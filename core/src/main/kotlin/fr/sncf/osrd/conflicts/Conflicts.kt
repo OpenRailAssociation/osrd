@@ -41,7 +41,7 @@ data class RequirementId(
 
 enum class RequirementType {
     TRAIN,
-    WORK_SCHEDULE
+    WORK_SCHEDULE,
 }
 
 fun detectConflicts(requirements: List<Requirements>): List<Conflict> {
@@ -88,7 +88,7 @@ class ConflictDetectorImpl(requirements: List<Requirements>) : ConflictDetector 
     data class RoutingZoneConfig(
         val entryDet: DirDetectorId,
         val exitDet: DirDetectorId,
-        val switches: Map<String, String>
+        val switches: Map<String, String>,
     )
 
     data class RoutingZoneRequirement(
@@ -114,7 +114,7 @@ class ConflictDetectorImpl(requirements: List<Requirements>) : ConflictDetector 
                         RoutingZoneConfig(
                             zoneRequirement.entryDetector,
                             zoneRequirement.exitDetector,
-                            zoneRequirement.switches
+                            zoneRequirement.switches,
                         )
                     val requirement =
                         RoutingZoneRequirement(trainId, route, beginTime, endTime, config)
@@ -238,13 +238,13 @@ internal fun <ReqT : ResourceRequirement> detectConflicts(
 
 enum class EventType {
     BEGIN,
-    END
+    END,
 }
 
 class Event(
     val eventType: EventType,
     val time: Double,
-    val requirements: Collection<ConflictRequirement>
+    val requirements: Collection<ConflictRequirement>,
 ) : Comparable<Event> {
     override fun compareTo(other: Event): Int {
         val timeDelta = this.time.compareTo(other.time)
@@ -259,7 +259,7 @@ class Event(
 
 fun mergeMap(
     resources: HashMap<ConflictingGroupKey, MutableList<Conflict>>,
-    conflictType: ConflictType
+    conflictType: ConflictType,
 ): MutableList<Conflict> {
     // sort and merge conflicts with overlapping time ranges
     val newConflicts = mutableListOf<Conflict>()

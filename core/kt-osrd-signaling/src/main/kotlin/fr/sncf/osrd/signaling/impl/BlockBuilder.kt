@@ -14,7 +14,7 @@ private val logger = KotlinLogging.logger {}
 internal fun internalBuildBlocks(
     sigModuleManager: InfraSigSystemManager,
     rawSignalingInfra: RawSignalingInfra,
-    loadedSignalInfra: LoadedSignalInfra
+    loadedSignalInfra: LoadedSignalInfra,
 ): BlockInfra {
     // Step 1) associate DirDetectorIds to a list of delimiting logical signals
     val signalDelimiters = findSignalDelimiters(rawSignalingInfra, loadedSignalInfra)
@@ -94,7 +94,7 @@ internal fun internalBuildBlocks(
                         true,
                         curBlock.zonePaths,
                         curBlock.signals,
-                        curBlock.signalPositions
+                        curBlock.signalPositions,
                     )
                 }
 
@@ -108,7 +108,7 @@ internal fun internalBuildBlocks(
                         sigModuleManager,
                         rawSignalingInfra,
                         loadedSignalInfra,
-                        nonRouteDelimitingSignalLogAggregator
+                        nonRouteDelimitingSignalLogAggregator,
                     )
                 }
             }
@@ -122,7 +122,7 @@ data class AssociatedDetector(val detector: DirDetectorId, val distance: Distanc
 
 private fun findSignalDelimiters(
     rawSignalingInfra: RawSignalingInfra,
-    loadedSignalInfra: LoadedSignalInfra
+    loadedSignalInfra: LoadedSignalInfra,
 ): IdxMap<LogicalSignalId, AssociatedDetector> {
     val res = IdxMap<LogicalSignalId, AssociatedDetector>()
     for (zonePath in rawSignalingInfra.zonePaths) {
@@ -182,7 +182,7 @@ class PartialBlock(
 ) {
     constructor(
         startAtBufferStop: Boolean,
-        expectedSignalingSystem: SignalingSystemId?
+        expectedSignalingSystem: SignalingSystemId?,
     ) : this(
         startAtBufferStop,
         MutableStaticIdxArrayList(),
@@ -217,7 +217,7 @@ class PartialBlock(
             signalPositions.clone(),
             zonePaths.clone(),
             expectedSignalingSystem,
-            currentLength
+            currentLength,
         )
     }
 }
@@ -244,7 +244,7 @@ private fun getInitPartialBlocks(
                 mutableOffsetArrayListOf(),
                 MutableStaticIdxArrayList(),
                 null,
-                Length(0.meters)
+                Length(0.meters),
             )
         )
     } else {
@@ -329,7 +329,7 @@ private fun BlockInfraBuilder.updatePartialBlocks(
                     false,
                     curBlock.zonePaths,
                     curBlock.signals,
-                    curBlock.signalPositions
+                    curBlock.signalPositions,
                 )
                 val drivers = loadedSignalInfra.getDrivers(signal)
                 if (drivers.size == 0) {
@@ -358,7 +358,7 @@ private fun warnOnRouteEndingOnNonRouteDelimitingSignal(
     sigModuleManager: InfraSigSystemManager,
     rawSignalingInfra: RawSignalingInfra,
     loadedSignalInfra: LoadedSignalInfra,
-    logAggregator: LogAggregator
+    logAggregator: LogAggregator,
 ) {
     val endSignals = detectorSignals[routeExitDet] ?: return
     for (associatedSignal in endSignals.values()) {

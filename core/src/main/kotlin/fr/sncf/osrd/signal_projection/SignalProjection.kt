@@ -31,7 +31,7 @@ fun projectSignals(
     routePath: StaticIdxList<Route>,
     signalCriticalPositions: Collection<SignalCriticalPosition>,
     zoneUpdates: Collection<ZoneUpdate>,
-    simulationEndTime: TimeDelta
+    simulationEndTime: TimeDelta,
 ): List<SignalUpdate> {
     val rawInfra = fullInfra.rawInfra
     val loadedSignalInfra = fullInfra.loadedSignalInfra
@@ -85,7 +85,7 @@ fun projectSignals(
             blockPath,
             blockInfra,
             0.meters,
-            chunkPath.endOffset - chunkPath.beginOffset
+            chunkPath.endOffset - chunkPath.beginOffset,
         )
     if (pathSignals.isEmpty()) return emptyList()
 
@@ -111,7 +111,7 @@ fun projectSignals(
             rawInfra,
             signalCriticalPositions,
             Length(chunkPath.endOffset - chunkPath.beginOffset),
-            simulationEndTime
+            simulationEndTime,
         )
     return signalUpdates
 }
@@ -140,7 +140,7 @@ private fun computeSignalAspectChangeEvents(
                 {
                     leastConstrainingStates[loadedSignalInfra.getSignalingSystem(it.signal)]!!
                         .getEnum("aspect")
-                }
+                },
             )
             .toMutableMap()
 
@@ -175,7 +175,7 @@ private fun computeSignalAspectChangeEvents(
                 blockPath.size,
                 zoneStates,
                 ZoneStatus.CLEAR,
-                nextSignalState
+                nextSignalState,
             )
         val simulatedAspects = simulatedSignalStates.mapValues { it.value.getEnum("aspect") }
         for (pathSignal in pathSignals) {
@@ -271,7 +271,7 @@ private fun signalUpdates(
                         positionEnd,
                         color("VL"),
                         blinking("VL"),
-                        "VL"
+                        "VL",
                     )
                 )
             }
@@ -290,7 +290,7 @@ private fun signalUpdates(
                     positionEnd,
                     color(event.newAspect),
                     blinking(event.newAspect),
-                    event.newAspect
+                    event.newAspect,
                 )
             )
         }
@@ -309,7 +309,7 @@ private fun signalUpdates(
                     positionEnd,
                     color(event.newAspect),
                     blinking(event.newAspect),
-                    event.newAspect
+                    event.newAspect,
                 )
             )
         }

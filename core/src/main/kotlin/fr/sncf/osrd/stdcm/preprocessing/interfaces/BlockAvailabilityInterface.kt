@@ -40,7 +40,7 @@ interface BlockAvailabilityInterface {
         infraExplorer: InfraExplorerWithEnvelope,
         startOffset: Offset<BlockPath>,
         endOffset: Offset<BlockPath>,
-        startTime: Double
+        startTime: Double,
     ): Availability
 
     /** Represents the availability of the requested section */
@@ -58,7 +58,7 @@ interface BlockAvailabilityInterface {
         /** The train can use the section now and up to `maximumDelay` later without conflict */
         val maximumDelay: Double,
         /** Earliest time any resource used by the train is reused by another one */
-        val timeOfNextConflict: Double
+        val timeOfNextConflict: Double,
     ) : Availability()
 
     /** The requested section isn't available yet */
@@ -72,7 +72,7 @@ interface BlockAvailabilityInterface {
          * It's either the offset where we start using a resource before it's available, or the
          * offset where the train would have released a resource it has kept for too long.
          */
-        val firstConflictOffset: Offset<TravelledPath>
+        val firstConflictOffset: Offset<TravelledPath>,
     ) : Availability()
 
     /**

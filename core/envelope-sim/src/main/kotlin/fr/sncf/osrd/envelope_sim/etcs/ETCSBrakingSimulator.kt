@@ -28,7 +28,7 @@ interface ETCSBrakingSimulator {
      */
     fun addSlowdownBrakingCurves(
         envelope: Envelope,
-        limitsOfAuthority: Collection<LimitOfAuthority>
+        limitsOfAuthority: Collection<LimitOfAuthority>,
     ): Envelope
 
     /**
@@ -37,19 +37,19 @@ interface ETCSBrakingSimulator {
      */
     fun addStopBrakingCurves(
         envelope: Envelope,
-        endsOfAuthority: Collection<EndOfAuthority>
+        endsOfAuthority: Collection<EndOfAuthority>,
     ): Envelope
 
     /** Compute the ETCS braking curves for each LoA, ordered by LoA offset. */
     fun computeSlowdownBrakingCurves(
         envelope: Envelope,
-        limitsOfAuthority: Collection<LimitOfAuthority>
+        limitsOfAuthority: Collection<LimitOfAuthority>,
     ): LOABrakingCurves
 
     /** Compute the ETCS braking curves for each EoA, ordered by EoA offset. */
     fun computeStopBrakingCurves(
         envelope: Envelope,
-        endsOfAuthority: Collection<EndOfAuthority>
+        endsOfAuthority: Collection<EndOfAuthority>,
     ): EOABrakingCurves
 
     /**
@@ -85,10 +85,8 @@ typealias EOABrakingCurves = NavigableMap<EndOfAuthority, BrakingCurves>
 
 data class BrakingCurve(val brakingType: BrakingType, val brakingCurve: Envelope)
 
-data class LimitOfAuthority(
-    val offset: Offset<TravelledPath>,
-    val speed: Double,
-) : Comparable<LimitOfAuthority> {
+data class LimitOfAuthority(val offset: Offset<TravelledPath>, val speed: Double) :
+    Comparable<LimitOfAuthority> {
     init {
         assert(speed > 0)
     }
@@ -129,13 +127,13 @@ data class EndOfAuthority(
 enum class EoaType {
     STOP,
     SPACING,
-    ROUTING
+    ROUTING,
 }
 
 class ETCSBrakingSimulatorImpl(override val context: EnvelopeSimContext) : ETCSBrakingSimulator {
     override fun addSlowdownBrakingCurves(
         envelope: Envelope,
-        limitsOfAuthority: Collection<LimitOfAuthority>
+        limitsOfAuthority: Collection<LimitOfAuthority>,
     ): Envelope {
         val sortedLimitsOfAuthority = limitsOfAuthority.sorted()
         val beginPos = envelope.beginPos
@@ -148,7 +146,7 @@ class ETCSBrakingSimulatorImpl(override val context: EnvelopeSimContext) : ETCSB
                     limitOfAuthority,
                     context,
                     envelopeWithLoaBrakingCurves,
-                    beginPos
+                    beginPos,
                 )
             val indicationCurve = ebdBrakingCurves[IND] ?: continue
             indicationCurve.brakingCurve.stream().forEach { builder.addPart(it) }
@@ -165,7 +163,7 @@ class ETCSBrakingSimulatorImpl(override val context: EnvelopeSimContext) : ETCSB
 
     override fun addStopBrakingCurves(
         envelope: Envelope,
-        endsOfAuthority: Collection<EndOfAuthority>
+        endsOfAuthority: Collection<EndOfAuthority>,
     ): Envelope {
         val sortedEndsOfAuthority = endsOfAuthority.sorted()
         var beginPos = envelope.beginPos
@@ -187,7 +185,7 @@ class ETCSBrakingSimulatorImpl(override val context: EnvelopeSimContext) : ETCSB
 
     override fun computeSlowdownBrakingCurves(
         envelope: Envelope,
-        limitsOfAuthority: Collection<LimitOfAuthority>
+        limitsOfAuthority: Collection<LimitOfAuthority>,
     ): LOABrakingCurves {
         val res: LOABrakingCurves = TreeMap()
         for (limitOfAuthority in limitsOfAuthority) {
@@ -199,7 +197,7 @@ class ETCSBrakingSimulatorImpl(override val context: EnvelopeSimContext) : ETCSB
 
     override fun computeStopBrakingCurves(
         envelope: Envelope,
-        endsOfAuthority: Collection<EndOfAuthority>
+        endsOfAuthority: Collection<EndOfAuthority>,
     ): EOABrakingCurves {
         val res: EOABrakingCurves = TreeMap()
         for (endOfAuthority in endsOfAuthority) {
@@ -215,12 +213,7 @@ class ETCSBrakingSimulatorImpl(override val context: EnvelopeSimContext) : ETCSB
         while (cursor.findPartTransition(::increase)) {
             val offset = Offset<TravelledPath>(cursor.position.meters)
             if (etcsRanges.contains(offset.distance)) {
-                limitsOfAuthority.add(
-                    LimitOfAuthority(
-                        offset,
-                        cursor.speed,
-                    )
-                )
+                limitsOfAuthority.add(LimitOfAuthority(offset, cursor.speed))
             }
             cursor.nextPart()
         }
@@ -231,7 +224,7 @@ class ETCSBrakingSimulatorImpl(override val context: EnvelopeSimContext) : ETCSB
         envelope: Envelope,
         offsets: List<Offset<TravelledPath>>,
         areSignalsOnOffsetsRestrictive: List<Boolean>,
-        eoaType: EoaType
+        eoaType: EoaType,
     ): List<EndOfAuthority> {
         val etcsRanges = context.etcsContext?.applicationRanges ?: return listOf()
         val orderedStops = offsets.zip(areSignalsOnOffsetsRestrictive).sortedBy { it.first }
@@ -254,7 +247,7 @@ class ETCSBrakingSimulatorImpl(override val context: EnvelopeSimContext) : ETCSB
                 // Stop location is out of bounds of the envelope: throw exception.
                 throw OSRDError.envelopeStopOutOfBoundsError(
                     stopOffset.distance.meters,
-                    envelope.endPos
+                    envelope.endPos,
                 )
             }
             if (etcsRanges.contains(stopOffset.distance)) {
@@ -265,7 +258,7 @@ class ETCSBrakingSimulatorImpl(override val context: EnvelopeSimContext) : ETCSB
                             computeSpacingConflictEoa(
                                 stopOffset,
                                 isStopSignalRestrictive,
-                                envelope.endPos
+                                envelope.endPos,
                             )
                         EoaType.ROUTING ->
                             computeRoutingConflictEoa(stopOffset, isStopSignalRestrictive)
@@ -287,7 +280,7 @@ class ETCSBrakingSimulatorImpl(override val context: EnvelopeSimContext) : ETCSB
                 offsetEOA = stopOffset,
                 offsetSVL = this.context.etcsContext!!.getMandatoryDangerPoint(stopOffset),
                 usedCurveType = IND,
-                eoaType = EoaType.STOP
+                eoaType = EoaType.STOP,
             )
         } else {
             // On an open signal, EoA = stop, SvL = null and the used curve is the permitted speed.
@@ -295,7 +288,7 @@ class ETCSBrakingSimulatorImpl(override val context: EnvelopeSimContext) : ETCSB
                 offsetEOA = stopOffset,
                 offsetSVL = null,
                 usedCurveType = PS,
-                eoaType = EoaType.STOP
+                eoaType = EoaType.STOP,
             )
         }
     }
@@ -304,7 +297,7 @@ class ETCSBrakingSimulatorImpl(override val context: EnvelopeSimContext) : ETCSB
     private fun computeSpacingConflictEoa(
         signalOffset: Offset<TravelledPath>,
         isRouteDelimiter: Boolean,
-        endPos: Double
+        endPos: Double,
     ): EndOfAuthority? {
         val nextDetector = this.context.etcsContext!!.getNextDetector(signalOffset)!!
         return if (isRouteDelimiter) {
@@ -314,7 +307,7 @@ class ETCSBrakingSimulatorImpl(override val context: EnvelopeSimContext) : ETCSB
                 offsetEOA = signalOffset,
                 offsetSVL = nextDetector,
                 usedCurveType = IND,
-                eoaType = EoaType.SPACING
+                eoaType = EoaType.SPACING,
             )
         } else if (nextDetector.distance.meters <= endPos) {
             // On a non-route delimiter signal for spacing requirements, EoA = SvL = next detector.
@@ -322,7 +315,7 @@ class ETCSBrakingSimulatorImpl(override val context: EnvelopeSimContext) : ETCSB
                 offsetEOA = nextDetector,
                 offsetSVL = nextDetector,
                 usedCurveType = IND,
-                eoaType = EoaType.SPACING
+                eoaType = EoaType.SPACING,
             )
         } else {
             // On a non-route delimiter  signal, if the next detector is not located before the end
@@ -343,7 +336,7 @@ class ETCSBrakingSimulatorImpl(override val context: EnvelopeSimContext) : ETCSB
                 offsetEOA = signalOffset,
                 offsetSVL = this.context.etcsContext!!.getMandatoryDangerPoint(signalOffset),
                 usedCurveType = IND,
-                eoaType = EoaType.ROUTING
+                eoaType = EoaType.ROUTING,
             )
         } else {
             // It isn't possible to have a routing requirement on a non-route delimiter signal:

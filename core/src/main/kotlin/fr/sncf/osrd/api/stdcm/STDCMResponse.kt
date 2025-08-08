@@ -19,7 +19,7 @@ interface STDCMResponse
 class STDCMSuccess(
     var simulation: SimulationSuccess,
     var path: PathfindingBlockResponse,
-    @Json(name = "departure_time") var departureTime: ZonedDateTime
+    @Json(name = "departure_time") var departureTime: ZonedDateTime,
 ) : STDCMResponse
 
 class PathNotFound : STDCMResponse

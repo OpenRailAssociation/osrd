@@ -91,28 +91,28 @@ class EnvelopeTest {
             make(
                 EnvelopeTestUtils.generateTimes(
                     doubleArrayOf(0.0, 10.0),
-                    doubleArrayOf(100.0, 100.0)
+                    doubleArrayOf(100.0, 100.0),
                 )
             )
         val envelopeB =
             make(
                 EnvelopeTestUtils.generateTimes(
                     doubleArrayOf(5.0, 10.0),
-                    doubleArrayOf(100.0, 100.0)
+                    doubleArrayOf(100.0, 100.0),
                 )
             )
         val envelopeC =
             make(
                 EnvelopeTestUtils.generateTimes(
                     doubleArrayOf(0.0, 15.0),
-                    doubleArrayOf(100.0, 100.0)
+                    doubleArrayOf(100.0, 100.0),
                 )
             )
         val envelopeD =
             make(
                 EnvelopeTestUtils.generateTimes(
                     doubleArrayOf(5.0, 15.0),
-                    doubleArrayOf(100.0, 100.0)
+                    doubleArrayOf(100.0, 100.0),
                 )
             )
         assertThrows(AssertionError::class.java) { minEnvelopes(envelopeA, envelopeB) }
@@ -141,13 +141,13 @@ class EnvelopeTest {
         assertTrue(
             areSpeedsEqual(
                 envelopeA.interpolateSpeedLeftDir(intersectionPosition, directionAscending),
-                intersectionSpeed
+                intersectionSpeed,
             )
         )
         assertTrue(
             areSpeedsEqual(
                 envelopeB.interpolateSpeedLeftDir(intersectionPosition, directionAscending),
-                intersectionSpeed
+                intersectionSpeed,
             )
         )
 
@@ -166,7 +166,7 @@ class EnvelopeTest {
             val partA =
                 EnvelopeTestUtils.generateTimes(
                     doubleArrayOf(0.0, 20.0),
-                    doubleArrayOf(150.0, 50.0)
+                    doubleArrayOf(150.0, 50.0),
                 )
             val partB =
                 EnvelopeTestUtils.generateTimes(doubleArrayOf(0.0, 20.0), doubleArrayOf(200.0, 0.0))
@@ -175,7 +175,7 @@ class EnvelopeTest {
             val partC2 =
                 EnvelopeTestUtils.generateTimes(
                     doubleArrayOf(10.0, 20.0),
-                    doubleArrayOf(200.0, 0.0)
+                    doubleArrayOf(200.0, 0.0),
                 )
             val envelopeA = make(partA)
             val envelopeB = make(partB)
@@ -190,15 +190,15 @@ class EnvelopeTest {
                     envelopeB,
                     1,
                     listOf(0.0, intersectionAB, 20.0),
-                    listOf(150.0, speedIntersectionAB, 0.0)
+                    listOf(150.0, speedIntersectionAB, 0.0),
                 ),
                 Arguments.of(
                     envelopeA,
                     envelopeC,
                     3,
                     listOf(0.0, 10.0, 10.0, intersectionAC, 20.0),
-                    listOf(50.0, 0.0, envelopeA.interpolateSpeed(10.0), speedIntersectionAC, 0.0)
-                )
+                    listOf(50.0, 0.0, envelopeA.interpolateSpeed(10.0), speedIntersectionAC, 0.0),
+                ),
             )
         }
     }

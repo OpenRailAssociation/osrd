@@ -25,7 +25,7 @@ interface SigSystemManager : InfraSigSystemManager {
     fun checkSignalingSystemBlock(
         reporter: BlockDiagReporter,
         sigSystem: SignalingSystemId,
-        block: SigBlock
+        block: SigBlock,
     )
 
     /** Driver specific checks of the signal settings and block */
@@ -33,7 +33,7 @@ interface SigSystemManager : InfraSigSystemManager {
         reporter: SignalDiagReporter,
         driverId: SignalDriverId,
         settings: SigSettings,
-        sigBlock: SigBlock
+        sigBlock: SigBlock,
     )
 
     fun evalSignal(
@@ -42,13 +42,13 @@ interface SigSystemManager : InfraSigSystemManager {
         parameters: SigParameters,
         stateSchema: SigStateSchema,
         maView: MovementAuthorityView?,
-        limitView: SpeedLimitView?
+        limitView: SpeedLimitView?,
     ): SigState
 
     fun isConstraining(
         signalingSystem: SignalingSystemId,
         signalState: SigState,
-        trainState: SignalingTrainState
+        trainState: SignalingTrainState,
     ): Boolean
 }
 
@@ -59,7 +59,7 @@ interface SignalingSimulator {
 
     fun buildBlocks(
         rawSignalingInfra: RawSignalingInfra,
-        loadedSignalInfra: LoadedSignalInfra
+        loadedSignalInfra: LoadedSignalInfra,
     ): BlockInfra
 
     fun evaluate(
@@ -72,6 +72,6 @@ interface SignalingSimulator {
         zoneStates: List<ZoneStatus>,
         followingZoneState: ZoneStatus,
         followingSignalState: SigState? = null,
-        followingSignalSettings: SigSettings? = null
+        followingSignalSettings: SigSettings? = null,
     ): Map<LogicalSignalId, SigState>
 }

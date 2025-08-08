@@ -8,19 +8,19 @@ import fr.sncf.osrd.utils.indexing.StaticIdxSpace
 class MockSigSystemManager(
     val sigSystem: String,
     val settingsSchema: SigSettingsSchema,
-    val parametersSchema: SigParametersSchema
+    val parametersSchema: SigParametersSchema,
 ) : SigSystemManager {
     override fun checkSignalingSystemBlock(
         reporter: BlockDiagReporter,
         sigSystem: SignalingSystemId,
-        block: SigBlock
+        block: SigBlock,
     ) {}
 
     override fun checkSignal(
         reporter: SignalDiagReporter,
         driverId: SignalDriverId,
         settings: SigSettings,
-        sigBlock: SigBlock
+        sigBlock: SigBlock,
     ) {}
 
     override fun evalSignal(
@@ -29,7 +29,7 @@ class MockSigSystemManager(
         parameters: SigParameters,
         stateSchema: SigStateSchema,
         maView: MovementAuthorityView?,
-        limitView: SpeedLimitView?
+        limitView: SpeedLimitView?,
     ): SigState {
         TODO("Not yet implemented")
     }
@@ -37,7 +37,7 @@ class MockSigSystemManager(
     override fun isConstraining(
         signalingSystem: SignalingSystemId,
         signalState: SigState,
-        trainState: SignalingTrainState
+        trainState: SignalingTrainState,
     ): Boolean {
         TODO("Not yet implemented")
     }
@@ -79,7 +79,7 @@ class MockSigSystemManager(
 
     override fun findDriver(
         outputSig: SignalingSystemId,
-        inputSig: SignalingSystemId
+        inputSig: SignalingSystemId,
     ): SignalDriverId {
         assert(outputSig == SignalingSystemId(0u) && inputSig == SignalingSystemId(0u))
         return SignalDriverId(0u)

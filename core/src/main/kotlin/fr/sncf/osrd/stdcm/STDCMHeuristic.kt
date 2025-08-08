@@ -43,11 +43,7 @@ data class STDCMAStarHeuristic(
         // already locked-in).
 
         // Account for the steps that will be passed in the lookahead
-        val expectedIndex =
-            getExpectedStepIndex(
-                allBlocks.dropLast(1),
-                stepTracker,
-            )
+        val expectedIndex = getExpectedStepIndex(allBlocks.dropLast(1), stepTracker)
         if (expectedIndex >= remainingTimeEstimations.size) return 0.0
 
         val timeAfterStartOfLastBlock =
@@ -69,10 +65,7 @@ data class STDCMAStarHeuristic(
     }
 
     /** Returns the numbers of passed waypoints at the end of the block list */
-    private fun getExpectedStepIndex(
-        blocks: List<BlockId>,
-        stepTracker: StepTracker,
-    ): Int {
+    private fun getExpectedStepIndex(blocks: List<BlockId>, stepTracker: StepTracker): Int {
         val stepTrackerCopy = stepTracker.clone()
         for (block in blocks) {
             stepTrackerCopy.moveForward(block, Offset.zero(), blockInfra.getBlockLength(block))
@@ -130,8 +123,8 @@ class STDCMHeuristicBuilder(
                         block.remainingTimeAtBlockStart,
                         remainingTimeEstimations[i].getOrDefault(
                             block.block,
-                            Double.POSITIVE_INFINITY
-                        )
+                            Double.POSITIVE_INFINITY,
+                        ),
                     )
             }
             if (block.stepIndex >= 0) {
@@ -174,9 +167,7 @@ class STDCMHeuristicBuilder(
      * Generates all the pending blocks that can lead to the given block, as long as the pending
      * blocks' remaining times stay below `maximumRunningTime`.
      */
-    private fun getPredecessors(
-        pendingBlock: PendingBlock,
-    ): Collection<PendingBlock> {
+    private fun getPredecessors(pendingBlock: PendingBlock): Collection<PendingBlock> {
         if (pendingBlock.remainingTimeAtBlockStart > maxRunningTime) return emptyList()
         val detector = blockInfra.getBlockEntry(rawInfra, pendingBlock.block)
         val blocks = blockInfra.getBlocksEndingAtDetector(detector)
@@ -187,7 +178,7 @@ class STDCMHeuristicBuilder(
                     block,
                     null,
                     pendingBlock.stepIndex,
-                    pendingBlock.remainingTimeAtBlockStart
+                    pendingBlock.remainingTimeAtBlockStart,
                 )
             res.add(newBlock)
         }
@@ -209,7 +200,7 @@ class STDCMHeuristicBuilder(
         block: StaticIdx<Block>,
         offset: Offset<Block>?,
         currentIndex: Int,
-        remainingTime: Double
+        remainingTime: Double,
     ): PendingBlock {
         var newIndex = currentIndex
         val actualOffset = offset ?: blockInfra.getBlockLength(block)
@@ -223,7 +214,7 @@ class STDCMHeuristicBuilder(
         return PendingBlock(
             block,
             newIndex,
-            remainingTime + mrspBuilder.getBlockTime(block, offset)
+            remainingTime + mrspBuilder.getBlockTime(block, offset),
         )
     }
 }

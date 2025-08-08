@@ -66,7 +66,7 @@ class IncrementalConflictDetector(requirements: List<Requirements>) {
      * no conflict).
      */
     fun analyseConflicts(
-        spacingRequirements: List<SpacingRequirement>,
+        spacingRequirements: List<SpacingRequirement>
     ): IncrementalConflictResponse {
         val minDelayWithoutConflicts = minDelayWithoutConflicts(spacingRequirements)
         if (minDelayWithoutConflicts != 0.0) { // There are initial conflicts
@@ -84,10 +84,7 @@ class IncrementalConflictDetector(requirements: List<Requirements>) {
                 maxDelay = min(maxDelay, nextUse - spacingRequirement.endTime)
                 timeOfNextConflict = min(timeOfNextConflict, nextUse)
             }
-            return NoConflictResponse(
-                maxDelay,
-                timeOfNextConflict,
-            )
+            return NoConflictResponse(maxDelay, timeOfNextConflict)
         }
     }
 
@@ -95,9 +92,7 @@ class IncrementalConflictDetector(requirements: List<Requirements>) {
      * Returns the earliest time at which there is a conflict (a resource is used by the new train
      * and in the initial requirements).
      */
-    private fun earliestConflictTime(
-        spacingRequirements: List<SpacingRequirement>,
-    ): Double {
+    private fun earliestConflictTime(spacingRequirements: List<SpacingRequirement>): Double {
         var res = Double.POSITIVE_INFINITY
         for (spacingRequirement in spacingRequirements) {
             val map = spacingZoneUses[spacingRequirement.zone] ?: continue
@@ -113,9 +108,7 @@ class IncrementalConflictDetector(requirements: List<Requirements>) {
      * Returns the minimum amount of delay to add to the new requirements to avoid any conflict. May
      * be infinite. 0 if no conflict.
      */
-    private fun minDelayWithoutConflicts(
-        spacingRequirements: List<SpacingRequirement>,
-    ): Double {
+    private fun minDelayWithoutConflicts(spacingRequirements: List<SpacingRequirement>): Double {
         var minDelay = 0.0
         // We iterate until the requirements fit in the timetable,
         // shifting them later whenever a conflict is detected.

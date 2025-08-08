@@ -28,7 +28,7 @@ class SigSystemManagerImpl : SigSystemManager {
         driverMap[
             Pair(
                 findSignalingSystemOrThrow(sigDriver.outputSignalingSystem),
-                findSignalingSystemOrThrow(sigDriver.inputSignalingSystem)
+                findSignalingSystemOrThrow(sigDriver.inputSignalingSystem),
             )] = res
         return res
     }
@@ -39,7 +39,7 @@ class SigSystemManagerImpl : SigSystemManager {
         parameters: SigParameters,
         stateSchema: SigStateSchema,
         maView: MovementAuthorityView?,
-        limitView: SpeedLimitView?
+        limitView: SpeedLimitView?,
     ): SigState {
         val driver = driverPool[driverId]
         return driver.evalSignal(signal, parameters, stateSchema, maView, limitView)
@@ -48,7 +48,7 @@ class SigSystemManagerImpl : SigSystemManager {
     override fun isConstraining(
         signalingSystem: SignalingSystemId,
         signalState: SigState,
-        trainState: SignalingTrainState
+        trainState: SignalingTrainState,
     ): Boolean {
         val driver = sigSystemPool[signalingSystem]
         return driver.isConstrainingOnSight(signalState, trainState)
@@ -91,7 +91,7 @@ class SigSystemManagerImpl : SigSystemManager {
 
     override fun findDriver(
         outputSig: SignalingSystemId,
-        inputSig: SignalingSystemId
+        inputSig: SignalingSystemId,
     ): SignalDriverId {
         return driverMap[Pair(outputSig, inputSig)]!!
     }
@@ -115,7 +115,7 @@ class SigSystemManagerImpl : SigSystemManager {
     override fun checkSignalingSystemBlock(
         reporter: BlockDiagReporter,
         sigSystem: SignalingSystemId,
-        block: SigBlock
+        block: SigBlock,
     ) {
         sigSystemPool[sigSystem].checkBlock(reporter, block)
     }
@@ -124,7 +124,7 @@ class SigSystemManagerImpl : SigSystemManager {
         reporter: SignalDiagReporter,
         driverId: SignalDriverId,
         settings: SigSettings,
-        sigBlock: SigBlock
+        sigBlock: SigBlock,
     ) {
         driverPool[driverId].checkSignal(reporter, settings, sigBlock)
     }

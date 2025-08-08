@@ -13,7 +13,7 @@ fun growCapacity(currentCapacity: Int, currentSize: Int, expectedAdditions: Int)
     val addedCapacity =
         (currentCapacity.toLong() + currentCapacity.toLong() / 2).coerceIn(
             MIN_GROW_COUNT,
-            MAX_GROW_COUNT
+            MAX_GROW_COUNT,
         )
 
     var newCapacity = addedCapacity + currentCapacity

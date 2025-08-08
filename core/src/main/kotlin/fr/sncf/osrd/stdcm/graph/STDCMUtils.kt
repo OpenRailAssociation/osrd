@@ -13,9 +13,7 @@ import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.withoutConsecutiveDuplicates
 
 /** Returns the offset of the next stop (if any) on the current block, starting at startOffset */
-fun getNextStopOnCurrentBlock(
-    infraExplorer: InfraExplorer,
-): Offset<Block>? {
+fun getNextStopOnCurrentBlock(infraExplorer: InfraExplorer): Offset<Block>? {
     return infraExplorer
         .getStepTracker()
         .getStepsInLookahead()

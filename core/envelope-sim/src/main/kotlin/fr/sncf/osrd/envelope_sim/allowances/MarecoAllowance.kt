@@ -20,7 +20,7 @@ class MarecoAllowance(
     beginPos: Double,
     endPos: Double,
     capacitySpeedLimit: Double,
-    ranges: List<AllowanceRange>
+    ranges: List<AllowanceRange>,
 ) : AbstractAllowanceWithRanges(beginPos, endPos, capacitySpeedLimit, ranges.toMutableList()) {
     init {
         assert(capacitySpeedLimit >= 1) {
@@ -57,7 +57,7 @@ class MarecoAllowance(
      */
     override fun computeInitialHighBound(
         envelopeSection: Envelope,
-        rollingStock: PhysicsRollingStock
+        rollingStock: PhysicsRollingStock,
     ): Double {
         val sectionMaxSpeed = envelopeSection.maxSpeed
         var maxSpeed = sectionMaxSpeed
@@ -76,7 +76,7 @@ class MarecoAllowance(
     override fun computeCore(
         base: Envelope,
         context: EnvelopeSimContext,
-        speedCap: Double // v1
+        speedCap: Double, // v1
     ): Envelope {
         val vf = computeVf(speedCap, context.rollingStock)
 
@@ -89,7 +89,7 @@ class MarecoAllowance(
                 context,
                 cappedEnvelope,
                 initialPosition,
-                initialSpeed
+                initialSpeed,
             )
 
         // 2) find accelerating slopes on constant speed limit regions

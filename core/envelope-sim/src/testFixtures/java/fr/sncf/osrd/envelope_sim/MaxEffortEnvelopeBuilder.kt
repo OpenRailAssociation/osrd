@@ -17,12 +17,12 @@ object MaxEffortEnvelopeBuilder {
     fun makeSimpleMaxEffortEnvelope(
         context: EnvelopeSimContext,
         maxSpeed: Double,
-        stops: DoubleArray
+        stops: DoubleArray,
     ): Envelope {
         return makeMaxEffortEnvelopeFromSpeedRanges(
             context,
             ImmutableRangeMap.of(Range.open(0.0, context.path.length), maxSpeed),
-            stops
+            stops,
         )
     }
 
@@ -47,7 +47,7 @@ object MaxEffortEnvelopeBuilder {
     private fun makeMaxEffortEnvelopeFromSpeedRanges(
         context: EnvelopeSimContext,
         speeds: RangeMap<Double, Double>,
-        stops: DoubleArray
+        stops: DoubleArray,
     ): Envelope {
         val flatMRSP = TestMRSPBuilder.makeSimpleMRSP(context, speeds)
         val stopInfos = ArrayList<SimStop>()

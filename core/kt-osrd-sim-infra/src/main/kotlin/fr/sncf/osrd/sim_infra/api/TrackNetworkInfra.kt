@@ -35,12 +35,13 @@ typealias TrackNodeConfigId = StaticIdx<TrackNodeConfig>
 interface TrackNetworkInfra {
     fun getNextTrackSection(
         currentTrack: DirTrackSectionId,
-        config: TrackNodeConfigId
+        config: TrackNodeConfigId,
     ): OptDirTrackSectionId
 
     fun getNextTrackNode(trackSection: DirTrackSectionId): OptStaticIdx<TrackNode>
 
     fun getNextTrackNodePort(trackSection: DirTrackSectionId): OptStaticIdx<TrackNodePort>
+
     /** Returns the track section which is plugged into a given node port */
     fun getPortConnection(trackNode: TrackNodeId, port: TrackNodePortId): EndpointTrackSectionId
 
@@ -49,11 +50,13 @@ interface TrackNetworkInfra {
      * than one, and abstract nodes (track section links) always have one.
      */
     fun getTrackNodeConfigs(trackNode: TrackNodeId): StaticIdxSpace<TrackNodeConfig>
+
     /**
      * Returns the number of ports for this node. Abstract nodes have two ports, and switches have
      * at least 3.
      */
     fun getTrackNodePorts(trackNode: TrackNodeId): StaticIdxSpace<TrackNodePort>
+
     /**
      * Given a node, a configuration, and an entry port, returns either the exit port, or -1 if the
      * entry cannot be used in this configuration.
@@ -61,8 +64,9 @@ interface TrackNetworkInfra {
     fun getTrackNodeExitPort(
         trackNode: TrackNodeId,
         config: TrackNodeConfigId,
-        entryPort: TrackNodePortId
+        entryPort: TrackNodePortId,
     ): OptStaticIdx<TrackNodePort>
+
     /** Returns the time it takes for the node to change configuration */
     fun getTrackNodeDelay(trackNode: TrackNodeId): Duration
 

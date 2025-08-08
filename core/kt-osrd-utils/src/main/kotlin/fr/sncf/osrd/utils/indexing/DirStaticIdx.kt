@@ -15,7 +15,7 @@ import fr.sncf.osrd.utils.Direction
 value class DirStaticIdx<T>(val data: UInt) : NumIdx {
     public constructor(
         id: StaticIdx<T>,
-        direction: Direction
+        direction: Direction,
     ) : this(
         (id.index shl 1) or
             when (direction) {

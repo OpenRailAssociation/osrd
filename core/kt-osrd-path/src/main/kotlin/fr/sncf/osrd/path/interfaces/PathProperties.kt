@@ -12,10 +12,7 @@ import fr.sncf.osrd.utils.indexing.StaticIdx
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Offset
 
-data class IdxWithOffset<T, U>(
-    val value: StaticIdx<T>,
-    val offset: Offset<U>,
-)
+data class IdxWithOffset<T, U>(val value: StaticIdx<T>, val offset: Offset<U>)
 
 typealias IdxWithBlockPathOffset<T> = IdxWithOffset<T, BlockPath>
 
@@ -55,7 +52,7 @@ interface PathProperties {
 
     fun getSpeedLimitProperties(
         trainTag: String?,
-        temporarySpeedLimitManager: TemporarySpeedLimitManager?
+        temporarySpeedLimitManager: TemporarySpeedLimitManager?,
     ): DistanceRangeMap<SpeedLimitProperty>
 
     fun getZones(): DistanceRangeMap<ZoneId>

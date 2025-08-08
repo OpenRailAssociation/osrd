@@ -42,7 +42,7 @@ data class DistanceRangeMapImpl<T>(
             if (pairs.isEmpty()) return result
             var nextKey = pairs[0].first
             var nextValues = mutableListOf(pairs[0].second)
-            for ((key, value) in pairs.slice(1 ..< pairs.size)) {
+            for ((key, value) in pairs.slice(1..<pairs.size)) {
                 if (key == nextKey) {
                     nextValues.add(value)
                 } else {
@@ -192,7 +192,7 @@ data class DistanceRangeMapImpl<T>(
 
     override fun <U> updateMapIntersection(
         update: DistanceRangeMap<U>,
-        updateFunction: BiFunction<T, U, T>
+        updateFunction: BiFunction<T, U, T>,
     ) {
         for ((updateLower, updateUpper, updateValue) in update) {
             for ((subMapLower, subMapUpper, subMapValue) in this.subMap(updateLower, updateUpper)) {
@@ -204,7 +204,7 @@ data class DistanceRangeMapImpl<T>(
     override fun updateMap(
         update: DistanceRangeMap<T>,
         updateFunction: (T, T) -> T,
-        default: (T) -> T
+        default: (T) -> T,
     ) {
         val resultEntries = mutableListOf<DistanceRangeMap.RangeMapEntry<T>>()
 
@@ -228,7 +228,7 @@ data class DistanceRangeMapImpl<T>(
                             DistanceRangeMap.RangeMapEntry(
                                 lastEnd,
                                 subMapLower,
-                                default(updateValue)
+                                default(updateValue),
                             )
                         )
                     }
@@ -384,7 +384,7 @@ data class DistanceRangeMapImpl<T>(
             for (entry in map.asMapOfRanges()) res.put(
                 entry.key.lowerEndpoint(),
                 entry.key.upperEndpoint(),
-                entry.value
+                entry.value,
             )
             return res
         }

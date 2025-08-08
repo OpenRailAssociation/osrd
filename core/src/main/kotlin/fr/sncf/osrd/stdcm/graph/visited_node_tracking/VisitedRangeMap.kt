@@ -36,7 +36,7 @@ data class VisitedRangeMap(
         // (The end of all ranges depends on conflicting occupancy along the path)
         map.put(
             Range.closed(startTime, endRangeDepartureTimeChange),
-            VisitedWithDepartureTimeChange(nodeCost, totalStopDuration)
+            VisitedWithDepartureTimeChange(nodeCost, totalStopDuration),
         )
 
         // Visited with extra stop duration, starting from the end of the previous range
@@ -46,7 +46,7 @@ data class VisitedRangeMap(
             VisitedWithAddedStopTime(
                 LinearFunction(totalStopDuration - endRangeDepartureTimeChange),
                 nodeCost,
-            )
+            ),
         )
         // Visited with extra margins, starting from the end of the previous range
         putRange(
@@ -54,8 +54,8 @@ data class VisitedRangeMap(
             endRangeExtraTravelTime,
             VisitedWithAddedTravelTime(
                 LinearFunction(nodeCost - endRangeExtraStopTime),
-                totalStopDuration
-            )
+                totalStopDuration,
+            ),
         )
     }
 
@@ -63,9 +63,7 @@ data class VisitedRangeMap(
      * Returns true if the map already contains visited ranges for all new ranges from the given
      * parameters.
      */
-    fun isVisited(
-        newValues: VisitedRangeMap,
-    ): Boolean {
+    fun isVisited(newValues: VisitedRangeMap): Boolean {
         if (newValues.map.asMapOfRanges().isEmpty()) return true
 
         val visitingRange = newValues.span()

@@ -13,5 +13,5 @@ data class OccupancySegment(
     val distanceStart: Distance,
     val distanceEnd: Distance,
     val enabledIfBlockInLookahead: BlockId? = null,
-    val disabledIfBlockInLookahead: BlockId? = null
+    val disabledIfBlockInLookahead: BlockId? = null,
 )

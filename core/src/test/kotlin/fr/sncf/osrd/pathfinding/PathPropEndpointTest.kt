@@ -23,21 +23,21 @@ class PathPropEndpointTest : ApiTest() {
                     "TA0",
                     Offset(50.meters),
                     Offset(2000.meters),
-                    EdgeDirection.START_TO_STOP
+                    EdgeDirection.START_TO_STOP,
                 ),
                 DirectionalTrackRange(
                     "TA1",
                     Offset(0.meters),
                     Offset(1950.meters),
-                    EdgeDirection.START_TO_STOP
-                )
+                    EdgeDirection.START_TO_STOP,
+                ),
             )
         val requestBody =
             pathPropRequestAdapter.toJson(
                 PathPropRequest(
                     trackSectionRanges = trackSectionRanges,
                     infra = "small_infra/infra.json",
-                    expectedVersion = 1
+                    expectedVersion = 1,
                 )
             )
         val rawResponse =
@@ -52,8 +52,8 @@ class PathPropEndpointTest : ApiTest() {
             parsed.electrifications,
             RangeValues(
                 listOf(Offset(1910.meters), Offset(1950.meters)),
-                listOf(Electrified("1500V"), Neutral(true), Electrified("25000V"))
-            )
+                listOf(Electrified("1500V"), Neutral(true), Electrified("25000V")),
+            ),
         )
         assertEquals(parsed.geometry.coordinates.size, 6)
         val oPs =
@@ -63,21 +63,21 @@ class PathPropEndpointTest : ApiTest() {
                     OperationalPointPartResponse("TA0", 700.0, null),
                     OperationalPointExtensions(
                         OperationalPointSncfExtension(22, "BV", "BV", "0", "WS"),
-                        OperationalPointIdentifierExtension("West_station", 8722)
+                        OperationalPointIdentifierExtension("West_station", 8722),
                     ),
                     Offset(650.meters),
-                    null
+                    null,
                 ),
                 OperationalPointResponse(
                     "West_station",
                     OperationalPointPartResponse("TA1", 500.0, null),
                     OperationalPointExtensions(
                         OperationalPointSncfExtension(22, "BV", "BV", "0", "WS"),
-                        OperationalPointIdentifierExtension("West_station", 8722)
+                        OperationalPointIdentifierExtension("West_station", 8722),
                     ),
                     Offset(2450.meters),
-                    null
-                )
+                    null,
+                ),
             )
         assertEquals(parsed.operationalPoints, oPs)
     }
@@ -90,7 +90,7 @@ class PathPropEndpointTest : ApiTest() {
                     "TF1",
                     Offset(0.meters),
                     Offset(6_500.meters),
-                    EdgeDirection.START_TO_STOP
+                    EdgeDirection.START_TO_STOP,
                 )
             )
         val requestBody =
@@ -98,7 +98,7 @@ class PathPropEndpointTest : ApiTest() {
                 PathPropRequest(
                     trackSectionRanges = trackSectionRanges,
                     infra = "small_infra/infra.json",
-                    expectedVersion = 1
+                    expectedVersion = 1,
                 )
             )
         val rawResponse =
@@ -111,8 +111,8 @@ class PathPropEndpointTest : ApiTest() {
             parsed.curves,
             RangeValues(
                 listOf(Offset(3_100.meters), Offset(4_400.meters)),
-                listOf(0.0, 9_500.0, 0.0)
-            )
+                listOf(0.0, 9_500.0, 0.0),
+            ),
         )
     }
 
@@ -124,7 +124,7 @@ class PathPropEndpointTest : ApiTest() {
                     "TF1",
                     Offset(0.meters),
                     Offset(6_500.meters),
-                    EdgeDirection.STOP_TO_START
+                    EdgeDirection.STOP_TO_START,
                 )
             )
         val requestBody =
@@ -132,7 +132,7 @@ class PathPropEndpointTest : ApiTest() {
                 PathPropRequest(
                     trackSectionRanges = trackSectionRanges,
                     infra = "small_infra/infra.json",
-                    expectedVersion = 1
+                    expectedVersion = 1,
                 )
             )
         val rawResponse =
@@ -145,8 +145,8 @@ class PathPropEndpointTest : ApiTest() {
             parsed.curves,
             RangeValues(
                 listOf(Offset(2_100.meters), Offset(3_400.meters)),
-                listOf(0.0, -9_500.0, 0.0)
-            )
+                listOf(0.0, -9_500.0, 0.0),
+            ),
         )
     }
 
@@ -158,7 +158,7 @@ class PathPropEndpointTest : ApiTest() {
                     "TD0",
                     Offset(1_000.meters),
                     Offset(23_000.meters),
-                    EdgeDirection.START_TO_STOP
+                    EdgeDirection.START_TO_STOP,
                 )
             )
         val requestBody =
@@ -166,7 +166,7 @@ class PathPropEndpointTest : ApiTest() {
                 PathPropRequest(
                     trackSectionRanges = trackSectionRanges,
                     infra = "small_infra/infra.json",
-                    expectedVersion = 1
+                    expectedVersion = 1,
                 )
             )
         val rawResponse =
@@ -186,10 +186,10 @@ class PathPropEndpointTest : ApiTest() {
                     Offset(13_000.meters),
                     Offset(14_000.meters),
                     Offset(15_000.meters),
-                    Offset(16_000.meters)
+                    Offset(16_000.meters),
                 ),
-                listOf(0.0, 3.0, 6.0, 3.0, 0.0, -3.0, -6.0, -3.0, 0.0)
-            )
+                listOf(0.0, 3.0, 6.0, 3.0, 0.0, -3.0, -6.0, -3.0, 0.0),
+            ),
         )
     }
 
@@ -201,7 +201,7 @@ class PathPropEndpointTest : ApiTest() {
                     "TD0",
                     Offset(1_000.meters),
                     Offset(23_000.meters),
-                    EdgeDirection.STOP_TO_START
+                    EdgeDirection.STOP_TO_START,
                 )
             )
         val requestBody =
@@ -209,7 +209,7 @@ class PathPropEndpointTest : ApiTest() {
                 PathPropRequest(
                     trackSectionRanges = trackSectionRanges,
                     infra = "small_infra/infra.json",
-                    expectedVersion = 1
+                    expectedVersion = 1,
                 )
             )
         val rawResponse =
@@ -229,10 +229,10 @@ class PathPropEndpointTest : ApiTest() {
                     Offset(14_000.meters),
                     Offset(15_000.meters),
                     Offset(16_000.meters),
-                    Offset(17_000.meters)
+                    Offset(17_000.meters),
                 ),
-                listOf(0.0, 3.0, 6.0, 3.0, 0.0, -3.0, -6.0, -3.0, 0.0)
-            )
+                listOf(0.0, 3.0, 6.0, 3.0, 0.0, -3.0, -6.0, -3.0, 0.0),
+            ),
         )
     }
 }

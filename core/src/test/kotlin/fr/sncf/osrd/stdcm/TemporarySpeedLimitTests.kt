@@ -21,7 +21,7 @@ class TemporarySpeedLimitTests {
         infra: FullInfra,
         temporarySpeedLimits: List<STDCMTemporarySpeedLimit>,
         beginDetector: String,
-        endDetector: String
+        endDetector: String,
     ): STDCMResult {
         val temporarySpeedLimitManager =
             buildTemporarySpeedLimitManager(infra, temporarySpeedLimits)
@@ -58,9 +58,9 @@ class TemporarySpeedLimitTests {
                             trackSection = "TF1",
                             begin = Offset(Distance.fromMeters(500.0)),
                             end = Offset(Distance.fromMeters(1000.0)),
-                            direction = EdgeDirection.START_TO_STOP
+                            direction = EdgeDirection.START_TO_STOP,
                         )
-                    )
+                    ),
                 )
             )
         val res =
@@ -68,7 +68,7 @@ class TemporarySpeedLimitTests {
         val resultSpeedLimits =
             res.trainPath.getSpeedLimitProperties(
                 "",
-                buildTemporarySpeedLimitManager(smallInfra, temporarySpeedLimits)
+                buildTemporarySpeedLimitManager(smallInfra, temporarySpeedLimits),
             )
 
         // Check that the temporary speed limit applies on the correct range in the STDCM result
@@ -83,7 +83,7 @@ class TemporarySpeedLimitTests {
             RangeMapEntry(
                 expectedSpeedLimitBeginOffset,
                 expectedSpeedLimitEndOffset,
-                expectedSpeedLimitProperty
+                expectedSpeedLimitProperty,
             )
         assert(resultSpeedLimits.contains(expectedSpeedLimitRangeMap))
     }
@@ -100,9 +100,9 @@ class TemporarySpeedLimitTests {
                             trackSection = "TF1",
                             begin = Offset(Distance.fromMeters(500.0)),
                             end = Offset(Distance.fromMeters(1000.0)),
-                            direction = EdgeDirection.START_TO_STOP
+                            direction = EdgeDirection.START_TO_STOP,
                         )
-                    )
+                    ),
                 )
             )
         val res =
@@ -110,14 +110,14 @@ class TemporarySpeedLimitTests {
         val resultSpeedLimits =
             res.trainPath.getSpeedLimitProperties(
                 "",
-                buildTemporarySpeedLimitManager(smallInfra, temporarySpeedLimits)
+                buildTemporarySpeedLimitManager(smallInfra, temporarySpeedLimits),
             )
 
         val expectedRangeMap =
             RangeMapEntry(
                 Distance.fromMeters(0.0),
                 Distance.fromMeters(3933.0),
-                SpeedLimitProperty(Speed(83333U), SpeedLimitSource.UnknownTag())
+                SpeedLimitProperty(Speed(83333U), SpeedLimitSource.UnknownTag()),
             )
         assert(resultSpeedLimits.contains(expectedRangeMap))
     }
@@ -134,9 +134,9 @@ class TemporarySpeedLimitTests {
                             trackSection = "TF1",
                             begin = Offset(Distance.fromMeters(500.0)),
                             end = Offset(Distance.fromMeters(1000.0)),
-                            direction = EdgeDirection.START_TO_STOP
+                            direction = EdgeDirection.START_TO_STOP,
                         )
-                    )
+                    ),
                 ),
                 STDCMTemporarySpeedLimit(
                     20.0,
@@ -145,17 +145,17 @@ class TemporarySpeedLimitTests {
                             trackSection = "TF1",
                             begin = Offset(Distance.fromMeters(800.0)),
                             end = Offset(Distance.fromMeters(1100.0)),
-                            direction = EdgeDirection.START_TO_STOP
+                            direction = EdgeDirection.START_TO_STOP,
                         )
-                    )
-                )
+                    ),
+                ),
             )
         val res =
             sendSTDCMWithTemporarySpeedLimits(smallInfra, temporarySpeedLimits, "DE3", "DF1_1")
         val resultSpeedLimits =
             res.trainPath.getSpeedLimitProperties(
                 "",
-                buildTemporarySpeedLimitManager(smallInfra, temporarySpeedLimits)
+                buildTemporarySpeedLimitManager(smallInfra, temporarySpeedLimits),
             )
 
         val expectedSpeedLimitRangeMaps =
@@ -163,12 +163,12 @@ class TemporarySpeedLimitTests {
                 RangeMapEntry(
                     Distance.fromMeters(2183.0),
                     Distance.fromMeters(2483.0),
-                    SpeedLimitProperty(Speed.fromMetersPerSecond(30.0), null)
+                    SpeedLimitProperty(Speed.fromMetersPerSecond(30.0), null),
                 ),
                 RangeMapEntry(
                     Distance.fromMeters(2483.0),
                     Distance.fromMeters(2783.0),
-                    SpeedLimitProperty(Speed.fromMetersPerSecond(20.0), null)
+                    SpeedLimitProperty(Speed.fromMetersPerSecond(20.0), null),
                 ),
             )
         for (speedLimitRangeMap in expectedSpeedLimitRangeMaps) {
@@ -188,9 +188,9 @@ class TemporarySpeedLimitTests {
                             trackSection = "TF1",
                             begin = Offset(Distance.fromMeters(800.0)),
                             end = Offset(Distance.fromMeters(1100.0)),
-                            direction = EdgeDirection.STOP_TO_START
+                            direction = EdgeDirection.STOP_TO_START,
                         )
-                    )
+                    ),
                 )
             )
         val res =
@@ -198,14 +198,14 @@ class TemporarySpeedLimitTests {
         val resultSpeedLimits =
             res.trainPath.getSpeedLimitProperties(
                 "",
-                buildTemporarySpeedLimitManager(smallInfra, temporarySpeedLimits)
+                buildTemporarySpeedLimitManager(smallInfra, temporarySpeedLimits),
             )
 
         val expectedRangeMap =
             RangeMapEntry(
                 Distance.fromMeters(0.0),
                 Distance.fromMeters(3933.0),
-                SpeedLimitProperty(Speed(83333U), SpeedLimitSource.UnknownTag())
+                SpeedLimitProperty(Speed(83333U), SpeedLimitSource.UnknownTag()),
             )
         assert(resultSpeedLimits.contains(expectedRangeMap))
     }

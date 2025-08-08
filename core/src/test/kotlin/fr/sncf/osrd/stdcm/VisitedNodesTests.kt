@@ -149,10 +149,7 @@ class VisitedNodesTests {
         val params2 =
             params1.copy(
                 timeData =
-                    params1.timeData.copy(
-                        earliestReachableTime = 120.0,
-                        totalRunningTime = 15.0,
-                    )
+                    params1.timeData.copy(earliestReachableTime = 120.0, totalRunningTime = 15.0)
             )
         // The duration here is longer than the previous test: it's visited from t=120 to t=125
         // (above the cost function), then unvisited from t=125. Some parts are unvisited => false
@@ -233,9 +230,7 @@ class VisitedNodesTests {
                             listOf(
                                 params1.timeData.stopTimeData
                                     .first()
-                                    .copy(
-                                        currentDuration = if (lowerStopDuration) 0.0 else 120.0,
-                                    )
+                                    .copy(currentDuration = if (lowerStopDuration) 0.0 else 120.0)
                             )
                     )
             )
@@ -263,7 +258,7 @@ class VisitedNodesTests {
                                 StopTimeData(
                                     currentDuration = 120.0,
                                     minDuration = 120.0,
-                                    maxDepartureDelayBeforeStop = 0.0
+                                    maxDepartureDelayBeforeStop = 0.0,
                                 )
                             ),
                         maxFirstDepartureDelaying = 100.0,
@@ -282,7 +277,7 @@ class VisitedNodesTests {
                                 params1.timeData.stopTimeData.first().copy(currentDuration = 0.0)
                             )
                     ),
-                remainingTimeEstimation = if (increaseRemainingTime) 600.0 else 300.0
+                remainingTimeEstimation = if (increaseRemainingTime) 600.0 else 300.0,
             )
         visitedNodes.markAsVisited(params1)
         assertEquals(increaseRemainingTime, visitedNodes.isVisited(params2))
@@ -306,7 +301,7 @@ class VisitedNodesTests {
 
         // a -> b, lookahead: b -> c -> d
         var explorerWithLookahead = infraExplorerFromBlock(infra, infra, blocks.first())
-        for (i in 0 ..< 2) explorerWithLookahead =
+        for (i in 0..<2) explorerWithLookahead =
             explorerWithLookahead.cloneAndExtendLookahead().first()
 
         val timeData =
@@ -346,11 +341,7 @@ class VisitedNodesTests {
         assertTrue {
             visitedNodes.isVisited(
                 testParams.copy(
-                    timeData =
-                        timeData.copy(
-                            earliestReachableTime = 50.0,
-                            totalRunningTime = 50.0,
-                        )
+                    timeData = timeData.copy(earliestReachableTime = 50.0, totalRunningTime = 50.0)
                 )
             )
         }

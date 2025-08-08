@@ -269,7 +269,7 @@ class Envelope(parts: Array<EnvelopePart>) :
         beginPosition: Double,
         beginSpeed: Double,
         endPosition: Double,
-        endSpeed: Double
+        endSpeed: Double,
     ): Array<EnvelopePart> {
         var beginIndex = 0
         var beginPartIndex = 0
@@ -294,7 +294,7 @@ class Envelope(parts: Array<EnvelopePart>) :
             endPartIndex,
             endIndex,
             endPosition,
-            endSpeed
+            endSpeed,
         )
     }
 
@@ -307,7 +307,7 @@ class Envelope(parts: Array<EnvelopePart>) :
         endPartIndex: Int,
         endStepIndex: Int,
         endPosition: Double,
-        endSpeed: Double
+        endSpeed: Double,
     ): Array<EnvelopePart> {
         assert(beginPartIndex <= endPartIndex)
 
@@ -320,7 +320,7 @@ class Envelope(parts: Array<EnvelopePart>) :
                     beginSpeed,
                     endStepIndex,
                     endPosition,
-                    endSpeed
+                    endSpeed,
                 ) ?: return arrayOf()
             return arrayOf(sliced)
         }

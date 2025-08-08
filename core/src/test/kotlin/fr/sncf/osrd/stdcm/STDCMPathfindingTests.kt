@@ -66,7 +66,7 @@ class STDCMPathfindingTests {
                 secondBlock,
                 OccupancySegment(0.0, 50.0, 0.meters, 100.meters),
                 secondBlock,
-                OccupancySegment(10000.0, Double.POSITIVE_INFINITY, 0.meters, 100.meters)
+                OccupancySegment(10000.0, Double.POSITIVE_INFINITY, 0.meters, 100.meters),
             )
         val res =
             STDCMPathfindingBuilder()
@@ -118,7 +118,7 @@ class STDCMPathfindingTests {
                 secondBlock,
                 OccupancySegment(0.0, 50.0, 0.meters, 100.meters),
                 secondBlock,
-                OccupancySegment(1000.0, Double.POSITIVE_INFINITY, 0.meters, 100.meters)
+                OccupancySegment(1000.0, Double.POSITIVE_INFINITY, 0.meters, 100.meters),
             )
         val res =
             STDCMPathfindingBuilder()
@@ -176,12 +176,12 @@ class STDCMPathfindingTests {
         val occupancyGraph1 =
             ImmutableMultimap.of(
                 blockTop,
-                OccupancySegment(0.0, Double.POSITIVE_INFINITY, 0.meters, 100.meters)
+                OccupancySegment(0.0, Double.POSITIVE_INFINITY, 0.meters, 100.meters),
             )
         val occupancyGraph2 =
             ImmutableMultimap.of(
                 blockBottom,
-                OccupancySegment(0.0, Double.POSITIVE_INFINITY, 0.meters, 100.meters)
+                OccupancySegment(0.0, Double.POSITIVE_INFINITY, 0.meters, 100.meters),
             )
         val res1 =
             STDCMPathfindingBuilder()
@@ -364,7 +364,7 @@ class STDCMPathfindingTests {
             .setUnavailableTimes(
                 ImmutableMultimap.of(
                     block,
-                    OccupancySegment(0.0, Double.POSITIVE_INFINITY, 99000.meters, 100000.meters)
+                    OccupancySegment(0.0, Double.POSITIVE_INFINITY, 99000.meters, 100000.meters),
                 )
             )
             .run()!!
@@ -387,7 +387,7 @@ class STDCMPathfindingTests {
             .setUnavailableTimes(
                 ImmutableMultimap.of(
                     block,
-                    OccupancySegment(300.0, Double.POSITIVE_INFINITY, 0.meters, 100000.meters)
+                    OccupancySegment(300.0, Double.POSITIVE_INFINITY, 0.meters, 100000.meters),
                 )
             )
             .run()!!
@@ -421,7 +421,7 @@ class STDCMPathfindingTests {
                 blocks[0],
                 OccupancySegment(300.0, 3600.0, 0.meters, 1.meters),
                 blocks[2],
-                OccupancySegment(0.0, 3600.0, 0.meters, 1.meters)
+                OccupancySegment(0.0, 3600.0, 0.meters, 1.meters),
             )
         val res =
             STDCMPathfindingBuilder()
@@ -485,7 +485,7 @@ class STDCMPathfindingTests {
                     setOf(
                         EdgeLocation(
                             BlockId(infra.getRouteFromName("a->b").index),
-                            Offset(0.meters)
+                            Offset(0.meters),
                         )
                     )
                 )
@@ -493,13 +493,14 @@ class STDCMPathfindingTests {
                     setOf(
                         EdgeLocation(
                             BlockId(infra.getRouteFromName("x->y").index),
-                            Offset(0.meters)
+                            Offset(0.meters),
                         )
                     )
                 )
                 .run()
         assertNull(res)
     }
+
     /** Start and end are on the same block, but reversed */
     @Test
     fun singleBlockReversed() {
@@ -557,7 +558,7 @@ class STDCMPathfindingTests {
         arrivalTime: Double,
         toleranceBefore: Double,
         toleranceAfter: Double,
-        isFirstPath: Boolean
+        isFirstPath: Boolean,
     ) {
         /*
         a --> b
@@ -582,8 +583,8 @@ class STDCMPathfindingTests {
                     PlannedTimingData(
                         arrivalTime.seconds,
                         toleranceBefore.seconds,
-                        toleranceAfter.seconds
-                    )
+                        toleranceAfter.seconds,
+                    ),
                 )
                 .setUnavailableTimes(occupancyGraph)
                 .run()!!
@@ -626,8 +627,8 @@ class STDCMPathfindingTests {
                         45.seconds,
                         // Purely theoretical tolerance here, shouldn't happen in real use case
                         10_000.seconds,
-                        5.seconds
-                    )
+                        5.seconds,
+                    ),
                 )
                 .setUnavailableTimes(occupancyGraph)
                 .run()!!
@@ -646,7 +647,7 @@ class STDCMPathfindingTests {
         arrivalTime: Double,
         toleranceBefore: Double,
         toleranceAfter: Double,
-        departureTime: Double
+        departureTime: Double,
     ) {
         /*
         a --> b
@@ -670,8 +671,8 @@ class STDCMPathfindingTests {
                     PlannedTimingData(
                         arrivalTime.seconds,
                         toleranceBefore.seconds,
-                        toleranceAfter.seconds
-                    )
+                        toleranceAfter.seconds,
+                    ),
                 )
                 .setEndLocations(setOf(EdgeLocation(blocks[0], Offset(100.meters))))
                 .setUnavailableTimes(occupancyGraph)
@@ -694,7 +695,7 @@ class STDCMPathfindingTests {
                 .setInfra(infra.fullInfra())
                 .setStartLocations(
                     setOf(EdgeLocation(blocks[0], Offset(0.meters))),
-                    PlannedTimingData(plannedStepArrivalTime.seconds, 10.seconds, 10.seconds)
+                    PlannedTimingData(plannedStepArrivalTime.seconds, 10.seconds, 10.seconds),
                 )
                 .setEndLocations(setOf(EdgeLocation(blocks[0], Offset(100.meters))))
                 .run()!!
@@ -717,14 +718,14 @@ class STDCMPathfindingTests {
         val occupancyGraph =
             ImmutableMultimap.of(
                 blocks[0],
-                OccupancySegment(startOccupancy, 10_000.0, 0.meters, 0.meters)
+                OccupancySegment(startOccupancy, 10_000.0, 0.meters, 0.meters),
             )
         val res =
             STDCMPathfindingBuilder()
                 .setInfra(infra.fullInfra())
                 .setStartLocations(
                     setOf(EdgeLocation(blocks[0], Offset(0.meters))),
-                    PlannedTimingData(plannedStepArrivalTime.seconds, 10.seconds, 10.seconds)
+                    PlannedTimingData(plannedStepArrivalTime.seconds, 10.seconds, 10.seconds),
                 )
                 .setEndLocations(setOf(EdgeLocation(blocks[0], Offset(100.meters))))
                 .setUnavailableTimes(occupancyGraph)
@@ -745,7 +746,7 @@ class STDCMPathfindingTests {
                 .setInfra(infra.fullInfra())
                 .setStartLocations(
                     setOf(EdgeLocation(blocks[0], Offset(0.meters))),
-                    PlannedTimingData((-10).seconds, 20.seconds, 10.0.seconds)
+                    PlannedTimingData((-10).seconds, 20.seconds, 10.0.seconds),
                 )
                 .setEndLocations(setOf(EdgeLocation(blocks[0], Offset(100.meters))))
                 .run()!!
@@ -765,11 +766,11 @@ class STDCMPathfindingTests {
                 .setInfra(infra.fullInfra())
                 .setStartLocations(
                     setOf(EdgeLocation(blocks[0], Offset(0.meters))),
-                    PlannedTimingData((-10).seconds, 20.seconds, 10.0.seconds)
+                    PlannedTimingData((-10).seconds, 20.seconds, 10.0.seconds),
                 )
                 .setEndLocations(
                     setOf(EdgeLocation(blocks[0], Offset(100.meters))),
-                    PlannedTimingData(60.seconds, 60.seconds, 0.seconds)
+                    PlannedTimingData(60.seconds, 60.seconds, 0.seconds),
                 )
                 .run()!!
         assertEquals(0.0, res.departureTime)
@@ -792,14 +793,14 @@ class STDCMPathfindingTests {
         val occupancyGraph =
             ImmutableMultimap.of(
                 blocks[0],
-                OccupancySegment(0.0, occupancyDelay, 0.meters, 0.meters)
+                OccupancySegment(0.0, occupancyDelay, 0.meters, 0.meters),
             )
         val res =
             STDCMPathfindingBuilder()
                 .setInfra(infra.fullInfra())
                 .setStartLocations(
                     setOf(EdgeLocation(blocks[0], Offset(0.meters))),
-                    PlannedTimingData(totalDelay.seconds, totalDelay.seconds, 5.0.seconds)
+                    PlannedTimingData(totalDelay.seconds, totalDelay.seconds, 5.0.seconds),
                 )
                 .setEndLocations(setOf(EdgeLocation(blocks[0], Offset(100.meters))))
                 .setUnavailableTimes(occupancyGraph)

@@ -16,7 +16,4 @@ annotation class PrimitiveWrapperCollections(
 @Target(AnnotationTarget.FILE)
 @Retention(AnnotationRetention.SOURCE)
 @Repeatable
-annotation class PrimitiveCollections(
-    val primitive: KClass<*>,
-    val collections: Array<String>,
-)
+annotation class PrimitiveCollections(val primitive: KClass<*>, val collections: Array<String>)

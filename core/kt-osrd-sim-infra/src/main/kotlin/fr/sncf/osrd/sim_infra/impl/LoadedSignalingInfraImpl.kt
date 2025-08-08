@@ -5,7 +5,7 @@ import fr.sncf.osrd.utils.indexing.*
 
 data class SignalParameters(
     val default: SigParameters,
-    val conditional: Map<RouteId, SigParameters>
+    val conditional: Map<RouteId, SigParameters>,
 )
 
 class LoadedSignalingInfraImpl(

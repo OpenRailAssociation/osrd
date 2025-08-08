@@ -116,7 +116,7 @@ fun initInfraExplorerWithEnvelope(
                     IncrementalRequirementEnvelopeAdapter(rollingStock, null, false),
                     explorer.getIncrementalPath(),
                 ),
-                rollingStock
+                rollingStock,
             )
         }
 }

@@ -177,7 +177,7 @@ private class InfraExplorerImpl(
 
     override fun getCurrentEdgePathProperties(
         offset: Offset<Block>,
-        length: Distance?
+        length: Distance?,
     ): PathProperties {
         // We re-compute the routes of the current path since the cache may be incorrect
         // because of a previous iteration.
@@ -186,12 +186,7 @@ private class InfraExplorerImpl(
         // So we have to correct that here now that we now which route we're on.
         val path =
             pathPropertiesCache.getOrElse(getCurrentBlock()) {
-                val res =
-                    makePathProps(
-                        blockInfra,
-                        rawInfra,
-                        getCurrentBlock(),
-                    )
+                val res = makePathProps(blockInfra, rawInfra, getCurrentBlock())
                 pathPropertiesCache[getCurrentBlock()] = res
                 res
             }
@@ -255,7 +250,7 @@ private class InfraExplorerImpl(
 
     override fun getLookahead(): StaticIdxList<Block> {
         val res = mutableStaticIdxArrayListOf<Block>()
-        for (i in currentIndex + 1 ..< blocks.size) res.add(blocks[i])
+        for (i in currentIndex + 1..<blocks.size) res.add(blocks[i])
         return res
     }
 
@@ -340,13 +335,10 @@ private class InfraExplorerImpl(
                         mutableStaticIdxArrayListOf(block),
                         containsStart = startsPath,
                         containsEnd = endPath,
-                        stops =
-                            findStopsInTravelledPathAndOnBlock(
-                                stepsOnBlock,
-                            ),
+                        stops = findStopsInTravelledPathAndOnBlock(stepsOnBlock),
                         travelledPathBegin = travelledPathBegin.distance,
                         travelledPathEnd =
-                            blockInfra.getBlockLength(block) - travelledPathEndBlockOffset
+                            blockInfra.getBlockLength(block) - travelledPathEndBlockOffset,
                     )
                 )
                 pathAlreadyStarted = true
@@ -359,7 +351,7 @@ private class InfraExplorerImpl(
         for (block in addedBlocks) {
             blockRoutes[block] = route
         }
-        for (i in 0 ..< nBlocksToSkip) moveForward()
+        for (i in 0..<nBlocksToSkip) moveForward()
         for (pathFragment in pathFragments) incrementalPath.extend(pathFragment)
 
         return true

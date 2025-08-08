@@ -80,7 +80,7 @@ data class TimeData(
     fun withAddedTime(
         extraTravelTime: Double,
         extraStopTime: Double?,
-        maxAdditionalStopTime: Double?
+        maxAdditionalStopTime: Double?,
     ): TimeData {
         assert((extraStopTime == null) == (maxAdditionalStopTime == null)) {
             "Can't set just one of 'stop duration' or 'max additional stop duration' without the other"
@@ -201,7 +201,7 @@ data class StopTimeData(
     /** Minimum stop duration as described in the input. */
     val minDuration: Double,
     /** We need to keep track of how much delay we can add before this stop. */
-    val maxDepartureDelayBeforeStop: Double
+    val maxDepartureDelayBeforeStop: Double,
 ) {
     fun withAddedStopTime(extraStopTime: Double): StopTimeData {
         return copy(currentDuration = currentDuration + extraStopTime)

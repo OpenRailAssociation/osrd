@@ -11,9 +11,7 @@ import java.util.*
 import kotlin.collections.set
 import kotlin.time.Duration
 
-class ZoneDescriptorBuilder(
-    val movableElements: MutableStaticIdxSortedSet<TrackNode>,
-)
+class ZoneDescriptorBuilder(val movableElements: MutableStaticIdxSortedSet<TrackNode>)
 
 interface RouteBuilder {
     fun zonePath(zonePath: StaticIdx<ZonePath>)
@@ -61,7 +59,7 @@ class RouteBuilderImpl(private val name: String) : RouteBuilder {
             speedLimits,
             speedLimitStarts,
             speedLimitEnds,
-            chunks
+            chunks,
         )
     }
 }
@@ -70,14 +68,11 @@ interface ZonePathBuilder {
     fun movableElement(
         movableElement: TrackNodeId,
         config: TrackNodeConfigId,
-        zonePathOffset: Offset<ZonePath>
+        zonePathOffset: Offset<ZonePath>,
     )
 }
 
-class ZonePathBuilderImpl(
-    val entry: DirDetectorId,
-    val exit: DirDetectorId,
-) : ZonePathBuilder {
+class ZonePathBuilderImpl(val entry: DirDetectorId, val exit: DirDetectorId) : ZonePathBuilder {
     private val movableElements = MutableStaticIdxArrayList<TrackNode>()
     private val movableElementsConfigs = MutableStaticIdxArrayList<TrackNodeConfig>()
     private val movableElementsDistances = MutableOffsetArrayList<ZonePath>()
@@ -85,7 +80,7 @@ class ZonePathBuilderImpl(
     override fun movableElement(
         movableElement: TrackNodeId,
         config: TrackNodeConfigId,
-        zonePathOffset: Offset<ZonePath>
+        zonePathOffset: Offset<ZonePath>,
     ) {
         movableElements.add(movableElement)
         movableElementsConfigs.add(config)
@@ -99,7 +94,7 @@ class ZonePathBuilderImpl(
             movableElements,
             movableElementsConfigs,
             movableElementsDistances,
-            MutableDirStaticIdxArrayList()
+            MutableDirStaticIdxArrayList(),
         )
     }
 }
@@ -142,7 +137,7 @@ class PhysicalSignalBuilderImpl(
             dirTrackSectionId,
             undirectedTrackOffset,
             children,
-            sightDistance
+            sightDistance,
         )
     }
 }
@@ -235,7 +230,7 @@ class RawInfraBuilder {
 
     fun getChunkBoundaryDetector(
         trackSection: TrackSectionId,
-        chunkBoundaryIndex: Int
+        chunkBoundaryIndex: Int,
     ): DetectorId? {
         return trackSectionPool[trackSection].chunkBoundaryToDetector[chunkBoundaryIndex]
     }
@@ -250,7 +245,7 @@ class RawInfraBuilder {
 
     fun getNextTrackSection(
         curTrack: DirTrackSectionId,
-        config: TrackNodeConfigId
+        config: TrackNodeConfigId,
     ): DirTrackSectionId? {
         val nextNode = getNodeAtEndpoint(curTrack.toEndpoint) ?: return null
         val nodeDescriptor = trackNodePool[nextNode]
@@ -290,7 +285,7 @@ class RawInfraBuilder {
 
     fun getTrackSectionEndpointIdx(
         trackSectionName: String,
-        endpoint: Endpoint
+        endpoint: Endpoint,
     ): EndpointTrackSectionId {
         return EndpointTrackSectionId(getTrackSectionIdx(trackSectionName), endpoint)
     }
@@ -299,7 +294,7 @@ class RawInfraBuilder {
         name: String,
         delay: Duration,
         ports: StaticPool<TrackNodePort, EndpointTrackSectionId>,
-        configs: StaticPool<TrackNodeConfig, TrackNodeConfigDescriptor>
+        configs: StaticPool<TrackNodeConfig, TrackNodeConfigDescriptor>,
     ): TrackNodeId {
         val nodeIdx = trackNodePool.add(TrackNodeDescriptor(name, delay, ports, configs))
         for (portIdx in ports) {
@@ -376,7 +371,7 @@ class RawInfraBuilder {
     fun zonePath(
         entry: DirDetectorId,
         exit: DirDetectorId,
-        init: ZonePathBuilder.() -> Unit
+        init: ZonePathBuilder.() -> Unit,
     ): ZonePathId {
         val builder = ZonePathBuilderImpl(entry, exit)
         builder.init()
@@ -399,7 +394,7 @@ class RawInfraBuilder {
                 movableElements,
                 movableElementsConfigs,
                 movableElementsDistances,
-                chunks
+                chunks,
             )
         return zonePathMap.getOrPut(zonePathDesc) { zonePathPool.add(zonePathDesc) }
     }
@@ -423,7 +418,7 @@ class RawInfraBuilder {
         sightDistance: Distance,
         dirTrackSectionId: DirTrackSectionId,
         undirectedTrackOffset: Offset<TrackSection>,
-        init: PhysicalSignalBuilder.() -> Unit
+        init: PhysicalSignalBuilder.() -> Unit,
     ): PhysicalSignalId {
         val builder =
             PhysicalSignalBuilderImpl(
@@ -431,7 +426,7 @@ class RawInfraBuilder {
                 sightDistance,
                 dirTrackSectionId,
                 undirectedTrackOffset,
-                logicalSignalPool
+                logicalSignalPool,
             )
         builder.init()
         return physicalSignalPool.add(builder.build())
@@ -467,14 +462,14 @@ class RawInfraBuilder {
         gradients: DirectionalMap<DistanceRangeMap<Double>>,
         length: Length<TrackChunk>,
         offset: Offset<TrackSection>,
-        loadingGaugeConstraints: DistanceRangeMap<LoadingGaugeConstraint>
+        loadingGaugeConstraints: DistanceRangeMap<LoadingGaugeConstraint>,
     ): TrackChunkId {
         val initSpeedSections = {
             distanceRangeMapOf(
                 DistanceRangeMap.RangeMapEntry(
                     0.meters,
                     length.distance,
-                    SpeedSection(Double.POSITIVE_INFINITY.metersPerSecond, mapOf(), mapOf())
+                    SpeedSection(Double.POSITIVE_INFINITY.metersPerSecond, mapOf(), mapOf()),
                 )
             )
         }
@@ -502,7 +497,7 @@ class RawInfraBuilder {
                 // NeutralSections will be filled later on
                 DirectionalMap(distanceRangeMapOf(), distanceRangeMapOf()),
                 // SpeedSections will be filled later on,
-                DirectionalMap(initSpeedSections(), initSpeedSections())
+                DirectionalMap(initSpeedSections(), initSpeedSections()),
             )
         )
     }
@@ -515,8 +510,8 @@ class RawInfraBuilder {
             (
                 chunkDescriptor: TrackChunkDescriptor,
                 incomingRangeLowerBound: Distance,
-                incomingRangeUpperBound: Distance
-            ) -> Unit
+                incomingRangeUpperBound: Distance,
+            ) -> Unit,
     ) {
         val trackSectionChunks = getTrackSectionDistanceSortedChunks(trackSectionName)
         for (chunkDistanceId in trackSectionChunks.tailMap(trackSectionChunks.floorKey(lower))) {
@@ -535,7 +530,7 @@ class RawInfraBuilder {
         operationalPointId: String,
         trackSectionName: String,
         trackSectionOffset: Offset<TrackSection>,
-        props: Map<String, String>
+        props: Map<String, String>,
     ): OperationalPointPartId? {
         if (!trackSectionNameToIdxMap.contains(trackSectionName)) {
             return null
@@ -548,7 +543,7 @@ class RawInfraBuilder {
                     operationalPointId,
                     Offset(trackSectionOffset.distance - chunkDistanceIdx.key),
                     chunkDistanceIdx.value,
-                    props
+                    props,
                 )
             )
         val oppList =
@@ -750,14 +745,14 @@ data class ReachedTrackDeadEnd(val trackEndpoint: EndpointTrackSectionId) : Buil
 
 data class ReachedNodeDeadEnd(
     val dirTrackSection: DirTrackSectionId,
-    val nodeConfig: TrackNodeConfigId
+    val nodeConfig: TrackNodeConfigId,
 ) : BuildRouteError()
 
 class RouteZonePathBuilder(
     private val infraBuilder: RawInfraBuilder,
     private val routeBuilder: RouteBuilder,
     routeEntry: DirDetectorId,
-    private val releaseDetectors: StaticIdxSortedSet<Detector>
+    private val releaseDetectors: StaticIdxSortedSet<Detector>,
 ) {
     // the state of the zone path currently being built
     private var zonePathCount = 0
@@ -795,7 +790,7 @@ class RouteZonePathBuilder(
                 zonePathNodes.clone(),
                 zonePathNodeConfigs.clone(),
                 zonePathNodeOffsets.clone(),
-                zonePathChunks.clone()
+                zonePathChunks.clone(),
             )
         )
         zonePathCount++

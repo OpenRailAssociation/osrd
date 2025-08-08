@@ -13,12 +13,12 @@ import kotlin.math.min
 data class DriverBehaviour(
     val acceleratingPostponementOffset: Double = 50.0,
     val brakingAnticipationOffset: Double = 100.0,
-    val signalingSystems: List<String> = listOf("BAL", "BAPR")
+    val signalingSystems: List<String> = listOf("BAL", "BAPR"),
 ) {
     /** Applies the driver behavior to the MRSP, adding reaction time for MRSP changes */
     fun applyToMRSP(
         mrsp: Envelope,
-        optSignalingSystemRanges: DistanceRangeMap<String>? = null
+        optSignalingSystemRanges: DistanceRangeMap<String>? = null,
     ): Envelope {
         val signalingSystemRanges = optSignalingSystemRanges ?: distanceRangeMapOf()
         val builder = MRSPEnvelopeBuilder()
@@ -39,10 +39,10 @@ data class DriverBehaviour(
                 EnvelopePart.generateTimes(
                     listOf(
                         EnvelopeProfile.CONSTANT_SPEED,
-                        MRSPEnvelopeBuilder.LimitKind.SPEED_LIMIT
+                        MRSPEnvelopeBuilder.LimitKind.SPEED_LIMIT,
                     ),
                     doubleArrayOf(begin, end),
-                    doubleArrayOf(speed, speed)
+                    doubleArrayOf(speed, speed),
                 )
             )
         }

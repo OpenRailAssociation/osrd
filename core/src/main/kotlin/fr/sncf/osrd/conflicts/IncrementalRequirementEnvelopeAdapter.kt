@@ -23,7 +23,7 @@ class IncrementalRequirementEnvelopeAdapter(
 ) : IncrementalRequirementCallbacks {
     override fun maxSpeedInRange(
         pathBeginOff: Offset<TravelledPath>,
-        pathEndOff: Offset<TravelledPath>
+        pathEndOff: Offset<TravelledPath>,
     ): Double {
         if (envelopeWithStops == null) {
             return Double.POSITIVE_INFINITY
@@ -35,7 +35,7 @@ class IncrementalRequirementEnvelopeAdapter(
         }
         return envelopeWithStops.maxSpeedInRange(
             max(begin, 0.0),
-            min(end, envelopeWithStops.endPos)
+            min(end, envelopeWithStops.endPos),
         )
     }
 
@@ -67,7 +67,7 @@ class IncrementalRequirementEnvelopeAdapter(
 
     override fun arrivalTimeInRange(
         pathBeginOff: Offset<TravelledPath>,
-        pathEndOff: Offset<TravelledPath>
+        pathEndOff: Offset<TravelledPath>,
     ): Double {
         if (envelopeWithStops == null) return Double.POSITIVE_INFINITY
         // if the head of the train enters the zone at some point, use that
@@ -87,7 +87,7 @@ class IncrementalRequirementEnvelopeAdapter(
 
     override fun departureTimeFromRange(
         pathBeginOff: Offset<TravelledPath>,
-        pathEndOff: Offset<TravelledPath>
+        pathEndOff: Offset<TravelledPath>,
     ): Double {
         if (envelopeWithStops == null) return Double.POSITIVE_INFINITY
         val end = pathEndOff.distance.meters

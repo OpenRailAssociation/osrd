@@ -82,7 +82,7 @@ class GenericTrackNodeBuilder(
 class TrackLinkBuilder(
     override val name: String,
     private val a: TrackSectionEndpoint,
-    private val b: TrackSectionEndpoint
+    private val b: TrackSectionEndpoint,
 ) : TrackNodeBuilder {
     override fun build(defaultSwitchDelay: Double?): RJSSwitch {
         return RJSSwitch(name, "link", mapOf("A" to a.build(), "B" to b.build()), 0.0)
@@ -94,7 +94,7 @@ class PointSwitchBuilder(
     private val a: TrackSectionEndpoint,
     private val b1: TrackSectionEndpoint,
     private val b2: TrackSectionEndpoint,
-    val groupChangeDelay: Double? = null
+    val groupChangeDelay: Double? = null,
 ) : TrackNodeBuilder {
     override fun build(defaultSwitchDelay: Double?): RJSSwitch {
         val connections = mapOf("A" to a, "B1" to b1, "B2" to b2)
@@ -217,7 +217,7 @@ class PhysicalSignalBuilder(
 
     fun logicalSignal(
         signalingSystem: String,
-        init: LogicalSignalBuilder.() -> Unit = {}
+        init: LogicalSignalBuilder.() -> Unit = {},
     ): LogicalSignalBuilder {
         val builder = LogicalSignalBuilder(signalingSystem)
         builder.init()
@@ -261,7 +261,7 @@ class RJSInfraBuilder {
         a: TrackSectionEndpoint,
         b1: TrackSectionEndpoint,
         b2: TrackSectionEndpoint,
-        groupChangeDelay: Double? = null
+        groupChangeDelay: Double? = null,
     ): PointSwitchBuilder {
         val builder = PointSwitchBuilder(name, a, b1, b2, groupChangeDelay)
         nodes.add(builder)
@@ -272,7 +272,7 @@ class RJSInfraBuilder {
         name: String,
         type: String,
         groupChangeDelay: Double? = null,
-        init: GenericTrackNodeBuilder.() -> Unit
+        init: GenericTrackNodeBuilder.() -> Unit,
     ): GenericTrackNodeBuilder {
         val builder = GenericTrackNodeBuilder(name, type, groupChangeDelay)
         builder.init()
@@ -298,7 +298,7 @@ class RJSInfraBuilder {
      */
     fun logicalSignal(
         signalingSystem: String,
-        init: LogicalSignalBuilder.() -> Unit = {}
+        init: LogicalSignalBuilder.() -> Unit = {},
     ): LogicalSignalBuilder {
         val builder = LogicalSignalBuilder(signalingSystem)
         builder.init()

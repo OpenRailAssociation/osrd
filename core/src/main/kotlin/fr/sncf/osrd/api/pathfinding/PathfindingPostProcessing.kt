@@ -33,7 +33,7 @@ import kotlin.math.abs
 fun runPathfindingPostProcessing(
     infra: FullInfra,
     initialRequest: PathfindingBlockRequest,
-    rawPath: PathfindingResultId<Block>
+    rawPath: PathfindingResultId<Block>,
 ): PathfindingBlockSuccess {
     val res = runPathfindingBlockPostProcessing(infra, rawPath)
     validatePathfindingResponse(infra, initialRequest, res)
@@ -42,7 +42,7 @@ fun runPathfindingPostProcessing(
 
 fun runPathfindingBlockPostProcessing(
     infra: FullInfra,
-    rawPath: PathfindingResultId<Block>
+    rawPath: PathfindingResultId<Block>,
 ): PathfindingBlockSuccess {
     // We reuse some of the old function of pathfindingResultConverter,
     // there will be some cleanup to be made when the old version is removed
@@ -56,14 +56,14 @@ fun runPathfindingBlockPostProcessing(
         routeList,
         trackRanges,
         Length(rawPath.ranges.map { it.end - it.start }.sumDistances()),
-        makePathItemPositions(rawPath)
+        makePathItemPositions(rawPath),
     )
 }
 
 private fun validatePathfindingResponse(
     infra: FullInfra,
     req: PathfindingBlockRequest,
-    res: PathfindingBlockResponse
+    res: PathfindingBlockResponse,
 ) {
     if (res !is PathfindingBlockSuccess) return
 
@@ -125,7 +125,7 @@ private fun makeTrackRanges(oldRoutePath: List<RJSRoutePath>): List<DirectionalT
                         trackRange.trackSectionID,
                         Offset(trackRange.begin.meters),
                         Offset(trackRange.end.meters),
-                        trackRange.direction
+                        trackRange.direction,
                     )
                 )
             } else {
@@ -140,7 +140,7 @@ private fun makeTrackRanges(oldRoutePath: List<RJSRoutePath>): List<DirectionalT
 
 private fun makeBlocks(
     infra: FullInfra,
-    ranges: List<Pathfinding.EdgeRange<StaticIdx<Block>, Block>>
+    ranges: List<Pathfinding.EdgeRange<StaticIdx<Block>, Block>>,
 ): List<String> {
     val res = mutableListOf<String>()
     for (range in ranges) {
@@ -154,7 +154,7 @@ private fun makeBlocks(
 private fun makeRoutePath(
     blockInfra: BlockInfra,
     rawInfra: RawSignalingInfra,
-    ranges: List<PathfindingEdgeRangeId<Block>>
+    ranges: List<PathfindingEdgeRangeId<Block>>,
 ): List<RJSRoutePath> {
     val blocks = ranges.stream().map { x -> x.edge }.toList()
     val chunkPath = blockInfra.chunksOnBlocks(blocks)
@@ -166,7 +166,7 @@ private fun makeRoutePath(
             rawInfra,
             Iterables.getLast(chunkPath),
             Iterables.getLast(routes),
-            Iterables.getLast(ranges)
+            Iterables.getLast(ranges),
         )
     return convertRoutesToRJS(rawInfra, routes, startOffset, endOffset)
 }
@@ -176,7 +176,7 @@ private fun convertRoutesToRJS(
     infra: RawSignalingInfra,
     routes: StaticIdxList<Route>,
     startOffset: Offset<Route>,
-    endOffset: Offset<Route>
+    endOffset: Offset<Route>,
 ): List<RJSRoutePath> {
     if (routes.size == 0) return listOf()
     if (routes.size == 1) return listOf(convertRouteToRJS(infra, routes[0], startOffset, endOffset))
@@ -192,7 +192,7 @@ private fun convertRouteToRJS(
     rawInfra: RawSignalingInfra,
     route: RouteId,
     startOffset: Offset<Route>?,
-    endOffset: Offset<Route>?
+    endOffset: Offset<Route>?,
 ): RJSRoutePath {
     var mutStartOffset = startOffset
     var mutEndOffset = endOffset
@@ -200,7 +200,7 @@ private fun convertRouteToRJS(
     if (mutEndOffset == null) mutEndOffset = rawInfra.getRouteLength(route)
     return RJSRoutePath(
         rawInfra.getRouteName(route),
-        makeRJSTrackRanges(rawInfra, route, mutStartOffset, mutEndOffset)
+        makeRJSTrackRanges(rawInfra, route, mutStartOffset, mutEndOffset),
     )
 }
 
@@ -209,7 +209,7 @@ private fun makeRJSTrackRanges(
     infra: RawSignalingInfra,
     route: RouteId,
     routeStartOffset: Offset<Route>,
-    routeEndOffset: Offset<Route>
+    routeEndOffset: Offset<Route>,
 ): List<RJSDirectionalTrackRange> {
     val res = ArrayList<RJSDirectionalTrackRange>()
     var chunkStartPathOffset: Offset<BlockPath> = Offset(0.meters)
@@ -246,7 +246,7 @@ private fun makeRJSTrackRanges(
                     trackName,
                     rangeStartOnTrack.distance.meters,
                     rangeEndOnTrack.distance.meters,
-                    direction
+                    direction,
                 )
             )
         }
@@ -278,7 +278,7 @@ private fun findStartOffset(
     rawInfra: RawSignalingInfra,
     firstChunk: DirTrackChunkId,
     routeStaticIdx: RouteId,
-    range: PathfindingEdgeRangeId<Block>
+    range: PathfindingEdgeRangeId<Block>,
 ): Offset<Route> {
     return getRouteChunkOffset(rawInfra, routeStaticIdx, firstChunk) -
         getBlockChunkOffset(blockInfra, rawInfra, firstChunk, range).distance + range.start.distance
@@ -290,7 +290,7 @@ private fun findEndOffset(
     rawInfra: RawSignalingInfra,
     lastChunk: DirTrackChunkId,
     routeStaticIdx: RouteId,
-    range: PathfindingEdgeRangeId<Block>
+    range: PathfindingEdgeRangeId<Block>,
 ): Offset<Route> {
     return getRouteChunkOffset(rawInfra, routeStaticIdx, lastChunk) -
         getBlockChunkOffset(blockInfra, rawInfra, lastChunk, range).distance + range.end.distance

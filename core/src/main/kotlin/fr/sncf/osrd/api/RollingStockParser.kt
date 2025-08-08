@@ -23,7 +23,7 @@ fun parseRawRollingStock(
     if (!rawModes.containsKey(rawPhysicsConsist.effortCurves.defaultMode))
         throw OSRDError.newInvalidRollingStockError(
             ErrorType.InvalidRollingStockDefaultModeNotFound,
-            rawPhysicsConsist.effortCurves.defaultMode
+            rawPhysicsConsist.effortCurves.defaultMode,
         )
 
     // Parse tractive effort curves modes
@@ -65,7 +65,7 @@ private fun parseRollingResistance(rjsRollingResistance: RJSRollingResistance?):
     if (rjsRollingResistance.javaClass != Davis::class.java)
         throw OSRDError.newInvalidRollingStockFieldError(
             "rolling_resistance",
-            "unsupported rolling resistance type"
+            "unsupported rolling resistance type",
         )
     return rjsRollingResistance as Davis
 }
@@ -73,13 +73,13 @@ private fun parseRollingResistance(rjsRollingResistance: RJSRollingResistance?):
 /** Parse an RJSEffortCurveConditions into a EffortCurveConditions */
 private fun parseEffortCurveConditions(
     rjsCond: RJSEffortCurveConditions?,
-    fieldKey: String
+    fieldKey: String,
 ): EffortCurveConditions {
     if (rjsCond == null) throw OSRDError.newMissingRollingStockFieldError(fieldKey)
     return EffortCurveConditions(
         rjsCond.comfort,
         rjsCond.electricalProfileLevel,
-        rjsCond.powerRestrictionCode
+        rjsCond.powerRestrictionCode,
     )
 }
 
@@ -94,7 +94,7 @@ private fun parseModeEffortCurves(rjsMode: RJSModeEffortCurve, fieldKey: String)
         val cond =
             parseEffortCurveConditions(
                 rjsCondCurve.cond,
-                String.format("%s.curves[%d].cond", fieldKey, i)
+                String.format("%s.curves[%d].cond", fieldKey, i),
             )
         curves[i] = ConditionalEffortCurve(cond, curve)
     }
@@ -103,7 +103,7 @@ private fun parseModeEffortCurves(rjsMode: RJSModeEffortCurve, fieldKey: String)
 
 private fun parseEffortCurve(
     rjsEffortCurve: RJSEffortCurve,
-    fieldKey: String
+    fieldKey: String,
 ): Array<TractiveEffortPoint?> {
     if (rjsEffortCurve.speeds == null)
         throw OSRDError.newMissingRollingStockFieldError("$fieldKey.speeds")

@@ -48,7 +48,7 @@ data class SpeedSection(
 }
 
 data class SpeedLimitTagDescriptor(
-    val fallbackList: List<String>, // order of the list matters for fallback (when equal speed)
+    val fallbackList: List<String> // order of the list matters for fallback (when equal speed)
 )
 
 class TrackNodeConfigDescriptor(
@@ -64,7 +64,7 @@ class TrackNodeDescriptor(
 ) {
     fun getTrackNodeExitPort(
         config: TrackNodeConfigId,
-        entryPort: TrackNodePortId
+        entryPort: TrackNodePortId,
     ): OptStaticIdx<TrackNodePort> {
         for (link in configs[config].portLinks) {
             if (link.first == entryPort) return OptStaticIdx(link.second.index)
@@ -103,13 +103,10 @@ class TrackChunkDescriptor(
     val loadingGaugeConstraints: DistanceRangeMap<LoadingGaugeConstraint>,
     val electrificationVoltage: DistanceRangeMap<Set<String>>,
     val neutralSections: DirectionalMap<DistanceRangeMap<NeutralSection>>,
-    val speedSections: DirectionalMap<DistanceRangeMap<SpeedSection>>
+    val speedSections: DirectionalMap<DistanceRangeMap<SpeedSection>>,
 )
 
-class ZoneDescriptor(
-    val movableElements: StaticIdxSortedSet<TrackNode>,
-    var name: String = "",
-)
+class ZoneDescriptor(val movableElements: StaticIdxSortedSet<TrackNode>, var name: String = "")
 
 class RouteDescriptor(
     val name: String,
@@ -248,7 +245,7 @@ class RawInfraImpl(
 
     private fun findChunkIndex(
         dirTrackSection: DirTrackSectionId,
-        offset: Offset<TrackSection>
+        offset: Offset<TrackSection>,
     ): Int {
         val chunkBounds = trackChunksBounds[dirTrackSection.value]
         return chunkBounds.findSegment(offset, dirTrackSection.direction)
@@ -274,7 +271,7 @@ class RawInfraImpl(
     private fun findChunkOffset(
         trackSection: TrackSectionId,
         chunkIndex: Int,
-        trackSectionOffset: Offset<TrackSection>
+        trackSectionOffset: Offset<TrackSection>,
     ): Offset<TrackChunk> {
         val chunkBounds = trackChunksBounds[trackSection]
         assert(chunkIndex < (chunkBounds.size - 1))
@@ -558,12 +555,12 @@ class RawInfraImpl(
                 } else if (infraTagSpeedAndSource.first != null) {
                     SpeedLimitProperty(
                         infraTagSpeedAndSource.first!!,
-                        infraTagSpeedAndSource.second
+                        infraTagSpeedAndSource.second,
                     )
                 } else {
                     SpeedLimitProperty(
                         speedSection.default,
-                        if (trainTag != null) SpeedLimitSource.UnknownTag() else null
+                        if (trainTag != null) SpeedLimitSource.UnknownTag() else null,
                     )
                 }
             res.put(entry.lower, entry.upper, allowedSpeedAndTag)
@@ -574,7 +571,7 @@ class RawInfraImpl(
     private fun getInfraTagSpeedAndSource(
         speedSection: SpeedSection,
         trainTag: String?,
-        trainSpeedLimitTagDescriptor: SpeedLimitTagDescriptor?
+        trainSpeedLimitTagDescriptor: SpeedLimitTagDescriptor?,
     ): Pair<Speed?, SpeedLimitSource?> {
         if (trainTag == null) {
             return Pair(null, null)
@@ -624,7 +621,7 @@ class RawInfraImpl(
     override fun getTrackNodeExitPort(
         trackNode: TrackNodeId,
         config: TrackNodeConfigId,
-        entryPort: TrackNodePortId
+        entryPort: TrackNodePortId,
     ): OptStaticIdx<TrackNodePort> {
         return trackNodePool[trackNode].getTrackNodeExitPort(config, entryPort)
     }
@@ -683,7 +680,7 @@ class RawInfraImpl(
 
     override fun getNextTrackSection(
         currentTrack: DirTrackSectionId,
-        config: TrackNodeConfigId
+        config: TrackNodeConfigId,
     ): OptDirTrackSectionId {
         val currentPort = getNextTrackNodePort(currentTrack)
         if (currentPort.isNone) return OptDirTrackSectionId()
@@ -711,7 +708,7 @@ class RawInfraImpl(
 
     override fun getPortConnection(
         trackNode: TrackNodeId,
-        port: TrackNodePortId
+        port: TrackNodePortId,
     ): EndpointTrackSectionId {
         return trackNodePool[trackNode].ports[port]
     }
@@ -789,7 +786,7 @@ class RawInfraImpl(
         entry: DirDetectorId,
         exit: DirDetectorId,
         movableElements: StaticIdxList<TrackNode>,
-        trackNodeConfigs: StaticIdxList<TrackNodeConfig>
+        trackNodeConfigs: StaticIdxList<TrackNodeConfig>,
     ): ZonePathId? {
         return zonePathMap[ZonePathSpec(entry, exit, movableElements, trackNodeConfigs)]
     }

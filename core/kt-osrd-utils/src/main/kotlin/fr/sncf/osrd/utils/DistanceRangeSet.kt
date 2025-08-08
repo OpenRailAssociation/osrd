@@ -5,10 +5,7 @@ import fr.sncf.osrd.utils.units.Distance
 interface DistanceRangeSet : Iterable<DistanceRangeSet.RangeSetEntry> {
 
     /** When iterating over the values of the set, this represents one range */
-    data class RangeSetEntry(
-        val lower: Distance,
-        val upper: Distance,
-    )
+    data class RangeSetEntry(val lower: Distance, val upper: Distance)
 
     /** Sets the value between the lower and upper distances */
     fun put(lower: Distance, upper: Distance)

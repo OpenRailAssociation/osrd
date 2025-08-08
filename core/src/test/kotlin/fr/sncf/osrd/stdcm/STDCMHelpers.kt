@@ -84,7 +84,7 @@ fun simulateBlock(
 fun occupancyTest(
     res: STDCMResult,
     occupancyGraph: ImmutableMultimap<BlockId, OccupancySegment>,
-    tolerance: Double = 0.0
+    tolerance: Double = 0.0,
 ) {
     val envelopeWrapper = EnvelopeStopWrapper(res.envelope, res.stopResults)
     val blocks = res.blocks.ranges
@@ -116,19 +116,19 @@ fun occupancyTest(
 fun infraExplorerFromBlock(
     rawInfra: RawInfra,
     blockInfra: BlockInfra,
-    block: BlockId
+    block: BlockId,
 ): InfraExplorer {
     return initInfraExplorer(
             rawInfra,
             blockInfra,
-            PathfindingEdgeLocationId(block, Offset(0.meters))
+            PathfindingEdgeLocationId(block, Offset(0.meters)),
         )
         .elementAt(0)
 }
 
 fun stepsFromLocations(
     vararg locations: PathfindingEdgeLocationId<Block>,
-    stops: Boolean = false
+    stops: Boolean = false,
 ): List<STDCMStep> {
     val duration = if (stops) 0.0 else null
     return locations.map { STDCMStep(listOf(it), duration, stops) }

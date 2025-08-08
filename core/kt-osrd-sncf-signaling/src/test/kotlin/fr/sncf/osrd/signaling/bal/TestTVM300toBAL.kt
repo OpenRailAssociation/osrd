@@ -83,7 +83,7 @@ class TestTVM300toBAL {
                 listOf(), // we don't use parameters here
                 fullPath.size,
                 zoneStates,
-                ZoneStatus.INCOMPATIBLE
+                ZoneStatus.INCOMPATIBLE,
             )
         val logicalSignals =
             listOf(signalM, signalN).map { loadedSignalInfra.getLogicalSignals(it).first() }
@@ -94,7 +94,7 @@ class TestTVM300toBAL {
     private fun asserSignalListAspectEquals(
         expectedAspects: List<String>,
         actualAspects: Map<LogicalSignalId, SigState>,
-        signals: List<LogicalSignalId>
+        signals: List<LogicalSignalId>,
     ) {
         for ((aspect, signal) in expectedAspects.zip(signals)) {
             assertEquals(aspect, actualAspects[signal]!!.getEnum("aspect"))

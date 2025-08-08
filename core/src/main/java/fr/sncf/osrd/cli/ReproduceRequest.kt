@@ -31,36 +31,36 @@ import org.slf4j.LoggerFactory
 class ReproduceRequest : CliCommand {
     @Parameter(
         names = ["--stdcm-payload-path"],
-        description = "Path to the json payload file to load"
+        description = "Path to the json payload file to load",
     )
     private var stdcmPayloadPath: String? = null
 
     @Parameter(
         names = ["--pathfinding-payload-path"],
-        description = "Path to the json payload file to load"
+        description = "Path to the json payload file to load",
     )
     private var pathfindingPayloadPath: String? = null
 
     @Parameter(
         names = ["--simulation-payload-path"],
-        description = "Path to the json payload file to load"
+        description = "Path to the json payload file to load",
     )
     private var simulationPayloadPath: String? = null
 
     @Parameter(
         names = ["--editoast-url"],
-        description = "The base URL of editoast (used to query infrastructures)"
+        description = "The base URL of editoast (used to query infrastructures)",
     )
     private var editoastUrl = "http://localhost:8090/"
 
     @Parameter(
         names = ["--editoast-authorization"],
-        description = "The HTTP Authorization header sent to editoast"
+        description = "The HTTP Authorization header sent to editoast",
     )
     private var editoastAuthorization = "x-osrd-skip-authz"
     @Parameter(
         names = ["--railjson"],
-        description = "Path to the railjson infra file, overriding the id given in the request"
+        description = "Path to the railjson infra file, overriding the id given in the request",
     )
     private var railjson: String? = null
     private val logger: Logger = LoggerFactory.getLogger("ReproduceRequest")
@@ -118,7 +118,7 @@ data class FileInfraProvider(val infra: FullInfra) : InfraProvider {
     override fun getInfra(
         infraId: String?,
         expectedVersion: Int?,
-        diagnosticRecorder: DiagnosticRecorder?
+        diagnosticRecorder: DiagnosticRecorder?,
     ): FullInfra {
         return infra
     }

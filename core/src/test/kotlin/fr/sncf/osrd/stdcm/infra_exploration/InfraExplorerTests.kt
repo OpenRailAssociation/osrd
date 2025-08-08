@@ -34,7 +34,7 @@ class InfraExplorerTests {
                 infra,
                 infra,
                 PathfindingEdgeLocationId(block, Offset(0.meters)),
-                stepsFromLocations(PathfindingEdgeLocationId(block, infra.getBlockLength(block)))
+                stepsFromLocations(PathfindingEdgeLocationId(block, infra.getBlockLength(block))),
             )
         assertEquals(1, explorers.size)
         val explorer = explorers.first()
@@ -64,7 +64,7 @@ class InfraExplorerTests {
                 PathfindingEdgeLocationId(blocks[0], Offset(0.meters)),
                 stepsFromLocations(
                     PathfindingEdgeLocationId(blocks.last(), infra.getBlockLength(blocks.last()))
-                )
+                ),
             )
         assertEquals(1, firstExplorers.size)
         var explorer = firstExplorers.first()
@@ -74,7 +74,7 @@ class InfraExplorerTests {
         assertFalse { explorer.getIncrementalPath().pathComplete }
 
         // Fully extend lookahead
-        for (i in 0 ..< 3) {
+        for (i in 0..<3) {
             val extended = explorer.cloneAndExtendLookahead()
             assertEquals(1, extended.size)
             explorer = extended.first()
@@ -132,11 +132,11 @@ class InfraExplorerTests {
         assertEquals(2, firstExplorerExtended.size)
         assertEquals(
             firstExplorerExtended[0].getCurrentBlock(),
-            firstExplorerExtended[1].getCurrentBlock()
+            firstExplorerExtended[1].getCurrentBlock(),
         )
         assertNotEquals(
             firstExplorerExtended[0].getLastEdgeIdentifier(),
-            firstExplorerExtended[1].getLastEdgeIdentifier()
+            firstExplorerExtended[1].getLastEdgeIdentifier(),
         )
 
         // extend lookahead twice, current block a->b, lookahead b->c1->d->e and b->c2->d->e
@@ -154,7 +154,7 @@ class InfraExplorerTests {
         // equal
         assertNotEquals(
             extendedUntilEnd[0].getLastEdgeIdentifier(),
-            extendedUntilEnd[1].getLastEdgeIdentifier()
+            extendedUntilEnd[1].getLastEdgeIdentifier(),
         )
 
         // Move forward once, current block b->c1 and b->c2, lookahead c1->d->e and c2->d->e
@@ -162,18 +162,18 @@ class InfraExplorerTests {
         extendedUntilEnd[1].moveForward()
         assertNotEquals(
             extendedUntilEnd[0].getCurrentBlock(),
-            extendedUntilEnd[1].getCurrentBlock()
+            extendedUntilEnd[1].getCurrentBlock(),
         )
 
         // Move forward 2 times, both explorers should be at current block d->e and no lookahead
-        for (i in 0 ..< 2) {
+        for (i in 0..<2) {
             extendedUntilEnd[0].moveForward()
             extendedUntilEnd[1].moveForward()
         }
         assertEquals(extendedUntilEnd[0].getCurrentBlock(), extendedUntilEnd[1].getCurrentBlock())
         assertEquals(
             extendedUntilEnd[0].getLastEdgeIdentifier(),
-            extendedUntilEnd[1].getLastEdgeIdentifier()
+            extendedUntilEnd[1].getLastEdgeIdentifier(),
         )
     }
 
@@ -215,7 +215,7 @@ class InfraExplorerTests {
                 infra,
                 infra,
                 PathfindingEdgeLocationId(blocks[0], Offset(0.meters)),
-                constraints = constraints
+                constraints = constraints,
             )
         assertEquals(1, firstExplorers.size)
         val firstExplorer = firstExplorers.first()
@@ -235,20 +235,11 @@ class InfraExplorerTests {
         assertEquals(1, firstExplorerExtended3.size)
 
         firstExplorerExtended3.first().moveForward()
-        assertEquals(
-            blocks[3],
-            firstExplorerExtended3.first().getCurrentBlock(),
-        )
+        assertEquals(blocks[3], firstExplorerExtended3.first().getCurrentBlock())
         firstExplorerExtended3.first().moveForward()
-        assertEquals(
-            blocks[4],
-            firstExplorerExtended3.first().getCurrentBlock(),
-        )
+        assertEquals(blocks[4], firstExplorerExtended3.first().getCurrentBlock())
         firstExplorerExtended3.first().moveForward()
-        assertEquals(
-            blocks[5],
-            firstExplorerExtended3.first().getCurrentBlock(),
-        )
+        assertEquals(blocks[5], firstExplorerExtended3.first().getCurrentBlock())
     }
 
     /**
@@ -274,7 +265,7 @@ class InfraExplorerTests {
             initInfraExplorer(
                 infra.rawInfra,
                 infra.blockInfra,
-                PathfindingEdgeLocationId(firstBlock, Offset(0.meters))
+                PathfindingEdgeLocationId(firstBlock, Offset(0.meters)),
             )
         assertEquals(2, firstExplorers.size) // There should be one instance per route
     }
@@ -314,7 +305,7 @@ class InfraExplorerTests {
             initInfraExplorer(
                     infra.rawInfra,
                     infra.blockInfra,
-                    PathfindingEdgeLocationId(block, Offset(0.meters))
+                    PathfindingEdgeLocationId(block, Offset(0.meters)),
                 )
                 .toList()
         assertEquals(4, explorers.size) // There should be one instance per route
@@ -356,7 +347,7 @@ class InfraExplorerTests {
             initInfraExplorer(
                     infra.rawInfra,
                     infra.blockInfra,
-                    PathfindingEdgeLocationId(block, Offset(0.meters))
+                    PathfindingEdgeLocationId(block, Offset(0.meters)),
                 )
                 .toList()
         assertEquals(1, explorers.size)
@@ -390,8 +381,8 @@ class InfraExplorerTests {
                         PathfindingEdgeLocationId(blocks[1], Offset(50.meters)),
                         PathfindingEdgeLocationId(blocks[2], Offset(0.meters)),
                         PathfindingEdgeLocationId(blocks[3], Offset(50.meters)),
-                        stops = true
-                    )
+                        stops = true,
+                    ),
                 )
                 .single()
         while (true) explorer = explorer.cloneAndExtendLookahead().firstOrNull() ?: break
@@ -426,20 +417,20 @@ class InfraExplorerTests {
                     PathfindingEdgeLocationId(block, Offset(32.meters)),
                     stepsFromLocations(
                         PathfindingEdgeLocationId(block, Offset(42.meters)),
-                        stops = true
-                    )
+                        stops = true,
+                    ),
                 )
                 .first()
         val incrementalPath = explorers.getIncrementalPath()
         assertEquals(1, incrementalPath.stopCount)
         assertEquals(
             Offset(10.meters),
-            incrementalPath.toTravelledPath(incrementalPath.getStopOffset(0))
+            incrementalPath.toTravelledPath(incrementalPath.getStopOffset(0)),
         )
     }
 
     private fun <T> allEqual(list: List<T>): Boolean {
-        for (i in 1 ..< list.size) {
+        for (i in 1..<list.size) {
             if (list[0] != list[i]) return false
         }
         return true

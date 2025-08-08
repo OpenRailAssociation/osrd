@@ -79,7 +79,7 @@ class ETCSBrakingCurvesEndpoint(
                     rollingStock.basePowerClass,
                     powerRestrictionsLegacyMap,
                     rollingStock.powerRestrictions,
-                    request.useElectricalProfiles
+                    request.useElectricalProfiles,
                 )
             val curvesAndConditions =
                 rollingStock.mapTractiveEffortCurves(electrificationMap, request.comfort)
@@ -97,8 +97,8 @@ class ETCSBrakingCurvesEndpoint(
                         chunkPath,
                         routePath,
                         blockPath,
-                        signalingRanges
-                    )
+                        signalingRanges,
+                    ),
                 )
 
             // Parse mrsp.
@@ -115,7 +115,7 @@ class ETCSBrakingCurvesEndpoint(
                     mrsp,
                     stops.map { it.offset },
                     stops.map { it.rjsReceptionSignal.isStopOnClosedSignal },
-                    EoaType.STOP
+                    EoaType.STOP,
                 )
             val stopBrakingCurves = etcsSimulator.computeStopBrakingCurves(mrsp, etcsStops)
             // Compute conflict braking curves on each of the path's ETCS signals.
@@ -137,14 +137,14 @@ class ETCSBrakingCurvesEndpoint(
                     mrsp,
                     etcsSignalOffsets,
                     areEtcsSignalRouteDelimiters,
-                    EoaType.SPACING
+                    EoaType.SPACING,
                 )
             val etcsRoutingConflictEoas =
                 etcsSimulator.computeEoaLocations(
                     mrsp,
                     etcsSignalOffsets,
                     areEtcsSignalRouteDelimiters,
-                    EoaType.ROUTING
+                    EoaType.ROUTING,
                 )
             val etcsConflictEoas = etcsSpacingConflictEoas.plus(etcsRoutingConflictEoas).sorted()
             val conflictBrakingCurves =
@@ -155,7 +155,7 @@ class ETCSBrakingCurvesEndpoint(
                 ETCSBrakingCurvesResponse(
                     slowdownBrakingCurves.map { buildETCSCurves(it.value) },
                     stopBrakingCurves.map { buildETCSCurves(it.value) },
-                    buildETCSConflictCurves(conflictBrakingCurves)
+                    buildETCSConflictCurves(conflictBrakingCurves),
                 )
             RsJson(RsWithBody(etcsBrakingCurvesResponseAdapter.toJson(res)))
         } catch (ex: Throwable) {
@@ -165,7 +165,7 @@ class ETCSBrakingCurvesEndpoint(
 
     private data class TravelledPathSignal(
         val offset: Offset<TravelledPath>,
-        val isRouteDelimiter: Boolean
+        val isRouteDelimiter: Boolean,
     ) : Comparable<TravelledPathSignal> {
         override fun compareTo(other: TravelledPathSignal): Int {
             return offset.compareTo(other.offset)
@@ -180,7 +180,7 @@ class ETCSBrakingCurvesEndpoint(
         fullInfra: FullInfra,
         blockPath: StaticIdxList<Block>,
         pathOffsetBuilder: PathOffsetBuilder,
-        signalingSystemId: String? = null
+        signalingSystemId: String? = null,
     ): List<TravelledPathSignal> {
         val res = mutableSetOf<TravelledPathSignal>()
         var currentOffset = Offset<BlockPath>(Distance.ZERO)
@@ -205,7 +205,7 @@ class ETCSBrakingCurvesEndpoint(
     private fun parseRawMrsp(
         rawMrsp: RangeValues<SpeedLimitProperty>,
         endPos: Offset<TravelledPath>,
-        beginPos: Offset<TravelledPath> = Offset(Distance.ZERO)
+        beginPos: Offset<TravelledPath> = Offset(Distance.ZERO),
     ): Envelope {
         val speedLimitDistanceRangeMap = rawMrsp.toDistanceRangeMap(beginPos, endPos)
         val mrspParts = mutableListOf<EnvelopePart>()
@@ -219,7 +219,7 @@ class ETCSBrakingCurvesEndpoint(
                 EnvelopePart.generateTimes(
                     attrs,
                     doubleArrayOf(entry.lower.meters, entry.upper.meters),
-                    doubleArrayOf(speed, speed)
+                    doubleArrayOf(speed, speed),
                 )
             )
         }
@@ -236,7 +236,7 @@ class ETCSBrakingCurvesEndpoint(
                 it.value[BrakingType.PS]!!.brakingCurve.buildSimpleEnvelope(),
                 it.value[BrakingType.GUI]!!.brakingCurve.buildSimpleEnvelope(),
                 if (it.key.eoaType == EoaType.SPACING) ConflictType.SPACING
-                else ConflictType.ROUTING
+                else ConflictType.ROUTING,
             )
         }
     }
@@ -257,7 +257,7 @@ class ETCSBrakingCurvesEndpoint(
         return SimpleEnvelope(
             simplifiedEnvelope.map { Offset(it.position.meters) },
             simplifiedEnvelope.map { it.time.seconds },
-            simplifiedEnvelope.map { it.speed }
+            simplifiedEnvelope.map { it.speed },
         )
     }
 }

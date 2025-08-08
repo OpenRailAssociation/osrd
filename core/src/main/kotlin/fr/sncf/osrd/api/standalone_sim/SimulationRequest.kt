@@ -31,7 +31,7 @@ class SimulationRequest(
     @Json(name = "power_restrictions") val powerRestrictions: List<SimulationPowerRestrictionItem>,
     val options: TrainScheduleOptions,
     @Json(name = "physics_consist") val physicsConsist: PhysicsConsistModel,
-    @Json(name = "electrical_profile_set_id") val electricalProfileSetId: String?
+    @Json(name = "electrical_profile_set_id") val electricalProfileSetId: String?,
 ) {
     companion object {
         val adapter: JsonAdapter<SimulationRequest> =
@@ -84,7 +84,7 @@ class SimulationPath(
     val blocks: List<String>,
     val routes: List<String>,
     @Json(name = "track_section_ranges") val trackSectionRanges: List<DirectionalTrackRange>,
-    @Json(name = "path_item_positions") val pathItemPositions: List<Offset<TravelledPath>>
+    @Json(name = "path_item_positions") val pathItemPositions: List<Offset<TravelledPath>>,
 )
 
 class SimulationScheduleItem(
@@ -143,5 +143,5 @@ class SimulationPowerRestrictionItem(
 
 class TrainScheduleOptions(
     @Json(name = "use_electrical_profiles") val useElectricalProfiles: Boolean,
-    @Json(name = "use_speed_limits_for_simulation") val useSpeedLimits: Boolean?
+    @Json(name = "use_speed_limits_for_simulation") val useSpeedLimits: Boolean?,
 )

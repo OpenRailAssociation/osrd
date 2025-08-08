@@ -37,7 +37,7 @@ class ConditionalOccupancyTests {
                     Double.POSITIVE_INFINITY,
                     0.meters,
                     100.meters,
-                    unavailableBlock
+                    unavailableBlock,
                 ),
             )
 
@@ -84,7 +84,7 @@ class ConditionalOccupancyTests {
                     0.meters,
                     100.meters,
                     unavailableBlock,
-                    block2
+                    block2,
                 ),
             )
 
@@ -136,7 +136,7 @@ class ConditionalOccupancyTests {
                     0.meters,
                     100.meters,
                     unavailableBlock,
-                    block2
+                    block2,
                 ),
                 block3,
                 OccupancySegment(
@@ -145,7 +145,7 @@ class ConditionalOccupancyTests {
                     0.meters,
                     100.meters,
                     unavailableBlock,
-                    block7
+                    block7,
                 ),
                 block4,
                 OccupancySegment(
@@ -154,7 +154,7 @@ class ConditionalOccupancyTests {
                     0.meters,
                     100.meters,
                     unavailableBlock,
-                    block7
+                    block7,
                 ),
                 block5,
                 OccupancySegment(
@@ -163,7 +163,7 @@ class ConditionalOccupancyTests {
                     0.meters,
                     100.meters,
                     unavailableBlock,
-                    block7
+                    block7,
                 ),
                 block6,
                 OccupancySegment(
@@ -172,7 +172,7 @@ class ConditionalOccupancyTests {
                     0.meters,
                     100.meters,
                     unavailableBlock,
-                    block7
+                    block7,
                 ),
             )
 
@@ -241,7 +241,7 @@ class ConditionalOccupancyTests {
     private fun initBuilder(
         fullInfra: FullInfra,
         occupancyGraph: ImmutableMultimap<BlockId, OccupancySegment>,
-        startBlock: BlockId
+        startBlock: BlockId,
     ): STDCMPathfindingBuilder {
         return STDCMPathfindingBuilder()
             .setInfra(fullInfra)

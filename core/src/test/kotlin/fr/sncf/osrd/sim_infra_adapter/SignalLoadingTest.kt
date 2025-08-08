@@ -13,7 +13,7 @@ class SignalLoadingTest {
         MockSigSystemManager(
             "BAL",
             SigSettingsSchema { flag("Nf") },
-            SigParametersSchema { flag("jaune_cli") }
+            SigParametersSchema { flag("jaune_cli") },
         )
 
     @Test

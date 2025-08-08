@@ -90,11 +90,11 @@ class TestBALtoBAL {
                 listOf(), // we don't use parameters here
                 fullPath.size,
                 zoneStates,
-                ZoneStatus.INCOMPATIBLE
+                ZoneStatus.INCOMPATIBLE,
             )
         assertEquals(
             "A",
-            res[loadedSignalInfra.getLogicalSignals(signalV).first()]!!.getEnum("aspect")
+            res[loadedSignalInfra.getLogicalSignals(signalV).first()]!!.getEnum("aspect"),
         )
     }
 }

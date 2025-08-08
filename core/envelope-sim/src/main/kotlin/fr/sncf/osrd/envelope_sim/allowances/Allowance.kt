@@ -20,7 +20,7 @@ abstract class AllowanceValue {
         sectionTime: Double,
         totalTime: Double,
         sectionDistance: Double,
-        totalDistance: Double
+        totalDistance: Double,
     ): Double {
         val ratio = getSectionRatio(sectionTime, totalTime, sectionDistance, totalDistance)
         val totalAllowance = getAllowanceTime(totalTime, totalDistance)
@@ -38,7 +38,7 @@ abstract class AllowanceValue {
         sectionTime: Double,
         totalTime: Double,
         sectionDistance: Double,
-        totalDistance: Double
+        totalDistance: Double,
     ): Double
 
     /** A fixed time allowance */
@@ -55,7 +55,7 @@ abstract class AllowanceValue {
             sectionTime: Double,
             totalTime: Double,
             sectionDistance: Double,
-            totalDistance: Double
+            totalDistance: Double,
         ): Double {
             return sectionTime / totalTime
         }
@@ -76,7 +76,7 @@ abstract class AllowanceValue {
             sectionTime: Double,
             totalTime: Double,
             sectionDistance: Double,
-            totalDistance: Double
+            totalDistance: Double,
         ): Double {
             return sectionTime / totalTime
         }
@@ -97,7 +97,7 @@ abstract class AllowanceValue {
             sectionTime: Double,
             totalTime: Double,
             sectionDistance: Double,
-            totalDistance: Double
+            totalDistance: Double,
         ): Double {
             return sectionDistance / totalDistance
         }

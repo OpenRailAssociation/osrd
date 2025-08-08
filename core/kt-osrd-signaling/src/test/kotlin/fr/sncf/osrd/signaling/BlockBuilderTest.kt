@@ -88,14 +88,14 @@ class BlockBuilderTest {
                 detV.decreasing,
                 detY.increasing,
                 mutableStaticIdxArrayListOf(switch),
-                mutableStaticIdxArrayListOf(switchUpper)
+                mutableStaticIdxArrayListOf(switchUpper),
             )!!
         val zonePathXY =
             infra.findZonePath(
                 detX.decreasing,
                 detY.increasing,
                 mutableStaticIdxArrayListOf(switch),
-                mutableStaticIdxArrayListOf(switchLower)
+                mutableStaticIdxArrayListOf(switchLower),
             )!!
 
         val simulator =
@@ -103,7 +103,7 @@ class BlockBuilderTest {
                 MockSigSystemManager(
                     "BAL",
                     SigSettingsSchema { flag("Nf") },
-                    SigParametersSchema { flag("jaune_cli") }
+                    SigParametersSchema { flag("jaune_cli") },
                 )
             )
         val loadedSignalInfra = simulator.loadSignals(infra)
@@ -117,28 +117,28 @@ class BlockBuilderTest {
                     false,
                     mutableStaticIdxArrayListOf(zonePathUV),
                     infra.getLogicalSignals(signalV),
-                    mutableOffsetArrayListOf()
+                    mutableOffsetArrayListOf(),
                 )
                 block(
                     false,
                     true,
                     mutableStaticIdxArrayListOf(zonePathVY, zonePathYZ),
                     infra.getLogicalSignals(signalV),
-                    mutableOffsetArrayListOf()
+                    mutableOffsetArrayListOf(),
                 )
                 block(
                     true,
                     false,
                     mutableStaticIdxArrayListOf(zonePathWX),
                     infra.getLogicalSignals(signalX),
-                    mutableOffsetArrayListOf()
+                    mutableOffsetArrayListOf(),
                 )
                 block(
                     false,
                     true,
                     mutableStaticIdxArrayListOf(zonePathXY, zonePathYZ),
                     infra.getLogicalSignals(signalX),
-                    mutableOffsetArrayListOf()
+                    mutableOffsetArrayListOf(),
                 )
             }
 
@@ -147,7 +147,7 @@ class BlockBuilderTest {
 
     data class BlockDescriptor(
         val path: StaticIdxList<ZonePath>,
-        val signals: StaticIdxList<LogicalSignal>
+        val signals: StaticIdxList<LogicalSignal>,
     )
 
     private fun blockInfraToSet(infra: BlockInfra): MutableSet<BlockDescriptor> {

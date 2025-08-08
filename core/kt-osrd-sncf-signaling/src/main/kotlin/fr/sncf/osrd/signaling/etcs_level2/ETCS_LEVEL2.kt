@@ -35,7 +35,7 @@ object ETCS_LEVEL2 : SignalingSystemDriver {
 
     override fun isConstrainingOnSight(
         signalState: SigState,
-        trainState: SignalingTrainState
+        trainState: SignalingTrainState,
     ): Boolean {
         return false
     }

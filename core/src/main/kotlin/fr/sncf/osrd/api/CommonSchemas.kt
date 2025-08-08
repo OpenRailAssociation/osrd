@@ -27,11 +27,11 @@ data class RangeValues<valueT>(
     // bounds).
     @Json(name = "boundaries") val internalBoundaries: List<Offset<TravelledPath>> = listOf(),
     // List of `n+1` values associated to the bounded intervals
-    val values: List<valueT> = listOf()
+    val values: List<valueT> = listOf(),
 ) {
     fun toDistanceRangeMap(
         beginPos: Offset<TravelledPath>,
-        endPos: Offset<TravelledPath>
+        endPos: Offset<TravelledPath>,
     ): DistanceRangeMap<valueT> {
         val boundaries = internalBoundaries.toMutableList()
         boundaries.add(0, beginPos)
@@ -45,7 +45,7 @@ data class RangeValues<valueT>(
                 DistanceRangeMap.RangeMapEntry(
                     boundaries[i].distance,
                     boundaries[i + 1].distance,
-                    values[i]
+                    values[i],
                 )
             )
         }
@@ -72,7 +72,7 @@ class SignalCriticalPosition(
 class RJSRoutingRequirement(
     val route: String,
     @Json(name = "begin_time") val beginTime: TimeDelta,
-    val zones: List<RJSRoutingZoneRequirement>
+    val zones: List<RJSRoutingZoneRequirement>,
 )
 
 class RJSRoutingZoneRequirement(

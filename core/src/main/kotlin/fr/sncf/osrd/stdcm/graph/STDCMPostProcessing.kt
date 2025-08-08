@@ -78,7 +78,7 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
                 comfort,
                 trainTag,
                 temporarySpeedLimitManager,
-                areSpeedsEqual(0.0, edges.last().endSpeed)
+                areSpeedsEqual(0.0, edges.last().endSpeed),
             )
         val withAllowance =
             buildFinalEnvelope(
@@ -106,7 +106,7 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
 
                 // Allow us to display OP, a hack that will be fixed
                 // after the redesign of simulation data models
-                makePathStops(stops, trainPath)
+                makePathStops(stops, trainPath),
             )
         return if (res.envelope.totalTime > maxRunTime) {
             // This can happen if the destination is one edge away from being reachable in time,
@@ -127,14 +127,7 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
         stopAtEnd: Boolean,
     ): Envelope {
         val context = build(rollingStock, physicsPath, timeStep, comfort)
-        val mrsp =
-            computeMRSP(
-                trainPath,
-                rollingStock,
-                false,
-                trainTag,
-                temporarySpeedLimitManager,
-            )
+        val mrsp = computeMRSP(trainPath, rollingStock, false, trainTag, temporarySpeedLimitManager)
         val stopInfos =
             stops.map { SimStop(Offset(it.position.meters), it.receptionSignal) }.toMutableList()
         if (stopAtEnd) stopInfos.add(SimStop(Offset(physicsPath.length.meters), SHORT_SLIP_STOP))
@@ -156,9 +149,7 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
      * Compute the final TimeData to be used as reference. The main things we're looking for are the
      * train departure time and the duration of each stop.
      */
-    private fun computeTimeData(
-        edges: List<STDCMEdge>,
-    ): TimeData {
+    private fun computeTimeData(edges: List<STDCMEdge>): TimeData {
         // Make stop list mutable (locally)
         val nodes = getNodes(edges)
         val mutableStopData = nodes.last().timeData.stopTimeData.toMutableList()
@@ -225,7 +216,7 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
                     max(
                         mutableStopData[addedStopTimeIndex].minDuration,
                         mutableStopData[addedStopTimeIndex].currentDuration -
-                            remainingStopTimeToRemove
+                            remainingStopTimeToRemove,
                     )
                 val timeRemoved =
                     mutableStopData[addedStopTimeIndex].currentDuration - newStopDuration
@@ -270,7 +261,7 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
             maxTimeDiff =
                 min(
                     maxTimeDiff,
-                    edge.timeData.maxDepartureDelayingWithoutConflict - timeRemovedFromStops
+                    edge.timeData.maxDepartureDelayingWithoutConflict - timeRemovedFromStops,
                 )
             if (nextNode.stopDuration != null) {
                 val maxRemovedStopTime =
@@ -303,7 +294,7 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
                         offset.meters,
                         timeData.stopTimeData[stopIndex++].currentDuration,
                         // TODO: forward and use receptionSignal param from request
-                        if (isTimeStrictlyPositive(prevNode.stopDuration)) SHORT_SLIP_STOP else OPEN
+                        if (isTimeStrictlyPositive(prevNode.stopDuration)) SHORT_SLIP_STOP else OPEN,
                     )
                 )
             offset += edge.length.distance

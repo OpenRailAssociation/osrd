@@ -34,16 +34,8 @@ class EngineeringAllowanceManagerTests {
 
     private val engineeringAllowanceManager = EngineeringAllowanceManager(deceleration, null)
 
-    private fun constAcceleration(
-        endSpeed: Double,
-        length: Distance,
-    ): SummarizedSimulationResult {
-        val sim =
-            runSimplifiedSimulation(
-                acceleration,
-                endSpeed,
-                length.meters,
-            )
+    private fun constAcceleration(endSpeed: Double, length: Distance): SummarizedSimulationResult {
+        val sim = runSimplifiedSimulation(acceleration, endSpeed, length.meters)
         return SummarizedSimulationResult(sim.newBeginSpeed, sim.newDuration)
     }
 
@@ -51,10 +43,7 @@ class EngineeringAllowanceManagerTests {
     fun testNoConflict() {
         val opportunities =
             engineeringAllowanceManager
-                .generateAllowanceOpportunities(
-                    basicSegments.asSequence(),
-                    constantSpeed,
-                )
+                .generateAllowanceOpportunities(basicSegments.asSequence(), constantSpeed)
                 .toList()
         print(opportunities)
         assertEquals(3, opportunities.size)

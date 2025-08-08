@@ -14,7 +14,7 @@ class ConflictDetectionResponse(
      * train/work schedule IDs. (i.e. there's only one conflict entry between trains (A, B), but
      * there may be a different one for trains (B, C), or (A, B, C)).
      */
-    val conflicts: Collection<ConflictResponse>,
+    val conflicts: Collection<ConflictResponse>
 )
 
 /**

@@ -68,12 +68,7 @@ class StepTracker(private val inputSteps: List<STDCMStep>) {
                     .filter { it.offset in currentPathBlockOffset..rangeEnd }
                     .minByOrNull { it.offset } ?: break
             currentPathOffset = currentBlockStart + location.offset.distance
-            val newStep =
-                LocatedStep(
-                    currentPathOffset,
-                    location,
-                    step,
-                )
+            val newStep = LocatedStep(currentPathOffset, location, step)
             res.add(newStep)
             seenSteps.add(newStep)
         }

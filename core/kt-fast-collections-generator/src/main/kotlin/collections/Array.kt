@@ -17,7 +17,7 @@ private fun CollectionItemType.generateArray(context: GeneratorContext, currentF
         context.codeGenerator.createNewFile(
             Dependencies(true, currentFile),
             generatedPackage,
-            fileName
+            fileName,
         )
     file.appendText(
         """
@@ -264,7 +264,7 @@ class ArrayGenerator {
         override fun generate(
             context: GeneratorContext,
             currentFile: KSFile,
-            itemType: CollectionItemType
+            itemType: CollectionItemType,
         ) {
             itemType.generateArray(context, currentFile)
         }

@@ -16,7 +16,7 @@ object ETCS_LEVEL2toBAL : SignalDriver {
         parameters: SigParameters,
         stateSchema: SigStateSchema,
         maView: MovementAuthorityView?,
-        limitView: SpeedLimitView?
+        limitView: SpeedLimitView?,
     ): SigState {
         return stateSchema { value("aspect", "VL") }
     }

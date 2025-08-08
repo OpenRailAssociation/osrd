@@ -34,7 +34,7 @@ internal class RoutingSimImpl<InfraT>(
     private fun destructionJob(
         route: RouteId,
         pathZones: Array<ZoneId>,
-        handles: List<ZoneReservationId>
+        handles: List<ZoneReservationId>,
     ): Job =
         scope.launch {
             val releaseZones = infra.getRouteReleaseZones(route)

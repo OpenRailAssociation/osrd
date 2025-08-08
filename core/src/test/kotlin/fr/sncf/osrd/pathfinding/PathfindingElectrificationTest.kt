@@ -58,8 +58,8 @@ class PathfindingElectrificationTest : ApiTest() {
                 infra.fullInfra(),
                 getPathfindingBlockRequest(
                     TestTrains.FAST_ELECTRIC_TRAIN,
-                    listOf(waypointsStart, waypointsEnd)
-                )
+                    listOf(waypointsStart, waypointsEnd),
+                ),
             )
         val normalPathSuccess = checkPathfindingSuccess(normalPathResp, 400.meters)
 
@@ -77,8 +77,8 @@ class PathfindingElectrificationTest : ApiTest() {
                 infra.fullInfra(),
                 getPathfindingBlockRequest(
                     TestTrains.FAST_ELECTRIC_TRAIN,
-                    listOf(waypointsStart, waypointsEnd)
-                )
+                    listOf(waypointsStart, waypointsEnd),
+                ),
             )
         val electricPathSuccess = checkPathfindingSuccess(electricPathResp, 400.meters)
 
@@ -93,8 +93,8 @@ class PathfindingElectrificationTest : ApiTest() {
                     infra.fullInfra(),
                     getPathfindingBlockRequest(
                         TestTrains.FAST_ELECTRIC_TRAIN,
-                        listOf(waypointsStart, waypointsEnd)
-                    )
+                        listOf(waypointsStart, waypointsEnd),
+                    ),
                 )
             }
             .isExactlyInstanceOf(NoPathFoundException::class.java)
@@ -115,7 +115,7 @@ class PathfindingElectrificationTest : ApiTest() {
     fun testNeutralSectionAndElectrificationPathfinding(
         withElectrification: Boolean,
         neutralSectionDirection: Direction?,
-        pathSuccess: Boolean
+        pathSuccess: Boolean,
     ) {
         val infra = DummyInfra()
         infra.addBlock("a", "b")
@@ -148,8 +148,8 @@ class PathfindingElectrificationTest : ApiTest() {
                     infra.fullInfra(),
                     getPathfindingBlockRequest(
                         TestTrains.FAST_ELECTRIC_TRAIN,
-                        listOf(waypointsStart, waypointsEnd)
-                    )
+                        listOf(waypointsStart, waypointsEnd),
+                    ),
                 )
             checkPathfindingSuccess(electricPathResp, 300.meters)
         } else {
@@ -158,8 +158,8 @@ class PathfindingElectrificationTest : ApiTest() {
                         infra.fullInfra(),
                         getPathfindingBlockRequest(
                             TestTrains.FAST_ELECTRIC_TRAIN,
-                            listOf(waypointsStart, waypointsEnd)
-                        )
+                            listOf(waypointsStart, waypointsEnd),
+                        ),
                     )
                 }
                 .isExactlyInstanceOf(NoPathFoundException::class.java)
@@ -186,7 +186,7 @@ class PathfindingElectrificationTest : ApiTest() {
                 Arguments.of(true, Direction.DECREASING, true),
                 Arguments.of(false, null, false),
                 Arguments.of(false, Direction.INCREASING, true),
-                Arguments.of(false, Direction.DECREASING, false)
+                Arguments.of(false, Direction.DECREASING, false),
             )
         }
     }
@@ -206,7 +206,7 @@ class PathfindingElectrificationTest : ApiTest() {
                         rjsTrackSection.id,
                         ApplicableDirection.BOTH,
                         0.0,
-                        rjsTrackSection.length
+                        rjsTrackSection.length,
                     )
                 }
                 .toList()
@@ -219,8 +219,8 @@ class PathfindingElectrificationTest : ApiTest() {
                 infraWithAllElectrifiedTrack,
                 getPathfindingBlockRequest(
                     TestTrains.FAST_ELECTRIC_TRAIN,
-                    listOf(waypointsStart, waypointsEnd)
-                )
+                    listOf(waypointsStart, waypointsEnd),
+                ),
             )
         val normalPathSuccess = checkPathfindingSuccess(normalPathResp, 39_553.meters)
         val normalTracks = normalPathSuccess.trackSectionRanges.map { it.trackSection }
@@ -241,8 +241,8 @@ class PathfindingElectrificationTest : ApiTest() {
                 infraPartialElectrifiedTrack,
                 getPathfindingBlockRequest(
                     TestTrains.FAST_ELECTRIC_TRAIN,
-                    listOf(waypointsStart, waypointsEnd)
-                )
+                    listOf(waypointsStart, waypointsEnd),
+                ),
             )
         val partialElectricPathSuccess =
             checkPathfindingSuccess(partialElectricPathResp, 39_553.meters)
@@ -266,8 +266,8 @@ class PathfindingElectrificationTest : ApiTest() {
                     Helpers.fullInfraFromRJS(rjsInfra),
                     getPathfindingBlockRequest(
                         TestTrains.FAST_ELECTRIC_TRAIN,
-                        listOf(waypointsStart, waypointsEnd)
-                    )
+                        listOf(waypointsStart, waypointsEnd),
+                    ),
                 )
             }
             .isExactlyInstanceOf(NoPathFoundException::class.java)

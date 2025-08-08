@@ -47,7 +47,7 @@ object BAPR : SignalingSystemDriver {
 
     override fun isConstrainingOnSight(
         signalState: SigData<SignalStateMarker>,
-        trainState: SignalingTrainState
+        trainState: SignalingTrainState,
     ): Boolean {
         return signalState.getEnum("aspect") != "VL"
     }

@@ -57,7 +57,7 @@ class DepartureTimeShiftTests {
                 secondBlock,
                 OccupancySegment(1200.0, 2400.0, 0.meters, 100.meters),
                 secondBlock,
-                OccupancySegment(2400.0, 3600.0, 0.meters, 100.meters)
+                OccupancySegment(2400.0, 3600.0, 0.meters, 100.meters),
             )
         val res =
             STDCMPathfindingBuilder()
@@ -194,10 +194,10 @@ class DepartureTimeShiftTests {
                     firstBlockEnvelope.totalTime + 10,
                     Double.POSITIVE_INFINITY,
                     0.meters,
-                    100.meters
+                    100.meters,
                 ),
                 secondBlock,
-                OccupancySegment(0.0, 3600.0, 0.meters, 100.meters)
+                OccupancySegment(0.0, 3600.0, 0.meters, 100.meters),
             )
         val res =
             STDCMPathfindingBuilder()
@@ -239,7 +239,7 @@ class DepartureTimeShiftTests {
                 secondBlock,
                 OccupancySegment(300.0, 500.0, 0.meters, 100.meters),
                 thirdBlock,
-                OccupancySegment(0.0, 500.0, 0.meters, 100.meters)
+                OccupancySegment(0.0, 500.0, 0.meters, 100.meters),
             )
         val res =
             STDCMPathfindingBuilder()
@@ -275,7 +275,7 @@ class DepartureTimeShiftTests {
                 firstBlock,
                 OccupancySegment(300.0, 500.0, 0.meters, 100.meters),
                 secondBlock,
-                OccupancySegment(0.0, 500.0, 0.meters, 100.meters)
+                OccupancySegment(0.0, 500.0, 0.meters, 100.meters),
             )
         val res =
             STDCMPathfindingBuilder()
@@ -350,7 +350,7 @@ class DepartureTimeShiftTests {
                 secondBlock,
                 OccupancySegment(600.0, Double.POSITIVE_INFINITY, 0.meters, 100.meters),
                 forthBlock,
-                OccupancySegment(0.0, 1000.0, 0.meters, 100.meters)
+                OccupancySegment(0.0, 1000.0, 0.meters, 100.meters),
             )
         val res =
             STDCMPathfindingBuilder()
@@ -400,7 +400,7 @@ class DepartureTimeShiftTests {
                 thirdBlock,
                 OccupancySegment(0.0, 600.0, 0.meters, 100.meters),
                 forthBlock,
-                OccupancySegment(0.0, 800.0, 0.meters, 100.meters)
+                OccupancySegment(0.0, 800.0, 0.meters, 100.meters),
             )
         val res =
             STDCMPathfindingBuilder()
@@ -445,7 +445,7 @@ class DepartureTimeShiftTests {
                 thirdBlock,
                 OccupancySegment(0.0, 1200.0, 0.meters, 100.meters),
                 thirdBlock,
-                OccupancySegment(1500.0, Double.POSITIVE_INFINITY, 0.meters, 100.meters)
+                OccupancySegment(1500.0, Double.POSITIVE_INFINITY, 0.meters, 100.meters),
             )
         val res =
             STDCMPathfindingBuilder()

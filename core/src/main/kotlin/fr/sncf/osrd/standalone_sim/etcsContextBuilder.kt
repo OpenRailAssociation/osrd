@@ -36,7 +36,7 @@ fun makeETCSContext(
     return EnvelopeSimContext.ETCSContext(
         etcsRanges,
         buildETCSDangerPoints(infra.rawInfra, chunkPath, routePath),
-        buildETCSBlockDetectors(infra, blockPath, chunkPath)
+        buildETCSBlockDetectors(infra, blockPath, chunkPath),
     )
 }
 
@@ -49,7 +49,7 @@ fun makeETCSContext(
 fun buildETCSDangerPoints(
     infra: RawInfra,
     chunkPath: ChunkPath,
-    routePath: StaticIdxList<Route>
+    routePath: StaticIdxList<Route>,
 ): List<Offset<TravelledPath>> {
     val zonePaths = routePath.flatMap { infra.getRoutePath(it) }
     var currentZonePathStartOffset = -getRoutePathStartOffset(infra, chunkPath, routePath).distance
@@ -73,7 +73,7 @@ fun buildETCSDangerPoints(
 fun buildETCSBlockDetectors(
     infra: FullInfra,
     blockPath: StaticIdxList<Block>,
-    chunkPath: ChunkPath
+    chunkPath: ChunkPath,
 ): List<Offset<TravelledPath>> {
     val etcsBlockDetectors = mutableListOf<Offset<BlockPath>>()
     var currentOffset = Offset.zero<BlockPath>()
@@ -136,7 +136,7 @@ private fun getEndOfLastTrackPathOffset(
     infra: RawInfra,
     lastTrack: TrackSectionId,
     lastChunk: DirStaticIdx<TrackChunk>,
-    lastChunkEndOffset: Offset<TravelledPath>
+    lastChunkEndOffset: Offset<TravelledPath>,
 ): Offset<TravelledPath> {
     val lastTrackLength = infra.getTrackSectionLength(lastTrack)
     val lastChunkLength = infra.getTrackChunkLength(lastChunk.value)

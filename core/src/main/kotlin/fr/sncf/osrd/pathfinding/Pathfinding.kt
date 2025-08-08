@@ -28,7 +28,7 @@ import kotlin.math.max
  */
 @SuppressFBWarnings(
     value = ["FE_FLOATING_POINT_EQUALITY"],
-    justification = "No arithmetic is done on values where we test for equality, only copies"
+    justification = "No arithmetic is done on values where we test for equality, only copies",
 )
 class Pathfinding<NodeT : Any, EdgeT : Any, OffsetType>(
     private val graph: Graph<NodeT, EdgeT, OffsetType>
@@ -60,7 +60,7 @@ class Pathfinding<NodeT : Any, EdgeT : Any, OffsetType>(
     /** Contains all the results of a pathfinding */
     data class Result<EdgeT, OffsetType>(
         val ranges: List<EdgeRange<EdgeT, OffsetType>>, // Full path as edge ranges
-        val waypoints: List<EdgeLocation<EdgeT, OffsetType>>
+        val waypoints: List<EdgeLocation<EdgeT, OffsetType>>,
     )
 
     /** A location on a range, made of edge + offset. Used for the input of the pathfinding */
@@ -73,7 +73,7 @@ class Pathfinding<NodeT : Any, EdgeT : Any, OffsetType>(
     data class EdgeRange<EdgeT, OffsetType>(
         val edge: EdgeT,
         val start: Offset<OffsetType>,
-        val end: Offset<OffsetType>
+        val end: Offset<OffsetType>,
     )
 
     /** A simple range with no edge attached */
@@ -206,7 +206,7 @@ class Pathfinding<NodeT : Any, EdgeT : Any, OffsetType>(
     @WithSpan(value = "Running core pathfinding algorithm", kind = SpanKind.SERVER)
     fun runPathfinding(
         starts: Collection<EdgeLocation<EdgeT, OffsetType>>,
-        targetsOnEdges: List<TargetsOnEdge<EdgeT, OffsetType>>
+        targetsOnEdges: List<TargetsOnEdge<EdgeT, OffsetType>>,
     ): Result<EdgeT, OffsetType>? {
         checkParameters()
         for (location in starts) {
@@ -277,7 +277,7 @@ class Pathfinding<NodeT : Any, EdgeT : Any, OffsetType>(
                             step.prev,
                             step.totalDistance,
                             newNReachedTargets,
-                            stepTargets
+                            stepTargets,
                         )
                     }
                 }
@@ -290,7 +290,7 @@ class Pathfinding<NodeT : Any, EdgeT : Any, OffsetType>(
                         EdgeRange(edge, Offset(0.meters), edgeToLength!!.apply(edge)),
                         step,
                         step.totalDistance,
-                        step.nReachedTargets
+                        step.nReachedTargets,
                     )
                 }
             } else {
@@ -373,7 +373,7 @@ class Pathfinding<NodeT : Any, EdgeT : Any, OffsetType>(
         prev: Step<EdgeT, OffsetType>?,
         prevDistance: Double,
         nPassedTargets: Int,
-        targets: List<EdgeLocation<EdgeT, OffsetType>> = listOf()
+        targets: List<EdgeLocation<EdgeT, OffsetType>> = listOf(),
     ) {
         val filteredRange = filterRange(range) ?: return
         val totalDistance = prevDistance + rangeCost.invoke(filteredRange)
@@ -382,7 +382,7 @@ class Pathfinding<NodeT : Any, EdgeT : Any, OffsetType>(
             distanceLeftEstimation =
                 estimateRemainingDistance!![nPassedTargets].apply(
                     filteredRange.edge,
-                    filteredRange.end
+                    filteredRange.end,
                 )
         val newStep =
             Step(

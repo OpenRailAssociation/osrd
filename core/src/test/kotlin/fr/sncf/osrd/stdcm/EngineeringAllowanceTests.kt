@@ -45,7 +45,7 @@ class EngineeringAllowanceTests {
                 2.0,
                 null,
                 null,
-                null
+                null,
             )!!
         val secondBlockEnvelope =
             simulateBlock(
@@ -58,7 +58,7 @@ class EngineeringAllowanceTests {
                 2.0,
                 null,
                 null,
-                null
+                null,
             )!!
         val timeThirdBlockFree = firstBlockEnvelope.totalTime + secondBlockEnvelope.totalTime
         val occupancyGraph =
@@ -68,10 +68,10 @@ class EngineeringAllowanceTests {
                     firstBlockEnvelope.totalTime + 10,
                     Double.POSITIVE_INFINITY,
                     0.meters,
-                    1000.meters
+                    1000.meters,
                 ),
                 thirdBlock,
-                OccupancySegment(0.0, timeThirdBlockFree + 30, 0.meters, 100.meters)
+                OccupancySegment(0.0, timeThirdBlockFree + 30, 0.meters, 100.meters),
             )
         val timeStep = 2.0
         val res =
@@ -127,7 +127,7 @@ class EngineeringAllowanceTests {
                 2.0,
                 null,
                 null,
-                null
+                null,
             )!!
         val secondBlockEnvelope =
             simulateBlock(
@@ -140,7 +140,7 @@ class EngineeringAllowanceTests {
                 2.0,
                 null,
                 null,
-                null
+                null,
             )!!
         val timeLastBlockFree =
             firstBlockEnvelope.totalTime + 120 + secondBlockEnvelope.totalTime * 3
@@ -151,10 +151,10 @@ class EngineeringAllowanceTests {
                     firstBlockEnvelope.totalTime + timeStep,
                     Double.POSITIVE_INFINITY,
                     0.meters,
-                    1000.meters
+                    1000.meters,
                 ),
                 lastBlock,
-                OccupancySegment(0.0, timeLastBlockFree, 0.meters, 1000.meters)
+                OccupancySegment(0.0, timeLastBlockFree, 0.meters, 1000.meters),
             )
         val res =
             STDCMPathfindingBuilder()
@@ -212,7 +212,7 @@ class EngineeringAllowanceTests {
                 2.0,
                 null,
                 null,
-                null
+                null,
             )!!
         val secondBlockEnvelope =
             simulateBlock(
@@ -225,7 +225,7 @@ class EngineeringAllowanceTests {
                 2.0,
                 null,
                 null,
-                null
+                null,
             )!!
         val timeLastBlockFree =
             firstBlockEnvelope.totalTime + 120 + secondBlockEnvelope.totalTime * 3
@@ -238,7 +238,7 @@ class EngineeringAllowanceTests {
                     firstBlockEnvelope.totalTime + timeStep,
                     Double.POSITIVE_INFINITY,
                     0.meters,
-                    1000.meters
+                    1000.meters,
                 ),
                 lastBlock,
                 OccupancySegment(0.0, timeLastBlockFree, 0.meters, 1000.meters),
@@ -247,8 +247,8 @@ class EngineeringAllowanceTests {
                     timeThirdBlockOccupied,
                     Double.POSITIVE_INFINITY,
                     0.meters,
-                    1000.meters
-                )
+                    1000.meters,
+                ),
             )
         val res =
             STDCMPathfindingBuilder()
@@ -295,7 +295,7 @@ class EngineeringAllowanceTests {
         val occupancyGraph =
             ImmutableMultimap.of(
                 thirdBlock,
-                OccupancySegment(0.0, timeThirdBlockFree, 0.meters, 1.meters)
+                OccupancySegment(0.0, timeThirdBlockFree, 0.meters, 1.meters),
             )
         val timeStep = 2.0
         val res =
@@ -346,7 +346,7 @@ class EngineeringAllowanceTests {
                 thirdBlock,
                 OccupancySegment(0.0, 1800.0, 0.meters, 100.meters),
                 forthBlock,
-                OccupancySegment(0.0, 4000.0, 0.meters, 100.meters)
+                OccupancySegment(0.0, 4000.0, 0.meters, 100.meters),
             )
         val timeStep = 2.0
         val res =
@@ -396,7 +396,7 @@ class EngineeringAllowanceTests {
                 thirdBlock,
                 OccupancySegment(0.0, 1_200.0, 0.meters, 100.meters),
                 forthBlock,
-                OccupancySegment(0.0, 1_200.0, 0.meters, 100.meters)
+                OccupancySegment(0.0, 1_200.0, 0.meters, 100.meters),
             )
         val res =
             STDCMPathfindingBuilder()
@@ -434,14 +434,14 @@ class EngineeringAllowanceTests {
             listOf(
                 infra.addBlock("a", "b", 1000.meters),
                 infra.addBlock("b", "c", 1.meters),
-                infra.addBlock("c", "d", 1000.meters)
+                infra.addBlock("c", "d", 1000.meters),
             )
         val occupancyGraph =
             ImmutableMultimap.of(
                 blocks[0],
                 OccupancySegment(300.0, Double.POSITIVE_INFINITY, 0.meters, 1000.meters),
                 blocks[2],
-                OccupancySegment(0.0, 3600.0, 0.meters, 1000.meters)
+                OccupancySegment(0.0, 3600.0, 0.meters, 1000.meters),
             )
         val res =
             STDCMPathfindingBuilder()
@@ -530,7 +530,7 @@ class EngineeringAllowanceTests {
                 blocks[0],
                 OccupancySegment(300.0, 3600.0, 0.meters, 1.meters),
                 blocks[2],
-                OccupancySegment(0.0, 3600.0, 0.meters, 1.meters)
+                OccupancySegment(0.0, 3600.0, 0.meters, 1.meters),
             )
         val timeStep = 2.0
         val res =
@@ -580,7 +580,7 @@ class EngineeringAllowanceTests {
                 2.0,
                 null,
                 null,
-                null
+                null,
             )!!
         val secondBlockEnvelope =
             simulateBlock(
@@ -593,7 +593,7 @@ class EngineeringAllowanceTests {
                 2.0,
                 null,
                 null,
-                null
+                null,
             )!!
         val timeThirdBlockFree = firstBlockEnvelope.totalTime + secondBlockEnvelope.totalTime
         val occupancyGraph =
@@ -603,10 +603,10 @@ class EngineeringAllowanceTests {
                     firstBlockEnvelope.totalTime + 10,
                     Double.POSITIVE_INFINITY,
                     0.meters,
-                    1000.meters
+                    1000.meters,
                 ),
                 thirdBlock,
-                OccupancySegment(0.0, timeThirdBlockFree + 30, 0.meters, 100.meters)
+                OccupancySegment(0.0, timeThirdBlockFree + 30, 0.meters, 100.meters),
             )
         val timeStep = 2.0
         val res =

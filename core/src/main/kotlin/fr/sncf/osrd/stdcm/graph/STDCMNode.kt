@@ -128,7 +128,7 @@ data class STDCMNode(
         val maxTimeDiff =
             min(
                 plannedTimingData.getTimeDiff(maxTime),
-                plannedTimingData.arrivalTimeToleranceAfter.seconds
+                plannedTimingData.arrivalTimeToleranceAfter.seconds,
             )
         val relativeMaxTimeDiff = plannedTimingData.getBeforeOrAfterRelativeTimeDiff(maxTimeDiff)
         // If time diff < 0.0 and maxTimeDiff >= 0.0, then we can add delay to make the node
@@ -177,7 +177,7 @@ data class STDCMNode(
         }
         return min(
             maxAddedDelay,
-            updatedTimeData.maxDepartureDelayingWithoutConflict - possibleTimeRemovedFromStops
+            updatedTimeData.maxDepartureDelayingWithoutConflict - possibleTimeRemovedFromStops,
         )
     }
 

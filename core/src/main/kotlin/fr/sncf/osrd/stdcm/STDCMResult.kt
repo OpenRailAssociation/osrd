@@ -21,5 +21,5 @@ data class STDCMResult(
     val physicsPath: PhysicsPath,
     val routePath: List<RouteId>,
     val departureTime: Double,
-    val stopResults: List<TrainStop>
+    val stopResults: List<TrainStop>,
 )

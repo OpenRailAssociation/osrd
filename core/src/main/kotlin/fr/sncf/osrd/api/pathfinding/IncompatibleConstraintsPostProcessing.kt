@@ -40,12 +40,12 @@ fun buildIncompatibleConstraintsResponse(
                 infra,
                 pathRanges,
                 pathProps.getElectrification(),
-                elecConstraints.firstOrNull()
+                elecConstraints.firstOrNull(),
             )
             .map {
                 RangeValue(
                     Pathfinding.Range(Offset(it.lower), Offset(it.upper)),
-                    it.value.joinToString(",")
+                    it.value.joinToString(","),
                 )
             }
 
@@ -56,7 +56,7 @@ fun buildIncompatibleConstraintsResponse(
                 infra,
                 pathRanges,
                 pathProps.getLoadingGauge(),
-                gaugeConstraints.firstOrNull()
+                gaugeConstraints.firstOrNull(),
             )
             .map { RangeValue<String>(Pathfinding.Range(Offset(it.lower), Offset(it.upper)), null) }
 
@@ -69,7 +69,7 @@ fun buildIncompatibleConstraintsResponse(
                 infra,
                 pathRanges,
                 pathSignalingSystem,
-                signalingSystemConstraints.firstOrNull()
+                signalingSystemConstraints.firstOrNull(),
             )
             .map { RangeValue(Pathfinding.Range(Offset(it.lower), Offset(it.upper)), it.value) }
 
@@ -86,8 +86,8 @@ fun buildIncompatibleConstraintsResponse(
         IncompatibleConstraints(
             elecBlockedRangeValues,
             gaugeBlockedRanges,
-            signalingSystemBlockedRangeValues
-        )
+            signalingSystemBlockedRangeValues,
+        ),
     )
 }
 
@@ -95,7 +95,7 @@ private fun <T> getConstraintsDistanceRange(
     infra: FullInfra,
     pathRanges: List<Pathfinding.EdgeRange<BlockId, Block>>,
     pathConstrainedValues: DistanceRangeMap<T>,
-    constraint: PathfindingConstraint<Block>?
+    constraint: PathfindingConstraint<Block>?,
 ): DistanceRangeMap<T> {
     if (constraint == null) {
         return distanceRangeMapOf()
@@ -111,7 +111,7 @@ private fun <T> getConstraintsDistanceRange(
 private fun getBlockedRanges(
     infra: FullInfra,
     pathRanges: List<Pathfinding.EdgeRange<BlockId, Block>>,
-    currentConstraint: PathfindingConstraint<Block>
+    currentConstraint: PathfindingConstraint<Block>,
 ): DistanceRangeMap<Boolean> {
     val blockList = pathRanges.map { it.edge }
     val blockedRanges = distanceRangeMapOf<Boolean>()
@@ -121,7 +121,7 @@ private fun getBlockedRanges(
             blockedRanges.put(
                 startBlockPathOffset + it.start.distance,
                 startBlockPathOffset + it.end.distance,
-                true
+                true,
             )
         }
         startBlockPathOffset += infra.blockInfra.getBlockLength(block).distance
@@ -129,14 +129,14 @@ private fun getBlockedRanges(
     blockedRanges.truncate(
         pathRanges.first().start.distance,
         startBlockPathOffset - infra.blockInfra.getBlockLength(blockList.last()).distance +
-            pathRanges.last().end.distance
+            pathRanges.last().end.distance,
     )
     return blockedRanges
 }
 
 private fun getPathSignalingSystems(
     infra: FullInfra,
-    blockList: List<BlockId>
+    blockList: List<BlockId>,
 ): DistanceRangeMap<String> {
     val pathSignalingSystem = distanceRangeMapOf<String>()
     var startBlockPathOffset = Distance.ZERO
@@ -148,7 +148,7 @@ private fun getPathSignalingSystems(
         pathSignalingSystem.put(
             startBlockPathOffset,
             startBlockPathOffset + blockLength,
-            blockSignalingSystemName
+            blockSignalingSystemName,
         )
         startBlockPathOffset += blockLength
     }

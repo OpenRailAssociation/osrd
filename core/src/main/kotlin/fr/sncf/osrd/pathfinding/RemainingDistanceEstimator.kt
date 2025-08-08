@@ -19,7 +19,7 @@ class RemainingDistanceEstimator(
     private val blockInfra: BlockInfra,
     private val rawInfra: RawSignalingInfra,
     edgeLocations: Collection<PathfindingEdgeLocationId<Block>>,
-    private val remainingDistance: Distance
+    private val remainingDistance: Distance,
 ) {
     private val targets: MutableCollection<Point> = ArrayList()
 
@@ -55,7 +55,7 @@ fun minDistanceBetweenSteps(
     blockInfra: BlockInfra,
     rawInfra: RawSignalingInfra,
     step1: Collection<PathfindingEdgeLocationId<Block>>,
-    step2: Collection<PathfindingEdgeLocationId<Block>>
+    step2: Collection<PathfindingEdgeLocationId<Block>>,
 ): Distance {
     val step1Points = step1.map { blockOffsetToPoint(blockInfra, rawInfra, it.edge, it.offset) }
     val step2Points = step2.map { blockOffsetToPoint(blockInfra, rawInfra, it.edge, it.offset) }
@@ -74,7 +74,7 @@ private fun blockOffsetToPoint(
     blockInfra: BlockInfra,
     rawInfra: RawSignalingInfra,
     blockIdx: BlockId,
-    pointOffset: Offset<Block>
+    pointOffset: Offset<Block>,
 ): Point {
     // Ideally, we would just call `makePathProps(blockId).getGeo()` to get geo data for the block.
     // But that introduces a lot of overhead (building the path and projecting the results),

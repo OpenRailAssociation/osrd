@@ -25,7 +25,7 @@ class ConstraintCombiner<EdgeT, OffsetType>(
 /** Initialize the constraints used to determine whether a block can be explored of not */
 fun initConstraints(
     fullInfra: FullInfra,
-    rollingStockList: Collection<RollingStock>
+    rollingStockList: Collection<RollingStock>,
 ): List<PathfindingConstraint<Block>> {
     if (rollingStockList.isEmpty()) return listOf()
     assert(rollingStockList.size == 1)
@@ -35,13 +35,13 @@ fun initConstraints(
         LoadingGaugeConstraints(
             fullInfra.blockInfra,
             fullInfra.rawInfra,
-            rollingStock.loadingGaugeType
+            rollingStock.loadingGaugeType,
         )
     val signalisationSystemConstraints =
         makeSignalingSystemConstraints(
             fullInfra.blockInfra,
             fullInfra.signalingSimulator,
-            rollingStockList
+            rollingStockList,
         )
 
     val res = mutableListOf(loadingGaugeConstraints, signalisationSystemConstraints)
@@ -50,7 +50,7 @@ fun initConstraints(
             ElectrificationConstraints(
                 fullInfra.blockInfra,
                 fullInfra.rawInfra,
-                rollingStock.modeNames
+                rollingStock.modeNames,
             )
         )
     return res

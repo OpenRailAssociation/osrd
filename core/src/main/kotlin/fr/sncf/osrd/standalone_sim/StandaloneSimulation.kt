@@ -71,7 +71,7 @@ fun runStandaloneSimulation(
     initialSpeed: Double,
     margins: RangeValues<MarginValue>,
     pathItemPositions: List<Offset<TravelledPath>>,
-    driverBehaviour: DriverBehaviour = DriverBehaviour()
+    driverBehaviour: DriverBehaviour = DriverBehaviour(),
 ): SimulationSuccess {
     if (chunkPath.length == 0.meters) throw OSRDError(ZeroLengthPath)
     val signalingRanges = buildSignalingRanges(infra, blockPath, chunkPath)
@@ -86,21 +86,13 @@ fun runStandaloneSimulation(
             speedLimitTag,
             null,
             safetySpeedRanges,
-            useSpeedLimits
+            useSpeedLimits,
         )
     mrsp = driverBehaviour.applyToMRSP(mrsp, signalingRanges)
     // We don't use speed safety ranges in the MRSP displayed in the front
     // (just like we don't add the train length)
     val speedLimits =
-        computeMRSP(
-            pathProps,
-            rollingStock,
-            false,
-            speedLimitTag,
-            null,
-            null,
-            useSpeedLimits,
-        )
+        computeMRSP(pathProps, rollingStock, false, speedLimitTag, null, null, useSpeedLimits)
 
     // Build paths and contexts
     val envelopeSimPath = EnvelopeTrainPath.from(infra.rawInfra, pathProps, electricalProfileMap)
@@ -110,7 +102,7 @@ fun runStandaloneSimulation(
             rollingStock.basePowerClass,
             powerRestrictionsLegacyMap,
             rollingStock.powerRestrictions,
-            !useElectricalProfiles
+            !useElectricalProfiles,
         )
     val curvesAndConditions = rollingStock.mapTractiveEffortCurves(electrificationMap, comfort)
     val electrificationRanges =
@@ -121,7 +113,7 @@ fun runStandaloneSimulation(
             envelopeSimPath,
             timeStep,
             curvesAndConditions.curves,
-            makeETCSContext(rollingStock, infra, chunkPath, routes, blockPath, signalingRanges)
+            makeETCSContext(rollingStock, infra, chunkPath, routes, blockPath, signalingRanges),
         )
 
     // Max speed envelope
@@ -134,7 +126,7 @@ fun runStandaloneSimulation(
             rollingStock.addNeutralSystemTimes(
                 electrificationMap,
                 comfort,
-                context.tractiveEffortCurveMap
+                context.tractiveEffortCurveMap,
             )
         )
 
@@ -202,7 +194,7 @@ fun runStandaloneSimulation(
 fun buildSignalingRanges(
     infra: FullInfra,
     blockPath: StaticIdxList<Block>,
-    chunkPath: ChunkPath
+    chunkPath: ChunkPath,
 ): DistanceRangeMap<String> {
     val blockInfra = infra.blockInfra
     var blockStartOffset =
@@ -234,7 +226,7 @@ fun makeElectricalProfiles(
             is ElectrifiedUsage ->
                 ElectricalProfileValue.Profile(
                     electrification.profile,
-                    electrification.profileHandled
+                    electrification.profileHandled,
                 )
             else -> ElectricalProfileValue.NoProfile()
         }
@@ -245,7 +237,7 @@ fun makeElectricalProfiles(
     for (electrification in electrificationRanges) {
         profileMap.putCoalescing(
             Range.closed(electrification.start, electrification.stop),
-            profileFromElectrification(electrification.electrificationUsage)
+            profileFromElectrification(electrification.electrificationUsage),
         )
     }
 
@@ -298,7 +290,7 @@ fun buildFinalEnvelope(
     context: EnvelopeSimContext,
     margins: RangeValues<MarginValue>,
     allowanceType: RJSAllowanceDistribution,
-    scheduledPoints: List<SimulationScheduleItem>
+    scheduledPoints: List<SimulationScheduleItem>,
 ): Envelope {
     fun getEnvelopeTimeAt(offset: Offset<TravelledPath>): Double {
         return provisionalEnvelope.interpolateDepartureFromClamp(offset.distance.meters)
@@ -328,7 +320,7 @@ fun buildFinalEnvelope(
                     extraTime,
                     margins,
                     prevFixedPointOffset,
-                    point.pathOffset
+                    point.pathOffset,
                 )
             )
             prevFixedPointDepartureTime = arrivalTime + extraTime + (point.stopFor?.seconds ?: 0.0)
@@ -357,7 +349,7 @@ fun buildFinalEnvelope(
                 AllowanceRange(
                     prevFixedPointOffset.distance.meters,
                     point.pathOffset.distance.meters,
-                    FixedTime(maxEffortExtraTime)
+                    FixedTime(maxEffortExtraTime),
                 )
             )
             prevFixedPointDepartureTime =
@@ -377,7 +369,7 @@ fun buildFinalEnvelope(
                 0.0,
                 margins,
                 prevFixedPointOffset,
-                pathEnd
+                pathEnd,
             )
         )
     }
@@ -403,7 +395,7 @@ fun distributeAllowance(
     extraTime: Double,
     margins: RangeValues<MarginValue>,
     startOffset: Offset<TravelledPath>,
-    endOffset: Offset<TravelledPath>
+    endOffset: Offset<TravelledPath>,
 ): List<AllowanceRange> {
     assert(startOffset <= endOffset)
     if (startOffset == endOffset) {
@@ -414,7 +406,7 @@ fun distributeAllowance(
     fun rangeTime(
         from: Offset<TravelledPath>,
         to: Offset<TravelledPath>,
-        envelope: Envelope = provisionalEnvelope
+        envelope: Envelope = provisionalEnvelope,
     ): Double {
         assert(from < to)
         val start = envelope.interpolateDepartureFromClamp(from.distance.meters)
@@ -436,7 +428,7 @@ fun distributeAllowance(
             AllowanceRange(
                 rangeStart.distance.meters,
                 rangeEnd.distance.meters,
-                FixedTime(baseAllowanceValue + extraTime * ratio)
+                FixedTime(baseAllowanceValue + extraTime * ratio),
             )
         )
         rangeStart = rangeEnd
@@ -452,7 +444,7 @@ fun buildProvisionalEnvelope(
     maxEffortEnvelope: Envelope,
     context: EnvelopeSimContext,
     rawMargins: RangeValues<MarginValue>,
-    constraintDistribution: RJSAllowanceDistribution
+    constraintDistribution: RJSAllowanceDistribution,
 ): Envelope {
     val marginRanges = mutableListOf<AllowanceRange>()
     // Add path extremities to boundaries

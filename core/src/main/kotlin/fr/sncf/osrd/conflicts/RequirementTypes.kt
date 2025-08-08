@@ -28,7 +28,7 @@ data class SpacingRequirement(
                 infra.getZoneFromName(input.zone),
                 input.beginTime.seconds,
                 input.endTime.seconds,
-                true
+                true,
             )
         }
     }
@@ -52,7 +52,7 @@ data class RoutingRequirement(
                 "${entryDetector.direction.name}:${infra.getDetectorName(entryDetector.value)}",
                 "${exitDetector.direction.name}:${infra.getDetectorName(exitDetector.value)}",
                 switches,
-                endTime.seconds
+                endTime.seconds,
             )
         }
 
@@ -63,7 +63,7 @@ data class RoutingRequirement(
                     assert(split.size == 2)
                     return DirDetectorId(
                         infra.findDetector(split[1])!!,
-                        Direction.valueOf(split[0])
+                        Direction.valueOf(split[0]),
                     )
                 }
                 return RoutingZoneRequirement(
@@ -71,7 +71,7 @@ data class RoutingRequirement(
                     parseDirDetector(input.entryDetector),
                     parseDirDetector(input.exitDetector),
                     input.switches,
-                    input.endTime.seconds
+                    input.endTime.seconds,
                 )
             }
         }
@@ -81,7 +81,7 @@ data class RoutingRequirement(
         return RJSRoutingRequirement(
             infra.getRouteName(route),
             beginTime.seconds,
-            zones.map { it.toRJS(infra) }
+            zones.map { it.toRJS(infra) },
         )
     }
 
@@ -90,7 +90,7 @@ data class RoutingRequirement(
             return RoutingRequirement(
                 infra.getRouteFromName(input.route),
                 input.beginTime.seconds,
-                input.zones.map { RoutingZoneRequirement.fromRJS(it, infra) }
+                input.zones.map { RoutingZoneRequirement.fromRJS(it, infra) },
             )
         }
     }

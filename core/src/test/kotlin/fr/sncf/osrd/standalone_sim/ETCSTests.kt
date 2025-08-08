@@ -26,12 +26,7 @@ class ETCSTests {
     fun simpleTestDangerPointsForwards() {
         val fullInfra = tinyInfra
         val infra = fullInfra.rawInfra
-        val trackIds =
-            listOf(
-                "ne.micro.foo_a",
-                "ne.micro.foo_to_bar",
-                "ne.micro.bar_a",
-            )
+        val trackIds = listOf("ne.micro.foo_a", "ne.micro.foo_to_bar", "ne.micro.bar_a")
         val routesNames =
             listOf(
                 "rt.buffer_stop_a->tde.foo_a-switch_foo",
@@ -54,12 +49,7 @@ class ETCSTests {
     fun testDangerPointsForwardsTracksPartiallyCovered() {
         val fullInfra = tinyInfra
         val infra = fullInfra.rawInfra
-        val trackIds =
-            listOf(
-                "ne.micro.foo_a",
-                "ne.micro.foo_to_bar",
-                "ne.micro.bar_a",
-            )
+        val trackIds = listOf("ne.micro.foo_a", "ne.micro.foo_to_bar", "ne.micro.bar_a")
         val routesNames =
             listOf(
                 "rt.buffer_stop_a->tde.foo_a-switch_foo",
@@ -82,12 +72,7 @@ class ETCSTests {
     fun testDangerPointsBackwards() {
         val fullInfra = tinyInfra
         val infra = fullInfra.rawInfra
-        val trackIds =
-            listOf(
-                "ne.micro.bar_a",
-                "ne.micro.foo_to_bar",
-                "ne.micro.foo_a",
-            )
+        val trackIds = listOf("ne.micro.bar_a", "ne.micro.foo_to_bar", "ne.micro.foo_a")
         val routesNames =
             listOf(
                 "rt.buffer_stop_c->tde.track-bar",
@@ -111,17 +96,9 @@ class ETCSTests {
     fun testDangerPointsBackwardsEndBeforeSwitch() {
         val fullInfra = tinyInfra
         val infra = fullInfra.rawInfra
-        val trackIds =
-            listOf(
-                "ne.micro.bar_a",
-                "ne.micro.foo_to_bar",
-                "ne.micro.foo_a",
-            )
+        val trackIds = listOf("ne.micro.bar_a", "ne.micro.foo_to_bar", "ne.micro.foo_a")
         val routesNames =
-            listOf(
-                "rt.buffer_stop_c->tde.track-bar",
-                "rt.tde.track-bar->tde.switch_foo-track",
-            )
+            listOf("rt.buffer_stop_c->tde.track-bar", "rt.tde.track-bar->tde.switch_foo-track")
         val routeIdx = routesNames.map { infra.getRouteFromName(it) }.toIdxList()
         val start = 100.meters
         val end = 5_000.meters

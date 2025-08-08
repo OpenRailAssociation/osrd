@@ -18,7 +18,7 @@ import fr.sncf.osrd.utils.units.meters
 data class PathPropertiesView(
     val base: PathProperties,
     val startOffset: Offset<TravelledPath>,
-    val endOffset: Offset<TravelledPath>
+    val endOffset: Offset<TravelledPath>,
 ) : PathProperties {
     override fun getSlopes(): DistanceRangeMap<Double> {
         return sliceRangeMap(base.getSlopes())
@@ -61,7 +61,7 @@ data class PathPropertiesView(
 
     override fun getSpeedLimitProperties(
         trainTag: String?,
-        temporarySpeedLimitManager: TemporarySpeedLimitManager?
+        temporarySpeedLimitManager: TemporarySpeedLimitManager?,
     ): DistanceRangeMap<SpeedLimitProperty> {
         return sliceRangeMap(base.getSpeedLimitProperties(trainTag, temporarySpeedLimitManager))
     }

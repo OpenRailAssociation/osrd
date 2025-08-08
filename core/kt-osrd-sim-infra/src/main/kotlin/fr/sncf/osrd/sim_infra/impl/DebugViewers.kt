@@ -14,11 +14,7 @@ import fr.sncf.osrd.utils.units.Offset
  * These classes shouldn't be generally used, it's only here to make it easier to track objects when
  * using a debugger. They can be used to create watches containing the object properties.
  */
-data class DirectedViewer<T>(
-    val rawId: UInt,
-    val direction: Direction,
-    val value: T,
-)
+data class DirectedViewer<T>(val rawId: UInt, val direction: Direction, val value: T)
 
 data class ChunkViewer(
     val trackName: String,
@@ -41,11 +37,7 @@ data class BlockViewer(
     val length: Length<Block>,
 )
 
-data class RouteViewer(
-    val name: String,
-    val blocks: List<BlockViewer>,
-    val id: RouteId,
-)
+data class RouteViewer(val name: String, val blocks: List<BlockViewer>, val id: RouteId)
 
 fun <T, U> makeDirViewer(id: DirStaticIdx<T>, value: U): DirectedViewer<U> {
     return DirectedViewer(id.data, id.direction, value)
@@ -86,11 +78,7 @@ fun makeBlock(rawInfra: RawInfra, blockInfra: BlockInfra, id: StaticIdx<Block>):
     )
 }
 
-fun makeRoute(
-    rawInfra: RawInfra,
-    blockInfra: BlockInfra,
-    id: StaticIdx<Route>,
-): RouteViewer {
+fun makeRoute(rawInfra: RawInfra, blockInfra: BlockInfra, id: StaticIdx<Route>): RouteViewer {
     val ids = MutableStaticIdxArrayList<Route>()
     ids.add(id)
     return RouteViewer(

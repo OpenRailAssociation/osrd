@@ -61,7 +61,7 @@ class ConflictDetectionEndpoint(private val infraManager: InfraProvider) : Take 
 private fun makeConflictDetectionResponse(
     infra: RawSignalingInfra,
     conflicts: Collection<Conflict>,
-    startTime: ZonedDateTime
+    startTime: ZonedDateTime,
 ): ConflictDetectionResponse {
     return ConflictDetectionResponse(
         conflicts.map {
@@ -77,7 +77,7 @@ private fun makeConflictDetectionResponse(
                         startTime.plus(Duration.ofMillis((requirement.startTime * 1000).toLong())),
                         startTime.plus(Duration.ofMillis((requirement.endTime * 1000).toLong())),
                     )
-                }
+                },
             )
         }
     )

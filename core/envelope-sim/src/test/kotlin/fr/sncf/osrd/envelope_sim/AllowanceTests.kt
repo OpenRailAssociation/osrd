@@ -30,7 +30,7 @@ class AllowanceTests {
         allowance: AbstractAllowanceWithRanges,
         context: EnvelopeSimContext,
         lowSpeed: Double,
-        highSpeed: Double
+        highSpeed: Double,
     ) {
         // We check that when the speed parameter goes up, the speed goes up at every point of the
         // envelope
@@ -40,7 +40,7 @@ class AllowanceTests {
         while (speed < highSpeed) {
             val envelope = allowance.computeIteration(maxEffortEnvelope, context, speed)
             for (part in envelope) {
-                for (i in 0 ..< part.stepCount()) {
+                for (i in 0..<part.stepCount()) {
                     val position = part.getPointSpeed(i)
                     val newSpeed = envelope.interpolateSpeed(position)
                     val prevSpeed = previousEnvelope.interpolateSpeed(position)
@@ -79,14 +79,14 @@ class AllowanceTests {
             EnvelopeSimPathBuilder.buildNonElectrified(
                 length.toDouble(),
                 doubleArrayOf(0.0, 800.0, 35000.0, length.toDouble()),
-                doubleArrayOf(0.0, 50.0, -10.0)
+                doubleArrayOf(0.0, 50.0, -10.0),
             )
         val testContext =
             EnvelopeSimContext(
                 SimpleRollingStock.STANDARD_TRAIN,
                 trainPath,
                 2.0,
-                SimpleRollingStock.LINEAR_EFFORT_CURVE_MAP
+                SimpleRollingStock.LINEAR_EFFORT_CURVE_MAP,
             )
         val stops = doubleArrayOf()
         val maxEffortEnvelope = makeSimpleMaxEffortEnvelope(testContext, 44.0, stops)
@@ -106,7 +106,7 @@ class AllowanceTests {
             EnvelopeShape.DECREASING,
             EnvelopeShape.INCREASING,
             EnvelopeShape.DECREASING,
-            EnvelopeShape.DECREASING
+            EnvelopeShape.DECREASING,
         )
         val delta = 2 * allowanceEnvelope.maxSpeed * SimpleContextBuilder.TIME_STEP
         // don't modify these values, they have been calculated with a 0.1s time step, so they can
@@ -119,7 +119,7 @@ class AllowanceTests {
             5094.0,
             6000.0,
             6931.0,
-            9339.0
+            9339.0,
         )
         Assertions.assertTrue(allowanceEnvelope.continuous)
     }
@@ -144,7 +144,7 @@ class AllowanceTests {
             EnvelopeShape.INCREASING,
             EnvelopeShape.CONSTANT,
             EnvelopeShape.DECREASING,
-            EnvelopeShape.DECREASING
+            EnvelopeShape.DECREASING,
         )
         val delta = 2 * allowanceEnvelope.maxSpeed * SimpleContextBuilder.TIME_STEP
         // don't modify these values, they have been calculated with a 0.1s time step, so they can
@@ -159,7 +159,7 @@ class AllowanceTests {
             6000.0,
             7259.0,
             8764.0,
-            9830.0
+            9830.0,
         )
         Assertions.assertTrue(allowanceEnvelope.continuous)
     }
@@ -180,7 +180,7 @@ class AllowanceTests {
     private fun testAllowanceTime(
         base: Envelope,
         context: EnvelopeSimContext,
-        allowance: AbstractAllowanceWithRanges
+        allowance: AbstractAllowanceWithRanges,
     ) {
         val allowanceEnvelope = allowance.apply(base, context)
         val marginTime = allowanceEnvelope.totalTime
@@ -191,7 +191,7 @@ class AllowanceTests {
     private fun testTransitionPoints(
         base: Envelope,
         context: EnvelopeSimContext,
-        allowance: AbstractAllowanceWithRanges
+        allowance: AbstractAllowanceWithRanges,
     ) {
         val tolerance = 0.02 // percentage
         val beginPos = allowance.beginPos
@@ -220,7 +220,7 @@ class AllowanceTests {
         Assertions.assertEquals(
             speedBeginPointBase,
             speedBeginPoint,
-            speedBeginPointBase * tolerance
+            speedBeginPointBase * tolerance,
         )
         Assertions.assertEquals(speedEndPointBase, speedEndPoint, speedEndPointBase * tolerance)
     }
@@ -273,7 +273,7 @@ class AllowanceTests {
     private fun testEngineeringAllowance(
         base: Envelope,
         context: EnvelopeSimContext,
-        allowance: AbstractAllowanceWithRanges
+        allowance: AbstractAllowanceWithRanges,
     ) {
         testAllowanceTime(base, context, allowance)
         testTransitionPoints(base, context, allowance)
@@ -362,7 +362,7 @@ class AllowanceTests {
             }
         Assertions.assertEquals(
             marecoThrown.osrdErrorType,
-            ErrorType.AllowanceConvergenceTooMuchTime
+            ErrorType.AllowanceConvergenceTooMuchTime,
         )
 
         // test linear distribution
@@ -373,7 +373,7 @@ class AllowanceTests {
             }
         Assertions.assertEquals(
             linearThrown.osrdErrorType,
-            ErrorType.AllowanceConvergenceTooMuchTime
+            ErrorType.AllowanceConvergenceTooMuchTime,
         )
     }
 
@@ -399,7 +399,7 @@ class AllowanceTests {
             }
         Assertions.assertEquals(
             marecoThrown.osrdErrorType,
-            ErrorType.AllowanceConvergenceTooMuchTime
+            ErrorType.AllowanceConvergenceTooMuchTime,
         )
 
         // test linear distribution
@@ -410,7 +410,7 @@ class AllowanceTests {
             }
         Assertions.assertEquals(
             linearThrown.osrdErrorType,
-            ErrorType.AllowanceConvergenceTooMuchTime
+            ErrorType.AllowanceConvergenceTooMuchTime,
         )
     }
 
@@ -418,7 +418,7 @@ class AllowanceTests {
         maxEffortEnvelope: Envelope,
         context: EnvelopeSimContext,
         standardAllowance: AbstractAllowanceWithRanges,
-        engineeringAllowance: AbstractAllowanceWithRanges
+        engineeringAllowance: AbstractAllowanceWithRanges,
     ) {
         val standardEnvelope = standardAllowance.apply(maxEffortEnvelope, context)
         val engineeringEnvelope = engineeringAllowance.apply(standardEnvelope, context)
@@ -455,7 +455,7 @@ class AllowanceTests {
             maxEffortEnvelope,
             testContext,
             standardMarecoAllowance,
-            engineeringMarecoAllowance
+            engineeringMarecoAllowance,
         )
 
         // test linear distribution
@@ -467,7 +467,7 @@ class AllowanceTests {
             maxEffortEnvelope,
             testContext,
             standardLinearAllowance,
-            engineeringLinearAllowance
+            engineeringLinearAllowance,
         )
     }
 
@@ -475,7 +475,7 @@ class AllowanceTests {
         maxEffortEnvelope: Envelope,
         testContext: EnvelopeSimContext,
         allowanceA: AbstractAllowanceWithRanges,
-        allowanceB: AbstractAllowanceWithRanges
+        allowanceB: AbstractAllowanceWithRanges,
     ) {
         val engineeringEnvelopeA = allowanceA.apply(maxEffortEnvelope, testContext)
         val engineeringEnvelopeB = allowanceB.apply(engineeringEnvelopeA, testContext)
@@ -507,7 +507,7 @@ class AllowanceTests {
             maxEffortEnvelope,
             testContext,
             marecoAllowanceA,
-            marecoAllowanceB
+            marecoAllowanceB,
         )
 
         // test linear distribution
@@ -518,7 +518,7 @@ class AllowanceTests {
             maxEffortEnvelope,
             testContext,
             linearAllowanceA,
-            linearAllowanceB
+            linearAllowanceB,
         )
     }
 
@@ -570,7 +570,7 @@ class AllowanceTests {
                         50000.0,
                         70000.0,
                         75000.0,
-                        100000.0
+                        100000.0,
                     )
                 gradeValues = doubleArrayOf(0.0, -20.0, 10.0, -15.0, 5.0, -2.0, 0.0, -10.0, 10.0)
             }
@@ -583,14 +583,14 @@ class AllowanceTests {
             EnvelopeSimPathBuilder.buildNonElectrified(
                 length.toDouble(),
                 gradePositions,
-                gradeValues
+                gradeValues,
             )
         val testContext =
             EnvelopeSimContext(
                 testRollingStock,
                 testPath,
                 SimpleContextBuilder.TIME_STEP,
-                SimpleRollingStock.LINEAR_EFFORT_CURVE_MAP
+                SimpleRollingStock.LINEAR_EFFORT_CURVE_MAP,
             )
         val stops = doubleArrayOf(50000.0, testContext.path.length)
         val maxEffortEnvelope = makeComplexMaxEffortEnvelope(testContext, stops)
@@ -635,14 +635,14 @@ class AllowanceTests {
             EnvelopeSimPathBuilder.buildNonElectrified(
                 length,
                 gradePositions.toArray(),
-                gradeValues.toArray()
+                gradeValues.toArray(),
             )
         val testContext =
             EnvelopeSimContext(
                 testRollingStock,
                 testPath,
                 SimpleContextBuilder.TIME_STEP,
-                SimpleRollingStock.LINEAR_EFFORT_CURVE_MAP
+                SimpleRollingStock.LINEAR_EFFORT_CURVE_MAP,
             )
         val stops = doubleArrayOf(50000.0, length)
         val maxEffortEnvelope = makeComplexMaxEffortEnvelope(testContext, stops)
@@ -680,7 +680,7 @@ class AllowanceTests {
                     EnvelopeShape.DECREASING,
                     EnvelopeShape.INCREASING,
                     EnvelopeShape.DECREASING,
-                    EnvelopeShape.INCREASING
+                    EnvelopeShape.INCREASING,
                 ),
                 arrayOf(EnvelopeShape.DECREASING),
                 arrayOf(EnvelopeShape.INCREASING),
@@ -693,7 +693,7 @@ class AllowanceTests {
                 arrayOf(
                     EnvelopeShape.DECREASING,
                     EnvelopeShape.INCREASING,
-                    EnvelopeShape.DECREASING
+                    EnvelopeShape.DECREASING,
                 ),
                 arrayOf(EnvelopeShape.CONSTANT),
                 arrayOf(EnvelopeShape.DECREASING, EnvelopeShape.INCREASING),
@@ -701,10 +701,10 @@ class AllowanceTests {
                 arrayOf(
                     EnvelopeShape.DECREASING,
                     EnvelopeShape.INCREASING,
-                    EnvelopeShape.DECREASING
+                    EnvelopeShape.DECREASING,
                 ),
-                arrayOf(EnvelopeShape.DECREASING)
-            )
+                arrayOf(EnvelopeShape.DECREASING),
+            ),
         )
     }
 
@@ -797,14 +797,14 @@ class AllowanceTests {
             EnvelopeSimPathBuilder.buildNonElectrified(
                 length.toDouble(),
                 gradePositions,
-                gradeValues
+                gradeValues,
             )
         val testContext =
             EnvelopeSimContext(
                 testRollingStock,
                 testPath,
                 SimpleContextBuilder.TIME_STEP,
-                SimpleRollingStock.LINEAR_EFFORT_CURVE_MAP
+                SimpleRollingStock.LINEAR_EFFORT_CURVE_MAP,
             )
         val stops = doubleArrayOf(length.toDouble())
         val begin = 3000
@@ -860,7 +860,7 @@ class AllowanceTests {
             }
         Assertions.assertEquals(
             marecoException.osrdErrorType,
-            ErrorType.AllowanceConvergenceTooMuchTime
+            ErrorType.AllowanceConvergenceTooMuchTime,
         )
 
         // test linear distribution
@@ -872,7 +872,7 @@ class AllowanceTests {
             }
         Assertions.assertEquals(
             linearException.osrdErrorType,
-            ErrorType.AllowanceConvergenceTooMuchTime
+            ErrorType.AllowanceConvergenceTooMuchTime,
         )
         assert(linearException.cause == ErrorCause.USER)
     }
@@ -890,7 +890,7 @@ class AllowanceTests {
                 800.0,
                 810.0,
                 10.0,
-                listOf(AllowanceRange(800.0, 810.0, AllowanceValue.Percentage(10.0)))
+                listOf(AllowanceRange(800.0, 810.0, AllowanceValue.Percentage(10.0))),
             )
         val thrown =
             Assertions.assertThrows(OSRDError::class.java) {
@@ -912,7 +912,7 @@ class AllowanceTests {
                 655.0,
                 2258.0,
                 9.1,
-                listOf(AllowanceRange(655.0, 2258.0, AllowanceValue.Percentage(8.1)))
+                listOf(AllowanceRange(655.0, 2258.0, AllowanceValue.Percentage(8.1))),
             )
 
         val secondAllowance =
@@ -920,7 +920,7 @@ class AllowanceTests {
                 485.0,
                 2286.0,
                 3.44,
-                listOf(AllowanceRange(485.0, 2286.0, AllowanceValue.Percentage(13.0)))
+                listOf(AllowanceRange(485.0, 2286.0, AllowanceValue.Percentage(13.0))),
             )
         secondAllowance.apply(firstAllowance.apply(maxEffortEnvelope, testContext), testContext)
     }
@@ -940,8 +940,8 @@ class AllowanceTests {
                 1.0,
                 listOf(
                     AllowanceRange(0.0, 8000.0, AllowanceValue.TimePerDistance(1000.0)),
-                    AllowanceRange(8000.0, 10000.0, AllowanceValue.Percentage(10.0))
-                )
+                    AllowanceRange(8000.0, 10000.0, AllowanceValue.Percentage(10.0)),
+                ),
             )
         allowance.apply(maxEffortEnvelope, testContext)
     }
@@ -952,7 +952,7 @@ class AllowanceTests {
             beginPos: Double,
             endPos: Double,
             capacitySpeedLimit: Double,
-            value: AllowanceValue
+            value: AllowanceValue,
         ): MarecoAllowance {
             val defaultRange = listOf(AllowanceRange(beginPos, endPos, value))
             return MarecoAllowance(beginPos, endPos, capacitySpeedLimit, defaultRange)
@@ -962,7 +962,7 @@ class AllowanceTests {
             beginPos: Double,
             endPos: Double,
             capacitySpeedLimit: Double,
-            value: AllowanceValue
+            value: AllowanceValue,
         ): LinearAllowance {
             val defaultRange = listOf(AllowanceRange(beginPos, endPos, value))
             return LinearAllowance(beginPos, endPos, capacitySpeedLimit, defaultRange)
@@ -973,7 +973,7 @@ class AllowanceTests {
             context: EnvelopeSimContext,
             allowance: Allowance,
             speed: Double,
-            stop: Boolean
+            stop: Boolean,
         ): Envelope {
             val path = context.path
             val stops = if (stop) doubleArrayOf(6000.0, path.length) else doubleArrayOf(path.length)

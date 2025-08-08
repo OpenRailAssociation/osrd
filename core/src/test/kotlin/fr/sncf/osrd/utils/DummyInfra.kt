@@ -44,7 +44,7 @@ class DummyInfra : RawInfra, BlockInfra {
         exit: String,
         length: Distance = 100.meters,
         allowedSpeed: Double = Double.POSITIVE_INFINITY,
-        signalingSystemName: String = BAL.id
+        signalingSystemName: String = BAL.id,
     ): BlockId {
         val name = String.format("%s->%s", entry, exit)
         val entryId = getOrCreateDetectorId(entry)
@@ -60,7 +60,7 @@ class DummyInfra : RawInfra, BlockInfra {
                 allowedSpeed,
                 0.0,
                 signalingSystemId,
-                signalingSystemName
+                signalingSystemName,
             )
         )
         entryMap.put(entryId, id)
@@ -228,7 +228,7 @@ class DummyInfra : RawInfra, BlockInfra {
         entry: DirDetectorId,
         exit: DirDetectorId,
         movableElements: StaticIdxList<TrackNode>,
-        trackNodeConfigs: StaticIdxList<TrackNodeConfig>
+        trackNodeConfigs: StaticIdxList<TrackNodeConfig>,
     ): ZonePathId? {
         TODO("Not yet implemented")
     }
@@ -311,7 +311,7 @@ class DummyInfra : RawInfra, BlockInfra {
 
     override fun getNextTrackSection(
         currentTrack: DirTrackSectionId,
-        config: TrackNodeConfigId
+        config: TrackNodeConfigId,
     ): OptDirTrackSectionId {
         TODO("Not yet implemented")
     }
@@ -328,7 +328,7 @@ class DummyInfra : RawInfra, BlockInfra {
 
     override fun getPortConnection(
         trackNode: TrackNodeId,
-        port: TrackNodePortId
+        port: TrackNodePortId,
     ): EndpointTrackSectionId {
         TODO("Not yet implemented")
     }
@@ -344,7 +344,7 @@ class DummyInfra : RawInfra, BlockInfra {
     override fun getTrackNodeExitPort(
         trackNode: TrackNodeId,
         config: TrackNodeConfigId,
-        entryPort: TrackNodePortId
+        entryPort: TrackNodePortId,
     ): OptStaticIdx<TrackNodePort> {
         TODO("Not yet implemented")
     }
@@ -419,7 +419,7 @@ class DummyInfra : RawInfra, BlockInfra {
     ): DistanceRangeMap<Set<String>> {
         return makeRangeMap(
             blockPool[trackChunk.index].length,
-            setOf(blockPool[trackChunk.index].voltage)
+            setOf(blockPool[trackChunk.index].voltage),
         )
     }
 
@@ -437,12 +437,12 @@ class DummyInfra : RawInfra, BlockInfra {
     override fun getTrackChunkSpeedLimitProperties(
         trackChunk: DirTrackChunkId,
         trainTag: String?,
-        route: String?
+        route: String?,
     ): DistanceRangeMap<SpeedLimitProperty> {
         val desc = blockPool[trackChunk.value.index]
         return makeRangeMap(
             desc.length,
-            SpeedLimitProperty(desc.allowedSpeed.metersPerSecond, null)
+            SpeedLimitProperty(desc.allowedSpeed.metersPerSecond, null),
         )
     }
 
@@ -531,7 +531,7 @@ class DummyInfra : RawInfra, BlockInfra {
 
     override fun getBlocksFromTrackChunk(
         trackChunk: TrackChunkId,
-        direction: Direction
+        direction: Direction,
     ): MutableStaticIdxArraySet<Block> {
         if (direction == Direction.DECREASING)
             return mutableStaticIdxArraySetOf() // TODO: to implement eventually
@@ -553,6 +553,7 @@ class DummyInfra : RawInfra, BlockInfra {
     override fun getBlockFromName(name: String): BlockId {
         return BlockId(name.toUInt()) // We don't actually need persistence here
     }
+
     // endregion
 
     // region utils

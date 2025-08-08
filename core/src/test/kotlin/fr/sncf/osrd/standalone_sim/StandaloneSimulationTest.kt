@@ -42,14 +42,14 @@ class StandaloneSimulationTest {
         listOf(
                 "rt.buffer_stop_c->tde.track-bar",
                 "rt.tde.track-bar->tde.switch_foo-track",
-                "rt.tde.switch_foo-track->buffer_stop_a"
+                "rt.tde.switch_foo-track->buffer_stop_a",
             )
             .map { infra.rawInfra.getRouteFromName(it) }
     private val blocks =
         listOf(
                 "[il.sig.C2-BAL];[buffer_stop_c, tde.track-bar];[]",
                 "[il.sig.C2-BAL, il.sig.C6-BAL];[tde.track-bar, tde.switch_foo-track];[]",
-                "[il.sig.C6-BAL];[tde.switch_foo-track, buffer_stop_a];[il.switch_foo-A_B2]"
+                "[il.sig.C6-BAL];[tde.switch_foo-track, buffer_stop_a];[il.switch_foo-A_B2]",
             )
             .map { infra.blockInfra.getBlockFromName("block.${md5(it)}")!! }
 
@@ -66,7 +66,7 @@ class StandaloneSimulationTest {
             rollingStock.basePowerClass,
             ImmutableRangeMap.of(),
             rollingStock.powerRestrictions,
-            true
+            true,
         )
     private val curvesAndConditions =
         rollingStock.mapTractiveEffortCurves(electrificationMap, Comfort.STANDARD)
@@ -108,7 +108,7 @@ class StandaloneSimulationTest {
         val startSpeed: Double = 0.0,
         val margins: RangeValues<MarginValue> = RangeValues(),
         val pathLength: Distance,
-        val powerRestrictions: DistanceRangeMap<String> = distanceRangeMapOf()
+        val powerRestrictions: DistanceRangeMap<String> = distanceRangeMapOf(),
     )
 
     /**
@@ -128,7 +128,7 @@ class StandaloneSimulationTest {
                         .interpolateDepartureFrom(thirdDistance.distance.meters)
                         .seconds + 60.seconds,
                     null,
-                    OPEN
+                    OPEN,
                 ),
                 SimulationScheduleItem(
                     halfDistance,
@@ -136,14 +136,14 @@ class StandaloneSimulationTest {
                         .interpolateDepartureFrom(halfDistance.distance.meters)
                         .seconds + 120.seconds,
                     15.seconds,
-                    OPEN
+                    OPEN,
                 ),
                 SimulationScheduleItem(twoThirdDistance, null, 30.seconds, OPEN),
                 SimulationScheduleItem(
                     Offset<TravelledPath>(pathLength),
                     maxEffortEnvelope.totalTime.seconds + 300.seconds,
                     0.seconds,
-                    OPEN
+                    OPEN,
                 ),
             )
 
@@ -166,11 +166,8 @@ class StandaloneSimulationTest {
                 RangeValues(listOf(), listOf(MarginValue.Percentage(10.0))),
                 RangeValues(
                     listOf(Offset(pathLength / 2.0)),
-                    listOf(
-                        MarginValue.Percentage(10.0),
-                        MarginValue.MinPer100Km(5.0),
-                    ),
-                )
+                    listOf(MarginValue.Percentage(10.0), MarginValue.MinPer100Km(5.0)),
+                ),
             )
 
         // Power restriction values
@@ -183,16 +180,16 @@ class StandaloneSimulationTest {
                             DistanceRangeMap.RangeMapEntry(
                                 pathLength / 3.0,
                                 pathLength * 2.0 / 3.0,
-                                "Restrict2"
+                                "Restrict2",
                             ),
                             DistanceRangeMap.RangeMapEntry(
                                 pathLength * 2.0 / 3.0,
                                 pathLength,
-                                "Restrict1"
-                            )
+                                "Restrict1",
+                            ),
                         )
                         .toTypedArray()
-                )
+                ),
             )
 
         // List all possible combinations
@@ -209,7 +206,7 @@ class StandaloneSimulationTest {
                                     startSpeed = startSpeed,
                                     allowanceDistribution = distribution,
                                     pathLength = pathLength,
-                                    powerRestrictions = powerRestrictions
+                                    powerRestrictions = powerRestrictions,
                                 )
                             )
                         }
@@ -254,14 +251,14 @@ class StandaloneSimulationTest {
                     scheduledPoint.pathOffset,
                     res.finalOutput.positions,
                     res.finalOutput.times,
-                    false
+                    false,
                 )
             val departure =
                 getTimeAt(
                     scheduledPoint.pathOffset,
                     res.finalOutput.positions,
                     res.finalOutput.times,
-                    true
+                    true,
                 )
             if (scheduledPoint.arrival != null) {
                 assertEquals(scheduledPoint.arrival!!.seconds, arrival, 2.0)
@@ -291,7 +288,7 @@ class StandaloneSimulationTest {
             val expectedDiff =
                 value.getAllowanceTime(
                     baseTime,
-                    (exitOffset.distance - entryOffset.distance).meters
+                    (exitOffset.distance - entryOffset.distance).meters,
                 )
 
             // We need a lot of tolerance here as the curves are simplified, and it's
@@ -311,26 +308,11 @@ class StandaloneSimulationTest {
         val schedule =
             listOf(
                 // Start of path, check that it doesn't extend beyond the start
-                SimulationScheduleItem(
-                    Offset(42.meters),
-                    42.seconds,
-                    42.seconds,
-                    SHORT_SLIP_STOP,
-                ),
+                SimulationScheduleItem(Offset(42.meters), 42.seconds, 42.seconds, SHORT_SLIP_STOP),
                 // OPEN, check that this is ignored
-                SimulationScheduleItem(
-                    Offset(10_000.meters),
-                    42.seconds,
-                    42.seconds,
-                    OPEN,
-                ),
+                SimulationScheduleItem(Offset(10_000.meters), 42.seconds, 42.seconds, OPEN),
                 // STOP before the last buffer stop
-                SimulationScheduleItem(
-                    Offset(10_300.meters),
-                    42.seconds,
-                    42.seconds,
-                    STOP,
-                ),
+                SimulationScheduleItem(Offset(10_300.meters), 42.seconds, 42.seconds, STOP),
             )
 
         val signalingRanges = buildSignalingRanges(infra, blocks.toIdxList(), chunkPath)
@@ -344,16 +326,16 @@ class StandaloneSimulationTest {
                         DistanceRangeMap.RangeMapEntry(
                             10_200.meters,
                             10_300.meters,
-                            30.kilometersPerHour
+                            30.kilometersPerHour,
                         ),
                         // Last buffer stop short slip range
                         DistanceRangeMap.RangeMapEntry(
                             10_300.meters,
                             10_400.meters,
-                            10.kilometersPerHour
+                            10.kilometersPerHour,
                         ),
                     )
-                    .toTypedArray(),
+                    .toTypedArray()
             )
         assertEquals(expected, safetySpeedRanges)
     }
@@ -371,12 +353,7 @@ class StandaloneSimulationTest {
         // switch or buffer-stop is under ETCS or not doesn't matter)
         val schedule =
             listOf(
-                SimulationScheduleItem(
-                    Offset(42.meters),
-                    42.seconds,
-                    42.seconds,
-                    STOP,
-                ),
+                SimulationScheduleItem(Offset(42.meters), 42.seconds, 42.seconds, STOP),
                 // Stop associated to the 10150m signal
                 SimulationScheduleItem(
                     Offset(10_000.meters),
@@ -385,12 +362,7 @@ class StandaloneSimulationTest {
                     SHORT_SLIP_STOP,
                 ),
                 // Stop associated to the last buffer stop
-                SimulationScheduleItem(
-                    Offset(10_300.meters),
-                    42.seconds,
-                    42.seconds,
-                    STOP,
-                ),
+                SimulationScheduleItem(Offset(10_300.meters), 42.seconds, 42.seconds, STOP),
             )
 
         val signalingRangesBAL = buildSignalingRanges(infra, blocks.toIdxList(), chunkPath)
@@ -404,7 +376,7 @@ class StandaloneSimulationTest {
                 chunkPath,
                 routes.toIdxList(),
                 schedule,
-                signalingRangesEtcsHappyPath
+                signalingRangesEtcsHappyPath,
             )
         val expectedEtcsHappyPath =
             distanceRangeMapOf(
@@ -412,25 +384,25 @@ class StandaloneSimulationTest {
                         DistanceRangeMap.RangeMapEntry(
                             9_950.meters,
                             10_050.meters,
-                            30.kilometersPerHour
+                            30.kilometersPerHour,
                         ),
                         DistanceRangeMap.RangeMapEntry(
                             10_050.meters,
                             10_150.meters,
-                            10.kilometersPerHour
+                            10.kilometersPerHour,
                         ),
                         DistanceRangeMap.RangeMapEntry(
                             10_200.meters,
                             10_300.meters,
-                            30.kilometersPerHour
+                            30.kilometersPerHour,
                         ),
                         DistanceRangeMap.RangeMapEntry(
                             10_300.meters,
                             10_400.meters,
-                            10.kilometersPerHour
+                            10.kilometersPerHour,
                         ),
                     )
-                    .toTypedArray(),
+                    .toTypedArray()
             )
         assertEquals(expectedEtcsHappyPath, safetySpeedRangesEtcsHappyPath)
 
@@ -444,14 +416,12 @@ class StandaloneSimulationTest {
                 chunkPath,
                 routes.toIdxList(),
                 schedule,
-                signalingRangesEndFullEtcs
+                signalingRangesEndFullEtcs,
             )
         val expectedEndFullEtcs =
             distanceRangeMapOf(
-                *listOf(
-                        DistanceRangeMap.RangeMapEntry(0.meters, 150.meters, 30.kilometersPerHour),
-                    )
-                    .toTypedArray(),
+                *listOf(DistanceRangeMap.RangeMapEntry(0.meters, 150.meters, 30.kilometersPerHour))
+                    .toTypedArray()
             )
         assertEquals(expectedEndFullEtcs, safetySpeedRangesEndFullEtcs)
 
@@ -465,18 +435,16 @@ class StandaloneSimulationTest {
                 chunkPath,
                 routes.toIdxList(),
                 schedule,
-                signalingRangesEndEtcsExceptFinalBuffer
+                signalingRangesEndEtcsExceptFinalBuffer,
             )
         val expectedEndFullEtcsExceptFinalBuffer =
             distanceRangeMapOf(
-                *listOf(
-                        DistanceRangeMap.RangeMapEntry(0.meters, 150.meters, 30.kilometersPerHour),
-                    )
-                    .toTypedArray(),
+                *listOf(DistanceRangeMap.RangeMapEntry(0.meters, 150.meters, 30.kilometersPerHour))
+                    .toTypedArray()
             )
         assertEquals(
             expectedEndFullEtcsExceptFinalBuffer,
-            safetySpeedRangesEndFullEtcsExceptFinalBuffer
+            safetySpeedRangesEndFullEtcsExceptFinalBuffer,
         )
 
         // ETCS_LEVEL2 range covers all the end, starting between penultimate stop and its signal:
@@ -486,7 +454,7 @@ class StandaloneSimulationTest {
         signalingRangesEtcsStartingBetweenPenultimateStopAndItsSignal.put(
             10_100.meters,
             10_400.meters,
-            ETCS_LEVEL2.id
+            ETCS_LEVEL2.id,
         )
         val safetySpeedRangesEtcsStartingBetweenPenultimateStopAndItsSignal =
             makeSafetySpeedRanges(
@@ -494,7 +462,7 @@ class StandaloneSimulationTest {
                 chunkPath,
                 routes.toIdxList(),
                 schedule,
-                signalingRangesEtcsStartingBetweenPenultimateStopAndItsSignal
+                signalingRangesEtcsStartingBetweenPenultimateStopAndItsSignal,
             )
         val expectedEtcsStartingBetweenPenultimateStopAndItsSignal =
             distanceRangeMapOf(
@@ -503,19 +471,19 @@ class StandaloneSimulationTest {
                         DistanceRangeMap.RangeMapEntry(
                             9_950.meters,
                             10_050.meters,
-                            30.kilometersPerHour
+                            30.kilometersPerHour,
                         ),
                         DistanceRangeMap.RangeMapEntry(
                             10_050.meters,
                             10_150.meters,
-                            10.kilometersPerHour
+                            10.kilometersPerHour,
                         ),
                     )
-                    .toTypedArray(),
+                    .toTypedArray()
             )
         assertEquals(
             expectedEtcsStartingBetweenPenultimateStopAndItsSignal,
-            safetySpeedRangesEtcsStartingBetweenPenultimateStopAndItsSignal
+            safetySpeedRangesEtcsStartingBetweenPenultimateStopAndItsSignal,
         )
 
         // ETCS_LEVEL2 covers only the end, starting between the last stop and the buffer-stop:
@@ -524,7 +492,7 @@ class StandaloneSimulationTest {
         signalingRangesEtcsStartingBetweenLastStopAndBuffer.put(
             10_350.meters,
             10_400.meters,
-            ETCS_LEVEL2.id
+            ETCS_LEVEL2.id,
         )
         val safetySpeedRangesEtcsStartingBetweenLastStopAndBuffer =
             makeSafetySpeedRanges(
@@ -532,7 +500,7 @@ class StandaloneSimulationTest {
                 chunkPath,
                 routes.toIdxList(),
                 schedule,
-                signalingRangesEtcsStartingBetweenLastStopAndBuffer
+                signalingRangesEtcsStartingBetweenLastStopAndBuffer,
             )
         val expectedEtcsStartingBetweenLastStopAndBuffer =
             distanceRangeMapOf(
@@ -541,29 +509,29 @@ class StandaloneSimulationTest {
                         DistanceRangeMap.RangeMapEntry(
                             9_950.meters,
                             10_050.meters,
-                            30.kilometersPerHour
+                            30.kilometersPerHour,
                         ),
                         DistanceRangeMap.RangeMapEntry(
                             10_050.meters,
                             10_150.meters,
-                            10.kilometersPerHour
+                            10.kilometersPerHour,
                         ),
                         DistanceRangeMap.RangeMapEntry(
                             10_200.meters,
                             10_300.meters,
-                            30.kilometersPerHour
+                            30.kilometersPerHour,
                         ),
                         DistanceRangeMap.RangeMapEntry(
                             10_300.meters,
                             10_400.meters,
-                            10.kilometersPerHour
+                            10.kilometersPerHour,
                         ),
                     )
-                    .toTypedArray(),
+                    .toTypedArray()
             )
         assertEquals(
             expectedEtcsStartingBetweenLastStopAndBuffer,
-            safetySpeedRangesEtcsStartingBetweenLastStopAndBuffer
+            safetySpeedRangesEtcsStartingBetweenLastStopAndBuffer,
         )
     }
 
@@ -596,7 +564,7 @@ class StandaloneSimulationTest {
     private fun getTimeAt(
         offset: Offset<TravelledPath>,
         train: ReportTrain,
-        interpolateRight: Boolean
+        interpolateRight: Boolean,
     ): Double {
         return getTimeAt(offset, train.positions, train.times, interpolateRight)
     }
@@ -608,7 +576,7 @@ class StandaloneSimulationTest {
         offset: Offset<TravelledPath>,
         positions: List<Offset<TravelledPath>>,
         times: List<TimeDelta>,
-        interpolateRight: Boolean
+        interpolateRight: Boolean,
     ): Double {
         for (i in 1 until positions.size) {
             val pos = positions[i]

@@ -29,7 +29,7 @@ class PathfindingBlocksEndpointTest {
     fun testFindWaypointBlocks(
         pathfindingWaypoint: TrackLocation,
         direction: Direction,
-        expectedEdgeLocations: Set<PathfindingEdgeLocationId<Block>>
+        expectedEdgeLocations: Set<PathfindingEdgeLocationId<Block>>,
     ) {
         val blocks = findWaypointBlocks(smallInfra, pathfindingWaypoint, direction)
         Assertions.assertThat(blocks).containsExactlyInAnyOrderElementsOf(expectedEdgeLocations)
@@ -52,16 +52,16 @@ class PathfindingBlocksEndpointTest {
                 Arguments.of(
                     TrackLocation("TA3", Offset(10.meters)),
                     Direction.INCREASING,
-                    mutableSetOf(EdgeLocation(BlockId(8U), Offset<Block>(190.meters)))
+                    mutableSetOf(EdgeLocation(BlockId(8U), Offset<Block>(190.meters))),
                 ),
                 Arguments.of(
                     TrackLocation("TA5", Offset(20.meters)),
                     Direction.DECREASING,
                     mutableSetOf(
                         EdgeLocation(BlockId(19U), Offset<Block>(210.meters)),
-                        EdgeLocation(BlockId(18U), Offset<Block>(210.meters))
-                    )
-                )
+                        EdgeLocation(BlockId(18U), Offset<Block>(210.meters)),
+                    ),
+                ),
             )
         }
     }

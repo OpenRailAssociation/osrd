@@ -88,7 +88,7 @@ private fun sigSchemaFields(init: SigSchemaBuilder.() -> Unit): List<SigField> {
 
 class SigSchema<MarkerT>(
     /** A list of fields, sorted by name */
-    fields: List<SigField>,
+    fields: List<SigField>
 ) {
     val sortedFields = fields.sortedBy { it.name }
     val fields

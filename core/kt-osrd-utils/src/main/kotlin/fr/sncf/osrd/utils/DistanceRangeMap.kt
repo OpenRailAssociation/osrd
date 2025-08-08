@@ -14,11 +14,7 @@ import java.util.function.BiFunction
 interface DistanceRangeMap<T> : Iterable<DistanceRangeMap.RangeMapEntry<T>> {
 
     /** When iterating over the values of the map, this represents one range of constant value */
-    data class RangeMapEntry<T>(
-        val lower: Distance,
-        val upper: Distance,
-        val value: T,
-    )
+    data class RangeMapEntry<T>(val lower: Distance, val upper: Distance, val value: T)
 
     /** Sets the value between the lower and upper distances */
     fun put(lower: Distance, upper: Distance, value: T)
@@ -66,7 +62,7 @@ interface DistanceRangeMap<T> : Iterable<DistanceRangeMap.RangeMapEntry<T>> {
     fun updateMap(
         update: DistanceRangeMap<T>,
         updateFunction: (T, T) -> T,
-        default: (T) -> T = { it }
+        default: (T) -> T = { it },
     )
 
     /** Returns true if there is no entry at all */
@@ -86,7 +82,7 @@ fun <T> distanceRangeMapOf(vararg entries: DistanceRangeMap.RangeMapEntry<T>): D
  */
 fun <T> mergeDistanceRangeMaps(
     maps: List<DistanceRangeMap<T>>,
-    distances: List<Distance>
+    distances: List<Distance>,
 ): DistanceRangeMap<T> {
     assert((maps.size - 1 == distances.size) || (maps.isEmpty() && distances.isEmpty()))
 
@@ -100,7 +96,7 @@ fun <T> mergeDistanceRangeMaps(
                 DistanceRangeMap.RangeMapEntry(
                     entry.lower + previousDistance,
                     entry.upper + previousDistance,
-                    entry.value
+                    entry.value,
                 )
             )
         }
@@ -117,7 +113,7 @@ fun <T> mergeDistanceRangeMaps(
  */
 fun <T, R> filterIntersection(
     mapToFilter: DistanceRangeMap<T>,
-    filter: DistanceRangeMap<R>
+    filter: DistanceRangeMap<R>,
 ): DistanceRangeMap<T> {
     val res = distanceRangeMapOf<T>()
     for (range in filter) {

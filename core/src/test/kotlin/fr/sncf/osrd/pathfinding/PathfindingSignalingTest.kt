@@ -60,8 +60,8 @@ class PathfindingSignalingTest {
                     infra.fullInfra(),
                     getPathfindingBlockRequest(
                         TestTrains.TRAIN_WITHOUT_TVM,
-                        listOf(waypointsStart, waypointsEnd)
-                    )
+                        listOf(waypointsStart, waypointsEnd),
+                    ),
                 )
             }
             .isExactlyInstanceOf(NoPathFoundException::class.java)
@@ -88,8 +88,8 @@ class PathfindingSignalingTest {
                 infra.fullInfra(),
                 getPathfindingBlockRequest(
                     TestTrains.TRAIN_WITHOUT_TVM,
-                    listOf(waypointsStart, waypointsEnd)
-                )
+                    listOf(waypointsStart, waypointsEnd),
+                ),
             )
         checkPathfindingSuccess(
             pathfindingResp,
@@ -99,8 +99,8 @@ class PathfindingSignalingTest {
                     DirectionalTrackRange("a->b", Offset.zero(), Offset(100.meters), START_TO_STOP),
                     DirectionalTrackRange("b->N", Offset.zero(), Offset(100.meters), START_TO_STOP),
                     DirectionalTrackRange("N->d", Offset.zero(), Offset(100.meters), START_TO_STOP),
-                    DirectionalTrackRange("d->e", Offset.zero(), Offset(100.meters), START_TO_STOP)
-                )
+                    DirectionalTrackRange("d->e", Offset.zero(), Offset(100.meters), START_TO_STOP),
+                ),
         )
     }
 
@@ -115,8 +115,8 @@ class PathfindingSignalingTest {
                 infra.fullInfra(),
                 getPathfindingBlockRequest(
                     TestTrains.TRAIN_WITHOUT_TVM,
-                    listOf(waypointsStart, waypointsEnd)
-                )
+                    listOf(waypointsStart, waypointsEnd),
+                ),
             )
         checkPathfindingSuccess(
             pathfindingResp,
@@ -126,8 +126,8 @@ class PathfindingSignalingTest {
                     DirectionalTrackRange("a->b", Offset.zero(), Offset(100.meters), START_TO_STOP),
                     DirectionalTrackRange("b->S", Offset.zero(), Offset(100.meters), START_TO_STOP),
                     DirectionalTrackRange("S->d", Offset.zero(), Offset(100.meters), START_TO_STOP),
-                    DirectionalTrackRange("d->e", Offset.zero(), Offset(100.meters), START_TO_STOP)
-                )
+                    DirectionalTrackRange("d->e", Offset.zero(), Offset(100.meters), START_TO_STOP),
+                ),
         )
     }
 
@@ -140,12 +140,12 @@ class PathfindingSignalingTest {
         "TVM430, ETCS_LEVEL2, S",
         "TVM300, TVM430, S",
         "BAL, TVM300, S",
-        "BAPR, BAL, S"
+        "BAPR, BAL, S",
     )
     fun shouldPriorEtcsThenTvm430ThenTvm300ThenBalThenBaprForPathfinding(
         northSigSystem: String,
         southSigSystem: String,
-        intermediateWaypoint: String
+        intermediateWaypoint: String,
     ) {
         // Other blocks are BAL
         setSigSystemIds(listOf("b->N", "N->d"), northSigSystem)
@@ -161,8 +161,8 @@ class PathfindingSignalingTest {
                 infra.fullInfra(),
                 getPathfindingBlockRequest(
                     TestTrains.REALISTIC_ETCS_FAST_TRAIN,
-                    listOf(waypointsStart, waypointsInter, waypointsEnd)
-                )
+                    listOf(waypointsStart, waypointsInter, waypointsEnd),
+                ),
             )
         checkPathfindingSuccess(
             pathfindingSouthResp,
@@ -175,16 +175,16 @@ class PathfindingSignalingTest {
                         "b->$intermediateWaypoint",
                         Offset.zero(),
                         Offset(100.meters),
-                        START_TO_STOP
+                        START_TO_STOP,
                     ),
                     DirectionalTrackRange(
                         "$intermediateWaypoint->d",
                         Offset.zero(),
                         Offset(100.meters),
-                        START_TO_STOP
+                        START_TO_STOP,
                     ),
-                    DirectionalTrackRange("d->e", Offset.zero(), Offset(100.meters), START_TO_STOP)
-                )
+                    DirectionalTrackRange("d->e", Offset.zero(), Offset(100.meters), START_TO_STOP),
+                ),
         )
     }
 }

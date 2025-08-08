@@ -26,7 +26,7 @@ class SignalingSystemConstraintsTest {
     fun testSignalingSystemBlockedRanges(
         blockId: BlockId,
         rollingStock: RollingStock,
-        expectedBlockedRanges: Collection<Pathfinding.Range<Block>>
+        expectedBlockedRanges: Collection<Pathfinding.Range<Block>>,
     ) {
         /*
 
@@ -42,7 +42,7 @@ class SignalingSystemConstraintsTest {
             makeSignalingSystemConstraints(
                 fullInfra.blockInfra,
                 fullInfra.signalingSimulator,
-                listOf(rollingStock)
+                listOf(rollingStock),
             )
         val blockedRanges = signalingSystemConstraints.apply(blockId)
         Assertions.assertThat(blockedRanges).isEqualTo(expectedBlockedRanges)
@@ -54,7 +54,7 @@ class SignalingSystemConstraintsTest {
             Arguments.of(
                 1,
                 TestTrains.TRAIN_WITHOUT_TVM,
-                setOf(Pathfinding.Range<TrackChunk>(Offset(0.meters), Offset(100.meters)))
+                setOf(Pathfinding.Range<TrackChunk>(Offset(0.meters), Offset(100.meters))),
             ),
             Arguments.of(0, TestTrains.FAST_ELECTRIC_TRAIN, HashSet<Any>()),
             Arguments.of(1, TestTrains.FAST_ELECTRIC_TRAIN, HashSet<Any>()),

@@ -72,7 +72,7 @@ interface SignalDriver {
         parameters: SigParameters,
         stateSchema: SigStateSchema,
         maView: MovementAuthorityView?,
-        limitView: SpeedLimitView?
+        limitView: SpeedLimitView?,
     ): SigState
 
     fun checkSignal(reporter: SignalDiagReporter, signal: SigSettings, block: SigBlock)

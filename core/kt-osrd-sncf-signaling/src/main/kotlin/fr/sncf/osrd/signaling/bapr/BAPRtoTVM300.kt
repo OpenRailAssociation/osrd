@@ -16,7 +16,7 @@ object BAPRtoTVM300 : SignalDriver {
         parameters: SigParameters,
         stateSchema: SigStateSchema,
         maView: MovementAuthorityView?,
-        limitView: SpeedLimitView?
+        limitView: SpeedLimitView?,
     ): SigState {
         return stateSchema { value("aspect", "VL") } // TODO: find out how these transition work
     }

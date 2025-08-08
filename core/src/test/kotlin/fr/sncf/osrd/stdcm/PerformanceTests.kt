@@ -229,7 +229,7 @@ class PerformanceTests {
                 setOf(
                     EdgeLocation(
                         BlockId(infra.getRouteFromName("25,25->25,26").index),
-                        Offset<Block>(0.meters)
+                        Offset<Block>(0.meters),
                     )
                 )
             )
@@ -237,7 +237,7 @@ class PerformanceTests {
                 setOf(
                     EdgeLocation(
                         BlockId(infra.getRouteFromName("75,75->75,76").index),
-                        Offset<Block>(0.meters)
+                        Offset<Block>(0.meters),
                     )
                 )
             )

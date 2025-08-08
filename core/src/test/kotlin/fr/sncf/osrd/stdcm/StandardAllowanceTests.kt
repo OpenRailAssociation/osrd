@@ -18,7 +18,7 @@ class StandardAllowanceTests {
     @JvmRecord
     data class STDCMAllowanceResults(
         val withAllowance: STDCMResult?,
-        val withoutAllowance: STDCMResult?
+        val withoutAllowance: STDCMResult?,
     )
 
     /**
@@ -35,7 +35,7 @@ class StandardAllowanceTests {
             listOf(
                 infra.addBlock("a", "b", 1000.meters, 30.0),
                 infra.addBlock("b", "c", 1000.meters, 30.0),
-                infra.addBlock("c", "d", 1000.meters, 30.0)
+                infra.addBlock("c", "d", 1000.meters, 30.0),
             )
         val allowance = AllowanceValue.Percentage(10.0)
         val res =
@@ -62,7 +62,7 @@ class StandardAllowanceTests {
             listOf(
                 infra.addBlock("a", "b", 1000.meters, 30.0),
                 infra.addBlock("b", "c", 1000.meters, 30.0),
-                infra.addBlock("c", "d", 1000.meters, 30.0)
+                infra.addBlock("c", "d", 1000.meters, 30.0),
             )
         val allowance = AllowanceValue.Percentage(1000.0)
         val res =
@@ -166,14 +166,14 @@ class StandardAllowanceTests {
             listOf(
                 infra.addBlock("a", "b", 1000.meters, 30.0),
                 infra.addBlock("b", "c", 10000.meters, 30.0),
-                infra.addBlock("c", "d", 1000.meters, 30.0)
+                infra.addBlock("c", "d", 1000.meters, 30.0),
             )
         val occupancyGraph =
             ImmutableMultimap.of(
                 blocks[0],
                 OccupancySegment(120.0, Double.POSITIVE_INFINITY, 0.meters, 1000.meters),
                 blocks[2],
-                OccupancySegment(0.0, 1000.0, 0.meters, 1000.meters)
+                OccupancySegment(0.0, 1000.0, 0.meters, 1000.meters),
             )
         val allowance = AllowanceValue.Percentage(20.0)
         val res =
@@ -189,7 +189,7 @@ class StandardAllowanceTests {
         Assertions.assertEquals(
             1000.0,
             thirdBlockEntryTime,
-            4 * TIME_STEP
+            4 * TIME_STEP,
         ) // Errors build up, we need a high delta
     }
 
@@ -215,14 +215,14 @@ class StandardAllowanceTests {
             listOf(
                 infra.addBlock("a", "b", 1.meters, 30.0),
                 infra.addBlock("b", "c", 10000.meters, 30.0),
-                infra.addBlock("c", "d", 1.meters, 30.0)
+                infra.addBlock("c", "d", 1.meters, 30.0),
             )
         val occupancyGraph =
             ImmutableMultimap.of(
                 blocks[0],
                 OccupancySegment(60.0, Double.POSITIVE_INFINITY, 0.meters, 1.meters),
                 blocks[2],
-                OccupancySegment(0.0, 1000.0, 0.meters, 1.meters)
+                OccupancySegment(0.0, 1000.0, 0.meters, 1.meters),
             )
         val allowance = AllowanceValue.Percentage(20.0)
         val res =
@@ -298,7 +298,7 @@ class StandardAllowanceTests {
                 thirdBlock,
                 OccupancySegment(0.0, 1200.0, 0.meters, 100.meters),
                 forthBlock,
-                OccupancySegment(0.0, 2000.0, 0.meters, 100.meters)
+                OccupancySegment(0.0, 2000.0, 0.meters, 100.meters),
             )
         val res =
             runWithAndWithoutAllowance(
@@ -341,14 +341,14 @@ class StandardAllowanceTests {
             listOf(
                 infra.addBlock("a", "b", 1000.meters, 30.0),
                 infra.addBlock("b", "c", 10000.meters, 30.0),
-                infra.addBlock("c", "d", 1000.meters, 30.0)
+                infra.addBlock("c", "d", 1000.meters, 30.0),
             )
         val occupancyGraph =
             ImmutableMultimap.of(
                 blocks[0],
                 OccupancySegment(120.0, Double.POSITIVE_INFINITY, 0.meters, 1000.meters),
                 blocks[2],
-                OccupancySegment(0.0, 1000.0, 0.meters, 1000.meters)
+                OccupancySegment(0.0, 1000.0, 0.meters, 1000.meters),
             )
         val allowance = AllowanceValue.TimePerDistance(60.0)
         val res =
@@ -458,7 +458,7 @@ class StandardAllowanceTests {
                 thirdBlock,
                 OccupancySegment(0.0, 1200.0, 0.meters, 100.meters),
                 forthBlock,
-                OccupancySegment(0.0, 2000.0, 0.meters, 100.meters)
+                OccupancySegment(0.0, 2000.0, 0.meters, 100.meters),
             )
         val res =
             runWithAndWithoutAllowance(
@@ -510,10 +510,10 @@ class StandardAllowanceTests {
                     2000 + 2 * TIME_STEP,
                     Double.POSITIVE_INFINITY,
                     0.meters,
-                    1000.meters
+                    1000.meters,
                 ),
                 secondBlock,
-                OccupancySegment(0.0, 2000 - 2 * TIME_STEP, 0.meters, 1000.meters)
+                OccupancySegment(0.0, 2000 - 2 * TIME_STEP, 0.meters, 1000.meters),
             )
         val res =
             runWithAndWithoutAllowance(
@@ -555,7 +555,7 @@ class StandardAllowanceTests {
         fun checkAllowanceResult(
             results: STDCMAllowanceResults,
             value: AllowanceValue,
-            tolerance: Double
+            tolerance: Double,
         ) {
             var mutTolerance = tolerance
             if (java.lang.Double.isNaN(mutTolerance)) mutTolerance = 2 * TIME_STEP

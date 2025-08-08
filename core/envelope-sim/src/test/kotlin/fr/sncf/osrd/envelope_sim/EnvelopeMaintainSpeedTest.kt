@@ -17,7 +17,7 @@ class EnvelopeMaintainSpeedTest {
             EnvelopeSimPathBuilder.buildNonElectrified(
                 10000.0,
                 doubleArrayOf(0.0, 5000.0, 6000.0, 7000.0, 8000.0, 8500.0, 9000.0, 10000.0),
-                doubleArrayOf(0.0, 40.0, -40.0, 0.0, 50.0, -50.0, 0.0)
+                doubleArrayOf(0.0, 40.0, -40.0, 0.0, 50.0, -50.0, 0.0),
             )
         val testRollingStock = SimpleRollingStock.STANDARD_TRAIN
         val context =
@@ -25,7 +25,7 @@ class EnvelopeMaintainSpeedTest {
                 testRollingStock,
                 path,
                 SimpleContextBuilder.TIME_STEP,
-                SimpleRollingStock.LINEAR_EFFORT_CURVE_MAP
+                SimpleRollingStock.LINEAR_EFFORT_CURVE_MAP,
             )
 
         val flatMRSP =
@@ -33,7 +33,7 @@ class EnvelopeMaintainSpeedTest {
                 generateTimes(
                     listOf(EnvelopeProfile.CONSTANT_SPEED),
                     doubleArrayOf(0.0, 10000.0),
-                    doubleArrayOf(44.4, 44.4)
+                    doubleArrayOf(44.4, 44.4),
                 )
             )
         val maxSpeedEnvelope = maxSpeedEnvelopeFrom(context, stops, flatMRSP)
@@ -46,8 +46,8 @@ class EnvelopeMaintainSpeedTest {
                 arrayOf(EnvelopeShape.DECREASING, EnvelopeShape.INCREASING),
                 arrayOf(EnvelopeShape.CONSTANT),
                 arrayOf(EnvelopeShape.DECREASING, EnvelopeShape.INCREASING),
-                arrayOf(EnvelopeShape.CONSTANT)
-            )
+                arrayOf(EnvelopeShape.CONSTANT),
+            ),
         )
         Assertions.assertTrue(maxEffortEnvelope.continuous)
     }

@@ -52,7 +52,7 @@ class TrainPhysicsIntegratorTest {
         var speed = 0.0
 
         // go to full speed by cruising for 20 minutes
-        for (i in 0 ..< 20 * 60) {
+        for (i in 0..<20 * 60) {
             val step =
                 TrainPhysicsIntegrator.step(context, position, speed, Action.ACCELERATE, +1.0)
             position += step.positionDelta
@@ -64,7 +64,7 @@ class TrainPhysicsIntegratorTest {
 
         // continue the simulation, but with some slope
         val newContext = SimpleContextBuilder.makeSimpleContext(100000.0, 35.0, TIME_STEP)
-        for (i in 0 ..< 20 * 60) {
+        for (i in 0..<20 * 60) {
             val step =
                 TrainPhysicsIntegrator.step(newContext, position, speed, Action.ACCELERATE, +1.0)
             position += step.positionDelta
@@ -95,7 +95,7 @@ class TrainPhysicsIntegratorTest {
                 weightForce,
                 speed,
                 500000.0,
-                +1.0
+                +1.0,
             )
         var step = TrainPhysicsIntegrator.newtonStep(TIME_STEP, speed, acceleration, +1.0)
         position += step.positionDelta
@@ -128,7 +128,7 @@ class TrainPhysicsIntegratorTest {
         val constrainedBuilder =
             ConstrainedEnvelopePartBuilder(
                 builder,
-                SpeedConstraint(0.0, EnvelopePartConstraintType.FLOOR)
+                SpeedConstraint(0.0, EnvelopePartConstraintType.FLOOR),
             )
         EnvelopeDeceleration.decelerate(context, 0.0, 10.0, constrainedBuilder, 1.0)
         builder.setAttr(EnvelopeProfile.BRAKING)

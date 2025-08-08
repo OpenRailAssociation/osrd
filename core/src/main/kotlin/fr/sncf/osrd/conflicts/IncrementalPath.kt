@@ -20,7 +20,7 @@ sealed interface FragmentBlocks
 
 data class FragmentStop(
     val fragmentOffset: Offset<FragmentBlocks>,
-    val receptionSignal: RJSReceptionSignal
+    val receptionSignal: RJSReceptionSignal,
 )
 
 class PathFragment(
@@ -122,7 +122,7 @@ fun incrementalPathOf(rawInfra: RawInfra, blockInfra: BlockInfra): IncrementalPa
 
 private class IncrementalStop(
     val offset: Offset<BlockPath>,
-    val receptionSignal: RJSReceptionSignal
+    val receptionSignal: RJSReceptionSignal,
 )
 
 private class IncrementalPathImpl(
@@ -262,7 +262,7 @@ private class IncrementalPathImpl(
             this.routeZoneBounds.shallowCopy(),
             this.zonePathBounds.shallowCopy(),
             this.travelledPathBegin,
-            this.travelledPathEnd
+            this.travelledPathEnd,
         )
     }
 
@@ -304,7 +304,7 @@ private class IncrementalPathImpl(
 
     override fun convertZonePathOffset(
         zonePathIndex: Int,
-        offset: Offset<ZonePath>
+        offset: Offset<ZonePath>,
     ): Offset<BlockPath> {
         return getZonePathStartOffset(zonePathIndex) + offset.distance
     }

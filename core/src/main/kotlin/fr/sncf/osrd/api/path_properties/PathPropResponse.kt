@@ -33,18 +33,18 @@ data class OperationalPointResponse(
     val part: OperationalPointPartResponse,
     val extensions: OperationalPointExtensions?,
     val position: Offset<TravelledPath>,
-    val weight: Long?
+    val weight: Long?,
 )
 
 data class OperationalPointPartResponse(
     val track: String,
     val position: Double,
-    val extensions: OperationalPointPartExtension?
+    val extensions: OperationalPointPartExtension?,
 )
 
 data class OperationalPointExtensions(
     val sncf: OperationalPointSncfExtension?,
-    val identifier: OperationalPointIdentifierExtension?
+    val identifier: OperationalPointIdentifierExtension?,
 )
 
 data class OperationalPointSncfExtension(
@@ -52,7 +52,7 @@ data class OperationalPointSncfExtension(
     val ch: String,
     @Json(name = "ch_short_label") val chShortLabel: String,
     @Json(name = "ch_long_label") val chLongLabel: String,
-    val trigram: String
+    val trigram: String,
 )
 
 data class OperationalPointIdentifierExtension(val name: String, val uic: Long)

@@ -14,7 +14,7 @@ import fr.sncf.osrd.utils.units.meters
 fun getRoutePathStartOffset(
     infra: RawInfra,
     chunkPath: ChunkPath,
-    routes: StaticIdxList<Route>
+    routes: StaticIdxList<Route>,
 ): Offset<BlockPath> {
     val zonePaths = routes.flatMap { infra.getRoutePath(it) }
     return trainPathZonePathOffset(infra, zonePaths, chunkPath)
@@ -27,7 +27,7 @@ fun trainPathBlockOffset(
     infra: RawInfra,
     blockInfra: BlockInfra,
     blockPath: StaticIdxList<Block>,
-    chunkPath: ChunkPath
+    chunkPath: ChunkPath,
 ): Offset<BlockPath> {
     val zonePaths = blockPath.flatMap { blockInfra.getBlockZonePaths(it) }
     return trainPathZonePathOffset(infra, zonePaths, chunkPath)
@@ -40,7 +40,7 @@ fun trainPathBlockOffset(
 fun trainPathZonePathOffset(
     infra: RawInfra,
     zonePaths: List<ZonePathId>,
-    chunkPath: ChunkPath
+    chunkPath: ChunkPath,
 ): Offset<BlockPath> {
     var prevChunksLength = Offset<BlockPath>(0.meters)
     val routeChunks = zonePaths.flatMap { infra.getZonePathChunks(it) }
@@ -70,7 +70,7 @@ fun getBlockChunkOffset(
     blockInfra: BlockInfra,
     rawInfra: RawSignalingInfra,
     chunk: DirTrackChunkId,
-    range: PathfindingEdgeRangeId<Block>
+    range: PathfindingEdgeRangeId<Block>,
 ): Offset<Block> {
     var offset = Offset<Block>(0.meters)
     for (dirChunkId in blockInfra.getTrackChunksFromBlock(range.edge)) {
@@ -84,7 +84,7 @@ fun getBlockChunkOffset(
 fun getRouteChunkOffset(
     rawInfra: RawSignalingInfra,
     routeStaticIdx: RouteId,
-    chunk: DirTrackChunkId
+    chunk: DirTrackChunkId,
 ): Offset<Route> {
     var offset = Offset<Route>(0.meters)
     for (dirChunkId in rawInfra.getChunksOnRoute(routeStaticIdx)) {

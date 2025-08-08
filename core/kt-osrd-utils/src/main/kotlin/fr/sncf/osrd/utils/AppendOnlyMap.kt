@@ -5,9 +5,7 @@ package fr.sncf.osrd.utils
  * diverging paths while minimizing copies. See also `AppendOnlyLinkedList`. On duplicates, the
  * previous value is effectively replaced, but it still takes some space in the list.
  */
-class AppendOnlyMap<K, V>(
-    private val list: AppendOnlyLinkedList<Pair<K, V>>,
-) {
+class AppendOnlyMap<K, V>(private val list: AppendOnlyLinkedList<Pair<K, V>>) {
     /**
      * Returns the value associated with the key. O(n) in worst case, O(1) if the value is near the
      * end.

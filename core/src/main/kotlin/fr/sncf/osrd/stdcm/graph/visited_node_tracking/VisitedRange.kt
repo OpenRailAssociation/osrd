@@ -9,10 +9,7 @@ import fr.sncf.osrd.utils.areTimesEqual
  */
 abstract class VisitedRange {
     /** Is the given (sub)range covered by `this`? */
-    fun isVisited(
-        timeRange: Range<Double>,
-        visitingRange: VisitedRange,
-    ): Boolean {
+    fun isVisited(timeRange: Range<Double>, visitingRange: VisitedRange): Boolean {
         val thisLowest = getLowestCostOnRange(timeRange)
         val otherLowest = visitingRange.getLowestCostOnRange(timeRange)
         val thisHighest = getHighestCostOnRange(timeRange)
@@ -66,7 +63,7 @@ abstract class VisitedRange {
  */
 data class VisitedWithDepartureTimeChange(
     private val baseCost: Double,
-    private val stopTime: Double
+    private val stopTime: Double,
 ) : VisitedRange() {
     override fun evaluateAtTime(time: Double): DetailedCostAtTime {
         return DetailedCostAtTime(baseCost, stopTime)
@@ -95,7 +92,7 @@ data class VisitedWithAddedStopTime(
 data class VisitedWithAddedTravelTime(
     // the time t is visited at f(t) seconds of total running time duration
     private val visitedWithTravelTime: LinearFunction,
-    private val stopTime: Double
+    private val stopTime: Double,
 ) : VisitedRange() {
     override fun evaluateAtTime(time: Double): DetailedCostAtTime {
         return DetailedCostAtTime(visitedWithTravelTime.apply(time), stopTime)

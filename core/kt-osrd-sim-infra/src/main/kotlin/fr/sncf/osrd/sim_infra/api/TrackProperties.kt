@@ -9,15 +9,12 @@ import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.Speed
 
-data class NeutralSection(
-    val lowerPantograph: Boolean,
-    val isAnnouncement: Boolean,
-)
+data class NeutralSection(val lowerPantograph: Boolean, val isAnnouncement: Boolean)
 
 @JvmRecord
 data class SpeedLimitProperty(
     val speed: Speed,
-    val source: SpeedLimitSource? // if train-tag used, source of the speed-limit
+    val source: SpeedLimitSource?, // if train-tag used, source of the speed-limit
 ) : Comparable<SpeedLimitProperty> {
     override fun compareTo(other: SpeedLimitProperty): Int {
         return this.speed.compareTo(other.speed)
@@ -86,7 +83,7 @@ interface TrackProperties {
     fun getTrackChunkSpeedLimitProperties(
         trackChunk: DirTrackChunkId,
         trainTag: String?,
-        route: String?
+        route: String?,
     ): DistanceRangeMap<SpeedLimitProperty>
 
     fun getTrackChunkGeom(trackChunk: TrackChunkId): LineString

@@ -37,29 +37,13 @@ data class CachedBlockMRSPBuilder(
     /** Returns the speed limits for the given block (cached). */
     fun getMRSP(block: BlockId): Envelope {
         return mrspCache.computeIfAbsent(block) {
-            val pathProps =
-                makePathProps(
-                    blockInfra,
-                    rawInfra,
-                    block,
-                    routes = listOf(),
-                )
-            computeMRSP(
-                pathProps,
-                rsMaxSpeed,
-                rsLength,
-                false,
-                null,
-                temporarySpeedLimitManager,
-            )
+            val pathProps = makePathProps(blockInfra, rawInfra, block, routes = listOf())
+            computeMRSP(pathProps, rsMaxSpeed, rsLength, false, null, temporarySpeedLimitManager)
         }
     }
 
     /** Returns the time it takes to go through the given block, until `endOffset` if specified. */
-    fun getBlockTime(
-        block: BlockId,
-        endOffset: Offset<Block>?,
-    ): Double {
+    fun getBlockTime(block: BlockId, endOffset: Offset<Block>?): Double {
         if (endOffset?.distance == 0.meters) return 0.0
         val actualLength = endOffset ?: blockInfra.getBlockLength(block)
         val mrsp = getMRSP(block)

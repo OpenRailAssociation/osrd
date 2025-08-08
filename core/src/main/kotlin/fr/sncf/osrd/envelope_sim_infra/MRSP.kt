@@ -96,7 +96,7 @@ fun computeMRSP(
         val attrs =
             mutableListOf<SelfTypeHolder>(
                 EnvelopeProfile.CONSTANT_SPEED,
-                MRSPEnvelopeBuilder.LimitKind.SPEED_LIMIT
+                MRSPEnvelopeBuilder.LimitKind.SPEED_LIMIT,
             )
         if (speedLimitProp.source != null) {
             attrs.add(speedLimitProp.source!!)
@@ -108,7 +108,7 @@ fun computeMRSP(
                 EnvelopePart.generateTimes(
                     attrs,
                     doubleArrayOf(start, end),
-                    doubleArrayOf(speed, speed)
+                    doubleArrayOf(speed, speed),
                 )
             )
         }
@@ -122,7 +122,7 @@ fun computeMRSP(
         pathLength.meters,
         rsMaxSpeed.metersPerSecond,
         attrs,
-        speedLimitProperties
+        speedLimitProperties,
     )
 
     // Add safety speeds
@@ -140,7 +140,7 @@ fun computeMRSP(
                 Distance.min(range.upper, pathLength.meters),
                 speed,
                 newAttrs,
-                speedLimitProperties
+                speedLimitProperties,
             )
         }
     }
@@ -161,7 +161,7 @@ fun addSpeedSection(
             EnvelopePart.generateTimes(
                 propsRange.value,
                 doubleArrayOf(propsRange.lower.meters, propsRange.upper.meters),
-                doubleArrayOf(speed.metersPerSecond, speed.metersPerSecond)
+                doubleArrayOf(speed.metersPerSecond, speed.metersPerSecond),
             )
         )
     }

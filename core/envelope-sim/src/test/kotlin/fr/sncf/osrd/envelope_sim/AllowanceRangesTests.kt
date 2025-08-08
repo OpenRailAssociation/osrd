@@ -28,7 +28,7 @@ class AllowanceRangesTests {
         speed: Double,
         stop: Boolean,
         value1: AllowanceValue,
-        value2: AllowanceValue
+        value2: AllowanceValue,
     ): Envelope {
         val path = context.path
         val stops = if (stop) doubleArrayOf(6000.0, path.length) else doubleArrayOf(path.length)
@@ -36,7 +36,7 @@ class AllowanceRangesTests {
         val ranges =
             listOf(
                 AllowanceRange(0.0, 0.3 * path.length, value1),
-                AllowanceRange(0.3 * path.length, path.length, value2)
+                AllowanceRange(0.3 * path.length, path.length, value2),
             )
         val allowance = MarecoAllowance(0.0, path.length, 1.0, ranges)
         return allowance.apply(maxEffortEnvelope, context)
@@ -51,7 +51,7 @@ class AllowanceRangesTests {
                 44.4,
                 false,
                 AllowanceValue.Percentage(10.0),
-                AllowanceValue.Percentage(20.0)
+                AllowanceValue.Percentage(20.0),
             )
         EnvelopeShape.check(
             marecoEnvelope,
@@ -60,7 +60,7 @@ class AllowanceRangesTests {
             EnvelopeShape.DECREASING,
             EnvelopeShape.CONSTANT,
             EnvelopeShape.DECREASING,
-            EnvelopeShape.DECREASING
+            EnvelopeShape.DECREASING,
         )
         Assertions.assertTrue(marecoEnvelope.continuous)
     }
@@ -78,7 +78,7 @@ class AllowanceRangesTests {
         val ranges =
             listOf(
                 AllowanceRange(0.0, rangesTransition.toDouble(), value1),
-                AllowanceRange(rangesTransition.toDouble(), length.toDouble(), value2)
+                AllowanceRange(rangesTransition.toDouble(), length.toDouble(), value2),
             )
         val allowance = MarecoAllowance(0.0, length.toDouble(), 30 / 3.6, ranges)
         val marecoEnvelope = allowance.apply(maxEffortEnvelope, testContext)
@@ -100,7 +100,7 @@ class AllowanceRangesTests {
         Assertions.assertEquals(
             marecoEnvelope.totalTime,
             targetTime1 + targetTime2,
-            testContext.timeStep
+            testContext.timeStep,
         )
     }
 
@@ -119,7 +119,7 @@ class AllowanceRangesTests {
             listOf(
                 AllowanceRange(rangesTransitions[0], rangesTransitions[1], value1),
                 AllowanceRange(rangesTransitions[1], rangesTransitions[2], value2),
-                AllowanceRange(rangesTransitions[2], rangesTransitions[3], value3)
+                AllowanceRange(rangesTransitions[2], rangesTransitions[3], value3),
             )
         val allowance = MarecoAllowance(0.0, length.toDouble(), 30 / 3.6, ranges)
         val marecoEnvelope = allowance.apply(maxEffortEnvelope, testContext)
@@ -146,7 +146,7 @@ class AllowanceRangesTests {
         Assertions.assertEquals(
             marecoEnvelope.totalTime,
             targetTime1 + targetTime2 + targetTime3,
-            testContext.timeStep
+            testContext.timeStep,
         )
     }
 
@@ -165,7 +165,7 @@ class AllowanceRangesTests {
             listOf(
                 AllowanceRange(rangesTransitions[0], rangesTransitions[1], value1),
                 AllowanceRange(rangesTransitions[1], rangesTransitions[2], value2),
-                AllowanceRange(rangesTransitions[2], rangesTransitions[3], value3)
+                AllowanceRange(rangesTransitions[2], rangesTransitions[3], value3),
             )
         val allowance = MarecoAllowance(0.0, length.toDouble(), 30 / 3.6, ranges)
         val marecoEnvelope = allowance.apply(maxEffortEnvelope, testContext)
@@ -192,7 +192,7 @@ class AllowanceRangesTests {
         Assertions.assertEquals(
             marecoEnvelope.totalTime,
             targetTime1 + targetTime2 + targetTime3,
-            testContext.timeStep
+            testContext.timeStep,
         )
     }
 
@@ -211,7 +211,7 @@ class AllowanceRangesTests {
             listOf(
                 AllowanceRange(rangesTransitions[0], rangesTransitions[1], value1),
                 AllowanceRange(rangesTransitions[1], rangesTransitions[2], value2),
-                AllowanceRange(rangesTransitions[2], rangesTransitions[3], value3)
+                AllowanceRange(rangesTransitions[2], rangesTransitions[3], value3),
             )
         val allowance = MarecoAllowance(0.0, length.toDouble(), 1.0, ranges)
         val marecoEnvelope = allowance.apply(maxEffortEnvelope, testContext)
@@ -220,14 +220,14 @@ class AllowanceRangesTests {
         Assertions.assertEquals(
             maxEffortEnvelope.interpolateDepartureFrom(rangesTransitions[1]) + value1.time,
             marecoEnvelope.interpolateDepartureFrom(rangesTransitions[1]),
-            testContext.timeStep
+            testContext.timeStep,
         )
         Assertions.assertEquals(
             maxEffortEnvelope.interpolateDepartureFrom(rangesTransitions[2]) +
                 value1.time +
                 value2.time,
             marecoEnvelope.interpolateDepartureFrom(rangesTransitions[2]),
-            testContext.timeStep
+            testContext.timeStep,
         )
         Assertions.assertEquals(
             (maxEffortEnvelope.interpolateDepartureFrom(rangesTransitions[3]) +
@@ -235,12 +235,12 @@ class AllowanceRangesTests {
                 value2.time +
                 value3.time),
             marecoEnvelope.interpolateDepartureFrom(rangesTransitions[3]),
-            testContext.timeStep
+            testContext.timeStep,
         )
         Assertions.assertEquals(
             maxEffortEnvelope.totalTime + value1.time + value2.time + value3.time,
             marecoEnvelope.totalTime,
-            testContext.timeStep
+            testContext.timeStep,
         )
 
         // Checks that we don't accelerate to match the original speed for transitions
@@ -267,7 +267,7 @@ class AllowanceRangesTests {
         val ranges =
             listOf(
                 AllowanceRange(rangesTransitions[0], rangesTransitions[1], value1),
-                AllowanceRange(rangesTransitions[1], rangesTransitions[2], value2)
+                AllowanceRange(rangesTransitions[1], rangesTransitions[2], value2),
             )
         val allowance = MarecoAllowance(0.0, length.toDouble(), 30 / 3.6, ranges)
         val marecoEnvelope = allowance.apply(maxEffortEnvelope, testContext)
@@ -288,7 +288,7 @@ class AllowanceRangesTests {
         Assertions.assertEquals(
             marecoEnvelope.totalTime,
             targetTime1 + targetTime2,
-            testContext.timeStep
+            testContext.timeStep,
         )
     }
 
@@ -308,7 +308,7 @@ class AllowanceRangesTests {
             listOf(
                 AllowanceRange(rangesTransitions[0], rangesTransitions[1], value1),
                 AllowanceRange(rangesTransitions[1], rangesTransitions[2], value2),
-                AllowanceRange(rangesTransitions[2], rangesTransitions[3], value3)
+                AllowanceRange(rangesTransitions[2], rangesTransitions[3], value3),
             )
         val allowance = MarecoAllowance(0.0, length.toDouble(), 30 / 3.6, ranges)
         val marecoEnvelope = allowance.apply(maxEffortEnvelope, testContext)
@@ -335,7 +335,7 @@ class AllowanceRangesTests {
         Assertions.assertEquals(
             marecoEnvelope.totalTime,
             targetTime1 + targetTime2 + targetTime3,
-            testContext.timeStep
+            testContext.timeStep,
         )
     }
 
@@ -371,7 +371,7 @@ class AllowanceRangesTests {
             SimpleContextBuilder.makeSimpleContext(
                 length.toDouble(),
                 0.0,
-                SimpleContextBuilder.TIME_STEP * 2
+                SimpleContextBuilder.TIME_STEP * 2,
             )
         val stops = doubleArrayOf(length.toDouble())
         val maxEffortEnvelope = makeSimpleMaxEffortEnvelope(testContext, 10.0, stops)
@@ -400,7 +400,7 @@ class AllowanceRangesTests {
                 testRollingStock,
                 testPath,
                 SimpleContextBuilder.TIME_STEP,
-                SimpleRollingStock.LINEAR_EFFORT_CURVE_MAP
+                SimpleRollingStock.LINEAR_EFFORT_CURVE_MAP,
             )
         val allowance =
             LinearAllowance(
@@ -409,8 +409,8 @@ class AllowanceRangesTests {
                 1.5,
                 listOf(
                     AllowanceRange(0.0, 301.0, FixedTime(50.0)),
-                    AllowanceRange(301.0, testPath.length, AllowanceValue.Percentage(50.0))
-                )
+                    AllowanceRange(301.0, testPath.length, AllowanceValue.Percentage(50.0)),
+                ),
             )
         val maxEffortEnvelope = makeSimpleMaxEffortEnvelope(testContext, 80.0, stops)
         allowance.apply(maxEffortEnvelope, testContext)
@@ -431,15 +431,15 @@ class AllowanceRangesTests {
                 testRollingStock,
                 testPath,
                 SimpleContextBuilder.TIME_STEP,
-                SimpleRollingStock.LINEAR_EFFORT_CURVE_MAP
+                SimpleRollingStock.LINEAR_EFFORT_CURVE_MAP,
             )
         val allowanceRanges = ArrayList<AllowanceRange>()
-        for (i in 0 ..< nRanges) {
+        for (i in 0..<nRanges) {
             allowanceRanges.add(
                 AllowanceRange(
                     i * rangeLength,
                     (i + 1) * rangeLength,
-                    AllowanceValue.Percentage(50.0)
+                    AllowanceValue.Percentage(50.0),
                 )
             )
         }
@@ -447,7 +447,7 @@ class AllowanceRangesTests {
         val allowance = LinearAllowance(0.0, testPath.length, 1.5, allowanceRanges)
         val stopsDistance = testPath.length / nStops
         val stops = ArrayList<Double>()
-        for (i in 0 ..< nStops) {
+        for (i in 0..<nStops) {
             stops.add((i + 1) * stopsDistance)
         }
         val maxEffortEnvelope =
@@ -461,7 +461,7 @@ class AllowanceRangesTests {
     private fun applyAllowanceIgnoringUserError(
         allowance: Allowance,
         envelope: Envelope,
-        context: EnvelopeSimContext
+        context: EnvelopeSimContext,
     ) {
         try {
             allowance.apply(envelope, context)
@@ -484,7 +484,7 @@ class AllowanceRangesTests {
                 Arguments.of(doubleArrayOf(5.0, 20.0, 10.0)),
                 Arguments.of(doubleArrayOf(20.0, 5.0, 10.0)),
                 Arguments.of(doubleArrayOf(5.0, 10.0, 20.0)),
-                Arguments.of(doubleArrayOf(5.0, 40.0, 5.0))
+                Arguments.of(doubleArrayOf(5.0, 40.0, 5.0)),
             )
         }
     }

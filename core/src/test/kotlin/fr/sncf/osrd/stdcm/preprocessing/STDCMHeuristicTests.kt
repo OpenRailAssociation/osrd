@@ -48,27 +48,27 @@ class STDCMHeuristicTests {
                 STDCMStep(
                     listOf(PathfindingEdgeLocationId(blocks[0], Offset(50.meters))),
                     null,
-                    false
+                    false,
                 ),
                 STDCMStep(
                     listOf(PathfindingEdgeLocationId(blocks[1], Offset(25.meters))),
                     null,
-                    false
+                    false,
                 ),
                 STDCMStep(
                     listOf(PathfindingEdgeLocationId(blocks[1], Offset(75.meters))),
                     null,
-                    false
+                    false,
                 ),
                 STDCMStep(
                     listOf(PathfindingEdgeLocationId(blocks[2], Offset(0.meters))),
                     null,
-                    false
+                    false,
                 ),
                 STDCMStep(
                     listOf(PathfindingEdgeLocationId(blocks[3], Offset(100.meters))),
                     1.0,
-                    true
+                    true,
                 ),
             )
 
@@ -94,11 +94,11 @@ class STDCMHeuristicTests {
         explorer = explorer.cloneAndExtendLookahead().single().moveForward()
         assertEquals(
             400.0 - 100.0 - 25.0,
-            getLocationRemainingTime(infra, explorer, 25.meters, heuristic)
+            getLocationRemainingTime(infra, explorer, 25.meters, heuristic),
         )
         assertEquals(
             400.0 - 100.0 - 75.0,
-            getLocationRemainingTime(infra, explorer, 75.meters, heuristic)
+            getLocationRemainingTime(infra, explorer, 75.meters, heuristic),
         )
 
         // Current block = 2
@@ -136,17 +136,17 @@ class STDCMHeuristicTests {
                 STDCMStep(
                     listOf(PathfindingEdgeLocationId(blocks[0], Offset(50.meters))),
                     null,
-                    false
+                    false,
                 ),
                 STDCMStep(
                     listOf(PathfindingEdgeLocationId(blocks[1], Offset(50.meters))),
                     null,
-                    false
+                    false,
                 ),
                 STDCMStep(
                     listOf(PathfindingEdgeLocationId(blocks[3], Offset(50.meters))),
                     1.0,
-                    true
+                    true,
                 ),
             )
 
@@ -174,18 +174,13 @@ class STDCMHeuristicTests {
             // While the lookahead is on the right path, the remaining distance shouldn't change
             assertEquals(
                 400.0 - 50.0 - 50.0,
-                getLocationRemainingTime(
-                    infra,
-                    explorer,
-                    50.meters,
-                    heuristics,
-                )
+                getLocationRemainingTime(infra, explorer, 50.meters, heuristics),
             )
         }
 
         var wrongPathExplorer =
             initInfraExplorer(infra, infra, steps.first().locations.first(), steps).single()
-        for (i in 0 ..< 2) {
+        for (i in 0..<2) {
             wrongPathExplorer =
                 wrongPathExplorer.cloneAndExtendLookahead().single {
                     it.getLookahead().last() != blocks[1]
@@ -194,12 +189,7 @@ class STDCMHeuristicTests {
         // Lookahead on the wrong path, no possible result
         assertEquals(
             Double.POSITIVE_INFINITY,
-            getLocationRemainingTime(
-                infra,
-                wrongPathExplorer,
-                50.meters,
-                heuristics,
-            )
+            getLocationRemainingTime(infra, wrongPathExplorer, 50.meters, heuristics),
         )
     }
 
@@ -248,7 +238,7 @@ class STDCMHeuristicTests {
                 null,
                 null,
                 0.0,
-                null
+                null,
             )
         val defaultEdge =
             STDCMEdge(
@@ -266,7 +256,7 @@ class STDCMHeuristicTests {
                 make(
                     EnvelopeTestUtils.generateTimes(
                         doubleArrayOf(0.0, 1.0),
-                        doubleArrayOf(1.0, 1.0)
+                        doubleArrayOf(1.0, 1.0),
                     )
                 ),
             )
@@ -279,10 +269,6 @@ class STDCMHeuristicTests {
             offset?.let { Offset(it) } ?: infra.getBlockLength(infraExplorer.getCurrentBlock())
         stepTracker.moveForward(infraExplorer.getCurrentBlock(), Offset.zero(), blockOffset)
 
-        return heuristic.invoke(
-            defaultEdge,
-            offset?.let { Offset(it) },
-            stepTracker,
-        )
+        return heuristic.invoke(defaultEdge, offset?.let { Offset(it) }, stepTracker)
     }
 }

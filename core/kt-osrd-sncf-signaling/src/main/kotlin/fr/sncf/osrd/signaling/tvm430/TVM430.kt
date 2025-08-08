@@ -16,7 +16,7 @@ object TVM430 : SignalingSystemDriver {
     override val stateSchema = SigStateSchema {
         enum(
             "aspect",
-            listOf("300VL", "300(VL)", "270A", "220A", "160A", "080A", "000", "OCCUPIED")
+            listOf("300VL", "300(VL)", "270A", "220A", "160A", "080A", "000", "OCCUPIED"),
         )
     }
     override val settingsSchema = SigSettingsSchema { flag("Nf") }
@@ -51,7 +51,7 @@ object TVM430 : SignalingSystemDriver {
 
     override fun isConstrainingOnSight(
         signalState: SigState,
-        trainState: SignalingTrainState
+        trainState: SignalingTrainState,
     ): Boolean {
         if (signalState.getEnum("aspect").contains("VL")) {
             // VL should never be considered constraining,

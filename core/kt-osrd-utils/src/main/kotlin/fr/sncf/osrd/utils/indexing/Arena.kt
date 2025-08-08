@@ -13,7 +13,7 @@ internal constructor(
     slotGenerations: UIntArray,
     useMap: BooleanArray,
     slotForwardLinks: IntArray,
-    usedHead: Int
+    usedHead: Int,
 ) : BaseArenaImpl<IndexT>(slotGenerations, useMap, slotForwardLinks, usedHead), Arena<IndexT> {}
 
 class MutableArenaImpl<IndexT>(initSize: Int) :

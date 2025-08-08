@@ -32,7 +32,7 @@ data class EdgeLocation(val edge: STDCMEdge, val offset: Offset<STDCMEdge>)
 
 data class Result(
     val edges: List<STDCMEdge>, // Full path as a list of edges
-    val waypoints: List<EdgeLocation>
+    val waypoints: List<EdgeLocation>,
 )
 
 val logger: Logger = LoggerFactory.getLogger("STDCM")
@@ -260,20 +260,14 @@ class STDCMPathfinding(
     /** Converts start locations into starting nodes. */
     private fun getStartNodes(
         graph: STDCMGraph,
-        constraints: List<PathfindingConstraint<Block>>
+        constraints: List<PathfindingConstraint<Block>>,
     ): Set<STDCMNode> {
         val res = HashSet<STDCMNode>()
         val firstStep = steps[0]
         assert(!firstStep.stop)
         for (location in firstStep.locations) {
             val infraExplorers =
-                initInfraExplorerWithEnvelope(
-                    fullInfra,
-                    location,
-                    rollingStock,
-                    steps,
-                    constraints,
-                )
+                initInfraExplorerWithEnvelope(fullInfra, location, rollingStock, steps, constraints)
             val extended = infraExplorers.flatMap { extendLookaheadUntil(it, 3) }
             for (explorer in extended) {
                 val node =

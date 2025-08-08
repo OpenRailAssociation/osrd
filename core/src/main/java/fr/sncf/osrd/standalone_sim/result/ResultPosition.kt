@@ -29,14 +29,14 @@ private constructor(time: Double, pathOffset: Double, trackSection: String?, off
             time: Double,
             pathOffset: Double,
             path: PathProperties,
-            rawInfra: RawSignalingInfra
+            rawInfra: RawSignalingInfra,
         ): ResultPosition {
             val location = path.getTrackLocationAtOffset(Offset(pathOffset.meters))
             return ResultPosition(
                 time,
                 pathOffset,
                 rawInfra.getTrackSectionName(location.trackId),
-                location.offset.distance.meters
+                location.offset.distance.meters,
             )
         }
     }
