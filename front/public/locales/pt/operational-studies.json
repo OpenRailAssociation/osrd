@@ -1,1 +1,15 @@
-{}
+{
+  "boards": {
+    "conflicts": "Conflitos",
+    "macro": "Macro",
+    "map": "Mapa",
+    "tables": "Tabelas",
+    "trains": "Comboios"
+  },
+  "importTrains": {
+    "cancel": "Cancelar",
+    "date": "DATA",
+    "datetime": "Data e hora",
+    "download": "Transferir"
+  }
+}
