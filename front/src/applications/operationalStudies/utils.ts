@@ -496,3 +496,9 @@ export const groupRoundTrips = (
 
   return { oneWays, roundTrips, others };
 };
+
+export const getInvalidStepLabel = (step: OperationalPointReference) => {
+  if ('uic' in step) return step.uic.toString();
+  if ('trigram' in step) return step.trigram;
+  return step.operational_point;
+};
