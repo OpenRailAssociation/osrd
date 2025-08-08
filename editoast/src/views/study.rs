@@ -33,14 +33,6 @@ use crate::views::pagination::PaginationQueryParams;
 use crate::views::project::ProjectError;
 use crate::views::project::ProjectIdParam;
 
-editoast_common::schemas! {
-    Study,
-    StudyCreateForm,
-    StudyPatchForm,
-    StudyWithScenarioCount,
-    StudyResponse,
-}
-
 #[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "study")]
 pub enum StudyError {
@@ -57,6 +49,7 @@ pub enum StudyError {
     Database(#[from] editoast_models::model::Error),
 }
 
+#[editoast_derive::openapi_schema]
 #[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
 pub struct StudyResponse {
     #[serde(flatten)]
@@ -76,6 +69,7 @@ impl StudyResponse {
 }
 
 /// This structure is used by the post endpoint to create a study
+#[editoast_derive::openapi_schema]
 #[derive(Serialize, Deserialize, Default, ToSchema)]
 pub(in crate::views) struct StudyCreateForm {
     pub name: String,
@@ -264,6 +258,7 @@ pub(in crate::views) async fn get(
 }
 
 /// This structure is used by the patch endpoint to patch a study
+#[editoast_derive::openapi_schema]
 #[derive(Serialize, Deserialize, Default, ToSchema)]
 pub(in crate::views) struct StudyPatchForm {
     pub name: Option<String>,
@@ -358,6 +353,7 @@ pub(in crate::views) async fn patch(
     Ok(Json(StudyResponse::new(response, project)))
 }
 
+#[editoast_derive::openapi_schema]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
 #[schema(as = StudyWithScenarios)]
 pub struct StudyWithScenarioCount {

@@ -23,6 +23,7 @@ use editoast_derive::Model;
 use super::Project;
 use super::Study;
 
+#[editoast_derive::openapi_schema]
 #[derive(Debug, Clone, Model, Deserialize, Serialize, ToSchema)]
 #[model(table = database::tables::scenario)]
 #[model(gen(ops = crud, list))]

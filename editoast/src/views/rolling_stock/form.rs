@@ -20,6 +20,7 @@ use crate::models::Changeset;
 use crate::models::Model;
 use crate::models::RollingStock;
 
+#[editoast_derive::openapi_schema]
 #[editoast_derive::annotate_units]
 #[derive(Debug, Clone, Deserialize, Serialize, ToSchema)]
 pub struct RollingStockForm {

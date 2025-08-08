@@ -26,11 +26,6 @@ use crate::models::Retrieve;
 use crate::models::electrical_profiles::ElectricalProfileSet;
 use crate::models::electrical_profiles::LightElectricalProfileSet;
 
-editoast_common::schemas! {
-    LightElectricalProfileSet,
-    ElectricalProfileSet,
-}
-
 #[derive(IntoParams)]
 #[allow(unused)]
 pub struct ElectricalProfileSetId {

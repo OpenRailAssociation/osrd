@@ -31,12 +31,6 @@ use std::result::Result as StdResult;
 use thiserror::Error;
 use utoipa::ToSchema;
 
-editoast_common::schemas! {
-    DelimitedAreaResponse,
-    DirectedLocation,
-    InputError,
-}
-
 // Maximum distance the graph can be explored from a speed limit execution signal
 // without finding any legitimate ending to the speed limit before it is considered
 // there is not valid limit on the portion of the graph that is being explored.
@@ -51,11 +45,13 @@ pub(in crate::views) struct DelimitedAreaForm {
     exits: Vec<DirectedLocation>,
 }
 
+#[editoast_derive::openapi_schema]
 #[derive(Deserialize, Serialize, ToSchema)]
 pub(in crate::views) struct DelimitedAreaResponse {
     track_ranges: Vec<DirectionalTrackRange>,
 }
 
+#[editoast_derive::openapi_schema]
 #[derive(Debug, Deserialize, Serialize, ToSchema)]
 struct DirectedLocation {
     #[schema(inline)]
@@ -74,6 +70,7 @@ enum DelimitedAreaError {
     },
 }
 
+#[editoast_derive::openapi_schema]
 #[derive(Debug, Error, Serialize, Deserialize, ToSchema)]
 enum InputError {
     #[error("Track '{0}' does not exist")]

@@ -4,10 +4,7 @@ use crate::models::Study;
 use crate::models::prelude::*;
 use crate::models::work_schedules::WorkSchedule;
 
-editoast_common::schemas! {
-    Ordering,
-}
-
+#[editoast_derive::openapi_schema]
 #[derive(Debug, Clone, serde::Deserialize, Default, utoipa::ToSchema)]
 pub enum Ordering {
     NameAsc,

@@ -24,11 +24,8 @@ use utoipa::ToSchema;
 use utoipa::openapi::RefOr;
 use utoipa::openapi::Schema;
 
-editoast_common::schemas! {
-    RoundTrips,
-}
-
 /// Represents a collection of round trips and one-way
+#[editoast_derive::openapi_schema]
 #[derive(Debug, Default, Clone, Deserialize, Serialize, ToSchema)]
 pub(in crate::views) struct RoundTrips {
     /// List of one-way trains

@@ -67,15 +67,6 @@ use editoast_schemas::train_schedule::OperationalPointIdentifier;
 use editoast_schemas::train_schedule::OperationalPointReference;
 use editoast_schemas::train_schedule::PathItemLocation;
 
-editoast_common::schemas! {
-    pathfinding::schemas(),
-    delimited_area::schemas(),
-    InfraIdQueryParam,
-    InfraState,
-    InfraWithState,
-    RelatedOperationalPoint,
-}
-
 #[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "infra")]
 pub enum InfraApiError {
@@ -89,6 +80,7 @@ pub enum InfraApiError {
     Database(#[from] model::Error),
 }
 
+#[editoast_derive::openapi_schema]
 #[derive(Debug, Default, Clone, Serialize, Deserialize, IntoParams, ToSchema)]
 #[into_params(parameter_in = Query)]
 pub(in crate::views) struct InfraIdQueryParam {
@@ -251,6 +243,7 @@ pub(in crate::views) async fn list(
     Ok(Json(response))
 }
 
+#[editoast_derive::openapi_schema]
 #[derive(Debug, Clone, Copy, Default, Deserialize, PartialEq, Eq, Serialize, ToSchema)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum InfraState {
@@ -278,6 +271,7 @@ impl From<osrdyne_client::WorkerStatus> for InfraState {
     }
 }
 
+#[editoast_derive::openapi_schema]
 #[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
 pub(in crate::views) struct InfraWithState {
     #[serde(flatten)]
@@ -926,6 +920,7 @@ pub(in crate::views) struct MatchOperationalPointsForm {
     operational_point_references: Vec<OperationalPointReference>,
 }
 
+#[editoast_derive::openapi_schema]
 #[derive(Serialize, ToSchema)]
 #[cfg_attr(test, derive(Deserialize))]
 struct RelatedOperationalPoint {

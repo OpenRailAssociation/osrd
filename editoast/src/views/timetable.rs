@@ -72,16 +72,6 @@ use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
 use crate::views::timetable::simulation::SimulationResponseSuccess;
 
-editoast_common::schemas! {
-    Conflict,
-    TimetableResult,
-    stdcm::schemas(),
-    paced_train::schemas(),
-    train_schedule::schemas(),
-    simulation::schemas(),
-    similar_trains::schemas(),
-}
-
 #[derive(Debug, Error, EditoastError, derive_more::From)]
 #[editoast_error(base_id = "timetable")]
 enum TimetableError {
@@ -101,6 +91,7 @@ enum TimetableError {
 }
 
 /// Creation result for a Timetable
+#[editoast_derive::openapi_schema]
 #[derive(Debug, Default, Serialize, Deserialize, ToSchema)]
 #[cfg_attr(test, derive(PartialEq))]
 pub(in crate::views) struct TimetableResult {
@@ -379,6 +370,7 @@ pub struct ElectricalProfileSetIdQueryParam {
     electrical_profile_set_id: Option<i64>,
 }
 
+#[editoast_derive::openapi_schema]
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize, ToSchema)]
 pub struct Conflict {
     /// List of train schedule ids involved in the conflict

@@ -10,7 +10,6 @@ use utoipa::ToSchema;
 
 use crate::models::prelude::*;
 
-
 #[editoast_derive::openapi_schema]
 #[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
 #[serde(rename_all = "snake_case")]

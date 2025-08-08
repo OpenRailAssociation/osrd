@@ -32,12 +32,6 @@ use thiserror::Error;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
 
-editoast_common::schemas! {
-    TowedRollingStockCountList,
-    TowedRollingStockForm,
-    TowedRollingStockLockedForm,
-}
-
 #[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "towedrollingstocks")]
 pub enum TowedRollingStockError {
@@ -54,6 +48,7 @@ pub enum TowedRollingStockError {
     Database(#[from] model::Error),
 }
 
+#[editoast_derive::openapi_schema]
 #[editoast_derive::annotate_units]
 #[derive(Debug, Clone, Deserialize, Serialize, ToSchema)]
 pub struct TowedRollingStockForm {
@@ -125,6 +120,7 @@ pub(in crate::views) async fn post(
     Ok(Json(rolling_stock))
 }
 
+#[editoast_derive::openapi_schema]
 #[derive(Serialize, ToSchema)]
 #[cfg_attr(test, derive(Deserialize))]
 pub(in crate::views) struct TowedRollingStockCountList {
@@ -276,6 +272,7 @@ pub(in crate::views) async fn patch_by_id(
     Ok(Json(new_towed_rolling_stock))
 }
 
+#[editoast_derive::openapi_schema]
 #[derive(Debug, Deserialize, ToSchema)]
 #[serde(deny_unknown_fields)]
 pub(in crate::views) struct TowedRollingStockLockedForm {

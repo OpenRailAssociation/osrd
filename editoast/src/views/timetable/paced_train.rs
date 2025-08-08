@@ -45,17 +45,6 @@ use crate::views::timetable::simulation;
 use crate::views::timetable::simulation::SummaryResponse;
 use crate::views::timetable::simulation::train_simulation_batch;
 
-editoast_common::schemas! {
-    PacedTrainResponse,
-    ProjectPathPacedTrainResult,
-    PacedTrainForm,
-    PacedTrain,
-    OccupancyBlockForm,
-    OccupancyBlocksPacedTrainResult,
-    PacedTrainSummaryResponse,
-    ExceptionQueryParam,
-}
-
 #[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "paced_train")]
 enum PacedTrainError {
@@ -76,6 +65,7 @@ enum PacedTrainError {
     Database(#[from] editoast_models::model::Error),
 }
 
+#[editoast_derive::openapi_schema]
 #[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
 pub struct PacedTrainForm {
     /// Timetable attached to the paced train
@@ -84,6 +74,7 @@ pub struct PacedTrainForm {
     pub paced_train_base: PacedTrain,
 }
 
+#[editoast_derive::openapi_schema]
 #[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
 pub(in crate::views) struct PacedTrainResponse {
     id: i64,
@@ -225,6 +216,7 @@ pub(in crate::views) struct SimulationBatchForm {
     ids: HashSet<i64>,
 }
 
+#[editoast_derive::openapi_schema]
 #[derive(Debug, Serialize, ToSchema)]
 #[cfg_attr(test, derive(PartialEq, serde::Deserialize))]
 #[schema(as = PacedTrainSimulationSummaryResult)]
@@ -366,6 +358,7 @@ pub(in crate::views) async fn simulation_summary(
     Ok(Json(results))
 }
 
+#[editoast_derive::openapi_schema]
 #[derive(Debug, Default, Clone, Serialize, Deserialize, IntoParams, ToSchema)]
 #[into_params(parameter_in = Query)]
 pub(in crate::views) struct ExceptionQueryParam {
@@ -539,6 +532,7 @@ pub(in crate::views) async fn simulation(
 }
 
 /// Project path output is described by time-space points and blocks
+#[editoast_derive::openapi_schema]
 #[derive(Debug, Deserialize, Serialize, ToSchema)]
 pub struct ProjectPathPacedTrainResult {
     /// Paced train
@@ -840,6 +834,7 @@ pub(in crate::views) async fn project_path_op(
 }
 
 /// Occupancy blocks output is described by blocks (signal updates)
+#[editoast_derive::openapi_schema]
 #[derive(Debug, Deserialize, Serialize, ToSchema)]
 pub struct OccupancyBlocksPacedTrainResult {
     /// Paced train

@@ -237,12 +237,6 @@ use crate::views::AuthorizationError;
 use crate::views::pagination::PaginationQueryParams;
 use database::DbConnectionPoolV2;
 
-editoast_common::schemas! {
-    SearchPayload,
-    SearchQuery,
-    SearchResultItem::schemas(),
-}
-
 #[derive(Debug, thiserror::Error, EditoastError)]
 #[editoast_error(base_id = "search")]
 enum SearchApiError {
@@ -253,6 +247,7 @@ enum SearchApiError {
 }
 
 /// A search query
+#[editoast_derive::openapi_schema]
 #[derive(ToSchema, Serialize)]
 #[schema(example = json!(["and", ["=", ["infra_id"], 2], ["search", ["name"], "plop"]]))]
 #[serde(untagged)]
@@ -266,6 +261,7 @@ enum SearchQuery {
 }
 
 /// The payload of a search request
+#[editoast_derive::openapi_schema]
 #[derive(Debug, Clone, Deserialize, ToSchema)]
 #[schema(example = json!({
     "object": "operationalpoint",
@@ -402,7 +398,6 @@ pub(in crate::views) async fn search(
     Ok(Json(serde_json::to_value(results).unwrap()))
 }
 
-// NOTE: every structure deriving `Search` here might have to `#[allow(unused)]`
 // because while the name and type information of the fields are read by the macro,
 // they might not be explicitly used in the code. (Their JSON representation extracted
 // from the DB query is directly forwarded into the endpoint response, so these
@@ -412,6 +407,7 @@ pub(in crate::views) async fn search(
 // annotations to alter the schema. That's not ideal since none of them are ever
 // serialized, but that's life.
 
+#[editoast_derive::openapi_schema]
 #[derive(Search, Serialize, ToSchema)]
 #[search(
     table = "search_track",
@@ -419,7 +415,6 @@ pub(in crate::views) async fn search(
     column(name = "line_code", data_type = "INT"),
     column(name = "line_name", data_type = "TEXT")
 )]
-#[allow(unused)]
 /// A search result item for a query with `object = "track"`
 ///
 // **IMPORTANT**: Please note that any modification to this struct should be reflected in [crate::models::infra::Infra::clone]
@@ -432,6 +427,7 @@ pub(super) struct SearchResultItemTrack {
     line_code: i64,
 }
 
+#[editoast_derive::openapi_schema]
 #[derive(Search, Serialize, ToSchema)]
 #[search(
     table = "search_operational_point",
@@ -477,7 +473,6 @@ pub(super) struct SearchResultItemTrack {
         textual_search,
     )
 )]
-#[allow(unused)]
 /// A search result item for a query with `object = "operationalpoint"`
 ///
 // **IMPORTANT**: Please note that any modification to this struct should be reflected in [crate::models::infra::Infra::clone]
@@ -503,12 +498,12 @@ pub(super) struct SearchResultItemOperationalPoint {
     track_sections: Vec<SearchResultItemOperationalPointTrackSections>,
 }
 #[derive(Serialize, ToSchema)]
-#[allow(unused)]
 pub(super) struct SearchResultItemOperationalPointTrackSections {
     track: String,
     position: f64,
 }
 
+#[editoast_derive::openapi_schema]
 #[derive(Search, Serialize, ToSchema)]
 #[search(
     table = "search_signal",
@@ -561,7 +556,6 @@ pub(super) struct SearchResultItemOperationalPointTrackSections {
         INNER JOIN infra_object_track_section AS track_section ON track_section.obj_id = sig.data->>'track' AND track_section.infra_id = sig.infra_id
         INNER JOIN infra_layer_signal AS lay ON lay.infra_id = sig.infra_id AND lay.obj_id = sig.obj_id"
 )]
-#[allow(unused)]
 /// A search result item for a query with `object = "signal"`
 ///
 // **IMPORTANT**: Please note that any modification to this struct should be reflected in [crate::models::infra::Infra::clone]
@@ -588,6 +582,7 @@ pub(super) struct SearchResultItemSignal {
     sprite: Option<String>,
 }
 
+#[editoast_derive::openapi_schema]
 #[derive(Search, Serialize, ToSchema)]
 #[search(
     table = "search_project",
@@ -597,7 +592,6 @@ pub(super) struct SearchResultItemSignal {
     column(name = "description", data_type = "string"),
     column(name = "tags", data_type = "string")
 )]
-#[allow(unused)]
 /// A search result item for a query with `object = "project"`
 pub(super) struct SearchResultItemProject {
     #[search(sql = "project.id")]
@@ -619,6 +613,7 @@ pub(super) struct SearchResultItemProject {
     tags: Vec<String>,
 }
 
+#[editoast_derive::openapi_schema]
 #[derive(Search, Serialize, ToSchema)]
 #[search(
     table = "search_user",
@@ -636,7 +631,6 @@ pub(super) struct SearchResultItemProject {
         textual_search
     )
 )]
-#[allow(unused)]
 /// A search result item for a query with `object = "user"`
 pub(super) struct SearchResultItemUser {
     #[search(sql = "authn_user.id")]
@@ -647,6 +641,7 @@ pub(super) struct SearchResultItemUser {
     name: String,
 }
 
+#[editoast_derive::openapi_schema]
 #[derive(Search, Serialize, ToSchema)]
 #[search(
     table = "search_study",
@@ -661,7 +656,6 @@ pub(super) struct SearchResultItemUser {
     ),
     column(name = "project_id", data_type = "INTEGER", sql = "study.project_id")
 )]
-#[allow(unused)]
 /// A search result item for a query with `object = "study"`
 pub(super) struct SearchResultItemStudy {
     #[search(sql = "study.id")]
@@ -686,6 +680,7 @@ pub(super) struct SearchResultItemStudy {
     budget: Option<u32>,
 }
 
+#[editoast_derive::openapi_schema]
 #[derive(Search, Serialize, ToSchema)]
 #[search(
     table = "search_scenario",
@@ -712,7 +707,6 @@ pub(super) struct SearchResultItemStudy {
     ),
     column(name = "study_id", data_type = "INTEGER", sql = "scenario.study_id")
 )]
-#[allow(unused)]
 /// A search result item for a query with `object = "scenario"`
 pub(super) struct SearchResultItemScenario {
     #[search(sql = "scenario.id")]
@@ -740,6 +734,7 @@ pub(super) struct SearchResultItemScenario {
     tags: Vec<String>,
 }
 
+#[editoast_derive::openapi_schema]
 #[derive(Search, Serialize, ToSchema)]
 #[cfg_attr(test, derive(serde::Deserialize))]
 #[search(
@@ -747,7 +742,6 @@ pub(super) struct SearchResultItemScenario {
     column(name = "timetable_id", data_type = "integer"),
     column(name = "train_name", data_type = "string")
 )]
-#[allow(unused)]
 /// A search result item for a query with `object = "trainschedule"`
 pub(super) struct SearchResultItemTrainSchedule {
     #[search(sql = "train_schedule.id")]

@@ -71,11 +71,6 @@ impl std::fmt::Display for Codes {
     }
 }
 
-editoast_common::schemas! {
-    Waypoint,
-    WaypointResponse,
-}
-
 #[derive(Debug, Deserialize, ToSchema)]
 #[cfg_attr(test, derive(Serialize))]
 struct RollingStockCharacteristics {
@@ -83,6 +78,7 @@ struct RollingStockCharacteristics {
     speed_limit_tag: Option<String>,
 }
 
+#[editoast_derive::openapi_schema]
 #[derive(Clone, Deserialize, ToSchema)]
 #[cfg_attr(test, derive(PartialEq, Serialize))]
 #[schema(as = SimilarTrainWaypoint)]
@@ -116,6 +112,7 @@ pub(in crate::views) struct Request {
     timetable_id: i64,
 }
 
+#[editoast_derive::openapi_schema]
 #[derive(Debug, Serialize, ToSchema)]
 #[cfg_attr(test, derive(PartialEq, Deserialize))]
 #[schema(as = SimilarTrainWaypointResponse)]

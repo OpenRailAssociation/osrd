@@ -21,10 +21,6 @@ use super::pagination::PaginatedList;
 use super::pagination::PaginationQueryParams;
 use super::pagination::PaginationStats;
 
-editoast_common::schemas! {
-    StdcmLogListItem,
-}
-
 #[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "stdcm_log")]
 enum StdcmLogError {
@@ -41,6 +37,7 @@ enum StdcmLogError {
     MissingIdAndTraceId,
 }
 
+#[editoast_derive::openapi_schema]
 #[derive(Serialize, ToSchema)]
 #[cfg_attr(test, derive(Deserialize))]
 struct StdcmLogListItem {

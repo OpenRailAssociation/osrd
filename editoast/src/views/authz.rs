@@ -35,18 +35,7 @@ use super::pagination::PaginatedList;
 use super::pagination::PaginationQueryParams;
 use super::pagination::PaginationStats;
 
-editoast_common::schemas! {
-    InfraGrant,
-    InfraPrivilege,
-    ResourceType,
-    Role,
-    SubjectType,
-
-    // not inlined because BodyUpdateGrants is an enum and derive(ToSchema) cannot iniline
-    GrantBody,
-    RevokeBody,
-}
-
+#[editoast_derive::openapi_schema]
 #[derive(Serialize, Deserialize, ToSchema)]
 #[cfg_attr(test, derive(Debug))]
 enum SubjectType {
@@ -54,6 +43,7 @@ enum SubjectType {
     Group,
 }
 
+#[editoast_derive::openapi_schema]
 #[derive(Display, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, ToSchema)]
 #[serde(rename_all = "snake_case")]
 #[strum(serialize_all = "snake_case")]
@@ -437,6 +427,7 @@ pub(in crate::views) async fn subjects_with_grant_on_resource(
     }))
 }
 
+#[editoast_derive::openapi_schema]
 #[derive(Deserialize, ToSchema)]
 pub(in crate::views) struct GrantBody {
     resource_type: ResourceType,
@@ -445,6 +436,7 @@ pub(in crate::views) struct GrantBody {
     grant: InfraGrant,
 }
 
+#[editoast_derive::openapi_schema]
 #[derive(Deserialize, ToSchema)]
 pub(in crate::views) struct RevokeBody {
     resource_type: ResourceType,
