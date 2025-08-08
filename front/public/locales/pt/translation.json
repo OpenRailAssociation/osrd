@@ -1,1 +1,34 @@
-{}
+{
+  "Editor": {
+    "directions": {
+      "BOTH": "Ambos",
+      "START_TO_STOP": "Partida até chegada"
+    },
+    "entities": {
+      "errors-linked": "Problemas associados"
+    },
+    "infra-errors": {
+      "error-level": {
+        "all": "Todos",
+        "errors": "Erros",
+        "warnings": "Avisos"
+      },
+      "error-type": {
+        "all": "Todos",
+        "empty_object": {
+          "name": "Objeto vazio"
+        },
+        "invalid_reference": {
+          "name": "Referência inválida"
+        },
+        "invalid_route": {
+          "description": "A rota « {{obj_id}} » é inválida, o caminho solicitado não é consistente",
+          "name": "Rota inválida"
+        },
+        "missing_route": {
+          "name": "Rota em falta"
+        }
+      }
+    }
+  }
+}
