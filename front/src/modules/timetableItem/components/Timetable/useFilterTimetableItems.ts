@@ -121,14 +121,15 @@ const useFilterTimetableItems = (
       // Apply train category filter
       if (trainCategoryFilter !== 'all') {
         if (trainCategoryFilter === 'noCategory') {
-          if (category) {
-            return false;
+          if (category) return false;
+        } else {
+          if (!category) return false;
+
+          if (isMainCategory(category)) {
+            if (category.main_category !== trainCategoryFilter) return false;
+          } else {
+            if (category.sub_category_code !== trainCategoryFilter) return false;
           }
-        } else if (
-          !category ||
-          (isMainCategory(category) && category.main_category !== trainCategoryFilter)
-        ) {
-          return false;
         }
       }
 

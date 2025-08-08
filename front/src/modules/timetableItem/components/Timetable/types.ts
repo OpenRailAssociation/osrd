@@ -5,8 +5,9 @@ import type {
   PathfindingInputError,
   PathfindingNotFound,
   SimulationSummaryResult,
-  TrainMainCategory,
+  TrainMainCategories,
   TrainScheduleResponse,
+  SubCategory,
 } from 'common/api/osrdEditoastApi';
 import type {
   OccurrenceId,
@@ -22,7 +23,10 @@ export type ScheduledPointsHonoredFilter = 'both' | 'honored' | 'notHonored';
 
 export type TrainTypeFilter = 'both' | 'pacedTrain' | 'trainSchedule';
 
-export type TrainCategoryFilter = 'all' | 'noCategory' | TrainMainCategory;
+export type TrainCategoryFilter =
+  | 'all'
+  | 'noCategory'
+  | (TrainMainCategories | SubCategory['code']);
 
 type SimulationSummaryResultSuccess = Extract<SimulationSummaryResult, { status: 'success' }>;
 

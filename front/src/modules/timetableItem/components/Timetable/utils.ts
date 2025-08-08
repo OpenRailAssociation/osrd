@@ -1,7 +1,12 @@
 import dayjs from 'dayjs';
 import { omit } from 'lodash';
 
-import type { PacedTrain, TrainSchedule } from 'common/api/osrdEditoastApi';
+import type {
+  PacedTrain,
+  SubCategory,
+  TrainMainCategories,
+  TrainSchedule,
+} from 'common/api/osrdEditoastApi';
 import type { TimetableItem, TimetableItemId } from 'reducers/osrdconf/types';
 import type { Duration } from 'utils/duration';
 import { isPacedTrainResponseWithPacedTrainId } from 'utils/trainId';
@@ -74,3 +79,13 @@ export const exportTimetableItems = (
   a.download = 'timetable.json';
   a.click();
 };
+
+export function extractCategoryId(fullId: string): TrainMainCategories | SubCategory['code'] {
+  const [prefix, code] = fullId.split(':');
+
+  if (prefix === 'main' || prefix === 'sub') {
+    return code;
+  }
+
+  throw new Error(`Unknown category prefix: ${prefix}`);
+}
