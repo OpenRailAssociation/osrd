@@ -1,4 +1,4 @@
-import { type ComponentType, useContext, useEffect, useRef, useState } from 'react';
+import { useContext, useEffect, useRef, useState } from 'react';
 
 import along from '@turf/along';
 import length from '@turf/length';
@@ -237,8 +237,4 @@ const PointEditionLeftPanel = <Entity extends EditorEntity>({
   );
 };
 
-const getPointEditionLeftPanel =
-  (type: EditoastType): ComponentType =>
-  () => <PointEditionLeftPanel type={type} />;
-
-export default getPointEditionLeftPanel;
+export default PointEditionLeftPanel;

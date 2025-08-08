@@ -21,7 +21,7 @@ import { NULL_GEOMETRY } from 'types';
 import { nearestPointOnLine } from 'utils/geometry';
 import { getNearestPoint } from 'utils/mapHelper';
 
-import { PointEditionMessages, getPointEditionLeftPanel } from './components';
+import { PointEditionMessages, PointEditionLeftPanel } from './components';
 import { POINT_LAYER_ID } from './consts';
 import type { BufferStopEntity, DetectorEntity, PointEditionState, SignalEntity } from './types';
 
@@ -289,7 +289,9 @@ function getPointEditionTool<T extends EditorPoint>({
     },
 
     layersComponent,
-    leftPanelComponent: getPointEditionLeftPanel(LAYER_TO_EDITOAST_DICT[layer]),
+    leftPanelComponent() {
+      return <PointEditionLeftPanel type={LAYER_TO_EDITOAST_DICT[layer]} />;
+    },
     messagesComponent: PointEditionMessages,
   };
 }
