@@ -55,14 +55,6 @@ pub use tags::Tags;
 pub use train_schedule::TrainSchedule;
 pub use user::User;
 
-editoast_common::schemas! {
-    infra::schemas(),
-    project::schemas(),
-    rolling_stock::schemas(),
-    stdcm_log::schemas(),
-    tags::schemas(),
-    towed_rolling_stock::schemas(),
-}
 
 #[cfg(test)]
 mod tests {

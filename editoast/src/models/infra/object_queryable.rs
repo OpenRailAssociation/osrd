@@ -18,10 +18,8 @@ use crate::error::Result;
 use crate::models::get_geometry_layer_table;
 use crate::models::get_table;
 
-editoast_common::schemas! {
-    ObjectQueryable,
-}
 
+#[editoast_derive::openapi_schema]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, QueryableByName, utoipa::ToSchema)]
 #[schema(as = InfraObjectWithGeometry)]
 pub struct ObjectQueryable {

@@ -40,9 +40,6 @@ use crate::infra_cache::InfraCache;
 use crate::infra_cache::ObjectCache;
 use crate::infra_cache::operation::CacheOperation;
 
-editoast_common::schemas! {
-    infra_error::schemas(),
-}
 
 /// Empty context used when no context is needed
 #[derive(Debug, Default)]

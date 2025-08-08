@@ -42,9 +42,6 @@ use crate::infra_cache::operation::CacheOperation;
 use database::DbConnection;
 use database::DbConnectionPoolV2;
 
-editoast_common::schemas! {
-    error::schemas(),
-}
 
 /// This trait define how a generated data table should be handled
 pub trait GeneratedData {

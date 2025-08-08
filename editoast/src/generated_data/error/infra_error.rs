@@ -10,12 +10,7 @@ use strum::EnumDiscriminants;
 use strum::EnumString;
 use utoipa::ToSchema;
 
-editoast_common::schemas! {
-     InfraError,
-     InfraErrorType,
-     InfraErrorTypeLabel,
-}
-
+#[editoast_derive::openapi_schema]
 #[derive(Serialize, Deserialize, PartialEq, Debug, Clone, ToSchema)]
 pub struct InfraError {
     pub obj_id: String,
@@ -27,10 +22,12 @@ pub struct InfraError {
     pub sub_type: InfraErrorType,
 }
 
+#[editoast_derive::openapi_schema]
 #[derive(Serialize, Deserialize, PartialEq, Debug, EnumDiscriminants, Clone, ToSchema)]
 #[strum(serialize_all = "snake_case")]
 #[strum_discriminants(derive(ToSchema, Deserialize, EnumString, AsRefStr))]
 #[strum_discriminants(name(InfraErrorTypeLabel))]
+#[strum_discriminants(editoast_derive::openapi_schema())]
 #[strum_discriminants(serde(rename_all = "snake_case", deny_unknown_fields))]
 #[strum_discriminants(strum(serialize_all = "snake_case"))]
 #[serde(tag = "error_type", rename_all = "snake_case", deny_unknown_fields)]
