@@ -44,10 +44,6 @@ use editoast_schemas::infra::RAILJSON_VERSION;
 use editoast_schemas::infra::RailJson;
 use editoast_schemas::primitives::ObjectType;
 
-editoast_common::schemas! {
-    Infra,
-    object_queryable::schemas(),
-}
 
 /// The default version of a newly created infrastructure
 ///
@@ -56,6 +52,7 @@ editoast_common::schemas! {
 #[cfg(test)]
 pub const DEFAULT_INFRA_VERSION: i64 = 0;
 
+#[editoast_derive::openapi_schema]
 #[derive(Debug, Clone, Educe, Serialize, Deserialize, Model, utoipa::ToSchema)]
 #[model(table = database::tables::infra)]
 #[model(gen(ops = crud, batch_ops = r, list))]

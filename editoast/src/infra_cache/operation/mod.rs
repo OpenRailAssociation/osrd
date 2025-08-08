@@ -24,9 +24,6 @@ use editoast_schemas::infra::InfraObject;
 use editoast_schemas::primitives::ObjectRef;
 use editoast_schemas::primitives::ObjectType;
 
-editoast_common::schemas! {
-    Operation,
-}
 
 #[doc(hidden)]
 #[linkme::distributed_slice(editoast_common::OPENAPI_SCHEMAS)]
@@ -61,6 +58,7 @@ static _TESTOPERATION_OPENAPI_SCHEMA: editoast_common::OpenApiSchemaSliceItem =
 static _PATCH_OPENAPI_SCHEMA: editoast_common::OpenApiSchemaSliceItem =
     <json_patch::Patch as utoipa::ToSchema>::schema;
 
+#[editoast_derive::openapi_schema]
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq)]
 #[serde(tag = "operation_type", deny_unknown_fields, rename_all = "UPPERCASE")]
 pub enum Operation {

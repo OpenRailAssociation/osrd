@@ -20,7 +20,6 @@ use editoast_schemas::rolling_stock::LoadingGaugeType;
 use editoast_schemas::rolling_stock::RollingResistance;
 use editoast_schemas::rolling_stock::RollingStockMetadata;
 use editoast_schemas::rolling_stock::RollingStockSupportedSignalingSystems;
-use power_restrictions::PowerRestriction;
 use serde::Deserialize;
 use serde::Serialize;
 
@@ -33,11 +32,8 @@ use crate::models::prelude::*;
 mod schedules_from_rolling_stock;
 pub use schedules_from_rolling_stock::ScenarioReference;
 
-editoast_common::schemas! {
-    RollingStock,
-    PowerRestriction,
-}
 
+#[editoast_derive::openapi_schema]
 #[editoast_derive::annotate_units]
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq, Model, ToSchema)]
 #[model(table = database::tables::rolling_stock)]

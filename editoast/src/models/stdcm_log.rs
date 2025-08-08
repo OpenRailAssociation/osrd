@@ -10,11 +10,8 @@ use utoipa::ToSchema;
 
 use crate::models::prelude::*;
 
-editoast_common::schemas! {
-    StdcmLog,
-    StdcmResponseOrError,
-}
 
+#[editoast_derive::openapi_schema]
 #[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
 #[serde(rename_all = "snake_case")]
 // We accepted the difference of memory size taken by variants
@@ -26,6 +23,7 @@ pub enum StdcmResponseOrError {
     RequestError(serde_json::Value),
 }
 
+#[editoast_derive::openapi_schema]
 #[derive(Clone, Debug, Serialize, Deserialize, Model, ToSchema)]
 #[model(table = database::tables::stdcm_logs)]
 #[model(gen(ops = crd, list))]

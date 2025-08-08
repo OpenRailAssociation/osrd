@@ -86,12 +86,9 @@ use crate::ValkeyClient;
 use crate::client::get_app_version;
 use crate::error::Result;
 use crate::error::{self};
-use crate::generated_data;
 use crate::generated_data::speed_limit_tags_config::SpeedLimitTagIds;
 use crate::infra_cache::InfraCache;
-use crate::infra_cache::operation;
 use crate::map::MapLayers;
-use crate::models;
 use crate::models::PgAuthDriver;
 use crate::valkey_utils::ValkeyConfig;
 
@@ -388,13 +385,10 @@ fn service_router() -> router::DocumentedRouter {
 }
 
 editoast_common::schemas! {
-    models::schemas(),
-    generated_data::schemas(),
     authz::schemas(),
     electrical_profiles::schemas(),
     error::schemas(),
     infra::schemas(),
-    operation::schemas(),
     operational_studies::schemas(),
     pagination::schemas(),
     path::schemas(),

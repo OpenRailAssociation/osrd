@@ -2,10 +2,8 @@ use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
 
-editoast_common::schemas! {
-    Tags,
-}
 
+#[editoast_derive::openapi_schema]
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Default, ToSchema)]
 pub struct Tags(Vec<String>);
 
