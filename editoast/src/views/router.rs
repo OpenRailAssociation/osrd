@@ -1,6 +1,11 @@
 use std::collections::VecDeque;
 
-// we cannot have a tuple (*const (), fn(...) -> ...) because raw pointers are not Send or Sync
+// fn(function_type_name) -> utoipa::Path::path_item
+//
+// We can't just build a slice of tuples (&'static str, fn) because std::any::type_name_of_val
+// constness is unstable. So O(n^2) here we go...
+//
+// If this takes too long, we can always optimize it later (structure, search algorithm, featuring utoipa).
 pub(in crate::views) type OpenApiRouteSliceItem =
     fn(&str) -> Option<fn(Option<&str>) -> utoipa::openapi::path::PathItem>;
 

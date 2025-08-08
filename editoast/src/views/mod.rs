@@ -34,6 +34,7 @@ use editoast_common::Version;
 use fga::client::Limits;
 #[cfg(test)]
 pub(crate) use test_app::test_app;
+use tracing::Instrument;
 
 use ::core::str;
 use std::collections::HashSet;
@@ -914,7 +915,25 @@ impl AppState {
 impl Server {
     pub async fn new(config: ServerConfig) -> anyhow::Result<Self> {
         info!("Building server...");
-        let app_state = AppState::init(config).await?;
+        let router = tracing::debug_span!("router initialization").in_scope(|| {
+            let now = std::time::Instant::now();
+            let router = service_router().router;
+            let elapsed = now.elapsed();
+            tracing::debug!(time_ms = elapsed.as_millis(), "router initialized");
+            router
+        });
+        let app_state = tracing::info_span!("AppState initialization")
+            .in_scope(|| {
+                async move {
+                    let now = std::time::Instant::now();
+                    let app_state = AppState::init(config).await?;
+                    let elapsed = now.elapsed();
+                    tracing::debug!(time_ms = elapsed.as_millis(), "app state initialized");
+                    Ok::<_, anyhow::Error>(app_state)
+                }
+                .in_current_span()
+            })
+            .await?;
 
         // Custom Bytes and String extractor configuration
         let request_payload_limit = RequestBodyLimitLayer::new(250 * 1024 * 1024); // 250MiB
@@ -940,7 +959,7 @@ impl Server {
 
         // Configure the axum router
         let router: Router<()> = axum::Router::<AppState>::new()
-            .merge(service_router().router)
+            .merge(router)
             .route_layer(axum::middleware::from_fn_with_state(
                 app_state.clone(),
                 authentication_middleware,
