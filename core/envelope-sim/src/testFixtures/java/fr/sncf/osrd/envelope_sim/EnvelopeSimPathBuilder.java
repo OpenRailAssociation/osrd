@@ -8,6 +8,7 @@ import com.google.common.collect.RangeMap;
 import com.google.common.collect.TreeRangeMap;
 import fr.sncf.osrd.path.implementations.EnvelopeSimPath;
 import fr.sncf.osrd.path.interfaces.Electrification;
+import fr.sncf.osrd.path.interfaces.PhysicsPath;
 import fr.sncf.osrd.path.legacy_objects.electrification.Electrified;
 import fr.sncf.osrd.path.legacy_objects.electrification.NonElectrified;
 import java.util.HashMap;
@@ -29,7 +30,7 @@ public class EnvelopeSimPathBuilder {
         return electrificationMap.subRangeMap(Range.closed(0.0, length));
     }
 
-    private static EnvelopeSimPath buildElectrified(
+    private static PhysicsPath buildElectrified(
             double length,
             RangeMap<Double, Electrification> electrificationMap,
             HashMap<String, ImmutableRangeMap<Double, Electrification>> electrificationMapByPowerClass) {
@@ -42,7 +43,7 @@ public class EnvelopeSimPathBuilder {
     }
 
     /** Builds an EnvelopeSimPath with no electrification */
-    public static EnvelopeSimPath buildNonElectrified(double length, double[] gradePositions, double[] gradeValues) {
+    public static PhysicsPath buildNonElectrified(double length, double[] gradePositions, double[] gradeValues) {
         var defaultElectrificationMap = ImmutableRangeMap.<Double, Electrification>builder()
                 .put(Range.closed(0.0, length), new NonElectrified())
                 .build();
@@ -50,14 +51,14 @@ public class EnvelopeSimPathBuilder {
     }
 
     /** Builds an EnvelopeSimPath with some electrification modes */
-    public static EnvelopeSimPath withModes(double length) {
+    public static PhysicsPath withModes(double length) {
         return buildElectrified(length, ImmutableRangeMap.copyOf(getModeMap(length)), new HashMap<>());
     }
 
     /**
      * Builds an EnvelopeSimPath with some electrification modes and a set of electrical profiles
      */
-    public static EnvelopeSimPath withElectricalProfiles1500() {
+    public static PhysicsPath withElectricalProfiles1500() {
         RangeMap<Double, String> profiles1 = TreeRangeMap.create();
         profiles1.put(Range.closed(3.0, 8.0), "A");
         profiles1.put(Range.closed(8.1, 10.5), "25000V");
@@ -88,7 +89,7 @@ public class EnvelopeSimPathBuilder {
      * Builds an EnvelopeSimPath with some electrification modes and a set of electrical profiles
      * different from `withElectricalProfiles25000`
      */
-    public static EnvelopeSimPath withElectricalProfiles25000(double length) {
+    public static PhysicsPath withElectricalProfiles25000(double length) {
         var defaultElecMap = getModeMap(length);
 
         HashMap<String, ImmutableRangeMap<Double, String>> electricalProfiles = new HashMap<>();

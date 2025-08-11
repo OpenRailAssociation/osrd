@@ -6,7 +6,7 @@ import fr.sncf.osrd.envelope_sim.allowances.AllowanceRange
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue
 import fr.sncf.osrd.envelope_sim.allowances.LinearAllowance
 import fr.sncf.osrd.envelope_sim.allowances.MarecoAllowance
-import fr.sncf.osrd.path.implementations.EnvelopeSimPath
+import fr.sncf.osrd.path.interfaces.PhysicsPath
 import fr.sncf.osrd.path.interfaces.TravelledPath
 import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
 import fr.sncf.osrd.reporting.exceptions.ErrorType
@@ -53,7 +53,7 @@ fun buildFinalEnvelope(
     maxSpeedEnvelope: Envelope,
     edges: List<STDCMEdge>,
     standardAllowance: AllowanceValue?,
-    envelopeSimPath: EnvelopeSimPath,
+    envelopeSimPath: PhysicsPath,
     rollingStock: RollingStock,
     timeStep: Double,
     comfort: Comfort?,
@@ -419,7 +419,7 @@ private fun handlePostProcessingConflict(
     maxSpeedEnvelope: Envelope,
     edges: List<STDCMEdge>,
     standardAllowance: AllowanceValue?,
-    envelopeSimPath: EnvelopeSimPath,
+    envelopeSimPath: PhysicsPath,
     rollingStock: RollingStock,
     timeStep: Double,
     comfort: Comfort?,
