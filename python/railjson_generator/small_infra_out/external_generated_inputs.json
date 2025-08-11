@@ -203,21 +203,6 @@
             "power_class": "1",
             "track_ranges": [
                 {
-                    "track": "TI0",
-                    "begin": 0.0,
-                    "end": 750.0
-                },
-                {
-                    "track": "TI1",
-                    "begin": 0.0,
-                    "end": 650.0
-                },
-                {
-                    "track": "TI2",
-                    "begin": 0.0,
-                    "end": 2350.0
-                },
-                {
                     "track": "TA1",
                     "begin": 0.0,
                     "end": 1950.0
@@ -251,6 +236,26 @@
                     "track": "TB0",
                     "begin": 0.0,
                     "end": 3000.0
+                },
+                {
+                    "track": "TI0",
+                    "begin": 0.0,
+                    "end": 750.0
+                },
+                {
+                    "track": "TI1",
+                    "begin": 0.0,
+                    "end": 650.0
+                },
+                {
+                    "track": "TI2",
+                    "begin": 0.0,
+                    "end": 2350.0
+                },
+                {
+                    "track": "TI3",
+                    "begin": 0.0,
+                    "end": 250.0
                 },
                 {
                     "track": "TC0",
@@ -364,21 +369,6 @@
             "power_class": "2",
             "track_ranges": [
                 {
-                    "track": "TI0",
-                    "begin": 0.0,
-                    "end": 750.0
-                },
-                {
-                    "track": "TI1",
-                    "begin": 0.0,
-                    "end": 650.0
-                },
-                {
-                    "track": "TI2",
-                    "begin": 0.0,
-                    "end": 2350.0
-                },
-                {
                     "track": "TA1",
                     "begin": 0.0,
                     "end": 1950.0
@@ -412,6 +402,26 @@
                     "track": "TB0",
                     "begin": 0.0,
                     "end": 3000.0
+                },
+                {
+                    "track": "TI0",
+                    "begin": 0.0,
+                    "end": 750.0
+                },
+                {
+                    "track": "TI1",
+                    "begin": 0.0,
+                    "end": 650.0
+                },
+                {
+                    "track": "TI2",
+                    "begin": 0.0,
+                    "end": 2350.0
+                },
+                {
+                    "track": "TI3",
+                    "begin": 0.0,
+                    "end": 250.0
                 },
                 {
                     "track": "TC0",
@@ -525,21 +535,6 @@
             "power_class": "3",
             "track_ranges": [
                 {
-                    "track": "TI0",
-                    "begin": 0.0,
-                    "end": 750.0
-                },
-                {
-                    "track": "TI1",
-                    "begin": 0.0,
-                    "end": 650.0
-                },
-                {
-                    "track": "TI2",
-                    "begin": 0.0,
-                    "end": 2350.0
-                },
-                {
                     "track": "TA1",
                     "begin": 0.0,
                     "end": 1950.0
@@ -573,6 +568,26 @@
                     "track": "TB0",
                     "begin": 0.0,
                     "end": 3000.0
+                },
+                {
+                    "track": "TI0",
+                    "begin": 0.0,
+                    "end": 750.0
+                },
+                {
+                    "track": "TI1",
+                    "begin": 0.0,
+                    "end": 650.0
+                },
+                {
+                    "track": "TI2",
+                    "begin": 0.0,
+                    "end": 2350.0
+                },
+                {
+                    "track": "TI3",
+                    "begin": 0.0,
+                    "end": 250.0
                 },
                 {
                     "track": "TC0",
@@ -686,21 +701,6 @@
             "power_class": "4",
             "track_ranges": [
                 {
-                    "track": "TI0",
-                    "begin": 0.0,
-                    "end": 750.0
-                },
-                {
-                    "track": "TI1",
-                    "begin": 0.0,
-                    "end": 650.0
-                },
-                {
-                    "track": "TI2",
-                    "begin": 0.0,
-                    "end": 2350.0
-                },
-                {
                     "track": "TA1",
                     "begin": 0.0,
                     "end": 1950.0
@@ -734,6 +734,26 @@
                     "track": "TB0",
                     "begin": 0.0,
                     "end": 3000.0
+                },
+                {
+                    "track": "TI0",
+                    "begin": 0.0,
+                    "end": 750.0
+                },
+                {
+                    "track": "TI1",
+                    "begin": 0.0,
+                    "end": 650.0
+                },
+                {
+                    "track": "TI2",
+                    "begin": 0.0,
+                    "end": 2350.0
+                },
+                {
+                    "track": "TI3",
+                    "begin": 0.0,
+                    "end": 250.0
                 },
                 {
                     "track": "TC0",
@@ -847,21 +867,6 @@
             "power_class": "5",
             "track_ranges": [
                 {
-                    "track": "TI0",
-                    "begin": 0.0,
-                    "end": 750.0
-                },
-                {
-                    "track": "TI1",
-                    "begin": 0.0,
-                    "end": 650.0
-                },
-                {
-                    "track": "TI2",
-                    "begin": 0.0,
-                    "end": 2350.0
-                },
-                {
                     "track": "TA1",
                     "begin": 0.0,
                     "end": 1950.0
@@ -895,6 +900,26 @@
                     "track": "TB0",
                     "begin": 0.0,
                     "end": 3000.0
+                },
+                {
+                    "track": "TI0",
+                    "begin": 0.0,
+                    "end": 750.0
+                },
+                {
+                    "track": "TI1",
+                    "begin": 0.0,
+                    "end": 650.0
+                },
+                {
+                    "track": "TI2",
+                    "begin": 0.0,
+                    "end": 2350.0
+                },
+                {
+                    "track": "TI3",
+                    "begin": 0.0,
+                    "end": 250.0
                 },
                 {
                     "track": "TC0",

@@ -266,7 +266,7 @@
     ],
     "routes": [
         {
-            "id": "rt.buffer_stop.0->DI0",
+            "id": "rt.buffer_stop.0->DI2",
             "entry_point": {
                 "type": "BufferStop",
                 "id": "buffer_stop.0"
@@ -274,76 +274,13 @@
             "entry_point_direction": "START_TO_STOP",
             "exit_point": {
                 "type": "Detector",
-                "id": "DI0"
+                "id": "DI2"
             },
             "release_detectors": [],
             "switches_directions": {}
         },
         {
-            "id": "rt.DI0->DI2",
-            "entry_point": {
-                "type": "Detector",
-                "id": "DI0"
-            },
-            "entry_point_direction": "START_TO_STOP",
-            "exit_point": {
-                "type": "Detector",
-                "id": "DI2"
-            },
-            "release_detectors": [],
-            "switches_directions": {
-                "PI0": "A_B1"
-            }
-        },
-        {
-            "id": "rt.buffer_stop.1->DI1",
-            "entry_point": {
-                "type": "BufferStop",
-                "id": "buffer_stop.1"
-            },
-            "entry_point_direction": "START_TO_STOP",
-            "exit_point": {
-                "type": "Detector",
-                "id": "DI1"
-            },
-            "release_detectors": [],
-            "switches_directions": {}
-        },
-        {
-            "id": "rt.DI1->DI2",
-            "entry_point": {
-                "type": "Detector",
-                "id": "DI1"
-            },
-            "entry_point_direction": "START_TO_STOP",
-            "exit_point": {
-                "type": "Detector",
-                "id": "DI2"
-            },
-            "release_detectors": [],
-            "switches_directions": {
-                "PI0": "A_B2"
-            }
-        },
-        {
-            "id": "rt.DI2->DA5",
-            "entry_point": {
-                "type": "Detector",
-                "id": "DI2"
-            },
-            "entry_point_direction": "START_TO_STOP",
-            "exit_point": {
-                "type": "Detector",
-                "id": "DA5"
-            },
-            "release_detectors": [],
-            "switches_directions": {
-                "PI1": "A_B1",
-                "PA2": "A_B2"
-            }
-        },
-        {
-            "id": "rt.DI2->buffer_stop.2",
+            "id": "rt.DI2->buffer_stop.5",
             "entry_point": {
                 "type": "Detector",
                 "id": "DI2"
@@ -351,37 +288,7 @@
             "entry_point_direction": "START_TO_STOP",
             "exit_point": {
                 "type": "BufferStop",
-                "id": "buffer_stop.2"
-            },
-            "release_detectors": [],
-            "switches_directions": {
-                "PI1": "A_B2"
-            }
-        },
-        {
-            "id": "rt.buffer_stop.2->DA2",
-            "entry_point": {
-                "type": "BufferStop",
-                "id": "buffer_stop.2"
-            },
-            "entry_point_direction": "START_TO_STOP",
-            "exit_point": {
-                "type": "Detector",
-                "id": "DA2"
-            },
-            "release_detectors": [],
-            "switches_directions": {}
-        },
-        {
-            "id": "rt.DA2->buffer_stop.1",
-            "entry_point": {
-                "type": "Detector",
-                "id": "DA2"
-            },
-            "entry_point_direction": "START_TO_STOP",
-            "exit_point": {
-                "type": "BufferStop",
-                "id": "buffer_stop.1"
+                "id": "buffer_stop.5"
             },
             "release_detectors": [],
             "switches_directions": {
@@ -390,15 +297,15 @@
             }
         },
         {
-            "id": "rt.DA2->buffer_stop.0",
+            "id": "rt.DI2->buffer_stop.4",
             "entry_point": {
                 "type": "Detector",
-                "id": "DA2"
+                "id": "DI2"
             },
             "entry_point_direction": "START_TO_STOP",
             "exit_point": {
                 "type": "BufferStop",
-                "id": "buffer_stop.0"
+                "id": "buffer_stop.4"
             },
             "release_detectors": [],
             "switches_directions": {
@@ -407,10 +314,10 @@
             }
         },
         {
-            "id": "rt.buffer_stop.3->DA0",
+            "id": "rt.buffer_stop.1->DA0",
             "entry_point": {
                 "type": "BufferStop",
-                "id": "buffer_stop.3"
+                "id": "buffer_stop.1"
             },
             "entry_point_direction": "START_TO_STOP",
             "exit_point": {
@@ -455,10 +362,10 @@
             }
         },
         {
-            "id": "rt.buffer_stop.4->DA1",
+            "id": "rt.buffer_stop.2->DA1",
             "entry_point": {
                 "type": "BufferStop",
-                "id": "buffer_stop.4"
+                "id": "buffer_stop.2"
             },
             "entry_point_direction": "START_TO_STOP",
             "exit_point": {
@@ -486,23 +393,6 @@
             }
         },
         {
-            "id": "rt.DA3->buffer_stop.3",
-            "entry_point": {
-                "type": "Detector",
-                "id": "DA3"
-            },
-            "entry_point_direction": "STOP_TO_START",
-            "exit_point": {
-                "type": "BufferStop",
-                "id": "buffer_stop.3"
-            },
-            "release_detectors": [],
-            "switches_directions": {
-                "PA2": "A_B1",
-                "PA0": "A_B1"
-            }
-        },
-        {
             "id": "rt.DA3->buffer_stop.1",
             "entry_point": {
                 "type": "Detector",
@@ -515,13 +405,12 @@
             },
             "release_detectors": [],
             "switches_directions": {
-                "PA2": "A_B2",
-                "PI1": "A_B1",
-                "PI0": "A_B2"
+                "PA2": "A_B1",
+                "PA0": "A_B1"
             }
         },
         {
-            "id": "rt.DA3->buffer_stop.0",
+            "id": "rt.DA3->buffer_stop.5",
             "entry_point": {
                 "type": "Detector",
                 "id": "DA3"
@@ -529,7 +418,25 @@
             "entry_point_direction": "STOP_TO_START",
             "exit_point": {
                 "type": "BufferStop",
-                "id": "buffer_stop.0"
+                "id": "buffer_stop.5"
+            },
+            "release_detectors": [],
+            "switches_directions": {
+                "PA2": "A_B2",
+                "PI1": "A_B1",
+                "PI0": "A_B2"
+            }
+        },
+        {
+            "id": "rt.DA3->buffer_stop.4",
+            "entry_point": {
+                "type": "Detector",
+                "id": "DA3"
+            },
+            "entry_point_direction": "STOP_TO_START",
+            "exit_point": {
+                "type": "BufferStop",
+                "id": "buffer_stop.4"
             },
             "release_detectors": [],
             "switches_directions": {
@@ -571,7 +478,7 @@
             }
         },
         {
-            "id": "rt.DA4->buffer_stop.4",
+            "id": "rt.DA4->buffer_stop.2",
             "entry_point": {
                 "type": "Detector",
                 "id": "DA4"
@@ -579,29 +486,12 @@
             "entry_point_direction": "STOP_TO_START",
             "exit_point": {
                 "type": "BufferStop",
-                "id": "buffer_stop.4"
+                "id": "buffer_stop.2"
             },
             "release_detectors": [],
             "switches_directions": {
                 "PA3": "A_B1",
                 "PA1": "A_B2"
-            }
-        },
-        {
-            "id": "rt.DA4->buffer_stop.5",
-            "entry_point": {
-                "type": "Detector",
-                "id": "DA4"
-            },
-            "entry_point_direction": "STOP_TO_START",
-            "exit_point": {
-                "type": "BufferStop",
-                "id": "buffer_stop.5"
-            },
-            "release_detectors": [],
-            "switches_directions": {
-                "PA3": "A_B1",
-                "PA1": "A_B1"
             }
         },
         {
@@ -614,6 +504,23 @@
             "exit_point": {
                 "type": "BufferStop",
                 "id": "buffer_stop.3"
+            },
+            "release_detectors": [],
+            "switches_directions": {
+                "PA3": "A_B1",
+                "PA1": "A_B1"
+            }
+        },
+        {
+            "id": "rt.DA4->buffer_stop.1",
+            "entry_point": {
+                "type": "Detector",
+                "id": "DA4"
+            },
+            "entry_point_direction": "STOP_TO_START",
+            "exit_point": {
+                "type": "BufferStop",
+                "id": "buffer_stop.1"
             },
             "release_detectors": [],
             "switches_directions": {
@@ -654,10 +561,10 @@
             }
         },
         {
-            "id": "rt.buffer_stop.5->DB0",
+            "id": "rt.buffer_stop.3->DB0",
             "entry_point": {
                 "type": "BufferStop",
-                "id": "buffer_stop.5"
+                "id": "buffer_stop.3"
             },
             "entry_point_direction": "START_TO_STOP",
             "exit_point": {
@@ -682,6 +589,114 @@
             "switches_directions": {
                 "PA1": "A_B1",
                 "PA3": "A_B1"
+            }
+        },
+        {
+            "id": "rt.buffer_stop.4->DI0",
+            "entry_point": {
+                "type": "BufferStop",
+                "id": "buffer_stop.4"
+            },
+            "entry_point_direction": "START_TO_STOP",
+            "exit_point": {
+                "type": "Detector",
+                "id": "DI0"
+            },
+            "release_detectors": [],
+            "switches_directions": {}
+        },
+        {
+            "id": "rt.DI0->DI3",
+            "entry_point": {
+                "type": "Detector",
+                "id": "DI0"
+            },
+            "entry_point_direction": "START_TO_STOP",
+            "exit_point": {
+                "type": "Detector",
+                "id": "DI3"
+            },
+            "release_detectors": [],
+            "switches_directions": {
+                "PI0": "A_B1"
+            }
+        },
+        {
+            "id": "rt.buffer_stop.5->DI1",
+            "entry_point": {
+                "type": "BufferStop",
+                "id": "buffer_stop.5"
+            },
+            "entry_point_direction": "START_TO_STOP",
+            "exit_point": {
+                "type": "Detector",
+                "id": "DI1"
+            },
+            "release_detectors": [],
+            "switches_directions": {}
+        },
+        {
+            "id": "rt.DI1->DI3",
+            "entry_point": {
+                "type": "Detector",
+                "id": "DI1"
+            },
+            "entry_point_direction": "START_TO_STOP",
+            "exit_point": {
+                "type": "Detector",
+                "id": "DI3"
+            },
+            "release_detectors": [],
+            "switches_directions": {
+                "PI0": "A_B2"
+            }
+        },
+        {
+            "id": "rt.DI3->DA2",
+            "entry_point": {
+                "type": "Detector",
+                "id": "DI3"
+            },
+            "entry_point_direction": "START_TO_STOP",
+            "exit_point": {
+                "type": "Detector",
+                "id": "DA2"
+            },
+            "release_detectors": [],
+            "switches_directions": {
+                "PI1": "A_B1"
+            }
+        },
+        {
+            "id": "rt.DI3->buffer_stop.0",
+            "entry_point": {
+                "type": "Detector",
+                "id": "DI3"
+            },
+            "entry_point_direction": "START_TO_STOP",
+            "exit_point": {
+                "type": "BufferStop",
+                "id": "buffer_stop.0"
+            },
+            "release_detectors": [],
+            "switches_directions": {
+                "PI1": "A_B2"
+            }
+        },
+        {
+            "id": "rt.DA2->DA5",
+            "entry_point": {
+                "type": "Detector",
+                "id": "DA2"
+            },
+            "entry_point_direction": "START_TO_STOP",
+            "exit_point": {
+                "type": "Detector",
+                "id": "DA5"
+            },
+            "release_detectors": [],
+            "switches_directions": {
+                "PA2": "A_B2"
             }
         },
         {
@@ -1990,136 +2005,6 @@
                 "type": "LineString",
                 "coordinates": [
                     [
-                        -0.399905989,
-                        49.511371919
-                    ],
-                    [
-                        -0.392118223,
-                        49.511488984
-                    ],
-                    [
-                        -0.390308459,
-                        49.510052494
-                    ]
-                ]
-            },
-            "id": "TI0",
-            "length": 750.0,
-            "slopes": [],
-            "curves": [],
-            "loading_gauge_limits": [],
-            "extensions": {
-                "sncf": {
-                    "line_code": 404040,
-                    "line_name": "North_West_Parking",
-                    "track_number": 2,
-                    "track_name": "A"
-                }
-            }
-        },
-        {
-            "geo": {
-                "type": "LineString",
-                "coordinates": [
-                    [
-                        -0.399908223,
-                        49.509952495
-                    ],
-                    [
-                        -0.390308459,
-                        49.510052494
-                    ]
-                ]
-            },
-            "id": "TI1",
-            "length": 650.0,
-            "slopes": [],
-            "curves": [],
-            "loading_gauge_limits": [],
-            "extensions": {
-                "sncf": {
-                    "line_code": 404040,
-                    "line_name": "North_West_Parking",
-                    "track_number": 1,
-                    "track_name": "B"
-                }
-            }
-        },
-        {
-            "geo": {
-                "type": "LineString",
-                "coordinates": [
-                    [
-                        -0.390308459,
-                        49.510052494
-                    ],
-                    [
-                        -0.374246119,
-                        49.510219813
-                    ],
-                    [
-                        -0.370160915,
-                        49.507828941
-                    ],
-                    [
-                        -0.37,
-                        49.5
-                    ]
-                ]
-            },
-            "id": "TI2",
-            "length": 2350.0,
-            "slopes": [],
-            "curves": [],
-            "loading_gauge_limits": [],
-            "extensions": {
-                "sncf": {
-                    "line_code": 404040,
-                    "line_name": "North_West_Parking",
-                    "track_number": 1,
-                    "track_name": "A-B"
-                }
-            }
-        },
-        {
-            "geo": {
-                "type": "LineString",
-                "coordinates": [
-                    [
-                        -0.37,
-                        49.5
-                    ],
-                    [
-                        -0.365,
-                        49.5
-                    ]
-                ]
-            },
-            "id": "TI3",
-            "length": 250.0,
-            "slopes": [],
-            "curves": [],
-            "loading_gauge_limits": [
-                {
-                    "category": "GA",
-                    "begin": 0.0,
-                    "end": 150.0
-                }
-            ],
-            "extensions": {
-                "sncf": {
-                    "line_code": 424242,
-                    "line_name": "West_parking",
-                    "track_number": 1,
-                    "track_name": "V1"
-                }
-            }
-        },
-        {
-            "geo": {
-                "type": "LineString",
-                "coordinates": [
-                    [
                         -0.4,
                         49.5
                     ],
@@ -2135,17 +2020,17 @@
             "curves": [],
             "loading_gauge_limits": [
                 {
-                    "category": "GB",
+                    "category": "GB1",
                     "begin": 0.0,
                     "end": 200.0
                 },
                 {
-                    "category": "GA",
+                    "category": "G1",
                     "begin": 200.0,
-                    "end": 1750.0
+                    "end": 1900.0
                 },
                 {
-                    "category": "GB",
+                    "category": "FR3.3",
                     "begin": 100.0,
                     "end": 1500.0
                 }
@@ -2450,6 +2335,130 @@
                     "line_name": "South_West_Parking",
                     "track_number": 1,
                     "track_name": "A"
+                }
+            }
+        },
+        {
+            "geo": {
+                "type": "LineString",
+                "coordinates": [
+                    [
+                        -0.399905989,
+                        49.511371919
+                    ],
+                    [
+                        -0.392118223,
+                        49.511488984
+                    ],
+                    [
+                        -0.390308459,
+                        49.510052494
+                    ]
+                ]
+            },
+            "id": "TI0",
+            "length": 750.0,
+            "slopes": [],
+            "curves": [],
+            "loading_gauge_limits": [],
+            "extensions": {
+                "sncf": {
+                    "line_code": 404040,
+                    "line_name": "North_West_Parking",
+                    "track_number": 2,
+                    "track_name": "A"
+                }
+            }
+        },
+        {
+            "geo": {
+                "type": "LineString",
+                "coordinates": [
+                    [
+                        -0.399908223,
+                        49.509952495
+                    ],
+                    [
+                        -0.390308459,
+                        49.510052494
+                    ]
+                ]
+            },
+            "id": "TI1",
+            "length": 650.0,
+            "slopes": [],
+            "curves": [],
+            "loading_gauge_limits": [],
+            "extensions": {
+                "sncf": {
+                    "line_code": 404040,
+                    "line_name": "North_West_Parking",
+                    "track_number": 1,
+                    "track_name": "B"
+                }
+            }
+        },
+        {
+            "geo": {
+                "type": "LineString",
+                "coordinates": [
+                    [
+                        -0.390308459,
+                        49.510052494
+                    ],
+                    [
+                        -0.374246119,
+                        49.510219813
+                    ],
+                    [
+                        -0.370160915,
+                        49.507828941
+                    ],
+                    [
+                        -0.37,
+                        49.5
+                    ]
+                ]
+            },
+            "id": "TI2",
+            "length": 2350.0,
+            "slopes": [],
+            "curves": [],
+            "loading_gauge_limits": [],
+            "extensions": {
+                "sncf": {
+                    "line_code": 404040,
+                    "line_name": "North_West_Parking",
+                    "track_number": 1,
+                    "track_name": "A-B"
+                }
+            }
+        },
+        {
+            "geo": {
+                "type": "LineString",
+                "coordinates": [
+                    [
+                        -0.37,
+                        49.5
+                    ],
+                    [
+                        -0.365,
+                        49.5
+                    ]
+                ]
+            },
+            "id": "TI3",
+            "length": 250.0,
+            "slopes": [],
+            "curves": [],
+            "loading_gauge_limits": [],
+            "extensions": {
+                "sncf": {
+                    "line_code": 424242,
+                    "line_name": "West_parking",
+                    "track_number": 1,
+                    "track_name": "V1"
                 }
             }
         },
@@ -3294,30 +3303,6 @@
             },
             "track_ranges": [
                 {
-                    "track": "TI0",
-                    "begin": 0.0,
-                    "end": 750.0,
-                    "applicable_directions": "BOTH"
-                },
-                {
-                    "track": "TI1",
-                    "begin": 0.0,
-                    "end": 650.0,
-                    "applicable_directions": "BOTH"
-                },
-                {
-                    "track": "TI2",
-                    "begin": 0.0,
-                    "end": 2350.0,
-                    "applicable_directions": "BOTH"
-                },
-                {
-                    "track": "TI3",
-                    "begin": 0.0,
-                    "end": 250.0,
-                    "applicable_directions": "BOTH"
-                },
-                {
                     "track": "TA0",
                     "begin": 0.0,
                     "end": 1750.0,
@@ -3369,6 +3354,30 @@
                     "track": "TB0",
                     "begin": 0.0,
                     "end": 3000.0,
+                    "applicable_directions": "BOTH"
+                },
+                {
+                    "track": "TI0",
+                    "begin": 0.0,
+                    "end": 750.0,
+                    "applicable_directions": "BOTH"
+                },
+                {
+                    "track": "TI1",
+                    "begin": 0.0,
+                    "end": 650.0,
+                    "applicable_directions": "BOTH"
+                },
+                {
+                    "track": "TI2",
+                    "begin": 0.0,
+                    "end": 2350.0,
+                    "applicable_directions": "BOTH"
+                },
+                {
+                    "track": "TI3",
+                    "begin": 0.0,
+                    "end": 250.0,
                     "applicable_directions": "BOTH"
                 },
                 {
@@ -3551,24 +3560,6 @@
             "voltage": "25000V",
             "track_ranges": [
                 {
-                    "track": "TI0",
-                    "begin": 0.0,
-                    "end": 750.0,
-                    "applicable_directions": "BOTH"
-                },
-                {
-                    "track": "TI1",
-                    "begin": 0.0,
-                    "end": 650.0,
-                    "applicable_directions": "BOTH"
-                },
-                {
-                    "track": "TI2",
-                    "begin": 0.0,
-                    "end": 2350.0,
-                    "applicable_directions": "BOTH"
-                },
-                {
                     "track": "TA1",
                     "begin": 0.0,
                     "end": 1950.0,
@@ -3614,6 +3605,30 @@
                     "track": "TB0",
                     "begin": 0.0,
                     "end": 3000.0,
+                    "applicable_directions": "BOTH"
+                },
+                {
+                    "track": "TI0",
+                    "begin": 0.0,
+                    "end": 750.0,
+                    "applicable_directions": "BOTH"
+                },
+                {
+                    "track": "TI1",
+                    "begin": 0.0,
+                    "end": 650.0,
+                    "applicable_directions": "BOTH"
+                },
+                {
+                    "track": "TI2",
+                    "begin": 0.0,
+                    "end": 2350.0,
+                    "applicable_directions": "BOTH"
+                },
+                {
+                    "track": "TI3",
+                    "begin": 0.0,
+                    "end": 250.0,
                     "applicable_directions": "BOTH"
                 },
                 {
@@ -3753,112 +3768,33 @@
                     "begin": 0.0,
                     "end": 1750.0,
                     "applicable_directions": "BOTH"
-                },
-                {
-                    "track": "TI3",
-                    "begin": 0.0,
-                    "end": 250.0,
-                    "applicable_directions": "BOTH"
                 }
             ]
         }
     ],
     "signals": [
         {
-            "track": "TI0",
-            "position": 550.0,
-            "id": "SI0",
-            "direction": "START_TO_STOP",
-            "sight_distance": 400.0,
-            "logical_signals": [
-                {
-                    "signaling_system": "ETCS_LEVEL2",
-                    "next_signaling_systems": [],
-                    "settings": {
-                        "Nf": "true"
-                    },
-                    "default_parameters": {},
-                    "conditional_parameters": []
-                }
-            ],
-            "extensions": {
-                "sncf": {
-                    "label": "SI0",
-                    "side": "LEFT",
-                    "kp": ""
-                }
-            }
-        },
-        {
-            "track": "TI1",
-            "position": 450.0,
-            "id": "SI1",
-            "direction": "START_TO_STOP",
-            "sight_distance": 400.0,
-            "logical_signals": [
-                {
-                    "signaling_system": "ETCS_LEVEL2",
-                    "next_signaling_systems": [],
-                    "settings": {
-                        "Nf": "true"
-                    },
-                    "default_parameters": {},
-                    "conditional_parameters": []
-                }
-            ],
-            "extensions": {
-                "sncf": {
-                    "label": "SI1",
-                    "side": "LEFT",
-                    "kp": ""
-                }
-            }
-        },
-        {
-            "track": "TI2",
-            "position": 2150.0,
+            "track": "TA0",
+            "position": 1550.0,
             "id": "SI2",
             "direction": "START_TO_STOP",
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "true"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
             "extensions": {
                 "sncf": {
                     "label": "SI2",
-                    "side": "LEFT",
-                    "kp": ""
-                }
-            }
-        },
-        {
-            "track": "TA0",
-            "position": 1550.0,
-            "id": "SA2",
-            "direction": "START_TO_STOP",
-            "sight_distance": 400.0,
-            "logical_signals": [
-                {
-                    "signaling_system": "ETCS_LEVEL2",
-                    "next_signaling_systems": [],
-                    "settings": {
-                        "Nf": "true"
-                    },
-                    "default_parameters": {},
-                    "conditional_parameters": []
-                }
-            ],
-            "extensions": {
-                "sncf": {
-                    "label": "SA2",
                     "side": "LEFT",
                     "kp": ""
                 }
@@ -3872,12 +3808,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "true"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -3897,12 +3835,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "true"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -3922,12 +3862,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "true"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -3947,12 +3889,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "false"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -3972,12 +3916,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "false"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -3997,12 +3943,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "false"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -4022,12 +3970,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "false"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -4047,12 +3997,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "false"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -4072,12 +4024,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "false"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -4097,12 +4051,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "false"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -4122,12 +4078,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "true"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -4147,12 +4105,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "true"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -4172,12 +4132,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "false"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -4197,12 +4159,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "false"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -4222,12 +4186,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "false"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -4247,12 +4213,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "false"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -4272,12 +4240,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "false"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -4297,12 +4267,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "false"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -4322,12 +4294,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "false"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -4347,12 +4321,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "true"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -4372,18 +4348,128 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "true"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
             "extensions": {
                 "sncf": {
                     "label": "SB0",
+                    "side": "LEFT",
+                    "kp": ""
+                }
+            }
+        },
+        {
+            "track": "TI0",
+            "position": 550.0,
+            "id": "SI0",
+            "direction": "START_TO_STOP",
+            "sight_distance": 400.0,
+            "logical_signals": [
+                {
+                    "signaling_system": "BAL",
+                    "next_signaling_systems": [],
+                    "settings": {
+                        "Nf": "true"
+                    },
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
+                    "conditional_parameters": []
+                }
+            ],
+            "extensions": {
+                "sncf": {
+                    "label": "SI0",
+                    "side": "LEFT",
+                    "kp": ""
+                }
+            }
+        },
+        {
+            "track": "TI1",
+            "position": 450.0,
+            "id": "SI1",
+            "direction": "START_TO_STOP",
+            "sight_distance": 400.0,
+            "logical_signals": [
+                {
+                    "signaling_system": "BAL",
+                    "next_signaling_systems": [],
+                    "settings": {
+                        "Nf": "true"
+                    },
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
+                    "conditional_parameters": []
+                }
+            ],
+            "extensions": {
+                "sncf": {
+                    "label": "SI1",
+                    "side": "LEFT",
+                    "kp": ""
+                }
+            }
+        },
+        {
+            "track": "TI2",
+            "position": 2150.0,
+            "id": "SI3",
+            "direction": "START_TO_STOP",
+            "sight_distance": 400.0,
+            "logical_signals": [
+                {
+                    "signaling_system": "BAL",
+                    "next_signaling_systems": [],
+                    "settings": {
+                        "Nf": "true"
+                    },
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
+                    "conditional_parameters": []
+                }
+            ],
+            "extensions": {
+                "sncf": {
+                    "label": "SI3",
+                    "side": "LEFT",
+                    "kp": ""
+                }
+            }
+        },
+        {
+            "track": "TI3",
+            "position": 50.0,
+            "id": "SA2",
+            "direction": "START_TO_STOP",
+            "sight_distance": 400.0,
+            "logical_signals": [
+                {
+                    "signaling_system": "BAL",
+                    "next_signaling_systems": [],
+                    "settings": {
+                        "Nf": "true"
+                    },
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
+                    "conditional_parameters": []
+                }
+            ],
+            "extensions": {
+                "sncf": {
+                    "label": "SA2",
                     "side": "LEFT",
                     "kp": ""
                 }
@@ -4397,12 +4483,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "true"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -4422,12 +4510,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "true"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -4447,12 +4537,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "true"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -4472,12 +4564,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "true"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -4497,12 +4591,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "true"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -4522,12 +4618,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "true"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -4547,12 +4645,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "true"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -4572,12 +4672,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "true"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -4597,12 +4699,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "true"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -4622,12 +4726,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "false"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -4647,12 +4753,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "false"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -4672,12 +4780,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "false"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -4697,12 +4807,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "false"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -4722,12 +4834,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "false"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -4747,12 +4861,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "false"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -4772,12 +4888,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "false"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -4797,12 +4915,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "false"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -4822,12 +4942,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "false"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -4847,12 +4969,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "false"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -4872,12 +4996,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "false"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -4897,12 +5023,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "false"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -4922,12 +5050,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "false"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -4947,12 +5077,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "false"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -4972,12 +5104,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "false"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -4997,12 +5131,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "false"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -5022,12 +5158,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "false"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -5047,12 +5185,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "false"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -5072,12 +5212,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "false"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -5097,12 +5239,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "false"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -5122,12 +5266,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "true"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -5147,12 +5293,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "true"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -5172,12 +5320,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "false"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -5197,12 +5347,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "false"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -5222,12 +5374,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "false"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -5247,12 +5401,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "false"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -5272,12 +5428,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "false"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -5297,12 +5455,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "false"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -5322,12 +5482,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "false"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -5347,12 +5509,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "false"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -5372,12 +5536,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "false"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -5397,12 +5563,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "false"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -5422,12 +5590,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "false"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -5447,12 +5617,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "false"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -5472,12 +5644,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "false"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -5497,12 +5671,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "false"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -5522,12 +5698,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "false"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -5547,12 +5725,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "false"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -5572,12 +5752,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "false"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -5597,12 +5779,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "false"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -5622,12 +5806,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "false"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -5647,12 +5833,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "false"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -5672,12 +5860,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "true"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -5697,12 +5887,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "true"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -5722,12 +5914,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "true"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -5747,12 +5941,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "true"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -5772,12 +5968,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "true"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -5797,12 +5995,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "true"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -5822,12 +6022,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "true"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -5847,12 +6049,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "true"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -5872,12 +6076,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "false"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -5897,12 +6103,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "false"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -5922,12 +6130,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "true"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -5947,12 +6157,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "true"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -5972,12 +6184,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "true"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -5997,12 +6211,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "true"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -6022,12 +6238,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "true"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -6047,12 +6265,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "true"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -6072,12 +6292,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "true"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -6097,12 +6319,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "true"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -6122,12 +6346,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "true"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -6147,12 +6373,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "false"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -6172,12 +6400,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "false"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -6197,12 +6427,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "true"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -6222,12 +6454,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "true"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -6247,12 +6481,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "true"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -6272,12 +6508,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "true"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -6297,12 +6535,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "true"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -6322,12 +6562,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "true"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -6347,12 +6589,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "true"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -6372,12 +6616,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "true"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -6397,12 +6643,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "false"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -6422,12 +6670,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "false"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -6447,12 +6697,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "false"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -6472,12 +6724,14 @@
             "sight_distance": 400.0,
             "logical_signals": [
                 {
-                    "signaling_system": "ETCS_LEVEL2",
+                    "signaling_system": "BAL",
                     "next_signaling_systems": [],
                     "settings": {
                         "Nf": "false"
                     },
-                    "default_parameters": {},
+                    "default_parameters": {
+                        "jaune_cli": "false"
+                    },
                     "conditional_parameters": []
                 }
             ],
@@ -6492,32 +6746,32 @@
     ],
     "buffer_stops": [
         {
-            "track": "TI0",
+            "track": "TA0",
             "position": 0.0,
             "id": "buffer_stop.0"
         },
         {
-            "track": "TI1",
+            "track": "TA1",
             "position": 0.0,
             "id": "buffer_stop.1"
         },
         {
-            "track": "TA0",
+            "track": "TA2",
             "position": 0.0,
             "id": "buffer_stop.2"
         },
         {
-            "track": "TA1",
+            "track": "TB0",
             "position": 0.0,
             "id": "buffer_stop.3"
         },
         {
-            "track": "TA2",
+            "track": "TI0",
             "position": 0.0,
             "id": "buffer_stop.4"
         },
         {
-            "track": "TB0",
+            "track": "TI1",
             "position": 0.0,
             "id": "buffer_stop.5"
         },
@@ -6544,29 +6798,9 @@
     ],
     "detectors": [
         {
-            "track": "TI0",
-            "position": 570.0,
-            "id": "DI0"
-        },
-        {
-            "track": "TI1",
-            "position": 470.0,
-            "id": "DI1"
-        },
-        {
-            "track": "TI2",
-            "position": 2170.0,
-            "id": "DI2"
-        },
-        {
-            "track": "TI3",
-            "position": 125.0,
-            "id": "DI3"
-        },
-        {
             "track": "TA0",
             "position": 1570.0,
-            "id": "DA2"
+            "id": "DI2"
         },
         {
             "track": "TA1",
@@ -6667,6 +6901,26 @@
             "track": "TB0",
             "position": 2820.0,
             "id": "DB0"
+        },
+        {
+            "track": "TI0",
+            "position": 570.0,
+            "id": "DI0"
+        },
+        {
+            "track": "TI1",
+            "position": 470.0,
+            "id": "DI1"
+        },
+        {
+            "track": "TI2",
+            "position": 2170.0,
+            "id": "DI3"
+        },
+        {
+            "track": "TI3",
+            "position": 70.0,
+            "id": "DA2"
         },
         {
             "track": "TC0",
@@ -7037,12 +7291,6 @@
             ],
             "track_ranges": [
                 {
-                    "track": "TG4",
-                    "begin": 0.0,
-                    "end": 500.0,
-                    "direction": "START_TO_STOP"
-                },
-                {
                     "track": "TA6",
                     "begin": 0.0,
                     "end": 10.0,
@@ -7055,9 +7303,9 @@
             "id": "neutral_section.1",
             "announcement_track_ranges": [
                 {
-                    "track": "TI3",
-                    "begin": 100.0,
-                    "end": 210.0,
+                    "track": "TA0",
+                    "begin": 1850.0,
+                    "end": 1960.0,
                     "direction": "START_TO_STOP"
                 }
             ],

@@ -48,7 +48,9 @@ const studyData: StudyData = readJsonFile('tests/assets/operation-studies/study.
  * @returns {Promise<Infra>} - The created infrastructure object.
  */
 async function createInfrastructure(infraName = infrastructureName): Promise<Infra> {
-  const smallInfraRailjson: RailJson = readJsonFile('./tests/assets/infrastructure/infra.json');
+  const smallInfraRailjson: RailJson = readJsonFile(
+    './../tests/data/infras/small_infra/infra.json'
+  );
 
   const createdInfra: PostInfraRailjsonApiResponse = await postApiRequest(
     `/api/infra/railjson`,
