@@ -31,7 +31,7 @@ const usePathProjection = (infra: InfraWithState) => {
     osrdEditoastApi.endpoints.getTrainScheduleByIdPath.useQuery(scheduleArg);
   const { data: pacedPath } = osrdEditoastApi.endpoints.getPacedTrainByIdPath.useQuery(pacedArg);
 
-  const path = schedulePath ?? pacedPath;
+  const path = trainScheduleId ? schedulePath : pacedPath;
 
   const { data: pathProperties } =
     osrdEditoastApi.endpoints.postInfraByInfraIdPathProperties.useQuery(
