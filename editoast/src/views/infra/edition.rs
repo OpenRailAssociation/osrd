@@ -100,7 +100,7 @@ pub(in crate::views) async fn edit(
     // Check user privilege on infra
     auth.check_authorization(async |authorizer| {
         authorizer
-            .authorize_infra_write(&authz::Infra(infra_id))
+            .authorize_infra(&authz::Infra(infra_id), authz::InfraPrivilege::CanWrite)
             .await
     })
     .await?;
@@ -173,7 +173,7 @@ pub(in crate::views) async fn split_track_section(
     // Check user privilege on infra
     auth.check_authorization(async |authorizer| {
         authorizer
-            .authorize_infra_write(&authz::Infra(infra_id))
+            .authorize_infra(&authz::Infra(infra_id), authz::InfraPrivilege::CanWrite)
             .await
     })
     .await?;

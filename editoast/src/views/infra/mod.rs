@@ -324,7 +324,7 @@ pub(in crate::views) async fn get(
     // Check user privilege on infra
     auth.check_authorization(async |authorizer| {
         authorizer
-            .authorize_infra_read(&authz::Infra(infra_id))
+            .authorize_infra(&authz::Infra(infra_id), authz::InfraPrivilege::CanRead)
             .await
     })
     .await?;
@@ -436,7 +436,7 @@ pub(in crate::views) async fn clone(
     auth.clone()
         .check_authorization(async |authorizer| {
             authorizer
-                .authorize_infra_read(&authz::Infra(infra_id))
+                .authorize_infra(&authz::Infra(infra_id), authz::InfraPrivilege::CanRead)
                 .await
         })
         .await?;
@@ -494,7 +494,7 @@ pub(in crate::views) async fn delete(
     // Check user privilege on infra
     auth.check_authorization(async |authorizer| {
         authorizer
-            .authorize_infra_delete(&authz::Infra(infra_id))
+            .authorize_infra(&authz::Infra(infra_id), authz::InfraPrivilege::CanDelete)
             .await
     })
     .await?;
@@ -586,7 +586,7 @@ pub(in crate::views) async fn get_switch_types(
     // Check user privilege on infra
     auth.check_authorization(async |authorizer| {
         authorizer
-            .authorize_infra_read(&authz::Infra(infra_id))
+            .authorize_infra(&authz::Infra(infra_id), authz::InfraPrivilege::CanRead)
             .await
     })
     .await?;
@@ -644,7 +644,7 @@ pub(in crate::views) async fn get_speed_limit_tags(
     // Check user privilege on infra
     auth.check_authorization(async |authorizer| {
         authorizer
-            .authorize_infra_read(&authz::Infra(infra_id))
+            .authorize_infra(&authz::Infra(infra_id), authz::InfraPrivilege::CanRead)
             .await
     })
     .await?;
@@ -700,7 +700,7 @@ pub(in crate::views) async fn get_voltages(
     // Check user privilege on infra
     auth.check_authorization(async |authorizer| {
         authorizer
-            .authorize_infra_read(&authz::Infra(infra_id))
+            .authorize_infra(&authz::Infra(infra_id), authz::InfraPrivilege::CanRead)
             .await
     })
     .await?;
@@ -776,7 +776,7 @@ pub(in crate::views) async fn lock(
     // Check user privilege on infra
     auth.check_authorization(async |authorizer| {
         authorizer
-            .authorize_infra_write(&authz::Infra(infra_id))
+            .authorize_infra(&authz::Infra(infra_id), authz::InfraPrivilege::CanWrite)
             .await
     })
     .await?;
@@ -812,7 +812,7 @@ pub(in crate::views) async fn unlock(
     // Check user privilege on infra
     auth.check_authorization(async |authorizer| {
         authorizer
-            .authorize_infra_write(&authz::Infra(infra_id))
+            .authorize_infra(&authz::Infra(infra_id), authz::InfraPrivilege::CanWrite)
             .await
     })
     .await?;
@@ -865,7 +865,7 @@ pub(in crate::views) async fn load(
     // Check user privilege on infra
     auth.check_authorization(async |authorizer| {
         authorizer
-            .authorize_infra_read(&authz::Infra(infra_id))
+            .authorize_infra(&authz::Infra(infra_id), authz::InfraPrivilege::CanRead)
             .await
     })
     .await?;
@@ -971,7 +971,7 @@ pub(in crate::views) async fn match_operational_points(
     }
     auth.check_authorization(async |authorizer| {
         authorizer
-            .authorize_infra_read(&authz::Infra(infra_id))
+            .authorize_infra(&authz::Infra(infra_id), authz::InfraPrivilege::CanRead)
             .await
     })
     .await?;

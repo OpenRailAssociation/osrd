@@ -82,7 +82,7 @@ pub(in crate::views) async fn get_routes_from_waypoint(
     // Check user privilege on infra
     auth.check_authorization(async |authorizer| {
         authorizer
-            .authorize_infra_read(&authz::Infra(path.infra_id))
+            .authorize_infra(&authz::Infra(path.infra_id), authz::InfraPrivilege::CanRead)
             .await
     })
     .await?;
@@ -178,7 +178,7 @@ pub(in crate::views) async fn get_routes_track_ranges(
     // Check user privilege on infra
     auth.check_authorization(async |authorizer| {
         authorizer
-            .authorize_infra_read(&authz::Infra(infra_id))
+            .authorize_infra(&authz::Infra(infra_id), authz::InfraPrivilege::CanRead)
             .await
     })
     .await?;
@@ -250,7 +250,7 @@ pub(in crate::views) async fn get_routes_nodes(
     // Check user privilege on infra
     auth.check_authorization(async |authorizer| {
         authorizer
-            .authorize_infra_read(&authz::Infra(infra_id))
+            .authorize_infra(&authz::Infra(infra_id), authz::InfraPrivilege::CanRead)
             .await
     })
     .await?;

@@ -79,30 +79,13 @@ impl<S: StorageDriver> Authorizer<S> {
             .await
     }
 
-    pub async fn authorize_infra_read(
+    pub async fn authorize_infra(
         &self,
         infra: &Infra,
+        privilege: InfraPrivilege,
     ) -> Result<Authorization<()>, Error<S::Error>> {
         self.regulator
-            .authorize_infra_read(&User(self.user_id), infra)
-            .await
-    }
-
-    pub async fn authorize_infra_write(
-        &self,
-        infra: &Infra,
-    ) -> Result<Authorization<()>, Error<S::Error>> {
-        self.regulator
-            .authorize_infra_write(&User(self.user_id), infra)
-            .await
-    }
-
-    pub async fn authorize_infra_delete(
-        &self,
-        infra: &Infra,
-    ) -> Result<Authorization<()>, Error<S::Error>> {
-        self.regulator
-            .authorize_infra_delete(&User(self.user_id), infra)
+            .authorize_infra(&User(self.user_id), infra, privilege)
             .await
     }
 

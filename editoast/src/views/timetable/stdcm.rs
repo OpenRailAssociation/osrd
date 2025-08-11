@@ -187,7 +187,7 @@ pub(in crate::views) async fn stdcm(
     auth.clone()
         .check_authorization(async |authorizer| {
             authorizer
-                .authorize_infra_read(&authz::Infra(infra_id))
+                .authorize_infra(&authz::Infra(infra_id), authz::InfraPrivilege::CanRead)
                 .await
         })
         .await?;
