@@ -11,8 +11,8 @@ import { SubCategoryContextProvider } from 'common/SubCategoryContext';
 import useInfraStatus from 'modules/pathfinding/hooks/useInfraStatus';
 import { getOperationalStudiesInfraID } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 
-import ScenarioHeader from '../components/ScenarioHeader';
-import type { Board } from '../types';
+import ScenarioHeader from '../../components/ScenarioHeader';
+import type { Board } from '../../types';
 
 const Scenario = () => {
   const { scenario } = useScenario();

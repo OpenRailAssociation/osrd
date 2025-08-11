@@ -9,8 +9,8 @@ import type { NetzgrafikDto, NGEEvent } from 'applications/operationalStudies/co
 import { MANAGE_TIMETABLE_ITEM_TYPES } from 'applications/operationalStudies/consts';
 import useScenarioData from 'applications/operationalStudies/hooks/useScenarioData';
 import type { Board } from 'applications/operationalStudies/types';
-import ManageTimetableItemModal from 'applications/operationalStudies/views/ManageTimetableItemModal';
-import SimulationResults from 'applications/operationalStudies/views/SimulationResults';
+import ManageTimetableItemModal from 'applications/operationalStudies/views/Scenario/components/ManageTimetableItemModal';
+import SimulationResults from 'applications/operationalStudies/views/Scenario/components/SimulationResults';
 import type { Conflict, InfraWithState, ScenarioResponse } from 'common/api/osrdEditoastApi';
 import { Loader } from 'common/Loaders';
 import ConflictsList from 'modules/conflict/components/ConflictsList';
