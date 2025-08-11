@@ -47,7 +47,7 @@ import {
 import { useAppDispatch } from 'store';
 import { formatKmValue } from 'utils/strings';
 
-import { useManageTimetableItemContext } from '../hooks/useManageTimetableItemContext';
+import { useManageTimetableItemContext } from '../../../hooks/useManageTimetableItemContext';
 
 const ManageTimetableItem = () => {
   const [showTrainSettings, setShowTrainSettings] = useState(true);

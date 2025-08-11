@@ -34,10 +34,10 @@ import {
 } from 'utils/trainId';
 import { mapBy } from 'utils/types';
 
-import BoardWrapper from '../components/Scenario/BoardWrapper';
-import { useScenarioContext } from '../hooks/useScenarioContext';
-import useSimulationResults from '../hooks/useSimulationResults';
-import type { Board } from '../types';
+import BoardWrapper from '../../../components/Scenario/BoardWrapper';
+import { useScenarioContext } from '../../../hooks/useScenarioContext';
+import useSimulationResults from '../../../hooks/useSimulationResults';
+import type { Board } from '../../../types';
 
 const SPEED_SPACE_CHART_HEIGHT = 521.5;
 const HANDLE_TAB_RESIZE_HEIGHT = 20;

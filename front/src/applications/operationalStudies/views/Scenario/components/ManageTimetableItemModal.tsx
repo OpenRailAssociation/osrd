@@ -5,10 +5,10 @@ import TimetableManageItem, {
   type TimetableManageItemProps,
 } from 'modules/timetableItem/components/ManageTimetableItem/TimetableManageItem';
 
-import { MANAGE_TIMETABLE_ITEM_TYPES } from '../consts';
+import { MANAGE_TIMETABLE_ITEM_TYPES } from '../../../consts';
 import ImportTimetableItem from './ImportTimetableItem';
 import ManageTimetableItem from './ManageTimetableItem';
-import { ManageTimetableItemContextProvider } from '../hooks/useManageTimetableItemContext';
+import { ManageTimetableItemContextProvider } from '../../../hooks/useManageTimetableItemContext';
 
 type ManageTimetableItemModalProps = TimetableManageItemProps & {
   scenario: ScenarioResponse;
