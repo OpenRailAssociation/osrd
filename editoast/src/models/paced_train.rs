@@ -170,7 +170,7 @@ impl PacedTrain {
     }
 
     /// Returns an iterator over all train occurrences, including:
-    /// - base occurrences
+    /// - base occurrences, minus the ones disabled by a modified exception
     /// - occurrences modified by exceptions (which replace a base one)
     /// - occurrences created by exceptions (additional trains)
     ///
@@ -181,27 +181,37 @@ impl PacedTrain {
     pub fn iter_occurrences(&self) -> impl Iterator<Item = (TrainId, TrainSchedule)> {
         let mut base_occurrences = self.get_base_occurrences();
 
-        let enabled_modified_exceptions = self
+        let modified_exceptions = self
             .exceptions
             .iter()
-            .filter(|ex| !ex.disabled)
             .filter_map(|e| match e.exception_type {
                 ExceptionType::Modified { occurrence_index } => Some((occurrence_index, e)),
                 _ => None,
             });
 
-        for (occurrence_index, exception) in enabled_modified_exceptions {
+        let mut to_remove = vec![false; base_occurrences.len()];
+        // Modify corresponding occurrences.
+        for (occurrence_index, exception) in modified_exceptions {
             if let Some(occurrence) = base_occurrences.get_mut(occurrence_index as usize) {
-                let train_id = TrainId::PacedTrainModifiedException {
-                    paced_train_id: self.id,
-                    index: occurrence_index as u64,
-                    exception_key: exception.key.clone(),
-                };
-                *occurrence = (train_id, self.apply_exception(exception));
+                if exception.disabled {
+                    to_remove[occurrence_index as usize] = true;
+                } else {
+                    let train_id = TrainId::PacedTrainModifiedException {
+                        paced_train_id: self.id,
+                        index: occurrence_index as u64,
+                        exception_key: exception.key.clone(),
+                    };
+                    *occurrence = (train_id, self.apply_exception(exception));
+                }
             }
         }
+        // Remove disabled occurrences.
+        let occurences = base_occurrences
+            .into_iter()
+            .zip(to_remove)
+            .filter_map(|(occ, disabled)| if disabled { None } else { Some(occ) });
 
-        base_occurrences
+        occurences
             .into_iter()
             .chain(self.get_created_occurrences_exceptions())
             .sorted_by_key(|(_, ts)| ts.start_time)
@@ -452,7 +462,7 @@ mod tests {
         let occurrences: Vec<(TrainId, schemas::TrainSchedule)> =
             paced_train.iter_occurrences().collect();
 
-        assert_eq!(occurrences.len(), 5);
+        assert_eq!(occurrences.len(), 4);
 
         let start_times: Vec<DateTime<Utc>> =
             occurrences.iter().map(|(_, o)| o.start_time).collect();
@@ -465,7 +475,6 @@ mod tests {
         assert_eq!(
             start_times,
             vec![
-                DateTime::<Utc>::from_str("2025-05-15T14:00:00+02:00").unwrap(),
                 DateTime::<Utc>::from_str("2025-05-15T14:30:00+02:00").unwrap(),
                 DateTime::<Utc>::from_str("2025-05-15T15:00:00+02:00").unwrap(),
                 DateTime::<Utc>::from_str("2025-05-15T15:10:00+02:00").unwrap(),
@@ -476,7 +485,6 @@ mod tests {
         assert_eq!(
             train_names,
             vec![
-                "train_name".to_string(),
                 "modified_exception_train_name".to_string(),
                 "train_name".to_string(),
                 "created_exception_train_name".to_string(),
@@ -487,10 +495,6 @@ mod tests {
         assert_eq!(
             types,
             vec![
-                TrainId::PacedTrainBaseOccurrence {
-                    paced_train_id: paced_train.id,
-                    index: 0
-                },
                 TrainId::PacedTrainModifiedException {
                     paced_train_id: paced_train.id,
                     index: 1,
