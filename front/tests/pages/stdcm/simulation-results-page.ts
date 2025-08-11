@@ -126,35 +126,25 @@ class SimulationResultPage extends STDCMPage {
     await expect(this.startNewQueryWithDataButton).toBeVisible();
   }
 
-  async downloadSimulation(downloadDir: string): Promise<void> {
-    // Get the download link element and suggested filename
+  async downloadSimulation(downloadDir: string): Promise<string> {
     await expect(this.downloadLink).toBeVisible();
-    const suggestedFilename = await this.downloadLink.getAttribute('download');
-    expect(suggestedFilename).toMatch(/^Stdcm.*\.pdf$/);
 
-    const downloadPath = path.join(downloadDir, suggestedFilename!);
+    // Start waiting for download event BEFORE clicking the link
+    const [download] = await Promise.all([
+      this.page.waitForEvent('download'),
+      this.downloadLink.click(),
+    ]);
+
+    const suggestedFilename = download.suggestedFilename();
+    expect(suggestedFilename).toMatch(/^Stdcm.*\.pdf$/);
 
     await fs.promises.mkdir(downloadDir, { recursive: true });
 
-    // Get the file content from the `blob:` URL
-    const fileContent = await this.downloadSimulationButton.evaluate(async (el) => {
-      if (!(el instanceof HTMLAnchorElement)) {
-        throw new Error('Element is not an anchor tag');
-      }
-
-      const response = await fetch(el.href);
-      if (!response.ok) {
-        throw new Error(`Failed to fetch the blob: ${response.status} ${response.statusText}`);
-      }
-
-      const buffer = await response.arrayBuffer();
-      return Array.from(new Uint8Array(buffer));
-    });
-
-    // Write the file to the local file system
-    await fs.promises.writeFile(downloadPath, Buffer.from(fileContent));
+    const downloadPath = path.join(downloadDir, suggestedFilename);
+    await download.saveAs(downloadPath);
 
     logger.info(`The PDF was successfully downloaded to: ${downloadPath}`);
+    return downloadPath;
   }
 
   async startNewQuery() {

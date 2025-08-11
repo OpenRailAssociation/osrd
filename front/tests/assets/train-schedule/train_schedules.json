@@ -641,7 +641,7 @@
       { "id": "id2659", "deleted": false, "uic": 8744, "secondary_code": "BV" },
       { "id": "id2492", "deleted": false, "track": "TD0", "offset": 11080000 },
       { "id": "id2570", "deleted": false, "uic": 8733, "secondary_code": "BV" },
-      { "id": "id2436", "deleted": false, "track": "TX1", "offset": 105000 }
+      { "id": "id2436", "deleted": false, "track": "TI1", "offset": 105000 }
     ],
     "schedule": [
       {

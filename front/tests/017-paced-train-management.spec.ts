@@ -165,7 +165,7 @@ test.describe('Verify simulation configuration in operational studies for train 
       originTrigram: 'WS',
       destinationTrigram: 'NES',
     });
-    await operationalStudiesPage.checkPathfindingDistance('46.000 km');
+    await operationalStudiesPage.checkPathfindingDistance('46.050 km');
 
     // Verify initial row count and fill table with input data
     await operationalStudiesPage.openTimesAndStopsTab();

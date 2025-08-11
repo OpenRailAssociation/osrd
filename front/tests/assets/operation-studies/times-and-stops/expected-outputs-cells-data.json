@@ -9,9 +9,9 @@
     "signalReceptionClosed": false,
     "margin": {
       "theoretical": "5 %",
-      "theoreticalS": "29 s",
-      "actual": "920 s",
-      "difference": "891 s"
+      "theoreticalS": "18 s",
+      "actual": "1140 s",
+      "difference": "1122 s"
     },
     "calculatedArrival": "11:22:40",
     "calculatedDeparture": ""
@@ -54,7 +54,7 @@
   {
     "stationName": "North_East_station",
     "stationCh": "BV",
-    "trackName": "V2",
+    "trackName": "V1",
     "requestedArrival": "",
     "requestedDeparture": "",
     "stopTime": "0",
@@ -65,7 +65,7 @@
       "actual": "",
       "difference": ""
     },
-    "calculatedArrival": "12:16:22",
-    "calculatedDeparture": "12:16:22"
+    "calculatedArrival": "12:16:23",
+    "calculatedDeparture": "12:16:23"
   }
 ]

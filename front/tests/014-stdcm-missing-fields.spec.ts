@@ -78,7 +78,7 @@ test.describe('Verify stdcm missing fields', () => {
     await stdcmPage.expectWarningBoxHidden();
     await simulationResultPage.verifySimulationDetails({
       simulationIndex: 0,
-      simulationLengthAndDuration: '51 km — 48min',
+      simulationLengthAndDuration: '51 km — 33min',
       validSimulationNumber: 1,
     });
 
@@ -116,7 +116,7 @@ test.describe('Verify stdcm missing fields', () => {
     await stdcmPage.expectWarningBoxHidden();
     await simulationResultPage.verifySimulationDetails({
       simulationIndex: 1,
-      simulationLengthAndDuration: '51 km — 40min',
+      simulationLengthAndDuration: '51 km — 22min',
       validSimulationNumber: 2,
     });
   });

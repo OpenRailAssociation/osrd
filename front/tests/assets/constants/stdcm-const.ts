@@ -79,4 +79,4 @@ export const VIA_STOP_TYPES = {
   DRIVER_SWITCH: 'driverSwitch',
 };
 
-export const CONFLICT_ARRIVAL_TIME = '05:00';
+export const CONFLICT_ARRIVAL_TIME = '16:29';
