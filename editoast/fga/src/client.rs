@@ -1098,6 +1098,8 @@ mod tests {
     use crate::model::AsUser;
     use crate::model::Check;
     use crate::model::Relation;
+    use crate::test_client;
+    use crate::test_utilities::connection_settings;
 
     fn setup_tracing() {
         tracing_subscriber::fmt()
@@ -1108,27 +1110,11 @@ mod tests {
             .ok();
     }
 
-    macro_rules! test_client {
-        () => {
-            Client::try_new_store(
-                stdext::function_name!()
-                    .split("::")
-                    .filter(|x| *x != "{{closure}}")
-                    .collect::<Vec<_>>()
-                    .join("-"),
-                crate::connection_settings(),
-            )
-            .await
-            .expect("Failed to initialize client")
-        };
-    }
-
     #[tokio::test]
     async fn test_try_init_not_found() {
         setup_tracing();
         let result =
-            Client::try_with_store("nonexistent_store".to_owned(), crate::connection_settings())
-                .await;
+            Client::try_with_store("nonexistent_store".to_owned(), connection_settings()).await;
 
         match result {
             Err(InitializationError::NotFound(store_name)) => {

@@ -21,6 +21,7 @@ utoipa.workspace = true
 
 [dev-dependencies]
 editoast_common.workspace = true
+fga = { workspace = true, features = ["test_utilities"] }
 pretty_assertions.workspace = true
 stdext.workspace = true
 tokio.workspace = true

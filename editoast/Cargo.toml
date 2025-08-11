@@ -252,6 +252,7 @@ core_client = { workspace = true, features = ["mocking_client"] }
 database = { workspace = true, features = ["testing"] }
 editoast_models = { workspace = true, features = ["testing"] }
 editoast_schemas = { workspace = true, features = ["testing"] }
+fga = { path = "./fga", features = ["test_utilities"] }
 osrdyne_client = { workspace = true, features = ["mock_client"] }
 pretty_assertions.workspace = true
 rstest.workspace = true

@@ -4,6 +4,9 @@ license.workspace = true
 version.workspace = true
 edition.workspace = true
 
+[features]
+test_utilities = []
+
 [dependencies]
 fga_derive = { path = "../fga_derive" }
 futures.workspace = true
