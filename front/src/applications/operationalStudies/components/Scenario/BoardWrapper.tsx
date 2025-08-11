@@ -1,5 +1,7 @@
 import React from 'react';
 
+import cx from 'classnames';
+
 import MenuTriggerButton from 'common/MenuTriggerButton';
 import type { OSRDMenuItem } from 'common/OSRDMenu';
 
@@ -39,7 +41,13 @@ const BoardWrapper = ({
           menuProps={{ items, className: 'board-header-menu' }}
         />
       </div>
-      <div className="board-body">{children}</div>
+      <div
+        className={cx('board-body', {
+          'with-rounded-corners': !withFooter,
+        })}
+      >
+        {children}
+      </div>
       {withFooter && <div className="board-footer" />}
     </div>
   );
