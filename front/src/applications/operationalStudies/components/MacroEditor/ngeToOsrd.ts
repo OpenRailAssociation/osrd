@@ -40,7 +40,7 @@ import {
   createMacroNode,
   deleteMacroNodeByNgeId,
   getFrequencyFromFrequencyId,
-  getTrainMainCategoryFromId,
+  getTrainCategoryFromTrainrunCategoryId,
   updateMacroNode,
 } from './utils';
 import type {
@@ -434,7 +434,12 @@ const handleCreateTimetableItem = async (
     startDate
   );
   await populateSecondaryCodesInPath(path, infraId, dispatch);
-  const category = getTrainMainCategoryFromId(trainrun.categoryId);
+
+  const category = getTrainCategoryFromTrainrunCategoryId(
+    state.trainrunCategories,
+    trainrun.categoryId
+  );
+
   const pacedTrain: PacedTrain = {
     ...DEFAULT_PACED_TRAIN_PAYLOAD,
     paced: createPacedAttributesFromTrainrun(trainrun, netzgrafikDto)!,
@@ -443,11 +448,7 @@ const handleCreateTimetableItem = async (
     path,
     start_time: startDate.toISOString(),
     schedule,
-    category: category
-      ? {
-          main_category: category,
-        }
-      : undefined,
+    category,
   };
   const newTimetableItems = await dispatch(
     osrdEditoastApi.endpoints.postTimetableByIdPacedTrains.initiate({
@@ -511,12 +512,11 @@ const handleUpdateTimetableItem = async ({
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { id, ...timetableItemBase } = timetableItem;
 
-  const mainCategory = getTrainMainCategoryFromId(trainrun.categoryId);
-  const category = mainCategory
-    ? {
-        main_category: mainCategory,
-      }
-    : undefined;
+  const category = getTrainCategoryFromTrainrunCategoryId(
+    state.trainrunCategories,
+    trainrun.categoryId
+  );
+
   const timetableItemForUpdate = {
     ...timetableItemBase,
     train_name: trainrun.name,

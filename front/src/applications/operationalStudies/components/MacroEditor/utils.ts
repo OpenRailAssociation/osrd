@@ -6,8 +6,10 @@ import {
   type MacroNodeResponse,
   type PathItemLocation,
   type SearchResultItemOperationalPoint,
-  type TrainMainCategory,
+  type SubCategory,
+  type TrainCategory,
 } from 'common/api/osrdEditoastApi';
+import isMainCategory from 'modules/rollingStock/helpers/category';
 import type { TimetableItem } from 'reducers/osrdconf/types';
 import type { AppDispatch } from 'store';
 import { Duration } from 'utils/duration';
@@ -22,11 +24,12 @@ import {
   DEFAULT_TRAINRUN_FREQUENCIES,
   NETZGRAFIK_COLOR_PALETTE,
   CATEGORY_COLOR_VARIANTS,
-  OSRD_TRAINRUN_CATEGORY_MAPPING,
+  OSRD_TRAINRUN_MAIN_CATEGORY_CODE_MAPPING,
+  TRAIN_MAIN_CATEGORY_TO_NGE,
 } from './consts';
 import type MacroEditorState from './MacroEditorState';
 import type { NodeIndexed } from './MacroEditorState';
-import type { TrainrunFrequency, TrainrunTimeCategory } from '../NGE/types';
+import type { TrainrunCategory, TrainrunFrequency, TrainrunTimeCategory } from '../NGE/types';
 
 export const findOpFromPathItem = (
   pathItem: PathItemLocation,
@@ -244,29 +247,71 @@ export const getTrainrunFrequencyFromTimetableItem = (
   return trainrunFrequency;
 };
 
-export const getNetzgrafikColors = () =>
-  Object.entries(NETZGRAFIK_COLOR_PALETTE).map(([colorRef, baseColor], index) => ({
-    id: index,
-    colorRef,
-    color: CATEGORY_COLOR_VARIANTS[`${baseColor}50`],
-    colorFocus: CATEGORY_COLOR_VARIANTS[`${baseColor}70`],
-    colorMuted: CATEGORY_COLOR_VARIANTS[`${baseColor}10`],
-    colorRelated: CATEGORY_COLOR_VARIANTS[`${baseColor}50`],
-    colorDarkMode: CATEGORY_COLOR_VARIANTS[`${baseColor}50`],
-    colorDarkModeFocus: CATEGORY_COLOR_VARIANTS[`${baseColor}70`],
-    colorDarkModeMuted: CATEGORY_COLOR_VARIANTS[`${baseColor}10`],
-    colorDarkModeRelated: CATEGORY_COLOR_VARIANTS[`${baseColor}50`],
+export const getNetzgrafikColors = (subCategories: SubCategory[]) => {
+  const mainColors = Object.entries(NETZGRAFIK_COLOR_PALETTE).map(
+    ([colorRef, baseColor], index) => ({
+      id: index,
+      colorRef,
+      color: CATEGORY_COLOR_VARIANTS[`${baseColor}50`],
+      colorFocus: CATEGORY_COLOR_VARIANTS[`${baseColor}70`],
+      colorMuted: CATEGORY_COLOR_VARIANTS[`${baseColor}10`],
+      colorRelated: CATEGORY_COLOR_VARIANTS[`${baseColor}50`],
+      colorDarkMode: CATEGORY_COLOR_VARIANTS[`${baseColor}50`],
+      colorDarkModeFocus: CATEGORY_COLOR_VARIANTS[`${baseColor}70`],
+      colorDarkModeMuted: CATEGORY_COLOR_VARIANTS[`${baseColor}10`],
+      colorDarkModeRelated: CATEGORY_COLOR_VARIANTS[`${baseColor}50`],
+    })
+  );
+
+  const subColors = subCategories.map((cat, index) => ({
+    id: mainColors.length + index,
+    colorRef: 'sub_' + cat.code,
+    color: cat.color,
+    colorFocus: cat.hovered_color,
+    colorMuted: cat.background_color,
+    colorRelated: cat.color,
+    colorDarkMode: cat.color,
+    colorDarkModeFocus: cat.hovered_color,
+    colorDarkModeMuted: cat.background_color,
+    colorDarkModeRelated: cat.color,
   }));
 
-export const getTrainMainCategoryFromId = (id: number): TrainMainCategory | null => {
-  for (const key of OSRD_TRAINRUN_CATEGORY_MAPPING.keys()) {
-    if (OSRD_TRAINRUN_CATEGORY_MAPPING.get(key)!.id === id) {
-      return key !== 'NO_CATEGORY' ? key : null;
-    }
+  return [...mainColors, ...subColors];
+};
+
+export const getTrainCategoryFromTrainrunCategoryId = (
+  trainrunCategories: TrainrunCategory[],
+  id: number
+): TrainCategory | null => {
+  const category = trainrunCategories.find((cat) => cat.id === id);
+  if (!category) throw new Error(`Trainrun category with ID ${id} not found.`);
+  if (category.colorRef.startsWith('sub_')) {
+    return {
+      sub_category_code: category.colorRef.replace('sub_', ''),
+    };
   }
-  throw new Error(`Unknown train category id: ${id}`);
+
+  const mainCat = TRAIN_MAIN_CATEGORY_TO_NGE.find((cat) => cat.colorRef === category.colorRef)!;
+
+  if (mainCat.trainCategory === 'NO_CATEGORY') {
+    return null;
+  }
+
+  return { main_category: mainCat.trainCategory };
 };
 
 // If the categoryKey is null or undefined, we return the ID for 'NO_CATEGORY'
-export const getTrainrunCategoryId = (categoryKey?: TrainMainCategory | null) =>
-  OSRD_TRAINRUN_CATEGORY_MAPPING.get(categoryKey || 'NO_CATEGORY')!.id;
+export const getTrainrunCategoryId = (
+  trainrunCategories: TrainrunCategory[],
+  trainCategory?: TrainCategory | null
+): number => {
+  if (trainCategory && isMainCategory(trainCategory)) {
+    const mainKey = trainCategory.main_category;
+    return OSRD_TRAINRUN_MAIN_CATEGORY_CODE_MAPPING.get(mainKey)!.id;
+  } else if (!trainCategory) {
+    return OSRD_TRAINRUN_MAIN_CATEGORY_CODE_MAPPING.get('NO_CATEGORY')!.id;
+  }
+
+  const subKey = 'sub_' + trainCategory.sub_category_code;
+  return trainrunCategories.find((cat) => cat.colorRef === subKey)!.id;
+};
