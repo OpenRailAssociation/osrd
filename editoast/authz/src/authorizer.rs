@@ -153,6 +153,16 @@ mod tests {
         groups: Arc<Mutex<HashMap<GroupName, i64>>>,
     }
 
+    macro_rules! authz_client {
+        () => {{
+            let mut client = fga::test_client!();
+            crate::ensure_latest_authorization_model(&mut client)
+                .await
+                .expect("Failed to initialize/update the authorization model");
+            client
+        }};
+    }
+
     #[tokio::test]
     async fn check_user_grants() {
         let user_identity = || "toto".to_owned();
@@ -160,7 +170,7 @@ mod tests {
             identity: user_identity(),
             name: "Sir Toto, the One and Only".to_owned(),
         };
-        let regulator = Regulator::new(crate::openfga!(), MockAuthDriver::default());
+        let regulator = Regulator::new(authz_client!(), MockAuthDriver::default());
         let regulator = move || regulator.clone();
 
         let user_id = regulator()
@@ -216,7 +226,7 @@ mod tests {
             identity: user_identity(),
             name: "Sir Toto, the One and Only".to_owned(),
         };
-        let regulator = Regulator::new(crate::openfga!(), MockAuthDriver::default());
+        let regulator = Regulator::new(authz_client!(), MockAuthDriver::default());
         let regulator = move || regulator.clone();
 
         // setup user
@@ -345,7 +355,7 @@ mod tests {
             name: "friends".to_owned(),
         };
 
-        let regulator = Regulator::new(crate::openfga!(), MockAuthDriver::default());
+        let regulator = Regulator::new(authz_client!(), MockAuthDriver::default());
         let regulator = move || regulator.clone();
 
         // setup subjects
@@ -460,7 +470,7 @@ mod tests {
     // If I'm a WRITER on an infra, and I grant READER to an OWNER, the OWNER should *not* become READER
     #[tokio::test]
     async fn prevent_downgrade() {
-        let regulator = Regulator::new(crate::openfga!(), MockAuthDriver::default());
+        let regulator = Regulator::new(authz_client!(), MockAuthDriver::default());
         let regulator = move || regulator.clone();
 
         let alice = Subject::User(User(
@@ -514,7 +524,7 @@ mod tests {
     // A WRITER cannot demote another WRITER
     #[tokio::test]
     async fn prevent_demotion() {
-        let regulator = Regulator::new(crate::openfga!(), MockAuthDriver::default());
+        let regulator = Regulator::new(authz_client!(), MockAuthDriver::default());
         let regulator = move || regulator.clone();
 
         let alice = Subject::User(User(
