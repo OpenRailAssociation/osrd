@@ -1,3 +1,19 @@
+//! Finds similar train schedules for a given train path and rolling stock.
+//!
+//! This module implements an algorithm to identify train schedules that closely match a new train's
+//! waypoints and characteristics. It works in these steps:
+//!
+//! 1. **Validate Inputs**: Checks if the rolling stock and speed limit tag exist.
+//! 2. **Query Candidates**: Finds train schedules in the given timetable with matching rolling stock
+//!    and stops at the new train's segment endpoints.
+//! 3. **Simulate Trains**: Computes the path properties of candidate train schedules to confirm their routes.
+//! 4. **Build Graphs**: Creates a graph for each segment, mapping waypoints of past trains.
+//! 5. **Find Matches**: Identifies past trains that cover each segment of the new train's path.
+//! 6. **Select Best Trains**: Chooses the smallest set of past trains that cover all segments.
+//! 7. **Build Response**: Formats the results, combining consecutive segments with the same train.
+//!
+//! The result is a list of similar train segments with their train ids and start times.
+
 mod graph;
 mod new_train;
 mod past_train;
