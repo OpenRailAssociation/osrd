@@ -368,7 +368,7 @@ def test_max_running_time(
         ],
         "pathfinding_result": {
             "blocks": [
-                "block.257fce538543c5f960490c7606bbc603",
+                "block.456b451eed3264038c49a889503b7ac6",
                 "block.1dbf71a8896e98cd71157a44bb918a9e",
                 "block.97661cd54d96453abdc191d1be184af5",
                 "block.52b46c47a8253001dad72b6907da3a07",
@@ -386,13 +386,13 @@ def test_max_running_time(
             "length": 42000000,
             "path_item_positions": [0, 42000000],
             "routes": [
-                "rt.buffer_stop.2->DA1",
+                "rt.buffer_stop.4->DA1",
                 "rt.DA1->DA6",
                 "rt.DA6->DC6",
                 "rt.DC6->DD3",
                 "rt.DD3->DH0",
                 "rt.DH0->DH2",
-                "rt.DH2->buffer_stop.7",
+                "rt.DH2->buffer_stop.9",
             ],
             "status": "success",
             "track_section_ranges": [

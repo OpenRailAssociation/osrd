@@ -83,7 +83,7 @@ def test_get_paced_train_with_exception_path(
             "power_restrictions": [],
             "schedule": [],
             "path": [
-                {"id": "id1", "deleted": False, "track": "TA0", "offset": 470000},
+                {"id": "id1", "deleted": False, "track": "TI0", "offset": 470000},
                 {"id": "id2", "deleted": False, "track": "TG4", "offset": 1993000},
             ],
             "margins": {
@@ -121,9 +121,11 @@ def test_get_paced_train_with_exception_path(
         "TH0",
         "TH1",
     ]
-    # Check if the exception path is present in track_sections, the first is TA0 and last is TG4
+    # Check if the exception path is present in track_sections, the first is TI0 and last is TG4
     assert exception_track_sections == [
-        "TA0",
+        "TI0",
+        "TI2",
+        "TI3",
         "TA6",
         "TC1",
         "TD0",
@@ -151,7 +153,7 @@ def test_get_paced_train_with_exception_simulation(
         "disabled": False,
         "path_and_schedule": {
             "path": [
-                {"id": "id1", "deleted": False, "track": "TA0", "offset": 470000},
+                {"id": "id1", "deleted": False, "track": "TI0", "offset": 470000},
                 {"id": "id2", "deleted": False, "track": "TG4", "offset": 1993000},
             ],
             "schedule": [],

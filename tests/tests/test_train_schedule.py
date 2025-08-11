@@ -129,7 +129,7 @@ def test_etcs_schedule_stop_brakes_result_never_reach_mrsp(
                 "rolling_stock_name": etcs_rolling_stock_name,
                 "start_time": "2024-01-01T07:00:00Z",
                 "path": [
-                    {"id": "zero", "track": "TA0", "offset": 862000},
+                    {"id": "zero", "track": "TI2", "offset": 1_112_000},
                     {"id": "first", "track": "TD0", "offset": 9001000},
                     {"id": "second", "track": "TD0", "offset": 10769000},
                     {"id": "third", "track": "TD0", "offset": 17156000},
@@ -175,11 +175,11 @@ def test_etcs_schedule_stop_brakes_result_never_reach_mrsp(
     #   that there is an acceleration then deceleration in between (never reach the MRSP given the acceleration curves).
     # This check is especially interesting on the first 2 stops that are so close that their braking curves are
     #   theoretically overlapping distance ranges.
-    first_stop_offset = 21_139_000
-    second_stop_offset = 22_907_000
-    third_stop_offset = 29_294_000
-    fourth_stop_offset = 41_359_000
-    final_stop_offset = 45_060_000
+    first_stop_offset = 21_489_000
+    second_stop_offset = 23_257_000
+    third_stop_offset = 29_644_000
+    fourth_stop_offset = 41_709_000
+    final_stop_offset = 45_410_000
     stop_offsets = [
         0,
         first_stop_offset,
@@ -213,7 +213,7 @@ def test_etcs_schedule_stop_brakes_result_never_reach_mrsp(
             prev_speed = current_speed
 
     # Check that the uphill brake is shorter than downhill brake.
-    offset_37_ms_brake_uphill = 20_084_083  # first stop is the end of the braking
+    offset_37_ms_brake_uphill = 20_406_350  # first stop is the end of the braking
     assert (
         abs(
             _get_current_or_next_speed_at(
@@ -223,7 +223,7 @@ def test_etcs_schedule_stop_brakes_result_never_reach_mrsp(
         )
         < 1
     )
-    offset_37_ms_brake_downhill = 28_007_977  # third stop is the end of the braking
+    offset_37_ms_brake_downhill = 28_357_977  # third stop is the end of the braking
     assert (
         abs(
             _get_current_or_next_speed_at(
@@ -248,13 +248,13 @@ def test_etcs_schedule_stop_brakes_result_never_reach_mrsp(
     # - check high-speed point
     # - check the point closest to the bending-point at 220 km/h (can be above or under: only the "shape" of the curve matters)
     # - stop is already checked
-    offset_start_first_brake_high_speed = 15_032_882
-    offset_bending_guidance_point_first_brake = 18_229_194
+    offset_start_first_brake_high_speed = 15_300_515
+    offset_bending_guidance_point_first_brake = 18_579_194
     _assert_equal_speeds(
         _get_current_or_next_speed_at(
             simulation_final_output, offset_start_first_brake_high_speed
         ),
-        kph2ms(276.838),
+        kph2ms(278.185),
     )
     _assert_equal_speeds(
         _get_current_or_next_speed_at(
@@ -263,8 +263,8 @@ def test_etcs_schedule_stop_brakes_result_never_reach_mrsp(
         kph2ms(217.971),
     )
 
-    offset_fourth_high_speed = 37_087_326
-    offset_fourth_brake_220_kph_speed = 37_590_127
+    offset_fourth_high_speed = 37_437_326
+    offset_fourth_brake_220_kph_speed = 37_940_127
     _assert_equal_speeds(
         _get_current_or_next_speed_at(
             simulation_final_output, offset_fourth_high_speed
@@ -295,7 +295,7 @@ def test_etcs_schedule_result_stop_brake_from_mrsp(
                 "rolling_stock_name": etcs_rolling_stock_name,
                 "start_time": "2024-01-01T07:00:00Z",
                 "path": [
-                    {"id": "zero", "track": "TA0", "offset": 862_000},
+                    {"id": "zero", "track": "TI2", "offset": 1_112_000},
                     {"id": "first", "track": "TD0", "offset": 1_7156_000},
                     {"id": "second", "track": "TH1", "offset": 1_177_000},
                     {"id": "last", "track": "TH1", "offset": 3_922_000},
@@ -324,7 +324,6 @@ def test_etcs_schedule_result_stop_brake_from_mrsp(
         f"{EDITOAST_URL}train_schedule/{schedule_id}/simulation?infra_id={etcs_scenario.infra}"
     )
     simulation_final_output = simu_response.json()["final_output"]
-
     assert len(simulation_final_output["positions"]) == len(
         simulation_final_output["speeds"]
     )
@@ -336,9 +335,9 @@ def test_etcs_schedule_result_stop_brake_from_mrsp(
 
     # Check that the curves does respect Ends of Authority (EoA = stops), and that there is an
     # acceleration then deceleration in between (maintain speed when reach the MRSP).
-    first_stop_offset = 29_294_000
-    second_stop_offset = 42_315_000
-    final_stop_offset = 45_060_000
+    first_stop_offset = 29_644_000
+    second_stop_offset = 42_665_000
+    final_stop_offset = 45_410_000
     stop_offsets = [
         0,
         first_stop_offset,
@@ -370,7 +369,7 @@ def test_etcs_schedule_result_stop_brake_from_mrsp(
             prev_speed = current_speed
 
     # Check that the braking curves from the MRSP for the first and second stops start at the expected offset
-    offset_start_first_brake = 21_467_192
+    offset_start_first_brake = 21_817_192
     speed_before_first_brake = _get_current_or_next_speed_at(
         simulation_final_output, offset_start_first_brake
     )
@@ -381,7 +380,7 @@ def test_etcs_schedule_result_stop_brake_from_mrsp(
         )
         < speed_before_first_brake
     )
-    offset_start_second_brake = 40_543_050
+    offset_start_second_brake = 40_893_050
     speed_before_second_brake = _get_current_or_next_speed_at(
         simulation_final_output, offset_start_second_brake
     )
@@ -410,7 +409,7 @@ def test_etcs_schedule_result_stop_with_eoa_and_svl_at_same_location(
                 "rolling_stock_name": etcs_rolling_stock_name,
                 "start_time": "2024-01-01T07:00:00Z",
                 "path": [
-                    {"id": "zero", "track": "TA0", "offset": 862_000},
+                    {"id": "zero", "track": "TI2", "offset": 1_112_000},
                     {"id": "first", "track": "TH0", "offset": 1_000_000},
                     {"id": "last", "track": "TH1", "offset": 3_922_000},
                 ],
@@ -449,8 +448,8 @@ def test_etcs_schedule_result_stop_with_eoa_and_svl_at_same_location(
 
     # Check that the curves respect the EoA + SvL (EoA = stops), and that there is an
     # acceleration then deceleration in between (maintain speed when reach the MRSP).
-    first_stop_offset = 41_138_000
-    final_stop_offset = 45_060_000
+    first_stop_offset = 41_488_000
+    final_stop_offset = 45_410_000
     stop_offsets = [
         0,
         first_stop_offset,
@@ -481,7 +480,7 @@ def test_etcs_schedule_result_stop_with_eoa_and_svl_at_same_location(
             prev_speed = current_speed
 
     # Check that the braking curve starts and ends at the expected offsets.
-    offset_start_first_brake = 33_461_530
+    offset_start_first_brake = 33_811_530
     speed_before_first_brake = _get_current_or_next_speed_at(
         simulation_final_output, offset_start_first_brake
     )
@@ -493,18 +492,18 @@ def test_etcs_schedule_result_stop_with_eoa_and_svl_at_same_location(
         < speed_before_first_brake
     )
     # Check a bending point for the first stop's braking curve (where the Guidance curve's influence stops).
-    offset_bending_guidance_point = 37_313_980
+    offset_bending_guidance_point = 37_663_980
     speed_at_bending_guidance_point = _get_current_or_next_speed_at(
         simulation_final_output, offset_bending_guidance_point
     )
     _assert_equal_speeds(speed_at_bending_guidance_point, kph2ms(222.444_095))
     # Check that the release part (where the speed stays at 40km/h) starts and ends at the expected offsets.
-    offset_start_release_speed = 40_827_738
+    offset_start_release_speed = 41_177_738
     speed_at_start_release_speed = _get_current_or_next_speed_at(
         simulation_final_output, offset_start_release_speed
     )
     _assert_equal_speeds(speed_at_start_release_speed, RELEASE_SPEED_40)
-    offset_end_release_speed = 40_892_587
+    offset_end_release_speed = 41_242_587
     speed_at_end_release_speed = _get_current_or_next_speed_at(
         simulation_final_output, offset_end_release_speed
     )
@@ -527,7 +526,7 @@ def test_etcs_schedule_result_stop_with_eoa_and_svl_at_different_locations(
                 "rolling_stock_name": etcs_rolling_stock_name,
                 "start_time": "2024-01-01T07:00:00Z",
                 "path": [
-                    {"id": "zero", "track": "TA0", "offset": 862_000},
+                    {"id": "zero", "track": "TI2", "offset": 1_112_000},
                     {"id": "first", "track": "TH0", "offset": 900_000},
                     {"id": "last", "track": "TH1", "offset": 3_922_000},
                 ],
@@ -571,9 +570,9 @@ def test_etcs_schedule_result_stop_with_eoa_and_svl_at_different_locations(
     # Check that the curves respect the EoA + SvL (EoA = stops), and that there is an
     # acceleration then deceleration in between (maintain speed when reach the MRSP).
     # Here, the stop (EoA) is 100m before the PH1 switch (SvL).
-    svl_ph1_offset = 41_138_000
+    svl_ph1_offset = 41_488_000
     first_stop_offset = svl_ph1_offset - 100_000
-    final_stop_offset = 45_060_000
+    final_stop_offset = 45_410_000
     stop_offsets = [
         0,
         first_stop_offset,
@@ -604,7 +603,7 @@ def test_etcs_schedule_result_stop_with_eoa_and_svl_at_different_locations(
             prev_speed = current_speed
 
     # Check that the braking curve starts and ends at the expected offsets.
-    offset_start_first_brake = 33_361_530
+    offset_start_first_brake = 33_711_530
     speed_before_first_brake = _get_current_or_next_speed_at(
         simulation_final_output, offset_start_first_brake
     )
@@ -616,21 +615,21 @@ def test_etcs_schedule_result_stop_with_eoa_and_svl_at_different_locations(
         < speed_before_first_brake
     )
     # Check the first bending point for the first stop's braking curve (where the Guidance curve's influence stops).
-    offset_bending_guidance_point = 37_239_933
+    offset_bending_guidance_point = 37_589_933
     speed_at_bending_guidance_point = _get_current_or_next_speed_at(
         simulation_final_output, offset_bending_guidance_point
     )
     _assert_equal_speeds(speed_at_bending_guidance_point, kph2ms(221.94))
     # Check the second bending point for the first stop's braking curve, where the indication curve followed switches
     # from the EoA indication curve to the SvL indication curve.
-    offset_bending_point_eoa_to_svl = 39_005_481
+    offset_bending_point_eoa_to_svl = 39_355_481
     speed_at_bending_point_eoa_to_svl = _get_current_or_next_speed_at(
         simulation_final_output, offset_bending_point_eoa_to_svl
     )
     _assert_equal_speeds(speed_at_bending_point_eoa_to_svl, kph2ms(159.411_475_5))
     # Check the third bending point for the first stop's braking curve, where the indication curve followed switches
     # back from the SvL indication curve to the EoA indication curve.
-    offset_bending_point_svl_to_eoa = 40_617_604
+    offset_bending_point_svl_to_eoa = 40_967_604
     speed_at_bending_point_svl_to_eoa = _get_current_or_next_speed_at(
         simulation_final_output, offset_bending_point_svl_to_eoa
     )
@@ -640,8 +639,8 @@ def test_etcs_schedule_result_stop_with_eoa_and_svl_at_different_locations(
 @pytest.mark.parametrize(
     ["stop_signal_status", "brake_start_offset", "first_bending_point_offset"],
     [
-        ("OPEN", 34_081_530, 37_794_783),
-        ("STOP", 33_361_530, 37_239_933),
+        ("OPEN", 34_431_530, 38_044_783),
+        ("STOP", 33_711_530, 37_589_933),
     ],
 )
 def test_etcs_schedule_result_stop_on_open_signal(
@@ -670,7 +669,7 @@ def test_etcs_schedule_result_stop_on_open_signal(
                 "rolling_stock_name": etcs_rolling_stock_name,
                 "start_time": "2024-01-01T07:00:00Z",
                 "path": [
-                    {"id": "zero", "track": "TA0", "offset": 862_000},
+                    {"id": "zero", "track": "TI2", "offset": 1_112_000},
                     {"id": "first", "track": "TH0", "offset": 900_000},
                     {"id": "last", "track": "TH1", "offset": 3_922_000},
                 ],
@@ -714,9 +713,9 @@ def test_etcs_schedule_result_stop_on_open_signal(
     # The EOA permitted speed curve should also be used on an open signal
     # instead of the less permissive EOA indication speed curve used for closed signal.
     # Here, the stop (EoA) is 100m before the PH1 switch (SvL).
-    svl_ph1_offset = 41_138_000
+    svl_ph1_offset = 41_488_000
     first_stop_offset = svl_ph1_offset - 100_000
-    final_stop_offset = 45_060_000
+    final_stop_offset = 45_410_000
     stop_offsets = [
         0,
         first_stop_offset,
@@ -774,7 +773,7 @@ def test_etcs_schedule_result_stop_on_open_signal(
         # Check that we continue to follow the EOA permitted speed curve for the open signal without switching to SVL
         # This is not obvious from the shape of the curve, so this final check mostly serves to prevent accidental
         # regression by providing a numerical value for the speed.
-        offset_post_bending_point = 40_649_200
+        offset_post_bending_point = 40_999_200
         speed_post_bending_point = _get_current_or_next_speed_at(
             simulation_final_output, offset_post_bending_point
         )
@@ -797,7 +796,7 @@ def test_etcs_schedule_result_slowdowns(
                 "rolling_stock_name": etcs_rolling_stock_name,
                 "start_time": "2024-01-01T07:00:00Z",
                 "path": [
-                    {"id": "zero", "track": "TA0", "offset": 0},
+                    {"id": "zero", "track": "TI2", "offset": 350},
                     {"id": "last", "track": "TH1", "offset": 5_000_000},
                 ],
                 "schedule": [
@@ -837,7 +836,7 @@ def test_etcs_schedule_result_slowdowns(
     # Check that the curves do respect Ends of Authority (EoA = stops), and that there is an
     # acceleration then deceleration in between (maintain speed when reach the MRSP).
     # This is the case here because MRSP is not doing ups-and-downs.
-    final_stop_offset = 47_000_000
+    final_stop_offset = 47_599_650
     stop_offsets = [
         0,
         final_stop_offset,
@@ -875,7 +874,7 @@ def test_etcs_schedule_result_slowdowns(
     # * the initial target for ETCS is the actual MRSP, not adding any anticipation from driver behavior.
 
     # First slowdown
-    offset_start_brake_288_to_142 = 35_151_913
+    offset_start_brake_288_to_142 = 35_751_563
     speed_before_brake_288_to_142 = _get_current_or_next_speed_at(
         simulation_final_output, offset_start_brake_288_to_142
     )
@@ -887,7 +886,7 @@ def test_etcs_schedule_result_slowdowns(
         < speed_before_brake_288_to_142
     )
 
-    offset_bending_guidance_point = 38_296_384
+    offset_bending_guidance_point = 38_646_384
     speed_at_bending_guidance_point = _get_current_or_next_speed_at(
         simulation_final_output, offset_bending_guidance_point
     )
@@ -895,7 +894,7 @@ def test_etcs_schedule_result_slowdowns(
     # where speed is 65.499_773_3 m/s.
     _assert_equal_speeds(speed_at_bending_guidance_point, kph2ms(235.799_184_0))
 
-    offset_end_brake_288_to_142 = 40_824_370
+    offset_end_brake_288_to_142 = 41_174_370
     speed_after_brake_288_to_142 = _get_current_or_next_speed_at(
         simulation_final_output, offset_end_brake_288_to_142
     )
@@ -908,7 +907,7 @@ def test_etcs_schedule_result_slowdowns(
     _assert_equal_speeds(speed_after_brake_288_to_142, SPEED_LIMIT_142)
 
     # Second slowdown
-    offset_start_brake_142_to_112 = 44_413_825
+    offset_start_brake_142_to_112 = 45_013_475
     speed_before_brake_142_to_112 = _get_current_or_next_speed_at(
         simulation_final_output, offset_start_brake_142_to_112
     )
@@ -919,7 +918,7 @@ def test_etcs_schedule_result_slowdowns(
         )
         < speed_before_brake_142_to_112
     )
-    offset_end_brake_142_to_112 = 44_948_022
+    offset_end_brake_142_to_112 = 45_298_022
     speed_after_brake_142_to_112 = _get_current_or_next_speed_at(
         simulation_final_output, offset_end_brake_142_to_112
     )
@@ -930,9 +929,8 @@ def test_etcs_schedule_result_slowdowns(
         > speed_after_brake_142_to_112
     )
     _assert_equal_speeds(speed_after_brake_142_to_112, SPEED_LIMIT_112)
-
     # Third slowdown, reaching release speed
-    offset_start_brake_112_to_40 = 45_762_292
+    offset_start_brake_112_to_40 = 46_361_942
     speed_before_brake_112_to_40 = _get_current_or_next_speed_at(
         simulation_final_output, offset_start_brake_112_to_40
     )
@@ -943,7 +941,7 @@ def test_etcs_schedule_result_slowdowns(
         )
         < speed_before_brake_112_to_40
     )
-    offset_end_brake_112_to_40 = 46_689_738
+    offset_end_brake_112_to_40 = 47_289_388
     speed_after_brake_112_to_40 = _get_current_or_next_speed_at(
         simulation_final_output, offset_end_brake_112_to_40
     )
@@ -956,7 +954,7 @@ def test_etcs_schedule_result_slowdowns(
     _assert_equal_speeds(speed_after_brake_112_to_40, RELEASE_SPEED_40)
 
     # Last slowdown, EoA (complete stop) braking curve is applied
-    offset_start_brake_40_to_0 = 46_754_587
+    offset_start_brake_40_to_0 = 47_354_237
     speed_before_brake_40_to_0 = _get_current_or_next_speed_at(
         simulation_final_output, offset_start_brake_40_to_0
     )
@@ -967,7 +965,7 @@ def test_etcs_schedule_result_slowdowns(
         )
         < speed_before_brake_40_to_0
     )
-    offset_end_brake_40_to_0 = 47_000_000
+    offset_end_brake_40_to_0 = 47_599_650
     speed_after_brake_40_to_0 = _get_current_or_next_speed_at(
         simulation_final_output, offset_end_brake_40_to_0
     )
@@ -996,7 +994,7 @@ def test_etcs_schedule_result_slowdowns_with_stop(
                 "rolling_stock_name": etcs_rolling_stock_name,
                 "start_time": "2024-01-01T07:00:00Z",
                 "path": [
-                    {"id": "zero", "track": "TA0", "offset": 0},
+                    {"id": "zero", "track": "TI2", "offset": 350},
                     {"id": "stop", "track": "TH0", "offset": 662_000},
                     {"id": "last", "track": "TH1", "offset": 5_000_000},
                 ],
@@ -1034,7 +1032,7 @@ def test_etcs_schedule_result_slowdowns_with_stop(
     # Check that the curves do respect Ends of Authority (EoA = stops), and that there is an
     # acceleration then deceleration in between (maintain speed when reach the MRSP).
     # This is the case here because MRSP is not doing ups-and-downs.
-    final_stop_offset = 47_000_000
+    final_stop_offset = 47_599_650
     stop_offsets = [
         0,
         final_stop_offset,
@@ -1069,9 +1067,9 @@ def test_etcs_schedule_result_slowdowns_with_stop(
     positions = simulation_final_output["positions"]
     speeds = simulation_final_output["speeds"]
 
-    offset_start_deceleration_to_stop = 33_985_530
-    offset_intermediate_stop = 41_662_000
-    offset_end_acceleration_from_stop = 43_806_384
+    offset_start_deceleration_to_stop = 35_335_530
+    offset_intermediate_stop = 42_261_650
+    offset_end_acceleration_from_stop = 44_156_384
 
     start_index = bisect.bisect_left(positions, offset_start_deceleration_to_stop)
     intermediate_index = bisect.bisect_left(positions, offset_intermediate_stop)
@@ -1114,7 +1112,7 @@ def test_etcs_spacing_req(
                 "rolling_stock_name": etcs_rolling_stock_name,
                 "start_time": "2024-01-01T07:00:00Z",
                 "path": [
-                    {"id": "zero", "track": "TA0", "offset": 0},
+                    {"id": "zero", "track": "TI2", "offset": 350},
                     {"id": "stop", "track": "TH0", "offset": 662_000},
                     {"id": "last", "track": "TH1", "offset": 5_000_000},
                 ],
@@ -1151,50 +1149,56 @@ def test_etcs_spacing_req(
 
     # zone entry buffer_stop.0
     spacing_req_z0 = simulation_final_output["spacing_requirements"][0]
-    assert spacing_req_z0["zone"] == "zone.[DA2:DECREASING, buffer_stop.0:INCREASING]"
+    assert (
+        spacing_req_z0["zone"]
+        == "zone.[DI0:INCREASING, DI1:INCREASING, DI2:DECREASING]"
+    )
     assert spacing_req_z0["begin_time"] == 0
-    assert spacing_req_z0["end_time"] == 103241
+    assert spacing_req_z0["end_time"] == 111685
 
     # zone entry DA2 (triggered by SA2)
     spacing_req_z1 = simulation_final_output["spacing_requirements"][1]
     assert (
         spacing_req_z1["zone"]
-        == "zone.[DA2:INCREASING, DA3:DECREASING, DA7:INCREASING]"
+        == "zone.[DA2:INCREASING, DI2:INCREASING, DI3:DECREASING]"
     )
-    assert spacing_req_z1["begin_time"] == 62181
-    assert spacing_req_z1["end_time"] == 111927
+    assert spacing_req_z1["begin_time"] == 69739
+    assert spacing_req_z1["end_time"] == 118646
 
     # zone entry DA3 (triggered by SA2)
     spacing_req_z2 = simulation_final_output["spacing_requirements"][2]
-    assert spacing_req_z2["zone"] == "zone.[DA3:INCREASING, DA6_1:DECREASING]"
-    assert spacing_req_z2["begin_time"] == 62181
-    assert spacing_req_z2["end_time"] == 145858
+    assert (
+        spacing_req_z2["zone"]
+        == "zone.[DA3:DECREASING, DA7:INCREASING, DI3:INCREASING]"
+    )
+    assert spacing_req_z2["begin_time"] == 69739
+    assert spacing_req_z2["end_time"] == 125299
 
-    # zone entry DD0_8 (triggered by SD0_8)
+    # zone entry DD0_7 (triggered by SD0_7)
     spacing_req_zone_intersect_full_speed = simulation_final_output[
         "spacing_requirements"
     ][19]
     assert (
         spacing_req_zone_intersect_full_speed["zone"]
-        == "zone.[DD0_8:INCREASING, DD0_9:DECREASING]"
+        == "zone.[DD0_7:INCREASING, DD0_8:DECREASING]"
     )
-    assert spacing_req_zone_intersect_full_speed["begin_time"] == 347978
-    assert spacing_req_zone_intersect_full_speed["end_time"] == 464473
+    assert spacing_req_zone_intersect_full_speed["begin_time"] == 336403
+    assert spacing_req_zone_intersect_full_speed["end_time"] == 452742
 
-    # zone entry DH1 (triggered by SG0)
+    # zone entry DG0 (triggered by SG0)
     spacing_req_zone_stop = simulation_final_output["spacing_requirements"][32]
-    assert spacing_req_zone_stop["zone"] == "zone.[DH1:INCREASING, DH2:DECREASING]"
-    assert spacing_req_zone_stop["begin_time"] == 535548
-    assert spacing_req_zone_stop["end_time"] == 851123
+    assert (
+        spacing_req_zone_stop["zone"]
+        == "zone.[DG0:INCREASING, DG1:DECREASING, DH0:INCREASING, DH1:DECREASING]"
+    )
+    assert spacing_req_zone_stop["begin_time"] == 543036
+    assert spacing_req_zone_stop["end_time"] == 736816
 
     # zone entry DH1_2 (triggered by SH1_2)
     spacing_req_zone_final = simulation_final_output["spacing_requirements"][36]
-    assert (
-        spacing_req_zone_final["zone"]
-        == "zone.[DH1_2:INCREASING, buffer_stop.7:DECREASING]"
-    )
-    assert spacing_req_zone_final["begin_time"] == 899826
-    assert spacing_req_zone_final["end_time"] == 1042849
+    assert spacing_req_zone_final["zone"] == "zone.[DH1_1:INCREASING, DH1_2:DECREASING]"
+    assert spacing_req_zone_final["begin_time"] == 877960
+    assert spacing_req_zone_final["end_time"] == 968168
 
 
 def test_etcs_schedule_braking_curves_endpoint(
@@ -1213,7 +1217,7 @@ def test_etcs_schedule_braking_curves_endpoint(
                 "rolling_stock_name": etcs_rolling_stock_name,
                 "start_time": "2024-01-01T07:00:00Z",
                 "path": [
-                    {"id": "zero", "track": "TA0", "offset": 862_000},
+                    {"id": "zero", "track": "TI2", "offset": 1_112_000},
                     {"id": "first", "track": "TD0", "offset": 1_7156_000},
                     {"id": "second", "track": "TH1", "offset": 1_177_000},
                     {"id": "last", "track": "TH1", "offset": 3_922_000},
@@ -1246,21 +1250,21 @@ def test_etcs_schedule_braking_curves_endpoint(
     conflicts = etcs_braking_curves_response.json()["conflicts"]
 
     # Check that the correct stop curves (EoAs = stops) are present
-    first_stop_offset = 29_294_000
-    second_stop_offset = 42_315_000
-    final_stop_offset = 45_060_000
+    first_stop_offset = 29_644_000
+    second_stop_offset = 42_665_000
+    final_stop_offset = 45_410_000
     stop_offsets = [
         first_stop_offset,
         second_stop_offset,
         final_stop_offset,
     ]
     start_braking_curves_offsets = [
-        [21_467_192, MAX_SPEED_288],
+        [21_817_192, MAX_SPEED_288],
         [
-            34_638_530,
+            34_988_530,
             MAX_SPEED_288,
         ],  # Hitting the LoA maintain-speed, but not the actual MRSP
-        [43_763_476, SPEED_LIMIT_142],
+        [44_113_476, SPEED_LIMIT_142],
     ]
     assert len(stops) == len(stop_offsets)
     for i in range(len(stops)):
@@ -1292,15 +1296,15 @@ def test_etcs_schedule_braking_curves_endpoint(
         )
 
     # Check that the correct slowdown curves (LoAs = slowdowns) are present
-    first_slowdown_offset = 40_638_000
-    second_slowdown_offset = 44_638_000
+    first_slowdown_offset = 40_988_000
+    second_slowdown_offset = 44_988_000
     slowdown_offsets = [
         [first_slowdown_offset, SPEED_LIMIT_142],
         [second_slowdown_offset, SPEED_LIMIT_112],
     ]
     start_braking_curves_offsets = [
-        [34_289_913, MAX_SPEED_288],
-        [43_551_825, SPEED_LIMIT_142],
+        [34_639_913, MAX_SPEED_288],
+        [43_901_825, SPEED_LIMIT_142],
     ]
     assert len(slowdowns) == len(slowdown_offsets)
     for i in range(len(slowdowns)):
@@ -1351,8 +1355,8 @@ def test_etcs_schedule_braking_curves_endpoint(
     assert spacing_count == 29
     assert routing_count == 7
     last_conflict_curves = conflicts[-1]
-    assert last_conflict_curves["indication"]["positions"][0] == 42_766_050
-    assert last_conflict_curves["indication"]["positions"][-1] == 44_538_000
+    assert last_conflict_curves["indication"]["positions"][0] == 43_116_050
+    assert last_conflict_curves["indication"]["positions"][-1] == 44_888_000
 
 
 def _assert_equal_speeds(left, right):

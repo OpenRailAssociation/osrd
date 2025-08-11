@@ -9,7 +9,7 @@ _EXPECTED_WEST_TO_SOUTH_EAST_PATH = Path(
     **{
         "status": "success",
         "blocks": [
-            "block.257fce538543c5f960490c7606bbc603",
+            "block.456b451eed3264038c49a889503b7ac6",
             "block.1dbf71a8896e98cd71157a44bb918a9e",
             "block.97661cd54d96453abdc191d1be184af5",
             "block.52b46c47a8253001dad72b6907da3a07",
@@ -24,16 +24,16 @@ _EXPECTED_WEST_TO_SOUTH_EAST_PATH = Path(
             "block.a69d6a804dfee71d0cc91314b915e0c7",
             "block.f2b0ac13a7f1d9149ee6df4004cbaac3",
             "block.374246fd74fffa8a5dc3e2dc11b78b84",
-            "block.1fd1a71ba69b41b8849eff642ebfcf61",
+            "block.def5239895bb765730c1337c7d906379",
         ],
         "routes": [
-            "rt.buffer_stop.2->DA1",
+            "rt.buffer_stop.4->DA1",
             "rt.DA1->DA6",
             "rt.DA6->DC6",
             "rt.DC6->DD3",
             "rt.DD3->DH0",
             "rt.DH0->DH2",
-            "rt.DH2->buffer_stop.7",
+            "rt.DH2->buffer_stop.9",
         ],
         "track_section_ranges": [
             {
