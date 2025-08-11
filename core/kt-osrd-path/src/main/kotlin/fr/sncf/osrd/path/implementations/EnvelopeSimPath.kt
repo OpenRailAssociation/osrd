@@ -125,7 +125,7 @@ class EnvelopeSimPath(
     }
 
     /** For a given position, return the index of the position just before in gradePositions */
-    fun getIndexBeforePos(position: Double): Int {
+    private fun getIndexBeforePos(position: Double): Int {
         // TODO: Optimise method by using binary search.
         if (position <= gradePositions[0]) return 0
         if (position >= gradePositions[gradePositions.size - 1]) return gradePositions.size - 1
@@ -148,7 +148,7 @@ class EnvelopeSimPath(
     }
 
     /** Get the electrification related data for a given power class and power restriction map. */
-    fun getElectrificationMap(
+    override fun getElectrificationMap(
         basePowerClass: String?,
         powerRestrictionMap: RangeMap<Double, String>?,
         powerRestrictionToPowerClass: Map<String, String>?,
@@ -180,19 +180,5 @@ class EnvelopeSimPath(
             }
         }
         return ImmutableRangeMap.copyOf(res)
-    }
-
-    /** Get the electrification related data for a given power class and power restriction map. */
-    fun getElectrificationMap(
-        basePowerClass: String?,
-        powerRestrictionMap: RangeMap<Double, String>?,
-        powerRestrictionToPowerClass: Map<String, String>?,
-    ): ImmutableRangeMap<Double, Electrification> {
-        return getElectrificationMap(
-            basePowerClass,
-            powerRestrictionMap,
-            powerRestrictionToPowerClass,
-            false,
-        )
     }
 }

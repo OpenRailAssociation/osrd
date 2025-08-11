@@ -6,7 +6,7 @@ import static org.junit.jupiter.api.Assertions.*;
 import com.google.common.collect.*;
 import fr.sncf.osrd.envelope_sim.EnvelopeSimPathBuilder;
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock;
-import fr.sncf.osrd.path.implementations.EnvelopeSimPath;
+import fr.sncf.osrd.path.interfaces.PhysicsPath;
 import fr.sncf.osrd.railjson.schema.rollingstock.Comfort;
 import java.util.Arrays;
 import java.util.List;
@@ -43,11 +43,11 @@ public class TestRollingStock {
     @ParameterizedTest
     @MethodSource("mapTractiveEffortCurveArgs")
     void testMapTractiveEffortCurveCoherent(
-            EnvelopeSimPath path, Comfort comfort, RangeMap<Double, String> powerRestrictionMap) {
+            PhysicsPath path, Comfort comfort, RangeMap<Double, String> powerRestrictionMap) {
         var rollingStock = TestTrains.REALISTIC_FAST_TRAIN;
 
         var elecCondMap = path.getElectrificationMap(
-                rollingStock.basePowerClass, powerRestrictionMap, rollingStock.powerRestrictions);
+                rollingStock.basePowerClass, powerRestrictionMap, rollingStock.powerRestrictions, false);
         var tractiveEffortCurveMap = rollingStock.mapTractiveEffortCurves(elecCondMap, comfort);
         testRangeCoverage(tractiveEffortCurveMap.conditions(), path.getLength());
         testRangeCoverage(tractiveEffortCurveMap.curves(), path.getLength());
@@ -82,7 +82,7 @@ public class TestRollingStock {
 
         var comfort = Comfort.STANDARD;
         var elecCondMap = path.getElectrificationMap(
-                rollingStock.basePowerClass, powerRestrictionMap, rollingStock.powerRestrictions);
+                rollingStock.basePowerClass, powerRestrictionMap, rollingStock.powerRestrictions, false);
         var res = rollingStock.mapTractiveEffortCurves(elecCondMap, comfort);
 
         testRangeCoverage(res.curves(), path.getLength());
