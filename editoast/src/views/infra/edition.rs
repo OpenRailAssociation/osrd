@@ -1202,6 +1202,6 @@ pub mod tests {
             .get_objects(conn, ObjectType::TrackSection, &vec!["TA0".to_string()])
             .await
             .unwrap();
-        assert_eq!(2000.0, res[0].railjson.as_object().unwrap()["length"]);
+        assert_eq!(1750.0, res[0].railjson.as_object().unwrap()["length"]);
     }
 }

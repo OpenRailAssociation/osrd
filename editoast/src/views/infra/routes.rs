@@ -337,72 +337,73 @@ mod tests {
     use editoast_schemas::infra::Waypoint;
 
     #[rstest]
-    async fn get_routes_nodes() {
-        let tests = vec![
-            (json!({}), (vec![], vec![])),
-            (
-                json!({ "PA2": "A_B2" }), // point_switch
-                (
-                    vec!["rt.DA2->DA5", "rt.DA3->buffer_stop.0"],
-                    vec![("PA2".to_string(), HashSet::from(["A_B2".to_string()]))],
-                ),
-            ),
-            (
-                json!({ "PD0": "STATIC" }), // crossing
-                (
-                    vec![
-                        "rt.DD2->DD6",
-                        "rt.DD4->DD0",
-                        "rt.DD5->DE1",
-                        "rt.DE0->buffer_stop.4",
-                    ],
-                    vec![("PD0".to_string(), HashSet::from(["STATIC".to_string()]))],
-                ),
-            ),
-            (
-                json!({ "PH0": "A1_B1" }), // double_slip_switch
-                (
-                    vec!["rt.DG0->DG3", "rt.DG1->DD7"],
-                    vec![("PH0".to_string(), HashSet::from(["A1_B1".to_string()]))],
-                ),
-            ),
-            (
-                json!({ "PH1": null }), // all routes crossing PH1
-                (
-                    vec![
-                        "rt.DG2->DH1",
-                        "rt.DH2->DG4",
-                        "rt.DH2->buffer_stop.7",
-                        "rt.DH3->DH1",
-                    ],
-                    vec![(
-                        "PH1".to_string(),
-                        HashSet::from(["A_B1".to_string(), "A_B2".to_string()]),
-                    )],
-                ),
-            ),
-            (
-                json!({ "PA0": "A_B1", "PA2": "A_B1" }),
-                (
-                    vec!["rt.DA0->DA5", "rt.DA3->buffer_stop.1"],
-                    vec![
-                        ("PA0".to_string(), HashSet::from(["A_B1".to_string()])),
-                        ("PA2".to_string(), HashSet::from(["A_B1".to_string()])),
-                    ],
-                ),
-            ),
-            (
-                json!({ "PA0": "A_B1", "PA2": null }),
-                (
-                    vec!["rt.DA0->DA5", "rt.DA3->buffer_stop.1"],
-                    vec![
-                        ("PA0".to_string(), HashSet::from(["A_B1".to_string()])),
-                        ("PA2".to_string(), HashSet::from(["A_B1".to_string()])),
-                    ],
-                ),
-            ),
-        ];
-
+    #[rstest]
+    #[case(json!({}), (vec![], vec![]))]
+    #[case::point_switch(
+        json!({ "PA2": "A_B2" }), // point_switch
+        (
+            vec!["rt.DI2->DA5", "rt.DA3->buffer_stop.0", "rt.DA3->buffer_stop.1"],
+            vec![("PA2".to_string(), HashSet::from(["A_B2".to_string()]))],
+        )
+    )]
+    #[case::crossing(
+        json!({ "PD0": "STATIC" }), // crossing
+        (
+            vec![
+                "rt.DD2->DD6",
+                "rt.DD4->DD0",
+                "rt.DD5->DE1",
+                "rt.DE0->buffer_stop.6",
+            ],
+            vec![("PD0".to_string(), HashSet::from(["STATIC".to_string()]))],
+        )
+    )]
+    #[case::double_slip_switch(
+        json!({ "PH0": "A1_B1" }), // double_slip_switch
+        (
+            vec!["rt.DG0->DG3", "rt.DG1->DD7"],
+            vec![("PH0".to_string(), HashSet::from(["A1_B1".to_string()]))],
+        )
+    )]
+    #[case::all_routes_crossing_ph1(
+        json!({ "PH1": null }), // all routes crossing PH1
+        (
+            vec![
+                "rt.DG2->DH1",
+                "rt.DH2->DG4",
+                "rt.DH2->buffer_stop.9",
+                "rt.DH3->DH1",
+            ],
+            vec![(
+                "PH1".to_string(),
+                HashSet::from(["A_B1".to_string(), "A_B2".to_string()]),
+            )],
+        )
+    )]
+    #[case(
+        json!({ "PA0": "A_B1", "PA2": "A_B1" }),
+        (
+            vec!["rt.DA0->DA5", "rt.DA3->buffer_stop.3"],
+            vec![
+                ("PA0".to_string(), HashSet::from(["A_B1".to_string()])),
+                ("PA2".to_string(), HashSet::from(["A_B1".to_string()])),
+            ],
+        )
+    )]
+    #[case(
+        json!({ "PA0": "A_B1", "PA2": null }),
+        (
+            vec!["rt.DA0->DA5", "rt.DA3->buffer_stop.3"],
+            vec![
+                ("PA0".to_string(), HashSet::from(["A_B1".to_string()])),
+                ("PA2".to_string(), HashSet::from(["A_B1".to_string()])),
+            ],
+        )
+    )]
+    async fn get_routes_nodes(
+        #[case] params: serde_json::Value,
+        #[case] expected: (Vec<&str>, Vec<(String, HashSet<String>)>),
+    ) {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
@@ -437,20 +438,18 @@ mod tests {
             assert_eq!(got_available_positions, expected_available_positions);
         }
 
-        for (params, expected) in tests {
-            let expected_result = RoutesFromNodesPositions {
-                routes: expected.0.iter().map(|s| s.to_string()).collect(),
-                available_node_positions: expected.1.into_iter().collect::<HashMap<_, _>>(),
-            };
-            let request = app
-                .post(&format!("/infra/{}/routes/nodes", small_infra.id))
-                .json(&params);
-            println!("{request:?}  body:\n    {params}");
+        let expected_result = RoutesFromNodesPositions {
+            routes: expected.0.iter().map(|s| s.to_string()).collect(),
+            available_node_positions: expected.1.into_iter().collect::<HashMap<_, _>>(),
+        };
+        let request = app
+            .post(&format!("/infra/{}/routes/nodes", small_infra.id))
+            .json(&params);
+        println!("{request:?}  body:\n    {params}");
 
-            let got: RoutesFromNodesPositions =
-                app.fetch(request).assert_status(StatusCode::OK).json_into();
-            compare_result(got, expected_result)
-        }
+        let got: RoutesFromNodesPositions =
+            app.fetch(request).assert_status(StatusCode::OK).json_into();
+        compare_result(got, expected_result)
     }
 
     #[rstest]

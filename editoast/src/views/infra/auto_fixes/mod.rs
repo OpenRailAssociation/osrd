@@ -457,7 +457,7 @@ mod tests {
             obj_type: ObjectType::Signal,
         })));
         assert!(operations.contains(&Operation::Delete(DeleteOperation {
-            obj_id: "buffer_stop.1".to_string(),
+            obj_id: "buffer_stop.3".to_string(),
             obj_type: ObjectType::BufferStop,
         })));
         assert!(operations.contains(&Operation::Delete(DeleteOperation {
@@ -478,7 +478,7 @@ mod tests {
         let small_infra_id = small_infra.id;
         // Remove a buffer stop
         let deletion = Operation::Delete(DeleteOperation {
-            obj_id: "buffer_stop.4".to_string(),
+            obj_id: "buffer_stop.6".to_string(),
             obj_type: ObjectType::BufferStop,
         });
         deletion
@@ -492,11 +492,11 @@ mod tests {
             .json_into();
 
         assert!(operations.contains(&Operation::Delete(DeleteOperation {
-            obj_id: "rt.DE0->buffer_stop.4".to_string(),
+            obj_id: "rt.DE0->buffer_stop.6".to_string(),
             obj_type: ObjectType::Route,
         })));
         assert!(operations.contains(&Operation::Delete(DeleteOperation {
-            obj_id: "rt.buffer_stop.4->DD5".to_string(),
+            obj_id: "rt.buffer_stop.6->DD5".to_string(),
             obj_type: ObjectType::Route,
         })));
     }
