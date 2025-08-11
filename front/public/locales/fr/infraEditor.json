@@ -313,7 +313,7 @@
         "title": "Systèmes de signalisations suivants"
       },
       "settings": {
-        "description": "Une liste de paramètres qui définissent un système de signalisation.",
+        "description": "Une liste de paramètres définis en fonction du système de signalisation.",
         "title": "Paramètres"
       },
       "signaling_system": {
@@ -952,6 +952,17 @@
         "description": "Itinéraire pour lequel ces paramètres sont actifs",
         "title": "Itinéraire"
       }
+    },
+    "title": "Paramètres conditionnels"
+  },
+  "__main____Tvm430System__Parameters": {
+    "title": "Paramètres par défault"
+  },
+  "__main____Tvm430System__Settings": {
+    "properties": {
+      "Nf": {
+        "description": "Le signal est-il non franchissable"
+      }
     }
   },
   "__main____TvmSystem__Settings": {
@@ -974,6 +985,9 @@
     "electrifications": {
       "description": "Caténaires de l’infrastructure ",
       "title": "Caténaires"
+    },
+    "extended_switch_types": {
+      "title": "Types d’aiguillages étendus"
     },
     "neutral_sections": {
       "description": "Sections neutres de l’infrastructure",
@@ -1010,6 +1024,10 @@
     "track_sections": {
       "description": "section de voie de l’infrastructure",
       "title": "section de voie"
+    },
+    "version": {
+      "description": "Version du schéma",
+      "title": "Version"
     }
   }
 }
