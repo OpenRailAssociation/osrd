@@ -503,10 +503,11 @@ impl<S: StorageDriver> Regulator<S> {
     }
 
     #[tracing::instrument(skip(self), ret(level = Level::DEBUG), err)]
-    pub async fn authorize_infra_read(
+    pub async fn authorize_infra(
         &self,
         user: &User,
         infra: &Infra,
+        privilege: InfraPrivilege,
     ) -> Result<Authorization<()>, Error<S::Error>> {
         // Check if the infra exists
         if !self
@@ -528,182 +529,40 @@ impl<S: StorageDriver> Regulator<S> {
             return Ok(Authorization::Bypassed);
         }
 
-        // Calling openfga
-        let check = self
-            .openfga
-            .check(model::Infra::can_read().check(user, infra))
-            .await?;
+        // Calling openfga with the appropriate privilege check
+        let check = match privilege {
+            InfraPrivilege::CanRead => {
+                self.openfga
+                    .check(model::Infra::can_read().check(user, infra))
+                    .await?
+            }
+            InfraPrivilege::CanWrite => {
+                self.openfga
+                    .check(model::Infra::can_write().check(user, infra))
+                    .await?
+            }
+            InfraPrivilege::CanDelete => {
+                self.openfga
+                    .check(model::Infra::can_delete().check(user, infra))
+                    .await?
+            }
+            InfraPrivilege::CanShareRead => {
+                self.openfga
+                    .check(model::Infra::can_share_read().check(user, infra))
+                    .await?
+            }
+            InfraPrivilege::CanShareWrite => {
+                self.openfga
+                    .check(model::Infra::can_share_write().check(user, infra))
+                    .await?
+            }
+            InfraPrivilege::CanShareOwnership => {
+                self.openfga
+                    .check(model::Infra::can_share_ownership().check(user, infra))
+                    .await?
+            }
+        };
         Ok(Authorization::from_privilege_check(check))
-    }
-
-    #[tracing::instrument(skip(self), ret(level = Level::DEBUG), err)]
-    pub async fn authorize_infra_write(
-        &self,
-        user: &User,
-        infra: &Infra,
-    ) -> Result<Authorization<()>, Error<S::Error>> {
-        // Check if the infra exists
-        if !self
-            .driver
-            .infra_exists(infra.0)
-            .await
-            .map_err(Error::Storage)?
-        {
-            return Err(Error::UnknownResource(infra.0));
-        }
-
-        // Check if user exists
-        if !self.user_exists(user.0).await? {
-            return Err(Error::UnknownSubject(user.0));
-        }
-
-        // Bypass if user is an admin
-        if self.is_admin(user).await? {
-            return Ok(Authorization::Bypassed);
-        }
-
-        // Calling openfga
-        let check = self
-            .openfga
-            .check(model::Infra::can_write().check(user, infra))
-            .await?;
-        Ok(Authorization::from_privilege_check(check))
-    }
-
-    #[tracing::instrument(skip(self), ret(level = Level::DEBUG), err)]
-    pub async fn authorize_infra_delete(
-        &self,
-        user: &User,
-        infra: &Infra,
-    ) -> Result<Authorization<()>, Error<S::Error>> {
-        // Check if the infra exists
-        if !self
-            .driver
-            .infra_exists(infra.0)
-            .await
-            .map_err(Error::Storage)?
-        {
-            return Err(Error::UnknownResource(infra.0));
-        }
-
-        // Check if user exists
-        if !self.user_exists(user.0).await? {
-            return Err(Error::UnknownSubject(user.0));
-        }
-
-        // Bypass if user is an admin
-        if self.is_admin(user).await? {
-            return Ok(Authorization::Bypassed);
-        }
-
-        // Calling openfga
-        let check = self
-            .openfga
-            .check(model::Infra::can_delete().check(user, infra))
-            .await?;
-        Ok(Authorization::from_privilege_check(check))
-    }
-
-    #[tracing::instrument(skip(self), ret(level = Level::DEBUG), err)]
-    pub async fn authorize_infra_sharing_read(
-        &self,
-        user: &User,
-        infra: &Infra,
-    ) -> Result<Authorization<()>, Error<S::Error>> {
-        // Check if the infra exists
-        if !self
-            .driver
-            .infra_exists(infra.0)
-            .await
-            .map_err(Error::Storage)?
-        {
-            return Err(Error::UnknownResource(infra.0));
-        }
-
-        // Check if user exists
-        if !self.user_exists(user.0).await? {
-            return Err(Error::UnknownSubject(user.0));
-        }
-
-        // Bypass if user is an admin
-        if self.check_roles(user, [Role::Admin].into()).await? {
-            return Ok(Authorization::Bypassed);
-        }
-
-        // Calling openfga
-        let result = self
-            .openfga
-            .check(model::Infra::can_share_read().check(user, infra))
-            .await?;
-        Ok(Authorization::from_privilege_check(result))
-    }
-
-    #[tracing::instrument(skip(self), ret(level = Level::DEBUG), err)]
-    pub async fn authorize_infra_sharing_write(
-        &self,
-        user: &User,
-        infra: &Infra,
-    ) -> Result<Authorization<()>, Error<S::Error>> {
-        // Check if the infra exists
-        if !self
-            .driver
-            .infra_exists(infra.0)
-            .await
-            .map_err(Error::Storage)?
-        {
-            return Err(Error::UnknownResource(infra.0));
-        }
-
-        // Check if user exists
-        if !self.user_exists(user.0).await? {
-            return Err(Error::UnknownSubject(user.0));
-        }
-
-        // Bypass if user is an admin
-        if self.check_roles(user, [Role::Admin].into()).await? {
-            return Ok(Authorization::Bypassed);
-        }
-
-        // Calling openfga
-        let result = self
-            .openfga
-            .check(model::Infra::can_share_write().check(user, infra))
-            .await?;
-        Ok(Authorization::from_privilege_check(result))
-    }
-
-    #[tracing::instrument(skip(self), ret(level = Level::DEBUG), err)]
-    pub async fn authorize_infra_sharing_ownership(
-        &self,
-        user: &User,
-        infra: &Infra,
-    ) -> Result<Authorization<()>, Error<S::Error>> {
-        // Check if the infra exists
-        if !self
-            .driver
-            .infra_exists(infra.0)
-            .await
-            .map_err(Error::Storage)?
-        {
-            return Err(Error::UnknownResource(infra.0));
-        }
-
-        // Check if user exists
-        if !self.user_exists(user.0).await? {
-            return Err(Error::UnknownSubject(user.0));
-        }
-
-        // Bypass if user is an admin
-        if self.check_roles(user, [Role::Admin].into()).await? {
-            return Ok(Authorization::Bypassed);
-        }
-
-        // Calling openfga
-        let result = self
-            .openfga
-            .check(model::Infra::can_share_ownership().check(user, infra))
-            .await?;
-        Ok(Authorization::from_privilege_check(result))
     }
 
     #[tracing::instrument(skip(self), ret(level = Level::DEBUG), err)]
@@ -864,10 +723,16 @@ impl<S: StorageDriver> Regulator<S> {
         grant: InfraGrant,
     ) -> Result<Authorization<()>, Error<S::Error>> {
         let authz_share = match grant {
-            InfraGrant::Reader => self.authorize_infra_sharing_read(issuer, infra).await?,
-            InfraGrant::Writer => self.authorize_infra_sharing_write(issuer, infra).await?,
+            InfraGrant::Reader => {
+                self.authorize_infra(issuer, infra, InfraPrivilege::CanShareRead)
+                    .await?
+            }
+            InfraGrant::Writer => {
+                self.authorize_infra(issuer, infra, InfraPrivilege::CanShareWrite)
+                    .await?
+            }
             InfraGrant::Owner => {
-                self.authorize_infra_sharing_ownership(issuer, infra)
+                self.authorize_infra(issuer, infra, InfraPrivilege::CanShareOwnership)
                     .await?
             }
         };

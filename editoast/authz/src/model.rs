@@ -51,7 +51,7 @@ pub struct Group(pub i64);
 pub struct Infra(pub i64);
 
 #[editoast_derive::openapi_schema]
-#[derive(Debug, Display, PartialEq, Eq, Hash, Serialize, Deserialize, ToSchema)]
+#[derive(Debug, Clone, Copy, Display, PartialEq, Eq, Hash, Serialize, Deserialize, ToSchema)]
 #[serde(rename_all = "snake_case")]
 #[strum(serialize_all = "snake_case")]
 #[allow(clippy::enum_variant_names)] // needed due to "Can" prefix

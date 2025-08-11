@@ -307,7 +307,9 @@ pub(in crate::views) async fn subjects_with_grant_on_resource(
             // consult who has access to it.
             authn
                 .check_authorization(async |authorizer| {
-                    authorizer.authorize_infra_read(&infra).await
+                    authorizer
+                        .authorize_infra(&infra, authz::InfraPrivilege::CanRead)
+                        .await
                 })
                 .await?;
             tokio::try_join!(
