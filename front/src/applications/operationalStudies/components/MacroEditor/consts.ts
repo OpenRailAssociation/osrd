@@ -1,4 +1,8 @@
-import type { PacedTrain, TrainMainCategory, TrainSchedule } from 'common/api/osrdEditoastApi';
+import {
+  type PacedTrain,
+  type TrainMainCategory,
+  type TrainSchedule,
+} from 'common/api/osrdEditoastApi';
 import { Duration } from 'utils/duration';
 
 import type {
@@ -173,7 +177,7 @@ export const DEFAULT_PACED_TRAIN_PAYLOAD: Pick<
 
 export const DEFAULT_TIME_WINDOW = new Duration({ hours: 2 });
 
-const TRAIN_CATEGORY_TO_NGE: {
+export const TRAIN_MAIN_CATEGORY_TO_NGE: {
   trainCategory: TrainMainCategory | 'NO_CATEGORY';
   colorRef: string;
 }[] = [
@@ -190,13 +194,13 @@ const TRAIN_CATEGORY_TO_NGE: {
   { trainCategory: 'NO_CATEGORY', colorRef: 'NC' },
 ];
 
-export const OSRD_TRAINRUN_CATEGORY_MAPPING = new Map<
+export const OSRD_TRAINRUN_MAIN_CATEGORY_CODE_MAPPING = new Map<
   TrainMainCategory | 'NO_CATEGORY',
   TrainrunCategory
 >();
 
-TRAIN_CATEGORY_TO_NGE.forEach(({ trainCategory, colorRef }, index) => {
-  OSRD_TRAINRUN_CATEGORY_MAPPING.set(trainCategory, {
+TRAIN_MAIN_CATEGORY_TO_NGE.forEach(({ trainCategory, colorRef }, index) => {
+  OSRD_TRAINRUN_MAIN_CATEGORY_CODE_MAPPING.set(trainCategory, {
     id: index + 1,
     order: index + 1,
     name: trainCategory,

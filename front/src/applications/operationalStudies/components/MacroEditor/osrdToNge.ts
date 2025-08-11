@@ -8,8 +8,7 @@ import {
   groupRoundTrips,
   checkRoundTripCompatible,
 } from 'applications/operationalStudies/utils';
-import { osrdEditoastApi, type TrainSchedule } from 'common/api/osrdEditoastApi';
-import isMainCategory from 'modules/rollingStock/helpers/category';
+import { osrdEditoastApi, type SubCategory, type TrainSchedule } from 'common/api/osrdEditoastApi';
 import type { TimetableItem, TimetableItemWithPathOps } from 'reducers/osrdconf/types';
 import type { AppDispatch } from 'store';
 import { Duration, addDurationToDate } from 'utils/duration';
@@ -25,7 +24,7 @@ import {
   TRAINRUN_LABEL_GROUP,
   DEFAULT_TIME_LOCK,
   DEFAULT_TRAINRUN_TIME_CATEGORIES,
-  OSRD_TRAINRUN_CATEGORY_MAPPING,
+  OSRD_TRAINRUN_MAIN_CATEGORY_CODE_MAPPING,
 } from './consts';
 import MacroEditorState, { type NodeIndexed } from './MacroEditorState';
 import {
@@ -246,12 +245,33 @@ const castNodeToNge = (
   ),
 });
 
-export const getTrainrunCategories = (t: TFunction<'operational-studies'>): TrainrunCategory[] =>
-  Array.from(OSRD_TRAINRUN_CATEGORY_MAPPING.entries()).map(([key, category]) => ({
+export const getTrainrunCategories = (
+  t: TFunction<'operational-studies'>,
+  subCategories: SubCategory[]
+): TrainrunCategory[] => {
+  const subCategoriesFormatted = subCategories.map((subCat, i) => ({
+    id: OSRD_TRAINRUN_MAIN_CATEGORY_CODE_MAPPING.size + i + 1,
+    order: OSRD_TRAINRUN_MAIN_CATEGORY_CODE_MAPPING.size + i + 1,
+    name: subCat.name,
+    shortName: subCat.code,
+    fachCategory: 'HaltezeitUncategorized',
+    colorRef: 'sub_' + subCat.code,
+    minimalTurnaroundTime: 0,
+    nodeHeadwayStop: 0,
+    nodeHeadwayNonStop: 0,
+    sectionHeadway: 0,
+  }));
+
+  const mainCategoriesFormatted = Array.from(
+    OSRD_TRAINRUN_MAIN_CATEGORY_CODE_MAPPING.entries()
+  ).map(([key, category]) => ({
     ...category,
     name: t(`main.macroEditor.trainCategory.${key}.name`),
     shortName: t(`main.macroEditor.trainCategory.${key}.shortName`),
   }));
+
+  return [...mainCategoriesFormatted, ...subCategoriesFormatted];
+};
 
 /**
  * Load & index the data of the timetableItem for the given scenario.
@@ -260,7 +280,8 @@ export const loadAndIndexNge = async (
   state: MacroEditorState,
   timetableItems: TimetableItemWithPathOps[],
   dispatch: AppDispatch,
-  t: TFunction<'operational-studies'>
+  t: TFunction<'operational-studies'>,
+  subCategories: SubCategory[]
 ): Promise<void> => {
   // Load path items
   let nbNodesIndexed = 0;
@@ -323,7 +344,7 @@ export const loadAndIndexNge = async (
   state.trainrunFrequencies = getNgeTrainrunFrequencies(timetableItems, t);
 
   // Initialize TrainrunCategories
-  state.trainrunCategories = getTrainrunCategories(t);
+  state.trainrunCategories = getTrainrunCategories(t, subCategories);
 
   // Now that we have all nodes, we apply a layout
   applyLayout(state, timetableItems);
@@ -343,14 +364,11 @@ const getNgeTrainruns = (
     .map((timetableItem, index) => {
       state.timetableItemIdByNgeId.set(index + 1, [timetableItem.id, timetableItem.returnId]);
       const trainrunFrequency = getTrainrunFrequencyFromTimetableItem(timetableItem, state);
+
       return {
         id: index + 1,
         name: timetableItem.train_name,
-        categoryId: getTrainrunCategoryId(
-          timetableItem.category && isMainCategory(timetableItem.category)
-            ? timetableItem.category.main_category
-            : undefined
-        ),
+        categoryId: getTrainrunCategoryId(state.trainrunCategories, timetableItem.category),
         frequencyId: trainrunFrequency.id,
         trainrunTimeCategoryId: getTrainrunTimeCategoryFromFrequency(trainrunFrequency).id,
         labelIds: (timetableItem.labels || []).map((l) =>
@@ -578,7 +596,8 @@ const getNgeLabels = (state: MacroEditorState): LabelDto[] =>
  */
 export const getNgeDto = (
   state: MacroEditorState,
-  groupedTimetableItems: (readonly [TimetableItem, TimetableItem | null])[]
+  groupedTimetableItems: (readonly [TimetableItem, TimetableItem | null])[],
+  subCategories: SubCategory[]
 ): NetzgrafikDto => {
   const labels = getNgeLabels(state);
   return {
@@ -586,7 +605,7 @@ export const getNgeDto = (
     trainruns: getNgeTrainruns(state, groupedTimetableItems, labels),
     resources: [state.ngeResource],
     metadata: {
-      netzgrafikColors: getNetzgrafikColors(),
+      netzgrafikColors: getNetzgrafikColors(subCategories),
       trainrunCategories: state.trainrunCategories,
       trainrunFrequencies: state.trainrunFrequencies,
       trainrunTimeCategories: DEFAULT_TRAINRUN_TIME_CATEGORIES,
@@ -698,6 +717,10 @@ export const loadNgeDto = async (
   });
   const groupedTimetableItems = groupCompatibleRoundTrips(roundTripGroups);
 
-  await loadAndIndexNge(state, timetableItems, dispatch, t);
-  return getNgeDto(state, groupedTimetableItems);
+  const { results: subCategories } = await dispatch(
+    osrdEditoastApi.endpoints.getSubCategory.initiate({ page: 1 }, { subscribe: false })
+  ).unwrap();
+
+  await loadAndIndexNge(state, timetableItems, dispatch, t, subCategories);
+  return await getNgeDto(state, groupedTimetableItems, subCategories);
 };
