@@ -129,6 +129,40 @@ fun buildTrainPathFromChunks(
     )
 }
 
+/**
+ * Build a TrainPath from chunk path. Blocks are filled in by picking any block on each range.
+ * Shouldn't be used where blocks actually matter (such as conflict detection).
+ */
+fun buildTrainPathFromChunkPath(
+    rawInfra: RawInfra,
+    blockInfra: BlockInfra,
+    chunkPath: ChunkPath,
+    routes: List<RouteId>? = null,
+    routeNames: List<String>? = null,
+    electricalProfileMapping: ElectricalProfileMapping? = null,
+): TrainPath {
+    val chunkRanges = mutableListOf<DirChunkRange>()
+    var prevChunkLength = 0.meters
+    for ((i, chunk) in chunkPath.chunks.withIndex()) {
+        val isFirst = i == 0
+        val isLast = i == chunkPath.chunks.size - 1
+        val chunkLength = rawInfra.getTrackChunkLength(chunk.value)
+        val from = if (isFirst) chunkPath.beginOffset.cast<TrackChunk>() else Offset.zero()
+        var to = chunkLength
+        if (isLast) to = Offset(chunkPath.endOffset.distance - prevChunkLength)
+        chunkRanges.add(DirChunkRange(chunk, from, to))
+        prevChunkLength += chunkLength.distance
+    }
+    return buildTrainPathFromChunks(
+        rawInfra,
+        blockInfra,
+        buildRangeMap(chunkRanges),
+        routes,
+        routeNames,
+        electricalProfileMapping,
+    )
+}
+
 /** Create a range map from list of ranges, mapping them to the path offset (starting at 0). */
 fun <ValueType, OffsetType> buildRangeMap(
     ranges: List<GenericLinearRange<ValueType, OffsetType>>

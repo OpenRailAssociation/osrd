@@ -40,7 +40,7 @@ class EnvelopeTrainPathTest {
         val infra = Helpers.fullInfraFromRJS(rjsInfra)
         val path =
             pathFromTracks(
-                infra.rawInfra,
+                infra,
                 listOf("TA0", "TA1"),
                 Direction.INCREASING,
                 500.meters,
@@ -108,7 +108,7 @@ class EnvelopeTrainPathTest {
                 // Direction.INCREASING
             )
         val infra = Helpers.fullInfraFromRJS(rjsInfra)
-        val path = pathFromTracks(infra.rawInfra, tracks, direction, 500.meters, 3_600.meters)
+        val path = pathFromTracks(infra, tracks, direction, 500.meters, 3_600.meters)
         val envelopeSimPath = EnvelopeTrainPath.from(infra.rawInfra, path)
 
         assertThat(envelopeSimPath.getElectrificationMap(null, null, null)).isEqualTo(expectedMap)
@@ -168,7 +168,7 @@ class EnvelopeTrainPathTest {
         profileMap.parseRJS(rjsElectricalProfiles)
         val path =
             pathFromTracks(
-                infra.rawInfra,
+                infra,
                 listOf("TA0", "TA1"),
                 Direction.INCREASING,
                 1_000.meters,
@@ -266,7 +266,7 @@ class EnvelopeTrainPathTest {
         profileMap.parseRJS(rjsElectricalProfiles)
         val path =
             pathFromTracks(
-                infra.rawInfra,
+                infra,
                 listOf("TA2", "TA1", "TA0"),
                 Direction.DECREASING,
                 1_000.meters,
