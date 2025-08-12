@@ -4,8 +4,8 @@ import { ChevronLeft, Pencil } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
-import { EditedElementContainerContext } from 'applications/operationalStudies/components/Scenario/EditedElementContainerContext';
 import { MANAGE_TIMETABLE_ITEM_TYPES } from 'applications/operationalStudies/consts';
+import { EditedElementContainerContext } from 'applications/operationalStudies/views/Scenario/components/EditedElementContainerContext';
 import type { InfraState } from 'common/api/osrdEditoastApi';
 import CheckboxRadioSNCF from 'common/BootstrapSNCF/CheckboxRadioSNCF';
 import { ConfirmModal, useModal } from 'common/BootstrapSNCF/ModalSNCF';

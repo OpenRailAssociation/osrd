@@ -5,7 +5,6 @@ import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
-import InfraLoadingState from 'applications/operationalStudies/components/Scenario/InfraLoadingState';
 import type { Board } from 'applications/operationalStudies/types';
 import type { InfraWithState, ScenarioResponse } from 'common/api/osrdEditoastApi';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
@@ -13,6 +12,8 @@ import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import UserActionsDropdown from 'common/UserActionsDropdown';
 import AddAndEditScenarioModal from 'modules/scenario/components/AddOrEditScenarioModal';
 import useAuth from 'utils/hooks/useAuth';
+
+import InfraLoadingState from './InfraLoadingState';
 
 const BOARDS: Board[] = ['trains', 'map', 'macro', 'std', 'sdd', 'tables', 'conflicts'];
 

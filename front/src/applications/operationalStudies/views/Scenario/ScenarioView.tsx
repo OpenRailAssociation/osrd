@@ -2,7 +2,6 @@ import { useState } from 'react';
 
 import { useSelector } from 'react-redux';
 
-import ScenarioContent from 'applications/operationalStudies/components/Scenario/ScenarioContent';
 import useScenario from 'applications/operationalStudies/hooks/useScenario';
 import { ScenarioContextProvider } from 'applications/operationalStudies/hooks/useScenarioContext';
 import useScenarioQueryParams from 'applications/operationalStudies/hooks/useScenarioQueryParams';
@@ -11,8 +10,9 @@ import { SubCategoryContextProvider } from 'common/SubCategoryContext';
 import useInfraStatus from 'modules/pathfinding/hooks/useInfraStatus';
 import { getOperationalStudiesInfraID } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 
-import ScenarioHeader from '../../components/ScenarioHeader';
+import ScenarioHeader from './components/ScenarioHeader';
 import type { Board } from '../../types';
+import ScenarioContent from './components/ScenarioContent';
 
 const Scenario = () => {
   const { scenario } = useScenario();

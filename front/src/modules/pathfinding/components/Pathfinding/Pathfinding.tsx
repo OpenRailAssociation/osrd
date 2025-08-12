@@ -4,8 +4,8 @@ import { isEqual } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
-import InfraLoadingState from 'applications/operationalStudies/components/Scenario/InfraLoadingState';
 import { useManageTimetableItemContext } from 'applications/operationalStudies/hooks/useManageTimetableItemContext';
+import InfraLoadingState from 'applications/operationalStudies/views/Scenario/components/InfraLoadingState';
 import infraLogo from 'assets/pictures/components/tracks.svg';
 import { Spinner } from 'common/Loaders';
 import { isPathStepInvalid } from 'modules/pathfinding/utils';
