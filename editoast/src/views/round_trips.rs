@@ -2,6 +2,7 @@ use crate::error::Result;
 use crate::models;
 use crate::models::Model;
 use crate::models::TrainScheduleRoundTrips;
+use crate::models::round_trips::PacedTrainRoundTrips;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
 use crate::views::pagination::PaginationQueryParams;
@@ -126,8 +127,53 @@ pub(in crate::views) async fn post_train_schedules(
     request_body = RoundTrips,
     responses((status = 204, description = "Round trips were successfully upserted"))
 )]
-pub(in crate::views) async fn post_paced_trains() -> Result<impl IntoResponse> {
-    // TODO: Implement this endpoint
+pub(in crate::views) async fn post_paced_trains(
+    State(db_pool): State<DbConnectionPoolV2>,
+    Extension(auth): AuthenticationExt,
+    Json(round_trips): Json<RoundTrips>,
+) -> Result<impl IntoResponse> {
+    let authorized = auth
+        .check_roles([authz::Role::OperationalStudies].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Forbidden.into());
+    }
+
+    let to_remove = round_trips
+        .one_ways
+        .iter()
+        .copied()
+        .chain(round_trips.round_trips.iter().flat_map(|(l, r)| [*l, *r]));
+    let round_trips_changesets = round_trips
+        .round_trips
+        .iter()
+        .map(|(l, r)| {
+            PacedTrainRoundTrips::changeset()
+                .left_id(*l)
+                .right_id(Some(*r))
+        })
+        .chain(
+            round_trips
+                .one_ways
+                .iter()
+                .map(|id| PacedTrainRoundTrips::changeset().left_id(*id)),
+        );
+
+    db_pool
+        .get()
+        .await?
+        .transaction::<_, crate::error::InternalError, _>(|mut conn| {
+            async move {
+                PacedTrainRoundTrips::delete_batch_train_ids(&mut conn, to_remove).await?;
+                PacedTrainRoundTrips::create_batch::<_, Vec<_>>(&mut conn, round_trips_changesets)
+                    .await?;
+                Ok(())
+            }
+            .scope_boxed()
+        })
+        .await?;
+
     Ok(axum::http::StatusCode::NO_CONTENT)
 }
 
@@ -172,8 +218,22 @@ pub(in crate::views) async fn delete_train_schedules(
     ),
     responses((status = 204, description = "Round trips were successfully deleted"))
 )]
-pub(in crate::views) async fn delete_paced_trains() -> Result<impl IntoResponse> {
-    // TODO: Implement this endpoint
+pub(in crate::views) async fn delete_paced_trains(
+    State(db_pool): State<DbConnectionPoolV2>,
+    Extension(auth): AuthenticationExt,
+    Json(train_schedule_ids): Json<HashSet<i64>>,
+) -> Result<impl IntoResponse> {
+    let authorized = auth
+        .check_roles([authz::Role::OperationalStudies].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Forbidden.into());
+    }
+
+    let conn = &mut db_pool.get().await?;
+    PacedTrainRoundTrips::delete_batch_train_ids(conn, train_schedule_ids).await?;
+
     Ok(axum::http::StatusCode::NO_CONTENT)
 }
 
@@ -235,12 +295,34 @@ pub(in crate::views) async fn list_train_schedules(
     responses((status = 200, body = inline(RoundTripsPage)))
 )]
 pub(in crate::views) async fn list_paced_trains(
-    Path(TimetableIdParam { id: _ }): Path<TimetableIdParam>,
+    State(db_pool): State<DbConnectionPoolV2>,
+    Extension(auth): AuthenticationExt,
+    Path(TimetableIdParam { id: timetable_id }): Path<TimetableIdParam>,
     Query(PaginationQueryParams { page, page_size }): Query<PaginationQueryParams<1000>>,
 ) -> Result<Json<RoundTripsPage>> {
-    // TODO: Implement this endpoint
-    Ok(Json(RoundTripsPage {
-        stats: PaginationStats::new(0, 0, page, page_size),
-        results: RoundTrips::default(),
-    }))
+    let authorized = auth
+        .check_roles([authz::Role::OperationalStudies].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Forbidden.into());
+    }
+
+    let conn = &mut db_pool.get().await?;
+
+    let (round_trips, stats) =
+        PacedTrainRoundTrips::list_paginated(conn, timetable_id, page, page_size).await?;
+
+    let results = round_trips
+        .into_iter()
+        .fold(RoundTrips::default(), |mut acc, rt| {
+            if let Some(right_id) = rt.right_id {
+                acc.round_trips.push((rt.left_id, right_id));
+            } else {
+                acc.one_ways.push(rt.left_id);
+            }
+            acc
+        });
+
+    Ok(Json(RoundTripsPage { results, stats }))
 }
