@@ -3,8 +3,6 @@ use std::result::Result;
 use database::DbConnection;
 use editoast_models::model;
 
-use crate::error::EditoastError;
-
 use super::Model;
 
 /// Describes how a [Model] can be deleted from the database
