@@ -20,7 +20,7 @@ export default function ItineraryLayer({
   geometry,
   hideItineraryLine = false,
   showStdcmAssets = false,
-  isFeasible,
+  isFeasible = true,
 }: ItineraryLayerProps) {
   if (geometry) {
     const lineWidth = showStdcmAssets ? 3 : 5;
