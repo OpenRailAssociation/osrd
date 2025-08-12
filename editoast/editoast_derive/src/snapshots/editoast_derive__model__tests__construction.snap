@@ -560,6 +560,7 @@ impl crate::models::prelude::List for Document {
 }
 #[automatically_derived]
 impl crate::models::prelude::Count for Document {
+    type Error = editoast_models::model::Error;
     #[tracing::instrument(
         name = "model:count<Document>",
         skip_all,
@@ -575,7 +576,7 @@ impl crate::models::prelude::Count for Document {
     async fn count(
         conn: &mut database::DbConnection,
         settings: crate::models::prelude::SelectionSettings<Self>,
-    ) -> crate::error::Result<u64> {
+    ) -> std::result::Result<u64, Self::Error> {
         use diesel::QueryDsl;
         use diesel_async::RunQueryDsl;
         use futures_util::stream::TryStreamExt;
@@ -597,7 +598,11 @@ impl crate::models::prelude::Count for Document {
                 query = query.offset(offset);
             }
         }
-        Ok(query.get_result::<i64>(conn.write().await.deref_mut()).await? as u64)
+        query
+            .get_result::<i64>(conn.write().await.deref_mut())
+            .await
+            .map(|count| count as u64)
+            .map_err(|e| Self::Error::from(editoast_models::model::Error::from(e)))
     }
 }
 #[automatically_derived]
