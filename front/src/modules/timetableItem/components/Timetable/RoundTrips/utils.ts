@@ -7,10 +7,16 @@ import {
   getStationFromOps,
   isOperationalPointReference,
 } from 'applications/operationalStudies/utils';
-import type { OperationalPoint, TrainSchedule } from 'common/api/osrdEditoastApi';
+import type { OperationalPoint, TrainSchedule, RoundTrips } from 'common/api/osrdEditoastApi';
 import type { TimetableItemWithPathOps } from 'reducers/osrdconf/types';
 import { addDurationToDate, Duration } from 'utils/duration';
-import { isPacedTrainResponseWithPacedTrainId } from 'utils/trainId';
+import {
+  extractEditoastIdFromPacedTrainId,
+  extractEditoastIdFromTrainScheduleId,
+  isPacedTrainId,
+  isPacedTrainResponseWithPacedTrainId,
+  isTrainScheduleId,
+} from 'utils/trainId';
 
 import type { PairingItem } from '../types';
 
@@ -86,7 +92,7 @@ const formatBasePairingItem = (
   };
 };
 
-const formatPairingItems = (
+export const formatPairingItems = (
   roundTripGroups: TimetableItemRoundTripGroups,
   t: TFunction<'operational-studies', 'main'>
 ): PairingItem[] => {
@@ -117,4 +123,85 @@ const formatPairingItems = (
     .sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()));
 };
 
-export default formatPairingItems;
+const getItemInitialStatus = (itemRawId: number, roundTrips: RoundTrips) => {
+  let initialStatus: 'oneWays' | 'roundTrips' | 'todo' = 'todo';
+  if (roundTrips.one_ways?.includes(itemRawId)) {
+    initialStatus = 'oneWays';
+  } else if (roundTrips.round_trips?.flat().includes(itemRawId)) {
+    initialStatus = 'roundTrips';
+  }
+  return initialStatus;
+};
+
+export const buildRoundTripsPayload = (
+  pairingItems: PairingItem[],
+  trainScheduleRoundtrips: RoundTrips,
+  pacedTrainRoundtrips: RoundTrips
+) => {
+  const trainScheduleIdsToDelete: number[] = [];
+  const trainScheduleOneWaysIds: number[] = [];
+  const trainScheduleRoundTripsIds: number[][] = [];
+  const pacedTrainIdsToDelete: number[] = [];
+  const pacedTrainOneWaysIds: number[] = [];
+  const pacedTrainRoundTripsIds: number[][] = [];
+
+  for (const item of pairingItems) {
+    if (isTrainScheduleId(item.id)) {
+      const itemRawId = extractEditoastIdFromTrainScheduleId(item.id);
+      const initialStatus = getItemInitialStatus(itemRawId, trainScheduleRoundtrips);
+
+      if (
+        item.status === 'roundTrips' &&
+        initialStatus !== item.status &&
+        !trainScheduleRoundTripsIds.flat().includes(itemRawId)
+      ) {
+        if (!isTrainScheduleId(item.pairedItemId)) {
+          throw new Error(
+            'a train schedule round trip item can only be paired with another train schedule'
+          );
+        }
+        const pairedItemRawId = extractEditoastIdFromTrainScheduleId(item.pairedItemId);
+        trainScheduleRoundTripsIds.push([itemRawId, pairedItemRawId]);
+      }
+      if (item.status === 'oneWays' && initialStatus !== item.status) {
+        trainScheduleOneWaysIds.push(itemRawId);
+      }
+      if (item.status === 'todo' && initialStatus !== item.status) {
+        trainScheduleIdsToDelete.push(itemRawId);
+      }
+    }
+    if (isPacedTrainId(item.id)) {
+      const itemRawId = extractEditoastIdFromPacedTrainId(item.id);
+      const initialStatus = getItemInitialStatus(itemRawId, pacedTrainRoundtrips);
+
+      if (
+        item.status === 'roundTrips' &&
+        initialStatus !== item.status &&
+        !pacedTrainRoundTripsIds.flat().includes(itemRawId)
+      ) {
+        if (isTrainScheduleId(item.pairedItemId)) {
+          throw new Error(
+            'a paced train round trip item can only be paired with another paced train'
+          );
+        }
+        const pairedItemRawId = extractEditoastIdFromPacedTrainId(item.pairedItemId);
+        pacedTrainRoundTripsIds.push([itemRawId, pairedItemRawId]);
+      }
+      if (item.status === 'oneWays' && initialStatus !== item.status) {
+        pacedTrainOneWaysIds.push(itemRawId);
+      }
+      if (item.status === 'todo' && initialStatus !== item.status) {
+        pacedTrainIdsToDelete.push(itemRawId);
+      }
+    }
+  }
+
+  return {
+    trainScheduleIdsToDelete,
+    trainScheduleOneWaysIds,
+    trainScheduleRoundTripsIds,
+    pacedTrainIdsToDelete,
+    pacedTrainOneWaysIds,
+    pacedTrainRoundTripsIds,
+  };
+};

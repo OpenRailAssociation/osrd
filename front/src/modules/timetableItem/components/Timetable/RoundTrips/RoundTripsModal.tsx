@@ -19,7 +19,7 @@ import { mapBy } from 'utils/types';
 import OneWaysColumn from './OneWaysColumn';
 import RoundTripsColumn from './RoundTripsColumn';
 import TodoColumn from './TodoColumn';
-import formatPairingItems from './utils';
+import { buildRoundTripsPayload, formatPairingItems } from './utils';
 import type { PairingItem, RoundTripsColumnPair } from '../types';
 
 type RoundTripsModalProps = {
@@ -65,6 +65,18 @@ const RoundTripsModal = ({
     osrdEditoastApi.endpoints.getTimetableByIdRoundTripsPacedTrains.useQuery(
       timetableId ? { id: timetableId } : skipToken
     );
+
+  const [postRoundTripsTrainSchedules] =
+    osrdEditoastApi.endpoints.postRoundTripsTrainSchedules.useMutation();
+
+  const [deleteRoundTripsTrainSchedules] =
+    osrdEditoastApi.endpoints.postRoundTripsTrainSchedulesDelete.useMutation();
+
+  const [postRoundTripsPacedTrains] =
+    osrdEditoastApi.endpoints.postRoundTripsPacedTrains.useMutation();
+
+  const [deleteRoundTripsPacedTrains] =
+    osrdEditoastApi.endpoints.postRoundTripsPacedTrainsDelete.useMutation();
 
   const timetableItemsWithOps = useTimetableItemsWithPathOps(infraId, timetableItems);
 
@@ -133,6 +145,47 @@ const RoundTripsModal = ({
     setRoundTripsModalIsOpen(false);
   };
 
+  const saveRoundTrips = async () => {
+    if (!trainScheduleRoundtrips || !pacedTrainRoundtrips) return;
+
+    const {
+      trainScheduleIdsToDelete,
+      trainScheduleOneWaysIds,
+      trainScheduleRoundTripsIds,
+      pacedTrainIdsToDelete,
+      pacedTrainOneWaysIds,
+      pacedTrainRoundTripsIds,
+    } = buildRoundTripsPayload(pairingItems, trainScheduleRoundtrips, pacedTrainRoundtrips);
+
+    const apiCalls = [];
+    if (pacedTrainIdsToDelete.length > 0) {
+      apiCalls.push(deleteRoundTripsPacedTrains({ body: pacedTrainIdsToDelete }));
+    }
+    if (trainScheduleIdsToDelete.length > 0) {
+      apiCalls.push(deleteRoundTripsTrainSchedules({ body: trainScheduleIdsToDelete }));
+    }
+    if (pacedTrainRoundTripsIds.length > 0 || pacedTrainOneWaysIds.length > 0) {
+      apiCalls.push(
+        postRoundTripsPacedTrains({
+          roundTrips: { round_trips: pacedTrainRoundTripsIds, one_ways: pacedTrainOneWaysIds },
+        })
+      );
+    }
+    if (trainScheduleRoundTripsIds.length > 0 || trainScheduleOneWaysIds.length > 0) {
+      apiCalls.push(
+        postRoundTripsTrainSchedules({
+          roundTrips: {
+            round_trips: trainScheduleRoundTripsIds,
+            one_ways: trainScheduleOneWaysIds,
+          },
+        })
+      );
+    }
+    await Promise.all(apiCalls);
+
+    closeModal();
+  };
+
   useModalFocusTrap(modalRef, closeModal);
 
   useEffect(() => {
@@ -198,7 +251,12 @@ const RoundTripsModal = ({
       </div>
       <div className="round-trips-modal-footer">
         <Button label={commonT('cancel')} variant="Cancel" size="medium" onClick={closeModal} />
-        <Button label={commonT('saveEdits')} variant="Primary" size="medium" onClick={closeModal} />
+        <Button
+          label={commonT('saveEdits')}
+          variant="Primary"
+          size="medium"
+          onClick={saveRoundTrips}
+        />
       </div>
     </dialog>
   );
