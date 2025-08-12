@@ -200,7 +200,7 @@ test.describe('Verify simulation configuration in operational studies for train 
     await pacedTrainSection.selectOccurrence({ pacedTrainIndex: 0, occurrenceIndex: 0 });
     await scenarioPage.toggleTrainList();
     if (browserName === 'chromium') {
-      await expect(simulationResultPage.speedSpaceChartTabindexElement).toHaveScreenshot(
+      await expect(simulationResultPage.speedSpaceChart).toHaveScreenshot(
         'SpeedSpaceChart-InitialInputs.png'
       );
     }
