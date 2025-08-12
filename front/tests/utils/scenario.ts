@@ -10,7 +10,7 @@ const scenarioData: ScenarioData = readJsonFile('tests/assets/operation-studies/
 
 // Define the SetupResult type to structure the returned setup data.
 type SetupResult = {
-  smallInfra: Infra;
+  mediumInfra: Infra;
   project: Project;
   study: Study;
   scenario: Scenario;
@@ -31,7 +31,7 @@ export default async function createScenario(
   electricalProfileId: number | null = null
 ): Promise<SetupResult> {
   // Fetch or create infrastructure
-  const smallInfra: Infra = infraId ? ({ id: infraId } as Infra) : await getInfra();
+  const mediumInfra: Infra = infraId ? ({ id: infraId } as Infra) : await getInfra();
 
   // Fetch or create project
   const project: Project = projectId ? ({ id: projectId } as Project) : await getProject();
@@ -51,7 +51,7 @@ export default async function createScenario(
     {
       ...scenarioData,
       name: scenarioNameFinal,
-      infra_id: smallInfra.id,
+      infra_id: mediumInfra.id,
       timetable_id: timetableResult.timetable_id,
       electrical_profile_set_id: electricalProfileId,
     },
@@ -61,7 +61,7 @@ export default async function createScenario(
 
   // Return the result of the setup with all relevant details
   return {
-    smallInfra,
+    mediumInfra,
     project,
     study,
     scenario,

@@ -48,11 +48,13 @@ const studyData: StudyData = readJsonFile('tests/assets/operation-studies/study.
  * @returns {Promise<Infra>} - The created infrastructure object.
  */
 async function createInfrastructure(infraName = infrastructureName): Promise<Infra> {
-  const smallInfraRailjson: RailJson = readJsonFile('./tests/assets/infrastructure/infra.json');
+  const mediumInfraRailjson: RailJson = readJsonFile(
+    './../tests/data/infras/medium_infra/infra.json'
+  );
 
   const createdInfra: PostInfraRailjsonApiResponse = await postApiRequest(
     `/api/infra/railjson`,
-    { ...smallInfraRailjson },
+    { ...mediumInfraRailjson },
     {
       name: infraName,
       generate_data: true,
@@ -61,8 +63,8 @@ async function createInfrastructure(infraName = infrastructureName): Promise<Inf
   );
 
   // Fetch and return the created infrastructure by its ID
-  const smallInfra: Infra = await getApiRequest(`/api/infra/${createdInfra.infra}`);
-  return smallInfra;
+  const mediumInfra: Infra = await getApiRequest(`/api/infra/${createdInfra.infra}`);
+  return mediumInfra;
 }
 
 /**
@@ -161,9 +163,9 @@ export async function createDataForTests(): Promise<void> {
 
   try {
     // Step 1: Create infrastructure
-    let smallInfra = await getInfra();
-    if (!smallInfra) smallInfra = await createInfrastructure();
-    process.env.TEST_INFRA_ID = String(smallInfra.id);
+    let mediumInfra = await getInfra();
+    if (!mediumInfra) mediumInfra = await createInfrastructure();
+    process.env.TEST_INFRA_ID = String(mediumInfra.id);
 
     // Step 2: Create rolling stocks
     await createRollingStocks();
@@ -175,7 +177,7 @@ export async function createDataForTests(): Promise<void> {
     const study = await createStudy(project.id);
 
     // Step 5: Create a scenario for the study
-    await createScenario(undefined, project.id, study.id, smallInfra.id);
+    await createScenario(undefined, project.id, study.id, mediumInfra.id);
 
     // Step 6: Create a project, study, scenario and import train schedule and paced train data
     const projectWithTimetableItems = await createProject(timetableItemProjectName);
@@ -188,7 +190,7 @@ export async function createDataForTests(): Promise<void> {
         timetableItemScenarioName,
         projectWithTimetableItems.id,
         studyWithTimetableItems.id,
-        smallInfra.id
+        mediumInfra.id
       )
     ).scenario;
     await sendTrainSchedules(scenarioWithTimetableItems.timetable_id, trainSchedulesJson);
@@ -196,7 +198,7 @@ export async function createDataForTests(): Promise<void> {
 
     // Step 7: Configure STDCM search environment for the tests
     const stdcmEnvironment = {
-      infra_id: smallInfra.id,
+      infra_id: mediumInfra.id,
       search_window_begin: createDateInSpecialTimeZone(
         '2024-10-17T00:00:00',
         'Europe/Paris'
@@ -212,7 +214,7 @@ export async function createDataForTests(): Promise<void> {
 
     await createStdcmEnvironment(stdcmEnvironment);
     expect(await retrieveLatestStdcmEnvironment()).toMatchObject({
-      infra_id: smallInfra.id,
+      infra_id: mediumInfra.id,
     });
   } catch (error) {
     throw new Error('Error during test data setup', { cause: error });
