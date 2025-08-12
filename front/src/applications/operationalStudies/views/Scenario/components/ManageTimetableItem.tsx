@@ -23,7 +23,7 @@ import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/compon
 import isMainCategory from 'modules/rollingStock/helpers/category';
 import { isElectric } from 'modules/rollingStock/helpers/electric';
 import TimesStopsInput from 'modules/timesStops/TimesStopsInput';
-import { Map } from 'modules/timetableItem/components/ManageTimetableItem';
+import ManageTimetableItemMap from 'modules/timetableItem/components/ManageTimetableItem/ManageTimetableItemMap';
 import {
   MARKER_TYPE,
   type MarkerInformation,
@@ -160,13 +160,13 @@ const ManageTimetableItem = () => {
         <div className="floating-itinerary">
           <Itinerary rollingStockId={rollingStockId} />
         </div>
-        <Map
+        <ManageTimetableItemMap
           pathProperties={pathProperties ? pick(pathProperties, ['length', 'geometry']) : undefined}
           simulationPathSteps={markersInformation}
           pathStepsAndSuggestedOPs={pathStepsAndSuggestedOPs}
         >
           <IncompatibleConstraints pathProperties={pathProperties} />
-        </Map>
+        </ManageTimetableItemMap>
       </div>
     ),
   };
