@@ -32,7 +32,7 @@ opentelemetry-semantic-conventions = "0.30.0"
 opentelemetry_sdk = { version = "0.30.0", features = ["rt-tokio"] }
 percent-encoding = "2.3.1"
 priority-queue = "2.5.0"
-reqwest = { version = "0.12.22", default-features = false, features = [
+reqwest = { version = "0.12.23", default-features = false, features = [
   "json",
   "rustls-tls",
 ] }
