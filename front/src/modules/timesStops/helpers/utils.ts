@@ -12,7 +12,7 @@ import {
 import type { PathItemLocation, ReceptionSignal, TrackReference } from 'common/api/osrdEditoastApi';
 import type { TimeString } from 'common/types';
 import { matchPathStepAndOp } from 'modules/pathfinding/utils';
-import type { SuggestedOP } from 'modules/timetableItem/components/ManageTimetableItem/types';
+import type { SuggestedOP } from 'modules/timetableItem/types';
 import type { PathStep } from 'reducers/osrdconf/types';
 import { Duration } from 'utils/duration';
 import { msToS } from 'utils/physics';

@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 
-import type { SuggestedOP } from 'modules/timetableItem/components/ManageTimetableItem/types';
+import type { SuggestedOP } from 'modules/timetableItem/types';
 
 import { findClosestOperationalPoint } from '../formatConflicts';
 

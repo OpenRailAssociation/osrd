@@ -1,12 +1,12 @@
 import { describe, it, expect } from 'vitest';
 
 import type { LightRollingStockWithLiveries } from 'common/api/osrdEditoastApi';
-import type { SuggestedOP } from 'modules/timetableItem/components/ManageTimetableItem/types';
 import type {
   PacedTrainWithDetails,
   TimetableItemWithSummaries,
   TrainScheduleWithDetails,
 } from 'modules/timetableItem/components/Timetable/types';
+import type { SuggestedOP } from 'modules/timetableItem/types';
 import {
   operationalStudiesConfSlice,
   operationalStudiesInitialConf,

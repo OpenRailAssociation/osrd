@@ -13,6 +13,7 @@ import { SnappedMarker } from 'common/Map/Layers';
 import { computeBBoxViewport } from 'common/Map/WarpedMap/core/helpers';
 import { useInfraID } from 'common/osrdContext';
 import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
+import type { SuggestedOP } from 'modules/timetableItem/types';
 import { useMapSettings, useMapSettingsActions } from 'reducers/globalMap';
 import type { Viewport } from 'reducers/globalMap/types';
 import { useAppDispatch } from 'store';
@@ -21,7 +22,7 @@ import { getMapMouseEventNearestFeature } from 'utils/mapHelper';
 import AddPathStepPopup from './AddPathStepPopup';
 import ItineraryLayer from './ItineraryLayer';
 import ItineraryMarkers, { type MarkerInformation } from './ItineraryMarkers';
-import type { FeatureInfoClick, SuggestedOP } from '../types';
+import type { FeatureInfoClick } from '../types';
 
 const OPERATIONAL_POINT_LAYERS = [
   'chartis/osrd_operational_point/geo',

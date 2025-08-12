@@ -9,7 +9,7 @@ import { useTranslation } from 'react-i18next';
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import type { PathfindingState } from 'modules/pathfinding/types';
 import { isVia, matchPathStepAndOp } from 'modules/pathfinding/utils';
-import type { SuggestedOP } from 'modules/timetableItem/components/ManageTimetableItem/types';
+import type { SuggestedOP } from 'modules/timetableItem/types';
 import {
   updatePathSteps,
   upsertSeveralViasFromSuggestedOP,
