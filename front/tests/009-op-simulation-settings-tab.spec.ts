@@ -187,7 +187,7 @@ test.describe('Simulation Settings Tab Verification', () => {
     await timeAndStopSimulationOutputs.verifyTimesStopsDataSheetVisibility();
     await simulationResultPage.selectAllSpeedSpaceChartCheckboxes();
     if (browserName === 'chromium') {
-      await expect(simulationResultPage.speedSpaceChartTabindexElement).toHaveScreenshot(
+      await expect(simulationResultPage.speedSpaceChart).toHaveScreenshot(
         'SpeedSpaceChart-ElectricalProfileActivated.png'
       );
     }
@@ -204,7 +204,7 @@ test.describe('Simulation Settings Tab Verification', () => {
     await timeAndStopSimulationOutputs.verifyTimesStopsDataSheetVisibility();
     await simulationResultPage.selectAllSpeedSpaceChartCheckboxes();
     if (browserName === 'chromium') {
-      await expect(simulationResultPage.speedSpaceChartTabindexElement).toHaveScreenshot(
+      await expect(simulationResultPage.speedSpaceChart).toHaveScreenshot(
         'SpeedSpaceChart-ElectricalProfileDisabled.png'
       );
     }
@@ -240,7 +240,7 @@ test.describe('Simulation Settings Tab Verification', () => {
     await timeAndStopSimulationOutputs.verifyTimesStopsDataSheetVisibility();
     await simulationResultPage.selectAllSpeedSpaceChartCheckboxes();
     if (browserName === 'chromium') {
-      await expect(simulationResultPage.speedSpaceChartTabindexElement).toHaveScreenshot(
+      await expect(simulationResultPage.speedSpaceChart).toHaveScreenshot(
         'SpeedSpaceChart-SpeedLimitTagActivated.png'
       );
     }
@@ -257,7 +257,7 @@ test.describe('Simulation Settings Tab Verification', () => {
     await timeAndStopSimulationOutputs.verifyTimesStopsDataSheetVisibility();
     await simulationResultPage.selectAllSpeedSpaceChartCheckboxes();
     if (browserName === 'chromium') {
-      await expect(simulationResultPage.speedSpaceChartTabindexElement).toHaveScreenshot(
+      await expect(simulationResultPage.speedSpaceChart).toHaveScreenshot(
         'SpeedSpaceChart-SpeedLimitTagDisabled.png'
       );
     }
@@ -303,7 +303,7 @@ test.describe('Simulation Settings Tab Verification', () => {
     await timeAndStopSimulationOutputs.verifyTimesStopsDataSheetVisibility();
     await simulationResultPage.selectAllSpeedSpaceChartCheckboxes();
     if (browserName === 'chromium') {
-      await expect(simulationResultPage.speedSpaceChartTabindexElement).toHaveScreenshot(
+      await expect(simulationResultPage.speedSpaceChart).toHaveScreenshot(
         'SpeedSpaceChart-LinearMargin.png'
       );
     }
@@ -320,7 +320,7 @@ test.describe('Simulation Settings Tab Verification', () => {
     await timeAndStopSimulationOutputs.verifyTimesStopsDataSheetVisibility();
     await simulationResultPage.selectAllSpeedSpaceChartCheckboxes();
     if (browserName === 'chromium') {
-      await expect(simulationResultPage.speedSpaceChartTabindexElement).toHaveScreenshot(
+      await expect(simulationResultPage.speedSpaceChart).toHaveScreenshot(
         'SpeedSpaceChart-MarecoMargin.png'
       );
     }
@@ -365,7 +365,7 @@ test.describe('Simulation Settings Tab Verification', () => {
     await timeAndStopSimulationOutputs.verifyTimesStopsDataSheetVisibility();
     await simulationResultPage.selectAllSpeedSpaceChartCheckboxes();
     if (browserName === 'chromium') {
-      await expect(simulationResultPage.speedSpaceChartTabindexElement).toHaveScreenshot(
+      await expect(simulationResultPage.speedSpaceChart).toHaveScreenshot(
         'SpeedSpaceChart-AllSettingsEnabled.png'
       );
     }

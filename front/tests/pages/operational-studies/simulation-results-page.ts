@@ -7,15 +7,13 @@ class OpSimulationResultPage extends CommonPage {
 
   private readonly speedSpaceChartCheckboxItems: Locator;
 
-  readonly speedSpaceChartTabindexElement: Locator;
-
   private readonly speedSpaceChartCloseSettingsButton: Locator;
 
   private readonly manchetteSpaceTimeChart: Locator;
 
   private readonly spaceTimeChart: Locator;
 
-  private readonly speedSpaceChart: Locator;
+  readonly speedSpaceChart: Locator;
 
   readonly timesStopsDataSheet: Locator;
 
@@ -31,9 +29,6 @@ class OpSimulationResultPage extends CommonPage {
     this.speedSpaceChartSettingsButton = page.getByTestId('interaction-settings');
     this.speedSpaceChartCloseSettingsButton = page.getByTestId('settings-panel-close');
     this.speedSpaceChartCheckboxItems = page.locator('#settings-panel .selection .checkmark');
-    this.speedSpaceChartTabindexElement = page.locator(
-      '#container-SpeedSpaceChart > div[tabindex="0"]'
-    );
   }
 
   private async openSettingsPanel(): Promise<void> {
