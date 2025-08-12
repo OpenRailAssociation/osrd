@@ -1,5 +1,7 @@
 /* eslint-disable import/prefer-default-export */
-import type { PathLevel, HoveredItem } from '@osrd-project/ui-charts';
+import type { PathLevel, HoveredItem, Conflict } from '@osrd-project/ui-charts';
+import dayjs from 'dayjs';
+import { compact } from 'lodash';
 
 import type { SubCategory } from 'common/api/osrdEditoastApi';
 import isMainCategory from 'modules/rollingStock/helpers/category';
@@ -7,11 +9,29 @@ import {
   DEFAULT_TRAIN_PATH_COLORS,
   TRAIN_MAIN_CATEGORY_PATH_COLORS,
 } from 'modules/simulationResult/consts';
+import type {
+  LayerRangeData,
+  PathOperationalPoint,
+  TrainSpaceTimeData,
+  WaypointsPanelData,
+} from 'modules/simulationResult/types';
 import type { TimetableItemWithDetails } from 'modules/timetableItem/components/Timetable/types';
+import computeOccurrenceName from 'modules/timetableItem/helpers/computeOccurrenceName';
+import {
+  getOccurrencesNb,
+  findExceptionWithOccurrenceId,
+} from 'modules/timetableItem/helpers/pacedTrain';
 import type { TrainId } from 'reducers/osrdconf/types';
-import { extractPacedTrainIdFromOccurrenceId, isOccurrenceId } from 'utils/trainId';
+import {
+  extractPacedTrainIdFromOccurrenceId,
+  formatPacedTrainIdToIndexedOccurrenceId,
+  isOccurrenceId,
+  isTrainScheduleProjection,
+} from 'utils/trainId';
 
-const getPathStyle = (
+import { cutSpaceTimeRect } from '../SpaceTimeChart/helpers/utils';
+
+export const getPathStyle = (
   hovered: HoveredItem | null,
   train: { color: string; id: string },
   dragging: boolean,
@@ -102,4 +122,114 @@ const getPathStyle = (
   return { color: colors.normal };
 };
 
-export default getPathStyle;
+export const expandProjectedTrains = (trains: TrainSpaceTimeData[]): TrainSpaceTimeData[] =>
+  trains.flatMap<TrainSpaceTimeData>((train) => {
+    if (isTrainScheduleProjection(train)) return train;
+    // TODO exceptions : handle added exceptions in issue https://github.com/OpenRailAssociation/osrd/issues/11476
+    const pacedTrainId = extractPacedTrainIdFromOccurrenceId(train.id);
+    const occurrencesCount = getOccurrencesNb(train.paced);
+    const occurrences = [];
+    for (let i = 0; i < occurrencesCount; i += 1) {
+      const occurrenceId = formatPacedTrainIdToIndexedOccurrenceId(pacedTrainId, i);
+      const correspondingException = findExceptionWithOccurrenceId(train.exceptions, occurrenceId);
+      // Disabled occurrences should not be projected
+      if (correspondingException?.disabled) continue;
+
+      const occurrenceStartTime = dayjs(train.departureTime)
+        .add(i * train.paced.interval.ms, 'ms')
+        .toDate();
+      occurrences.push({
+        ...train,
+        id: occurrenceId,
+        name: computeOccurrenceName(train.name, i),
+        departureTime: occurrenceStartTime,
+      });
+    }
+    return occurrences;
+  });
+
+export const cutSpaceTimeChart = (
+  projectedTrains: TrainSpaceTimeData[],
+  conflicts: Conflict[],
+  operationalPoints: PathOperationalPoint[],
+  waypointsPanelData?: WaypointsPanelData
+) => {
+  let filteredProjectPathTrainResult = projectedTrains;
+  let filteredConflicts = conflicts;
+
+  if (!waypointsPanelData || waypointsPanelData.filteredWaypoints.length < 2)
+    return { filteredProjectPathTrainResult, filteredConflicts };
+
+  const { filteredWaypoints } = waypointsPanelData;
+  const firstPosition = filteredWaypoints.at(0)!.position;
+  const lastPosition = filteredWaypoints.at(-1)!.position;
+
+  if (firstPosition !== 0 || lastPosition !== operationalPoints.at(-1)!.position) {
+    filteredProjectPathTrainResult = projectedTrains.map((train) => ({
+      ...train,
+      spaceTimeCurves: train.spaceTimeCurves.map(({ positions, times }) => {
+        const cutPositions: number[] = [];
+        const cutTimes: number[] = [];
+
+        for (let i = 1; i < positions.length; i += 1) {
+          const currentRange: LayerRangeData = {
+            spaceStart: positions[i - 1],
+            spaceEnd: positions[i],
+            timeStart: times[i - 1],
+            timeEnd: times[i],
+          };
+
+          const interpolatedRange = cutSpaceTimeRect(currentRange, firstPosition, lastPosition);
+
+          // TODO : remove reformatting the datas when https://github.com/OpenRailAssociation/osrd-ui/issues/694 is merged
+          if (!interpolatedRange) continue;
+
+          if (i === 1 || cutPositions.length === 0) {
+            cutPositions.push(interpolatedRange.spaceStart);
+            cutTimes.push(interpolatedRange.timeStart);
+          }
+          cutPositions.push(interpolatedRange.spaceEnd);
+          cutTimes.push(interpolatedRange.timeEnd);
+        }
+
+        return {
+          positions: cutPositions,
+          times: cutTimes,
+        };
+      }),
+      signalUpdates: compact(
+        train.signalUpdates.map((signal) => {
+          const updatedSignalRange = cutSpaceTimeRect(
+            {
+              spaceStart: signal.position_start,
+              spaceEnd: signal.position_end,
+              timeStart: signal.time_start,
+              timeEnd: signal.time_end,
+            },
+            firstPosition,
+            lastPosition
+          );
+
+          if (!updatedSignalRange) return null;
+
+          // TODO : remove reformatting the datas when https://github.com/OpenRailAssociation/osrd-ui/issues/694 is merged
+          return {
+            ...signal,
+            position_start: updatedSignalRange.spaceStart,
+            position_end: updatedSignalRange.spaceEnd,
+            time_start: updatedSignalRange.timeStart,
+            time_end: updatedSignalRange.timeEnd,
+          };
+        })
+      ),
+    }));
+
+    filteredConflicts = compact(
+      conflicts.map((conflict) => cutSpaceTimeRect(conflict, firstPosition, lastPosition))
+    );
+
+    return { filteredProjectPathTrainResult, filteredConflicts };
+  }
+
+  return { filteredProjectPathTrainResult, filteredConflicts };
+};

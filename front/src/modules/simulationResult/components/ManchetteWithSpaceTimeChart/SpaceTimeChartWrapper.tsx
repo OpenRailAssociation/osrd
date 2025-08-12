@@ -33,36 +33,27 @@ import { Slider } from '@osrd-project/ui-core';
 import { Sliders, Iterations, ZoomIn } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import dayjs from 'dayjs';
-import { compact, keyBy, sortBy } from 'lodash';
+import { keyBy, sortBy } from 'lodash';
 
 import upward from 'assets/pictures/workSchedules/ScheduledMaintenanceUp.svg';
 import {
   osrdEditoastApi,
   type PostWorkSchedulesProjectPathApiResponse,
 } from 'common/api/osrdEditoastApi';
-import { cutSpaceTimeRect } from 'modules/simulationResult/components/SpaceTimeChart/helpers/utils';
 import { ASPECT_LABELS_COLORS } from 'modules/simulationResult/consts';
 import type {
   AspectLabel,
-  LayerRangeData,
   PathOperationalPoint,
   TrainSpaceTimeData,
   WaypointsPanelData,
 } from 'modules/simulationResult/types';
 import type { TimetableItemWithDetails } from 'modules/timetableItem/components/Timetable/types';
-import computeOccurrenceName from 'modules/timetableItem/helpers/computeOccurrenceName';
-import {
-  findExceptionWithOccurrenceId,
-  getOccurrencesNb,
-} from 'modules/timetableItem/helpers/pacedTrain';
 import type { TimetableItemId, TrainId } from 'reducers/osrdconf/types';
 import { updateSelectedTrainId } from 'reducers/simulationResults';
 import { useAppDispatch } from 'store';
 import {
   isTrainId,
-  formatPacedTrainIdToIndexedOccurrenceId,
   extractPacedTrainIdFromOccurrenceId,
-  isTrainScheduleProjection,
   isOccurrenceId,
   extractOccurrenceIndexFromOccurrenceId,
   isTrainScheduleId,
@@ -71,7 +62,7 @@ import {
 } from 'utils/trainId';
 
 import SettingsPanel from './SettingsPanel';
-import { getPathStyle } from './utils';
+import { expandProjectedTrains, cutSpaceTimeChart, getPathStyle } from './utils';
 import { Spinner } from '../../../../common/Loaders';
 import ManchetteMenuButton from '../SpaceTimeChart/ManchetteMenuButton';
 import ProjectionLoadingMessage from '../SpaceTimeChart/ProjectionLoadingMessage';
@@ -154,37 +145,8 @@ const SpaceTimeChartWrapper = ({
       pageSize: 100,
     });
 
-  const projectedTrains = useMemo(
-    () =>
-      projectPathTrainResult.flatMap<TrainSpaceTimeData>((train) => {
-        if (isTrainScheduleProjection(train)) {
-          return train;
-        }
-        // TODO exceptions : handle added exceptions in issue https://github.com/OpenRailAssociation/osrd/issues/11476
-        const pacedTrainId = extractPacedTrainIdFromOccurrenceId(train.id);
-        const occurrencesCount = getOccurrencesNb(train.paced);
-        const occurrences = [];
-        for (let i = 0; i < occurrencesCount; i += 1) {
-          const occurrenceId = formatPacedTrainIdToIndexedOccurrenceId(pacedTrainId, i);
-          const correspondingException = findExceptionWithOccurrenceId(
-            train.exceptions,
-            occurrenceId
-          );
-          // Disabled occurrences should not be projected
-          if (correspondingException?.disabled) continue;
-
-          const occurrenceStartTime = dayjs(train.departureTime)
-            .add(i * train.paced.interval.ms, 'ms')
-            .toDate();
-          occurrences.push({
-            ...train,
-            id: occurrenceId,
-            name: computeOccurrenceName(train.name, i),
-            departureTime: occurrenceStartTime,
-          });
-        }
-        return occurrences;
-      }),
+  const projectedTrains = useMemo<TrainSpaceTimeData[]>(
+    () => expandProjectedTrains(projectPathTrainResult),
     [projectPathTrainResult]
   );
 
@@ -192,86 +154,10 @@ const SpaceTimeChartWrapper = ({
 
   // Cut the spacetime chart curves if the first or last waypoints are hidden
   const { filteredProjectPathTrainResult: cutProjectedTrains, filteredConflicts: cutConflicts } =
-    useMemo(() => {
-      let filteredProjectPathTrainResult = projectedTrains;
-      let filteredConflicts = conflicts;
-
-      if (!waypointsPanelData || waypointsPanelData.filteredWaypoints.length < 2)
-        return { filteredProjectPathTrainResult, filteredConflicts };
-
-      const { filteredWaypoints } = waypointsPanelData;
-      const firstPosition = filteredWaypoints.at(0)!.position;
-      const lastPosition = filteredWaypoints.at(-1)!.position;
-
-      if (firstPosition !== 0 || lastPosition !== operationalPoints.at(-1)!.position) {
-        filteredProjectPathTrainResult = projectedTrains.map((train) => ({
-          ...train,
-          spaceTimeCurves: train.spaceTimeCurves.map(({ positions, times }) => {
-            const cutPositions: number[] = [];
-            const cutTimes: number[] = [];
-
-            for (let i = 1; i < positions.length; i += 1) {
-              const currentRange: LayerRangeData = {
-                spaceStart: positions[i - 1],
-                spaceEnd: positions[i],
-                timeStart: times[i - 1],
-                timeEnd: times[i],
-              };
-
-              const interpolatedRange = cutSpaceTimeRect(currentRange, firstPosition, lastPosition);
-
-              // TODO : remove reformatting the datas when https://github.com/OpenRailAssociation/osrd-ui/issues/694 is merged
-              if (!interpolatedRange) continue;
-
-              if (i === 1 || cutPositions.length === 0) {
-                cutPositions.push(interpolatedRange.spaceStart);
-                cutTimes.push(interpolatedRange.timeStart);
-              }
-              cutPositions.push(interpolatedRange.spaceEnd);
-              cutTimes.push(interpolatedRange.timeEnd);
-            }
-
-            return {
-              positions: cutPositions,
-              times: cutTimes,
-            };
-          }),
-          signalUpdates: compact(
-            train.signalUpdates.map((signal) => {
-              const updatedSignalRange = cutSpaceTimeRect(
-                {
-                  spaceStart: signal.position_start,
-                  spaceEnd: signal.position_end,
-                  timeStart: signal.time_start,
-                  timeEnd: signal.time_end,
-                },
-                firstPosition,
-                lastPosition
-              );
-
-              if (!updatedSignalRange) return null;
-
-              // TODO : remove reformatting the datas when https://github.com/OpenRailAssociation/osrd-ui/issues/694 is merged
-              return {
-                ...signal,
-                position_start: updatedSignalRange.spaceStart,
-                position_end: updatedSignalRange.spaceEnd,
-                time_start: updatedSignalRange.timeStart,
-                time_end: updatedSignalRange.timeEnd,
-              };
-            })
-          ),
-        }));
-
-        filteredConflicts = compact(
-          conflicts.map((conflict) => cutSpaceTimeRect(conflict, firstPosition, lastPosition))
-        );
-
-        return { filteredProjectPathTrainResult, filteredConflicts };
-      }
-
-      return { filteredProjectPathTrainResult, filteredConflicts };
-    }, [waypointsPanelData?.filteredWaypoints, projectedTrains, conflicts]);
+    useMemo(
+      () => cutSpaceTimeChart(projectedTrains, conflicts, operationalPoints, waypointsPanelData),
+      [waypointsPanelData?.filteredWaypoints, projectedTrains, conflicts]
+    );
 
   const paths = usePaths(cutProjectedTrains);
 
