@@ -101,6 +101,7 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
     infraId: scenario.infra_id,
     electricalProfileSetId,
     path: projectionPath?.path,
+    operationalPoints: projectionPath?.operationalPoints,
   });
 
   const {

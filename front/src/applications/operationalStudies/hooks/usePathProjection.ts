@@ -38,7 +38,7 @@ const usePathProjection = (infra: InfraWithState) => {
       path?.status === 'success'
         ? {
             infraId: infra.id,
-            props: ['geometry'],
+            props: ['geometry', 'operational_points'],
             pathPropertiesInput: { track_section_ranges: path.track_section_ranges },
           }
         : skipToken
@@ -51,6 +51,7 @@ const usePathProjection = (infra: InfraWithState) => {
     return {
       path,
       geometry: pathProperties.geometry,
+      operationalPoints: pathProperties.operational_points,
     };
   }, [path, pathProperties]);
 };

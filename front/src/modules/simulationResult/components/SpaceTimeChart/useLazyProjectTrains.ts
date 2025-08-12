@@ -1,6 +1,5 @@
 import { useEffect, useState, useCallback, useRef } from 'react';
 
-import { skipToken } from '@reduxjs/toolkit/query/react';
 import { useSelector } from 'react-redux';
 
 import TrainOpProjectionLazyLoader from 'applications/operationalStudies/helpers/TrainOpProjectionLazyLoader';
@@ -8,7 +7,7 @@ import type { ProjectionResult } from 'applications/operationalStudies/helpers/T
 import type TrainProjectionLazyLoaderAbstract from 'applications/operationalStudies/helpers/TrainProjectionLazyLoaderAbstract';
 import TrainTrackProjectionLazyLoader from 'applications/operationalStudies/helpers/TrainTrackProjectionLazyLoader';
 import upsertNewProjectedTrains from 'applications/operationalStudies/helpers/upsertNewProjectedTrains';
-import { osrdEditoastApi, type PathfindingResultSuccess } from 'common/api/osrdEditoastApi';
+import { type PathfindingResultSuccess, type PathProperties } from 'common/api/osrdEditoastApi';
 import type { TrainSpaceTimeData } from 'modules/simulationResult/types';
 import type { TimetableItemId, TimetableItem } from 'reducers/osrdconf/types';
 import { getProjectionType } from 'reducers/simulationResults/selectors';
@@ -18,12 +17,14 @@ type UseLazyProjectTrainsOptions = {
   infraId: number;
   electricalProfileSetId?: number;
   path?: PathfindingResultSuccess;
+  operationalPoints?: PathProperties['operational_points'];
 };
 
 const useLazyProjectTrains = ({
   infraId,
   electricalProfileSetId,
   path,
+  operationalPoints,
 }: UseLazyProjectTrainsOptions) => {
   const dispatch = useAppDispatch();
   const loaderRef = useRef<TrainProjectionLazyLoaderAbstract>(null);
@@ -32,19 +33,6 @@ const useLazyProjectTrains = ({
     Map<TimetableItemId, TrainSpaceTimeData>
   >(new Map());
   const projectionType = useSelector(getProjectionType);
-
-  const { data: pathProperties } =
-    osrdEditoastApi.endpoints.postInfraByInfraIdPathProperties.useQuery(
-      projectionType === 'operationalPointProjection' && path
-        ? {
-            infraId,
-            props: ['operational_points'],
-            pathPropertiesInput: {
-              track_section_ranges: path.track_section_ranges,
-            },
-          }
-        : skipToken
-    );
 
   const onProgress = useCallback((results: Map<TimetableItemId, ProjectionResult>) => {
     setProjectedTrainsById((prev) =>
@@ -65,7 +53,7 @@ const useLazyProjectTrains = ({
     const loader =
       projectionType === 'trackProjection'
         ? new TrainTrackProjectionLazyLoader(options)
-        : new TrainOpProjectionLazyLoader(options, pathProperties?.operational_points);
+        : new TrainOpProjectionLazyLoader(options, operationalPoints);
 
     loader.projectTimetableItems([...timetableItemsByIdRef.current.keys()]);
 
@@ -74,7 +62,7 @@ const useLazyProjectTrains = ({
       loader.cancel();
       loaderRef.current = null;
     };
-  }, [infraId, electricalProfileSetId, path, projectionType, pathProperties]);
+  }, [infraId, electricalProfileSetId, path, projectionType, operationalPoints]);
 
   const projectTimetableItems = useCallback((timetableItems: TimetableItem[]) => {
     for (const timetableItem of timetableItems) {
