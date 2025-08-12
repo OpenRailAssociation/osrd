@@ -1,14 +1,14 @@
 import { ChevronLeft, ChevronRight } from '@osrd-project/ui-icons';
 
+import { ManageTimetableItemContextProvider } from 'applications/operationalStudies/hooks/useManageTimetableItemContext';
 import type { ScenarioResponse } from 'common/api/osrdEditoastApi';
 import TimetableManageItem, {
   type TimetableManageItemProps,
 } from 'modules/timetableItem/components/ManageTimetableItem/TimetableManageItem';
 
-import { MANAGE_TIMETABLE_ITEM_TYPES } from '../../../consts';
 import ImportTimetableItem from './ImportTimetableItem';
 import ManageTimetableItem from './ManageTimetableItem';
-import { ManageTimetableItemContextProvider } from '../../../hooks/useManageTimetableItemContext';
+import { MANAGE_TIMETABLE_ITEM_TYPES } from '../consts';
 
 type ManageTimetableItemModalProps = TimetableManageItemProps & {
   scenario: ScenarioResponse;

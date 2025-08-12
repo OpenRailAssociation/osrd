@@ -3,7 +3,6 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import { ChevronRight } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 
-import { MANAGE_TIMETABLE_ITEM_TYPES } from 'applications/operationalStudies/consts';
 import useScenarioData from 'applications/operationalStudies/hooks/useScenarioData';
 import type { Board } from 'applications/operationalStudies/types';
 import ManageTimetableItemModal from 'applications/operationalStudies/views/Scenario/components/ManageTimetableItemModal';
@@ -22,6 +21,7 @@ import { updateSelectedTrainId } from 'reducers/simulationResults';
 import { useAppDispatch } from 'store';
 import { formatEditoastIdToTrainScheduleId } from 'utils/trainId';
 
+import { MANAGE_TIMETABLE_ITEM_TYPES } from '../consts';
 import BoardWrapper from './BoardWrapper';
 import { EditedElementContainerProvider } from './EditedElementContainerContext';
 import MacroEditorState from './MacroEditor/MacroEditorState';

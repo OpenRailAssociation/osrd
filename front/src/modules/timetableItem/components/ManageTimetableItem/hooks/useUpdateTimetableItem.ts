@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
-import { MANAGE_TIMETABLE_ITEM_TYPES } from 'applications/operationalStudies/consts';
+import { MANAGE_TIMETABLE_ITEM_TYPES } from 'applications/operationalStudies/views/Scenario/consts';
 import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
 import checkCurrentConfig from 'modules/timetableItem/components/ManageTimetableItem/helpers/checkCurrentConfig';
 import {

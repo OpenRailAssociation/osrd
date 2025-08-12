@@ -4,7 +4,7 @@ import cx from 'classnames';
 import { useSelector } from 'react-redux';
 import { Virtualizer } from 'virtua';
 
-import { MANAGE_TIMETABLE_ITEM_TYPES } from 'applications/operationalStudies/consts';
+import { MANAGE_TIMETABLE_ITEM_TYPES } from 'applications/operationalStudies/views/Scenario/consts';
 import { type InfraState } from 'common/api/osrdEditoastApi';
 import { useSubCategoryContext } from 'common/SubCategoryContext';
 import { selectTrainToEdit } from 'reducers/osrdconf/operationalStudiesConf';
