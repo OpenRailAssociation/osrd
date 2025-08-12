@@ -75,7 +75,7 @@ import WaypointsPanel from './WaypointsPanel';
 import { Spinner } from '../../../../common/Loaders';
 import makeProjectedItems from '../SpaceTimeChart/helpers/makeProjectedItems';
 
-type ManchetteWithSpaceTimeChartBaseProps = {
+type SpaceTimeChartWrapperBaseProps = {
   operationalPoints: PathOperationalPoint[];
   projectPathTrainResult: TrainSpaceTimeData[];
   selectedTrainId?: TrainId;
@@ -112,7 +112,7 @@ type ManchetteWithSpaceTimeChartBaseProps = {
   timetableItemsWithDetails?: TimetableItemWithDetails[];
 };
 
-type ManchetteWithSpaceTimeChartProps = ManchetteWithSpaceTimeChartBaseProps &
+type SpaceTimeChartWrapperProps = SpaceTimeChartWrapperBaseProps &
   (
     | {
         waypointsPanelData: WaypointsPanelData;
@@ -128,7 +128,7 @@ type ManchetteWithSpaceTimeChartProps = ManchetteWithSpaceTimeChartBaseProps &
 
 export const MANCHETTE_WITH_SPACE_TIME_CHART_DEFAULT_HEIGHT = 561;
 
-const ManchetteWithSpaceTimeChartWrapper = ({
+const SpaceTimeChartWrapper = ({
   operationalPoints,
   projectPathTrainResult,
   waypointsPanelData,
@@ -145,7 +145,7 @@ const ManchetteWithSpaceTimeChartWrapper = ({
   timetableItemsWithDetails,
   waypointsPanelIsOpen,
   setWaypointsPanelIsOpen,
-}: ManchetteWithSpaceTimeChartProps) => {
+}: SpaceTimeChartWrapperProps) => {
   const dispatch = useAppDispatch();
 
   const manchetteWithSpaceTimeChartRef = useRef<HTMLDivElement>(null);
@@ -683,4 +683,4 @@ const ManchetteWithSpaceTimeChartWrapper = ({
   );
 };
 
-export default ManchetteWithSpaceTimeChartWrapper;
+export default SpaceTimeChartWrapper;
