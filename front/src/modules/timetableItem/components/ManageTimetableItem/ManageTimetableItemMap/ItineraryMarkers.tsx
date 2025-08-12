@@ -46,7 +46,7 @@ type MarkerProperties = {
 type ItineraryMarkersProps = {
   simulationPathSteps: MarkerInformation[];
   pathStepsAndSuggestedOPs?: SuggestedOP[];
-  showStdcmAssets: boolean;
+  showStdcmAssets?: boolean;
   infraId: number;
 };
 
@@ -109,7 +109,7 @@ const extractMarkerInformation = (
 const ItineraryMarkers = ({
   simulationPathSteps,
   pathStepsAndSuggestedOPs,
-  showStdcmAssets,
+  showStdcmAssets = false,
   infraId,
 }: ItineraryMarkersProps) => {
   const { getTrackSectionsByIds } = useCachedTrackSections(infraId);
