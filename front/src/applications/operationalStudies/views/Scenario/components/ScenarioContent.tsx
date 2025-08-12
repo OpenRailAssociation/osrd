@@ -3,11 +3,6 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import { ChevronRight } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 
-import MacroEditorState from 'applications/operationalStudies/components/MacroEditor/MacroEditorState';
-import { handleOperation } from 'applications/operationalStudies/components/MacroEditor/ngeToOsrd';
-import { loadNgeDto } from 'applications/operationalStudies/components/MacroEditor/osrdToNge';
-import NGE from 'applications/operationalStudies/components/NGE';
-import type { NetzgrafikDto, NGEEvent } from 'applications/operationalStudies/components/NGE/types';
 import { MANAGE_TIMETABLE_ITEM_TYPES } from 'applications/operationalStudies/consts';
 import useScenarioData from 'applications/operationalStudies/hooks/useScenarioData';
 import type { Board } from 'applications/operationalStudies/types';
@@ -29,6 +24,11 @@ import { formatEditoastIdToTrainScheduleId } from 'utils/trainId';
 
 import BoardWrapper from './BoardWrapper';
 import { EditedElementContainerProvider } from './EditedElementContainerContext';
+import MacroEditorState from './MacroEditor/MacroEditorState';
+import { handleOperation } from './MacroEditor/ngeToOsrd';
+import { loadNgeDto } from './MacroEditor/osrdToNge';
+import NGE from './NGE';
+import type { NetzgrafikDto, NGEEvent } from './NGE/types';
 
 type ScenarioContentProps = {
   scenario: ScenarioResponse;
