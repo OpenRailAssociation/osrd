@@ -28,7 +28,7 @@ import { isPacedTrainToEditData } from './helpers/formatTimetableItemPayload';
 import useUpdateTimetableItem from './hooks/useUpdateTimetableItem';
 import PacedTrainSettings from './PacedTrainSettings';
 
-export type TimetableManageItemProps = {
+export type ManageTimetableItemLeftPanelProps = {
   displayTimetableItemManagement: string;
   timetableItemToEditData?: TimetableItemToEditData;
   setDisplayTimetableItemManagement: (type: string) => void;
@@ -40,14 +40,14 @@ export type TimetableManageItemProps = {
 /**
  * Create/edit train schedules and paced trains
  */
-const TimetableManageItem = ({
+const ManageTimetableItemLeftPanel = ({
   displayTimetableItemManagement,
   setDisplayTimetableItemManagement,
   upsertTimetableItems,
   removeTimetableItems,
   timetableItemToEditData,
   setTimetableItemToEditData,
-}: TimetableManageItemProps) => {
+}: ManageTimetableItemLeftPanelProps) => {
   const { setEditedElementContainer } = useContext(EditedElementContainerContext);
   const dispatch = useAppDispatch();
   const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTimetableItem' });
@@ -199,4 +199,4 @@ const TimetableManageItem = ({
   );
 };
 
-export default TimetableManageItem;
+export default ManageTimetableItemLeftPanel;
