@@ -8,6 +8,8 @@ use crate::ListAndCount;
 use crate::Model;
 use crate::SelectionSettings;
 use crate::error::Result;
+use crate::models::Count;
+use crate::models::List;
 
 /// Statistics about a paginated editoast response
 ///
@@ -85,7 +87,10 @@ impl PaginationStats {
     }
 }
 
-pub trait PaginatedList: ListAndCount + 'static {
+pub trait PaginatedList: ListAndCount + 'static
+where
+    <Self as List>::Error: From<<Self as Count>::Error>,
+{
     /// Lists the models and compute [PaginationStats]
     ///
     /// See [ListAndCount::list_and_count] for more details.
@@ -101,7 +106,7 @@ pub trait PaginatedList: ListAndCount + 'static {
     async fn list_paginated(
         conn: &mut DbConnection,
         settings: SelectionSettings<Self>,
-    ) -> Result<(Vec<Self>, PaginationStats)> {
+    ) -> Result<(Vec<Self>, PaginationStats), <Self as List>::Error> {
         let (page, page_size) = settings
             .get_pagination_settings()
             .expect("the limit and the offset must be set in order to call list_paginated");
@@ -111,7 +116,12 @@ pub trait PaginatedList: ListAndCount + 'static {
     }
 }
 
-impl<T> PaginatedList for T where T: ListAndCount + 'static {}
+impl<T> PaginatedList for T
+where
+    T: ListAndCount + 'static,
+    <Self as List>::Error: From<<Self as Count>::Error>,
+{
+}
 
 #[derive(Debug, Clone, Copy)]
 pub struct PaginationQueryParams<const MAX_PAGE_SIZE: u64 = 25> {

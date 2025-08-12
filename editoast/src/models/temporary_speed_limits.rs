@@ -39,20 +39,6 @@ impl From<model::Error> for TslGroupError {
     }
 }
 
-// temporary
-impl crate::error::EditoastError for TslGroupError {
-    fn get_status(&self) -> axum::http::StatusCode {
-        match self {
-            Self::NameAlreadyUsed { .. } => axum::http::StatusCode::BAD_REQUEST,
-            Self::Database(e) => e.get_status(),
-        }
-    }
-
-    fn get_type(&self) -> &str {
-        "editoast:TslGroupError"
-    }
-}
-
 #[derive(Debug, Serialize, Clone, Model)]
 #[model(table = temporary_speed_limit, error(write = Error))]
 #[model(gen(ops = cr, batch_ops = c, list))]
@@ -70,17 +56,6 @@ pub struct TemporarySpeedLimit {
 #[derive(Debug, thiserror::Error)]
 #[error(transparent)]
 pub struct Error(#[from] model::Error);
-
-// temporary
-impl crate::error::EditoastError for Error {
-    fn get_status(&self) -> axum::http::StatusCode {
-        self.0.get_status()
-    }
-
-    fn get_type(&self) -> &str {
-        self.0.get_type()
-    }
-}
 
 impl From<TemporarySpeedLimit> for core_client::stdcm::TemporarySpeedLimit {
     fn from(value: TemporarySpeedLimit) -> Self {

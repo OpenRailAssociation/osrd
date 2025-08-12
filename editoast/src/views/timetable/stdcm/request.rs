@@ -266,7 +266,7 @@ impl Request {
     pub(super) async fn get_work_schedules(
         &self,
         conn: &mut DbConnection,
-    ) -> Result<Vec<WorkSchedule>> {
+    ) -> Result<Vec<WorkSchedule>, <WorkSchedule as List>::Error> {
         if self.work_schedule_group_id.is_none() {
             return Ok(vec![]);
         }
