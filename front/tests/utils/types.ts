@@ -20,6 +20,8 @@ export type PdfSimulationContent = {
     referenceEngineValue: string;
     maxLength: string;
     maxLengthValue: string;
+    loadingGauge: string;
+    loadingGaugeValue: string;
   };
   requestedRoute: {
     station1: {
