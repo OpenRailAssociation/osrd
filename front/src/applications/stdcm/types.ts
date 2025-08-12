@@ -15,7 +15,7 @@ import type {
   SpeedDistanceDiagramData,
   TrainSpaceTimeData,
 } from 'modules/simulationResult/types';
-import type { SuggestedOP } from 'modules/timetableItem/components/ManageTimetableItem/types';
+import type { SuggestedOP } from 'modules/timetableItem/types';
 import type { StdcmPathStep } from 'reducers/osrdconf/types';
 import type { Duration } from 'utils/duration';
 import type { ValueOf } from 'utils/types';
