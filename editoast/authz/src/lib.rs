@@ -81,6 +81,7 @@ pub enum Authorization<T> {
 pub struct Unauthorized {
     pub reason: &'static str,
 }
+
 impl Authorization<()> {
     pub fn allowed(self) -> Result<(), Unauthorized> {
         match self {
@@ -104,6 +105,22 @@ impl Authorization<()> {
 impl<T> Authorization<T> {
     pub fn denied(&self) -> bool {
         matches!(self, Self::Denied { .. })
+    }
+}
+
+impl<T: std::fmt::Debug> Authorization<T> {
+    pub fn expect_allowed(self, reason: &'static str) -> T {
+        match self {
+            Authorization::Granted(value) => value,
+            other => panic!("expected Authorization::Granted, got {other:?}: {reason}"),
+        }
+    }
+
+    pub fn expect_denied(self, reason: &'static str) -> &'static str {
+        match self {
+            Authorization::Denied { reason } => reason,
+            other => panic!("expected Authorization::Denied, got {other:?}: {reason}"),
+        }
     }
 }
 

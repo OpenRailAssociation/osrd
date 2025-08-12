@@ -37,6 +37,25 @@ impl Subject {
     }
 }
 
+#[cfg(test)]
+impl AsRef<User> for Subject {
+    fn as_ref(&self) -> &User {
+        match self {
+            Subject::User(user) => user,
+            Subject::Group(_) => unreachable!("tests should make sure the subject is a user"),
+        }
+    }
+}
+#[cfg(test)]
+impl AsRef<Group> for Subject {
+    fn as_ref(&self) -> &Group {
+        match self {
+            Subject::User(_) => unreachable!("tests should make sure the subject is a group"),
+            Subject::Group(group) => group,
+        }
+    }
+}
+
 #[derive(
     fga::Type, fga::User, fga::Object, derive_more::FromStr, Debug, Clone, PartialEq, Eq, Hash,
 )]
@@ -65,7 +84,20 @@ pub enum InfraPrivilege {
 }
 
 #[editoast_derive::openapi_schema]
-#[derive(Debug, Display, Clone, Copy, PartialEq, Eq, Hash, Serialize, Deserialize, ToSchema)]
+#[derive(
+    Debug,
+    Display,
+    Clone,
+    Copy,
+    PartialEq,
+    Eq,
+    PartialOrd,
+    Ord,
+    Hash,
+    Serialize,
+    Deserialize,
+    ToSchema,
+)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 #[strum(serialize_all = "SCREAMING_SNAKE_CASE")]
 pub enum InfraGrant {

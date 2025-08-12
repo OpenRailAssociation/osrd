@@ -457,6 +457,128 @@ mod tests {
         );
     }
 
+    // If I'm a WRITER on an infra, and I grant READER to an OWNER, the OWNER should *not* become READER
+    #[tokio::test]
+    async fn prevent_downgrade() {
+        let regulator = Regulator::new(crate::openfga!(), MockAuthDriver::default());
+        let regulator = move || regulator.clone();
+
+        let alice = Subject::User(User(
+            regulator()
+                .driver
+                .ensure_user(&UserInfo {
+                    identity: "alice".to_owned(),
+                    name: "Alice".to_owned(),
+                })
+                .await
+                .expect("alice should be created")
+                .id,
+        ));
+        let bob = Subject::User(User(
+            regulator()
+                .driver
+                .ensure_user(&UserInfo {
+                    identity: "bob".to_owned(),
+                    name: "Bob".to_owned(),
+                })
+                .await
+                .expect("bob should be created")
+                .id,
+        ));
+
+        // Give Alice WRITER and Bob OWNER privileges
+        regulator()
+            .give_infra_grant_unchecked(&alice, &Infra(1), InfraGrant::Writer)
+            .await
+            .expect("granting writer to alice should succeed");
+        regulator()
+            .give_infra_grant_unchecked(&bob, &Infra(1), InfraGrant::Owner)
+            .await
+            .expect("granting owner to bob should succeed");
+
+        // Alice (WRITER) tries to downgrade Bob (OWNER)
+        regulator()
+            .give_infra_grant(alice.as_ref(), &bob, &Infra(1), InfraGrant::Reader)
+            .await
+            .expect("grant operation should complete")
+            .expect_denied("insufficient privileges to downgrade this user");
+
+        // Check Bob is still OWNER
+        let bobs_grant = regulator()
+            .infra_grant(&bob, &Infra(1))
+            .await
+            .expect("checking final grant should succeed");
+        assert_eq!(bobs_grant, Some(InfraGrant::Owner));
+    }
+
+    // A WRITER cannot demote another WRITER
+    #[tokio::test]
+    async fn prevent_demotion() {
+        let regulator = Regulator::new(crate::openfga!(), MockAuthDriver::default());
+        let regulator = move || regulator.clone();
+
+        let alice = Subject::User(User(
+            regulator()
+                .driver
+                .ensure_user(&UserInfo {
+                    identity: "alice".to_owned(),
+                    name: "Alice".to_owned(),
+                })
+                .await
+                .expect("alice should be created")
+                .id,
+        ));
+        let bob = Subject::User(User(
+            regulator()
+                .driver
+                .ensure_user(&UserInfo {
+                    identity: "bob".to_owned(),
+                    name: "Bob".to_owned(),
+                })
+                .await
+                .expect("bob should be created")
+                .id,
+        ));
+
+        // Give both users WRITER privilege
+        regulator()
+            .give_infra_grant_unchecked(&alice, &Infra(1), InfraGrant::Writer)
+            .await
+            .expect("granting writer to alice should succeed");
+        regulator()
+            .give_infra_grant_unchecked(&bob, &Infra(1), InfraGrant::Writer)
+            .await
+            .expect("granting writer to bob should succeed");
+
+        // Try to have Alice demote Bob to READER (both WRITER)
+        regulator()
+            .give_infra_grant(alice.as_ref(), &bob, &Infra(1), InfraGrant::Reader)
+            .await
+            .expect("grant operation should complete")
+            .expect_denied("cannot demote a user with the same privilege level");
+
+        // Check Bob still is WRITER
+        let bobs_grant = regulator()
+            .infra_grant(&bob, &Infra(1))
+            .await
+            .expect("checking final grant should succeed");
+        assert_eq!(bobs_grant, Some(InfraGrant::Writer));
+
+        // ---
+
+        regulator()
+            .give_infra_grant(alice.as_ref(), &bob, &Infra(1), InfraGrant::Writer)
+            .await
+            .expect("grant operation should complete")
+            .expect_allowed("granting the same level 'successfully does nothing'");
+
+        let bobs_grant = regulator()
+            .infra_grant(&bob, &Infra(1))
+            .await
+            .expect("checking final grant should succeed");
+        assert_eq!(bobs_grant, Some(InfraGrant::Writer));
+    }
+
     impl StorageDriver for MockAuthDriver {
         type Error = Infallible;
 

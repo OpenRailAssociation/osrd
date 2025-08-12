@@ -684,7 +684,7 @@ impl<S: StorageDriver> Regulator<S> {
             return Err(Error::UnknownSubject(subject.id()));
         }
 
-        // Remove other grants before to add the new one
+        // Remove existing grants before adding the new one
         self.revoke_infra_grants_unchecked(subject, infra).await?;
 
         // Grant the new one
@@ -736,6 +736,19 @@ impl<S: StorageDriver> Regulator<S> {
                     .await?
             }
         };
+
+        if !self.is_admin(issuer).await?
+            && let Some(issuer_grant) = self
+                .infra_grant(&Subject::User(User(issuer.0)), infra)
+                .await?
+            && let Some(subject_grant) = self.infra_grant(subject, infra).await?
+            && (grant < subject_grant && issuer_grant <= subject_grant)
+        {
+            return Ok(Authorization::Denied {
+                reason: "cannot demote user without having a higher grant",
+            });
+        }
+
         authz_share
             .allowed_then_try(async || {
                 self.give_infra_grant_unchecked(subject, infra, grant)
