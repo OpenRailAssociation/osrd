@@ -68,6 +68,7 @@ pub(crate) struct Errors {
     pub(crate) retrieve: syn::Path,
     pub(crate) update: syn::Path,
     pub(crate) delete: syn::Path,
+    pub(crate) list: syn::Path,
 }
 
 #[derive(Debug, PartialEq)]

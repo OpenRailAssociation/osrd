@@ -305,7 +305,8 @@ impl Errors {
                 create: path.clone(),
                 retrieve: path.clone(),
                 update: path.clone(),
-                delete: path,
+                delete: path.clone(),
+                list: path,
             }),
             ErrorArgs::Rw(RwErrorArgs { read, write, .. }) => {
                 let Errors {
@@ -314,10 +315,11 @@ impl Errors {
                 let read = read.unwrap_or(retrieve);
                 let write = write.unwrap_or(create);
                 Ok(Self {
-                    retrieve: read,
+                    retrieve: read.clone(),
                     create: write.clone(),
                     update: write.clone(),
                     delete: write,
+                    list: read,
                 })
             }
             ErrorArgs::Detailed(DetailedErrorArgs {
@@ -331,12 +333,14 @@ impl Errors {
                     retrieve: default_retrieve,
                     update: default_update,
                     delete: default_delete,
+                    list: default_list,
                 } = Errors::default();
                 Ok(Self {
                     retrieve: retrieve.unwrap_or(default_retrieve),
                     create: create.unwrap_or(default_create),
                     update: update.unwrap_or(default_update),
                     delete: delete.unwrap_or(default_delete),
+                    list: default_list,
                 })
             }
         }
@@ -350,6 +354,7 @@ impl Default for Errors {
             retrieve: syn::parse_quote! { editoast_models::model::Error },
             update: syn::parse_quote! { editoast_models::model::Error },
             delete: syn::parse_quote! { editoast_models::model::Error },
+            list: syn::parse_quote! { editoast_models::model::Error },
         }
     }
 }

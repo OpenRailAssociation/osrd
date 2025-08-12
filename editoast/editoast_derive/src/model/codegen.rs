@@ -362,6 +362,7 @@ impl ModelConfig {
         CountImpl {
             model: self.model.clone(),
             table_mod: self.table.clone(),
+            error: self.errors.list.clone(),
         }
         .tokens_if(self.impl_plan.list)
     }

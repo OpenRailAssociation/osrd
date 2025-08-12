@@ -68,7 +68,7 @@ mod tests {
     use super::prelude::*;
 
     #[derive(Debug, Default, Clone, Model, PartialEq, Eq)]
-    #[model(table = database::tables::document, error = DocError)]
+    #[model(table = database::tables::document, error(write = DocError))] // remporary — revert to error = DocError
     #[model(gen(ops = crud, batch_ops = crud, list))]
     struct Document {
         id: i64,
