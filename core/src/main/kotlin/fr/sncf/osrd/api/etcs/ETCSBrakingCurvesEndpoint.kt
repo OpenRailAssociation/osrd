@@ -7,10 +7,9 @@ import fr.sncf.osrd.envelope.part.EnvelopePart
 import fr.sncf.osrd.envelope_sim.EnvelopeProfile
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext
 import fr.sncf.osrd.envelope_sim.etcs.*
-import fr.sncf.osrd.path.implementations.EnvelopeTrainPath
+import fr.sncf.osrd.path.implementations.buildTrainPathFromChunkPath
 import fr.sncf.osrd.path.interfaces.BlockPath
 import fr.sncf.osrd.path.interfaces.TravelledPath
-import fr.sncf.osrd.path.interfaces.makePathProperties
 import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl
 import fr.sncf.osrd.signaling.etcs_level2.ETCS_LEVEL2
 import fr.sncf.osrd.sim_infra.api.*
@@ -68,14 +67,18 @@ class ETCSBrakingCurvesEndpoint(
             // Parse path.
             val chunkPath = makeChunkPath(infra.rawInfra, request.path.trackSectionRanges)
             val routePath = convertRoutePath(infra.rawInfra, request.path.routes)
-            val pathProps = makePathProperties(infra.rawInfra, chunkPath, routePath.toList())
+            val trainPath =
+                buildTrainPathFromChunkPath(
+                    infra.rawInfra,
+                    infra.blockInfra,
+                    chunkPath,
+                    routePath.toList(),
+                )
             val blockPath = convertBlockPath(infra.blockInfra, request.path.blocks)
-            val envelopeSimPath =
-                EnvelopeTrainPath.from(infra.rawInfra, pathProps, electricalProfileMap)
             val powerRestrictionsLegacyMap =
                 parsePowerRestrictions(request.powerRestrictions).toRangeMap()
             val electrificationMap =
-                envelopeSimPath.getElectrificationMap(
+                trainPath.getElectrificationMap(
                     rollingStock.basePowerClass,
                     powerRestrictionsLegacyMap,
                     rollingStock.powerRestrictions,
@@ -88,7 +91,7 @@ class ETCSBrakingCurvesEndpoint(
             val context =
                 EnvelopeSimContext(
                     rollingStock,
-                    envelopeSimPath,
+                    trainPath,
                     2.0,
                     curvesAndConditions.curves,
                     makeETCSContext(
@@ -102,7 +105,7 @@ class ETCSBrakingCurvesEndpoint(
                 )
 
             // Parse mrsp.
-            val mrsp = parseRawMrsp(request.mrsp, Offset(envelopeSimPath.length.meters))
+            val mrsp = parseRawMrsp(request.mrsp, Offset(trainPath.getLength()))
 
             // Compute ETCS braking curves.
             val etcsSimulator = ETCSBrakingSimulatorImpl(context)

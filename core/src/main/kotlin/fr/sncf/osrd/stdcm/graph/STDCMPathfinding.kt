@@ -129,7 +129,7 @@ class STDCMPathfinding(
         val res =
             STDCMPostProcessing(graph)
                 .makeResult(
-                    fullInfra.rawInfra,
+                    fullInfra,
                     path,
                     graph.standardAllowance,
                     rollingStock,

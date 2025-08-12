@@ -1,7 +1,7 @@
 package fr.sncf.osrd.api.standalone_sim
 
 import fr.sncf.osrd.api.*
-import fr.sncf.osrd.path.interfaces.makePathProperties
+import fr.sncf.osrd.path.implementations.buildTrainPathFromChunkPath
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl
 import fr.sncf.osrd.standalone_sim.runStandaloneSimulation
@@ -59,7 +59,13 @@ class SimulationEndpoint(
             // Parse path
             val chunkPath = makeChunkPath(infra.rawInfra, request.path.trackSectionRanges)
             val routePath = convertRoutePath(infra.rawInfra, request.path.routes)
-            val pathProps = makePathProperties(infra.rawInfra, chunkPath, routePath.toList())
+            val pathProps =
+                buildTrainPathFromChunkPath(
+                    infra.rawInfra,
+                    infra.blockInfra,
+                    chunkPath,
+                    routePath.toList(),
+                )
             val blockPath = convertBlockPath(infra.blockInfra, request.path.blocks)
 
             val res =

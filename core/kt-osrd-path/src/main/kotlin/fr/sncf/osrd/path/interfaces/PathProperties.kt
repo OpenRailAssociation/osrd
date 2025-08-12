@@ -3,11 +3,9 @@ package fr.sncf.osrd.path.interfaces
 import fr.sncf.osrd.geom.LineString
 import fr.sncf.osrd.path.implementations.ChunkPath
 import fr.sncf.osrd.path.implementations.PathPropertiesImpl
-import fr.sncf.osrd.path.implementations.buildChunkPath
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra.impl.TemporarySpeedLimitManager
 import fr.sncf.osrd.utils.DistanceRangeMap
-import fr.sncf.osrd.utils.indexing.DirStaticIdxList
 import fr.sncf.osrd.utils.indexing.StaticIdx
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Offset
@@ -77,22 +75,10 @@ interface PathProperties {
  * available in some contexts, such as unit tests. It is, however, required if speed limits are
  * computed along that path.
  */
-fun buildPathPropertiesFrom(
-    infra: RawSignalingInfra,
-    chunks: DirStaticIdxList<TrackChunk>,
-    pathBeginOffset: Offset<BlockPath>,
-    pathEndOffset: Offset<BlockPath>,
-    routes: List<RouteId>? = null,
-): PathProperties {
-    val chunkPath = buildChunkPath(infra, chunks, pathBeginOffset, pathEndOffset)
-    return makePathProperties(infra, chunkPath, routes)
-}
-
-fun makePathProperties(
+internal fun makePathProperties(
     infra: RawSignalingInfra,
     chunkPath: ChunkPath,
     routes: List<RouteId>? = null,
-    temporarySpeedLimitManager: TemporarySpeedLimitManager? = null,
 ): PathProperties {
     return PathPropertiesImpl(infra, chunkPath, routes)
 }

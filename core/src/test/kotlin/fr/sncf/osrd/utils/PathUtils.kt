@@ -1,10 +1,11 @@
 package fr.sncf.osrd.utils
 
+import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.path.implementations.ChunkPath
 import fr.sncf.osrd.path.implementations.buildChunkPath
+import fr.sncf.osrd.path.implementations.buildTrainPathFromChunkPath
 import fr.sncf.osrd.path.interfaces.BlockPath
 import fr.sncf.osrd.path.interfaces.PathProperties
-import fr.sncf.osrd.path.interfaces.buildPathPropertiesFrom
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.utils.indexing.MutableDirStaticIdxArrayList
 import fr.sncf.osrd.utils.indexing.mutableDirStaticIdxArrayListOf
@@ -16,6 +17,7 @@ import fr.sncf.osrd.utils.units.meters
 /** Build a path from track ids */
 fun pathFromTracks(
     infra: RawInfra,
+    blockInfra: BlockInfra,
     trackIds: List<String>,
     dir: Direction,
     start: Distance,
@@ -26,7 +28,18 @@ fun pathFromTracks(
         .map { id -> infra.getTrackSectionFromName(id)!! }
         .flatMap { track -> infra.getTrackSectionChunks(track).dirIter(dir) }
         .forEach { dirChunk -> chunkList.add(dirChunk) }
-    return buildPathPropertiesFrom(infra, chunkList, Length(start), Length(end))
+    val chunkPath = buildChunkPath(infra, chunkList, Offset(start), Offset(end))
+    return buildTrainPathFromChunkPath(infra, blockInfra, chunkPath)
+}
+
+fun pathFromTracks(
+    infra: FullInfra,
+    trackIds: List<String>,
+    dir: Direction,
+    start: Distance,
+    end: Distance,
+): PathProperties {
+    return pathFromTracks(infra.rawInfra, infra.blockInfra, trackIds, dir, start, end)
 }
 
 /** Build a path from route ids */

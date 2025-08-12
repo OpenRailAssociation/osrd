@@ -12,9 +12,8 @@ import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue.TimePerDistance
 import fr.sncf.osrd.envelope_sim.pipelines.maxEffortEnvelopeFrom
 import fr.sncf.osrd.envelope_sim.pipelines.maxSpeedEnvelopeFrom
 import fr.sncf.osrd.envelope_sim_infra.computeMRSP
-import fr.sncf.osrd.path.implementations.EnvelopeTrainPath
+import fr.sncf.osrd.path.implementations.buildTrainPathFromChunkPath
 import fr.sncf.osrd.path.interfaces.TravelledPath
-import fr.sncf.osrd.path.interfaces.makePathProperties
 import fr.sncf.osrd.path.legacy_objects.ElectricalProfileMapping
 import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowanceDistribution
@@ -54,15 +53,14 @@ class StandaloneSimulationTest {
             .map { infra.blockInfra.getBlockFromName("block.${md5(it)}")!! }
 
     private val chunkPath = pathFromRoutes(infra.rawInfra, routes)
-    private val pathProps = makePathProperties(infra.rawInfra, chunkPath, routes)
-    private val pathLength = pathProps.getLength()
+    private val trainPath =
+        buildTrainPathFromChunkPath(infra.rawInfra, infra.blockInfra, chunkPath, routes)
+    private val pathLength = trainPath.getLength()
 
     // Build a reference max speed envelope
-    private val mrsp = computeMRSP(pathProps, rollingStock, true, null, null)
-    private val envelopeSimPath =
-        EnvelopeTrainPath.from(infra.rawInfra, pathProps, ElectricalProfileMapping())
+    private val mrsp = computeMRSP(trainPath, rollingStock, true, null, null)
     private val electrificationMap =
-        envelopeSimPath.getElectrificationMap(
+        trainPath.getElectrificationMap(
             rollingStock.basePowerClass,
             ImmutableRangeMap.of(),
             rollingStock.powerRestrictions,
@@ -71,7 +69,7 @@ class StandaloneSimulationTest {
     private val curvesAndConditions =
         rollingStock.mapTractiveEffortCurves(electrificationMap, Comfort.STANDARD)
     private var context =
-        EnvelopeSimContext(rollingStock, envelopeSimPath, 2.0, curvesAndConditions.curves)
+        EnvelopeSimContext(rollingStock, trainPath, 2.0, curvesAndConditions.curves)
     private val maxSpeedEnvelope = maxSpeedEnvelopeFrom(context, emptyList(), mrsp)
     private val maxEffortEnvelope = maxEffortEnvelopeFrom(context, 0.0, maxSpeedEnvelope)
 
@@ -81,7 +79,7 @@ class StandaloneSimulationTest {
         val res =
             runStandaloneSimulation(
                 infra,
-                pathProps,
+                trainPath,
                 chunkPath,
                 routes.toIdxList(),
                 blocks.toIdxList(),
@@ -217,7 +215,7 @@ class StandaloneSimulationTest {
         val res =
             runStandaloneSimulation(
                 infra,
-                pathProps,
+                trainPath,
                 chunkPath,
                 routes.toIdxList(),
                 blocks.toIdxList(),
@@ -476,7 +474,7 @@ class StandaloneSimulationTest {
             )
         val offsetEndSafetySpeed = 5_000.0
         val mrspWithSafetySpeed =
-            computeMRSP(pathProps, rollingStock, true, null, null, safetySpeeds)
+            computeMRSP(trainPath, rollingStock, true, null, null, safetySpeeds)
         assertEquals(mrsp.endPos, mrspWithSafetySpeed.endPos)
         var position = 0.0
         while (position < mrsp.endPos) {
