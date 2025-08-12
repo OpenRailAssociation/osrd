@@ -281,7 +281,7 @@ export const isTooFast = (
 
   const toCheckPathItemIds = new Set(timetableItem.margins?.boundaries);
   timetableItem.schedule?.forEach((schedule) => {
-    if (schedule.arrival || schedule.stop_for) {
+    if (schedule.arrival) {
       toCheckPathItemIds.add(schedule.at);
     }
   });
