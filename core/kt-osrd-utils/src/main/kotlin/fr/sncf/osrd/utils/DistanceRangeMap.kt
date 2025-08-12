@@ -70,6 +70,12 @@ interface DistanceRangeMap<T> : Iterable<DistanceRangeMap.RangeMapEntry<T>> {
 
     /** Clear the map */
     fun clear()
+
+    /**
+     * Keeps the same keys, but applies the mapping to each value. Returns a copy, this instance
+     * isn't changed.
+     */
+    fun <U> mapValues(mapping: (T) -> U): DistanceRangeMap<U>
 }
 
 fun <T> distanceRangeMapOf(vararg entries: DistanceRangeMap.RangeMapEntry<T>): DistanceRangeMap<T> {

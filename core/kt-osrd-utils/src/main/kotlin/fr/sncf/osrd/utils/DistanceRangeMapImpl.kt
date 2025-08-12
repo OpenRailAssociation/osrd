@@ -295,6 +295,12 @@ data class DistanceRangeMapImpl<T>(
         values.clear()
     }
 
+    override fun <U> mapValues(mapping: (T) -> U): DistanceRangeMap<U> {
+        return distanceRangeMapOf(
+            asList().map { DistanceRangeMap.RangeMapEntry(it.lower, it.upper, mapping(it.value)) }
+        )
+    }
+
     /** Merges adjacent values, removes 0-length ranges */
     private fun mergeAdjacent() {
         fun remove(i: Int) {
@@ -372,6 +378,18 @@ data class DistanceRangeMapImpl<T>(
     /** Asserts that the internal state is consistent */
     private fun validate() {
         assert(bounds.size == values.size + 1 || (bounds.size == 0 && values.isEmpty()))
+    }
+
+    /** Formats the map like so: `[bound1] value1 [bound2] value2 [bound3]`. */
+    override fun toString(): String {
+        val result = StringBuilder()
+        for (i in 0..<bounds.size) {
+            result.append("[${bounds[i]}] ")
+            if (i < values.size) {
+                result.append("${values[i]} ")
+            }
+        }
+        return result.toString()
     }
 
     companion object {
