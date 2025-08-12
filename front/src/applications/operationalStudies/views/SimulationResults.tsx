@@ -10,7 +10,7 @@ import SimulationWarpedMap from 'common/Map/WarpedMap/SimulationWarpedMap';
 import ResizableSection from 'common/ResizableSection';
 import ManchetteWithSpaceTimeChartWrapper, {
   MANCHETTE_WITH_SPACE_TIME_CHART_DEFAULT_HEIGHT,
-} from 'modules/simulationResult/components/ManchetteWithSpaceTimeChart/ManchetteWithSpaceTimeChart';
+} from 'modules/simulationResult/components/ManchetteWithSpaceTimeChart/SpaceTimeChartWrapper';
 import SimulationResultsMap from 'modules/simulationResult/components/SimulationResultsMap';
 import useGetProjectedTrainOperationalPoints from 'modules/simulationResult/components/SpaceTimeChart/useGetProjectedTrainOperationalPoints';
 import useProjectedConflicts from 'modules/simulationResult/components/SpaceTimeChart/useProjectedConflicts';

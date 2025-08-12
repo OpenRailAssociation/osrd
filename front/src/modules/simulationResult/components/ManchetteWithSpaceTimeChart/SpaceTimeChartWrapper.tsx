@@ -71,7 +71,7 @@ import {
 } from 'utils/trainId';
 
 import SettingsPanel from './SettingsPanel';
-import getPathStyle from './utils';
+import { getPathStyle } from './utils';
 import { Spinner } from '../../../../common/Loaders';
 import ManchetteMenuButton from '../SpaceTimeChart/ManchetteMenuButton';
 import ProjectionLoadingMessage from '../SpaceTimeChart/ProjectionLoadingMessage';
@@ -118,7 +118,7 @@ type ManchetteWithSpaceTimeChartProps = {
 
 export const MANCHETTE_WITH_SPACE_TIME_CHART_DEFAULT_HEIGHT = 561;
 
-const ManchetteWithSpaceTimeChartWrapper = ({
+const SpaceTimeChartWrapper = ({
   operationalPoints,
   projectPathTrainResult,
   waypointsPanelData,
@@ -691,4 +691,4 @@ const ManchetteWithSpaceTimeChartWrapper = ({
   );
 };
 
-export default ManchetteWithSpaceTimeChartWrapper;
+export default SpaceTimeChartWrapper;
