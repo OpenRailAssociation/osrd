@@ -6,7 +6,6 @@ import { compact } from 'lodash';
 import type { MapLayerMouseEvent } from 'maplibre-gl';
 import type { MapRef } from 'react-map-gl/maplibre';
 
-import captureMap from 'applications/operationalStudies/helpers/captureMap';
 import type { MapPathProperties } from 'applications/operationalStudies/types';
 import BaseMap from 'common/Map/BaseMap';
 import MapButtons from 'common/Map/Buttons/MapButtons';
@@ -20,35 +19,30 @@ import type { Viewport } from 'reducers/globalMap/types';
 import { useAppDispatch } from 'store';
 import { getMapMouseEventNearestFeature } from 'utils/mapHelper';
 
-import OPERATIONAL_POINT_LAYERS from './consts';
 import ItineraryLayer from './ManageTimetableItemMap/ItineraryLayer';
 import ItineraryMarkers, {
   type MarkerInformation,
 } from './ManageTimetableItemMap/ItineraryMarkers';
 import type { FeatureInfoClick, SuggestedOP } from './types';
 
+const OPERATIONAL_POINT_LAYERS = [
+  'chartis/osrd_operational_point/geo',
+  'chartis/osrd_operational_point_yardname/geo',
+  'chartis/osrd_operational_point_name_short/geo',
+  'chartis/osrd_operational_point_name/geo',
+  'chartis/osrd_operational_point_kp/geo',
+];
+
 type MapProps = {
   pathProperties?: MapPathProperties;
-  setMapCanvas?: (mapCanvas: string) => void;
-  hideAttribution?: boolean;
-  hideItinerary?: boolean;
-  preventPointSelection?: boolean;
-  mapId?: string;
   simulationPathSteps: MarkerInformation[];
   pathStepsAndSuggestedOPs?: SuggestedOP[];
-  isFeasible?: boolean;
 };
 
-const Map = ({
+const ManageTimetableItemMap = ({
   pathProperties,
-  setMapCanvas,
-  hideAttribution = false,
-  hideItinerary = false,
-  preventPointSelection = false,
-  mapId = 'map-container',
   simulationPathSteps,
   pathStepsAndSuggestedOPs,
-  isFeasible = true,
   children,
 }: PropsWithChildren<MapProps>) => {
   const dispatch = useAppDispatch();
@@ -94,8 +88,6 @@ const Map = ({
   };
 
   const onFeatureClick = (e: MapLayerMouseEvent) => {
-    if (preventPointSelection) return;
-
     const result = getMapMouseEventNearestFeature(e, {
       layersId: [
         'chartis/tracks-geo/main',
@@ -115,7 +107,6 @@ const Map = ({
   };
 
   const onMoveGetFeature = (e: MapLayerMouseEvent) => {
-    if (preventPointSelection) return;
     const result = getMapMouseEventNearestFeature(e, {
       layersId: [
         'chartis/tracks-geo/main',
@@ -188,17 +179,13 @@ const Map = ({
         mapSettings={mapSettings}
       />
       <BaseMap
-        mapId={mapId}
+        mapId="map-container"
         mapRef={mapRef}
-        cursor={preventPointSelection ? 'default' : 'pointer'}
-        hideAttribution={hideAttribution}
+        cursor="pointer"
         hoveredOperationalPointId={hoveredOperationalPointId}
         infraId={infraID}
         interactiveLayerIds={interactiveLayerIds}
         onClick={onFeatureClick}
-        onIdle={() => {
-          captureMap(viewport, mapId, setMapCanvas, pathGeometry);
-        }}
         onMouseMove={onMoveGetFeature}
         mapSettings={mapSettings}
         updatePartialViewPort={updateViewportChange}
@@ -215,8 +202,6 @@ const Map = ({
         <ItineraryLayer
           layerOrder={LAYER_GROUPS_ORDER[LAYERS.PATH.GROUP]}
           geometry={pathGeometry}
-          hideItineraryLine={hideItinerary}
-          isFeasible={isFeasible}
         />
         {infraID && (
           <ItineraryMarkers
@@ -233,4 +218,4 @@ const Map = ({
   );
 };
 
-export default Map;
+export default ManageTimetableItemMap;
