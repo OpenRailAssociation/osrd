@@ -36,7 +36,6 @@ type MapProps = {
   mapId?: string;
   simulationPathSteps: MarkerInformation[];
   pathStepsAndSuggestedOPs?: SuggestedOP[];
-  showStdcmAssets?: boolean;
   isFeasible?: boolean;
 };
 
@@ -49,7 +48,6 @@ const Map = ({
   mapId = 'map-container',
   simulationPathSteps,
   pathStepsAndSuggestedOPs,
-  showStdcmAssets = false,
   isFeasible = true,
   children,
 }: PropsWithChildren<MapProps>) => {
@@ -205,7 +203,7 @@ const Map = ({
         mapSettings={mapSettings}
         updatePartialViewPort={updateViewportChange}
       >
-        {!showStdcmAssets && featureInfoClick && (
+        {featureInfoClick && (
           <AddPathStepPopup
             infraId={infraID}
             pathProperties={pathProperties}
@@ -218,14 +216,12 @@ const Map = ({
           layerOrder={LAYER_GROUPS_ORDER[LAYERS.PATH.GROUP]}
           geometry={pathGeometry}
           hideItineraryLine={hideItinerary}
-          showStdcmAssets={showStdcmAssets}
           isFeasible={isFeasible}
         />
         {infraID && (
           <ItineraryMarkers
             simulationPathSteps={simulationPathSteps}
             pathStepsAndSuggestedOPs={pathStepsAndSuggestedOPs}
-            showStdcmAssets={showStdcmAssets}
             infraId={infraID}
           />
         )}

@@ -7,7 +7,7 @@ type ItineraryLayerProps = {
   layerOrder: number;
   geometry?: GeoJsonLineString;
   hideItineraryLine?: boolean;
-  showStdcmAssets: boolean;
+  showStdcmAssets?: boolean;
   isFeasible?: boolean;
 };
 
@@ -19,7 +19,7 @@ export default function ItineraryLayer({
   layerOrder,
   geometry,
   hideItineraryLine = false,
-  showStdcmAssets,
+  showStdcmAssets = false,
   isFeasible,
 }: ItineraryLayerProps) {
   if (geometry) {
