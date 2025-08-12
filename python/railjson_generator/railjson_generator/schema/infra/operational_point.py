@@ -11,19 +11,25 @@ class OperationalPoint:
     parts: List
     weight: Optional[int]
     uic: int
+    ch: str
+    id: str
 
     def __init__(
         self,
         label: str,
+        id: Optional[str] = None,
         trigram: Optional[str] = None,
         uic: int = 8700,
         weight: Optional[int] = None,
+        ch: str = "BV",
     ):
         self.label = label
         self.trigram = trigram or label[:3].upper()
         self.parts = list()
         self.uic = uic
         self.weight = weight
+        self.id = id or label
+        self.ch = ch
 
     def add_part(self, track, offset):
         op_part = OperationalPointPart(self, offset)

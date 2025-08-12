@@ -77,19 +77,17 @@ class Infra:
         parts_per_op = defaultdict(list)
         for track in self.track_sections:
             for op_part in track.operational_points:
-                parts_per_op[op_part.operational_point.label].append(
-                    op_part.to_rjs(track)
-                )
+                parts_per_op[op_part.operational_point.id].append(op_part.to_rjs(track))
         ops = []
         for op in self.operational_points:
             new_op = infra.OperationalPoint(
-                id=op.label,
-                parts=parts_per_op[op.label],
+                id=op.id,
+                parts=parts_per_op[op.id],
                 extensions={  # pyright: ignore[reportCallIssue] - 'extensions' exists but is registered through 'register_extension'
                     "sncf": infra.OperationalPointSncfExtension(
                         ci=int(str(op.uic)[2:]),  # remove two first digits of UIC code
-                        ch="BV",
-                        ch_short_label="BV",
+                        ch_short_label=op.ch,
+                        ch=op.ch,
                         ch_long_label="0",
                         trigram=op.trigram,
                     ),
@@ -118,8 +116,9 @@ class Infra:
         ]:
             seen_ids = set()
             for instance in instance_list:
-                if instance.label in seen_ids:
+                unique_id = getattr(instance, "id", instance.label)
+                if unique_id in seen_ids:
                     duplicates.append(instance)
                 else:
-                    seen_ids.add(instance.label)
+                    seen_ids.add(unique_id)
         return duplicates
