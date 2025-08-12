@@ -49,7 +49,7 @@ class ElectricalProfileMappingTest {
         profileMap.parseRJS(rjsElectricalProfiles)
         val path =
             pathFromTracks(
-                infra.rawInfra,
+                infra,
                 listOf("TA0", "TA1"),
                 Direction.INCREASING,
                 1_000.meters,

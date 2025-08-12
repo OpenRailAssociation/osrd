@@ -6,7 +6,7 @@ import fr.sncf.osrd.api.pathfinding.PathfindingBlockSuccess
 import fr.sncf.osrd.api.pathfinding.runPathfinding
 import fr.sncf.osrd.conflicts.SpacingRequirement
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue
-import fr.sncf.osrd.path.interfaces.makePathProperties
+import fr.sncf.osrd.path.implementations.buildTrainPathFromChunkPath
 import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowanceDistribution
 import fr.sncf.osrd.sim_infra.api.RawInfra
@@ -456,7 +456,8 @@ fun makeRequirementsFromPath(
             as PathfindingBlockSuccess
 
     val chunkPath = makeChunkPath(infra.rawInfra, path.trackSectionRanges)
-    val pathProperties = makePathProperties(infra.rawInfra, chunkPath, routes = listOf())
+    val pathProperties =
+        buildTrainPathFromChunkPath(infra.rawInfra, infra.blockInfra, chunkPath, routes = listOf())
 
     val sim =
         runStandaloneSimulation(

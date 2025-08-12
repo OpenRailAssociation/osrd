@@ -2,7 +2,6 @@ package fr.sncf.osrd.sim_infra_adapter
 
 import fr.sncf.osrd.geom.LineString
 import fr.sncf.osrd.geom.Point
-import fr.sncf.osrd.parseRJSInfra
 import fr.sncf.osrd.path.implementations.buildTrainPathFromBlock
 import fr.sncf.osrd.railjson.schema.common.graph.ApplicableDirection
 import fr.sncf.osrd.railjson.schema.geom.RJSLineString
@@ -20,6 +19,7 @@ import fr.sncf.osrd.train.TestTrains.MAX_SPEED
 import fr.sncf.osrd.utils.Direction
 import fr.sncf.osrd.utils.DistanceRangeMap.RangeMapEntry
 import fr.sncf.osrd.utils.Helpers
+import fr.sncf.osrd.utils.Helpers.fullInfraFromRJS
 import fr.sncf.osrd.utils.indexing.StaticIdx
 import fr.sncf.osrd.utils.pathFromTracks
 import fr.sncf.osrd.utils.units.Offset
@@ -51,7 +51,7 @@ class PathPropertiesTests {
             if (track.id.equals("TA1")) // 1.950km long
              track.slopes = listOf(RJSSlope(1_000.0, 1_950.0, -5.0))
         }
-        val infra = parseRJSInfra(rjsInfra)
+        val infra = fullInfraFromRJS(rjsInfra)
 
         val path =
             pathFromTracks(
@@ -115,7 +115,7 @@ class PathPropertiesTests {
                 null,
             )
         )
-        val infra = parseRJSInfra(rjsInfra)
+        val infra = fullInfraFromRJS(rjsInfra)
         val path =
             pathFromTracks(
                 infra,
@@ -126,7 +126,7 @@ class PathPropertiesTests {
             )
         val opIdsIdxWithOffset =
             path.getOperationalPointParts().map { op ->
-                Pair(infra.getOperationalPointPartOpId(op.value), op.offset)
+                Pair(infra.rawInfra.getOperationalPointPartOpId(op.value), op.offset)
             }
         assertEquals(
             listOf(Pair("new_op_1", Offset(0.meters)), Pair("new_op_2", Offset(10_000.meters))),
@@ -189,7 +189,7 @@ class PathPropertiesTests {
                     null,
                 ),
             )
-        val infra = parseRJSInfra(rjsInfra)
+        val infra = fullInfraFromRJS(rjsInfra)
         val path =
             pathFromTracks(
                 infra,
@@ -200,7 +200,7 @@ class PathPropertiesTests {
             )
         val opIdsIdxWithOffset =
             path.getOperationalPointParts().map { op ->
-                Pair(infra.getOperationalPointPartOpId(op.value), op.offset)
+                Pair(infra.rawInfra.getOperationalPointPartOpId(op.value), op.offset)
             }
         assertEquals(
             listOf(
@@ -221,7 +221,7 @@ class PathPropertiesTests {
             )
         val opIdsIdxWithOffsetBackward =
             pathBackward.getOperationalPointParts().map { op ->
-                Pair(infra.getOperationalPointPartOpId(op.value), op.offset)
+                Pair(infra.rawInfra.getOperationalPointPartOpId(op.value), op.offset)
             }
         assertEquals(
             listOf(
@@ -252,7 +252,7 @@ class PathPropertiesTests {
         for (track in rjsInfra.trackSections) if (track.id.equals("TA0"))
             track.curves =
                 listOf(RJSCurve(0.0, 1_000.0, 5_000.0), RJSCurve(1_000.0, 2_000.0, 10_000.0))
-        val infra = parseRJSInfra(rjsInfra)
+        val infra = fullInfraFromRJS(rjsInfra)
         val pathBackward =
             pathFromTracks(infra, listOf("TA0"), Direction.DECREASING, 500.meters, 1_500.meters)
         val slopesBackward = pathBackward.getCurves()
@@ -285,7 +285,7 @@ class PathPropertiesTests {
             track.slopes = listOf(RJSSlope(0.0, 1_000.0, 5.0), RJSSlope(1_000.0, 2_000.0, 15.0))
             track.curves = listOf(RJSCurve(0.0, 1_000.0, 5_000.0))
         }
-        val infra = parseRJSInfra(rjsInfra)
+        val infra = fullInfraFromRJS(rjsInfra)
         val pathBackward =
             pathFromTracks(infra, listOf("TA0"), Direction.DECREASING, 500.meters, 1_500.meters)
         val slopesBackward = pathBackward.getGradients()
@@ -317,7 +317,7 @@ class PathPropertiesTests {
             if (track.id.equals("TA1"))
                 track.geo = RJSLineString.make(listOf(1.0, 2.0, 2.0), listOf(1.0, 1.0, 1.95))
         }
-        val infra = parseRJSInfra(rjsInfra)
+        val infra = fullInfraFromRJS(rjsInfra)
 
         val path =
             pathFromTracks(
@@ -397,7 +397,7 @@ class PathPropertiesTests {
                     ),
                 ),
             )
-        val infra = parseRJSInfra(rjsInfra)
+        val infra = fullInfraFromRJS(rjsInfra)
 
         val path =
             pathFromTracks(
@@ -457,7 +457,7 @@ class PathPropertiesTests {
                         RJSLoadingGaugeLimit(1_000.0, 1_950.0, RJSLoadingGaugeType.GC),
                     )
         }
-        val infra = parseRJSInfra(rjsInfra)
+        val infra = fullInfraFromRJS(rjsInfra)
 
         val pathBackward =
             pathFromTracks(
