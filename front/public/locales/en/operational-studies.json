@@ -122,8 +122,6 @@
       },
       "uniqueTrainSchedule": "Unique train schedule"
     },
-    "macroscopic": "MACRO",
-    "microscopic": "MICRO",
     "moreDetails": "Display more details",
     "noElectricalProfileSet": "No electrical profile",
     "occurrenceMenu": {

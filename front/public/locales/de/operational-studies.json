@@ -108,8 +108,6 @@
       },
       "uniqueTrainSchedule": "Einzelner Zug"
     },
-    "macroscopic": "MAKRO",
-    "microscopic": "MIKRO",
     "moreDetails": "Mehr Details anzeigen",
     "noElectricalProfileSet": "Kein Bahnstromprofil",
     "pacedTrain": {
