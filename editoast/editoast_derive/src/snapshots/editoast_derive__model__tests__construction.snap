@@ -510,6 +510,7 @@ impl crate::models::Delete for Document {
 }
 #[automatically_derived]
 impl crate::models::prelude::List for Document {
+    type Error = editoast_models::model::Error;
     #[tracing::instrument(
         name = "model:list<Document>",
         skip_all,
@@ -525,7 +526,7 @@ impl crate::models::prelude::List for Document {
     async fn list(
         conn: &mut database::DbConnection,
         settings: crate::models::prelude::SelectionSettings<Self>,
-    ) -> crate::error::Result<Vec<Self>> {
+    ) -> std::result::Result<Vec<Self>, Self::Error> {
         use diesel::QueryDsl;
         use diesel_async::RunQueryDsl;
         use futures_util::stream::TryStreamExt;
@@ -548,14 +549,15 @@ impl crate::models::prelude::List for Document {
             tracing::Span::current().record("offset", offset);
             query = query.offset(offset);
         }
-        let results: Vec<Document> = query
+        query
             .select((dsl::id, dsl::content_type, dsl::data))
             .load_stream::<DocumentRow>(conn.write().await.deref_mut())
-            .await?
+            .await
+            .map_err(|e| Self::Error::from(editoast_models::model::Error::from(e)))?
             .map_ok(<Document as crate::models::prelude::Model>::from_row)
-            .try_collect()
-            .await?;
-        Ok(results)
+            .try_collect::<Vec<_>>()
+            .await
+            .map_err(|e| Self::Error::from(editoast_models::model::Error::from(e)))
     }
 }
 #[automatically_derived]

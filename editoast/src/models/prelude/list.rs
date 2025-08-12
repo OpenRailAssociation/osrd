@@ -186,11 +186,13 @@ impl<M: Model + 'static> SelectionSettings<M> {
 /// You can implement this type manually but it is recommended to use the `Model`
 /// derive macro instead.
 pub trait List: Model {
+    type Error: std::error::Error + From<editoast_models::model::Error> + Send;
+
     /// Lists the objects that match the provided settings
     async fn list(
         conn: &mut DbConnection,
         settings: SelectionSettings<Self>,
-    ) -> crate::error::Result<Vec<Self>>;
+    ) -> Result<Vec<Self>, Self::Error>;
 }
 
 /// Describe how we can count the number of occurrences of the [Model]
@@ -199,10 +201,7 @@ pub trait List: Model {
 /// You can implement this type manually but it is recommended to use the `Model`
 /// derive macro instead.
 pub trait Count: Model {
-    type Error: std::error::Error
-        + From<editoast_models::model::Error>
-        + Send
-        + crate::error::EditoastError; // temporary bound
+    type Error: std::error::Error + From<editoast_models::model::Error> + Send;
 
     /// Counts the number of objects that match the provided settings
     async fn count(
@@ -214,7 +213,11 @@ pub trait Count: Model {
 /// A trait that combines [List] and [Count] into a single function [ListAndCount::list_and_count]
 ///
 /// This trait is automatically implemented for any type that implements both [List] and [Count].
-pub trait ListAndCount: Model {
+pub trait ListAndCount: Model + List + Count
+where
+    // in practice, they're the same when generated using derive(Model)
+    <Self as List>::Error: From<<Self as Count>::Error>,
+{
     /// Lists and counts the objects that match the provided settings
     ///
     /// # Performance
@@ -230,14 +233,17 @@ pub trait ListAndCount: Model {
     async fn list_and_count(
         conn: &mut DbConnection,
         settings: SelectionSettings<Self>,
-    ) -> crate::error::Result<(Vec<Self>, u64)>;
+    ) -> Result<(Vec<Self>, u64), <Self as List>::Error>;
 }
 
-impl<M: Model + List + Count> ListAndCount for M {
+impl<M: Model + List + Count> ListAndCount for M
+where
+    <M as List>::Error: From<<M as Count>::Error>,
+{
     async fn list_and_count(
         conn: &mut DbConnection,
         settings: SelectionSettings<Self>,
-    ) -> crate::error::Result<(Vec<Self>, u64)> {
+    ) -> Result<(Vec<Self>, u64), <Self as List>::Error> {
         let count = Self::count(conn, settings.clone()).await?;
         let list = Self::list(conn, settings).await?;
         Ok((list, count))

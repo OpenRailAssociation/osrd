@@ -214,6 +214,7 @@ impl crate::models::Delete for Timetable {
 }
 #[automatically_derived]
 impl crate::models::prelude::List for Timetable {
+    type Error = editoast_models::model::Error;
     #[tracing::instrument(
         name = "model:list<Timetable>",
         skip_all,
@@ -229,7 +230,7 @@ impl crate::models::prelude::List for Timetable {
     async fn list(
         conn: &mut database::DbConnection,
         settings: crate::models::prelude::SelectionSettings<Self>,
-    ) -> crate::error::Result<Vec<Self>> {
+    ) -> std::result::Result<Vec<Self>, Self::Error> {
         use diesel::QueryDsl;
         use diesel_async::RunQueryDsl;
         use futures_util::stream::TryStreamExt;
@@ -252,14 +253,15 @@ impl crate::models::prelude::List for Timetable {
             tracing::Span::current().record("offset", offset);
             query = query.offset(offset);
         }
-        let results: Vec<Timetable> = query
+        query
             .select((dsl::id,))
             .load_stream::<TimetableRow>(conn.write().await.deref_mut())
-            .await?
+            .await
+            .map_err(|e| Self::Error::from(editoast_models::model::Error::from(e)))?
             .map_ok(<Timetable as crate::models::prelude::Model>::from_row)
-            .try_collect()
-            .await?;
-        Ok(results)
+            .try_collect::<Vec<_>>()
+            .await
+            .map_err(|e| Self::Error::from(editoast_models::model::Error::from(e)))
     }
 }
 #[automatically_derived]

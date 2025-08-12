@@ -6,6 +6,7 @@ pub(crate) struct ListImpl {
     pub(super) table_mod: syn::Path,
     pub(super) row: syn::Ident,
     pub(super) columns: Vec<syn::Ident>,
+    pub(super) error: syn::Path,
 }
 
 impl ToTokens for ListImpl {
@@ -15,12 +16,15 @@ impl ToTokens for ListImpl {
             table_mod,
             row,
             columns,
+            error,
         } = self;
         let span_name = format!("model:list<{model}>");
 
         tokens.extend(quote! {
             #[automatically_derived]
             impl crate::models::prelude::List for #model {
+                type Error = #error;
+
                 #[tracing::instrument(name = #span_name, skip_all, err, fields(
                     nb_filters = settings.filters.len(),
                     nb_sorts = settings.sorts.len(),
@@ -31,7 +35,7 @@ impl ToTokens for ListImpl {
                 async fn list(
                     conn: &mut database::DbConnection,
                     settings: crate::models::prelude::SelectionSettings<Self>,
-                ) -> crate::error::Result<Vec<Self>> {
+                ) -> std::result::Result<Vec<Self>, Self::Error> {
                     use diesel::QueryDsl;
                     use diesel_async::RunQueryDsl;
                     use futures_util::stream::TryStreamExt;
@@ -60,15 +64,15 @@ impl ToTokens for ListImpl {
                         query = query.offset(offset);
                     }
 
-                    let results: Vec<#model> = query
+                    query
                         .select((#(dsl::#columns,)*))
                         .load_stream::<#row>(conn.write().await.deref_mut())
-                        .await?
+                        .await
+                        .map_err(|e| Self::Error::from(editoast_models::model::Error::from(e)))?
                         .map_ok(<#model as crate::models::prelude::Model>::from_row)
-                        .try_collect()
-                        .await?;
-
-                    Ok(results)
+                        .try_collect::<Vec<_>>()
+                        .await
+                        .map_err(|e| Self::Error::from(editoast_models::model::Error::from(e)))
                 }
             }
 

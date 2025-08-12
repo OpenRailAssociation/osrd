@@ -354,6 +354,7 @@ impl ModelConfig {
             table_mod: self.table.clone(),
             row: self.row.name.clone(),
             columns: self.columns().cloned().collect(),
+            error: self.errors.list.clone(),
         }
         .tokens_if(self.impl_plan.list)
     }
