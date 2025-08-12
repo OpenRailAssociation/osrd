@@ -5,8 +5,10 @@ import com.google.common.collect.RangeMap
 import fr.sncf.osrd.path.interfaces.*
 import fr.sncf.osrd.path.legacy_objects.ElectricalProfileMapping
 import fr.sncf.osrd.sim_infra.api.*
+import fr.sncf.osrd.sim_infra.impl.makeDirChunk
 import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.distanceRangeMapOf
+import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 
@@ -113,5 +115,27 @@ data class TrainPathNoBacktrack(
         res = res.subMap(from.distance, to.distance)
         res.shiftPositions(-from.distance)
         return res
+    }
+
+    /** *Debugging purpose*. We try to find the actual names of underlying objects. */
+    override fun toString(): String {
+        data class PrintableRange<T>(val from: Distance, val to: Distance, val value: T) {
+            override fun toString(): String {
+                return "($value[$from,$to])"
+            }
+        }
+        fun <T, U> mapToPrintable(
+            map: DistanceRangeMap<GenericLinearRange<T, U>>?,
+            toPrintable: (T) -> String,
+        ): String {
+            return map?.mapValues {
+                    PrintableRange(it.from.distance, it.to.distance, toPrintable(it.value))
+                }
+                .toString()
+        }
+        val chunks = mapToPrintable(chunks) { makeDirChunk(rawInfra, it).toString() }
+        val blocks = mapToPrintable(blocks) { "block=${it.index.toInt()}" }
+        val routes = mapToPrintable(routes) { rawInfra.getRouteName(it) }
+        return "$chunks ; blocks=$blocks ; routes=$routes"
     }
 }
