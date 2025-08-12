@@ -2,8 +2,8 @@ import { readFile } from 'node:fs/promises';
 
 import { describe, expect, test, vi } from 'vitest';
 
-import { convertNgeDtoToOsrd } from 'applications/operationalStudies/components/MacroEditor/ngeToOsrd';
-import type { NetzgrafikDto } from 'applications/operationalStudies/components/NGE/types';
+import type { NetzgrafikDto } from '../../NGE/types';
+import { convertNgeDtoToOsrd } from '../ngeToOsrd';
 
 async function readJsonFile(path: string): Promise<unknown> {
   return JSON.parse(await readFile(new URL(path, import.meta.url).pathname, 'utf-8'));

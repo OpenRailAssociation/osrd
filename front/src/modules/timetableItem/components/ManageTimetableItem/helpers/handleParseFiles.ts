@@ -1,9 +1,9 @@
 import type { TFunction } from 'i18next';
 import type { Dispatch } from 'redux';
 
-import { convertNgeDtoToOsrd } from 'applications/operationalStudies/components/MacroEditor/ngeToOsrd';
-import type { NetzgrafikDto } from 'applications/operationalStudies/components/NGE/types';
 import type { TimetableJsonPayload } from 'applications/operationalStudies/types';
+import { convertNgeDtoToOsrd } from 'applications/operationalStudies/views/Scenario/components/MacroEditor/ngeToOsrd';
+import type { NetzgrafikDto } from 'applications/operationalStudies/views/Scenario/components/NGE/types';
 import { type TrainSchedule } from 'common/api/osrdEditoastApi';
 import { setFailure } from 'reducers/main';
 import { castErrorToFailure } from 'utils/error';
