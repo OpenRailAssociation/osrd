@@ -8,7 +8,7 @@ import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
-import { EditedElementContainerContext } from 'applications/operationalStudies/components/Scenario/EditedElementContainerContext';
+import { EditedElementContainerContext } from 'applications/operationalStudies/views/Scenario/components/EditedElementContainerContext';
 import {
   osrdEditoastApi,
   type PacedTrain,

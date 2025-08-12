@@ -13,9 +13,9 @@ import {
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
-import BoardWrapper from 'applications/operationalStudies/components/Scenario/BoardWrapper';
 import { MANAGE_TIMETABLE_ITEM_TYPES } from 'applications/operationalStudies/consts';
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
+import BoardWrapper from 'applications/operationalStudies/views/Scenario/components/BoardWrapper';
 import { osrdEditoastApi, type InfraState } from 'common/api/osrdEditoastApi';
 import DeleteModal from 'common/BootstrapSNCF/ModalSNCF/DeleteModal';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';

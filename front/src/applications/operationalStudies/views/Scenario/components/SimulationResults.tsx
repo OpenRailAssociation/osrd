@@ -34,7 +34,7 @@ import {
 } from 'utils/trainId';
 import { mapBy } from 'utils/types';
 
-import BoardWrapper from '../../../components/Scenario/BoardWrapper';
+import BoardWrapper from './BoardWrapper';
 import { useScenarioContext } from '../../../hooks/useScenarioContext';
 import useSimulationResults from '../../../hooks/useSimulationResults';
 import type { Board } from '../../../types';
