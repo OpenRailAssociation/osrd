@@ -9,7 +9,7 @@ import type { StdcmSimulationOutputs } from 'applications/stdcm/types';
 import { hasResults } from 'applications/stdcm/utils/simulationOutputUtils';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import ResizableSection from 'common/ResizableSection';
-import ManchetteWithSpaceTimeChartWrapper, {
+import SpaceTimeChartWrapper, {
   MANCHETTE_WITH_SPACE_TIME_CHART_DEFAULT_HEIGHT,
 } from 'modules/simulationResult/components/SpaceTimeChart/SpaceTimeChartWrapper';
 import SpeedSpaceChartContainer from 'modules/simulationResult/components/SpeedSpaceChart/SpeedSpaceChartContainer';
@@ -66,7 +66,7 @@ const StdcmDebugResults = ({ simulationOutputs }: StdcmDebugResultsProps) => {
           >
             <p className="mt-2 mb-3 ml-4 font-weight-bold">{t('spaceTimeGraphic')}</p>
             <div className="chart-container mt-2">
-              <ManchetteWithSpaceTimeChartWrapper
+              <SpaceTimeChartWrapper
                 operationalPoints={pathProperties.manchetteOperationalPoints}
                 selectedTrainId={STDCM_TRAIN_TIMETABLE_ID}
                 projectPathTrainResult={projectedData.spaceTimeData}

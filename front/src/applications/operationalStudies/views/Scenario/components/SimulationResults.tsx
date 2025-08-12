@@ -8,7 +8,7 @@ import { type Conflict } from 'common/api/osrdEditoastApi';
 import SimulationWarpedMap from 'common/Map/WarpedMap/SimulationWarpedMap';
 import ResizableSection from 'common/ResizableSection';
 import SimulationResultsMap from 'modules/simulationResult/components/SimulationResultsMap';
-import ManchetteWithSpaceTimeChartWrapper, {
+import SpaceTimeChartWrapper, {
   MANCHETTE_WITH_SPACE_TIME_CHART_DEFAULT_HEIGHT,
 } from 'modules/simulationResult/components/SpaceTimeChart/SpaceTimeChartWrapper';
 import useGetProjectedTrainOperationalPoints from 'modules/simulationResult/components/SpaceTimeChart/useGetProjectedTrainOperationalPoints';
@@ -239,7 +239,7 @@ const SimulationResults = ({
               <div className="osrd-simulation-container d-flex flex-grow-1 flex-shrink-1">
                 <div className="chart-container">
                   {trainIdUsedForProjection && (
-                    <ManchetteWithSpaceTimeChartWrapper
+                    <SpaceTimeChartWrapper
                       operationalPoints={projectedOperationalPoints}
                       projectPathTrainResult={projectPathTrainResult}
                       selectedTrainId={selectedTrainId}
