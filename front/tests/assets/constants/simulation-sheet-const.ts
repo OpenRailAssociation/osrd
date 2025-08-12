@@ -28,6 +28,8 @@ const simulationSheetDetails = (): PdfSimulationContent => ({
     referenceEngineValue: 'ELECTRIC_RS_E2E',
     maxLength: frTranslations.maxLength,
     maxLengthValue: '567 m',
+    loadingGauge: frTranslations.loadingGauge,
+    loadingGaugeValue: 'GA',
   },
   requestedRoute: {
     station1: {
