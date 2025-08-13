@@ -327,6 +327,7 @@ impl Errors {
                 retrieve,
                 update,
                 delete,
+                list,
             }) => {
                 let Errors {
                     create: default_create,
@@ -340,7 +341,7 @@ impl Errors {
                     create: create.unwrap_or(default_create),
                     update: update.unwrap_or(default_update),
                     delete: delete.unwrap_or(default_delete),
-                    list: default_list,
+                    list: list.unwrap_or(default_list),
                 })
             }
         }
