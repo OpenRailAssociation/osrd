@@ -4,6 +4,7 @@ import {
   Clock,
   Flame,
   KebabHorizontal,
+  Manchette,
   Moon,
   Pencil,
   Play,
@@ -62,6 +63,7 @@ type OccurrenceItemProps = {
   occurrenceActions: ReturnType<typeof useOccurrenceActions>;
   subCategories?: SubCategory[];
   pacedTrainId: PacedTrainId;
+  showProjectionIcon?: boolean;
 };
 
 const OccurrenceItem = ({
@@ -77,6 +79,7 @@ const OccurrenceItem = ({
   },
   subCategories,
   pacedTrainId,
+  showProjectionIcon,
 }: OccurrenceItemProps) => {
   const dispatch = useAppDispatch();
   const { t } = useTranslation('operational-studies', { keyPrefix: 'main' });
@@ -232,6 +235,11 @@ const OccurrenceItem = ({
       >
         <div className="title-img">
           <div className="indicator-title">
+            {showProjectionIcon && (
+              <div className="occurrence-projected">
+                <Manchette iconColor="var(--white100)" />
+              </div>
+            )}
             <OccurrenceIndicator occurrence={occurrence} subCategories={subCategories} />
 
             <div className="label">

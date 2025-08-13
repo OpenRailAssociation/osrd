@@ -33,6 +33,7 @@ import type {
   OccurrenceId,
 } from 'reducers/osrdconf/types';
 import { updateSelectedTrainId, updateTrainUsedForProjection } from 'reducers/simulationResults';
+import { getTrainUsedForProjection } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
 import { addDurationToDate, Duration } from 'utils/duration';
 import { castErrorToFailure } from 'utils/error';
@@ -54,7 +55,6 @@ type PacedTrainItemProps = {
   handleOpenOccurrencesList: (pacedTrainId: PacedTrainId) => void;
   pacedTrain: PacedTrainWithDetails;
   isOnEdit: boolean;
-  isProjectionPathUsed: boolean;
   selectedTrainId?: TrainId;
   selectPacedTrainToEdit: (
     pacedTrainToEdit: PacedTrainWithDetails,
@@ -64,6 +64,7 @@ type PacedTrainItemProps = {
   upsertTimetableItems: (timetableItems: TimetableItem[]) => void;
   removePacedTrains: (pacedTrainIdsToRemove: TimetableItemId[]) => void;
   subCategories: SubCategory[];
+  infraIsCached: boolean;
 };
 
 const PacedTrainItem = ({
@@ -73,12 +74,12 @@ const PacedTrainItem = ({
   handleOpenOccurrencesList,
   pacedTrain,
   isOnEdit,
-  isProjectionPathUsed,
   selectPacedTrainToEdit,
   selectedTrainId,
   upsertTimetableItems,
   removePacedTrains,
   subCategories,
+  infraIsCached,
 }: PacedTrainItemProps) => {
   const { editedElementContainer } = useContext(EditedElementContainerContext);
   const { t } = useTranslation('operational-studies', { keyPrefix: 'main' });
@@ -86,6 +87,12 @@ const PacedTrainItem = ({
   const { openModal } = useContext(ModalContext);
   const { closeModal } = useContext(ModalContext);
   const timetableId = useSelector(getOperationalStudiesTimetableID);
+  const trainUsedForProjection = useSelector(getTrainUsedForProjection);
+  const projectedExceptionIsPathException =
+    trainUsedForProjection !== undefined &&
+    'exceptionKey' in trainUsedForProjection &&
+    pacedTrain.exceptions.find((ex) => ex.key === trainUsedForProjection.exceptionKey)
+      ?.path_and_schedule !== undefined;
 
   const { summary } = pacedTrain;
   const { rollingStocks } = useRollingStockContext();
@@ -260,11 +267,20 @@ const PacedTrainItem = ({
           role="button"
           tabIndex={0}
         >
-          {isProjectionPathUsed && (
-            <div className="train-projected">
-              <Manchette iconColor="var(--white100)" />
-            </div>
-          )}
+          {infraIsCached &&
+            trainUsedForProjection &&
+            trainUsedForProjection.id === pacedTrain.id && (
+              <div
+                className={cx('train-projected', {
+                  grayed:
+                    'exceptionKey' in trainUsedForProjection &&
+                    trainUsedForProjection.exceptionKey !== undefined &&
+                    projectedExceptionIsPathException,
+                })}
+              >
+                <Manchette iconColor="var(--white100)" />
+              </div>
+            )}
           <div
             data-testid="occurrences-count"
             className={cx('occurrences-count', {
@@ -367,17 +383,29 @@ const PacedTrainItem = ({
       )}
       {isOccurrencesListOpen && (
         <div className="occurrences">
-          {occurrences.map((occurrence, index) => (
-            <OccurrenceItem
-              occurrence={occurrence}
-              key={occurrence.id}
-              isSelected={selectedTrainId === occurrence.id}
-              nextOccurrence={occurrences[index + 1]}
-              occurrenceActions={occurrenceActions}
-              subCategories={subCategories}
-              pacedTrainId={pacedTrain.id}
-            />
-          ))}
+          {occurrences.map((occurrence, index) => {
+            // used to have the projection icon next to the occurrence in the list.
+            // shown if the projected occurrence key matches the one on this line
+            const showProjectionIcon =
+              infraIsCached &&
+              trainUsedForProjection &&
+              'exceptionKey' in trainUsedForProjection &&
+              trainUsedForProjection.exceptionKey !== undefined &&
+              trainUsedForProjection.exceptionKey === occurrence.key &&
+              projectedExceptionIsPathException;
+            return (
+              <OccurrenceItem
+                occurrence={occurrence}
+                key={occurrence.id}
+                isSelected={selectedTrainId === occurrence.id}
+                nextOccurrence={occurrences[index + 1]}
+                occurrenceActions={occurrenceActions}
+                subCategories={subCategories}
+                pacedTrainId={pacedTrain.id}
+                showProjectionIcon={showProjectionIcon}
+              />
+            );
+          })}
         </div>
       )}
     </div>
