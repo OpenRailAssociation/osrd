@@ -34,18 +34,24 @@ export const buildSteps = (
 
       const operationalPoint = cichDict[ocpRef];
 
-      const currentArrivalSeconds = time2sec(arrivalTime);
-
-      if (previousDepartureSeconds !== null && currentArrivalSeconds < previousDepartureSeconds) {
-        dayOffset += 1;
-      }
-
-      previousDepartureSeconds = time2sec(departureTime);
+      const currentDepartureSeconds = time2sec(departureTime);
 
       const stepDate = new Date(startDate);
       stepDate.setDate(stepDate.getDate() + dayOffset);
 
       const formattedDate = stepDate.toISOString().split('T')[0];
+
+      const arrivalDate = new Date(`${formattedDate}T${arrivalTime}`);
+      const departureDate = new Date(`${formattedDate}T${departureTime}`);
+
+      if (previousDepartureSeconds && currentDepartureSeconds < previousDepartureSeconds) {
+        dayOffset += 1;
+
+        arrivalDate.setDate(arrivalDate.getDate() + 1);
+        departureDate.setDate(departureDate.getDate() + 1);
+      }
+
+      previousDepartureSeconds = currentDepartureSeconds;
 
       //! We add 87 to the CI code to create the UIC. It is France specific and will break if used in other countries.
       const uic = Number(`
@@ -54,8 +60,6 @@ export const buildSteps = (
 
       let stopFor: number | undefined;
 
-      const arrivalDate = new Date(`${formattedDate}T${arrivalTime}`);
-      const departureDate = new Date(`${formattedDate}T${departureTime}`);
       if (ocpType === 'stop') {
         if (arrivalTime && departureTime) {
           stopFor = Math.round((departureDate.getTime() - arrivalDate.getTime()) / 1000);
