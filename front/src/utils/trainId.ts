@@ -1,5 +1,6 @@
 import { isEmpty } from 'lodash';
 
+import type { PacedTrainException } from 'common/api/osrdEditoastApi';
 import type {
   TimetableItemWithDetails,
   PacedTrainWithDetails,
@@ -173,6 +174,18 @@ export const formatPacedTrainIdToExceptionId = (
     exceptionId,
   });
 };
+
+/**
+ * Given a paced train id with a PacedTrainId format (used across the front),
+ * returns the occurrence id with an OccurrenceId format (used across the front).
+ */
+export const formatPacedTrainIdToOccurrenceId = (
+  pacedTrainId: PacedTrainId,
+  exception: PacedTrainException
+): OccurrenceId =>
+  exception.occurrence_index
+    ? formatPacedTrainIdToIndexedOccurrenceId(pacedTrainId, exception.occurrence_index)
+    : formatPacedTrainIdToExceptionId(pacedTrainId, exception.key);
 
 /**
  * Given a occurrence id with an OccurrenceId format (used across the front),

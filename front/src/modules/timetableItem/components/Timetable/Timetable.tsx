@@ -190,9 +190,7 @@ const Timetable = ({
                   selectedTrainId={selectedTrainId}
                   upsertTimetableItems={upsertTimetableItems}
                   removePacedTrains={removeAndUnselectTrains}
-                  isProjectionPathUsed={
-                    infra.status === 'READY' && trainIdUsedForProjection === timetableItem.id
-                  }
+                  infraIsCached={infra.status === 'READY'}
                   subCategories={subCategories}
                 />
               )}

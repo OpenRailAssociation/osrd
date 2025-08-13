@@ -37,10 +37,18 @@ import {
   updateSelectedTrainId,
   updateTrainIdUsedForProjection,
 } from 'reducers/simulationResults';
+import { getTrainIdUsedForProjection } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
 import { addDurationToDate, Duration } from 'utils/duration';
 import { castErrorToFailure } from 'utils/error';
-import { formatEditoastIdToPacedTrainId, extractEditoastIdFromPacedTrainId } from 'utils/trainId';
+import {
+  formatEditoastIdToPacedTrainId,
+  extractEditoastIdFromPacedTrainId,
+  extractPacedTrainIdFromOccurrenceId,
+  isTrainScheduleId,
+  isPacedTrainId,
+  formatPacedTrainIdToOccurrenceId,
+} from 'utils/trainId';
 
 import TimetableItemActions from '../TimetableItemActions';
 import useOccurrences from './hooks/useOccurrences';
@@ -58,7 +66,6 @@ type PacedTrainItemProps = {
   handleOpenOccurrencesList: (pacedTrainId: PacedTrainId) => void;
   pacedTrain: PacedTrainWithDetails;
   isOnEdit: boolean;
-  isProjectionPathUsed: boolean;
   selectedTrainId?: TrainId;
   selectPacedTrainToEdit: (
     pacedTrainToEdit: PacedTrainWithDetails,
@@ -68,6 +75,7 @@ type PacedTrainItemProps = {
   upsertTimetableItems: (timetableItems: TimetableItem[]) => void;
   removePacedTrains: (pacedTrainIdsToRemove: TimetableItemId[]) => void;
   subCategories: SubCategory[];
+  infraIsCached: boolean;
 };
 
 const PacedTrainItem = ({
@@ -77,12 +85,12 @@ const PacedTrainItem = ({
   handleOpenOccurrencesList,
   pacedTrain,
   isOnEdit,
-  isProjectionPathUsed,
   selectPacedTrainToEdit,
   selectedTrainId,
   upsertTimetableItems,
   removePacedTrains,
   subCategories,
+  infraIsCached,
 }: PacedTrainItemProps) => {
   const { editedElementContainer } = useContext(EditedElementContainerContext);
   const { t } = useTranslation('operational-studies', { keyPrefix: 'main' });
@@ -90,6 +98,26 @@ const PacedTrainItem = ({
   const { openModal } = useContext(ModalContext);
   const { closeModal } = useContext(ModalContext);
   const timetableId = useSelector(getOperationalStudiesTimetableID);
+
+  const trainIdUsedForProjection = useSelector(getTrainIdUsedForProjection);
+
+  const { showPacedTrainProjectionIcon, pathUsedForProjectionIsException } = useMemo(() => {
+    if (!trainIdUsedForProjection || isTrainScheduleId(trainIdUsedForProjection))
+      return { showPacedTrainProjectionIcon: false, pathUsedForProjectionIsException: false };
+    if (isPacedTrainId(trainIdUsedForProjection))
+      return {
+        showPacedTrainProjectionIcon: pacedTrain.id === trainIdUsedForProjection,
+        pathUsedForProjectionIsException: false,
+      };
+    const exception = pacedTrain.exceptions.find(
+      (ex) => formatPacedTrainIdToOccurrenceId(pacedTrain.id, ex) === trainIdUsedForProjection
+    );
+    return {
+      showPacedTrainProjectionIcon:
+        extractPacedTrainIdFromOccurrenceId(trainIdUsedForProjection) === pacedTrain.id,
+      pathUsedForProjectionIsException: !!exception?.path_and_schedule,
+    };
+  }, [trainIdUsedForProjection, pacedTrain]);
 
   const { summary } = pacedTrain;
   const { rollingStocks } = useRollingStockContext();
@@ -254,8 +282,12 @@ const PacedTrainItem = ({
           role="button"
           tabIndex={0}
         >
-          {isProjectionPathUsed && (
-            <div className="train-projected">
+          {infraIsCached && showPacedTrainProjectionIcon && (
+            <div
+              className={cx('train-projected', {
+                grayed: pathUsedForProjectionIsException,
+              })}
+            >
               <Manchette iconColor="var(--white100)" />
             </div>
           )}
