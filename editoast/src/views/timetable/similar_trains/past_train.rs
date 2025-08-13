@@ -3,7 +3,7 @@ use std::collections::HashSet;
 
 use itertools::Itertools as _;
 
-use crate::views::timetable::similar_trains::Codes;
+use crate::views::timetable::similar_trains::OperationalPoint;
 use crate::views::timetable::similar_trains::new_train::Segment;
 
 use super::graph;
@@ -32,15 +32,15 @@ impl PastTrain {
         self.path.iter().filter(|wp| wp.stop)
     }
 
-    pub(super) fn rank(&self, waypoint_codes: &Codes) -> Option<usize> {
+    pub(super) fn rank(&self, waypoint_op: &OperationalPoint) -> Option<usize> {
         self.path
             .iter()
-            .position(|graph::Waypoint { codes, .. }| codes == waypoint_codes)
+            .position(|graph::Waypoint { op, .. }| op == waypoint_op)
     }
 
     pub(super) fn clamp_path(&self, segment: &Segment) -> Option<&[graph::Waypoint]> {
-        let start = self.rank(&segment.begin().codes);
-        let end = self.rank(&segment.end().codes);
+        let start = self.rank(&segment.begin().op);
+        let end = self.rank(&segment.end().op);
 
         match (start, end) {
             (Some(s), Some(e)) if s <= e => Some(&self.path[s..=e]),
@@ -61,7 +61,7 @@ impl PastTrain {
 #[derive(Debug, Default)]
 pub(super) struct Pool {
     trains: Vec<PastTrain>,
-    segment_index: HashMap<(Codes, Codes), HashSet<usize>>,
+    segment_index: HashMap<(OperationalPoint, OperationalPoint), HashSet<usize>>,
 }
 
 impl Pool {
@@ -70,7 +70,7 @@ impl Pool {
     }
 
     pub(super) fn trains_in_segment(&self, segment: &Segment) -> impl Iterator<Item = &PastTrain> {
-        let key = (segment.begin().codes.clone(), segment.end().codes.clone());
+        let key = (segment.begin().op.clone(), segment.end().op.clone());
         self.segment_index
             .get(&key)
             .into_iter()
@@ -83,7 +83,7 @@ impl Extend<PastTrain> for Pool {
         for train in iter {
             let index = self.trains.len();
             for (stop1, stop2) in train.iter_stops().tuple_windows() {
-                let key = (stop1.codes.clone(), stop2.codes.clone());
+                let key = (stop1.op.clone(), stop2.op.clone());
                 self.segment_index.entry(key).or_default().insert(index);
             }
             self.trains.push(train);

@@ -1,14 +1,14 @@
 use std::collections::VecDeque;
 
+use arcstr::ArcStr;
 use itertools::Itertools;
-use smol_str::SmolStr;
 
-use super::Codes;
+use super::OperationalPoint;
 
 #[derive(Debug, Clone)]
 #[cfg_attr(test, derive(PartialEq, Eq))]
 pub(super) struct Waypoint {
-    pub(super) codes: Codes,
+    pub(super) op: OperationalPoint,
     kind: Kind,
 }
 
@@ -20,16 +20,16 @@ pub(super) enum Kind {
 }
 
 impl Waypoint {
-    pub(super) fn passing_by(primary_code: u64, secondary_code: SmolStr) -> Self {
+    pub(super) fn passing_by(op: ArcStr) -> Self {
         Self {
-            codes: Codes::new(primary_code, secondary_code),
+            op: OperationalPoint(op),
             kind: Kind::PassingBy,
         }
     }
 
-    pub(super) fn stop(primary_code: u64, secondary_code: SmolStr) -> Self {
+    pub(super) fn stop(op: ArcStr) -> Self {
         Self {
-            codes: Codes::new(primary_code, secondary_code),
+            op: OperationalPoint(op),
             kind: Kind::Stop,
         }
     }
@@ -160,13 +160,13 @@ mod tests {
     #[test]
     fn test_segmentation() {
         let waypoints = vec![
-            Waypoint::stop(1, SmolStr::new("a")),
-            Waypoint::passing_by(2, SmolStr::new("b")),
-            Waypoint::passing_by(3, SmolStr::new("c")),
-            Waypoint::stop(4, SmolStr::new("d")),
-            Waypoint::passing_by(5, SmolStr::new("e")),
-            Waypoint::stop(6, SmolStr::new("f")),
-            Waypoint::stop(7, SmolStr::new("g")),
+            Waypoint::stop("a".into()),
+            Waypoint::passing_by("b".into()),
+            Waypoint::passing_by("c".into()),
+            Waypoint::stop("d".into()),
+            Waypoint::passing_by("e".into()),
+            Waypoint::stop("f".into()),
+            Waypoint::stop("g".into()),
         ];
         let train = NewTrain::new(waypoints.clone()).unwrap();
 
@@ -184,13 +184,13 @@ mod tests {
     #[test]
     fn test_segment_endpoints() {
         let waypoints = vec![
-            Waypoint::stop(1, SmolStr::new("a")),
-            Waypoint::passing_by(2, SmolStr::new("b")),
-            Waypoint::passing_by(3, SmolStr::new("c")),
-            Waypoint::stop(4, SmolStr::new("d")),
-            Waypoint::passing_by(5, SmolStr::new("e")),
-            Waypoint::stop(6, SmolStr::new("f")),
-            Waypoint::stop(7, SmolStr::new("g")),
+            Waypoint::stop("a".into()),
+            Waypoint::passing_by("b".into()),
+            Waypoint::passing_by("c".into()),
+            Waypoint::stop("d".into()),
+            Waypoint::passing_by("e".into()),
+            Waypoint::stop("f".into()),
+            Waypoint::stop("g".into()),
         ];
         let train = NewTrain::new(waypoints.clone()).unwrap();
 
