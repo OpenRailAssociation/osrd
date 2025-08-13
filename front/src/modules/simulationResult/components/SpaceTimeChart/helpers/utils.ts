@@ -1,11 +1,13 @@
-import type { Conflict } from '@osrd-project/ui-charts';
+import type { Conflict, OccupancyBlock } from '@osrd-project/ui-charts';
 import { chunk, compact, noop, omit } from 'lodash';
 
+import { ASPECT_LABELS_COLORS } from 'modules/simulationResult/consts';
 import type { OccurrenceId, TimetableItem, TrainScheduleId } from 'reducers/osrdconf/types';
 import { isOccurrenceId, isTrainScheduleId } from 'utils/trainId';
 
 import type { MovableOccupancyZone } from './zones';
 import type {
+  AspectLabel,
   IndividualTrainProjection,
   LayerRangeData,
   PathOperationalPoint,
@@ -205,3 +207,17 @@ export const cutSpaceTimeChart = (
 
   return { filteredProjectPathTrainResult, filteredConflicts };
 };
+
+export const getOccupancyBlocks = (trains: IndividualTrainProjection[]): OccupancyBlock[] =>
+  trains.flatMap((train) => {
+    const departureTime = train.departureTime.getTime();
+
+    return train.signalUpdates.map((block) => ({
+      timeStart: departureTime + block.time_start,
+      timeEnd: departureTime + block.time_end,
+      spaceStart: block.position_start,
+      spaceEnd: block.position_end,
+      color: ASPECT_LABELS_COLORS[block.aspect_label as AspectLabel],
+      blinking: block.blinking,
+    }));
+  });
