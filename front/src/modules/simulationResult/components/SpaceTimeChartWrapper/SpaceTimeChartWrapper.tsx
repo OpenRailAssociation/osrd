@@ -52,10 +52,6 @@ import { useAppDispatch } from 'store';
 import {
   isTrainId,
   extractPacedTrainIdFromOccurrenceId,
-  isOccurrenceId,
-  isTrainScheduleId,
-  extractEditoastIdFromTrainScheduleId,
-  extractEditoastIdFromPacedTrainId,
   extractOccurrenceIndexFromOccurrenceId,
   isPacedTrainId,
   formatPacedTrainIdToIndexedOccurrenceId,
@@ -197,15 +193,8 @@ const SpaceTimeChartWrapper = ({
     allTrainsProjected
   );
 
-  const extractTrainId = useCallback((id: string) => {
-    if (isTrainScheduleId(id)) return extractEditoastIdFromTrainScheduleId(id);
-    if (isOccurrenceId(id))
-      return extractEditoastIdFromPacedTrainId(extractPacedTrainIdFromOccurrenceId(id));
-    return id;
-  }, []);
-
   const splitPoints = useMemo<SplitPoint[]>(() => {
-    const pathsIndex = keyBy(paths, ({ id }) => extractTrainId(id));
+    const pathsIndex = keyBy(paths, ({ id }) => id);
 
     return (
       sortBy(
@@ -229,7 +218,7 @@ const SpaceTimeChartWrapper = ({
               position={operationalPointPosition}
               tracks={tracks || []}
               occupancyZones={(zones || []).map((zone) => {
-                const path = pathsIndex[extractTrainId(zone.trainId)];
+                const path = pathsIndex[zone.trainId];
                 if (!path) return zone;
                 const pathStyle = getPathStyle(
                   hoveredItem,
