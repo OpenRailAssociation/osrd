@@ -20,6 +20,7 @@ use crate::error::Result;
 use crate::generated_data::sprite_config::SpriteConfig;
 use crate::generated_data::sprite_config::SpriteConfigs;
 use crate::infra_cache::InfraCache;
+use crate::infra_cache::object_cache::SignalCache;
 use crate::infra_cache::operation::CacheOperation;
 
 pub struct SignalLayer;
@@ -42,21 +43,16 @@ fn find_sprite_id(sprite_config: &SpriteConfigs, logical_signal: &LogicalSignal)
 
 /// Generate the signaling system and sprite fields of the layer.
 /// Only updated_signals are updated
-async fn generate_signaling_system_and_sprite<'a, T: Iterator<Item = &'a String>>(
+async fn generate_signaling_system_and_sprite<'a, T: Iterator<Item = &'a SignalCache>>(
     conn: &mut DbConnection,
     infra: i64,
-    infra_cache: &InfraCache,
     updated_signals: T,
 ) -> Result<()> {
     let sprite_configs = SpriteConfig::load();
     let mut group_by_sprite: HashMap<_, Vec<_>> = HashMap::new();
 
-    for signal_id in updated_signals {
-        let signal = infra_cache
-            .signals()
-            .get(signal_id)
-            .expect("Cache out of sync");
-        let logical_signal = match signal.unwrap_signal().logical_signals.first() {
+    for signal in updated_signals {
+        let logical_signal = match signal.logical_signals.first() {
             Some(logical_signal) => logical_signal,
             None => continue,
         };
@@ -67,7 +63,7 @@ async fn generate_signaling_system_and_sprite<'a, T: Iterator<Item = &'a String>
         group_by_sprite
             .entry((signaling_system, sprite_id))
             .or_default()
-            .push(signal_id);
+            .push(&signal.obj_id);
     }
 
     for ((signaling_system, sprite_id), signals) in group_by_sprite {
@@ -98,8 +94,10 @@ impl GeneratedData for SignalLayer {
         generate_signaling_system_and_sprite(
             conn,
             infra,
-            infra_cache,
-            infra_cache.signals().keys(), // All signals
+            infra_cache
+                .signals()
+                .values()
+                .map(|signal| signal.unwrap_signal()),
         )
         .await?;
         Ok(())
@@ -138,8 +136,13 @@ impl GeneratedData for SignalLayer {
             generate_signaling_system_and_sprite(
                 conn,
                 infra,
-                infra_cache,
-                updated_signals.into_iter(),
+                updated_signals.into_iter().map(|id| {
+                    infra_cache
+                        .signals()
+                        .get(id)
+                        .expect("Cache not synced")
+                        .unwrap_signal()
+                }),
             )
             .await?;
         }
