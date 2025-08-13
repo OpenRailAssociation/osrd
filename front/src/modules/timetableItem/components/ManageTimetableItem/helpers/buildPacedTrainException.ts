@@ -1,8 +1,7 @@
 import dayjs from 'dayjs';
-import { isEmpty, isEqual, omit, pick } from 'lodash';
-import { v4 as uuidV4 } from 'uuid';
+import { isEmpty, isEqual, omit } from 'lodash';
 
-import type { PacedTrain, PacedTrainException } from 'common/api/osrdEditoastApi';
+import type { PacedTrain, PacedTrainException, TrainSchedule } from 'common/api/osrdEditoastApi';
 import computeBasePathStep from 'modules/timetableItem/helpers/computeBasePathStep';
 import computeOccurrenceName from 'modules/timetableItem/helpers/computeOccurrenceName';
 import { findExceptionWithOccurrenceId } from 'modules/timetableItem/helpers/pacedTrain';
@@ -17,29 +16,15 @@ import {
 
 /**
  * Compare the original paced train with the one from the occurrence update and
- * fill the original paced train exceptions property every time a field is different.
+ * fill the original paced train exceptions property every time a field is different
+ * the caller is responsible for generating the exception key and occurrence index.
  */
 export function generatePacedTrainException(
-  updatedOccurrence: Omit<PacedTrain, 'exceptions'>,
+  updatedOccurrence: TrainSchedule,
   originalPacedTrain: PacedTrain,
-  occurrenceId: OccurrenceId
-): PacedTrainException {
-  const exceptionToUpdate = findExceptionWithOccurrenceId(
-    originalPacedTrain.exceptions,
-    occurrenceId
-  );
-
-  const exception: PacedTrainException = exceptionToUpdate
-    ? // If the exception was already present, we update it from scratch
-      {
-        ...pick(exceptionToUpdate, ['key', 'occurrence_index']),
-      }
-    : {
-        key: uuidV4(),
-        occurrence_index: isIndexedOccurrenceId(occurrenceId)
-          ? extractOccurrenceIndexFromOccurrenceId(occurrenceId)
-          : undefined,
-      };
+  occurrenceIndex: number | null = null
+): Omit<PacedTrainException, 'key' | 'occurrence_index'> {
+  const exception: Omit<PacedTrainException, 'key' | 'occurrence_index'> = {};
 
   if (
     !isEqual(originalPacedTrain.constraint_distribution, updatedOccurrence.constraint_distribution)
@@ -50,7 +35,7 @@ export function generatePacedTrainException(
   }
 
   if (!isEqual(originalPacedTrain.initial_speed, updatedOccurrence.initial_speed)) {
-    exception.initial_speed = { value: updatedOccurrence.initial_speed! };
+    exception.initial_speed = { value: updatedOccurrence.initial_speed ?? 0 };
   }
 
   if (!isEqual(originalPacedTrain.labels, updatedOccurrence.labels)) {
@@ -79,7 +64,7 @@ export function generatePacedTrainException(
     )
   ) {
     exception.path_and_schedule = {
-      margins: updatedOccurrence.margins!,
+      margins: updatedOccurrence.margins ?? { boundaries: [], values: ['0%'] },
       path: updatedOccurrence.path,
       power_restrictions: updatedOccurrence.power_restrictions ?? [],
       schedule: updatedOccurrence.schedule ?? [],
@@ -92,7 +77,7 @@ export function generatePacedTrainException(
   ) {
     exception.rolling_stock = {
       rolling_stock_name: updatedOccurrence.rolling_stock_name,
-      comfort: updatedOccurrence.comfort ?? originalPacedTrain.comfort!,
+      comfort: updatedOccurrence.comfort ?? originalPacedTrain.comfort ?? 'STANDARD',
     };
   }
 
@@ -113,8 +98,7 @@ export function generatePacedTrainException(
   // Custom compare for start time as each indexed occurrence has its own built start time
   let originalStartTimeToTest = new Date(originalPacedTrain.start_time);
 
-  if (isIndexedOccurrenceId(occurrenceId)) {
-    const occurrenceIndex = extractOccurrenceIndexFromOccurrenceId(occurrenceId);
+  if (occurrenceIndex !== null) {
     const originalPacedTrainInterval = Duration.parse(originalPacedTrain.paced.interval);
     originalStartTimeToTest = dayjs(originalStartTimeToTest)
       .add(occurrenceIndex * originalPacedTrainInterval.ms, 'ms')
@@ -125,14 +109,13 @@ export function generatePacedTrainException(
   const pacedTrainStartTime = new Date(updatedOccurrence.start_time);
   pacedTrainStartTime.setMilliseconds(0);
 
-  if (!isEqual(originalStartTimeToTest, pacedTrainStartTime)) {
+  if (occurrenceIndex === null || !isEqual(originalStartTimeToTest, pacedTrainStartTime)) {
     exception.start_time = { value: updatedOccurrence.start_time };
   }
 
   // Custom compare for name as each occurrence has its own built name
   let originalTrainNameToTest = originalPacedTrain.train_name;
-  if (isIndexedOccurrenceId(occurrenceId)) {
-    const occurrenceIndex = extractOccurrenceIndexFromOccurrenceId(occurrenceId);
+  if (occurrenceIndex !== null) {
     originalTrainNameToTest = computeOccurrenceName(originalTrainNameToTest, occurrenceIndex);
   } else {
     // If the occurrence is an added exception, we pass its standard name format
