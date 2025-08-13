@@ -20,8 +20,10 @@ mod past_train;
 
 use std::collections::HashMap;
 use std::collections::HashSet;
+use std::ops::Deref;
 use std::sync::Arc;
 
+use arcstr::ArcStr;
 use authz::Role;
 use axum::Extension;
 use axum::Json;
@@ -32,13 +34,12 @@ use core_client::CoreClient;
 use core_client::path_properties::OperationalPointOnPath;
 use core_client::path_properties::PathPropertiesRequest;
 use database::DbConnection;
+use derive_more::Deref;
+use derive_more::Display;
 use editoast_derive::EditoastError;
-use editoast_schemas::infra::OperationalPointSncfExtension;
 use itertools::Itertools as _;
 use serde::Deserialize;
 use serde::Serialize;
-use smol_str::SmolStr;
-use smol_str::ToSmolStr as _;
 use utoipa::ToSchema;
 
 use crate::ValkeyClient;
@@ -60,32 +61,8 @@ use super::AuthenticationExt;
 use super::AuthorizationError;
 
 // Simulation layer struct, not a view struct, to move in some mod.rs when the simulation crate will be there
-// TODO: use operational point IDs (not obj_ids)
-#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash)]
-struct Codes {
-    primary: u64,
-    secondary: SmolStr,
-}
-
-impl Codes {
-    pub fn new(primary: u64, secondary: SmolStr) -> Self {
-        Self { primary, secondary }
-    }
-}
-
-impl<'a> From<&'a OperationalPointSncfExtension> for Codes {
-    fn from(
-        OperationalPointSncfExtension { ci, ch, .. }: &'a OperationalPointSncfExtension,
-    ) -> Self {
-        Self::new(*ci as u64, ch.to_smolstr())
-    }
-}
-
-impl std::fmt::Display for Codes {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}:{}", self.primary, self.secondary)
-    }
-}
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Display, Deref)]
+struct OperationalPoint(ArcStr);
 
 #[derive(Debug, Deserialize, ToSchema)]
 #[cfg_attr(test, derive(Serialize))]
@@ -99,21 +76,14 @@ struct RollingStockCharacteristics {
 #[cfg_attr(test, derive(PartialEq, Serialize))]
 #[schema(as = SimilarTrainWaypoint)]
 struct Waypoint {
-    ci: u64,
     #[schema(value_type = String)]
-    ch: SmolStr,
+    id: ArcStr,
     stop: bool,
 }
 
 impl std::fmt::Debug for Waypoint {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "{}:{}{}",
-            self.ci,
-            self.ch,
-            if self.stop { "[STOP]" } else { "" },
-        )
+        write!(f, "{}{}", self.id, if self.stop { "[STOP]" } else { "" },)
     }
 }
 
@@ -133,9 +103,8 @@ pub(in crate::views) struct Request {
 #[cfg_attr(test, derive(PartialEq, Deserialize))]
 #[schema(as = SimilarTrainWaypointResponse)]
 struct WaypointResponse {
-    ci: i64,
     #[schema(value_type = String)]
-    ch: SmolStr,
+    id: ArcStr,
 }
 
 #[derive(Debug, Serialize, ToSchema)]
@@ -252,11 +221,11 @@ pub(in crate::views) async fn similar_trains(
 
     let waypoints = squash_successive_waypoints(waypoints);
     let wp_count = waypoints.len();
-    let new_train_waypoints = waypoints.into_iter().map(|Waypoint { ci, ch, stop }| {
+    let new_train_waypoints = waypoints.into_iter().map(|Waypoint { id, stop }| {
         if stop {
-            new_train::Waypoint::stop(ci, ch)
+            new_train::Waypoint::stop(id)
         } else {
-            new_train::Waypoint::passing_by(ci, ch)
+            new_train::Waypoint::passing_by(id)
         }
     });
     let new_train =
@@ -418,12 +387,10 @@ pub(in crate::views) async fn similar_trains(
                 start_time,
                 train_id,
                 begin: WaypointResponse {
-                    ci: begin.codes.primary as i64,
-                    ch: begin.codes.secondary,
+                    id: begin.op.deref().clone(),
                 },
                 end: WaypointResponse {
-                    ci: end.codes.primary as i64,
-                    ch: end.codes.secondary,
+                    id: end.op.deref().clone(),
                 },
             }
         })
@@ -467,8 +434,7 @@ fn squash_successive_waypoints(waypoints: Vec<Waypoint>) -> Vec<Waypoint> {
     let mut result = Vec::<Waypoint>::with_capacity(waypoints.len());
     for waypoint in waypoints {
         if let Some(prev) = result.last_mut()
-            && prev.ci == waypoint.ci
-            && prev.ch == waypoint.ch
+            && prev.id == waypoint.id
         {
             prev.stop |= waypoint.stop;
             continue;
@@ -517,30 +483,24 @@ async fn search_candidate_train_schedules(
 
     let segments_stops = new_train
         .segment_endpoints()
-        .map(|(stop1, stop2)| (stop1.codes.clone(), stop2.codes.clone()))
+        .map(|(stop1, stop2)| (stop1.op.clone(), stop2.op.clone()))
         .collect::<HashSet<_>>();
 
-    let candidate_schedules  =
+    let candidate_schedules =
         tracing::debug_span!("keeping train schedules stopping at segment ends").in_scope(|| {
             let mut candidates: Vec<models::TrainSchedule> = Default::default();
             for train_schedule in train_schedules {
                 let retain_schedule = {
-                    let mut stop_pairs_forming_a_segment = train_schedule.iter_stops()
+                    let mut stop_pairs_forming_a_segment = train_schedule
+                        .iter_stops()
                         .flat_map(|p| path_item_cache.get_from_path_location(&p.location))
                         .tuple_windows()
                         .flat_map(|(ops1, ops2)| ops1.iter().cartesian_product(ops2.iter()))
-                        .filter_map(|(op1, op2)| {
-                            if let (Some(sncf1), Some(sncf2)) = (op1.extensions.sncf.as_ref(), op2.extensions.sncf.as_ref()) {
-                                Some((Codes::from(sncf1), Codes::from(sncf2)))
-                            } else {
-                                tracing::warn!(
-                                    ?op1,
-                                    ?op2,
-                                    train_schedule_id = train_schedule.id,
-                                    "operational point pair is missing an SNCF extension, required for similar schedules, ignoring it"
-                                );
-                                None
-                            }
+                        .map(|(op1, op2)| {
+                            (
+                                OperationalPoint(op1.obj_id.clone().into()),
+                                OperationalPoint(op2.obj_id.clone().into()),
+                            )
                         })
                         .filter(|key| segments_stops.contains(key));
                     stop_pairs_forming_a_segment.next().is_some()
@@ -630,7 +590,7 @@ async fn simulate_past_trains(
 
     let stop_waypoints = new_train
         .stops()
-        .map(|wp| wp.codes.clone())
+        .map(|wp| wp.op.clone())
         .collect::<HashSet<_>>();
     let selected_past_trains = path_properties
         .zip(candidate_schedules.into_iter())
@@ -641,16 +601,16 @@ async fn simulate_past_trains(
                 },
                 ts,
             )| {
-                let ops = operational_points.into_iter().filter_map(
-                    |OperationalPointOnPath { extensions, .. }| {
-                        let sncf = extensions.sncf.as_ref()?;
-                        let codes = Codes::from(sncf);
-                        Some(graph::Waypoint {
-                            stop: stop_waypoints.contains(&codes),
-                            codes,
-                        })
-                    },
-                );
+                let ops =
+                    operational_points
+                        .into_iter()
+                        .map(|OperationalPointOnPath { id, .. }| {
+                            let op = OperationalPoint(id.as_str().into());
+                            graph::Waypoint {
+                                stop: stop_waypoints.contains(&op),
+                                op,
+                            }
+                        });
                 past_train::PastTrain::new(ts.id, ops)
             },
         )
@@ -715,7 +675,6 @@ mod tests {
     use pretty_assertions::assert_eq;
     use reqwest::StatusCode;
     use rstest::rstest;
-    use smol_str::ToSmolStr;
     use uuid::Uuid;
 
     use crate::models::TrainSchedule;
@@ -734,13 +693,11 @@ mod tests {
 
         let waypoints = vec![
             Waypoint {
-                ci: 1,
-                ch: "a".to_smolstr(),
+                id: "a".into(),
                 stop: false,
             },
             Waypoint {
-                ci: 2,
-                ch: "b".to_smolstr(),
+                id: "b".into(),
                 stop: false,
             },
         ];
@@ -748,60 +705,51 @@ mod tests {
 
         let waypoints = vec![
             Waypoint {
-                ci: 1,
-                ch: "a".to_smolstr(),
+                id: "a".into(),
                 stop: false,
             },
             Waypoint {
-                ci: 1,
-                ch: "a".to_smolstr(),
+                id: "a".into(),
                 stop: false,
             },
         ];
         assert_eq!(
             squash_successive_waypoints(waypoints),
             vec![Waypoint {
-                ci: 1,
-                ch: "a".to_smolstr(),
+                id: "a".into(),
                 stop: false,
             }]
         );
 
         let waypoints = vec![
             Waypoint {
-                ci: 1,
-                ch: "a".to_smolstr(),
+                id: "a".into(),
                 stop: false,
             },
             Waypoint {
-                ci: 1,
-                ch: "a".to_smolstr(),
+                id: "a".into(),
                 stop: true,
             },
         ];
         assert_eq!(
             squash_successive_waypoints(waypoints),
             vec![Waypoint {
-                ci: 1,
-                ch: "a".to_smolstr(),
+                id: "a".into(),
                 stop: true,
             }]
         );
 
         let waypoints = vec![
             Waypoint {
-                ci: 1,
-                ch: "a".to_smolstr(),
+                id: "a".into(),
                 stop: false,
             },
             Waypoint {
-                ci: 1,
-                ch: "a".to_smolstr(),
+                id: "a".into(),
                 stop: false,
             },
             Waypoint {
-                ci: 2,
-                ch: "b".to_smolstr(),
+                id: "b".into(),
                 stop: false,
             },
         ];
@@ -809,13 +757,11 @@ mod tests {
             squash_successive_waypoints(waypoints),
             vec![
                 Waypoint {
-                    ci: 1,
-                    ch: "a".to_smolstr(),
+                    id: "a".into(),
                     stop: false,
                 },
                 Waypoint {
-                    ci: 2,
-                    ch: "b".to_smolstr(),
+                    id: "b".into(),
                     stop: false,
                 },
             ]
@@ -1016,21 +962,21 @@ mod tests {
     // MWS(33):stop  MES(44):passing_by  NS(55):stop
     #[case(
         vec![
-            Waypoint { ci:33, ch:"BV".into(), stop:true },
-            Waypoint { ci:44, ch:"BV".into(), stop:false },
-            Waypoint { ci:55, ch:"BV".into(), stop:true },
+            Waypoint { id:"Mid_West_station".into(), stop:true },
+            Waypoint { id:"Mid_East_station".into(), stop:false },
+            Waypoint { id:"North_station".into(), stop:true },
         ],
-        WaypointResponse { ci:33, ch:"BV".into() },
-        WaypointResponse { ci:55, ch:"BV".into() },
+        WaypointResponse { id: "Mid_West_station".into() },
+        WaypointResponse { id: "North_station".into() },
     )]
     // NS(55):stop SS(66):stop
     #[case(
         vec![
-            Waypoint { ci:55, ch:"BV".into(), stop:true },
-            Waypoint { ci:66, ch:"BV".into(), stop:true },
+            Waypoint { id:"North_station".into(), stop:true },
+            Waypoint { id:"South_station".into(), stop:true },
         ],
-        WaypointResponse { ci:55, ch:"BV".into() },
-        WaypointResponse { ci:66, ch:"BV".into() },
+        WaypointResponse { id: "North_station".into() },
+        WaypointResponse { id: "South_station".into() },
     )]
     async fn one_similar_train(
         #[case] waypoints: Vec<Waypoint>,
@@ -1075,8 +1021,8 @@ mod tests {
         1,
         Some("MA100".to_string()),
         vec![
-            Waypoint { ci:33, ch:"BV".into(), stop:true },
-            Waypoint { ci:55, ch:"BV".into(), stop:true },
+            Waypoint { id:"Mid_West_station".into(), stop:true },
+            Waypoint { id:"North_station".into(), stop:true },
         ],
     )]
     // Different speed limit tag
@@ -1084,8 +1030,8 @@ mod tests {
         0,
         Some("MA90".to_string()),
         vec![
-            Waypoint { ci:33, ch:"BV".into(), stop:true },
-            Waypoint { ci:55, ch:"BV".into(), stop:true },
+            Waypoint { id:"Mid_West_station".into(), stop:true },
+            Waypoint { id:"North_station".into(), stop:true },
         ],
     )]
     // Different schedule
@@ -1094,9 +1040,9 @@ mod tests {
         0,
         Some("MA100".to_string()),
         vec![
-            Waypoint { ci:33, ch:"BV".into(), stop:true },
-            Waypoint { ci:44, ch:"BV".into(), stop:true },
-            Waypoint { ci:55, ch:"BV".into(), stop:true },
+            Waypoint { id:"Mid_West_station".into(), stop:true },
+            Waypoint { id:"Mid_East_station".into(), stop:true },
+            Waypoint { id:"North_station".into(), stop:true },
         ],
     )]
     // Same schedule but too much stops
@@ -1105,10 +1051,10 @@ mod tests {
         0,
         Some("MA100".to_string()),
         vec![
-            Waypoint { ci:33, ch:"BV".into(), stop:true },
-            Waypoint { ci:44, ch:"BV".into(), stop:false },
-            Waypoint { ci:55, ch:"BV".into(), stop:false },
-            Waypoint { ci:66, ch:"BV".into(), stop:true },
+            Waypoint { id:"Mid_West_station".into(), stop:true },
+            Waypoint { id:"Mid_East_station".into(), stop:false },
+            Waypoint { id:"North_station".into(), stop:false },
+            Waypoint { id:"South_station".into(), stop:true },
         ],
     )]
     async fn no_similar_train(
@@ -1239,28 +1185,23 @@ mod tests {
             },
             waypoints: vec![
                 Waypoint {
-                    ci: 22,
-                    ch: "BV".into(),
+                    id: "West_station".into(),
                     stop: true,
                 },
                 Waypoint {
-                    ci: 33,
-                    ch: "BV".into(),
+                    id: "Mid_West_station".into(),
                     stop: false,
                 },
                 Waypoint {
-                    ci: 44,
-                    ch: "BV".into(),
+                    id: "Mid_East_station".into(),
                     stop: true,
                 },
                 Waypoint {
-                    ci: 55,
-                    ch: "BV".into(),
+                    id: "North_station".into(),
                     stop: false,
                 },
                 Waypoint {
-                    ci: 66,
-                    ch: "BV".into(),
+                    id: "South_station".into(),
                     stop: true,
                 },
             ],
@@ -1276,24 +1217,20 @@ mod tests {
                     train_id: Some(train_1),
                     start_time: Some(start_time_1),
                     begin: WaypointResponse {
-                        ci: 22,
-                        ch: "BV".into(),
+                        id: "West_station".into(),
                     },
                     end: WaypointResponse {
-                        ci: 44,
-                        ch: "BV".into(),
+                        id: "Mid_East_station".into(),
                     },
                 },
                 SimilarTrainItem {
                     train_id: Some(train_2),
                     start_time: Some(start_time_2),
                     begin: WaypointResponse {
-                        ci: 44,
-                        ch: "BV".into(),
+                        id: "Mid_East_station".into(),
                     },
                     end: WaypointResponse {
-                        ci: 66,
-                        ch: "BV".into(),
+                        id: "South_station".into(),
                     },
                 },
             ],
@@ -1444,23 +1381,19 @@ mod tests {
             },
             waypoints: vec![
                 Waypoint {
-                    ci: 22,
-                    ch: "BV".into(),
+                    id: "West_station".into(),
                     stop: true,
                 },
                 Waypoint {
-                    ci: 33,
-                    ch: "BV".into(),
+                    id: "Mid_West_station".into(),
                     stop: false,
                 },
                 Waypoint {
-                    ci: 44,
-                    ch: "BV".into(),
+                    id: "Mid_East_station".into(),
                     stop: true,
                 },
                 Waypoint {
-                    ci: 77,
-                    ch: "BV".into(),
+                    id: "North_East_station".into(),
                     stop: true,
                 },
             ],
@@ -1475,12 +1408,10 @@ mod tests {
                 train_id: Some(train_id),
                 start_time: Some(start_time),
                 begin: WaypointResponse {
-                    ci: 22,
-                    ch: "BV".into(),
+                    id: "West_station".into(),
                 },
                 end: WaypointResponse {
-                    ci: 77,
-                    ch: "BV".into(),
+                    id: "North_East_station".into(),
                 },
             }],
         };
@@ -1574,28 +1505,23 @@ mod tests {
             },
             waypoints: vec![
                 Waypoint {
-                    ci: 22,
-                    ch: "BV".into(),
+                    id: "West_station".into(),
                     stop: true,
                 },
                 Waypoint {
-                    ci: 33,
-                    ch: "BV".into(),
+                    id: "Mid_West_station".into(),
                     stop: true,
                 },
                 Waypoint {
-                    ci: 44,
-                    ch: "BV".into(),
+                    id: "Mid_East_station".into(),
                     stop: true,
                 },
                 Waypoint {
-                    ci: 55,
-                    ch: "BV".into(),
+                    id: "North_station".into(),
                     stop: true,
                 },
                 Waypoint {
-                    ci: 66,
-                    ch: "BV".into(),
+                    id: "South_station".into(),
                     stop: true,
                 },
             ],
@@ -1611,48 +1537,40 @@ mod tests {
                     train_id: Some(train_1),
                     start_time: Some(start_time_1),
                     begin: WaypointResponse {
-                        ci: 22,
-                        ch: "BV".into(),
+                        id: "West_station".into(),
                     },
                     end: WaypointResponse {
-                        ci: 33,
-                        ch: "BV".into(),
+                        id: "Mid_West_station".into(),
                     },
                 },
                 SimilarTrainItem {
                     train_id: None,
                     start_time: None,
                     begin: WaypointResponse {
-                        ci: 33,
-                        ch: "BV".into(),
+                        id: "Mid_West_station".into(),
                     },
                     end: WaypointResponse {
-                        ci: 44,
-                        ch: "BV".into(),
+                        id: "Mid_East_station".into(),
                     },
                 },
                 SimilarTrainItem {
                     train_id: Some(train_2),
                     start_time: Some(start_time_2),
                     begin: WaypointResponse {
-                        ci: 44,
-                        ch: "BV".into(),
+                        id: "Mid_East_station".into(),
                     },
                     end: WaypointResponse {
-                        ci: 55,
-                        ch: "BV".into(),
+                        id: "North_station".into(),
                     },
                 },
                 SimilarTrainItem {
                     train_id: None,
                     start_time: None,
                     begin: WaypointResponse {
-                        ci: 55,
-                        ch: "BV".into(),
+                        id: "North_station".into(),
                     },
                     end: WaypointResponse {
-                        ci: 66,
-                        ch: "BV".into(),
+                        id: "South_station".into(),
                     },
                 },
             ],

@@ -4367,12 +4367,10 @@ export type SearchPayload = {
   query: SearchQuery;
 };
 export type SimilarTrainWaypointResponse = {
-  ch: string;
-  ci: number;
+  id: string;
 };
 export type SimilarTrainWaypoint = {
-  ch: string;
-  ci: number;
+  id: string;
   stop: boolean;
 };
 export type StdcmSearchEnvironment = {

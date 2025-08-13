@@ -1,4 +1,4 @@
-use crate::views::timetable::similar_trains::Codes;
+use crate::views::timetable::similar_trains::OperationalPoint;
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::collections::VecDeque;
@@ -11,13 +11,13 @@ use crate::views::timetable::similar_trains::past_train;
 
 #[derive(Clone, PartialEq, Eq, Hash)]
 pub(super) struct Waypoint {
-    pub(super) codes: Codes,
+    pub(super) op: OperationalPoint,
     pub(super) stop: bool,
 }
 
 impl std::fmt::Debug for Waypoint {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}{}", self.codes, if self.stop { "[STOP]" } else { "" },)
+        write!(f, "{}{}", self.op, if self.stop { "[STOP]" } else { "" },)
     }
 }
 
@@ -33,18 +33,18 @@ struct GraphNode {
 #[derive(Debug, Default)]
 pub(super) struct Graph {
     graph: InnerGraph,
-    codes_index: HashMap<Codes, NodeIndex>,
+    ops_index: HashMap<OperationalPoint, NodeIndex>,
 }
 
 impl Graph {
-    fn get_node(&self, codes: &Codes) -> Option<&GraphNode> {
-        self.codes_index
-            .get(codes)
+    fn get_node(&self, op: &OperationalPoint) -> Option<&GraphNode> {
+        self.ops_index
+            .get(op)
             .and_then(|&node| self.graph.node_weight(node))
     }
 
     fn get_or_create_node(&mut self, waypoint: Waypoint, train_id: past_train::Id) -> NodeIndex {
-        if let Some(node) = self.codes_index.get(&waypoint.codes) {
+        if let Some(node) = self.ops_index.get(&waypoint.op) {
             self.graph
                 .node_weight_mut(*node)
                 .unwrap()
@@ -52,12 +52,12 @@ impl Graph {
                 .insert(train_id);
             *node
         } else {
-            let key = waypoint.codes.clone();
+            let key = waypoint.op.clone();
             let node = self.graph.add_node(GraphNode {
                 waypoint,
                 trains: HashSet::from([train_id]),
             });
-            self.codes_index.insert(key, node);
+            self.ops_index.insert(key, node);
             node
         }
     }
@@ -82,10 +82,10 @@ impl Graph {
         target: &'a new_train::Waypoint,
         max_distance: usize,
     ) -> TrainsOnPath<'a> {
-        let Some(from) = self.codes_index.get(&initial.codes) else {
+        let Some(from) = self.ops_index.get(&initial.op) else {
             return TrainsOnPath::MissingInitialWaypoint(initial);
         };
-        let Some(to) = self.codes_index.get(&target.codes) else {
+        let Some(to) = self.ops_index.get(&target.op) else {
             return TrainsOnPath::MissingTargetWaypoint(target);
         };
 
@@ -150,7 +150,7 @@ impl MatchingState {
         let mut path = segment.into_path();
         let current_waypoint = path.pop_front().ok_or(())?;
         let trains = graph
-            .get_node(&current_waypoint.codes)
+            .get_node(&current_waypoint.op)
             .ok_or(())?
             .trains
             .clone();

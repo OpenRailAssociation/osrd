@@ -12782,29 +12782,20 @@ components:
     SimilarTrainWaypoint:
       type: object
       required:
-      - ci
-      - ch
+      - id
       - stop
       properties:
-        ch:
+        id:
           type: string
-        ci:
-          type: integer
-          format: int64
-          minimum: 0
         stop:
           type: boolean
     SimilarTrainWaypointResponse:
       type: object
       required:
-      - ci
-      - ch
+      - id
       properties:
-        ch:
+        id:
           type: string
-        ci:
-          type: integer
-          format: int64
     SimulationResponse:
       oneOf:
       - allOf:
