@@ -183,5 +183,8 @@
   },
   "nav-bar": {
     "about": "Sobre"
-  }
+  },
+  "operationalStudies": "Estudos operacionais",
+  "rollingStockEditor": "Editor de material rodante",
+  "stdcm": "Pedido de caminho de curto prazo"
 }
