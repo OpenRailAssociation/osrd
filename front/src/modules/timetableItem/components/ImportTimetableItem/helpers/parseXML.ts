@@ -138,9 +138,7 @@ const parseXML = async (xmlDoc: Document): Promise<TimetableJsonPayload> => {
       train_name: trainNumber,
       rolling_stock_name: rollingStockName || formationRef || '', // RollingStocks in xml files rarely have the correct format
       start_time: new Date(`${startDate} ${firstDepartureTimeformatted}`).toISOString(),
-      constraint_distribution: xmlDoc.documentElement.hasAttribute('xmlns:tps')
-        ? 'STANDARD'
-        : 'MARECO',
+      constraint_distribution: 'STANDARD',
       path,
       schedule,
     };
