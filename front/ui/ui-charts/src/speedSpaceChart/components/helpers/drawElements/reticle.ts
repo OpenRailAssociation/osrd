@@ -3,7 +3,6 @@ import { WHITE, BLACK, MARGINS } from '../../const';
 import {
   clearCanvas,
   binarySearch,
-  getAdaptiveHeight,
   maxPositionValue,
   maxSpeedValue,
   interpolate,
@@ -56,8 +55,7 @@ export const drawCursor = ({ ctx, width, height, store }: DrawFunctionParams) =>
   const maxSpeed = maxSpeedValue(store);
   const maxPosition = maxPositionValue(store.speeds);
 
-  const heightWithoutLayers = getAdaptiveHeight(height, layersDisplay, false);
-  const cursorBoxHeight = heightWithoutLayers - MARGIN_BOTTOM - MARGIN_TOP;
+  const cursorBoxHeight = height - MARGIN_BOTTOM - MARGIN_TOP;
   const cursorBoxWidth = width - MARGIN_LEFT - MARGIN_RIGHT;
 
   const xPositionReference = (ref: number) =>

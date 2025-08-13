@@ -17,6 +17,10 @@ type SettingsPanelProps = {
   store: Store;
   setStore: React.Dispatch<React.SetStateAction<Store>>;
   setIsMouseHoveringSettingsPanel: React.Dispatch<React.SetStateAction<boolean>>;
+  adjustHeightOnLayerChange: (
+    layerName: 'electricalProfiles' | 'powerRestrictions' | 'speedLimitTags',
+    isCurrentlyActive: boolean
+  ) => void;
   translations?: SpeedSpaceChartProps['translations'];
   testIdPrefix?: string;
 };
@@ -27,6 +31,7 @@ const SettingsPanel = ({
   store,
   setStore,
   setIsMouseHoveringSettingsPanel,
+  adjustHeightOnLayerChange,
   translations,
   testIdPrefix,
 }: SettingsPanelProps) => {
@@ -76,6 +81,14 @@ const SettingsPanel = ({
                     [selection]: !prev.layersDisplay[selection],
                   },
                 }));
+
+                if (
+                  selection === 'electricalProfiles' ||
+                  selection === 'powerRestrictions' ||
+                  selection === 'speedLimitTags'
+                ) {
+                  adjustHeightOnLayerChange(selection, store.layersDisplay[selection]);
+                }
               }}
             />
           </div>

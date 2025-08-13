@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
 import InteractionButtons from './common/InteractionButtons';
 import SettingsPanel from './common/SettingsPanel';
@@ -18,7 +18,7 @@ import {
   TickLayerX,
   TickLayerYRight,
 } from './layers/index';
-import { getAdaptiveHeight, getGraphOffsets, getLinearLayerMarginTop } from './utils';
+import { getGraphOffsets } from './utils';
 import type { Data, Store } from '../types';
 
 export type SpeedSpaceChartProps = {
@@ -92,13 +92,56 @@ const SpeedSpaceChart = ({
     isSettingsPanelOpened: false,
   });
 
+  const {
+    mainChartHeight,
+    powerRestrictionsTop,
+    speedLimitTagsTop,
+    electricalProfileLayerHeight,
+    interactivityLayerHeight,
+  } = useMemo(() => {
+    const _electricalProfilesOffset = store.layersDisplay.electricalProfiles
+      ? LINEAR_LAYERS_HEIGHTS.ELECTRICAL_PROFILES_HEIGHT
+      : 0;
+    const _powerRestrictionsOffset = store.layersDisplay.powerRestrictions
+      ? LINEAR_LAYERS_HEIGHTS.POWER_RESTRICTIONS_HEIGHT
+      : 0;
+    const _speedLimitTagsOffset = store.layersDisplay.speedLimitTags
+      ? LINEAR_LAYERS_HEIGHTS.SPEED_LIMIT_TAGS_HEIGHT
+      : 0;
+
+    // Height of the speedSpaceChart only (without the linear layers below) + top and bottom margins
+    // TODO: remove the top and bottom margins from _mainChartHeight
+    const _mainChartHeight =
+      height - (_electricalProfilesOffset + _powerRestrictionsOffset + _speedLimitTagsOffset);
+
+    const _baseLayerPosition = _mainChartHeight - MARGINS.MARGIN_BOTTOM;
+    const _powerRestrictionsTop = _baseLayerPosition + _electricalProfilesOffset;
+    const _speedLimitTagsTop = _powerRestrictionsTop + _powerRestrictionsOffset;
+
+    const _interactivityLayerHeight =
+      _mainChartHeight -
+      MARGINS.MARGIN_BOTTOM -
+      MARGINS.MARGIN_TOP +
+      _electricalProfilesOffset +
+      _powerRestrictionsOffset +
+      _speedLimitTagsOffset;
+
+    return {
+      mainChartHeight: _mainChartHeight,
+      powerRestrictionsTop: _powerRestrictionsTop,
+      speedLimitTagsTop: _speedLimitTagsTop,
+      electricalProfileLayerHeight:
+        _mainChartHeight + LINEAR_LAYERS_HEIGHTS.ELECTRICAL_PROFILES_HEIGHT,
+      interactivityLayerHeight: _interactivityLayerHeight,
+    };
+  }, [height, store.layersDisplay]);
+
   const { WIDTH_OFFSET, HEIGHT_OFFSET } = getGraphOffsets(
     width,
-    height,
+    mainChartHeight,
     store.layersDisplay.declivities
   );
-  const dynamicHeight = getAdaptiveHeight(height, store.layersDisplay);
-  const dynamicHeightOffset = getAdaptiveHeight(HEIGHT_OFFSET, store.layersDisplay);
+
   const { OFFSET_RIGHT_AXIS } = MARGINS;
   const adjustedWidthRightAxis = store.layersDisplay.declivities
     ? width - OFFSET_RIGHT_AXIS
@@ -122,6 +165,24 @@ const SpeedSpaceChart = ({
     }));
   };
 
+  const adjustHeightOnLayerChange = useCallback(
+    (
+      layerName: 'electricalProfiles' | 'powerRestrictions' | 'speedLimitTags',
+      isCurrentlyActive: boolean
+    ) => {
+      let adjustment: number;
+      if (layerName === 'electricalProfiles') {
+        adjustment = LINEAR_LAYERS_HEIGHTS.ELECTRICAL_PROFILES_HEIGHT;
+      } else if (layerName === 'powerRestrictions') {
+        adjustment = LINEAR_LAYERS_HEIGHTS.POWER_RESTRICTIONS_HEIGHT;
+      } else {
+        adjustment = LINEAR_LAYERS_HEIGHTS.SPEED_LIMIT_TAGS_HEIGHT;
+      }
+      setHeight((prevHeight) => prevHeight + (isCurrentlyActive ? -adjustment : adjustment));
+    },
+    [setHeight]
+  );
+
   useEffect(() => {
     setStore((prev) => ({
       ...prev,
@@ -129,15 +190,11 @@ const SpeedSpaceChart = ({
     }));
   }, [data]);
 
-  useEffect(() => {
-    setHeight(dynamicHeight);
-  }, [setHeight, dynamicHeight]);
-
   return (
     <div
       style={{
         width: `${width}px`,
-        height: `${dynamicHeight}px`,
+        height: `${height}px`,
         backgroundColor: `${backgroundColor}`,
       }}
       tabIndex={0}
@@ -159,13 +216,14 @@ const SpeedSpaceChart = ({
           style={{ width: adjustedWidthRightAxis }}
         >
           <SettingsPanel
-            globalHeight={dynamicHeight}
+            globalHeight={height}
             color={backgroundColor}
             store={store}
             setStore={setStore}
             setIsMouseHoveringSettingsPanel={setIsMouseHoveringSettingsPanel}
             translations={translations}
             testIdPrefix="settings-panel"
+            adjustHeightOnLayerChange={adjustHeightOnLayerChange}
           />
         </div>
       )}
@@ -174,52 +232,47 @@ const SpeedSpaceChart = ({
       )}
       <CurveLayer width={WIDTH_OFFSET} height={HEIGHT_OFFSET} store={store} />
       {store.layersDisplay.speedLimits && (
-        <SpeedLimitsLayer width={adjustedWidthRightAxis} height={height} store={store} />
+        <SpeedLimitsLayer width={adjustedWidthRightAxis} height={mainChartHeight} store={store} />
       )}
       {store.layersDisplay.steps && (
-        <StepsLayer width={adjustedWidthRightAxis} height={height} store={store} />
+        <StepsLayer width={adjustedWidthRightAxis} height={mainChartHeight} store={store} />
       )}
-      <AxisLayerY width={width} height={height} store={store} />
+      <AxisLayerY width={width} height={mainChartHeight} store={store} />
       {store.layersDisplay.electricalProfiles && (
         <ElectricalProfileLayer
           width={adjustedWidthRightAxis}
-          height={height + LINEAR_LAYERS_HEIGHTS.ELECTRICAL_PROFILES_HEIGHT}
+          height={electricalProfileLayerHeight}
           store={store}
         />
       )}
       {store.layersDisplay.powerRestrictions && (
         <PowerRestrictionsLayer
           width={adjustedWidthRightAxis}
-          marginTop={getLinearLayerMarginTop(height, store.layersDisplay)}
+          marginTop={powerRestrictionsTop}
           store={store}
         />
       )}
       {store.layersDisplay.speedLimitTags && (
         <SpeedLimitTagsLayer
           width={adjustedWidthRightAxis}
-          marginTop={getLinearLayerMarginTop(
-            height,
-            store.layersDisplay,
-            store.layersDisplay.speedLimitTags
-          )}
+          marginTop={speedLimitTagsTop}
           store={store}
         />
       )}
-      <TickLayerX width={adjustedWidthRightAxis} height={dynamicHeight} store={store} />
+      <TickLayerX width={adjustedWidthRightAxis} height={height} store={store} />
       {store.layersDisplay.declivities && (
-        <TickLayerYRight width={width} height={height} store={store} />
+        <TickLayerYRight width={width} height={mainChartHeight} store={store} />
       )}
       {!isMouseHoveringSettingsPanel && (
         <ReticleLayer
           width={adjustedWidthRightAxis}
-          height={dynamicHeight}
-          heightOffset={dynamicHeightOffset}
+          internalHeight={mainChartHeight}
           store={store}
         />
       )}
       <FrontInteractivityLayer
         width={WIDTH_OFFSET}
-        height={dynamicHeightOffset}
+        height={interactivityLayerHeight}
         store={store}
         setStore={setStore}
       />
