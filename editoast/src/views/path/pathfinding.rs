@@ -204,7 +204,7 @@ pub(in crate::views) async fn post(
 
     let conn = db_pool.get().await?;
     let mut valkey_conn = valkey.get_connection().await?;
-    let infra = Infra::retrieve_real_or_fail(conn.clone(), infra_id, || {
+    let infra = Infra::retrieve_or_fail(conn.clone(), infra_id, || {
         PathfindingError::InfraNotFound { infra_id }
     })
     .await?;
@@ -400,7 +400,7 @@ pub async fn pathfinding_from_train<T: TrainScheduleLike>(
     train_schedule: T,
 ) -> Result<PathfindingResult> {
     let rolling_stock: Vec<_> =
-        RollingStock::retrieve_real(conn.clone(), train_schedule.rolling_stock_name().to_owned())
+        RollingStock::retrieve(conn.clone(), train_schedule.rolling_stock_name().to_owned())
             .await?
             .into_iter()
             .map_into()

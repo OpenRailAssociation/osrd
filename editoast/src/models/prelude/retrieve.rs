@@ -3,10 +3,6 @@ use std::fmt::Debug;
 use axum::http::StatusCode;
 use database::DbConnection;
 
-use crate::error::EditoastError;
-use crate::error::InternalError;
-use crate::error::Result;
-
 use super::Model;
 
 /// Describes how a [Model] can be retrieved from the database
@@ -20,46 +16,16 @@ where
 {
     type Error: std::error::Error + From<editoast_models::model::Error> + Send;
 
-    #[deprecated = "use Retrieve::retrieve_real instead"]
-    async fn retrieve(conn: &mut DbConnection, id: K) -> Result<Option<Self>> {
-        match Self::retrieve_real(conn.clone(), id).await {
-            Ok(model) => Ok(model),
-            // TODO: this is a temporary hack to ease the Retrieve error migration
-            // This implementation will be removed in the future and `retrieve_real`
-            // will become `retrieve`.
-            Err(model_error) => Err(InternalError {
-                status: StatusCode::INTERNAL_SERVER_ERROR,
-                error_type: "editoast:model:retrieve".to_owned(),
-                context: Default::default(),
-                message: model_error.to_string(),
-            }),
-        }
-    }
-
     /// Retrieves the row #`id` and deserializes it as a model instance
-    async fn retrieve_real(conn: DbConnection, id: K) -> Result<Option<Self>, Self::Error>;
-
-    #[deprecated = "use Retrieve::retrieve_real_or_fail instead"]
-    async fn retrieve_or_fail<E, F>(conn: &mut DbConnection, id: K, fail: F) -> Result<Self>
-    where
-        E: EditoastError,
-        F: FnOnce() -> E + Send,
-    {
-        #[expect(deprecated)]
-        match Self::retrieve(conn, id).await {
-            Ok(Some(obj)) => Ok(obj),
-            Ok(None) => Err(fail().into()),
-            Err(e) => Err(e),
-        }
-    }
+    async fn retrieve(conn: DbConnection, id: K) -> Result<Option<Self>, Self::Error>;
 
     /// Just like [Retrieve::retrieve] but returns `Err(fail())` if the row was not found
-    async fn retrieve_real_or_fail<E, F>(conn: DbConnection, id: K, fail: F) -> Result<Self, E>
+    async fn retrieve_or_fail<E, F>(conn: DbConnection, id: K, fail: F) -> Result<Self, E>
     where
         E: From<Self::Error>,
         F: FnOnce() -> E + Send,
     {
-        match Self::retrieve_real(conn, id).await {
+        match Self::retrieve(conn, id).await {
             Ok(Some(obj)) => Ok(obj),
             Ok(None) => Err(fail()),
             Err(e) => Err(E::from(e)),

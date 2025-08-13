@@ -93,7 +93,7 @@ impl Study {
     {
         conn.transaction(|mut conn| {
             async move {
-                let mut study = Self::retrieve_real_or_fail(conn.clone(), study_id, || {
+                let mut study = Self::retrieve_or_fail(conn.clone(), study_id, || {
                     StudyError::NotFound { study_id }
                 })
                 .await?;
@@ -152,7 +152,7 @@ pub mod tests {
             create_study(&mut db_pool.get_ok(), study_name, created_project.id).await;
 
         // Retrieve a study
-        let study = Study::retrieve_real(db_pool.get_ok(), created_study.id)
+        let study = Study::retrieve(db_pool.get_ok(), created_study.id)
             .await
             .expect("Failed to retrieve study")
             .expect("Study not found");

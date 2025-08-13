@@ -83,7 +83,7 @@ pub async fn trains_import(
 
     let timetable = match args.id {
         Some(timetable) => {
-            Timetable::retrieve_real_or_fail(db_pool.get().await?, timetable, || {
+            Timetable::retrieve_or_fail(db_pool.get().await?, timetable, || {
                 anyhow::anyhow!("Timetable not found, id: {}", timetable)
             })
             .await?

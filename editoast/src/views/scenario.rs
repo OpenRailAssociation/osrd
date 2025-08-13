@@ -248,7 +248,7 @@ pub(in crate::views) async fn delete(
                     return Err(ProjectError::NotFound { project_id }.into());
                 }
 
-                let scenario = Scenario::retrieve_real_or_fail(conn.clone(), scenario_id, || {
+                let scenario = Scenario::retrieve_or_fail(conn.clone(), scenario_id, || {
                     ScenarioError::NotFound { scenario_id }
                 })
                 .await?;
@@ -390,11 +390,11 @@ pub(in crate::views) async fn get(
         .await?
         .transaction(|mut conn| {
             async move {
-                let project = Project::retrieve_real_or_fail(conn.clone(), project_id, || {
+                let project = Project::retrieve_or_fail(conn.clone(), project_id, || {
                     ProjectError::NotFound { project_id }
                 })
                 .await?;
-                let study = Study::retrieve_real_or_fail(conn.clone(), study_id, || {
+                let study = Study::retrieve_or_fail(conn.clone(), study_id, || {
                     StudyError::NotFound { study_id }
                 })
                 .await?;
@@ -402,7 +402,7 @@ pub(in crate::views) async fn get(
                     return Err(ProjectError::NotFound { project_id }.into());
                 }
 
-                let scenario = Scenario::retrieve_real_or_fail(conn.clone(), scenario_id, || {
+                let scenario = Scenario::retrieve_or_fail(conn.clone(), scenario_id, || {
                     ScenarioError::NotFound { scenario_id }
                 })
                 .await?;
@@ -460,7 +460,7 @@ pub(in crate::views) async fn list(
     let conn = &mut db_pool.get().await?;
 
     let study =
-        Study::retrieve_real_or_fail(conn.clone(), study_id, || StudyError::NotFound { study_id })
+        Study::retrieve_or_fail(conn.clone(), study_id, || StudyError::NotFound { study_id })
             .await?;
     if study.project_id != project_id {
         return Err(ProjectError::NotFound { project_id }.into());
@@ -601,7 +601,7 @@ mod tests {
         assert_eq!(response.scenario.timetable_id, study_timetable_id);
         assert_eq!(response.scenario.tags, study_tags);
 
-        let created_scenario = Scenario::retrieve_real(pool.get_ok(), response.scenario.id)
+        let created_scenario = Scenario::retrieve(pool.get_ok(), response.scenario.id)
             .await
             .expect("Failed to retrieve scenario")
             .expect("Scenario not found");

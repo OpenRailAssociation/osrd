@@ -181,8 +181,8 @@ pub(in crate::views) async fn stdcm(
 
     // 1.  Infra / Timetable / Trains / Simulation / Rolling Stock
 
-    let infra = Infra::retrieve_real_or_fail(conn.clone(), infra_id, || {
-        StdcmError::InfraNotFound { infra_id }
+    let infra = Infra::retrieve_or_fail(conn.clone(), infra_id, || StdcmError::InfraNotFound {
+        infra_id,
     })
     .await?;
 
@@ -196,7 +196,7 @@ pub(in crate::views) async fn stdcm(
         .await?;
 
     let rolling_stock =
-        RollingStock::retrieve_real_or_fail(conn.clone(), stdcm_request.rolling_stock_id, || {
+        RollingStock::retrieve_or_fail(conn.clone(), stdcm_request.rolling_stock_id, || {
             StdcmError::RollingStockNotFound {
                 rolling_stock_id: stdcm_request.rolling_stock_id,
             }
@@ -241,7 +241,7 @@ pub(in crate::views) async fn stdcm(
     let earliest_departure_time = stdcm_request.get_earliest_departure_time(simulation_run_time);
     let latest_simulation_end = stdcm_request.get_latest_simulation_end(simulation_run_time);
 
-    let timetable = Timetable::retrieve_real_or_fail(conn.clone(), timetable_id, || {
+    let timetable = Timetable::retrieve_or_fail(conn.clone(), timetable_id, || {
         StdcmError::TimetableNotFound { timetable_id }
     })
     .await?;

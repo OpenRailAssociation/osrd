@@ -72,7 +72,7 @@ pub async fn clone_infra(
     infra_args: InfraCloneArgs,
     db_pool: Arc<DbConnectionPoolV2>,
 ) -> anyhow::Result<()> {
-    let infra = Infra::retrieve_real_or_fail(db_pool.get().await?, infra_args.id as i64, || {
+    let infra = Infra::retrieve_or_fail(db_pool.get().await?, infra_args.id as i64, || {
         anyhow::anyhow!("Infrastructure not found, ID: {}", infra_args.id)
     })
     .await?;

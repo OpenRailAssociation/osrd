@@ -45,7 +45,7 @@ pub async fn import_rolling_stock(
                         .bold()
                 );
                 let existing_rolling_stock =
-                    RollingStock::retrieve_real(conn.clone(), rolling_stock_name.clone()).await?;
+                    RollingStock::retrieve(conn.clone(), rolling_stock_name.clone()).await?;
                 match (existing_rolling_stock, args.force) {
                     (Some(_), true) => {
                         let rolling_stock = rolling_stock
@@ -199,7 +199,7 @@ mod tests {
                 "import should succeed, as raise_panto and startup are not required for non electric",
             );
             let created_rs =
-                RollingStock::retrieve_real(db_pool.get_ok(), rolling_stock_name.to_string())
+                RollingStock::retrieve(db_pool.get_ok(), rolling_stock_name.to_string())
                     .await
                     .unwrap();
             assert!(created_rs.is_some());
@@ -226,7 +226,7 @@ mod tests {
             // THEN
             assert!(result.is_ok(), "import should succeed");
             let created_rs =
-                RollingStock::retrieve_real(db_pool.get_ok(), rolling_stock_name.to_string())
+                RollingStock::retrieve(db_pool.get_ok(), rolling_stock_name.to_string())
                     .await
                     .expect("failed to retrieve rolling stock")
                     .unwrap();
@@ -263,7 +263,7 @@ mod tests {
                 "import should fail, as raise_panto and startup are required for electric"
             );
             let created_rs =
-                RollingStock::retrieve_real(db_pool.get_ok(), rolling_stock_name.to_string())
+                RollingStock::retrieve(db_pool.get_ok(), rolling_stock_name.to_string())
                     .await
                     .unwrap();
             assert!(created_rs.is_none());
@@ -288,7 +288,7 @@ mod tests {
             // THEN
             assert!(result.is_ok(), "import should succeed");
             let created_rs =
-                RollingStock::retrieve_real(db_pool.get_ok(), rolling_stock_name.to_string())
+                RollingStock::retrieve(db_pool.get_ok(), rolling_stock_name.to_string())
                     .await
                     .expect("Failed to retrieve rolling stock")
                     .unwrap();
@@ -335,12 +335,10 @@ mod tests {
                 result.is_ok(),
                 "import should succeed, but result as skipped, as a rolling stock already exists and --force is disabled"
             );
-            let rolling_stock = RollingStock::retrieve_real(
-                db_pool.get_ok(),
-                existing_rolling_stock_name.to_string(),
-            )
-            .await
-            .unwrap();
+            let rolling_stock =
+                RollingStock::retrieve(db_pool.get_ok(), existing_rolling_stock_name.to_string())
+                    .await
+                    .unwrap();
             assert!(rolling_stock.is_some());
             assert!(rolling_stock.unwrap().length == units::meter::new(400.0));
         }
@@ -378,12 +376,10 @@ mod tests {
                 result.is_ok(),
                 "import should succeed, but result as skipped, as a rolling stock already exists and --force is disabled"
             );
-            let rolling_stock = RollingStock::retrieve_real(
-                db_pool.get_ok(),
-                existing_rolling_stock_name.to_string(),
-            )
-            .await
-            .unwrap();
+            let rolling_stock =
+                RollingStock::retrieve(db_pool.get_ok(), existing_rolling_stock_name.to_string())
+                    .await
+                    .unwrap();
             assert!(rolling_stock.is_some());
             assert!(rolling_stock.unwrap().length == units::meter::new(100.0));
         }
@@ -434,12 +430,10 @@ mod tests {
 
             // THEN
             assert!(result.is_ok());
-            let created_rs = TowedRollingStock::retrieve_real(
-                db_pool.get_ok(),
-                towed_rolling_stock_name.to_string(),
-            )
-            .await
-            .unwrap();
+            let created_rs =
+                TowedRollingStock::retrieve(db_pool.get_ok(), towed_rolling_stock_name.to_string())
+                    .await
+                    .unwrap();
             assert!(created_rs.is_some());
         }
     }

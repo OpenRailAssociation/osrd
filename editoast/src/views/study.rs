@@ -230,11 +230,11 @@ pub(in crate::views) async fn get(
         .await?
         .transaction(|mut conn| {
             async move {
-                let project = Project::retrieve_real_or_fail(conn.clone(), project_id, || {
+                let project = Project::retrieve_or_fail(conn.clone(), project_id, || {
                     ProjectError::NotFound { project_id }
                 })
                 .await?;
-                let study = Study::retrieve_real_or_fail(conn.clone(), study_id, || {
+                let study = Study::retrieve_or_fail(conn.clone(), study_id, || {
                     StudyError::NotFound { study_id }
                 })
                 .await?;
@@ -460,7 +460,7 @@ pub mod tests {
             }));
         let response: StudyResponse = app.fetch(request).assert_status(StatusCode::OK).json_into();
 
-        let study = Study::retrieve_real(db_pool.get_ok(), response.study.id)
+        let study = Study::retrieve(db_pool.get_ok(), response.study.id)
             .await
             .expect("Failed to retrieve study")
             .expect("Study not found");
@@ -583,12 +583,12 @@ pub mod tests {
 
         app.fetch(request).assert_status(StatusCode::OK);
 
-        let updated_study = Study::retrieve_real(db_pool.get_ok(), created_study.id)
+        let updated_study = Study::retrieve(db_pool.get_ok(), created_study.id)
             .await
             .expect("Failed to retrieve study")
             .expect("Study not found");
 
-        let updated_project = Project::retrieve_real(db_pool.get_ok(), created_project.id)
+        let updated_project = Project::retrieve(db_pool.get_ok(), created_project.id)
             .await
             .expect("Failed to retrieve project")
             .expect("Project not found");

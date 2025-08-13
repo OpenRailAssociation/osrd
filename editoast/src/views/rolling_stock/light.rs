@@ -151,7 +151,7 @@ pub(in crate::views) async fn get(
         return Err(AuthorizationError::Forbidden.into());
     }
     let rolling_stock =
-        RollingStock::retrieve_real_or_fail(db_pool.get().await?, light_rolling_stock_id, || {
+        RollingStock::retrieve_or_fail(db_pool.get().await?, light_rolling_stock_id, || {
             RollingStockError::KeyNotFound {
                 rolling_stock_key: RollingStockKey::Id(light_rolling_stock_id),
             }
@@ -184,7 +184,7 @@ pub(in crate::views) async fn get_by_name(
     if !authorized {
         return Err(AuthorizationError::Forbidden.into());
     }
-    let rolling_stock = RollingStock::retrieve_real_or_fail(
+    let rolling_stock = RollingStock::retrieve_or_fail(
         db_pool.get().await?,
         light_rolling_stock_name.clone(),
         || RollingStockError::KeyNotFound {

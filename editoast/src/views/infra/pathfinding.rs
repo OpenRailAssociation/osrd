@@ -119,7 +119,7 @@ pub(in crate::views) async fn pathfinding_view(
     }
 
     // TODO: lock for share
-    let infra = Infra::retrieve_real_or_fail(db_pool.get().await?, infra_id, || {
+    let infra = Infra::retrieve_or_fail(db_pool.get().await?, infra_id, || {
         InfraApiError::NotFound { infra_id }
     })
     .await?;

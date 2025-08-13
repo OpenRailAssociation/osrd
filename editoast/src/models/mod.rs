@@ -208,7 +208,7 @@ mod tests {
 
         let ids = docs.iter().map(|d| d.id).collect::<Vec<_>>();
         assert_eq!(
-            Document::retrieve_real(pool.get_ok(), ids[0])
+            Document::retrieve(pool.get_ok(), ids[0])
                 .await
                 .expect("Failed to retrieve document")
                 .expect("Document not found")
@@ -216,7 +216,7 @@ mod tests {
             Data::Prefixed(0x43)
         );
         assert_eq!(
-            Document::retrieve_real(pool.get_ok(), ids[1])
+            Document::retrieve(pool.get_ok(), ids[1])
                 .await
                 .expect("Failed to retrieve document")
                 .expect("Document not found")

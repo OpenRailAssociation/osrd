@@ -413,7 +413,7 @@ pub(in crate::views) async fn put_in_group(
     conn.transaction(|conn| {
         Box::pin(async move {
             // Check that the group exists
-            WorkScheduleGroup::retrieve_real_or_fail(conn.clone(), group_id, || {
+            WorkScheduleGroup::retrieve_or_fail(conn.clone(), group_id, || {
                 WorkScheduleError::WorkScheduleGroupNotFound { id: group_id }
             })
             .await?;
@@ -482,7 +482,7 @@ pub(in crate::views) async fn get_group(
     let conn = &mut db_pool.get().await?;
 
     // Check that the group exists
-    WorkScheduleGroup::retrieve_real_or_fail(conn.clone(), group_id, || {
+    WorkScheduleGroup::retrieve_or_fail(conn.clone(), group_id, || {
         WorkScheduleError::WorkScheduleGroupNotFound { id: group_id }
     })
     .await?;
@@ -531,7 +531,7 @@ pub mod tests {
             .json_into::<WorkScheduleCreateResponse>();
 
         // THEN
-        let created_group = WorkScheduleGroup::retrieve_real(
+        let created_group = WorkScheduleGroup::retrieve(
             pool.get_ok(),
             work_schedule_response.work_schedule_group_id,
         )

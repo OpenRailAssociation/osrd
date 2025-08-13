@@ -89,7 +89,7 @@ impl From<ProjectCreateForm> for Changeset<Project> {
 }
 
 async fn check_image_content(conn: &mut DbConnection, document_key: i64) -> Result<()> {
-    let doc = Document::retrieve_real_or_fail(conn.clone(), document_key, || {
+    let doc = Document::retrieve_or_fail(conn.clone(), document_key, || {
         ProjectError::ImageNotFound { document_key }
     })
     .await?;
@@ -240,8 +240,8 @@ pub(in crate::views) async fn get(
         return Err(AuthorizationError::Forbidden.into());
     }
     let mut conn = db_pool.get().await?;
-    let project = Project::retrieve_real_or_fail(conn.clone(), project_id, || {
-        ProjectError::NotFound { project_id }
+    let project = Project::retrieve_or_fail(conn.clone(), project_id, || ProjectError::NotFound {
+        project_id,
     })
     .await?;
     Ok(Json(
@@ -278,7 +278,7 @@ pub(in crate::views) async fn delete(
         .await?
         .transaction(|mut conn| {
             async move {
-                let project = Project::retrieve_real_or_fail(conn.clone(), project_id, || {
+                let project = Project::retrieve_or_fail(conn.clone(), project_id, || {
                     ProjectError::NotFound { project_id }
                 })
                 .await?;
@@ -433,7 +433,7 @@ pub mod tests {
         let response: ProjectWithStudyCount =
             app.fetch(request).assert_status(StatusCode::OK).json_into();
 
-        let project = Project::retrieve_real(pool.get_ok(), response.project.id)
+        let project = Project::retrieve(pool.get_ok(), response.project.id)
             .await
             .expect("Failed to retrieve project")
             .expect("Project not found");
@@ -531,7 +531,7 @@ pub mod tests {
         let response: ProjectWithStudyCount =
             app.fetch(request).assert_status(StatusCode::OK).json_into();
 
-        let project = Project::retrieve_real(db_pool.get_ok(), response.project.id)
+        let project = Project::retrieve(db_pool.get_ok(), response.project.id)
             .await
             .expect("Failed to retrieve project")
             .expect("Project not found");
@@ -550,7 +550,7 @@ pub mod tests {
         let project = create_project(&mut db_pool.get_ok(), &app.name("project")).await;
 
         let check_image = |conn: DbConnection, image_id: Option<i64>| async move {
-            let p = Project::retrieve_real(conn, project.id)
+            let p = Project::retrieve(conn, project.id)
                 .await
                 .expect("Failed to retrieve project")
                 .expect("Project not found");
