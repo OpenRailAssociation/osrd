@@ -294,8 +294,7 @@ mod tests {
 
         let TemporarySpeedLimitCreateResponse { group_id } =
             app.fetch(request).assert_status(StatusCode::OK).json_into();
-        #[expect(deprecated)]
-        let created_group = TemporarySpeedLimitGroup::retrieve(&mut pool.get_ok(), group_id)
+        let created_group = TemporarySpeedLimitGroup::retrieve_real(pool.get_ok(), group_id)
             .await
             .expect("Failed to retrieve the created temporary speed limit group")
             .expect("No temporary speed limit group matches the group identifier of the endpoint response");

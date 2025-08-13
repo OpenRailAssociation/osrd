@@ -585,11 +585,10 @@ pub(in crate::views) async fn conflicts(
         return Err(AuthorizationError::Forbidden.into());
     }
 
-    let mut conn = db_pool.get().await?;
+    let conn = db_pool.get().await?;
 
-    #[expect(deprecated)]
-    let infra = Infra::retrieve_or_fail(&mut conn, infra_id, || TimetableError::InfraNotFound {
-        infra_id,
+    let infra = Infra::retrieve_real_or_fail(conn.clone(), infra_id, || {
+        TimetableError::InfraNotFound { infra_id }
     })
     .await?;
 
@@ -975,9 +974,8 @@ mod tests {
         let created_timetable: TimetableResult =
             app.fetch(request).assert_status(StatusCode::OK).json_into();
 
-        #[expect(deprecated)]
         let retrieved_timetable =
-            Timetable::retrieve(&mut pool.get_ok(), created_timetable.timetable_id)
+            Timetable::retrieve_real(pool.get_ok(), created_timetable.timetable_id)
                 .await
                 .expect("Failed to retrieve timetable")
                 .expect("Timetable not found");

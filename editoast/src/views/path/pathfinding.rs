@@ -202,11 +202,10 @@ pub(in crate::views) async fn post(
         return Err(AuthorizationError::Forbidden.into());
     }
 
-    let conn = &mut db_pool.get().await?;
+    let conn = db_pool.get().await?;
     let mut valkey_conn = valkey.get_connection().await?;
-    #[expect(deprecated)]
-    let infra = Infra::retrieve_or_fail(conn, infra_id, || PathfindingError::InfraNotFound {
-        infra_id,
+    let infra = Infra::retrieve_real_or_fail(conn.clone(), infra_id, || {
+        PathfindingError::InfraNotFound { infra_id }
     })
     .await?;
 
@@ -225,7 +224,7 @@ pub(in crate::views) async fn post(
 
 /// Pathfinding computation given a path input
 async fn pathfinding_blocks(
-    conn: &mut DbConnection,
+    conn: DbConnection,
     valkey_conn: &mut ValkeyConnection,
     core: Arc<CoreClient>,
     infra: &Infra,
@@ -237,7 +236,7 @@ async fn pathfinding_blocks(
 
 /// Pathfinding batch computation given a list of path inputs
 async fn pathfinding_blocks_batch(
-    conn: &mut DbConnection,
+    mut conn: DbConnection,
     valkey_conn: &mut ValkeyConnection,
     core: Arc<CoreClient>,
     infra: &Infra,
@@ -291,7 +290,7 @@ async fn pathfinding_blocks_batch(
         .filter(|(_, res)| res.is_none())
         .flat_map(|(hash, _)| &path_request_map[*hash].path_items)
         .collect();
-    let path_item_cache = PathItemCache::load(conn, infra.id, &path_items).await?;
+    let path_item_cache = PathItemCache::load(&mut conn, infra.id, &path_items).await?;
 
     debug!(
         nb_path_items = path_items.len(),
@@ -394,15 +393,14 @@ fn build_pathfinding_request(
 
 /// Compute a path given a train schedule and an infrastructure.
 pub async fn pathfinding_from_train<T: TrainScheduleLike>(
-    conn: &mut DbConnection,
+    conn: DbConnection,
     valkey: &mut ValkeyConnection,
     core: Arc<CoreClient>,
     infra: &Infra,
     train_schedule: T,
 ) -> Result<PathfindingResult> {
-    #[expect(deprecated)]
     let rolling_stock: Vec<_> =
-        RollingStock::retrieve(conn, train_schedule.rolling_stock_name().to_string())
+        RollingStock::retrieve_real(conn.clone(), train_schedule.rolling_stock_name().to_owned())
             .await?
             .into_iter()
             .map_into()
@@ -418,7 +416,7 @@ pub async fn pathfinding_from_train<T: TrainScheduleLike>(
 
 /// Compute a path given a batch of trainschedule and an infrastructure.
 pub async fn pathfinding_from_train_batch<T: TrainScheduleLike>(
-    conn: &mut DbConnection,
+    conn: DbConnection,
     valkey: &mut ValkeyConnection,
     core: Arc<CoreClient>,
     infra: &Infra,

@@ -91,8 +91,7 @@ pub(in crate::views) async fn edit(
     }
 
     // TODO: lock for update
-    #[expect(deprecated)]
-    let mut infra = Infra::retrieve_or_fail(&mut db_pool.get().await?, infra_id, || {
+    let mut infra = Infra::retrieve_real_or_fail(db_pool.get().await?, infra_id, || {
         InfraApiError::NotFound { infra_id }
     })
     .await?;
@@ -164,8 +163,7 @@ pub(in crate::views) async fn split_track_section(
     );
 
     // Check the infra
-    #[expect(deprecated)]
-    let mut infra = Infra::retrieve_or_fail(&mut db_pool.get().await?, infra_id, || {
+    let mut infra = Infra::retrieve_real_or_fail(db_pool.get().await?, infra_id, || {
         InfraApiError::NotFound { infra_id }
     })
     .await?;

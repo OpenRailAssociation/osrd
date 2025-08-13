@@ -98,11 +98,11 @@ pub(in crate::views) async fn list_auto_fixes(
         return Err(AuthorizationError::Forbidden.into());
     }
 
-    let conn = &mut db_pool.get().await?;
-
-    #[expect(deprecated)]
-    let infra =
-        Infra::retrieve_or_fail(conn, infra_id, || InfraApiError::NotFound { infra_id }).await?;
+    let mut conn = db_pool.get().await?;
+    let infra = Infra::retrieve_real_or_fail(conn.clone(), infra_id, || InfraApiError::NotFound {
+        infra_id,
+    })
+    .await?;
 
     // Check user privilege on infra
     auth.check_authorization(async |authorizer| {
@@ -113,7 +113,7 @@ pub(in crate::views) async fn list_auto_fixes(
     .await?;
 
     // accepting the early release of ReadGuard as it's anyway released when sending the suggestions (so before edit)
-    let mut infra_cache_clone = InfraCache::get_or_load(conn, &infra_caches, &infra)
+    let mut infra_cache_clone = InfraCache::get_or_load(&mut conn, &infra_caches, &infra)
         .await?
         .clone();
 

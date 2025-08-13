@@ -53,10 +53,11 @@ pub(in crate::views) async fn get_line_bbox(
 
     let line_code: i32 = line_code.try_into().unwrap();
 
-    let conn = &mut db_pool.get().await?;
-    #[expect(deprecated)]
-    let infra =
-        Infra::retrieve_or_fail(conn, infra_id, || InfraApiError::NotFound { infra_id }).await?;
+    let mut conn = db_pool.get().await?;
+    let infra = Infra::retrieve_real_or_fail(conn.clone(), infra_id, || InfraApiError::NotFound {
+        infra_id,
+    })
+    .await?;
 
     // Check user privilege on infra
     auth.check_authorization(async |authorizer| {
@@ -69,7 +70,7 @@ pub(in crate::views) async fn get_line_bbox(
     let mut bbox = BoundingBox::default();
     let selection_settings =
         SelectionSettings::new().filter(move || TrackSectionModel::INFRA_ID.eq(infra.id));
-    let tracksections_model = TrackSectionModel::list(conn, selection_settings).await?;
+    let tracksections_model = TrackSectionModel::list(&mut conn, selection_settings).await?;
     let mut tracksections = tracksections_model
         .into_iter()
         .map(TrackSection::from)

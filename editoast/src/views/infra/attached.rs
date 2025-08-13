@@ -80,10 +80,10 @@ pub(in crate::views) async fn attached(
     // Check that infra exists
     let mut conn = db_pool.get().await?;
     // TODO: lock for share
-    #[expect(deprecated)]
-    let infra =
-        Infra::retrieve_or_fail(&mut conn, infra_id, || InfraApiError::NotFound { infra_id })
-            .await?;
+    let infra = Infra::retrieve_real_or_fail(conn.clone(), infra_id, || InfraApiError::NotFound {
+        infra_id,
+    })
+    .await?;
 
     // Check user privilege on infra
     auth.check_authorization(async |authorizer| {

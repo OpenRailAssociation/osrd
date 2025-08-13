@@ -272,7 +272,7 @@ pub async fn consist_train_simulation_batch<T: TrainScheduleLike>(
     let mut valkey_conn = valkey_client.get_connection().await?;
 
     let pathfinding_results = pathfinding_from_train_batch(
-        conn,
+        conn.clone(),
         &mut valkey_conn,
         core.clone(),
         infra,

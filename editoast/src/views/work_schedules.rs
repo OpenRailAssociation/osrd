@@ -23,6 +23,7 @@ use chrono::DateTime;
 use chrono::Utc;
 use database::DbConnectionPoolV2;
 use editoast_derive::EditoastError;
+use editoast_models::model;
 use editoast_schemas::infra::Direction;
 use editoast_schemas::infra::TrackRange;
 use serde::Deserialize;
@@ -51,8 +52,7 @@ enum WorkScheduleError {
     WorkScheduleGroupNotFound { id: i64 },
     #[error(transparent)]
     #[editoast_error(status = 500)]
-    #[from(editoast_models::model::Error)]
-    Database(work_schedules::WsGroupError),
+    Database(model::Error),
 }
 
 impl From<work_schedules::WsGroupError> for WorkScheduleError {
@@ -61,7 +61,7 @@ impl From<work_schedules::WsGroupError> for WorkScheduleError {
             work_schedules::WsGroupError::NameAlreadyUsed { name } => {
                 WorkScheduleError::NameAlreadyUsed { name }
             }
-            e => WorkScheduleError::Database(e),
+            work_schedules::WsGroupError::Database(e) => WorkScheduleError::Database(e),
         }
     }
 }
@@ -413,8 +413,7 @@ pub(in crate::views) async fn put_in_group(
     conn.transaction(|conn| {
         Box::pin(async move {
             // Check that the group exists
-            #[expect(deprecated)]
-            WorkScheduleGroup::retrieve_or_fail(&mut conn.clone(), group_id, || {
+            WorkScheduleGroup::retrieve_real_or_fail(conn.clone(), group_id, || {
                 WorkScheduleError::WorkScheduleGroupNotFound { id: group_id }
             })
             .await?;
@@ -483,8 +482,7 @@ pub(in crate::views) async fn get_group(
     let conn = &mut db_pool.get().await?;
 
     // Check that the group exists
-    #[expect(deprecated)]
-    WorkScheduleGroup::retrieve_or_fail(conn, group_id, || {
+    WorkScheduleGroup::retrieve_real_or_fail(conn.clone(), group_id, || {
         WorkScheduleError::WorkScheduleGroupNotFound { id: group_id }
     })
     .await?;
@@ -533,9 +531,8 @@ pub mod tests {
             .json_into::<WorkScheduleCreateResponse>();
 
         // THEN
-        #[expect(deprecated)]
-        let created_group = WorkScheduleGroup::retrieve(
-            &mut pool.get_ok(),
+        let created_group = WorkScheduleGroup::retrieve_real(
+            pool.get_ok(),
             work_schedule_response.work_schedule_group_id,
         )
         .await

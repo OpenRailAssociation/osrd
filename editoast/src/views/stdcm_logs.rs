@@ -35,6 +35,10 @@ enum StdcmLogError {
     #[error("STDCM log entry could not be found without specifying an 'id' or 'trace_id'")]
     #[editoast_error(status = 400)]
     MissingIdAndTraceId,
+
+    #[error(transparent)]
+    #[editoast_error(status = 500)]
+    Database(#[from] editoast_models::model::Error),
 }
 
 #[editoast_derive::openapi_schema]
@@ -121,23 +125,22 @@ pub(in crate::views) async fn stdcm_log_by_id_or_trace_id(
         return Err(AuthorizationError::Forbidden.into());
     }
 
-    let conn = &mut db_pool.get().await?;
+    let conn = db_pool.get().await?;
 
     if id.is_some() {
-        #[expect(deprecated)]
-        let stdcm_log = StdcmLog::retrieve_or_fail(conn, id.unwrap(), || StdcmLogError::NotFound {
-            id: id.unwrap(),
+        let stdcm_log = StdcmLog::retrieve_real_or_fail(conn, id.unwrap(), || {
+            StdcmLogError::NotFound { id: id.unwrap() }
         })
         .await?;
         Ok(Json(stdcm_log))
     } else if trace_id.is_some() {
-        #[expect(deprecated)]
-        let stdcm_log = StdcmLog::retrieve_or_fail(conn, Some(trace_id.clone().unwrap()), || {
-            StdcmLogError::TraceIdNotFound {
-                trace_id: trace_id.unwrap(),
-            }
-        })
-        .await?;
+        let stdcm_log =
+            StdcmLog::retrieve_real_or_fail(conn, Some(trace_id.clone().unwrap()), || {
+                StdcmLogError::TraceIdNotFound {
+                    trace_id: trace_id.unwrap(),
+                }
+            })
+            .await?;
         Ok(Json(stdcm_log))
     } else {
         Err(StdcmLogError::MissingIdAndTraceId.into())

@@ -79,13 +79,13 @@ pub(in crate::views) async fn get(
     if !authorized {
         return Err(AuthorizationError::Forbidden.into());
     }
-    let conn = &mut db_pool.get().await?;
-    #[expect(deprecated)]
-    let ep_set = ElectricalProfileSet::retrieve_or_fail(conn, electrical_profile_set_id, || {
-        ElectricalProfilesError::NotFound {
+    let ep_set = ElectricalProfileSet::retrieve_real_or_fail(
+        db_pool.get().await?,
+        electrical_profile_set_id,
+        || ElectricalProfilesError::NotFound {
             electrical_profile_set_id,
-        }
-    })
+        },
+    )
     .await?;
     Ok(Json(ep_set.data))
 }
@@ -120,13 +120,13 @@ pub(in crate::views) async fn get_level_order(
     if !authorized {
         return Err(AuthorizationError::Forbidden.into());
     }
-    let conn = &mut db_pool.get().await?;
-    #[expect(deprecated)]
-    let ep_set = ElectricalProfileSet::retrieve_or_fail(conn, electrical_profile_set_id, || {
-        ElectricalProfilesError::NotFound {
+    let ep_set = ElectricalProfileSet::retrieve_real_or_fail(
+        db_pool.get().await?,
+        electrical_profile_set_id,
+        || ElectricalProfilesError::NotFound {
             electrical_profile_set_id,
-        }
-    })
+        },
+    )
     .await?;
     Ok(Json(ep_set.data.level_order))
 }
@@ -207,6 +207,9 @@ pub enum ElectricalProfilesError {
     #[error("Electrical Profile Set '{electrical_profile_set_id}', could not be found")]
     #[editoast_error(status = 404)]
     NotFound { electrical_profile_set_id: i64 },
+    #[error(transparent)]
+    #[editoast_error(status = 500)]
+    Database(#[from] editoast_models::model::Error),
 }
 
 #[cfg(test)]
@@ -343,8 +346,7 @@ mod tests {
         response.assert_status(StatusCode::OK);
         let created_ep: ElectricalProfileSet = response.json();
 
-        #[expect(deprecated)]
-        let created_ep = ElectricalProfileSet::retrieve(&mut pool.get_ok(), created_ep.id)
+        let created_ep = ElectricalProfileSet::retrieve_real(pool.get_ok(), created_ep.id)
             .await
             .expect("Failed to retrieve created electrical profile set")
             .expect("Electrical profile set not found");

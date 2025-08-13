@@ -160,16 +160,16 @@ pub(in crate::views) async fn list(
         return Err(AuthorizationError::Forbidden.into());
     }
 
-    let conn = &mut db_pool.get().await?;
+    let mut conn = db_pool.get().await?;
 
     // Check for project / study / scenario
-    check_project_study_scenario(conn, project_id, study_id, scenario_id).await?;
+    check_project_study_scenario(conn.clone(), project_id, study_id, scenario_id).await?;
 
     // Ask the db
     let settings = pagination_params
         .into_selection_settings()
         .filter(move || MacroNode::SCENARIO_ID.eq(scenario_id));
-    let (result, stats) = MacroNode::list_paginated(conn, settings).await?;
+    let (result, stats) = MacroNode::list_paginated(&mut conn, settings).await?;
 
     // Produce the response
     Ok(Json(MacroNodeListResponse {
@@ -266,8 +266,8 @@ pub(in crate::views) async fn get(
     }
 
     // Check for project / study / scenario
-    let conn = &mut db_pool.get().await?;
-    check_project_study_scenario(conn, project_id, study_id, scenario_id).await?;
+    let conn = db_pool.get().await?;
+    check_project_study_scenario(conn.clone(), project_id, study_id, scenario_id).await?;
 
     // Get / check the node
     let macro_node = retrieve_macro_node_and_check_scenario(conn, scenario_id, node_id).await?;
@@ -305,8 +305,7 @@ pub(in crate::views) async fn update(
         scenario_id,
         move |mut conn, scenario, study, project| {
             async move {
-                #[expect(deprecated)]
-                let node = MacroNode::retrieve_or_fail(&mut conn, node_id, || {
+                let node = MacroNode::retrieve_real_or_fail(conn.clone(), node_id, || {
                     MacroNodeError::NotFound { node_id }
                 })
                 .await?;
@@ -367,8 +366,7 @@ pub(in crate::views) async fn delete(
         scenario_id,
         move |mut conn, scenario, study, project| {
             async move {
-                #[expect(deprecated)]
-                let node = MacroNode::retrieve_or_fail(&mut conn, node_id, || {
+                let node = MacroNode::retrieve_real_or_fail(conn.clone(), node_id, || {
                     MacroNodeError::NotFound { node_id }
                 })
                 .await?;
@@ -398,25 +396,24 @@ pub(in crate::views) async fn delete(
 }
 
 async fn check_project_study_scenario(
-    conn: &mut DbConnection,
+    conn: DbConnection,
     project_id: i64,
     study_id: i64,
     scenario_id: i64,
 ) -> Result<(Project, Study, Scenario)> {
-    #[expect(deprecated)]
-    let project =
-        Project::retrieve_or_fail(conn, project_id, || ProjectError::NotFound { project_id })
-            .await?;
-    #[expect(deprecated)]
+    let project = Project::retrieve_real_or_fail(conn.clone(), project_id, || {
+        ProjectError::NotFound { project_id }
+    })
+    .await?;
     let study =
-        Study::retrieve_or_fail(conn, study_id, || StudyError::NotFound { study_id }).await?;
+        Study::retrieve_real_or_fail(conn.clone(), study_id, || StudyError::NotFound { study_id })
+            .await?;
 
     if study.project_id != project_id {
         return Err(StudyError::NotFound { study_id }.into());
     }
 
-    #[expect(deprecated)]
-    let scenario = Scenario::retrieve_or_fail(conn, scenario_id, || ScenarioError::NotFound {
+    let scenario = Scenario::retrieve_real_or_fail(conn, scenario_id, || ScenarioError::NotFound {
         scenario_id,
     })
     .await?;
@@ -428,15 +425,13 @@ async fn check_project_study_scenario(
 }
 
 async fn retrieve_macro_node_and_check_scenario(
-    conn: &mut DbConnection,
+    conn: DbConnection,
     scenario_id: i64,
     node_id: i64,
 ) -> Result<MacroNode> {
-    #[expect(deprecated)]
-    let node = MacroNode::retrieve_or_fail(&mut conn.clone(), node_id, || {
-        MacroNodeError::NotFound { node_id }
-    })
-    .await?;
+    let node =
+        MacroNode::retrieve_real_or_fail(conn, node_id, || MacroNodeError::NotFound { node_id })
+            .await?;
     if node.scenario_id != scenario_id {
         return Err(MacroNodeError::NotFound { node_id }.into());
     }
@@ -510,14 +505,9 @@ pub mod test {
         let response: MacroNodeBatchResponse =
             app.fetch(request).assert_status(StatusCode::OK).json_into();
 
-        #[expect(deprecated)]
-        let node =
-            MacroNode::retrieve_or_fail(&mut db_pool.get_ok(), response.macro_nodes[0].id, || {
-                MacroNodeError::NotFound {
-                    node_id: response.macro_nodes[0].id,
-                }
-            })
+        let node = MacroNode::retrieve_real(db_pool.get_ok(), response.macro_nodes[0].id)
             .await
+            .unwrap()
             .expect("Failed to retrieve node");
 
         assert_eq!(nodes_data, response.macro_nodes);
@@ -548,14 +538,10 @@ pub mod test {
         let response: MacroNodeResponse =
             app.fetch(request).assert_status(StatusCode::OK).json_into();
 
-        #[expect(deprecated)]
-        let node = MacroNode::retrieve_or_fail(&mut db_pool.get_ok(), fixtures.nodes[0].id, || {
-            MacroNodeError::NotFound {
-                node_id: response.id,
-            }
-        })
-        .await
-        .expect("Failed to retrieve node");
+        let node = MacroNode::retrieve_real(db_pool.get_ok(), fixtures.nodes[0].id)
+            .await
+            .unwrap()
+            .expect("Failed to retrieve node");
 
         assert_eq!(node_data, response);
         assert_eq!(node, response);
@@ -619,7 +605,7 @@ pub mod test {
         let fixtures = create_macro_node_fixtures_set(&mut db_pool.get_ok(), 1).await;
 
         let result = retrieve_macro_node_and_check_scenario(
-            &mut db_pool.get_ok(),
+            db_pool.get_ok(),
             fixtures.scenario.id + 1,
             fixtures.nodes[0].id,
         )

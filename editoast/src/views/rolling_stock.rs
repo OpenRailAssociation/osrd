@@ -349,9 +349,8 @@ pub(in crate::views) async fn update(
         .await?
         .transaction::<_, InternalError, _>(|conn| {
             async move {
-                #[expect(deprecated)]
                 let previous_rolling_stock =
-                    RollingStock::retrieve_or_fail(&mut conn.clone(), rolling_stock_id, || {
+                    RollingStock::retrieve_real_or_fail(conn.clone(), rolling_stock_id, || {
                         RollingStockError::KeyNotFound {
                             rolling_stock_key: RollingStockKey::Id(rolling_stock_id),
                         }
@@ -423,12 +422,12 @@ pub(in crate::views) async fn delete(
     }
     let conn = &mut db_pool.get().await?;
 
-    #[expect(deprecated)]
-    let rolling_stock =
-        RollingStock::retrieve_or_fail(conn, rolling_stock_id, || RollingStockError::KeyNotFound {
+    let rolling_stock = RollingStock::retrieve_real_or_fail(conn.clone(), rolling_stock_id, || {
+        RollingStockError::KeyNotFound {
             rolling_stock_key: RollingStockKey::Id(rolling_stock_id),
-        })
-        .await?;
+        }
+    })
+    .await?;
     assert_rolling_stock_unlocked(&rolling_stock)?;
 
     if force {
@@ -636,8 +635,7 @@ pub(in crate::views) async fn get_usage(
 ) -> Result<Json<Vec<ScenarioReference>>> {
     let mut conn = db_pool.get().await?;
 
-    #[expect(deprecated)]
-    let rolling_stock = RollingStock::retrieve_or_fail(&mut conn, rolling_stock_id, || {
+    let rolling_stock = RollingStock::retrieve_real_or_fail(conn.clone(), rolling_stock_id, || {
         RollingStockError::KeyNotFound {
             rolling_stock_key: RollingStockKey::Id(rolling_stock_id),
         }
@@ -653,21 +651,19 @@ pub(in crate::views) async fn get_usage(
 pub async fn retrieve_existing_rolling_stock(
     conn: &mut DbConnection,
     rolling_stock_key: RollingStockKey,
-) -> Result<RollingStock> {
+) -> Result<RollingStock, RollingStockError> {
     match rolling_stock_key.clone() {
-        RollingStockKey::Id(id) =>
-        {
-            #[expect(deprecated)]
-            RollingStock::retrieve_or_fail(conn, id, || RollingStockError::KeyNotFound {
-                rolling_stock_key: rolling_stock_key.clone(),
+        RollingStockKey::Id(id) => {
+            RollingStock::retrieve_real_or_fail(conn.clone(), id, || {
+                RollingStockError::KeyNotFound {
+                    rolling_stock_key: rolling_stock_key.clone(),
+                }
             })
             .await
         }
-        RollingStockKey::Name(name) =>
-        {
-            #[expect(deprecated)]
-            RollingStock::retrieve_or_fail(conn, name, || RollingStockError::KeyNotFound {
-                rolling_stock_key,
+        RollingStockKey::Name(name) => {
+            RollingStock::retrieve_real_or_fail(conn.clone(), name, || {
+                RollingStockError::KeyNotFound { rolling_stock_key }
             })
             .await
         }
@@ -827,8 +823,7 @@ pub mod tests {
         // THEN
         let response: RollingStock = raw_response.assert_status(StatusCode::OK).json_into();
         // Check if the rolling stock was created in the database
-        #[expect(deprecated)]
-        let rolling_stock = RollingStock::retrieve(&mut db_pool.get_ok(), response.id)
+        let rolling_stock = RollingStock::retrieve_real(db_pool.get_ok(), response.id)
             .await
             .expect("Failed to retrieve rolling stock")
             .expect("Rolling stock not found");
@@ -859,8 +854,7 @@ pub mod tests {
         // THEN
         let response: RollingStock = raw_response.assert_status(StatusCode::OK).json_into();
         // Check if the rolling stock was created in the database with locked = true
-        #[expect(deprecated)]
-        let rolling_stock = RollingStock::retrieve(&mut db_pool.get_ok(), response.id)
+        let rolling_stock = RollingStock::retrieve_real(db_pool.get_ok(), response.id)
             .await
             .expect("Failed to retrieve rolling stock")
             .expect("Rolling stock not found");
@@ -1138,9 +1132,8 @@ pub mod tests {
         // THEN
         raw_response.assert_status(StatusCode::OK);
 
-        #[expect(deprecated)]
         let updated_rolling_stock: RollingStock =
-            RollingStock::retrieve(&mut db_pool.get_ok(), fast_rolling_stock.id)
+            RollingStock::retrieve_real(db_pool.get_ok(), fast_rolling_stock.id)
                 .await
                 .expect("Failed to retrieve rolling stock")
                 .expect("Rolling stock not found");
@@ -1190,9 +1183,8 @@ pub mod tests {
         // THEN
         raw_response.assert_status(StatusCode::OK);
 
-        #[expect(deprecated)]
         let updated_rolling_stock: RollingStock =
-            RollingStock::retrieve(&mut db_pool.get_ok(), fast_rolling_stock.id)
+            RollingStock::retrieve_real(db_pool.get_ok(), fast_rolling_stock.id)
                 .await
                 .expect("Failed to retrieve rolling stock")
                 .expect("Rolling stock not found");
@@ -1239,9 +1231,8 @@ pub mod tests {
             "The primary_category cannot be listed in other_categories for rolling stocks."
         );
 
-        #[expect(deprecated)]
         let updated_rolling_stock: RollingStock =
-            RollingStock::retrieve(&mut db_pool.get_ok(), fast_rolling_stock.id)
+            RollingStock::retrieve_real(db_pool.get_ok(), fast_rolling_stock.id)
                 .await
                 .expect("Failed to retrieve rolling stock")
                 .expect("Rolling stock not found");
@@ -1344,9 +1335,8 @@ pub mod tests {
 
         app.fetch(request).assert_status(StatusCode::NO_CONTENT);
 
-        #[expect(deprecated)]
         let fast_rolling_stock: RollingStock =
-            RollingStock::retrieve(&mut db_pool.get_ok(), fast_rolling_stock.id)
+            RollingStock::retrieve_real(db_pool.get_ok(), fast_rolling_stock.id)
                 .await
                 .expect("Failed to retrieve rolling stock")
                 .expect("Rolling stock not found");
@@ -1375,9 +1365,8 @@ pub mod tests {
 
         app.fetch(request).assert_status(StatusCode::NO_CONTENT);
 
-        #[expect(deprecated)]
         let fast_rolling_stock: RollingStock =
-            RollingStock::retrieve(&mut db_pool.get_ok(), locked_fast_rolling_stock.id)
+            RollingStock::retrieve_real(db_pool.get_ok(), locked_fast_rolling_stock.id)
                 .await
                 .expect("Failed to retrieve rolling stock")
                 .expect("Rolling stock not found");

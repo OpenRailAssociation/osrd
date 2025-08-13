@@ -173,11 +173,11 @@ pub(in crate::views) async fn get(
     }
 
     let conn = &mut db_pool.get().await?;
-    #[expect(deprecated)]
-    let train_schedule = models::TrainSchedule::retrieve_or_fail(conn, train_schedule_id, || {
-        TrainScheduleError::NotFound { train_schedule_id }
-    })
-    .await?;
+    let train_schedule =
+        models::TrainSchedule::retrieve_real_or_fail(conn.clone(), train_schedule_id, || {
+            TrainScheduleError::NotFound { train_schedule_id }
+        })
+        .await?;
     Ok(Json(train_schedule.into()))
 }
 
@@ -299,8 +299,7 @@ pub(in crate::views) async fn simulation(
     }
 
     // Retrieve infra or fail
-    #[expect(deprecated)]
-    let infra = Infra::retrieve_or_fail(&mut db_pool.get().await?, infra_id, || {
+    let infra = Infra::retrieve_real_or_fail(db_pool.get().await?, infra_id, || {
         TrainScheduleError::InfraNotFound { infra_id }
     })
     .await?;
@@ -314,9 +313,8 @@ pub(in crate::views) async fn simulation(
     .await?;
 
     // Retrieve train_schedule or fail
-    #[expect(deprecated)]
-    let train_schedule = models::TrainSchedule::retrieve_or_fail(
-        &mut db_pool.get().await?,
+    let train_schedule = models::TrainSchedule::retrieve_real_or_fail(
+        db_pool.get().await?,
         train_schedule_id,
         || TrainScheduleError::NotFound { train_schedule_id },
     )
@@ -517,9 +515,8 @@ pub(in crate::views) async fn simulation_summary(
 
     let conn = &mut db_pool.get().await?;
 
-    #[expect(deprecated)]
-    let infra = Infra::retrieve_or_fail(conn, infra_id, || TrainScheduleError::InfraNotFound {
-        infra_id,
+    let infra = Infra::retrieve_real_or_fail(conn.clone(), infra_id, || {
+        TrainScheduleError::InfraNotFound { infra_id }
     })
     .await?;
 
@@ -591,12 +588,11 @@ pub(in crate::views) async fn get_path(
         return Err(AuthorizationError::Forbidden.into());
     }
 
-    let conn = &mut db_pool.get().await?;
+    let conn = db_pool.get().await?;
     let mut valkey_conn = valkey_client.get_connection().await?;
 
-    #[expect(deprecated)]
-    let infra = Infra::retrieve_or_fail(conn, infra_id, || PathfindingError::InfraNotFound {
-        infra_id,
+    let infra = Infra::retrieve_real_or_fail(conn.clone(), infra_id, || {
+        PathfindingError::InfraNotFound { infra_id }
     })
     .await?;
 
@@ -608,11 +604,11 @@ pub(in crate::views) async fn get_path(
     })
     .await?;
 
-    #[expect(deprecated)]
-    let train_schedule = models::TrainSchedule::retrieve_or_fail(conn, train_schedule_id, || {
-        TrainScheduleError::NotFound { train_schedule_id }
-    })
-    .await?;
+    let train_schedule =
+        models::TrainSchedule::retrieve_real_or_fail(conn.clone(), train_schedule_id, || {
+            TrainScheduleError::NotFound { train_schedule_id }
+        })
+        .await?;
     Ok(Json(
         pathfinding_from_train(conn, &mut valkey_conn, core, &infra, train_schedule).await?,
     ))

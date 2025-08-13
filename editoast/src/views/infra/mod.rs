@@ -315,8 +315,7 @@ pub(in crate::views) async fn get(
     }
 
     let infra_id = infra.infra_id;
-    #[expect(deprecated)]
-    let infra = Infra::retrieve_or_fail(&mut db_pool.get().await?, infra_id, || {
+    let infra = Infra::retrieve_real_or_fail(db_pool.get().await?, infra_id, || {
         InfraApiError::NotFound { infra_id }
     })
     .await?;
@@ -426,11 +425,11 @@ pub(in crate::views) async fn clone(
         return Err(AuthorizationError::Forbidden.into());
     }
 
-    let conn = &mut db_pool.get().await?;
-
-    #[expect(deprecated)]
-    let infra =
-        Infra::retrieve_or_fail(conn, infra_id, || InfraApiError::NotFound { infra_id }).await?;
+    let mut conn = db_pool.get().await?;
+    let infra = Infra::retrieve_real_or_fail(conn.clone(), infra_id, || InfraApiError::NotFound {
+        infra_id,
+    })
+    .await?;
 
     // Check user privilege on infra
     auth.clone()
@@ -441,7 +440,7 @@ pub(in crate::views) async fn clone(
         })
         .await?;
 
-    let cloned_infra = infra.clone(conn, name).await?;
+    let cloned_infra = infra.clone(&mut conn, name).await?;
 
     // Assign OWNER to the user on the infra if authz is enabled
     // NOTE: we use the regulator here instead of the one in the authorizer to bypass the checks on grant_infra_owner
@@ -577,11 +576,12 @@ pub(in crate::views) async fn get_switch_types(
         return Err(AuthorizationError::Forbidden.into());
     }
 
-    let conn = &mut db_pool.get().await?;
+    let mut conn = db_pool.get().await?;
 
-    #[expect(deprecated)]
-    let infra =
-        Infra::retrieve_or_fail(conn, infra_id, || InfraApiError::NotFound { infra_id }).await?;
+    let infra = Infra::retrieve_real_or_fail(conn.clone(), infra_id, || InfraApiError::NotFound {
+        infra_id,
+    })
+    .await?;
 
     // Check user privilege on infra
     auth.check_authorization(async |authorizer| {
@@ -593,7 +593,7 @@ pub(in crate::views) async fn get_switch_types(
 
     let selection_settings =
         SelectionSettings::new().filter(move || SwitchTypeModel::INFRA_ID.eq(infra.id));
-    let switch_types_model = SwitchTypeModel::list(conn, selection_settings).await?;
+    let switch_types_model = SwitchTypeModel::list(&mut conn, selection_settings).await?;
 
     let extended_switch_types = switch_types_model
         .into_iter()
@@ -635,11 +635,12 @@ pub(in crate::views) async fn get_speed_limit_tags(
         return Err(AuthorizationError::Forbidden.into());
     }
 
-    let conn = &mut db_pool.get().await?;
+    let mut conn = db_pool.get().await?;
 
-    #[expect(deprecated)]
-    let infra =
-        Infra::retrieve_or_fail(conn, infra_id, || InfraApiError::NotFound { infra_id }).await?;
+    let infra = Infra::retrieve_real_or_fail(conn.clone(), infra_id, || InfraApiError::NotFound {
+        infra_id,
+    })
+    .await?;
 
     // Check user privilege on infra
     auth.check_authorization(async |authorizer| {
@@ -649,7 +650,7 @@ pub(in crate::views) async fn get_speed_limit_tags(
     })
     .await?;
 
-    let infra_tags = infra.get_speed_limit_tags(conn).await?;
+    let infra_tags = infra.get_speed_limit_tags(&mut conn).await?;
     let union_tags: HashSet<String> = infra_tags
         .into_iter()
         .map(|el| el.tag)
@@ -691,8 +692,7 @@ pub(in crate::views) async fn get_voltages(
     }
 
     let include_rolling_stock_modes = param.include_rolling_stock_modes;
-    #[expect(deprecated)]
-    let infra = Infra::retrieve_or_fail(&mut db_pool.get().await?, infra_id, || {
+    let infra = Infra::retrieve_real_or_fail(db_pool.get().await?, infra_id, || {
         InfraApiError::NotFound { infra_id }
     })
     .await?;
@@ -738,8 +738,7 @@ pub(in crate::views) async fn get_all_voltages(
 }
 
 async fn set_locked(infra_id: i64, locked: bool, db_pool: DbConnectionPoolV2) -> Result<()> {
-    #[expect(deprecated)]
-    let mut infra = Infra::retrieve_or_fail(&mut db_pool.get().await?, infra_id, || {
+    let mut infra = Infra::retrieve_real_or_fail(db_pool.get().await?, infra_id, || {
         InfraApiError::NotFound { infra_id }
     })
     .await?;
@@ -856,8 +855,7 @@ pub(in crate::views) async fn load(
         return Err(AuthorizationError::Forbidden.into());
     }
 
-    #[expect(deprecated)]
-    let infra = Infra::retrieve_or_fail(&mut db_pool.get().await?, infra_id, || {
+    let infra = Infra::retrieve_real_or_fail(db_pool.get().await?, infra_id, || {
         InfraApiError::NotFound { infra_id }
     })
     .await?;
@@ -1161,8 +1159,7 @@ pub mod tests {
             app.post(format!("/infra/{}/clone/?name=cloned_infra", empty_infra.id).as_str());
 
         let cloned_infra_id: i64 = app.fetch(request).assert_status(StatusCode::OK).json_into();
-        #[expect(deprecated)]
-        let cloned_infra = Infra::retrieve(&mut db_pool.get_ok(), cloned_infra_id)
+        let cloned_infra = Infra::retrieve_real(db_pool.get_ok(), cloned_infra_id)
             .await
             .unwrap()
             .expect("infra was not cloned");
@@ -1207,8 +1204,7 @@ pub mod tests {
             .assert_status(StatusCode::OK)
             .json_into();
 
-        #[expect(deprecated)]
-        let _cloned_infra = Infra::retrieve(&mut db_pool.get_ok(), cloned_infra_id)
+        let _cloned_infra = Infra::retrieve_real(db_pool.get_ok(), cloned_infra_id)
             .await
             .unwrap()
             .expect("infra was not cloned");
@@ -1512,8 +1508,7 @@ pub mod tests {
         app.fetch(req).assert_status(StatusCode::NO_CONTENT);
 
         // Check lock
-        #[expect(deprecated)]
-        let infra = Infra::retrieve(&mut db_pool.get_ok(), empty_infra.id)
+        let infra = Infra::retrieve_real(db_pool.get_ok(), empty_infra.id)
             .await
             .unwrap()
             .expect("infra was not cloned");
@@ -1525,8 +1520,7 @@ pub mod tests {
         app.fetch(req).assert_status(StatusCode::NO_CONTENT);
 
         // Check lock
-        #[expect(deprecated)]
-        let infra = Infra::retrieve(&mut db_pool.get_ok(), empty_infra.id)
+        let infra = Infra::retrieve_real(db_pool.get_ok(), empty_infra.id)
             .await
             .unwrap()
             .expect("infra was not cloned");

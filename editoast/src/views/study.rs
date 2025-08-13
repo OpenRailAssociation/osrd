@@ -230,14 +230,12 @@ pub(in crate::views) async fn get(
         .await?
         .transaction(|mut conn| {
             async move {
-                #[expect(deprecated)]
-                let project = Project::retrieve_or_fail(&mut conn, project_id, || {
+                let project = Project::retrieve_real_or_fail(conn.clone(), project_id, || {
                     ProjectError::NotFound { project_id }
                 })
                 .await?;
-                #[expect(deprecated)]
-                let study = Study::retrieve_or_fail(&mut conn, study_id, || StudyError::NotFound {
-                    study_id,
+                let study = Study::retrieve_real_or_fail(conn.clone(), study_id, || {
+                    StudyError::NotFound { study_id }
                 })
                 .await?;
 
@@ -462,8 +460,7 @@ pub mod tests {
             }));
         let response: StudyResponse = app.fetch(request).assert_status(StatusCode::OK).json_into();
 
-        #[expect(deprecated)]
-        let study = Study::retrieve(&mut db_pool.get_ok(), response.study.id)
+        let study = Study::retrieve_real(db_pool.get_ok(), response.study.id)
             .await
             .expect("Failed to retrieve study")
             .expect("Study not found");
@@ -586,14 +583,12 @@ pub mod tests {
 
         app.fetch(request).assert_status(StatusCode::OK);
 
-        #[expect(deprecated)]
-        let updated_study = Study::retrieve(&mut db_pool.get_ok(), created_study.id)
+        let updated_study = Study::retrieve_real(db_pool.get_ok(), created_study.id)
             .await
             .expect("Failed to retrieve study")
             .expect("Study not found");
 
-        #[expect(deprecated)]
-        let updated_project = Project::retrieve(&mut db_pool.get_ok(), created_project.id)
+        let updated_project = Project::retrieve_real(db_pool.get_ok(), created_project.id)
             .await
             .expect("Failed to retrieve project")
             .expect("Project not found");

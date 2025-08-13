@@ -69,6 +69,7 @@
       "NotFound": "Document '{{document_key}}' not found"
     },
     "electrical_profiles": {
+      "Database": "Internal error (database)",
       "NotFound": "Electrical Profile Set '{{electrical_profile_set_id}}', could not be found"
     },
     "fonts": {
@@ -135,6 +136,7 @@
       "NotFound": "Paced train '{{paced_train_id}}' could not be found"
     },
     "pathfinding": {
+      "Database": "Internal error (database)",
       "ElectricalProfilesOverlap": "Electrical Profile overlaps with others",
       "ElectrificationOverlap": "Electrification '{{electrification_id}}' overlaps with other electrifications",
       "InfraNotFound": "Infrastructure '{{infra_id}}' does not exist",
@@ -205,6 +207,7 @@
       "UnknownSignalingSystem": "Unknown signaling system"
     },
     "stdcm": {
+      "Database": "Internal error (database)",
       "InfraNotFound": "Infrastructure '{{infra_id}}' does not exist",
       "InvalidConsistLength": "Invalid consist length {{provided_consist_length}}: it should be greater than '{{expected_min}}'",
       "InvalidConsistMass": "Invalid consist mass {{provided_consist_mass}}: it should be greater than '{{expected_min}}'",
@@ -215,6 +218,7 @@
       "TrainSimulationFail": "Train simulation failed"
     },
     "stdcm_log": {
+      "Database": "Internal error (database)",
       "MissingIdAndTraceId": "STDCM log entry could not be found without specifying an 'id' or 'trace_id'",
       "NotFound": "STDCM log entry '{{id}}' could not be found",
       "TraceIdNotFound": "STDCM log entry '{{trace_id}}' could not be found"

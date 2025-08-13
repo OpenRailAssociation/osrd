@@ -57,11 +57,11 @@ pub(in crate::views) async fn get(
         return Err(AuthorizationError::Forbidden.into());
     }
     let conn = &mut db_pool.get().await?;
-    #[expect(deprecated)]
-    let doc = Document::retrieve_or_fail(conn, document_id, || DocumentErrors::NotFound {
-        document_key: document_id,
-    })
-    .await?;
+    let doc =
+        Document::retrieve_real_or_fail(conn.clone(), document_id, || DocumentErrors::NotFound {
+            document_key: document_id,
+        })
+        .await?;
     Ok((
         StatusCode::OK,
         [
@@ -190,8 +190,7 @@ mod tests {
         let new_doc = response.json::<PostDocumentResponse>().document_key;
 
         // Get create document
-        #[expect(deprecated)]
-        let document = Document::retrieve(&mut pool.get_ok(), new_doc)
+        let document = Document::retrieve_real(pool.get_ok(), new_doc)
             .await
             .expect("Failed to retrieve document")
             .expect("Document not found");

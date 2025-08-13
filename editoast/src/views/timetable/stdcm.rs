@@ -83,7 +83,7 @@ pub(in crate::views) enum StdcmResponse {
     },
 }
 
-#[derive(Debug, Error, EditoastError, Serialize)]
+#[derive(Debug, Error, EditoastError, Serialize, derive_more::From)]
 #[editoast_error(base_id = "stdcm")]
 enum StdcmError {
     #[error("Infrastrcture {infra_id} does not exist")]
@@ -113,6 +113,10 @@ enum StdcmError {
         provided_consist_length: f64,
         expected_min: f64,
     },
+    #[error(transparent)]
+    #[from(forward)]
+    #[serde(skip)]
+    Database(editoast_models::model::Error),
 }
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize, IntoParams, ToSchema)]
@@ -177,9 +181,8 @@ pub(in crate::views) async fn stdcm(
 
     // 1.  Infra / Timetable / Trains / Simulation / Rolling Stock
 
-    #[expect(deprecated)]
-    let infra = Infra::retrieve_or_fail(&mut conn, infra_id, || StdcmError::InfraNotFound {
-        infra_id,
+    let infra = Infra::retrieve_real_or_fail(conn.clone(), infra_id, || {
+        StdcmError::InfraNotFound { infra_id }
     })
     .await?;
 
@@ -192,9 +195,8 @@ pub(in crate::views) async fn stdcm(
         })
         .await?;
 
-    #[expect(deprecated)]
     let rolling_stock =
-        RollingStock::retrieve_or_fail(&mut conn, stdcm_request.rolling_stock_id, || {
+        RollingStock::retrieve_real_or_fail(conn.clone(), stdcm_request.rolling_stock_id, || {
             StdcmError::RollingStockNotFound {
                 rolling_stock_id: stdcm_request.rolling_stock_id,
             }
@@ -239,8 +241,7 @@ pub(in crate::views) async fn stdcm(
     let earliest_departure_time = stdcm_request.get_earliest_departure_time(simulation_run_time);
     let latest_simulation_end = stdcm_request.get_latest_simulation_end(simulation_run_time);
 
-    #[expect(deprecated)]
-    let timetable = Timetable::retrieve_or_fail(&mut conn, timetable_id, || {
+    let timetable = Timetable::retrieve_real_or_fail(conn.clone(), timetable_id, || {
         StdcmError::TimetableNotFound { timetable_id }
     })
     .await?;
