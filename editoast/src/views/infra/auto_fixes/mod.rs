@@ -511,7 +511,7 @@ mod tests {
         );
 
         let mut infra_cache = InfraCache::default();
-        infra_cache.add(signal.clone()).unwrap();
+        infra_cache.add(&signal).unwrap();
         let operations = fix_infra(&mut infra_cache, vec![error]).unwrap();
         let operation = operations.first().unwrap();
         assert_eq!(
@@ -565,13 +565,13 @@ mod tests {
         );
         let mut infra_cache = InfraCache::default();
         infra_cache
-            .add(BufferStopCache::new(
+            .add(&BufferStopCache::new(
                 exit_bs_id.to_string(),
                 "track_id".to_string(),
                 0.0,
             ))
             .unwrap();
-        infra_cache.add(route.clone()).unwrap();
+        infra_cache.add(&route).unwrap();
 
         // Delete the route: the entry point doesn't exist.
         let operations = fix_infra(&mut infra_cache, vec![error]).unwrap();
@@ -603,7 +603,7 @@ mod tests {
         );
         let mut infra_cache = InfraCache::default();
         infra_cache
-            .add(BufferStopCache::new(
+            .add(&BufferStopCache::new(
                 exit_bs_id.to_string(),
                 "track_id".to_string(),
                 0.0,
@@ -642,13 +642,13 @@ mod tests {
         );
         let mut infra_cache = InfraCache::default();
         infra_cache
-            .add(DetectorCache::new(
+            .add(&DetectorCache::new(
                 entry_detector_id.to_string(),
                 "track_id".to_string(),
                 0.0,
             ))
             .unwrap();
-        infra_cache.add(route.clone()).unwrap();
+        infra_cache.add(&route).unwrap();
 
         // Delete the route: the exit point doesn't exist.
         let operations = fix_infra(&mut infra_cache, vec![error]).unwrap();
@@ -683,20 +683,20 @@ mod tests {
         );
         let mut infra_cache = InfraCache::default();
         infra_cache
-            .add(DetectorCache::new(
+            .add(&DetectorCache::new(
                 entry_detector_id.to_string(),
                 track_id.to_string(),
                 0.0,
             ))
             .unwrap();
         infra_cache
-            .add(DetectorCache::new(
+            .add(&DetectorCache::new(
                 exit_detector_id.to_string(),
                 track_id.to_string(),
                 1000.0,
             ))
             .unwrap();
-        infra_cache.add(route).unwrap();
+        infra_cache.add(&route).unwrap();
 
         // Don't delete the route: entry and exit points are fine.
         let operations = fix_infra(&mut infra_cache, vec![error]).unwrap();

@@ -66,7 +66,7 @@ mod tests {
     fn invalid_ref() {
         let mut infra_cache = create_small_infra_cache();
         let signal = create_signal_cache("S_error", "E", 250.);
-        infra_cache.add(signal.clone()).unwrap();
+        infra_cache.add(&signal).unwrap();
         let errors = check_invalid_ref(
             &signal.clone().into(),
             &infra_cache,
@@ -82,7 +82,7 @@ mod tests {
     fn out_of_range() {
         let mut infra_cache = create_small_infra_cache();
         let signal = create_signal_cache("S_error", "A", 530.);
-        infra_cache.add(signal.clone()).unwrap();
+        infra_cache.add(&signal).unwrap();
         let errors = check_out_of_range(
             &signal.clone().into(),
             &infra_cache,
