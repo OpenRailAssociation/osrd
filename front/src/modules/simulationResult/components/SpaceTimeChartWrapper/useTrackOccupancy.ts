@@ -94,7 +94,7 @@ const useTrackOccupancy = ({
 }): {
   deployedWaypoints: DeployedWaypoint[];
   toggleWaypoint: (waypointId: string, selectedState?: boolean) => void;
-  handleTrainDrag: ({
+  updateTrackOccupanciesOnDrag: ({
     draggedTrainId,
     newTrainData,
     initialDepartureTime,
@@ -285,7 +285,7 @@ const useTrackOccupancy = ({
     ]
   );
 
-  const handleTrainDrag = useCallback(
+  const updateTrackOccupanciesOnDrag = useCallback(
     async ({
       draggedTrainId,
       newTrainData,
@@ -598,7 +598,7 @@ const useTrackOccupancy = ({
     fetchOperationalPoints();
   }, [timetableItemProjections, i18n.language]);
 
-  return { deployedWaypoints, toggleWaypoint, handleTrainDrag };
+  return { deployedWaypoints, toggleWaypoint, updateTrackOccupanciesOnDrag };
 };
 
 export default useTrackOccupancy;
