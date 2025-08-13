@@ -13,8 +13,11 @@ import {
 import { storePacedTrain } from 'modules/timetableItem/helpers/updateTimetableItemHelpers';
 import { getOperationalStudiesTimetableID } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 import type { OccurrenceId, TimetableItem, TimetableItemId } from 'reducers/osrdconf/types';
-import { updateSelectedTrainId } from 'reducers/simulationResults';
-import { getSelectedTrainId } from 'reducers/simulationResults/selectors';
+import { updateSelectedTrainId, updateTrainUsedForProjection } from 'reducers/simulationResults';
+import {
+  getSelectedTrainId,
+  getTrainUsedForProjection,
+} from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
 import { isIndexedOccurrenceId, extractExceptionIdFromOccurrenceId } from 'utils/trainId';
 
@@ -43,6 +46,7 @@ const useOccurrenceActions = ({
 
   const timetableId = useSelector(getOperationalStudiesTimetableID);
   const selectedTrainId = useSelector(getSelectedTrainId);
+  const trainUsedForProjection = useSelector(getTrainUsedForProjection);
 
   const selectOccurrence = useCallback((occurrenceId: OccurrenceId) => {
     dispatch(updateSelectedTrainId(occurrenceId));
@@ -134,16 +138,23 @@ const useOccurrenceActions = ({
 
       // If we are disabling the selected occurrence, we want to put the selection
       // on the first enabled occurrence chronologically
-      if (status === 'disabled' && selectedTrainId === occurrence.id) {
+      if (status === 'disabled') {
         const firstEnabledOccurrence = occurrences.find(
           (occ) => occ.id !== occurrence.id && !occ.disabled
         );
-
-        dispatch(updateSelectedTrainId(firstEnabledOccurrence?.id));
-        // TODO exceptions : update projected occurrence id in issue https://github.com/OpenRailAssociation/osrd/issues/11476
+        if (selectedTrainId === occurrence.id) {
+          dispatch(updateSelectedTrainId(firstEnabledOccurrence?.id));
+        }
+        if (
+          trainUsedForProjection &&
+          'exceptionKey' in trainUsedForProjection &&
+          trainUsedForProjection.exceptionKey === occurrence.key
+        ) {
+          dispatch(updateTrainUsedForProjection({ trainId: pacedTrain.id }));
+        }
       }
     },
-    [pacedTrain, occurrences, selectedTrainId]
+    [pacedTrain, occurrences, selectedTrainId, trainUsedForProjection]
   );
 
   /**
