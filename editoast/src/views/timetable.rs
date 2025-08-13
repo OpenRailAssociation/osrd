@@ -603,15 +603,15 @@ pub(in crate::views) async fn conflicts(
     let (trains, paced_trains) = retrieve_trains_and_paced_trains(conn, timetable_id).await?;
 
     // Flatten paced trains occurrences
-    let (occurance_ids, occurance_trains): (Vec<_>, Vec<_>) = paced_trains
+    let (occurrence_ids, occurrence_trains): (Vec<_>, Vec<_>) = paced_trains
         .iter()
         .flat_map(|pt| pt.iter_occurrences())
         .unzip();
-    let occurance_simulations: Vec<_> = train_simulation_batch(
+    let occurrence_simulations: Vec<_> = train_simulation_batch(
         &mut db_pool.get().await?,
         valkey_client.clone(),
         core_client.clone(),
-        &occurance_trains,
+        &occurrence_trains,
         &infra,
         electrical_profile_set_id,
     )
@@ -633,16 +633,16 @@ pub(in crate::views) async fn conflicts(
     .collect();
 
     // Concatenate paced trains occurrences with train schedules
-    let train_ids: Vec<_> = occurance_ids
+    let train_ids: Vec<_> = occurrence_ids
         .into_iter()
         .chain(trains.iter().map(|ts| TrainId::TrainSchedule(ts.id)))
         .collect();
-    let start_times = occurance_trains
+    let start_times = occurrence_trains
         .iter()
         .map(|ts| ts.start_time())
         .chain(trains.iter().map(|ts| ts.start_time()))
         .collect::<Vec<_>>();
-    let simulations: Vec<_> = occurance_simulations
+    let simulations: Vec<_> = occurrence_simulations
         .into_iter()
         .chain(simulations)
         .collect();
