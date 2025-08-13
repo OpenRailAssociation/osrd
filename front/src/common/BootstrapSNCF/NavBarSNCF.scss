@@ -1,5 +1,33 @@
-.user-settings-btn:disabled {
-  cursor: not-allowed;
-  color: #c0c0c0 !important;
-  pointer-events: auto;
+.nav-bar {
+  height: 40px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: #333;
+  padding: 0 8px;
+
+  .user-settings-btn:disabled {
+    cursor: not-allowed;
+    color: #c0c0c0 !important;
+    pointer-events: auto;
+  }
+
+  .impersonated {
+    background-color: var(--highlight30) !important;
+
+    .user-dropdown {
+      margin-right: 16px;
+    }
+
+    .navbar-breadcrumbs {
+      .text-truncate,
+      a {
+        color: var(--black50);
+
+        &:hover {
+          color: var(--black100);
+        }
+      }
+    }
+  }
 }
