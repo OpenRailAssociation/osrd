@@ -1,15 +1,17 @@
 /* eslint-disable import/prefer-default-export */
-import type { PathLevel, HoveredItem, Conflict } from '@osrd-project/ui-charts';
+import type { PathLevel, HoveredItem, Conflict, OccupancyBlock } from '@osrd-project/ui-charts';
 import dayjs from 'dayjs';
 import { compact } from 'lodash';
 
 import type { SubCategory } from 'common/api/osrdEditoastApi';
 import isMainCategory from 'modules/rollingStock/helpers/category';
 import {
+  ASPECT_LABELS_COLORS,
   DEFAULT_TRAIN_PATH_COLORS,
   TRAIN_MAIN_CATEGORY_PATH_COLORS,
 } from 'modules/simulationResult/consts';
 import type {
+  AspectLabel,
   LayerRangeData,
   PathOperationalPoint,
   TrainSpaceTimeData,
@@ -232,4 +234,19 @@ export const cutSpaceTimeChart = (
   }
 
   return { filteredProjectPathTrainResult, filteredConflicts };
+};
+
+export const getOccupancyBlocks = (trains: TrainSpaceTimeData[]): OccupancyBlock[] => {
+  return trains.flatMap((train) => {
+    const departureTime = train.departureTime.getTime();
+
+    return train.signalUpdates.map((block) => ({
+      timeStart: departureTime + block.time_start,
+      timeEnd: departureTime + block.time_end,
+      spaceStart: block.position_start,
+      spaceEnd: block.position_end,
+      color: ASPECT_LABELS_COLORS[block.aspect_label as AspectLabel],
+      blinking: block.blinking,
+    }));
+  });
 };

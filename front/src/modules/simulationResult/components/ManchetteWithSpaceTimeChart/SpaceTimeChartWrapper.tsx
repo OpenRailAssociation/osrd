@@ -40,9 +40,7 @@ import {
   osrdEditoastApi,
   type PostWorkSchedulesProjectPathApiResponse,
 } from 'common/api/osrdEditoastApi';
-import { ASPECT_LABELS_COLORS } from 'modules/simulationResult/consts';
 import type {
-  AspectLabel,
   PathOperationalPoint,
   TrainSpaceTimeData,
   WaypointsPanelData,
@@ -62,7 +60,12 @@ import {
 } from 'utils/trainId';
 
 import SettingsPanel from './SettingsPanel';
-import { expandProjectedTrains, cutSpaceTimeChart, getPathStyle } from './utils';
+import {
+  expandProjectedTrains,
+  cutSpaceTimeChart,
+  getPathStyle,
+  getOccupancyBlocks,
+} from './utils';
 import { Spinner } from '../../../../common/Loaders';
 import ManchetteMenuButton from '../SpaceTimeChart/ManchetteMenuButton';
 import ProjectionLoadingMessage from '../SpaceTimeChart/ProjectionLoadingMessage';
@@ -308,18 +311,7 @@ const SpaceTimeChartWrapper = ({
     showSignalsStates: false,
   });
 
-  const occupancyBlocks = cutProjectedTrains.flatMap((train) => {
-    const departureTime = train.departureTime.getTime();
-
-    return train.signalUpdates.map((block) => ({
-      timeStart: departureTime + block.time_start,
-      timeEnd: departureTime + block.time_end,
-      spaceStart: block.position_start,
-      spaceEnd: block.position_end,
-      color: ASPECT_LABELS_COLORS[block.aspect_label as AspectLabel],
-      blinking: block.blinking,
-    }));
-  });
+  const occupancyBlocks = getOccupancyBlocks(cutProjectedTrains);
 
   const onPanOverloaded: SpaceTimeChartProps['onPan'] = async (payload) => {
     const { isPanning } = payload;
