@@ -26,7 +26,6 @@ pub(super) fn route(input: &ItemFn) -> darling::Result<TokenStream> {
     let path_name = Ident::new(&format!("__path_{name}"), name.span());
     Ok(quote::quote! {
         #[doc(hidden)]
-        #[unsafe(no_mangle)]
         #[linkme::distributed_slice(crate::views::router::OPENAPI_ROUTES)]
         static #static_name: crate::views::router::OpenApiRouteSliceItem = |type_name: &str| {
             (type_name == std::any::type_name_of_val(&#name)).then_some(<#path_name as utoipa::Path>::path_item)
