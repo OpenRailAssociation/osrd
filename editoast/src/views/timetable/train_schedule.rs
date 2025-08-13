@@ -174,7 +174,7 @@ pub(in crate::views) async fn get(
 
     let conn = &mut db_pool.get().await?;
     let train_schedule =
-        models::TrainSchedule::retrieve_real_or_fail(conn.clone(), train_schedule_id, || {
+        models::TrainSchedule::retrieve_or_fail(conn.clone(), train_schedule_id, || {
             TrainScheduleError::NotFound { train_schedule_id }
         })
         .await?;
@@ -299,7 +299,7 @@ pub(in crate::views) async fn simulation(
     }
 
     // Retrieve infra or fail
-    let infra = Infra::retrieve_real_or_fail(db_pool.get().await?, infra_id, || {
+    let infra = Infra::retrieve_or_fail(db_pool.get().await?, infra_id, || {
         TrainScheduleError::InfraNotFound { infra_id }
     })
     .await?;
@@ -313,12 +313,11 @@ pub(in crate::views) async fn simulation(
     .await?;
 
     // Retrieve train_schedule or fail
-    let train_schedule = models::TrainSchedule::retrieve_real_or_fail(
-        db_pool.get().await?,
-        train_schedule_id,
-        || TrainScheduleError::NotFound { train_schedule_id },
-    )
-    .await?;
+    let train_schedule =
+        models::TrainSchedule::retrieve_or_fail(db_pool.get().await?, train_schedule_id, || {
+            TrainScheduleError::NotFound { train_schedule_id }
+        })
+        .await?;
 
     // Compute simulation of a train schedule
     let (simulation, _) = train_simulation_batch(
@@ -371,7 +370,7 @@ pub(in crate::views) async fn etcs_braking_curves(
     }
 
     // Retrieve infra or fail
-    let infra = Infra::retrieve_real_or_fail(db_pool.get().await?, infra_id, || {
+    let infra = Infra::retrieve_or_fail(db_pool.get().await?, infra_id, || {
         TrainScheduleError::InfraNotFound { infra_id }
     })
     .await?;
@@ -385,12 +384,11 @@ pub(in crate::views) async fn etcs_braking_curves(
     .await?;
 
     // Retrieve train_schedule or fail
-    let train_schedule = models::TrainSchedule::retrieve_real_or_fail(
-        db_pool.get().await?,
-        train_schedule_id,
-        || TrainScheduleError::NotFound { train_schedule_id },
-    )
-    .await?;
+    let train_schedule =
+        models::TrainSchedule::retrieve_or_fail(db_pool.get().await?, train_schedule_id, || {
+            TrainScheduleError::NotFound { train_schedule_id }
+        })
+        .await?;
 
     // Compute simulation of a train schedule
     let (simulation_result, pathfinding_result) = train_simulation_batch(
@@ -433,7 +431,7 @@ pub(in crate::views) async fn etcs_braking_curves(
     };
 
     // Build physics consist
-    let rs = RollingStock::retrieve_real_or_fail(
+    let rs = RollingStock::retrieve_or_fail(
         db_pool.get().await?,
         train_schedule.rolling_stock_name.clone(),
         || TrainScheduleError::RollingStockNotFound {
@@ -515,7 +513,7 @@ pub(in crate::views) async fn simulation_summary(
 
     let conn = &mut db_pool.get().await?;
 
-    let infra = Infra::retrieve_real_or_fail(conn.clone(), infra_id, || {
+    let infra = Infra::retrieve_or_fail(conn.clone(), infra_id, || {
         TrainScheduleError::InfraNotFound { infra_id }
     })
     .await?;
@@ -591,7 +589,7 @@ pub(in crate::views) async fn get_path(
     let conn = db_pool.get().await?;
     let mut valkey_conn = valkey_client.get_connection().await?;
 
-    let infra = Infra::retrieve_real_or_fail(conn.clone(), infra_id, || {
+    let infra = Infra::retrieve_or_fail(conn.clone(), infra_id, || {
         PathfindingError::InfraNotFound { infra_id }
     })
     .await?;
@@ -605,7 +603,7 @@ pub(in crate::views) async fn get_path(
     .await?;
 
     let train_schedule =
-        models::TrainSchedule::retrieve_real_or_fail(conn.clone(), train_schedule_id, || {
+        models::TrainSchedule::retrieve_or_fail(conn.clone(), train_schedule_id, || {
             TrainScheduleError::NotFound { train_schedule_id }
         })
         .await?;
@@ -644,7 +642,7 @@ pub(in crate::views) async fn project_path(
         electrical_profile_set_id,
     }): Json<ProjectPathForm>,
 ) -> Result<Json<HashMap<i64, SpaceTimeCurves>>> {
-    let infra = &Infra::retrieve_real_or_fail(db_pool.get().await?, infra_id, || {
+    let infra = &Infra::retrieve_or_fail(db_pool.get().await?, infra_id, || {
         TrainScheduleError::InfraNotFound { infra_id }
     })
     .await?;
@@ -718,7 +716,7 @@ pub(in crate::views) async fn project_path_op(
         operational_points_distances,
     }): Json<ProjectPathOperationalPointForm>,
 ) -> Result<Json<HashMap<i64, Arc<SpaceTimeCurves>>>> {
-    let infra = &Infra::retrieve_real_or_fail(db_pool.get().await?, infra_id, || {
+    let infra = &Infra::retrieve_or_fail(db_pool.get().await?, infra_id, || {
         TrainScheduleError::InfraNotFound { infra_id }
     })
     .await?;
@@ -833,7 +831,7 @@ pub(in crate::views) async fn occupancy_blocks(
     })
     .await?;
 
-    let infra = &Infra::retrieve_real_or_fail(db_pool.get().await?, infra_id, || {
+    let infra = &Infra::retrieve_or_fail(db_pool.get().await?, infra_id, || {
         TrainScheduleError::InfraNotFound { infra_id }
     })
     .await?;
@@ -934,7 +932,7 @@ pub(in crate::views) async fn track_occupancy(
     .await?;
 
     // Retrieve infra / train_schedules / operational points
-    let infra = Infra::retrieve_real_or_fail(db_pool.get().await?, infra_id, || {
+    let infra = Infra::retrieve_or_fail(db_pool.get().await?, infra_id, || {
         TrainScheduleError::InfraNotFound { infra_id }
     })
     .await?;
@@ -949,7 +947,7 @@ pub(in crate::views) async fn track_occupancy(
         )
         .await?;
 
-    let operational_point = OperationalPointModel::retrieve_real_or_fail(
+    let operational_point = OperationalPointModel::retrieve_or_fail(
         db_pool.get().await?,
         (infra_id, operational_point_id.clone()),
         || TrainScheduleError::OperationalPointNotFound {
@@ -1342,7 +1340,7 @@ pub mod tests {
         assert_eq!(response.len(), 1);
 
         let created_train_schedule =
-            models::TrainSchedule::retrieve_real(pool.get_ok(), response.first().unwrap().id)
+            models::TrainSchedule::retrieve(pool.get_ok(), response.first().unwrap().id)
                 .await
                 .expect("Failed to retrieve updated train schedule")
                 .expect("Updated train schedule not found");

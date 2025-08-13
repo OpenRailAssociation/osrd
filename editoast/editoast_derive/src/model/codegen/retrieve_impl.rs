@@ -36,7 +36,7 @@ impl ToTokens for RetrieveImpl {
                 type Error = #error;
 
                 #[tracing::instrument(name = #span_name, skip_all, err, fields(query_id))]
-                async fn retrieve_real(
+                async fn retrieve(
                     conn: database::DbConnection,
                     #id_ident: #ty,
                 ) -> std::result::Result<Option<#model>, Self::Error> {

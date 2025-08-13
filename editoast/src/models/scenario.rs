@@ -93,7 +93,7 @@ impl Scenario {
     {
         conn.transaction(|mut conn| {
             async move {
-                let mut scenario = Self::retrieve_real_or_fail(conn.clone(), scenario_id, || {
+                let mut scenario = Self::retrieve_or_fail(conn.clone(), scenario_id, || {
                     ScenarioError::NotFound { scenario_id }
                 })
                 .await?;

@@ -304,7 +304,7 @@ pub mod tests {
 
         // THEN
         let stdcm_search_env_in_db =
-            StdcmSearchEnvironment::retrieve_real(pool.get_ok(), stdcm_search_env.id)
+            StdcmSearchEnvironment::retrieve(pool.get_ok(), stdcm_search_env.id)
                 .await
                 .expect("Failed to retrieve stdcm search environment")
                 .expect("Stdcm search environment not found");

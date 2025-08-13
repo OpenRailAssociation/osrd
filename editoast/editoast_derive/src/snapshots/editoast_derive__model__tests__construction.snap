@@ -298,7 +298,7 @@ impl crate::models::Retrieve<(String)> for Document {
         err,
         fields(query_id)
     )]
-    async fn retrieve_real(
+    async fn retrieve(
         conn: database::DbConnection,
         content_type: (String),
     ) -> std::result::Result<Option<Document>, Self::Error> {
@@ -327,7 +327,7 @@ impl crate::models::Retrieve<(i64)> for Document {
         err,
         fields(query_id)
     )]
-    async fn retrieve_real(
+    async fn retrieve(
         conn: database::DbConnection,
         id_: (i64),
     ) -> std::result::Result<Option<Document>, Self::Error> {

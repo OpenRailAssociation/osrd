@@ -71,7 +71,7 @@ pub(in crate::views) async fn get_objects(
         return Err(GetObjectsErrors::DuplicateIdsProvided.into());
     }
 
-    let infra = Infra::retrieve_real_or_fail(db_pool.get().await?, infra_id, || {
+    let infra = Infra::retrieve_or_fail(db_pool.get().await?, infra_id, || {
         InfraApiError::NotFound { infra_id }
     })
     .await?;
@@ -148,7 +148,7 @@ pub(in crate::views) async fn list_objects_ids(
         return Err(AuthorizationError::Forbidden.into());
     }
 
-    let infra = Infra::retrieve_real_or_fail(db_pool.get().await?, infra_id, || {
+    let infra = Infra::retrieve_or_fail(db_pool.get().await?, infra_id, || {
         InfraApiError::NotFound { infra_id }
     })
     .await?;

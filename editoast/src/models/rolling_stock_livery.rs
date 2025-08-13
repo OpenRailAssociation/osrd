@@ -70,16 +70,12 @@ pub mod tests {
             create_rolling_stock_livery_fixture(&mut db_pool.get_ok(), "rs_livery_name").await;
 
         assert!(
-            RollingStockLivery::retrieve_real(db_pool.get_ok(), rs_livery.id)
+            RollingStockLivery::retrieve(db_pool.get_ok(), rs_livery.id)
                 .await
                 .is_ok()
         );
 
-        assert!(
-            Document::retrieve_real(db_pool.get_ok(), image.id)
-                .await
-                .is_ok()
-        );
+        assert!(Document::retrieve(db_pool.get_ok(), image.id).await.is_ok());
 
         assert!(
             rs_livery
@@ -89,14 +85,14 @@ pub mod tests {
         );
 
         assert!(
-            RollingStockLivery::retrieve_real(db_pool.get_ok(), rs_livery.id)
+            RollingStockLivery::retrieve(db_pool.get_ok(), rs_livery.id)
                 .await
                 .expect("Failed to retrieve rolling stock livery")
                 .is_none()
         );
 
         assert!(
-            Document::retrieve_real(db_pool.get_ok(), image.id)
+            Document::retrieve(db_pool.get_ok(), image.id)
                 .await
                 .expect("Failed to retrieve document")
                 .is_none()

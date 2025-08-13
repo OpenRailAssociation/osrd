@@ -157,7 +157,7 @@ impl Project {
     {
         conn.transaction(|mut conn| {
             async move {
-                let mut project = Self::retrieve_real_or_fail(conn.clone(), project_id, || {
+                let mut project = Self::retrieve_or_fail(conn.clone(), project_id, || {
                     ProjectError::NotFound { project_id }
                 })
                 .await?;
@@ -203,7 +203,7 @@ pub mod tests {
         let created_project = create_project(&mut db_pool.get_ok(), "test_project_name").await;
 
         // Get a project
-        let project = Project::retrieve_real(db_pool.get_ok(), created_project.id)
+        let project = Project::retrieve(db_pool.get_ok(), created_project.id)
             .await
             .expect("Failed to retrieve project")
             .expect("Project not found");
@@ -228,7 +228,7 @@ pub mod tests {
             .await
             .expect("Failed to update project");
 
-        let project = Project::retrieve_real(db_pool.get_ok(), created_project.id)
+        let project = Project::retrieve(db_pool.get_ok(), created_project.id)
             .await
             .expect("Failed to retrieve project")
             .expect("Project not found");

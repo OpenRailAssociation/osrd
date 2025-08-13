@@ -72,11 +72,10 @@ pub(in crate::views) async fn get_routes_from_waypoint(
     }
 
     let mut conn = db_pool.get().await?;
-    let infra =
-        Infra::retrieve_real_or_fail(conn.clone(), path.infra_id, || InfraApiError::NotFound {
-            infra_id: path.infra_id,
-        })
-        .await?;
+    let infra = Infra::retrieve_or_fail(conn.clone(), path.infra_id, || InfraApiError::NotFound {
+        infra_id: path.infra_id,
+    })
+    .await?;
 
     // Check user privilege on infra
     auth.check_authorization(async |authorizer| {
@@ -168,7 +167,7 @@ pub(in crate::views) async fn get_routes_track_ranges(
     let db_pool = db_pool.clone();
     let infra_caches = infra_caches.clone();
     let infra_id = infra;
-    let infra = Infra::retrieve_real_or_fail(db_pool.get().await?, infra_id, || {
+    let infra = Infra::retrieve_or_fail(db_pool.get().await?, infra_id, || {
         InfraApiError::NotFound { infra_id }
     })
     .await?;
@@ -239,7 +238,7 @@ pub(in crate::views) async fn get_routes_nodes(
         return Err(AuthorizationError::Forbidden.into());
     }
 
-    let infra = Infra::retrieve_real_or_fail(db_pool.get().await?, infra_id, || {
+    let infra = Infra::retrieve_or_fail(db_pool.get().await?, infra_id, || {
         InfraApiError::NotFound { infra_id }
     })
     .await?;

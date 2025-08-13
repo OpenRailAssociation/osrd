@@ -123,11 +123,10 @@ pub(in crate::views) async fn get_by_id(
 
     let conn = &mut db_pool.get().await?;
 
-    let paced_train =
-        models::PacedTrain::retrieve_real_or_fail(conn.clone(), paced_train_id, || {
-            PacedTrainError::NotFound { paced_train_id }
-        })
-        .await?;
+    let paced_train = models::PacedTrain::retrieve_or_fail(conn.clone(), paced_train_id, || {
+        PacedTrainError::NotFound { paced_train_id }
+    })
+    .await?;
 
     let paced_train: PacedTrainResponse = paced_train.into();
 
@@ -270,7 +269,7 @@ pub(in crate::views) async fn simulation_summary(
 
     let conn = &mut db_pool.get().await?;
 
-    let infra = Infra::retrieve_real_or_fail(conn.clone(), infra_id, || {
+    let infra = Infra::retrieve_or_fail(conn.clone(), infra_id, || {
         PacedTrainError::InfraNotFound { infra_id }
     })
     .await?;
@@ -397,7 +396,7 @@ pub(in crate::views) async fn get_path(
     let conn = &mut db_pool.get().await?;
     let mut valkey_conn = valkey_client.get_connection().await?;
 
-    let infra = Infra::retrieve_real_or_fail(conn.clone(), infra_id, || {
+    let infra = Infra::retrieve_or_fail(conn.clone(), infra_id, || {
         PacedTrainError::InfraNotFound { infra_id }
     })
     .await?;
@@ -410,11 +409,10 @@ pub(in crate::views) async fn get_path(
     })
     .await?;
 
-    let paced_train =
-        models::PacedTrain::retrieve_real_or_fail(conn.clone(), paced_train_id, || {
-            PacedTrainError::NotFound { paced_train_id }
-        })
-        .await?;
+    let paced_train = models::PacedTrain::retrieve_or_fail(conn.clone(), paced_train_id, || {
+        PacedTrainError::NotFound { paced_train_id }
+    })
+    .await?;
 
     let train_schedule = match exception_key {
         Some(exception_key) => {
@@ -483,7 +481,7 @@ pub(in crate::views) async fn simulation(
     }
 
     // Retrieve infra or fail
-    let infra = Infra::retrieve_real_or_fail(db_pool.get().await?, infra_id, || {
+    let infra = Infra::retrieve_or_fail(db_pool.get().await?, infra_id, || {
         PacedTrainError::InfraNotFound { infra_id }
     })
     .await?;
@@ -498,7 +496,7 @@ pub(in crate::views) async fn simulation(
 
     // Retrieve paced_train or fail
     let paced_train =
-        models::PacedTrain::retrieve_real_or_fail(db_pool.get().await?, paced_train_id, || {
+        models::PacedTrain::retrieve_or_fail(db_pool.get().await?, paced_train_id, || {
             PacedTrainError::NotFound { paced_train_id }
         })
         .await?;
@@ -578,7 +576,7 @@ pub(in crate::views) async fn project_path(
         electrical_profile_set_id,
     }): Json<ProjectPathForm>,
 ) -> Result<Json<HashMap<i64, ProjectPathPacedTrainResult>>> {
-    let infra = &Infra::retrieve_real_or_fail(db_pool.get().await?, infra_id, || {
+    let infra = &Infra::retrieve_or_fail(db_pool.get().await?, infra_id, || {
         PacedTrainError::InfraNotFound { infra_id }
     })
     .await?;
@@ -712,7 +710,7 @@ pub(in crate::views) async fn project_path_op(
         operational_points_distances,
     }): Json<ProjectPathOperationalPointForm>,
 ) -> Result<Json<HashMap<i64, ProjectPathPacedTrainResult>>> {
-    let infra = &Infra::retrieve_real_or_fail(db_pool.get().await?, infra_id, || {
+    let infra = &Infra::retrieve_or_fail(db_pool.get().await?, infra_id, || {
         PacedTrainError::InfraNotFound { infra_id }
     })
     .await?;
@@ -887,7 +885,7 @@ pub(in crate::views) async fn occupancy_blocks(
     })
     .await?;
 
-    let infra = &Infra::retrieve_real_or_fail(db_pool.get().await?, infra_id, || {
+    let infra = &Infra::retrieve_or_fail(db_pool.get().await?, infra_id, || {
         PacedTrainError::InfraNotFound { infra_id }
     })
     .await?;
@@ -1071,7 +1069,7 @@ mod tests {
         assert_eq!(response.len(), 1);
 
         let created_paced_train =
-            models::PacedTrain::retrieve_real(pool.get_ok(), response.first().unwrap().id)
+            models::PacedTrain::retrieve(pool.get_ok(), response.first().unwrap().id)
                 .await
                 .expect("Failed to retrieve updated paced train")
                 .expect("Updated paced train not found");
@@ -1117,7 +1115,7 @@ mod tests {
         app.fetch(request).assert_status(StatusCode::NO_CONTENT);
 
         let created_paced_train =
-            models::PacedTrain::retrieve_real(pool.get_ok(), simple_paced_train.id)
+            models::PacedTrain::retrieve(pool.get_ok(), simple_paced_train.id)
                 .await
                 .expect("Failed to retrieve updated paced train")
                 .expect("Updated paced train not found");
@@ -1147,7 +1145,7 @@ mod tests {
 
         app.fetch(request).assert_status(StatusCode::NO_CONTENT);
 
-        let updated_paced_train = models::PacedTrain::retrieve_real(pool.get_ok(), paced_train.id)
+        let updated_paced_train = models::PacedTrain::retrieve(pool.get_ok(), paced_train.id)
             .await
             .expect("Failed to retrieve updated paced train")
             .expect("Updated paced train not found");

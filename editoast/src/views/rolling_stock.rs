@@ -350,7 +350,7 @@ pub(in crate::views) async fn update(
         .transaction::<_, InternalError, _>(|conn| {
             async move {
                 let previous_rolling_stock =
-                    RollingStock::retrieve_real_or_fail(conn.clone(), rolling_stock_id, || {
+                    RollingStock::retrieve_or_fail(conn.clone(), rolling_stock_id, || {
                         RollingStockError::KeyNotFound {
                             rolling_stock_key: RollingStockKey::Id(rolling_stock_id),
                         }
@@ -422,7 +422,7 @@ pub(in crate::views) async fn delete(
     }
     let conn = &mut db_pool.get().await?;
 
-    let rolling_stock = RollingStock::retrieve_real_or_fail(conn.clone(), rolling_stock_id, || {
+    let rolling_stock = RollingStock::retrieve_or_fail(conn.clone(), rolling_stock_id, || {
         RollingStockError::KeyNotFound {
             rolling_stock_key: RollingStockKey::Id(rolling_stock_id),
         }
@@ -635,7 +635,7 @@ pub(in crate::views) async fn get_usage(
 ) -> Result<Json<Vec<ScenarioReference>>> {
     let mut conn = db_pool.get().await?;
 
-    let rolling_stock = RollingStock::retrieve_real_or_fail(conn.clone(), rolling_stock_id, || {
+    let rolling_stock = RollingStock::retrieve_or_fail(conn.clone(), rolling_stock_id, || {
         RollingStockError::KeyNotFound {
             rolling_stock_key: RollingStockKey::Id(rolling_stock_id),
         }
@@ -654,16 +654,14 @@ pub async fn retrieve_existing_rolling_stock(
 ) -> Result<RollingStock, RollingStockError> {
     match rolling_stock_key.clone() {
         RollingStockKey::Id(id) => {
-            RollingStock::retrieve_real_or_fail(conn.clone(), id, || {
-                RollingStockError::KeyNotFound {
-                    rolling_stock_key: rolling_stock_key.clone(),
-                }
+            RollingStock::retrieve_or_fail(conn.clone(), id, || RollingStockError::KeyNotFound {
+                rolling_stock_key: rolling_stock_key.clone(),
             })
             .await
         }
         RollingStockKey::Name(name) => {
-            RollingStock::retrieve_real_or_fail(conn.clone(), name, || {
-                RollingStockError::KeyNotFound { rolling_stock_key }
+            RollingStock::retrieve_or_fail(conn.clone(), name, || RollingStockError::KeyNotFound {
+                rolling_stock_key,
             })
             .await
         }
@@ -823,7 +821,7 @@ pub mod tests {
         // THEN
         let response: RollingStock = raw_response.assert_status(StatusCode::OK).json_into();
         // Check if the rolling stock was created in the database
-        let rolling_stock = RollingStock::retrieve_real(db_pool.get_ok(), response.id)
+        let rolling_stock = RollingStock::retrieve(db_pool.get_ok(), response.id)
             .await
             .expect("Failed to retrieve rolling stock")
             .expect("Rolling stock not found");
@@ -854,7 +852,7 @@ pub mod tests {
         // THEN
         let response: RollingStock = raw_response.assert_status(StatusCode::OK).json_into();
         // Check if the rolling stock was created in the database with locked = true
-        let rolling_stock = RollingStock::retrieve_real(db_pool.get_ok(), response.id)
+        let rolling_stock = RollingStock::retrieve(db_pool.get_ok(), response.id)
             .await
             .expect("Failed to retrieve rolling stock")
             .expect("Rolling stock not found");
@@ -1133,7 +1131,7 @@ pub mod tests {
         raw_response.assert_status(StatusCode::OK);
 
         let updated_rolling_stock: RollingStock =
-            RollingStock::retrieve_real(db_pool.get_ok(), fast_rolling_stock.id)
+            RollingStock::retrieve(db_pool.get_ok(), fast_rolling_stock.id)
                 .await
                 .expect("Failed to retrieve rolling stock")
                 .expect("Rolling stock not found");
@@ -1184,7 +1182,7 @@ pub mod tests {
         raw_response.assert_status(StatusCode::OK);
 
         let updated_rolling_stock: RollingStock =
-            RollingStock::retrieve_real(db_pool.get_ok(), fast_rolling_stock.id)
+            RollingStock::retrieve(db_pool.get_ok(), fast_rolling_stock.id)
                 .await
                 .expect("Failed to retrieve rolling stock")
                 .expect("Rolling stock not found");
@@ -1232,7 +1230,7 @@ pub mod tests {
         );
 
         let updated_rolling_stock: RollingStock =
-            RollingStock::retrieve_real(db_pool.get_ok(), fast_rolling_stock.id)
+            RollingStock::retrieve(db_pool.get_ok(), fast_rolling_stock.id)
                 .await
                 .expect("Failed to retrieve rolling stock")
                 .expect("Rolling stock not found");
@@ -1336,7 +1334,7 @@ pub mod tests {
         app.fetch(request).assert_status(StatusCode::NO_CONTENT);
 
         let fast_rolling_stock: RollingStock =
-            RollingStock::retrieve_real(db_pool.get_ok(), fast_rolling_stock.id)
+            RollingStock::retrieve(db_pool.get_ok(), fast_rolling_stock.id)
                 .await
                 .expect("Failed to retrieve rolling stock")
                 .expect("Rolling stock not found");
@@ -1366,7 +1364,7 @@ pub mod tests {
         app.fetch(request).assert_status(StatusCode::NO_CONTENT);
 
         let fast_rolling_stock: RollingStock =
-            RollingStock::retrieve_real(db_pool.get_ok(), locked_fast_rolling_stock.id)
+            RollingStock::retrieve(db_pool.get_ok(), locked_fast_rolling_stock.id)
                 .await
                 .expect("Failed to retrieve rolling stock")
                 .expect("Rolling stock not found");

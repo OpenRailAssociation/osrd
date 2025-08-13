@@ -85,7 +85,7 @@ async fn set_stdcm_search_env_from_scenario(
             .await?;
     }
 
-    let scenario = Scenario::retrieve_real_or_fail(conn.clone(), args.scenario_id, || {
+    let scenario = Scenario::retrieve_or_fail(conn.clone(), args.scenario_id, || {
         anyhow::anyhow!("Scenario not found, id: {}", args.scenario_id)
     })
     .await?;

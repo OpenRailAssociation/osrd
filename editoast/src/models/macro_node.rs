@@ -52,7 +52,7 @@ pub mod test {
             .expect("Failed to create macro node");
 
         // Retrieve the created node
-        let node = MacroNode::retrieve_real(db_pool.get_ok(), created.id)
+        let node = MacroNode::retrieve(db_pool.get_ok(), created.id)
             .await
             .expect("Failed to retrieve node")
             .expect("Macro node not found");

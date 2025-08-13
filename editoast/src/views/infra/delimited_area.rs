@@ -147,7 +147,7 @@ pub(in crate::views) async fn delimited_area(
 
     // Retrieve the infra
     let mut conn = db_pool.get().await?;
-    let infra = Infra::retrieve_real_or_fail(conn.clone(), infra_id, || InfraApiError::NotFound {
+    let infra = Infra::retrieve_or_fail(conn.clone(), infra_id, || InfraApiError::NotFound {
         infra_id,
     })
     .await?;

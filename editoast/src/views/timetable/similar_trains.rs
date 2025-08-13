@@ -245,7 +245,7 @@ pub(in crate::views) async fn similar_trains(
         return Err(SimilarTrainsError::TimetableNotFound { timetable_id }.into());
     }
 
-    let infra = Infra::retrieve_real_or_fail(conn.clone(), infra_id, || {
+    let infra = Infra::retrieve_or_fail(conn.clone(), infra_id, || {
         SimilarTrainsError::InfraNotFound { infra_id }
     })
     .await?;

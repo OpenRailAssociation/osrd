@@ -315,7 +315,7 @@ pub(in crate::views) async fn get(
     }
 
     let infra_id = infra.infra_id;
-    let infra = Infra::retrieve_real_or_fail(db_pool.get().await?, infra_id, || {
+    let infra = Infra::retrieve_or_fail(db_pool.get().await?, infra_id, || {
         InfraApiError::NotFound { infra_id }
     })
     .await?;
@@ -426,7 +426,7 @@ pub(in crate::views) async fn clone(
     }
 
     let mut conn = db_pool.get().await?;
-    let infra = Infra::retrieve_real_or_fail(conn.clone(), infra_id, || InfraApiError::NotFound {
+    let infra = Infra::retrieve_or_fail(conn.clone(), infra_id, || InfraApiError::NotFound {
         infra_id,
     })
     .await?;
@@ -578,7 +578,7 @@ pub(in crate::views) async fn get_switch_types(
 
     let mut conn = db_pool.get().await?;
 
-    let infra = Infra::retrieve_real_or_fail(conn.clone(), infra_id, || InfraApiError::NotFound {
+    let infra = Infra::retrieve_or_fail(conn.clone(), infra_id, || InfraApiError::NotFound {
         infra_id,
     })
     .await?;
@@ -637,7 +637,7 @@ pub(in crate::views) async fn get_speed_limit_tags(
 
     let mut conn = db_pool.get().await?;
 
-    let infra = Infra::retrieve_real_or_fail(conn.clone(), infra_id, || InfraApiError::NotFound {
+    let infra = Infra::retrieve_or_fail(conn.clone(), infra_id, || InfraApiError::NotFound {
         infra_id,
     })
     .await?;
@@ -692,7 +692,7 @@ pub(in crate::views) async fn get_voltages(
     }
 
     let include_rolling_stock_modes = param.include_rolling_stock_modes;
-    let infra = Infra::retrieve_real_or_fail(db_pool.get().await?, infra_id, || {
+    let infra = Infra::retrieve_or_fail(db_pool.get().await?, infra_id, || {
         InfraApiError::NotFound { infra_id }
     })
     .await?;
@@ -738,7 +738,7 @@ pub(in crate::views) async fn get_all_voltages(
 }
 
 async fn set_locked(infra_id: i64, locked: bool, db_pool: DbConnectionPoolV2) -> Result<()> {
-    let mut infra = Infra::retrieve_real_or_fail(db_pool.get().await?, infra_id, || {
+    let mut infra = Infra::retrieve_or_fail(db_pool.get().await?, infra_id, || {
         InfraApiError::NotFound { infra_id }
     })
     .await?;
@@ -855,7 +855,7 @@ pub(in crate::views) async fn load(
         return Err(AuthorizationError::Forbidden.into());
     }
 
-    let infra = Infra::retrieve_real_or_fail(db_pool.get().await?, infra_id, || {
+    let infra = Infra::retrieve_or_fail(db_pool.get().await?, infra_id, || {
         InfraApiError::NotFound { infra_id }
     })
     .await?;
@@ -1159,7 +1159,7 @@ pub mod tests {
             app.post(format!("/infra/{}/clone/?name=cloned_infra", empty_infra.id).as_str());
 
         let cloned_infra_id: i64 = app.fetch(request).assert_status(StatusCode::OK).json_into();
-        let cloned_infra = Infra::retrieve_real(db_pool.get_ok(), cloned_infra_id)
+        let cloned_infra = Infra::retrieve(db_pool.get_ok(), cloned_infra_id)
             .await
             .unwrap()
             .expect("infra was not cloned");
@@ -1204,7 +1204,7 @@ pub mod tests {
             .assert_status(StatusCode::OK)
             .json_into();
 
-        let _cloned_infra = Infra::retrieve_real(db_pool.get_ok(), cloned_infra_id)
+        let _cloned_infra = Infra::retrieve(db_pool.get_ok(), cloned_infra_id)
             .await
             .unwrap()
             .expect("infra was not cloned");
@@ -1508,7 +1508,7 @@ pub mod tests {
         app.fetch(req).assert_status(StatusCode::NO_CONTENT);
 
         // Check lock
-        let infra = Infra::retrieve_real(db_pool.get_ok(), empty_infra.id)
+        let infra = Infra::retrieve(db_pool.get_ok(), empty_infra.id)
             .await
             .unwrap()
             .expect("infra was not cloned");
@@ -1520,7 +1520,7 @@ pub mod tests {
         app.fetch(req).assert_status(StatusCode::NO_CONTENT);
 
         // Check lock
-        let infra = Infra::retrieve_real(db_pool.get_ok(), empty_infra.id)
+        let infra = Infra::retrieve(db_pool.get_ok(), empty_infra.id)
             .await
             .unwrap()
             .expect("infra was not cloned");

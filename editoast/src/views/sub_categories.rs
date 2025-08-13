@@ -170,11 +170,10 @@ async fn delete_sub_category_and_fallback_to_main(
     conn: &mut DbConnection,
     code: String,
 ) -> Result<()> {
-    let sub_category =
-        models::SubCategory::retrieve_real_or_fail(conn.clone(), code.clone(), || {
-            SubCategoryError::NotFound { code: code.clone() }
-        })
-        .await?;
+    let sub_category = models::SubCategory::retrieve_or_fail(conn.clone(), code.clone(), || {
+        SubCategoryError::NotFound { code: code.clone() }
+    })
+    .await?;
 
     let sub_category_code = Some(sub_category.code.clone());
     let paced_trains_ids: Vec<i64> = models::PacedTrain::list(
@@ -259,26 +258,22 @@ pub mod tests {
             app.fetch(request).assert_status(StatusCode::OK).json_into();
         let created_sub_category1 = response.first().unwrap();
 
-        let sub_category_1 = models::SubCategory::retrieve_real(
-            db_pool.get_ok(),
-            created_sub_category1.code.clone(),
-        )
-        .await
-        .expect("Failed to retrieve sub category")
-        .expect("Sub category not found")
-        .into();
+        let sub_category_1 =
+            models::SubCategory::retrieve(db_pool.get_ok(), created_sub_category1.code.clone())
+                .await
+                .expect("Failed to retrieve sub category")
+                .expect("Sub category not found")
+                .into();
 
         assert_eq!(created_sub_category1, &sub_category_1);
 
         let created_sub_category2 = response.get(1).unwrap();
-        let sub_category_2 = models::SubCategory::retrieve_real(
-            db_pool.get_ok(),
-            created_sub_category2.code.clone(),
-        )
-        .await
-        .expect("Failed to retrieve sub category")
-        .expect("Sub category not found")
-        .into();
+        let sub_category_2 =
+            models::SubCategory::retrieve(db_pool.get_ok(), created_sub_category2.code.clone())
+                .await
+                .expect("Failed to retrieve sub category")
+                .expect("Sub category not found")
+                .into();
 
         assert_eq!(created_sub_category2, &sub_category_2);
     }
@@ -392,12 +387,12 @@ pub mod tests {
         ));
         app.fetch(request).assert_status(StatusCode::NO_CONTENT);
 
-        let paced_train_1 = models::PacedTrain::retrieve_real(db_pool.get_ok(), paced_train_1.id)
+        let paced_train_1 = models::PacedTrain::retrieve(db_pool.get_ok(), paced_train_1.id)
             .await
             .expect("Failed to retrieve paced train")
             .expect("Paced train 1 not found");
 
-        let paced_train_2 = models::PacedTrain::retrieve_real(db_pool.get_ok(), paced_train_2.id)
+        let paced_train_2 = models::PacedTrain::retrieve(db_pool.get_ok(), paced_train_2.id)
             .await
             .expect("Failed to retrieve paced train")
             .expect("Paced train 2 not found");
@@ -419,13 +414,13 @@ pub mod tests {
         );
 
         let train_schedule_1 =
-            models::TrainSchedule::retrieve_real(db_pool.get_ok(), train_schedule_1.id)
+            models::TrainSchedule::retrieve(db_pool.get_ok(), train_schedule_1.id)
                 .await
                 .expect("Failed to retrieve train schedule")
                 .expect("Train schedule 1 not found");
 
         let train_schedule_2 =
-            models::TrainSchedule::retrieve_real(db_pool.get_ok(), train_schedule_2.id)
+            models::TrainSchedule::retrieve(db_pool.get_ok(), train_schedule_2.id)
                 .await
                 .expect("Failed to retrieve train schedule")
                 .expect("Train schedule 2 not found");

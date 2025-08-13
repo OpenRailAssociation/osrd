@@ -587,8 +587,8 @@ pub(in crate::views) async fn conflicts(
 
     let conn = db_pool.get().await?;
 
-    let infra = Infra::retrieve_real_or_fail(conn.clone(), infra_id, || {
-        TimetableError::InfraNotFound { infra_id }
+    let infra = Infra::retrieve_or_fail(conn.clone(), infra_id, || TimetableError::InfraNotFound {
+        infra_id,
     })
     .await?;
 
@@ -975,7 +975,7 @@ mod tests {
             app.fetch(request).assert_status(StatusCode::OK).json_into();
 
         let retrieved_timetable =
-            Timetable::retrieve_real(pool.get_ok(), created_timetable.timetable_id)
+            Timetable::retrieve(pool.get_ok(), created_timetable.timetable_id)
                 .await
                 .expect("Failed to retrieve timetable")
                 .expect("Timetable not found");

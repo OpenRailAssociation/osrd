@@ -79,7 +79,7 @@ pub(in crate::views) async fn get(
     if !authorized {
         return Err(AuthorizationError::Forbidden.into());
     }
-    let ep_set = ElectricalProfileSet::retrieve_real_or_fail(
+    let ep_set = ElectricalProfileSet::retrieve_or_fail(
         db_pool.get().await?,
         electrical_profile_set_id,
         || ElectricalProfilesError::NotFound {
@@ -120,7 +120,7 @@ pub(in crate::views) async fn get_level_order(
     if !authorized {
         return Err(AuthorizationError::Forbidden.into());
     }
-    let ep_set = ElectricalProfileSet::retrieve_real_or_fail(
+    let ep_set = ElectricalProfileSet::retrieve_or_fail(
         db_pool.get().await?,
         electrical_profile_set_id,
         || ElectricalProfilesError::NotFound {
@@ -346,7 +346,7 @@ mod tests {
         response.assert_status(StatusCode::OK);
         let created_ep: ElectricalProfileSet = response.json();
 
-        let created_ep = ElectricalProfileSet::retrieve_real(pool.get_ok(), created_ep.id)
+        let created_ep = ElectricalProfileSet::retrieve(pool.get_ok(), created_ep.id)
             .await
             .expect("Failed to retrieve created electrical profile set")
             .expect("Electrical profile set not found");

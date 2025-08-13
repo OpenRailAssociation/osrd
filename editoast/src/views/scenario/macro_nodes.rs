@@ -305,7 +305,7 @@ pub(in crate::views) async fn update(
         scenario_id,
         move |mut conn, scenario, study, project| {
             async move {
-                let node = MacroNode::retrieve_real_or_fail(conn.clone(), node_id, || {
+                let node = MacroNode::retrieve_or_fail(conn.clone(), node_id, || {
                     MacroNodeError::NotFound { node_id }
                 })
                 .await?;
@@ -366,7 +366,7 @@ pub(in crate::views) async fn delete(
         scenario_id,
         move |mut conn, scenario, study, project| {
             async move {
-                let node = MacroNode::retrieve_real_or_fail(conn.clone(), node_id, || {
+                let node = MacroNode::retrieve_or_fail(conn.clone(), node_id, || {
                     MacroNodeError::NotFound { node_id }
                 })
                 .await?;
@@ -401,19 +401,19 @@ async fn check_project_study_scenario(
     study_id: i64,
     scenario_id: i64,
 ) -> Result<(Project, Study, Scenario)> {
-    let project = Project::retrieve_real_or_fail(conn.clone(), project_id, || {
-        ProjectError::NotFound { project_id }
+    let project = Project::retrieve_or_fail(conn.clone(), project_id, || ProjectError::NotFound {
+        project_id,
     })
     .await?;
     let study =
-        Study::retrieve_real_or_fail(conn.clone(), study_id, || StudyError::NotFound { study_id })
+        Study::retrieve_or_fail(conn.clone(), study_id, || StudyError::NotFound { study_id })
             .await?;
 
     if study.project_id != project_id {
         return Err(StudyError::NotFound { study_id }.into());
     }
 
-    let scenario = Scenario::retrieve_real_or_fail(conn, scenario_id, || ScenarioError::NotFound {
+    let scenario = Scenario::retrieve_or_fail(conn, scenario_id, || ScenarioError::NotFound {
         scenario_id,
     })
     .await?;
@@ -430,8 +430,7 @@ async fn retrieve_macro_node_and_check_scenario(
     node_id: i64,
 ) -> Result<MacroNode> {
     let node =
-        MacroNode::retrieve_real_or_fail(conn, node_id, || MacroNodeError::NotFound { node_id })
-            .await?;
+        MacroNode::retrieve_or_fail(conn, node_id, || MacroNodeError::NotFound { node_id }).await?;
     if node.scenario_id != scenario_id {
         return Err(MacroNodeError::NotFound { node_id }.into());
     }
@@ -505,7 +504,7 @@ pub mod test {
         let response: MacroNodeBatchResponse =
             app.fetch(request).assert_status(StatusCode::OK).json_into();
 
-        let node = MacroNode::retrieve_real(db_pool.get_ok(), response.macro_nodes[0].id)
+        let node = MacroNode::retrieve(db_pool.get_ok(), response.macro_nodes[0].id)
             .await
             .unwrap()
             .expect("Failed to retrieve node");
@@ -538,7 +537,7 @@ pub mod test {
         let response: MacroNodeResponse =
             app.fetch(request).assert_status(StatusCode::OK).json_into();
 
-        let node = MacroNode::retrieve_real(db_pool.get_ok(), fixtures.nodes[0].id)
+        let node = MacroNode::retrieve(db_pool.get_ok(), fixtures.nodes[0].id)
             .await
             .unwrap()
             .expect("Failed to retrieve node");

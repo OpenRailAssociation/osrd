@@ -55,7 +55,7 @@ pub(in crate::views) async fn get_railjson(
     }
 
     let infra_id = infra.infra_id;
-    let infra_meta = Infra::retrieve_real_or_fail(db_pool.get().await?, infra_id, || {
+    let infra_meta = Infra::retrieve_or_fail(db_pool.get().await?, infra_id, || {
         InfraApiError::NotFound { infra_id }
     })
     .await?;

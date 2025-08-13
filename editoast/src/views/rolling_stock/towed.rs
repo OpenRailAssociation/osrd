@@ -191,14 +191,13 @@ pub(in crate::views) async fn get_by_id(
         return Err(AuthorizationError::Forbidden.into());
     }
 
-    let towed_rolling_stock = TowedRollingStock::retrieve_real_or_fail(
-        db_pool.get().await?,
-        towed_rolling_stock_id,
-        || TowedRollingStockError::IdNotFound {
-            towed_rolling_stock_id,
-        },
-    )
-    .await?;
+    let towed_rolling_stock =
+        TowedRollingStock::retrieve_or_fail(db_pool.get().await?, towed_rolling_stock_id, || {
+            TowedRollingStockError::IdNotFound {
+                towed_rolling_stock_id,
+            }
+        })
+        .await?;
     Ok(Json(towed_rolling_stock))
 }
 
@@ -233,7 +232,7 @@ pub(in crate::views) async fn patch_by_id(
         .await?
         .transaction::<_, InternalError, _>(|conn| {
             async move {
-                let existing_rolling_stock = TowedRollingStock::retrieve_real_or_fail(
+                let existing_rolling_stock = TowedRollingStock::retrieve_or_fail(
                     conn.clone(),
                     towed_rolling_stock_id,
                     || TowedRollingStockError::IdNotFound {
