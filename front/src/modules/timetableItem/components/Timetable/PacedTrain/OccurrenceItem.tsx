@@ -4,6 +4,7 @@ import {
   Clock,
   Flame,
   KebabHorizontal,
+  Manchette,
   Moon,
   Pencil,
   Play,
@@ -16,11 +17,13 @@ import dayjs from 'dayjs';
 import { omit } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { GiPathDistance } from 'react-icons/gi';
+import { useSelector } from 'react-redux';
 
 import AnchoredMenu from 'common/AnchoredMenu';
 import type { SubCategory } from 'common/api/osrdEditoastApi';
 import OSRDMenu, { type OSRDMenuItem } from 'common/OSRDMenu';
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
+import { getTrainIdUsedForProjection } from 'reducers/simulationResults/selectors';
 import { addElementAtIndex } from 'utils/array';
 import { addDurationToDate } from 'utils/duration';
 import {
@@ -77,6 +80,8 @@ const OccurrenceItem = ({
   const menuRef = useRef<HTMLDivElement>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  const trainIdUsedForProjection = useSelector(getTrainIdUsedForProjection);
 
   const { trainName, rollingStock, startTime, disabled, exceptionChangeGroups, summary } =
     occurrence;
@@ -209,6 +214,12 @@ const OccurrenceItem = ({
       >
         <div className="title-img">
           <div className="indicator-title">
+            {trainIdUsedForProjection === occurrence.id &&
+              !!exceptionChangeGroups?.path_and_schedule && (
+                <div className="occurrence-projected">
+                  <Manchette iconColor="var(--white100)" />
+                </div>
+              )}
             <OccurrenceIndicator occurrence={occurrence} subCategories={subCategories} />
 
             <div className="label">
