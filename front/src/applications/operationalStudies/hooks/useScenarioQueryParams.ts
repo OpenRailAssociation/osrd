@@ -60,6 +60,7 @@ const useScenarioQueryParams = () => {
   useEffect(() => {
     const selectedTrainFromUrl = getParamFromUrlOrStorage('selected_train');
     const projectionFromUrl = getParamFromUrlOrStorage('projection');
+    const projectionExceptionKeyFromUrl = getParamFromUrlOrStorage('projection_exception_key');
     if (
       selectedTrainFromUrl &&
       (isTrainScheduleId(selectedTrainFromUrl) || isOccurrenceId(selectedTrainFromUrl))
@@ -70,7 +71,12 @@ const useScenarioQueryParams = () => {
       projectionFromUrl &&
       (isTrainScheduleId(projectionFromUrl) || isPacedTrainId(projectionFromUrl))
     ) {
-      dispatch(updateTrainUsedForProjection({ trainId: projectionFromUrl }));
+      dispatch(
+        updateTrainUsedForProjection({
+          trainId: projectionFromUrl,
+          exceptionKey: projectionExceptionKeyFromUrl,
+        })
+      );
     }
   }, [dispatch, getParamFromUrlOrStorage]);
 
@@ -81,6 +87,13 @@ const useScenarioQueryParams = () => {
     }
     if (reduxProjectionTrain?.id.toString() !== getParamFromUrlOrStorage('projection')) {
       setParamsInUrlAndStorage('projection', reduxProjectionTrain?.id.toString());
+    }
+    if (
+      reduxProjectionTrain &&
+      'exceptionKey' in reduxProjectionTrain &&
+      reduxProjectionTrain.exceptionKey !== getParamFromUrlOrStorage('projection_exception_key')
+    ) {
+      setParamsInUrlAndStorage('projection_exception_key', reduxProjectionTrain.exceptionKey);
     }
   }, [
     reduxSelectedTrainId,
