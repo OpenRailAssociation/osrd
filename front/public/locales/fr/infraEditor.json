@@ -362,7 +362,7 @@
         "description": "Début des bp/cc zone neutre"
       },
       "rev": {
-        "description": "REV de la section neutre bp/cc",
+        "description": "Pancarte réversibilité",
         "title": "Rev"
       }
     },
@@ -491,7 +491,7 @@
         "title": "Angle"
       },
       "direction": {
-        "description": "Orientation du panneau sur la piste"
+        "description": "Orientation du panneau sur la voie"
       },
       "kp": {
         "description": "Point kilométrique du panneau",
