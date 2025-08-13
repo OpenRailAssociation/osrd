@@ -6159,6 +6159,25 @@ components:
           type: string
           enum:
           - editoast:infra:edition:SplitTrackSectionBadOffset
+    EditoastElectricalProfilesErrorDatabase:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 500
+        type:
+          type: string
+          enum:
+          - editoast:electrical_profiles:Database
     EditoastElectricalProfilesErrorNotFound:
       type: object
       required:
@@ -6217,6 +6236,7 @@ components:
       - $ref: '#/components/schemas/EditoastDocumentErrorsNotFound'
       - $ref: '#/components/schemas/EditoastEditionErrorInfraIsLocked'
       - $ref: '#/components/schemas/EditoastEditionErrorSplitTrackSectionBadOffset'
+      - $ref: '#/components/schemas/EditoastElectricalProfilesErrorDatabase'
       - $ref: '#/components/schemas/EditoastElectricalProfilesErrorNotFound'
       - $ref: '#/components/schemas/EditoastFontErrorsFileNotFound'
       - $ref: '#/components/schemas/EditoastGeometryErrorUnexpectedGeometry'
@@ -6244,6 +6264,7 @@ components:
       - $ref: '#/components/schemas/EditoastPacedTrainErrorExceptionNotFound'
       - $ref: '#/components/schemas/EditoastPacedTrainErrorInfraNotFound'
       - $ref: '#/components/schemas/EditoastPacedTrainErrorNotFound'
+      - $ref: '#/components/schemas/EditoastPathfindingErrorDatabase'
       - $ref: '#/components/schemas/EditoastPathfindingErrorInfraNotFound'
       - $ref: '#/components/schemas/EditoastPathfindingViewErrorsEndingTrackLocationNotFound'
       - $ref: '#/components/schemas/EditoastPathfindingViewErrorsInvalidNumberOfPaths'
@@ -6276,6 +6297,7 @@ components:
       - $ref: '#/components/schemas/EditoastSimilarTrainsErrorTimetableNotFound'
       - $ref: '#/components/schemas/EditoastSpriteErrorsFileNotFound'
       - $ref: '#/components/schemas/EditoastSpriteErrorsUnknownSignalingSystem'
+      - $ref: '#/components/schemas/EditoastStdcmErrorDatabase'
       - $ref: '#/components/schemas/EditoastStdcmErrorInfraNotFound'
       - $ref: '#/components/schemas/EditoastStdcmErrorInvalidConsistLength'
       - $ref: '#/components/schemas/EditoastStdcmErrorInvalidConsistMass'
@@ -6284,6 +6306,7 @@ components:
       - $ref: '#/components/schemas/EditoastStdcmErrorTimetableNotFound'
       - $ref: '#/components/schemas/EditoastStdcmErrorTowedRollingStockNotFound'
       - $ref: '#/components/schemas/EditoastStdcmErrorTrainSimulationFail'
+      - $ref: '#/components/schemas/EditoastStdcmLogErrorDatabase'
       - $ref: '#/components/schemas/EditoastStdcmLogErrorMissingIdAndTraceId'
       - $ref: '#/components/schemas/EditoastStdcmLogErrorNotFound'
       - $ref: '#/components/schemas/EditoastStdcmLogErrorTraceIdNotFound'
@@ -6910,6 +6933,25 @@ components:
           type: string
           enum:
           - editoast:paced_train:NotFound
+    EditoastPathfindingErrorDatabase:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 500
+        type:
+          type: string
+          enum:
+          - editoast:pathfinding:Database
     EditoastPathfindingErrorInfraNotFound:
       type: object
       required:
@@ -7627,6 +7669,25 @@ components:
           type: string
           enum:
           - editoast:sprites:UnknownSignalingSystem
+    EditoastStdcmErrorDatabase:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 400
+        type:
+          type: string
+          enum:
+          - editoast:stdcm:Database
     EditoastStdcmErrorInfraNotFound:
       type: object
       required:
@@ -7820,6 +7881,25 @@ components:
           type: string
           enum:
           - editoast:stdcm:TrainSimulationFail
+    EditoastStdcmLogErrorDatabase:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 500
+        type:
+          type: string
+          enum:
+          - editoast:stdcm_log:Database
     EditoastStdcmLogErrorMissingIdAndTraceId:
       type: object
       required:

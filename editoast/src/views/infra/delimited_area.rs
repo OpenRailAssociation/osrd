@@ -146,10 +146,11 @@ pub(in crate::views) async fn delimited_area(
     }
 
     // Retrieve the infra
-    let conn = &mut db_pool.get().await?;
-    #[expect(deprecated)]
-    let infra =
-        Infra::retrieve_or_fail(conn, infra_id, || InfraApiError::NotFound { infra_id }).await?;
+    let mut conn = db_pool.get().await?;
+    let infra = Infra::retrieve_real_or_fail(conn.clone(), infra_id, || InfraApiError::NotFound {
+        infra_id,
+    })
+    .await?;
 
     // Check user privilege on infra
     auth.check_authorization(async |authorizer| {
@@ -159,7 +160,7 @@ pub(in crate::views) async fn delimited_area(
     })
     .await?;
 
-    let infra_cache = InfraCache::get_or_load(conn, &infra_caches, &infra).await?;
+    let infra_cache = InfraCache::get_or_load(&mut conn, &infra_caches, &infra).await?;
     let graph = Graph::load(&infra_cache);
 
     // Validate user input

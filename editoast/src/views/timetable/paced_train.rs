@@ -123,11 +123,11 @@ pub(in crate::views) async fn get_by_id(
 
     let conn = &mut db_pool.get().await?;
 
-    #[expect(deprecated)]
-    let paced_train = models::PacedTrain::retrieve_or_fail(conn, paced_train_id, || {
-        PacedTrainError::NotFound { paced_train_id }
-    })
-    .await?;
+    let paced_train =
+        models::PacedTrain::retrieve_real_or_fail(conn.clone(), paced_train_id, || {
+            PacedTrainError::NotFound { paced_train_id }
+        })
+        .await?;
 
     let paced_train: PacedTrainResponse = paced_train.into();
 
@@ -270,9 +270,8 @@ pub(in crate::views) async fn simulation_summary(
 
     let conn = &mut db_pool.get().await?;
 
-    #[expect(deprecated)]
-    let infra = Infra::retrieve_or_fail(conn, infra_id, || PacedTrainError::InfraNotFound {
-        infra_id,
+    let infra = Infra::retrieve_real_or_fail(conn.clone(), infra_id, || {
+        PacedTrainError::InfraNotFound { infra_id }
     })
     .await?;
 
@@ -398,9 +397,8 @@ pub(in crate::views) async fn get_path(
     let conn = &mut db_pool.get().await?;
     let mut valkey_conn = valkey_client.get_connection().await?;
 
-    #[expect(deprecated)]
-    let infra = Infra::retrieve_or_fail(conn, infra_id, || PacedTrainError::InfraNotFound {
-        infra_id,
+    let infra = Infra::retrieve_real_or_fail(conn.clone(), infra_id, || {
+        PacedTrainError::InfraNotFound { infra_id }
     })
     .await?;
 
@@ -412,11 +410,11 @@ pub(in crate::views) async fn get_path(
     })
     .await?;
 
-    #[expect(deprecated)]
-    let paced_train = models::PacedTrain::retrieve_or_fail(conn, paced_train_id, || {
-        PacedTrainError::NotFound { paced_train_id }
-    })
-    .await?;
+    let paced_train =
+        models::PacedTrain::retrieve_real_or_fail(conn.clone(), paced_train_id, || {
+            PacedTrainError::NotFound { paced_train_id }
+        })
+        .await?;
 
     let train_schedule = match exception_key {
         Some(exception_key) => {
@@ -434,7 +432,14 @@ pub(in crate::views) async fn get_path(
     };
 
     Ok(Json(
-        pathfinding_from_train(conn, &mut valkey_conn, core_client, &infra, train_schedule).await?,
+        pathfinding_from_train(
+            db_pool.get().await?,
+            &mut valkey_conn,
+            core_client,
+            &infra,
+            train_schedule,
+        )
+        .await?,
     ))
 }
 
@@ -478,8 +483,7 @@ pub(in crate::views) async fn simulation(
     }
 
     // Retrieve infra or fail
-    #[expect(deprecated)]
-    let infra = Infra::retrieve_or_fail(&mut db_pool.get().await?, infra_id, || {
+    let infra = Infra::retrieve_real_or_fail(db_pool.get().await?, infra_id, || {
         PacedTrainError::InfraNotFound { infra_id }
     })
     .await?;
@@ -493,9 +497,8 @@ pub(in crate::views) async fn simulation(
     .await?;
 
     // Retrieve paced_train or fail
-    #[expect(deprecated)]
     let paced_train =
-        models::PacedTrain::retrieve_or_fail(&mut db_pool.get().await?, paced_train_id, || {
+        models::PacedTrain::retrieve_real_or_fail(db_pool.get().await?, paced_train_id, || {
             PacedTrainError::NotFound { paced_train_id }
         })
         .await?;

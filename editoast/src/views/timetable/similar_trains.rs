@@ -585,7 +585,7 @@ async fn simulate_past_trains(
 
     let paths = {
         let paths = pathfinding_from_train_batch(
-            conn,
+            conn.clone(),
             &mut valkey.get_connection().await?,
             core_client.clone(),
             infra,

@@ -92,10 +92,11 @@ pub(in crate::views) async fn list_errors(
         None => None,
     };
 
-    let conn = &mut db_pool.get().await?;
-    #[expect(deprecated)]
-    let infra =
-        Infra::retrieve_or_fail(conn, infra_id, || InfraApiError::NotFound { infra_id }).await?;
+    let mut conn = db_pool.get().await?;
+    let infra = Infra::retrieve_real_or_fail(conn.clone(), infra_id, || InfraApiError::NotFound {
+        infra_id,
+    })
+    .await?;
 
     // Check user privilege on infra
     auth.check_authorization(async |authorizer| {
@@ -106,7 +107,7 @@ pub(in crate::views) async fn list_errors(
     .await?;
 
     let (results, total_count) = infra
-        .get_paginated_errors(conn, level, error_type, object_id, page, page_size)
+        .get_paginated_errors(&mut conn, level, error_type, object_id, page, page_size)
         .await?;
     let results = results
         .into_iter()

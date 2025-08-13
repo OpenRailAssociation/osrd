@@ -203,8 +203,7 @@ pub mod tests {
         let created_project = create_project(&mut db_pool.get_ok(), "test_project_name").await;
 
         // Get a project
-        #[expect(deprecated)]
-        let project = Project::retrieve(&mut db_pool.get_ok(), created_project.id)
+        let project = Project::retrieve_real(db_pool.get_ok(), created_project.id)
             .await
             .expect("Failed to retrieve project")
             .expect("Project not found");
@@ -229,8 +228,7 @@ pub mod tests {
             .await
             .expect("Failed to update project");
 
-        #[expect(deprecated)]
-        let project = Project::retrieve(&mut db_pool.get_ok(), created_project.id)
+        let project = Project::retrieve_real(db_pool.get_ok(), created_project.id)
             .await
             .expect("Failed to retrieve project")
             .expect("Project not found");

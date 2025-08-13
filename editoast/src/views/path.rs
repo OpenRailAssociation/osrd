@@ -20,12 +20,14 @@ pub enum PathfindingError {
     #[error("Infra '{infra_id}', could not be found")]
     #[editoast_error(status = 404)]
     InfraNotFound { infra_id: i64 },
+    #[error(transparent)]
+    #[editoast_error(status = 500)]
+    Database(#[from] editoast_models::model::Error),
 }
 
 async fn retrieve_infra_version(conn: &mut DbConnection, infra_id: i64) -> Result<i64> {
-    #[expect(deprecated)]
-    let infra = Infra::retrieve_or_fail(conn, infra_id, || PathfindingError::InfraNotFound {
-        infra_id,
+    let infra = Infra::retrieve_real_or_fail(conn.clone(), infra_id, || {
+        PathfindingError::InfraNotFound { infra_id }
     })
     .await?;
     Ok(infra.version)
