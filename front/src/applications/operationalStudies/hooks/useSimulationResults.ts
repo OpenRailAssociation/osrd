@@ -122,17 +122,17 @@ const useSimulationResults = (infraId: number): SimulationResults | undefined =>
       { skip: pathfinding?.status !== 'success' }
     );
 
-  if ((pathfinding?.status !== 'success' || simulation?.status !== 'success') && train)
-    return { isValid: false, train, rollingStock };
+  if (!train || exception?.disabled) {
+    return undefined;
+  }
 
   if (
-    !train ||
     pathfinding?.status !== 'success' ||
     simulation?.status !== 'success' ||
     !rawPathProperties ||
     !rollingStock
   ) {
-    return undefined;
+    return { isValid: false, train, rollingStock };
   }
 
   const pathProperties = preparePathPropertiesData(
