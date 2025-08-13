@@ -42,10 +42,9 @@ import { useSubCategoryContext } from 'common/SubCategoryContext';
 import {
   isIndividualOccurrenceProjection,
   cutSpaceTimeChart,
+  getOccupancyBlocks,
 } from 'modules/simulationResult/components/SpaceTimeChart/helpers/utils';
-import { ASPECT_LABELS_COLORS } from 'modules/simulationResult/consts';
 import type {
-  AspectLabel,
   IndividualTrainProjection,
   PathOperationalPoint,
   TrainSpaceTimeData,
@@ -330,18 +329,7 @@ const SpaceTimeChartWrapper = ({
     showSignalsStates: false,
   });
 
-  const occupancyBlocks = cutProjectedTrains.flatMap((train) => {
-    const departureTime = train.departureTime.getTime();
-
-    return train.signalUpdates.map((block) => ({
-      timeStart: departureTime + block.time_start,
-      timeEnd: departureTime + block.time_end,
-      spaceStart: block.position_start,
-      spaceEnd: block.position_end,
-      color: ASPECT_LABELS_COLORS[block.aspect_label as AspectLabel],
-      blinking: block.blinking,
-    }));
-  });
+  const occupancyBlocks = getOccupancyBlocks(cutProjectedTrains);
 
   const onPanOverloaded: SpaceTimeChartProps['onPan'] = async (payload) => {
     const { isPanning } = payload;
