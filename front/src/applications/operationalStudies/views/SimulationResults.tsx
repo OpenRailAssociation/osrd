@@ -260,76 +260,81 @@ const SimulationResults = ({
         </div>
       </ResizableSection>
 
-      {simulationResults?.isValid && (
+      {simulationResults && (
         <>
-          {/* SIMULATION : SPEED SPACE CHART */}
-          <div className="osrd-simulation-container speedspacechart-container">
-            <div
-              className="chart-container"
-              style={{
-                height: `${speedSpaceChartContainerHeight + HANDLE_TAB_RESIZE_HEIGHT}px`,
-              }}
-            >
-              <SpeedSpaceChartContainer
-                timetableItemSimulation={simulationResults.simulation}
-                selectedTimetableItemPowerRestrictions={simulationResults.powerRestrictions}
-                rollingStock={simulationResults.rollingStock}
-                pathProperties={simulationResults.pathProperties}
-                heightOfSpeedSpaceChartContainer={speedSpaceChartContainerHeight}
-                setHeightOfSpeedSpaceChartContainer={setSpeedSpaceChartContainerHeight}
-              />
-            </div>
-          </div>
+          {simulationResults.isValid && (
+            <>
+              {/* SIMULATION : SPEED SPACE CHART */}
+              <div className="osrd-simulation-container speedspacechart-container">
+                <div
+                  className="chart-container"
+                  style={{
+                    height: `${speedSpaceChartContainerHeight + HANDLE_TAB_RESIZE_HEIGHT}px`,
+                  }}
+                >
+                  <SpeedSpaceChartContainer
+                    timetableItemSimulation={simulationResults.simulation}
+                    selectedTimetableItemPowerRestrictions={simulationResults.powerRestrictions}
+                    rollingStock={simulationResults.rollingStock}
+                    pathProperties={simulationResults.pathProperties}
+                    heightOfSpeedSpaceChartContainer={speedSpaceChartContainerHeight}
+                    setHeightOfSpeedSpaceChartContainer={setSpeedSpaceChartContainerHeight}
+                  />
+                </div>
+              </div>
 
-          {/* SIMULATION : MAP */}
-          <BoardWrapper hidden={!isMapDisplayed} name={t('boards.map')} withFooter>
-            <div data-testid="simulation-map" className="simulation-map">
-              <SimulationResultsMap
-                geometry={simulationResults.pathProperties.geometry}
-                setMapCanvas={setMapCanvas}
-                pathfindingResult={simulationResults.path}
+              {/* SIMULATION : MAP */}
+              <BoardWrapper hidden={!isMapDisplayed} name={t('boards.map')} withFooter>
+                <div data-testid="simulation-map" className="simulation-map">
+                  <SimulationResultsMap
+                    geometry={simulationResults.pathProperties.geometry}
+                    setMapCanvas={setMapCanvas}
+                    pathfindingResult={simulationResults.path}
+                  />
+                </div>
+              </BoardWrapper>
+            </>
+          )}
+
+          {/* TIME STOPS TABLE */}
+          <BoardWrapper
+            hidden={!activeBoards.has('tables')}
+            name={t('simulationResults.timetableOutput')}
+          >
+            <div className="time-stop-outputs">
+              <TimesStopsOutput
+                infraId={infraId}
+                selectedTrain={simulationResults?.train}
+                {...(simulationResults?.isValid && simulationSummary?.isValid
+                  ? {
+                      isValid: true,
+                      simulatedTrain: simulationResults.simulation.final_output,
+                      simulatedPath: simulationResults.path,
+                      simulatedPathItemTimes: simulationSummary.pathItemTimes,
+                      simulatedOperationalPoints:
+                        simulationResults.pathProperties.operationalPoints,
+                    }
+                  : { isValid: false })}
               />
             </div>
+
+            {simulationResults?.isValid && (
+              <div className="time-stop-outputs">
+                {/* SIMULATION EXPORT BUTTONS */}
+                <SimulationResultExport
+                  path={simulationResults.path}
+                  scenarioData={scenarioData}
+                  train={simulationResults.train}
+                  simulation={simulationResults.simulation}
+                  pathProperties={simulationResults.pathProperties}
+                  rollingStock={simulationResults.rollingStock}
+                  mapCanvas={mapCanvas}
+                />
+              </div>
+            )}
           </BoardWrapper>
         </>
       )}
-
-      {/* TIME STOPS TABLE */}
-      <BoardWrapper
-        hidden={!activeBoards.has('tables')}
-        name={t('simulationResults.timetableOutput')}
-      >
-        <div className="time-stop-outputs">
-          <TimesStopsOutput
-            infraId={infraId}
-            selectedTrain={simulationResults?.train}
-            {...(simulationResults?.isValid && simulationSummary?.isValid
-              ? {
-                  isValid: true,
-                  simulatedTrain: simulationResults.simulation.final_output,
-                  simulatedPath: simulationResults.path,
-                  simulatedPathItemTimes: simulationSummary.pathItemTimes,
-                  simulatedOperationalPoints: simulationResults.pathProperties.operationalPoints,
-                }
-              : { isValid: false })}
-          />
-        </div>
-
-        {simulationResults?.isValid && (
-          <div className="time-stop-outputs">
-            {/* SIMULATION EXPORT BUTTONS */}
-            <SimulationResultExport
-              path={simulationResults.path}
-              scenarioData={scenarioData}
-              train={simulationResults.train}
-              simulation={simulationResults.simulation}
-              pathProperties={simulationResults.pathProperties}
-              rollingStock={simulationResults.rollingStock}
-              mapCanvas={mapCanvas}
-            />
-          </div>
-        )}
-      </BoardWrapper>
     </div>
   );
 };
