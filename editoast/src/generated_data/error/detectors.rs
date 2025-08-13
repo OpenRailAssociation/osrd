@@ -67,7 +67,7 @@ mod tests {
     fn invalid_ref() {
         let mut infra_cache = create_small_infra_cache();
         let detector = create_detector_cache("D_error", "E", 250.);
-        infra_cache.add(detector.clone()).unwrap();
+        infra_cache.add(&detector).unwrap();
         let errors = check_invalid_ref(
             &detector.clone().into(),
             &infra_cache,
@@ -83,7 +83,7 @@ mod tests {
     fn out_of_range() {
         let mut infra_cache = create_small_infra_cache();
         let detector = create_detector_cache("D_error", "A", 530.);
-        infra_cache.add(detector.clone()).unwrap();
+        infra_cache.add(&detector).unwrap();
         let errors = check_out_of_range(
             &detector.clone().into(),
             &infra_cache,

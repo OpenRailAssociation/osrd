@@ -248,7 +248,7 @@ mod tests {
             vec![],
             Default::default(),
         );
-        infra_cache.add(route.clone()).unwrap();
+        infra_cache.add(&route).unwrap();
         let graph = Graph::load(&infra_cache);
         let errors = check_entry_point_ref(&route.clone().into(), &infra_cache, &graph);
         assert_eq!(1, errors.len());
@@ -268,7 +268,7 @@ mod tests {
             vec!["Detector_non_existing".into()],
             Default::default(),
         );
-        infra_cache.add(route.clone()).unwrap();
+        infra_cache.add(&route).unwrap();
         let graph = Graph::load(&infra_cache);
         let errors = check_release_detectors_ref(&route.clone().into(), &infra_cache, &graph);
         assert_eq!(1, errors.len());
@@ -288,7 +288,7 @@ mod tests {
             vec![],
             Default::default(),
         );
-        infra_cache.add(route.clone()).unwrap();
+        infra_cache.add(&route).unwrap();
         let graph = Graph::load(&infra_cache);
         let errors = check_exit_point_ref(&route.clone().into(), &infra_cache, &graph);
         assert_eq!(1, errors.len());
@@ -308,7 +308,7 @@ mod tests {
             vec![],
             [("no_switch".into(), "A_B1".into())].into(),
         );
-        infra_cache.add(route.clone()).unwrap();
+        infra_cache.add(&route).unwrap();
         let graph = Graph::load(&infra_cache);
         let errors = check_switches_directions_ref(&route.clone().into(), &infra_cache, &graph);
         assert_eq!(1, errors.len());
@@ -329,7 +329,7 @@ mod tests {
             vec![],
             [("switch".into(), "NO_GROUP".into())].into(),
         );
-        infra_cache.add(route.clone()).unwrap();
+        infra_cache.add(&route).unwrap();
         let graph = Graph::load(&infra_cache);
         let errors = check_switches_directions_ref(&route.clone().into(), &infra_cache, &graph);
         assert_eq!(1, errors.len());
@@ -353,7 +353,7 @@ mod tests {
             vec![],
             [("switch".into(), "A_B1".into())].into(), // Wrong direction
         );
-        infra_cache.add(route.clone()).unwrap();
+        infra_cache.add(&route).unwrap();
         let graph = Graph::load(&infra_cache);
         let ctx = Default::default();
         let (errors, _) = check_path(&route.clone().into(), &infra_cache, &graph, ctx);
@@ -373,7 +373,7 @@ mod tests {
             vec![],
             [("switch".into(), "A_B2".into())].into(),
         );
-        infra_cache.add(route.clone()).unwrap();
+        infra_cache.add(&route).unwrap();
         let graph = Graph::load(&infra_cache);
         let ctx = Default::default();
         let (errors, _) = check_path(&route.clone().into(), &infra_cache, &graph, ctx);
@@ -393,7 +393,7 @@ mod tests {
             vec![],
             [("switch".into(), "A_B2".into())].into(),
         );
-        infra_cache.add(route.clone()).unwrap();
+        infra_cache.add(&route).unwrap();
         let graph = Graph::load(&infra_cache);
         let ctx = Default::default();
         let (errors, _) = check_path(&route.clone().into(), &infra_cache, &graph, ctx);
@@ -413,7 +413,7 @@ mod tests {
             vec![],
             Default::default(),
         );
-        infra_cache.add(route.clone()).unwrap();
+        infra_cache.add(&route).unwrap();
         let graph = Graph::load(&infra_cache);
         let ctx = Default::default();
         let (errors, _) = check_path(&route.clone().into(), &infra_cache, &graph, ctx);
@@ -426,7 +426,7 @@ mod tests {
     fn release_detector_out_of_path() {
         let mut infra_cache = create_small_infra_cache();
         let detector = create_detector_cache("D2", "B", 255.);
-        infra_cache.add(detector.clone()).unwrap();
+        infra_cache.add(&detector).unwrap();
         let route = create_route_cache(
             "ErrorRoute",
             Waypoint::new_buffer_stop("BF1"),
@@ -435,7 +435,7 @@ mod tests {
             vec!["D2".into()],
             [("link".into(), "LINK".into())].into(),
         );
-        infra_cache.add(route.clone()).unwrap();
+        infra_cache.add(&route).unwrap();
         let graph = Graph::load(&infra_cache);
         let ctx = Default::default();
         let (errors, _) = check_path(&route.clone().into(), &infra_cache, &graph, ctx);
@@ -460,7 +460,7 @@ mod tests {
             ]
             .into(),
         );
-        infra_cache.add(route.clone()).unwrap();
+        infra_cache.add(&route).unwrap();
         let graph = Graph::load(&infra_cache);
         let ctx = Default::default();
         let (errors, _) = check_path(&route.clone().into(), &infra_cache, &graph, ctx);

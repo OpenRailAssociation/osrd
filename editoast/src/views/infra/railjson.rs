@@ -179,6 +179,7 @@ pub(in crate::views) async fn post_railjson(
         return Err(AuthorizationError::Forbidden.into());
     }
 
+    let infra_cache = InfraCache::from(&railjson);
     let mut infra = Infra::changeset()
         .name(params.name.clone())
         .last_railjson_version()
@@ -203,8 +204,6 @@ pub(in crate::views) async fn post_railjson(
         .await
         .map_err(|_| InfraApiError::NotFound { infra_id })?;
     if params.generate_data {
-        // TODO: we should be able to generate an InfraCache from the RailJson directly
-        let infra_cache = InfraCache::load(&mut db_pool.get().await?, &infra).await?;
         infra.refresh(db_pool, true, &infra_cache).await?;
     }
 

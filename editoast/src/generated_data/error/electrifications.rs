@@ -132,7 +132,7 @@ mod tests {
         let mut infra_cache = create_small_infra_cache();
         let track_ranges_error = vec![("A", 20., 500.), ("E", 0., 500.), ("B", 0., 250.)];
         let electrification = create_electrification_cache("Cat_error", track_ranges_error);
-        infra_cache.add(electrification.clone()).unwrap();
+        infra_cache.add(&electrification).unwrap();
         let errors = check_electrification_track_ranges(
             &electrification.clone().into(),
             &infra_cache,
@@ -150,7 +150,7 @@ mod tests {
         let mut infra_cache = create_small_infra_cache();
         let track_ranges_error = vec![("A", 20., 530.), ("B", 0., 250.)];
         let electrification = create_electrification_cache("Cat_error", track_ranges_error);
-        infra_cache.add(electrification.clone()).unwrap();
+        infra_cache.add(&electrification).unwrap();
         let errors = check_electrification_track_ranges(
             &electrification.clone().into(),
             &infra_cache,
@@ -172,12 +172,12 @@ mod tests {
         let track_ranges_1 = vec![("A", 20., 220.)];
         let mut electrification_1 = create_electrification_cache("Cat_error_1", track_ranges_1);
         electrification_1.voltage = "1500V".into();
-        infra_cache.add(electrification_1).unwrap();
+        infra_cache.add(&electrification_1).unwrap();
 
         let track_ranges_2 = vec![("A", start, end)];
         let mut electrification_2 = create_electrification_cache("Cat_error_2", track_ranges_2);
         electrification_2.voltage = "25000V".into();
-        infra_cache.add(electrification_2).unwrap();
+        infra_cache.add(&electrification_2).unwrap();
 
         let errors = check_overlapping(&infra_cache, &Graph::load(&infra_cache));
         assert_eq!(0, errors.len());
@@ -193,12 +193,12 @@ mod tests {
         let track_ranges_1 = vec![("A", 20., 220.)];
         let mut electrification_1 = create_electrification_cache("Cat_error_1", track_ranges_1);
         electrification_1.voltage = "1500V".into();
-        infra_cache.add(electrification_1).unwrap();
+        infra_cache.add(&electrification_1).unwrap();
 
         let track_ranges_2 = vec![("A", start, end)];
         let mut electrification_2 = create_electrification_cache("Cat_error_2", track_ranges_2);
         electrification_2.voltage = "1500V".into();
-        infra_cache.add(electrification_2).unwrap();
+        infra_cache.add(&electrification_2).unwrap();
 
         let errors = check_overlapping(&infra_cache, &Graph::load(&infra_cache));
         let expected = InfraError::new_overlapping_electrifications("Cat_error_1", "Cat_error_2");
