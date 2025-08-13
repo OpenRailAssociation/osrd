@@ -62,7 +62,12 @@ const TodoColumn = ({
       }
     }
 
-    return { suggestions, others };
+    return {
+      suggestions: suggestions.sort((a, b) =>
+        a.name.toLowerCase().localeCompare(b.name.toLowerCase())
+      ),
+      others: others.sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase())),
+    };
   }, [timetableItemsWithOpsById, pairingItemsById, itemIdToPair]);
 
   const moveItemToOneWays = (itemToMove: PairingItem) => {
