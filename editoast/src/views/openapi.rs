@@ -90,11 +90,23 @@ fn remove_discriminator(schema: &mut RefOr<Schema>) {
 }
 
 #[derive(OpenApi)]
-#[openapi(info(
-    title = "OSRD Editoast",
-    description = "All HTTP endpoints of Editoast",
-    license(name = "LGPL", url = "https://www.gnu.org/licenses/lgpl-3.0.html"),
-))]
+#[openapi(
+    info(
+        title = "OSRD Editoast",
+        description = "All HTTP endpoints of Editoast",
+        license(name = "LGPL", url = "https://www.gnu.org/licenses/lgpl-3.0.html"),
+    ),
+    components(schemas(
+        json_patch::AddOperation,
+        json_patch::CopyOperation,
+        json_patch::MoveOperation,
+        json_patch::Patch,
+        json_patch::PatchOperation,
+        json_patch::RemoveOperation,
+        json_patch::ReplaceOperation,
+        json_patch::TestOperation,
+    ))
+)]
 pub struct OpenApiRoot;
 
 impl OpenApiRoot {
