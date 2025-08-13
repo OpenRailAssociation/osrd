@@ -314,7 +314,7 @@ fn reduce_operation(
 #[editoast_error(base_id = "auto_fixes")]
 pub enum AutoFixesEditoastError {
     #[error(
-        "Reached maximum number of iterations to fix infra without providing every possible fixe"
+        "Reached maximum number of iterations to fix infra without providing every possible fix"
     )]
     #[editoast_error(status = 500)]
     MaximumIterationReached,

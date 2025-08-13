@@ -86,7 +86,7 @@ enum InputError {
 #[derive(Debug, Error, Serialize, Deserialize)]
 enum TrackRangeConstructionError {
     #[error("Track identifiers do not match")]
-    TrackIdentifierMissmatch,
+    TrackIdentifierMismatch,
     #[error("The input directions or locations on track do not allow to build a valid track range")]
     InvalidRelativeLocations,
     #[error("The location is not on track")]
@@ -430,7 +430,7 @@ fn track_range_between_two_locations(
     if entry.direction != exit.direction || exit_before_entry {
         Err(TrackRangeConstructionError::InvalidRelativeLocations)
     } else if entry.track != exit.track {
-        Err(TrackRangeConstructionError::TrackIdentifierMissmatch)
+        Err(TrackRangeConstructionError::TrackIdentifierMismatch)
     } else {
         Ok(DirectionalTrackRange {
             track: entry.track.clone(),
@@ -463,7 +463,7 @@ fn track_range_between_endpoint_and_location(
     if !location_on_correct_direction {
         Err(TrackRangeConstructionError::InvalidRelativeLocations)
     } else if !same_track {
-        Err(TrackRangeConstructionError::TrackIdentifierMissmatch)
+        Err(TrackRangeConstructionError::TrackIdentifierMismatch)
     } else if !location_inside_track {
         Err(TrackRangeConstructionError::LocationNotOnTrack)
     } else {
