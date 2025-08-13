@@ -1243,6 +1243,7 @@ pub mod tests {
     use crate::models::fixtures::create_timetable;
     use crate::models::fixtures::simple_sub_category;
     use crate::models::fixtures::simple_train_schedule_base;
+    use crate::models::fixtures::simple_train_schedule_changeset;
     use crate::views::test_app::TestApp;
     use crate::views::test_app::TestAppBuilder;
     use crate::views::tests::mocked_core_pathfinding_sim_and_proj;
@@ -1403,6 +1404,51 @@ pub mod tests {
 
         let request = app
             .put(format!("/train_schedule/{}", train_schedule.id).as_str())
+            .json(&json!(update_train_schedule_form));
+
+        let response: TrainScheduleResponse =
+            app.fetch(request).assert_status(StatusCode::OK).json_into();
+        assert_eq!(
+            response.train_schedule.rolling_stock_name,
+            update_train_schedule_form.train_schedule.rolling_stock_name
+        )
+    }
+
+    #[rstest]
+    async fn train_schedule_put_with_category() {
+        let app = TestAppBuilder::default_app();
+        let pool = app.db_pool();
+
+        let created_sub_category = simple_sub_category(
+            "tjv",
+            TrainMainCategory(editoast_schemas::rolling_stock::TrainMainCategory::HighSpeedTrain),
+        )
+        .create(&mut pool.get_ok())
+        .await
+        .expect("Failed to create sub category");
+
+        let timetable = create_timetable(&mut pool.get_ok()).await;
+        let train_schedule = simple_train_schedule_changeset(timetable.id)
+            .sub_category(Some(created_sub_category.code))
+            .create(&mut pool.get_ok())
+            .await
+            .expect("Failed to create train schedule");
+        let train_schedule_id = train_schedule.id;
+
+        let update_train_schedule = editoast_schemas::TrainSchedule {
+            category: Some(TrainCategory::Main {
+                main_category: editoast_schemas::rolling_stock::TrainMainCategory::HighSpeedTrain,
+            }),
+            ..train_schedule.into()
+        };
+
+        let update_train_schedule_form = TrainScheduleForm {
+            timetable_id: Some(timetable.id),
+            train_schedule: update_train_schedule,
+        };
+
+        let request = app
+            .put(format!("/train_schedule/{train_schedule_id}").as_str())
             .json(&json!(update_train_schedule_form));
 
         let response: TrainScheduleResponse =
