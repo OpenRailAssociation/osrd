@@ -117,7 +117,7 @@ const SimulationResults = ({
   const {
     toggleWaypoint,
     deployedWaypoints,
-    handleTrainDrag: handleTrainDragInTrackOccupancy,
+    updateTrackOccupanciesOnDrag: handleTrainDragInTrackOccupancy,
   } = useTrackOccupancy({
     infraId,
     pathOperationalPoints: filteredOperationalPoints,
@@ -253,7 +253,7 @@ const SimulationResults = ({
                         toggleDeployedWaypoint: toggleWaypoint,
                         timetableId,
                       }}
-                      occupancyZonesLayers={deployedWaypoints}
+                      trackOccupancyDiagramsData={deployedWaypoints}
                       onCloseOccupancyLayer={(waypointId: string) =>
                         toggleWaypoint(waypointId, false)
                       }

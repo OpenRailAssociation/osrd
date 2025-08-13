@@ -76,7 +76,7 @@ type SpaceTimeChartWrapperBaseProps = {
   selectedTrainId?: TrainId;
   conflicts?: Conflict[];
   workSchedules?: PostWorkSchedulesProjectPathApiResponse;
-  occupancyZonesLayers?: {
+  trackOccupancyDiagramsData?: {
     waypointId: string;
     operationalPointId: string;
     operationalPointPosition: number;
@@ -129,7 +129,7 @@ const SpaceTimeChartWrapper = ({
   waypointsPanelData,
   conflicts = [],
   workSchedules,
-  occupancyZonesLayers,
+  trackOccupancyDiagramsData,
   onCloseOccupancyLayer,
   projectionLoaderData: { totalTrains, allTrainsProjected },
   height = MANCHETTE_WITH_SPACE_TIME_CHART_DEFAULT_HEIGHT,
@@ -198,7 +198,7 @@ const SpaceTimeChartWrapper = ({
 
     return (
       sortBy(
-        occupancyZonesLayers || [],
+        trackOccupancyDiagramsData || [],
         ({ operationalPointPosition }) => operationalPointPosition
       ).map(
         ({
@@ -267,7 +267,7 @@ const SpaceTimeChartWrapper = ({
       ) || []
     );
   }, [
-    occupancyZonesLayers,
+    trackOccupancyDiagramsData,
     activeWaypointId,
     timetableItemsWithDetails,
     selectedTrainId,
