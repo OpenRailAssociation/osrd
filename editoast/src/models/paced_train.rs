@@ -240,12 +240,12 @@ impl From<paced_train::PacedTrain> for PacedTrainChangeset {
             .exceptions(exceptions);
 
         match train_schedule_base.category {
-            Some(TrainCategory::Main { main_category }) => {
-                changeset.main_category(Some(TrainMainCategory(main_category)))
-            }
-            Some(TrainCategory::Sub { sub_category_code }) => {
-                changeset.sub_category(Some(sub_category_code))
-            }
+            Some(TrainCategory::Main { main_category }) => changeset
+                .main_category(Some(TrainMainCategory(main_category)))
+                .sub_category(None),
+            Some(TrainCategory::Sub { sub_category_code }) => changeset
+                .sub_category(Some(sub_category_code))
+                .main_category(None),
             None => changeset,
         }
     }
