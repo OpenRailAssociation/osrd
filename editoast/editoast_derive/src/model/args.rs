@@ -92,6 +92,7 @@ pub(super) struct DetailedErrorArgs {
     pub(super) retrieve: Option<syn::Path>,
     pub(super) update: Option<syn::Path>,
     pub(super) delete: Option<syn::Path>,
+    pub(super) list: Option<syn::Path>,
 }
 
 #[derive(FromMeta, Default, Debug, PartialEq)]
