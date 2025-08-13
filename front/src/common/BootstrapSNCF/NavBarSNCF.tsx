@@ -14,11 +14,11 @@ import useDeploymentSettings from 'utils/hooks/useDeploymentSettings';
 
 import { useModal } from './ModalSNCF';
 
-type Props = {
+type NavBarProps = {
   appName?: string | ReactElement;
 };
 
-const LegacyNavBarSNCF = ({ appName }: Props) => {
+const NavBar = ({ appName }: NavBarProps) => {
   const { openModal } = useModal();
   const deploymentSettings = useDeploymentSettings();
   const safeWord = useSelector(getUserSafeWord);
@@ -50,7 +50,7 @@ const LegacyNavBarSNCF = ({ appName }: Props) => {
   );
 
   return (
-    <div className={cx('mastheader', impersonatedUser ? 'mastheader-impersonated' : '')}>
+    <div className={cx('nav-bar', { impersonated: impersonatedUser })}>
       <div
         className={cx(
           'flex-grow-0',
@@ -104,4 +104,4 @@ const LegacyNavBarSNCF = ({ appName }: Props) => {
   );
 };
 
-export default LegacyNavBarSNCF;
+export default NavBar;
