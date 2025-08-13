@@ -1,14 +1,20 @@
 import { compact } from 'lodash';
+import { v4 as uuidV4 } from 'uuid';
 
 import type { PacedTrain, TrainSchedule } from 'common/api/osrdEditoastApi';
 import getStepLocation from 'modules/pathfinding/helpers/getStepLocation';
+import { findExceptionWithOccurrenceId } from 'modules/timetableItem/helpers/pacedTrain';
 import type {
   TimetableItemToEditData,
   OperationalStudiesConfState,
   PacedTrainId,
 } from 'reducers/osrdconf/types';
 import { kmhToMs } from 'utils/physics';
-import { isPacedTrainId } from 'utils/trainId';
+import {
+  extractOccurrenceIndexFromOccurrenceId,
+  isIndexedOccurrenceId,
+  isPacedTrainId,
+} from 'utils/trainId';
 
 import {
   generatePacedTrainException,
@@ -116,15 +122,28 @@ export function formatPacedTrainPayload(
     );
     // ========== user modified an occurrence ==========
     if (timetableItemToEditData.occurrenceId) {
-      const exception = generatePacedTrainException(
+      const occurrenceIndex = isIndexedOccurrenceId(timetableItemToEditData.occurrenceId)
+        ? extractOccurrenceIndexFromOccurrenceId(timetableItemToEditData.occurrenceId)
+        : undefined;
+
+      const baseException = generatePacedTrainException(
         newPacedTrain, // contains occurrence changes
         originalPacedTrain,
+        occurrenceIndex
+      );
+
+      const existingException = findExceptionWithOccurrenceId(
+        originalPacedTrain.exceptions,
         timetableItemToEditData.occurrenceId
       );
 
       const updatedExceptions = updatePacedTrainExceptionsList(
         originalPacedTrain.exceptions,
-        exception,
+        {
+          ...baseException,
+          key: existingException?.key ?? uuidV4(),
+          occurrence_index: occurrenceIndex,
+        },
         timetableItemToEditData.occurrenceId
       );
       // If we are updating an occurrence, we want to send the exact same original paced train

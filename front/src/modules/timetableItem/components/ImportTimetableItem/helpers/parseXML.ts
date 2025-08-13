@@ -1,14 +1,32 @@
+import { omit } from 'lodash';
+import { v4 as uuidV4 } from 'uuid';
+
 import type { CichDictValue, TimetableJsonPayload } from 'applications/operationalStudies/types';
-import type { PacedTrain, TrainSchedule } from 'common/api/osrdEditoastApi';
-import { Duration } from 'utils/duration';
+import type { PacedTrain, TrainSchedule, PacedTrainException } from 'common/api/osrdEditoastApi';
+import { addDurationToDate, Duration } from 'utils/duration';
 
 import { buildSteps, cleanTimeFormat } from './buildStepsFromOcp';
 import findMostFrequentScheduleInPacedTrain from './findMostFrequentXmlSchedule';
+import { generatePacedTrainException } from '../../ManageTimetableItem/helpers/buildPacedTrainException';
 
 const extractCiChCode = (code: string) => {
   const [ciCode, chCode] = code.split('/');
   return { ciCode: Number(ciCode), chCode };
 };
+
+const trainScheduleToPacedTrain = (
+  trainSchedule: TrainSchedule,
+  pacedTrainId: string,
+  intervalDuration: Duration,
+  timeWindowDuration: Duration
+): Omit<PacedTrain, 'exceptions'> => ({
+  ...trainSchedule,
+  train_name: pacedTrainId,
+  paced: {
+    interval: intervalDuration.toISOString(),
+    time_window: timeWindowDuration.toISOString(),
+  },
+});
 
 const mapTrainNames = (trainSchedules: TrainSchedule[], trains: Element[]): TrainSchedule[] => {
   const trainPartToTrainMap: Record<string, string> = {};
@@ -70,6 +88,145 @@ export const getMostFrequentInterval = (schedules: TrainSchedule[]): Duration =>
   }
 
   return new Duration({ minutes: mostFrequentRoundedMin });
+};
+
+const reconcilePacedTrainOccurrences = (
+  pacedTrainId: string,
+  importedTrainSchedules: TrainSchedule[],
+  modelTrainSchedule: TrainSchedule,
+  intervalDuration: Duration
+): PacedTrain | null => {
+  if (importedTrainSchedules.length < 2) {
+    console.warn(`Not enough schedules to build a paced train for ${pacedTrainId}.`);
+    return null;
+  }
+
+  const sortedImportedSchedules = [...importedTrainSchedules].sort(
+    (a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime()
+  );
+
+  const firstImportedDepartureTime = new Date(sortedImportedSchedules[0].start_time);
+  const lastImportedDepartureTime = new Date(
+    sortedImportedSchedules[sortedImportedSchedules.length - 1].start_time
+  );
+
+  const totalTimeWindow = Duration.subtractDate(
+    lastImportedDepartureTime,
+    firstImportedDepartureTime
+  ).add(intervalDuration);
+  const intervalMinutes = intervalDuration.total('minute');
+
+  const durationBetweenFirstAndLast = Duration.subtractDate(
+    lastImportedDepartureTime,
+    firstImportedDepartureTime
+  );
+
+  const numberOfIntervals = Math.round(
+    durationBetweenFirstAndLast.total('minute') / intervalMinutes
+  );
+
+  const numberOfExpectedOccurrences = numberOfIntervals + 1;
+
+  const originalPacedTrain: PacedTrain = {
+    ...trainScheduleToPacedTrain(
+      modelTrainSchedule,
+      pacedTrainId,
+      intervalDuration,
+      totalTimeWindow
+    ),
+    exceptions: [],
+  };
+
+  const osrdDefaultOccurrences: {
+    startTime: Date;
+    matchedImportedSchedule: TrainSchedule | null;
+  }[] = [];
+  for (let i = 0; i < numberOfExpectedOccurrences; i += 1) {
+    const expectedDepartureTime = addDurationToDate(
+      firstImportedDepartureTime,
+      new Duration({ minutes: i * intervalMinutes })
+    );
+    osrdDefaultOccurrences.push({
+      startTime: expectedDepartureTime,
+      matchedImportedSchedule: null,
+    });
+  }
+
+  const matchedImportedScheduleKeys = new Set<string>();
+  const getScheduleKey = (s: TrainSchedule) => `${s.start_time}`;
+  const exceptions: PacedTrainException[] = [];
+
+  // Match OSRD Default Occurrences to imported Trains
+  osrdDefaultOccurrences.forEach((osrdOccurrence, index) => {
+    let bestCandidate: TrainSchedule | null = null;
+    let minTimeDifference = Infinity;
+
+    const availableImportedSchedules = sortedImportedSchedules.filter(
+      (schedule) => !matchedImportedScheduleKeys.has(getScheduleKey(schedule))
+    );
+
+    availableImportedSchedules.forEach((importedSchedule) => {
+      const importedDepartureTime = new Date(importedSchedule.start_time);
+      const timeDifferenceMinutes = Math.abs(
+        Duration.subtractDate(osrdOccurrence.startTime, importedDepartureTime).total('minute')
+      );
+
+      if (
+        timeDifferenceMinutes <= intervalMinutes / 4 &&
+        timeDifferenceMinutes < minTimeDifference
+      ) {
+        bestCandidate = importedSchedule;
+        minTimeDifference = timeDifferenceMinutes;
+      }
+    });
+
+    if (bestCandidate) {
+      matchedImportedScheduleKeys.add(getScheduleKey(bestCandidate));
+
+      const baseException = generatePacedTrainException(bestCandidate, originalPacedTrain, index);
+      const cleanException = omit(baseException, 'train_name');
+      // Case 1: OSRD default occurrence has a match in the imported file
+      if (Object.keys(cleanException).length > 0) {
+        exceptions.push({
+          ...cleanException,
+          key: uuidV4(),
+          occurrence_index: index,
+        });
+      }
+    } else {
+      // Case 2: OSRD default occurrence has no match in the imported file
+      // Create a disabled exception
+      exceptions.push({
+        key: uuidV4(),
+        occurrence_index: index,
+        disabled: true,
+      });
+    }
+  });
+
+  // Processing Unattributed Trains as added exceptions
+  sortedImportedSchedules.forEach((importedSchedule) => {
+    if (matchedImportedScheduleKeys.has(getScheduleKey(importedSchedule))) {
+      return;
+    }
+
+    const baseException = generatePacedTrainException(importedSchedule, originalPacedTrain, null);
+
+    const exception: PacedTrainException = {
+      ...baseException,
+      key: uuidV4(),
+    };
+
+    const cleanException = omit(exception, 'train_name');
+    exceptions.push(cleanException);
+  });
+
+  const pacedTrainBase: PacedTrain = {
+    ...originalPacedTrain,
+    exceptions,
+  };
+
+  return pacedTrainBase;
 };
 
 const parseXML = async (xmlDoc: Document): Promise<TimetableJsonPayload> => {
@@ -183,43 +340,29 @@ const parseXML = async (xmlDoc: Document): Promise<TimetableJsonPayload> => {
     };
   });
 
-  const buildPacedTrain = (
-    pacedTrainId: string,
-    pacedTrainSchedules: TrainSchedule[]
-  ): PacedTrain | null => {
-    if (pacedTrainSchedules.length < 2) {
-      console.warn('Not enough schedules to build a paced train');
-      return null;
+  const importedPacedTrains: PacedTrain[] = [];
+  Object.entries(pacedTrains).forEach(([pacedTrainId, pacedTrainSchedules]) => {
+    const modelTrainSchedule = pacedTrainMostFrequentSchedules[pacedTrainId].schedule;
+
+    if (modelTrainSchedule && pacedTrainSchedules.length > 0) {
+      const intervalDuration = getMostFrequentInterval(pacedTrainSchedules);
+
+      const pacedTrainWithExceptions = reconcilePacedTrainOccurrences(
+        pacedTrainId,
+        pacedTrainSchedules,
+        modelTrainSchedule,
+        intervalDuration
+      );
+
+      if (pacedTrainWithExceptions) {
+        importedPacedTrains.push(pacedTrainWithExceptions);
+      }
+    } else {
+      console.warn(
+        `Could not determine model train or no schedules for pacedTrainId: ${pacedTrainId}.`
+      );
     }
-
-    const sortedSchedules = pacedTrainSchedules.sort(
-      (a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime()
-    );
-
-    const departureDates = sortedSchedules.map((s) => new Date(s.start_time));
-    const intervalDuration = getMostFrequentInterval(pacedTrainSchedules);
-
-    const totalDuration = Duration.subtractDate(
-      departureDates[departureDates.length - 1],
-      departureDates[0]
-    ).add(intervalDuration);
-
-    return {
-      ...sortedSchedules[0],
-      train_name: pacedTrainId,
-      paced: {
-        interval: intervalDuration.toISOString(),
-        time_window: totalDuration.toISOString(),
-      },
-      exceptions: [],
-    };
-  };
-
-  const importedPacedTrains: PacedTrain[] = Object.entries(pacedTrains)
-    .map(([pacedTrainId, pacedTrainSchedules]) =>
-      buildPacedTrain(pacedTrainId, pacedTrainSchedules)
-    )
-    .filter((pacedTrain) => pacedTrain !== null);
+  });
 
   const trainSchedulesInPacedTrain = new Set(
     Object.values(pacedTrains)
