@@ -38,7 +38,6 @@ data:
       "^POST /api/infra/\\d+/pathfinding(?:\\?|$|/$)",
       "^POST /api/infra/\\d+/routes/nodes(?:\\?|$|/$)",
       "^POST /api/infra/\\d+/split_track_section(?:\\?|$|/$)",
-      "^POST /api/infra/railjson(?:\\?|$|/$)",
       "^POST /api/infra/refresh(?:\\?|$|/$)",
     ]
     {{- end }}
@@ -58,7 +57,6 @@ data:
       "^POST /api/infra/\\d+/pathfinding(?:\\?|$|/$)",
       "^POST /api/infra/\\d+/routes/nodes(?:\\?|$|/$)",
       "^POST /api/infra/\\d+/split_track_section(?:\\?|$|/$)",
-      "^POST /api/infra/railjson(?:\\?|$|/$)",
       "^POST /api/infra/refresh(?:\\?|$|/$)",
     ]
     {{- end }}
