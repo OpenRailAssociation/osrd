@@ -127,7 +127,7 @@
     "description": "Une courbe définit le rayon de courbure d'une partie spécifique de la section de voie correspondante.",
     "properties": {
       "begin": {
-        "description": "Distance entre le début du correspondant et le début de la courbure (en mètres).",
+        "description": "Distance entre le début du correspondant et le début de la courbure (en mètres). ",
         "title": "Début"
       },
       "end": {
@@ -951,6 +951,9 @@
       "on_route": {
         "description": "Itinéraire pour lequel ces paramètres sont actifs",
         "title": "Itinéraire"
+      },
+      "parameters": {
+        "description": "Paramètres du signal TVM430"
       }
     },
     "title": "Paramètres conditionnels"
@@ -963,7 +966,8 @@
       "Nf": {
         "description": "Le signal est-il non franchissable"
       }
-    }
+    },
+    "title": "Paramètres"
   },
   "__main____TvmSystem__Settings": {
     "properties": {
@@ -987,6 +991,7 @@
       "title": "Caténaires"
     },
     "extended_switch_types": {
+      "description": "Types d'appareil de voie pouvant être ajouté par l'utilisateur",
       "title": "Types d’aiguillages étendus"
     },
     "neutral_sections": {
