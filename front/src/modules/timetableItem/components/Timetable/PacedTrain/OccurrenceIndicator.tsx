@@ -10,8 +10,8 @@ import OSRDTooltip from 'common/OSRDTooltip';
 import isMainCategory from 'modules/rollingStock/helpers/category';
 import { getExceptionType } from 'utils/trainId';
 
-import { TRAIN_MAIN_CATEGORY_CLASS } from '../consts';
 import type { Occurrence } from '../types';
+import { getTrainCategoryClassName } from '../utils';
 
 type OccurrenceIndicatorProps = {
   occurrence: Occurrence;
@@ -41,7 +41,7 @@ const OccurrenceIndicator = ({ occurrence, subCategories }: OccurrenceIndicatorP
     return t('occurrenceType.addedOccurrence');
   };
 
-  const categoryValue = occurrence.exceptionChangeGroups?.rolling_stock_category?.value;
+  const categoryValue = occurrence.category;
 
   const displayedChangeGroups =
     occurrence.exceptionChangeGroups &&
@@ -105,14 +105,10 @@ const OccurrenceIndicator = ({ occurrence, subCategories }: OccurrenceIndicatorP
         />
       )}
       <span
-        className={cx(
-          'icon',
-          `train-category-bg-${TRAIN_MAIN_CATEGORY_CLASS[occurrence.category && isMainCategory(occurrence.category) ? occurrence.category.main_category : 'None']}`,
-          {
-            exception: !isEmpty(occurrence.exceptionChangeGroups),
-            disabled: occurrence.disabled,
-          }
-        )}
+        className={cx('icon', getTrainCategoryClassName(occurrence.category, 'bg'), {
+          exception: !isEmpty(occurrence.exceptionChangeGroups),
+          disabled: occurrence.disabled,
+        })}
         style={{
           backgroundColor: currentSubCategory?.background_color,
         }}
