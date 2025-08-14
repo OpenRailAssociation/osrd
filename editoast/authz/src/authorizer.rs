@@ -132,36 +132,13 @@ impl<S: StorageDriver> std::fmt::Debug for Authorizer<S> {
 mod tests {
     use super::*;
     use crate::Role;
+    use crate::authz_client;
     use crate::identity::GroupInfo;
-    use crate::identity::GroupName;
     use crate::identity::User;
-    use crate::identity::UserIdentity;
+    use crate::mock_driver::MockAuthDriver;
     use crate::model;
     use crate::model::Group;
-    use futures::stream;
     use pretty_assertions::assert_eq;
-    use std::collections::HashMap;
-    use std::convert::Infallible;
-    use std::sync::Arc;
-    use std::sync::Mutex;
-    use std::sync::RwLock;
-
-    #[derive(Debug, Clone, Default)]
-    struct MockAuthDriver {
-        counter: Arc<RwLock<i64>>,
-        users: Arc<Mutex<HashMap<UserIdentity, i64>>>,
-        groups: Arc<Mutex<HashMap<GroupName, i64>>>,
-    }
-
-    macro_rules! authz_client {
-        () => {{
-            let mut client = fga::test_client!();
-            crate::ensure_latest_authorization_model(&mut client)
-                .await
-                .expect("Failed to initialize/update the authorization model");
-            client
-        }};
-    }
 
     #[tokio::test]
     async fn check_user_grants() {
@@ -468,57 +445,25 @@ mod tests {
     }
 
     // If I'm a WRITER on an infra, and I grant READER to an OWNER, the OWNER should *not* become READER
-    #[tokio::test]
+    #[tokio::test(flavor = "multi_thread")]
     async fn prevent_downgrade() {
         let regulator = Regulator::new(authz_client!(), MockAuthDriver::default());
-        let regulator = move || regulator.clone();
 
-        let alice = Subject::User(User(
-            regulator()
-                .driver
-                .ensure_user(&UserInfo {
-                    identity: "alice".to_owned(),
-                    name: "Alice".to_owned(),
-                })
-                .await
-                .expect("alice should be created")
-                .id,
-        ));
-        let bob = Subject::User(User(
-            regulator()
-                .driver
-                .ensure_user(&UserInfo {
-                    identity: "bob".to_owned(),
-                    name: "Bob".to_owned(),
-                })
-                .await
-                .expect("bob should be created")
-                .id,
-        ));
-
-        // Give Alice WRITER and Bob OWNER privileges
-        regulator()
-            .give_infra_grant_unchecked(&alice, &Infra(1), InfraGrant::Writer)
-            .await
-            .expect("granting writer to alice should succeed");
-        regulator()
-            .give_infra_grant_unchecked(&bob, &Infra(1), InfraGrant::Owner)
-            .await
-            .expect("granting owner to bob should succeed");
+        let infra = Infra(1);
+        let alice = regulator.alice();
+        let bob = regulator.bob();
+        regulator.set_infra_grant(alice, infra, InfraGrant::Writer);
+        regulator.set_infra_grant(bob, infra, InfraGrant::Owner);
 
         // Alice (WRITER) tries to downgrade Bob (OWNER)
-        regulator()
-            .give_infra_grant(alice.as_ref(), &bob, &Infra(1), InfraGrant::Reader)
+        regulator
+            .give_infra_grant(&alice, &bob.into(), &infra, InfraGrant::Reader)
             .await
             .expect("grant operation should complete")
             .expect_denied("insufficient privileges to downgrade this user");
 
         // Check Bob is still OWNER
-        let bobs_grant = regulator()
-            .infra_grant(&bob, &Infra(1))
-            .await
-            .expect("checking final grant should succeed");
-        assert_eq!(bobs_grant, Some(InfraGrant::Owner));
+        regulator.assert_infra_grant_eq(bob, infra, Some(InfraGrant::Owner));
     }
 
     // A WRITER cannot demote another WRITER
@@ -587,105 +532,5 @@ mod tests {
             .await
             .expect("checking final grant should succeed");
         assert_eq!(bobs_grant, Some(InfraGrant::Writer));
-    }
-
-    impl StorageDriver for MockAuthDriver {
-        type Error = Infallible;
-
-        async fn ensure_user(&self, user: &UserInfo) -> Result<User, Self::Error> {
-            let mut users = self.users.lock().unwrap();
-            let user_id = {
-                let id = self.counter.read().unwrap();
-                *users.entry(user.identity.clone()).or_insert(*id)
-            };
-            *self.counter.write().unwrap() += 1;
-            Ok(User {
-                id: user_id,
-                info: user.clone(),
-            })
-        }
-
-        async fn ensure_group(&self, group: &GroupInfo) -> Result<i64, Self::Error> {
-            let mut groups = self.groups.lock().unwrap();
-            let group_id = {
-                let id = self.counter.read().unwrap();
-                *groups.entry(group.name.clone()).or_insert(*id)
-            };
-            *self.counter.write().unwrap() += 1;
-            Ok(group_id)
-        }
-
-        async fn get_user_id(
-            &self,
-            user_identity: &UserIdentity,
-        ) -> Result<Option<i64>, Self::Error> {
-            Ok(self.users.lock().unwrap().get(user_identity).copied())
-        }
-
-        async fn get_group_id(&self, group_name: &GroupName) -> Result<Option<i64>, Self::Error> {
-            Ok(self.groups.lock().unwrap().get(group_name).copied())
-        }
-
-        async fn get_user_info(&self, user_id: i64) -> Result<Option<UserInfo>, Self::Error> {
-            let users = self.users.lock().unwrap();
-            let user_info = users
-                .iter()
-                .find(|(_, id)| **id == user_id)
-                .map(|(identity, _)| UserInfo {
-                    identity: identity.clone(),
-                    name: "Mocked User".to_owned(),
-                });
-            Ok(user_info)
-        }
-
-        async fn get_group_info(&self, group_id: i64) -> Result<Option<GroupInfo>, Self::Error> {
-            let groups = self.groups.lock().unwrap();
-            let group_info = groups
-                .iter()
-                .find(|(_, id)| **id == group_id)
-                .map(|(name, _)| GroupInfo { name: name.clone() });
-            Ok(group_info)
-        }
-
-        async fn list_users(
-            &self,
-        ) -> Result<impl stream::TryStream<Ok = (i64, UserInfo), Error = Self::Error>, Self::Error>
-        {
-            Ok(stream::iter(
-                self.users
-                    .lock()
-                    .unwrap()
-                    .clone()
-                    .into_iter()
-                    .map(|(identity, id)| {
-                        Ok((
-                            id,
-                            UserInfo {
-                                name: format!("Mocked user {identity}"),
-                                identity,
-                            },
-                        ))
-                    }),
-            ))
-        }
-
-        async fn list_groups(
-            &self,
-        ) -> Result<impl stream::TryStream<Ok = (i64, GroupInfo), Error = Self::Error>, Self::Error>
-        {
-            Ok(stream::iter(
-                self.groups
-                    .lock()
-                    .unwrap()
-                    .clone()
-                    .into_iter()
-                    .map(|(name, id)| Ok((id, GroupInfo { name }))),
-            ))
-        }
-
-        async fn infra_exists(&self, _infra_id: i64) -> Result<bool, Self::Error> {
-            // Mock implementation, always return true
-            Ok(true)
-        }
     }
 }
