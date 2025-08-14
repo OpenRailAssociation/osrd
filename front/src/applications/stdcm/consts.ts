@@ -22,8 +22,8 @@ export const COMPOSITION_CODES_MAX_SPEEDS: Record<string, number | undefined> = 
   ME100: 100,
   ME120: 120,
   ME140: 140,
-  ME160: 160,
   HLP: 100,
+  MV160: 160,
   MVGV: 200,
 };
 export const DEFAULT_COMPOSITION_CODE = 'MA100';
