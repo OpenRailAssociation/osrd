@@ -5,7 +5,7 @@ import {
   getStationFromOps,
   isOperationalPointReference,
 } from 'applications/operationalStudies/utils';
-import type { OperationalPoint, PathItemLocation } from 'common/api/osrdEditoastApi';
+import type { OperationalPoint, TrainSchedule } from 'common/api/osrdEditoastApi';
 import type { TimetableItemWithPathOps } from 'reducers/osrdconf/types';
 import { addDurationToDate, Duration } from 'utils/duration';
 import { isPacedTrainResponseWithPacedTrainId } from 'utils/trainId';
@@ -14,18 +14,23 @@ import type { PairingItem } from '../types';
 
 const getStepLabels = (
   ops: (OperationalPoint[] | null)[],
-  steps: PathItemLocation[],
+  steps: TrainSchedule['path'],
+  schedule: TrainSchedule['schedule'],
   t: TFunction<'operational-studies', 'main'>
 ) =>
-  steps.map((step, index) => {
+  steps.reduce<string[]>((acc, step, index) => {
     const pathOp = ops.at(index)!;
     const isExtremity = index === 0 || index === steps.length - 1;
+    const isStop = schedule?.some((s) => s.at === step.id && !!s.stop_for);
+
+    if (!isExtremity && !isStop) return acc;
 
     // If no matching op has been found for this step, it's either a track offset or an invalid step
     if (pathOp.length === 0) {
-      return !isOperationalPointReference(step)
-        ? t('requestedPointUnknown')
-        : getInvalidStepLabel(step);
+      acc.push(
+        !isOperationalPointReference(step) ? t('requestedPointUnknown') : getInvalidStepLabel(step)
+      );
+      return acc;
     }
 
     const station = getStationFromOps(pathOp);
@@ -33,10 +38,14 @@ const getStepLabels = (
     // We know we will have a station since we handled the case where pathOp is empty
     const stationName = station!.extensions?.identifier?.name ?? '';
 
-    if (!isExtremity) return stationName;
+    if (!isExtremity) {
+      acc.push(stationName);
+      return acc;
+    }
 
-    return `${stationName} ${station!.extensions?.sncf?.ch ?? ''}`;
-  });
+    acc.push(`${stationName} ${station!.extensions?.sncf?.ch ?? ''}`);
+    return acc;
+  }, []);
 
 const formatPairingItems = (
   items: TimetableItemWithPathOps[],
@@ -48,7 +57,7 @@ const formatPairingItems = (
 
   // TODO : handle status with round-trips data in issue https://github.com/OpenRailAssociation/osrd/issues/12376
   return sortedItems.map((item) => {
-    const stepLabels = getStepLabels(item.pathOps, item.path, t);
+    const stepLabels = getStepLabels(item.pathOps, item.path, item.schedule, t);
 
     const arrivalStepId = item.path.at(-1)?.id;
     const destinationSchedule = item.schedule?.find(
