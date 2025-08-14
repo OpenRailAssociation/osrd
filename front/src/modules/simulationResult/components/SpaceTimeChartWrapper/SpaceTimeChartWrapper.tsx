@@ -32,13 +32,13 @@ import {
 import { Slider } from '@osrd-project/ui-core';
 import { Sliders, Iterations, ZoomIn } from '@osrd-project/ui-icons';
 import cx from 'classnames';
-import dayjs from 'dayjs';
 import { keyBy, sortBy } from 'lodash';
 import { createPortal } from 'react-dom';
 
 import upward from 'assets/pictures/workSchedules/ScheduledMaintenanceUp.svg';
 import { type PostWorkSchedulesProjectPathApiResponse } from 'common/api/osrdEditoastApi';
 import { useSubCategoryContext } from 'common/SubCategoryContext';
+import { configureHandlePan } from 'modules/simulationResult/components/SpaceTimeChartWrapper/helpers/configureHandlePan';
 import type {
   PathOperationalPoint,
   TrainSpaceTimeData,
@@ -47,23 +47,12 @@ import type {
 } from 'modules/simulationResult/types';
 import type { TimetableItemWithDetails } from 'modules/timetableItem/components/Timetable/types';
 import type { OccurrenceId, PacedTrainId, TrainId, TrainScheduleId } from 'reducers/osrdconf/types';
-import { updateSelectedTrainId } from 'reducers/simulationResults';
 import { useAppDispatch } from 'store';
-import {
-  isTrainId,
-  extractPacedTrainIdFromOccurrenceId,
-  extractOccurrenceIndexFromOccurrenceId,
-  isPacedTrainId,
-  formatPacedTrainIdToIndexedOccurrenceId,
-} from 'utils/trainId';
+import { isTrainId, isPacedTrainId, formatPacedTrainIdToIndexedOccurrenceId } from 'utils/trainId';
 
 import getPathStyle from './helpers/getPathStyle';
 import makeProjectedItems from './helpers/makeProjectedItems';
-import {
-  cutSpaceTimeChart,
-  getOccupancyBlocks,
-  isIndividualOccurrenceProjection,
-} from './helpers/utils';
+import { cutSpaceTimeChart, getOccupancyBlocks } from './helpers/utils';
 import ProjectionLoadingMessage from './ProjectionLoadingMessage';
 import SettingsPanel from './SettingsPanel';
 import useWaypointMenu from './useWaypointMenu';
@@ -319,97 +308,6 @@ const SpaceTimeChartWrapper = ({
 
   const occupancyBlocks = getOccupancyBlocks(cutProjectedTrains);
 
-  const onPanOverloaded: SpaceTimeChartProps['onPan'] = async (payload) => {
-    const { isPanning } = payload;
-
-    if (!handleTrainDrag) {
-      // if no handleTrainDrag, we pan normally
-      spaceTimeChartProps.onPan?.(payload);
-      return;
-    }
-
-    // if dragging
-    if (draggingState) {
-      const { draggedTrain, initialDepartureTime } = draggingState;
-
-      if (draggedTrain.id !== selectedTrainId) {
-        dispatch(updateSelectedTrainId(draggedTrain.id));
-      }
-
-      const timeDiff = payload.data.time - payload.initialData.time;
-
-      let newDepartureTime = new Date(initialDepartureTime.getTime() + timeDiff);
-
-      // if the dragged train is an occurrence, we need to update the first occurrence because the others are based on it
-      if (
-        isIndividualOccurrenceProjection(draggedTrain) &&
-        (!draggedTrain.exception || !draggedTrain.exception.start_time)
-      ) {
-        const occurrencesIndex = extractOccurrenceIndexFromOccurrenceId(draggedTrain.id);
-        const pacedTrainId = extractPacedTrainIdFromOccurrenceId(draggedTrain.id);
-        const pacedTrain = projectPathTrainResult.find(
-          ({ id }) => isPacedTrainId(id) && id === pacedTrainId
-        );
-        if (pacedTrain && 'paced' in pacedTrain) {
-          newDepartureTime = dayjs(newDepartureTime)
-            .add(occurrencesIndex * -pacedTrain.paced.interval.ms, 'ms')
-            .toDate();
-        }
-      }
-
-      // stop dragging if necessary
-      if (!isPanning) {
-        setDraggingState(undefined);
-      }
-
-      await handleTrainDrag({
-        draggedTrainId: draggedTrain.id,
-        initialDepartureTime,
-        newDepartureTime,
-        stopPanning: !isPanning,
-      });
-      return;
-    }
-
-    // if not dragging, we check if we should start dragging
-    // Only a mouse hover that starts already over a path should register
-    // if we start panning, and then the mouse hovers over the path,
-    // it should continue just sliding the chart, not start dragging the train path
-    if (
-      isPanning &&
-      !previousPanning &&
-      !zoomMode &&
-      hoveredItem &&
-      (isSegmentPickingElement(hoveredItem.element) || isPointPickingElement(hoveredItem.element))
-    ) {
-      const hoveredTrainId = hoveredItem.element.pathId;
-      if (!isTrainId(hoveredTrainId)) return;
-
-      const train = projectedTrains.find((projectedTrain) => projectedTrain.id === hoveredTrainId);
-      if (!train) {
-        console.error(`No train found with id ${hoveredTrainId}`);
-        return;
-      }
-
-      // disable start time exception for now
-      const isStartTimeException =
-        isIndividualOccurrenceProjection(train) && !!train.exception?.start_time;
-      if (isStartTimeException) return;
-
-      setDraggingState({
-        draggedTrain: train,
-        initialDepartureTime: train.departureTime,
-      });
-    }
-
-    // if no hovered train, we pan normally
-    spaceTimeChartProps.onPan?.(payload);
-
-    if (isPanning !== previousPanning) {
-      setPreviousPanning(isPanning);
-    }
-  };
-
   const manchettePropsWithWaypointMenu = useMemo(
     () => ({
       ...manchetteProps,
@@ -425,6 +323,31 @@ const SpaceTimeChartWrapper = ({
       activeWaypointRef,
     }),
     [manchetteProps, activeWaypointId, handleWaypointClick]
+  );
+
+  const handlePan = useCallback(
+    configureHandlePan({
+      spaceTimeChartOnPan: spaceTimeChartProps.onPan,
+      handleTrainDrag,
+      draggingState,
+      setDraggingState,
+      hoveredItem,
+      previousPanning,
+      setPreviousPanning,
+      zoomMode,
+      projectPathTrainResult,
+      dispatch,
+    }),
+    [
+      spaceTimeChartProps.onPan,
+      handleTrainDrag,
+      draggingState,
+      hoveredItem,
+      previousPanning,
+      zoomMode,
+      projectPathTrainResult,
+      dispatch,
+    ]
   );
 
   const handleHoveredChildUpdate: SpaceTimeChartProps['onHoveredChildUpdate'] = useCallback(
@@ -528,7 +451,7 @@ const SpaceTimeChartWrapper = ({
             className="inset-0 absolute h-full"
             height={height}
             {...spaceTimeChartProps}
-            onPan={onPanOverloaded}
+            onPan={handlePan}
             onClick={handleClick}
             onHoveredChildUpdate={handleHoveredChildUpdate}
             spaceOrigin={
