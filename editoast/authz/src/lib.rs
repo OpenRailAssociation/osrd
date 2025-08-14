@@ -109,6 +109,7 @@ impl<T> Authorization<T> {
 }
 
 impl<T: std::fmt::Debug> Authorization<T> {
+    #[track_caller]
     pub fn expect_allowed(self, reason: &'static str) -> T {
         match self {
             Authorization::Granted(value) => value,
@@ -116,6 +117,7 @@ impl<T: std::fmt::Debug> Authorization<T> {
         }
     }
 
+    #[track_caller]
     pub fn expect_denied(self, reason: &'static str) -> &'static str {
         match self {
             Authorization::Denied { reason } => reason,

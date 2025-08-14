@@ -720,9 +720,24 @@ impl<S: StorageDriver> Regulator<S> {
         issuer: &User,
         subject: &Subject,
         infra: &Infra,
-        grant: InfraGrant,
+        new_grant: InfraGrant,
     ) -> Result<Authorization<()>, Error<S::Error>> {
-        let authz_share = match grant {
+        // Set grant rules:
+        // 1. Issuer must have the correct sharing privilege
+        // 2. Issuer is admin (may not have any direct grant on the resource)
+        //     1. cannot demote the last owner (including self)
+        //     2. can demote or promote anyone to any grant level otherwise
+        // 3. Issuer is owner
+        //     1. cannot demote the last owner (including self)
+        //     2. can demote or promote anyone to any grant level otherwise
+        // 4. Issuer is anything else
+        //     1. can demote self
+        //     2. cannot promote self
+        //     3. can promote anyone up to their own grant level
+        //     4. can demote anyone with a strictly lower grant level than their own
+
+        // Rule 1., 4.2 and 4.3
+        let authz_share = match new_grant {
             InfraGrant::Reader => {
                 self.authorize_infra(issuer, infra, InfraPrivilege::CanShareRead)
                     .await?
@@ -737,12 +752,30 @@ impl<S: StorageDriver> Regulator<S> {
             }
         };
 
-        if !self.is_admin(issuer).await?
-            && let Some(issuer_grant) = self
-                .infra_grant(&Subject::User(User(issuer.0)), infra)
-                .await?
-            && let Some(subject_grant) = self.infra_grant(subject, infra).await?
-            && (grant < subject_grant && issuer_grant <= subject_grant)
+        let is_admin = self.is_admin(issuer).await?;
+        let issuer = Subject::User(User(issuer.0));
+        let issuer_grant = self.infra_grant(&issuer, infra).await?;
+        let subject_grant = self.infra_grant(subject, infra).await?;
+
+        // Rule 2.1 and 3.1
+        if let Some(subject_grant) = subject_grant
+            && subject_grant == InfraGrant::Owner
+            && new_grant < subject_grant
+        {
+            let current_owners = self.get_infra_owners(infra).await?;
+            if current_owners.len() == 1 && current_owners.contains(subject) {
+                return Ok(Authorization::Denied {
+                    reason: "cannot demote the last owner",
+                });
+            }
+        }
+
+        // Rule 3.2 and 4.4
+        if !is_admin
+            && let Some(issuer_grant) = issuer_grant // guaranteed by the model if sharing is allowed
+            && let Some(subject_grant) = subject_grant
+            && &issuer != subject // Rule 4.1
+            && (new_grant < subject_grant && issuer_grant <= subject_grant)
         {
             return Ok(Authorization::Denied {
                 reason: "cannot demote user without having a higher grant",
@@ -751,7 +784,7 @@ impl<S: StorageDriver> Regulator<S> {
 
         authz_share
             .allowed_then_try(async || {
-                self.give_infra_grant_unchecked(subject, infra, grant)
+                self.give_infra_grant_unchecked(subject, infra, new_grant)
                     .await?;
                 Ok(Authorization::Granted(()))
             })
@@ -765,16 +798,55 @@ impl<S: StorageDriver> Regulator<S> {
         subject: &Subject,
         infra: &Infra,
     ) -> Result<Authorization<()>, Error<S::Error>> {
-        if !self.is_admin(issuer).await?
-            && !self
+        // TODO: add a can_revoke privilege in the authorization model
+
+        // Revoking rules:
+        // 1. Only owners (and admins) can fully revoke grants
+        // 2. The last owner of a resource cannot be revoked, even by admins
+        // 3. An owner cannot revoke another owner
+
+        let is_subject_owner = match subject {
+            Subject::User(user) => {
+                self.openfga
+                    .check(Infra::owner().check(user, infra))
+                    .await?
+            }
+            Subject::Group(group) => {
+                self.openfga
+                    .check(Infra::owner().check(Group::member().userset(group), infra))
+                    .await?
+            }
+        };
+
+        if is_subject_owner {
+            let current_owners = self.get_infra_owners(infra).await?;
+            if current_owners.len() == 1 && current_owners.contains(subject) {
+                return Ok(Authorization::Denied {
+                    reason: "cannot remove the last owner from infrastructure",
+                });
+            }
+        }
+
+        if !self.is_admin(issuer).await? {
+            let is_issuer_owner = self
                 .openfga
                 .check(Infra::owner().check(issuer, infra))
-                .await?
-        {
-            return Ok(Authorization::Denied {
-                reason: "only owners can revoke grants",
-            });
+                .await?;
+
+            if !is_issuer_owner {
+                return Ok(Authorization::Denied {
+                    reason: "only owners can revoke grants",
+                });
+            }
+
+            // Rule 3: An owner cannot revoke another owner (only admins can)
+            if is_issuer_owner && is_subject_owner {
+                return Ok(Authorization::Denied {
+                    reason: "owner cannot revoke another owner",
+                });
+            }
         }
+
         self.revoke_infra_grants_unchecked(subject, infra).await?;
         Ok(Authorization::Granted(()))
     }
@@ -840,5 +912,257 @@ impl<S: StorageDriver> Regulator<S> {
         }
         delete.execute().await?;
         Ok(())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::Infra;
+    use crate::InfraGrant;
+    use crate::mock_driver::MockAuthDriver;
+
+    // GRANTING TESTS
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn admin_cannot_demote_last_owner() {
+        let regulator = Regulator::new(crate::authz_client!(), MockAuthDriver::default());
+        let infra = Infra(1);
+        let alice = regulator.alice();
+        let walter = regulator.walter();
+
+        regulator.set_infra_grant(alice, infra, InfraGrant::Owner);
+
+        regulator
+            .give_infra_grant(&walter, &alice.into(), &infra, InfraGrant::Writer)
+            .await
+            .expect("grant operation should complete")
+            .expect_denied("cannot demote the last owner");
+
+        regulator.assert_infra_grant_eq(alice, infra, Some(InfraGrant::Owner));
+    }
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn admin_can_promote_and_demote_anyone() {
+        let regulator = Regulator::new(crate::authz_client!(), MockAuthDriver::default());
+        let infra = Infra(1);
+        let alice = regulator.alice();
+        let bob = regulator.bob();
+        let walter = regulator.walter();
+
+        regulator.set_infra_grant(alice, infra, InfraGrant::Owner);
+        regulator.set_infra_grant(bob, infra, InfraGrant::Reader);
+
+        // admin can promote anyone
+        regulator
+            .give_infra_grant(&walter, &bob.into(), &infra, InfraGrant::Owner)
+            .await
+            .expect("grant operation should complete")
+            .expect_allowed("admin can promote anyone");
+
+        regulator.assert_infra_grant_eq(bob, infra, Some(InfraGrant::Owner));
+
+        // admin can demote anyone (when not last owner)
+        regulator
+            .give_infra_grant(&walter, &bob.into(), &infra, InfraGrant::Writer)
+            .await
+            .expect("grant operation should complete")
+            .expect_allowed("admin can demote anyone");
+
+        regulator.assert_infra_grant_eq(bob, infra, Some(InfraGrant::Writer));
+    }
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn last_owner_cannot_demote_themself() {
+        let regulator = Regulator::new(crate::authz_client!(), MockAuthDriver::default());
+        let infra = Infra(1);
+        let alice = regulator.alice();
+
+        regulator.set_infra_grant(alice, infra, InfraGrant::Owner);
+
+        regulator
+            .give_infra_grant(&alice, &alice.into(), &infra, InfraGrant::Writer)
+            .await
+            .expect("grant operation should complete")
+            .expect_denied("cannot demote the last owner");
+
+        regulator.assert_infra_grant_eq(alice, infra, Some(InfraGrant::Owner));
+    }
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn owner_can_promote_and_demote_anyone() {
+        let regulator = Regulator::new(crate::authz_client!(), MockAuthDriver::default());
+        let infra = Infra(1);
+        let alice = regulator.alice();
+        let bob = regulator.bob();
+
+        regulator.set_infra_grant(alice, infra, InfraGrant::Owner);
+        regulator.set_infra_grant(bob, infra, InfraGrant::Reader);
+
+        // owner can promote anyone
+        regulator
+            .give_infra_grant(&alice, &bob.into(), &infra, InfraGrant::Writer)
+            .await
+            .expect("grant operation should complete")
+            .expect_allowed("owner can promote anyone");
+
+        regulator.assert_infra_grant_eq(bob, infra, Some(InfraGrant::Writer));
+
+        // owner can demote anyone
+        regulator
+            .give_infra_grant(&alice, &bob.into(), &infra, InfraGrant::Reader)
+            .await
+            .expect("grant operation should complete")
+            .expect_allowed("owner can demote anyone");
+
+        regulator.assert_infra_grant_eq(bob, infra, Some(InfraGrant::Reader));
+    }
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn user_can_demote_themself() {
+        let regulator = Regulator::new(crate::authz_client!(), MockAuthDriver::default());
+        let infra = Infra(1);
+        let alice = regulator.alice();
+
+        regulator.set_infra_grant(alice, infra, InfraGrant::Writer);
+
+        regulator
+            .give_infra_grant(&alice, &alice.into(), &infra, InfraGrant::Reader)
+            .await
+            .expect("grant operation should complete")
+            .expect_allowed("user can demote self");
+
+        regulator.assert_infra_grant_eq(alice, infra, Some(InfraGrant::Reader));
+    }
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn user_cannot_promote_themself() {
+        let regulator = Regulator::new(crate::authz_client!(), MockAuthDriver::default());
+        let infra = Infra(1);
+        let alice = regulator.alice();
+
+        regulator.set_infra_grant(alice, infra, InfraGrant::Writer);
+
+        regulator
+            .give_infra_grant(&alice, &alice.into(), &infra, InfraGrant::Owner)
+            .await
+            .expect("grant operation should complete")
+            .expect_denied("user cannot promote self");
+
+        regulator.assert_infra_grant_eq(alice, infra, Some(InfraGrant::Writer));
+    }
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn user_can_promote_up_to_own_level() {
+        let regulator = Regulator::new(crate::authz_client!(), MockAuthDriver::default());
+        let infra = Infra(1);
+        let alice = regulator.alice();
+        let bob = regulator.bob();
+
+        regulator.set_infra_grant(alice, infra, InfraGrant::Writer);
+        regulator.set_infra_grant(bob, infra, InfraGrant::Reader);
+
+        regulator
+            .give_infra_grant(&alice, &bob.into(), &infra, InfraGrant::Writer)
+            .await
+            .expect("grant operation should complete")
+            .expect_allowed("user can promote up to own level");
+
+        regulator.assert_infra_grant_eq(bob, infra, Some(InfraGrant::Writer));
+    }
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn user_cannot_promote_above_own_level() {
+        let regulator = Regulator::new(crate::authz_client!(), MockAuthDriver::default());
+        let infra = Infra(1);
+        let alice = regulator.alice();
+        let bob = regulator.bob();
+
+        regulator.set_infra_grant(alice, infra, InfraGrant::Writer);
+        regulator.set_infra_grant(bob, infra, InfraGrant::Reader);
+
+        regulator
+            .give_infra_grant(&alice, &bob.into(), &infra, InfraGrant::Owner)
+            .await
+            .expect("grant operation should complete")
+            .expect_denied("user cannot promote above own level");
+
+        regulator.assert_infra_grant_eq(bob, infra, Some(InfraGrant::Reader));
+    }
+
+    // REVOKING TESTS
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn only_owners_can_revoke() {
+        let regulator = Regulator::new(crate::authz_client!(), MockAuthDriver::default());
+        let infra = Infra(1);
+        let alice = regulator.alice();
+        let bob = regulator.bob();
+
+        regulator.set_infra_grant(alice, infra, InfraGrant::Writer);
+        regulator.set_infra_grant(bob, infra, InfraGrant::Reader);
+
+        regulator
+            .revoke_infra_grants(&alice, &bob.into(), &infra)
+            .await
+            .expect("revoke operation should complete")
+            .expect_denied("only owners can revoke grants");
+
+        regulator.assert_infra_grant_eq(bob, infra, Some(InfraGrant::Reader));
+    }
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn admins_can_revoke() {
+        let regulator = Regulator::new(crate::authz_client!(), MockAuthDriver::default());
+        let infra = Infra(1);
+        let alice = regulator.alice();
+        let walter = regulator.walter();
+
+        regulator.set_infra_grant(alice, infra, InfraGrant::Reader);
+
+        regulator
+            .revoke_infra_grants(&walter, &alice.into(), &infra)
+            .await
+            .expect("revoke operation should complete")
+            .expect_allowed("admin can revoke grants");
+
+        regulator.assert_infra_grant_eq(alice, infra, None);
+    }
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn last_owner_cannot_be_revoked_by_admin() {
+        let regulator = Regulator::new(crate::authz_client!(), MockAuthDriver::default());
+        let infra = Infra(1);
+        let alice = regulator.alice();
+        let walter = regulator.walter();
+
+        regulator.set_infra_grant(alice, infra, InfraGrant::Owner);
+
+        regulator
+            .revoke_infra_grants(&walter, &alice.into(), &infra)
+            .await
+            .expect("revoke operation should complete")
+            .expect_denied("last owner cannot be revoked");
+
+        regulator.assert_infra_grant_eq(alice, infra, Some(InfraGrant::Owner));
+    }
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn owner_cannot_revoke_another_owner() {
+        let regulator = Regulator::new(crate::authz_client!(), MockAuthDriver::default());
+        let infra = Infra(1);
+        let alice = regulator.alice();
+        let bob = regulator.bob();
+
+        regulator.set_infra_grant(alice, infra, InfraGrant::Owner);
+        regulator.set_infra_grant(bob, infra, InfraGrant::Owner);
+
+        regulator
+            .revoke_infra_grants(&alice, &bob.into(), &infra)
+            .await
+            .expect("revoke operation should complete")
+            .expect_denied("owner cannot revoke another owner");
+
+        regulator.assert_infra_grant_eq(bob, infra, Some(InfraGrant::Owner));
     }
 }
