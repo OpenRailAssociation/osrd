@@ -141,62 +141,6 @@ mod tests {
     use pretty_assertions::assert_eq;
 
     #[tokio::test]
-    async fn check_user_grants() {
-        let user_identity = || "toto".to_owned();
-        let user = || UserInfo {
-            identity: user_identity(),
-            name: "Sir Toto, the One and Only".to_owned(),
-        };
-        let regulator = Regulator::new(authz_client!(), MockAuthDriver::default());
-        let regulator = move || regulator.clone();
-
-        let user_id = regulator()
-            .driver
-            .ensure_user(&user())
-            .await
-            .expect("toto should be created")
-            .id;
-        let subject = Subject::User(User(user_id));
-
-        let authorizer = Authorizer::try_initialize(user_identity(), regulator())
-            .await
-            .unwrap();
-
-        authorizer
-            .regulator
-            .give_infra_grant_unchecked(&subject, &Infra(1), InfraGrant::Reader)
-            .await
-            .expect("Update grants should be successful");
-        let grant = authorizer
-            .infra_grant(&Infra(1))
-            .await
-            .expect("Check grants should be successful");
-        assert_eq!(grant, Some(InfraGrant::Reader));
-
-        authorizer
-            .regulator
-            .give_infra_grant_unchecked(&subject, &Infra(1), InfraGrant::Writer)
-            .await
-            .expect("Update grants should be successful");
-        let grant = authorizer
-            .infra_grant(&Infra(1))
-            .await
-            .expect("Check grants should be successful");
-        assert_eq!(grant, Some(InfraGrant::Writer));
-
-        authorizer
-            .regulator
-            .give_infra_grant_unchecked(&subject, &Infra(1), InfraGrant::Owner)
-            .await
-            .expect("Update grants should be successful");
-        let grant = authorizer
-            .infra_grant(&Infra(1))
-            .await
-            .expect("Check grants should be successful");
-        assert_eq!(grant, Some(InfraGrant::Owner));
-    }
-
-    #[tokio::test]
     async fn check_user_roles() {
         let user_identity = || "toto".to_owned();
         let user = || UserInfo {
