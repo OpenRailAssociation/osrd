@@ -171,6 +171,11 @@
       "LiveryMultipartError": "Invalid multipart request while uploading livery",
       "NameAlreadyUsed": "Name '{{name}}' already used"
     },
+    "round_trips": {
+      "Database": "Internal error (database)",
+      "DuplicateTrainIds": "The payload contains duplicate train IDs which is not allowed",
+      "TimetableNotFound": "Timetable '{{timetable_id}}' not found"
+    },
     "scenario": {
       "Database": "Internal error (database)",
       "InfraNotFound": "Infrastructure '{{infra_id}}' not found",

@@ -6283,6 +6283,9 @@ components:
       - $ref: '#/components/schemas/EditoastRollingStockErrorKeyNotFound'
       - $ref: '#/components/schemas/EditoastRollingStockErrorLiveryMultipartError'
       - $ref: '#/components/schemas/EditoastRollingStockErrorNameAlreadyUsed'
+      - $ref: '#/components/schemas/EditoastRoundTripsErrorDatabase'
+      - $ref: '#/components/schemas/EditoastRoundTripsErrorDuplicateTrainIds'
+      - $ref: '#/components/schemas/EditoastRoundTripsErrorTimetableNotFound'
       - $ref: '#/components/schemas/EditoastScenarioErrorDatabase'
       - $ref: '#/components/schemas/EditoastScenarioErrorInfraNotFound'
       - $ref: '#/components/schemas/EditoastScenarioErrorNotFound'
@@ -7353,6 +7356,68 @@ components:
           type: string
           enum:
           - editoast:rollingstocks:NameAlreadyUsed
+    EditoastRoundTripsErrorDatabase:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 500
+        type:
+          type: string
+          enum:
+          - editoast:round_trips:Database
+    EditoastRoundTripsErrorDuplicateTrainIds:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 400
+        type:
+          type: string
+          enum:
+          - editoast:round_trips:DuplicateTrainIds
+    EditoastRoundTripsErrorTimetableNotFound:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          required:
+          - timetable_id
+          properties:
+            timetable_id:
+              type: integer
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 404
+        type:
+          type: string
+          enum:
+          - editoast:round_trips:TimetableNotFound
     EditoastScenarioErrorDatabase:
       type: object
       required:
