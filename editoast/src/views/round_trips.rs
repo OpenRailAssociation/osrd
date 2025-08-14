@@ -83,20 +83,20 @@ pub(in crate::views) async fn post_train_schedules(
         .one_ways
         .iter()
         .copied()
-        .chain(round_trips.round_trips.iter().flat_map(|(l, r)| [*l, *r]));
+        .chain(round_trips.round_trips.iter().flat_map(|&(l, r)| [l, r]));
     let round_trips_changesets = round_trips
         .round_trips
         .iter()
-        .map(|(l, r)| {
+        .map(|&(l, r)| {
             TrainScheduleRoundTrips::changeset()
-                .left_id(*l)
-                .right_id(Some(*r))
+                .left_id(l.min(r))
+                .right_id(Some(l.max(r)))
         })
         .chain(
             round_trips
                 .one_ways
                 .iter()
-                .map(|id| TrainScheduleRoundTrips::changeset().left_id(*id)),
+                .map(|&id| TrainScheduleRoundTrips::changeset().left_id(id)),
         );
 
     db_pool
@@ -144,20 +144,20 @@ pub(in crate::views) async fn post_paced_trains(
         .one_ways
         .iter()
         .copied()
-        .chain(round_trips.round_trips.iter().flat_map(|(l, r)| [*l, *r]));
+        .chain(round_trips.round_trips.iter().flat_map(|&(l, r)| [l, r]));
     let round_trips_changesets = round_trips
         .round_trips
         .iter()
-        .map(|(l, r)| {
+        .map(|&(l, r)| {
             PacedTrainRoundTrips::changeset()
-                .left_id(*l)
-                .right_id(Some(*r))
+                .left_id(l.min(r))
+                .right_id(Some(l.max(r)))
         })
         .chain(
             round_trips
                 .one_ways
                 .iter()
-                .map(|id| PacedTrainRoundTrips::changeset().left_id(*id)),
+                .map(|&id| PacedTrainRoundTrips::changeset().left_id(id)),
         );
 
     db_pool
