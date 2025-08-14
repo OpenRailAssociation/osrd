@@ -101,6 +101,14 @@ impl NewTrain {
 
         segments.into_iter().map(Segment::from_path).collect()
     }
+
+    pub(super) fn begin(&self) -> &Waypoint {
+        self.waypoints.first().unwrap()
+    }
+
+    pub(super) fn end(&self) -> &Waypoint {
+        self.waypoints.last().unwrap()
+    }
 }
 
 #[derive(Debug, Clone)]

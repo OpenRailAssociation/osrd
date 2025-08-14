@@ -251,7 +251,16 @@ pub(in crate::views) async fn similar_trains(
     if candidate_schedules.is_empty() {
         tracing::info!("no candidate train schedules found — similar trains cannot be computed");
         return Ok(Json(Response {
-            similar_trains: Vec::new(),
+            similar_trains: vec![SimilarTrainItem {
+                train_id: None,
+                start_time: None,
+                begin: WaypointResponse {
+                    id: new_train.begin().op.deref().clone(),
+                },
+                end: WaypointResponse {
+                    id: new_train.end().op.deref().clone(),
+                },
+            }],
         }));
     }
 
@@ -339,7 +348,6 @@ pub(in crate::views) async fn similar_trains(
                         ?skipped,
                         "exploration irremediably blocked"
                     );
-                    // TODO: also collect trains with no similar trains found — for front display
                     break;
                 }
             }
@@ -1024,6 +1032,14 @@ mod tests {
             Waypoint { id:"Mid_West_station".into(), stop:true },
             Waypoint { id:"North_station".into(), stop:true },
         ],
+        vec![
+            SimilarTrainItem {
+                train_id: None,
+                start_time: None,
+                begin: WaypointResponse { id: "Mid_West_station".into() },
+                end: WaypointResponse { id: "North_station".into() }
+            },
+        ],
     )]
     // Different speed limit tag
     #[case(
@@ -1032,6 +1048,14 @@ mod tests {
         vec![
             Waypoint { id:"Mid_West_station".into(), stop:true },
             Waypoint { id:"North_station".into(), stop:true },
+        ],
+        vec![
+            SimilarTrainItem {
+                train_id: None,
+                start_time: None,
+                begin: WaypointResponse { id: "Mid_West_station".into() },
+                end: WaypointResponse { id: "North_station".into() }
+            },
         ],
     )]
     // Different schedule
@@ -1043,6 +1067,14 @@ mod tests {
             Waypoint { id:"Mid_West_station".into(), stop:true },
             Waypoint { id:"Mid_East_station".into(), stop:true },
             Waypoint { id:"North_station".into(), stop:true },
+        ],
+        vec![
+            SimilarTrainItem {
+                train_id: None,
+                start_time: None,
+                begin: WaypointResponse { id: "Mid_West_station".into() },
+                end: WaypointResponse { id: "North_station".into() }
+            },
         ],
     )]
     // Same schedule but too much stops
@@ -1056,11 +1088,20 @@ mod tests {
             Waypoint { id:"North_station".into(), stop:false },
             Waypoint { id:"South_station".into(), stop:true },
         ],
+        vec![
+            SimilarTrainItem {
+                train_id: None,
+                start_time: None,
+                begin: WaypointResponse { id: "Mid_West_station".into() },
+                end: WaypointResponse { id: "South_station".into() }
+            },
+        ],
     )]
     async fn no_similar_train(
         #[case] index_rolling_stock_name: usize,
         #[case] speed_limit_tag: Option<String>,
         #[case] waypoints: Vec<Waypoint>,
+        #[case] similar_trains: Vec<SimilarTrainItem>,
     ) {
         let InitTestResponse {
             app,
@@ -1082,12 +1123,7 @@ mod tests {
         let request = app.post("/similar_trains").json(&request);
         let response: Response = app.fetch(request).assert_status(StatusCode::OK).json_into();
 
-        assert_eq!(
-            response,
-            Response {
-                similar_trains: Vec::new()
-            }
-        );
+        assert_eq!(response, Response { similar_trains });
     }
 
     #[rstest]
