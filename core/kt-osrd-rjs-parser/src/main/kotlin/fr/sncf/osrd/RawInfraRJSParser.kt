@@ -53,8 +53,7 @@ private fun parseLineString(rjsLineString: RJSLineString?): LineString? {
 private fun getSlopes(rjsTrackSection: RJSTrackSection): DistanceRangeMap<Double> {
     val slopes =
         distanceRangeMapOf(
-            *listOf(DistanceRangeMap.RangeMapEntry(0.meters, rjsTrackSection.length.meters, 0.0))
-                .toTypedArray()
+            DistanceRangeMap.RangeMapEntry(0.meters, rjsTrackSection.length.meters, 0.0)
         )
     if (rjsTrackSection.slopes != null) {
         for (rjsSlope in rjsTrackSection.slopes) {
@@ -76,8 +75,7 @@ private fun getSlopes(rjsTrackSection: RJSTrackSection): DistanceRangeMap<Double
 private fun getCurves(rjsTrackSection: RJSTrackSection): DistanceRangeMap<Double> {
     val curves =
         distanceRangeMapOf(
-            *listOf(DistanceRangeMap.RangeMapEntry(0.meters, rjsTrackSection.length.meters, 0.0))
-                .toTypedArray()
+            listOf(DistanceRangeMap.RangeMapEntry(0.meters, rjsTrackSection.length.meters, 0.0))
         )
     if (rjsTrackSection.curves != null) {
         for (rjsCurve in rjsTrackSection.curves) {

@@ -260,7 +260,7 @@ class TestDistanceRangeMap {
     @Test
     fun testMergeDistanceRangeMapsSimple() {
         val inputMap =
-            distanceRangeMapOf<Int>(
+            distanceRangeMapOf(
                 DistanceRangeMap.RangeMapEntry(Distance(0), Distance(50), 1),
                 DistanceRangeMap.RangeMapEntry(Distance(50), Distance(100), 2),
             )

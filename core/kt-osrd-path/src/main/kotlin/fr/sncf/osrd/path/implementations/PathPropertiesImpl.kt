@@ -135,8 +135,7 @@ data class PathPropertiesImpl(
             if (zoneId != null) {
                 val chunkLength = infra.getTrackChunkLength(chunkId).distance
                 distanceRangeMapOf(
-                    *listOf(DistanceRangeMap.RangeMapEntry(Distance.ZERO, chunkLength, zoneId))
-                        .toTypedArray()
+                    DistanceRangeMap.RangeMapEntry(Distance.ZERO, chunkLength, zoneId)
                 )
             } else {
                 distanceRangeMapOf()

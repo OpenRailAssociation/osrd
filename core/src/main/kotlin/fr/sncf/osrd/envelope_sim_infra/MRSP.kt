@@ -179,9 +179,7 @@ fun makeSpeedLimitAttributes(
     baseAttrs: List<SelfTypeHolder>,
 ): DistanceRangeMap<List<SelfTypeHolder>> {
     val result: DistanceRangeMap<List<SelfTypeHolder>> =
-        distanceRangeMapOf(
-            *listOf(DistanceRangeMap.RangeMapEntry(lower, upper, baseAttrs)).toTypedArray()
-        )
+        distanceRangeMapOf(DistanceRangeMap.RangeMapEntry(lower, upper, baseAttrs))
 
     // Add important attributes from the old speed ranges
     val attrsWithMissingRange = baseAttrs.toMutableList()
