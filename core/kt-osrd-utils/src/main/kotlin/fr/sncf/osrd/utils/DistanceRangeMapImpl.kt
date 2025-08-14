@@ -172,11 +172,7 @@ data class DistanceRangeMapImpl<T>(
     }
 
     override fun clone(): DistanceRangeMap<T> {
-        val res = DistanceRangeMapImpl<T>()
-        for (entry in this) {
-            res.put(entry.lower, entry.upper, entry.value)
-        }
-        return res
+        return DistanceRangeMapImpl(bounds.clone(), values.toMutableList())
     }
 
     override fun subMap(lower: Distance, upper: Distance): DistanceRangeMap<T> {

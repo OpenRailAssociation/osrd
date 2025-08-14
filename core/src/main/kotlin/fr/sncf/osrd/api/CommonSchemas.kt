@@ -49,7 +49,7 @@ data class RangeValues<valueT>(
                 )
             )
         }
-        return distanceRangeMapOf(*rangeMapEntries.toTypedArray())
+        return distanceRangeMapOf(rangeMapEntries)
     }
 }
 

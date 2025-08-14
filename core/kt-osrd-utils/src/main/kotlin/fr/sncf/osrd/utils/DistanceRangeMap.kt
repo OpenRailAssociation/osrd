@@ -76,6 +76,10 @@ fun <T> distanceRangeMapOf(vararg entries: DistanceRangeMap.RangeMapEntry<T>): D
     return DistanceRangeMapImpl(entries.asList())
 }
 
+fun <T> distanceRangeMapOf(entries: List<DistanceRangeMap.RangeMapEntry<T>>): DistanceRangeMap<T> {
+    return DistanceRangeMapImpl(entries)
+}
+
 /**
  * Merges all the given range maps, offsetting them by the given distances. The lists must be empty
  * or `maps` must be larger by one.
@@ -104,7 +108,7 @@ fun <T> mergeDistanceRangeMaps(
     }
 
     // Build the whole map at once to avoid redundant computations.
-    return distanceRangeMapOf(*resEntries.toTypedArray())
+    return distanceRangeMapOf(resEntries)
 }
 
 /**

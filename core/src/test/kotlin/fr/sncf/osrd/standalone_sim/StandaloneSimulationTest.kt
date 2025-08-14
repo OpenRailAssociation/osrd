@@ -175,20 +175,13 @@ class StandaloneSimulationTest {
             listOf(
                 distanceRangeMapOf(),
                 distanceRangeMapOf(
-                    *listOf(
-                            DistanceRangeMap.RangeMapEntry(0.meters, pathLength / 3.0, "Restrict1"),
-                            DistanceRangeMap.RangeMapEntry(
-                                pathLength / 3.0,
-                                pathLength * 2.0 / 3.0,
-                                "Restrict2",
-                            ),
-                            DistanceRangeMap.RangeMapEntry(
-                                pathLength * 2.0 / 3.0,
-                                pathLength,
-                                "Restrict1",
-                            ),
-                        )
-                        .toTypedArray()
+                    DistanceRangeMap.RangeMapEntry(0.meters, pathLength / 3.0, "Restrict1"),
+                    DistanceRangeMap.RangeMapEntry(
+                        pathLength / 3.0,
+                        pathLength * 2.0 / 3.0,
+                        "Restrict2",
+                    ),
+                    DistanceRangeMap.RangeMapEntry(pathLength * 2.0 / 3.0, pathLength, "Restrict1"),
                 ),
             )
 
@@ -320,22 +313,11 @@ class StandaloneSimulationTest {
             makeSafetySpeedRanges(infra, chunkPath, routes.toIdxList(), schedule, signalingRanges)
         val expected =
             distanceRangeMapOf(
-                *listOf(
-                        DistanceRangeMap.RangeMapEntry(0.meters, 50.meters, 30.kilometersPerHour),
-                        DistanceRangeMap.RangeMapEntry(50.meters, 150.meters, 10.kilometersPerHour),
-                        DistanceRangeMap.RangeMapEntry(
-                            10_200.meters,
-                            10_300.meters,
-                            30.kilometersPerHour,
-                        ),
-                        // Last buffer stop short slip range
-                        DistanceRangeMap.RangeMapEntry(
-                            10_300.meters,
-                            10_400.meters,
-                            10.kilometersPerHour,
-                        ),
-                    )
-                    .toTypedArray()
+                DistanceRangeMap.RangeMapEntry(0.meters, 50.meters, 30.kilometersPerHour),
+                DistanceRangeMap.RangeMapEntry(50.meters, 150.meters, 10.kilometersPerHour),
+                DistanceRangeMap.RangeMapEntry(10_200.meters, 10_300.meters, 30.kilometersPerHour),
+                // Last buffer stop short slip range
+                DistanceRangeMap.RangeMapEntry(10_300.meters, 10_400.meters, 10.kilometersPerHour),
             )
         assertEquals(expected, safetySpeedRanges)
     }
@@ -380,29 +362,10 @@ class StandaloneSimulationTest {
             )
         val expectedEtcsHappyPath =
             distanceRangeMapOf(
-                *listOf(
-                        DistanceRangeMap.RangeMapEntry(
-                            9_950.meters,
-                            10_050.meters,
-                            30.kilometersPerHour,
-                        ),
-                        DistanceRangeMap.RangeMapEntry(
-                            10_050.meters,
-                            10_150.meters,
-                            10.kilometersPerHour,
-                        ),
-                        DistanceRangeMap.RangeMapEntry(
-                            10_200.meters,
-                            10_300.meters,
-                            30.kilometersPerHour,
-                        ),
-                        DistanceRangeMap.RangeMapEntry(
-                            10_300.meters,
-                            10_400.meters,
-                            10.kilometersPerHour,
-                        ),
-                    )
-                    .toTypedArray()
+                DistanceRangeMap.RangeMapEntry(9_950.meters, 10_050.meters, 30.kilometersPerHour),
+                DistanceRangeMap.RangeMapEntry(10_050.meters, 10_150.meters, 10.kilometersPerHour),
+                DistanceRangeMap.RangeMapEntry(10_200.meters, 10_300.meters, 30.kilometersPerHour),
+                DistanceRangeMap.RangeMapEntry(10_300.meters, 10_400.meters, 10.kilometersPerHour),
             )
         assertEquals(expectedEtcsHappyPath, safetySpeedRangesEtcsHappyPath)
 
@@ -420,8 +383,7 @@ class StandaloneSimulationTest {
             )
         val expectedEndFullEtcs =
             distanceRangeMapOf(
-                *listOf(DistanceRangeMap.RangeMapEntry(0.meters, 150.meters, 30.kilometersPerHour))
-                    .toTypedArray()
+                DistanceRangeMap.RangeMapEntry(0.meters, 150.meters, 30.kilometersPerHour)
             )
         assertEquals(expectedEndFullEtcs, safetySpeedRangesEndFullEtcs)
 
@@ -439,8 +401,7 @@ class StandaloneSimulationTest {
             )
         val expectedEndFullEtcsExceptFinalBuffer =
             distanceRangeMapOf(
-                *listOf(DistanceRangeMap.RangeMapEntry(0.meters, 150.meters, 30.kilometersPerHour))
-                    .toTypedArray()
+                DistanceRangeMap.RangeMapEntry(0.meters, 150.meters, 30.kilometersPerHour)
             )
         assertEquals(
             expectedEndFullEtcsExceptFinalBuffer,
@@ -466,20 +427,9 @@ class StandaloneSimulationTest {
             )
         val expectedEtcsStartingBetweenPenultimateStopAndItsSignal =
             distanceRangeMapOf(
-                *listOf(
-                        DistanceRangeMap.RangeMapEntry(0.meters, 150.meters, 30.kilometersPerHour),
-                        DistanceRangeMap.RangeMapEntry(
-                            9_950.meters,
-                            10_050.meters,
-                            30.kilometersPerHour,
-                        ),
-                        DistanceRangeMap.RangeMapEntry(
-                            10_050.meters,
-                            10_150.meters,
-                            10.kilometersPerHour,
-                        ),
-                    )
-                    .toTypedArray()
+                DistanceRangeMap.RangeMapEntry(0.meters, 150.meters, 30.kilometersPerHour),
+                DistanceRangeMap.RangeMapEntry(9_950.meters, 10_050.meters, 30.kilometersPerHour),
+                DistanceRangeMap.RangeMapEntry(10_050.meters, 10_150.meters, 10.kilometersPerHour),
             )
         assertEquals(
             expectedEtcsStartingBetweenPenultimateStopAndItsSignal,
@@ -504,30 +454,11 @@ class StandaloneSimulationTest {
             )
         val expectedEtcsStartingBetweenLastStopAndBuffer =
             distanceRangeMapOf(
-                *listOf(
-                        DistanceRangeMap.RangeMapEntry(0.meters, 150.meters, 30.kilometersPerHour),
-                        DistanceRangeMap.RangeMapEntry(
-                            9_950.meters,
-                            10_050.meters,
-                            30.kilometersPerHour,
-                        ),
-                        DistanceRangeMap.RangeMapEntry(
-                            10_050.meters,
-                            10_150.meters,
-                            10.kilometersPerHour,
-                        ),
-                        DistanceRangeMap.RangeMapEntry(
-                            10_200.meters,
-                            10_300.meters,
-                            30.kilometersPerHour,
-                        ),
-                        DistanceRangeMap.RangeMapEntry(
-                            10_300.meters,
-                            10_400.meters,
-                            10.kilometersPerHour,
-                        ),
-                    )
-                    .toTypedArray()
+                DistanceRangeMap.RangeMapEntry(0.meters, 150.meters, 30.kilometersPerHour),
+                DistanceRangeMap.RangeMapEntry(9_950.meters, 10_050.meters, 30.kilometersPerHour),
+                DistanceRangeMap.RangeMapEntry(10_050.meters, 10_150.meters, 10.kilometersPerHour),
+                DistanceRangeMap.RangeMapEntry(10_200.meters, 10_300.meters, 30.kilometersPerHour),
+                DistanceRangeMap.RangeMapEntry(10_300.meters, 10_400.meters, 10.kilometersPerHour),
             )
         assertEquals(
             expectedEtcsStartingBetweenLastStopAndBuffer,
