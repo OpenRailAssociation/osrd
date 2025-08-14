@@ -42,9 +42,9 @@ import TimetableItemActions from '../TimetableItemActions';
 import useOccurrences from './hooks/useOccurrences';
 import OccurrenceItem from './OccurrenceItem';
 import { formatPacedTrainWithDetailsToPacedTrainPayload } from '../../ManageTimetableItem/helpers/formatTimetableItemPayload';
-import { TIMETABLE_ITEM_DELTA, TRAIN_MAIN_CATEGORY_CLASS } from '../consts';
+import { TIMETABLE_ITEM_DELTA } from '../consts';
 import type { PacedTrainWithDetails } from '../types';
-import { formatTrainDuration } from '../utils';
+import { formatTrainDuration, getTrainCategoryClassName } from '../utils';
 import useOccurrenceActions from './hooks/useOccurrenceActions';
 
 type PacedTrainItemProps = {
@@ -211,17 +211,6 @@ const PacedTrainItem = ({
       ? subCategories.find((option) => option.code === category.sub_category_code)
       : undefined;
 
-  const getTrainCategoryClassName = (
-    trainCategory: PacedTrain['category'],
-    type: 'bg' | 'text'
-  ) => {
-    if (!trainCategory) return 'None';
-    if (isMainCategory(trainCategory)) {
-      return `train-category-${type}-${TRAIN_MAIN_CATEGORY_CLASS[trainCategory.main_category]}`;
-    }
-    return 'None';
-  };
-
   const worstCase = useMemo(
     () => getOccurrencesWorstStatus(pacedTrain),
     [pacedTrain.summary, pacedTrain.exceptions]
@@ -267,10 +256,10 @@ const PacedTrainItem = ({
           )}
           <div
             data-testid="occurrences-count"
-            className={cx('occurrences-count', {
-              [getTrainCategoryClassName(pacedTrain.category, 'bg')]:
-                category !== undefined && isMainCategory(category),
-            })}
+            className={cx(
+              'occurrences-count',
+              getTrainCategoryClassName(pacedTrain.category, 'bg')
+            )}
             style={{ backgroundColor: currentSubCategory?.color }}
           >
             {occurrencesCount}
@@ -284,10 +273,7 @@ const PacedTrainItem = ({
           <div className="train-info">
             <span
               data-testid="paced-train-name"
-              className={cx('train-name', {
-                [getTrainCategoryClassName(pacedTrain.category, 'text')]:
-                  category !== undefined && isMainCategory(category),
-              })}
+              className={cx('train-name', getTrainCategoryClassName(pacedTrain.category, 'text'))}
               style={{ color: currentSubCategory?.color }}
             >
               {pacedTrain.name}

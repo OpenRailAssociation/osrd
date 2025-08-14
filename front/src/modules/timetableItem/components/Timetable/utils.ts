@@ -7,11 +7,12 @@ import type {
   TrainMainCategories,
   TrainSchedule,
 } from 'common/api/osrdEditoastApi';
+import isMainCategory from 'modules/rollingStock/helpers/category';
 import type { TimetableItem, TimetableItemId } from 'reducers/osrdconf/types';
 import type { Duration } from 'utils/duration';
 import { isPacedTrainResponseWithPacedTrainId } from 'utils/trainId';
 
-import { specialCodeDictionary } from './consts';
+import { specialCodeDictionary, TRAIN_MAIN_CATEGORY_CLASS } from './consts';
 import type { TimetableItemWithDetails } from './types';
 
 /** Filter timetable items by their names and labels */
@@ -89,3 +90,13 @@ export function extractCategoryId(fullId: string): TrainMainCategories | SubCate
 
   throw new Error(`Unknown category prefix: ${prefix}`);
 }
+export const getTrainCategoryClassName = (
+  trainCategory: PacedTrain['category'],
+  type: 'bg' | 'text'
+) => {
+  if (!trainCategory) return `train-category-${type}-None`;
+  if (isMainCategory(trainCategory)) {
+    return `train-category-${type}-${TRAIN_MAIN_CATEGORY_CLASS[trainCategory.main_category]}`;
+  }
+  return null;
+};
