@@ -171,6 +171,11 @@
       "LiveryMultipartError": "Requête multipart invalide pour upload de livrée",
       "NameAlreadyUsed": "Un matériel roulant avec le nom '{{name}}' existe déjà"
     },
+    "round_trips": {
+      "Database": "Erreur interne (base de données)",
+      "DuplicateTrainIds": "Les informations transmises contiennent des identifiants de train en double, ce qui n'est pas autorisé",
+      "TimetableNotFound": "Grille horaire '{{timetable_id}}' non trouvée"
+    },
     "scenario": {
       "Database": "Erreur interne (base de données)",
       "InfraNotFound": "Infrastructure '{{infra_id}}' non trouvée",

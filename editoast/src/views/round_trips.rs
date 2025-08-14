@@ -1,8 +1,10 @@
 use crate::error::Result;
 use crate::models;
+use crate::models::Exists;
 use crate::models::Model;
 use crate::models::TrainScheduleRoundTrips;
 use crate::models::round_trips::PacedTrainRoundTrips;
+use crate::models::timetable::Timetable;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
 use crate::views::pagination::PaginationQueryParams;
@@ -17,6 +19,8 @@ use axum::extract::State;
 use axum::response::IntoResponse;
 use database::DbConnectionPoolV2;
 use diesel_async::scoped_futures::ScopedFutureExt;
+use editoast_derive::EditoastError;
+use itertools::Itertools;
 use models::CreateBatch;
 use serde::Deserialize;
 use serde::Serialize;
@@ -24,6 +28,23 @@ use std::collections::HashSet;
 use utoipa::ToSchema;
 use utoipa::openapi::RefOr;
 use utoipa::openapi::Schema;
+
+#[derive(Debug, thiserror::Error, EditoastError, derive_more::From)]
+#[editoast_error(base_id = "round_trips")]
+enum RoundTripsError {
+    #[error("Timetable '{timetable_id}' not found")]
+    #[editoast_error(status = 404)]
+    TimetableNotFound { timetable_id: i64 },
+
+    #[error("The payload contains duplicate train IDs which is not allowed")]
+    #[editoast_error(status = 400)]
+    DuplicateTrainIds,
+
+    #[error("Database error")]
+    #[editoast_error(status = 500)]
+    #[from(forward)]
+    Database(editoast_models::model::Error),
+}
 
 /// Represents a collection of round trips and one-way
 #[editoast_derive::openapi_schema]
@@ -36,6 +57,20 @@ pub(in crate::views) struct RoundTrips {
     #[serde(default)]
     #[schema(schema_with = schema_round_trips)]
     round_trips: Vec<(i64, i64)>,
+}
+
+impl RoundTrips {
+    /// Check if it contains duplicate ids in both one-ways and round trips
+    fn has_duplicates(&self) -> bool {
+        // Using sort and dedup is faster than using a HashSet
+        let nb_ids = self.one_ways.len() + self.round_trips.len() * 2;
+        let mut ids = Vec::with_capacity(nb_ids);
+        ids.extend(self.one_ways.iter().copied());
+        ids.extend(self.round_trips.iter().flat_map(|&(l, r)| [l, r]));
+        ids.sort_unstable();
+        let dedup_count = ids.iter().dedup().count();
+        dedup_count != nb_ids
+    }
 }
 
 // We need to implement `ToSchema` manually to handle tuple arity correctly
@@ -77,6 +112,10 @@ pub(in crate::views) async fn post_train_schedules(
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
         return Err(AuthorizationError::Forbidden.into());
+    }
+
+    if round_trips.has_duplicates() {
+        return Err(RoundTripsError::DuplicateTrainIds.into());
     }
 
     let to_remove = round_trips
@@ -138,6 +177,10 @@ pub(in crate::views) async fn post_paced_trains(
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
         return Err(AuthorizationError::Forbidden.into());
+    }
+
+    if round_trips.has_duplicates() {
+        return Err(RoundTripsError::DuplicateTrainIds.into());
     }
 
     let to_remove = round_trips
@@ -269,6 +312,11 @@ pub(in crate::views) async fn list_train_schedules(
 
     let conn = &mut db_pool.get().await?;
 
+    Timetable::exists_or_fail(conn, timetable_id, || RoundTripsError::TimetableNotFound {
+        timetable_id,
+    })
+    .await?;
+
     let (round_trips, stats) =
         TrainScheduleRoundTrips::list_paginated(conn, timetable_id, page, page_size).await?;
 
@@ -310,6 +358,11 @@ pub(in crate::views) async fn list_paced_trains(
 
     let conn = &mut db_pool.get().await?;
 
+    Timetable::exists_or_fail(conn, timetable_id, || RoundTripsError::TimetableNotFound {
+        timetable_id,
+    })
+    .await?;
+
     let (round_trips, stats) =
         PacedTrainRoundTrips::list_paginated(conn, timetable_id, page, page_size).await?;
 
@@ -325,4 +378,34 @@ pub(in crate::views) async fn list_paced_trains(
         });
 
     Ok(Json(RoundTripsPage { results, stats }))
+}
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn test_round_trips_duplicates() {
+        use super::RoundTrips;
+
+        let round_trips = RoundTrips {
+            one_ways: (1..10_000).collect(),
+            round_trips: (10_000..20_000).step_by(2).map(|i| (i, i + 1)).collect(),
+        };
+        assert!(!round_trips.has_duplicates());
+
+        let round_trips_with_duplicates = RoundTrips {
+            one_ways: (1..10_000).chain(std::iter::once(424)).collect(),
+            round_trips: (10_000..20_000).step_by(2).map(|i| (i, i + 1)).collect(),
+        };
+        assert!(round_trips_with_duplicates.has_duplicates());
+
+        let round_trips_with_duplicates = RoundTrips {
+            one_ways: (1..10_000).collect(),
+            round_trips: (10_000..20_000)
+                .step_by(2)
+                .chain(std::iter::once(424))
+                .map(|i| (i, i + 1))
+                .collect(),
+        };
+        assert!(round_trips_with_duplicates.has_duplicates());
+    }
 }
