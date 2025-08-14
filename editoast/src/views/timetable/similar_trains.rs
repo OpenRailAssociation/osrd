@@ -179,6 +179,7 @@ pub(in crate::views) async fn similar_trains(
         speed_limit_tag_ids,
         valkey,
         core_client,
+        config,
         ..
     }): State<AppState>,
     Json(Request {
@@ -280,6 +281,7 @@ pub(in crate::views) async fn similar_trains(
         &infra,
         &new_train,
         candidate_schedules,
+        config.app_version.as_deref(),
     )
     .await?;
 
@@ -535,6 +537,7 @@ async fn simulate_past_trains(
     infra: &Infra,
     new_train: &new_train::NewTrain,
     candidate_schedules: Vec<models::TrainSchedule>,
+    app_version: Option<&str>,
 ) -> Result<Vec<past_train::PastTrain>> {
     let rolling_stock_names = candidate_schedules
         .iter()
@@ -559,6 +562,7 @@ async fn simulate_past_trains(
             infra,
             &candidate_schedules,
             &rolling_stocks,
+            app_version,
         )
         .await?;
         paths
@@ -593,6 +597,7 @@ async fn simulate_past_trains(
         core_client,
         &mut valkey_conn,
         &path_properties_requests,
+        app_version,
     )
     .await?;
 

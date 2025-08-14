@@ -40,7 +40,6 @@ use crate::models::RollingStock;
 use crate::valkey_utils::ValkeyConnection;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
-use crate::views::get_app_version;
 use crate::views::path::PathfindingError;
 use crate::views::path::path_item_cache::PathItemCache;
 
@@ -76,9 +75,14 @@ impl PathfindingInput {
     ///   - The path entry is different
     ///   - The infrastructure has been modified
     ///   - The application has been updated (the algorithm or payloads may have changed)
-    fn compute_path_hash_with_versioning(&self, infra: i64, infra_version: i64) -> String {
-        // Retrieve OSRD Version
-        let osrd_version = get_app_version().unwrap_or_default();
+    fn compute_path_hash_with_versioning(
+        &self,
+        infra: i64,
+        infra_version: i64,
+        app_version: Option<&str>,
+    ) -> String {
+        // Use provided app version or default
+        let osrd_version = app_version.unwrap_or("default");
         let mut hasher = DefaultHasher::new();
         self.hash(&mut hasher);
         let hash_path_input = hasher.finish();
@@ -188,6 +192,7 @@ pub(in crate::views) async fn post(
         db_pool,
         valkey,
         core_client,
+        config,
         ..
     }): State<AppState>,
     Extension(auth): AuthenticationExt,
@@ -218,7 +223,15 @@ pub(in crate::views) async fn post(
     .await?;
 
     Ok(Json(
-        pathfinding_blocks(conn, &mut valkey_conn, core_client, &infra, path_input).await?,
+        pathfinding_blocks(
+            conn,
+            &mut valkey_conn,
+            core_client,
+            &infra,
+            path_input,
+            config.app_version.as_deref(),
+        )
+        .await?,
     ))
 }
 
@@ -229,8 +242,11 @@ async fn pathfinding_blocks(
     core: Arc<CoreClient>,
     infra: &Infra,
     path_input: PathfindingInput,
+    app_version: Option<&str>,
 ) -> Result<PathfindingResult> {
-    let mut path = pathfinding_blocks_batch(conn, valkey_conn, core, infra, &[path_input]).await?;
+    let mut path =
+        pathfinding_blocks_batch(conn, valkey_conn, core, infra, &[path_input], app_version)
+            .await?;
     Ok(Arc::unwrap_or_clone(path.pop().unwrap()))
 }
 
@@ -241,6 +257,7 @@ async fn pathfinding_blocks_batch(
     core: Arc<CoreClient>,
     infra: &Infra,
     pathfinding_inputs: &[PathfindingInput],
+    app_version: Option<&str>,
 ) -> Result<Vec<Arc<PathfindingResult>>> {
     let mut hash_to_path_indexes: HashMap<String, Vec<usize>> = HashMap::default();
     let mut path_request_map: HashMap<String, PathfindingInput> = HashMap::default();
@@ -248,7 +265,7 @@ async fn pathfinding_blocks_batch(
     let mut pathfinding_results = vec![initial_value; pathfinding_inputs.len()];
     for (index, path_input) in pathfinding_inputs.iter().enumerate() {
         let pathfinding_hash =
-            path_input.compute_path_hash_with_versioning(infra.id, infra.version);
+            path_input.compute_path_hash_with_versioning(infra.id, infra.version, app_version);
         hash_to_path_indexes
             .entry(pathfinding_hash.clone())
             .or_default()
@@ -398,6 +415,7 @@ pub async fn pathfinding_from_train<T: TrainScheduleLike>(
     core: Arc<CoreClient>,
     infra: &Infra,
     train_schedule: T,
+    app_version: Option<&str>,
 ) -> Result<PathfindingResult> {
     let rolling_stock: Vec<_> =
         RollingStock::retrieve(conn.clone(), train_schedule.rolling_stock_name().to_owned())
@@ -407,10 +425,18 @@ pub async fn pathfinding_from_train<T: TrainScheduleLike>(
             .collect();
 
     Ok(Arc::unwrap_or_clone(
-        pathfinding_from_train_batch(conn, valkey, core, infra, &[train_schedule], &rolling_stock)
-            .await?
-            .pop()
-            .unwrap(),
+        pathfinding_from_train_batch(
+            conn,
+            valkey,
+            core,
+            infra,
+            &[train_schedule],
+            &rolling_stock,
+            app_version,
+        )
+        .await?
+        .pop()
+        .unwrap(),
     ))
 }
 
@@ -422,6 +448,7 @@ pub async fn pathfinding_from_train_batch<T: TrainScheduleLike>(
     infra: &Infra,
     train_schedules: &[T],
     rolling_stocks: &[schemas::RollingStock],
+    app_version: Option<&str>,
 ) -> Result<Vec<Arc<PathfindingResult>>> {
     let initial_value = Arc::new(PathfindingResult::Failure(
         PathfindingFailure::PathfindingInputError(PathfindingInputError::NotEnoughPathItems),
@@ -474,10 +501,11 @@ pub async fn pathfinding_from_train_batch<T: TrainScheduleLike>(
         to_compute_index.push(index);
     }
 
-    for (index, res) in pathfinding_blocks_batch(conn, valkey, core, infra, &to_compute)
-        .await?
-        .into_iter()
-        .enumerate()
+    for (index, res) in
+        pathfinding_blocks_batch(conn, valkey, core, infra, &to_compute, app_version)
+            .await?
+            .into_iter()
+            .enumerate()
     {
         results[to_compute_index[index]] = res;
     }

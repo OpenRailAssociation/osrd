@@ -276,6 +276,7 @@ pub struct ElectricalProfileSetIdQueryParam {
 )]
 pub(in crate::views) async fn simulation(
     State(AppState {
+        config,
         valkey: valkey_client,
         core_client,
         db_pool,
@@ -327,6 +328,7 @@ pub(in crate::views) async fn simulation(
         &[train_schedule],
         &infra,
         electrical_profile_set_id,
+        config.app_version.as_deref(),
     )
     .await?
     .pop()
@@ -347,6 +349,7 @@ pub(in crate::views) async fn simulation(
 )]
 pub(in crate::views) async fn etcs_braking_curves(
     State(AppState {
+        config,
         valkey: valkey_client,
         core_client,
         db_pool,
@@ -398,6 +401,7 @@ pub(in crate::views) async fn etcs_braking_curves(
         std::slice::from_ref(&train_schedule),
         &infra,
         electrical_profile_set_id,
+        config.app_version.as_deref(),
     )
     .await?
     .pop()
@@ -491,6 +495,7 @@ pub(in crate::views) struct SimulationBatchForm {
 )]
 pub(in crate::views) async fn simulation_summary(
     State(AppState {
+        config,
         db_pool,
         valkey: valkey_client,
         core_client: core,
@@ -541,6 +546,7 @@ pub(in crate::views) async fn simulation_summary(
         &train_schedules,
         &infra,
         electrical_profile_set_id,
+        config.app_version.as_deref(),
     )
     .await?;
 
@@ -567,6 +573,7 @@ pub(in crate::views) async fn simulation_summary(
 )]
 pub(in crate::views) async fn get_path(
     State(AppState {
+        config,
         db_pool,
         valkey: valkey_client,
         core_client: core,
@@ -608,7 +615,15 @@ pub(in crate::views) async fn get_path(
         })
         .await?;
     Ok(Json(
-        pathfinding_from_train(conn, &mut valkey_conn, core, &infra, train_schedule).await?,
+        pathfinding_from_train(
+            conn,
+            &mut valkey_conn,
+            core,
+            &infra,
+            train_schedule,
+            config.app_version.as_deref(),
+        )
+        .await?,
     ))
 }
 
@@ -629,6 +644,7 @@ pub(in crate::views) async fn get_path(
 )]
 pub(in crate::views) async fn project_path(
     State(AppState {
+        config,
         db_pool,
         valkey: valkey_client,
         core_client,
@@ -680,6 +696,7 @@ pub(in crate::views) async fn project_path(
         infra,
         &trains_schedules,
         electrical_profile_set_id,
+        config.app_version.as_deref(),
     )
     .await?;
 
@@ -705,6 +722,7 @@ pub(in crate::views) async fn project_path_op(
         db_pool,
         valkey: valkey_client,
         core_client,
+        config,
         ..
     }): State<AppState>,
     Extension(auth): AuthenticationExt,
@@ -780,6 +798,7 @@ pub(in crate::views) async fn project_path_op(
         operational_points_projection,
         infra,
         electrical_profile_set_id,
+        config.app_version.as_deref(),
     )
     .await?;
 
@@ -806,6 +825,7 @@ pub(in crate::views) async fn occupancy_blocks(
         db_pool,
         valkey: valkey_client,
         core_client,
+        config,
         ..
     }): State<AppState>,
     Extension(auth): AuthenticationExt,
@@ -854,6 +874,7 @@ pub(in crate::views) async fn occupancy_blocks(
         infra,
         &train_schedules,
         electrical_profile_set_id,
+        config.app_version.as_deref(),
     )
     .await?;
 
@@ -903,6 +924,7 @@ pub(in crate::views) struct TrackOccupancy {
 )]
 pub(in crate::views) async fn track_occupancy(
     State(AppState {
+        config,
         db_pool,
         valkey,
         core_client,
@@ -964,6 +986,7 @@ pub(in crate::views) async fn track_occupancy(
         &train_schedules,
         &infra,
         electrical_profile_set_id,
+        config.app_version.as_deref(),
     )
     .await?;
 

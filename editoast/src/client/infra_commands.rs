@@ -151,6 +151,7 @@ pub async fn clear_infra(
     args: ClearArgs,
     db_pool: Arc<DbConnectionPoolV2>,
     valkey_config: ValkeyConfig,
+    app_version: Option<&str>,
 ) -> anyhow::Result<()> {
     let mut infras = vec![];
     if args.infra_ids.is_empty() {
@@ -169,7 +170,8 @@ pub async fn clear_infra(
             infra.name.clone().bold(),
             infra.id
         );
-        build_valkey_pool_and_invalidate_all_cache(valkey_config.clone(), infra.id).await?;
+        build_valkey_pool_and_invalidate_all_cache(valkey_config.clone(), infra.id, app_version)
+            .await?;
         infra.clear(&mut db_pool.get().await?).await?;
         println!("✅ Infra {}[{}] cleared!", infra.name.bold(), infra.id);
     }
@@ -182,6 +184,7 @@ pub async fn generate_infra(
     args: GenerateArgs,
     db_pool: Arc<DbConnectionPoolV2>,
     valkey_config: ValkeyConfig,
+    app_version: Option<&str>,
 ) -> anyhow::Result<()> {
     let mut infras = vec![];
     if args.infra_ids.is_empty() {
@@ -204,7 +207,12 @@ pub async fn generate_infra(
             .refresh(db_pool.clone(), args.force, &infra_cache)
             .await?
         {
-            build_valkey_pool_and_invalidate_all_cache(valkey_config.clone(), infra.id).await?;
+            build_valkey_pool_and_invalidate_all_cache(
+                valkey_config.clone(),
+                infra.id,
+                app_version,
+            )
+            .await?;
             println!("✅ Infra {}[{}] generated!", infra.name.bold(), infra.id);
         } else {
             println!(
@@ -224,6 +232,7 @@ pub async fn generate_infra(
 async fn build_valkey_pool_and_invalidate_all_cache(
     valkey_config: ValkeyConfig,
     infra_id: i64,
+    app_version: Option<&str>,
 ) -> anyhow::Result<()> {
     let valkey = ValkeyClient::new(valkey_config.into())?;
     let mut conn = valkey.get_connection().await?;
@@ -231,6 +240,7 @@ async fn build_valkey_pool_and_invalidate_all_cache(
         &mut conn,
         &MapLayers::default().layers.keys().cloned().collect(),
         infra_id,
+        app_version,
     )
     .await
     .map_err(|e| anyhow::anyhow!("Couldn't refresh valkey cache layers: {e}"))

@@ -567,6 +567,7 @@ impl FromStr for TrainId {
 )]
 pub(in crate::views) async fn conflicts(
     State(AppState {
+        config,
         db_pool,
         valkey: valkey_client,
         core_client,
@@ -616,6 +617,7 @@ pub(in crate::views) async fn conflicts(
         &occurrence_trains,
         &infra,
         electrical_profile_set_id,
+        config.app_version.as_deref(),
     )
     .await?
     .into_iter()
@@ -628,6 +630,7 @@ pub(in crate::views) async fn conflicts(
         &trains,
         &infra,
         electrical_profile_set_id,
+        config.app_version.as_deref(),
     )
     .await?
     .into_iter()
@@ -741,6 +744,7 @@ pub(in crate::views) async fn requirements(
         db_pool,
         valkey: valkey_client,
         core_client,
+        config,
         ..
     }): State<AppState>,
     Extension(auth): AuthenticationExt,
@@ -801,6 +805,7 @@ pub(in crate::views) async fn requirements(
         &trains,
         &infra,
         electrical_profile_set_id,
+        config.app_version.as_deref(),
     )
     .await?
     .into_iter()

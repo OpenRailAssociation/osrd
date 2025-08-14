@@ -26,7 +26,6 @@ use utoipa::ToSchema;
 
 use super::path::path_item_cache::PathItemCache;
 use crate::ValkeyClient;
-use crate::client::get_app_version;
 use crate::models::infra::Infra;
 use crate::views::path::pathfinding::PathfindingResult;
 use crate::views::path::projection::PathProjection;
@@ -159,8 +158,9 @@ impl TrainSimulationDetails {
         infra_id: i64,
         infra_version: i64,
         path_projection_tracks: &[TrackRange],
+        app_version: Option<&str>,
     ) -> String {
-        let osrd_version = get_app_version().unwrap_or_default();
+        let osrd_version = app_version.unwrap_or_default();
         let mut hasher = DefaultHasher::new();
         self.positions.hash(&mut hasher);
         self.times.hash(&mut hasher);
@@ -178,8 +178,9 @@ impl TrainSimulationDetails {
         path_projection_tracks: &[TrackRange],
         path_routes: &[Identifier],
         path_blocks: &[Identifier],
+        app_version: Option<&str>,
     ) -> String {
-        let osrd_version = get_app_version().unwrap_or_default();
+        let osrd_version = app_version.unwrap_or_default();
         let mut hasher = DefaultHasher::new();
         self.signal_critical_positions.hash(&mut hasher);
         self.zone_updates.hash(&mut hasher);
@@ -345,6 +346,7 @@ pub fn linear_interpolate(a_x: u64, b_x: u64, a_y: u64, b_y: u64, x: u64) -> u64
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 pub async fn compute_projected_train_paths<T: TrainScheduleLike>(
     conn: &mut DbConnection,
     core_client: Arc<CoreClient>,
@@ -353,6 +355,7 @@ pub async fn compute_projected_train_paths<T: TrainScheduleLike>(
     infra: &Infra,
     train_schedules: &[T],
     electrical_profile_set_id: Option<i64>,
+    app_version: Option<&str>,
 ) -> Result<Vec<Arc<SpaceTimeCurves>>> {
     let path_projection = PathProjection::new(&track_section_ranges);
     let mut valkey_conn = valkey_client.get_connection().await?;
@@ -365,6 +368,7 @@ pub async fn compute_projected_train_paths<T: TrainScheduleLike>(
         train_schedules,
         infra,
         electrical_profile_set_id,
+        app_version,
     )
     .await?;
 
@@ -382,6 +386,7 @@ pub async fn compute_projected_train_paths<T: TrainScheduleLike>(
                         infra.id,
                         infra.version,
                         &track_section_ranges,
+                        app_version,
                     ),
                 )
             })
@@ -638,6 +643,7 @@ pub async fn compute_projected_train_path_op<T: TrainScheduleLike>(
     operational_points_projection: OperationalPointProjection,
     infra: &Infra,
     electrical_profile_set_id: Option<i64>,
+    app_version: Option<&str>,
 ) -> Result<Vec<Arc<SpaceTimeCurves>>> {
     let simulations = train_simulation_batch(
         conn,
@@ -646,6 +652,7 @@ pub async fn compute_projected_train_path_op<T: TrainScheduleLike>(
         train_schedules,
         infra,
         electrical_profile_set_id,
+        app_version,
     )
     .await?;
 

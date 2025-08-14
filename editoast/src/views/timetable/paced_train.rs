@@ -247,6 +247,7 @@ struct SimulationContext {
 )]
 pub(in crate::views) async fn simulation_summary(
     State(AppState {
+        config,
         db_pool,
         valkey: valkey_client,
         core_client,
@@ -321,6 +322,7 @@ pub(in crate::views) async fn simulation_summary(
         &schedules,
         &infra,
         electrical_profile_set_id,
+        config.app_version.as_deref(),
     )
     .await?;
 
@@ -379,6 +381,7 @@ pub(in crate::views) async fn get_path(
         db_pool,
         valkey: valkey_client,
         core_client,
+        config,
         ..
     }): State<AppState>,
     Extension(auth): AuthenticationExt,
@@ -393,7 +396,7 @@ pub(in crate::views) async fn get_path(
     if !authorized {
         return Err(AuthorizationError::Forbidden.into());
     }
-    let conn = &mut db_pool.get().await?;
+    let conn = db_pool.get().await?;
     let mut valkey_conn = valkey_client.get_connection().await?;
 
     let infra = Infra::retrieve_or_fail(conn.clone(), infra_id, || {
@@ -431,11 +434,12 @@ pub(in crate::views) async fn get_path(
 
     Ok(Json(
         pathfinding_from_train(
-            db_pool.get().await?,
+            conn,
             &mut valkey_conn,
             core_client,
             &infra,
             train_schedule,
+            config.app_version.as_deref(),
         )
         .await?,
     ))
@@ -459,6 +463,7 @@ pub struct ElectricalProfileSetIdQueryParam {
 )]
 pub(in crate::views) async fn simulation(
     State(AppState {
+        config,
         valkey: valkey_client,
         core_client,
         db_pool,
@@ -524,6 +529,7 @@ pub(in crate::views) async fn simulation(
         &[train_schedule],
         &infra,
         electrical_profile_set_id,
+        config.app_version.as_deref(),
     )
     .await?
     .pop()
@@ -566,6 +572,7 @@ pub(in crate::views) async fn project_path(
         db_pool,
         valkey: valkey_client,
         core_client,
+        config,
         ..
     }): State<AppState>,
     Extension(auth): AuthenticationExt,
@@ -636,6 +643,7 @@ pub(in crate::views) async fn project_path(
             .map(|c| c.train_schedule.clone())
             .collect::<Vec<_>>(),
         electrical_profile_set_id,
+        config.app_version.as_deref(),
     )
     .await?
     .into_iter()
@@ -699,6 +707,7 @@ pub(in crate::views) async fn project_path_op(
         db_pool,
         valkey: valkey_client,
         core_client,
+        config,
         ..
     }): State<AppState>,
     Extension(auth): AuthenticationExt,
@@ -795,6 +804,7 @@ pub(in crate::views) async fn project_path_op(
         operational_points_projection,
         infra,
         electrical_profile_set_id,
+        config.app_version.as_deref(),
     )
     .await?;
 
@@ -860,6 +870,7 @@ pub(in crate::views) async fn occupancy_blocks(
         db_pool,
         valkey: valkey_client,
         core_client,
+        config,
         ..
     }): State<AppState>,
     Extension(auth): AuthenticationExt,
@@ -932,6 +943,7 @@ pub(in crate::views) async fn occupancy_blocks(
         infra,
         &train_schedules,
         electrical_profile_set_id,
+        config.app_version.as_deref(),
     )
     .await?;
 

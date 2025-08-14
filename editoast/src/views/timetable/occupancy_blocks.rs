@@ -67,6 +67,7 @@ pub(super) async fn compute_batch_signal_updates<'a>(
     Ok(response.signal_updates)
 }
 
+#[allow(clippy::too_many_arguments)]
 pub(super) async fn compute_occupancy_blocks<T: TrainScheduleLike>(
     conn: &mut DbConnection,
     core_client: Arc<CoreClient>,
@@ -75,6 +76,7 @@ pub(super) async fn compute_occupancy_blocks<T: TrainScheduleLike>(
     infra: &Infra,
     trains_schedules: &[T],
     electrical_profile_set_id: Option<i64>,
+    app_version: Option<&str>,
 ) -> Result<Vec<Arc<OccupancyBlocks>>> {
     let mut valkey_conn = valkey_client.get_connection().await?;
 
@@ -86,6 +88,7 @@ pub(super) async fn compute_occupancy_blocks<T: TrainScheduleLike>(
         trains_schedules,
         infra,
         electrical_profile_set_id,
+        app_version,
     )
     .await?;
 
@@ -105,6 +108,7 @@ pub(super) async fn compute_occupancy_blocks<T: TrainScheduleLike>(
                         &path.track_section_ranges,
                         &path.routes,
                         &path.blocks,
+                        app_version,
                     ),
                 )
             })
