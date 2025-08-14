@@ -6,7 +6,7 @@ use strum::EnumIter;
 use strum::EnumString;
 use utoipa::ToSchema;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, derive_more::From)]
 pub enum Subject {
     User(User),
     Group(Group),
@@ -57,16 +57,16 @@ impl AsRef<Group> for Subject {
 }
 
 #[derive(
-    fga::Type, fga::User, fga::Object, derive_more::FromStr, Debug, Clone, PartialEq, Eq, Hash,
+    fga::Type, fga::User, fga::Object, derive_more::FromStr, Debug, Clone, Copy, PartialEq, Eq, Hash,
 )]
 pub struct User(pub i64);
 
 #[derive(
-    fga::Type, fga::User, fga::Object, derive_more::FromStr, Debug, Clone, PartialEq, Eq, Hash,
+    fga::Type, fga::User, fga::Object, derive_more::FromStr, Debug, Clone, Copy, PartialEq, Eq, Hash,
 )]
 pub struct Group(pub i64);
 
-#[derive(fga::Type, fga::User, fga::Object, derive_more::FromStr, Debug, Clone)]
+#[derive(fga::Type, fga::User, fga::Object, derive_more::FromStr, Debug, Clone, Copy)]
 pub struct Infra(pub i64);
 
 #[editoast_derive::openapi_schema]
