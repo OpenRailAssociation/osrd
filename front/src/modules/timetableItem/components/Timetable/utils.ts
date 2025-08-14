@@ -13,7 +13,7 @@ import type { Duration } from 'utils/duration';
 import { isPacedTrainResponseWithPacedTrainId } from 'utils/trainId';
 
 import { specialCodeDictionary, TRAIN_MAIN_CATEGORY_CLASS } from './consts';
-import type { TimetableItemWithDetails } from './types';
+import type { SimulationSummary, TimetableItemWithDetails } from './types';
 
 /** Filter timetable items by their names and labels */
 export const keepItem = (name: string | undefined, labels: string[], searchString: string) => {
@@ -99,4 +99,19 @@ export const getTrainCategoryClassName = (
     return `train-category-${type}-${TRAIN_MAIN_CATEGORY_CLASS[trainCategory.main_category]}`;
   }
   return null;
+};
+
+// TODO: Reason received when a pathfinding failed. Remove this when issue #12772 is resolved.
+export const isValidPathfinding = (summaryTrain: SimulationSummary | undefined) => {
+  if (!summaryTrain) return false;
+  if ('invalidReason' in summaryTrain) {
+    return ![
+      'pathfinding_failure',
+      'not_found_in_blocks',
+      'not_found_in_routes',
+      'not_found_in_tracks',
+      'incompatible_constraints',
+    ].includes(summaryTrain.invalidReason);
+  }
+  return true;
 };

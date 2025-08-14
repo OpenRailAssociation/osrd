@@ -18,7 +18,11 @@ import type {
   TrainScheduleId,
   TrainScheduleWithTrainId,
 } from 'reducers/osrdconf/types';
-import { updateTrainIdUsedForProjection, updateSelectedTrainId } from 'reducers/simulationResults';
+import {
+  updateTrainIdUsedForProjection,
+  updateSelectedTrainId,
+  updateProjectionType,
+} from 'reducers/simulationResults';
 import { useAppDispatch } from 'store';
 import { addDurationToDate, Duration } from 'utils/duration';
 import { castErrorToFailure } from 'utils/error';
@@ -31,7 +35,12 @@ import ArrivalTimeLoader from './ArrivalTimeLoader';
 import { TIMETABLE_ITEM_DELTA, TRAIN_MAIN_CATEGORY_CLASS } from './consts';
 import TimetableItemActions from './TimetableItemActions';
 import type { TrainScheduleWithDetails } from './types';
-import { formatFullDate, formatTrainDuration, roundAndFormatToNearestMinute } from './utils';
+import {
+  formatFullDate,
+  formatTrainDuration,
+  isValidPathfinding,
+  roundAndFormatToNearestMinute,
+} from './utils';
 
 type TrainScheduleItemProps = {
   isInSelection: boolean;
@@ -149,6 +158,7 @@ const TrainScheduleItem = ({
 
   const selectPathProjection = async () => {
     dispatch(updateTrainIdUsedForProjection(train.id));
+    if (!summary?.isValid) dispatch(updateProjectionType('operationalPointProjection'));
   };
 
   const arrivalTime = summary?.isValid
@@ -289,7 +299,7 @@ const TrainScheduleItem = ({
         duplicateTimetableItem={duplicateTrain}
         editTimetableItem={() => selectTrainToEdit(train)}
         deleteTimetableItem={deleteTrain}
-        isTimetableItemValid={summary?.isValid}
+        canBeUsedForProjection={isValidPathfinding(summary)}
       />
     </div>
   );

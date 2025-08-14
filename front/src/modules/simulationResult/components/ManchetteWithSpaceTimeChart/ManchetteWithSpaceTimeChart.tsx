@@ -145,6 +145,13 @@ const ManchetteWithSpaceTimeChartWrapper = ({
     initialDepartureTime: Date;
   }>();
 
+  const isTimetableItemValid = useMemo(() => {
+    const timetableItemUsedForProjectionWithDetails = timetableItemsWithDetails?.find(
+      (item) => item.id === selectedProjectionId
+    );
+    return timetableItemUsedForProjectionWithDetails?.summary?.isValid ?? false;
+  }, [timetableItemsWithDetails, selectedProjectionId]);
+
   const spaceTimeChartRef = useRef<HTMLDivElement>(null);
 
   const [waypointsPanelIsOpen, setWaypointsPanelIsOpen] = useState(false);
@@ -630,6 +637,7 @@ const ManchetteWithSpaceTimeChartWrapper = ({
               settings={settings}
               onChange={setSettings}
               onClose={() => setShowSettingsPanel(false)}
+              isTimetableItemValid={isTimetableItemValid}
             />
           )}
 

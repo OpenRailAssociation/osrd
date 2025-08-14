@@ -322,7 +322,7 @@ const PacedTrainItem = ({
               'sm'
             );
           }}
-          isTimetableItemValid={summary?.isValid}
+          canBeUsedForProjection={summary?.isValid}
           showResetExceptionsButton={pacedTrain.exceptions.length > 0}
           resetAllExceptions={() => {
             openModal(

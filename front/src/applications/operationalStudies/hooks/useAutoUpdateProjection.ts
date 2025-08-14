@@ -4,6 +4,7 @@ import { useSelector } from 'react-redux';
 
 import type { InfraWithState } from 'common/api/osrdEditoastApi';
 import type { TimetableItemWithDetails } from 'modules/timetableItem/components/Timetable/types';
+import { isValidPathfinding } from 'modules/timetableItem/components/Timetable/utils';
 import type { TimetableItemId } from 'reducers/osrdconf/types';
 import { updateSelectedTrainId, updateTrainIdUsedForProjection } from 'reducers/simulationResults';
 import {
@@ -62,13 +63,17 @@ const useAutoUpdateProjection = (
     }
 
     // at this point, the selected train is not in the timetable anymore or is undefined
-    // by default, select the first valid train
-    const firstValidTrain = timetableItemsWithDetails.find((item) => item.summary?.isValid);
-    if (firstValidTrain) {
-      dispatch(updateTrainIdUsedForProjection(firstValidTrain.id));
-      const newTrainIdToSelect = isTrainScheduleId(firstValidTrain.id)
-        ? firstValidTrain.id
-        : formatPacedTrainIdToIndexedOccurrenceId(firstValidTrain.id, 0);
+    // by default, select the first valid item for the projection
+    // if no valid item is found, select item with valid pathfinding
+    const firstTrainCanBeUsedForProjection =
+      timetableItemsWithDetails.find((item) => item.summary?.isValid) ??
+      timetableItemsWithDetails.find((item) => item.summary && isValidPathfinding(item.summary));
+
+    if (firstTrainCanBeUsedForProjection) {
+      dispatch(updateTrainIdUsedForProjection(firstTrainCanBeUsedForProjection.id));
+      const newTrainIdToSelect = isTrainScheduleId(firstTrainCanBeUsedForProjection.id)
+        ? firstTrainCanBeUsedForProjection.id
+        : formatPacedTrainIdToIndexedOccurrenceId(firstTrainCanBeUsedForProjection.id, 0);
       dispatch(updateSelectedTrainId(newTrainIdToSelect));
     }
   }, [timetableItemIds, infra, timetableItemsWithDetails]);
