@@ -146,7 +146,7 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
         ? formatPacedTrainWithDetails(timetableItem, rollingStock)
         : formatTrainScheduleWithDetails(timetableItem, rollingStock);
     });
-    return sortBy(items, 'startTime');
+    return sortBy(items, ['startTime', 'name', 'id']);
   }, [timetableItems, rollingStocksByName, simulatedTrainsById]);
 
   const projectedTrains = useMemo(
