@@ -34,7 +34,6 @@ use utoipa::ToSchema;
 
 use crate::AppState;
 use crate::ValkeyConnection;
-use crate::client::get_app_version;
 use crate::error::Result;
 use crate::views::AuthenticationExt;
 use crate::views::path::retrieve_infra_version;
@@ -149,6 +148,7 @@ pub(in crate::views) async fn post(
         db_pool,
         valkey,
         core_client,
+        config,
         ..
     }): State<AppState>,
     Extension(auth): AuthenticationExt,
@@ -176,10 +176,15 @@ pub(in crate::views) async fn post(
         infra: infra_id,
         expected_version: infra_version,
     };
-    let path_properties = compute_path_properties_batch(core_client, &mut valkey_conn, &[request])
-        .await?
-        .next()
-        .unwrap();
+    let path_properties = compute_path_properties_batch(
+        core_client,
+        &mut valkey_conn,
+        &[request],
+        config.app_version.as_deref(),
+    )
+    .await?
+    .next()
+    .unwrap();
 
     Ok(Json(
         PathProperties::from(path_properties).filter_properties(query_props),
@@ -191,6 +196,7 @@ pub(in crate::views) async fn post(
 async fn retrieve_path_properties_from_cache<'a>(
     conn: &mut ValkeyConnection,
     requests: &'a [PathPropertiesRequest<'a>],
+    app_version: Option<&str>,
 ) -> Result<
     impl Iterator<
         Item = (
@@ -201,7 +207,7 @@ async fn retrieve_path_properties_from_cache<'a>(
 > {
     let keys = requests
         .iter()
-        .map(path_properties_input_hash)
+        .map(|req| path_properties_input_hash(req, app_version))
         .collect_vec();
     // required to collect because json_get_bulk takes a slice...
     let cached = conn.json_get_bulk(&keys).await?.collect_vec();
@@ -218,17 +224,21 @@ async fn cache_path_properties<'a>(
             &'a core_client::path_properties::PathPropertiesResponse,
         ),
     >,
+    app_version: Option<&str>,
 ) -> Result<()> {
     let data = properties
         .into_iter()
-        .map(|(req, resp)| (path_properties_input_hash(req), resp))
+        .map(|(req, resp)| (path_properties_input_hash(req, app_version), resp))
         .collect_vec();
     conn.json_set_bulk(&data).await
 }
 
 /// Compute path properties input hash without supported electrifications
-fn path_properties_input_hash(path_properties_request: &PathPropertiesRequest<'_>) -> String {
-    let osrd_version = get_app_version().unwrap_or_default();
+fn path_properties_input_hash(
+    path_properties_request: &PathPropertiesRequest<'_>,
+    app_version: Option<&str>,
+) -> String {
+    let osrd_version = app_version.unwrap_or_default();
     let mut hasher = DefaultHasher::new();
     path_properties_request
         .track_section_ranges
@@ -246,9 +256,10 @@ pub(in crate::views) async fn compute_path_properties_batch(
     core_client: Arc<CoreClient>,
     conn: &mut ValkeyConnection,
     requests: &[PathPropertiesRequest<'_>],
+    app_version: Option<&str>,
 ) -> Result<impl Iterator<Item = core_client::path_properties::PathPropertiesResponse>> {
     let (cached, to_compute): (Vec<_>, Vec<_>) =
-        retrieve_path_properties_from_cache(conn, requests)
+        retrieve_path_properties_from_cache(conn, requests, app_version)
             .await?
             .partition_map(|(req, res)| match res {
                 Some(res) => Either::Left(res),
@@ -266,7 +277,12 @@ pub(in crate::views) async fn compute_path_properties_batch(
 
     tracing::debug!(computed = computed.len(), "computed path properties");
 
-    cache_path_properties(conn, to_compute.into_iter().zip(computed.iter())).await?;
+    cache_path_properties(
+        conn,
+        to_compute.into_iter().zip(computed.iter()),
+        app_version,
+    )
+    .await?;
 
     tracing::debug!("cached path properties");
 

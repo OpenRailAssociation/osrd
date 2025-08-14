@@ -84,6 +84,7 @@ pub async fn runserver(
     postgres: PostgresConfig,
     valkey: ValkeyConfig,
     openfga: OpenfgaConfig,
+    app_version: Option<String>,
 ) -> anyhow::Result<()> {
     let config = views::ServerConfig {
         port,
@@ -107,6 +108,7 @@ pub async fn runserver(
         openfga_config: openfga.into(),
         root_url,
         dynamic_assets_path,
+        app_version,
     };
 
     let server = views::Server::new(config).await?;

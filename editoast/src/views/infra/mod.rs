@@ -123,6 +123,7 @@ pub(in crate::views) async fn refresh(
         valkey: valkey_client,
         infra_caches,
         map_layers,
+        config,
         ..
     }): State<AppState>,
     Extension(auth): AuthenticationExt,
@@ -171,6 +172,7 @@ pub(in crate::views) async fn refresh(
             &mut conn,
             &map_layers.layers.keys().cloned().collect(),
             *infra_id,
+            config.app_version.as_deref(),
         )
         .await?;
     }

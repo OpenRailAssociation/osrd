@@ -129,9 +129,11 @@ async fn run() -> anyhow::Result<()> {
         Color::Auto => colored::control::set_override(std::io::stderr().is_terminal()),
     }
 
+    let app_version = client.app_version;
+
     match client.command {
         Commands::Runserver(args) => {
-            runserver(*args, pg_config, valkey_config, openfga_config).await
+            runserver(*args, pg_config, valkey_config, openfga_config, app_version).await
         }
         Commands::ImportRollingStock(args) => import_rolling_stock(args, db_pool.into()).await,
         Commands::ImportTowedRollingStock(args) => {
@@ -162,9 +164,11 @@ async fn run() -> anyhow::Result<()> {
         },
         Commands::Infra(subcommand) => match subcommand {
             InfraCommands::Clone(args) => clone_infra(args, db_pool.into()).await,
-            InfraCommands::Clear(args) => clear_infra(args, db_pool.into(), valkey_config).await,
+            InfraCommands::Clear(args) => {
+                clear_infra(args, db_pool.into(), valkey_config, app_version.as_deref()).await
+            }
             InfraCommands::Generate(args) => {
-                generate_infra(args, db_pool.into(), valkey_config).await
+                generate_infra(args, db_pool.into(), valkey_config, app_version.as_deref()).await
             }
             InfraCommands::ImportRailjson(args) => import_railjson(args, db_pool.into()).await,
         },

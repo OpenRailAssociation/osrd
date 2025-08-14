@@ -31,7 +31,6 @@ use uuid::Uuid;
 
 use crate::AppState;
 use crate::ValkeyClient;
-use crate::client::get_app_version;
 use crate::error::Result;
 use crate::generated_data;
 use crate::infra_cache::InfraCache;
@@ -78,6 +77,7 @@ pub(in crate::views) async fn edit(
         infra_caches,
         valkey,
         map_layers,
+        config,
         ..
     }): State<AppState>,
     Extension(auth): AuthenticationExt,
@@ -112,6 +112,7 @@ pub(in crate::views) async fn edit(
         &operations,
         &mut infra_cache,
         valkey.clone(),
+        config.app_version.as_deref(),
     )
     .await?;
 
@@ -120,6 +121,7 @@ pub(in crate::views) async fn edit(
         &mut conn,
         &map_layers.layers.keys().cloned().collect(),
         infra_id,
+        config.app_version.as_deref(),
     )
     .await?;
 
@@ -143,6 +145,7 @@ pub(in crate::views) async fn split_track_section(
         infra_caches,
         valkey,
         map_layers,
+        config,
         ..
     }): State<AppState>,
     Extension(auth): AuthenticationExt,
@@ -355,6 +358,7 @@ pub(in crate::views) async fn split_track_section(
         &operations,
         &mut infra_cache,
         valkey.clone(),
+        config.app_version.as_deref(),
     )
     .await?;
     let mut conn = valkey.get_connection().await?;
@@ -362,6 +366,7 @@ pub(in crate::views) async fn split_track_section(
         &mut conn,
         &map_layers.layers.keys().cloned().collect(),
         infra_id,
+        config.app_version.as_deref(),
     )
     .await?;
 
@@ -865,6 +870,7 @@ async fn apply_edit(
     operations: &[Operation],
     infra_cache: &mut InfraCache,
     valkey: Arc<ValkeyClient>,
+    app_version: Option<&str>,
 ) -> Result<Vec<InfraObject>> {
     let infra_id = infra.id;
     // Check if the infra is locked
@@ -906,7 +912,7 @@ async fn apply_edit(
                 infra_cache.apply_operations(&cache_operations)?;
 
                 infra_cache.infra_version = infra.version;
-                let osrd_version = get_app_version().unwrap_or_default();
+                let osrd_version = app_version.unwrap_or("default");
                 let mut valkey_conn = valkey.get_connection().await?;
                 let _ = valkey_conn
                     .json_zadd(
@@ -1096,6 +1102,7 @@ pub mod tests {
             &operations,
             &mut infra_cache,
             app.valkey_client(),
+            None,
         )
         .await
         .ok()
@@ -1138,6 +1145,7 @@ pub mod tests {
             &operations,
             &mut infra_cache,
             app.valkey_client(),
+            None,
         )
         .await
         .unwrap();
@@ -1189,6 +1197,7 @@ pub mod tests {
             &operations,
             &mut infra_cache,
             app.valkey_client(),
+            None,
         )
         .await;
 

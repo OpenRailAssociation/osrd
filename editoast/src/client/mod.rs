@@ -14,8 +14,6 @@ pub mod timetables_commands;
 pub mod user;
 mod valkey_config;
 
-use std::env;
-
 use clap::Parser;
 use clap::Subcommand;
 use clap::ValueEnum;
@@ -50,6 +48,9 @@ pub struct Client {
     pub openfga_config: OpenfgaConfig,
     #[arg(long, env, value_enum, default_value_t = Color::Auto)]
     pub color: Color,
+    /// OSRD version (used for cache keys, always provide in production)
+    #[clap(long, env = "OSRD_GIT_DESCRIBE")]
+    pub app_version: Option<String>,
     #[command(subcommand)]
     pub command: Commands,
 }
@@ -101,11 +102,6 @@ pub enum Commands {
 pub fn print_openapi() {
     let openapi = OpenApiRoot::build_openapi();
     print!("{}", serde_yaml::to_string(&openapi).unwrap());
-}
-
-/// Retrieve the app version (git describe)
-pub fn get_app_version() -> Option<String> {
-    env::var("OSRD_GIT_DESCRIBE").ok()
 }
 
 #[cfg(test)]

@@ -164,6 +164,7 @@ impl TestAppBuilder {
     pub fn build(self) -> TestApp {
         // Generate test server config
         let config = ServerConfig {
+            app_version: None,
             port: 0,
             address: String::default(),
             health_check_timeout: chrono::Duration::milliseconds(500),

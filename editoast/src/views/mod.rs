@@ -83,7 +83,6 @@ use tracing::warn;
 use url::Url;
 
 use crate::ValkeyClient;
-use crate::client::get_app_version;
 use crate::error::Result;
 use crate::generated_data::speed_limit_tags_config::SpeedLimitTagIds;
 use crate::infra_cache::InfraCache;
@@ -459,7 +458,7 @@ impl Authentication {
         }
     }
 
-    /// Retuns the list of infra IDs that the issuer of the request is authorized to read.
+    /// Returns the list of infra IDs that the issuer of the request is authorized to read.
     /// If user has full access (in case of admin or skip authorization), it return a Bypassed with an empty list
     async fn list_authorized_infra(&self) -> Result<Authorization<Vec<Infra>>, AuthorizerError> {
         match self {
@@ -692,9 +691,11 @@ pub async fn check_health(
         (status = 200, description = "Return the service version", body = Version),
     ),
 )]
-pub(in crate::views) async fn version() -> Json<Version> {
+pub(in crate::views) async fn version(
+    State(AppState { config, .. }): State<AppState>,
+) -> Json<Version> {
     Json(Version {
-        git_describe: get_app_version(),
+        git_describe: config.app_version.clone(),
     })
 }
 
@@ -751,6 +752,7 @@ pub struct ServerConfig {
     pub openfga_config: OpenfgaConfig,
     pub root_url: Url,
     pub dynamic_assets_path: PathBuf,
+    pub app_version: Option<String>,
 }
 
 pub struct Server {

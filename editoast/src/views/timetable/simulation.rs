@@ -32,7 +32,6 @@ use utoipa::ToSchema;
 
 use crate::RetrieveBatchUnchecked;
 use crate::ValkeyClient;
-use crate::client::get_app_version;
 use crate::error::InternalError;
 use crate::error::Result;
 use crate::models::RollingStock;
@@ -200,6 +199,7 @@ impl From<simulation::Response> for SummaryResponse {
 /// Compute in batch the simulation of a list of train schedule
 ///
 /// Note: The order of the returned simulations is the same as the order of the train schedules.
+#[allow(clippy::too_many_arguments)]
 pub async fn train_simulation_batch<T: TrainScheduleLike>(
     conn: &mut DbConnection,
     valkey_client: Arc<ValkeyClient>,
@@ -207,6 +207,7 @@ pub async fn train_simulation_batch<T: TrainScheduleLike>(
     train_schedules: &[T],
     infra: &Infra,
     electrical_profile_set_id: Option<i64>,
+    app_version: Option<&str>,
 ) -> Result<Vec<(Arc<simulation::Response>, Arc<PathfindingResult>)>> {
     // Compute path
 
@@ -234,6 +235,7 @@ pub async fn train_simulation_batch<T: TrainScheduleLike>(
             let consists = consists.clone();
             let infra = <Infra as Clone>::clone(infra);
             let chunk = chunk.to_vec(); // TODO: avoid cloning the chunk
+            let app_version = app_version.map(String::from);
             tokio::spawn(
                 async move {
                     consist_train_simulation_batch(
@@ -244,6 +246,7 @@ pub async fn train_simulation_batch<T: TrainScheduleLike>(
                         &chunk,
                         &consists,
                         electrical_profile_set_id,
+                        app_version.as_deref(),
                     )
                     .await
                 }
@@ -260,6 +263,7 @@ pub async fn train_simulation_batch<T: TrainScheduleLike>(
 }
 
 #[tracing::instrument(skip_all, fields(nb_trains = train_schedules.len()))]
+#[allow(clippy::too_many_arguments)]
 pub async fn consist_train_simulation_batch<T: TrainScheduleLike>(
     conn: &mut DbConnection,
     valkey_client: Arc<ValkeyClient>,
@@ -268,6 +272,7 @@ pub async fn consist_train_simulation_batch<T: TrainScheduleLike>(
     train_schedules: &[T],
     consists: &[PhysicsConsistParameters],
     electrical_profile_set_id: Option<i64>,
+    app_version: Option<&str>,
 ) -> Result<Vec<(Arc<simulation::Response>, Arc<PathfindingResult>)>> {
     let mut valkey_conn = valkey_client.get_connection().await?;
 
@@ -281,6 +286,7 @@ pub async fn consist_train_simulation_batch<T: TrainScheduleLike>(
             .iter()
             .map(|consist| consist.traction_engine.clone())
             .collect::<Vec<_>>(),
+        app_version,
     )
     .await?;
 
@@ -337,6 +343,7 @@ pub async fn consist_train_simulation_batch<T: TrainScheduleLike>(
             infra.id,
             infra.version,
             &simulation_request,
+            app_version,
         );
         to_sim
             .entry(simulation_hash.clone())
@@ -514,8 +521,9 @@ fn compute_train_simulation_hash_with_versioning(
     infra_id: i64,
     infra_version: i64,
     simulation_input: &core_client::simulation::Request,
+    app_version: Option<&str>,
 ) -> String {
-    let osrd_version = get_app_version().unwrap_or_default();
+    let osrd_version = app_version.unwrap_or("default");
     let mut hasher = DefaultHasher::new();
     simulation_input.hash(&mut hasher);
     let hash_simulation_input = hasher.finish();

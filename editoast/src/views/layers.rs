@@ -175,6 +175,7 @@ pub(in crate::views) async fn cache_and_get_mvt_tile(
         map_layers,
         db_pool,
         valkey,
+        config,
         ..
     }): State<AppState>,
     Extension(auth): AuthenticationExt,
@@ -198,7 +199,12 @@ pub(in crate::views) async fn cache_and_get_mvt_tile(
         None => return Err(LayersError::new_view_not_found(view_slug, layer).into()),
     };
     let cache_key = get_cache_tile_key(
-        &get_view_cache_prefix(&layer_slug, infra_id, &view_slug),
+        &get_view_cache_prefix(
+            &layer_slug,
+            infra_id,
+            &view_slug,
+            config.app_version.as_deref(),
+        ),
         &Tile { x, y, z },
     );
 

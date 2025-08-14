@@ -224,6 +224,7 @@ pub(in crate::views) async fn stdcm(
         db_pool.clone(),
         valkey_client.clone(),
         core_client.clone(),
+        config.app_version.as_deref(),
         &stdcm_request,
         &infra,
         &physics_consist_parameters,
@@ -258,6 +259,7 @@ pub(in crate::views) async fn stdcm(
         &train_schedules,
         &infra,
         stdcm_request.electrical_profile_set_id,
+        config.app_version.as_deref(),
     )
     .await?
     .into_iter()
@@ -474,10 +476,12 @@ struct VirtualTrainRun {
 }
 
 impl VirtualTrainRun {
+    #[allow(clippy::too_many_arguments)]
     async fn simulate(
         db_pool: Arc<DbConnectionPoolV2>,
         valkey_client: Arc<ValkeyClient>,
         core_client: Arc<CoreClient>,
+        app_version: Option<&str>,
         stdcm_request: &Request,
         infra: &Infra,
         consist_parameters: &PhysicsConsistParameters,
@@ -525,6 +529,7 @@ impl VirtualTrainRun {
             slice::from_ref(&train_schedule),
             slice::from_ref(consist_parameters),
             None,
+            app_version,
         )
         .await?
         .pop()
