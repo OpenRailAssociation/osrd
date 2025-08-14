@@ -13,7 +13,7 @@
         "create-actions": "{{creation_count}} créations d’objets",
         "delete-actions": "{{deletion_count}} suppressions d’objets",
         "loading-loader": "Calcul des corrections possibles",
-        "no-fixes-found": "Aucune correction trouvée",
+        "no-fixes-found": "Aucune correction trouvée.",
         "saving-loader": "Corrections en cours d'application sur l’infrastructure",
         "text": "Les actions suivantes vont être appliquées pour corriger certaines anomalies d’infrastructure :",
         "title": "Correcteur automatique d’anomalies",
@@ -59,7 +59,7 @@
           "name": "Itinéraire manquant"
         },
         "node_endpoints_not_unique": {
-          "description": "Une extrémité de voie est utilisée par plusieurs ports du nœud « {{obj_id}} »",
+          "description": "Une extrémité de voie est utilisée par plusieurs ports du nœud « {{obj_id}} ».",
           "name": "Extrémité de voie de nœud non unique"
         },
         "object_out_of_path": {
@@ -224,8 +224,8 @@
         },
         "linked-routes": "Itinéraires liés",
         "no-linked-route": "Aucun itinéraire lié",
-        "routes-ending-at": "Arrivant à...",
-        "routes-starting-from": "Partant de..."
+        "routes-ending-at": "Arrivant à…",
+        "routes-starting-from": "Partant de…"
       },
       "range-edition": {
         "edit-track-range-end": "Modifier le point d'arrivée",
@@ -280,12 +280,12 @@
         "label": "Outil \"Itinéraire\"",
         "locked-release-detectors": "Une fois cette propriété activée et sauvegardée, celle-ci ne peut plus être désactivée",
         "no-route-found": "Aucun itinéraire compatible trouvé",
-        "no-waypoint-picked-yet": "Cliquer sur le bouton ci-contre pour sélectionner un détecteur ou un heurtoir sur la carte.",
+        "no-waypoint-picked-yet": "Cliquer sur le bouton ci-contre pour sélectionner un détecteur ou un heurtoir sur la carte",
         "preview-candidate": "Sélectionner",
         "search-routes": "Rechercher des itinéraires compatibles",
         "search-routes-alt": "Rechercher des itinéraires alternatifs",
         "start": "Départ",
-        "start_direction": "Direction au départ",
+        "start_direction": "Direction au départ :",
         "swap-endpoints": "Échanger les extrémités",
         "to": "à",
         "untitled-track": "Ligne sans nom"
@@ -370,7 +370,7 @@
         "sign-remove": "Supprimer le panneau",
         "sign-select": "Sélectionner",
         "sign-side": "Côté",
-        "sign-track-id": "Track section id",
+        "sign-track-id": "Id de section de voie",
         "sign-type": "Type",
         "sign-value": "Vitesse",
         "signs-section-list": "Liste des panneaux de la section",
@@ -497,7 +497,7 @@
       "reset-north": "Réinitialiser la caméra"
     },
     "navigation": {
-      "goBack": "Retour à  la page précédente",
+      "goBack": "Retour à la page précédente",
       "goHome": "Retour à la page d'accueil"
     },
     "next": "Suivant",
@@ -681,7 +681,7 @@
     "addNewRollingStock": "Nouveau matériel roulant",
     "addNewTractionMode": "Ajouter un nouveau mode de traction",
     "basePowerClass": "Classe de puissance",
-    "cancelUpdateRollingStock": "Annuler la mise à jour du matériel roulant?",
+    "cancelUpdateRollingStock": "Annuler la mise à jour du matériel roulant ?",
     "categoriesOptions": {
       "COMMUTER_TRAIN": "Train suburbain",
       "FAST_FREIGHT_TRAIN": "Train de fret rapide",
@@ -696,7 +696,7 @@
       "choose": "Choisissez une catégorie",
       "noCategory": "Pas de catégorie"
     },
-    "chooseRollingStock": "Sélectionnez un matériel roulant pour en afficher les informations.",
+    "chooseRollingStock": "Sélectionnez un matériel roulant pour en afficher les informations",
     "comfort": "Confort",
     "comfortAcceleration": "Accélération « confort »",
     "comfortLevels": "Niveaux de confort",
@@ -706,7 +706,7 @@
       "STANDARD": "Standard"
     },
     "confirmAddRollingStock": "Êtes-vous sûr de vouloir ajouter ce matériel roulant ?",
-    "confirmUpdateRollingStock": "Confirmer la mise à jour du matériel roulant?",
+    "confirmUpdateRollingStock": "Confirmer la mise à jour du matériel roulant",
     "constGamma": "Décélération horaire",
     "curves": {
       "all": "Toutes les courbes",
@@ -727,10 +727,10 @@
       "invalidConversion": "Conversion invalide",
       "minMaxRangeError": "La valeur doit être comprise entre {{min}} et {{max}}",
       "minRangeError": "La valeur doit être supérieure ou égale à {{min}}",
-      "missingConversion": "Cette conversion n'existe pas dans le schéma. La valeur n'a pas été modifiée",
+      "missingConversion": "Cette conversion n'existe pas dans le schéma. La valeur n'a pas été modifiée.",
       "missingInformation": "Informations manquantes",
       "ressourcesNotFound": "Ressources introuvables",
-      "rollingStockUsed": "Le Matériel roulant est utilisé dans les scénarios suivants:",
+      "rollingStockUsed": "Le Matériel roulant est utilisé dans les scénarios suivants :",
       "unableToRetrieveRollingStock": "Récupération matériel impossible",
       "unableToRetrieveRollingStockMessage": "Une erreur est survenue"
     },
@@ -749,17 +749,17 @@
       "invalidEffortCurves": "Courbes invalides : {{invalidEffortCurves}}. Chaque courbe doit posséder au moins 2 combinaisons de valeurs vitesse / effort (sans doublon sur les valeurs de vitesse). Les combinaisons ayant au moins un champs vide sont ignorées. Une vitesse ne peut pas excéder 600km/h et un effort ne peut pas excéder 1000kN.",
       "invalidForm": "Formulaire incomplet",
       "missingEffortCurves": "Veuillez renseigner une courbe effort-vitesse",
-      "missingInformationAutomaticallyFilled_one": "Le champ suivant a été initialisé par défaut: {{invalidFields}}.",
-      "missingInformationAutomaticallyFilled_other": "Les champs suivants ont été initialisés par défaut: {{invalidFields}}.",
+      "missingInformationAutomaticallyFilled_one": "Le champ suivant a été initialisé par défaut : {{invalidFields}}.",
+      "missingInformationAutomaticallyFilled_other": "Les champs suivants ont été initialisés par défaut : {{invalidFields}}.",
       "missingName": "Veuillez renseigner un nom",
       "missingPrimaryCategory": "Veuillez renseigner une catégorie principale",
-      "rollingStockAdded": "Le matériel roulant a été ajouté.",
-      "rollingStockDeleted": "Le matériel roulant a été supprimé.",
+      "rollingStockAdded": "Le matériel roulant a été ajouté",
+      "rollingStockDeleted": "Le matériel roulant a été supprimé",
       "rollingStockDuplicateName": "Un matériel roulant du même nom existe déjà.",
-      "rollingStockNotAdded": "Le matériel roulant n'a pas été ajouté.",
-      "rollingStockNotDeleted": "Le matériel roulant n'a pas été supprimé.",
-      "rollingStockNotUpdated": "Le matériel roulant n'a pas été mis à jour.",
-      "rollingStockUpdated": "Le matériel roulant a été mis à jour.",
+      "rollingStockNotAdded": "Le matériel roulant n'a pas été ajouté",
+      "rollingStockNotDeleted": "Le matériel roulant n'a pas été supprimé",
+      "rollingStockNotUpdated": "Le matériel roulant n'a pas été mis à jour",
+      "rollingStockUpdated": "Le matériel roulant a été mis à jour",
       "success": "Opération réussie"
     },
     "metadata": {
