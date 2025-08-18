@@ -1,5 +1,5 @@
 /* eslint-disable import/prefer-default-export */
-import { dateToHHMMSS } from 'utils/date';
+import { formatLocalTime } from 'utils/date';
 import { Duration, addDurationToDate } from 'utils/duration';
 import { calculateTimeDifferenceInDays } from 'utils/timeManipulation';
 
@@ -15,7 +15,7 @@ const computeDayTimeFromStartTime = (
   const isAfterMidnight = arrivalDatetime.getDate() !== previousDatetime.getDate();
 
   const timeExtraDay = {
-    time: dateToHHMMSS(arrivalDatetime),
+    time: formatLocalTime(arrivalDatetime),
     daySinceDeparture: calculateTimeDifferenceInDays(startDatetime, arrivalDatetime),
     dayDisplayed: isAfterMidnight,
   };

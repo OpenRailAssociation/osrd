@@ -5,7 +5,7 @@ import type {
 import type { ReportTrain, SimulationResponseSuccess } from 'common/api/osrdEditoastApi';
 import type { Train } from 'reducers/osrdconf/types';
 import type { PositionSpeedTime, SpeedRanges } from 'reducers/simulationResults/types';
-import { dateToHHMMSS } from 'utils/date';
+import { formatLocalTime } from 'utils/date';
 import { mmToM, mToMm } from 'utils/physics';
 import { ms2sec } from 'utils/timeManipulation';
 
@@ -228,7 +228,7 @@ export default function exportTrainCSV(
       op: speed.op || '',
       ch: speed.ch || '',
       trackName: speed.trackName,
-      time: dateToHHMMSS(new Date(speed.time)),
+      time: formatLocalTime(new Date(speed.time)),
       seconds: pointToComma(+ms2sec(speed.time).toFixed(1)),
       position: pointToComma(+(speed.position / 1000).toFixed(3)),
       speed: pointToComma(+(speed.speed * 3.6).toFixed(3)),
