@@ -1,12 +1,15 @@
 /* eslint-disable import/prefer-default-export */
-import { dateToHHMMSS } from 'utils/date';
 import { Duration, addDurationToDate } from 'utils/duration';
 
 import type { ScheduleEntry } from '../types';
 import { receptionSignalToSignalBooleans } from './utils';
 
 /** Format the stopFor, calculatedDeparture, shortSlipDistance and onStopSignal properties */
-export const formatSchedule = (arrivalTime?: Date, schedule?: ScheduleEntry) => {
+export const formatSchedule = (
+  arrivalTime: Date | undefined,
+  schedule: ScheduleEntry | undefined,
+  dateTimeLocale: Intl.Locale
+) => {
   if (!schedule) {
     return {
       stopFor: undefined,
@@ -35,7 +38,7 @@ export const formatSchedule = (arrivalTime?: Date, schedule?: ScheduleEntry) => 
   }
   return {
     stopFor: `${stopFor.total('second')}`,
-    calculatedDeparture: dateToHHMMSS(addDurationToDate(arrivalTime, stopFor)),
+    calculatedDeparture: addDurationToDate(arrivalTime, stopFor).toLocaleTimeString(dateTimeLocale),
     ...receptionSignalToSignalBooleans(schedule.reception_signal),
   };
 };
