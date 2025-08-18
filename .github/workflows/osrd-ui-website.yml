@@ -10,6 +10,9 @@ on:
 
   # Run on PRs, but only preview
   pull_request:
+    paths:
+      - front/ui/**
+      - front/package-lock.json
     types:
       - opened
       - reopened
