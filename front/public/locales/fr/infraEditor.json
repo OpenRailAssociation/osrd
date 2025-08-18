@@ -131,7 +131,7 @@
         "title": "Début"
       },
       "end": {
-        "description": " Distance entre la fin de la courbure et la fin de la section de voie correspondante (en mètres). ",
+        "description": "Distance entre la fin de la courbure et la fin de la section de voie correspondante (en mètres).",
         "title": "Fin"
       },
       "radius": {
@@ -194,14 +194,14 @@
     "description": "Un intervalle sur une section de voie est un intervalle avec une direction associée.",
     "properties": {
       "begin": {
-        "description": "Distance de début par rapport au début de la section de voie (en mètres).",
+        "description": "Distance de début par rapport au début de la section de voie (en mètres)",
         "title": "Début"
       },
       "direction": {
-        "description": "Description de la direction."
+        "description": "Description de la direction"
       },
       "end": {
-        "description": "Distance de fin par rapport au début de la section de voie (en mètres).",
+        "description": "Distance de fin par rapport au début de la section de voie (en mètres)",
         "title": "Fin"
       },
       "track": {
@@ -219,11 +219,11 @@
         "title": "Identifiant"
       },
       "track_ranges": {
-        "description": "Liste des intervalles de section de voie où la tension est appliquée.",
+        "description": "Liste des intervalles de section de voie où la tension est appliquée",
         "title": "Intervalles de section de voie"
       },
       "voltage": {
-        "description": "Tension électrique (en Volts).",
+        "description": "Tension électrique (en Volts)",
         "title": "Tension électrique"
       }
     },
@@ -280,14 +280,14 @@
     "description": "La limite de gabarit correspond à une restriction appliquée aux trains en fonction de leur gabarit et de leur type de matériel roulant.",
     "properties": {
       "begin": {
-        "description": "Début de la limite de gabarit par rapport au début de la section de voie (en mètres).",
+        "description": "Début de la limite de gabarit par rapport au début de la section de voie (en mètres)",
         "title": "Début"
       },
       "category": {
-        "description": "Catégorie de gabarit pour le matériel roulant correspondant."
+        "description": "Catégorie de gabarit pour le matériel roulant correspondant"
       },
       "end": {
-        "description": "Fin de la limite de gabarit par rapport au début de la section de voie (en mètres).",
+        "description": "Fin de la limite de gabarit par rapport au début de la section de voie (en mètres)",
         "title": "Fin"
       }
     },
@@ -298,7 +298,7 @@
     "title": "Type de gabarit"
   },
   "LogicalSignal": {
-    "description": "Un signal logique correspond à ce qui est affiché. Un signal physique comprend un ensemble de signaux logiques.",
+    "description": "Un signal logique correspond à ce qui est affiché. Un signal physique comprend un ensemble de signaux logiques",
     "properties": {
       "conditional_parameters": {
         "description": "Une liste de paramètres conditionnels qui sont définis par système de signalisation",
@@ -309,15 +309,15 @@
         "title": "Paramètres par défaut"
       },
       "next_signaling_systems": {
-        "description": "Liste de systèmes de signalisation autorisés en amont.",
+        "description": "Liste de systèmes de signalisation autorisés en amont",
         "title": "Systèmes de signalisations suivants"
       },
       "settings": {
-        "description": "Une liste de paramètres définis en fonction du système de signalisation.",
+        "description": "Une liste de paramètres définis en fonction du système de signalisation",
         "title": "Paramètres"
       },
       "signaling_system": {
-        "description": "Le système de signalisation du signal.",
+        "description": "Le système de signalisation du signal",
         "title": "Système de signalisation"
       }
     },
@@ -327,7 +327,7 @@
     "description": "Les zones neutres sont des intervalles de section de voie où les trains n’ont pas le droit de récupérer de l’électricité de caténaires. Ils doivent utiliser leur inertie sur ces intervalles. En pratique, les zones neutres sont délimitées par des panneaux. Dans OSRD, les zones neutres sont directionnelles, afin de prendre en compte des placements de panneaux différents en fonction de la direction. Pour plus d’information, consulter [la documentation] (https://osrd.fr/en/docs/explanation/neutral_sections/).",
     "properties": {
       "announcement_track_ranges": {
-        "description": "Liste des intervalles de section de voie où la NEUTRAL SECTION à venir est annoncée.",
+        "description": "Liste des intervalles de section de voie où la NEUTRAL SECTION à venir est annoncée",
         "title": "Intervalles de section de voie à venir"
       },
       "id": {
@@ -335,11 +335,11 @@
         "title": "Identifiant"
       },
       "lower_pantograph": {
-        "description": "S’il faut que le train baisse ou non son pantographe sur cette section.",
+        "description": "S’il faut que le train baisse ou non son pantographe sur cette section",
         "title": "Baisser pantographe"
       },
       "track_ranges": {
-        "description": "Liste des intervalles de section de voie où le train ne peut pas récupérer de l’électricité de caténaires.",
+        "description": "Liste des intervalles de section de voie où le train ne peut pas récupérer de l’électricité de caténaires",
         "title": "Intervalles de section de voie"
       }
     },
@@ -409,7 +409,7 @@
         "title": "Position"
       },
       "track": {
-        "description": "Référence à la section de voie sur laquelle l’objet est situé.",
+        "description": "Référence à la section de voie sur laquelle l’objet est situé",
         "title": "Voie"
       }
     },
@@ -446,7 +446,7 @@
         "title": "Ci"
       },
       "trigram": {
-        "description": "Identifiant unique d’un point remarquable, composé de trois lettres et propre à la SNCF.",
+        "description": "Identifiant unique d’un point remarquable, composé de trois lettres et propre à la SNCF",
         "title": "Trigramme"
       }
     },
@@ -459,7 +459,7 @@
         "title": "Point d’entrée"
       },
       "entry_point_direction": {
-        "description": "Sens de l’itinéraire au point d’entrée."
+        "description": "Sens de l’itinéraire au point d’entrée"
       },
       "exit_point": {
         "title": "Point de sortie"
@@ -473,7 +473,7 @@
         "title": "Détecteurs de libération"
       },
       "switches_directions": {
-        "description": "Liste des directions des aiguilles sur l’itinéraire.",
+        "description": "Liste des directions des aiguilles sur l’itinéraire",
         "title": "Directions des aiguilles"
       }
     },
@@ -513,7 +513,7 @@
         "title": "Type"
       },
       "value": {
-        "description": "Si le panneau est une annonce, précise la valeur.",
+        "description": "Si le panneau est une annonce, précise la valeur",
         "title": "Valeur"
       }
     },
