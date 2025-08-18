@@ -3,21 +3,21 @@ use chrono::Duration as ChronoDuration;
 use chrono::Utc;
 use editoast_derive::Model;
 use editoast_models::rolling_stock::TrainMainCategory;
-use editoast_schemas;
-use editoast_schemas::paced_train;
-use editoast_schemas::paced_train::ExceptionType;
-use editoast_schemas::paced_train::Paced;
-use editoast_schemas::paced_train::PacedTrainException;
-use editoast_schemas::rolling_stock::TrainCategory;
-use editoast_schemas::train_schedule::Comfort;
-use editoast_schemas::train_schedule::Distribution;
-use editoast_schemas::train_schedule::Margins;
-use editoast_schemas::train_schedule::PathItem;
-use editoast_schemas::train_schedule::PowerRestrictionItem;
-use editoast_schemas::train_schedule::ScheduleItem;
-use editoast_schemas::train_schedule::TrainSchedule;
-use editoast_schemas::train_schedule::TrainScheduleOptions;
 use itertools::Itertools;
+use schemas;
+use schemas::paced_train;
+use schemas::paced_train::ExceptionType;
+use schemas::paced_train::Paced;
+use schemas::paced_train::PacedTrainException;
+use schemas::rolling_stock::TrainCategory;
+use schemas::train_schedule::Comfort;
+use schemas::train_schedule::Distribution;
+use schemas::train_schedule::Margins;
+use schemas::train_schedule::PathItem;
+use schemas::train_schedule::PowerRestrictionItem;
+use schemas::train_schedule::ScheduleItem;
+use schemas::train_schedule::TrainSchedule;
+use schemas::train_schedule::TrainScheduleOptions;
 
 use super::Tags;
 use crate::models::prelude::*;
@@ -254,7 +254,7 @@ impl From<paced_train::PacedTrain> for PacedTrainChangeset {
 impl From<PacedTrain> for paced_train::PacedTrain {
     fn from(paced_train: PacedTrain) -> Self {
         Self {
-            train_schedule_base: editoast_schemas::TrainSchedule {
+            train_schedule_base: schemas::TrainSchedule {
                 train_name: paced_train.train_name,
                 labels: paced_train.labels.to_vec(),
                 rolling_stock_name: paced_train.rolling_stock_name,
@@ -299,15 +299,15 @@ mod tests {
     use chrono::Utc;
     use database::DbConnectionPoolV2;
     use editoast_models::rolling_stock::TrainMainCategory;
-    use editoast_schemas::paced_train::PacedTrainException;
-    use editoast_schemas::paced_train::RollingStockCategoryChangeGroup;
-    use editoast_schemas::paced_train::StartTimeChangeGroup;
-    use editoast_schemas::train_schedule::Comfort;
-    use editoast_schemas::train_schedule::Distribution;
-    use editoast_schemas::train_schedule::Margins;
-    use editoast_schemas::train_schedule::TrainScheduleOptions;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
+    use schemas::paced_train::PacedTrainException;
+    use schemas::paced_train::RollingStockCategoryChangeGroup;
+    use schemas::paced_train::StartTimeChangeGroup;
+    use schemas::train_schedule::Comfort;
+    use schemas::train_schedule::Distribution;
+    use schemas::train_schedule::Margins;
+    use schemas::train_schedule::TrainScheduleOptions;
 
     pub fn create_paced_train(exceptions: Vec<PacedTrainException>) -> PacedTrain {
         PacedTrain {
@@ -318,7 +318,7 @@ mod tests {
             comfort: Comfort::Standard,
             initial_speed: 25.0,
             main_category: Some(TrainMainCategory(
-                editoast_schemas::rolling_stock::TrainMainCategory::HighSpeedTrain,
+                schemas::rolling_stock::TrainMainCategory::HighSpeedTrain,
             )),
             constraint_distribution: Distribution::Standard,
             labels: Tags::new(vec![]),
@@ -344,8 +344,8 @@ mod tests {
         let mut exception = create_created_exception_with_change_groups("key_1");
 
         exception.rolling_stock_category = Some(RollingStockCategoryChangeGroup {
-            value: Some(editoast_schemas::rolling_stock::TrainCategory::Main {
-                main_category: editoast_schemas::rolling_stock::TrainMainCategory::FastFreightTrain,
+            value: Some(schemas::rolling_stock::TrainCategory::Main {
+                main_category: schemas::rolling_stock::TrainMainCategory::FastFreightTrain,
             }),
         });
 
@@ -356,8 +356,8 @@ mod tests {
         // Check if it get replaced by exception category
         assert_eq!(
             paced_train_exception.category,
-            Some(editoast_schemas::rolling_stock::TrainCategory::Main {
-                main_category: editoast_schemas::rolling_stock::TrainMainCategory::FastFreightTrain
+            Some(schemas::rolling_stock::TrainCategory::Main {
+                main_category: schemas::rolling_stock::TrainMainCategory::FastFreightTrain
             })
         );
     }
@@ -449,7 +449,7 @@ mod tests {
 
         let paced_train =
             create_paced_train(vec![exception_1.clone(), exception_2.clone(), exception_3]);
-        let occurrences: Vec<(TrainId, editoast_schemas::TrainSchedule)> =
+        let occurrences: Vec<(TrainId, schemas::TrainSchedule)> =
             paced_train.iter_occurrences().collect();
 
         assert_eq!(occurrences.len(), 5);
@@ -520,7 +520,7 @@ mod tests {
         });
 
         let paced_train = create_paced_train(vec![exception_1.clone()]);
-        let occurrences: Vec<(TrainId, editoast_schemas::TrainSchedule)> =
+        let occurrences: Vec<(TrainId, schemas::TrainSchedule)> =
             paced_train.iter_occurrences().collect();
 
         assert_eq!(occurrences.len(), 4);
@@ -585,7 +585,7 @@ mod tests {
         let paced_train_changeset = simple_paced_train_changeset(timetable.id);
         let created_sub_category = simple_sub_category(
             "tjv",
-            TrainMainCategory(editoast_schemas::rolling_stock::TrainMainCategory::HighSpeedTrain),
+            TrainMainCategory(schemas::rolling_stock::TrainMainCategory::HighSpeedTrain),
         )
         .create(&mut pool.get_ok())
         .await
@@ -594,7 +594,7 @@ mod tests {
         let train_schedule_changeset = paced_train_changeset
             .sub_category(Some(created_sub_category.code))
             .main_category(Some(TrainMainCategory(
-                editoast_schemas::rolling_stock::TrainMainCategory::HighSpeedTrain,
+                schemas::rolling_stock::TrainMainCategory::HighSpeedTrain,
             )));
         let error = train_schedule_changeset
             .create(&mut pool.get_ok())

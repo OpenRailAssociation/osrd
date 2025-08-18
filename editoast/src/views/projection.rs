@@ -8,11 +8,11 @@ use core_client::simulation::SignalCriticalPosition;
 use core_client::simulation::ZoneUpdate;
 use database::DbConnection;
 use editoast_derive::EditoastError;
-use editoast_schemas::primitives::Identifier;
-use editoast_schemas::train_schedule::OperationalPointIdentifier;
-use editoast_schemas::train_schedule::PathItemLocation;
-use editoast_schemas::train_schedule::TrainScheduleLike;
 use itertools::Itertools;
+use schemas::primitives::Identifier;
+use schemas::train_schedule::OperationalPointIdentifier;
+use schemas::train_schedule::PathItemLocation;
+use schemas::train_schedule::TrainScheduleLike;
 use serde::Deserialize;
 use serde::Serialize;
 use std::collections::HashMap;
@@ -794,11 +794,11 @@ mod tests {
     use super::*;
     use crate::models::fixtures::create_small_infra;
     use crate::views::test_app::TestAppBuilder;
-    use editoast_schemas::infra::Direction;
-    use editoast_schemas::infra::DirectionalTrackRange;
-    use editoast_schemas::train_schedule::OperationalPointReference;
-    use editoast_schemas::train_schedule::PathItemLocation;
     use rstest::rstest;
+    use schemas::infra::Direction;
+    use schemas::infra::DirectionalTrackRange;
+    use schemas::train_schedule::OperationalPointReference;
+    use schemas::train_schedule::PathItemLocation;
 
     #[rstest]
     #[case(1, 0)]

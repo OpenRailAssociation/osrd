@@ -1,15 +1,15 @@
 use diesel::sql_types::Double;
 use diesel::sql_types::Text;
-use editoast_schemas::primitives::OSRDIdentified;
-use editoast_schemas::primitives::OSRDTyped;
-use editoast_schemas::primitives::ObjectType;
 use educe::Educe;
+use schemas::primitives::OSRDIdentified;
+use schemas::primitives::OSRDTyped;
+use schemas::primitives::ObjectType;
 use serde::Deserialize;
 use serde::Serialize;
 
 use crate::infra_cache::Cache;
 use crate::infra_cache::ObjectCache;
-use editoast_schemas::infra::Detector;
+use schemas::infra::Detector;
 
 #[derive(QueryableByName, Debug, Clone, Educe, Deserialize, Serialize)]
 #[educe(Hash, PartialEq)]

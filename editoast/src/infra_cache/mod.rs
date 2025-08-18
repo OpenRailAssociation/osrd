@@ -19,32 +19,32 @@ use diesel::sql_types::Nullable;
 use diesel::sql_types::Text;
 use diesel_async::RunQueryDsl;
 use editoast_derive::EditoastError;
-use editoast_schemas::infra::Crossing;
-use editoast_schemas::infra::Direction;
-use editoast_schemas::infra::DirectionalTrackRange;
-use editoast_schemas::infra::DoubleSlipSwitch;
-use editoast_schemas::infra::Electrification;
-use editoast_schemas::infra::Endpoint;
-use editoast_schemas::infra::Link;
-use editoast_schemas::infra::NeutralSection;
-use editoast_schemas::infra::OperationalPointPart;
-use editoast_schemas::infra::PointSwitch;
-use editoast_schemas::infra::RailJson;
-use editoast_schemas::infra::Route;
-use editoast_schemas::infra::RoutePath;
-use editoast_schemas::infra::SingleSlipSwitch;
-use editoast_schemas::infra::SpeedSection;
-use editoast_schemas::infra::SwitchType;
-use editoast_schemas::infra::TrackEndpoint;
-use editoast_schemas::infra::Waypoint;
-use editoast_schemas::primitives::OSRDIdentified;
-use editoast_schemas::primitives::OSRDObject;
-use editoast_schemas::primitives::ObjectRef;
-use editoast_schemas::primitives::ObjectType;
 use enum_map::EnumMap;
 use geos::geojson::Geometry;
 pub use graph::Graph;
 use itertools::Itertools as _;
+use schemas::infra::Crossing;
+use schemas::infra::Direction;
+use schemas::infra::DirectionalTrackRange;
+use schemas::infra::DoubleSlipSwitch;
+use schemas::infra::Electrification;
+use schemas::infra::Endpoint;
+use schemas::infra::Link;
+use schemas::infra::NeutralSection;
+use schemas::infra::OperationalPointPart;
+use schemas::infra::PointSwitch;
+use schemas::infra::RailJson;
+use schemas::infra::Route;
+use schemas::infra::RoutePath;
+use schemas::infra::SingleSlipSwitch;
+use schemas::infra::SpeedSection;
+use schemas::infra::SwitchType;
+use schemas::infra::TrackEndpoint;
+use schemas::infra::Waypoint;
+use schemas::primitives::OSRDIdentified;
+use schemas::primitives::OSRDObject;
+use schemas::primitives::ObjectRef;
+use schemas::primitives::ObjectType;
 use serde::Deserialize;
 use serde::Serialize;
 use std::ops::DerefMut;
@@ -61,8 +61,8 @@ use crate::infra_cache::operation::CacheOperation;
 use crate::models::Infra;
 use crate::models::railjson::find_all_schemas;
 use database::DbConnection;
-use editoast_schemas::infra::InfraObject;
-use editoast_schemas::primitives::BoundingBox;
+use schemas::infra::InfraObject;
+use schemas::primitives::BoundingBox;
 
 /// Contains infra cached data used to generate layers and errors
 #[derive(Debug, Default, Clone)]
@@ -937,11 +937,11 @@ impl From<&RailJson> for InfraCache {
 #[cfg(test)]
 pub mod tests {
     use dashmap::DashMap;
-    use editoast_schemas::infra::BufferStop;
-    use editoast_schemas::infra::Detector;
-    use editoast_schemas::infra::Waypoint;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
+    use schemas::infra::BufferStop;
+    use schemas::infra::Detector;
+    use schemas::infra::Waypoint;
     use std::collections::HashMap;
 
     use super::OperationalPointCache;
@@ -955,24 +955,24 @@ pub mod tests {
     use crate::models::fixtures::create_empty_infra;
     use crate::models::fixtures::create_infra_object;
     use database::DbConnectionPoolV2;
-    use editoast_schemas::infra::ApplicableDirections;
-    use editoast_schemas::infra::ApplicableDirectionsTrackRange;
-    use editoast_schemas::infra::Direction;
-    use editoast_schemas::infra::Electrification;
-    use editoast_schemas::infra::Endpoint;
-    use editoast_schemas::infra::OperationalPoint;
-    use editoast_schemas::infra::Route;
-    use editoast_schemas::infra::Signal;
-    use editoast_schemas::infra::SpeedSection;
-    use editoast_schemas::infra::Switch;
-    use editoast_schemas::infra::SwitchPortConnection;
-    use editoast_schemas::infra::SwitchType;
-    use editoast_schemas::infra::TrackEndpoint;
-    use editoast_schemas::infra::TrackSection;
-    use editoast_schemas::primitives::BoundingBox;
-    use editoast_schemas::primitives::Identifier;
-    use editoast_schemas::primitives::NonBlankString;
-    use editoast_schemas::primitives::OSRDIdentified;
+    use schemas::infra::ApplicableDirections;
+    use schemas::infra::ApplicableDirectionsTrackRange;
+    use schemas::infra::Direction;
+    use schemas::infra::Electrification;
+    use schemas::infra::Endpoint;
+    use schemas::infra::OperationalPoint;
+    use schemas::infra::Route;
+    use schemas::infra::Signal;
+    use schemas::infra::SpeedSection;
+    use schemas::infra::Switch;
+    use schemas::infra::SwitchPortConnection;
+    use schemas::infra::SwitchType;
+    use schemas::infra::TrackEndpoint;
+    use schemas::infra::TrackSection;
+    use schemas::primitives::BoundingBox;
+    use schemas::primitives::Identifier;
+    use schemas::primitives::NonBlankString;
+    use schemas::primitives::OSRDIdentified;
 
     #[rstest]
     async fn load_track_section() {
@@ -1473,11 +1473,11 @@ pub mod tests {
         use crate::infra_cache::tests::create_speed_section_cache;
         use crate::infra_cache::tests::create_switch_cache_point;
         use crate::infra_cache::tests::create_switch_type_cache;
-        use editoast_schemas::infra::Direction::StartToStop;
-        use editoast_schemas::infra::TrackEndpoint;
-        use editoast_schemas::infra::Waypoint::BufferStop;
-        use editoast_schemas::primitives::Identifier;
-        use editoast_schemas::primitives::ObjectType;
+        use schemas::infra::Direction::StartToStop;
+        use schemas::infra::TrackEndpoint;
+        use schemas::infra::Waypoint::BufferStop;
+        use schemas::primitives::Identifier;
+        use schemas::primitives::ObjectType;
 
         #[test]
         fn track_section() {

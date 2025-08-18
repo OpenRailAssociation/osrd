@@ -5,7 +5,7 @@ use axum::extract::Path;
 use axum::extract::Query;
 use axum::extract::State;
 use database::DbConnectionPoolV2;
-use editoast_schemas::infra::RoutePath;
+use schemas::infra::RoutePath;
 use serde::Deserialize;
 use serde::Serialize;
 use std::collections::HashMap;
@@ -326,11 +326,11 @@ mod tests {
     use crate::views::infra::routes::RoutesResponse;
     use crate::views::infra::routes::WaypointType;
     use crate::views::test_app::TestAppBuilder;
-    use editoast_schemas::infra::BufferStop;
-    use editoast_schemas::infra::Detector;
-    use editoast_schemas::infra::Route;
-    use editoast_schemas::infra::TrackSection;
-    use editoast_schemas::infra::Waypoint;
+    use schemas::infra::BufferStop;
+    use schemas::infra::Detector;
+    use schemas::infra::Route;
+    use schemas::infra::TrackSection;
+    use schemas::infra::Waypoint;
 
     #[rstest]
     async fn get_routes_nodes() {

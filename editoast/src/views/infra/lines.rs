@@ -5,8 +5,8 @@ use axum::extract::Path;
 use axum::extract::State;
 use database::DbConnectionPoolV2;
 use editoast_derive::EditoastError;
-use editoast_schemas::infra::TrackSection;
-use editoast_schemas::primitives::BoundingBox;
+use schemas::infra::TrackSection;
+use schemas::primitives::BoundingBox;
 use thiserror::Error;
 
 use crate::error::Result;
@@ -90,20 +90,20 @@ pub(in crate::views) async fn get_line_bbox(
 #[cfg(test)]
 mod tests {
     use axum::http::StatusCode;
-    use editoast_schemas::infra::TrackSectionSncfExtension;
-    use editoast_schemas::primitives::Identifier;
     use geos::geojson::Geometry;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
+    use schemas::infra::TrackSectionSncfExtension;
+    use schemas::primitives::Identifier;
     use serde_json::json;
     use std::str::FromStr;
 
     use crate::infra_cache::operation::create::apply_create_operation;
     use crate::models::fixtures::create_empty_infra;
     use crate::views::test_app::TestAppBuilder;
-    use editoast_schemas::infra::TrackSection;
-    use editoast_schemas::infra::TrackSectionExtensions;
-    use editoast_schemas::primitives::BoundingBox;
+    use schemas::infra::TrackSection;
+    use schemas::infra::TrackSectionExtensions;
+    use schemas::primitives::BoundingBox;
 
     #[rstest]
     async fn returns_correct_bbox_for_existing_line_code() {

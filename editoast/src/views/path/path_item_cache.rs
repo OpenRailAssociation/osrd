@@ -1,12 +1,12 @@
 use core_client::pathfinding::InvalidPathItem;
 use core_client::pathfinding::PathfindingInputError;
 use database::DbConnection;
-use editoast_schemas::infra::TrackOffset;
-use editoast_schemas::primitives::NonBlankString;
-use editoast_schemas::train_schedule::OperationalPointIdentifier;
-use editoast_schemas::train_schedule::OperationalPointReference;
-use editoast_schemas::train_schedule::PathItemLocation;
-use editoast_schemas::train_schedule::TrackReference;
+use schemas::infra::TrackOffset;
+use schemas::primitives::NonBlankString;
+use schemas::train_schedule::OperationalPointIdentifier;
+use schemas::train_schedule::OperationalPointReference;
+use schemas::train_schedule::PathItemLocation;
+use schemas::train_schedule::TrackReference;
 use std::collections::HashMap;
 use std::collections::HashSet;
 

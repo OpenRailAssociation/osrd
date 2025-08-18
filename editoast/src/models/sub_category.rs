@@ -1,6 +1,6 @@
 use editoast_derive::Model;
 use editoast_models::rolling_stock::TrainMainCategory;
-use editoast_schemas::rolling_stock::SubCategoryColor;
+use schemas::rolling_stock::SubCategoryColor;
 use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
@@ -25,7 +25,7 @@ pub struct SubCategory {
     pub hovered_color: SubCategoryColor,
 }
 
-impl From<SubCategory> for editoast_schemas::rolling_stock::SubCategory {
+impl From<SubCategory> for schemas::rolling_stock::SubCategory {
     fn from(value: SubCategory) -> Self {
         Self {
             code: value.code,
@@ -38,8 +38,8 @@ impl From<SubCategory> for editoast_schemas::rolling_stock::SubCategory {
     }
 }
 
-impl From<editoast_schemas::rolling_stock::SubCategory> for SubCategoryChangeset {
-    fn from(sub_category: editoast_schemas::rolling_stock::SubCategory) -> Self {
+impl From<schemas::rolling_stock::SubCategory> for SubCategoryChangeset {
+    fn from(sub_category: schemas::rolling_stock::SubCategory) -> Self {
         SubCategory::changeset()
             .code(sub_category.code)
             .name(sub_category.name)

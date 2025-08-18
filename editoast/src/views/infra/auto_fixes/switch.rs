@@ -7,9 +7,9 @@ use super::new_ref_fix_delete_pair;
 use crate::generated_data::infra_error::InfraError;
 use crate::generated_data::infra_error::InfraErrorType;
 use crate::infra_cache::object_cache::SwitchCache;
-use editoast_schemas::primitives::OSRDObject as _;
-use editoast_schemas::primitives::ObjectRef;
-use editoast_schemas::primitives::ObjectType;
+use schemas::primitives::OSRDObject as _;
+use schemas::primitives::ObjectRef;
+use schemas::primitives::ObjectType;
 
 pub fn fix_switch(
     switch: &SwitchCache,

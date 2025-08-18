@@ -10,51 +10,51 @@ use database::DbConnection;
 
 use common::units;
 use database::DbConnectionPoolV2;
-use editoast_schemas::fixtures::simple_created_exception_with_change_groups;
-use editoast_schemas::fixtures::simple_modified_exception_with_change_groups;
-use editoast_schemas::infra::Direction;
-use editoast_schemas::infra::DirectionalTrackRange;
-use editoast_schemas::infra::InfraObject;
-use editoast_schemas::infra::RailJson;
-use editoast_schemas::infra::TrackOffset;
-use editoast_schemas::paced_train::ConstraintDistributionChangeGroup;
-use editoast_schemas::paced_train::ExceptionType;
-use editoast_schemas::paced_train::InitialSpeedChangeGroup;
-use editoast_schemas::paced_train::LabelsChangeGroup;
-use editoast_schemas::paced_train::OptionsChangeGroup;
-use editoast_schemas::paced_train::Paced;
-use editoast_schemas::paced_train::PacedTrain;
-use editoast_schemas::paced_train::PacedTrainException;
-use editoast_schemas::paced_train::PathAndScheduleChangeGroup;
-use editoast_schemas::paced_train::RollingStockCategoryChangeGroup;
-use editoast_schemas::paced_train::RollingStockChangeGroup;
-use editoast_schemas::paced_train::SpeedLimitTagChangeGroup;
-use editoast_schemas::paced_train::StartTimeChangeGroup;
-use editoast_schemas::paced_train::TrainNameChangeGroup;
-use editoast_schemas::primitives::Identifier;
-use editoast_schemas::primitives::NonBlankString;
-use editoast_schemas::primitives::OSRDObject;
-use editoast_schemas::rolling_stock::EffortCurves;
-use editoast_schemas::rolling_stock::LoadingGaugeType;
-use editoast_schemas::rolling_stock::RollingResistance;
-use editoast_schemas::rolling_stock::RollingResistancePerWeight;
-use editoast_schemas::rolling_stock::RollingStockSupportedSignalingSystems;
-use editoast_schemas::rolling_stock::SubCategoryColor;
-use editoast_schemas::rolling_stock::TowedRollingStock;
-use editoast_schemas::rolling_stock::TrainMainCategories;
-use editoast_schemas::rolling_stock::TrainMainCategory;
-use editoast_schemas::train_schedule::Comfort;
-use editoast_schemas::train_schedule::Distribution;
-use editoast_schemas::train_schedule::MarginValue;
-use editoast_schemas::train_schedule::Margins;
-use editoast_schemas::train_schedule::OperationalPointIdentifier;
-use editoast_schemas::train_schedule::OperationalPointReference;
-use editoast_schemas::train_schedule::PathItem;
-use editoast_schemas::train_schedule::PathItemLocation;
-use editoast_schemas::train_schedule::ScheduleItem;
-use editoast_schemas::train_schedule::TrainSchedule;
-use editoast_schemas::train_schedule::TrainScheduleOptions;
 use postgis_diesel::types::LineString;
+use schemas::fixtures::simple_created_exception_with_change_groups;
+use schemas::fixtures::simple_modified_exception_with_change_groups;
+use schemas::infra::Direction;
+use schemas::infra::DirectionalTrackRange;
+use schemas::infra::InfraObject;
+use schemas::infra::RailJson;
+use schemas::infra::TrackOffset;
+use schemas::paced_train::ConstraintDistributionChangeGroup;
+use schemas::paced_train::ExceptionType;
+use schemas::paced_train::InitialSpeedChangeGroup;
+use schemas::paced_train::LabelsChangeGroup;
+use schemas::paced_train::OptionsChangeGroup;
+use schemas::paced_train::Paced;
+use schemas::paced_train::PacedTrain;
+use schemas::paced_train::PacedTrainException;
+use schemas::paced_train::PathAndScheduleChangeGroup;
+use schemas::paced_train::RollingStockCategoryChangeGroup;
+use schemas::paced_train::RollingStockChangeGroup;
+use schemas::paced_train::SpeedLimitTagChangeGroup;
+use schemas::paced_train::StartTimeChangeGroup;
+use schemas::paced_train::TrainNameChangeGroup;
+use schemas::primitives::Identifier;
+use schemas::primitives::NonBlankString;
+use schemas::primitives::OSRDObject;
+use schemas::rolling_stock::EffortCurves;
+use schemas::rolling_stock::LoadingGaugeType;
+use schemas::rolling_stock::RollingResistance;
+use schemas::rolling_stock::RollingResistancePerWeight;
+use schemas::rolling_stock::RollingStockSupportedSignalingSystems;
+use schemas::rolling_stock::SubCategoryColor;
+use schemas::rolling_stock::TowedRollingStock;
+use schemas::rolling_stock::TrainMainCategories;
+use schemas::rolling_stock::TrainMainCategory;
+use schemas::train_schedule::Comfort;
+use schemas::train_schedule::Distribution;
+use schemas::train_schedule::MarginValue;
+use schemas::train_schedule::Margins;
+use schemas::train_schedule::OperationalPointIdentifier;
+use schemas::train_schedule::OperationalPointReference;
+use schemas::train_schedule::PathItem;
+use schemas::train_schedule::PathItemLocation;
+use schemas::train_schedule::ScheduleItem;
+use schemas::train_schedule::TrainSchedule;
+use schemas::train_schedule::TrainScheduleOptions;
 use serde::Deserialize;
 use serde_json::Value;
 use uuid::Uuid;
@@ -350,7 +350,7 @@ pub async fn create_scenario_fixtures_set(
 
 pub fn fast_rolling_stock_changeset(name: &str) -> Changeset<RollingStock> {
     Changeset::<RollingStock>::from(
-        serde_json::from_str::<editoast_schemas::RollingStock>(include_str!(
+        serde_json::from_str::<schemas::RollingStock>(include_str!(
             "../tests/example_rolling_stock_1.json"
         ))
         .expect("Unable to parse example rolling stock"),
@@ -368,7 +368,7 @@ pub async fn create_fast_rolling_stock(conn: &mut DbConnection, name: &str) -> R
 
 pub fn rolling_stock_with_energy_sources_changeset(name: &str) -> Changeset<RollingStock> {
     Changeset::<RollingStock>::from(
-        serde_json::from_str::<editoast_schemas::RollingStock>(include_str!(
+        serde_json::from_str::<schemas::RollingStock>(include_str!(
             "../tests/example_rolling_stock_2_energy_sources.json"
         ))
         .expect("Unable to parse rolling stock with energy sources"),

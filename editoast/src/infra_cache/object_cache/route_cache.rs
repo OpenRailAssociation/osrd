@@ -1,6 +1,6 @@
 use crate::infra_cache::Cache;
 use crate::infra_cache::ObjectCache;
-use editoast_schemas::infra::Route;
+use schemas::infra::Route;
 
 impl Cache for Route {
     fn get_track_referenced_id(&self) -> Vec<&String> {

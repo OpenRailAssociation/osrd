@@ -1,8 +1,8 @@
-use editoast_schemas::infra::Endpoint;
-use editoast_schemas::primitives::OSRDIdentified;
-use editoast_schemas::primitives::OSRDObject;
-use editoast_schemas::primitives::ObjectRef;
-use editoast_schemas::primitives::ObjectType;
+use schemas::infra::Endpoint;
+use schemas::primitives::OSRDIdentified;
+use schemas::primitives::OSRDObject;
+use schemas::primitives::ObjectRef;
+use schemas::primitives::ObjectType;
 use serde::Deserialize;
 use serde::Serialize;
 use strum::AsRefStr;

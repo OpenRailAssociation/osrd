@@ -1,4 +1,4 @@
-use editoast_schemas::primitives::Identifier;
+use schemas::primitives::Identifier;
 use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;

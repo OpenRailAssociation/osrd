@@ -540,7 +540,7 @@ async fn simulate_past_trains(
     )
     .await?
     .into_iter()
-    .map(editoast_schemas::RollingStock::from)
+    .map(schemas::RollingStock::from)
     .collect_vec();
 
     let paths = {
@@ -666,15 +666,15 @@ mod tests {
     use core_client::path_properties::PropertyZoneValues;
     use core_client::pathfinding::PathfindingResultSuccess;
     use database::DbConnectionPoolV2;
-    use editoast_schemas::train_schedule::Comfort;
-    use editoast_schemas::train_schedule::Distribution;
-    use editoast_schemas::train_schedule::Margins;
-    use editoast_schemas::train_schedule::PathItem;
-    use editoast_schemas::train_schedule::ScheduleItem;
-    use editoast_schemas::train_schedule::TrainScheduleOptions;
     use pretty_assertions::assert_eq;
     use reqwest::StatusCode;
     use rstest::rstest;
+    use schemas::train_schedule::Comfort;
+    use schemas::train_schedule::Distribution;
+    use schemas::train_schedule::Margins;
+    use schemas::train_schedule::PathItem;
+    use schemas::train_schedule::ScheduleItem;
+    use schemas::train_schedule::TrainScheduleOptions;
     use uuid::Uuid;
 
     use crate::models::TrainSchedule;

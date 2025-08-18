@@ -8,13 +8,13 @@ use super::new_ref_fix_create_pair;
 use crate::generated_data::infra_error::InfraError;
 use crate::generated_data::infra_error::InfraErrorType;
 use crate::infra_cache::object_cache::TrackSectionCache;
-use editoast_schemas::infra::BufferStop;
-use editoast_schemas::infra::Endpoint;
-use editoast_schemas::infra::InfraObject;
-use editoast_schemas::primitives::Identifier;
-use editoast_schemas::primitives::OSRDIdentified as _;
-use editoast_schemas::primitives::OSRDObject as _;
-use editoast_schemas::primitives::ObjectRef;
+use schemas::infra::BufferStop;
+use schemas::infra::Endpoint;
+use schemas::infra::InfraObject;
+use schemas::primitives::Identifier;
+use schemas::primitives::OSRDIdentified as _;
+use schemas::primitives::OSRDObject as _;
+use schemas::primitives::ObjectRef;
 
 pub fn fix_track_section(
     track_section: &TrackSectionCache,
@@ -54,7 +54,7 @@ mod tests {
     use crate::infra_cache::ObjectCache;
     use crate::infra_cache::operation::CacheOperation;
     use crate::infra_cache::operation::Operation;
-    use editoast_schemas::infra::TrackSection;
+    use schemas::infra::TrackSection;
 
     #[test]
     fn missing_buffer_stop() {

@@ -11,9 +11,9 @@ use axum::extract::State;
 use axum::response::IntoResponse;
 use database::DbConnectionPoolV2;
 use editoast_derive::EditoastError;
-use editoast_schemas::paced_train::PacedTrain;
-use editoast_schemas::train_schedule::OperationalPointReference;
-use editoast_schemas::train_schedule::PathItemLocation;
+use schemas::paced_train::PacedTrain;
+use schemas::train_schedule::OperationalPointReference;
+use schemas::train_schedule::PathItemLocation;
 use serde::Deserialize;
 use serde::Serialize;
 use thiserror::Error;
@@ -231,7 +231,7 @@ pub(in crate::views) struct PacedTrainSummaryResponse {
 struct SimulationContext {
     paced_train_id: i64,
     exception_key: Option<String>,
-    train_schedule: editoast_schemas::TrainSchedule,
+    train_schedule: schemas::TrainSchedule,
 }
 
 /// Associate each paced train id with its simulation summaries response
@@ -309,7 +309,7 @@ pub(in crate::views) async fn simulation_summary(
             })
             .collect();
 
-    let schedules: Vec<editoast_schemas::TrainSchedule> = simulation_contexts
+    let schedules: Vec<schemas::TrainSchedule> = simulation_contexts
         .iter()
         .map(|ctx| ctx.train_schedule.clone())
         .collect();
@@ -982,19 +982,19 @@ mod tests {
     use core_client::simulation::SpeedLimitProperties;
     use database::DbConnectionPoolV2;
     use editoast_models::rolling_stock::TrainMainCategory;
-    use editoast_schemas::fixtures::simple_created_exception_with_change_groups;
-    use editoast_schemas::fixtures::simple_modified_exception_with_change_groups;
-    use editoast_schemas::paced_train::InitialSpeedChangeGroup;
-    use editoast_schemas::paced_train::Paced;
-    use editoast_schemas::paced_train::PacedTrain;
-    use editoast_schemas::paced_train::PacedTrainException;
-    use editoast_schemas::paced_train::RollingStockChangeGroup;
-    use editoast_schemas::paced_train::TrainNameChangeGroup;
-    use editoast_schemas::rolling_stock::TrainCategory;
-    use editoast_schemas::train_schedule::Comfort;
-    use editoast_schemas::train_schedule::TrainSchedule;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
+    use schemas::fixtures::simple_created_exception_with_change_groups;
+    use schemas::fixtures::simple_modified_exception_with_change_groups;
+    use schemas::paced_train::InitialSpeedChangeGroup;
+    use schemas::paced_train::Paced;
+    use schemas::paced_train::PacedTrain;
+    use schemas::paced_train::PacedTrainException;
+    use schemas::paced_train::RollingStockChangeGroup;
+    use schemas::paced_train::TrainNameChangeGroup;
+    use schemas::rolling_stock::TrainCategory;
+    use schemas::train_schedule::Comfort;
+    use schemas::train_schedule::TrainSchedule;
     use serde_json::json;
 
     use crate::error::InternalError;
@@ -1046,7 +1046,7 @@ mod tests {
 
         let created_sub_category = simple_sub_category(
             "tjv",
-            TrainMainCategory(editoast_schemas::rolling_stock::TrainMainCategory::HighSpeedTrain),
+            TrainMainCategory(schemas::rolling_stock::TrainMainCategory::HighSpeedTrain),
         )
         .create(&mut pool.get_ok())
         .await
@@ -1078,8 +1078,7 @@ mod tests {
             created_paced_train.sub_category,
             Some(created_sub_category.code.clone())
         );
-        let created_paced_train: editoast_schemas::paced_train::PacedTrain =
-            created_paced_train.into();
+        let created_paced_train: schemas::paced_train::PacedTrain = created_paced_train.into();
 
         assert_eq!(
             created_paced_train.train_schedule_base.category,

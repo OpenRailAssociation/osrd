@@ -30,7 +30,7 @@ pub async fn import_rolling_stock(
     for rolling_stock_path in args.rolling_stock_path {
         let mut conn = db_pool.get().await?;
         let rolling_stock_file = File::open(rolling_stock_path)?;
-        let rolling_stock: editoast_schemas::RollingStock =
+        let rolling_stock: schemas::RollingStock =
             serde_json::from_reader(BufReader::new(rolling_stock_file))?;
         let rolling_stock_name = rolling_stock.name.clone();
         let rolling_stock: Changeset<RollingStock> = rolling_stock.into();
@@ -113,7 +113,7 @@ pub async fn import_towed_rolling_stock(
 ) -> anyhow::Result<()> {
     for towed_rolling_stock_path in args.rolling_stock_path {
         let towed_rolling_stock_file = File::open(towed_rolling_stock_path)?;
-        let towed_rolling_stock: editoast_schemas::TowedRollingStock =
+        let towed_rolling_stock: schemas::TowedRollingStock =
             serde_json::from_reader(BufReader::new(towed_rolling_stock_file))?;
         let towed_rolling_stock: Changeset<TowedRollingStock> = towed_rolling_stock.into();
         println!(
@@ -151,8 +151,8 @@ mod tests {
         use database::DbConnectionPoolV2;
         use rstest::rstest;
 
-        fn get_fast_rolling_stock_schema(name: &str) -> editoast_schemas::RollingStock {
-            let mut rolling_stock_form: editoast_schemas::RollingStock =
+        fn get_fast_rolling_stock_schema(name: &str) -> schemas::RollingStock {
+            let mut rolling_stock_form: schemas::RollingStock =
                 serde_json::from_str(include_str!("../tests/example_rolling_stock_1.json"))
                     .expect("Unable to parse");
             rolling_stock_form.name = name.to_string();
@@ -414,7 +414,7 @@ mod tests {
             // GIVEN
             let db_pool = DbConnectionPoolV2::for_tests();
             let towed_rolling_stock_name = "towed";
-            let mut towed_rolling_stock_form: editoast_schemas::TowedRollingStock =
+            let mut towed_rolling_stock_form: schemas::TowedRollingStock =
                 serde_json::from_str(include_str!("../tests/example_towed_rolling_stock_1.json"))
                     .expect("Unable to parse");
             towed_rolling_stock_form.name = towed_rolling_stock_name.to_string();

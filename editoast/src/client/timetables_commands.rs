@@ -6,7 +6,7 @@ use std::sync::Arc;
 use clap::Args;
 use clap::Subcommand;
 use database::DbConnectionPoolV2;
-use editoast_schemas::train_schedule::TrainSchedule;
+use schemas::train_schedule::TrainSchedule;
 
 use crate::models;
 use crate::models::prelude::*;

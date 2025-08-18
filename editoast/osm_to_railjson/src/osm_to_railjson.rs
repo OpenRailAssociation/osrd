@@ -8,8 +8,8 @@ use tracing::info;
 
 use super::utils::*;
 use crate::generate_routes;
-use editoast_schemas::infra::RailJson;
-use editoast_schemas::infra::TrackSection;
+use schemas::infra::RailJson;
+use schemas::infra::TrackSection;
 /// Run the osm-to-railjson subcommand
 /// Converts OpenStreetMap pbf file to railjson
 pub fn osm_to_railjson(
@@ -127,10 +127,10 @@ pub fn parse_osm(osm_pbf_in: PathBuf) -> Result<RailJson, Box<dyn Error + Send +
 
 #[cfg(test)]
 mod tests {
-    use editoast_schemas::infra::ApplicableDirections;
-    use editoast_schemas::infra::RailJson;
-    use editoast_schemas::infra::TrackEndpoint;
-    use editoast_schemas::primitives::Identifier;
+    use schemas::infra::ApplicableDirections;
+    use schemas::infra::RailJson;
+    use schemas::infra::TrackEndpoint;
+    use schemas::primitives::Identifier;
     use std::collections::HashMap;
 
     use super::*;

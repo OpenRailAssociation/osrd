@@ -2,17 +2,17 @@ use diesel::sql_types::Double;
 use diesel::sql_types::Jsonb;
 use diesel::sql_types::Text;
 use diesel_json::Json as DieselJson;
-use editoast_schemas::primitives::OSRDIdentified;
-use editoast_schemas::primitives::OSRDTyped;
-use editoast_schemas::primitives::ObjectType;
 use educe::Educe;
+use schemas::primitives::OSRDIdentified;
+use schemas::primitives::OSRDTyped;
+use schemas::primitives::ObjectType;
 use serde::Deserialize;
 use serde::Serialize;
 
 use crate::infra_cache::Cache;
 use crate::infra_cache::ObjectCache;
-use editoast_schemas::infra::LogicalSignal;
-use editoast_schemas::infra::Signal;
+use schemas::infra::LogicalSignal;
+use schemas::infra::Signal;
 
 #[derive(QueryableByName, Debug, Clone, Educe, Deserialize, Serialize)]
 #[educe(Hash, PartialEq)]

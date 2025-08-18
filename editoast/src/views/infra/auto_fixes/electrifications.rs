@@ -14,11 +14,11 @@ use crate::infra_cache::operation::CacheOperation;
 use crate::infra_cache::operation::DeleteOperation;
 use crate::infra_cache::operation::Operation;
 use crate::infra_cache::operation::UpdateOperation;
-use editoast_schemas::infra::Electrification;
-use editoast_schemas::infra::InfraObject;
-use editoast_schemas::primitives::OSRDIdentified as _;
-use editoast_schemas::primitives::OSRDObject as _;
-use editoast_schemas::primitives::ObjectRef;
+use schemas::infra::Electrification;
+use schemas::infra::InfraObject;
+use schemas::primitives::OSRDIdentified as _;
+use schemas::primitives::OSRDObject as _;
+use schemas::primitives::ObjectRef;
 
 fn invalid_reference_to_ordered_operation(
     electrification: &Electrification,
@@ -93,13 +93,13 @@ mod tests {
     use crate::infra_cache::ObjectCache;
     use crate::infra_cache::operation::CacheOperation;
     use crate::infra_cache::operation::Operation;
-    use editoast_schemas::infra::ApplicableDirections;
-    use editoast_schemas::infra::ApplicableDirectionsTrackRange;
-    use editoast_schemas::infra::Electrification;
-    use editoast_schemas::primitives::Identifier;
-    use editoast_schemas::primitives::OSRDObject as _;
-    use editoast_schemas::primitives::ObjectRef;
-    use editoast_schemas::primitives::ObjectType;
+    use schemas::infra::ApplicableDirections;
+    use schemas::infra::ApplicableDirectionsTrackRange;
+    use schemas::infra::Electrification;
+    use schemas::primitives::Identifier;
+    use schemas::primitives::OSRDObject as _;
+    use schemas::primitives::ObjectRef;
+    use schemas::primitives::ObjectType;
 
     #[test]
     fn invalid_refs_ordered_electrification() {

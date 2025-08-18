@@ -9,7 +9,7 @@ use diesel::sql_types::Jsonb;
 use diesel::sql_types::Nullable;
 use diesel::sql_types::Text;
 use diesel_async::RunQueryDsl;
-use editoast_schemas::primitives::ObjectType;
+use schemas::primitives::ObjectType;
 use serde::Deserialize;
 use serde::Serialize;
 

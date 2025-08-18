@@ -10,9 +10,9 @@ use crate::generated_data::infra_error::InfraError;
 use crate::infra_cache::Graph;
 use crate::infra_cache::InfraCache;
 use crate::infra_cache::ObjectCache;
-use editoast_schemas::primitives::OSRDIdentified;
-use editoast_schemas::primitives::ObjectRef;
-use editoast_schemas::primitives::ObjectType;
+use schemas::primitives::OSRDIdentified;
+use schemas::primitives::ObjectRef;
+use schemas::primitives::ObjectType;
 
 pub const OBJECT_GENERATORS: [ObjectErrorGenerator<NoContext>; 2] = [
     ObjectErrorGenerator::new(1, check_empty),
@@ -123,9 +123,9 @@ mod tests {
     use crate::infra_cache::Graph;
     use crate::infra_cache::tests::create_electrification_cache;
     use crate::infra_cache::tests::create_small_infra_cache;
-    use editoast_schemas::primitives::ObjectRef;
-    use editoast_schemas::primitives::ObjectType;
     use rstest::rstest;
+    use schemas::primitives::ObjectRef;
+    use schemas::primitives::ObjectType;
 
     #[test]
     fn invalid_ref() {

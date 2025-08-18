@@ -10,8 +10,8 @@ use diesel::sql_types::Array;
 use diesel::sql_types::BigInt;
 use diesel::sql_types::Nullable;
 use diesel::sql_types::Text;
-use editoast_schemas::infra::LogicalSignal;
-use editoast_schemas::primitives::ObjectType;
+use schemas::infra::LogicalSignal;
+use schemas::primitives::ObjectType;
 
 use super::GeneratedData;
 use super::utils::InvolvedObjects;

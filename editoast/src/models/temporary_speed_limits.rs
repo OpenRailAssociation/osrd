@@ -4,7 +4,7 @@ use database::tables::temporary_speed_limit;
 use database::tables::temporary_speed_limit_group;
 use editoast_derive::Model;
 use editoast_models::model;
-use editoast_schemas::infra::DirectionalTrackRange;
+use schemas::infra::DirectionalTrackRange;
 use serde::Serialize;
 
 #[derive(Debug, Clone, Model)]

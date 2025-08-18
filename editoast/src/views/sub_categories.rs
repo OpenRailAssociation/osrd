@@ -8,8 +8,8 @@ use axum::response::IntoResponse;
 use database::DbConnection;
 use database::DbConnectionPoolV2;
 use editoast_derive::EditoastError;
-use editoast_schemas::rolling_stock::SubCategory;
 use itertools::Itertools;
+use schemas::rolling_stock::SubCategory;
 use serde::Serialize;
 use thiserror::Error;
 use utoipa::IntoParams;
@@ -216,9 +216,9 @@ async fn delete_sub_category_and_fallback_to_main(
 pub mod tests {
     use axum::http::StatusCode;
     use editoast_models::rolling_stock::TrainMainCategory;
-    use editoast_schemas::rolling_stock::SubCategory;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
+    use schemas::rolling_stock::SubCategory;
     use serde_json::json;
 
     use crate::models;
@@ -239,7 +239,7 @@ pub mod tests {
             {
                 "code": "tjv",
                 "name": "TJV",
-                "main_category": editoast_schemas::rolling_stock::TrainMainCategory::HighSpeedTrain,
+                "main_category": schemas::rolling_stock::TrainMainCategory::HighSpeedTrain,
                 "color": "#FF0000",
                 "background_color": "#FF0000",
                 "hovered_color": "#FF0000",
@@ -247,7 +247,7 @@ pub mod tests {
             {
                 "code": "ter",
                 "name": "TER",
-                "main_category": editoast_schemas::rolling_stock::TrainMainCategory::CommuterTrain,
+                "main_category": schemas::rolling_stock::TrainMainCategory::CommuterTrain,
                 "color": "#00FF00",
                 "background_color": "#00FF00",
                 "hovered_color": "#00FF00",
@@ -286,7 +286,7 @@ pub mod tests {
             {
                 "code": "tjv",
                 "name": "TJV",
-                "main_category": editoast_schemas::rolling_stock::TrainMainCategory::HighSpeedTrain,
+                "main_category": schemas::rolling_stock::TrainMainCategory::HighSpeedTrain,
                 "color": "#FF0000",
                 "background_color": "#FF0000",
                 "hovered_color": "#FF0000",
@@ -294,7 +294,7 @@ pub mod tests {
             {
                 "code": "tjv",
                 "name": "TJV",
-                "main_category": editoast_schemas::rolling_stock::TrainMainCategory::CommuterTrain,
+                "main_category": schemas::rolling_stock::TrainMainCategory::CommuterTrain,
                 "color": "#00FF00",
                 "background_color": "#00FF00",
                 "hovered_color": "#00FF00",
@@ -311,7 +311,7 @@ pub mod tests {
 
         let created_sub_category_1 = simple_sub_category(
             "tjv",
-            TrainMainCategory(editoast_schemas::rolling_stock::TrainMainCategory::HighSpeedTrain),
+            TrainMainCategory(schemas::rolling_stock::TrainMainCategory::HighSpeedTrain),
         )
         .create(&mut db_pool.get_ok())
         .await
@@ -319,7 +319,7 @@ pub mod tests {
 
         let created_sub_category_2 = simple_sub_category(
             "ter",
-            TrainMainCategory(editoast_schemas::rolling_stock::TrainMainCategory::HighSpeedTrain),
+            TrainMainCategory(schemas::rolling_stock::TrainMainCategory::HighSpeedTrain),
         )
         .create(&mut db_pool.get_ok())
         .await
@@ -341,7 +341,7 @@ pub mod tests {
 
         let created_sub_category = simple_sub_category(
             "tjv",
-            TrainMainCategory(editoast_schemas::rolling_stock::TrainMainCategory::HighSpeedTrain),
+            TrainMainCategory(schemas::rolling_stock::TrainMainCategory::HighSpeedTrain),
         )
         .create(&mut db_pool.get_ok())
         .await
@@ -403,13 +403,13 @@ pub mod tests {
         assert_eq!(
             paced_train_1.main_category,
             Some(TrainMainCategory(
-                editoast_schemas::rolling_stock::TrainMainCategory::HighSpeedTrain
+                schemas::rolling_stock::TrainMainCategory::HighSpeedTrain
             ))
         );
         assert_eq!(
             paced_train_2.main_category,
             Some(TrainMainCategory(
-                editoast_schemas::rolling_stock::TrainMainCategory::HighSpeedTrain
+                schemas::rolling_stock::TrainMainCategory::HighSpeedTrain
             ))
         );
 
@@ -431,13 +431,13 @@ pub mod tests {
         assert_eq!(
             train_schedule_1.main_category,
             Some(TrainMainCategory(
-                editoast_schemas::rolling_stock::TrainMainCategory::HighSpeedTrain
+                schemas::rolling_stock::TrainMainCategory::HighSpeedTrain
             ))
         );
         assert_eq!(
             train_schedule_2.main_category,
             Some(TrainMainCategory(
-                editoast_schemas::rolling_stock::TrainMainCategory::HighSpeedTrain
+                schemas::rolling_stock::TrainMainCategory::HighSpeedTrain
             ))
         );
 

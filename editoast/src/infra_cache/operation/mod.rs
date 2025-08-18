@@ -6,8 +6,8 @@ use std::ops::Deref as _;
 
 use chrono::Utc;
 use editoast_derive::EditoastError;
-use editoast_schemas::primitives::OSRDObject as _;
 use json_patch::Patch;
+use schemas::primitives::OSRDObject as _;
 use serde::Deserialize;
 use serde::Serialize;
 use thiserror::Error;
@@ -20,9 +20,9 @@ use crate::infra_cache::ObjectCache;
 use crate::models::Infra;
 use crate::models::prelude::*;
 use database::DbConnection;
-use editoast_schemas::infra::InfraObject;
-use editoast_schemas::primitives::ObjectRef;
-use editoast_schemas::primitives::ObjectType;
+use schemas::infra::InfraObject;
+use schemas::primitives::ObjectRef;
+use schemas::primitives::ObjectType;
 
 #[editoast_derive::openapi_schema]
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq)]

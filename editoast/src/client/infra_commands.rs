@@ -8,7 +8,7 @@ use clap::Subcommand;
 use colored::Colorize as _;
 use database::DbConnection;
 use database::DbConnectionPoolV2;
-use editoast_schemas::infra::RailJson;
+use schemas::infra::RailJson;
 
 use crate::ValkeyClient;
 use crate::infra_cache::InfraCache;

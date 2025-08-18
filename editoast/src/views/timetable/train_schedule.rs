@@ -20,13 +20,13 @@ use core_client::simulation::SimulationPath;
 use authz;
 use database::DbConnectionPoolV2;
 use editoast_derive::EditoastError;
-use editoast_schemas::infra::TrackOffset;
-use editoast_schemas::primitives::PositiveDuration;
-use editoast_schemas::train_schedule::OperationalPointIdentifier;
-use editoast_schemas::train_schedule::OperationalPointReference;
-use editoast_schemas::train_schedule::PathItemLocation;
-use editoast_schemas::train_schedule::TrainSchedule;
-use editoast_schemas::train_schedule::TrainScheduleLike;
+use schemas::infra::TrackOffset;
+use schemas::primitives::PositiveDuration;
+use schemas::train_schedule::OperationalPointIdentifier;
+use schemas::train_schedule::OperationalPointReference;
+use schemas::train_schedule::PathItemLocation;
+use schemas::train_schedule::TrainSchedule;
+use schemas::train_schedule::TrainScheduleLike;
 use serde::Deserialize;
 use serde::Serialize;
 use thiserror::Error;
@@ -1218,15 +1218,15 @@ pub mod tests {
     use core_client::mocking::MockingClient;
     use core_client::pathfinding::TrackRange;
     use editoast_models::rolling_stock::TrainMainCategory;
-    use editoast_schemas::infra::Direction;
-    use editoast_schemas::primitives::Identifier;
-    use editoast_schemas::rolling_stock::TrainCategory;
-    use editoast_schemas::train_schedule::OperationalPointReference;
-    use editoast_schemas::train_schedule::PathItem;
-    use editoast_schemas::train_schedule::ReceptionSignal;
-    use editoast_schemas::train_schedule::ScheduleItem;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
+    use schemas::infra::Direction;
+    use schemas::primitives::Identifier;
+    use schemas::rolling_stock::TrainCategory;
+    use schemas::train_schedule::OperationalPointReference;
+    use schemas::train_schedule::PathItem;
+    use schemas::train_schedule::ReceptionSignal;
+    use schemas::train_schedule::ScheduleItem;
     use serde_json::json;
 
     use super::*;
@@ -1317,7 +1317,7 @@ pub mod tests {
 
         let created_sub_category = simple_sub_category(
             "tjv",
-            TrainMainCategory(editoast_schemas::rolling_stock::TrainMainCategory::HighSpeedTrain),
+            TrainMainCategory(schemas::rolling_stock::TrainMainCategory::HighSpeedTrain),
         )
         .create(&mut pool.get_ok())
         .await
@@ -1349,7 +1349,7 @@ pub mod tests {
             created_train_schedule.sub_category,
             Some(created_sub_category.code.clone())
         );
-        let created_train_schedule: editoast_schemas::TrainSchedule = created_train_schedule.into();
+        let created_train_schedule: schemas::TrainSchedule = created_train_schedule.into();
 
         assert_eq!(
             created_train_schedule.category,
@@ -1415,7 +1415,7 @@ pub mod tests {
 
         let created_sub_category = simple_sub_category(
             "tjv",
-            TrainMainCategory(editoast_schemas::rolling_stock::TrainMainCategory::HighSpeedTrain),
+            TrainMainCategory(schemas::rolling_stock::TrainMainCategory::HighSpeedTrain),
         )
         .create(&mut pool.get_ok())
         .await
@@ -1429,9 +1429,9 @@ pub mod tests {
             .expect("Failed to create train schedule");
         let train_schedule_id = train_schedule.id;
 
-        let update_train_schedule = editoast_schemas::TrainSchedule {
+        let update_train_schedule = schemas::TrainSchedule {
             category: Some(TrainCategory::Main {
-                main_category: editoast_schemas::rolling_stock::TrainMainCategory::HighSpeedTrain,
+                main_category: schemas::rolling_stock::TrainMainCategory::HighSpeedTrain,
             }),
             ..train_schedule.into()
         };

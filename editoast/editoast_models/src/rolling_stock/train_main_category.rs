@@ -15,12 +15,12 @@ use serde::Serialize;
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, FromSqlRow, AsExpression)]
 #[diesel(sql_type = sql_types::TrainMainCategory)]
-pub struct TrainMainCategory(pub editoast_schemas::rolling_stock::TrainMainCategory);
+pub struct TrainMainCategory(pub schemas::rolling_stock::TrainMainCategory);
 
 impl FromSql<sql_types::TrainMainCategory, Pg> for TrainMainCategory {
     fn from_sql(value: PgValue) -> diesel::deserialize::Result<Self> {
         let s = std::str::from_utf8(value.as_bytes()).map_err(|_| "Invalid UTF-8 data")?;
-        editoast_schemas::rolling_stock::TrainMainCategory::from_str(s)
+        schemas::rolling_stock::TrainMainCategory::from_str(s)
             .map(TrainMainCategory)
             .map_err(|_| "Unrecognized enum variant for TrainCategory".into())
     }
@@ -35,7 +35,7 @@ impl ToSql<sql_types::TrainMainCategory, Pg> for TrainMainCategory {
 }
 
 impl Deref for TrainMainCategory {
-    type Target = editoast_schemas::rolling_stock::TrainMainCategory;
+    type Target = schemas::rolling_stock::TrainMainCategory;
 
     fn deref(&self) -> &Self::Target {
         &self.0

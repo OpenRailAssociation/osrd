@@ -12,7 +12,7 @@ use diesel::sql_types::BigInt;
 use diesel::sql_types::Jsonb;
 use diesel::sql_types::Text;
 use diesel_async::RunQueryDsl;
-use editoast_schemas::primitives::ObjectType;
+use schemas::primitives::ObjectType;
 
 use super::GeneratedData;
 use super::utils::InvolvedObjects;

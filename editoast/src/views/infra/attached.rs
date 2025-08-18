@@ -17,7 +17,7 @@ use crate::models::prelude::*;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
 use crate::views::infra::InfraApiError;
-use editoast_schemas::primitives::ObjectType;
+use schemas::primitives::ObjectType;
 
 /// Objects types that can be attached to a track
 const ATTACHED_OBJECTS_TYPES: &[ObjectType] = &[
@@ -128,10 +128,10 @@ mod tests {
     use crate::models::Infra;
     use crate::models::prelude::*;
     use crate::views::test_app::TestAppBuilder;
-    use editoast_schemas::infra::Detector;
-    use editoast_schemas::infra::TrackSection;
-    use editoast_schemas::primitives::OSRDIdentified;
-    use editoast_schemas::primitives::ObjectType;
+    use schemas::infra::Detector;
+    use schemas::infra::TrackSection;
+    use schemas::primitives::OSRDIdentified;
+    use schemas::primitives::ObjectType;
 
     #[rstest]
     async fn get_attached_detector() {

@@ -68,7 +68,7 @@ impl BoundingBox {
     /// # Examples
     ///
     /// ```
-    /// use editoast_schemas::primitives::BoundingBox;
+    /// use schemas::primitives::BoundingBox;
     ///
     /// let bbox = BoundingBox((40.0, -75.0), (42.0, -73.0));
     /// let diagonal_length = bbox.diagonal_length();

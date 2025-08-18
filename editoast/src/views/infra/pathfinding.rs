@@ -25,12 +25,12 @@ use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
 use crate::views::infra::InfraApiError;
 use crate::views::infra::InfraIdParam;
-use editoast_schemas::infra::Direction;
-use editoast_schemas::infra::DirectionalTrackRange;
-use editoast_schemas::infra::Endpoint;
-use editoast_schemas::infra::TrackEndpoint;
-use editoast_schemas::primitives::Identifier;
-use editoast_schemas::primitives::ObjectType;
+use schemas::infra::Direction;
+use schemas::infra::DirectionalTrackRange;
+use schemas::infra::Endpoint;
+use schemas::infra::TrackEndpoint;
+use schemas::primitives::Identifier;
+use schemas::primitives::ObjectType;
 
 const DEFAULT_NUMBER_OF_PATHS: u8 = 5;
 const MAX_NUMBER_OF_PATHS: u8 = 5;
@@ -429,9 +429,9 @@ mod tests {
     use crate::infra_cache::tests::create_small_infra_cache;
     use crate::views::infra::pathfinding::InfraPathfindingInput;
     use crate::views::infra::pathfinding::PathfindingTrackLocationInput;
-    use editoast_schemas::infra::Direction;
-    use editoast_schemas::infra::DirectionalTrackRange;
-    use editoast_schemas::primitives::Identifier;
+    use schemas::infra::Direction;
+    use schemas::infra::DirectionalTrackRange;
+    use schemas::primitives::Identifier;
 
     fn expected_path() -> Vec<DirectionalTrackRange> {
         vec![

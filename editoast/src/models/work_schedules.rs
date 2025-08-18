@@ -5,7 +5,7 @@ use chrono::Utc;
 use core_client::stdcm::UndirectedTrackRange;
 use editoast_derive::Model;
 use editoast_models::model;
-use editoast_schemas::infra::TrackRange;
+use schemas::infra::TrackRange;
 use serde::Deserialize;
 use serde::Serialize;
 use strum::FromRepr;

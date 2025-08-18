@@ -2,7 +2,7 @@ use std::collections::HashMap;
 use std::ops::DerefMut;
 
 use diesel::pg::Pg;
-use editoast_schemas::primitives::Identifier;
+use schemas::primitives::Identifier;
 use serde::Deserialize;
 
 use super::Infra;
