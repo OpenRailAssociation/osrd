@@ -150,7 +150,7 @@
   },
   "scripts": {
     "compile": "tsc -b",
-    "start": "vite",
+    "start": "export NODE_OPTIONS='--max_old_space_size=4096' && vite",
     "start-container": "vite --host",
     "build": "npm run build --workspaces --if-present && vite build",
     "test": "npm run test --workspaces --if-present && vitest",
