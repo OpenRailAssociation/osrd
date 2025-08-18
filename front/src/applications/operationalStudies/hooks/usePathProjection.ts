@@ -9,6 +9,7 @@ import { getTrainIdUsedForProjection } from 'reducers/simulationResults/selector
 import {
   extractEditoastIdFromPacedTrainId,
   extractEditoastIdFromTrainScheduleId,
+  isPacedTrainId,
   isTrainScheduleId,
 } from 'utils/trainId';
 
@@ -21,7 +22,7 @@ const usePathProjection = (infra: InfraWithStatus) => {
       : undefined;
 
   const pacedTrainId =
-    trainIdUsedForProjection && !isTrainScheduleId(trainIdUsedForProjection)
+    trainIdUsedForProjection && isPacedTrainId(trainIdUsedForProjection)
       ? extractEditoastIdFromPacedTrainId(trainIdUsedForProjection)
       : undefined;
 

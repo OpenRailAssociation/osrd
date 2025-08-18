@@ -21,6 +21,7 @@ import {
   extractEditoastIdFromTrainScheduleId,
   extractEditoastIdFromPacedTrainId,
   isPacedTrainResponseWithPacedTrainId,
+  isOccurrenceId,
 } from 'utils/trainId';
 import { mapBy } from 'utils/types';
 
@@ -151,11 +152,10 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithStatus) => 
     [projectedTrainsById]
   );
 
-  const pathUsedForProjection = useMemo(
-    () =>
-      trainIdUsedForProjection ? timetableItemsById.get(trainIdUsedForProjection)?.path : undefined,
-    [trainIdUsedForProjection, timetableItems]
-  );
+  const pathUsedForProjection = useMemo(() => {
+    if (!trainIdUsedForProjection || isOccurrenceId(trainIdUsedForProjection)) return undefined;
+    return timetableItemsById.get(trainIdUsedForProjection)?.path;
+  }, [trainIdUsedForProjection, timetableItems]);
 
   const timetableItemIds = useMemo(
     () => timetableItems?.map((item) => item.id) ?? [],
