@@ -131,7 +131,7 @@
         "title": "Début"
       },
       "end": {
-        "description": "Distance entre la fin de la courbure et la fin de la section de voie correspondante (en mètres).",
+        "description": "Distance entre la fin de la courbure et la fin de la section de voie correspondante (en mètres)",
         "title": "Fin"
       },
       "radius": {
@@ -583,18 +583,18 @@
     "title": "Système de signalisation"
   },
   "Slope": {
-    "description": "Correspond au gradient d’élévation d’une partie d’une section de voie. Le gradient peut être positif (cas d’une rampe) ou négatif (cas d’une pente).",
+    "description": "Correspond au gradient d’élévation d’une partie d’une section de voie. Le gradient peut être positif (cas d’une rampe) ou négatif (cas d’une pente)",
     "properties": {
       "begin": {
-        "description": "Distance correspondant au début du gradient associé par rapport au début de la section de voie (en mètres).",
+        "description": "Distance correspondant au début du gradient associé par rapport au début de la section de voie (en mètres)",
         "title": "Début"
       },
       "end": {
-        "description": "Distance correspondant à la fin du gradient associé par rapport au début de la section de voie (en mètres).",
+        "description": "Distance correspondant à la fin du gradient associé par rapport au début de la section de voie (en mètres)",
         "title": "Fin"
       },
       "gradient": {
-        "description": "Gradient correspondant (en mètres par kilomètres).",
+        "description": "Gradient correspondant (en mètres par kilomètres)",
         "title": "Gradient"
       }
     },
@@ -612,7 +612,7 @@
         "title": "Sur les itinéraires"
       },
       "speed_limit": {
-        "description": "Vitesse limite par défaut des trains qui ne sont dans aucune catégorie spécifique (en mètres par seconde).",
+        "description": "Vitesse limite par défaut des trains qui ne sont dans aucune catégorie spécifique (en mètres par seconde)",
         "title": "Vitesse limite"
       },
       "speed_limit_by_tag": {
@@ -636,11 +636,11 @@
         "title": "Panneau d’annonce"
       },
       "r": {
-        "description": "Fin de la limite permanente de vitesse.",
+        "description": "Fin de la limite permanente de vitesse",
         "title": "Panneau R"
       },
       "z": {
-        "description": "Début de la limite permanente de vitesse."
+        "description": "Début de la limite permanente de vitesse"
       }
     },
     "title": "Extensions spécifiques à la SNCF"
@@ -649,7 +649,7 @@
     "description": "Les aiguilles sont des appareils permettant de changer de voie.",
     "properties": {
       "group_change_delay": {
-        "description": "Temps nécessaire pour changer la configuration d’une aiguille.",
+        "description": "Temps nécessaire pour changer la configuration d’une aiguille",
         "title": "Délai de changement de configuration d’un groupe d’aiguilles"
       },
       "id": {
@@ -674,11 +674,11 @@
     "description": "Connexion entre chaque branche d’un type d’aiguille. Elle est toujours bidirectionnelle.",
     "properties": {
       "dst": {
-        "description": "Nom de la branche de destination de la connexion.",
+        "description": "Nom de la branche de destination de la connexion",
         "title": "Dst"
       },
       "src": {
-        "description": " Nom de la branche source de la connexion. ",
+        "description": "Nom de la branche source de la connexion",
         "title": "Src"
       }
     },
@@ -705,7 +705,7 @@
         "title": "Id"
       },
       "ports": {
-        "description": "Liste des branches d’une aiguille. Les branches correspondent aux extrémités des aiguilles.",
+        "description": "Liste des branches d’une aiguille. Les branches correspondent aux extrémités des aiguilles",
         "title": "Branches de l’aiguille"
       }
     },
@@ -987,7 +987,7 @@
       "title": "Détecteurs"
     },
     "electrifications": {
-      "description": "Caténaires de l’infrastructure ",
+      "description": "Caténaires de l’infrastructure",
       "title": "Caténaires"
     },
     "extended_switch_types": {
