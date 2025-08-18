@@ -29,6 +29,7 @@ import { getTrainIdUsedForProjection } from 'reducers/simulationResults/selector
 import { useAppDispatch } from 'store';
 import {
   extractPacedTrainIdFromOccurrenceId,
+  isOccurrenceId,
   isPacedTrainWithDetails,
   isTrainScheduleId,
 } from 'utils/trainId';
@@ -237,7 +238,7 @@ const SimulationResults = ({
               </div>
               <div className="osrd-simulation-container d-flex flex-grow-1 flex-shrink-1">
                 <div className="chart-container">
-                  {trainIdUsedForProjection && (
+                  {trainIdUsedForProjection && !isOccurrenceId(trainIdUsedForProjection) && (
                     <SpaceTimeChartWrapper
                       operationalPoints={projectedOperationalPoints}
                       projectPathTrainResult={projectPathTrainResult}

@@ -1,6 +1,6 @@
 import type { ScaleTime, ScaleLinear } from 'd3-scale';
 
-import type { TimetableItemId, TrainId } from 'reducers/osrdconf/types';
+import type { OccurrenceId, PacedTrainId, TrainId, TrainScheduleId } from 'reducers/osrdconf/types';
 
 type SimulationD3Scale = ScaleTime<number, number> | ScaleLinear<number, number>;
 
@@ -33,6 +33,6 @@ export type ProjectionType = 'trackProjection' | 'operationalPointProjection';
 export interface SimulationResultsState {
   chart?: Chart;
   selectedTrainId?: TrainId;
-  trainIdUsedForProjection?: TimetableItemId;
+  trainIdUsedForProjection?: TrainScheduleId | PacedTrainId | OccurrenceId;
   projectionType: ProjectionType;
 }
