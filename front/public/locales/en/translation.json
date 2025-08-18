@@ -224,8 +224,8 @@
         },
         "linked-routes": "Linked routes",
         "no-linked-route": "No linked routes",
-        "routes-ending-at": "Ending at...",
-        "routes-starting-from": "Starting from..."
+        "routes-ending-at": "Ending at…",
+        "routes-starting-from": "Starting from…"
       },
       "range-edition": {
         "edit-track-range-end": "Edit arrival point",
@@ -244,7 +244,7 @@
           "pick-entry_point-cancel": "Cancel the selection of the starting point",
           "pick-entry_point-update": "Modify the selected starting point",
           "pick-exit_point": "Ending point selection tool",
-          "pick-exit_point-cancel": "Undo exit point selection.",
+          "pick-exit_point-cancel": "Undo exit point selection",
           "pick-exit_point-update": "Modify the selected exit point",
           "reset-route": "Reset the route",
           "save-route": "Save the route"
@@ -804,7 +804,7 @@
     "thermal": "Combustion engine",
     "tractionModes": "Traction modes",
     "unspecified": "Unspecified",
-    "waitingLoader": "Please wait, rolling stock database loading..."
+    "waitingLoader": "Please wait, rolling stock database loading…"
   },
   "rollingStockEditor": "Rolling stock editor",
   "stdcm": "Short term path request",
