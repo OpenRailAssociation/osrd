@@ -1,11 +1,11 @@
 import dayjs from 'dayjs';
 import duration from 'dayjs/plugin/duration';
+import utc from 'dayjs/plugin/utc';
 
 import type { TimeString } from 'common/types';
 
-import { dateToHHMMSS } from './date';
-
 dayjs.extend(duration);
+dayjs.extend(utc);
 
 export const SECONDS_IN_A_DAY = 86400;
 
@@ -51,5 +51,6 @@ export function secToHoursString(sec: number | null): TimeString {
   if (!sec) {
     return '';
   }
-  return dateToHHMMSS(new Date(sec * 1000), { utc: true });
+  const date = new Date(sec * 1000);
+  return dayjs(date).utc().format('HH:mm:ss');
 }

@@ -2,13 +2,11 @@ import { useMemo } from 'react';
 
 import dayjs from 'dayjs';
 import customParseFormat from 'dayjs/plugin/customParseFormat';
-import utc from 'dayjs/plugin/utc';
 import type { TFunction } from 'i18next';
 import { useTranslation } from 'react-i18next';
 
 import type { StdcmSearchDatetimeWindow } from 'applications/stdcm/types';
 
-dayjs.extend(utc);
 dayjs.extend(customParseFormat);
 
 /**
@@ -83,12 +81,6 @@ export const formatTimeDifference = (_start: Date, _end: Date, t: TFunction): st
   if (diffInMinutes > 0) parts.push(`${diffInMinutes}${t('common.units.minute')}`);
 
   return parts.join(' ');
-};
-
-export const dateToHHMMSS = (date: Date, options?: { withoutSeconds?: boolean; utc?: boolean }) => {
-  const format = options?.withoutSeconds ? 'HH:mm' : 'HH:mm:ss';
-  if (options?.utc) return dayjs(date).utc().format(format);
-  return dayjs(date).local().format(format);
 };
 
 export const useDateTimeLocale = () => {
