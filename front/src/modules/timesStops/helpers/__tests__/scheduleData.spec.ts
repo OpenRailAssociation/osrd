@@ -5,10 +5,12 @@ import type { ReceptionSignal } from 'common/api/osrdEditoastApi';
 import { formatSchedule } from '../scheduleData';
 
 describe('formatScheduleTime', () => {
+  const dateTimeLocale = new Intl.Locale('fr-FR');
+
   it('should return empty objecty if schedule is undefined', () => {
     const arrivalTime = new Date();
 
-    expect(formatSchedule(arrivalTime)).toEqual({
+    expect(formatSchedule(arrivalTime, undefined, dateTimeLocale)).toEqual({
       stopFor: undefined,
       shortSlipDistance: false,
       onStopSignal: false,
@@ -24,7 +26,7 @@ describe('formatScheduleTime', () => {
       reception_signal: 'OPEN' as ReceptionSignal,
     };
 
-    expect(formatSchedule(arrivalTime, schedule)).toEqual({
+    expect(formatSchedule(arrivalTime, schedule, dateTimeLocale)).toEqual({
       calculatedDeparture: '02:04:40',
       stopFor: '100',
       shortSlipDistance: false,
