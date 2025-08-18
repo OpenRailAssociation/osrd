@@ -1,8 +1,8 @@
-use editoast_schemas::infra::Direction;
-use editoast_schemas::infra::TrackOffset;
-use editoast_schemas::primitives::Identifier;
-use editoast_schemas::rolling_stock::LoadingGaugeType;
-use editoast_schemas::train_schedule::PathItemLocation;
+use schemas::infra::Direction;
+use schemas::infra::TrackOffset;
+use schemas::primitives::Identifier;
+use schemas::rolling_stock::LoadingGaugeType;
+use schemas::train_schedule::PathItemLocation;
 use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
@@ -172,8 +172,8 @@ pub struct TrackRange {
     pub direction: Direction,
 }
 
-impl From<editoast_schemas::infra::DirectionalTrackRange> for TrackRange {
-    fn from(value: editoast_schemas::infra::DirectionalTrackRange) -> Self {
+impl From<schemas::infra::DirectionalTrackRange> for TrackRange {
+    fn from(value: schemas::infra::DirectionalTrackRange) -> Self {
         TrackRange {
             track_section: value.track,
             begin: (value.begin * 1000.).round() as u64,

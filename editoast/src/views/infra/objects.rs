@@ -8,7 +8,7 @@ use axum::extract::Path;
 use axum::extract::State;
 use database::DbConnectionPoolV2;
 use editoast_derive::EditoastError;
-use editoast_schemas::primitives::ObjectType;
+use schemas::primitives::ObjectType;
 use thiserror::Error;
 
 use super::InfraApiError;
@@ -171,9 +171,9 @@ pub(in crate::views) async fn list_objects_ids(
 #[cfg(test)]
 mod tests {
     use axum::http::StatusCode;
-    use editoast_schemas::primitives::Identifier;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
+    use schemas::primitives::Identifier;
     use serde_json::Value as JsonValue;
     use serde_json::json;
 
@@ -181,9 +181,9 @@ mod tests {
     use crate::models::fixtures::create_empty_infra;
     use crate::views::infra::objects::ObjectQueryable;
     use crate::views::test_app::TestAppBuilder;
-    use editoast_schemas::infra::Switch;
-    use editoast_schemas::infra::SwitchType;
-    use editoast_schemas::primitives::OSRDIdentified;
+    use schemas::infra::Switch;
+    use schemas::infra::SwitchType;
+    use schemas::primitives::OSRDIdentified;
 
     #[rstest]
     async fn check_invalid_ids() {

@@ -4,7 +4,7 @@ use database::DbConnection;
 use database::tables::electrical_profile_set;
 use diesel_async::RunQueryDsl;
 use editoast_derive::Model;
-use editoast_schemas::infra::ElectricalProfileSetData;
+use schemas::infra::ElectricalProfileSetData;
 use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;

@@ -956,7 +956,6 @@ dependencies = [
  "core_client",
  "deadpool",
  "editoast_derive",
- "editoast_schemas",
  "educe",
  "futures-util",
  "hostname",
@@ -968,6 +967,7 @@ dependencies = [
  "pretty_assertions",
  "reqwest",
  "rstest",
+ "schemas",
  "serde",
  "serde_json",
  "thiserror 2.0.12",
@@ -1367,7 +1367,6 @@ dependencies = [
  "diesel_json",
  "editoast_derive",
  "editoast_models",
- "editoast_schemas",
  "educe",
  "enum-map",
  "enumset",
@@ -1402,6 +1401,7 @@ dependencies = [
  "regex",
  "reqwest",
  "rstest",
+ "schemas",
  "search",
  "serde",
  "serde_json",
@@ -1453,7 +1453,6 @@ dependencies = [
  "diesel-async",
  "editoast_derive",
  "editoast_models",
- "editoast_schemas",
  "futures 0.3.31",
  "futures-util",
  "openssl",
@@ -1461,6 +1460,7 @@ dependencies = [
  "postgis_diesel",
  "postgres-openssl",
  "regex",
+ "schemas",
  "serde",
  "strum",
  "thiserror 2.0.12",
@@ -1469,31 +1469,6 @@ dependencies = [
  "tracing",
  "url",
  "utoipa",
-]
-
-[[package]]
-name = "editoast_schemas"
-version = "0.1.0"
-dependencies = [
- "chrono",
- "common",
- "editoast_derive",
- "educe",
- "enum-map",
- "geojson",
- "iso8601",
- "linkme",
- "rand 0.9.2",
- "regex",
- "rstest",
- "serde",
- "serde_json",
- "serde_with",
- "strum",
- "thiserror 2.0.12",
- "uom",
- "utoipa",
- "uuid",
 ]
 
 [[package]]
@@ -3172,11 +3147,11 @@ name = "osm_to_railjson"
 version = "0.1.0"
 dependencies = [
  "clap",
- "editoast_schemas",
  "geo-types",
  "geos",
  "osm4routing",
  "rstest",
+ "schemas",
  "serde_json",
  "tempfile",
  "tracing",
@@ -4188,6 +4163,31 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1f29ebaa345f945cec9fbbc532eb307f0fdad8161f281b6369539c8d84876b3d"
 dependencies = [
  "windows-sys 0.59.0",
+]
+
+[[package]]
+name = "schemas"
+version = "0.1.0"
+dependencies = [
+ "chrono",
+ "common",
+ "editoast_derive",
+ "educe",
+ "enum-map",
+ "geojson",
+ "iso8601",
+ "linkme",
+ "rand 0.9.2",
+ "regex",
+ "rstest",
+ "serde",
+ "serde_json",
+ "serde_with",
+ "strum",
+ "thiserror 2.0.12",
+ "uom",
+ "utoipa",
+ "uuid",
 ]
 
 [[package]]

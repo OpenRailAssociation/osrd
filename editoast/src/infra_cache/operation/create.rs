@@ -4,9 +4,9 @@ use diesel::sql_types::BigInt;
 use diesel::sql_types::Json;
 use diesel::sql_types::Text;
 use diesel_async::RunQueryDsl;
-use editoast_schemas::infra::InfraObject;
-use editoast_schemas::primitives::OSRDIdentified;
-use editoast_schemas::primitives::OSRDObject;
+use schemas::infra::InfraObject;
+use schemas::primitives::OSRDIdentified;
+use schemas::primitives::OSRDObject;
 use std::ops::DerefMut;
 
 use super::OperationError;
@@ -36,17 +36,17 @@ pub async fn apply_create_operation<'r>(
 
 #[cfg(test)]
 pub mod tests {
-    use editoast_schemas::infra::BufferStop;
-    use editoast_schemas::infra::Detector;
-    use editoast_schemas::infra::Electrification;
-    use editoast_schemas::infra::NeutralSection;
-    use editoast_schemas::infra::OperationalPoint;
-    use editoast_schemas::infra::Route;
-    use editoast_schemas::infra::Signal;
-    use editoast_schemas::infra::SpeedSection;
-    use editoast_schemas::infra::Switch;
-    use editoast_schemas::infra::SwitchType;
-    use editoast_schemas::infra::TrackSection;
+    use schemas::infra::BufferStop;
+    use schemas::infra::Detector;
+    use schemas::infra::Electrification;
+    use schemas::infra::NeutralSection;
+    use schemas::infra::OperationalPoint;
+    use schemas::infra::Route;
+    use schemas::infra::Signal;
+    use schemas::infra::SpeedSection;
+    use schemas::infra::Switch;
+    use schemas::infra::SwitchType;
+    use schemas::infra::TrackSection;
 
     macro_rules! test_create_object {
         ($obj:ident) => {
@@ -55,7 +55,7 @@ pub mod tests {
                 async fn [<test_create_ $obj:snake>]() {
                     let db_pool = database::DbConnectionPoolV2::for_tests();
                     let infra = crate::models::fixtures::create_empty_infra(&mut db_pool.get_ok()).await;
-                    let infra_object = editoast_schemas::infra::InfraObject::$obj {
+                    let infra_object = schemas::infra::InfraObject::$obj {
                         railjson: $obj::default(),
                     };
                     let result = crate::infra_cache::operation::create::apply_create_operation(&infra_object, infra.id, &mut db_pool.get_ok()).await;

@@ -12,12 +12,12 @@ use core_client::simulation::SimulationPowerRestrictionItem;
 use core_client::simulation::SimulationScheduleItem;
 use core_client::simulation::SpeedLimitProperties;
 use database::DbConnection;
-use editoast_schemas::train_schedule::Margins;
-use editoast_schemas::train_schedule::PathItem;
-use editoast_schemas::train_schedule::PowerRestrictionItem;
-use editoast_schemas::train_schedule::ScheduleItem;
-use editoast_schemas::train_schedule::TrainScheduleLike;
 use itertools::Itertools;
+use schemas::train_schedule::Margins;
+use schemas::train_schedule::PathItem;
+use schemas::train_schedule::PowerRestrictionItem;
+use schemas::train_schedule::ScheduleItem;
+use schemas::train_schedule::TrainScheduleLike;
 use serde::Deserialize;
 use serde::Serialize;
 use std::collections::HashMap;
@@ -450,7 +450,7 @@ fn build_simulation_request<T: TrainScheduleLike>(
 pub fn build_path_items_to_position<'t>(
     path_items: &'t [PathItem],
     path_item_positions: &[u64],
-) -> HashMap<&'t editoast_schemas::primitives::NonBlankString, u64> {
+) -> HashMap<&'t schemas::primitives::NonBlankString, u64> {
     assert_eq!(path_item_positions.len(), path_items.len());
     // Project path items to path offset
 
@@ -463,7 +463,7 @@ pub fn build_path_items_to_position<'t>(
 
 pub fn build_sim_schedule_items(
     schedule_items: &[ScheduleItem],
-    path_items_to_position: &HashMap<&editoast_schemas::primitives::NonBlankString, u64>,
+    path_items_to_position: &HashMap<&schemas::primitives::NonBlankString, u64>,
 ) -> Vec<SimulationScheduleItem> {
     schedule_items
         .iter()
@@ -484,7 +484,7 @@ pub fn build_sim_schedule_items(
 
 fn build_sim_margins(
     margins: &Margins,
-    path_items_to_position: &HashMap<&editoast_schemas::primitives::NonBlankString, u64>,
+    path_items_to_position: &HashMap<&schemas::primitives::NonBlankString, u64>,
 ) -> SimulationMargins {
     SimulationMargins {
         boundaries: margins
@@ -498,7 +498,7 @@ fn build_sim_margins(
 
 pub fn build_sim_power_restriction_items(
     power_restrictions: &[PowerRestrictionItem],
-    path_items_to_position: &HashMap<&editoast_schemas::primitives::NonBlankString, u64>,
+    path_items_to_position: &HashMap<&schemas::primitives::NonBlankString, u64>,
 ) -> Vec<SimulationPowerRestrictionItem> {
     power_restrictions
         .iter()

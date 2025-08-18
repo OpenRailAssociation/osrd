@@ -1,4 +1,4 @@
-use editoast_schemas::train_schedule::Comfort;
+use schemas::train_schedule::Comfort;
 use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;

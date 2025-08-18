@@ -7,12 +7,12 @@ use crate::generated_data::infra_error::InfraError;
 use crate::infra_cache::Graph;
 use crate::infra_cache::InfraCache;
 use crate::infra_cache::ObjectCache;
-use editoast_schemas::infra::Waypoint;
-use editoast_schemas::primitives::Identifier;
-use editoast_schemas::primitives::OSRDIdentified;
-use editoast_schemas::primitives::OSRDObject;
-use editoast_schemas::primitives::ObjectRef;
-use editoast_schemas::primitives::ObjectType;
+use schemas::infra::Waypoint;
+use schemas::primitives::Identifier;
+use schemas::primitives::OSRDIdentified;
+use schemas::primitives::OSRDObject;
+use schemas::primitives::ObjectRef;
+use schemas::primitives::ObjectType;
 
 pub const OBJECT_GENERATORS: [ObjectErrorGenerator<Context>; 5] = [
     ObjectErrorGenerator::new(1, check_entry_point_ref),
@@ -231,11 +231,11 @@ mod tests {
     use crate::infra_cache::tests::create_detector_cache;
     use crate::infra_cache::tests::create_route_cache;
     use crate::infra_cache::tests::create_small_infra_cache;
-    use editoast_schemas::infra::Direction;
-    use editoast_schemas::infra::Waypoint;
-    use editoast_schemas::primitives::OSRDObject;
-    use editoast_schemas::primitives::ObjectRef;
-    use editoast_schemas::primitives::ObjectType;
+    use schemas::infra::Direction;
+    use schemas::infra::Waypoint;
+    use schemas::primitives::OSRDObject;
+    use schemas::primitives::ObjectRef;
+    use schemas::primitives::ObjectType;
 
     #[test]
     fn invalid_ref_entry_point() {

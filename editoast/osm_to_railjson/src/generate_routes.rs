@@ -6,15 +6,15 @@
 
 use std::collections::HashMap;
 
-use editoast_schemas::infra::Direction;
-use editoast_schemas::infra::Endpoint;
-use editoast_schemas::infra::RailJson;
-use editoast_schemas::infra::Route;
-use editoast_schemas::infra::TrackEndpoint;
-use editoast_schemas::infra::Waypoint;
-use editoast_schemas::infra::builtin_node_types_list;
-use editoast_schemas::primitives::Identifier;
-use editoast_schemas::primitives::OSRDIdentified;
+use schemas::infra::Direction;
+use schemas::infra::Endpoint;
+use schemas::infra::RailJson;
+use schemas::infra::Route;
+use schemas::infra::TrackEndpoint;
+use schemas::infra::Waypoint;
+use schemas::infra::builtin_node_types_list;
+use schemas::primitives::Identifier;
+use schemas::primitives::OSRDIdentified;
 
 /* Part 1: type definitions */
 // When building the graph, a node can be a trackEndPoint, a detector or a buffer stop
@@ -301,9 +301,9 @@ pub fn routes(railjson: &RailJson) -> Vec<Route> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use editoast_schemas::infra::BufferStop;
-    use editoast_schemas::infra::Detector;
-    use editoast_schemas::infra::TrackSection;
+    use schemas::infra::BufferStop;
+    use schemas::infra::Detector;
+    use schemas::infra::TrackSection;
 
     fn min_infra() -> RailJson {
         let track = TrackSection {

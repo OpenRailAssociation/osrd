@@ -6,11 +6,11 @@ use super::Fix;
 use super::new_ref_fix_delete_pair;
 use crate::generated_data::infra_error::InfraError;
 use crate::generated_data::infra_error::InfraErrorType;
-use editoast_schemas::infra::Route;
-use editoast_schemas::primitives::OSRDIdentified as _;
-use editoast_schemas::primitives::OSRDObject as _;
-use editoast_schemas::primitives::ObjectRef;
-use editoast_schemas::primitives::ObjectType;
+use schemas::infra::Route;
+use schemas::primitives::OSRDIdentified as _;
+use schemas::primitives::OSRDObject as _;
+use schemas::primitives::ObjectRef;
+use schemas::primitives::ObjectType;
 
 pub fn fix_route(
     route: &Route,

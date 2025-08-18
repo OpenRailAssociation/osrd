@@ -4,17 +4,17 @@ use chrono::DateTime;
 use chrono::Utc;
 use editoast_derive::Model;
 use editoast_models::rolling_stock::TrainMainCategory;
-use editoast_schemas;
-use editoast_schemas::rolling_stock::TrainCategory;
-use editoast_schemas::train_schedule;
-use editoast_schemas::train_schedule::Comfort;
-use editoast_schemas::train_schedule::Distribution;
-use editoast_schemas::train_schedule::Margins;
-use editoast_schemas::train_schedule::PathItem;
-use editoast_schemas::train_schedule::PowerRestrictionItem;
-use editoast_schemas::train_schedule::ScheduleItem;
-use editoast_schemas::train_schedule::TrainScheduleLike;
-use editoast_schemas::train_schedule::TrainScheduleOptions;
+use schemas;
+use schemas::rolling_stock::TrainCategory;
+use schemas::train_schedule;
+use schemas::train_schedule::Comfort;
+use schemas::train_schedule::Distribution;
+use schemas::train_schedule::Margins;
+use schemas::train_schedule::PathItem;
+use schemas::train_schedule::PowerRestrictionItem;
+use schemas::train_schedule::ScheduleItem;
+use schemas::train_schedule::TrainScheduleLike;
+use schemas::train_schedule::TrainScheduleOptions;
 
 use crate::models::prelude::*;
 
@@ -51,9 +51,9 @@ pub struct TrainSchedule {
     pub sub_category: Option<String>,
 }
 
-impl From<editoast_schemas::TrainSchedule> for TrainScheduleChangeset {
+impl From<schemas::TrainSchedule> for TrainScheduleChangeset {
     fn from(
-        editoast_schemas::TrainSchedule {
+        schemas::TrainSchedule {
             train_name,
             labels,
             rolling_stock_name,
@@ -68,7 +68,7 @@ impl From<editoast_schemas::TrainSchedule> for TrainScheduleChangeset {
             power_restrictions,
             options,
             category,
-        }: editoast_schemas::TrainSchedule,
+        }: schemas::TrainSchedule,
     ) -> Self {
         let changeset = TrainSchedule::changeset()
             .comfort(comfort)
@@ -218,7 +218,7 @@ mod tests {
         let train_schedule_changeset = simple_train_schedule_changeset(timetable.id);
         let created_sub_category = simple_sub_category(
             "tjv",
-            TrainMainCategory(editoast_schemas::rolling_stock::TrainMainCategory::HighSpeedTrain),
+            TrainMainCategory(schemas::rolling_stock::TrainMainCategory::HighSpeedTrain),
         )
         .create(&mut pool.get_ok())
         .await
@@ -227,7 +227,7 @@ mod tests {
         let train_schedule_changeset = train_schedule_changeset
             .sub_category(Some(created_sub_category.code))
             .main_category(Some(TrainMainCategory(
-                editoast_schemas::rolling_stock::TrainMainCategory::HighSpeedTrain,
+                schemas::rolling_stock::TrainMainCategory::HighSpeedTrain,
             )));
         let error = train_schedule_changeset
             .create(&mut pool.get_ok())

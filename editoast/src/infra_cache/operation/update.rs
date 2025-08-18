@@ -9,10 +9,10 @@ use diesel::sql_types::Json;
 use diesel::sql_types::Jsonb;
 use diesel::sql_types::Text;
 use diesel_async::RunQueryDsl;
-use editoast_schemas::infra::InfraObject;
-use editoast_schemas::primitives::OSRDIdentified;
-use editoast_schemas::primitives::ObjectType;
 use json_patch::Patch;
+use schemas::infra::InfraObject;
+use schemas::primitives::OSRDIdentified;
+use schemas::primitives::ObjectType;
 use serde::Deserialize;
 use serde::Serialize;
 use serde_json::Value;
@@ -126,11 +126,11 @@ mod tests {
     use diesel::sql_types::Double;
     use diesel::sql_types::Text;
     use diesel_async::RunQueryDsl;
-    use editoast_schemas::infra::Signal;
-    use editoast_schemas::infra::SpeedSection;
-    use editoast_schemas::infra::Switch;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
+    use schemas::infra::Signal;
+    use schemas::infra::SpeedSection;
+    use schemas::infra::Switch;
     use serde_json::from_str;
     use std::ops::DerefMut;
 
@@ -140,9 +140,9 @@ mod tests {
     use crate::models::fixtures::create_empty_infra;
     use crate::models::fixtures::create_infra_object;
     use database::DbConnectionPoolV2;
-    use editoast_schemas::infra::TrackSection;
-    use editoast_schemas::primitives::OSRDIdentified;
-    use editoast_schemas::primitives::ObjectType;
+    use schemas::infra::TrackSection;
+    use schemas::primitives::OSRDIdentified;
+    use schemas::primitives::ObjectType;
 
     #[derive(QueryableByName)]
     struct Value {

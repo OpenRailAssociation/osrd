@@ -15,15 +15,15 @@ use database::DbConnection;
 use database::DbConnectionPoolV2;
 use editoast_models::rolling_stock::TrainMainCategories;
 use editoast_models::rolling_stock::TrainMainCategory;
-use editoast_schemas::rolling_stock::EffortCurves;
-use editoast_schemas::rolling_stock::EnergySource;
-use editoast_schemas::rolling_stock::EtcsBrakeParams;
-use editoast_schemas::rolling_stock::LoadingGaugeType;
-use editoast_schemas::rolling_stock::ModeEffortCurves;
-use editoast_schemas::rolling_stock::RollingResistance;
-use editoast_schemas::rolling_stock::RollingStockMetadata;
-use editoast_schemas::rolling_stock::RollingStockSupportedSignalingSystems;
 use itertools::Itertools as _;
+use schemas::rolling_stock::EffortCurves;
+use schemas::rolling_stock::EnergySource;
+use schemas::rolling_stock::EtcsBrakeParams;
+use schemas::rolling_stock::LoadingGaugeType;
+use schemas::rolling_stock::ModeEffortCurves;
+use schemas::rolling_stock::RollingResistance;
+use schemas::rolling_stock::RollingStockMetadata;
+use schemas::rolling_stock::RollingStockSupportedSignalingSystems;
 use serde::Serialize;
 use std::collections::HashMap;
 use utoipa::ToSchema;
@@ -55,7 +55,7 @@ pub(in crate::views) struct LightRollingStockWithLiveries {
     #[serde(flatten)]
     rolling_stock: LightRollingStock,
     #[schema(value_type = Vec<RollingStockLivery>)]
-    liveries: Vec<editoast_schemas::rolling_stock::RollingStockLivery>,
+    liveries: Vec<schemas::rolling_stock::RollingStockLivery>,
 }
 
 impl LightRollingStockWithLiveries {

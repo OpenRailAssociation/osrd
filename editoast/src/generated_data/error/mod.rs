@@ -22,10 +22,10 @@ use diesel::sql_types::BigInt;
 use diesel::sql_types::Json;
 use diesel::sql_types::Text;
 use diesel_async::RunQueryDsl;
-use editoast_schemas::primitives::OSRDObject;
-use editoast_schemas::primitives::ObjectType;
 use futures_util::Future;
 use itertools::Itertools;
+use schemas::primitives::OSRDObject;
+use schemas::primitives::ObjectType;
 use serde_json::to_value;
 use sha1::Digest;
 use sha1::Sha1;
@@ -440,7 +440,7 @@ mod tests {
     use super::track_sections;
     use crate::infra_cache::tests::create_buffer_stop_cache;
     use crate::infra_cache::tests::create_small_infra_cache;
-    use editoast_schemas::primitives::ObjectType;
+    use schemas::primitives::ObjectType;
 
     #[rstest]
     async fn small_infra_cache_validation() {

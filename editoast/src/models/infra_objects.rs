@@ -8,7 +8,7 @@ use serde::Serialize;
 use crate::models::prelude::*;
 use database::DbConnection;
 use database::tables::*;
-use editoast_schemas::primitives::ObjectType;
+use schemas::primitives::ObjectType;
 
 pub trait ModelBackedSchema: Sized {
     type Model: SchemaModel + Into<Self>;
@@ -63,7 +63,7 @@ macro_rules! infra_model {
             fn new_from_schema(schema: Self::Schema) -> Changeset<Self> {
                 // TODO: remove the `id` field of the schemas and replace it by
                 // a `models::ObjectId` type, whose `Default` yields a new UUID
-                use editoast_schemas::primitives::OSRDIdentified;
+                use schemas::primitives::OSRDIdentified;
                 let obj_id = schema.get_id().clone();
                 Self::changeset().schema(schema).obj_id(obj_id)
             }
@@ -139,75 +139,71 @@ infra_model!(
     TrackSectionModel,
     infra_object_track_section,
     infra_layer_track_section,
-    editoast_schemas::infra::TrackSection
+    schemas::infra::TrackSection
 );
 
 infra_model!(
     BufferStopModel,
     infra_object_buffer_stop,
     infra_layer_buffer_stop,
-    editoast_schemas::infra::BufferStop
+    schemas::infra::BufferStop
 );
 
 infra_model!(
     ElectrificationModel,
     infra_object_electrification,
     infra_layer_electrification,
-    editoast_schemas::infra::Electrification
+    schemas::infra::Electrification
 );
 
 infra_model!(
     DetectorModel,
     infra_object_detector,
     infra_layer_detector,
-    editoast_schemas::infra::Detector
+    schemas::infra::Detector
 );
 
 infra_model!(
     OperationalPointModel,
     infra_object_operational_point,
     infra_layer_operational_point,
-    editoast_schemas::infra::OperationalPoint
+    schemas::infra::OperationalPoint
 );
 
-infra_model!(
-    RouteModel,
-    infra_object_route,
-    editoast_schemas::infra::Route
-);
+infra_model!(RouteModel, infra_object_route, schemas::infra::Route);
 
 infra_model!(
     SignalModel,
     infra_object_signal,
     infra_layer_signal,
-    editoast_schemas::infra::Signal
+    schemas::infra::Signal
 );
 
 infra_model!(
     SwitchModel,
     infra_object_switch,
     infra_layer_switch,
-    editoast_schemas::infra::Switch
+    schemas::infra::Switch
 );
 
 infra_model!(
     SpeedSectionModel,
     infra_object_speed_section,
     infra_layer_speed_section,
-    editoast_schemas::infra::SpeedSection
+    schemas::infra::SpeedSection
 );
 
 infra_model!(
     SwitchTypeModel,
     infra_object_extended_switch_type,
-    editoast_schemas::infra::SwitchType
+    schemas::infra::SwitchType
 );
 
 infra_model!(
     NeutralSectionModel,
     infra_object_neutral_section,
     infra_layer_neutral_section,
-    editoast_schemas::infra::NeutralSection
+    schemas::infra::NeutralSection
 );
 
 pub fn get_table(object_type: &ObjectType) -> &'static str {

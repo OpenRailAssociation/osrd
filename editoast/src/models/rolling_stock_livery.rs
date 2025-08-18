@@ -29,7 +29,7 @@ pub struct RollingStockLivery {
     pub compound_image_id: Option<i64>,
 }
 
-impl From<RollingStockLivery> for editoast_schemas::rolling_stock::RollingStockLivery {
+impl From<RollingStockLivery> for schemas::rolling_stock::RollingStockLivery {
     fn from(livery_model: RollingStockLivery) -> Self {
         Self {
             id: livery_model.id,

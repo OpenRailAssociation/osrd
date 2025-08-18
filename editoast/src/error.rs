@@ -253,7 +253,7 @@ impl EditoastError for json_patch::PatchError {
 inventory::submit! {
     crate::error::ErrorDefinition::new("editoast:geometry:UnexpectedGeometry", "UnexpectedGeometry", "GeometryError", 404u16, r#"{"expected":"String","actual":"String"}"#)
 }
-impl EditoastError for editoast_schemas::errors::GeometryError {
+impl EditoastError for schemas::errors::GeometryError {
     fn get_status(&self) -> StatusCode {
         StatusCode::INTERNAL_SERVER_ERROR
     }

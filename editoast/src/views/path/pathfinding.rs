@@ -19,12 +19,12 @@ use core_client::pathfinding::PathfindingNotFound;
 use core_client::pathfinding::PathfindingRequest;
 use core_client::pathfinding::PathfindingResultSuccess;
 use database::DbConnection;
-use editoast_schemas::rolling_stock::LoadingGaugeType;
-use editoast_schemas::train_schedule::PathItemLocation;
-use editoast_schemas::train_schedule::TrainScheduleLike;
 use educe::Educe;
 use itertools::Itertools;
 use ordered_float::OrderedFloat;
+use schemas::rolling_stock::LoadingGaugeType;
+use schemas::train_schedule::PathItemLocation;
+use schemas::train_schedule::TrainScheduleLike;
 use serde::Deserialize;
 use serde::Serialize;
 use tracing::debug;
@@ -421,7 +421,7 @@ pub async fn pathfinding_from_train_batch<T: TrainScheduleLike>(
     core: Arc<CoreClient>,
     infra: &Infra,
     train_schedules: &[T],
-    rolling_stocks: &[editoast_schemas::RollingStock],
+    rolling_stocks: &[schemas::RollingStock],
 ) -> Result<Vec<Arc<PathfindingResult>>> {
     let initial_value = Arc::new(PathfindingResult::Failure(
         PathfindingFailure::PathfindingInputError(PathfindingInputError::NotEnoughPathItems),
@@ -492,12 +492,12 @@ pub mod tests {
     use core_client::pathfinding::PathfindingInputError;
     use core_client::pathfinding::PathfindingResultSuccess;
     use database::DbConnectionPoolV2;
-    use editoast_schemas::train_schedule::OperationalPointIdentifier;
-    use editoast_schemas::train_schedule::OperationalPointReference;
-    use editoast_schemas::train_schedule::PathItemLocation;
-    use editoast_schemas::train_schedule::TrackReference;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
+    use schemas::train_schedule::OperationalPointIdentifier;
+    use schemas::train_schedule::OperationalPointReference;
+    use schemas::train_schedule::PathItemLocation;
+    use schemas::train_schedule::TrackReference;
     use serde_json::json;
 
     use crate::models::fixtures::create_small_infra;

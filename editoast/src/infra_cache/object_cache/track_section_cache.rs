@@ -1,18 +1,18 @@
-use editoast_schemas::infra::Curve;
-use editoast_schemas::infra::Endpoint;
-use editoast_schemas::infra::Slope;
-use editoast_schemas::infra::TrackEndpoint;
-use editoast_schemas::primitives::OSRDIdentified;
-use editoast_schemas::primitives::OSRDTyped;
-use editoast_schemas::primitives::ObjectType;
 use educe::Educe;
+use schemas::infra::Curve;
+use schemas::infra::Endpoint;
+use schemas::infra::Slope;
+use schemas::infra::TrackEndpoint;
+use schemas::primitives::OSRDIdentified;
+use schemas::primitives::OSRDTyped;
+use schemas::primitives::ObjectType;
 use serde::Deserialize;
 use serde::Serialize;
 
 use crate::infra_cache::Cache;
 use crate::infra_cache::ObjectCache;
-use editoast_schemas::infra::TrackSection;
-use editoast_schemas::primitives::BoundingBox;
+use schemas::infra::TrackSection;
+use schemas::primitives::BoundingBox;
 
 #[derive(Debug, Clone, Educe, Deserialize, Serialize)]
 #[educe(Hash, PartialEq, Default)]

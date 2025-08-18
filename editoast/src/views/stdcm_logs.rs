@@ -163,13 +163,13 @@ mod tests {
     use core_client::simulation::Response;
     use core_client::simulation::SimulationSuccess;
     use core_client::simulation::SpeedLimitProperties;
-    use editoast_schemas::train_schedule::Comfort;
-    use editoast_schemas::train_schedule::MarginValue;
-    use editoast_schemas::train_schedule::OperationalPointIdentifier;
-    use editoast_schemas::train_schedule::OperationalPointReference;
-    use editoast_schemas::train_schedule::PathItemLocation;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
+    use schemas::train_schedule::Comfort;
+    use schemas::train_schedule::MarginValue;
+    use schemas::train_schedule::OperationalPointIdentifier;
+    use schemas::train_schedule::OperationalPointReference;
+    use schemas::train_schedule::PathItemLocation;
     use tracing_subscriber::filter::Directive;
     use uuid::Uuid;
 

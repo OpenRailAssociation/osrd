@@ -8,9 +8,9 @@ use axum::extract::State;
 use axum::http::StatusCode;
 use axum::http::header;
 use axum::response::IntoResponse;
-use editoast_schemas::infra::RailJson;
 use enum_map::EnumMap;
 use futures::future::try_join_all;
+use schemas::infra::RailJson;
 use serde::Deserialize;
 use serde::Serialize;
 use strum::IntoEnumIterator;
@@ -28,7 +28,7 @@ use crate::views::AuthorizationError;
 use crate::views::infra::InfraApiError;
 use crate::views::infra::InfraIdParam;
 use database::DbConnectionPoolV2;
-use editoast_schemas::primitives::ObjectType;
+use schemas::primitives::ObjectType;
 
 /// Serialize an infra
 #[editoast_derive::route]
@@ -220,8 +220,8 @@ mod tests {
     use crate::infra_cache::operation::create::apply_create_operation;
     use crate::models::fixtures::create_empty_infra;
     use crate::views::test_app::TestAppBuilder;
-    use editoast_schemas::infra::RAILJSON_VERSION;
-    use editoast_schemas::infra::SwitchType;
+    use schemas::infra::RAILJSON_VERSION;
+    use schemas::infra::SwitchType;
 
     #[rstest]
     // PostgreSQL deadlock can happen in this test, see section `Deadlock` of [DbConnectionPoolV2::get] for more information

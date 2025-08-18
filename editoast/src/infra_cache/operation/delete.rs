@@ -3,8 +3,8 @@ use diesel::sql_query;
 use diesel::sql_types::BigInt;
 use diesel::sql_types::Text;
 use diesel_async::RunQueryDsl;
-use editoast_schemas::primitives::ObjectRef;
-use editoast_schemas::primitives::ObjectType;
+use schemas::primitives::ObjectRef;
+use schemas::primitives::ObjectType;
 use serde::Deserialize;
 use serde::Serialize;
 use std::ops::DerefMut;
@@ -66,18 +66,18 @@ mod tests {
     use diesel::sql_types::BigInt;
 
     use database::DbConnectionPoolV2;
-    use editoast_schemas::infra::BufferStop;
-    use editoast_schemas::infra::Detector;
-    use editoast_schemas::infra::Electrification;
-    use editoast_schemas::infra::NeutralSection;
-    use editoast_schemas::infra::OperationalPoint;
-    use editoast_schemas::infra::Route;
-    use editoast_schemas::infra::Signal;
-    use editoast_schemas::infra::SpeedSection;
-    use editoast_schemas::infra::Switch;
-    use editoast_schemas::infra::TrackSection;
-    use editoast_schemas::primitives::OSRDIdentified;
-    use editoast_schemas::primitives::OSRDObject;
+    use schemas::infra::BufferStop;
+    use schemas::infra::Detector;
+    use schemas::infra::Electrification;
+    use schemas::infra::NeutralSection;
+    use schemas::infra::OperationalPoint;
+    use schemas::infra::Route;
+    use schemas::infra::Signal;
+    use schemas::infra::SpeedSection;
+    use schemas::infra::Switch;
+    use schemas::infra::TrackSection;
+    use schemas::primitives::OSRDIdentified;
+    use schemas::primitives::OSRDObject;
 
     #[derive(QueryableByName)]
     struct Count {
@@ -96,7 +96,7 @@ mod tests {
                     let db_pool = DbConnectionPoolV2::for_tests();
                     let infra = crate::models::fixtures::create_empty_infra(&mut db_pool.get_ok()).await;
 
-                    let railjson_object = editoast_schemas::infra::InfraObject::$obj {
+                    let railjson_object = schemas::infra::InfraObject::$obj {
                         railjson: $obj::default(),
                     };
                     let result = crate::infra_cache::operation::create::apply_create_operation(&railjson_object, infra.id, &mut db_pool.get_ok()).await;

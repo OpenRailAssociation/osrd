@@ -13,7 +13,6 @@ chrono.workspace = true
 common = { workspace = true }
 deadpool.workspace = true
 editoast_derive.workspace = true
-editoast_schemas = { workspace = true, features = ["testing"] }
 educe.workspace = true
 futures-util.workspace = true
 hostname.workspace = true
@@ -23,6 +22,7 @@ lapin.workspace = true
 linkme.workspace = true
 opentelemetry.workspace = true
 reqwest.workspace = true
+schemas = { workspace = true, features = ["testing"] }
 serde = { workspace = true, features = ["derive"] }
 serde_json.workspace = true
 thiserror.workspace = true
@@ -36,9 +36,9 @@ uuid.workspace = true
 [dev-dependencies]
 async-std.workspace = true
 core_client = { path = "./", features = ["mocking_client"] }
-editoast_schemas = { workspace = true, features = ["testing"] }
 pretty_assertions.workspace = true
 rstest.workspace = true
+schemas = { workspace = true, features = ["testing"] }
 
 [lints]
 workspace = true

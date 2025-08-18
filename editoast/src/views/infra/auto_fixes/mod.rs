@@ -30,11 +30,11 @@ use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
 use crate::views::infra::InfraApiError;
 use crate::views::infra::InfraIdParam;
-use editoast_schemas::infra::InfraObject;
-use editoast_schemas::primitives::OSRDIdentified as _;
-use editoast_schemas::primitives::OSRDObject;
-use editoast_schemas::primitives::ObjectRef;
-use editoast_schemas::primitives::ObjectType;
+use schemas::infra::InfraObject;
+use schemas::primitives::OSRDIdentified as _;
+use schemas::primitives::OSRDObject;
+use schemas::primitives::ObjectRef;
+use schemas::primitives::ObjectType;
 
 mod buffer_stop;
 mod detector;
@@ -337,9 +337,9 @@ mod tests {
     use std::collections::HashMap;
 
     use axum::http::StatusCode;
-    use editoast_schemas::infra::BufferStop;
-    use editoast_schemas::infra::BufferStopExtension;
     use pretty_assertions::assert_eq;
+    use schemas::infra::BufferStop;
+    use schemas::infra::BufferStopExtension;
 
     use super::*;
     use crate::generated_data::infra_error::InfraErrorType;
@@ -355,24 +355,24 @@ mod tests {
     use crate::views::infra::errors::query_errors;
     use crate::views::test_app::TestApp;
     use crate::views::test_app::TestAppBuilder;
-    use editoast_schemas::infra::ApplicableDirectionsTrackRange;
-    use editoast_schemas::infra::Detector;
-    use editoast_schemas::infra::Electrification;
-    use editoast_schemas::infra::Endpoint;
-    use editoast_schemas::infra::InfraObject;
-    use editoast_schemas::infra::OperationalPoint;
-    use editoast_schemas::infra::OperationalPointPart;
-    use editoast_schemas::infra::Route;
-    use editoast_schemas::infra::Signal;
-    use editoast_schemas::infra::Slope;
-    use editoast_schemas::infra::SpeedSection;
-    use editoast_schemas::infra::Switch;
-    use editoast_schemas::infra::TrackEndpoint;
-    use editoast_schemas::infra::TrackSection;
-    use editoast_schemas::infra::Waypoint;
-    use editoast_schemas::primitives::Identifier;
-    use editoast_schemas::primitives::ObjectRef;
-    use editoast_schemas::primitives::ObjectType;
+    use schemas::infra::ApplicableDirectionsTrackRange;
+    use schemas::infra::Detector;
+    use schemas::infra::Electrification;
+    use schemas::infra::Endpoint;
+    use schemas::infra::InfraObject;
+    use schemas::infra::OperationalPoint;
+    use schemas::infra::OperationalPointPart;
+    use schemas::infra::Route;
+    use schemas::infra::Signal;
+    use schemas::infra::Slope;
+    use schemas::infra::SpeedSection;
+    use schemas::infra::Switch;
+    use schemas::infra::TrackEndpoint;
+    use schemas::infra::TrackSection;
+    use schemas::infra::Waypoint;
+    use schemas::primitives::Identifier;
+    use schemas::primitives::ObjectRef;
+    use schemas::primitives::ObjectType;
 
     impl TestApp {
         fn auto_fixes_request(&self, infra_id: i64) -> axum_test::TestRequest {

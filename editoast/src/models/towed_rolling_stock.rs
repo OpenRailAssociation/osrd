@@ -5,7 +5,7 @@ use common::units::quantities::Length;
 use common::units::quantities::Mass;
 use common::units::quantities::Velocity;
 use editoast_derive::Model;
-use editoast_schemas::rolling_stock::RollingResistancePerWeight;
+use schemas::rolling_stock::RollingResistancePerWeight;
 use serde::Deserialize;
 use serde::Serialize;
 
@@ -50,7 +50,7 @@ pub struct TowedRollingStock {
     pub version: i64,
 }
 
-impl From<TowedRollingStock> for editoast_schemas::TowedRollingStock {
+impl From<TowedRollingStock> for schemas::TowedRollingStock {
     fn from(model: TowedRollingStock) -> Self {
         Self {
             name: model.name,
@@ -68,8 +68,8 @@ impl From<TowedRollingStock> for editoast_schemas::TowedRollingStock {
     }
 }
 
-impl From<editoast_schemas::TowedRollingStock> for Changeset<TowedRollingStock> {
-    fn from(towed_rolling_stock: editoast_schemas::TowedRollingStock) -> Self {
+impl From<schemas::TowedRollingStock> for Changeset<TowedRollingStock> {
+    fn from(towed_rolling_stock: schemas::TowedRollingStock) -> Self {
         TowedRollingStock::changeset()
             .name(towed_rolling_stock.name)
             .label(towed_rolling_stock.label)

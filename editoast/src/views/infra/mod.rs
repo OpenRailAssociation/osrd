@@ -25,10 +25,10 @@ use database::DbConnection;
 use database::DbConnectionPoolV2;
 use editoast_derive::EditoastError;
 use editoast_models::model;
-use editoast_schemas::infra::SwitchType;
-use editoast_schemas::primitives::Identifier;
 use itertools::Itertools;
 use osrdyne_client::OsrdyneClient;
+use schemas::infra::SwitchType;
+use schemas::primitives::Identifier;
 use serde::Deserialize;
 use serde::Serialize;
 use std::collections::HashMap;
@@ -61,11 +61,11 @@ use crate::views::path::path_item_cache::retrieve_op_from_ids;
 use crate::views::path::path_item_cache::retrieve_op_from_trigrams;
 use crate::views::path::path_item_cache::retrieve_op_from_uic;
 use authz::Role;
-use editoast_schemas::infra::OperationalPoint;
-use editoast_schemas::infra::builtin_node_types_list;
-use editoast_schemas::train_schedule::OperationalPointIdentifier;
-use editoast_schemas::train_schedule::OperationalPointReference;
-use editoast_schemas::train_schedule::PathItemLocation;
+use schemas::infra::OperationalPoint;
+use schemas::infra::builtin_node_types_list;
+use schemas::train_schedule::OperationalPointIdentifier;
+use schemas::train_schedule::OperationalPointReference;
+use schemas::train_schedule::PathItemLocation;
 
 #[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "infra")]
@@ -1114,17 +1114,17 @@ pub mod tests {
     use diesel::sql_query;
     use diesel::sql_types::BigInt;
     use diesel_async::RunQueryDsl;
-    use editoast_schemas::infra::Electrification;
-    use editoast_schemas::infra::RAILJSON_VERSION;
-    use editoast_schemas::infra::Speed;
-    use editoast_schemas::infra::SpeedSection;
-    use editoast_schemas::infra::SwitchType;
-    use editoast_schemas::primitives::ObjectType;
-    use editoast_schemas::train_schedule::TrackReference;
     use osrdyne_client::OsrdyneClient;
     use osrdyne_client::WorkerStatus;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
+    use schemas::infra::Electrification;
+    use schemas::infra::RAILJSON_VERSION;
+    use schemas::infra::Speed;
+    use schemas::infra::SpeedSection;
+    use schemas::infra::SwitchType;
+    use schemas::primitives::ObjectType;
+    use schemas::train_schedule::TrackReference;
     use serde_json::json;
     use std::ops::DerefMut;
     use strum::IntoEnumIterator;
@@ -1140,7 +1140,7 @@ pub mod tests {
     use crate::models::infra::DEFAULT_INFRA_VERSION;
     use crate::views::test_app::TestApp;
     use crate::views::test_app::TestAppBuilder;
-    use editoast_schemas::train_schedule::OperationalPointIdentifier;
+    use schemas::train_schedule::OperationalPointIdentifier;
 
     impl TestApp {
         fn delete_infra_request(&self, infra_id: i64) -> axum_test::TestRequest {

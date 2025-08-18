@@ -1,6 +1,6 @@
-use editoast_schemas::infra::Direction;
-use editoast_schemas::infra::TrackOffset;
-use editoast_schemas::primitives::Identifier;
+use schemas::infra::Direction;
+use schemas::infra::TrackOffset;
+use schemas::primitives::Identifier;
 use std::collections::HashMap;
 
 use super::TrackRange;
@@ -286,8 +286,8 @@ pub enum TrackLocationFromPath {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use editoast_schemas::infra::DirectionalTrackRange;
     use rstest::rstest;
+    use schemas::infra::DirectionalTrackRange;
     use std::iter::DoubleEndedIterator;
 
     #[test]

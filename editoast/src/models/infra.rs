@@ -40,9 +40,9 @@ use crate::models::railjson::persist_railjson;
 use database::DbConnection;
 use database::DbConnectionPoolV2;
 use database::tables::infra::dsl;
-use editoast_schemas::infra::RAILJSON_VERSION;
-use editoast_schemas::infra::RailJson;
-use editoast_schemas::primitives::ObjectType;
+use schemas::infra::RAILJSON_VERSION;
+use schemas::infra::RailJson;
+use schemas::primitives::ObjectType;
 
 /// The default version of a newly created infrastructure
 ///
@@ -301,22 +301,22 @@ impl Infra {
 
 #[cfg(test)]
 pub mod tests {
-    use editoast_schemas::infra::BufferStop;
-    use editoast_schemas::infra::Detector;
-    use editoast_schemas::infra::Electrification;
-    use editoast_schemas::infra::NeutralSection;
-    use editoast_schemas::infra::OperationalPoint;
-    use editoast_schemas::infra::RAILJSON_VERSION;
-    use editoast_schemas::infra::RailJson;
-    use editoast_schemas::infra::Route;
-    use editoast_schemas::infra::Signal;
-    use editoast_schemas::infra::SpeedSection;
-    use editoast_schemas::infra::Switch;
-    use editoast_schemas::infra::SwitchType;
-    use editoast_schemas::infra::TrackSection;
-    use editoast_schemas::primitives::OSRDIdentified;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
+    use schemas::infra::BufferStop;
+    use schemas::infra::Detector;
+    use schemas::infra::Electrification;
+    use schemas::infra::NeutralSection;
+    use schemas::infra::OperationalPoint;
+    use schemas::infra::RAILJSON_VERSION;
+    use schemas::infra::RailJson;
+    use schemas::infra::Route;
+    use schemas::infra::Signal;
+    use schemas::infra::SpeedSection;
+    use schemas::infra::Switch;
+    use schemas::infra::SwitchType;
+    use schemas::infra::TrackSection;
+    use schemas::primitives::OSRDIdentified;
     use uuid::Uuid;
 
     use super::Infra;

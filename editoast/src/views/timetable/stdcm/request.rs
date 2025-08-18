@@ -4,13 +4,13 @@ use chrono::Utc;
 use common::units;
 use core_client::pathfinding::PathfindingInputError;
 use database::DbConnection;
-use editoast_schemas::rolling_stock::LoadingGaugeType;
-use editoast_schemas::rolling_stock::RollingStock;
-use editoast_schemas::train_schedule::Comfort;
-use editoast_schemas::train_schedule::MarginValue;
-use editoast_schemas::train_schedule::PathItem;
-use editoast_schemas::train_schedule::PathItemLocation;
 use itertools::Itertools as _;
+use schemas::rolling_stock::LoadingGaugeType;
+use schemas::rolling_stock::RollingStock;
+use schemas::train_schedule::Comfort;
+use schemas::train_schedule::MarginValue;
+use schemas::train_schedule::PathItem;
+use schemas::train_schedule::PathItemLocation;
 use serde::Deserialize;
 use serde::Deserializer;
 use serde::Serialize;
@@ -300,7 +300,7 @@ impl Request {
     pub(super) fn validate_consist(
         &self,
         traction_engine: &RollingStock,
-        towed_rolling_stock: &Option<editoast_schemas::TowedRollingStock>,
+        towed_rolling_stock: &Option<schemas::TowedRollingStock>,
     ) -> Result<()> {
         self.validate_consist_mass(traction_engine, towed_rolling_stock)?;
         self.validate_consist_length(traction_engine, towed_rolling_stock)?;
@@ -310,7 +310,7 @@ impl Request {
     fn validate_consist_mass(
         &self,
         traction_engine: &RollingStock,
-        towed_rolling_stock: &Option<editoast_schemas::TowedRollingStock>,
+        towed_rolling_stock: &Option<schemas::TowedRollingStock>,
     ) -> Result<()> {
         let consist_mass = traction_engine.mass
             + towed_rolling_stock
@@ -335,7 +335,7 @@ impl Request {
     fn validate_consist_length(
         &self,
         traction_engine: &RollingStock,
-        towed_rolling_stock: &Option<editoast_schemas::TowedRollingStock>,
+        towed_rolling_stock: &Option<schemas::TowedRollingStock>,
     ) -> Result<()> {
         let consist_length = traction_engine.length
             + towed_rolling_stock

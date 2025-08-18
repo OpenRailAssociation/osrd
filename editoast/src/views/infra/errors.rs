@@ -7,7 +7,7 @@ use axum::extract::Path;
 use axum::extract::Query;
 use axum::extract::State;
 use editoast_derive::EditoastError;
-use editoast_schemas::primitives::Identifier;
+use schemas::primitives::Identifier;
 use serde::Deserialize;
 use serde::Serialize;
 use thiserror::Error;

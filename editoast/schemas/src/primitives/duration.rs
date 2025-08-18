@@ -5,11 +5,11 @@
 //! ```
 //! use chrono::Duration;
 //! use serde::{Serialize, Deserialize};
-//! use editoast_schemas::primitives::duration;
+//! use schemas::primitives::duration;
 //!
 //! #[derive(Serialize, Deserialize)]
 //! struct MyStruct {
-//!     #[serde(with = "editoast_schemas::primitives::duration")] // <- Add this line
+//!     #[serde(with = "schemas::primitives::duration")] // <- Add this line
 //!     duration: Duration
 //! }
 //!
@@ -47,7 +47,7 @@ pub enum PositiveDurationError {
 ///
 /// ```
 /// use serde::{Serialize, Deserialize};
-/// use editoast_schemas::primitives::PositiveDuration;
+/// use schemas::primitives::PositiveDuration;
 ///
 /// #[derive(Serialize, Deserialize)]
 /// struct MyStruct {

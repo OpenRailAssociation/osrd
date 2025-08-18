@@ -1,9 +1,9 @@
 use common::geometry::GeoJsonLineString;
-use editoast_schemas::infra::OperationalPointExtensions;
-use editoast_schemas::infra::OperationalPointPart;
-use editoast_schemas::infra::OperationalPointPartExtension;
-use editoast_schemas::infra::OperationalPointSncfExtension;
-use editoast_schemas::primitives::Identifier;
+use schemas::infra::OperationalPointExtensions;
+use schemas::infra::OperationalPointPart;
+use schemas::infra::OperationalPointPartExtension;
+use schemas::infra::OperationalPointSncfExtension;
+use schemas::primitives::Identifier;
 use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;

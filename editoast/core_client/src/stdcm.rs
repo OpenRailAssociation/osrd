@@ -2,11 +2,11 @@ use std::collections::HashMap;
 
 use chrono::DateTime;
 use chrono::Utc;
-use editoast_schemas::infra::TrackOffset;
-use editoast_schemas::rolling_stock::LoadingGaugeType;
-use editoast_schemas::rolling_stock::RollingStockSupportedSignalingSystems;
-use editoast_schemas::train_schedule::Comfort;
-use editoast_schemas::train_schedule::MarginValue;
+use schemas::infra::TrackOffset;
+use schemas::rolling_stock::LoadingGaugeType;
+use schemas::rolling_stock::RollingStockSupportedSignalingSystems;
+use schemas::train_schedule::Comfort;
+use schemas::train_schedule::MarginValue;
 use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;

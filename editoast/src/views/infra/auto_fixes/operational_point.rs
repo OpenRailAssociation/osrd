@@ -1,11 +1,11 @@
-use editoast_schemas::primitives::OSRDIdentified;
-use editoast_schemas::primitives::OSRDObject as _;
-use editoast_schemas::primitives::ObjectRef;
-use editoast_schemas::primitives::ObjectType;
 use itertools::Itertools;
 use json_patch::Patch;
 use json_patch::PatchOperation;
 use json_patch::RemoveOperation;
+use schemas::primitives::OSRDIdentified;
+use schemas::primitives::OSRDObject as _;
+use schemas::primitives::ObjectRef;
+use schemas::primitives::ObjectType;
 use std::collections::HashMap;
 use tracing::debug;
 
@@ -94,10 +94,10 @@ mod tests {
     use crate::infra_cache::object_cache::OperationalPointPartCache;
     use crate::infra_cache::operation::CacheOperation;
     use crate::infra_cache::operation::Operation;
-    use editoast_schemas::primitives::Identifier;
-    use editoast_schemas::primitives::OSRDObject as _;
-    use editoast_schemas::primitives::ObjectRef;
-    use editoast_schemas::primitives::ObjectType;
+    use schemas::primitives::Identifier;
+    use schemas::primitives::OSRDObject as _;
+    use schemas::primitives::ObjectRef;
+    use schemas::primitives::ObjectType;
 
     #[test]
     fn invalid_refs_ordered_operational_point() {

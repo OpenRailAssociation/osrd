@@ -10,8 +10,8 @@ use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use database::DbConnectionPoolV2;
 use editoast_derive::EditoastError;
-use editoast_schemas::infra::ElectricalProfileSetData;
-use editoast_schemas::infra::LevelValues;
+use schemas::infra::ElectricalProfileSetData;
+use schemas::infra::LevelValues;
 use serde::Deserialize;
 use thiserror::Error;
 use utoipa::IntoParams;
@@ -223,8 +223,8 @@ mod tests {
     use crate::Exists;
     use crate::models::fixtures::create_electrical_profile_set;
     use crate::views::test_app::TestAppBuilder;
-    use editoast_schemas::infra::ElectricalProfile;
-    use editoast_schemas::infra::TrackRange;
+    use schemas::infra::ElectricalProfile;
+    use schemas::infra::TrackRange;
 
     #[rstest]
     async fn get_electrical_profile_list() {

@@ -5,8 +5,8 @@ use chrono::DateTime;
 use chrono::Utc;
 use database::DbConnectionPoolV2;
 use editoast_derive::EditoastError;
-use editoast_schemas::infra::DirectionalTrackRange;
 use itertools::Either;
+use schemas::infra::DirectionalTrackRange;
 use serde::Deserialize;
 use serde::Serialize;
 use serde::de::Error as SerdeError;
@@ -178,9 +178,9 @@ mod tests {
     use chrono::DateTime;
     use chrono::Duration;
     use chrono::Utc;
-    use editoast_schemas::infra::Direction;
-    use editoast_schemas::infra::DirectionalTrackRange;
     use rstest::rstest;
+    use schemas::infra::Direction;
+    use schemas::infra::DirectionalTrackRange;
     use serde_json::json;
     use uuid::Uuid;
 

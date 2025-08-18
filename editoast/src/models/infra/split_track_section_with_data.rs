@@ -8,8 +8,8 @@ use diesel::sql_types::Double;
 use diesel::sql_types::Jsonb;
 use diesel::sql_types::Text;
 use diesel_async::RunQueryDsl;
-use editoast_schemas::infra::TrackSection;
-use editoast_schemas::primitives::Identifier;
+use schemas::infra::TrackSection;
+use schemas::primitives::Identifier;
 use serde::Deserialize;
 
 use super::Infra;
