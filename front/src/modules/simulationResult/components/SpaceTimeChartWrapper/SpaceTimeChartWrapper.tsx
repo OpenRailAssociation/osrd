@@ -5,8 +5,6 @@ import {
   type HoveredItem,
   type SpaceTimeChartProps,
   useManchetteWithSpaceTimeChart,
-  timeScaleToZoomValue,
-  DEFAULT_ZOOM_MS_PER_PX,
   ZoomRect,
   ConflictLayer,
   PathLayer,
@@ -24,8 +22,6 @@ import {
   isOccupancyPickingElement,
 } from '@osrd-project/ui-charts';
 import { Slider } from '@osrd-project/ui-core';
-import { Sliders, Iterations, ZoomIn } from '@osrd-project/ui-icons';
-import cx from 'classnames';
 import { createPortal } from 'react-dom';
 
 import upward from 'assets/pictures/workSchedules/ScheduledMaintenanceUp.svg';
@@ -64,6 +60,7 @@ import makeProjectedItems from './helpers/makeProjectedItems';
 import { cutSpaceTimeChart, getOccupancyBlocks } from './helpers/utils';
 import ProjectionLoadingMessage from './ProjectionLoadingMessage';
 import SettingsPanel from './SettingsPanel';
+import SpaceTimeChartToolbar from './SpaceTimeChartToolbar';
 import useWaypointMenu from './useWaypointMenu';
 import WaypointsPanel from './WaypointsPanel';
 
@@ -394,42 +391,14 @@ const SpaceTimeChartWrapper = ({
           data-testid="space-time-chart-container"
           className="space-time-chart-container"
         >
-          <div className="toolbar">
-            <button
-              data-testid="zoom-reset-button"
-              type="button"
-              className={cx('reset-button', {
-                'reset-button-disabled': xZoom === timeScaleToZoomValue(DEFAULT_ZOOM_MS_PER_PX),
-              })}
-              onClick={() => {
-                if (xZoom !== timeScaleToZoomValue(DEFAULT_ZOOM_MS_PER_PX)) {
-                  handleXZoom(timeScaleToZoomValue(DEFAULT_ZOOM_MS_PER_PX));
-                }
-              }}
-            >
-              <Iterations />
-            </button>
-            <button
-              data-testid="zoom-button"
-              type="button"
-              className={cx('zoom-button', {
-                'zoom-button-clicked': zoomMode,
-                'zoom-button-disabled': !!waypointsPanelData?.deployedWaypoints?.size,
-              })}
-              onClick={toggleZoomMode}
-              disabled={!!waypointsPanelData?.deployedWaypoints?.size}
-            >
-              <ZoomIn className="icon" />
-            </button>
-            <button
-              type="button"
-              data-testid="menu-button"
-              className="menu-button"
-              onClick={() => setShowSettingsPanel(true)}
-            >
-              <Sliders />
-            </button>
-          </div>
+          <SpaceTimeChartToolbar
+            xZoom={xZoom}
+            handleXZoom={handleXZoom}
+            zoomMode={zoomMode}
+            waypointsPanelData={waypointsPanelData}
+            toggleZoomMode={toggleZoomMode}
+            setShowSettingsPanel={setShowSettingsPanel}
+          />
           {showSettingsPanel && (
             <SettingsPanel
               settings={settings}
