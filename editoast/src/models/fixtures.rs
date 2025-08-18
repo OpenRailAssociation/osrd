@@ -8,8 +8,8 @@ use chrono::Duration as ChronoDuration;
 use chrono::Utc;
 use database::DbConnection;
 
+use common::units;
 use database::DbConnectionPoolV2;
-use editoast_common::units;
 use editoast_schemas::fixtures::simple_created_exception_with_change_groups;
 use editoast_schemas::fixtures::simple_modified_exception_with_change_groups;
 use editoast_schemas::infra::Direction;

@@ -10,8 +10,8 @@ pub(super) fn openapi_schema(input: &DeriveInput) -> darling::Result<TokenStream
     );
     Ok(quote::quote! {
         #[doc(hidden)]
-        #[linkme::distributed_slice(editoast_common::OPENAPI_SCHEMAS)]
-        static #static_name: editoast_common::OpenApiSchemaSliceItem = <#name as utoipa::ToSchema>::schema;
+        #[linkme::distributed_slice(common::OPENAPI_SCHEMAS)]
+        static #static_name: common::OpenApiSchemaSliceItem = <#name as utoipa::ToSchema>::schema;
 
         #input
     })

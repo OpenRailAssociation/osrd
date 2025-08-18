@@ -34,16 +34,16 @@ pub struct EtcsBrakeParams {
     /// Values (in m/s²) should be contained in [0, 10]
     pub k_n_neg: SpeedIntervalValueCurve,
     /// T_traction_cut_off: time delay in s from the traction cut-off command to the moment the acceleration due to traction is zero
-    #[educe(Hash(method(editoast_common::hash_float::<5,_>)))]
+    #[educe(Hash(method(common::hash_float::<5,_>)))]
     pub t_traction_cut_off: f64,
     /// T_bs1: time service break in s used for SBI1 computation
-    #[educe(Hash(method(editoast_common::hash_float::<5,_>)))]
+    #[educe(Hash(method(common::hash_float::<5,_>)))]
     pub t_bs1: f64,
     /// T_bs2: time service break in s used for SBI2 computation
-    #[educe(Hash(method(editoast_common::hash_float::<5,_>)))]
+    #[educe(Hash(method(common::hash_float::<5,_>)))]
     pub t_bs2: f64,
     /// T_be: safe brake build up time in s
-    #[educe(Hash(method(editoast_common::hash_float::<5,_>)))]
+    #[educe(Hash(method(common::hash_float::<5,_>)))]
     pub t_be: f64,
 }
 
@@ -52,12 +52,12 @@ pub struct EtcsBrakeParams {
 #[educe(Hash)]
 #[serde(deny_unknown_fields, remote = "Self")]
 pub struct SpeedIntervalValueCurve {
-    #[educe(Hash(method(editoast_common::hash_float_slice::<3,_>)))]
+    #[educe(Hash(method(common::hash_float_slice::<3,_>)))]
     #[schema(example = json!([8.333333, 19.444444]))]
     /// Speed in m/s (sorted ascending)
     /// External bounds are implicit to [0, rolling_stock.max_speed]
     boundaries: Vec<f64>,
-    #[educe(Hash(method(editoast_common::hash_float_slice::<3,_>)))]
+    #[educe(Hash(method(common::hash_float_slice::<3,_>)))]
     #[schema(min_items = 1, minimum = 0, example = json!([0.5, 0.6, 0.5]))]
     /// Interval values, must be >= 0 (unit to be made explicit at use)
     /// There must be one more value than boundaries

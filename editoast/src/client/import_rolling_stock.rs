@@ -147,8 +147,8 @@ mod tests {
 
         use crate::client::generate_temp_file;
 
+        use common::units;
         use database::DbConnectionPoolV2;
-        use editoast_common::units;
         use rstest::rstest;
 
         fn get_fast_rolling_stock_schema(name: &str) -> editoast_schemas::RollingStock {

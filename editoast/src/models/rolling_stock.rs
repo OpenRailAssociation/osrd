@@ -2,13 +2,13 @@ mod power_restrictions;
 
 use std::collections::HashMap;
 
-use editoast_common::units;
-use editoast_common::units::quantities::Acceleration;
-use editoast_common::units::quantities::Deceleration;
-use editoast_common::units::quantities::Length;
-use editoast_common::units::quantities::Mass;
-use editoast_common::units::quantities::Time;
-use editoast_common::units::quantities::Velocity;
+use common::units;
+use common::units::quantities::Acceleration;
+use common::units::quantities::Deceleration;
+use common::units::quantities::Length;
+use common::units::quantities::Mass;
+use common::units::quantities::Time;
+use common::units::quantities::Velocity;
 use editoast_derive::Model;
 use editoast_models::model;
 use editoast_models::rolling_stock::TrainMainCategories;

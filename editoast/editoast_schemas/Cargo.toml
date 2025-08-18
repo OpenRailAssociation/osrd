@@ -9,7 +9,7 @@ testing = []
 
 [dependencies]
 chrono.workspace = true
-editoast_common.workspace = true
+common.workspace = true
 editoast_derive.workspace = true
 educe.workspace = true
 enum-map.workspace = true

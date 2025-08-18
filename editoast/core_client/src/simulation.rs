@@ -2,13 +2,13 @@ use std::collections::BTreeMap;
 use std::collections::HashMap;
 use std::hash::Hash;
 
-use editoast_common::units;
-use editoast_common::units::quantities::Acceleration;
-use editoast_common::units::quantities::Deceleration;
-use editoast_common::units::quantities::Length;
-use editoast_common::units::quantities::Mass;
-use editoast_common::units::quantities::Time;
-use editoast_common::units::quantities::Velocity;
+use common::units;
+use common::units::quantities::Acceleration;
+use common::units::quantities::Deceleration;
+use common::units::quantities::Length;
+use common::units::quantities::Mass;
+use common::units::quantities::Time;
+use common::units::quantities::Velocity;
 use editoast_schemas::primitives::Identifier;
 use editoast_schemas::rolling_stock::EffortCurves;
 use editoast_schemas::rolling_stock::EtcsBrakeParams;
@@ -62,7 +62,7 @@ pub struct PhysicsConsist {
     #[schema(value_type = f64)]
     pub const_gamma: Deceleration,
     pub etcs_brake_params: Option<EtcsBrakeParams>,
-    #[educe(Hash(method(editoast_common::hash_float::<5,_>)))]
+    #[educe(Hash(method(common::hash_float::<5,_>)))]
     pub inertia_coefficient: f64,
     /// Mass of the rolling stock
     #[educe(Hash(method(units::kilogram::hash)))]
@@ -274,7 +274,7 @@ pub struct Request {
     pub path: SimulationPath,
     pub schedule: Vec<SimulationScheduleItem>,
     pub margins: SimulationMargins,
-    #[educe(Hash(method(editoast_common::hash_float::<3,_>)))]
+    #[educe(Hash(method(common::hash_float::<3,_>)))]
     pub initial_speed: f64,
     pub comfort: Comfort,
     pub constraint_distribution: Distribution,

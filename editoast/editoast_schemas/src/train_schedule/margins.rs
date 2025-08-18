@@ -49,8 +49,8 @@ impl Serialize for Margins {
 #[educe(Hash, Default)]
 pub enum MarginValue {
     #[educe(Default)]
-    Percentage(#[educe(Hash(method(editoast_common::hash_float::<3,_>)))] f64),
-    MinPer100Km(#[educe(Hash(method(editoast_common::hash_float::<3,_>)))] f64),
+    Percentage(#[educe(Hash(method(common::hash_float::<3,_>)))] f64),
+    MinPer100Km(#[educe(Hash(method(common::hash_float::<3,_>)))] f64),
 }
 
 impl<'de> Deserialize<'de> for MarginValue {

@@ -30,7 +30,7 @@ mod test_app;
 use ::authz::Authorization;
 use ::authz::Infra;
 use ::authz::StorageDriver;
-use editoast_common::Version;
+use common::Version;
 use fga::client::Limits;
 #[cfg(test)]
 pub(crate) use test_app::test_app;

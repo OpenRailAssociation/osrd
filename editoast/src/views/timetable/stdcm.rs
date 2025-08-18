@@ -556,9 +556,9 @@ fn build_single_margin(margin: Option<MarginValue>) -> Margins {
 mod tests {
     use axum::http::StatusCode;
     use chrono::DateTime;
+    use common::units;
     use core_client::simulation::SimulationSuccess;
     use database::DbConnectionPoolV2;
-    use editoast_common::units;
     use editoast_schemas::fixtures::simple_rolling_stock;
     use editoast_schemas::fixtures::towed_rolling_stock;
     use editoast_schemas::rolling_stock::RollingResistance;

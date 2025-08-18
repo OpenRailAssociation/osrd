@@ -72,11 +72,11 @@ pub struct EffortCurveConditions {
 #[serde(deny_unknown_fields)]
 #[serde(remote = "Self")]
 pub struct EffortCurve {
-    #[educe(Hash(method(editoast_common::hash_float_slice::<3,_>)))]
+    #[educe(Hash(method(common::hash_float_slice::<3,_>)))]
     #[schema(min_items = 2, example = json!([0.0, 2.958, 46.719]))]
     /// Speeds in m/s. Must contains the same number of elements as `max_efforts`
     speeds: Vec<f64>,
-    #[educe(Hash(method(editoast_common::hash_float_slice::<3,_>)))]
+    #[educe(Hash(method(common::hash_float_slice::<3,_>)))]
     #[schema(min_items = 2, example = json!([23500.0, 23200.0, 21200.0]))]
     /// Max efforts in N. Must contains the same number of elements as `speeds`.
     max_efforts: Vec<f64>,

@@ -1,9 +1,9 @@
 use chrono::DateTime;
 use chrono::Duration;
 use chrono::Utc;
+use common::units;
 use core_client::pathfinding::PathfindingInputError;
 use database::DbConnection;
-use editoast_common::units;
 use editoast_schemas::rolling_stock::LoadingGaugeType;
 use editoast_schemas::rolling_stock::RollingStock;
 use editoast_schemas::train_schedule::Comfort;

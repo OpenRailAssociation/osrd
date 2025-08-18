@@ -221,7 +221,7 @@ pub fn search_config_store(input: proc_macro::TokenStream) -> proc_macro::TokenS
 /// * `#[model(to_string)]`: calls `to_string()` before writing the field to the database and calls `String::from` after reading (diesel column type: String)
 /// * `#[model(to_enum)]`: is converted as `u8` before writing the field to the database and calls `FromRepr::from_repr` after reading (diesel column type: TinyInt)
 /// * `#[model(remote = "T")]`: calls `Into::<T>::into` before writing the field to the database and calls `T::from` after reading (diesel column type: T)
-/// * `#[model(uom_unit = "path::to::unit")]`: the value is the path to an unit defined in editoast_common, e.g. `"editoast_common::units::meter"`
+/// * `#[model(uom_unit = "path::to::unit")]`: the value is the path to an unit defined in common, e.g. `"common::units::meter"`
 /// * `#[model(geo)]` **TODO**: TBD
 ///
 /// #### A note on identifiers

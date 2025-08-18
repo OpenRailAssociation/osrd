@@ -29,9 +29,9 @@ use client::stdcm_search_env_commands::handle_stdcm_search_env_command;
 use client::timetables_commands::*;
 use client::user;
 use client::user::UserCommand;
+use common::tracing::TracingConfig;
+use common::tracing::create_tracing_subscriber;
 use database::DbConnectionPoolV2;
-use editoast_common::tracing::TracingConfig;
-use editoast_common::tracing::create_tracing_subscriber;
 use tracing_subscriber::util::SubscriberInitExt;
 pub use views::AppState;
 
@@ -59,7 +59,7 @@ enum EditoastMode {
     Cli,
 }
 
-impl From<EditoastMode> for editoast_common::tracing::Stream {
+impl From<EditoastMode> for common::tracing::Stream {
     fn from(mode: EditoastMode) -> Self {
         match mode {
             EditoastMode::Webservice => Self::Stdout,

@@ -1,4 +1,4 @@
-use editoast_common::Version;
+use common::Version;
 use serde::Serialize;
 
 use super::AsCoreRequest;

@@ -18,11 +18,11 @@ use axum::extract::Query;
 use axum::extract::State;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
+use common::geometry::GeoJsonPoint;
 use core_client::AsCoreRequest;
 use core_client::infra_loading::InfraLoadRequest;
 use database::DbConnection;
 use database::DbConnectionPoolV2;
-use editoast_common::geometry::GeoJsonPoint;
 use editoast_derive::EditoastError;
 use editoast_models::model;
 use editoast_schemas::infra::SwitchType;
@@ -1108,12 +1108,12 @@ async fn populate_op_geo(
 #[cfg(test)]
 pub mod tests {
     use axum::http::StatusCode;
+    use common::geometry::GeoJsonPointValue;
     use core_client::CoreClient;
     use core_client::mocking::MockingClient;
     use diesel::sql_query;
     use diesel::sql_types::BigInt;
     use diesel_async::RunQueryDsl;
-    use editoast_common::geometry::GeoJsonPointValue;
     use editoast_schemas::infra::Electrification;
     use editoast_schemas::infra::RAILJSON_VERSION;
     use editoast_schemas::infra::Speed;
