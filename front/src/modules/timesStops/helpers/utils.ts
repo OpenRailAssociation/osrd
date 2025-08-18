@@ -92,7 +92,7 @@ export const formatSuggestedViasToRowVias = (
 
     const departureTime =
       stopForSeconds !== undefined && arrivalInSeconds
-        ? secToHoursString(arrivalInSeconds + stopForSeconds, { withSeconds: true })
+        ? secToHoursString(arrivalInSeconds + stopForSeconds)
         : undefined;
     const formattedDeparture: TimeExtraDays | undefined = departureTime
       ? { time: departureTime }
@@ -263,13 +263,13 @@ export function updateDaySinceDeparture(
       if (isAfterMidnight || isDepartureMidnight) {
         currentDaySinceDeparture += 1;
         formattedDeparture = {
-          time: secToHoursString(departureInSeconds, { withSeconds: true }),
+          time: secToHoursString(departureInSeconds),
           daySinceDeparture: currentDaySinceDeparture,
           dayDisplayed: true,
         };
       } else {
         formattedDeparture = {
-          time: secToHoursString(departureInSeconds, { withSeconds: true }),
+          time: secToHoursString(departureInSeconds),
           daySinceDeparture: currentDaySinceDeparture,
         };
       }
