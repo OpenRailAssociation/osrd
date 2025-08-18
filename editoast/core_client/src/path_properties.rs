@@ -1,4 +1,4 @@
-use editoast_common::geometry::GeoJsonLineString;
+use common::geometry::GeoJsonLineString;
 use editoast_schemas::infra::OperationalPointExtensions;
 use editoast_schemas::infra::OperationalPointPart;
 use editoast_schemas::infra::OperationalPointPartExtension;

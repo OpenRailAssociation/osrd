@@ -10,6 +10,7 @@ use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::State;
+use common::geometry::GeoJsonLineString;
 use core_client::AsCoreRequest;
 use core_client::CoreClient;
 use core_client::path_properties::OperationalPointOnPath;
@@ -18,7 +19,6 @@ use core_client::path_properties::PropertyElectrificationValues;
 use core_client::path_properties::PropertyValuesF64;
 use core_client::path_properties::PropertyZoneValues;
 use core_client::pathfinding::TrackRange;
-use editoast_common::geometry::GeoJsonLineString;
 use enumset::EnumSet;
 use enumset::EnumSetType;
 use itertools::Either;
@@ -276,6 +276,9 @@ pub(in crate::views) async fn compute_path_properties_batch(
 #[cfg(test)]
 mod tests {
     use axum::http::StatusCode;
+    use common::geometry::GeoJsonLineString;
+    use common::geometry::GeoJsonLineStringValue;
+    use common::geometry::GeoJsonPointValue;
     use core_client::mocking::MockingClient;
     use core_client::path_properties::OperationalPointOnPath;
     use core_client::path_properties::PropertyElectrificationValue;
@@ -283,9 +286,6 @@ mod tests {
     use core_client::path_properties::PropertyValuesF64;
     use core_client::path_properties::PropertyZoneValues;
     use database::DbConnectionPoolV2;
-    use editoast_common::geometry::GeoJsonLineString;
-    use editoast_common::geometry::GeoJsonLineStringValue;
-    use editoast_common::geometry::GeoJsonPointValue;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
     use serde_json::json;

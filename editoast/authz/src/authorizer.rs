@@ -340,7 +340,7 @@ mod tests {
 
     #[tokio::test]
     async fn check_group_roles() {
-        editoast_common::setup_tracing_for_test();
+        common::setup_tracing_for_test();
         let alice_identity = || "alice".to_owned();
         let alice = || UserInfo {
             identity: alice_identity(),

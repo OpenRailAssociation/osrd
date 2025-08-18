@@ -27,7 +27,7 @@ impl UnitType {
 }
 
 fn get_abbreviation(value: &str) -> Option<&'static str> {
-    // Any new value here must also be added in editoast_common/src/units.rs
+    // Any new value here must also be added in common/src/units.rs
     match value {
         "second" => Some("Duration in s"),
         "millisecond" => Some("Duration in ms"),

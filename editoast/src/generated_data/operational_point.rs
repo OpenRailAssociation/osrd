@@ -1,6 +1,7 @@
 use std::collections::HashMap;
 use std::ops::DerefMut;
 
+use common::geometry::GeoJsonPoint;
 use database::DbConnection;
 use database::tables::infra_layer_operational_point::dsl;
 use diesel::delete;
@@ -11,7 +12,6 @@ use diesel::sql_types::BigInt;
 use diesel::sql_types::Jsonb;
 use diesel::sql_types::Text;
 use diesel_async::RunQueryDsl;
-use editoast_common::geometry::GeoJsonPoint;
 use editoast_schemas::primitives::ObjectType;
 
 use super::GeneratedData;

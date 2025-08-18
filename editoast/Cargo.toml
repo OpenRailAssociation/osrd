@@ -8,9 +8,9 @@ edition.workspace = true
 members = [
   ".",
   "authz",
+  "common",
   "core_client",
   "database",
-  "editoast_common",
   "editoast_derive",
   "editoast_models",
   "editoast_schemas",
@@ -36,6 +36,7 @@ async-std = { version = "1.13.0", features = ["attributes", "tokio1"] }
 authz = { path = "./authz" }
 chrono = { version = "0.4.41", default-features = false, features = ["serde"] }
 clap = { version = "4.5", features = ["derive", "env"] }
+common = { path = "./common" }
 core_client = { path = "./core_client" }
 darling = "0.20"
 database = { path = "./database" }
@@ -62,7 +63,6 @@ diesel-async = { version = "0.5", default-features = false, features = [
   "deadpool",
   "postgres",
 ] }
-editoast_common = { path = "./editoast_common" }
 editoast_derive = { path = "./editoast_derive" }
 editoast_models = { path = "./editoast_models" }
 editoast_schemas = { path = "./editoast_schemas" }
@@ -146,6 +146,7 @@ axum-tracing-opentelemetry = { version = "0.29.0", default-features = false, fea
 chrono.workspace = true
 clap.workspace = true
 colored = "3.0.0"
+common = { workspace = true }
 core_client = { workspace = true, features = ["mocking_client"] }
 dashmap = "6.1.0"
 database.workspace = true
@@ -158,7 +159,6 @@ derive_more.workspace = true
 diesel.workspace = true
 diesel-async = { workspace = true }
 diesel_json = "0.2.1"
-editoast_common = { workspace = true }
 editoast_derive.workspace = true
 editoast_models.workspace = true
 editoast_schemas.workspace = true

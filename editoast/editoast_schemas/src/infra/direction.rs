@@ -1,4 +1,4 @@
-use editoast_common::rangemap_utils::Direction as RangeMapDirection;
+use common::rangemap_utils::Direction as RangeMapDirection;
 use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;

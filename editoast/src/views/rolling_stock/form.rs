@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
-use editoast_common::units::quantities::*;
-use editoast_common::units::*;
+use common::units::quantities::*;
+use common::units::*;
 use editoast_models::rolling_stock::TrainMainCategories;
 use editoast_models::rolling_stock::TrainMainCategory;
 use editoast_schemas::rolling_stock::EffortCurves;

@@ -454,8 +454,8 @@ checksum = "1505bd5d3d116872e7271a6d4e16d81d0c8570876c8de68093a09ac269d8aac0"
 name = "authz"
 version = "0.1.0"
 dependencies = [
+ "common",
  "derive_more",
- "editoast_common",
  "editoast_derive",
  "fga",
  "futures 0.3.31",
@@ -867,6 +867,26 @@ dependencies = [
 ]
 
 [[package]]
+name = "common"
+version = "0.1.0"
+dependencies = [
+ "linkme",
+ "opentelemetry",
+ "opentelemetry-semantic-conventions",
+ "opentelemetry_sdk",
+ "rangemap",
+ "serde",
+ "serde_json",
+ "thiserror 2.0.12",
+ "tracing",
+ "tracing-opentelemetry",
+ "tracing-subscriber",
+ "uom",
+ "url",
+ "utoipa",
+]
+
+[[package]]
 name = "concurrent-queue"
 version = "2.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -932,9 +952,9 @@ dependencies = [
  "approx",
  "async-std",
  "chrono",
+ "common",
  "core_client",
  "deadpool",
- "editoast_common",
  "editoast_derive",
  "editoast_schemas",
  "educe",
@@ -1335,6 +1355,7 @@ dependencies = [
  "chrono",
  "clap",
  "colored",
+ "common",
  "core_client",
  "dashmap",
  "database",
@@ -1344,7 +1365,6 @@ dependencies = [
  "diesel",
  "diesel-async",
  "diesel_json",
- "editoast_common",
  "editoast_derive",
  "editoast_models",
  "editoast_schemas",
@@ -1409,26 +1429,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "editoast_common"
-version = "0.1.0"
-dependencies = [
- "linkme",
- "opentelemetry",
- "opentelemetry-semantic-conventions",
- "opentelemetry_sdk",
- "rangemap",
- "serde",
- "serde_json",
- "thiserror 2.0.12",
- "tracing",
- "tracing-opentelemetry",
- "tracing-subscriber",
- "uom",
- "url",
- "utoipa",
-]
-
-[[package]]
 name = "editoast_derive"
 version = "0.1.0"
 dependencies = [
@@ -1447,10 +1447,10 @@ dependencies = [
 name = "editoast_models"
 version = "0.1.0"
 dependencies = [
+ "common",
  "database",
  "diesel",
  "diesel-async",
- "editoast_common",
  "editoast_derive",
  "editoast_models",
  "editoast_schemas",
@@ -1476,7 +1476,7 @@ name = "editoast_schemas"
 version = "0.1.0"
 dependencies = [
  "chrono",
- "editoast_common",
+ "common",
  "editoast_derive",
  "educe",
  "enum-map",

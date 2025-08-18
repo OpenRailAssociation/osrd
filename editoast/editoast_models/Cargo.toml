@@ -8,10 +8,10 @@ edition.workspace = true
 testing = []
 
 [dependencies]
+common.workspace = true
 database.workspace = true
 diesel.workspace = true
 diesel-async.workspace = true
-editoast_common.workspace = true
 editoast_derive.workspace = true
 editoast_schemas.workspace = true
 futures.workspace = true

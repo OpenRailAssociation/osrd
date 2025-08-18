@@ -656,6 +656,9 @@ mod tests {
     use std::str::FromStr;
 
     use chrono::Duration;
+    use common::geometry::GeoJsonLineString;
+    use common::geometry::GeoJsonLineStringValue;
+    use common::geometry::GeoJsonPointValue;
     use core_client::mocking::MockingClient;
     use core_client::path_properties::PropertyElectrificationValue;
     use core_client::path_properties::PropertyElectrificationValues;
@@ -663,9 +666,6 @@ mod tests {
     use core_client::path_properties::PropertyZoneValues;
     use core_client::pathfinding::PathfindingResultSuccess;
     use database::DbConnectionPoolV2;
-    use editoast_common::geometry::GeoJsonLineString;
-    use editoast_common::geometry::GeoJsonLineStringValue;
-    use editoast_common::geometry::GeoJsonPointValue;
     use editoast_schemas::train_schedule::Comfort;
     use editoast_schemas::train_schedule::Distribution;
     use editoast_schemas::train_schedule::Margins;

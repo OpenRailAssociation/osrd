@@ -1,10 +1,10 @@
-use editoast_common::units;
-use editoast_common::units::quantities::AerodynamicDrag;
-use editoast_common::units::quantities::AerodynamicDragPerWeight;
-use editoast_common::units::quantities::SolidFriction;
-use editoast_common::units::quantities::SolidFrictionPerWeight;
-use editoast_common::units::quantities::ViscosityFriction;
-use editoast_common::units::quantities::ViscosityFrictionPerWeight;
+use common::units;
+use common::units::quantities::AerodynamicDrag;
+use common::units::quantities::AerodynamicDragPerWeight;
+use common::units::quantities::SolidFriction;
+use common::units::quantities::SolidFrictionPerWeight;
+use common::units::quantities::ViscosityFriction;
+use common::units::quantities::ViscosityFrictionPerWeight;
 use educe::Educe;
 use serde::Deserialize;
 use serde::Serialize;
