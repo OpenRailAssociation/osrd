@@ -179,12 +179,18 @@ const SpaceTimeChartWrapper = ({
 
   const subCategories = useSubCategoryContext();
 
+  const [previousPanning, setPreviousPanning] = useState(false);
+
+  const [showSettingsPanel, setShowSettingsPanel] = useState(false);
+  const [settings, setSettings] = useState({
+    showConflicts: false,
+    showSignalsStates: false,
+  });
+
   const projectedTrains = useMemo(
     () => makeProjectedItems(projectPathTrainResult),
     [projectPathTrainResult]
   );
-
-  const [previousPanning, setPreviousPanning] = useState(false);
 
   // Cut the spacetime chart curves if the first or last waypoints are hidden
   const { filteredProjectPathTrainResult: cutProjectedTrains, filteredConflicts: cutConflicts } =
@@ -284,12 +290,6 @@ const SpaceTimeChartWrapper = ({
       setTimeOrigin(minTime);
     }
   }, [selectedProjectionId, projectPathTrainResult.length]);
-
-  const [showSettingsPanel, setShowSettingsPanel] = useState(false);
-  const [settings, setSettings] = useState({
-    showConflicts: false,
-    showSignalsStates: false,
-  });
 
   const occupancyBlocks = getOccupancyBlocks(cutProjectedTrains);
 
