@@ -7,7 +7,6 @@ import type {
 } from 'common/api/osrdEditoastApi';
 import type { SimulationSummary } from 'modules/timetableItem/components/Timetable/types';
 import type { Train } from 'reducers/osrdconf/types';
-import { NO_BREAK_SPACE } from 'utils/strings';
 
 import useOutputTableData from './hooks/useOutputTableData';
 import TimesStops from './TimesStops';
@@ -51,8 +50,7 @@ const TimesStopsOutput = ({
           rowData.arrival?.time && rowData.calculatedArrival
             ? rowData.calculatedArrival !== rowData.arrival.time
             : false;
-        const negativeDiffMargins =
-          rowData.diffMargins && Number(rowData.diffMargins?.split(NO_BREAK_SPACE)[0]) < 0;
+        const negativeDiffMargins = rowData.diffMargins && parseInt(rowData.diffMargins) < 0;
         return cx({
           'warning-schedule': arrivalScheduleNotRespected,
           'warning-margin': negativeDiffMargins,
