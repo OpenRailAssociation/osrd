@@ -1,8 +1,9 @@
 import dayjs from 'dayjs';
 import { useTranslation } from 'react-i18next';
 
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import isMainCategory from 'modules/rollingStock/helpers/category';
-import { TRAIN_MAIN_CATEGORY_CLASS } from 'modules/timetableItem/components/Timetable/consts';
+import { getTrainCategoryClassName } from 'modules/timetableItem/components/Timetable/utils';
 
 import type { ConflictWithTrainNames } from '../types';
 
@@ -19,6 +20,11 @@ const ConflictCard = ({
   const start_time = formatToLocalTime(conflict.start_time);
   const end_time = formatToLocalTime(conflict.end_time);
   const start_date = dayjs(conflict.start_time).format('DD/MM/YYYY');
+
+  const { data: { results: subCategories } = { results: [] } } =
+    osrdEditoastApi.endpoints.getSubCategory.useQuery({
+      pageSize: 100,
+    });
 
   return (
     <div
@@ -45,15 +51,19 @@ const ConflictCard = ({
       <div className="trains-name" title={conflict.trainNames.join(', ')}>
         {conflict.trainNames.map((trainName, idx) => {
           const category = conflict.trainCategories[idx];
-          const categoryClass =
-            category && isMainCategory(category)
-              ? TRAIN_MAIN_CATEGORY_CLASS[category.main_category]
-              : TRAIN_MAIN_CATEGORY_CLASS.None;
+
+          const currentSubCategory =
+            category && !isMainCategory(category)
+              ? subCategories?.find((opt) => opt.code === category.sub_category_code)
+              : null;
 
           return (
             <div
               key={`train-${idx}-${trainName}`}
-              className={`train-name-card train-category-text-${categoryClass}`}
+              className={`train-name-card ${getTrainCategoryClassName(category, 'text')}`}
+              style={{
+                color: currentSubCategory?.color,
+              }}
               title={trainName}
             >
               <span>{trainName}</span>
