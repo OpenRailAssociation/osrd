@@ -377,7 +377,7 @@
     "removeVia": "Remove this waypoint",
     "returnToSimulationResults": "Go back to simulation results",
     "rollingstock": "Rolling stock",
-    "saving": "Saving... please wait",
+    "saving": "Saving… please wait",
     "showTrainSettings": "Show",
     "speedLimitByTagAbbrev": "Code compo.",
     "tabs": {
@@ -416,7 +416,7 @@
   },
   "operational-studies-management": {
     "delete": "Delete",
-    "filter-placeholder": "Search...",
+    "filter-placeholder": "Search…",
     "open": "Open",
     "sort-by-latest": "Latest",
     "sort-by-name": "Sort by name",
