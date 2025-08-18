@@ -47,9 +47,9 @@ export function calculateTimeDifferenceInDays(datetime1?: Date, datetime2?: Date
  *
  * using the param withSeconds returns the longer format "HH:MM:SS"
  */
-export function secToHoursString(sec: number | null, { withSeconds = false } = {}): TimeString {
+export function secToHoursString(sec: number | null): TimeString {
   if (!sec) {
     return '';
   }
-  return dateToHHMMSS(new Date(sec * 1000), { withoutSeconds: !withSeconds, utc: true });
+  return dateToHHMMSS(new Date(sec * 1000), { utc: true });
 }
