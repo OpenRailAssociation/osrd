@@ -32,7 +32,7 @@ license = "LGPL-3.0"
 
 [workspace.dependencies]
 approx = "0.5.1"
-async-std = { version = "1.13.0", features = ["attributes", "tokio1"] }
+async-std = { version = "1.13.2", features = ["attributes", "tokio1"] }
 authz = { path = "./authz" }
 chrono = { version = "0.4.41", default-features = false, features = ["serde"] }
 clap = { version = "4.5", features = ["derive", "env"] }
