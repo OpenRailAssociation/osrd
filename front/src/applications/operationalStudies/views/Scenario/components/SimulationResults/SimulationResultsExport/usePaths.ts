@@ -1,7 +1,8 @@
 import { useMemo } from 'react';
 
-import { PATH_COLOR_DEFAULT } from '../consts';
-import { type ProjectPathTrainResult } from '../types';
+import type { ProjectPathTrainResult } from '@osrd-project/ui-charts';
+
+const PATH_COLOR_DEFAULT = '#8A714B';
 
 const transformCurve = (curve: ProjectPathTrainResult['spaceTimeCurves'][0], departureTime: Date) =>
   curve.positions.map((position, i) => ({

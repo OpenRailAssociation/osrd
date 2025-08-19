@@ -15,9 +15,8 @@ export {
   default as useManchetteWithSpaceTimeChart,
   type SplitPoint,
 } from './hooks/useManchetteWithSpaceTimeChart';
-export { default as usePaths } from './hooks/usePaths';
 
-export type { Waypoint, ProjectPathTrainResult, InteractiveWaypoint } from './types';
+export type { Waypoint, ProjectPathTrainResult, InteractiveWaypoint, ChartPath } from './types';
 
 export { positionMmToKm, positionKmToMm } from './utils';
 export { timeScaleToZoomValue, isInteractiveWaypoint } from './utils/helpers';
