@@ -22,3 +22,11 @@ export type ProjectPathTrainResult = {
   }[];
   departureTime: Date;
 };
+
+export type ChartPoint = { time: number; position: number };
+export type ChartPath = {
+  id: string;
+  label: string;
+  color: string;
+  points: { time: number; position: number }[];
+};
