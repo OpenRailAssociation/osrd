@@ -50,19 +50,12 @@ import type {
   WaypointsPanelData,
 } from 'modules/simulationResult/types';
 import type { TimetableItemWithDetails } from 'modules/timetableItem/components/Timetable/types';
-import computeOccurrenceName from 'modules/timetableItem/helpers/computeOccurrenceName';
-import {
-  findExceptionWithOccurrenceId,
-  getOccurrencesNb,
-} from 'modules/timetableItem/helpers/pacedTrain';
 import type { TimetableItemId, TrainId } from 'reducers/osrdconf/types';
 import { updateSelectedTrainId } from 'reducers/simulationResults';
 import { useAppDispatch } from 'store';
 import {
   isTrainId,
-  formatPacedTrainIdToIndexedOccurrenceId,
   extractPacedTrainIdFromOccurrenceId,
-  isTrainScheduleProjection,
   isOccurrenceId,
   extractOccurrenceIndexFromOccurrenceId,
   isTrainScheduleId,
@@ -74,6 +67,7 @@ import {
 import SettingsPanel from './SettingsPanel';
 import getPathStyle from './utils';
 import { Spinner } from '../../../../common/Loaders';
+import makeProjectedItems from '../SpaceTimeChart/helpers/makeProjectedItems';
 import ProjectionLoadingMessage from '../SpaceTimeChart/ProjectionLoadingMessage';
 import useWaypointMenu from '../SpaceTimeChart/useWaypointMenu';
 import WaypointsPanel from '../SpaceTimeChart/WaypointsPanel';
@@ -172,35 +166,7 @@ const ManchetteWithSpaceTimeChartWrapper = ({
   const subCategories = useSubCategoryContext();
 
   const projectedTrains = useMemo(
-    () =>
-      projectPathTrainResult.flatMap<IndividualTrainProjection>((train) => {
-        if (isTrainScheduleProjection(train)) {
-          return train;
-        }
-        // TODO exceptions : handle added exceptions in issue https://github.com/OpenRailAssociation/osrd/issues/11476
-        const occurrencesCount = getOccurrencesNb(train.paced);
-        const occurrences = [];
-        for (let i = 0; i < occurrencesCount; i += 1) {
-          const occurrenceId = formatPacedTrainIdToIndexedOccurrenceId(train.id, i);
-          const correspondingException = findExceptionWithOccurrenceId(
-            train.exceptions,
-            occurrenceId
-          );
-          // Disabled occurrences should not be projected
-          if (correspondingException?.disabled) continue;
-
-          const occurrenceStartTime = dayjs(train.departureTime)
-            .add(i * train.paced.interval.ms, 'ms')
-            .toDate();
-          occurrences.push({
-            ...train,
-            id: occurrenceId,
-            name: computeOccurrenceName(train.name, i),
-            departureTime: occurrenceStartTime,
-          });
-        }
-        return occurrences;
-      }),
+    () => makeProjectedItems(projectPathTrainResult),
     [projectPathTrainResult]
   );
 
