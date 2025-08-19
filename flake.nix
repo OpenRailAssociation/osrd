@@ -61,6 +61,7 @@
               cargo-watch
               taplo
               uv
+              openfga-cli
 
               # Core
               gradle
