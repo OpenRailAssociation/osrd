@@ -15,7 +15,6 @@ import {
   type SplitPoint,
   isSegmentPickingElement,
   isPointPickingElement,
-  usePaths,
   isInteractiveWaypoint,
   type Track,
   type OccupancyZone,
@@ -24,6 +23,7 @@ import {
 import { Slider } from '@osrd-project/ui-core';
 import { createPortal } from 'react-dom';
 
+import usePaths from 'applications/operationalStudies/views/Scenario/components/SimulationResults/SimulationResultsExport/usePaths';
 import upward from 'assets/pictures/workSchedules/ScheduledMaintenanceUp.svg';
 import { type PostWorkSchedulesProjectPathApiResponse } from 'common/api/osrdEditoastApi';
 import { useSubCategoryContext } from 'common/SubCategoryContext';

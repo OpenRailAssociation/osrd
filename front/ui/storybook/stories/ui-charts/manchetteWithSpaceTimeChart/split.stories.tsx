@@ -9,14 +9,13 @@ import {
   SpaceTimeChart,
   useDraw,
   useManchetteWithSpaceTimeChart,
-  usePaths,
 } from '@osrd-project/ui-charts';
 import '@osrd-project/ui-charts/dist/theme.css';
 import '@osrd-project/ui-core/dist/theme.css';
 import type { Meta } from '@storybook/react-vite';
 import { clamp } from 'lodash';
 
-import { SAMPLE_WAYPOINTS, SAMPLE_PATHS_DATA } from './assets/sampleData';
+import { SAMPLE_WAYPOINTS, SAMPLE_CHART_PATHS } from './assets/sampleData';
 
 const AMBIANT_A10 = '#EFF3F5';
 
@@ -91,13 +90,13 @@ const FlatStep = ({ position }: { position: number }) => {
  */
 const SplitManchetteWithSpaceTimeChartWrapper = ({
   waypoints,
-  projectPathTrainResult,
+  paths,
   selectedTrain,
   height = 561,
   splitPoints = [],
 }: {
   waypoints: typeof SAMPLE_WAYPOINTS;
-  projectPathTrainResult: typeof SAMPLE_PATHS_DATA;
+  paths: typeof SAMPLE_CHART_PATHS;
   selectedTrain: number;
   height: number;
   splitPoints: ManchetteWithSpaceTimeChartProps['splitPoints'];
@@ -106,14 +105,13 @@ const SplitManchetteWithSpaceTimeChartWrapper = ({
   const manchetteWithSpaceTimeChartRef = useRef<HTMLDivElement>(null);
   const spaceTimeChartRef = useRef<HTMLDivElement>(null);
 
-  const paths = usePaths(projectPathTrainResult);
   const { manchetteProps, spaceTimeChartProps, handleScroll } = useManchetteWithSpaceTimeChart({
     waypoints,
     manchetteWithSpaceTimeChartRef,
     height,
     spaceTimeChartRef,
     splitPoints,
-    defaultTimeOrigin: Math.min(...projectPathTrainResult.map((p) => +p.departureTime)),
+    defaultTimeOrigin: Math.min(...paths.map((p) => +p.points[0]?.time)),
   });
 
   return (
@@ -152,7 +150,7 @@ export default meta;
 export const Default = {
   args: {
     waypoints: SAMPLE_WAYPOINTS,
-    projectPathTrainResult: SAMPLE_PATHS_DATA,
+    paths: SAMPLE_CHART_PATHS,
     selectedTrain: 1,
     splitPoints: [
       {
