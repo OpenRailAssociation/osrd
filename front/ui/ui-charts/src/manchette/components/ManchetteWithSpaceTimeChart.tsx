@@ -3,10 +3,10 @@ import React, { useRef } from 'react';
 import Manchette, { type ManchetteProps } from './Manchette';
 import { PathLayer, SpaceTimeChart, type SpaceTimeChartProps } from '../../spaceTimeChart';
 import { INITIAL_SPACE_TIME_CHART_HEIGHT } from '../consts';
+import { SAMPLE_CHART_PATHS } from '../assets/sampleData';
 import useManchetteWithSpaceTimeChart, {
   type SplitPoint,
 } from '../hooks/useManchetteWithSpaceTimeChart';
-import usePaths from '../hooks/usePaths';
 import { type ProjectPathTrainResult, type Waypoint } from '../types';
 
 export type ManchetteWithSpaceTimeChartProps = {
@@ -39,7 +39,7 @@ const ManchetteWithSpaceTimeChart = ({
   const manchetteWithSpaceTimeChartRef = useRef<HTMLDivElement>(null);
   const spaceTimeChartRef = useRef<HTMLDivElement>(null);
 
-  const paths = usePaths(projectPathTrainResult);
+  const paths = SAMPLE_CHART_PATHS;
   const { manchetteProps, spaceTimeChartProps, handleScroll } = useManchetteWithSpaceTimeChart({
     waypoints,
     manchetteWithSpaceTimeChartRef,

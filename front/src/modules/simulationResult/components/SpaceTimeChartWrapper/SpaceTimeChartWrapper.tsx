@@ -15,7 +15,6 @@ import {
   type SplitPoint,
   isSegmentPickingElement,
   isPointPickingElement,
-  usePaths,
   isInteractiveWaypoint,
   type Track,
   type OccupancyZone,
@@ -63,6 +62,7 @@ import SettingsPanel from './SettingsPanel';
 import SpaceTimeChartToolbar from './SpaceTimeChartToolbar';
 import useWaypointMenu from './useWaypointMenu';
 import WaypointsPanel from './WaypointsPanel';
+import usePaths from 'applications/operationalStudies/views/Scenario/components/SimulationResults/SimulationResultsExport/usePaths';
 
 type SpaceTimeChartWrapperBaseProps = {
   operationalPoints: PathOperationalPoint[];

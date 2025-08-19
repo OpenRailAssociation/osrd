@@ -15,7 +15,6 @@ export {
   default as useManchetteWithSpaceTimeChart,
   type SplitPoint,
 } from './hooks/useManchetteWithSpaceTimeChart';
-export { default as usePaths } from './hooks/usePaths';
 
 export type { Waypoint, ProjectPathTrainResult, InteractiveWaypoint } from './types';
 

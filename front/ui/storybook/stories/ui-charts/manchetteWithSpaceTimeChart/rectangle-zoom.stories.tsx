@@ -8,14 +8,13 @@ import {
   type Waypoint,
   ZoomRect,
   PathLayer,
-  usePaths,
 } from '@osrd-project/ui-charts';
 import { Slider } from '@osrd-project/ui-core';
 import { ZoomIn } from '@osrd-project/ui-icons';
 import type { Meta } from '@storybook/react-vite';
 import cx from 'classnames';
 
-import { SAMPLE_WAYPOINTS, SAMPLE_PATHS_DATA } from './assets/sampleData';
+import { SAMPLE_WAYPOINTS, SAMPLE_PATHS_DATA, SAMPLE_CHART_PATHS } from './assets/sampleData';
 import { MouseTracker } from '../spaceTimeChart/helpers/components';
 
 import '@osrd-project/ui-core/dist/theme.css';
@@ -37,7 +36,7 @@ const ManchetteWithSpaceTimeWrapper = ({
 }: ManchetteWithSpaceTimeWrapperProps) => {
   const manchetteWithSpaceTimeChartRef = useRef<HTMLDivElement>(null);
   const spaceTimeChartRef = useRef<HTMLDivElement>(null);
-  const paths = usePaths(projectPathTrainResult);
+  const paths = SAMPLE_CHART_PATHS;
   const {
     manchetteProps,
     spaceTimeChartProps,

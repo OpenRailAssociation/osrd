@@ -9,11 +9,10 @@ import {
   type ProjectPathTrainResult,
   type Waypoint,
   PathLayer,
-  usePaths,
 } from '@osrd-project/ui-charts';
 import type { Meta } from '@storybook/react-vite';
 
-import { SAMPLE_WAYPOINTS, SAMPLE_PATHS_DATA } from './assets/sampleData';
+import { SAMPLE_WAYPOINTS, SAMPLE_PATHS_DATA, SAMPLE_CHART_PATHS } from './assets/sampleData';
 
 type ManchetteWithSpaceTimeWrapperProps = {
   waypoints: Waypoint[];
@@ -32,7 +31,7 @@ const ManchetteWithSpaceTimeWrapper = ({
 }: ManchetteWithSpaceTimeWrapperProps) => {
   const manchetteWithSpaceTimeChartRef = useRef<HTMLDivElement>(null);
 
-  const paths = usePaths(projectPathTrainResult);
+  const paths = SAMPLE_CHART_PATHS;
   const { manchetteProps, spaceTimeChartProps, handleScroll } = useManchetteWithSpaceTimeChart({
     waypoints,
     manchetteWithSpaceTimeChartRef,

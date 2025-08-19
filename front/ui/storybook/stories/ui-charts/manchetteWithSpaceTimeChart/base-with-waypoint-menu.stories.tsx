@@ -8,7 +8,6 @@ import {
   useManchetteWithSpaceTimeChart,
   isInteractiveWaypoint,
   PathLayer,
-  usePaths,
 } from '@osrd-project/ui-charts';
 import { EyeClosed, Telescope } from '@osrd-project/ui-icons';
 import type { Meta } from '@storybook/react-vite';
@@ -16,7 +15,7 @@ import '@osrd-project/ui-core/dist/theme.css';
 import '@osrd-project/ui-charts/dist/theme.css';
 
 import AnchoredMenu from './AnchoredMenu';
-import { SAMPLE_PATHS_DATA, SAMPLE_WAYPOINTS } from './assets/sampleData';
+import { SAMPLE_CHART_PATHS, SAMPLE_PATHS_DATA, SAMPLE_WAYPOINTS } from './assets/sampleData';
 import Menu, { type MenuItem } from './Menu';
 
 type ManchetteWithSpaceTimeWrapperProps = {
@@ -72,7 +71,7 @@ const ManchetteWithSpaceTimeWrapper = ({
     setActiveWaypointId(waypointId);
   };
 
-  const paths = usePaths(projectPathTrainResult);
+  const paths = SAMPLE_CHART_PATHS;
   const { manchetteProps, spaceTimeChartProps, handleScroll } = useManchetteWithSpaceTimeChart({
     waypoints,
     manchetteWithSpaceTimeChartRef,
