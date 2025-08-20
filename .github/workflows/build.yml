@@ -67,8 +67,8 @@ jobs:
       # - `failed to solve: failed to compute cache key`
       #   full message: `failed to solve: failed to compute cache key: failed to get state for index 0 on XXXXXX`
       #
-      # - `httpReadSeeker: failed open: failed to authorize: no active session`
-      #   full message: `ERROR: failed to solve: DeadlineExceeded: failed to compute cache key: failed to copy: httpReadSeeker: failed open: failed to authorize: no active session for XXXXX: context deadline exceeded`
+      # - `httpReadSeeker: failed open:`
+      #   full message: `ERROR: failed to solve: DeadlineExceeded: failed to compute cache key: failed to copy: httpReadSeeker: failed open: no active session for XXXXX: context deadline exceeded`
       - name: Build and push
         run: |
           set -euo pipefail
@@ -78,7 +78,7 @@ jobs:
 
           TRANSIENT_FAILURES=(
             "failed to solve: failed to compute cache key"
-            "httpReadSeeker: failed open: failed to authorize: no active session"
+            "httpReadSeeker: failed open:"
           )
           BAKEFILE="--file=docker/docker-bake.hcl"
           METADATA="--file=bake-metadata.json"
