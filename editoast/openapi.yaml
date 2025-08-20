@@ -13522,12 +13522,12 @@ components:
       required:
       - infra
       - expected_version
+      - timetable_id
       - path_items
       - rolling_stock_loading_gauge
       - rolling_stock_supported_signaling_systems
       - comfort
       - physics_consist
-      - trains_requirements
       - start_time
       - maximum_departure_delay
       - maximum_run_time
@@ -13703,26 +13703,10 @@ components:
           description: Numerical integration time step in milliseconds. Use default value if not specified.
           nullable: true
           minimum: 0
-        trains_requirements:
-          type: object
-          additionalProperties:
-            type: object
-            required:
-            - start_time
-            - spacing_requirements
-            - routing_requirements
-            properties:
-              routing_requirements:
-                type: array
-                items:
-                  $ref: '#/components/schemas/RoutingRequirement'
-              spacing_requirements:
-                type: array
-                items:
-                  $ref: '#/components/schemas/SpacingRequirement'
-              start_time:
-                type: string
-                format: date-time
+        timetable_id:
+          type: integer
+          format: int64
+          description: Timetable id
         work_schedules:
           type: array
           items:

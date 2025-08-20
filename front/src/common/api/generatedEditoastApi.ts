@@ -4509,13 +4509,8 @@ export type StdcmRequest = {
   time_gap_before: number;
   /** Numerical integration time step in milliseconds. Use default value if not specified. */
   time_step?: number | null;
-  trains_requirements: {
-    [key: string]: {
-      routing_requirements: RoutingRequirement[];
-      spacing_requirements: SpacingRequirement[];
-      start_time: string;
-    };
-  };
+  /** Timetable id */
+  timetable_id: number;
   /** List of planned work schedules */
   work_schedules: WorkSchedule[];
 };
