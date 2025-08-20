@@ -6,7 +6,6 @@ use std::sync::Arc;
 use clap::Args;
 use colored::Colorize as _;
 use database::DbConnectionPoolV2;
-use validator::ValidationErrorsKind;
 
 use crate::models::RollingStock;
 use editoast_models::TowedRollingStock;
@@ -34,73 +33,49 @@ pub async fn import_rolling_stock(
             serde_json::from_reader(BufReader::new(rolling_stock_file))?;
         let rolling_stock_name = rolling_stock.name.clone();
         let rolling_stock: Changeset<RollingStock> = rolling_stock.into();
-        match rolling_stock.validate() {
-            Ok(()) => {
+
+        println!(
+            "🍞 Importing rolling stock {}",
+            rolling_stock
+                .name
+                .as_deref()
+                .unwrap_or("rolling stock without name")
+                .bold()
+        );
+        let existing_rolling_stock =
+            RollingStock::retrieve(conn.clone(), rolling_stock_name.clone()).await?;
+        match (existing_rolling_stock, args.force) {
+            (Some(_), true) => {
+                let rolling_stock = rolling_stock
+                    .locked(false)
+                    .version(0)
+                    .update(&mut conn, rolling_stock_name.clone())
+                    .await?
+                    .unwrap();
                 println!(
-                    "🍞 Importing rolling stock {}",
-                    rolling_stock
-                        .name
-                        .as_deref()
-                        .unwrap_or("rolling stock without name")
-                        .bold()
+                    "   ↳ ✅ Rolling stock {}[{}] saved! (forced update)",
+                    &rolling_stock_name.bold(),
+                    &rolling_stock.id,
                 );
-                let existing_rolling_stock =
-                    RollingStock::retrieve(conn.clone(), rolling_stock_name.clone()).await?;
-                match (existing_rolling_stock, args.force) {
-                    (Some(_), true) => {
-                        let rolling_stock = rolling_stock
-                            .locked(false)
-                            .version(0)
-                            .update(&mut conn, rolling_stock_name.clone())
-                            .await?
-                            .unwrap();
-                        println!(
-                            "   ↳ ✅ Rolling stock {}[{}] saved! (forced update)",
-                            &rolling_stock_name.bold(),
-                            &rolling_stock.id,
-                        );
-                    }
-                    (Some(existing_rolling_stock), false) => {
-                        println!(
-                            "   ↳ ⚠️  Rolling stock {}[{}] already existing! (try use \"--force\" to update it)",
-                            &rolling_stock_name.bold(),
-                            &existing_rolling_stock.id,
-                        );
-                    }
-                    _ => {
-                        let rolling_stock = rolling_stock
-                            .locked(false)
-                            .version(0)
-                            .create(&mut conn)
-                            .await?;
-                        println!(
-                            "   ↳ ✅ Rolling stock {}[{}] saved!",
-                            &rolling_stock_name.bold(),
-                            &rolling_stock.id,
-                        );
-                    }
-                }
             }
-            Err(e) => {
-                if let Some(ValidationErrorsKind::Field(field_errors)) = e.errors().get("__all__") {
-                    for error in field_errors {
-                        if &error.code == "electrical_power_startup_time" {
-                            tracing::error!(
-                                "Rolling stock is electrical, but electrical_power_startup_time is missing"
-                            );
-                        } else if &error.code == "raise_pantograph_time" {
-                            tracing::error!(
-                                "Rolling stock is electrical, but raise_pantograph_time is missing"
-                            );
-                        } else {
-                            tracing::error!(
-                                code = %error.code,
-                                "Unknown rolling stock validation error"
-                            );
-                        }
-                    }
-                }
-                anyhow::bail!("Rolling stock import failed");
+            (Some(existing_rolling_stock), false) => {
+                println!(
+                    "   ↳ ⚠️  Rolling stock {}[{}] already existing! (try use \"--force\" to update it)",
+                    &rolling_stock_name.bold(),
+                    &existing_rolling_stock.id,
+                );
+            }
+            _ => {
+                let rolling_stock = rolling_stock
+                    .locked(false)
+                    .version(0)
+                    .create(&mut conn)
+                    .await?;
+                println!(
+                    "   ↳ ✅ Rolling stock {}[{}] saved!",
+                    &rolling_stock_name.bold(),
+                    &rolling_stock.id,
+                );
             }
         };
     }

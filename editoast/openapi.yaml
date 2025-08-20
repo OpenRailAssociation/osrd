@@ -2823,6 +2823,30 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/RollingStockWithLiveries'
+    put:
+      tags:
+      - rolling_stock
+      summary: Modify a rolling stock
+      parameters:
+      - name: rolling_stock_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RollingStockForm'
+        required: true
+      responses:
+        '200':
+          description: The created rolling stock
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/RollingStockWithLiveries'
     delete:
       tags:
       - rolling_stock
@@ -2847,30 +2871,6 @@ paths:
           description: The requested rolling stock was not found
         '409':
           description: The requested rolling stock is used
-    patch:
-      tags:
-      - rolling_stock
-      summary: Patch a rolling stock
-      parameters:
-      - name: rolling_stock_id
-        in: path
-        required: true
-        schema:
-          type: integer
-          format: int64
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/RollingStockForm'
-        required: true
-      responses:
-        '200':
-          description: The created rolling stock
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/RollingStockWithLiveries'
   /rolling_stock/{rolling_stock_id}/livery:
     post:
       tags:
@@ -11854,14 +11854,18 @@ components:
         const_gamma:
           type: number
           format: double
-          description: Acceleration in m·s⁻²
+          description: |-
+            The constant gamma braking coefficient used when NOT circulating
+            under ETCS/ERTMS signaling system
+            Acceleration in m·s⁻²
         effort_curves:
           $ref: '#/components/schemas/EffortCurves'
         electrical_power_startup_time:
           type: number
           format: double
           description: |-
-            The time the train takes before actually using electrical power (in seconds). Is null if the train is not electric.
+            The time the train takes before actually using electrical power (in seconds).
+            Is null if the train is not electric.
             Duration in s
           example: 5.0
           nullable: true
@@ -11884,7 +11888,8 @@ components:
           $ref: '#/components/schemas/LoadingGaugeType'
         locked:
           type: boolean
-          nullable: true
+          description: 'Deprecated for openapi: overwritten by query-param'
+          default: false
         mass:
           type: number
           format: double
@@ -11908,11 +11913,15 @@ components:
             type: string
         primary_category:
           $ref: '#/components/schemas/TrainMainCategory'
+        railjson_version:
+          type: string
+          default: '3.3'
         raise_pantograph_time:
           type: number
           format: double
           description: |-
-            The time it takes to raise this train's pantograph in seconds. Is null if the train is not electric.
+            The time it takes to raise this train's pantograph in seconds.
+            Is null if the train is not electric.
             Duration in s
           example: 15.0
           nullable: true

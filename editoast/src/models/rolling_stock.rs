@@ -23,9 +23,8 @@ use serde::Deserialize;
 use serde::Serialize;
 
 use utoipa::ToSchema;
-use validator::ValidationError;
-use validator::ValidationErrors;
 
+use crate::error;
 use editoast_models::prelude::*;
 
 mod schedules_from_rolling_stock;
@@ -128,82 +127,6 @@ impl From<editoast_models::Error> for Error {
                 Self::BasePowerClassEmpty
             }
             e => Self::Database(e),
-        }
-    }
-}
-
-impl RollingStockChangeset {
-    pub fn validate(&self) -> std::result::Result<(), ValidationErrors> {
-        let mut validation_errors = ValidationErrors::new();
-
-        self.validate_primary_category(&mut validation_errors);
-
-        self.validate_effort_curves(&mut validation_errors);
-
-        if !validation_errors.is_empty() {
-            return Err(validation_errors);
-        }
-
-        Ok(())
-    }
-
-    fn validate_effort_curves(&self, validation_errors: &mut ValidationErrors) {
-        if let Some(effort_curves) = &self.effort_curves {
-            if effort_curves.is_electric() {
-                if self
-                    .electrical_power_startup_time
-                    .flatten()
-                    .map(units::second::new)
-                    .is_none()
-                {
-                    let mut error = ValidationError::new("electrical_power_startup_time");
-                    error.message = Some(
-                        "electrical_power_startup_time is required for electric rolling stocks"
-                            .into(),
-                    );
-                    validation_errors.add("effort_curves", error);
-                }
-                if self
-                    .raise_pantograph_time
-                    .flatten()
-                    .map(units::second::new)
-                    .is_none()
-                {
-                    let mut error = ValidationError::new("raise_pantograph_time");
-                    error.message = Some(
-                        "raise_pantograph_time is required for electric rolling stocks".into(),
-                    );
-                    validation_errors.add("effort_curves", error);
-                }
-            }
-        } else {
-            validation_errors.add(
-                "effort_curves",
-                ValidationError::new("effort_curves is required"),
-            );
-        }
-    }
-
-    fn validate_primary_category(&self, validation_errors: &mut ValidationErrors) {
-        if let Some(primary_category) = &self.primary_category {
-            if let Some(other_categories) = &self.other_categories
-                && other_categories
-                    .iter()
-                    .flatten()
-                    .any(|category| category == primary_category)
-            {
-                let mut error = ValidationError::new("primary_category");
-                error.message = Some(
-                    "The primary_category cannot be listed in other_categories for rolling stocks."
-                        .into(),
-                );
-                validation_errors.add("primary_category", error);
-            }
-        } else {
-            validation_errors.add(
-                "primary_category",
-                ValidationError::new("primary_category is required"),
-            );
         }
     }
 }

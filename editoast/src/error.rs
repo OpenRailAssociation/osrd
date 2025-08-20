@@ -21,8 +21,6 @@ use std::fmt::Formatter;
 use std::result::Result as StdResult;
 use tracing::error;
 use utoipa::ToSchema;
-use validator::ValidationErrors;
-use validator::ValidationErrorsKind;
 
 pub type Result<T, E = InternalError> = StdResult<T, E>;
 
@@ -179,33 +177,6 @@ impl EditoastError for PoolError {
 
     fn get_type(&self) -> &str {
         "editoast:ValkeyPoolError"
-    }
-}
-
-/// Handle all json errors
-impl EditoastError for ValidationErrors {
-    fn get_status(&self) -> StatusCode {
-        StatusCode::BAD_REQUEST
-    }
-
-    fn get_type(&self) -> &str {
-        "editoast:ValidationError"
-    }
-
-    fn context(&self) -> HashMap<String, Value> {
-        let mut context_map = HashMap::new();
-        for (field, error_kind) in self.errors() {
-            if let ValidationErrorsKind::Field(errors) = error_kind {
-                let mut name = *field;
-                if name == "__all__" {
-                    name = "schema_validation";
-                }
-                let error_messages: Vec<String> =
-                    errors.iter().map(|error| error.to_string()).collect();
-                context_map.insert(name.to_owned(), json!(error_messages));
-            }
-        }
-        context_map
     }
 }
 

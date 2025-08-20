@@ -239,8 +239,6 @@ uom.workspace = true
 url.workspace = true
 utoipa.workspace = true
 uuid.workspace = true
-# TODO: remove validator crate dependency (little use and benefits)
-validator = { version = "0.19.0", features = ["derive"] }
 
 [dev-dependencies]
 async-std.workspace = true
