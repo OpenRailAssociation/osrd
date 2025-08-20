@@ -485,15 +485,22 @@ const ManchetteWithSpaceTimeChartWrapper = ({
     ) {
       const hoveredTrainId = hoveredItem.element.pathId;
       if (!isTrainId(hoveredTrainId)) return;
+
       const train = projectedTrains.find((projectedTrain) => projectedTrain.id === hoveredTrainId);
-      if (train) {
-        setDraggingState({
-          draggedTrain: train,
-          initialDepartureTime: train.departureTime,
-        });
-      } else {
+      if (!train) {
         console.error(`No train found with id ${hoveredTrainId}`);
+        return;
       }
+
+      // disable start time exception for now
+      const isStartTimeException =
+        isIndividualOccurrenceProjection(train) && !!train.exception?.start_time;
+      if (isStartTimeException) return;
+
+      setDraggingState({
+        draggedTrain: train,
+        initialDepartureTime: train.departureTime,
+      });
     }
 
     // if no hovered train, we pan normally
