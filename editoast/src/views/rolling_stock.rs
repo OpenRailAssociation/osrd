@@ -1,8 +1,7 @@
-pub(in crate::views) mod form;
 pub(in crate::views) mod light;
 pub(in crate::views) mod towed;
 
-pub use form::RollingStockForm;
+use schemas::RollingStock as RollingStockForm;
 
 use std::io::Cursor;
 use std::sync::Arc;
@@ -304,7 +303,6 @@ pub(in crate::views) async fn create(
 
     let conn = &mut db_pool.get().await?;
     let rolling_stock_changeset: Changeset<RollingStock> = rolling_stock_form.into();
-    rolling_stock_changeset.validate()?;
 
     let rolling_stock = rolling_stock_changeset
         .locked(query_params.locked)
@@ -316,10 +314,10 @@ pub(in crate::views) async fn create(
     Ok(Json(rolling_stock))
 }
 
-/// Patch a rolling stock
+/// Modify a rolling stock
 #[editoast_derive::route]
 #[utoipa::path(
-    patch, path = "",
+    put, path = "",
     tag = "rolling_stock",
     params(RollingStockIdParam),
     request_body = RollingStockForm,
@@ -341,9 +339,6 @@ pub(in crate::views) async fn update(
         return Err(AuthorizationError::Forbidden.into());
     }
 
-    let rolling_stock_changeset: Changeset<RollingStock> = rolling_stock_form.into();
-    rolling_stock_changeset.validate()?;
-
     let new_rolling_stock = db_pool
         .get()
         .await?
@@ -358,22 +353,21 @@ pub(in crate::views) async fn update(
                     .await?;
                 assert_rolling_stock_unlocked(&previous_rolling_stock)?;
 
-                let mut new_rolling_stock = rolling_stock_changeset
-                    .update(&mut conn.clone(), rolling_stock_id)
-                    .await
-                    .map_err(RollingStockError::from)?
-                    .ok_or(RollingStockError::KeyNotFound {
-                        rolling_stock_key: RollingStockKey::Id(rolling_stock_id),
-                    })?;
-
-                if new_rolling_stock != previous_rolling_stock {
-                    new_rolling_stock.version += 1;
-                    new_rolling_stock
-                        .save(&mut conn.clone())
+                if rolling_stock_form != previous_rolling_stock.clone().into() {
+                    let mut rolling_stock_changeset: Changeset<RollingStock> =
+                        rolling_stock_form.clone().into();
+                    rolling_stock_changeset.version = Some(&previous_rolling_stock.version + 1);
+                    let new_rolling_stock = rolling_stock_changeset
+                        .update(&mut conn.clone(), rolling_stock_id)
                         .await
                         .map_err(RollingStockError::from)?
+                        .ok_or(RollingStockError::KeyNotFound {
+                            rolling_stock_key: RollingStockKey::Id(rolling_stock_id),
+                        })?;
+                    Ok(new_rolling_stock)
+                } else {
+                    Ok(previous_rolling_stock)
                 }
-                Ok(new_rolling_stock)
             }
             .scope_boxed()
         })
@@ -1120,7 +1114,7 @@ pub mod tests {
         rolling_stock_form.name = updated_rs_name.to_string();
 
         let request = app
-            .patch(format!("/rolling_stock/{}", fast_rolling_stock.id).as_str())
+            .put(format!("/rolling_stock/{}", fast_rolling_stock.id).as_str())
             .json(&&rolling_stock_form);
 
         // WHEN
@@ -1164,14 +1158,14 @@ pub mod tests {
         let mut rolling_stock_form: RollingStockForm = fast_rolling_stock.clone().into();
         let primary_category =
             TrainMainCategory(schemas::rolling_stock::TrainMainCategory::HighSpeedTrain);
-        rolling_stock_form.primary_category = primary_category.clone();
-        let other_categories = TrainMainCategories(vec![TrainMainCategory(
+        rolling_stock_form.primary_category = *primary_category.clone();
+        let other_categories = schemas::rolling_stock::TrainMainCategories(vec![
             schemas::rolling_stock::TrainMainCategory::RegionalTrain,
-        )]);
-        rolling_stock_form.other_categories = other_categories.clone();
+        ]);
+        rolling_stock_form.other_categories = other_categories;
 
         let request = app
-            .patch(format!("/rolling_stock/{}", fast_rolling_stock.id).as_str())
+            .put(format!("/rolling_stock/{}", fast_rolling_stock.id).as_str())
             .json(&&rolling_stock_form);
 
         // WHEN
@@ -1191,7 +1185,12 @@ pub mod tests {
             fast_rolling_stock.version + 1
         );
         assert_eq!(updated_rolling_stock.primary_category, primary_category);
-        assert_eq!(updated_rolling_stock.other_categories, other_categories);
+        assert_eq!(
+            updated_rolling_stock.other_categories,
+            TrainMainCategories(vec![TrainMainCategory(
+                schemas::rolling_stock::TrainMainCategory::RegionalTrain
+            ),])
+        );
     }
 
     #[rstest]
@@ -1207,25 +1206,25 @@ pub mod tests {
         let mut rolling_stock_form: RollingStockForm = fast_rolling_stock.clone().into();
         let primary_category =
             TrainMainCategory(schemas::rolling_stock::TrainMainCategory::HighSpeedTrain);
-        rolling_stock_form.primary_category = primary_category.clone();
-        let other_categories = TrainMainCategories(vec![primary_category.clone()]);
+        rolling_stock_form.primary_category = *primary_category.clone();
+        let other_categories =
+            schemas::rolling_stock::TrainMainCategories(vec![*primary_category.clone()]);
         rolling_stock_form.other_categories = other_categories.clone();
 
         let request = app
-            .patch(format!("/rolling_stock/{}", fast_rolling_stock.id).as_str())
+            .put(format!("/rolling_stock/{}", fast_rolling_stock.id).as_str())
             .json(&&rolling_stock_form);
 
         // WHEN
         let raw_response = app.fetch(request);
 
         // THEN
-        let response: InternalError = raw_response
-            .assert_status(StatusCode::BAD_REQUEST)
-            .json_into();
-        assert_eq!(response.error_type, "editoast:ValidationError");
+        let response = raw_response
+            .assert_status(StatusCode::UNPROCESSABLE_ENTITY)
+            .bytes();
         assert_eq!(
-            &response.context.get("primary_category").unwrap()[0],
-            "The primary_category cannot be listed in other_categories for rolling stocks."
+            &String::from_utf8(response).unwrap(),
+            "Failed to deserialize the JSON body into the target type: invalid rolling-stock: primary_category: The primary_category cannot be listed in other_categories for rolling stocks."
         );
 
         let updated_rolling_stock: RollingStock =
@@ -1254,7 +1253,7 @@ pub mod tests {
         let second_fast_rolling_stock_form: RollingStockForm = second_fast_rolling_stock.into();
 
         let request = app
-            .patch(format!("/rolling_stock/{}", first_fast_rolling_stock.id).as_str())
+            .put(format!("/rolling_stock/{}", first_fast_rolling_stock.id).as_str())
             .json(&second_fast_rolling_stock_form);
 
         // WHEN
@@ -1293,7 +1292,7 @@ pub mod tests {
         second_fast_rolling_stock_form.name = "second_fast_rolling_stock_name".to_owned();
 
         let request = app
-            .patch(format!("/rolling_stock/{}", locked_fast_rolling_stock.id).as_str())
+            .put(format!("/rolling_stock/{}", locked_fast_rolling_stock.id).as_str())
             .json(&second_fast_rolling_stock_form);
 
         // WHEN

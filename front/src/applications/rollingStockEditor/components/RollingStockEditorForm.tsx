@@ -53,8 +53,7 @@ const RollingStockEditorForm = ({
   const { t: rollingStockT } = useTranslation('translation', { keyPrefix: 'rollingStock' });
   const { openModal, closeModal } = useModal();
   const [postRollingstock] = osrdEditoastApi.endpoints.postRollingStock.useMutation();
-  const [patchRollingStock] =
-    osrdEditoastApi.endpoints.patchRollingStockByRollingStockId.useMutation();
+  const [putRollingStock] = osrdEditoastApi.endpoints.putRollingStockByRollingStockId.useMutation();
 
   const [errorMessage, setErrorMessage] = useState('');
 
@@ -108,7 +107,7 @@ const RollingStockEditorForm = ({
 
   const updateRollingStock = (payload: RollingStockForm) => () => {
     if (rollingStockData) {
-      patchRollingStock({
+      putRollingStock({
         rollingStockId: rollingStockData.id,
         rollingStockForm: payload,
       })
