@@ -147,7 +147,7 @@ const ManchetteWithSpaceTimeChartWrapper = ({
 
   const [waypointsPanelIsOpen, setWaypointsPanelIsOpen] = useState(false);
 
-  const { subCategories } = useSubCategoryContext();
+  const subCategories = useSubCategoryContext();
 
   const projectedTrains = useMemo(
     () =>

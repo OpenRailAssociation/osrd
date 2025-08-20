@@ -140,7 +140,7 @@ const Timetable = ({
     []
   );
 
-  const { subCategories } = useSubCategoryContext();
+  const subCategories = useSubCategoryContext();
 
   return (
     <div className="scenario-timetable">

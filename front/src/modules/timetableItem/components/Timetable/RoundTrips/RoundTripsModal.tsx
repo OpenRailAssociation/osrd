@@ -52,7 +52,7 @@ const RoundTripsModal = ({
   const [filter, setFilter] = useState('');
   const debouncedFilter = useDebounce(filter, 300);
 
-  const { subCategories } = useSubCategoryContext();
+  const subCategories = useSubCategoryContext();
 
   const { data: { results: trainScheduleRoundtrips } = { results: undefined } } =
     osrdEditoastApi.endpoints.getTimetableByIdRoundTripsTrainSchedules.useQuery(

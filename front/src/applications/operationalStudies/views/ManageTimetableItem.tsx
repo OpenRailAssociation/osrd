@@ -229,7 +229,7 @@ const ManageTimetableItem = () => {
     []
   );
 
-  const { subCategories } = useSubCategoryContext();
+  const subCategories = useSubCategoryContext();
 
   const currentSubCategory = useMemo(() => {
     if (isMainCategory(currentCategory)) return undefined;

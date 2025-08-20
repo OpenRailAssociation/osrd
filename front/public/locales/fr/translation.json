@@ -810,7 +810,7 @@
   "stdcm": "Sillons de dernière minute",
   "subCategory": {
     "errorMessages": {
-      "unableToRetrieveSubCategory": "Récupération sous-catégorie impossible",
+      "unableToRetrieveSubCategory": "Récupération des sous-catégories impossible",
       "unableToRetrieveSubCategoryMessage": "Une erreur est survenue"
     }
   },

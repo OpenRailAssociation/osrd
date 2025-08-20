@@ -810,7 +810,7 @@
   "stdcm": "Short term path request",
   "subCategory": {
     "errorMessages": {
-      "unableToRetrieveSubCategory": "Cannot fetch sub-category",
+      "unableToRetrieveSubCategory": "Cannot fetch sub-categories",
       "unableToRetrieveSubCategoryMessage": "An error has occurred"
     }
   },

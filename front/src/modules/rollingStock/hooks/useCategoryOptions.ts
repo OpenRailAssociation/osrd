@@ -10,7 +10,7 @@ export type CategoryOption = { id?: string; label: string };
 export default function useCategoryOptions(withPlaceholder = true) {
   const { t } = useTranslation();
 
-  const { subCategories } = useSubCategoryContext();
+  const subCategories = useSubCategoryContext();
 
   const validMainCategories = Array.from(TrainMainCategoryDict.keys());
 
