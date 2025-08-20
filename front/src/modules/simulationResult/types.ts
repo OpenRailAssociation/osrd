@@ -13,7 +13,7 @@ import type {
   TrainSchedule,
 } from 'common/api/osrdEditoastApi';
 import type { PacedTrainWithDetails } from 'modules/timetableItem/components/Timetable/types';
-import type { OccurrenceId, TimetableItem, TrainScheduleId } from 'reducers/osrdconf/types';
+import type { OccurrenceId, PacedTrainId, TimetableItem, TrainScheduleId } from 'reducers/osrdconf/types';
 import type { ArrayElement } from 'utils/types';
 
 // This alias refers to an operational point, in the context of a given path, from Edistoast:
@@ -44,8 +44,19 @@ export type TrainSpaceTimeData = {
   signalUpdates: SignalUpdate[];
 } & (
   | { id: TrainScheduleId }
-  | { id: OccurrenceId; paced: PacedTrainWithDetails['paced']; exceptions: PacedTrainException[] }
+  | { id: PacedTrainId; paced: PacedTrainWithDetails['paced']; exceptions: PacedTrainException[] }
 );
+
+/** Contains an individual projection, either of a trainSchedule or an occurrence */
+export type IndividualTrainProjection = {
+  name: string;
+  spaceTimeCurves: {
+    positions: number[];
+    times: number[];
+  }[];
+  departureTime: Date;
+  signalUpdates: SignalUpdate[];
+} & ({ id: TrainScheduleId } | { id: OccurrenceId });
 
 // Speed Space Chart
 export type SpeedLimitTagValue = ArrayElement<SimulationResponseSuccess['mrsp']['values']>;
