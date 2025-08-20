@@ -808,6 +808,12 @@
   },
   "rollingStockEditor": "Éditeur de matériel roulant",
   "stdcm": "Sillons de dernière minute",
+  "subCategory": {
+    "errorMessages": {
+      "unableToRetrieveSubCategory": "Récupération sous-catégorie impossible",
+      "unableToRetrieveSubCategoryMessage": "Une erreur est survenue"
+    }
+  },
   "timeStopTable": {
     "arrivalTime": "arrivée demandée",
     "calculatedArrivalTime": "arrivée calculée",

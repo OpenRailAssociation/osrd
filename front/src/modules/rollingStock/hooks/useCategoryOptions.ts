@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 
-import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { useSubCategoryContext } from 'common/SubCategoryContext';
 import { TrainMainCategoryDict } from 'modules/rollingStock/consts';
 
 import type { CategoryOptionWithId } from '../types';
@@ -10,10 +10,7 @@ export type CategoryOption = { id?: string; label: string };
 export default function useCategoryOptions(withPlaceholder = true) {
   const { t } = useTranslation();
 
-  const { data: { results: subCategories } = { results: [] } } =
-    osrdEditoastApi.endpoints.getSubCategory.useQuery({
-      pageSize: 100,
-    });
+  const { subCategories } = useSubCategoryContext();
 
   const validMainCategories = Array.from(TrainMainCategoryDict.keys());
 

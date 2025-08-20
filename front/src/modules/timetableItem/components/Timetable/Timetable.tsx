@@ -5,7 +5,8 @@ import { useSelector } from 'react-redux';
 import { Virtualizer } from 'virtua';
 
 import { MANAGE_TIMETABLE_ITEM_TYPES } from 'applications/operationalStudies/consts';
-import { osrdEditoastApi, type InfraState } from 'common/api/osrdEditoastApi';
+import { type InfraState } from 'common/api/osrdEditoastApi';
+import { useSubCategoryContext } from 'common/SubCategoryContext';
 import { selectTrainToEdit } from 'reducers/osrdconf/operationalStudiesConf';
 import type {
   TimetableItemId,
@@ -139,10 +140,7 @@ const Timetable = ({
     []
   );
 
-  const { data: { results: subCategories } = { results: [] } } =
-    osrdEditoastApi.endpoints.getSubCategory.useQuery({
-      pageSize: 100,
-    });
+  const { subCategories } = useSubCategoryContext();
 
   return (
     <div className="scenario-timetable">
