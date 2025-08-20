@@ -820,6 +820,17 @@ const injectedRtkApi = api
         query: (queryArg) => ({ url: `/rolling_stock/${queryArg.rollingStockId}` }),
         providesTags: ['rolling_stock'],
       }),
+      putRollingStockByRollingStockId: build.mutation<
+        PutRollingStockByRollingStockIdApiResponse,
+        PutRollingStockByRollingStockIdApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/rolling_stock/${queryArg.rollingStockId}`,
+          method: 'PUT',
+          body: queryArg.rollingStockForm,
+        }),
+        invalidatesTags: ['rolling_stock'],
+      }),
       deleteRollingStockByRollingStockId: build.mutation<
         DeleteRollingStockByRollingStockIdApiResponse,
         DeleteRollingStockByRollingStockIdApiArg
@@ -830,17 +841,6 @@ const injectedRtkApi = api
           params: {
             force: queryArg.force,
           },
-        }),
-        invalidatesTags: ['rolling_stock'],
-      }),
-      patchRollingStockByRollingStockId: build.mutation<
-        PatchRollingStockByRollingStockIdApiResponse,
-        PatchRollingStockByRollingStockIdApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/rolling_stock/${queryArg.rollingStockId}`,
-          method: 'PATCH',
-          body: queryArg.rollingStockForm,
         }),
         invalidatesTags: ['rolling_stock'],
       }),
@@ -2095,17 +2095,17 @@ export type GetRollingStockByRollingStockIdApiResponse =
 export type GetRollingStockByRollingStockIdApiArg = {
   rollingStockId: number;
 };
+export type PutRollingStockByRollingStockIdApiResponse =
+  /** status 200 The created rolling stock */ RollingStockWithLiveries;
+export type PutRollingStockByRollingStockIdApiArg = {
+  rollingStockId: number;
+  rollingStockForm: RollingStockForm;
+};
 export type DeleteRollingStockByRollingStockIdApiResponse = unknown;
 export type DeleteRollingStockByRollingStockIdApiArg = {
   rollingStockId: number;
   /** force the deletion even if it's used */
   force?: boolean;
-};
-export type PatchRollingStockByRollingStockIdApiResponse =
-  /** status 200 The created rolling stock */ RollingStockWithLiveries;
-export type PatchRollingStockByRollingStockIdApiArg = {
-  rollingStockId: number;
-  rollingStockForm: RollingStockForm;
 };
 export type PostRollingStockByRollingStockIdLiveryApiResponse =
   /** status 200 The created rolling stock */ RollingStockLivery;
@@ -4186,7 +4186,8 @@ export type RollingStockForm = {
   /** Acceleration in m·s⁻² */
   const_gamma: number;
   effort_curves: EffortCurves;
-  /** The time the train takes before actually using electrical power (in seconds). Is null if the train is not electric.
+  /** The time the train takes before actually using electrical power (in seconds).
+    Is null if the train is not electric.
     Duration in s */
   electrical_power_startup_time?: number | null;
   energy_sources?: EnergySource[];
@@ -4195,7 +4196,7 @@ export type RollingStockForm = {
   /** Length in m */
   length: number;
   loading_gauge: LoadingGaugeType;
-  locked?: boolean | null;
+  locked: boolean;
   /** Mass in kg */
   mass: number;
   /** Velocity in m·s⁻¹ */
@@ -4208,7 +4209,9 @@ export type RollingStockForm = {
     [key: string]: string;
   };
   primary_category: TrainMainCategory;
-  /** The time it takes to raise this train's pantograph in seconds. Is null if the train is not electric.
+  railjson_version?: string;
+  /** The time it takes to raise this train's pantograph in seconds.
+    Is null if the train is not electric.
     Duration in s */
   raise_pantograph_time?: number | null;
   rolling_resistance: RollingResistance;

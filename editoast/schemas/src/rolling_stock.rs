@@ -57,15 +57,24 @@ use common::units::quantities::Velocity;
 use serde::Deserialize;
 use serde::Serialize;
 use std::collections::HashMap;
+use utoipa::ToSchema;
 
 pub const ROLLING_STOCK_RAILJSON_VERSION: &str = "3.3";
 
-#[derive(Debug, Clone, PartialEq, Deserialize, Serialize)]
+fn default_rolling_stock_railjson_version() -> String {
+    ROLLING_STOCK_RAILJSON_VERSION.to_string()
+}
+
+#[editoast_derive::openapi_schema]
+#[editoast_derive::annotate_units]
+#[derive(Debug, Clone, PartialEq, Deserialize, Serialize, ToSchema)]
 #[serde(remote = "Self")]
+#[schema(as = RollingStockForm)]
 pub struct RollingStock {
     pub name: String,
     pub locked: bool,
     pub effort_curves: EffortCurves,
+    #[schema(example = "5", required)]
     pub base_power_class: Option<String>,
     #[serde(with = "units::meter")]
     pub length: Length,
@@ -88,19 +97,24 @@ pub struct RollingStock {
     pub rolling_resistance: RollingResistance,
     pub loading_gauge: LoadingGaugeType,
     /// Mapping of power restriction code to power class
+    #[schema(required)]
     #[serde(default)]
     pub power_restrictions: HashMap<String, String>,
     #[serde(default)]
     pub energy_sources: Vec<EnergySource>,
     /// The time the train takes before actually using electrical power (in seconds).
     /// Is null if the train is not electric.
+    #[schema(example = 5.0)]
     #[serde(default, with = "units::second::option")]
     pub electrical_power_startup_time: Option<Time>,
     /// The time it takes to raise this train's pantograph in seconds.
     /// Is null if the train is not electric.
+    #[schema(example = 15.0)]
     #[serde(default, with = "units::second::option")]
     pub raise_pantograph_time: Option<Time>,
     pub supported_signaling_systems: RollingStockSupportedSignalingSystems,
+    #[schema(default = default_rolling_stock_railjson_version)]
+    #[serde(default = "default_rolling_stock_railjson_version")]
     pub railjson_version: String,
     #[serde(default)]
     pub metadata: Option<RollingStockMetadata>,
@@ -115,6 +129,30 @@ impl<'de> Deserialize<'de> for RollingStock {
     {
         let rolling_stock = RollingStock::deserialize(deserializer)?;
 
+        if rolling_stock.effort_curves.is_electric() {
+            if rolling_stock.electrical_power_startup_time.is_none() {
+                return Err(serde::de::Error::custom(
+                    "invalid rolling-stock: effort_curves: electrical_power_startup_time is required for electric rolling stocks.",
+                ));
+            }
+            if rolling_stock.raise_pantograph_time.is_none() {
+                return Err(serde::de::Error::custom(
+                    "invalid rolling-stock: effort_curves: raise_pantograph_time is required for electric rolling stocks.",
+                ));
+            }
+        }
+
+        if rolling_stock
+            .other_categories
+            .0
+            .iter()
+            .any(|category| category == &rolling_stock.primary_category)
+        {
+            return Err(serde::de::Error::custom(
+                "invalid rolling-stock: primary_category: The primary_category cannot be listed in other_categories for rolling stocks.",
+            ));
+        }
+
         if rolling_stock
             .supported_signaling_systems
             .0
@@ -122,7 +160,7 @@ impl<'de> Deserialize<'de> for RollingStock {
             && rolling_stock.etcs_brake_params.is_none()
         {
             return Err(serde::de::Error::custom(
-                "invalid rolling-stock, supporting ETCS_LEVEL2 signaling system requires providing ETCS brake parameters.",
+                "invalid rolling-stock: supporting ETCS_LEVEL2 signaling system requires providing ETCS brake parameters.",
             ));
         }
         Ok(rolling_stock)

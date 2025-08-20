@@ -53,6 +53,7 @@ export const getRollingStockEditorDefaultValues = (
   rollingStockData
     ? {
         railjsonVersion: rollingStockData.railjson_version,
+        locked: rollingStockData.locked || false,
         name: rollingStockData.name,
         detail: rollingStockData.metadata?.detail || '',
         family: rollingStockData.metadata?.family || '',

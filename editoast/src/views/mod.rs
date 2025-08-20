@@ -350,7 +350,7 @@ fn service_router() -> router::DocumentedRouter {
                     })
                     .nests("/{rolling_stock_id}", |path| {
                         path.route("/", get!(rolling_stock::get))
-                            .route("/", patch!(rolling_stock::update))
+                            .route("/", put!(rolling_stock::update))
                             .route("/", delete!(rolling_stock::delete))
                             .route("/locked", patch!(rolling_stock::update_locked))
                             .route("/livery", post!(rolling_stock::create_livery))

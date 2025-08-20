@@ -40,6 +40,7 @@ export const rollingStockEditorQueryArg = (
 
   return {
     name: data.name,
+    locked: data.locked,
     length: data.length,
     max_speed: handleUnitValue(
       { unit: 'm/s', value: data.maxSpeed.value },
