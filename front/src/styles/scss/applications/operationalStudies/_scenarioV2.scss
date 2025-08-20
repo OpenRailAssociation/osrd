@@ -222,23 +222,6 @@
   z-index: 4;
 
   .scenario-timetable-manage-timetable-item {
-    overflow: auto;
-
-    @media screen and (max-width: 2400px) {
-      & {
-        min-width: 424px;
-      }
-    }
-    @media screen and (max-width: 1920px) {
-      & {
-        min-width: 392px;
-      }
-    }
-    @media screen and (max-width: 1249px) {
-      & {
-        min-width: 360px;
-      }
-    }
     overflow: hidden;
     background-color: #d7d7d7aa;
     border-radius: 4px;
