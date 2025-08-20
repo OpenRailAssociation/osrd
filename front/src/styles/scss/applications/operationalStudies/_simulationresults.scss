@@ -18,14 +18,37 @@
 
       .simulation-warped-map {
         margin-right: 1px;
-      }
 
-      .warped-map > :first-child {
-        border-radius: 0 !important;
-        border-color: var(--black10) !important;
-        border-bottom: 0 !important;
-        border-top: 0 !important;
-        padding-left: 1px !important;
+        .show-warped-map-button {
+          border: none;
+          cursor: pointer;
+          color: var(--black25);
+          background-color: var(--ambientB5);
+
+          &:active,
+          &:focus {
+            outline: none;
+          }
+        }
+
+        .warped-map {
+          overflow: hidden;
+          transition: 0.2s;
+
+          .border {
+            border-radius: 0;
+            border-color: var(--black10) !important;
+            border-bottom: 0 !important;
+            border-top: 0 !important;
+            padding-left: 1px !important;
+          }
+
+          .buttons {
+            position: absolute;
+            bottom: 2em;
+            right: 2em;
+          }
+        }
       }
 
       .osrd-simulation-container {
