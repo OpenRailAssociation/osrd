@@ -48,6 +48,11 @@ export default defineConfig(({ mode }) => {
     server: {
       open: false,
       port: +env.OSRD_VITE_PORT || 3000,
+      strictPort: true,
+      hmr: {
+        clientPort: +env.OSRD_VITE_PORT || 3000,
+        overlay: false,
+      },
     },
     test: {
       globalSetup: './vitest.global-setup.ts',
