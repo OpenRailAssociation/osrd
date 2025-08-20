@@ -85,11 +85,11 @@ function extractStationLabel(
  */
 const useTrackOccupancy = ({
   infraId,
-  trains,
+  timetableItemProjections,
   pathOperationalPoints,
 }: {
   infraId: number;
-  trains: OccupancyTrainSpaceTimeData[];
+  timetableItemProjections: OccupancyTrainSpaceTimeData[];
   pathOperationalPoints: PathOperationalPoint[];
 }): {
   deployedWaypoints: DeployedWaypoint[];
@@ -108,7 +108,7 @@ const useTrackOccupancy = ({
 } => {
   const { t, i18n } = useTranslation('operational-studies');
   const draggedTrains = useRef(new Set<string>());
-  const previousTrains = usePrevious(trains);
+  const previousTimetableItems = usePrevious(timetableItemProjections);
 
   const { getTrackSectionsByIds } = useScenarioContext();
 
@@ -120,9 +120,9 @@ const useTrackOccupancy = ({
     osrdEditoastApi.endpoints.postTrainScheduleTrackOccupancy.useMutation();
   const [postInfraByInfraIdMatchOperationalPoints] =
     osrdEditoastApi.endpoints.postInfraByInfraIdMatchOperationalPoints.useLazyQuery();
-  const trainsDict = useMemo(
-    () => keyBy(trains, ({ id }) => extractEditoastIdFromTimetableItemId(id)),
-    [trains]
+  const timetableItemsById = useMemo(
+    () => keyBy(timetableItemProjections, ({ id }) => extractEditoastIdFromTimetableItemId(id)),
+    [timetableItemProjections]
   );
 
   const [tracksState, setTracksState] = useState<AsyncState<Record<string, Track[]>>>({
@@ -228,9 +228,12 @@ const useTrackOccupancy = ({
       // Start fetching data:
       if (!currentState) {
         const abort = batchFetchTrackOccupancy(
-          keys(trainsDict),
+          keys(timetableItemsById),
           (ids) =>
-            fetchTrackOccupancy(pathOperationalPointsDict[waypointId]?.opId, pick(trainsDict, ids)),
+            fetchTrackOccupancy(
+              pathOperationalPointsDict[waypointId]?.opId,
+              pick(timetableItemsById, ids)
+            ),
           {
             batchSize: 50,
             onProgress: (data) =>
@@ -278,7 +281,7 @@ const useTrackOccupancy = ({
       pathOperationalPointsDict,
       pathOperationalPointsState,
       updatePathOperationalPointState,
-      trainsDict,
+      timetableItemsById,
     ]
   );
 
@@ -415,42 +418,52 @@ const useTrackOccupancy = ({
 
   // Update train data for all deployed waypoints on trains update:
   useEffect(() => {
-    if (!previousTrains || isEqual(trains, previousTrains) || isEmpty(pathOperationalPointsState))
+    if (
+      !previousTimetableItems ||
+      isEqual(timetableItemProjections, previousTimetableItems) ||
+      isEmpty(pathOperationalPointsState)
+    )
       return;
 
-    const previousTrainsDict = keyBy(previousTrains, (train) =>
-      extractEditoastIdFromTimetableItemId(train.id)
+    const previousTimetableItemsDict = keyBy(previousTimetableItems, (timetableItem) =>
+      extractEditoastIdFromTimetableItemId(timetableItem.id)
     );
 
     const addedTrainIDs = new Set<number>();
     const removedTrainIDs = new Set<number>();
     const modifiedTrainIDs = new Set<number>();
 
-    trains.forEach((train) => {
-      const id = extractEditoastIdFromTimetableItemId(train.id);
-      const previousTrain = previousTrainsDict[id];
-      if (!previousTrain) addedTrainIDs.add(id);
-      else if (!isEqual(train, previousTrain) && !draggedTrains.current.has(train.id)) {
+    timetableItemProjections.forEach((timetableItem) => {
+      const id = extractEditoastIdFromTimetableItemId(timetableItem.id);
+      const previousTimetableItem = previousTimetableItemsDict[id];
+      if (!previousTimetableItem) addedTrainIDs.add(id);
+      else if (
+        !isEqual(timetableItem, previousTimetableItem) &&
+        !draggedTrains.current.has(timetableItem.id)
+      ) {
         modifiedTrainIDs.add(id);
         if (
-          !isEqual(train.originPathItemLocation, previousTrain.originPathItemLocation) ||
           !isEqual(
-            train.destinationPathItemLocation,
-            previousTrainsDict[id].destinationPathItemLocation
+            timetableItem.originPathItemLocation,
+            previousTimetableItem.originPathItemLocation
+          ) ||
+          !isEqual(
+            timetableItem.destinationPathItemLocation,
+            previousTimetableItemsDict[id].destinationPathItemLocation
           )
         ) {
           // Remove cached station labels for this train:
-          trainsStationLabelsRef.current[train.id] = undefined;
+          trainsStationLabelsRef.current[timetableItem.id] = undefined;
         }
       }
     });
 
-    previousTrains.forEach((train) => {
-      const id = extractEditoastIdFromTimetableItemId(train.id);
-      if (!trainsDict[id]) {
+    previousTimetableItems.forEach((timetableItem) => {
+      const id = extractEditoastIdFromTimetableItemId(timetableItem.id);
+      if (!timetableItemsById[id]) {
         removedTrainIDs.add(id);
         // Remove cached station labels for this train:
-        trainsStationLabelsRef.current[train.id] = undefined;
+        trainsStationLabelsRef.current[timetableItem.id] = undefined;
       }
     });
 
@@ -459,7 +472,7 @@ const useTrackOccupancy = ({
       forEach(pathOperationalPointsState, async (_, waypointId) => {
         const newZones = await fetchTrackOccupancy(
           pathOperationalPointsDict[waypointId]?.opId,
-          pick(trainsDict, [...addedTrainIDs, ...modifiedTrainIDs])
+          pick(timetableItemsById, [...addedTrainIDs, ...modifiedTrainIDs])
         );
 
         if (newZones.length)
@@ -500,47 +513,49 @@ const useTrackOccupancy = ({
         );
       });
     }
-  }, [trains]);
+  }, [timetableItemProjections]);
 
   // Load train origin and destination stations names:
   useEffect(() => {
     const trainsStationLabels = trainsStationLabelsRef.current;
-    const trainsToFetch = trains.filter((train) => !trainsStationLabels[train.id]);
+    const timetableItemsToFetch = timetableItemProjections.filter(
+      (timetableItem) => !trainsStationLabels[timetableItem.id]
+    );
 
-    if (!trainsToFetch.length) return;
+    if (!timetableItemsToFetch.length) return;
 
     const fetchOperationalPoints = async () => {
       try {
         const requests: {
-          trainId: TimetableItemId;
+          timetableItemId: TimetableItemId;
           side: Side;
           opReference: OperationalPointReference;
         }[] = [];
 
-        trainsToFetch.forEach((train) => {
-          trainsStationLabels[train.id] = {};
+        timetableItemsToFetch.forEach((timetableItem) => {
+          trainsStationLabels[timetableItem.id] = {};
           SIDES.forEach((side) => {
-            const itemLocation = train[`${side}PathItemLocation`];
+            const itemLocation = timetableItem[`${side}PathItemLocation`];
             if (!itemLocation) {
-              trainsStationLabels[train.id] = {
-                ...trainsStationLabels[train.id],
+              trainsStationLabels[timetableItem.id] = {
+                ...trainsStationLabels[timetableItem.id],
                 [side]: undefined,
               };
             } else if ('track' in itemLocation) {
-              trainsStationLabels[train.id] = {
-                ...trainsStationLabels[train.id],
+              trainsStationLabels[timetableItem.id] = {
+                ...trainsStationLabels[timetableItem.id],
                 [side]: { type: 'requestedPoint' },
               };
             } else if ('operational_point' in itemLocation) {
               requests.push({
                 side,
-                trainId: train.id,
+                timetableItemId: timetableItem.id,
                 opReference: { operational_point: itemLocation.operational_point },
               });
             } else if ('trigram' in itemLocation) {
               requests.push({
                 side,
-                trainId: train.id,
+                timetableItemId: timetableItem.id,
                 opReference: {
                   trigram: itemLocation.trigram,
                   secondary_code: itemLocation.secondary_code,
@@ -549,7 +564,7 @@ const useTrackOccupancy = ({
             } else if ('uic' in itemLocation) {
               requests.push({
                 side,
-                trainId: train.id,
+                timetableItemId: timetableItem.id,
                 opReference: { uic: itemLocation.uic, secondary_code: itemLocation.secondary_code },
               });
             }
@@ -565,10 +580,10 @@ const useTrackOccupancy = ({
           },
         }).unwrap();
 
-        requests.forEach(({ side, trainId }, i) => {
+        requests.forEach(({ side, timetableItemId }, i) => {
           const op = data.related_operational_points[i].at(0);
-          trainsStationLabels[trainId] = {
-            ...trainsStationLabels[trainId],
+          trainsStationLabels[timetableItemId] = {
+            ...trainsStationLabels[timetableItemId],
             [side]: {
               type: 'label',
               label: op?.extensions?.sncf?.trigram || op?.extensions?.identifier?.name || undefined,
@@ -581,7 +596,7 @@ const useTrackOccupancy = ({
     };
 
     fetchOperationalPoints();
-  }, [trains, i18n.language]);
+  }, [timetableItemProjections, i18n.language]);
 
   return { deployedWaypoints, toggleWaypoint, handleTrainDrag };
 };

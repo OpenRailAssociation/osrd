@@ -122,7 +122,7 @@ const SimulationResults = ({
   } = useTrackOccupancy({
     infraId,
     pathOperationalPoints: filteredOperationalPoints,
-    trains: projectPathTrainResult,
+    timetableItemProjections: projectPathTrainResult,
   });
 
   const conflictZones = useProjectedConflicts(infraId, conflicts, projectionData?.path);
