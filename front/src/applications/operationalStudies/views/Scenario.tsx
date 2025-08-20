@@ -7,6 +7,7 @@ import useScenario from 'applications/operationalStudies/hooks/useScenario';
 import { ScenarioContextProvider } from 'applications/operationalStudies/hooks/useScenarioContext';
 import useScenarioQueryParams from 'applications/operationalStudies/hooks/useScenarioQueryParams';
 import { RollingStockContextProvider } from 'common/RollingStockContext';
+import { SubCategoryContextProvider } from 'common/SubCategoryContext';
 import useInfraStatus from 'modules/pathfinding/hooks/useInfraStatus';
 import { getOperationalStudiesInfraID } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 
@@ -48,12 +49,14 @@ const Scenario = () => {
         toggleBoard={toggleBoard}
       />
       <RollingStockContextProvider>
-        <ScenarioContent
-          scenario={scenario}
-          infra={infra}
-          infraMetadata={infraData}
-          activeBoards={activeBoards}
-        />
+        <SubCategoryContextProvider>
+          <ScenarioContent
+            scenario={scenario}
+            infra={infra}
+            infraMetadata={infraData}
+            activeBoards={activeBoards}
+          />
+        </SubCategoryContextProvider>
       </RollingStockContextProvider>
     </ScenarioContextProvider>
   );

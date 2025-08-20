@@ -9,9 +9,10 @@ import allowancesPic from 'assets/pictures/components/allowances.svg';
 import pahtFindingPic from 'assets/pictures/components/pathfinding.svg';
 import simulationSettings from 'assets/pictures/components/simulationSettings.svg';
 import rollingStockPic from 'assets/pictures/components/train.svg';
-import { osrdEditoastApi, type Comfort } from 'common/api/osrdEditoastApi';
+import { type Comfort } from 'common/api/osrdEditoastApi';
 import { useOsrdConfActions } from 'common/osrdContext';
 import { useStoreDataForSpeedLimitByTagSelector } from 'common/SpeedLimitByTagSelector/useStoreDataForSpeedLimitByTagSelector';
+import { useSubCategoryContext } from 'common/SubCategoryContext';
 import Tabs from 'common/Tabs';
 import IncompatibleConstraints from 'modules/pathfinding/components/IncompatibleConstraints';
 import Itinerary from 'modules/pathfinding/components/Itinerary';
@@ -228,10 +229,7 @@ const ManageTimetableItem = () => {
     []
   );
 
-  const { data: { results: subCategories } = { results: [] } } =
-    osrdEditoastApi.endpoints.getSubCategory.useQuery({
-      pageSize: 100,
-    });
+  const { subCategories } = useSubCategoryContext();
 
   const currentSubCategory = useMemo(() => {
     if (isMainCategory(currentCategory)) return undefined;

@@ -1,7 +1,7 @@
 import dayjs from 'dayjs';
 import { useTranslation } from 'react-i18next';
 
-import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { useSubCategoryContext } from 'common/SubCategoryContext';
 import isMainCategory from 'modules/rollingStock/helpers/category';
 import { getTrainCategoryClassName } from 'modules/timetableItem/components/Timetable/utils';
 
@@ -21,10 +21,7 @@ const ConflictCard = ({
   const end_time = formatToLocalTime(conflict.end_time);
   const start_date = dayjs(conflict.start_time).format('DD/MM/YYYY');
 
-  const { data: { results: subCategories } = { results: [] } } =
-    osrdEditoastApi.endpoints.getSubCategory.useQuery({
-      pageSize: 100,
-    });
+  const { subCategories } = useSubCategoryContext();
 
   return (
     <div

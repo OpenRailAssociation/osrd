@@ -10,6 +10,7 @@ import { useSelector } from 'react-redux';
 import useTimetableItemsWithPathOps from 'applications/operationalStudies/hooks/useTimetableItemsWithPathOps';
 import { checkRoundTripCompatible, groupRoundTrips } from 'applications/operationalStudies/utils';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { useSubCategoryContext } from 'common/SubCategoryContext';
 import { getOperationalStudiesTimetableID } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 import type { TimetableItem, TimetableItemId } from 'reducers/osrdconf/types';
 import { useDebounce } from 'utils/helpers';
@@ -51,10 +52,7 @@ const RoundTripsModal = ({
   const [filter, setFilter] = useState('');
   const debouncedFilter = useDebounce(filter, 300);
 
-  const { data: { results: subCategories } = { results: [] } } =
-    osrdEditoastApi.endpoints.getSubCategory.useQuery({
-      pageSize: 100,
-    });
+  const { subCategories } = useSubCategoryContext();
 
   const { data: { results: trainScheduleRoundtrips } = { results: undefined } } =
     osrdEditoastApi.endpoints.getTimetableByIdRoundTripsTrainSchedules.useQuery(
