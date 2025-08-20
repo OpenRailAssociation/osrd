@@ -15,7 +15,6 @@
   <a href="https://osrd.fr/en/docs/guides/contribute/"><img src="https://img.shields.io/github/contributors-anon/OpenRailAssociation/osrd" alt="Contributors badge" /></a>
   <a href="https://github.com/OpenRailAssociation/osrd/blob/dev/LICENSE"><img src="https://img.shields.io/badge/license-LGPL-blue.svg" alt="LGPL License badge" /></a>
   <a href="https://github.com/OpenRailAssociation/osrd/actions/workflows/build.yml"><img src="https://github.com/OpenRailAssociation/osrd/actions/workflows/build.yml/badge.svg" alt="Build Status" /></a>
-  <a href="https://hosted.weblate.org/engage/osrd/"><img src="https://hosted.weblate.org/widget/osrd/svg-badge.svg" alt="Translation status" /></a>
   <a href="https://api.reuse.software/info/github.com/OpenRailAssociation/osrd"><img src="https://api.reuse.software/badge/github.com/OpenRailAssociation/osrd" alt="REUSE status" /></a>
   <a href="https://github.com/OpenRailAssociation/technical-committee/blob/main/incubation-process.md"><img src="https://openrailassociation.org/badges/openrail-project-stage-2.svg" alt="Openrail Incubation Stage" /></a>
 </p>
@@ -34,6 +33,20 @@ Learn more about the project on [osrd.fr](https://osrd.fr/en/).
 OSRD is still in active development.
 User and programming interfaces are not entirely stable and are still occasionally modified.
 If you rely on OSRD, be prepared to deal with regular changes.
+
+## Languages
+
+OSRD support multiple languages. Here is the translation status for the different languages.
+Integrated means that users can actually activate the language in the application.
+If you want to contribute to the translation, you can do so easily with [Weblate](https://hosted.weblate.org/engage/osrd/).
+
+| **Language**  |                                                          **Status**                                                         | **Integrated** |
+|---------------|:---------------------------------------------------------------------------------------------------------------------------:|:--------------:|
+| 🇬🇧 English       | [![Translation status](https://hosted.weblate.org/widget/osrd/-/en/svg-badge.svg)](https://hosted.weblate.org/engage/osrd/) |        ✅      |
+| 🇫🇷 French        | [![Translation status](https://hosted.weblate.org/widget/osrd/-/fr/svg-badge.svg)](https://hosted.weblate.org/engage/osrd/) |        ✅      |
+| 🇩🇪 German        | [![Translation status](https://hosted.weblate.org/widget/osrd/-/de/svg-badge.svg)](https://hosted.weblate.org/engage/osrd/) |        ✅      |
+| 🇵🇹 Portugese     | [![Translation status](https://hosted.weblate.org/widget/osrd/-/pt/svg-badge.svg)](https://hosted.weblate.org/engage/osrd/) |        ❌      |
+| 🇪🇸 Spanish       | [![Translation status](https://hosted.weblate.org/widget/osrd/-/es/svg-badge.svg)](https://hosted.weblate.org/engage/osrd/) |        ❌      |
 
 ## Getting Started
 
