@@ -90,7 +90,7 @@ const TimetableManageItem = ({
   };
 
   return (
-    <div className="scenario-timetable-manage-timetable-item">
+    <div className="scenario-timetable-manage-timetable-item left-column">
       <div className="scenario-timetable-manage-timetable-item-header">
         {displayTimetableItemManagement === MANAGE_TIMETABLE_ITEM_TYPES.edit &&
           timetableItemToEditData && (
