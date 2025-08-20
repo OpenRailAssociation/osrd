@@ -28,7 +28,7 @@ impl<'a, R: Relation, U: AsUser<User = R::User>> From<&Tuple<'a, R, U>> for RawT
 
 impl Client {
     #[tracing::instrument(skip(self), err)]
-    pub(super) async fn get_stores_read<'a>(
+    pub(super) async fn get_stores_read(
         &self,
         store_id: &str,
         tuple_key: RawTuple,
@@ -91,7 +91,7 @@ impl Client {
     // doesn't support more than 100 tuples in the request. So mapping 100 objects
     // max is fine—we'll always be bounded by the network call.
     #[tracing::instrument(skip(self, writes, deletes), err)]
-    pub(super) async fn post_stores_write<'a>(
+    pub(super) async fn post_stores_write(
         &self,
         store_id: &str,
         writes: &[RawTuple],

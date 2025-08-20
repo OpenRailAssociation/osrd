@@ -168,7 +168,7 @@ impl MatchingState {
     pub(super) fn advance(mut self) -> Result<Self, AdvancementError> {
         let Some(target_waypoint) = self.path.pop_front() else {
             return Err(AdvancementError {
-                last_state: self,
+                last_state: Box::new(self),
                 error: AdvancementErrorKind::ReachedPathEnding,
             });
         };
@@ -225,7 +225,7 @@ impl MatchingState {
                 self.path.push_front(target_waypoint);
                 self.skipped = Some(skipped);
                 return Err(AdvancementError {
-                    last_state: self,
+                    last_state: Box::new(self),
                     error: blocked,
                 });
             }
@@ -248,7 +248,7 @@ impl MatchingState {
 #[display("{error:?}")]
 pub(super) struct AdvancementError {
     #[display(skip)]
-    pub(super) last_state: MatchingState,
+    pub(super) last_state: Box<MatchingState>,
     pub(super) error: AdvancementErrorKind,
 }
 
