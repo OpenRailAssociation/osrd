@@ -6,13 +6,11 @@
 @use './BootstrapSNCF/OptionsSNCF.scss';
 @use './BootstrapSNCF/NavBarSNCF.scss';
 @use './BootstrapSNCF/SelectImprovedSNCF.scss';
-
 @use './authorization/grantsManager.scss';
 @use './DotsLoader/DotsLoader.scss';
 @use './Grid/Grid.scss';
 @use './IntervalsDataViz/style.scss';
 @use './Loaders/Loader.scss';
-@use './Map/WarpedMap/SimulationWarpedMap.scss';
 @use './Map/MapKey.scss';
 @use './Notifications/Notifications.scss';
 @use './SpeedLimitByTagSelector/SpeedLimitByTagSelector.scss';
