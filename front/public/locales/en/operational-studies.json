@@ -302,6 +302,8 @@
       "requiredField": "Required field.",
       "softErrorInfra": "The application is unavailable, a server error has occurred, please try again later.",
       "timetableItemTitle": "An error has occurred",
+      "tooHighInput": "Must be < 43800",
+      "tooHighValue": "The {{value}} must be less than 43800 (one month)",
       "tooLowInput": "Must be > 0",
       "tooLowValue": "The {{value}} must be greater than 0",
       "unableToLoadInfra": "Loading error, retry in progress ({{reloadCount}})",

@@ -7,3 +7,5 @@ const OPERATIONAL_POINT_LAYERS = [
 ];
 
 export default OPERATIONAL_POINT_LAYERS;
+
+export const MAX_TIMEWINDOW_MINUTES = 43800; // 1 month

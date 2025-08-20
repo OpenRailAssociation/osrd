@@ -302,6 +302,8 @@
       "requiredField": "Champ obligatoire.",
       "softErrorInfra": "L'application est indisponible, une erreur serveur est survenue, veuillez réessayer ultérieurement.",
       "timetableItemTitle": "Une erreur est survenue",
+      "tooHighInput": "Doit être < 43800",
+      "tooHighValue": "La {{value}} doit être inférieure à 43800 (un mois)",
       "tooLowInput": "Doit être > 0",
       "tooLowValue": "La {{value}} doit être supérieure à 0",
       "unableToLoadInfra": "Erreur de chargement, nouvelle tentative en cours ({{reloadCount}})",
