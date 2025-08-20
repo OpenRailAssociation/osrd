@@ -5,6 +5,8 @@ import { setFailure } from 'reducers/main';
 import type { OperationalStudiesConfState } from 'reducers/osrdconf/types';
 import { isInvalidFloatNumber } from 'utils/numbers';
 
+import { MAX_TIMEWINDOW_MINUTES } from '../consts';
+
 const checkCurrentConfig = (
   osrdconf: OperationalStudiesConfState,
   t: TFunction<'operational-studies', 'manageTimetableItem'>,
@@ -107,6 +109,17 @@ const checkCurrentConfig = (
         setFailure({
           name: t('errorMessages.timetableItemTitle'),
           message: t('errorMessages.tooLowValue', {
+            value: t('pacedTrains.timeWindow').toLowerCase(),
+          }),
+        })
+      );
+    }
+    if (timeWindow.total('minute') >= MAX_TIMEWINDOW_MINUTES) {
+      error = true;
+      dispatch(
+        setFailure({
+          name: t('errorMessages.timetableItemTitle'),
+          message: t('errorMessages.tooHighValue', {
             value: t('pacedTrains.timeWindow').toLowerCase(),
           }),
         })

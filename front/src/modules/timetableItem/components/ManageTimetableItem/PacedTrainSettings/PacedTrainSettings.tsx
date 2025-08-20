@@ -9,6 +9,7 @@ import { useAppDispatch } from 'store';
 import { Duration } from 'utils/duration';
 
 import AddedOccurrences from './AddedOccurrences';
+import { MAX_TIMEWINDOW_MINUTES } from '../consts';
 
 const PacedTrainSettings = () => {
   const timeWindow = useSelector(getTimeWindow).total('minute');
@@ -34,9 +35,16 @@ const PacedTrainSettings = () => {
             }}
             value={timeWindow}
             noMargin
-            isInvalid={timeWindow < 1}
-            errorMsg={timeWindow < 1 ? t('errorMessages.tooLowInput') : undefined}
+            isInvalid={timeWindow < 1 || timeWindow >= MAX_TIMEWINDOW_MINUTES}
+            errorMsg={
+              timeWindow < 1
+                ? t('errorMessages.tooLowInput')
+                : timeWindow >= MAX_TIMEWINDOW_MINUTES
+                  ? t('errorMessages.tooHighInput', { max: MAX_TIMEWINDOW_MINUTES })
+                  : undefined
+            }
             min={1}
+            max={MAX_TIMEWINDOW_MINUTES}
             unit="min"
             textRight
             sm

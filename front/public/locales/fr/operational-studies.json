@@ -300,6 +300,8 @@
       "originTimeOutsideWindow": "La date de départ doit être comprise entre le {{low}} et le {{high}}",
       "requiredField": "Champ obligatoire.",
       "timetableItemTitle": "Une erreur est survenue",
+      "tooHighInput": "Doit être < 43800",
+      "tooHighValue": "La {{value}} doit être inférieure à 43800 (un mois)",
       "tooLowInput": "Doit être > 0",
       "tooLowValue": "La {{value}} doit être supérieure à 0",
       "unableToRetrieveTags": "Impossible de récupérer les étiquettes"
