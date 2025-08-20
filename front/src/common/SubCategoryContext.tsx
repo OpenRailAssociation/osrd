@@ -7,11 +7,9 @@ import type { SubCategory } from 'common/api/osrdEditoastApi';
 import { setFailure } from 'reducers/main';
 import { useAppDispatch } from 'store';
 
-type SubCategoryContextValue = {
-  subCategories: SubCategory[];
-};
+type SubCategoryContextValue = SubCategory[];
 
-const SubCategoryContext = createContext<SubCategoryContextValue>({ subCategories: [] });
+const SubCategoryContext = createContext<SubCategoryContextValue>([]);
 
 export const useSubCategoryContext = (): SubCategoryContextValue => {
   const context = useContext(SubCategoryContext);
@@ -45,7 +43,7 @@ export const SubCategoryContextProvider = ({ children }: SubCategoryContextProvi
     }
   }, [isError, dispatch, t]);
 
-  const value = useMemo<SubCategoryContextValue>(() => ({ subCategories }), [subCategories]);
+  const value = useMemo<SubCategoryContextValue>(() => subCategories, [subCategories]);
 
   return <SubCategoryContext.Provider value={value}>{children}</SubCategoryContext.Provider>;
 };

@@ -21,7 +21,7 @@ const ConflictCard = ({
   const end_time = formatToLocalTime(conflict.end_time);
   const start_date = dayjs(conflict.start_time).format('DD/MM/YYYY');
 
-  const { subCategories } = useSubCategoryContext();
+  const subCategories = useSubCategoryContext();
 
   return (
     <div

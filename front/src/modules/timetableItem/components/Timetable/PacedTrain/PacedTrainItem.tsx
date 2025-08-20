@@ -337,7 +337,6 @@ const PacedTrainItem = ({
       {summary?.isValid && (
         <div className="more-info">
           <div className="more-info-left">
-            {/* TODO : add a category span in https://github.com/OpenRailAssociation/osrd/issues/11542 */}
             <span className="more-info-item">
               {t('timetable.stopsCount', { count: pacedTrain.stopsCount })}
             </span>
