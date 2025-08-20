@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use chrono::DateTime;
 use chrono::Utc;
 use schemas::infra::TrackOffset;
@@ -11,7 +9,6 @@ use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
 
-use super::conflict_detection::TrainRequirements;
 use super::pathfinding::PathfindingResultSuccess;
 use super::pathfinding::TrackRange;
 use super::simulation::PhysicsConsist;
@@ -27,6 +24,8 @@ pub struct Request {
     pub infra: i64,
     /// Infrastructure expected version
     pub expected_version: i64,
+    /// Timetable id
+    pub timetable_id: i64,
 
     // Pathfinding inputs
     /// List of waypoints. Each waypoint is a list of track offset.
@@ -44,8 +43,6 @@ pub struct Request {
     pub physics_consist: PhysicsConsist,
 
     // STDCM search parameters
-    #[schema(inline)]
-    pub trains_requirements: HashMap<String, TrainRequirements>,
     /// Numerical integration time step in milliseconds. Use default value if not specified.
     pub time_step: Option<u64>,
     pub start_time: DateTime<Utc>,
@@ -140,6 +137,6 @@ impl AsCoreRequest<Json<Response>> for Request {
     const URL_PATH: &'static str = "/stdcm";
 
     fn worker_id(&self) -> Option<String> {
-        Some(self.infra.to_string())
+        Some(format!("{}#{}", self.infra, self.timetable_id))
     }
 }

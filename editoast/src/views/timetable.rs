@@ -777,6 +777,10 @@ pub(in crate::views) async fn requirements(
         infra_id,
     })
     .await?;
+    Timetable::exists_or_fail(conn, timetable_id, || TimetableError::NotFound {
+        timetable_id,
+    })
+    .await?;
 
     // List trains and paced trains
     let (trains, stats) = <(models::TrainSchedule, models::PacedTrain)>::list_concatenated(

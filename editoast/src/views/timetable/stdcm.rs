@@ -156,7 +156,7 @@ pub(in crate::views) async fn stdcm(
     Extension(auth): AuthenticationExt,
     Path(id): Path<i64>,
     Query(query): Query<InfraIdQueryParam>,
-    Json(stdcm_request): Json<Request>,
+    Json(request): Json<Request>,
 ) -> Result<Json<StdcmResponse>> {
     let authorized = auth
         .check_roles([authz::Role::Stdcm].into())
@@ -179,8 +179,7 @@ pub(in crate::views) async fn stdcm(
     let timetable_id = id;
     let infra_id = query.infra;
 
-    // 1.  Infra / Timetable / Trains / Simulation / Rolling Stock
-
+    // 1. Get Infra
     let infra = Infra::retrieve_or_fail(conn.clone(), infra_id, || StdcmError::InfraNotFound {
         infra_id,
     })
@@ -195,37 +194,45 @@ pub(in crate::views) async fn stdcm(
         })
         .await?;
 
+    // 2. Get Timetable / Work schedules
+    let timetable = Timetable::retrieve_or_fail(conn.clone(), timetable_id, || {
+        StdcmError::TimetableNotFound { timetable_id }
+    })
+    .await?;
+    let work_schedules = request.get_work_schedules(&mut conn).await?;
+
+    // 3. Get RollingStock
     let rolling_stock =
-        RollingStock::retrieve_or_fail(conn.clone(), stdcm_request.rolling_stock_id, || {
+        RollingStock::retrieve_or_fail(conn.clone(), request.rolling_stock_id, || {
             StdcmError::RollingStockNotFound {
-                rolling_stock_id: stdcm_request.rolling_stock_id,
+                rolling_stock_id: request.rolling_stock_id,
             }
         })
         .await?
         .into();
 
-    let towed_rolling_stock = stdcm_request
+    let towed_rolling_stock = request
         .get_towed_rolling_stock(&mut conn)
         .await?
         .map(From::from);
 
-    stdcm_request.validate_consist(&rolling_stock, &towed_rolling_stock)?;
+    request.validate_consist(&rolling_stock, &towed_rolling_stock)?;
 
     let physics_consist_parameters = PhysicsConsistParameters {
-        max_speed: stdcm_request.max_speed,
-        total_length: stdcm_request.total_length,
-        total_mass: stdcm_request.total_mass,
+        max_speed: request.max_speed,
+        total_length: request.total_length,
+        total_mass: request.total_mass,
         towed_rolling_stock,
         traction_engine: rolling_stock,
     };
 
-    // 2. Compute the earliest start time and maximum departure delay
+    // 4. Compute the earliest start time and maximum departure delay
     let virtual_train_run = VirtualTrainRun::simulate(
         db_pool.clone(),
         valkey_client.clone(),
         core_client.clone(),
         config.app_version.as_deref(),
-        &stdcm_request,
+        &request,
         &infra,
         &physics_consist_parameters,
         timetable_id,
@@ -239,48 +246,15 @@ pub(in crate::views) async fn stdcm(
         }));
     };
 
-    let earliest_departure_time = stdcm_request.get_earliest_departure_time(simulation_run_time);
-    let latest_simulation_end = stdcm_request.get_latest_simulation_end(simulation_run_time);
-
-    let timetable = Timetable::retrieve_or_fail(conn.clone(), timetable_id, || {
-        StdcmError::TimetableNotFound { timetable_id }
-    })
-    .await?;
-
-    let train_schedules = timetable
-        .schedules_in_time_window(&mut conn, earliest_departure_time, latest_simulation_end)
-        .await?;
-
-    // 3. Get scheduled train requirements
-    let simulations: Vec<_> = train_simulation_batch(
-        &mut conn,
-        valkey_client.clone(),
-        core_client.clone(),
-        &train_schedules,
-        &infra,
-        stdcm_request.electrical_profile_set_id,
-        config.app_version.as_deref(),
-    )
-    .await?
-    .into_iter()
-    .map(|(sim, _)| sim)
-    .collect();
-
-    let trains_requirements = build_train_requirements(
-        &train_schedules,
-        &simulations,
-        earliest_departure_time,
-        latest_simulation_end,
-    );
-
-    // 4. Retrieve work schedules
-    let work_schedules = stdcm_request.get_work_schedules(&mut conn).await?;
+    let earliest_departure_time = request.get_earliest_departure_time(simulation_run_time);
+    let latest_simulation_end = request.get_latest_simulation_end(simulation_run_time);
 
     // 5. Build STDCM request
     let stdcm_request = core_client::stdcm::Request {
         infra: infra.id,
         expected_version: infra.version,
-        rolling_stock_loading_gauge: stdcm_request
+        timetable_id,
+        rolling_stock_loading_gauge: request
             .loading_gauge_type
             .unwrap_or(physics_consist_parameters.traction_engine.loading_gauge),
         rolling_stock_supported_signaling_systems: physics_consist_parameters
@@ -288,21 +262,18 @@ pub(in crate::views) async fn stdcm(
             .supported_signaling_systems
             .clone(),
         physics_consist: physics_consist_parameters.into(),
-        temporary_speed_limits: stdcm_request
+        temporary_speed_limits: request
             .get_temporary_speed_limits(&mut conn, simulation_run_time)
             .await?,
-        comfort: stdcm_request.comfort,
-        path_items: stdcm_request
-            .get_stdcm_path_items(&mut conn, infra_id)
-            .await?,
+        comfort: request.comfort,
+        path_items: request.get_stdcm_path_items(&mut conn, infra_id).await?,
         start_time: earliest_departure_time,
-        trains_requirements,
-        maximum_departure_delay: stdcm_request.get_maximum_departure_delay(simulation_run_time),
-        maximum_run_time: stdcm_request.get_maximum_run_time(simulation_run_time),
-        speed_limit_tag: stdcm_request.speed_limit_tags,
-        time_gap_before: stdcm_request.time_gap_before,
-        time_gap_after: stdcm_request.time_gap_after,
-        margin: stdcm_request.margin,
+        maximum_departure_delay: request.get_maximum_departure_delay(simulation_run_time),
+        maximum_run_time: request.get_maximum_run_time(simulation_run_time),
+        speed_limit_tag: request.speed_limit_tags.clone(),
+        time_gap_before: request.time_gap_before,
+        time_gap_after: request.time_gap_after,
+        margin: request.margin,
         time_step: Some(2000),
         work_schedules: work_schedules
             .iter()
@@ -342,7 +313,7 @@ pub(in crate::views) async fn stdcm(
             // the endpoint to return as soon as possible, and because failing
             // to persist a log entry is not a very important error here.
             StdcmLog::log(
-                conn,
+                conn.clone(),
                 trace_id.map(|trace_id| trace_id.to_string()),
                 stdcm_request,
                 stdcm_response,
@@ -364,6 +335,22 @@ pub(in crate::views) async fn stdcm(
             departure_time,
         })),
         core_client::stdcm::Response::PathNotFound => {
+            let train_schedules = timetable
+                .schedules_in_time_window(&mut conn, earliest_departure_time, latest_simulation_end)
+                .await?;
+            let simulations: Vec<_> = train_simulation_batch(
+                &mut conn,
+                valkey_client.clone(),
+                core_client.clone(),
+                &train_schedules,
+                &infra,
+                request.electrical_profile_set_id,
+                config.app_version.as_deref(),
+            )
+            .await?
+            .into_iter()
+            .map(|(sim, _)| sim)
+            .collect();
             let simulation_failure_handler = SimulationFailureHandler {
                 core_client,
                 infra_id,
