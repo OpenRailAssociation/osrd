@@ -23,8 +23,8 @@ import {
   osrdEditoastApi,
   type PathItemLocation,
 } from 'common/api/osrdEditoastApi';
-import type { TrainId } from 'reducers/osrdconf/types';
-import { extractEditoastIdFromTrainId } from 'utils/trainId';
+import type { TimetableItemId, TrainId } from 'reducers/osrdconf/types';
+import { extractEditoastIdFromTimetableItemId, extractEditoastIdFromTrainId } from 'utils/trainId';
 
 import type { PathOperationalPoint, TrainSpaceTimeData } from '../../types';
 import { batchFetchTrackOccupancy } from './helpers/utils';
@@ -121,7 +121,7 @@ const useTrackOccupancy = ({
   const [postInfraByInfraIdMatchOperationalPoints] =
     osrdEditoastApi.endpoints.postInfraByInfraIdMatchOperationalPoints.useLazyQuery();
   const trainsDict = useMemo(
-    () => keyBy(trains, ({ id }) => extractEditoastIdFromTrainId(id)),
+    () => keyBy(trains, ({ id }) => extractEditoastIdFromTimetableItemId(id)),
     [trains]
   );
 
@@ -419,7 +419,7 @@ const useTrackOccupancy = ({
       return;
 
     const previousTrainsDict = keyBy(previousTrains, (train) =>
-      extractEditoastIdFromTrainId(train.id)
+      extractEditoastIdFromTimetableItemId(train.id)
     );
 
     const addedTrainIDs = new Set<number>();
@@ -427,7 +427,7 @@ const useTrackOccupancy = ({
     const modifiedTrainIDs = new Set<number>();
 
     trains.forEach((train) => {
-      const id = extractEditoastIdFromTrainId(train.id);
+      const id = extractEditoastIdFromTimetableItemId(train.id);
       const previousTrain = previousTrainsDict[id];
       if (!previousTrain) addedTrainIDs.add(id);
       else if (!isEqual(train, previousTrain) && !draggedTrains.current.has(train.id)) {
@@ -446,7 +446,7 @@ const useTrackOccupancy = ({
     });
 
     previousTrains.forEach((train) => {
-      const id = extractEditoastIdFromTrainId(train.id);
+      const id = extractEditoastIdFromTimetableItemId(train.id);
       if (!trainsDict[id]) {
         removedTrainIDs.add(id);
         // Remove cached station labels for this train:
@@ -512,7 +512,7 @@ const useTrackOccupancy = ({
     const fetchOperationalPoints = async () => {
       try {
         const requests: {
-          trainId: TrainId;
+          trainId: TimetableItemId;
           side: Side;
           opReference: OperationalPointReference;
         }[] = [];

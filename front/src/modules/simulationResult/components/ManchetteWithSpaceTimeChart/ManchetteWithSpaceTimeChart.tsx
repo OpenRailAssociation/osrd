@@ -43,6 +43,7 @@ import { cutSpaceTimeRect } from 'modules/simulationResult/components/SpaceTimeC
 import { ASPECT_LABELS_COLORS } from 'modules/simulationResult/consts';
 import type {
   AspectLabel,
+  IndividualTrainProjection,
   LayerRangeData,
   PathOperationalPoint,
   TrainSpaceTimeData,
@@ -67,6 +68,7 @@ import {
   isTrainScheduleId,
   extractEditoastIdFromTrainScheduleId,
   extractEditoastIdFromPacedTrainId,
+  isPacedTrainId,
 } from 'utils/trainId';
 
 import SettingsPanel from './SettingsPanel';
@@ -154,7 +156,7 @@ const ManchetteWithSpaceTimeChartWrapper = ({
 
   const [hoveredItem, setHoveredItem] = useState<null | HoveredItem>(null);
   const [draggingState, setDraggingState] = useState<{
-    draggedTrain: TrainSpaceTimeData;
+    draggedTrain: IndividualTrainProjection;
     initialDepartureTime: Date;
   }>();
 
@@ -171,16 +173,15 @@ const ManchetteWithSpaceTimeChartWrapper = ({
 
   const projectedTrains = useMemo(
     () =>
-      projectPathTrainResult.flatMap<TrainSpaceTimeData>((train) => {
+      projectPathTrainResult.flatMap<IndividualTrainProjection>((train) => {
         if (isTrainScheduleProjection(train)) {
           return train;
         }
         // TODO exceptions : handle added exceptions in issue https://github.com/OpenRailAssociation/osrd/issues/11476
-        const pacedTrainId = extractPacedTrainIdFromOccurrenceId(train.id);
         const occurrencesCount = getOccurrencesNb(train.paced);
         const occurrences = [];
         for (let i = 0; i < occurrencesCount; i += 1) {
-          const occurrenceId = formatPacedTrainIdToIndexedOccurrenceId(pacedTrainId, i);
+          const occurrenceId = formatPacedTrainIdToIndexedOccurrenceId(train.id, i);
           const correspondingException = findExceptionWithOccurrenceId(
             train.exceptions,
             occurrenceId
@@ -470,20 +471,18 @@ const ManchetteWithSpaceTimeChartWrapper = ({
       const timeDiff = payload.data.time - payload.initialData.time;
 
       let newDepartureTime = new Date(initialDepartureTime.getTime() + timeDiff);
-      let draggedTrainId = draggedTrain.id;
 
       // if the dragged train is an occurrence, we need to update the first occurrence because the others are based on it
       if (isOccurrenceId(draggedTrain.id)) {
         const occurrencesIndex = extractOccurrenceIndexFromOccurrenceId(draggedTrain.id);
         const pacedTrainId = extractPacedTrainIdFromOccurrenceId(draggedTrain.id);
-        const firstOccurrence = projectPathTrainResult.find(
-          ({ id }) => isOccurrenceId(id) && extractPacedTrainIdFromOccurrenceId(id) === pacedTrainId
+        const pacedTrain = projectPathTrainResult.find(
+          ({ id }) => isPacedTrainId(id) && id === pacedTrainId
         );
-        if (firstOccurrence && 'paced' in firstOccurrence) {
+        if (pacedTrain && 'paced' in pacedTrain) {
           newDepartureTime = dayjs(newDepartureTime)
-            .add(occurrencesIndex * -firstOccurrence.paced.interval.ms, 'ms')
+            .add(occurrencesIndex * -pacedTrain.paced.interval.ms, 'ms')
             .toDate();
-          draggedTrainId = firstOccurrence.id;
         }
       }
 
@@ -493,7 +492,7 @@ const ManchetteWithSpaceTimeChartWrapper = ({
       }
 
       await handleTrainDrag({
-        draggedTrainId,
+        draggedTrainId: draggedTrain.id,
         initialDepartureTime,
         newDepartureTime,
         stopPanning: !isPanning,

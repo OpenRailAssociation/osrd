@@ -1,10 +1,7 @@
 import type { TrainSpaceTimeData } from 'modules/simulationResult/types';
 import type { TimetableItemId, TimetableItem } from 'reducers/osrdconf/types';
 import { Duration } from 'utils/duration';
-import {
-  formatPacedTrainIdToIndexedOccurrenceId,
-  isPacedTrainResponseWithPacedTrainId,
-} from 'utils/trainId';
+import { isPacedTrainResponseWithPacedTrainId } from 'utils/trainId';
 
 import type { ProjectionResult } from './TrainProjectionLazyLoaderAbstract';
 
@@ -30,7 +27,7 @@ const upsertNewProjectedTrains = (
       signalUpdates: trainData.signal_updates || [],
       ...(isPacedTrainResponseWithPacedTrainId(matchingTrain)
         ? {
-            id: formatPacedTrainIdToIndexedOccurrenceId(matchingTrain.id, 0),
+            id: matchingTrain.id,
             paced: {
               timeWindow: Duration.parse(matchingTrain.paced.time_window),
               interval: Duration.parse(matchingTrain.paced.interval),

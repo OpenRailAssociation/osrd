@@ -94,10 +94,7 @@ const SimulationResults = ({
       const timetableItemDict = keyBy(timetableItemsWithDetails, 'id');
       setProjectPathTrainResult(
         projectionData.projectedTrains.map((train) => {
-          const timetableItem =
-            timetableItemDict[
-              isTrainScheduleId(train.id) ? train.id : extractPacedTrainIdFromOccurrenceId(train.id)
-            ];
+          const timetableItem = timetableItemDict[train.id];
           return {
             ...train,
             originPathItemLocation: timetableItem?.path.at(0),
@@ -157,7 +154,12 @@ const SimulationResults = ({
     initialDepartureTime: Date;
     stopPanning: boolean;
   }) => {
-    const draggedTrain = projectPathTrainResult.find((train) => train.id === draggedTrainId);
+    const draggedTimetatbleItemId = isTrainScheduleId(draggedTrainId)
+      ? draggedTrainId
+      : extractPacedTrainIdFromOccurrenceId(draggedTrainId);
+    const draggedTrain = projectPathTrainResult.find(
+      (train) => train.id === draggedTimetatbleItemId
+    );
     if (!draggedTrain) return;
 
     const newTrainData = { ...draggedTrain, departureTime: newDepartureTime };
@@ -172,10 +174,7 @@ const SimulationResults = ({
 
     if (stopPanning) {
       // update in the database
-      const draggedItemId = isTrainScheduleId(draggedTrainId)
-        ? draggedTrainId
-        : extractPacedTrainIdFromOccurrenceId(draggedTrainId);
-      await updateTrainDepartureTime(draggedItemId, newDepartureTime);
+      await updateTrainDepartureTime(draggedTimetatbleItemId, newDepartureTime);
 
       // Handle retrieving track occupancy data from server (so with stopPanning: true):
       await handleTrainDragInTrackOccupancy({
@@ -187,7 +186,9 @@ const SimulationResults = ({
     } else {
       // update in the state
       setProjectPathTrainResult(
-        projectPathTrainResult.map((train) => (train.id === draggedTrainId ? newTrainData : train))
+        projectPathTrainResult.map((train) =>
+          train.id === draggedTimetatbleItemId ? newTrainData : train
+        )
       );
     }
   };
