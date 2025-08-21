@@ -45,7 +45,7 @@ If you want to contribute to the translation, you can do so easily with [Weblate
 | 🇬🇧 English       | [![Translation status](https://hosted.weblate.org/widget/osrd/-/en/svg-badge.svg)](https://hosted.weblate.org/engage/osrd/) |        ✅      |
 | 🇫🇷 French        | [![Translation status](https://hosted.weblate.org/widget/osrd/-/fr/svg-badge.svg)](https://hosted.weblate.org/engage/osrd/) |        ✅      |
 | 🇩🇪 German        | [![Translation status](https://hosted.weblate.org/widget/osrd/-/de/svg-badge.svg)](https://hosted.weblate.org/engage/osrd/) |        ✅      |
-| 🇵🇹 Portugese     | [![Translation status](https://hosted.weblate.org/widget/osrd/-/pt/svg-badge.svg)](https://hosted.weblate.org/engage/osrd/) |        ❌      |
+| 🇵🇹 Portuguese    | [![Translation status](https://hosted.weblate.org/widget/osrd/-/pt/svg-badge.svg)](https://hosted.weblate.org/engage/osrd/) |        ❌      |
 | 🇪🇸 Spanish       | [![Translation status](https://hosted.weblate.org/widget/osrd/-/es/svg-badge.svg)](https://hosted.weblate.org/engage/osrd/) |        ❌      |
 
 ## Getting Started
