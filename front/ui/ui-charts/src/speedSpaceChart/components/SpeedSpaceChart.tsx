@@ -216,7 +216,6 @@ const SpeedSpaceChart = ({
           style={{ width: adjustedWidthRightAxis }}
         >
           <SettingsPanel
-            globalHeight={height}
             color={backgroundColor}
             store={store}
             setStore={setStore}
