@@ -1410,9 +1410,9 @@ const injectedRtkApi = api
         }),
         providesTags: ['work_schedules'],
       }),
-      postWorkerLoad: build.mutation<PostWorkerLoadApiResponse, PostWorkerLoadApiArg>({
+      postWorkerLoad: build.query<PostWorkerLoadApiResponse, PostWorkerLoadApiArg>({
         query: (queryArg) => ({ url: `/worker_load`, method: 'POST', body: queryArg.body }),
-        invalidatesTags: ['worker'],
+        providesTags: ['worker'],
       }),
     }),
     overrideExisting: false,

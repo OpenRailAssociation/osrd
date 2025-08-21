@@ -1,43 +1,24 @@
 import cx from 'classnames';
-import { useTranslation } from 'react-i18next';
 
-import type { InfraWithState } from 'common/api/osrdEditoastApi';
+import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 
-const STEPS = [
-  'INITIALIZING',
-  'DOWNLOADING',
-  'PARSING_JSON',
-  'PARSING_INFRA',
-  'LOADING_SIGNALS',
-  'BUILDING_BLOCKS',
-  'CACHED',
-];
+export default function InfraLoadingState() {
+  const { infra } = useScenarioContext();
 
-type Props = {
-  infra: InfraWithState;
-};
-
-export default function InfraLoadingState({ infra }: Props) {
-  const { t } = useTranslation('operational-studies', { keyPrefix: 'main' });
+  if (!infra) return null;
 
   return (
     <div
-      className={cx(
-        'infra-loading-state',
-        infra.state && infra.state === 'CACHED' ? 'cached' : 'loading'
-      )}
-      title={infra.state}
+      className={cx('infra-loading-state', infra.status === 'READY' ? 'cached' : 'loading')}
+      title={infra.status}
     >
-      {infra.state && infra.state === 'CACHED' ? (
+      {infra.status === 'READY' ? (
         <span className="infra-loaded" />
       ) : (
         <>
           <span className="infra-loader">•</span>
           <span className="infra-loader">•</span>
           <span className="infra-loader">•</span>
-          <div className="steps">
-            {t('infraLoadingState', { step: STEPS.indexOf(infra.state) + 1 })}
-          </div>
         </>
       )}
     </div>

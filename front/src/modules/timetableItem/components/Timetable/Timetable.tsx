@@ -4,8 +4,8 @@ import cx from 'classnames';
 import { useSelector } from 'react-redux';
 import { Virtualizer } from 'virtua';
 
+import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import { MANAGE_TIMETABLE_ITEM_TYPES } from 'applications/operationalStudies/views/Scenario/consts';
-import { type InfraState } from 'common/api/osrdEditoastApi';
 import { useSubCategoryContext } from 'common/SubCategoryContext';
 import { selectTrainToEdit } from 'reducers/osrdconf/operationalStudiesConf';
 import type {
@@ -34,7 +34,6 @@ import type {
 
 type TimetableProps = {
   setDisplayTimetableItemManagement: (mode: string) => void;
-  infraState: InfraState;
   upsertTimetableItems: (timetableItems: TimetableItem[]) => void;
   setTimetableItemToEditData: (timetableItemToEditData?: TimetableItemToEditData) => void;
   setSelectedTimetableItemIds: (selectedTimetableItemIds: TimetableItemId[]) => void;
@@ -52,7 +51,6 @@ const formatDepartureDate = (d: Date, locale: Intl.Locale) =>
 
 const Timetable = ({
   setDisplayTimetableItemManagement,
-  infraState,
   upsertTimetableItems,
   setTimetableItemToEditData,
   setSelectedTimetableItemIds,
@@ -65,6 +63,8 @@ const Timetable = ({
   selectedTimetableItemIds,
 }: TimetableProps) => {
   const dateTimeLocale = useDateTimeLocale();
+
+  const { infra } = useScenarioContext();
 
   const [expandedTimetableItemIds, setExpandedTimetableItemIds] = useState<Set<TimetableItemId>>(
     new Set()
@@ -168,13 +168,13 @@ const Timetable = ({
                   isInSelection={selectedTimetableItemIds.includes(timetableItem.id)}
                   handleSelectTrain={handleSelectTimetableItem}
                   train={timetableItem as TrainScheduleWithDetails}
-                  isSelected={infraState === 'CACHED' && selectedTrainId === timetableItem.id}
+                  isSelected={infra.status === 'READY' && selectedTrainId === timetableItem.id}
                   isModified={timetableItem.id === timetableItemToEditData?.timetableItemId}
                   upsertTrainSchedules={upsertTimetableItems}
                   removeTrains={removeAndUnselectTrains}
                   selectTrainToEdit={selectTimetableItemToEdit}
                   projectionPathIsUsed={
-                    infraState === 'CACHED' && trainIdUsedForProjection === timetableItem.id
+                    infra.status === 'READY' && trainIdUsedForProjection === timetableItem.id
                   }
                   subCategories={subCategories}
                 />
@@ -191,7 +191,7 @@ const Timetable = ({
                   upsertTimetableItems={upsertTimetableItems}
                   removePacedTrains={removeAndUnselectTrains}
                   isProjectionPathUsed={
-                    infraState === 'CACHED' && trainIdUsedForProjection === timetableItem.id
+                    infra.status === 'READY' && trainIdUsedForProjection === timetableItem.id
                   }
                   subCategories={subCategories}
                 />

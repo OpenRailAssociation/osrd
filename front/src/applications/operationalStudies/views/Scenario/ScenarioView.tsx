@@ -35,12 +35,7 @@ const Scenario = () => {
 
   return (
     <ScenarioContextProvider infra={infra}>
-      <ScenarioHeader
-        scenario={scenario}
-        infra={infra}
-        activeBoards={activeBoards}
-        toggleBoard={toggleBoard}
-      />
+      <ScenarioHeader scenario={scenario} activeBoards={activeBoards} toggleBoard={toggleBoard} />
       <RollingStockContextProvider>
         <SubCategoryContextProvider>
           <ScenarioContent scenario={scenario} activeBoards={activeBoards} />

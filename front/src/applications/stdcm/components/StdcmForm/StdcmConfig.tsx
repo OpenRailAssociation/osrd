@@ -24,6 +24,7 @@ import {
   getStdcmRollingStockID,
   getStdcmScenarioID,
   getStdcmStudyID,
+  getStdcmTimetableID,
 } from 'reducers/osrdconf/stdcmConf/selectors';
 import type { OsrdStdcmConfState } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
@@ -81,7 +82,14 @@ const StdcmConfig = ({
   const launchButtonRef = useRef<HTMLDivElement>(null);
 
   const infraId = useSelector(getStdcmInfraID);
+  const timetableId = useSelector(getStdcmTimetableID);
+
+  // We need to load 2 infras:
+  // - 1 infra without any timetableId, which will be used for the pathfinding requests
+  // - 1 infra with the timetableId, which will be used for the stdcm request (faster since the timetable will be cached)
+  // The form is disabled until both workers have fully loaded.
   const { infra } = useInfraStatus({ infraId });
+  const { infra: infraStdcm } = useInfraStatus({ infraId, timetableId });
 
   const dispatch = useAppDispatch();
 
@@ -182,12 +190,12 @@ const StdcmConfig = ({
   }, [pathfinding, pathSteps, t, consistErrors]);
 
   useEffect(() => {
-    if (!infra || infra.state === 'CACHED') {
+    if (infra?.status === 'READY' && infraStdcm?.status === 'READY') {
       setFormErrors(undefined);
     } else {
       setFormErrors({ errorType: StdcmConfigErrorTypes.INFRA_NOT_LOADED });
     }
-  }, [infra]);
+  }, [infra?.status, infraStdcm?.status]);
 
   useEffect(() => {
     if (!isDebugMode) {
@@ -240,7 +248,11 @@ const StdcmConfig = ({
     });
 
     // Prevent clearing formErrors if pathfindingFailed is still active
-    if (formErrors?.errorType === StdcmConfigErrorTypes.PATHFINDING_FAILED && !updatedErrors) {
+    if (
+      (formErrors?.errorType === StdcmConfigErrorTypes.PATHFINDING_FAILED ||
+        formErrors?.errorType === StdcmConfigErrorTypes.INFRA_NOT_LOADED) &&
+      !updatedErrors
+    ) {
       return;
     }
 

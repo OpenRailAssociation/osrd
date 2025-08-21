@@ -16,7 +16,7 @@ import { useSelector } from 'react-redux';
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import BoardWrapper from 'applications/operationalStudies/views/Scenario/components/BoardWrapper';
 import { MANAGE_TIMETABLE_ITEM_TYPES } from 'applications/operationalStudies/views/Scenario/consts';
-import { osrdEditoastApi, type InfraState } from 'common/api/osrdEditoastApi';
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import DeleteModal from 'common/BootstrapSNCF/ModalSNCF/DeleteModal';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import { setFailure, setSuccess } from 'reducers/main';
@@ -46,7 +46,6 @@ import { exportTimetableItems } from './utils';
 
 type TimetableBoardWrapperProps = {
   setDisplayTimetableItemManagement: (mode: string) => void;
-  infraState: InfraState;
   upsertTimetableItems: (timetableItems: TimetableItem[]) => void;
   setTimetableItemToEditData: (timetableItemToEditData?: TimetableItemToEditData) => void;
   removeTimetableItems: (timetableItemsToRemove: TimetableItemId[]) => void;
@@ -58,7 +57,6 @@ type TimetableBoardWrapperProps = {
 
 const TimetableBoardWrapper = ({
   setDisplayTimetableItemManagement,
-  infraState,
   upsertTimetableItems,
   setTimetableItemToEditData,
   removeTimetableItems,
@@ -334,7 +332,6 @@ const TimetableBoardWrapper = ({
           timetableFilters={timetableFilters}
           setSelectedTimetableItemIds={setSelectedTimetableItemIds}
           setDisplayTimetableItemManagement={setDisplayTimetableItemManagement}
-          infraState={infraState}
           upsertTimetableItems={upsertTimetableItems}
           setTimetableItemToEditData={setTimetableItemToEditData}
           removeAndUnselectTrains={removeAndUnselectTrains}

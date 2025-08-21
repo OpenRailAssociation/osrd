@@ -3,12 +3,9 @@ import { useCallback, useEffect, useMemo, useState, useRef } from 'react';
 import { keyBy, sortBy } from 'lodash';
 import { useSelector } from 'react-redux';
 
-import {
-  osrdEditoastApi,
-  type InfraWithState,
-  type ScenarioResponse,
-} from 'common/api/osrdEditoastApi';
+import { osrdEditoastApi, type ScenarioResponse } from 'common/api/osrdEditoastApi';
 import { useRollingStockContext } from 'common/RollingStockContext';
+import type { InfraWithStatus } from 'modules/infra/types';
 import useLazyProjectTrains from 'modules/simulationResult/components/SpaceTimeChartWrapper/useLazyProjectTrains';
 import {
   formatPacedTrainWithDetails,
@@ -36,7 +33,7 @@ type ScenarioBroadcastMessage =
   | { type: 'removeTimetableItems'; timetableItemIds: TimetableItemId[] }
   | { type: 'setTimetableItemDepartureTime'; timetableItemId: TimetableItemId; newDeparture: Date };
 
-const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
+const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithStatus) => {
   const dispatch = useAppDispatch();
   const electricalProfileSetId = useSelector(getOperationalStudiesElectricalProfileSetId);
   const trainIdUsedForProjection = useSelector(getTrainIdUsedForProjection);
@@ -168,10 +165,10 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithState) => {
 
   // first load of the summaries
   useEffect(() => {
-    if (timetableItems && infra.state === 'CACHED' && simulatedTrainsById.size === 0) {
+    if (timetableItems && infra.status === 'READY' && simulatedTrainsById.size === 0) {
       simulateTimetableItems(timetableItems);
     }
-  }, [timetableItems, infra.state, simulatedTrainsById]);
+  }, [timetableItems, infra.status, simulatedTrainsById]);
 
   const broadcastChannel = useRef<BroadcastChannel>(null);
 

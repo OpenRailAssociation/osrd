@@ -3,7 +3,8 @@ import { useMemo } from 'react';
 import { skipToken } from '@reduxjs/toolkit/query/react';
 import { useSelector } from 'react-redux';
 
-import { osrdEditoastApi, type InfraWithState } from 'common/api/osrdEditoastApi';
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import type { InfraWithStatus } from 'modules/infra/types';
 import { getTrainIdUsedForProjection } from 'reducers/simulationResults/selectors';
 import {
   extractEditoastIdFromPacedTrainId,
@@ -11,7 +12,7 @@ import {
   isTrainScheduleId,
 } from 'utils/trainId';
 
-const usePathProjection = (infra: InfraWithState) => {
+const usePathProjection = (infra: InfraWithStatus) => {
   const trainIdUsedForProjection = useSelector(getTrainIdUsedForProjection);
 
   const trainScheduleId =

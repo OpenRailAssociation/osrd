@@ -1,11 +1,12 @@
 import { createContext, useContext, useMemo, type ReactNode } from 'react';
 
 import useCachedTrackSections from 'applications/operationalStudies/hooks/useCachedTrackSections';
-import type { InfraWithState, TrackSection } from 'common/api/osrdEditoastApi';
+import type { TrackSection } from 'common/api/osrdEditoastApi';
+import type { InfraWithStatus } from 'modules/infra/types';
 
 type ScenarioContextType = {
   infraId: number;
-  infra: InfraWithState;
+  infra: InfraWithStatus;
   isInfraLoaded: boolean;
   getTrackSectionsByIds: (requestedTrackIds: string[]) => Promise<Record<string, TrackSection>>;
   trackSectionsLoading: boolean;
@@ -13,7 +14,7 @@ type ScenarioContextType = {
 const ScenarioContext = createContext<ScenarioContextType>(null);
 
 type ScenarioContextProviderProps = {
-  infra: InfraWithState;
+  infra: InfraWithStatus;
   children: ReactNode;
 };
 
@@ -22,16 +23,16 @@ export const ScenarioContextProvider = ({ infra, children }: ScenarioContextProv
     infra.id
   );
 
-  const providedContext = useMemo(() => {
-    const isInfraLoaded = ['ERROR', 'TRANSIENT_ERROR', 'CACHED'].includes(infra.state);
-    return {
+  const providedContext = useMemo(
+    () => ({
       getTrackSectionsByIds,
       infraId: infra.id,
       infra,
-      isInfraLoaded,
+      isInfraLoaded: infra.status === 'READY',
       trackSectionsLoading,
-    };
-  }, [getTrackSectionsByIds, infra, trackSectionsLoading]);
+    }),
+    [getTrackSectionsByIds, infra, trackSectionsLoading]
+  );
   return <ScenarioContext.Provider value={providedContext}>{children}</ScenarioContext.Provider>;
 };
 

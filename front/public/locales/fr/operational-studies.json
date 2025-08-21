@@ -67,7 +67,6 @@
       "unableToDeleteScenarioMessage": "Impossible de supprimer le scénario"
     },
     "filterPlaceholder": "Filtre, étiquettes",
-    "infraLoadingState": "{{step}}/3",
     "infrastructure": "Infrastructure",
     "lessDetails": "Afficher moins de détails",
     "loadingConflicts": "Chargement des conflits…",

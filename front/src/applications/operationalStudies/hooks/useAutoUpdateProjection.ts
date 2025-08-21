@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 
 import { useSelector } from 'react-redux';
 
-import type { InfraWithState } from 'common/api/osrdEditoastApi';
+import type { InfraWithStatus } from 'modules/infra/types';
 import type { TimetableItemWithDetails } from 'modules/timetableItem/components/Timetable/types';
 import { isValidPathfinding } from 'modules/timetableItem/components/Timetable/utils';
 import type { TimetableItemId } from 'reducers/osrdconf/types';
@@ -28,7 +28,7 @@ import {
  * currentTrainIdForProjection will still be undefined and must be updated)
  */
 const useAutoUpdateProjection = (
-  infra: InfraWithState,
+  infra: InfraWithStatus,
   timetableItemIds: TimetableItemId[],
   timetableItemsWithDetails: TimetableItemWithDetails[]
 ) => {
@@ -37,7 +37,7 @@ const useAutoUpdateProjection = (
   const selectedTrainId = useSelector(getSelectedTrainId);
 
   useEffect(() => {
-    if (infra.state !== 'CACHED' || timetableItemIds.length === 0) {
+    if (infra.status !== 'READY' || timetableItemIds.length === 0) {
       if (selectedTrainId) dispatch(updateSelectedTrainId(undefined));
       if (currentTrainIdForProjection) dispatch(updateTrainIdUsedForProjection(undefined));
       return;

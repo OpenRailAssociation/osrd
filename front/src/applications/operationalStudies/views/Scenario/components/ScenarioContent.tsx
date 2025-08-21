@@ -151,7 +151,6 @@ const ScenarioContent = ({ scenario, activeBoards }: ScenarioContentProps) => {
           setDisplayTimetableItemManagement={setDisplayTimetableItemManagement}
           upsertTimetableItems={upsertTimetableItemsWithNge}
           removeTimetableItems={removeTimetableItemsWithNge}
-          infraState={infra.state}
           timetableItemToEditData={timetableItemToEditData}
           setTimetableItemToEditData={setTimetableItemToEditData}
           scenario={scenario}
@@ -168,7 +167,6 @@ const ScenarioContent = ({ scenario, activeBoards }: ScenarioContentProps) => {
           <div className="scenario-sidemenu">
             <TimetableBoardWrapper
               setDisplayTimetableItemManagement={setDisplayTimetableItemManagement}
-              infraState={infra.state}
               upsertTimetableItems={upsertTimetableItemsWithNge}
               removeTimetableItems={removeTimetableItemsWithNge}
               timetableItems={timetableItems}
@@ -194,7 +192,7 @@ const ScenarioContent = ({ scenario, activeBoards }: ScenarioContentProps) => {
           {!isInfraLoaded &&
             displayTimetableItemManagement !== MANAGE_TIMETABLE_ITEM_TYPES.add &&
             displayTimetableItemManagement !== MANAGE_TIMETABLE_ITEM_TYPES.edit && (
-              <ScenarioLoaderMessage infraState={infra?.state} />
+              <ScenarioLoaderMessage />
             )}
           <div className="scenario-results">
             {isInfraLoaded && infra && (

@@ -6,7 +6,6 @@ import { useSelector } from 'react-redux';
 
 import { EditedElementContainerContext } from 'applications/operationalStudies/views/Scenario/components/EditedElementContainerContext';
 import { MANAGE_TIMETABLE_ITEM_TYPES } from 'applications/operationalStudies/views/Scenario/consts';
-import type { InfraState } from 'common/api/osrdEditoastApi';
 import CheckboxRadioSNCF from 'common/BootstrapSNCF/CheckboxRadioSNCF';
 import { ConfirmModal, useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import DotsLoader from 'common/DotsLoader';
@@ -35,7 +34,6 @@ export type TimetableManageItemProps = {
   setDisplayTimetableItemManagement: (type: string) => void;
   upsertTimetableItems: (timetableItems: TimetableItem[]) => void;
   removeTimetableItems: (timetableItems: TimetableItemId[]) => void;
-  infraState?: InfraState;
   setTimetableItemToEditData: (timetableItemToEditData?: TimetableItemToEditData) => void;
 };
 
@@ -47,7 +45,6 @@ const TimetableManageItem = ({
   setDisplayTimetableItemManagement,
   upsertTimetableItems,
   removeTimetableItems,
-  infraState,
   timetableItemToEditData,
   setTimetableItemToEditData,
 }: TimetableManageItemProps) => {
@@ -160,7 +157,6 @@ const TimetableManageItem = ({
               </button>
             ) : (
               <CreateTimetableItemButton
-                infraState={infraState}
                 setIsWorking={setIsWorking}
                 upsertTimetableItems={upsertTimetableItems}
                 isPacedTrainMode={editingItemType === 'pacedTrain'}

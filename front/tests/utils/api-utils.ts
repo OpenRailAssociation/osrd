@@ -8,7 +8,6 @@ import type {
   GetProjectsByProjectIdStudiesAndStudyIdScenariosApiResponse,
   LightElectricalProfileSet,
   GetInfraApiResponse,
-  InfraWithState,
   ProjectWithStudies,
   StudyWithScenarios,
   ScenarioWithDetails,
@@ -21,6 +20,7 @@ import type {
   StdcmSearchEnvironment,
   TowedRollingStock,
   PaginationStats,
+  WorkerStatus,
 } from 'common/api/osrdEditoastApi';
 
 import {
@@ -147,22 +147,24 @@ export const deleteApiRequest = async (
  */
 export const getInfra = async (infraName = infrastructureName): Promise<Infra> => {
   const infras: GetInfraApiResponse = await getApiRequest('/api/infra');
-  const infra = infras.results.find((i: InfraWithState) => i.name === infraName);
-  return infra as Infra;
+  const infra = infras.results.find((i: Infra) => i.name === infraName);
+  return infra!;
 };
 
 /**
- * Retrieve infrastructure data by ID.
+ * Check the status of the infrastructure worker.
  *
- * @param infraId - The ID of the infrastructure to retrieve.
- * @returns {Promise<InfraWithState>} - The matching infrastructure data.
+ * @param infraId - The ID of the infrastructure to load.
+ * @returns {Promise<Status>} - The status of the corresponding worker.
  */
-export const getInfraById = async (infraId: number): Promise<InfraWithState> => {
+export const getWorkerStatus = async (infraId: number): Promise<WorkerStatus> => {
   try {
-    const response = await getApiRequest(`/api/infra/${infraId}`);
-    return response as InfraWithState;
+    const response = await postApiRequest(`/api//worker_load/`, {
+      infra_id: infraId,
+    });
+    return response as WorkerStatus;
   } catch (error) {
-    throw new Error(`Failed to retrieve infrastructure with ID ${infraId}`, { cause: error });
+    throw new Error(`Failed to retrieve worker with infra ID ${infraId}`, { cause: error });
   }
 };
 

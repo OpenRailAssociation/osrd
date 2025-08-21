@@ -4,8 +4,8 @@ import { compact } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
-import type { InfraWithState } from 'common/api/osrdEditoastApi';
 import type { RangedValue } from 'common/types';
+import type { InfraWithStatus } from 'modules/infra/types';
 import getPathVoltages from 'modules/pathfinding/helpers/getPathVoltages';
 import usePathfinding from 'modules/pathfinding/hooks/usePathfinding';
 import type { PathfindingState } from 'modules/pathfinding/types';
@@ -28,7 +28,7 @@ type ManageTimetableItemContext = {
     options?: { isInitialization: boolean }
   ) => void;
   pathfindingState: PathfindingState;
-  infraInfo: { infra?: InfraWithState };
+  infraInfo: { infra?: InfraWithStatus };
   /** Operational points along the path (including origin and destination) and vias added by clicking on map */
   pathStepsAndSuggestedOPs?: SuggestedOP[];
 } | null;
