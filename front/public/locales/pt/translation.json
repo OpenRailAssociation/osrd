@@ -182,7 +182,8 @@
     }
   },
   "nav-bar": {
-    "about": "Sobre"
+    "about": "Sobre",
+    "languages": "Línguas"
   },
   "operationalStudies": "Estudos operacionais",
   "rollingStockEditor": "Editor de material rodante",

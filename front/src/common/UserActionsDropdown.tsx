@@ -5,11 +5,11 @@ import getUnicodeFlagIcon from 'country-flag-icons/unicode';
 import { useTranslation } from 'react-i18next';
 
 import useAuth from '../utils/hooks/useAuth';
-import { language2flag } from '../utils/strings';
+import { languageCodeToCountryCode } from '../utils/strings';
 import DropdownSNCF, { type DROPDOWN_STYLE_TYPES } from './BootstrapSNCF/DropdownSNCF';
 import HelpModalSNCF from './BootstrapSNCF/HelpModalSNCF';
 import { useModal } from './BootstrapSNCF/ModalSNCF';
-import ChangeLanguageModal from './ChangeLanguageModal';
+import ChangeLanguageModal, { languageName } from './ChangeLanguageModal';
 import ReleaseInformations from './ReleaseInformations';
 import UserSettings from './UserSettings';
 
@@ -67,9 +67,9 @@ const UserActionsDropdown = ({
           onClick={() => openModal(<ChangeLanguageModal />, 'sm')}
         >
           <span className="mr-2">
-            {i18n.language && getUnicodeFlagIcon(language2flag(i18n.language))}
+            {i18n.language && getUnicodeFlagIcon(languageCodeToCountryCode(i18n.language))}
           </span>
-          <span data-testid="language-info">{t(`nav-bar.language.${i18n.language}`)} </span>
+          <span data-testid="language-info">{languageName(i18n.language)}</span>
         </button>
       ),
       key: 'language',

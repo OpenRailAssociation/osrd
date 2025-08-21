@@ -27,7 +27,6 @@ const IGNORE_UNUSED: RegExp[] = [
   /translation:common.map-actions\..*/,
   /Editor\.item-statuses\..*/,
   /translation:Editor\.infra-errors\.error-type\..*/, // Infra error types are generated
-  /translation:nav-bar.language\..*/, // Language selector which is generated with the locale
 
   // Map
   /translation:mapKey.alternatingCurrent/,
