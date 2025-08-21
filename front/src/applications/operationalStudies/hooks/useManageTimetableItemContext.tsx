@@ -28,7 +28,7 @@ type ManageTimetableItemContext = {
     options?: { isInitialization: boolean }
   ) => void;
   pathfindingState: PathfindingState;
-  infraInfo: { infra?: InfraWithState; reloadCount: number };
+  infraInfo: { infra?: InfraWithState };
   /** Operational points along the path (including origin and destination) and vias added by clicking on map */
   pathStepsAndSuggestedOPs?: SuggestedOP[];
 } | null;

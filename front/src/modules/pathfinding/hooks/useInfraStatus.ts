@@ -6,8 +6,6 @@ export default function useInfraStatus({ infraId }: { infraId: number | undefine
   const [reloadInfra] = osrdEditoastApi.endpoints.postInfraByInfraIdLoad.useMutation();
 
   const [isInfraLoaded, setIsInfraLoaded] = useState(false);
-  const [reloadCount, setReloadCount] = useState(1);
-  const [isInfraError, setIsInfraError] = useState(false);
 
   const { data: infra } = osrdEditoastApi.endpoints.getInfraByInfraId.useQuery(
     { infraId: infraId! },
@@ -19,16 +17,8 @@ export default function useInfraStatus({ infraId }: { infraId: number | undefine
   );
 
   useEffect(() => {
-    if (reloadCount <= 5 && infra && infra.state === 'TRANSIENT_ERROR') {
-      setTimeout(() => {
-        reloadInfra({ infraId: infraId! }).unwrap();
-        setReloadCount((count) => count + 1);
-      }, 1000);
-    }
-  }, [infra, reloadCount]);
-
-  useEffect(() => {
     if (infraId) {
+      setIsInfraLoaded(false);
       reloadInfra({ infraId }).unwrap();
     }
   }, [infraId]);
@@ -37,21 +27,14 @@ export default function useInfraStatus({ infraId }: { infraId: number | undefine
     if (infra) {
       switch (infra.state) {
         case 'DOWNLOADING':
-          setIsInfraLoaded(false);
-          break;
-        case 'NOT_LOADED': {
-          reloadInfra({ infraId: infraId! }).unwrap();
+        case 'NOT_LOADED':
+        case 'ERROR': {
           setIsInfraLoaded(false);
           break;
         }
-        case 'ERROR':
-        case 'TRANSIENT_ERROR': {
-          setIsInfraLoaded(true);
-          break;
-        }
+        case 'TRANSIENT_ERROR':
         case 'CACHED': {
           setIsInfraLoaded(true);
-          if (isInfraError) setIsInfraError(false);
           break;
         }
         default:
@@ -60,17 +43,8 @@ export default function useInfraStatus({ infraId }: { infraId: number | undefine
     }
   }, [infra]);
 
-  useEffect(() => {
-    if (isInfraError) {
-      reloadInfra({ infraId: infraId! }).unwrap();
-      setIsInfraLoaded(false);
-    }
-  }, [isInfraError]);
-
   return {
     infra,
     isInfraLoaded,
-    reloadCount,
-    setIsInfraError,
   };
 }

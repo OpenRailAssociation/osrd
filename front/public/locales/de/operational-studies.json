@@ -224,11 +224,9 @@
       "noTrainStep": "Die Inkrementierungsschritte für diesen Zug müssen höher als 0 sein.",
       "originTimeOutsideWindow": "Abfahrtszeit muss zwischen {{low}} und {{high}} liegen.",
       "requiredField": "Erforderliches Feld.",
-      "softErrorInfra": "Die Anwendung ist nicht verfügbar, da ein Serverfehler aufgetreten ist. Bitte versuchen Sie es später erneut.",
       "timetableItemTitle": "Ein Fehler ist aufgetreten",
       "tooLowInput": "Muss größer 0 als sein",
-      "tooLowValue": "{{value}} muss größer als 0 sein",
-      "unableToLoadInfra": "Ladefehler, erneuter Versuch in Aufbau ({{reloadCount}})"
+      "tooLowValue": "{{value}} muss größer als 0 sein"
     },
     "incompatibleConstraints": {
       "filters": {

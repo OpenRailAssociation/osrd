@@ -16,7 +16,7 @@ import {
 } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 import { conditionalStringConcat, formatKmValue } from 'utils/strings';
 
-import { InfraHardError, InfraSoftError } from './InfraError';
+import InfraError from './InfraError';
 
 const Pathfinding = ({ rollingStockId }: { rollingStockId: number | undefined }) => {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTimetableItem' });
@@ -29,7 +29,7 @@ const Pathfinding = ({ rollingStockId }: { rollingStockId: number | undefined })
   const {
     pathProperties,
     pathfindingState,
-    infraInfo: { infra, reloadCount },
+    infraInfo: { infra },
   } = useManageTimetableItemContext();
 
   const missingElements = conditionalStringConcat([
@@ -52,9 +52,7 @@ const Pathfinding = ({ rollingStockId }: { rollingStockId: number | undefined })
         </div>
       )}
 
-      {infra && infra.state === 'TRANSIENT_ERROR' && <InfraSoftError reloadCount={reloadCount} />}
-
-      {infra && infra.state === 'ERROR' && <InfraHardError />}
+      {infra && ['ERROR', 'TRANSIENT_ERROR'].includes(infra.state) && <InfraError />}
 
       {!pathfindingState.error &&
         !pathfindingState.isRunning &&
