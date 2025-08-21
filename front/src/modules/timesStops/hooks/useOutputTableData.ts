@@ -43,21 +43,21 @@ const useOutputTableData = (
 
   // Format input path step rows
   useEffect(() => {
-    const formatPathStepRows = async (): Promise<Map<string, Partial<TimesStopsRow>>> => {
-      if (!selectedTrain) return new Map();
-
-      const trackIds = selectedTrain.path.reduce<string[]>((ids, step) => {
+    const formatPathStepRows = async (
+      train: Train
+    ): Promise<Map<string, Partial<TimesStopsRow>>> => {
+      const trackIds = train.path.reduce<string[]>((ids, step) => {
         if ('track' in step) ids.push(step.track);
         return ids;
       }, []);
       const trackSections = await getTrackSectionsByIds(trackIds);
 
-      const startDatetime = new Date(selectedTrain.start_time);
+      const startDatetime = new Date(train.start_time);
       let lastReferenceDate = startDatetime;
       let mapWaypointCount = 0;
 
       return new Map(
-        selectedTrain.path.map((pathStep, index) => {
+        train.path.map((pathStep, index) => {
           const matchingOperationalPoint = pathStepOps.find((op) => matchOpRefAndOp(op, pathStep));
 
           if ('track' in pathStep) mapWaypointCount += 1;
@@ -99,7 +99,7 @@ const useOutputTableData = (
             diffMargins,
           } = computeMargins(
             theoreticalMargins,
-            selectedTrain,
+            train,
             scheduleByAt,
             index,
             simulatedPathItemTimes
@@ -147,7 +147,7 @@ const useOutputTableData = (
         return;
       }
 
-      const pathStepRowsById = await formatPathStepRows();
+      const pathStepRowsById = await formatPathStepRows(selectedTrain);
 
       let formattedRows = Array.from(pathStepRowsById.values());
 
