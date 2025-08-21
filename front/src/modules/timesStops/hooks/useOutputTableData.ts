@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 import { keyBy } from 'lodash';
 import { useTranslation } from 'react-i18next';
@@ -6,10 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import useTrainOps from 'applications/operationalStudies/hooks/useTrainOps';
 import type { PathPropertiesFormatted } from 'applications/operationalStudies/types';
-import type {
-  PathfindingResultSuccess,
-  SimulationResponseSuccess,
-} from 'common/api/osrdEditoastApi';
+import type { SimulationResponseSuccess } from 'common/api/osrdEditoastApi';
 import { matchPathStepAndOp } from 'modules/pathfinding/utils';
 import { interpolateValue } from 'modules/simulationResult/SimulationResultExport/utils';
 import type { SimulationSummary } from 'modules/timetableItem/types';
@@ -29,30 +26,25 @@ const useOutputTableData = (
   isValid: boolean,
   selectedTrain?: Train,
   simulatedTrain?: SimulationResponseSuccess['final_output'],
-  simulatedPath?: PathfindingResultSuccess,
   simulatedPathItemTimes?: Extract<SimulationSummary, { isValid: true }>['pathItemTimes'],
-  simulatedOperationalPoints?: PathPropertiesFormatted['operationalPoints']
+  operationalPointsOnPath?: PathPropertiesFormatted['operationalPoints']
 ): TimesStopsRow[] => {
   const { t } = useTranslation('operational-studies');
   const dateTimeLocale = useDateTimeLocale();
   const { getTrackSectionsByIds } = useScenarioContext();
 
-  const [rows, setRows] = useState<TimesStopsRow[]>([]);
+  const pathStepOps = useTrainOps(infraId, selectedTrain);
 
-  const trainOperationalPoints = useTrainOps(infraId, selectedTrain);
+  const [rows, setRows] = useState<TimesStopsRow[]>([]);
 
   // Extract common properties between valid and invalid trains
   const scheduleByAt: Record<string, ScheduleEntry> = keyBy(selectedTrain?.schedule, 'at');
   const theoreticalMargins = selectedTrain && getTheoreticalMargins(selectedTrain);
-  const operationalPoints = useMemo(
-    () => simulatedOperationalPoints ?? trainOperationalPoints,
-    [simulatedOperationalPoints, trainOperationalPoints]
-  );
 
   // Format input path step rows
   useEffect(() => {
     const formatPathStepRows = async (): Promise<Map<string, Partial<TimesStopsRow>>> => {
-      if (!selectedTrain || !operationalPoints || operationalPoints.length === 0) return new Map();
+      if (!selectedTrain) return new Map();
 
       const trackIds = selectedTrain.path.reduce<string[]>((ids, step) => {
         if ('track' in step) ids.push(step.track);
@@ -66,10 +58,7 @@ const useOutputTableData = (
 
       return new Map(
         selectedTrain.path.map((pathStep, index) => {
-          const opPositionOnPath = simulatedPath?.path_item_positions[index];
-          const matchingOperationalPoint = operationalPoints.find((op) =>
-            opPositionOnPath ? op.position === opPositionOnPath : matchOpRefAndOp(op, pathStep)
-          );
+          const matchingOperationalPoint = pathStepOps.find((op) => matchOpRefAndOp(op, pathStep));
 
           if ('track' in pathStep) mapWaypointCount += 1;
           const name = getOperationalPointName(
@@ -153,7 +142,7 @@ const useOutputTableData = (
     };
 
     const formatRows = async () => {
-      if (!selectedTrain || !operationalPoints) {
+      if (!selectedTrain) {
         setRows([]);
         return;
       }
@@ -163,11 +152,11 @@ const useOutputTableData = (
       let formattedRows = Array.from(pathStepRowsById.values());
 
       // For valid trains, complete the rows with the simulated path's operational points and tracks information
-      if (isValid && simulatedTrain) {
-        const trackIds = operationalPoints.map((op) => op.part.track);
+      if (isValid && simulatedTrain && operationalPointsOnPath) {
+        const trackIds = operationalPointsOnPath.map((op) => op.part.track);
         const trackSectionsOnPath = await getTrackSectionsByIds(trackIds);
 
-        formattedRows = operationalPoints.map((op) => {
+        formattedRows = operationalPointsOnPath.map((op) => {
           const trackName = trackSectionsOnPath[op.part.track]?.extensions?.sncf?.track_name;
 
           // early return if the op matches a pathStep (handled in formatPathStepRows)
@@ -216,7 +205,7 @@ const useOutputTableData = (
     };
 
     formatRows();
-  }, [operationalPoints, simulatedTrain, getTrackSectionsByIds]);
+  }, [pathStepOps, operationalPointsOnPath, simulatedTrain, getTrackSectionsByIds]);
 
   return rows;
 };
