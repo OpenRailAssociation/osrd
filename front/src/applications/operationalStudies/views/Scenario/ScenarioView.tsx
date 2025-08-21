@@ -1,14 +1,11 @@
 import { useState } from 'react';
 
-import { useSelector } from 'react-redux';
-
 import useScenario from 'applications/operationalStudies/hooks/useScenario';
 import { ScenarioContextProvider } from 'applications/operationalStudies/hooks/useScenarioContext';
 import useScenarioQueryParams from 'applications/operationalStudies/hooks/useScenarioQueryParams';
 import { RollingStockContextProvider } from 'common/RollingStockContext';
 import { SubCategoryContextProvider } from 'common/SubCategoryContext';
 import useInfraStatus from 'modules/pathfinding/hooks/useInfraStatus';
-import { getOperationalStudiesInfraID } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 
 import ScenarioHeader from './components/ScenarioHeader';
 import type { Board } from '../../types';
@@ -16,14 +13,10 @@ import ScenarioContent from './components/ScenarioContent';
 
 const Scenario = () => {
   const { scenario } = useScenario();
-
-  const infraId = useSelector(getOperationalStudiesInfraID);
+  const { infra } = useInfraStatus({ infraId: scenario?.infra_id });
 
   // Initialize and sync the URL and local storage with Redux
   useScenarioQueryParams();
-
-  const infraData = useInfraStatus({ infraId });
-  const { infra } = infraData;
 
   const [activeBoards, setActiveBoards] = useState<Set<Board>>(
     new Set<Board>(['trains', 'map', 'std', 'sdd', 'tables'])
@@ -41,7 +34,7 @@ const Scenario = () => {
   if (!scenario || !infra) return null;
 
   return (
-    <ScenarioContextProvider infraId={infra.id}>
+    <ScenarioContextProvider infra={infra}>
       <ScenarioHeader
         scenario={scenario}
         infra={infra}
@@ -50,12 +43,7 @@ const Scenario = () => {
       />
       <RollingStockContextProvider>
         <SubCategoryContextProvider>
-          <ScenarioContent
-            scenario={scenario}
-            infra={infra}
-            infraMetadata={infraData}
-            activeBoards={activeBoards}
-          />
+          <ScenarioContent scenario={scenario} activeBoards={activeBoards} />
         </SubCategoryContextProvider>
       </RollingStockContextProvider>
     </ScenarioContextProvider>

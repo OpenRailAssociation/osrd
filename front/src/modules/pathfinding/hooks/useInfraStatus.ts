@@ -45,6 +45,5 @@ export default function useInfraStatus({ infraId }: { infraId: number | undefine
 
   return {
     infra,
-    isInfraLoaded,
   };
 }
