@@ -33,7 +33,6 @@ import { isEmptyArray } from 'utils/array';
 import { Duration } from 'utils/duration';
 import { castErrorToFailure } from 'utils/error';
 
-import useInfraStatus from './useInfraStatus';
 import getPointOnPathCoordinates from '../helpers/getPointOnPathCoordinates';
 import getTrackLengthCumulativeSums from '../helpers/getTrackLengthCumulativeSums';
 import type { PathfindingState } from '../types';
@@ -53,8 +52,7 @@ const usePathfinding = ({
   const dispatch = useAppDispatch();
   const pathSteps = useSelector(getPathSteps);
   const powerRestrictions = useSelector(getPowerRestrictions);
-  const { infraId, getTrackSectionsByIds } = useScenarioContext();
-  const { infra } = useInfraStatus({ infraId });
+  const { infraId, getTrackSectionsByIds, infra } = useScenarioContext();
   const [pathfindingState, setPathfindingState] =
     useState<PathfindingState>(initialPathfindingState);
   const [pathProperties, setPathProperties] = useState<ManageTimetableItemPathProperties>();

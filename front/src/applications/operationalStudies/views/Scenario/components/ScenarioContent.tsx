@@ -3,11 +3,12 @@ import { useState, useCallback, useRef, useEffect } from 'react';
 import { ChevronRight } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 
+import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import useScenarioData from 'applications/operationalStudies/hooks/useScenarioData';
 import type { Board } from 'applications/operationalStudies/types';
 import ManageTimetableItemModal from 'applications/operationalStudies/views/Scenario/components/ManageTimetableItemModal';
 import SimulationResults from 'applications/operationalStudies/views/Scenario/components/SimulationResults';
-import type { Conflict, InfraWithState, ScenarioResponse } from 'common/api/osrdEditoastApi';
+import type { Conflict, ScenarioResponse } from 'common/api/osrdEditoastApi';
 import { Loader } from 'common/Loaders';
 import ConflictsList from 'modules/conflict/components/ConflictsList';
 import ScenarioLoaderMessage from 'modules/scenario/components/ScenarioLoaderMessage';
@@ -32,21 +33,16 @@ import type { NetzgrafikDto, NGEEvent } from './NGE/types';
 
 type ScenarioContentProps = {
   scenario: ScenarioResponse;
-  infra: InfraWithState;
-  infraMetadata: { isInfraLoaded: boolean; };
   activeBoards: Set<Board>;
 };
 
 const MACRO_EDITOR_HEIGHT = 776; // px
 
-const ScenarioContent = ({
-  scenario,
-  infra,
-  infraMetadata: { isInfraLoaded },
-  activeBoards,
-}: ScenarioContentProps) => {
+const ScenarioContent = ({ scenario, activeBoards }: ScenarioContentProps) => {
   const { t, i18n } = useTranslation('operational-studies');
   const dispatch = useAppDispatch();
+
+  const { infra, isInfraLoaded } = useScenarioContext();
 
   const [displayTimetableItemManagement, setDisplayTimetableItemManagement] = useState<string>(
     MANAGE_TIMETABLE_ITEM_TYPES.none
