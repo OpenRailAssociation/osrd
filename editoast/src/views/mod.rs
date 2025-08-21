@@ -24,6 +24,7 @@ pub mod sub_categories;
 pub mod temporary_speed_limits;
 pub mod timetable;
 pub mod work_schedules;
+mod worker_load;
 
 #[cfg(test)]
 mod test_app;
@@ -120,6 +121,7 @@ fn service_router() -> router::DocumentedRouter {
             .route("/health", get!(health))
             .route("/version", get!(version))
             .route("/version/core", get!(core_version))
+            .route("/worker_load", post!(worker_load::worker_load))
 
             // authorization
             .nests("/authz", |path| {
@@ -158,7 +160,6 @@ fn service_router() -> router::DocumentedRouter {
                             .route("/clone", post!(infra::clone))
                             .route("/delimited_area", get!(infra::delimited_area::delimited_area))
                             .route("/errors", get!(infra::errors::list_errors))
-                            .route("/load", post!(infra::load))
                             .route("/lock", post!(infra::lock))
                             .route("/match_operational_points", post!(infra::match_operational_points))
                             .route("/path_properties", post!(path::properties::post))

@@ -19,14 +19,11 @@ use axum::extract::State;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use common::geometry::GeoJsonPoint;
-use core_client::AsCoreRequest;
-use core_client::infra_loading::InfraLoadRequest;
 use database::DbConnection;
 use database::DbConnectionPoolV2;
 use editoast_derive::EditoastError;
 use editoast_models::prelude::*;
 use itertools::Itertools;
-use osrdyne_client::OsrdyneClient;
 use schemas::infra::SwitchType;
 use schemas::primitives::Identifier;
 use serde::Deserialize;
@@ -182,7 +179,7 @@ pub(in crate::views) async fn refresh(
 pub(in crate::views) struct InfraListResponse {
     #[serde(flatten)]
     stats: PaginationStats,
-    results: Vec<InfraWithState>,
+    results: Vec<Infra>,
 }
 
 /// Lists all infras along with their current loading state in Core
@@ -196,11 +193,7 @@ pub(in crate::views) struct InfraListResponse {
     ),
 )]
 pub(in crate::views) async fn list(
-    State(AppState {
-        db_pool,
-        osrdyne_client,
-        ..
-    }): State<AppState>,
+    State(AppState { db_pool, .. }): State<AppState>,
     Extension(auth): AuthenticationExt,
     Query(pagination): Query<PaginationQueryParams<1000>>,
 ) -> Result<Json<InfraListResponse>> {
@@ -225,58 +218,11 @@ pub(in crate::views) async fn list(
 
     let (infras, stats) = Infra::list_paginated(conn, settings).await?;
 
-    let infra_states = fetch_all_infra_states(&infras, osrdyne_client.as_ref()).await?;
-
     let response = InfraListResponse {
         stats,
-        results: infras
-            .into_iter()
-            .map(|infra| {
-                let state = infra_states
-                    .get(&infra.id.to_string())
-                    .cloned()
-                    .unwrap_or(InfraState::NotLoaded);
-                InfraWithState { infra, state }
-            })
-            .collect(),
+        results: infras,
     };
     Ok(Json(response))
-}
-
-#[editoast_derive::openapi_schema]
-#[derive(Debug, Clone, Copy, Default, Deserialize, PartialEq, Eq, Serialize, ToSchema)]
-#[serde(rename_all = "SCREAMING_SNAKE_CASE")]
-pub enum InfraState {
-    #[default]
-    NotLoaded,
-    Initializing,
-    Downloading,
-    ParsingJson,
-    ParsingInfra,
-    LoadingSignals,
-    BuildingBlocks,
-    Cached,
-    TransientError,
-    Error,
-}
-
-impl From<osrdyne_client::WorkerStatus> for InfraState {
-    fn from(status: osrdyne_client::WorkerStatus) -> Self {
-        match status {
-            osrdyne_client::WorkerStatus::Unscheduled => InfraState::NotLoaded,
-            osrdyne_client::WorkerStatus::Started => InfraState::Initializing,
-            osrdyne_client::WorkerStatus::Ready => InfraState::Cached,
-            osrdyne_client::WorkerStatus::Error => InfraState::Error,
-        }
-    }
-}
-
-#[editoast_derive::openapi_schema]
-#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
-pub(in crate::views) struct InfraWithState {
-    #[serde(flatten)]
-    pub infra: Infra,
-    pub state: InfraState,
 }
 
 #[derive(IntoParams, Deserialize)]
@@ -293,19 +239,15 @@ pub(in crate::views) struct InfraIdParam {
     tag = "infra",
     params(InfraIdParam),
     responses(
-        (status = 200, description = "The infra", body = InfraWithState),
+        (status = 200, description = "The infra", body = Infra),
         (status = 404, description = "Infra ID not found"),
     ),
 )]
 pub(in crate::views) async fn get(
-    State(AppState {
-        db_pool,
-        osrdyne_client,
-        ..
-    }): State<AppState>,
+    State(AppState { db_pool, .. }): State<AppState>,
     Extension(auth): AuthenticationExt,
     Path(infra): Path<InfraIdParam>,
-) -> Result<Json<InfraWithState>> {
+) -> Result<Json<Infra>> {
     // check user roles
     let has_role = auth
         .check_roles([authz::Role::OperationalStudies, authz::Role::Stdcm].into())
@@ -328,8 +270,7 @@ pub(in crate::views) async fn get(
     })
     .await?;
 
-    let state = fetch_infra_state(infra.id, osrdyne_client.as_ref()).await?;
-    Ok(Json(InfraWithState { infra, state }))
+    Ok(Json(infra))
 }
 
 #[derive(Debug, Deserialize, ToSchema)]
@@ -820,98 +761,6 @@ pub(in crate::views) async fn unlock(
     Ok(StatusCode::NO_CONTENT)
 }
 
-#[derive(Deserialize, Debug, Clone, IntoParams)]
-#[into_params(parameter_in = Query)]
-pub(in crate::views) struct TimetableQueryParam {
-    timetable: Option<i64>,
-}
-
-/// Instructs Core to load an infra
-#[editoast_derive::route]
-#[utoipa::path(
-    post, path = "",
-    tag = "infra",
-    params(InfraIdParam, TimetableQueryParam),
-    responses(
-        (status = 204, description = "The infra was loaded successfully"),
-        (status = 404, description = "The infra was not found"),
-    )
-)]
-pub(in crate::views) async fn load(
-    State(AppState {
-        db_pool,
-        core_client,
-        ..
-    }): State<AppState>,
-    Extension(auth): AuthenticationExt,
-    Path(InfraIdParam { infra_id }): Path<InfraIdParam>,
-    Query(TimetableQueryParam { timetable }): Query<TimetableQueryParam>,
-) -> Result<impl IntoResponse> {
-    // Check user roles
-    let has_role = auth
-        .check_roles([authz::Role::OperationalStudies, authz::Role::Stdcm].into())
-        .await?;
-    if !has_role {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
-    let infra = Infra::retrieve_or_fail(db_pool.get().await?, infra_id, || {
-        InfraApiError::NotFound { infra_id }
-    })
-    .await?;
-
-    // Check user privilege on infra
-    auth.check_authorization(async |authorizer| {
-        authorizer
-            .authorize_infra(&authz::Infra(infra_id), authz::InfraPrivilege::CanRead)
-            .await
-    })
-    .await?;
-
-    let infra_request = InfraLoadRequest {
-        infra: infra.id,
-        timetable,
-        expected_version: infra.version,
-    };
-    infra_request.fetch(core_client.as_ref()).await?;
-    Ok(StatusCode::NO_CONTENT)
-}
-
-#[derive(Debug, Error, EditoastError)]
-#[editoast_error(base_id = "infra_state")]
-pub enum InfraStateError {
-    #[error("Failed to fetch infra state: {0}")]
-    #[editoast_error(status = 500)]
-    FetchError(#[from] osrdyne_client::Error),
-}
-
-pub async fn fetch_infra_state(infra_id: i64, osrdyne: &OsrdyneClient) -> Result<InfraState> {
-    let status = osrdyne
-        .get_worker_status(&infra_id.to_string())
-        .await
-        .map_err(InfraStateError::FetchError)?;
-    Ok(status.into())
-}
-
-pub async fn fetch_all_infra_states(
-    infras: &[Infra],
-    osrdyne: &OsrdyneClient,
-) -> Result<HashMap<String, InfraState>> {
-    let ids = infras
-        .iter()
-        .map(|infra| infra.id.to_string())
-        .collect_vec();
-    let statuses = osrdyne
-        .get_workers_statuses(&ids)
-        .await
-        .map_err(InfraStateError::FetchError)?;
-
-    Ok(statuses
-        .into_iter()
-        .map(|(id, status)| (id, status.into()))
-        .collect())
-}
-
 #[derive(Deserialize, ToSchema)]
 #[cfg_attr(test, derive(Serialize))]
 pub(in crate::views) struct MatchOperationalPointsForm {
@@ -1114,8 +963,6 @@ pub mod tests {
     use diesel::sql_query;
     use diesel::sql_types::BigInt;
     use diesel_async::RunQueryDsl;
-    use osrdyne_client::OsrdyneClient;
-    use osrdyne_client::WorkerStatus;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
     use schemas::infra::Electrification;
@@ -1525,46 +1372,6 @@ pub mod tests {
             .unwrap()
             .expect("infra was not cloned");
         assert!(!infra.locked);
-    }
-
-    #[rstest]
-    async fn infra_load_core() {
-        let db_pool = DbConnectionPoolV2::for_tests();
-        let mut core = MockingClient::new();
-        core.stub("/infra_load")
-            .method(reqwest::Method::POST)
-            .response(StatusCode::OK)
-            .body("{}")
-            .finish();
-
-        let app = TestAppBuilder::new()
-            .db_pool(db_pool.clone())
-            .core_client(core.into())
-            .build();
-        let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
-
-        let req = app.post(format!("/infra/{}/load", empty_infra.id).as_str());
-
-        app.fetch(req).assert_status(StatusCode::NO_CONTENT);
-    }
-
-    #[rstest]
-    async fn infra_status() {
-        let db_pool: DbConnectionPoolV2 = DbConnectionPoolV2::for_tests();
-        let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
-
-        let osrdyne_client = OsrdyneClient::mock()
-            .with_status(&empty_infra.id.to_string(), WorkerStatus::Ready)
-            .build();
-        let app = TestAppBuilder::new()
-            .db_pool(db_pool)
-            .core_client(CoreClient::Mocked(MockingClient::default()))
-            .osrdyne_client(osrdyne_client)
-            .build();
-
-        let req = app.get(format!("/infra/{}/", empty_infra.id).as_str());
-        let response: InfraWithState = app.fetch(req).assert_status(StatusCode::OK).json_into();
-        assert_eq!(response.state, InfraState::Cached);
     }
 
     #[rstest]
