@@ -194,7 +194,7 @@ async fn update_queue(
             chan.queue_bind(
                 &queue_name,
                 &pool.request_xchg,
-                &key.encode(),
+                key.encode(),
                 QueueBindOptions::default(),
                 FieldTable::default(),
             )
@@ -212,7 +212,7 @@ async fn update_queue(
             chan.queue_unbind(
                 &queue_name,
                 &pool.request_xchg,
-                &key.encode(),
+                key.encode(),
                 FieldTable::default(),
             )
             .await?;
@@ -223,7 +223,7 @@ async fn update_queue(
             chan.queue_unbind(
                 &queue_name,
                 &pool.request_xchg,
-                &key.encode(),
+                key.encode(),
                 FieldTable::default(),
             )
             .await?;

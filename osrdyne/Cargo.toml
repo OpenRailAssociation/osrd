@@ -30,7 +30,7 @@ opentelemetry = "0.30.0"
 opentelemetry-otlp = { version = "0.30.0", features = ["grpc-tonic"] }
 opentelemetry-semantic-conventions = "0.30.0"
 opentelemetry_sdk = { version = "0.30.0", features = ["rt-tokio"] }
-percent-encoding = "2.3.1"
+percent-encoding = "2.3.2"
 priority-queue = "2.5.0"
 reqwest = { version = "0.12.23", default-features = false, features = [
   "json",
@@ -40,7 +40,7 @@ schemars = "0.8.22"
 serde = "1.0.219"
 serde_json = "1.0.143"
 sha2 = "0.10.9"
-smallvec = { version = "1.15.1", features = ["serde"] }
+smol_str = { version = "0.3.2", features = ["serde"] }
 thiserror = "2.0.16"
 thunderdome = "0.6.1"
 tokio = { version = "1.47.1", features = ["full"] }

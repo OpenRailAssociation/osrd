@@ -153,7 +153,7 @@ async fn list_workers(
             .into_iter()
             .map(|key| {
                 (
-                    key.encode(),
+                    key.encode().to_string(),
                     WorkerState {
                         worker_metadata: Some(WorkerMetadata {
                             external_id: "noop".to_string(),
