@@ -637,11 +637,40 @@
     "rolling_stock_name": "ELECTRIC_RS_E2E",
     "start_time": "2024-10-17T19:05:00Z",
     "path": [
-      { "id": "id2458", "deleted": false, "track": "TG4", "offset": 1549000 },
-      { "id": "id2659", "deleted": false, "uic": 8744, "secondary_code": "BV" },
-      { "id": "id2492", "deleted": false, "track": "TD0", "offset": 11080000 },
-      { "id": "id2570", "deleted": false, "uic": 8733, "secondary_code": "BV" },
-      { "id": "id2436", "deleted": false, "track": "TI1", "offset": 105000 }
+      {
+        "id": "b4df37d0-ffe2-4166-b7b6-8c0c5a47e9b0",
+        "deleted": false,
+        "uic": 8777,
+        "secondary_code": "BV",
+        "track_reference": null
+      },
+      {
+        "id": "id2659",
+        "deleted": false,
+        "uic": 8744,
+        "secondary_code": "BV",
+        "track_reference": null
+      },
+      {
+        "id": "id2492",
+        "deleted": false,
+        "track": "TD0",
+        "offset": 11080000
+      },
+      {
+        "id": "id2570",
+        "deleted": false,
+        "uic": 8733,
+        "secondary_code": "BV",
+        "track_reference": null
+      },
+      {
+        "id": "dbc7c80b-aee0-4835-8857-63863dae2ff1",
+        "deleted": false,
+        "uic": 8799,
+        "secondary_code": "BC",
+        "track_reference": null
+      }
     ],
     "schedule": [
       {
@@ -659,19 +688,28 @@
         "locked": false
       },
       {
-        "at": "id2436",
-        "arrival": "PT13823S",
+        "at": "dbc7c80b-aee0-4835-8857-63863dae2ff1",
+        "arrival": null,
         "stop_for": "P0D",
         "reception_signal": "OPEN",
         "locked": false
       }
     ],
-    "margins": { "boundaries": ["id2436"], "values": ["5%", "0%"] },
-    "initial_speed": 27.77777777777778,
+    "margins": {
+      "boundaries": [],
+      "values": ["0%"]
+    },
+    "initial_speed": 27.777777777777779,
     "comfort": "STANDARD",
     "constraint_distribution": "MARECO",
     "speed_limit_tag": "MA100",
     "power_restrictions": [],
-    "options": { "use_electrical_profiles": false }
+    "options": {
+      "use_electrical_profiles": false,
+      "use_speed_limits_for_simulation": true
+    },
+    "category": {
+      "main_category": "FREIGHT_TRAIN"
+    }
   }
 ]

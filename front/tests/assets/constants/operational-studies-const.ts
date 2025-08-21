@@ -88,6 +88,14 @@ export const IMPORTED_PACED_TRAIN_DETAILS: PacedTrainDetails[] = [
     interval: '60',
     expectedOccurrencesCount: 4,
   },
+  {
+    name: 'Paced Train - All exceptions',
+    startTime: '02:48',
+    labels: ['NWS-NES', 'Valid'],
+    timeWindow: '250',
+    interval: '65',
+    expectedOccurrencesCount: 5,
+  },
 ];
 
 export const IMPORT_PACED_TRAIN_OCCURRENCES_DETAILS: OccurrenceDetails[][] = [

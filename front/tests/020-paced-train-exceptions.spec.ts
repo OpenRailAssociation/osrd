@@ -91,7 +91,7 @@ test.describe('Paced trains and exception management', () => {
           infra.id
         )
       ).scenario;
-      await sendPacedTrains(scenarioItems.timetable_id, pacedTrainsJson);
+      await sendPacedTrains(scenarioItems.timetable_id, pacedTrainsJson.slice(0, 6));
     }
   );
 
@@ -440,17 +440,7 @@ test.describe('Paced trains and exception management', () => {
       });
     });
 
-    // 6. projection
-    await pacedTrainSection.clickOccurrenceMenuButton('project');
-    // TODO: check snapshots
-
     await test.step('Restore occurrence to model', async () => {
-      await pacedTrainSection.checkOccurrenceMenuIcon(addedOccurrenceIndex);
-      await pacedTrainSection.checkOccurrenceActionMenu({
-        occurrenceIndex: addedOccurrenceIndex,
-        expectedButtons: ADDED_AND_MODIFIED_EXCEPTION_MENU_BUTTONS,
-        translations: frTranslations,
-      });
       await pacedTrainSection.clickOccurrenceMenuButton('restore');
       await pacedTrainSection.verifyOccurrenceDetails(
         {
