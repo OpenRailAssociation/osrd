@@ -94,7 +94,7 @@ export const getTrainCategoryClassName = (
   trainCategory: PacedTrain['category'],
   type: 'bg' | 'text'
 ) => {
-  if (!trainCategory) return `train-category-${type}-None`;
+  if (!trainCategory) return `train-category-${type}-none`;
   if (isMainCategory(trainCategory)) {
     return `train-category-${type}-${TRAIN_MAIN_CATEGORY_CLASS[trainCategory.main_category]}`;
   }
