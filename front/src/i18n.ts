@@ -8,7 +8,7 @@ import { initReactI18next } from 'react-i18next';
 
 const version = encodeURIComponent(import.meta.env.VITE_OSRD_GIT_DESCRIBE);
 
-export const supportedLngs = ['de', 'en', 'fr'];
+export const supportedLngs = ['de', 'en', 'fr', 'pt'];
 
 i18n
   .use(Backend)
