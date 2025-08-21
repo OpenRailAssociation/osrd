@@ -10,6 +10,7 @@ type WaypointProps = {
   waypointRef?: React.RefObject<HTMLDivElement | null>;
   isActive: boolean;
   isMenuActive?: boolean;
+  testIdPrefix?: string;
 };
 
 const Waypoint = ({
@@ -17,8 +18,10 @@ const Waypoint = ({
   waypointRef,
   isActive,
   isMenuActive,
+  testIdPrefix,
 }: WaypointProps) => (
   <div
+    data-testid={testIdPrefix ? `${testIdPrefix}-base-info` : undefined}
     className={cx('flex waypoint items-baseline', {
       'waypoint-active': isActive,
       'menu-active': isMenuActive,
@@ -29,11 +32,26 @@ const Waypoint = ({
       if (onClick && !isMenuActive) onClick(id);
     }}
   >
-    <div className="waypoint-position justify-self-start text-end">{positionMmToKm(position)}</div>
+    <div
+      data-testid={testIdPrefix ? `${testIdPrefix}-position` : undefined}
+      className="waypoint-position justify-self-start text-end"
+    >
+      {positionMmToKm(position)}
+    </div>
 
-    <div className="waypoint-name mx-2 justify-self-start">{name}</div>
+    <div
+      data-testid={testIdPrefix ? `${testIdPrefix}-name` : undefined}
+      className="waypoint-name mx-2 justify-self-start"
+    >
+      {name}
+    </div>
     <div className="waypoint-separator"></div>
-    <div className="waypoint-ch font-mono justify-self-end">{secondaryCode}</div>
+    <div
+      data-testid={testIdPrefix ? `${testIdPrefix}-ch` : undefined}
+      className="waypoint-ch font-mono justify-self-end"
+    >
+      {secondaryCode}
+    </div>
     <div className="waypoint-separator"></div>
 
     <div className="waypoint-type"></div>

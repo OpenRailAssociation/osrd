@@ -19,6 +19,7 @@ export type ManchetteProps = {
   yZoom?: number;
   children?: React.ReactNode;
   isProportional?: boolean;
+  testIdPrefix?: string;
   toggleMode: () => void;
 };
 
@@ -49,6 +50,7 @@ const Manchette = ({
                 waypointRef={activeWaypointId === content.id ? activeWaypointRef : undefined}
                 isActive={activeWaypointId === content.id}
                 isMenuActive={!!activeWaypointId}
+                testIdPrefix="waypoint"
               />
             </div>
           ) : (
@@ -58,9 +60,10 @@ const Manchette = ({
         {children}
       </div>
     </div>
-    <div className="manchette-actions">
+    <div data-testid="manchette-actions" className="manchette-actions">
       <div className="zoom-buttons">
         <button
+          data-testid="zoom-out-button"
           className="zoom-out"
           onClick={zoomYOut}
           disabled={yZoom <= MIN_ZOOM_Y || !!activeWaypointId}
@@ -68,22 +71,35 @@ const Manchette = ({
           <ZoomOut />
         </button>
         <button
+          data-testid="zoom-in-button"
           className="zoom-in"
           onClick={zoomYIn}
           disabled={yZoom >= MAX_ZOOM_Y || !!activeWaypointId}
         >
           <ZoomIn />
         </button>
-        <button disabled={!!activeWaypointId} className="zoom-reset" onClick={resetZoom}>
+        <button
+          data-testid="reset-zoom-button"
+          disabled={!!activeWaypointId}
+          className="zoom-reset"
+          onClick={resetZoom}
+        >
           Fit
         </button>
       </div>
       <div className="flex items-center ml-auto text-sans font-semibold">
         <button disabled={!!activeWaypointId} className="toggle-mode" onClick={toggleMode}>
           <div className="flex flex-col items-end pr-2">
-            <span className={cx({ 'text-grey-30': !isProportional })}>Km</span>
+            <span className={cx({ 'text-grey-30': !isProportional })} data-testid="km-mode-button">
+              Km
+            </span>
 
-            <span className={cx({ 'text-grey-30': isProportional })}>Linéaire</span>
+            <span
+              className={cx({ 'text-grey-30': isProportional })}
+              data-testid="linear-mode-button"
+            >
+              Linéaire
+            </span>
           </div>
         </button>
       </div>
