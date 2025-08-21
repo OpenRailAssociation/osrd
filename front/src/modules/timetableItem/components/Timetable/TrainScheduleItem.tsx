@@ -32,12 +32,13 @@ import {
 } from 'utils/trainId';
 
 import ArrivalTimeLoader from './ArrivalTimeLoader';
-import { TIMETABLE_ITEM_DELTA, TRAIN_MAIN_CATEGORY_CLASS } from './consts';
+import { TIMETABLE_ITEM_DELTA } from './consts';
 import TimetableItemActions from './TimetableItemActions';
 import type { TrainScheduleWithDetails } from './types';
 import {
   formatFullDate,
   formatTrainDuration,
+  getTrainCategoryClassName,
   isValidPathfinding,
   roundAndFormatToNearestMinute,
 } from './utils';
@@ -213,10 +214,7 @@ const TrainScheduleItem = ({
               </div>
               <div title={train.name} className="checkbox-label">
                 <div
-                  className={cx(
-                    'train-info',
-                    `train-category-text-${TRAIN_MAIN_CATEGORY_CLASS[train.category && isMainCategory(train.category) ? train.category.main_category : 'None']}`
-                  )}
+                  className={cx('train-info', getTrainCategoryClassName(category, 'text'))}
                   style={{ color: currentSubCategory?.color }}
                 >
                   {projectionPathIsUsed && (

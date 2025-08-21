@@ -13,8 +13,8 @@ import OSRDTooltip from 'common/OSRDTooltip';
 import isMainCategory from 'modules/rollingStock/helpers/category';
 import type { TimetableItemId } from 'reducers/osrdconf/types';
 
-import { TRAIN_MAIN_CATEGORY_CLASS } from '../consts';
 import type { PairDataToolTip, PairingItem } from '../types';
+import { getTrainCategoryClassName } from '../utils';
 
 type RoundTripsModalCardProps = {
   pairingItem: PairingItem;
@@ -145,10 +145,7 @@ const RoundTripsModalCard = ({
       <div className="round-trips-card-header">
         <h3
           title={name}
-          className={cx(
-            'name',
-            `train-category-text-${TRAIN_MAIN_CATEGORY_CLASS[category && isMainCategory(category) ? category.main_category : 'None']}`
-          )}
+          className={cx('name', getTrainCategoryClassName(category, 'text'))}
           style={{ color: currentSubCategory?.color }}
         >
           {name}
