@@ -2,7 +2,6 @@ import {
   CURSOR_SNAP_DISTANCE,
   LINEAR_LAYER_SEPARATOR_HEIGHT,
   LINEAR_LAYERS_HEIGHTS,
-  LINEAR_LAYERS_HEIGHTS_BY_NAME,
   MARGINS,
   type LAYERS_SELECTION,
 } from './const';
@@ -75,26 +74,6 @@ export const getAdaptiveHeight = (
   ].reduce((acc, curr) => acc + curr, 0);
 
   return (height += isIncludingLinearLayers ? adjustment : -adjustment);
-};
-
-/**
- * Calculates the top position for the linear layers based on the height and the layers displayed.
- * The speed limit tags linear layer needs to call this function with the isSpeedLimitByTag flag set to true.
- */
-export const getLinearLayerMarginTop = (
-  height: number,
-  layersDisplay: Store['layersDisplay'],
-  isSpeedLimitByTag: boolean = false
-) => {
-  let adjustment = 0;
-  const { electricalProfiles, powerRestrictions } = layersDisplay;
-
-  if (electricalProfiles) adjustment = LINEAR_LAYERS_HEIGHTS_BY_NAME.electricalProfiles;
-
-  if (powerRestrictions && isSpeedLimitByTag)
-    adjustment += LINEAR_LAYERS_HEIGHTS_BY_NAME.powerRestrictions;
-
-  return height + adjustment - MARGINS.MARGIN_BOTTOM;
 };
 
 export const getLinearLayersDisplayedHeight = (layersDisplay: Store['layersDisplay']) =>
