@@ -92,9 +92,7 @@ impl Pool {
     }
 
     pub fn parse_key(&self, queue_name: &str) -> Option<Key> {
-        queue_name
-            .strip_prefix(&self.pool_req_prefix)
-            .map(Key::decode)
+        queue_name.strip_prefix(&self.pool_req_prefix).map(Key::new)
     }
 
     pub fn key_queue_name(&self, key: &Key) -> String {
@@ -344,7 +342,7 @@ async fn orphan_processor(
     while let Some(delivery) = consumer.next().await {
         let delivery = delivery?;
         let routing_key = delivery.routing_key.as_str();
-        let key = Key::decode(routing_key);
+        let key = Key::new(routing_key);
 
         // Require queue creation
         // FIXME: understand the implications of the zero extra duration
@@ -425,7 +423,7 @@ async fn activity_processor(
     while let Some(delivery) = consumer.next().await {
         let delivery = delivery?;
         let routing_key = delivery.routing_key.as_str();
-        let key = Key::decode(routing_key);
+        let key = Key::new(routing_key);
         let now = std::time::Instant::now();
 
         let headers = delivery.properties.headers();

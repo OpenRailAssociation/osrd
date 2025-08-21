@@ -710,7 +710,7 @@ impl WorkerDriver for KubernetesDriver {
                                 external_id: deployment.metadata.name.clone()?,
                                 worker_id: Uuid::parse_str(worker_id)
                                     .expect("worker_id not a valid UUID"),
-                                worker_key: Key::decode(worker_key),
+                                worker_key: Key::new(worker_key),
                                 metadata,
                             })
                         } else {
@@ -769,7 +769,7 @@ impl WorkerDriver for KubernetesDriver {
 
                         if !current_workers
                             .iter()
-                            .any(|worker| worker.worker_key == Key::decode(worker_key))
+                            .any(|worker| worker.worker_key == Key::new(worker_key))
                         {
                             info!(%worker_deployment_name, "Deleting HPA as the worker is not found");
 
@@ -814,7 +814,7 @@ impl WorkerDriver for KubernetesDriver {
 
                         if !current_workers
                             .iter()
-                            .any(|worker| worker.worker_key == Key::decode(worker_key))
+                            .any(|worker| worker.worker_key == Key::new(worker_key))
                         {
                             info!(%worker_deployment_name, "Deleting Keda ScaledObject as the worker is not found");
 

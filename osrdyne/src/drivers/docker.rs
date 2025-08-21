@@ -253,7 +253,7 @@ impl WorkerDriver for DockerDriver {
                                         .expect("worker_id label missing"),
                                 )
                                 .expect("worker_id label is not a valid UUID"),
-                                worker_key: Key::decode(
+                                worker_key: Key::new(
                                     labels
                                         .get(LABEL_WORKER_KEY)
                                         .expect("worker_key label missing"),

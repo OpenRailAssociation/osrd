@@ -44,7 +44,7 @@ impl WorkerDriver for NoopDriver {
             Ok(vec![WorkerMetadata {
                 external_id: self.fixed_pool_id.to_string(),
                 worker_id: self.fixed_pool_id,
-                worker_key: Key::decode("0"),
+                worker_key: Key::new("0"),
                 metadata: Default::default(),
             }])
         })
