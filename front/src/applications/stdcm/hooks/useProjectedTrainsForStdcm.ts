@@ -5,7 +5,7 @@ import { useSelector } from 'react-redux';
 import useLazySimulateTrains from 'applications/operationalStudies/hooks/useLazySimulateTrains';
 import type { StdcmSuccessResponse } from 'applications/stdcm/types';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import useLazyProjectTrains from 'modules/simulationResult/components/SpaceTimeChart/useLazyProjectTrains';
+import useLazyProjectTrains from 'modules/simulationResult/components/SpaceTimeChartWrapper/useLazyProjectTrains';
 import type { TrainSpaceTimeData } from 'modules/simulationResult/types';
 import type { TimetableItemWithDetails } from 'modules/timetableItem/components/Timetable/types';
 import {
