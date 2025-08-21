@@ -11,9 +11,9 @@ import { getApiContext, handleErrorResponse } from './api-utils';
  * @param body - The request payload containing train schedule data.
  * @returns {Promise<TrainScheduleResponse[]>} - The API response containing the train schedule results.
  */
-async function sendTrainSchedules(
+async function sendTrainSchedules<T>(
   timetableId: number,
-  body: JSON
+  body: T
 ): Promise<TrainScheduleResponse[]> {
   const apiContext: APIRequestContext = await getApiContext();
   const trainSchedulesResponse: APIResponse = await apiContext.post(

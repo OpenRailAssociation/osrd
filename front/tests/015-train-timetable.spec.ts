@@ -90,9 +90,13 @@ test.describe('Verify train schedule elements and filters', () => {
   test('Loading timetable items and verifying simulation result for train schedules', async () => {
     await test.step('Verify counts then filter valid train schedules', async () => {
       await scenarioTimetableSection.verifyTimetableItemsCount(TOTAL_TIMETABLE_ITEMS);
+      await scenarioTimetableSection.filterTrainTypeAndVerifyTrainCount(
+        'Unique train',
+        TOTAL_TRAIN_SCHEDULES
+      );
       await scenarioTimetableSection.filterValidityAndVerifyTrainCount(
         'Valid',
-        VALID_TIMETABLE_ITEMS,
+        VALID_TRAIN_SCHEDULE,
         frTranslations
       );
     });
@@ -107,9 +111,13 @@ test.describe('Verify train schedule elements and filters', () => {
     await test.step('Verify counts and invalid message, then filter valid paced trains', async () => {
       await scenarioTimetableSection.verifyTimetableItemsCount(TOTAL_TIMETABLE_ITEMS);
       await scenarioTimetableSection.verifyInvalidTrainsMessageVisibility();
+      await scenarioTimetableSection.filterTrainTypeAndVerifyTrainCount(
+        'Service',
+        TOTAL_PACED_TRAINS
+      );
       await scenarioTimetableSection.filterValidityAndVerifyTrainCount(
         'Valid',
-        VALID_TIMETABLE_ITEMS,
+        VALID_PACED_TRAINS,
         frTranslations
       );
     });
