@@ -39,11 +39,6 @@ import { createPortal } from 'react-dom';
 import upward from 'assets/pictures/workSchedules/ScheduledMaintenanceUp.svg';
 import { type PostWorkSchedulesProjectPathApiResponse } from 'common/api/osrdEditoastApi';
 import { useSubCategoryContext } from 'common/SubCategoryContext';
-import {
-  isIndividualOccurrenceProjection,
-  cutSpaceTimeChart,
-  getOccupancyBlocks,
-} from 'modules/simulationResult/components/SpaceTimeChart/helpers/utils';
 import type {
   IndividualTrainProjection,
   PathOperationalPoint,
@@ -66,12 +61,17 @@ import {
 } from 'utils/trainId';
 
 import getPathStyle from './helpers/getPathStyle';
+import makeProjectedItems from './helpers/makeProjectedItems';
+import {
+  cutSpaceTimeChart,
+  getOccupancyBlocks,
+  isIndividualOccurrenceProjection,
+} from './helpers/utils';
 import ProjectionLoadingMessage from './ProjectionLoadingMessage';
 import SettingsPanel from './SettingsPanel';
 import useWaypointMenu from './useWaypointMenu';
 import WaypointsPanel from './WaypointsPanel';
 import { Spinner } from '../../../../common/Loaders';
-import makeProjectedItems from '../SpaceTimeChart/helpers/makeProjectedItems';
 
 type SpaceTimeChartWrapperBaseProps = {
   operationalPoints: PathOperationalPoint[];

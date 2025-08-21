@@ -9,7 +9,7 @@ import {
   type ScenarioResponse,
 } from 'common/api/osrdEditoastApi';
 import { useRollingStockContext } from 'common/RollingStockContext';
-import useLazyProjectTrains from 'modules/simulationResult/components/SpaceTimeChart/useLazyProjectTrains';
+import useLazyProjectTrains from 'modules/simulationResult/components/SpaceTimeChartWrapper/useLazyProjectTrains';
 import {
   formatPacedTrainWithDetails,
   formatTrainScheduleWithDetails,
