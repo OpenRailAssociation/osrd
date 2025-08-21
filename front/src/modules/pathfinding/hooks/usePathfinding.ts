@@ -54,7 +54,7 @@ const usePathfinding = ({
   const pathSteps = useSelector(getPathSteps);
   const powerRestrictions = useSelector(getPowerRestrictions);
   const { infraId, getTrackSectionsByIds } = useScenarioContext();
-  const { infra, reloadCount, setIsInfraError } = useInfraStatus({ infraId });
+  const { infra } = useInfraStatus({ infraId });
   const [pathfindingState, setPathfindingState] =
     useState<PathfindingState>(initialPathfindingState);
   const [pathProperties, setPathProperties] = useState<ManageTimetableItemPathProperties>();
@@ -330,9 +330,6 @@ const usePathfinding = ({
             error = 'failedRequest';
           } else if ('data' in e && isObject(e.data) && 'message' in e.data) {
             error = e.data.message as string;
-            if (e.data.message === 'Infra not loaded' || e.data.message === 'Invalid version') {
-              setIsInfraError(true);
-            }
           }
           setError(error);
         }
@@ -353,7 +350,6 @@ const usePathfinding = ({
     pathProperties,
     infraInfo: {
       infra,
-      reloadCount,
     },
   };
 };

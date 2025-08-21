@@ -33,7 +33,7 @@ import type { NetzgrafikDto, NGEEvent } from './NGE/types';
 type ScenarioContentProps = {
   scenario: ScenarioResponse;
   infra: InfraWithState;
-  infraMetadata: { isInfraLoaded: boolean; reloadCount: number };
+  infraMetadata: { isInfraLoaded: boolean; };
   activeBoards: Set<Board>;
 };
 

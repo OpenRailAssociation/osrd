@@ -300,11 +300,9 @@
       "noTrainStep": "The increment step of the train must be greater than zero",
       "originTimeOutsideWindow": "Departure date must be between {{low}} and {{high}}",
       "requiredField": "Required field.",
-      "softErrorInfra": "The application is unavailable, a server error has occurred, please try again later.",
       "timetableItemTitle": "An error has occurred",
       "tooLowInput": "Must be > 0",
       "tooLowValue": "The {{value}} must be greater than 0",
-      "unableToLoadInfra": "Loading error, retry in progress ({{reloadCount}})",
       "unableToRetrieveTags": "Impossible to get tags"
     },
     "hideTrainSettings": "Hide",
