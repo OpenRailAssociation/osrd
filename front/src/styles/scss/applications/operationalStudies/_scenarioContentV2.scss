@@ -2,7 +2,7 @@
   display: flex;
   height: calc(100vh - 32px);
   // TODO: remove !important after a refacto of mastnav-container
-  padding: 16px 12px 0px 12px !important;
+  padding: 16px 12px 12px 12px !important;
   .right-column,
   .left-column {
     width: 488px;
@@ -44,7 +44,6 @@
   }
   .right-column {
     padding-left: 8px;
-    padding-bottom: 12px;
 
     .board-wrapper {
       height: 100%;
