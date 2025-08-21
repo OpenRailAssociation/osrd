@@ -3,7 +3,6 @@ import { describe, expect, it, vi } from 'vitest';
 import { MARGINS } from '../components/const';
 import {
   clearCanvas,
-  getAdaptiveHeight,
   getGraphOffsets,
   getLinearLayersDisplayedHeight,
   maxPositionValue,
@@ -155,62 +154,6 @@ describe('clearCanvas', () => {
     } as unknown as CanvasRenderingContext2D;
     clearCanvas(ctx, 100, 200);
     expect(ctx.clearRect).toHaveBeenCalledWith(0, 0, 100, 200);
-  });
-});
-
-describe('getAdaptiveHeight', () => {
-  it('should return the correct adaptive height with one linear layer', () => {
-    const height = 100;
-    const layersDisplay = {
-      fastestDrive: false,
-      speedLimits: false,
-      speedAnomalies: false,
-      electricalProfiles: true,
-      powerRestrictions: false,
-      declivities: false,
-      speedLimitTags: false,
-      signals: false,
-      steps: false,
-      temporarySpeedLimits: false,
-    };
-    const adaptiveHeight = getAdaptiveHeight(height, layersDisplay);
-    expect(adaptiveHeight).toBe(156);
-  });
-
-  it('should return the correct adaptive height with multiple linear layers', () => {
-    const height = 100;
-    const layersDisplay = {
-      fastestDrive: false,
-      speedLimits: false,
-      speedAnomalies: false,
-      electricalProfiles: true,
-      powerRestrictions: true,
-      declivities: false,
-      speedLimitTags: true,
-      signals: false,
-      steps: false,
-      temporarySpeedLimits: false,
-    };
-    const adaptiveHeight = getAdaptiveHeight(height, layersDisplay);
-    expect(adaptiveHeight).toBe(236);
-  });
-
-  it('should return the correct adaptive height with one linear layer removed', () => {
-    const height = 100;
-    const layersDisplay = {
-      fastestDrive: false,
-      speedLimits: false,
-      speedAnomalies: false,
-      electricalProfiles: true,
-      powerRestrictions: false,
-      declivities: false,
-      speedLimitTags: false,
-      signals: false,
-      steps: false,
-      temporarySpeedLimits: false,
-    };
-    const adaptiveHeight = getAdaptiveHeight(height, layersDisplay, false);
-    expect(adaptiveHeight).toBe(44);
   });
 });
 
