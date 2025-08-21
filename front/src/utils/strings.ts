@@ -24,7 +24,7 @@ export function formatKmValue(value: number, unit: Unit = 'meters', digits = 3) 
   return `${(value / divider).toFixed(digits)}${NO_BREAK_SPACE}km`;
 }
 
-export function language2flag(lng: string) {
+export function languageCodeToCountryCode(lng: string) {
   switch (lng) {
     case 'en':
       return 'gb';

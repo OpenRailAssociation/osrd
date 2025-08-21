@@ -664,12 +664,7 @@
       "librairies": "Librairies & licences",
       "version": "Version"
     },
-    "language": {
-      "de": "Deutsch",
-      "en": "English",
-      "fr": "Français",
-      "languageChoice": "Langue de l'interface"
-    },
+    "languages": "Langues",
     "safeWord": "Mot clé de sécurité",
     "safeWordHelp": "Le « mot-clé de sécurité » permet de filtrer de manière transparente la liste des projets avec le mot renseigné, utilisé comme une étiquette. Préférez un mot compliqué dans l'idée que personne ne l'utilise par inadvertance. Ajoutez-le comme une étiquette à un projet ; il sera automatiquement ajouté à la création de projet si le mot est renseigné ici.",
     "userSettings": "Paramètres utilisateur",

@@ -10,8 +10,35 @@ import { supportedLngs } from 'i18n';
 
 import { useModal } from './BootstrapSNCF/ModalSNCF';
 
-const SortedLanguages = () => {
-  const { t, i18n } = useTranslation();
+// We don't use `t` cause language names are fixed
+export const languageName = (lng: string) => {
+  switch (lng) {
+    case 'de':
+      return 'Deutsch';
+    case 'en':
+      return 'English';
+    case 'fr':
+      return 'Français';
+    default:
+      return null;
+  }
+};
+
+const languageSvgFlag = (lng: string) => {
+  switch (lng) {
+    case 'de':
+      return <DE title="Deutsch" />;
+    case 'en':
+      return <GB title="English" />;
+    case 'fr':
+      return <FR title="Français" />;
+    default:
+      return null;
+  }
+};
+
+const Languages = () => {
+  const { i18n } = useTranslation();
   const { closeModal } = useModal();
 
   const changeLanguage = (lng: string) => {
@@ -19,37 +46,18 @@ const SortedLanguages = () => {
     closeModal();
   };
 
-  const formatLanguageWithFlag = (lng: string) => {
-    const title = t(`nav-bar.language.${lng}`);
-    switch (lng) {
-      case 'de':
-        return <DE title={title} />;
-      case 'en':
-        return <GB title={title} />;
-      case 'fr':
-        return <FR title={title} />;
-      default:
-        return null;
-    }
-  };
-
-  const availablesLanguages = supportedLngs.map((lng) => ({
-    key: lng,
-    value: t(`nav-bar.language.${lng}`),
-  }));
-  availablesLanguages.sort((a, b) => a.value.localeCompare(b.value));
   return (
     <>
-      {availablesLanguages.map((lng) => (
+      {supportedLngs.map((languageCode) => (
         <button
           type="button"
           className="btn btn-secondary btn-block language-choice-btn"
-          key={`language-btn-${lng.key}`}
-          disabled={i18n.language === lng.key}
-          onClick={() => changeLanguage(lng.key)}
+          key={`language-btn-${languageCode}`}
+          disabled={i18n.language === languageCode}
+          onClick={() => changeLanguage(languageCode)}
         >
-          {formatLanguageWithFlag(lng.key)}
-          {lng.value}
+          {languageSvgFlag(languageCode)}
+          {languageName(languageCode)}
         </button>
       ))}
     </>
@@ -57,14 +65,16 @@ const SortedLanguages = () => {
 };
 
 export default function ChangeLanguageModal() {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
 
   return (
     <div className="informations">
       <ModalHeaderSNCF withCloseButton>
-        <h1>{t('nav-bar.language.languageChoice')}</h1>
+        <h1>{t('nav-bar.languages')}</h1>
       </ModalHeaderSNCF>
-      <ModalBodySNCF>{i18n.languages && <SortedLanguages />}</ModalBodySNCF>
+      <ModalBodySNCF>
+        <Languages />
+      </ModalBodySNCF>
     </div>
   );
 }
