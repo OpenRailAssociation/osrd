@@ -292,6 +292,12 @@
       "Database": "Internal error (database)",
       "NameAlreadyUsed": "A group of work schedules with '{{name}}' already exists",
       "WorkScheduleGroupNotFound": "No such work schedule group with id '{{id}}'"
+    },
+    "worker_load": {
+      "Database": "Internal error (database)",
+      "FetchStatusError": "Internal error (osrdyne)",
+      "InfraNotFound": "Infrastructure '{{infra_id}}' could not be found",
+      "TimetableNotFound": "Timetable '{{timetable_id}}' could not be found"
     }
   },
   "pageNotFound": "The page you are looking for does not exist."

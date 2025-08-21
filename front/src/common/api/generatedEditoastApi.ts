@@ -29,6 +29,7 @@ export const addTagTypes = [
   'temporary_speed_limits',
   'etcs_braking_curves',
   'work_schedules',
+  'worker',
 ] as const;
 const injectedRtkApi = api
   .enhanceEndpoints({
@@ -281,19 +282,6 @@ const injectedRtkApi = api
           url: `/infra/${queryArg.infraId}/lines/${queryArg.lineCode}/bbox`,
         }),
         providesTags: ['infra'],
-      }),
-      postInfraByInfraIdLoad: build.mutation<
-        PostInfraByInfraIdLoadApiResponse,
-        PostInfraByInfraIdLoadApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/infra/${queryArg.infraId}/load`,
-          method: 'POST',
-          params: {
-            timetable: queryArg.timetable,
-          },
-        }),
-        invalidatesTags: ['infra'],
       }),
       postInfraByInfraIdLock: build.mutation<
         PostInfraByInfraIdLockApiResponse,
@@ -1422,6 +1410,10 @@ const injectedRtkApi = api
         }),
         providesTags: ['work_schedules'],
       }),
+      postWorkerLoad: build.mutation<PostWorkerLoadApiResponse, PostWorkerLoadApiArg>({
+        query: (queryArg) => ({ url: `/worker_load`, method: 'POST', body: queryArg.body }),
+        invalidatesTags: ['worker'],
+      }),
     }),
     overrideExisting: false,
   });
@@ -1538,7 +1530,7 @@ export type GetFontsByFontAndGlyphApiArg = {
 export type GetHealthApiResponse = unknown;
 export type GetHealthApiArg = void;
 export type GetInfraApiResponse = /** status 200 All infras, paginated */ PaginationStats & {
-  results: InfraWithState[];
+  results: Infra[];
 };
 export type GetInfraApiArg = {
   page?: number;
@@ -1574,7 +1566,7 @@ export type PostInfraRefreshApiArg = {
 };
 export type GetInfraVoltagesApiResponse = /** status 200 Voltages list */ string[];
 export type GetInfraVoltagesApiArg = void;
-export type GetInfraByInfraIdApiResponse = /** status 200 The infra */ InfraWithState;
+export type GetInfraByInfraIdApiResponse = /** status 200 The infra */ Infra;
 export type GetInfraByInfraIdApiArg = {
   /** An existing infra ID */
   infraId: number;
@@ -1659,12 +1651,6 @@ export type GetInfraByInfraIdLinesAndLineCodeBboxApiArg = {
   infraId: number;
   /** A line code */
   lineCode: number;
-};
-export type PostInfraByInfraIdLoadApiResponse = unknown;
-export type PostInfraByInfraIdLoadApiArg = {
-  /** An existing infra ID */
-  infraId: number;
-  timetable?: number | null;
 };
 export type PostInfraByInfraIdLockApiResponse = unknown;
 export type PostInfraByInfraIdLockApiArg = {
@@ -2624,6 +2610,15 @@ export type PostWorkSchedulesProjectPathApiArg = {
     work_schedule_group_id: number;
   };
 };
+export type PostWorkerLoadApiResponse = /** status 204 The worker status */ WorkerStatus;
+export type PostWorkerLoadApiArg = {
+  body: {
+    /** The infra id of the worker to load */
+    infra_id: number;
+    /** The timetable id to load, if any */
+    timetable_id?: number | null;
+  };
+};
 export type InfraGrant = 'READER' | 'WRITER' | 'OWNER';
 export type ResourceType = 'infra';
 export type GrantBody = {
@@ -2710,20 +2705,6 @@ export type Infra = {
   name: string;
   railjson_version: string;
   version: number;
-};
-export type InfraState =
-  | 'NOT_LOADED'
-  | 'INITIALIZING'
-  | 'DOWNLOADING'
-  | 'PARSING_JSON'
-  | 'PARSING_INFRA'
-  | 'LOADING_SIGNALS'
-  | 'BUILDING_BLOCKS'
-  | 'CACHED'
-  | 'TRANSIENT_ERROR'
-  | 'ERROR';
-export type InfraWithState = Infra & {
-  state: InfraState;
 };
 export type BufferStop = {
   extensions?: {
@@ -4768,3 +4749,4 @@ export type Intersection = {
   /** Distance of the beginning of the intersection relative to the beginning of the path */
   start: number;
 };
+export type WorkerStatus = 'NOT_READY' | 'LOADING' | 'READY' | 'ERROR';

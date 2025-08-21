@@ -469,7 +469,7 @@ paths:
                     results:
                       type: array
                       items:
-                        $ref: '#/components/schemas/InfraWithState'
+                        $ref: '#/components/schemas/Infra'
     post:
       tags:
       - infra
@@ -616,7 +616,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/InfraWithState'
+                $ref: '#/components/schemas/Infra'
         '404':
           description: Infra ID not found
     post:
@@ -946,31 +946,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BoundingBox'
-  /infra/{infra_id}/load:
-    post:
-      tags:
-      - infra
-      summary: Instructs Core to load an infra
-      parameters:
-      - name: infra_id
-        in: path
-        description: An existing infra ID
-        required: true
-        schema:
-          type: integer
-          format: int64
-      - name: timetable
-        in: query
-        required: false
-        schema:
-          type: integer
-          format: int64
-          nullable: true
-      responses:
-        '204':
-          description: The infra was loaded successfully
-        '404':
-          description: The infra was not found
   /infra/{infra_id}/lock:
     post:
       tags:
@@ -4826,6 +4801,38 @@ paths:
                       enum:
                       - CATENARY
                       - TRACK
+  /worker_load:
+    post:
+      tags:
+      - worker
+      summary: Ensure a worker for the given infra (and stdcm timetable) is ready
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - infra_id
+              properties:
+                infra_id:
+                  type: integer
+                  format: int64
+                  description: The infra id of the worker to load
+                timetable_id:
+                  type: integer
+                  format: int64
+                  description: The timetable id to load, if any
+                  nullable: true
+        required: true
+      responses:
+        '204':
+          description: The worker status
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkerStatus'
+        '404':
+          description: The timetable was not found
 components:
   schemas:
     AddOperation:
@@ -6307,7 +6314,6 @@ components:
       - $ref: '#/components/schemas/EditoastInfraApiErrorDatabase'
       - $ref: '#/components/schemas/EditoastInfraApiErrorNotFound'
       - $ref: '#/components/schemas/EditoastInfraCacheEditoastErrorObjectNotFound'
-      - $ref: '#/components/schemas/EditoastInfraStateErrorFetchError'
       - $ref: '#/components/schemas/EditoastLayersErrorLayerNotFound'
       - $ref: '#/components/schemas/EditoastLayersErrorViewNotFound'
       - $ref: '#/components/schemas/EditoastLinesErrorsLineNotFound'
@@ -6403,6 +6409,10 @@ components:
       - $ref: '#/components/schemas/EditoastWorkScheduleErrorDatabase'
       - $ref: '#/components/schemas/EditoastWorkScheduleErrorNameAlreadyUsed'
       - $ref: '#/components/schemas/EditoastWorkScheduleErrorWorkScheduleGroupNotFound'
+      - $ref: '#/components/schemas/EditoastWorkerLoadErrorDatabase'
+      - $ref: '#/components/schemas/EditoastWorkerLoadErrorFetchStatusError'
+      - $ref: '#/components/schemas/EditoastWorkerLoadErrorInfraNotFound'
+      - $ref: '#/components/schemas/EditoastWorkerLoadErrorTimetableNotFound'
       description: Generated error type for Editoast
       discriminator:
         propertyName: type
@@ -6570,25 +6580,6 @@ components:
           type: string
           enum:
           - editoast:infra_cache:ObjectNotFound
-    EditoastInfraStateErrorFetchError:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 500
-        type:
-          type: string
-          enum:
-          - editoast:infra_state:FetchError
     EditoastLayersErrorLayerNotFound:
       type: object
       required:
@@ -8721,6 +8712,92 @@ components:
           type: string
           enum:
           - editoast:work_schedule:WorkScheduleGroupNotFound
+    EditoastWorkerLoadErrorDatabase:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 500
+        type:
+          type: string
+          enum:
+          - editoast:worker_load:Database
+    EditoastWorkerLoadErrorFetchStatusError:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 500
+        type:
+          type: string
+          enum:
+          - editoast:worker_load:FetchStatusError
+    EditoastWorkerLoadErrorInfraNotFound:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          required:
+          - infra_id
+          properties:
+            infra_id:
+              type: integer
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 404
+        type:
+          type: string
+          enum:
+          - editoast:worker_load:InfraNotFound
+    EditoastWorkerLoadErrorTimetableNotFound:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          required:
+          - timetable_id
+          properties:
+            timetable_id:
+              type: integer
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 404
+        type:
+          type: string
+          enum:
+          - editoast:worker_load:TimetableNotFound
     EffortCurve:
       type: object
       required:
@@ -9620,28 +9697,6 @@ components:
       - can_share_write
       - can_delete
       - can_share_ownership
-    InfraState:
-      type: string
-      enum:
-      - NOT_LOADED
-      - INITIALIZING
-      - DOWNLOADING
-      - PARSING_JSON
-      - PARSING_INFRA
-      - LOADING_SIGNALS
-      - BUILDING_BLOCKS
-      - CACHED
-      - TRANSIENT_ERROR
-      - ERROR
-    InfraWithState:
-      allOf:
-      - $ref: '#/components/schemas/Infra'
-      - type: object
-        required:
-        - state
-        properties:
-          state:
-            $ref: '#/components/schemas/InfraState'
     InitialSpeedChangeGroup:
       type: object
       required:
@@ -14815,6 +14870,13 @@ components:
       enum:
       - CATENARY
       - TRACK
+    WorkerStatus:
+      type: string
+      enum:
+      - NOT_READY
+      - LOADING
+      - READY
+      - ERROR
     ZoneUpdate:
       type: object
       required:
