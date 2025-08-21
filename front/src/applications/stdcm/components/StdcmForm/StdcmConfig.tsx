@@ -295,6 +295,7 @@ const StdcmConfig = ({
               >
                 {formErrors && (
                   <StdcmWarningBox
+                    infra={infra}
                     errorInfos={formErrors}
                     removeOriginArrivalTime={removeOriginArrivalTime}
                     removeDestinationArrivalTime={removeDestinationArrivalTime}
