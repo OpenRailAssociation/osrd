@@ -1,6 +1,5 @@
 use std::fmt::{Debug, Display};
 
-use percent_encoding::{NON_ALPHANUMERIC, percent_decode_str, percent_encode};
 use serde::{Deserialize, Serialize};
 use smallvec::SmallVec;
 
@@ -16,7 +15,7 @@ impl Serialize for Key {
 impl<'de> Deserialize<'de> for Key {
     fn deserialize<D: serde::Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
         let key = String::deserialize(deserializer)?;
-        Ok(Key::decode(&key))
+        Ok(Key::new(&key))
     }
 }
 
@@ -34,11 +33,7 @@ impl From<&[u8]> for Key {
 
 impl Debug for Key {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.write_str("Key(")?;
-        for chunk in self.encode_iter() {
-            f.write_str(chunk)?;
-        }
-        f.write_str(")")
+        write!(f, "Key({})", self.encode())
     }
 }
 
@@ -47,15 +42,7 @@ impl Key {
         Key(key.as_bytes().into())
     }
 
-    pub(crate) fn decode(encoded_key: &str) -> Self {
-        Key(percent_decode_str(encoded_key).collect())
-    }
-
-    pub(crate) fn encode_iter(&self) -> impl Iterator<Item = &str> {
-        percent_encode(&self.0, NON_ALPHANUMERIC)
-    }
-
     pub(crate) fn encode(&self) -> String {
-        self.encode_iter().collect()
+        self.0.iter().map(|&b| b as char).collect()
     }
 }
