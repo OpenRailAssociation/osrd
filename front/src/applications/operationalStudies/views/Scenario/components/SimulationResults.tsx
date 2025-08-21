@@ -334,7 +334,6 @@ const SimulationResults = ({
                   ? {
                       isValid: true,
                       simulatedTrain: simulationResults.simulation.final_output,
-                      simulatedPath: simulationResults.path,
                       simulatedPathItemTimes: simulationSummary.pathItemTimes,
                       simulatedOperationalPoints:
                         simulationResults.pathProperties.operationalPoints,

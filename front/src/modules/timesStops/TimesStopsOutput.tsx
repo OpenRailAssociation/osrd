@@ -27,7 +27,6 @@ const TimesStopsOutput = ({
   isValid,
   selectedTrain,
   simulatedTrain,
-  simulatedPath,
   simulatedPathItemTimes,
   simulatedOperationalPoints,
 }: TimesStopsOutputProps) => {
@@ -36,7 +35,6 @@ const TimesStopsOutput = ({
     isValid,
     selectedTrain,
     simulatedTrain,
-    simulatedPath,
     simulatedPathItemTimes,
     simulatedOperationalPoints
   );

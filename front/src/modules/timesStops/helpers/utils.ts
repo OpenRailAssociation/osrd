@@ -4,12 +4,16 @@ import dayjs from 'dayjs';
 import type { TFunction } from 'i18next';
 import { round, isEqual, isNil } from 'lodash';
 
-import type { PositionedOperationalPoint } from 'applications/operationalStudies/types';
 import {
   getInvalidStepLabel,
   isOperationalPointReference,
 } from 'applications/operationalStudies/utils';
-import type { PathItemLocation, ReceptionSignal, TrackReference } from 'common/api/osrdEditoastApi';
+import type {
+  OperationalPoint,
+  PathItemLocation,
+  ReceptionSignal,
+  TrackReference,
+} from 'common/api/osrdEditoastApi';
 import type { TimeString } from 'common/types';
 import { matchPathStepAndOp } from 'modules/pathfinding/utils';
 import type { SuggestedOP } from 'modules/timetableItem/types';
@@ -347,10 +351,7 @@ export function receptionSignalToSignalBooleans(receptionSignal?: ReceptionSigna
   return { shortSlipDistance: false, onStopSignal: false };
 }
 
-export const matchOpRefAndOp = (
-  op: PositionedOperationalPoint,
-  opRef: PathItemLocation
-): boolean => {
+export const matchOpRefAndOp = (op: OperationalPoint, opRef: PathItemLocation): boolean => {
   if ('operational_point' in opRef) return op.id === opRef.operational_point;
   if ('trigram' in opRef) {
     return (
@@ -373,7 +374,7 @@ export const getTrackReferenceLabel = (trackReference?: TrackReference | null) =
 };
 
 export const getOperationalPointName = (
-  op: PositionedOperationalPoint | undefined,
+  op: OperationalPoint | undefined,
   step: PathItemLocation,
   mapWaypointCount: number,
   t: TFunction<'operational-studies'>
