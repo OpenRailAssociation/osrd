@@ -7,10 +7,10 @@ import { useSelector } from 'react-redux';
 import { type Conflict } from 'common/api/osrdEditoastApi';
 import SimulationWarpedMap from 'common/Map/WarpedMap/SimulationWarpedMap';
 import ResizableSection from 'common/ResizableSection';
+import SimulationResultsMap from 'modules/simulationResult/components/SimulationResultsMap';
 import ManchetteWithSpaceTimeChartWrapper, {
   MANCHETTE_WITH_SPACE_TIME_CHART_DEFAULT_HEIGHT,
-} from 'modules/simulationResult/components/ManchetteWithSpaceTimeChart/ManchetteWithSpaceTimeChart';
-import SimulationResultsMap from 'modules/simulationResult/components/SimulationResultsMap';
+} from 'modules/simulationResult/components/SpaceTimeChart/SpaceTimeChartWrapper';
 import useGetProjectedTrainOperationalPoints from 'modules/simulationResult/components/SpaceTimeChart/useGetProjectedTrainOperationalPoints';
 import useProjectedConflicts from 'modules/simulationResult/components/SpaceTimeChart/useProjectedConflicts';
 import useTrackOccupancy, {

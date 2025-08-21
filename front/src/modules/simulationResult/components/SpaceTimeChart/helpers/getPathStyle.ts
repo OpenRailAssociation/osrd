@@ -1,4 +1,3 @@
-/* eslint-disable import/prefer-default-export */
 import type { PathLevel, HoveredItem } from '@osrd-project/ui-charts';
 
 import type { SubCategory } from 'common/api/osrdEditoastApi';
