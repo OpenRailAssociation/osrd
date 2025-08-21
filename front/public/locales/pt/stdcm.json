@@ -18,7 +18,7 @@
       }
     },
     "length": "Comprimento",
-    "maxSpeed": "Velocidade máxima.",
+    "maxSpeed": "Velocidade máxima",
     "tonnage": "Tonelagem"
   },
   "datetimeOutsideWindow": "A data deve estar entre {{low}} e {{high}}",
