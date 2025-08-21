@@ -1471,9 +1471,56 @@ pub mod tests {
         let response: TrainScheduleResponse =
             app.fetch(request).assert_status(StatusCode::OK).json_into();
         assert_eq!(
-            response.train_schedule.rolling_stock_name,
-            update_train_schedule_form.train_schedule.rolling_stock_name
+            response.train_schedule.category,
+            update_train_schedule_form.train_schedule.category
         )
+    }
+
+    #[rstest]
+    async fn train_schedule_put_with_none_category() {
+        let app = TestAppBuilder::default_app();
+        let pool = app.db_pool();
+
+        let created_sub_category = simple_sub_category(
+            "NRER",
+            TrainMainCategory(schemas::rolling_stock::TrainMainCategory::HighSpeedTrain),
+        )
+        .create(&mut pool.get_ok())
+        .await
+        .expect("Failed to create sub category");
+
+        let timetable = create_timetable(&mut pool.get_ok()).await;
+        let train_schedule = simple_train_schedule_changeset(timetable.id)
+            .sub_category(Some(created_sub_category.code))
+            .create(&mut pool.get_ok())
+            .await
+            .expect("Failed to create train schedule");
+        let train_schedule_id = train_schedule.id;
+
+        let update_train_schedule = schemas::TrainSchedule {
+            category: None,
+            ..train_schedule.into()
+        };
+
+        let update_train_schedule_form = TrainScheduleForm {
+            timetable_id: Some(timetable.id),
+            train_schedule: update_train_schedule,
+        };
+
+        let request = app
+            .put(format!("/train_schedule/{train_schedule_id}").as_str())
+            .json(&json!(update_train_schedule_form));
+
+        let response: TrainScheduleResponse =
+            app.fetch(request).assert_status(StatusCode::OK).json_into();
+
+        let updated_train_schedule = models::TrainSchedule::retrieve(pool.get_ok(), response.id)
+            .await
+            .expect("Failed to retrieve updated train schedule")
+            .expect("Updated train schedule not found");
+
+        assert_eq!(updated_train_schedule.main_category, None);
+        assert_eq!(updated_train_schedule.sub_category, None);
     }
 
     async fn app_infra_id_train_schedule_id_for_simulation_tests() -> (TestApp, i64, i64) {

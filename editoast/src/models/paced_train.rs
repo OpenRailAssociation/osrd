@@ -256,7 +256,7 @@ impl From<paced_train::PacedTrain> for PacedTrainChangeset {
             Some(TrainCategory::Sub { sub_category_code }) => changeset
                 .sub_category(Some(sub_category_code))
                 .main_category(None),
-            None => changeset,
+            None => changeset.sub_category(None).main_category(None),
         }
     }
 }
