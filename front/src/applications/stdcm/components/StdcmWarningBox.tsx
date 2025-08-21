@@ -2,10 +2,8 @@ import { Button } from '@osrd-project/ui-core';
 import { Alert } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
-import { useSelector } from 'react-redux';
 
-import useInfraStatus from 'modules/pathfinding/hooks/useInfraStatus';
-import { getStdcmInfraID } from 'reducers/osrdconf/stdcmConf/selectors';
+import type { InfraWithStatus } from 'modules/infra/types';
 
 import useStaticPathfinding from '../hooks/useStaticPathfinding';
 import { StdcmConfigErrorTypes, type StdcmConfigErrors } from '../types';
@@ -13,12 +11,14 @@ import { StdcmConfigErrorTypes, type StdcmConfigErrors } from '../types';
 const SHORT_TEXT_ERRORS = [StdcmConfigErrorTypes.INFRA_NOT_LOADED];
 
 type StdcmWarningBoxProps = {
+  infra?: InfraWithStatus;
   errorInfos: StdcmConfigErrors;
   removeOriginArrivalTime: () => void;
   removeDestinationArrivalTime: () => void;
 };
 
 const StdcmWarningBox = ({
+  infra,
   errorInfos: { errorType, errorDetails },
   removeOriginArrivalTime,
   removeDestinationArrivalTime,
@@ -29,8 +29,6 @@ const StdcmWarningBox = ({
   const hasMissingFields = (errorDetails?.missingFields?.length ?? 0) > 0;
   const hasRouteErrors = (errorDetails?.routeErrors?.length ?? 0) > 0;
 
-  const infraId = useSelector(getStdcmInfraID);
-  const { infra } = useInfraStatus({ infraId });
   const { pathfinding, isPathFindingLoading: _ } = useStaticPathfinding(infra);
   const hasIncompatibleConstraints =
     pathfinding?.status === 'failure' &&
