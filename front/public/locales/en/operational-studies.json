@@ -67,7 +67,6 @@
       "unableToDeleteScenarioMessage": "Unable to delete a scenario"
     },
     "filterPlaceholder": "Filter, tags",
-    "infraLoadingState": "{{step}}/3",
     "infrastructure": "Infrastructure",
     "lessDetails": "Display less details",
     "loadingConflicts": "Loading conflicts…",

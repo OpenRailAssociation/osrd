@@ -1,7 +1,7 @@
 import { type Locator, type Page, expect } from '@playwright/test';
 import { v4 as uuidv4 } from 'uuid';
 
-import { getInfraById } from './api-utils';
+import { getWorkerStatus } from './api-utils';
 import { logger } from '../logging-fixture';
 
 /**
@@ -84,7 +84,7 @@ export async function handleAndVerifyInput(inputField: Locator, value?: string):
 
 /**
  * Waits until the infrastructure state becomes 'CACHED' before proceeding to the next step.
- * The function polls the `infra.state` every 10 seconds, up to a total of 60 seconds.
+ * The function polls the `infra.status` every 10 seconds, up to a total of 60 seconds.
  * Displays the total time taken for the state to reach 'CACHED'.
  *
  * @param infraId - The ID of the infrastructure to retrieve and check.
@@ -97,17 +97,15 @@ export const waitForInfraStateToBeCached = async (infraId: number): Promise<void
   const startTime = Date.now(); // Record start time
 
   for (let attempt = 0; attempt < maxRetries; attempt += 1) {
-    const infra = await getInfraById(infraId); // Retrieve the latest infra object
-    if (infra.state === 'CACHED') {
+    const status = await getWorkerStatus(infraId); // Retrieve the latest infra object
+    if (status === 'READY') {
       const totalTime = Date.now() - startTime;
       logger.info(
         `Infrastructure state is 'CACHED'. Total time taken: ${totalTime / 1000} seconds.`
       );
       return;
     }
-    logger.info(
-      `Attempt ${attempt + 1}: Infrastructure current state is '${infra.state}', waiting...`
-    );
+    logger.info(`Attempt ${attempt + 1}: Infrastructure current state is '${status}', waiting...`);
     await new Promise((resolve) => {
       setTimeout(resolve, delay);
     });

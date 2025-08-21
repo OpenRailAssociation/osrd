@@ -253,7 +253,7 @@ const usePathfinding = ({
         return;
       }
 
-      if (infra?.state !== 'CACHED') {
+      if (infra?.status !== 'READY') {
         return;
       }
 
@@ -337,10 +337,10 @@ const usePathfinding = ({
   );
 
   useEffect(() => {
-    if (infra?.state === 'CACHED') {
+    if (infra?.status === 'READY') {
       launchPathfinding(pathSteps, currentRollingStockId, { isInitialization: true });
     }
-  }, [infra?.state]);
+  }, [infra?.status]);
 
   return {
     launchPathfinding,

@@ -55,7 +55,6 @@
       "unableToDeleteScenarioMessage": "Szenario löschen nicht möglich."
     },
     "filterPlaceholder": "Filter, Tags",
-    "infraLoadingState": "{{step}}/3",
     "infrastructure": "Netz",
     "lessDetails": "Weniger Details anzeigen",
     "macroEditor": {

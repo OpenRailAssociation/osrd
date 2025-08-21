@@ -6,7 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
 import type { Board } from 'applications/operationalStudies/types';
-import type { InfraWithState, ScenarioResponse } from 'common/api/osrdEditoastApi';
+import type { ScenarioResponse } from 'common/api/osrdEditoastApi';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import UserActionsDropdown from 'common/UserActionsDropdown';
@@ -19,12 +19,11 @@ const BOARDS: Board[] = ['trains', 'map', 'macro', 'std', 'sdd', 'tables', 'conf
 
 type ScenarioHeaderProps = {
   scenario: ScenarioResponse;
-  infra: InfraWithState;
   activeBoards: Set<Board>;
   toggleBoard: (board: Board) => void;
 };
 
-const ScenarioHeader = ({ scenario, infra, activeBoards, toggleBoard }: ScenarioHeaderProps) => {
+const ScenarioHeader = ({ scenario, activeBoards, toggleBoard }: ScenarioHeaderProps) => {
   const { username, impersonatedUser, impersonate } = useAuth();
   const { openModal } = useModal();
   const navigate = useNavigate();
@@ -169,7 +168,7 @@ const ScenarioHeader = ({ scenario, infra, activeBoards, toggleBoard }: Scenario
 
           <div className="scenario-details-infra-name">
             {t('main.infrastructure')} :&nbsp;
-            {infra && <InfraLoadingState infra={infra} />}
+            <InfraLoadingState />
             &nbsp;
             <span className="scenario-infra-name" data-testid="scenario-infra-name">
               {scenario.infra_name}

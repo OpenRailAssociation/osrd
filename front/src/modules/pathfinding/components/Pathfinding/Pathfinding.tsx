@@ -44,15 +44,15 @@ const Pathfinding = ({ rollingStockId }: { rollingStockId: number | undefined })
 
   return (
     <div className="pathfinding-state-main-container flex-grow-1">
-      {infra && infra.state !== 'CACHED' && (
+      {infra && infra.status !== 'READY' && (
         <div className="content infra-loading">
           <img src={infraLogo} alt="Infra logo" className="infra-logo" />
           <div>{t('infraLoading')}</div>
-          <InfraLoadingState infra={infra} />
+          <InfraLoadingState />
         </div>
       )}
 
-      {infra && ['ERROR', 'TRANSIENT_ERROR'].includes(infra.state) && <InfraError />}
+      {infra && infra.status === 'ERROR' && <InfraError />}
 
       {!pathfindingState.error &&
         !pathfindingState.isRunning &&
@@ -75,7 +75,7 @@ const Pathfinding = ({ rollingStockId }: { rollingStockId: number | undefined })
       {!pathProperties && isPathFindingActive ? (
         <div
           data-testid="pathfinding-no-state"
-          className={cx('content pathfinding-none', { 'mt-2': infra && infra.state !== 'CACHED' })}
+          className={cx('content pathfinding-none', { 'mt-2': infra && infra.status !== 'READY' })}
         >
           {t('pathfindingNoState')}
         </div>
@@ -84,7 +84,7 @@ const Pathfinding = ({ rollingStockId }: { rollingStockId: number | undefined })
           {(pathfindingState.error || hasInvalidPathStep) && (
             <div
               className={cx('content pathfinding-error', {
-                'mt-2': infra && infra.state !== 'CACHED',
+                'mt-2': infra && infra.status !== 'READY',
               })}
             >
               <span className="lead">

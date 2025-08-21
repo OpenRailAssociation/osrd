@@ -1,22 +1,20 @@
 import { useTranslation } from 'react-i18next';
 
-import type { InfraState } from 'common/api/osrdEditoastApi';
+import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import { Loader } from 'common/Loaders';
 
-type Props = {
-  infraState?: InfraState;
-};
-
-export default function ScenarioLoaderMessage({ infraState }: Props) {
+export default function ScenarioLoaderMessage() {
   const { t } = useTranslation('operational-studies');
 
-  if (infraState === 'ERROR' || infraState === 'TRANSIENT_ERROR') {
+  const { infra } = useScenarioContext();
+
+  if (infra.status === 'ERROR') {
     return (
       <h1 className="text-center">{t('simulationResults.errorMessages.errorLoadingInfra')}</h1>
     );
   }
 
-  if (infraState !== 'CACHED') {
+  if (infra.status !== 'READY') {
     return (
       <Loader
         msg={t('simulationResults.infraLoading')}

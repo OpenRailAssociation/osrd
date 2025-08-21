@@ -24,7 +24,6 @@ const ManageTimetableItemModal = ({
   timetableItemToEditData,
   setTimetableItemToEditData,
   scenario,
-  infraState,
   setCollapsedTimetableEdit,
   collapsedTimetableEdit,
 }: ManageTimetableItemModalProps) => (
@@ -36,7 +35,6 @@ const ManageTimetableItemModal = ({
       removeTimetableItems={removeTimetableItems}
       timetableItemToEditData={timetableItemToEditData}
       setTimetableItemToEditData={setTimetableItemToEditData}
-      infraState={infraState}
     />
 
     {(displayTimetableItemManagement === MANAGE_TIMETABLE_ITEM_TYPES.add ||

@@ -11,6 +11,7 @@ const config: ConfigFile = {
   endpointOverrides: [
     {
       pattern: [
+        'postWorkerLoad',
         'postInfraByInfraIdMatchOperationalPoints',
         'postInfraByInfraIdObjectsAndObjectType',
         'postInfraByInfraIdPathfinding',

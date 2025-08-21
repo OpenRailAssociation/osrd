@@ -2,8 +2,8 @@ import { Plus } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
+import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import type { InfraState } from 'common/api/osrdEditoastApi';
 import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
 import { setFailure, setSuccess } from 'reducers/main';
 import { clearAddedExceptionsList } from 'reducers/osrdconf/operationalStudiesConf';
@@ -24,7 +24,6 @@ import {
 } from './helpers/formatTimetableItemPayload';
 
 type CreateTimetableItemButtonProps = {
-  infraState?: InfraState;
   setIsWorking: (isWorking: boolean) => void;
   upsertTimetableItems: (timetableItems: TimetableItem[]) => void;
   isPacedTrainMode: boolean;
@@ -34,13 +33,14 @@ type CreateTimetableItemButtonProps = {
  * Create train schedules and paced trains
  */
 const CreateTimetableItemButton = ({
-  infraState,
   setIsWorking,
   upsertTimetableItems,
   isPacedTrainMode,
 }: CreateTimetableItemButtonProps) => {
   const dispatch = useAppDispatch();
   const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTimetableItem' });
+
+  const { infra } = useScenarioContext();
 
   const simulationConf = useSelector(getOperationalStudiesConf);
 
@@ -117,7 +117,7 @@ const CreateTimetableItemButton = ({
     <button
       className="btn btn-primary mb-2"
       type="button"
-      disabled={infraState !== 'CACHED'}
+      disabled={infra.status !== 'READY'}
       onClick={createTrainSchedules}
       data-testid="create-timetable-item-button"
     >
