@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React from 'react';
 
 import { Checkbox } from '@osrd-project/ui-core';
 import { X } from '@osrd-project/ui-icons';
@@ -6,13 +6,11 @@ import { X } from '@osrd-project/ui-icons';
 import type { Store } from '../../types';
 import { DETAILS_BOX_SELECTION, LAYERS_SELECTION } from '../const';
 import type { SpeedSpaceChartProps } from '../SpeedSpaceChart';
-import { isLayerActive, getAdaptiveHeight } from '../utils';
+import { isLayerActive } from '../utils';
 
 const SETTINGS_PANEL_BASE_HEIGHT = 442;
-const SPEEDSPACECHART_BASE_HEIGHT = 521.5;
 
 type SettingsPanelProps = {
-  globalHeight: number;
   color: string;
   store: Store;
   setStore: React.Dispatch<React.SetStateAction<Store>>;
@@ -26,7 +24,6 @@ type SettingsPanelProps = {
 };
 
 const SettingsPanel = ({
-  globalHeight,
   color,
   store,
   setStore,
@@ -35,7 +32,6 @@ const SettingsPanel = ({
   translations,
   testIdPrefix,
 }: SettingsPanelProps) => {
-  const [height, setHeight] = useState(`${SETTINGS_PANEL_BASE_HEIGHT}px`);
   const closeSettingsPanel = () => {
     setIsMouseHoveringSettingsPanel(false);
     setStore((prev) => ({
@@ -44,20 +40,13 @@ const SettingsPanel = ({
     }));
   };
 
-  useEffect(() => {
-    const linearLayersHeight = getAdaptiveHeight(0, store.layersDisplay);
-
-    if (globalHeight < SPEEDSPACECHART_BASE_HEIGHT + linearLayersHeight) {
-      setHeight(
-        `${globalHeight - linearLayersHeight - (SPEEDSPACECHART_BASE_HEIGHT - SETTINGS_PANEL_BASE_HEIGHT)}px`
-      );
-    }
-  }, [globalHeight, store.layersDisplay]);
-
   return (
     <div
       id="settings-panel"
-      style={{ background: `rgba(${color.substring(4, color.length - 1)}, 0.4)`, height }}
+      style={{
+        background: `rgba(${color.substring(4, color.length - 1)}, 0.4)`,
+        height: `${SETTINGS_PANEL_BASE_HEIGHT}px`,
+      }}
       className="font-sans"
       onMouseEnter={() => setIsMouseHoveringSettingsPanel(true)}
       onMouseLeave={() => setIsMouseHoveringSettingsPanel(false)}
