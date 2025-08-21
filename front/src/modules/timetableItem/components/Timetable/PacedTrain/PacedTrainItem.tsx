@@ -32,7 +32,11 @@ import type {
   TrainId,
   OccurrenceId,
 } from 'reducers/osrdconf/types';
-import { updateSelectedTrainId, updateTrainIdUsedForProjection } from 'reducers/simulationResults';
+import {
+  updateProjectionType,
+  updateSelectedTrainId,
+  updateTrainIdUsedForProjection,
+} from 'reducers/simulationResults';
 import { useAppDispatch } from 'store';
 import { addDurationToDate, Duration } from 'utils/duration';
 import { castErrorToFailure } from 'utils/error';
@@ -44,7 +48,7 @@ import OccurrenceItem from './OccurrenceItem';
 import { formatPacedTrainWithDetailsToPacedTrainPayload } from '../../ManageTimetableItem/helpers/formatTimetableItemPayload';
 import { TIMETABLE_ITEM_DELTA } from '../consts';
 import type { PacedTrainWithDetails } from '../types';
-import { formatTrainDuration, getTrainCategoryClassName } from '../utils';
+import { formatTrainDuration, getTrainCategoryClassName, isValidPathfinding } from '../utils';
 import useOccurrenceActions from './hooks/useOccurrenceActions';
 
 type PacedTrainItemProps = {
@@ -105,6 +109,7 @@ const PacedTrainItem = ({
 
   const selectPathProjection = async () => {
     dispatch(updateTrainIdUsedForProjection(pacedTrain.id));
+    if (!summary?.isValid) dispatch(updateProjectionType('operationalPointProjection'));
   };
 
   const deletePacedTrain = async (currentSelectedTrainId?: TrainId) => {
@@ -322,7 +327,7 @@ const PacedTrainItem = ({
               'sm'
             );
           }}
-          canBeUsedForProjection={summary?.isValid}
+          canBeUsedForProjection={isValidPathfinding(summary)}
           showResetExceptionsButton={pacedTrain.exceptions.length > 0}
           resetAllExceptions={() => {
             openModal(
