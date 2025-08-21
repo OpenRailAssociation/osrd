@@ -17,7 +17,13 @@ type MenuProps = {
 const Menu = ({ menuRef, items }: MenuProps) => (
   <div ref={menuRef} className="ui-manchette-menu">
     {items.map(({ title, icon, onClick }) => (
-      <button key={title} type="button" className="menu-item" onClick={onClick}>
+      <button
+        key={title}
+        type="button"
+        className="menu-item"
+        onClick={onClick}
+        data-testid={`menu-item-${title}`}
+      >
         <span className="icon">{icon}</span>
         <span>{title}</span>
       </button>
