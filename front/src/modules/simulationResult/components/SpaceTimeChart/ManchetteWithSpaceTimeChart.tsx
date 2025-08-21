@@ -67,13 +67,13 @@ import {
   isPacedTrainId,
 } from 'utils/trainId';
 
+import getPathStyle from './helpers/getPathStyle';
+import ProjectionLoadingMessage from './ProjectionLoadingMessage';
 import SettingsPanel from './SettingsPanel';
-import getPathStyle from './utils';
+import useWaypointMenu from './useWaypointMenu';
+import WaypointsPanel from './WaypointsPanel';
 import { Spinner } from '../../../../common/Loaders';
 import makeProjectedItems from '../SpaceTimeChart/helpers/makeProjectedItems';
-import ProjectionLoadingMessage from '../SpaceTimeChart/ProjectionLoadingMessage';
-import useWaypointMenu from '../SpaceTimeChart/useWaypointMenu';
-import WaypointsPanel from '../SpaceTimeChart/WaypointsPanel';
 
 type ManchetteWithSpaceTimeChartBaseProps = {
   operationalPoints: PathOperationalPoint[];

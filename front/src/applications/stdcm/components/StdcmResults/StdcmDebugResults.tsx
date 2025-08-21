@@ -11,7 +11,7 @@ import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import ResizableSection from 'common/ResizableSection';
 import ManchetteWithSpaceTimeChartWrapper, {
   MANCHETTE_WITH_SPACE_TIME_CHART_DEFAULT_HEIGHT,
-} from 'modules/simulationResult/components/ManchetteWithSpaceTimeChart/ManchetteWithSpaceTimeChart';
+} from 'modules/simulationResult/components/SpaceTimeChart/SpaceTimeChartWrapper';
 import SpeedSpaceChartContainer from 'modules/simulationResult/components/SpeedSpaceChart/SpeedSpaceChartContainer';
 import { getWorkScheduleGroupId } from 'reducers/osrdconf/stdcmConf/selectors';
 
