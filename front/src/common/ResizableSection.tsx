@@ -10,23 +10,22 @@ const ResizableSection = ({
 }: PropsWithChildren<{
   minHeight?: number;
   height: number;
-  setHeight?: React.Dispatch<React.SetStateAction<number>>;
+  setHeight: React.Dispatch<React.SetStateAction<number>>;
 }>) => {
   const [baseHeight, setBaseHeight] = useState(height);
-  const [sectionHeight, setSectionHeight] = useState(baseHeight);
 
   return (
-    <div className="resizable-section" style={{ height: sectionHeight }}>
+    <div className="resizable-section" style={{ height }}>
       <Rnd
         default={{
           x: 0,
           y: 0,
           width: '100%',
-          height: sectionHeight,
+          height,
         }}
         size={{
           width: '100%',
-          height: sectionHeight,
+          height,
         }}
         minHeight={minHeight}
         disableDragging
@@ -44,11 +43,10 @@ const ResizableSection = ({
           bottom: 'resizable-section-handle',
         }}
         onResizeStart={() => {
-          setBaseHeight(sectionHeight);
+          setBaseHeight(height);
         }}
         onResize={(_e, _dir, _refToElement, delta) => {
-          setSectionHeight(baseHeight + delta.height);
-          setHeight?.(baseHeight + delta.height);
+          setHeight(baseHeight + delta.height);
         }}
       >
         {children}
