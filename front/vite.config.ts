@@ -3,6 +3,7 @@ import { createRequire } from 'node:module';
 import * as path from 'node:path';
 
 import react from '@vitejs/plugin-react-swc';
+import { deprecations } from 'sass';
 import { defineConfig, loadEnv } from 'vite';
 import checker from 'vite-plugin-checker';
 import { viteStaticCopy } from 'vite-plugin-static-copy';
@@ -17,6 +18,15 @@ const ngeBase = path.dirname(
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
   return {
+    css: {
+      preprocessorOptions: {
+        scss: {
+          // Make all deprecations fatal. Any sass upgrade must resolve these
+          // deprecation issues before being merged.
+          fatalDeprecations: Object.values(deprecations),
+        },
+      },
+    },
     plugins: [
       react(),
       viteTsconfigPaths(),
