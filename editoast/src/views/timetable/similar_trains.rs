@@ -279,7 +279,6 @@ pub(in crate::views) async fn similar_trains(
         valkey,
         core_client,
         &infra,
-        &new_train,
         candidate_schedules,
         config.app_version.as_deref(),
     )
@@ -535,7 +534,6 @@ async fn simulate_past_trains(
     valkey: Arc<ValkeyClient>,
     core_client: Arc<CoreClient>,
     infra: &Infra,
-    new_train: &new_train::NewTrain,
     candidate_schedules: Vec<models::TrainSchedule>,
     app_version: Option<&str>,
 ) -> Result<Vec<past_train::PastTrain>> {
@@ -601,10 +599,6 @@ async fn simulate_past_trains(
     )
     .await?;
 
-    let stop_waypoints = new_train
-        .stops()
-        .map(|wp| wp.op.clone())
-        .collect::<HashSet<_>>();
     let selected_past_trains = path_properties
         .zip(candidate_schedules.into_iter())
         .map(
@@ -614,15 +608,17 @@ async fn simulate_past_trains(
                 },
                 ts,
             )| {
+                let stop_ids = ts
+                    .iter_stops()
+                    .map(|path_item| OperationalPoint(path_item.id.as_str().into()))
+                    .collect::<HashSet<_>>();
                 let ops =
                     operational_points
                         .into_iter()
                         .map(|OperationalPointOnPath { id, .. }| {
                             let op = OperationalPoint(id.as_str().into());
-                            graph::Waypoint {
-                                stop: stop_waypoints.contains(&op),
-                                op,
-                            }
+                            let stop = stop_ids.contains(&op);
+                            graph::Waypoint { stop, op }
                         });
                 past_train::PastTrain::new(ts.id, ops)
             },
@@ -894,7 +890,7 @@ mod tests {
         train_id: i64,
         start_time: DateTime<Utc>,
     }
-    async fn init_test() -> InitTestResponse {
+    async fn init_test(path: Vec<PathItem>) -> InitTestResponse {
         let db_pool = DbConnectionPoolV2::for_tests();
         let mut core = MockingClient::new();
         core.stub("/pathfinding/blocks")
@@ -926,13 +922,6 @@ mod tests {
             create_fast_rolling_stock(&mut app.db_pool().get_ok(), &Uuid::new_v4().to_string())
                 .await;
 
-        let path: Vec<PathItem> = vec![
-            PathItem::new_operational_point("West_station"), // WS
-            PathItem::new_operational_point("Mid_West_station"), // MWS
-            PathItem::new_operational_point("Mid_East_station"), // MES
-            PathItem::new_operational_point("North_station"), // NS
-            PathItem::new_operational_point("South_station"), // SS
-        ];
         let schedule: Vec<ScheduleItem> = vec![
             ScheduleItem::new_with_stop(
                 "Mid_West_station",
@@ -975,6 +964,10 @@ mod tests {
     // MWS(33):stop  MES(44):passing_by  NS(55):stop
     #[case(
         vec![
+            PathItem::new_operational_point("Mid_West_station"), // MWS
+            PathItem::new_operational_point("North_station"), // NS
+        ],
+        vec![
             Waypoint { id:"Mid_West_station".into(), stop:true },
             Waypoint { id:"Mid_East_station".into(), stop:false },
             Waypoint { id:"North_station".into(), stop:true },
@@ -985,6 +978,10 @@ mod tests {
     // NS(55):stop SS(66):stop
     #[case(
         vec![
+            PathItem::new_operational_point("North_station"), // NS
+            PathItem::new_operational_point("South_station"), // SS
+        ],
+        vec![
             Waypoint { id:"North_station".into(), stop:true },
             Waypoint { id:"South_station".into(), stop:true },
         ],
@@ -992,6 +989,7 @@ mod tests {
         WaypointResponse { id: "South_station".into() },
     )]
     async fn one_similar_train(
+        #[case] path: Vec<PathItem>,
         #[case] waypoints: Vec<Waypoint>,
         #[case] begin: WaypointResponse,
         #[case] end: WaypointResponse,
@@ -1003,7 +1001,7 @@ mod tests {
             timetable_id,
             train_id,
             start_time,
-        } = init_test().await;
+        } = init_test(path).await;
 
         let request = Request {
             rolling_stock: RollingStockCharacteristics {
@@ -1108,13 +1106,20 @@ mod tests {
         #[case] waypoints: Vec<Waypoint>,
         #[case] similar_trains: Vec<SimilarTrainItem>,
     ) {
+        let path = vec![
+            PathItem::new_operational_point("West_station"), // WS
+            PathItem::new_operational_point("Mid_West_station"), // MWS
+            PathItem::new_operational_point("Mid_East_station"), // MES
+            PathItem::new_operational_point("North_station"), // NS
+            PathItem::new_operational_point("South_station"), // SS
+        ];
         let InitTestResponse {
             app,
             infra_id,
             rolling_stock_names,
             timetable_id,
             ..
-        } = init_test().await;
+        } = init_test(path).await;
 
         let request = Request {
             rolling_stock: RollingStockCharacteristics {
@@ -1172,7 +1177,6 @@ mod tests {
 
         let path: Vec<PathItem> = vec![
             PathItem::new_operational_point("West_station"), // WS
-            PathItem::new_operational_point("Mid_West_station"), // MWS
             PathItem::new_operational_point("Mid_East_station"), // MES
         ];
         let schedule: Vec<ScheduleItem> = vec![ScheduleItem::new_with_stop(
@@ -1196,7 +1200,6 @@ mod tests {
 
         let path: Vec<PathItem> = vec![
             PathItem::new_operational_point("Mid_East_station"), // MES
-            PathItem::new_operational_point("North_station"),    // NS
             PathItem::new_operational_point("South_station"),    // SS
         ];
         let schedule: Vec<ScheduleItem> = vec![ScheduleItem::new_with_stop(
@@ -1206,7 +1209,7 @@ mod tests {
         let start_time_2 =
             DateTime::from_str("2025-01-01T12:00:00Z").expect("Failed to parse datetime");
 
-        // MES(44):passing_by  NS(55):stop  SS(66):stop
+        // MES(44):stop  NS(55):passing_by  SS(66):stop
         let train_2 = create_train_schedule(
             &mut db_pool.get_ok(),
             timetable.id,
@@ -1385,7 +1388,6 @@ mod tests {
 
         let path: Vec<PathItem> = vec![
             PathItem::new_operational_point("West_station"), // WS
-            PathItem::new_operational_point("Mid_West_station"), // MWS
             PathItem::new_operational_point("Mid_East_station"), // MES
             PathItem::new_operational_point("North_East_station"), // NES
         ];
