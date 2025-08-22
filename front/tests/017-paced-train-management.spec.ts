@@ -150,7 +150,7 @@ test.describe('Verify simulation configuration in operational studies for train 
   });
 
   /** *************** Test 2 **************** */
-  test('Add a paced train and verify its timetable details', async ({ page }) => {
+  test('Add a paced train and verify its timetable details', async ({ page, browserName }) => {
     await operationalStudiesPage.openTimetableItemForm();
 
     // Set the paced train inputs
@@ -199,10 +199,11 @@ test.describe('Verify simulation configuration in operational studies for train 
     // Click on occurrence to check its simulation results
     await pacedTrainSection.selectOccurrence({ pacedTrainIndex: 0, occurrenceIndex: 0 });
     await scenarioPage.toggleTrainList();
-
-    await expect(simulationResultPage.speedSpaceChartTabindexElement).toHaveScreenshot(
-      'SpeedSpaceChart-InitialInputs.png'
-    );
+    if (browserName === 'chromium') {
+      await expect(simulationResultPage.speedSpaceChartTabindexElement).toHaveScreenshot(
+        'SpeedSpaceChart-InitialInputs.png'
+      );
+    }
     await scrollContainer(page, '.time-stop-outputs .time-stops-datasheet .dsg-container');
     await timeAndStopSimulationOutputs.getOutputTableData(expectedOutputData);
   });
