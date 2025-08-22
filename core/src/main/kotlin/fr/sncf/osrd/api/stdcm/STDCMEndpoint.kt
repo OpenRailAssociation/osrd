@@ -1,15 +1,14 @@
 package fr.sncf.osrd.api.stdcm
 
 import com.google.common.collect.ImmutableRangeMap
+import com.google.common.collect.Range
+import com.google.common.collect.RangeSet
+import com.google.common.collect.TreeRangeSet
 import fr.sncf.osrd.api.*
 import fr.sncf.osrd.api.pathfinding.findWaypointBlocks
 import fr.sncf.osrd.api.pathfinding.hasDuplicateTracks
 import fr.sncf.osrd.api.pathfinding.runPathfindingBlockPostProcessing
 import fr.sncf.osrd.api.standalone_sim.*
-import fr.sncf.osrd.conflicts.IncrementalConflictDetector
-import fr.sncf.osrd.conflicts.NoConflictResponse
-import fr.sncf.osrd.conflicts.Requirements
-import fr.sncf.osrd.conflicts.SpacingRequirement
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue.Percentage
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue.TimePerDistance
@@ -26,8 +25,8 @@ import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl
 import fr.sncf.osrd.signaling.etcs_level2.ETCS_LEVEL2
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.DirTrackChunkId
-import fr.sncf.osrd.sim_infra.api.RawSignalingInfra
 import fr.sncf.osrd.sim_infra.api.SpeedLimitProperty
+import fr.sncf.osrd.sim_infra.api.ZoneId
 import fr.sncf.osrd.sim_infra.impl.TemporarySpeedLimitManager
 import fr.sncf.osrd.standalone_sim.makeElectricalProfiles
 import fr.sncf.osrd.standalone_sim.makeMRSPResponse
@@ -57,6 +56,11 @@ import java.time.Duration.ofMillis
 import java.time.LocalDateTime
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
+import java.util.TreeMap
+import kotlin.math.max
+import kotlin.math.min
+import kotlinx.coroutines.async
+import kotlinx.coroutines.runBlocking
 import org.takes.Request
 import org.takes.Response
 import org.takes.Take
@@ -66,7 +70,10 @@ import org.takes.rs.RsText
 import org.takes.rs.RsWithBody
 import org.takes.rs.RsWithStatus
 
-class STDCMEndpoint(private val infraManager: InfraProvider) : Take {
+class STDCMEndpoint(
+    private val infraManager: InfraProvider,
+    private val timetableCacheManager: TimetableCacheManager,
+) : Take {
     @Throws(OSRDError::class)
     override fun act(req: Request): Response {
         // Parse request input
@@ -113,19 +120,62 @@ class STDCMEndpoint(private val infraManager: InfraProvider) : Take {
                         it != ETCS_LEVEL2.id
                     },
                 )
-            val trainsRequirements =
-                parseTrainsRequirements(
-                        infra.rawInfra,
-                        request.trainsRequirements,
-                        request.startTime,
-                    )
-                    .toMutableList()
-            request.trainsRequirements = mapOf() // Free up the RAM taken by raw requirements
-            val convertedWorkSchedules =
-                convertWorkScheduleCollection(infra.rawInfra, request.workSchedules)
-            trainsRequirements.add(convertedWorkSchedules)
-            val spacingRequirements = trainsRequirements.flatMap { it.spacingRequirements }
             val steps = parseSteps(infra, request.pathItems, request.startTime)
+            val convertedWorkSchedules = mutableMapOf<ZoneId, RangeSet<Double>>()
+            convertWorkScheduleCollection(infra.rawInfra, request.workSchedules)
+                .spacingRequirements
+                .forEach { spacingReq ->
+                    val set =
+                        convertedWorkSchedules.computeIfAbsent(spacingReq.zone) {
+                            TreeRangeSet.create()
+                        }
+                    set.add(Range.closedOpen(spacingReq.beginTime, spacingReq.endTime))
+                }
+            val requirements = runBlocking {
+                val trainRequirements = async {
+                    timetableCacheManager.get(request.infra, infra.rawInfra, request.timetableId)
+                }
+                // Cached requirements are relative to EPOCH. Add time diff with request start time
+                // to these requirements.
+                val searchWindowBeginEpoch = request.startTime.durationSinceEpoch()
+                val searchWindowEndEpoch =
+                    searchWindowBeginEpoch +
+                        request.maximumDepartureDelay!!.seconds +
+                        request.maximumRunTime.seconds
+                val res =
+                    trainRequirements
+                        .await()
+                        .mapValues { (_, value) ->
+                            TreeRangeSet.create<Double>().apply {
+                                for (range in value.asRanges()) {
+                                    // Filter out unnecessary requirements
+                                    if (
+                                        range.upperEndpoint() > searchWindowBeginEpoch &&
+                                            range.lowerEndpoint() < searchWindowEndEpoch
+                                    ) {
+                                        val newRange =
+                                            Range.range(
+                                                range.lowerEndpoint() - searchWindowBeginEpoch,
+                                                range.lowerBoundType(),
+                                                range.upperEndpoint() - searchWindowBeginEpoch,
+                                                range.upperBoundType(),
+                                            )
+                                        add(newRange)
+                                    }
+                                }
+                            } as RangeSet<Double>
+                        }
+                        .toMutableMap()
+                for ((zone, ranges) in convertedWorkSchedules) {
+                    val set = res.computeIfAbsent(zone) { TreeRangeSet.create() }
+                    set.addAll(ranges)
+                }
+                res.map { entry ->
+                        entry.key to
+                            TreeMap(entry.value.asRanges().associateBy { it.upperEndpoint() })
+                    }
+                    .toMap()
+            }
 
             // Run the STDCM pathfinding
             val path =
@@ -136,7 +186,7 @@ class STDCMEndpoint(private val infraManager: InfraProvider) : Take {
                     0.0,
                     steps,
                     makeBlockAvailability(
-                        spacingRequirements,
+                        requirements,
                         gridMarginBeforeTrain = request.timeGapBefore.seconds,
                         gridMarginAfterTrain = request.timeGapAfter.seconds,
                         timeStep = request.timeStep!!.seconds,
@@ -164,14 +214,6 @@ class STDCMEndpoint(private val infraManager: InfraProvider) : Take {
                     temporarySpeedLimitManager,
                     request.comfort,
                 )
-
-            // Check for conflicts
-            checkForConflicts(
-                infra.rawInfra(),
-                trainsRequirements,
-                simulationResponse,
-                path.departureTime,
-            )
 
             val departureTime =
                 request.startTime.plus(ofMillis((path.departureTime * 1000).toLong()))
@@ -385,32 +427,6 @@ private fun parseSimulationScheduleItems(
             SimulationScheduleItem(Offset(it.position.meters), null, duration, it.receptionSignal)
         }
     )
-}
-
-/** Sanity check, we assert that the result is not conflicting with the scheduled timetable */
-private fun checkForConflicts(
-    rawInfra: RawSignalingInfra,
-    timetableTrainRequirements: List<Requirements>,
-    simResult: SimulationSuccess,
-    departureTime: Double,
-) {
-    // Shifts the requirements generated by the new train to account for its departure time
-    val newTrainSpacingRequirement =
-        simResult.finalOutput.spacingRequirements.map {
-            SpacingRequirement(
-                rawInfra.getZoneFromName(it.zone),
-                it.beginTime.seconds + departureTime,
-                it.endTime.seconds + departureTime,
-                true,
-            )
-        }
-    val conflictDetector = IncrementalConflictDetector(timetableTrainRequirements)
-    val spacingRequirements =
-        parseSpacingRequirements(rawInfra, newTrainSpacingRequirement.map { it.toRJS(rawInfra) })
-    val conflicts = conflictDetector.analyseConflicts(spacingRequirements)
-    assert(conflicts is NoConflictResponse) {
-        "STDCM result is conflicting with the scheduled timetable"
-    }
 }
 
 private fun findWaypointBlocks(

@@ -3,11 +3,7 @@ package fr.sncf.osrd.cli
 import com.beust.jcommander.Parameter
 import com.beust.jcommander.Parameters
 import com.squareup.moshi.JsonAdapter
-import fr.sncf.osrd.api.ElectricalProfileSetManager
-import fr.sncf.osrd.api.FullInfra
-import fr.sncf.osrd.api.InfraManager
-import fr.sncf.osrd.api.InfraProvider
-import fr.sncf.osrd.api.makeSignalingSimulator
+import fr.sncf.osrd.api.*
 import fr.sncf.osrd.api.pathfinding.PathfindingBlocksEndpoint
 import fr.sncf.osrd.api.pathfinding.pathfindingRequestAdapter
 import fr.sncf.osrd.api.standalone_sim.SimulationEndpoint
@@ -86,7 +82,7 @@ class ReproduceRequest : CliCommand {
             val time = measureTime {
                 if (stdcmPayloadPath != null) {
                     logger.info("running stdcm request at $stdcmPayloadPath")
-                    STDCMEndpoint(infraManager)
+                    STDCMEndpoint(infraManager, TODO("reproduce with heavy payload format"))
                         .run(loadRequest(stdcmPayloadPath!!, stdcmRequestAdapter))
                 }
                 if (pathfindingPayloadPath != null) {

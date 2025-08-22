@@ -3,10 +3,7 @@ package fr.sncf.osrd.cli
 import com.beust.jcommander.Parameter
 import com.beust.jcommander.Parameters
 import com.rabbitmq.client.*
-import fr.sncf.osrd.api.ElectricalProfileSetManager
-import fr.sncf.osrd.api.InfraLoadEndpoint
-import fr.sncf.osrd.api.InfraManager
-import fr.sncf.osrd.api.VersionEndpoint
+import fr.sncf.osrd.api.*
 import fr.sncf.osrd.api.conflicts.ConflictDetectionEndpoint
 import fr.sncf.osrd.api.etcs.ETCSBrakingCurvesEndpoint
 import fr.sncf.osrd.api.path_properties.PathPropEndpoint
@@ -107,9 +104,11 @@ class WorkerCommand : CliCommand {
 
         val httpClient = OkHttpClient.Builder().readTimeout(120, TimeUnit.SECONDS).build()
 
-        val infraId = WORKER_KEY
+        val infraId = WORKER_KEY.split("-").first()
+        val timetableId = WORKER_KEY.split("-").getOrNull(1)?.toInt()
         val diagnosticRecorder = DiagnosticRecorderImpl(false)
         val infraManager = InfraManager(editoastUrl, editoastAuthorization, httpClient)
+        val timetableCache = TimetableCacheManager(editoastUrl!!, editoastAuthorization, httpClient)
         val electricalProfileSetManager =
             ElectricalProfileSetManager(editoastUrl, editoastAuthorization, httpClient)
 
@@ -132,7 +131,7 @@ class WorkerCommand : CliCommand {
                 "/etcs_braking_curves" to
                     ETCSBrakingCurvesEndpoint(infraManager, electricalProfileSetManager),
                 "/version" to VersionEndpoint(),
-                "/stdcm" to STDCMEndpoint(infraManager),
+                "/stdcm" to STDCMEndpoint(infraManager, timetableCache),
                 "/infra_load" to InfraLoadEndpoint(infraManager),
             )
 
@@ -155,7 +154,9 @@ class WorkerCommand : CliCommand {
 
             if (!ALL_INFRA) {
                 try {
-                    infraManager.load(infraId, null, diagnosticRecorder)
+                    val infra = infraManager.load(infraId, null, diagnosticRecorder)
+                    if (timetableId != null)
+                        timetableCache.load(infraId, infra.rawInfra, timetableId)
                 } catch (e: OSRDError) {
                     val isInfraLoadError =
                         setOf(ErrorType.InfraHardLoadingError, ErrorType.InfraSoftLoadingError)
@@ -180,6 +181,8 @@ class WorkerCommand : CliCommand {
                     throw t
                 }
             }
+            if (ALL_INFRA && timetableId != null)
+                logger.warn("Timetables can't be preloaded when not specialized on an infra")
 
             connection.createChannel().use { channel -> reportActivity(channel, "ready") }
 

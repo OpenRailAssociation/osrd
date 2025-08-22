@@ -26,7 +26,7 @@ class ConflictDetectionRequest(
 )
 
 /** Describes the requirements needed for a given train to run without any delay. */
-class TrainRequirementsRequest(
+open class TrainRequirementsRequest(
     /**
      * Start time for the given train. Acts as a reference point for all time values in the spacing
      * and routing requirements for this train (values expressed as time delta).
@@ -43,6 +43,15 @@ class TrainRequirementsRequest(
      */
     @Json(name = "routing_requirements") val routingRequirements: Collection<RJSRoutingRequirement>,
 )
+
+// TODO: use this class in conflict detection endpoint rather than Map<Long,
+// TrainRequirementsRequest>
+class TrainRequirementsById(
+    @Json(name = "train_id") val trainId: String,
+    @Json(name = "start_time") startTime: ZonedDateTime,
+    @Json(name = "spacing_requirements") spacingRequirements: Collection<RJSSpacingRequirement>,
+    @Json(name = "routing_requirements") routingRequirements: Collection<RJSRoutingRequirement>,
+) : TrainRequirementsRequest(startTime, spacingRequirements, routingRequirements)
 
 /** Describes the set of work schedules in the given timetable. */
 class WorkSchedulesRequest(

@@ -17,7 +17,7 @@ public abstract class APIClient {
         this.httpClient = httpClient;
     }
 
-    Request buildRequest(String endpointPath, String queryParameters) {
+    public Request buildRequest(String endpointPath, String queryParameters) {
         var url = baseUrl.newBuilder()
                 .addPathSegments(endpointPath)
                 .encodedQuery(queryParameters)
@@ -27,7 +27,7 @@ public abstract class APIClient {
         return builder.build();
     }
 
-    Request buildRequest(String endpointPath) {
+    public Request buildRequest(String endpointPath) {
         return buildRequest(endpointPath, null);
     }
 
