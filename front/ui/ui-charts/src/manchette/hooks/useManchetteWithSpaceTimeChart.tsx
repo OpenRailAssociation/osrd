@@ -180,53 +180,22 @@ const useManchetteWithSpaceTimeChart = ({
       const spaceRange = Math.abs(spaceEnd - spaceStart); // height of rect in mm
 
       const chosenTimeScale = timeRange / spaceTimeChartRef.current.clientWidth;
-      let chosenSpaceScale: number | undefined;
-      let overrideState: Partial<State>;
+      const newTimeScale = clamp(chosenTimeScale, MAX_ZOOM_MS_PER_PX, MIN_ZOOM_MS_PER_PX);
+      const newXZoom = timeScaleToZoomValue(newTimeScale);
+      const newXOffset = sideOffset(
+        timeOrigin,
+        newTimeScale,
+        rect.timeStart,
+        rect.timeEnd,
+        spaceTimeChartRef.current.clientWidth
+      );
+
+      let newYZoom = yZoom;
+      let newYOffset = yOffset;
+
       if (isProportional) {
-        chosenSpaceScale = spaceRange / drawingHeightWithoutTopPadding;
-        overrideState = { rect: null };
-      } else if (pixelRect) {
-        const currentStopHeight = BASE_WAYPOINT_HEIGHT * yZoom;
-        const { yStart, yEnd } = pixelRect;
-        const numberOfStopsInRect = Math.abs(yEnd - yStart) / currentStopHeight;
-        let newStopHeight = drawingHeightWithoutTopPadding / numberOfStopsInRect;
-        // at maximum zoom, we want 3 stops displayed
-        const maxStopHeight =
-          drawingHeightWithoutTopPadding / (2 + BASE_WAYPOINT_HEIGHT / newStopHeight);
-        newStopHeight = Math.min(newStopHeight, maxStopHeight);
-        const newYZoom = newStopHeight / BASE_WAYPOINT_HEIGHT;
-        const rectTop = yOffset + Math.min(yStart, yEnd) - WAYPOINT_LINE_HEIGHT;
-        const numberOfStopsBeforeRectTop = rectTop / currentStopHeight;
-        const newYOffset = numberOfStopsBeforeRectTop * newStopHeight;
-
-        overrideState = {
-          rect: null,
-          pixelRect: null,
-          yZoom: newYZoom,
-          yOffset: newYOffset,
-          scrollTo: newYOffset,
-        };
-      }
-
-      setState((prev) => {
-        if (prev.zoomMode || !prev.rect || !spaceTimeChartRef?.current) {
-          return prev;
-        }
-        const newTimeScale = clamp(chosenTimeScale, MAX_ZOOM_MS_PER_PX, MIN_ZOOM_MS_PER_PX);
-        const timeZoomValue = timeScaleToZoomValue(newTimeScale);
-
-        const newXOffset = sideOffset(
-          timeOrigin,
-          newTimeScale,
-          prev.rect.timeStart,
-          prev.rect.timeEnd,
-          spaceTimeChartRef.current.clientWidth
-        );
-
-        let newYZoom = yZoom;
-        let newYOffset = yOffset;
-        if (chosenSpaceScale) {
-          const newSpaceScale = clamp(
+        const chosenSpaceScale = spaceRange / drawingHeightWithoutTopPadding;
+        const newSpaceScale = clamp(
             chosenSpaceScale,
             maxZoomMillimeterPerPx,
             minZoomMillimeterPerPx
@@ -245,25 +214,39 @@ const useManchetteWithSpaceTimeChart = ({
               sideOffset(
                 spaceOrigin,
                 newSpaceScale,
-                prev.rect.spaceStart,
-                prev.rect.spaceEnd,
+                rect.spaceStart,
+                rect.spaceEnd,
                 height,
                 verticalPadding
               )
             );
           }
-        }
+      } else if (pixelRect) {
+        const currentStopHeight = BASE_WAYPOINT_HEIGHT * yZoom;
+        const { yStart, yEnd } = pixelRect;
+        const numberOfStopsInRect = Math.abs(yEnd - yStart) / currentStopHeight;
+        let newStopHeight = drawingHeightWithoutTopPadding / numberOfStopsInRect;
+        // at maximum zoom, we want 3 stops displayed
+        const maxStopHeight =
+          drawingHeightWithoutTopPadding / (2 + BASE_WAYPOINT_HEIGHT / newStopHeight);
+        newStopHeight = Math.min(newStopHeight, maxStopHeight);
 
-        return {
+        newYZoom = newStopHeight / BASE_WAYPOINT_HEIGHT;
+        const rectTop = yOffset + Math.min(yStart, yEnd) - WAYPOINT_LINE_HEIGHT;
+        const numberOfStopsBeforeRectTop = rectTop / currentStopHeight;
+        newYOffset = numberOfStopsBeforeRectTop * newStopHeight;
+      }
+
+      setState((prev) =>({
           ...prev,
-          xZoom: timeZoomValue,
+          xZoom: newXZoom,
           yZoom: newYZoom,
           xOffset: newXOffset,
           yOffset: newYOffset,
           scrollTo: newYOffset,
-          ...overrideState,
-        };
-      });
+          rect: null,
+          pixelRect: null,
+        }));
     }
   }, [
     state.rect,
