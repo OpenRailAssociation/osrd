@@ -174,80 +174,77 @@ const useManchetteWithSpaceTimeChart = ({
   );
 
   useEffect(() => {
-    if (rect && !zoomMode && spaceTimeChartRef?.current) {
-      const { timeStart, timeEnd, spaceStart, spaceEnd } = rect;
-      const timeRange = Math.abs(Number(timeEnd) - Number(timeStart)); // width of rect in ms
-      const spaceRange = Math.abs(spaceEnd - spaceStart); // height of rect in mm
-
-      const chosenTimeScale = timeRange / spaceTimeChartRef.current.clientWidth;
-      const newTimeScale = clamp(chosenTimeScale, MAX_ZOOM_MS_PER_PX, MIN_ZOOM_MS_PER_PX);
-      const newXZoom = timeScaleToZoomValue(newTimeScale);
-      const newXOffset = sideOffset(
-        timeOrigin,
-        newTimeScale,
-        rect.timeStart,
-        rect.timeEnd,
-        spaceTimeChartRef.current.clientWidth
-      );
-
-      let newYZoom = yZoom;
-      let newYOffset = yOffset;
-
-      if (isProportional) {
-        const chosenSpaceScale = spaceRange / drawingHeightWithoutTopPadding;
-        const newSpaceScale = clamp(
-            chosenSpaceScale,
-            maxZoomMillimeterPerPx,
-            minZoomMillimeterPerPx
-          );
-          // we don’t need to handle this case and compute an offset
-          // this condition happens when we draw a rectangle
-          // larger than the entire chart (minus padding)
-          // that would actually zoom OUT if it wasn’t clamped.
-          if (newSpaceScale !== minZoomMillimeterPerPx) {
-            newYZoom = spaceScaleToZoomValue(
-              minZoomMillimeterPerPx,
-              maxZoomMillimeterPerPx,
-              newSpaceScale
-            );
-            newYOffset = Math.abs(
-              sideOffset(
-                spaceOrigin,
-                newSpaceScale,
-                rect.spaceStart,
-                rect.spaceEnd,
-                height,
-                verticalPadding
-              )
-            );
-          }
-      } else if (pixelRect) {
-        const currentStopHeight = BASE_WAYPOINT_HEIGHT * yZoom;
-        const { yStart, yEnd } = pixelRect;
-        const numberOfStopsInRect = Math.abs(yEnd - yStart) / currentStopHeight;
-        let newStopHeight = drawingHeightWithoutTopPadding / numberOfStopsInRect;
-        // at maximum zoom, we want 3 stops displayed
-        const maxStopHeight =
-          drawingHeightWithoutTopPadding / (2 + BASE_WAYPOINT_HEIGHT / newStopHeight);
-        newStopHeight = Math.min(newStopHeight, maxStopHeight);
-
-        newYZoom = newStopHeight / BASE_WAYPOINT_HEIGHT;
-        const rectTop = yOffset + Math.min(yStart, yEnd) - WAYPOINT_LINE_HEIGHT;
-        const numberOfStopsBeforeRectTop = rectTop / currentStopHeight;
-        newYOffset = numberOfStopsBeforeRectTop * newStopHeight;
-      }
-
-      setState((prev) =>({
-          ...prev,
-          xZoom: newXZoom,
-          yZoom: newYZoom,
-          xOffset: newXOffset,
-          yOffset: newYOffset,
-          scrollTo: newYOffset,
-          rect: null,
-          pixelRect: null,
-        }));
+    if (!rect || zoomMode || !spaceTimeChartRef?.current) {
+      return;
     }
+    const { timeStart, timeEnd, spaceStart, spaceEnd } = rect;
+    const timeRange = Math.abs(Number(timeEnd) - Number(timeStart)); // width of rect in ms
+    const spaceRange = Math.abs(spaceEnd - spaceStart); // height of rect in mm
+
+    const chosenTimeScale = timeRange / spaceTimeChartRef.current.clientWidth;
+    const newTimeScale = clamp(chosenTimeScale, MAX_ZOOM_MS_PER_PX, MIN_ZOOM_MS_PER_PX);
+    const newXZoom = timeScaleToZoomValue(newTimeScale);
+    const newXOffset = sideOffset(
+      timeOrigin,
+      newTimeScale,
+      rect.timeStart,
+      rect.timeEnd,
+      spaceTimeChartRef.current.clientWidth
+    );
+
+    let newYZoom = yZoom;
+    let newYOffset = yOffset;
+
+    if (isProportional) {
+      const chosenSpaceScale = spaceRange / drawingHeightWithoutTopPadding;
+      const newSpaceScale = clamp(chosenSpaceScale, maxZoomMillimeterPerPx, minZoomMillimeterPerPx);
+      // we don’t need to handle this case and compute an offset
+      // this condition happens when we draw a rectangle
+      // larger than the entire chart (minus padding)
+      // that would actually zoom OUT if it wasn’t clamped.
+      if (newSpaceScale !== minZoomMillimeterPerPx) {
+        newYZoom = spaceScaleToZoomValue(
+          minZoomMillimeterPerPx,
+          maxZoomMillimeterPerPx,
+          newSpaceScale
+        );
+        newYOffset = Math.abs(
+          sideOffset(
+            spaceOrigin,
+            newSpaceScale,
+            rect.spaceStart,
+            rect.spaceEnd,
+            height,
+            verticalPadding
+          )
+        );
+      }
+    } else if (pixelRect) {
+      const currentStopHeight = BASE_WAYPOINT_HEIGHT * yZoom;
+      const { yStart, yEnd } = pixelRect;
+      const numberOfStopsInRect = Math.abs(yEnd - yStart) / currentStopHeight;
+      let newStopHeight = drawingHeightWithoutTopPadding / numberOfStopsInRect;
+      // at maximum zoom, we want 3 stops displayed
+      const maxStopHeight =
+        drawingHeightWithoutTopPadding / (2 + BASE_WAYPOINT_HEIGHT / newStopHeight);
+      newStopHeight = Math.min(newStopHeight, maxStopHeight);
+
+      newYZoom = newStopHeight / BASE_WAYPOINT_HEIGHT;
+      const rectTop = yOffset + Math.min(yStart, yEnd) - WAYPOINT_LINE_HEIGHT;
+      const numberOfStopsBeforeRectTop = rectTop / currentStopHeight;
+      newYOffset = numberOfStopsBeforeRectTop * newStopHeight;
+    }
+
+    setState((prev) => ({
+      ...prev,
+      xZoom: newXZoom,
+      yZoom: newYZoom,
+      xOffset: newXOffset,
+      yOffset: newYOffset,
+      scrollTo: newYOffset,
+      rect: null,
+      pixelRect: null,
+    }));
   }, [
     state.rect,
     state.zoomMode,
