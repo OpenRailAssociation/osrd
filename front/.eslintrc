@@ -67,7 +67,10 @@
     "@typescript-eslint/non-nullable-type-assertion-style": "error",
     "@typescript-eslint/naming-convention": [
       "error",
-      { "selector": ["variable", "function"], "format": ["camelCase", "UPPER_CASE", "PascalCase"], "leadingUnderscore": "allow" }
+      { "selector": ["function"], "format": ["camelCase", "PascalCase"] },
+      { "selector": ["variable"], "format": ["camelCase", "UPPER_CASE", "PascalCase"], "leadingUnderscore": "allow" },
+      { "selector": ["variable"], "modifiers": ["global"], "format": ["camelCase", "UPPER_CASE", "PascalCase"] },
+      { "selector": ["variable"], "modifiers": ["destructured"], "format": ["camelCase", "UPPER_CASE", "PascalCase", "snake_case"] }
     ],
 
     "@typescript-eslint/no-restricted-types": [
