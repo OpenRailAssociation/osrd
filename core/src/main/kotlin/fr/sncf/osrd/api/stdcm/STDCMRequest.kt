@@ -5,9 +5,9 @@ import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import fr.sncf.osrd.api.DirectionalTrackRange
+import fr.sncf.osrd.api.TimetableId
 import fr.sncf.osrd.api.TrackLocation
 import fr.sncf.osrd.api.WorkSchedule
-import fr.sncf.osrd.api.conflicts.TrainRequirementsRequest
 import fr.sncf.osrd.api.standalone_sim.MarginValue
 import fr.sncf.osrd.api.standalone_sim.MarginValueAdapter
 import fr.sncf.osrd.api.standalone_sim.PhysicsConsistModel
@@ -23,6 +23,7 @@ import java.time.ZonedDateTime
 class STDCMRequest(
     var infra: String,
     @Json(name = "expected_version") var expectedVersion: Int,
+    @Json(name = "timetable_id") var timetableId: TimetableId,
 
     // Rolling stock
     @Json(name = "physics_consist") val physicsConsist: PhysicsConsistModel,
@@ -33,8 +34,6 @@ class STDCMRequest(
     @Json(name = "rolling_stock_loading_gauge") val rollingStockLoadingGauge: RJSLoadingGaugeType,
     @Json(name = "rolling_stock_supported_signaling_systems")
     val rollingStockSupportedSignalingSystems: List<String>,
-    @Json(name = "trains_requirements")
-    var trainsRequirements: Map<String, TrainRequirementsRequest>,
 
     // Simulation inputs
     val comfort: Comfort,
@@ -54,10 +53,10 @@ class STDCMRequest(
     @Json(name = "time_gap_after") val timeGapAfter: TimeDelta,
     /// Margin to apply to the whole train.
     val margin: MarginValue,
-    @Json(name = "work_schedules") val workSchedules: Collection<WorkSchedule> = listOf(),
     /// Temporary speed limits which are active between the train departure and arrival.
     @Json(name = "temporary_speed_limits")
     val temporarySpeedLimits: Collection<STDCMTemporarySpeedLimit>,
+    @Json(name = "work_schedules") val workSchedules: Collection<WorkSchedule> = listOf(),
 )
 
 data class STDCMTemporarySpeedLimit(
