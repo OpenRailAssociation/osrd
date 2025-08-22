@@ -13,8 +13,22 @@ import { waitForInfraStateToBeCached } from './utils';
 import { getInfra } from './utils/api-utils';
 import type { ConsistFields } from './utils/types';
 
-test.describe('FeedbackCard Tests', () => {
-  test.slow(); // Mark test as slow due to multiple steps
+const consistDetails: ConsistFields = {
+  tractionEngine: electricRollingStockName,
+  tonnage: '950',
+  length: '567',
+  maxSpeed: '100',
+  speedLimitTag: 'HLP',
+};
+
+const tractionEnginePrefilledValues = {
+  tonnage: '900',
+  length: '400',
+  maxSpeed: '288',
+};
+
+test.describe('Stdcm feedback card', () => {
+  test.slow();
   test.use({ viewport: { width: 1920, height: 1080 } });
 
   let stdcmPage: STDCMPage;
@@ -23,20 +37,6 @@ test.describe('FeedbackCard Tests', () => {
   let destinationSection: DestinationSection;
   let simulationResultPage: SimulationResultPage;
   let infra: Infra;
-
-  const consistDetails: ConsistFields = {
-    tractionEngine: electricRollingStockName,
-    tonnage: '950',
-    length: '567',
-    maxSpeed: '100',
-    speedLimitTag: 'HLP',
-  };
-
-  const tractionEnginePrefilledValues = {
-    tonnage: '900',
-    length: '400',
-    maxSpeed: '288',
-  };
 
   test.beforeAll('Fetch infrastructure', async () => {
     infra = await getInfra();
@@ -52,28 +52,41 @@ test.describe('FeedbackCard Tests', () => {
     ];
     await page.goto('/stdcm');
     await stdcmPage.removeViteOverlay();
-    // Wait for infra to be in 'CACHED' state before proceeding
     await waitForInfraStateToBeCached(infra.id);
   });
 
-  test('Verify FeedbackCard visibility and mail redirection', async () => {
-    await consistSection.fillAndVerifyConsistDetails(
-      consistDetails,
-      tractionEnginePrefilledValues.tonnage,
-      tractionEnginePrefilledValues.length,
-      tractionEnginePrefilledValues.maxSpeed
-    );
-    await originSection.fillOriginDetailsLight();
-    await destinationSection.fillDestinationDetailsLight();
-    await stdcmPage.verifyValidSimulationLaunch();
-    await simulationResultPage.verifySimulationDetails({
-      simulationIndex: 0,
-      simulationLengthAndDuration: '51 km — 33min',
-      validSimulationNumber: 1,
+  /** *************** Test 1 **************** */
+  test('Verify feedback card visibility and mail redirection', async () => {
+    await test.step('Fill consist with traction engine details and verify prefilled values', async () => {
+      await consistSection.fillAndVerifyConsistDetails(
+        consistDetails,
+        tractionEnginePrefilledValues.tonnage,
+        tractionEnginePrefilledValues.length,
+        tractionEnginePrefilledValues.maxSpeed
+      );
     });
-    await simulationResultPage.verifyFeedbackCardVisibility();
 
-    const { expectedSubject, expectedBody, expectedMail } = getMailFeedbackData();
-    await simulationResultPage.verifyMailRedirection(expectedSubject, expectedBody, expectedMail);
+    await test.step('Fill origin and destination', async () => {
+      await originSection.fillOriginDetailsLight();
+      await destinationSection.fillDestinationDetailsLight();
+    });
+
+    await test.step('Launch simulation and verify simulation details', async () => {
+      await stdcmPage.verifyValidSimulationLaunch();
+      await simulationResultPage.verifySimulationDetails({
+        simulationIndex: 0,
+        simulationLengthAndDuration: '51 km — 33min',
+        validSimulationNumber: 1,
+      });
+    });
+
+    await test.step('Verify feedback card is visible', async () => {
+      await simulationResultPage.verifyFeedbackCardVisibility();
+    });
+
+    await test.step('Verify mail redirection from feedback card', async () => {
+      const { expectedSubject, expectedBody, expectedMail } = getMailFeedbackData();
+      await simulationResultPage.verifyMailRedirection(expectedSubject, expectedBody, expectedMail);
+    });
   });
 });

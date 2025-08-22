@@ -71,28 +71,37 @@ test.describe('Verify train schedule elements and filters', () => {
     await waitForInfraStateToBeCached(infra.id);
   });
 
-  test('Duplicate and delete a paced train', async ({ page }) => {
+  /** *************** Test 1 **************** */
+  test('Select and delete all timetable items', async ({ page }) => {
     scenarioTimetableSection = new ScenarioTimetableSection(page);
 
-    // Verify total items count
-    await scenarioTimetableSection.verifyTotalItemsLabel(frTranslations, {
-      totalPacedTrainCount: TOTAL_PACED_TRAINS,
-      totalTrainScheduleCount: TOTAL_TRAIN_SCHEDULES,
+    await test.step('Verify initial totals', async () => {
+      await scenarioTimetableSection.verifyTotalItemsLabel(frTranslations, {
+        totalPacedTrainCount: TOTAL_PACED_TRAINS,
+        totalTrainScheduleCount: TOTAL_TRAIN_SCHEDULES,
+      });
     });
-    // Select all remaining items
-    await scenarioTimetableSection.selectAllTimetableItems(frTranslations, {
-      totalPacedTrainCount: TOTAL_PACED_TRAINS,
-      totalTrainScheduleCount: TOTAL_TRAIN_SCHEDULES,
+
+    await test.step('Select all timetable items', async () => {
+      await scenarioTimetableSection.selectAllTimetableItems(frTranslations, {
+        totalPacedTrainCount: TOTAL_PACED_TRAINS,
+        totalTrainScheduleCount: TOTAL_TRAIN_SCHEDULES,
+      });
     });
-    // Delete all items
-    await scenarioTimetableSection.deleteAllTimetableItems();
-    // As in other tests, checking the last notification needs to be done in a different method
-    // otherwise the received message of the last notification is empty
-    await scenarioTimetableSection.verifyAllTimetableItemsHaveBeenDeleted(
-      TOTAL_TIMETABLE_ITEMS,
-      frTranslations
-    );
-    // Verify timetable is empty and total label is empty
-    await scenarioTimetableSection.verifyTimetableIsEmpty(frTranslations.timetable.noTrain);
+
+    await test.step('Delete all selected items', async () => {
+      await scenarioTimetableSection.deleteAllTimetableItems();
+    });
+
+    await test.step('Verify deletion notifications', async () => {
+      await scenarioTimetableSection.verifyAllTimetableItemsHaveBeenDeleted(
+        TOTAL_TIMETABLE_ITEMS,
+        frTranslations
+      );
+    });
+
+    await test.step('Verify timetable is empty', async () => {
+      await scenarioTimetableSection.verifyTimetableIsEmpty(frTranslations.timetable.noTrain);
+    });
   });
 });

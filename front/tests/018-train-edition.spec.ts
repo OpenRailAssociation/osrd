@@ -69,7 +69,7 @@ test.describe('Edit train schedules and paced trains', () => {
   });
 
   test.beforeEach(
-    'Setup project, study, infra and create scenario with timetableItems',
+    'Setup scenario with one train schedule and one paced train',
     async ({ page }) => {
       [pacedTrainSection, scenarioTimetableSection, operationalStudiesPage] = [
         new PacedTrainSection(page),
@@ -104,58 +104,78 @@ test.describe('Edit train schedules and paced trains', () => {
     await deleteScenario(project.id, study.id, scenarioItems.name);
   });
 
+  /** *************** Test 1 **************** */
   test('Edit a paced train', async () => {
-    await pacedTrainSection.editPacedTrain();
-
-    await operationalStudiesPage.setTimeWindow(TIME_WINDOW);
-    await operationalStudiesPage.setInterval(INTERVAL);
-    await operationalStudiesPage.setTimetableItemName(EDITED_PACED_TRAIN_NAME);
-
-    await operationalStudiesPage.updateTimetableItem(frTranslations.updatePacedTrain);
-
-    await operationalStudiesPage.checkToastHasBeenLaunched(frTranslations.pacedTrainUpdated);
-
-    await scenarioTimetableSection.verifyTotalItemsLabel(frTranslations, {
-      totalPacedTrainCount: 1,
-      totalTrainScheduleCount: 1,
+    await test.step('Open paced train edition page', async () => {
+      await pacedTrainSection.openPacedTrainEditor();
     });
-    await pacedTrainSection.verifyPacedTrainItemDetails(
-      {
-        name: EDITED_PACED_TRAIN_NAME,
-        startTime: '03:00',
-        labels: [],
-        timeWindow: TIME_WINDOW,
-        interval: INTERVAL,
-        expectedOccurrencesCount: 12,
-      },
-      0,
-      { pacedTrainCardAlreadyOpen: true }
-    );
+
+    await test.step('Update paced train properties', async () => {
+      await operationalStudiesPage.setTimeWindow(TIME_WINDOW);
+      await operationalStudiesPage.setInterval(INTERVAL);
+      await operationalStudiesPage.setTimetableItemName(EDITED_PACED_TRAIN_NAME);
+    });
+
+    await test.step('Save paced train and verify toast notification', async () => {
+      await operationalStudiesPage.updateTimetableItem(frTranslations.updatePacedTrain);
+      await operationalStudiesPage.checkToastHasBeenLaunched(frTranslations.pacedTrainUpdated);
+    });
+
+    await test.step('Verify timetable labels and paced train details', async () => {
+      await scenarioTimetableSection.verifyTotalItemsLabel(frTranslations, {
+        totalPacedTrainCount: 1,
+        totalTrainScheduleCount: 1,
+      });
+      await pacedTrainSection.verifyPacedTrainItemDetails(
+        {
+          name: EDITED_PACED_TRAIN_NAME,
+          startTime: '03:00',
+          labels: [],
+          timeWindow: TIME_WINDOW,
+          interval: INTERVAL,
+          expectedOccurrencesCount: 12,
+        },
+        0,
+        { pacedTrainCardAlreadyOpen: true }
+      );
+    });
   });
 
+  /** *************** Test 2 **************** */
   test('Turn paced train into train schedule', async () => {
-    await pacedTrainSection.editPacedTrain();
+    await test.step('Edit paced train', async () => {
+      await pacedTrainSection.openPacedTrainEditor();
+    });
 
-    await operationalStudiesPage.turnPacedTrainIntoTrainSchedule(frTranslations);
+    await test.step('Convert paced train to train schedule', async () => {
+      await operationalStudiesPage.turnPacedTrainIntoTrainSchedule(frTranslations);
+      await operationalStudiesPage.checkToastHasBeenLaunched(frTranslations.pacedTrainUpdated);
+    });
 
-    await operationalStudiesPage.checkToastHasBeenLaunched(frTranslations.pacedTrainUpdated);
-
-    await scenarioTimetableSection.verifyTotalItemsLabel(frTranslations, {
-      totalPacedTrainCount: 0,
-      totalTrainScheduleCount: 2,
+    await test.step('Verify timetable labels after conversion', async () => {
+      await scenarioTimetableSection.verifyTotalItemsLabel(frTranslations, {
+        totalPacedTrainCount: 0,
+        totalTrainScheduleCount: 2,
+      });
     });
   });
 
+  /** *************** Test 3 **************** */
   test('Turn a train schedule into a paced train', async () => {
-    await scenarioTimetableSection.editTimetableItem(1);
+    await test.step('Edit train schedule at index 1', async () => {
+      await scenarioTimetableSection.editTimetableItem(1);
+    });
 
-    await operationalStudiesPage.turnTrainScheduleIntoPacedTrain(frTranslations);
+    await test.step('Convert train schedule to paced train', async () => {
+      await operationalStudiesPage.turnTrainScheduleIntoPacedTrain(frTranslations);
+      await operationalStudiesPage.checkToastHasBeenLaunched(frTranslations.trainScheduleUpdated);
+    });
 
-    await operationalStudiesPage.checkToastHasBeenLaunched(frTranslations.trainScheduleUpdated);
-
-    await scenarioTimetableSection.verifyTotalItemsLabel(frTranslations, {
-      totalPacedTrainCount: 2,
-      totalTrainScheduleCount: 0,
+    await test.step('Verify timetable labels after conversion', async () => {
+      await scenarioTimetableSection.verifyTotalItemsLabel(frTranslations, {
+        totalPacedTrainCount: 2,
+        totalTrainScheduleCount: 0,
+      });
     });
   });
 });

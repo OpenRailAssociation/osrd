@@ -21,81 +21,93 @@ test.describe('Validate the Operational Study Project workflow', () => {
 
   /** *************** Test 1 **************** */
   test('Create a new project', async ({ page }) => {
-    // Go to projects page
-    await page.goto('/operational-studies/projects');
-
-    // Define a unique project name for the test
     const projectName = generateUniqueName(projectData.name);
 
-    // Create a new project using the project page model and json data
-    await projectPage.createProject({
-      name: projectName,
-      description: projectData.description,
-      objectives: projectData.objectives,
-      funders: projectData.funders,
-      budget: projectData.budget,
-      tags: projectData.tags,
+    await test.step('Go to projects page', async () => {
+      await page.goto('/operational-studies/projects');
     });
 
-    // Validate that the project was created with the correct data
-    await projectPage.validateProjectData({
-      name: projectName,
-      description: projectData.description,
-      objectives: projectData.objectives,
-      funders: projectData.funders,
-      budget: projectData.budget,
-      tags: projectData.tags,
+    await test.step('Create project via UI', async () => {
+      await projectPage.createProject({
+        name: projectName,
+        description: projectData.description,
+        objectives: projectData.objectives,
+        funders: projectData.funders,
+        budget: projectData.budget,
+        tags: projectData.tags,
+      });
     });
 
-    // Delete the created project
-    await deleteProject(projectName);
+    await test.step('Validate created project data', async () => {
+      await projectPage.validateProjectData({
+        name: projectName,
+        description: projectData.description,
+        objectives: projectData.objectives,
+        funders: projectData.funders,
+        budget: projectData.budget,
+        tags: projectData.tags,
+      });
+    });
+
+    await test.step('Delete created project', async () => {
+      await deleteProject(projectName);
+    });
   });
 
   /** *************** Test 2 **************** */
   test('Update an existing project', async ({ page }) => {
-    // Create a project
-    project = await createProject(generateUniqueName(projectData.name));
-    await page.goto('/operational-studies/projects');
-
-    // Open the created project by name using the project page model
-    await projectPage.openProjectByTestId(project.name);
-
-    // Update the project data and save it
-    await projectPage.updateProject({
-      name: `${project.name} (updated)`,
-      description: `${project.description} (updated)`,
-      objectives: `${projectData.objectives} (updated)`,
-      funders: `${project.funders} (updated)`,
-      budget: '123456789',
-      tags: ['update-tag'],
+    await test.step('Create a base project', async () => {
+      project = await createProject(generateUniqueName(projectData.name));
     });
 
-    // Navigate back to the Operational Studies page via the home page
-    await projectPage.backToHomePage();
-    await projectPage.goToOperationalStudiesPage();
-
-    // Reopen the updated project and validate the updated data
-    await projectPage.openProjectByTestId(`${project.name} (updated)`);
-    await projectPage.validateProjectData({
-      name: `${project.name} (updated)`,
-      description: `${project.description} (updated)`,
-      objectives: `${projectData.objectives} (updated)`,
-      funders: `${project.funders} (updated)`,
-      budget: '123456789',
-      tags: ['update-tag'],
+    await test.step('Open created project from projects list', async () => {
+      await page.goto('/operational-studies/projects');
+      await projectPage.openProjectByTestId(project.name);
     });
-    // Delete the created project
-    await deleteProject(`${project.name} (updated)`);
+
+    await test.step('Update than save project details', async () => {
+      await projectPage.updateProject({
+        name: `${project.name} (updated)`,
+        description: `${project.description} (updated)`,
+        objectives: `${projectData.objectives} (updated)`,
+        funders: `${project.funders} (updated)`,
+        budget: '123456789',
+        tags: ['update-tag'],
+      });
+    });
+
+    await test.step('Navigate back to operational studies page via home page', async () => {
+      await projectPage.backToHomePage();
+      await projectPage.goToOperationalStudiesPage();
+    });
+
+    await test.step('Reopen updated project and validate data', async () => {
+      await projectPage.openProjectByTestId(`${project.name} (updated)`);
+      await projectPage.validateProjectData({
+        name: `${project.name} (updated)`,
+        description: `${project.description} (updated)`,
+        objectives: `${projectData.objectives} (updated)`,
+        funders: `${project.funders} (updated)`,
+        budget: '123456789',
+        tags: ['update-tag'],
+      });
+    });
+
+    await test.step('Delete updated project', async () => {
+      await deleteProject(`${project.name} (updated)`);
+    });
   });
 
   /** *************** Test 3 **************** */
   test('Delete a project', async ({ page }) => {
-    // Create a project
-    project = await createProject(generateUniqueName(projectData.name));
-    await page.goto('/operational-studies/projects');
+    await test.step('Create a project to delete', async () => {
+      project = await createProject(generateUniqueName(projectData.name));
+    });
 
-    // Find the project by name and delete it using the page model
-    await projectPage.openProjectByTestId(project.name);
-    await projectPage.deleteProject(project.name);
+    await test.step('Open project and delete it', async () => {
+      await page.goto('/operational-studies/projects');
+      await projectPage.openProjectByTestId(project.name);
+      await projectPage.deleteProject(project.name);
+    });
   });
 });

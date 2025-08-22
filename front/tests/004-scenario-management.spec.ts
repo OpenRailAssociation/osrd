@@ -52,94 +52,104 @@ test.describe('Validate the Scenario creation workflow', () => {
 
   /** *************** Test 1 **************** */
   test('Create a new scenario', async ({ page }) => {
-    // Navigate to the study page for the selected project
-    await page.goto(`/operational-studies/projects/${project.id}/studies/${study.id}`);
+    const scenarioName = generateUniqueName(scenarioData.name);
 
-    const scenarioName = generateUniqueName(scenarioData.name); // Generate a unique scenario name
-
-    // Create a new scenario using the scenario page model
-    await scenarioPage.createScenario({
-      name: scenarioName,
-      description: scenarioData.description,
-      infraName: infrastructureName,
-      tags: scenarioData.tags,
-      electricProfileName: electricalProfileSet.name,
+    await test.step('Navigate to study page', async () => {
+      await page.goto(`/operational-studies/projects/${project.id}/studies/${study.id}`);
     });
-    await waitForInfraStateToBeCached(infra.id);
 
-    // Validate that the scenario was created with the correct data
-    await scenarioPage.validateScenarioData({
-      name: scenarioName,
-      description: scenarioData.description,
-      infraName: infrastructureName,
+    await test.step('Create scenario via UI', async () => {
+      await scenarioPage.createScenario({
+        name: scenarioName,
+        description: scenarioData.description,
+        infraName: infrastructureName,
+        tags: scenarioData.tags,
+        electricProfileName: electricalProfileSet.name,
+      });
+      await waitForInfraStateToBeCached(infra.id);
     });
-    await deleteScenario(project.id, study.id, scenarioName);
+
+    await test.step('Validate created scenario data', async () => {
+      await scenarioPage.validateScenarioData({
+        name: scenarioName,
+        description: scenarioData.description,
+        infraName: infrastructureName,
+      });
+    });
+
+    await test.step('Delete created scenario', async () => {
+      await deleteScenario(project.id, study.id, scenarioName);
+    });
   });
 
   /** *************** Test 2 **************** */
   test('Update an existing scenario', async ({ page }) => {
-    // Set up a scenario
-    ({ project, study, scenario } = await createScenario());
+    await test.step('Create a base scenario', async () => {
+      ({ project, study, scenario } = await createScenario());
+    });
 
-    // Navigate to the specific scenario page
-    await page.goto(`/operational-studies/projects/${project.id}/studies/${study.id}`);
-    await scenarioPage.openScenarioByName(scenario.name);
+    await test.step('Open scenario from study page and wait infra cache', async () => {
+      await page.goto(`/operational-studies/projects/${project.id}/studies/${study.id}`);
+      await scenarioPage.openScenarioByName(scenario.name);
+      await waitForInfraStateToBeCached(scenario.infra_id);
+    });
 
-    // Wait for infra to be in 'CACHED' state before proceeding
-    await waitForInfraStateToBeCached(scenario.infra_id);
-
-    // Update the scenario with new details
     const updatedScenarioName = generateUniqueName(`${scenarioData.name}(updated)`);
-    await scenarioPage.updateScenario({
-      name: updatedScenarioName,
-      description: `${scenario.description} (updated)`,
-      tags: ['update-tag'],
+    await test.step('Update scenario details', async () => {
+      await scenarioPage.updateScenario({
+        name: updatedScenarioName,
+        description: `${scenario.description} (updated)`,
+        tags: ['update-tag'],
+      });
     });
 
-    await scenarioPage.validateScenarioData({
-      name: updatedScenarioName,
-      description: `${scenario.description} (updated)`,
-      infraName: infrastructureName,
-      isUpdating: true,
+    await test.step('Validate updated scenario (in scenario page)', async () => {
+      await scenarioPage.validateScenarioData({
+        name: updatedScenarioName,
+        description: `${scenario.description} (updated)`,
+        infraName: infrastructureName,
+        isUpdating: true,
+      });
     });
 
-    // Navigate back to the study page to verify the updated tags
-    await page.goto(`/operational-studies/projects/${project.id}/studies/${study.id}`);
-
-    // Assert that the updated tags include the new 'update-tag'
-    expect(await scenarioPage.getScenarioTags(updatedScenarioName).textContent()).toContain(
-      `${scenarioData.tags.join('')}update-tag`
-    );
-
-    // Reopen the updated scenario and validate the updated data
-    await scenarioPage.openScenarioByName(updatedScenarioName);
-    await scenarioPage.validateScenarioData({
-      name: updatedScenarioName,
-      description: `${scenario.description} (updated)`,
-      infraName: infrastructureName,
+    await test.step('Validate scenario tags in study page list', async () => {
+      await page.goto(`/operational-studies/projects/${project.id}/studies/${study.id}`);
+      expect(await scenarioPage.getScenarioTags(updatedScenarioName).textContent()).toContain(
+        `${scenarioData.tags.join('')}update-tag`
+      );
     });
 
-    // Delete the scenario
-    await deleteScenario(project.id, study.id, updatedScenarioName);
+    await test.step('Reopen updated scenario and re-validate', async () => {
+      await scenarioPage.openScenarioByName(updatedScenarioName);
+      await scenarioPage.validateScenarioData({
+        name: updatedScenarioName,
+        description: `${scenario.description} (updated)`,
+        infraName: infrastructureName,
+      });
+    });
+
+    await test.step('Delete updated scenario', async () => {
+      await deleteScenario(project.id, study.id, updatedScenarioName);
+    });
   });
 
   /** *************** Test 3 **************** */
   test('Delete a scenario', async ({ page }) => {
-    // Set up a scenario
-    ({ project, study, scenario } = await createScenario());
+    await test.step('Create a scenario to delete', async () => {
+      ({ project, study, scenario } = await createScenario());
+    });
 
-    // Navigate to the specific scenario page
-    await page.goto(`/operational-studies/projects/${project.id}/studies/${study.id}`);
-    await scenarioPage.openScenarioByName(scenario.name);
-    await waitForInfraStateToBeCached(infra.id);
-    // Initiate the deletion of the scenario
-    await scenarioPage.openScenarioEditForm();
-    await scenarioPage.deleteScenario();
+    await test.step('Open scenario and delete via edit form', async () => {
+      await page.goto(`/operational-studies/projects/${project.id}/studies/${study.id}`);
+      await scenarioPage.openScenarioByName(scenario.name);
+      await waitForInfraStateToBeCached(infra.id);
+      await scenarioPage.openScenarioEditForm();
+      await scenarioPage.deleteScenario();
+    });
 
-    // Navigate back to the study page
-    await page.goto(`/operational-studies/projects/${project.id}/studies/${study.id}`);
-
-    // Ensure that the scenario is no longer visible
-    await expect(scenarioPage.getScenarioByName(scenario.name)).not.toBeVisible();
+    await test.step('Verify scenario no longer visible in study page', async () => {
+      await page.goto(`/operational-studies/projects/${project.id}/studies/${study.id}`);
+      await expect(scenarioPage.getScenarioByName(scenario.name)).not.toBeVisible();
+    });
   });
 });
