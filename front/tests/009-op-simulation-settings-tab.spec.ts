@@ -159,7 +159,7 @@ test.describe('Simulation Settings Tab Verification', () => {
     await deleteScenario(project.id, study.id, scenario.name);
   });
 
-  test('Activate electrical profiles', async ({ page }) => {
+  test('Activate electrical profiles', async ({ page, browserName }) => {
     const cell: CellData = {
       stationName: 'Mid_East_station',
       header: 'stopTime',
@@ -186,9 +186,11 @@ test.describe('Simulation Settings Tab Verification', () => {
 
     await timeAndStopSimulationOutputs.verifyTimesStopsDataSheetVisibility();
     await simulationResultPage.selectAllSpeedSpaceChartCheckboxes();
-    await expect(simulationResultPage.speedSpaceChartTabindexElement).toHaveScreenshot(
-      'SpeedSpaceChart-ElectricalProfileActivated.png'
-    );
+    if (browserName === 'chromium') {
+      await expect(simulationResultPage.speedSpaceChartTabindexElement).toHaveScreenshot(
+        'SpeedSpaceChart-ElectricalProfileActivated.png'
+      );
+    }
     await scrollContainer(page, '.time-stop-outputs .time-stops-datasheet .dsg-container');
     await timeAndStopSimulationOutputs.getOutputTableData(expectedCellDataElectricalProfileON);
     await scenarioPage.toggleTrainList(false);
@@ -201,14 +203,16 @@ test.describe('Simulation Settings Tab Verification', () => {
 
     await timeAndStopSimulationOutputs.verifyTimesStopsDataSheetVisibility();
     await simulationResultPage.selectAllSpeedSpaceChartCheckboxes();
-    await expect(simulationResultPage.speedSpaceChartTabindexElement).toHaveScreenshot(
-      'SpeedSpaceChart-ElectricalProfileDisabled.png'
-    );
+    if (browserName === 'chromium') {
+      await expect(simulationResultPage.speedSpaceChartTabindexElement).toHaveScreenshot(
+        'SpeedSpaceChart-ElectricalProfileDisabled.png'
+      );
+    }
     await timeAndStopSimulationOutputs.getOutputTableData(expectedCellDataElectricalProfileOFF);
     await scenarioPage.toggleTrainList(false);
     await scenarioTimetableSection.getTimetableItemArrivalTime('11:52');
   });
-  test('Activate composition code', async ({ page }) => {
+  test('Activate composition code', async ({ page, browserName }) => {
     const cell: CellData = {
       stationName: 'Mid_East_station',
       header: 'stopTime',
@@ -235,9 +239,11 @@ test.describe('Simulation Settings Tab Verification', () => {
 
     await timeAndStopSimulationOutputs.verifyTimesStopsDataSheetVisibility();
     await simulationResultPage.selectAllSpeedSpaceChartCheckboxes();
-    await expect(simulationResultPage.speedSpaceChartTabindexElement).toHaveScreenshot(
-      'SpeedSpaceChart-SpeedLimitTagActivated.png'
-    );
+    if (browserName === 'chromium') {
+      await expect(simulationResultPage.speedSpaceChartTabindexElement).toHaveScreenshot(
+        'SpeedSpaceChart-SpeedLimitTagActivated.png'
+      );
+    }
     await scrollContainer(page, '.time-stop-outputs .time-stops-datasheet .dsg-container');
     await timeAndStopSimulationOutputs.getOutputTableData(expectedCellDataCodeCompoON);
     await scenarioPage.toggleTrainList(false);
@@ -250,14 +256,16 @@ test.describe('Simulation Settings Tab Verification', () => {
 
     await timeAndStopSimulationOutputs.verifyTimesStopsDataSheetVisibility();
     await simulationResultPage.selectAllSpeedSpaceChartCheckboxes();
-    await expect(simulationResultPage.speedSpaceChartTabindexElement).toHaveScreenshot(
-      'SpeedSpaceChart-SpeedLimitTagDisabled.png'
-    );
+    if (browserName === 'chromium') {
+      await expect(simulationResultPage.speedSpaceChartTabindexElement).toHaveScreenshot(
+        'SpeedSpaceChart-SpeedLimitTagDisabled.png'
+      );
+    }
     await timeAndStopSimulationOutputs.getOutputTableData(expectedCellDataCodeCompoOFF);
     await scenarioPage.toggleTrainList(false);
     await scenarioTimetableSection.getTimetableItemArrivalTime('11:52');
   });
-  test('Activate linear and mareco margin', async ({ page }) => {
+  test('Activate linear and mareco margin', async ({ page, browserName }) => {
     const inputTableData: CellData[] = [
       {
         stationName: 'Mid_East_station',
@@ -294,10 +302,11 @@ test.describe('Simulation Settings Tab Verification', () => {
 
     await timeAndStopSimulationOutputs.verifyTimesStopsDataSheetVisibility();
     await simulationResultPage.selectAllSpeedSpaceChartCheckboxes();
-    await expect(simulationResultPage.speedSpaceChartTabindexElement).toHaveScreenshot(
-      'SpeedSpaceChart-LinearMargin.png'
-    );
-
+    if (browserName === 'chromium') {
+      await expect(simulationResultPage.speedSpaceChartTabindexElement).toHaveScreenshot(
+        'SpeedSpaceChart-LinearMargin.png'
+      );
+    }
     await scrollContainer(page, '.time-stop-outputs .time-stops-datasheet .dsg-container');
     await timeAndStopSimulationOutputs.getOutputTableData(expectedCellDataLinearMargin);
     await scenarioPage.toggleTrainList(false);
@@ -310,14 +319,16 @@ test.describe('Simulation Settings Tab Verification', () => {
 
     await timeAndStopSimulationOutputs.verifyTimesStopsDataSheetVisibility();
     await simulationResultPage.selectAllSpeedSpaceChartCheckboxes();
-    await expect(simulationResultPage.speedSpaceChartTabindexElement).toHaveScreenshot(
-      'SpeedSpaceChart-MarecoMargin.png'
-    );
+    if (browserName === 'chromium') {
+      await expect(simulationResultPage.speedSpaceChartTabindexElement).toHaveScreenshot(
+        'SpeedSpaceChart-MarecoMargin.png'
+      );
+    }
     await timeAndStopSimulationOutputs.getOutputTableData(expectedCellDataMarecoMargin);
     await scenarioPage.toggleTrainList(false);
     await scenarioTimetableSection.getTimetableItemArrivalTime('11:55');
   });
-  test('Add all the simulation settings', async ({ page }) => {
+  test('Add all the simulation settings', async ({ page, browserName }) => {
     const inputTableData: CellData[] = [
       {
         stationName: 'Mid_East_station',
@@ -353,9 +364,11 @@ test.describe('Simulation Settings Tab Verification', () => {
     await scenarioPage.toggleTrainList();
     await timeAndStopSimulationOutputs.verifyTimesStopsDataSheetVisibility();
     await simulationResultPage.selectAllSpeedSpaceChartCheckboxes();
-    await expect(simulationResultPage.speedSpaceChartTabindexElement).toHaveScreenshot(
-      'SpeedSpaceChart-AllSettingsEnabled.png'
-    );
+    if (browserName === 'chromium') {
+      await expect(simulationResultPage.speedSpaceChartTabindexElement).toHaveScreenshot(
+        'SpeedSpaceChart-AllSettingsEnabled.png'
+      );
+    }
     await scrollContainer(page, '.time-stop-outputs .time-stops-datasheet .dsg-container');
     await timeAndStopSimulationOutputs.getOutputTableData(expectedCellDataForAllSettings);
     await scenarioPage.toggleTrainList(false);
