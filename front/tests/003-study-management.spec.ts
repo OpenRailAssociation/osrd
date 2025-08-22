@@ -11,17 +11,11 @@ import { formatDateToDayMonthYear } from './utils/date-utils';
 import readJsonFile from './utils/file-utils';
 import { createStudy } from './utils/setup-utils';
 import { deleteStudy } from './utils/teardown-utils';
-import type { FlatTranslations, StudyData } from './utils/types';
-
-type StudyfrTranslations = {
-  study: {
-    studyCategories: FlatTranslations;
-    studyStates: FlatTranslations;
-  };
-};
+import type { StudyData, StudyFrTranslations } from './utils/types';
 
 const studyData: StudyData = readJsonFile('tests/assets/operation-studies/study.json');
-const frTranslations: StudyfrTranslations = readJsonFile(
+
+const frTranslations: StudyFrTranslations = readJsonFile(
   'public/locales/fr/operational-studies.json'
 );
 

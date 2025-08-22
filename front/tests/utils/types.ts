@@ -324,6 +324,13 @@ export type StdcmTranslations = {
 
 export type FlatTranslations = Record<string, string>;
 
+export type StudyFrTranslations = {
+  study: {
+    studyCategories: FlatTranslations;
+    studyStates: FlatTranslations;
+  };
+};
+
 export type ManageTimetableItemTranslations = FlatTranslations & {
   pacedTrains: FlatTranslations;
 };
