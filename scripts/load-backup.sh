@@ -41,7 +41,7 @@ fi
 # These variables are necessary to load the infra on the correct instance (the pr-infra or the dev one)
 OSRD_POSTGRES="osrd-postgres"
 OSRD_POSTGRES_PORT=5432
-if [ "$PR_TEST" = 1 ]; then
+if [ "${PR_TEST:-0}" = 1 ]; then
   OSRD_POSTGRES="osrd-postgres-pr-tests"
   OSRD_POSTGRES_PORT=5433
 fi
