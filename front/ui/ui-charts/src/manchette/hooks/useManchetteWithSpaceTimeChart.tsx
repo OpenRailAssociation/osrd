@@ -173,14 +173,41 @@ const useManchetteWithSpaceTimeChart = ({
     totalDistance
   );
 
-  const handleRectangleZoom = useCallback(
-    ({
-      scales: { chosenTimeScale, chosenSpaceScale },
-      overrideState,
-    }: {
-      scales: { chosenTimeScale: number; chosenSpaceScale?: number };
-      overrideState?: Partial<State>;
-    }) => {
+  useEffect(() => {
+    if (rect && !zoomMode && spaceTimeChartRef?.current) {
+      const { timeStart, timeEnd, spaceStart, spaceEnd } = rect;
+      const timeRange = Math.abs(Number(timeEnd) - Number(timeStart)); // width of rect in ms
+      const spaceRange = Math.abs(spaceEnd - spaceStart); // height of rect in mm
+
+      const chosenTimeScale = timeRange / spaceTimeChartRef.current.clientWidth;
+      let chosenSpaceScale: number | undefined;
+      let overrideState: Partial<State>;
+      if (isProportional) {
+        chosenSpaceScale = spaceRange / drawingHeightWithoutTopPadding;
+        overrideState = { rect: null };
+      } else if (pixelRect) {
+        const currentStopHeight = BASE_WAYPOINT_HEIGHT * yZoom;
+        const { yStart, yEnd } = pixelRect;
+        const numberOfStopsInRect = Math.abs(yEnd - yStart) / currentStopHeight;
+        let newStopHeight = drawingHeightWithoutTopPadding / numberOfStopsInRect;
+        // at maximum zoom, we want 3 stops displayed
+        const maxStopHeight =
+          drawingHeightWithoutTopPadding / (2 + BASE_WAYPOINT_HEIGHT / newStopHeight);
+        newStopHeight = Math.min(newStopHeight, maxStopHeight);
+        const newYZoom = newStopHeight / BASE_WAYPOINT_HEIGHT;
+        const rectTop = yOffset + Math.min(yStart, yEnd) - WAYPOINT_LINE_HEIGHT;
+        const numberOfStopsBeforeRectTop = rectTop / currentStopHeight;
+        const newYOffset = numberOfStopsBeforeRectTop * newStopHeight;
+
+        overrideState = {
+          rect: null,
+          pixelRect: null,
+          yZoom: newYZoom,
+          yOffset: newYOffset,
+          scrollTo: newYOffset,
+        };
+      }
+
       setState((prev) => {
         if (prev.zoomMode || !prev.rect || !spaceTimeChartRef?.current) {
           return prev;
@@ -237,65 +264,10 @@ const useManchetteWithSpaceTimeChart = ({
           ...overrideState,
         };
       });
-    },
-    [
-      timeOrigin,
-      spaceOrigin,
-      minZoomMillimeterPerPx,
-      maxZoomMillimeterPerPx,
-      yOffset,
-      yZoom,
-      height,
-      spaceTimeChartRef,
-      verticalPadding,
-    ]
-  );
-
-  useEffect(() => {
-    if (rect && !zoomMode && spaceTimeChartRef?.current) {
-      const { timeStart, timeEnd, spaceStart, spaceEnd } = rect;
-      const timeRange = Math.abs(Number(timeEnd) - Number(timeStart)); // width of rect in ms
-      const spaceRange = Math.abs(spaceEnd - spaceStart); // height of rect in mm
-
-      const chosenTimeScale = timeRange / spaceTimeChartRef.current.clientWidth;
-      if (isProportional) {
-        const chosenSpaceScale = spaceRange / drawingHeightWithoutTopPadding;
-        handleRectangleZoom({
-          scales: { chosenTimeScale, chosenSpaceScale },
-          overrideState: { rect: null },
-        });
-      } else if (pixelRect) {
-        const currentStopHeight = BASE_WAYPOINT_HEIGHT * yZoom;
-        const { yStart, yEnd } = pixelRect;
-        const numberOfStopsInRect = Math.abs(yEnd - yStart) / currentStopHeight;
-        let newStopHeight = drawingHeightWithoutTopPadding / numberOfStopsInRect;
-        // at maximum zoom, we want 3 stops displayed
-        const maxStopHeight =
-          drawingHeightWithoutTopPadding / (2 + BASE_WAYPOINT_HEIGHT / newStopHeight);
-        newStopHeight = Math.min(newStopHeight, maxStopHeight);
-        const newYZoom = newStopHeight / BASE_WAYPOINT_HEIGHT;
-        const rectTop = yOffset + Math.min(yStart, yEnd) - WAYPOINT_LINE_HEIGHT;
-        const numberOfStopsBeforeRectTop = rectTop / currentStopHeight;
-        const newYOffset = numberOfStopsBeforeRectTop * newStopHeight;
-
-        handleRectangleZoom({
-          scales: {
-            chosenTimeScale,
-          },
-          overrideState: {
-            rect: null,
-            pixelRect: null,
-            yZoom: newYZoom,
-            yOffset: newYOffset,
-            scrollTo: newYOffset,
-          },
-        });
-      }
     }
   }, [
     state.rect,
     state.zoomMode,
-    handleRectangleZoom,
     drawingHeightWithoutTopPadding,
     isProportional,
     pixelRect,
@@ -304,6 +276,12 @@ const useManchetteWithSpaceTimeChart = ({
     yOffset,
     yZoom,
     zoomMode,
+    timeOrigin,
+    maxZoomMillimeterPerPx,
+    minZoomMillimeterPerPx,
+    spaceOrigin,
+    height,
+    verticalPadding,
   ]);
 
   const zoomYIn = useCallback(() => {
