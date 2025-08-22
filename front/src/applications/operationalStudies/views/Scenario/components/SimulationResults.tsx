@@ -50,7 +50,6 @@ type SimulationResultsProps = {
   conflicts?: Conflict[];
   activeBoards: Set<Board>;
   updateTrainDepartureTime: (trainId: TimetableItemId, newDepartureTime: Date) => Promise<void>;
-  isMapDisplayed?: boolean;
 };
 
 const SimulationResults = ({
@@ -60,7 +59,6 @@ const SimulationResults = ({
   conflicts = [],
   activeBoards,
   updateTrainDepartureTime,
-  isMapDisplayed,
 }: SimulationResultsProps) => {
   const { t } = useTranslation('operational-studies');
   const dispatch = useAppDispatch();
@@ -301,7 +299,7 @@ const SimulationResults = ({
               </div>
 
               {/* SIMULATION : MAP */}
-              <BoardWrapper hidden={!isMapDisplayed} name={t('boards.map')} withFooter>
+              <BoardWrapper hidden={!activeBoards.has('map')} name={t('boards.map')} withFooter>
                 <div data-testid="simulation-map" className="simulation-map">
                   <SimulationResultsMap
                     geometry={simulationResults.pathProperties.geometry}
