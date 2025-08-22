@@ -100,163 +100,182 @@ test.describe('Verify simulation configuration in operational studies for train 
     await deleteScenario(project.id, study.id, scenario.name);
   });
 
-  test.beforeEach('Go to scenario page', async ({ page }) => {
-    [
-      rollingstockSelector,
-      operationalStudiesPage,
-      scenarioTimetableSection,
-      routeTab,
-      pacedTrainSection,
-      timesAndStopsTab,
-      simulationResultPage,
-      timeAndStopSimulationOutputs,
-      scenarioPage,
-    ] = [
-      new RollingStockSelector(page),
-      new OperationalStudiesPage(page),
-      new ScenarioTimetableSection(page),
-      new RouteTab(page),
-      new PacedTrainSection(page),
-      new TimesAndStopsTab(page),
-      new OpSimulationResultPage(page),
-      new TimeAndStopSimulationOutputs(page),
-      new ScenarioPage(page),
-    ];
+  test.beforeEach(
+    'Navigate to scenario page and wait for infrastructure to be loaded',
+    async ({ page }) => {
+      [
+        rollingstockSelector,
+        operationalStudiesPage,
+        scenarioTimetableSection,
+        routeTab,
+        pacedTrainSection,
+        timesAndStopsTab,
+        simulationResultPage,
+        timeAndStopSimulationOutputs,
+        scenarioPage,
+      ] = [
+        new RollingStockSelector(page),
+        new OperationalStudiesPage(page),
+        new ScenarioTimetableSection(page),
+        new RouteTab(page),
+        new PacedTrainSection(page),
+        new TimesAndStopsTab(page),
+        new OpSimulationResultPage(page),
+        new TimeAndStopSimulationOutputs(page),
+        new ScenarioPage(page),
+      ];
 
-    // Navigate to the scenario page for the given project and study
-    await page.goto(
-      `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenario.id}`
-    );
-    await operationalStudiesPage.removeViteOverlay();
-
-    await waitForInfraStateToBeCached(infra.id);
-  });
+      await page.goto(
+        `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenario.id}`
+      );
+      await operationalStudiesPage.removeViteOverlay();
+      await waitForInfraStateToBeCached(infra.id);
+    }
+  );
 
   /** *************** Test 1 **************** */
   test('Verify default behaviors with paced train mode', async () => {
-    await operationalStudiesPage.openTimetableItemForm();
+    await test.step('Open timetable item form', async () => {
+      await operationalStudiesPage.openTimetableItemForm();
+    });
 
-    // Verify that all configuration buttons and inputs are visible and have their proper default values
-    await operationalStudiesPage.checkInputsAndButtons(frTranslations, scenario.creation_date);
+    await test.step('Verify default inputs/buttons', async () => {
+      await operationalStudiesPage.checkInputsAndButtons(frTranslations, scenario.creation_date);
+    });
 
-    // Verify that all tabs are visible and their default behavior is correct
-    await operationalStudiesPage.checkTabs();
+    await test.step('Verify tabs default behavior', async () => {
+      await operationalStudiesPage.checkTabs();
+    });
 
-    // Check the define paced train checkbox
-    await operationalStudiesPage.checkPacedTrainModeAndVerifyInputs(frTranslations);
+    await test.step('Enable paced train mode and verify inputs', async () => {
+      await operationalStudiesPage.checkPacedTrainModeAndVerifyInputs(frTranslations);
+    });
 
-    // Test the paced train mode behavior
-    await operationalStudiesPage.testPacedTrainMode(frTranslations);
+    await test.step('Test paced train mode behavior', async () => {
+      await operationalStudiesPage.testPacedTrainMode(frTranslations);
+    });
   });
 
   /** *************** Test 2 **************** */
   test('Add a paced train and verify its timetable details', async ({ page, browserName }) => {
-    await operationalStudiesPage.openTimetableItemForm();
-
-    // Set the paced train inputs
-    await operationalStudiesPage.fillPacedTrainSettings(NEW_PACED_TRAIN_SETTINGS);
-
-    // Select a rolling stock
-    await rollingstockSelector.selectRollingStock(dualModeRollingStockName);
-
-    // Select an itinerary
-    await operationalStudiesPage.openRouteTab();
-    await routeTab.performPathfindingByTrigram({
-      originTrigram: 'WS',
-      destinationTrigram: 'NES',
-    });
-    await operationalStudiesPage.checkPathfindingDistance('46.050 km');
-
-    // Verify initial row count and fill table with input data
-    await operationalStudiesPage.openTimesAndStopsTab();
-    await scrollContainer(page, '.time-stops-datasheet .dsg-container');
-
-    await timesAndStopsTab.verifyActiveRowsCount(2);
-    for (const cell of initialInputsData) {
-      const translatedHeader = cleanWhitespace(frTranslations[cell.header]);
-      await timesAndStopsTab.fillTableCellByStationAndHeader(
-        cell.stationName,
-        translatedHeader,
-        cell.value,
-        cell.marginForm
-      );
-    }
-
-    // Add paced train
-    await operationalStudiesPage.createTimetableItem();
-
-    // Verify the paced train has been added and return to the simulation results and timetable
-    await operationalStudiesPage.checkToastHasBeenLaunched(frTranslations.pacedTrains.added);
-    await operationalStudiesPage.returnSimulationResult();
-
-    // Confirm that the number of paced trains added matches the expected number
-    await scenarioTimetableSection.verifyTimetableItemsCount(1); // Only one paced train can be added at a time
-
-    await pacedTrainSection.verifyPacedTrainItemDetails(NEW_PACED_TRAIN_SETTINGS, 0, {
-      occurrenceData: ADD_PACED_TRAIN_OCCURRENCES_DETAILS[0],
+    await test.step('Open timetable item form', async () => {
+      await operationalStudiesPage.openTimetableItemForm();
     });
 
-    // Click on occurrence to check its simulation results
-    await pacedTrainSection.selectOccurrence({ pacedTrainIndex: 0, occurrenceIndex: 0 });
-    await scenarioPage.toggleTrainList();
-    if (browserName === 'chromium') {
-      await expect(simulationResultPage.speedSpaceChart).toHaveScreenshot(
-        'SpeedSpaceChart-InitialInputs.png'
-      );
-    }
-    await scrollContainer(page, '.time-stop-outputs .time-stops-datasheet .dsg-container');
-    await timeAndStopSimulationOutputs.getOutputTableData(expectedOutputData);
+    await test.step('Fill paced train inputs', async () => {
+      await operationalStudiesPage.fillPacedTrainSettings(NEW_PACED_TRAIN_SETTINGS);
+    });
+
+    await test.step('Select rolling stock', async () => {
+      await rollingstockSelector.selectRollingStock(dualModeRollingStockName);
+    });
+
+    await test.step('Select itinerary and verify distance', async () => {
+      await operationalStudiesPage.openRouteTab();
+      await routeTab.performPathfindingByTrigram({
+        originTrigram: 'WS',
+        destinationTrigram: 'NES',
+      });
+      await operationalStudiesPage.checkPathfindingDistance('46.050 km');
+    });
+
+    await test.step('Fill Times & Stops table with initial inputs', async () => {
+      await operationalStudiesPage.openTimesAndStopsTab();
+      await scrollContainer(page, '.time-stops-datasheet .dsg-container');
+      await timesAndStopsTab.verifyActiveRowsCount(2);
+
+      for (const cell of initialInputsData) {
+        const translatedHeader = cleanWhitespace(frTranslations[cell.header]);
+        await timesAndStopsTab.fillTableCellByStationAndHeader(
+          cell.stationName,
+          translatedHeader,
+          cell.value,
+          cell.marginForm
+        );
+      }
+    });
+
+    await test.step('Create paced train and return to results', async () => {
+      await operationalStudiesPage.createTimetableItem();
+      await operationalStudiesPage.checkToastHasBeenLaunched(frTranslations.pacedTrains.added);
+      await operationalStudiesPage.returnSimulationResult();
+    });
+
+    await test.step('Verify list contains exactly one paced train', async () => {
+      await scenarioTimetableSection.verifyTimetableItemsCount(1);
+    });
+
+    await test.step('Verify paced train card and first occurrence details', async () => {
+      await pacedTrainSection.verifyPacedTrainItemDetails(NEW_PACED_TRAIN_SETTINGS, 0, {
+        occurrenceData: ADD_PACED_TRAIN_OCCURRENCES_DETAILS[0],
+      });
+    });
+
+    await test.step('Open first occurrence and verify its simulation results (screenshot comparison for the GEV)', async () => {
+      await pacedTrainSection.selectOccurrence({ pacedTrainIndex: 0, occurrenceIndex: 0 });
+      await scenarioPage.toggleTrainList();
+      if (browserName === 'chromium') {
+        await expect(simulationResultPage.speedSpaceChart).toHaveScreenshot(
+          'SpeedSpaceChart-InitialInputs.png'
+        );
+      }
+      await scrollContainer(page, '.time-stop-outputs .time-stops-datasheet .dsg-container');
+      await timeAndStopSimulationOutputs.getOutputTableData(expectedOutputData);
+    });
   });
 
   /** *************** Test 3 **************** */
   test('Duplicate and delete a paced train', async ({ page }) => {
-    await sendPacedTrains(scenario.timetable_id, pacedTrainsJson);
-
-    // to trigger list of paced train initialization for this e2e test, which isn't needed locally
-    await page.reload();
-
-    await scenarioTimetableSection.verifyTotalItemsLabel(frTranslations, {
-      totalPacedTrainCount: TOTAL_PACED_TRAINS,
-      totalTrainScheduleCount: 0,
+    await test.step('Set paced trains via API and reload to initialize list', async () => {
+      await sendPacedTrains(scenario.timetable_id, pacedTrainsJson);
+      await page.reload();
     });
 
-    // Duplicate the first paced train
-    await pacedTrainSection.duplicatePacedTrain();
-
-    // Verify that a toast is displayed
-    await operationalStudiesPage.checkToastHasBeenLaunched(
-      frTranslations.timetable.pacedTrainAdded
-    );
-
-    // Verify that there is one more paced train in the list
-    await scenarioTimetableSection.verifyTotalItemsLabel(frTranslations, {
-      totalPacedTrainCount: TOTAL_PACED_TRAINS + 1,
-      totalTrainScheduleCount: 0,
+    await test.step('Verify initial counters', async () => {
+      await scenarioTimetableSection.verifyTotalItemsLabel(frTranslations, {
+        totalPacedTrainCount: TOTAL_PACED_TRAINS,
+        totalTrainScheduleCount: 0,
+      });
     });
 
-    // Verify that the duplicated paced train has the proper details
-    await pacedTrainSection.verifyPacedTrainItemDetails(DUPLICATED_PACED_TRAIN_DETAILS, 1, {
-      occurrenceData: DUPLICATED_PACED_TRAIN_OCCURRENCES_DETAILS,
-      copyTranslation: frTranslations.timetable.copy,
+    await test.step('Duplicate first paced train and verify toast notification', async () => {
+      await pacedTrainSection.duplicatePacedTrain();
+      await operationalStudiesPage.checkToastHasBeenLaunched(
+        frTranslations.timetable.pacedTrainAdded
+      );
     });
 
-    // Verify global item counter has one more paced train
-    await scenarioTimetableSection.verifyTotalItemsLabel(frTranslations, {
-      totalPacedTrainCount: TOTAL_PACED_TRAINS_WITH_DUPLICATE,
-      totalTrainScheduleCount: 0,
+    await test.step('Verify counters increased by one', async () => {
+      await scenarioTimetableSection.verifyTotalItemsLabel(frTranslations, {
+        totalPacedTrainCount: TOTAL_PACED_TRAINS + 1,
+        totalTrainScheduleCount: 0,
+      });
     });
 
-    // Delete the duplicated paced train
-    await pacedTrainSection.deletePacedTrain(
-      DUPLICATED_PACED_TRAIN_INDEX,
-      frTranslations,
-      DUPLICATED_PACED_TRAIN_DETAILS
-    );
+    await test.step('Verify duplicated paced train details', async () => {
+      await pacedTrainSection.verifyPacedTrainItemDetails(DUPLICATED_PACED_TRAIN_DETAILS, 1, {
+        occurrenceData: DUPLICATED_PACED_TRAIN_OCCURRENCES_DETAILS,
+        copyTranslation: frTranslations.timetable.copy,
+      });
+    });
 
-    // Verify global item counter has one less paced train
-    await scenarioTimetableSection.verifyTotalItemsLabel(frTranslations, {
-      totalPacedTrainCount: TOTAL_PACED_TRAINS,
-      totalTrainScheduleCount: 0,
+    await test.step('Verify global counter with duplicate', async () => {
+      await scenarioTimetableSection.verifyTotalItemsLabel(frTranslations, {
+        totalPacedTrainCount: TOTAL_PACED_TRAINS_WITH_DUPLICATE,
+        totalTrainScheduleCount: 0,
+      });
+    });
+
+    await test.step('Delete duplicated paced train and verify counters', async () => {
+      await pacedTrainSection.deletePacedTrain(
+        DUPLICATED_PACED_TRAIN_INDEX,
+        frTranslations,
+        DUPLICATED_PACED_TRAIN_DETAILS
+      );
+      await scenarioTimetableSection.verifyTotalItemsLabel(frTranslations, {
+        totalPacedTrainCount: TOTAL_PACED_TRAINS,
+        totalTrainScheduleCount: 0,
+      });
     });
   });
 });

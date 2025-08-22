@@ -13,8 +13,19 @@ import { waitForInfraStateToBeCached } from './utils';
 import { getInfra, setTowedRollingStock } from './utils/api-utils';
 import type { ConsistFields } from './utils/types';
 
+const fastRollingStockPrefilledValues = {
+  tonnage: '190',
+  length: '46',
+  maxSpeed: '220',
+};
+const towedRollingStockPrefilledValues = {
+  tonnage: '46',
+  length: '26',
+  maxSpeed: '180',
+};
+
 test.describe('Verify stdcm simulation page', () => {
-  test.slow(); // Mark test as slow due to multiple steps
+  test.slow();
   test.use({ viewport: { width: 1920, height: 1080 } });
 
   let stdcmPage: STDCMPage;
@@ -28,17 +39,6 @@ test.describe('Verify stdcm simulation page', () => {
   let infra: Infra;
   let createdTowedRollingStock: TowedRollingStock;
   let towedConsistDetails: ConsistFields;
-
-  const fastRollingStockPrefilledValues = {
-    tonnage: '190',
-    length: '46',
-    maxSpeed: '220',
-  };
-  const towedRollingStockPrefilledValues = {
-    tonnage: '46',
-    length: '26',
-    maxSpeed: '180',
-  };
 
   test.beforeAll('Fetch infrastructure', async () => {
     infra = await getInfra();
@@ -67,59 +67,72 @@ test.describe('Verify stdcm simulation page', () => {
       new SimulationResultPage(page),
       new LinkedTrainSection(page),
     ];
-    // Navigate to STDCM page
+
     await page.goto('/stdcm');
     await stdcmPage.removeViteOverlay();
-
-    // Wait for infra to be in 'CACHED' state before proceeding
     await waitForInfraStateToBeCached(infra.id);
   });
 
   /** *************** Test 1 **************** */
   test('Verify STDCM anterior linked train', async ({ page: _ }, testInfo) => {
-    await consistSection.fillAndVerifyConsistDetails(
-      towedConsistDetails,
-      fastRollingStockPrefilledValues.tonnage,
-      fastRollingStockPrefilledValues.length,
-      towedRollingStockPrefilledValues.tonnage,
-      towedRollingStockPrefilledValues.length
-    );
-    await linkedTrainSection.anteriorLinkedPathDetails();
-    await destinationSection.fillDestinationDetailsLight();
-    await viaSection.fillAndVerifyViaDetails({
-      viaNumber: 1,
-      ciSearchText: 'nS',
+    await test.step('Fill consist with traction engine details + towed RS and verify prefilled values', async () => {
+      await consistSection.fillAndVerifyConsistDetails(
+        towedConsistDetails,
+        fastRollingStockPrefilledValues.tonnage,
+        fastRollingStockPrefilledValues.length,
+        towedRollingStockPrefilledValues.tonnage,
+        towedRollingStockPrefilledValues.length
+      );
     });
-    await destinationSection.fillDestinationDetailsLight();
-    await stdcmPage.verifyValidSimulationLaunch();
-    await simulationResultPage.verifyTableData(
-      './tests/assets/stdcm/linked-train/anterior-linked-train-table.json'
-    );
-    await simulationResultPage.retainSimulation();
-    await simulationResultPage.downloadSimulation(testInfo.outputDir);
+
+    await test.step('Configure anterior linked path, destinations and vias', async () => {
+      await linkedTrainSection.anteriorLinkedPathDetails();
+      await destinationSection.fillDestinationDetailsLight();
+      await viaSection.fillAndVerifyViaDetails({ viaNumber: 1, ciSearchText: 'nS' });
+      await destinationSection.fillDestinationDetailsLight();
+    });
+
+    await test.step('Launch simulation and verify outputs', async () => {
+      await stdcmPage.verifyValidSimulationLaunch();
+      await simulationResultPage.verifyTableData(
+        './tests/assets/stdcm/linked-train/anterior-linked-train-table.json'
+      );
+    });
+
+    await test.step('Retain + download simulation PDF', async () => {
+      await simulationResultPage.retainSimulation();
+      await simulationResultPage.downloadSimulation(testInfo.outputDir);
+    });
   });
 
   /** *************** Test 2 **************** */
   test('Verify STDCM posterior linked train', async ({ page: _ }, testInfo) => {
-    // Preserve the order of section filling to avoid race conditions caused by Playwright's execution speed.
-    await originSection.fillOriginDetailsLight(undefined, 'respectDestinationSchedule', true);
-    await linkedTrainSection.posteriorLinkedPathDetails();
-    await viaSection.fillAndVerifyViaDetails({
-      viaNumber: 1,
-      ciSearchText: 'mid_east',
+    await test.step('Fill origin with posterior constraints and linked path', async () => {
+      await originSection.fillOriginDetailsLight(undefined, 'respectDestinationSchedule', true);
+      await linkedTrainSection.posteriorLinkedPathDetails();
+      await viaSection.fillAndVerifyViaDetails({ viaNumber: 1, ciSearchText: 'mid_east' });
     });
-    await consistSection.fillAndVerifyConsistDetails(
-      towedConsistDetails,
-      fastRollingStockPrefilledValues.tonnage,
-      fastRollingStockPrefilledValues.length,
-      towedRollingStockPrefilledValues.tonnage,
-      towedRollingStockPrefilledValues.length
-    );
-    await stdcmPage.verifyValidSimulationLaunch();
-    await simulationResultPage.verifyTableData(
-      './tests/assets/stdcm/linked-train/posterior-linked-train-table.json'
-    );
-    await simulationResultPage.retainSimulation();
-    await simulationResultPage.downloadSimulation(testInfo.outputDir);
+
+    await test.step('Fill consist with traction engine details + towed RS and verify prefilled values', async () => {
+      await consistSection.fillAndVerifyConsistDetails(
+        towedConsistDetails,
+        fastRollingStockPrefilledValues.tonnage,
+        fastRollingStockPrefilledValues.length,
+        towedRollingStockPrefilledValues.tonnage,
+        towedRollingStockPrefilledValues.length
+      );
+    });
+
+    await test.step('Launch simulation and verify outputs', async () => {
+      await stdcmPage.verifyValidSimulationLaunch();
+      await simulationResultPage.verifyTableData(
+        './tests/assets/stdcm/linked-train/posterior-linked-train-table.json'
+      );
+    });
+
+    await test.step('Retain + download simulation PDF', async () => {
+      await simulationResultPage.retainSimulation();
+      await simulationResultPage.downloadSimulation(testInfo.outputDir);
+    });
   });
 });

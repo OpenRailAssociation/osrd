@@ -14,8 +14,18 @@ import { waitForInfraStateToBeCached } from './utils';
 import { getInfra, setTowedRollingStock } from './utils/api-utils';
 import type { ConsistFields } from './utils/types';
 
+const consistDetails: ConsistFields = {
+  tractionEngine: electricRollingStockName,
+  tonnage: '950',
+  length: '567',
+  speedLimitTag: 'HLP',
+};
+const tractionEnginePrefilledValues = { tonnage: '900', length: '400' };
+const fastRollingStockPrefilledValues = { tonnage: '190', length: '46' };
+const towedRollingStockPrefilledValues = { tonnage: '46', length: '26' };
+
 test.describe('Verify stdcm simulation page', () => {
-  test.slow(); // Mark test as slow due to multiple steps
+  test.slow();
   test.use({ viewport: { width: 1920, height: 1080 } });
 
   let stdcmPage: STDCMPage;
@@ -28,25 +38,6 @@ test.describe('Verify stdcm simulation page', () => {
 
   let infra: Infra;
   let createdTowedRollingStock: TowedRollingStock;
-
-  const consistDetails: ConsistFields = {
-    tractionEngine: electricRollingStockName,
-    tonnage: '950',
-    length: '567',
-    speedLimitTag: 'HLP',
-  };
-  const tractionEnginePrefilledValues = {
-    tonnage: '900',
-    length: '400',
-  };
-  const fastRollingStockPrefilledValues = {
-    tonnage: '190',
-    length: '46',
-  };
-  const towedRollingStockPrefilledValues = {
-    tonnage: '46',
-    length: '26',
-  };
 
   test.beforeAll('Fetch infrastructure', async () => {
     infra = await getInfra();
@@ -79,43 +70,54 @@ test.describe('Verify stdcm simulation page', () => {
 
   /** *************** Test 1 **************** */
   test('Verify default STDCM page', async () => {
-    // Verify visibility of STDCM elements and handle default fields
+    await test.step('Verify base UI sections are visible', async () => {
+      await stdcmPage.verifyStdcmElementsVisibility();
+    });
 
-    await stdcmPage.verifyStdcmElementsVisibility();
-    await consistSection.verifyDefaultConsistFields();
-    await originSection.verifyDefaultOriginFields();
-    await destinationSection.verifyDefaultDestinationFields();
-    await viaSection.addAndDeletedDefaultVia();
-    await linkedTrainSection.addAndDeleteDefaultLinkedPath();
+    await test.step('Verify default input values', async () => {
+      await consistSection.verifyDefaultConsistFields();
+      await originSection.verifyDefaultOriginFields();
+      await destinationSection.verifyDefaultDestinationFields();
+    });
+
+    await test.step('Add/delete default via and linked path', async () => {
+      await viaSection.addAndDeletedDefaultVia();
+      await linkedTrainSection.addAndDeleteDefaultLinkedPath();
+    });
   });
 
   /** *************** Test 2 **************** */
   test('Launch STDCM simulation with all stops', async () => {
-    // Populate STDCM page with origin, destination, and via details, then verify
-    await consistSection.fillAndVerifyConsistDetails(
-      consistDetails,
-      tractionEnginePrefilledValues.tonnage,
-      tractionEnginePrefilledValues.length
-    );
-    await originSection.fillAndVerifyOriginDetails();
-    await destinationSection.fillAndVerifyDestinationDetails();
-    const viaDetails = [
-      { viaNumber: 1, ciSearchText: 'mid_west' },
-      { viaNumber: 2, ciSearchText: 'mid_east' },
-      { viaNumber: 3, ciSearchText: 'nS' },
-    ];
-
-    for (const viaDetail of viaDetails) {
-      await viaSection.fillAndVerifyViaDetails(viaDetail);
-    }
-    // Launch simulation and verify output data matches expected results
-    await stdcmPage.verifyValidSimulationLaunch();
-    await simulationResultPage.verifySimulationDetails({
-      simulationIndex: 0,
-      simulationLengthAndDuration: '51 km — 42min',
-      validSimulationNumber: 1,
+    await test.step('Fill consist, origin and destination', async () => {
+      await consistSection.fillAndVerifyConsistDetails(
+        consistDetails,
+        tractionEnginePrefilledValues.tonnage,
+        tractionEnginePrefilledValues.length
+      );
+      await originSection.fillAndVerifyOriginDetails();
+      await destinationSection.fillAndVerifyDestinationDetails();
     });
-    await simulationResultPage.verifyTableData('./tests/assets/stdcm/stdcm-all-stops.json');
+
+    await test.step('Fill three vias and verify each', async () => {
+      const viaDetails = [
+        { viaNumber: 1, ciSearchText: 'mid_west' },
+        { viaNumber: 2, ciSearchText: 'mid_east' },
+        { viaNumber: 3, ciSearchText: 'nS' },
+      ];
+      for (const viaDetail of viaDetails) {
+        await viaSection.fillAndVerifyViaDetails(viaDetail);
+      }
+    });
+
+    await test.step('Launch simulation and verify results table', async () => {
+      await stdcmPage.verifyValidSimulationLaunch();
+      await simulationResultPage.verifySimulationDetails({
+        simulationIndex: 0,
+        simulationLengthAndDuration: '51 km — 42min',
+        validSimulationNumber: 1,
+      });
+      await simulationResultPage.verifyTableData('./tests/assets/stdcm/stdcm-all-stops.json');
+    });
   });
 
   /** *************** Test 3 **************** */
@@ -125,34 +127,40 @@ test.describe('Verify stdcm simulation page', () => {
       towedRollingStock: createdTowedRollingStock.name,
     };
 
-    await consistSection.fillAndVerifyConsistDetails(
-      towedConsistDetails,
-      fastRollingStockPrefilledValues.tonnage,
-      fastRollingStockPrefilledValues.length,
-      towedRollingStockPrefilledValues.tonnage,
-      towedRollingStockPrefilledValues.length
-    );
-    await originSection.fillOriginDetailsLight(CONFLICT_ARRIVAL_TIME);
-    await destinationSection.fillDestinationDetailsLight();
-    await viaSection.fillAndVerifyViaDetails({
-      viaNumber: 1,
-      ciSearchText: 'mid_west',
+    await test.step('Fill consist section with towed RS and route', async () => {
+      await consistSection.fillAndVerifyConsistDetails(
+        towedConsistDetails,
+        fastRollingStockPrefilledValues.tonnage,
+        fastRollingStockPrefilledValues.length,
+        towedRollingStockPrefilledValues.tonnage,
+        towedRollingStockPrefilledValues.length
+      );
+      await originSection.fillOriginDetailsLight(CONFLICT_ARRIVAL_TIME);
+      await destinationSection.fillDestinationDetailsLight();
+      await viaSection.fillAndVerifyViaDetails({ viaNumber: 1, ciSearchText: 'mid_west' });
     });
-    // Run first simulation without capacity
-    await stdcmPage.verifyValidSimulationLaunch();
-    await simulationResultPage.verifySimulationDetails({
-      simulationIndex: 0,
+
+    await test.step('Launch simulation (expect alternative simulations triggered)', async () => {
+      await stdcmPage.verifyValidSimulationLaunch();
     });
-    await simulationResultPage.verifySimulationDetails({
-      simulationIndex: 1,
-      simulationLengthAndDuration: '51 km — 2h 35min',
-      validSimulationNumber: 1,
+
+    await test.step('Initial simulation result is "No capacity"', async () => {
+      await simulationResultPage.verifySimulationDetails({ simulationIndex: 0 });
     });
-    await simulationResultPage.verifyTableData(
-      './tests/assets/stdcm/towed-rolling-stock/towed-rolling-stock-table-result.json'
-    );
-    await simulationResultPage.verifySimulationDetails({
-      simulationIndex: 2,
+
+    await test.step('First alternative simulation is VALID (51 km — 2h 35min) and verify details', async () => {
+      await simulationResultPage.verifySimulationDetails({
+        simulationIndex: 1,
+        simulationLengthAndDuration: '51 km — 2h 35min',
+        validSimulationNumber: 1,
+      });
+      await simulationResultPage.verifyTableData(
+        './tests/assets/stdcm/towed-rolling-stock/towed-rolling-stock-table-result.json'
+      );
+    });
+
+    await test.step('Second alternative simulation result is "No capacity"', async () => {
+      await simulationResultPage.verifySimulationDetails({ simulationIndex: 2 });
     });
   });
 });

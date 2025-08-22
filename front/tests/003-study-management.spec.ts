@@ -95,38 +95,45 @@ test.describe('Validate the Study creation workflow', () => {
       tags: ['update-tag'],
     });
 
-    await studyPage.validateStudyData({
-      name: `${study.name} (updated)`,
-      description: `${study.description} (updated)`,
-      type: frTranslations.study.studyCategories.operability,
-      status: frTranslations.study.studyStates.inProgress,
-      startDate: expectedDate,
-      expectedEndDate: expectedDate,
-      endDate: expectedDate,
-      serviceCode: 'A1230',
-      businessCode: 'B1230',
-      budget: '123456789',
-      tags: ['update-tag'],
-      isUpdate: true, // Indicate that this is an update
+    await test.step('Validate updated study data', async () => {
+      await studyPage.validateStudyData({
+        name: `${study.name} (updated)`,
+        description: `${study.description} (updated)`,
+        type: frTranslations.study.studyCategories.operability,
+        status: frTranslations.study.studyStates.inProgress,
+        startDate: expectedDate,
+        expectedEndDate: expectedDate,
+        endDate: expectedDate,
+        serviceCode: 'A1230',
+        businessCode: 'B1230',
+        budget: '123456789',
+        tags: ['update-tag'],
+        isUpdate: true,
+      });
     });
 
-    // Navigate back to the project page
-    await page.goto(`/operational-studies/projects/${project.id}`);
+    await test.step('Verify updated study in project list (tags)', async () => {
+      await page.goto(`/operational-studies/projects/${project.id}`);
+      await expect(page.getByTestId(`${study.name} (updated)`).first()).toBeVisible();
+    });
 
-    await expect(page.getByTestId(`${study.name} (updated)`).first()).toBeVisible();
-
-    await deleteStudy(project.id, `${study.name} (updated)`);
+    await test.step('Delete updated study', async () => {
+      await deleteStudy(project.id, `${study.name} (updated)`);
+    });
   });
 
   /** *************** Test 3 **************** */
   test('Delete a study', async ({ page }) => {
-    // Create a study
-    study = await createStudy(project.id, generateUniqueName(studyData.name));
+    await test.step('Create a study to delete', async () => {
+      study = await createStudy(project.id, generateUniqueName(studyData.name));
+    });
 
-    // Navigate to the list of studies for the project
-    await page.goto(`/operational-studies/projects/${project.id}`);
+    await test.step('Navigate to project studies list', async () => {
+      await page.goto(`/operational-studies/projects/${project.id}`);
+    });
 
-    // Delete the study by name using the study page model
-    await studyPage.deleteStudy(study.name);
+    await test.step('Delete study by name via UI', async () => {
+      await studyPage.deleteStudy(study.name);
+    });
   });
 });

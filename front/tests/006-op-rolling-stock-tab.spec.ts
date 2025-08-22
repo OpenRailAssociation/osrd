@@ -45,70 +45,72 @@ test.describe('Rolling stock Tab Verification', () => {
       new OperationalStudiesPage(page),
       new RollingStockSelector(page),
     ];
+
     await page.goto(
       `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenario.id}`
     );
-    // Wait for infra to be in 'CACHED' state before proceeding
     await waitForInfraStateToBeCached(infra.id);
     await operationalStudiesPage.openTimetableItemForm();
   });
 
   /** *************** Test 1 **************** */
   test('Select a rolling stock for operational study', async () => {
-    // Verify the presence of warnings
-    await operationalStudiesPage.verifyTabWarningPresence();
-
-    // Open the Rolling Stock Selector and search for the dual-mode rolling stock
-    await rollingStockSelector.openEmptyRollingStockSelector();
-    await rollingStockSelector.searchRollingstock(dualModeRollingStockName);
-
-    // Locate the rolling stock card and verify its inactive state
-
-    await rollingStockSelector.verifyRollingStockIsInactive(dualModeRollingStockName);
-
-    // Click on the rolling stock card to activate it
-    await rollingStockSelector.selectRollingStockCard({ name: dualModeRollingStockName });
-
-    // Select the comfort option (AIR_CONDITIONING) and confirm the selection
-    const comfortACRadioText = await rollingStockSelector.comfortACButton.innerText();
-    await rollingStockSelector.selectRollingStockCard({
-      name: dualModeRollingStockName,
-      selectComfort: true,
-      confirmSelection: true,
+    await test.step('Verify tab warnings are present', async () => {
+      await operationalStudiesPage.verifyTabWarningPresence();
     });
 
-    // Verify that the correct comfort type is displayed after selection
+    await test.step('Open selector and search dual-mode rolling stock', async () => {
+      await rollingStockSelector.openEmptyRollingStockSelector();
+      await rollingStockSelector.searchRollingstock(dualModeRollingStockName);
+    });
 
-    await rollingStockSelector.verifySelectedComfortMatches(comfortACRadioText);
+    await test.step('Verify RS card is inactive before selection', async () => {
+      await rollingStockSelector.verifyRollingStockIsInactive(dualModeRollingStockName);
+    });
+
+    await test.step('Activate RS card', async () => {
+      await rollingStockSelector.selectRollingStockCard({ name: dualModeRollingStockName });
+    });
+
+    await test.step('Select AIR_CONDITIONING comfort and confirm the new RS is displayed', async () => {
+      const comfortACRadioText = await rollingStockSelector.comfortACButton.innerText();
+      await rollingStockSelector.selectRollingStockCard({
+        name: dualModeRollingStockName,
+        selectComfort: true,
+        confirmSelection: true,
+      });
+      await rollingStockSelector.verifySelectedComfortMatches(comfortACRadioText);
+    });
   });
 
   /** *************** Test 2 **************** */
   test('Modify a rolling stock for operational study', async () => {
-    // Select the electric rolling stock
-    await rollingStockSelector.openEmptyRollingStockSelector();
-    await rollingStockSelector.searchRollingstock(electricRollingStockName);
-    await rollingStockSelector.selectRollingStockCard({
-      name: rollingStock.name,
-      confirmSelection: true,
-    });
-    expect(await rollingStockSelector.selectedRollingStockName.innerText()).toEqual(
-      electricRollingStockName
-    );
-
-    // Reopen the rolling stock selector and apply filters
-    await rollingStockSelector.openRollingstockModal();
-    await rollingStockSelector.toggleThermalRollingStockFilter();
-    await rollingStockSelector.toggleElectricRollingStockFilter();
-
-    // Select the dual-mode rolling stock and confirm the selection
-    await rollingStockSelector.selectRollingStockCard({
-      name: dualModeRollingStockName,
-      confirmSelection: true,
+    await test.step('Select electric rolling stock', async () => {
+      await rollingStockSelector.openEmptyRollingStockSelector();
+      await rollingStockSelector.searchRollingstock(electricRollingStockName);
+      await rollingStockSelector.selectRollingStockCard({
+        name: rollingStock.name,
+        confirmSelection: true,
+      });
+      expect(await rollingStockSelector.selectedRollingStockName.innerText()).toEqual(
+        electricRollingStockName
+      );
     });
 
-    // Verify that the correct dual-mode rolling stock is displayed
-    expect(await rollingStockSelector.selectedRollingStockName.innerText()).toEqual(
-      dualModeRollingStockName
-    );
+    await test.step('Open selector and toggle Thermal + Electric filters', async () => {
+      await rollingStockSelector.openRollingstockModal();
+      await rollingStockSelector.toggleThermalRollingStockFilter();
+      await rollingStockSelector.toggleElectricRollingStockFilter();
+    });
+
+    await test.step('Select dual-mode rolling stock and confirm the new RS is displayed', async () => {
+      await rollingStockSelector.selectRollingStockCard({
+        name: dualModeRollingStockName,
+        confirmSelection: true,
+      });
+      expect(await rollingStockSelector.selectedRollingStockName.innerText()).toEqual(
+        dualModeRollingStockName
+      );
+    });
   });
 });
