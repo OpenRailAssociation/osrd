@@ -112,7 +112,6 @@ const AddOrEditScenarioModal = ({ editionMode = false, scenario }: AddOrEditScen
         ],
       }),
     });
-  const [loadInfra] = osrdEditoastApi.endpoints.postInfraByInfraIdLoad.useMutation();
 
   const [displayErrors, setDisplayErrors] = useState(false);
 
@@ -178,7 +177,6 @@ const AddOrEditScenarioModal = ({ editionMode = false, scenario }: AddOrEditScen
         .unwrap()
         .then(({ id }) => {
           dispatch(updateScenarioID(id));
-          loadInfra({ infraId: infraID! }).unwrap();
           navigate(`projects/${projectId}/studies/${studyId}/scenarios/${id}`);
           closeModal();
         })
