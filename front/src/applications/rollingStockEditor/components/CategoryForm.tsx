@@ -59,7 +59,7 @@ const RollingStockEditorCategoryForm = ({
           id="primary-category-selector"
           data-testid="primary-category-selector"
           name="primary-category-selector"
-          label={t('primaryCategory')}
+          label={`${t('primaryCategory')} *`}
           value={
             rollingStockValues.primaryCategory
               ? {
