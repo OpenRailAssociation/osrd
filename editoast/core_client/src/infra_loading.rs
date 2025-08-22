@@ -17,7 +17,7 @@ impl AsCoreRequest<()> for InfraLoadRequest {
 
     fn worker_id(&self) -> Option<String> {
         match self.timetable {
-            Some(timetable) => Some(format!("{}#{}", self.infra, timetable)),
+            Some(timetable) => Some(format!("{}-{}", self.infra, timetable)),
             None => Some(self.infra.to_string()),
         }
     }

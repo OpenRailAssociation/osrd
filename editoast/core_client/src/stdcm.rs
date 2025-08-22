@@ -137,6 +137,6 @@ impl AsCoreRequest<Json<Response>> for Request {
     const URL_PATH: &'static str = "/stdcm";
 
     fn worker_id(&self) -> Option<String> {
-        Some(format!("{}#{}", self.infra, self.timetable_id))
+        Some(format!("{}-{}", self.infra, self.timetable_id))
     }
 }
