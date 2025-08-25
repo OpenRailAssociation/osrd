@@ -88,29 +88,6 @@ body {
   transition: 0.4s ease-in-out;
 }
 
-.mastheader-impersonated {
-  background-color: var(--highlight30) !important;
-
-  .user-dropdown {
-    margin-right: 16px;
-  }
-
-  .navbar-breadcrumbs {
-    .text-truncate,
-    a {
-      color: var(--black50);
-
-      &:hover {
-        color: var(--black100);
-      }
-    }
-  }
-}
-
-.impersonated-user {
-  color: var(--black100);
-}
-
 .mastnav.fullscreen {
   left: -112px !important;
 }

@@ -12,6 +12,21 @@
     background-color: var(--ambientB10);
     min-width: 780px;
 
+    &.impersonated {
+      background-color: var(--highlight30) !important;
+
+      .navbar-breadcrumbs {
+        .text-truncate,
+        a {
+          color: var(--black50);
+
+          &:hover {
+            color: var(--black100);
+          }
+        }
+      }
+    }
+
     button:focus {
       outline: none;
     }
