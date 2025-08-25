@@ -6,18 +6,78 @@
   background-color: #333;
   padding: 0 8px;
 
+  .app-logo {
+    flex-grow: 0;
+    img {
+      height: 24px !important;
+    }
+
+    .custom-logo {
+      img {
+        height: 40px;
+      }
+    }
+
+    .without-image {
+      img {
+        width: 24px;
+      }
+    }
+  }
+
+  .user-dropdown,
+  .navbar-breadcrumbs {
+    font-size: 14px;
+    font-family: 'IBM Plex Sans', sans-serif;
+    color: var(--grey30);
+    cursor: pointer;
+
+    .text-truncate:hover {
+      color: var(--white);
+    }
+  }
+
+  .right-tool-bar {
+    margin-bottom: 0px;
+    height: 100%;
+    color: white;
+    display: flex;
+
+    .item {
+      display: flex;
+      position: relative;
+
+      button:focus {
+        outline: none;
+      }
+
+      &.with-separator {
+        &::after {
+          background-color: #4d4f53;
+          position: absolute;
+          top: calc(50% - 0.6875rem);
+          left: 0;
+          width: 0.0625rem;
+          height: 1.375rem;
+          content: '';
+        }
+      }
+
+      .safe-word-btn {
+        color: #82be00;
+        padding: 0 20px;
+      }
+    }
+  }
+
   .user-settings-btn:disabled {
     cursor: not-allowed;
     color: #c0c0c0 !important;
     pointer-events: auto;
   }
 
-  .impersonated {
+  &.impersonated {
     background-color: var(--highlight30) !important;
-
-    .user-dropdown {
-      margin-right: 16px;
-    }
 
     .navbar-breadcrumbs {
       .text-truncate,
@@ -28,6 +88,10 @@
           color: var(--black100);
         }
       }
+    }
+
+    .impersonated-user {
+      color: var(--black100);
     }
   }
 }

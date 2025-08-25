@@ -41,7 +41,7 @@ const NavBar = ({ appName }: NavBarProps) => {
   const userDropdownTitle = (
     <div className={cx('user-dropdown', { 'impersonated-user': impersonatedUser })}>
       {impersonatedUser ? (
-        <Hubot size="sm" className="mr-2" />
+        <Hubot size="lg" className="mr-2" />
       ) : (
         <Person size="sm" className="mr-2" />
       )}
@@ -52,11 +52,10 @@ const NavBar = ({ appName }: NavBarProps) => {
   return (
     <div className={cx('nav-bar', { impersonated: impersonatedUser })}>
       <div
-        className={cx(
-          'flex-grow-0',
-          deploymentSettings?.hasCustomizedLogo ? 'mastheader-logo-with-name' : 'mastheader-logo',
-          { 'without-image': logoUrl }
-        )}
+        className={cx('app-logo', {
+          'custom-logo': deploymentSettings?.hasCustomizedLogo,
+          'without-image': logoUrl,
+        })}
       >
         <Link to="/">
           {logoUrl ? (
@@ -70,15 +69,15 @@ const NavBar = ({ appName }: NavBarProps) => {
           )}
         </Link>
       </div>
-      <header role="banner" className="mastheader-title d-flex flex-grow-1">
+      <header role="banner" className="d-flex flex-grow-1">
         <h1 className="text-white pl-3 mb-0">{appName}</h1>
       </header>
-      <ul className="mastheader-toolbar toolbar mb-0">
+      <ul className="right-tool-bar">
         {safeWord && (
-          <li className="toolbar-item separator-gray-500 d-none d-md-flex">
+          <li className="item">
             <button
               type="button"
-              className="btn btn-only-icon btn-link btn-notif toolbar-item-spacing text-success"
+              className="safe-word-btn"
               onClick={() => openModal(<UserSettings />)}
               aria-label={t('nav-bar.userSettings')}
               title={t('nav-bar.userSettings')}
@@ -87,7 +86,7 @@ const NavBar = ({ appName }: NavBarProps) => {
             </button>
           </li>
         )}
-        <li className="toolbar-item separator-gray-500">
+        <li className={cx('item', { 'with-separator': !!safeWord })}>
           <UserActionsDropdown titleContent={userDropdownTitle} />
           {impersonatedUser && (
             <button
