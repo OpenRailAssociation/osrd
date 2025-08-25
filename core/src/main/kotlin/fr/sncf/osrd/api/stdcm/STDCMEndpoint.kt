@@ -36,6 +36,7 @@ import fr.sncf.osrd.standalone_sim.runScheduleMetadataExtractor
 import fr.sncf.osrd.stdcm.PlannedTimingData
 import fr.sncf.osrd.stdcm.STDCMResult
 import fr.sncf.osrd.stdcm.STDCMStep
+import fr.sncf.osrd.stdcm.graph.checkPlannedStepsAndMaybeIndex
 import fr.sncf.osrd.stdcm.graph.findPath
 import fr.sncf.osrd.stdcm.graph.logger
 import fr.sncf.osrd.stdcm.preprocessing.implementation.makeBlockAvailability
@@ -330,6 +331,11 @@ private fun parseSteps(
         throw OSRDError(ErrorType.MissingLastSTDCMStop)
     }
     if (pathItems.any { it.stopDuration == null && it.stepTimingData != null }) {
+        throw OSRDError(ErrorType.InvalidSTDCMStepWithTimingData)
+    }
+
+    val (valid, _) = checkPlannedStepsAndMaybeIndex(pathItems.map { it.stepTimingData })
+    if (!valid) {
         throw OSRDError(ErrorType.InvalidSTDCMStepWithTimingData)
     }
 

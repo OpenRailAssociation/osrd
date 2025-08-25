@@ -63,3 +63,23 @@ fun extendLookaheadUntil(input: InfraExplorer, minBlocks: Int): Collection<Infra
     }
     return res
 }
+
+/**
+ * Checks there is no more than one planned step (non-null element). If there is one, checks it's
+ * the departure or arrival. If it's either, returns the corresponding index.
+ */
+fun <T> checkPlannedStepsAndMaybeIndex(input: List<T>): Pair<Boolean, Int?> {
+    val filteredIndices = input.withIndex().filter { (_, item) -> item != null }.map { (i, _) -> i }
+    if (filteredIndices.size > 1) {
+        return Pair(false, null)
+    }
+    if (filteredIndices.size == 0) {
+        // Should not be valid, but happens in tests
+        return Pair(true, null)
+    }
+    val index = filteredIndices[0]
+    if (index > 0 && index < input.size - 1) {
+        return Pair(false, null)
+    }
+    return Pair(true, index)
+}

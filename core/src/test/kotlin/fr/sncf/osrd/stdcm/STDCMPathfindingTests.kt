@@ -754,29 +754,6 @@ class STDCMPathfindingTests {
     }
 
     /**
-     * Train goes through start time after planned arrival time, then goes through end time before
-     * arrival time: no delay should be added.
-     */
-    @Test
-    fun noDelayAddedWhenTrainPassesAfterPlannedArrivalTimeThenBeforePlannedArrivalTime() {
-        val infra = DummyInfra()
-        val blocks = listOf(infra.addBlock("a", "b"))
-        val res =
-            STDCMPathfindingBuilder()
-                .setInfra(infra.fullInfra())
-                .setStartLocations(
-                    setOf(EdgeLocation(blocks[0], Offset(0.meters))),
-                    PlannedTimingData((-10).seconds, 20.seconds, 10.0.seconds),
-                )
-                .setEndLocations(
-                    setOf(EdgeLocation(blocks[0], Offset(100.meters))),
-                    PlannedTimingData(60.seconds, 60.seconds, 0.seconds),
-                )
-                .run()!!
-        assertEquals(0.0, res.departureTime)
-    }
-
-    /**
      * Train goes through start with added delay due to occupancy, and before planned arrival time:
      * planned delay should be added to existing delay.
      */
