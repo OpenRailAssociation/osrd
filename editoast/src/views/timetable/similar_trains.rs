@@ -1176,7 +1176,7 @@ mod tests {
             PathItem::new_operational_point("Mid_East_station"), // MES
         ];
         let schedule: Vec<ScheduleItem> = vec![ScheduleItem::new_with_stop(
-            "South_station",
+            "West_station",
             Duration::new(0, 0).expect("Failed to parse duration"),
         )];
         let start_time_1 =
