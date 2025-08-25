@@ -32,7 +32,6 @@ import fr.sncf.osrd.utils.units.meters
 import io.opentelemetry.api.trace.SpanKind
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import kotlin.math.abs
-import kotlin.math.max
 import kotlin.math.min
 
 /**
@@ -154,123 +153,65 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
         val mutableStopData = nodes.last().timeData.stopTimeData.toMutableList()
         var timeData = nodes.last().timeData.copy(stopTimeData = mutableStopData)
 
-        // Find the index of the first planned node, and matching stop index
-        val firstPlannedNodeIndex = nodes.indexOfFirst { it.plannedTimingData != null }
-        if (firstPlannedNodeIndex < 0) return timeData
-        val node = nodes[firstPlannedNodeIndex]
-        // Index of the last stop *before* the first planned node (in the mutableStopData list)
-        val lastStopIndexBeforeNode =
-            nodes.subList(0, firstPlannedNodeIndex).count { it.stopDuration != null }
+        // Find the index of the only planned node
+        val (valid, maybeIndex) = checkPlannedStepsAndMaybeIndex(nodes.map { it.plannedTimingData })
+        assert(valid)
+        // Note: used in tests
+        if (maybeIndex == null) {
+            return timeData
+        }
+        // Either departure or arrival
+        val plannedNodeIndex = maybeIndex!!
+        val plannedNode = nodes[plannedNodeIndex]
 
         // Figure out how much time we'd like to add
-        val realTime = node.getRealTime(timeData)
-        var timeDiff = node.plannedTimingData!!.getTimeDiff(realTime)
+        val realTime = plannedNode.getRealTime(timeData)
+        var timeDiff = plannedNode.plannedTimingData!!.getTimeDiff(realTime)
         if (timeDiff > 0) return timeData // No change required
         timeDiff = abs(timeDiff)
 
+        // If we are planning the departure, we just need to delay it
+        if (plannedNodeIndex == 0) {
+            val addedDepartureDelay = min(timeData.maxFirstDepartureDelaying, timeDiff)
+            timeData = timeData.copy(departureTime = timeData.departureTime + addedDepartureDelay)
+            return timeData
+        }
+
+        // Below, plannedNode is the arrival
+        // Index of the last stop *before* the arrival (in the mutableStopData list)
+        val lastStopIndexBeforeArrival =
+            nodes.subList(0, plannedNodeIndex).count { it.stopDuration != null }
         // Identify how much time we can add to the previous stop without causing conflict
         val maxAddedTime =
-            findMaxPossibleTimeToAdd(
-                lastStopIndexBeforeNode,
-                node,
-                nodes.subList(firstPlannedNodeIndex + 1, nodes.size),
-                mutableStopData,
-                timeData,
-            )
+            findMaxPossibleTimeToAdd(lastStopIndexBeforeArrival, plannedNode, timeData)
         var actualStopAddedTime = min(maxAddedTime, timeDiff)
 
-        // Add time to the previous stop, or delay the departure time accordingly.
-        // We prefer delaying the departure time when possible.
+        // Add time to the previous stop, or delay the departure time accordingly
+        // We prefer delaying the departure time when possible
         val addedDepartureDelay = min(actualStopAddedTime, timeData.maxFirstDepartureDelaying)
         timeData = timeData.copy(departureTime = timeData.departureTime + addedDepartureDelay)
         actualStopAddedTime -= addedDepartureDelay
 
         if (actualStopAddedTime > 0) {
-            mutableStopData[lastStopIndexBeforeNode - 1] =
-                mutableStopData[lastStopIndexBeforeNode - 1].withAddedStopTime(actualStopAddedTime)
+            mutableStopData[lastStopIndexBeforeArrival - 1] =
+                mutableStopData[lastStopIndexBeforeArrival - 1].withAddedStopTime(
+                    actualStopAddedTime
+                )
         }
 
-        // Reduce time to the next stops, to keep the change as local as possible
-        reduceNextStopDurations(
-            lastStopIndexBeforeNode,
-            actualStopAddedTime,
-            nodes.subList(firstPlannedNodeIndex + 1, nodes.size),
-            mutableStopData,
-        )
         return timeData
     }
 
-    /** Reduce the duration of the next stops to account for any extra time we have added before */
-    private fun reduceNextStopDurations(
-        lastStopIndexBeforeNode: Int,
-        maxTimeDiff: Double,
-        nextNodes: List<STDCMNode>,
-        mutableStopData: MutableList<StopTimeData>,
-    ) {
-        var addedStopTimeIndex = lastStopIndexBeforeNode
-        var remainingStopTimeToRemove = maxTimeDiff
-        for (nextNode in nextNodes) {
-            if (nextNode.stopDuration != null) {
-                val newStopDuration =
-                    max(
-                        mutableStopData[addedStopTimeIndex].minDuration,
-                        mutableStopData[addedStopTimeIndex].currentDuration -
-                            remainingStopTimeToRemove,
-                    )
-                val timeRemoved =
-                    mutableStopData[addedStopTimeIndex].currentDuration - newStopDuration
-                mutableStopData[addedStopTimeIndex] =
-                    mutableStopData[addedStopTimeIndex].copy(currentDuration = newStopDuration)
-                remainingStopTimeToRemove -= timeRemoved
-                if (remainingStopTimeToRemove <= 0) break
-                addedStopTimeIndex++
-            }
-        }
-    }
-
     /**
-     * Identify the max possible time we can add to the previous stop, assuming we can remove some
-     * time from next stops.
-     *
-     * For example, with a train stopping at A, having a requested timing at B and then stopping
-     * again at C: We're trying to find by how much we can "move" stop duration from C to A, to
-     * delay B passage time without affecting what's outside the [A, C] range.
+     * Identify the max possible time we can add to the previous stop, assuming we are at arrival.
      */
     private fun findMaxPossibleTimeToAdd(
         lastStopIndexBeforeNode: Int,
-        node: STDCMNode,
-        nextNodes: List<STDCMNode>,
-        mutableStopData: MutableList<StopTimeData>,
+        arrivalNode: STDCMNode,
         lastTimeData: TimeData,
     ): Double {
         if (lastStopIndexBeforeNode == 0) return lastTimeData.maxFirstDepartureDelaying
-
-        // Init the result with the delay we can add without conflict between the last stop and the
-        // planned node
-        var maxTimeDiff =
-            if (node.stopDuration == null) node.timeData.maxDepartureDelayingWithoutConflict
-            else node.timeData.stopTimeData.last().maxDepartureDelayBeforeStop
-
-        var nextStopIndex = lastStopIndexBeforeNode
-        if (node.stopDuration != null) nextStopIndex++
-        var timeRemovedFromStops = 0.0
-        for (nextNode in nextNodes) {
-            // Using the edge is more reliable to check the lack of conflict
-            val edge = nextNode.previousEdge!!
-            maxTimeDiff =
-                min(
-                    maxTimeDiff,
-                    edge.timeData.maxDepartureDelayingWithoutConflict - timeRemovedFromStops,
-                )
-            if (nextNode.stopDuration != null) {
-                val maxRemovedStopTime =
-                    mutableStopData[nextStopIndex].currentDuration -
-                        mutableStopData[nextStopIndex].currentDuration
-                timeRemovedFromStops += maxRemovedStopTime
-                nextStopIndex++
-            }
-        }
-        return maxTimeDiff
+        return arrivalNode.timeData.stopTimeData.last().maxDepartureDelayBeforeStop
     }
 
     private fun getNodes(edges: List<STDCMEdge>): List<STDCMNode> {
