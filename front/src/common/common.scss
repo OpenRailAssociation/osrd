@@ -4,8 +4,10 @@
 @use './BootstrapSNCF/CheckboxRadioSNCF.scss';
 @use './BootstrapSNCF/InputGroupSNCF.scss';
 @use './BootstrapSNCF/OptionsSNCF.scss';
-@use './BootstrapSNCF/NavBarSNCF.scss';
 @use './BootstrapSNCF/SelectImprovedSNCF.scss';
+
+@use './components/NavBar.scss';
+
 @use './authorization/grantsManager.scss';
 @use './DotsLoader/DotsLoader.scss';
 @use './Grid/Grid.scss';

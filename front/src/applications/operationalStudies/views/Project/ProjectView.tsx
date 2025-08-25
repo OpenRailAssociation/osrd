@@ -19,9 +19,9 @@ import {
   osrdEditoastApi,
 } from 'common/api/osrdEditoastApi';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
-import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
 import { Loader, Spinner } from 'common/Loaders';
+import NavBar from 'common/NavBar';
 import SelectionToolbar from 'common/SelectionToolbar';
 import AddOrEditProjectModal from 'modules/project/components/AddOrEditProjectModal';
 import { cleanScenarioLocalStorage } from 'modules/scenario/helpers/utils';
@@ -222,7 +222,7 @@ const ProjectView = () => {
 
   return (
     <>
-      <NavBarSNCF appName={<BreadCrumbs project={project} />} />
+      <NavBar appName={<BreadCrumbs project={project} />} />
 
       <main className="mastcontainer mastcontainer-no-mastnav">
         <div className="p-3 project-view">

@@ -8,7 +8,7 @@ import stdcmImg from 'assets/pictures/home/stdcm.svg';
 import useAllowedUserRoles from 'common/authorization/hooks/useAllowedUserRoles';
 import CardSNCF from 'common/BootstrapSNCF/CardSNCF';
 import { ModalProvider } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
-import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
+import NavBar from 'common/NavBar';
 
 export default function Home() {
   const { t } = useTranslation();
@@ -22,7 +22,7 @@ export default function Home() {
 
   return (
     <ModalProvider>
-      <NavBarSNCF />
+      <NavBar />
       <main className="mastcontainer mastcontainer-no-mastnav">
         <div className="cardscontainer">
           <div className="row justify-content-center mb-2">
