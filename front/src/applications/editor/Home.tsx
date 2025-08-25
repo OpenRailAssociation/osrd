@@ -3,7 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { Route, Routes } from 'react-router-dom';
 
 import { ModalProvider } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
-import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
+import NavBar from 'common/NavBar';
 import { useCurrentInfra } from 'modules/infra/useInfra';
 
 import Editor from './Editor';
@@ -14,7 +14,7 @@ export default function HomeEditorUnplugged() {
 
   return (
     <ModalProvider>
-      <NavBarSNCF
+      <NavBar
         appName={
           <>
             {t('editor')}

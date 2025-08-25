@@ -14,9 +14,9 @@ import {
   type ScenarioWithDetails,
 } from 'common/api/osrdEditoastApi';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
-import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
 import { Loader, Spinner } from 'common/Loaders';
+import NavBar from 'common/NavBar';
 import SelectionToolbar from 'common/SelectionToolbar';
 import AddOrEditScenarioModal from 'modules/scenario/components/AddOrEditScenarioModal';
 import { cleanScenarioLocalStorage } from 'modules/scenario/helpers/utils';
@@ -211,7 +211,7 @@ const StudyView = () => {
 
   return (
     <>
-      <NavBarSNCF appName={<BreadCrumbs project={study?.project} study={study} />} />
+      <NavBar appName={<BreadCrumbs project={study?.project} study={study} />} />
       <main className="mastcontainer mastcontainer-no-mastnav">
         <div className="p-3 study-view">
           {study ? (

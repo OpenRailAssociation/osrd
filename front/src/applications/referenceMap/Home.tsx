@@ -6,7 +6,7 @@ import { Route, Routes } from 'react-router-dom';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { ModalProvider } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
-import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
+import NavBar from 'common/NavBar';
 import { useInfraActions, useInfraID } from 'common/osrdContext';
 import { useAppDispatch } from 'store';
 
@@ -38,7 +38,7 @@ const HomeReferenceMap = () => {
 
   return (
     <ModalProvider>
-      <NavBarSNCF
+      <NavBar
         appName={
           <>
             {t('map')}

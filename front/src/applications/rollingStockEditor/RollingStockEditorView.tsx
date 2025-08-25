@@ -5,8 +5,8 @@ import { useTranslation } from 'react-i18next';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { ModalProvider } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
-import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 import { Loader } from 'common/Loaders/Loader';
+import NavBar from 'common/NavBar';
 import { RollingStockCard } from 'modules/rollingStock/components/RollingStockCard';
 import { SearchRollingStock } from 'modules/rollingStock/components/RollingStockSelector';
 import useFilterRollingStock from 'modules/rollingStock/hooks/useFilterRollingStock';
@@ -132,7 +132,7 @@ const RollingStockEditor = () => {
 
   return (
     <ModalProvider>
-      <NavBarSNCF appName={<>{t('rollingStockEditor')}</>} />
+      <NavBar appName={<>{t('rollingStockEditor')}</>} />
       <div className="d-flex rollingstock-editor">
         <div className="d-flex ml-4 flex-column rollingstock-editor-left-container">
           {(isEditing || isAdding) && (

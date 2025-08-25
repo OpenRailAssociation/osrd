@@ -12,9 +12,9 @@ import {
   type ProjectWithStudies,
   type SearchResultItemProject,
 } from 'common/api/osrdEditoastApi';
-import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
 import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
 import { Spinner } from 'common/Loaders';
+import NavBar from 'common/NavBar';
 import SelectionToolbar from 'common/SelectionToolbar';
 import AddOrEditProjectModal from 'modules/project/components/AddOrEditProjectModal';
 import cleanLocalStorageByProject from 'modules/project/helpers/cleanLocalStorageByProject';
@@ -163,7 +163,7 @@ const ProjectListView = () => {
 
   return (
     <>
-      <NavBarSNCF appName={<div className="navbar-breadcrumbs">{t('project.projects')}</div>} />
+      <NavBar appName={<div className="navbar-breadcrumbs">{t('project.projects')}</div>} />
       <main className="mastcontainer mastcontainer-no-mastnav">
         <div className="p-3">
           <div className="projects-toolbar">

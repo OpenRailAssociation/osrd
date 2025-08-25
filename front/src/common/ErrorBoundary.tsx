@@ -4,7 +4,7 @@ import { Link, useNavigate, useRouteError } from 'react-router-dom';
 
 import type { ApiError } from 'common/api/baseGeneratedApis';
 import { ModalProvider } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
-import NavBarSNCF from 'common/BootstrapSNCF/NavBarSNCF';
+import NavBar from 'common/NavBar';
 import { getErrorMessage } from 'utils/error';
 
 export default function ErrorBoundary() {
@@ -13,7 +13,7 @@ export default function ErrorBoundary() {
   const navigate = useNavigate();
   return (
     <ModalProvider>
-      <NavBarSNCF appName="OSRD" />
+      <NavBar appName="OSRD" />
       <main className="mastcontainer mastcontainer-no-mastnav d-flex align-items-center justify-content-center vh-100">
         <div className="p-3">
           {error ? (
