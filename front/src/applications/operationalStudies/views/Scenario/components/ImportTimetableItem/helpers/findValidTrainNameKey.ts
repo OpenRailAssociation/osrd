@@ -1,6 +1,5 @@
-import rollingstockOpenData2OSRD from 'modules/timetableItem/components/ImportTimetableItem/rollingstock_opendata2osrd.json';
-
-import type { RollingstockOpenData2OSRDKeys } from '../../ImportTimetableItem/types';
+import rollingstockOpenData2OSRD from '../rollingstock_opendata2osrd.json';
+import type { RollingstockOpenData2OSRDKeys } from '../types';
 
 const normalizeString = (rollingStock: string): string =>
   rollingStock.toUpperCase().replace(/[_\W]/g, '');
