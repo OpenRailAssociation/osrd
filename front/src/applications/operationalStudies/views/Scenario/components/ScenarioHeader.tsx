@@ -84,7 +84,7 @@ const ScenarioHeader = ({ activeBoards, toggleBoard }: ScenarioHeaderProps) => {
 
   return (
     <header className="scenario-header-container">
-      <div className={cx('scenario-header', { 'mastheader-impersonated': impersonatedUser })}>
+      <div className={cx('scenario-header', { impersonated: impersonatedUser })}>
         {/* scenario info */}
         <div className="scenario-info">
           <button className="close-btn" type="button" onClick={closeScenario}>
