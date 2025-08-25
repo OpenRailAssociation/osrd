@@ -120,7 +120,7 @@ const useStdcm = ({
       outputs = {
         pathProperties,
         results: formattedResponse,
-        speedSpaceChartData: chartData,
+        speedDistanceDiagramData: chartData,
       };
     } else {
       outputs = { pathProperties, conflicts: formattedResponse.conflicts };

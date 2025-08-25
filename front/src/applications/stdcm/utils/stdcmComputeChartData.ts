@@ -4,7 +4,7 @@ import { preparePathPropertiesData } from 'applications/operationalStudies/utils
 import type { StdcmPathProperties, StdcmSuccessResponse } from 'applications/stdcm/types';
 import type { RollingStockWithLiveries } from 'common/api/osrdEditoastApi';
 import formatPowerRestrictionRangesWithHandled from 'modules/powerRestriction/helpers/formatPowerRestrictionRangesWithHandled';
-import type { SpeedSpaceChartData } from 'modules/simulationResult/types';
+import type { SpeedDistanceDiagramData } from 'modules/simulationResult/types';
 import type { TimetableItem } from 'reducers/osrdconf/types';
 
 const computeChartData = (
@@ -13,7 +13,7 @@ const computeChartData = (
   t: TFunction,
   rollingStock: RollingStockWithLiveries,
   pathProperties: StdcmPathProperties
-): SpeedSpaceChartData => {
+): SpeedDistanceDiagramData => {
   const { simulation, path: pathfindingResult } = stdcmResponse;
 
   /**
@@ -42,7 +42,7 @@ const computeChartData = (
     formattedPowerRestrictions,
     simulation,
     formattedPathProperties,
-  } as SpeedSpaceChartData;
+  } as SpeedDistanceDiagramData;
 };
 
 export default computeChartData;

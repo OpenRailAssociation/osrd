@@ -15,32 +15,32 @@ import type {
 
 import { formatData } from './helpers';
 
-export type SpeedSpaceChartContainerProps = {
+export type SpeedDistanceDiagramWrapperProps = {
   timetableItemSimulation: SimulationResponseSuccess;
   selectedTimetableItemPowerRestrictions?: LayerData<PowerRestrictionValues>[];
   pathProperties: PathPropertiesFormatted;
   height: number;
   rollingStock: RollingStockWithLiveries;
-  setHeightOfSpeedSpaceChartContainer: React.Dispatch<React.SetStateAction<number>>;
+  setHeight: React.Dispatch<React.SetStateAction<number>>;
 };
 
-const SPEEDSPACECHART_MIN_HEIGHT = 400;
-const SPEEDSPACECHART_BACKGROUND_COLOR = 'transparent';
+const SPEED_DISTANCE_DIAGRAM_MIN_HEIGHT = 400;
+const SPEED_DISTANCE_DIAGRAM_BACKGROUND_COLOR = 'transparent';
 
-const SpeedSpaceChartContainer = ({
+const SpeedDistanceDiagramWrapper = ({
   timetableItemSimulation,
   selectedTimetableItemPowerRestrictions,
   pathProperties,
   height,
   rollingStock,
-  setHeightOfSpeedSpaceChartContainer,
-}: SpeedSpaceChartContainerProps) => {
+  setHeight,
+}: SpeedDistanceDiagramWrapperProps) => {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'simulationResults' });
 
   const root = useRef<HTMLDivElement>(null);
   const [containerWidth, setContainerWidth] = useState<number>(root.current?.clientWidth || 0);
 
-  const speedSpaceChartData = formatData(
+  const data = formatData(
     timetableItemSimulation,
     rollingStock.length,
     selectedTimetableItemPowerRestrictions,
@@ -49,22 +49,22 @@ const SpeedSpaceChartContainer = ({
 
   const translations = {
     detailsBoxDisplay: {
-      reticleInfos: t('speedSpaceSettings.reticleInfos'),
-      energySource: t('speedSpaceSettings.energySource'),
-      tractionStatus: t('speedSpaceSettings.tractionStatus'),
-      declivities: t('speedSpaceSettings.slopes'),
-      electricalProfiles: t('speedSpaceSettings.electricalProfiles'),
-      powerRestrictions: t('speedSpaceSettings.powerRestrictions'),
+      reticleInfos: t('speedDistanceSettings.reticleInfos'),
+      energySource: t('speedDistanceSettings.energySource'),
+      tractionStatus: t('speedDistanceSettings.tractionStatus'),
+      declivities: t('speedDistanceSettings.slopes'),
+      electricalProfiles: t('speedDistanceSettings.electricalProfiles'),
+      powerRestrictions: t('speedDistanceSettings.powerRestrictions'),
     },
     layersDisplay: {
-      context: t('speedSpaceSettings.context'),
-      steps: t('speedSpaceSettings.steps'),
-      declivities: t('speedSpaceSettings.slopes'),
-      speedLimits: t('speedSpaceSettings.speedLimits'),
-      temporarySpeedLimits: t('speedSpaceSettings.temporarySpeedLimits'),
-      electricalProfiles: t('speedSpaceSettings.electricalProfiles'),
-      powerRestrictions: t('speedSpaceSettings.powerRestrictions'),
-      speedLimitTags: t('speedSpaceSettings.speedLimitTags'),
+      context: t('speedDistanceSettings.context'),
+      steps: t('speedDistanceSettings.steps'),
+      declivities: t('speedDistanceSettings.slopes'),
+      speedLimits: t('speedDistanceSettings.speedLimits'),
+      temporarySpeedLimits: t('speedDistanceSettings.temporarySpeedLimits'),
+      electricalProfiles: t('speedDistanceSettings.electricalProfiles'),
+      powerRestrictions: t('speedDistanceSettings.powerRestrictions'),
+      speedLimitTags: t('speedDistanceSettings.speedLimitTags'),
     },
   };
 
@@ -97,11 +97,11 @@ const SpeedSpaceChartContainer = ({
     >
       {containerWidth > 0 && (
         <SpeedSpaceChart
-          width={containerWidth || SPEEDSPACECHART_MIN_HEIGHT}
+          width={containerWidth || SPEED_DISTANCE_DIAGRAM_MIN_HEIGHT}
           height={height}
-          setHeight={setHeightOfSpeedSpaceChartContainer}
-          backgroundColor={SPEEDSPACECHART_BACKGROUND_COLOR}
-          data={speedSpaceChartData}
+          setHeight={setHeight}
+          backgroundColor={SPEED_DISTANCE_DIAGRAM_BACKGROUND_COLOR}
+          data={data}
           translations={translations}
         />
       )}
@@ -109,4 +109,4 @@ const SpeedSpaceChartContainer = ({
   );
 };
 
-export default SpeedSpaceChartContainer;
+export default SpeedDistanceDiagramWrapper;

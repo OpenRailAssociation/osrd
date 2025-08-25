@@ -12,10 +12,10 @@ import ResizableSection from 'common/ResizableSection';
 import SpaceTimeChartWrapper, {
   MANCHETTE_WITH_SPACE_TIME_CHART_DEFAULT_HEIGHT,
 } from 'modules/simulationResult/components/SpaceTimeChartWrapper/SpaceTimeChartWrapper';
-import SpeedSpaceChartContainer from 'modules/simulationResult/components/SpeedSpaceChart/SpeedSpaceChartContainer';
+import SpeedDistanceDiagramWrapper from 'modules/simulationResult/components/SpeedDistanceDiagram/SpeedDistanceDiagramWrapper';
 import { getWorkScheduleGroupId } from 'reducers/osrdconf/stdcmConf/selectors';
 
-const SPEED_SPACE_CHART_HEIGHT = 521.5;
+const SDD_INITIAL_HEIGHT = 521.5;
 const HANDLE_TAB_RESIZE_HEIGHT = 20;
 const MANCHETTE_HEIGHT_DIFF = 100;
 
@@ -27,8 +27,7 @@ const StdcmDebugResults = ({ simulationOutputs }: StdcmDebugResultsProps) => {
   const workScheduleGroupId = useSelector(getWorkScheduleGroupId);
   const successfulSimulation = hasResults(simulationOutputs) ? simulationOutputs : undefined;
 
-  const [speedSpaceChartContainerHeight, setSpeedSpaceChartContainerHeight] =
-    useState(SPEED_SPACE_CHART_HEIGHT);
+  const [SDDWrapperHeight, setSDDWrapperHeight] = useState(SDD_INITIAL_HEIGHT);
   const { t } = useTranslation('stdcm');
 
   const [manchetteWithSpaceTimeChartHeight, setManchetteWithSpaceTimeChartHeight] = useState(
@@ -48,7 +47,7 @@ const StdcmDebugResults = ({ simulationOutputs }: StdcmDebugResultsProps) => {
   );
 
   if (!successfulSimulation) return null;
-  const { pathProperties, results, speedSpaceChartData } = successfulSimulation;
+  const { pathProperties, results, speedDistanceDiagramData } = successfulSimulation;
 
   return (
     <div className="stdcm-debug-results">
@@ -80,20 +79,22 @@ const StdcmDebugResults = ({ simulationOutputs }: StdcmDebugResultsProps) => {
         </ResizableSection>
       )}
 
-      <div className="osrd-simulation-container my-2 speedspacechart-container">
+      <div className="osrd-simulation-container my-2">
         <div
           className="chart-container"
           style={{
-            height: `${speedSpaceChartContainerHeight + HANDLE_TAB_RESIZE_HEIGHT}px`,
+            height: `${SDDWrapperHeight + HANDLE_TAB_RESIZE_HEIGHT}px`,
           }}
         >
-          <SpeedSpaceChartContainer
+          <SpeedDistanceDiagramWrapper
             timetableItemSimulation={results.simulation}
-            selectedTimetableItemPowerRestrictions={speedSpaceChartData.formattedPowerRestrictions}
-            pathProperties={speedSpaceChartData.formattedPathProperties}
-            height={speedSpaceChartContainerHeight}
-            setHeightOfSpeedSpaceChartContainer={setSpeedSpaceChartContainerHeight}
-            rollingStock={speedSpaceChartData.rollingStock}
+            selectedTimetableItemPowerRestrictions={
+              speedDistanceDiagramData.formattedPowerRestrictions
+            }
+            pathProperties={speedDistanceDiagramData.formattedPathProperties}
+            height={SDDWrapperHeight}
+            setHeight={setSDDWrapperHeight}
+            rollingStock={speedDistanceDiagramData.rollingStock}
           />
         </div>
       </div>

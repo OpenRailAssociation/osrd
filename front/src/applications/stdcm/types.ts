@@ -12,7 +12,7 @@ import type {
 } from 'common/api/osrdEditoastApi';
 import type {
   PathOperationalPoint,
-  SpeedSpaceChartData,
+  SpeedDistanceDiagramData,
   TrainSpaceTimeData,
 } from 'modules/simulationResult/types';
 import type { SuggestedOP } from 'modules/timetableItem/components/ManageTimetableItem/types';
@@ -81,7 +81,7 @@ export type ConsistErrors = {
 
 export type StdcmResults = {
   stdcmResponse: StdcmSuccessResponse;
-  speedSpaceChartData: SpeedSpaceChartData | null;
+  speedDistanceDiagramData: SpeedDistanceDiagramData | null;
   spaceTimeData: TrainSpaceTimeData[] | null;
 };
 
@@ -125,7 +125,7 @@ export type StdcmSimulationInputs = {
 export type StdcmResultsOutput = {
   pathProperties: StdcmPathProperties;
   results: StdcmSuccessResponse;
-  speedSpaceChartData: SpeedSpaceChartData;
+  speedDistanceDiagramData: SpeedDistanceDiagramData;
 };
 
 export type StdcmConflictsOutput = {
