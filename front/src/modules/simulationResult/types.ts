@@ -76,7 +76,7 @@ export type IndividualTrainProjection = {
 // Speed Space Chart
 export type SpeedLimitTagValue = ArrayElement<SimulationResponseSuccess['mrsp']['values']>;
 
-export type SpeedSpaceChartData = {
+export type SpeedDistanceDiagramData = {
   rollingStock: RollingStockWithLiveries;
   formattedPowerRestrictions: LayerData<PowerRestrictionValues>[] | undefined;
   simulation?: SimulationResponseSuccess;

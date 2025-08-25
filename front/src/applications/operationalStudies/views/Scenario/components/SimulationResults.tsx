@@ -16,7 +16,7 @@ import useProjectedConflicts from 'modules/simulationResult/components/SpaceTime
 import useTrackOccupancy, {
   type OccupancyTrainSpaceTimeData,
 } from 'modules/simulationResult/components/SpaceTimeChartWrapper/useTrackOccupancy';
-import SpeedSpaceChartContainer from 'modules/simulationResult/components/SpeedSpaceChart/SpeedSpaceChartContainer';
+import SpeedDistanceDiagramWrapper from 'modules/simulationResult/components/SpeedDistanceDiagram/SpeedDistanceDiagramWrapper';
 import SimulationResultExport from 'modules/simulationResult/SimulationResultExport/SimulationResultsExport';
 import type { ProjectionData } from 'modules/simulationResult/types';
 import TimesStopsOutput from 'modules/timesStops/TimesStopsOutput';
@@ -40,8 +40,8 @@ import useSimulationResults from '../../../hooks/useSimulationResults';
 import type { Board } from '../../../types';
 
 const HIDDEN_CHART_TOP_HEIGHT = 35;
-const SPEED_SPACE_CHART_HEIGHT = 460;
-const SPEEDSPACECHART_MIN_HEIGHT = 400;
+const SDD_INITIAL_HEIGHT = 460;
+const SDD_MIN_HEIGHT = 400;
 
 type SimulationResultsProps = {
   scenarioData: { name: string; infraName: string };
@@ -79,7 +79,7 @@ const SimulationResults = ({
     MANCHETTE_WITH_SPACE_TIME_CHART_DEFAULT_HEIGHT
   );
 
-  const [SDDHeight, setSDDHeight] = useState(SPEED_SPACE_CHART_HEIGHT);
+  const [SDDHeight, setSDDHeight] = useState(SDD_INITIAL_HEIGHT);
 
   const [mapCanvas, setMapCanvas] = useState<string>();
 
@@ -281,16 +281,16 @@ const SimulationResults = ({
             <>
               {/* SIMULATION : SPEED SPACE CHART */}
               {activeBoards.has('sdd') && (
-                <div className="speed-space-chart-section">
+                <div className="speed-distance-diagram-section">
                   <ResizableSection
                     height={SDDHeight}
                     setHeight={setSDDHeight}
-                    minHeight={SPEEDSPACECHART_MIN_HEIGHT}
+                    minHeight={SDD_MIN_HEIGHT}
                   >
-                    <BoardWrapper name={t('simulationResults.speedSpaceChart')}>
+                    <BoardWrapper name={t('simulationResults.speedDistanceDiagram')}>
                       <div className="osrd-simulation-container">
                         <div className="chart-container">
-                          <SpeedSpaceChartContainer
+                          <SpeedDistanceDiagramWrapper
                             timetableItemSimulation={simulationResults.simulation}
                             selectedTimetableItemPowerRestrictions={
                               simulationResults.powerRestrictions
@@ -298,7 +298,7 @@ const SimulationResults = ({
                             rollingStock={simulationResults.rollingStock}
                             pathProperties={simulationResults.pathProperties}
                             height={SDDHeight}
-                            setHeightOfSpeedSpaceChartContainer={setSDDHeight}
+                            setHeight={setSDDHeight}
                           />
                         </div>
                       </div>
