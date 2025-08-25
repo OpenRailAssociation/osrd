@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 import { Button } from '@osrd-project/ui-core';
 import { PDFDownloadLink } from '@react-pdf/renderer';
@@ -6,8 +6,11 @@ import { useTranslation, Trans } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
 import useConflictsMessages from 'applications/stdcm/hooks/useConflictsMessages';
+import type { SimilarTrainWithSecondaryCode } from 'applications/stdcm/types';
 import { extractMarkersInfo } from 'applications/stdcm/utils';
+import { addSecondaryCodesToSimilarTrains } from 'applications/stdcm/utils/addSecondaryCodesToSimilarTrains';
 import { hasConflicts, hasResults } from 'applications/stdcm/utils/simulationOutputUtils';
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import DefaultBaseMap from 'common/Map/DefaultBaseMap';
 import {
   generateCodeNumber,
@@ -19,6 +22,7 @@ import {
   getRetainedSimulationIndex,
   getSelectedSimulation,
   getStdcmInfraID,
+  getStdcmTimetableID,
 } from 'reducers/osrdconf/stdcmConf/selectors';
 import { useAppDispatch } from 'store';
 import useDeploymentSettings from 'utils/hooks/useDeploymentSettings';
@@ -51,6 +55,7 @@ const StdcmResults = ({
   displayInfoMessage,
 }: StcdmResultsProps) => {
   const infraId = useSelector(getStdcmInfraID);
+  const timetableId = useSelector(getStdcmTimetableID);
   const dispatch = useAppDispatch();
 
   const { t } = useTranslation('stdcm', { keyPrefix: 'simulation.results' });
@@ -92,6 +97,57 @@ const StdcmResults = ({
     }
     return extractMarkersInfo(outputs.results.simulationPathSteps);
   }, [hasSimulationResults, outputs]);
+
+  const [similarTrains, setSimilarTrains] = useState<SimilarTrainWithSecondaryCode[]>([]);
+
+  const [postSimilarTrains] = osrdEditoastApi.endpoints.postSimilarTrains.useMutation();
+
+  useEffect(() => {
+    const searchForSimilarTrains = async () => {
+      const { consist, pathSteps } = selectedSimulation.inputs;
+      if (!consist) {
+        return;
+      }
+
+      const key = (uic: number | undefined, ch: string) => `${uic}-${ch}`;
+
+      const isStopByOpKey = pathSteps.reduce((acc, ps) => {
+        const k = key(ps.location?.uic, ps.location?.secondary_code ?? '');
+        acc.set(k, !ps.isVia || ps.stopFor !== undefined);
+        return acc;
+      }, new Map<string, boolean>());
+
+      const waypoints = (
+        selectedSimulation.outputs?.pathProperties.manchetteOperationalPoints ?? []
+      ).map((op) => {
+        const k = key(op.extensions?.identifier?.uic, op.extensions?.sncf?.ch ?? '');
+        return {
+          id: op.opId!,
+          stop: isStopByOpKey.get(k) ?? false,
+        };
+      });
+
+      const request = {
+        infra_id: infraId,
+        rolling_stock: {
+          name: consist.tractionEngine?.name ?? '',
+          speed_limit_tag: consist.speedLimitByTag,
+        },
+        timetable_id: timetableId,
+        waypoints,
+      };
+
+      const response = await postSimilarTrains({ body: request });
+      const rawSimilarTrains = response.data?.similar_trains ?? [];
+
+      const enrichedSimilarTrains = addSecondaryCodesToSimilarTrains(rawSimilarTrains, pathSteps);
+
+      setSimilarTrains(enrichedSimilarTrains);
+    };
+    if (isSelectedSimulationRetained) {
+      searchForSimilarTrains();
+    }
+  }, [isSelectedSimulationRetained]);
 
   return (
     <>
@@ -138,6 +194,7 @@ const StdcmResults = ({
                               simulationReportSheetNumber={simulationReportSheetNumber}
                               operationalPointsList={operationalPointsList}
                               simulationSheetLogo={deploymentSettings?.stdcmSimulationSheetLogo}
+                              similarTrains={similarTrains}
                             />
                           }
                           fileName={`${deploymentSettings?.stdcmName || 'Stdcm'}-${simulationReportSheetNumber}.pdf`}
