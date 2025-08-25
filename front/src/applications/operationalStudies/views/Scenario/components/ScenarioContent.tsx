@@ -211,7 +211,7 @@ const ScenarioContent = ({
               />
             )}
             <BoardWrapper hidden={!activeBoards.has('macro')} name="MACRO">
-              <div className="osrd-simulation-container speedspacechart-container">
+              <div className="osrd-simulation-container">
                 <div
                   className="chart-container"
                   style={{

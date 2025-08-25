@@ -288,7 +288,7 @@ const SimulationResults = ({
                     minHeight={SPEEDSPACECHART_MIN_HEIGHT}
                   >
                     <BoardWrapper name={t('simulationResults.speedSpaceChart')}>
-                      <div className="osrd-simulation-container speedspacechart-container">
+                      <div className="osrd-simulation-container">
                         <div className="chart-container">
                           <SpeedSpaceChartContainer
                             timetableItemSimulation={simulationResults.simulation}
