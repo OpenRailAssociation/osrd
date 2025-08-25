@@ -3165,7 +3165,8 @@ paths:
                     items:
                       type: object
                       required:
-                      - train_id
+                      - train_name
+                      - start_time
                       - begin
                       - end
                       properties:
@@ -3177,14 +3178,15 @@ paths:
                           type: string
                           format: date-time
                           description: |-
-                            Both `train_id` and `start_time` are `None` if no similar train
+                            Both `train_name` and `start_time` are `None` if no similar train
                             was found for the segment; otherwise, both are `Some`.
                           nullable: true
-                        train_id:
+                        train_name:
                           type: string
                           description: |-
-                            Both `train_id` and `start_time` are `None` if no similar train
+                            Both `train_name` and `start_time` are `None` if no similar train
                             was found for the segment; otherwise, both are `Some`.
+                          nullable: true
   /sprites/signaling_systems:
     get:
       tags:
