@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 
 import type {
   LinkedTrains,
+  SimilarTrainWithSecondaryCode,
   StdcmResultsOperationalPoint,
   StdcmSimulationInputs,
   StdcmSuccessResponse,
@@ -13,6 +14,7 @@ import iconAlert from 'assets/simulationReportSheet/icon_alert_fill.png';
 import ConsistAndRoute from 'modules/SimulationReportSheet/ConsistAndRoute';
 import Header from 'modules/SimulationReportSheet/Header';
 import RCInfo from 'modules/SimulationReportSheet/RCInfo';
+import SimilarTrainsToDuplicate from 'modules/SimulationReportSheet/SimilarTrainsToDuplicate';
 import SimulationTable from 'modules/SimulationReportSheet/SimulationTable';
 import styles from 'modules/SimulationReportSheet/styles/SimulationReportStyleSheet';
 import type { RouteTableRow } from 'modules/SimulationReportSheet/types';
@@ -31,6 +33,7 @@ type StdcmSimulationReportSheetProps = {
   simulationReportSheetNumber: string;
   operationalPointsList: StdcmResultsOperationalPoint[];
   simulationSheetLogo?: string;
+  similarTrains: SimilarTrainWithSecondaryCode[];
 };
 
 const StdcmSimulationReportSheet = ({
@@ -40,6 +43,7 @@ const StdcmSimulationReportSheet = ({
   simulationReportSheetNumber,
   operationalPointsList,
   simulationSheetLogo,
+  similarTrains,
 }: StdcmSimulationReportSheetProps) => {
   const { t } = useTranslation('stdcm');
   const dateTimeLocale = useDateTimeLocale();
@@ -117,6 +121,7 @@ const StdcmSimulationReportSheet = ({
           stdcmLinkedTrains={stdcmLinkedTrains}
           routeTableRows={routeOperationalPoints}
         />
+        <SimilarTrainsToDuplicate similarTrains={similarTrains} />
         <SimulationTable isStdcm rows={simulationTableRows} pathLength={stdcmData.path.length} />
         <View style={styles.footer.warrantyBox}>
           <Text style={styles.footer.warrantyMessage}>{t('reportSheet.withoutWarranty')}</Text>

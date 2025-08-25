@@ -54,6 +54,18 @@ export type StdcmPathProperties = {
   zones: NonNullable<PathProperties['zones']>;
 };
 
+type WaypointWithSecondaryCode = {
+  name: string;
+  secondary_code?: string | null;
+};
+
+export type SimilarTrainWithSecondaryCode = {
+  train_name: string | null;
+  start_time?: Date;
+  begin: WaypointWithSecondaryCode;
+  end: WaypointWithSecondaryCode;
+};
+
 export type StdcmResultsOperationalPoint = {
   opId?: string;
   positionOnPath: number;

@@ -394,6 +394,65 @@ const styles = {
       marginTop: '8',
     },
   }),
+  similarTrainsToDuplicate: StyleSheet.create({
+    similarTrainsToDuplicate: {
+      marginBottom: 15,
+      paddingLeft: 16,
+      borderTop: '1 solid #D3D1CF',
+    },
+    title: {
+      marginTop: '12',
+      marginBottom: '13',
+      marginLeft: '4',
+      textTransform: 'uppercase',
+      fontSize: '18',
+      fontWeight: 'bold',
+      color: '#000000',
+      letterSpacing: '0.4',
+    },
+    cardsContainer: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 16,
+    },
+    card: {
+      padding: 24,
+      width: 426,
+      height: 160,
+      backgroundColor: '#EFF3F5',
+      display: 'flex',
+      flexDirection: 'column',
+      justifyContent: 'space-between',
+    },
+    stationRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      fontSize: 16,
+      paddingBottom: 5,
+      paddingTop: 3,
+      paddingLeft: 8,
+      paddingRight: 8,
+      backgroundColor: '#FFFFFF',
+      border: ' 1 solid #D3D1CF',
+      borderRadius: 4,
+    },
+    stationCode: {
+      fontWeight: 'bold',
+    },
+    middleRow: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      fontSize: 16,
+      paddingLeft: 8,
+      paddingRight: 8,
+    },
+    trainId: {
+      fontWeight: 'bold',
+    },
+    startDate: {
+      fontSize: 16,
+    },
+  }),
   simulation: StyleSheet.create({
     simulation: {
       paddingBottom: '17',
