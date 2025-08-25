@@ -5,11 +5,10 @@ import type { GraouTrainSchedule } from 'common/api/graouApi';
 import { type ScenarioResponse } from 'common/api/osrdEditoastApi';
 import { Loader } from 'common/Loaders';
 import { useRollingStockContext } from 'common/RollingStockContext';
-import {
-  ImportTimetableItemConfig,
-  ImportTimetableItemTrainsList,
-} from 'modules/timetableItem/components/ImportTimetableItem';
 import type { TimetableItem } from 'reducers/osrdconf/types';
+
+import ImportTimetableItemConfig from './ImportTimetableItemConfig';
+import ImportTimetableItemTrainsList from './ImportTimetableItemTrainsList';
 
 type ImportTimetableItemProps = {
   scenario: ScenarioResponse;

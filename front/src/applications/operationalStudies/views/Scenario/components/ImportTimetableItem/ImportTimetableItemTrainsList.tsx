@@ -13,7 +13,6 @@ import {
   type ScenarioResponse,
 } from 'common/api/osrdEditoastApi';
 import { Loader } from 'common/Loaders';
-import rollingstockOpenData2OSRD from 'modules/timetableItem/components/ImportTimetableItem/rollingstock_opendata2osrd.json';
 import { setFailure, setSuccess } from 'reducers/main';
 import type {
   PacedTrainWithPacedTrainId,
@@ -24,7 +23,8 @@ import { useAppDispatch } from 'store';
 import { formatEditoastIdToPacedTrainId, formatEditoastIdToTrainScheduleId } from 'utils/trainId';
 
 import generateTrainSchedulesPayloads from './generateTrainSchedulesPayloads';
-import findValidTrainNameKey from '../ManageTimetableItem/helpers/findValidTrainNameKey';
+import findValidTrainNameKey from './helpers/findValidTrainNameKey';
+import rollingstockOpenData2OSRD from './rollingstock_opendata2osrd.json';
 
 function LoadingIfSearching({
   isLoading,
