@@ -110,12 +110,13 @@ struct WaypointResponse {
 #[derive(Debug, Serialize, ToSchema)]
 #[cfg_attr(test, derive(Deserialize, PartialEq))]
 struct SimilarTrainItem {
-    /// Both `train_id` and `start_time` are `None` if no similar train
+    /// Both `train_name` and `start_time` are `None` if no similar train
     /// was found for the segment; otherwise, both are `Some`.
-    #[schema(value_type = String)]
-    train_id: Option<past_train::Id>,
-    /// Both `train_id` and `start_time` are `None` if no similar train
+    #[schema(required)]
+    train_name: Option<String>,
+    /// Both `train_name` and `start_time` are `None` if no similar train
     /// was found for the segment; otherwise, both are `Some`.
+    #[schema(required)]
     start_time: Option<DateTime<Utc>>,
     #[schema(value_type = SimilarTrainWaypointResponse)]
     begin: WaypointResponse,
@@ -253,7 +254,7 @@ pub(in crate::views) async fn similar_trains(
         tracing::info!("no candidate train schedules found — similar trains cannot be computed");
         return Ok(Json(Response {
             similar_trains: vec![SimilarTrainItem {
-                train_id: None,
+                train_name: None,
                 start_time: None,
                 begin: WaypointResponse {
                     id: new_train.begin().op.deref().clone(),
@@ -266,9 +267,9 @@ pub(in crate::views) async fn similar_trains(
     }
 
     // keep the departure date in memory in order to build the API response later on
-    let candidate_schedules_departure_date = candidate_schedules
+    let candidate_schedules_response_info = candidate_schedules
         .iter()
-        .map(|ts| (ts.id, ts.start_time))
+        .map(|ts| (ts.id, (ts.train_name.clone(), ts.start_time)))
         .collect::<HashMap<_, _>>();
 
     // Step 3 : simulate candidate train schedules
@@ -390,12 +391,13 @@ pub(in crate::views) async fn similar_trains(
     let response_items = similar_trains
         .into_iter()
         .map(|((begin, end), train_id)| {
-            let start_time = train_id
+            let (train_name, start_time) = train_id
                 .as_ref()
-                .and_then(|train_id| candidate_schedules_departure_date.get(train_id).cloned());
+                .and_then(|train_id| candidate_schedules_response_info.get(train_id).cloned())
+                .unzip();
             SimilarTrainItem {
                 start_time,
-                train_id,
+                train_name,
                 begin: WaypointResponse {
                     id: begin.op.deref().clone(),
                 },
@@ -861,8 +863,8 @@ mod tests {
         start_time: DateTime<Utc>,
         schedule: Vec<ScheduleItem>,
         speed_limit_tag: Option<String>,
-    ) -> past_train::Id {
-        let train_schedule = TrainSchedule::changeset()
+    ) -> String {
+        TrainSchedule::changeset()
             .timetable_id(timetable_id)
             .train_name(Uuid::new_v4().to_string())
             .rolling_stock_name(rolling_stock_name)
@@ -882,8 +884,8 @@ mod tests {
             .speed_limit_tag(speed_limit_tag)
             .create(conn)
             .await
-            .expect("Failed to create train schedule");
-        train_schedule.id
+            .expect("Failed to create train schedule")
+            .train_name
     }
 
     struct InitTestResponse {
@@ -891,7 +893,7 @@ mod tests {
         infra_id: i64,
         rolling_stock_names: Vec<String>,
         timetable_id: i64,
-        train_id: i64,
+        train_name: String,
         start_time: DateTime<Utc>,
     }
     async fn init_test() -> InitTestResponse {
@@ -951,7 +953,7 @@ mod tests {
             DateTime::from_str("2025-01-01T10:00:00Z").expect("Failed to parse datetime");
 
         // WS(22):stop  MWS(33):stop  MES(44):passing_by  NS(55):stop  SS(66):stop
-        let train_id = create_train_schedule(
+        let train_name = create_train_schedule(
             &mut db_pool.get_ok(),
             timetable.id,
             rolling_stock.name.clone(),
@@ -966,7 +968,7 @@ mod tests {
             infra_id: small_infra.id,
             rolling_stock_names: vec![rolling_stock.name, rolling_stock_2.name],
             timetable_id: timetable.id,
-            train_id,
+            train_name,
             start_time,
         }
     }
@@ -1001,7 +1003,7 @@ mod tests {
             infra_id,
             rolling_stock_names,
             timetable_id,
-            train_id,
+            train_name,
             start_time,
         } = init_test().await;
 
@@ -1019,7 +1021,7 @@ mod tests {
 
         let expected_response = Response {
             similar_trains: vec![SimilarTrainItem {
-                train_id: Some(train_id),
+                train_name: Some(train_name),
                 start_time: Some(start_time),
                 begin,
                 end,
@@ -1039,7 +1041,7 @@ mod tests {
         ],
         vec![
             SimilarTrainItem {
-                train_id: None,
+                train_name: None,
                 start_time: None,
                 begin: WaypointResponse { id: "Mid_West_station".into() },
                 end: WaypointResponse { id: "North_station".into() }
@@ -1056,7 +1058,7 @@ mod tests {
         ],
         vec![
             SimilarTrainItem {
-                train_id: None,
+                train_name: None,
                 start_time: None,
                 begin: WaypointResponse { id: "Mid_West_station".into() },
                 end: WaypointResponse { id: "North_station".into() }
@@ -1075,7 +1077,7 @@ mod tests {
         ],
         vec![
             SimilarTrainItem {
-                train_id: None,
+                train_name: None,
                 start_time: None,
                 begin: WaypointResponse { id: "Mid_West_station".into() },
                 end: WaypointResponse { id: "North_station".into() }
@@ -1095,7 +1097,7 @@ mod tests {
         ],
         vec![
             SimilarTrainItem {
-                train_id: None,
+                train_name: None,
                 start_time: None,
                 begin: WaypointResponse { id: "Mid_West_station".into() },
                 end: WaypointResponse { id: "South_station".into() }
@@ -1255,7 +1257,7 @@ mod tests {
         let expected_response = Response {
             similar_trains: vec![
                 SimilarTrainItem {
-                    train_id: Some(train_1),
+                    train_name: Some(train_1),
                     start_time: Some(start_time_1),
                     begin: WaypointResponse {
                         id: "West_station".into(),
@@ -1265,7 +1267,7 @@ mod tests {
                     },
                 },
                 SimilarTrainItem {
-                    train_id: Some(train_2),
+                    train_name: Some(train_2),
                     start_time: Some(start_time_2),
                     begin: WaypointResponse {
                         id: "Mid_East_station".into(),
@@ -1446,7 +1448,7 @@ mod tests {
 
         let expected_response = Response {
             similar_trains: vec![SimilarTrainItem {
-                train_id: Some(train_id),
+                train_name: Some(train_id),
                 start_time: Some(start_time),
                 begin: WaypointResponse {
                     id: "West_station".into(),
@@ -1575,7 +1577,7 @@ mod tests {
         let expected_response = Response {
             similar_trains: vec![
                 SimilarTrainItem {
-                    train_id: Some(train_1),
+                    train_name: Some(train_1),
                     start_time: Some(start_time_1),
                     begin: WaypointResponse {
                         id: "West_station".into(),
@@ -1585,7 +1587,7 @@ mod tests {
                     },
                 },
                 SimilarTrainItem {
-                    train_id: None,
+                    train_name: None,
                     start_time: None,
                     begin: WaypointResponse {
                         id: "Mid_West_station".into(),
@@ -1595,7 +1597,7 @@ mod tests {
                     },
                 },
                 SimilarTrainItem {
-                    train_id: Some(train_2),
+                    train_name: Some(train_2),
                     start_time: Some(start_time_2),
                     begin: WaypointResponse {
                         id: "Mid_East_station".into(),
@@ -1605,7 +1607,7 @@ mod tests {
                     },
                 },
                 SimilarTrainItem {
-                    train_id: None,
+                    train_name: None,
                     start_time: None,
                     begin: WaypointResponse {
                         id: "North_station".into(),
