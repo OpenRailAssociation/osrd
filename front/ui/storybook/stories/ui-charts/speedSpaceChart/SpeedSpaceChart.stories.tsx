@@ -36,7 +36,7 @@ const SpeedSpaceChartStory = ({
     <div style={{ height: containerHeight }}>
       <SpeedSpaceChart
         width={width}
-        height={height}
+        height={containerHeight}
         backgroundColor={backgroundColor}
         data={data}
         setHeight={setContainerHeight}
