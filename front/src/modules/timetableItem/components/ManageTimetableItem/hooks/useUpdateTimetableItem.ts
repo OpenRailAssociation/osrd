@@ -21,8 +21,11 @@ import type {
   TimetableItem,
   TrainId,
   TimetableItemToEditData,
+  PacedTrainWithPacedTrainId,
+  TrainScheduleWithTrainId,
 } from 'reducers/osrdconf/types';
-import { updateSelectedTrainId } from 'reducers/simulationResults';
+import { updateSelectedTrainId, updateTrainIdUsedForProjection } from 'reducers/simulationResults';
+import { getTrainIdUsedForProjection } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
 import {
   extractPacedTrainIdFromOccurrenceId,
@@ -50,6 +53,7 @@ const useUpdateTimetableItem = (
   const confName = useSelector(getName);
   const timetableId = useSelector(getOperationalStudiesTimetableID);
   const simulationConf = useSelector(getOperationalStudiesConf);
+  const trainIdUsedForProjection = useSelector(getTrainIdUsedForProjection);
   const startTime = useSelector(getStartTime);
   const { rollingStock } = useStoreDataForRollingStockSelector({
     rollingStockId: simulationConf.rollingStockID,
@@ -67,8 +71,9 @@ const useUpdateTimetableItem = (
     setIsWorking(true);
 
     let trainIdToSelect: TrainId | undefined;
+    let updatedItem: PacedTrainWithPacedTrainId | TrainScheduleWithTrainId;
     if (simulationConf.editingItemType !== 'trainSchedule') {
-      const updatedItem = await storePacedTrain(
+      updatedItem = await storePacedTrain(
         timetableItemId,
         // When editing an occurrence, timetableItemToEditData will contain the original paced train
         // informations and the occurrence id being modified.
@@ -90,7 +95,7 @@ const useUpdateTimetableItem = (
           ? selectedTrainId
           : formatPacedTrainIdToIndexedOccurrenceId(updatedItem.id, 0);
     } else {
-      const updatedItem = await storeTrainSchedule(
+      updatedItem = await storeTrainSchedule(
         timetableItemId,
         formatTimetableItemPayload(simulationConf, rollingStock!.name),
         timetableId!,
@@ -108,8 +113,19 @@ const useUpdateTimetableItem = (
         text: `${confName}: ${startTime.toLocaleString()}`,
       })
     );
-    dispatch(clearAddedExceptionsList());
     dispatch(updateSelectedTrainId(trainIdToSelect));
+
+    // if the updated train was used for the projection, update the projectedTrainId
+    if (
+      trainIdUsedForProjection &&
+      timetableItemId !== updatedItem.id &&
+      trainIdUsedForProjection === timetableItemId
+    ) {
+      dispatch(updateTrainIdUsedForProjection(updatedItem.id));
+    }
+
+    // close the modal
+    dispatch(clearAddedExceptionsList());
     setDisplayTimetableItemManagement(MANAGE_TIMETABLE_ITEM_TYPES.none);
     setTimetableItemIdToEdit(undefined);
   };
