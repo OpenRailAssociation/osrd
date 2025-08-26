@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react';
 
+import { skipToken } from '@reduxjs/toolkit/query';
+
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 
 /**
@@ -20,11 +22,10 @@ export default function useWorkerStatus({
   // This endpoint initializes a worker, loads the required infrastructure on it, and optionally caches
   // the timetable to speed up stdcm requests.
   const { data: workerStatus = 'NOT_READY' } = osrdEditoastApi.endpoints.postWorkerLoad.useQuery(
-    { body: { infra_id: infraId!, timetable_id: timetableId } },
+    infraId ? { body: { infra_id: infraId, timetable_id: timetableId } } : skipToken,
     {
       refetchOnMountOrArgChange: true,
       pollingInterval: shouldPoll ? 1000 : undefined,
-      skip: !infraId,
     }
   );
 

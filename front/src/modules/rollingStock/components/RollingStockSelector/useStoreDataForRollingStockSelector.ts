@@ -1,3 +1,4 @@
+import { skipToken } from '@reduxjs/toolkit/query';
 import { useSelector } from 'react-redux';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
@@ -12,12 +13,11 @@ export const useStoreDataForRollingStockSelector = ({
 
   const { currentData: rollingStock } =
     osrdEditoastApi.endpoints.getRollingStockByRollingStockId.useQuery(
-      {
-        rollingStockId: rollingStockId!,
-      },
-      {
-        skip: !rollingStockId,
-      }
+      rollingStockId
+        ? {
+            rollingStockId,
+          }
+        : skipToken
     );
 
   return {

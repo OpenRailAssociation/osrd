@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-non-null-asserted-optional-chain */
 import { useEffect, useMemo } from 'react';
 
+import { skipToken } from '@reduxjs/toolkit/query';
 import { useParams } from 'react-router-dom';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
@@ -39,14 +40,13 @@ const useScenario = () => {
     isError: isScenarioError,
     error: errorScenario,
   } = osrdEditoastApi.endpoints.getProjectsByProjectIdStudiesAndStudyIdScenariosScenarioId.useQuery(
-    {
-      projectId: projectId!,
-      studyId: studyId!,
-      scenarioId: scenarioId!,
-    },
-    {
-      skip: !projectId || !studyId || !scenarioId,
-    }
+    projectId && studyId && scenarioId
+      ? {
+          projectId: projectId,
+          studyId: studyId,
+          scenarioId: scenarioId,
+        }
+      : skipToken
   );
 
   useEffect(() => {

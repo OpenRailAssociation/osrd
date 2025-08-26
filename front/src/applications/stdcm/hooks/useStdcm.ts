@@ -1,5 +1,6 @@
 import { useRef, useState } from 'react';
 
+import { skipToken } from '@reduxjs/toolkit/query';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import { v4 as uuidV4 } from 'uuid';
@@ -62,8 +63,7 @@ const useStdcm = ({
 
   const { data: stdcmRollingStock } =
     osrdEditoastApi.endpoints.getLightRollingStockByRollingStockId.useQuery(
-      { rollingStockId: osrdconf.rollingStockID! },
-      { skip: !osrdconf.rollingStockID }
+      osrdconf.rollingStockID ? { rollingStockId: osrdconf.rollingStockID } : skipToken
     );
 
   useStoreDataForSpeedLimitByTagSelector({

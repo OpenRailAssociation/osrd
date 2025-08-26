@@ -1,5 +1,6 @@
 import { useContext, useEffect, useMemo, useState } from 'react';
 
+import { skipToken } from '@reduxjs/toolkit/query';
 import { cloneDeep, compact, isEmpty, isEqual, last, pick, uniq, uniqWith } from 'lodash';
 import { useTranslation } from 'react-i18next';
 
@@ -100,18 +101,20 @@ const RangeEditionLeftPanel = () => {
   };
 
   const { data: voltages } = osrdEditoastApi.endpoints.getInfraByInfraIdVoltages.useQuery(
-    {
-      infraId: infraID!,
-    },
-    { skip: !infraID }
+    infraID
+      ? {
+          infraId: infraID,
+        }
+      : skipToken
   );
 
   const { data: speedLimitTagsByInfraId } =
     osrdEditoastApi.endpoints.getInfraByInfraIdSpeedLimitTags.useQuery(
-      {
-        infraId: infraID!,
-      },
-      { skip: !infraID }
+      infraID
+        ? {
+            infraId: infraID,
+          }
+        : skipToken
     );
   const allSpeedLimitTags = uniq(speedLimitTagsByInfraId);
   const allSpeedLimitTagsOrdered = useMemo(() => allSpeedLimitTags.sort(), [allSpeedLimitTags]);

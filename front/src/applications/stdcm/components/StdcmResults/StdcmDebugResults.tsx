@@ -1,5 +1,6 @@
 import { useState } from 'react';
 
+import { skipToken } from '@reduxjs/toolkit/query';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
@@ -37,14 +38,15 @@ const StdcmDebugResults = ({ simulationOutputs }: StdcmDebugResultsProps) => {
   const projectedData = useProjectedTrainsForStdcm(successfulSimulation?.results);
 
   const { data: workSchedules } = osrdEditoastApi.endpoints.postWorkSchedulesProjectPath.useQuery(
-    {
-      body: {
-        path_track_ranges:
-          successfulSimulation?.results.pathfinding_result.path.track_section_ranges || [],
-        work_schedule_group_id: workScheduleGroupId!,
-      },
-    },
-    { skip: !workScheduleGroupId || !successfulSimulation }
+    workScheduleGroupId && successfulSimulation
+      ? {
+          body: {
+            path_track_ranges:
+              successfulSimulation.results.pathfinding_result.path.track_section_ranges || [],
+            work_schedule_group_id: workScheduleGroupId,
+          },
+        }
+      : skipToken
   );
 
   if (!successfulSimulation) return null;

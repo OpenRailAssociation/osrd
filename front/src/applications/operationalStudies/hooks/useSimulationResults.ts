@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 
+import { skipToken } from '@reduxjs/toolkit/query';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
@@ -76,50 +77,47 @@ const useSimulationResults = (): SimulationResults | undefined => {
   }, [selectedTrainId, timetableItem]);
 
   const { currentData: pathfinding } = osrdEditoastApi.endpoints.getTrainPath.useQuery(
-    {
-      id: selectedTrainId!,
-      infraId,
-      exceptionKey: exception?.key,
-    },
-    {
-      skip: !selectedTrainId,
-    }
+    selectedTrainId
+      ? {
+          id: selectedTrainId,
+          infraId,
+          exceptionKey: exception?.key,
+        }
+      : skipToken
   );
 
   const { currentData: simulation } = osrdEditoastApi.endpoints.getTrainSimulation.useQuery(
-    {
-      id: selectedTrainId!,
-      infraId,
-      electricalProfileSetId,
-      exceptionKey: exception?.key,
-    },
-    {
-      skip: !selectedTrainId,
-    }
+    selectedTrainId
+      ? {
+          id: selectedTrainId,
+          infraId,
+          electricalProfileSetId,
+          exceptionKey: exception?.key,
+        }
+      : skipToken
   );
 
   // TODO: replace this API call by extracting the rolling stock from the rolling
   // stocks list
   const { currentData: rollingStock } =
     osrdEditoastApi.endpoints.getRollingStockNameByRollingStockName.useQuery(
-      {
-        rollingStockName: train?.rolling_stock_name || '',
-      },
-      {
-        skip: !train,
-      }
+      train
+        ? {
+            rollingStockName: train.rolling_stock_name,
+          }
+        : skipToken
     );
 
   const { currentData: rawPathProperties } =
     osrdEditoastApi.endpoints.postInfraByInfraIdPathProperties.useQuery(
-      {
-        infraId,
-        pathPropertiesInput: {
-          track_section_ranges:
-            pathfinding?.status === 'success' ? pathfinding.path.track_section_ranges : [],
-        },
-      },
-      { skip: pathfinding?.status !== 'success' }
+      pathfinding?.status === 'success'
+        ? {
+            infraId,
+            pathPropertiesInput: {
+              track_section_ranges: pathfinding.path.track_section_ranges,
+            },
+          }
+        : skipToken
     );
 
   if (!train || exception?.disabled) {

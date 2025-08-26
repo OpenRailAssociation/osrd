@@ -1,5 +1,6 @@
 import { useEffect, useMemo } from 'react';
 
+import { skipToken } from '@reduxjs/toolkit/query';
 import { uniq } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
@@ -30,10 +31,11 @@ export const useStoreDataForSpeedLimitByTagSelector = ({
   };
   const { data: speedLimitsTagsByInfraId = [], error } =
     osrdEditoastApi.endpoints.getInfraByInfraIdSpeedLimitTags.useQuery(
-      {
-        infraId: infraID!,
-      },
-      { skip: !infraID || isStdcm }
+      infraID && !isStdcm
+        ? {
+            infraId: infraID,
+          }
+        : skipToken
     );
 
   useEffect(() => {

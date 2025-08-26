@@ -1,5 +1,6 @@
 import { useCallback, useEffect } from 'react';
 
+import { skipToken } from '@reduxjs/toolkit/query';
 import { useDispatch, useSelector } from 'react-redux';
 
 import {
@@ -22,12 +23,11 @@ function useAuth() {
 
   const [logout] = osrdGatewayApi.endpoints.logout.useMutation();
 
-  const { data } = osrdEditoastApi.endpoints.getAuthzMe.useQuery(undefined, {
-    skip: !isUserLogged,
-  });
-  const user = osrdEditoastApi.endpoints.getAuthzMe.useQuery(undefined, {
-    skip: !isUserLogged,
-  });
+  const { data } = osrdEditoastApi.endpoints.getAuthzMe.useQuery(
+    isUserLogged ? undefined : skipToken
+  );
+
+  const user = osrdEditoastApi.endpoints.getAuthzMe.useQuery(isUserLogged ? undefined : skipToken);
 
   useEffect(() => {
     if (!isUserLogged && !isAuthenticateLoading) {

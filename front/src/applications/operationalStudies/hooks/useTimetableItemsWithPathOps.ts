@@ -1,5 +1,7 @@
 import { useMemo } from 'react';
 
+import { skipToken } from '@reduxjs/toolkit/query';
+
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { TimetableItem, TimetableItemWithPathOps } from 'reducers/osrdconf/types';
 
@@ -17,11 +19,7 @@ const useTimetableItemsWithPathOps = (
 
   const { currentData: timetableOperationalPoints, isSuccess } =
     osrdEditoastApi.endpoints.matchAllOperationalPoints.useQuery(
-      {
-        infraId,
-        opRefs: timetableOpRefs,
-      },
-      { skip: timetableOpRefs.length === 0 }
+      timetableOpRefs.length > 0 ? { infraId, opRefs: timetableOpRefs } : skipToken
     );
 
   return useMemo(() => {

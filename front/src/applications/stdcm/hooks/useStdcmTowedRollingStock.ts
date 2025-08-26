@@ -1,3 +1,4 @@
+import { skipToken } from '@reduxjs/toolkit/query';
 import { useSelector } from 'react-redux';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
@@ -8,12 +9,11 @@ const useStdcmTowedRollingStock = () => {
 
   const { currentData: towedRollingStock } =
     osrdEditoastApi.endpoints.getTowedRollingStockByTowedRollingStockId.useQuery(
-      {
-        towedRollingStockId: towedRollingStockId!,
-      },
-      {
-        skip: !towedRollingStockId,
-      }
+      towedRollingStockId
+        ? {
+            towedRollingStockId,
+          }
+        : skipToken
     );
 
   return towedRollingStock;
