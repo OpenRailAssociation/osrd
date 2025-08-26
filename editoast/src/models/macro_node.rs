@@ -23,13 +23,14 @@ pub struct MacroNode {
 
 #[cfg(test)]
 pub mod test {
+    use super::*;
+
+    use database::DbConnectionPoolV2;
+    use editoast_models::prelude::*;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
 
-    use super::*;
     use crate::models::fixtures::create_scenario_fixtures_set;
-    use crate::models::prelude::*;
-    use database::DbConnectionPoolV2;
 
     #[rstest]
     async fn macro_node_create_and_get() {

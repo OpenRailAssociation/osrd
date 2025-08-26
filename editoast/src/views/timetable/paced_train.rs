@@ -26,7 +26,6 @@ use crate::error::Result;
 use crate::models;
 use crate::models::Infra;
 use crate::models::paced_train::PacedTrainChangeset;
-use crate::models::prelude::*;
 use crate::views::AuthorizationError;
 use crate::views::infra::InfraIdQueryParam;
 use crate::views::path::path_item_cache::PathItemCache;
@@ -44,6 +43,7 @@ use crate::views::timetable::occupancy_blocks::compute_occupancy_blocks;
 use crate::views::timetable::simulation;
 use crate::views::timetable::simulation::SummaryResponse;
 use crate::views::timetable::simulation::train_simulation_batch;
+use editoast_models::prelude::*;
 
 #[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "paced_train")]
@@ -1021,7 +1021,6 @@ mod tests {
     use crate::models::fixtures::simple_paced_train_changeset;
     use crate::models::fixtures::simple_sub_category;
     use crate::models::paced_train::PacedTrainChangeset;
-    use crate::models::prelude::*;
     use crate::views::path::pathfinding::PathfindingFailure;
     use crate::views::path::pathfinding::PathfindingResult;
     use crate::views::test_app::TestApp;
@@ -1033,6 +1032,7 @@ mod tests {
     use crate::views::timetable::simulation;
     use crate::views::timetable::simulation::SimulationResponseSuccess;
     use crate::views::timetable::simulation::SummaryResponse;
+    use editoast_models::prelude::*;
 
     #[rstest]
     async fn paced_train_post() {

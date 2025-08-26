@@ -1,20 +1,19 @@
 use chrono::DateTime;
 use chrono::Utc;
+use database::DbConnection;
 use diesel_async::scoped_futures::ScopedBoxFuture;
 use diesel_async::scoped_futures::ScopedFutureExt;
 use editoast_derive::Model;
+use editoast_models::prelude::*;
 use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
 
-use crate::SelectionSettings;
 use crate::error::InternalError;
 use crate::models::Document;
 use crate::models::Study;
 use crate::models::Tags;
-use crate::models::prelude::*;
 use crate::views::project::ProjectError;
-use database::DbConnection;
 
 #[editoast_derive::openapi_schema]
 #[derive(Clone, Debug, Serialize, Deserialize, Model, ToSchema, PartialEq)]
@@ -181,14 +180,13 @@ impl Project {
 
 #[cfg(test)]
 pub mod tests {
+    use super::*;
+
+    use database::DbConnectionPoolV2;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
 
-    use super::*;
-    use crate::models::Model;
     use crate::models::fixtures::create_project;
-    use crate::models::prelude::*;
-    use database::DbConnectionPoolV2;
 
     #[rstest]
     async fn project_creation() {

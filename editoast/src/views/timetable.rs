@@ -66,13 +66,13 @@ use crate::error::Result;
 use crate::models;
 use crate::models::Infra;
 use crate::models::paced_train::PacedTrainChangeset;
-use crate::models::prelude::*;
 use crate::models::timetable::Timetable;
 use crate::models::timetable::TimetableWithTrains;
 use crate::models::train_schedule::TrainScheduleChangeset;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
 use crate::views::timetable::simulation::SimulationResponseSuccess;
+use editoast_models::prelude::*;
 
 #[derive(Debug, Error, EditoastError, derive_more::From)]
 #[editoast_error(base_id = "timetable")]

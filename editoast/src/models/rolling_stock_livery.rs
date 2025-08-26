@@ -1,8 +1,9 @@
+use database::DbConnection;
 use editoast_derive::Model;
+use editoast_models::prelude::*;
 
 use super::Document;
 use crate::error::Result;
-use database::DbConnection;
 
 #[cfg(test)]
 use serde::Deserialize;
@@ -42,7 +43,6 @@ impl From<RollingStockLivery> for schemas::rolling_stock::RollingStockLivery {
 
 impl RollingStockLivery {
     pub async fn delete_with_compound_image(&self, conn: &mut DbConnection) -> Result<bool> {
-        use crate::models::DeleteStatic;
         let livery = RollingStockLivery::delete_static(conn, self.id).await?;
         if let Some(image_id) = self.compound_image_id {
             let doc_delete_result = Document::delete_static(conn, image_id).await?;
@@ -54,13 +54,13 @@ impl RollingStockLivery {
 
 #[cfg(test)]
 pub mod tests {
-    use rstest::*;
+    use super::*;
 
-    use super::RollingStockLivery;
+    use database::DbConnectionPoolV2;
+    use rstest::rstest;
+
     use crate::models::Document;
     use crate::models::fixtures::create_rolling_stock_livery_fixture;
-    use crate::models::prelude::*;
-    use database::DbConnectionPoolV2;
 
     #[rstest]
     async fn create_delete_rolling_stock_livery() {

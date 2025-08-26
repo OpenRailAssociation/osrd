@@ -24,7 +24,6 @@ use crate::models::Scenario;
 use crate::models::Study;
 use crate::models::Tags;
 use crate::models::macro_node::MacroNode;
-use crate::models::prelude::*;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
 use crate::views::pagination::PaginatedList;
@@ -36,6 +35,7 @@ use crate::views::scenario::ScenarioError;
 use crate::views::scenario::ScenarioIdParam;
 use crate::views::study::StudyError;
 use crate::views::study::StudyIdParam;
+use editoast_models::prelude::*;
 
 #[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "macro_node")]

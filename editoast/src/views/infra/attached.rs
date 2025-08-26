@@ -13,10 +13,10 @@ use crate::AppState;
 use crate::error::Result;
 use crate::infra_cache::InfraCache;
 use crate::models::Infra;
-use crate::models::prelude::*;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
 use crate::views::infra::InfraApiError;
+use editoast_models::prelude::*;
 use schemas::primitives::ObjectType;
 
 /// Objects types that can be attached to a track
@@ -126,8 +126,8 @@ mod tests {
 
     use crate::infra_cache::operation::create::apply_create_operation;
     use crate::models::Infra;
-    use crate::models::prelude::*;
     use crate::views::test_app::TestAppBuilder;
+    use editoast_models::prelude::*;
     use schemas::infra::Detector;
     use schemas::infra::TrackSection;
     use schemas::primitives::OSRDIdentified;

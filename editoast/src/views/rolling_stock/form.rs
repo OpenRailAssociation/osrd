@@ -16,9 +16,8 @@ use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
 
-use crate::models::Changeset;
-use crate::models::Model;
 use crate::models::RollingStock;
+use editoast_models::prelude::*;
 
 #[editoast_derive::openapi_schema]
 #[editoast_derive::annotate_units]

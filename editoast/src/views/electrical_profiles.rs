@@ -19,12 +19,9 @@ use utoipa::IntoParams;
 use super::AuthenticationExt;
 use super::AuthorizationError;
 use crate::error::Result;
-use crate::models::Create;
-use crate::models::DeleteStatic;
-use crate::models::Model;
-use crate::models::Retrieve;
 use crate::models::electrical_profiles::ElectricalProfileSet;
 use crate::models::electrical_profiles::LightElectricalProfileSet;
+use editoast_models::prelude::*;
 
 #[derive(IntoParams)]
 #[allow(unused)]
@@ -220,7 +217,6 @@ mod tests {
     use rstest::rstest;
 
     use super::*;
-    use crate::Exists;
     use crate::models::fixtures::create_electrical_profile_set;
     use crate::views::test_app::TestAppBuilder;
     use schemas::infra::ElectricalProfile;

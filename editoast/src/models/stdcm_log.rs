@@ -8,7 +8,7 @@ use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
 
-use crate::models::prelude::*;
+use editoast_models::prelude::*;
 
 #[editoast_derive::openapi_schema]
 #[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]

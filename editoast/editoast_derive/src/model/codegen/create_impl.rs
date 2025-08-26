@@ -33,7 +33,7 @@ impl ToTokens for CreateImpl {
 
         tokens.extend(quote! {
             #[automatically_derived]
-            impl crate::models::Create<#model> for #changeset {
+            impl crate::prelude::Create<#model> for #changeset {
                 type Error = #error;
 
                 #[tracing::instrument(name = #span_name, skip_all, err)]

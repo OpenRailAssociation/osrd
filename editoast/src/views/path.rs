@@ -12,7 +12,7 @@ use thiserror::Error;
 
 use crate::error::Result;
 use crate::models::Infra;
-use crate::models::prelude::*;
+use editoast_models::prelude::*;
 
 #[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "pathfinding")]

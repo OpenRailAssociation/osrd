@@ -20,7 +20,7 @@ impl ToTokens for DeleteImpl {
 
         tokens.extend(quote! {
             #[automatically_derived]
-            impl crate::models::Delete for #model {
+            impl crate::prelude::Delete for #model {
                 type Error = #error;
 
                 #[tracing::instrument(name = #span_name, skip_all, ret, err, fields(query_id = ?self.#primary_key))]

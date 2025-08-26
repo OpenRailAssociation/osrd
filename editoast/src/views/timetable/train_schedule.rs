@@ -39,7 +39,6 @@ use crate::models;
 use crate::models::OperationalPointModel;
 use crate::models::RollingStock;
 use crate::models::infra::Infra;
-use crate::models::prelude::*;
 use crate::models::train_schedule::TrainScheduleChangeset;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
@@ -68,6 +67,7 @@ use crate::views::timetable::simulation::Response;
 use crate::views::timetable::simulation::build_path_items_to_position;
 use crate::views::timetable::simulation::build_sim_power_restriction_items;
 use crate::views::timetable::simulation::build_sim_schedule_items;
+use editoast_models::prelude::*;
 
 use super::simulation::SummaryResponse;
 use super::simulation::train_simulation_batch;

@@ -10,10 +10,10 @@ use schemas::train_schedule::TrackReference;
 use std::collections::HashMap;
 use std::collections::HashSet;
 
-use crate::RetrieveBatchUnchecked;
 use crate::error::Result;
 use crate::models::OperationalPointModel;
 use crate::models::TrackSectionModel;
+use editoast_models::prelude::*;
 
 use super::pathfinding::PathfindingFailure;
 use super::pathfinding::PathfindingResult;

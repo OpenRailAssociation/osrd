@@ -34,7 +34,7 @@ impl ToTokens for UpdateImpl {
 
         tokens.extend(quote! {
             #[automatically_derived]
-            impl crate::models::Update<#ty, #model> for #changeset {
+            impl crate::prelude::Update<#ty, #model> for #changeset {
                 type Error = #error;
 
                 #[tracing::instrument(name = #span_name, skip_all, err, fields(query_id))]

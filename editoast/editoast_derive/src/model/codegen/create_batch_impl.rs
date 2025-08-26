@@ -54,7 +54,7 @@ impl ToTokens for CreateBatchImpl {
 
         tokens.extend(quote! {
             #[automatically_derived]
-            impl crate::models::CreateBatch for #model {
+            impl crate::prelude::CreateBatch for #model {
                 type Error = #error;
 
                 #[tracing::instrument(name = #span_name, skip_all, err)]
@@ -65,7 +65,7 @@ impl ToTokens for CreateBatchImpl {
                     conn: &mut database::DbConnection,
                     values: I,
                 ) -> std::result::Result<C, Self::Error> {
-                    use crate::models::Model;
+                    use crate::prelude::Model;
                     use #table_mod::dsl;
                     use std::ops::DerefMut;
                     use diesel::prelude::*;

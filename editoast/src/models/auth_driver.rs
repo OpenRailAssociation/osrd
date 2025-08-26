@@ -2,7 +2,6 @@ use std::ops::DerefMut;
 use std::sync::Arc;
 
 use crate::models::Infra;
-use crate::models::prelude::Exists;
 use authz::StorageDriver;
 use authz::identity::GroupInfo;
 use authz::identity::GroupName;
@@ -14,6 +13,7 @@ use diesel::dsl;
 use diesel::prelude::*;
 use diesel_async::RunQueryDsl;
 use diesel_async::scoped_futures::ScopedFutureExt as _;
+use editoast_models::prelude::*;
 
 use database::tables::*;
 use futures::StreamExt;

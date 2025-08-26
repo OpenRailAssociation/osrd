@@ -36,12 +36,12 @@ use crate::error::Result;
 use crate::models::Document;
 use crate::models::RollingStock;
 use crate::models::RollingStockImage;
-use crate::models::prelude::*;
 use crate::models::rolling_stock;
 use crate::models::rolling_stock::ScenarioReference;
 use crate::models::rolling_stock_livery::RollingStockLivery;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
+use editoast_models::prelude::*;
 
 #[editoast_derive::openapi_schema]
 #[derive(Debug, Serialize, ToSchema)]
@@ -599,7 +599,6 @@ pub(in crate::views) async fn create_livery(
         let mut w = Cursor::new(Vec::new());
         image.write_to(&mut w, ImageFormat::Png).unwrap();
 
-        use crate::models::Create;
         let image = Document::changeset()
             .content_type(String::from("image/png"))
             .data(w.into_inner())

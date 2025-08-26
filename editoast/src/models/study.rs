@@ -14,8 +14,8 @@ use crate::error::InternalError;
 use crate::error::Result;
 use crate::models::Scenario;
 use crate::models::Tags;
-use crate::models::prelude::*;
 use crate::views::study::StudyError;
+use editoast_models::prelude::*;
 
 use super::Project;
 

@@ -5,6 +5,7 @@ use chrono::DateTime;
 use chrono::Utc;
 use database::DbConnectionPoolV2;
 use editoast_derive::EditoastError;
+use editoast_models::prelude::*;
 use itertools::Either;
 use schemas::infra::DirectionalTrackRange;
 use serde::Deserialize;
@@ -14,11 +15,7 @@ use std::result::Result as StdResult;
 use thiserror::Error;
 use utoipa::ToSchema;
 
-use crate::Create;
-use crate::CreateBatch;
-use crate::Model;
 use crate::error::Result;
-use crate::models::Changeset;
 use crate::models::temporary_speed_limits;
 use crate::models::temporary_speed_limits::TemporarySpeedLimit;
 use crate::models::temporary_speed_limits::TemporarySpeedLimitGroup;
@@ -168,9 +165,8 @@ pub(in crate::views) async fn create_temporary_speed_limit_group(
 
 #[cfg(test)]
 mod tests {
-    use crate::List;
-    use crate::Retrieve;
-    use crate::SelectionSettings;
+    use super::*;
+
     use crate::models::temporary_speed_limits::TemporarySpeedLimitGroup;
     use crate::views::test_app::TestApp;
     use axum::http::StatusCode;

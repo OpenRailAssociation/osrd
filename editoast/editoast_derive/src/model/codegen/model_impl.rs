@@ -18,7 +18,7 @@ impl ToTokens for ModelImpl {
         } = self;
         tokens.extend(quote! {
             #[automatically_derived]
-            impl crate::models::Model for #model {
+            impl crate::prelude::Model for #model {
                 type Row = #row;
                 type Changeset = #changeset;
                 type Table = #table::table;

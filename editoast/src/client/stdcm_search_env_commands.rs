@@ -1,7 +1,3 @@
-use crate::Exists;
-use crate::Model;
-use crate::Retrieve;
-use crate::models::Create;
 use crate::models::Infra;
 use crate::models::Scenario;
 use crate::models::electrical_profiles::ElectricalProfileSet;
@@ -15,6 +11,7 @@ use clap::Args;
 use clap::Subcommand;
 use database::DbConnection;
 use database::DbConnectionPoolV2;
+use editoast_models::prelude::*;
 use std::fs::File;
 use std::io::BufReader;
 use std::path::PathBuf;
@@ -254,7 +251,7 @@ mod tests {
     use crate::models::fixtures::create_timetable;
     use crate::models::fixtures::create_work_schedule_group;
     use crate::models::fixtures::simple_train_schedule_changeset;
-    use crate::models::prelude::*;
+    use editoast_models::prelude::*;
 
     use super::*;
     use chrono::DateTime;

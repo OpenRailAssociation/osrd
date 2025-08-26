@@ -84,7 +84,7 @@ impl ToTokens for RetrieveBatchImpl {
 
         tokens.extend(quote! {
             #[automatically_derived]
-            impl crate::models::RetrieveBatchUnchecked<#ty> for #model {
+            impl crate::prelude::RetrieveBatchUnchecked<#ty> for #model {
                 type Error = #error;
 
                 #[tracing::instrument(name = #span_name, skip_all, err, fields(query_id))]
@@ -95,7 +95,7 @@ impl ToTokens for RetrieveBatchImpl {
                     conn: &mut database::DbConnection,
                     ids: I,
                 ) -> std::result::Result<C, Self::Error> {
-                    use crate::models::Model;
+                    use crate::prelude::Model;
                     use #table_mod::dsl;
                     use diesel::prelude::*;
                     use diesel_async::RunQueryDsl;
@@ -114,8 +114,8 @@ impl ToTokens for RetrieveBatchImpl {
                     conn: &mut database::DbConnection,
                     ids: I,
                 ) -> std::result::Result<C, Self::Error> {
-                    use crate::models::Identifiable;
-                    use crate::models::Model;
+                    use crate::prelude::Identifiable;
+                    use crate::prelude::Model;
                     use #table_mod::dsl;
                     use diesel::prelude::*;
                     use diesel_async::RunQueryDsl;

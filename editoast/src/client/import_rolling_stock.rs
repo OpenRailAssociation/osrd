@@ -9,8 +9,8 @@ use database::DbConnectionPoolV2;
 use validator::ValidationErrorsKind;
 
 use crate::models::RollingStock;
-use crate::models::prelude::*;
 use crate::models::towed_rolling_stock::TowedRollingStock;
+use editoast_models::prelude::*;
 
 #[derive(Args, Clone, Debug)]
 #[command(about, long_about = "Import a rolling stock given a json file")]

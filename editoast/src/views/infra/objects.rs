@@ -13,12 +13,12 @@ use thiserror::Error;
 
 use super::InfraApiError;
 use super::InfraIdParam;
-use crate::Retrieve;
 use crate::error::Result;
 use crate::models::Infra;
 use crate::models::infra::ObjectQueryable;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
+use editoast_models::prelude::*;
 
 #[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "infra:objects")]

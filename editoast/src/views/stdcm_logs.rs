@@ -11,9 +11,9 @@ use thiserror::Error;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
 
-use crate::Retrieve;
 use crate::error::Result;
 use crate::models::stdcm_log::StdcmLog;
+use editoast_models::prelude::*;
 
 use super::AuthenticationExt;
 use super::AuthorizationError;

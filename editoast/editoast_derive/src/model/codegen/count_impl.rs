@@ -18,7 +18,7 @@ impl ToTokens for CountImpl {
 
         tokens.extend(quote! {
             #[automatically_derived]
-            impl crate::models::prelude::Count for #model {
+            impl crate::prelude::Count for #model {
                 type Error = #error;
 
                 #[tracing::instrument(name = #span_name, skip_all, ret, err, fields(
@@ -29,7 +29,7 @@ impl ToTokens for CountImpl {
                 ))]
                 async fn count(
                     conn: &mut database::DbConnection,
-                    settings: crate::models::prelude::SelectionSettings<Self>,
+                    settings: crate::prelude::SelectionSettings<Self>,
                 ) -> std::result::Result<u64, Self::Error> {
                     use diesel::QueryDsl;
                     use diesel_async::RunQueryDsl;
@@ -39,7 +39,7 @@ impl ToTokens for CountImpl {
                     let mut query = #table_mod::table.select(diesel::dsl::count_star()).into_boxed();
 
                     for filter_fun in settings.filters {
-                        let crate::models::prelude::FilterSetting(filter) = (*filter_fun)();
+                        let crate::prelude::FilterSetting(filter) = (*filter_fun)();
                         query = query.filter(filter);
                     }
 

@@ -1,7 +1,4 @@
 use crate::error::Result;
-use crate::models;
-use crate::models::Exists;
-use crate::models::Model;
 use crate::models::TrainScheduleRoundTrips;
 use crate::models::round_trips::PacedTrainRoundTrips;
 use crate::models::timetable::Timetable;
@@ -20,8 +17,8 @@ use axum::response::IntoResponse;
 use database::DbConnectionPoolV2;
 use diesel_async::scoped_futures::ScopedFutureExt;
 use editoast_derive::EditoastError;
+use editoast_models::prelude::*;
 use itertools::Itertools;
-use models::CreateBatch;
 use serde::Deserialize;
 use serde::Serialize;
 use std::collections::HashSet;

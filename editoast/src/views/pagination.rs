@@ -6,12 +6,8 @@ use serde::Serialize;
 
 use utoipa::ToSchema;
 
-use crate::ListAndCount;
-use crate::Model;
-use crate::SelectionSettings;
 use crate::error::Result;
-use crate::models::Count;
-use crate::models::List;
+use editoast_models::prelude::*;
 
 /// Statistics about a paginated editoast response
 ///
