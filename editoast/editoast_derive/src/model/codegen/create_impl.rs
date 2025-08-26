@@ -50,7 +50,7 @@ impl ToTokens for CreateImpl {
                         .get_result::<#row>(conn.write().await.deref_mut())
                         .await
                         .map(Into::into)
-                        .map_err(|e| Self::Error::from(editoast_models::model::Error::from(e)))
+                        .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))
                 }
             }
         });

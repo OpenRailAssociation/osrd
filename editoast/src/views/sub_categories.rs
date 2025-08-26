@@ -38,7 +38,7 @@ enum SubCategoryError {
     #[error(transparent)]
     #[editoast_error(status = 500)]
     #[from(forward)]
-    Database(editoast_models::model::Error),
+    Database(editoast_models::Error),
 }
 
 impl From<sub_category::Error> for SubCategoryError {

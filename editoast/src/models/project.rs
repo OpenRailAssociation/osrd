@@ -15,7 +15,6 @@ use crate::models::Tags;
 use crate::models::prelude::*;
 use crate::views::project::ProjectError;
 use database::DbConnection;
-use editoast_models::model;
 
 #[editoast_derive::openapi_schema]
 #[derive(Clone, Debug, Serialize, Deserialize, Model, ToSchema, PartialEq)]
@@ -37,7 +36,10 @@ pub struct Project {
 }
 
 #[tracing::instrument(skip(conn), ret, err)]
-async fn try_delete_document(conn: &DbConnection, doc_id: i64) -> Result<(), model::Error> {
+async fn try_delete_document(
+    conn: &DbConnection,
+    doc_id: i64,
+) -> Result<(), editoast_models::Error> {
     let res = conn
         .transaction(|mut conn| {
             async move {
@@ -61,7 +63,7 @@ async fn try_delete_document(conn: &DbConnection, doc_id: i64) -> Result<(), mod
         .await;
     match res {
         Ok(_) => Ok(()),
-        Err(model::Error::ForeignKeyViolation { constraint })
+        Err(editoast_models::Error::ForeignKeyViolation { constraint })
             if constraint == "project_image_id_fkey" =>
         {
             Ok(())
@@ -75,7 +77,7 @@ impl Project {
     pub async fn update_last_modified(
         &mut self,
         conn: &mut DbConnection,
-    ) -> Result<(), model::Error> {
+    ) -> Result<(), editoast_models::Error> {
         self.last_modification = Utc::now();
         self.save(conn).await?;
         Ok(())
@@ -97,7 +99,7 @@ impl Project {
         &mut self,
         conn: &mut DbConnection,
         new_doc_id: Option<i64>,
-    ) -> Result<(), model::Error> {
+    ) -> Result<(), editoast_models::Error> {
         conn.transaction(|mut conn| {
             async move {
                 let old_doc_id = self.image;
@@ -108,7 +110,7 @@ impl Project {
                 {
                     try_delete_document(&conn, old_doc_id).await?;
                 }
-                Ok::<_, model::Error>(())
+                Ok::<_, editoast_models::Error>(())
             }
             .scope_boxed()
         })
@@ -121,7 +123,7 @@ impl Project {
     pub async fn delete_and_prune_document(
         self,
         conn: &mut DbConnection,
-    ) -> Result<(), model::Error> {
+    ) -> Result<(), editoast_models::Error> {
         conn.transaction(|mut conn| {
             async move {
                 if !self.delete(&mut conn).await? {

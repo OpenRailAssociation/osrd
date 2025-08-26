@@ -89,7 +89,7 @@ impl From<Timetable> for TimetableChangeset {
 impl TimetableChangeset {}
 #[automatically_derived]
 impl crate::models::Exists<(i64)> for Timetable {
-    type Error = editoast_models::model::Error;
+    type Error = editoast_models::Error;
     #[tracing::instrument(
         name = "model:exists<Timetable>",
         skip_all,
@@ -109,12 +109,12 @@ impl crate::models::Exists<(i64)> for Timetable {
         diesel::select(diesel::dsl::exists(dsl::timetable.filter(dsl::id.eq(id))))
             .get_result(conn.write().await.deref_mut())
             .await
-            .map_err(|e| Self::Error::from(editoast_models::model::Error::from(e)))
+            .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))
     }
 }
 #[automatically_derived]
 impl crate::models::Retrieve<(i64)> for Timetable {
-    type Error = editoast_models::model::Error;
+    type Error = editoast_models::Error;
     #[tracing::instrument(
         name = "model:retrieve<Timetable>",
         skip_all,
@@ -137,12 +137,12 @@ impl crate::models::Retrieve<(i64)> for Timetable {
             .await
             .map(Timetable::from)
             .optional()
-            .map_err(|e| Self::Error::from(editoast_models::model::Error::from(e)))
+            .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))
     }
 }
 #[automatically_derived]
 impl crate::models::DeleteStatic<(i64)> for Timetable {
-    type Error = editoast_models::model::Error;
+    type Error = editoast_models::Error;
     #[tracing::instrument(
         name = "model:delete_static<Timetable>",
         skip_all,
@@ -163,12 +163,12 @@ impl crate::models::DeleteStatic<(i64)> for Timetable {
             .execute(conn.write().await.deref_mut())
             .await
             .map(|n| n == 1)
-            .map_err(|e| Self::Error::from(editoast_models::model::Error::from(e)))
+            .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))
     }
 }
 #[automatically_derived]
 impl crate::models::Create<Timetable> for TimetableChangeset {
-    type Error = editoast_models::model::Error;
+    type Error = editoast_models::Error;
     #[tracing::instrument(name = "model:create<Timetable>", skip_all, err)]
     async fn create(
         self,
@@ -183,12 +183,12 @@ impl crate::models::Create<Timetable> for TimetableChangeset {
             .get_result::<TimetableRow>(conn.write().await.deref_mut())
             .await
             .map(Into::into)
-            .map_err(|e| Self::Error::from(editoast_models::model::Error::from(e)))
+            .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))
     }
 }
 #[automatically_derived]
 impl crate::models::Delete for Timetable {
-    type Error = editoast_models::model::Error;
+    type Error = editoast_models::Error;
     #[tracing::instrument(
         name = "model:delete<Timetable>",
         skip_all,
@@ -209,12 +209,12 @@ impl crate::models::Delete for Timetable {
             .execute(conn.write().await.deref_mut())
             .await
             .map(|n| n == 1)
-            .map_err(|e| Self::Error::from(editoast_models::model::Error::from(e)))
+            .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))
     }
 }
 #[automatically_derived]
 impl crate::models::prelude::List for Timetable {
-    type Error = editoast_models::model::Error;
+    type Error = editoast_models::Error;
     #[tracing::instrument(
         name = "model:list<Timetable>",
         skip_all,
@@ -257,16 +257,16 @@ impl crate::models::prelude::List for Timetable {
             .select((dsl::id,))
             .load_stream::<TimetableRow>(conn.write().await.deref_mut())
             .await
-            .map_err(|e| Self::Error::from(editoast_models::model::Error::from(e)))?
+            .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))?
             .map_ok(<Timetable as crate::models::prelude::Model>::from_row)
             .try_collect::<Vec<_>>()
             .await
-            .map_err(|e| Self::Error::from(editoast_models::model::Error::from(e)))
+            .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))
     }
 }
 #[automatically_derived]
 impl crate::models::prelude::Count for Timetable {
-    type Error = editoast_models::model::Error;
+    type Error = editoast_models::Error;
     #[tracing::instrument(
         name = "model:count<Timetable>",
         skip_all,
@@ -308,12 +308,12 @@ impl crate::models::prelude::Count for Timetable {
             .get_result::<i64>(conn.write().await.deref_mut())
             .await
             .map(|count| count as u64)
-            .map_err(|e| Self::Error::from(editoast_models::model::Error::from(e)))
+            .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))
     }
 }
 #[automatically_derived]
 impl crate::models::RetrieveBatchUnchecked<(i64)> for Timetable {
-    type Error = editoast_models::model::Error;
+    type Error = editoast_models::Error;
     #[tracing::instrument(
         name = "model:retrieve_batch_unchecked<Timetable>",
         skip_all,
@@ -348,15 +348,11 @@ impl crate::models::RetrieveBatchUnchecked<(i64)> for Timetable {
                         .select((dsl::id,))
                         .load_stream::<TimetableRow>(conn.write().await.deref_mut())
                         .await
-                        .map_err(|e| Self::Error::from(
-                            editoast_models::model::Error::from(e),
-                        ))?
+                        .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))?
                         .map_ok(<Timetable as Model>::from_row)
                         .try_collect::<Vec<_>>()
                         .await
-                        .map_err(|e| Self::Error::from(
-                            editoast_models::model::Error::from(e),
-                        ))?
+                        .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))?
                 };
                 result.extend(chunk_result);
             }
@@ -398,18 +394,14 @@ impl crate::models::RetrieveBatchUnchecked<(i64)> for Timetable {
                         .select((dsl::id,))
                         .load_stream::<TimetableRow>(conn.write().await.deref_mut())
                         .await
-                        .map_err(|e| Self::Error::from(
-                            editoast_models::model::Error::from(e),
-                        ))?
+                        .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))?
                         .map_ok(|row| {
                             let model = <Timetable as Model>::from_row(row);
                             (model.get_id(), model)
                         })
                         .try_collect::<Vec<_>>()
                         .await
-                        .map_err(|e| Self::Error::from(
-                            editoast_models::model::Error::from(e),
-                        ))?
+                        .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))?
                 };
                 result.extend(chunk_result);
             }
@@ -419,7 +411,7 @@ impl crate::models::RetrieveBatchUnchecked<(i64)> for Timetable {
 }
 #[automatically_derived]
 impl crate::models::DeleteBatch<(i64)> for Timetable {
-    type Error = editoast_models::model::Error;
+    type Error = editoast_models::Error;
     #[tracing::instrument(
         name = "model:delete_batch<Timetable>",
         skip_all,
@@ -452,9 +444,7 @@ impl crate::models::DeleteBatch<(i64)> for Timetable {
                     query
                         .execute(conn.write().await.deref_mut())
                         .await
-                        .map_err(|e| Self::Error::from(
-                            editoast_models::model::Error::from(e),
-                        ))?
+                        .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))?
                 };
                 result.push(chunk_result);
             }

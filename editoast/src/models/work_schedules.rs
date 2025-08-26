@@ -4,7 +4,6 @@ use chrono::DateTime;
 use chrono::Utc;
 use core_client::stdcm::UndirectedTrackRange;
 use editoast_derive::Model;
-use editoast_models::model;
 use schemas::infra::TrackRange;
 use serde::Deserialize;
 use serde::Serialize;
@@ -26,13 +25,13 @@ pub enum WsGroupError {
     #[error("Work schedule group name already used: {name}")]
     NameAlreadyUsed { name: String },
     #[error(transparent)]
-    Database(model::Error),
+    Database(editoast_models::Error),
 }
 
-impl From<model::Error> for WsGroupError {
-    fn from(e: model::Error) -> Self {
+impl From<editoast_models::Error> for WsGroupError {
+    fn from(e: editoast_models::Error) -> Self {
         match e {
-            model::Error::UniqueViolation {
+            editoast_models::Error::UniqueViolation {
                 constraint,
                 column,
                 value,

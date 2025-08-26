@@ -277,7 +277,7 @@ impl EditoastError for schemas::errors::GeometryError {
 inventory::submit! {
     ErrorDefinition::new("editoast:model:ModelError", "", "ModelError", 500u16, r#"{}"#)
 }
-impl EditoastError for editoast_models::model::Error {
+impl EditoastError for editoast_models::Error {
     fn get_status(&self) -> StatusCode {
         StatusCode::INTERNAL_SERVER_ERROR
     }

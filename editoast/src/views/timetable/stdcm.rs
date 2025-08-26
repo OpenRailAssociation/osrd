@@ -116,7 +116,7 @@ enum StdcmError {
     #[error(transparent)]
     #[from(forward)]
     #[serde(skip)]
-    Database(editoast_models::model::Error),
+    Database(editoast_models::Error),
 }
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize, IntoParams, ToSchema)]

@@ -607,7 +607,7 @@ mod tests {
 
         assert_eq!(
             error,
-            editoast_models::model::Error::CheckViolation {
+            editoast_models::Error::CheckViolation {
                 constraint: "only_one_category".to_string(),
             }
         );

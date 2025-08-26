@@ -156,7 +156,7 @@ enum SimilarTrainsError {
     #[error("Database error")]
     #[editoast_error(status = 500)]
     #[from(forward)]
-    Database(editoast_models::model::Error),
+    Database(editoast_models::Error),
 }
 
 #[editoast_derive::route]

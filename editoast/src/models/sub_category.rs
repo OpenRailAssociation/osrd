@@ -58,13 +58,13 @@ pub enum Error {
     #[error("Sub category code already used: {code}")]
     CodeAlreadyUsed { code: String },
     #[error(transparent)]
-    Database(editoast_models::model::Error),
+    Database(editoast_models::Error),
 }
 
-impl From<editoast_models::model::Error> for Error {
-    fn from(e: editoast_models::model::Error) -> Self {
+impl From<editoast_models::Error> for Error {
+    fn from(e: editoast_models::Error) -> Self {
         match e {
-            editoast_models::model::Error::UniqueViolation {
+            editoast_models::Error::UniqueViolation {
                 constraint,
                 column,
                 value,

@@ -2,7 +2,6 @@ pub(in crate::views) mod form;
 pub(in crate::views) mod light;
 pub(in crate::views) mod towed;
 
-use editoast_models::model;
 pub use form::RollingStockForm;
 
 use std::io::Cursor;
@@ -121,7 +120,7 @@ pub enum RollingStockError {
     #[error(transparent)]
     #[editoast_error(status = 500)]
     #[from(forward)]
-    Database(model::Error),
+    Database(editoast_models::Error),
 }
 
 #[derive(Debug, Error)]

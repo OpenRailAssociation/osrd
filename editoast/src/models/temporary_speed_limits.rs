@@ -3,7 +3,6 @@ use chrono::Utc;
 use database::tables::temporary_speed_limit;
 use database::tables::temporary_speed_limit_group;
 use editoast_derive::Model;
-use editoast_models::model;
 use schemas::infra::DirectionalTrackRange;
 use serde::Serialize;
 
@@ -21,13 +20,13 @@ pub enum TslGroupError {
     #[error("Temporary speed limit group name already used: {name}")]
     NameAlreadyUsed { name: String },
     #[error(transparent)]
-    Database(model::Error),
+    Database(editoast_models::Error),
 }
 
-impl From<model::Error> for TslGroupError {
-    fn from(e: model::Error) -> Self {
+impl From<editoast_models::Error> for TslGroupError {
+    fn from(e: editoast_models::Error) -> Self {
         match e {
-            model::Error::UniqueViolation {
+            editoast_models::Error::UniqueViolation {
                 constraint,
                 column,
                 value,
@@ -55,7 +54,7 @@ pub struct TemporarySpeedLimit {
 
 #[derive(Debug, thiserror::Error)]
 #[error(transparent)]
-pub struct Error(#[from] model::Error);
+pub struct Error(#[from] editoast_models::Error);
 
 impl From<TemporarySpeedLimit> for core_client::stdcm::TemporarySpeedLimit {
     fn from(value: TemporarySpeedLimit) -> Self {

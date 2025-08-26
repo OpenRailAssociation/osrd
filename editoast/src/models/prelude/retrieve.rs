@@ -14,7 +14,7 @@ where
     K: Send,
     Self: Send,
 {
-    type Error: std::error::Error + From<editoast_models::model::Error> + Send;
+    type Error: std::error::Error + From<editoast_models::Error> + Send;
 
     /// Retrieves the row #`id` and deserializes it as a model instance
     async fn retrieve(conn: DbConnection, id: K) -> Result<Option<Self>, Self::Error>;
@@ -42,7 +42,7 @@ where
     K: Send,
     Self: Send,
 {
-    type Error: std::error::Error + From<editoast_models::model::Error> + Send;
+    type Error: std::error::Error + From<editoast_models::Error> + Send;
 
     /// Returns whether the row #`id` exists in the database
     async fn exists(conn: &mut DbConnection, id: K) -> Result<bool, Self::Error>;
@@ -73,7 +73,7 @@ where
     K: Send + Debug,
     Self: Send,
 {
-    type Error: std::error::Error + From<editoast_models::model::Error> + Send;
+    type Error: std::error::Error + From<editoast_models::Error> + Send;
 
     /// Retrieves a batch of rows from the database given an iterator of keys
     ///

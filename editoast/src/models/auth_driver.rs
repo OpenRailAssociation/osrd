@@ -23,7 +23,7 @@ use tracing::Level;
 pub enum AuthDriverError {
     #[error(transparent)]
     #[from(database::DatabaseError)]
-    Database(#[from] editoast_models::model::Error),
+    Database(#[from] editoast_models::Error),
     #[error(transparent)]
     DatabaseUnavailable(#[from] database::db_connection_pool::DatabasePoolError),
     #[error("Subject with id {subject_id} not found")]

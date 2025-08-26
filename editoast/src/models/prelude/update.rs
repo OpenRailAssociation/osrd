@@ -57,7 +57,7 @@ impl<M: Model> Patch<'_, M> {
             .changeset
             .update_or_fail(conn, id, || {
                 <<M as Model>::Changeset as Update<K, M>>::Error::from(
-                    editoast_models::model::Error::from(NotFound),
+                    editoast_models::Error::from(NotFound),
                 )
             })
             .await?;
@@ -78,7 +78,7 @@ where
     K: Send,
     M: Model,
 {
-    type Error: std::error::Error + From<editoast_models::model::Error> + Send;
+    type Error: std::error::Error + From<editoast_models::Error> + Send;
 
     /// Updates the row #`id` with the changeset values and returns the updated model
     async fn update(self, conn: &mut DbConnection, id: K) -> Result<Option<M>, Self::Error>;
@@ -102,7 +102,7 @@ where
 /// This trait is automatically implemented for all models that implement
 /// [Update].
 pub trait Save<K: Send>: Model {
-    type Error: std::error::Error + From<editoast_models::model::Error> + Send;
+    type Error: std::error::Error + From<editoast_models::Error> + Send;
 
     /// Persists the model instance to the database
     ///
@@ -130,7 +130,7 @@ where
         let changeset = <M as Model>::Changeset::from(self.clone()); // FIXME: I don't like that clone, maybe a ChangesetOwned/Changeset pair would work?
         *self = changeset
             .update_or_fail(conn, id, || {
-                Self::Error::from(editoast_models::model::Error::from(NotFound))
+                Self::Error::from(editoast_models::Error::from(NotFound))
             })
             .await?;
         Ok(())
@@ -149,7 +149,7 @@ where
     M: Model,
     K: Send + Clone,
 {
-    type Error: std::error::Error + From<editoast_models::model::Error> + Send;
+    type Error: std::error::Error + From<editoast_models::Error> + Send;
 
     /// Updates a batch of rows in the database given an iterator of keys
     ///

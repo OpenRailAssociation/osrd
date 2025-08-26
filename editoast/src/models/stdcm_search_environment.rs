@@ -12,8 +12,6 @@ use utoipa::ToSchema;
 use crate::models::prelude::*;
 
 #[cfg(test)]
-use editoast_models::model;
-#[cfg(test)]
 use serde::Deserialize;
 
 #[editoast_derive::openapi_schema]
@@ -80,7 +78,7 @@ impl StdcmSearchEnvironment {
 
     /// Delete all existing search environments.
     #[cfg(test)]
-    pub async fn delete_all(conn: &mut DbConnection) -> Result<(), model::Error> {
+    pub async fn delete_all(conn: &mut DbConnection) -> Result<(), editoast_models::Error> {
         use database::tables::stdcm_search_environment::dsl::*;
         diesel::delete(stdcm_search_environment)
             .execute(conn.write().await.deref_mut())
