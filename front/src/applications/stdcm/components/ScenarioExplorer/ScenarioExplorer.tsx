@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 
+import { skipToken } from '@reduxjs/toolkit/query';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 import { MdTrain } from 'react-icons/md';
@@ -28,25 +29,26 @@ const ScenarioExplorer = ({
   const [imageUrl, setImageUrl] = useState<string>();
 
   const { data: projectDetails } = osrdEditoastApi.endpoints.getProjectsByProjectId.useQuery(
-    { projectId: globalProjectId! },
-    { skip: !globalProjectId }
+    globalProjectId ? { projectId: globalProjectId } : skipToken
   );
 
   const { data: studyDetails } =
     osrdEditoastApi.endpoints.getProjectsByProjectIdStudiesAndStudyId.useQuery(
-      { projectId: globalProjectId!, studyId: globalStudyId! },
-      { skip: !globalProjectId && !globalStudyId }
+      globalProjectId && globalStudyId
+        ? { projectId: globalProjectId, studyId: globalStudyId }
+        : skipToken
     );
 
   const { currentData: scenario } =
     osrdEditoastApi.endpoints.getProjectsByProjectIdStudiesAndStudyIdScenariosScenarioId.useQuery(
+      globalProjectId && globalStudyId && globalScenarioId
+        ? {
+            projectId: globalProjectId,
+            studyId: globalStudyId,
+            scenarioId: globalScenarioId,
+          }
+        : skipToken,
       {
-        projectId: globalProjectId!,
-        studyId: globalStudyId!,
-        scenarioId: globalScenarioId!,
-      },
-      {
-        skip: !globalProjectId || !globalStudyId || !globalScenarioId,
         refetchOnMountOrArgChange: true,
       }
     );

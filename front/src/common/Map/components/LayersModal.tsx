@@ -1,5 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
 
+import { skipToken } from '@reduxjs/toolkit/query';
 import { isString, uniq } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { GiElectric, GiUnplugged } from 'react-icons/gi';
@@ -60,8 +61,7 @@ const LayersModal = ({ compactModal, closePortalModal }: LayersModalProps) => {
 
   const { data: speedLimitTagsByInfraId } =
     osrdEditoastApi.endpoints.getInfraByInfraIdSpeedLimitTags.useQuery(
-      { infraId: infraID! },
-      { skip: !infraID }
+      infraID ? { infraId: infraID } : skipToken
     );
   const DEFAULT_SPEED_LIMIT_TAG = useMemo(() => t('Editor.layers-modal.noSpeedLimitByTag'), [t]);
 

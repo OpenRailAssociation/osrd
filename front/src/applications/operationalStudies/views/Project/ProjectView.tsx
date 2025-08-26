@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 
 import { Pencil } from '@osrd-project/ui-icons';
+import { skipToken } from '@reduxjs/toolkit/query';
 import { useTranslation } from 'react-i18next';
 import { BiTargetLock } from 'react-icons/bi';
 import ReactMarkdown from 'react-markdown';
@@ -68,19 +69,17 @@ const ProjectView = () => {
     isError: isProjectError,
     error: projectError,
   } = osrdEditoastApi.endpoints.getProjectsByProjectId.useQuery(
-    { projectId: +projectId! },
-    {
-      skip: !projectId,
-    }
+    projectId ? { projectId: +projectId } : skipToken
   );
 
   const { data: projectStudies } = osrdEditoastApi.endpoints.getProjectsByProjectIdStudies.useQuery(
-    {
-      projectId: Number(projectId),
-      ordering: sortOption,
-      pageSize: 1000,
-    },
-    { skip: !projectId }
+    projectId
+      ? {
+          projectId: Number(projectId),
+          ordering: sortOption,
+          pageSize: 1000,
+        }
+      : skipToken
   );
 
   const [getScenarios] =

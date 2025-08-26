@@ -1,5 +1,6 @@
 import { useState } from 'react';
 
+import { skipToken } from '@reduxjs/toolkit/query';
 import { useTranslation } from 'react-i18next';
 
 import { OPERATION_TYPE } from 'applications/editor/consts';
@@ -19,8 +20,7 @@ const InfraErrorCorrectorModal = () => {
 
   const { data: infraAutoFixes, isLoading } =
     osrdEditoastApi.endpoints.getInfraByInfraIdAutoFixes.useQuery(
-      { infraId: infraId! },
-      { skip: !infraId }
+      infraId ? { infraId } : skipToken
     );
 
   function displayFixes() {

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react';
 
 import { Pencil } from '@osrd-project/ui-icons';
+import { skipToken } from '@reduxjs/toolkit/query';
 import { useTranslation } from 'react-i18next';
 import { useParams } from 'react-router-dom';
 
@@ -65,13 +66,12 @@ const StudyView = () => {
     isError: isCurrentStudyError,
     error: studyError,
   } = osrdEditoastApi.endpoints.getProjectsByProjectIdStudiesAndStudyId.useQuery(
-    {
-      projectId: projectId!,
-      studyId: studyId!,
-    },
-    {
-      skip: !projectId || !studyId,
-    }
+    projectId && studyId
+      ? {
+          projectId,
+          studyId,
+        }
+      : skipToken
   );
 
   const [postSearch] = osrdEditoastApi.endpoints.postSearch.useMutation();
@@ -82,13 +82,14 @@ const StudyView = () => {
 
   const { data: scenarios } =
     osrdEditoastApi.endpoints.getProjectsByProjectIdStudiesAndStudyIdScenarios.useQuery(
-      {
-        projectId: projectId!,
-        studyId: studyId!,
-        ordering: sortOption,
-        pageSize: 1000,
-      },
-      { skip: !projectId || !studyId }
+      projectId && studyId
+        ? {
+            projectId,
+            studyId,
+            ordering: sortOption,
+            pageSize: 1000,
+          }
+        : skipToken
     );
 
   const {

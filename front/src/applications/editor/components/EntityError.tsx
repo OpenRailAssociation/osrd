@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 
+import { skipToken } from '@reduxjs/toolkit/query';
 import cx from 'classnames';
 import { isNil, uniqueId } from 'lodash';
 import { useTranslation } from 'react-i18next';
@@ -15,12 +16,13 @@ const EntityError = ({ entity, className }: { entity: EditorEntity; className?: 
   const { t } = useTranslation();
   const infraID = useInfraID();
   const { data } = osrdEditoastApi.endpoints.getInfraByInfraIdErrors.useQuery(
-    {
-      // Infra can be undefined, but in this case the query is skipped
-      infraId: infraID!,
-      objectId: entity.properties.id,
-    },
-    { skip: isNil(infraID) }
+    infraID
+      ? {
+          // Infra can be undefined, but in this case the query is skipped
+          infraId: infraID,
+          objectId: entity.properties.id,
+        }
+      : skipToken
   );
 
   const hasError = useMemo(() => {

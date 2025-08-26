@@ -1,4 +1,4 @@
-import { isNil } from 'lodash';
+import { skipToken } from '@reduxjs/toolkit/query';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useInfraID } from 'common/osrdContext';
@@ -8,8 +8,7 @@ import { useInfraID } from 'common/osrdContext';
  */
 export default function useInfra(infraID?: number) {
   const { data, isLoading, error } = osrdEditoastApi.endpoints.getInfraByInfraId.useQuery(
-    { infraId: infraID! },
-    { skip: isNil(infraID) }
+    infraID ? { infraId: infraID } : skipToken
   );
 
   return { data, isLoading, error };

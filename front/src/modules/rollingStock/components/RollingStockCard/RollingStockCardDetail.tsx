@@ -53,12 +53,7 @@ export default function RollingStockCardDetail({
 
   // we only fetch the whole rollingStock here, when we open the card and display its details
   const { data: rollingStock, error } =
-    osrdEditoastApi.endpoints.getRollingStockByRollingStockId.useQuery(
-      { rollingStockId: id },
-      {
-        skip: !id,
-      }
-    );
+    osrdEditoastApi.endpoints.getRollingStockByRollingStockId.useQuery({ rollingStockId: id });
 
   useEffect(() => {
     if (rollingStock) setCurvesComfortList(getCurvesComforts(rollingStock.effort_curves.modes));

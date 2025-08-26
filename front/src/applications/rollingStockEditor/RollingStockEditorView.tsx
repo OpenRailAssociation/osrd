@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 
 import { Upload } from '@osrd-project/ui-icons';
+import { skipToken } from '@reduxjs/toolkit/query';
 import { useTranslation } from 'react-i18next';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
@@ -36,12 +37,11 @@ const RollingStockEditor = () => {
 
   const { data: selectedRollingStock } =
     osrdEditoastApi.endpoints.getRollingStockByRollingStockId.useQuery(
-      {
-        rollingStockId: openedRollingStockCardId!,
-      },
-      {
-        skip: !openedRollingStockCardId,
-      }
+      openedRollingStockCardId
+        ? {
+            rollingStockId: openedRollingStockCardId,
+          }
+        : skipToken
     );
 
   const {

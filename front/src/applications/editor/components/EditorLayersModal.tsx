@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 
+import { skipToken } from '@reduxjs/toolkit/query';
 import { groupBy, mapKeys, mapValues, sum, isString, isArray, uniq } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { GiElectric, GiUnplugged } from 'react-icons/gi';
@@ -75,8 +76,7 @@ const EditorLayersModal = ({
 
   const { data: speedLimitTagsByInfraId } =
     osrdEditoastApi.endpoints.getInfraByInfraIdSpeedLimitTags.useQuery(
-      { infraId: infraID! },
-      { skip: !infraID }
+      infraID ? { infraId: infraID } : skipToken
     );
   const allSpeedLimitTags = uniq(speedLimitTagsByInfraId);
   const allSpeedLimitTagsOrdered = useMemo(() => allSpeedLimitTags.sort(), [allSpeedLimitTags]);
