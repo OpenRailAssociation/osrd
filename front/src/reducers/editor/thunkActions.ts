@@ -90,7 +90,7 @@ export function updateTotalsIssue(infraID: number | undefined) {
               pageSize: 1,
               page: 1,
             },
-            { subscribe: false, forceRefetch: true }
+            { subscribe: false }
           )
         );
         total = totalResp.data?.count || 0;
@@ -107,7 +107,7 @@ export function updateTotalsIssue(infraID: number | undefined) {
                 pageSize: 1,
                 page: 1,
               },
-              { subscribe: false, forceRefetch: true }
+              { subscribe: false }
             )
           );
           filterTotal = filterResp.data?.count || 0;

@@ -664,7 +664,7 @@ export const loadNgeDto = async (
   const trainSchedulesPromise = dispatch(
     osrdEditoastApi.endpoints.getAllTimetableByIdTrainSchedules.initiate(
       { timetableId },
-      { forceRefetch: true, subscribe: false }
+      { subscribe: false }
     )
   );
   const trainSchedules = (await trainSchedulesPromise.unwrap())
@@ -677,7 +677,7 @@ export const loadNgeDto = async (
   const pacedTrainsPromise = dispatch(
     osrdEditoastApi.endpoints.getAllTimetableByIdPacedTrains.initiate(
       { timetableId },
-      { forceRefetch: true, subscribe: false }
+      { subscribe: false }
     )
   );
   const pacedTrains = (await pacedTrainsPromise.unwrap())
