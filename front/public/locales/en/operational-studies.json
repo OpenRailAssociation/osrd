@@ -507,7 +507,7 @@
     },
     "projectionInProgress": "Projection in progress: {{ count }}/{{ total }} trains",
     "simulationSheet": "Simulation sheet",
-    "speedSpaceChart": "Speed Space Chart",
+    "speedSpaceChart": "SDD",
     "speedSpaceSettings": {
       "context": "Context",
       "electricalProfiles": "Electrical profiles",

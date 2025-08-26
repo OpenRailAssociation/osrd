@@ -39,9 +39,9 @@ import { useScenarioContext } from '../../../hooks/useScenarioContext';
 import useSimulationResults from '../../../hooks/useSimulationResults';
 import type { Board } from '../../../types';
 
-const SPEED_SPACE_CHART_HEIGHT = 521.5;
-const HANDLE_TAB_RESIZE_HEIGHT = 20;
 const HIDDEN_CHART_TOP_HEIGHT = 35;
+const SPEED_SPACE_CHART_HEIGHT = 460;
+const SPEEDSPACECHART_MIN_HEIGHT = 400;
 
 type SimulationResultsProps = {
   scenarioData: { name: string; infraName: string };
@@ -79,8 +79,8 @@ const SimulationResults = ({
     MANCHETTE_WITH_SPACE_TIME_CHART_DEFAULT_HEIGHT
   );
 
-  const [speedSpaceChartContainerHeight, setSpeedSpaceChartContainerHeight] =
-    useState(SPEED_SPACE_CHART_HEIGHT);
+  const [SDDHeight, setSDDHeight] = useState(SPEED_SPACE_CHART_HEIGHT);
+
   const [mapCanvas, setMapCanvas] = useState<string>();
 
   const [projectPathTrainResult, setProjectPathTrainResult] = useState<
@@ -280,23 +280,32 @@ const SimulationResults = ({
           {simulationResults.isValid && (
             <>
               {/* SIMULATION : SPEED SPACE CHART */}
-              <div className="osrd-simulation-container speedspacechart-container">
-                <div
-                  className="chart-container"
-                  style={{
-                    height: `${speedSpaceChartContainerHeight + HANDLE_TAB_RESIZE_HEIGHT}px`,
-                  }}
-                >
-                  <SpeedSpaceChartContainer
-                    timetableItemSimulation={simulationResults.simulation}
-                    selectedTimetableItemPowerRestrictions={simulationResults.powerRestrictions}
-                    rollingStock={simulationResults.rollingStock}
-                    pathProperties={simulationResults.pathProperties}
-                    heightOfSpeedSpaceChartContainer={speedSpaceChartContainerHeight}
-                    setHeightOfSpeedSpaceChartContainer={setSpeedSpaceChartContainerHeight}
-                  />
+              {activeBoards.has('sdd') && (
+                <div className="speed-space-chart-section">
+                  <ResizableSection
+                    height={SDDHeight}
+                    setHeight={setSDDHeight}
+                    minHeight={SPEEDSPACECHART_MIN_HEIGHT}
+                  >
+                    <BoardWrapper name={t('simulationResults.speedSpaceChart')}>
+                      <div className="osrd-simulation-container speedspacechart-container">
+                        <div className="chart-container">
+                          <SpeedSpaceChartContainer
+                            timetableItemSimulation={simulationResults.simulation}
+                            selectedTimetableItemPowerRestrictions={
+                              simulationResults.powerRestrictions
+                            }
+                            rollingStock={simulationResults.rollingStock}
+                            pathProperties={simulationResults.pathProperties}
+                            height={SDDHeight}
+                            setHeightOfSpeedSpaceChartContainer={setSDDHeight}
+                          />
+                        </div>
+                      </div>
+                    </BoardWrapper>
+                  </ResizableSection>
                 </div>
-              </div>
+              )}
 
               {/* SIMULATION : MAP */}
               <BoardWrapper hidden={!activeBoards.has('map')} name={t('boards.map')} withFooter>

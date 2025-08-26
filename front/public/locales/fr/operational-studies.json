@@ -507,7 +507,7 @@
     },
     "projectionInProgress": "Projection en cours : {{ count }}/{{ total }} trains",
     "simulationSheet": "Fiche de simulation",
-    "speedSpaceChart": "Graphique Espace Vitesse",
+    "speedSpaceChart": "GEV",
     "speedSpaceSettings": {
       "context": "Contexte",
       "electricalProfiles": "Profils électrique",
