@@ -26,16 +26,18 @@ impl crate::models::Model for Document {
     type Changeset = DocumentChangeset;
     type Table = database::tables::osrd_infra_document::table;
 }
+#[doc(hidden)]
+struct _DocumentField<M, T, Column>(core::marker::PhantomData<(M, T, Column)>);
 paste::paste! {
-    impl Document { pub const [< id_ : snake : upper >] : crate ::models::ModelField <
-    Document, i64, id > = crate ::models::ModelField::new(); pub const [< content_type :
-    snake : upper >] : crate ::models::ModelField < Document, String,
-    database::tables::osrd_infra_document::content_type > = crate
-    ::models::ModelField::new(); pub const [< data : snake : upper >] : crate
-    ::models::ModelField < Document, Vec < u8 >,
-    database::tables::osrd_infra_document::data > = crate ::models::ModelField::new(); }
+    impl Document { pub const [< id_ : snake : upper >] : _DocumentField < Document, i64,
+    id > = _DocumentField(core::marker::PhantomData); pub const [< content_type : snake :
+    upper >] : _DocumentField < Document, String,
+    database::tables::osrd_infra_document::content_type > =
+    _DocumentField(core::marker::PhantomData); pub const [< data : snake : upper >] :
+    _DocumentField < Document, Vec < u8 >, database::tables::osrd_infra_document::data >
+    = _DocumentField(core::marker::PhantomData); }
 }
-impl crate::models::prelude::ModelField<Document, i64, id> {
+impl _DocumentField<Document, i64, id> {
     pub fn eq(&self, value: i64) -> crate::models::prelude::FilterSetting<Document> {
         use diesel::ExpressionMethods;
         crate::models::prelude::FilterSetting::new(id.eq(value))
@@ -56,7 +58,7 @@ impl crate::models::prelude::ModelField<Document, i64, id> {
         crate::models::prelude::SortSetting(Box::new(id.desc()))
     }
 }
-impl crate::models::prelude::ModelField<
+impl _DocumentField<
     Document,
     String,
     database::tables::osrd_infra_document::content_type,
@@ -94,11 +96,7 @@ impl crate::models::prelude::ModelField<
         )
     }
 }
-impl crate::models::prelude::ModelField<
-    Document,
-    Vec<u8>,
-    database::tables::osrd_infra_document::data,
-> {
+impl _DocumentField<Document, Vec<u8>, database::tables::osrd_infra_document::data> {
     pub fn eq(&self, value: Vec<u8>) -> crate::models::prelude::FilterSetting<Document> {
         use diesel::ExpressionMethods;
         crate::models::prelude::FilterSetting::new(

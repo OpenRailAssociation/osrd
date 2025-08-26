@@ -9,6 +9,7 @@ mod delete_batch_impl;
 mod delete_impl;
 mod delete_static_impl;
 mod exists_impl;
+mod field_wrapper_decl;
 mod identifiable_impl;
 mod list_impl;
 mod model_field_api_impl_block;
@@ -24,6 +25,8 @@ mod update_impl;
 
 use quote::ToTokens;
 use syn::parse_quote;
+
+use crate::model::codegen::field_wrapper_decl::FieldWrapperDecl;
 
 use self::changeset_builder_impl_block::ChangesetBuilderImplBlock;
 use self::changeset_decl::ChangesetDecl;
@@ -141,6 +144,13 @@ impl ModelConfig {
         }
     }
 
+    pub(crate) fn field_wrapper_decl(&self) -> FieldWrapperDecl {
+        FieldWrapperDecl {
+            vis: self.visibility.clone(),
+            ident: self.field_wrapper.clone(),
+        }
+    }
+
     pub(crate) fn model_fields_impl_block(&self) -> ModelFieldsImplBlock {
         ModelFieldsImplBlock {
             model: self.model.clone(),
@@ -152,6 +162,7 @@ impl ModelConfig {
                     column: field.column.clone(),
                 })
                 .collect(),
+            field_wrapper: self.field_wrapper.clone(),
         }
     }
 
@@ -161,6 +172,7 @@ impl ModelConfig {
                 ModelFieldApiImplBlock {
                     model: self.model.clone(),
                     field: field.clone(),
+                    field_wrapper: self.field_wrapper.clone(),
                 }
                 .tokens_if(self.impl_plan.list)
             })

@@ -212,6 +212,7 @@ impl ModelConfig {
                 vis,
             }
         };
+        let field_wrapper = syn::Ident::new(&format!("_{model_name}Field"), Span::call_site());
 
         let model_config = Self {
             model: model_name,
@@ -224,6 +225,7 @@ impl ModelConfig {
             fields,
             row,
             changeset,
+            field_wrapper,
             errors: options
                 .error
                 .map(Errors::from_args)

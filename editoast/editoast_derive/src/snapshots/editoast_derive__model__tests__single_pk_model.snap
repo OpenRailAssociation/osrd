@@ -20,16 +20,14 @@ impl crate::models::Model for Timetable {
     type Changeset = TimetableChangeset;
     type Table = database::tables::timetable::table;
 }
+#[doc(hidden)]
+struct _TimetableField<M, T, Column>(core::marker::PhantomData<(M, T, Column)>);
 paste::paste! {
-    impl Timetable { pub const [< id : snake : upper >] : crate ::models::ModelField <
-    Timetable, i64, database::tables::timetable::id > = crate
-    ::models::ModelField::new(); }
+    impl Timetable { pub const [< id : snake : upper >] : _TimetableField < Timetable,
+    i64, database::tables::timetable::id > = _TimetableField(core::marker::PhantomData);
+    }
 }
-impl crate::models::prelude::ModelField<
-    Timetable,
-    i64,
-    database::tables::timetable::id,
-> {
+impl _TimetableField<Timetable, i64, database::tables::timetable::id> {
     pub fn eq(&self, value: i64) -> crate::models::prelude::FilterSetting<Timetable> {
         use diesel::ExpressionMethods;
         crate::models::prelude::FilterSetting::new(
