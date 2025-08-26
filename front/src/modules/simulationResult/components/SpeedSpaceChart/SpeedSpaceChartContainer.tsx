@@ -6,8 +6,6 @@ import {
   type PowerRestrictionValues,
 } from '@osrd-project/ui-charts';
 import { useTranslation } from 'react-i18next';
-import { CgLoadbar } from 'react-icons/cg';
-import { Rnd } from 'react-rnd';
 
 import type { PathPropertiesFormatted } from 'applications/operationalStudies/types';
 import type {
@@ -21,29 +19,23 @@ export type SpeedSpaceChartContainerProps = {
   timetableItemSimulation: SimulationResponseSuccess;
   selectedTimetableItemPowerRestrictions?: LayerData<PowerRestrictionValues>[];
   pathProperties: PathPropertiesFormatted;
-  heightOfSpeedSpaceChartContainer: number;
+  height: number;
   rollingStock: RollingStockWithLiveries;
   setHeightOfSpeedSpaceChartContainer: React.Dispatch<React.SetStateAction<number>>;
 };
 
-const SPEEDSPACECHART_HEIGHT = 521.5;
 const SPEEDSPACECHART_MIN_HEIGHT = 400;
 const SPEEDSPACECHART_BACKGROUND_COLOR = 'transparent';
-const SPEEDSPACECHART_PADDING_BOTTOM = 22.5;
 
 const SpeedSpaceChartContainer = ({
   timetableItemSimulation,
   selectedTimetableItemPowerRestrictions,
   pathProperties,
-  heightOfSpeedSpaceChartContainer,
+  height,
   rollingStock,
   setHeightOfSpeedSpaceChartContainer,
 }: SpeedSpaceChartContainerProps) => {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'simulationResults' });
-
-  const [heightOfSpeedSpaceChart, setHeightOfSpeedSpaceChart] = useState(SPEEDSPACECHART_HEIGHT);
-  const [baseHeightOfSpeedSpaceChart, setBaseHeightOfSpeedSpaceChart] =
-    useState(heightOfSpeedSpaceChart);
 
   const root = useRef<HTMLDivElement>(null);
   const [containerWidth, setContainerWidth] = useState<number>(root.current?.clientWidth || 0);
@@ -96,57 +88,24 @@ const SpeedSpaceChartContainer = ({
   }, []);
 
   return (
-    <Rnd
-      default={{
-        x: 0,
-        y: 0,
-        width: '100%',
-        height: `${heightOfSpeedSpaceChartContainer}px`,
-      }}
-      size={{
-        width: '100%',
-        height: `${heightOfSpeedSpaceChartContainer + SPEEDSPACECHART_PADDING_BOTTOM}px`,
-      }}
-      minHeight={SPEEDSPACECHART_MIN_HEIGHT}
-      disableDragging
-      enableResizing={{
-        bottom: true,
-        top: false,
-        topLeft: false,
-        topRight: false,
-        left: false,
-        right: false,
-      }}
-      onResizeStart={() => {
-        setBaseHeightOfSpeedSpaceChart(heightOfSpeedSpaceChart);
-      }}
-      onResize={(_e, _dir, _refToElement, delta) => {
-        setHeightOfSpeedSpaceChart(baseHeightOfSpeedSpaceChart + delta.height);
-      }}
+    <div
+      ref={root}
+      id="container-SpeedSpaceChart"
+      data-testid="speed-space-chart"
+      className="chart"
+      style={{ height: `${height}px` }}
     >
-      <div
-        ref={root}
-        id="container-SpeedSpaceChart"
-        data-testid="speed-space-chart"
-        className="chart"
-        style={{ height: `${heightOfSpeedSpaceChartContainer}px` }}
-      >
-        <p className="mt-2 mb-3 ml-3 font-weight-bold">{t('speedSpaceChart')}</p>
-        {containerWidth > 0 && (
-          <SpeedSpaceChart
-            width={containerWidth || SPEEDSPACECHART_MIN_HEIGHT}
-            height={heightOfSpeedSpaceChart - SPEEDSPACECHART_PADDING_BOTTOM}
-            setHeight={setHeightOfSpeedSpaceChartContainer}
-            backgroundColor={SPEEDSPACECHART_BACKGROUND_COLOR}
-            data={speedSpaceChartData}
-            translations={translations}
-          />
-        )}
-        <div className="handle-tab-resize">
-          <CgLoadbar />
-        </div>
-      </div>
-    </Rnd>
+      {containerWidth > 0 && (
+        <SpeedSpaceChart
+          width={containerWidth || SPEEDSPACECHART_MIN_HEIGHT}
+          height={height}
+          setHeight={setHeightOfSpeedSpaceChartContainer}
+          backgroundColor={SPEEDSPACECHART_BACKGROUND_COLOR}
+          data={speedSpaceChartData}
+          translations={translations}
+        />
+      )}
+    </div>
   );
 };
 

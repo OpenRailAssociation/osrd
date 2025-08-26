@@ -91,7 +91,7 @@ const StdcmDebugResults = ({ simulationOutputs }: StdcmDebugResultsProps) => {
             timetableItemSimulation={results.simulation}
             selectedTimetableItemPowerRestrictions={speedSpaceChartData.formattedPowerRestrictions}
             pathProperties={speedSpaceChartData.formattedPathProperties}
-            heightOfSpeedSpaceChartContainer={speedSpaceChartContainerHeight}
+            height={speedSpaceChartContainerHeight}
             setHeightOfSpeedSpaceChartContainer={setSpeedSpaceChartContainerHeight}
             rollingStock={speedSpaceChartData.rollingStock}
           />
