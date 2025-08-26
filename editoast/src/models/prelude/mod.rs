@@ -6,8 +6,6 @@ mod list;
 mod retrieve;
 mod update;
 
-use std::marker::PhantomData;
-
 pub use create::*;
 pub use delete::*;
 pub use list::*;
@@ -56,19 +54,6 @@ pub type Row<M> = <M as Model>::Row;
 ///
 /// Helps silent compiler errors about type ambiguity.
 pub type Changeset<M> = <M as Model>::Changeset;
-
-/// A struct persisting the column and type information of each model field
-///
-/// This struct is instantiated by the `Model` derive macro and shouldn't be
-/// used manually. The macro expansion also provides a few methods such as
-/// `eq` or `asc` that can be used in conjunction with [SelectionSettings].
-pub struct ModelField<M, T, Column>(PhantomData<(M, T, Column)>);
-
-impl<M, T, Column> ModelField<M, T, Column> {
-    pub(in crate::models) const fn new() -> Self {
-        Self(PhantomData)
-    }
-}
 
 pub trait Identifiable<T = i64>
 where

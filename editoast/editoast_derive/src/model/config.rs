@@ -18,6 +18,7 @@ pub(crate) struct ModelConfig {
     pub(crate) fields: Fields,
     pub(crate) row: Row,
     pub(crate) changeset: Changeset,
+    pub(crate) field_wrapper: syn::Ident,
     pub(crate) errors: Errors,
     pub(crate) identifiers: BTreeSet<Identifier>, // identifiers ⊆ fields
     pub(crate) preferred_identifier: Identifier,  // preferred_identifier ∈ identifiers

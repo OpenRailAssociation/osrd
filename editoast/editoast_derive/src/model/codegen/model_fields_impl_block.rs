@@ -5,6 +5,7 @@ use quote::quote;
 pub(crate) struct ModelFieldsImplBlock {
     pub(super) model: syn::Ident,
     pub(super) fields: Vec<ModelFieldDecl>,
+    pub(super) field_wrapper: syn::Ident,
 }
 
 pub(crate) struct ModelFieldDecl {
@@ -15,7 +16,11 @@ pub(crate) struct ModelFieldDecl {
 
 impl ToTokens for ModelFieldsImplBlock {
     fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
-        let Self { model, fields } = self;
+        let Self {
+            model,
+            fields,
+            field_wrapper,
+        } = self;
         let np!(name, ty, column): np!(vec3) = fields
             .iter()
             .map(|field| {
@@ -26,7 +31,7 @@ impl ToTokens for ModelFieldsImplBlock {
         tokens.extend(quote! {
             paste::paste! {
                 impl #model {
-                    #(pub const [< #name:snake:upper >]: crate::models::ModelField<#model, #ty, #column> = crate::models::ModelField::new();)*
+                    #(pub const [< #name:snake:upper >]: #field_wrapper<#model, #ty, #column> = #field_wrapper(core::marker::PhantomData);)*
                 }
             }
         });

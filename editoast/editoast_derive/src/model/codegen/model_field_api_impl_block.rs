@@ -6,11 +6,16 @@ use syn::parse_quote;
 pub(crate) struct ModelFieldApiImplBlock {
     pub(super) model: syn::Ident,
     pub(super) field: ModelField,
+    pub(super) field_wrapper: syn::Ident,
 }
 
 impl ToTokens for ModelFieldApiImplBlock {
     fn to_tokens(&self, tokens: &mut proc_macro2::TokenStream) {
-        let Self { model, field } = self;
+        let Self {
+            model,
+            field,
+            field_wrapper,
+        } = self;
         let ModelField { ty, column, .. } = &field;
         let (transform, map_transform) = if field.has_transformation() {
             let transform_ty = field.transform_type();
@@ -22,7 +27,7 @@ impl ToTokens for ModelFieldApiImplBlock {
             (quote! {}, quote! {})
         };
         tokens.extend(quote! {
-            impl crate::models::prelude::ModelField<#model, #ty, #column> {
+            impl #field_wrapper<#model, #ty, #column> {
                 pub fn eq(&self, value: #ty) -> crate::models::prelude::FilterSetting<#model> {
                     use diesel::ExpressionMethods;
                     #transform;
