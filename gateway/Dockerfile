@@ -74,6 +74,9 @@ ENV VITE_OSRD_GIT_DESCRIBE=${OSRD_GIT_DESCRIBE}
 
 COPY --from=front_src . /app
 
+# Use a readonly token to avoid 429 too many requests from npm
+RUN echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc
+
 # If SKIP_FRONT is set to 1, skip the front build
 RUN --mount=type=cache,target=/root/.npm \
     if [ "$SKIP_FRONT" = "1" ]; then exit 0; else npm ci; fi

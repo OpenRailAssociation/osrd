@@ -70,6 +70,8 @@ jobs:
       # - `httpReadSeeker: failed open:`
       #   full message: `ERROR: failed to solve: DeadlineExceeded: failed to compute cache key: failed to copy: httpReadSeeker: failed open: no active session for XXXXX: context deadline exceeded`
       - name: Build and push
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           set -euo pipefail
 

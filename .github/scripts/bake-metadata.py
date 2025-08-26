@@ -307,7 +307,7 @@ def generate_bake_file(event, targets):
         bake_targets[f"base-{target.name}"] = target_manifest
 
     version = event.version_string()
-    bake_targets["base"] = {"args": {"OSRD_GIT_DESCRIBE": version}}
+    bake_targets["base"] = {"args": {"OSRD_GIT_DESCRIBE": version}, "secret": ["id=NPM_TOKEN"]}
     return {"target": bake_targets}
 
 

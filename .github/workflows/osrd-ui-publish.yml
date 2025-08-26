@@ -32,9 +32,12 @@ jobs:
           key: ${{ runner.os }}-modules-${{ hashFiles('**/package-lock.json') }}
 
       - name: Publish
+        env:
+          NPM_TOKEN: ${{ secrets.NPM_TOKEN }}
         run: |
           TAG=${GITHUB_REF/refs\/tags\//}
           VERSION=${TAG/ui-v/}
           cd front
+          echo "//registry.npmjs.org/:_authToken=${NPM_TOKEN}" > .npmrc
           npm ci
           npx lerna publish ${VERSION} --yes --no-push --no-git-tag-version --private
