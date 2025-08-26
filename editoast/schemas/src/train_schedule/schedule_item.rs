@@ -1,5 +1,4 @@
 use crate::primitives::NonBlankString;
-use chrono::Duration;
 use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
@@ -43,7 +42,7 @@ pub struct ScheduleItem {
 
 #[cfg(feature = "testing")]
 impl ScheduleItem {
-    pub fn new_with_stop(at: &str, duration: Duration) -> Self {
+    pub fn new_with_stop(at: &str, duration: chrono::Duration) -> Self {
         Self {
             at: at.into(),
             arrival: None,
