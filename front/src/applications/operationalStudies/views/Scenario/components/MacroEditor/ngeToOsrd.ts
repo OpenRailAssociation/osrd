@@ -7,7 +7,6 @@ import {
   type TrainSchedule,
   type MacroNodeForm,
 } from 'common/api/osrdEditoastApi';
-import { checkChangeGroups } from 'modules/timetableItem/components/ManageTimetableItem/helpers/buildPacedTrainException';
 import {
   createPacedTrain,
   createTrainSchedule,
@@ -47,6 +46,7 @@ import {
   getTrainCategoryFromTrainrunCategoryId,
   updateMacroNode,
 } from './utils';
+import { checkChangeGroups } from '../ManageTimetableItem/helpers/buildPacedTrainException';
 import type {
   NetzgrafikDto,
   NGEEvent,
