@@ -11,8 +11,12 @@ import {
   type PacedTrain,
   type TrainSchedule,
   type ScenarioResponse,
+  type TrainCategory,
 } from 'common/api/osrdEditoastApi';
 import { Loader } from 'common/Loaders';
+import { useSubCategoryContext } from 'common/SubCategoryContext';
+import { TrainMainCategoryDict } from 'modules/rollingStock/consts';
+import isMainCategory from 'modules/rollingStock/helpers/category';
 import { setFailure, setSuccess } from 'reducers/main';
 import type {
   PacedTrainWithPacedTrainId,
@@ -58,16 +62,45 @@ const ImportTimetableItemTrainsList = ({
   const { t } = useTranslation('operational-studies', { keyPrefix: 'importTrains' });
 
   const {
-    train_schedules: trainSchedulesJsonData,
-    paced_trains: pacedTrainsJsonData,
+    train_schedules: trainSchedulesFromJsonData,
+    paced_trains: pacedTrainsFromJsonData,
     macro_nodes: macroNodes,
   } = trainsJsonData;
+
+  const subCategories = useSubCategoryContext();
+
+  const checkCategory = (category?: TrainCategory | null): TrainCategory | null => {
+    if (!category) return null;
+
+    if (isMainCategory(category)) {
+      const mainCategory = TrainMainCategoryDict.get(category.main_category);
+      return mainCategory ? { ...category, main_category: mainCategory } : null;
+    }
+
+    const hasValidSubCategory = subCategories.some(
+      (subCategory) => subCategory.code === category.sub_category_code
+    );
+    return hasValidSubCategory ? category : null;
+  };
+
+  const { pacedTrainsJsonData, trainSchedulesJsonData } = useMemo(
+    () => ({
+      pacedTrainsJsonData: pacedTrainsFromJsonData.map((pacedTrain) => ({
+        ...pacedTrain,
+        category: checkCategory(pacedTrain.category),
+      })),
+      trainSchedulesJsonData: trainSchedulesFromJsonData.map((trainSchedule) => ({
+        ...trainSchedule,
+        category: checkCategory(trainSchedule.category),
+      })),
+    }),
+    [pacedTrainsFromJsonData, trainSchedulesFromJsonData, subCategories]
+  );
+
   const formattedTrainsList = useMemo(
     () =>
       trainsList.map(({ rollingStock, ...train }) => {
-        if (!rollingStock) {
-          return { ...train, rollingStock: '' };
-        }
+        if (!rollingStock) return { ...train, rollingStock: '' };
 
         const validTrainNameKey = findValidTrainNameKey(rollingStock);
         const validTrainName = validTrainNameKey
