@@ -1078,6 +1078,7 @@ dependencies = [
  "ident_case",
  "proc-macro2",
  "quote",
+ "strsim",
  "syn 2.0.106",
 ]
 
@@ -1466,7 +1467,7 @@ dependencies = [
 name = "editoast_derive"
 version = "0.1.0"
 dependencies = [
- "darling 0.20.11",
+ "darling 0.21.2",
  "insta",
  "paste",
  "pretty_assertions",
@@ -1707,7 +1708,7 @@ dependencies = [
 name = "fga_derive"
 version = "0.1.0"
 dependencies = [
- "darling 0.20.11",
+ "darling 0.21.2",
  "quote",
  "syn 2.0.106",
 ]
