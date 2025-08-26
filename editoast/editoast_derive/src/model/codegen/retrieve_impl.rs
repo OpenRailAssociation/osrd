@@ -32,7 +32,7 @@ impl ToTokens for RetrieveImpl {
 
         tokens.extend(quote! {
             #[automatically_derived]
-            impl crate::models::Retrieve<#ty> for #model {
+            impl crate::prelude::Retrieve<#ty> for #model {
                 type Error = #error;
 
                 #[tracing::instrument(name = #span_name, skip_all, err, fields(query_id))]

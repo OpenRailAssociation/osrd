@@ -15,7 +15,7 @@ use crate::infra_cache::InfraCache;
 use crate::map;
 use crate::map::MapLayers;
 use crate::models::Infra;
-use crate::models::prelude::*;
+use editoast_models::prelude::*;
 
 use super::ValkeyConfig;
 

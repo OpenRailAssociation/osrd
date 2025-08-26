@@ -20,8 +20,8 @@ use schemas::train_schedule::TrainSchedule;
 use schemas::train_schedule::TrainScheduleOptions;
 
 use super::Tags;
-use crate::models::prelude::*;
 use crate::views::timetable::TrainId;
+use editoast_models::prelude::*;
 
 #[derive(Debug, Clone, Model)]
 #[cfg_attr(test, derive(Default, PartialEq))]
@@ -303,11 +303,11 @@ mod tests {
     use crate::models::fixtures::create_timetable;
     use crate::models::fixtures::simple_paced_train_changeset;
     use crate::models::fixtures::simple_sub_category;
-    use crate::models::prelude::*;
     use crate::views::timetable::TrainId;
     use chrono::DateTime;
     use chrono::Utc;
     use database::DbConnectionPoolV2;
+    use editoast_models::prelude::*;
     use editoast_models::rolling_stock::TrainMainCategory;
     use pretty_assertions::assert_eq;
     use rstest::rstest;

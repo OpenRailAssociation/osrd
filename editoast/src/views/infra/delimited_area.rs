@@ -1,5 +1,4 @@
 use crate::AppState;
-use crate::Retrieve;
 use crate::error::Result;
 use crate::infra_cache::Graph;
 use crate::infra_cache::InfraCache;
@@ -14,6 +13,7 @@ use axum::Json;
 use axum::extract::Path;
 use axum::extract::State;
 use editoast_derive::EditoastError;
+use editoast_models::prelude::*;
 use itertools::Either;
 use itertools::Itertools;
 use schemas::infra::Direction;

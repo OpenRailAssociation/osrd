@@ -42,12 +42,12 @@ use crate::infra_cache::operation::Operation;
 use crate::infra_cache::operation::UpdateOperation;
 use crate::map;
 use crate::models::Infra;
-use crate::models::prelude::*;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
 use crate::views::infra::InfraApiError;
 use crate::views::infra::InfraIdParam;
 use database::DbConnection;
+use editoast_models::prelude::*;
 use schemas::infra::InfraObject;
 
 /// Edit the content of an infrastructure

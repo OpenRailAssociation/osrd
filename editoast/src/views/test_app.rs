@@ -421,7 +421,7 @@ impl TestApp {
     fn authz_subject(&self, subject_id: i64) -> authz::Subject {
         let mut conn = self.app_state.db_pool.get_ok();
         block_on(async move {
-            use crate::models::prelude::*;
+            use editoast_models::prelude::*;
 
             if models::User::exists(&mut conn, subject_id).await.unwrap() {
                 authz::Subject::User(authz::User(subject_id))

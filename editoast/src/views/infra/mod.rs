@@ -24,6 +24,7 @@ use core_client::infra_loading::InfraLoadRequest;
 use database::DbConnection;
 use database::DbConnectionPoolV2;
 use editoast_derive::EditoastError;
+use editoast_models::prelude::*;
 use itertools::Itertools;
 use osrdyne_client::OsrdyneClient;
 use schemas::infra::SwitchType;
@@ -39,7 +40,6 @@ use utoipa::ToSchema;
 use super::Authentication;
 use super::AuthenticationExt;
 use super::pagination::PaginationStats;
-use super::params::List;
 use crate::AppState;
 use crate::Arc;
 use crate::error::Result;
@@ -48,13 +48,12 @@ use crate::generated_data::speed_limit_tags_config::SpeedLimitTagIds;
 use crate::infra_cache::InfraCache;
 use crate::map;
 use crate::models::Infra;
-use crate::models::List as _;
 use crate::models::SwitchTypeModel;
 use crate::models::TrackSectionModel;
-use crate::models::prelude::*;
 use crate::views::AuthorizationError;
 use crate::views::pagination::PaginatedList as _;
 use crate::views::pagination::PaginationQueryParams;
+use crate::views::params;
 use crate::views::path::path_item_cache::PathItemCache;
 use crate::views::path::path_item_cache::retrieve_op_from_ids;
 use crate::views::path::path_item_cache::retrieve_op_from_trigrams;
@@ -96,7 +95,7 @@ pub(in crate::views) struct RefreshQueryParams {
     /// If not provided, all available infras will be refreshed.
     #[serde(default)]
     #[param(value_type = Vec<u64>)]
-    infras: List<i64>,
+    infras: params::List<i64>,
 }
 
 #[derive(Debug, Serialize, ToSchema)]
@@ -138,7 +137,7 @@ pub(in crate::views) async fn refresh(
     // Use a transaction to give scope to infra list lock
     let RefreshQueryParams {
         force,
-        infras: List(infras),
+        infras: params::List(infras),
     } = query_params;
 
     let infras_list = if infras.is_empty() {

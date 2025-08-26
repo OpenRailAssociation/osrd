@@ -16,8 +16,6 @@ pub use auth_driver::PgAuthDriver;
 pub mod group;
 pub mod paced_train;
 pub mod pagination;
-#[allow(unused)]
-pub mod prelude;
 pub mod project;
 pub mod railjson;
 pub mod rolling_stock;
@@ -35,8 +33,6 @@ pub mod towed_rolling_stock;
 pub mod train_schedule;
 pub mod user;
 pub mod work_schedules;
-
-pub use prelude::*;
 
 pub use documents::Document;
 pub use group::Group;
@@ -65,7 +61,7 @@ mod tests {
     use pretty_assertions::assert_eq;
     use rstest::rstest;
 
-    use super::prelude::*;
+    use editoast_models::prelude::*;
 
     #[derive(Debug, Default, Clone, Model, PartialEq, Eq)]
     #[model(table = database::tables::document, error = DocError)]

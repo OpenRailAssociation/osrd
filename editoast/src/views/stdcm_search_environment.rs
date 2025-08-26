@@ -1,4 +1,3 @@
-use crate::models::prelude::*;
 use crate::views::pagination::PaginatedList;
 use crate::views::pagination::PaginationQueryParams;
 use crate::views::pagination::PaginationStats;
@@ -15,6 +14,7 @@ use chrono::DateTime;
 use chrono::Utc;
 use database::DbConnectionPoolV2;
 use editoast_derive::EditoastError;
+use editoast_models::prelude::*;
 use serde::Deserialize;
 use serde::Serialize;
 use serde::de::Error as SerdeError;
@@ -23,11 +23,7 @@ use thiserror::Error;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
 
-#[cfg(test)]
-use crate::Model;
 use crate::error::Result;
-use crate::models::Changeset;
-use crate::models::Create;
 use crate::models::stdcm_search_environment::StdcmSearchEnvironment;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
@@ -262,8 +258,6 @@ pub mod tests {
     use rstest::rstest;
 
     use super::*;
-    use crate::Create;
-    use crate::Retrieve;
     use crate::models::stdcm_search_environment::tests::stdcm_search_env_fixtures;
     use crate::views::test_app::TestAppBuilder;
 

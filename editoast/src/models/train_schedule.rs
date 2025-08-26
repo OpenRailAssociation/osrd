@@ -16,7 +16,7 @@ use schemas::train_schedule::ScheduleItem;
 use schemas::train_schedule::TrainScheduleLike;
 use schemas::train_schedule::TrainScheduleOptions;
 
-use crate::models::prelude::*;
+use editoast_models::prelude::*;
 
 #[derive(Debug, Clone, Model)]
 #[cfg_attr(test, derive(Default))]
@@ -208,7 +208,7 @@ mod tests {
     use crate::models::fixtures::create_timetable;
     use crate::models::fixtures::simple_sub_category;
     use crate::models::fixtures::simple_train_schedule_changeset;
-    use crate::models::prelude::*;
+    use editoast_models::prelude::*;
 
     #[rstest]
     async fn train_schedule_both_categories_check_post() {

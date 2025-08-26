@@ -12,6 +12,7 @@ use database::DbConnection;
 use database::DbConnectionPoolV2;
 use diesel_async::scoped_futures::ScopedFutureExt;
 use editoast_derive::EditoastError;
+use editoast_models::prelude::*;
 use serde::Deserialize;
 use serde::Serialize;
 use serde_with::rust::double_option;
@@ -25,7 +26,6 @@ use crate::models::Infra;
 use crate::models::Project;
 use crate::models::Study;
 use crate::models::Tags;
-use crate::models::prelude::*;
 use crate::models::scenario::Scenario;
 use crate::models::timetable::Timetable;
 use crate::views::AuthenticationExt;
@@ -281,7 +281,7 @@ pub(in crate::views) struct ScenarioPatchForm {
     pub electrical_profile_set_id: Option<Option<i64>>,
 }
 
-impl From<ScenarioPatchForm> for <Scenario as crate::models::Model>::Changeset {
+impl From<ScenarioPatchForm> for <Scenario as editoast_models::prelude::Model>::Changeset {
     fn from(scenario: ScenarioPatchForm) -> Self {
         Scenario::changeset()
             .flat_name(scenario.name)

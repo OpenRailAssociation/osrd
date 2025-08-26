@@ -31,14 +31,13 @@ pub use object_queryable::ObjectQueryable;
 use crate::error::Result;
 use crate::generated_data;
 use crate::infra_cache::InfraCache;
-use crate::models::Create;
 use crate::models::get_geometry_layer_table;
 use crate::models::get_table;
-use crate::models::prelude::*;
 use crate::models::railjson::persist_railjson;
 use database::DbConnection;
 use database::DbConnectionPoolV2;
 use database::tables::infra::dsl;
+use editoast_models::prelude::*;
 use schemas::infra::RAILJSON_VERSION;
 use schemas::infra::RailJson;
 use schemas::primitives::ObjectType;
@@ -325,10 +324,10 @@ pub mod tests {
     use crate::error::EditoastError;
     use crate::models::fixtures::create_empty_infra;
     use crate::models::infra::DEFAULT_INFRA_VERSION;
-    use crate::models::prelude::*;
     use crate::models::railjson::RailJsonError;
     use crate::models::railjson::find_all_schemas;
     use database::DbConnectionPoolV2;
+    use editoast_models::prelude::*;
 
     #[rstest]
     async fn create_infra() {

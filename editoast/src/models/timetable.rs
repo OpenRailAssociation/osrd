@@ -12,9 +12,9 @@ use futures_util::stream::TryStreamExt;
 use std::ops::DerefMut;
 
 use crate::error::Result;
-use crate::models::prelude::*;
 use crate::models::train_schedule::TrainSchedule;
 use database::DbConnection;
+use editoast_models::prelude::*;
 
 #[derive(Debug, Default, Clone, Model)]
 #[cfg_attr(test, derive(serde::Deserialize))]

@@ -9,7 +9,7 @@ use serde::Serialize;
 use std::ops::DerefMut;
 use utoipa::ToSchema;
 
-use crate::models::prelude::*;
+use editoast_models::prelude::*;
 
 #[cfg(test)]
 use serde::Deserialize;
@@ -98,7 +98,6 @@ pub mod tests {
 
     use super::*;
     use crate::models::Infra;
-    use crate::models::Model;
     use crate::models::electrical_profiles::ElectricalProfileSet;
     use crate::models::fixtures::create_electrical_profile_set;
     use crate::models::fixtures::create_empty_infra;

@@ -1,6 +1,5 @@
 use super::pagination::PaginatedList;
 use crate::error::Result;
-use crate::models::prelude::*;
 use crate::models::work_schedules;
 use crate::models::work_schedules::WorkSchedule;
 use crate::models::work_schedules::WorkScheduleGroup;
@@ -23,6 +22,7 @@ use chrono::DateTime;
 use chrono::Utc;
 use database::DbConnectionPoolV2;
 use editoast_derive::EditoastError;
+use editoast_models::prelude::*;
 use schemas::infra::Direction;
 use schemas::infra::TrackRange;
 use serde::Deserialize;

@@ -1,6 +1,5 @@
 use std::fmt::Debug;
 
-use axum::http::StatusCode;
 use database::DbConnection;
 
 use super::Model;
@@ -14,7 +13,7 @@ where
     K: Send,
     Self: Send,
 {
-    type Error: std::error::Error + From<editoast_models::Error> + Send;
+    type Error: std::error::Error + From<crate::Error> + Send;
 
     /// Retrieves the row #`id` and deserializes it as a model instance
     async fn retrieve(conn: DbConnection, id: K) -> Result<Option<Self>, Self::Error>;
@@ -42,7 +41,7 @@ where
     K: Send,
     Self: Send,
 {
-    type Error: std::error::Error + From<editoast_models::Error> + Send;
+    type Error: std::error::Error + From<crate::Error> + Send;
 
     /// Returns whether the row #`id` exists in the database
     async fn exists(conn: &mut DbConnection, id: K) -> Result<bool, Self::Error>;
@@ -73,7 +72,7 @@ where
     K: Send + Debug,
     Self: Send,
 {
-    type Error: std::error::Error + From<editoast_models::Error> + Send;
+    type Error: std::error::Error + From<crate::Error> + Send;
 
     /// Retrieves a batch of rows from the database given an iterator of keys
     ///
@@ -124,12 +123,25 @@ where
     /// Returns a collection of the retrieved rows and a set of the keys
     /// that were not found.
     ///
-    /// ```
+    /// ```no_run
+    /// # use editoast_models::prelude::*;
+    /// # use database::DbConnection;
+    /// # use std::collections::HashSet;
+    /// # #[derive(Debug, PartialEq, Eq, Hash)]
+    /// # struct Document;
+    /// # impl Document {
+    /// #     async fn retrieve_batch<C: Default + std::iter::Extend<Self>>(
+    /// #         _conn: &mut DbConnection, _ids: impl IntoIterator<Item = i64> + Send
+    /// #     ) -> Result<(C, HashSet<i64>), std::io::Error> { Ok((C::default(), HashSet::new())) }
+    /// # }
+    /// # async fn example(mut conn: DbConnection) -> Result<(), std::io::Error> {
     /// let mut ids = (0..5).collect::<Vec<_>>();
     /// ids.push(123456789);
     /// let (docs, missing): (HashSet<_>, _) = Document::retrieve_batch(&mut conn, ids).await?;
-    /// assert!(ids.contains(&123456789));
+    /// assert!(missing.contains(&123456789));
     /// assert_eq!(docs.len(), 5);
+    /// # Ok(())
+    /// # }
     /// ```
     async fn retrieve_batch<I, C>(
         conn: &mut DbConnection,
@@ -160,12 +172,25 @@ where
 
     /// Just like [RetrieveBatch::retrieve_batch] but the returned models are paired with their key
     ///
-    /// ```
+    /// ```no_run
+    /// # use editoast_models::prelude::*;
+    /// # use database::DbConnection;
+    /// # use std::collections::{HashMap, HashSet};
+    /// # #[derive(Debug, PartialEq, Eq, Hash)]
+    /// # struct Document;
+    /// # impl Document {
+    /// #     async fn retrieve_batch_with_key<C: Default + std::iter::Extend<(i64, Self)>>(
+    /// #         _conn: &mut DbConnection, _ids: impl IntoIterator<Item = i64> + Send
+    /// #     ) -> Result<(C, HashSet<i64>), std::io::Error> { Ok((C::default(), HashSet::new())) }
+    /// # }
+    /// # async fn example(mut conn: DbConnection) -> Result<(), std::io::Error> {
     /// let mut ids = (0..5).collect::<Vec<_>>();
     /// ids.push(123456789);
     /// let (docs, missing): (HashMap<_, _>, _) = Document::retrieve_batch_with_key(&mut conn, ids).await?;
-    /// assert!(ids.contains(&123456789));
-    /// assert!(docs.contains(&1));
+    /// assert!(missing.contains(&123456789));
+    /// assert!(docs.contains_key(&1));
+    /// # Ok(())
+    /// # }
     /// ```
     async fn retrieve_batch_with_key<I, C>(
         conn: &mut DbConnection,
@@ -201,11 +226,30 @@ where
     /// On failure, the error returned is the result of calling `fail(missing)` where `missing`
     /// is the set of ids that were not found.
     ///
-    /// ```
+    /// ```no_run
+    /// # use editoast_models::prelude::*;
+    /// # use database::DbConnection;
+    /// # use std::collections::HashSet;
+    /// # #[derive(Debug, PartialEq, Eq, Hash)]
+    /// # struct Document;
+    /// # impl Document {
+    /// #     async fn retrieve_batch_or_fail<C: Default + std::iter::Extend<Self>, F>(
+    /// #         _conn: &mut DbConnection, _ids: impl IntoIterator<Item = i64> + Send, _fail: F
+    /// #     ) -> Result<C, MyErrorType> { Ok(C::default()) }
+    /// # }
+    /// # #[derive(Debug)]
+    /// # enum MyErrorType { DocumentsNotFound(HashSet<i64>) }
+    /// # impl std::fmt::Display for MyErrorType {
+    /// #     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result { write!(f, "error") }
+    /// # }
+    /// # impl std::error::Error for MyErrorType {}
+    /// # async fn example(mut conn: DbConnection) -> Result<(), MyErrorType> {
     /// let ids = (0..5).collect::<Vec<_>>();
     /// let docs: HashSet<_> = Document::retrieve_batch_or_fail(&mut conn, ids, |missing| {
     ///    MyErrorType::DocumentsNotFound(missing)
     /// }).await?;
+    /// # Ok(())
+    /// # }
     /// ```
     async fn retrieve_batch_or_fail<I, C, E, F>(
         conn: &mut DbConnection,
@@ -232,11 +276,30 @@ where
 
     /// Just like [RetrieveBatch::retrieve_batch_or_fail] but the returned models are paired with their key
     ///
-    /// ```
+    /// ```no_run
+    /// # use editoast_models::prelude::*;
+    /// # use database::DbConnection;
+    /// # use std::collections::{HashMap, HashSet};
+    /// # #[derive(Debug, PartialEq, Eq, Hash)]
+    /// # struct Document;
+    /// # impl Document {
+    /// #     async fn retrieve_batch_with_key_or_fail<C: Default + std::iter::Extend<(i64, Self)>, F>(
+    /// #         _conn: &mut DbConnection, _ids: impl IntoIterator<Item = i64> + Send, _fail: F
+    /// #     ) -> Result<C, MyErrorType> { Ok(C::default()) }
+    /// # }
+    /// # #[derive(Debug)]
+    /// # enum MyErrorType { DocumentsNotFound(HashSet<i64>) }
+    /// # impl std::fmt::Display for MyErrorType {
+    /// #     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result { write!(f, "error") }
+    /// # }
+    /// # impl std::error::Error for MyErrorType {}
+    /// # async fn example(mut conn: DbConnection) -> Result<(), MyErrorType> {
     /// let ids = (0..5).collect::<Vec<_>>();
     /// let docs: HashMap<_, _> = Document::retrieve_batch_with_key_or_fail(&mut conn, ids, |missing| {
     ///   MyErrorType::DocumentsNotFound(missing)
     /// }).await?;
+    /// # Ok(())
+    /// # }
     /// ```
     async fn retrieve_batch_with_key_or_fail<I, C, E, F>(
         conn: &mut DbConnection,

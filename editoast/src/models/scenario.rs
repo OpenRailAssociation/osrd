@@ -14,11 +14,11 @@ use utoipa::ToSchema;
 use crate::error::InternalError;
 use crate::error::Result;
 use crate::models::Tags;
-use crate::models::prelude::*;
 use crate::models::timetable::Timetable;
 use crate::views::scenario::ScenarioError;
 use database::DbConnection;
 use editoast_derive::Model;
+use editoast_models::prelude::*;
 
 use super::Project;
 use super::Study;

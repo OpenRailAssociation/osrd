@@ -9,7 +9,7 @@ use database::DbConnectionPoolV2;
 use schemas::infra::ElectricalProfileSetData;
 
 use crate::models::electrical_profiles::ElectricalProfileSet;
-use crate::models::prelude::*;
+use editoast_models::prelude::*;
 
 #[derive(Subcommand, Debug)]
 pub enum ElectricalProfilesCommands {

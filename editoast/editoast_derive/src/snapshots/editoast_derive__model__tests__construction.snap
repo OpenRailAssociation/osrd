@@ -21,7 +21,7 @@ struct Document {
 // -----------------------------------------------------------------------------
 
 #[automatically_derived]
-impl crate::models::Model for Document {
+impl crate::prelude::Model for Document {
     type Row = DocumentRow;
     type Changeset = DocumentChangeset;
     type Table = database::tables::osrd_infra_document::table;
@@ -38,24 +38,21 @@ paste::paste! {
     = _DocumentField(core::marker::PhantomData); }
 }
 impl _DocumentField<Document, i64, id> {
-    pub fn eq(&self, value: i64) -> crate::models::prelude::FilterSetting<Document> {
+    pub fn eq(&self, value: i64) -> crate::prelude::FilterSetting<Document> {
         use diesel::ExpressionMethods;
-        crate::models::prelude::FilterSetting::new(id.eq(value))
+        crate::prelude::FilterSetting::new(id.eq(value))
     }
-    pub fn eq_any(
-        &self,
-        values: Vec<i64>,
-    ) -> crate::models::prelude::FilterSetting<Document> {
+    pub fn eq_any(&self, values: Vec<i64>) -> crate::prelude::FilterSetting<Document> {
         use diesel::ExpressionMethods;
-        crate::models::prelude::FilterSetting::new(id.eq_any(values))
+        crate::prelude::FilterSetting::new(id.eq_any(values))
     }
-    pub fn asc(&self) -> crate::models::prelude::SortSetting<Document> {
+    pub fn asc(&self) -> crate::prelude::SortSetting<Document> {
         use diesel::ExpressionMethods;
-        crate::models::prelude::SortSetting(Box::new(id.asc()))
+        crate::prelude::SortSetting(Box::new(id.asc()))
     }
-    pub fn desc(&self) -> crate::models::prelude::SortSetting<Document> {
+    pub fn desc(&self) -> crate::prelude::SortSetting<Document> {
         use diesel::ExpressionMethods;
-        crate::models::prelude::SortSetting(Box::new(id.desc()))
+        crate::prelude::SortSetting(Box::new(id.desc()))
     }
 }
 impl _DocumentField<
@@ -63,64 +60,64 @@ impl _DocumentField<
     String,
     database::tables::osrd_infra_document::content_type,
 > {
-    pub fn eq(&self, value: String) -> crate::models::prelude::FilterSetting<Document> {
+    pub fn eq(&self, value: String) -> crate::prelude::FilterSetting<Document> {
         use diesel::ExpressionMethods;
         let value: diesel_json::Json<String> = diesel_json::Json(value);
-        crate::models::prelude::FilterSetting::new(
+        crate::prelude::FilterSetting::new(
             database::tables::osrd_infra_document::content_type.eq(value),
         )
     }
     pub fn eq_any(
         &self,
         values: Vec<String>,
-    ) -> crate::models::prelude::FilterSetting<Document> {
+    ) -> crate::prelude::FilterSetting<Document> {
         use diesel::ExpressionMethods;
         let values: Vec<diesel_json::Json<String>> = values
             .into_iter()
             .map(|value| diesel_json::Json(value))
             .collect();
-        crate::models::prelude::FilterSetting::new(
+        crate::prelude::FilterSetting::new(
             database::tables::osrd_infra_document::content_type.eq_any(values),
         )
     }
-    pub fn asc(&self) -> crate::models::prelude::SortSetting<Document> {
+    pub fn asc(&self) -> crate::prelude::SortSetting<Document> {
         use diesel::ExpressionMethods;
-        crate::models::prelude::SortSetting(
+        crate::prelude::SortSetting(
             Box::new(database::tables::osrd_infra_document::content_type.asc()),
         )
     }
-    pub fn desc(&self) -> crate::models::prelude::SortSetting<Document> {
+    pub fn desc(&self) -> crate::prelude::SortSetting<Document> {
         use diesel::ExpressionMethods;
-        crate::models::prelude::SortSetting(
+        crate::prelude::SortSetting(
             Box::new(database::tables::osrd_infra_document::content_type.desc()),
         )
     }
 }
 impl _DocumentField<Document, Vec<u8>, database::tables::osrd_infra_document::data> {
-    pub fn eq(&self, value: Vec<u8>) -> crate::models::prelude::FilterSetting<Document> {
+    pub fn eq(&self, value: Vec<u8>) -> crate::prelude::FilterSetting<Document> {
         use diesel::ExpressionMethods;
-        crate::models::prelude::FilterSetting::new(
+        crate::prelude::FilterSetting::new(
             database::tables::osrd_infra_document::data.eq(value),
         )
     }
     pub fn eq_any(
         &self,
         values: Vec<Vec<u8>>,
-    ) -> crate::models::prelude::FilterSetting<Document> {
+    ) -> crate::prelude::FilterSetting<Document> {
         use diesel::ExpressionMethods;
-        crate::models::prelude::FilterSetting::new(
+        crate::prelude::FilterSetting::new(
             database::tables::osrd_infra_document::data.eq_any(values),
         )
     }
-    pub fn asc(&self) -> crate::models::prelude::SortSetting<Document> {
+    pub fn asc(&self) -> crate::prelude::SortSetting<Document> {
         use diesel::ExpressionMethods;
-        crate::models::prelude::SortSetting(
+        crate::prelude::SortSetting(
             Box::new(database::tables::osrd_infra_document::data.asc()),
         )
     }
-    pub fn desc(&self) -> crate::models::prelude::SortSetting<Document> {
+    pub fn desc(&self) -> crate::prelude::SortSetting<Document> {
         use diesel::ExpressionMethods;
-        crate::models::prelude::SortSetting(
+        crate::prelude::SortSetting(
             Box::new(database::tables::osrd_infra_document::data.desc()),
         )
     }
@@ -144,19 +141,19 @@ struct DocumentChangeset {
     pub data: Option<Vec<u8>>,
 }
 #[automatically_derived]
-impl crate::models::Identifiable<(String)> for Document {
+impl crate::prelude::Identifiable<(String)> for Document {
     fn get_id(&self) -> (String) {
         (self.content_type.clone())
     }
 }
 #[automatically_derived]
-impl crate::models::Identifiable<(i64)> for Document {
+impl crate::prelude::Identifiable<(i64)> for Document {
     fn get_id(&self) -> (i64) {
         (self.id_.clone())
     }
 }
 #[automatically_derived]
-impl crate::models::PreferredId<(i64)> for Document {}
+impl crate::prelude::PreferredId<(i64)> for Document {}
 #[automatically_derived]
 impl From<DocumentRow> for Document {
     fn from(row: DocumentRow) -> Self {
@@ -204,7 +201,7 @@ impl DocumentChangeset {
     }
 }
 #[automatically_derived]
-impl crate::models::Exists<(String)> for Document {
+impl crate::prelude::Exists<(String)> for Document {
     type Error = editoast_models::Error;
     #[tracing::instrument(
         name = "model:exists<Document>",
@@ -234,7 +231,7 @@ impl crate::models::Exists<(String)> for Document {
     }
 }
 #[automatically_derived]
-impl crate::models::Exists<(i64)> for Document {
+impl crate::prelude::Exists<(i64)> for Document {
     type Error = editoast_models::Error;
     #[tracing::instrument(
         name = "model:exists<Document>",
@@ -261,7 +258,7 @@ impl crate::models::Exists<(i64)> for Document {
     }
 }
 #[automatically_derived]
-impl crate::models::Retrieve<(String)> for Document {
+impl crate::prelude::Retrieve<(String)> for Document {
     type Error = editoast_models::Error;
     #[tracing::instrument(
         name = "model:retrieve<Document>",
@@ -290,7 +287,7 @@ impl crate::models::Retrieve<(String)> for Document {
     }
 }
 #[automatically_derived]
-impl crate::models::Retrieve<(i64)> for Document {
+impl crate::prelude::Retrieve<(i64)> for Document {
     type Error = editoast_models::Error;
     #[tracing::instrument(
         name = "model:retrieve<Document>",
@@ -318,7 +315,7 @@ impl crate::models::Retrieve<(i64)> for Document {
     }
 }
 #[automatically_derived]
-impl crate::models::Update<(String), Document> for DocumentChangeset {
+impl crate::prelude::Update<(String), Document> for DocumentChangeset {
     type Error = editoast_models::Error;
     #[tracing::instrument(
         name = "model:update<Document>",
@@ -350,7 +347,7 @@ impl crate::models::Update<(String), Document> for DocumentChangeset {
     }
 }
 #[automatically_derived]
-impl crate::models::Update<(i64), Document> for DocumentChangeset {
+impl crate::prelude::Update<(i64), Document> for DocumentChangeset {
     type Error = editoast_models::Error;
     #[tracing::instrument(
         name = "model:update<Document>",
@@ -379,7 +376,7 @@ impl crate::models::Update<(i64), Document> for DocumentChangeset {
     }
 }
 #[automatically_derived]
-impl crate::models::DeleteStatic<(String)> for Document {
+impl crate::prelude::DeleteStatic<(String)> for Document {
     type Error = editoast_models::Error;
     #[tracing::instrument(
         name = "model:delete_static<Document>",
@@ -408,7 +405,7 @@ impl crate::models::DeleteStatic<(String)> for Document {
     }
 }
 #[automatically_derived]
-impl crate::models::DeleteStatic<(i64)> for Document {
+impl crate::prelude::DeleteStatic<(i64)> for Document {
     type Error = editoast_models::Error;
     #[tracing::instrument(
         name = "model:delete_static<Document>",
@@ -434,7 +431,7 @@ impl crate::models::DeleteStatic<(i64)> for Document {
     }
 }
 #[automatically_derived]
-impl crate::models::Create<Document> for DocumentChangeset {
+impl crate::prelude::Create<Document> for DocumentChangeset {
     type Error = editoast_models::Error;
     #[tracing::instrument(name = "model:create<Document>", skip_all, err)]
     async fn create(
@@ -454,7 +451,7 @@ impl crate::models::Create<Document> for DocumentChangeset {
     }
 }
 #[automatically_derived]
-impl crate::models::Delete for Document {
+impl crate::prelude::Delete for Document {
     type Error = editoast_models::Error;
     #[tracing::instrument(
         name = "model:delete<Document>",
@@ -480,7 +477,7 @@ impl crate::models::Delete for Document {
     }
 }
 #[automatically_derived]
-impl crate::models::prelude::List for Document {
+impl crate::prelude::List for Document {
     type Error = editoast_models::Error;
     #[tracing::instrument(
         name = "model:list<Document>",
@@ -496,7 +493,7 @@ impl crate::models::prelude::List for Document {
     )]
     async fn list(
         conn: &mut database::DbConnection,
-        settings: crate::models::prelude::SelectionSettings<Self>,
+        settings: crate::prelude::SelectionSettings<Self>,
     ) -> std::result::Result<Vec<Self>, Self::Error> {
         use diesel::QueryDsl;
         use diesel_async::RunQueryDsl;
@@ -505,11 +502,11 @@ impl crate::models::prelude::List for Document {
         use std::ops::DerefMut;
         let mut query = database::tables::osrd_infra_document::table.into_boxed();
         for filter_fun in settings.filters {
-            let crate::models::prelude::FilterSetting(filter) = (*filter_fun)();
+            let crate::prelude::FilterSetting(filter) = (*filter_fun)();
             query = query.filter(filter);
         }
         for sort_fun in settings.sorts {
-            let crate::models::prelude::SortSetting(sort) = (*sort_fun)();
+            let crate::prelude::SortSetting(sort) = (*sort_fun)();
             query = query.order_by(sort);
         }
         if let Some(limit) = settings.limit {
@@ -525,14 +522,14 @@ impl crate::models::prelude::List for Document {
             .load_stream::<DocumentRow>(conn.write().await.deref_mut())
             .await
             .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))?
-            .map_ok(<Document as crate::models::prelude::Model>::from_row)
+            .map_ok(<Document as crate::prelude::Model>::from_row)
             .try_collect::<Vec<_>>()
             .await
             .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))
     }
 }
 #[automatically_derived]
-impl crate::models::prelude::Count for Document {
+impl crate::prelude::Count for Document {
     type Error = editoast_models::Error;
     #[tracing::instrument(
         name = "model:count<Document>",
@@ -548,7 +545,7 @@ impl crate::models::prelude::Count for Document {
     )]
     async fn count(
         conn: &mut database::DbConnection,
-        settings: crate::models::prelude::SelectionSettings<Self>,
+        settings: crate::prelude::SelectionSettings<Self>,
     ) -> std::result::Result<u64, Self::Error> {
         use diesel::QueryDsl;
         use diesel_async::RunQueryDsl;
@@ -558,7 +555,7 @@ impl crate::models::prelude::Count for Document {
             .select(diesel::dsl::count_star())
             .into_boxed();
         for filter_fun in settings.filters {
-            let crate::models::prelude::FilterSetting(filter) = (*filter_fun)();
+            let crate::prelude::FilterSetting(filter) = (*filter_fun)();
             query = query.filter(filter);
         }
         if settings.paginate_counting {
@@ -579,7 +576,7 @@ impl crate::models::prelude::Count for Document {
     }
 }
 #[automatically_derived]
-impl crate::models::CreateBatch for Document {
+impl crate::prelude::CreateBatch for Document {
     type Error = editoast_models::Error;
     #[tracing::instrument(name = "model:create_batch<Document>", skip_all, err)]
     async fn create_batch<
@@ -589,7 +586,7 @@ impl crate::models::CreateBatch for Document {
         conn: &mut database::DbConnection,
         values: I,
     ) -> std::result::Result<C, Self::Error> {
-        use crate::models::Model;
+        use crate::prelude::Model;
         use database::tables::osrd_infra_document::dsl;
         use std::ops::DerefMut;
         use diesel::prelude::*;
@@ -622,7 +619,7 @@ impl crate::models::CreateBatch for Document {
     }
 }
 #[automatically_derived]
-impl crate::models::CreateBatchWithKey<(String)> for Document {
+impl crate::prelude::CreateBatchWithKey<(String)> for Document {
     type Error = editoast_models::Error;
     #[tracing::instrument(name = "model:create_batch_with_key<Document>", skip_all, err)]
     async fn create_batch_with_key<
@@ -632,8 +629,8 @@ impl crate::models::CreateBatchWithKey<(String)> for Document {
         conn: &mut database::DbConnection,
         values: I,
     ) -> std::result::Result<C, Self::Error> {
-        use crate::models::Identifiable;
-        use crate::models::Model;
+        use crate::prelude::Identifiable;
+        use crate::prelude::Model;
         use std::ops::DerefMut;
         use database::tables::osrd_infra_document::dsl;
         use diesel::prelude::*;
@@ -669,7 +666,7 @@ impl crate::models::CreateBatchWithKey<(String)> for Document {
     }
 }
 #[automatically_derived]
-impl crate::models::CreateBatchWithKey<(i64)> for Document {
+impl crate::prelude::CreateBatchWithKey<(i64)> for Document {
     type Error = editoast_models::Error;
     #[tracing::instrument(name = "model:create_batch_with_key<Document>", skip_all, err)]
     async fn create_batch_with_key<
@@ -679,8 +676,8 @@ impl crate::models::CreateBatchWithKey<(i64)> for Document {
         conn: &mut database::DbConnection,
         values: I,
     ) -> std::result::Result<C, Self::Error> {
-        use crate::models::Identifiable;
-        use crate::models::Model;
+        use crate::prelude::Identifiable;
+        use crate::prelude::Model;
         use std::ops::DerefMut;
         use database::tables::osrd_infra_document::dsl;
         use diesel::prelude::*;
@@ -716,7 +713,7 @@ impl crate::models::CreateBatchWithKey<(i64)> for Document {
     }
 }
 #[automatically_derived]
-impl crate::models::RetrieveBatchUnchecked<(String)> for Document {
+impl crate::prelude::RetrieveBatchUnchecked<(String)> for Document {
     type Error = editoast_models::Error;
     #[tracing::instrument(
         name = "model:retrieve_batch_unchecked<Document>",
@@ -728,7 +725,7 @@ impl crate::models::RetrieveBatchUnchecked<(String)> for Document {
         I: std::iter::IntoIterator<Item = (String)> + Send,
         C: Default + std::iter::Extend<Document> + Send + std::fmt::Debug,
     >(conn: &mut database::DbConnection, ids: I) -> std::result::Result<C, Self::Error> {
-        use crate::models::Model;
+        use crate::prelude::Model;
         use database::tables::osrd_infra_document::dsl;
         use diesel::prelude::*;
         use diesel_async::RunQueryDsl;
@@ -773,8 +770,8 @@ impl crate::models::RetrieveBatchUnchecked<(String)> for Document {
         I: std::iter::IntoIterator<Item = (String)> + Send,
         C: Default + std::iter::Extend<((String), Document)> + Send + std::fmt::Debug,
     >(conn: &mut database::DbConnection, ids: I) -> std::result::Result<C, Self::Error> {
-        use crate::models::Identifiable;
-        use crate::models::Model;
+        use crate::prelude::Identifiable;
+        use crate::prelude::Model;
         use database::tables::osrd_infra_document::dsl;
         use diesel::prelude::*;
         use diesel_async::RunQueryDsl;
@@ -814,7 +811,7 @@ impl crate::models::RetrieveBatchUnchecked<(String)> for Document {
     }
 }
 #[automatically_derived]
-impl crate::models::RetrieveBatchUnchecked<(i64)> for Document {
+impl crate::prelude::RetrieveBatchUnchecked<(i64)> for Document {
     type Error = editoast_models::Error;
     #[tracing::instrument(
         name = "model:retrieve_batch_unchecked<Document>",
@@ -826,7 +823,7 @@ impl crate::models::RetrieveBatchUnchecked<(i64)> for Document {
         I: std::iter::IntoIterator<Item = (i64)> + Send,
         C: Default + std::iter::Extend<Document> + Send + std::fmt::Debug,
     >(conn: &mut database::DbConnection, ids: I) -> std::result::Result<C, Self::Error> {
-        use crate::models::Model;
+        use crate::prelude::Model;
         use database::tables::osrd_infra_document::dsl;
         use diesel::prelude::*;
         use diesel_async::RunQueryDsl;
@@ -871,8 +868,8 @@ impl crate::models::RetrieveBatchUnchecked<(i64)> for Document {
         I: std::iter::IntoIterator<Item = (i64)> + Send,
         C: Default + std::iter::Extend<((i64), Document)> + Send + std::fmt::Debug,
     >(conn: &mut database::DbConnection, ids: I) -> std::result::Result<C, Self::Error> {
-        use crate::models::Identifiable;
-        use crate::models::Model;
+        use crate::prelude::Identifiable;
+        use crate::prelude::Model;
         use database::tables::osrd_infra_document::dsl;
         use diesel::prelude::*;
         use diesel_async::RunQueryDsl;
@@ -912,7 +909,7 @@ impl crate::models::RetrieveBatchUnchecked<(i64)> for Document {
     }
 }
 #[automatically_derived]
-impl crate::models::UpdateBatchUnchecked<Document, (String)> for DocumentChangeset {
+impl crate::prelude::UpdateBatchUnchecked<Document, (String)> for DocumentChangeset {
     type Error = editoast_models::Error;
     #[tracing::instrument(
         name = "model:update_batch_unchecked<Document>",
@@ -928,7 +925,7 @@ impl crate::models::UpdateBatchUnchecked<Document, (String)> for DocumentChanges
         conn: &mut database::DbConnection,
         ids: I,
     ) -> crate::error::Result<C, Self::Error> {
-        use crate::models::Model;
+        use crate::prelude::Model;
         use database::tables::osrd_infra_document::dsl;
         use diesel::prelude::*;
         use diesel_async::RunQueryDsl;
@@ -982,8 +979,8 @@ impl crate::models::UpdateBatchUnchecked<Document, (String)> for DocumentChanges
         conn: &mut database::DbConnection,
         ids: I,
     ) -> crate::error::Result<C, Self::Error> {
-        use crate::models::Identifiable;
-        use crate::models::Model;
+        use crate::prelude::Identifiable;
+        use crate::prelude::Model;
         use database::tables::osrd_infra_document::dsl;
         use std::ops::DerefMut;
         use diesel::prelude::*;
@@ -1028,7 +1025,7 @@ impl crate::models::UpdateBatchUnchecked<Document, (String)> for DocumentChanges
     }
 }
 #[automatically_derived]
-impl crate::models::UpdateBatchUnchecked<Document, (i64)> for DocumentChangeset {
+impl crate::prelude::UpdateBatchUnchecked<Document, (i64)> for DocumentChangeset {
     type Error = editoast_models::Error;
     #[tracing::instrument(
         name = "model:update_batch_unchecked<Document>",
@@ -1044,7 +1041,7 @@ impl crate::models::UpdateBatchUnchecked<Document, (i64)> for DocumentChangeset 
         conn: &mut database::DbConnection,
         ids: I,
     ) -> crate::error::Result<C, Self::Error> {
-        use crate::models::Model;
+        use crate::prelude::Model;
         use database::tables::osrd_infra_document::dsl;
         use diesel::prelude::*;
         use diesel_async::RunQueryDsl;
@@ -1098,8 +1095,8 @@ impl crate::models::UpdateBatchUnchecked<Document, (i64)> for DocumentChangeset 
         conn: &mut database::DbConnection,
         ids: I,
     ) -> crate::error::Result<C, Self::Error> {
-        use crate::models::Identifiable;
-        use crate::models::Model;
+        use crate::prelude::Identifiable;
+        use crate::prelude::Model;
         use database::tables::osrd_infra_document::dsl;
         use std::ops::DerefMut;
         use diesel::prelude::*;
@@ -1144,7 +1141,7 @@ impl crate::models::UpdateBatchUnchecked<Document, (i64)> for DocumentChangeset 
     }
 }
 #[automatically_derived]
-impl crate::models::DeleteBatch<(String)> for Document {
+impl crate::prelude::DeleteBatch<(String)> for Document {
     type Error = editoast_models::Error;
     #[tracing::instrument(
         name = "model:delete_batch<Document>",
@@ -1189,7 +1186,7 @@ impl crate::models::DeleteBatch<(String)> for Document {
     }
 }
 #[automatically_derived]
-impl crate::models::DeleteBatch<(i64)> for Document {
+impl crate::prelude::DeleteBatch<(i64)> for Document {
     type Error = editoast_models::Error;
     #[tracing::instrument(
         name = "model:delete_batch<Document>",

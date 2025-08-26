@@ -48,13 +48,13 @@ use crate::generated_data::speed_limit_tags_config::SpeedLimitTagIds;
 use crate::models;
 use crate::models::Infra;
 use crate::models::RollingStock;
-use crate::models::prelude::*;
 use crate::models::timetable::Timetable;
 use crate::views::path::path_item_cache::PathItemCache;
 use crate::views::path::pathfinding::PathfindingResult;
 use crate::views::path::pathfinding_from_train_batch;
 use crate::views::timetable::similar_trains::graph::AdvancementError;
 use crate::views::timetable::similar_trains::graph::AdvancementErrorKind;
+use editoast_models::prelude::*;
 
 use super::AppState;
 use super::AuthenticationExt;

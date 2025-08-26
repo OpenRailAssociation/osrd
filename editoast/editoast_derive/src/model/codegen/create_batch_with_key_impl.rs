@@ -62,7 +62,7 @@ impl ToTokens for CreateBatchWithKeyImpl {
 
         tokens.extend(quote! {
             #[automatically_derived]
-            impl crate::models::CreateBatchWithKey<#ty> for #model {
+            impl crate::prelude::CreateBatchWithKey<#ty> for #model {
                 type Error = #error;
 
                 #[tracing::instrument(name = #span_name, skip_all, err)]
@@ -73,8 +73,8 @@ impl ToTokens for CreateBatchWithKeyImpl {
                     conn: &mut database::DbConnection,
                     values: I,
                 ) -> std::result::Result<C, Self::Error> {
-                    use crate::models::Identifiable;
-                    use crate::models::Model;
+                    use crate::prelude::Identifiable;
+                    use crate::prelude::Model;
                     use std::ops::DerefMut;
                     use #table_mod::dsl;
                     use diesel::prelude::*;

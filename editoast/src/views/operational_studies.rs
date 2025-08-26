@@ -1,8 +1,8 @@
 use crate::models::Project;
 use crate::models::Scenario;
 use crate::models::Study;
-use crate::models::prelude::*;
 use crate::models::work_schedules::WorkSchedule;
+use editoast_models::prelude::*;
 
 #[editoast_derive::openapi_schema]
 #[derive(Debug, Clone, serde::Deserialize, Default, utoipa::ToSchema)]

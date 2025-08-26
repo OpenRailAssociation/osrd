@@ -6,8 +6,8 @@ use schemas::infra::major_version;
 
 use crate::error::Result;
 use crate::models::infra_objects::*;
-use crate::models::prelude::*;
 use database::DbConnection;
+use editoast_models::prelude::*;
 
 use super::Infra;
 

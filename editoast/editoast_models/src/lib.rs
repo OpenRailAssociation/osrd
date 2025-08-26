@@ -1,3 +1,4 @@
+pub mod prelude;
 pub mod rolling_stock;
 
 use std::sync::LazyLock;

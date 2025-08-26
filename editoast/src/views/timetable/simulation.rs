@@ -30,7 +30,6 @@ use tracing::Instrument;
 use tracing::info;
 use utoipa::ToSchema;
 
-use crate::RetrieveBatchUnchecked;
 use crate::ValkeyClient;
 use crate::error::InternalError;
 use crate::error::Result;
@@ -43,6 +42,7 @@ use crate::views::timetable::Infra;
 use crate::views::timetable::PathfindingResult;
 use crate::views::timetable::PhysicsConsistParameters;
 use crate::views::timetable::simulation;
+use editoast_models::prelude::*;
 
 pub const TRAIN_SIZE_BATCH: usize = 100;
 

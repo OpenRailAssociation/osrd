@@ -26,7 +26,7 @@ use utoipa::ToSchema;
 use validator::ValidationError;
 use validator::ValidationErrors;
 
-use crate::models::prelude::*;
+use editoast_models::prelude::*;
 
 mod schedules_from_rolling_stock;
 pub use schedules_from_rolling_stock::ScenarioReference;
@@ -293,8 +293,8 @@ pub mod tests {
     use crate::models::fixtures::create_rolling_stock_with_energy_sources;
     use crate::models::fixtures::fast_rolling_stock_changeset;
     use crate::models::fixtures::rolling_stock_with_energy_sources_changeset;
-    use crate::models::prelude::*;
     use database::DbConnectionPoolV2;
+    use editoast_models::prelude::*;
 
     #[rstest]
     async fn update_rolling_stock() {

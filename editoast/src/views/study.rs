@@ -27,11 +27,11 @@ use crate::error::Result;
 use crate::models::Project;
 use crate::models::Study;
 use crate::models::Tags;
-use crate::models::prelude::*;
 use crate::views::pagination::PaginatedList as _;
 use crate::views::pagination::PaginationQueryParams;
 use crate::views::project::ProjectError;
 use crate::views::project::ProjectIdParam;
+use editoast_models::prelude::*;
 
 #[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "study")]

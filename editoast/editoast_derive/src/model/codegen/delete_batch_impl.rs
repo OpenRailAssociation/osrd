@@ -51,7 +51,7 @@ impl ToTokens for DeleteBatchImpl {
 
         tokens.extend(quote! {
             #[automatically_derived]
-            impl crate::models::DeleteBatch<#ty> for #model {
+            impl crate::prelude::DeleteBatch<#ty> for #model {
                 type Error = #error;
 
                 #[tracing::instrument(name = #span_name, skip_all, ret, err, fields(query_ids))]

@@ -17,7 +17,6 @@ use utoipa::ToSchema;
 
 use crate::error::Result;
 use crate::models;
-use crate::models::prelude::*;
 use crate::models::sub_category;
 use crate::models::sub_category::SubCategoryChangeset;
 use crate::views::AuthenticationExt;
@@ -25,6 +24,7 @@ use crate::views::AuthorizationError;
 use crate::views::pagination::PaginatedList;
 use crate::views::pagination::PaginationQueryParams;
 use crate::views::pagination::PaginationStats;
+use editoast_models::prelude::*;
 
 #[derive(Debug, Error, EditoastError, derive_more::From)]
 #[editoast_error(base_id = "sub_categories")]
@@ -226,9 +226,9 @@ pub mod tests {
     use crate::models::fixtures::simple_paced_train_changeset;
     use crate::models::fixtures::simple_sub_category;
     use crate::models::fixtures::simple_train_schedule_changeset;
-    use crate::models::prelude::*;
     use crate::views::sub_categories::SubCategoryPage;
     use crate::views::test_app::TestAppBuilder;
+    use editoast_models::prelude::*;
 
     #[rstest]
     async fn sub_category_post() {

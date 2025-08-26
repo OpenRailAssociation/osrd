@@ -5,7 +5,7 @@ use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
 
-use crate::models::prelude::*;
+use editoast_models::prelude::*;
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Model, ToSchema)]
 #[model(table = database::tables::sub_categories)]

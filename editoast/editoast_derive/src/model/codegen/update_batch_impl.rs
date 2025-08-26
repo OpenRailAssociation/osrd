@@ -93,7 +93,7 @@ impl ToTokens for UpdateBatchImpl {
 
         tokens.extend(quote! {
             #[automatically_derived]
-            impl crate::models::UpdateBatchUnchecked<#model, #ty> for #changeset {
+            impl crate::prelude::UpdateBatchUnchecked<#model, #ty> for #changeset {
                 type Error = #error;
 
                 #[tracing::instrument(name = #span_name, skip_all, err, fields(query_ids))]
@@ -105,7 +105,7 @@ impl ToTokens for UpdateBatchImpl {
                     conn: &mut database::DbConnection,
                     ids: I,
                 ) -> crate::error::Result<C, Self::Error> {
-                    use crate::models::Model;
+                    use crate::prelude::Model;
                     use #table_mod::dsl;
                     use diesel::prelude::*;
                     use diesel_async::RunQueryDsl;
@@ -126,8 +126,8 @@ impl ToTokens for UpdateBatchImpl {
                     conn: &mut database::DbConnection,
                     ids: I,
                 ) -> crate::error::Result<C, Self::Error> {
-                    use crate::models::Identifiable;
-                    use crate::models::Model;
+                    use crate::prelude::Identifiable;
+                    use crate::prelude::Model;
                     use #table_mod::dsl;
                     use std::ops::DerefMut;
                     use diesel::prelude::*;

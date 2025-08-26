@@ -28,26 +28,26 @@ impl ToTokens for ModelFieldApiImplBlock {
         };
         tokens.extend(quote! {
             impl #field_wrapper<#model, #ty, #column> {
-                pub fn eq(&self, value: #ty) -> crate::models::prelude::FilterSetting<#model> {
+                pub fn eq(&self, value: #ty) -> crate::prelude::FilterSetting<#model> {
                     use diesel::ExpressionMethods;
                     #transform;
-                    crate::models::prelude::FilterSetting::new(#column.eq(value))
+                    crate::prelude::FilterSetting::new(#column.eq(value))
                 }
 
-                pub fn eq_any(&self, values: Vec<#ty>) -> crate::models::prelude::FilterSetting<#model> {
+                pub fn eq_any(&self, values: Vec<#ty>) -> crate::prelude::FilterSetting<#model> {
                     use diesel::ExpressionMethods;
                     #map_transform;
-                    crate::models::prelude::FilterSetting::new(#column.eq_any(values))
+                    crate::prelude::FilterSetting::new(#column.eq_any(values))
                 }
 
-                pub fn asc(&self) -> crate::models::prelude::SortSetting<#model> {
+                pub fn asc(&self) -> crate::prelude::SortSetting<#model> {
                     use diesel::ExpressionMethods;
-                    crate::models::prelude::SortSetting(Box::new(#column.asc()))
+                    crate::prelude::SortSetting(Box::new(#column.asc()))
                 }
 
-                pub fn desc(&self) -> crate::models::prelude::SortSetting<#model> {
+                pub fn desc(&self) -> crate::prelude::SortSetting<#model> {
                     use diesel::ExpressionMethods;
-                    crate::models::prelude::SortSetting(Box::new(#column.desc()))
+                    crate::prelude::SortSetting(Box::new(#column.desc()))
                 }
             }
         });

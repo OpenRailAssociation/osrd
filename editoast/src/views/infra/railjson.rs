@@ -21,13 +21,13 @@ use crate::AppState;
 use crate::error::Result;
 use crate::infra_cache::InfraCache;
 use crate::models::Infra;
-use crate::models::prelude::*;
 use crate::views::Authentication;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
 use crate::views::infra::InfraApiError;
 use crate::views::infra::InfraIdParam;
 use database::DbConnectionPoolV2;
+use editoast_models::prelude::*;
 use schemas::primitives::ObjectType;
 
 /// Serialize an infra

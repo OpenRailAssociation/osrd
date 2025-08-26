@@ -10,6 +10,7 @@ use database::DbConnection;
 use database::DbConnectionPoolV2;
 use diesel_async::scoped_futures::ScopedFutureExt as _;
 use editoast_derive::EditoastError;
+use editoast_models::prelude::*;
 use serde::Deserialize;
 use serde::Serialize;
 use serde_with::rust::double_option;
@@ -22,14 +23,9 @@ use super::operational_studies::OperationalStudiesOrderingParam;
 use super::pagination::PaginatedList;
 use super::pagination::PaginationStats;
 use crate::error::Result;
-use crate::models::Changeset;
-use crate::models::Create;
 use crate::models::Document;
-use crate::models::Model;
 use crate::models::Project;
-use crate::models::Retrieve;
 use crate::models::Tags;
-use crate::models::Update;
 use crate::views::AuthorizationError;
 use crate::views::pagination::PaginationQueryParams;
 
@@ -402,15 +398,14 @@ pub(in crate::views) async fn patch(
 
 #[cfg(test)]
 pub mod tests {
+    use super::*;
 
     use axum::http::StatusCode;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
     use serde_json::json;
 
-    use super::*;
     use crate::models::fixtures::create_project;
-    use crate::models::prelude::*;
     use crate::views::test_app;
     use crate::views::test_app::TestAppBuilder;
     use crate::views::test_app::TestRequestExt;

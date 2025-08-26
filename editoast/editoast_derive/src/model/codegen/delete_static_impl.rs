@@ -28,7 +28,7 @@ impl ToTokens for DeleteStaticImpl {
 
         tokens.extend(quote! {
             #[automatically_derived]
-            impl crate::models::DeleteStatic<#ty> for #model {
+            impl crate::prelude::DeleteStatic<#ty> for #model {
                 type Error = #error;
 
                 #[tracing::instrument(name = #span_name, skip_all, ret, err, fields(query_id))]

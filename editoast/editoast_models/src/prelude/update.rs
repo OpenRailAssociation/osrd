@@ -3,7 +3,7 @@ use std::fmt::Debug;
 use database::DbConnection;
 use diesel::result::Error::NotFound;
 
-use crate::models::PreferredId;
+use super::PreferredId;
 
 use super::Model;
 
@@ -19,7 +19,7 @@ where
     K: Send,
     M: Model,
 {
-    type Error: std::error::Error + From<editoast_models::Error> + Send;
+    type Error: std::error::Error + From<crate::Error> + Send;
 
     /// Updates the row #`id` with the changeset values and returns the updated model
     async fn update(self, conn: &mut DbConnection, id: K) -> Result<Option<M>, Self::Error>;
@@ -43,18 +43,30 @@ where
 /// This trait is automatically implemented for all models that implement
 /// [Update].
 pub trait Save<K: Send>: Model {
-    type Error: std::error::Error + From<editoast_models::Error> + Send;
+    type Error: std::error::Error + From<crate::Error> + Send;
 
     /// Persists the model instance to the database
     ///
     /// # Example
     ///
-    /// ```
-    /// let mut doc = Document::retrieve(&mut conn, 1).await?.unwrap();
+    /// ```no_run
+    /// # use editoast_models::prelude::*;
+    /// # use database::DbConnection;
+    /// # #[derive(Debug, PartialEq, Eq, Hash)]
+    /// # struct Document { title: String }
+    /// # impl Document {
+    /// #     async fn retrieve(_conn: DbConnection, _id: i64) -> Result<Option<Self>, std::io::Error> {
+    /// #         Ok(Some(Document { title: "old title".to_string() }))
+    /// #     }
+    /// #     async fn save(&mut self, _conn: &mut DbConnection) -> Result<(), std::io::Error> { Ok(()) }
+    /// # }
+    /// # async fn example(mut conn: DbConnection) -> Result<(), std::io::Error> {
+    /// let mut doc = Document::retrieve(conn.clone(), 1).await?.unwrap();
     /// doc.title = "new title".to_string();
     /// doc.save(&mut conn).await?;
     /// assert_eq!(doc.title, "new title");
-    /// ```
+    /// # Ok(())
+    /// # }
     async fn save(&mut self, conn: &mut DbConnection) -> Result<(), Self::Error>;
 }
 
@@ -70,9 +82,7 @@ where
         let id = self.get_id();
         let changeset = <M as Model>::Changeset::from(self.clone()); // FIXME: I don't like that clone, maybe a ChangesetOwned/Changeset pair would work?
         *self = changeset
-            .update_or_fail(conn, id, || {
-                Self::Error::from(editoast_models::Error::from(NotFound))
-            })
+            .update_or_fail(conn, id, || Self::Error::from(crate::Error::from(NotFound)))
             .await?;
         Ok(())
     }
@@ -90,7 +100,7 @@ where
     M: Model,
     K: Send + Clone,
 {
-    type Error: std::error::Error + From<editoast_models::Error> + Send;
+    type Error: std::error::Error + From<crate::Error> + Send;
 
     /// Updates a batch of rows in the database given an iterator of keys
     ///
@@ -143,7 +153,20 @@ where
     /// Returns a collection of the updated rows and a set of the keys
     /// that were not found.
     ///
-    /// ```
+    /// ```no_run
+    /// # use editoast_models::prelude::*;
+    /// # use database::DbConnection;
+    /// # use std::collections::HashSet;
+    /// # #[derive(Debug, PartialEq, Eq, Hash)]
+    /// # struct Document { data: Vec<u8> }
+    /// # impl Document {
+    /// #     fn changeset() -> Self { Self { data: Vec::new() } }
+    /// #     fn data(mut self, data: Vec<u8>) -> Self { self.data = data; self }
+    /// #     async fn update_batch<C: Default + std::iter::Extend<Self>>(
+    /// #         self, _conn: &mut DbConnection, _ids: impl IntoIterator<Item = i64> + Send
+    /// #     ) -> Result<(C, HashSet<i64>), std::io::Error> { Ok((C::default(), HashSet::new())) }
+    /// # }
+    /// # async fn example(mut conn: DbConnection) -> Result<(), std::io::Error> {
     /// let mut ids = (0..5).collect::<Vec<_>>();
     /// ids.push(123456789);
     /// let (docs, missing): (Vec<_>, _) =
@@ -153,7 +176,9 @@ where
     ///         .await?;
     /// assert!(missing.contains(&123456789));
     /// assert_eq!(docs.len(), 5);
-    /// assert_eq!(docs[0].data, vec![]);
+    /// assert_eq!(docs[0].data, Vec::<u8>::new());
+    /// # Ok(())
+    /// # }
     /// ```
     async fn update_batch<I, C>(
         self,
@@ -182,7 +207,20 @@ where
 
     /// Just like [UpdateBatch::update_batch] but the returned models are paired with their key
     ///
-    /// ```
+    /// ```no_run
+    /// # use editoast_models::prelude::*;
+    /// # use database::DbConnection;
+    /// # use std::collections::{BTreeMap, HashSet};
+    /// # #[derive(Debug, PartialEq, Eq, Hash)]
+    /// # struct Document { data: Vec<u8> }
+    /// # impl Document {
+    /// #     fn changeset() -> Self { Self { data: Vec::new() } }
+    /// #     fn data(mut self, data: Vec<u8>) -> Self { self.data = data; self }
+    /// #     async fn update_batch_with_key<C: Default + std::iter::Extend<(i64, Self)>>(
+    /// #         self, _conn: &mut DbConnection, _ids: impl IntoIterator<Item = i64> + Send
+    /// #     ) -> Result<(C, HashSet<i64>), std::io::Error> { Ok((C::default(), HashSet::new())) }
+    /// # }
+    /// # async fn example(mut conn: DbConnection) -> Result<(), std::io::Error> {
     /// let mut ids = (0..5).collect::<Vec<_>>();
     /// ids.push(123456789);
     /// let (docs, missing): (BTreeMap<_, _>, _) =
@@ -191,6 +229,8 @@ where
     ///       .update_batch_with_key(&mut conn, ids)
     ///       .await?;
     /// assert!(missing.contains(&123456789));
+    /// # Ok(())
+    /// # }
     /// ```
     async fn update_batch_with_key<I, C>(
         self,
@@ -224,12 +264,33 @@ where
     /// On failure, the error returned is the result of calling `fail(missing)` where `missing`
     /// is the set of ids that were not found.
     ///
-    /// ```
+    /// ```no_run
+    /// # use editoast_models::prelude::*;
+    /// # use database::DbConnection;
+    /// # use std::collections::HashSet;
+    /// # #[derive(Debug, PartialEq, Eq, Hash)]
+    /// # struct Document { data: Vec<u8> }
+    /// # impl Document {
+    /// #     fn changeset() -> Self { Self { data: Vec::new() } }
+    /// #     fn data(mut self, data: Vec<u8>) -> Self { self.data = data; self }
+    /// #     async fn update_batch_or_fail<C: Default + std::iter::Extend<Self>, F>(
+    /// #         self, _conn: &mut DbConnection, _ids: impl IntoIterator<Item = i64> + Send, _fail: F
+    /// #     ) -> Result<C, MyErrorType> { Ok(C::default()) }
+    /// # }
+    /// # #[derive(Debug)]
+    /// # enum MyErrorType { DocumentsNotFound(HashSet<i64>) }
+    /// # impl std::fmt::Display for MyErrorType {
+    /// #     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result { write!(f, "error") }
+    /// # }
+    /// # impl std::error::Error for MyErrorType {}
+    /// # async fn example(mut conn: DbConnection) -> Result<(), MyErrorType> {
     /// let docs: Vec<_> = Document::changeset()
     ///     .data(vec![])
     ///     .update_batch_or_fail(&mut conn, (0..5), |missing| {
     ///         MyErrorType::DocumentsNotFound(missing)
     ///     }).await?;
+    /// # Ok(())
+    /// # }
     /// ```
     async fn update_batch_or_fail<I, C, E, F>(
         self,
@@ -257,12 +318,33 @@ where
 
     /// Just like [UpdateBatch::update_batch_or_fail] but the returned models are paired with their key
     ///
-    /// ```
+    /// ```no_run
+    /// # use editoast_models::prelude::*;
+    /// # use database::DbConnection;
+    /// # use std::collections::{BTreeMap, HashSet};
+    /// # #[derive(Debug, PartialEq, Eq, Hash)]
+    /// # struct Document { data: Vec<u8> }
+    /// # impl Document {
+    /// #     fn changeset() -> Self { Self { data: Vec::new() } }
+    /// #     fn data(mut self, data: Vec<u8>) -> Self { self.data = data; self }
+    /// #     async fn update_batch_with_key_or_fail<C: Default + std::iter::Extend<(i64, Self)>, F>(
+    /// #         self, _conn: &mut DbConnection, _ids: impl IntoIterator<Item = i64> + Send, _fail: F
+    /// #     ) -> Result<C, MyErrorType> { Ok(C::default()) }
+    /// # }
+    /// # #[derive(Debug)]
+    /// # enum MyErrorType { DocumentsNotFound(HashSet<i64>) }
+    /// # impl std::fmt::Display for MyErrorType {
+    /// #     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result { write!(f, "error") }
+    /// # }
+    /// # impl std::error::Error for MyErrorType {}
+    /// # async fn example(mut conn: DbConnection) -> Result<(), MyErrorType> {
     /// let docs: BTreeMap<_, _> = Document::changeset()
     ///     .data(vec![])
     ///     .update_batch_with_key_or_fail(&mut conn, (0..5), |missing| {
     ///         MyErrorType::DocumentsNotFound(missing)
     ///     }).await?;
+    /// # Ok(())
+    /// # }
     /// ```
     async fn update_batch_with_key_or_fail<I, C, E, F>(
         self,

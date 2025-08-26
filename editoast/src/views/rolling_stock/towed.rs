@@ -1,6 +1,5 @@
 use crate::error::InternalError;
 use crate::error::Result;
-use crate::models::prelude::*;
 use crate::models::towed_rolling_stock::TowedRollingStock;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
@@ -23,6 +22,7 @@ use common::units::quantities::Velocity;
 use database::DbConnectionPoolV2;
 use diesel_async::scoped_futures::ScopedFutureExt as _;
 use editoast_derive::EditoastError;
+use editoast_models::prelude::*;
 use schemas::rolling_stock::ROLLING_STOCK_RAILJSON_VERSION;
 use schemas::rolling_stock::RollingResistancePerWeight;
 use serde::Deserialize;

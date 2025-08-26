@@ -9,11 +9,11 @@ use database::DbConnectionPoolV2;
 use schemas::train_schedule::TrainSchedule;
 
 use crate::models;
-use crate::models::prelude::*;
 use crate::models::timetable::Timetable;
 use crate::models::timetable::TimetableWithTrains;
 use crate::views::timetable::train_schedule::TrainScheduleForm;
 use crate::views::timetable::train_schedule::TrainScheduleResponse;
+use editoast_models::prelude::*;
 
 #[derive(Subcommand, Debug)]
 pub enum TimetablesCommands {

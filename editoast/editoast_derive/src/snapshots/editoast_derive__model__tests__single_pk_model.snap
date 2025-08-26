@@ -15,7 +15,7 @@ struct Timetable {
 // -----------------------------------------------------------------------------
 
 #[automatically_derived]
-impl crate::models::Model for Timetable {
+impl crate::prelude::Model for Timetable {
     type Row = TimetableRow;
     type Changeset = TimetableChangeset;
     type Table = database::tables::timetable::table;
@@ -28,32 +28,23 @@ paste::paste! {
     }
 }
 impl _TimetableField<Timetable, i64, database::tables::timetable::id> {
-    pub fn eq(&self, value: i64) -> crate::models::prelude::FilterSetting<Timetable> {
+    pub fn eq(&self, value: i64) -> crate::prelude::FilterSetting<Timetable> {
         use diesel::ExpressionMethods;
-        crate::models::prelude::FilterSetting::new(
-            database::tables::timetable::id.eq(value),
-        )
+        crate::prelude::FilterSetting::new(database::tables::timetable::id.eq(value))
     }
-    pub fn eq_any(
-        &self,
-        values: Vec<i64>,
-    ) -> crate::models::prelude::FilterSetting<Timetable> {
+    pub fn eq_any(&self, values: Vec<i64>) -> crate::prelude::FilterSetting<Timetable> {
         use diesel::ExpressionMethods;
-        crate::models::prelude::FilterSetting::new(
+        crate::prelude::FilterSetting::new(
             database::tables::timetable::id.eq_any(values),
         )
     }
-    pub fn asc(&self) -> crate::models::prelude::SortSetting<Timetable> {
+    pub fn asc(&self) -> crate::prelude::SortSetting<Timetable> {
         use diesel::ExpressionMethods;
-        crate::models::prelude::SortSetting(
-            Box::new(database::tables::timetable::id.asc()),
-        )
+        crate::prelude::SortSetting(Box::new(database::tables::timetable::id.asc()))
     }
-    pub fn desc(&self) -> crate::models::prelude::SortSetting<Timetable> {
+    pub fn desc(&self) -> crate::prelude::SortSetting<Timetable> {
         use diesel::ExpressionMethods;
-        crate::models::prelude::SortSetting(
-            Box::new(database::tables::timetable::id.desc()),
-        )
+        crate::prelude::SortSetting(Box::new(database::tables::timetable::id.desc()))
     }
 }
 #[derive(Queryable)]
@@ -65,13 +56,13 @@ struct TimetableRow {
 #[derive(Debug, Default)]
 struct TimetableChangeset;
 #[automatically_derived]
-impl crate::models::Identifiable<(i64)> for Timetable {
+impl crate::prelude::Identifiable<(i64)> for Timetable {
     fn get_id(&self) -> (i64) {
         (self.id.clone())
     }
 }
 #[automatically_derived]
-impl crate::models::PreferredId<(i64)> for Timetable {}
+impl crate::prelude::PreferredId<(i64)> for Timetable {}
 #[automatically_derived]
 impl From<TimetableRow> for Timetable {
     fn from(row: TimetableRow) -> Self {
@@ -86,7 +77,7 @@ impl From<Timetable> for TimetableChangeset {
 }
 impl TimetableChangeset {}
 #[automatically_derived]
-impl crate::models::Exists<(i64)> for Timetable {
+impl crate::prelude::Exists<(i64)> for Timetable {
     type Error = editoast_models::Error;
     #[tracing::instrument(
         name = "model:exists<Timetable>",
@@ -111,7 +102,7 @@ impl crate::models::Exists<(i64)> for Timetable {
     }
 }
 #[automatically_derived]
-impl crate::models::Retrieve<(i64)> for Timetable {
+impl crate::prelude::Retrieve<(i64)> for Timetable {
     type Error = editoast_models::Error;
     #[tracing::instrument(
         name = "model:retrieve<Timetable>",
@@ -139,7 +130,7 @@ impl crate::models::Retrieve<(i64)> for Timetable {
     }
 }
 #[automatically_derived]
-impl crate::models::DeleteStatic<(i64)> for Timetable {
+impl crate::prelude::DeleteStatic<(i64)> for Timetable {
     type Error = editoast_models::Error;
     #[tracing::instrument(
         name = "model:delete_static<Timetable>",
@@ -165,7 +156,7 @@ impl crate::models::DeleteStatic<(i64)> for Timetable {
     }
 }
 #[automatically_derived]
-impl crate::models::Create<Timetable> for TimetableChangeset {
+impl crate::prelude::Create<Timetable> for TimetableChangeset {
     type Error = editoast_models::Error;
     #[tracing::instrument(name = "model:create<Timetable>", skip_all, err)]
     async fn create(
@@ -185,7 +176,7 @@ impl crate::models::Create<Timetable> for TimetableChangeset {
     }
 }
 #[automatically_derived]
-impl crate::models::Delete for Timetable {
+impl crate::prelude::Delete for Timetable {
     type Error = editoast_models::Error;
     #[tracing::instrument(
         name = "model:delete<Timetable>",
@@ -211,7 +202,7 @@ impl crate::models::Delete for Timetable {
     }
 }
 #[automatically_derived]
-impl crate::models::prelude::List for Timetable {
+impl crate::prelude::List for Timetable {
     type Error = editoast_models::Error;
     #[tracing::instrument(
         name = "model:list<Timetable>",
@@ -227,7 +218,7 @@ impl crate::models::prelude::List for Timetable {
     )]
     async fn list(
         conn: &mut database::DbConnection,
-        settings: crate::models::prelude::SelectionSettings<Self>,
+        settings: crate::prelude::SelectionSettings<Self>,
     ) -> std::result::Result<Vec<Self>, Self::Error> {
         use diesel::QueryDsl;
         use diesel_async::RunQueryDsl;
@@ -236,11 +227,11 @@ impl crate::models::prelude::List for Timetable {
         use std::ops::DerefMut;
         let mut query = database::tables::timetable::table.into_boxed();
         for filter_fun in settings.filters {
-            let crate::models::prelude::FilterSetting(filter) = (*filter_fun)();
+            let crate::prelude::FilterSetting(filter) = (*filter_fun)();
             query = query.filter(filter);
         }
         for sort_fun in settings.sorts {
-            let crate::models::prelude::SortSetting(sort) = (*sort_fun)();
+            let crate::prelude::SortSetting(sort) = (*sort_fun)();
             query = query.order_by(sort);
         }
         if let Some(limit) = settings.limit {
@@ -256,14 +247,14 @@ impl crate::models::prelude::List for Timetable {
             .load_stream::<TimetableRow>(conn.write().await.deref_mut())
             .await
             .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))?
-            .map_ok(<Timetable as crate::models::prelude::Model>::from_row)
+            .map_ok(<Timetable as crate::prelude::Model>::from_row)
             .try_collect::<Vec<_>>()
             .await
             .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))
     }
 }
 #[automatically_derived]
-impl crate::models::prelude::Count for Timetable {
+impl crate::prelude::Count for Timetable {
     type Error = editoast_models::Error;
     #[tracing::instrument(
         name = "model:count<Timetable>",
@@ -279,7 +270,7 @@ impl crate::models::prelude::Count for Timetable {
     )]
     async fn count(
         conn: &mut database::DbConnection,
-        settings: crate::models::prelude::SelectionSettings<Self>,
+        settings: crate::prelude::SelectionSettings<Self>,
     ) -> std::result::Result<u64, Self::Error> {
         use diesel::QueryDsl;
         use diesel_async::RunQueryDsl;
@@ -289,7 +280,7 @@ impl crate::models::prelude::Count for Timetable {
             .select(diesel::dsl::count_star())
             .into_boxed();
         for filter_fun in settings.filters {
-            let crate::models::prelude::FilterSetting(filter) = (*filter_fun)();
+            let crate::prelude::FilterSetting(filter) = (*filter_fun)();
             query = query.filter(filter);
         }
         if settings.paginate_counting {
@@ -310,7 +301,7 @@ impl crate::models::prelude::Count for Timetable {
     }
 }
 #[automatically_derived]
-impl crate::models::RetrieveBatchUnchecked<(i64)> for Timetable {
+impl crate::prelude::RetrieveBatchUnchecked<(i64)> for Timetable {
     type Error = editoast_models::Error;
     #[tracing::instrument(
         name = "model:retrieve_batch_unchecked<Timetable>",
@@ -322,7 +313,7 @@ impl crate::models::RetrieveBatchUnchecked<(i64)> for Timetable {
         I: std::iter::IntoIterator<Item = (i64)> + Send,
         C: Default + std::iter::Extend<Timetable> + Send + std::fmt::Debug,
     >(conn: &mut database::DbConnection, ids: I) -> std::result::Result<C, Self::Error> {
-        use crate::models::Model;
+        use crate::prelude::Model;
         use database::tables::timetable::dsl;
         use diesel::prelude::*;
         use diesel_async::RunQueryDsl;
@@ -367,8 +358,8 @@ impl crate::models::RetrieveBatchUnchecked<(i64)> for Timetable {
         I: std::iter::IntoIterator<Item = (i64)> + Send,
         C: Default + std::iter::Extend<((i64), Timetable)> + Send + std::fmt::Debug,
     >(conn: &mut database::DbConnection, ids: I) -> std::result::Result<C, Self::Error> {
-        use crate::models::Identifiable;
-        use crate::models::Model;
+        use crate::prelude::Identifiable;
+        use crate::prelude::Model;
         use database::tables::timetable::dsl;
         use diesel::prelude::*;
         use diesel_async::RunQueryDsl;
@@ -408,7 +399,7 @@ impl crate::models::RetrieveBatchUnchecked<(i64)> for Timetable {
     }
 }
 #[automatically_derived]
-impl crate::models::DeleteBatch<(i64)> for Timetable {
+impl crate::prelude::DeleteBatch<(i64)> for Timetable {
     type Error = editoast_models::Error;
     #[tracing::instrument(
         name = "model:delete_batch<Timetable>",
