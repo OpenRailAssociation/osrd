@@ -9,6 +9,7 @@ import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
 import { EditedElementContainerContext } from 'applications/operationalStudies/views/Scenario/components/EditedElementContainerContext';
+import { formatPacedTrainWithDetailsToPacedTrainPayload } from 'applications/operationalStudies/views/Scenario/components/ManageTimetableItem/helpers/formatTimetableItemPayload';
 import {
   osrdEditoastApi,
   type PacedTrain,
@@ -53,7 +54,6 @@ import {
 import TimetableItemActions from '../TimetableItemActions';
 import useOccurrences from './hooks/useOccurrences';
 import OccurrenceItem from './OccurrenceItem';
-import { formatPacedTrainWithDetailsToPacedTrainPayload } from '../../ManageTimetableItem/helpers/formatTimetableItemPayload';
 import { TIMETABLE_ITEM_DELTA } from '../consts';
 import type { PacedTrainWithDetails } from '../types';
 import { formatTrainDuration, getTrainCategoryClassName, isValidPathfinding } from '../utils';

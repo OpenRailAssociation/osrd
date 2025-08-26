@@ -15,13 +15,13 @@ import { useManageTimetableItemContext } from 'applications/operationalStudies/h
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import type { MapPathProperties } from 'applications/operationalStudies/types';
 import { osrdEditoastApi, type OperationalPoint } from 'common/api/osrdEditoastApi';
-import { setPointIti } from 'modules/timetableItem/components/ManageTimetableItem/ManageTimetableItemMap/setPointIti';
 import { getOrigin, getDestination } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 import type { PathStep } from 'reducers/osrdconf/types';
 import { getPointOnTrackCoordinates } from 'utils/geometry';
 
 import type { FeatureInfoClick } from '../types';
 import OperationalPointPopupDetails from './OperationalPointPopupDetails';
+import { setPointIti } from './setPointIti';
 
 type AddPathStepPopupProps = {
   infraId: number | undefined;

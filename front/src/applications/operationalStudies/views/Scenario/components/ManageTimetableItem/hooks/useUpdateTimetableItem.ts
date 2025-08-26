@@ -3,7 +3,6 @@ import { useSelector } from 'react-redux';
 
 import { MANAGE_TIMETABLE_ITEM_TYPES } from 'applications/operationalStudies/views/Scenario/consts';
 import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
-import checkCurrentConfig from 'modules/timetableItem/components/ManageTimetableItem/helpers/checkCurrentConfig';
 import {
   storePacedTrain,
   storeTrainSchedule,
@@ -34,6 +33,7 @@ import {
   isPacedTrainId,
 } from 'utils/trainId';
 
+import checkCurrentConfig from '../helpers/checkCurrentConfig';
 import {
   formatPacedTrainPayload,
   formatTimetableItemPayload,

@@ -5,6 +5,7 @@ import { compact, pick } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
+import { useManageTimetableItemContext } from 'applications/operationalStudies/hooks/useManageTimetableItemContext';
 import allowancesPic from 'assets/pictures/components/allowances.svg';
 import pahtFindingPic from 'assets/pictures/components/pathfinding.svg';
 import simulationSettings from 'assets/pictures/components/simulationSettings.svg';
@@ -23,13 +24,6 @@ import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/compon
 import isMainCategory from 'modules/rollingStock/helpers/category';
 import { isElectric } from 'modules/rollingStock/helpers/electric';
 import TimesStopsInput from 'modules/timesStops/TimesStopsInput';
-import ManageTimetableItemMap from 'modules/timetableItem/components/ManageTimetableItem/ManageTimetableItemMap';
-import {
-  MARKER_TYPE,
-  type MarkerInformation,
-} from 'modules/timetableItem/components/ManageTimetableItem/ManageTimetableItemMap/ItineraryMarkers';
-import SimulationSettings from 'modules/timetableItem/components/ManageTimetableItem/SimulationSettings';
-import TrainSettings from 'modules/timetableItem/components/ManageTimetableItem/TrainSettings';
 import {
   resetUsingSpeedLimits,
   updateRollingStockComfort,
@@ -47,7 +41,10 @@ import {
 import { useAppDispatch } from 'store';
 import { formatKmValue } from 'utils/strings';
 
-import { useManageTimetableItemContext } from '../../../hooks/useManageTimetableItemContext';
+import ManageTimetableItemMap from './ManageTimetableItemMap';
+import { type MarkerInformation, MARKER_TYPE } from './ManageTimetableItemMap/ItineraryMarkers';
+import SimulationSettings from './SimulationSettings';
+import TrainSettings from './TrainSettings';
 
 const ManageTimetableItem = () => {
   const [showTrainSettings, setShowTrainSettings] = useState(true);
