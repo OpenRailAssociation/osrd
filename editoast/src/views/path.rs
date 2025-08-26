@@ -22,7 +22,7 @@ pub enum PathfindingError {
     InfraNotFound { infra_id: i64 },
     #[error(transparent)]
     #[editoast_error(status = 500)]
-    Database(#[from] editoast_models::model::Error),
+    Database(#[from] editoast_models::Error),
 }
 
 async fn retrieve_infra_version(conn: &mut DbConnection, infra_id: i64) -> Result<i64> {

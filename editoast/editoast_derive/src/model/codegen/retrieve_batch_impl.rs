@@ -55,11 +55,11 @@ impl ToTokens for RetrieveBatchImpl {
                     .select((#(dsl::#columns,)*))
                     .load_stream::<#row>(conn.write().await.deref_mut())
                     .await
-                    .map_err(|e| Self::Error::from(editoast_models::model::Error::from(e)))?
+                    .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))?
                     .map_ok(<#model as Model>::from_row)
                     .try_collect::<Vec<_>>()
                     .await
-                    .map_err(|e| Self::Error::from(editoast_models::model::Error::from(e)))?
+                    .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))?
             },
         };
 
@@ -72,14 +72,14 @@ impl ToTokens for RetrieveBatchImpl {
                 .select((#(dsl::#columns,)*))
                 .load_stream::<#row>(conn.write().await.deref_mut())
                 .await
-                .map_err(|e| Self::Error::from(editoast_models::model::Error::from(e)))?
+                .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))?
                 .map_ok(|row| {
                     let model = <#model as Model>::from_row(row);
                     (model.get_id(), model)
                 })
                 .try_collect::<Vec<_>>()
                 .await
-                .map_err(|e| Self::Error::from(editoast_models::model::Error::from(e)))?
+                .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))?
         });
 
         tokens.extend(quote! {

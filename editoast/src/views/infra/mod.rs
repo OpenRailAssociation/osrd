@@ -24,7 +24,6 @@ use core_client::infra_loading::InfraLoadRequest;
 use database::DbConnection;
 use database::DbConnectionPoolV2;
 use editoast_derive::EditoastError;
-use editoast_models::model;
 use itertools::Itertools;
 use osrdyne_client::OsrdyneClient;
 use schemas::infra::SwitchType;
@@ -77,7 +76,7 @@ pub enum InfraApiError {
 
     #[error(transparent)]
     #[editoast_error(status = 500)]
-    Database(#[from] model::Error),
+    Database(#[from] editoast_models::Error),
 }
 
 #[editoast_derive::openapi_schema]

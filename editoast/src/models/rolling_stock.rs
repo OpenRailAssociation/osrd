@@ -10,7 +10,6 @@ use common::units::quantities::Mass;
 use common::units::quantities::Time;
 use common::units::quantities::Velocity;
 use editoast_derive::Model;
-use editoast_models::model;
 use editoast_models::rolling_stock::TrainMainCategories;
 use editoast_models::rolling_stock::TrainMainCategory;
 use schemas::rolling_stock::EffortCurves;
@@ -110,20 +109,20 @@ pub enum Error {
     #[error("Rolling stock base power class cannot be an empty string")]
     BasePowerClassEmpty,
     #[error(transparent)]
-    Database(editoast_models::model::Error),
+    Database(editoast_models::Error),
 }
 
-impl From<model::Error> for Error {
-    fn from(e: model::Error) -> Self {
+impl From<editoast_models::Error> for Error {
+    fn from(e: editoast_models::Error) -> Self {
         match e {
-            model::Error::UniqueViolation {
+            editoast_models::Error::UniqueViolation {
                 constraint,
                 column,
                 value,
             } if constraint == "rolling_stock_name_key" && column == "name" => {
                 Self::NameAlreadyUsed { name: value }
             }
-            model::Error::CheckViolation { constraint }
+            editoast_models::Error::CheckViolation { constraint }
                 if constraint == "base_power_class_null_or_non_empty" =>
             {
                 Self::BasePowerClassEmpty

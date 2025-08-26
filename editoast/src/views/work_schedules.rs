@@ -23,7 +23,6 @@ use chrono::DateTime;
 use chrono::Utc;
 use database::DbConnectionPoolV2;
 use editoast_derive::EditoastError;
-use editoast_models::model;
 use schemas::infra::Direction;
 use schemas::infra::TrackRange;
 use serde::Deserialize;
@@ -52,7 +51,7 @@ enum WorkScheduleError {
     WorkScheduleGroupNotFound { id: i64 },
     #[error(transparent)]
     #[editoast_error(status = 500)]
-    Database(model::Error),
+    Database(editoast_models::Error),
 }
 
 impl From<work_schedules::WsGroupError> for WorkScheduleError {

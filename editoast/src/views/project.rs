@@ -10,7 +10,6 @@ use database::DbConnection;
 use database::DbConnectionPoolV2;
 use diesel_async::scoped_futures::ScopedFutureExt as _;
 use editoast_derive::EditoastError;
-use editoast_models::model;
 use serde::Deserialize;
 use serde::Serialize;
 use serde_with::rust::double_option;
@@ -50,7 +49,7 @@ pub enum ProjectError {
     #[error(transparent)]
     #[from(forward)]
     #[editoast_error(status = 500)]
-    Database(model::Error),
+    Database(editoast_models::Error),
 }
 
 /// Creation form for a project

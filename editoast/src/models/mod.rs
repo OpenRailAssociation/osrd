@@ -78,7 +78,7 @@ mod tests {
 
     #[derive(Debug, thiserror::Error)]
     #[error("oh no {0}")]
-    struct DocError(#[from] editoast_models::model::Error);
+    struct DocError(#[from] editoast_models::Error);
 
     #[rstest]
     async fn test_batch() {

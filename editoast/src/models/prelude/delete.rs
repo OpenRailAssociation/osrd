@@ -1,7 +1,6 @@
 use std::result::Result;
 
 use database::DbConnection;
-use editoast_models::model;
 
 use super::Model;
 
@@ -10,7 +9,7 @@ use super::Model;
 /// You can implement this type manually but its recommended to use the `Model`
 /// derive macro instead.
 pub trait Delete: Model {
-    type Error: std::error::Error + From<editoast_models::model::Error> + Send;
+    type Error: std::error::Error + From<editoast_models::Error> + Send;
 
     /// Deletes the row corresponding to this model instance
     ///
@@ -42,7 +41,7 @@ pub trait DeleteStatic<K>: Model
 where
     K: Send,
 {
-    type Error: std::error::Error + From<editoast_models::model::Error> + Send;
+    type Error: std::error::Error + From<editoast_models::Error> + Send;
 
     /// Deletes the row #`id` from the database
     async fn delete_static(
@@ -72,7 +71,7 @@ pub trait DeleteBatch<K>: Model
 where
     K: Send,
 {
-    type Error: std::error::Error + From<editoast_models::model::Error> + Send;
+    type Error: std::error::Error + From<editoast_models::Error> + Send;
 
     /// Deletes a batch of rows from the database given an iterator of keys
     ///

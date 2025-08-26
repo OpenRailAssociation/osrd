@@ -351,11 +351,11 @@ impl Errors {
 impl Default for Errors {
     fn default() -> Self {
         Self {
-            create: syn::parse_quote! { editoast_models::model::Error },
-            retrieve: syn::parse_quote! { editoast_models::model::Error },
-            update: syn::parse_quote! { editoast_models::model::Error },
-            delete: syn::parse_quote! { editoast_models::model::Error },
-            list: syn::parse_quote! { editoast_models::model::Error },
+            create: syn::parse_quote! { editoast_models::Error },
+            retrieve: syn::parse_quote! { editoast_models::Error },
+            update: syn::parse_quote! { editoast_models::Error },
+            delete: syn::parse_quote! { editoast_models::Error },
+            list: syn::parse_quote! { editoast_models::Error },
         }
     }
 }

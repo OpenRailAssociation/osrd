@@ -234,7 +234,7 @@ impl<'a> crate::models::Patch<'a, Document> {
 }
 #[automatically_derived]
 impl crate::models::Exists<(String)> for Document {
-    type Error = editoast_models::model::Error;
+    type Error = editoast_models::Error;
     #[tracing::instrument(
         name = "model:exists<Document>",
         skip_all,
@@ -259,12 +259,12 @@ impl crate::models::Exists<(String)> for Document {
             )
             .get_result(conn.write().await.deref_mut())
             .await
-            .map_err(|e| Self::Error::from(editoast_models::model::Error::from(e)))
+            .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))
     }
 }
 #[automatically_derived]
 impl crate::models::Exists<(i64)> for Document {
-    type Error = editoast_models::model::Error;
+    type Error = editoast_models::Error;
     #[tracing::instrument(
         name = "model:exists<Document>",
         skip_all,
@@ -286,12 +286,12 @@ impl crate::models::Exists<(i64)> for Document {
             )
             .get_result(conn.write().await.deref_mut())
             .await
-            .map_err(|e| Self::Error::from(editoast_models::model::Error::from(e)))
+            .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))
     }
 }
 #[automatically_derived]
 impl crate::models::Retrieve<(String)> for Document {
-    type Error = editoast_models::model::Error;
+    type Error = editoast_models::Error;
     #[tracing::instrument(
         name = "model:retrieve<Document>",
         skip_all,
@@ -315,12 +315,12 @@ impl crate::models::Retrieve<(String)> for Document {
             .await
             .map(Document::from)
             .optional()
-            .map_err(|e| Self::Error::from(editoast_models::model::Error::from(e)))
+            .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))
     }
 }
 #[automatically_derived]
 impl crate::models::Retrieve<(i64)> for Document {
-    type Error = editoast_models::model::Error;
+    type Error = editoast_models::Error;
     #[tracing::instrument(
         name = "model:retrieve<Document>",
         skip_all,
@@ -343,12 +343,12 @@ impl crate::models::Retrieve<(i64)> for Document {
             .await
             .map(Document::from)
             .optional()
-            .map_err(|e| Self::Error::from(editoast_models::model::Error::from(e)))
+            .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))
     }
 }
 #[automatically_derived]
 impl crate::models::Update<(String), Document> for DocumentChangeset {
-    type Error = editoast_models::model::Error;
+    type Error = editoast_models::Error;
     #[tracing::instrument(
         name = "model:update<Document>",
         skip_all,
@@ -375,12 +375,12 @@ impl crate::models::Update<(String), Document> for DocumentChangeset {
             .await
             .map(Into::into)
             .optional()
-            .map_err(|e| Self::Error::from(editoast_models::model::Error::from(e)))
+            .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))
     }
 }
 #[automatically_derived]
 impl crate::models::Update<(i64), Document> for DocumentChangeset {
-    type Error = editoast_models::model::Error;
+    type Error = editoast_models::Error;
     #[tracing::instrument(
         name = "model:update<Document>",
         skip_all,
@@ -404,12 +404,12 @@ impl crate::models::Update<(i64), Document> for DocumentChangeset {
             .await
             .map(Into::into)
             .optional()
-            .map_err(|e| Self::Error::from(editoast_models::model::Error::from(e)))
+            .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))
     }
 }
 #[automatically_derived]
 impl crate::models::DeleteStatic<(String)> for Document {
-    type Error = editoast_models::model::Error;
+    type Error = editoast_models::Error;
     #[tracing::instrument(
         name = "model:delete_static<Document>",
         skip_all,
@@ -433,12 +433,12 @@ impl crate::models::DeleteStatic<(String)> for Document {
             .execute(conn.write().await.deref_mut())
             .await
             .map(|n| n == 1)
-            .map_err(|e| Self::Error::from(editoast_models::model::Error::from(e)))
+            .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))
     }
 }
 #[automatically_derived]
 impl crate::models::DeleteStatic<(i64)> for Document {
-    type Error = editoast_models::model::Error;
+    type Error = editoast_models::Error;
     #[tracing::instrument(
         name = "model:delete_static<Document>",
         skip_all,
@@ -459,12 +459,12 @@ impl crate::models::DeleteStatic<(i64)> for Document {
             .execute(conn.write().await.deref_mut())
             .await
             .map(|n| n == 1)
-            .map_err(|e| Self::Error::from(editoast_models::model::Error::from(e)))
+            .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))
     }
 }
 #[automatically_derived]
 impl crate::models::Create<Document> for DocumentChangeset {
-    type Error = editoast_models::model::Error;
+    type Error = editoast_models::Error;
     #[tracing::instrument(name = "model:create<Document>", skip_all, err)]
     async fn create(
         self,
@@ -479,12 +479,12 @@ impl crate::models::Create<Document> for DocumentChangeset {
             .get_result::<DocumentRow>(conn.write().await.deref_mut())
             .await
             .map(Into::into)
-            .map_err(|e| Self::Error::from(editoast_models::model::Error::from(e)))
+            .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))
     }
 }
 #[automatically_derived]
 impl crate::models::Delete for Document {
-    type Error = editoast_models::model::Error;
+    type Error = editoast_models::Error;
     #[tracing::instrument(
         name = "model:delete<Document>",
         skip_all,
@@ -505,12 +505,12 @@ impl crate::models::Delete for Document {
             .execute(conn.write().await.deref_mut())
             .await
             .map(|n| n == 1)
-            .map_err(|e| Self::Error::from(editoast_models::model::Error::from(e)))
+            .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))
     }
 }
 #[automatically_derived]
 impl crate::models::prelude::List for Document {
-    type Error = editoast_models::model::Error;
+    type Error = editoast_models::Error;
     #[tracing::instrument(
         name = "model:list<Document>",
         skip_all,
@@ -553,16 +553,16 @@ impl crate::models::prelude::List for Document {
             .select((dsl::id, dsl::content_type, dsl::data))
             .load_stream::<DocumentRow>(conn.write().await.deref_mut())
             .await
-            .map_err(|e| Self::Error::from(editoast_models::model::Error::from(e)))?
+            .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))?
             .map_ok(<Document as crate::models::prelude::Model>::from_row)
             .try_collect::<Vec<_>>()
             .await
-            .map_err(|e| Self::Error::from(editoast_models::model::Error::from(e)))
+            .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))
     }
 }
 #[automatically_derived]
 impl crate::models::prelude::Count for Document {
-    type Error = editoast_models::model::Error;
+    type Error = editoast_models::Error;
     #[tracing::instrument(
         name = "model:count<Document>",
         skip_all,
@@ -604,12 +604,12 @@ impl crate::models::prelude::Count for Document {
             .get_result::<i64>(conn.write().await.deref_mut())
             .await
             .map(|count| count as u64)
-            .map_err(|e| Self::Error::from(editoast_models::model::Error::from(e)))
+            .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))
     }
 }
 #[automatically_derived]
 impl crate::models::CreateBatch for Document {
-    type Error = editoast_models::model::Error;
+    type Error = editoast_models::Error;
     #[tracing::instrument(name = "model:create_batch<Document>", skip_all, err)]
     async fn create_batch<
         I: std::iter::IntoIterator<Item = DocumentChangeset> + Send,
@@ -638,15 +638,11 @@ impl crate::models::CreateBatch for Document {
                         .returning((dsl::id, dsl::content_type, dsl::data))
                         .load_stream::<DocumentRow>(conn.write().await.deref_mut())
                         .await
-                        .map_err(|e| Self::Error::from(
-                            editoast_models::model::Error::from(e),
-                        ))?
+                        .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))?
                         .map_ok(<Document as Model>::from_row)
                         .try_collect::<Vec<_>>()
                         .await
-                        .map_err(|e| Self::Error::from(
-                            editoast_models::model::Error::from(e),
-                        ))?
+                        .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))?
                 };
                 result.extend(chunk_result);
             }
@@ -656,7 +652,7 @@ impl crate::models::CreateBatch for Document {
 }
 #[automatically_derived]
 impl crate::models::CreateBatchWithKey<(String)> for Document {
-    type Error = editoast_models::model::Error;
+    type Error = editoast_models::Error;
     #[tracing::instrument(name = "model:create_batch_with_key<Document>", skip_all, err)]
     async fn create_batch_with_key<
         I: std::iter::IntoIterator<Item = DocumentChangeset> + Send,
@@ -686,18 +682,14 @@ impl crate::models::CreateBatchWithKey<(String)> for Document {
                         .returning((dsl::id, dsl::content_type, dsl::data))
                         .load_stream::<DocumentRow>(conn.write().await.deref_mut())
                         .await
-                        .map_err(|e| Self::Error::from(
-                            editoast_models::model::Error::from(e),
-                        ))?
+                        .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))?
                         .map_ok(|row| {
                             let model = <Document as Model>::from_row(row);
                             (model.get_id(), model)
                         })
                         .try_collect::<Vec<_>>()
                         .await
-                        .map_err(|e| Self::Error::from(
-                            editoast_models::model::Error::from(e),
-                        ))?
+                        .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))?
                 };
                 result.extend(chunk_result);
             }
@@ -707,7 +699,7 @@ impl crate::models::CreateBatchWithKey<(String)> for Document {
 }
 #[automatically_derived]
 impl crate::models::CreateBatchWithKey<(i64)> for Document {
-    type Error = editoast_models::model::Error;
+    type Error = editoast_models::Error;
     #[tracing::instrument(name = "model:create_batch_with_key<Document>", skip_all, err)]
     async fn create_batch_with_key<
         I: std::iter::IntoIterator<Item = DocumentChangeset> + Send,
@@ -737,18 +729,14 @@ impl crate::models::CreateBatchWithKey<(i64)> for Document {
                         .returning((dsl::id, dsl::content_type, dsl::data))
                         .load_stream::<DocumentRow>(conn.write().await.deref_mut())
                         .await
-                        .map_err(|e| Self::Error::from(
-                            editoast_models::model::Error::from(e),
-                        ))?
+                        .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))?
                         .map_ok(|row| {
                             let model = <Document as Model>::from_row(row);
                             (model.get_id(), model)
                         })
                         .try_collect::<Vec<_>>()
                         .await
-                        .map_err(|e| Self::Error::from(
-                            editoast_models::model::Error::from(e),
-                        ))?
+                        .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))?
                 };
                 result.extend(chunk_result);
             }
@@ -758,7 +746,7 @@ impl crate::models::CreateBatchWithKey<(i64)> for Document {
 }
 #[automatically_derived]
 impl crate::models::RetrieveBatchUnchecked<(String)> for Document {
-    type Error = editoast_models::model::Error;
+    type Error = editoast_models::Error;
     #[tracing::instrument(
         name = "model:retrieve_batch_unchecked<Document>",
         skip_all,
@@ -793,15 +781,11 @@ impl crate::models::RetrieveBatchUnchecked<(String)> for Document {
                         .select((dsl::id, dsl::content_type, dsl::data))
                         .load_stream::<DocumentRow>(conn.write().await.deref_mut())
                         .await
-                        .map_err(|e| Self::Error::from(
-                            editoast_models::model::Error::from(e),
-                        ))?
+                        .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))?
                         .map_ok(<Document as Model>::from_row)
                         .try_collect::<Vec<_>>()
                         .await
-                        .map_err(|e| Self::Error::from(
-                            editoast_models::model::Error::from(e),
-                        ))?
+                        .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))?
                 };
                 result.extend(chunk_result);
             }
@@ -843,18 +827,14 @@ impl crate::models::RetrieveBatchUnchecked<(String)> for Document {
                         .select((dsl::id, dsl::content_type, dsl::data))
                         .load_stream::<DocumentRow>(conn.write().await.deref_mut())
                         .await
-                        .map_err(|e| Self::Error::from(
-                            editoast_models::model::Error::from(e),
-                        ))?
+                        .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))?
                         .map_ok(|row| {
                             let model = <Document as Model>::from_row(row);
                             (model.get_id(), model)
                         })
                         .try_collect::<Vec<_>>()
                         .await
-                        .map_err(|e| Self::Error::from(
-                            editoast_models::model::Error::from(e),
-                        ))?
+                        .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))?
                 };
                 result.extend(chunk_result);
             }
@@ -864,7 +844,7 @@ impl crate::models::RetrieveBatchUnchecked<(String)> for Document {
 }
 #[automatically_derived]
 impl crate::models::RetrieveBatchUnchecked<(i64)> for Document {
-    type Error = editoast_models::model::Error;
+    type Error = editoast_models::Error;
     #[tracing::instrument(
         name = "model:retrieve_batch_unchecked<Document>",
         skip_all,
@@ -899,15 +879,11 @@ impl crate::models::RetrieveBatchUnchecked<(i64)> for Document {
                         .select((dsl::id, dsl::content_type, dsl::data))
                         .load_stream::<DocumentRow>(conn.write().await.deref_mut())
                         .await
-                        .map_err(|e| Self::Error::from(
-                            editoast_models::model::Error::from(e),
-                        ))?
+                        .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))?
                         .map_ok(<Document as Model>::from_row)
                         .try_collect::<Vec<_>>()
                         .await
-                        .map_err(|e| Self::Error::from(
-                            editoast_models::model::Error::from(e),
-                        ))?
+                        .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))?
                 };
                 result.extend(chunk_result);
             }
@@ -949,18 +925,14 @@ impl crate::models::RetrieveBatchUnchecked<(i64)> for Document {
                         .select((dsl::id, dsl::content_type, dsl::data))
                         .load_stream::<DocumentRow>(conn.write().await.deref_mut())
                         .await
-                        .map_err(|e| Self::Error::from(
-                            editoast_models::model::Error::from(e),
-                        ))?
+                        .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))?
                         .map_ok(|row| {
                             let model = <Document as Model>::from_row(row);
                             (model.get_id(), model)
                         })
                         .try_collect::<Vec<_>>()
                         .await
-                        .map_err(|e| Self::Error::from(
-                            editoast_models::model::Error::from(e),
-                        ))?
+                        .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))?
                 };
                 result.extend(chunk_result);
             }
@@ -970,7 +942,7 @@ impl crate::models::RetrieveBatchUnchecked<(i64)> for Document {
 }
 #[automatically_derived]
 impl crate::models::UpdateBatchUnchecked<Document, (String)> for DocumentChangeset {
-    type Error = editoast_models::model::Error;
+    type Error = editoast_models::Error;
     #[tracing::instrument(
         name = "model:update_batch_unchecked<Document>",
         skip_all,
@@ -1014,15 +986,11 @@ impl crate::models::UpdateBatchUnchecked<Document, (String)> for DocumentChanges
                         .returning((dsl::id, dsl::content_type, dsl::data))
                         .load_stream::<DocumentRow>(conn.write().await.deref_mut())
                         .await
-                        .map_err(|e| Self::Error::from(
-                            editoast_models::model::Error::from(e),
-                        ))?
+                        .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))?
                         .map_ok(<Document as Model>::from_row)
                         .try_collect::<Vec<_>>()
                         .await
-                        .map_err(|e| Self::Error::from(
-                            editoast_models::model::Error::from(e),
-                        ))?
+                        .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))?
                 };
                 result.extend(chunk_result);
             }
@@ -1073,18 +1041,14 @@ impl crate::models::UpdateBatchUnchecked<Document, (String)> for DocumentChanges
                         .returning((dsl::id, dsl::content_type, dsl::data))
                         .load_stream::<DocumentRow>(conn.write().await.deref_mut())
                         .await
-                        .map_err(|e| Self::Error::from(
-                            editoast_models::model::Error::from(e),
-                        ))?
+                        .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))?
                         .map_ok(|row| {
                             let model = <Document as Model>::from_row(row);
                             (model.get_id(), model)
                         })
                         .try_collect::<Vec<_>>()
                         .await
-                        .map_err(|e| Self::Error::from(
-                            editoast_models::model::Error::from(e),
-                        ))?
+                        .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))?
                 };
                 result.extend(chunk_result);
             }
@@ -1094,7 +1058,7 @@ impl crate::models::UpdateBatchUnchecked<Document, (String)> for DocumentChanges
 }
 #[automatically_derived]
 impl crate::models::UpdateBatchUnchecked<Document, (i64)> for DocumentChangeset {
-    type Error = editoast_models::model::Error;
+    type Error = editoast_models::Error;
     #[tracing::instrument(
         name = "model:update_batch_unchecked<Document>",
         skip_all,
@@ -1138,15 +1102,11 @@ impl crate::models::UpdateBatchUnchecked<Document, (i64)> for DocumentChangeset 
                         .returning((dsl::id, dsl::content_type, dsl::data))
                         .load_stream::<DocumentRow>(conn.write().await.deref_mut())
                         .await
-                        .map_err(|e| Self::Error::from(
-                            editoast_models::model::Error::from(e),
-                        ))?
+                        .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))?
                         .map_ok(<Document as Model>::from_row)
                         .try_collect::<Vec<_>>()
                         .await
-                        .map_err(|e| Self::Error::from(
-                            editoast_models::model::Error::from(e),
-                        ))?
+                        .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))?
                 };
                 result.extend(chunk_result);
             }
@@ -1197,18 +1157,14 @@ impl crate::models::UpdateBatchUnchecked<Document, (i64)> for DocumentChangeset 
                         .returning((dsl::id, dsl::content_type, dsl::data))
                         .load_stream::<DocumentRow>(conn.write().await.deref_mut())
                         .await
-                        .map_err(|e| Self::Error::from(
-                            editoast_models::model::Error::from(e),
-                        ))?
+                        .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))?
                         .map_ok(|row| {
                             let model = <Document as Model>::from_row(row);
                             (model.get_id(), model)
                         })
                         .try_collect::<Vec<_>>()
                         .await
-                        .map_err(|e| Self::Error::from(
-                            editoast_models::model::Error::from(e),
-                        ))?
+                        .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))?
                 };
                 result.extend(chunk_result);
             }
@@ -1218,7 +1174,7 @@ impl crate::models::UpdateBatchUnchecked<Document, (i64)> for DocumentChangeset 
 }
 #[automatically_derived]
 impl crate::models::DeleteBatch<(String)> for Document {
-    type Error = editoast_models::model::Error;
+    type Error = editoast_models::Error;
     #[tracing::instrument(
         name = "model:delete_batch<Document>",
         skip_all,
@@ -1252,9 +1208,7 @@ impl crate::models::DeleteBatch<(String)> for Document {
                     query
                         .execute(conn.write().await.deref_mut())
                         .await
-                        .map_err(|e| Self::Error::from(
-                            editoast_models::model::Error::from(e),
-                        ))?
+                        .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))?
                 };
                 result.push(chunk_result);
             }
@@ -1265,7 +1219,7 @@ impl crate::models::DeleteBatch<(String)> for Document {
 }
 #[automatically_derived]
 impl crate::models::DeleteBatch<(i64)> for Document {
-    type Error = editoast_models::model::Error;
+    type Error = editoast_models::Error;
     #[tracing::instrument(
         name = "model:delete_batch<Document>",
         skip_all,
@@ -1299,9 +1253,7 @@ impl crate::models::DeleteBatch<(i64)> for Document {
                     query
                         .execute(conn.write().await.deref_mut())
                         .await
-                        .map_err(|e| Self::Error::from(
-                            editoast_models::model::Error::from(e),
-                        ))?
+                        .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))?
                 };
                 result.push(chunk_result);
             }

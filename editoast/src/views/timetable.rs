@@ -86,7 +86,7 @@ enum TimetableError {
     #[error(transparent)]
     #[from(forward)]
     #[editoast_error(status = 500)]
-    Database(editoast_models::model::Error),
+    Database(editoast_models::Error),
     #[error("Failed to parse train_id '{train_id}'")]
     #[editoast_error(status = 500)]
     ParseError { train_id: String },

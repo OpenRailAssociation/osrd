@@ -23,7 +23,6 @@ use common::units::quantities::Velocity;
 use database::DbConnectionPoolV2;
 use diesel_async::scoped_futures::ScopedFutureExt as _;
 use editoast_derive::EditoastError;
-use editoast_models::model;
 use schemas::rolling_stock::ROLLING_STOCK_RAILJSON_VERSION;
 use schemas::rolling_stock::RollingResistancePerWeight;
 use serde::Deserialize;
@@ -45,7 +44,7 @@ pub enum TowedRollingStockError {
 
     #[error(transparent)]
     #[editoast_error(status = 500)]
-    Database(#[from] model::Error),
+    Database(#[from] editoast_models::Error),
 }
 
 #[editoast_derive::openapi_schema]

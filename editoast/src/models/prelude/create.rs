@@ -2,7 +2,6 @@ use std::fmt::Debug;
 use std::result::Result;
 
 use database::DbConnection;
-use editoast_models::model;
 
 use super::Model;
 
@@ -11,7 +10,7 @@ use super::Model;
 /// You can implement this type manually but its recommended to use the `Model`
 /// derive macro instead.
 pub trait Create<M: Model>: Sized {
-    type Error: std::error::Error + From<editoast_models::model::Error> + Send;
+    type Error: std::error::Error + From<editoast_models::Error> + Send;
 
     /// Creates a new row in the database with the values of the changeset and
     /// returns the created model instance
@@ -35,7 +34,7 @@ pub trait Create<M: Model>: Sized {
 /// You can implement this type manually but its recommended to use the `Model`
 /// derive macro instead.
 pub trait CreateBatch: Model {
-    type Error: std::error::Error + From<editoast_models::model::Error> + Send;
+    type Error: std::error::Error + From<editoast_models::Error> + Send;
 
     /// Creates a batch of rows in the database given an iterator of changesets
     ///
@@ -70,7 +69,7 @@ pub trait CreateBatchWithKey<K>: Model
 where
     K: Send + Clone,
 {
-    type Error: std::error::Error + From<editoast_models::model::Error> + Send;
+    type Error: std::error::Error + From<editoast_models::Error> + Send;
 
     /// Just like [CreateBatch::create_batch] but the returned models are paired with their key
     async fn create_batch_with_key<

@@ -42,7 +42,7 @@ enum StdcmSearchEnvError {
 
     #[error(transparent)]
     #[editoast_error(status = 500)]
-    Database(#[from] editoast_models::model::Error),
+    Database(#[from] editoast_models::Error),
 }
 
 #[editoast_derive::openapi_schema]

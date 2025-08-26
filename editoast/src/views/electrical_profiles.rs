@@ -209,7 +209,7 @@ pub enum ElectricalProfilesError {
     NotFound { electrical_profile_set_id: i64 },
     #[error(transparent)]
     #[editoast_error(status = 500)]
-    Database(#[from] editoast_models::model::Error),
+    Database(#[from] editoast_models::Error),
 }
 
 #[cfg(test)]

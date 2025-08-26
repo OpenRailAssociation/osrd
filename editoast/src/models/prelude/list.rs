@@ -186,7 +186,7 @@ impl<M: Model + 'static> SelectionSettings<M> {
 /// You can implement this type manually but it is recommended to use the `Model`
 /// derive macro instead.
 pub trait List: Model {
-    type Error: std::error::Error + From<editoast_models::model::Error> + Send;
+    type Error: std::error::Error + From<editoast_models::Error> + Send;
 
     /// Lists the objects that match the provided settings
     async fn list(
@@ -201,7 +201,7 @@ pub trait List: Model {
 /// You can implement this type manually but it is recommended to use the `Model`
 /// derive macro instead.
 pub trait Count: Model {
-    type Error: std::error::Error + From<editoast_models::model::Error> + Send;
+    type Error: std::error::Error + From<editoast_models::Error> + Send;
 
     /// Counts the number of objects that match the provided settings
     async fn count(
