@@ -7,65 +7,6 @@ use crate::models::PreferredId;
 
 use super::Model;
 
-/// A couple ([Model] mutable reference, a [Model] changeset instance)
-///
-/// This struct is useful for several things:
-///
-/// * Provides a function [Patch::apply] that applies the changeset to the model
-///   row and updates the model instance with the new values
-/// * Takes the model instance as a mutable reference ensuring no concurrent
-///   modification can be made to the instance
-/// * The `Model` derive macro generates a builder similar to the changeset
-///   for `Patch<'a, YourModel>` as well making this struct easier to use.
-///
-/// # Example
-///
-/// ```
-/// let mut doc = Document::retrieve(&mut conn, 1).await?.unwrap();
-/// doc.patch().title("new title").apply(&mut conn).await?;
-/// assert_eq!(doc.title, "new title");
-/// ```
-///
-/// See [Model::patch]
-///
-/// Also checkout [Save] and [Save::save] that provide another way to modify
-/// [Model] instances.
-#[allow(unused)]
-pub struct Patch<'a, T: Model> {
-    pub(super) model: &'a mut T,
-    pub changeset: T::Changeset,
-}
-
-#[allow(unused)]
-impl<M: Model> Patch<'_, M> {
-    /// Applies the patch changeset to update the model instance's row and updates
-    /// the model reference with its new values
-    ///
-    /// If this method is not implemented for your model for whatever reason, just
-    /// use [Save::save].
-    pub async fn apply<K>(
-        self,
-        conn: &mut DbConnection,
-    ) -> Result<(), <<M as Model>::Changeset as Update<K, M>>::Error>
-    where
-        for<'b> K: Send + Clone + 'b,
-        M: Model + PreferredId<K> + Send,
-        <M as Model>::Changeset: Update<K, M> + Send,
-    {
-        let id: K = self.model.get_id();
-        let updated: M = self
-            .changeset
-            .update_or_fail(conn, id, || {
-                <<M as Model>::Changeset as Update<K, M>>::Error::from(
-                    editoast_models::Error::from(NotFound),
-                )
-            })
-            .await?;
-        *self.model = updated;
-        Ok(())
-    }
-}
-
 /// Describes how a [Model] can be updated in the database
 ///
 /// The models that implement this trait also implement [Save] which provide

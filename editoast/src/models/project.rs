@@ -166,11 +166,8 @@ impl Project {
 
                 let res = f(conn.clone(), &mut project).await;
 
-                project
-                    .patch()
-                    .last_modification(Utc::now())
-                    .apply(&mut conn)
-                    .await?;
+                project.last_modification = Utc::now();
+                project.save(&mut conn).await?;
 
                 res.map(|t| (t, project)).map_err(Into::into)
             }
@@ -222,11 +219,10 @@ pub mod tests {
         let project_budget = Some(1000);
 
         // Patch a project
+        created_project.name = project_name.to_owned();
+        created_project.budget = project_budget;
         created_project
-            .patch()
-            .name(project_name.to_owned())
-            .budget(project_budget)
-            .apply(&mut db_pool.get_ok())
+            .save(&mut db_pool.get_ok())
             .await
             .expect("Failed to update project");
 

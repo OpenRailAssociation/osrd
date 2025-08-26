@@ -25,7 +25,6 @@ mod update_impl;
 use quote::ToTokens;
 use syn::parse_quote;
 
-use self::changeset_builder_impl_block::BuilderType;
 use self::changeset_builder_impl_block::ChangesetBuilderImplBlock;
 use self::changeset_decl::ChangesetDecl;
 use self::changeset_decl::ChangesetFieldDecl;
@@ -207,19 +206,10 @@ impl ModelConfig {
 
     pub(crate) fn changeset_builder_impl_block(&self) -> Option<ChangesetBuilderImplBlock> {
         ChangesetBuilderImplBlock {
-            builder_type: BuilderType::Changeset,
-            model: self.model.clone(),
             changeset: self.changeset.ident(),
             fields: self.changeset_fields().cloned().collect(),
         }
         .tokens_if(self.impl_plan.has_upsert())
-    }
-
-    pub(crate) fn patch_builder_impl_block(&self) -> Option<ChangesetBuilderImplBlock> {
-        self.changeset_builder_impl_block().and_then(|mut builder| {
-            builder.builder_type = BuilderType::Patch;
-            builder.tokens_if(self.impl_plan.has_update())
-        })
     }
 
     pub(crate) fn identifiable_impls(&self) -> Vec<IdentifiableImpl> {

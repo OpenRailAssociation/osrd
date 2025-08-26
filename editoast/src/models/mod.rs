@@ -241,10 +241,9 @@ mod tests {
             .expect("Failed to create documents batch");
         let unique_doc_idx = 10;
 
+        documents[unique_doc_idx].content_type = unique_ct.to_string();
         documents[unique_doc_idx]
-            .patch()
-            .content_type(unique_ct.to_string())
-            .apply(&mut pool.get_ok())
+            .save(&mut pool.get_ok())
             .await
             .expect("Failed to update document");
 

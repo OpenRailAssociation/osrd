@@ -337,10 +337,9 @@ pub mod tests {
             create_rolling_stock_with_energy_sources(&mut db_pool.get_ok(), new_name).await;
 
         // WHEN
+        other_rs.name = original_name.to_owned();
         let error = other_rs
-            .patch()
-            .name(original_name.to_owned())
-            .apply(&mut db_pool.get_ok())
+            .save(&mut db_pool.get_ok())
             .await
             .expect_err("update should fail - name already used");
 
