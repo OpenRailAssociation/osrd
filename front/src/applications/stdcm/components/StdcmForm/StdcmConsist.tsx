@@ -6,6 +6,7 @@ import { useSelector } from 'react-redux';
 
 import { consistErrorFields } from 'applications/stdcm/consts';
 import useConsistFieldStatus from 'applications/stdcm/hooks/useConsistFieldStatus';
+import useFilterTowedRollingStock from 'applications/stdcm/hooks/useFilterTowedRollingStock';
 import useStdcmTowedRollingStock from 'applications/stdcm/hooks/useStdcmTowedRollingStock';
 import type { ConsistErrors } from 'applications/stdcm/types';
 import calculateConsistMaxSpeed from 'applications/stdcm/utils/calculateConsistMaxSpeed';
@@ -25,7 +26,6 @@ import { useStoreDataForSpeedLimitByTagSelector } from 'common/SpeedLimitByTagSe
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
 import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
 import useFilterRollingStock from 'modules/rollingStock/hooks/useFilterRollingStock';
-import useFilterTowedRollingStock from 'modules/towedRollingStock/hooks/useFilterTowedRollingStock';
 import { updateMaxSpeed, updateTowedRollingStockID } from 'reducers/osrdconf/stdcmConf';
 import {
   getStdcmRollingStockID,
