@@ -111,11 +111,8 @@ impl Scenario {
                 )
                 .await?;
 
-                scenario
-                    .patch()
-                    .last_modification(Utc::now())
-                    .apply(&mut conn)
-                    .await?;
+                scenario.last_modification = Utc::now();
+                scenario.save(&mut conn).await?;
 
                 Ok((t, scenario, study, project))
             }

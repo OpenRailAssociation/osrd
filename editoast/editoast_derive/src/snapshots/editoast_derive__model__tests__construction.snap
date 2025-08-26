@@ -205,33 +205,6 @@ impl DocumentChangeset {
         self
     }
 }
-impl<'a> crate::models::Patch<'a, Document> {
-    #[allow(unused)]
-    #[must_use = "builder methods are intended to be chained"]
-    pub fn content_type(mut self, content_type: String) -> Self {
-        self.changeset.content_type = Some(diesel_json::Json(content_type));
-        self
-    }
-    #[allow(unused)]
-    #[must_use = "builder methods are intended to be chained"]
-    pub fn data(mut self, data: Vec<u8>) -> Self {
-        self.changeset.data = Some(data);
-        self
-    }
-    #[allow(unused)]
-    #[must_use = "builder methods are intended to be chained"]
-    pub fn flat_content_type(mut self, content_type: Option<String>) -> Self {
-        self.changeset.content_type = content_type
-            .map(|content_type| diesel_json::Json(content_type));
-        self
-    }
-    #[allow(unused)]
-    #[must_use = "builder methods are intended to be chained"]
-    pub fn flat_data(mut self, data: Option<Vec<u8>>) -> Self {
-        self.changeset.data = data.map(|data| data);
-        self
-    }
-}
 #[automatically_derived]
 impl crate::models::Exists<(String)> for Document {
     type Error = editoast_models::Error;

@@ -38,7 +38,6 @@ pub fn model(input: &DeriveInput) -> Result<TokenStream> {
     let changeset_from_model_impl = config.changeset_from_model_impl();
 
     let changeset_builder = config.changeset_builder_impl_block();
-    let patch_builder = config.patch_builder_impl_block();
 
     let exist_impls = config.exists_impls();
     let retrieve_impls = config.retrieve_impls();
@@ -68,7 +67,6 @@ pub fn model(input: &DeriveInput) -> Result<TokenStream> {
         #changeset_from_model_impl
 
         #changeset_builder
-        #patch_builder
 
         #(#exist_impls)*
         #(#retrieve_impls)*

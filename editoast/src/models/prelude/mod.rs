@@ -37,14 +37,6 @@ pub trait Model: std::fmt::Debug + Clone + Sized + Send {
         Self::Changeset::default()
     }
 
-    /// Returns an empty [Patch] referencing this instance of the model
-    fn patch(&mut self) -> Patch<'_, Self> {
-        Patch {
-            model: self,
-            changeset: Self::Changeset::default(),
-        }
-    }
-
     fn into_changeset(self) -> Self::Changeset {
         self.into()
     }

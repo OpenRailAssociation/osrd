@@ -111,11 +111,8 @@ impl Study {
                 )
                 .await?;
 
-                study
-                    .patch()
-                    .last_modification(Utc::now())
-                    .apply(&mut conn)
-                    .await?;
+                study.last_modification = Utc::now();
+                study.save(&mut conn).await?;
 
                 Ok((t, study, project))
             }
