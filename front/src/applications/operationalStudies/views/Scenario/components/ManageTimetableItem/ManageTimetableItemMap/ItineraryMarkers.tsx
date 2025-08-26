@@ -13,9 +13,8 @@ import originSVG from 'assets/pictures/origin.svg';
 import viaSVG from 'assets/pictures/via.svg';
 import type { PathItemLocation, TrackSection } from 'common/api/osrdEditoastApi';
 import { matchPathStepAndOp } from 'modules/pathfinding/utils';
+import type { SuggestedOP } from 'modules/timetableItem/types';
 import type { PathStep } from 'reducers/osrdconf/types';
-
-import type { SuggestedOP } from '../../../types';
 
 export type MarkerInformation = Pick<PathStep, 'name' | 'coordinates' | 'metadata'> &
   PathItemLocation & {

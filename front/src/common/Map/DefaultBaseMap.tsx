@@ -5,15 +5,15 @@ import type { Geometry } from 'geojson';
 import { compact } from 'lodash';
 import type { MapRef } from 'react-map-gl/maplibre';
 
+import ItineraryLayer from 'applications/operationalStudies/views/Scenario/components/ManageTimetableItem/ManageTimetableItemMap/ItineraryLayer';
+import ItineraryMarkers, {
+  type MarkerInformation,
+} from 'applications/operationalStudies/views/Scenario/components/ManageTimetableItem/ManageTimetableItemMap/ItineraryMarkers';
 import type { GeoJsonLineString } from 'common/api/osrdEditoastApi';
 import BaseMap from 'common/Map/BaseMap';
 import MapButtons from 'common/Map/Buttons/MapButtons';
 import { computeBBoxViewport } from 'common/Map/WarpedMap/core/helpers';
 import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
-import ItineraryLayer from 'modules/timetableItem/components/ManageTimetableItem/ManageTimetableItemMap/ItineraryLayer';
-import ItineraryMarkers, {
-  type MarkerInformation,
-} from 'modules/timetableItem/components/ManageTimetableItem/ManageTimetableItemMap/ItineraryMarkers';
 import type { MapSettings, Viewport } from 'reducers/globalMap/types';
 
 type DefaultBaseMapProps = {
