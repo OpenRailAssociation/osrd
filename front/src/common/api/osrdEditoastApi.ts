@@ -44,7 +44,7 @@ const osrdEditoastApi = generatedEditoastApi
                   pageSize,
                   page,
                 },
-                { forceRefetch: true, subscribe: false }
+                { subscribe: false }
               )
             );
             const { data } = await promise;
@@ -70,7 +70,7 @@ const osrdEditoastApi = generatedEditoastApi
                   pageSize,
                   page,
                 },
-                { forceRefetch: true, subscribe: false }
+                { subscribe: false }
               )
             );
             const { data } = await promise;
@@ -91,7 +91,7 @@ const osrdEditoastApi = generatedEditoastApi
                 {
                   id: extractEditoastIdFromTrainScheduleId(timetableItemId),
                 },
-                { forceRefetch: true, subscribe: false }
+                { subscribe: false }
               )
             ).unwrap();
             data = { ...trainSchedule, id: timetableItemId };
@@ -101,7 +101,7 @@ const osrdEditoastApi = generatedEditoastApi
                 {
                   id: extractEditoastIdFromPacedTrainId(timetableItemId),
                 },
-                { forceRefetch: true, subscribe: false }
+                { subscribe: false }
               )
             ).unwrap();
             data = { ...pacedTrain, id: timetableItemId };
@@ -126,7 +126,7 @@ const osrdEditoastApi = generatedEditoastApi
                   id: extractEditoastIdFromTrainScheduleId(trainId),
                   infraId,
                 },
-                { forceRefetch: true, subscribe: false }
+                { subscribe: false }
               )
             ).unwrap();
           } else {
@@ -138,7 +138,7 @@ const osrdEditoastApi = generatedEditoastApi
                   infraId,
                   exceptionKey,
                 },
-                { forceRefetch: true, subscribe: false }
+                { subscribe: false }
               )
             ).unwrap();
           }
@@ -166,7 +166,7 @@ const osrdEditoastApi = generatedEditoastApi
                   infraId,
                   electricalProfileSetId,
                 },
-                { forceRefetch: true, subscribe: false }
+                { subscribe: false }
               )
             ).unwrap();
           } else {
@@ -179,7 +179,7 @@ const osrdEditoastApi = generatedEditoastApi
                   electricalProfileSetId,
                   exceptionKey,
                 },
-                { forceRefetch: true, subscribe: false }
+                { subscribe: false }
               )
             ).unwrap();
           }
@@ -208,7 +208,7 @@ const osrdEditoastApi = generatedEditoastApi
                     operational_point_references: batch,
                   },
                 },
-                { forceRefetch: true, subscribe: false }
+                { subscribe: false }
               )
             );
 

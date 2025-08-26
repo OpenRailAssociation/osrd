@@ -172,7 +172,7 @@ export const getSavedMacroNodes = async (
           pageSize,
           page,
         },
-        { forceRefetch: true, subscribe: false }
+        { subscribe: false }
       )
     );
     // need to unsubscribe on get call to avoid cache issue
