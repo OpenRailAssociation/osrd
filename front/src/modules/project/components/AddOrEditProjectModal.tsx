@@ -27,7 +27,6 @@ import ModalFooterSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalFooterSNCF';
 import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import TextareaSNCF from 'common/BootstrapSNCF/TextareaSNCF';
-import { useOsrdConfActions } from 'common/osrdContext';
 import { setFailure, setSuccess } from 'reducers/main';
 import { getUserSafeWord } from 'reducers/user/userSelectors';
 import { useAppDispatch } from 'store';
@@ -82,8 +81,6 @@ export default function AddOrEditProjectModal({
   const [postProject] = osrdEditoastApi.endpoints.postProjects.useMutation();
   const [patchProject] = osrdEditoastApi.endpoints.patchProjectsByProjectId.useMutation();
   const [deleteProject] = osrdEditoastApi.endpoints.deleteProjectsByProjectId.useMutation();
-
-  const { updateProjectID } = useOsrdConfActions();
 
   const initialValuesRef = useRef<ProjectForm | null>(null);
 
@@ -148,7 +145,6 @@ export default function AddOrEditProjectModal({
         request
           .unwrap()
           .then((projectCreated) => {
-            dispatch(updateProjectID(projectCreated.id));
             navigate(`/operational-studies/projects/${projectCreated.id}`);
             closeModal();
           })
@@ -223,8 +219,6 @@ export default function AddOrEditProjectModal({
     await deleteProject({ projectId: project!.id })
       .unwrap()
       .then(async () => {
-        dispatch(updateProjectID(undefined));
-
         navigate(`/operational-studies/projects/`);
         closeModal();
         dispatch(

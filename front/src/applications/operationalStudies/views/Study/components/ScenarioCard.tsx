@@ -7,9 +7,6 @@ import { useNavigate } from 'react-router-dom';
 
 import infraLogo from 'assets/pictures/components/tracks.svg';
 import type { ScenarioWithDetails } from 'common/api/osrdEditoastApi';
-import { useOsrdConfActions } from 'common/osrdContext';
-import { updateTrainIdUsedForProjection } from 'reducers/simulationResults';
-import { useAppDispatch } from 'store';
 import { useDateTimeLocale } from 'utils/date';
 
 type ScenarioCardProps = {
@@ -28,14 +25,6 @@ export default function ScenarioCard({
   const { t } = useTranslation('operational-studies');
   const dateTimeLocale = useDateTimeLocale();
   const navigate = useNavigate();
-  const dispatch = useAppDispatch();
-  const { updateScenarioID } = useOsrdConfActions();
-
-  const handleClick = () => {
-    dispatch(updateScenarioID(scenario.id));
-    dispatch(updateTrainIdUsedForProjection(undefined));
-    navigate(`scenarios/${scenario.id}`);
-  };
 
   return (
     <div
@@ -59,7 +48,7 @@ export default function ScenarioCard({
           data-testid="openScenario"
           className="btn btn-primary btn-sm"
           type="button"
-          onClick={handleClick}
+          onClick={() => navigate(`scenarios/${scenario.id}`)}
         >
           <span className="mr-2">{t('operational-studies-management.open')}</span>
           <FileDirectoryOpen variant="fill" />

@@ -23,7 +23,7 @@ import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import SelectImprovedSNCF from 'common/BootstrapSNCF/SelectImprovedSNCF';
 import TextareaSNCF from 'common/BootstrapSNCF/TextareaSNCF';
-import { useInfraID, useOsrdConfActions } from 'common/osrdContext';
+import { useInfraID } from 'common/osrdContext';
 import { InfraSelectorModal } from 'modules/infra/components/InfraSelector';
 import DeleteItemsModal from 'modules/project/components/DeleteItemsModal';
 import { setFailure, setSuccess } from 'reducers/main';
@@ -69,7 +69,6 @@ const AddOrEditScenarioModal = ({ editionMode = false, scenario }: AddOrEditScen
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const infraID = useInfraID();
-  const { updateScenarioID } = useOsrdConfActions();
 
   const [currentScenario, setCurrentScenario] = useState<ScenarioForm>(scenario || emptyScenario);
 
@@ -176,7 +175,6 @@ const AddOrEditScenarioModal = ({ editionMode = false, scenario }: AddOrEditScen
       })
         .unwrap()
         .then(({ id }) => {
-          dispatch(updateScenarioID(id));
           navigate(`projects/${projectId}/studies/${studyId}/scenarios/${id}`);
           closeModal();
         })
@@ -222,7 +220,6 @@ const AddOrEditScenarioModal = ({ editionMode = false, scenario }: AddOrEditScen
       deleteScenario({ projectId, studyId, scenarioId: scenario.id })
         .unwrap()
         .then(() => {
-          dispatch(updateScenarioID(undefined));
           cleanScenarioLocalStorage(scenario.timetable_id);
           navigate(`projects/${projectId}/studies/${studyId}`);
           closeModal();
