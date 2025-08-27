@@ -66,15 +66,15 @@ export const FIELDS_LABEL = {
 };
 
 // mapKey
-export interface MapKeyProps {
+export type MapKeyProps = {
   active?: boolean;
   closeMapKeyPopUp: () => void;
-}
+};
 
-interface SpeedLimitKey {
+type SpeedLimitKey = {
   speed: string;
   text: string;
-}
+};
 
 export const speedLimitMapKey: SpeedLimitKey[] = [
   { speed: 'v300', text: '> 220km/h' },
@@ -86,11 +86,11 @@ export const speedLimitMapKey: SpeedLimitKey[] = [
   { speed: 'v0', text: '1km/h - 30km/h' },
 ];
 
-interface ElectrificationKey {
+type ElectrificationKey = {
   color: string;
   text: string;
   current: string;
-}
+};
 
 export const electrificationMapKey: ElectrificationKey[] = [
   { color: 'color25000V', text: '25000V', current: 'alternatingCurrent' },

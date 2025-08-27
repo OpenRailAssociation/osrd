@@ -5,11 +5,11 @@ import { MAP_TRACK_SOURCES, MAP_URL } from 'common/Map/const';
 
 import OrderedLayer from './OrderedLayer';
 
-interface TracksGeographicProps {
+type TracksGeographicProps = {
   layerOrder?: number;
   infraID: number | undefined;
   lineSearchCode?: number;
-}
+};
 
 const LineSearchLayer = ({ layerOrder, infraID, lineSearchCode }: TracksGeographicProps) => {
   if (isNil(infraID)) return null;

@@ -1,6 +1,6 @@
-interface MODES_Types {
+type MODES_Types = {
   [n: string]: string;
-}
+};
 
 export const MODES: MODES_Types = Object.freeze({
   simulation: 'SIMULATION',

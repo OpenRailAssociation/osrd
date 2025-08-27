@@ -9,14 +9,14 @@ import { MAIN_API } from 'config/config';
 import type { RootState } from 'reducers';
 import { getImpersonatedUser } from 'reducers/user/userSelectors';
 
-export interface ApiError {
+export type ApiError = {
   data: {
     type: string;
     message: string;
     context: object;
   };
   status: number;
-}
+};
 
 // initialize an empty api service that we'll inject endpoints into later as needed
 export const baseEditoastApi = createApi({

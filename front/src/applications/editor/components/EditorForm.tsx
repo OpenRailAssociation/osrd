@@ -25,7 +25,7 @@ const fields = {
   ArrayField: FormComponent,
 };
 
-interface EditorFormProps<T> {
+type EditorFormProps<T> = {
   data: T;
   onSubmit: (data: T) => Promise<void>;
   onChange?: (data: T) => void;
@@ -34,7 +34,7 @@ interface EditorFormProps<T> {
   overrideSchema?: JSONSchema7;
   overrideUiSchema?: UiSchema;
   overrideFields?: Record<string, Field>;
-}
+};
 
 /**
  * Display a form to create/update a new entity.

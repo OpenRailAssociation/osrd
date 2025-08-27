@@ -3,11 +3,11 @@ import { isNil } from 'lodash';
 
 import type { LinearMetadataItem } from 'common/IntervalsDataViz/types';
 
-interface LinearMetadataTooltipProps<T> {
+type LinearMetadataTooltipProps<T> = {
   item: LinearMetadataItem<T>;
   point?: number;
   schema: JSONSchema7;
-}
+};
 
 export const LinearMetadataTooltip = <T extends Record<string, unknown>>({
   item,

@@ -12,12 +12,12 @@ import type { Theme, OmitLayer } from 'types';
 
 import OrderedLayer from '../OrderedLayer';
 
-interface RoutesProps {
+type RoutesProps = {
   colors: Theme;
   layerOrder: number;
   infraID: number | undefined;
   highlightedArea?: Geometry;
-}
+};
 
 export function getRoutesLineLayerProps(params: {
   colors: Theme;

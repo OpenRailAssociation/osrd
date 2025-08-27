@@ -408,12 +408,12 @@ export const SourcesDefinitionsIndex = SOURCES_DEFINITION.reduce(
   {} as Record<LayerType, (context: LayerContext, prefix: string) => LayerProps[]>
 );
 
-interface EditorSourceProps {
+type EditorSourceProps = {
   id?: string;
   data: Feature | FeatureCollection;
   layers: LayerProps[];
   layerOrder?: number;
-}
+};
 
 export const EditorSource = ({ id, data, layers, layerOrder }: EditorSourceProps) => {
   const dataFingerPrint =
@@ -433,7 +433,7 @@ export const EditorSource = ({ id, data, layers, layerOrder }: EditorSourceProps
   );
 };
 
-interface GeoJSONsProps {
+type GeoJSONsProps = {
   colors: Theme;
   layersSettings: MapState['mapSettings']['layersSettings'];
   issuesSettings?: EditorState['issuesSettings'];
@@ -447,7 +447,7 @@ interface GeoJSONsProps {
   // When true, all layers are rendered (ie "minzoom" restrictions are ignored)
   renderAll?: boolean;
   infraID: number | undefined;
-}
+};
 
 const GeoJSONs = ({
   colors,

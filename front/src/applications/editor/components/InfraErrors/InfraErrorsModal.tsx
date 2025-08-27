@@ -6,9 +6,9 @@ import { useInfraID } from 'common/osrdContext';
 
 import InfraErrorsList from './InfraErrorsList';
 
-interface InfraErrorsModalProps {
+type InfraErrorsModalProps = {
   onErrorClick: (infraId: number, item: InfraError) => void | Promise<void>;
-}
+};
 
 const InfraErrorsModal = ({ onErrorClick }: InfraErrorsModalProps) => {
   const { t } = useTranslation();

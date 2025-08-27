@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { Modal } from './Modal';
 import { ModalContext } from './ModalProvider';
 
-export interface ConfirmModalProps {
+export type ConfirmModalProps = {
   title?: string;
   confirmLabel?: string;
   cancelLabel?: string;
@@ -13,7 +13,7 @@ export interface ConfirmModalProps {
   onConfirm?: () => void | Promise<void>;
   onCancel?: () => void | Promise<void>;
   withCloseButton?: boolean;
-}
+};
 
 export const ConfirmModal = ({
   title,

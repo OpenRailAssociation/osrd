@@ -4,10 +4,10 @@ import type { Theme } from 'types';
 
 import OrderedLayer from '../OrderedLayer';
 
-interface BackgroundProps {
+type BackgroundProps = {
   colors: Theme;
   layerOrder?: number;
-}
+};
 
 function Background(props: BackgroundProps) {
   const { colors, layerOrder } = props;

@@ -8,12 +8,12 @@ import type { Theme } from 'types';
 
 import OrderedLayer from '../OrderedLayer';
 
-interface ElectrificationsProps {
+type ElectrificationsProps = {
   colors: Theme;
   layerOrder: number;
   infraID: number | undefined;
   highlightedArea?: Geometry;
-}
+};
 
 export function getElectrificationsProps({
   colors,

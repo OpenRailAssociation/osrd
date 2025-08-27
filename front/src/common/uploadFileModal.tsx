@@ -8,9 +8,9 @@ import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import ModalFooterSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalFooterSNCF';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 
-interface UploadFileModalProps {
+type UploadFileModalProps = {
   handleSubmit: (file: File) => void;
-}
+};
 
 const UploadFileModal = ({ handleSubmit }: UploadFileModalProps) => {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'importTrains' });

@@ -24,10 +24,10 @@ import type { InfraErrorLevel } from './types';
 
 const INFRA_ERROR_LEVELS: Array<NonNullable<InfraErrorLevel>> = ['all', 'errors', 'warnings'];
 
-interface InfraErrorsListProps {
+type InfraErrorsListProps = {
   infraID: number;
   onErrorClick: (infraId: number, item: InfraError) => void | Promise<void>;
-}
+};
 
 const InfraErrorsList = ({ infraID, onErrorClick }: InfraErrorsListProps) => {
   const { t } = useTranslation();

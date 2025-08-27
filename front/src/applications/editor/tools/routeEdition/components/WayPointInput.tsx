@@ -22,11 +22,12 @@ import useKeyboardShortcuts from 'utils/hooks/useKeyboardShortcuts';
 
 import type { EndPoint } from '../../switchEdition/types';
 
-interface WayPointInputProps {
+type WayPointInputProps = {
   endPoint: EndPoint;
   wayPoint?: WayPoint | null;
   onChange: (entity: WayPointEntity | null) => void;
-}
+};
+
 const WayPointInput = ({ endPoint, wayPoint, onChange }: WayPointInputProps) => {
   const dispatch = useAppDispatch();
   const { state, setState } = useContext(

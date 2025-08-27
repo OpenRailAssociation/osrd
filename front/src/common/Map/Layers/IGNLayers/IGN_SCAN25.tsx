@@ -2,10 +2,10 @@ import { Source, type LayerProps } from 'react-map-gl/maplibre';
 
 import OrderedLayer from '../OrderedLayer';
 
-interface IGN_SCAN25_Props {
+type IGN_SCAN25_Props = {
   layerOrder?: number;
   showIGNSCAN25?: boolean;
-}
+};
 
 export default function IGN_SCAN25({ layerOrder, showIGNSCAN25 }: IGN_SCAN25_Props) {
   const IGN_SCAN25_Params: LayerProps = {

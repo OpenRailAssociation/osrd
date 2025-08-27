@@ -23,10 +23,10 @@ import { useAppDispatch } from 'store';
 
 const DEFAULT_DISPLAYED_RANGES_COUNT = 3;
 
-interface AttachedRangesItemsListProps {
+type AttachedRangesItemsListProps = {
   id: string;
   itemType: 'SpeedSection' | 'Electrification';
-}
+};
 
 /**
  * Generic component to show attached ranges items of a specific type for an edited track section:

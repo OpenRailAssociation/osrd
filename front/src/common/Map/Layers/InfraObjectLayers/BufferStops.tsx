@@ -37,12 +37,12 @@ export function getBufferStopsLayerProps(params: {
   return res;
 }
 
-interface BufferStopsProps {
+type BufferStopsProps = {
   colors: Theme;
   layerOrder: number;
   infraID: number | undefined;
   highlightedArea?: Geometry;
-}
+};
 
 const BufferStops = ({ layerOrder, infraID, highlightedArea }: BufferStopsProps) => {
   if (isNil(infraID)) return null;

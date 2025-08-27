@@ -4,12 +4,13 @@ import { BsFillExclamationCircleFill, BsFillExclamationTriangleFill } from 'reac
 
 import type { InfraError } from 'common/api/osrdEditoastApi';
 
+type InfraErrorIconProps = IconBaseProps & {
+  error: InfraError;
+};
+
 /**
  * A component that display an infra error Icon.
  */
-interface InfraErrorIconProps extends IconBaseProps {
-  error: InfraError;
-}
 const InfraErrorIcon = ({ error, ...props }: InfraErrorIconProps) =>
   error.is_warning ? (
     <BsFillExclamationTriangleFill {...props} className={cx('text-warning', props.className)} />

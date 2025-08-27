@@ -8,13 +8,13 @@ import { LoaderFill } from 'common/Loaders';
 
 import { SearchRouteItem } from './SearchRouteItem';
 
-interface SearchRouteProps {
+type SearchRouteProps = {
   searchFn: () => void;
   selectFn: (i: number) => void;
   state: OptionsStateType;
   disabled: boolean;
   isNew: boolean;
-}
+};
 
 export const SearchRoute = ({ searchFn, selectFn, state, disabled, isNew }: SearchRouteProps) => {
   const { t } = useTranslation();

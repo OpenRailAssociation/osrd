@@ -11,11 +11,11 @@ function buildLayoutFilter(
     ...Array.from(ids).map((id) => ['in', id, ['get', 'ids']]),
   ] as FilterSpecification;
 }
-interface IncompatibleConstraintsLayerProps {
+type IncompatibleConstraintsLayerProps = {
   geojson: FeatureCollection<LineString, { ids: string[] }>;
   selected: Set<string>;
   hovered: Set<string>;
-}
+};
 
 const IncompatibleConstraintsLayer = ({
   geojson,

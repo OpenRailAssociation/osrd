@@ -35,9 +35,9 @@ import useInputChange from 'utils/hooks/useInputChange';
 import useModalFocusTrap from 'utils/hooks/useModalFocusTrap';
 import useOutsideClick from 'utils/hooks/useOutsideClick';
 
-export interface StudyForm extends StudyCreateForm {
+export type StudyForm = StudyCreateForm & {
   id?: number;
-}
+};
 
 type AddOrEditStudyModalProps = {
   editionMode?: boolean;

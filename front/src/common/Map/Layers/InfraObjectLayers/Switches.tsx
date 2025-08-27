@@ -60,12 +60,12 @@ export function getSwitchesNameLayerProps(params: {
   return res;
 }
 
-interface SwitchesProps {
+type SwitchesProps = {
   colors: Theme;
   layerOrder: number;
   infraID: number | undefined;
   highlightedArea?: Geometry;
-}
+};
 
 const Switches = ({ colors, layerOrder, infraID, highlightedArea }: SwitchesProps) => {
   const layerPoint = getSwitchesLayerProps({ colors, sourceTable: 'switches', highlightedArea });

@@ -3,11 +3,12 @@ import { useEffect, useState } from 'react';
 import useAuthz from './useAuthz';
 import type { Privilege, ResourceType } from '../types';
 
-interface UseCheckUserPrivilegesParams {
+type UseCheckUserPrivilegesParams = {
   resourceType: ResourceType;
   resourceId?: number;
   privileges: Privilege[];
-}
+};
+
 /**
  *
  * Hook to check if the connected user has the specified privileges.

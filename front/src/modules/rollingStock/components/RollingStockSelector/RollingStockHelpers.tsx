@@ -17,12 +17,12 @@ const RollingStockUnit = ({ unit, detail }: { unit: string; detail: string }) =>
   return null;
 };
 
-interface RollingStockInfoProps {
+type RollingStockInfoProps = {
   rollingStock: RollingStock | LightRollingStock;
   showSeries?: boolean;
   showMiddle?: boolean;
   showEnd?: boolean;
-}
+};
 
 export const RollingStockInfo = ({
   rollingStock,

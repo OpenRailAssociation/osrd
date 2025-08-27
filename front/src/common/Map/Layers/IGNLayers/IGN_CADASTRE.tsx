@@ -2,10 +2,10 @@ import { Source, type LayerProps } from 'react-map-gl/maplibre';
 
 import OrderedLayer from '../OrderedLayer';
 
-interface IGN_Cadastre_Props {
+type IGN_Cadastre_Props = {
   layerOrder?: number;
   showIGNCadastre?: boolean;
-}
+};
 
 const IGN_Cadastre_Params: LayerProps = {
   source: 'orthophoto',

@@ -4,11 +4,11 @@ import type { Theme } from 'types';
 
 import OrderedLayer from '../OrderedLayer';
 
-interface TracksOSMProps {
+type TracksOSMProps = {
   colors: Theme;
   layerOrder: number;
   showOSMtracksections?: boolean;
-}
+};
 
 function TracksOSM({ colors, layerOrder, showOSMtracksections }: TracksOSMProps) {
   const railwayMinor: LayerProps = {

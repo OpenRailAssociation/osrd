@@ -9,7 +9,7 @@ import {
   isNilObject,
 } from './utils';
 
-interface IntervalItemProps<T> extends IntervalItemBaseProps<T> {
+type IntervalItemProps<T> = IntervalItemBaseProps<T> & {
   dragingStartAt: number | null;
   fullLength: number;
   min: number;
@@ -20,7 +20,7 @@ interface IntervalItemProps<T> extends IntervalItemBaseProps<T> {
   setResizing: (
     resizing: { index: number | null; startAt: number; startPosition: number } | null
   ) => void;
-}
+};
 
 const IntervalItem = <T extends { [key: string]: string | number }>({
   creating,

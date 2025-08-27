@@ -25,9 +25,9 @@ import {
 } from './types';
 import { getSegmentsConstraints, getSizeOfEnabledFilters } from './utils';
 
-interface IncompatibleConstraintsProps {
+type IncompatibleConstraintsProps = {
   pathProperties?: ManageTimetableItemPathProperties;
-}
+};
 
 const IncompatibleConstraints = ({ pathProperties }: IncompatibleConstraintsProps) => {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTimetableItem' });

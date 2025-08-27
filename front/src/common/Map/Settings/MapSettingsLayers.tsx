@@ -16,12 +16,13 @@ import { useAppDispatch } from 'store';
 
 type LayerSettings = MapState['mapSettings']['layersSettings'];
 
-interface FormatSwitchProps {
+type FormatSwitchProps = {
   name: keyof Omit<LayerSettings, 'speedlimittag'>;
   icon: ReactNode;
   color?: string;
   disabled?: boolean;
-}
+};
+
 export const FormatSwitch = ({ name, icon, color, disabled }: FormatSwitchProps) => {
   const dispatch = useAppDispatch();
   const { t } = useTranslation();

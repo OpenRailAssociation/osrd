@@ -4,18 +4,18 @@ import type { TimetableItemId, TrainId } from 'reducers/osrdconf/types';
 
 type SimulationD3Scale = ScaleTime<number, number> | ScaleLinear<number, number>;
 
-export interface Chart {
+export type Chart = {
   width: number;
   height: number;
   x: SimulationD3Scale;
   y: SimulationD3Scale;
   rotate?: boolean;
-}
+};
 
-interface Position<Time = number> {
+type Position<Time = number> = {
   time: Time;
   position: number;
-}
+};
 
 export type PositionSpeedTime<Time = number> = Position<Time> & {
   speed: number;
@@ -30,9 +30,9 @@ export type SpeedRanges = {
 
 export type ProjectionType = 'trackProjection' | 'operationalPointProjection';
 
-export interface SimulationResultsState {
+export type SimulationResultsState = {
   chart?: Chart;
   selectedTrainId?: TrainId;
   trainIdUsedForProjection?: TimetableItemId;
   projectionType: ProjectionType;
-}
+};

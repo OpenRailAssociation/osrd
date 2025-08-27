@@ -1,6 +1,6 @@
 import type { TrackSectionEntity } from 'applications/editor/tools/trackEdition/types';
 
-export interface TrackSplitState {
+export type TrackSplitState = {
   // the traksection to split
   track: TrackSectionEntity;
   // in millimeters for editoast
@@ -11,4 +11,4 @@ export interface TrackSplitState {
     | { type: 'movePoint'; offset: number }
     | { type: 'hoverPoint' }
     | { type: 'splitLine'; offset: number };
-}
+};

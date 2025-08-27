@@ -7,10 +7,10 @@ import { useTranslation } from 'react-i18next';
 import type { FiltersConstrainstState, IncompatibleConstraintType } from './types';
 import { getIcon, getSizeOfEnabledFilters } from './utils';
 
-interface IncompatibleConstraintsFiltersProps extends HTMLAttributes<unknown> {
+type IncompatibleConstraintsFiltersProps = HTMLAttributes<unknown> & {
   data: FiltersConstrainstState;
   toggleFilter: (type: string) => void;
-}
+};
 
 const IncompatibleConstraintsFilters = (props: IncompatibleConstraintsFiltersProps) => {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTimetableItem' });

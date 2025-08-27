@@ -14,7 +14,7 @@ import { RollingStockInfo } from 'modules/rollingStock/components/RollingStockSe
 import RollingStockCardButtons from './RollingStockCardButtons';
 import RollingStockCardDetail from './RollingStockCardDetail';
 
-interface RollingStockCardProps {
+type RollingStockCardProps = {
   isOpen: boolean;
   isOnEditMode?: boolean;
   noCardSelected: boolean;
@@ -22,7 +22,7 @@ interface RollingStockCardProps {
   rollingStock: LightRollingStockWithLiveries;
   setOpenedRollingStockCardId: (openCardId: number | undefined) => void;
   onSelectRollingStock?: (rollingStock: LightRollingStockWithLiveries, comfort: Comfort) => void;
-}
+};
 
 const RollingStockCard = ({
   isOpen,

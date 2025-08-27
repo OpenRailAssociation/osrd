@@ -2,10 +2,10 @@ import { useTranslation } from 'react-i18next';
 
 import type { IntervalItem } from './types';
 
-interface IntervalsEditorTooltip {
+type IntervalsEditorTooltip = {
   item: IntervalItem;
   point: number;
-}
+};
 
 const IntervalsEditorTooltip = ({ item, point }: IntervalsEditorTooltip) => {
   const { t } = useTranslation();

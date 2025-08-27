@@ -6,9 +6,9 @@ import type { Layer } from 'applications/editor/consts';
 import { type EditorState, editorSliceActions } from 'reducers/editor';
 import { useAppDispatch } from 'store';
 
-interface ButtonMapInfraErrorsProps {
+type ButtonMapInfraErrorsProps = {
   editorState: EditorState;
-}
+};
 
 const ButtonMapInfraErrors = ({ editorState }: ButtonMapInfraErrorsProps) => {
   const dispatch = useAppDispatch();

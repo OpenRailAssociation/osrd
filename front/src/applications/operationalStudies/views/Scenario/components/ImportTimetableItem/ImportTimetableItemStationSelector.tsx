@@ -8,12 +8,12 @@ import { Loader } from 'common/Loaders';
 import StationCard from 'common/StationCard';
 import { useDebounce } from 'utils/helpers';
 
-interface ImportTimetableItemStationSelectorProps {
+type ImportTimetableItemStationSelectorProps = {
   id: string;
   term?: string;
   onSelect: (station?: GraouStation) => void;
   setTerm: (searchString: string) => void;
-}
+};
 
 const ImportTimetableItemStationSelector = ({
   id,

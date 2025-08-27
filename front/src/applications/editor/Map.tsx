@@ -36,7 +36,7 @@ import type { MapStyle, Viewport } from 'reducers/globalMap/types';
 import { useAppDispatch } from 'store';
 import { getMapMouseEventNearestFeature } from 'utils/mapHelper';
 
-interface MapProps<S extends CommonToolState = CommonToolState> {
+type MapProps<S extends CommonToolState = CommonToolState> = {
   t: TFunction;
   toolState: S;
   setToolState: (state: Partial<S>) => void;
@@ -46,13 +46,13 @@ interface MapProps<S extends CommonToolState = CommonToolState> {
   setViewport: (newViewport: Partial<Viewport>, updateRouter?: boolean) => void;
   mapRef: React.RefObject<MapRef | null>;
   infraID: number | undefined;
-}
+};
 
-interface MapState {
+type MapState = {
   isLoaded: boolean;
   isDragging: boolean;
   isHovering: boolean;
-}
+};
 
 const protocol = new Protocol();
 maplibregl.addProtocol('pmtiles', protocol.tile);

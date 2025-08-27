@@ -1,10 +1,10 @@
 /**
  * for example
- * interface HeadTailPositionSpeed {
+ * type HeadTailPositionSpeed = {
  *   headPosition: PositionSpeedTime;
  *   tailPosition: PositionSpeedTime;
  *   speed: SpeedTime;
- * }
+ * };
  * ValueOf<HeadTailPositionSpeed> = PositionSpeedTime | SpeedTime;
  */
 export type ValueOf<T> = T[keyof T];

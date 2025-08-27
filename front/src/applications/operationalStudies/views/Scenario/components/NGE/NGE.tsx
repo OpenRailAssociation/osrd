@@ -12,10 +12,10 @@ import { useTranslation } from 'react-i18next';
 import { EMPTY_DTO } from './consts';
 import type { NetzgrafikDto, NGEEvent } from './types';
 
-interface NGEElement extends HTMLElement {
+type NGEElement = HTMLElement & {
   language: string;
   netzgrafikDto: NetzgrafikDto;
-}
+};
 
 type NGEProps = {
   dto?: NetzgrafikDto;

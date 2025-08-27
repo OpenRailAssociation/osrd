@@ -35,14 +35,14 @@ const OSM_LAYERS = new Set(['building', 'water', 'water_name', 'waterway', 'poi'
  * It is designed as a component instead of a hook to simplify mounting/unmounting the temporary invisible map.
  */
 
-interface DataLoaderProps {
+type DataLoaderProps = {
   bbox: BBox2d;
   getGeoJSONs: (
     osrdData: Partial<Record<Layer, FeatureCollection>>,
     osmData: Record<string, FeatureCollection>
   ) => void;
   layers: Set<Layer>;
-}
+};
 
 const DataLoader = ({ bbox, getGeoJSONs, layers }: DataLoaderProps) => {
   const mapBlankStyle = useMapBlankStyle();

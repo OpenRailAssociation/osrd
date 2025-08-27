@@ -5,10 +5,10 @@ import type { Theme } from 'types';
 
 import OrderedLayer from '../OrderedLayer';
 
-interface PlatformsProps {
+type PlatformsProps = {
   colors: Theme;
   layerOrder?: number;
-}
+};
 
 export function Platforms(props: PlatformsProps) {
   const { colors, layerOrder } = props;

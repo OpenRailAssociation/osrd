@@ -27,11 +27,11 @@ import { castErrorToFailure } from 'utils/error';
 import parseXML from './helpers/parseXML';
 import StationSelector from './ImportTimetableItemStationSelector';
 
-interface ImportTimetableItemConfigProps {
+type ImportTimetableItemConfigProps = {
   setTrainsList: (trainsList: GraouTrainSchedule[]) => void;
   setIsLoading: (isLoading: boolean) => void;
   setTrainsJsonData: (trainsJsonData: TimetableJsonPayload) => void;
-}
+};
 
 const ImportTimetableItemConfig = ({
   setTrainsList,

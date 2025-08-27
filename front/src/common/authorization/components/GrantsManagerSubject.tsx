@@ -12,13 +12,14 @@ import { getErrorMessage } from 'utils/error';
 import type { Grant, Privilege, Subject } from '../types';
 import generateGrantSelectProps from '../utils/generateGrantSelectProps';
 
-interface GrantsManagerSubjectProps {
+type GrantsManagerSubjectProps = {
   subject: Subject;
   subjectGrant?: Grant;
   userId: number;
   userPrivileges: Set<Privilege>;
   onChange: (grant?: Grant) => Promise<void>;
-}
+};
+
 const GrantsManagerSubject = ({
   subject,
   subjectGrant,

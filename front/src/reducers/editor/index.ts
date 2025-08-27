@@ -9,7 +9,7 @@ import { buildMapStateReducer, defaultMapSettings } from 'reducers/globalMap';
 import type { MapSettings, Viewport } from 'reducers/globalMap/types';
 import { type InfraState, buildInfraStateReducers, infraState } from 'reducers/infra';
 
-export interface EditorState extends InfraState {
+export type EditorState = InfraState & {
   editorSchema: EditorSchema;
   mapSettings: MapSettings;
   editorLayers: Set<Layer>;
@@ -22,7 +22,7 @@ export interface EditorState extends InfraState {
     filterLevel: NonNullable<InfraErrorLevel>;
     filterType: InfraErrorTypeLabel | null;
   };
-}
+};
 
 export const editorInitialState: EditorState = {
   // Definition of entities (json schema)

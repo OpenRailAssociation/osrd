@@ -1,13 +1,14 @@
 import cx from 'classnames';
 import { Link } from 'react-router-dom';
 
-interface CardProps {
+type CardProps = {
   link: string;
   img: string;
   title: string;
   disabledLink?: boolean;
   openInNewTab?: boolean;
-}
+};
+
 const CardSNCF = ({ link, img, title, disabledLink = false, openInNewTab = false }: CardProps) => (
   <Link
     to={link}
