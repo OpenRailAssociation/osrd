@@ -25,9 +25,8 @@ data class STDCMNode(
     // Planned arrival time at node, with its tolerance. Is null at least when the node is not a
     // stop
     val plannedTimingData: PlannedTimingData?,
-    // Previous node with non-null PlannedTimingDelta: time difference between arrival time on node
-    // and planned arrival time, divided by the total duration of the time window
-    val previousPlannedNodeRelativeTimeDiff: Double?,
+    // Careful, not filled at departure.
+    val departurePlannedRelativeTimeDiff: Double?,
     // Estimation of the min time it takes to reach the end from this node
     var remainingTimeEstimation: Double,
     // Reference to the main graph. Only null in some unit tests, where we don't have a full graph
@@ -68,11 +67,11 @@ data class STDCMNode(
 
         // If equal, minimise the difference with the planned arrival times at the last planned node
         else if (
-            previousPlannedNodeRelativeTimeDiff != null &&
-                other.previousPlannedNodeRelativeTimeDiff != null &&
-                previousPlannedNodeRelativeTimeDiff != other.previousPlannedNodeRelativeTimeDiff
+            departurePlannedRelativeTimeDiff != null &&
+                other.departurePlannedRelativeTimeDiff != null &&
+                departurePlannedRelativeTimeDiff != other.departurePlannedRelativeTimeDiff
         )
-            previousPlannedNodeRelativeTimeDiff.compareTo(other.previousPlannedNodeRelativeTimeDiff)
+            departurePlannedRelativeTimeDiff.compareTo(other.departurePlannedRelativeTimeDiff)
 
         // If equal, take the train which has the smallest time since its departure.
         // Unlike the first check, this includes stop time.
@@ -118,12 +117,16 @@ data class STDCMNode(
         val realTime = getRealTime(updatedTimeData)
         val timeDiff = plannedTimingData.getTimeDiff(realTime)
         val relativeTimeDiff = plannedTimingData.getBeforeOrAfterRelativeTimeDiff(timeDiff)
+        if (timeData.totalRunningTime <= 0) {
+            return relativeTimeDiff
+        }
+        assert(infraExplorer.getStepTracker().hasReachedDestination())
         // If time diff is positive, adding delay won't decrease relative time diff: return
         // relativeTimeDiff
         if (timeDiff >= 0) return relativeTimeDiff
 
         val maxAddedDelay = computeMaxAddedDelay(updatedTimeData)
-        val maxTime = getRealTime(updatedTimeData) + maxAddedDelay
+        val maxTime = realTime + maxAddedDelay
 
         val maxTimeDiff =
             min(
@@ -159,26 +162,9 @@ data class STDCMNode(
         if (isBeforeFirstStop()) {
             return updatedTimeData.maxFirstDepartureDelaying
         }
-        var maxAddedDelay = Double.POSITIVE_INFINITY
-
-        // List of stops that haven't been reached on this node
-        var nextStopIndex = timeData.stopTimeData.size - 1
-        if (stopDuration == null) nextStopIndex++
-        val nextStops =
-            updatedTimeData.stopTimeData.subList(nextStopIndex, updatedTimeData.stopTimeData.size)
-
-        // We keep track of how much time we've added at each stop
-        // (which can be ignored for local time changes)
-        var possibleTimeRemovedFromStops = 0.0
-        for (stop in nextStops) {
-            maxAddedDelay =
-                min(maxAddedDelay, stop.maxDepartureDelayBeforeStop - possibleTimeRemovedFromStops)
-            possibleTimeRemovedFromStops += stop.currentDuration - stop.minDuration
-        }
-        return min(
-            maxAddedDelay,
-            updatedTimeData.maxDepartureDelayingWithoutConflict - possibleTimeRemovedFromStops,
-        )
+        var lastStop = updatedTimeData.stopTimeData.lastOrNull()!!
+        var maxAddedDelay = lastStop.maxDepartureDelayBeforeStop
+        return min(maxAddedDelay, updatedTimeData.maxDepartureDelayingWithoutConflict)
     }
 
     /**
