@@ -6,7 +6,7 @@ import type { StudyState } from 'applications/operationalStudies/views/Study/con
 import type { SelectOptionObject } from 'common/BootstrapSNCF/SelectImprovedSNCF';
 import { SMALL_INPUT_MAX_LENGTH, SMALL_TEXT_AREA_MAX_LENGTH, isInvalidString } from 'utils/strings';
 
-import type { StudyForm } from './components/AddOrEditStudyModal';
+import type { StudyForm } from './AddOrEditStudyModal';
 
 export const createSelectOptions = (
   t: TFunction<'operational-studies'>,

@@ -27,13 +27,14 @@ import TextareaSNCF from 'common/BootstrapSNCF/TextareaSNCF';
 import { useOsrdConfActions } from 'common/osrdContext';
 import DeleteItemsModal from 'modules/project/components/DeleteItemsModal';
 import { cleanScenarioLocalStorage } from 'modules/scenario/helpers/utils';
-import { checkStudyFields, createSelectOptions } from 'modules/study/utils';
 import { setFailure, setSuccess } from 'reducers/main';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 import useInputChange from 'utils/hooks/useInputChange';
 import useModalFocusTrap from 'utils/hooks/useModalFocusTrap';
 import useOutsideClick from 'utils/hooks/useOutsideClick';
+
+import { createSelectOptions, checkStudyFields } from './utils';
 
 export type StudyForm = StudyCreateForm & {
   id?: number;
