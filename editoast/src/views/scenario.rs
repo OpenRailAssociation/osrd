@@ -186,7 +186,7 @@ pub(in crate::views) async fn create(
         move |mut conn, study, project| {
             async move {
                 if project.id != project_id {
-                    return Err(ProjectError::NotFound { project_id }.into());
+                    return Err::<_, InternalError>(ProjectError::NotFound { project_id }.into());
                 }
 
                 Timetable::exists_or_fail(&mut conn, timetable_id, || {
@@ -201,7 +201,8 @@ pub(in crate::views) async fn create(
 
                 let scenario = scenario_cs.study_id(study.id).create(&mut conn).await?;
 
-                ScenarioWithDetails::from_scenario(scenario, &mut conn).await
+                let details = ScenarioWithDetails::from_scenario(scenario, &mut conn).await?;
+                Ok((details, study, project))
             }
             .scope_boxed()
         },
@@ -239,13 +240,13 @@ pub(in crate::views) async fn delete(
         return Err(AuthorizationError::Forbidden.into());
     }
 
-    let ((), _, _) = Study::transactional_content_update(
+    Study::transactional_content_update(
         db_pool.get().await?,
         study_id,
         move |mut conn, study, project| {
             async move {
                 if project.id != project_id {
-                    return Err(ProjectError::NotFound { project_id }.into());
+                    return Err::<_, InternalError>(ProjectError::NotFound { project_id }.into());
                 }
 
                 let scenario = Scenario::retrieve_or_fail(conn.clone(), scenario_id, || {
@@ -322,13 +323,13 @@ pub(in crate::views) async fn patch(
         return Err(AuthorizationError::Forbidden.into());
     }
 
-    let (details, _, study, project) = Scenario::transactional_content_update(
+    let (details, study, project) = Scenario::transactional_content_update(
         db_pool.get().await?,
         scenario_id,
-        move |mut conn, _, study, project| {
+        move |mut conn, _scenario, study, project| {
             async move {
                 if project.id != project_id {
-                    return Err(ProjectError::NotFound { project_id }.into());
+                    return Err::<_, InternalError>(ProjectError::NotFound { project_id }.into());
                 }
                 if study.id != study_id {
                     return Err(StudyError::NotFound { study_id }.into());
@@ -347,7 +348,8 @@ pub(in crate::views) async fn patch(
                     })
                     .await?;
 
-                ScenarioWithDetails::from_scenario(scenario, &mut conn).await
+                let details = ScenarioWithDetails::from_scenario(scenario, &mut conn).await?;
+                Ok((details, study, project))
             }
             .scope_boxed()
         },
@@ -399,7 +401,7 @@ pub(in crate::views) async fn get(
                 })
                 .await?;
                 if study.project_id != project.id {
-                    return Err(ProjectError::NotFound { project_id }.into());
+                    return Err::<_, InternalError>(ProjectError::NotFound { project_id }.into());
                 }
 
                 let scenario = Scenario::retrieve_or_fail(conn.clone(), scenario_id, || {

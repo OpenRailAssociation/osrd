@@ -79,42 +79,35 @@ impl Study {
         conn: DbConnection,
         study_id: i64,
         f: F,
-    ) -> Result<(T, Self, Project), InternalError>
+    ) -> Result<T, InternalError>
     where
         T: Send,
         E: Into<InternalError> + Send, // EditoastError bound will be removed when retrieve will return the model's error
-        F: for<'a> FnOnce(
-                DbConnection,
-                &'a mut Self,
-                &'a mut Project,
-            ) -> ScopedBoxFuture<'a, 'a, Result<T, E>>
+        F: FnOnce(DbConnection, Self, Project) -> ScopedBoxFuture<'static, 'static, Result<T, E>>
             + Send
             + 'static,
     {
         conn.transaction(|mut conn| {
             async move {
-                let mut study = Self::retrieve_or_fail(conn.clone(), study_id, || {
+                let study = Self::retrieve_or_fail(conn.clone(), study_id, || {
                     StudyError::NotFound { study_id }
                 })
                 .await?;
 
-                let ((t, mut study), project) = Project::transactional_content_update(
+                let id = study.id;
+                let t = Project::transactional_content_update(
                     conn.clone(),
                     study.project_id,
-                    |conn, project| {
-                        async move {
-                            let res = f(conn.clone(), &mut study, project).await;
-                            res.map(|t| (t, study))
-                        }
-                        .scope_boxed()
-                    },
+                    |conn, project| async move { f(conn, study, project).await }.scope_boxed(),
                 )
                 .await?;
 
-                study.last_modification = Utc::now();
-                study.save(&mut conn).await?;
+                Study::changeset()
+                    .last_modification(Utc::now())
+                    .update(&mut conn, id)
+                    .await?;
 
-                Ok((t, study, project))
+                Ok(t)
             }
             .scope_boxed()
         })

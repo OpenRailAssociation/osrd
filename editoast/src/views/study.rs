@@ -141,7 +141,7 @@ pub(in crate::views) async fn create(
                     .into_study_changeset(project.id)?
                     .create(&mut conn)
                     .await?;
-                Ok::<_, InternalError>(study)
+                Ok::<_, InternalError>((study, project))
             }
             .scope_boxed()
         },
@@ -328,10 +328,10 @@ pub(in crate::views) async fn patch(
         return Err(AuthorizationError::Forbidden.into());
     }
 
-    let (response, _, project) = Study::transactional_content_update(
+    let (response, project) = Study::transactional_content_update(
         db_pool.get().await?,
         study_id,
-        move |mut conn, _, project| {
+        move |mut conn, _study, project| {
             async move {
                 if project.id != project_id {
                     return Err::<_, InternalError>(StudyError::NotFound { study_id }.into());
@@ -341,7 +341,7 @@ pub(in crate::views) async fn patch(
                     .update_or_fail(&mut conn, study_id, || StudyError::NotFound { study_id })
                     .await?;
                 let study_scenarios = StudyWithScenarioCount::try_fetch(&mut conn, study).await?;
-                Ok::<_, InternalError>(study_scenarios)
+                Ok::<_, InternalError>((study_scenarios, project))
             }
             .scope_boxed()
         },
