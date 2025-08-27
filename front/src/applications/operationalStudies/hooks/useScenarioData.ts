@@ -12,7 +12,6 @@ import {
   formatTrainScheduleWithDetails,
 } from 'modules/timetableItem/helpers/formatTimetableItemWithDetails';
 import { getExceptionFromOccurrenceId } from 'modules/timetableItem/helpers/pacedTrain';
-import { getOperationalStudiesElectricalProfileSetId } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 import type { TimetableItemId, TimetableItem } from 'reducers/osrdconf/types';
 import { getTrainIdUsedForProjection } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
@@ -38,7 +37,6 @@ type ScenarioBroadcastMessage =
 
 const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithStatus) => {
   const dispatch = useAppDispatch();
-  const electricalProfileSetId = useSelector(getOperationalStudiesElectricalProfileSetId);
   const trainIdUsedForProjection = useSelector(getTrainIdUsedForProjection);
 
   const [timetableItems, setTimetableItems] = useState<TimetableItem[]>();
@@ -98,7 +96,7 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithStatus) => 
     updateProjectedTimetableItemDepartureTime,
   } = useLazyProjectTrains({
     infraId: scenario.infra_id,
-    electricalProfileSetId,
+    electricalProfileSetId: scenario.electrical_profile_set_id,
     path: projectionPath?.pathfinding,
     operationalPoints: projectionPath?.operationalPoints,
   });
@@ -111,7 +109,7 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithStatus) => 
     updateSimulatedTimetableItemDepartureTime,
   } = useLazySimulateTrains({
     infraId: scenario.infra_id,
-    electricalProfileSetId,
+    electricalProfileSetId: scenario.electrical_profile_set_id,
     rollingStocks,
     onProgress: (summaries) => {
       projectTimetableItems([...summaries.keys()].map((id) => timetableItemsById.get(id)!));
