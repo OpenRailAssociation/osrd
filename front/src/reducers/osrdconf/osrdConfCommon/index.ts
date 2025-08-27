@@ -25,9 +25,6 @@ export const defaultCommonConf: OsrdConfState = {
 };
 
 type CommonConfReducers<S extends OsrdConfState> = InfraStateReducers<S> & {
-  ['updateProjectID']: CaseReducer<S, PayloadAction<S['projectID']>>;
-  ['updateStudyID']: CaseReducer<S, PayloadAction<S['studyID']>>;
-  ['updateScenarioID']: CaseReducer<S, PayloadAction<S['scenarioID']>>;
   ['updateTimetableID']: CaseReducer<S, PayloadAction<S['timetableID']>>;
   ['updateRollingStockID']: CaseReducer<S, PayloadAction<S['rollingStockID']>>;
   ['updateSpeedLimitByTag']: CaseReducer<S, PayloadAction<S['speedLimitByTag'] | null>>;
@@ -37,15 +34,6 @@ export function buildCommonConfReducers<S extends OsrdConfState>(): CommonConfRe
   return {
     ...buildInfraStateReducers<S>(),
     ...buildMapStateReducer<OsrdConfState>(),
-    updateProjectID(state: Draft<S>, action: PayloadAction<S['projectID']>) {
-      state.projectID = action.payload;
-    },
-    updateStudyID(state: Draft<S>, action: PayloadAction<S['studyID']>) {
-      state.studyID = action.payload;
-    },
-    updateScenarioID(state: Draft<S>, action: PayloadAction<S['scenarioID']>) {
-      state.scenarioID = action.payload;
-    },
     updateTimetableID(state: Draft<S>, action: PayloadAction<S['timetableID']>) {
       state.timetableID = action.payload;
     },

@@ -24,7 +24,6 @@ import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import SelectImprovedSNCF from 'common/BootstrapSNCF/SelectImprovedSNCF';
 import TextareaSNCF from 'common/BootstrapSNCF/TextareaSNCF';
-import { useOsrdConfActions } from 'common/osrdContext';
 import DeleteItemsModal from 'modules/project/components/DeleteItemsModal';
 import { cleanScenarioLocalStorage } from 'modules/scenario/helpers/utils';
 import { setFailure, setSuccess } from 'reducers/main';
@@ -71,7 +70,6 @@ const AddOrEditStudyModal = ({ editionMode, study, scenarios }: AddOrEditStudyMo
   const [currentStudy, setCurrentStudy] = useState<StudyForm>(study || emptyStudy);
   const [displayErrors, setDisplayErrors] = useState(false);
   const { projectId } = useParams() as StudyParams;
-  const { updateStudyID } = useOsrdConfActions();
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
 
@@ -122,7 +120,6 @@ const AddOrEditStudyModal = ({ editionMode, study, scenarios }: AddOrEditStudyMo
       })
         .unwrap()
         .then((createdStudy) => {
-          dispatch(updateStudyID(createdStudy.id));
           navigate(`projects/${projectId}/studies/${createdStudy.id}`);
           closeModal();
         });
@@ -172,7 +169,6 @@ const AddOrEditStudyModal = ({ editionMode, study, scenarios }: AddOrEditStudyMo
               text: t('study.studyDeletedDetails', { name: study.name }),
             })
           );
-          dispatch(updateStudyID(undefined));
           navigate(`projects/${projectId}/`);
           closeModal();
         });

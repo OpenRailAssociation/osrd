@@ -32,27 +32,6 @@ const testCommonConfReducers = (slice: OperationalStudiesConfSlice | StdcmConfSl
     defaultStore = createStore(slice);
   });
 
-  it('should handle updateProjectID', () => {
-    const newProjectID = 5;
-    defaultStore.dispatch(slice.actions.updateProjectID(newProjectID));
-    const state = defaultStore.getState()[slice.name];
-    expect(state.projectID).toBe(newProjectID);
-  });
-
-  it('should handle updateStudyID', () => {
-    const newStudyID = 5;
-    defaultStore.dispatch(slice.actions.updateStudyID(newStudyID));
-    const state = defaultStore.getState()[slice.name];
-    expect(state.studyID).toBe(newStudyID);
-  });
-
-  it('should handle updateScenarioID', () => {
-    const newScenarioID = 5;
-    defaultStore.dispatch(slice.actions.updateScenarioID(newScenarioID));
-    const state = defaultStore.getState()[slice.name];
-    expect(state.scenarioID).toBe(newScenarioID);
-  });
-
   it('should update infraID', () => {
     const newInfraID = 5;
     defaultStore.dispatch(slice.actions.updateInfraID(newInfraID));

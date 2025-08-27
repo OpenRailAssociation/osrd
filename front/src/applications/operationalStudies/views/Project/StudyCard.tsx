@@ -5,8 +5,6 @@ import { useNavigate } from 'react-router-dom';
 
 import studyLogo from 'assets/pictures/views/study.svg';
 import type { StudyWithScenarios } from 'common/api/osrdEditoastApi';
-import { useOsrdConfActions } from 'common/osrdContext';
-import { useAppDispatch } from 'store';
 import { useDateTimeLocale } from 'utils/date';
 import { budgetFormat } from 'utils/numbers';
 
@@ -26,14 +24,6 @@ export default function StudyCard({
   const { t } = useTranslation('operational-studies');
   const dateTimeLocale = useDateTimeLocale();
   const navigate = useNavigate();
-  const dispatch = useAppDispatch();
-  const { updateScenarioID, updateStudyID } = useOsrdConfActions();
-
-  const handleClick = () => {
-    dispatch(updateStudyID(study.id));
-    dispatch(updateScenarioID(undefined));
-    navigate(`studies/${study.id}`);
-  };
 
   return (
     <div
@@ -56,7 +46,7 @@ export default function StudyCard({
         <button
           data-testid="openStudy"
           className="btn btn-primary btn-sm"
-          onClick={handleClick}
+          onClick={() => navigate(`studies/${study.id}`)}
           type="button"
         >
           <span className="mr-2">{t('operational-studies-management.open')}</span>
