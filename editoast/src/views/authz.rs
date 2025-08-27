@@ -2,7 +2,6 @@ use std::collections::HashMap;
 use std::collections::HashSet;
 
 use crate::error::Result;
-use crate::models;
 use crate::models::Infra;
 use crate::views::Authentication;
 use ::authz;
@@ -349,19 +348,19 @@ pub(in crate::views) async fn subjects_with_grant_on_resource(
                 // Query the subjects from the database.
                 // OpenFGA might have returned subjects that don't exist, so these will be filtered out.
                 // The pagination will be correct even in this case.
-                let (subjects, stats) = models::Subject::list_paginated(
+                let (subjects, stats) = editoast_models::Subject::list_paginated(
                     &mut conn,
                     pagination
                         .into_selection_settings()
-                        .filter(move || models::Subject::ID.eq_any(subjects_id.clone()))
-                        .order_by(move || models::Subject::ID.asc()),
+                        .filter(move || editoast_models::Subject::ID.eq_any(subjects_id.clone()))
+                        .order_by(move || editoast_models::Subject::ID.asc()),
                 )
                 .await?;
 
                 // Take the IDs of the subjects that were returned by the database — which do exist for sure now.
                 let subjects_id = subjects
                     .into_iter()
-                    .map(|models::Subject { id }| id)
+                    .map(|editoast_models::Subject { id }| id)
                     .collect_vec();
 
                 // Query the database for users and groups details.
