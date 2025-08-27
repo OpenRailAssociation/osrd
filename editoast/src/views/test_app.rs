@@ -423,7 +423,10 @@ impl TestApp {
         block_on(async move {
             use editoast_models::prelude::*;
 
-            if models::User::exists(&mut conn, subject_id).await.unwrap() {
+            if editoast_models::User::exists(&mut conn, subject_id)
+                .await
+                .unwrap()
+            {
                 authz::Subject::User(authz::User(subject_id))
             } else if models::Group::exists(&mut conn, subject_id).await.unwrap() {
                 authz::Subject::Group(authz::Group(subject_id))

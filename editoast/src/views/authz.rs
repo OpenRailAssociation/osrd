@@ -365,18 +365,18 @@ pub(in crate::views) async fn subjects_with_grant_on_resource(
                     .collect_vec();
 
                 // Query the database for users and groups details.
-                let users = models::User::list(
+                let users = editoast_models::User::list(
                     &mut conn,
                     SelectionSettings::new()
                         .filter({
                             let ids = subjects_id.clone();
-                            move || models::User::ID.eq_any(ids.clone())
+                            move || editoast_models::User::ID.eq_any(ids.clone())
                         })
-                        .order_by(move || models::User::ID.asc()),
+                        .order_by(move || editoast_models::User::ID.asc()),
                 )
                 .await?
                 .into_iter()
-                .map(|models::User { id, name, .. }| (id, name))
+                .map(|editoast_models::User { id, name, .. }| (id, name))
                 .collect::<HashMap<_, _>>();
 
                 let groups = models::Group::list(
@@ -484,11 +484,11 @@ pub(in crate::views) async fn update_grants(
         let mut conn = db_pool.get().await?;
         let mut conn2 = conn.clone();
         let (users, groups) = tokio::try_join!(
-            models::User::list(
+            editoast_models::User::list(
                 &mut conn,
                 SelectionSettings::new().filter({
                     let ids = subjects_id.clone();
-                    move || models::User::ID.eq_any(ids.clone())
+                    move || editoast_models::User::ID.eq_any(ids.clone())
                 })
             ),
             models::Group::list(
@@ -499,7 +499,7 @@ pub(in crate::views) async fn update_grants(
         )?;
         users
             .into_iter()
-            .map(|models::User { id, .. }| (id, authz::Subject::User(authz::User(id))))
+            .map(|editoast_models::User { id, .. }| (id, authz::Subject::User(authz::User(id))))
             .chain(
                 groups
                     .into_iter()
