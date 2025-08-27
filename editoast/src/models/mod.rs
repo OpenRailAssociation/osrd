@@ -23,7 +23,7 @@ pub mod scenario;
 pub mod stdcm_search_environment;
 pub mod study;
 pub mod sub_category;
-pub mod subject;
+
 pub mod tags;
 pub mod temporary_speed_limits;
 pub mod timetable;
@@ -41,7 +41,7 @@ pub use round_trips::TrainScheduleRoundTrips;
 pub use scenario::Scenario;
 pub use study::Study;
 pub use sub_category::SubCategory;
-pub use subject::Subject;
+
 pub use tags::Tags;
 pub use train_schedule::TrainSchedule;
 
