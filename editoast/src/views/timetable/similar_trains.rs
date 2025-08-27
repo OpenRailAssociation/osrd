@@ -71,6 +71,34 @@ struct RollingStockCharacteristics {
     speed_limit_tag: Option<String>,
 }
 
+impl RollingStockCharacteristics {
+    async fn validate(
+        &self,
+        conn: &mut DbConnection,
+        speed_limit_tag_ids: &SpeedLimitTagIds,
+    ) -> Result<()> {
+        if !RollingStock::exists(conn, self.name.clone()).await? {
+            return Err(SimilarTrainsError::RollingStockNotFound {
+                rolling_stock_name: self.name.clone(),
+            }
+            .into());
+        }
+
+        if self
+            .speed_limit_tag
+            .as_ref()
+            .is_some_and(|tag| !speed_limit_tag_ids.contains(tag))
+        {
+            return Err(SimilarTrainsError::SpeedLimitNotFound {
+                speed_limit_tag: self.speed_limit_tag.as_ref().cloned().unwrap(),
+            }
+            .into());
+        }
+
+        Ok(())
+    }
+}
+
 #[editoast_derive::openapi_schema]
 #[derive(Clone, Deserialize, ToSchema)]
 #[cfg_attr(test, derive(PartialEq, Serialize))]
@@ -209,7 +237,9 @@ pub(in crate::views) async fn similar_trains(
     // Step 1: input validation and preprocessing
     // ------------------------------------------
 
-    validate_rolling_stock_input(&mut conn, &rolling_stock, &speed_limit_tag_ids).await?;
+    rolling_stock
+        .validate(&mut conn, &speed_limit_tag_ids)
+        .await?;
 
     if !Timetable::exists(&mut conn, timetable_id).await? {
         return Err(SimilarTrainsError::TimetableNotFound { timetable_id }.into());
@@ -409,35 +439,6 @@ pub(in crate::views) async fn similar_trains(
     Ok(Json(Response {
         similar_trains: response_items,
     }))
-}
-
-async fn validate_rolling_stock_input(
-    conn: &mut DbConnection,
-    RollingStockCharacteristics {
-        name,
-        speed_limit_tag,
-        ..
-    }: &RollingStockCharacteristics,
-    speed_limit_tag_ids: &SpeedLimitTagIds,
-) -> Result<()> {
-    if !RollingStock::exists(conn, name.clone()).await? {
-        return Err(SimilarTrainsError::RollingStockNotFound {
-            rolling_stock_name: name.clone(),
-        }
-        .into());
-    }
-
-    if speed_limit_tag
-        .as_ref()
-        .is_some_and(|tag| !speed_limit_tag_ids.contains(tag))
-    {
-        return Err(SimilarTrainsError::SpeedLimitNotFound {
-            speed_limit_tag: speed_limit_tag.as_ref().cloned().unwrap(),
-        }
-        .into());
-    }
-
-    Ok(())
 }
 
 fn squash_successive_waypoints(waypoints: Vec<Waypoint>) -> Vec<Waypoint> {
