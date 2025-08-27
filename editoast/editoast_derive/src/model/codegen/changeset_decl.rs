@@ -47,7 +47,7 @@ impl ToTokens for ChangesetDecl {
             });
         } else {
             tokens.extend(quote! {
-                #[derive(Debug, Default, Queryable, AsChangeset, Insertable, #(#additional_derives),*)]
+                #[derive(Debug, Default, diesel::Queryable, diesel::AsChangeset, diesel::Insertable, #(#additional_derives),*)]
                 #[diesel(table_name = #table)]
                 #vis struct #ident {
                     #(

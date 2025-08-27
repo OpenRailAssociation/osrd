@@ -47,7 +47,7 @@ impl _TimetableField<Timetable, i64, database::tables::timetable::id> {
         crate::prelude::SortSetting(Box::new(database::tables::timetable::id.desc()))
     }
 }
-#[derive(Queryable)]
+#[derive(diesel::Queryable)]
 #[diesel(table_name = database::tables::timetable)]
 struct TimetableRow {
     #[diesel(column_name = "id")]

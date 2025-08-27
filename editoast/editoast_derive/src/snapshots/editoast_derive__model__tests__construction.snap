@@ -122,7 +122,7 @@ impl _DocumentField<Document, Vec<u8>, database::tables::osrd_infra_document::da
         )
     }
 }
-#[derive(Queryable, Debug)]
+#[derive(diesel::Queryable, Debug)]
 #[diesel(table_name = database::tables::osrd_infra_document)]
 struct DocumentRow {
     #[diesel(column_name = "id")]
@@ -132,7 +132,14 @@ struct DocumentRow {
     #[diesel(column_name = "data")]
     data: Vec<u8>,
 }
-#[derive(Debug, Default, Queryable, AsChangeset, Insertable, Debug)]
+#[derive(
+    Debug,
+    Default,
+    diesel::Queryable,
+    diesel::AsChangeset,
+    diesel::Insertable,
+    Debug
+)]
 #[diesel(table_name = database::tables::osrd_infra_document)]
 struct DocumentChangeset {
     #[diesel(deserialize_as = diesel_json::Json<String>, column_name = "content_type")]
