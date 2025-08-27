@@ -33,7 +33,6 @@ use utoipa::ToSchema;
 
 use crate::error::InternalError;
 use crate::error::Result;
-use crate::models::Document;
 use crate::models::RollingStock;
 use crate::models::RollingStockImage;
 use crate::models::rolling_stock;
@@ -41,6 +40,7 @@ use crate::models::rolling_stock::ScenarioReference;
 use crate::models::rolling_stock_livery::RollingStockLivery;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
+use editoast_models::Document;
 use editoast_models::prelude::*;
 
 #[editoast_derive::openapi_schema]

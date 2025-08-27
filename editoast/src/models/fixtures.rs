@@ -61,7 +61,6 @@ use uuid::Uuid;
 
 use crate::infra_cache::operation::create::apply_create_operation;
 use crate::models;
-use crate::models::Document;
 use crate::models::Infra;
 use crate::models::Project;
 use crate::models::RollingStock;
@@ -75,6 +74,7 @@ use crate::models::sub_category::SubCategoryChangeset;
 use crate::models::timetable::Timetable;
 use crate::models::work_schedules::WorkSchedule;
 use crate::models::work_schedules::WorkScheduleGroup;
+use editoast_models::Document;
 use editoast_models::prelude::*;
 
 use super::temporary_speed_limits::TemporarySpeedLimitGroup;

@@ -1,4 +1,3 @@
-pub mod documents;
 pub mod electrical_profiles;
 #[allow(unused)]
 #[cfg(test)]
@@ -34,7 +33,6 @@ pub mod train_schedule;
 pub mod user;
 pub mod work_schedules;
 
-pub use documents::Document;
 pub use group::Group;
 pub use infra::Infra;
 pub use infra_objects::*;
