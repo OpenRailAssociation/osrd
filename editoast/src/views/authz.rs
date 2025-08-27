@@ -379,18 +379,18 @@ pub(in crate::views) async fn subjects_with_grant_on_resource(
                 .map(|editoast_models::User { id, name, .. }| (id, name))
                 .collect::<HashMap<_, _>>();
 
-                let groups = models::Group::list(
+                let groups = editoast_models::Group::list(
                     &mut conn,
                     SelectionSettings::new()
                         .filter({
                             let ids = subjects_id.clone();
-                            move || models::Group::ID.eq_any(ids.clone())
+                            move || editoast_models::Group::ID.eq_any(ids.clone())
                         })
-                        .order_by(move || models::Group::ID.asc()),
+                        .order_by(move || editoast_models::Group::ID.asc()),
                 )
                 .await?
                 .into_iter()
-                .map(|models::Group { id, name }| (id, name))
+                .map(|editoast_models::Group { id, name }| (id, name))
                 .collect::<HashMap<_, _>>();
 
                 Ok((stats, subjects_id, users, groups))
@@ -491,20 +491,18 @@ pub(in crate::views) async fn update_grants(
                     move || editoast_models::User::ID.eq_any(ids.clone())
                 })
             ),
-            models::Group::list(
+            editoast_models::Group::list(
                 &mut conn2,
                 SelectionSettings::new()
-                    .filter(move || models::Group::ID.eq_any(subjects_id.clone()))
+                    .filter(move || editoast_models::Group::ID.eq_any(subjects_id.clone()))
             )
         )?;
         users
             .into_iter()
             .map(|editoast_models::User { id, .. }| (id, authz::Subject::User(authz::User(id))))
-            .chain(
-                groups
-                    .into_iter()
-                    .map(|models::Group { id, .. }| (id, authz::Subject::Group(authz::Group(id)))),
-            )
+            .chain(groups.into_iter().map(|editoast_models::Group { id, .. }| {
+                (id, authz::Subject::Group(authz::Group(id)))
+            }))
             .collect::<HashMap<_, _>>()
     };
 

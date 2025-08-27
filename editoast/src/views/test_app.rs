@@ -40,7 +40,6 @@ use crate::ValkeyClient;
 use crate::generated_data::speed_limit_tags_config::SpeedLimitTagIds;
 use crate::infra_cache::InfraCache;
 use crate::map::MapLayers;
-use crate::models;
 use crate::models::PgAuthDriver;
 use crate::valkey_utils::ValkeyConfig;
 use crate::views::service_router;
@@ -428,7 +427,10 @@ impl TestApp {
                 .unwrap()
             {
                 authz::Subject::User(authz::User(subject_id))
-            } else if models::Group::exists(&mut conn, subject_id).await.unwrap() {
+            } else if editoast_models::Group::exists(&mut conn, subject_id)
+                .await
+                .unwrap()
+            {
                 authz::Subject::Group(authz::Group(subject_id))
             } else {
                 panic!("Subject with ID '{subject_id}' does not exist");
