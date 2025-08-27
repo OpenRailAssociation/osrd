@@ -376,7 +376,7 @@ pub(in crate::views) async fn patch(
     };
     let project_changeset: Changeset<Project> = form.into();
 
-    let (project, _) =
+    let project =
         Project::transactional_content_update(conn.clone(), project_id, |mut conn, project| {
             async move {
                 let mut project = project_changeset

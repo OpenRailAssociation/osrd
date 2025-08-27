@@ -78,43 +78,42 @@ impl Scenario {
         conn: DbConnection,
         scenario_id: i64,
         f: F,
-    ) -> Result<(T, Self, Study, Project), InternalError>
+    ) -> Result<T, InternalError>
     where
         T: Send,
         E: Into<InternalError> + Send, // EditoastError bound will be removed when retrieve will return the model's error
-        F: for<'a> FnOnce(
+        F: FnOnce(
                 DbConnection,
-                &'a mut Self,
-                &'a mut Study,
-                &'a mut Project,
-            ) -> ScopedBoxFuture<'a, 'a, Result<T, E>>
+                Self,
+                Study,
+                Project,
+            ) -> ScopedBoxFuture<'static, 'static, Result<T, E>>
             + Send
             + 'static,
     {
         conn.transaction(|mut conn| {
             async move {
-                let mut scenario = Self::retrieve_or_fail(conn.clone(), scenario_id, || {
+                let scenario = Self::retrieve_or_fail(conn.clone(), scenario_id, || {
                     ScenarioError::NotFound { scenario_id }
                 })
                 .await?;
 
-                let ((t, mut scenario), study, project) = Study::transactional_content_update(
+                let id = scenario.id;
+                let t = Study::transactional_content_update(
                     conn.clone(),
                     scenario.study_id,
                     |conn, study, project| {
-                        async move {
-                            let res = f(conn.clone(), &mut scenario, study, project).await;
-                            res.map(|t| (t, scenario))
-                        }
-                        .scope_boxed()
+                        async move { f(conn, scenario, study, project).await }.scope_boxed()
                     },
                 )
                 .await?;
 
-                scenario.last_modification = Utc::now();
-                scenario.save(&mut conn).await?;
+                Scenario::changeset()
+                    .last_modification(Utc::now())
+                    .update(&mut conn, id)
+                    .await?;
 
-                Ok((t, scenario, study, project))
+                Ok(t)
             }
             .scope_boxed()
         })

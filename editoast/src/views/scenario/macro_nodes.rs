@@ -206,7 +206,7 @@ pub(in crate::views) async fn create(
         return Err(AuthorizationError::Forbidden.into());
     }
 
-    let (created, _, _, _) = Scenario::transactional_content_update(
+    let created = Scenario::transactional_content_update(
         db_pool.get().await?,
         scenario_id,
         move |mut conn, scenario, study, project| {
@@ -300,7 +300,7 @@ pub(in crate::views) async fn update(
         return Err(AuthorizationError::Forbidden.into());
     }
 
-    let (updated, _, _, _) = Scenario::transactional_content_update(
+    let updated = Scenario::transactional_content_update(
         db_pool.get().await?,
         scenario_id,
         move |mut conn, scenario, study, project| {

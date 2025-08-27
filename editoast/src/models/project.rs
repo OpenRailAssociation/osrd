@@ -150,26 +150,28 @@ impl Project {
         conn: DbConnection,
         project_id: i64,
         f: F,
-    ) -> Result<(T, Self), InternalError>
+    ) -> Result<T, InternalError>
     where
         T: Send,
         E: Into<InternalError> + Send, // EditoastError bound will be removed when retrieve will return the model's error
-        F: for<'a> FnOnce(DbConnection, &'a mut Self) -> ScopedBoxFuture<'a, 'a, Result<T, E>>
-            + Send,
+        F: FnOnce(DbConnection, Self) -> ScopedBoxFuture<'static, 'static, Result<T, E>> + Send,
     {
         conn.transaction(|mut conn| {
             async move {
-                let mut project = Self::retrieve_or_fail(conn.clone(), project_id, || {
+                let project = Self::retrieve_or_fail(conn.clone(), project_id, || {
                     ProjectError::NotFound { project_id }
                 })
                 .await?;
 
-                let res = f(conn.clone(), &mut project).await;
+                let id = project.id;
+                let res = f(conn.clone(), project).await;
 
-                project.last_modification = Utc::now();
-                project.save(&mut conn).await?;
+                Project::changeset()
+                    .last_modification(Utc::now())
+                    .update(&mut conn, id)
+                    .await?;
 
-                res.map(|t| (t, project)).map_err(Into::into)
+                res.map_err(Into::into)
             }
             .scope_boxed()
         })
