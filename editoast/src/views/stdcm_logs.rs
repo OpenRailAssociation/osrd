@@ -12,7 +12,7 @@ use utoipa::IntoParams;
 use utoipa::ToSchema;
 
 use crate::error::Result;
-use crate::models::stdcm_log::StdcmLog;
+use editoast_models::StdcmLog;
 use editoast_models::prelude::*;
 
 use super::AuthenticationExt;
@@ -148,6 +148,8 @@ pub(in crate::views) async fn stdcm_log_by_id_or_trace_id(
 
 #[cfg(test)]
 mod tests {
+    use super::*;
+
     use std::str::FromStr;
 
     use authz;
@@ -176,7 +178,6 @@ mod tests {
     use crate::models::fixtures::create_fast_rolling_stock;
     use crate::models::fixtures::create_small_infra;
     use crate::models::fixtures::create_timetable;
-    use crate::models::stdcm_log::StdcmLog;
     use crate::views::path::pathfinding::PathfindingResult;
     use crate::views::stdcm_logs::StdcmLogListResponse;
     use crate::views::test_app;

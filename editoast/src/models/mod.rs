@@ -7,7 +7,6 @@ pub mod infra_objects;
 pub mod layers;
 pub mod macro_node;
 pub mod round_trips;
-pub mod stdcm_log;
 
 mod auth_driver;
 pub use auth_driver::PgAuthDriver;

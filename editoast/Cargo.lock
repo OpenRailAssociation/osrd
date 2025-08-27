@@ -1474,14 +1474,18 @@ dependencies = [
 name = "editoast_models"
 version = "0.1.0"
 dependencies = [
+ "chrono",
  "common",
+ "core_client",
  "database",
  "diesel",
  "diesel-async",
+ "diesel_json",
  "editoast_derive",
  "editoast_models",
  "futures 0.3.31",
  "futures-util",
+ "linkme",
  "openssl",
  "opentelemetry-semantic-conventions",
  "paste",
@@ -1490,6 +1494,7 @@ dependencies = [
  "regex",
  "schemas",
  "serde",
+ "serde_json",
  "strum",
  "thiserror 2.0.16",
  "tokio",

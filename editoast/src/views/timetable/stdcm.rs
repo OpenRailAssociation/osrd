@@ -46,8 +46,6 @@ use crate::error::InternalError;
 use crate::error::Result;
 use crate::models::Infra;
 use crate::models::RollingStock;
-use crate::models::stdcm_log::StdcmLog;
-use crate::models::stdcm_log::StdcmResponseOrError;
 use crate::models::timetable::Timetable;
 use crate::models::train_schedule::TrainSchedule;
 use crate::views::AuthenticationExt;
@@ -59,7 +57,9 @@ use crate::views::timetable::simulation;
 use crate::views::timetable::simulation::SimulationResponseSuccess;
 use crate::views::timetable::simulation::consist_train_simulation_batch;
 use crate::views::timetable::train_simulation_batch;
+use editoast_models::StdcmLog;
 use editoast_models::prelude::*;
+use editoast_models::stdcm_log::StdcmResponseOrError;
 
 #[editoast_derive::openapi_schema]
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, ToSchema)]

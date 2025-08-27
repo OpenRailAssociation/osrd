@@ -3,12 +3,14 @@ pub mod document;
 pub mod pagination;
 pub mod prelude;
 pub mod rolling_stock;
+pub mod stdcm_log;
 
 // Export all Model at crate root
 pub use authn::group::Group;
 pub use authn::subject::Subject;
 pub use authn::user::User;
 pub use document::Document;
+pub use stdcm_log::StdcmLog;
 
 use std::sync::LazyLock;
 

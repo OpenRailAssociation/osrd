@@ -8,7 +8,9 @@ use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
 
-use editoast_models::prelude::*;
+use crate::prelude::*;
+
+use crate as editoast_models; // HACK: remove after all models are in this crate
 
 #[editoast_derive::openapi_schema]
 #[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
