@@ -10,6 +10,7 @@ import remarkGfm from 'remark-gfm';
 import AddNewCard from 'applications/operationalStudies/components/AddNewCard';
 import BreadCrumbs from 'applications/operationalStudies/components/BreadCrumbs';
 import FilterTextField from 'applications/operationalStudies/components/FilterTextField';
+import AddOrEditStudyModal from 'applications/operationalStudies/components/Study/AddOrEditStudyModal';
 import useMultiSelection from 'applications/operationalStudies/hooks/useMultiSelection';
 import { getDocument } from 'common/api/documentApi';
 import {
@@ -24,7 +25,6 @@ import { Loader, Spinner } from 'common/Loaders';
 import SelectionToolbar from 'common/SelectionToolbar';
 import AddOrEditProjectModal from 'modules/project/components/AddOrEditProjectModal';
 import { cleanScenarioLocalStorage } from 'modules/scenario/helpers/utils';
-import AddOrEditStudyModal from 'modules/study/components/AddOrEditStudyModal';
 import { budgetFormat } from 'utils/numbers';
 
 import StudyCard from './StudyCard';
