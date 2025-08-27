@@ -4,6 +4,7 @@ pub mod prelude;
 pub mod rolling_stock;
 
 // Export all Model at crate root
+pub use authn::group::Group;
 pub use authn::user::User;
 pub use document::Document;
 

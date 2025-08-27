@@ -11,7 +11,6 @@ pub mod round_trips;
 mod auth_driver;
 pub use auth_driver::PgAuthDriver;
 
-pub mod group;
 pub mod paced_train;
 pub mod pagination;
 pub mod project;
@@ -31,7 +30,6 @@ pub mod towed_rolling_stock;
 pub mod train_schedule;
 pub mod work_schedules;
 
-pub use group::Group;
 pub use infra::Infra;
 pub use infra_objects::*;
 pub use paced_train::PacedTrain;
