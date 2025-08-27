@@ -9,8 +9,8 @@ use super::Infra;
 use crate::error::Result;
 use crate::generated_data::infra_error::InfraError;
 use crate::generated_data::infra_error::InfraErrorTypeLabel;
-use crate::models::pagination::load_for_pagination;
 use database::DbConnection;
+use editoast_models::pagination::load_for_pagination;
 
 #[derive(Default, Debug, Clone, PartialEq, Eq, Deserialize, utoipa::ToSchema)]
 #[serde(rename_all = "lowercase")]

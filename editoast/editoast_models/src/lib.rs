@@ -1,5 +1,6 @@
 pub mod authn;
 pub mod document;
+pub mod pagination;
 pub mod prelude;
 pub mod rolling_stock;
 
