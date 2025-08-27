@@ -1484,6 +1484,7 @@ dependencies = [
  "futures-util",
  "openssl",
  "opentelemetry-semantic-conventions",
+ "paste",
  "postgis_diesel",
  "postgres-openssl",
  "regex",

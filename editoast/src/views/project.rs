@@ -23,11 +23,11 @@ use super::operational_studies::OperationalStudiesOrderingParam;
 use super::pagination::PaginatedList;
 use super::pagination::PaginationStats;
 use crate::error::Result;
-use crate::models::Document;
 use crate::models::Project;
 use crate::models::Tags;
 use crate::views::AuthorizationError;
 use crate::views::pagination::PaginationQueryParams;
+use editoast_models::Document;
 
 #[derive(Debug, Error, EditoastError, derive_more::From)]
 #[editoast_error(base_id = "project")]

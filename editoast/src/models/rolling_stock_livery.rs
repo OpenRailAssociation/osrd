@@ -2,8 +2,8 @@ use database::DbConnection;
 use editoast_derive::Model;
 use editoast_models::prelude::*;
 
-use super::Document;
 use crate::error::Result;
+use editoast_models::Document;
 
 #[cfg(test)]
 use serde::Deserialize;
@@ -59,8 +59,8 @@ pub mod tests {
     use database::DbConnectionPoolV2;
     use rstest::rstest;
 
-    use crate::models::Document;
     use crate::models::fixtures::create_rolling_stock_livery_fixture;
+    use editoast_models::Document;
 
     #[rstest]
     async fn create_delete_rolling_stock_livery() {

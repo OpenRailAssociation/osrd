@@ -1,5 +1,9 @@
+pub mod documents;
 pub mod prelude;
 pub mod rolling_stock;
+
+// Export all Model at crate root
+pub use documents::Document;
 
 use std::sync::LazyLock;
 
