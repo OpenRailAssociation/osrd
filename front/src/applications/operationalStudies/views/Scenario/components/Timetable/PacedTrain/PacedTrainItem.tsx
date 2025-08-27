@@ -8,6 +8,7 @@ import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
+import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import { EditedElementContainerContext } from 'applications/operationalStudies/views/Scenario/components/EditedElementContainerContext';
 import { formatPacedTrainWithDetailsToPacedTrainPayload } from 'applications/operationalStudies/views/Scenario/components/ManageTimetableItem/helpers/formatTimetableItemPayload';
 import {
@@ -28,7 +29,6 @@ import {
 } from 'modules/timetableItem/helpers/updateTimetableItemHelpers';
 import type { PacedTrainWithDetails } from 'modules/timetableItem/types';
 import { setFailure, setSuccess } from 'reducers/main';
-import { getOperationalStudiesTimetableID } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 import type {
   PacedTrainId,
   PacedTrainWithPacedTrainId,
@@ -96,7 +96,9 @@ const PacedTrainItem = ({
   const dispatch = useAppDispatch();
   const { openModal } = useContext(ModalContext);
   const { closeModal } = useContext(ModalContext);
-  const timetableId = useSelector(getOperationalStudiesTimetableID);
+
+  const { timetableId } = useScenarioContext();
+  const { rollingStocks } = useRollingStockContext();
 
   const trainIdUsedForProjection = useSelector(getTrainIdUsedForProjection);
 
@@ -119,7 +121,6 @@ const PacedTrainItem = ({
   }, [trainIdUsedForProjection, pacedTrain]);
 
   const { summary } = pacedTrain;
-  const { rollingStocks } = useRollingStockContext();
   const { occurrences, occurrencesCount } = useOccurrences(pacedTrain, rollingStocks);
 
   const occurrenceActions = useOccurrenceActions({
@@ -162,7 +163,7 @@ const PacedTrainItem = ({
     await storePacedTrain(
       pacedTrain.id,
       updatedPacedTrainPayload,
-      timetableId!,
+      timetableId,
       dispatch,
       upsertTimetableItems,
       removePacedTrains

@@ -68,7 +68,7 @@ const TimetableBoardWrapper = ({
   const [showTrainDetails, setShowTrainDetails] = useState(false);
   const [roundTripsModalIsOpen, setRoundTripsModalIsOpen] = useState(false);
 
-  const { infraId } = useScenarioContext();
+  const { infraId, timetableId } = useScenarioContext();
   const { openModal } = useContext(ModalContext);
 
   const { t } = useTranslation('operational-studies');
@@ -330,6 +330,7 @@ const TimetableBoardWrapper = ({
           roundTripsModalIsOpen={roundTripsModalIsOpen}
           setRoundTripsModalIsOpen={setRoundTripsModalIsOpen}
           infraId={infraId}
+          timetableId={timetableId}
           timetableItems={timetableItems}
           refreshNge={refreshNge}
         />

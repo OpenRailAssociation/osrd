@@ -3,6 +3,7 @@ import { useCallback } from 'react';
 import { useSelector } from 'react-redux';
 import { v4 as uuidV4 } from 'uuid';
 
+import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import { updatePacedTrainExceptionsList } from 'applications/operationalStudies/views/Scenario/components/ManageTimetableItem/helpers/buildPacedTrainException';
 import { formatPacedTrainWithDetailsToPacedTrainPayload } from 'applications/operationalStudies/views/Scenario/components/ManageTimetableItem/helpers/formatTimetableItemPayload';
 import type { PacedTrain } from 'common/api/osrdEditoastApi';
@@ -16,7 +17,6 @@ import type {
   PacedTrainWithDetails,
   SimulatedException,
 } from 'modules/timetableItem/types';
-import { getOperationalStudiesTimetableID } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 import type { OccurrenceId, TimetableItem, TimetableItemId } from 'reducers/osrdconf/types';
 import { updateSelectedTrainId, updateTrainIdUsedForProjection } from 'reducers/simulationResults';
 import { getSelectedTrainId } from 'reducers/simulationResults/selectors';
@@ -43,8 +43,8 @@ const useOccurrenceActions = ({
   removePacedTrains,
 }: OccurrenceActionsParams) => {
   const dispatch = useAppDispatch();
+  const { timetableId } = useScenarioContext();
 
-  const timetableId = useSelector(getOperationalStudiesTimetableID);
   const selectedTrainId = useSelector(getSelectedTrainId);
 
   const selectOccurrence = useCallback((occurrenceId: OccurrenceId) => {
@@ -133,7 +133,7 @@ const useOccurrenceActions = ({
       storePacedTrain(
         pacedTrain.id,
         formattedPacedTrain,
-        timetableId!,
+        timetableId,
         dispatch,
         upsertTimetableItems,
         removePacedTrains
@@ -193,7 +193,7 @@ const useOccurrenceActions = ({
       storePacedTrain(
         pacedTrain.id,
         formattedPacedTrain,
-        timetableId!,
+        timetableId,
         dispatch,
         upsertTimetableItems,
         removePacedTrains
@@ -214,7 +214,7 @@ const useOccurrenceActions = ({
       storePacedTrain(
         pacedTrain.id,
         updatedPacedTrainPayload,
-        timetableId!,
+        timetableId,
         dispatch,
         upsertTimetableItems,
         removePacedTrains

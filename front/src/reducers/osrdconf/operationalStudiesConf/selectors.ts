@@ -68,7 +68,6 @@ export const {
   getProjectID: getOperationalStudiesProjectID,
   getStudyID: getOperationalStudiesStudyID,
   getScenarioID: getOperationalStudiesScenarioID,
-  getTimetableID: getOperationalStudiesTimetableID,
   getElectricalProfileSetId: getOperationalStudiesElectricalProfileSetId,
   getRollingStockID: getOperationalStudiesRollingStockID,
   getSpeedLimitByTag: getOperationalStudiesSpeedLimitByTag,

@@ -22,7 +22,6 @@ import type { ProjectionData } from 'modules/simulationResult/types';
 import TimesStopsOutput from 'modules/timesStops/TimesStopsOutput';
 import { findExceptionWithOccurrenceId } from 'modules/timetableItem/helpers/pacedTrain';
 import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
-import { getOperationalStudiesTimetableID } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 import type { TimetableItemId, TrainId } from 'reducers/osrdconf/types';
 import { updateSelectedTrainId } from 'reducers/simulationResults';
 import { getTrainIdUsedForProjection } from 'reducers/simulationResults/selectors';
@@ -62,9 +61,7 @@ const SimulationResults = ({
 }: SimulationResultsProps) => {
   const { t } = useTranslation('operational-studies');
   const dispatch = useAppDispatch();
-  const { infraId } = useScenarioContext();
-
-  const timetableId = useSelector(getOperationalStudiesTimetableID);
+  const { infraId, timetableId } = useScenarioContext();
 
   const simulationResults = useSimulationResults();
   const selectedTrainId = simulationResults?.train.id;
