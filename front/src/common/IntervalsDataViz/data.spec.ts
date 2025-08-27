@@ -9,9 +9,9 @@ import type { LinearMetadataItem } from './types';
 
 const DEBUG = false;
 
-interface Degree {
+type Degree = {
   degree: number;
-}
+};
 
 const defaultLine: LineString = {
   type: 'LineString',

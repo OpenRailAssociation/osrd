@@ -20,7 +20,7 @@ import { getEditorState } from 'reducers/editor/selectors';
 import { useMapSettings } from 'reducers/globalMap';
 import { NULL_GEOMETRY } from 'types';
 
-interface BasePointEditionLayersProps {
+type BasePointEditionLayersProps = {
   // eslint-disable-next-line react/no-unused-prop-types
   map: Map;
   mergeEntityWithNearestPoint?: (
@@ -28,7 +28,7 @@ interface BasePointEditionLayersProps {
     nearestPoint: NonNullable<PointEditionState<EditorEntity>['nearestPoint']>
   ) => EditorEntity;
   interactiveLayerIDRegex?: RegExp;
-}
+};
 
 export const BasePointEditionLayers = ({
   mergeEntityWithNearestPoint,

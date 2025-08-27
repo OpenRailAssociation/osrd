@@ -7,10 +7,10 @@ import { buildMapStateReducer, defaultMapSettings } from 'reducers/globalMap';
 import type { MapSettings, Viewport } from 'reducers/globalMap/types';
 import { gpsRound } from 'utils/helpers';
 
-export interface MapState {
+export type MapState = {
   url: typeof MAP_URL;
   mapSettings: MapSettings;
-}
+};
 
 export const mapInitialState: MapState = {
   url: MAP_URL,

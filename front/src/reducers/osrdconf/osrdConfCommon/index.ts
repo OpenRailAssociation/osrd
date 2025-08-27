@@ -24,7 +24,7 @@ export const defaultCommonConf: OsrdConfState = {
   ...infraState,
 };
 
-interface CommonConfReducers<S extends OsrdConfState> extends InfraStateReducers<S> {
+type CommonConfReducers<S extends OsrdConfState> = InfraStateReducers<S> & {
   ['updateProjectID']: CaseReducer<S, PayloadAction<S['projectID']>>;
   ['updateStudyID']: CaseReducer<S, PayloadAction<S['studyID']>>;
   ['updateScenarioID']: CaseReducer<S, PayloadAction<S['scenarioID']>>;
@@ -32,7 +32,7 @@ interface CommonConfReducers<S extends OsrdConfState> extends InfraStateReducers
   ['updateElectricalProfileSetId']: CaseReducer<S, PayloadAction<S['electricalProfileSetId']>>;
   ['updateRollingStockID']: CaseReducer<S, PayloadAction<S['rollingStockID']>>;
   ['updateSpeedLimitByTag']: CaseReducer<S, PayloadAction<S['speedLimitByTag'] | null>>;
-}
+};
 
 export function buildCommonConfReducers<S extends OsrdConfState>(): CommonConfReducers<S> {
   return {

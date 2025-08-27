@@ -32,9 +32,9 @@ import type { TrackSectionEntity } from '../../trackEdition/types';
 
 type EditorPoint = BufferStopEntity | DetectorEntity | SignalEntity;
 
-interface PointEditionLeftPanelProps {
+type PointEditionLeftPanelProps = {
   type: EditoastType;
-}
+};
 
 /**
  * Generic component for point edition left panel:

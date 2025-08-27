@@ -59,12 +59,12 @@ export function getDetectorsNameLayerProps(params: {
   return res;
 }
 
-interface DetectorsProps {
+type DetectorsProps = {
   colors: Theme;
   layerOrder: number;
   infraID: number | undefined;
   highlightedArea?: Geometry;
-}
+};
 
 const Detectors = ({ colors, layerOrder, infraID, highlightedArea }: DetectorsProps) => {
   const layerPoint = getDetectorsLayerProps({ colors, sourceTable: 'detectors', highlightedArea });

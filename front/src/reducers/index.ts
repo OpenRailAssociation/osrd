@@ -123,7 +123,7 @@ type AllActions = Action;
 
 export type OsrdSlice = ConfSlice | EditorSlice | MapViewerSlice;
 
-export interface RootState {
+export type RootState = {
   [userSlice.name]: UserState;
   [mapSlice.name]: MapState;
   [mapViewerSlice.name]: MapViewerState;
@@ -134,7 +134,7 @@ export interface RootState {
   [simulationResultsSlice.name]: SimulationResultsState;
   [osrdEditoastApi.reducerPath]: ReturnType<typeof osrdEditoastApi.reducer>;
   [osrdGatewayApi.reducerPath]: ReturnType<typeof osrdGatewayApi.reducer>;
-}
+};
 
 export const rootInitialState: RootState = {
   [userSlice.name]: userInitialState,

@@ -43,10 +43,7 @@ const NotificationWrapper = (notif: Notification) => {
   );
 };
 
-interface Props {
-  notifications: Array<Notification>;
-}
-const Notifications = (props: Props) => {
+const Notifications = (props: { notifications: Array<Notification> }) => {
   const { notifications } = props;
 
   return (

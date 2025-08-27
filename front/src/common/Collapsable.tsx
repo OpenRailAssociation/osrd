@@ -5,10 +5,11 @@ import cx from 'classnames';
 import { omit } from 'lodash';
 import { useTranslation } from 'react-i18next';
 
-interface CollapsableProps extends Omit<HTMLAttributes<unknown>, 'children' | 'collapsed'> {
+type CollapsableProps = Omit<HTMLAttributes<unknown>, 'children' | 'collapsed'> & {
   children: [React.JSX.Element, React.JSX.Element];
   collapsed?: boolean;
-}
+};
+
 const Collapsable = (props: CollapsableProps) => {
   const { children, collapsed = false, className } = props;
   const { t } = useTranslation();

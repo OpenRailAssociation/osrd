@@ -15,14 +15,14 @@ import { castErrorToFailure } from 'utils/error';
  * - locked: true if the rolling stock is native in the database, can't be updated/deleted
  * - notLocked: true if the rolling stock is created by the user, can be updated/deleted
  */
-export interface RollingStockFilters {
+export type RollingStockFilters = {
   id?: number;
   text: string;
   elec: boolean;
   thermal: boolean;
   locked: boolean;
   notLocked: boolean;
-}
+};
 
 export type RollingStockFilterKeys = keyof Omit<RollingStockFilters, 'text'>;
 

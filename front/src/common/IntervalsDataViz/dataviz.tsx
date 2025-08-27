@@ -16,7 +16,7 @@ import { ResizingScale, SimpleScale } from './Scales';
 import type { IntervalItemBaseProps, LinearMetadataItem, OperationalPoint } from './types';
 import { preventDefault, getPositionFromMouseEvent } from './utils';
 
-export interface LinearMetadataDatavizProps<T> extends IntervalItemBaseProps<T> {
+export type LinearMetadataDatavizProps<T> = IntervalItemBaseProps<T> & {
   /**
    * Data to display on ranges below the main chart. The data must cover the whole path.
    * Ex: display the electrification ranges to help the user selecting the correct power restrictions on path
@@ -57,7 +57,7 @@ export interface LinearMetadataDatavizProps<T> extends IntervalItemBaseProps<T> 
    * Event when the user is resizing an item
    */
   onResize?: (index: number, gap: number, finalized: boolean) => void;
-}
+};
 
 /**
  * Component that displays a linear metadata of a line.

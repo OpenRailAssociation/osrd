@@ -51,9 +51,9 @@ const emptyProject: ProjectCreateForm = {
   tags: [],
 };
 
-export interface ProjectForm extends ProjectCreateForm {
+export type ProjectForm = ProjectCreateForm & {
   id?: number;
-}
+};
 
 type AddOrEditProjectModalProps = {
   editionMode?: boolean;

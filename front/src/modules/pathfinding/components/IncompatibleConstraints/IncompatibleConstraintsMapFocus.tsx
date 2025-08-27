@@ -8,9 +8,9 @@ import { useMap } from 'react-map-gl/maplibre';
 
 import { useMapSettings } from 'reducers/globalMap';
 
-interface IncompatibleConstraintsMapFocusProps extends HTMLAttributes<unknown> {
+type IncompatibleConstraintsMapFocusProps = HTMLAttributes<unknown> & {
   geojson?: FeatureCollection<LineString>;
-}
+};
 
 const IncompatibleConstraintsMapFocus = (props: IncompatibleConstraintsMapFocusProps) => {
   const map = useMap();

@@ -18,7 +18,7 @@ import useOutsideClick from 'utils/hooks/useOutsideClick';
 /**
  * Type of the modal context
  */
-export interface ModalContextType {
+export type ModalContextType = {
   isOpen: boolean;
   size?: string;
   className?: string;
@@ -29,7 +29,7 @@ export interface ModalContextType {
     optionalClasses?: string
   ) => void;
   closeModal: () => void;
-}
+};
 
 /**
  * Default modal context (used when creating the context)

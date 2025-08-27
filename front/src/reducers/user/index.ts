@@ -3,7 +3,7 @@ import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import type { ApiError } from 'common/api/baseGeneratedApis';
 import type { Role, SearchResultItemUser } from 'common/api/osrdEditoastApi';
 
-export interface UserState {
+export type UserState = {
   isLogged: boolean;
   impersonatedUser?: SearchResultItemUser;
   loginError?: ApiError;
@@ -12,7 +12,7 @@ export interface UserState {
   userPreferences: { safeWord: string };
   userRoles: Role[];
   account: Record<string, string>;
-}
+};
 
 export const userInitialState: UserState = {
   isLogged: false,

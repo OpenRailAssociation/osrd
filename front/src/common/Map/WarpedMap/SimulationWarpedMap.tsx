@@ -24,17 +24,17 @@ import { clip } from 'utils/mapHelper';
 
 const WIDTH = 300;
 
-interface PathStatePayload {
+type PathStatePayload = {
   path: Feature<LineString>;
   pathBBox: BBox2d;
   warpedBBox: BBox2d;
   transform: WarpingFunction;
-}
+};
 
-interface DataStatePayload {
+type DataStatePayload = {
   osm: Record<string, FeatureCollection>;
   osrd: Partial<Record<Layer, FeatureCollection>>;
-}
+};
 
 function transformDataStatePayload(
   data: Record<string, FeatureCollection>,

@@ -9,10 +9,10 @@ import ModalFooterSNCF from './ModalFooterSNCF';
 import ModalHeaderSNCF from './ModalHeaderSNCF';
 import { ModalContext } from './ModalProvider';
 
-export interface ModalProps {
+export type ModalProps = {
   title?: string;
   withCloseButton?: boolean;
-}
+};
 
 export const Modal = ({
   children,

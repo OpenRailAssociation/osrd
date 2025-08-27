@@ -12,13 +12,13 @@ export type NullGeometry = typeof NULL_GEOMETRY;
 export type Bbox = [Position, Position];
 export type Path = Array<Position>;
 
-export interface RectangleZone {
+export type RectangleZone = {
   type: 'rectangle';
   points: [Position, Position];
-}
-export interface PolygonZone {
+};
+export type PolygonZone = {
   type: 'polygon';
   points: Position[];
-}
+};
 export type Zone = RectangleZone | PolygonZone;
 export type OmitLayer<T> = Omit<T, 'id' | 'source'>;

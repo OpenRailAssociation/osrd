@@ -6,7 +6,7 @@ export type LinearMetadataItem<T = { [key: string]: unknown }> = T & {
   end: number;
 };
 
-export interface IntervalItemBaseProps<T> {
+export type IntervalItemBaseProps<T> = {
   /**
    * Boolean indicating if we are going to create a new item
    */
@@ -97,10 +97,10 @@ export interface IntervalItemBaseProps<T> {
   options?: { resizingScale?: boolean; fullHeightItem?: boolean; showValues?: boolean };
 
   disableDrag?: boolean;
-}
+};
 
-export interface OperationalPoint {
+export type OperationalPoint = {
   id?: string;
   position: number;
   name?: string;
-}
+};

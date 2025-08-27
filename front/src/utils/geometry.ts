@@ -45,13 +45,13 @@ export function lengthFromLineCoordinates(coordinates?: Position[]) {
   return NaN;
 }
 
-export interface NearestPointOnLine extends Feature<Point> {
+export type NearestPointOnLine = Feature<Point> & {
   properties: {
     index: number;
     dist: number;
     location: number;
   };
-}
+};
 /**
  * This function has the same signature than the one of turf, but it is more precise.
  *

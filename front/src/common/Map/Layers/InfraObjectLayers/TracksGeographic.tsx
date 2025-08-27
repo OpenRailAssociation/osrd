@@ -10,12 +10,12 @@ import type { Theme } from 'types';
 import geoMainLayer from './getGeographicLayerProps';
 import OrderedLayer from '../OrderedLayer';
 
-interface TracksGeographicProps {
+type TracksGeographicProps = {
   colors: Theme;
   layerOrder?: number;
   infraID: number | undefined;
   highlightedArea?: Geometry;
-}
+};
 
 function TracksGeographic({ colors, layerOrder, infraID, highlightedArea }: TracksGeographicProps) {
   const { showIGNBDORTHO, showIGNSCAN25 } = useMapSettings();

@@ -11,14 +11,14 @@ import type { Theme, OmitLayer } from 'types';
 
 import OrderedLayer from '../OrderedLayer';
 
-interface SpeedLimitsProps {
+type SpeedLimitsProps = {
   colors: Theme;
   layerOrder: number;
   punctualLayerOrder: number;
   infraID?: number;
   layersSettings: MapState['mapSettings']['layersSettings'];
   highlightedArea?: Geometry;
-}
+};
 
 export function getSpeedSectionsTag({ speedlimittag }: LayersSettings): string {
   return speedlimittag !== null ? `speed_limit_by_tag_${speedlimittag}` : 'null';

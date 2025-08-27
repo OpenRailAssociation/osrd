@@ -3,14 +3,15 @@ import { useTranslation } from 'react-i18next';
 
 import type { RouteCandidate } from 'applications/editor/tools/routeEdition/types';
 
-interface SearchRouteItemProps {
+type SearchRouteItemProps = {
   index: number;
   data: RouteCandidate;
   color: string;
   selected: boolean;
   mode: 'normal' | 'selection';
   onSelect: (index: number) => void;
-}
+};
+
 export const SearchRouteItem = ({
   index,
   data,

@@ -1,12 +1,12 @@
 export * from './geospatial';
 
 // Notification type
-export interface Notification {
+export type Notification = {
   title?: string;
   text: string;
   date?: Date;
   type: 'success' | 'error' | 'warning';
-}
+};
 
 //
 //  Misc

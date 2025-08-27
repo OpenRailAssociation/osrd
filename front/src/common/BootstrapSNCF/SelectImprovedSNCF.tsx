@@ -5,7 +5,7 @@ import { isObject, isNil } from 'lodash';
 
 import { type SelectOptionObject, getOptionLabel, getOptionValue } from './SelectSNCF';
 
-interface SelectProps<T> {
+type SelectProps<T> = {
   inline?: boolean;
   label?: ReactNode;
   options: T[];
@@ -22,7 +22,7 @@ interface SelectProps<T> {
   setSelectVisibility?: (arg: boolean) => void;
   noTogglingHeader?: boolean;
   disabled?: boolean;
-}
+};
 
 function SelectImproved<T extends string | SelectOptionObject>({
   inline,

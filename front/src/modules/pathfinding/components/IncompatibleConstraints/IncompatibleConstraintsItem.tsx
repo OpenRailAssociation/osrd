@@ -10,7 +10,7 @@ import { distanceToHumanReadable } from 'utils/strings';
 import type { IncompatibleConstraintEnhanced } from './types';
 import { getIcon } from './utils';
 
-interface IncompatibleConstraintItemProps {
+type IncompatibleConstraintItemProps = {
   data: IncompatibleConstraintEnhanced;
   isHovered?: boolean;
   isSelected?: boolean;
@@ -18,7 +18,7 @@ interface IncompatibleConstraintItemProps {
   onLeave: () => void;
   onClick: () => void;
   gotoMap: () => void;
-}
+};
 
 const IncompatibleConstraintItem = ({
   data,

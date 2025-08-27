@@ -17,10 +17,10 @@ import { Spinner } from 'common/Loaders';
 import { useInfraID } from 'common/osrdContext';
 import { useAppDispatch } from 'store';
 
-interface RoutesListProps {
+type RoutesListProps = {
   type: EditoastType;
   id: string;
-}
+};
 
 /**
  * Generic component to show routes starting or ending from the edited waypoint:

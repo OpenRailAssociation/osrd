@@ -2,11 +2,11 @@ import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
 import type { Notification } from 'types';
 
-export interface MainState {
+export type MainState = {
   loading: number;
   notifications: Array<Notification>;
   lastInterfaceVersion: string;
-}
+};
 
 export const mainInitialState: MainState = {
   // Number of running task

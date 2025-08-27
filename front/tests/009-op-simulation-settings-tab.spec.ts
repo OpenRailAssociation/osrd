@@ -78,13 +78,13 @@ test.describe('Simulation Settings Tab Verification', () => {
 
   type TranslationKeys = keyof typeof frTranslations;
 
-  // Define CellData interface for table cell data
-  interface CellData {
+  // Define CellData type for table cell data
+  type CellData = {
     stationName: string;
     header: TranslationKeys;
     value: string;
     marginForm?: string;
-  }
+  };
 
   test.beforeAll('Add electrical profile via API and fetch infrastructure', async () => {
     electricalProfileSet = await setElectricalProfile();

@@ -1,10 +1,10 @@
 import { type Page } from 'playwright';
 
-interface ScrollOptions {
+type ScrollOptions = {
   stepSize?: number;
   timeout?: number;
   scrollOffsetThreshold?: number;
-}
+};
 
 /**
  * Scroll a specified container element horizontally by the given step size, with a delay between steps.

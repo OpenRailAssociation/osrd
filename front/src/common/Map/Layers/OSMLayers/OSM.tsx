@@ -9,12 +9,12 @@ import mapStyleJson from 'assets/mapstyles/OSMStyle.json';
 import OrderedLayer, { type OrderedLayerProps } from 'common/Map/Layers/OrderedLayer';
 import type { MapStyle } from 'reducers/globalMap/types';
 
-interface OSMProps {
+type OSMProps = {
   mapIsLoaded?: boolean;
   layerOrder?: number;
   mapStyle: MapStyle;
   showOSM3dBuildings?: boolean;
-}
+};
 
 function getMapStyle(mapStyle: string): LayerProps[] {
   switch (mapStyle) {

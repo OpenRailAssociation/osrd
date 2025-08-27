@@ -11,7 +11,7 @@ import getMastLayerProps from './getMastLayerProps';
 import OrderedLayer from '../OrderedLayer';
 import { type SignalContext } from '../types';
 
-interface PlatformProps {
+type PlatformProps = {
   colors: Theme;
   sourceTable: string;
   hovered?: { id: string; layer: string };
@@ -19,7 +19,7 @@ interface PlatformProps {
   layerOrder: number;
   infraID: number | undefined;
   highlightedArea?: Geometry;
-}
+};
 
 const Signals = ({ colors, sourceTable, layerOrder, infraID, highlightedArea }: PlatformProps) => {
   const context: SignalContext = {

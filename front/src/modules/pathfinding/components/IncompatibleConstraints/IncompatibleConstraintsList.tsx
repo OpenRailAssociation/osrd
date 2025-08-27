@@ -8,13 +8,13 @@ import { useMapSettings } from 'reducers/globalMap';
 import IncompatibleConstraintItem from './IncompatibleConstraintsItem';
 import type { IncompatibleConstraintEnhanced } from './types';
 
-interface IncompatibleConstraintListProps {
+type IncompatibleConstraintListProps = {
   data: Array<IncompatibleConstraintEnhanced>;
   hovered: Set<string>;
   selected: Set<string>;
   onHover: (itemId: string | null) => void;
   onSelect: (itemId: string) => void;
-}
+};
 
 const IncompatibleConstraintsList = ({
   data,

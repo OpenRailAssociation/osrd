@@ -235,13 +235,13 @@ export type STDCMResultTableRow = {
   refEngine: string | null;
 };
 
-// Define interface for table cell data
-export interface CellData {
+// Define type for table cell data
+export type CellData = {
   stationName: string;
   header: string;
   value: string;
   marginForm?: string;
-}
+};
 
 export type PacedTrainDetails = {
   name: string;

@@ -3,10 +3,10 @@ import { Marker } from 'react-map-gl/maplibre';
 import type { MapSearchMarker } from 'reducers/globalMap/types';
 import type { Theme } from 'types';
 
-interface SearchMarkerProps {
+type SearchMarkerProps = {
   data: MapSearchMarker;
   colors: Theme;
-}
+};
 
 function SearchMarker(props: SearchMarkerProps) {
   const { data, colors } = props;

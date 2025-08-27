@@ -8,10 +8,10 @@ import { setFailure } from 'reducers/main';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 
-export interface TowedRollingStockFilters {
+export type TowedRollingStockFilters = {
   id?: number;
   text: string;
-}
+};
 
 const initialFilters: TowedRollingStockFilters = {
   text: '',

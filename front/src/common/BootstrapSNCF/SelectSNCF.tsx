@@ -3,10 +3,10 @@ import { type ReactNode } from 'react';
 import cx from 'classnames';
 import { isString } from 'lodash';
 
-export interface SelectOptionObject {
+export type SelectOptionObject = {
   id?: string;
   label: string;
-}
+};
 
 export function getOptionValue(option: string | SelectOptionObject): string {
   return isString(option) ? option : option.id || option.label;
@@ -15,7 +15,7 @@ export function getOptionValue(option: string | SelectOptionObject): string {
 export function getOptionLabel(option: string | SelectOptionObject): string {
   return isString(option) ? option : option.label;
 }
-interface SelectProps<T> {
+type SelectProps<T> = {
   id: string;
   label?: ReactNode;
   name?: string;
@@ -25,7 +25,7 @@ interface SelectProps<T> {
   className?: string;
   sm?: boolean;
   disabled?: boolean;
-}
+};
 
 function SelectSNCF<T extends string | SelectOptionObject>({
   id,

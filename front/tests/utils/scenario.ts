@@ -8,14 +8,14 @@ import type { ScenarioData } from './types';
 
 const scenarioData: ScenarioData = readJsonFile('tests/assets/operation-studies/scenario.json');
 
-// Define the SetupResult interface to structure the returned setup data.
-interface SetupResult {
+// Define the SetupResult type to structure the returned setup data.
+type SetupResult = {
   smallInfra: Infra;
   project: Project;
   study: Study;
   scenario: Scenario;
   timetableResult: TimetableResult;
-}
+};
 
 /**
  * Set up a scenario by fetching required infrastructure, project, study, and creating a new scenario.

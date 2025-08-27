@@ -2,10 +2,10 @@ import { Source, type LayerProps } from 'react-map-gl/maplibre';
 
 import OrderedLayer from '../OrderedLayer';
 
-interface IGN_BD_ORTHO_Props {
+type IGN_BD_ORTHO_Props = {
   layerOrder?: number;
   showIGNBDORTHO?: boolean;
-}
+};
 
 export default function IGN_BD_ORTHO({ layerOrder, showIGNBDORTHO }: IGN_BD_ORTHO_Props) {
   const IGN_BD_ORTHO_Params: LayerProps = {
