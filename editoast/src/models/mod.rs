@@ -29,7 +29,6 @@ pub mod temporary_speed_limits;
 pub mod timetable;
 pub mod towed_rolling_stock;
 pub mod train_schedule;
-pub mod user;
 pub mod work_schedules;
 
 pub use group::Group;
@@ -46,7 +45,6 @@ pub use sub_category::SubCategory;
 pub use subject::Subject;
 pub use tags::Tags;
 pub use train_schedule::TrainSchedule;
-pub use user::User;
 
 #[cfg(test)]
 mod tests {

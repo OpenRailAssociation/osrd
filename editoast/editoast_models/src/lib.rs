@@ -1,8 +1,10 @@
+pub mod authn;
 pub mod document;
 pub mod prelude;
 pub mod rolling_stock;
 
 // Export all Model at crate root
+pub use authn::user::User;
 pub use document::Document;
 
 use std::sync::LazyLock;
