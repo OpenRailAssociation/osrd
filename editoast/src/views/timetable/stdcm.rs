@@ -328,13 +328,14 @@ pub(in crate::views) async fn stdcm(
         });
 
         let stdcm_response = match stdcm_response {
-            Ok(ref response) => StdcmResponseOrError::Response(response.clone()),
-            Err(ref error) => {
-                let error: InternalError = error.clone();
-                StdcmResponseOrError::RequestError(serde_json::to_value(error.clone()).unwrap_or(
-                    serde_json::Value::String("Failed to serialize the error".into()),
-                ))
-            }
+            Ok(ref response) => StdcmResponseOrError::Response(
+                serde_json::to_value(response)
+                    .expect("we deserialized it right, no reason to fail the other way around"),
+            ),
+            Err(ref error) => StdcmResponseOrError::RequestError(
+                serde_json::to_value(error)
+                    .expect("we deserialized it right, no reason to fail the other way around"),
+            ),
         };
 
         tokio::spawn(
@@ -344,7 +345,8 @@ pub(in crate::views) async fn stdcm(
             StdcmLog::log(
                 conn,
                 trace_id.map(|trace_id| trace_id.to_string()),
-                stdcm_request,
+                serde_json::to_value(&stdcm_request)
+                    .expect("we deserialized it right, no reason to fail the other way around"),
                 stdcm_response,
                 user_id,
             )

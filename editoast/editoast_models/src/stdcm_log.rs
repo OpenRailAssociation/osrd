@@ -1,7 +1,5 @@
 use chrono::DateTime;
 use chrono::Utc;
-use core_client::stdcm::Request;
-use core_client::stdcm::Response;
 use database::DbConnection;
 use editoast_derive::Model;
 use serde::Deserialize;
@@ -15,12 +13,9 @@ use crate as editoast_models; // HACK: remove after all models are in this crate
 #[editoast_derive::openapi_schema]
 #[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
 #[serde(rename_all = "snake_case")]
-// We accepted the difference of memory size taken by variants
-// Since there is only on success and others are error cases
-#[allow(clippy::large_enum_variant)]
 pub enum StdcmResponseOrError {
     #[schema(value_type = StdcmResponse)]
-    Response(Response),
+    Response(serde_json::Value),
     RequestError(serde_json::Value),
 }
 
@@ -34,7 +29,7 @@ pub struct StdcmLog {
     pub trace_id: Option<String>,
     #[model(json)]
     #[schema(value_type = StdcmRequest)]
-    pub request: Request,
+    pub request: serde_json::Value,
     #[model(json)]
     pub response: StdcmResponseOrError,
     pub created: DateTime<Utc>,
@@ -45,7 +40,7 @@ impl StdcmLog {
     pub async fn log(
         mut conn: DbConnection,
         trace_id: Option<String>,
-        request: Request,
+        request: serde_json::Value,
         response: StdcmResponseOrError,
         user_id: Option<i64>,
     ) {
