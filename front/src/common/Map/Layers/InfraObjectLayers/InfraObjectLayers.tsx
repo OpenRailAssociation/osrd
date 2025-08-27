@@ -66,7 +66,7 @@ const InfraObjectLayers = ({
     {layersSettings.neutral_sections && (
       <NeutralSections
         colors={colors[mapStyle]}
-        layerOrder={LAYER_GROUPS_ORDER[LAYERS.DEAD_SECTIONS.GROUP]}
+        layerOrder={LAYER_GROUPS_ORDER[LAYERS.NEUTRAL_SECTIONS.GROUP]}
         infraID={infraId}
         highlightedArea={highlightedArea}
       />
