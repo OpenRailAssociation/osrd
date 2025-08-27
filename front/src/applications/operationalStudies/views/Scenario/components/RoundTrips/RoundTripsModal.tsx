@@ -2,16 +2,13 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 
 import { Button, Input } from '@osrd-project/ui-core';
 import { Filter } from '@osrd-project/ui-icons';
-import { skipToken } from '@reduxjs/toolkit/query';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
-import { useSelector } from 'react-redux';
 
 import useTimetableItemsWithPathOps from 'applications/operationalStudies/hooks/useTimetableItemsWithPathOps';
 import { checkRoundTripCompatible, groupRoundTrips } from 'applications/operationalStudies/utils';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useSubCategoryContext } from 'common/SubCategoryContext';
-import { getOperationalStudiesTimetableID } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 import type { TimetableItem, TimetableItemId } from 'reducers/osrdconf/types';
 import { useDebounce } from 'utils/helpers';
 import useModalFocusTrap from 'utils/hooks/useModalFocusTrap';
@@ -27,6 +24,7 @@ type RoundTripsModalProps = {
   roundTripsModalIsOpen: boolean;
   setRoundTripsModalIsOpen: (isOpen: boolean) => void;
   infraId: number;
+  timetableId: number;
   timetableItems: TimetableItem[];
   refreshNge: () => Promise<void>;
 };
@@ -35,6 +33,7 @@ const RoundTripsModal = ({
   roundTripsModalIsOpen,
   setRoundTripsModalIsOpen,
   infraId,
+  timetableId,
   timetableItems,
   refreshNge,
 }: RoundTripsModalProps) => {
@@ -44,8 +43,6 @@ const RoundTripsModal = ({
   const { t: commonT } = useTranslation('translation', {
     keyPrefix: 'common',
   });
-
-  const timetableId = useSelector(getOperationalStudiesTimetableID);
 
   const modalRef = useRef<HTMLDialogElement>(null);
 
@@ -57,14 +54,12 @@ const RoundTripsModal = ({
   const subCategories = useSubCategoryContext();
 
   const { data: { results: trainScheduleRoundtrips } = { results: undefined } } =
-    osrdEditoastApi.endpoints.getTimetableByIdRoundTripsTrainSchedules.useQuery(
-      timetableId ? { id: timetableId } : skipToken
-    );
+    osrdEditoastApi.endpoints.getTimetableByIdRoundTripsTrainSchedules.useQuery({
+      id: timetableId,
+    });
 
   const { data: { results: pacedTrainRoundtrips } = { results: undefined } } =
-    osrdEditoastApi.endpoints.getTimetableByIdRoundTripsPacedTrains.useQuery(
-      timetableId ? { id: timetableId } : skipToken
-    );
+    osrdEditoastApi.endpoints.getTimetableByIdRoundTripsPacedTrains.useQuery({ id: timetableId });
 
   const [postRoundTripsTrainSchedules] =
     osrdEditoastApi.endpoints.postRoundTripsTrainSchedules.useMutation();

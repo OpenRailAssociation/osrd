@@ -40,7 +40,7 @@ const CreateTimetableItemButton = ({
   const dispatch = useAppDispatch();
   const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTimetableItem' });
 
-  const { infra } = useScenarioContext();
+  const { infra, timetableId } = useScenarioContext();
 
   const simulationConf = useSelector(getOperationalStudiesConf);
 
@@ -56,7 +56,6 @@ const CreateTimetableItemButton = ({
   const createTrainSchedules = async () => {
     if (!checkCurrentConfig(simulationConf, t, dispatch, rollingStock?.name)) return;
 
-    const timetableId = simulationConf.timetableID!;
     const baseTrainName = simulationConf.name;
 
     setIsWorking(true);

@@ -17,7 +17,6 @@ const checkCurrentConfig = (
   const {
     pathSteps,
     name: trainName,
-    timetableID,
     initialSpeed,
     startTime,
     interval,
@@ -67,15 +66,6 @@ const checkCurrentConfig = (
       setFailure({
         name: t('errorMessages.timetableItemTitle'),
         message: t('errorMessages.noName'),
-      })
-    );
-  }
-  if (!timetableID) {
-    error = true;
-    dispatch(
-      setFailure({
-        name: t('errorMessages.timetableItemTitle'),
-        message: t('errorMessages.noTimetable'),
       })
     );
   }

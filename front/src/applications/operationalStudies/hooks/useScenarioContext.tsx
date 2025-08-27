@@ -9,6 +9,7 @@ type ScenarioContextType = {
   infraId: number;
   isInfraLoaded: boolean;
   scenario: ScenarioResponse;
+  timetableId: number;
   trackSectionsLoading: boolean;
   getTrackSectionsByIds: (requestedTrackIds: string[]) => Promise<Record<string, TrackSection>>;
 } | null;
@@ -34,6 +35,7 @@ export const ScenarioContextProvider = ({
       infra,
       isInfraLoaded: infra.status === 'READY',
       scenario,
+      timetableId: scenario.timetable_id,
       trackSectionsLoading,
       getTrackSectionsByIds,
     }),
