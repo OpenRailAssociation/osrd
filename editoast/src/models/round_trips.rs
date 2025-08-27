@@ -1,9 +1,9 @@
-use crate::models::pagination::load_for_pagination;
 use crate::views::pagination::PaginationStats;
 use database::DbConnection;
 use diesel::ExpressionMethods;
 use diesel::QueryDsl;
 use editoast_derive::Model;
+use editoast_models::pagination::load_for_pagination;
 use itertools::Itertools;
 
 #[derive(Clone, Debug, Model)]

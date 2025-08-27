@@ -11,8 +11,6 @@ use diesel::sql_types::Untyped;
 use diesel_async::RunQueryDsl;
 use std::ops::DerefMut;
 
-use crate::error::Result;
-
 #[derive(QueryId)]
 struct PaginatedQuery<Q> {
     query: Q,
@@ -36,7 +34,7 @@ pub async fn load_for_pagination<Q, T>(
     query: Q,
     page: u64,
     page_size: u64,
-) -> Result<(Vec<T>, u64)>
+) -> Result<(Vec<T>, u64), database::DatabaseError>
 where
     Q: Query + QueryId + QueryFragment<Pg> + Send,
     T: QueryableByName<Pg> + Send + 'static,
@@ -47,7 +45,8 @@ where
         offset: ((page - 1) * page_size) as i64,
     };
 
-    let results = query
+    // implicit typing confuses rust-analyzer ¯\_(ツ)_/¯
+    let results: Vec<_> = query
         .load::<RowWithCount<T>>(conn.write().await.deref_mut())
         .await?;
 

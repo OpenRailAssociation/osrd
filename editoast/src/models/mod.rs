@@ -12,7 +12,6 @@ mod auth_driver;
 pub use auth_driver::PgAuthDriver;
 
 pub mod paced_train;
-pub mod pagination;
 pub mod project;
 pub mod railjson;
 pub mod rolling_stock;
