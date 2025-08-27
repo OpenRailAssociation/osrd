@@ -11,7 +11,6 @@ import {
   findExceptionWithOccurrenceId,
 } from 'modules/timetableItem/helpers/pacedTrain';
 import useSelectedTimetableItem from 'modules/timetableItem/hooks/useSelectedTimetableItem';
-import { getOperationalStudiesElectricalProfileSetId } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 import { getSelectedTrainId } from 'reducers/simulationResults/selectors';
 import { Duration } from 'utils/duration';
 import {
@@ -30,8 +29,7 @@ import { useScenarioContext } from './useScenarioContext';
 const useSimulationResults = (): SimulationResults | undefined => {
   const { t } = useTranslation('operational-studies');
 
-  const { infraId } = useScenarioContext();
-  const electricalProfileSetId = useSelector(getOperationalStudiesElectricalProfileSetId);
+  const { infraId, electricalProfileSetId } = useScenarioContext();
   const selectedTrainId = useSelector(getSelectedTrainId);
 
   const timetableItem = useSelectedTimetableItem();

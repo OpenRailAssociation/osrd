@@ -29,7 +29,6 @@ type CommonConfReducers<S extends OsrdConfState> = InfraStateReducers<S> & {
   ['updateStudyID']: CaseReducer<S, PayloadAction<S['studyID']>>;
   ['updateScenarioID']: CaseReducer<S, PayloadAction<S['scenarioID']>>;
   ['updateTimetableID']: CaseReducer<S, PayloadAction<S['timetableID']>>;
-  ['updateElectricalProfileSetId']: CaseReducer<S, PayloadAction<S['electricalProfileSetId']>>;
   ['updateRollingStockID']: CaseReducer<S, PayloadAction<S['rollingStockID']>>;
   ['updateSpeedLimitByTag']: CaseReducer<S, PayloadAction<S['speedLimitByTag'] | null>>;
 };
@@ -49,12 +48,6 @@ export function buildCommonConfReducers<S extends OsrdConfState>(): CommonConfRe
     },
     updateTimetableID(state: Draft<S>, action: PayloadAction<S['timetableID']>) {
       state.timetableID = action.payload;
-    },
-    updateElectricalProfileSetId(
-      state: Draft<S>,
-      action: PayloadAction<S['electricalProfileSetId']>
-    ) {
-      state.electricalProfileSetId = action.payload;
     },
     updateRollingStockID(state: Draft<S>, action: PayloadAction<S['rollingStockID']>) {
       state.rollingStockID = action.payload;

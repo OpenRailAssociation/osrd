@@ -10,6 +10,7 @@ type ScenarioContextType = {
   isInfraLoaded: boolean;
   scenario: ScenarioResponse;
   timetableId: number;
+  electricalProfileSetId?: number;
   trackSectionsLoading: boolean;
   getTrackSectionsByIds: (requestedTrackIds: string[]) => Promise<Record<string, TrackSection>>;
 } | null;
@@ -36,6 +37,7 @@ export const ScenarioContextProvider = ({
       isInfraLoaded: infra.status === 'READY',
       scenario,
       timetableId: scenario.timetable_id,
+      electricalProfileSetId: scenario.electrical_profile_set_id,
       trackSectionsLoading,
       getTrackSectionsByIds,
     }),
