@@ -6,7 +6,6 @@ import { useSelector } from 'react-redux';
 
 import { type Conflict } from 'common/api/osrdEditoastApi';
 import SimulationWarpedMap from 'common/Map/WarpedMap/SimulationWarpedMap';
-import ResizableSection from 'common/ResizableSection';
 import SimulationResultsMap from 'modules/simulationResult/components/SimulationResultsMap';
 import SpaceTimeChartWrapper, {
   MANCHETTE_WITH_SPACE_TIME_CHART_DEFAULT_HEIGHT,
@@ -39,7 +38,7 @@ import { useScenarioContext } from '../../../hooks/useScenarioContext';
 import useSimulationResults from '../../../hooks/useSimulationResults';
 import type { Board } from '../../../types';
 
-const HIDDEN_CHART_TOP_HEIGHT = 35;
+const BOARD_WRAPPER_HEADER_HEIGHT = 35;
 const SDD_INITIAL_HEIGHT = 460;
 const SDD_MIN_HEIGHT = 400;
 
@@ -219,7 +218,7 @@ const SimulationResults = ({
           <div className="std-container">
             <div
               className="simulation-warped-map d-flex flex-row align-items-stretch"
-              style={{ height: manchetteWithSpaceTimeChartHeight - HIDDEN_CHART_TOP_HEIGHT }}
+              style={{ height: manchetteWithSpaceTimeChartHeight - BOARD_WRAPPER_HEADER_HEIGHT }}
             >
               <button
                 type="button"
@@ -259,7 +258,7 @@ const SimulationResults = ({
                     }
                     conflicts={conflictZones}
                     projectionLoaderData={projectionData.projectionLoaderData}
-                    height={manchetteWithSpaceTimeChartHeight - HIDDEN_CHART_TOP_HEIGHT}
+                    height={manchetteWithSpaceTimeChartHeight - BOARD_WRAPPER_HEADER_HEIGHT}
                     handleTrainDrag={handleTrainDrag}
                     onTrainClick={(trainId) => {
                       dispatch(updateSelectedTrainId(trainId));
@@ -280,32 +279,23 @@ const SimulationResults = ({
           {simulationResults.isValid && (
             <>
               {/* SIMULATION : SPEED SPACE CHART */}
-              {activeBoards.has('sdd') && (
-                <div className="speed-distance-diagram-section">
-                  <ResizableSection
-                    height={SDDHeight}
-                    setHeight={setSDDHeight}
-                    minHeight={SDD_MIN_HEIGHT}
-                  >
-                    <BoardWrapper name={t('simulationResults.speedDistanceDiagram')}>
-                      <div className="osrd-simulation-container">
-                        <div className="chart-container">
-                          <SpeedDistanceDiagramWrapper
-                            timetableItemSimulation={simulationResults.simulation}
-                            selectedTimetableItemPowerRestrictions={
-                              simulationResults.powerRestrictions
-                            }
-                            rollingStock={simulationResults.rollingStock}
-                            pathProperties={simulationResults.pathProperties}
-                            height={SDDHeight}
-                            setHeight={setSDDHeight}
-                          />
-                        </div>
-                      </div>
-                    </BoardWrapper>
-                  </ResizableSection>
-                </div>
-              )}
+              <BoardWrapper
+                name={t('simulationResults.speedDistanceDiagram')}
+                hidden={!activeBoards.has('sdd')}
+                resizable
+                height={SDDHeight + BOARD_WRAPPER_HEADER_HEIGHT}
+                setHeight={setSDDHeight}
+                minHeight={SDD_MIN_HEIGHT}
+              >
+                <SpeedDistanceDiagramWrapper
+                  timetableItemSimulation={simulationResults.simulation}
+                  selectedTimetableItemPowerRestrictions={simulationResults.powerRestrictions}
+                  rollingStock={simulationResults.rollingStock}
+                  pathProperties={simulationResults.pathProperties}
+                  height={SDDHeight}
+                  setHeight={setSDDHeight}
+                />
+              </BoardWrapper>
 
               {/* SIMULATION : MAP */}
               <BoardWrapper hidden={!activeBoards.has('map')} name={t('boards.map')} withFooter>
