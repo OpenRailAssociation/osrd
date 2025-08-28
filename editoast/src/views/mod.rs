@@ -724,6 +724,7 @@ pub struct OsrdyneConfig {
     pub core: CoreConfig,
 }
 
+#[derive(Clone)]
 pub struct OpenfgaConfig {
     pub url: Url,
     pub store: String,
@@ -795,80 +796,101 @@ impl FromRef<AppState> for Arc<CoreClient> {
 }
 
 impl AppState {
+    #[tracing::instrument(skip_all, level = "info", err, name = "AppState initialization")]
     async fn init(config: ServerConfig) -> anyhow::Result<Self> {
-        info!("Building application state...");
-
-        // Config database
-        let valkey = ValkeyClient::new(config.valkey_config.clone())?.into();
-
-        // Create database pool
-        let db_pool = {
-            let PostgresConfig {
+        #[tracing::instrument(skip_all, level = "info", err, name = "PostgreSQL connection")]
+        async fn connect_db(
+            PostgresConfig {
                 database_url,
                 pool_size,
-            } = config.postgres_config.clone();
+            }: PostgresConfig,
+        ) -> anyhow::Result<Arc<DbConnectionPoolV2>> {
             let pool = DbConnectionPoolV2::try_initialize(database_url, pool_size).await?;
-            Arc::new(pool)
-        };
+            Ok(Arc::new(pool))
+        }
+        let db_pool_fut =
+            tokio::spawn(connect_db(config.postgres_config.clone()).in_current_span());
 
-        // Setup infra cache map
-        let infra_caches = DashMap::<i64, InfraCache>::default().into();
-
-        // Static list of configured speed-limit tag ids
-        let speed_limit_tag_ids = Arc::new(SpeedLimitTagIds::load());
-
-        // Build Core client
-        let core_client = {
-            let CoreConfig {
+        #[tracing::instrument(skip_all, level = "info", err, name = "Core client connection")]
+        async fn connect_core_client(
+            CoreConfig {
                 timeout,
                 single_worker,
                 num_channels,
                 worker_pool_id,
-            } = config.osrdyne_config.core.clone();
+            }: CoreConfig,
+            mq_url: Url,
+        ) -> anyhow::Result<Arc<CoreClient>> {
             let options = mq_client::Options {
-                uri: config.osrdyne_config.mq_url.clone(),
+                uri: mq_url,
                 worker_pool_identifier: worker_pool_id,
                 timeout: timeout.num_seconds() as u64,
                 single_worker,
                 num_channels,
             };
-            CoreClient::new_mq(options).await?.into()
-        };
+            let client = CoreClient::new_mq(options).await?;
+            Ok(Arc::new(client))
+        }
+        let core_client_fut = tokio::spawn(
+            connect_core_client(
+                config.osrdyne_config.core.clone(),
+                config.osrdyne_config.mq_url.clone(),
+            )
+            .in_current_span(),
+        );
 
+        #[tracing::instrument(skip_all, level = "info", err, name = "OpenFGA connection")]
+        async fn connect_openfga(
+            openfga_config: OpenfgaConfig,
+            enable_authorization: bool,
+        ) -> anyhow::Result<fga::Client> {
+            let mut openfga = {
+                tracing::info!(url = %openfga_config.url, "connecting to OpenFGA");
+                match fga::Client::try_with_store(
+                    openfga_config.store.clone(),
+                    openfga_config.try_as_settings()?,
+                )
+                .await
+                {
+                    Err(fga::client::InitializationError::NotFound(store)) => {
+                        tracing::info!(store, "store not found, creating it");
+                        fga::Client::try_new_store(store, openfga_config.try_as_settings()?).await?
+                    }
+                    result => result?,
+                }
+            };
+            tracing::info!(url = %openfga_config.url, "connected to OpenFGA");
+            if enable_authorization {
+                ::authz::ensure_latest_authorization_model(&mut openfga).await?;
+            }
+            Ok(openfga)
+        }
+        let openfga_fut = tokio::spawn(
+            connect_openfga(config.openfga_config.clone(), config.enable_authorization)
+                .in_current_span(),
+        );
+
+        // Synchronous operations
+        let infra_caches = DashMap::<i64, InfraCache>::default().into();
+        let speed_limit_tag_ids = Arc::new(SpeedLimitTagIds::load());
+        let valkey = ValkeyClient::new(config.valkey_config.clone())?.into();
         let osrdyne_client = Arc::new(OsrdyneClient::new(
             config.osrdyne_config.osrdyne_api_url.clone(),
         ));
 
-        let mut openfga = {
-            tracing::info!(url = %config.openfga_config.url, "connecting to OpenFGA");
-            match fga::Client::try_with_store(
-                config.openfga_config.store.clone(),
-                config.openfga_config.try_as_settings()?,
-            )
-            .await
-            {
-                Err(fga::client::InitializationError::NotFound(store)) => {
-                    tracing::info!(store, "store not found, creating it");
-                    fga::Client::try_new_store(store, config.openfga_config.try_as_settings()?)
-                        .await?
-                }
-                result => result?,
-            }
-        };
-        tracing::info!(url = %config.openfga_config.url, "connected to OpenFGA");
-        if config.enable_authorization {
-            ::authz::ensure_latest_authorization_model(&mut openfga).await?;
-        }
-
-        let auth_driver = PgAuthDriver::new(db_pool.clone());
+        let (db_pool, core_client, openfga) = tokio::try_join!(
+            async { db_pool_fut.await? },
+            async { core_client_fut.await? },
+            async { openfga_fut.await? }
+        )?;
 
         Ok(Self {
+            regulator: Regulator::new(openfga, PgAuthDriver::new(db_pool.clone())),
             valkey,
             db_pool,
             infra_caches,
             core_client,
             osrdyne_client,
-            regulator: Regulator::new(openfga, auth_driver),
             map_layers: Arc::new(MapLayers::default()),
             speed_limit_tag_ids,
             health_check_timeout: config.health_check_timeout,
@@ -878,27 +900,13 @@ impl AppState {
 }
 
 impl Server {
+    #[tracing::instrument(skip_all, err, level = "info", name = "server initialization")]
     pub async fn new(config: ServerConfig) -> anyhow::Result<Self> {
         info!("Building server...");
-        let router = tracing::debug_span!("router initialization").in_scope(|| {
-            let now = std::time::Instant::now();
-            let router = service_router().router;
-            let elapsed = now.elapsed();
-            tracing::debug!(time_ms = elapsed.as_millis(), "router initialized");
-            router
-        });
-        let app_state = tracing::info_span!("AppState initialization")
-            .in_scope(|| {
-                async move {
-                    let now = std::time::Instant::now();
-                    let app_state = AppState::init(config).await?;
-                    let elapsed = now.elapsed();
-                    tracing::debug!(time_ms = elapsed.as_millis(), "app state initialized");
-                    Ok::<_, anyhow::Error>(app_state)
-                }
-                .in_current_span()
-            })
-            .await?;
+        let app_state_fut = tokio::spawn(AppState::init(config).in_current_span());
+        let router =
+            tracing::debug_span!("router initialization").in_scope(|| service_router().router);
+        let app_state = app_state_fut.await??;
 
         // Custom Bytes and String extractor configuration
         let request_payload_limit = RequestBodyLimitLayer::new(250 * 1024 * 1024); // 250MiB
