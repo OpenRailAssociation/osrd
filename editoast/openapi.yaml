@@ -3171,9 +3171,9 @@ paths:
                       - end
                       properties:
                         begin:
-                          $ref: '#/components/schemas/SimilarTrainWaypointResponse'
+                          type: string
                         end:
-                          $ref: '#/components/schemas/SimilarTrainWaypointResponse'
+                          type: string
                         start_time:
                           type: string
                           format: date-time
@@ -12996,13 +12996,6 @@ components:
           type: string
         stop:
           type: boolean
-    SimilarTrainWaypointResponse:
-      type: object
-      required:
-      - id
-      properties:
-        id:
-          type: string
     SimulationResponse:
       oneOf:
       - allOf:
