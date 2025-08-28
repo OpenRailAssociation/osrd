@@ -43,7 +43,7 @@ export async function fetchTimetableItem(
   return { ...trainSchedule, id: timetableItemId };
 }
 
-async function createTrainSchedule(
+export async function createTrainSchedule(
   dispatch: AppDispatch,
   timetableId: number,
   trainSchedule: TrainSchedule
@@ -60,7 +60,7 @@ async function createTrainSchedule(
   };
 }
 
-async function createPacedTrain(
+export async function createPacedTrain(
   dispatch: AppDispatch,
   timetableId: number,
   pacedTrain: PacedTrain
