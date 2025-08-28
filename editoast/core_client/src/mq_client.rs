@@ -27,6 +27,7 @@ use tokio::sync::oneshot;
 use tokio::task;
 use tokio::time::Duration;
 use tokio::time::timeout;
+use tracing::Instrument;
 use url::Url;
 use uuid::Uuid;
 
@@ -197,6 +198,7 @@ pub struct MQResponse {
 const SINGLE_WORKER_KEY: &str = "all";
 
 impl RabbitMQClient {
+    #[tracing::instrument(skip_all, err, level = "info", name = "RabbitMQClient::new")]
     pub async fn new(options: Options) -> Result<Self, MqClientError> {
         let hostname = hostname::get()
             .map(|name| name.to_string_lossy().into_owned())
@@ -204,24 +206,36 @@ impl RabbitMQClient {
 
         let conn = Arc::new(RwLock::new(None));
 
+        // We want to be signalled when the first connection is established to avoid wasting
+        // retries and introduce unnecessary latency.
+        let (tx, rx) = tokio::sync::oneshot::channel();
         tokio::spawn(Self::connection_loop(
             options.uri,
             hostname.clone(),
             conn.clone(),
+            tx,
         ));
+        rx.instrument(tracing::info_span!("waiting for first connection signal"))
+            .await
+            .ok();
 
         // We should ensure that the connection is established at least once before creating the pool
         // since deadpool will try to create resources upfront
-        const MAX_RETRIES: usize = 10;
-        const RETRY_DELAY: Duration = Duration::from_secs(1);
+        const MAX_RETRIES: usize = 11;
+        const MAX_RETRY_DELAY: Duration = Duration::from_secs(1); // max reached after 5th attempt
+        let mut retry_delay = Duration::from_millis(25); // fails after 6800ms, ie. up to three reconnections of 2s
 
         let mut retries = 0;
         while retries < MAX_RETRIES {
-            if Self::connection_ok(&conn).await {
+            if Self::connection_ok(&conn)
+                .instrument(tracing::info_span!("RabbitMQClient::connection_ok")) // not instrumented at function-level to avoid spamming traces in connection_loop
+                .await
+            {
                 break;
             }
-            tokio::time::sleep(RETRY_DELAY).await;
+            tokio::time::sleep(retry_delay.min(MAX_RETRY_DELAY)).await;
             retries += 1;
+            retry_delay *= 2;
         }
 
         if retries == MAX_RETRIES {
@@ -274,7 +288,9 @@ impl RabbitMQClient {
         uri: Url,
         hostname: String,
         connection: Arc<RwLock<Option<Connection>>>,
+        initial_connection_ok_signal: tokio::sync::oneshot::Sender<()>,
     ) {
+        let mut tx = Some(initial_connection_ok_signal);
         loop {
             if Self::connection_ok(&connection).await {
                 tokio::time::sleep(Duration::from_secs(2)).await;
@@ -293,6 +309,9 @@ impl RabbitMQClient {
             match new_connection {
                 Ok(new_connection) => {
                     *connection.write().await = Some(new_connection);
+                    if let Some(tx) = tx.take() {
+                        tx.send(()).ok();
+                    }
                     tracing::info!("Reconnected to RabbitMQ");
                 }
                 Err(e) => {
