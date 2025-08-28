@@ -94,36 +94,19 @@ const getTrainrunSectionsByTrainrunId = (netzgrafikDto: NetzgrafikDto, trainrunI
   //     const leftSection = { id: 20, targetNodeId: 10, targetPortId: 30, … };
   //     const rightSection = { id: 21, sourceNodeId: 10, sourcePortId: 31, … };
   //
-  // Note, there is no guarantee that a train run will be made up of stricly
-  // ordered source → target chains. Source and target are arbitrary names for
-  // a section's ends. For instance, two sections' sources might point to the
-  // same node:
-  //
-  //     const node = { id: 10, transitions: [{ port1Id: 30, port2Id: 31 }], … };
-  //     const leftSection = { id: 20, sourceNodeId: 10, sourcePortId: 30, … };
-  //     const rightSection = { id: 21, sourceNodeId: 10, sourcePortId: 31, … };
-  //
   // Build a map of sections keyed by the outgoing port ID they are connected
   // to. Find the leaf (departure/arrival) sections: these are the ones without
   // a transition for their source or target port.
   const sectionsByConnectedPortId = new Map<number, TrainrunSectionDto>();
-  const leafSectionsAndNodes: [TrainrunSectionDto, number][] = [];
+  const leafSections: TrainrunSectionDto[] = [];
   for (const section of sections) {
     const sourceNode = getNodeById(netzgrafikDto.nodes, section.sourceNodeId)!;
-    const targetNode = getNodeById(netzgrafikDto.nodes, section.targetNodeId)!;
-
     const sourceConnectedPortId = findConnectedPortId(sourceNode, section.sourcePortId);
-    const targetConnectedPortId = findConnectedPortId(targetNode, section.targetPortId);
 
-    if (sourceConnectedPortId !== null) {
+    if (sourceConnectedPortId === null) {
+      leafSections.push(section);
+    } else {
       sectionsByConnectedPortId.set(sourceConnectedPortId, section);
-    } else {
-      leafSectionsAndNodes.push([section, section.sourceNodeId]);
-    }
-    if (targetConnectedPortId !== null) {
-      sectionsByConnectedPortId.set(targetConnectedPortId, section);
-    } else {
-      leafSectionsAndNodes.push([section, section.targetNodeId]);
     }
   }
 
@@ -131,13 +114,12 @@ const getTrainrunSectionsByTrainrunId = (netzgrafikDto: NetzgrafikDto, trainrunI
   // already seen (because we've reached it at the end of a previous walk).
   const seenSectionIds = new Set<number>();
   const orderedSectionPaths = [];
-  for (const [startSection, startNodeId] of leafSectionsAndNodes) {
+  for (const startSection of leafSections) {
     if (seenSectionIds.has(startSection.id)) {
       continue;
     }
 
     let section: TrainrunSectionDto | undefined = startSection;
-    let nodeId = startNodeId;
     const orderedSections = [];
     while (section) {
       // Make sure we don't enter an infinite loop
@@ -146,31 +128,8 @@ const getTrainrunSectionsByTrainrunId = (netzgrafikDto: NetzgrafikDto, trainrunI
       }
       seenSectionIds.add(section.id);
 
-      if (section.sourceNodeId === nodeId) {
-        orderedSections.push(section);
-        nodeId = section.targetNodeId;
-        section = sectionsByConnectedPortId.get(section.targetPortId);
-      } else if (section.targetNodeId === nodeId) {
-        // Swap source and target, so that the rest of the conversion logic
-        // can assume sections are always ordered from source to target
-        orderedSections.push({
-          ...section,
-          sourceNodeId: section.targetNodeId,
-          targetNodeId: section.sourceNodeId,
-          sourcePortId: section.targetPortId,
-          targetPortId: section.sourcePortId,
-          sourceDeparture: section.targetDeparture,
-          targetDeparture: section.sourceDeparture,
-          sourceArrival: section.targetArrival,
-          targetArrival: section.sourceArrival,
-        });
-        nodeId = section.sourceNodeId;
-        section = sectionsByConnectedPortId.get(section.sourcePortId);
-      } else {
-        // Unreachable: the previous section's end node should be either this
-        // node's source or target
-        throw new Error('Section is disconnected from previous section');
-      }
+      orderedSections.push(section);
+      section = sectionsByConnectedPortId.get(section.targetPortId);
     }
 
     orderedSectionPaths.push(orderedSections);
