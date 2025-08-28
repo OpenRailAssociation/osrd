@@ -65,7 +65,6 @@ def run(
     """
     Run the given number of tests, logging errors in the given folder as json files
     """
-    session.post(editoast_url + f"infra/{scenario.infra}/load").raise_for_status()
     timetable_range = _build_timetable_range(editoast_url, scenario, session)
     seed = seed or random.randint(0, 2**32)
     op_list = list(_make_op_list(editoast_url, scenario.infra, session))

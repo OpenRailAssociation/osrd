@@ -52,6 +52,7 @@ def run(
     Runs every test
     :param editoast_url: url to reach the editoast api
     :param scenario: scenario to use for the tests
+    :param session: session used for the tests
     :param scenario_ttl: number of tests to run before a scenario reset
     :param n_test: number of tests to run
     :param log_folder: (optional) path to a folder to log errors in
@@ -61,7 +62,6 @@ def run(
     """
     print("loading infra")
     infra_graph = _make_graph(editoast_url, scenario.infra, session)
-    _raise_if_error(session.post(editoast_url + f"infra/{scenario.infra}/load"))
     # The prelude allows us to keep track of path/schedule requests sent so far,
     # so we can easily reproduce the current state.
     prelude = []

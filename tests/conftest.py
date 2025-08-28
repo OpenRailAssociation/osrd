@@ -255,7 +255,6 @@ def west_to_south_east_path(
     session: Session, small_infra: Infra, fast_rolling_stock: int
 ) -> Iterator[TrainPath]:
     """west_to_south_east_path screenshot in `tests/README.md`"""
-    session.post(f"{EDITOAST_URL}infra/{small_infra.id}/load").raise_for_status()
     response = session.post(
         f"{EDITOAST_URL}infra/{small_infra.id}/pathfinding/blocks",
         json={
