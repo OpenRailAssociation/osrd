@@ -428,11 +428,24 @@ const handleCreateTimetableItem = async (
     netzgrafikDto,
     trainrun
   );
+
+  if (trainrun.trainrunDirection === 'one_way') {
+    throw new Error(
+      'ngeToOsrd handleCreateTimetableItem received a one_way train dto instead of a round trip'
+    );
+  }
   const { path, schedule } = generatePathAndSchedule(
     trainrunSections,
     netzgrafikDto.nodes,
     startDate
   );
+  const { path: returnPath, schedule: returnSchedule } = generatePathAndSchedule(
+    trainrunSections,
+    netzgrafikDto.nodes,
+    startDate,
+    TRAINRUN_DIRECTIONS.BACKWARD
+  );
+
   await populateSecondaryCodesInPath(path, infraId, dispatch);
 
   const category = getTrainCategoryFromTrainrunCategoryId(
@@ -450,22 +463,33 @@ const handleCreateTimetableItem = async (
     schedule,
     category,
   };
+  const returnPacedTrain = { ...pacedTrain, path: returnPath, schedule: returnSchedule };
+
   const newTimetableItems = await dispatch(
     osrdEditoastApi.endpoints.postTimetableByIdPacedTrains.initiate({
       id: timetableId,
-      body: [pacedTrain],
+      body: [pacedTrain, returnPacedTrain],
     })
   ).unwrap();
-  if (newTimetableItems.length === 0) {
-    throw new Error('Failed to create paced train');
+  if (newTimetableItems.length !== 2) {
+    throw new Error('Failed to create paced train with return trip');
   }
+  await dispatch(
+    osrdEditoastApi.endpoints.postRoundTripsPacedTrains.initiate({
+      roundTrips: { round_trips: [[newTimetableItems[0].id, newTimetableItems[1].id]] },
+    })
+  ).unwrap();
+
   const newPacedTrain: PacedTrainWithPacedTrainId = {
     ...newTimetableItems[0],
     id: formatEditoastIdToPacedTrainId(newTimetableItems[0].id),
   };
-  // TODO: handle roundtrips
-  state.timetableItemIdByNgeId.set(trainrun.id, [newPacedTrain.id, null]);
-  addUpsertedTimetableItems([newPacedTrain]);
+  const newReturnPacedTrain: PacedTrainWithPacedTrainId = {
+    ...newTimetableItems[1],
+    id: formatEditoastIdToPacedTrainId(newTimetableItems[1].id),
+  };
+  state.timetableItemIdByNgeId.set(trainrun.id, [newPacedTrain.id, newReturnPacedTrain.id]);
+  addUpsertedTimetableItems([newPacedTrain, newReturnPacedTrain]);
 };
 
 /**
