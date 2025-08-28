@@ -5,16 +5,13 @@ import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
 import { upsertMapWaypointsInOperationalPoints } from 'applications/operationalStudies/helpers/upsertMapWaypointsInOperationalPoints';
-import { osrdEditoastApi, type PathfindingResult } from 'common/api/osrdEditoastApi';
+import { osrdEditoastApi, type PathfindingResultSuccess } from 'common/api/osrdEditoastApi';
 import { isStation } from 'modules/pathfinding/utils';
 import type { PathOperationalPoint } from 'modules/simulationResult/types';
 import type { TimetableItem } from 'reducers/osrdconf/types';
-import { getProjectionType } from 'reducers/simulationResults/selectors';
 import {
-  extractEditoastIdFromPacedTrainId,
-  extractEditoastIdFromTrainScheduleId,
-  isTrainScheduleId,
-} from 'utils/trainId';
+  getProjectionType,
+} from 'reducers/simulationResults/selectors';
 
 import { getWaypointsLocalStorageKey } from './helpers/utils';
 
@@ -22,10 +19,12 @@ const useGetProjectedTrainOperationalPoints = ({
   infraId,
   timetableId,
   timetableItemUsedForProjection,
+  pathfinding,
 }: {
   infraId: number;
   timetableId: number | undefined;
   timetableItemUsedForProjection?: TimetableItem;
+  pathfinding?: PathfindingResultSuccess;
 }) => {
   const { t } = useTranslation('operational-studies');
   const projectionType = useSelector(getProjectionType);
@@ -34,38 +33,19 @@ const useGetProjectedTrainOperationalPoints = ({
   const [filteredOperationalPoints, setFilteredOperationalPoints] =
     useState<PathOperationalPoint[]>(operationalPoints);
 
-  const [getTrainSchedulePath] = osrdEditoastApi.endpoints.getTrainScheduleByIdPath.useLazyQuery();
-  const [getPacedTrainPath] = osrdEditoastApi.endpoints.getPacedTrainByIdPath.useLazyQuery();
   const [postPathProperties] =
     osrdEditoastApi.endpoints.postInfraByInfraIdPathProperties.useLazyQuery();
 
   useEffect(() => {
     const getOperationalPoints = async () => {
-      if (!timetableItemUsedForProjection) return;
-
-      const trainIdUsedForProjection = timetableItemUsedForProjection.id;
-
-      let path: PathfindingResult;
-      if (isTrainScheduleId(trainIdUsedForProjection)) {
-        path = await getTrainSchedulePath({
-          id: extractEditoastIdFromTrainScheduleId(trainIdUsedForProjection),
-          infraId,
-        }).unwrap();
-      } else {
-        path = await getPacedTrainPath({
-          id: extractEditoastIdFromPacedTrainId(trainIdUsedForProjection),
-          infraId,
-        }).unwrap();
-      }
-
-      if (path.status !== 'success') return;
+      if (!timetableItemUsedForProjection || !pathfinding) return;
 
       if (timetableItemUsedForProjection) {
         const { operational_points } = await postPathProperties({
           infraId,
           props: ['operational_points'],
           pathPropertiesInput: {
-            track_section_ranges: path.track_section_ranges,
+            track_section_ranges: pathfinding.track_section_ranges,
           },
         }).unwrap();
 
@@ -81,7 +61,7 @@ const useGetProjectedTrainOperationalPoints = ({
             ? upsertMapWaypointsInOperationalPoints(
                 'PathOperationalPoint',
                 timetableItemUsedForProjection.path,
-                path.path_item_positions,
+                pathfinding.path_item_positions,
                 operationalPointsWithUniqueIds,
                 t
               )
@@ -115,7 +95,7 @@ const useGetProjectedTrainOperationalPoints = ({
     };
 
     getOperationalPoints();
-  }, [timetableItemUsedForProjection, infraId, t, projectionType]);
+  }, [timetableItemUsedForProjection, pathfinding, infraId, t, projectionType]);
 
   return { operationalPoints, filteredOperationalPoints, setFilteredOperationalPoints };
 };
