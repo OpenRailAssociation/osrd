@@ -397,7 +397,7 @@ const handleCreateTimetableItem = async (
     trainrun
   );
 
-  if (trainrun.trainrunDirection === 'one_way') {
+  if (trainrun.direction === 'one_way') {
     throw new Error(
       'ngeToOsrd handleCreateTimetableItem received a one_way train dto instead of a round trip'
     );
@@ -585,7 +585,7 @@ const handleUpdateTimetableItem = async ({
     );
   }
 
-  if (trainrun.trainrunDirection === 'one_way') {
+  if (trainrun.direction === 'one_way') {
     if (timetableItemIds[1]) {
       // NGE always selects the forward trip by default when going from round trip to one way trip,
       // thus the trip that needs to be deleted is always the return trip
@@ -982,9 +982,11 @@ export const convertNgeDtoToOsrd = (dto: NetzgrafikDto) => {
     const { labels, startDate, trainrunSections } = generateTrainrunProperties(dto, trainrun);
     const category = dto.metadata.trainrunCategories.find((cat) => cat.id === trainrun.categoryId);
     if (category) labels.push(category.name);
-    for (const direction of Object.values(TRAINRUN_DIRECTIONS)) {
-      // TODO: handle the one-way trainrun cases when this PR is merged:
-      // https://github.com/SchweizerischeBundesbahnen/netzgrafik-editor-frontend/pull/477
+    const directions =
+      trainrun.direction === 'one_way'
+        ? [TRAINRUN_DIRECTIONS.FORWARD]
+        : [TRAINRUN_DIRECTIONS.FORWARD, TRAINRUN_DIRECTIONS.BACKWARD];
+    for (const direction of directions) {
       const { path, schedule } = generatePathAndSchedule(
         trainrunSections,
         dto.nodes,
@@ -1014,5 +1016,7 @@ export const convertNgeDtoToOsrd = (dto: NetzgrafikDto) => {
     }
   }
 
+  // TODO: handle return trips by having a for example by having a return trips field in TimetableJsonPayload with [id1, id2],
+  // then calling the return trip api after creating the trains in ImportTimetableItemTrainsList
   return { macro_nodes: macroNodes, paced_trains: pacedTrains, train_schedules: trainSchedules };
 };

@@ -55,7 +55,7 @@ export type TrainrunDto = {
   frequencyId: number;
   trainrunTimeCategoryId: number;
   labelIds: (number | string)[];
-  trainrunDirection: 'one_way' | 'round_trip';
+  direction: 'one_way' | 'round_trip';
 };
 
 export type TimeLockDto = {

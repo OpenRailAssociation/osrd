@@ -374,7 +374,7 @@ const getNgeTrainruns = (
         labelIds: (timetableItem.labels || []).map((l) =>
           labels.findIndex((e) => e.label === l && e.labelGroupId === TRAINRUN_LABEL_GROUP.id)
         ),
-        trainrunDirection: timetableItem.returnId ? 'round_trip' : 'one_way',
+        direction: timetableItem.returnId ? 'round_trip' : 'one_way',
       };
     });
 
