@@ -2149,8 +2149,8 @@ export type PostSearchApiArg = {
 export type PostSimilarTrainsApiResponse =
   /** status 200 A combination of reference train identifiers similar to the provided train */ {
     similar_trains: {
-      begin: SimilarTrainWaypointResponse;
-      end: SimilarTrainWaypointResponse;
+      begin: string;
+      end: string;
       /** Both `train_name` and `start_time` are `None` if no similar train
         was found for the segment; otherwise, both are `Some`. */
       start_time: string | null;
@@ -4340,9 +4340,6 @@ export type SearchPayload = {
   /** The object kind to query - run `editoast search list` to get all possible values */
   object: string;
   query: SearchQuery;
-};
-export type SimilarTrainWaypointResponse = {
-  id: string;
 };
 export type SimilarTrainWaypoint = {
   id: string;

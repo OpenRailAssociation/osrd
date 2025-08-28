@@ -98,15 +98,6 @@ pub(in crate::views) struct Request {
     timetable_id: i64,
 }
 
-#[editoast_derive::openapi_schema]
-#[derive(Debug, Serialize, ToSchema)]
-#[cfg_attr(test, derive(PartialEq, Deserialize))]
-#[schema(as = SimilarTrainWaypointResponse)]
-struct WaypointResponse {
-    #[schema(value_type = String)]
-    id: ArcStr,
-}
-
 #[derive(Debug, Serialize, ToSchema)]
 #[cfg_attr(test, derive(Deserialize, PartialEq))]
 struct SimilarTrainItem {
@@ -118,10 +109,10 @@ struct SimilarTrainItem {
     /// was found for the segment; otherwise, both are `Some`.
     #[schema(required)]
     start_time: Option<DateTime<Utc>>,
-    #[schema(value_type = SimilarTrainWaypointResponse)]
-    begin: WaypointResponse,
-    #[schema(value_type = SimilarTrainWaypointResponse)]
-    end: WaypointResponse,
+    #[schema(value_type = String)]
+    begin: ArcStr,
+    #[schema(value_type = String)]
+    end: ArcStr,
 }
 
 #[derive(Debug, Serialize, ToSchema)]
@@ -256,12 +247,8 @@ pub(in crate::views) async fn similar_trains(
             similar_trains: vec![SimilarTrainItem {
                 train_name: None,
                 start_time: None,
-                begin: WaypointResponse {
-                    id: new_train.begin().op.deref().clone(),
-                },
-                end: WaypointResponse {
-                    id: new_train.end().op.deref().clone(),
-                },
+                begin: new_train.begin().op.deref().clone(),
+                end: new_train.end().op.deref().clone(),
             }],
         }));
     }
@@ -397,12 +384,8 @@ pub(in crate::views) async fn similar_trains(
             SimilarTrainItem {
                 start_time,
                 train_name,
-                begin: WaypointResponse {
-                    id: begin.op.deref().clone(),
-                },
-                end: WaypointResponse {
-                    id: end.op.deref().clone(),
-                },
+                begin: begin.op.deref().clone(),
+                end: end.op.deref().clone(),
             }
         })
         .collect();
@@ -974,8 +957,8 @@ mod tests {
             Waypoint { id:"Mid_East_station".into(), stop:false },
             Waypoint { id:"North_station".into(), stop:true },
         ],
-        WaypointResponse { id: "Mid_West_station".into() },
-        WaypointResponse { id: "North_station".into() },
+        "Mid_West_station",
+        "North_station",
     )]
     // NS(55):stop SS(66):stop
     #[case(
@@ -987,14 +970,14 @@ mod tests {
             Waypoint { id:"North_station".into(), stop:true },
             Waypoint { id:"South_station".into(), stop:true },
         ],
-        WaypointResponse { id: "North_station".into() },
-        WaypointResponse { id: "South_station".into() },
+        "North_station",
+        "South_station",
     )]
     async fn one_similar_train(
         #[case] path: Vec<PathItem>,
         #[case] waypoints: Vec<Waypoint>,
-        #[case] begin: WaypointResponse,
-        #[case] end: WaypointResponse,
+        #[case] begin: &str,
+        #[case] end: &str,
     ) {
         let InitTestResponse {
             app,
@@ -1021,8 +1004,8 @@ mod tests {
             similar_trains: vec![SimilarTrainItem {
                 train_name: Some(train_name),
                 start_time: Some(start_time),
-                begin,
-                end,
+                begin: begin.into(),
+                end: end.into(),
             }],
         };
         assert_eq!(response, expected_response);
@@ -1041,8 +1024,8 @@ mod tests {
             SimilarTrainItem {
                 train_name: None,
                 start_time: None,
-                begin: WaypointResponse { id: "Mid_West_station".into() },
-                end: WaypointResponse { id: "North_station".into() }
+                begin: "Mid_West_station".into(),
+                end: "North_station".into(),
             },
         ],
     )]
@@ -1058,8 +1041,8 @@ mod tests {
             SimilarTrainItem {
                 train_name: None,
                 start_time: None,
-                begin: WaypointResponse { id: "Mid_West_station".into() },
-                end: WaypointResponse { id: "North_station".into() }
+                begin: "Mid_West_station".into(),
+                end: "North_station".into(),
             },
         ],
     )]
@@ -1077,8 +1060,8 @@ mod tests {
             SimilarTrainItem {
                 train_name: None,
                 start_time: None,
-                begin: WaypointResponse { id: "Mid_West_station".into() },
-                end: WaypointResponse { id: "North_station".into() }
+                begin: "Mid_West_station".into(),
+                end: "North_station".into(),
             },
         ],
     )]
@@ -1097,8 +1080,8 @@ mod tests {
             SimilarTrainItem {
                 train_name: None,
                 start_time: None,
-                begin: WaypointResponse { id: "Mid_West_station".into() },
-                end: WaypointResponse { id: "South_station".into() }
+                begin: "Mid_West_station".into(),
+                end: "South_station".into(),
             },
         ],
     )]
@@ -1262,22 +1245,14 @@ mod tests {
                 SimilarTrainItem {
                     train_name: Some(train_1),
                     start_time: Some(start_time_1),
-                    begin: WaypointResponse {
-                        id: "West_station".into(),
-                    },
-                    end: WaypointResponse {
-                        id: "Mid_East_station".into(),
-                    },
+                    begin: "West_station".into(),
+                    end: "Mid_East_station".into(),
                 },
                 SimilarTrainItem {
                     train_name: Some(train_2),
                     start_time: Some(start_time_2),
-                    begin: WaypointResponse {
-                        id: "Mid_East_station".into(),
-                    },
-                    end: WaypointResponse {
-                        id: "South_station".into(),
-                    },
+                    begin: "Mid_East_station".into(),
+                    end: "South_station".into(),
                 },
             ],
         };
@@ -1452,12 +1427,8 @@ mod tests {
             similar_trains: vec![SimilarTrainItem {
                 train_name: Some(train_id),
                 start_time: Some(start_time),
-                begin: WaypointResponse {
-                    id: "West_station".into(),
-                },
-                end: WaypointResponse {
-                    id: "North_East_station".into(),
-                },
+                begin: "West_station".into(),
+                end: "North_East_station".into(),
             }],
         };
         assert_eq!(response, expected_response);
@@ -1581,42 +1552,26 @@ mod tests {
                 SimilarTrainItem {
                     train_name: Some(train_1),
                     start_time: Some(start_time_1),
-                    begin: WaypointResponse {
-                        id: "West_station".into(),
-                    },
-                    end: WaypointResponse {
-                        id: "Mid_West_station".into(),
-                    },
+                    begin: "West_station".into(),
+                    end: "Mid_West_station".into(),
                 },
                 SimilarTrainItem {
                     train_name: None,
                     start_time: None,
-                    begin: WaypointResponse {
-                        id: "Mid_West_station".into(),
-                    },
-                    end: WaypointResponse {
-                        id: "Mid_East_station".into(),
-                    },
+                    begin: "Mid_West_station".into(),
+                    end: "Mid_East_station".into(),
                 },
                 SimilarTrainItem {
                     train_name: Some(train_2),
                     start_time: Some(start_time_2),
-                    begin: WaypointResponse {
-                        id: "Mid_East_station".into(),
-                    },
-                    end: WaypointResponse {
-                        id: "North_station".into(),
-                    },
+                    begin: "Mid_East_station".into(),
+                    end: "North_station".into(),
                 },
                 SimilarTrainItem {
                     train_name: None,
                     start_time: None,
-                    begin: WaypointResponse {
-                        id: "North_station".into(),
-                    },
-                    end: WaypointResponse {
-                        id: "South_station".into(),
-                    },
+                    begin: "North_station".into(),
+                    end: "South_station".into(),
                 },
             ],
         };
