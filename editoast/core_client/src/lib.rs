@@ -33,6 +33,7 @@ pub enum CoreClient {
 }
 
 impl CoreClient {
+    #[tracing::instrument(skip_all, err)]
     pub async fn new_mq(options: mq_client::Options) -> Result<Self, Error> {
         let client = RabbitMQClient::new(options)
             .await
