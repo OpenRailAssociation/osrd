@@ -1,32 +1,36 @@
-import React from 'react';
+import { type PropsWithChildren } from 'react';
 
 import cx from 'classnames';
 
 import MenuTriggerButton from 'common/MenuTriggerButton';
 import type { OSRDMenuItem } from 'common/OSRDMenu';
+import ResizableSection, { type ResizableSectionProps } from 'common/ResizableSection';
 
-type BoardWrapperProps = {
-  children: React.ReactNode;
+type CommonProps = PropsWithChildren<{
   hidden?: boolean;
   name: string;
   items?: OSRDMenuItem[];
   withFooter?: boolean;
   dataTestId?: string;
+}>;
+
+type ResizableProps = {
+  resizable: true;
+} & ResizableSectionProps;
+
+type NonResizableProps = {
+  resizable?: false;
 };
 
-const BoardWrapper = ({
-  children,
-  hidden = false,
-  name,
-  items = [],
-  withFooter = false,
-  dataTestId,
-}: BoardWrapperProps) => {
+type BoardWrapperProps = CommonProps & (ResizableProps | NonResizableProps);
+
+const BoardWrapper = (props: BoardWrapperProps) => {
+  const { children, hidden = false, name, items = [], withFooter = false, dataTestId } = props;
   if (hidden) {
     return null;
   }
 
-  return (
+  const content = (
     <div className="board-wrapper" data-testid={dataTestId}>
       <div className="board-header">
         <span className="board-header-name" data-testid="board-header-name">
@@ -51,6 +55,22 @@ const BoardWrapper = ({
       {withFooter && <div className="board-footer" />}
     </div>
   );
+
+  if (props.resizable) {
+    return (
+      <div className="board-wrapper-resizable-section-wrapper">
+        <ResizableSection
+          height={props.height}
+          setHeight={props.setHeight}
+          minHeight={props.minHeight}
+        >
+          {content}
+        </ResizableSection>
+      </div>
+    );
+  }
+
+  return content;
 };
 
 export default BoardWrapper;

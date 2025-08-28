@@ -2,16 +2,13 @@ import { useState, type PropsWithChildren } from 'react';
 
 import { Rnd } from 'react-rnd';
 
-const ResizableSection = ({
-  minHeight,
-  height,
-  setHeight,
-  children,
-}: PropsWithChildren<{
+export type ResizableSectionProps = PropsWithChildren<{
   minHeight?: number;
   height: number;
   setHeight: React.Dispatch<React.SetStateAction<number>>;
-}>) => {
+}>;
+
+const ResizableSection = ({ minHeight, height, setHeight, children }: ResizableSectionProps) => {
   const [baseHeight, setBaseHeight] = useState(height);
 
   return (
