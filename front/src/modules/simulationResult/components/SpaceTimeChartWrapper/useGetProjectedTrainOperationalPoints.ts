@@ -9,9 +9,7 @@ import { osrdEditoastApi, type PathfindingResultSuccess } from 'common/api/osrdE
 import { isStation } from 'modules/pathfinding/utils';
 import type { PathOperationalPoint } from 'modules/simulationResult/types';
 import type { TimetableItem } from 'reducers/osrdconf/types';
-import {
-  getProjectionType,
-} from 'reducers/simulationResults/selectors';
+import { getProjectionType } from 'reducers/simulationResults/selectors';
 
 import { getWaypointsLocalStorageKey } from './helpers/utils';
 
@@ -40,58 +38,56 @@ const useGetProjectedTrainOperationalPoints = ({
     const getOperationalPoints = async () => {
       if (!timetableItemUsedForProjection || !pathfinding) return;
 
-      if (timetableItemUsedForProjection) {
-        const { operational_points } = await postPathProperties({
-          infraId,
-          props: ['operational_points'],
-          pathPropertiesInput: {
-            track_section_ranges: pathfinding.track_section_ranges,
-          },
-        }).unwrap();
+      const { operational_points } = await postPathProperties({
+        infraId,
+        props: ['operational_points'],
+        pathPropertiesInput: {
+          track_section_ranges: pathfinding.track_section_ranges,
+        },
+      }).unwrap();
 
-        let operationalPointsWithUniqueIds: PathOperationalPoint[] =
-          operational_points?.map((op, i) => ({
-            ...omit(op, 'id'),
-            waypointId: `${op.id}-${op.position}-${i}`,
-            opId: op.id,
-          })) || [];
+      let operationalPointsWithUniqueIds: PathOperationalPoint[] =
+        operational_points?.map((op, i) => ({
+          ...omit(op, 'id'),
+          waypointId: `${op.id}-${op.position}-${i}`,
+          opId: op.id,
+        })) || [];
 
-        operationalPointsWithUniqueIds =
-          projectionType === 'trackProjection'
-            ? upsertMapWaypointsInOperationalPoints(
-                'PathOperationalPoint',
-                timetableItemUsedForProjection.path,
-                pathfinding.path_item_positions,
-                operationalPointsWithUniqueIds,
-                t
-              )
-            : operationalPointsWithUniqueIds;
+      operationalPointsWithUniqueIds =
+        projectionType === 'trackProjection'
+          ? upsertMapWaypointsInOperationalPoints(
+              'PathOperationalPoint',
+              timetableItemUsedForProjection.path,
+              pathfinding.path_item_positions,
+              operationalPointsWithUniqueIds,
+              t
+            )
+          : operationalPointsWithUniqueIds;
 
-        setOperationalPoints(operationalPointsWithUniqueIds);
+      setOperationalPoints(operationalPointsWithUniqueIds);
 
-        const stringifiedSavedWaypoints = localStorage.getItem(
-          getWaypointsLocalStorageKey(timetableId, timetableItemUsedForProjection.path)
-        );
-        if (stringifiedSavedWaypoints) {
-          operationalPointsWithUniqueIds = JSON.parse(
-            stringifiedSavedWaypoints
-          ) as PathOperationalPoint[];
-        } else {
-          // If the manchette hasn't been saved, we want to display by default only
-          // the waypoints with CH BV/00/'' and the path steps (origin, destination, vias)
+      const stringifiedSavedWaypoints = localStorage.getItem(
+        getWaypointsLocalStorageKey(timetableId, timetableItemUsedForProjection.path)
+      );
+      if (stringifiedSavedWaypoints) {
+        operationalPointsWithUniqueIds = JSON.parse(
+          stringifiedSavedWaypoints
+        ) as PathOperationalPoint[];
+      } else {
+        // If the manchette hasn't been saved, we want to display by default only
+        // the waypoints with CH BV/00/'' and the path steps (origin, destination, vias)
 
-          const lastIndex = operationalPointsWithUniqueIds.length - 1;
-          operationalPointsWithUniqueIds = operationalPointsWithUniqueIds.filter((op, i) => {
-            if (i === 0 || i === lastIndex) return true;
-            // handle waypoints added from the map
-            if (!op.extensions?.sncf) return true;
-            // handle waypoints added from the pathfinding or operational points on path
-            return isStation(op.extensions.sncf.ch) || op.weight === 100;
-          });
-        }
-
-        setFilteredOperationalPoints(operationalPointsWithUniqueIds);
+        const lastIndex = operationalPointsWithUniqueIds.length - 1;
+        operationalPointsWithUniqueIds = operationalPointsWithUniqueIds.filter((op, i) => {
+          if (i === 0 || i === lastIndex) return true;
+          // handle waypoints added from the map
+          if (!op.extensions?.sncf) return true;
+          // handle waypoints added from the pathfinding or operational points on path
+          return isStation(op.extensions.sncf.ch) || op.weight === 100;
+        });
       }
+
+      setFilteredOperationalPoints(operationalPointsWithUniqueIds);
     };
 
     getOperationalPoints();
