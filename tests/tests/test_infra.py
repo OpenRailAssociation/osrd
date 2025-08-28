@@ -18,7 +18,6 @@ class _InfraDetails:
     locked: bool
     created: str
     modified: str
-    state: str
 
 
 @dataclass(frozen=True)

@@ -57,7 +57,6 @@ def test_empty_timetable(
     _, timetable = create_scenario(
         EDITOAST_URL, small_infra.id, foo_project_id, op_study, session
     )
-    session.post(EDITOAST_URL + f"infra/{small_infra.id}/load")
     payload = {
         "rolling_stock_id": fast_rolling_stock,
         "timetable_id": timetable,
@@ -155,7 +154,6 @@ def test_between_trains(
 def test_work_schedules(
     small_scenario: Scenario, fast_rolling_stock: int, session: Session
 ):
-    session.post(EDITOAST_URL + f"infra/{small_scenario.infra}/load")
     start_time = datetime.datetime(2024, 1, 1, 14, 0, 0, tzinfo=datetime.timezone.utc)
     end_time = start_time + datetime.timedelta(days=4)
     # TODO: we cannot delete work schedules for now, so let's give a unique name
@@ -211,7 +209,6 @@ def test_mrsp_sources(
     fast_rolling_stock: int,
     session: Session,
 ):
-    session.post(f"{EDITOAST_URL}infra/{small_infra.id}/load").raise_for_status()
     stdcm_payload = {
         "start_time": "2024-05-22T10:00:00.000Z",
         "rolling_stock_id": fast_rolling_stock,
@@ -278,7 +275,6 @@ def test_max_running_time(
                    [       ] <  max running time
                    [                             ] < departure time window
     """
-    session.post(EDITOAST_URL + f"infra/{small_scenario.infra}/load")
     origin_start_time = datetime.datetime(
         2024, 1, 1, 8, 0, 0, tzinfo=datetime.timezone.utc
     )

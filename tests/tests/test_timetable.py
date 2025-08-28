@@ -36,7 +36,6 @@ def test_conflicts_with_paced_trains(
     expected_conflict_types: set[str],
     session: Session,
 ):
-    session.post(f"{EDITOAST_URL}infra/{small_infra.id}/load").raise_for_status()
     stopping_train_schedule_payload = [
         {
             "comfort": "STANDARD",
@@ -123,7 +122,6 @@ def test_conflicts_with_reception_on_closed_signal(
     expected_conflict_types: set[str],
     session: Session,
 ):
-    session.post(f"{EDITOAST_URL}infra/{small_infra.id}/load").raise_for_status()
     stopping_train_schedule_payload = [
         {
             "comfort": "STANDARD",
@@ -253,7 +251,6 @@ def test_paced_train_conflicts(
     expected_conflict_types: set[str],
     session: Session,
 ):
-    session.post(f"{EDITOAST_URL}infra/{small_infra.id}/load").raise_for_status()
     paced_train_payload = {
         "comfort": "STANDARD",
         "constraint_distribution": "STANDARD",
@@ -320,7 +317,6 @@ def test_paced_train_with_exceptions_conflicts(
     fast_rolling_stock: int,
     session: Session,
 ):
-    session.post(f"{EDITOAST_URL}infra/{small_infra.id}/load").raise_for_status()
     paced_train_payload = {
         "comfort": "STANDARD",
         "constraint_distribution": "STANDARD",
@@ -427,7 +423,6 @@ def test_scheduled_points_with_incompatible_margins(
     fast_rolling_stock: int,
     session: Session,
 ):
-    session.post(f"{EDITOAST_URL}infra/{small_infra.id}/load").raise_for_status()
     train_schedule_payload = [
         {
             "comfort": "STANDARD",
@@ -480,7 +475,6 @@ def test_mrsp_sources(
     fast_rolling_stock: int,
     session: Session,
 ):
-    session.post(f"{EDITOAST_URL}infra/{small_infra.id}/load").raise_for_status()
     train_schedule_payload = [
         {
             "comfort": "STANDARD",
