@@ -96,7 +96,7 @@ async function updatePacedTrain(dispatch: AppDispatch, id: PacedTrainId, pacedTr
   ).unwrap();
 }
 
-async function deleteTrainSchedule(dispatch: AppDispatch, id: TrainScheduleId) {
+export async function deleteTrainSchedule(dispatch: AppDispatch, id: TrainScheduleId) {
   await dispatch(
     osrdEditoastApi.endpoints.deleteTrainSchedule.initiate({
       body: { ids: [extractEditoastIdFromTrainScheduleId(id)] },
@@ -104,7 +104,7 @@ async function deleteTrainSchedule(dispatch: AppDispatch, id: TrainScheduleId) {
   ).unwrap();
 }
 
-async function deletePacedTrain(dispatch: AppDispatch, id: PacedTrainId) {
+export async function deletePacedTrain(dispatch: AppDispatch, id: PacedTrainId) {
   await dispatch(
     osrdEditoastApi.endpoints.deletePacedTrain.initiate({
       body: { ids: [extractEditoastIdFromPacedTrainId(id)] },

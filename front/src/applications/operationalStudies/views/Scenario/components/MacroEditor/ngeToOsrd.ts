@@ -9,6 +9,8 @@ import {
 } from 'common/api/osrdEditoastApi';
 import { checkChangeGroups } from 'modules/timetableItem/components/ManageTimetableItem/helpers/buildPacedTrainException';
 import {
+  deletePacedTrain,
+  deleteTrainSchedule,
   fetchTimetableItem,
   storePacedTrain,
   storeTrainSchedule,
@@ -21,8 +23,6 @@ import type {
 import type { AppDispatch } from 'store';
 import { Duration } from 'utils/duration';
 import {
-  extractEditoastIdFromPacedTrainId,
-  extractEditoastIdFromTrainScheduleId,
   formatEditoastIdToPacedTrainId,
   isPacedTrainId,
   isPacedTrainResponseWithPacedTrainId,
@@ -492,6 +492,32 @@ const handleCreateTimetableItem = async (
   addUpsertedTimetableItems([newPacedTrain, newReturnPacedTrain]);
 };
 
+const deleteTimetableItemById = async (
+  timetableItemId: TimetableItemId,
+  dispatch: AppDispatch,
+  addDeletedTimetableItemIds: (timetableItemIds: TimetableItemId[]) => void
+) => {
+  if (isPacedTrainId(timetableItemId)) await deletePacedTrain(dispatch, timetableItemId);
+  else await deleteTrainSchedule(dispatch, timetableItemId);
+
+  addDeletedTimetableItemIds([timetableItemId]);
+};
+
+const handleDeleteTimetableItem = async (
+  trainrunId: number,
+  state: MacroEditorState,
+  dispatch: AppDispatch,
+  addDeletedTimetableItemIds: (timetableItemIds: TimetableItemId[]) => void
+) => {
+  const timetableItemIds = state.timetableItemIdByNgeId.get(trainrunId);
+  for (const timetableItemId of timetableItemIds ?? []) {
+    if (timetableItemId) {
+      await deleteTimetableItemById(timetableItemId, dispatch, addDeletedTimetableItemIds);
+    }
+  }
+  state.timetableItemIdByNgeId.delete(trainrunId);
+};
+
 /**
  * Handle the following cases:
  * - if the TimetableItem is initially a PacedTrain and the frequency is still PacedTrain (`paced` time window is keep identical and interval to corresponding TrainrunFrequency)
@@ -591,29 +617,6 @@ const handleUpdateTimetableItem = async ({
   }
   // TODO: handle roundtrips
   state.timetableItemIdByNgeId.set(trainrun.id, [updatedTimetableItem.id, null]);
-};
-
-const handleDeleteTimetableItem = async (
-  trainrunId: number,
-  state: MacroEditorState,
-  dispatch: AppDispatch,
-  addDeletedTimetableItemIds: (timetableItemIds: TimetableItemId[]) => void
-) => {
-  // TODO: handle roundtrips
-  const timetableItemId = state.timetableItemIdByNgeId.get(trainrunId)![0];
-  const editoastTrainId = isPacedTrainId(timetableItemId)
-    ? extractEditoastIdFromPacedTrainId(timetableItemId)
-    : extractEditoastIdFromTrainScheduleId(timetableItemId);
-  const endpoint = isPacedTrainId(timetableItemId)
-    ? osrdEditoastApi.endpoints.deletePacedTrain
-    : osrdEditoastApi.endpoints.deleteTrainSchedule;
-  await dispatch(
-    endpoint.initiate({
-      body: { ids: [editoastTrainId] },
-    })
-  ).unwrap();
-  addDeletedTimetableItemIds([timetableItemId]);
-  state.timetableItemIdByNgeId.delete(trainrunId);
 };
 
 const handleTrainrunOperation = async ({
