@@ -108,7 +108,7 @@ const SimulationResults = ({
     filteredOperationalPoints,
     setFilteredOperationalPoints,
   } = useGetProjectedTrainOperationalPoints({
-    timetableItemUsedForProjection: projectionData?.timetableItem,
+    path: projectionData?.path,
     infraId,
     timetableId,
     pathfinding: projectionData?.pathfinding,
@@ -246,7 +246,7 @@ const SimulationResults = ({
                       waypointsPanelData={{
                         filteredWaypoints: filteredOperationalPoints,
                         setFilteredWaypoints: setFilteredOperationalPoints,
-                        projectionPath: projectionData.timetableItem.path,
+                        projectionPath: projectionData.path,
                         deployedWaypoints: new Set(
                           deployedWaypoints.map(({ waypointId }) => waypointId)
                         ),

@@ -84,7 +84,7 @@ export type SpeedDistanceDiagramData = {
 };
 
 export type ProjectionData = {
-  timetableItem: TimetableItem;
+  path: TimetableItem['path'];
   projectedTrains: TrainSpaceTimeData[];
   pathfinding: PathfindingResultSuccess;
   geometry: PathProperties['geometry'];
