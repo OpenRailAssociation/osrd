@@ -45,6 +45,7 @@ import StdcmWarningBox from '../StdcmWarningBox';
 import StdcmMapActivePerimeter from './StdcmMapActivePerimeter';
 
 declare global {
+  // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
   interface Window {
     osrdStdcmConfState?: OsrdStdcmConfState;
   }
