@@ -530,6 +530,8 @@ const getNgeTrainrunSectionsWithNodes = (
           } else {
             targetDeparture = createDepartureTimeLock(returnTargetScheduleEntry, returnStartTime);
           }
+        } else if (returnIndex === 1) {
+          targetDeparture = createTimeLock(startTime, startTime);
         }
 
         let sourceArrival = { ...DEFAULT_TIME_LOCK };
