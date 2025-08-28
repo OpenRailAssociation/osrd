@@ -279,7 +279,7 @@ const generateSchedule = (
     const transition = getNodeById(nodes, toNodeId)!.transitions.find(
       (tr) => tr.port1Id === toPortId || tr.port2Id === toPortId
     );
-    const isNonStopTransit = transition?.isNonStopTransit ?? false;
+    const isStopTransit = !(transition?.isNonStopTransit ?? false);
 
     // Note that "arrival" is the time the train arrives at the node
     // and "departure" is the time the train leaves the node
@@ -306,7 +306,7 @@ const generateSchedule = (
         // destination is not configured the same way in macro.
         return {
           at: `${toNodeId}-${index + 1}`,
-          stop_for: 'P0D',
+          stop_for: Duration.zero.toISOString(),
           // Default information
           locked: false,
           reception_signal: 'OPEN',
@@ -318,11 +318,16 @@ const generateSchedule = (
     // If missing arrival time, default to a zero stop duration
     arrival = arrival || departure!;
 
+    let stop_for: string | null = null;
+    if (isStopTransit)
+      stop_for = departure
+        ? formatDateDifferenceFrom(arrival, departure)
+        : Duration.zero.toISOString();
+
     return {
       at: `${toNodeId}-${index + 1}`,
       arrival: formatDateDifferenceFrom(startDate, arrival),
-      stop_for:
-        departure && !isNonStopTransit ? formatDateDifferenceFrom(arrival, departure) : null,
+      stop_for,
       // Default information
       locked: false,
       reception_signal: 'OPEN',
