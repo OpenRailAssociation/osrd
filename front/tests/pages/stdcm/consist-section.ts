@@ -59,8 +59,7 @@ class ConsistSection {
       if (!selectedValue) return;
 
       await dropdownField.fill(selectedValue);
-      await dropdownField.press('ArrowDown');
-      await dropdownField.press('Enter');
+      await this.page.getByTestId('traction-engine-item').click();
       await dropdownField.blur();
       await expect(dropdownField).toHaveValue(selectedValue);
 
