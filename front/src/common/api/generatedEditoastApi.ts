@@ -24,7 +24,6 @@ export const addTagTypes = [
   'sncf',
   'sprites',
   'stdcm_search_environment',
-  'stdcm_log',
   'sub_categories',
   'temporary_speed_limits',
   'etcs_braking_curves',
@@ -988,26 +987,6 @@ const injectedRtkApi = api
           method: 'DELETE',
         }),
         invalidatesTags: ['stdcm_search_environment'],
-      }),
-      getStdcmLog: build.query<GetStdcmLogApiResponse, GetStdcmLogApiArg>({
-        query: (queryArg) => ({
-          url: `/stdcm_log`,
-          params: {
-            trace_id: queryArg.traceId,
-            id: queryArg.id,
-          },
-        }),
-        providesTags: ['stdcm_log'],
-      }),
-      getStdcmLogs: build.query<GetStdcmLogsApiResponse, GetStdcmLogsApiArg>({
-        query: (queryArg) => ({
-          url: `/stdcm_logs`,
-          params: {
-            page: queryArg.page,
-            page_size: queryArg.pageSize,
-          },
-        }),
-        providesTags: ['stdcm_log'],
       }),
       getSubCategory: build.query<GetSubCategoryApiResponse, GetSubCategoryApiArg>({
         query: (queryArg) => ({
@@ -2219,18 +2198,6 @@ export type DeleteStdcmSearchEnvironmentByEnvIdApiResponse = unknown;
 export type DeleteStdcmSearchEnvironmentByEnvIdApiArg = {
   /** An stdcm search environment ID */
   envId: number;
-};
-export type GetStdcmLogApiResponse = /** status 200 The STDCM log */ StdcmLog;
-export type GetStdcmLogApiArg = {
-  traceId?: string | null;
-  id?: number | null;
-};
-export type GetStdcmLogsApiResponse = /** status 200 The list of STDCM Logs */ PaginationStats & {
-  results: StdcmLogListItem[];
-};
-export type GetStdcmLogsApiArg = {
-  page?: number;
-  pageSize?: number | null;
 };
 export type GetSubCategoryApiResponse =
   /** status 200 The list of sub categories */ SubCategoryPage;
@@ -4412,88 +4379,20 @@ export type StdcmSearchEnvironmentCreateForm = {
   timetable_id: number;
   work_schedule_group_id?: number | null;
 };
-export type WorkScheduleType = 'CATENARY' | 'TRACK';
-export type WorkSchedule = {
-  end_date_time: string;
-  id: number;
-  obj_id: string;
-  start_date_time: string;
-  track_ranges: TrackRange[];
-  work_schedule_group_id: number;
-  work_schedule_type: WorkScheduleType;
+export type SubCategoryColor = string;
+export type SubCategory = {
+  background_color: SubCategoryColor;
+  code: string;
+  color: SubCategoryColor;
+  hovered_color: SubCategoryColor;
+  main_category: TrainMainCategory;
+  name: string;
 };
-export type StdcmRequest = {
-  comfort: Comfort;
-  /** Infrastructure expected version */
-  expected_version: number;
-  /** Infrastructure id */
-  infra: number;
-  margin?:
-    | (
-        | {
-            Percentage: number;
-          }
-        | {
-            MinPer100Km: number;
-          }
-      )
-    | null;
-  /** Maximum departure delay in milliseconds. */
-  maximum_departure_delay: number;
-  /** Maximum run time of the simulation in milliseconds */
-  maximum_run_time: number;
-  /** List of waypoints. Each waypoint is a list of track offset. */
-  path_items: PathItem[];
-  physics_consist: {
-    base_power_class?: string | null;
-    comfort_acceleration: number;
-    /** The constant gamma braking coefficient used when NOT circulating
-        under ETCS/ERTMS signaling system */
-    const_gamma: number;
-    effort_curves: EffortCurves;
-    /** The time the train takes before actually using electrical power.
-        Is null if the train is not electric or the value not specified. */
-    electrical_power_startup_time?: number | null;
-    etcs_brake_params?: EtcsBrakeParams | null;
-    inertia_coefficient: number;
-    /** Length of the rolling stock */
-    length: number;
-    /** Mass of the rolling stock */
-    mass: number;
-    /** Maximum speed of the rolling stock */
-    max_speed: number;
-    /** Mapping of power restriction code to power class */
-    power_restrictions?: {
-      [key: string]: string;
-    };
-    /** The time it takes to raise this train's pantograph.
-        Is null if the train is not electric or the value not specified. */
-    raise_pantograph_time?: number | null;
-    rolling_resistance: RollingResistance;
-    startup_acceleration: number;
-    startup_time: number;
-  };
-  rolling_stock_loading_gauge: LoadingGaugeType;
-  rolling_stock_supported_signaling_systems: RollingStockSupportedSignalingSystems;
-  speed_limit_tag?: string | null;
-  start_time: string;
-  /** List of applicable temporary speed limits between the train departure and arrival */
-  temporary_speed_limits: {
-    /** Speed limitation in m/s */
-    speed_limit: number;
-    /** Track ranges on which the speed limitation applies */
-    track_ranges: TrackRange[];
-  }[];
-  /** Gap between the created train and following trains in milliseconds */
-  time_gap_after: number;
-  /** Gap between the created train and previous trains in milliseconds */
-  time_gap_before: number;
-  /** Numerical integration time step in milliseconds. Use default value if not specified. */
-  time_step?: number | null;
-  /** Timetable id */
+export type SubCategoryPage = PaginationStats & {
+  results: SubCategory[];
+};
+export type TimetableResult = {
   timetable_id: number;
-  /** List of planned work schedules */
-  work_schedules: WorkSchedule[];
 };
 export type ConflictRequirement = {
   end_time: string;
@@ -4528,56 +4427,6 @@ export type Conflict = {
   train_schedule_ids: number[];
   /** List of work schedule ids involved in the conflict */
   work_schedule_ids: number[];
-};
-export type StdcmResponse =
-  | {
-      departure_time: string;
-      path: PathfindingResultSuccess;
-      simulation: SimulationResponseSuccess;
-      status: 'success';
-    }
-  | {
-      conflicts: Conflict[];
-      pathfinding_result: PathfindingResult;
-      status: 'conflicts';
-    }
-  | {
-      error: SimulationResponse;
-      status: 'preprocessing_simulation_error';
-    };
-export type StdcmResponseOrError =
-  | {
-      response: StdcmResponse;
-    }
-  | {
-      request_error: unknown;
-    };
-export type StdcmLog = {
-  created: string;
-  id: number;
-  request: StdcmRequest;
-  response: StdcmResponseOrError;
-  trace_id?: string | null;
-  user_id?: number | null;
-};
-export type StdcmLogListItem = {
-  id: number;
-  trace_id?: string | null;
-};
-export type SubCategoryColor = string;
-export type SubCategory = {
-  background_color: SubCategoryColor;
-  code: string;
-  color: SubCategoryColor;
-  hovered_color: SubCategoryColor;
-  main_category: TrainMainCategory;
-  name: string;
-};
-export type SubCategoryPage = PaginationStats & {
-  results: SubCategory[];
-};
-export type TimetableResult = {
-  timetable_id: number;
 };
 export type TrainRequirementsById = {
   routing_requirements: RoutingRequirement[];
@@ -4742,6 +4591,16 @@ export type WorkScheduleItemForm = {
   start_date_time: string;
   track_ranges: TrackRange[];
   work_schedule_type: 'CATENARY' | 'TRACK';
+};
+export type WorkScheduleType = 'CATENARY' | 'TRACK';
+export type WorkSchedule = {
+  end_date_time: string;
+  id: number;
+  obj_id: string;
+  start_date_time: string;
+  track_ranges: TrackRange[];
+  work_schedule_group_id: number;
+  work_schedule_type: WorkScheduleType;
 };
 export type Intersection = {
   /** Distance of the end of the intersection relative to the beginning of the path */

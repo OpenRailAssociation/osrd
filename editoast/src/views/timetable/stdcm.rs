@@ -20,8 +20,6 @@ use core_client::simulation::SpacingRequirement;
 use database::DbConnectionPoolV2;
 use editoast_derive::EditoastError;
 use failure_handler::SimulationFailureHandler;
-use opentelemetry::trace::TraceContextExt;
-use opentelemetry::trace::TraceId;
 use request::Request;
 use request::convert_steps;
 use schemas::primitives::PositiveDuration;
@@ -35,8 +33,6 @@ use std::collections::HashMap;
 use std::slice;
 use std::sync::Arc;
 use thiserror::Error;
-use tracing::Instrument;
-use tracing_opentelemetry::OpenTelemetrySpanExt;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
 
@@ -46,8 +42,6 @@ use crate::error::InternalError;
 use crate::error::Result;
 use crate::models::Infra;
 use crate::models::RollingStock;
-use crate::models::stdcm_log::StdcmLog;
-use crate::models::stdcm_log::StdcmResponseOrError;
 use crate::models::timetable::Timetable;
 use crate::models::train_schedule::TrainSchedule;
 use crate::views::AuthenticationExt;
@@ -166,14 +160,6 @@ pub(in crate::views) async fn stdcm(
         return Err(AuthorizationError::Forbidden.into());
     }
 
-    let trace_id = tracing::Span::current()
-        .context()
-        .span()
-        .span_context()
-        .trace_id();
-
-    let trace_id = Some(trace_id).filter(|trace_id| *trace_id != TraceId::INVALID);
-
     let mut conn = db_pool.get().await?;
 
     let timetable_id = id;
@@ -288,42 +274,7 @@ pub(in crate::views) async fn stdcm(
         .await
         .map_err(Into::into);
 
-    // 6. Log STDCM request and response if logging is enabled
-    if config.enable_stdcm_logging {
-        let user_id = auth.user_id().unwrap_or_else(|e| {
-            tracing::error!(
-                error = %e,
-                "Authorization failed. Unable to retrieve user ID."
-            );
-            None
-        });
-
-        let stdcm_response = match stdcm_response {
-            Ok(ref response) => StdcmResponseOrError::Response(response.clone()),
-            Err(ref error) => {
-                let error: InternalError = error.clone();
-                StdcmResponseOrError::RequestError(serde_json::to_value(error.clone()).unwrap_or(
-                    serde_json::Value::String("Failed to serialize the error".into()),
-                ))
-            }
-        };
-
-        tokio::spawn(
-            // We just don't await the creation of the log entry since we want
-            // the endpoint to return as soon as possible, and because failing
-            // to persist a log entry is not a very important error here.
-            StdcmLog::log(
-                conn.clone(),
-                trace_id.map(|trace_id| trace_id.to_string()),
-                stdcm_request,
-                stdcm_response,
-                user_id,
-            )
-            .in_current_span(),
-        );
-    }
-
-    // 7. Handle STDCM Core Response
+    // 6. Handle STDCM Core Response
     match stdcm_response? {
         core_client::stdcm::Response::Success {
             simulation,

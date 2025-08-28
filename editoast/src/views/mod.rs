@@ -17,7 +17,6 @@ mod router;
 pub mod scenario;
 pub mod search;
 pub mod sprites;
-pub mod stdcm_logs;
 pub mod stdcm_search_environment;
 pub mod study;
 pub mod sub_categories;
@@ -263,8 +262,6 @@ fn service_router() -> router::DocumentedRouter {
                     .route("/list", get!(stdcm_search_environment::list))
                     .route("/{env_id}", delete!(stdcm_search_environment::delete))
             })
-            .route("/stdcm_logs", get!(stdcm_logs::list_stdcm_logs))
-            .route("/stdcm_log", get!(stdcm_logs::stdcm_log_by_id_or_trace_id))
             .nests("/work_schedules", |path| {
                 path.route("/", post!(work_schedules::create))
                     .route("/project_path", post!(work_schedules::project_path))
@@ -746,7 +743,6 @@ pub struct ServerConfig {
     pub health_check_timeout: Duration,
     pub map_layers_max_zoom: u8,
     pub enable_authorization: bool,
-    pub enable_stdcm_logging: bool,
     pub postgres_config: PostgresConfig,
     pub osrdyne_config: OsrdyneConfig,
     pub valkey_config: ValkeyConfig,
