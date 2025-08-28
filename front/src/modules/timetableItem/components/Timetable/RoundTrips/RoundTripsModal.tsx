@@ -28,6 +28,7 @@ type RoundTripsModalProps = {
   setRoundTripsModalIsOpen: (isOpen: boolean) => void;
   infraId: number;
   timetableItems: TimetableItem[];
+  refreshNge: () => Promise<void>;
 };
 
 const RoundTripsModal = ({
@@ -35,6 +36,7 @@ const RoundTripsModal = ({
   setRoundTripsModalIsOpen,
   infraId,
   timetableItems,
+  refreshNge,
 }: RoundTripsModalProps) => {
   const { t } = useTranslation('operational-studies', {
     keyPrefix: 'main',
@@ -180,6 +182,8 @@ const RoundTripsModal = ({
       );
     }
     await Promise.all(apiCalls);
+
+    await refreshNge();
 
     closeModal();
   };
