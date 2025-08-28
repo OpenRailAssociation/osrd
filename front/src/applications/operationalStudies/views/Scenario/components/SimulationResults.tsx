@@ -123,7 +123,7 @@ const SimulationResults = ({
     timetableItemProjections: projectPathTrainResult,
   });
 
-  const conflictZones = useProjectedConflicts(infraId, conflicts, projectionData?.path);
+  const conflictZones = useProjectedConflicts(infraId, conflicts, projectionData?.pathfinding);
 
   const simulationSummary = useMemo(() => {
     if (!selectedTrainId) return undefined;

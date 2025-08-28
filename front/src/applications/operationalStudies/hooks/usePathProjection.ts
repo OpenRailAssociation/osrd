@@ -32,29 +32,29 @@ const usePathProjection = (infra: InfraWithStatus) => {
     osrdEditoastApi.endpoints.getTrainScheduleByIdPath.useQuery(scheduleArg);
   const { data: pacedPath } = osrdEditoastApi.endpoints.getPacedTrainByIdPath.useQuery(pacedArg);
 
-  const path = trainScheduleId ? schedulePath : pacedPath;
+  const pathfinding = trainScheduleId ? schedulePath : pacedPath;
 
   const { data: pathProperties } =
     osrdEditoastApi.endpoints.postInfraByInfraIdPathProperties.useQuery(
-      path?.status === 'success'
+      pathfinding?.status === 'success'
         ? {
             infraId: infra.id,
             props: ['geometry', 'operational_points'],
-            pathPropertiesInput: { track_section_ranges: path.track_section_ranges },
+            pathPropertiesInput: { track_section_ranges: pathfinding.track_section_ranges },
           }
         : skipToken
     );
 
   return useMemo(() => {
-    if (path?.status !== 'success' || !pathProperties) {
+    if (pathfinding?.status !== 'success' || !pathProperties) {
       return undefined;
     }
     return {
-      path,
+      pathfinding,
       geometry: pathProperties.geometry,
       operationalPoints: pathProperties.operational_points,
     };
-  }, [path, pathProperties]);
+  }, [pathfinding, pathProperties]);
 };
 
 export default usePathProjection;
