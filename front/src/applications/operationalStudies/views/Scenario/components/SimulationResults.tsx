@@ -111,6 +111,7 @@ const SimulationResults = ({
     timetableItemUsedForProjection: projectionData?.timetableItem,
     infraId,
     timetableId,
+    pathfinding: projectionData?.pathfinding,
   });
 
   const {
