@@ -30,12 +30,12 @@ if  {
     {
         [ "$#" -eq 2 ] &&
             [ "$2" != "up" ]
-    } || 
+    } ||
     {
         [ "$#" -eq 1 ] &&
             [ "$1" != "down" ] &&
             [ "$1" != "down-and-clean" ]
-    } || 
+    } ||
     {
         [ "$#" -ne 1 ] &&
             [ "$#" -ne 2 ] &&
@@ -50,7 +50,32 @@ fi
 # Change ports in needed files
 export PR_NB="" # We export a blank string for down and down-and-clean options not to produce a warning
 
-if [ "$2" = "up" ] || [ "$2" = "up-and-load-backup" ]; then
+if [ "$1" = "down" ]; then
+
+    # Shutdown the docker instance
+    docker compose \
+        -p "osrd-pr-tests" \
+        -f "docker/docker-compose.pr-tests.yml" \
+        down
+
+elif [ "$1" = "down-and-clean" ]; then
+
+    # Shutdown and clean the docker instance (remove "osrd" images too)
+    osrd_images=$(docker compose \
+        -p "osrd-pr-tests" \
+        -f "docker/docker-compose.pr-tests.yml" \
+        images --format json \
+        core editoast osrdyne gateway front \
+        | jq --raw-output '.[].ID')
+
+    docker compose \
+        -p "osrd-pr-tests" \
+        -f "docker/docker-compose.pr-tests.yml" \
+        down -v
+
+    # shellcheck disable=SC2086
+    docker rmi ${osrd_images}
+elif [ "$2" = "up" ] || [ "$2" = "up-and-load-backup" ]; then
 
     export PR_NB="pr-$1"
 
@@ -71,31 +96,5 @@ if [ "$2" = "up" ] || [ "$2" = "up-and-load-backup" ]; then
         -p "osrd-pr-tests" \
         -f "docker/docker-compose.pr-tests.yml" \
         up -d
-
-elif [ "$1" = "down" ]; then
-
-    # Shutdown the docker instance
-    docker compose \
-        -p "osrd-pr-tests" \
-        -f "docker/docker-compose.pr-tests.yml" \
-        down
-
-else
-
-    # Shutdown and clean the docker instance (remove "osrd" images too)
-    osrd_images=$(docker compose \
-        -p "osrd-pr-tests" \
-        -f "docker/docker-compose.pr-tests.yml" \
-        images --format json \
-        core editoast osrdyne gateway front \
-        | jq --raw-output '.[].ID')
-
-    docker compose \
-        -p "osrd-pr-tests" \
-        -f "docker/docker-compose.pr-tests.yml" \
-        down -v
-
-    # shellcheck disable=SC2086
-    docker rmi ${osrd_images}
 
 fi
