@@ -53,6 +53,7 @@ type TimetableBoardWrapperProps = {
   timetableItemToEditData?: TimetableItemToEditData;
   timetableItems?: TimetableItem[];
   timetableItemsWithDetails: TimetableItemWithDetails[];
+  refreshNge: () => Promise<void>;
 };
 
 const TimetableBoardWrapper = ({
@@ -64,6 +65,7 @@ const TimetableBoardWrapper = ({
   timetableItemToEditData,
   timetableItems = [],
   timetableItemsWithDetails,
+  refreshNge,
 }: TimetableBoardWrapperProps) => {
   const [selectedTimetableItemIds, setSelectedTimetableItemIds] = useState<TimetableItemId[]>([]);
   const [showTrainDetails, setShowTrainDetails] = useState(false);
@@ -347,6 +349,7 @@ const TimetableBoardWrapper = ({
           setRoundTripsModalIsOpen={setRoundTripsModalIsOpen}
           infraId={infraId}
           timetableItems={timetableItems}
+          refreshNge={refreshNge}
         />
       )}
     </>

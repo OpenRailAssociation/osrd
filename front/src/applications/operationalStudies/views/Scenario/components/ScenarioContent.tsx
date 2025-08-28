@@ -179,6 +179,7 @@ const ScenarioContent = ({
               timetableItemsWithDetails={timetableItemsWithDetails}
               setTimetableItemToEditData={setTimetableItemToEditData}
               timetableItemToEditData={timetableItemToEditData}
+              refreshNge={refreshNge}
             />
           </div>
         </div>
