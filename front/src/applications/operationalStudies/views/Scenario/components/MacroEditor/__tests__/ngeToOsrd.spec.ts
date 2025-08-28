@@ -12,9 +12,9 @@ async function readJsonFile(path: string): Promise<unknown> {
 vi.setSystemTime(new Date('2025-06-25T13:00:00.000Z'));
 
 describe('convertNgeDtoToOsrd', () => {
-  test.each(['sharedSource', 'sharedTarget'])('outOfOrderSourceTarget-$0', async (name) => {
-    const dto = (await readJsonFile(`./outOfOrderSourceTarget-${name}-dto.json`)) as NetzgrafikDto;
-    const expected = await readJsonFile(`./outOfOrderSourceTarget-output.json`);
+  test.each(['roundTrip', 'oneWay'])('ngeToOsrd-inputDto-$0', async (name) => {
+    const dto = (await readJsonFile(`./ngeToOsrd-inputDto-${name}.json`)) as NetzgrafikDto;
+    const expected = await readJsonFile(`./ngeToOsrd-output-${name}.json`);
     const result = convertNgeDtoToOsrd(dto);
     // Go through JSON encoding to discard undefined fields
     expect(JSON.parse(JSON.stringify(result))).toEqual(expected);

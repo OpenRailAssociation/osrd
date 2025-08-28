@@ -55,7 +55,7 @@
         {
           "at": "6-2",
           "arrival": "PT4M",
-          "stop_for": null,
+          "stop_for": "P0D",
           "locked": false,
           "reception_signal": "OPEN"
         }
@@ -85,7 +85,7 @@
         {
           "at": "7-2",
           "arrival": "PT4M",
-          "stop_for": null,
+          "stop_for": "P0D",
           "locked": false,
           "reception_signal": "OPEN"
         }
