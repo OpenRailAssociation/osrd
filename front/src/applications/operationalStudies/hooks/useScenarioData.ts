@@ -97,7 +97,7 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithStatus) => 
   } = useLazyProjectTrains({
     infraId: scenario.infra_id,
     electricalProfileSetId,
-    path: projectionPath?.path,
+    path: projectionPath?.pathfinding,
     operationalPoints: projectionPath?.operationalPoints,
   });
 
