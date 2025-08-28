@@ -3285,70 +3285,6 @@ paths:
       responses:
         '204':
           description: The stdcm search environment was deleted successfully
-  /stdcm_log:
-    get:
-      tags:
-      - stdcm_log
-      parameters:
-      - name: trace_id
-        in: query
-        required: false
-        schema:
-          type: string
-          nullable: true
-      - name: id
-        in: query
-        required: false
-        schema:
-          type: integer
-          format: int64
-          nullable: true
-      responses:
-        '200':
-          description: The STDCM log
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/StdcmLog'
-  /stdcm_logs:
-    get:
-      tags:
-      - stdcm_log
-      parameters:
-      - name: page
-        in: query
-        required: false
-        schema:
-          type: integer
-          format: int64
-          default: 1
-          minimum: 1
-      - name: page_size
-        in: query
-        required: false
-        schema:
-          type: integer
-          format: int64
-          default: 25
-          nullable: true
-          maximum: 25
-          minimum: 1
-      responses:
-        '200':
-          description: The list of STDCM Logs
-          content:
-            application/json:
-              schema:
-                allOf:
-                - $ref: '#/components/schemas/PaginationStats'
-                - type: object
-                  required:
-                  - results
-                  properties:
-                    results:
-                      type: array
-                      items:
-                        $ref: '#/components/schemas/StdcmLogListItem'
   /sub_category:
     get:
       tags:
@@ -6377,10 +6313,6 @@ components:
       - $ref: '#/components/schemas/EditoastStdcmErrorTimetableNotFound'
       - $ref: '#/components/schemas/EditoastStdcmErrorTowedRollingStockNotFound'
       - $ref: '#/components/schemas/EditoastStdcmErrorTrainSimulationFail'
-      - $ref: '#/components/schemas/EditoastStdcmLogErrorDatabase'
-      - $ref: '#/components/schemas/EditoastStdcmLogErrorMissingIdAndTraceId'
-      - $ref: '#/components/schemas/EditoastStdcmLogErrorNotFound'
-      - $ref: '#/components/schemas/EditoastStdcmLogErrorTraceIdNotFound'
       - $ref: '#/components/schemas/EditoastStdcmSearchEnvErrorDatabase'
       - $ref: '#/components/schemas/EditoastStdcmSearchEnvErrorNotFound'
       - $ref: '#/components/schemas/EditoastStudyErrorDatabase'
@@ -7999,92 +7931,6 @@ components:
           type: string
           enum:
           - editoast:stdcm:TrainSimulationFail
-    EditoastStdcmLogErrorDatabase:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 500
-        type:
-          type: string
-          enum:
-          - editoast:stdcm_log:Database
-    EditoastStdcmLogErrorMissingIdAndTraceId:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 400
-        type:
-          type: string
-          enum:
-          - editoast:stdcm_log:MissingIdAndTraceId
-    EditoastStdcmLogErrorNotFound:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-          required:
-          - id
-          properties:
-            id:
-              type: integer
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 404
-        type:
-          type: string
-          enum:
-          - editoast:stdcm_log:NotFound
-    EditoastStdcmLogErrorTraceIdNotFound:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-          required:
-          - trace_id
-          properties:
-            trace_id:
-              type: string
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 404
-        type:
-          type: string
-          enum:
-          - editoast:stdcm_log:TraceIdNotFound
     EditoastStdcmSearchEnvErrorDatabase:
       type: object
       required:
@@ -13536,42 +13382,6 @@ components:
         value:
           type: string
           format: date-time
-    StdcmLog:
-      type: object
-      required:
-      - id
-      - request
-      - response
-      - created
-      properties:
-        created:
-          type: string
-          format: date-time
-        id:
-          type: integer
-          format: int64
-        request:
-          $ref: '#/components/schemas/StdcmRequest'
-        response:
-          $ref: '#/components/schemas/StdcmResponseOrError'
-        trace_id:
-          type: string
-          nullable: true
-        user_id:
-          type: integer
-          format: int64
-          nullable: true
-    StdcmLogListItem:
-      type: object
-      required:
-      - id
-      properties:
-        id:
-          type: integer
-          format: int64
-        trace_id:
-          type: string
-          nullable: true
     StdcmRequest:
       type: object
       required:
@@ -13814,19 +13624,6 @@ components:
             type: string
             enum:
             - preprocessing_simulation_error
-    StdcmResponseOrError:
-      oneOf:
-      - type: object
-        required:
-        - response
-        properties:
-          response:
-            $ref: '#/components/schemas/StdcmResponse'
-      - type: object
-        required:
-        - request_error
-        properties:
-          request_error: {}
     StdcmSearchEnvironment:
       type: object
       required:

@@ -222,12 +222,6 @@
       "TowedRollingStockNotFound": "Matériel roulant remorqué {towed_rolling_stock_id} non trouvé",
       "TrainSimulationFail": "Échec de la simulation du train"
     },
-    "stdcm_log": {
-      "Database": "Erreur interne (base de données)",
-      "MissingIdAndTraceId": "STDCM Log n'a pas pu être trouvée sans spécifier un 'id' ou un 'trace_id'",
-      "NotFound": "STDCM Log '{{id}}' n'a pas pu être trouvée",
-      "TraceIdNotFound": "STDCM Log '{{trace_id}}' n'a pas pu être trouvée"
-    },
     "stdcm_search_env": {
       "Database": "Erreur interne (base de données)",
       "NotFound": "Environnement de recherche stdcm '{{env_id}}' non trouvé"

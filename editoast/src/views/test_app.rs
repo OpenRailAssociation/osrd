@@ -88,7 +88,6 @@ pub(crate) struct TestAppBuilder {
     core_client: Option<CoreClient>,
     osrdyne_client: Option<OsrdyneClient>,
     authorization_model: Option<&'static str>,
-    enable_stdcm_logging: bool,
     enable_telemetry: bool,
     telemetry_directives: Vec<Directive>,
     root_url: Option<Url>,
@@ -102,7 +101,6 @@ impl TestAppBuilder {
             core_client: None,
             osrdyne_client: None,
             authorization_model: None,
-            enable_stdcm_logging: false,
             enable_telemetry: true,
             telemetry_directives: vec![],
             root_url: None,
@@ -137,23 +135,8 @@ impl TestAppBuilder {
         self
     }
 
-    pub fn enable_stdcm_logging(mut self, enable_stdcm_logging: bool) -> Self {
-        self.enable_stdcm_logging = enable_stdcm_logging;
-        self
-    }
-
-    pub fn enable_telemetry(mut self, enable_telemetry: bool) -> Self {
-        self.enable_telemetry = enable_telemetry;
-        self
-    }
-
     pub fn root_url(mut self, root_url: Url) -> Self {
         self.root_url = Some(root_url);
-        self
-    }
-
-    pub fn with_rust_log_directive(mut self, directive: Directive) -> Self {
-        self.telemetry_directives.push(directive);
         self
     }
 
@@ -169,7 +152,6 @@ impl TestAppBuilder {
             address: String::default(),
             health_check_timeout: chrono::Duration::milliseconds(500),
             enable_authorization: self.authorization_model.is_some(),
-            enable_stdcm_logging: self.enable_stdcm_logging,
             map_layers_max_zoom: 18,
             postgres_config: PostgresConfig {
                 database_url: Url::parse("postgres://osrd:password@localhost:5432/osrd").unwrap(),
@@ -357,10 +339,6 @@ impl TestApp {
 
     pub fn valkey_client(&self) -> Arc<ValkeyClient> {
         self.app_state.valkey.clone()
-    }
-
-    pub fn regulator(&self) -> Regulator {
-        self.app_state.regulator.clone()
     }
 
     pub fn speed_limit_tag_ids(&self) -> Arc<SpeedLimitTagIds> {

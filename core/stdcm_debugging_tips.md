@@ -9,11 +9,7 @@ It's essential to reliably reproduce requests in a local environment.
 Intercepting the requests from editoast to core is ideal as they contain all timetable and work schedule info, though
 the payload can get somehow large (100s of mbs).
 
-There are to ways to get the payloads:
-
-1. In local: run core with `LOG_STDCM_REQUESTS=TRUE` as env variable (beware though, it will log *every* request)
-2. In prod environments: find a trace_id using datadog ([private link for sncf envs](https://claps.datadoghq.eu/apm/traces?query=service%3Aosrd-editoast%20-status%3Aok&agg_m=count&agg_m_source=base&agg_t=count&cols=core_service%2Ccore_resource_name%2Clog_duration%2Clog_http.method%2Clog_http.status_code&fromUser=false&historicalData=false&messageDisplay=inline&query_translation_version=v0&sort=desc&spanType=all&storage=hot&view=spans&start=1743426877565&end=1743427777565&paused=false)).
-Then use the `/api/stdcm_log?trace_id=id` endpoint. The json content needs to be trimmed to only keep the request payload.
+In local: run core with `LOG_STDCM_REQUESTS=TRUE` as env variable (beware though, it will log *every* request)
 
 ## Reproduce request payloads
 
