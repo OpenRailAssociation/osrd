@@ -16,12 +16,12 @@ import { getWaypointsLocalStorageKey } from './helpers/utils';
 const useGetProjectedTrainOperationalPoints = ({
   infraId,
   timetableId,
-  timetableItemUsedForProjection,
+  path,
   pathfinding,
 }: {
   infraId: number;
   timetableId: number | undefined;
-  timetableItemUsedForProjection?: TimetableItem;
+  path?: TimetableItem['path'];
   pathfinding?: PathfindingResultSuccess;
 }) => {
   const { t } = useTranslation('operational-studies');
@@ -36,8 +36,9 @@ const useGetProjectedTrainOperationalPoints = ({
 
   useEffect(() => {
     const getOperationalPoints = async () => {
-      if (!timetableItemUsedForProjection || !pathfinding) return;
+      if (!path || !pathfinding) return;
 
+      // TODO: get the operational points from useScenarioData
       const { operational_points } = await postPathProperties({
         infraId,
         props: ['operational_points'],
@@ -57,7 +58,7 @@ const useGetProjectedTrainOperationalPoints = ({
         projectionType === 'trackProjection'
           ? upsertMapWaypointsInOperationalPoints(
               'PathOperationalPoint',
-              timetableItemUsedForProjection.path,
+              path,
               pathfinding.path_item_positions,
               operationalPointsWithUniqueIds,
               t
@@ -67,7 +68,7 @@ const useGetProjectedTrainOperationalPoints = ({
       setOperationalPoints(operationalPointsWithUniqueIds);
 
       const stringifiedSavedWaypoints = localStorage.getItem(
-        getWaypointsLocalStorageKey(timetableId, timetableItemUsedForProjection.path)
+        getWaypointsLocalStorageKey(timetableId, path)
       );
       if (stringifiedSavedWaypoints) {
         operationalPointsWithUniqueIds = JSON.parse(
@@ -91,7 +92,7 @@ const useGetProjectedTrainOperationalPoints = ({
     };
 
     getOperationalPoints();
-  }, [timetableItemUsedForProjection, pathfinding, infraId, t, projectionType]);
+  }, [path, pathfinding, infraId, t, projectionType]);
 
   return { operationalPoints, filteredOperationalPoints, setFilteredOperationalPoints };
 };
