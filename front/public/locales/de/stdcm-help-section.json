@@ -1,1 +1,15 @@
-{}
+{
+  "asu": [
+    {
+      "title": "Name der Anwendung",
+      "value": "OSRD"
+    },
+    {
+      "title": "Hilfe",
+      "value": "ASU-Anwendungsunterstützung"
+    },
+    {
+      "title": "Fon"
+    }
+  ]
+}
