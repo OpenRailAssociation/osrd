@@ -1,4 +1,20 @@
 {
+  "Editor": {
+    "directions": {
+      "START_TO_STOP": "Abfahrt bis Ankunft",
+      "STOP_TO_START": "Ankunft bis Abfahrt"
+    },
+    "entities": {
+      "errors-linked": "Verknüpfte Fehler"
+    },
+    "infra-errors": {
+      "corrector-modal": {
+        "create-actions": "{{creation_count}} erstellte Objekte",
+        "delete-actions": "{{deletion_count}} gelöschte Objekte",
+        "loading-loader": "Berechne mögliche Lösungen"
+      }
+    }
+  },
   "common": {
     "collapse": "Einklappen",
     "delete": "Löschen",
