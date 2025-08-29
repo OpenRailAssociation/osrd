@@ -1,4 +1,10 @@
 {
+  "boards": {
+    "conflicts": "Konflikte",
+    "macro": "Makro",
+    "map": "Karte",
+    "tables": "Fahrplan/Tabelle"
+  },
   "importTrains": {
     "and": "und",
     "cancel": "Abbrechen",
