@@ -1,1 +1,6 @@
-{}
+{
+  "ApplicableDirections": {
+    "description": "이는 특정 객체들의 적용 방향을 알기 위해 사용됩니다",
+    "title": "적용 가능한 방향"
+  }
+}
