@@ -1,4 +1,14 @@
 {
+  "arriveAt": "Ankunft um {{ time }}",
+  "consist": {
+    "compositionCode": "Baureihe",
+    "consist": "Zusammensetzung",
+    "errors": {
+      "maxSpeed": {
+        "negative": "Wert muss positiv sein."
+      }
+    }
+  },
   "scenarioExplorer": {
     "infraLegend": "Betriebsnetz",
     "noScenarioSelected": "Hier klicken, um ein Szenario mit einem Betriebsnetz und eigenem Kursbuch auszuwählen.",
