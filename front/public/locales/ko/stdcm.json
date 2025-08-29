@@ -1,1 +1,5 @@
-{}
+{
+  "allowances": {
+    "gridMarginBeforeAfter": "시간표의 이전/이후 여유 시간"
+  }
+}
