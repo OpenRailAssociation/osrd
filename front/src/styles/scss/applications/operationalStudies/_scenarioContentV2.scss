@@ -1,13 +1,13 @@
 .scenario-content-v2 {
   display: flex;
   height: calc(100vh - 32px);
-  // TODO: remove !important after a refacto of mastnav-container
-  padding: 16px 12px 12px 12px !important;
+
   .right-column,
   .left-column {
     width: 488px;
     min-width: 488px;
   }
+
   @media screen and (max-width: 2400px) {
     .right-column,
     .left-column {
@@ -29,21 +29,29 @@
       min-width: 360px;
     }
   }
+
+  .right-column,
+  .left-column,
+  .center-column {
+    padding: 16px 12px;
+  }
+
   .left-column {
-    padding-right: 8px;
+    padding-right: 4px;
 
     .board-wrapper {
       height: 100%;
     }
   }
+
   .center-column {
     position: relative;
     width: 100%;
     overflow: auto;
-    padding-inline: 8px;
   }
+
   .right-column {
-    padding-left: 8px;
+    padding-left: 4px;
 
     .board-wrapper {
       height: 100%;
