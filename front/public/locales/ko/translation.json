@@ -1,1 +1,8 @@
-{}
+{
+  "Editor": {
+    "directions": {
+      "BOTH": "모두",
+      "START_TO_STOP": "시작에서 끝까지"
+    }
+  }
+}
