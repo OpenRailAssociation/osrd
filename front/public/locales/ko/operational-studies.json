@@ -1,1 +1,6 @@
-{}
+{
+  "boards": {
+    "conflicts": "충돌",
+    "macro": "매크로"
+  }
+}
