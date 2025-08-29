@@ -1,1 +1,8 @@
-{}
+{
+  "401": "Unauthentifizierter Benutzer",
+  "403": "Zugriff verweigert",
+  "404": "Quelle nicht gefunden",
+  "500": "Serverfehler",
+  "502": "Serverfehler",
+  "503": "Serverfehler"
+}
