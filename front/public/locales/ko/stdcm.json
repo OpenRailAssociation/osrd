@@ -1,5 +1,15 @@
 {
   "allowances": {
-    "gridMarginBeforeAfter": "시간표의 이전/이후 여유 시간"
+    "gridMarginBeforeAfter": "시간표의 이전/이후 여유 시간",
+    "standardAllowance": "회복 여유"
+  },
+  "arriveAt": "{{time}}에 도착하다",
+  "consist": {
+    "compositionCode": "합성 코드",
+    "errors": {
+      "maxSpeed": {
+        "negative": "양수여야 한다."
+      }
+    }
   }
 }
