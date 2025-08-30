@@ -2,5 +2,8 @@
   "ApplicableDirections": {
     "description": "이는 특정 객체들의 적용 방향을 알기 위해 사용됩니다",
     "title": "적용 가능한 방향"
+  },
+  "ApplicableDirectionsTrackRange": {
+    "description": "적용 가능한 방향의 트랙 범위란 특정 방향들이 연관된 트랙 범위이다."
   }
 }
