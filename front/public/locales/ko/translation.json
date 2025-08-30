@@ -2,7 +2,8 @@
   "Editor": {
     "directions": {
       "BOTH": "모두",
-      "START_TO_STOP": "시작에서 끝까지"
+      "START_TO_STOP": "시작에서 끝까지",
+      "STOP_TO_START": "종료에서 시작까지"
     }
   }
 }
