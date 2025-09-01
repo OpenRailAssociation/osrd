@@ -283,7 +283,7 @@ const SimulationResults = ({
                 name={t('simulationResults.speedDistanceDiagram')}
                 hidden={!activeBoards.has('sdd')}
                 resizable
-                height={SDDHeight + BOARD_WRAPPER_HEADER_HEIGHT}
+                height={SDDHeight}
                 setHeight={setSDDHeight}
                 minHeight={SDD_MIN_HEIGHT}
               >
@@ -292,7 +292,7 @@ const SimulationResults = ({
                   selectedTimetableItemPowerRestrictions={simulationResults.powerRestrictions}
                   rollingStock={simulationResults.rollingStock}
                   pathProperties={simulationResults.pathProperties}
-                  height={SDDHeight}
+                  height={SDDHeight - BOARD_WRAPPER_HEADER_HEIGHT}
                   setHeight={setSDDHeight}
                 />
               </BoardWrapper>
