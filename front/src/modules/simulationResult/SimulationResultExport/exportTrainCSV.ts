@@ -118,10 +118,10 @@ const overloadSteps = (
   }));
 
   const formattedElectricalProfiles = electricalProfiles.values.map((value, index) => {
-    const position = mmToM(electricalProfiles.boundaries[index - 1]) || 0;
+    const position = electricalProfiles.boundaries[index - 1] || 0;
     const currentTrainRegime = {
       speed: interpolateValue(trainRegime, position, 'speeds'),
-      position,
+      position: mmToM(position),
       time: interpolateValue(trainRegime, position, 'times'),
     };
     return {
