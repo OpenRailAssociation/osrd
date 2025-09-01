@@ -7,6 +7,10 @@ import type {
   TrainScheduleId,
   TrainScheduleWithTrainId,
 } from 'reducers/osrdconf/types';
+import {
+  unsetTrainIdsMatching,
+  unsetTrainIdsMatchingMissingOccurencesOf,
+} from 'reducers/simulationResults';
 import type { AppDispatch } from 'store';
 import {
   extractEditoastIdFromPacedTrainId,
@@ -16,6 +20,8 @@ import {
   isPacedTrainId,
   isTrainScheduleId,
 } from 'utils/trainId';
+
+import { getOcurrencesIds } from './pacedTrain';
 
 export async function fetchTimetableItem(
   timetableItemId: TimetableItemId,
@@ -97,6 +103,7 @@ async function updatePacedTrain(dispatch: AppDispatch, id: PacedTrainId, pacedTr
 }
 
 export async function deleteTrainSchedules(dispatch: AppDispatch, ids: TrainScheduleId[]) {
+  ids.forEach((id) => dispatch(unsetTrainIdsMatching(id)));
   await dispatch(
     osrdEditoastApi.endpoints.deleteTrainSchedule.initiate({
       body: { ids: ids.map((id) => extractEditoastIdFromTrainScheduleId(id)) },
@@ -105,6 +112,7 @@ export async function deleteTrainSchedules(dispatch: AppDispatch, ids: TrainSche
 }
 
 export async function deletePacedTrains(dispatch: AppDispatch, ids: PacedTrainId[]) {
+  ids.forEach((id) => dispatch(unsetTrainIdsMatching(id)));
   await dispatch(
     osrdEditoastApi.endpoints.deletePacedTrain.initiate({
       body: { ids: ids.map((id) => extractEditoastIdFromPacedTrainId(id)) },
@@ -149,6 +157,12 @@ export async function storePacedTrain(
   removeTimetableItems: (timetableItems: TimetableItemId[]) => void
 ): Promise<PacedTrainWithPacedTrainId> {
   if (isPacedTrainId(timetableItemIdToUpdate)) {
+    dispatch(
+      unsetTrainIdsMatchingMissingOccurencesOf({
+        pacedTrainId: timetableItemIdToUpdate,
+        occurrencesPresent: getOcurrencesIds(pacedTrain, timetableItemIdToUpdate),
+      })
+    );
     await updatePacedTrain(dispatch, timetableItemIdToUpdate, pacedTrain);
     const updatedPacedTrain = {
       ...pacedTrain,
