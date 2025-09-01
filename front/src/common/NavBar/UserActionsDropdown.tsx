@@ -7,11 +7,11 @@ import { useTranslation } from 'react-i18next';
 import DropdownSNCF, { type DROPDOWN_STYLE_TYPES } from 'common/BootstrapSNCF/DropdownSNCF';
 import HelpModalSNCF from 'common/BootstrapSNCF/HelpModalSNCF';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
-import ReleaseInformations from 'common/ReleaseInformations';
 import useAuth from 'utils/hooks/useAuth';
 import { languageCodeToCountryCode } from 'utils/strings';
 
 import ChangeLanguageModal, { languageName } from './ChangeLanguageModal';
+import ReleaseInformations from './ReleaseInformations';
 import UserSettings from './UserSettings';
 
 type UserActionsDropdownProps = {

@@ -159,7 +159,7 @@
     "lint": "npm run lint --workspaces --if-present && eslint --ext .ts,.tsx,.js,.jsx src scripts tests *.ts --max-warnings 0",
     "lint-fix": "npm run lint:fix --workspaces --if-present && eslint --ext .ts,.tsx,.js,.jsx src scripts tests *.ts --fix",
     "generate-types": "exec scripts/generate-types.sh",
-    "generate-licenses": "license-checker-rseidelsohn --json --production --direct --excludePackagesStartingWith '@types' --excludePrivatePackages --customPath src/common/ReleaseInformations/json/licenseCustomFormat.json > src/common/ReleaseInformations/json/licenses.json",
+    "generate-licenses": "license-checker-rseidelsohn --json --production --direct --excludePackagesStartingWith '@types' --excludePrivatePackages --customPath src/common/NavBar/json/licenseCustomFormat.json > src/common/NavBar/json/licenses.json",
     "e2e-tests": "playwright test",
     "i18n-api-errors": "tsx ./scripts/i18n-api-errors.ts",
     "i18n-checker": "tsx ./scripts/i18n-checker.ts",
