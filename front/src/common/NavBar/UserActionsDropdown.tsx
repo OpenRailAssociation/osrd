@@ -11,7 +11,7 @@ import useAuth from 'utils/hooks/useAuth';
 import { languageCodeToCountryCode } from 'utils/strings';
 
 import ChangeLanguageModal, { languageName } from './ChangeLanguageModal';
-import ReleaseInformations from './ReleaseInformations';
+import ReleaseInformation from './ReleaseInformation';
 import UserSettings from './UserSettings';
 
 type UserActionsDropdownProps = {
@@ -35,7 +35,7 @@ const UserActionsDropdown = ({
         <button
           type="button"
           className="btn-link text-reset"
-          onClick={() => openModal(<ReleaseInformations />, 'lg')}
+          onClick={() => openModal(<ReleaseInformation />, 'lg')}
         >
           <span className="mr-2">
             <Info />
