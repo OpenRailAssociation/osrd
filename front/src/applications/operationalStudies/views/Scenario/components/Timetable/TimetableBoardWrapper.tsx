@@ -17,9 +17,12 @@ import { useScenarioContext } from 'applications/operationalStudies/hooks/useSce
 import BoardWrapper from 'applications/operationalStudies/views/Scenario/components/BoardWrapper';
 import RoundTripsModal from 'applications/operationalStudies/views/Scenario/components/RoundTrips/RoundTripsModal';
 import { MANAGE_TIMETABLE_ITEM_TYPES } from 'applications/operationalStudies/views/Scenario/consts';
-import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import DeleteModal from 'common/BootstrapSNCF/ModalSNCF/DeleteModal';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
+import {
+  deletePacedTrains,
+  deleteTrainSchedules,
+} from 'modules/timetableItem/helpers/updateTimetableItemHelpers';
 import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
 import { setFailure, setSuccess } from 'reducers/main';
 import type {
@@ -34,11 +37,7 @@ import { updateSelectedTrainId } from 'reducers/simulationResults';
 import { getSelectedTrainId } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
-import {
-  extractEditoastIdFromPacedTrainId,
-  extractEditoastIdFromTrainScheduleId,
-  isTrainScheduleId,
-} from 'utils/trainId';
+import { isTrainScheduleId } from 'utils/trainId';
 
 import Timetable from './Timetable';
 import useFilterTimetableItems from './useFilterTimetableItems';
@@ -77,9 +76,6 @@ const TimetableBoardWrapper = ({
   const dispatch = useAppDispatch();
 
   const selectedTrainId = useSelector(getSelectedTrainId);
-
-  const [deleteTrainSchedules] = osrdEditoastApi.endpoints.deleteTrainSchedule.useMutation();
-  const [deletePacedTrains] = osrdEditoastApi.endpoints.deletePacedTrain.useMutation();
 
   const { totalPacedTrainCount, totalTrainScheduleCount } = useMemo(
     () =>
@@ -205,25 +201,14 @@ const TimetableBoardWrapper = ({
       dispatch(updateSelectedTrainId(undefined));
     }
 
-    const editoastSelectedTrainScheduleIds = selectedTrainScheduleIds.map((id) =>
-      extractEditoastIdFromTrainScheduleId(id)
-    );
-    const editoastSelectedPacedTrainIds = selectedPacedTrainIds.map((id) =>
-      extractEditoastIdFromPacedTrainId(id)
-    );
-
     try {
       let deletingTrainSchedulesPromise;
       let deletingPacedTrainsPromise;
-      if (editoastSelectedTrainScheduleIds.length > 0) {
-        deletingTrainSchedulesPromise = deleteTrainSchedules({
-          body: { ids: editoastSelectedTrainScheduleIds },
-        }).unwrap();
+      if (selectedTrainScheduleIds.length > 0) {
+        deletingTrainSchedulesPromise = deleteTrainSchedules(dispatch, selectedTrainScheduleIds);
       }
-      if (editoastSelectedPacedTrainIds.length > 0) {
-        deletingPacedTrainsPromise = deletePacedTrains({
-          body: { ids: editoastSelectedPacedTrainIds },
-        }).unwrap();
+      if (selectedPacedTrainIds.length > 0) {
+        deletingPacedTrainsPromise = deletePacedTrains(dispatch, selectedPacedTrainIds);
       }
       await Promise.all([deletingTrainSchedulesPromise, deletingPacedTrainsPromise]);
 

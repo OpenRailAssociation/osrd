@@ -22,7 +22,10 @@ import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import { useRollingStockContext } from 'common/RollingStockContext';
 import isMainCategory from 'modules/rollingStock/helpers/category';
 import { getOccurrencesWorstStatus } from 'modules/timetableItem/helpers/pacedTrain';
-import { storePacedTrain } from 'modules/timetableItem/helpers/updateTimetableItemHelpers';
+import {
+  deletePacedTrains,
+  storePacedTrain,
+} from 'modules/timetableItem/helpers/updateTimetableItemHelpers';
 import type { PacedTrainWithDetails } from 'modules/timetableItem/types';
 import { setFailure, setSuccess } from 'reducers/main';
 import { getOperationalStudiesTimetableID } from 'reducers/osrdconf/operationalStudiesConf/selectors';
@@ -34,11 +37,7 @@ import type {
   TrainId,
   OccurrenceId,
 } from 'reducers/osrdconf/types';
-import {
-  updateProjectionType,
-  updateSelectedTrainId,
-  updateTrainIdUsedForProjection,
-} from 'reducers/simulationResults';
+import { updateProjectionType, updateTrainIdUsedForProjection } from 'reducers/simulationResults';
 import { getTrainIdUsedForProjection } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
 import { addDurationToDate, Duration } from 'utils/duration';
@@ -133,25 +132,15 @@ const PacedTrainItem = ({
 
   const [postPacedTrain] = osrdEditoastApi.endpoints.postTimetableByIdPacedTrains.useMutation();
   const [getPacedTrainById] = osrdEditoastApi.endpoints.getPacedTrainById.useLazyQuery();
-  const [deletePacedTrains] = osrdEditoastApi.endpoints.deletePacedTrain.useMutation();
 
   const selectPathProjection = async () => {
     dispatch(updateTrainIdUsedForProjection(pacedTrain.id));
     if (!summary?.isValid) dispatch(updateProjectionType('operationalPointProjection'));
   };
 
-  const deletePacedTrain = async (currentSelectedTrainId?: TrainId) => {
-    const hasOccurrenceSelected = selectedTrainId?.includes(pacedTrain.id);
-    if (hasOccurrenceSelected) {
-      // we need to set selectedTrainId to undefined, otherwise just after the delete,
-      // some unvalid rtk calls are dispatched (see rollingstock request in SimulationResults)
-      dispatch(updateSelectedTrainId(undefined));
-    }
-
+  const deletePacedTrain = async () => {
     try {
-      await deletePacedTrains({
-        body: { ids: [extractEditoastIdFromPacedTrainId(pacedTrain.id)] },
-      }).unwrap();
+      await deletePacedTrains(dispatch, [pacedTrain.id]);
       removePacedTrains([pacedTrain.id]);
       dispatch(
         setSuccess({
@@ -161,9 +150,6 @@ const PacedTrainItem = ({
       );
     } catch (e) {
       dispatch(setFailure(castErrorToFailure(e)));
-      if (hasOccurrenceSelected) {
-        dispatch(updateSelectedTrainId(currentSelectedTrainId));
-      }
     }
   };
 
@@ -352,7 +338,7 @@ const PacedTrainItem = ({
           deleteTimetableItem={async () => {
             openModal(
               <DeleteModal
-                handleDelete={async () => deletePacedTrain(selectedTrainId)}
+                handleDelete={async () => deletePacedTrain()}
                 selectedPacedTrainIds={[pacedTrain.id]}
                 selectedTrainScheduleIds={[]}
               />,
