@@ -1,4 +1,4 @@
-import React, { Fragment, type ReactNode, useCallback, useEffect, useMemo, useState } from 'react';
+import React, { Fragment, type ReactNode, useCallback, useMemo, useState } from 'react';
 
 import { sortBy, clamp } from 'lodash';
 
@@ -14,19 +14,17 @@ import {
 } from '../../spaceTimeChart/utils/scales';
 import type { ManchetteProps } from '../components/Manchette';
 import {
-  MAX_ZOOM_Y,
-  MIN_ZOOM_Y,
-  ZOOM_Y_DELTA,
-  DEFAULT_ZOOM_MS_PER_PX,
   MAX_ZOOM_MS_PER_PX,
   MIN_ZOOM_MS_PER_PX,
   BASE_WAYPOINT_HEIGHT,
   FOOTER_HEIGHT,
   WAYPOINT_LINE_HEIGHT,
   INITIAL_SPACE_TIME_CHART_HEIGHT,
+  MAX_ZOOM_Y,
 } from '../consts';
 import type { InteractiveWaypoint, Waypoint } from '../types';
 import { getDistance, calcTotalDistance } from '../utils';
+import useSyncManchette, { type SyncManchetteState } from './useSyncManchette';
 import {
   selectWaypointsToDisplay,
   getScales,
@@ -35,38 +33,7 @@ import {
   getExtremaScales,
   zoomValueToSpaceScale,
   zoomValueToTimeScale,
-  zoomX,
 } from '../utils/helpers';
-
-type State = {
-  xZoom: number;
-  yZoom: number;
-  timeOrigin: number;
-  spaceOrigin: number;
-  /** current x PIXEL offset from x origin */
-  xOffset: number;
-  /** current y PIXEL offset from y origin (the current y-scroll of the view. always updates) */
-  yOffset: number;
-  /** only update after a zoom. used to update back the view scroll value */
-  scrollTo: number | null;
-  panning: { initialOffset: { x: number; y: number } } | null;
-  zoomMode: boolean;
-  rect: {
-    timeStart: Date;
-    timeEnd: Date;
-    spaceStart: number; // mm
-    spaceEnd: number; // mm
-  } | null;
-  pixelRect: {
-    xStart: number;
-    xEnd: number;
-    yStart: number;
-    yEnd: number;
-  } | null;
-  isProportional: boolean;
-  waypointsChart: Waypoint[];
-  scales: SpaceScale[];
-};
 
 export type SplitPoint = {
   /** helper identify nodes for this split point in the React tree */
@@ -118,6 +85,11 @@ const useManchetteWithSpaceTimeChart = ({
   splitPoints?: SplitPoint[];
   options?: Partial<ManchetteWithSpaceTimeChartOptions>;
 }) => {
+  const canvasDrawingHeight = Math.max(1 + BASE_WAYPOINT_HEIGHT, height - FOOTER_HEIGHT); // 521
+  const drawingHeightWithoutTopPadding = canvasDrawingHeight - verticalPadding; // 473
+  const drawingHeightWithoutBothPadding =
+    canvasDrawingHeight - (verticalPadding + BASE_WAYPOINT_HEIGHT); // 441
+
   const { displayTimeCaptions, enableTimePan, enableSpacePan, enableTimeZoom } = useMemo(
     () => ({
       ...DEFAULT_MANCHETTE_WITH_SPACE_TIME_CHART_OPTIONS,
@@ -125,46 +97,39 @@ const useManchetteWithSpaceTimeChart = ({
     }),
     [options]
   );
-  const [isShiftPressed, setIsShiftPressed] = useState(false);
-  const [state, setState] = useState<State>({
-    xZoom: timeScaleToZoomValue(DEFAULT_ZOOM_MS_PER_PX),
-    yZoom: 1,
-    timeOrigin: defaultTimeOrigin,
-    spaceOrigin: defaultSpaceOrigin,
-    xOffset: defaultXOffset,
-    yOffset: 0,
-    scrollTo: null,
-    panning: null,
-    zoomMode: false,
-    rect: null,
-    pixelRect: null,
-    isProportional: true,
-    waypointsChart: [],
-    scales: [],
-  });
+
+  const [isProportional, setIsPropotional] = useState(true);
 
   const {
-    xZoom,
-    yZoom,
-    timeOrigin,
-    spaceOrigin,
-    xOffset,
-    yOffset,
-    scrollTo,
-    panning,
-    zoomMode,
-    rect,
-    isProportional,
-  } = state;
+    state: { xZoom, yZoom, timeOrigin, spaceOrigin, xOffset, yOffset, zoomMode, rect, panning },
+    setState: setSyncManchetteState,
+    handleScrollInManchette,
+    handleXZoom,
+    handleXZoomOnWheelEvent,
+    yZoomHelpers: { zoomYIn, zoomYOut, resetZoom },
+  } = useSyncManchette({
+    manchetteWithSpaceTimeChartRef,
+    diagramRef: spaceTimeChartRef,
+    height,
+    initialState: {
+      timeOrigin: defaultTimeOrigin,
+      spaceOrigin: defaultSpaceOrigin,
+      xOffset: defaultXOffset,
+    },
+    maxYZoom: isProportional
+      ? MAX_ZOOM_Y
+      : (drawingHeightWithoutTopPadding - BASE_WAYPOINT_HEIGHT) / (2 * BASE_WAYPOINT_HEIGHT),
+    enableTimeZoom,
+  });
 
   /** used when we change the train dataset for example to center the chart on the new data */
-  const setTimeOrigin = useCallback((newTimeOrigin: number) => {
-    setState((prev) => ({ ...prev, timeOrigin: newTimeOrigin }));
-  }, []);
-  const canvasDrawingHeight = Math.max(1 + BASE_WAYPOINT_HEIGHT, height - FOOTER_HEIGHT); // 521
-  const drawingHeightWithoutTopPadding = canvasDrawingHeight - verticalPadding; // 473
-  const drawingHeightWithoutBothPadding =
-    canvasDrawingHeight - (verticalPadding + BASE_WAYPOINT_HEIGHT); // 441
+  const setTimeOrigin = useCallback(
+    (newTimeOrigin: number) => {
+      setSyncManchetteState((prev) => ({ ...prev, timeOrigin: newTimeOrigin }));
+    },
+    [setSyncManchetteState]
+  );
+
   const totalDistance = calcTotalDistance(waypoints);
 
   const { minZoomMillimeterPerPx, maxZoomMillimeterPerPx } = getExtremaScales(
@@ -174,7 +139,7 @@ const useManchetteWithSpaceTimeChart = ({
   );
 
   const handleRectZoomEnd = useCallback(
-    (prev: State) => {
+    (prev: SyncManchetteState) => {
       if (!prev.rect || !spaceTimeChartRef?.current) {
         return {};
       }
@@ -197,7 +162,7 @@ const useManchetteWithSpaceTimeChart = ({
       let newYZoom = prev.yZoom;
       let newYOffset = prev.yOffset;
 
-      if (prev.isProportional) {
+      if (isProportional) {
         const chosenSpaceScale = spaceRange / drawingHeightWithoutTopPadding;
         const newSpaceScale = clamp(
           chosenSpaceScale,
@@ -253,6 +218,7 @@ const useManchetteWithSpaceTimeChart = ({
     },
     [
       spaceTimeChartRef,
+      isProportional,
       drawingHeightWithoutTopPadding,
       maxZoomMillimeterPerPx,
       minZoomMillimeterPerPx,
@@ -261,116 +227,13 @@ const useManchetteWithSpaceTimeChart = ({
     ]
   );
 
-  const zoomYIn = useCallback(() => {
-    const maxZoom = isProportional
-      ? MAX_ZOOM_Y
-      : (drawingHeightWithoutTopPadding - BASE_WAYPOINT_HEIGHT) / (2 * BASE_WAYPOINT_HEIGHT);
-    const newYZoom = Math.min(yZoom + ZOOM_Y_DELTA, maxZoom);
-    if (newYZoom !== yZoom) {
-      const newYOffset = yOffset * (newYZoom / yZoom);
-
-      setState((prev) => ({
-        ...prev,
-        yZoom: newYZoom,
-        yOffset: newYOffset,
-        scrollTo: newYOffset,
-      }));
-    }
-  }, [yZoom, yOffset, drawingHeightWithoutTopPadding, isProportional]);
-
-  const zoomYOut = useCallback(() => {
-    const newYZoom = Math.max(MIN_ZOOM_Y, yZoom - ZOOM_Y_DELTA);
-    if (newYZoom !== yZoom) {
-      const newYOffset = yOffset * (newYZoom / yZoom);
-      setState((prev) => ({
-        ...prev,
-        yZoom: newYZoom,
-        yOffset: newYOffset,
-        scrollTo: newYOffset,
-      }));
-    }
-  }, [yZoom, yOffset]);
-
-  useEffect(() => {
-    if (scrollTo !== null && manchetteWithSpaceTimeChartRef.current) {
-      manchetteWithSpaceTimeChartRef.current.scrollTo({
-        top: scrollTo,
-        behavior: 'instant',
-      });
-    }
-  }, [scrollTo, manchetteWithSpaceTimeChartRef]);
-
-  const resetZoom = useCallback(() => {
-    setState((prev) => ({ ...prev, yZoom: 1 }));
-  }, []);
-
-  const handleScroll = useCallback(
-    (e: React.UIEvent<HTMLDivElement>) => {
-      if (rect) {
-        e.preventDefault();
-        return;
-      }
-      if (!isShiftPressed && manchetteWithSpaceTimeChartRef.current) {
-        const { scrollTop } = manchetteWithSpaceTimeChartRef.current;
-        if (scrollTop || scrollTop === 0) {
-          setState((prev) => ({ ...prev, yOffset: scrollTop }));
-        }
-      }
-    },
-    [isShiftPressed, manchetteWithSpaceTimeChartRef, rect]
-  );
-
-  const handleKeyDown = useCallback((event: KeyboardEvent) => {
-    if (event.key === 'Shift') {
-      setIsShiftPressed(true);
-    }
-  }, []);
-
-  const handleKeyUp = useCallback((event: KeyboardEvent) => {
-    if (event.key === 'Shift') {
-      setIsShiftPressed(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    window.addEventListener('keydown', handleKeyDown);
-    window.addEventListener('keyup', handleKeyUp);
-
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown);
-      window.removeEventListener('keyup', handleKeyUp);
-    };
-  }, [handleKeyDown, handleKeyUp]);
-
   const toggleMode = useCallback(() => {
-    setState((prev) => ({ ...prev, isProportional: !prev.isProportional }));
+    setIsPropotional((prev) => !prev);
   }, []);
 
   const toggleZoomMode = useCallback(() => {
-    setState((prev) => ({ ...prev, zoomMode: !prev.zoomMode }));
-  }, []);
-
-  const handleXZoom = useCallback(
-    (newXZoom: number, xPosition = (spaceTimeChartRef?.current?.offsetWidth || 0) / 2) => {
-      if (enableTimeZoom) {
-        setState((prev) => ({
-          ...prev,
-          ...zoomX(prev.xZoom, prev.xOffset, newXZoom, xPosition),
-        }));
-      }
-    },
-    [enableTimeZoom, spaceTimeChartRef]
-  );
-
-  const handleXZoomOnWheelEvent = useCallback(
-    (wheelEvent: WheelEvent, newXZoom: number, xPosition: number) => {
-      if (isShiftPressed && !rect) {
-        wheelEvent.preventDefault();
-        handleXZoom(newXZoom, xPosition);
-      }
-    },
-    [handleXZoom, isShiftPressed, rect]
-  );
+    setSyncManchetteState((prev) => ({ ...prev, zoomMode: !prev.zoomMode }));
+  }, [setSyncManchetteState]);
 
   const spaceScales = useMemo(() => {
     // Here, we first compute the base scales, and then we insert a flat step for each split point:
@@ -576,7 +439,7 @@ const useManchetteWithSpaceTimeChart = ({
     xZoom: number;
     toggleZoomMode: () => void;
     zoomMode: boolean;
-    rect: State['rect'];
+    rect: SyncManchetteState['rect'];
     timeScale: number;
     spaceScale: number;
     setTimeOrigin: (v: number) => void;
@@ -625,7 +488,7 @@ const useManchetteWithSpaceTimeChart = ({
             context: { width, getData },
           } = payload;
           const diff = getDistance(initialPosition, position);
-          setState((prev) => {
+          setSyncManchetteState((prev) => {
             if (!isPanning) {
               return {
                 ...prev,
@@ -642,14 +505,14 @@ const useManchetteWithSpaceTimeChart = ({
               const timeEnd = clamp(data.time, minPoint.time, maxPoint.time);
               const spaceStart = clamp(initialData.position, minPoint.position, maxPoint.position);
               const spaceEnd = clamp(data.position, minPoint.position, maxPoint.position);
-              const newRect: State['rect'] = {
+              const newRect: SyncManchetteState['rect'] = {
                 timeStart: new Date(timeStart),
                 timeEnd: new Date(timeEnd),
                 spaceStart,
                 spaceEnd,
               };
 
-              let newPixelRect: State['pixelRect'] = null;
+              let newPixelRect: SyncManchetteState['pixelRect'] = null;
               if (!isProportional) {
                 const xStart = clamp(initialPosition.x, 0, width);
                 const xEnd = clamp(position.x, 0, width);
@@ -693,7 +556,7 @@ const useManchetteWithSpaceTimeChart = ({
           });
         },
       },
-      handleScroll,
+      handleScroll: handleScrollInManchette,
       handleXZoom,
       xZoom,
       toggleZoomMode,
@@ -722,7 +585,7 @@ const useManchetteWithSpaceTimeChart = ({
       timeOrigin,
       spaceOrigin,
       spaceScales,
-      handleScroll,
+      handleScrollInManchette,
       handleXZoom,
       handleXZoomOnWheelEvent,
       toggleZoomMode,
@@ -731,6 +594,7 @@ const useManchetteWithSpaceTimeChart = ({
       minZoomMillimeterPerPx,
       maxZoomMillimeterPerPx,
       setTimeOrigin,
+      setSyncManchetteState,
       panning,
       manchetteWithSpaceTimeChartRef,
       enableTimePan,
