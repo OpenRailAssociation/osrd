@@ -16,6 +16,14 @@ const testWithLogging = baseTest.extend<{ page: Page }>({
     // Log before the test starts
     logger.info(`START: '${testInfo.title}' | Browser: ${browserName}`);
 
+    // Attach browser metadata (name and version)
+    const browserVersion = page.context().browser()?.version();
+    testInfo.attachments.push({
+      name: 'metadata.json',
+      contentType: 'application/json',
+      body: Buffer.from(JSON.stringify({ name: browserName, version: browserVersion }), 'utf-8'),
+    });
+
     // Handle uncaught exceptions
     page.on('pageerror', (exception) => {
       logger.error('🚨Uncaught page error:', exception);

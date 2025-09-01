@@ -68,6 +68,9 @@ await (async () => {
   const report: GithubSummaryReport = JSON.parse(fs.readFileSync(reportPath, 'utf-8'));
 
   const { summary, tests } = report.results;
+  const allBrowsers = [...new Set(tests.map((t) => t.browser?.toLowerCase() || 'unknown'))];
+  const useBrowserColumn = allBrowsers.length > 1;
+
   const flakyTests = tests.filter((t) => t.flaky);
   const failedTests = tests.filter((t) => t.status === 'failed');
 
@@ -104,9 +107,9 @@ await (async () => {
 💡 **Inspecting Traces**
 
 > Each failed test includes a downloadable \`trace.zip\` file.
-> To view the trace, extract the archive and upload it to the 🎯 Playwright Trace Viewer](https://trace.playwright.dev/)
-- 📦 Download Traces](${traceUrl})
-- 🎥 Download Videos](${videoUrl})
+> To view the trace, extract the archive and upload it to the 🎯 [Playwright Trace Viewer](https://trace.playwright.dev/)
+- 📦 [Download Traces](${traceUrl})
+- 🎥 [Download Videos](${videoUrl})
 
 | Failed Test | Status | Error |
 |-------------|--------|-------|
@@ -135,15 +138,30 @@ ${flakyTests
 
 ### 🧪 Detailed Test Results
 
-| Test Name | Status | Duration (s) | Flaky? |
-|-----------|--------|--------------|--------|
+${!useBrowserColumn ? `💡 Tests were executed using: \`${allBrowsers[0]}\`\n\n` : ''}
+
+| Test Name | Status | Duration (s) | Flaky?${useBrowserColumn ? ' | Browser & Version' : ''} |
+|-----------|--------|--------------|--------${useBrowserColumn ? '|---------' : ''}|
 ${tests
-  .map(
-    (t) =>
-      `| ${t.name} | ${formatStatus(t.status)} | ${(t.duration ?? 0) / 1000} | ${
-        t.flaky ? '**Yes**' : 'No'
-      } |`
-  )
+  .map((t) => {
+    const row = [
+      t.name,
+      formatStatus(t.status),
+      (t.duration ?? 0) / 1000,
+      t.flaky ? '**Yes**' : 'No',
+    ];
+
+    if (useBrowserColumn) {
+      const browserDisplay =
+        t.browser?.toLowerCase().includes('chromium') ||
+        t.browser?.toLowerCase().includes('firefox')
+          ? t.browser
+          : 'None';
+      row.push(browserDisplay);
+    }
+
+    return `| ${row.join(' | ')} |`;
+  })
   .join('\n')}
 `;
 
