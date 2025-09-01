@@ -10,8 +10,8 @@ const errorMessages = {
 };
 
 describe('useDatePicker', () => {
-  let onDayChange: RangeDatePickerProps['onDateChange'];
-  let onSlotChange: SingleDatePickerProps['onDateChange'];
+  let onSlotChange: RangeDatePickerProps['onDateChange'];
+  let onDayChange: SingleDatePickerProps['onDateChange'];
 
   beforeEach(() => {
     onDayChange = vi.fn();
@@ -85,7 +85,7 @@ describe('useDatePicker', () => {
         useDatePicker({
           inputProps: { id: 'id', label: 'label' },
           isRangeMode: true,
-          onDateChange: onDayChange,
+          onDateChange: onSlotChange,
         })
       );
 
@@ -196,7 +196,7 @@ describe('useDatePicker', () => {
               label: 'label',
             },
             isRangeMode: true,
-            onDateChange: onDayChange,
+            onDateChange: onSlotChange,
             errorMessages,
           })
         );
