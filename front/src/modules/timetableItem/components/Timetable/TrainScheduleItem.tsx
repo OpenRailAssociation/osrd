@@ -11,6 +11,7 @@ import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { SubCategory, TrainSchedule } from 'common/api/osrdEditoastApi';
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
 import isMainCategory from 'modules/rollingStock/helpers/category';
+import { deleteTrainSchedules } from 'modules/timetableItem/helpers/updateTimetableItemHelpers';
 import { setFailure, setSuccess } from 'reducers/main';
 import type {
   TimetableItemId,
@@ -74,7 +75,6 @@ const TrainScheduleItem = ({
   const [postTrainSchedule] =
     osrdEditoastApi.endpoints.postTimetableByIdTrainSchedules.useMutation();
   const [getTrainSchedule] = osrdEditoastApi.endpoints.getTrainScheduleById.useLazyQuery();
-  const [deleteTrainSchedule] = osrdEditoastApi.endpoints.deleteTrainSchedule.useMutation();
 
   const { summary } = train;
 
@@ -83,16 +83,7 @@ const TrainScheduleItem = ({
   };
 
   const deleteTrain = async () => {
-    if (isSelected) {
-      // we need to set selectedTrainId to undefined, otherwise just after the delete,
-      // some unvalid rtk calls are dispatched (see rollingstock request in SimulationResults)
-      dispatch(updateSelectedTrainId(undefined));
-    }
-
-    deleteTrainSchedule({
-      body: { ids: [extractEditoastIdFromTrainScheduleId(train.id)] },
-    })
-      .unwrap()
+    deleteTrainSchedules(dispatch, [train.id])
       .then(() => {
         removeTrains([train.id]);
         dispatch(
