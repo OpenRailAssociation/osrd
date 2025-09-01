@@ -2,10 +2,10 @@ import cx from 'classnames';
 import type { Position } from 'geojson';
 import { Marker } from 'react-map-gl/maplibre';
 
-import { MARKER_TYPE } from 'applications/operationalStudies/views/Scenario/components/ManageTimetableItem/ManageTimetableItemMap/ItineraryMarkers';
 import destinationIcon from 'assets/pictures/mapMarkers/destination.svg';
 import viaIcon from 'assets/pictures/mapMarkers/intermediate-point.svg';
 import originIcon from 'assets/pictures/mapMarkers/start.svg';
+import { MARKER_TYPE } from 'common/Map/Layers/ItineraryMarkers';
 
 const MARKER_OFFSET: [number, number] = [0, 8];
 
