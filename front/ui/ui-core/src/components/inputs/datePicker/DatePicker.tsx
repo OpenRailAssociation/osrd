@@ -20,7 +20,7 @@ type BaseDatePickerProps = {
 
 export type SingleDatePickerProps = BaseDatePickerProps & {
   isRangeMode?: false;
-  onDateChange: (nextDate: Date) => void;
+  onDateChange: (nextDate?: Date) => void;
   value?: Date;
 };
 

@@ -27,7 +27,7 @@ const DatePickerStory = (props: DatePickerProps) => {
   const [value, setValue] = useState(props.value);
   const onSlotChange = (_: Date, nextSelectedSlot: CalendarSlot | undefined) =>
     setValue(nextSelectedSlot);
-  const onDayChange = (nextDate: Date) => setValue(nextDate);
+  const onDayChange = (nextDate?: Date) => setValue(nextDate);
 
   if (props.isRangeMode) {
     return (

@@ -23,9 +23,9 @@ export default function useDatePicker(datePickerProps: DatePickerProps) {
   const [inputValue, setInputValue] = useState(formatInputValue(datePickerProps));
   const [selectedSlot, setSelectedSlot] = useState(formatValueToSlot(datePickerProps));
   const [statusWithMessage, setStatusWithMessage] = useState<StatusWithMessage>();
-
   const calendarPickerRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
   useOutsideClick(calendarPickerRef, (e) => {
     // Do not close the picker if any children in input wrapper is clicked.
     // This wrapper include, the input itself, the trailing content (which contains the calendar icon) and the leading content
@@ -68,19 +68,24 @@ export default function useDatePicker(datePickerProps: DatePickerProps) {
     if (inputIsDate) {
       const [day, month, year] = newValue.split('/').map(Number);
       const date = new Date(year + 2000, month - 1, day);
-
-      if (!isNaN(date.getTime()) && isWithinInterval(date, selectableSlot) && onDateChange) {
+      const isRealDate = !Number.isNaN(date.getTime());
+      const isValid = isRealDate && isWithinInterval(date, selectableSlot);
+      if (isValid) {
+        setStatusWithMessage(undefined);
         onDateChange(date);
       } else {
         setStatusWithMessage({ status: 'error', message: errorMessages?.invalidDate });
+        onDateChange(undefined);
       }
       return;
     }
 
     if (containsOnlyNumbersAndSlashes(newValue) && newValue.length < 8) {
       setStatusWithMessage(undefined);
+      onDateChange(undefined);
       return;
     }
+    onDateChange(undefined);
     setStatusWithMessage({
       status: 'error',
       message: errorMessages?.invalidInput,
