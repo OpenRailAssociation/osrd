@@ -9,7 +9,7 @@ import { useScenarioContext } from 'applications/operationalStudies/hooks/useSce
 import type { Board } from 'applications/operationalStudies/types';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
-import UserActionsDropdown from 'common/UserActionsDropdown';
+import UserActionsDropdown from 'common/NavBar/UserActionsDropdown';
 import AddAndEditScenarioModal from 'modules/scenario/components/AddOrEditScenarioModal';
 import useAuth from 'utils/hooks/useAuth';
 

@@ -4,13 +4,14 @@ import { Gear, Info, Report, SignOut } from '@osrd-project/ui-icons';
 import getUnicodeFlagIcon from 'country-flag-icons/unicode';
 import { useTranslation } from 'react-i18next';
 
-import useAuth from '../utils/hooks/useAuth';
-import { languageCodeToCountryCode } from '../utils/strings';
-import DropdownSNCF, { type DROPDOWN_STYLE_TYPES } from './BootstrapSNCF/DropdownSNCF';
-import HelpModalSNCF from './BootstrapSNCF/HelpModalSNCF';
-import { useModal } from './BootstrapSNCF/ModalSNCF';
+import DropdownSNCF, { type DROPDOWN_STYLE_TYPES } from 'common/BootstrapSNCF/DropdownSNCF';
+import HelpModalSNCF from 'common/BootstrapSNCF/HelpModalSNCF';
+import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
+import ReleaseInformations from 'common/ReleaseInformations';
+import useAuth from 'utils/hooks/useAuth';
+import { languageCodeToCountryCode } from 'utils/strings';
+
 import ChangeLanguageModal, { languageName } from './ChangeLanguageModal';
-import ReleaseInformations from './ReleaseInformations';
 import UserSettings from './UserSettings';
 
 type UserActionsDropdownProps = {

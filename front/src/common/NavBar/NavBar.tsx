@@ -7,11 +7,12 @@ import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
-import UserActionsDropdown from 'common/UserActionsDropdown';
-import UserSettings from 'common/UserSettings';
 import { getUserSafeWord } from 'reducers/user/userSelectors';
 import useAuth from 'utils/hooks/useAuth';
 import useDeploymentSettings from 'utils/hooks/useDeploymentSettings';
+
+import UserActionsDropdown from './UserActionsDropdown';
+import UserSettings from './UserSettings';
 
 type NavBarProps = {
   appName?: string | ReactElement;
