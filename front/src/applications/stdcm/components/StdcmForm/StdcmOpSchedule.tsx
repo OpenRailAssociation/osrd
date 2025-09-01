@@ -121,6 +121,7 @@ const StdcmOpSchedule = ({ disabled, pathStep, opId, isOrigin = false }: StdcmOp
             selectableSlot={selectableSlot}
             value={pathStep.arrival}
             onDateChange={(e) => {
+              if (!e) return;
               onArrivalChange({
                 date: e,
                 hours: arrivalTimeHours || 0,

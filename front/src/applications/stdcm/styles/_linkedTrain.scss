@@ -38,13 +38,21 @@
       background-color: var(--grey10);
       color: var(--primary50);
       border-radius: 6px;
+
       &.white {
         background-color: var(--white);
       }
+
       .stdcm-linked-train-loading {
         color: var(--primary90);
         align-self: center;
       }
+    }
+
+    .stdcm-linked-train-button[disabled] {
+      opacity: 0.5;
+      pointer-events: none;
+      cursor: not-allowed;
     }
 
     .stdcm-linked-train-results {
@@ -75,6 +83,7 @@
           margin-bottom: 4px;
           text-align: start;
         }
+
         .opDetails {
           font-size: 0.875rem;
           line-height: 20px;

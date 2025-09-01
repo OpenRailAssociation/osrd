@@ -24,6 +24,7 @@ const StdcmLinkedTrainSearch = ({
 }: StdcmLinkedTrainSearchProps) => {
   const { t } = useTranslation('stdcm');
   const [displayLinkedTrainSearch, setShowLinkedTrainSearch] = useState(false);
+  const [isLinkedTrainDateValid, setIsLinkedTrainDateValid] = useState(true);
 
   const {
     displaySearchButton,
@@ -96,7 +97,10 @@ const StdcmLinkedTrainSearch = ({
               value={linkedTrainDate}
               onDateChange={(date) => {
                 setDisplaySearchButton(true);
-                setLinkedTrainDate(date);
+                setIsLinkedTrainDateValid(date !== undefined);
+                if (date) {
+                  setLinkedTrainDate(date);
+                }
               }}
             />
           </div>
@@ -106,6 +110,7 @@ const StdcmLinkedTrainSearch = ({
               className="stdcm-linked-train-button"
               type="button"
               onClick={launchTrainScheduleSearch}
+              disabled={!isLinkedTrainDateValid}
             >
               {t('find')}
             </button>
