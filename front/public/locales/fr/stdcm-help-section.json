@@ -53,6 +53,10 @@
             {
               "type": "text",
               "value": "Vos requêtes sont pour le moment possibles uniquement entre Perrigny et Miramas, entre J-7 et J-1 17 heures, et ne prennent pas en compte les ATEs, matières dangereuses, et gabarits GB."
+            },
+            {
+              "type": "text",
+              "value": "<a href='mailto:{{stdcmFeedbackMail}}' target=\"_blank\">Contactez-nous</a>"
             }
           ],
           "title": "Périmètre"
