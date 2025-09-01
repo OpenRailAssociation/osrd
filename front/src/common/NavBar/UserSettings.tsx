@@ -6,18 +6,20 @@ import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
+import {
+  osrdEditoastApi,
+  type SearchResultItemUser,
+  type PostSearchApiArg,
+} from 'common/api/osrdEditoastApi';
+import useAuthz from 'common/authorization/hooks/useAuthz';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { ModalBodySNCF, ModalHeaderSNCF } from 'common/BootstrapSNCF/ModalSNCF';
+import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import { updateUserPreferences } from 'reducers/user';
 import { getUserPreferences } from 'reducers/user/userSelectors';
 import { useAppDispatch } from 'store';
 import { useDebounce } from 'utils/helpers';
 import useAuth from 'utils/hooks/useAuth';
-
-import { type PostSearchApiArg, type SearchResultItemUser } from './api/generatedEditoastApi';
-import { osrdEditoastApi } from './api/osrdEditoastApi';
-import useAuthz from './authorization/hooks/useAuthz';
-import { ModalContext } from './BootstrapSNCF/ModalSNCF/ModalProvider';
 
 const UserSettings = () => {
   const [postSearch] = osrdEditoastApi.endpoints.postSearch.useMutation();

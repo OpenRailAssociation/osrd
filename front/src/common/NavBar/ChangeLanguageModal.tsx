@@ -4,11 +4,10 @@
 import { DE, FR, GB, PT } from 'country-flag-icons/react/3x2';
 import { useTranslation } from 'react-i18next';
 
+import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import ModalBodySNCF from 'common/BootstrapSNCF/ModalSNCF/ModalBodySNCF';
 import ModalHeaderSNCF from 'common/BootstrapSNCF/ModalSNCF/ModalHeaderSNCF';
 import { supportedLngs } from 'i18n';
-
-import { useModal } from './BootstrapSNCF/ModalSNCF';
 
 // We don't use `t` cause language names are fixed
 export const languageName = (lng: string) => {
