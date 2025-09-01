@@ -2,13 +2,13 @@ package fr.sncf.osrd.api.stdcm
 
 import com.google.common.collect.ImmutableRangeMap
 import com.google.common.collect.Range
-import com.google.common.collect.RangeSet
 import com.google.common.collect.TreeRangeSet
 import fr.sncf.osrd.api.*
 import fr.sncf.osrd.api.pathfinding.findWaypointBlocks
 import fr.sncf.osrd.api.pathfinding.hasDuplicateTracks
 import fr.sncf.osrd.api.pathfinding.runPathfindingBlockPostProcessing
 import fr.sncf.osrd.api.standalone_sim.*
+import fr.sncf.osrd.conflicts.ParsedRequirements
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue.Percentage
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue.TimePerDistance
@@ -57,9 +57,6 @@ import java.time.LocalDateTime
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.util.TreeMap
-import kotlin.math.max
-import kotlin.math.min
-import kotlinx.coroutines.async
 import kotlinx.coroutines.runBlocking
 import org.takes.Request
 import org.takes.Response
@@ -121,61 +118,7 @@ class STDCMEndpoint(
                     },
                 )
             val steps = parseSteps(infra, request.pathItems, request.startTime)
-            val convertedWorkSchedules = mutableMapOf<ZoneId, RangeSet<Double>>()
-            convertWorkScheduleCollection(infra.rawInfra, request.workSchedules)
-                .spacingRequirements
-                .forEach { spacingReq ->
-                    val set =
-                        convertedWorkSchedules.computeIfAbsent(spacingReq.zone) {
-                            TreeRangeSet.create()
-                        }
-                    set.add(Range.closedOpen(spacingReq.beginTime, spacingReq.endTime))
-                }
-            val requirements = runBlocking {
-                val trainRequirements = async {
-                    timetableCacheManager.get(request.infra, infra.rawInfra, request.timetableId)
-                }
-                // Cached requirements are relative to EPOCH. Add time diff with request start time
-                // to these requirements.
-                val searchWindowBeginEpoch = request.startTime.durationSinceEpoch()
-                val searchWindowEndEpoch =
-                    searchWindowBeginEpoch +
-                        request.maximumDepartureDelay!!.seconds +
-                        request.maximumRunTime.seconds
-                val res =
-                    trainRequirements
-                        .await()
-                        .mapValues { (_, value) ->
-                            TreeRangeSet.create<Double>().apply {
-                                for (range in value.asRanges()) {
-                                    // Filter out unnecessary requirements
-                                    if (
-                                        range.upperEndpoint() > searchWindowBeginEpoch &&
-                                            range.lowerEndpoint() < searchWindowEndEpoch
-                                    ) {
-                                        val newRange =
-                                            Range.range(
-                                                range.lowerEndpoint() - searchWindowBeginEpoch,
-                                                range.lowerBoundType(),
-                                                range.upperEndpoint() - searchWindowBeginEpoch,
-                                                range.upperBoundType(),
-                                            )
-                                        add(newRange)
-                                    }
-                                }
-                            } as RangeSet<Double>
-                        }
-                        .toMutableMap()
-                for ((zone, ranges) in convertedWorkSchedules) {
-                    val set = res.computeIfAbsent(zone) { TreeRangeSet.create() }
-                    set.addAll(ranges)
-                }
-                res.map { entry ->
-                        entry.key to
-                            TreeMap(entry.value.asRanges().associateBy { it.upperEndpoint() })
-                    }
-                    .toMap()
-            }
+            val requirements = getRequirements(request, infra)
 
             // Run the STDCM pathfinding
             val path =
@@ -221,6 +164,53 @@ class STDCMEndpoint(
             RsJson(RsWithBody(stdcmResponseAdapter.toJson(response)))
         } catch (ex: Throwable) {
             ExceptionHandler.handle(ex)
+        }
+    }
+
+    /**
+     * Collect all spacing requirements in an easily fetchable format. Combines both train
+     * requirements and work schedules.
+     */
+    private fun getRequirements(request: STDCMRequest, infra: FullInfra): ParsedRequirements {
+        val res = mutableMapOf<ZoneId, TreeRangeSet<Double>>()
+        convertWorkScheduleCollection(infra.rawInfra, request.workSchedules)
+            .spacingRequirements
+            .forEach { spacingReq ->
+                val set = res.computeIfAbsent(spacingReq.zone) { TreeRangeSet.create() }
+                set.add(Range.closedOpen(spacingReq.beginTime, spacingReq.endTime))
+            }
+
+        val trainRequirements = runBlocking {
+            timetableCacheManager.get(request.infra, infra.rawInfra, request.timetableId)
+        }
+        // Cached requirements are relative to EPOCH. Add time diff with request start time
+        // to these requirements.
+        val searchWindowBeginEpoch = request.startTime.durationSinceEpoch()
+        val searchWindowEndEpoch =
+            searchWindowBeginEpoch +
+                request.maximumDepartureDelay!!.seconds +
+                request.maximumRunTime.seconds
+        for ((zoneId, rangeSet) in trainRequirements) {
+            val setBuilder = res.computeIfAbsent(zoneId) { TreeRangeSet.create() }
+            for (range in rangeSet.asRanges()) {
+                // Filter out unnecessary requirements
+                val included =
+                    range.upperEndpoint() > searchWindowBeginEpoch &&
+                        range.lowerEndpoint() < searchWindowEndEpoch
+                if (included) {
+                    val newRange =
+                        Range.range(
+                            range.lowerEndpoint() - searchWindowBeginEpoch,
+                            range.lowerBoundType(),
+                            range.upperEndpoint() - searchWindowBeginEpoch,
+                            range.upperBoundType(),
+                        )
+                    setBuilder.add(newRange)
+                }
+            }
+        }
+        return res.mapValues { rangeSet ->
+            TreeMap(rangeSet.value.asRanges().associateBy { it.upperEndpoint() })
         }
     }
 
