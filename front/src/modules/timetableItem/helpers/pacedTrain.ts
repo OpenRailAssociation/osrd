@@ -1,12 +1,19 @@
 import dayjs from 'dayjs';
 
 import type { PacedTrain, PacedTrainException } from 'common/api/osrdEditoastApi';
-import type { OccurrenceId, TimetableItem, TimetableItemId } from 'reducers/osrdconf/types';
-import type { Duration } from 'utils/duration';
+import type {
+  OccurrenceId,
+  PacedTrainId,
+  TimetableItem,
+  TimetableItemId,
+} from 'reducers/osrdconf/types';
+import { Duration } from 'utils/duration';
 import {
   extractExceptionIdFromOccurrenceId,
   extractOccurrenceIndexFromOccurrenceId,
   extractPacedTrainIdFromOccurrenceId,
+  formatPacedTrainIdToExceptionId,
+  formatPacedTrainIdToIndexedOccurrenceId,
   isIndexedOccurrenceId,
   isPacedTrainResponseWithPacedTrainId,
 } from 'utils/trainId';
@@ -150,4 +157,18 @@ export const getExceptionFromOccurrenceId = (
     exception = pacedTrain.exceptions.find((e) => e.key === key);
   }
   return exception;
+};
+
+export const getOcurrencesIds = (pacedTrain: PacedTrain, pacedTrainId: PacedTrainId) => {
+  const occurrencesIds: OccurrenceId[] = pacedTrain.exceptions
+    .filter((exception) => exception.occurrence_index === undefined) // Indexed exceptions follow the regular indexed occurrence id pattern
+    .map((exception) => formatPacedTrainIdToExceptionId(pacedTrainId, exception.key));
+  const indexedOccurencesCount = getOccurrencesNb({
+    timeWindow: Duration.parse(pacedTrain.paced.time_window),
+    interval: Duration.parse(pacedTrain.paced.interval),
+  });
+  for (let i = 0; i < indexedOccurencesCount; i += 1) {
+    occurrencesIds.push(formatPacedTrainIdToIndexedOccurrenceId(pacedTrainId, i));
+  }
+  return occurrencesIds;
 };
