@@ -10,6 +10,8 @@ import type { MapPathProperties } from 'applications/operationalStudies/types';
 import BaseMap from 'common/Map/BaseMap';
 import MapButtons from 'common/Map/Buttons/MapButtons';
 import { SnappedMarker } from 'common/Map/Layers';
+import ItineraryLayer from 'common/Map/Layers/ItineraryLayer';
+import ItineraryMarkers, { type MarkerInformation } from 'common/Map/Layers/ItineraryMarkers';
 import { computeBBoxViewport } from 'common/Map/WarpedMap/core/helpers';
 import { useInfraID } from 'common/osrdContext';
 import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
@@ -20,8 +22,6 @@ import { useAppDispatch } from 'store';
 import { getMapMouseEventNearestFeature } from 'utils/mapHelper';
 
 import AddPathStepPopup from './AddPathStepPopup';
-import ItineraryLayer from './ItineraryLayer';
-import ItineraryMarkers, { type MarkerInformation } from './ItineraryMarkers';
 import type { FeatureInfoClick } from '../types';
 
 const OPERATIONAL_POINT_LAYERS = [
