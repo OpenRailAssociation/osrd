@@ -173,12 +173,23 @@ const useManchetteWithSpaceTimeChart = ({
   );
 
   const handleRectZoomEnd = useCallback(
-    (prev: State) => {
-      if (!prev.rect || !spaceTimeChartRef?.current) {
+    (prev: State, payload: Parameters<NonNullable<SpaceTimeChartProps['onPan']>>[0]) => {
+      if (!spaceTimeChartRef?.current) {
         return {};
       }
+      const {
+        initialData,
+        data,
+        context: { width, getData },
+      } = payload;
 
-      const { timeStart, timeEnd, spaceStart, spaceEnd } = prev.rect;
+      const minPoint = getData({ x: 0, y: 0 });
+      const maxPoint = getData({ x: width, y: canvasDrawingHeight });
+      const timeStart = clamp(initialData.time, minPoint.time, maxPoint.time);
+      const timeEnd = clamp(data.time, minPoint.time, maxPoint.time);
+      const spaceStart = clamp(initialData.position, minPoint.position, maxPoint.position);
+      const spaceEnd = clamp(data.position, minPoint.position, maxPoint.position);
+
       const timeRange = Math.abs(Number(timeEnd) - Number(timeStart)); // width of rect in ms
       const spaceRange = Math.abs(spaceEnd - spaceStart); // height of rect in mm
 
@@ -188,8 +199,8 @@ const useManchetteWithSpaceTimeChart = ({
       const newXOffset = sideOffset(
         prev.timeOrigin,
         newTimeScale,
-        prev.rect.timeStart,
-        prev.rect.timeEnd,
+        timeStart,
+        timeEnd,
         spaceTimeChartRef.current.clientWidth
       );
 
@@ -217,8 +228,8 @@ const useManchetteWithSpaceTimeChart = ({
             sideOffset(
               prev.spaceOrigin,
               newSpaceScale,
-              prev.rect.spaceStart,
-              prev.rect.spaceEnd,
+              spaceStart,
+              spaceEnd,
               height,
               verticalPadding
             )
@@ -620,7 +631,7 @@ const useManchetteWithSpaceTimeChart = ({
             if (!isPanning) {
               return {
                 ...prev,
-                ...(prev.zoomMode && prev.rect ? handleRectZoomEnd(prev) : {}),
+                ...(prev.zoomMode && prev.rect ? handleRectZoomEnd(prev, payload) : {}),
                 panning: null,
                 zoomMode: false,
               };
