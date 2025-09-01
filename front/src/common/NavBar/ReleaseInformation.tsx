@@ -11,7 +11,7 @@ import useDeploymentSettings from 'utils/hooks/useDeploymentSettings';
 
 import LicenseAttributions from './LicenseAttributions';
 
-function ReleaseInformations() {
+const ReleaseInformation = () => {
   const { t } = useTranslation();
   const deploymentSettings = useDeploymentSettings();
   const { data: editoastVersion } = osrdEditoastApi.endpoints.getVersion.useQuery();
@@ -80,6 +80,6 @@ function ReleaseInformations() {
       </ModalBodySNCF>
     </div>
   );
-}
+};
 
-export default ReleaseInformations;
+export default ReleaseInformation;
