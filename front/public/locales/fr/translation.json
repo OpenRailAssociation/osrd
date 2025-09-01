@@ -588,7 +588,7 @@
     "electrifications": "Électrification",
     "keyTitle": "Légende",
     "lower_pantograph": "Zone « baissez panto »",
-    "neutral_sections": "BP / CC",
+    "neutral_sections": "BP/CC",
     "speedlimit": "Vitesse",
     "switch_off": "Coupez Courant"
   },
@@ -624,7 +624,7 @@
       "buffer_stops": "Heurtoirs",
       "detectors": "Détecteurs",
       "electrifications": "Électrification",
-      "neutral_sections": "BP / CC",
+      "neutral_sections": "BP/CC",
       "operational_points": "Points remarquables",
       "platforms": "Quais",
       "routes": "Cantons",
