@@ -12,6 +12,8 @@ import fr.sncf.osrd.conflicts.SpacingRequirement
 import fr.sncf.osrd.sim_infra.api.RawInfra
 import fr.sncf.osrd.sim_infra.api.ZoneId
 import fr.sncf.osrd.utils.json.UnitAdapterFactory
+import io.opentelemetry.api.trace.SpanKind
+import io.opentelemetry.instrumentation.annotations.WithSpan
 import java.time.Duration
 import java.time.Instant
 import java.time.ZonedDateTime
@@ -49,6 +51,7 @@ class TimetableCacheManager(
      * Returns the parsed requirements for a timetable, fetching it from editoast if not already
      * cached.
      */
+    @WithSpan(value = "Accessing timetable content", kind = SpanKind.SERVER)
     suspend fun get(infraId: String, infra: RawInfra, timetableId: TimetableId): STDCMRequirements =
         coroutineScope {
             logger.info("Start computing timetable requirements")
@@ -74,10 +77,12 @@ class TimetableCacheManager(
         }
 
     /** Load given timetable ID. */
+    @WithSpan(value = "Preloading timetable content", kind = SpanKind.SERVER)
     fun load(infraId: String, infra: RawInfra, timetableId: TimetableId) {
         runBlocking { get(infraId, infra, timetableId) }
     }
 
+    @WithSpan(value = "Fetching timetable content", kind = SpanKind.SERVER)
     private suspend fun fetchTimetableRequirements(
         infraId: String,
         infra: RawInfra,
