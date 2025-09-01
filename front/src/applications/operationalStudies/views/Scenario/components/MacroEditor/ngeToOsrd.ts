@@ -10,8 +10,8 @@ import {
 import {
   createPacedTrain,
   createTrainSchedule,
-  deletePacedTrain,
-  deleteTrainSchedule,
+  deletePacedTrains,
+  deleteTrainSchedules,
   fetchTimetableItem,
   storePacedTrain,
   storeTrainSchedule,
@@ -465,8 +465,8 @@ const deleteTimetableItemById = async (
   dispatch: AppDispatch,
   addDeletedTimetableItemIds: (timetableItemIds: TimetableItemId[]) => void
 ) => {
-  if (isPacedTrainId(timetableItemId)) await deletePacedTrain(dispatch, timetableItemId);
-  else await deleteTrainSchedule(dispatch, timetableItemId);
+  if (isPacedTrainId(timetableItemId)) await deletePacedTrains(dispatch, [timetableItemId]);
+  else await deleteTrainSchedules(dispatch, [timetableItemId]);
 
   addDeletedTimetableItemIds([timetableItemId]);
 };
