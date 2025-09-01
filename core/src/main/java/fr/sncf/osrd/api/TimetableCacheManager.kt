@@ -18,11 +18,14 @@ import java.time.Duration
 import java.time.Instant
 import java.time.ZonedDateTime
 import java.util.concurrent.ConcurrentHashMap
+import kotlin.math.pow
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
 import okhttp3.OkHttpClient
+import okhttp3.Request
+import okhttp3.Response
 import org.slf4j.LoggerFactory
 
 typealias TimetableId = Int
@@ -62,17 +65,20 @@ class TimetableCacheManager(
 
             val mutex = mutexes.computeIfAbsent(timetableId) { Mutex() }
             mutex.withLock {
-                cache[timetableId]?.let {
-                    return@coroutineScope it
-                }
-                val requirements =
-                    withContext(fetchDispatcher) {
-                        fetchTimetableRequirements(infraId, infra, timetableId)
+                try {
+                    cache[timetableId]?.let {
+                        return@coroutineScope it
                     }
-                cache[timetableId] = requirements
-                mutexes.remove(timetableId)
-                logger.info("End of computing of timetable requirements")
-                return@coroutineScope requirements
+                    val requirements =
+                        withContext(fetchDispatcher) {
+                            fetchTimetableRequirements(infraId, infra, timetableId)
+                        }
+                    cache[timetableId] = requirements
+                    logger.info("End of computing of timetable requirements")
+                    return@coroutineScope requirements
+                } finally {
+                    mutexes.remove(timetableId)
+                }
             }
         }
 
@@ -153,9 +159,23 @@ class TimetableCacheManager(
         val endpointPath = "timetable/$timetableId/requirements/"
         val request =
             buildRequest(endpointPath, "infra_id=$infraId&page=$page&page_size=$PAGE_SIZE")
-        val response = httpClient.newCall(request).execute()
-        if (!response.isSuccessful) throw UnexpectedHttpResponse(response)
+        val response = getWithRetries(request)
         return paginatedRequirementsAdapter.fromJson(response.body.source())!!
+    }
+
+    /** Try to access a request, retries on error with increasing delay */
+    private fun getWithRetries(request: Request, nRetries: Int = N_RETRIES): Response {
+        var response: Response? = null
+        for (tryCount in 1..<nRetries) {
+            response = httpClient.newCall(request).execute()
+            if (response.isSuccessful) return response
+            else {
+                logger.error("Error when getting ${request.url}: $response")
+                val nextSleepDuration = 1_000 * 2.0.pow(tryCount).toLong()
+                Thread.sleep(nextSleepDuration)
+            }
+        }
+        throw UnexpectedHttpResponse(response)
     }
 
     private data class PaginatedRequirements(
@@ -172,6 +192,8 @@ class TimetableCacheManager(
 }
 
 val EPOCH_ZONED: ZonedDateTime = Instant.EPOCH.atZone(java.time.ZoneId.of("UTC"))
+
+const val N_RETRIES = 5
 
 /** Returns the duration since EPOCH, in seconds, precise to the millisecond. */
 fun ZonedDateTime.durationSinceEpoch(): Double {
