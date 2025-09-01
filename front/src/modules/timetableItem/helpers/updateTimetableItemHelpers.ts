@@ -96,18 +96,18 @@ async function updatePacedTrain(dispatch: AppDispatch, id: PacedTrainId, pacedTr
   ).unwrap();
 }
 
-export async function deleteTrainSchedule(dispatch: AppDispatch, id: TrainScheduleId) {
+export async function deleteTrainSchedules(dispatch: AppDispatch, ids: TrainScheduleId[]) {
   await dispatch(
     osrdEditoastApi.endpoints.deleteTrainSchedule.initiate({
-      body: { ids: [extractEditoastIdFromTrainScheduleId(id)] },
+      body: { ids: ids.map((id) => extractEditoastIdFromTrainScheduleId(id)) },
     })
   ).unwrap();
 }
 
-export async function deletePacedTrain(dispatch: AppDispatch, id: PacedTrainId) {
+export async function deletePacedTrains(dispatch: AppDispatch, ids: PacedTrainId[]) {
   await dispatch(
     osrdEditoastApi.endpoints.deletePacedTrain.initiate({
-      body: { ids: [extractEditoastIdFromPacedTrainId(id)] },
+      body: { ids: ids.map((id) => extractEditoastIdFromPacedTrainId(id)) },
     })
   ).unwrap();
 }
@@ -132,7 +132,7 @@ export async function storeTrainSchedule(
   }
 
   // Turn a PacedTrain into a TrainSchedule
-  await deletePacedTrain(dispatch, timetableItemIdToUpdate);
+  await deletePacedTrains(dispatch, [timetableItemIdToUpdate]);
   const newTrainSchedule = await createTrainSchedule(dispatch, timetableId, trainSchedule);
 
   removeTimetableItems([timetableItemIdToUpdate]);
@@ -160,7 +160,7 @@ export async function storePacedTrain(
   }
 
   // Turn a TrainSchedule into a PacedTrain
-  await deleteTrainSchedule(dispatch, timetableItemIdToUpdate);
+  await deleteTrainSchedules(dispatch, [timetableItemIdToUpdate]);
   const newPacedTrain = await createPacedTrain(dispatch, timetableId, pacedTrain);
 
   removeTimetableItems([timetableItemIdToUpdate]);
