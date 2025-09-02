@@ -11,10 +11,10 @@ import type { OSRDMenuItem } from 'common/OSRDMenu';
 import OSRDMenu from 'common/OSRDMenu';
 import OSRDTooltip from 'common/OSRDTooltip';
 import isMainCategory from 'modules/rollingStock/helpers/category';
+import { getTrainCategoryClassName } from 'modules/timetableItem/components/Timetable/utils';
 import type { TimetableItemId } from 'reducers/osrdconf/types';
 
 import type { PairDataToolTip, PairingItem } from './types';
-import { getTrainCategoryClassName } from '../utils';
 
 type RoundTripsModalCardProps = {
   pairingItem: PairingItem;
