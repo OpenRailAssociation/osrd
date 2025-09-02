@@ -3,11 +3,11 @@ import { v4 as uuidV4 } from 'uuid';
 
 import type { CichDictValue, TimetableJsonPayload } from 'applications/operationalStudies/types';
 import type { PacedTrain, TrainSchedule, PacedTrainException } from 'common/api/osrdEditoastApi';
+import { generatePacedTrainException } from 'modules/timetableItem/helpers/buildPacedTrainException';
 import { addDurationToDate, Duration } from 'utils/duration';
 
 import { buildSteps, cleanTimeFormat } from './buildStepsFromOcp';
 import findMostFrequentScheduleInPacedTrain from './findMostFrequentXmlSchedule';
-import { generatePacedTrainException } from '../../ManageTimetableItem/helpers/buildPacedTrainException';
 
 const extractCiChCode = (code: string) => {
   const [ciCode, chCode] = code.split('/');

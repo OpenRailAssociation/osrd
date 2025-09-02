@@ -3,6 +3,11 @@ import { v4 as uuidV4 } from 'uuid';
 
 import type { PacedTrain, TrainSchedule } from 'common/api/osrdEditoastApi';
 import getStepLocation from 'modules/pathfinding/helpers/getStepLocation';
+import {
+  generatePacedTrainException,
+  updatePacedTrainExceptionsList,
+  checkChangeGroups,
+} from 'modules/timetableItem/helpers/buildPacedTrainException';
 import { findExceptionWithOccurrenceId } from 'modules/timetableItem/helpers/pacedTrain';
 import type { PacedTrainWithDetails } from 'modules/timetableItem/types';
 import type {
@@ -17,11 +22,6 @@ import {
   isPacedTrainId,
 } from 'utils/trainId';
 
-import {
-  generatePacedTrainException,
-  updatePacedTrainExceptionsList,
-  checkChangeGroups,
-} from './buildPacedTrainException';
 import formatMargin from './formatMargin';
 import formatSchedule from './formatSchedule';
 
