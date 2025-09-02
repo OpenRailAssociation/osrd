@@ -5,40 +5,39 @@ import type { ScenarioResponse, TrackSection } from 'common/api/osrdEditoastApi'
 import type { InfraWithStatus } from 'modules/infra/types';
 
 type ScenarioContextType = {
-  infraId: number;
   infra: InfraWithStatus;
+  infraId: number;
   isInfraLoaded: boolean;
-  getTrackSectionsByIds: (requestedTrackIds: string[]) => Promise<Record<string, TrackSection>>;
   scenario: ScenarioResponse;
   trackSectionsLoading: boolean;
+  getTrackSectionsByIds: (requestedTrackIds: string[]) => Promise<Record<string, TrackSection>>;
 } | null;
 const ScenarioContext = createContext<ScenarioContextType>(null);
 
 type ScenarioContextProviderProps = {
   infra: InfraWithStatus;
-  infraId: number;
-  children: ReactNode;
   scenario: ScenarioResponse;
+  children: ReactNode;
 };
 
 export const ScenarioContextProvider = ({
   infra,
-  infraId,
   scenario,
   children,
 }: ScenarioContextProviderProps) => {
-  const { getTrackSectionsByIds, isLoading: trackSectionsLoading } =
-    useCachedTrackSections(infraId);
+  const { getTrackSectionsByIds, isLoading: trackSectionsLoading } = useCachedTrackSections(
+    infra.id
+  );
   const providedContext = useMemo(
     () => ({
-      getTrackSectionsByIds,
-      infraId,
+      infraId: infra.id,
       infra,
       isInfraLoaded: infra.status === 'READY',
-      trackSectionsLoading,
       scenario,
+      trackSectionsLoading,
+      getTrackSectionsByIds,
     }),
-    [getTrackSectionsByIds, infra, trackSectionsLoading, infraId, scenario]
+    [infra, scenario, trackSectionsLoading, getTrackSectionsByIds]
   );
   return <ScenarioContext.Provider value={providedContext}>{children}</ScenarioContext.Provider>;
 };
