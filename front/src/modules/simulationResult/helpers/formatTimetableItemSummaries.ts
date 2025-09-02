@@ -3,11 +3,11 @@ import type {
   PacedTrainSimulationSummaryResult,
   SimulationSummaryResult,
 } from 'common/api/osrdEditoastApi';
-import type { TimetableItemWithDetails } from 'modules/timetableItem/components/Timetable/types';
 import {
   formatPacedTrainWithDetails,
   formatTrainScheduleWithDetails,
 } from 'modules/timetableItem/helpers/formatTimetableItemWithDetails';
+import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
 import type {
   TimetableItemId,
   TimetableItem,

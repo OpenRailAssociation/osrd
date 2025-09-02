@@ -20,8 +20,8 @@ import SpeedDistanceDiagramWrapper from 'modules/simulationResult/components/Spe
 import SimulationResultExport from 'modules/simulationResult/SimulationResultExport/SimulationResultsExport';
 import type { ProjectionData } from 'modules/simulationResult/types';
 import TimesStopsOutput from 'modules/timesStops/TimesStopsOutput';
-import type { TimetableItemWithDetails } from 'modules/timetableItem/components/Timetable/types';
 import { findExceptionWithOccurrenceId } from 'modules/timetableItem/helpers/pacedTrain';
+import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
 import { getOperationalStudiesTimetableID } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 import type { TimetableItemId, TrainId } from 'reducers/osrdconf/types';
 import { updateSelectedTrainId } from 'reducers/simulationResults';

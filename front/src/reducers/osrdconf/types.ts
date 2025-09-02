@@ -21,7 +21,7 @@ import type {
   ReceptionSignal,
   TrainSchedule,
 } from 'common/api/osrdEditoastApi';
-import type { PacedTrainWithDetails } from 'modules/timetableItem/components/Timetable/types';
+import type { PacedTrainWithDetails } from 'modules/timetableItem/types';
 import type { MapSettings } from 'reducers/globalMap/types';
 import type { InfraState } from 'reducers/infra';
 import type { Duration } from 'utils/duration';

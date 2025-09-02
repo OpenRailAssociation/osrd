@@ -11,6 +11,7 @@ import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { SubCategory, TrainSchedule } from 'common/api/osrdEditoastApi';
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
 import isMainCategory from 'modules/rollingStock/helpers/category';
+import type { TrainScheduleWithDetails } from 'modules/timetableItem/types';
 import { setFailure, setSuccess } from 'reducers/main';
 import type {
   TimetableItemId,
@@ -34,7 +35,6 @@ import {
 import ArrivalTimeLoader from './ArrivalTimeLoader';
 import { TIMETABLE_ITEM_DELTA } from './consts';
 import TimetableItemActions from './TimetableItemActions';
-import type { TrainScheduleWithDetails } from './types';
 import {
   formatFullDate,
   formatTrainDuration,

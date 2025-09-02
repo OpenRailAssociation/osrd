@@ -1,4 +1,4 @@
-import type { SimulationSummary } from 'modules/timetableItem/components/Timetable/types';
+import type { SimulationSummary } from 'modules/timetableItem/types';
 import type { Train } from 'reducers/osrdconf/types';
 import { ms2sec } from 'utils/timeManipulation';
 

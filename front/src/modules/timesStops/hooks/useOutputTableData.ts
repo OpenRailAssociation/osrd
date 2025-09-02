@@ -12,7 +12,7 @@ import type {
 } from 'common/api/osrdEditoastApi';
 import { matchPathStepAndOp } from 'modules/pathfinding/utils';
 import { interpolateValue } from 'modules/simulationResult/SimulationResultExport/utils';
-import type { SimulationSummary } from 'modules/timetableItem/components/Timetable/types';
+import type { SimulationSummary } from 'modules/timetableItem/types';
 import type { Train } from 'reducers/osrdconf/types';
 import { useDateTimeLocale } from 'utils/date';
 import { Duration } from 'utils/duration';

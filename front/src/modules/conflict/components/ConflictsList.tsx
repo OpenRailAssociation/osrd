@@ -3,7 +3,7 @@ import { useMemo } from 'react';
 import cx from 'classnames';
 
 import type { Conflict } from 'common/api/osrdEditoastApi';
-import type { TimetableItemWithDetails } from 'modules/timetableItem/components/Timetable/types';
+import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
 
 import ConflictCard from './ConflictCard';
 import type { ConflictWithTrainNames } from '../types';

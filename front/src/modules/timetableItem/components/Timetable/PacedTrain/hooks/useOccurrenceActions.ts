@@ -11,14 +11,17 @@ import {
   extractOccurrenceDetailsFromPacedTrain,
 } from 'modules/timetableItem/helpers/pacedTrain';
 import { storePacedTrain } from 'modules/timetableItem/helpers/updateTimetableItemHelpers';
+import type {
+  Occurrence,
+  PacedTrainWithDetails,
+  SimulatedException,
+} from 'modules/timetableItem/types';
 import { getOperationalStudiesTimetableID } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 import type { OccurrenceId, TimetableItem, TimetableItemId } from 'reducers/osrdconf/types';
 import { updateSelectedTrainId, updateTrainIdUsedForProjection } from 'reducers/simulationResults';
 import { getSelectedTrainId } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
 import { isIndexedOccurrenceId, extractExceptionIdFromOccurrenceId } from 'utils/trainId';
-
-import type { Occurrence, PacedTrainWithDetails, SimulatedException } from '../../types';
 
 type OccurrenceActionsParams = {
   pacedTrain: PacedTrainWithDetails;

@@ -3,8 +3,8 @@ import { v4 as uuidV4 } from 'uuid';
 
 import type { PacedTrain, TrainSchedule } from 'common/api/osrdEditoastApi';
 import getStepLocation from 'modules/pathfinding/helpers/getStepLocation';
-import type { PacedTrainWithDetails } from 'modules/timetableItem/components/Timetable/types';
 import { findExceptionWithOccurrenceId } from 'modules/timetableItem/helpers/pacedTrain';
+import type { PacedTrainWithDetails } from 'modules/timetableItem/types';
 import type {
   TimetableItemToEditData,
   OperationalStudiesConfState,

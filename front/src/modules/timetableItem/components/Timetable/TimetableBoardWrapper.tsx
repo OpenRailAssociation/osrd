@@ -19,6 +19,7 @@ import { MANAGE_TIMETABLE_ITEM_TYPES } from 'applications/operationalStudies/vie
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import DeleteModal from 'common/BootstrapSNCF/ModalSNCF/DeleteModal';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
+import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
 import { setFailure, setSuccess } from 'reducers/main';
 import type {
   PacedTrainId,
@@ -40,7 +41,6 @@ import {
 
 import RoundTripsModal from './RoundTrips/RoundTripsModal';
 import Timetable from './Timetable';
-import type { TimetableItemWithDetails } from './types';
 import useFilterTimetableItems from './useFilterTimetableItems';
 import { exportTimetableItems } from './utils';
 

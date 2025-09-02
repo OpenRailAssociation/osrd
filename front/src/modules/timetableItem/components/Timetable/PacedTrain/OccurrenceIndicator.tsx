@@ -8,9 +8,9 @@ import { useTranslation } from 'react-i18next';
 import type { SubCategory } from 'common/api/osrdEditoastApi';
 import OSRDTooltip from 'common/OSRDTooltip';
 import isMainCategory from 'modules/rollingStock/helpers/category';
+import type { Occurrence } from 'modules/timetableItem/types';
 import { getExceptionType } from 'utils/trainId';
 
-import type { Occurrence } from '../types';
 import { getTrainCategoryClassName } from '../utils';
 
 type OccurrenceIndicatorProps = {

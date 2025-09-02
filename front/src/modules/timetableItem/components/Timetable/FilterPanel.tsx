@@ -7,9 +7,9 @@ import type { SubCategory, TrainMainCategories } from 'common/api/osrdEditoastAp
 import useCategoryOptions from 'modules/rollingStock/hooks/useCategoryOptions';
 
 import type {
+  TimetableFilters,
   ValidityFilter,
   ScheduledPointsHonoredFilter,
-  TimetableFilters,
   TrainTypeFilter,
 } from './types';
 import { extractCategoryId } from './utils';

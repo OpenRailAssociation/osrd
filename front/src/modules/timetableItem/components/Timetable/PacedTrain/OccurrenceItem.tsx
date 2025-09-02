@@ -23,6 +23,7 @@ import AnchoredMenu from 'common/AnchoredMenu';
 import type { SubCategory } from 'common/api/osrdEditoastApi';
 import OSRDMenu, { type OSRDMenuItem } from 'common/OSRDMenu';
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
+import type { Occurrence } from 'modules/timetableItem/types';
 import { getTrainIdUsedForProjection } from 'reducers/simulationResults/selectors';
 import { addElementAtIndex } from 'utils/array';
 import { addDurationToDate } from 'utils/duration';
@@ -34,7 +35,6 @@ import {
 
 import OccurrenceIndicator from './OccurrenceIndicator';
 import ArrivalTimeLoader from '../ArrivalTimeLoader';
-import type { Occurrence } from '../types';
 import { formatTrainDuration, roundAndFormatToNearestMinute } from '../utils';
 import type useOccurrenceActions from './hooks/useOccurrenceActions';
 

@@ -9,12 +9,11 @@ import {
   findExceptionWithOccurrenceId,
   getOccurrencesNb,
 } from 'modules/timetableItem/helpers/pacedTrain';
+import type { Occurrence, PacedTrainWithDetails } from 'modules/timetableItem/types';
 import {
   formatPacedTrainIdToExceptionId,
   formatPacedTrainIdToIndexedOccurrenceId,
 } from 'utils/trainId';
-
-import type { Occurrence, PacedTrainWithDetails } from '../../types';
 
 const useOccurrences = (
   pacedTrain: PacedTrainWithDetails,

@@ -12,7 +12,7 @@ import type {
   SimulationResponseSuccess,
   TrainSchedule,
 } from 'common/api/osrdEditoastApi';
-import type { PacedTrainWithDetails } from 'modules/timetableItem/components/Timetable/types';
+import type { PacedTrainWithDetails } from 'modules/timetableItem/types';
 import type {
   OccurrenceId,
   PacedTrainId,

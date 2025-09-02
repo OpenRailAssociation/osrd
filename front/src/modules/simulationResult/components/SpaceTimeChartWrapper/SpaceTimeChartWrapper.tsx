@@ -45,7 +45,7 @@ import type {
   WaypointsPanelData,
   DraggingState,
 } from 'modules/simulationResult/types';
-import type { TimetableItemWithDetails } from 'modules/timetableItem/components/Timetable/types';
+import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
 import type { OccurrenceId, PacedTrainId, TrainId, TrainScheduleId } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { isTrainId, isPacedTrainId, formatPacedTrainIdToIndexedOccurrenceId } from 'utils/trainId';
