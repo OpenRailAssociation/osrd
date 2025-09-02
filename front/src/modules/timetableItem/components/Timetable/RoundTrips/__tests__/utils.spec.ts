@@ -3,7 +3,7 @@ import { describe, expect, it } from 'vitest';
 import type { RoundTrips } from 'common/api/osrdEditoastApi';
 import type { PacedTrainId, TrainScheduleId } from 'reducers/osrdconf/types';
 
-import type { PairingItem } from '../../types';
+import type { PairingItem } from '../types';
 import { buildRoundTripsPayload } from '../utils';
 
 describe('buildRoundTripsPayload', () => {

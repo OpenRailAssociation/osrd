@@ -18,7 +18,7 @@ import {
   isTrainScheduleId,
 } from 'utils/trainId';
 
-import type { PairingItem } from '../types';
+import type { PairingItem } from './types';
 
 const getStepLabels = (
   ops: (OperationalPoint[] | null)[],
