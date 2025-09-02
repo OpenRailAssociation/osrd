@@ -17,10 +17,15 @@ import type {
   TimetableItemId,
   TimetableItem,
   TimetableItemToEditData,
+  TrainId,
 } from 'reducers/osrdconf/types';
 import { updateSelectedTrainId } from 'reducers/simulationResults';
 import { useAppDispatch } from 'store';
-import { formatEditoastIdToTrainScheduleId } from 'utils/trainId';
+import {
+  formatEditoastIdToExceptionId,
+  formatEditoastIdToIndexedOccurrenceId,
+  formatEditoastIdToTrainScheduleId,
+} from 'utils/trainId';
 
 import { MANAGE_TIMETABLE_ITEM_TYPES } from '../consts';
 import BoardWrapper from './BoardWrapper';
@@ -134,13 +139,24 @@ const ScenarioContent = ({ activeBoards }: ScenarioContentProps) => {
   const handleNGELoad = () => setNGEIsLoading(false);
 
   const handleConflictClick = (conflict: Conflict) => {
+    let formattedFirstTrainId: TrainId | undefined;
     if (conflict.train_schedule_ids.length > 0) {
-      // TODO Paced train : Adapt this to handle paced trains in conflict issue
-      const formattedFirstTrainId = formatEditoastIdToTrainScheduleId(
-        conflict.train_schedule_ids[0]
-      );
-      dispatch(updateSelectedTrainId(formattedFirstTrainId));
+      formattedFirstTrainId = formatEditoastIdToTrainScheduleId(conflict.train_schedule_ids[0]);
+    } else {
+      const firstPacedTrainOccurrenceId = conflict.paced_train_occurrence_ids[0];
+      if ('index' in firstPacedTrainOccurrenceId) {
+        formattedFirstTrainId = formatEditoastIdToIndexedOccurrenceId({
+          pacedTrainId: firstPacedTrainOccurrenceId.paced_train_id,
+          occurrenceIndex: firstPacedTrainOccurrenceId.index,
+        });
+      } else {
+        formattedFirstTrainId = formatEditoastIdToExceptionId({
+          pacedTrainId: firstPacedTrainOccurrenceId.paced_train_id,
+          exceptionId: firstPacedTrainOccurrenceId.exception_key,
+        });
+      }
     }
+    dispatch(updateSelectedTrainId(formattedFirstTrainId));
   };
 
   return (
