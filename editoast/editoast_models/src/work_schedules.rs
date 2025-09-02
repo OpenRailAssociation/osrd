@@ -106,3 +106,35 @@ impl WorkSchedule {
 fn elapsed_time_since_ms(time: &DateTime<Utc>, since: &DateTime<Utc>) -> u64 {
     max(0, (*time - since).num_milliseconds()) as u64
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::prelude::*;
+    use database::DbConnectionPoolV2;
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn unique_group_name() {
+        let db_pool = DbConnectionPoolV2::for_tests();
+
+        WorkScheduleGroup::changeset()
+            .name("UNIQUE_NAME".to_string())
+            .creation_date(Utc::now())
+            .create(&mut db_pool.get_ok())
+            .await
+            .unwrap();
+
+        let result = WorkScheduleGroup::changeset()
+            .name("UNIQUE_NAME".to_string())
+            .creation_date(Utc::now())
+            .create(&mut db_pool.get_ok())
+            .await;
+
+        match result {
+            Err(WsGroupError::NameAlreadyUsed { name }) => {
+                assert_eq!(name, "UNIQUE_NAME");
+            }
+            other => panic!("Expected NameAlreadyUsed error, got: {:?}", other),
+        }
+    }
+}
