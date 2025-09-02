@@ -42,6 +42,7 @@ class WorkerCommand : CliCommand {
     )
     private var editoastAuthorization: String = "x-osrd-skip-authz"
 
+    val LOCAL_TIMETABLE_CACHE: String?
     val WORKER_ID: String?
     val WORKER_ID_USE_HOSTNAME: Boolean
     val WORKER_KEY: String?
@@ -54,6 +55,7 @@ class WorkerCommand : CliCommand {
     val WORKER_THREADS: Int
 
     init {
+        LOCAL_TIMETABLE_CACHE = System.getenv("LOCAL_TIMETABLE_CACHE")
         WORKER_ID_USE_HOSTNAME = getBooleanEnvvar("WORKER_ID_USE_HOSTNAME")
         ALL_INFRA = getBooleanEnvvar("ALL_INFRA")
         WORKER_KEY = if (ALL_INFRA) "all" else System.getenv("WORKER_KEY")
@@ -108,7 +110,13 @@ class WorkerCommand : CliCommand {
         val timetableId = WORKER_KEY.split("-").getOrNull(1)?.toInt()
         val diagnosticRecorder = DiagnosticRecorderImpl(false)
         val infraManager = InfraManager(editoastUrl, editoastAuthorization, httpClient)
-        val timetableCache = TimetableCacheManager(editoastUrl!!, editoastAuthorization, httpClient)
+        val timetableCache =
+            TimetableCacheManager(
+                editoastUrl!!,
+                editoastAuthorization,
+                httpClient,
+                LOCAL_TIMETABLE_CACHE,
+            )
         val electricalProfileSetManager =
             ElectricalProfileSetManager(editoastUrl, editoastAuthorization, httpClient)
 
