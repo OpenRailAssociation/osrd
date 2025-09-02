@@ -18,7 +18,6 @@ pub mod rolling_stock_livery;
 pub mod scenario;
 pub mod stdcm_search_environment;
 pub mod study;
-pub mod sub_category;
 
 pub mod temporary_speed_limits;
 pub mod timetable;
@@ -34,7 +33,6 @@ pub use rolling_stock::RollingStock;
 pub use round_trips::TrainScheduleRoundTrips;
 pub use scenario::Scenario;
 pub use study::Study;
-pub use sub_category::SubCategory;
 
 pub use train_schedule::TrainSchedule;
 

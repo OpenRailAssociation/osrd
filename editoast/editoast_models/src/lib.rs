@@ -5,6 +5,7 @@ pub mod pagination;
 pub mod prelude;
 pub mod rolling_stock;
 pub mod rolling_stock_image;
+pub mod sub_category;
 pub mod tags;
 
 // Export all Model at crate root
@@ -15,6 +16,7 @@ pub use document::Document;
 pub use electrical_profiles::ElectricalProfileSet;
 pub use electrical_profiles::LightElectricalProfileSet;
 pub use rolling_stock_image::RollingStockImage;
+pub use sub_category::SubCategory;
 pub use tags::Tags;
 
 use std::sync::LazyLock;
