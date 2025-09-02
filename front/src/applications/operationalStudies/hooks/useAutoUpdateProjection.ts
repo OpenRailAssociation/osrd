@@ -2,8 +2,8 @@ import { useEffect } from 'react';
 
 import { useSelector } from 'react-redux';
 
+import { isValidPathfinding } from 'applications/operationalStudies/views/Scenario/components/Timetable/utils';
 import type { InfraWithStatus } from 'modules/infra/types';
-import { isValidPathfinding } from 'modules/timetableItem/components/Timetable/utils';
 import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
 import type { TimetableItemId } from 'reducers/osrdconf/types';
 import { updateSelectedTrainId, updateTrainIdUsedForProjection } from 'reducers/simulationResults';
