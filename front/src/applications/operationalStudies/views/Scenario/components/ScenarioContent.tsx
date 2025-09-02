@@ -12,7 +12,6 @@ import type { Conflict } from 'common/api/osrdEditoastApi';
 import { Loader } from 'common/Loaders';
 import ConflictsList from 'modules/conflict/components/ConflictsList';
 import ScenarioLoaderMessage from 'modules/scenario/components/ScenarioLoaderMessage';
-import TimetableBoardWrapper from 'modules/timetableItem/components/Timetable/TimetableBoardWrapper';
 import type {
   TimetableItemId,
   TimetableItem,
@@ -30,6 +29,7 @@ import { handleOperation } from './MacroEditor/ngeToOsrd';
 import { loadNgeDto } from './MacroEditor/osrdToNge';
 import NGE from './NGE';
 import type { NetzgrafikDto, NGEEvent } from './NGE/types';
+import TimetableBoardWrapper from './Timetable/TimetableBoardWrapper';
 
 type ScenarioContentProps = {
   activeBoards: Set<Board>;
