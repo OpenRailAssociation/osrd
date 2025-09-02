@@ -23,7 +23,6 @@ pub mod temporary_speed_limits;
 pub mod timetable;
 pub mod towed_rolling_stock;
 pub mod train_schedule;
-pub mod work_schedules;
 
 pub use infra::Infra;
 pub use infra_objects::*;

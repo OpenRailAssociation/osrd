@@ -9,10 +9,10 @@ use core_client::conflict_detection::WorkSchedulesRequest;
 
 use crate::error::Result;
 use crate::models::train_schedule::TrainSchedule;
-use crate::models::work_schedules::WorkSchedule;
 use crate::views::timetable::Conflict;
 use crate::views::timetable::simulation;
 use crate::views::timetable::stdcm::StdcmResponse;
+use editoast_models::WorkSchedule;
 
 use super::VirtualTrainRun;
 use super::build_train_requirements;

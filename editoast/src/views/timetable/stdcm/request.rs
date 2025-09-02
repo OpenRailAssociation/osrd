@@ -23,10 +23,10 @@ use utoipa::ToSchema;
 use crate::error::Result;
 use crate::models::temporary_speed_limits::TemporarySpeedLimit;
 use crate::models::towed_rolling_stock::TowedRollingStock;
-use crate::models::work_schedules::WorkSchedule;
 use crate::views::path::path_item_cache::PathItemCache;
 use crate::views::path::pathfinding::PathfindingFailure;
 use crate::views::path::pathfinding::PathfindingResult;
+use editoast_models::WorkSchedule;
 use editoast_models::prelude::*;
 
 use super::StdcmError;
