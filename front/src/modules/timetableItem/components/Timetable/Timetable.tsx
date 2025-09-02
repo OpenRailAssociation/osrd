@@ -7,6 +7,11 @@ import { Virtualizer } from 'virtua';
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import { MANAGE_TIMETABLE_ITEM_TYPES } from 'applications/operationalStudies/views/Scenario/consts';
 import { useSubCategoryContext } from 'common/SubCategoryContext';
+import type {
+  TimetableItemWithDetails,
+  PacedTrainWithDetails,
+  TrainScheduleWithDetails,
+} from 'modules/timetableItem/types';
 import { selectTrainToEdit } from 'reducers/osrdconf/operationalStudiesConf';
 import type {
   TimetableItemId,
@@ -25,12 +30,7 @@ import { isPacedTrainWithDetails, isTrainScheduleId } from 'utils/trainId';
 import PacedTrainItem from './PacedTrain/PacedTrainItem';
 import TimetableToolbar from './TimetableToolbar';
 import TrainScheduleItem from './TrainScheduleItem';
-import type {
-  PacedTrainWithDetails,
-  TimetableFilters,
-  TimetableItemWithDetails,
-  TrainScheduleWithDetails,
-} from './types';
+import type { TimetableFilters } from './types';
 
 type TimetableProps = {
   setDisplayTimetableItemManagement: (mode: string) => void;

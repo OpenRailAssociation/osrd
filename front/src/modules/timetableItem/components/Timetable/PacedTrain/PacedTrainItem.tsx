@@ -23,6 +23,7 @@ import { useRollingStockContext } from 'common/RollingStockContext';
 import isMainCategory from 'modules/rollingStock/helpers/category';
 import { getOccurrencesWorstStatus } from 'modules/timetableItem/helpers/pacedTrain';
 import { storePacedTrain } from 'modules/timetableItem/helpers/updateTimetableItemHelpers';
+import type { PacedTrainWithDetails } from 'modules/timetableItem/types';
 import { setFailure, setSuccess } from 'reducers/main';
 import { getOperationalStudiesTimetableID } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 import type {
@@ -55,7 +56,6 @@ import TimetableItemActions from '../TimetableItemActions';
 import useOccurrences from './hooks/useOccurrences';
 import OccurrenceItem from './OccurrenceItem';
 import { TIMETABLE_ITEM_DELTA } from '../consts';
-import type { PacedTrainWithDetails } from '../types';
 import { formatTrainDuration, getTrainCategoryClassName, isValidPathfinding } from '../utils';
 import useOccurrenceActions from './hooks/useOccurrenceActions';
 

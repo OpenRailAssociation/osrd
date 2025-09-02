@@ -4,10 +4,11 @@ import { Alert, Filter } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 
+import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
 import type { TimetableItem } from 'reducers/osrdconf/types';
 
 import FilterPanel from './FilterPanel';
-import type { TimetableFilters, TimetableItemWithDetails } from './types';
+import type { TimetableFilters } from './types';
 import { timetableHasInvalidItem } from './utils';
 
 type TimetableToolbarProps = {

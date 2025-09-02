@@ -3,8 +3,8 @@ import { useEffect } from 'react';
 import { useSelector } from 'react-redux';
 
 import type { InfraWithStatus } from 'modules/infra/types';
-import type { TimetableItemWithDetails } from 'modules/timetableItem/components/Timetable/types';
 import { isValidPathfinding } from 'modules/timetableItem/components/Timetable/utils';
+import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
 import type { TimetableItemId } from 'reducers/osrdconf/types';
 import { updateSelectedTrainId, updateTrainIdUsedForProjection } from 'reducers/simulationResults';
 import {

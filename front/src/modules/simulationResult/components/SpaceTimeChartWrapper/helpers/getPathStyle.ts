@@ -6,7 +6,7 @@ import {
   DEFAULT_TRAIN_PATH_COLORS,
   TRAIN_MAIN_CATEGORY_PATH_COLORS,
 } from 'modules/simulationResult/consts';
-import type { TimetableItemWithDetails } from 'modules/timetableItem/components/Timetable/types';
+import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
 import type { TrainId } from 'reducers/osrdconf/types';
 import { extractPacedTrainIdFromOccurrenceId, isOccurrenceId } from 'utils/trainId';
 

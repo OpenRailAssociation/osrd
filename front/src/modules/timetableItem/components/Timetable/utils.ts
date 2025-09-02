@@ -8,12 +8,12 @@ import type {
   TrainSchedule,
 } from 'common/api/osrdEditoastApi';
 import isMainCategory from 'modules/rollingStock/helpers/category';
+import type { SimulationSummary, TimetableItemWithDetails } from 'modules/timetableItem/types';
 import type { TimetableItem, TimetableItemId } from 'reducers/osrdconf/types';
 import type { Duration } from 'utils/duration';
 import { isPacedTrainResponseWithPacedTrainId } from 'utils/trainId';
 
 import { specialCodeDictionary, TRAIN_MAIN_CATEGORY_CLASS } from './consts';
-import type { SimulationSummary, TimetableItemWithDetails } from './types';
 
 /** Filter timetable items by their names and labels */
 export const keepItem = (name: string | undefined, labels: string[], searchString: string) => {

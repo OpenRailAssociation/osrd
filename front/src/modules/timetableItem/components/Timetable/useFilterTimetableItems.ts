@@ -4,15 +4,15 @@ import { uniq } from 'lodash';
 
 import { useRollingStockContext } from 'common/RollingStockContext';
 import isMainCategory from 'modules/rollingStock/helpers/category';
+import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
 import { useDebounce } from 'utils/helpers';
 import { isPacedTrainWithDetails } from 'utils/trainId';
 
 import type {
-  ScheduledPointsHonoredFilter,
   TimetableFilters,
-  TrainTypeFilter,
-  TimetableItemWithDetails,
   ValidityFilter,
+  ScheduledPointsHonoredFilter,
+  TrainTypeFilter,
   TrainCategoryFilter,
 } from './types';
 import { extractTagCode, keepItem } from './utils';

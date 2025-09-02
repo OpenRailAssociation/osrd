@@ -11,7 +11,7 @@ import {
   isPacedTrainResponseWithPacedTrainId,
 } from 'utils/trainId';
 
-import type { ExceptionChangeGroups, PacedTrainWithDetails } from '../components/Timetable/types';
+import type { ExceptionChangeGroups, PacedTrainWithDetails } from '../types';
 
 export const getOccurrencesNb = ({ timeWindow, interval }: PacedTrainWithDetails['paced']) => {
   if (interval.ms === 0) {

@@ -5,7 +5,7 @@ import type {
   TimetableItemWithDetails,
   PacedTrainWithDetails,
   Occurrence,
-} from 'modules/timetableItem/components/Timetable/types';
+} from 'modules/timetableItem/types';
 import type {
   AddedExceptionId,
   IndexedOccurrenceId,

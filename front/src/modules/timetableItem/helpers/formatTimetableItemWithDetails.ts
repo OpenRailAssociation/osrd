@@ -8,7 +8,7 @@ import type {
   SimulatedException,
   SimulationSummary,
   TimetableItemWithDetails,
-} from 'modules/timetableItem/components/Timetable/types';
+} from 'modules/timetableItem/types';
 import type {
   PacedTrainWithPacedTrainId,
   TimetableItem,
