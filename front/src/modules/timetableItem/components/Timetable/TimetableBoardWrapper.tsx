@@ -15,6 +15,7 @@ import { useSelector } from 'react-redux';
 
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import BoardWrapper from 'applications/operationalStudies/views/Scenario/components/BoardWrapper';
+import RoundTripsModal from 'applications/operationalStudies/views/Scenario/components/RoundTrips/RoundTripsModal';
 import { MANAGE_TIMETABLE_ITEM_TYPES } from 'applications/operationalStudies/views/Scenario/consts';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import DeleteModal from 'common/BootstrapSNCF/ModalSNCF/DeleteModal';
@@ -39,7 +40,6 @@ import {
   isTrainScheduleId,
 } from 'utils/trainId';
 
-import RoundTripsModal from './RoundTrips/RoundTripsModal';
 import Timetable from './Timetable';
 import useFilterTimetableItems from './useFilterTimetableItems';
 import { exportTimetableItems } from './utils';
