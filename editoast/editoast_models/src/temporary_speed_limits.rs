@@ -43,7 +43,6 @@ impl From<crate::Error> for TslGroupError {
 #[derive(Debug, Serialize, Clone, Model)]
 #[model(table = database::tables::temporary_speed_limit)]
 #[model(gen(ops = cr, batch_ops = c, list))]
-#[model(error(write = Error))]
 pub struct TemporarySpeedLimit {
     pub id: i64,
     pub start_date_time: DateTime<Utc>,
@@ -54,10 +53,6 @@ pub struct TemporarySpeedLimit {
     pub obj_id: String,
     pub temporary_speed_limit_group_id: i64,
 }
-
-#[derive(Debug, thiserror::Error)]
-#[error(transparent)]
-pub struct Error(#[from] crate::Error);
 
 impl From<TemporarySpeedLimit> for core_client::stdcm::TemporarySpeedLimit {
     fn from(value: TemporarySpeedLimit) -> Self {
