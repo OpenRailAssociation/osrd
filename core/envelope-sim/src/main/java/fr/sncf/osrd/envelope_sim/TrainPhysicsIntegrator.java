@@ -108,15 +108,16 @@ public final class TrainPhysicsIntegrator {
         var grade = getMinGrade(rollingStock, path, position);
         var gradientAcceleration = getGradientAcceleration(grade);
         return switch (brakingType) {
-                // See Subset referenced in RJSEtcsBrakeParams: §3.13.6.2.1.3.
+            // See Subset referenced in RJSEtcsBrakeParams: §3.13.6.2.1.3.
             case EBD -> -rollingStock.getRJSEtcsBrakeParams().getSafeBrakingAcceleration(speed) + gradientAcceleration;
-                // See Subset referenced in RJSEtcsBrakeParams: §3.13.6.3.1.3.
-            case SBD -> -rollingStock.getRJSEtcsBrakeParams().getServiceBrakingAcceleration(speed)
-                    + gradientAcceleration;
-                // See Subset referenced in RJSEtcsBrakeParams: §3.13.6.4.3.
-            case GUI -> -rollingStock.getRJSEtcsBrakeParams().getNormalServiceBrakingAcceleration(speed)
-                    + gradientAcceleration
-                    + rollingStock.getRJSEtcsBrakeParams().getGradientAccelerationCorrection(grade, speed);
+            // See Subset referenced in RJSEtcsBrakeParams: §3.13.6.3.1.3.
+            case SBD ->
+                -rollingStock.getRJSEtcsBrakeParams().getServiceBrakingAcceleration(speed) + gradientAcceleration;
+            // See Subset referenced in RJSEtcsBrakeParams: §3.13.6.4.3.
+            case GUI ->
+                -rollingStock.getRJSEtcsBrakeParams().getNormalServiceBrakingAcceleration(speed)
+                        + gradientAcceleration
+                        + rollingStock.getRJSEtcsBrakeParams().getGradientAccelerationCorrection(grade, speed);
             default -> throw new UnsupportedOperationException("Braking type not supported: " + brakingType);
         };
     }
