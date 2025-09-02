@@ -38,7 +38,6 @@ import { useScenarioContext } from '../../../hooks/useScenarioContext';
 import useSimulationResults from '../../../hooks/useSimulationResults';
 import type { Board } from '../../../types';
 
-const BOARD_WRAPPER_HEADER_HEIGHT = 35;
 const SDD_INITIAL_HEIGHT = 460;
 const SDD_MIN_HEIGHT = 400;
 
@@ -218,7 +217,7 @@ const SimulationResults = ({
           <div className="std-container">
             <div
               className="simulation-warped-map d-flex flex-row align-items-stretch"
-              style={{ height: manchetteWithSpaceTimeChartHeight - BOARD_WRAPPER_HEADER_HEIGHT }}
+              style={{ height: manchetteWithSpaceTimeChartHeight }}
             >
               <button
                 type="button"
@@ -258,7 +257,7 @@ const SimulationResults = ({
                     }
                     conflicts={conflictZones}
                     projectionLoaderData={projectionData.projectionLoaderData}
-                    height={manchetteWithSpaceTimeChartHeight - BOARD_WRAPPER_HEADER_HEIGHT}
+                    height={manchetteWithSpaceTimeChartHeight}
                     handleTrainDrag={handleTrainDrag}
                     onTrainClick={(trainId) => {
                       dispatch(updateSelectedTrainId(trainId));
@@ -292,7 +291,7 @@ const SimulationResults = ({
                   selectedTimetableItemPowerRestrictions={simulationResults.powerRestrictions}
                   rollingStock={simulationResults.rollingStock}
                   pathProperties={simulationResults.pathProperties}
-                  height={SDDHeight - BOARD_WRAPPER_HEADER_HEIGHT}
+                  height={SDDHeight}
                   setHeight={setSDDHeight}
                 />
               </BoardWrapper>

@@ -6,6 +6,8 @@ import MenuTriggerButton from 'common/MenuTriggerButton';
 import type { OSRDMenuItem } from 'common/OSRDMenu';
 import ResizableSection, { type ResizableSectionProps } from 'common/ResizableSection';
 
+export const BOARD_WRAPPER_HEADER_HEIGHT = 35;
+
 type CommonProps = PropsWithChildren<{
   hidden?: boolean;
   name: string;
@@ -60,7 +62,7 @@ const BoardWrapper = (props: BoardWrapperProps) => {
     return (
       <div className="board-wrapper-resizable-section-wrapper">
         <ResizableSection
-          height={props.height}
+          height={props.height + BOARD_WRAPPER_HEADER_HEIGHT}
           setHeight={props.setHeight}
           minHeight={props.minHeight}
         >
