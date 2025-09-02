@@ -26,17 +26,22 @@ type RollingStockEditorParameterFormProps = {
   ) => void;
 };
 
+type RollingStockEditorParameterFormColumnProps = RollingStockEditorParameterFormProps & {
+  lastNonZeroMass: MultiUnitsParameter;
+  setLastNonZeroMass: (lastNonZeroMass: React.SetStateAction<MultiUnitsParameter>) => void;
+};
+
 // TODO: make the conditional return clearer
 const RollingStockEditorParameterFormColumn = ({
   rollingStockValues,
   setRollingStockValues,
+  lastNonZeroMass,
+  setLastNonZeroMass,
   propertiesList,
-}: RollingStockEditorParameterFormProps & {
+}: RollingStockEditorParameterFormColumnProps & {
   propertiesList: SchemaProperty[];
 }) => {
   const { t } = useTranslation('translation', { keyPrefix: 'rollingStock' });
-  // The mass is sets by default to its min for a new rolling stock, so it should always be defined on first render
-  const [lastNonZeroMass, setLastNonZeroMass] = useState(rollingStockValues.mass!);
 
   /** Handle change in value or unit in a multiunit input */
   const handleMultiUnitParamChange = <U extends MultiUnit>(
@@ -225,6 +230,8 @@ const RollingStockEditorParameterForm = ({
   effortCurves: EffortCurveForms | null;
 }) => {
   const { t } = useTranslation('translation', { keyPrefix: 'rollingStock' });
+  // The mass is sets by default to its min for a new rolling stock, so it should always be defined on first render
+  const [lastNonZeroMass, setLastNonZeroMass] = useState(rollingStockValues.mass!);
   const refListOfProperties = Object.keys(RollingStockEditorParameter);
 
   const {
@@ -240,6 +247,8 @@ const RollingStockEditorParameterForm = ({
           rollingStockValues={rollingStockValues}
           setRollingStockValues={setRollingStockValues}
           propertiesList={leftSideList}
+          lastNonZeroMass={lastNonZeroMass}
+          setLastNonZeroMass={setLastNonZeroMass}
         />
       </div>
       <div className="col-xl-4 rollingstock-editor-input-container mb-3">
@@ -247,6 +256,8 @@ const RollingStockEditorParameterForm = ({
           rollingStockValues={rollingStockValues}
           setRollingStockValues={setRollingStockValues}
           propertiesList={middleSideList}
+          lastNonZeroMass={lastNonZeroMass}
+          setLastNonZeroMass={setLastNonZeroMass}
         />
       </div>
       <div className="d-flex flex-column justify-content-between col-xl-4 pb-3">
@@ -258,6 +269,8 @@ const RollingStockEditorParameterForm = ({
           rollingStockValues={rollingStockValues}
           setRollingStockValues={setRollingStockValues}
           propertiesList={rightSideList}
+          lastNonZeroMass={lastNonZeroMass}
+          setLastNonZeroMass={setLastNonZeroMass}
         />
       </div>
     </div>
