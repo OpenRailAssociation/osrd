@@ -25,7 +25,6 @@ use crate::error::Result;
 use crate::models::Infra;
 use crate::models::Project;
 use crate::models::Study;
-use crate::models::Tags;
 use crate::models::scenario::Scenario;
 use crate::models::timetable::Timetable;
 use crate::views::AuthenticationExt;
@@ -38,6 +37,7 @@ use crate::views::project::ProjectError;
 use crate::views::project::ProjectIdParam;
 use crate::views::study::StudyError;
 use crate::views::study::StudyIdParam;
+use editoast_models::tags::Tags;
 
 #[derive(IntoParams, Deserialize)]
 pub(in crate::views) struct ScenarioPathParam {

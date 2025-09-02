@@ -13,9 +13,9 @@ use utoipa::ToSchema;
 use crate::error::InternalError;
 use crate::error::Result;
 use crate::models::Scenario;
-use crate::models::Tags;
 use crate::views::study::StudyError;
 use editoast_models::prelude::*;
+use editoast_models::tags::Tags;
 
 use super::Project;
 
