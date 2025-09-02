@@ -13,7 +13,7 @@ import OSRDTooltip from 'common/OSRDTooltip';
 import isMainCategory from 'modules/rollingStock/helpers/category';
 import type { TimetableItemId } from 'reducers/osrdconf/types';
 
-import type { PairDataToolTip, PairingItem } from '../types';
+import type { PairDataToolTip, PairingItem } from './types';
 import { getTrainCategoryClassName } from '../utils';
 
 type RoundTripsModalCardProps = {

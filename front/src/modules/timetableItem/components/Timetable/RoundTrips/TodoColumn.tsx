@@ -10,7 +10,7 @@ import { isPacedTrainId } from 'utils/trainId';
 
 import RoundTripsModalCard from './RoundTripsModalCard';
 import RoundTripsModalPairingColumn from './RoundTripsModalPairingColumn';
-import type { PairingItem } from '../types';
+import type { PairingItem } from './types';
 
 type TodoColumnProps = {
   setPairingItems: React.Dispatch<React.SetStateAction<PairingItem[]>>;

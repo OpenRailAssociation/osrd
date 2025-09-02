@@ -5,7 +5,7 @@ import { useTranslation } from 'react-i18next';
 import type { SubCategory } from 'common/api/osrdEditoastApi';
 
 import RoundTripsModalCard from './RoundTripsModalCard';
-import type { PairingItem, RoundTripsColumnPair } from '../types';
+import type { PairingItem, RoundTripsColumnPair } from './types';
 
 type RoundTripsColumnProps = {
   setPairingItems: React.Dispatch<React.SetStateAction<PairingItem[]>>;

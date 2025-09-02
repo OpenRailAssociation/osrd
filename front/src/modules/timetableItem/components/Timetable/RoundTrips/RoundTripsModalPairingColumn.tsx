@@ -9,7 +9,7 @@ import type { TimetableItemId } from 'reducers/osrdconf/types';
 import useOutsideClick from 'utils/hooks/useOutsideClick';
 
 import RoundTripsModalCard from './RoundTripsModalCard';
-import type { PairDataToolTip, PairingItem } from '../types';
+import type { PairDataToolTip, PairingItem } from './types';
 
 type RoundTripsModalPairingColumnProps = {
   closePairingMode: () => void;

@@ -20,8 +20,8 @@ import { mapBy } from 'utils/types';
 import OneWaysColumn from './OneWaysColumn';
 import RoundTripsColumn from './RoundTripsColumn';
 import TodoColumn from './TodoColumn';
+import type { PairingItem, RoundTripsColumnPair } from './types';
 import { buildRoundTripsPayload, formatPairingItems } from './utils';
-import type { PairingItem, RoundTripsColumnPair } from '../types';
 
 type RoundTripsModalProps = {
   roundTripsModalIsOpen: boolean;
