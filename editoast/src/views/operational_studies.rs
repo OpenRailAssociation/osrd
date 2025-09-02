@@ -1,7 +1,7 @@
 use crate::models::Project;
 use crate::models::Scenario;
 use crate::models::Study;
-use crate::models::work_schedules::WorkSchedule;
+use editoast_models::WorkSchedule;
 use editoast_models::prelude::*;
 
 #[editoast_derive::openapi_schema]

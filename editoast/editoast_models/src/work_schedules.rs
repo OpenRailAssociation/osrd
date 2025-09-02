@@ -10,6 +10,8 @@ use serde::Serialize;
 use strum::FromRepr;
 use utoipa::ToSchema;
 
+use crate as editoast_models;
+
 #[derive(Debug, Clone, Model)]
 #[model(table = database::tables::work_schedule_group)]
 #[model(gen(ops = crd, batch_ops = c, list))]
@@ -21,17 +23,18 @@ pub struct WorkScheduleGroup {
 }
 
 #[derive(Debug, thiserror::Error)]
+#[cfg_attr(test, derive(PartialEq))]
 pub enum WsGroupError {
     #[error("Work schedule group name already used: {name}")]
     NameAlreadyUsed { name: String },
     #[error(transparent)]
-    Database(editoast_models::Error),
+    Database(crate::Error),
 }
 
-impl From<editoast_models::Error> for WsGroupError {
-    fn from(e: editoast_models::Error) -> Self {
+impl From<crate::Error> for WsGroupError {
+    fn from(e: crate::Error) -> Self {
         match e {
-            editoast_models::Error::UniqueViolation {
+            crate::Error::UniqueViolation {
                 constraint,
                 column,
                 value,

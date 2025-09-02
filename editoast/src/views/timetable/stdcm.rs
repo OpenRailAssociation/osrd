@@ -523,9 +523,6 @@ mod tests {
     use crate::models::fixtures::create_fast_rolling_stock;
     use crate::models::fixtures::create_small_infra;
     use crate::models::fixtures::create_timetable;
-    use crate::models::work_schedules::WorkSchedule;
-    use crate::models::work_schedules::WorkScheduleGroup;
-    use crate::models::work_schedules::WorkScheduleType;
     use crate::views::test_app::TestAppBuilder;
     use crate::views::timetable::stdcm::PathfindingResult;
     use crate::views::timetable::stdcm::Request;
@@ -541,6 +538,9 @@ mod tests {
     use core_client::simulation::PhysicsConsist;
     use core_client::simulation::ReportTrain;
     use core_client::simulation::SpeedLimitProperties;
+    use editoast_models::WorkSchedule;
+    use editoast_models::WorkScheduleGroup;
+    use editoast_models::work_schedules::WorkScheduleType;
 
     use super::*;
 
@@ -1209,7 +1209,7 @@ mod tests {
     ) {
         // GIVEN
 
-        use crate::models::work_schedules::WorkSchedule;
+        use editoast_models::WorkSchedule;
         let work_schedules = [WorkSchedule {
             id: rand::random::<i64>(),
             start_date_time: DateTime::parse_from_rfc3339(ws_start_time)

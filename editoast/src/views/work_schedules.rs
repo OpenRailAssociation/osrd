@@ -1,9 +1,5 @@
 use super::pagination::PaginatedList;
 use crate::error::Result;
-use crate::models::work_schedules;
-use crate::models::work_schedules::WorkSchedule;
-use crate::models::work_schedules::WorkScheduleGroup;
-use crate::models::work_schedules::WorkScheduleType;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
 use crate::views::operational_studies::Ordering;
@@ -22,7 +18,11 @@ use chrono::DateTime;
 use chrono::Utc;
 use database::DbConnectionPoolV2;
 use editoast_derive::EditoastError;
+use editoast_models::WorkSchedule;
+use editoast_models::WorkScheduleGroup;
 use editoast_models::prelude::*;
+use editoast_models::work_schedules::WorkScheduleType;
+use editoast_models::work_schedules::WsGroupError;
 use schemas::infra::Direction;
 use schemas::infra::TrackRange;
 use serde::Deserialize;
@@ -54,13 +54,11 @@ enum WorkScheduleError {
     Database(editoast_models::Error),
 }
 
-impl From<work_schedules::WsGroupError> for WorkScheduleError {
-    fn from(e: work_schedules::WsGroupError) -> Self {
+impl From<WsGroupError> for WorkScheduleError {
+    fn from(e: WsGroupError) -> Self {
         match e {
-            work_schedules::WsGroupError::NameAlreadyUsed { name } => {
-                WorkScheduleError::NameAlreadyUsed { name }
-            }
-            work_schedules::WsGroupError::Database(e) => WorkScheduleError::Database(e),
+            WsGroupError::NameAlreadyUsed { name } => WorkScheduleError::NameAlreadyUsed { name },
+            WsGroupError::Database(e) => WorkScheduleError::Database(e),
         }
     }
 }
