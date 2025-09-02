@@ -7,6 +7,7 @@ import type { OSRDMenuItem } from 'common/OSRDMenu';
 import ResizableSection, { type ResizableSectionProps } from 'common/ResizableSection';
 
 export const BOARD_WRAPPER_HEADER_HEIGHT = 35;
+export const BOARD_WRAPPER_FOOTER_HEIGHT = 16;
 
 type CommonProps = PropsWithChildren<{
   hidden?: boolean;
@@ -59,10 +60,16 @@ const BoardWrapper = (props: BoardWrapperProps) => {
   );
 
   if (props.resizable) {
+    // Height offset compensates for the space occupied by BoardWrapper's header and footer.
+    // The height prop corresponds to the resizable content (board-body),
+    // but ResizableSection needs to know the total height including these fixed elements.
+    const heightOffset =
+      BOARD_WRAPPER_HEADER_HEIGHT + (withFooter ? BOARD_WRAPPER_FOOTER_HEIGHT : 0);
+
     return (
       <div className="board-wrapper-resizable-section-wrapper">
         <ResizableSection
-          height={props.height + BOARD_WRAPPER_HEADER_HEIGHT}
+          height={props.height + heightOffset}
           setHeight={props.setHeight}
           minHeight={props.minHeight}
         >
