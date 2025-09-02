@@ -215,7 +215,7 @@ class PerformanceTests {
                         if (otherI < 0 || otherI >= height || otherJ < 0 || otherJ >= width)
                             continue
                         val other = String.format("%d,%d", otherI, otherJ)
-                        val length = centerGeo!!.distanceAsMeters(infra.detectorGeoPoint[other])
+                        val length = centerGeo!!.distanceAsMeters(infra.detectorGeoPoint[other]!!)
                         infra.addBlock(center, other, Distance.fromMeters(length))
                         infra.addBlock(other, center, Distance.fromMeters(length))
                     }
