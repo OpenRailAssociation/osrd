@@ -11,15 +11,11 @@ import type { Board } from 'applications/operationalStudies/types';
 import { type Conflict } from 'common/api/osrdEditoastApi';
 import SimulationWarpedMap from 'common/Map/WarpedMap/SimulationWarpedMap';
 import ResizableSection from 'common/ResizableSection';
-import createHandleTrainDrag from 'modules/simulationResult/components/SpaceTimeChartWrapper/helpers/createHandleTrainDrag';
 import SpaceTimeChartWrapper, {
   MANCHETTE_WITH_SPACE_TIME_CHART_DEFAULT_HEIGHT,
 } from 'modules/simulationResult/components/SpaceTimeChartWrapper/SpaceTimeChartWrapper';
-import useGetProjectedTrainOperationalPoints from 'modules/simulationResult/components/SpaceTimeChartWrapper/useGetProjectedTrainOperationalPoints';
 import useProjectedConflicts from 'modules/simulationResult/components/SpaceTimeChartWrapper/useProjectedConflicts';
-import useTrackOccupancy, {
-  type OccupancyTrainSpaceTimeData,
-} from 'modules/simulationResult/components/SpaceTimeChartWrapper/useTrackOccupancy';
+import type { OccupancyTrainSpaceTimeData } from 'modules/simulationResult/components/SpaceTimeChartWrapper/useTrackOccupancy';
 import SpeedDistanceDiagramWrapper from 'modules/simulationResult/components/SpeedDistanceDiagram/SpeedDistanceDiagramWrapper';
 import type { ProjectionData } from 'modules/simulationResult/types';
 import TimesStopsOutput from 'modules/timesStops/TimesStopsOutput';
@@ -62,7 +58,6 @@ const SimulationResults = ({
   timetableItemsWithDetails,
   conflicts = [],
   activeBoards,
-  updateTrainDepartureTime,
 }: SimulationResultsProps) => {
   const { t } = useTranslation('operational-studies');
   const dispatch = useAppDispatch();
@@ -106,29 +101,6 @@ const SimulationResults = ({
     }
   }, [projectionData, timetableItemsWithDetails]);
 
-  const {
-    operationalPoints: projectedOperationalPoints,
-    filteredOperationalPoints,
-    setFilteredOperationalPoints,
-  } = useGetProjectedTrainOperationalPoints({
-    path: projectionData?.path,
-    infraId,
-    timetableId,
-    pathfinding: projectionData?.pathfinding,
-    projectedOperationalPoints: projectionData?.operationalPoints,
-  });
-
-  const {
-    toggleWaypoint,
-    deployedWaypoints,
-    updateTrackOccupanciesOnDrag: handleTrainDragInTrackOccupancy,
-  } = useTrackOccupancy({
-    infraId,
-    pathfindingHasFailed: projectionData?.pathfindingStatus === 'failed',
-    pathOperationalPoints: filteredOperationalPoints,
-    timetableItemProjections: projectPathTrainResult,
-  });
-
   const conflictZones = useProjectedConflicts(infraId, conflicts, projectionData?.pathfinding);
 
   const simulationSummary = useMemo(() => {
@@ -146,13 +118,6 @@ const SimulationResults = ({
     const exception = findExceptionWithOccurrenceId(pacedTrain.exceptions, selectedTrainId);
     return exception?.summary ?? pacedTrain.summary;
   }, [timetableItemsWithDetails, selectedTrainId]);
-
-  const handleTrainDrag = createHandleTrainDrag({
-    projectPathTrainResult,
-    setProjectPathTrainResult,
-    handleTrainDragInTrackOccupancy,
-    updateTrainDepartureTime,
-  });
 
   const { etcsBrakingCurves, fetchEtcsBrakingCurves } = useEtcsBrakingCurves(
     simulationResults?.rollingStock?.etcs_brake_params !== null,
@@ -216,28 +181,15 @@ const SimulationResults = ({
               <div className="osrd-simulation-container d-flex flex-grow-1 flex-shrink-1">
                 {trainIdUsedForProjection && projectionData && (
                   <SpaceTimeChartWrapper
-                    operationalPoints={projectedOperationalPoints}
+                    infraId={infraId}
+                    timetableId={timetableId}
+                    projectionData={projectionData}
                     projectPathTrainResult={projectPathTrainResult}
                     selectedTrainId={selectedTrainId}
                     timetableItemsWithDetails={timetableItemsWithDetails}
-                    waypointsPanelData={{
-                      filteredWaypoints: filteredOperationalPoints,
-                      setFilteredWaypoints: setFilteredOperationalPoints,
-                      projectionPath: projectionData.path,
-                      deployedWaypoints: new Set(
-                        deployedWaypoints.map(({ waypointId }) => waypointId)
-                      ),
-                      toggleDeployedWaypoint: toggleWaypoint,
-                      timetableId,
-                    }}
-                    trackOccupancyDiagramsData={deployedWaypoints}
-                    onCloseOccupancyLayer={(waypointId: string) =>
-                      toggleWaypoint(waypointId, false)
-                    }
                     conflicts={conflictZones}
                     projectionLoaderData={projectionData.projectionLoaderData}
                     height={manchetteWithSpaceTimeChartHeight - HIDDEN_CHART_TOP_HEIGHT}
-                    handleTrainDrag={handleTrainDrag}
                     onTrainClick={(trainId) => {
                       dispatch(updateSelectedTrainId(trainId));
                     }}

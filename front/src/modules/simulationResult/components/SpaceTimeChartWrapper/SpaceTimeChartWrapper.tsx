@@ -29,10 +29,10 @@ import { type PostWorkSchedulesProjectPathApiResponse } from 'common/api/osrdEdi
 import { useSubCategoryContext } from 'common/SubCategoryContext';
 import { configureHandlePan } from 'modules/simulationResult/components/SpaceTimeChartWrapper/helpers/configureHandlePan';
 import type {
-  PathOperationalPoint,
   TrainSpaceTimeData,
   WaypointsPanelData,
   DraggingState,
+  ProjectionData,
 } from 'modules/simulationResult/types';
 import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
 import type {
@@ -55,18 +55,25 @@ import {
 } from 'utils/trainId';
 
 import { buildSplitPoints } from './buildSplitPoints';
+import createHandleTrainDrag from './helpers/createHandleTrainDrag';
 import getPathStyle from './helpers/getPathStyle';
 import makeProjectedItems from './helpers/makeProjectedItems';
 import { cutSpaceTimeChart, getOccupancyBlocks } from './helpers/utils';
 import ProjectionLoadingMessage from './ProjectionLoadingMessage';
 import SettingsPanel from './SettingsPanel';
 import SpaceTimeChartToolbar from './SpaceTimeChartToolbar';
+import useGetProjectedTrainOperationalPoints from './useGetProjectedTrainOperationalPoints';
+import useTrackOccupancy, { type OccupancyTrainSpaceTimeData } from './useTrackOccupancy';
 import useWaypointMenu from './useWaypointMenu';
 import WaypointsPanel from './WaypointsPanel';
 
 type SpaceTimeChartWrapperBaseProps = {
-  operationalPoints: PathOperationalPoint[];
+  infraId: number;
+  timetableId: number | undefined;
+  projectionData?: ProjectionData;
   projectPathTrainResult: TrainSpaceTimeData[];
+  setProjectPathTrainResult?: (trains: OccupancyTrainSpaceTimeData[]) => void;
+  updateTrainDepartureTime?: (trainId: TimetableItemId, newDepartureTime: Date) => Promise<void>;
   selectedTrainId?: TrainId;
   conflicts?: Conflict[];
   workSchedules?: PostWorkSchedulesProjectPathApiResponse;
@@ -79,22 +86,10 @@ type SpaceTimeChartWrapperBaseProps = {
     tracks?: Track[];
     loading?: boolean;
   }[];
-  onCloseOccupancyLayer?: (waypointId: string) => void;
   projectionLoaderData: {
     totalTrains: number;
     allTrainsProjected: boolean;
   };
-  handleTrainDrag?: ({
-    draggedTrainId,
-    newDepartureTime,
-    initialDepartureTime,
-    stopPanning,
-  }: {
-    draggedTrainId: TrainId;
-    initialDepartureTime: Date;
-    newDepartureTime: Date;
-    stopPanning: boolean;
-  }) => Promise<void>;
   height?: number;
   onTrainClick?: (trainId: TrainId) => void;
   selectedProjectionId: TrainScheduleId | PacedTrainId | OccurrenceId;
@@ -105,7 +100,7 @@ type SpaceTimeChartWrapperBaseProps = {
 type SpaceTimeChartWrapperProps = SpaceTimeChartWrapperBaseProps &
   (
     | {
-        waypointsPanelData: WaypointsPanelData;
+        waypointsPanelData?: WaypointsPanelData;
         waypointsPanelIsOpen: boolean;
         setWaypointsPanelIsOpen: (waypointsModalOpen: boolean) => void;
       }
@@ -119,16 +114,17 @@ type SpaceTimeChartWrapperProps = SpaceTimeChartWrapperBaseProps &
 export const MANCHETTE_WITH_SPACE_TIME_CHART_DEFAULT_HEIGHT = 561;
 
 const SpaceTimeChartWrapper = ({
-  operationalPoints,
+  infraId,
+  timetableId,
+  projectionData,
   projectPathTrainResult,
-  waypointsPanelData,
+  setProjectPathTrainResult,
+  updateTrainDepartureTime,
   conflicts = [],
   workSchedules,
   trackOccupancyDiagramsData,
-  onCloseOccupancyLayer,
   projectionLoaderData: { totalTrains, allTrainsProjected },
   height = MANCHETTE_WITH_SPACE_TIME_CHART_DEFAULT_HEIGHT,
-  handleTrainDrag,
   onTrainClick,
   selectedProjectionId,
   selectedTrainId,
@@ -188,6 +184,59 @@ const SpaceTimeChartWrapper = ({
     () => makeProjectedItems(projectPathTrainResult),
     [projectPathTrainResult]
   );
+
+  const { operationalPoints, filteredOperationalPoints, setFilteredOperationalPoints } =
+    useGetProjectedTrainOperationalPoints({
+      infraId,
+      timetableId,
+      path: projectionData?.path,
+      pathfinding: projectionData?.pathfinding,
+      projectedOperationalPoints: projectionData?.operationalPoints,
+    });
+
+  const {
+    toggleWaypoint,
+    deployedWaypoints,
+    updateTrackOccupanciesOnDrag: handleTrainDragInTrackOccupancy,
+  } = useTrackOccupancy({
+    infraId,
+    pathOperationalPoints: filteredOperationalPoints,
+    timetableItemProjections: projectPathTrainResult as OccupancyTrainSpaceTimeData[],
+  });
+
+  const onCloseOccupancyLayer = useCallback(
+    (waypointId: string) => toggleWaypoint(waypointId, false),
+    [toggleWaypoint]
+  );
+
+  const waypointsPanelData = useMemo(() => {
+    if (!projectionData?.path) return undefined;
+    return {
+      filteredWaypoints: filteredOperationalPoints,
+      setFilteredWaypoints: setFilteredOperationalPoints,
+      projectionPath: projectionData.path,
+      deployedWaypoints: new Set(deployedWaypoints.map(({ waypointId }) => waypointId)),
+      toggleDeployedWaypoint: toggleWaypoint,
+      timetableId,
+    };
+  }, [
+    projectionData?.path,
+    filteredOperationalPoints,
+    setFilteredOperationalPoints,
+    deployedWaypoints,
+    toggleWaypoint,
+    timetableId,
+  ]);
+
+  const handleTrainDrag =
+    setProjectPathTrainResult && updateTrainDepartureTime
+      ? createHandleTrainDrag({
+          projectPathTrainResult: projectPathTrainResult as OccupancyTrainSpaceTimeData[],
+          setProjectPathTrainResult,
+          handleTrainDragInTrackOccupancy,
+          updateTrainDepartureTime,
+        })
+      : undefined;
 
   // Cut the spacetime chart curves if the first or last waypoints are hidden
   const { filteredProjectPathTrainResult: cutProjectedTrains, filteredConflicts: cutConflicts } =
