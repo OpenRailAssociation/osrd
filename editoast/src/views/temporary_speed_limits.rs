@@ -6,7 +6,6 @@ use chrono::Utc;
 use database::DbConnectionPoolV2;
 use editoast_derive::EditoastError;
 use editoast_models::prelude::*;
-use itertools::Either;
 use schemas::infra::DirectionalTrackRange;
 use serde::Deserialize;
 use serde::Serialize;
@@ -96,13 +95,7 @@ enum TemporarySpeedLimitError {
     NameAlreadyUsed { name: String },
     #[error(transparent)]
     #[editoast_error(status = 500)]
-    Database(Either<temporary_speed_limits::Error, temporary_speed_limits::TslGroupError>),
-}
-
-impl From<temporary_speed_limits::Error> for TemporarySpeedLimitError {
-    fn from(e: temporary_speed_limits::Error) -> Self {
-        Self::Database(Either::Left(e))
-    }
+    Database(#[from] editoast_models::Error),
 }
 
 impl From<temporary_speed_limits::TslGroupError> for TemporarySpeedLimitError {
@@ -111,7 +104,7 @@ impl From<temporary_speed_limits::TslGroupError> for TemporarySpeedLimitError {
             temporary_speed_limits::TslGroupError::NameAlreadyUsed { name } => {
                 Self::NameAlreadyUsed { name }
             }
-            e => Self::Database(Either::Right(e)),
+            temporary_speed_limits::TslGroupError::Database(err) => Self::Database(err),
         }
     }
 }
