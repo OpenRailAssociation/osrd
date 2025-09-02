@@ -1,19 +1,13 @@
 import dayjs from 'dayjs';
 import { omit } from 'lodash';
 
-import type {
-  PacedTrain,
-  SubCategory,
-  TrainMainCategories,
-  TrainSchedule,
-} from 'common/api/osrdEditoastApi';
-import isMainCategory from 'modules/rollingStock/helpers/category';
+import type { PacedTrain, TrainSchedule } from 'common/api/osrdEditoastApi';
 import type { SimulationSummary, TimetableItemWithDetails } from 'modules/timetableItem/types';
 import type { TimetableItem, TimetableItemId } from 'reducers/osrdconf/types';
 import type { Duration } from 'utils/duration';
 import { isPacedTrainResponseWithPacedTrainId } from 'utils/trainId';
 
-import { specialCodeDictionary, TRAIN_MAIN_CATEGORY_CLASS } from './consts';
+import { specialCodeDictionary } from './consts';
 
 /** Filter timetable items by their names and labels */
 export const keepItem = (name: string | undefined, labels: string[], searchString: string) => {
@@ -79,26 +73,6 @@ export const exportTimetableItems = (
   a.href = url;
   a.download = 'timetable.json';
   a.click();
-};
-
-export function extractCategoryId(fullId: string): TrainMainCategories | SubCategory['code'] {
-  const [prefix, code] = fullId.split(':');
-
-  if (prefix === 'main' || prefix === 'sub') {
-    return code;
-  }
-
-  throw new Error(`Unknown category prefix: ${prefix}`);
-}
-export const getTrainCategoryClassName = (
-  trainCategory: PacedTrain['category'],
-  type: 'bg' | 'text'
-) => {
-  if (!trainCategory) return `train-category-${type}-none`;
-  if (isMainCategory(trainCategory)) {
-    return `train-category-${type}-${TRAIN_MAIN_CATEGORY_CLASS[trainCategory.main_category]}`;
-  }
-  return null;
 };
 
 // TODO: Reason received when a pathfinding failed. Remove this when issue #12772 is resolved.

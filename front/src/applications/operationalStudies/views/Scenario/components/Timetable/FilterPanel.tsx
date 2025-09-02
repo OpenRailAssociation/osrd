@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next';
 
 import type { SubCategory, TrainMainCategories } from 'common/api/osrdEditoastApi';
 import useCategoryOptions from 'modules/rollingStock/hooks/useCategoryOptions';
+import { extractCategoryId } from 'modules/timetableItem/helpers/category';
 
 import type {
   TimetableFilters,
@@ -12,7 +13,6 @@ import type {
   ScheduledPointsHonoredFilter,
   TrainTypeFilter,
 } from './types';
-import { extractCategoryId } from './utils';
 
 type FilterPanelProps = {
   toggleFilterPanel: () => void;

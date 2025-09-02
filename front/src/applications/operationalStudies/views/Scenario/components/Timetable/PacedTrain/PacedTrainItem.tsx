@@ -20,6 +20,7 @@ import DeleteModal from 'common/BootstrapSNCF/ModalSNCF/DeleteModal';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import { useRollingStockContext } from 'common/RollingStockContext';
 import isMainCategory from 'modules/rollingStock/helpers/category';
+import { getTrainCategoryClassName } from 'modules/timetableItem/helpers/category';
 import { formatPacedTrainWithDetailsToPacedTrainPayload } from 'modules/timetableItem/helpers/formatTimetableItemPayload';
 import { getOccurrencesWorstStatus } from 'modules/timetableItem/helpers/pacedTrain';
 import { storePacedTrain } from 'modules/timetableItem/helpers/updateTimetableItemHelpers';
@@ -56,7 +57,7 @@ import TimetableItemActions from '../TimetableItemActions';
 import useOccurrences from './hooks/useOccurrences';
 import OccurrenceItem from './OccurrenceItem';
 import { TIMETABLE_ITEM_DELTA } from '../consts';
-import { formatTrainDuration, getTrainCategoryClassName, isValidPathfinding } from '../utils';
+import { formatTrainDuration, isValidPathfinding } from '../utils';
 import useOccurrenceActions from './hooks/useOccurrenceActions';
 
 type PacedTrainItemProps = {
