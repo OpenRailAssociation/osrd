@@ -16,12 +16,12 @@ use thiserror::Error;
 use utoipa::ToSchema;
 
 use crate::error::Result;
-use crate::models::temporary_speed_limits;
-use crate::models::temporary_speed_limits::TemporarySpeedLimit;
-use crate::models::temporary_speed_limits::TemporarySpeedLimitGroup;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
 use authz::Role;
+use editoast_models::TemporarySpeedLimit;
+use editoast_models::TemporarySpeedLimitGroup;
+use editoast_models::temporary_speed_limits;
 
 #[derive(Deserialize, ToSchema)]
 #[serde(remote = "Self")]
@@ -167,22 +167,22 @@ pub(in crate::views) async fn create_temporary_speed_limit_group(
 mod tests {
     use super::*;
 
-    use crate::models::temporary_speed_limits::TemporarySpeedLimitGroup;
     use crate::views::test_app::TestApp;
     use axum::http::StatusCode;
     use axum_test::TestRequest;
     use chrono::DateTime;
     use chrono::Duration;
     use chrono::Utc;
+    use editoast_models::TemporarySpeedLimitGroup;
     use rstest::rstest;
     use schemas::infra::Direction;
     use schemas::infra::DirectionalTrackRange;
     use serde_json::json;
     use uuid::Uuid;
 
-    use crate::models::temporary_speed_limits::TemporarySpeedLimit;
     use crate::views::temporary_speed_limits::TemporarySpeedLimitCreateResponse;
     use crate::views::test_app::TestAppBuilder;
+    use editoast_models::TemporarySpeedLimit;
 
     struct TimePeriod {
         start_date_time: DateTime<Utc>,

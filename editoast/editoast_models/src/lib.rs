@@ -7,6 +7,7 @@ pub mod rolling_stock;
 pub mod rolling_stock_image;
 pub mod sub_category;
 pub mod tags;
+pub mod temporary_speed_limits;
 pub mod work_schedules;
 
 // Export all Model at crate root
@@ -19,6 +20,8 @@ pub use electrical_profiles::LightElectricalProfileSet;
 pub use rolling_stock_image::RollingStockImage;
 pub use sub_category::SubCategory;
 pub use tags::Tags;
+pub use temporary_speed_limits::TemporarySpeedLimit;
+pub use temporary_speed_limits::TemporarySpeedLimitGroup;
 pub use work_schedules::WorkSchedule;
 pub use work_schedules::WorkScheduleGroup;
 
