@@ -19,8 +19,8 @@ use utoipa::IntoParams;
 use super::AuthenticationExt;
 use super::AuthorizationError;
 use crate::error::Result;
-use crate::models::electrical_profiles::ElectricalProfileSet;
-use crate::models::electrical_profiles::LightElectricalProfileSet;
+use editoast_models::ElectricalProfileSet;
+use editoast_models::LightElectricalProfileSet;
 use editoast_models::prelude::*;
 
 #[derive(IntoParams)]

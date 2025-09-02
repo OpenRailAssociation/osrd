@@ -8,7 +8,7 @@ use clap::Subcommand;
 use database::DbConnectionPoolV2;
 use schemas::infra::ElectricalProfileSetData;
 
-use crate::models::electrical_profiles::ElectricalProfileSet;
+use editoast_models::ElectricalProfileSet;
 use editoast_models::prelude::*;
 
 #[derive(Subcommand, Debug)]

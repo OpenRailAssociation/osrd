@@ -5,13 +5,14 @@ version.workspace = true
 edition.workspace = true
 
 [features]
-testing = []
+testing = ["dep:serde_json"]
 
 [dependencies]
 common.workspace = true
 database.workspace = true
 diesel.workspace = true
 diesel-async.workspace = true
+diesel_json.workspace = true
 editoast_derive.workspace = true
 futures.workspace = true
 futures-util.workspace = true
@@ -24,6 +25,7 @@ postgres-openssl.workspace = true
 regex.workspace = true
 schemas.workspace = true
 serde.workspace = true
+serde_json = { workspace = true, optional = true }
 strum.workspace = true
 thiserror.workspace = true
 tokio.workspace = true
@@ -34,6 +36,7 @@ utoipa.workspace = true
 
 [dev-dependencies]
 # The feature 'testing' is needed for all of the doc-tests
+database = { path = "../database", features = ["testing"] }
 editoast_models = { path = "./", features = ["testing"] }
 
 [lints]

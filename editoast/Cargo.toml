@@ -63,6 +63,7 @@ diesel-async = { version = "0.5", default-features = false, features = [
   "deadpool",
   "postgres",
 ] }
+diesel_json = "0.2.1"
 editoast_derive = { path = "./editoast_derive" }
 editoast_models = { path = "./editoast_models" }
 educe = "0.6.0"
@@ -158,7 +159,7 @@ deadpool-redis = { version = "0.22.0", features = [
 derive_more.workspace = true
 diesel.workspace = true
 diesel-async = { workspace = true }
-diesel_json = "0.2.1"
+diesel_json.workspace = true
 editoast_derive.workspace = true
 editoast_models.workspace = true
 educe.workspace = true

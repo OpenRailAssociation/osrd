@@ -1,5 +1,6 @@
 pub mod authn;
 pub mod document;
+pub mod electrical_profiles;
 pub mod pagination;
 pub mod prelude;
 pub mod rolling_stock;
@@ -10,6 +11,9 @@ pub use authn::group::Group;
 pub use authn::subject::Subject;
 pub use authn::user::User;
 pub use document::Document;
+pub use electrical_profiles::ElectricalProfileSet;
+pub use electrical_profiles::LightElectricalProfileSet;
+pub use tags::Tags;
 
 use std::sync::LazyLock;
 
