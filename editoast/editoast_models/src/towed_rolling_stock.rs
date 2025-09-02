@@ -9,7 +9,8 @@ use schemas::rolling_stock::RollingResistancePerWeight;
 use serde::Deserialize;
 use serde::Serialize;
 
-use editoast_models::prelude::*;
+use crate as editoast_models;
+use crate::prelude::*;
 
 #[editoast_derive::openapi_schema]
 #[editoast_derive::annotate_units]
@@ -68,7 +69,7 @@ impl From<TowedRollingStock> for schemas::TowedRollingStock {
     }
 }
 
-impl From<schemas::TowedRollingStock> for Changeset<TowedRollingStock> {
+impl From<schemas::TowedRollingStock> for TowedRollingStockChangeset {
     fn from(towed_rolling_stock: schemas::TowedRollingStock) -> Self {
         TowedRollingStock::changeset()
             .name(towed_rolling_stock.name)
@@ -81,5 +82,6 @@ impl From<schemas::TowedRollingStock> for Changeset<TowedRollingStock> {
             .inertia_coefficient(towed_rolling_stock.inertia_coefficient)
             .rolling_resistance(towed_rolling_stock.rolling_resistance)
             .const_gamma(towed_rolling_stock.const_gamma)
+            .max_speed(towed_rolling_stock.max_speed)
     }
 }

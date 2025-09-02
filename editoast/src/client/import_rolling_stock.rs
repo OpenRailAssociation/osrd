@@ -9,7 +9,7 @@ use database::DbConnectionPoolV2;
 use validator::ValidationErrorsKind;
 
 use crate::models::RollingStock;
-use crate::models::towed_rolling_stock::TowedRollingStock;
+use editoast_models::TowedRollingStock;
 use editoast_models::prelude::*;
 
 #[derive(Args, Clone, Debug)]

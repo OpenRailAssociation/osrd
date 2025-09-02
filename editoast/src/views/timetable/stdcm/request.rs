@@ -21,11 +21,11 @@ use uom::si::mass::kilogram;
 use utoipa::ToSchema;
 
 use crate::error::Result;
-use crate::models::towed_rolling_stock::TowedRollingStock;
 use crate::views::path::path_item_cache::PathItemCache;
 use crate::views::path::pathfinding::PathfindingFailure;
 use crate::views::path::pathfinding::PathfindingResult;
 use editoast_models::TemporarySpeedLimit;
+use editoast_models::TowedRollingStock;
 use editoast_models::WorkSchedule;
 use editoast_models::prelude::*;
 
