@@ -58,7 +58,7 @@ class RemainingDistanceEstimatorTest {
         justification = "called implicitly by MethodSource",
     )
     private fun testRemainingDistanceEstimatorArgs(): Stream<Arguments> {
-        val points = path!!.getGeo().points
+        val points = path!!.getGeo().getPoints()
         return Stream.of( // Test same point
             Arguments.of(
                 listOf(EdgeLocation(block, Offset<Block>(0.meters))),

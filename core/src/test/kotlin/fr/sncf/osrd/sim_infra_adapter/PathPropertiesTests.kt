@@ -731,8 +731,8 @@ class PathPropertiesTests {
     /** Assert that line strings are equal, with a certain tolerance for double values */
     private fun assertLinestringEqual(expected: LineString, actual: LineString, tolerance: Double) {
         val simplified = simplifyLineString(actual)
-        assertEquals(expected.points.size, simplified.points.size)
-        for ((expectedPoint, actualPoint) in expected.points zip simplified.points) {
+        assertEquals(expected.getPoints().size, simplified.getPoints().size)
+        for ((expectedPoint, actualPoint) in expected.getPoints() zip simplified.getPoints()) {
             assertEquals(expectedPoint.lon, actualPoint.lon, tolerance)
             assertEquals(expectedPoint.lat, actualPoint.lat, tolerance)
         }
@@ -751,9 +751,13 @@ class PathPropertiesTests {
 
         val longitudes = arrayListOf<Double>()
         val latitudes = arrayListOf<Double>()
-        for (i in 0 until l.points.size) {
-            val p = l.points[i]
-            if (i > 0 && i < l.points.size - 1 && aligned(p, l.points[i - 1], l.points[i + 1]))
+        for (i in 0 until l.getPoints().size) {
+            val p = l.getPoints()[i]
+            if (
+                i > 0 &&
+                    i < l.getPoints().size - 1 &&
+                    aligned(p, l.getPoints()[i - 1], l.getPoints()[i + 1])
+            )
                 continue
             longitudes.add(p.lon)
             latitudes.add(p.lat)

@@ -52,7 +52,7 @@ private fun makeElectrifications(pathProperties: PathProperties): RangeValues<El
 private fun makeGeographic(path: PathProperties): RJSLineString {
     val lineString = path.getGeo()
     val coordinates = ArrayList<List<Double>>()
-    for (p in lineString.points) coordinates.add(listOf(p.lon, p.lat))
+    for (p in lineString.getPoints()) coordinates.add(listOf(p.lon, p.lat))
     return RJSLineString("LineString", coordinates)
 }
 

@@ -37,7 +37,7 @@ data class ProgressLogger(
         if (progress >= thresholdDistance * nSamplesReached) {
             val block = node.infraExplorer.getCurrentBlock()
             val geo =
-                buildTrainPathFromBlock(graph.rawInfra, graph.blockInfra, block).getGeo().points[0]
+                buildTrainPathFromBlock(graph.rawInfra, graph.blockInfra, block).getGeo().getPoints()[0]
             val str =
                 "node sample for progress $nSamplesReached/$nStepsProgress: " +
                     "time=${node.timeData.earliestReachableTime.toInt()}s, " +
