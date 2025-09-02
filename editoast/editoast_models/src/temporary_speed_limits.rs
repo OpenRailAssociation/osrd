@@ -1,14 +1,15 @@
 use chrono::DateTime;
 use chrono::Utc;
-use database::tables::temporary_speed_limit;
-use database::tables::temporary_speed_limit_group;
 use editoast_derive::Model;
 use schemas::infra::DirectionalTrackRange;
 use serde::Serialize;
 
+use crate as editoast_models; // HACK: remove when all models are in this crate
+
 #[derive(Debug, Clone, Model)]
-#[model(table = temporary_speed_limit_group, error = TslGroupError)]
+#[model(table = database::tables::temporary_speed_limit_group)]
 #[model(gen(ops = crd, batch_ops = c, list))]
+#[model(error(create = TslGroupError, update = TslGroupError))]
 pub struct TemporarySpeedLimitGroup {
     pub id: i64,
     pub creation_date: DateTime<Utc>,
@@ -16,17 +17,18 @@ pub struct TemporarySpeedLimitGroup {
 }
 
 #[derive(Debug, thiserror::Error)]
+#[cfg_attr(test, derive(PartialEq))]
 pub enum TslGroupError {
     #[error("Temporary speed limit group name already used: {name}")]
     NameAlreadyUsed { name: String },
     #[error(transparent)]
-    Database(editoast_models::Error),
+    Database(crate::Error),
 }
 
-impl From<editoast_models::Error> for TslGroupError {
-    fn from(e: editoast_models::Error) -> Self {
+impl From<crate::Error> for TslGroupError {
+    fn from(e: crate::Error) -> Self {
         match e {
-            editoast_models::Error::UniqueViolation {
+            crate::Error::UniqueViolation {
                 constraint,
                 column,
                 value,
@@ -39,8 +41,9 @@ impl From<editoast_models::Error> for TslGroupError {
 }
 
 #[derive(Debug, Serialize, Clone, Model)]
-#[model(table = temporary_speed_limit, error(write = Error))]
+#[model(table = database::tables::temporary_speed_limit)]
 #[model(gen(ops = cr, batch_ops = c, list))]
+#[model(error(write = Error))]
 pub struct TemporarySpeedLimit {
     pub id: i64,
     pub start_date_time: DateTime<Utc>,
@@ -54,7 +57,7 @@ pub struct TemporarySpeedLimit {
 
 #[derive(Debug, thiserror::Error)]
 #[error(transparent)]
-pub struct Error(#[from] editoast_models::Error);
+pub struct Error(#[from] crate::Error);
 
 impl From<TemporarySpeedLimit> for core_client::stdcm::TemporarySpeedLimit {
     fn from(value: TemporarySpeedLimit) -> Self {

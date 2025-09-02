@@ -76,7 +76,7 @@ use editoast_models::WorkScheduleGroup;
 use editoast_models::prelude::*;
 use editoast_models::tags::Tags;
 
-use super::temporary_speed_limits::TemporarySpeedLimitGroup;
+use editoast_models::TemporarySpeedLimitGroup;
 
 pub fn project_changeset(name: &str) -> Changeset<Project> {
     Project::changeset()
