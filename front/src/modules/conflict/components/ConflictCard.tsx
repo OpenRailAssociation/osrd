@@ -1,9 +1,9 @@
 import dayjs from 'dayjs';
 import { useTranslation } from 'react-i18next';
 
+import { getTrainCategoryClassName } from 'applications/operationalStudies/views/Scenario/components/Timetable/utils';
 import { useSubCategoryContext } from 'common/SubCategoryContext';
 import isMainCategory from 'modules/rollingStock/helpers/category';
-import { getTrainCategoryClassName } from 'modules/timetableItem/components/Timetable/utils';
 
 import type { ConflictWithTrainNames } from '../types';
 
