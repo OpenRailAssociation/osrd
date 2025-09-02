@@ -5,6 +5,10 @@ import { useSelector } from 'react-redux';
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
+import {
+  formatPacedTrainPayload,
+  formatTimetableItemPayload,
+} from 'modules/timetableItem/helpers/formatTimetableItemPayload';
 import { setFailure, setSuccess } from 'reducers/main';
 import { clearAddedExceptionsList } from 'reducers/osrdconf/operationalStudiesConf';
 import { getOperationalStudiesConf } from 'reducers/osrdconf/operationalStudiesConf/selectors';
@@ -18,10 +22,6 @@ import { castErrorToFailure } from 'utils/error';
 import { formatEditoastIdToPacedTrainId, formatEditoastIdToTrainScheduleId } from 'utils/trainId';
 
 import checkCurrentConfig from './helpers/checkCurrentConfig';
-import {
-  formatPacedTrainPayload,
-  formatTimetableItemPayload,
-} from './helpers/formatTimetableItemPayload';
 
 type CreateTimetableItemButtonProps = {
   setIsWorking: (isWorking: boolean) => void;

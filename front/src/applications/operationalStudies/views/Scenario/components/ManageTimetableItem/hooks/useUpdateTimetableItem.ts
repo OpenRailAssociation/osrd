@@ -4,6 +4,10 @@ import { useSelector } from 'react-redux';
 import { MANAGE_TIMETABLE_ITEM_TYPES } from 'applications/operationalStudies/views/Scenario/consts';
 import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
 import {
+  formatPacedTrainPayload,
+  formatTimetableItemPayload,
+} from 'modules/timetableItem/helpers/formatTimetableItemPayload';
+import {
   storePacedTrain,
   storeTrainSchedule,
 } from 'modules/timetableItem/helpers/updateTimetableItemHelpers';
@@ -34,10 +38,6 @@ import {
 } from 'utils/trainId';
 
 import checkCurrentConfig from '../helpers/checkCurrentConfig';
-import {
-  formatPacedTrainPayload,
-  formatTimetableItemPayload,
-} from '../helpers/formatTimetableItemPayload';
 
 const useUpdateTimetableItem = (
   setIsWorking: (isWorking: boolean) => void,

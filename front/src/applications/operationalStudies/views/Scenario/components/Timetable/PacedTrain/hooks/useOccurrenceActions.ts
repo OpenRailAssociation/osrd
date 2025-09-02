@@ -3,9 +3,9 @@ import { useCallback } from 'react';
 import { useSelector } from 'react-redux';
 import { v4 as uuidV4 } from 'uuid';
 
-import { formatPacedTrainWithDetailsToPacedTrainPayload } from 'applications/operationalStudies/views/Scenario/components/ManageTimetableItem/helpers/formatTimetableItemPayload';
 import type { PacedTrain } from 'common/api/osrdEditoastApi';
 import { updatePacedTrainExceptionsList } from 'modules/timetableItem/helpers/buildPacedTrainException';
+import { formatPacedTrainWithDetailsToPacedTrainPayload } from 'modules/timetableItem/helpers/formatTimetableItemPayload';
 import {
   findExceptionWithOccurrenceId,
   extractOccurrenceDetailsFromPacedTrain,

@@ -1,6 +1,5 @@
+import type { Margin } from 'applications/operationalStudies/views/Scenario/components/ManageTimetableItem/types';
 import type { PathStep } from 'reducers/osrdconf/types';
-
-import type { Margin } from '../types';
 
 const formatMargin = (pathSteps: PathStep[]): Margin | undefined => {
   const boundaries: string[] = [];

@@ -9,6 +9,7 @@ import { MANAGE_TIMETABLE_ITEM_TYPES } from 'applications/operationalStudies/vie
 import CheckboxRadioSNCF from 'common/BootstrapSNCF/CheckboxRadioSNCF';
 import { ConfirmModal, useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import DotsLoader from 'common/DotsLoader';
+import { isPacedTrainToEditData } from 'modules/timetableItem/helpers/formatTimetableItemPayload';
 import { toggleEditingItemType } from 'reducers/osrdconf/operationalStudiesConf';
 import {
   getEditingItemType,
@@ -24,7 +25,6 @@ import { useAppDispatch } from 'store';
 import { isPacedTrainId, isTrainScheduleId } from 'utils/trainId';
 
 import CreateTimetableItemButton from './CreateTimetableItemButton';
-import { isPacedTrainToEditData } from './helpers/formatTimetableItemPayload';
 import useUpdateTimetableItem from './hooks/useUpdateTimetableItem';
 import PacedTrainSettings from './PacedTrainSettings';
 
