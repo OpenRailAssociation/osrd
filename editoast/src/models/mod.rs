@@ -20,7 +20,6 @@ pub mod stdcm_search_environment;
 pub mod study;
 
 pub mod timetable;
-pub mod towed_rolling_stock;
 pub mod train_schedule;
 
 pub use infra::Infra;

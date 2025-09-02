@@ -1,6 +1,5 @@
 use crate::error::InternalError;
 use crate::error::Result;
-use crate::models::towed_rolling_stock::TowedRollingStock;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
 use crate::views::pagination::PaginatedList;
@@ -22,7 +21,9 @@ use common::units::quantities::Velocity;
 use database::DbConnectionPoolV2;
 use diesel_async::scoped_futures::ScopedFutureExt as _;
 use editoast_derive::EditoastError;
+use editoast_models::TowedRollingStock;
 use editoast_models::prelude::*;
+use editoast_models::towed_rolling_stock::TowedRollingStockChangeset;
 use schemas::rolling_stock::ROLLING_STOCK_RAILJSON_VERSION;
 use schemas::rolling_stock::RollingResistancePerWeight;
 use serde::Deserialize;
@@ -71,7 +72,7 @@ pub struct TowedRollingStockForm {
     pub max_speed: Option<Velocity>,
 }
 
-impl From<TowedRollingStockForm> for Changeset<TowedRollingStock> {
+impl From<TowedRollingStockForm> for TowedRollingStockChangeset {
     fn from(towed_rolling_stock_form: TowedRollingStockForm) -> Self {
         TowedRollingStock::changeset()
             .railjson_version(ROLLING_STOCK_RAILJSON_VERSION.to_string())
@@ -317,11 +318,11 @@ pub(in crate::views) async fn patch_by_id_locked(
 #[cfg(test)]
 mod tests {
     use super::TowedRollingStockCountList;
-    use crate::models::towed_rolling_stock::TowedRollingStock;
     use crate::views::test_app::TestApp;
     use crate::views::test_app::TestAppBuilder;
     use axum::http::StatusCode;
     use common::units;
+    use editoast_models::TowedRollingStock;
     use rstest::rstest;
     use serde_json::json;
     use uuid::Uuid;
