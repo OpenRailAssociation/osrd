@@ -67,13 +67,13 @@ use crate::models::RollingStock;
 use crate::models::Scenario;
 use crate::models::Study;
 use crate::models::SubCategory;
-use crate::models::electrical_profiles::ElectricalProfileSet;
 use crate::models::rolling_stock_livery::RollingStockLivery;
 use crate::models::sub_category::SubCategoryChangeset;
 use crate::models::timetable::Timetable;
 use crate::models::work_schedules::WorkSchedule;
 use crate::models::work_schedules::WorkScheduleGroup;
 use editoast_models::Document;
+use editoast_models::ElectricalProfileSet;
 use editoast_models::prelude::*;
 use editoast_models::tags::Tags;
 

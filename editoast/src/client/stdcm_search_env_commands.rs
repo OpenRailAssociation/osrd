@@ -1,6 +1,5 @@
 use crate::models::Infra;
 use crate::models::Scenario;
-use crate::models::electrical_profiles::ElectricalProfileSet;
 use crate::models::stdcm_search_environment::StdcmSearchEnvironment;
 use crate::models::timetable::Timetable;
 use crate::models::work_schedules::WorkScheduleGroup;
@@ -11,6 +10,7 @@ use clap::Args;
 use clap::Subcommand;
 use database::DbConnection;
 use database::DbConnectionPoolV2;
+use editoast_models::ElectricalProfileSet;
 use editoast_models::prelude::*;
 use std::fs::File;
 use std::io::BufReader;

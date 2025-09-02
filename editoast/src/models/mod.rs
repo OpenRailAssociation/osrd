@@ -1,4 +1,3 @@
-pub mod electrical_profiles;
 #[allow(unused)]
 #[cfg(test)]
 pub mod fixtures;
