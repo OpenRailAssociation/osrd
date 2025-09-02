@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.kotlin.jvm)
     id 'java'
     id 'jacoco'
+    alias(libs.plugins.kotlin.serialization)
 }
 
 repositories {
@@ -29,4 +30,6 @@ dependencies {
     testImplementation libs.junit.jupiter.params
     // Use JUnit Jupiter Engine for testing.
     testRuntimeOnly libs.junit.jupiter.engine
+    implementation libs.kotlinx.serialization.core
+    implementation libs.kotlinx.serialization.cbor
 }

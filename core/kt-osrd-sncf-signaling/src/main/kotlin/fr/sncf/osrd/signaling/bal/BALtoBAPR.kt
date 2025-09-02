@@ -8,7 +8,9 @@ import fr.sncf.osrd.sim_infra.api.SigParameters
 import fr.sncf.osrd.sim_infra.api.SigSettings
 import fr.sncf.osrd.sim_infra.api.SigState
 import fr.sncf.osrd.sim_infra.api.SigStateSchema
+import kotlinx.serialization.Serializable
 
+@Serializable
 object BALtoBAPR : SignalDriver {
     override val name = "BAL-BAPR"
     override val inputSignalingSystem = "BAPR"

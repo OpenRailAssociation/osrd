@@ -30,10 +30,12 @@ private fun CollectionItemType.generateRingBuffer(context: GeneratorContext, cur
 
             package $generatedPackage
 
+            import kotlinx.serialization.Serializable
             import fr.sncf.osrd.fast_collections.growCapacity
             import ${type.qualifiedName}
 
             /** GENERATED CODE */
+            @Serializable
             class Mutable${simpleName}RingBuffer${paramsDecl} private constructor(
                 private var _size: Int,
                 private var offset: Int,
@@ -128,7 +130,7 @@ private fun CollectionItemType.generateRingBuffer(context: GeneratorContext, cur
                         addBack(item)
                     return true
                 }
-                
+
                 /** GENERATED CODE */
                 fun addFront(element: $type): Int {
                     if (size == 0) {

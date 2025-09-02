@@ -27,6 +27,7 @@ private fun CollectionItemType.generateArray(context: GeneratorContext, currentF
 
             package $generatedPackage
 
+            import kotlinx.serialization.Serializable
             import ${type.qualifiedName}
 
             // regular lambda types are compiled to a generic Function<In, Out> type, which boxes
@@ -35,6 +36,7 @@ private fun CollectionItemType.generateArray(context: GeneratorContext, currentF
                 fun call(idx: Int): $type
             }
 
+            @Serializable
             @JvmInline
             value class Mutable${simpleName}Array${paramsDecl}(private val data: $bufferType) {
                 public constructor(size: Int, init: ${simpleName}ArrayInitializer${paramsUse})
@@ -162,6 +164,7 @@ private fun CollectionItemType.generateArray(context: GeneratorContext, currentF
 
             /** GENERATED CODE */
 
+            @Serializable
             @JvmInline
             value class ${simpleName}Array${paramsDecl}(private val data: ${bufferType}) {
                 val size get() = data.size

@@ -5,7 +5,9 @@ import fr.sncf.osrd.sim_infra.api.SigParameters
 import fr.sncf.osrd.sim_infra.api.SigSettings
 import fr.sncf.osrd.sim_infra.api.SigState
 import fr.sncf.osrd.sim_infra.api.SigStateSchema
+import kotlinx.serialization.Serializable
 
+@Serializable
 object BALtoETCS_LEVEL2 : SignalDriver {
     override val name = "BAL-ETCS_LEVEL2"
     override val inputSignalingSystem = "BAL"

@@ -6,12 +6,14 @@ import com.google.common.collect.RangeMap
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.meters
 import java.util.function.BiFunction
+import kotlinx.serialization.Serializable
 
 /**
  * DistanceRangeMap allows to store values over intervals (e.g. elevation on sections of a track)
  * and query them. The default value is null.
  */
-interface DistanceRangeMap<T> : Iterable<DistanceRangeMap.RangeMapEntry<T>> {
+@Serializable
+sealed interface DistanceRangeMap<T> : Iterable<DistanceRangeMap.RangeMapEntry<T>> {
 
     /** When iterating over the values of the map, this represents one range of constant value */
     data class RangeMapEntry<T>(val lower: Distance, val upper: Distance, val value: T)

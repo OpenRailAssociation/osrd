@@ -6,6 +6,7 @@ import fr.sncf.osrd.utils.indexing.StaticIdxSpace
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.OffsetList
+import kotlinx.serialization.Serializable
 
 /** A fixed size signaling block */
 sealed interface Block
@@ -25,6 +26,7 @@ sealed interface LogicalSignal
 
 typealias LogicalSignalId = StaticIdx<LogicalSignal>
 
+@Serializable
 data class RawSignalParameters(
     val default: Map<String, String>,
     val conditional: Map<RouteId, Map<String, String>>,

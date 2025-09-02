@@ -1,13 +1,13 @@
 package fr.sncf.osrd.geom
 
 import com.carrotsearch.hppc.DoubleArrayList
-import kotlinx.serialization.Serializable
 import java.lang.String
 import java.util.*
 import kotlin.Double
 import kotlin.DoubleArray
 import kotlin.assert
 import kotlin.doubleArrayOf
+import kotlinx.serialization.Serializable
 
 @Serializable
 data class LineString(

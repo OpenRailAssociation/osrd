@@ -7,7 +7,9 @@ import fr.sncf.osrd.sim_infra.api.SigParameters
 import fr.sncf.osrd.sim_infra.api.SigSettings
 import fr.sncf.osrd.sim_infra.api.SigState
 import fr.sncf.osrd.sim_infra.api.SigStateSchema
+import kotlinx.serialization.Serializable
 
+@Serializable
 object BALtoTVM300 : SignalDriver {
     override val name = "BAL-TVM300"
     override val inputSignalingSystem = "BAL"

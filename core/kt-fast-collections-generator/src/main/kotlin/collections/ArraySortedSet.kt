@@ -34,10 +34,12 @@ private fun CollectionItemType.generateArraySortedSet(
 
             package $generatedPackage
 
+            import kotlinx.serialization.Serializable
             import fr.sncf.osrd.fast_collections.growCapacity
             import ${type.qualifiedName}
 
             /** GENERATED CODE */
+            @Serializable
             @Suppress("INAPPLICABLE_JVM_NAME")
             class Mutable${simpleName}ArraySet${paramsDecl} private constructor(
                 private var usedElements: Int,
@@ -92,13 +94,13 @@ private fun CollectionItemType.generateArraySortedSet(
                     usedElements--
                     return oldValue
                 }
-                
+
                 override fun remove(value: $type): Boolean {
                     val searchResult = binarySearch(value, 0, usedElements)
                     // no need to remove anything if the item was not found
                     if (searchResult < 0)
                         return false
-            
+
                     for (i in searchResult until usedElements - 1)
                         buffer[i] = buffer[i + 1]
                     usedElements--
@@ -224,7 +226,7 @@ private fun CollectionItemType.generateArraySortedSet(
                         if (i != 0)
                             builder.append(", ")
                         builder.append(buffer[i].toString())
-                    }         
+                    }
                     builder.append('}')
                     return builder.toString()
                 }

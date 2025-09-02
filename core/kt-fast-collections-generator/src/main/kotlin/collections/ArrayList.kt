@@ -35,10 +35,12 @@ private fun CollectionItemType.generateArrayList(context: GeneratorContext, curr
 
             package $generatedPackage
 
+            import kotlinx.serialization.Serializable
             import fr.sncf.osrd.fast_collections.growCapacity
             import ${type.qualifiedName}
 
             /** GENERATED CODE */
+            @Serializable
             @Suppress("INAPPLICABLE_JVM_NAME")
             class Mutable${simpleName}ArrayList${paramsDecl} private constructor(
                 private var usedElements: Int,

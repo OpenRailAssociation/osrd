@@ -6,7 +6,9 @@ import fr.sncf.osrd.utils.indexing.*
 import fr.sncf.osrd.utils.md5
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.OffsetList
+import kotlinx.serialization.Serializable
 
+@Serializable
 class BlockDescriptor(
     val length: Length<Block>,
     val startAtBufferStop: Boolean,
@@ -36,10 +38,11 @@ class BlockDescriptor(
     }
 }
 
+@Serializable
 class BlockInfraImpl(
     private val blockPool: StaticPool<Block, BlockDescriptor>,
     private val loadedSignalInfra: LoadedSignalInfra,
-    rawInfra: RawInfra,
+    private val rawInfra: RawInfra,
 ) : BlockInfra {
     private val blockEntryDetectorMap = IdxMap<DirDetectorId, MutableStaticIdxList<Block>>()
     private val blockExitDetectorMap = IdxMap<DirDetectorId, MutableStaticIdxList<Block>>()

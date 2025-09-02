@@ -12,6 +12,7 @@ import fr.sncf.osrd.utils.indexing.*
 import fr.sncf.osrd.utils.units.*
 import kotlin.collections.set
 import kotlin.time.Duration
+import kotlinx.serialization.Serializable
 import mu.KotlinLogging
 
 val logger = KotlinLogging.logger {}
@@ -20,6 +21,7 @@ val logger = KotlinLogging.logger {}
 //       trains using one specific route AND one specific speedLimitTag
 //       (not affecting other trains using that route but with another speedLimitTag, or using
 //       that speedLimitTag but another route).
+@Serializable
 data class SpeedSection(
     val default: Speed,
     val speedByTrainTag: Map<String, Speed>,
@@ -47,15 +49,18 @@ data class SpeedSection(
     }
 }
 
+@Serializable
 data class SpeedLimitTagDescriptor(
     val fallbackList: List<String> // order of the list matters for fallback (when equal speed)
 )
 
+@Serializable
 class TrackNodeConfigDescriptor(
     val name: String,
     val portLinks: List<Pair<TrackNodePortId, TrackNodePortId>>,
 )
 
+@Serializable
 class TrackNodeDescriptor(
     val name: String,
     val delay: Duration,
@@ -84,12 +89,14 @@ class TrackNodeDescriptor(
     }
 }
 
+@Serializable
 class TrackSectionDescriptor(
     val name: String,
     val chunks: StaticIdxList<TrackChunk>,
     val detectors: StaticIdxList<Detector>,
 )
 
+@Serializable
 class TrackChunkDescriptor(
     var track: StaticIdx<TrackSection>,
     val offset: Offset<TrackSection>,
@@ -106,8 +113,10 @@ class TrackChunkDescriptor(
     val speedSections: DirectionalMap<DistanceRangeMap<SpeedSection>>,
 )
 
+@Serializable
 class ZoneDescriptor(val movableElements: StaticIdxSortedSet<TrackNode>, var name: String = "")
 
+@Serializable
 class RouteDescriptor(
     val name: String,
     var length: Length<Route>,
@@ -119,6 +128,7 @@ class RouteDescriptor(
     val chunks: DirStaticIdxList<TrackChunk>,
 )
 
+@Serializable
 class LogicalSignalDescriptor(
     val signalingSystemId: String,
     val nextSignalingSystemIds: List<String>,
@@ -126,6 +136,7 @@ class LogicalSignalDescriptor(
     val rawParameters: RawSignalParameters,
 )
 
+@Serializable
 class PhysicalSignalDescriptor(
     val name: String?,
     val dirTrackSectionId: DirTrackSectionId,
@@ -134,6 +145,7 @@ class PhysicalSignalDescriptor(
     val sightDistance: Distance,
 )
 
+@Serializable
 open class ZonePathSpec(
     val entry: DirDetectorId,
     val exit: DirDetectorId,
@@ -157,15 +169,21 @@ open class ZonePathSpec(
     }
 }
 
+@Serializable
 class ZonePathDescriptor(
-    entry: DirDetectorId,
-    exit: DirDetectorId,
-    movableElements: StaticIdxList<TrackNode>,
-    movableElementsConfigs: StaticIdxList<TrackNodeConfig>,
+    val entry: DirDetectorId,
+    val exit: DirDetectorId,
+    val movableElements: StaticIdxList<TrackNode>,
+    val movableElementsConfigs: StaticIdxList<TrackNodeConfig>,
     val movableElementsPositions: OffsetList<ZonePath>,
     val chunks: DirStaticIdxList<TrackChunk>,
-) : ZonePathSpec(entry, exit, movableElements, movableElementsConfigs)
+) {
+    fun getSpecs(): ZonePathSpec {
+        return ZonePathSpec(entry, exit, movableElements, movableElementsConfigs)
+    }
+}
 
+@Serializable
 class OperationalPointPartDescriptor(
     // Multiple OperationalPointParts can have the same operationalPointId
     val operationalPointId: String,
@@ -174,23 +192,27 @@ class OperationalPointPartDescriptor(
     val props: Map<String, String>,
 )
 
+@Serializable
 class ZonePathCache(
     val length: Length<ZonePath>,
     val signals: StaticIdxList<PhysicalSignal>,
     val signalPositions: OffsetList<ZonePath>,
 )
 
+@Serializable
 data class TrackChunkSignal(
     val directedOffset: Offset<DirTrackChunkId>,
     val signal: PhysicalSignalId,
 )
 
+@Serializable
 class DetectorDescriptor(
     val trackSection: TrackSectionId,
     val chunkBoundaryIndex: Int,
     val names: List<String>,
 )
 
+@Serializable
 class RawInfraImpl(
     private val trackNodePool: StaticPool<TrackNode, TrackNodeDescriptor>,
     private val trackSectionPool: StaticPool<TrackSection, TrackSectionDescriptor>,

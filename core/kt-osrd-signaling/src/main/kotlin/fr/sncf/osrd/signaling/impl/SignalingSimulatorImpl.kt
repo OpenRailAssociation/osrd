@@ -7,6 +7,7 @@ import fr.sncf.osrd.sim_infra.impl.loadedSignalInfra
 import fr.sncf.osrd.utils.LogAggregator
 import fr.sncf.osrd.utils.indexing.*
 import fr.sncf.osrd.utils.units.Distance
+import kotlinx.serialization.Serializable
 import mu.KotlinLogging
 
 private val logger = KotlinLogging.logger {}
@@ -26,6 +27,7 @@ fun ZoneStatus.toProtectionStatus(): ProtectionStatus {
     }
 }
 
+@Serializable
 class SignalingSimulatorImpl(override val sigModuleManager: SigSystemManager) : SignalingSimulator {
     private fun loadSignalSetting(
         rawSettings: Map<String, String>,

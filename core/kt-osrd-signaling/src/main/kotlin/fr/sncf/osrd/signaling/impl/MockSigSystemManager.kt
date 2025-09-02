@@ -4,7 +4,9 @@ import fr.sncf.osrd.signaling.*
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra.api.SignalDriver
 import fr.sncf.osrd.utils.indexing.StaticIdxSpace
+import kotlinx.serialization.Serializable
 
+@Serializable
 class MockSigSystemManager(
     val sigSystem: String,
     val settingsSchema: SigSettingsSchema,

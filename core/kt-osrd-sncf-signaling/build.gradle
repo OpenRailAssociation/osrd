@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.kotlin.jvm)
     id 'jacoco'
+    alias(libs.plugins.kotlin.serialization)
 }
 
 repositories {
@@ -20,6 +21,8 @@ dependencies {
 
     implementation libs.kotlin.stdlib
     testImplementation libs.kotlin.test
+    implementation libs.kotlinx.serialization.core
+    implementation libs.kotlinx.serialization.cbor
 }
 
 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
