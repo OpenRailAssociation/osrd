@@ -15,6 +15,7 @@ diesel-async.workspace = true
 editoast_derive.workspace = true
 futures.workspace = true
 futures-util.workspace = true
+linkme.workspace = true
 openssl.workspace = true
 opentelemetry-semantic-conventions.workspace = true
 paste.workspace = true

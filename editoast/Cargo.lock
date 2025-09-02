@@ -1488,6 +1488,7 @@ dependencies = [
  "editoast_models",
  "futures 0.3.31",
  "futures-util",
+ "linkme",
  "openssl",
  "opentelemetry-semantic-conventions",
  "paste",

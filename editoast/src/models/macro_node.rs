@@ -3,7 +3,7 @@ use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
 
-use crate::models::Tags;
+use editoast_models::tags::Tags;
 
 #[derive(Clone, Debug, Serialize, Deserialize, Model, ToSchema, PartialEq)]
 #[model(table = database::tables::macro_node)]

@@ -3,6 +3,7 @@ pub mod document;
 pub mod pagination;
 pub mod prelude;
 pub mod rolling_stock;
+pub mod tags;
 
 // Export all Model at crate root
 pub use authn::group::Group;

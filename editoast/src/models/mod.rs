@@ -22,7 +22,6 @@ pub mod stdcm_search_environment;
 pub mod study;
 pub mod sub_category;
 
-pub mod tags;
 pub mod temporary_speed_limits;
 pub mod timetable;
 pub mod towed_rolling_stock;
@@ -40,7 +39,6 @@ pub use scenario::Scenario;
 pub use study::Study;
 pub use sub_category::SubCategory;
 
-pub use tags::Tags;
 pub use train_schedule::TrainSchedule;
 
 #[cfg(test)]

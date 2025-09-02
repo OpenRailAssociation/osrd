@@ -22,8 +22,8 @@ use schemas::train_schedule::ScheduleItem;
 use schemas::train_schedule::TrainSchedule;
 use schemas::train_schedule::TrainScheduleOptions;
 
-use super::Tags;
 use editoast_models::prelude::*;
+use editoast_models::tags::Tags;
 
 #[derive(Debug, Clone, Model)]
 #[cfg_attr(test, derive(Default, PartialEq))]
@@ -386,7 +386,6 @@ mod tests {
     use std::str::FromStr;
 
     use crate::models::PacedTrain;
-    use crate::models::Tags;
     use crate::models::fixtures::create_created_exception_with_change_groups;
     use crate::models::fixtures::create_modified_exception_with_change_groups;
     use crate::models::fixtures::create_timetable;
@@ -398,6 +397,7 @@ mod tests {
     use database::DbConnectionPoolV2;
     use editoast_models::prelude::*;
     use editoast_models::rolling_stock::TrainMainCategory;
+    use editoast_models::tags::Tags;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
     use schemas::paced_train::PacedTrainException;

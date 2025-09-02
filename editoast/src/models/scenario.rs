@@ -13,12 +13,12 @@ use utoipa::ToSchema;
 
 use crate::error::InternalError;
 use crate::error::Result;
-use crate::models::Tags;
 use crate::models::timetable::Timetable;
 use crate::views::scenario::ScenarioError;
 use database::DbConnection;
 use editoast_derive::Model;
 use editoast_models::prelude::*;
+use editoast_models::tags::Tags;
 
 use super::Project;
 use super::Study;
