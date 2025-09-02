@@ -1,11 +1,12 @@
+use crate::rolling_stock::TrainMainCategory;
 use editoast_derive::Model;
-use editoast_models::rolling_stock::TrainMainCategory;
 use schemas::rolling_stock::SubCategoryColor;
 use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
 
-use editoast_models::prelude::*;
+use crate as editoast_models;
+use crate::prelude::*; // HACK: remove after all models are in this crate
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Model, ToSchema)]
 #[model(table = database::tables::sub_categories)]
@@ -43,9 +44,7 @@ impl From<schemas::rolling_stock::SubCategory> for SubCategoryChangeset {
         SubCategory::changeset()
             .code(sub_category.code)
             .name(sub_category.name)
-            .main_category(editoast_models::rolling_stock::TrainMainCategory(
-                sub_category.main_category,
-            ))
+            .main_category(TrainMainCategory(sub_category.main_category))
             .color(sub_category.color)
             .background_color(sub_category.background_color)
             .hovered_color(sub_category.hovered_color)
@@ -58,13 +57,13 @@ pub enum Error {
     #[error("Sub category code already used: {code}")]
     CodeAlreadyUsed { code: String },
     #[error(transparent)]
-    Database(editoast_models::Error),
+    Database(crate::Error),
 }
 
-impl From<editoast_models::Error> for Error {
-    fn from(e: editoast_models::Error) -> Self {
+impl From<crate::Error> for Error {
+    fn from(e: crate::Error) -> Self {
         match e {
-            editoast_models::Error::UniqueViolation {
+            crate::Error::UniqueViolation {
                 constraint,
                 column,
                 value,
