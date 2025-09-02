@@ -13,8 +13,9 @@ import {
 } from 'common/api/graouApi';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
+import UploadFileModal from 'common/fileHandling/uploadFileModal';
+import { handleFileReadingError } from 'common/fileHandling/utils';
 import StationCard from 'common/StationCard';
-import UploadFileModal from 'common/uploadFileModal';
 import { setFailure, setWarning } from 'reducers/main';
 import { useAppDispatch } from 'store';
 import { formatLocalDate } from 'utils/date';
@@ -22,10 +23,7 @@ import { castErrorToFailure } from 'utils/error';
 
 import parseXML from './helpers/parseXML';
 import StationSelector from './ImportTimetableItemStationSelector';
-import {
-  handleFileReadingError,
-  processJsonFile,
-} from '../ManageTimetableItem/helpers/handleParseFiles';
+import { processJsonFile } from '../ManageTimetableItem/helpers/handleParseFiles';
 
 type ImportTimetableItemConfigProps = {
   setTrainsList: (trainsList: GraouTrainSchedule[]) => void;

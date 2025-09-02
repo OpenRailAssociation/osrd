@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react';
 import { Upload } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 
-import { handleFileReadingError } from 'applications/operationalStudies/views/Scenario/components/ManageTimetableItem/helpers/handleParseFiles';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type {
   RollingStock,
@@ -11,9 +10,10 @@ import type {
   RollingStockWithLiveries,
 } from 'common/api/osrdEditoastApi';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
+import UploadFileModal from 'common/fileHandling/uploadFileModal';
+import { handleFileReadingError } from 'common/fileHandling/utils';
 import Tabs from 'common/Tabs';
 import type { TabProps } from 'common/Tabs';
-import UploadFileModal from 'common/uploadFileModal';
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
 import { addFailureNotification, setFailure, setSuccess } from 'reducers/main';
 import { useAppDispatch } from 'store';
