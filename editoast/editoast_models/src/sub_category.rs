@@ -74,3 +74,55 @@ impl From<crate::Error> for Error {
         }
     }
 }
+
+#[cfg(any(test, feature = "testing"))]
+impl SubCategory {
+    pub fn fake(
+        code: &str,
+        name: &str,
+        main_category: schemas::rolling_stock::TrainMainCategory,
+    ) -> Changeset<Self> {
+        Self::changeset()
+            .code(code.to_string())
+            .name(name.to_string())
+            .main_category(TrainMainCategory(main_category))
+            .color(SubCategoryColor::from("#FF0000".to_string()))
+            .background_color(SubCategoryColor::from("#00FF00".to_string()))
+            .hovered_color(SubCategoryColor::from("#0000FF".to_string()))
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use database::DbConnectionPoolV2;
+
+    #[tokio::test(flavor = "multi_thread")]
+    async fn unique_code() {
+        let db_pool = DbConnectionPoolV2::for_tests();
+
+        let _sub_category1 = SubCategory::fake(
+            "code",
+            "First Category",
+            schemas::rolling_stock::TrainMainCategory::FreightTrain,
+        )
+        .create(&mut db_pool.get_ok())
+        .await
+        .expect("Failed to create first sub category");
+
+        let result = SubCategory::fake(
+            "code",
+            "Second Category",
+            schemas::rolling_stock::TrainMainCategory::CommuterTrain,
+        )
+        .create(&mut db_pool.get_ok())
+        .await;
+
+        match result {
+            Err(Error::CodeAlreadyUsed { code }) => {
+                assert_eq!(code, "code");
+            }
+            other => panic!("Expected CodeAlreadyUsed error, got: {:?}", other),
+        }
+    }
+}
