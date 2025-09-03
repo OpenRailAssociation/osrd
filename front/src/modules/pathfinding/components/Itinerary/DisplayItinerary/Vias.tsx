@@ -6,19 +6,23 @@ import { useSelector } from 'react-redux';
 
 import { useManageTimetableItemContext } from 'applications/operationalStudies/hooks/useManageTimetableItemContext';
 import { isPathStepInvalid } from 'modules/pathfinding/utils';
+import { updatePathSteps } from 'reducers/osrdconf/operationalStudiesConf';
 import { getPathSteps, getVias } from 'reducers/osrdconf/operationalStudiesConf/selectors';
+import { useAppDispatch } from 'store';
 import { removeElementAtIndex } from 'utils/array';
 import { formatUicToCi } from 'utils/strings';
 
 type ViasProps = {
   zoomToFeaturePoint: (lngLat?: Position, id?: string) => void;
+  frozenPathfinding: boolean;
 };
 
-const Vias = ({ zoomToFeaturePoint }: ViasProps) => {
+const Vias = ({ zoomToFeaturePoint, frozenPathfinding }: ViasProps) => {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTimetableItem' });
   const vias = useSelector(getVias());
   const pathSteps = useSelector(getPathSteps);
   const { launchPathfinding } = useManageTimetableItemContext();
+  const dispatch = useAppDispatch();
 
   return (
     <>
@@ -58,7 +62,8 @@ const Vias = ({ zoomToFeaturePoint }: ViasProps) => {
               type="button"
               onClick={() => {
                 const newPathSteps = removeElementAtIndex(pathSteps, index + 1);
-                launchPathfinding(newPathSteps);
+                if (!frozenPathfinding) launchPathfinding(newPathSteps);
+                else dispatch(updatePathSteps(newPathSteps));
               }}
             >
               <XCircle variant="fill" />

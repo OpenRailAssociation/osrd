@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 
-import { ArrowSwitch, Route, Plus, Rocket, Trash } from '@osrd-project/ui-icons';
+import { ArrowSwitch, Route, Plus, Rocket, Trash, NorthStar, Sun } from '@osrd-project/ui-icons';
 import bbox from '@turf/bbox';
 import type { Position } from 'geojson';
 import { compact, isNil } from 'lodash';
@@ -36,6 +36,7 @@ const Itinerary = ({ rollingStockId }: { rollingStockId: number | undefined }) =
   const powerRestrictions = useSelector(getPowerRestrictions);
 
   const [displayTypeAndPath, setDisplayTypeAndPath] = useState(false);
+  const [frozenPathfinding, setFrozenPathfinding] = useState(false);
   const dispatch = useAppDispatch();
   const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTimetableItem' });
   const { openModal } = useModal();
@@ -155,6 +156,15 @@ const Itinerary = ({ rollingStockId }: { rollingStockId: number | undefined }) =
             <ArrowSwitch />
           </button>
           <button
+            className={`col ml-1 my-1 btn btn-sm ${
+              frozenPathfinding ? 'bg-warning text-yellow-500' : 'bg-info text-white'
+            }`}
+            type="button"
+            onClick={() => setFrozenPathfinding(!frozenPathfinding)}
+          >
+            {frozenPathfinding ? <Sun /> : <NorthStar />}
+          </button>
+          <button
             data-testid="delete-itinerary-button"
             type="button"
             title={t('deleteRoute')}
@@ -171,7 +181,7 @@ const Itinerary = ({ rollingStockId }: { rollingStockId: number | undefined }) =
           <Origin zoomToFeaturePoint={zoomToFeaturePoint} />
           <div className="vias-list mb-2" data-testid="itinerary-vias">
             {pathSteps.length > 2 ? (
-              <Vias zoomToFeaturePoint={zoomToFeaturePoint} />
+              <Vias zoomToFeaturePoint={zoomToFeaturePoint} frozenPathfinding={frozenPathfinding} />
             ) : (
               <small data-testid="no-waypoint-chosen-text" className="ml-4">
                 {t('noPlaceChosen')}
