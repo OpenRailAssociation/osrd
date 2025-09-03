@@ -10,13 +10,15 @@ import type { Train } from 'reducers/osrdconf/types';
 
 import { getStationFromOps, isOperationalPointReference } from '../utils';
 
-const useInvalidTrainOps = (
+/**
+ * Given a train, return the operational points corresponding to the pathSteps of this train
+ */
+const useTrainOps = (
   infraId: number,
-  isValid: boolean,
   train?: Train
 ): PathPropertiesFormatted['operationalPoints'] => {
   const operationalPointReferences: OperationalPointReference[] = useMemo(() => {
-    if (isValid || !train) return [];
+    if (!train) return [];
     return train.path.reduce<OperationalPointReference[]>((acc, pathItem) => {
       if (isOperationalPointReference(pathItem)) {
         const { id: _id, deleted: _deleted, ...cleanOperationalPointReference } = pathItem;
@@ -61,4 +63,4 @@ const useInvalidTrainOps = (
   return formattedOperationalPoints;
 };
 
-export default useInvalidTrainOps;
+export default useTrainOps;

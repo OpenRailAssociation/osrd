@@ -3,8 +3,8 @@ import { useEffect, useMemo, useState } from 'react';
 import { keyBy } from 'lodash';
 import { useTranslation } from 'react-i18next';
 
-import useInvalidTrainOps from 'applications/operationalStudies/hooks/useInvalidTrainOps';
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
+import useTrainOps from 'applications/operationalStudies/hooks/useTrainOps';
 import type { PathPropertiesFormatted } from 'applications/operationalStudies/types';
 import type {
   PathfindingResultSuccess,
@@ -39,13 +39,14 @@ const useOutputTableData = (
 
   const [rows, setRows] = useState<TimesStopsRow[]>([]);
 
+  const trainOperationalPoints = useTrainOps(infraId, selectedTrain);
+
   // Extract common properties between valid and invalid trains
   const scheduleByAt: Record<string, ScheduleEntry> = keyBy(selectedTrain?.schedule, 'at');
   const theoreticalMargins = selectedTrain && getTheoreticalMargins(selectedTrain);
-  const invalidTrainOperationalPoints = useInvalidTrainOps(infraId, isValid, selectedTrain);
   const operationalPoints = useMemo(
-    () => simulatedOperationalPoints ?? invalidTrainOperationalPoints,
-    [simulatedOperationalPoints, invalidTrainOperationalPoints]
+    () => simulatedOperationalPoints ?? trainOperationalPoints,
+    [simulatedOperationalPoints, trainOperationalPoints]
   );
 
   // Format input path step rows
