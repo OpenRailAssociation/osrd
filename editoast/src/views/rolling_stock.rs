@@ -1,7 +1,7 @@
 pub(in crate::views) mod light;
 pub(in crate::views) mod towed;
 
-pub use schemas::RollingStock as RollingStockForm;
+use schemas::RollingStock as RollingStockForm;
 
 use std::io::Cursor;
 use std::sync::Arc;
@@ -339,8 +339,6 @@ pub(in crate::views) async fn update(
         return Err(AuthorizationError::Forbidden.into());
     }
 
-    let mut rolling_stock_changeset: Changeset<RollingStock> = rolling_stock_form.clone().into();
-
     let new_rolling_stock = db_pool
         .get()
         .await?
@@ -356,6 +354,8 @@ pub(in crate::views) async fn update(
                 assert_rolling_stock_unlocked(&previous_rolling_stock)?;
 
                 if rolling_stock_form != previous_rolling_stock.clone().into() {
+                    let mut rolling_stock_changeset: Changeset<RollingStock> =
+                        rolling_stock_form.clone().into();
                     rolling_stock_changeset.version = Some(&previous_rolling_stock.version + 1);
                     let new_rolling_stock = rolling_stock_changeset
                         .update(&mut conn.clone(), rolling_stock_id)

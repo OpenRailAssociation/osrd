@@ -70,11 +70,7 @@ const RollingStockEditorButtons = ({
 
   const duplicateRollingStock = () => {
     const date = new Date().getTime().toString().slice(-3);
-    const duplicatedRollingstock = {
-      ...rollingStock,
-      name: `${rollingStock.name}-${date}`,
-      locked: false,
-    };
+    const duplicatedRollingstock = { ...rollingStock, name: `${rollingStock.name}-${date}` };
     postRollingstock({
       locked: false,
       rollingStockForm: duplicatedRollingstock,

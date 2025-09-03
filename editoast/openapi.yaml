@@ -11826,7 +11826,6 @@ components:
       type: object
       required:
       - name
-      - locked
       - effort_curves
       - base_power_class
       - length
@@ -11855,7 +11854,10 @@ components:
         const_gamma:
           type: number
           format: double
-          description: Acceleration in m·s⁻²
+          description: |-
+            The constant gamma braking coefficient used when NOT circulating
+            under ETCS/ERTMS signaling system
+            Acceleration in m·s⁻²
         effort_curves:
           $ref: '#/components/schemas/EffortCurves'
         electrical_power_startup_time:
@@ -11886,6 +11888,8 @@ components:
           $ref: '#/components/schemas/LoadingGaugeType'
         locked:
           type: boolean
+          description: 'Deprecated for openapi: overwritten by query-param'
+          default: false
         mass:
           type: number
           format: double

@@ -11,7 +11,6 @@ export const DEFAULT_SIGNALING_SYSTEMS = ['BAL', 'BAPR'];
 
 export const newRollingStockValues: RollingStockParametersValues = {
   railjsonVersion: '',
-  locked: false,
   name: '',
   detail: '',
   family: '',

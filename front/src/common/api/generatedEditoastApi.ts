@@ -4183,7 +4183,9 @@ export type RollingStockForm = {
   base_power_class: string | null;
   /** Acceleration in m·s⁻² */
   comfort_acceleration: number;
-  /** Acceleration in m·s⁻² */
+  /** The constant gamma braking coefficient used when NOT circulating
+    under ETCS/ERTMS signaling system
+    Acceleration in m·s⁻² */
   const_gamma: number;
   effort_curves: EffortCurves;
   /** The time the train takes before actually using electrical power (in seconds).
@@ -4196,7 +4198,8 @@ export type RollingStockForm = {
   /** Length in m */
   length: number;
   loading_gauge: LoadingGaugeType;
-  locked: boolean;
+  /** Deprecated for openapi: overwritten by query-param */
+  locked?: boolean;
   /** Mass in kg */
   mass: number;
   /** Velocity in m·s⁻¹ */

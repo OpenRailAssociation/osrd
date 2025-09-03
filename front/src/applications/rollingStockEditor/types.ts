@@ -9,7 +9,6 @@ import type { MultiUnitsParameter, MultiUnit } from 'modules/rollingStock/types'
 
 export type RollingStockParametersValidValues = {
   railjsonVersion: string;
-  locked: boolean;
   name: string;
   detail: string;
   family: string;
@@ -43,7 +42,6 @@ export type RollingStockParametersValidValues = {
 
 export type RollingStockParametersValues = {
   railjsonVersion: string;
-  locked: boolean;
   name: string;
   detail: string;
   family: string;

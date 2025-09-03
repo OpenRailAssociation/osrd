@@ -72,6 +72,11 @@ fn default_rolling_stock_railjson_version() -> String {
 #[schema(as = RollingStockForm)]
 pub struct RollingStock {
     pub name: String,
+    /// Deprecated for openapi: overwritten by query-param
+    // TODO: stop exposing this param (keep only query-param)
+    // Remove it completely from the struct if possible
+    #[schema(default = false)]
+    #[serde(default)]
     pub locked: bool,
     pub effort_curves: EffortCurves,
     #[schema(example = "5", required)]
@@ -86,8 +91,8 @@ pub struct RollingStock {
     pub startup_acceleration: Acceleration,
     #[serde(with = "units::meter_per_second_squared")]
     pub comfort_acceleration: Acceleration,
-    // The constant gamma braking coefficient used when NOT circulating
-    // under ETCS/ERTMS signaling system
+    /// The constant gamma braking coefficient used when NOT circulating
+    /// under ETCS/ERTMS signaling system
     #[serde(with = "units::meter_per_second_squared")]
     pub const_gamma: Deceleration,
     pub etcs_brake_params: Option<EtcsBrakeParams>,

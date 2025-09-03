@@ -81,7 +81,7 @@ const RollingStockEditorForm = ({
   const addNewRollingstock = (payload: RollingStockForm) => () => {
     postRollingstock({
       locked: false,
-      rollingStockForm: { ...payload, locked: false },
+      rollingStockForm: payload,
     })
       .unwrap()
       .then((res) => {
