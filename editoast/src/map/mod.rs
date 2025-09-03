@@ -1,4 +1,3 @@
-mod layer_cache;
 mod layers;
 
 use deadpool_redis::redis::AsyncCommands;
@@ -6,10 +5,37 @@ pub use layers::Layer;
 pub use layers::MapLayers;
 pub use layers::View;
 
-pub use self::layer_cache::get_cache_tile_key;
-pub use self::layer_cache::get_layer_cache_prefix;
-pub use self::layer_cache::get_view_cache_prefix;
 use crate::error::Result;
+
+pub fn get_layer_cache_prefix(
+    layer_name: &str,
+    infra_id: i64,
+    app_version: Option<&str>,
+) -> String {
+    let version = app_version.unwrap_or("default");
+    format!("editoast.{version}.layer.{layer_name}.infra_{infra_id}")
+}
+
+pub fn get_view_cache_prefix<T1, T2>(
+    layer_name: T1,
+    infra_id: i64,
+    view_name: T2,
+    app_version: Option<&str>,
+) -> String
+where
+    T1: AsRef<str>,
+    T2: AsRef<str>,
+{
+    format!(
+        "{layer_prefix}.{view_name}",
+        layer_prefix = get_layer_cache_prefix(layer_name.as_ref(), infra_id, app_version),
+        view_name = view_name.as_ref()
+    )
+}
+
+pub fn get_cache_tile_key(view_prefix: &str, (x, y, z): (u64, u64, u64)) -> String {
+    format!("{view_prefix}.tile/{z}/{x}/{y}")
+}
 
 /// Invalidates layer cache for a specific infra and view if provided
 ///
@@ -56,4 +82,33 @@ pub async fn invalidate_all(
         invalidate_full_layer_cache(valkey, infra_id, layer_name, app_version).await?;
     }
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_get_layer_cache_prefix() {
+        assert_eq!(
+            get_layer_cache_prefix("track_sections", 1, None),
+            "editoast.default.layer.track_sections.infra_1"
+        );
+    }
+
+    #[test]
+    fn test_get_view_cache_prefix() {
+        assert_eq!(
+            get_view_cache_prefix("track_sections", 1, "geo", None),
+            "editoast.default.layer.track_sections.infra_1.geo"
+        );
+    }
+
+    #[test]
+    fn test_get_cache_tile_key() {
+        assert_eq!(
+            get_cache_tile_key("editoast.default.layer.track_sections.infra_1", (1, 2, 3)),
+            "editoast.default.layer.track_sections.infra_1.tile/3/1/2"
+        );
+    }
 }
