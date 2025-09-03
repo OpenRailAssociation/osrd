@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 
 import { Checkbox } from '@osrd-project/ui-core';
 import { Clock, Flame, Moon, Manchette } from '@osrd-project/ui-icons';
@@ -9,6 +9,8 @@ import { useTranslation } from 'react-i18next';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { SubCategory, TrainSchedule } from 'common/api/osrdEditoastApi';
+import { useInfraID } from 'common/osrdContext';
+import getStepLocation from 'modules/pathfinding/helpers/getStepLocation';
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
 import isMainCategory from 'modules/rollingStock/helpers/category';
 import { deleteTrainSchedules } from 'modules/timetableItem/helpers/updateTimetableItemHelpers';
@@ -72,6 +74,7 @@ const TrainScheduleItem = ({
   const { t } = useTranslation('operational-studies', { keyPrefix: 'main' });
   const dateTimeLocale = useDateTimeLocale();
   const dispatch = useAppDispatch();
+  const infraId = useInfraID();
 
   const [postTrainSchedule] =
     osrdEditoastApi.endpoints.postTimetableByIdTrainSchedules.useMutation();
@@ -167,6 +170,72 @@ const TrainScheduleItem = ({
     category && !isMainCategory(category)
       ? subCategories.find((option) => option.code === category.sub_category_code)
       : undefined;
+
+  const [fetchedOrigin, setFetchedOrigin] = useState<{ name?: string; ch?: string } | undefined>();
+  const [fetchedDestination, setFetchedDestination] = useState<
+    { name?: string; ch?: string } | undefined
+  >();
+
+  const [matchAllOperationalPoints] =
+    osrdEditoastApi.endpoints.matchAllOperationalPoints.useLazyQuery();
+
+  useEffect(() => {
+    const fetchEndpoints = async () => {
+      try {
+        if (!infraId || !train.path) {
+          setFetchedOrigin(undefined);
+          setFetchedDestination(undefined);
+          return;
+        }
+        const steps = train.path;
+
+        const nonTrackSteps = steps.flatMap((step) => {
+          const pathItemLocation = getStepLocation(step);
+          if ('track' in pathItemLocation) return [];
+          return [pathItemLocation];
+        });
+        if (!nonTrackSteps.length) {
+          setFetchedOrigin(undefined);
+          setFetchedDestination(undefined);
+          return;
+        }
+
+        const firstRef = nonTrackSteps[0];
+        const lastRef = nonTrackSteps[nonTrackSteps.length - 1];
+        const ops = await matchAllOperationalPoints({
+          infraId,
+          opRefs: [firstRef, lastRef],
+        }).unwrap();
+
+        const [originCandidates, destinationCandidates] = ops;
+        const origin = originCandidates?.[0];
+        const destination = destinationCandidates?.[0];
+
+        setFetchedOrigin(
+          origin
+            ? {
+                name: origin.extensions?.identifier?.name,
+                ch: origin.extensions?.sncf?.ch,
+              }
+            : undefined
+        );
+        setFetchedDestination(
+          destination
+            ? {
+                name: destination.extensions?.identifier?.name,
+                ch: destination.extensions?.sncf?.ch,
+              }
+            : undefined
+        );
+      } catch (error) {
+        console.error('Error fetching operational points:', error);
+        setFetchedOrigin(undefined);
+        setFetchedDestination(undefined);
+      }
+    };
+
+    fetchEndpoints();
+  }, [infraId, train.path]);
 
   return (
     <div
@@ -283,6 +352,19 @@ const TrainScheduleItem = ({
             </div>
           </div>
         )}
+
+        <div className="more-info">
+          <div className="more-info-left">
+            <span className="more-info-item">
+              {fetchedOrigin ? `${fetchedOrigin.name} (${fetchedOrigin.ch})` : 'N/A'}
+            </span>
+            <span className="more-info-item">{'->'}</span>
+            <span className="more-info-item">
+              {fetchedDestination ? `${fetchedDestination.name} (${fetchedDestination.ch})` : 'N/A'}
+            </span>
+            <span className="more-info-item"></span>
+          </div>
+        </div>
       </div>
       <TimetableItemActions
         selectPathProjection={selectPathProjection}
