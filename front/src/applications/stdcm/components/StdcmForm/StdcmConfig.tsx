@@ -360,7 +360,8 @@ const StdcmConfig = ({
             mapId="stdcm-map-config"
             infraId={infra?.id}
             pathStepMarkers={markersInfo}
-            highlightedArea={activePerimeter}
+            highlightedArea={activePerimeter?.geometry}
+            highlightedOperationalPoints={activePerimeter?.operationalPoints}
             mapSettings={mapSettings}
             updateMapSettings={updateMapSettings}
           >

@@ -22,6 +22,7 @@ type InfraObjectLayersProps = {
   hoveredOperationalPointId?: string;
   layersSettings: LayersSettings;
   highlightedArea?: Geometry;
+  highlightedOperationalPoints?: number[];
 };
 
 const InfraObjectLayers = ({
@@ -30,6 +31,7 @@ const InfraObjectLayers = ({
   hoveredOperationalPointId,
   layersSettings,
   highlightedArea,
+  highlightedOperationalPoints,
 }: InfraObjectLayersProps) => (
   <>
     <TracksGeographic
@@ -53,6 +55,7 @@ const InfraObjectLayers = ({
         operationnalPointId={hoveredOperationalPointId}
         infraID={infraId}
         highlightedArea={highlightedArea}
+        highlightedOperationalPoints={highlightedOperationalPoints}
       />
     )}
     {layersSettings.electrifications && (
