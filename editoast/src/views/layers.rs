@@ -20,7 +20,6 @@ use crate::AppState;
 use crate::error::Result;
 use crate::map::Layer;
 use crate::map::MapLayers;
-use crate::map::Tile;
 use crate::map::get_cache_tile_key;
 use crate::map::get_view_cache_prefix;
 use crate::models::layers::geo_json_and_data::GeoJsonAndData;
@@ -205,7 +204,7 @@ pub(in crate::views) async fn cache_and_get_mvt_tile(
             &view_slug,
             config.app_version.as_deref(),
         ),
-        &Tile { x, y, z },
+        (x, y, z),
     );
 
     let mut valkey = valkey_client.get_connection().await?;
