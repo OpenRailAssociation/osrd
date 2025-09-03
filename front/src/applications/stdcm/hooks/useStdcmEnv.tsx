@@ -2,6 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { useDispatch } from 'react-redux';
 
+import STDCM_PERIMETER_OPERATIONAL_POINTS from 'assets/operationStudies/stdcmPerimeterOperationalPoints';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import {
   resetStdcmSimulations,
@@ -37,7 +38,14 @@ export default function useStdcmEnvironment() {
             begin: new Date(data.search_window_begin),
             end: new Date(data.search_window_end),
           },
-          activePerimeter: data.active_perimeter,
+          activePerimeter: data.active_perimeter
+            ? {
+                geometry: data.active_perimeter,
+                // TODO: this should be removed in a near futur when the operational points for the permimeter will be stored
+                // in the database and served by the API
+                operationalPoints: STDCM_PERIMETER_OPERATIONAL_POINTS,
+              }
+            : undefined,
         })
       );
     } catch (e) {

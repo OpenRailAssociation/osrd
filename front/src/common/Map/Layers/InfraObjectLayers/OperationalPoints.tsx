@@ -1,6 +1,11 @@
 import type { Geometry } from 'geojson';
 import { isNil } from 'lodash';
-import type { ExpressionSpecification } from 'maplibre-gl';
+import type {
+  ColorSpecification,
+  DataDrivenPropertyValueSpecification,
+  ExpressionSpecification,
+  FilterSpecification,
+} from 'maplibre-gl';
 import { Source, type LayerProps } from 'react-map-gl/maplibre';
 
 import { MAP_URL } from 'common/Map/const';
@@ -15,7 +20,44 @@ type OperationalPointsProps = {
   infraID: number | undefined;
   operationnalPointId?: string;
   highlightedArea?: Geometry;
+  highlightedOperationalPoints?: number[];
 };
+
+function getColorByHighlighted(data: {
+  highlightedArea?: Geometry;
+  highlightedOperationalPoints?: number[];
+  inColor: string | ExpressionSpecification;
+  outColor: string | ExpressionSpecification;
+}): DataDrivenPropertyValueSpecification<ColorSpecification> {
+  if (data.highlightedOperationalPoints && data.highlightedOperationalPoints.length > 0)
+    return [
+      'case',
+      ['in', ['get', 'extensions_sncf_ci'], ['literal', data.highlightedOperationalPoints]],
+      data.inColor,
+      data.outColor,
+    ];
+  if (data.highlightedArea)
+    return ['case', ['within', data.highlightedArea], data.inColor, data.outColor];
+  return data.inColor;
+}
+
+function getFilterHighlighted(
+  data: {
+    highlightedArea?: Geometry;
+    highlightedOperationalPoints?: number[];
+  },
+  reverseCondition = false
+): FilterSpecification {
+  let result: FilterSpecification = true;
+  if (data.highlightedOperationalPoints && data.highlightedOperationalPoints.length > 0)
+    result = ['in', ['get', 'extensions_sncf_ci'], ['literal', data.highlightedOperationalPoints]];
+  else if (data.highlightedArea) result = ['within', data.highlightedArea];
+
+  if (reverseCondition === true) {
+    return ['!=', result, true];
+  }
+  return result;
+}
 
 const OperationalPointsLayer = ({
   colors,
@@ -23,6 +65,7 @@ const OperationalPointsLayer = ({
   infraID,
   operationnalPointId,
   highlightedArea,
+  highlightedOperationalPoints,
 }: OperationalPointsProps) => {
   if (isNil(infraID)) return null;
 
@@ -33,24 +76,17 @@ const OperationalPointsLayer = ({
     paint: {
       'circle-stroke-color': colors.op.stroke,
       'circle-stroke-width': 1.5,
-      'circle-color': highlightedArea
-        ? [
-            'case',
-            ['within', highlightedArea],
-            [
-              'case',
-              ['in', ['get', 'extensions_sncf_ch'], ['literal', ['BV', '00']]],
-              colors.op.circleBV,
-              colors.op.circle,
-            ],
-            colors.muted.color,
-          ]
-        : [
-            'case',
-            ['in', ['get', 'extensions_sncf_ch'], ['literal', ['BV', '00']]],
-            colors.op.circleBV,
-            colors.op.circle,
-          ],
+      'circle-color': getColorByHighlighted({
+        highlightedArea,
+        highlightedOperationalPoints,
+        inColor: [
+          'case',
+          ['in', ['get', 'extensions_sncf_ch'], ['literal', ['BV', '00']]],
+          colors.op.circleBV,
+          colors.op.circle,
+        ],
+        outColor: colors.muted.color,
+      }),
       'circle-radius': 3,
     },
   };
@@ -58,14 +94,14 @@ const OperationalPointsLayer = ({
   // There is a bug on the color, see https://github.com/maplibre/maplibre-gl-js/issues/5833
   const LABEL_SECTIONS: Array<{
     id: string;
-    textFormat: Array<
-      | ExpressionSpecification
-      | {
-          'font-scale'?: number;
-          'text-color'?: string | ExpressionSpecification;
-          'text-font'?: ExpressionSpecification;
-        }
-    >;
+    textFormat: [
+      ExpressionSpecification,
+      {
+        'font-scale'?: number;
+        'text-font'?: ExpressionSpecification;
+        'text-color'?: string | ExpressionSpecification;
+      },
+    ];
   }> = [
     {
       id: 'pk',
@@ -73,9 +109,7 @@ const OperationalPointsLayer = ({
         ['concat', ['get', 'kp'], '\n'],
         {
           'font-scale': 1,
-          'text-color': highlightedArea
-            ? ['case', ['within', highlightedArea], colors.op.textTrigram, colors.muted.color]
-            : colors.op.textTrigram,
+          'text-color': colors.op.textTrigram,
         },
       ],
     },
@@ -96,9 +130,7 @@ const OperationalPointsLayer = ({
         ],
         {
           'font-scale': 1.1,
-          'text-color': highlightedArea
-            ? ['case', ['within', highlightedArea], colors.op.textTrigram, colors.muted.color]
-            : colors.op.textTrigram,
+          'text-color': colors.op.textTrigram,
         },
       ],
     },
@@ -108,9 +140,7 @@ const OperationalPointsLayer = ({
         ['concat', ['get', 'extensions_identifier_name'], '\n'],
         {
           'font-scale': 1.1,
-          'text-color': highlightedArea
-            ? ['case', ['within', highlightedArea], colors.op.textName, colors.muted.color]
-            : colors.op.textName,
+          'text-color': colors.op.textName,
         },
       ],
     },
@@ -125,19 +155,24 @@ const OperationalPointsLayer = ({
         ],
         {
           'font-scale': 1,
+          'text-font': ['literal', ['IBMPlexSansCondensed-Medium']],
           'text-color': highlightedArea
             ? ['case', ['within', highlightedArea], colors.op.textYard, colors.muted.color]
             : colors.op.textYard,
-          'text-font': ['literal', ['IBMPlexSansCondensed-Medium']],
         },
       ],
     },
   ];
 
-  function getText(filter?: string[]) {
-    return LABEL_SECTIONS.filter((s) => (filter ? filter?.includes(s.id) : true)).flatMap(
-      (s) => s.textFormat
-    );
+  function getText(labelsToInclude?: string[], overrideTextColor?: string) {
+    return LABEL_SECTIONS.filter((s) =>
+      labelsToInclude ? labelsToInclude?.includes(s.id) : true
+    ).flatMap((s) => {
+      const textFormat = s.textFormat;
+      if (overrideTextColor)
+        return [textFormat[0], { ...textFormat[1], 'text-color': overrideTextColor }];
+      else return textFormat;
+    });
   }
 
   const name: LayerProps = {
@@ -172,10 +207,49 @@ const OperationalPointsLayer = ({
       'text-offset': [0.75, -1],
       'text-max-width': 32,
     },
+    filter: getFilterHighlighted({ highlightedArea, highlightedOperationalPoints }),
     paint: {
-      'text-color': highlightedArea
-        ? ['case', ['within', highlightedArea], colors.op.textName, colors.muted.color]
-        : colors.op.textName,
+      'text-color': colors.op.textName,
+      'text-halo-width': DEFAULT_HALO_WIDTH,
+      'text-halo-color': colors.op.halo,
+    },
+  };
+
+  const nameMuted: LayerProps = {
+    type: 'symbol',
+    'source-layer': 'operational_points',
+    minzoom: 7,
+    layout: {
+      'text-field': [
+        'step',
+        ['zoom'],
+        ['format', ...getText(['pk', 'trigram', 'name', 'yard'], colors.muted.color)],
+        7,
+        ['format', ...getText(['trigram'], colors.muted.color)],
+        9,
+        ['format', ...getText(['pk', 'trigram'], colors.muted.color)],
+        10,
+        ['format', ...getText(['pk', 'trigram', 'name'], colors.muted.color)],
+        17,
+        ['format', ...getText(['pk', 'trigram', 'name', 'yard'], colors.muted.color)],
+      ],
+      'text-font': [
+        'case',
+        ['==', ['get', 'id'], operationnalPointId || ''],
+        ['literal', ['IBMPlexSans']],
+        ['literal', ['IBMPlexSansCondensed-Medium']],
+      ],
+      'text-letter-spacing': 0.05,
+      'text-size': getDynamicTextSize(),
+      'text-anchor': 'top-left',
+      'text-allow-overlap': getAllowOverlap(),
+      'text-justify': 'left',
+      'text-offset': [0.75, -1],
+      'text-max-width': 32,
+    },
+    filter: getFilterHighlighted({ highlightedArea, highlightedOperationalPoints }, true),
+    paint: {
+      'text-color': colors.muted.color,
       'text-halo-width': DEFAULT_HALO_WIDTH,
       'text-halo-color': colors.op.halo,
     },
@@ -193,6 +267,14 @@ const OperationalPointsLayer = ({
         id="chartis/osrd_operational_point_name/geo"
         layerOrder={layerOrder}
       />
+
+      {highlightedOperationalPoints && highlightedOperationalPoints.length > 0 && (
+        <OrderedLayer
+          {...nameMuted}
+          id="chartis/osrd_operational_point_name_muted/geo"
+          layerOrder={layerOrder}
+        />
+      )}
     </Source>
   );
 };

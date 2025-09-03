@@ -12,7 +12,7 @@ export default () => {
 
   useEffect(() => {
     if (activePerimeter) {
-      const area = bbox(activePerimeter) as [number, number, number, number];
+      const area = bbox(activePerimeter.geometry) as [number, number, number, number];
       map.current?.fitBounds(area, { padding: 50 });
     }
   }, [map, activePerimeter]);
