@@ -1,4 +1,3 @@
-mod failure_handler;
 pub(crate) mod request;
 
 use authz;
@@ -12,14 +11,10 @@ use chrono::Duration;
 use chrono::Utc;
 use core_client::AsCoreRequest;
 use core_client::CoreClient;
-use core_client::conflict_detection::TrainRequirements;
 use core_client::pathfinding::InvalidPathItem;
 use core_client::pathfinding::PathfindingResultSuccess;
-use core_client::simulation::RoutingRequirement;
-use core_client::simulation::SpacingRequirement;
 use database::DbConnectionPoolV2;
 use editoast_derive::EditoastError;
-use failure_handler::SimulationFailureHandler;
 use request::Request;
 use request::convert_steps;
 use schemas::primitives::PositiveDuration;
@@ -29,7 +24,6 @@ use schemas::train_schedule::ReceptionSignal;
 use schemas::train_schedule::ScheduleItem;
 use serde::Deserialize;
 use serde::Serialize;
-use std::collections::HashMap;
 use std::slice;
 use std::sync::Arc;
 use thiserror::Error;
@@ -46,13 +40,10 @@ use crate::models::timetable::Timetable;
 use crate::models::train_schedule::TrainSchedule;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
-use crate::views::path::pathfinding::PathfindingResult;
-use crate::views::timetable::Conflict;
 use crate::views::timetable::PhysicsConsistParameters;
 use crate::views::timetable::simulation;
 use crate::views::timetable::simulation::SimulationResponseSuccess;
 use crate::views::timetable::simulation::consist_train_simulation_batch;
-use crate::views::timetable::train_simulation_batch;
 use editoast_models::prelude::*;
 
 #[editoast_derive::openapi_schema]
@@ -67,10 +58,7 @@ pub(in crate::views) enum StdcmResponse {
         path: PathfindingResultSuccess,
         departure_time: DateTime<Utc>,
     },
-    Conflicts {
-        pathfinding_result: PathfindingResult,
-        conflicts: Vec<Conflict>,
-    },
+    PathNotFound,
     PreprocessingSimulationError {
         #[schema(value_type = SimulationResponse)]
         error: simulation::Response,
@@ -181,8 +169,8 @@ pub(in crate::views) async fn stdcm(
         .await?;
 
     // 2. Get Timetable / Work schedules
-    let timetable = Timetable::retrieve_or_fail(conn.clone(), timetable_id, || {
-        StdcmError::TimetableNotFound { timetable_id }
+    Timetable::exists_or_fail(&mut conn, timetable_id, || StdcmError::TimetableNotFound {
+        timetable_id,
     })
     .await?;
     let work_schedules = request.get_work_schedules(&mut conn).await?;
@@ -285,132 +273,12 @@ pub(in crate::views) async fn stdcm(
             path,
             departure_time,
         })),
-        core_client::stdcm::Response::PathNotFound => {
-            let train_schedules = timetable
-                .schedules_in_time_window(&mut conn, earliest_departure_time, latest_simulation_end)
-                .await?;
-            let simulations: Vec<_> = train_simulation_batch(
-                &mut conn,
-                valkey_client.clone(),
-                core_client.clone(),
-                &train_schedules,
-                &infra,
-                request.electrical_profile_set_id,
-                config.app_version.as_deref(),
-            )
-            .await?
-            .into_iter()
-            .map(|(sim, _)| sim)
-            .collect();
-            let simulation_failure_handler = SimulationFailureHandler {
-                core_client,
-                infra_id,
-                infra_version: infra.version,
-                train_schedules,
-                simulations,
-                work_schedules,
-                virtual_train_run,
-                earliest_departure_time,
-                latest_simulation_end,
-            };
-            let stdcm_response = simulation_failure_handler.compute_conflicts().await?;
-            Ok(Json(stdcm_response))
-        }
+        core_client::stdcm::Response::PathNotFound => Ok(Json(StdcmResponse::PathNotFound)),
     }
-}
-
-/// Build the list of scheduled train requirements, only including requirements
-/// that overlap with the possible simulation times.
-fn build_train_requirements(
-    train_schedules: &[TrainSchedule],
-    simulation_responses: &[impl AsRef<simulation::Response>],
-    departure_time: DateTime<Utc>,
-    latest_simulation_end: DateTime<Utc>,
-) -> HashMap<String, TrainRequirements> {
-    let mut trains_requirements = HashMap::new();
-    for (train, sim) in train_schedules.iter().zip(simulation_responses) {
-        let final_output = match sim.as_ref() {
-            simulation::Response::Success(SimulationResponseSuccess { final_output, .. }) => {
-                final_output
-            }
-            _ => continue,
-        };
-
-        // First check that the train overlaps with the simulation range
-        let start_time = train.start_time;
-        let train_duration_ms = *final_output.report_train.times.last().unwrap_or(&0);
-        if !is_resource_in_range(
-            departure_time,
-            latest_simulation_end,
-            start_time,
-            0,
-            train_duration_ms,
-        ) {
-            continue;
-        }
-
-        let spacing_requirements: Vec<SpacingRequirement> = final_output
-            .spacing_requirements
-            .iter()
-            .filter(|req| {
-                is_resource_in_range(
-                    departure_time,
-                    latest_simulation_end,
-                    start_time,
-                    req.begin_time,
-                    req.end_time,
-                )
-            })
-            .cloned()
-            .collect();
-        let routing_requirements: Vec<RoutingRequirement> = final_output
-            .routing_requirements
-            .iter()
-            .filter(|req| {
-                is_resource_in_range(
-                    departure_time,
-                    latest_simulation_end,
-                    start_time,
-                    req.begin_time,
-                    req.zones
-                        .iter()
-                        .map(|zone_req| zone_req.end_time)
-                        .max()
-                        .unwrap_or(req.begin_time),
-                )
-            })
-            .cloned()
-            .collect();
-        trains_requirements.insert(
-            train.id.to_string(),
-            TrainRequirements {
-                start_time,
-                spacing_requirements,
-                routing_requirements,
-            },
-        );
-    }
-    trains_requirements
-}
-
-/// Returns true if the resource use is at least partially in the simulation time range
-fn is_resource_in_range(
-    earliest_sim_time: DateTime<Utc>,
-    latest_sim_time: DateTime<Utc>,
-    train_start_time: DateTime<Utc>,
-    resource_start_time: u64,
-    resource_end_time: u64,
-) -> bool {
-    let abs_resource_start_time =
-        train_start_time + Duration::milliseconds(resource_start_time as i64);
-    let abs_resource_end_time = train_start_time + Duration::milliseconds(resource_end_time as i64);
-    abs_resource_start_time <= latest_sim_time && abs_resource_end_time >= earliest_sim_time
 }
 
 struct VirtualTrainRun {
-    train_schedule: TrainSchedule,
     simulation: simulation::Response,
-    pathfinding: PathfindingResult,
 }
 
 impl VirtualTrainRun {
@@ -459,7 +327,7 @@ impl VirtualTrainRun {
         };
 
         // Compute simulation of a train schedule
-        let (simulation, pathfinding) = consist_train_simulation_batch(
+        let (simulation, _) = consist_train_simulation_batch(
             &mut db_pool.get().await?,
             valkey_client,
             core_client,
@@ -474,9 +342,7 @@ impl VirtualTrainRun {
         .ok_or(StdcmError::TrainSimulationFail)?;
 
         Ok(Self {
-            train_schedule,
             simulation: Arc::unwrap_or_clone(simulation),
-            pathfinding: Arc::unwrap_or_clone(pathfinding),
         })
     }
 }
@@ -501,7 +367,6 @@ mod tests {
     use chrono::DateTime;
     use common::units;
     use core_client::simulation::SimulationSuccess;
-    use database::DbConnectionPoolV2;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
     use schemas::fixtures::simple_rolling_stock;
@@ -523,24 +388,18 @@ mod tests {
     use crate::models::fixtures::create_fast_rolling_stock;
     use crate::models::fixtures::create_small_infra;
     use crate::models::fixtures::create_timetable;
+    use crate::views::path::pathfinding::PathfindingResult;
     use crate::views::test_app::TestAppBuilder;
-    use crate::views::timetable::stdcm::PathfindingResult;
     use crate::views::timetable::stdcm::Request;
     use crate::views::timetable::stdcm::request::PathfindingItem;
     use crate::views::timetable::stdcm::request::StepTimingData;
     use core_client;
-    use core_client::conflict_detection::Conflict as CoreConflict;
-    use core_client::conflict_detection::ConflictDetectionResponse;
-    use core_client::conflict_detection::ConflictType;
     use core_client::mocking::MockingClient;
     use core_client::simulation::CompleteReportTrain;
     use core_client::simulation::ElectricalProfiles;
     use core_client::simulation::PhysicsConsist;
     use core_client::simulation::ReportTrain;
     use core_client::simulation::SpeedLimitProperties;
-    use editoast_models::WorkSchedule;
-    use editoast_models::WorkScheduleGroup;
-    use editoast_models::work_schedules::WorkScheduleType;
 
     use super::*;
 
@@ -840,34 +699,6 @@ mod tests {
         );
     }
 
-    fn get_conflict_data(train_ids: Vec<String>, work_schedule_ids: Vec<String>) -> CoreConflict {
-        CoreConflict {
-            train_ids,
-            work_schedule_ids,
-            start_time: DateTime::from_str("2024-01-01T06:00:00Z")
-                .expect("Failed to parse datetime"),
-            end_time: DateTime::from_str("2024-01-01T18:00:00Z").expect("Failed to parse datetime"),
-            conflict_type: ConflictType::Spacing,
-            requirements: vec![],
-        }
-    }
-
-    fn get_conflict_response_data(
-        train_schedule_ids: Vec<i64>,
-        work_schedule_ids: Vec<i64>,
-    ) -> Conflict {
-        Conflict {
-            train_schedule_ids,
-            paced_train_occurrence_ids: vec![],
-            work_schedule_ids,
-            start_time: DateTime::from_str("2024-01-01T06:00:00Z")
-                .expect("Failed to parse datetime"),
-            end_time: DateTime::from_str("2024-01-01T18:00:00Z").expect("Failed to parse datetime"),
-            conflict_type: ConflictType::Spacing,
-            requirements: vec![],
-        }
-    }
-
     #[rstest]
     async fn stdcm_return_success() {
         let mut core = core_mocking_client();
@@ -1046,22 +877,12 @@ mod tests {
     }
 
     #[rstest]
-    async fn stdcm_return_conflicts() {
+    async fn stdcm_fails() {
         let mut core = core_mocking_client();
         core.stub("/stdcm")
             .method(reqwest::Method::POST)
             .response(StatusCode::OK)
             .json(json!({"status": "path_not_found"}))
-            .finish();
-        core.stub("/conflict_detection")
-            .method(reqwest::Method::POST)
-            .response(StatusCode::OK)
-            .json(ConflictDetectionResponse {
-                conflicts: vec![get_conflict_data(
-                    vec![0.to_string(), 1.to_string()],
-                    vec![],
-                )],
-            })
             .finish();
 
         let app = TestAppBuilder::new().core_client(core.into()).build();
@@ -1078,100 +899,7 @@ mod tests {
         let stdcm_response: StdcmResponse =
             app.fetch(request).assert_status(StatusCode::OK).json_into();
 
-        assert_eq!(
-            stdcm_response,
-            StdcmResponse::Conflicts {
-                pathfinding_result: PathfindingResult::Success(pathfinding_result_success()),
-                conflicts: vec![get_conflict_response_data(vec![1], vec![])],
-            }
-        );
-    }
-
-    #[rstest]
-    async fn stdcm_return_work_schedule_conflicts() {
-        let db_pool = DbConnectionPoolV2::for_tests();
-
-        let work_schedule_group = WorkScheduleGroup::changeset()
-            .name("work_schedule_group_name_test".to_string())
-            .creation_date(Utc::now())
-            .create(&mut db_pool.get_ok())
-            .await
-            .expect("Failed to create a new work schedule group");
-
-        let work_schedule_changeset = WorkSchedule::changeset()
-            .start_date_time(
-                DateTime::from_str("2024-01-01T06:00:00Z").expect("Failed to parse datetime"),
-            )
-            .end_date_time(
-                DateTime::from_str("2024-01-01T18:00:00Z").expect("Failed to parse datetime"),
-            )
-            .track_ranges(vec![])
-            .obj_id("work_schedule_obj_id".to_string())
-            .work_schedule_type(WorkScheduleType::Catenary)
-            .work_schedule_group_id(work_schedule_group.id);
-
-        let work_schedules: Vec<_> =
-            WorkSchedule::create_batch(&mut db_pool.get_ok(), vec![work_schedule_changeset])
-                .await
-                .expect("Failed to create a new work schedule");
-        let work_schedule_ids: Vec<String> = work_schedules
-            .into_iter()
-            .map(|ws| ws.id.to_string())
-            .collect();
-
-        let mut core = core_mocking_client();
-        core.stub("/stdcm")
-            .method(reqwest::Method::POST)
-            .response(StatusCode::OK)
-            .json(core_client::stdcm::Response::PathNotFound)
-            .finish();
-        core.stub("/conflict_detection")
-            .method(reqwest::Method::POST)
-            .response(StatusCode::OK)
-            .json(ConflictDetectionResponse {
-                conflicts: vec![get_conflict_data(
-                    vec![String::from("0")],
-                    work_schedule_ids.clone(),
-                )],
-            })
-            .finish();
-
-        let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
-        let timetable = create_timetable(&mut db_pool.get_ok()).await;
-        let rolling_stock =
-            create_fast_rolling_stock(&mut db_pool.get_ok(), &Uuid::new_v4().to_string()).await;
-        let app = TestAppBuilder::new()
-            .db_pool(db_pool)
-            .core_client(core.into())
-            .build();
-
-        let request = app
-            .post(format!("/timetable/{}/stdcm?infra={}", timetable.id, small_infra.id).as_str())
-            .json(&get_stdcm_payload(
-                rolling_stock.id,
-                Some(work_schedule_group.id),
-                None,
-                None,
-            ));
-
-        let stdcm_response: StdcmResponse =
-            app.fetch(request).assert_status(StatusCode::OK).json_into();
-
-        assert_eq!(
-            stdcm_response,
-            StdcmResponse::Conflicts {
-                pathfinding_result: PathfindingResult::Success(pathfinding_result_success()),
-                conflicts: vec![get_conflict_response_data(
-                    vec![],
-                    work_schedule_ids
-                        .iter()
-                        .map(|ws| ws
-                            .parse::<i64>()
-                            .unwrap_or_else(|_| panic!("Failed to parse work schedule id '{ws}'")))
-                        .collect()
-                )],
-            }
-        );
+        assert_eq!(stdcm_response, StdcmResponse::PathNotFound);
     }
 
     #[rstest]

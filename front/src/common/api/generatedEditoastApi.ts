@@ -2301,9 +2301,7 @@ export type PostTimetableByIdStdcmApiResponse = /** status 201 The simulation re
       status: 'success';
     }
   | {
-      conflicts: Conflict[];
-      pathfinding_result: PathfindingResult;
-      status: 'conflicts';
+      status: 'path_not_found';
     }
   | {
       error: SimulationResponse;

@@ -3871,20 +3871,12 @@ paths:
                       - success
                 - type: object
                   required:
-                  - pathfinding_result
-                  - conflicts
                   - status
                   properties:
-                    conflicts:
-                      type: array
-                      items:
-                        $ref: '#/components/schemas/Conflict'
-                    pathfinding_result:
-                      $ref: '#/components/schemas/PathfindingResult'
                     status:
                       type: string
                       enum:
-                      - conflicts
+                      - path_not_found
                 - type: object
                   required:
                   - error
@@ -13592,20 +13584,12 @@ components:
             - success
       - type: object
         required:
-        - pathfinding_result
-        - conflicts
         - status
         properties:
-          conflicts:
-            type: array
-            items:
-              $ref: '#/components/schemas/Conflict'
-          pathfinding_result:
-            $ref: '#/components/schemas/PathfindingResult'
           status:
             type: string
             enum:
-            - conflicts
+            - path_not_found
       - type: object
         required:
         - error
