@@ -1,11 +1,3 @@
-/// Web mercator coordinates
-#[derive(Debug, Clone, Copy)]
-pub struct Tile {
-    pub x: u64,
-    pub y: u64,
-    pub z: u64,
-}
-
 pub fn get_layer_cache_prefix(
     layer_name: &str,
     infra_id: i64,
@@ -32,17 +24,13 @@ where
     )
 }
 
-pub fn get_cache_tile_key(view_prefix: &str, tile: &Tile) -> String {
-    format!("{view_prefix}.tile/{}/{}/{}", tile.z, tile.x, tile.y)
+pub fn get_cache_tile_key(view_prefix: &str, (x, y, z): (u64, u64, u64)) -> String {
+    format!("{view_prefix}.tile/{z}/{x}/{y}")
 }
 
 #[cfg(test)]
 mod tests {
-
-    use super::Tile;
-    use super::get_cache_tile_key;
-    use super::get_layer_cache_prefix;
-    use super::get_view_cache_prefix;
+    use super::*;
 
     #[test]
     fn test_get_layer_cache_prefix() {
@@ -63,10 +51,7 @@ mod tests {
     #[test]
     fn test_get_cache_tile_key() {
         assert_eq!(
-            get_cache_tile_key(
-                "editoast.default.layer.track_sections.infra_1",
-                &Tile { x: 1, y: 2, z: 3 }
-            ),
+            get_cache_tile_key("editoast.default.layer.track_sections.infra_1", (1, 2, 3)),
             "editoast.default.layer.track_sections.infra_1.tile/3/1/2"
         );
     }
