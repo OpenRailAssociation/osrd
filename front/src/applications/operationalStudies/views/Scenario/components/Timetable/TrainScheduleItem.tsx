@@ -365,6 +365,12 @@ const TrainScheduleItem = ({
             <span className="more-info-item"></span>
           </div>
         </div>
+
+        {train.labels.length !== 0 && (
+          <div className="more-info more-info-tags">
+            <span className="more-info-left">{train.labels?.join(', ') || ''}</span>
+          </div>
+        )}
       </div>
       <TimetableItemActions
         selectPathProjection={selectPathProjection}

@@ -133,7 +133,7 @@
     display: flex;
     align-items: center;
     font-size: 0.8rem;
-    height: 28px;
+    height: 24px;
     flex-wrap: wrap;
     justify-content: space-between;
     .more-info-left {
@@ -147,6 +147,12 @@
       text-align: end;
       margin-right: 55px;
     }
+  }
+
+  .more-info-tags {
+    margin-top: -3px;
+    margin-bottom: -8px;
+    font-style: italic;
   }
 
   .action-buttons {
