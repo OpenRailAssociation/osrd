@@ -104,12 +104,12 @@ export const upsertPathStepsInOPs = (
   pathSteps.forEach((step) => {
     const { arrival, stopFor, receptionSignal, theoreticalMargin } = step;
     // We check only for pathSteps added by map click
-    if ('track' in step) {
+    if ('track' in step.location) {
       const formattedStep: SuggestedOP = {
         pathStepId: step.id,
         positionOnPath: step.positionOnPath!,
-        offsetOnTrack: step.offset,
-        track: step.track,
+        offsetOnTrack: step.location.offset,
+        track: step.location.track,
         coordinates: step.coordinates,
         stopFor,
         arrival,
@@ -136,7 +136,7 @@ export const upsertPathStepsInOPs = (
     } else {
       updatedOPs = updatedOPs.map((op) => {
         if (
-          matchPathStepAndOp(step, op) &&
+          matchPathStepAndOp(step.location, op) &&
           op.kp === step.kp &&
           step.positionOnPath === op.positionOnPath
         ) {
@@ -164,7 +164,7 @@ export const pathStepMatchesOp = (
   >,
   withKP = false
 ) => {
-  if (!matchPathStepAndOp(pathStep, op)) {
+  if (!matchPathStepAndOp(pathStep.location, op)) {
     return pathStep.id === op.pathStepId;
   }
   if ('uic' in pathStep) {

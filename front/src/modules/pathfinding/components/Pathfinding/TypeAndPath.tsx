@@ -161,9 +161,11 @@ const TypeAndPath = ({ setDisplayTypeAndPath, rollingStockId }: TypeAndPathProps
       const pathSteps = opList
         .filter((op) => op.trigram !== '')
         .map(({ uic, ch }) => ({
-          uic,
-          secondary_code: ch,
           id: uuidV4(),
+          location: {
+            uic,
+            secondary_code: ch,
+          },
         }));
 
       setDisplayTypeAndPath(false);

@@ -15,8 +15,10 @@ describe('reversePathSteps', () => {
       arrival: null,
       theoreticalMargin: '0%',
       id: 'id205',
-      uic: 87447219,
-      secondary_code: '00',
+      location: {
+        uic: 87447219,
+        secondary_code: '00',
+      },
     },
     {
       coordinates: [-1.0556643079994392, 49.22710024999522],
@@ -27,8 +29,10 @@ describe('reversePathSteps', () => {
       arrival: null,
       theoreticalMargin: '10%',
       id: 'id111',
-      uic: 87447219,
-      secondary_code: 'JS',
+      location: {
+        uic: 87447219,
+        secondary_code: 'JS',
+      },
     },
     {
       coordinates: [-1.1270019417633528, 49.16208587851326],
@@ -37,8 +41,10 @@ describe('reversePathSteps', () => {
       kp: '10+396',
       arrival: new Duration({ milliseconds: 1500000 }),
       id: 'id117',
-      uic: 87447185,
-      secondary_code: '00',
+      location: {
+        uic: 87447185,
+        secondary_code: '00',
+      },
     },
     {
       coordinates: [-1.1001532584044673, 49.11681385050178],
@@ -48,8 +54,10 @@ describe('reversePathSteps', () => {
       stopFor: new Duration({ milliseconds: 50 }),
       arrival: null,
       id: 'id132',
-      uic: 87447003,
-      secondary_code: '00',
+      location: {
+        uic: 87447003,
+        secondary_code: '00',
+      },
     },
     {
       coordinates: [-1.1572150034554578, 49.091813245871975],
@@ -58,15 +66,19 @@ describe('reversePathSteps', () => {
       arrival: null,
       theoreticalMargin: '2min/100km',
       id: 'id97',
-      track: '6146255e-6667-11e3-81ff-01f464e0362d',
-      offset: 5715,
+      location: {
+        track: '6146255e-6667-11e3-81ff-01f464e0362d',
+        offset: 5715,
+      },
     },
     {
       id: 'id206',
       deleted: false,
-      uic: 87447144,
-      secondary_code: '00',
-      track_reference: null,
+      location: {
+        uic: 87447144,
+        secondary_code: '00',
+        track_reference: null,
+      },
       name: 'Carantilly-Marigny',
       arrival: new Duration({ milliseconds: 3000000 }),
       stopFor: new Duration({ milliseconds: 0 }),
@@ -82,9 +94,11 @@ describe('reversePathSteps', () => {
     {
       id: 'id206',
       deleted: false,
-      uic: 87447144,
-      secondary_code: '00',
-      track_reference: null,
+      location: {
+        uic: 87447144,
+        secondary_code: '00',
+        track_reference: null,
+      },
       name: 'Carantilly-Marigny',
       arrival: null,
       stopFor: new Duration({ milliseconds: 0 }),
@@ -102,8 +116,10 @@ describe('reversePathSteps', () => {
       arrival: null,
       theoreticalMargin: '10%',
       id: 'id97',
-      track: '6146255e-6667-11e3-81ff-01f464e0362d',
-      offset: 5715,
+      location: {
+        track: '6146255e-6667-11e3-81ff-01f464e0362d',
+        offset: 5715,
+      },
     },
     {
       coordinates: [-1.1001532584044673, 49.11681385050178],
@@ -113,8 +129,10 @@ describe('reversePathSteps', () => {
       stopFor: new Duration({ milliseconds: 50 }),
       arrival: null,
       id: 'id132',
-      uic: 87447003,
-      secondary_code: '00',
+      location: {
+        uic: 87447003,
+        secondary_code: '00',
+      },
     },
     {
       coordinates: [-1.1270019417633528, 49.16208587851326],
@@ -123,8 +141,10 @@ describe('reversePathSteps', () => {
       kp: '10+396',
       arrival: null,
       id: 'id117',
-      uic: 87447185,
-      secondary_code: '00',
+      location: {
+        uic: 87447185,
+        secondary_code: '00',
+      },
     },
     {
       coordinates: [-1.0556643079994392, 49.22710024999522],
@@ -135,8 +155,10 @@ describe('reversePathSteps', () => {
       arrival: null,
       theoreticalMargin: '0%',
       id: 'id111',
-      uic: 87447219,
-      secondary_code: 'JS',
+      location: {
+        uic: 87447219,
+        secondary_code: 'JS',
+      },
     },
     {
       coordinates: [-1.050442535980733, 49.227023973327874],
@@ -145,8 +167,10 @@ describe('reversePathSteps', () => {
       kp: '295+200',
       arrival: null,
       id: 'id205',
-      uic: 87447219,
-      secondary_code: '00',
+      location: {
+        uic: 87447219,
+        secondary_code: '00',
+      },
     },
   ];
 

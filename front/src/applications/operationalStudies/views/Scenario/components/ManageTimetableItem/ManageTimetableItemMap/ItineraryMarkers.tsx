@@ -16,10 +16,10 @@ import { matchPathStepAndOp } from 'modules/pathfinding/utils';
 import type { SuggestedOP } from 'modules/timetableItem/types';
 import type { PathStep } from 'reducers/osrdconf/types';
 
-export type MarkerInformation = Pick<PathStep, 'name' | 'coordinates' | 'metadata'> &
-  PathItemLocation & {
-    pointType: MARKER_TYPE;
-  };
+export type MarkerInformation = Pick<PathStep, 'name' | 'coordinates' | 'metadata'> & {
+  pointType: MARKER_TYPE;
+  location: PathItemLocation;
+};
 
 export enum MARKER_TYPE {
   ORIGIN = 'origin',
@@ -86,7 +86,7 @@ const extractMarkerInformation = (
       if (!pathStep.coordinates) return null;
 
       const matchingOp = suggestedOP
-        ? suggestedOP.find((op) => matchPathStepAndOp(pathStep, op))
+        ? suggestedOP.find((op) => matchPathStepAndOp(pathStep.location, op))
         : undefined;
 
       const images = showStdcmAssets ? STDCM_MARKER_IMAGES : MARKER_IMAGES;

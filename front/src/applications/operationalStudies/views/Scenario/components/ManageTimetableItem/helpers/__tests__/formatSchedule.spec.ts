@@ -12,8 +12,10 @@ describe('formatSchedule', () => {
         {
           id: 'id331',
           deleted: false,
-          uic: 8706,
-          secondary_code: 'BV',
+          location: {
+            uic: 8706,
+            secondary_code: 'BV',
+          },
           kp: '130+538',
           name: 'G',
           positionOnPath: 0,
@@ -27,8 +29,10 @@ describe('formatSchedule', () => {
         {
           id: 'id332',
           deleted: false,
-          uic: 8737,
-          secondary_code: 'BV',
+          location: {
+            uic: 8737,
+            secondary_code: 'BV',
+          },
           kp: '117+422',
           name: 'V',
           positionOnPath: 13116000,

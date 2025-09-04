@@ -22,18 +22,20 @@ export const insertViaFromMap = (
   const origin = pathSteps[0];
   const destination = last(pathSteps);
 
+  const { location: newLocation } = newVia;
   const newStep = {
     id: newVia.id,
     coordinates: newVia.coordinates,
-    ...('track' in newVia
-      ? {
-          track: newVia.track,
-          offset: newVia.offset,
-        }
-      : {
-          ...newVia,
-          track_reference: newVia.track_reference,
-        }),
+    location:
+      'track' in newLocation
+        ? {
+            track: newLocation.track,
+            offset: newLocation.offset,
+          }
+        : {
+            ...newLocation,
+            track_reference: newLocation.track_reference,
+          },
   };
 
   let newViaIndex = -1;
@@ -77,12 +79,12 @@ export function upsertPathStep(statePathSteps: (PathStep | null)[], op: Suggeste
       'stopFor',
     ]),
     id: uuidV4(),
-    ...(op.uic
+    location: op.uic
       ? { uic: op.uic, secondary_code: op.ch }
       : {
           track: op.track,
           offset: op.offsetOnTrack,
-        }),
+        },
   };
 
   const stepIndex = cleanPathSteps.findIndex((step) => pathStepMatchesOp(step, op));
@@ -92,10 +94,13 @@ export function upsertPathStep(statePathSteps: (PathStep | null)[], op: Suggeste
     newVia = {
       ...newVia,
       id: cleanPathSteps[stepIndex].id,
-      track_reference:
-        'track_reference' in cleanPathSteps[stepIndex]
-          ? cleanPathSteps[stepIndex].track_reference
-          : undefined,
+      location: {
+        ...newVia.location,
+        track_reference:
+          'track_reference' in cleanPathSteps[stepIndex].location
+            ? cleanPathSteps[stepIndex].location.track_reference
+            : undefined,
+      },
     }; // We don't need to change the id of the updated via
     statePathSteps[stepIndex] = newVia;
   } else {

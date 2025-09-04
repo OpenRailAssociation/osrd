@@ -81,7 +81,7 @@ const usePathfinding = ({
       if (!infraId || !steps.length) return;
 
       const opRefs = steps.flatMap((step) => {
-        const pathItemLocation = getStepLocation(step);
+        const pathItemLocation = getStepLocation(step.location);
         if ('track' in pathItemLocation) return [];
         return [pathItemLocation];
       });
@@ -193,7 +193,7 @@ const usePathfinding = ({
         positionOnPath
       );
       const correspondingOp = suggestedOperationalPoints.find((suggestedOp) =>
-        matchPathStepAndOp(step, suggestedOp)
+        matchPathStepAndOp(step.location, suggestedOp)
       );
 
       const theoreticalMargin = i === 0 ? step.theoreticalMargin || '0%' : step.theoreticalMargin;
@@ -265,7 +265,7 @@ const usePathfinding = ({
       const pathfindingInput = getPathfindingQuery({
         infraId,
         rollingStock,
-        pathSteps: steps.filter((step) => !step.isInvalid),
+        pathSteps: steps.filter((step) => !step.isInvalid).map((step) => step?.location),
       });
 
       if (!pathfindingInput) {

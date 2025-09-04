@@ -29,12 +29,12 @@ import { marginRegExValidation, MarginUnit } from '../consts';
 import { TableType, type TimeExtraDays, type TimesStopsInputRow } from '../types';
 
 const matchPathStepAndOpWithKP = (step: PathStep, op: SuggestedOP) => {
-  if (!matchPathStepAndOp(step, op)) {
+  if (!matchPathStepAndOp(step.location, op)) {
     return step.id === op.pathStepId;
   }
   // We match the kp in case two OPs have the same uic+ch (can happen when the
   // infra is imported)
-  if ('uic' in step || 'trigram' in step) {
+  if ('uic' in step.location || 'trigram' in step.location) {
     return step.kp === op.kp;
   }
   return true;

@@ -85,7 +85,9 @@ describe('simulationConfReducer', () => {
         pathSteps: [
           {
             id: 'id1',
-            uic: 123,
+            location: {
+              uic: 123,
+            },
             name: '123',
             theoreticalMargin: '10%',
             arrival: null,
@@ -95,7 +97,9 @@ describe('simulationConfReducer', () => {
           },
           {
             id: 'id2',
-            uic: 234,
+            location: {
+              uic: 234,
+            },
             name: '234',
             theoreticalMargin: undefined,
             arrival: null,
@@ -133,7 +137,9 @@ describe('simulationConfReducer', () => {
         pathSteps: [
           {
             id: 'id1',
-            uic: 123,
+            location: {
+              uic: 123,
+            },
             name: '123',
             theoreticalMargin: '10%',
             arrival: null,
@@ -143,7 +149,9 @@ describe('simulationConfReducer', () => {
           },
           {
             id: 'id2',
-            uic: 234,
+            location: {
+              uic: 234,
+            },
             name: '234',
             theoreticalMargin: undefined,
             arrival: null,
@@ -188,7 +196,9 @@ describe('simulationConfReducer', () => {
       const insertedVia: PathStep = {
         id: 'id1',
         positionOnPath: 200,
-        uic: 396002,
+        location: {
+          uic: 396002,
+        },
         coordinates: [47.99542250806296, 0.1918181738752042],
       };
 
@@ -219,8 +229,10 @@ describe('simulationConfReducer', () => {
       const updatedVia: PathStep = {
         id: 'lemans',
         positionOnPath: 200,
-        track: '60ca8dda-6667-11e3-81ff-01f464e0362d',
-        offset: 426.443,
+        location: {
+          track: '60ca8dda-6667-11e3-81ff-01f464e0362d',
+          offset: 426.443,
+        },
         stopFor: Duration.parse('PT5M'),
         coordinates: [47.99542250806296, 0.1918181738752042],
         locked: newVia.locked,

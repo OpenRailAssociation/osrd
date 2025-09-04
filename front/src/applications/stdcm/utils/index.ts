@@ -33,8 +33,10 @@ export const extractMarkersInfo = (pathSteps: StdcmPathStep[]): MarkerInformatio
 
     acc.push({
       pointType,
-      uic: step.location.uic,
-      secondary_code: step.location.secondary_code,
+      location: {
+        uic: step.location.uic,
+        secondary_code: step.location.secondary_code,
+      },
       coordinates: step.location.coordinates,
       name: step.location.name,
     });

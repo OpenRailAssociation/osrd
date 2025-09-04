@@ -39,7 +39,7 @@ const ModalSuggestedVias = ({ suggestedVias, launchPathfinding }: ModalSuggested
   );
 
   const removeViaFromPath = (op: SuggestedOP) => {
-    const newPathSteps = pathSteps.filter((step) => !matchPathStepAndOp(step!, op));
+    const newPathSteps = pathSteps.filter((step) => !matchPathStepAndOp(step!.location, op));
     launchPathfinding(newPathSteps);
   };
 
