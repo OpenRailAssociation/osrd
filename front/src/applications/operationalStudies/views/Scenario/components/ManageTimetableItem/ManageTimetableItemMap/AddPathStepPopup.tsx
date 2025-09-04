@@ -91,12 +91,6 @@ const AddPathStepPopup = ({
         track: properties.id,
         offset: Math.round(offset),
         kp: properties.kp,
-        metadata: {
-          lineCode: properties.extensions_sncf_line_code,
-          lineName: properties.extensions_sncf_line_name,
-          trackName: properties.extensions_sncf_track_name,
-          trackNumber: properties.extensions_sncf_track_number,
-        },
       });
     };
 

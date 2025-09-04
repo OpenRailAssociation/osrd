@@ -158,7 +158,7 @@ function formatOperationalPointWithTimes(
     ...partiallyFormattedOp,
     name: op.name,
     ch: op.ch,
-    trackName: op.metadata?.trackName,
+    trackName: op.trackName,
     stopType,
     stopRequested,
   };
