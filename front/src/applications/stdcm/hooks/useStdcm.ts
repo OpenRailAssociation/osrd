@@ -11,9 +11,9 @@ import {
 } from 'applications/stdcm/consts';
 import type {
   StdcmRequestStatus,
-  StdcmResponse,
   StdcmSimulation,
   StdcmSimulationInputs,
+  StdcmSuccessResponse,
 } from 'applications/stdcm/types';
 import {
   osrdEditoastApi,
@@ -84,23 +84,22 @@ const useStdcm = ({
   const createSimulation = async (
     inputs: StdcmSimulationInputs,
     payload: PostTimetableByIdStdcmApiArg,
-    response: Extract<PostTimetableByIdStdcmApiResponse, { status: 'success' | 'conflicts' }>,
+    response: Extract<PostTimetableByIdStdcmApiResponse, { status: 'success' | 'path_not_found' }>,
     alternativePath?: 'upstream' | 'downstream'
   ): Promise<Omit<StdcmSimulation, 'index'>> => {
-    const formattedResponse = {
-      ...response,
-      rollingStock: stdcmRollingStock,
-      creationDate: new Date(),
-      speedLimitByTag: osrdconf.speedLimitByTag,
-      simulationPathSteps: osrdconf.stdcmPathSteps,
-      path: response.status === 'conflicts' ? response.pathfinding_result : response.path,
-    } as StdcmResponse;
-
-    const pathProperties = await fetchPathProperties(formattedResponse.path, infraId, dispatch);
-
-    // If the response is successful compute the chart data, otherwise only include conflicts.
+    const creationDate = new Date();
     let outputs;
-    if (formattedResponse.status === 'success') {
+    // If the response is successful compute the chart data.
+    if (response.status === 'success') {
+      const formattedResponse = {
+        ...response,
+        rollingStock: stdcmRollingStock,
+        creationDate,
+        speedLimitByTag: osrdconf.speedLimitByTag,
+        simulationPathSteps: osrdconf.stdcmPathSteps,
+        path: response.path,
+      } as StdcmSuccessResponse;
+      const pathProperties = await fetchPathProperties(formattedResponse.path, infraId, dispatch);
       const stdcmTrain: TimetableItem = {
         id: formatEditoastIdToTrainScheduleId(STDCM_TRAIN_ID),
         comfort: payload.body.comfort,
@@ -123,11 +122,11 @@ const useStdcm = ({
         speedDistanceDiagramData: chartData,
       };
     } else {
-      outputs = { pathProperties, conflicts: formattedResponse.conflicts };
+      outputs = response;
     }
 
     return {
-      creationDate: formattedResponse.creationDate,
+      creationDate,
       inputs,
       outputs,
       alternativePath,
@@ -156,8 +155,8 @@ const useStdcm = ({
     dispatch(addStdcmSimulations([simulation]));
   };
 
-  const handleConflicts = async (
-    response: Extract<PostTimetableByIdStdcmApiResponse, { status: 'conflicts' }>,
+  const handlePathNotFound = async (
+    response: Extract<PostTimetableByIdStdcmApiResponse, { status: 'path_not_found' }>,
     payload: PostTimetableByIdStdcmApiArg
   ) => {
     const simulationsToAdd: Omit<StdcmSimulation, 'index'>[] = [];
@@ -228,8 +227,8 @@ const useStdcm = ({
 
       if (response.status === 'success') {
         await handleSuccess(response, payload);
-      } else if (response.status === 'conflicts') {
-        await handleConflicts(response, payload);
+      } else if (response.status === 'path_not_found') {
+        await handlePathNotFound(response, payload);
       } else {
         handleRejection(new Error('Unexpected response status.'));
       }
