@@ -23,7 +23,7 @@ import {
   MAX_ZOOM_Y,
 } from '../consts';
 import type { InteractiveWaypoint, Waypoint } from '../types';
-import { getDistance, calcTotalDistance } from '../utils';
+import { calcTotalDistance } from '../utils';
 import useSyncManchette, { type SyncManchetteState } from './useSyncManchette';
 import {
   selectWaypointsToDisplay,
@@ -90,7 +90,7 @@ const useManchetteWithSpaceTimeChart = ({
   const drawingHeightWithoutBothPadding =
     canvasDrawingHeight - (verticalPadding + BASE_WAYPOINT_HEIGHT); // 441
 
-  const { displayTimeCaptions, enableTimePan, enableSpacePan, enableTimeZoom } = useMemo(
+  const { displayTimeCaptions, enableTimeZoom } = useMemo(
     () => ({
       ...DEFAULT_MANCHETTE_WITH_SPACE_TIME_CHART_OPTIONS,
       ...options,
@@ -101,12 +101,13 @@ const useManchetteWithSpaceTimeChart = ({
   const [isProportional, setIsPropotional] = useState(true);
 
   const {
-    state: { xZoom, yZoom, timeOrigin, spaceOrigin, xOffset, yOffset, zoomMode, rect, panning },
+    state: { xZoom, yZoom, timeOrigin, spaceOrigin, xOffset, yOffset, zoomMode, rect },
     setState: setSyncManchetteState,
     handleScrollInManchette,
     handleXZoom,
     handleXZoomOnWheelEvent,
     yZoomHelpers: { zoomYIn, zoomYOut, resetZoom },
+    basicOnPan,
   } = useSyncManchette({
     manchetteWithSpaceTimeChartRef,
     diagramRef: spaceTimeChartRef,
@@ -487,12 +488,11 @@ const useManchetteWithSpaceTimeChart = ({
             isPanning,
             context: { width, getData },
           } = payload;
-          const diff = getDistance(initialPosition, position);
           setSyncManchetteState((prev) => {
-            if (!isPanning) {
+            if (!isPanning && prev.zoomMode && prev.rect) {
               return {
                 ...prev,
-                ...(prev.zoomMode && prev.rect ? handleRectZoomEnd(prev) : {}),
+                ...handleRectZoomEnd(prev),
                 panning: null,
                 zoomMode: false,
               };
@@ -528,31 +528,7 @@ const useManchetteWithSpaceTimeChart = ({
               };
             }
 
-            if (!panning) {
-              return {
-                ...prev,
-                panning: { initialOffset: { x: xOffset, y: yOffset } },
-              };
-            }
-
-            const newState = { ...prev };
-            const { initialOffset } = panning;
-            const manchette = manchetteWithSpaceTimeChartRef.current;
-
-            if (enableTimePan) {
-              newState.xOffset = initialOffset.x + diff.x;
-            }
-            if (enableSpacePan) {
-              let newYOffset = initialOffset.y - diff.y;
-              newYOffset = Math.max(newYOffset, 0);
-              if (manchette) {
-                newYOffset = Math.min(newYOffset, manchette.scrollHeight - manchette.offsetHeight);
-                manchette.scrollTop = newYOffset;
-              }
-              newState.yOffset = newYOffset;
-            }
-
-            return newState;
+            return basicOnPan(payload, prev);
           });
         },
       },
@@ -595,10 +571,7 @@ const useManchetteWithSpaceTimeChart = ({
       maxZoomMillimeterPerPx,
       setTimeOrigin,
       setSyncManchetteState,
-      panning,
-      manchetteWithSpaceTimeChartRef,
-      enableTimePan,
-      enableSpacePan,
+      basicOnPan,
       handleRectZoomEnd,
       canvasDrawingHeight,
     ]
