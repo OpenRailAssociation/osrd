@@ -11,7 +11,7 @@ import type {
   RollingStockWithLiveries,
 } from 'common/api/osrdEditoastApi';
 import { getSupportedElectrification, isThermal } from 'modules/rollingStock/helpers/electric';
-import type { SuggestedOP } from 'modules/timetableItem/types';
+import type { SuggestedOP, SuggestedOPOnPath } from 'modules/timetableItem/types';
 import type { PathStep } from 'reducers/osrdconf/types';
 import { addElementAtIndex } from 'utils/array';
 import { getPointOnTrackCoordinates } from 'utils/geometry';
@@ -22,7 +22,7 @@ export const formatSuggestedOperationalPoints = (
   operationalPoints: Array<NonNullable<Required<PathProperties['operational_points']>>[number]>,
   geometry: GeoJsonLineString,
   pathLength: number
-): SuggestedOP[] =>
+): SuggestedOPOnPath[] =>
   operationalPoints.map((op) => ({
     opId: op.id,
     name: op.extensions?.identifier?.name,
@@ -90,11 +90,11 @@ export const getPathfindingQuery = ({
 };
 
 export const upsertPathStepsInOPs = (
-  ops: SuggestedOP[],
+  ops: SuggestedOPOnPath[],
   pathSteps: PathStep[],
   t: TFunction<'operational-studies'>
 ): SuggestedOP[] => {
-  let updatedOPs = [...ops];
+  let updatedOPs: SuggestedOP[] = [...ops];
   let waypointCounter = 1;
   pathSteps.forEach((step) => {
     const { arrival, stopFor, receptionSignal, theoreticalMargin } = step;

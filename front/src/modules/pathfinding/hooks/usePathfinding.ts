@@ -20,7 +20,6 @@ import {
   getPathfindingQuery,
   matchPathStepAndOp,
 } from 'modules/pathfinding/utils';
-import type { SuggestedOP } from 'modules/timetableItem/types';
 import { setFailure, setWarning } from 'reducers/main';
 import { replaceItinerary, updatePathSteps } from 'reducers/osrdconf/operationalStudiesConf';
 import {
@@ -167,7 +166,7 @@ const usePathfinding = ({
       pathResult.track_section_ranges
     );
 
-    const suggestedOperationalPoints: SuggestedOP[] = formatSuggestedOperationalPoints(
+    const suggestedOperationalPoints = formatSuggestedOperationalPoints(
       operational_points,
       geometry,
       pathResult.length

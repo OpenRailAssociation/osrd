@@ -3,6 +3,20 @@ import type { Position } from 'geojson';
 import type { ReceptionSignal } from 'common/api/osrdEditoastApi';
 import type { Duration } from 'utils/duration';
 
+export type SuggestedOPOnPath = {
+  opId: string;
+  name?: string;
+  uic?: number;
+  ch?: string;
+  kp?: string;
+  trigram?: string;
+  offsetOnTrack: number;
+  track: string;
+  /** Distance from the beginning of the path in mm */
+  positionOnPath: number;
+  coordinates: Position;
+};
+
 export type SuggestedOP = {
   pathStepId?: string;
   opId?: string;
