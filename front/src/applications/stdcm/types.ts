@@ -3,7 +3,6 @@ import type {
   GeoJsonPoint,
   Conflict,
   LightRollingStock,
-  PathfindingResultSuccess,
   PostTimetableByIdStdcmApiResponse,
   RollingStockWithLiveries,
   TowedRollingStock,
@@ -33,19 +32,12 @@ export type StdcmSuccessResponse = Extract<
   alternativePath?: 'upstream' | 'downstream';
 };
 
-export type StdcmConflictsResponse = Extract<
+export type StdcmPathNotFound = Extract<
   PostTimetableByIdStdcmApiResponse,
-  { status: 'conflicts' }
-> & {
-  rollingStock: LightRollingStock;
-  creationDate: Date;
-  speedLimitByTag?: string;
-  simulationPathSteps: StdcmPathStep[];
-  path: PathfindingResultSuccess;
-  alternativePath?: 'upstream' | 'downstream';
-};
+  { status: 'path_not_found' }
+>;
 
-export type StdcmResponse = StdcmConflictsResponse | StdcmSuccessResponse;
+export type StdcmResponse = StdcmPathNotFound | StdcmSuccessResponse;
 
 export type StdcmPathProperties = {
   manchetteOperationalPoints?: PathOperationalPoint[];
@@ -133,7 +125,7 @@ export type StdcmConflictsOutput = {
   conflicts: Conflict[];
 };
 
-export type StdcmSimulationOutputs = StdcmResultsOutput | StdcmConflictsOutput;
+export type StdcmSimulationOutputs = StdcmResultsOutput | StdcmPathNotFound;
 
 export type StdcmSimulation = {
   index: number;
