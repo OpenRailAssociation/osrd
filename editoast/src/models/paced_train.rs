@@ -208,12 +208,12 @@ impl PacedTrain {
             }
         }
         // Remove disabled occurrences.
-        let occurences = base_occurrences
+        let occurrences = base_occurrences
             .into_iter()
             .zip(to_remove)
             .filter_map(|(occ, disabled)| if disabled { None } else { Some(occ) });
 
-        occurences
+        occurrences
             .into_iter()
             .chain(self.get_created_occurrences_exceptions())
             .sorted_by_key(|(_, ts)| ts.start_time)
