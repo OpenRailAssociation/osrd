@@ -1,3 +1,5 @@
+@use './scenario';
+
 .scenario-header-container {
   .scenario-header {
     position: relative;
@@ -244,6 +246,15 @@
 
     .scenario-timetable-manage-timetable-item-body {
       padding: 8px;
+    }
+
+    #timetable-edited-element {
+      padding: 14px 24px;
+      @include scenario.hide-train-details;
+
+      .scenario-timetable-train {
+        @extend %scenario-timetable-train;
+      }
     }
   }
 
