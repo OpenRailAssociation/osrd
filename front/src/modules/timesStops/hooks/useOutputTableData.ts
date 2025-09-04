@@ -50,12 +50,19 @@ const useOutputTableData = (
 
   // Format input path step rows
   useEffect(() => {
-    const formatPathStepRows = (): Map<string, Partial<TimesStopsRow>> => {
+    const formatPathStepRows = async (): Promise<Map<string, Partial<TimesStopsRow>>> => {
       if (!selectedTrain || !operationalPoints || operationalPoints.length === 0) return new Map();
+
+      const trackIds = selectedTrain.path.reduce<string[]>((ids, step) => {
+        if ('track' in step) ids.push(step.track);
+        return ids;
+      }, []);
+      const trackSections = await getTrackSectionsByIds(trackIds);
 
       const startDatetime = new Date(selectedTrain.start_time);
       let lastReferenceDate = startDatetime;
       let mapWaypointCount = 0;
+
       return new Map(
         selectedTrain.path.map((pathStep, index) => {
           const opPositionOnPath = simulatedPath?.path_item_positions[index];
@@ -70,6 +77,10 @@ const useOutputTableData = (
             mapWaypointCount,
             t
           );
+          const trackName =
+            'track' in pathStep
+              ? trackSections[pathStep.track]?.extensions?.sncf?.track_name
+              : getTrackReferenceLabel(pathStep.track_reference);
 
           const schedule = scheduleByAt[pathStep.id];
           const computedArrival = simulatedPathItemTimes
@@ -118,6 +129,7 @@ const useOutputTableData = (
             opId: matchingOperationalPoint?.id,
             name,
             ch: matchingOperationalPoint?.extensions?.sncf?.ch,
+            trackName,
 
             arrival,
             departure,
@@ -145,17 +157,20 @@ const useOutputTableData = (
         return;
       }
 
-      const pathStepRowsById = formatPathStepRows();
+      const pathStepRowsById = await formatPathStepRows();
 
-      let formattedRows;
+      let formattedRows = Array.from(pathStepRowsById.values());
 
       // For valid trains, complete the rows with the simulated path's operational points and tracks information
       if (isValid && simulatedTrain) {
         const trackIds = operationalPoints.map((op) => op.part.track);
-        const trackSections = await getTrackSectionsByIds(trackIds);
+        const trackSectionsOnPath = await getTrackSectionsByIds(trackIds);
 
         formattedRows = operationalPoints.map((op) => {
-          const trackName = trackSections[op.part.track]?.extensions?.sncf?.track_name;
+          const trackName = trackSectionsOnPath[op.part.track]?.extensions?.sncf?.track_name;
+
+          // early return if the op matches a pathStep (handled in formatPathStepRows)
+          // only add the trackName which has been found by the pathfinding (if not precised in the pathStep)
           const matchingPathStep = selectedTrain.path.find((pathStep) =>
             matchPathStepAndOp(pathStep, {
               opId: op.id,
@@ -166,11 +181,9 @@ const useOutputTableData = (
               offsetOnTrack: op.part.position,
             })
           );
-
           const matchingPathStepRow = matchingPathStep
             ? pathStepRowsById.get(matchingPathStep.id)
             : undefined;
-
           if (matchingPathStepRow) {
             return {
               ...matchingPathStepRow,
@@ -194,26 +207,6 @@ const useOutputTableData = (
             ch: op.extensions?.sncf?.ch,
             trackName,
             calculatedArrival: calculatedArrival.toLocaleTimeString(dateTimeLocale),
-          };
-        });
-      } else {
-        const trackIds = selectedTrain.path
-          .filter((step) => 'track' in step)
-          .map((step) => step.track);
-        const trackSections = await getTrackSectionsByIds(trackIds);
-
-        formattedRows = Array.from(pathStepRowsById.values()).map((pathStepRow, index) => {
-          const matchingPathStep = selectedTrain.path[index];
-
-          // We check if a specific track has been selected when clicking on the map
-          const trackName =
-            'track' in matchingPathStep
-              ? trackSections[matchingPathStep.track]?.extensions?.sncf?.track_name
-              : getTrackReferenceLabel(matchingPathStep.track_reference);
-
-          return {
-            ...pathStepRow,
-            trackName,
           };
         });
       }
