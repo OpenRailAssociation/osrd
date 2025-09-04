@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
 
+import type { SpaceTimeChartProps } from '../../spaceTimeChart';
 import { DEFAULT_ZOOM_MS_PER_PX, MAX_ZOOM_Y, MIN_ZOOM_Y, ZOOM_Y_DELTA } from '../consts';
+import { getDistance } from '../utils';
 import { timeScaleToZoomValue, zoomX } from '../utils/helpers';
 
 const INITIAL_STATE = {
@@ -186,6 +188,46 @@ const useSyncManchette = ({
     }
   }, [scrollTo, manchetteWithSpaceTimeChartRef]);
 
+  // =========== On Pan ===========
+  const basicOnPan = useCallback(
+    (
+      payload: Parameters<NonNullable<SpaceTimeChartProps['onPan']>>[0],
+      prev: SyncManchetteState
+    ) => {
+      if (!payload.isPanning) {
+        return {
+          ...prev,
+          panning: null,
+          zoomMode: false,
+        };
+      }
+
+      if (!prev.panning) {
+        return {
+          ...prev,
+          panning: { initialOffset: { x: prev.xOffset, y: prev.yOffset } },
+        };
+      }
+
+      const newState = { ...prev };
+      const { initialOffset } = prev.panning;
+      const diff = getDistance(payload.initialPosition, payload.position);
+      const manchette = manchetteWithSpaceTimeChartRef.current;
+
+      newState.xOffset = initialOffset.x + diff.x;
+      let newYOffset = initialOffset.y - diff.y;
+      newYOffset = Math.max(newYOffset, 0);
+      if (manchette) {
+        newYOffset = Math.min(newYOffset, manchette.scrollHeight - manchette.offsetHeight);
+        manchette.scrollTop = newYOffset;
+      }
+      newState.yOffset = newYOffset;
+
+      return newState;
+    },
+    [manchetteWithSpaceTimeChartRef]
+  );
+
   return useMemo(
     () => ({
       state,
@@ -194,6 +236,7 @@ const useSyncManchette = ({
       handleXZoom,
       handleXZoomOnWheelEvent,
       yZoomHelpers: { zoomYIn, zoomYOut, resetZoom: resetYZoom },
+      basicOnPan,
     }),
     [
       state,
@@ -203,6 +246,7 @@ const useSyncManchette = ({
       zoomYIn,
       zoomYOut,
       resetYZoom,
+      basicOnPan,
     ]
   );
 };
