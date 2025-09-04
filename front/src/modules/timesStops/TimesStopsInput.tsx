@@ -84,7 +84,8 @@ const TimesStopsInput = ({
 
   const clearPathStep = (rowData: TimesStopsInputRow) => {
     const index = pathSteps.findIndex(
-      (step) => matchPathStepAndOp(step, rowData) && step.positionOnPath === rowData.positionOnPath
+      (step) =>
+        matchPathStepAndOp(step.location, rowData) && step.positionOnPath === rowData.positionOnPath
     );
 
     const updatedPathSteps = pathSteps.map((step, i) => {

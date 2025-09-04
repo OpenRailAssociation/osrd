@@ -30,7 +30,8 @@ const Origin = ({ zoomToFeaturePoint }: OriginProps) => {
     >
       <strong data-testid="origin-op-info" className="mr-1 text-nowrap">
         {/* If origin doesn't have name, we know that it has been added by click on map and has a track property */}
-        {origin?.name || (origin && 'track' in origin && origin.track.split('-')[0])}
+        {origin?.name ||
+          (origin && 'track' in origin.location && origin.location.track.split('-')[0])}
       </strong>
     </div>
   );

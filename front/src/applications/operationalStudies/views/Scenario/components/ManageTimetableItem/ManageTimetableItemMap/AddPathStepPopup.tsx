@@ -88,8 +88,10 @@ const AddPathStepPopup = ({
       setNewPathStep({
         id: uuidV4(),
         coordinates: featureInfoClick.coordinates.slice(0, 2),
-        track: properties.id,
-        offset: Math.round(offset),
+        location: {
+          track: properties.id,
+          offset: Math.round(offset),
+        },
         kp: properties.kp,
         metadata: {
           lineCode: properties.extensions_sncf_line_code,
@@ -134,8 +136,10 @@ const AddPathStepPopup = ({
 
       setClickedOp({
         id: uuidV4(),
-        secondary_code: operationalPoint.extensions!.sncf!.ch,
-        uic: operationalPoint.extensions!.identifier!.uic,
+        location: {
+          secondary_code: operationalPoint.extensions!.sncf!.ch,
+          uic: operationalPoint.extensions!.identifier!.uic,
+        },
         tracks: trackPartCoordinates,
       });
       setSelectedTrack(trackPartCoordinates[0]);
@@ -156,13 +160,16 @@ const AddPathStepPopup = ({
       return;
     }
 
-    const { tracks: _tracks, ...opWithoutTracks } = clickedOp;
+    const { tracks: _tracks, location: prevLocation, ...opWithoutTracks } = clickedOp;
     setNewPathStep({
       ...opWithoutTracks,
       coordinates: selectedTrack.coordinates,
-      track_reference: selectedTrack.trackName
-        ? { track_name: selectedTrack.trackName }
-        : undefined,
+      location: {
+        ...prevLocation,
+        track_reference: selectedTrack.trackName
+          ? { track_name: selectedTrack.trackName }
+          : undefined,
+      },
     });
   }, [clickedOp, selectedTrack]);
 

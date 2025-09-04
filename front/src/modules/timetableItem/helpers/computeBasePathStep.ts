@@ -23,8 +23,8 @@ const computeBasePathStep = (
   timetableItem: Pick<TrainSchedule, 'path' | 'schedule' | 'margins'>,
   pathItemIndex: number
 ): PathStep => {
-  const step = timetableItem.path[pathItemIndex];
-  const correspondingSchedule = timetableItem.schedule?.find((schedule) => schedule.at === step.id);
+  const { id, deleted, ...location } = timetableItem.path[pathItemIndex];
+  const correspondingSchedule = timetableItem.schedule?.find((schedule) => schedule.at === id);
 
   const {
     arrival,
@@ -34,23 +34,25 @@ const computeBasePathStep = (
   } = correspondingSchedule || {};
 
   let name;
-  if ('trigram' in step) {
-    name = step.trigram + (step.secondary_code ? `/${step.secondary_code}` : '');
-  } else if ('uic' in step) {
-    name = step.uic.toString();
-  } else if ('operational_point' in step) {
-    name = step.operational_point;
+  if ('trigram' in location) {
+    name = location.trigram + (location.secondary_code ? `/${location.secondary_code}` : '');
+  } else if ('uic' in location) {
+    name = location.uic.toString();
+  } else if ('operational_point' in location) {
+    name = location.operational_point;
   }
 
   let theoreticalMargin;
   if (timetableItem.margins && pathItemIndex !== timetableItem.path.length - 1) {
-    theoreticalMargin = findCorrespondingMargin(step.id, pathItemIndex, timetableItem.margins);
+    theoreticalMargin = findCorrespondingMargin(id, pathItemIndex, timetableItem.margins);
   }
 
   return {
-    ...step,
-    ...('track' in step ? { offset: mmToM(step.offset) } : null),
+    id,
+    deleted,
     name,
+
+    location: { ...location, ...('track' in location ? { offset: mmToM(location.offset) } : null) },
     arrival: arrival ? Duration.parse(arrival) : null,
     stopFor: stopFor ? Duration.parse(stopFor) : null,
     // If not provided, we set locked and receptionSignal to their default values
