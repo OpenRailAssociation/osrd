@@ -5,11 +5,10 @@ import { PDFDownloadLink } from '@react-pdf/renderer';
 import { useTranslation, Trans } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
-import useConflictsMessages from 'applications/stdcm/hooks/useConflictsMessages';
-import type { SimilarTrainWithSecondaryCode } from 'applications/stdcm/types';
+import type { SimilarTrainWithSecondaryCode, StdcmResultsOutput } from 'applications/stdcm/types';
 import { extractMarkersInfo } from 'applications/stdcm/utils';
 import { addSecondaryCodesToSimilarTrains } from 'applications/stdcm/utils/addSecondaryCodesToSimilarTrains';
-import { hasConflicts, hasResults } from 'applications/stdcm/utils/simulationOutputUtils';
+import { hasResults } from 'applications/stdcm/utils/simulationOutputUtils';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import DefaultBaseMap from 'common/Map/DefaultBaseMap';
 import {
@@ -72,10 +71,7 @@ const StdcmResults = ({
 
   const { outputs, alternativePath } = selectedSimulation;
 
-  const hasConflictResults = hasConflicts(outputs);
   const hasSimulationResults = hasResults(outputs);
-
-  const { trackConflicts, workConflicts } = useConflictsMessages(outputs);
 
   const simulationReportSheetNumber = generateCodeNumber();
   const isSelectedSimulationRetained =
@@ -105,7 +101,7 @@ const StdcmResults = ({
   useEffect(() => {
     const searchForSimilarTrains = async () => {
       const { consist, pathSteps } = selectedSimulation.inputs;
-      if (!consist) {
+      if (!consist || !hasSimulationResults) {
         return;
       }
 
@@ -118,7 +114,8 @@ const StdcmResults = ({
       }, new Map<string, boolean>());
 
       const waypoints = (
-        selectedSimulation.outputs?.pathProperties.manchetteOperationalPoints ?? []
+        (selectedSimulation.outputs as StdcmResultsOutput).pathProperties
+          .manchetteOperationalPoints ?? []
       ).map((op) => {
         const k = key(op.extensions?.identifier?.uic, op.extensions?.sncf?.ch ?? '');
         return {
@@ -173,7 +170,7 @@ const StdcmResults = ({
                   </span>
                 </div>
               )}
-              {hasSimulationResults && !hasConflictResults ? (
+              {hasSimulationResults ? (
                 <div className="results-and-sheet">
                   <StcdmResultsTable
                     stdcmData={outputs.results}
@@ -230,33 +227,7 @@ const StdcmResults = ({
               ) : (
                 <div className="simulation-failure">
                   <span className="title">{t('notFound')}</span>
-                  <span className="change-criteria">{t('conflictsTitle')}</span>
-
-                  {trackConflicts.length > 0 && (
-                    <ul>
-                      {trackConflicts.map((message, index) => (
-                        <li key={index}>
-                          <span>
-                            <Trans>&bull; {message}</Trans>
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
-
-                  {trackConflicts.length > 0 && workConflicts.length > 0 && <br />}
-
-                  {workConflicts.length > 0 && (
-                    <ul>
-                      {workConflicts.map((message, index) => (
-                        <li key={index}>
-                          <span>
-                            <Trans>&bull; {message}</Trans>
-                          </span>
-                        </li>
-                      ))}
-                    </ul>
-                  )}
+                  <span className="change-criteria">{t('pathNotFound')}</span>
                   <span>{t('changeSearchCriteria')}</span>
                   {!alternativePath && !displayInfoMessage && (
                     <div className="alternative-simulations-info">
@@ -272,9 +243,9 @@ const StdcmResults = ({
               <DefaultBaseMap
                 mapId="stdcm-map-result"
                 infraId={infraId}
-                geometry={outputs?.pathProperties?.geometry}
+                geometry={hasSimulationResults ? outputs?.pathProperties.geometry : undefined}
                 pathStepMarkers={markersInfo}
-                isFeasible={!hasConflictResults}
+                isFeasible={hasSimulationResults}
                 mapSettings={mapSettings}
                 updateMapSettings={updateMapSettings}
               />

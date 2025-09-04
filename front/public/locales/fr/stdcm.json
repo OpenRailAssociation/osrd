@@ -134,16 +134,12 @@
     "infoMessage": "Cette simulation n'offre pas la garantie de disponibilité du sillon.",
     "results": {
       "changeSearchCriteria": "Vous pouvez modifier vos critères de recherche pour trouver une solution.",
-      "conflictsTitle": "Voici les problèmes rencontrés au moment du calcul sur le chemin le plus court :",
       "displayAll": "Afficher tous les jalons",
       "displayMain": "Afficher les jalons principaux",
       "downloadSimulationSheet": "Télécharger la fiche de simulation",
       "gesicoRequest": "et joignez ce document à votre demande GESICO.",
       "notFound": "Aucun passage n'a été trouvé pour cette configuration",
-      "remainingTrackConflicts_one": "un autre conflit avec un autre sillon",
-      "remainingTrackConflicts_other": "{{count}} autres conflits avec d'autres sillons",
-      "remainingWorkConflicts_one": "un autre conflit avec des travaux",
-      "remainingWorkConflicts_other": "{{count}} autres travaux en conflit",
+      "pathNotFound": "Incompatibilité avec des sillons et/ou planches travaux existants.",
       "retainThisSimulation": "Retenir cette simulation",
       "simulationDownstream": "Simulation lancée automatiquement en raison de l’absence de capacité avec les paramètres demandés : la tolérance <underline>avant</underline> l’heure de départ a été augmentée.",
       "simulationName": {
@@ -160,8 +156,6 @@
         "errorMessage": "Nous sommes désolés de ne pas avoir pu traiter votre demande. L’équipe LMR a été notifiée et prendra connaissance de la situation dès que possible.",
         "failed": "Un problème technique est survenu"
       },
-      "trackConflict": "conflit avec un autre sillon entre <strong>{{waypointBefore}}</strong> et <strong>{{waypointAfter}}</strong> du {{startDate}} à {{startTime}} au {{endDate}} à {{endTime}}",
-      "trackConflictSameDay": "conflit avec un sillon entre <strong>{{waypointBefore}}</strong> et <strong>{{waypointAfter}}</strong> le {{startDate}} entre {{startTime}} et {{endTime}}",
       "upgrade": {
         "arrivalIncompatible": "Heure arrivée incompatible",
         "helpUs": "Aidez-nous à améliorer {{stdcmName}}",
@@ -169,9 +163,7 @@
         "reason": "Cette simulation ne répond pas à vos besoin car…",
         "startIncompatible": "Heure départ incompatible",
         "unqualifiedDriver": "Conducteur non habilité"
-      },
-      "workConflict": "travaux de <strong>{{waypointBefore}}</strong> à <strong>{{waypointAfter}}</strong> du {{startDate}} à {{startTime}} au {{endDate}} à {{endTime}}",
-      "workConflictSameDay": "travaux de <strong>{{waypointBefore}}</strong> à <strong>{{waypointAfter}}</strong> le {{startDate}} entre {{startTime}} et {{endTime}}"
+      }
     },
     "stopCalculation": "Arrêter"
   },
