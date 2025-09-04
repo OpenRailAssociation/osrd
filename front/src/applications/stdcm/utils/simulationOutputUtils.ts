@@ -3,7 +3,6 @@ import type {
   StdcmSuccessResponse,
   StdcmPathProperties,
 } from 'applications/stdcm/types';
-import type { Conflict } from 'common/api/osrdEditoastApi';
 import type { SpeedDistanceDiagramData } from 'modules/simulationResult/types';
 
 export const hasResults = (
@@ -13,8 +12,3 @@ export const hasResults = (
   results: StdcmSuccessResponse;
   speedDistanceDiagramData: SpeedDistanceDiagramData;
 } => !!outputs && 'results' in outputs;
-
-export const hasConflicts = (
-  outputs?: StdcmSimulationOutputs
-): outputs is { pathProperties: StdcmPathProperties; conflicts: Conflict[] } =>
-  !!outputs && 'conflicts' in outputs;

@@ -134,16 +134,12 @@
     "infoMessage": "This simulation doesn't ensure the availability of the path.",
     "results": {
       "changeSearchCriteria": "You can modify your search criteria to find a solution.",
-      "conflictsTitle": "Here are the problems encountered when calculating the shortest path:",
       "displayAll": "Display all operational points",
       "displayMain": "Display main operational points",
       "downloadSimulationSheet": "Download simulation report sheet",
       "gesicoRequest": "and attach this document to your GESICO request.",
       "notFound": "No path was found for this configuration",
-      "remainingTrackConflicts_one": "one other conflict with another train path",
-      "remainingTrackConflicts_other": "{{count}} other conflicts with other train paths",
-      "remainingWorkConflicts_one": "one other work in conflict",
-      "remainingWorkConflicts_other": "{{count}} other works in conflict",
+      "pathNotFound": "Clash with existing train and/or work schedules.",
       "retainThisSimulation": "Retain this simulation",
       "simulationDownstream": "Simulation automatically computed as no capacity was found for the requested criteria: the tolerance <underline>before</underline> departure time was increased.",
       "simulationName": {
@@ -160,8 +156,6 @@
         "errorMessage": "We are sorry that we could not process your request. The LMR team has been notified and will be aware of the situation as soon as possible.",
         "failed": "A technical issue has occurred"
       },
-      "trackConflict": "conflict with a train path between <strong>{{waypointBefore}}</strong> and <strong>{{waypointAfter}}</strong> from {{startDate}} at {{startTime}} to {{endDate}} at {{endTime}}",
-      "trackConflictSameDay": "conflict with a train path between <strong>{{waypointBefore}}</strong> and <strong>{{waypointAfter}}</strong> on {{startDate}} between {{startTime}} and {{endTime}}",
       "upgrade": {
         "arrivalIncompatible": "Arrival time incompatible",
         "helpUs": "Help us improve {{stdcmName}}",
@@ -169,9 +163,7 @@
         "reason": "This simulation does not meet your needs because…",
         "startIncompatible": "Departure time incompatible",
         "unqualifiedDriver": "Unqualified driver"
-      },
-      "workConflict": "scheduled work from <strong>{{waypointBefore}}</strong> to <strong>{{waypointAfter}}</strong> from {{startDate}} at {{startTime}} to {{endDate}} at {{endTime}}",
-      "workConflictSameDay": "scheduled work from <strong>{{waypointBefore}}</strong> to <strong>{{waypointAfter}}</strong> on {{startDate}} between {{startTime}} and {{endTime}}"
+      }
     },
     "stopCalculation": "Stop"
   },

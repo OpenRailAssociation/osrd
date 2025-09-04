@@ -4,7 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
 import useHorizontalScroll from 'applications/stdcm/hooks/useHorizontalScroll';
-import { hasConflicts, hasResults } from 'applications/stdcm/utils/simulationOutputUtils';
+import { hasResults } from 'applications/stdcm/utils/simulationOutputUtils';
 import { getStdcmCompletedSimulations } from 'reducers/osrdconf/stdcmConf/selectors';
 import { formatTimeDifference, useDateTimeLocale } from 'utils/date';
 import { mmToKm } from 'utils/physics';
@@ -96,7 +96,7 @@ const StdcmSimulationNavigator = ({
                   >
                     <div data-testid="simulation-name" className="simulation-name">
                       <span>
-                        {hasValidResults && !hasConflicts(outputs)
+                        {hasValidResults
                           ? t('simulation.results.simulationName.withOutputs', {
                               id: simulationId,
                               ns: 'stdcm',
