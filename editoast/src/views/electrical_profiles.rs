@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::sync::Arc;
 
 use authz::Role;
 use axum::Extension;
@@ -39,7 +40,7 @@ pub struct ElectricalProfileSetId {
     )
 )]
 pub(in crate::views) async fn list(
-    State(db_pool): State<DbConnectionPoolV2>,
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
 ) -> Result<Json<Vec<LightElectricalProfileSet>>> {
     let authorized = auth
@@ -65,7 +66,7 @@ pub(in crate::views) async fn list(
     )
 )]
 pub(in crate::views) async fn get(
-    State(db_pool): State<DbConnectionPoolV2>,
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
     Path(electrical_profile_set_id): Path<i64>,
 ) -> Result<Json<ElectricalProfileSetData>> {
@@ -106,7 +107,7 @@ pub(in crate::views) async fn get(
     )
 )]
 pub(in crate::views) async fn get_level_order(
-    State(db_pool): State<DbConnectionPoolV2>,
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
     Path(electrical_profile_set_id): Path<i64>,
 ) -> Result<Json<HashMap<String, LevelValues>>> {
@@ -140,7 +141,7 @@ pub(in crate::views) async fn get_level_order(
     )
 )]
 pub(in crate::views) async fn delete(
-    State(db_pool): State<DbConnectionPoolV2>,
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
     Path(electrical_profile_set_id): Path<i64>,
 ) -> Result<impl IntoResponse> {
@@ -178,7 +179,7 @@ pub(in crate::views) struct ElectricalProfileQueryArgs {
     )
 )]
 pub(in crate::views) async fn post_electrical_profile(
-    State(db_pool): State<DbConnectionPoolV2>,
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
     Query(ep_set_name): Query<ElectricalProfileQueryArgs>,
     Json(ep_data): Json<ElectricalProfileSetData>,

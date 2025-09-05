@@ -134,7 +134,7 @@ mod tests {
             Err(WsGroupError::NameAlreadyUsed { name }) => {
                 assert_eq!(name, "UNIQUE_NAME");
             }
-            other => panic!("Expected NameAlreadyUsed error, got: {:?}", other),
+            other => panic!("Expected NameAlreadyUsed error, got: {other:?}"),
         }
     }
 }

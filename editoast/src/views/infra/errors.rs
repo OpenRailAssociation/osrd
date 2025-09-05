@@ -1,4 +1,5 @@
 use std::str::FromStr;
+use std::sync::Arc;
 
 use authz;
 use axum::Extension;
@@ -68,7 +69,7 @@ pub(in crate::views) struct InfraErrorResponse {
      ),
  )]
 pub(in crate::views) async fn list_errors(
-    State(db_pool): State<DbConnectionPoolV2>,
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
     Path(InfraIdParam { infra_id }): Path<InfraIdParam>,
     Query(PaginationQueryParams { page, page_size }): Query<PaginationQueryParams<100>>,

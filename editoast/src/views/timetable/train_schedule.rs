@@ -158,7 +158,7 @@ impl From<TrainScheduleForm> for TrainScheduleChangeset {
     )
 )]
 pub(in crate::views) async fn get(
-    State(db_pool): State<DbConnectionPoolV2>,
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
     Path(TrainScheduleIdParam {
         id: train_schedule_id,
@@ -197,7 +197,7 @@ pub(in crate::views) struct TrainScheduleIds {
     )
 )]
 pub(in crate::views) async fn delete(
-    State(db_pool): State<DbConnectionPoolV2>,
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
     Json(TrainScheduleIds { ids: train_ids }): Json<TrainScheduleIds>,
 ) -> Result<impl IntoResponse> {
@@ -230,7 +230,7 @@ pub(in crate::views) async fn delete(
     )
 )]
 pub(in crate::views) async fn put(
-    State(db_pool): State<DbConnectionPoolV2>,
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
     Path(TrainScheduleIdParam {
         id: train_schedule_id,

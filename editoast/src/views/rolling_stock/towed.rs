@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use crate::error::InternalError;
 use crate::error::Result;
 use crate::views::AuthenticationExt;
@@ -101,7 +103,7 @@ impl From<TowedRollingStockForm> for TowedRollingStockChangeset {
     )
 )]
 pub(in crate::views) async fn post(
-    State(db_pool): State<DbConnectionPoolV2>,
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
     Json(towed_rolling_stock_form): Json<TowedRollingStockForm>,
 ) -> Result<Json<TowedRollingStock>> {
@@ -139,7 +141,7 @@ pub(in crate::views) struct TowedRollingStockCountList {
     )
 )]
 pub(in crate::views) async fn get_list(
-    State(db_pool): State<DbConnectionPoolV2>,
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
     Query(page_settings): Query<PaginationQueryParams<50>>,
 ) -> Result<Json<TowedRollingStockCountList>> {
@@ -177,7 +179,7 @@ pub struct TowedRollingStockIdParam {
     )
 )]
 pub(in crate::views) async fn get_by_id(
-    State(db_pool): State<DbConnectionPoolV2>,
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
     Path(TowedRollingStockIdParam {
         towed_rolling_stock_id,
@@ -212,7 +214,7 @@ pub(in crate::views) async fn get_by_id(
     )
 )]
 pub(in crate::views) async fn patch_by_id(
-    State(db_pool): State<DbConnectionPoolV2>,
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
     Path(TowedRollingStockIdParam {
         towed_rolling_stock_id,
@@ -288,7 +290,7 @@ pub(in crate::views) struct TowedRollingStockLockedForm {
     )
 )]
 pub(in crate::views) async fn patch_by_id_locked(
-    State(db_pool): State<DbConnectionPoolV2>,
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
     Path(towed_rolling_stock_id): Path<i64>,
     Json(TowedRollingStockLockedForm { locked }): Json<TowedRollingStockLockedForm>,

@@ -19,6 +19,7 @@ use serde::Deserialize;
 use serde::Serialize;
 use serde::de::Error as SerdeError;
 use std::result::Result as StdResult;
+use std::sync::Arc;
 use thiserror::Error;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
@@ -118,7 +119,7 @@ impl From<StdcmSearchEnvironmentCreateForm> for Changeset<StdcmSearchEnvironment
     )
 )]
 pub(in crate::views) async fn create(
-    State(db_pool): State<DbConnectionPoolV2>,
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
     Json(form): Json<StdcmSearchEnvironmentCreateForm>,
 ) -> Result<impl IntoResponse> {
@@ -145,7 +146,7 @@ pub(in crate::views) async fn create(
     )
 )]
 pub(in crate::views) async fn retrieve_latest(
-    State(db_pool): State<DbConnectionPoolV2>,
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
 ) -> Result<Response> {
     let authorized = auth
@@ -183,7 +184,7 @@ pub(in crate::views) struct StdcmSearchEnvIdParam {
     )
 )]
 pub(in crate::views) async fn delete(
-    State(db_pool): State<DbConnectionPoolV2>,
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
     Path(StdcmSearchEnvIdParam { env_id }): Path<StdcmSearchEnvIdParam>,
 ) -> Result<impl IntoResponse> {
@@ -223,7 +224,7 @@ pub(in crate::views) struct SdcmSearchEnvListResponse {
     )
 )]
 pub(in crate::views) async fn list(
-    State(db_pool): State<DbConnectionPoolV2>,
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
     Query(page_settings): Query<PaginationQueryParams<1000>>,
 ) -> Result<Json<SdcmSearchEnvListResponse>> {

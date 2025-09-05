@@ -14,6 +14,7 @@ use editoast_derive::EditoastError;
 use serde::Deserialize;
 use serde::Serialize;
 use serde_with::rust::double_option;
+use std::sync::Arc;
 use thiserror::Error;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
@@ -119,7 +120,7 @@ impl StudyCreateForm {
     )
 )]
 pub(in crate::views) async fn create(
-    State(db_pool): State<DbConnectionPoolV2>,
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
     Path(project_id): Path<i64>,
     Json(data): Json<StudyCreateForm>,
@@ -176,7 +177,7 @@ pub struct StudyIdParam {
     )
 )]
 pub(in crate::views) async fn delete(
-    State(db_pool): State<DbConnectionPoolV2>,
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
     Path((project_id, study_id)): Path<(i64, i64)>,
 ) -> Result<impl IntoResponse> {
@@ -213,7 +214,7 @@ pub(in crate::views) async fn delete(
     )
 )]
 pub(in crate::views) async fn get(
-    State(db_pool): State<DbConnectionPoolV2>,
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
     Path((project_id, study_id)): Path<(i64, i64)>,
 ) -> Result<Json<StudyResponse>> {
@@ -315,7 +316,7 @@ impl StudyPatchForm {
     )
 )]
 pub(in crate::views) async fn patch(
-    State(db_pool): State<DbConnectionPoolV2>,
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
     Path((project_id, study_id)): Path<(i64, i64)>,
     Json(data): Json<StudyPatchForm>,
@@ -390,7 +391,7 @@ pub(in crate::views) struct StudyListResponse {
     )
 )]
 pub(in crate::views) async fn list(
-    State(db_pool): State<DbConnectionPoolV2>,
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
     Path(project_id): Path<i64>,
     Query(pagination_params): Query<PaginationQueryParams<1000>>,

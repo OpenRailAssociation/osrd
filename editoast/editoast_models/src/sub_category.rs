@@ -122,7 +122,7 @@ mod tests {
             Err(Error::CodeAlreadyUsed { code }) => {
                 assert_eq!(code, "code");
             }
-            other => panic!("Expected CodeAlreadyUsed error, got: {:?}", other),
+            other => panic!("Expected CodeAlreadyUsed error, got: {other:?}"),
         }
     }
 }

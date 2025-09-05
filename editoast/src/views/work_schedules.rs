@@ -29,6 +29,7 @@ use serde::Deserialize;
 use serde::Serialize;
 use serde::de::Error as SerdeError;
 use std::result::Result as StdResult;
+use std::sync::Arc;
 use thiserror::Error;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
@@ -138,7 +139,7 @@ pub(in crate::views) struct WorkScheduleCreateResponse {
     )
 )]
 pub(in crate::views) async fn create(
-    State(db_pool): State<DbConnectionPoolV2>,
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
     Json(WorkScheduleCreateForm {
         work_schedule_group_name,
@@ -210,7 +211,7 @@ pub(in crate::views) struct WorkScheduleProjection {
     )
 )]
 pub(in crate::views) async fn project_path(
-    State(db_pool): State<DbConnectionPoolV2>,
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
     Json(WorkScheduleProjectForm {
         work_schedule_group_id,
@@ -286,7 +287,7 @@ pub(in crate::views) struct WorkScheduleGroupCreateResponse {
     )
 )]
 pub(in crate::views) async fn create_group(
-    State(db_pool): State<DbConnectionPoolV2>,
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
     Json(WorkScheduleGroupCreateForm {
         work_schedule_group_name,
@@ -327,7 +328,7 @@ pub(in crate::views) async fn create_group(
     )
 )]
 pub(in crate::views) async fn delete_group(
-    State(db_pool): State<DbConnectionPoolV2>,
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
     Path(WorkScheduleGroupIdParam { id: group_id }): Path<WorkScheduleGroupIdParam>,
 ) -> Result<impl IntoResponse> {
@@ -357,7 +358,7 @@ pub(in crate::views) async fn delete_group(
     )
 )]
 pub(in crate::views) async fn list_groups(
-    State(db_pool): State<DbConnectionPoolV2>,
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
 ) -> Result<Json<Vec<i64>>> {
     let authorized = auth
@@ -392,7 +393,7 @@ pub(in crate::views) async fn list_groups(
     )
 )]
 pub(in crate::views) async fn put_in_group(
-    State(db_pool): State<DbConnectionPoolV2>,
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
     Path(WorkScheduleGroupIdParam { id: group_id }): Path<WorkScheduleGroupIdParam>,
     Json(work_schedules): Json<Vec<WorkScheduleItemForm>>,
@@ -456,7 +457,7 @@ pub struct WorkScheduleOrderingParam {
     )
 )]
 pub(in crate::views) async fn get_group(
-    State(db_pool): State<DbConnectionPoolV2>,
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
     Path(WorkScheduleGroupIdParam { id: group_id }): Path<WorkScheduleGroupIdParam>,
     Query(pagination_params): Query<PaginationQueryParams<100>>,

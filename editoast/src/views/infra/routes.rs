@@ -10,6 +10,7 @@ use serde::Deserialize;
 use serde::Serialize;
 use std::collections::HashMap;
 use std::collections::HashSet;
+use std::sync::Arc;
 use strum::Display;
 use utoipa::ToSchema;
 
@@ -60,7 +61,7 @@ pub(in crate::views) struct RoutesResponse {
 )]
 pub(in crate::views) async fn get_routes_from_waypoint(
     Path(path): Path<RoutesFromWaypointParams>,
-    State(db_pool): State<DbConnectionPoolV2>,
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
 ) -> Result<Json<RoutesResponse>> {
     // Check user roles

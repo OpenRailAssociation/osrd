@@ -109,7 +109,7 @@ pub(in crate::views) struct PacedTrainIdParam {
     )
 )]
 pub(in crate::views) async fn get_by_id(
-    State(db_pool): State<DbConnectionPoolV2>,
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
     Path(PacedTrainIdParam { id: paced_train_id }): Path<PacedTrainIdParam>,
 ) -> Result<impl IntoResponse> {
@@ -145,7 +145,7 @@ pub(in crate::views) async fn get_by_id(
     )
 )]
 pub(in crate::views) async fn update_paced_train(
-    State(db_pool): State<DbConnectionPoolV2>,
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
     Path(PacedTrainIdParam { id: paced_train_id }): Path<PacedTrainIdParam>,
     Json(paced_train_base): Json<PacedTrain>,
@@ -185,7 +185,7 @@ pub(in crate::views) struct PacedTrainIds {
     )
 )]
 pub(in crate::views) async fn delete(
-    State(db_pool): State<DbConnectionPoolV2>,
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
     Json(PacedTrainIds {
         ids: paced_train_ids,

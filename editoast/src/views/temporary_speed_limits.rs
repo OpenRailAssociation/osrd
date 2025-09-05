@@ -11,6 +11,7 @@ use serde::Deserialize;
 use serde::Serialize;
 use serde::de::Error as SerdeError;
 use std::result::Result as StdResult;
+use std::sync::Arc;
 use thiserror::Error;
 use utoipa::ToSchema;
 
@@ -119,7 +120,7 @@ impl From<temporary_speed_limits::TslGroupError> for TemporarySpeedLimitError {
     )
 )]
 pub(in crate::views) async fn create_temporary_speed_limit_group(
-    State(db_pool): State<DbConnectionPoolV2>,
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
     Json(TemporarySpeedLimitCreateForm {
         speed_limit_group_name,

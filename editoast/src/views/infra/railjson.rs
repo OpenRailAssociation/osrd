@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use authz;
 use authz::InfraGrant;
 use axum::Extension;
@@ -43,7 +45,7 @@ use schemas::primitives::ObjectType;
 )]
 pub(in crate::views) async fn get_railjson(
     Path(infra): Path<InfraIdParam>,
-    State(db_pool): State<DbConnectionPoolV2>,
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
 ) -> Result<impl IntoResponse> {
     // Check user roles

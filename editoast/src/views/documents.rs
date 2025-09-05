@@ -10,6 +10,7 @@ use axum::http::header::CONTENT_TYPE;
 use axum::response::IntoResponse;
 use editoast_derive::EditoastError;
 use serde::Serialize;
+use std::sync::Arc;
 use thiserror::Error;
 use utoipa::ToSchema;
 
@@ -46,7 +47,7 @@ pub enum DocumentErrors {
     )
 )]
 pub(in crate::views) async fn get(
-    State(db_pool): State<DbConnectionPoolV2>,
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
     Path(document_id): Path<i64>,
 ) -> Result<impl IntoResponse> {
@@ -92,7 +93,7 @@ struct NewDocumentResponse {
     )
 )]
 pub(in crate::views) async fn post(
-    State(db_pool): State<DbConnectionPoolV2>,
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
     axum_extra::TypedHeader(content_type): axum_extra::TypedHeader<headers::ContentType>,
     bytes: Bytes,
@@ -137,7 +138,7 @@ pub(in crate::views) async fn post(
     )
 )]
 pub(in crate::views) async fn delete(
-    State(db_pool): State<DbConnectionPoolV2>,
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
     Path(document_id): Path<i64>,
 ) -> Result<impl IntoResponse> {

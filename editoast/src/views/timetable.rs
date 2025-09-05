@@ -134,7 +134,7 @@ pub(in crate::views) struct ListTrainSchedulesResponse {
     ),
 )]
 pub(in crate::views) async fn get_train_schedules(
-    State(db_pool): State<DbConnectionPoolV2>,
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
     Path(TimetableIdParam { id: timetable_id }): Path<TimetableIdParam>,
     Query(pagination_params): Query<PaginationQueryParams<200>>,
@@ -174,7 +174,7 @@ pub(in crate::views) async fn get_train_schedules(
     ),
 )]
 pub(in crate::views) async fn post(
-    State(db_pool): State<DbConnectionPoolV2>,
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
 ) -> Result<Json<TimetableResult>> {
     let authorized = auth
@@ -204,7 +204,7 @@ pub(in crate::views) async fn post(
     ),
 )]
 pub(in crate::views) async fn delete(
-    State(db_pool): State<DbConnectionPoolV2>,
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
     Path(TimetableIdParam { id: timetable_id }): Path<TimetableIdParam>,
 ) -> Result<impl IntoResponse> {
@@ -236,7 +236,7 @@ pub(in crate::views) async fn delete(
     )
 )]
 pub(in crate::views) async fn post_train_schedule(
-    State(db_pool): State<DbConnectionPoolV2>,
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
     Path(TimetableIdParam { id: timetable_id }): Path<TimetableIdParam>,
     Json(train_schedules): Json<Vec<TrainSchedule>>,
@@ -282,7 +282,7 @@ pub(in crate::views) async fn post_train_schedule(
     )
 )]
 pub(in crate::views) async fn post_paced_train(
-    State(db_pool): State<DbConnectionPoolV2>,
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
     Path(TimetableIdParam { id: timetable_id }): Path<TimetableIdParam>,
     Json(paced_trains): Json<Vec<PacedTrain>>,
@@ -334,7 +334,7 @@ pub(in crate::views) struct ListPacedTrainsResponse {
     ),
 )]
 pub(in crate::views) async fn get_paced_trains(
-    State(db_pool): State<DbConnectionPoolV2>,
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
     Path(TimetableIdParam { id: timetable_id }): Path<TimetableIdParam>,
     Query(pagination_params): Query<PaginationQueryParams<200>>,

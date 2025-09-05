@@ -22,6 +22,7 @@ use itertools::Itertools;
 use serde::Deserialize;
 use serde::Serialize;
 use std::collections::HashSet;
+use std::sync::Arc;
 use utoipa::ToSchema;
 use utoipa::openapi::RefOr;
 use utoipa::openapi::Schema;
@@ -99,7 +100,7 @@ fn schema_round_trips() -> RefOr<Schema> {
     responses((status = 204, description = "Round trips were successfully upserted"))
 )]
 pub(in crate::views) async fn post_train_schedules(
-    State(db_pool): State<DbConnectionPoolV2>,
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
     Json(round_trips): Json<RoundTrips>,
 ) -> Result<impl IntoResponse> {
@@ -164,7 +165,7 @@ pub(in crate::views) async fn post_train_schedules(
     responses((status = 204, description = "Round trips were successfully upserted"))
 )]
 pub(in crate::views) async fn post_paced_trains(
-    State(db_pool): State<DbConnectionPoolV2>,
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
     Json(round_trips): Json<RoundTrips>,
 ) -> Result<impl IntoResponse> {
@@ -229,7 +230,7 @@ pub(in crate::views) async fn post_paced_trains(
     responses((status = 204, description = "Round trips were successfully deleted"))
 )]
 pub(in crate::views) async fn delete_train_schedules(
-    State(db_pool): State<DbConnectionPoolV2>,
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
     Json(train_schedule_ids): Json<HashSet<i64>>,
 ) -> Result<impl IntoResponse> {
@@ -259,7 +260,7 @@ pub(in crate::views) async fn delete_train_schedules(
     responses((status = 204, description = "Round trips were successfully deleted"))
 )]
 pub(in crate::views) async fn delete_paced_trains(
-    State(db_pool): State<DbConnectionPoolV2>,
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
     Json(train_schedule_ids): Json<HashSet<i64>>,
 ) -> Result<impl IntoResponse> {
@@ -294,7 +295,7 @@ pub(in crate::views) struct RoundTripsPage {
     responses((status = 200, body = inline(RoundTripsPage)))
 )]
 pub(in crate::views) async fn list_train_schedules(
-    State(db_pool): State<DbConnectionPoolV2>,
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
     Path(TimetableIdParam { id: timetable_id }): Path<TimetableIdParam>,
     Query(PaginationQueryParams { page, page_size }): Query<PaginationQueryParams<1000>>,
@@ -340,7 +341,7 @@ pub(in crate::views) async fn list_train_schedules(
     responses((status = 200, body = inline(RoundTripsPage)))
 )]
 pub(in crate::views) async fn list_paced_trains(
-    State(db_pool): State<DbConnectionPoolV2>,
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
     Path(TimetableIdParam { id: timetable_id }): Path<TimetableIdParam>,
     Query(PaginationQueryParams { page, page_size }): Query<PaginationQueryParams<1000>>,
