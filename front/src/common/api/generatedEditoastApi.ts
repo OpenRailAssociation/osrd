@@ -578,7 +578,7 @@ const injectedRtkApi = api
             exception_key: queryArg.exceptionKey,
           },
         }),
-        providesTags: ['train_schedule'],
+        providesTags: ['paced_train'],
       }),
       getProjects: build.query<GetProjectsApiResponse, GetProjectsApiArg>({
         query: (queryArg) => ({

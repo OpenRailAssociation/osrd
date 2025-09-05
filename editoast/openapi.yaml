@@ -1973,7 +1973,7 @@ paths:
   /paced_train/{id}/simulation:
     get:
       tags:
-      - train_schedule
+      - paced_train
       summary: Retrieve the space, speed and time curve of a given train
       parameters:
       - name: id
