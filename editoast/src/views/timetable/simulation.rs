@@ -144,6 +144,9 @@ pub enum SummaryResponse {
         /// Base simulation time for each train schedule path item.
         /// The first value is always `0` (beginning of the path) and the last one, the total time of the simulation (end of the path)
         path_item_times_base: Vec<u64>,
+        /// The path offset in mm of each path item given as input of the pathfinding
+        /// The first value is always `0` (beginning of the path) and the last one is always equal to the `length` of the path in mm
+        path_item_positions: Vec<u64>,
     },
     /// Pathfinding not found
     PathfindingNotFound(PathfindingNotFound),
@@ -155,8 +158,8 @@ pub enum SummaryResponse {
     PathfindingInputError(PathfindingInputError),
 }
 
-impl From<simulation::Response> for SummaryResponse {
-    fn from(response: simulation::Response) -> Self {
+impl SummaryResponse {
+    pub fn summarize_simulation(response: simulation::Response, path: PathfindingResult) -> Self {
         match response {
             simulation::Response::Success(SimulationResponseSuccess {
                 final_output,
@@ -164,6 +167,13 @@ impl From<simulation::Response> for SummaryResponse {
                 base,
                 ..
             }) => {
+                let PathfindingResult::Success(PathfindingResultSuccess {
+                    path_item_positions,
+                    ..
+                }) = path
+                else {
+                    panic!("Pathfinding cannnot fail if the simulation has succeeded")
+                };
                 let report = final_output.report_train;
                 Self::Success {
                     length: *report.positions.last().unwrap(),
@@ -172,6 +182,7 @@ impl From<simulation::Response> for SummaryResponse {
                     path_item_times_final: report.path_item_times.clone(),
                     path_item_times_provisional: provisional.path_item_times.clone(),
                     path_item_times_base: base.path_item_times.clone(),
+                    path_item_positions: path_item_positions.clone(),
                 }
             }
             simulation::Response::PathfindingFailed { pathfinding_failed } => {
