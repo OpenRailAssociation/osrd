@@ -5,6 +5,8 @@ pub mod simulation;
 pub mod stdcm;
 pub mod train_schedule;
 
+use std::fmt::Display;
+use std::str::FromStr;
 use std::sync::Arc;
 
 use authz;
@@ -64,7 +66,6 @@ use crate::error::Result;
 use crate::models;
 use crate::models::Infra;
 use crate::models::paced_train::PacedTrainChangeset;
-use crate::models::paced_train::TrainId;
 use crate::models::timetable::Timetable;
 use crate::models::timetable::TimetableWithTrains;
 use crate::models::train_schedule::TrainScheduleChangeset;
@@ -467,6 +468,93 @@ enum PacedTrainOccurrenceRef {
     CreatedException { exception_key: String },
 }
 
+#[derive(Debug, Clone, PartialEq)]
+/// This ID is used to identify paced train occurrences and exceptions when sending them to the core API for conflict detection.
+pub enum TrainId {
+    TrainSchedule(i64),
+    PacedTrainBaseOccurrence {
+        paced_train_id: i64,
+        index: u64,
+    },
+    PacedTrainModifiedException {
+        paced_train_id: i64,
+        index: u64,
+        exception_key: String,
+    },
+    PacedTrainCreatedException {
+        paced_train_id: i64,
+        exception_key: String,
+    },
+}
+
+impl Display for TrainId {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::TrainSchedule(id) => write!(f, "{id}"),
+            Self::PacedTrainBaseOccurrence {
+                paced_train_id,
+                index,
+            } => write!(f, "{paced_train_id}#{index}"),
+            Self::PacedTrainCreatedException {
+                paced_train_id,
+                exception_key,
+            } => write!(f, "{paced_train_id}@{exception_key}"),
+            Self::PacedTrainModifiedException {
+                paced_train_id,
+                exception_key,
+                index,
+            } => write!(f, "{paced_train_id}@{exception_key}#{index}"),
+        }
+    }
+}
+
+impl FromStr for TrainId {
+    type Err = &'static str;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        // Is it a paced train exception?
+        if let Some((train_id_str, exception_str)) = s.split_once('@') {
+            let paced_train_id = train_id_str
+                .parse::<i64>()
+                .map_err(|_| "Invalid train id")?;
+            // Is it a modified paced train exception?
+            if let Some((exception_key, index_str)) = exception_str.split_once('#') {
+                let index = index_str
+                    .parse::<u64>()
+                    .map_err(|_| "Invalid exception index")?;
+                Ok(TrainId::PacedTrainModifiedException {
+                    paced_train_id,
+                    exception_key: exception_key.to_string(),
+                    index,
+                })
+            } else {
+                let exception_key = exception_str.to_string();
+                Ok(TrainId::PacedTrainCreatedException {
+                    paced_train_id,
+                    exception_key,
+                })
+            }
+        } else {
+            // Is it a base paced train exception?
+            if let Some((train_id_str, index_str)) = s.split_once('#') {
+                let paced_train_id = train_id_str
+                    .parse::<i64>()
+                    .map_err(|_| "Invalid train id")?;
+                let index = index_str
+                    .parse::<u64>()
+                    .map_err(|_| "Invalid occurrence index")?;
+                Ok(TrainId::PacedTrainBaseOccurrence {
+                    paced_train_id,
+                    index,
+                })
+            } else {
+                let train_id = s.parse::<i64>().map_err(|_| "Invalid train id")?;
+                Ok(TrainId::TrainSchedule(train_id))
+            }
+        }
+    }
+}
+
 /// Retrieve the list of conflicts of the timetable (invalid trains are ignored)
 #[editoast_derive::route]
 #[utoipa::path(
@@ -552,6 +640,7 @@ pub(in crate::views) async fn conflicts(
     // Concatenate paced trains occurrences with train schedules
     let train_ids: Vec<_> = occurrence_ids
         .into_iter()
+        .map(TrainId::TrainSchedule)
         .chain(trains.iter().map(|ts| TrainId::TrainSchedule(ts.id)))
         .collect();
     let start_times = occurrence_trains
@@ -710,7 +799,10 @@ pub(in crate::views) async fn requirements(
     let (train_ids, trains): (Vec<_>, Vec<_>) = trains
         .flat_map(|train| match train {
             Either::Left(ts) => vec![(TrainId::TrainSchedule(ts.id), ts.into())],
-            Either::Right(pt) => pt.iter_occurrences().collect(),
+            Either::Right(pt) => pt
+                .iter_occurrences()
+                .map(|(id, pt)| (TrainId::TrainSchedule(id), pt))
+                .collect(),
         })
         .unzip();
 
