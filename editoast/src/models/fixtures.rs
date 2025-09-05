@@ -355,6 +355,7 @@ pub fn fast_rolling_stock_changeset(name: &str) -> Changeset<RollingStock> {
         .expect("Unable to parse example rolling stock"),
     )
     .name(name.to_owned())
+    .locked(false)
     .version(0)
 }
 
@@ -373,6 +374,7 @@ pub fn rolling_stock_with_energy_sources_changeset(name: &str) -> Changeset<Roll
         .expect("Unable to parse rolling stock with energy sources"),
     )
     .name(name.to_owned())
+    .locked(false)
     .version(1)
 }
 

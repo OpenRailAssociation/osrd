@@ -4198,8 +4198,6 @@ export type RollingStockForm = {
   /** Length in m */
   length: number;
   loading_gauge: LoadingGaugeType;
-  /** Deprecated for openapi: overwritten by query-param */
-  locked?: boolean;
   /** Mass in kg */
   mass: number;
   /** Velocity in m·s⁻¹ */

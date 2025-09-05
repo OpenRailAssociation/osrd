@@ -435,7 +435,6 @@
     "C1": "3"
   },
   "energy_sources": [],
-  "locked": false,
   "electrical_power_startup_time": 6.0,
   "raise_pantograph_time": 16.0,
   "version": 1,

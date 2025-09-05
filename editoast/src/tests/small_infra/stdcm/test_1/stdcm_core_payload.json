@@ -5,7 +5,6 @@
     "id": 899,
     "name": "TC64700",
     "version": "3.3",
-    "locked": true,
     "effort_curves": {
       "modes": {
         "thermal": {
