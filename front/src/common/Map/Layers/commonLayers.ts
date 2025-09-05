@@ -6,7 +6,8 @@ import type {
   CircleLayerSpecification,
 } from 'react-map-gl/maplibre';
 
-import type { Theme, OmitLayer } from 'types';
+import type { Theme } from 'common/Map/theme';
+import type { OmitLayer } from 'types';
 
 // Default symbol spacing (see https://maplibre.org/maplibre-style-spec/layers/#symbol-spacing)
 export const DEFAULT_SYMBOL_SPACING: PropertyValueSpecification<number> = 500;

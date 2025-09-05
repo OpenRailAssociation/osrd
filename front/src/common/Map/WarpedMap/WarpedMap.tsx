@@ -7,7 +7,6 @@ import type { LngLatBoundsLike } from 'maplibre-gl';
 import ReactMapGL, { Layer, type MapRef, Source } from 'react-map-gl/maplibre';
 
 import type { Layer as LayerType } from 'applications/editor/consts';
-import colors from 'common/Map/Consts/colors';
 import {
   EditorSource,
   OrderedLayer,
@@ -18,6 +17,7 @@ import {
   type LayerContext,
   type OrderedLayerProps,
 } from 'common/Map/Layers';
+import { colors } from 'common/Map/theme';
 import type { BBox2d } from 'common/Map/WarpedMap/core/helpers';
 import { LAYERS, LAYER_ENTITIES_ORDERS, LAYER_GROUPS_ORDER } from 'config/layerOrder';
 import RenderItinerary from 'modules/simulationResult/components/SimulationResultsMap/RenderItinerary';

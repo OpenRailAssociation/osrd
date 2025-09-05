@@ -3,7 +3,7 @@ import { isNil } from 'lodash';
 import { type LayerProps, Source } from 'react-map-gl/maplibre';
 
 import { MAP_URL } from 'common/Map/const';
-import type { Theme } from 'types';
+import type { Theme } from 'common/Map/theme';
 
 import NeutralSectionSigns from './NeutralSectionSigns';
 import OrderedLayer from '../../../OrderedLayer';

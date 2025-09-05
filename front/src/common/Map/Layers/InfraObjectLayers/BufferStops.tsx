@@ -3,7 +3,8 @@ import { isNil } from 'lodash';
 import { Source, type SymbolLayerSpecification } from 'react-map-gl/maplibre';
 
 import { MAP_URL } from 'common/Map/const';
-import type { Theme, OmitLayer } from 'types';
+import type { Theme } from 'common/Map/theme';
+import type { OmitLayer } from 'types';
 
 import { DEFAULT_HALO_WIDTH, getAllowOverlap, getDynamicTextSize } from '../commonLayers';
 import OrderedLayer from '../OrderedLayer';

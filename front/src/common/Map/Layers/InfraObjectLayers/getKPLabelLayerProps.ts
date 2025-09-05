@@ -3,7 +3,8 @@ import type { ExpressionFilterSpecification } from 'maplibre-gl';
 import type { SymbolLayerSpecification } from 'react-map-gl/maplibre';
 
 import { getAllowOverlap, getDynamicTextSize } from 'common/Map/Layers/commonLayers';
-import type { OmitLayer, Theme } from 'types';
+import type { Theme } from 'common/Map/theme';
+import type { OmitLayer } from 'types';
 
 import type { LayerProps } from '../types';
 

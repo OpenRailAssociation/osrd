@@ -17,7 +17,6 @@ import type { CommonToolState } from 'applications/editor/tools/types';
 import type { EditorContextType, ExtendedEditorContextType, Tool } from 'applications/editor/types';
 import type { InfraError } from 'common/api/osrdEditoastApi';
 import { CUSTOM_ATTRIBUTION } from 'common/Map/const';
-import colors from 'common/Map/Consts/colors';
 import {
   IGNLayers,
   LineSearchLayer,
@@ -29,6 +28,7 @@ import {
   VirtualLayers,
   useMapBlankStyle,
 } from 'common/Map/Layers';
+import { colors } from 'common/Map/theme';
 import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
 import { getEditorState } from 'reducers/editor/selectors';
 import { useMapSettings, useMapSettingsActions } from 'reducers/globalMap';

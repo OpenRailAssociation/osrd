@@ -3,7 +3,7 @@ import { isNil } from 'lodash';
 import { Source, type MapRef } from 'react-map-gl/maplibre';
 
 import { MAP_URL } from 'common/Map/const';
-import type { Theme } from 'types';
+import type { Theme } from 'common/Map/theme';
 
 import { getPointLayerProps, getSignalLayerProps } from './geoSignalsLayers';
 import getKPLabelLayerProps from './getKPLabelLayerProps';

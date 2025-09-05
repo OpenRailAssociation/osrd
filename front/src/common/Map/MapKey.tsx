@@ -1,6 +1,6 @@
 import { useTranslation } from 'react-i18next';
 
-import colors from 'common/Map/Consts/colors';
+import { colors, type Theme } from 'common/Map/theme';
 import { useMapSettings } from 'reducers/globalMap';
 
 import { electrificationMapKey, type MapKeyProps, speedLimitMapKey } from './const';
@@ -25,7 +25,7 @@ const MapSettings = ({ closeMapKeyPopUp }: MapKeyProps) => {
           className="powerline"
           style={{
             background: `repeating-linear-gradient(to right, ${
-              colors[mapStyle].powerline[key.color]
+              colors[mapStyle].powerline[key.color as keyof Theme['powerline']]
             } 20px, #333 22px, #333 24px)`,
           }}
         />
