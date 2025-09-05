@@ -27,6 +27,7 @@ use serde::Serialize;
 use std::slice;
 use std::sync::Arc;
 use thiserror::Error;
+use tracing::Span;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
 
@@ -115,6 +116,13 @@ pub(in crate::views) struct InfraIdQueryParam {
 /// If the simulation fails, the function uses a virtual train to detect conflicts
 /// with existing train schedules. It then returns both the conflict information
 /// and the pathfinding result from the virtual train's simulation.
+#[tracing::instrument(
+    target = "editoast::timetable",
+    name = "stdcm",
+    skip_all,
+    err,
+    fields(request)
+)]
 #[editoast_derive::route]
 #[utoipa::path(
     post, path = "",
@@ -140,6 +148,9 @@ pub(in crate::views) async fn stdcm(
     Query(query): Query<InfraIdQueryParam>,
     Json(request): Json<Request>,
 ) -> Result<Json<StdcmResponse>> {
+    // Add serialized request to trace attributes
+    Span::current().record("request", serde_json::to_string(&request)?);
+
     let authorized = auth
         .check_roles([authz::Role::Stdcm].into())
         .await
