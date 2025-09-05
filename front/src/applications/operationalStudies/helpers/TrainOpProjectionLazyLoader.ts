@@ -1,3 +1,5 @@
+import { isEmpty } from 'lodash';
+
 import {
   osrdEditoastApi,
   type OperationalPointReference,
@@ -159,12 +161,22 @@ export default class TrainOpProjectionLazyLoader extends TrainProjectionLazyLoad
 
     for (const [id, result] of Object.entries(rawPacedTrainResults)) {
       const pacedTrainId = formatEditoastIdToPacedTrainId(Number(id));
-      const { paced_train: space_time_curves } = result;
-      const { paced_train: signal_updates } = rawPacedTrainOccupancyBlocks[id];
-      rawResults.set(pacedTrainId, {
-        space_time_curves,
-        signal_updates,
-      });
+      const pacedTrainProjectionResult: ProjectionResult = {
+        space_time_curves: result.paced_train,
+        signal_updates: rawPacedTrainOccupancyBlocks[id].paced_train,
+      };
+
+      if (!isEmpty(result.exceptions)) {
+        pacedTrainProjectionResult.exceptions = new Map();
+        for (const [exceptionKey, exception] of Object.entries(result.exceptions)) {
+          pacedTrainProjectionResult.exceptions.set(exceptionKey, {
+            space_time_curves: exception,
+            signal_updates: [],
+          });
+        }
+      }
+
+      rawResults.set(pacedTrainId, pacedTrainProjectionResult);
     }
 
     this.options.onProgress(rawResults);
