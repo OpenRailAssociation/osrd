@@ -12,10 +12,11 @@ import type { AppDispatch } from 'store';
 import {
   extractOccurrenceIndexFromOccurrenceId,
   extractPacedTrainIdFromOccurrenceId,
-  isOccurrenceId,
+  isPacedTrainId,
   isTrainId,
 } from 'utils/trainId';
 
+import { isIndividualOccurrenceProjection } from './utils';
 import type { IndividualTrainProjection, TrainSpaceTimeData } from '../../../types';
 
 type DraggingState =
@@ -33,6 +34,8 @@ type ConfigureHandlePanParams = {
     newDepartureTime: Date;
     stopPanning: boolean;
   }) => Promise<void>;
+  selectedTrainId?: TrainId;
+  projectedTrains: IndividualTrainProjection[];
   draggingState: DraggingState;
   setDraggingState: (s: DraggingState) => void;
   hoveredItem: HoveredItem | null;
@@ -46,6 +49,8 @@ type ConfigureHandlePanParams = {
 export function configureHandlePan({
   spaceTimeChartOnPan,
   handleTrainDrag,
+  selectedTrainId,
+  projectedTrains,
   draggingState,
   setDraggingState,
   hoveredItem,
@@ -67,27 +72,29 @@ export function configureHandlePan({
     // If dragging
     if (draggingState) {
       const { draggedTrain, initialDepartureTime } = draggingState;
-      dispatch(updateSelectedTrainId(draggedTrain.id));
+
+      if (draggedTrain.id !== selectedTrainId) {
+        dispatch(updateSelectedTrainId(draggedTrain.id));
+      }
 
       const timeDiff = payload.data.time - payload.initialData.time;
 
       let newDepartureTime = new Date(initialDepartureTime.getTime() + timeDiff);
-      let draggedTrainId = draggedTrain.id;
 
       // if the dragged train is an occurrence, we need to update the first occurrence because the others are based on it
-      if (isOccurrenceId(draggedTrain.id)) {
+      if (
+        isIndividualOccurrenceProjection(draggedTrain) &&
+        (!draggedTrain.exception || !draggedTrain.exception.start_time)
+      ) {
         const occurrencesIndex = extractOccurrenceIndexFromOccurrenceId(draggedTrain.id);
         const pacedTrainId = extractPacedTrainIdFromOccurrenceId(draggedTrain.id);
-        const firstOccurrence = projectPathTrainResult.find(
-          ({ id }) => isOccurrenceId(id) && extractPacedTrainIdFromOccurrenceId(id) === pacedTrainId
+        const pacedTrain = projectPathTrainResult.find(
+          ({ id }) => isPacedTrainId(id) && id === pacedTrainId
         );
-        if (firstOccurrence && 'paced' in firstOccurrence) {
+        if (pacedTrain && 'paced' in pacedTrain) {
           newDepartureTime = dayjs(newDepartureTime)
-            .add(occurrencesIndex * -firstOccurrence.paced.interval.ms, 'ms')
+            .add(occurrencesIndex * -pacedTrain.paced.interval.ms, 'ms')
             .toDate();
-          if (isOccurrenceId(firstOccurrence.id)) {
-            draggedTrainId = firstOccurrence.id;
-          }
         }
       }
 
@@ -97,7 +104,7 @@ export function configureHandlePan({
       }
 
       await handleTrainDrag({
-        draggedTrainId,
+        draggedTrainId: draggedTrain.id,
         initialDepartureTime,
         newDepartureTime,
         stopPanning: !isPanning,
@@ -118,16 +125,22 @@ export function configureHandlePan({
     ) {
       const hoveredTrainId = hoveredItem.element.pathId;
       if (!isTrainId(hoveredTrainId)) return;
-      const train = projectPathTrainResult.find(
-        (projectedTrain) => projectedTrain.id === hoveredTrainId
-      );
-      // Only set dragging state if train is an occurrence (IndividualTrainProjection)
-      if (train && isOccurrenceId(train.id)) {
-        setDraggingState({
-          draggedTrain: train as IndividualTrainProjection,
-          initialDepartureTime: train.departureTime,
-        });
+
+      const train = projectedTrains.find((projectedTrain) => projectedTrain.id === hoveredTrainId);
+      if (!train) {
+        console.error(`No train found with id ${hoveredTrainId}`);
+        return;
       }
+
+      // disable start time exception for now
+      const isStartTimeException =
+        isIndividualOccurrenceProjection(train) && !!train.exception?.start_time;
+      if (isStartTimeException) return;
+
+      setDraggingState({
+        draggedTrain: train,
+        initialDepartureTime: train.departureTime,
+      });
     }
 
     // if no hovered train, we pan normally

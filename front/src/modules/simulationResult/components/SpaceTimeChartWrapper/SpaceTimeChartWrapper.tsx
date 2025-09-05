@@ -329,6 +329,8 @@ const SpaceTimeChartWrapper = ({
     configureHandlePan({
       spaceTimeChartOnPan: spaceTimeChartProps.onPan,
       handleTrainDrag,
+      selectedTrainId,
+      projectedTrains,
       draggingState,
       setDraggingState,
       hoveredItem,
