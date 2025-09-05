@@ -423,8 +423,11 @@ const handleCreateTimetableItem = async (
     TRAINRUN_DIRECTIONS.BACKWARD
   );
 
-  await populateSecondaryCodesInPath(pathAndSchedule.path, infraId, dispatch);
-
+  await populateSecondaryCodesInPath(
+    [...pathAndSchedule.path, ...returnPathAndSchedule.path],
+    infraId,
+    dispatch
+  );
   const category = getTrainCategoryFromTrainrunCategoryId(
     state.trainrunCategories,
     trainrun.categoryId
@@ -621,6 +624,8 @@ const handleUpdateTimetableItem = async ({
     new Date(oldForwardTimetableItem.start_time),
     TRAINRUN_DIRECTIONS.BACKWARD
   );
+
+  await populateSecondaryCodesInPath(returnPathAndSchedule.path, infraId, dispatch);
 
   let newReturnTimetableItem: TimetableItem;
 
