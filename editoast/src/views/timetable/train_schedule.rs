@@ -552,8 +552,11 @@ pub(in crate::views) async fn simulation_summary(
 
     // Transform simulations to simulation summary
     let mut simulation_summaries = HashMap::new();
-    for (train_schedule, (sim, _)) in train_schedules.iter().zip(simulations) {
-        let simulation_summary_result = SummaryResponse::from(Arc::unwrap_or_clone(sim));
+    for (train_schedule, (sim, path)) in train_schedules.iter().zip(simulations) {
+        let simulation_summary_result = SummaryResponse::summarize_simulation(
+            Arc::unwrap_or_clone(sim),
+            Arc::unwrap_or_clone(path),
+        );
         simulation_summaries.insert(train_schedule.id, simulation_summary_result);
     }
 
