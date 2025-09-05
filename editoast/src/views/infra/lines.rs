@@ -7,6 +7,7 @@ use database::DbConnectionPoolV2;
 use editoast_derive::EditoastError;
 use schemas::infra::TrackSection;
 use schemas::primitives::BoundingBox;
+use std::sync::Arc;
 use thiserror::Error;
 
 use crate::error::Result;
@@ -40,7 +41,7 @@ enum LinesErrors {
 )]
 pub(in crate::views) async fn get_line_bbox(
     Path((infra_id, line_code)): Path<(i64, i64)>,
-    State(db_pool): State<DbConnectionPoolV2>,
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
 ) -> Result<Json<BoundingBox>> {
     // Check user roles

@@ -11,6 +11,7 @@ use editoast_derive::EditoastError;
 use itertools::Itertools;
 use schemas::rolling_stock::SubCategory;
 use serde::Serialize;
+use std::sync::Arc;
 use thiserror::Error;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
@@ -69,7 +70,7 @@ pub(in crate::views) struct SubCategoryPage {
     ),
 )]
 pub(in crate::views) async fn get_sub_categories(
-    State(db_pool): State<DbConnectionPoolV2>,
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
     Query(pagination): Query<PaginationQueryParams<1000>>,
 ) -> Result<Json<SubCategoryPage>> {
@@ -105,7 +106,7 @@ pub(in crate::views) async fn get_sub_categories(
     ),
 )]
 pub(in crate::views) async fn create_sub_categories(
-    State(db_pool): State<DbConnectionPoolV2>,
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
     Json(data): Json<Vec<SubCategory>>,
 ) -> Result<Json<Vec<SubCategory>>> {
@@ -146,7 +147,7 @@ struct SubCategoryCodeParam {
     ),
 )]
 pub(in crate::views) async fn delete_sub_category(
-    State(db_pool): State<DbConnectionPoolV2>,
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Path(code): Path<String>,
     Extension(auth): AuthenticationExt,
 ) -> Result<impl IntoResponse> {

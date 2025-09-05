@@ -26,6 +26,7 @@ use schemas::rolling_stock::RollingStockMetadata;
 use schemas::rolling_stock::RollingStockSupportedSignalingSystems;
 use serde::Serialize;
 use std::collections::HashMap;
+use std::sync::Arc;
 use utoipa::ToSchema;
 
 use super::RollingStockError;
@@ -95,7 +96,7 @@ pub(in crate::views) struct LightRollingStockWithLiveriesCountList {
     )
 )]
 pub(in crate::views) async fn list(
-    State(db_pool): State<DbConnectionPoolV2>,
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
     Query(page_settings): Query<PaginationQueryParams<1000>>,
 ) -> Result<Json<LightRollingStockWithLiveriesCountList>> {
@@ -137,7 +138,7 @@ pub(in crate::views) async fn list(
     )
 )]
 pub(in crate::views) async fn get(
-    State(db_pool): State<DbConnectionPoolV2>,
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
     Path(light_rolling_stock_id): Path<i64>,
 ) -> Result<Json<LightRollingStockWithLiveries>> {
@@ -171,7 +172,7 @@ pub(in crate::views) async fn get(
     )
 )]
 pub(in crate::views) async fn get_by_name(
-    State(db_pool): State<DbConnectionPoolV2>,
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
     Path(light_rolling_stock_name): Path<String>,
 ) -> Result<Json<LightRollingStockWithLiveries>> {

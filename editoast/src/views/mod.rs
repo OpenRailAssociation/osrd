@@ -777,9 +777,9 @@ pub struct AppState {
     pub regulator: Regulator,
 }
 
-impl FromRef<AppState> for DbConnectionPoolV2 {
+impl FromRef<AppState> for Arc<DbConnectionPoolV2> {
     fn from_ref(input: &AppState) -> Self {
-        (*input.db_pool).clone()
+        input.db_pool.clone()
     }
 }
 

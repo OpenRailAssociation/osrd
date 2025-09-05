@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use std::collections::HashSet;
+use std::sync::Arc;
 
 use crate::error::Result;
 use crate::models::Infra;
@@ -468,7 +469,7 @@ pub(in crate::views) enum BodyUpdateGrants {
     ),
 )]
 pub(in crate::views) async fn update_grants(
-    State(db_pool): State<DbConnectionPoolV2>,
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
     Json(body): Json<BodyUpdateGrants>,
 ) -> Result<impl IntoResponse> {

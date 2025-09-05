@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use std::collections::HashSet;
+use std::sync::Arc;
 
 use authz;
 use axum::Extension;
@@ -55,7 +56,7 @@ pub(in crate::views) struct ObjectTypeParam {
 pub(in crate::views) async fn get_objects(
     Path(InfraIdParam { infra_id }): Path<InfraIdParam>,
     Path(object_type_param): Path<ObjectTypeParam>,
-    State(db_pool): State<DbConnectionPoolV2>,
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
     Json(obj_ids): Json<Vec<String>>,
 ) -> Result<Json<Vec<ObjectQueryable>>> {
@@ -136,7 +137,7 @@ pub(in crate::views) struct ListObjectsResponse {
 pub(in crate::views) async fn list_objects_ids(
     Path(InfraIdParam { infra_id }): Path<InfraIdParam>,
     Path(ObjectTypeParam { object_type }): Path<ObjectTypeParam>,
-    State(db_pool): State<DbConnectionPoolV2>,
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
 ) -> Result<Json<ListObjectsResponse>> {
     // Check user roles

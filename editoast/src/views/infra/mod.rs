@@ -418,7 +418,7 @@ pub(in crate::views) async fn clone(
     ),
 )]
 pub(in crate::views) async fn delete(
-    State(db_pool): State<DbConnectionPoolV2>,
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
     Path(InfraIdParam { infra_id }): Path<InfraIdParam>,
 ) -> Result<impl IntoResponse> {
@@ -471,7 +471,7 @@ impl From<InfraPatchForm> for Changeset<Infra> {
     ),
 )]
 pub(in crate::views) async fn put(
-    State(db_pool): State<DbConnectionPoolV2>,
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
     Path(infra): Path<i64>,
     Json(patch): Json<InfraPatchForm>,
@@ -505,7 +505,7 @@ pub(in crate::views) async fn put(
     )
 )]
 pub(in crate::views) async fn get_switch_types(
-    State(db_pool): State<DbConnectionPoolV2>,
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
     Path(InfraIdParam { infra_id }): Path<InfraIdParam>,
 ) -> Result<Json<Vec<SwitchType>>> {
@@ -565,7 +565,7 @@ pub(in crate::views) async fn get_switch_types(
 pub(in crate::views) async fn get_speed_limit_tags(
     Extension(auth): AuthenticationExt,
     Path(InfraIdParam { infra_id }): Path<InfraIdParam>,
-    State(db_pool): State<DbConnectionPoolV2>,
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
     State(builtin_tags): State<Arc<SpeedLimitTagIds>>,
 ) -> Result<Json<HashSet<String>>> {
     // Check user roles
@@ -623,7 +623,7 @@ pub(in crate::views) async fn get_voltages(
     Extension(auth): AuthenticationExt,
     Path(InfraIdParam { infra_id }): Path<InfraIdParam>,
     Query(param): Query<GetVoltagesQueryParams>,
-    State(db_pool): State<DbConnectionPoolV2>,
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
 ) -> Result<Json<Vec<String>>> {
     let authorized = auth
         .check_roles([authz::Role::OperationalStudies, authz::Role::Stdcm].into())
@@ -663,7 +663,7 @@ pub(in crate::views) async fn get_voltages(
     )
 )]
 pub(in crate::views) async fn get_all_voltages(
-    State(db_pool): State<DbConnectionPoolV2>,
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
 ) -> Result<Json<Vec<String>>> {
     let authorized = auth
@@ -678,14 +678,14 @@ pub(in crate::views) async fn get_all_voltages(
     Ok(Json(voltages.into_iter().map(|el| el.voltage).collect()))
 }
 
-async fn set_locked(infra_id: i64, locked: bool, db_pool: DbConnectionPoolV2) -> Result<()> {
-    let mut infra = Infra::retrieve_or_fail(db_pool.get().await?, infra_id, || {
-        InfraApiError::NotFound { infra_id }
+async fn set_locked(mut conn: DbConnection, infra_id: i64, locked: bool) -> Result<()> {
+    let mut infra = Infra::retrieve_or_fail(conn.clone(), infra_id, || InfraApiError::NotFound {
+        infra_id,
     })
     .await?;
 
     infra.locked = locked;
-    infra.save(&mut db_pool.get().await?).await?;
+    infra.save(&mut conn).await?;
     Ok(())
 }
 
@@ -703,7 +703,7 @@ async fn set_locked(infra_id: i64, locked: bool, db_pool: DbConnectionPoolV2) ->
 pub(in crate::views) async fn lock(
     Extension(auth): AuthenticationExt,
     Path(InfraIdParam { infra_id }): Path<InfraIdParam>,
-    State(db_pool): State<DbConnectionPoolV2>,
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
 ) -> Result<impl IntoResponse> {
     // Check user roles
     let has_role = auth
@@ -721,7 +721,7 @@ pub(in crate::views) async fn lock(
     })
     .await?;
 
-    set_locked(infra_id, true, db_pool).await?;
+    set_locked(db_pool.get().await?, infra_id, true).await?;
     Ok(StatusCode::NO_CONTENT)
 }
 
@@ -739,7 +739,7 @@ pub(in crate::views) async fn lock(
 pub(in crate::views) async fn unlock(
     Extension(auth): AuthenticationExt,
     Path(InfraIdParam { infra_id }): Path<InfraIdParam>,
-    State(db_pool): State<DbConnectionPoolV2>,
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
 ) -> Result<impl IntoResponse> {
     // Check user roles
     let has_role = auth
@@ -757,7 +757,7 @@ pub(in crate::views) async fn unlock(
     })
     .await?;
 
-    set_locked(infra_id, false, db_pool).await?;
+    set_locked(db_pool.get().await?, infra_id, false).await?;
     Ok(StatusCode::NO_CONTENT)
 }
 

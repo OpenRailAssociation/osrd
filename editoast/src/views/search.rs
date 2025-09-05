@@ -198,6 +198,7 @@
 // TODO: the documentation of this file needs to be updated (no more search.yml)
 
 use std::ops::DerefMut;
+use std::sync::Arc;
 
 use axum::Extension;
 use axum::extract::Json;
@@ -338,7 +339,7 @@ struct SearchDBResult {
     )
 )]
 pub(in crate::views) async fn search(
-    State(db_pool): State<DbConnectionPoolV2>,
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
     Query(PaginationQueryParams { page, page_size }): Query<PaginationQueryParams<1000>>,
     Json(SearchPayload { object, query, dry }): Json<SearchPayload>,

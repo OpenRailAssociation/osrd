@@ -5,6 +5,7 @@ pub(in crate::views) mod towed;
 pub use form::RollingStockForm;
 
 use std::io::Cursor;
+use std::sync::Arc;
 
 use authz::Role;
 use axum::Extension;
@@ -185,7 +186,7 @@ pub struct RollingStockNameParam {
     )
 )]
 pub(in crate::views) async fn get(
-    State(db_pool): State<DbConnectionPoolV2>,
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
     Path(rolling_stock_id): Path<i64>,
 ) -> Result<Json<RollingStockWithLiveries>> {
@@ -217,7 +218,7 @@ pub(in crate::views) async fn get(
     )
 )]
 pub(in crate::views) async fn get_by_name(
-    State(db_pool): State<DbConnectionPoolV2>,
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
     Path(rolling_stock_name): Path<String>,
 ) -> Result<Json<RollingStockWithLiveries>> {
@@ -249,7 +250,7 @@ pub(in crate::views) async fn get_by_name(
     )
 )]
 pub(in crate::views) async fn get_power_restrictions(
-    State(db_pool): State<DbConnectionPoolV2>,
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
 ) -> Result<Json<Vec<String>>> {
     let authorized = auth
@@ -288,7 +289,7 @@ pub(in crate::views) struct PostRollingStockQueryParams {
     )
 )]
 pub(in crate::views) async fn create(
-    State(db_pool): State<DbConnectionPoolV2>,
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
     Query(query_params): Query<PostRollingStockQueryParams>,
     Json(rolling_stock_form): Json<RollingStockForm>,
@@ -327,7 +328,7 @@ pub(in crate::views) async fn create(
     )
 )]
 pub(in crate::views) async fn update(
-    State(db_pool): State<DbConnectionPoolV2>,
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
     Path(rolling_stock_id): Path<i64>,
     Json(rolling_stock_form): Json<RollingStockForm>,
@@ -407,7 +408,7 @@ pub(in crate::views) struct DeleteRollingStockQueryParams {
     )
 )]
 pub(in crate::views) async fn delete(
-    State(db_pool): State<DbConnectionPoolV2>,
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
     Path(rolling_stock_id): Path<i64>,
     Query(DeleteRollingStockQueryParams { force }): Query<DeleteRollingStockQueryParams>,
@@ -476,7 +477,7 @@ pub(in crate::views) struct RollingStockLockedUpdateForm {
     )
 )]
 pub(in crate::views) async fn update_locked(
-    State(db_pool): State<DbConnectionPoolV2>,
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
     Path(rolling_stock_id): Path<i64>,
     Json(RollingStockLockedUpdateForm { locked }): Json<RollingStockLockedUpdateForm>,
@@ -560,7 +561,7 @@ async fn parse_multipart_content(
     )
 )]
 pub(in crate::views) async fn create_livery(
-    State(db_pool): State<DbConnectionPoolV2>,
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
     Path(rolling_stock_id): Path<i64>,
     form: Multipart,
@@ -628,7 +629,7 @@ pub(in crate::views) async fn create_livery(
     )
 )]
 pub(in crate::views) async fn get_usage(
-    State(db_pool): State<DbConnectionPoolV2>,
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Path(rolling_stock_id): Path<i64>,
 ) -> Result<Json<Vec<ScenarioReference>>> {
     let mut conn = db_pool.get().await?;

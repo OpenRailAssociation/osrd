@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use authz::Role;
 use axum::Extension;
 use axum::extract::Json;
@@ -146,7 +148,7 @@ pub(in crate::views) struct MacroNodeListResponse {
     )
 )]
 pub(in crate::views) async fn list(
-    State(db_pool): State<DbConnectionPoolV2>,
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
     Path((project_id, study_id, scenario_id)): Path<(i64, i64, i64)>,
     Query(pagination_params): Query<PaginationQueryParams<100>>,
@@ -192,7 +194,7 @@ pub(in crate::views) async fn list(
     )
 )]
 pub(in crate::views) async fn create(
-    State(db_pool): State<DbConnectionPoolV2>,
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
     Path((project_id, study_id, scenario_id)): Path<(i64, i64, i64)>,
     Json(data): Json<MacroNodeBatchForm>,
@@ -252,7 +254,7 @@ pub(in crate::views) async fn create(
     )
 )]
 pub(in crate::views) async fn get(
-    State(db_pool): State<DbConnectionPoolV2>,
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
     Path((project_id, study_id, scenario_id, node_id)): Path<(i64, i64, i64, i64)>,
 ) -> Result<Json<MacroNodeResponse>> {
@@ -287,7 +289,7 @@ pub(in crate::views) async fn get(
     )
 )]
 pub(in crate::views) async fn update(
-    State(db_pool): State<DbConnectionPoolV2>,
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
     Path((project_id, study_id, scenario_id, node_id)): Path<(i64, i64, i64, i64)>,
     Json(data): Json<MacroNodeForm>,
@@ -349,7 +351,7 @@ pub(in crate::views) async fn update(
     )
 )]
 pub(in crate::views) async fn delete(
-    State(db_pool): State<DbConnectionPoolV2>,
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
     Path((project_id, study_id, scenario_id, node_id)): Path<(i64, i64, i64, i64)>,
 ) -> Result<impl IntoResponse> {
