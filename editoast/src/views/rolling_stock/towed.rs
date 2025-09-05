@@ -14,25 +14,18 @@ use axum::extract::Path;
 use axum::extract::Query;
 use axum::extract::State;
 use axum::http::StatusCode;
-use common::units;
-use common::units::quantities::Acceleration;
-use common::units::quantities::Deceleration;
-use common::units::quantities::Length;
-use common::units::quantities::Mass;
-use common::units::quantities::Velocity;
 use database::DbConnectionPoolV2;
 use diesel_async::scoped_futures::ScopedFutureExt as _;
 use editoast_derive::EditoastError;
 use editoast_models::TowedRollingStock;
 use editoast_models::prelude::*;
-use editoast_models::towed_rolling_stock::TowedRollingStockChangeset;
-use schemas::rolling_stock::ROLLING_STOCK_RAILJSON_VERSION;
-use schemas::rolling_stock::RollingResistancePerWeight;
 use serde::Deserialize;
 use serde::Serialize;
 use thiserror::Error;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
+
+use schemas::TowedRollingStock as TowedRollingStockForm;
 
 #[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "towedrollingstocks")]
@@ -49,54 +42,19 @@ pub enum TowedRollingStockError {
     #[editoast_error(status = 500)]
     Database(#[from] editoast_models::Error),
 }
-
-#[editoast_derive::openapi_schema]
-#[editoast_derive::annotate_units]
-#[derive(Debug, Clone, Deserialize, Serialize, ToSchema)]
-pub struct TowedRollingStockForm {
-    pub name: String,
-    pub label: String,
-    pub locked: bool,
-
-    #[serde(with = "units::kilogram")]
-    pub mass: Mass,
-    #[serde(with = "units::meter")]
-    pub length: Length,
-    #[serde(with = "units::meter_per_second_squared")]
-    pub comfort_acceleration: Acceleration,
-    #[serde(with = "units::meter_per_second_squared")]
-    pub startup_acceleration: Acceleration,
-    pub inertia_coefficient: f64,
-    pub rolling_resistance: RollingResistancePerWeight,
-    #[serde(with = "units::meter_per_second_squared")]
-    pub const_gamma: Deceleration,
-    #[serde(default, with = "units::meter_per_second::option")]
-    pub max_speed: Option<Velocity>,
+#[derive(Debug, Deserialize, IntoParams, ToSchema)]
+#[into_params(parameter_in = Query)]
+pub(in crate::views) struct PostTowedRollingStockQueryParams {
+    #[serde(default)]
+    locked: bool,
 }
 
-impl From<TowedRollingStockForm> for TowedRollingStockChangeset {
-    fn from(towed_rolling_stock_form: TowedRollingStockForm) -> Self {
-        TowedRollingStock::changeset()
-            .railjson_version(ROLLING_STOCK_RAILJSON_VERSION.to_string())
-            .name(towed_rolling_stock_form.name)
-            .label(towed_rolling_stock_form.label)
-            .locked(towed_rolling_stock_form.locked)
-            .mass(towed_rolling_stock_form.mass)
-            .length(towed_rolling_stock_form.length)
-            .comfort_acceleration(towed_rolling_stock_form.comfort_acceleration)
-            .startup_acceleration(towed_rolling_stock_form.startup_acceleration)
-            .inertia_coefficient(towed_rolling_stock_form.inertia_coefficient)
-            .rolling_resistance(towed_rolling_stock_form.rolling_resistance)
-            .const_gamma(towed_rolling_stock_form.const_gamma)
-            .max_speed(towed_rolling_stock_form.max_speed)
-    }
-}
-
-/// Create a rolling stock
+/// Create a towed rolling stock
 #[editoast_derive::route]
 #[utoipa::path(
     post, path = "",
     tag = "rolling_stock",
+    params(PostTowedRollingStockQueryParams),
     request_body = TowedRollingStockForm,
     responses(
         (status = 200, description = "The created towed rolling stock", body = TowedRollingStock)
@@ -105,6 +63,7 @@ impl From<TowedRollingStockForm> for TowedRollingStockChangeset {
 pub(in crate::views) async fn post(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
+    Query(query_params): Query<PostTowedRollingStockQueryParams>,
     Json(towed_rolling_stock_form): Json<TowedRollingStockForm>,
 ) -> Result<Json<TowedRollingStock>> {
     let authorized = auth
@@ -117,7 +76,11 @@ pub(in crate::views) async fn post(
     let conn = &mut db_pool.get().await?;
     let rolling_stock_changeset: Changeset<TowedRollingStock> = towed_rolling_stock_form.into();
 
-    let rolling_stock = rolling_stock_changeset.version(0).create(conn).await?;
+    let rolling_stock = rolling_stock_changeset
+        .locked(query_params.locked)
+        .version(0)
+        .create(conn)
+        .await?;
 
     Ok(Json(rolling_stock))
 }
@@ -205,15 +168,15 @@ pub(in crate::views) async fn get_by_id(
 
 #[editoast_derive::route]
 #[utoipa::path(
-    patch, path = "",
+    put, path = "",
     tag = "rolling_stock",
     params(TowedRollingStockIdParam),
     request_body = TowedRollingStockForm,
     responses(
-        (status = 200, description = "The created towed rolling stock", body = TowedRollingStock)
+        (status = 200, description = "The modified towed rolling stock", body = TowedRollingStock)
     )
 )]
-pub(in crate::views) async fn patch_by_id(
+pub(in crate::views) async fn put_by_id(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
     Path(TowedRollingStockIdParam {
@@ -250,19 +213,21 @@ pub(in crate::views) async fn patch_by_id(
                     .into());
                 }
 
-                let mut new_towed_rolling_stock =
-                    Changeset::<TowedRollingStock>::from(towed_rolling_stock_form)
+                if towed_rolling_stock_form != existing_rolling_stock.clone().into() {
+                    let mut towed_rolling_stock_changeset: Changeset<TowedRollingStock> =
+                        towed_rolling_stock_form.clone().into();
+                    towed_rolling_stock_changeset.version =
+                        Some(&existing_rolling_stock.version + 1);
+                    let new_towed_rolling_stock = towed_rolling_stock_changeset
                         .update(&mut conn.clone(), towed_rolling_stock_id)
                         .await?
                         .ok_or(TowedRollingStockError::IdNotFound {
                             towed_rolling_stock_id,
                         })?;
-
-                if new_towed_rolling_stock != existing_rolling_stock {
-                    new_towed_rolling_stock.version += 1;
-                    new_towed_rolling_stock.save(&mut conn.clone()).await?;
+                    Ok(new_towed_rolling_stock)
+                } else {
+                    Ok(existing_rolling_stock)
                 }
-                Ok(new_towed_rolling_stock)
             }
             .scope_boxed()
         })
@@ -353,6 +318,7 @@ mod tests {
 
         let request = app
             .post("/towed_rolling_stock")
+            .add_query_param("locked", locked)
             .json(&towed_rolling_stock_json);
 
         app.fetch(request).assert_status(StatusCode::OK).json_into()
@@ -419,7 +385,7 @@ mod tests {
 
         let id: i64 = rand::random(); // <-- doesn't exist
         app.fetch(
-            app.patch(&format!("/towed_rolling_stock/{id}"))
+            app.put(&format!("/towed_rolling_stock/{id}"))
                 .json(&towed_rolling_stock),
         )
         .assert_status(StatusCode::NOT_FOUND);
@@ -436,7 +402,7 @@ mod tests {
         towed_rolling_stock.mass = units::kilogram::new(13000.0);
         let updated_towed_rolling_stock: TowedRollingStock = app
             .fetch(
-                app.patch(&format!("/towed_rolling_stock/{id}"))
+                app.put(&format!("/towed_rolling_stock/{id}"))
                     .json(&towed_rolling_stock),
             )
             .assert_status(StatusCode::OK)
@@ -471,7 +437,7 @@ mod tests {
         let id = towed_rolling_stock.id;
         towed_rolling_stock.mass = units::kilogram::new(13000.0);
         app.fetch(
-            app.patch(&format!("/towed_rolling_stock/{id}"))
+            app.put(&format!("/towed_rolling_stock/{id}"))
                 .json(&towed_rolling_stock),
         )
         .assert_status(StatusCode::CONFLICT);
@@ -492,7 +458,7 @@ mod tests {
         )
         .assert_status(StatusCode::NO_CONTENT);
         app.fetch(
-            app.patch(&format!("/towed_rolling_stock/{id}"))
+            app.put(&format!("/towed_rolling_stock/{id}"))
                 .json(&towed_rolling_stock),
         )
         .assert_status(StatusCode::OK);

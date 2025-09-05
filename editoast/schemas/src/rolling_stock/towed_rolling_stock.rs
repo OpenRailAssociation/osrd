@@ -1,3 +1,5 @@
+use crate::rolling_stock::default_rolling_stock_railjson_version;
+
 use super::RollingResistancePerWeight;
 use common::units;
 use common::units::quantities::Acceleration;
@@ -6,10 +8,15 @@ use common::units::quantities::Length;
 use common::units::quantities::Mass;
 use common::units::quantities::Velocity;
 
-#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize)]
+#[editoast_derive::openapi_schema]
+#[editoast_derive::annotate_units]
+#[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize, utoipa::ToSchema)]
+#[schema(as = TowedRollingStockForm)]
 pub struct TowedRollingStock {
     pub name: String,
     pub label: String,
+    #[schema(default = default_rolling_stock_railjson_version)]
+    #[serde(default = "default_rolling_stock_railjson_version")]
     pub railjson_version: String,
     #[serde(with = "units::kilogram")]
     pub mass: Mass,
