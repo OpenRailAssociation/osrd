@@ -330,14 +330,17 @@ pub(in crate::views) async fn simulation_summary(
     let mut base_simulation = Arc::clone(&simulations[0].0);
     let results = simulation_contexts.into_iter().zip(simulations).fold(
         HashMap::<i64, PacedTrainSummaryResponse>::new(),
-        |mut map, (simulation_context, (simulation, _))| {
+        |mut map, (simulation_context, (simulation, path))| {
             if let Some(exception_key) = &simulation_context.exception_key {
                 if !Arc::ptr_eq(&base_simulation, &simulation) {
                     map.entry(simulation_context.paced_train_id)
                         .and_modify(|summary| {
                             summary.exceptions.insert(
                                 exception_key.to_string(),
-                                SummaryResponse::from(simulation.as_ref().clone()),
+                                SummaryResponse::summarize_simulation(
+                                    Arc::unwrap_or_clone(simulation),
+                                    Arc::unwrap_or_clone(path),
+                                ),
                             );
                         });
                 }
@@ -346,7 +349,10 @@ pub(in crate::views) async fn simulation_summary(
                 map.insert(
                     simulation_context.paced_train_id,
                     PacedTrainSummaryResponse {
-                        paced_train: SummaryResponse::from(Arc::unwrap_or_clone(simulation)),
+                        paced_train: SummaryResponse::summarize_simulation(
+                            Arc::unwrap_or_clone(simulation),
+                            Arc::unwrap_or_clone(path),
+                        ),
                         exceptions: HashMap::new(),
                     },
                 );
@@ -1537,7 +1543,8 @@ mod tests {
                     energy_consumption: 0.0,
                     path_item_times_final: vec![0, 1000, 2000, 3000],
                     path_item_times_provisional: vec![0, 1000, 2000, 3000],
-                    path_item_times_base: vec![0, 1000, 2000, 3000]
+                    path_item_times_base: vec![0, 1000, 2000, 3000],
+                    path_item_positions: vec![0, 1, 2, 3]
                 },
                 exceptions: [(
                     "change_initial_speed".to_string(),
@@ -1549,7 +1556,8 @@ mod tests {
                         energy_consumption: 0.0,
                         path_item_times_final: vec![0, 1000, 2000, 3000],
                         path_item_times_provisional: vec![0, 1000, 2000, 3000],
-                        path_item_times_base: vec![0, 1000, 2000, 3000]
+                        path_item_times_base: vec![0, 1000, 2000, 3000],
+                        path_item_positions: vec![0, 1, 2, 3]
                     }
                 )]
                 .into_iter()

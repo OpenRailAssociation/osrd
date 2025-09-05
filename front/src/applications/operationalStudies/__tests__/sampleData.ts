@@ -411,6 +411,7 @@ export const trainSummaryTooFast: Extract<SimulationSummaryResult, { status: 'su
   path_item_times_final: [0, 1739394, 3069187],
   path_item_times_provisional: [0, 1834414, 3164206],
   path_item_times_base: [0, 1444453, 2491479],
+  path_item_positions: [0, 1000, 2000],
 };
 
 export const trainScheduleTooFastOnInterval: TrainScheduleWithTrainId = {
@@ -485,6 +486,7 @@ export const trainSummaryTooFastOnInterval: Extract<
   path_item_times_final: [0, 5280030, 15300915],
   path_item_times_provisional: [0, 5222392, 15267584],
   path_item_times_base: [0, 4730243, 13828795],
+  path_item_positions: [0, 1000, 2000],
 };
 
 export const trainScheduleNotHonored: TrainScheduleWithTrainId = {
@@ -551,6 +553,7 @@ export const trainSummaryNotHonored: Extract<SimulationSummaryResult, { status: 
   path_item_times_final: [0, 1425534, 2186885],
   path_item_times_provisional: [0, 1425534, 2186885],
   path_item_times_base: [0, 1425534, 2186885],
+  path_item_positions: [0, 1000, 2000],
 };
 
 export const trainScheduleHonored: TrainScheduleWithTrainId = {
@@ -622,4 +625,5 @@ export const trainSummaryHonored: Extract<SimulationSummaryResult, { status: 'su
   path_item_times_final: [0, 2186885],
   path_item_times_provisional: [0, 2186885],
   path_item_times_base: [0, 2186885],
+  path_item_positions: [0, 1000],
 };
