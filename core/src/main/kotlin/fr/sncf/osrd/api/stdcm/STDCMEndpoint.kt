@@ -100,7 +100,6 @@ class STDCMEndpoint(
     @WithSpan(value = "Processing STDCM request", kind = SpanKind.SERVER)
     fun run(request: STDCMRequest): Response {
         val recorder = DiagnosticRecorderImpl(false)
-        Span.current().setAttribute("payload", stdcmRequestAdapter.toJson(request))
         logger.info(
             "Request received: start=${request.startTime}, max duration=${request.maximumRunTime}"
         )
