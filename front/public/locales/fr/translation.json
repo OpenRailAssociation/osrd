@@ -731,7 +731,7 @@
     },
     "export": "Exporter",
     "exportRollingStock": "Exporter le matériel roulant",
-    "import": "Importer un matériel roulant",
+    "importRollingStock": "Importer un matériel roulant",
     "inertiaCoefficient": "Coefficient d'inertie",
     "length": "Longueur",
     "listDisabled": "Veuillez quitter l'éditeur pour modifier la sélection",

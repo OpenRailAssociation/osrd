@@ -304,12 +304,12 @@ const RollingStockEditorForm = ({
         <button
           type="button"
           className="d-flex justify-content-start mb-2 py-1 px-2"
-          aria-label={t('rollingStock.import')}
-          title={t('rollingStock.import')}
+          aria-label={t('rollingStock.importRollingStock')}
+          title={t('rollingStock.importRollingStock')}
           onClick={() => openModal(<UploadFileModal handleSubmit={importFile} />)}
         >
           <Upload className="mr-2" />
-          {t('rollingStock.import')}
+          {t('rollingStock.importRollingStock')}
         </button>
         <Tabs pills fullWidth tabs={[tabRollingStockDetails, tabRollingStockCurves]} />
       </div>
