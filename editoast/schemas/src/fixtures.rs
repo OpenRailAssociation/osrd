@@ -49,7 +49,6 @@ pub fn simple_rolling_stock() -> RollingStock {
         energy_sources: vec![],
         const_gamma: units::meter_per_second_squared::new(1.0),
         etcs_brake_params: None,
-        locked: false,
         metadata: None,
         power_restrictions: HashMap::new(),
         railjson_version: "12".to_string(),

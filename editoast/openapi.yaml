@@ -11886,10 +11886,6 @@ components:
           description: Length in m
         loading_gauge:
           $ref: '#/components/schemas/LoadingGaugeType'
-        locked:
-          type: boolean
-          description: 'Deprecated for openapi: overwritten by query-param'
-          default: false
         mass:
           type: number
           format: double

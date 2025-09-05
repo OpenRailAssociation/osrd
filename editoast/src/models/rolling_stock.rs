@@ -135,7 +135,6 @@ impl From<RollingStock> for schemas::RollingStock {
     fn from(rolling_stock: RollingStock) -> Self {
         schemas::RollingStock {
             railjson_version: rolling_stock.railjson_version,
-            locked: rolling_stock.locked,
             metadata: rolling_stock.metadata,
             name: rolling_stock.name,
             effort_curves: rolling_stock.effort_curves,
@@ -172,7 +171,6 @@ impl From<schemas::RollingStock> for RollingStockChangeset {
     fn from(rolling_stock: schemas::RollingStock) -> Self {
         RollingStock::changeset()
             .railjson_version(rolling_stock.railjson_version)
-            .locked(rolling_stock.locked)
             .metadata(rolling_stock.metadata)
             .name(rolling_stock.name)
             .effort_curves(rolling_stock.effort_curves)
