@@ -119,20 +119,14 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithStatus) => 
   });
 
   // TODO Paced trains : adapt this to handle paced trains in the conflicts issue
-  const {
-    data: conflicts,
-    refetch: refetchConflicts,
-    isLoading,
-    isFetching,
-  } = osrdEditoastApi.endpoints.getTimetableByIdConflicts.useQuery(
-    {
-      id: scenario.timetable_id,
-      infraId: scenario.infra_id,
-    },
-    {
-      skip: !allTrainsSimulated,
+  const [fetchConflicts, { data: conflicts, isLoading, isFetching }] =
+    osrdEditoastApi.endpoints.getTimetableByIdConflicts.useLazyQuery();
+
+  const safeFetchConflicts = useCallback(() => {
+    if (allTrainsSimulated) {
+      fetchConflicts({ id: scenario.timetable_id, infraId: scenario.infra_id });
     }
-  );
+  }, [allTrainsSimulated, scenario.timetable_id, scenario.infra_id, fetchConflicts]);
 
   const isConflictsLoading = isLoading || isFetching;
 
@@ -197,9 +191,9 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithStatus) => 
       removeProjectedTimetableItems(timetableItemsToUpsert.map((item) => item.id));
 
       simulateTimetableItems(timetableItemsToUpsert);
-      refetchConflicts();
+      safeFetchConflicts();
     },
-    [refetchConflicts]
+    [safeFetchConflicts]
   );
 
   const removeTimetableItems = useCallback(
@@ -214,9 +208,9 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithStatus) => 
 
       removeSimulatedTimetableItems(_timetableItemsToRemove);
       removeProjectedTimetableItems(_timetableItemsToRemove);
-      refetchConflicts();
+      safeFetchConflicts();
     },
-    [refetchConflicts]
+    [safeFetchConflicts]
   );
 
   const setTimetableItemDepartureTime = useCallback(
@@ -239,9 +233,9 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithStatus) => 
 
       updateSimulatedTimetableItemDepartureTime(timetableItemId, newDeparture);
       updateProjectedTimetableItemDepartureTime(timetableItemId, newDeparture);
-      refetchConflicts();
+      safeFetchConflicts();
     },
-    []
+    [safeFetchConflicts]
   );
 
   /** Update only departure time of a timetable item */
