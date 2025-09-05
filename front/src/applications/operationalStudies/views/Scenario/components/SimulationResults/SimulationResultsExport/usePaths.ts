@@ -1,6 +1,14 @@
 import { useMemo } from 'react';
 
-import type { ProjectPathTrainResult } from '@osrd-project/ui-charts';
+type ProjectPathTrainResult = {
+  id: string;
+  name: string;
+  spaceTimeCurves: {
+    positions: number[];
+    times: number[];
+  }[];
+  departureTime: Date;
+};
 
 const PATH_COLOR_DEFAULT = '#8A714B';
 

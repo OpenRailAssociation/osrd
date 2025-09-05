@@ -395,7 +395,7 @@ const SpaceTimeChartWrapper = ({
             xZoom={xZoom}
             handleXZoom={handleXZoom}
             zoomMode={zoomMode}
-            waypointsPanelData={waypointsPanelData}
+            disableZoom={!!waypointsPanelData?.deployedWaypoints?.size}
             toggleZoomMode={toggleZoomMode}
             setShowSettingsPanel={setShowSettingsPanel}
           />
