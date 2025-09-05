@@ -185,8 +185,9 @@ const osrdEditoastApi = generatedEditoastApi
           }
           return { data: simulation };
         },
-        // TODO: fix getPacedTrainByIdSimulation tags (it should be paced_train)
-        providesTags: ['train_schedule'],
+        providesTags: (_result, _error, arg) => [
+          isTrainScheduleId(arg.id) ? 'train_schedule' : 'paced_train',
+        ],
       }),
       matchAllOperationalPoints: builder.query<
         RelatedOperationalPoint[][],
