@@ -294,10 +294,6 @@ class RollingStock(BaseModel, extra="forbid"):
         default=RAILJSON_ROLLING_STOCK_VERSION
     )
     name: str = Field(max_length=255)
-    locked: bool = Field(
-        default=False,
-        description="Whether the rolling stock can be edited/deleted or not",
-    )
     effort_curves: EffortCurves = Field(
         description="Curves mapping speed (in m/s) to maximum traction (in newtons)"
     )

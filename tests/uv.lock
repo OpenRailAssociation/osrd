@@ -182,7 +182,7 @@ wheels = [
 
 [[package]]
 name = "osrd-schemas"
-version = "0.8.18"
+version = "0.9.0"
 source = { editable = "../python/osrd_schemas" }
 dependencies = [
     { name = "geojson-pydantic" },

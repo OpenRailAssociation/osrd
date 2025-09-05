@@ -158,7 +158,6 @@
   "loading_gauge": "G1",
   "power_restrictions": {},
   "energy_sources": [],
-  "locked": false,
   "electrical_power_startup_time": 5.0,
   "raise_pantograph_time": 25.0,
   "version": 0,
