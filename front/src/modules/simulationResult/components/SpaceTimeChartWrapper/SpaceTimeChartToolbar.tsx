@@ -4,13 +4,11 @@ import { DEFAULT_ZOOM_MS_PER_PX, timeScaleToZoomValue } from '@osrd-project/ui-c
 import { Iterations, Sliders, ZoomIn } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 
-import type { WaypointsPanelData } from 'modules/simulationResult/types';
-
 type SpaceTimeChartToolbarProps = {
   xZoom: number;
   handleXZoom: (newXZoom: number, xPosition?: number) => void;
   zoomMode: boolean;
-  waypointsPanelData?: WaypointsPanelData;
+  disableZoom: boolean;
   toggleZoomMode: () => void;
   setShowSettingsPanel: Dispatch<SetStateAction<boolean>>;
   className?: string;
@@ -20,7 +18,7 @@ const SpaceTimeChartToolbar = ({
   xZoom,
   handleXZoom,
   zoomMode,
-  waypointsPanelData,
+  disableZoom,
   toggleZoomMode,
   setShowSettingsPanel,
 }: SpaceTimeChartToolbarProps) => (
@@ -44,10 +42,10 @@ const SpaceTimeChartToolbar = ({
       type="button"
       className={cx('zoom-button', {
         'zoom-button-clicked': zoomMode,
-        'zoom-button-disabled': !!waypointsPanelData?.deployedWaypoints?.size,
+        'zoom-button-disabled': disableZoom,
       })}
       onClick={toggleZoomMode}
-      disabled={!!waypointsPanelData?.deployedWaypoints?.size}
+      disabled={disableZoom}
     >
       <ZoomIn className="icon" />
     </button>
