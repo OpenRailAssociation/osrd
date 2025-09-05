@@ -27,6 +27,7 @@ use crate::rolling_stock::RollingStockSupportedSignalingSystems;
 use crate::rolling_stock::TowedRollingStock;
 use crate::rolling_stock::TrainMainCategories;
 use crate::rolling_stock::TrainMainCategory;
+use crate::rolling_stock::default_rolling_stock_railjson_version;
 use crate::train_schedule::Comfort;
 use crate::train_schedule::Distribution;
 use crate::train_schedule::MarginValue;
@@ -87,7 +88,7 @@ pub fn towed_rolling_stock() -> TowedRollingStock {
         },
         const_gamma: units::meter_per_second_squared::new(0.5),
         max_speed: Some(units::meter_per_second::new(35.0)),
-        railjson_version: "3.4".to_string(),
+        railjson_version: default_rolling_stock_railjson_version(),
     }
 }
 

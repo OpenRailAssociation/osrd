@@ -1169,6 +1169,9 @@ const injectedRtkApi = api
           url: `/towed_rolling_stock`,
           method: 'POST',
           body: queryArg.towedRollingStockForm,
+          params: {
+            locked: queryArg.locked,
+          },
         }),
         invalidatesTags: ['rolling_stock'],
       }),
@@ -1179,13 +1182,13 @@ const injectedRtkApi = api
         query: (queryArg) => ({ url: `/towed_rolling_stock/${queryArg.towedRollingStockId}` }),
         providesTags: ['rolling_stock'],
       }),
-      patchTowedRollingStockByTowedRollingStockId: build.mutation<
-        PatchTowedRollingStockByTowedRollingStockIdApiResponse,
-        PatchTowedRollingStockByTowedRollingStockIdApiArg
+      putTowedRollingStockByTowedRollingStockId: build.mutation<
+        PutTowedRollingStockByTowedRollingStockIdApiResponse,
+        PutTowedRollingStockByTowedRollingStockIdApiArg
       >({
         query: (queryArg) => ({
           url: `/towed_rolling_stock/${queryArg.towedRollingStockId}`,
-          method: 'PATCH',
+          method: 'PUT',
           body: queryArg.towedRollingStockForm,
         }),
         invalidatesTags: ['rolling_stock'],
@@ -2385,6 +2388,7 @@ export type GetTowedRollingStockApiArg = {
 export type PostTowedRollingStockApiResponse =
   /** status 200 The created towed rolling stock */ TowedRollingStock;
 export type PostTowedRollingStockApiArg = {
+  locked?: boolean;
   towedRollingStockForm: TowedRollingStockForm;
 };
 export type GetTowedRollingStockByTowedRollingStockIdApiResponse =
@@ -2392,9 +2396,9 @@ export type GetTowedRollingStockByTowedRollingStockIdApiResponse =
 export type GetTowedRollingStockByTowedRollingStockIdApiArg = {
   towedRollingStockId: number;
 };
-export type PatchTowedRollingStockByTowedRollingStockIdApiResponse =
-  /** status 200 The created towed rolling stock */ TowedRollingStock;
-export type PatchTowedRollingStockByTowedRollingStockIdApiArg = {
+export type PutTowedRollingStockByTowedRollingStockIdApiResponse =
+  /** status 200 The modified towed rolling stock */ TowedRollingStock;
+export type PutTowedRollingStockByTowedRollingStockIdApiArg = {
   towedRollingStockId: number;
   towedRollingStockForm: TowedRollingStockForm;
 };
@@ -4577,18 +4581,20 @@ export type TowedRollingStock = {
 export type TowedRollingStockForm = {
   /** Acceleration in m·s⁻² */
   comfort_acceleration: number;
-  /** Acceleration in m·s⁻² */
+  /** The constant gamma braking coefficient used when NOT circulating
+    under ETCS/ERTMS signaling system
+    Acceleration in m·s⁻² */
   const_gamma: number;
   inertia_coefficient: number;
   label: string;
   /** Length in m */
   length: number;
-  locked: boolean;
   /** Mass in kg */
   mass: number;
   /** Velocity in m·s⁻¹ */
   max_speed?: number | null;
   name: string;
+  railjson_version?: string;
   rolling_resistance: RollingResistancePerWeight;
   /** Acceleration in m·s⁻² */
   startup_acceleration: number;

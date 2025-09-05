@@ -366,7 +366,7 @@ fn service_router() -> router::DocumentedRouter {
                     .route("/", post!(rolling_stock::towed::post))
                     .nests("/{towed_rolling_stock_id}", |path| {
                         path.route("/", get!(rolling_stock::towed::get_by_id))
-                            .route("/", patch!(rolling_stock::towed::patch_by_id))
+                            .route("/", put!(rolling_stock::towed::put_by_id))
                             .route("/locked", patch!(rolling_stock::towed::patch_by_id_locked))
                     })
             })
