@@ -4026,7 +4026,13 @@ paths:
     post:
       tags:
       - rolling_stock
-      summary: Create a rolling stock
+      summary: Create a towed rolling stock
+      parameters:
+      - name: locked
+        in: query
+        required: false
+        schema:
+          type: boolean
       requestBody:
         content:
           application/json:
@@ -4058,7 +4064,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TowedRollingStock'
-    patch:
+    put:
       tags:
       - rolling_stock
       parameters:
@@ -4076,7 +4082,7 @@ paths:
         required: true
       responses:
         '200':
-          description: The created towed rolling stock
+          description: The modified towed rolling stock
           content:
             application/json:
               schema:
@@ -14140,7 +14146,6 @@ components:
       required:
       - name
       - label
-      - locked
       - mass
       - length
       - comfort_acceleration
@@ -14156,7 +14161,10 @@ components:
         const_gamma:
           type: number
           format: double
-          description: Acceleration in m·s⁻²
+          description: |-
+            The constant gamma braking coefficient used when NOT circulating
+            under ETCS/ERTMS signaling system
+            Acceleration in m·s⁻²
         inertia_coefficient:
           type: number
           format: double
@@ -14166,8 +14174,6 @@ components:
           type: number
           format: double
           description: Length in m
-        locked:
-          type: boolean
         mass:
           type: number
           format: double
@@ -14179,6 +14185,9 @@ components:
           nullable: true
         name:
           type: string
+        railjson_version:
+          type: string
+          default: '3.3'
         rolling_resistance:
           $ref: '#/components/schemas/RollingResistancePerWeight'
         startup_acceleration:

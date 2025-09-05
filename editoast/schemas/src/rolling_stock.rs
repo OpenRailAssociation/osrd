@@ -61,7 +61,7 @@ use utoipa::ToSchema;
 
 pub const ROLLING_STOCK_RAILJSON_VERSION: &str = "3.3";
 
-fn default_rolling_stock_railjson_version() -> String {
+pub fn default_rolling_stock_railjson_version() -> String {
     ROLLING_STOCK_RAILJSON_VERSION.to_string()
 }
 
