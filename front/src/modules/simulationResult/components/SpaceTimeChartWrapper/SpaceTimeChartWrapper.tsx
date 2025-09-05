@@ -55,6 +55,8 @@ import {
   isOccurrenceId,
   extractPacedTrainIdFromOccurrenceId,
   extractOccurrenceIndexFromOccurrenceId,
+  extractExceptionIdFromOccurrenceId,
+  isAddedExceptionId,
 } from 'utils/trainId';
 
 import getPathStyle from './helpers/getPathStyle';
@@ -161,8 +163,10 @@ const SpaceTimeChartWrapper = ({
     ) {
       const exeptionUsedForProjection = timetableItemUsedForProjectionWithDetails.exceptions.find(
         (exception) =>
-          exception.occurrence_index ===
-          extractOccurrenceIndexFromOccurrenceId(selectedProjectionId)
+          isAddedExceptionId(selectedProjectionId)
+            ? exception.key === extractExceptionIdFromOccurrenceId(selectedProjectionId)
+            : exception.occurrence_index ===
+              extractOccurrenceIndexFromOccurrenceId(selectedProjectionId)
       );
       if (exeptionUsedForProjection?.summary) return exeptionUsedForProjection.summary.isValid;
     }

@@ -23,7 +23,8 @@ export const isPacedTrainId = (id: string): id is PacedTrainId => id.startsWith(
 export const isIndexedOccurrenceId = (id: string): id is IndexedOccurrenceId =>
   id.startsWith('indexedoccurrence_');
 
-const isAddedExceptionId = (id: string): id is AddedExceptionId => id.startsWith('exception_');
+export const isAddedExceptionId = (id: string): id is AddedExceptionId =>
+  id.startsWith('exception_');
 
 export const isOccurrenceId = (id: string): id is OccurrenceId =>
   isIndexedOccurrenceId(id) || isAddedExceptionId(id);
