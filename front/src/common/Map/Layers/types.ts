@@ -3,9 +3,9 @@ import type {
   CustomLayerInterface,
 } from 'react-map-gl/maplibre';
 
+import type { Theme } from 'common/Map/theme';
 import type { EditorState } from 'reducers/editor';
 import type { MapState } from 'reducers/map';
-import type { Theme } from 'types';
 
 export type SignalContext = {
   sourceTable?: string;

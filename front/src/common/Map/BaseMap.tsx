@@ -6,7 +6,6 @@ import ReactMapGL, { AttributionControl, ScaleControl } from 'react-map-gl/mapli
 import type { MapRef } from 'react-map-gl/maplibre';
 import { useParams } from 'react-router-dom';
 
-import colors from 'common/Map/Consts/colors';
 import {
   IGNLayers,
   InfraObjectLayers,
@@ -16,6 +15,7 @@ import {
   VirtualLayers,
   useMapBlankStyle,
 } from 'common/Map/Layers';
+import { colors } from 'common/Map/theme';
 import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
 import type { Viewport } from 'reducers/globalMap/types';
 import type { MapState } from 'reducers/map';

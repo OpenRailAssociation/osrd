@@ -4,8 +4,8 @@ import type { LayerProps, SymbolLayerSpecification } from 'react-map-gl/maplibre
 import { Source } from 'react-map-gl/maplibre';
 
 import { MAP_URL } from 'common/Map/const';
+import type { Theme } from 'common/Map/theme';
 import { useInfraID } from 'common/osrdContext';
-import type { Theme } from 'types';
 
 import OrderedLayer from '../../../OrderedLayer';
 import type { LayerContext } from '../../../types';

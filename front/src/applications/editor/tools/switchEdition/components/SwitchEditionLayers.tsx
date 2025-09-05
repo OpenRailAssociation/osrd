@@ -18,12 +18,12 @@ import type {
 import useSwitch from 'applications/editor/tools/switchEdition/useSwitch';
 import type { TrackSectionEntity } from 'applications/editor/tools/trackEdition/types';
 import type { ExtendedEditorContextType } from 'applications/editor/types';
-import colors from 'common/Map/Consts/colors';
 import {
   GeoJSONs,
   getSwitchesLayerProps,
   getSwitchesNameLayerProps,
 } from 'common/Map/Layers/InfraObjectLayers';
+import { colors } from 'common/Map/theme';
 import { useInfraID } from 'common/osrdContext';
 import { getEditorState } from 'reducers/editor/selectors';
 import { useMapSettings } from 'reducers/globalMap';

@@ -1,12 +1,9 @@
 import { useEffect, useState } from 'react';
 
 import { get } from 'lodash';
-import { type LayerProps } from 'react-map-gl/maplibre';
 
 import OrderedLayer, { type OrderedLayerProps } from 'common/Map/Layers/OrderedLayer';
-import getOSMDarkStyle from 'common/Map/Layers/OSMLayers/mapstyles/dark';
-import getOSMMinimalStyle from 'common/Map/Layers/OSMLayers/mapstyles/minimal';
-import getOSMNormalStyle from 'common/Map/Layers/OSMLayers/mapstyles/normal';
+import { getOSMStyle } from 'common/Map/theme';
 import type { MapStyle } from 'reducers/globalMap/types';
 
 type OSMProps = {
@@ -15,17 +12,6 @@ type OSMProps = {
   mapStyle: MapStyle;
   showOSM3dBuildings?: boolean;
 };
-
-function getMapStyle(mapStyle: MapStyle): LayerProps[] {
-  switch (mapStyle) {
-    case 'dark':
-      return getOSMDarkStyle(mapStyle);
-    case 'minimal':
-      return getOSMMinimalStyle(mapStyle);
-    default:
-      return getOSMNormalStyle(mapStyle);
-  }
-}
 
 type FullLayerProps = OrderedLayerProps & { key?: string };
 type ToggledLayers = {
@@ -42,7 +28,7 @@ export function genOSMLayerProps(
   toggledLayers: ToggledLayers,
   layerOrder?: number
 ): FullLayerProps[] {
-  const osmStyle = getMapStyle(mapStyle);
+  const osmStyle = getOSMStyle(mapStyle);
   return osmStyle.reduce<FullLayerProps[]>((acc, layer) => {
     const isShown = get(toggledLayers, filters[layer.id || ''], true);
     if (!isShown) {

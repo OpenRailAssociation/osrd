@@ -1,6 +1,6 @@
-import colors from 'common/Map/Consts/colors';
 import OpenStreetMapSource from 'common/Map/Sources/OpenStreetMap';
 import TerrainSource from 'common/Map/Sources/Terrain';
+import { colors } from 'common/Map/theme';
 import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
 import type { MapStyle } from 'reducers/globalMap/types';
 

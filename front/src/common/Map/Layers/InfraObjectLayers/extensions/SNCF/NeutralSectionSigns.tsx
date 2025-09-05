@@ -5,7 +5,7 @@ import { type LayerProps, Source, type SymbolLayerSpecification } from 'react-ma
 import { MAP_URL } from 'common/Map/const';
 import { getAllowOverlap } from 'common/Map/Layers/commonLayers';
 import type { LayerContext } from 'common/Map/Layers/types';
-import type { Theme } from 'types';
+import type { Theme } from 'common/Map/theme';
 
 import OrderedLayer from '../../../OrderedLayer';
 import getKPLabelLayerProps from '../../getKPLabelLayerProps';

@@ -4,7 +4,7 @@ import { Source } from 'react-map-gl/maplibre';
 import type { LayerProps } from 'react-map-gl/maplibre';
 
 import { MAP_URL } from 'common/Map/const';
-import type { Theme } from 'types';
+import type { Theme } from 'common/Map/theme';
 
 import { getAllowOverlap, getDynamicTextSize } from '../commonLayers';
 import OrderedLayer from '../OrderedLayer';

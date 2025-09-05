@@ -1,7 +1,7 @@
 import type { Geometry } from 'geojson';
 import type { LineLayerSpecification } from 'react-map-gl/maplibre';
 
-import type { Theme } from 'types';
+import type { Theme } from 'common/Map/theme';
 
 export default function geoMainLayer(
   theme: Theme,

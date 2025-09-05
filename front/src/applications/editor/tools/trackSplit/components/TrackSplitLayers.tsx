@@ -13,8 +13,8 @@ import {
 } from 'applications/editor/tools/trackEdition/components/TrackEditionLayers';
 import { TRACK_LAYER_ID, POINTS_LAYER_ID } from 'applications/editor/tools/trackEdition/consts';
 import type { ExtendedEditorContextType } from 'applications/editor/types';
-import colors from 'common/Map/Consts/colors';
 import { GeoJSONs } from 'common/Map/Layers';
+import { colors } from 'common/Map/theme';
 import { useInfraID } from 'common/osrdContext';
 import { getEditorState } from 'reducers/editor/selectors';
 import { useMapSettings } from 'reducers/globalMap';

@@ -28,8 +28,8 @@ import {
 import type { TrackSectionEntity } from 'applications/editor/tools/trackEdition/types';
 import type { ExtendedEditorContextType } from 'applications/editor/types';
 import type { EditorEntity } from 'applications/editor/typesEditorEntity';
-import colors from 'common/Map/Consts/colors';
 import { GeoJSONs, SourcesDefinitionsIndex } from 'common/Map/Layers';
+import { colors } from 'common/Map/theme';
 import { useInfraID } from 'common/osrdContext';
 import { getEditorState } from 'reducers/editor/selectors';
 import { useMapSettings } from 'reducers/globalMap';

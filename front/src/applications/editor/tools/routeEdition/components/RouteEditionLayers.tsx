@@ -22,13 +22,13 @@ import {
 } from 'applications/editor/tools/routeEdition/utils';
 import type { ExtendedEditorContextType } from 'applications/editor/types';
 import type { EditorEntity } from 'applications/editor/typesEditorEntity';
-import colors from 'common/Map/Consts/colors';
 import {
   GeoJSONs,
   getRoutesLineLayerProps,
   getRoutesPointLayerProps,
   getRoutesTextLayerProps,
 } from 'common/Map/Layers/InfraObjectLayers';
+import { colors } from 'common/Map/theme';
 import { useInfraID } from 'common/osrdContext';
 import { getEditorState } from 'reducers/editor/selectors';
 import { useMapSettings } from 'reducers/globalMap';
