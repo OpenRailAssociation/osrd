@@ -455,7 +455,7 @@ pub struct ElectricalProfileSetIdQueryParam {
 #[editoast_derive::route]
 #[utoipa::path(
     get, path = "",
-    tag = "train_schedule",
+    tag = "paced_train",
     params(PacedTrainIdParam, InfraIdQueryParam, ElectricalProfileSetIdQueryParam, ExceptionQueryParam),
     responses(
         (status = 200, description = "Simulation Output", body = SimulationResponse),
