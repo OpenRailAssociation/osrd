@@ -133,6 +133,7 @@ mod tests {
     #[rstest::rstest]
     async fn import_export_timetable_schedule() {
         let db_pool = DbConnectionPoolV2::for_tests();
+        let db_pool = Arc::new(db_pool);
 
         let timetable = Timetable::changeset()
             .create(&mut db_pool.get_ok())
@@ -148,7 +149,7 @@ mod tests {
             path: file.path().into(),
             id: Some(timetable.id),
         };
-        let result = trains_import(args, db_pool.clone().into()).await;
+        let result = trains_import(args, db_pool.clone()).await;
         assert!(result.is_ok(), "{result:?}");
 
         // Test to export the import
@@ -157,7 +158,7 @@ mod tests {
             path: export_file.path().into(),
             id: timetable.id,
         };
-        let export_result = trains_export(args, db_pool.clone().into()).await;
+        let export_result = trains_export(args, db_pool.clone()).await;
         assert!(export_result.is_ok(), "{export_result:?}");
 
         // Test to reimport the exported import
@@ -165,7 +166,7 @@ mod tests {
             path: export_file.path().into(),
             id: Some(timetable.id),
         };
-        let reimport_result = trains_import(reimport_args, db_pool.clone().into()).await;
+        let reimport_result = trains_import(reimport_args, db_pool.clone()).await;
         assert!(reimport_result.is_ok(), "{reimport_result:?}");
 
         Timetable::delete_static(&mut db_pool.get_ok(), timetable.id)

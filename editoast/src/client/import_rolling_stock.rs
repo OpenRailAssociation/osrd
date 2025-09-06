@@ -179,6 +179,7 @@ mod tests {
         async fn import_non_electric_rs_without_startup_and_panto_values() {
             // GIVEN
             let db_pool = DbConnectionPoolV2::for_tests();
+            let db_pool = Arc::new(db_pool);
             let rolling_stock_name =
                 "fast_rolling_stock_import_non_electric_rs_without_startup_and_panto_values";
             let mut non_electric_rs = get_fast_rolling_stock_schema(rolling_stock_name);
@@ -191,7 +192,7 @@ mod tests {
             };
 
             // WHEN
-            let result = import_rolling_stock(args, db_pool.clone().into()).await;
+            let result = import_rolling_stock(args, db_pool.clone()).await;
 
             // THEN
             assert!(
@@ -209,6 +210,7 @@ mod tests {
         async fn import_non_electric_rs_with_startup_and_panto_values() {
             // GIVEN
             let db_pool = DbConnectionPoolV2::for_tests();
+            let db_pool = Arc::new(db_pool);
             let rolling_stock_name =
                 "fast_rolling_stock_import_non_electric_rs_with_startup_and_panto_values";
             let mut non_electric_rs = get_fast_rolling_stock_schema(rolling_stock_name);
@@ -221,7 +223,7 @@ mod tests {
             };
 
             // WHEN
-            let result = import_rolling_stock(args, db_pool.clone().into()).await;
+            let result = import_rolling_stock(args, db_pool.clone()).await;
 
             // THEN
             assert!(result.is_ok(), "import should succeed");
@@ -243,6 +245,7 @@ mod tests {
         async fn import_electric_rs_without_startup_and_panto_values() {
             // GIVEN
             let db_pool = DbConnectionPoolV2::for_tests();
+            let db_pool = Arc::new(db_pool);
             let rolling_stock_name =
                 "fast_rolling_stock_import_electric_rs_without_startup_and_panto_values";
             let mut electric_rs = get_fast_rolling_stock_schema(rolling_stock_name);
@@ -255,7 +258,7 @@ mod tests {
             };
 
             // WHEN
-            let result = import_rolling_stock(args, db_pool.clone().into()).await;
+            let result = import_rolling_stock(args, db_pool.clone()).await;
 
             // THEN
             assert!(
@@ -273,6 +276,7 @@ mod tests {
         async fn import_electric_rs_with_startup_and_panto_values() {
             // GIVEN
             let db_pool = DbConnectionPoolV2::for_tests();
+            let db_pool = Arc::new(db_pool);
             let rolling_stock_name =
                 "fast_rolling_stock_import_electric_rs_with_startup_and_panto_values";
             let electric_rolling_stock = get_fast_rolling_stock_schema(rolling_stock_name);
@@ -283,7 +287,7 @@ mod tests {
             };
 
             // WHEN
-            let result = import_rolling_stock(args, db_pool.clone().into()).await;
+            let result = import_rolling_stock(args, db_pool.clone()).await;
 
             // THEN
             assert!(result.is_ok(), "import should succeed");
@@ -305,6 +309,7 @@ mod tests {
         async fn import_existing_rolling_stock_without_force() {
             // GIVEN
             let db_pool = DbConnectionPoolV2::for_tests();
+            let db_pool = Arc::new(db_pool);
             let existing_rolling_stock_name = "existing_rolling_stock";
             let existing_rolling_stock_form =
                 get_fast_rolling_stock_schema(existing_rolling_stock_name);
@@ -328,7 +333,7 @@ mod tests {
             };
 
             // WHEN
-            let result = import_rolling_stock(args, db_pool.clone().into()).await;
+            let result = import_rolling_stock(args, db_pool.clone()).await;
 
             // THEN
             assert!(
@@ -347,6 +352,7 @@ mod tests {
         async fn import_existing_rolling_stock_with_force() {
             // GIVEN
             let db_pool = DbConnectionPoolV2::for_tests();
+            let db_pool = Arc::new(db_pool);
             let existing_rolling_stock_name = "existing_rolling_stock";
             let existing_rolling_stock_form =
                 get_fast_rolling_stock_schema(existing_rolling_stock_name);
@@ -369,7 +375,7 @@ mod tests {
             };
 
             // WHEN
-            let result = import_rolling_stock(args, db_pool.clone().into()).await;
+            let result = import_rolling_stock(args, db_pool.clone()).await;
 
             // THEN
             assert!(
@@ -413,6 +419,7 @@ mod tests {
         async fn import_valid_towed_rolling_stock() {
             // GIVEN
             let db_pool = DbConnectionPoolV2::for_tests();
+            let db_pool = Arc::new(db_pool);
             let towed_rolling_stock_name = "towed";
             let mut towed_rolling_stock_form: schemas::TowedRollingStock =
                 serde_json::from_str(include_str!("../tests/example_towed_rolling_stock_1.json"))
@@ -426,7 +433,7 @@ mod tests {
             };
 
             // WHEN
-            let result = import_towed_rolling_stock(args, db_pool.clone().into()).await;
+            let result = import_towed_rolling_stock(args, db_pool.clone()).await;
 
             // THEN
             assert!(result.is_ok());

@@ -1138,13 +1138,10 @@ pub mod tests {
 
     #[rstest]
     async fn infra_get() {
-        let db_pool = DbConnectionPoolV2::for_tests();
         let core_client = CoreClient::Mocked(MockingClient::default());
 
-        let app = TestAppBuilder::new()
-            .db_pool(db_pool.clone())
-            .core_client(core_client)
-            .build();
+        let app = TestAppBuilder::new().core_client(core_client).build();
+        let db_pool = app.db_pool();
         let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
 
         let req = app.get(format!("/infra/{}", empty_infra.id).as_str());
@@ -1340,13 +1337,10 @@ pub mod tests {
 
     #[rstest]
     async fn infra_lock() {
-        let db_pool = DbConnectionPoolV2::for_tests();
         let core_client = CoreClient::Mocked(MockingClient::default());
 
-        let app = TestAppBuilder::new()
-            .db_pool(db_pool.clone())
-            .core_client(core_client)
-            .build();
+        let app = TestAppBuilder::new().core_client(core_client).build();
+        let db_pool = app.db_pool();
         let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
 
         // Lock infra

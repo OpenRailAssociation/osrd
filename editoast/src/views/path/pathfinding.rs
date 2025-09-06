@@ -519,7 +519,6 @@ pub mod tests {
     use core_client::pathfinding::InvalidPathItem;
     use core_client::pathfinding::PathfindingInputError;
     use core_client::pathfinding::PathfindingResultSuccess;
-    use database::DbConnectionPoolV2;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
     use schemas::train_schedule::OperationalPointIdentifier;
@@ -535,7 +534,6 @@ pub mod tests {
 
     #[rstest]
     async fn pathfinding_fails_when_core_responds_with_zero_length_path() {
-        let db_pool = DbConnectionPoolV2::for_tests();
         let mut core = MockingClient::new();
         core.stub("/pathfinding/blocks")
             .method(reqwest::Method::POST)
@@ -549,10 +547,8 @@ pub mod tests {
                 "status": "success"
             }))
             .finish();
-        let app = TestAppBuilder::new()
-            .db_pool(db_pool.clone())
-            .core_client(core.into())
-            .build();
+        let app = TestAppBuilder::new().core_client(core.into()).build();
+        let db_pool = app.db_pool();
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
 
         let request = app
@@ -674,7 +670,6 @@ pub mod tests {
 
     #[rstest]
     async fn pathfinding_with_valid_path_items_returns_successful_result() {
-        let db_pool = DbConnectionPoolV2::for_tests();
         let mut core = MockingClient::new();
         core.stub("/pathfinding/blocks")
             .method(reqwest::Method::POST)
@@ -688,10 +683,8 @@ pub mod tests {
                 "status": "success"
             }))
             .finish();
-        let app = TestAppBuilder::new()
-            .db_pool(db_pool.clone())
-            .core_client(core.into())
-            .build();
+        let app = TestAppBuilder::new().core_client(core.into()).build();
+        let db_pool = app.db_pool();
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
 
         let request = app

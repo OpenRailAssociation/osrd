@@ -870,7 +870,6 @@ mod tests {
 
     #[rstest]
     async fn stdcm_return_success() {
-        let db_pool = DbConnectionPoolV2::for_tests();
         let mut core = core_mocking_client();
         core.stub("/stdcm")
             .method(reqwest::Method::POST)
@@ -883,10 +882,8 @@ mod tests {
             })
             .finish();
 
-        let app = TestAppBuilder::new()
-            .db_pool(db_pool.clone())
-            .core_client(core.into())
-            .build();
+        let app = TestAppBuilder::new().core_client(core.into()).build();
+        let db_pool = app.db_pool();
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
         let timetable = create_timetable(&mut db_pool.get_ok()).await;
         let rolling_stock =
@@ -916,7 +913,6 @@ mod tests {
 
     #[rstest]
     async fn stdcm_request_mass_validation() {
-        let db_pool = DbConnectionPoolV2::for_tests();
         let mut core = core_mocking_client();
         core.stub("/stdcm")
             .method(reqwest::Method::POST)
@@ -929,10 +925,8 @@ mod tests {
             })
             .finish();
 
-        let app = TestAppBuilder::new()
-            .db_pool(db_pool.clone())
-            .core_client(core.into())
-            .build();
+        let app = TestAppBuilder::new().core_client(core.into()).build();
+        let db_pool = app.db_pool();
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
         let timetable = create_timetable(&mut db_pool.get_ok()).await;
         let rolling_stock =
@@ -960,7 +954,6 @@ mod tests {
 
     #[rstest]
     async fn stdcm_request_length_validation() {
-        let db_pool = DbConnectionPoolV2::for_tests();
         let mut core = core_mocking_client();
         core.stub("/stdcm")
             .method(reqwest::Method::POST)
@@ -973,10 +966,8 @@ mod tests {
             })
             .finish();
 
-        let app = TestAppBuilder::new()
-            .db_pool(db_pool.clone())
-            .core_client(core.into())
-            .build();
+        let app = TestAppBuilder::new().core_client(core.into()).build();
+        let db_pool = app.db_pool();
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
         let timetable = create_timetable(&mut db_pool.get_ok()).await;
         let rolling_stock =
@@ -1006,7 +997,6 @@ mod tests {
 
     #[rstest]
     async fn stdcm_request_validation_success() {
-        let db_pool = DbConnectionPoolV2::for_tests();
         let mut core = core_mocking_client();
         core.stub("/stdcm")
             .method(reqwest::Method::POST)
@@ -1019,10 +1009,8 @@ mod tests {
             })
             .finish();
 
-        let app = TestAppBuilder::new()
-            .db_pool(db_pool.clone())
-            .core_client(core.into())
-            .build();
+        let app = TestAppBuilder::new().core_client(core.into()).build();
+        let db_pool = app.db_pool();
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
         let timetable = create_timetable(&mut db_pool.get_ok()).await;
         let rolling_stock =
@@ -1059,7 +1047,6 @@ mod tests {
 
     #[rstest]
     async fn stdcm_return_conflicts() {
-        let db_pool = DbConnectionPoolV2::for_tests();
         let mut core = core_mocking_client();
         core.stub("/stdcm")
             .method(reqwest::Method::POST)
@@ -1077,10 +1064,8 @@ mod tests {
             })
             .finish();
 
-        let app = TestAppBuilder::new()
-            .db_pool(db_pool.clone())
-            .core_client(core.into())
-            .build();
+        let app = TestAppBuilder::new().core_client(core.into()).build();
+        let db_pool = app.db_pool();
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
         let timetable = create_timetable(&mut db_pool.get_ok()).await;
         let rolling_stock =
@@ -1151,14 +1136,14 @@ mod tests {
             })
             .finish();
 
-        let app = TestAppBuilder::new()
-            .db_pool(db_pool.clone())
-            .core_client(core.into())
-            .build();
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
         let timetable = create_timetable(&mut db_pool.get_ok()).await;
         let rolling_stock =
             create_fast_rolling_stock(&mut db_pool.get_ok(), &Uuid::new_v4().to_string()).await;
+        let app = TestAppBuilder::new()
+            .db_pool(db_pool)
+            .core_client(core.into())
+            .build();
 
         let request = app
             .post(format!("/timetable/{}/stdcm?infra={}", timetable.id, small_infra.id).as_str())

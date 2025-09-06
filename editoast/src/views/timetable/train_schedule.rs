@@ -1545,7 +1545,7 @@ pub mod tests {
             .expect("Failed to create train schedule");
         let core = mocked_core_pathfinding_sim_and_proj(train_schedule.id);
         let app = TestAppBuilder::new()
-            .db_pool(db_pool.clone())
+            .db_pool(db_pool)
             .core_client(core.into())
             .build();
         (app, small_infra.id, train_schedule.id)
@@ -1613,7 +1613,7 @@ pub mod tests {
 
         let core = mocked_core_pathfinding_sim_and_proj(train_schedule_valid.id);
         let app = TestAppBuilder::new()
-            .db_pool(db_pool.clone())
+            .db_pool(db_pool)
             .core_client(core.into())
             .build();
 
@@ -1667,7 +1667,7 @@ pub mod tests {
 
         let core = mocked_core_pathfinding_and_sim();
         let app = TestAppBuilder::new()
-            .db_pool(db_pool.clone())
+            .db_pool(db_pool)
             .core_client(core.into())
             .build();
 
@@ -1714,11 +1714,11 @@ pub mod tests {
                 "status": "not_found_in_tracks"
             }))
             .finish();
+        let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
         let app = TestAppBuilder::new()
-            .db_pool(db_pool.clone())
+            .db_pool(db_pool)
             .core_client(core.into())
             .build();
-        let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
 
         let request = app.post("/train_schedule/track_occupancy").json(
             &json!({"train_schedule_ids": [train_schedule_valid.id],
