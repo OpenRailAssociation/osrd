@@ -659,7 +659,6 @@ mod tests {
     use core_client::path_properties::PropertyValuesF64;
     use core_client::path_properties::PropertyZoneValues;
     use core_client::pathfinding::PathfindingResultSuccess;
-    use database::DbConnectionPoolV2;
     use pretty_assertions::assert_eq;
     use reqwest::StatusCode;
     use rstest::rstest;
@@ -876,7 +875,6 @@ mod tests {
         start_time: DateTime<Utc>,
     }
     async fn init_test(path: Vec<PathItem>) -> InitTestResponse {
-        let db_pool = DbConnectionPoolV2::for_tests();
         let mut core = MockingClient::new();
         core.stub("/pathfinding/blocks")
             .method(reqwest::Method::POST)
@@ -895,10 +893,8 @@ mod tests {
             .response(StatusCode::OK)
             .json(create_path_properties_response(operational_points))
             .finish();
-        let app = TestAppBuilder::new()
-            .db_pool(db_pool.clone())
-            .core_client(core.into())
-            .build();
+        let app = TestAppBuilder::new().core_client(core.into()).build();
+        let db_pool = app.db_pool();
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
         let timetable = create_timetable(&mut db_pool.get_ok()).await;
         let rolling_stock =
@@ -1123,7 +1119,6 @@ mod tests {
 
     #[rstest]
     async fn compound_similar_trains() {
-        let db_pool = DbConnectionPoolV2::for_tests();
         let mut core = MockingClient::new();
         core.stub("/pathfinding/blocks")
             .method(reqwest::Method::POST)
@@ -1151,10 +1146,8 @@ mod tests {
                 operational_points_for_train_2,
             ))
             .finish();
-        let app = TestAppBuilder::new()
-            .db_pool(db_pool.clone())
-            .core_client(core.into())
-            .build();
+        let app = TestAppBuilder::new().core_client(core.into()).build();
+        let db_pool = app.db_pool();
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
         let timetable = create_timetable(&mut db_pool.get_ok()).await;
         let rolling_stock =
@@ -1261,7 +1254,6 @@ mod tests {
 
     #[rstest]
     async fn prefer_single_train_over_compound_result() {
-        let db_pool = DbConnectionPoolV2::for_tests();
         let mut core = MockingClient::new();
         core.stub("/pathfinding/blocks")
             .method(reqwest::Method::POST)
@@ -1300,10 +1292,8 @@ mod tests {
             .json(create_path_properties_response(operational_points_mes_nes)) // train_4
             .json(create_path_properties_response(operational_points_ws_nes)) // train_5
             .finish();
-        let app = TestAppBuilder::new()
-            .db_pool(db_pool.clone())
-            .core_client(core.into())
-            .build();
+        let app = TestAppBuilder::new().core_client(core.into()).build();
+        let db_pool = app.db_pool();
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
         let timetable = create_timetable(&mut db_pool.get_ok()).await;
         let rolling_stock =
@@ -1436,7 +1426,6 @@ mod tests {
 
     #[rstest]
     async fn no_similar_trains_for_some_segments() {
-        let db_pool = DbConnectionPoolV2::for_tests();
         let mut core = MockingClient::new();
         core.stub("/pathfinding/blocks")
             .method(reqwest::Method::POST)
@@ -1458,10 +1447,8 @@ mod tests {
             .json(create_path_properties_response(operational_points_ws_mws)) // train_1
             .json(create_path_properties_response(operational_points_mes_ns)) // train_2
             .finish();
-        let app = TestAppBuilder::new()
-            .db_pool(db_pool.clone())
-            .core_client(core.into())
-            .build();
+        let app = TestAppBuilder::new().core_client(core.into()).build();
+        let db_pool = app.db_pool();
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
         let timetable = create_timetable(&mut db_pool.get_ok()).await;
         let rolling_stock =

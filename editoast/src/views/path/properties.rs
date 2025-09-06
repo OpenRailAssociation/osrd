@@ -301,7 +301,6 @@ mod tests {
     use core_client::path_properties::PropertyElectrificationValues;
     use core_client::path_properties::PropertyValuesF64;
     use core_client::path_properties::PropertyZoneValues;
-    use database::DbConnectionPoolV2;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
     use serde_json::json;
@@ -328,7 +327,6 @@ mod tests {
     }
 
     fn init_test_app() -> TestApp {
-        let db_pool = DbConnectionPoolV2::for_tests();
         let mut core = MockingClient::new();
 
         core.stub("/path_properties")
@@ -337,10 +335,7 @@ mod tests {
             .json(path_properties_response())
             .finish();
 
-        TestAppBuilder::new()
-            .db_pool(db_pool.clone())
-            .core_client(core.into())
-            .build()
+        TestAppBuilder::new().core_client(core.into()).build()
     }
 
     #[rstest]

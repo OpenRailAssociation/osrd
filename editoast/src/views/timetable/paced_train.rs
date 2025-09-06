@@ -1303,7 +1303,7 @@ mod tests {
             .expect("Failed to create paced train");
         let core = mocked_core_pathfinding_sim_and_proj(paced_train.id);
         let app = TestAppBuilder::new()
-            .db_pool(db_pool.clone())
+            .db_pool(db_pool)
             .core_client(core.into())
             .build();
         (app, small_infra.id, paced_train.id)
@@ -1640,7 +1640,6 @@ mod tests {
 
     #[rstest]
     async fn get_paced_train_path() {
-        let db_pool = DbConnectionPoolV2::for_tests();
         let mut core = MockingClient::new();
         core.stub("/pathfinding/blocks")
             .method(reqwest::Method::POST)
@@ -1654,15 +1653,12 @@ mod tests {
                 "status": "success"
             }))
             .finish();
-        let app = TestAppBuilder::new()
-            .db_pool(db_pool.clone())
-            .core_client(core.into())
-            .build();
-        let pool = app.db_pool();
+        let app = TestAppBuilder::new().core_client(core.into()).build();
+        let db_pool = app.db_pool();
 
         create_fast_rolling_stock(&mut db_pool.get_ok(), "R2D2").await;
-        let timetable = create_timetable(&mut pool.get_ok()).await;
-        let paced_train = create_simple_paced_train(&mut pool.get_ok(), timetable.id).await;
+        let timetable = create_timetable(&mut db_pool.get_ok()).await;
+        let paced_train = create_simple_paced_train(&mut db_pool.get_ok(), timetable.id).await;
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
 
         let request = app.get(&format!(
@@ -1689,7 +1685,6 @@ mod tests {
 
     #[rstest]
     async fn get_paced_train_exception_path_rolling_stock_not_found() {
-        let db_pool = DbConnectionPoolV2::for_tests();
         let mut core = MockingClient::new();
         core.stub("/pathfinding/blocks")
             .method(reqwest::Method::POST)
@@ -1703,21 +1698,18 @@ mod tests {
                 "status": "success"
             }))
             .finish();
-        let app = TestAppBuilder::new()
-            .db_pool(db_pool.clone())
-            .core_client(core.into())
-            .build();
-        let pool = app.db_pool();
+        let app = TestAppBuilder::new().core_client(core.into()).build();
+        let db_pool = app.db_pool();
 
         create_fast_rolling_stock(&mut db_pool.get_ok(), "R2D2").await;
-        let timetable = create_timetable(&mut pool.get_ok()).await;
+        let timetable = create_timetable(&mut db_pool.get_ok()).await;
         let mut exception = create_created_exception_with_change_groups("exception_created_key");
         exception.rolling_stock = Some(RollingStockChangeGroup {
             rolling_stock_name: "exception_rolling_stock".into(),
             comfort: Comfort::Standard,
         });
         let paced_train = create_paced_train_with_exceptions(
-            &mut pool.get_ok(),
+            &mut db_pool.get_ok(),
             timetable.id,
             vec![exception.clone()],
         )
@@ -1747,7 +1739,6 @@ mod tests {
 
     #[rstest]
     async fn get_paced_train_exception_path() {
-        let db_pool = DbConnectionPoolV2::for_tests();
         let mut core = MockingClient::new();
         core.stub("/pathfinding/blocks")
             .method(reqwest::Method::POST)
@@ -1761,17 +1752,14 @@ mod tests {
                 "status": "success"
             }))
             .finish();
-        let app = TestAppBuilder::new()
-            .db_pool(db_pool.clone())
-            .core_client(core.into())
-            .build();
-        let pool = app.db_pool();
+        let app = TestAppBuilder::new().core_client(core.into()).build();
+        let db_pool = app.db_pool();
 
         create_fast_rolling_stock(&mut db_pool.get_ok(), "simulation_rolling_stock").await;
-        let timetable = create_timetable(&mut pool.get_ok()).await;
+        let timetable = create_timetable(&mut db_pool.get_ok()).await;
         let exception = create_created_exception_with_change_groups("exception_created_key");
         let paced_train = create_paced_train_with_exceptions(
-            &mut pool.get_ok(),
+            &mut db_pool.get_ok(),
             timetable.id,
             vec![exception.clone()],
         )
@@ -1820,7 +1808,7 @@ mod tests {
 
         let core = mocked_core_pathfinding_sim_and_proj(paced_train_valid.id);
         let app = TestAppBuilder::new()
-            .db_pool(db_pool.clone())
+            .db_pool(db_pool)
             .core_client(core.into())
             .build();
 

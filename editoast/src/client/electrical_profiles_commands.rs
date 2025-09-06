@@ -109,6 +109,7 @@ mod tests {
     async fn test_electrical_profile_set_delete() {
         // GIVEN
         let db_pool = DbConnectionPoolV2::for_tests();
+        let db_pool = Arc::new(db_pool);
         let electrical_profile_set = create_electrical_profile_set(&mut db_pool.get_ok()).await;
 
         let args = DeleteProfileSetArgs {
@@ -116,7 +117,7 @@ mod tests {
         };
 
         // WHEN
-        electrical_profile_set_delete(args, db_pool.clone().into())
+        electrical_profile_set_delete(args, db_pool.clone())
             .await
             .unwrap();
 
@@ -132,10 +133,11 @@ mod tests {
     #[rstest::rstest]
     async fn test_electrical_profile_set_list_doesnt_fail() {
         let db_pool = DbConnectionPoolV2::for_tests();
+        let db_pool = Arc::new(db_pool);
         let _ = create_electrical_profile_set(&mut db_pool.get_ok()).await;
         for quiet in [true, false] {
             let args = ListProfileSetArgs { quiet };
-            electrical_profile_set_list(args, db_pool.clone().into())
+            electrical_profile_set_list(args, db_pool.clone())
                 .await
                 .unwrap();
         }
