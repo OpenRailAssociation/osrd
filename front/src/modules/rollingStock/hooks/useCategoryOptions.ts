@@ -14,29 +14,27 @@ export default function useCategoryOptions(withPlaceholder = true) {
 
   const validMainCategories = Array.from(Object.values(TrainMainCategoryDict));
 
-  const groupedOptions: CategoryOptionWithId[] = [];
+  const mainCategoryOptions: CategoryOptionWithId[] = validMainCategories.map((mainCategory) => ({
+    id: `main:${mainCategory}`,
+    label: t(`rollingStock.categoriesOptions.${mainCategory}`),
+    category: { main_category: mainCategory },
+  }));
 
-  for (const mainCategory of validMainCategories) {
-    groupedOptions.push({
-      id: `main:${mainCategory}`,
-      label: t(`rollingStock.categoriesOptions.${mainCategory}`),
-      category: { main_category: mainCategory },
-    });
-
+  const subCategoryOptions: CategoryOptionWithId[] = validMainCategories.flatMap((mainCategory) => {
     const matchedSubCategories = subCategories.filter((sub) => sub.main_category === mainCategory);
 
-    groupedOptions.push(
-      ...matchedSubCategories.map((sub) => ({
-        id: `sub:${sub.code}`,
-        label: sub.name,
-        category: { sub_category_code: sub.code },
-        color: sub.color,
-        background_color: sub.background_color,
-        hovered_color: sub.hovered_color,
-        main_category: sub.main_category,
-      }))
-    );
-  }
+    return matchedSubCategories.map((sub) => ({
+      id: `sub:${sub.code}`,
+      label: sub.name,
+      category: { sub_category_code: sub.code },
+      color: sub.color,
+      background_color: sub.background_color,
+      hovered_color: sub.hovered_color,
+      main_category: sub.main_category,
+    }));
+  });
+
+  const groupedOptions = [...mainCategoryOptions, ...subCategoryOptions];
 
   if (withPlaceholder) {
     return [
