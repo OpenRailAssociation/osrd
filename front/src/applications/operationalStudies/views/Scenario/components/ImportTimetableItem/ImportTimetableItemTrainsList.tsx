@@ -70,7 +70,7 @@ const ImportTimetableItemTrainsList = ({
 
   const isTrainMainCategory = (v: string): v is TrainMainCategory => v in TrainMainCategoryDict;
 
-  const checkCategory = (category?: TrainCategory | null): TrainCategory | null => {
+  const checkCategory = (category?: TrainCategory | string | null): TrainCategory | null => {
     if (!category) return null;
 
     // This condition is added for train imports that still use the old format: `category: string`
