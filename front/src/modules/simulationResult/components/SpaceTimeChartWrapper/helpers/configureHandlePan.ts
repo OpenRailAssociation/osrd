@@ -4,11 +4,11 @@ import {
   type HoveredItem,
   type SpaceTimeChartProps,
 } from '@osrd-project/ui-charts';
-import dayjs from 'dayjs';
 
 import type { TrainId } from 'reducers/osrdconf/types';
 import { updateSelectedTrainId } from 'reducers/simulationResults';
 import type { AppDispatch } from 'store';
+import { Duration, subtractDurationFromDate } from 'utils/duration';
 import {
   extractOccurrenceIndexFromOccurrenceId,
   extractPacedTrainIdFromOccurrenceId,
@@ -92,9 +92,10 @@ export function configureHandlePan({
           ({ id }) => isPacedTrainId(id) && id === pacedTrainId
         );
         if (pacedTrain && 'paced' in pacedTrain) {
-          newDepartureTime = dayjs(newDepartureTime)
-            .add(occurrencesIndex * -pacedTrain.paced.interval.ms, 'ms')
-            .toDate();
+          newDepartureTime = subtractDurationFromDate(
+            newDepartureTime,
+            new Duration({ milliseconds: occurrencesIndex * pacedTrain.paced.interval.ms })
+          );
         }
       }
 
