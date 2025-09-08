@@ -105,7 +105,7 @@ export const buildSteps = (
       schedule.push({
         at: id,
         arrival: Duration.subtractDate(step.arrivalDate, departureTime).toISOString(),
-        stop_for: `PT${step.stopFor}S`,
+        stop_for: step.stopFor !== undefined ? `PT${step.stopFor}S` : null,
       });
     }
   }
