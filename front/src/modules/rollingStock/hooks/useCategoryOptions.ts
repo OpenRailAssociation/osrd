@@ -12,7 +12,7 @@ export default function useCategoryOptions(withPlaceholder = true) {
 
   const subCategories = useSubCategoryContext();
 
-  const validMainCategories = Array.from(TrainMainCategoryDict.keys());
+  const validMainCategories = Array.from(Object.values(TrainMainCategoryDict));
 
   const groupedOptions: CategoryOptionWithId[] = [];
 

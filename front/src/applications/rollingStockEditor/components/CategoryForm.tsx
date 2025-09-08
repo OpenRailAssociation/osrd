@@ -79,7 +79,7 @@ const RollingStockEditorCategoryForm = ({
           {t('otherCategories')}
         </label>
         <div className="d-flex flex-wrap" id="rs_category_checkboxes">
-          {Array.from(TrainMainCategoryDict.values()).map((category) => (
+          {Array.from(Object.values(TrainMainCategoryDict)).map((category) => (
             <div key={category} className={cx('col-12', 'col-sm-6', 'col-lg-4', 'mb-2')}>
               <CheckboxRadioSNCF
                 type="checkbox"
