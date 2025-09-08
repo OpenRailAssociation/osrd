@@ -11,7 +11,6 @@ use serde::Serialize;
 use utoipa::ToSchema;
 
 use crate::error::InternalError;
-use crate::error::Result;
 use crate::models::Scenario;
 use crate::views::study::StudyError;
 use editoast_models::prelude::*;
@@ -43,13 +42,19 @@ pub struct Study {
 }
 
 impl Study {
-    pub async fn update_last_modified(&mut self, conn: &mut DbConnection) -> Result<()> {
+    pub async fn update_last_modified(
+        &mut self,
+        conn: &mut DbConnection,
+    ) -> Result<(), editoast_models::Error> {
         self.last_modification = Utc::now();
         self.save(conn).await?;
         Ok(())
     }
 
-    pub async fn scenarios_count(&self, conn: &mut DbConnection) -> Result<u64> {
+    pub async fn scenarios_count(
+        &self,
+        conn: &mut DbConnection,
+    ) -> Result<u64, editoast_models::Error> {
         let study_id = self.id;
         let count = Scenario::count(
             conn,
@@ -59,13 +64,13 @@ impl Study {
         Ok(count)
     }
 
-    pub fn validate(study_changeset: &Changeset<Self>) -> Result<()> {
+    pub fn validate(study_changeset: &Changeset<Self>) -> Result<(), StartDateAfterEndDateError> {
         if !dates_in_order(
             study_changeset.start_date,
             study_changeset.expected_end_date,
         ) || !dates_in_order(study_changeset.start_date, study_changeset.actual_end_date)
         {
-            return Err(crate::views::study::StudyError::StartDateAfterEndDate.into());
+            return Err(StartDateAfterEndDateError);
         }
 
         Ok(())
@@ -121,6 +126,11 @@ fn dates_in_order(a: Option<Option<NaiveDate>>, b: Option<Option<NaiveDate>>) ->
         _ => true,
     }
 }
+
+// TODO: Remove this struct the day we add validation to the study deserialize.
+#[derive(Debug, thiserror::Error)]
+#[error("The study start date must be before the end date")]
+pub struct StartDateAfterEndDateError;
 
 #[cfg(test)]
 pub mod tests {

@@ -103,7 +103,7 @@ impl StudyCreateForm {
             .state(self.state)
             .study_type(self.study_type)
             .project_id(project_id);
-        Study::validate(&study_changeset)?;
+        Study::validate(&study_changeset).map_err(|_| StudyError::StartDateAfterEndDate)?;
         Ok(study_changeset)
     }
 }
@@ -294,7 +294,7 @@ impl StudyPatchForm {
             .flat_tags(self.tags)
             .flat_state(self.state)
             .flat_study_type(self.study_type);
-        Study::validate(&study_changeset)?;
+        Study::validate(&study_changeset).map_err(|_| StudyError::StartDateAfterEndDate)?;
         Ok(study_changeset)
     }
 }
@@ -362,7 +362,10 @@ pub struct StudyWithScenarioCount {
 
 impl StudyWithScenarioCount {
     pub async fn try_fetch(conn: &mut DbConnection, study: Study) -> Result<Self> {
-        let scenarios_count = study.scenarios_count(conn).await?;
+        let scenarios_count = study
+            .scenarios_count(conn)
+            .await
+            .map_err(StudyError::from)?;
         Ok(Self {
             study,
             scenarios_count,
