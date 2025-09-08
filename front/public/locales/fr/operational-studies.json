@@ -75,8 +75,8 @@
       "intervalXmin": "Intervalle {{minutes}}min",
       "trainCategory": {
         "COMMUTER_TRAIN": {
-          "name": "Train suburbain",
-          "shortName": "PU"
+          "name": "Train de banlieue",
+          "shortName": "B"
         },
         "FAST_FREIGHT_TRAIN": {
           "name": "Train de fret rapide",
@@ -88,10 +88,10 @@
         },
         "HIGH_SPEED_TRAIN": {
           "name": "Train à grande vitesse",
-          "shortName": "GV"
+          "shortName": "TAGV"
         },
         "INTERCITY_TRAIN": {
-          "name": "Train interurbain",
+          "name": "Train interville",
           "shortName": "IV"
         },
         "NIGHT_TRAIN": {
@@ -104,7 +104,7 @@
         },
         "REGIONAL_TRAIN": {
           "name": "Train régional",
-          "shortName": "MR"
+          "shortName": "R"
         },
         "TOURISTIC_TRAIN": {
           "name": "Train touristique",
