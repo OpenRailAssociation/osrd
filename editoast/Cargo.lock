@@ -462,12 +462,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "auto-future"
-version = "1.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "3c1e7e457ea78e524f48639f551fd79703ac3f2237f5ecccdf4708f8a75ad373"
-
-[[package]]
 name = "autocfg"
 version = "1.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -565,12 +559,11 @@ dependencies = [
 
 [[package]]
 name = "axum-test"
-version = "18.0.2"
+version = "18.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "84a5c86736717a01abbe75c16e46972a9d77abde7852f556d4ec5cad859997a0"
+checksum = "680e88effaafbb28675074f29cda0e984c984bed5eb513085c17caf7de564225"
 dependencies = [
  "anyhow",
- "auto-future",
  "axum",
  "bytes",
  "bytesize",
