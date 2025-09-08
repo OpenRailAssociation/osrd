@@ -122,8 +122,6 @@
     "react/jsx-props-no-spreading": 0,
     "react/prefer-stateless-function": "off",
     "react/static-property-placement": 0,
-    // disable vitest/prefer-to-be because it does not authorize toEqual for the floats
-    "vitest/prefer-to-be": "off",
     "no-restricted-imports": [
       "error",
       {
