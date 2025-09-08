@@ -19,7 +19,7 @@ type TimesStopsOutputProps = {
   simulatedTrain?: SimulationResponseSuccess['final_output'];
   simulatedPath?: PathfindingResultSuccess;
   simulatedPathItemTimes?: Extract<SimulationSummary, { isValid: true }>['pathItemTimes'];
-  simulatedOperationalPoints?: PathPropertiesFormatted['operationalPoints'];
+  operationalPointsOnPath?: PathPropertiesFormatted['operationalPoints'];
 };
 
 const TimesStopsOutput = ({
@@ -28,7 +28,7 @@ const TimesStopsOutput = ({
   selectedTrain,
   simulatedTrain,
   simulatedPathItemTimes,
-  simulatedOperationalPoints,
+  operationalPointsOnPath,
 }: TimesStopsOutputProps) => {
   const rows = useOutputTableData(
     infraId,
@@ -36,7 +36,7 @@ const TimesStopsOutput = ({
     selectedTrain,
     simulatedTrain,
     simulatedPathItemTimes,
-    simulatedOperationalPoints
+    operationalPointsOnPath
   );
   return (
     <TimesStops
