@@ -1,5 +1,3 @@
-import dayjs from 'dayjs';
-
 import type { PacedTrain, PacedTrainException } from 'common/api/osrdEditoastApi';
 import type {
   OccurrenceId,
@@ -7,7 +5,7 @@ import type {
   TimetableItem,
   TimetableItemId,
 } from 'reducers/osrdconf/types';
-import { Duration } from 'utils/duration';
+import { Duration, addDurationToDate } from 'utils/duration';
 import {
   extractExceptionIdFromOccurrenceId,
   extractOccurrenceIndexFromOccurrenceId,
@@ -29,13 +27,10 @@ export const getOccurrencesNb = ({ timeWindow, interval }: PacedTrainWithDetails
 
 /** startTime + index × interval */
 export const computeIndexedOccurrenceStartTime = (
-  pacedTrainStartTime: Date | null,
+  pacedTrainStartTime: Date,
   interval: Duration,
   index: number
-) =>
-  dayjs(pacedTrainStartTime)
-    .add(index * interval.ms, 'ms')
-    .toDate();
+) => addDurationToDate(pacedTrainStartTime, new Duration({ milliseconds: index * interval.ms }));
 
 /**
  * Based on an exception list and an occurrence id, find the corresponding exception
