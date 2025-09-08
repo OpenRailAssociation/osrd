@@ -35,6 +35,43 @@ const testWithLogging = baseTest.extend<{ page: Page; ignorePageErrors: boolean 
       });
     }
 
+    // Fail only on real API problems; ignore benign aborts/noisy assets.
+    page.on('requestfailed', (request) => {
+      const url = request.url();
+      const type = request.resourceType(); // 'xhr' | 'fetch' | 'image' | ...
+      const errorText = request.failure()?.errorText ?? 'Unknown network error';
+
+      // Abort messages (Chromium & Firefox)
+      const isAbort =
+        errorText === 'net::ERR_ABORTED' || // Chromium
+        errorText === 'NS_BINDING_ABORTED'; // Firefox
+
+      // Consider only API calls made via XHR/Fetch
+      const isCriticalApi = (type === 'xhr' || type === 'fetch') && /\/api\//.test(url);
+
+      if (isAbort || !isCriticalApi) return;
+
+      throw new Error(`Test failed: API request failed with "${errorText}"\n${url}`);
+    });
+
+    page.on('response', async (response) => {
+      const url = response.url();
+      const req = response.request();
+      const type = req.resourceType();
+      const status = response.status();
+      const responseText = response.statusText();
+
+      // Guard only API XHR/Fetch
+      const isCriticalApi = (type === 'xhr' || type === 'fetch') && /\/api\//.test(url);
+
+      if (!isCriticalApi) return;
+
+      // Fail on server/client errors; allow 2xx/3xx (201,204,304, etc.)
+      if (status >= 400) {
+        throw new Error(`HTTP error ${status} on ${url}: ${responseText}`);
+      }
+    });
+
     // Run the actual test
     await use(page);
 
