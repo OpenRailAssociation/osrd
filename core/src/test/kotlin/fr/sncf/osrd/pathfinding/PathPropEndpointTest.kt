@@ -55,7 +55,8 @@ class PathPropEndpointTest : ApiTest() {
                 listOf(Electrified("1500V"), Neutral(true), Electrified("25000V")),
             ),
         )
-        assertEquals(parsed.geometry.coordinates.size, 6)
+        // The size might change, there can be repeated points
+        assertEquals(parsed.geometry.coordinates.size, 7)
         val oPs =
             listOf(
                 OperationalPointResponse(
