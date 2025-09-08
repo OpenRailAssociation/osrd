@@ -25,6 +25,7 @@ fun makePathProps(
     rawInfra: RawSignalingInfra,
     blockInfra: BlockInfra,
     trackRanges: List<DirectionalTrackRange>,
+    routes: List<RouteId>? = null,
 ): PathProperties {
     val chunkPath = makeChunkPath(rawInfra, trackRanges)
 
@@ -42,7 +43,7 @@ fun makePathProps(
         rawInfra,
         blockInfra,
         buildRangeMap(chunkRanges),
-        routes = listOf(),
+        routes = routes,
     )
 }
 

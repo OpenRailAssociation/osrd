@@ -47,8 +47,16 @@ data class CachedBlockMRSPBuilder(
     /** Returns the speed limits for the given block (cached). */
     fun getMRSP(block: BlockId): Envelope {
         return mrspCache.computeIfAbsent(block) {
+            // TODO: change input to infra explorers, and fetch last route there
             val pathProps = buildTrainPathFromBlock(rawInfra, blockInfra, block, routes = listOf())
-            computeMRSP(pathProps, rsMaxSpeed, rsLength, false, null, temporarySpeedLimitManager)
+            computeMRSP(
+                pathProps,
+                rsMaxSpeed,
+                rsLength,
+                addRollingStockLength = true,
+                speedLimitTag,
+                temporarySpeedLimitManager,
+            )
         }
     }
 
