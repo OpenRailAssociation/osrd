@@ -1,6 +1,5 @@
 import { useMemo } from 'react';
 
-import dayjs from 'dayjs';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
@@ -9,6 +8,7 @@ import formatPowerRestrictionRangesWithHandled from 'modules/powerRestriction/he
 import {
   extractOccurrenceDetailsFromPacedTrain,
   findExceptionWithOccurrenceId,
+  computeIndexedOccurrenceStartTime,
 } from 'modules/timetableItem/helpers/pacedTrain';
 import useSelectedTimetableItem from 'modules/timetableItem/hooks/useSelectedTimetableItem';
 import { getSelectedTrainId } from 'reducers/simulationResults/selectors';
@@ -51,10 +51,11 @@ const useSimulationResults = (): SimulationResults | undefined => {
       startTime = exception.start_time.value;
     } else {
       const selectedOccurrenceIndex = extractOccurrenceIndexFromOccurrenceId(selectedTrainId);
-      const pacedTrainIntervalInMs = Duration.parse(timetableItem.paced.interval).ms;
-      startTime = dayjs(timetableItem.start_time)
-        .add(selectedOccurrenceIndex * pacedTrainIntervalInMs, 'ms')
-        .toISOString();
+      startTime = computeIndexedOccurrenceStartTime(
+        new Date(timetableItem.start_time),
+        Duration.parse(timetableItem.paced.interval),
+        selectedOccurrenceIndex
+      ).toISOString();
     }
 
     return {
