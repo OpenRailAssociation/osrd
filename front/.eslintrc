@@ -187,7 +187,8 @@
     {
       "files": ["tests/**/*.ts", "tests/**/*.tsx"],
       "rules": {
-        "@typescript-eslint/no-floating-promises": "error"
+        "@typescript-eslint/no-floating-promises": "error",
+        "react-hooks/rules-of-hooks": "off"
       }
     }
   ]
