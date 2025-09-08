@@ -1,13 +1,11 @@
-import dayjs from 'dayjs';
 import { useTranslation } from 'react-i18next';
 
 import { getTrainCategoryClassName } from 'applications/operationalStudies/views/Scenario/components/Timetable/utils';
 import { useSubCategoryContext } from 'common/SubCategoryContext';
 import isMainCategory from 'modules/rollingStock/helpers/category';
+import { useDateTimeLocale } from 'utils/date';
 
 import type { ConflictWithTrainNames } from '../types';
-
-const formatToLocalTime = (dateString: string) => dayjs.utc(dateString).local().format('HH:mm:ss');
 
 const ConflictCard = ({
   conflict,
@@ -17,9 +15,10 @@ const ConflictCard = ({
   onConflictClick: (conflict: ConflictWithTrainNames) => void;
 }) => {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'main' });
-  const start_time = formatToLocalTime(conflict.start_time);
-  const end_time = formatToLocalTime(conflict.end_time);
-  const start_date = dayjs(conflict.start_time).format('DD/MM/YYYY');
+  const dateTimeLocale = useDateTimeLocale();
+  const start_time = new Date(conflict.start_time).toLocaleTimeString(dateTimeLocale);
+  const end_time = new Date(conflict.end_time).toLocaleTimeString(dateTimeLocale);
+  const start_date = new Date(conflict.start_time).toLocaleDateString(dateTimeLocale);
 
   const subCategories = useSubCategoryContext();
 
