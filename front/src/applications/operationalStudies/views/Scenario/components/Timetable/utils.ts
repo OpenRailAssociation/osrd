@@ -39,8 +39,6 @@ export const extractTagCode = (tag?: string | null) => {
 export const timetableHasInvalidItem = (timetableItems: TimetableItemWithDetails[]) =>
   timetableItems.some((timetableItem) => timetableItem.summary && !timetableItem.summary.isValid);
 
-export const formatFullDate = (d: Date) => dayjs(d).format('D/MM/YYYY HH:mm:ss');
-
 export const roundAndFormatToNearestMinute = (d: Date) =>
   dayjs(d)
     .add(d.getSeconds() >= 30 ? 1 : 0, 'minute')

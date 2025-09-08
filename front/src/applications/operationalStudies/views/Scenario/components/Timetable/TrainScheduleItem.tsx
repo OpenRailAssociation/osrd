@@ -26,6 +26,7 @@ import {
   updateProjectionType,
 } from 'reducers/simulationResults';
 import { useAppDispatch } from 'store';
+import { useDateTimeLocale } from 'utils/date';
 import { addDurationToDate, Duration } from 'utils/duration';
 import { castErrorToFailure } from 'utils/error';
 import {
@@ -37,7 +38,6 @@ import ArrivalTimeLoader from './ArrivalTimeLoader';
 import { TIMETABLE_ITEM_DELTA } from './consts';
 import TimetableItemActions from './TimetableItemActions';
 import {
-  formatFullDate,
   formatTrainDuration,
   getTrainCategoryClassName,
   isValidPathfinding,
@@ -70,6 +70,7 @@ const TrainScheduleItem = ({
   subCategories,
 }: TrainScheduleItemProps) => {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'main' });
+  const dateTimeLocale = useDateTimeLocale();
   const dispatch = useAppDispatch();
 
   const [postTrainSchedule] =
@@ -228,7 +229,7 @@ const TrainScheduleItem = ({
               <div className="status-icon after-midnight">{isAfterMidnight && <Moon />}</div>
               <div
                 className="scenario-timetable-train-times"
-                title={formatFullDate(train.startTime)}
+                title={train.startTime.toLocaleString(dateTimeLocale)}
               >
                 {roundAndFormatToNearestMinute(train.startTime)}
               </div>
@@ -244,7 +245,7 @@ const TrainScheduleItem = ({
               <div
                 data-testid="timetable-item-arrival-time"
                 className="scenario-timetable-train-times"
-                title={arrivalTime ? formatFullDate(arrivalTime) : undefined}
+                title={arrivalTime ? arrivalTime.toLocaleString(dateTimeLocale) : undefined}
               >
                 {arrivalTime ? roundAndFormatToNearestMinute(arrivalTime) : <ArrivalTimeLoader />}
               </div>
