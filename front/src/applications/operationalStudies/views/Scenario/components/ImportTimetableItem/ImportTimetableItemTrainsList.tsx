@@ -12,6 +12,7 @@ import {
   type PacedTrain,
   type TrainSchedule,
   type TrainCategory,
+  type TrainMainCategory,
 } from 'common/api/osrdEditoastApi';
 import { Loader } from 'common/Loaders';
 import { useSubCategoryContext } from 'common/SubCategoryContext';
@@ -67,18 +68,18 @@ const ImportTimetableItemTrainsList = ({
 
   const subCategories = useSubCategoryContext();
 
+  const isTrainMainCategory = (v: string): v is TrainMainCategory => v in TrainMainCategoryDict;
+
   const checkCategory = (category?: TrainCategory | null): TrainCategory | null => {
     if (!category) return null;
 
     // This condition is added for train imports that still use the old format: `category: string`
     if (typeof category === 'string') {
-      const mainCategory = TrainMainCategoryDict.get(category);
-      return mainCategory ? { main_category: mainCategory } : null;
+      return isTrainMainCategory(category) ? { main_category: category } : null;
     }
 
     if (isMainCategory(category)) {
-      const mainCategory = TrainMainCategoryDict.get(category.main_category);
-      return mainCategory ? { ...category, main_category: mainCategory } : null;
+      return isTrainMainCategory(category.main_category) ? category : null;
     }
 
     const hasValidSubCategory = subCategories.some(

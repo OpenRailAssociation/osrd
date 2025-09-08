@@ -9,7 +9,7 @@ export function getMainCategoryOptions(
   t: TFunction<'translation', 'rollingStock'>,
   withPlaceholder = true
 ): (MainCategoryOptionWithId | { label: string })[] {
-  const options = Array.from(TrainMainCategoryDict.keys()).map((category) => ({
+  const options = Array.from(Object.values(TrainMainCategoryDict)).map((category) => ({
     id: category,
     label: t(`categoriesOptions.${category}`),
   }));
