@@ -1,19 +1,22 @@
 package fr.sncf.osrd.path.interfaces
 
+import com.google.common.collect.RangeMap
 import fr.sncf.osrd.sim_infra.api.*
-import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.indexing.DirStaticIdx
 import fr.sncf.osrd.utils.indexing.StaticIdx
+import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
 
 interface TrainPath : PhysicsPath, PathProperties {
     fun subPath(from: Offset<TrainPath>?, to: Offset<TrainPath>?): TrainPath
 
-    fun getBlocks(): DistanceRangeMap<BlockRange>
+    fun getTypedLength(): Length<TrainPath>
 
-    fun getRoutes(): DistanceRangeMap<RouteRange>
+    fun getBlocks(): LinearObjectMap<BlockRange>
 
-    fun getChunks(): DistanceRangeMap<DirChunkRange>
+    fun getRoutes(): LinearObjectMap<RouteRange>
+
+    fun getChunks(): LinearObjectMap<DirChunkRange>
     // To be expanded as needed with other linear objects
 }
 
@@ -28,6 +31,11 @@ data class GenericLinearRange<ValueType, OffsetType>(
 ) {
     val length = to - from
 }
+
+// We'd normally use `DistanceRangeMap` here, but supporting zero-length ranges is required.
+// Note: kotlin doesn't allow type arguments on type parameters, so we can't easily make it explicit
+// that T is meant to be a `GenericLinearRange` without having repeated parameters
+typealias LinearObjectMap<T> = RangeMap<Offset<TrainPath>, T>
 
 typealias LinearObjectRange<T> = GenericLinearRange<StaticIdx<T>, T>
 

@@ -10,6 +10,15 @@ import java.util.function.BiFunction
 /**
  * DistanceRangeMap allows to store values over intervals (e.g. elevation on sections of a track)
  * and query them. The default value is null.
+ *
+ * This is similar to guava's `RangeMap<Distance, T>`. There are tradeoffs with guava maps, detailed
+ * in the issue https://github.com/OpenRailAssociation/osrd/issues/12828. To keep it short:
+ * `DistanceRangeMap` is *considerably* more memory efficient, but it's a little slower than guava
+ * maps. Ours don't have proper open/closed range semantics, and we cannot support zero-length
+ * intervals.
+ *
+ * `DistanceRangeMap` should be used when memory footprint is a concern (in particular to store
+ * infra data), and when precise interval semantics aren't necessary.
  */
 interface DistanceRangeMap<T> : Iterable<DistanceRangeMap.RangeMapEntry<T>> {
 
