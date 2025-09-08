@@ -1,6 +1,5 @@
 import { useMemo } from 'react';
 
-import dayjs from 'dayjs';
 import { omit, sortBy } from 'lodash';
 
 import { type LightRollingStockWithLiveries } from 'common/api/osrdEditoastApi';
@@ -8,6 +7,7 @@ import computeOccurrenceName from 'modules/timetableItem/helpers/computeOccurren
 import {
   findExceptionWithOccurrenceId,
   getOccurrencesNb,
+  computeIndexedOccurrenceStartTime,
 } from 'modules/timetableItem/helpers/pacedTrain';
 import type { Occurrence, PacedTrainWithDetails } from 'modules/timetableItem/types';
 import {
@@ -49,9 +49,7 @@ const useOccurrences = (
 
       const startTime = correspondingException?.start_time?.value
         ? new Date(correspondingException.start_time.value)
-        : dayjs(pacedTrain.startTime)
-            .add(i * paced.interval.ms, 'ms')
-            .toDate();
+        : computeIndexedOccurrenceStartTime(pacedTrain.startTime, paced.interval, i);
 
       computedOccurrences.push({
         id: occurrenceId,

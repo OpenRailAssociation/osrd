@@ -1,10 +1,12 @@
-import dayjs from 'dayjs';
 import { isEmpty, isEqual, omit } from 'lodash';
 
 import type { PacedTrain, PacedTrainException, TrainSchedule } from 'common/api/osrdEditoastApi';
 import computeBasePathStep from 'modules/timetableItem/helpers/computeBasePathStep';
 import computeOccurrenceName from 'modules/timetableItem/helpers/computeOccurrenceName';
-import { findExceptionWithOccurrenceId } from 'modules/timetableItem/helpers/pacedTrain';
+import {
+  findExceptionWithOccurrenceId,
+  computeIndexedOccurrenceStartTime,
+} from 'modules/timetableItem/helpers/pacedTrain';
 import type { OccurrenceId } from 'reducers/osrdconf/types';
 import { removeElementAtIndex, replaceElementAtIndex } from 'utils/array';
 import { Duration } from 'utils/duration';
@@ -100,9 +102,11 @@ export function generatePacedTrainException(
 
   if (occurrenceIndex !== null) {
     const originalPacedTrainInterval = Duration.parse(originalPacedTrain.paced.interval);
-    originalStartTimeToTest = dayjs(originalStartTimeToTest)
-      .add(occurrenceIndex * originalPacedTrainInterval.ms, 'ms')
-      .toDate();
+    originalStartTimeToTest = computeIndexedOccurrenceStartTime(
+      originalStartTimeToTest,
+      originalPacedTrainInterval,
+      occurrenceIndex
+    );
   }
   // Remove milliseconds to avoid issues with the comparison
   originalStartTimeToTest.setMilliseconds(0);
@@ -251,9 +255,11 @@ export function checkChangeGroups(
     // their start time reset
     if (exception.start_time && exception.occurrence_index !== undefined) {
       const originalPacedTrainInterval = Duration.parse(updatedPacedTrain.paced.interval);
-      const originalStartTimeToTest = dayjs(new Date(updatedPacedTrain.start_time))
-        .add(exception.occurrence_index * originalPacedTrainInterval.ms, 'ms')
-        .toDate();
+      const originalStartTimeToTest = computeIndexedOccurrenceStartTime(
+        new Date(updatedPacedTrain.start_time),
+        originalPacedTrainInterval,
+        exception.occurrence_index
+      );
       const exceptionStartTime = new Date(exception.start_time.value);
 
       // Remove milliseconds to avoid issues with the comparison
