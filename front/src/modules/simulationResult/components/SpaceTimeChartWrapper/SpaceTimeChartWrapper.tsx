@@ -48,7 +48,14 @@ import type {
 import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
 import type { OccurrenceId, PacedTrainId, TrainId, TrainScheduleId } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
-import { isTrainId, isPacedTrainId, formatPacedTrainIdToIndexedOccurrenceId } from 'utils/trainId';
+import {
+  isTrainId,
+  isPacedTrainId,
+  formatPacedTrainIdToIndexedOccurrenceId,
+  isOccurrenceId,
+  extractPacedTrainIdFromOccurrenceId,
+  extractOccurrenceIndexFromOccurrenceId,
+} from 'utils/trainId';
 
 import getPathStyle from './helpers/getPathStyle';
 import makeProjectedItems from './helpers/makeProjectedItems';
@@ -139,9 +146,27 @@ const SpaceTimeChartWrapper = ({
   const [draggingState, setDraggingState] = useState<DraggingState>();
 
   const isTimetableItemValid = useMemo(() => {
+    const selectedItemId = isOccurrenceId(selectedProjectionId)
+      ? extractPacedTrainIdFromOccurrenceId(selectedProjectionId)
+      : selectedProjectionId;
+
     const timetableItemUsedForProjectionWithDetails = timetableItemsWithDetails?.find(
-      (item) => item.id === selectedProjectionId
+      (item) => item.id === selectedItemId
     );
+
+    if (
+      timetableItemUsedForProjectionWithDetails &&
+      'exceptions' in timetableItemUsedForProjectionWithDetails &&
+      isOccurrenceId(selectedProjectionId)
+    ) {
+      const exeptionUsedForProjection = timetableItemUsedForProjectionWithDetails.exceptions.find(
+        (exception) =>
+          exception.occurrence_index ===
+          extractOccurrenceIndexFromOccurrenceId(selectedProjectionId)
+      );
+      if (exeptionUsedForProjection?.summary) return exeptionUsedForProjection.summary.isValid;
+    }
+
     return timetableItemUsedForProjectionWithDetails?.summary?.isValid ?? false;
   }, [timetableItemsWithDetails, selectedProjectionId]);
 
