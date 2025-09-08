@@ -1,5 +1,3 @@
-import dayjs from 'dayjs';
-
 import type { StdcmPathProperties } from 'applications/stdcm/types';
 import type { Conflict } from 'common/api/osrdEditoastApi';
 import type { SuggestedOP } from 'modules/timetableItem/types';
@@ -75,10 +73,10 @@ export const formatConflicts = (
 
       const formattedConflict = {
         trainIds: conflict.train_schedule_ids,
-        startDate: dayjs(conflict.start_time).format('DD/MM/YYYY'),
-        endDate: dayjs(conflict.end_time).format('DD/MM/YYYY'),
-        startTime: dayjs(conflict.start_time).format('HH:mm'),
-        endTime: dayjs(conflict.end_time).format('HH:mm'),
+        startDate: new Date(conflict.start_time).toLocaleDateString(),
+        endDate: new Date(conflict.end_time).toLocaleDateString(),
+        startTime: new Date(conflict.start_time).toLocaleString(undefined, { timeStyle: 'short' }),
+        endTime: new Date(conflict.end_time).toLocaleString(undefined, { timeStyle: 'short' }),
         waypointBefore,
         waypointAfter,
       };
