@@ -28,7 +28,6 @@ import {
 } from './consts';
 import MacroEditorState, { type NodeIndexed } from './MacroEditorState';
 import {
-  deleteMacroNodeByDbId,
   getDefaultTrainrunFrequencies,
   getNetzgrafikColors,
   getSavedMacroNodes,
@@ -325,7 +324,8 @@ export const loadAndIndexNge = async (
       if (state.getNodeByKey(n.path_item_key) !== null) {
         state.updateNodeDataByKey(n.path_item_key, { ...n, dbId: n.id });
       } else {
-        await deleteMacroNodeByDbId(state, dispatch, n.id);
+        state.indexNodeByKey(n.path_item_key, { ...n, dbId: n.id, ngeId: nbNodesIndexed });
+        nbNodesIndexed += 1;
       }
     })
   );
@@ -442,6 +442,11 @@ const getNgeTrainrunSectionsWithNodes = (
 
   // Track nge nodes
   const ngeNodesByPathKey: Record<string, NetzgrafikDto['nodes'][0]> = {};
+  for (const node of state.nodes) {
+    if (!node) continue;
+    ngeNodesByPathKey[node.path_item_key] = castNodeToNge(state, node, labels);
+  }
+
   let trainrunSectionId = 0;
   const trainrunSections: TrainrunSectionDto[] = groupedTimetableItems.flatMap(
     ([timetableItem, returnTimetableItem], index) => {
@@ -465,25 +470,8 @@ const getNgeTrainrunSectionsWithNodes = (
         // list to the start.
         const returnIndex = timetableItem.path.length - 1 - i;
 
-        // Get the source node or created it
-        if (!ngeNodesByPathKey[sourceNodeKey]) {
-          ngeNodesByPathKey[sourceNodeKey] = castNodeToNge(
-            state,
-            state.getNodeByKey(sourceNodeKey)!,
-            labels
-          );
-        }
         const sourceNode = ngeNodesByPathKey[sourceNodeKey];
-
-        // Get the target node or created it
         const targetNodeKey = pathNodeKeys[i + 1];
-        if (!ngeNodesByPathKey[targetNodeKey]) {
-          ngeNodesByPathKey[targetNodeKey] = castNodeToNge(
-            state,
-            state.getNodeByKey(targetNodeKey)!,
-            labels
-          );
-        }
         const targetNode = ngeNodesByPathKey[targetNodeKey];
 
         // Adding port
