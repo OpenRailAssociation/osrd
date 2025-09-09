@@ -6,6 +6,7 @@ import { findClosestOperationalPoint } from '../formatConflicts';
 
 const operationalPoints: SuggestedOP[] = [
   {
+    pathStepId: 'step1',
     opId: 'id1',
     offsetOnTrack: 10,
     track: '123456',
@@ -13,6 +14,7 @@ const operationalPoints: SuggestedOP[] = [
     positionOnPath: 0,
   },
   {
+    pathStepId: 'step2',
     opId: 'id2',
     offsetOnTrack: 10,
     track: '123456',
@@ -20,6 +22,7 @@ const operationalPoints: SuggestedOP[] = [
     positionOnPath: 100,
   },
   {
+    pathStepId: 'step3',
     opId: 'id3',
     offsetOnTrack: 10,
     track: '123456',
@@ -27,6 +30,7 @@ const operationalPoints: SuggestedOP[] = [
     positionOnPath: 200,
   },
   {
+    pathStepId: 'step4',
     opId: 'id4',
     offsetOnTrack: 10,
     track: '123456',

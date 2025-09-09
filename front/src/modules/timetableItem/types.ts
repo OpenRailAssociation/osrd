@@ -14,7 +14,7 @@ import type { OccurrenceId, PacedTrainId, TrainScheduleId } from 'reducers/osrdc
 import type { Duration } from 'utils/duration';
 
 export type SuggestedOP = {
-  pathStepId?: string;
+  pathStepId: string | undefined;
   opId?: string;
   name?: string;
   uic?: number;
