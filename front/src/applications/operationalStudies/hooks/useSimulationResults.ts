@@ -22,13 +22,15 @@ import {
 
 import type { SimulationResults } from '../types';
 import { preparePathPropertiesData } from '../utils';
+import { useScenarioContext } from './useScenarioContext';
 
 /**
  * Prepare data to be used in simulation results
  */
-const useSimulationResults = (infraId: number): SimulationResults | undefined => {
+const useSimulationResults = (): SimulationResults | undefined => {
   const { t } = useTranslation('operational-studies');
 
+  const { infraId } = useScenarioContext();
   const electricalProfileSetId = useSelector(getOperationalStudiesElectricalProfileSetId);
   const selectedTrainId = useSelector(getSelectedTrainId);
 
