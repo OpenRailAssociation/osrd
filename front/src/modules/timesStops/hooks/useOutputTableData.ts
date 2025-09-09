@@ -13,7 +13,6 @@ import { interpolateValue } from 'modules/simulationResult/helpers/utils';
 import type { SimulationSummary } from 'modules/timetableItem/types';
 import type { Train } from 'reducers/osrdconf/types';
 import { getDisplayOnlyPathSteps } from 'reducers/simulationResults/selectors';
-import { useDateTimeLocale } from 'utils/date';
 import { Duration } from 'utils/duration';
 
 import { ARRIVAL_TIME_ACCEPTABLE_ERROR } from '../consts';
@@ -32,7 +31,6 @@ const useOutputTableData = (
   operationalPointsOnPath?: PathPropertiesFormatted['operationalPoints']
 ): TimesStopsRow[] => {
   const { t } = useTranslation('operational-studies');
-  const dateTimeLocale = useDateTimeLocale();
   const { getTrackSectionsByIds } = useScenarioContext();
   const displayOnlyPathSteps = useSelector(getDisplayOnlyPathSteps);
 
@@ -79,8 +77,7 @@ const useOutputTableData = (
             : undefined;
           const { stopFor, shortSlipDistance, onStopSignal, calculatedDeparture } = formatSchedule(
             computedArrival,
-            schedule,
-            dateTimeLocale
+            schedule
           );
           const { theoreticalArrival, arrival, departure, refDate } = computeInputDatetimes(
             startDatetime,
@@ -112,7 +109,9 @@ const useOutputTableData = (
                 ARRIVAL_TIME_ACCEPTABLE_ERROR
               : false;
           const calculatedArrival = computedArrival
-            ? (isOnTime ? theoreticalArrival! : computedArrival).toLocaleTimeString(dateTimeLocale)
+            ? isOnTime
+              ? theoreticalArrival!
+              : computedArrival
             : undefined;
 
           const pathStepRow = {
@@ -197,7 +196,7 @@ const useOutputTableData = (
               name: op.extensions?.identifier?.name,
               ch: op.extensions?.sncf?.ch,
               trackName,
-              calculatedArrival: calculatedArrival.toLocaleTimeString(dateTimeLocale),
+              calculatedArrival,
             });
           }
         }

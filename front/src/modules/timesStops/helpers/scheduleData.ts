@@ -7,8 +7,7 @@ import { receptionSignalToSignalBooleans } from './utils';
 /** Format the stopFor, calculatedDeparture, shortSlipDistance and onStopSignal properties */
 export const formatSchedule = (
   arrivalTime: Date | undefined,
-  schedule: ScheduleEntry | undefined,
-  dateTimeLocale: Intl.Locale
+  schedule: ScheduleEntry | undefined
 ) => {
   if (!schedule) {
     return {
@@ -38,7 +37,7 @@ export const formatSchedule = (
   }
   return {
     stopFor,
-    calculatedDeparture: addDurationToDate(arrivalTime, stopFor).toLocaleTimeString(dateTimeLocale),
+    calculatedDeparture: addDurationToDate(arrivalTime, stopFor),
     ...receptionSignalToSignalBooleans(schedule.reception_signal),
   };
 };
