@@ -7,6 +7,7 @@ import type { ManageTimetableItemPathProperties } from 'applications/operational
 import type { RollingStock } from 'common/api/osrdEditoastApi';
 import type { IntervalItem } from 'common/IntervalsEditor/types';
 import type { RangedValue } from 'common/types';
+import { NO_POWER_RESTRICTION } from 'modules/powerRestriction/consts';
 import {
   getPowerRestrictions,
   getPathSteps,
@@ -14,7 +15,6 @@ import {
 import { mmToM } from 'utils/physics';
 
 import usePowerRestrictionSelectorBehaviours from './usePowerRestrictionSelectorBehaviours';
-import { NO_POWER_RESTRICTION } from '../consts';
 import formatPowerRestrictions from '../helpers/formatPowerRestrictions';
 import getPowerRestrictionsWarningsData from '../helpers/powerRestrictionWarnings';
 

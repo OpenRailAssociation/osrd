@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 
-import type { PowerRestrictionWarnings } from 'modules/powerRestriction/types';
+import type { PowerRestrictionWarnings } from 'modules/powerRestrictionSelector/types';
 
 import {
   pathElectrificationRanges,

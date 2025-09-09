@@ -8,9 +8,9 @@ import type { RollingStock } from 'common/api/osrdEditoastApi';
 import IntervalsEditor from 'common/IntervalsEditor';
 import { INTERVAL_TYPES } from 'common/IntervalsEditor/types';
 import type { RangedValue } from 'common/types';
+import { NO_POWER_RESTRICTION } from 'modules/powerRestriction/consts';
 import { mmToM } from 'utils/physics';
 
-import { NO_POWER_RESTRICTION } from './consts';
 import usePowerRestrictionSelector from './hooks/usePowerRestrictionSelectorData';
 
 type PowerRestrictionsSelectorProps = {
