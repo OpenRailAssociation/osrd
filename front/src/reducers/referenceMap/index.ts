@@ -7,32 +7,32 @@ import type { InfraState } from 'reducers/infra';
 import { infraState, buildInfraStateReducers } from 'reducers/infra';
 import { gpsRound } from 'utils/helpers';
 
-export type MapViewerState = InfraState & {
+export type ReferenceMapState = InfraState & {
   mapSettings: MapSettings;
 };
 
-export const mapViewerInitialState: MapViewerState = {
+export const referenceMapInitialState: ReferenceMapState = {
   ...infraState,
   mapSettings: defaultMapSettings,
 };
 
-export const mapViewerSlice = createSlice({
-  name: 'mapViewer',
-  initialState: mapViewerInitialState,
+export const referenceMapSlice = createSlice({
+  name: 'referenceMap',
+  initialState: referenceMapInitialState,
   reducers: {
-    ...buildInfraStateReducers<MapViewerState>(),
-    ...buildMapStateReducer<MapViewerState>(),
+    ...buildInfraStateReducers<ReferenceMapState>(),
+    ...buildMapStateReducer<ReferenceMapState>(),
   },
 });
 
-export function updateMapViewerViewport(viewport: Partial<Viewport>, updateRouter = false) {
-  return (dispatch: Dispatch, getState: () => { mapViewer: MapViewerState }) => {
-    dispatch(mapViewerSlice.actions.updateViewport(viewport));
+export function updateReferenceMapViewport(viewport: Partial<Viewport>, updateRouter = false) {
+  return (dispatch: Dispatch, getState: () => { referenceMap: ReferenceMapState }) => {
+    dispatch(referenceMapSlice.actions.updateViewport(viewport));
 
     if (!updateRouter) return;
 
     const {
-      mapViewer: { mapSettings },
+      referenceMap: { mapSettings },
     } = getState();
     const latitude = gpsRound(viewport.latitude || mapSettings.viewport.latitude);
     const longitude = gpsRound(viewport.longitude || mapSettings.viewport.longitude);
@@ -44,8 +44,8 @@ export function updateMapViewerViewport(viewport: Partial<Viewport>, updateRoute
   };
 }
 
-export const mapViewerSliceActions = mapViewerSlice.actions;
+export const referenceMapSliceActions = referenceMapSlice.actions;
 
-export type MapViewerSlice = typeof mapViewerSlice;
+export type ReferenceMapSlice = typeof referenceMapSlice;
 
-export default mapViewerSlice.reducer;
+export default referenceMapSlice.reducer;

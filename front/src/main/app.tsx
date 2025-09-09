@@ -21,12 +21,12 @@ import { MODES } from 'main/consts';
 import { editorSlice } from 'reducers/editor';
 import editorSelectors from 'reducers/editor/selectors';
 import { setFailure, updateLastInterfaceVersion } from 'reducers/main';
-import { mapViewerSlice } from 'reducers/mapViewer';
-import mapViewerSelectors from 'reducers/mapViewer/selectors';
 import { operationalStudiesConfSlice } from 'reducers/osrdconf/operationalStudiesConf';
 import simulationConfSelectors from 'reducers/osrdconf/operationalStudiesConf/selectors';
 import { stdcmConfSlice } from 'reducers/osrdconf/stdcmConf';
 import stdcmConfSelectors from 'reducers/osrdconf/stdcmConf/selectors';
+import { referenceMapSlice } from 'reducers/referenceMap';
+import referenceMapSelectors from 'reducers/referenceMap/selectors';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 import useAuth from 'utils/hooks/useAuth';
@@ -43,9 +43,9 @@ const router = createBrowserRouter([
     path: 'map/*',
     element: (
       <OsrdContextLayout
-        slice={mapViewerSlice}
-        selectors={mapViewerSelectors}
-        mode={MODES.mapViewer}
+        slice={referenceMapSlice}
+        selectors={referenceMapSelectors}
+        mode={MODES.referenceMap}
       />
     ),
     children: [{ path: '*', element: <HomeMap /> }],

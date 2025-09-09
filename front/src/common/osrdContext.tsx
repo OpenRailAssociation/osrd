@@ -6,11 +6,11 @@ import { ModalProvider } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import { type MODES } from 'main/consts';
 import type { OsrdSlice } from 'reducers';
 import type { EditorSelectors } from 'reducers/editor/selectors';
-import type { MapViewerSelectors } from 'reducers/mapViewer/selectors';
 import type { ConfSelectors, ConfSliceActions } from 'reducers/osrdconf/osrdConfCommon';
+import type { ReferenceMapSelectors } from 'reducers/referenceMap/selectors';
 import type { ValueOf } from 'utils/types';
 
-export type OsrdSelectors = ConfSelectors | MapViewerSelectors | EditorSelectors;
+export type OsrdSelectors = ConfSelectors | ReferenceMapSelectors | EditorSelectors;
 
 export type OsrdContext = {
   slice: OsrdSlice;
