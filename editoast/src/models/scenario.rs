@@ -12,7 +12,6 @@ use serde::Serialize;
 use utoipa::ToSchema;
 
 use crate::error::InternalError;
-use crate::error::Result;
 use crate::models::timetable::Timetable;
 use crate::views::scenario::ScenarioError;
 use database::DbConnection;
@@ -45,7 +44,10 @@ pub struct Scenario {
 }
 
 impl Scenario {
-    pub async fn infra_name(&self, conn: &mut DbConnection) -> Result<String> {
+    pub async fn infra_name(
+        &self,
+        conn: &mut DbConnection,
+    ) -> Result<String, database::DatabaseError> {
         use database::tables::infra::dsl as infra_dsl;
         let infra_name = infra_dsl::infra
             .filter(infra_dsl::id.eq(self.infra_id))
@@ -55,15 +57,24 @@ impl Scenario {
         Ok(infra_name)
     }
 
-    pub async fn trains_count(&self, conn: &mut DbConnection) -> Result<i64> {
+    pub async fn trains_count(
+        &self,
+        conn: &mut DbConnection,
+    ) -> Result<i64, database::DatabaseError> {
         Timetable::trains_count(self.timetable_id, conn).await
     }
 
-    pub async fn paced_trains_count(&self, conn: &mut DbConnection) -> Result<i64> {
+    pub async fn paced_trains_count(
+        &self,
+        conn: &mut DbConnection,
+    ) -> Result<i64, database::DatabaseError> {
         Timetable::paced_trains_count(self.timetable_id, conn).await
     }
 
-    pub async fn update_last_modified(&mut self, conn: &mut DbConnection) -> Result<()> {
+    pub async fn update_last_modified(
+        &mut self,
+        conn: &mut DbConnection,
+    ) -> Result<(), editoast_models::Error> {
         self.last_modification = Utc::now();
         self.save(conn).await?;
         Ok(())

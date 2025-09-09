@@ -11,7 +11,6 @@ use editoast_derive::Model;
 use futures_util::stream::TryStreamExt;
 use std::ops::DerefMut;
 
-use crate::error::Result;
 use crate::models::train_schedule::TrainSchedule;
 use database::DbConnection;
 use editoast_models::prelude::*;
@@ -31,7 +30,10 @@ impl From<Timetable> for Option<i64> {
 }
 
 impl Timetable {
-    pub async fn trains_count(timetable_id: i64, conn: &mut DbConnection) -> Result<i64> {
+    pub async fn trains_count(
+        timetable_id: i64,
+        conn: &mut DbConnection,
+    ) -> Result<i64, database::DatabaseError> {
         use database::tables::train_schedule::dsl;
 
         dsl::train_schedule
@@ -42,7 +44,10 @@ impl Timetable {
             .map_err(Into::into)
     }
 
-    pub async fn paced_trains_count(timetable_id: i64, conn: &mut DbConnection) -> Result<i64> {
+    pub async fn paced_trains_count(
+        timetable_id: i64,
+        conn: &mut DbConnection,
+    ) -> Result<i64, database::DatabaseError> {
         use database::tables::paced_train::dsl;
 
         dsl::paced_train
@@ -56,7 +61,7 @@ impl Timetable {
     pub async fn gather_start_times(
         timetable_id: i64,
         conn: &mut DbConnection,
-    ) -> Result<Vec<DateTime<Utc>>> {
+    ) -> Result<Vec<DateTime<Utc>>, database::DatabaseError> {
         use database::tables::train_schedule::dsl;
 
         dsl::train_schedule
@@ -90,7 +95,7 @@ impl Timetable {
         conn: &mut DbConnection,
         min_time: DateTime<Utc>,
         max_time: DateTime<Utc>,
-    ) -> Result<Vec<TrainSchedule>> {
+    ) -> Result<Vec<TrainSchedule>, database::DatabaseError> {
         let train_schedules = sql_query(include_str!(
             "timetable/sql/get_train_schedules_in_time_window.sql"
         ))
