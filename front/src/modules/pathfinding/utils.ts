@@ -108,6 +108,7 @@ export const upsertPathStepsInOPs = (
     if ('track' in step.location) {
       const formattedStep: SuggestedOP = {
         pathStepId: step.id,
+        opId: undefined,
         positionOnPath: step.positionOnPath!,
         offsetOnTrack: step.location.offset,
         track: step.location.track,
