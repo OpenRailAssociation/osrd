@@ -24,6 +24,14 @@ const reduxDevToolsOptions: Config = {
 
 const middlewares: Middleware[] = [osrdEditoastApi.middleware, osrdGatewayApi.middleware];
 
+export type Dependencies = {
+  osrdEditoastApi: typeof osrdEditoastApi;
+};
+
+const dependencies = {
+  osrdEditoastApi,
+};
+
 const store = configureStore({
   reducer: persistedReducer,
   devTools: reduxDevToolsOptions,
@@ -37,6 +45,9 @@ const store = configureStore({
       // this check is not really necessary since Immer has already ensured the store immutability.
       // Disabling this feature improve performance. https://github.com/reduxjs/redux-toolkit/issues/415
       immutableCheck: false,
+      thunk: {
+        extraArgument: dependencies,
+      },
     })
       .prepend(listenerMiddleware.middleware)
       .concat(...middlewares),
@@ -71,13 +82,25 @@ getStoredState(persistConfig)
     console.error('Error retrieving persisted state:', err);
   });
 
-const createStoreWithoutMiddleware = (initialStateExtra: Partial<RootState>) =>
+const createStoreWithoutMiddleware = ({
+  initialState,
+  dependencies,
+}: {
+  initialState: Partial<RootState>;
+  dependencies?: Dependencies;
+}) =>
   configureStore({
     reducer: rootReducer,
     preloadedState: {
       ...rootInitialState,
-      ...initialStateExtra,
+      ...initialState,
     },
+    middleware: (getDefaultMiddleware) =>
+      getDefaultMiddleware({
+        thunk: {
+          extraArgument: dependencies,
+        },
+      }),
   });
 
 export { store, persistor, createStoreWithoutMiddleware };
