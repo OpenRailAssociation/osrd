@@ -16,7 +16,7 @@ import type { Duration } from 'utils/duration';
 export type SuggestedOP = {
   pathStepId: string | undefined;
   opId: string | undefined;
-  name?: string;
+  name: string | undefined;
   uic?: number;
   ch?: string;
   kp?: string;
