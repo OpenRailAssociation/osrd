@@ -10,8 +10,6 @@ import type { EditorSlice, EditorState } from 'reducers/editor';
 import editorReducer, { editorInitialState, editorSlice } from 'reducers/editor';
 import mainReducer, { mainInitialState, mainSlice } from 'reducers/main';
 import type { MainState } from 'reducers/main';
-import mapReducer, { mapInitialState, mapSlice } from 'reducers/map';
-import type { MapState } from 'reducers/map';
 import operationalStudiesConfReducer, {
   operationalStudiesConfSlice,
   operationalStudiesInitialConf,
@@ -41,23 +39,11 @@ const compressor = createCompressor({
   whitelist: ['rollingstock'],
 });
 
-const mapWhiteList = [
-  'mapStyle',
-  'showOrthoPhoto',
-  'showOSM',
-  'layers',
-  'layersSettings',
-  'userPreference',
-  'terrain3DExaggeration',
-];
-
 const userWhiteList = ['account', 'userPreferences', 'impersonatedUser'];
 
 const mainWhiteList = ['lastInterfaceVersion'];
 
 const operationalStudiesConfBlackList = ['usingSpeedLimits'];
-
-const saveMapFilter = createFilter(mapSlice.name, mapWhiteList);
 
 const saveUserFilter = createFilter(userSlice.name, userWhiteList);
 
@@ -107,19 +93,12 @@ export const persistConfig = {
   storage,
   transforms: [
     compressor,
-    saveMapFilter,
     saveUserFilter,
     saveMainFilter,
     operationalStudiesFilter,
     operationalStudiesDateTransform,
   ],
-  whitelist: [
-    userSlice.name,
-    mapSlice.name,
-    mainSlice.name,
-    simulationResultsSlice.name,
-    referenceMapSlice.name,
-  ],
+  whitelist: [userSlice.name, mainSlice.name, simulationResultsSlice.name, referenceMapSlice.name],
 };
 
 type AllActions = Action;
@@ -128,7 +107,6 @@ export type OsrdSlice = ConfSlice | EditorSlice | ReferenceMapSlice;
 
 export type RootState = {
   [userSlice.name]: UserState;
-  [mapSlice.name]: MapState;
   [referenceMapSlice.name]: ReferenceMapState;
   [editorSlice.name]: EditorState;
   [mainSlice.name]: MainState;
@@ -141,7 +119,6 @@ export type RootState = {
 
 export const rootInitialState: RootState = {
   [userSlice.name]: userInitialState,
-  [mapSlice.name]: mapInitialState,
   [referenceMapSlice.name]: referenceMapInitialState,
   [editorSlice.name]: editorInitialState,
   [mainSlice.name]: mainInitialState,
@@ -154,7 +131,6 @@ export const rootInitialState: RootState = {
 
 export type AnyReducerState =
   | UserState
-  | MapState
   | ReferenceMapState
   | EditorState
   | MainState
@@ -164,7 +140,6 @@ export type AnyReducerState =
 
 export const rootReducer: ReducersMapObject<RootState> = {
   [userSlice.name]: userReducer,
-  [mapSlice.name]: mapReducer,
   [referenceMapSlice.name]: referenceMapReducer,
   [editorSlice.name]: editorReducer,
   [mainSlice.name]: mainReducer,
