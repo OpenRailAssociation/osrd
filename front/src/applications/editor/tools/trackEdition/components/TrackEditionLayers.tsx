@@ -12,8 +12,8 @@ import type { ExtendedEditorContextType } from 'applications/editor/types';
 import { GeoJSONs } from 'common/Map/Layers';
 import { colors } from 'common/Map/theme';
 import { useInfraID } from 'common/osrdContext';
+import { useMapSettings } from 'reducers/commonMap';
 import { getEditorState } from 'reducers/editor/selectors';
-import { useMapSettings } from 'reducers/globalMap';
 
 export const TRACK_COLOR = '#666';
 export const TRACK_STYLE = { 'line-color': TRACK_COLOR, 'line-dasharray': [2, 1], 'line-width': 2 };

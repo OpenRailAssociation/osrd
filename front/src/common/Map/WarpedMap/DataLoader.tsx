@@ -18,7 +18,7 @@ import { GeoJSONs, OrderedLayer, useMapBlankStyle } from 'common/Map/Layers';
 import { colors, getOSMStyle } from 'common/Map/theme';
 import { simplifyFeature, type BBox2d } from 'common/Map/WarpedMap/core/helpers';
 import { useInfraID } from 'common/osrdContext';
-import { useMapSettings } from 'reducers/globalMap';
+import { useMapSettings } from 'reducers/commonMap';
 
 const TIME_LABEL = 'Loading OSRD and OSM data around warped path';
 

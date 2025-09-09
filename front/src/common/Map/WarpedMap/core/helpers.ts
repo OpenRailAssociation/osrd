@@ -20,7 +20,7 @@ import { type EditoastType, LAYER_TO_EDITOAST_DICT, type Layer } from 'applicati
 import { getMixedEntities } from 'applications/editor/data/api';
 import { flattenEntity } from 'applications/editor/data/utils';
 import vec, { type Vec2 } from 'common/Map/WarpedMap/core/vec-lib';
-import type { Viewport } from 'reducers/globalMap/types';
+import type { Viewport } from 'reducers/commonMap/types';
 import type { AppDispatch } from 'store';
 
 /*

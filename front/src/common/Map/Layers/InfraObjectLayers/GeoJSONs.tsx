@@ -11,7 +11,7 @@ import { MAP_TRACK_SOURCE, MAP_URL } from 'common/Map/const';
 import type { Theme } from 'common/Map/theme';
 import { LAYER_ENTITIES_ORDERS, LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
 import type { EditorState } from 'reducers/editor';
-import { useMapSettings } from 'reducers/globalMap';
+import { useMapSettings } from 'reducers/commonMap';
 import type { MapState } from 'reducers/map';
 
 import { getBufferStopsLayerProps } from './BufferStops';

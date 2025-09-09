@@ -10,8 +10,8 @@ import { extractMarkersInfo } from 'applications/stdcm/utils';
 import DefaultBaseMap from 'common/Map/DefaultBaseMap';
 import useInfraStatus from 'modules/pathfinding/hooks/useInfraStatus';
 import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
-import { useMapSettings, useMapSettingsActions } from 'reducers/globalMap';
-import type { MapSettings } from 'reducers/globalMap/types';
+import { useMapSettings, useMapSettingsActions } from 'reducers/commonMap';
+import type { MapSettings } from 'reducers/commonMap/types';
 import { resetMargins, restoreStdcmConfig, updateStdcmPathStep } from 'reducers/osrdconf/stdcmConf';
 import {
   getActivePerimeter,

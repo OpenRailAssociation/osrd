@@ -6,7 +6,7 @@ import type { SymbolLayerSpecification, LineLayerSpecification } from 'react-map
 
 import { MAP_URL } from 'common/Map/const';
 import type { Theme } from 'common/Map/theme';
-import type { LayersSettings } from 'reducers/globalMap/types';
+import type { LayersSettings } from 'reducers/commonMap/types';
 import type { MapState } from 'reducers/map';
 import type { OmitLayer } from 'types';
 

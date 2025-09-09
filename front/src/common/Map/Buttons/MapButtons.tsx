@@ -22,9 +22,9 @@ import ButtonMapInfras from 'common/Map/Buttons/ButtonMapInfras';
 import LayersModal from 'common/Map/components/LayersModal';
 import MapKey from 'common/Map/MapKey';
 import MapSearch from 'common/Map/Search/MapSearch';
+import { useMapSettingsActions } from 'reducers/commonMap';
+import type { MapSettings, Viewport } from 'reducers/commonMap/types';
 import { type EditorState } from 'reducers/editor';
-import { useMapSettingsActions } from 'reducers/globalMap';
-import type { MapSettings, Viewport } from 'reducers/globalMap/types';
 import { useAppDispatch } from 'store';
 import useOutsideClick from 'utils/hooks/useOutsideClick';
 

@@ -1,6 +1,6 @@
 import { describe, beforeEach, it, expect } from 'vitest';
 
-import type { MapSettings, Viewport } from 'reducers/globalMap/types';
+import type { MapSettings, Viewport } from 'reducers/commonMap/types';
 import { mapInitialState, mapSlice } from 'reducers/map';
 import { createStoreWithoutMiddleware } from 'store';
 

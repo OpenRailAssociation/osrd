@@ -25,8 +25,8 @@ import {
 } from 'common/Map/Layers/InfraObjectLayers';
 import { colors } from 'common/Map/theme';
 import { useInfraID } from 'common/osrdContext';
+import { useMapSettings } from 'reducers/commonMap';
 import { getEditorState } from 'reducers/editor/selectors';
-import { useMapSettings } from 'reducers/globalMap';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 

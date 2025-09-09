@@ -17,7 +17,7 @@ import {
 } from 'common/Map/Layers';
 import { colors } from 'common/Map/theme';
 import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
-import type { Viewport } from 'reducers/globalMap/types';
+import type { Viewport } from 'reducers/commonMap/types';
 import type { MapState } from 'reducers/map';
 
 import { CUSTOM_ATTRIBUTION } from './const';

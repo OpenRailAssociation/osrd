@@ -14,8 +14,8 @@ import { computeBBoxViewport } from 'common/Map/WarpedMap/core/helpers';
 import { useInfraID } from 'common/osrdContext';
 import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
 import type { SuggestedOP } from 'modules/timetableItem/types';
-import { useMapSettings, useMapSettingsActions } from 'reducers/globalMap';
-import type { Viewport } from 'reducers/globalMap/types';
+import { useMapSettings, useMapSettingsActions } from 'reducers/commonMap';
+import type { Viewport } from 'reducers/commonMap/types';
 import { useAppDispatch } from 'store';
 import { getMapMouseEventNearestFeature } from 'utils/mapHelper';
 

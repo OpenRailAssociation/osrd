@@ -3,7 +3,7 @@ import { useMemo } from 'react';
 import { debounce, sortBy } from 'lodash';
 import { useMap } from 'react-map-gl/maplibre';
 
-import { useMapSettings } from 'reducers/globalMap';
+import { useMapSettings } from 'reducers/commonMap';
 
 import IncompatibleConstraintItem from './IncompatibleConstraintsItem';
 import type { IncompatibleConstraintEnhanced } from './types';

@@ -8,8 +8,8 @@ import type { ViewState } from 'react-map-gl/maplibre';
 import type { SwitchType } from 'applications/editor/tools/switchEdition/types';
 import type { Operation } from 'common/api/osrdEditoastApi';
 import type { ModalContextType } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
+import type { MapStyle } from 'reducers/commonMap/types';
 import type { EditorState } from 'reducers/editor';
-import type { MapStyle } from 'reducers/globalMap/types';
 import type { AppDispatch } from 'store';
 
 import type { Layer } from './consts';

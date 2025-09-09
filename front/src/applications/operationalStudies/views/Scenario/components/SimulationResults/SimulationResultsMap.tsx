@@ -18,8 +18,8 @@ import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
 import getPointOnPathCoordinates from 'modules/pathfinding/helpers/getPointOnPathCoordinates';
 import getTrackLengthCumulativeSums from 'modules/pathfinding/helpers/getTrackLengthCumulativeSums';
 import Itinerary from 'modules/simulationResult/components/SimulationResultsMap/RenderItinerary';
-import { useMapSettings, useMapSettingsActions } from 'reducers/globalMap';
-import type { Viewport } from 'reducers/globalMap/types';
+import { useMapSettings, useMapSettingsActions } from 'reducers/commonMap';
+import type { Viewport } from 'reducers/commonMap/types';
 import { useAppDispatch } from 'store';
 
 const MAP_ID = 'simulation-result-map';

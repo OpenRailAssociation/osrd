@@ -5,7 +5,7 @@ import type {
   TrainCategory,
   TrainMainCategory,
 } from 'common/api/osrdEditoastApi';
-import { defaultMapSettings } from 'reducers/globalMap';
+import { defaultMapSettings } from 'reducers/commonMap';
 import type {
   AddedExceptionId,
   IndexedOccurrenceId,

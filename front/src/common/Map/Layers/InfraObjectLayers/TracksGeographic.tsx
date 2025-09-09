@@ -5,7 +5,7 @@ import { Source } from 'react-map-gl/maplibre';
 import { MAP_TRACK_SOURCES, MAP_URL } from 'common/Map/const';
 import { lineNameLayer, lineNumberLayer, trackNameLayer } from 'common/Map/Layers/commonLayers';
 import type { Theme } from 'common/Map/theme';
-import { useMapSettings } from 'reducers/globalMap';
+import { useMapSettings } from 'reducers/commonMap';
 
 import geoMainLayer from './getGeographicLayerProps';
 import OrderedLayer from '../OrderedLayer';

@@ -5,8 +5,8 @@ import type { InfraErrorLevel } from 'applications/editor/components/InfraErrors
 import type { Layer } from 'applications/editor/consts';
 import type { EditorSchema } from 'applications/editor/typesEditorEntity';
 import type { InfraErrorTypeLabel } from 'common/api/osrdEditoastApi';
-import { buildMapStateReducer, defaultMapSettings } from 'reducers/globalMap';
-import type { MapSettings, Viewport } from 'reducers/globalMap/types';
+import { buildMapStateReducer, defaultMapSettings } from 'reducers/commonMap';
+import type { MapSettings, Viewport } from 'reducers/commonMap/types';
 import { type InfraState, buildInfraStateReducers, infraState } from 'reducers/infra';
 
 export type EditorState = InfraState & {

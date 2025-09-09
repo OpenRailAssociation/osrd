@@ -30,9 +30,9 @@ import {
 } from 'common/Map/Layers';
 import { colors } from 'common/Map/theme';
 import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
+import { useMapSettings, useMapSettingsActions } from 'reducers/commonMap';
+import type { MapStyle, Viewport } from 'reducers/commonMap/types';
 import { getEditorState } from 'reducers/editor/selectors';
-import { useMapSettings, useMapSettingsActions } from 'reducers/globalMap';
-import type { MapStyle, Viewport } from 'reducers/globalMap/types';
 import { useAppDispatch } from 'store';
 import { getMapMouseEventNearestFeature } from 'utils/mapHelper';
 

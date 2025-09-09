@@ -7,7 +7,7 @@ import type { SearchResultItemOperationalPoint } from 'common/api/osrdEditoastAp
 import CheckboxRadioSNCF from 'common/BootstrapSNCF/CheckboxRadioSNCF';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { computeCoordinatesOnClick } from 'common/Map/utils';
-import { useMapSettingsActions } from 'reducers/globalMap';
+import { useMapSettingsActions } from 'reducers/commonMap';
 import { useAppDispatch } from 'store';
 
 import { MAIN_OP_CH_CODES } from './consts';

@@ -4,8 +4,8 @@ import { useTranslation } from 'react-i18next';
 import picDarkMode from 'assets/pictures/mapbuttons/mapstyle-dark.jpg';
 import picMinimalMode from 'assets/pictures/mapbuttons/mapstyle-minimal.jpg';
 import picNormalMode from 'assets/pictures/mapbuttons/mapstyle-normal.jpg';
-import { useMapSettingsActions } from 'reducers/globalMap';
-import type { MapStyle } from 'reducers/globalMap/types';
+import { useMapSettingsActions } from 'reducers/commonMap';
+import type { MapStyle } from 'reducers/commonMap/types';
 import { useAppDispatch } from 'store';
 
 const MapSettingsMapStyle = ({ mapStyle }: { mapStyle: MapStyle }) => {

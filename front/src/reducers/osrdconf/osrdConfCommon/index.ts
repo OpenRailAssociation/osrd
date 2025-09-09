@@ -1,7 +1,7 @@
 import type { CaseReducer, PayloadAction } from '@reduxjs/toolkit';
 import type { Draft } from 'immer';
 
-import { defaultMapSettings, buildMapStateReducer } from 'reducers/globalMap';
+import { defaultMapSettings, buildMapStateReducer } from 'reducers/commonMap';
 import { type InfraStateReducers, buildInfraStateReducers, infraState } from 'reducers/infra';
 import type {
   OperationalStudiesConfSlice,

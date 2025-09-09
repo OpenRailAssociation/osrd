@@ -1,7 +1,7 @@
 import { useTranslation } from 'react-i18next';
 
 import { colors, type Theme } from 'common/Map/theme';
-import { useMapSettings } from 'reducers/globalMap';
+import { useMapSettings } from 'reducers/commonMap';
 
 import { electrificationMapKey, type MapKeyProps, speedLimitMapKey } from './const';
 import MapModalHeader from './MapModalHeader';

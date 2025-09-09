@@ -17,7 +17,7 @@ import {
   computeCoordinatesOnClick,
 } from 'common/Map/utils';
 import { useInfraID } from 'common/osrdContext';
-import { useMapSettingsActions } from 'reducers/globalMap';
+import { useMapSettingsActions } from 'reducers/commonMap';
 import { setFailure } from 'reducers/main';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';

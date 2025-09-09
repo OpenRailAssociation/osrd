@@ -15,8 +15,8 @@ import {
   generateCodeNumber,
   getOperationalPointsWithTimes,
 } from 'modules/SimulationReportSheet/utils/formatSimulationReportSheet';
-import { useMapSettings, useMapSettingsActions } from 'reducers/globalMap';
-import type { MapSettings } from 'reducers/globalMap/types';
+import { useMapSettings, useMapSettingsActions } from 'reducers/commonMap';
+import type { MapSettings } from 'reducers/commonMap/types';
 import {
   getRetainedSimulationIndex,
   getSelectedSimulation,

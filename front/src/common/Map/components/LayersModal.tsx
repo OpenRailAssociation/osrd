@@ -19,8 +19,8 @@ import MapSettingsBackgroundSwitches from 'common/Map/Settings/MapSettingsBackgr
 import { Icon2SVG } from 'common/Map/Settings/MapSettingsLayers';
 import MapSettingsMapStyle from 'common/Map/Settings/MapSettingsMapStyle';
 import { useInfraID } from 'common/osrdContext';
-import { useMapSettings, useMapSettingsActions } from 'reducers/globalMap';
-import type { LayersSettings } from 'reducers/globalMap/types';
+import { useMapSettings, useMapSettingsActions } from 'reducers/commonMap';
+import type { LayersSettings } from 'reducers/commonMap/types';
 import { useAppDispatch } from 'store';
 
 const LAYERS = [

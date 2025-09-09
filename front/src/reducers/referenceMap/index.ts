@@ -1,8 +1,8 @@
 import { createSlice, type Dispatch } from '@reduxjs/toolkit';
 
 import history from 'main/history';
-import { defaultMapSettings, buildMapStateReducer } from 'reducers/globalMap';
-import type { MapSettings, Viewport } from 'reducers/globalMap/types';
+import { defaultMapSettings, buildMapStateReducer } from 'reducers/commonMap';
+import type { MapSettings, Viewport } from 'reducers/commonMap/types';
 import type { InfraState } from 'reducers/infra';
 import { infraState, buildInfraStateReducers } from 'reducers/infra';
 import { gpsRound } from 'utils/helpers';

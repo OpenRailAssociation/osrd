@@ -1,7 +1,7 @@
 import type { LayerProps } from 'react-map-gl/maplibre';
 
 import { colors } from 'common/Map/theme/colors';
-import type { MapStyle } from 'reducers/globalMap/types';
+import type { MapStyle } from 'reducers/commonMap/types';
 
 export function getOSMStyle(mapStyle: MapStyle): LayerProps[] {
   const background = colors[mapStyle].background.color;
