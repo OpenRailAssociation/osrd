@@ -9,7 +9,6 @@ use serde::Deserialize;
 use serde::Serialize;
 
 use super::Infra;
-use crate::error::Result;
 
 #[derive(QueryableByName, Debug, Clone, Serialize, Deserialize)]
 pub struct Voltage {
@@ -22,7 +21,7 @@ impl Infra {
         &self,
         conn: &mut DbConnection,
         include_rolling_stock_modes: bool,
-    ) -> Result<Vec<Voltage>> {
+    ) -> Result<Vec<Voltage>, database::DatabaseError> {
         let query = if !include_rolling_stock_modes {
             include_str!("sql/get_voltages_without_rolling_stocks_modes.sql")
         } else {
@@ -35,7 +34,9 @@ impl Infra {
         Ok(voltages)
     }
 
-    pub async fn get_all_voltages(conn: &mut DbConnection) -> Result<Vec<Voltage>> {
+    pub async fn get_all_voltages(
+        conn: &mut DbConnection,
+    ) -> Result<Vec<Voltage>, database::DatabaseError> {
         let query = include_str!("sql/get_all_voltages_and_modes.sql");
         let voltages = sql_query(query)
             .load::<Voltage>(conn.write().await.deref_mut())
