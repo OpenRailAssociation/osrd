@@ -27,7 +27,7 @@ pub trait SchemaModel: Model {
     async fn find_all<C: Default + std::iter::Extend<Self> + Send>(
         conn: &mut DbConnection,
         infra_id: i64,
-    ) -> crate::error::Result<C>;
+    ) -> Result<C, database::DatabaseError>;
 }
 
 macro_rules! infra_model {
@@ -71,7 +71,7 @@ macro_rules! infra_model {
             async fn find_all<C: Default + std::iter::Extend<Self> + Send>(
                 conn: &mut DbConnection,
                 infra_id: i64,
-            ) -> crate::error::Result<C> {
+            ) -> Result<C, database::DatabaseError> {
                 use diesel::prelude::*;
                 use diesel_async::RunQueryDsl;
                 use futures::stream::TryStreamExt;
@@ -247,7 +247,7 @@ impl OperationalPointModel {
         conn: &mut DbConnection,
         infra_id: i64,
         uic: &[u32],
-    ) -> crate::error::Result<Vec<Self>> {
+    ) -> Result<Vec<Self>, database::DatabaseError> {
         use database::tables::infra_object_operational_point::dsl;
         use diesel::dsl::sql;
         use diesel::prelude::*;
@@ -272,7 +272,7 @@ impl OperationalPointModel {
         conn: &mut DbConnection,
         infra_id: i64,
         trigrams: &[String],
-    ) -> crate::error::Result<Vec<Self>> {
+    ) -> Result<Vec<Self>, database::DatabaseError> {
         use database::tables::infra_object_operational_point::dsl;
         use diesel::dsl::sql;
         use diesel::prelude::*;
