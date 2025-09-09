@@ -9,7 +9,6 @@ use serde::Deserialize;
 use serde::Serialize;
 
 use super::Infra;
-use crate::error::Result;
 
 #[derive(QueryableByName, Debug, Clone, Serialize, Deserialize)]
 pub struct SpeedLimitTags {
@@ -21,7 +20,7 @@ impl Infra {
     pub async fn get_speed_limit_tags(
         &self,
         conn: &mut DbConnection,
-    ) -> Result<Vec<SpeedLimitTags>> {
+    ) -> Result<Vec<SpeedLimitTags>, database::DatabaseError> {
         let query = include_str!("sql/get_speed_limit_tags.sql");
         let speed_limits_tags = sql_query(query)
             .bind::<BigInt, _>(self.id)
