@@ -6,10 +6,9 @@ import type { TrackSection } from 'common/api/osrdEditoastApi';
 import type { IntervalItem } from 'common/IntervalsEditor/types';
 import findTrackSectionOffset from 'modules/pathfinding/helpers/findTrackSectionOffset';
 import getPointOnPathCoordinates from 'modules/pathfinding/helpers/getPointOnPathCoordinates';
+import { NO_POWER_RESTRICTION } from 'modules/powerRestriction/consts';
 import type { PathStep } from 'reducers/osrdconf/types';
 import { mmToM, mToMm } from 'utils/physics';
-
-import { NO_POWER_RESTRICTION } from '../consts';
 
 /**
  * Cut the correct range for a given position and add the new ranges to the

@@ -4,7 +4,7 @@ import type { PowerRestriction } from 'applications/operationalStudies/types';
 import type { RollingStock } from 'common/api/osrdEditoastApi';
 import type { RangedValue } from 'common/types';
 import { NO_POWER_RESTRICTION } from 'modules/powerRestriction/consts';
-import type { PowerRestrictionWarnings } from 'modules/powerRestriction/types';
+import type { PowerRestrictionWarnings } from 'modules/powerRestrictionSelector/types';
 import { getRollingStockPowerRestrictionsByMode } from 'modules/rollingStock/helpers/powerRestrictions';
 import type { PathStep } from 'reducers/osrdconf/types';
 
