@@ -9,7 +9,6 @@ use serde::Serialize;
 use utoipa::ToSchema;
 
 use super::RollingStock;
-use crate::error::Result;
 
 #[editoast_derive::openapi_schema]
 #[derive(QueryableByName, Debug, Clone, Serialize, Deserialize, ToSchema)]
@@ -19,7 +18,9 @@ pub struct PowerRestriction {
 }
 
 impl RollingStock {
-    pub async fn get_power_restrictions(conn: &mut DbConnection) -> Result<Vec<PowerRestriction>> {
+    pub async fn get_power_restrictions(
+        conn: &mut DbConnection,
+    ) -> Result<Vec<PowerRestriction>, database::DatabaseError> {
         let power_restrictions = sql_query(include_str!("sql/get_power_restrictions.sql"))
             .load::<PowerRestriction>(conn.write().await.deref_mut())
             .await?;
