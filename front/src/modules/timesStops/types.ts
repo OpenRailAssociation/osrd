@@ -28,8 +28,8 @@ export type TimesStopsRow = {
   theoreticalMarginSeconds?: string;
   calculatedMargin?: string;
   diffMargins?: string;
-  calculatedArrival?: string | null;
-  calculatedDeparture?: string | null;
+  calculatedArrival?: Date | null;
+  calculatedDeparture?: Date | null;
 
   isMarginValid?: boolean;
 };

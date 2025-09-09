@@ -10,6 +10,7 @@ import type { CellComponent } from '@sdziadkowiec/react-datasheet-grid/dist/type
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 
+import { useDateTimeLocale } from 'utils/date';
 import { Duration } from 'utils/duration';
 import { NO_BREAK_SPACE } from 'utils/strings';
 
@@ -51,6 +52,22 @@ function durationColumn() {
   });
 }
 
+function readOnlyTimeColumn(key: string, dateTimeLocale: Intl.Locale) {
+  const format = (date: Date | undefined) => date?.toLocaleTimeString(dateTimeLocale) ?? '';
+
+  return {
+    ...keyColumn(
+      key,
+      createTextColumn<Date | undefined>({
+        formatBlurredInput: format,
+        formatInputOnFocus: format,
+        formatForCopy: format,
+      })
+    ),
+    disabled: true,
+  };
+}
+
 const fixedWidth = (width: number) => ({ minWidth: width, maxWidth: width });
 
 function headerWithTitleTagIfShortened(shortenedHeader: string, fullHeader: string) {
@@ -63,6 +80,7 @@ export const useTimesStopsColumns = <T extends TimesStopsRow>(
   allWaypoints: T[] = []
 ) => {
   const { t } = useTranslation('translation', { keyPrefix: 'timeStopTable' });
+  const dateTimeLocale = useDateTimeLocale();
 
   const columns = useMemo<Column<T>[]>(() => {
     const isOutputTable = tableType === TableType.Output;
@@ -88,12 +106,13 @@ export const useTimesStopsColumns = <T extends TimesStopsRow>(
               ...fixedWidth(90),
             },
             {
-              ...disabledTextColumn('calculatedArrival', t('calculatedArrivalTime')),
+              ...readOnlyTimeColumn('calculatedArrival', dateTimeLocale),
+              title: t('calculatedArrivalTime'),
               headerClassName: 'padded-header',
               ...fixedWidth(105),
             },
             {
-              ...disabledTextColumn('calculatedDeparture', t('calculatedDepartureTime')),
+              ...readOnlyTimeColumn('calculatedDeparture', dateTimeLocale),
               title: headerWithTitleTagIfShortened(
                 t('calculatedDepartureTime'),
                 t('calculatedDepartureTimeFull')
@@ -237,7 +256,7 @@ export const useTimesStopsColumns = <T extends TimesStopsRow>(
       },
       ...extraOutputColumns,
     ] as Column<T>[];
-  }, [tableType, t, allWaypoints.length]);
+  }, [tableType, t, allWaypoints.length, dateTimeLocale]);
 
   return columns;
 };
