@@ -10,9 +10,9 @@ import type { Layer as LayerType } from 'applications/editor/consts';
 import { MAP_TRACK_SOURCE, MAP_URL } from 'common/Map/const';
 import type { Theme } from 'common/Map/theme';
 import { LAYER_ENTITIES_ORDERS, LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
-import type { EditorState } from 'reducers/editor';
 import { useMapSettings } from 'reducers/commonMap';
-import type { MapState } from 'reducers/map';
+import type { MapSettings } from 'reducers/commonMap/types';
+import type { EditorState } from 'reducers/editor';
 
 import { getBufferStopsLayerProps } from './BufferStops';
 import { getDetectorsLayerProps, getDetectorsNameLayerProps } from './Detectors';
@@ -434,7 +434,7 @@ export const EditorSource = ({ id, data, layers, layerOrder }: EditorSourceProps
 
 type GeoJSONsProps = {
   colors: Theme;
-  layersSettings: MapState['mapSettings']['layersSettings'];
+  layersSettings: MapSettings['layersSettings'];
   issuesSettings?: EditorState['issuesSettings'];
   hidden?: string[];
   selection?: string[];

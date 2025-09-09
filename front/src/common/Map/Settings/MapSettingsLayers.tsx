@@ -11,10 +11,10 @@ import OPsSVGFile from 'assets/pictures/layersicons/ops.svg';
 import SwitchesSVGFile from 'assets/pictures/layersicons/switches.svg';
 import SwitchSNCF, { SWITCH_TYPES } from 'common/BootstrapSNCF/SwitchSNCF';
 import { useMapSettings, useMapSettingsActions } from 'reducers/commonMap';
-import type { MapState } from 'reducers/map';
+import type { MapSettings } from 'reducers/commonMap/types';
 import { useAppDispatch } from 'store';
 
-type LayerSettings = MapState['mapSettings']['layersSettings'];
+type LayerSettings = MapSettings['layersSettings'];
 
 type FormatSwitchProps = {
   name: keyof Omit<LayerSettings, 'speedlimittag'>;

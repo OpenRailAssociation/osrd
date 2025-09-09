@@ -6,8 +6,7 @@ import type { SymbolLayerSpecification, LineLayerSpecification } from 'react-map
 
 import { MAP_URL } from 'common/Map/const';
 import type { Theme } from 'common/Map/theme';
-import type { LayersSettings } from 'reducers/commonMap/types';
-import type { MapState } from 'reducers/map';
+import type { LayersSettings, MapSettings } from 'reducers/commonMap/types';
 import type { OmitLayer } from 'types';
 
 import { DEFAULT_HALO_WIDTH, getAllowOverlap, getDynamicTextSize } from '../commonLayers';
@@ -18,7 +17,7 @@ type SpeedLimitsProps = {
   layerOrder: number;
   punctualLayerOrder: number;
   infraID?: number;
-  layersSettings: MapState['mapSettings']['layersSettings'];
+  layersSettings: MapSettings['layersSettings'];
   highlightedArea?: Geometry;
 };
 
