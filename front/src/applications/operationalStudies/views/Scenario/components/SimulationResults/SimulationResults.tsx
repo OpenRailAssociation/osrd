@@ -4,10 +4,12 @@ import { ChevronLeft, ChevronRight, Eye } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
+import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
+import useSimulationResults from 'applications/operationalStudies/hooks/useSimulationResults';
+import type { Board } from 'applications/operationalStudies/types';
 import { type Conflict } from 'common/api/osrdEditoastApi';
 import SimulationWarpedMap from 'common/Map/WarpedMap/SimulationWarpedMap';
 import ResizableSection from 'common/ResizableSection';
-import SimulationResultsMap from 'modules/simulationResult/components/SimulationResultsMap';
 import SpaceTimeChartWrapper, {
   MANCHETTE_WITH_SPACE_TIME_CHART_DEFAULT_HEIGHT,
 } from 'modules/simulationResult/components/SpaceTimeChartWrapper/SpaceTimeChartWrapper';
@@ -33,10 +35,8 @@ import {
 } from 'utils/trainId';
 import { mapBy } from 'utils/types';
 
-import BoardWrapper from './BoardWrapper';
-import { useScenarioContext } from '../../../hooks/useScenarioContext';
-import useSimulationResults from '../../../hooks/useSimulationResults';
-import type { Board } from '../../../types';
+import BoardWrapper from '../BoardWrapper';
+import SimulationResultsMap from './SimulationResultsMap';
 
 const HIDDEN_CHART_TOP_HEIGHT = 35;
 const SDD_INITIAL_HEIGHT = 460;
