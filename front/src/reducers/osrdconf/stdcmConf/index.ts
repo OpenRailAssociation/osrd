@@ -10,7 +10,7 @@ import {
   type StdcmLinkedTrainExtremity,
   type StdcmSimulation,
 } from 'applications/stdcm/types';
-import { buildMapStateReducer } from 'reducers/globalMap';
+import { buildMapStateReducer } from 'reducers/commonMap';
 import { defaultCommonConf, buildCommonConfReducers } from 'reducers/osrdconf/osrdConfCommon';
 import type { OsrdStdcmConfState, StdcmPathStep } from 'reducers/osrdconf/types';
 import { addElementAtIndex } from 'utils/array';

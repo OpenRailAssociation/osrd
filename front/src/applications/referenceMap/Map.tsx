@@ -5,8 +5,8 @@ import type { MapRef } from 'react-map-gl/maplibre';
 import BaseMap from 'common/Map/BaseMap';
 import MapButtons from 'common/Map/Buttons/MapButtons';
 import { useInfraID } from 'common/osrdContext';
-import { useMapSettings, useMapSettingsActions } from 'reducers/globalMap';
-import type { Viewport } from 'reducers/globalMap/types';
+import { useMapSettings, useMapSettingsActions } from 'reducers/commonMap';
+import type { Viewport } from 'reducers/commonMap/types';
 import { updateReferenceMapViewport } from 'reducers/referenceMap';
 import { useAppDispatch } from 'store';
 

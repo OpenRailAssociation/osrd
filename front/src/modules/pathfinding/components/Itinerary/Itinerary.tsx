@@ -13,7 +13,7 @@ import { computeBBoxViewport } from 'common/Map/WarpedMap/core/helpers';
 import Pathfinding from 'modules/pathfinding/components/Pathfinding';
 import TypeAndPath from 'modules/pathfinding/components/Pathfinding/TypeAndPath';
 import reversePathSteps from 'modules/pathfinding/helpers/reversePathSteps';
-import { useMapSettingsActions } from 'reducers/globalMap';
+import { useMapSettingsActions } from 'reducers/commonMap';
 import { setWarning } from 'reducers/main';
 import { getMap } from 'reducers/map/selectors';
 import {

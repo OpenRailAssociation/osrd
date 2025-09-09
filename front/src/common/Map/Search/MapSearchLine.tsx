@@ -8,8 +8,8 @@ import type { BoundingBox, SearchResultItemTrack } from 'common/api/osrdEditoast
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { computeBBoxViewport } from 'common/Map/WarpedMap/core/helpers';
 import { useInfraID } from 'common/osrdContext';
-import { useMapSettingsActions } from 'reducers/globalMap';
-import type { MapSettings, Viewport } from 'reducers/globalMap/types';
+import { useMapSettingsActions } from 'reducers/commonMap';
+import type { MapSettings, Viewport } from 'reducers/commonMap/types';
 import { useAppDispatch } from 'store';
 import { useDebounce } from 'utils/helpers';
 

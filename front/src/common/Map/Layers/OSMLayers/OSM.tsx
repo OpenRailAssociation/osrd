@@ -4,7 +4,7 @@ import { get } from 'lodash';
 
 import OrderedLayer, { type OrderedLayerProps } from 'common/Map/Layers/OrderedLayer';
 import { getOSMStyle } from 'common/Map/theme';
-import type { MapStyle } from 'reducers/globalMap/types';
+import type { MapStyle } from 'reducers/commonMap/types';
 
 type OSMProps = {
   mapIsLoaded?: boolean;

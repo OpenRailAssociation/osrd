@@ -1,4 +1,4 @@
-import type { MapStyle } from 'reducers/globalMap/types';
+import type { MapStyle } from 'reducers/commonMap/types';
 
 const speedNone = '#b9b9b9';
 const speed30 = '#ef5151';

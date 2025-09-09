@@ -8,8 +8,8 @@ import iconIGNBDORTHO from 'assets/pictures/mapbuttons/mapstyle-ortho.jpg';
 import iconOSMTracks from 'assets/pictures/mapbuttons/mapstyle-osm-tracks.jpg';
 import iconIGNSCAN25 from 'assets/pictures/mapbuttons/mapstyle-scan25.jpg';
 import SwitchSNCF, { SWITCH_TYPES, type SwitchSNCFProps } from 'common/BootstrapSNCF/SwitchSNCF';
-import { useMapSettingsActions } from 'reducers/globalMap';
-import { type MapSettings } from 'reducers/globalMap/types';
+import { useMapSettingsActions } from 'reducers/commonMap';
+import { type MapSettings } from 'reducers/commonMap/types';
 import { useAppDispatch } from 'store';
 
 type FormatSwitchProps = {

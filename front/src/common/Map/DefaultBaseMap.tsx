@@ -14,7 +14,7 @@ import BaseMap from 'common/Map/BaseMap';
 import MapButtons from 'common/Map/Buttons/MapButtons';
 import { computeBBoxViewport } from 'common/Map/WarpedMap/core/helpers';
 import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
-import type { MapSettings, Viewport } from 'reducers/globalMap/types';
+import type { MapSettings, Viewport } from 'reducers/commonMap/types';
 
 type DefaultBaseMapProps = {
   mapId: string;

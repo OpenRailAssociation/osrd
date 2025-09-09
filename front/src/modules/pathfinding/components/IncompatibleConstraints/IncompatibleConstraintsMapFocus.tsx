@@ -6,7 +6,7 @@ import type { FeatureCollection, LineString } from 'geojson';
 import { useTranslation } from 'react-i18next';
 import { useMap } from 'react-map-gl/maplibre';
 
-import { useMapSettings } from 'reducers/globalMap';
+import { useMapSettings } from 'reducers/commonMap';
 
 type IncompatibleConstraintsMapFocusProps = HTMLAttributes<unknown> & {
   geojson?: FeatureCollection<LineString>;

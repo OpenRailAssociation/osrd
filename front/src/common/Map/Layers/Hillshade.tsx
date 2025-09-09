@@ -1,6 +1,6 @@
 import { type LayerProps } from 'react-map-gl/maplibre';
 
-import { useMapSettings } from 'reducers/globalMap';
+import { useMapSettings } from 'reducers/commonMap';
 
 import OrderedLayer from './OrderedLayer';
 

@@ -23,8 +23,8 @@ import MapSettingsBackgroundSwitches from 'common/Map/Settings/MapSettingsBackgr
 import { Icon2SVG } from 'common/Map/Settings/MapSettingsLayers';
 import MapSettingsMapStyle from 'common/Map/Settings/MapSettingsMapStyle';
 import { useInfraID } from 'common/osrdContext';
+import { useMapSettings, useMapSettingsActions } from 'reducers/commonMap';
 import { editorSliceActions } from 'reducers/editor';
-import { useMapSettings, useMapSettingsActions } from 'reducers/globalMap';
 import { useAppDispatch } from 'store';
 
 export const LAYERS: Array<{ layers: Layer[]; icon: string | React.JSX.Element }> = [

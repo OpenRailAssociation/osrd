@@ -2,7 +2,7 @@ import type { Geometry } from 'geojson';
 
 import { colors } from 'common/Map/theme';
 import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
-import type { LayersSettings, MapStyle } from 'reducers/globalMap/types';
+import type { LayersSettings, MapStyle } from 'reducers/commonMap/types';
 
 import BufferStops from './BufferStops';
 import Detectors from './Detectors';

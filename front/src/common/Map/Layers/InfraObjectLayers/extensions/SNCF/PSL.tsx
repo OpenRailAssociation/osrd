@@ -13,7 +13,7 @@ import {
   getDynamicTextSize,
 } from 'common/Map/Layers/commonLayers';
 import type { Theme } from 'common/Map/theme';
-import type { LayersSettings } from 'reducers/globalMap/types';
+import type { LayersSettings } from 'reducers/commonMap/types';
 import type { MapState } from 'reducers/map';
 import type { OmitLayer } from 'types';
 

@@ -7,7 +7,7 @@ import type {
   SuggestedOP,
   TrainScheduleWithDetails,
 } from 'modules/timetableItem/types';
-import { buildMapStateReducer } from 'reducers/globalMap';
+import { buildMapStateReducer } from 'reducers/commonMap';
 import { defaultCommonConf, buildCommonConfReducers } from 'reducers/osrdconf/osrdConfCommon';
 import type { OperationalStudiesConfState } from 'reducers/osrdconf/types';
 import { Duration } from 'utils/duration';

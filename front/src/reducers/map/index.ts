@@ -3,8 +3,8 @@ import { createSlice } from '@reduxjs/toolkit';
 
 import { MAP_URL } from 'common/Map/const';
 import history from 'main/history';
-import { buildMapStateReducer, defaultMapSettings } from 'reducers/globalMap';
-import type { MapSettings, Viewport } from 'reducers/globalMap/types';
+import { buildMapStateReducer, defaultMapSettings } from 'reducers/commonMap';
+import type { MapSettings, Viewport } from 'reducers/commonMap/types';
 import { gpsRound } from 'utils/helpers';
 
 export type MapState = {

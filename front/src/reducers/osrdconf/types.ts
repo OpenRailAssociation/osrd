@@ -22,7 +22,7 @@ import type {
   TrainSchedule,
 } from 'common/api/osrdEditoastApi';
 import type { PacedTrainWithDetails } from 'modules/timetableItem/types';
-import type { MapSettings } from 'reducers/globalMap/types';
+import type { MapSettings } from 'reducers/commonMap/types';
 import type { InfraState } from 'reducers/infra';
 import type { Duration } from 'utils/duration';
 

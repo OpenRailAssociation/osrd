@@ -21,7 +21,7 @@ import { colors } from 'common/Map/theme';
 import type { BBox2d } from 'common/Map/WarpedMap/core/helpers';
 import { LAYERS, LAYER_ENTITIES_ORDERS, LAYER_GROUPS_ORDER } from 'config/layerOrder';
 import RenderItinerary from 'modules/simulationResult/components/SimulationResultsMap/RenderItinerary';
-import { useMapSettings } from 'reducers/globalMap';
+import { useMapSettings } from 'reducers/commonMap';
 
 type WarpedMapProps = {
   bbox: BBox2d;
