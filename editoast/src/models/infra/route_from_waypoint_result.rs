@@ -8,8 +8,6 @@ use diesel::sql_types::Text;
 use diesel_async::RunQueryDsl;
 
 use super::Infra;
-use crate::error::Result;
-
 #[derive(QueryableByName)]
 pub struct RouteFromWaypointResult {
     #[diesel(sql_type = Text)]
@@ -24,7 +22,7 @@ impl Infra {
         conn: &mut DbConnection,
         waypoint_id: &String,
         waypoint_type: String,
-    ) -> Result<Vec<RouteFromWaypointResult>> {
+    ) -> Result<Vec<RouteFromWaypointResult>, database::DatabaseError> {
         let routes = sql_query(include_str!("sql/get_routes_from_waypoint.sql"))
             .bind::<BigInt, _>(self.id)
             .bind::<Text, _>(&waypoint_id)
