@@ -10,8 +10,8 @@ import { INTERVAL_TYPES } from 'common/IntervalsEditor/types';
 import type { RangedValue } from 'common/types';
 import { mmToM } from 'utils/physics';
 
-import { NO_POWER_RESTRICTION } from '../consts';
-import usePowerRestrictionSelector from '../hooks/usePowerRestrictionSelectorData';
+import { NO_POWER_RESTRICTION } from './consts';
+import usePowerRestrictionSelector from './hooks/usePowerRestrictionSelectorData';
 
 type PowerRestrictionsSelectorProps = {
   voltageRanges: RangedValue[];
