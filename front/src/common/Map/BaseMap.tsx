@@ -17,12 +17,12 @@ import {
 } from 'common/Map/Layers';
 import { colors } from 'common/Map/theme';
 import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
-import type { Viewport } from 'reducers/commonMap/types';
-import type { MapState } from 'reducers/map';
+import type { MapSettings, Viewport } from 'reducers/commonMap/types';
 
 import { CUSTOM_ATTRIBUTION } from './const';
 
-type MapProps = Pick<MapState, 'mapSettings'> & {
+type MapProps = {
+  mapSettings: MapSettings;
   mapId: string;
   mapRef: MutableRefObject<MapRef | null>;
   interactiveLayerIds: string[];

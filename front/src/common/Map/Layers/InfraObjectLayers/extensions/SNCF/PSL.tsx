@@ -13,8 +13,7 @@ import {
   getDynamicTextSize,
 } from 'common/Map/Layers/commonLayers';
 import type { Theme } from 'common/Map/theme';
-import type { LayersSettings } from 'reducers/commonMap/types';
-import type { MapState } from 'reducers/map';
+import type { LayersSettings, MapSettings } from 'reducers/commonMap/types';
 import type { OmitLayer } from 'types';
 
 import SNCF_PSL_Signs from './PSLSigns';
@@ -26,7 +25,7 @@ type SNCF_PSLProps = {
   layerOrder: number;
   punctualLayerOrder: number;
   infraID?: number;
-  layersSettings: MapState['mapSettings']['layersSettings'];
+  layersSettings: MapSettings['layersSettings'];
   highlightedArea?: Geometry;
 };
 

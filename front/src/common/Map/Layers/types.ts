@@ -4,8 +4,8 @@ import type {
 } from 'react-map-gl/maplibre';
 
 import type { Theme } from 'common/Map/theme';
+import type { MapSettings } from 'reducers/commonMap/types';
 import type { EditorState } from 'reducers/editor';
-import type { MapState } from 'reducers/map';
 
 export type SignalContext = {
   sourceTable?: string;
@@ -19,7 +19,7 @@ export type LayerContext = SignalContext & {
   sourceTable?: string;
   isEmphasized: boolean;
   showIGNBDORTHO: boolean;
-  layersSettings: MapState['mapSettings']['layersSettings'];
+  layersSettings: MapSettings['layersSettings'];
   issuesSettings?: EditorState['issuesSettings'];
 };
 
