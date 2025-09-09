@@ -13,9 +13,8 @@ import { computeBBoxViewport } from 'common/Map/WarpedMap/core/helpers';
 import Pathfinding from 'modules/pathfinding/components/Pathfinding';
 import TypeAndPath from 'modules/pathfinding/components/Pathfinding/TypeAndPath';
 import reversePathSteps from 'modules/pathfinding/helpers/reversePathSteps';
-import { useMapSettingsActions } from 'reducers/commonMap';
+import { useMapSettings, useMapSettingsActions } from 'reducers/commonMap';
 import { setWarning } from 'reducers/main';
-import { getMap } from 'reducers/map/selectors';
 import {
   getOrigin,
   getDestination,
@@ -38,19 +37,19 @@ const Itinerary = ({ rollingStockId }: { rollingStockId: number | undefined }) =
 
   const [displayTypeAndPath, setDisplayTypeAndPath] = useState(false);
   const dispatch = useAppDispatch();
-  const map = useSelector(getMap);
   const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTimetableItem' });
   const { openModal } = useModal();
 
   const { pathProperties, launchPathfinding, pathStepsAndSuggestedOPs } =
     useManageTimetableItemContext();
 
+  const mapSettings = useMapSettings();
   const { updateViewport } = useMapSettingsActions();
 
   const zoomToFeaturePoint = (lngLat?: Position) => {
     if (lngLat) {
       const newViewport = {
-        ...map.mapSettings.viewport,
+        ...mapSettings.viewport,
         longitude: lngLat[0],
         latitude: lngLat[1],
         zoom: 16,
@@ -61,10 +60,7 @@ const Itinerary = ({ rollingStockId }: { rollingStockId: number | undefined }) =
 
   const seeWholeItinerary = () => {
     if (pathProperties) {
-      const newViewport = computeBBoxViewport(
-        bbox(pathProperties.geometry),
-        map.mapSettings.viewport
-      );
+      const newViewport = computeBBoxViewport(bbox(pathProperties.geometry), mapSettings.viewport);
       dispatch(updateViewport(newViewport));
     }
   };
