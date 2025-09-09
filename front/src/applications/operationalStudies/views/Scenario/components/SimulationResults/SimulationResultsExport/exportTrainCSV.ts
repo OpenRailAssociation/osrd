@@ -59,8 +59,7 @@ const overloadSteps = (
   trainRegime: ReportTrain,
   operationalPoints: OperationalPointWithTimeAndSpeed[],
   speedLimits: SpeedRanges,
-  electrificationRanges: ElectrificationRange[],
-  electricalProfiles: SimulationResponseSuccess['electrical_profiles']
+  electrificationRanges: ElectrificationRange[]
 ): PositionSpeedTimeOP[] => {
   const speedsAtOps = operationalPoints.map((op) => ({
     position: op.position,
@@ -82,9 +81,15 @@ const overloadSteps = (
   const speedsAtElectrificationRanges: PositionSpeedTimeOP[] = [];
   electrificationRanges.forEach((electrification, idx) => {
     const electrificationType = electrification.electrificationUsage.type;
-
+    const electricalProfileType = electrification.electrificationUsage.electrical_profile_type;
     const electrificationMode =
       electrificationType === 'electrification' ? electrification.electrificationUsage.voltage : '';
+    const electrificationProfile =
+      electrificationType === 'electrification' &&
+      electricalProfileType === 'profile' &&
+      electrification.electrificationUsage.profile
+        ? electrification.electrificationUsage.profile
+        : '';
     const electrificationStart = electrification.start;
 
     speedsAtElectrificationRanges.push({
@@ -92,6 +97,7 @@ const overloadSteps = (
       speed: interpolateValue(trainRegime, mToMm(electrificationStart), 'speeds'),
       electrificationType,
       electrificationMode,
+      electrificationProfile,
       time: interpolateValue(trainRegime, mToMm(electrificationStart), 'times'),
     });
 
@@ -107,6 +113,7 @@ const overloadSteps = (
         speed: interpolateValue(trainRegime, electrification.stop + 1, 'speeds'),
         electrificationType: '',
         electrificationMode: '',
+        electrificationProfile: '',
         time: interpolateValue(trainRegime, electrification.stop + 1, 'times'),
       });
     }
@@ -118,25 +125,10 @@ const overloadSteps = (
     time: trainRegime.times[index],
   }));
 
-  const formattedElectricalProfiles = electricalProfiles.values.map((value, index) => {
-    const position = electricalProfiles.boundaries[index - 1] || 0;
-    const currentTrainRegime = {
-      speed: interpolateValue(trainRegime, position, 'speeds'),
-      position: mmToM(position),
-      time: interpolateValue(trainRegime, position, 'times'),
-    };
-    return {
-      electrificationProfile:
-        value.electrical_profile_type === 'profile' ? value.profile || '' : '',
-      ...currentTrainRegime,
-    };
-  });
-
   const speedsWithOPsAndSpeedLimits = formattedTrainRegime.concat(
     speedsAtOps,
     speedsAtSpeedLimitChange,
-    speedsAtElectrificationRanges,
-    formattedElectricalProfiles
+    speedsAtElectrificationRanges
   );
 
   return speedsWithOPsAndSpeedLimits.sort((stepA, stepB) => stepA.position - stepB.position);
@@ -218,8 +210,7 @@ export default function exportTrainCSV(
     trainRegimeWithAccurateTime,
     operationalPoints,
     formattedMrsp,
-    electrificationRanges,
-    simulatedTrain.electrical_profiles
+    electrificationRanges
   );
 
   const steps: CSVData[] = [];
