@@ -22,9 +22,12 @@ const Map = () => {
 
   const mapRef = useRef<MapRef | null>(null);
 
-  const updateViewportChange = useCallback((value: Partial<Viewport>) => {
-    dispatch(updateMapViewerViewport(value));
-  }, []);
+  const updateViewportChange = useCallback(
+    (value: Partial<Viewport>, { updateRouter } = { updateRouter: false }) => {
+      dispatch(updateMapViewerViewport(value, updateRouter));
+    },
+    []
+  );
 
   const resetPitchBearing = () => {
     updateViewportChange({
