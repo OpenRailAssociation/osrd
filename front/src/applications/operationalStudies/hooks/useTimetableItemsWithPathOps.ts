@@ -25,10 +25,14 @@ const useTimetableItemsWithPathOps = (
     );
 
   return useMemo(() => {
-    if (!timetableItems || !timetableOperationalPoints || timetableOperationalPoints.length === 0) {
+    if (!timetableItems) {
       return [];
     }
-    return addPathOpsToTimetableItems(timetableItems, timetableOpRefs, timetableOperationalPoints);
+    return addPathOpsToTimetableItems(
+      timetableItems,
+      timetableOpRefs,
+      timetableOperationalPoints ?? []
+    );
   }, [timetableItems, timetableOperationalPoints]);
 };
 
