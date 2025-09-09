@@ -31,13 +31,13 @@ export const formatSchedule = (
 
   if (!arrivalTime) {
     return {
-      stopFor: `${stopFor.total('second')}`,
+      stopFor,
       calculatedDeparture: undefined,
       ...receptionSignalToSignalBooleans(schedule.reception_signal),
     };
   }
   return {
-    stopFor: `${stopFor.total('second')}`,
+    stopFor,
     calculatedDeparture: addDurationToDate(arrivalTime, stopFor).toLocaleTimeString(dateTimeLocale),
     ...receptionSignalToSignalBooleans(schedule.reception_signal),
   };

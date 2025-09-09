@@ -1,6 +1,7 @@
 import type { TrainSchedule } from 'common/api/osrdEditoastApi';
 import type { TimeString } from 'common/types';
 import type { SuggestedOP } from 'modules/timetableItem/types';
+import type { Duration } from 'utils/duration';
 import type { ArrayElement } from 'utils/types';
 
 export type TimeExtraDays = {
@@ -18,7 +19,7 @@ export type TimesStopsRow = {
 
   arrival?: TimeExtraDays; // value asked by user
   departure?: TimeExtraDays; // value asked by user
-  stopFor?: string | null; // value asked by user
+  stopFor?: Duration | null; // value asked by user
   onStopSignal?: boolean;
   shortSlipDistance?: boolean;
   theoreticalMargin?: string; // value asked by user

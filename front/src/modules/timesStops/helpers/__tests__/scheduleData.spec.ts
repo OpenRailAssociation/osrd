@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 
 import type { ReceptionSignal } from 'common/api/osrdEditoastApi';
+import { Duration } from 'utils/duration';
 
 import { formatSchedule } from '../scheduleData';
 
@@ -28,7 +29,7 @@ describe('formatScheduleTime', () => {
 
     expect(formatSchedule(arrivalTime, schedule, dateTimeLocale)).toEqual({
       calculatedDeparture: '02:04:40',
-      stopFor: '100',
+      stopFor: new Duration({ seconds: 100 }),
       shortSlipDistance: false,
       onStopSignal: false,
     });
