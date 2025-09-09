@@ -8,7 +8,7 @@ import useTrainOps from 'applications/operationalStudies/hooks/useTrainOps';
 import type { PathPropertiesFormatted } from 'applications/operationalStudies/types';
 import type { SimulationResponseSuccess } from 'common/api/osrdEditoastApi';
 import { matchPathStepAndOp } from 'modules/pathfinding/utils';
-import { interpolateValue } from 'modules/simulationResult/SimulationResultExport/utils';
+import { interpolateValue } from 'modules/simulationResult/helpers/utils';
 import type { SimulationSummary } from 'modules/timetableItem/types';
 import type { Train } from 'reducers/osrdconf/types';
 import { useDateTimeLocale } from 'utils/date';

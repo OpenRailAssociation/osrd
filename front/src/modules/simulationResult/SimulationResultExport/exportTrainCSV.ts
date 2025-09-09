@@ -3,13 +3,14 @@ import type {
   OperationalPointWithTimeAndSpeed,
 } from 'applications/operationalStudies/types';
 import type { ReportTrain, SimulationResponseSuccess } from 'common/api/osrdEditoastApi';
+import { interpolateValue } from 'modules/simulationResult/helpers/utils';
 import type { Train } from 'reducers/osrdconf/types';
 import type { PositionSpeedTime, SpeedRanges } from 'reducers/simulationResults/types';
 import { formatLocalTime } from 'utils/date';
 import { mmToM, mToMm } from 'utils/physics';
 import { ms2sec } from 'utils/timeManipulation';
 
-import { getActualVmaxs, interpolateValue } from './utils';
+import { getActualVmaxs } from './utils';
 
 /**
  * CSV Export of trainschedule

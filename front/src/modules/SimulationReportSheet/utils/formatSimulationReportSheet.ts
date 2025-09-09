@@ -3,7 +3,7 @@ import type { TFunction } from 'i18next';
 import { type StdcmResultsOperationalPoint, StdcmStopTypes } from 'applications/stdcm/types';
 import type { SimulationResponseSuccess } from 'common/api/osrdEditoastApi';
 import { matchPathStepAndOp } from 'modules/pathfinding/utils';
-import { interpolateValue } from 'modules/simulationResult/SimulationResultExport/utils';
+import { interpolateValue } from 'modules/simulationResult/helpers/utils';
 import type { SuggestedOP } from 'modules/timetableItem/types';
 import type { StdcmPathStep } from 'reducers/osrdconf/types';
 import { Duration } from 'utils/duration';
