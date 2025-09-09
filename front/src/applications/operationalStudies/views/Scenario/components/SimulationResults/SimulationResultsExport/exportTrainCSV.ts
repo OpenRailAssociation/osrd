@@ -88,11 +88,11 @@ const overloadSteps = (
     const electrificationStart = electrification.start;
 
     speedsAtElectrificationRanges.push({
-      position: mmToM(electrificationStart),
-      speed: interpolateValue(trainRegime, electrificationStart, 'speeds'),
+      position: electrificationStart,
+      speed: interpolateValue(trainRegime, mToMm(electrificationStart), 'speeds'),
       electrificationType,
       electrificationMode,
-      time: interpolateValue(trainRegime, electrificationStart, 'times'),
+      time: interpolateValue(trainRegime, mToMm(electrificationStart), 'times'),
     });
 
     // ElectrificationRanges could not be continuous, so we've to handle the case of
