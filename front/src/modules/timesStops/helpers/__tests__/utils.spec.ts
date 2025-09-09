@@ -20,14 +20,14 @@ describe('updateRowTimesAndMargin', () => {
         name: 'Gr',
         arrival: { time: '23:40:00' },
         departure: { time: '23:50:00' },
-        stopFor: '300', // no longer correct, not yet updated by the function
+        stopFor: new Duration({ seconds: 300 }), // no longer correct, not yet updated by the function
       } as TimesStopsInputRow;
       const previousRowData = {
         opId: 'd94a2af4',
         name: 'Gr',
         arrival: { time: '23:40:00' },
         departure: { time: '23:45:00' },
-        stopFor: '300',
+        stopFor: new Duration({ seconds: 300 }),
       } as TimesStopsInputRow;
       const result = updateRowTimesAndMargin(rowData, previousRowData, whateverOperation, 4);
       expect(result).toEqual({
@@ -35,7 +35,7 @@ describe('updateRowTimesAndMargin', () => {
         name: 'Gr',
         arrival: { time: '23:40:00' },
         departure: { time: '23:50:00' },
-        stopFor: '600', // now correct with the new arrival and departure
+        stopFor: new Duration({ seconds: 600 }), // now correct with the new arrival and departure
         isMarginValid: true,
       });
     });
@@ -87,14 +87,14 @@ describe('updateRowTimesAndMargin', () => {
         name: 'Gr',
         arrival: { time: '23:40:00' },
         departure: { time: '00:20:00' },
-        stopFor: '300',
+        stopFor: new Duration({ seconds: 300 }),
       } as TimesStopsInputRow;
       const previousRowData = {
         opId: 'd94a2af4',
         name: 'Gr',
         arrival: { time: '23:40:00' },
         departure: { time: '23:45:00' },
-        stopFor: '300',
+        stopFor: new Duration({ seconds: 300 }),
       } as TimesStopsInputRow;
       const result = updateRowTimesAndMargin(rowData, previousRowData, whateverOperation, 4);
       expect(result).toEqual({
@@ -102,7 +102,7 @@ describe('updateRowTimesAndMargin', () => {
         name: 'Gr',
         arrival: { time: '23:40:00' },
         departure: { time: '00:20:00' },
-        stopFor: '2400',
+        stopFor: new Duration({ seconds: 2400 }),
         isMarginValid: true,
       });
     });
@@ -114,14 +114,14 @@ describe('updateRowTimesAndMargin', () => {
         name: 'Gr',
         arrival: undefined,
         departure: { time: '00:20:00' },
-        stopFor: '600',
+        stopFor: new Duration({ seconds: 600 }),
       } as TimesStopsInputRow;
       const previousRowData = {
         opId: 'd94a2af4',
         name: 'Gr',
         arrival: { time: '00:10:00' },
         departure: { time: '00:20:00' },
-        stopFor: '600',
+        stopFor: new Duration({ seconds: 600 }),
       } as TimesStopsInputRow;
       const result = updateRowTimesAndMargin(rowData, previousRowData, whateverOperation, 4);
       expect(result).toEqual({
@@ -129,7 +129,7 @@ describe('updateRowTimesAndMargin', () => {
         name: 'Gr',
         arrival: undefined,
         departure: undefined,
-        stopFor: '600',
+        stopFor: new Duration({ seconds: 600 }),
         isMarginValid: true,
       });
     });
@@ -139,14 +139,14 @@ describe('updateRowTimesAndMargin', () => {
         name: 'Gr',
         arrival: { time: '' },
         departure: { time: '00:20:00' },
-        stopFor: '600',
+        stopFor: new Duration({ seconds: 600 }),
       } as TimesStopsInputRow;
       const previousRowData = {
         opId: 'd94a2af4',
         name: 'Gr',
         arrival: { time: '00:10:00' },
         departure: { time: '00:20:00' },
-        stopFor: '600',
+        stopFor: new Duration({ seconds: 600 }),
       } as TimesStopsInputRow;
       const result = updateRowTimesAndMargin(rowData, previousRowData, whateverOperation, 4);
       expect(result).toEqual({
@@ -154,7 +154,7 @@ describe('updateRowTimesAndMargin', () => {
         name: 'Gr',
         arrival: { time: '' },
         departure: undefined,
-        stopFor: '600',
+        stopFor: new Duration({ seconds: 600 }),
         isMarginValid: true,
       });
     });
@@ -166,14 +166,14 @@ describe('updateRowTimesAndMargin', () => {
         name: 'Gr',
         arrival: { time: '00:10:00' },
         departure: undefined,
-        stopFor: '600',
+        stopFor: new Duration({ seconds: 600 }),
       } as TimesStopsInputRow;
       const previousRowData = {
         opId: 'd94a2af4',
         name: 'Gr',
         arrival: { time: '00:10:00' },
         departure: { time: '00:20:00' },
-        stopFor: '600',
+        stopFor: new Duration({ seconds: 600 }),
       } as TimesStopsInputRow;
       const result = updateRowTimesAndMargin(rowData, previousRowData, whateverOperation, 4);
       expect(result).toEqual({
@@ -194,14 +194,14 @@ describe('updateRowTimesAndMargin', () => {
         name: 'Gr',
         arrival: undefined,
         departure: { time: '00:20:00' },
-        stopFor: '600',
+        stopFor: new Duration({ seconds: 600 }),
       } as TimesStopsInputRow;
       const previousRowData = {
         opId: 'd94a2af4',
         name: 'Gr',
         arrival: undefined,
         departure: undefined,
-        stopFor: '600',
+        stopFor: new Duration({ seconds: 600 }),
       } as TimesStopsInputRow;
       const result = updateRowTimesAndMargin(rowData, previousRowData, whateverOperation, 4);
       expect(result).toEqual({
@@ -209,7 +209,7 @@ describe('updateRowTimesAndMargin', () => {
         name: 'Gr',
         arrival: { time: '00:10:00' },
         departure: { time: '00:20:00' },
-        stopFor: '600',
+        stopFor: new Duration({ seconds: 600 }),
         isMarginValid: true,
       });
     });
@@ -258,7 +258,7 @@ describe('updateDaySinceDeparture', () => {
           uic: 86,
           ch: 'BX',
           arrival: { time: '11:00:00' },
-          stopFor: '1800',
+          stopFor: new Duration({ seconds: 1800 }),
         },
       ] as TimesStopsInputRow[];
       const result = updateDaySinceDeparture(TimesStopsInputRows, {
@@ -280,7 +280,7 @@ describe('updateDaySinceDeparture', () => {
           ch: 'BX',
           arrival: { time: '11:00:00', daySinceDeparture: 0 },
           departure: { time: '11:30:00', daySinceDeparture: 0 },
-          stopFor: '1800',
+          stopFor: new Duration({ seconds: 1800 }),
         },
       ];
       expect(result).toEqual(expected);
@@ -547,7 +547,7 @@ describe('updateDaySinceDeparture', () => {
           uic: 84,
           ch: 'BX',
           arrival: { time: '23:55:00' },
-          stopFor: '3600',
+          stopFor: new Duration({ seconds: 3600 }),
         },
         {
           opId: 'd982df3e',
@@ -576,7 +576,7 @@ describe('updateDaySinceDeparture', () => {
           ch: 'BX',
           arrival: { time: '23:55:00', daySinceDeparture: 0 },
           departure: { time: '00:55:00', daySinceDeparture: 1, dayDisplayed: true },
-          stopFor: '3600',
+          stopFor: new Duration({ seconds: 3600 }),
         },
         {
           opId: 'd982df3e',
@@ -633,7 +633,7 @@ describe('updateDaySinceDeparture', () => {
           uic: 72,
           ch: 'BV',
           arrival: { time: '23:30:00' },
-          stopFor: '3600',
+          stopFor: new Duration({ seconds: 3600 }),
         },
       ] as TimesStopsInputRow[];
       const result = updateDaySinceDeparture(TimesStopsInputRows, {
@@ -691,7 +691,7 @@ describe('updateDaySinceDeparture', () => {
             daySinceDeparture: 2,
             dayDisplayed: true,
           },
-          stopFor: '3600',
+          stopFor: new Duration({ seconds: 3600 }),
         },
       ];
       expect(result).toEqual(expected);

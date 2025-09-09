@@ -111,7 +111,7 @@ export const formatSuggestedViasToRowVias = (
       onStopSignal,
       name: name || t('timeStopTable.waypoint', { id: filteredOp.pathStepId }),
       shortSlipDistance,
-      stopFor: stopForSeconds !== undefined ? String(stopForSeconds) : undefined,
+      stopFor,
       theoreticalMargin,
     };
   });
@@ -166,13 +166,18 @@ export function updateRowTimesAndMargin(
     !isEqual(newRowData.departure, previousRowData.departure)
   ) {
     if (newRowData.departure?.time && newRowData.arrival?.time) {
-      newRowData.stopFor = String(
-        durationInSeconds(time2sec(newRowData.arrival.time), time2sec(newRowData.departure.time))
-      );
+      newRowData.stopFor = new Duration({
+        seconds: durationInSeconds(
+          time2sec(newRowData.arrival.time),
+          time2sec(newRowData.departure.time)
+        ),
+      });
     } else if (newRowData.departure) {
       if (!previousRowData.departure) {
         newRowData.arrival = {
-          time: sec2time(time2sec(newRowData.departure.time) - Number(newRowData.stopFor)),
+          time: sec2time(
+            time2sec(newRowData.departure.time) - (newRowData.stopFor?.total('second') ?? 0)
+          ),
         };
       } else {
         newRowData.departure = undefined;
@@ -199,10 +204,6 @@ export function updateRowTimesAndMargin(
     if (!newRowData.theoreticalMargin) {
       newRowData.theoreticalMargin = '0%';
     }
-  }
-  // Remove second unit in stopFor if inputted by mistake
-  if (newRowData.stopFor && /^[0-9]+ *s$/i.test(newRowData.stopFor)) {
-    newRowData.stopFor = newRowData.stopFor.replace(/ *s$/i, '');
   }
   return newRowData;
 }
@@ -260,7 +261,7 @@ export function updateDaySinceDeparture(
     let formattedDeparture: TimeExtraDays | undefined;
 
     if (stopFor && arrivalInSeconds !== null) {
-      const departureInSeconds = (arrivalInSeconds + Number(stopFor)) % SECONDS_IN_A_DAY;
+      const departureInSeconds = (arrivalInSeconds + stopFor.total('second')) % SECONDS_IN_A_DAY;
       const isAfterMidnight = departureInSeconds < previousTime;
       const isDepartureMidnight = departureInSeconds === 0;
 

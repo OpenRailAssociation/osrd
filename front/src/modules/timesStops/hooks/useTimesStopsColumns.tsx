@@ -10,6 +10,7 @@ import type { CellComponent } from '@sdziadkowiec/react-datasheet-grid/dist/type
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 
+import { Duration } from 'utils/duration';
 import { NO_BREAK_SPACE } from 'utils/strings';
 
 import { marginRegExValidation } from '../consts';
@@ -30,6 +31,25 @@ const timeColumn = (isOutputTable: boolean) =>
     minWidth: isOutputTable ? 110 : 170,
     isCellEmpty: ({ rowData }) => !rowData,
   }) as Partial<Column<TimeExtraDays | undefined, string, string>>;
+
+function durationColumn() {
+  const format = (duration: Duration | null | undefined) => String(duration?.total('second') ?? '');
+  const parse = (text: string) => {
+    // Remove trailing "s" unit, if any
+    const seconds = Number(text.trim().replace(/ *s$/i, ''));
+    return !isNaN(seconds) ? new Duration({ seconds }) : null;
+  };
+
+  return createTextColumn<Duration | null | undefined>({
+    formatBlurredInput: format,
+    formatInputOnFocus: format,
+    formatForCopy: format,
+    parseUserInput: parse,
+    parsePastedValue: parse,
+    continuousUpdates: false,
+    alignRight: true,
+  });
+}
 
 const fixedWidth = (width: number) => ({ minWidth: width, maxWidth: width });
 
@@ -131,13 +151,7 @@ export const useTimesStopsColumns = <T extends TimesStopsRow>(
         disabled: ({ rowIndex }) => isOutputTable || rowIndex === 0,
       },
       {
-        ...keyColumn(
-          'stopFor',
-          createTextColumn({
-            continuousUpdates: false,
-            alignRight: true,
-          })
-        ),
+        ...keyColumn('stopFor', durationColumn()),
         title: t('stopTime'),
         headerClassName: 'padded-header',
         disabled: isOutputTable,

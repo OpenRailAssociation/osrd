@@ -16,7 +16,6 @@ import {
 } from 'reducers/osrdconf/operationalStudiesConf';
 import type { PathStep } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
-import { Duration } from 'utils/duration';
 
 import {
   durationSinceStartTime,
@@ -125,12 +124,11 @@ const TimesStopsInput = ({
           (row, index) =>
             !isEqual(normalizeNullablesInRow(row), normalizeNullablesInRow(rows[index]))
         )
-        .map(({ shortSlipDistance, onStopSignal, arrival, departure, stopFor, ...row }) => ({
+        .map(({ shortSlipDistance, onStopSignal, arrival, departure, ...row }) => ({
           ...row,
           arrival: durationSinceStartTime(startTime, arrival),
           departure: durationSinceStartTime(startTime, departure),
           receptionSignal: onStopSignalToReceptionSignal(onStopSignal, shortSlipDistance),
-          stopFor: stopFor ? new Duration({ seconds: Number(stopFor) }) : null,
         }));
       dispatch(upsertSeveralViasFromSuggestedOP(newVias));
     },
