@@ -66,7 +66,7 @@ const SimulationResults = ({
 
   const timetableId = useSelector(getOperationalStudiesTimetableID);
 
-  const simulationResults = useSimulationResults(infraId);
+  const simulationResults = useSimulationResults();
   const selectedTrainId = simulationResults?.train.id;
 
   const trainIdUsedForProjection = useSelector(getTrainIdUsedForProjection);
