@@ -34,7 +34,10 @@ export type TimesStopsRow = {
   isMarginValid?: boolean;
 };
 
-export type TimesStopsInputRow = Omit<SuggestedOP, 'arrival' | 'departure' | 'stopFor'> &
+export type TimesStopsInputRow = Pick<
+  SuggestedOP,
+  'uic' | 'positionOnPath' | 'offsetOnTrack' | 'track'
+> &
   TimesStopsRow;
 
 export enum TableType {
