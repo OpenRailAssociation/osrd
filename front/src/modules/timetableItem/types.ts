@@ -34,8 +34,6 @@ export type SuggestedOP = {
   theoreticalMarginSeconds?: string;
   calculatedMargin?: string;
   diffMargins?: string;
-  calculatedArrival?: string | null;
-  calculatedDeparture?: string | null;
   receptionSignal?: ReceptionSignal;
   // Metadatas given by ManageTimetableItemMap click event to add origin/destination/via
   metadata?: {
