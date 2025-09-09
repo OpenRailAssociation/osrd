@@ -7,6 +7,7 @@
   },
   "type": "module",
   "devDependencies": {
+    "@eslint/js": "^8.57.1",
     "@rollup/plugin-eslint": "^9.0.5",
     "@rollup/plugin-node-resolve": "^16.0.0",
     "@rollup/plugin-typescript": "^12.1.0",
@@ -37,6 +38,7 @@
     "rollup-plugin-livereload": "^2.0.5",
     "rollup-plugin-postcss": "^4.0.2",
     "typescript": "^5.4.2",
+    "typescript-eslint": "^8.41.0",
     "vitest": "^3.2.3"
   }
 }
