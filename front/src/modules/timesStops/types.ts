@@ -12,7 +12,7 @@ export type TimeExtraDays = {
 export type TimesStopsRow = {
   pathStepId: string | undefined;
   opId: string | undefined;
-  name?: string;
+  name: string | undefined;
   ch?: string;
   trackName?: string;
 
