@@ -27,10 +27,6 @@ export type SuggestedOP = {
   /** Distance from the beginning of the path in mm */
   positionOnPath: number;
   coordinates?: Position;
-  /** Metadata given to mark a point as wishing to be deleted by the user.
-        It's useful for soft deleting the point (waiting to fix / remove all references)
-        If true, the train schedule is consider as invalid and must be edited */
-  deleted?: boolean;
   arrival?: Duration | null; // value asked by user, number of seconds since departure
   locked?: boolean;
   stopFor?: Duration | null; // value asked by user

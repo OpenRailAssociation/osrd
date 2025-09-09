@@ -240,7 +240,6 @@ describe('simulationConfReducer', () => {
         stopFor: Duration.parse('PT5M'),
         coordinates: [47.99542250806296, 0.1918181738752042],
         locked: newVia.locked,
-        deleted: newVia.deleted,
         name: newVia.name,
       };
 
