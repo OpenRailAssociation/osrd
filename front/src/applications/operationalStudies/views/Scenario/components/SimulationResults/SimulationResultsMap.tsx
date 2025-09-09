@@ -17,11 +17,10 @@ import { useInfraID } from 'common/osrdContext';
 import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
 import getPointOnPathCoordinates from 'modules/pathfinding/helpers/getPointOnPathCoordinates';
 import getTrackLengthCumulativeSums from 'modules/pathfinding/helpers/getTrackLengthCumulativeSums';
+import Itinerary from 'modules/simulationResult/components/SimulationResultsMap/RenderItinerary';
 import { useMapSettings, useMapSettingsActions } from 'reducers/globalMap';
 import type { Viewport } from 'reducers/globalMap/types';
 import { useAppDispatch } from 'store';
-
-import Itinerary from './RenderItinerary';
 
 const MAP_ID = 'simulation-result-map';
 
