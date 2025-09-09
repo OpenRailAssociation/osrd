@@ -13,8 +13,8 @@ import { computeBBoxViewport } from 'common/Map/WarpedMap/core/helpers';
 import Pathfinding from 'modules/pathfinding/components/Pathfinding';
 import TypeAndPath from 'modules/pathfinding/components/Pathfinding/TypeAndPath';
 import reversePathSteps from 'modules/pathfinding/helpers/reversePathSteps';
+import { useMapSettingsActions } from 'reducers/globalMap';
 import { setWarning } from 'reducers/main';
-import { updateViewport } from 'reducers/map';
 import { getMap } from 'reducers/map/selectors';
 import {
   getOrigin,
@@ -44,6 +44,8 @@ const Itinerary = ({ rollingStockId }: { rollingStockId: number | undefined }) =
 
   const { pathProperties, launchPathfinding, pathStepsAndSuggestedOPs } =
     useManageTimetableItemContext();
+
+  const { updateViewport } = useMapSettingsActions();
 
   const zoomToFeaturePoint = (lngLat?: Position) => {
     if (lngLat) {
