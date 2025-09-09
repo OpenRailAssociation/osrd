@@ -25,9 +25,11 @@ export const mapViewerSlice = createSlice({
   },
 });
 
-export function updateMapViewerViewport(viewport: Partial<Viewport>) {
+export function updateMapViewerViewport(viewport: Partial<Viewport>, updateRouter = false) {
   return (dispatch: Dispatch, getState: () => { mapViewer: MapViewerState }) => {
     dispatch(mapViewerSlice.actions.updateViewport(viewport));
+
+    if (!updateRouter) return;
 
     const {
       mapViewer: { mapSettings },
