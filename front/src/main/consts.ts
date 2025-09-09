@@ -6,7 +6,7 @@ export const MODES: MODES_Types = Object.freeze({
   simulation: 'SIMULATION',
   stdcm: 'STDCM',
   editor: 'EDITOR',
-  mapViewer: 'MAP_VIEWER',
+  referenceMap: 'REFERENCE_MAP',
 });
 
 export const DEFAULT_MODE = MODES.simulation;

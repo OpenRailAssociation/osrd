@@ -12,8 +12,6 @@ import mainReducer, { mainInitialState, mainSlice } from 'reducers/main';
 import type { MainState } from 'reducers/main';
 import mapReducer, { mapInitialState, mapSlice } from 'reducers/map';
 import type { MapState } from 'reducers/map';
-import type { MapViewerState, MapViewerSlice } from 'reducers/mapViewer';
-import mapViewerReducer, { mapViewerInitialState, mapViewerSlice } from 'reducers/mapViewer';
 import operationalStudiesConfReducer, {
   operationalStudiesConfSlice,
   operationalStudiesInitialConf,
@@ -23,6 +21,11 @@ import stdcmConfReducer, {
   stdcmConfSlice,
 } from 'reducers/osrdconf/stdcmConf';
 import type { OperationalStudiesConfState, OsrdStdcmConfState } from 'reducers/osrdconf/types';
+import referenceMapReducer, {
+  referenceMapInitialState,
+  referenceMapSlice,
+} from 'reducers/referenceMap';
+import type { ReferenceMapSlice, ReferenceMapState } from 'reducers/referenceMap';
 import simulationReducer, {
   simulationResultsInitialState,
   simulationResultsSlice,
@@ -115,18 +118,18 @@ export const persistConfig = {
     mapSlice.name,
     mainSlice.name,
     simulationResultsSlice.name,
-    mapViewerSlice.name,
+    referenceMapSlice.name,
   ],
 };
 
 type AllActions = Action;
 
-export type OsrdSlice = ConfSlice | EditorSlice | MapViewerSlice;
+export type OsrdSlice = ConfSlice | EditorSlice | ReferenceMapSlice;
 
 export type RootState = {
   [userSlice.name]: UserState;
   [mapSlice.name]: MapState;
-  [mapViewerSlice.name]: MapViewerState;
+  [referenceMapSlice.name]: ReferenceMapState;
   [editorSlice.name]: EditorState;
   [mainSlice.name]: MainState;
   [stdcmConfSlice.name]: OsrdStdcmConfState;
@@ -139,7 +142,7 @@ export type RootState = {
 export const rootInitialState: RootState = {
   [userSlice.name]: userInitialState,
   [mapSlice.name]: mapInitialState,
-  [mapViewerSlice.name]: mapViewerInitialState,
+  [referenceMapSlice.name]: referenceMapInitialState,
   [editorSlice.name]: editorInitialState,
   [mainSlice.name]: mainInitialState,
   [stdcmConfSlice.name]: stdcmConfInitialState,
@@ -152,7 +155,7 @@ export const rootInitialState: RootState = {
 export type AnyReducerState =
   | UserState
   | MapState
-  | MapViewerState
+  | ReferenceMapState
   | EditorState
   | MainState
   | OsrdStdcmConfState
@@ -162,7 +165,7 @@ export type AnyReducerState =
 export const rootReducer: ReducersMapObject<RootState> = {
   [userSlice.name]: userReducer,
   [mapSlice.name]: mapReducer,
-  [mapViewerSlice.name]: mapViewerReducer,
+  [referenceMapSlice.name]: referenceMapReducer,
   [editorSlice.name]: editorReducer,
   [mainSlice.name]: mainReducer,
   [stdcmConfSlice.name]: stdcmConfReducer,

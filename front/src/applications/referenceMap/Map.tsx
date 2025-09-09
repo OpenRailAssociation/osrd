@@ -7,7 +7,7 @@ import MapButtons from 'common/Map/Buttons/MapButtons';
 import { useInfraID } from 'common/osrdContext';
 import { useMapSettings, useMapSettingsActions } from 'reducers/globalMap';
 import type { Viewport } from 'reducers/globalMap/types';
-import { updateMapViewerViewport } from 'reducers/mapViewer';
+import { updateReferenceMapViewport } from 'reducers/referenceMap';
 import { useAppDispatch } from 'store';
 
 const REFERENCE_MAP_ID = 'reference-map';
@@ -24,7 +24,7 @@ const Map = () => {
 
   const updateViewportChange = useCallback(
     (value: Partial<Viewport>, { updateRouter } = { updateRouter: false }) => {
-      dispatch(updateMapViewerViewport(value, updateRouter));
+      dispatch(updateReferenceMapViewport(value, updateRouter));
     },
     []
   );
