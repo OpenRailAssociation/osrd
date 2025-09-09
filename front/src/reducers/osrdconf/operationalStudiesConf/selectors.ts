@@ -64,7 +64,6 @@ const buildOperationalStudiesConfSelectors = () => {
 const selectors = buildOperationalStudiesConfSelectors();
 
 export const {
-  getInfraID: getOperationalStudiesInfraID,
   getProjectID: getOperationalStudiesProjectID,
   getStudyID: getOperationalStudiesStudyID,
   getScenarioID: getOperationalStudiesScenarioID,
