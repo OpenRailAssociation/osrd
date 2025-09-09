@@ -31,7 +31,7 @@ impl TrainScheduleRoundTrips {
         timetable_id: i64,
         page: u64,
         page_size: u64,
-    ) -> crate::error::Result<(Vec<Self>, PaginationStats)> {
+    ) -> Result<(Vec<Self>, PaginationStats), database::DatabaseError> {
         use database::tables::train_schedule;
         use database::tables::train_schedule_round_trips;
 
@@ -61,7 +61,7 @@ impl TrainScheduleRoundTrips {
     pub async fn delete_batch_train_ids<I: IntoIterator<Item = i64> + Send>(
         conn: &mut DbConnection,
         train_schedule_ids: I,
-    ) -> crate::error::Result<usize> {
+    ) -> Result<usize, database::DatabaseError> {
         use database::tables::train_schedule_round_trips::dsl;
         use diesel::prelude::*;
         use diesel_async::RunQueryDsl;
@@ -103,7 +103,7 @@ impl PacedTrainRoundTrips {
         timetable_id: i64,
         page: u64,
         page_size: u64,
-    ) -> crate::error::Result<(Vec<Self>, PaginationStats)> {
+    ) -> Result<(Vec<Self>, PaginationStats), database::DatabaseError> {
         use database::tables::paced_train;
         use database::tables::paced_train_round_trips;
 
@@ -133,7 +133,7 @@ impl PacedTrainRoundTrips {
     pub async fn delete_batch_train_ids<I: IntoIterator<Item = i64> + Send>(
         conn: &mut DbConnection,
         paced_train_ids: I,
-    ) -> crate::error::Result<usize> {
+    ) -> Result<usize, database::DatabaseError> {
         use database::tables::paced_train_round_trips::dsl;
         use diesel::prelude::*;
         use diesel_async::RunQueryDsl;
