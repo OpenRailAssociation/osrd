@@ -2,8 +2,8 @@ import type {
   BoundariesData,
   ElectricalBoundariesData,
   ElectricalProfileValue,
-  ElectricalRangesData,
   ElectrificationRange,
+  ElectrificationUsage,
   ElectrificationValue,
   PositionData,
 } from 'applications/operationalStudies/types';
@@ -11,6 +11,7 @@ import type { SimulationSummaryResult } from 'common/api/osrdEditoastApi';
 import type { TrainScheduleId, TrainScheduleWithTrainId } from 'reducers/osrdconf/types';
 
 export const pathLength = 4000;
+export const pathLengthLong = 6000;
 
 /**
  * Data for transformBoundariesDataToPositionDataArray
@@ -36,316 +37,283 @@ export const getExpectedResultDataNumber = <T extends 'gradient' | 'radius'>(
   ] as PositionData<T>[];
 
 /**
- * Data for transformBoundariesDataToRangesData
+ * Data for mergeElectrificationAndProfiles and transformElectricalBoundariesToRanges
  */
 
-export const boundariesDataWithElectrification: ElectricalBoundariesData<ElectrificationValue> = {
+export const electrificationBoundariesMatched: ElectricalBoundariesData<ElectrificationValue> = {
+  boundaries: [1000, 2000, 3000],
+  values: [
+    { type: 'electrification', voltage: '1500V' },
+    { lower_pantograph: true, type: 'neutral_section' },
+    { type: 'non_electrified' },
+    { type: 'electrification', voltage: '25000V' },
+  ],
+};
+
+export const electricalProfileBoundariesMatched: ElectricalBoundariesData<ElectricalProfileValue> =
+  {
+    boundaries: [1000, 2000, 3000],
+    values: [
+      { electrical_profile_type: 'profile', profile: 'O', handled: true },
+      { electrical_profile_type: 'no_profile' },
+      { electrical_profile_type: 'no_profile' },
+      { electrical_profile_type: 'profile', profile: '25000V', handled: false },
+    ],
+  };
+
+export const mergedElectricalBoundariesMatched: ElectricalBoundariesData<ElectrificationUsage> = {
   boundaries: [1000, 2000, 3000],
   values: [
     {
       type: 'electrification',
       voltage: '1500V',
+      electrical_profile_type: 'profile',
+      profile: 'O',
+      handled: true,
     },
     {
       lower_pantograph: true,
       type: 'neutral_section',
+      electrical_profile_type: 'no_profile',
     },
     {
       type: 'non_electrified',
+      electrical_profile_type: 'no_profile',
     },
     {
       type: 'electrification',
       voltage: '25000V',
+      electrical_profile_type: 'profile',
+      profile: '25000V',
+      handled: false,
     },
   ],
 };
 
-export const boundariesDataWithElectrificalProfile: ElectricalBoundariesData<ElectricalProfileValue> =
+export const electrificationRangesMatched: ElectrificationRange[] = [
   {
-    boundaries: [1000, 2000, 3000],
+    start: 0,
+    stop: 1,
+    electrificationUsage: {
+      type: 'electrification',
+      voltage: '1500V',
+      electrical_profile_type: 'profile',
+      profile: 'O',
+      handled: true,
+    },
+  },
+  {
+    start: 1,
+    stop: 2,
+    electrificationUsage: {
+      lower_pantograph: true,
+      type: 'neutral_section',
+      electrical_profile_type: 'no_profile',
+    },
+  },
+  {
+    start: 2,
+    stop: 3,
+    electrificationUsage: {
+      type: 'non_electrified',
+      electrical_profile_type: 'no_profile',
+    },
+  },
+  {
+    start: 3,
+    stop: 4,
+    electrificationUsage: {
+      type: 'electrification',
+      voltage: '25000V',
+      electrical_profile_type: 'profile',
+      profile: '25000V',
+      handled: false,
+    },
+  },
+];
+
+export const electrificationBoundariesMismatched: ElectricalBoundariesData<ElectrificationValue> = {
+  boundaries: [1000, 2000, 3000, 4000, 4500],
+  values: [
+    { type: 'electrification', voltage: '1500V' },
+    { lower_pantograph: true, type: 'neutral_section' },
+    { lower_pantograph: false, type: 'neutral_section' },
+    { type: 'non_electrified' },
+    { type: 'electrification', voltage: '25000V' },
+    { type: 'electrification', voltage: '1500V' },
+  ],
+};
+
+export const electricalProfileBoundariesMismatched: ElectricalBoundariesData<ElectricalProfileValue> =
+  {
+    boundaries: [1000, 4000, 5000],
+    values: [
+      { electrical_profile_type: 'profile', profile: 'O', handled: true },
+      { electrical_profile_type: 'no_profile' },
+      { electrical_profile_type: 'profile', profile: '25000V', handled: false },
+      { electrical_profile_type: 'profile', profile: 'A1', handled: true },
+    ],
+  };
+
+export const mergedElectricalBoundariesMismatched: ElectricalBoundariesData<ElectrificationUsage> =
+  {
+    boundaries: [1000, 2000, 3000, 4000, 4500, 5000],
     values: [
       {
+        type: 'electrification',
+        voltage: '1500V',
         electrical_profile_type: 'profile',
         profile: 'O',
         handled: true,
       },
       {
+        lower_pantograph: true,
+        type: 'neutral_section',
         electrical_profile_type: 'no_profile',
       },
       {
+        lower_pantograph: false,
+        type: 'neutral_section',
         electrical_profile_type: 'no_profile',
       },
       {
+        type: 'non_electrified',
+        electrical_profile_type: 'no_profile',
+      },
+      {
+        type: 'electrification',
+        voltage: '25000V',
         electrical_profile_type: 'profile',
         profile: '25000V',
         handled: false,
       },
+      {
+        type: 'electrification',
+        voltage: '1500V',
+        electrical_profile_type: 'profile',
+        profile: '25000V',
+        handled: false,
+      },
+      {
+        type: 'electrification',
+        voltage: '1500V',
+        electrical_profile_type: 'profile',
+        profile: 'A1',
+        handled: true,
+      },
     ],
   };
 
+export const electrificationRangesMismatched: ElectrificationRange[] = [
+  {
+    start: 0,
+    stop: 1,
+    electrificationUsage: {
+      type: 'electrification',
+      voltage: '1500V',
+      electrical_profile_type: 'profile',
+      profile: 'O',
+      handled: true,
+    },
+  },
+  {
+    start: 1,
+    stop: 2,
+    electrificationUsage: {
+      lower_pantograph: true,
+      type: 'neutral_section',
+      electrical_profile_type: 'no_profile',
+    },
+  },
+  {
+    start: 2,
+    stop: 3,
+    electrificationUsage: {
+      lower_pantograph: false,
+      type: 'neutral_section',
+      electrical_profile_type: 'no_profile',
+    },
+  },
+  {
+    start: 3,
+    stop: 4,
+    electrificationUsage: {
+      type: 'non_electrified',
+      electrical_profile_type: 'no_profile',
+    },
+  },
+  {
+    start: 4,
+    stop: 4.5,
+    electrificationUsage: {
+      type: 'electrification',
+      voltage: '25000V',
+      electrical_profile_type: 'profile',
+      profile: '25000V',
+      handled: false,
+    },
+  },
+  {
+    start: 4.5,
+    stop: 5,
+    electrificationUsage: {
+      type: 'electrification',
+      voltage: '1500V',
+      electrical_profile_type: 'profile',
+      profile: '25000V',
+      handled: false,
+    },
+  },
+  {
+    start: 5,
+    stop: 6,
+    electrificationUsage: {
+      type: 'electrification',
+      voltage: '1500V',
+      electrical_profile_type: 'profile',
+      profile: 'A1',
+      handled: true,
+    },
+  },
+];
+
+export const electrificationBoundariesSingleSegment: ElectricalBoundariesData<ElectrificationValue> =
+  {
+    boundaries: [],
+    values: [{ type: 'non_electrified' }],
+  };
+
+export const electricalProfileBoundariesSingleSegment: ElectricalBoundariesData<ElectricalProfileValue> =
+  {
+    boundaries: [],
+    values: [{ electrical_profile_type: 'no_profile' }],
+  };
+
+export const mergedElectricalBoundariesSingleSegment: ElectricalBoundariesData<ElectrificationUsage> =
+  {
+    boundaries: [],
+    values: [
+      {
+        type: 'non_electrified',
+        electrical_profile_type: 'no_profile',
+      },
+    ],
+  };
+
+export const electrificationRangesSingleSegment: ElectrificationRange[] = [
+  {
+    start: 0,
+    stop: 4,
+    electrificationUsage: {
+      type: 'non_electrified',
+      electrical_profile_type: 'no_profile',
+    },
+  },
+];
+
 /**
- * Data for formatElectrificationRanges
+ * Data for isTooFast
  */
-
-export const electrificationRangesData: ElectricalRangesData<ElectrificationValue>[] = [
-  {
-    start: 0,
-    stop: 1,
-    values: {
-      type: 'electrification',
-      voltage: '1500V',
-    },
-  },
-  {
-    start: 1,
-    stop: 2,
-    values: {
-      lower_pantograph: true,
-      type: 'neutral_section',
-    },
-  },
-  {
-    start: 2,
-    stop: 3,
-    values: {
-      type: 'non_electrified',
-    },
-  },
-  {
-    start: 3,
-    stop: 4,
-    values: {
-      type: 'electrification',
-      voltage: '25000V',
-    },
-  },
-];
-
-export const electrificationRangesDataLarge: ElectricalRangesData<ElectrificationValue>[] = [
-  {
-    start: 0,
-    stop: 1,
-    values: {
-      type: 'electrification',
-      voltage: '1500V',
-    },
-  },
-  {
-    start: 1,
-    stop: 2,
-    values: {
-      lower_pantograph: true,
-      type: 'neutral_section',
-    },
-  },
-  {
-    start: 2,
-    stop: 3,
-    values: {
-      lower_pantograph: false,
-      type: 'neutral_section',
-    },
-  },
-  {
-    start: 3,
-    stop: 4,
-    values: {
-      type: 'non_electrified',
-    },
-  },
-  {
-    start: 4,
-    stop: 5,
-    values: {
-      type: 'electrification',
-      voltage: '25000V',
-    },
-  },
-  {
-    start: 5,
-    stop: 6,
-    values: {
-      type: 'electrification',
-      voltage: '1500V',
-    },
-  },
-];
-
-export const electricalProfileRangesData: ElectricalRangesData<ElectricalProfileValue>[] = [
-  {
-    start: 0,
-    stop: 1,
-    values: {
-      electrical_profile_type: 'profile',
-      profile: 'O',
-      handled: true,
-    },
-  },
-  {
-    start: 1,
-    stop: 2,
-    values: {
-      electrical_profile_type: 'no_profile',
-    },
-  },
-  {
-    start: 2,
-    stop: 3,
-    values: {
-      electrical_profile_type: 'no_profile',
-    },
-  },
-  {
-    start: 3,
-    stop: 4,
-    values: {
-      electrical_profile_type: 'profile',
-      profile: '25000V',
-      handled: false,
-    },
-  },
-];
-
-export const electricalProfileRangesDataShort: ElectricalRangesData<ElectricalProfileValue>[] = [
-  {
-    start: 0,
-    stop: 1,
-    values: {
-      electrical_profile_type: 'profile',
-      profile: 'O',
-      handled: true,
-    },
-  },
-  {
-    start: 1,
-    stop: 4,
-    values: {
-      electrical_profile_type: 'no_profile',
-    },
-  },
-  {
-    start: 4,
-    stop: 5,
-    values: {
-      electrical_profile_type: 'profile',
-      profile: '25000V',
-      handled: false,
-    },
-  },
-  {
-    start: 5,
-    stop: 6,
-    values: {
-      electrical_profile_type: 'profile',
-      profile: 'A1',
-      handled: true,
-    },
-  },
-];
-
-export const electrificationRanges: ElectrificationRange[] = [
-  {
-    start: 0,
-    stop: 1,
-    electrificationUsage: {
-      type: 'electrification',
-      voltage: '1500V',
-      electrical_profile_type: 'profile',
-      profile: 'O',
-      handled: true,
-    },
-  },
-  {
-    start: 1,
-    stop: 2,
-    electrificationUsage: {
-      lower_pantograph: true,
-      type: 'neutral_section',
-      electrical_profile_type: 'no_profile',
-    },
-  },
-  {
-    start: 2,
-    stop: 3,
-    electrificationUsage: {
-      type: 'non_electrified',
-      electrical_profile_type: 'no_profile',
-    },
-  },
-  {
-    start: 3,
-    stop: 4,
-    electrificationUsage: {
-      type: 'electrification',
-      voltage: '25000V',
-      electrical_profile_type: 'profile',
-      profile: '25000V',
-      handled: false,
-    },
-  },
-];
-
-export const electrificationRangesLarge: ElectrificationRange[] = [
-  {
-    start: 0,
-    stop: 1,
-    electrificationUsage: {
-      type: 'electrification',
-      voltage: '1500V',
-      electrical_profile_type: 'profile',
-      profile: 'O',
-      handled: true,
-    },
-  },
-  {
-    start: 1,
-    stop: 2,
-    electrificationUsage: {
-      lower_pantograph: true,
-      type: 'neutral_section',
-      electrical_profile_type: 'no_profile',
-    },
-  },
-  {
-    start: 2,
-    stop: 3,
-    electrificationUsage: {
-      lower_pantograph: false,
-      type: 'neutral_section',
-      electrical_profile_type: 'no_profile',
-    },
-  },
-  {
-    start: 3,
-    stop: 4,
-    electrificationUsage: {
-      type: 'non_electrified',
-      electrical_profile_type: 'no_profile',
-    },
-  },
-  {
-    start: 4,
-    stop: 5,
-    electrificationUsage: {
-      type: 'electrification',
-      voltage: '25000V',
-      electrical_profile_type: 'profile',
-      profile: '25000V',
-      handled: false,
-    },
-  },
-  {
-    start: 5,
-    stop: 6,
-    electrificationUsage: {
-      type: 'electrification',
-      voltage: '1500V',
-      electrical_profile_type: 'profile',
-      profile: 'A1',
-      handled: true,
-    },
-  },
-];
 
 export const trainScheduleTooFast: TrainScheduleWithTrainId = {
   id: 'trainschedule-98' as TrainScheduleId,

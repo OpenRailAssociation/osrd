@@ -34,8 +34,8 @@ import type {
   BoundariesData,
   ElectricalBoundariesData,
   ElectricalProfileValue,
-  ElectricalRangesData,
   ElectrificationRange,
+  ElectrificationUsage,
   ElectrificationValue,
   PathPropertiesFormatted,
   PositionData,
@@ -80,6 +80,46 @@ export const transformBoundariesDataToPositionDataArray = <T extends 'gradient' 
   return formattedData;
 };
 
+export const mergeElectrificationAndProfiles = (
+  electrifications: ElectricalBoundariesData<ElectrificationValue> | null | undefined,
+  electricalProfiles: ElectricalBoundariesData<ElectricalProfileValue>
+): ElectricalBoundariesData<ElectrificationUsage> | undefined => {
+  if (!electrifications) return undefined;
+
+  const mergedBoundaries = [
+    ...new Set([...electrifications.boundaries, ...electricalProfiles.boundaries]),
+  ].toSorted((a, b) => a - b);
+
+  const mergedValues: ElectrificationUsage[] = [
+    { ...electrifications.values[0], ...electricalProfiles.values[0] },
+  ];
+
+  let electrificationIndex = 0;
+  let profileIndex = 0;
+
+  for (const boundary of mergedBoundaries) {
+    while (
+      electrificationIndex < electrifications.boundaries.length &&
+      electrifications.boundaries[electrificationIndex] <= boundary
+    ) {
+      electrificationIndex++;
+    }
+    while (
+      profileIndex < electricalProfiles.boundaries.length &&
+      electricalProfiles.boundaries[profileIndex] <= boundary
+    ) {
+      profileIndex++;
+    }
+
+    mergedValues.push({
+      ...electrifications.values[electrificationIndex],
+      ...electricalProfiles.values[profileIndex],
+    });
+  }
+
+  return { boundaries: mergedBoundaries, values: mergedValues };
+};
+
 /**
  * Transform electrifications received with boundaries / values format :
  *  - boundaries : List of `n` boundaries of the ranges. A boundary is a distance
@@ -89,88 +129,28 @@ export const transformBoundariesDataToPositionDataArray = <T extends 'gradient' 
     the associated value. As the boundaries don't include the path's origin and destination
     positions, we add them manually.
  */
-export const transformBoundariesDataToRangesData = <
-  T extends ElectrificationValue | ElectricalProfileValue,
->(
-  boundariesData: ElectricalBoundariesData<T>,
+export const transformElectricalBoundariesToRanges = (
+  boundariesData: ElectricalBoundariesData<ElectrificationUsage> | undefined,
   pathLength: number
-): ElectricalRangesData<T>[] => {
-  // TODO : remove electrical profiles
+): ElectrificationRange[] => {
+  if (!boundariesData) return [];
+
   const { boundaries, values } = boundariesData;
 
-  const formattedData: ElectricalRangesData<T>[] = boundaries.map((boundary, index) => ({
+  const formattedData: ElectrificationRange[] = boundaries.map((boundary, index) => ({
     start: index === 0 ? 0 : mmToM(boundaries[index - 1]),
     stop: mmToM(boundary),
-    values: values[index],
+    electrificationUsage: values[index],
   }));
 
   formattedData.push({
     start: mmToM(boundaries.at(boundaries.length - 1) ?? 0),
     stop: mmToM(pathLength),
-    values: values[values.length - 1],
+    electrificationUsage: values[values.length - 1],
   });
 
   return formattedData;
 };
-
-export const formatElectrificationRanges = (
-  electrifications: ElectricalRangesData<ElectrificationValue>[],
-  electricalProfiles: ElectricalRangesData<ElectricalProfileValue>[]
-): ElectrificationRange[] =>
-  // Electrifications can be of three types, electricalProfiles only two, so we know electrifications
-  // will always be at least as long as electricalProfiles so we can use it as the main array
-  electrifications.map((currentElectrification, index) => {
-    const currentProfile = electricalProfiles[index];
-
-    // currentProfile is defined as long as we didn't reach the end of electricalProfiles array
-    if (currentProfile) {
-      // If start and stop are identical, we can merge the two items
-      if (
-        currentElectrification.start === currentProfile.start &&
-        currentElectrification.stop === currentProfile.stop
-      ) {
-        return {
-          electrificationUsage: {
-            ...currentElectrification.values,
-            ...currentProfile.values,
-          },
-          start: currentElectrification.start,
-          stop: currentElectrification.stop,
-        };
-      }
-
-      // Find the profile matching the current electrification range
-      // We know we will find one because currentProfile is still defined
-      const associatedProfile = electricalProfiles.find(
-        (profile) => profile.stop >= currentElectrification.stop
-      )!;
-
-      return {
-        electrificationUsage: {
-          ...currentElectrification.values,
-          ...associatedProfile.values,
-        },
-        start: currentElectrification.start,
-        stop: currentElectrification.stop,
-      };
-    }
-
-    // If we reached the end of the electricalProfiles array, we use its last value for the profile
-    // Find the profile matching the current electrification range
-    // We know we will find one because theirs last stops are the same
-    const associatedProfile = electricalProfiles.find(
-      (profile) => profile.stop >= currentElectrification.stop
-    )!;
-
-    return {
-      electrificationUsage: {
-        ...currentElectrification.values,
-        ...associatedProfile.values,
-      },
-      start: currentElectrification.start,
-      stop: currentElectrification.stop,
-    };
-  });
 
 /**
  * Format path properties data to be used in simulation results charts
@@ -184,14 +164,15 @@ export const preparePathPropertiesData = (
 ): PathPropertiesFormatted => {
   const formattedSlopes = transformBoundariesDataToPositionDataArray(slopes!, length, 'gradient');
   const formattedCurves = transformBoundariesDataToPositionDataArray(curves!, length, 'radius');
-  const electrificationsRanges = electrifications
-    ? transformBoundariesDataToRangesData(electrifications, length)
-    : [];
-  const electricalProfilesRanges = transformBoundariesDataToRangesData(electricalProfiles, length);
 
-  const electrificationRanges = formatElectrificationRanges(
-    electrificationsRanges,
-    electricalProfilesRanges
+  const mergedElectrificationAndProfiles = mergeElectrificationAndProfiles(
+    electrifications,
+    electricalProfiles
+  );
+
+  const electrificationAndProfilesRanges = transformElectricalBoundariesToRanges(
+    mergedElectrificationAndProfiles,
+    length
   );
 
   const voltageRanges = getPathVoltages(electrifications!, length);
@@ -205,7 +186,7 @@ export const preparePathPropertiesData = (
   );
 
   return {
-    electrifications: electrificationRanges,
+    electrifications: electrificationAndProfilesRanges,
     curves: formattedCurves,
     slopes: formattedSlopes,
     operationalPoints: operationalPointsWithAllWaypoints,

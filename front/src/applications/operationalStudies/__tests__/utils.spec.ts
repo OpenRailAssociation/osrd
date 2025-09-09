@@ -1,25 +1,30 @@
 import { describe, it, expect } from 'vitest';
 
 import {
-  formatElectrificationRanges,
+  mergeElectrificationAndProfiles,
   isScheduledPointsNotHonored,
   isTooFast,
   transformBoundariesDataToPositionDataArray,
-  transformBoundariesDataToRangesData,
+  transformElectricalBoundariesToRanges,
 } from 'applications/operationalStudies/utils';
 
 import {
-  boundariesDataWithElectrificalProfile,
-  boundariesDataWithElectrification,
   boundariesDataWithNumber,
-  electricalProfileRangesData,
-  electricalProfileRangesDataShort,
-  electrificationRanges,
-  electrificationRangesData,
-  electrificationRangesDataLarge,
-  electrificationRangesLarge,
+  electricalProfileBoundariesSingleSegment,
+  electricalProfileBoundariesMatched,
+  electricalProfileBoundariesMismatched,
+  electrificationBoundariesSingleSegment,
+  electrificationBoundariesMatched,
+  electrificationBoundariesMismatched,
+  electrificationRangesSingleSegment,
+  electrificationRangesMatched,
+  electrificationRangesMismatched,
   getExpectedResultDataNumber,
+  mergedElectricalBoundariesSingleSegment,
+  mergedElectricalBoundariesMatched,
+  mergedElectricalBoundariesMismatched,
   pathLength,
+  pathLengthLong,
   trainScheduleHonored,
   trainScheduleNoMatch,
   trainScheduleNoSchedule,
@@ -54,43 +59,61 @@ describe('transformBoundariesDataToPositionDataArray', () => {
   });
 });
 
-describe('transformBoundariesDataToRangesData', () => {
-  it('should transform boundaries data to ranges data for electrification', () => {
-    const result = transformBoundariesDataToRangesData(
-      boundariesDataWithElectrification,
-      pathLength
+describe('mergeElectrificationAndProfiles', () => {
+  it('should properly merge electrification and electrical profile boundaries if these boundaries are matched', () => {
+    const result = mergeElectrificationAndProfiles(
+      electrificationBoundariesMatched,
+      electricalProfileBoundariesMatched
     );
 
-    expect(result).toEqual(electrificationRangesData);
+    expect(result).toEqual(mergedElectricalBoundariesMatched);
   });
 
-  it('should transform boundaries data to ranges data for electrical profile', () => {
-    const result = transformBoundariesDataToRangesData(
-      boundariesDataWithElectrificalProfile,
-      pathLength
+  it('should properly merge electrification and electrical profile boundaries if these boundaries are mismatched', () => {
+    const result = mergeElectrificationAndProfiles(
+      electrificationBoundariesMismatched,
+      electricalProfileBoundariesMismatched
     );
 
-    expect(result).toEqual(electricalProfileRangesData);
+    expect(result).toEqual(mergedElectricalBoundariesMismatched);
+  });
+
+  it('should properly merge electrification and electrical profile boundaries if both boundaries list are empty', () => {
+    const result = mergeElectrificationAndProfiles(
+      electrificationBoundariesSingleSegment,
+      electricalProfileBoundariesSingleSegment
+    );
+
+    expect(result).toEqual(mergedElectricalBoundariesSingleSegment);
   });
 });
 
-describe('formatElectrificationRanges', () => {
-  it('should properly format electrification ranges if both parameters have same length', () => {
-    const result = formatElectrificationRanges(
-      electrificationRangesData,
-      electricalProfileRangesData
+describe('transformElectricalBoundariesToRanges', () => {
+  it('should transform electrical boundaries to ranges (matched boundaries case)', () => {
+    const result = transformElectricalBoundariesToRanges(
+      mergedElectricalBoundariesMatched,
+      pathLength
     );
 
-    expect(result).toEqual(electrificationRanges);
+    expect(result).toEqual(electrificationRangesMatched);
   });
 
-  it('should properly format electrification ranges if electrification is longer than electrical profiles', () => {
-    const result = formatElectrificationRanges(
-      electrificationRangesDataLarge,
-      electricalProfileRangesDataShort
+  it('should transform electrical boundaries to ranges (mismatched boundaries case)', () => {
+    const result = transformElectricalBoundariesToRanges(
+      mergedElectricalBoundariesMismatched,
+      pathLengthLong
     );
 
-    expect(result).toEqual(electrificationRangesLarge);
+    expect(result).toEqual(electrificationRangesMismatched);
+  });
+
+  it('should transform merged boundaries to ranges for a single segment', () => {
+    const result = transformElectricalBoundariesToRanges(
+      mergedElectricalBoundariesSingleSegment,
+      pathLength
+    );
+
+    expect(result).toEqual(electrificationRangesSingleSegment);
   });
 });
 
