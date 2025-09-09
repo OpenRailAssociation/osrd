@@ -185,6 +185,7 @@ describe('simulationConfReducer', () => {
       const store = createStore({ pathSteps });
 
       const newVia: SuggestedOP = {
+        pathStepId: undefined,
         opId: 'lemans',
         track: '60ca8dda-6667-11e3-81ff-01f464e0362d',
         offsetOnTrack: 426.443,

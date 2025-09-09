@@ -29,6 +29,7 @@ export const formatSuggestedOperationalPoints = (
 ): SuggestedOP[] =>
   operationalPoints.map((op) => ({
     opId: op.id,
+    pathStepId: undefined,
     name: op.extensions?.identifier?.name,
     uic: op.extensions?.identifier?.uic,
     ch: op.extensions?.sncf?.ch,

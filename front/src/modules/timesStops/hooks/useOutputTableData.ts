@@ -43,9 +43,7 @@ const useOutputTableData = (
 
   // Format input path step rows
   useEffect(() => {
-    const formatPathStepRows = async (
-      train: Train
-    ): Promise<Map<string, Partial<TimesStopsRow>>> => {
+    const formatPathStepRows = async (train: Train): Promise<Map<string, TimesStopsRow>> => {
       const trackIds = train.path.reduce<string[]>((ids, step) => {
         if ('track' in step) ids.push(step.track);
         return ids;
@@ -156,7 +154,7 @@ const useOutputTableData = (
         const trackIds = operationalPointsOnPath.map((op) => op.part.track);
         const trackSectionsOnPath = await getTrackSectionsByIds(trackIds);
 
-        formattedRows = operationalPointsOnPath.map((op) => {
+        formattedRows = operationalPointsOnPath.map((op): TimesStopsRow => {
           const trackName = trackSectionsOnPath[op.part.track]?.extensions?.sncf?.track_name;
 
           // early return if the op matches a pathStep (handled in formatPathStepRows)
@@ -192,6 +190,7 @@ const useOutputTableData = (
           const calculatedArrival = new Date(new Date(selectedTrain.start_time).getTime() + time);
 
           return {
+            pathStepId: undefined,
             opId: op.id,
             name: op.extensions?.identifier?.name,
             ch: op.extensions?.sncf?.ch,
