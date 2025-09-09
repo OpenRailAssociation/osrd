@@ -28,7 +28,7 @@ use super::pathfinding::TrackRange;
 use crate::AsCoreRequest;
 use crate::Json;
 
-#[derive(Debug, Clone, Serialize, Deserialize, Educe, ToSchema)]
+#[derive(Debug, Clone, Serialize, Deserialize, Educe, PartialEq, ToSchema)]
 #[educe(Hash)]
 pub struct PhysicsConsist {
     pub effort_curves: EffortCurves,

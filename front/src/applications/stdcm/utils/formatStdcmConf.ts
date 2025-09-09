@@ -212,6 +212,7 @@ export const formatStdcmPayload = (
 ): PostTimetableByIdStdcmApiArg => ({
   infra: validConfig.infraId,
   id: validConfig.timetableId,
+  returnDebugPayloads: false,
   body: {
     comfort: 'STANDARD',
     margin: createMargin(validConfig.margin),

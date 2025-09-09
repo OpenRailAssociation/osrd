@@ -3718,13 +3718,6 @@ paths:
         with existing train schedules. It then returns both the conflict information
         and the pathfinding result from the virtual train's simulation.
       parameters:
-      - name: infra
-        in: query
-        description: The infra id
-        required: true
-        schema:
-          type: integer
-          format: int64
       - name: id
         in: path
         description: timetable_id
@@ -3732,6 +3725,20 @@ paths:
         schema:
           type: integer
           format: int64
+      - name: infra
+        in: query
+        description: The infra id
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: return_debug_payloads
+        in: query
+        description: If true, extra payloads are returned to help with debugging
+        required: false
+        schema:
+          type: boolean
+          nullable: true
       requestBody:
         content:
           application/json:
@@ -3858,6 +3865,10 @@ paths:
                   - departure_time
                   - status
                   properties:
+                    core_payload:
+                      allOf:
+                      - $ref: '#/components/schemas/StdcmRequest'
+                      nullable: true
                     departure_time:
                       type: string
                       format: date-time
@@ -3873,6 +3884,10 @@ paths:
                   required:
                   - status
                   properties:
+                    core_payload:
+                      allOf:
+                      - $ref: '#/components/schemas/StdcmRequest'
+                      nullable: true
                     status:
                       type: string
                       enum:
@@ -3882,6 +3897,10 @@ paths:
                   - error
                   - status
                   properties:
+                    core_payload:
+                      allOf:
+                      - $ref: '#/components/schemas/StdcmRequest'
+                      nullable: true
                     error:
                       $ref: '#/components/schemas/SimulationResponse'
                     status:
@@ -13578,6 +13597,10 @@ components:
         - departure_time
         - status
         properties:
+          core_payload:
+            allOf:
+            - $ref: '#/components/schemas/StdcmRequest'
+            nullable: true
           departure_time:
             type: string
             format: date-time
@@ -13593,6 +13616,10 @@ components:
         required:
         - status
         properties:
+          core_payload:
+            allOf:
+            - $ref: '#/components/schemas/StdcmRequest'
+            nullable: true
           status:
             type: string
             enum:
@@ -13602,6 +13629,10 @@ components:
         - error
         - status
         properties:
+          core_payload:
+            allOf:
+            - $ref: '#/components/schemas/StdcmRequest'
+            nullable: true
           error:
             $ref: '#/components/schemas/SimulationResponse'
           status:
