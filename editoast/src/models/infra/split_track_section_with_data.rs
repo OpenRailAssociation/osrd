@@ -13,7 +13,6 @@ use schemas::primitives::Identifier;
 use serde::Deserialize;
 
 use super::Infra;
-use crate::error::Result;
 
 #[derive(QueryableByName, Debug, Clone, Deserialize)]
 pub struct SplitTrackSectionWithData {
@@ -33,7 +32,7 @@ impl Infra {
         conn: &mut DbConnection,
         track: Identifier,
         distance_fraction: f64,
-    ) -> Result<Option<SplitTrackSectionWithData>> {
+    ) -> Result<Option<SplitTrackSectionWithData>, database::DatabaseError> {
         let query = include_str!("sql/get_split_track_section_with_data.sql");
         let result = sql_query(query)
             .bind::<BigInt, _>(self.id)
