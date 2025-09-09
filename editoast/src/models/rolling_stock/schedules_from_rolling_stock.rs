@@ -8,7 +8,6 @@ use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
 
-use crate::error::Result;
 use crate::models::rolling_stock::RollingStock;
 use database::DbConnection;
 use database::tables::project;
@@ -46,7 +45,10 @@ impl From<SchedulesFromRollingStock> for ScenarioReference {
 type SchedulesFromRollingStock = (i64, String, i64, String, i64, String);
 
 impl RollingStock {
-    pub async fn get_usage(&self, conn: &mut DbConnection) -> Result<Vec<ScenarioReference>> {
+    pub async fn get_usage(
+        &self,
+        conn: &mut DbConnection,
+    ) -> Result<Vec<ScenarioReference>, database::DatabaseError> {
         let schedules: Vec<_> = train_schedule::table
             .inner_join(
                 rolling_stock::table.on(train_schedule::rolling_stock_name.eq(rolling_stock::name)),
