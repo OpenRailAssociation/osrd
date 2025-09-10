@@ -1,7 +1,7 @@
 import React, { type PropsWithChildren } from 'react';
 
-import { TRACK_HEIGHT_CONTAINER } from './consts';
-import type { Track } from './types';
+import { TRACK_HEIGHT_CONTAINER } from '../lib/consts';
+import type { Track } from '../lib/types';
 
 const TrackOccupancyManchette = ({ tracks, children }: PropsWithChildren<{ tracks: Track[] }>) => (
   <div className="track-occupancy-manchette">

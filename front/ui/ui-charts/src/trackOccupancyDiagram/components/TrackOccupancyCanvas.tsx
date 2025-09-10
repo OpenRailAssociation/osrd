@@ -4,8 +4,8 @@ import { X } from '@osrd-project/ui-icons';
 
 import OccupancyZonesLayer from './layers/OccupancyZonesLayer';
 import TracksLayer from './layers/TracksLayer';
-import type { OccupancyZone, Track } from './types';
 import { SpaceTimeChartContext } from '../../spaceTimeChart';
+import type { OccupancyZone, Track } from '../lib/types';
 
 const CloseButton = ({ position, onClose }: { position: number; onClose: () => void }) => {
   const { getSpacePixel } = useContext(SpaceTimeChartContext);
