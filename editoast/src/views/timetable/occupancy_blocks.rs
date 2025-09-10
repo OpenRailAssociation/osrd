@@ -1,4 +1,3 @@
-use crate::views::projection::TrainSimulationDetails;
 use core_client::AsCoreRequest;
 use core_client::CoreClient;
 use core_client::pathfinding::TrackRange;
@@ -17,6 +16,7 @@ use utoipa::ToSchema;
 use crate::error::Result;
 use crate::models::infra::Infra;
 use crate::views::projection::ProjectPathInput;
+use crate::views::projection::TrainSimulationDetails;
 use crate::views::projection::extract_train_details;
 use crate::views::timetable::simulation::train_simulation_batch;
 

@@ -1,4 +1,4 @@
-import type { TrackRange } from 'common/api/osrdEditoastApi';
+import type { CoreTrackRange } from 'common/api/osrdEditoastApi';
 
 /**
  * Return the track offset corresponding to the given position on path, composed of the track section id
@@ -7,7 +7,7 @@ import type { TrackRange } from 'common/api/osrdEditoastApi';
 const findTrackSectionOffset = (
   positionOnPath: number, // in mm
   tracksLengthCumulativeSums: number[], // in mm
-  trackRangesOnPath: TrackRange[]
+  trackRangesOnPath: CoreTrackRange[]
 ) => {
   const index = tracksLengthCumulativeSums.findIndex(
     (cumulativeSum) => positionOnPath <= cumulativeSum

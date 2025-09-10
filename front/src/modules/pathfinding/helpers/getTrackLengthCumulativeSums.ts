@@ -1,9 +1,9 @@
-import type { TrackRange } from 'common/api/osrdEditoastApi';
+import type { CoreTrackRange } from 'common/api/osrdEditoastApi';
 
 /**
  * Given a list of track ranges, return the array of cumulative sums of the lengths of the track ranges.
  */
-const getTrackLengthCumulativeSums = (trackRanges: TrackRange[]): number[] => {
+const getTrackLengthCumulativeSums = (trackRanges: CoreTrackRange[]): number[] => {
   const results: number[] = [];
 
   trackRanges.forEach((range, index) => {

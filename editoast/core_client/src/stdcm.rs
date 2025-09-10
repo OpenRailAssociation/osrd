@@ -103,6 +103,7 @@ pub struct TemporarySpeedLimit {
     /// Speed limitation in m/s
     pub speed_limit: f64,
     /// Track ranges on which the speed limitation applies
+    #[schema(value_type = Vec<CoreTrackRange>)]
     pub track_ranges: Vec<TrackRange>,
 }
 

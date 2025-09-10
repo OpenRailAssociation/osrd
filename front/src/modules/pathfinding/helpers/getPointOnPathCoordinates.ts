@@ -1,6 +1,6 @@
 import type { Position } from 'geojson';
 
-import type { TrackRange, TrackSection } from 'common/api/osrdEditoastApi';
+import type { CoreTrackRange, TrackSection } from 'common/api/osrdEditoastApi';
 import { getPointOnTrackCoordinates } from 'utils/geometry';
 import { mToMm } from 'utils/physics';
 
@@ -12,7 +12,7 @@ import findTrackSectionOffset from './findTrackSectionOffset';
  */
 const getPointOnPathCoordinates = (
   tracks: Record<string, TrackSection>,
-  trackRanges: TrackRange[],
+  trackRanges: CoreTrackRange[],
   tracksLengthCumulativeSums: number[],
   positionOnPath: number
 ): Position => {

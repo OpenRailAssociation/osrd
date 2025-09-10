@@ -2575,7 +2575,7 @@ export type PostWorkSchedulesProjectPathApiResponse =
   }[];
 export type PostWorkSchedulesProjectPathApiArg = {
   body: {
-    path_track_ranges: TrackRange[];
+    path_track_ranges: CoreTrackRange[];
     work_schedule_group_id: number;
   };
 };
@@ -2640,14 +2640,10 @@ export type LightElectricalProfileSet = {
   name: string;
 };
 export type LevelValues = string[];
-export type Direction = 'START_TO_STOP' | 'STOP_TO_START';
 export type TrackRange = {
-  /** The beginning of the range in mm. */
   begin: number;
-  direction: Direction;
-  /** The end of the range in mm. */
   end: number;
-  track_section: string;
+  track: string;
 };
 export type ElectricalProfile = {
   power_class: string;
@@ -2718,6 +2714,7 @@ export type SwitchType = {
   id: string;
   ports: string[];
 };
+export type Direction = 'START_TO_STOP' | 'STOP_TO_START';
 export type DirectionalTrackRange = {
   begin: number;
   direction: Direction;
@@ -3304,9 +3301,17 @@ export type Property =
   | 'geometry'
   | 'operational_points'
   | 'zones';
+export type CoreTrackRange = {
+  /** The beginning of the range in mm. */
+  begin: number;
+  direction: Direction;
+  /** The end of the range in mm. */
+  end: number;
+  track_section: string;
+};
 export type PathPropertiesInput = {
   /** List of track sections */
-  track_section_ranges: TrackRange[];
+  track_section_ranges: CoreTrackRange[];
 };
 export type PathfindingOutput = {
   detectors: string[];
@@ -3334,7 +3339,7 @@ export type PathfindingResultSuccess = {
   /** Path description as route ids */
   routes: string[];
   /** Path description as track ranges */
-  track_section_ranges: TrackRange[];
+  track_section_ranges: CoreTrackRange[];
 };
 export type TrackOffset = {
   /** Offset in mm */
@@ -3380,12 +3385,12 @@ export type PathfindingNotFound =
   | {
       error_type: 'not_found_in_blocks';
       length: number;
-      track_section_ranges: TrackRange[];
+      track_section_ranges: CoreTrackRange[];
     }
   | {
       error_type: 'not_found_in_routes';
       length: number;
-      track_section_ranges: TrackRange[];
+      track_section_ranges: CoreTrackRange[];
     }
   | {
       error_type: 'not_found_in_tracks';
@@ -3624,7 +3629,7 @@ export type OccupancyBlockForm = {
     /** List of route ids */
     routes: string[];
     /** List of track ranges */
-    track_section_ranges: TrackRange[];
+    track_section_ranges: CoreTrackRange[];
   };
 };
 export type SpaceTimeCurve = {
@@ -4506,7 +4511,7 @@ export type StdcmRequest = {
     /** Speed limitation in m/s */
     speed_limit: number;
     /** Track ranges on which the speed limitation applies */
-    track_ranges: TrackRange[];
+    track_ranges: CoreTrackRange[];
   }[];
   /** Gap between the created train and following trains in milliseconds */
   time_gap_after: number;

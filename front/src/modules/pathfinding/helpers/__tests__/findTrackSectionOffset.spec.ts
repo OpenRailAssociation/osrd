@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 
-import type { TrackRange } from 'common/api/osrdEditoastApi';
+import type { CoreTrackRange } from 'common/api/osrdEditoastApi';
 
 import findTrackSectionOffset from '../findTrackSectionOffset';
 
@@ -13,7 +13,7 @@ describe('findTrackSectionOffset', () => {
       { track_section: 'track_2', begin: 0, end: 1000, direction: 'START_TO_STOP' },
       { track_section: 'track_3' },
       { track_section: 'track_4' },
-    ] as TrackRange[];
+    ] as CoreTrackRange[];
 
     const offsetOnPath = 2060;
     const result = findTrackSectionOffset(
@@ -33,7 +33,7 @@ describe('findTrackSectionOffset', () => {
       { track_section: 'track_2', begin: 600, end: 1600, direction: 'START_TO_STOP' },
       { track_section: 'track_3' },
       { track_section: 'track_4' },
-    ] as TrackRange[];
+    ] as CoreTrackRange[];
 
     const offsetOnPath = 2300;
     const result = findTrackSectionOffset(
@@ -53,7 +53,7 @@ describe('findTrackSectionOffset', () => {
       { track_section: 'track_2', begin: 60, end: 1060, direction: 'STOP_TO_START' },
       { track_section: 'track_3' },
       { track_section: 'track_4' },
-    ] as TrackRange[];
+    ] as CoreTrackRange[];
 
     const offsetOnPath = 2010;
     const result = findTrackSectionOffset(
@@ -71,7 +71,7 @@ describe('findTrackSectionOffset', () => {
       { track_section: 'track_0' },
       { track_section: 'track_1' },
       { track_section: 'track_2' },
-    ] as TrackRange[];
+    ] as CoreTrackRange[];
 
     const offsetOnPath = 3001;
 
@@ -88,7 +88,7 @@ describe('findTrackSectionOffset', () => {
       { track_section: 'track_2', begin: 60, end: 1060, direction: 'STOP_TO_START' },
       { track_section: 'track_3' },
       { track_section: 'track_4' },
-    ] as TrackRange[];
+    ] as CoreTrackRange[];
 
     const offsetOnPath = 900;
     const result = findTrackSectionOffset(
