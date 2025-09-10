@@ -1,4 +1,4 @@
-import { type TickPattern } from './types';
+import { type TickPattern } from '../lib/types';
 
 type DrawTextType = {
   ctx: CanvasRenderingContext2D;
