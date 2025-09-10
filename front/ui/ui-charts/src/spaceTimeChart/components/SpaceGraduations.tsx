@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 
-import { useDraw } from '../hooks/useCanvas';
-import { type DrawingFunction } from '../lib/types';
+import type { DrawingFunction } from '../../common/types';
+import { useDraw } from '../../common/useCanvas';
 import { getCrispLineCoordinate } from '../utils/canvas';
 import { getSpacePixels } from '../utils/paths';
 

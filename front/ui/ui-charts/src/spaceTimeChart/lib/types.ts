@@ -1,5 +1,7 @@
 import { type HTMLProps, type ReactNode } from 'react';
 
+import { type HoveredItem, type PickingElement } from '../../common/types';
+
 // GLOBAL UTILITY TYPES:
 export type Point = {
   x: number;
@@ -91,39 +93,6 @@ export type PixelToTime = (x: number) => number;
 export type PixelToSpace = (y: number) => number;
 export type PointToData = (point: Point) => DataPoint;
 export type DataToPoint = (data: DataPoint) => Point;
-
-// CANVAS SPECIFIC TYPES:
-export const PICKING_LAYERS = ['paths', 'overlay'] as const;
-export type PickingLayerType = (typeof PICKING_LAYERS)[number];
-export const LAYERS = ['background', 'graduations', 'paths', 'overlay', 'captions'] as const;
-export type LayerType = (typeof LAYERS)[number];
-
-// PICKING SPECIFIC TYPES:
-export type PickingElement = { type: string };
-export type HoveredItem = { layer: PickingLayerType; element: PickingElement };
-
-export type DrawingFunction = (
-  canvasContext: CanvasRenderingContext2D,
-  stcContext: SpaceTimeChartContextType
-) => void;
-
-export type PickingDrawingFunction = (
-  imageData: ImageData,
-  stcContext: SpaceTimeChartContextType,
-  scalingRatio: number
-) => void;
-
-export type DrawingFunctionHandler = (
-  arg:
-    | { type: 'picking'; layer: PickingLayerType; fn: PickingDrawingFunction }
-    | { type: 'rendering'; layer: LayerType; fn: DrawingFunction }
-) => void;
-
-export type CanvasContextType = {
-  register: DrawingFunctionHandler;
-  unregister: DrawingFunctionHandler;
-  captureCanvases: () => Promise<Blob>;
-};
 
 // MOUSE CONTEXT:
 export type MouseState = {

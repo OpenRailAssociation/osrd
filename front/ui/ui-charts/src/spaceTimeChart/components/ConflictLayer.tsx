@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 
-import { useDraw, usePicking } from '../hooks/useCanvas';
-import type { DrawingFunction, PickingDrawingFunction, PickingElement } from '../lib/types';
+import type { DrawingFunction, PickingDrawingFunction, PickingElement } from '../../common/types';
+import { useDraw, usePicking } from '../../common/useCanvas';
 import { drawAliasedRect } from '../utils/canvas';
 import { indexToColor, hexToRgb } from '../utils/colors';
 

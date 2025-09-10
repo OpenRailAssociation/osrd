@@ -12,12 +12,9 @@ export * from './components/Quadrilateral';
 export * from './components/ZoomRect';
 export * from './components/TimeCaptions';
 
-export { usePicking, useDraw } from './hooks/useCanvas';
-
 export { DEFAULT_THEME } from './lib/consts';
-export { CanvasContext, MouseContext, SpaceTimeChartContext } from './lib/context';
+export { MouseContext, SpaceTimeChartContext } from './lib/context';
 export type {
-  HoveredItem,
   SpaceTimeChartProps,
   SpaceScale,
   OperationalPoint,
@@ -26,9 +23,6 @@ export type {
   Point,
   DataPoint,
   SpaceTimeChartContextType,
-  DrawingFunction,
-  PickingDrawingFunction,
-  PickingElement,
 } from './lib/types';
 
 export { isPathOnScreen } from './utils/geometry';
