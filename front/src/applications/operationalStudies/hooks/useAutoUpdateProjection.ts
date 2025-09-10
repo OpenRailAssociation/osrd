@@ -2,7 +2,6 @@ import { useEffect } from 'react';
 
 import { useSelector } from 'react-redux';
 
-import { isValidPathfinding } from 'applications/operationalStudies/views/Scenario/components/Timetable/utils';
 import type { InfraWithStatus } from 'modules/infra/types';
 import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
 import type { TimetableItemId } from 'reducers/osrdconf/types';
@@ -67,7 +66,7 @@ const useAutoUpdateProjection = (
     // if no valid item is found, select item with valid pathfinding
     const firstTrainCanBeUsedForProjection =
       timetableItemsWithDetails.find((item) => item.summary?.isValid) ??
-      timetableItemsWithDetails.find((item) => item.summary && isValidPathfinding(item.summary));
+      timetableItemsWithDetails.find((item) => item.summary);
 
     if (firstTrainCanBeUsedForProjection) {
       dispatch(updateTrainIdUsedForProjection(firstTrainCanBeUsedForProjection.id));

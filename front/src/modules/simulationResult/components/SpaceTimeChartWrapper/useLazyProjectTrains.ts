@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback, useRef } from 'react';
+import { useEffect, useState, useCallback, useRef, useMemo } from 'react';
 
 import { useSelector } from 'react-redux';
 
@@ -7,7 +7,13 @@ import type { ProjectionResult } from 'applications/operationalStudies/helpers/T
 import type TrainProjectionLazyLoaderAbstract from 'applications/operationalStudies/helpers/TrainProjectionLazyLoaderAbstract';
 import TrainTrackProjectionLazyLoader from 'applications/operationalStudies/helpers/TrainTrackProjectionLazyLoader';
 import upsertNewProjectedTrains from 'applications/operationalStudies/helpers/upsertNewProjectedTrains';
-import { type PathfindingResultSuccess, type PathProperties } from 'common/api/osrdEditoastApi';
+import { isOperationalPointReference } from 'applications/operationalStudies/utils';
+import {
+  type OperationalPointReference,
+  type PathfindingResultSuccess,
+  type PathItemLocation,
+  type PathProperties,
+} from 'common/api/osrdEditoastApi';
 import type { TrainSpaceTimeData } from 'modules/simulationResult/types';
 import type { TimetableItemId, TimetableItem } from 'reducers/osrdconf/types';
 import { getProjectionType } from 'reducers/simulationResults/selectors';
@@ -18,6 +24,7 @@ type UseLazyProjectTrainsOptions = {
   electricalProfileSetId?: number;
   path?: PathfindingResultSuccess;
   operationalPoints?: PathProperties['operational_points'];
+  pathUsedForProjection?: (PathItemLocation & { deleted?: boolean; id: string })[];
 };
 
 const useLazyProjectTrains = ({
@@ -25,6 +32,7 @@ const useLazyProjectTrains = ({
   electricalProfileSetId,
   path,
   operationalPoints,
+  pathUsedForProjection,
 }: UseLazyProjectTrainsOptions) => {
   const dispatch = useAppDispatch();
   const loaderRef = useRef<TrainProjectionLazyLoaderAbstract>(null);
@@ -40,6 +48,21 @@ const useLazyProjectTrains = ({
     );
   }, []);
 
+  const operationalPointReferences: OperationalPointReference[] = useMemo(() => {
+    if (!pathUsedForProjection) return [];
+    return pathUsedForProjection.reduce<OperationalPointReference[]>((acc, pathItem) => {
+      if (isOperationalPointReference(pathItem)) {
+        const { id: _id, deleted: _deleted, ...cleanOperationalPointReference } = pathItem;
+        acc.push(cleanOperationalPointReference);
+      }
+      return acc;
+    }, []);
+  }, [pathUsedForProjection]);
+
+  // 3. permettre la projection sur un train sans pathfinding
+  // - récupérer les pathSteps utilisés pour la projection (voir pathUsedForProjection dans le composant parent, le récupérer en props)
+  // - si pas de chemin, transformer les pathSteps en OpRefs
+  // - donner les opRefs et les opDistances
   useEffect(() => {
     if (!path) return undefined;
     const options = {
@@ -49,11 +72,11 @@ const useLazyProjectTrains = ({
       electricalProfileSetId,
       onProgress,
     };
-
+    const position = operationalPoints!.map((pos) => pos.position);
     const loader =
       projectionType === 'trackProjection'
         ? new TrainTrackProjectionLazyLoader(options)
-        : new TrainOpProjectionLazyLoader(options, operationalPoints);
+        : new TrainOpProjectionLazyLoader(operationalPointReferences, position, options);
 
     loader.projectTimetableItems([...timetableItemsByIdRef.current.keys()]);
 

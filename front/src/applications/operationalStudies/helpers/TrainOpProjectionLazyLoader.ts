@@ -1,7 +1,6 @@
 import {
   osrdEditoastApi,
   type OperationalPointReference,
-  type PathProperties,
   type PostPacedTrainOccupancyBlocksApiResponse,
   type PostPacedTrainProjectPathOpApiResponse,
   type PostTrainScheduleOccupancyBlocksApiResponse,
@@ -26,20 +25,18 @@ export default class TrainOpProjectionLazyLoader extends TrainProjectionLazyLoad
 
   readonly opDistances: number[];
 
+  // 1. modifier les paramètres de ce constructor par ordre d'importance:
+  // - opRefs: OperationalPointReference[]
+  // - opDistances: number[]
+  // - options: autres options à définir
   constructor(
-    options: TrainProjectionLazyLoaderOptions,
-    operationalPoints: PathProperties['operational_points']
+    opRefs: OperationalPointReference[],
+    opDistances: number[],
+    options: TrainProjectionLazyLoaderOptions
   ) {
     super(options);
-    this.opRefs = [];
-    this.opDistances = [];
-    if (!operationalPoints || operationalPoints.length === 0) return;
-    operationalPoints.forEach(({ id, position }, index) => {
-      this.opRefs.push({ operational_point: id });
-      if (index > 0) {
-        this.opDistances.push(position - operationalPoints[index - 1].position);
-      }
-    });
+    this.opRefs = opRefs;
+    this.opDistances = opDistances;
   }
 
   async processBatch(batch: TimetableItemId[]) {

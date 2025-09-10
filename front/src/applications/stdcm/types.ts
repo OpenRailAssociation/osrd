@@ -11,7 +11,7 @@ import type {
   LoadingGaugeType,
 } from 'common/api/osrdEditoastApi';
 import type {
-  PathOperationalPoint,
+  ProjectedOperationalPoint,
   SpeedDistanceDiagramData,
   TrainSpaceTimeData,
 } from 'modules/simulationResult/types';
@@ -48,7 +48,7 @@ export type StdcmConflictsResponse = Extract<
 export type StdcmResponse = StdcmConflictsResponse | StdcmSuccessResponse;
 
 export type StdcmPathProperties = {
-  manchetteOperationalPoints?: PathOperationalPoint[];
+  manchetteOperationalPoints?: ProjectedOperationalPoint[];
   geometry: NonNullable<PathProperties['geometry']>;
   suggestedOperationalPoints: SuggestedOP[];
   zones: NonNullable<PathProperties['zones']>;

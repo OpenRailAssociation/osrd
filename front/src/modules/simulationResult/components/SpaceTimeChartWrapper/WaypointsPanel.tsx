@@ -5,7 +5,7 @@ import { Alert } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 
-import type { PathOperationalPoint, WaypointsPanelData } from 'modules/simulationResult/types';
+import type { ProjectedOperationalPoint, WaypointsPanelData } from 'modules/simulationResult/types';
 import useModalFocusTrap from 'utils/hooks/useModalFocusTrap';
 import { mmToKm } from 'utils/physics';
 
@@ -14,10 +14,12 @@ import { getWaypointsLocalStorageKey } from './helpers/utils';
 type WaypointsPanelProps = {
   waypointsPanelIsOpen: boolean;
   setWaypointsPanelIsOpen: (open: boolean) => void;
-  waypoints: PathOperationalPoint[];
+  waypoints: ProjectedOperationalPoint[];
   waypointsPanelData: WaypointsPanelData;
 };
 
+// 2. Construire un nouvel type à partir d'opRef et l'utiliser pas les operationalPoints du pathfinding
+// (à modifier dans les props)
 const WaypointsPanel = ({
   waypointsPanelIsOpen,
   setWaypointsPanelIsOpen,

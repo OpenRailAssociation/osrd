@@ -40,7 +40,6 @@ import {
   formatFullDate,
   formatTrainDuration,
   getTrainCategoryClassName,
-  isValidPathfinding,
   roundAndFormatToNearestMinute,
 } from './utils';
 
@@ -287,7 +286,7 @@ const TrainScheduleItem = ({
         duplicateTimetableItem={duplicateTrain}
         editTimetableItem={() => selectTrainToEdit(train)}
         deleteTimetableItem={deleteTrain}
-        canBeUsedForProjection={isValidPathfinding(summary)}
+        // 4. autoriser le bouton 'Projeter' même si le train n'a pas de pathfinding
       />
     </div>
   );

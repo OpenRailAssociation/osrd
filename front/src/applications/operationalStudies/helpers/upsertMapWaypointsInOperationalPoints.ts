@@ -5,6 +5,7 @@ import type { PathfindingResultSuccess, TrainSchedule } from 'common/api/osrdEdi
 import type {
   PathOperationalPoint,
   EditoastPathOperationalPoint,
+  ProjectedOperationalPoint,
 } from 'modules/simulationResult/types';
 
 const HIGHEST_PRIORITY_WEIGHT = 100;
@@ -18,7 +19,7 @@ export function upsertMapWaypointsInOperationalPoints(
   pathItemsPositions: PathfindingResultSuccess['path_item_positions'],
   operationalPoints: PathOperationalPoint[],
   t: TFunction<'operational-studies'>
-): PathOperationalPoint[];
+): ProjectedOperationalPoint[];
 export function upsertMapWaypointsInOperationalPoints(
   type: 'EditoastPathOperationalPoint',
   path: TrainSchedule['path'],

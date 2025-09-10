@@ -40,10 +40,10 @@ import { type PostWorkSchedulesProjectPathApiResponse } from 'common/api/osrdEdi
 import { useSubCategoryContext } from 'common/SubCategoryContext';
 import { configureHandlePan } from 'modules/simulationResult/components/SpaceTimeChartWrapper/helpers/configureHandlePan';
 import type {
-  PathOperationalPoint,
   TrainSpaceTimeData,
   WaypointsPanelData,
   DraggingState,
+  ProjectedOperationalPoint,
 } from 'modules/simulationResult/types';
 import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
 import type { OccurrenceId, PacedTrainId, TrainId, TrainScheduleId } from 'reducers/osrdconf/types';
@@ -60,7 +60,7 @@ import WaypointsPanel from './WaypointsPanel';
 import { Spinner } from '../../../../common/Loaders';
 
 type SpaceTimeChartWrapperBaseProps = {
-  operationalPoints: PathOperationalPoint[];
+  operationalPoints: ProjectedOperationalPoint[];
   projectPathTrainResult: TrainSpaceTimeData[];
   selectedTrainId?: TrainId;
   conflicts?: Conflict[];
@@ -112,6 +112,7 @@ type SpaceTimeChartWrapperProps = SpaceTimeChartWrapperBaseProps &
 
 export const MANCHETTE_WITH_SPACE_TIME_CHART_DEFAULT_HEIGHT = 561;
 
+// 4. désactiver le GOV si on n'a pas de pathfinding
 const SpaceTimeChartWrapper = ({
   operationalPoints,
   projectPathTrainResult,
@@ -156,6 +157,8 @@ const SpaceTimeChartWrapper = ({
 
   const [previousPanning, setPreviousPanning] = useState(false);
 
+  // 2. Construire un nouvel type à partir d'opRef et l'utiliser pas les operationalPoints du pathfinding
+  // (à modifier dans les props du SpaceTimeChartWrapper)
   // Cut the spacetime chart curves if the first or last waypoints are hidden
   const { filteredProjectPathTrainResult: cutProjectedTrains, filteredConflicts: cutConflicts } =
     useMemo(
@@ -263,6 +266,9 @@ const SpaceTimeChartWrapper = ({
     hoveredItem,
   ]);
 
+  // 4. adapter la manchette pour pouvoir prendre des ops qui sont invalides + masquer la distance:
+  // - position doit maintenant pouvoir être masquée
+  // - poids set à 0 pour tout les OPs
   const {
     manchetteProps,
     spaceTimeChartProps,

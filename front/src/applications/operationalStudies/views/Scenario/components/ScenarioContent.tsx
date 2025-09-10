@@ -45,9 +45,8 @@ const MACRO_EDITOR_HEIGHT = 776; // px
 const ScenarioContent = ({ activeBoards }: ScenarioContentProps) => {
   const { t, i18n } = useTranslation('operational-studies');
   const dispatch = useAppDispatch();
-  const { scenario } = useScenarioContext();
 
-  const { infra, isInfraLoaded } = useScenarioContext();
+  const { infra, isInfraLoaded, scenario } = useScenarioContext();
 
   const [displayTimetableItemManagement, setDisplayTimetableItemManagement] = useState<string>(
     MANAGE_TIMETABLE_ITEM_TYPES.none

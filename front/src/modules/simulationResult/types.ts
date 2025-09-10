@@ -11,6 +11,7 @@ import type {
   RollingStockWithLiveries,
   SimulationResponseSuccess,
   TrainSchedule,
+  OperationalPointReference,
 } from 'common/api/osrdEditoastApi';
 import type { PacedTrainWithDetails } from 'modules/timetableItem/types';
 import type {
@@ -96,8 +97,8 @@ export type ProjectionData = {
 
 export type WaypointsPanelData = {
   timetableId: number | undefined;
-  filteredWaypoints: PathOperationalPoint[];
-  setFilteredWaypoints: Dispatch<SetStateAction<PathOperationalPoint[]>>;
+  filteredWaypoints: ProjectedOperationalPoint[];
+  setFilteredWaypoints: Dispatch<SetStateAction<ProjectedOperationalPoint[]>>;
   deployedWaypoints: Set<string>;
   toggleDeployedWaypoint: (waypointId: string, deployed?: boolean) => void;
   projectionPath: TrainSchedule['path'];
@@ -129,4 +130,8 @@ export type AspectLabel =
 export type DraggingState = {
   draggedTrain: IndividualTrainProjection;
   initialDepartureTime: Date;
+};
+
+export type ProjectedOperationalPoint = PathOperationalPoint & {
+  ref: OperationalPointReference;
 };

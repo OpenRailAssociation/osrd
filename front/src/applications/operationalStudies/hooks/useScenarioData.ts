@@ -3,7 +3,11 @@ import { useCallback, useEffect, useMemo, useState, useRef } from 'react';
 import { keyBy, sortBy } from 'lodash';
 import { useSelector } from 'react-redux';
 
-import { osrdEditoastApi, type ScenarioResponse } from 'common/api/osrdEditoastApi';
+import {
+  osrdEditoastApi,
+  type PathItemLocation,
+  type ScenarioResponse,
+} from 'common/api/osrdEditoastApi';
 import { useRollingStockContext } from 'common/RollingStockContext';
 import type { InfraWithStatus } from 'modules/infra/types';
 import useLazyProjectTrains from 'modules/simulationResult/components/SpaceTimeChartWrapper/useLazyProjectTrains';
@@ -50,6 +54,10 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithStatus) => 
   const { rollingStocks, rollingStockMap: rollingStocksByName } = useRollingStockContext();
 
   const projectionPath = usePathProjection(infra, timetableItemsById);
+
+  const [pathSteps, setPathSteps] = useState<
+    (PathItemLocation & { deleted?: boolean; id: string })[]
+  >([]);
 
   useEffect(() => {
     const trainSchedulesResult = dispatch(
@@ -101,6 +109,7 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithStatus) => 
     electricalProfileSetId,
     path: projectionPath?.pathfinding,
     operationalPoints: projectionPath?.operationalPoints,
+    pathUsedForProjection: pathSteps,
   });
 
   const {
@@ -158,6 +167,10 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithStatus) => 
     const exception = getExceptionFromOccurrenceId(timetableItemsById, trainIdUsedForProjection);
     return exception?.path_and_schedule?.path ?? pacedTrain!.path;
   }, [trainIdUsedForProjection, timetableItems]);
+
+  useEffect(() => {
+    if (pathUsedForProjection) setPathSteps(pathUsedForProjection);
+  }, [pathUsedForProjection]);
 
   const timetableItemIds = useMemo(
     () => timetableItems?.map((item) => item.id) ?? [],
