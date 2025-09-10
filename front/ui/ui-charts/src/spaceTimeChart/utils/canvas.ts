@@ -213,6 +213,72 @@ export function drawAliasedDisc(
   }
 }
 
+/**
+ * Draws an aliased quadrilateral
+ *
+ *      vertices[0]   ________ vertices[1]
+ *                  /        /
+ *     vertices[3] /________/ vertices[2]
+ *
+ */
+export function drawAliasedQuadrilateral(
+  imageData: ImageData,
+  points: [Point, Point, Point, Point],
+  [r, g, b]: RGBColor | RGBAColor,
+  scalingRatio: number = 1
+): void {
+  const vertices = points.map((point) => ({
+    x: Math.round(point.x * scalingRatio),
+    y: Math.round(point.y * scalingRatio),
+  }));
+
+  let { x: xmin, x: xmax, y: ymin, y: ymax } = vertices[0];
+  for (let i = 1; i < vertices.length; i++) {
+    const { x, y } = vertices[i];
+    if (x < xmin) xmin = x;
+    else if (x > xmax) xmax = x;
+
+    if (y < ymin) ymin = y;
+    else if (y > ymax) ymax = y;
+  }
+
+  xmin = clamp(xmin, 0, imageData.width - 1);
+  ymin = clamp(ymin, 0, imageData.height - 1);
+  xmax = clamp(xmax, 0, imageData.width - 1);
+  ymax = clamp(ymax, 0, imageData.height - 1);
+
+  for (let y = ymin; y < ymax; y++) {
+    for (let x = xmin; x < xmax; x++) {
+      // Compute whether the point is inside the quadrilateral
+      // using the Ray casting algorithm (see https://en.wikipedia.org/wiki/Point_in_polygon)
+      let isInside = false;
+      for (let i = 0; i < vertices.length; i++) {
+        const pointA = vertices[i];
+        const pointB = i === vertices.length - 1 ? vertices[0] : vertices[i + 1];
+
+        // Line equation from A to B: y(x) = m * x + c
+        const m = (pointB.y - pointA.y) / (pointB.x - pointA.x);
+        const c = pointB.y - m * pointB.x;
+
+        // Invert the equation: x(y) = (y - c) / m
+        // Look only for points that are on the left of the line, so for a given y, x < (y - c) / m
+        if (pointA.y > y != pointB.y > y && x < (y - c) / m) {
+          isInside = !isInside;
+        }
+      }
+
+      // If the point is inside the quadrilateral, allow interactions with it
+      if (isInside) {
+        const index = (y * imageData.width + x) * 4;
+        imageData.data[index] = r;
+        imageData.data[index + 1] = g;
+        imageData.data[index + 2] = b;
+        imageData.data[index + 3] = 255;
+      }
+    }
+  }
+}
+
 export function drawAliasedRect(
   imageData: ImageData,
   { x, y }: Point,

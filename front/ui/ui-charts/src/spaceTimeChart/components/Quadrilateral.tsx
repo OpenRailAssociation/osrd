@@ -1,9 +1,29 @@
 import { useCallback } from 'react';
 
-import { useDraw } from '../hooks/useCanvas';
-import { type DataPoint, type DrawingFunction } from '../lib/types';
+import { useDraw, usePicking } from '../hooks/useCanvas';
+import type {
+  DataPoint,
+  DrawingFunction,
+  PickingDrawingFunction,
+  PickingElement,
+  Point,
+} from '../lib/types';
+import { drawAliasedQuadrilateral } from '../utils/canvas';
+import { hexToRgb, indexToColor } from '../utils/colors';
+
+export type QuadrilaterPickingElement = PickingElement & {
+  type: 'quadrilateral';
+  id: string;
+};
+
+export function isQuadrilaterPickingElement(
+  element: PickingElement
+): element is QuadrilaterPickingElement {
+  return element.type === 'quadrilateral';
+}
 
 export type QuadrilateralProps = {
+  id: string;
   vertices: [DataPoint, DataPoint, DataPoint, DataPoint];
   style: {
     backgroundColor: string;
@@ -21,7 +41,7 @@ export type QuadrilateralProps = {
  *     vertices[3] /________/ vertices[2]
  *
  */
-export const Quadrilateral = ({ vertices, style }: QuadrilateralProps) => {
+export const Quadrilateral = ({ id, vertices, style }: QuadrilateralProps) => {
   const drawRegion = useCallback<DrawingFunction>(
     (ctx, { getSpacePixel, getTimePixel }) => {
       ctx.save();
@@ -43,6 +63,25 @@ export const Quadrilateral = ({ vertices, style }: QuadrilateralProps) => {
     [vertices, style]
   );
   useDraw('background', drawRegion);
+
+  const drawPicking = useCallback<PickingDrawingFunction>(
+    (imageData, { registerPickingElement, getTimePixel, getSpacePixel }, scalingRatio) => {
+      const points = vertices.map(
+        (vertice): Point => ({
+          x: getTimePixel(vertice.time),
+          y: getSpacePixel(vertice.position),
+        })
+      ) as [Point, Point, Point, Point];
+
+      const pickingElement: QuadrilaterPickingElement = { type: 'quadrilateral', id };
+      const index = registerPickingElement(pickingElement);
+      const color = hexToRgb(indexToColor(index));
+
+      drawAliasedQuadrilateral(imageData, points, color, scalingRatio);
+    },
+    [id, vertices]
+  );
+  usePicking('paths', drawPicking);
 
   return null;
 };
