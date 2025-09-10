@@ -4,8 +4,7 @@ use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
 
-// FIXME: this TrackRange and core_client::TrackRange are used interchangeably in the openapi...
-// #[editoast_derive::openapi_schema]
+#[editoast_derive::openapi_schema]
 #[derive(Debug, Educe, Clone, Deserialize, Serialize, PartialEq, ToSchema)]
 #[serde(deny_unknown_fields)]
 #[educe(Default)]

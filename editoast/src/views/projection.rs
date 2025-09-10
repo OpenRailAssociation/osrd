@@ -42,7 +42,7 @@ pub struct ProjectPathForm {
     pub infra_id: i64,
     pub electrical_profile_set_id: Option<i64>,
     pub ids: HashSet<i64>,
-    #[schema(inline)]
+    #[schema(inline, value_type = Vec<core_client::pathfinding::TrackRange>)]
     pub track_section_ranges: Vec<TrackRange>,
 }
 
@@ -61,7 +61,7 @@ pub struct ProjectPathOperationalPointForm {
 #[derive(Debug, Deserialize, ToSchema)]
 pub struct ProjectPathInput {
     /// List of track ranges
-    #[schema(min_items = 1)]
+    #[schema(min_items = 1, value_type = Vec<CoreTrackRange>)]
     pub track_section_ranges: Vec<TrackRange>,
     /// List of route ids
     #[schema(inline, min_items = 1)]

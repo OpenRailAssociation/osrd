@@ -1,9 +1,8 @@
+use core_client::pathfinding::TrackRange;
 use schemas::infra::Direction;
 use schemas::infra::TrackOffset;
 use schemas::primitives::Identifier;
 use std::collections::HashMap;
-
-use super::TrackRange;
 
 /// This object is useful to:
 /// - Get the position in the path given a location (track section and offset).

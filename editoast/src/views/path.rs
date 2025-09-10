@@ -5,7 +5,6 @@ pub(super) mod properties;
 
 pub use pathfinding::pathfinding_from_train_batch;
 
-use core_client::pathfinding::TrackRange;
 use database::DbConnection;
 use editoast_derive::EditoastError;
 use thiserror::Error;

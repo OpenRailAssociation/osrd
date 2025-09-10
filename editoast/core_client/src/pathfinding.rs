@@ -111,6 +111,7 @@ pub struct PathfindingResultSuccess {
     /// Path description as route ids
     pub routes: Vec<Identifier>,
     /// Path description as track ranges
+    #[schema(value_type = Vec<CoreTrackRange>)]
     pub track_section_ranges: Vec<TrackRange>,
     /// Length of the path in mm
     pub length: u64,
@@ -141,10 +142,12 @@ pub enum PathfindingInputError {
 #[serde(tag = "error_type", rename_all = "snake_case")]
 pub enum PathfindingNotFound {
     NotFoundInBlocks {
+        #[schema(value_type = Vec<CoreTrackRange>)]
         track_section_ranges: Vec<TrackRange>,
         length: u64,
     },
     NotFoundInRoutes {
+        #[schema(value_type = Vec<CoreTrackRange>)]
         track_section_ranges: Vec<TrackRange>,
         length: u64,
     },
@@ -160,6 +163,7 @@ pub enum PathfindingNotFound {
 /// `begin` is always less than `end`.
 #[editoast_derive::openapi_schema]
 #[derive(Serialize, Deserialize, Clone, Debug, ToSchema, Hash, PartialEq, Eq)]
+#[schema(as = CoreTrackRange)]
 pub struct TrackRange {
     /// The track section identifier.
     #[schema(inline)]

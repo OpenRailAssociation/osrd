@@ -4710,7 +4710,7 @@ paths:
                 path_track_ranges:
                   type: array
                   items:
-                    $ref: '#/components/schemas/TrackRange'
+                    $ref: '#/components/schemas/CoreTrackRange'
                 work_schedule_group_id:
                   type: integer
                   format: int64
@@ -5153,6 +5153,33 @@ components:
           description: |-
             JSON-Pointer value [RFC6901](https://tools.ietf.org/html/rfc6901) that references a location
             within the target document where the operation is performed.
+    CoreTrackRange:
+      type: object
+      description: |-
+        An oriented range on a track section.
+        `begin` is always less than `end`.
+      required:
+      - track_section
+      - begin
+      - end
+      - direction
+      properties:
+        begin:
+          type: integer
+          format: int64
+          description: The beginning of the range in mm.
+          minimum: 0
+        direction:
+          $ref: '#/components/schemas/Direction'
+        end:
+          type: integer
+          format: int64
+          description: The end of the range in mm.
+          minimum: 0
+        track_section:
+          type: string
+          maxLength: 255
+          minLength: 1
     Curve:
       type: object
       required:
@@ -10092,7 +10119,7 @@ components:
             track_section_ranges:
               type: array
               items:
-                $ref: '#/components/schemas/TrackRange'
+                $ref: '#/components/schemas/CoreTrackRange'
               description: List of track ranges
               minItems: 1
     OccupancyBlocksPacedTrainResult:
@@ -10843,7 +10870,7 @@ components:
         track_section_ranges:
           type: array
           items:
-            $ref: '#/components/schemas/TrackRange'
+            $ref: '#/components/schemas/CoreTrackRange'
           description: List of track sections
     PathfindingFailure:
       oneOf:
@@ -11032,7 +11059,7 @@ components:
           track_section_ranges:
             type: array
             items:
-              $ref: '#/components/schemas/TrackRange'
+              $ref: '#/components/schemas/CoreTrackRange'
       - type: object
         required:
         - track_section_ranges
@@ -11050,7 +11077,7 @@ components:
           track_section_ranges:
             type: array
             items:
-              $ref: '#/components/schemas/TrackRange'
+              $ref: '#/components/schemas/CoreTrackRange'
       - type: object
         required:
         - error_type
@@ -11159,7 +11186,7 @@ components:
         track_section_ranges:
           type: array
           items:
-            $ref: '#/components/schemas/TrackRange'
+            $ref: '#/components/schemas/CoreTrackRange'
           description: Path description as track ranges
     PathfindingTrackLocationInput:
       type: object
@@ -13572,7 +13599,7 @@ components:
               track_ranges:
                 type: array
                 items:
-                  $ref: '#/components/schemas/TrackRange'
+                  $ref: '#/components/schemas/CoreTrackRange'
                 description: Track ranges on which the speed limitation applies
           description: List of applicable temporary speed limits between the train departure and arrival
         time_gap_after:
@@ -14248,31 +14275,21 @@ components:
           minLength: 1
     TrackRange:
       type: object
-      description: |-
-        An oriented range on a track section.
-        `begin` is always less than `end`.
       required:
-      - track_section
+      - track
       - begin
       - end
-      - direction
       properties:
         begin:
-          type: integer
-          format: int64
-          description: The beginning of the range in mm.
-          minimum: 0
-        direction:
-          $ref: '#/components/schemas/Direction'
+          type: number
+          format: double
         end:
-          type: integer
-          format: int64
-          description: The end of the range in mm.
-          minimum: 0
-        track_section:
+          type: number
+          format: double
+        track:
           type: string
-          maxLength: 255
-          minLength: 1
+          example: 01234567-89ab-cdef-0123-456789abcdef
+      additionalProperties: false
     TrackReference:
       oneOf:
       - type: object
