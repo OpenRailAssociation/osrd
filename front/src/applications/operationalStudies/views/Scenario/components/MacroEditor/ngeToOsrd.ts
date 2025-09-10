@@ -296,13 +296,9 @@ const generateSchedule = (
 };
 
 /**
- * Generate properties (labels, startDate and trainrunSections) for a trainrun.
+ * Generate properties (labels and trainrunSections) for a trainrun.
  */
-const generateTrainrunProperties = (
-  netzgrafikDto: NetzgrafikDto,
-  trainrun: TrainrunDto,
-  oldStartDate?: Date
-) => {
+const generateTrainrunProperties = (netzgrafikDto: NetzgrafikDto, trainrun: TrainrunDto) => {
   const trainrunSections = getTrainrunSectionsByTrainrunId(netzgrafikDto, trainrun.id);
   const labels = compact(
     uniq(
@@ -311,30 +307,29 @@ const generateTrainrunProperties = (
       )
     )
   );
-  const startDate = calculateStartDate(trainrunSections, oldStartDate || new Date());
 
-  return { labels, startDate, trainrunSections };
+  return { labels, trainrunSections };
 };
 
 /**
- * Generate path and schedule from a trainrun. If the trainrun is backward,
- * the sections are reversed.
+ * Generate start time, path and schedule from a trainrun. If the trainrun is
+ * backward, the sections are reversed.
  */
 const generatePathAndSchedule = (
   trainrunSections: TrainrunSectionDto[],
   nodes: NodeDto[],
-  startDate: Date,
+  baseDate?: Date,
   trainrunDirection: TRAINRUN_DIRECTIONS = TRAINRUN_DIRECTIONS.FORWARD
 ) => {
   let sections = trainrunSections;
-  let directionStartDate = startDate;
   if (trainrunDirection === TRAINRUN_DIRECTIONS.BACKWARD) {
     sections = [...trainrunSections].reverse();
-    directionStartDate = calculateStartDate(sections, startDate, trainrunDirection);
   }
+
+  const startDate = calculateStartDate(sections, baseDate ?? new Date(), trainrunDirection);
   const path = generatePath(sections, nodes, trainrunDirection);
-  const schedule = generateSchedule(sections, nodes, directionStartDate, trainrunDirection); // directionStartDate, trainrunDirection);
-  return { path, schedule };
+  const schedule = generateSchedule(sections, nodes, startDate, trainrunDirection);
+  return { start_time: startDate.toISOString(), path, schedule };
 };
 
 // TODO: drop this function once this PR is merged:
@@ -393,21 +388,19 @@ const handleCreateTimetableItem = async (
   dispatch: AppDispatch,
   addUpsertedTimetableItems: (timetableItems: TimetableItem[]) => void
 ) => {
-  const { labels, startDate, trainrunSections } = generateTrainrunProperties(
-    netzgrafikDto,
-    trainrun
-  );
+  const { labels, trainrunSections } = generateTrainrunProperties(netzgrafikDto, trainrun);
 
   if (trainrun.direction === 'one_way') {
     throw new Error(
       'ngeToOsrd handleCreateTimetableItem received a one_way train dto instead of a round trip'
     );
   }
-  const pathAndSchedule = generatePathAndSchedule(trainrunSections, netzgrafikDto.nodes, startDate);
+  const pathAndSchedule = generatePathAndSchedule(trainrunSections, netzgrafikDto.nodes);
+
   const returnPathAndSchedule = generatePathAndSchedule(
     trainrunSections,
     netzgrafikDto.nodes,
-    startDate,
+    undefined,
     TRAINRUN_DIRECTIONS.BACKWARD
   );
 
@@ -423,7 +416,6 @@ const handleCreateTimetableItem = async (
     paced: createPacedAttributesFromTrainrun(trainrun, netzgrafikDto)!,
     train_name: trainrun.name,
     labels,
-    start_time: startDate.toISOString(),
     category,
     ...pathAndSchedule,
   };
@@ -511,15 +503,11 @@ const handleUpdateTimetableItem = async ({
 }) => {
   const timetableItemIds = state.timetableItemIdByNgeId.get(trainrun.id)!;
   const oldForwardTimetableItem = await fetchTimetableItem(timetableItemIds[0], dispatch);
-  const { labels, startDate, trainrunSections } = generateTrainrunProperties(
-    netzgrafikDto,
-    trainrun,
-    new Date(oldForwardTimetableItem.start_time)
-  );
+  const { labels, trainrunSections } = generateTrainrunProperties(netzgrafikDto, trainrun);
   const forwardPathAndSchedule = generatePathAndSchedule(
     trainrunSections,
     netzgrafikDto.nodes,
-    startDate
+    new Date(oldForwardTimetableItem.start_time)
   );
   await populateSecondaryCodesInPath(forwardPathAndSchedule.path, infraId, dispatch);
 
@@ -535,7 +523,6 @@ const handleUpdateTimetableItem = async ({
     ...timetableItemBase,
     train_name: trainrun.name,
     labels,
-    start_time: startDate.toISOString(),
     // Reset margins because they contain references to path items
     margins: undefined,
     paced: undefined,
@@ -611,7 +598,7 @@ const handleUpdateTimetableItem = async ({
   const returnPathAndSchedule = generatePathAndSchedule(
     trainrunSections,
     netzgrafikDto.nodes,
-    startDate,
+    new Date(oldForwardTimetableItem.start_time),
     TRAINRUN_DIRECTIONS.BACKWARD
   );
 
@@ -970,7 +957,7 @@ export const convertNgeDtoToOsrd = (dto: NetzgrafikDto) => {
   const trainSchedules: TrainSchedule[] = [];
   const pacedTrains: PacedTrain[] = [];
   for (const trainrun of dto.trainruns) {
-    const { labels, startDate, trainrunSections } = generateTrainrunProperties(dto, trainrun);
+    const { labels, trainrunSections } = generateTrainrunProperties(dto, trainrun);
     const category = dto.metadata.trainrunCategories.find((cat) => cat.id === trainrun.categoryId);
     if (category) labels.push(category.name);
     const directions =
@@ -978,18 +965,16 @@ export const convertNgeDtoToOsrd = (dto: NetzgrafikDto) => {
         ? [TRAINRUN_DIRECTIONS.FORWARD]
         : [TRAINRUN_DIRECTIONS.FORWARD, TRAINRUN_DIRECTIONS.BACKWARD];
     for (const direction of directions) {
-      const { path, schedule } = generatePathAndSchedule(
+      const pathAndSchedule = generatePathAndSchedule(
         trainrunSections,
         dto.nodes,
-        startDate,
+        undefined,
         direction
       );
       const commonProps = {
         train_name: trainrun.name,
         labels,
-        path,
-        start_time: startDate.toISOString(),
-        schedule,
+        ...pathAndSchedule,
       };
       const paced = createPacedAttributesFromTrainrun(trainrun, dto);
       if (paced) {
