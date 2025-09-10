@@ -1,6 +1,7 @@
 import { useCallback } from 'react';
 
-import { type DrawingFunction, useDraw } from '../../../spaceTimeChart';
+import type { DrawingFunction } from '../../../common/types';
+import { useDraw } from '../../../common/useCanvas';
 import { drawTracks } from '../helpers/drawElements/drawTracks';
 import type { Track } from '../types';
 

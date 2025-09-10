@@ -1,13 +1,8 @@
 import { useCallback } from 'react';
 
-import { useDraw, usePicking } from '../hooks/useCanvas';
-import type {
-  DataPoint,
-  DrawingFunction,
-  PickingDrawingFunction,
-  PickingElement,
-  Point,
-} from '../lib/types';
+import { useDraw, usePicking } from '../../common/useCanvas';
+import type { PickingElement, DrawingFunction, PickingDrawingFunction } from '../../common/types';
+import type { DataPoint, Point } from '../lib/types';
 import { drawAliasedQuadrilateral } from '../utils/canvas';
 import { hexToRgb, indexToColor } from '../utils/colors';
 

@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 
-import { useDraw } from '../hooks/useCanvas';
-import { type DrawingFunction } from '../lib/types';
+import type { DrawingFunction } from '../../common/types';
+import { useDraw } from '../../common/useCanvas';
 import { fillRect, type CanvasRect } from '../utils/canvas';
 
 /**

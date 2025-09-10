@@ -2,13 +2,12 @@ import { useCallback, useMemo } from 'react';
 
 import { sortBy } from 'lodash';
 
-import {
-  useDraw,
-  type DrawingFunction,
-  type PickingDrawingFunction,
-  usePicking,
-  type PickingElement,
-} from '../../../spaceTimeChart';
+import type {
+  DrawingFunction,
+  PickingDrawingFunction,
+  PickingElement,
+} from '../../../common/types';
+import { useDraw, usePicking } from '../../../common/useCanvas';
 import { drawAliasedRect } from '../../../spaceTimeChart/utils/canvas';
 import { hexToRgb, indexToColor } from '../../../spaceTimeChart/utils/colors';
 import {

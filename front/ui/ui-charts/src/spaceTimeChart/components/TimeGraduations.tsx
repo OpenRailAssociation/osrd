@@ -1,9 +1,9 @@
 import { useCallback, useContext } from 'react';
 
-import { useDraw } from '../hooks/useCanvas';
+import type { DrawingFunction } from '../../common/types';
+import { useDraw } from '../../common/useCanvas';
 import { MINUTE } from '../lib/consts';
 import { MouseContext } from '../lib/context';
-import { type DrawingFunction } from '../lib/types';
 import { computeVisibleTimeMarkers, getCrispLineCoordinate } from '../utils/canvas';
 import { BLACK_ALPHA_25, GREY_50 } from '../utils/colors';
 
