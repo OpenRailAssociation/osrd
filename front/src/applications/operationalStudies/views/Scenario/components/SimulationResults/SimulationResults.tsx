@@ -35,7 +35,7 @@ import {
 import { mapBy } from 'utils/types';
 
 import BoardWrapper from '../BoardWrapper';
-import SimulationResultExport from './SimulationResultExport';
+import SimulationResultsExport from './SimulationResultsExport';
 import SimulationResultsMap from './SimulationResultsMap';
 
 const HIDDEN_CHART_TOP_HEIGHT = 35;
@@ -341,7 +341,7 @@ const SimulationResults = ({
             {simulationResults?.isValid && (
               <div className="time-stop-outputs">
                 {/* SIMULATION EXPORT BUTTONS */}
-                <SimulationResultExport
+                <SimulationResultsExport
                   path={simulationResults.path}
                   scenarioData={scenarioData}
                   train={simulationResults.train}
