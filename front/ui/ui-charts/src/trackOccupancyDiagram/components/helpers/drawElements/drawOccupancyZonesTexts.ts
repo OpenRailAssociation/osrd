@@ -1,5 +1,5 @@
-import { MINUTES_TEXT_OFFSET, STATION_TEXT_OFFSET, FONTS, COLORS } from '../../consts';
-import type { OccupancyZone } from '../../types';
+import { MINUTES_TEXT_OFFSET, STATION_TEXT_OFFSET, FONTS, COLORS } from '../../../lib/consts';
+import type { OccupancyZone } from '../../../lib/types';
 import { drawText } from '../../utils';
 
 const BREAKPOINTS = {

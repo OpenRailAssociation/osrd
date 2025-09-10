@@ -2,8 +2,8 @@ import { useCallback } from 'react';
 
 import type { DrawingFunction } from '../../../common/types';
 import { useDraw } from '../../../common/useCanvas';
+import type { Track } from '../../lib/types';
 import { drawTracks } from '../helpers/drawElements/drawTracks';
-import type { Track } from '../types';
 
 const TracksLayer = ({
   tracks,

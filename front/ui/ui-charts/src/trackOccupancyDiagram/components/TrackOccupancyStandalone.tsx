@@ -2,14 +2,14 @@ import React, { useMemo, useRef } from 'react';
 
 import { KebabHorizontal } from '@osrd-project/ui-icons';
 
-import { TRACK_HEIGHT_CONTAINER } from './consts';
+import { TRACK_HEIGHT_CONTAINER } from '../lib/consts';
 import { isOccupancyPickingElement } from './layers/OccupancyZonesLayer';
 import TrackOccupancyCanvas from './TrackOccupancyCanvas';
 import TrackOccupancyManchette from './TrackOccupancyManchette';
-import type { OccupancyZone, Track } from './types';
 import { Manchette, useManchetteWithSpaceTimeChart } from '../../manchette';
 import { DEFAULT_THEME, SpaceTimeChart } from '../../spaceTimeChart';
 import { HOUR } from '../../spaceTimeChart/lib/consts';
+import type { OccupancyZone, Track } from '../lib/types';
 
 const TrackOccupancyStandalone = ({
   tracks,
