@@ -1,8 +1,8 @@
 import { useCallback } from 'react';
 
-import { useDraw } from '../hooks/useCanvas';
+import type { DrawingFunction } from '../../common/types';
+import { useDraw } from '../../common/useCanvas';
 import { HOUR, MINUTE } from '../lib/consts';
-import { type DrawingFunction } from '../lib/types';
 import { computeVisibleTimeMarkers, getCrispLineCoordinate } from '../utils/canvas';
 import { WHITE_ALPHA_75 } from '../utils/colors';
 

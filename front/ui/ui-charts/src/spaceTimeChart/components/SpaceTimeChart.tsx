@@ -5,16 +5,17 @@ import cx from 'classnames';
 import SpaceGraduations from './SpaceGraduations';
 import { TimeCaptions } from './TimeCaptions';
 import TimeGraduations from './TimeGraduations';
-import { useCanvas } from '../hooks/useCanvas';
+import { CanvasContext } from '../../common/context';
+import type { PickingElement } from '../../common/types';
+import { useCanvas } from '../../common/useCanvas';
 import { useMouseInteractions } from '../hooks/useMouseInteractions';
 import { useMouseTracking } from '../hooks/useMouseTracking';
 import { useSize } from '../hooks/useSize';
 import { DEFAULT_THEME } from '../lib/consts';
-import { CanvasContext, MouseContext, SpaceTimeChartContext } from '../lib/context';
+import { MouseContext, SpaceTimeChartContext } from '../lib/context';
 import { validateTheme } from '../lib/theme';
 import {
   type MouseContextType,
-  type PickingElement,
   type SpaceTimeChartContextType,
   type SpaceTimeChartProps,
 } from '../lib/types';

@@ -1,5 +1,6 @@
+import type { HoveredItem } from '../../common/types';
 import { isPointPickingElement, isSegmentPickingElement } from '../components/PathLayer';
-import { type HoveredItem, type Point } from '../lib/types';
+import type { Point } from '../lib/types';
 
 /**
  * This function takes a point and a segment, and returns the point of the segment that is the
