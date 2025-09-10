@@ -1,5 +1,5 @@
 import { type TICKS_PATTERN } from './consts';
-import { type PickingElement } from '../../spaceTimeChart';
+import type { PickingElement } from '../../common/types';
 
 export type Track = {
   id: string;

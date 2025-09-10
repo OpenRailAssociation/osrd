@@ -2,15 +2,13 @@ import { useCallback } from 'react';
 
 import { flatten, inRange, last } from 'lodash';
 
-import { useDraw, usePicking } from '../hooks/useCanvas';
+import type { DrawingFunction, PickingDrawingFunction, PickingElement } from '../../common/types';
+import { useDraw, usePicking } from '../../common/useCanvas';
 import {
   type DataPoint,
   DEFAULT_PATH_END,
-  type DrawingFunction,
   type OperationalPoint,
   type PathData,
-  type PickingDrawingFunction,
-  type PickingElement,
   type Point,
   type SpaceTimeChartContextType,
 } from '../lib/types';

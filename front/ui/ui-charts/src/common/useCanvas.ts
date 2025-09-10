@@ -2,25 +2,24 @@ import { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'r
 
 import { isEqual } from 'lodash';
 
-import { useDevicePixelRatio } from './useDevicePixelRatio';
-import { useSize } from './useSize';
-import { CanvasContext } from '../lib/context';
+import { CanvasContext } from './context';
 import {
+  LAYERS,
+  PICKING_LAYERS,
   type CanvasContextType,
   type DrawingFunction,
   type DrawingFunctionHandler,
   type HoveredItem,
-  LAYERS,
   type LayerType,
-  PICKING_LAYERS,
   type PickingDrawingFunction,
   type PickingLayerType,
-  type Point,
-  type SpaceTimeChartContextType,
-} from '../lib/types';
-import { getPickingScalingRatio } from '../utils/canvas';
-import { colorToIndex, rgbToHex } from '../utils/colors';
-import getPNGBlob from '../utils/png';
+} from './types';
+import { useDevicePixelRatio } from '../spaceTimeChart/hooks/useDevicePixelRatio';
+import { useSize } from '../spaceTimeChart/hooks/useSize';
+import { type Point, type SpaceTimeChartContextType } from '../spaceTimeChart/lib/types';
+import { getPickingScalingRatio } from '../spaceTimeChart/utils/canvas';
+import { colorToIndex, rgbToHex } from '../spaceTimeChart/utils/colors';
+import getPNGBlob from '../spaceTimeChart/utils/png';
 
 const PICKING = 'picking';
 const RENDERING = 'rendering';
