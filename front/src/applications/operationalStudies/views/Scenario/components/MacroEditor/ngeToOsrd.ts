@@ -6,6 +6,7 @@ import {
   type SearchResultItemOperationalPoint,
   type TrainSchedule,
   type MacroNodeForm,
+  type PathItemLocation,
 } from 'common/api/osrdEditoastApi';
 import {
   createPacedTrain,
@@ -484,6 +485,46 @@ const handleDeleteTimetableItem = async (
     }
   }
   state.timetableItemIdByNgeId.delete(trainrunId);
+};
+
+const comparePathItemLocations = async (
+  pathItemLocation1: PathItemLocation,
+  pathItemLocation2: PathItemLocation,
+  infraId: number,
+  dispatch: AppDispatch
+) => {
+  if ('track' in pathItemLocation1 || 'track' in pathItemLocation2) {
+    return (
+      'track' in pathItemLocation1 &&
+      'track' in pathItemLocation2 &&
+      pathItemLocation1.track === pathItemLocation2.track &&
+      pathItemLocation1.offset === pathItemLocation2.offset
+    );
+  }
+  const ops = await dispatch(
+    osrdEditoastApi.endpoints.matchAllOperationalPoints.initiate({
+      infraId,
+      opRefs: [pathItemLocation1, pathItemLocation2],
+    })
+  ).unwrap();
+  if (ops[0][0] && ops[1][0]) return ops[0][0].id === ops[1][0].id;
+  if ('trigram' in pathItemLocation1 && 'trigram' in pathItemLocation2) {
+    return (
+      pathItemLocation1.trigram === pathItemLocation2.trigram &&
+      pathItemLocation1.secondary_code === pathItemLocation2.secondary_code
+    );
+  }
+  if ('uic' in pathItemLocation1 && 'uic' in pathItemLocation2) {
+    return (
+      pathItemLocation1.uic === pathItemLocation2.uic &&
+      pathItemLocation1.secondary_code === pathItemLocation2.secondary_code
+    );
+  }
+  return (
+    'operational_point' in pathItemLocation1 &&
+    'operational_point' in pathItemLocation2 &&
+    pathItemLocation1.operational_point === pathItemLocation2.operational_point
+  );
 };
 
 /**
