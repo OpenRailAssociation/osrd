@@ -35,6 +35,7 @@ impl Waypoint {
     }
 }
 
+#[derive(Debug)]
 pub(super) struct NewTrain {
     waypoints: Vec<Waypoint>,
 }

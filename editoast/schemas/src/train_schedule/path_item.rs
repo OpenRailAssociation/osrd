@@ -94,3 +94,15 @@ pub enum OperationalPointIdentifier {
         secondary_code: Option<String>,
     },
 }
+
+impl PathItemLocation {
+    pub fn identifier(&self) -> Option<&str> {
+        match self {
+            Self::OperationalPointReference(OperationalPointReference {
+                reference: OperationalPointIdentifier::OperationalPointId { operational_point },
+                ..
+            }) => Some(operational_point.as_str()),
+            _ => None,
+        }
+    }
+}

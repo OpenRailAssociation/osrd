@@ -600,7 +600,17 @@ async fn simulate_past_trains(
             )| {
                 let stop_ids = ts
                     .iter_stops()
-                    .map(|path_item| OperationalPoint(path_item.id.as_str().into()))
+                    .flat_map(|path_item| match path_item.location.identifier() {
+                        Some(id) => Some(OperationalPoint(id.into())),
+                        None => {
+                            tracing::warn!(
+                                ts.id,
+                                ?path_item,
+                                "ignoring non ID-referenced path item"
+                            );
+                            None
+                        }
+                    })
                     .collect::<HashSet<_>>();
                 let ops =
                     operational_points
