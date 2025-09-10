@@ -112,9 +112,7 @@ class WorkerCommand : CliCommand {
         val infraManager = InfraManager(editoastUrl, editoastAuthorization, httpClient)
         val timetableCache =
             TimetableCacheManager(
-                editoastUrl!!,
-                editoastAuthorization,
-                httpClient,
+                TimetableDownloader(editoastUrl!!, editoastAuthorization, httpClient),
                 LOCAL_TIMETABLE_CACHE,
             )
         val electricalProfileSetManager =
