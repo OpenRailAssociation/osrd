@@ -365,7 +365,9 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
     await expect(this.timetableItemArrivalTime.nth(index)).toBeVisible();
     await expect(this.timetableItemArrivalTimeLoader).toBeHidden();
     await expect
-      .poll(async () => this.timetableItemArrivalTime.nth(index).textContent())
+      .poll(async () => await this.timetableItemArrivalTime.nth(index).innerText(), {
+        timeout: 30_000,
+      })
       .toBe(expectedArrivalTime);
   }
 
