@@ -15,13 +15,13 @@ import {
   OCCUPANCY_ZONE_HEIGHT,
   OCCUPANCY_ZONE_Y_START,
   TRACK_HEIGHT_CONTAINER,
-} from '../consts';
+} from '../../lib/consts';
+import type { OccupancyZone, OccupancyZonePickingElement, Track } from '../../lib/types';
 import {
   drawOccupationZone,
   drawRemainingTrainsBox,
   drawZoneTrailingText,
 } from '../helpers/drawElements/drawOccupancyZones';
-import type { OccupancyZone, OccupancyZonePickingElement, Track } from '../types';
 
 type RenderingInstruction =
   | {
