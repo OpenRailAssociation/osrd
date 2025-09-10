@@ -81,55 +81,52 @@ const RoundTripsModal = ({
   );
 
   const pairingItemsById = useMemo(() => mapBy(pairingItems, 'id'), [pairingItems]);
+  const pairingItemsByColumn = useMemo(() => {
+    const groupedPairingItems: {
+      todo: PairingItem[];
+      oneWays: PairingItem[];
+      roundTrips: RoundTripsColumnPair[];
+    } = { todo: [], oneWays: [], roundTrips: [] };
 
-  const pairingItemsByColumn = useMemo(
-    () =>
-      pairingItemsById.values().reduce<{
-        todo: PairingItem[];
-        oneWays: PairingItem[];
-        roundTrips: RoundTripsColumnPair[];
-      }>(
-        (acc, item) => {
-          if (
-            item.status !== 'roundTrips' &&
-            !item.name.toLowerCase().includes(debouncedFilter.toLowerCase())
-          ) {
-            return acc;
-          }
-          if (item.status === 'todo') {
-            acc.todo.push(item);
-          }
-          if (item.status === 'oneWays') {
-            acc.oneWays.push(item);
-          }
-          if (
-            item.status !== 'roundTrips' ||
-            acc.roundTrips.some(
-              ({ pair: [pairA, pairB] }) => pairA.id === item.id || pairB.id === item.id
-            )
-          ) {
-            return acc;
-          }
+    for (const item of pairingItemsById.values()) {
+      if (
+        item.status !== 'roundTrips' &&
+        !item.name.toLowerCase().includes(debouncedFilter.toLowerCase())
+      ) {
+        continue;
+      }
+      if (item.status === 'todo') {
+        groupedPairingItems.todo.push(item);
+      }
+      if (item.status === 'oneWays') {
+        groupedPairingItems.oneWays.push(item);
+      }
+      if (
+        item.status !== 'roundTrips' ||
+        groupedPairingItems.roundTrips.some(
+          ({ pair: [pairA, pairB] }) => pairA.id === item.id || pairB.id === item.id
+        )
+      ) {
+        continue;
+      }
 
-          const timetableItemA = timetableItemsWithOpsById.get(item.id)!;
-          const timetableItemB = timetableItemsWithOpsById.get(item.pairedItemId)!;
-          const pairingItemB = pairingItemsById.get(item.pairedItemId)!;
-          const isValid = checkRoundTripCompatible(timetableItemA, timetableItemB);
+      const timetableItemA = timetableItemsWithOpsById.get(item.id)!;
+      const timetableItemB = timetableItemsWithOpsById.get(item.pairedItemId)!;
+      const pairingItemB = pairingItemsById.get(item.pairedItemId)!;
+      const isValid = checkRoundTripCompatible(timetableItemA, timetableItemB);
 
-          if (
-            !item.name.toLowerCase().includes(debouncedFilter.toLowerCase()) &&
-            !pairingItemB.name.toLowerCase().includes(debouncedFilter.toLowerCase())
-          ) {
-            return acc;
-          }
+      if (
+        !item.name.toLowerCase().includes(debouncedFilter.toLowerCase()) &&
+        !pairingItemB.name.toLowerCase().includes(debouncedFilter.toLowerCase())
+      ) {
+        continue;
+      }
 
-          acc.roundTrips.push({ pair: [item, pairingItemB], isValid });
-          return acc;
-        },
-        { todo: [], oneWays: [], roundTrips: [] }
-      ),
-    [pairingItemsById, timetableItemsWithOpsById, debouncedFilter]
-  );
+      groupedPairingItems.roundTrips.push({ pair: [item, pairingItemB], isValid });
+    }
+
+    return groupedPairingItems;
+  }, [pairingItemsById, timetableItemsWithOpsById, debouncedFilter]);
 
   const openModal = () => {
     modalRef.current?.showModal();
