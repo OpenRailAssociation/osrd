@@ -555,7 +555,7 @@ const handleUpdateTimetableItem = async ({
   addDeletedTimetableItemIds: (timetableItemIds: TimetableItemId[]) => void;
 }) => {
   const timetableItemIds = state.timetableItemIdByNgeId.get(trainrun.id)!;
-  const oldForwardTimetableItem = await fetchTimetableItem(timetableItemIds[0], dispatch);
+  let oldForwardTimetableItem = await fetchTimetableItem(timetableItemIds[0], dispatch);
   const { labels, startDate, trainrunSections } = generateTrainrunProperties(
     netzgrafikDto,
     trainrun,
@@ -567,6 +567,46 @@ const handleUpdateTimetableItem = async ({
     startDate
   );
   await populateSecondaryCodesInPath(forwardPath, infraId, dispatch);
+
+  if (trainrun.direction === 'one_way') {
+    if (timetableItemIds[1]) {
+      const firstNewStepMatchOldForward = await comparePathItemLocations(
+        oldForwardTimetableItem.path[0],
+        forwardPath[0],
+        infraId,
+        dispatch
+      );
+      const indexToDelete = firstNewStepMatchOldForward ? 1 : 0;
+      if (!firstNewStepMatchOldForward)
+        oldForwardTimetableItem = await fetchTimetableItem(timetableItemIds[1], dispatch);
+
+      if (isPacedTrainId(oldForwardTimetableItem.id)) {
+        await dispatch(
+          osrdEditoastApi.endpoints.postRoundTripsPacedTrains.initiate({
+            roundTrips: {
+              one_ways: [extractEditoastIdFromPacedTrainId(oldForwardTimetableItem.id)],
+            },
+          })
+        ).unwrap();
+      } else {
+        await dispatch(
+          osrdEditoastApi.endpoints.postRoundTripsTrainSchedules.initiate({
+            roundTrips: {
+              one_ways: [extractEditoastIdFromTrainScheduleId(oldForwardTimetableItem.id)],
+            },
+          })
+        ).unwrap();
+      }
+      await deleteTimetableItemById(
+        timetableItemIds[indexToDelete]!,
+        dispatch,
+        addDeletedTimetableItemIds
+      );
+    }
+
+    state.timetableItemIdByNgeId.set(trainrun.id, [oldForwardTimetableItem.id, null]);
+    return;
+  }
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { id, ...timetableItemBase } = oldForwardTimetableItem;
@@ -624,34 +664,6 @@ const handleUpdateTimetableItem = async ({
       addUpsertedTimetableItems,
       addDeletedTimetableItemIds
     );
-  }
-
-  if (trainrun.direction === 'one_way') {
-    if (timetableItemIds[1]) {
-      // NGE always selects the forward trip by default when going from round trip to one way trip,
-      // thus the trip that needs to be deleted is always the return trip
-      if (isPacedTrainId(oldForwardTimetableItem.id)) {
-        await dispatch(
-          osrdEditoastApi.endpoints.postRoundTripsPacedTrains.initiate({
-            roundTrips: {
-              one_ways: [extractEditoastIdFromPacedTrainId(oldForwardTimetableItem.id)],
-            },
-          })
-        ).unwrap();
-      } else {
-        await dispatch(
-          osrdEditoastApi.endpoints.postRoundTripsTrainSchedules.initiate({
-            roundTrips: {
-              one_ways: [extractEditoastIdFromTrainScheduleId(oldForwardTimetableItem.id)],
-            },
-          })
-        ).unwrap();
-      }
-      await deleteTimetableItemById(timetableItemIds[1], dispatch, addDeletedTimetableItemIds);
-    }
-
-    state.timetableItemIdByNgeId.set(trainrun.id, [oldForwardTimetableItem.id, null]);
-    return;
   }
 
   const { path: returnPath, schedule: returnSchedule } = generatePathAndSchedule(
