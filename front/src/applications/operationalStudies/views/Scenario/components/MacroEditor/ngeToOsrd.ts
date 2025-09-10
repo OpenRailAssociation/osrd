@@ -402,19 +402,15 @@ const handleCreateTimetableItem = async (
       'ngeToOsrd handleCreateTimetableItem received a one_way train dto instead of a round trip'
     );
   }
-  const { path, schedule } = generatePathAndSchedule(
-    trainrunSections,
-    netzgrafikDto.nodes,
-    startDate
-  );
-  const { path: returnPath, schedule: returnSchedule } = generatePathAndSchedule(
+  const pathAndSchedule = generatePathAndSchedule(trainrunSections, netzgrafikDto.nodes, startDate);
+  const returnPathAndSchedule = generatePathAndSchedule(
     trainrunSections,
     netzgrafikDto.nodes,
     startDate,
     TRAINRUN_DIRECTIONS.BACKWARD
   );
 
-  await populateSecondaryCodesInPath(path, infraId, dispatch);
+  await populateSecondaryCodesInPath(pathAndSchedule.path, infraId, dispatch);
 
   const category = getTrainCategoryFromTrainrunCategoryId(
     state.trainrunCategories,
@@ -426,12 +422,11 @@ const handleCreateTimetableItem = async (
     paced: createPacedAttributesFromTrainrun(trainrun, netzgrafikDto)!,
     train_name: trainrun.name,
     labels,
-    path,
     start_time: startDate.toISOString(),
-    schedule,
     category,
+    ...pathAndSchedule,
   };
-  const returnPacedTrain = { ...pacedTrain, path: returnPath, schedule: returnSchedule };
+  const returnPacedTrain = { ...pacedTrain, ...returnPathAndSchedule };
 
   const newTimetableItems = await dispatch(
     osrdEditoastApi.endpoints.postTimetableByIdPacedTrains.initiate({
@@ -520,12 +515,12 @@ const handleUpdateTimetableItem = async ({
     trainrun,
     new Date(oldForwardTimetableItem.start_time)
   );
-  const { path: forwardPath, schedule: forwardSchedule } = generatePathAndSchedule(
+  const forwardPathAndSchedule = generatePathAndSchedule(
     trainrunSections,
     netzgrafikDto.nodes,
     startDate
   );
-  await populateSecondaryCodesInPath(forwardPath, infraId, dispatch);
+  await populateSecondaryCodesInPath(forwardPathAndSchedule.path, infraId, dispatch);
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const { id, ...timetableItemBase } = oldForwardTimetableItem;
@@ -539,14 +534,13 @@ const handleUpdateTimetableItem = async ({
     ...timetableItemBase,
     train_name: trainrun.name,
     labels,
-    path: forwardPath,
     start_time: startDate.toISOString(),
-    schedule: forwardSchedule,
     // Reset margins because they contain references to path items
     margins: undefined,
     paced: undefined,
     exceptions: undefined,
     category,
+    ...forwardPathAndSchedule,
   };
 
   const paced = createPacedAttributesFromTrainrun(trainrun, netzgrafikDto);
@@ -613,7 +607,7 @@ const handleUpdateTimetableItem = async ({
     return;
   }
 
-  const { path: returnPath, schedule: returnSchedule } = generatePathAndSchedule(
+  const returnPathAndSchedule = generatePathAndSchedule(
     trainrunSections,
     netzgrafikDto.nodes,
     startDate,
@@ -627,8 +621,7 @@ const handleUpdateTimetableItem = async ({
     if (newForwardPacedTrain) {
       const updatedReturnPacedTrain = {
         ...newForwardPacedTrain,
-        path: returnPath,
-        schedule: returnSchedule,
+        ...returnPathAndSchedule,
       };
       newReturnTimetableItem = await storePacedTrain(
         timetableItemIds[1],
@@ -641,8 +634,7 @@ const handleUpdateTimetableItem = async ({
     } else {
       const updatedReturnTrainSchedule = {
         ...newForwardTimetableItem,
-        path: returnPath,
-        schedule: returnSchedule,
+        ...returnPathAndSchedule,
       };
       newReturnTimetableItem = await storeTrainSchedule(
         timetableItemIds[1],
@@ -663,8 +655,7 @@ const handleUpdateTimetableItem = async ({
       }
       const returnPacedTrain = {
         ...newForwardPacedTrain,
-        path: returnPath,
-        schedule: returnSchedule,
+        ...returnPathAndSchedule,
       };
 
       newReturnTimetableItem = await createPacedTrain(dispatch, timetableId, returnPacedTrain);
@@ -688,8 +679,7 @@ const handleUpdateTimetableItem = async ({
       }
       const returnTrainSchedule = {
         ...newForwardTimetableItem,
-        path: returnPath,
-        schedule: returnSchedule,
+        ...returnPathAndSchedule,
       };
 
       newReturnTimetableItem = await createTrainSchedule(
