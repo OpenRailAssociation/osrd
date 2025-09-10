@@ -59,6 +59,11 @@ class ReproduceRequest : CliCommand {
         description = "Path to the railjson infra file, overriding the id given in the request",
     )
     private var railjson: String? = null
+    @Parameter(
+        names = ["--timetable-dir"],
+        description = "Path to the timetable directory, must contain timetable_id.json",
+    )
+    private var timetableDirectory: String? = null
     private val logger: Logger = LoggerFactory.getLogger("ReproduceRequest")
 
     @ExcludeFromGeneratedCodeCoverage
@@ -72,6 +77,10 @@ class ReproduceRequest : CliCommand {
                     val infra = FullInfra.fromRJSInfra(rjs, signalingSimulator)
                     FileInfraProvider(infra)
                 } else InfraManager(editoastUrl, editoastAuthorization, httpClient)
+            val timetableProvider =
+                if (timetableDirectory != null) JsonTimetableProvider(timetableDirectory!!)
+                else TimetableDownloader(editoastUrl, editoastAuthorization, httpClient)
+            val cacheManager = TimetableCacheManager(timetableProvider, timetableDirectory)
 
             fun <T> loadRequest(path: String, adapter: JsonAdapter<T>): T {
                 val fileSource = Path.of(path).source()
@@ -82,7 +91,7 @@ class ReproduceRequest : CliCommand {
             val time = measureTime {
                 if (stdcmPayloadPath != null) {
                     logger.info("running stdcm request at $stdcmPayloadPath")
-                    STDCMEndpoint(infraManager, TODO("reproduce with heavy payload format"))
+                    STDCMEndpoint(infraManager, cacheManager)
                         .run(loadRequest(stdcmPayloadPath!!, stdcmRequestAdapter))
                 }
                 if (pathfindingPayloadPath != null) {
