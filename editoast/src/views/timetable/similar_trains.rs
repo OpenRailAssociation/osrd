@@ -101,18 +101,21 @@ pub(in crate::views) struct Request {
 #[derive(Debug, Serialize, ToSchema)]
 #[cfg_attr(test, derive(Deserialize, PartialEq))]
 struct SimilarTrainItem {
-    /// Both `train_name` and `start_time` are `None` if no similar train
-    /// was found for the segment; otherwise, both are `Some`.
-    #[schema(required)]
-    train_name: Option<String>,
-    /// Both `train_name` and `start_time` are `None` if no similar train
-    /// was found for the segment; otherwise, both are `Some`.
-    #[schema(required)]
-    start_time: Option<DateTime<Utc>>,
+    #[schema(inline)]
+    /// `train` is `None` if no similar train
+    /// was found for the segment; otherwise, it is `Some`.
+    train: Option<TrainInfo>,
     #[schema(value_type = String)]
     begin: ArcStr,
     #[schema(value_type = String)]
     end: ArcStr,
+}
+
+#[derive(Debug, Serialize, ToSchema, Clone)]
+#[cfg_attr(test, derive(Deserialize, PartialEq))]
+struct TrainInfo {
+    train_name: String,
+    start_time: DateTime<Utc>,
 }
 
 #[derive(Debug, Serialize, ToSchema)]
@@ -245,8 +248,7 @@ pub(in crate::views) async fn similar_trains(
         tracing::info!("no candidate train schedules found — similar trains cannot be computed");
         return Ok(Json(Response {
             similar_trains: vec![SimilarTrainItem {
-                train_name: None,
-                start_time: None,
+                train: None,
                 begin: new_train.begin().op.deref().clone(),
                 end: new_train.end().op.deref().clone(),
             }],
@@ -256,7 +258,15 @@ pub(in crate::views) async fn similar_trains(
     // keep the departure date in memory in order to build the API response later on
     let candidate_schedules_response_info = candidate_schedules
         .iter()
-        .map(|ts| (ts.id, (ts.train_name.clone(), ts.start_time)))
+        .map(|ts| {
+            (
+                ts.id,
+                TrainInfo {
+                    train_name: ts.train_name.clone(),
+                    start_time: ts.start_time,
+                },
+            )
+        })
         .collect::<HashMap<_, _>>();
 
     // Step 3 : simulate candidate train schedules
@@ -376,17 +386,12 @@ pub(in crate::views) async fn similar_trains(
 
     let response_items = similar_trains
         .into_iter()
-        .map(|((begin, end), train_id)| {
-            let (train_name, start_time) = train_id
+        .map(|((begin, end), train_id)| SimilarTrainItem {
+            train: train_id
                 .as_ref()
-                .and_then(|train_id| candidate_schedules_response_info.get(train_id).cloned())
-                .unzip();
-            SimilarTrainItem {
-                start_time,
-                train_name,
-                begin: begin.op.deref().clone(),
-                end: end.op.deref().clone(),
-            }
+                .and_then(|train_id| candidate_schedules_response_info.get(train_id).cloned()),
+            begin: begin.op.deref().clone(),
+            end: end.op.deref().clone(),
         })
         .collect();
 
@@ -998,8 +1003,10 @@ mod tests {
 
         let expected_response = Response {
             similar_trains: vec![SimilarTrainItem {
-                train_name: Some(train_name),
-                start_time: Some(start_time),
+                train: Some(TrainInfo {
+                    train_name,
+                    start_time,
+                }),
                 begin: begin.into(),
                 end: end.into(),
             }],
@@ -1018,8 +1025,7 @@ mod tests {
         ],
         vec![
             SimilarTrainItem {
-                train_name: None,
-                start_time: None,
+                train: None,
                 begin: "Mid_West_station".into(),
                 end: "North_station".into(),
             },
@@ -1035,8 +1041,7 @@ mod tests {
         ],
         vec![
             SimilarTrainItem {
-                train_name: None,
-                start_time: None,
+                train: None,
                 begin: "Mid_West_station".into(),
                 end: "North_station".into(),
             },
@@ -1054,8 +1059,7 @@ mod tests {
         ],
         vec![
             SimilarTrainItem {
-                train_name: None,
-                start_time: None,
+                train: None,
                 begin: "Mid_West_station".into(),
                 end: "North_station".into(),
             },
@@ -1074,8 +1078,7 @@ mod tests {
         ],
         vec![
             SimilarTrainItem {
-                train_name: None,
-                start_time: None,
+                train: None,
                 begin: "Mid_West_station".into(),
                 end: "South_station".into(),
             },
@@ -1236,14 +1239,18 @@ mod tests {
         let expected_response = Response {
             similar_trains: vec![
                 SimilarTrainItem {
-                    train_name: Some(train_1),
-                    start_time: Some(start_time_1),
+                    train: Some(TrainInfo {
+                        train_name: train_1,
+                        start_time: start_time_1,
+                    }),
                     begin: "West_station".into(),
                     end: "Mid_East_station".into(),
                 },
                 SimilarTrainItem {
-                    train_name: Some(train_2),
-                    start_time: Some(start_time_2),
+                    train: Some(TrainInfo {
+                        train_name: train_2,
+                        start_time: start_time_2,
+                    }),
                     begin: "Mid_East_station".into(),
                     end: "South_station".into(),
                 },
@@ -1415,8 +1422,10 @@ mod tests {
 
         let expected_response = Response {
             similar_trains: vec![SimilarTrainItem {
-                train_name: Some(train_id),
-                start_time: Some(start_time),
+                train: Some(TrainInfo {
+                    train_name: train_id,
+                    start_time,
+                }),
                 begin: "West_station".into(),
                 end: "North_East_station".into(),
             }],
@@ -1537,26 +1546,28 @@ mod tests {
         let expected_response = Response {
             similar_trains: vec![
                 SimilarTrainItem {
-                    train_name: Some(train_1),
-                    start_time: Some(start_time_1),
+                    train: Some(TrainInfo {
+                        train_name: train_1,
+                        start_time: start_time_1,
+                    }),
                     begin: "West_station".into(),
                     end: "Mid_West_station".into(),
                 },
                 SimilarTrainItem {
-                    train_name: None,
-                    start_time: None,
+                    train: None,
                     begin: "Mid_West_station".into(),
                     end: "Mid_East_station".into(),
                 },
                 SimilarTrainItem {
-                    train_name: Some(train_2),
-                    start_time: Some(start_time_2),
+                    train: Some(TrainInfo {
+                        train_name: train_2,
+                        start_time: start_time_2,
+                    }),
                     begin: "Mid_East_station".into(),
                     end: "North_station".into(),
                 },
                 SimilarTrainItem {
-                    train_name: None,
-                    start_time: None,
+                    train: None,
                     begin: "North_station".into(),
                     end: "South_station".into(),
                 },

@@ -2152,12 +2152,10 @@ export type PostSimilarTrainsApiResponse =
     similar_trains: {
       begin: string;
       end: string;
-      /** Both `train_name` and `start_time` are `None` if no similar train
-        was found for the segment; otherwise, both are `Some`. */
-      start_time: string | null;
-      /** Both `train_name` and `start_time` are `None` if no similar train
-        was found for the segment; otherwise, both are `Some`. */
-      train_name: string | null;
+      train?: {
+        start_time: string;
+        train_name: string;
+      } | null;
     }[];
   };
 export type PostSimilarTrainsApiArg = {

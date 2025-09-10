@@ -17,8 +17,8 @@ export const addSecondaryCodesToSimilarTrains = (
   });
 
   return similarTrains.map((similarTrain) => ({
-    train_name: similarTrain.train_name,
-    start_time: similarTrain.start_time ? new Date(similarTrain.start_time) : undefined,
+    train_name: similarTrain.train?.train_name ?? null,
+    start_time: similarTrain.train ? new Date(similarTrain.train.start_time) : undefined,
     begin: {
       name: similarTrain.begin,
       secondary_code: nameToSecondaryCode.get(similarTrain.begin) ?? '—',
