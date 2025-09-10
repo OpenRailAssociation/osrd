@@ -53,7 +53,7 @@ const exportTrainPDF = async (
   URL.revokeObjectURL(url);
 };
 
-type SimulationResultExportProps = {
+type SimulationResultsExportProps = {
   path: PathfindingResultSuccess;
   scenarioData: { name: string; infraName: string };
   train: Train;
@@ -63,7 +63,7 @@ type SimulationResultExportProps = {
   mapCanvas?: string;
 };
 
-const SimulationResultExport = ({
+const SimulationResultsExport = ({
   path,
   scenarioData,
   train,
@@ -71,7 +71,7 @@ const SimulationResultExport = ({
   pathProperties,
   rollingStock,
   mapCanvas,
-}: SimulationResultExportProps) => {
+}: SimulationResultsExportProps) => {
   const { t } = useTranslation('operational-studies');
   const { t: tSimulationReportSheet } = useTranslation('stdcm');
 
@@ -111,4 +111,4 @@ const SimulationResultExport = ({
   );
 };
 
-export default SimulationResultExport;
+export default SimulationResultsExport;
