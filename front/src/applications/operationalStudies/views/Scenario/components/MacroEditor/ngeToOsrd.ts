@@ -206,7 +206,7 @@ export const generatePath = (
  */
 const calculateStartDate = (
   trainrunSections: TrainrunSectionDto[],
-  startDate: Date,
+  baseDate: Date,
   trainrunDirection: TRAINRUN_DIRECTIONS = TRAINRUN_DIRECTIONS.FORWARD
 ): Date => {
   // The departure time of the first section is guaranteed to be non-null
@@ -214,6 +214,7 @@ const calculateStartDate = (
     trainrunDirection === TRAINRUN_DIRECTIONS.BACKWARD
       ? trainrunSections[0].targetDeparture
       : trainrunSections[0].sourceDeparture;
+  const startDate = new Date(baseDate);
   startDate.setMinutes(startTimeLock.time!, 0, 0);
   return startDate;
 };
