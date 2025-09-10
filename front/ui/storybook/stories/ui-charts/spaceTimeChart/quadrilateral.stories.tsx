@@ -1,10 +1,13 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 import {
   SpaceTimeChart,
   PathLayer,
   Quadrilateral,
   type QuadrilateralProps,
+  isQuadrilaterPickingElement,
+  type Point,
+  Tooltip,
 } from '@osrd-project/ui-charts';
 import type { Meta } from '@storybook/react-vite';
 
@@ -24,19 +27,43 @@ type WrapperProps = {
   emptyData: boolean;
 };
 
-const QuadrilateralMock: QuadrilateralProps = {
-  vertices: [
-    { time: START_DATE.getTime() + HOUR, position: 3 * KILOMETER },
-    { time: START_DATE.getTime() + HOUR * 3, position: 3 * KILOMETER },
-    { time: START_DATE.getTime() + HOUR * 2, position: 11 * KILOMETER },
-    { time: START_DATE.getTime(), position: 11 * KILOMETER },
-  ],
-  style: {
-    backgroundColor: 'lightblue',
-    borderColor: 'red',
-    borderWidth: 1,
+const QuadrilateralMocks: QuadrilateralProps[] = [
+  {
+    id: 'P1',
+    vertices: [
+      { time: START_DATE.getTime() + HOUR, position: 3 * KILOMETER },
+      { time: START_DATE.getTime() + HOUR * 3, position: 3 * KILOMETER },
+      { time: START_DATE.getTime() + HOUR * 2, position: 11 * KILOMETER },
+      { time: START_DATE.getTime(), position: 11 * KILOMETER },
+    ],
+    style: {
+      backgroundColor: 'lightblue',
+      borderColor: 'red',
+      borderWidth: 1,
+    },
   },
-};
+  {
+    id: 'P2',
+    vertices: [
+      { time: START_DATE.getTime() + HOUR * 2, position: 30 * KILOMETER },
+      { time: START_DATE.getTime() + HOUR * 1, position: 30 * KILOMETER },
+      { time: START_DATE.getTime() + HOUR * 3, position: 70 * KILOMETER },
+      { time: START_DATE.getTime() + HOUR * 4, position: 70 * KILOMETER },
+    ],
+    style: {
+      backgroundColor: 'lightblue',
+      borderColor: 'blue',
+      borderWidth: 1,
+    },
+  },
+];
+
+const QuadrilaterTooltip = ({ position, id }: { position: Point; id: string }) => (
+  <Tooltip position={position}>
+    <div>{id}</div>
+  </Tooltip>
+);
+
 /**
  * This story aims at showcasing how to render a SpaceTimeChart.
  */
@@ -48,6 +75,9 @@ const Wrapper = ({
   spaceScaleType,
   emptyData,
 }: WrapperProps) => {
+  const [hoveredQuadrilater, setHoveredQuadrilater] = useState<string>();
+  const [cursorPosition, setCursorPosition] = useState<Point>();
+
   const operationalPoints = emptyData ? [] : OPERATIONAL_POINTS;
   const spaceScales = emptyData
     ? []
@@ -80,6 +110,16 @@ const Wrapper = ({
         timeScale={60000 / xZoomLevel}
         xOffset={xOffset}
         yOffset={yOffset}
+        onHoveredChildUpdate={({ item }) => {
+          if (item && isQuadrilaterPickingElement(item.element)) {
+            setHoveredQuadrilater(item.element.id);
+          } else {
+            setHoveredQuadrilater(undefined);
+          }
+        }}
+        onMouseMove={({ position }) => {
+          setCursorPosition(position);
+        }}
       >
         {paths.map((path) => (
           <PathLayer
@@ -90,7 +130,17 @@ const Wrapper = ({
             level={path.level || 2}
           />
         ))}
-        <Quadrilateral vertices={QuadrilateralMock.vertices} style={QuadrilateralMock.style} />
+        {QuadrilateralMocks.map((quadrilateral) => (
+          <Quadrilateral
+            key={quadrilateral.id}
+            id={quadrilateral.id}
+            vertices={quadrilateral.vertices}
+            style={quadrilateral.style}
+          />
+        ))}
+        {hoveredQuadrilater && cursorPosition && (
+          <QuadrilaterTooltip position={cursorPosition} id={hoveredQuadrilater} />
+        )}
       </SpaceTimeChart>
     </div>
   );
