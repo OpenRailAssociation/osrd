@@ -1,31 +1,31 @@
 import type { PostSimilarTrainsApiResponse } from 'common/api/osrdEditoastApi';
-import type { StdcmPathStep } from 'reducers/osrdconf/types';
+import type { PathOperationalPoint } from 'modules/simulationResult/types';
 
 import type { SimilarTrainWithSecondaryCode } from '../types';
 
 export const addSecondaryCodesToSimilarTrains = (
   similarTrains: PostSimilarTrainsApiResponse['similar_trains'],
-  pathSteps: StdcmPathStep[]
+  pathOP?: PathOperationalPoint[]
 ): SimilarTrainWithSecondaryCode[] => {
-  const nameToSecondaryCode = new Map<string, string>();
-
-  pathSteps.forEach((step) => {
-    const loc = step.location;
-    if (loc?.name && loc?.secondary_code) {
-      nameToSecondaryCode.set(loc.name, loc.secondary_code);
+  const opById = new Map<string, PathOperationalPoint>();
+  pathOP?.forEach((op) => {
+    if (op.opId) {
+      opById.set(op.opId, op);
     }
   });
+
+  const getOpInfo = (id: string) => {
+    const op = opById.get(id);
+    return {
+      name: op?.extensions?.identifier?.name ?? id,
+      secondary_code: op?.extensions?.sncf?.ch ?? '—',
+    };
+  };
 
   return similarTrains.map((similarTrain) => ({
     train_name: similarTrain.train?.train_name ?? null,
     start_time: similarTrain.train ? new Date(similarTrain.train.start_time) : undefined,
-    begin: {
-      name: similarTrain.begin,
-      secondary_code: nameToSecondaryCode.get(similarTrain.begin) ?? '—',
-    },
-    end: {
-      name: similarTrain.end,
-      secondary_code: nameToSecondaryCode.get(similarTrain.end) ?? '—',
-    },
+    begin: getOpInfo(similarTrain.begin),
+    end: getOpInfo(similarTrain.end),
   }));
 };

@@ -105,7 +105,6 @@ const StdcmResults = ({
       if (!consist || !hasSimulationResults) {
         return;
       }
-
       const key = (uic: number | undefined, ch: string) => `${uic}-${ch}`;
 
       const isStopByOpKey = pathSteps.reduce((acc, ps) => {
@@ -138,7 +137,10 @@ const StdcmResults = ({
       const response = await postSimilarTrains({ body: request });
       const rawSimilarTrains = response.data?.similar_trains ?? [];
 
-      const enrichedSimilarTrains = addSecondaryCodesToSimilarTrains(rawSimilarTrains, pathSteps);
+      const enrichedSimilarTrains = addSecondaryCodesToSimilarTrains(
+        rawSimilarTrains,
+        (selectedSimulation.outputs as StdcmResultsOutput).pathProperties.manchetteOperationalPoints
+      );
 
       setSimilarTrains(enrichedSimilarTrains);
     };
