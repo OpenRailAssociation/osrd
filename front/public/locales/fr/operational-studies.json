@@ -27,7 +27,7 @@
     "from": "Origine",
     "importTimetable": "Importer une grille horaire",
     "inputPlaceholder": "Nom, trigramme",
-    "launchImport": "Démarrer l'importation",
+    "launchImport": "Démarrer l'import",
     "noResults": "Aucun résultat",
     "pacedTrainsFound_one": "1 mission trouvée",
     "pacedTrainsFound_other": "{{count}} missions trouvées",
@@ -47,7 +47,7 @@
     "trainSchedulesFound_other": "{{count}} trains trouvés",
     "warningMessages": {
       "warning": "Attention",
-      "warningFilteredStepImport": "Certaines étapes invalides ont dû être supprimées pour permettre l'importation pour les trains : {{trainNumbers}}"
+      "warningFilteredStepImport": "{{trainNumbers}} trains invalides ont été modifiés pour être importés avec succès"
     }
   },
   "main": {
