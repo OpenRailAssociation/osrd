@@ -1,4 +1,3 @@
-/* eslint-disable import/prefer-default-export */
 import { useEffect, useState } from 'react';
 
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
@@ -9,12 +8,12 @@ import type {
 import type { SimulationResponseSuccess } from 'common/api/osrdEditoastApi';
 import type { Train } from 'reducers/osrdconf/types';
 
-import { formatOperationalPoints } from '../SimulationResultExport/utils';
+import { formatOperationalPoints } from './utils';
 
 /**
  * add time, speed, position, duration to operational points
  */
-export const useFormattedOperationalPoints = (
+const useFormattedOperationalPoints = (
   timetableItem?: Train,
   simulatedTimetableItem?: SimulationResponseSuccess,
   pathProperties?: PathPropertiesFormatted
@@ -43,3 +42,5 @@ export const useFormattedOperationalPoints = (
 
   return operationalPoints;
 };
+
+export default useFormattedOperationalPoints;

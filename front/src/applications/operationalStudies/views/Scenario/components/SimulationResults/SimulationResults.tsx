@@ -19,7 +19,6 @@ import useTrackOccupancy, {
   type OccupancyTrainSpaceTimeData,
 } from 'modules/simulationResult/components/SpaceTimeChartWrapper/useTrackOccupancy';
 import SpeedDistanceDiagramWrapper from 'modules/simulationResult/components/SpeedDistanceDiagram/SpeedDistanceDiagramWrapper';
-import SimulationResultExport from 'modules/simulationResult/SimulationResultExport/SimulationResultsExport';
 import type { ProjectionData } from 'modules/simulationResult/types';
 import TimesStopsOutput from 'modules/timesStops/TimesStopsOutput';
 import { findExceptionWithOccurrenceId } from 'modules/timetableItem/helpers/pacedTrain';
@@ -36,6 +35,7 @@ import {
 import { mapBy } from 'utils/types';
 
 import BoardWrapper from '../BoardWrapper';
+import SimulationResultExport from './SimulationResultExport';
 import SimulationResultsMap from './SimulationResultsMap';
 
 const HIDDEN_CHART_TOP_HEIGHT = 35;

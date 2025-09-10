@@ -17,7 +17,7 @@ import SimulationReportSheet from 'modules/SimulationReportSheet';
 import type { Train } from 'reducers/osrdconf/types';
 
 import exportTrainCSV from './exportTrainCSV';
-import { useFormattedOperationalPoints } from '../hooks/useFormattedOperationalPoints';
+import useFormattedOperationalPoints from './useFormattedOperationalPoints';
 
 const exportTrainPDF = async (
   path: PathfindingResultSuccess,
