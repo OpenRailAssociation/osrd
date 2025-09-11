@@ -261,6 +261,61 @@ const useManchetteWithSpaceTimeChart = ({
     ]
   );
 
+  const zoomToRect = useCallback(
+    (spaceStart: number, spaceEnd: number, timeStart: Date, timeEnd: Date) => {
+      setState((prev) => {
+        if (!spaceTimeChartRef?.current) {
+          return prev;
+        }
+
+        const newRect: State['rect'] = {
+          timeStart,
+          timeEnd,
+          spaceStart,
+          spaceEnd,
+        };
+
+        let newPixelRect: State['pixelRect'] = null;
+        if (!isProportional) {
+          const spaceScaleTree = spaceScalesToBinaryTree(spaceOrigin, spaceScales);
+          const getSpacePixel = getSpaceToPixel(0, spaceScaleTree);
+          const yStart = getSpacePixel(spaceStart);
+          const yEnd = getSpacePixel(spaceEnd);
+          const timeScale = zoomValueToTimeScale(prev.xZoom);
+          const xStart = (Number(timeStart) - prev.timeOrigin) / timeScale;
+          const xEnd = (Number(timeEnd) - prev.timeOrigin) / timeScale;
+          newPixelRect = {
+            xStart: clamp(xStart, 0, spaceTimeChartRef.current.clientWidth),
+            xEnd: clamp(xEnd, 0, spaceTimeChartRef.current.clientWidth),
+            yStart: clamp(yStart, 0, canvasDrawingHeight),
+            yEnd: clamp(yEnd, 0, canvasDrawingHeight),
+          };
+        }
+
+        return {
+          ...prev,
+          rect: newRect,
+          pixelRect: newPixelRect,
+          ...handleRectZoomEnd({
+            ...prev,
+            rect: newRect,
+            pixelRect: newPixelRect,
+          }),
+        };
+      });
+    },
+    [
+      spaceTimeChartRef,
+      isProportional,
+      spaceOrigin,
+      spaceScales,
+      canvasDrawingHeight,
+      handleRectZoomEnd,
+      xZoom,
+      timeOrigin,
+    ]
+  );
+
   const zoomYIn = useCallback(() => {
     const maxZoom = isProportional
       ? MAX_ZOOM_Y
@@ -569,6 +624,7 @@ const useManchetteWithSpaceTimeChart = ({
     timeScale: number;
     spaceScale: number;
     setTimeOrigin: (v: number) => void;
+    zoomToRect: (spaceStart: number, spaceEnd: number, timeStart: Date, timeEnd: Date) => void;
   }>(
     () => ({
       manchetteProps: {
@@ -694,6 +750,7 @@ const useManchetteWithSpaceTimeChart = ({
       timeScale: zoomValueToTimeScale(xZoom),
       spaceScale: zoomValueToSpaceScale(minZoomMillimeterPerPx, maxZoomMillimeterPerPx, yZoom),
       setTimeOrigin,
+      zoomToRect,
     }),
     [
       manchetteContents,
@@ -729,6 +786,7 @@ const useManchetteWithSpaceTimeChart = ({
       enableSpacePan,
       handleRectZoomEnd,
       canvasDrawingHeight,
+      zoomToRect,
     ]
   );
 };
