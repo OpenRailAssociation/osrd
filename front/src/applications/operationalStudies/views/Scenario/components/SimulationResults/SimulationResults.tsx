@@ -109,6 +109,7 @@ const SimulationResults = ({
     infraId,
     timetableId,
     pathfinding: projectionData?.pathfinding,
+    projectedOperationalPoints: projectionData?.operationalPoints,
   });
 
   const {
