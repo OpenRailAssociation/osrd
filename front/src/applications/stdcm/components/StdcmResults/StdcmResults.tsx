@@ -15,7 +15,7 @@ import {
   generateCodeNumber,
   getOperationalPointsWithTimes,
 } from 'modules/SimulationReportSheet/utils/formatSimulationReportSheet';
-import { useMapSettings, useMapSettingsActions } from 'reducers/commonMap';
+import { useMapSettings } from 'reducers/commonMap';
 import type { Viewport } from 'reducers/commonMap/types';
 import {
   getRetainedSimulationIndex,
@@ -23,7 +23,6 @@ import {
   getStdcmInfraID,
   getStdcmTimetableID,
 } from 'reducers/osrdconf/stdcmConf/selectors';
-import { useAppDispatch } from 'store';
 import useDeploymentSettings from 'utils/hooks/useDeploymentSettings';
 
 import StdcmDebugResults from './StdcmDebugResults';
@@ -55,18 +54,20 @@ const StdcmResults = ({
 }: StcdmResultsProps) => {
   const infraId = useSelector(getStdcmInfraID);
   const timetableId = useSelector(getStdcmTimetableID);
-  const dispatch = useAppDispatch();
 
   const { t } = useTranslation('stdcm', { keyPrefix: 'simulation.results' });
   const deploymentSettings = useDeploymentSettings();
 
   const selectedSimulation = useSelector(getSelectedSimulation);
   const retainedSimulationIndex = useSelector(getRetainedSimulationIndex);
+
   const mapSettings = useMapSettings();
-  const { updateMapSettings: updateMapSettingsAction } = useMapSettingsActions();
+
+  // Keep local state of the viewport to keep stdcm config and stdcm results maps independent
+  const [stdcmResultsViewport, setStdcmResultsViewport] = useState<Viewport>(mapSettings.viewport);
 
   const updateViewport = (viewport: Viewport) => {
-    dispatch(updateMapSettingsAction({ ...mapSettings, viewport }));
+    setStdcmResultsViewport(viewport);
   };
 
   const { outputs, alternativePath } = selectedSimulation;
@@ -246,7 +247,7 @@ const StdcmResults = ({
                 geometry={hasSimulationResults ? outputs?.pathProperties.geometry : undefined}
                 pathStepMarkers={markersInfo}
                 isFeasible={hasSimulationResults}
-                mapSettings={mapSettings}
+                mapSettings={{ ...mapSettings, viewport: stdcmResultsViewport }}
                 updateViewport={updateViewport}
               />
             </div>
