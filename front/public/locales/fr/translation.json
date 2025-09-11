@@ -678,11 +678,11 @@
     "basePowerClass": "Classe de puissance",
     "cancelUpdateRollingStock": "Annuler la mise à jour du matériel roulant ?",
     "categoriesOptions": {
-      "COMMUTER_TRAIN": "Train suburbain",
+      "COMMUTER_TRAIN": "Train de banlieue",
       "FAST_FREIGHT_TRAIN": "Train de fret rapide",
       "FREIGHT_TRAIN": "Train de fret",
       "HIGH_SPEED_TRAIN": "Train à grande vitesse",
-      "INTERCITY_TRAIN": "Train interurbain",
+      "INTERCITY_TRAIN": "Train interville",
       "NIGHT_TRAIN": "Train de nuit",
       "REGIONAL_TRAIN": "Train régional",
       "TOURISTIC_TRAIN": "Train touristique",
