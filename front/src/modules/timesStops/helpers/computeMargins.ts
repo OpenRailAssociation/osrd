@@ -77,7 +77,7 @@ function computeMargins(
     }
   }
 
-  // durations to go from the last pathStep with theorical margin to the next pathStep
+  // durations to go from the last pathStep with theoretical margin to the next pathStep
   // base = no margin
   // provisional = margins
   // final = margins + requested arrival times

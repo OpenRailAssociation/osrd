@@ -263,7 +263,8 @@ export const getPathItemByIndexDict = (timetableItemResult: TimetableItem) =>
   }, {} as Dictionary<number>);
 
 /**
- * Check if the item is too fast with a timetable item and a timetable item summary
+ * Check if the item is too fast with a timetable item and a timetable item summary,
+ * meaning that it does not respect the requested margin between at least 2 scheduled steps (steps with an arrival time or a margin set)
  * @param timetableItem
  * @param timetableItemSummary
  * @returns true if the train is too fast
@@ -279,24 +280,38 @@ export const isTooFast = (
     throw new Error('Assertion failed');
   }
 
-  const toCheckPathItemIds = new Set(timetableItem.margins?.boundaries);
-  timetableItem.schedule?.forEach((schedule) => {
-    if (schedule.arrival) {
-      toCheckPathItemIds.add(schedule.at);
+  const marginBoundariesSet = new Set(timetableItem.margins?.boundaries);
+  const toCheckPathItemIds: string[] = [];
+  timetableItem.schedule?.forEach((schedule, i) => {
+    if (!i || schedule.arrival || marginBoundariesSet.has(schedule.at)) {
+      toCheckPathItemIds.push(schedule.at);
     }
   });
-  toCheckPathItemIds.add(timetableItem.path[timetableItem.path.length - 1].id);
-
-  if (toCheckPathItemIds.size === 0) return false;
+  const lastStepId = timetableItem.path[timetableItem.path.length - 1].id;
+  if (toCheckPathItemIds[toCheckPathItemIds.length - 1] !== lastStepId)
+    toCheckPathItemIds.push(lastStepId);
 
   const pathItemMap = getPathItemByIndexDict(timetableItem);
 
-  for (const pathItemId of toCheckPathItemIds) {
+  for (let j = 0; j < toCheckPathItemIds.length; j++) {
+    const pathItemId = toCheckPathItemIds[j];
     const pathItemIndex = pathItemMap[pathItemId];
     const pathItemTimeFinal = timetableItemSummary.path_item_times_final[pathItemIndex];
     const pathItemTimeProvisional = timetableItemSummary.path_item_times_provisional[pathItemIndex];
 
-    if (pathItemTimeProvisional > pathItemTimeFinal + ARRIVAL_TIME_ACCEPTABLE_ERROR.ms) return true;
+    const prevPathItemId = j ? toCheckPathItemIds[j - 1] : timetableItem.path[0].id;
+    const prevPathItemIndex = pathItemMap[prevPathItemId];
+    const prevPathItemTimeFinal = timetableItemSummary.path_item_times_final[prevPathItemIndex];
+    const prevPathItemTimeProvisional =
+      timetableItemSummary.path_item_times_provisional[prevPathItemIndex];
+
+    const intervalDurationFinal = pathItemTimeFinal - prevPathItemTimeFinal;
+    const intervalDurationProvisional = pathItemTimeProvisional - prevPathItemTimeProvisional;
+    const marginDiff = intervalDurationFinal - intervalDurationProvisional;
+
+    if (marginDiff < -ARRIVAL_TIME_ACCEPTABLE_ERROR.ms) {
+      return true;
+    }
   }
   return false;
 };

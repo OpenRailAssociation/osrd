@@ -25,9 +25,11 @@ import {
   trainScheduleNoSchedule,
   trainScheduleNotHonored,
   trainScheduleTooFast,
+  trainScheduleTooFastOnInterval,
   trainSummaryHonored,
   trainSummaryNotHonored,
   trainSummaryTooFast,
+  trainSummaryTooFastOnInterval,
 } from './sampleData';
 
 describe('transformBoundariesDataToPositionDataArray', () => {
@@ -95,6 +97,14 @@ describe('formatElectrificationRanges', () => {
 describe('isTooFast', () => {
   it('should return true if the train is too fast', () => {
     const result = isTooFast(trainScheduleTooFast, trainSummaryTooFast);
+    expect(result).toBe(true);
+  });
+
+  it('should return true if the train is too fast on an interval only', () => {
+    // Case where the final time at C is higher than the provisional time at C,
+    // and the final time at B is higher than the provisional time at B,
+    // but the final travel time from B to C is lower than the provisional travel time from B to C.
+    const result = isTooFast(trainScheduleTooFastOnInterval, trainSummaryTooFastOnInterval);
     expect(result).toBe(true);
   });
 
