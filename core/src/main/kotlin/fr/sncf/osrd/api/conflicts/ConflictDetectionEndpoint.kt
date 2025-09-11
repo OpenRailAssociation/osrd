@@ -7,7 +7,6 @@ import fr.sncf.osrd.api.parseWorkSchedulesRequest
 import fr.sncf.osrd.conflicts.Conflict
 import fr.sncf.osrd.conflicts.Requirements
 import fr.sncf.osrd.conflicts.detectConflicts
-import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl
 import fr.sncf.osrd.sim_infra.api.RawSignalingInfra
 import java.time.Duration
 import java.time.ZonedDateTime

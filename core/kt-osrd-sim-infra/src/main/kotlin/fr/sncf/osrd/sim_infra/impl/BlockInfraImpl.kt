@@ -57,50 +57,62 @@ class BlockInfraImpl(
     private var nameToBlockMap: MutableMap<String, BlockId> = mutableMapOf()
     private val blockToNameMap: Map<BlockId, String>
 
+    // Avoids repeated initialization process when deserializing an object
+    private var initialized = false
+
     init {
-        for (blockId in blockPool.space()) {
-            val block = blockPool[blockId]
-            val entryZonePath = block.path[0]
-            val exitZonePath = block.path[block.path.size - 1]
+        if (!initialized) {
+            for (blockId in blockPool.space()) {
+                val block = blockPool[blockId]
+                val entryZonePath = block.path[0]
+                val exitZonePath = block.path[block.path.size - 1]
 
-            // Update blockEntryDetectorMap
-            val entryDirDet = rawInfra.getZonePathEntry(entryZonePath)
-            val exitDirDet = rawInfra.getZonePathExit(exitZonePath)
-            val entryDetList =
-                blockEntryDetectorMap.getOrPut(entryDirDet) { mutableStaticIdxArrayListOf() }
-            val exitDetList =
-                blockExitDetectorMap.getOrPut(exitDirDet) { mutableStaticIdxArrayListOf() }
-            entryDetList.add(blockId)
-            exitDetList.add(blockId)
+                // Update blockEntryDetectorMap
+                val entryDirDet = rawInfra.getZonePathEntry(entryZonePath)
+                val exitDirDet = rawInfra.getZonePathExit(exitZonePath)
+                val entryDetList =
+                    blockEntryDetectorMap.getOrPut(entryDirDet) { mutableStaticIdxArrayListOf() }
+                val exitDetList =
+                    blockExitDetectorMap.getOrPut(exitDirDet) { mutableStaticIdxArrayListOf() }
+                entryDetList.add(blockId)
+                exitDetList.add(blockId)
 
-            // Update blockEntrySignalMap
-            if (!block.startAtBufferStop) {
-                val entrySig = block.signals[0]
-                val sigList =
-                    blockEntrySignalMap.getOrPut(entrySig) { mutableStaticIdxArrayListOf() }
-                sigList.add(blockId)
-            }
-
-            // Update trackChunkToBlockMap, blockToTrackChunkMap, and zoneToBlockMap
-            for (zonePath in getBlockZonePaths(blockId)) {
-                val trackChunks = rawInfra.getZonePathChunks(zonePath)
-                val blockTrackChunks =
-                    blockToTrackChunkMap.getOrPut(blockId) { mutableDirStaticIdxArrayListOf() }
-                blockTrackChunks.addAll(trackChunks)
-                for (trackChunk in trackChunks) {
-                    val chunkBlocks =
-                        trackChunkToBlockMap.getOrPut(trackChunk) { mutableStaticIdxArraySetOf() }
-                    chunkBlocks.add(blockId)
+                // Update blockEntrySignalMap
+                if (!block.startAtBufferStop) {
+                    val entrySig = block.signals[0]
+                    val sigList =
+                        blockEntrySignalMap.getOrPut(entrySig) { mutableStaticIdxArrayListOf() }
+                    sigList.add(blockId)
                 }
-                zoneToBlockMap
-                    .getOrPut(rawInfra.getZonePathZone(zonePath)) { mutableStaticIdxArrayListOf() }
-                    .add(blockId)
-            }
 
-            // Build the block identifier maps
-            val name = buildBlockName(rawInfra, blockId, blockPool)
-            assert(!nameToBlockMap.containsKey(name)) { "duplicate in generated block ID ($name)" }
-            nameToBlockMap[name] = blockId
+                // Update trackChunkToBlockMap, blockToTrackChunkMap, and zoneToBlockMap
+                for (zonePath in getBlockZonePaths(blockId)) {
+                    val trackChunks = rawInfra.getZonePathChunks(zonePath)
+                    val blockTrackChunks =
+                        blockToTrackChunkMap.getOrPut(blockId) { mutableDirStaticIdxArrayListOf() }
+                    blockTrackChunks.addAll(trackChunks)
+                    for (trackChunk in trackChunks) {
+                        val chunkBlocks =
+                            trackChunkToBlockMap.getOrPut(trackChunk) {
+                                mutableStaticIdxArraySetOf()
+                            }
+                        chunkBlocks.add(blockId)
+                    }
+                    zoneToBlockMap
+                        .getOrPut(rawInfra.getZonePathZone(zonePath)) {
+                            mutableStaticIdxArrayListOf()
+                        }
+                        .add(blockId)
+                }
+
+                // Build the block identifier maps
+                val name = buildBlockName(rawInfra, blockId, blockPool)
+                assert(!nameToBlockMap.containsKey(name)) {
+                    "duplicate in generated block ID ($name)"
+                }
+                nameToBlockMap[name] = blockId
+            }
+            initialized = true
         }
         blockToNameMap = nameToBlockMap.entries.associate { (k, v) -> v to k }
     }

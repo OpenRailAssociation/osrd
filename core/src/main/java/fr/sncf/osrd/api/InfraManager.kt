@@ -6,6 +6,7 @@ import fr.sncf.osrd.railjson.schema.infra.RJSInfra
 import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.utils.jacoco.ExcludeFromGeneratedCodeCoverage
+import fr.sncf.osrd.utils.withLocalCache
 import java.io.IOException
 import java.util.concurrent.ConcurrentHashMap
 import java.util.function.BiConsumer
@@ -13,8 +14,12 @@ import okhttp3.OkHttpClient
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-class InfraManager(baseUrl: String, authorizationToken: String, httpClient: OkHttpClient) :
-    APIClient(baseUrl, authorizationToken, httpClient), InfraProvider {
+class InfraManager(
+    baseUrl: String,
+    authorizationToken: String,
+    httpClient: OkHttpClient,
+    val localCacheLocation: String? = null,
+) : APIClient(baseUrl, authorizationToken, httpClient), InfraProvider {
     private val infraCache = ConcurrentHashMap<String, InfraCacheEntry>()
     private val signalingSimulator = makeSignalingSimulator()
 
@@ -82,10 +87,7 @@ class InfraManager(baseUrl: String, authorizationToken: String, httpClient: OkHt
     }
 
     @Throws(OSRDError::class)
-    private fun downloadInfra(
-        cacheEntry: InfraCacheEntry,
-        infraId: String,
-    ): FullInfra {
+    private fun downloadInfra(cacheEntry: InfraCacheEntry, infraId: String): FullInfra {
         // create a request
         val endpointPath = String.format("infra/%s/railjson/", infraId)
         val request = buildRequest(endpointPath)
@@ -175,10 +177,7 @@ class InfraManager(baseUrl: String, authorizationToken: String, httpClient: OkHt
     @ExcludeFromGeneratedCodeCoverage
     @SuppressFBWarnings("REC_CATCH_EXCEPTION")
     @Throws(OSRDError::class, InterruptedException::class)
-    fun load(
-        infraId: String,
-        expectedVersion: Int?,
-    ): FullInfra {
+    fun load(infraId: String, expectedVersion: Int?): FullInfra {
         try {
             infraCache.putIfAbsent(infraId, InfraCacheEntry())
             val cacheEntry: InfraCacheEntry = infraCache.get(infraId)!!
@@ -191,8 +190,16 @@ class InfraManager(baseUrl: String, authorizationToken: String, httpClient: OkHt
                 val obsoleteVersion =
                     expectedVersion != null &&
                         (cacheEntry.version == null || expectedVersion > cacheEntry.version!!)
-                if (!cacheEntry.status.isStable || obsoleteVersion)
-                    return downloadInfra(cacheEntry, infraId)
+                if (!cacheEntry.status.isStable || obsoleteVersion) {
+                    return withLocalCache(
+                        localCacheLocation,
+                        "$infraId.$expectedVersion.cbor",
+                        FullInfra.serializer(),
+                        FullInfra.serializerModule,
+                    ) {
+                        downloadInfra(cacheEntry, infraId)
+                    }
+                }
 
                 // otherwise, wait for the infra to reach a stable state
                 if (cacheEntry.status == InfraStatus.CACHED) return cacheEntry.infra!!
@@ -218,10 +225,7 @@ class InfraManager(baseUrl: String, authorizationToken: String, httpClient: OkHt
     }
 
     @Throws(OSRDError::class, InterruptedException::class)
-    override fun getInfra(
-        infraId: String,
-        expectedVersion: Int?,
-    ): FullInfra {
+    override fun getInfra(infraId: String, expectedVersion: Int?): FullInfra {
         try {
             val cacheEntry = infraCache.get(infraId)
             if (cacheEntry == null || !cacheEntry.status.isStable) {

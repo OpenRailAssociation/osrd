@@ -2,7 +2,6 @@ package fr.sncf.osrd.api.path_properties
 
 import fr.sncf.osrd.api.ExceptionHandler
 import fr.sncf.osrd.api.InfraProvider
-import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl
 import fr.sncf.osrd.utils.makePathProps
 import org.takes.Request
 import org.takes.Response

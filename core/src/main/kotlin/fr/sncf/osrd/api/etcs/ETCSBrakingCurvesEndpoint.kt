@@ -11,7 +11,6 @@ import fr.sncf.osrd.path.implementations.EnvelopeTrainPath
 import fr.sncf.osrd.path.interfaces.BlockPath
 import fr.sncf.osrd.path.interfaces.TravelledPath
 import fr.sncf.osrd.path.interfaces.makePathProperties
-import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl
 import fr.sncf.osrd.signaling.etcs_level2.ETCS_LEVEL2
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.standalone_sim.PathOffsetBuilder

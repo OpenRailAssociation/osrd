@@ -3,7 +3,6 @@ package fr.sncf.osrd.api;
 import com.squareup.moshi.Json;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
-import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl;
 import org.takes.Request;
 import org.takes.Response;
 import org.takes.Take;

@@ -11,7 +11,6 @@ import fr.sncf.osrd.api.standalone_sim.SimulationRequest
 import fr.sncf.osrd.api.stdcm.STDCMEndpoint
 import fr.sncf.osrd.api.stdcm.stdcmRequestAdapter
 import fr.sncf.osrd.cli.ValidateInfra.Companion.parseRailJSONFromFile
-import fr.sncf.osrd.reporting.warnings.DiagnosticRecorder
 import fr.sncf.osrd.utils.jacoco.ExcludeFromGeneratedCodeCoverage
 import java.io.IOException
 import java.nio.file.Path
@@ -111,10 +110,7 @@ class ReproduceRequest : CliCommand {
  * needing to run any other part of the stack.
  */
 data class FileInfraProvider(val infra: FullInfra) : InfraProvider {
-    override fun getInfra(
-        infraId: String?,
-        expectedVersion: Int?,
-    ): FullInfra {
+    override fun getInfra(infraId: String?, expectedVersion: Int?): FullInfra {
         return infra
     }
 }
