@@ -11,7 +11,6 @@ import type { TrackSection } from 'common/api/osrdEditoastApi';
 import type { IntervalItem } from 'common/IntervalsEditor/types';
 import getTrackLengthCumulativeSums from 'modules/pathfinding/helpers/getTrackLengthCumulativeSums';
 import { NO_POWER_RESTRICTION } from 'modules/powerRestriction/consts';
-import { createCutAtPathStep } from 'modules/powerRestrictionSelector/helpers/createPathStep';
 import {
   upsertPowerRestrictionRanges,
   deletePowerRestrictionRanges,
@@ -25,6 +24,7 @@ import type { PathStep } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { mmToM, mToMm } from 'utils/physics';
 
+import { createCutAtPathStep } from '../helpers/createPathStep';
 import getRestrictionsToResize, {
   cleanCustomRanges,
   getRangesToResize,
