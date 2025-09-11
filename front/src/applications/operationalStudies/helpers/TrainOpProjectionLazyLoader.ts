@@ -3,7 +3,6 @@ import { isEmpty } from 'lodash';
 import {
   osrdEditoastApi,
   type OperationalPointReference,
-  type PathProperties,
   type PostPacedTrainOccupancyBlocksApiResponse,
   type PostPacedTrainProjectPathOpApiResponse,
   type PostTrainScheduleOccupancyBlocksApiResponse,
@@ -22,26 +21,19 @@ import TrainProjectionLazyLoaderAbstract, {
   type ProjectionResult,
   type TrainProjectionLazyLoaderOptions,
 } from './TrainProjectionLazyLoaderAbstract';
-
 export default class TrainOpProjectionLazyLoader extends TrainProjectionLazyLoaderAbstract {
   readonly opRefs: OperationalPointReference[];
 
   readonly opDistances: number[];
 
   constructor(
-    options: TrainProjectionLazyLoaderOptions,
-    operationalPoints: PathProperties['operational_points']
+    opRefs: OperationalPointReference[],
+    opDistances: number[],
+    options: TrainProjectionLazyLoaderOptions
   ) {
     super(options);
-    this.opRefs = [];
-    this.opDistances = [];
-    if (!operationalPoints || operationalPoints.length === 0) return;
-    operationalPoints.forEach(({ id, position }, index) => {
-      this.opRefs.push({ operational_point: id });
-      if (index > 0) {
-        this.opDistances.push(position - operationalPoints[index - 1].position);
-      }
-    });
+    this.opRefs = opRefs;
+    this.opDistances = opDistances;
   }
 
   async processBatch(batch: TimetableItemId[]) {

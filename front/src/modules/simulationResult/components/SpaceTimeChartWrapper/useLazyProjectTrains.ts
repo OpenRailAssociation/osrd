@@ -7,7 +7,11 @@ import type { ProjectionResult } from 'applications/operationalStudies/helpers/T
 import type TrainProjectionLazyLoaderAbstract from 'applications/operationalStudies/helpers/TrainProjectionLazyLoaderAbstract';
 import TrainTrackProjectionLazyLoader from 'applications/operationalStudies/helpers/TrainTrackProjectionLazyLoader';
 import upsertNewProjectedTrains from 'applications/operationalStudies/helpers/upsertNewProjectedTrains';
-import { type PathfindingResultSuccess, type PathProperties } from 'common/api/osrdEditoastApi';
+import {
+  type OperationalPointReference,
+  type PathfindingResultSuccess,
+  type PathProperties,
+} from 'common/api/osrdEditoastApi';
 import type { TrainSpaceTimeData } from 'modules/simulationResult/types';
 import type { TimetableItemId, TimetableItem } from 'reducers/osrdconf/types';
 import { getProjectionType } from 'reducers/simulationResults/selectors';
@@ -42,6 +46,8 @@ const useLazyProjectTrains = ({
 
   useEffect(() => {
     if (!path) return undefined;
+    const opRefs: OperationalPointReference[] = [];
+    const opDistances: number[] = [];
     const options = {
       dispatch,
       infraId,
@@ -50,10 +56,18 @@ const useLazyProjectTrains = ({
       onProgress,
     };
 
+    if (!operationalPoints || operationalPoints.length === 0) return;
+    operationalPoints.forEach(({ id, position }, index) => {
+      opRefs.push({ operational_point: id });
+      if (index > 0) {
+        opDistances.push(position - operationalPoints[index - 1].position);
+      }
+    });
+
     const loader =
       projectionType === 'trackProjection'
         ? new TrainTrackProjectionLazyLoader(options)
-        : new TrainOpProjectionLazyLoader(options, operationalPoints);
+        : new TrainOpProjectionLazyLoader(opRefs, opDistances, options);
 
     loader.projectTimetableItems([...timetableItemsByIdRef.current.keys()]);
 
