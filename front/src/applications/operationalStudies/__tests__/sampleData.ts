@@ -413,6 +413,80 @@ export const trainSummaryTooFast: Extract<SimulationSummaryResult, { status: 'su
   path_item_times_base: [0, 1444453, 2491479],
 };
 
+export const trainScheduleTooFastOnInterval: TrainScheduleWithTrainId = {
+  id: 'trainschedule_38366' as TrainScheduleId,
+  train_name: 'tooFastOnInterval',
+  labels: [],
+  rolling_stock_name: 'rs-fictive',
+  start_time: '2026-12-13T07:25:00Z',
+  path: [
+    {
+      id: 'idA',
+      deleted: false,
+      uic: 87700000,
+      secondary_code: 'BV',
+      track_reference: null,
+    },
+    {
+      id: 'idB',
+      deleted: false,
+      uic: 87700001,
+      secondary_code: 'BV',
+      track_reference: null,
+    },
+    {
+      id: 'idC',
+      deleted: false,
+      uic: 87700002,
+      secondary_code: 'BV',
+      track_reference: null,
+    },
+  ],
+  schedule: [
+    {
+      at: 'idB',
+      arrival: 'PT5280S',
+      stop_for: null,
+      reception_signal: 'OPEN',
+      locked: false,
+    },
+    {
+      at: 'idC',
+      arrival: 'PT15300S',
+      stop_for: 'P0D',
+      reception_signal: 'OPEN',
+      locked: false,
+    },
+  ],
+  margins: {
+    boundaries: ['idC'],
+    values: ['6.5min/100km', '0%'],
+  },
+  initial_speed: 0,
+  comfort: 'STANDARD',
+  constraint_distribution: 'STANDARD',
+  speed_limit_tag: null,
+  power_restrictions: [],
+  options: {
+    use_electrical_profiles: true,
+    use_speed_limits_for_simulation: true,
+  },
+  category: null,
+};
+
+export const trainSummaryTooFastOnInterval: Extract<
+  SimulationSummaryResult,
+  { status: 'success' }
+> = {
+  status: 'success',
+  length: 544740000,
+  time: 15300915,
+  energy_consumption: 12116583709.633162,
+  path_item_times_final: [0, 5280030, 15300915],
+  path_item_times_provisional: [0, 5222392, 15267584],
+  path_item_times_base: [0, 4730243, 13828795],
+};
+
 export const trainScheduleNotHonored: TrainScheduleWithTrainId = {
   id: 'trainschedule-96' as TrainScheduleId,
   train_name: 'notHonored',
