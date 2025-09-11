@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 
-import type { PowerRestrictionWarnings } from 'modules/powerRestrictionSelector/types';
+import generateEffortCurvesForTests from 'modules/powerRestriction/helpers/__tests__/generateEffortCurvesForTests';
 
 import {
   pathElectrificationRanges,
@@ -9,8 +9,8 @@ import {
   powerRestrictionRangesWithValidRanges,
   validPowerRestrictionRanges,
 } from './sampleData';
+import type { PowerRestrictionWarnings } from '../../types';
 import { countWarnings, getPowerRestrictionsWarnings } from '../powerRestrictionWarnings';
-import generateEffortCurvesForTests from './generateEffortCurvesForTests';
 
 const emptyResult: PowerRestrictionWarnings = {
   invalidCombinationWarnings: [],
