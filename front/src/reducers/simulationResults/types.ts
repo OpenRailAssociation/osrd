@@ -35,4 +35,5 @@ export type SimulationResultsState = {
   selectedTrainId?: TrainId;
   trainIdUsedForProjection?: TrainScheduleId | PacedTrainId | OccurrenceId;
   projectionType: ProjectionType;
+  displayOnlyPathSteps: boolean;
 };

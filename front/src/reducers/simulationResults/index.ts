@@ -10,12 +10,16 @@ export const simulationResultsInitialState: SimulationResultsState = {
   selectedTrainId: undefined,
   trainIdUsedForProjection: undefined,
   projectionType: 'trackProjection',
+  displayOnlyPathSteps: false,
 };
 
 export const simulationResultsSlice = createSlice({
   name: 'simulation',
   initialState: simulationResultsInitialState,
   reducers: {
+    toggleDisplayOnlyPathSteps(state: Draft<SimulationResultsState>) {
+      state.displayOnlyPathSteps = !state.displayOnlyPathSteps;
+    },
     updateSelectedTrainId(
       state: Draft<SimulationResultsState>,
       action: PayloadAction<TrainId | undefined>
@@ -79,6 +83,7 @@ export const simulationResultsSlice = createSlice({
 });
 
 export const {
+  toggleDisplayOnlyPathSteps,
   updateSelectedTrainId,
   updateTrainIdUsedForProjection,
   updateProjectionType,

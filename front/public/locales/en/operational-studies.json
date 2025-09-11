@@ -482,6 +482,7 @@
   },
   "simulationResults": {
     "departureTime": "Departure",
+    "displayWaypoints": "Display intermediate waypoints",
     "electricalProfiles": {
       "incompatible": "incompatible",
       "incompatibleMode": "Incompatible mode",
@@ -496,6 +497,7 @@
     "errorMessages": {
       "errorLoadingInfra": "Infrastructure loading error"
     },
+    "hideWaypoints": "Hide intermediate waypoints",
     "infraLoading": "Infrastructure is loading",
     "manchetteSettings": {
       "waypointsVisibility": "show/hide OP"
