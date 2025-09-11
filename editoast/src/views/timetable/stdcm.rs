@@ -28,7 +28,6 @@ use serde::Serialize;
 use std::slice;
 use std::sync::Arc;
 use thiserror::Error;
-use tracing::Span;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
 
@@ -137,7 +136,11 @@ pub(in crate::views) struct StdcmQueryParams {
     name = "stdcm",
     skip_all,
     err,
-    fields(request)
+    fields(
+        request = serde_json::to_string(&request)?,
+        timetable_id = id,
+        infra_id = query.infra,
+    )
 )]
 #[editoast_derive::route]
 #[utoipa::path(
@@ -165,9 +168,6 @@ pub(in crate::views) async fn stdcm(
     Query(query): Query<StdcmQueryParams>,
     Json(request): Json<Request>,
 ) -> Result<Json<StdcmResponse>> {
-    // Add serialized request to trace attributes
-    Span::current().record("request", serde_json::to_string(&request)?);
-
     let authorized = auth
         .check_roles([authz::Role::Stdcm].into())
         .await
