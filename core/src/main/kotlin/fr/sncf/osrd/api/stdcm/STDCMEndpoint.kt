@@ -99,13 +99,12 @@ class STDCMEndpoint(
     /** Process the given parsed request */
     @WithSpan(value = "Processing STDCM request", kind = SpanKind.SERVER)
     fun run(request: STDCMRequest): Response {
-        val recorder = DiagnosticRecorderImpl(false)
         logger.info(
             "Request received: start=${request.startTime}, max duration=${request.maximumRunTime}"
         )
         return try {
             // parse input data
-            val infra = infraManager.getInfra(request.infra, request.expectedVersion, recorder)
+            val infra = infraManager.getInfra(request.infra, request.expectedVersion)
             val temporarySpeedLimitManager =
                 buildTemporarySpeedLimitManager(infra, request.temporarySpeedLimits)
             val rollingStock =

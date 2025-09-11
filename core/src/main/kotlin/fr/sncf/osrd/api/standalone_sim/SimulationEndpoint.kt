@@ -44,10 +44,9 @@ class SimulationEndpoint(
     }
 
     fun run(request: SimulationRequest): Response {
-        val recorder = DiagnosticRecorderImpl(false)
         try {
             // load infra
-            val infra = infraManager.getInfra(request.infra, request.expectedVersion, recorder)
+            val infra = infraManager.getInfra(request.infra, request.expectedVersion)
 
             // load electrical profile set
             val electricalProfileMap =

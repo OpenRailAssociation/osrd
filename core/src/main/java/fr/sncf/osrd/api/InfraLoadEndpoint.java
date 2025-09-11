@@ -22,7 +22,6 @@ public class InfraLoadEndpoint implements Take {
 
     @Override
     public Response act(Request req) {
-        var recorder = new DiagnosticRecorderImpl(false);
         try {
             // Parse request input
             var body = new RqPrint(req).printBody();
@@ -30,7 +29,7 @@ public class InfraLoadEndpoint implements Take {
             if (request == null) return new RsWithStatus(new RsText("missing request body"), 400);
 
             // load infra
-            infraManager.load(request.infra, request.expectedVersion, recorder);
+            infraManager.load(request.infra, request.expectedVersion);
 
             return new RsWithStatus(204);
         } catch (Throwable ex) {

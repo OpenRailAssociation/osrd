@@ -15,7 +15,6 @@ import org.takes.rs.RsWithStatus
 
 class PathPropEndpoint(private val infraManager: InfraProvider) : Take {
     override fun act(req: Request?): Response {
-        val recorder = DiagnosticRecorderImpl(false)
         return try {
             val body = RqPrint(req).printBody()
             val request =
@@ -23,7 +22,7 @@ class PathPropEndpoint(private val infraManager: InfraProvider) : Take {
                     ?: return RsWithStatus(RsText("missing request body"), 400)
 
             // Load infra
-            val infra = infraManager.getInfra(request.infra, request.expectedVersion, recorder)
+            val infra = infraManager.getInfra(request.infra, request.expectedVersion)
 
             val pathProps = makePathProps(infra.rawInfra, request.trackSectionRanges)
             val res = makePathPropResponse(pathProps, infra.rawInfra)

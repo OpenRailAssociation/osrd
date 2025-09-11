@@ -53,10 +53,9 @@ class ETCSBrakingCurvesEndpoint(
     /** Process the given parsed request */
     @WithSpan(value = "Processing ETCSBrakingCurves request", kind = SpanKind.SERVER)
     fun run(request: ETCSBrakingCurvesRequest): Response {
-        val recorder = DiagnosticRecorderImpl(false)
         return try {
             // Load infra.
-            val infra = infraManager.getInfra(request.infra, request.expectedVersion, recorder)
+            val infra = infraManager.getInfra(request.infra, request.expectedVersion)
 
             // Load electrical profile set.
             val electricalProfileMap =

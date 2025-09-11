@@ -140,19 +140,20 @@ class TimetableCacheManager(
         val res = mutableMapOf<ZoneId, RangeSet<Double>>()
         val requirements =
             withLocalCache(
-                localCacheLocation,
-                "$timetableId.cbor",
-                STDCMRequirements.SerializableMap.serializer(),
-            ) {
-                runBlocking {
-                    val requirements = fetchTrainRequirements(infraId, infra, timetableId)
-                    requirements.collect { spacingReq ->
-                        val set = res.computeIfAbsent(spacingReq.zone) { TreeRangeSet.create() }
-                        set.add(Range.closedOpen(spacingReq.beginTime, spacingReq.endTime))
+                    localCacheLocation,
+                    "$timetableId.cbor",
+                    STDCMRequirements.SerializableMap.serializer(),
+                ) {
+                    runBlocking {
+                        val requirements = fetchTrainRequirements(infraId, infra, timetableId)
+                        requirements.collect { spacingReq ->
+                            val set = res.computeIfAbsent(spacingReq.zone) { TreeRangeSet.create() }
+                            set.add(Range.closedOpen(spacingReq.beginTime, spacingReq.endTime))
+                        }
+                        STDCMRequirements(res).toSerializable()
                     }
-                    STDCMRequirements(res).toSerializable()
                 }
-            }.toSTDCMRequirements()
+                .toSTDCMRequirements()
 
         logger.info("Saved timetable requirements for $timetableId")
         return requirements

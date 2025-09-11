@@ -108,8 +108,7 @@ class WorkerCommand : CliCommand {
 
         val infraId = WORKER_KEY.split("-").first()
         val timetableId = WORKER_KEY.split("-").getOrNull(1)?.toInt()
-        val diagnosticRecorder = DiagnosticRecorderImpl(false)
-        val infraManager = InfraManager(editoastUrl, editoastAuthorization, httpClient)
+        val infraManager = InfraManager(editoastUrl!!, editoastAuthorization, httpClient)
         val timetableCache =
             TimetableCacheManager(
                 editoastUrl!!,
@@ -162,7 +161,7 @@ class WorkerCommand : CliCommand {
 
             if (!ALL_INFRA) {
                 try {
-                    val infra = infraManager.load(infraId, null, diagnosticRecorder)
+                    val infra = infraManager.load(infraId, null)
                     if (timetableId != null)
                         timetableCache.load(infraId, infra.rawInfra, timetableId)
                 } catch (e: OSRDError) {

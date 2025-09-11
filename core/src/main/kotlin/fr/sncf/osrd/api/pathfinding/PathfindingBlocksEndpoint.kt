@@ -78,10 +78,9 @@ class PathfindingBlocksEndpoint(private val infraManager: InfraProvider) : Take 
 
     @WithSpan(value = "Processing pathfinding request", kind = SpanKind.SERVER)
     fun run(request: PathfindingBlockRequest): Response {
-        val recorder = DiagnosticRecorderImpl(false)
         try {
             // Load infra
-            val infra = infraManager.getInfra(request.infra, request.expectedVersion, recorder)
+            val infra = infraManager.getInfra(request.infra, request.expectedVersion)
             val res = runPathfinding(infra, request)
             pathfindingLogger.info("Success")
             return RsJson(RsWithBody(pathfindingResponseAdapter.toJson(res)))
