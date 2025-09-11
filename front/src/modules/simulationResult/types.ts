@@ -92,6 +92,7 @@ export type ProjectionData = {
     allTrainsProjected: boolean;
     totalTrains: number;
   };
+  operationalPoints: PathProperties['operational_points'];
 };
 
 export type WaypointsPanelData = {

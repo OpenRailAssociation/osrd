@@ -5,9 +5,9 @@ import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
 import { upsertMapWaypointsInOperationalPoints } from 'applications/operationalStudies/helpers/upsertMapWaypointsInOperationalPoints';
-import { osrdEditoastApi, type PathfindingResultSuccess } from 'common/api/osrdEditoastApi';
+import { type PathfindingResultSuccess } from 'common/api/osrdEditoastApi';
 import { isStation } from 'modules/pathfinding/utils';
-import type { PathOperationalPoint } from 'modules/simulationResult/types';
+import type { PathOperationalPoint, ProjectionData } from 'modules/simulationResult/types';
 import type { TimetableItem } from 'reducers/osrdconf/types';
 import { getProjectionType } from 'reducers/simulationResults/selectors';
 
@@ -18,11 +18,13 @@ const useGetProjectedTrainOperationalPoints = ({
   timetableId,
   path,
   pathfinding,
+  projectedOperationalPoints,
 }: {
   infraId: number;
   timetableId: number | undefined;
   path?: TimetableItem['path'];
   pathfinding?: PathfindingResultSuccess;
+  projectedOperationalPoints?: ProjectionData['operationalPoints'];
 }) => {
   const { t } = useTranslation('operational-studies');
   const projectionType = useSelector(getProjectionType);
@@ -31,24 +33,12 @@ const useGetProjectedTrainOperationalPoints = ({
   const [filteredOperationalPoints, setFilteredOperationalPoints] =
     useState<PathOperationalPoint[]>(operationalPoints);
 
-  const [postPathProperties] =
-    osrdEditoastApi.endpoints.postInfraByInfraIdPathProperties.useLazyQuery();
-
   useEffect(() => {
     const getOperationalPoints = async () => {
       if (!path || !pathfinding) return;
 
-      // TODO: get the operational points from useScenarioData
-      const { operational_points } = await postPathProperties({
-        infraId,
-        props: ['operational_points'],
-        pathPropertiesInput: {
-          track_section_ranges: pathfinding.track_section_ranges,
-        },
-      }).unwrap();
-
       let operationalPointsWithUniqueIds: PathOperationalPoint[] =
-        operational_points?.map((op, i) => ({
+        projectedOperationalPoints?.map((op, i) => ({
           ...omit(op, 'id'),
           waypointId: `${op.id}-${op.position}-${i}`,
           opId: op.id,
