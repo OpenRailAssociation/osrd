@@ -16,7 +16,6 @@ import fr.sncf.osrd.pathfinding.constraints.SignalingSystemConstraints
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType
 import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
-import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.stdcm.STDCMStep
 import fr.sncf.osrd.stdcm.graph.extendLookaheadUntil
@@ -78,10 +77,9 @@ class PathfindingBlocksEndpoint(private val infraManager: InfraProvider) : Take 
 
     @WithSpan(value = "Processing pathfinding request", kind = SpanKind.SERVER)
     fun run(request: PathfindingBlockRequest): Response {
-        val recorder = DiagnosticRecorderImpl(false)
         try {
             // Load infra
-            val infra = infraManager.getInfra(request.infra, request.expectedVersion, recorder)
+            val infra = infraManager.getInfra(request.infra, request.expectedVersion)
             val res = runPathfinding(infra, request)
             pathfindingLogger.info("Success")
             return RsJson(RsWithBody(pathfindingResponseAdapter.toJson(res)))

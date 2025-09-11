@@ -10,7 +10,6 @@ import fr.sncf.osrd.envelope_sim.etcs.*
 import fr.sncf.osrd.path.implementations.buildTrainPathFromChunkPath
 import fr.sncf.osrd.path.interfaces.BlockPath
 import fr.sncf.osrd.path.interfaces.TravelledPath
-import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl
 import fr.sncf.osrd.signaling.etcs_level2.ETCS_LEVEL2
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.standalone_sim.PathOffsetBuilder
@@ -52,10 +51,9 @@ class ETCSBrakingCurvesEndpoint(
     /** Process the given parsed request */
     @WithSpan(value = "Processing ETCSBrakingCurves request", kind = SpanKind.SERVER)
     fun run(request: ETCSBrakingCurvesRequest): Response {
-        val recorder = DiagnosticRecorderImpl(false)
         return try {
             // Load infra.
-            val infra = infraManager.getInfra(request.infra, request.expectedVersion, recorder)
+            val infra = infraManager.getInfra(request.infra, request.expectedVersion)
 
             // Load electrical profile set.
             val electricalProfileMap =
