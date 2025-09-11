@@ -2,7 +2,6 @@ package fr.sncf.osrd.api.project_signals
 
 import fr.sncf.osrd.api.ExceptionHandler
 import fr.sncf.osrd.api.InfraProvider
-import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl
 import fr.sncf.osrd.signal_projection.projectSignals
 import fr.sncf.osrd.sim_infra.api.convertBlockPath
 import fr.sncf.osrd.sim_infra.api.convertRoutePath
@@ -18,7 +17,6 @@ import org.takes.rs.RsWithStatus
 
 class SignalProjectionEndpoint(private val infraManager: InfraProvider) : Take {
     override fun act(req: Request?): Response {
-        val recorder = DiagnosticRecorderImpl(false)
         return try {
             val body = RqPrint(req).printBody()
             val request =
@@ -26,7 +24,7 @@ class SignalProjectionEndpoint(private val infraManager: InfraProvider) : Take {
                     ?: return RsWithStatus(RsText("missing request body"), 400)
 
             // Load infra
-            val infra = infraManager.getInfra(request.infra, request.expectedVersion, recorder)
+            val infra = infraManager.getInfra(request.infra, request.expectedVersion)
 
             // Parse path
             val chunkPath = makeChunkPath(infra.rawInfra, request.trackSectionRanges)

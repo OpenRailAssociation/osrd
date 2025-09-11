@@ -13,7 +13,6 @@ import fr.sncf.osrd.api.standalone_sim.SimulationEndpoint
 import fr.sncf.osrd.api.stdcm.STDCMEndpoint
 import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
-import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl
 import io.opentelemetry.api.GlobalOpenTelemetry
 import io.opentelemetry.context.Context
 import io.opentelemetry.context.propagation.TextMapGetter
@@ -108,8 +107,7 @@ class WorkerCommand : CliCommand {
 
         val infraId = WORKER_KEY.split("-").first()
         val timetableId = WORKER_KEY.split("-").getOrNull(1)?.toInt()
-        val diagnosticRecorder = DiagnosticRecorderImpl(false)
-        val infraManager = InfraManager(editoastUrl, editoastAuthorization, httpClient)
+        val infraManager = InfraManager(editoastUrl!!, editoastAuthorization, httpClient)
         val timetableCache =
             TimetableCacheManager(
                 TimetableDownloader(editoastUrl!!, editoastAuthorization, httpClient),
@@ -160,7 +158,7 @@ class WorkerCommand : CliCommand {
 
             if (!ALL_INFRA) {
                 try {
-                    val infra = infraManager.load(infraId, null, diagnosticRecorder)
+                    val infra = infraManager.load(infraId, null)
                     if (timetableId != null)
                         timetableCache.load(infraId, infra.rawInfra, timetableId)
                 } catch (e: OSRDError) {

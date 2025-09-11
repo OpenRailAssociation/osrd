@@ -21,7 +21,6 @@ import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop
 import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
-import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl
 import fr.sncf.osrd.signaling.etcs_level2.ETCS_LEVEL2
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.DirTrackChunkId
@@ -99,13 +98,12 @@ class STDCMEndpoint(
     /** Process the given parsed request */
     @WithSpan(value = "Processing STDCM request", kind = SpanKind.SERVER)
     fun run(request: STDCMRequest): Response {
-        val recorder = DiagnosticRecorderImpl(false)
         logger.info(
             "Request received: start=${request.startTime}, max duration=${request.maximumRunTime}"
         )
         return try {
             // parse input data
-            val infra = infraManager.getInfra(request.infra, request.expectedVersion, recorder)
+            val infra = infraManager.getInfra(request.infra, request.expectedVersion)
             val temporarySpeedLimitManager =
                 buildTemporarySpeedLimitManager(infra, request.temporarySpeedLimits)
             val rollingStock =

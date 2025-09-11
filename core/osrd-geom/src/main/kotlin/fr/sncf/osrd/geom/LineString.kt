@@ -250,8 +250,7 @@ data class LineString(
                 newBufferLat.add(*lineString.bufferLat)
                 var lastCumulativeLength = 0.0
                 // used to add the length of the previous Linestring to make the lengths of the next
-                // one
-                // cumulatives
+                // one cumulatives
                 if (!newCumulativeLengths.isEmpty)
                     lastCumulativeLength = newCumulativeLengths.get(newCumulativeLengths.size() - 1)
                 for (cumLength in lineString.cumulativeLengths) newCumulativeLengths.add(
