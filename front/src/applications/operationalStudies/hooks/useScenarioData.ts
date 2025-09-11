@@ -168,6 +168,10 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithStatus) => 
     }
   }, [timetableItems, infra.status, simulatedTrainsById]);
 
+  useEffect(() => {
+    safeFetchConflicts();
+  }, [safeFetchConflicts]);
+
   const broadcastChannel = useRef<BroadcastChannel>(null);
 
   const broadcastScenarioMessage = (msg: ScenarioBroadcastMessage) => {
