@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 
 import { keyBy } from 'lodash';
 import { useTranslation } from 'react-i18next';
+import { useSelector } from 'react-redux';
 
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import useTrainOps from 'applications/operationalStudies/hooks/useTrainOps';
@@ -11,6 +12,7 @@ import { matchPathStepAndOp } from 'modules/pathfinding/utils';
 import { interpolateValue } from 'modules/simulationResult/helpers/utils';
 import type { SimulationSummary } from 'modules/timetableItem/types';
 import type { Train } from 'reducers/osrdconf/types';
+import { getDisplayOnlyPathSteps } from 'reducers/simulationResults/selectors';
 import { useDateTimeLocale } from 'utils/date';
 import { Duration } from 'utils/duration';
 
@@ -32,6 +34,7 @@ const useOutputTableData = (
   const { t } = useTranslation('operational-studies');
   const dateTimeLocale = useDateTimeLocale();
   const { getTrackSectionsByIds } = useScenarioContext();
+  const displayOnlyPathSteps = useSelector(getDisplayOnlyPathSteps);
 
   const pathStepOps = useTrainOps(infraId, selectedTrain);
 
@@ -147,14 +150,14 @@ const useOutputTableData = (
 
       const pathStepRowsById = await formatPathStepRows(selectedTrain);
 
-      let formattedRows = Array.from(pathStepRowsById.values());
+      let formattedRows: TimesStopsRow[] = [];
 
       // For valid trains, complete the rows with the simulated path's operational points and tracks information
       if (isValid && simulatedTrain && operationalPointsOnPath) {
         const trackIds = operationalPointsOnPath.map((op) => op.part.track);
         const trackSectionsOnPath = await getTrackSectionsByIds(trackIds);
 
-        formattedRows = operationalPointsOnPath.map((op): TimesStopsRow => {
+        for (const op of operationalPointsOnPath) {
           const trackName = trackSectionsOnPath[op.part.track]?.extensions?.sncf?.track_name;
 
           // early return if the op matches a pathStep (handled in formatPathStepRows)
@@ -173,38 +176,46 @@ const useOutputTableData = (
             ? pathStepRowsById.get(matchingPathStep.id)
             : undefined;
           if (matchingPathStepRow) {
-            return {
+            formattedRows.push({
               ...matchingPathStepRow,
               trackName,
-            };
+            });
+          } else if (!displayOnlyPathSteps) {
+            // Compute arrival time when the operational point comes from the simulation
+            const matchingReportTrainIndex = simulatedTrain.positions.findIndex(
+              (position) => position === op.position
+            );
+            const time =
+              matchingReportTrainIndex === -1
+                ? interpolateValue(simulatedTrain, op.position, 'times')
+                : simulatedTrain.times[matchingReportTrainIndex];
+            const calculatedArrival = new Date(new Date(selectedTrain.start_time).getTime() + time);
+
+            formattedRows.push({
+              opId: op.id,
+              pathStepId: undefined,
+              name: op.extensions?.identifier?.name,
+              ch: op.extensions?.sncf?.ch,
+              trackName,
+              calculatedArrival: calculatedArrival.toLocaleTimeString(dateTimeLocale),
+            });
           }
-
-          // Compute arrival time when the operational point comes from the simulation
-          const matchingReportTrainIndex = simulatedTrain.positions.findIndex(
-            (position) => position === op.position
-          );
-          const time =
-            matchingReportTrainIndex === -1
-              ? interpolateValue(simulatedTrain, op.position, 'times')
-              : simulatedTrain.times[matchingReportTrainIndex];
-          const calculatedArrival = new Date(new Date(selectedTrain.start_time).getTime() + time);
-
-          return {
-            pathStepId: undefined,
-            opId: op.id,
-            name: op.extensions?.identifier?.name,
-            ch: op.extensions?.sncf?.ch,
-            trackName,
-            calculatedArrival: calculatedArrival.toLocaleTimeString(dateTimeLocale),
-          };
-        });
+        }
+      } else {
+        formattedRows = Array.from(pathStepRowsById.values());
       }
 
       setRows(formattedRows);
     };
 
     formatRows();
-  }, [pathStepOps, operationalPointsOnPath, simulatedTrain, getTrackSectionsByIds]);
+  }, [
+    pathStepOps,
+    operationalPointsOnPath,
+    simulatedTrain,
+    getTrackSectionsByIds,
+    displayOnlyPathSteps,
+  ]);
 
   return rows;
 };

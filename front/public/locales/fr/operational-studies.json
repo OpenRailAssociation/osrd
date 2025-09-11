@@ -482,6 +482,7 @@
   },
   "simulationResults": {
     "departureTime": "Départ",
+    "displayWaypoints": "Afficher les points de passage intermédiaires",
     "electricalProfiles": {
       "incompatible": "incompatible",
       "incompatibleMode": "Mode incompatible",
@@ -496,6 +497,7 @@
     "errorMessages": {
       "errorLoadingInfra": "Erreur de chargement de l'infrastructure"
     },
+    "hideWaypoints": "Masquer les points de passage intermédiaires",
     "infraLoading": "Infrastructure en cours de chargement",
     "manchetteSettings": {
       "waypointsVisibility": "Modifier la visibilité des PRs"

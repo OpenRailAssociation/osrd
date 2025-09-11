@@ -24,8 +24,11 @@ import TimesStopsOutput from 'modules/timesStops/TimesStopsOutput';
 import { findExceptionWithOccurrenceId } from 'modules/timetableItem/helpers/pacedTrain';
 import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
 import type { TimetableItemId, TrainId } from 'reducers/osrdconf/types';
-import { updateSelectedTrainId } from 'reducers/simulationResults';
-import { getTrainIdUsedForProjection } from 'reducers/simulationResults/selectors';
+import { toggleDisplayOnlyPathSteps, updateSelectedTrainId } from 'reducers/simulationResults';
+import {
+  getTrainIdUsedForProjection,
+  getDisplayOnlyPathSteps,
+} from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
 import {
   extractPacedTrainIdFromOccurrenceId,
@@ -66,6 +69,7 @@ const SimulationResults = ({
   const simulationResults = useSimulationResults();
   const selectedTrainId = simulationResults?.train.id;
 
+  const displayOnlyPathSteps = useSelector(getDisplayOnlyPathSteps);
   const trainIdUsedForProjection = useSelector(getTrainIdUsedForProjection);
 
   const [showWarpedMap, setShowWarpedMap] = useState(false);
@@ -323,6 +327,17 @@ const SimulationResults = ({
           <BoardWrapper
             hidden={!activeBoards.has('tables')}
             name={t('simulationResults.timetableOutput')}
+            items={[
+              {
+                title: displayOnlyPathSteps
+                  ? t('simulationResults.displayWaypoints')
+                  : t('simulationResults.hideWaypoints'),
+                icon: <Eye />,
+                onClick: () => {
+                  dispatch(toggleDisplayOnlyPathSteps());
+                },
+              },
+            ]}
           >
             <div className="time-stop-outputs">
               <TimesStopsOutput
