@@ -11,7 +11,7 @@ import DefaultBaseMap from 'common/Map/DefaultBaseMap';
 import useInfraStatus from 'modules/pathfinding/hooks/useInfraStatus';
 import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
 import { useMapSettings, useMapSettingsActions } from 'reducers/commonMap';
-import type { MapSettings } from 'reducers/commonMap/types';
+import type { Viewport } from 'reducers/commonMap/types';
 import { resetMargins, restoreStdcmConfig, updateStdcmPathStep } from 'reducers/osrdconf/stdcmConf';
 import {
   getActivePerimeter,
@@ -109,8 +109,8 @@ const StdcmConfig = ({
   const mapSettings = useMapSettings();
   const { updateMapSettings: updateMapSettingsAction } = useMapSettingsActions();
 
-  const updateMapSettings = (partialMapSettings: Partial<MapSettings>) => {
-    dispatch(updateMapSettingsAction(partialMapSettings));
+  const updateViewport = (viewport: Viewport) => {
+    dispatch(updateMapSettingsAction({ ...mapSettings, viewport }));
   };
 
   const [showMessage, setShowMessage] = useState(false);
@@ -363,7 +363,7 @@ const StdcmConfig = ({
             highlightedArea={activePerimeter?.geometry}
             highlightedOperationalPoints={activePerimeter?.operationalPoints}
             mapSettings={mapSettings}
-            updateMapSettings={updateMapSettings}
+            updateViewport={updateViewport}
           >
             <StdcmMapActivePerimeter />
           </DefaultBaseMap>
