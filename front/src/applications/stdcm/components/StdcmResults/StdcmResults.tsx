@@ -16,7 +16,7 @@ import {
   getOperationalPointsWithTimes,
 } from 'modules/SimulationReportSheet/utils/formatSimulationReportSheet';
 import { useMapSettings, useMapSettingsActions } from 'reducers/commonMap';
-import type { MapSettings } from 'reducers/commonMap/types';
+import type { Viewport } from 'reducers/commonMap/types';
 import {
   getRetainedSimulationIndex,
   getSelectedSimulation,
@@ -65,8 +65,8 @@ const StdcmResults = ({
   const mapSettings = useMapSettings();
   const { updateMapSettings: updateMapSettingsAction } = useMapSettingsActions();
 
-  const updateMapSettings = (partialMapSettings: Partial<MapSettings>) => {
-    dispatch(updateMapSettingsAction(partialMapSettings));
+  const updateViewport = (viewport: Viewport) => {
+    dispatch(updateMapSettingsAction({ ...mapSettings, viewport }));
   };
 
   const { outputs, alternativePath } = selectedSimulation;
@@ -247,7 +247,7 @@ const StdcmResults = ({
                 pathStepMarkers={markersInfo}
                 isFeasible={hasSimulationResults}
                 mapSettings={mapSettings}
-                updateMapSettings={updateMapSettings}
+                updateViewport={updateViewport}
               />
             </div>
           </div>
