@@ -23,7 +23,7 @@ type DefaultBaseMapProps = {
   pathStepMarkers?: MarkerInformation[];
   isFeasible?: boolean;
   mapSettings: MapSettings;
-  updateMapSettings: (mapSettings: Partial<MapSettings>) => void;
+  updateViewport: (viewPort: Viewport) => void;
   highlightedArea?: Geometry;
   highlightedOperationalPoints?: number[];
 };
@@ -43,7 +43,7 @@ const DefaultBaseMap = ({
   isFeasible = true,
   children,
   mapSettings,
-  updateMapSettings,
+  updateViewport,
   highlightedArea,
   highlightedOperationalPoints,
 }: PropsWithChildren<DefaultBaseMapProps>) => {
@@ -52,9 +52,9 @@ const DefaultBaseMap = ({
 
   const updateViewportChange = useCallback(
     (partialViewPort: Partial<Viewport>) => {
-      updateMapSettings({ viewport: { ...viewport, ...partialViewPort } });
+      updateViewport({ ...viewport, ...partialViewPort });
     },
-    [updateMapSettings, viewport]
+    [updateViewport, viewport]
   );
   const resetPitchBearing = () => {
     updateViewportChange({
