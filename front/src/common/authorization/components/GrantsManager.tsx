@@ -4,7 +4,6 @@ import { ChevronDown, ChevronUp } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 
 import { GRANTS_LABEL } from 'common/authorization/consts';
-import { capitalizeFirstLetter } from 'utils/strings';
 
 import type { Grant, Privilege, ResourceType } from '../types';
 import GrantsManagerSubjects from './GrantsManagerSubjects';
@@ -39,7 +38,7 @@ const GrantsManager = ({
       <div className="grant-manager-header">
         <span className="user-grant">
           {t('authorization.yourGrant', {
-            grant: capitalizeFirstLetter(t(`authorization.grants.${GRANTS_LABEL[grantLabel]}`)),
+            grant: t(`authorization.grants.${GRANTS_LABEL[grantLabel]}`),
           })}
         </span>
         <button
