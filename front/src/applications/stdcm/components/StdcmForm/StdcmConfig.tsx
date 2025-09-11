@@ -10,7 +10,7 @@ import { extractMarkersInfo } from 'applications/stdcm/utils';
 import DefaultBaseMap from 'common/Map/DefaultBaseMap';
 import useInfraStatus from 'modules/pathfinding/hooks/useInfraStatus';
 import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
-import { useMapSettings, useMapSettingsActions } from 'reducers/commonMap';
+import { useMapSettings } from 'reducers/commonMap';
 import type { Viewport } from 'reducers/commonMap/types';
 import { resetMargins, restoreStdcmConfig, updateStdcmPathStep } from 'reducers/osrdconf/stdcmConf';
 import {
@@ -107,10 +107,12 @@ const StdcmConfig = ({
   const activePerimeter = useSelector(getActivePerimeter);
 
   const mapSettings = useMapSettings();
-  const { updateMapSettings: updateMapSettingsAction } = useMapSettingsActions();
+
+  // Keep local state of the viewport to keep stdcm config and stdcm results maps independent
+  const [stdcmConfigViewport, setStdcmConfigViewport] = useState<Viewport>(mapSettings.viewport);
 
   const updateViewport = (viewport: Viewport) => {
-    dispatch(updateMapSettingsAction({ ...mapSettings, viewport }));
+    setStdcmConfigViewport(viewport);
   };
 
   const [showMessage, setShowMessage] = useState(false);
@@ -362,7 +364,7 @@ const StdcmConfig = ({
             pathStepMarkers={markersInfo}
             highlightedArea={activePerimeter?.geometry}
             highlightedOperationalPoints={activePerimeter?.operationalPoints}
-            mapSettings={mapSettings}
+            mapSettings={{ ...mapSettings, viewport: stdcmConfigViewport }}
             updateViewport={updateViewport}
           >
             <StdcmMapActivePerimeter />
