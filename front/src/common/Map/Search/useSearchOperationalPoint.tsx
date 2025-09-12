@@ -81,7 +81,7 @@ export default function useSearchOperationalPoint({
     [infraID, isStdcm, isSuperUser]
   );
 
-  /** Search for operational points whose trigrams start with the search query or whose name or UIC code (primary code) contain the search query */
+  /** Search for operational points whose trigrams start with the search query or whose name, id or UIC code (primary code) contain the search query */
   const searchOperationalPoints = useCallback(
     async (searchQuery: string) => {
       if (infraID === undefined) return [];
@@ -101,6 +101,7 @@ export default function useSearchOperationalPoint({
               [
                 'or',
                 ['search', ['name'], searchQuery],
+                ['like', ['obj_id'], `%${searchQuery}%`],
                 ['like', ['to_string', ['uic']], `%${searchQuery}%`],
               ],
               ['=', ['infra_id'], infraID],

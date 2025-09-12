@@ -117,7 +117,7 @@ const MapSearchSignal = ({ closeMapSearchPopUp }: MapSearchSignalProps) => {
         !lineSearch || payloadQuery,
         !trackSystem || createTrackSystemQuery(trackSystem),
         !settings.length || ['contains', ['settings'], ['list', ...settings]],
-        ['search', ['label'], signalName],
+        ['or', ['search', ['label'], signalName], ['like', ['obj_id'], `%${signalName}%`]],
       ],
     };
   };
