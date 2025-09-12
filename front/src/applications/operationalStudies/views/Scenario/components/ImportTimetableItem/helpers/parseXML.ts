@@ -255,7 +255,6 @@ const parseXML = async (xmlDoc: Document): Promise<TimetableJsonPayload> => {
   const trainGroups = Array.from(xmlDoc.getElementsByTagName('trainGroup'));
 
   const trainSchedulesByTrainPartId: Record<string, TrainSchedule> = {};
-  const trainParts = Array.from(xmlDoc.getElementsByTagName('trainPart'));
   const period = xmlDoc.getElementsByTagName('timetablePeriod')[0];
   const startDate = period ? period.getAttribute('startDate') : null;
 
@@ -264,59 +263,67 @@ const parseXML = async (xmlDoc: Document): Promise<TimetableJsonPayload> => {
     return { train_schedules: [], paced_trains: [] };
   }
 
-  trainParts.forEach((train) => {
-    const trainNumber = train.getAttribute('trainNumber') || train.getAttribute('id') || '';
-    const trainPartId = train.getAttribute('id') || '';
-    const ocpSteps = Array.from(train.getElementsByTagName('ocpTT'));
-    const formationTT = train.getElementsByTagName('formationTT')[0];
-    const formationRef = formationTT?.getAttribute('formationRef');
+  Array.from(xmlDoc.getElementsByTagName('train')).forEach((train) => {
+    const trainType = train.getAttribute('type');
 
-    let rollingStockName = null;
-    if (formationRef !== null) {
-      const formation = xmlDoc.getElementById(formationRef);
-      const vehicleRef = formation?.querySelector('trainOrder vehicleRef');
-      const vehicleRefAttribute = vehicleRef?.getAttribute('vehicleRef');
-      const vehicle = vehicleRefAttribute ? xmlDoc.getElementById(vehicleRefAttribute) : null;
-
-      rollingStockName = vehicle?.getAttribute('name') || null;
+    if (trainType !== 'operational') {
+      return;
     }
 
-    const firstOcpTT = ocpSteps[0];
-    const firstDepartureTime = firstOcpTT
-      .getElementsByTagName('times')[0]
-      ?.getAttribute('departure');
+    const trainPartRefs = train.querySelectorAll('trainPartRef');
 
-    const firstDepartureTimeformatted = firstDepartureTime && cleanTimeFormat(firstDepartureTime);
+    trainPartRefs.forEach((trainPartRef) => {
+      const trainPartId = trainPartRef.getAttribute('ref');
+      if (!trainPartId) return;
 
-    // Build steps using the fully populated localCichDict
-    const { path, schedule } = buildSteps(ocpSteps, localCichDict, new Date(startDate));
+      const trainPart = xmlDoc.getElementById(trainPartId);
+      if (!trainPart) return;
 
-    const trainSchedule: TrainSchedule = {
-      train_name: trainNumber,
-      rolling_stock_name: rollingStockName || formationRef || '', // RollingStocks in xml files rarely have the correct format
-      start_time: new Date(`${startDate} ${firstDepartureTimeformatted}`).toISOString(),
-      constraint_distribution: 'STANDARD',
-      path,
-      schedule,
-    };
-    trainSchedulesByTrainPartId[trainPartId] = trainSchedule;
-    trainSchedules.push(trainSchedule);
+      const trainNumber =
+        trainPart.getAttribute('trainNumber') || trainPart.getAttribute('id') || '';
+      const ocpSteps = Array.from(trainPart.getElementsByTagName('ocpTT'));
+      const formationTT = trainPart.getElementsByTagName('formationTT')[0];
+      const formationRef = formationTT?.getAttribute('formationRef');
+
+      let rollingStockName = null;
+      if (formationRef !== null) {
+        const formation = xmlDoc.getElementById(formationRef);
+        const vehicleRef = formation?.querySelector('trainOrder vehicleRef');
+        const vehicleRefAttribute = vehicleRef?.getAttribute('vehicleRef');
+        const vehicle = vehicleRefAttribute ? xmlDoc.getElementById(vehicleRefAttribute) : null;
+
+        rollingStockName = vehicle?.getAttribute('name') || null;
+      }
+
+      const firstOcpTT = ocpSteps[0];
+      const firstDepartureTime = firstOcpTT
+        .getElementsByTagName('times')[0]
+        ?.getAttribute('departure');
+
+      const firstDepartureTimeformatted = firstDepartureTime && cleanTimeFormat(firstDepartureTime);
+
+      // Build steps using the fully populated localCichDict
+      const { path, schedule } = buildSteps(ocpSteps, localCichDict, new Date(startDate));
+
+      const trainSchedule: TrainSchedule = {
+        train_name: trainNumber,
+        rolling_stock_name: rollingStockName || formationRef || '', // RollingStocks in xml files rarely have the correct format
+        start_time: new Date(`${startDate} ${firstDepartureTimeformatted}`).toISOString(),
+        constraint_distribution: 'STANDARD',
+        path,
+        schedule,
+      };
+      trainSchedulesByTrainPartId[trainPartId] = trainSchedule;
+      trainSchedules.push(trainSchedule);
+    });
   });
 
   const trainElementsById: Record<string, Element> = {};
-  const trainPartToTypeMap: Record<string, string> = {};
 
   Array.from(xmlDoc.getElementsByTagName('train')).forEach((train) => {
     const id = train.getAttribute('id');
-    const trainType = train.getAttribute('type');
-    const trainPartRef = train.querySelector('trainPartRef')?.getAttribute('ref');
-
     if (id) {
       trainElementsById[id] = train;
-    }
-
-    if (trainPartRef && trainType) {
-      trainPartToTypeMap[trainPartRef] = trainType;
     }
   });
 
@@ -324,16 +331,26 @@ const parseXML = async (xmlDoc: Document): Promise<TimetableJsonPayload> => {
     const pacedTrainId = trainGroup.getAttribute('id')!;
 
     const trainRefs = Array.from(trainGroup.getElementsByTagName('trainRef'));
-    pacedTrains[pacedTrainId] = trainRefs
+    const pacedTrainSchedules = trainRefs
       .map((trainRef) => {
         const trainId = trainRef.getAttribute('ref');
         const trainElement = trainId ? trainElementsById[trainId] : undefined;
+
+        const trainType = trainElement?.getAttribute('type');
+        if (trainType !== 'operational') {
+          return undefined;
+        }
 
         const trainPartRef = trainElement?.querySelector('trainPartRef')?.getAttribute('ref');
 
         return trainPartRef ? trainSchedulesByTrainPartId[trainPartRef] : undefined;
       })
       .filter((schedule) => schedule !== undefined);
+
+    // Only keep paced trains that have at least one operational train
+    if (pacedTrainSchedules.length > 0) {
+      pacedTrains[pacedTrainId] = pacedTrainSchedules;
+    }
   });
 
   const pacedTrainMostFrequentSchedules: Record<
@@ -373,22 +390,12 @@ const parseXML = async (xmlDoc: Document): Promise<TimetableJsonPayload> => {
     }
   });
 
-  // Filter train schedules to only include operational trains
-  const operationalTrainSchedules = trainSchedules.filter((schedule) => {
-    const trainPartEntry = Object.entries(trainSchedulesByTrainPartId).find(
-      ([_, trainSchedule]) => trainSchedule === schedule
-    );
-    const trainPartId = trainPartEntry?.[0];
-    const trainType = trainPartId ? trainPartToTypeMap[trainPartId] : undefined;
-    return trainType === 'operational';
-  });
-
   const trainSchedulesInPacedTrain = new Set(
     Object.values(pacedTrains)
       .flat()
       .map((schedule) => schedule.train_name)
   );
-  const singleTrainSchedules = operationalTrainSchedules.filter(
+  const singleTrainSchedules = trainSchedules.filter(
     (schedule) => !trainSchedulesInPacedTrain.has(schedule.train_name)
   );
 
