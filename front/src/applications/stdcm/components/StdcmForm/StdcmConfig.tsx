@@ -7,8 +7,9 @@ import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
 import { extractMarkersInfo } from 'applications/stdcm/utils';
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import DefaultBaseMap from 'common/Map/DefaultBaseMap';
-import useInfraStatus from 'modules/pathfinding/hooks/useInfraStatus';
+import useWorkerStatus from 'modules/pathfinding/hooks/useWorkerStatus';
 import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
 import { useMapSettings } from 'reducers/commonMap';
 import type { Viewport } from 'reducers/commonMap/types';
@@ -85,12 +86,16 @@ const StdcmConfig = ({
   const infraId = useSelector(getStdcmInfraID);
   const timetableId = useSelector(getStdcmTimetableID);
 
+  const { data: infra } = osrdEditoastApi.endpoints.getInfraByInfraId.useQuery({
+    infraId: infraId,
+  });
+
   // We need to load 2 infras:
   // - 1 infra without any timetableId, which will be used for the pathfinding requests
   // - 1 infra with the timetableId, which will be used for the stdcm request (faster since the timetable will be cached)
   // The form is disabled until both workers have fully loaded.
-  const { infra } = useInfraStatus({ infraId });
-  const { infra: infraStdcm } = useInfraStatus({ infraId, timetableId });
+  const pathfindingWorkerStatus = useWorkerStatus({ infraId });
+  const stdcmWorkerStatus = useWorkerStatus({ infraId, timetableId });
 
   const dispatch = useAppDispatch();
 
@@ -117,7 +122,10 @@ const StdcmConfig = ({
 
   const [showMessage, setShowMessage] = useState(false);
 
-  const { pathfinding, isPathFindingLoading } = useStaticPathfinding(infra);
+  const { pathfinding, isPathFindingLoading } = useStaticPathfinding(
+    pathfindingWorkerStatus,
+    infra
+  );
 
   const formRef = useRef<HTMLDivElement>(null);
   const pathfindingBannerRef = useRef<HTMLDivElement>(null);
@@ -193,12 +201,12 @@ const StdcmConfig = ({
   }, [pathfinding, pathSteps, t, consistErrors]);
 
   useEffect(() => {
-    if (infra?.status === 'READY' && infraStdcm?.status === 'READY') {
+    if (pathfindingWorkerStatus === 'READY' && stdcmWorkerStatus === 'READY') {
       setFormErrors(undefined);
     } else {
       setFormErrors({ errorType: StdcmConfigErrorTypes.INFRA_NOT_LOADED });
     }
-  }, [infra?.status, infraStdcm?.status]);
+  }, [pathfindingWorkerStatus, stdcmWorkerStatus]);
 
   useEffect(() => {
     if (!isDebugMode) {
@@ -311,6 +319,7 @@ const StdcmConfig = ({
                 {formErrors && (
                   <StdcmWarningBox
                     infra={infra}
+                    workerStatus={pathfindingWorkerStatus}
                     errorInfos={formErrors}
                     removeOriginArrivalTime={removeOriginArrivalTime}
                     removeDestinationArrivalTime={removeDestinationArrivalTime}

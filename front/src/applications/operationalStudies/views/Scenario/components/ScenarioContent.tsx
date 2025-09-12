@@ -48,7 +48,7 @@ const ScenarioContent = ({ activeBoards }: ScenarioContentProps) => {
   const dispatch = useAppDispatch();
   const { scenario } = useScenarioContext();
 
-  const { infra, isInfraLoaded } = useScenarioContext();
+  const { infraId, isInfraLoaded } = useScenarioContext();
 
   const [displayTimetableItemManagement, setDisplayTimetableItemManagement] = useState<string>(
     MANAGE_TIMETABLE_ITEM_TYPES.none
@@ -65,7 +65,7 @@ const ScenarioContent = ({ activeBoards }: ScenarioContentProps) => {
     upsertTimetableItems,
     removeTimetableItems,
     updateTrainDepartureTime,
-  } = useScenarioData(scenario, infra);
+  } = useScenarioData(scenario, infraId);
 
   const macroEditorState = useRef<MacroEditorState>(null);
   const [ngeDto, setNgeDto] = useState<NetzgrafikDto>();
@@ -73,7 +73,7 @@ const ScenarioContent = ({ activeBoards }: ScenarioContentProps) => {
 
   const refreshNge = useCallback(async () => {
     const state = new MacroEditorState(
-      infra.id,
+      infraId,
       scenario.id,
       scenario.study_id,
       scenario.project.id
@@ -83,7 +83,7 @@ const ScenarioContent = ({ activeBoards }: ScenarioContentProps) => {
     setNgeDto(dto);
   }, [
     dispatch,
-    infra.id,
+    infraId,
     scenario.study_id,
     scenario.project.id,
     scenario.id,
@@ -131,7 +131,7 @@ const ScenarioContent = ({ activeBoards }: ScenarioContentProps) => {
       event,
       netzgrafikDto,
       timetableId: scenario.timetable_id,
-      infraId: infra.id,
+      infraId,
       state: macroEditorState.current!,
       dispatch,
       addUpsertedTimetableItems: upsertTimetableItems,
@@ -213,7 +213,7 @@ const ScenarioContent = ({ activeBoards }: ScenarioContentProps) => {
               <ScenarioLoaderMessage />
             )}
           <div className="scenario-results">
-            {isInfraLoaded && infra && (
+            {isInfraLoaded && (
               <SimulationResults
                 scenarioData={{ name: scenario.name, infraName: scenario.infra_name }}
                 projectionData={projectionData}

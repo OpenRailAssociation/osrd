@@ -64,7 +64,7 @@ const Timetable = ({
 }: TimetableProps) => {
   const dateTimeLocale = useDateTimeLocale();
 
-  const { infra } = useScenarioContext();
+  const { workerStatus } = useScenarioContext();
 
   const [expandedTimetableItemIds, setExpandedTimetableItemIds] = useState<Set<TimetableItemId>>(
     new Set()
@@ -168,13 +168,13 @@ const Timetable = ({
                   isInSelection={selectedTimetableItemIds.includes(timetableItem.id)}
                   handleSelectTrain={handleSelectTimetableItem}
                   train={timetableItem as TrainScheduleWithDetails}
-                  isSelected={infra.status === 'READY' && selectedTrainId === timetableItem.id}
+                  isSelected={workerStatus === 'READY' && selectedTrainId === timetableItem.id}
                   isModified={timetableItem.id === timetableItemToEditData?.timetableItemId}
                   upsertTrainSchedules={upsertTimetableItems}
                   removeTrains={removeAndUnselectTrains}
                   selectTrainToEdit={selectTimetableItemToEdit}
                   projectionPathIsUsed={
-                    infra.status === 'READY' && trainIdUsedForProjection === timetableItem.id
+                    workerStatus === 'READY' && trainIdUsedForProjection === timetableItem.id
                   }
                   subCategories={subCategories}
                 />
@@ -190,7 +190,7 @@ const Timetable = ({
                   selectedTrainId={selectedTrainId}
                   upsertTimetableItems={upsertTimetableItems}
                   removePacedTrains={removeAndUnselectTrains}
-                  infraIsCached={infra.status === 'READY'}
+                  infraIsCached={workerStatus === 'READY'}
                   subCategories={subCategories}
                 />
               )}

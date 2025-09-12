@@ -3,7 +3,7 @@ import { Alert } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 
-import type { InfraWithStatus } from 'modules/infra/types';
+import type { Infra, WorkerStatus } from 'common/api/osrdEditoastApi';
 
 import useStaticPathfinding from '../hooks/useStaticPathfinding';
 import { StdcmConfigErrorTypes, type StdcmConfigErrors } from '../types';
@@ -11,7 +11,8 @@ import { StdcmConfigErrorTypes, type StdcmConfigErrors } from '../types';
 const SHORT_TEXT_ERRORS = [StdcmConfigErrorTypes.INFRA_NOT_LOADED];
 
 type StdcmWarningBoxProps = {
-  infra?: InfraWithStatus;
+  infra?: Infra;
+  workerStatus: WorkerStatus;
   errorInfos: StdcmConfigErrors;
   removeOriginArrivalTime: () => void;
   removeDestinationArrivalTime: () => void;
@@ -19,6 +20,7 @@ type StdcmWarningBoxProps = {
 
 const StdcmWarningBox = ({
   infra,
+  workerStatus,
   errorInfos: { errorType, errorDetails },
   removeOriginArrivalTime,
   removeDestinationArrivalTime,
@@ -29,7 +31,7 @@ const StdcmWarningBox = ({
   const hasMissingFields = (errorDetails?.missingFields?.length ?? 0) > 0;
   const hasRouteErrors = (errorDetails?.routeErrors?.length ?? 0) > 0;
 
-  const { pathfinding, isPathFindingLoading: _ } = useStaticPathfinding(infra);
+  const { pathfinding, isPathFindingLoading: _ } = useStaticPathfinding(workerStatus, infra);
   const hasIncompatibleConstraints =
     pathfinding?.status === 'failure' &&
     pathfinding.failed_status === 'pathfinding_not_found' &&

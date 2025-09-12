@@ -4,7 +4,6 @@ import { skipToken } from '@reduxjs/toolkit/query/react';
 import { useSelector } from 'react-redux';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import type { InfraWithStatus } from 'modules/infra/types';
 import { getExceptionFromOccurrenceId } from 'modules/timetableItem/helpers/pacedTrain';
 import type { TimetableItemId, TimetableItem } from 'reducers/osrdconf/types';
 import { getTrainIdUsedForProjection } from 'reducers/simulationResults/selectors';
@@ -17,7 +16,7 @@ import {
 } from 'utils/trainId';
 
 const usePathProjection = (
-  infra: InfraWithStatus,
+  infraId: number,
   timetableItemsById: Map<TimetableItemId, TimetableItem>
 ) => {
   const trainIdUsedForProjection = useSelector(getTrainIdUsedForProjection);
@@ -40,12 +39,8 @@ const usePathProjection = (
     }
   }
 
-  const scheduleArg = rawTrainScheduleId
-    ? { id: rawTrainScheduleId, infraId: infra.id }
-    : skipToken;
-  const pacedArg = rawPacedTrainId
-    ? { id: rawPacedTrainId, infraId: infra.id, exceptionKey }
-    : skipToken;
+  const scheduleArg = rawTrainScheduleId ? { id: rawTrainScheduleId, infraId } : skipToken;
+  const pacedArg = rawPacedTrainId ? { id: rawPacedTrainId, infraId, exceptionKey } : skipToken;
 
   const { data: schedulePath } =
     osrdEditoastApi.endpoints.getTrainScheduleByIdPath.useQuery(scheduleArg);
@@ -57,7 +52,7 @@ const usePathProjection = (
     osrdEditoastApi.endpoints.postInfraByInfraIdPathProperties.useQuery(
       pathfinding?.status === 'success'
         ? {
-            infraId: infra.id,
+            infraId,
             props: ['geometry', 'operational_points'],
             pathPropertiesInput: { track_section_ranges: pathfinding.track_section_ranges },
           }

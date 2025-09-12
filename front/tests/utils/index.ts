@@ -83,9 +83,9 @@ export async function handleAndVerifyInput(inputField: Locator, value?: string):
 }
 
 /**
- * Wait until the infrastructure state becomes 'CACHED' before proceeding to the next step.
- * The function polls the `infra.status` every 10 seconds, up to a total of 60 seconds.
- * Display the total time taken for the state to reach 'CACHED'.
+ * Waits until the infrastructure state becomes 'CACHED' before proceeding to the next step.
+ * The function polls the `workerStatus` every 10 seconds, up to a total of 60 seconds.
+ * Displays the total time taken for the state to reach 'CACHED'.
  *
  * @param infraId - The ID of the infrastructure to retrieve and check.
  * @throws {Error} - Throws an error if the state does not become 'CACHED' within 60 seconds.
@@ -97,7 +97,7 @@ export const waitForInfraStateToBeCached = async (infraId: number): Promise<void
   const startTime = Date.now(); // Record start time
 
   for (let attempt = 0; attempt < maxRetries; attempt += 1) {
-    const status = await getWorkerStatus(infraId); // Retrieve the latest infra object
+    const status = await getWorkerStatus(infraId);
     if (status === 'READY') {
       const totalTime = Date.now() - startTime;
       logger.info(

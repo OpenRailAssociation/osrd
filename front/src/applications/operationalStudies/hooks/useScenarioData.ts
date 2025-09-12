@@ -5,7 +5,6 @@ import { useSelector } from 'react-redux';
 
 import { osrdEditoastApi, type ScenarioResponse } from 'common/api/osrdEditoastApi';
 import { useRollingStockContext } from 'common/RollingStockContext';
-import type { InfraWithStatus } from 'modules/infra/types';
 import useLazyProjectTrains from 'modules/simulationResult/components/SpaceTimeChartWrapper/useLazyProjectTrains';
 import {
   formatPacedTrainWithDetails,
@@ -29,13 +28,14 @@ import { mapBy } from 'utils/types';
 import useAutoSelectTrainIds from './useAutoSelectTrainIds';
 import useLazySimulateTrains from './useLazySimulateTrains';
 import usePathProjection from './usePathProjection';
+import { useScenarioContext } from './useScenarioContext';
 
 type ScenarioBroadcastMessage =
   | { type: 'upsertTimetableItems'; timetableItems: TimetableItem[] }
   | { type: 'removeTimetableItems'; timetableItemIds: TimetableItemId[] }
   | { type: 'setTimetableItemDepartureTime'; timetableItemId: TimetableItemId; newDeparture: Date };
 
-const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithStatus) => {
+const useScenarioData = (scenario: ScenarioResponse, infraId: number) => {
   const dispatch = useAppDispatch();
   const trainIdUsedForProjection = useSelector(getTrainIdUsedForProjection);
 
@@ -45,9 +45,10 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithStatus) => 
   const [putTrainScheduleById] = osrdEditoastApi.endpoints.putTrainScheduleById.useMutation();
   const [putPacedTrainById] = osrdEditoastApi.endpoints.putPacedTrainById.useMutation();
 
+  const { workerStatus } = useScenarioContext();
   const { rollingStocks, rollingStockMap: rollingStocksByName } = useRollingStockContext();
 
-  const projectionPath = usePathProjection(infra, timetableItemsById);
+  const projectionPath = usePathProjection(infraId, timetableItemsById);
 
   useEffect(() => {
     const trainSchedulesResult = dispatch(
@@ -95,7 +96,7 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithStatus) => 
     removeProjectedTimetableItems,
     updateProjectedTimetableItemDepartureTime,
   } = useLazyProjectTrains({
-    infraId: scenario.infra_id,
+    infraId,
     electricalProfileSetId: scenario.electrical_profile_set_id,
     path: projectionPath?.pathfinding,
     operationalPoints: projectionPath?.operationalPoints,
@@ -108,7 +109,7 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithStatus) => 
     removeSimulatedTimetableItems,
     updateSimulatedTimetableItemDepartureTime,
   } = useLazySimulateTrains({
-    infraId: scenario.infra_id,
+    infraId,
     electricalProfileSetId: scenario.electrical_profile_set_id,
     rollingStocks,
     onProgress: (summaries) => {
@@ -163,10 +164,10 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithStatus) => 
 
   // first load of the summaries
   useEffect(() => {
-    if (timetableItems && infra.status === 'READY' && simulatedTrainsById.size === 0) {
+    if (timetableItems && workerStatus === 'READY' && simulatedTrainsById.size === 0) {
       simulateTimetableItems(timetableItems);
     }
-  }, [timetableItems, infra.status, simulatedTrainsById]);
+  }, [timetableItems, workerStatus, simulatedTrainsById]);
 
   useEffect(() => {
     safeFetchConflicts();
