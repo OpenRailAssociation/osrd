@@ -35,7 +35,7 @@ import {
   getPathStep,
 } from '../helpers/utils';
 
-type UsePowerRestrictionSelectorBehavioursArgs = {
+type UsePowerRestrictionsSelectorBehavioursArgs = {
   ranges: IntervalItem[];
   customRanges: IntervalItem[];
   pathProperties: ManageTimetableItemPathProperties;
@@ -44,14 +44,14 @@ type UsePowerRestrictionSelectorBehavioursArgs = {
   setCustomRanges: Dispatch<SetStateAction<IntervalItem[]>>;
 };
 
-const usePowerRestrictionSelectorBehaviours = ({
+const usePowerRestrictionsSelectorBehaviours = ({
   customRanges,
   pathProperties,
   pathSteps,
   powerRestrictionRanges,
   ranges,
   setCustomRanges,
-}: UsePowerRestrictionSelectorBehavioursArgs) => {
+}: UsePowerRestrictionsSelectorBehavioursArgs) => {
   const dispatch = useAppDispatch();
 
   const { getTrackSectionsByIds } = useScenarioContext();
@@ -279,4 +279,4 @@ const usePowerRestrictionSelectorBehaviours = ({
   };
 };
 
-export default usePowerRestrictionSelectorBehaviours;
+export default usePowerRestrictionsSelectorBehaviours;
