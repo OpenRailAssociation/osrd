@@ -20,6 +20,7 @@ import type {
 } from 'reducers/osrdconf/types';
 import { updateSelectedTrainId } from 'reducers/simulationResults';
 import { useAppDispatch } from 'store';
+import { usePrevious } from 'utils/hooks/state';
 import {
   formatEditoastIdToExceptionId,
   formatEditoastIdToIndexedOccurrenceId,
@@ -116,9 +117,11 @@ const ScenarioContent = ({ activeBoards }: ScenarioContentProps) => {
     }
   }, [i18n.language]);
 
+  const prevMacroActive = usePrevious(activeBoards.has('macro'));
+
   useEffect(() => {
     if (activeBoards.has('macro')) {
-      setNGEIsLoading(true);
+      if (!prevMacroActive) setNGEIsLoading(true);
       refreshNge();
     }
   }, [activeBoards.has('macro')]);
