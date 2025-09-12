@@ -243,6 +243,7 @@ export function useCanvas(
         canvas.style.height = size.height + 'px';
         canvas.setAttribute('width', Math.max(1, size.width * ratio) + 'px');
         canvas.setAttribute('height', Math.max(1, size.height * ratio) + 'px');
+        if (isPicking) canvas.style.imageRendering = 'pixelated';
 
         if (!isPicking) {
           // Reset the transform to identity, then apply the new scale
