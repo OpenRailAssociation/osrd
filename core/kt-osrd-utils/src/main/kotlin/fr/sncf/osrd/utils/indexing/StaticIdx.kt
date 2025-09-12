@@ -11,11 +11,12 @@ package fr.sncf.osrd.utils.indexing
 import fr.sncf.osrd.fast_collections.PrimitiveWrapperCollections
 import fr.sncf.osrd.utils.Direction
 import fr.sncf.osrd.utils.Endpoint
+import kotlinx.serialization.Serializable
 
 /**
  * The type-safe index. The index type can be an abstract token, such as an empty sealed interface.
  */
-@JvmInline value class StaticIdx<T>(override val index: UInt) : NumIdx
+@Serializable @JvmInline value class StaticIdx<T>(override val index: UInt) : NumIdx
 
 @JvmInline
 value class OptStaticIdx<T>(private val data: UInt) {
@@ -42,6 +43,7 @@ value class OptStaticIdx<T>(private val data: UInt) {
 }
 
 @JvmInline
+@Serializable
 value class EndpointStaticIdx<T>(val data: UInt) : NumIdx {
     constructor(
         value: StaticIdx<T>,
@@ -116,6 +118,7 @@ value class OptEndpointStaticIdx<T>(private val data: UInt) {
     }
 }
 
+@Serializable
 @JvmInline
 value class StaticPool<IndexT, ValueT>(private val items: MutableList<ValueT>) :
     StaticIdxIterable<IndexT> {
@@ -186,6 +189,7 @@ class StaticIdxSpaceIterator<IndexT>(val size: UInt) : StaticIdxIterator<IndexT>
 }
 
 @JvmInline
+@Serializable
 value class StaticIdxSpace<IndexT>(val size: UInt) : StaticIdxIterable<IndexT> {
     override fun iterator(): StaticIdxIterator<IndexT> {
         return StaticIdxSpaceIterator(size)

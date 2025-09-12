@@ -10,8 +10,10 @@ package fr.sncf.osrd.utils.indexing
 
 import fr.sncf.osrd.fast_collections.PrimitiveWrapperCollections
 import fr.sncf.osrd.utils.Direction
+import kotlinx.serialization.Serializable
 
 @JvmInline
+@Serializable
 value class DirStaticIdx<T>(val data: UInt) : NumIdx {
     public constructor(
         id: StaticIdx<T>,

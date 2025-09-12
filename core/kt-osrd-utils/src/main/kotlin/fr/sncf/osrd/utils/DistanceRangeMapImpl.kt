@@ -8,7 +8,9 @@ import fr.sncf.osrd.utils.units.MutableDistanceArrayList
 import java.util.PriorityQueue
 import java.util.function.BiFunction
 import kotlin.math.min
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class DistanceRangeMapImpl<T>(
     private val bounds: MutableDistanceArrayList,
     private val values: MutableList<T?>,

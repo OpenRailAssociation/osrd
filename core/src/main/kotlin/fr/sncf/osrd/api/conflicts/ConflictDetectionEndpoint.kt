@@ -7,7 +7,6 @@ import fr.sncf.osrd.api.parseWorkSchedulesRequest
 import fr.sncf.osrd.conflicts.Conflict
 import fr.sncf.osrd.conflicts.Requirements
 import fr.sncf.osrd.conflicts.detectConflicts
-import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl
 import fr.sncf.osrd.sim_infra.api.RawSignalingInfra
 import java.time.Duration
 import java.time.ZonedDateTime
@@ -22,7 +21,6 @@ import org.takes.rs.RsWithStatus
 
 class ConflictDetectionEndpoint(private val infraManager: InfraProvider) : Take {
     override fun act(req: Request?): Response {
-        val recorder = DiagnosticRecorderImpl(false)
         return try {
             val body = RqPrint(req).printBody()
             val request =
@@ -35,7 +33,7 @@ class ConflictDetectionEndpoint(private val infraManager: InfraProvider) : Take 
                 )
             }
 
-            val infra = infraManager.getInfra(request.infra, request.expectedVersion, recorder)
+            val infra = infraManager.getInfra(request.infra, request.expectedVersion)
 
             var minStartTime = request.trainsRequirements.values.minBy { it.startTime }.startTime
             val requirements = mutableListOf<Requirements>()

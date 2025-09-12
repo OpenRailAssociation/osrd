@@ -1,8 +1,11 @@
 package fr.sncf.osrd.utils.units
 
+import kotlinx.serialization.Serializable
+
 private const val multiplier = 1000.0
 
 @JvmInline
+@Serializable
 value class Speed(val millimetersPerSecond: ULong) : Comparable<Speed> {
     val metersPerSecond
         get() = millimetersPerSecond.toDouble() / multiplier

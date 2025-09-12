@@ -2,12 +2,15 @@ package fr.sncf.osrd.sim_infra.impl
 
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.utils.indexing.*
+import kotlinx.serialization.Serializable
 
+@Serializable
 data class SignalParameters(
     val default: SigParameters,
     val conditional: Map<RouteId, SigParameters>,
 )
 
+@Serializable
 class LoadedSignalingInfraImpl(
     val logicalSignalSpace: StaticIdxSpace<LogicalSignal>,
     val physicalSignalPool: StaticPool<PhysicalSignal, StaticIdxList<LogicalSignal>>,

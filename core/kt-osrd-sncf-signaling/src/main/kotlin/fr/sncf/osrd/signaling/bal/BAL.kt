@@ -5,7 +5,9 @@ import fr.sncf.osrd.signaling.SigBlock
 import fr.sncf.osrd.signaling.SignalingSystemDriver
 import fr.sncf.osrd.signaling.SignalingTrainState
 import fr.sncf.osrd.sim_infra.api.*
+import kotlinx.serialization.Serializable
 
+@Serializable
 object BAL : SignalingSystemDriver {
     override val id = "BAL"
     override val stateSchema = SigStateSchema { enum("aspect", listOf("VL", "A", "(A)", "S", "C")) }

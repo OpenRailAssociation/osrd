@@ -376,7 +376,7 @@ class RawInfraBuilder {
         val builder = ZonePathBuilderImpl(entry, exit)
         builder.init()
         val zonePathDesc = builder.build()
-        return zonePathMap.getOrPut(zonePathDesc) { zonePathPool.add(zonePathDesc) }
+        return zonePathMap.getOrPut(zonePathDesc.getSpecs()) { zonePathPool.add(zonePathDesc) }
     }
 
     fun zonePath(
@@ -396,13 +396,13 @@ class RawInfraBuilder {
                 movableElementsDistances,
                 chunks,
             )
-        return zonePathMap.getOrPut(zonePathDesc) { zonePathPool.add(zonePathDesc) }
+        return zonePathMap.getOrPut(zonePathDesc.getSpecs()) { zonePathPool.add(zonePathDesc) }
     }
 
     fun zonePath(entry: DirDetectorId, exit: DirDetectorId): ZonePathId {
         val builder = ZonePathBuilderImpl(entry, exit)
         val zonePathDesc = builder.build()
-        return zonePathMap.getOrPut(zonePathDesc) { zonePathPool.add(zonePathDesc) }
+        return zonePathMap.getOrPut(zonePathDesc.getSpecs()) { zonePathPool.add(zonePathDesc) }
     }
 
     fun route(name: String, init: RouteBuilder.() -> Unit): RouteId {

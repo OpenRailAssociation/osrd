@@ -1,7 +1,9 @@
 package fr.sncf.osrd.sim_infra.api
 
 import fr.sncf.osrd.reporting.exceptions.OSRDError
+import kotlinx.serialization.Serializable
 
+@Serializable
 sealed interface SigField {
     val name: String
     val hasDefault: Boolean
@@ -12,6 +14,7 @@ sealed interface SigField {
     fun decode(data: Int): String
 }
 
+@Serializable
 data class SigEnumField(override val name: String, val values: List<String>, val default: String?) :
     SigField {
     override val hasDefault
@@ -31,6 +34,7 @@ data class SigEnumField(override val name: String, val values: List<String>, val
     }
 }
 
+@Serializable
 data class SigFlagField(override val name: String, val default: Boolean?) : SigField {
     override val hasDefault
         get() = default != null
@@ -86,13 +90,12 @@ private fun sigSchemaFields(init: SigSchemaBuilder.() -> Unit): List<SigField> {
     return res
 }
 
-class SigSchema<MarkerT>(
+@Serializable
+data class SigSchema<MarkerT>(
     /** A list of fields, sorted by name */
-    fields: List<SigField>
+    val fields: List<SigField>
 ) {
     val sortedFields = fields.sortedBy { it.name }
-    val fields
-        get() = sortedFields
 
     private val fieldIndexMap: Map<String, Int>
 
@@ -157,6 +160,7 @@ interface SigDataBuilder {
     fun value(name: String, value: String)
 }
 
+@Serializable
 data class SigData<MarkerT>(val schema: SigSchema<MarkerT>, private val data: IntArray) {
     fun getFlag(fieldName: String): Boolean {
         val fieldIndex = schema.find(fieldName)

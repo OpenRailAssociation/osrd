@@ -322,7 +322,7 @@ class SpacingResourceGeneratorTest {
         val stopDuration = 5_000.0
         val zoneNameAfterStop =
             "zone.[det.b1.nf:DECREASING, det.b2.nf:DECREASING, det.center.3:INCREASING]"
-        val zoneAfterStop = infra.rawInfra().getZoneFromName(zoneNameAfterStop)
+        val zoneAfterStop = infra.rawInfra.getZoneFromName(zoneNameAfterStop)
 
         // Init stops and offsets
         val stopOffset =

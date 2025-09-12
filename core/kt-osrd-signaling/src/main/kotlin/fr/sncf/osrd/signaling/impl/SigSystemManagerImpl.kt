@@ -5,7 +5,9 @@ import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra.api.SignalDriver
 import fr.sncf.osrd.utils.indexing.StaticIdxSpace
 import fr.sncf.osrd.utils.indexing.StaticPool
+import kotlinx.serialization.Serializable
 
+@Serializable
 class SigSystemManagerImpl : SigSystemManager {
     private val sigSystemMap = mutableMapOf<String, SignalingSystemId>()
     private val sigSystemPool = StaticPool<SignalingSystem, SignalingSystemDriver>()

@@ -8,8 +8,9 @@ import fr.sncf.osrd.utils.indexing.StaticIdxList
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.Speed
+import kotlinx.serialization.Serializable
 
-data class NeutralSection(val lowerPantograph: Boolean, val isAnnouncement: Boolean)
+@Serializable data class NeutralSection(val lowerPantograph: Boolean, val isAnnouncement: Boolean)
 
 @JvmRecord
 data class SpeedLimitProperty(

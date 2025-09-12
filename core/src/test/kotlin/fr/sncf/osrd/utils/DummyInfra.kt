@@ -74,7 +74,7 @@ class DummyInfra : RawInfra, BlockInfra {
         for ((index, current) in routePoints.withIndex()) if (index != routePoints.size - 1) {
             val next = routePoints[index + 1]
             val currentPoint = detectorGeoPoint[current]!!
-            val nextPoint = detectorGeoPoint[next]
+            val nextPoint = detectorGeoPoint[next]!!
             val d = currentPoint.distanceAsMeters(nextPoint)
             routeBlockIds.add(addBlock(current, next, d.meters))
         }

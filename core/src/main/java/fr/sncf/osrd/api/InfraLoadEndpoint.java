@@ -3,7 +3,6 @@ package fr.sncf.osrd.api;
 import com.squareup.moshi.Json;
 import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
-import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl;
 import org.takes.Request;
 import org.takes.Response;
 import org.takes.Take;
@@ -22,7 +21,6 @@ public class InfraLoadEndpoint implements Take {
 
     @Override
     public Response act(Request req) {
-        var recorder = new DiagnosticRecorderImpl(false);
         try {
             // Parse request input
             var body = new RqPrint(req).printBody();
@@ -30,7 +28,7 @@ public class InfraLoadEndpoint implements Take {
             if (request == null) return new RsWithStatus(new RsText("missing request body"), 400);
 
             // load infra
-            infraManager.load(request.infra, request.expectedVersion, recorder);
+            infraManager.load(request.infra, request.expectedVersion);
 
             return new RsWithStatus(204);
         } catch (Throwable ex) {

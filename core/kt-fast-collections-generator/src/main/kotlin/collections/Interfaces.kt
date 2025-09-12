@@ -24,10 +24,12 @@ private fun CollectionItemType.generateInterfaces(context: GeneratorContext, cur
 
             package $generatedPackage
 
+            import kotlinx.serialization.Serializable
             import ${type.qualifiedName}
 
             /** GENERATED CODE */
-            interface ${simpleName}Collection${paramsDecl} : Iterable<${type}> {
+            @Serializable
+            sealed interface ${simpleName}Collection${paramsDecl} : Iterable<${type}> {
                 val size: Int
             }
 
@@ -37,7 +39,8 @@ private fun CollectionItemType.generateInterfaces(context: GeneratorContext, cur
 
             /** GENERATED CODE */
             @Suppress("INAPPLICABLE_JVM_NAME")
-            interface ${simpleName}List${paramsDecl} : ${simpleName}Collection${paramsUse} {
+            @Serializable
+            sealed interface ${simpleName}List${paramsDecl} : ${simpleName}Collection${paramsUse} {
                 @JvmName("get")
                 operator fun get(index: Int): $type
                 fun clone(): Mutable${simpleName}List${paramsUse}
@@ -46,7 +49,8 @@ private fun CollectionItemType.generateInterfaces(context: GeneratorContext, cur
 
             /** GENERATED CODE */
             @Suppress("INAPPLICABLE_JVM_NAME")
-            interface Mutable${simpleName}List${paramsDecl} : ${simpleName}List${paramsUse} {
+            @Serializable
+            sealed interface Mutable${simpleName}List${paramsDecl} : ${simpleName}List${paramsUse} {
                 fun ensureCapacity(expectedElements: Int)
                 fun add(element: ${type}): Boolean
                 fun add(elemA: ${type}, elemB: ${type})
@@ -61,14 +65,16 @@ private fun CollectionItemType.generateInterfaces(context: GeneratorContext, cur
 
             /** GENERATED CODE */
             @Suppress("INAPPLICABLE_JVM_NAME")
-            interface ${simpleName}SortedSet${paramsDecl} : ${simpleName}Collection${paramsUse} {
+            @Serializable
+            sealed interface ${simpleName}SortedSet${paramsDecl} : ${simpleName}Collection${paramsUse} {
                 operator fun contains(value: ${type}): Boolean
                 @JvmName("getAtIndex")
                 fun getAtIndex(index: Int): $type
             }
 
             /** GENERATED CODE */
-            interface Mutable${simpleName}SortedSet${paramsDecl} : ${simpleName}SortedSet${paramsDecl} {
+            @Serializable
+            sealed interface Mutable${simpleName}SortedSet${paramsDecl} : ${simpleName}SortedSet${paramsDecl} {
                 fun add(element: ${type}): Boolean
                 fun add(elemA: ${type}, elemB: ${type})
                 fun add(elemA: ${type}, elemB: ${type}, elemC: ${type})

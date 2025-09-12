@@ -1,7 +1,10 @@
 package fr.sncf.osrd.utils.indexing
 
+import kotlinx.serialization.Serializable
+
 typealias StaticIdxMap<IndexT, ValueT> = IdxMap<StaticIdx<IndexT>, ValueT>
 
+@Serializable
 class IdxMap<IndexT : NumIdx, DataT>(@PublishedApi internal val data: ArrayList<DataT?>) {
     constructor() : this(ArrayList())
 

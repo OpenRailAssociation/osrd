@@ -13,7 +13,6 @@ import fr.sncf.osrd.api.standalone_sim.SimulationEndpoint
 import fr.sncf.osrd.api.stdcm.STDCMEndpoint
 import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
-import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl
 import io.opentelemetry.api.GlobalOpenTelemetry
 import io.opentelemetry.context.Context
 import io.opentelemetry.context.propagation.TextMapGetter
@@ -43,6 +42,7 @@ class WorkerCommand : CliCommand {
     private var editoastAuthorization: String = "x-osrd-skip-authz"
 
     val LOCAL_TIMETABLE_CACHE: String?
+    val LOCAL_INFRA_CACHE: String?
     val WORKER_ID: String?
     val WORKER_ID_USE_HOSTNAME: Boolean
     val WORKER_KEY: String?
@@ -56,6 +56,7 @@ class WorkerCommand : CliCommand {
 
     init {
         LOCAL_TIMETABLE_CACHE = System.getenv("LOCAL_TIMETABLE_CACHE")
+        LOCAL_INFRA_CACHE = System.getenv("LOCAL_INFRA_CACHE")
         WORKER_ID_USE_HOSTNAME = getBooleanEnvvar("WORKER_ID_USE_HOSTNAME")
         ALL_INFRA = getBooleanEnvvar("ALL_INFRA")
         WORKER_KEY = if (ALL_INFRA) "all" else System.getenv("WORKER_KEY")
@@ -108,8 +109,8 @@ class WorkerCommand : CliCommand {
 
         val infraId = WORKER_KEY.split("-").first()
         val timetableId = WORKER_KEY.split("-").getOrNull(1)?.toInt()
-        val diagnosticRecorder = DiagnosticRecorderImpl(false)
-        val infraManager = InfraManager(editoastUrl, editoastAuthorization, httpClient)
+        val infraManager =
+            InfraManager(editoastUrl!!, editoastAuthorization, httpClient, LOCAL_INFRA_CACHE)
         val timetableCache =
             TimetableCacheManager(
                 editoastUrl!!,
@@ -162,7 +163,7 @@ class WorkerCommand : CliCommand {
 
             if (!ALL_INFRA) {
                 try {
-                    val infra = infraManager.load(infraId, null, diagnosticRecorder)
+                    val infra = infraManager.load(infraId, null)
                     if (timetableId != null)
                         timetableCache.load(infraId, infra.rawInfra, timetableId)
                 } catch (e: OSRDError) {

@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.ksp)
     id 'jacoco'
+    alias(libs.plugins.kotlin.serialization)
 }
 
 repositories {
@@ -27,6 +28,8 @@ dependencies {
     implementation libs.guava
     implementation libs.kotlin.stdlib
     testImplementation libs.kotlin.test
+    implementation libs.kotlinx.serialization.core
+    implementation libs.kotlinx.serialization.cbor
 }
 
 

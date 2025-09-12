@@ -18,8 +18,10 @@ package fr.sncf.osrd.utils.units
 import fr.sncf.osrd.fast_collections.PrimitiveWrapperCollections
 import fr.sncf.osrd.utils.Direction
 import kotlin.math.absoluteValue
+import kotlinx.serialization.Serializable
 
 @JvmInline
+@Serializable
 value class Distance(val millimeters: Long) : Comparable<Distance> {
     val absoluteValue
         get() = Distance(millimeters.absoluteValue)
@@ -80,6 +82,7 @@ val Int.meters: Distance
     get() = Distance(this.toLong() * 1000)
 
 @JvmInline
+@Serializable
 value class Offset<T>(val distance: Distance) : Comparable<Offset<T>> {
     operator fun plus(value: Distance): Offset<T> {
         return Offset(distance + value)
