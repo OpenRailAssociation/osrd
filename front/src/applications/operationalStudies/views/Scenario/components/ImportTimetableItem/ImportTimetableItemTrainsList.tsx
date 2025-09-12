@@ -110,7 +110,10 @@ const ImportTimetableItemTrainsList = ({
     return [...labels, unrecognizedCategoryLabel];
   };
 
-  const { pacedTrainsJsonData, trainSchedulesJsonData } = useMemo(
+  const { pacedTrainsJsonData, trainSchedulesJsonData } = useMemo<{
+    pacedTrainsJsonData: PacedTrain[];
+    trainSchedulesJsonData: TrainSchedule[];
+  }>(
     () => ({
       pacedTrainsJsonData: pacedTrainsFromJsonData.map((pacedTrain) => ({
         ...pacedTrain,

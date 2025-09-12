@@ -10,6 +10,7 @@ import type {
   TrainSchedule,
   MacroNodeForm,
   RollingStockWithLiveries,
+  TrainCategory,
 } from 'common/api/osrdEditoastApi';
 import type { RangedValue } from 'common/types';
 import type { PathOperationalPoint } from 'modules/simulationResult/types';
@@ -20,8 +21,12 @@ import type { ArrayElement } from 'utils/types';
 
 export type Board = 'trains' | 'map' | 'macro' | 'std' | 'sdd' | 'tables' | 'conflicts';
 
+export type TrainScheduleFromJson = Omit<TrainSchedule, 'category'> & {
+  category?: TrainCategory | string | null;
+};
+
 export type TimetableJsonPayload = {
-  train_schedules: TrainSchedule[];
+  train_schedules: TrainScheduleFromJson[];
   paced_trains: PacedTrain[];
   macro_nodes?: MacroNodeForm[];
 };
