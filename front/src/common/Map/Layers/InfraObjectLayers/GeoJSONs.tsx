@@ -15,7 +15,11 @@ import { useMapSettings } from 'reducers/globalMap';
 import type { MapState } from 'reducers/map';
 
 import { getBufferStopsLayerProps } from './BufferStops';
-import { getDetectorsLayerProps, getDetectorsNameLayerProps } from './Detectors';
+import {
+  DETECTOR_CIRCLES_DEF,
+  getDetectorsLayerProps,
+  getDetectorsNameLayerProps,
+} from './Detectors';
 import { getElectrificationsProps, getElectrificationsTextParams } from './Electrifications';
 import {
   getPSLSpeedLineBGLayerProps,
@@ -260,8 +264,20 @@ function getElectrificationsLayers(context: LayerContext, prefix: string): Layer
 function getDetectorsLayers(context: LayerContext, prefix: string): LayerProps[] {
   return [
     {
-      ...getDetectorsLayerProps(context),
-      id: `${prefix}geo/detector-main`,
+      ...getDetectorsLayerProps({ ...context, ...DETECTOR_CIRCLES_DEF[0] }),
+      id: `${prefix}geo/detectors-3`,
+      beforeId: `${prefix}geo/detectors-2`,
+      minzoom: POINT_ENTITIES_MIN_ZOOM,
+    },
+    {
+      ...getDetectorsLayerProps({ ...context, ...DETECTOR_CIRCLES_DEF[1] }),
+      id: `${prefix}geo/detectors-2`,
+      beforeId: `${prefix}geo/detectors-1`,
+      minzoom: POINT_ENTITIES_MIN_ZOOM,
+    },
+    {
+      ...getDetectorsLayerProps({ ...context, ...DETECTOR_CIRCLES_DEF[2] }),
+      id: `${prefix}geo/detectors-1`,
       minzoom: POINT_ENTITIES_MIN_ZOOM,
     },
     {
