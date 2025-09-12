@@ -31,13 +31,13 @@ export function getDetectorsLayerProps(params: {
     filter: params.highlightedArea ? ['within', params.highlightedArea] : true,
     paint: {
       'circle-stroke-color': chroma(params.colors.detectors.circle)
-        .alpha(params.alpha !== undefined ? params.alpha : 0)
+        .alpha(params.alpha ?? 1)
         .css(),
-      'circle-stroke-width': params.stroke !== undefined ? params.stroke : 2,
+      'circle-stroke-width': params.stroke ?? 2,
       'circle-color': chroma(params.colors.detectors.circleOther)
-        .alpha(params.alpha !== undefined ? params.alpha : 0)
+        .alpha(params.alpha ?? 1)
         .css(),
-      'circle-radius': params.radius !== undefined ? params.radius : 3,
+      'circle-radius': params.radius ?? 3,
     },
   };
 
