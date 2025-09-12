@@ -110,7 +110,7 @@ const OccurrenceIndicator = ({ occurrence, subCategories }: OccurrenceIndicatorP
           disabled: occurrence.disabled,
         })}
         style={{
-          backgroundColor: currentSubCategory?.background_color,
+          backgroundColor: currentSubCategory?.color,
         }}
       />
     </div>
