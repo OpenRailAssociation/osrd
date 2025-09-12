@@ -11,7 +11,7 @@ import type { RangedValue } from 'common/types';
 import { NO_POWER_RESTRICTION } from 'modules/powerRestriction/consts';
 import { mmToM } from 'utils/physics';
 
-import usePowerRestrictionSelector from './hooks/usePowerRestrictionSelectorData';
+import usePowerRestrictionsSelector from './hooks/usePowerRestrictionsSelector';
 
 type PowerRestrictionsSelectorProps = {
   voltageRanges: RangedValue[];
@@ -41,7 +41,7 @@ const PowerRestrictionsSelector = ({
     deletePowerRestrictionRange,
     cutPowerRestrictionRange,
     editPowerRestrictionRanges,
-  } = usePowerRestrictionSelector(
+  } = usePowerRestrictionsSelector(
     voltageRanges,
     rollingStockPowerRestrictions,
     rollingStockModes,

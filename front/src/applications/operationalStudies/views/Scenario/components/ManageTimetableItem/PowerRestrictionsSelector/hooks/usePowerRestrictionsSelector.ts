@@ -14,11 +14,11 @@ import {
 } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 import { mmToM } from 'utils/physics';
 
-import usePowerRestrictionSelectorBehaviours from './usePowerRestrictionSelectorBehaviours';
+import usePowerRestrictionsSelectorBehaviours from './usePowerRestrictionsSelectorBehaviours';
 import formatPowerRestrictions from '../helpers/formatPowerRestrictions';
 import getPowerRestrictionsWarningsData from '../helpers/powerRestrictionWarnings';
 
-const usePowerRestrictionSelector = (
+const usePowerRestrictionsSelector = (
   voltageRanges: RangedValue[],
   rollingStockPowerRestrictions: RollingStock['power_restrictions'],
   rollingStockModes: RollingStock['effort_curves']['modes'],
@@ -62,7 +62,7 @@ const usePowerRestrictionSelector = (
     deletePowerRestrictionRange,
     cutPowerRestrictionRange,
     editPowerRestrictionRanges,
-  } = usePowerRestrictionSelectorBehaviours({
+  } = usePowerRestrictionsSelectorBehaviours({
     customRanges,
     pathProperties,
     pathSteps,
@@ -116,4 +116,4 @@ const usePowerRestrictionSelector = (
   };
 };
 
-export default usePowerRestrictionSelector;
+export default usePowerRestrictionsSelector;
