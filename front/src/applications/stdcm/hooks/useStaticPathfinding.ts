@@ -3,8 +3,12 @@ import { useEffect, useState } from 'react';
 import { compact, isEqual } from 'lodash';
 import { useSelector } from 'react-redux';
 
-import { osrdEditoastApi, type PathfindingResult } from 'common/api/osrdEditoastApi';
-import type { InfraWithStatus } from 'modules/infra/types';
+import {
+  osrdEditoastApi,
+  type PathfindingResult,
+  type Infra,
+  type WorkerStatus,
+} from 'common/api/osrdEditoastApi';
 import { getPathfindingQuery } from 'modules/pathfinding/utils';
 import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
 import {
@@ -23,7 +27,7 @@ function pathStepsToLocations(
   return compact(pathSteps.map((s) => s.location));
 }
 
-const useStaticPathfinding = (infra?: InfraWithStatus) => {
+const useStaticPathfinding = (workerStatus: WorkerStatus, infra: Infra | undefined) => {
   const pathSteps = useSelector(getStdcmPathSteps);
   const [pathStepsLocations, setPathStepsLocations] = useState(pathStepsToLocations(pathSteps));
 
@@ -49,7 +53,7 @@ const useStaticPathfinding = (infra?: InfraWithStatus) => {
   useEffect(() => {
     const launchPathfinding = async () => {
       setPathfinding(undefined);
-      if (infra?.status !== 'READY' || !rollingStock || pathStepsLocations.length < 2) {
+      if (!infra || workerStatus !== 'READY' || !rollingStock || pathStepsLocations.length < 2) {
         return;
       }
 
@@ -80,7 +84,7 @@ const useStaticPathfinding = (infra?: InfraWithStatus) => {
     };
 
     launchPathfinding();
-  }, [pathStepsLocations, rollingStock, loadingGauge, infra]);
+  }, [pathStepsLocations, rollingStock, loadingGauge, infra, workerStatus]);
 
   return { pathfinding, isPathFindingLoading: isFetching };
 };

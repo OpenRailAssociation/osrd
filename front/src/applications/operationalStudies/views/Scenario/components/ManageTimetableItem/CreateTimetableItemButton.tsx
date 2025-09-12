@@ -40,7 +40,7 @@ const CreateTimetableItemButton = ({
   const dispatch = useAppDispatch();
   const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTimetableItem' });
 
-  const { infra, timetableId } = useScenarioContext();
+  const { workerStatus, timetableId } = useScenarioContext();
 
   const simulationConf = useSelector(getOperationalStudiesConf);
 
@@ -116,7 +116,7 @@ const CreateTimetableItemButton = ({
     <button
       className="btn btn-primary mb-2"
       type="button"
-      disabled={infra.status !== 'READY'}
+      disabled={workerStatus !== 'READY'}
       onClick={createTrainSchedules}
       data-testid="create-timetable-item-button"
     >

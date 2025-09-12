@@ -6,15 +6,15 @@ import { Loader } from 'common/Loaders';
 export default function ScenarioLoaderMessage() {
   const { t } = useTranslation('operational-studies');
 
-  const { infra } = useScenarioContext();
+  const { workerStatus } = useScenarioContext();
 
-  if (infra.status === 'ERROR') {
+  if (workerStatus === 'ERROR') {
     return (
       <h1 className="text-center">{t('simulationResults.errorMessages.errorLoadingInfra')}</h1>
     );
   }
 
-  if (infra.status !== 'READY') {
+  if (workerStatus !== 'READY') {
     return (
       <Loader
         msg={t('simulationResults.infraLoading')}

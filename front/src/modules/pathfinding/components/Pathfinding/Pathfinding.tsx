@@ -26,11 +26,7 @@ const Pathfinding = ({ rollingStockId }: { rollingStockId: number | undefined })
   const origin = useSelector(getOrigin, isEqual);
   const destination = useSelector(getDestination, isEqual);
 
-  const {
-    pathProperties,
-    pathfindingState,
-    infraInfo: { infra },
-  } = useManageTimetableItemContext();
+  const { pathProperties, pathfindingState, workerStatus } = useManageTimetableItemContext();
 
   const missingElements = conditionalStringConcat([
     [!origin, t('origin')],
@@ -44,7 +40,7 @@ const Pathfinding = ({ rollingStockId }: { rollingStockId: number | undefined })
 
   return (
     <div className="pathfinding-state-main-container flex-grow-1">
-      {infra && infra.status !== 'READY' && (
+      {workerStatus !== 'READY' && (
         <div className="content infra-loading">
           <img src={infraLogo} alt="Infra logo" className="infra-logo" />
           <div>{t('infraLoading')}</div>
@@ -52,7 +48,7 @@ const Pathfinding = ({ rollingStockId }: { rollingStockId: number | undefined })
         </div>
       )}
 
-      {infra && infra.status === 'ERROR' && <InfraError />}
+      {workerStatus === 'ERROR' && <InfraError />}
 
       {!pathfindingState.error &&
         !pathfindingState.isRunning &&
@@ -75,7 +71,7 @@ const Pathfinding = ({ rollingStockId }: { rollingStockId: number | undefined })
       {!pathProperties && isPathFindingActive ? (
         <div
           data-testid="pathfinding-no-state"
-          className={cx('content pathfinding-none', { 'mt-2': infra && infra.status !== 'READY' })}
+          className={cx('content pathfinding-none', { 'mt-2': workerStatus !== 'READY' })}
         >
           {t('pathfindingNoState')}
         </div>
@@ -84,7 +80,7 @@ const Pathfinding = ({ rollingStockId }: { rollingStockId: number | undefined })
           {(pathfindingState.error || hasInvalidPathStep) && (
             <div
               className={cx('content pathfinding-error', {
-                'mt-2': infra && infra.status !== 'READY',
+                'mt-2': workerStatus !== 'READY',
               })}
             >
               <span className="lead">

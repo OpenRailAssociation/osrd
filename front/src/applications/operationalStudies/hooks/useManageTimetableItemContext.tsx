@@ -4,8 +4,8 @@ import { compact } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
+import type { WorkerStatus } from 'common/api/osrdEditoastApi';
 import type { RangedValue } from 'common/types';
-import type { InfraWithStatus } from 'modules/infra/types';
 import getPathVoltages from 'modules/pathfinding/helpers/getPathVoltages';
 import usePathfinding from 'modules/pathfinding/hooks/usePathfinding';
 import type { PathfindingState } from 'modules/pathfinding/types';
@@ -18,6 +18,7 @@ import {
 import type { PathStep } from 'reducers/osrdconf/types';
 
 import type { ManageTimetableItemPathProperties } from '../types';
+import { useScenarioContext } from './useScenarioContext';
 
 type ManageTimetableItemContext = {
   pathProperties?: ManageTimetableItemPathProperties;
@@ -28,7 +29,7 @@ type ManageTimetableItemContext = {
     options?: { isInitialization: boolean }
   ) => void;
   pathfindingState: PathfindingState;
-  infraInfo: { infra?: InfraWithStatus };
+  workerStatus: WorkerStatus;
   /** Operational points along the path (including origin and destination) and vias added by clicking on map */
   pathStepsAndSuggestedOPs?: SuggestedOP[];
 } | null;
@@ -44,7 +45,8 @@ export const ManageTimetableItemContextProvider = ({
   const { t, i18n } = useTranslation('operational-studies');
 
   const rollingStockId = useSelector(getOperationalStudiesRollingStockID);
-  const { launchPathfinding, pathfindingState, infraInfo, pathProperties } = usePathfinding({
+  const { workerStatus } = useScenarioContext();
+  const { launchPathfinding, pathfindingState, pathProperties } = usePathfinding({
     rollingStockId,
   });
 
@@ -63,8 +65,8 @@ export const ManageTimetableItemContextProvider = ({
       pathProperties,
       voltageRanges,
       launchPathfinding,
+      workerStatus,
       pathfindingState,
-      infraInfo,
       pathStepsAndSuggestedOPs,
     }),
     [
@@ -72,7 +74,7 @@ export const ManageTimetableItemContextProvider = ({
       voltageRanges,
       launchPathfinding,
       pathfindingState,
-      infraInfo,
+      workerStatus,
       pathStepsAndSuggestedOPs,
     ]
   );

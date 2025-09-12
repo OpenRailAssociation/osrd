@@ -1,15 +1,20 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect } from 'react';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import type { InfraWithStatus } from 'modules/infra/types';
 
-export default function useInfraStatus({
+/**
+ * Hook used to launch a worker on which the asked infra and timetable are loaded
+ * Return the worker status
+ *
+ * A worker with a timetable and a infra can only used for stdcm requests.
+ */
+export default function useWorkerStatus({
   infraId,
   timetableId,
 }: {
   infraId: number | undefined;
   timetableId?: number;
-}): { infra?: InfraWithStatus } {
+}) {
   const [shouldPoll, setShouldPoll] = useState(true);
 
   // This endpoint initializes a worker, loads the required infrastructure on it, and optionally caches
@@ -19,13 +24,6 @@ export default function useInfraStatus({
     {
       refetchOnMountOrArgChange: true,
       pollingInterval: shouldPoll ? 1000 : undefined,
-      skip: !infraId,
-    }
-  );
-
-  const { data: infra } = osrdEditoastApi.endpoints.getInfraByInfraId.useQuery(
-    { infraId: infraId! },
-    {
       skip: !infraId,
     }
   );
@@ -50,10 +48,5 @@ export default function useInfraStatus({
     }
   }, [workerStatus]);
 
-  return useMemo(
-    () => ({
-      infra: infra ? { ...infra, status: workerStatus } : undefined,
-    }),
-    [infra, workerStatus]
-  );
+  return workerStatus;
 }

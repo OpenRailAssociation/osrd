@@ -1,12 +1,19 @@
 import { createContext, useContext, useMemo, type ReactNode } from 'react';
 
 import useCachedTrackSections from 'applications/operationalStudies/hooks/useCachedTrackSections';
-import type { ScenarioResponse, TrackSection } from 'common/api/osrdEditoastApi';
-import type { InfraWithStatus } from 'modules/infra/types';
+import {
+  osrdEditoastApi,
+  type Infra,
+  type ScenarioResponse,
+  type TrackSection,
+  type WorkerStatus,
+} from 'common/api/osrdEditoastApi';
+import useWorkerStatus from 'modules/pathfinding/hooks/useWorkerStatus';
 
 type ScenarioContextType = {
-  infra: InfraWithStatus;
+  infra?: Infra;
   infraId: number;
+  workerStatus: WorkerStatus;
   isInfraLoaded: boolean;
   scenario: ScenarioResponse;
   timetableId: number;
@@ -17,32 +24,36 @@ type ScenarioContextType = {
 const ScenarioContext = createContext<ScenarioContextType>(null);
 
 type ScenarioContextProviderProps = {
-  infra: InfraWithStatus;
   scenario: ScenarioResponse;
   children: ReactNode;
 };
 
-export const ScenarioContextProvider = ({
-  infra,
-  scenario,
-  children,
-}: ScenarioContextProviderProps) => {
+export const ScenarioContextProvider = ({ scenario, children }: ScenarioContextProviderProps) => {
+  const { data: infra } = osrdEditoastApi.endpoints.getInfraByInfraId.useQuery({
+    infraId: scenario.infra_id,
+  });
+
+  const workerStatus = useWorkerStatus({ infraId: scenario.infra_id });
+
   const { getTrackSectionsByIds, isLoading: trackSectionsLoading } = useCachedTrackSections(
-    infra.id
+    scenario.infra_id
   );
+
   const providedContext = useMemo(
     () => ({
-      infraId: infra.id,
+      infraId: scenario.infra_id,
       infra,
-      isInfraLoaded: infra.status === 'READY',
+      workerStatus,
+      isInfraLoaded: workerStatus === 'READY',
       scenario,
       timetableId: scenario.timetable_id,
       electricalProfileSetId: scenario.electrical_profile_set_id,
       trackSectionsLoading,
       getTrackSectionsByIds,
     }),
-    [infra, scenario, trackSectionsLoading, getTrackSectionsByIds]
+    [infra, scenario, workerStatus, trackSectionsLoading, getTrackSectionsByIds]
   );
+
   return <ScenarioContext.Provider value={providedContext}>{children}</ScenarioContext.Provider>;
 };
 

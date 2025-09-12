@@ -52,7 +52,7 @@ const usePathfinding = ({
   const dispatch = useAppDispatch();
   const pathSteps = useSelector(getPathSteps);
   const powerRestrictions = useSelector(getPowerRestrictions);
-  const { infraId, getTrackSectionsByIds, infra } = useScenarioContext();
+  const { infraId, getTrackSectionsByIds, workerStatus } = useScenarioContext();
   const [pathfindingState, setPathfindingState] =
     useState<PathfindingState>(initialPathfindingState);
   const [pathProperties, setPathProperties] = useState<ManageTimetableItemPathProperties>();
@@ -253,7 +253,7 @@ const usePathfinding = ({
         return;
       }
 
-      if (infra?.status !== 'READY') {
+      if (workerStatus !== 'READY') {
         return;
       }
 
@@ -333,22 +333,19 @@ const usePathfinding = ({
         }
       }
     },
-    [currentRollingStockId, infra]
+    [currentRollingStockId, workerStatus]
   );
 
   useEffect(() => {
-    if (infra?.status === 'READY') {
+    if (workerStatus === 'READY') {
       launchPathfinding(pathSteps, currentRollingStockId, { isInitialization: true });
     }
-  }, [infra?.status]);
+  }, [workerStatus]);
 
   return {
     launchPathfinding,
     pathfindingState,
     pathProperties,
-    infraInfo: {
-      infra,
-    },
   };
 };
 

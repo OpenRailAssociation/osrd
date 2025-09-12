@@ -3,16 +3,14 @@ import cx from 'classnames';
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 
 export default function InfraLoadingState() {
-  const { infra } = useScenarioContext();
-
-  if (!infra) return null;
+  const { workerStatus } = useScenarioContext();
 
   return (
     <div
-      className={cx('infra-loading-state', infra.status === 'READY' ? 'cached' : 'loading')}
-      title={infra.status}
+      className={cx('infra-loading-state', workerStatus === 'READY' ? 'cached' : 'loading')}
+      title={workerStatus}
     >
-      {infra.status === 'READY' ? (
+      {workerStatus === 'READY' ? (
         <span className="infra-loaded" />
       ) : (
         <>
