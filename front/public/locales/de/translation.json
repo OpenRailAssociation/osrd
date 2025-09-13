@@ -1,6 +1,7 @@
 {
   "Editor": {
     "directions": {
+      "BOTH": "Beide",
       "START_TO_STOP": "Abfahrt bis Ankunft",
       "STOP_TO_START": "Ankunft bis Abfahrt"
     },
@@ -11,7 +12,51 @@
       "corrector-modal": {
         "create-actions": "{{creation_count}} erstellte Objekte",
         "delete-actions": "{{deletion_count}} gelöschte Objekte",
-        "loading-loader": "Berechne mögliche Lösungen"
+        "loading-loader": "Berechne mögliche Lösungen",
+        "no-fixes-found": "Keine Korrektur gefunden.",
+        "saving-loader": "Anpassung der Infrastruktur",
+        "text": "Die folgenden Maßnahmen werden angewendet, um einige der Fehler der Infrastruktur zu korrigieren:",
+        "title": "Automatische Fehlerkorrektur",
+        "update-actions": "{{update_count} bestehende Objekt-Updates"
+      },
+      "error-level": {
+        "all": "Alle",
+        "errors": "Fehler",
+        "warnings": "Warnungen"
+      },
+      "error-type": {
+        "all": "Alle",
+        "duplicated_group": {
+          "description": "Schaltertyp « {{obj_id} » enthält eine doppelte Konfiguration « {{original_group_path} »",
+          "name": "Dupliziertes Schaltmuster"
+        },
+        "empty_object": {
+          "description": "Objekt « {{obj_id} » hat das leere Feld « {{field} »",
+          "name": "Leeres Objekt"
+        },
+        "invalid_group": {
+          "description": "Der Schalter « {{obj_id} » der Route « {{group} » befindet sich in der Konfiguration « {{switch_type}», die nicht existiert",
+          "name": "Ungültige Nadelposition"
+        },
+        "invalid_reference": {
+          "description": "Das Objekt « {{obj_id} » verweist auf das Objekt « {{reference.obj_id}», das nicht existiert",
+          "name": "Ungültige Referenz"
+        },
+        "invalid_route": {
+          "description": "Route « {{obj_id} » ist ungültig, angeforderter Pfad ist nicht konsistent",
+          "name": "Invalide Route"
+        },
+        "invalid_switch_ports": {
+          "description": "Schalter « {{obj_id} » hat einen Zweig, der nicht mit seinem Typ kompatibel ist",
+          "name": "Invalides Schaltmuster"
+        },
+        "missing_buffer_stop": {
+          "description": "Endpunkt « {{endpoint} » der Strecke « {{obj_id}} » hat keinen Prellbock",
+          "name": "Fehlender Prellbock"
+        },
+        "missing_route": {
+          "name": "Fehlende Route"
+        }
       }
     }
   },
