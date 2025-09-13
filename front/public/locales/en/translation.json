@@ -36,7 +36,7 @@
         },
         "invalid_group": {
           "description": "The switch « {{obj_id}} » of the route « {{group}} » is in the configuration « {{switch_type}} » which does not exist",
-          "name": "Position de l'aiguille invalide"
+          "name": "Invalid needle position"
         },
         "invalid_reference": {
           "description": "The object « {{obj_id}} » references the object « {{reference.obj_id}} » which does not exist",
