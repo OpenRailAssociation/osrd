@@ -26,10 +26,6 @@ const IGNORE_UNUSED: RegExp[] = [
   /Editor\.item-statuses\..*/,
   /translation:Editor\.infra-errors\.error-type\..*/, // Infra error types are generated
 
-  // Map
-  /translation:mapKey.alternatingCurrent/,
-  /translation:mapKey.directCurrent/,
-
   // Manage timetable item
   /operational-studies:manageTimetableItem.errorMessages\..*/,
   /operational-studies:manageTimetableItem.pathfindingErrors\.pathfinding_failure/,

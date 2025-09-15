@@ -89,12 +89,12 @@ export const speedLimitMapKey: SpeedLimitKey[] = [
 type ElectrificationKey = {
   color: string;
   text: string;
-  current: string;
+  current: 'alternatingCurrent' | 'directCurrent' | null;
 };
 
 export const electrificationMapKey: ElectrificationKey[] = [
   { color: 'color25000V', text: '25000V', current: 'alternatingCurrent' },
-  { color: 'color15000V1623', text: '15000V 16 2/3', current: '' },
+  { color: 'color15000V1623', text: '15000V 16 2/3', current: null },
   { color: 'color3000V', text: '3000V', current: 'directCurrent' },
   { color: 'color1500V', text: '1500V', current: 'directCurrent' },
   { color: 'color850V', text: '850V', current: 'directCurrent' },
