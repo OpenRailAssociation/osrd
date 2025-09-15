@@ -1,9 +1,9 @@
-import { useEffect } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { useSelector } from 'react-redux';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
 import { isValidPathfinding } from 'applications/operationalStudies/views/Scenario/components/Timetable/utils';
-import type { InfraWithStatus } from 'modules/infra/types';
 import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
 import type { TimetableItemId } from 'reducers/osrdconf/types';
 import { updateSelectedTrainId, updateTrainIdUsedForProjection } from 'reducers/simulationResults';
@@ -15,31 +15,124 @@ import { useAppDispatch } from 'store';
 import {
   extractPacedTrainIdFromOccurrenceId,
   formatPacedTrainIdToIndexedOccurrenceId,
+  isOccurrenceId,
+  isPacedTrainId,
   isTrainScheduleId,
 } from 'utils/trainId';
+
+type SimulationParams = {
+  projectId: string;
+  studyId: string;
+  scenarioId: string;
+};
 
 /**
  * Automatically select the train to be used for the simulation results display and for the projection.
  *
  * This hook is executed if:
- * - the infrastructure has just been loaded
+ * - the page has just been loaded
  * - a train is deleted, added or modified
  * - new trains have been loaded (if no valid train has been loaded before, selectedTrainId and
  * currentTrainIdForProjection will still be undefined and must be updated)
  */
 const useAutoUpdateProjection = (
-  infra: InfraWithStatus,
-  timetableItemIds: TimetableItemId[],
+  timetableItemIds: TimetableItemId[] | undefined,
   timetableItemsWithDetails: TimetableItemWithDetails[]
 ) => {
   const dispatch = useAppDispatch();
   const currentTrainIdForProjection = useSelector(getTrainIdUsedForProjection);
   const selectedTrainId = useSelector(getSelectedTrainId);
 
+  const location = useLocation();
+  const navigate = useNavigate();
+  const searchParams = useMemo(() => new URLSearchParams(location.search), [location.search]);
+
+  const {
+    projectId: urlProjectId,
+    studyId: urlStudyId,
+    scenarioId: urlScenarioId,
+  } = useParams() as SimulationParams;
+  const localKey = `useAutoSelectTrainIds_project${urlProjectId}_study${urlStudyId}_scenario${urlScenarioId}`;
+
+  const [parametersLoaded, setParametersLoaded] = useState<boolean>(false);
+
+  /**
+   * Get a parameter from the URL, or if absent from local storage
+   */
+  const getParamFromUrlOrStorage = useCallback(
+    (paramName: string) =>
+      searchParams.get(paramName) || localStorage.getItem(`${localKey}_${paramName}`) || undefined,
+    [localKey, searchParams]
+  );
+
+  /**
+   * Set a parameter in the URL and in the local storage.
+   * If the parameter value given is undefined, remove the parameter from the URL and local storage instead.
+   */
+  const setParamsInUrlAndStorage = useCallback(
+    (paramName: string, paramValue: string | undefined) => {
+      if (paramValue === undefined) {
+        searchParams.delete(paramName);
+        localStorage.removeItem(`${localKey}_${paramName}`);
+      } else {
+        searchParams.set(paramName, paramValue);
+        localStorage.setItem(`${localKey}_${paramName}`, paramValue);
+      }
+      navigate(`${location.pathname}?${searchParams.toString()}`, { replace: true });
+    },
+    [localKey, searchParams, location.pathname, navigate]
+  );
+
+  /**
+   * Set the selected and projected ids in redux to their values in the URL, or if absent in the local storage
+   */
+  const setIdsFromUrlOrStorage = useCallback(() => {
+    const selectedTrainFromUrl = getParamFromUrlOrStorage('selected_train');
+    const projectionFromUrl = getParamFromUrlOrStorage('projection');
+    if (
+      selectedTrainFromUrl &&
+      (isTrainScheduleId(selectedTrainFromUrl) || isOccurrenceId(selectedTrainFromUrl))
+    ) {
+      dispatch(updateSelectedTrainId(selectedTrainFromUrl));
+    }
+    if (
+      projectionFromUrl &&
+      (isTrainScheduleId(projectionFromUrl) || isPacedTrainId(projectionFromUrl))
+    ) {
+      dispatch(updateTrainIdUsedForProjection(projectionFromUrl));
+    }
+  }, [getParamFromUrlOrStorage, dispatch]);
+
+  // Update the URL and local storage on redux store change
   useEffect(() => {
-    if (infra.status !== 'READY' || timetableItemIds.length === 0) {
+    if (selectedTrainId?.toString() !== getParamFromUrlOrStorage('selected_train')) {
+      setParamsInUrlAndStorage('selected_train', selectedTrainId?.toString());
+    }
+    if (currentTrainIdForProjection?.toString() !== getParamFromUrlOrStorage('projection')) {
+      setParamsInUrlAndStorage('projection', currentTrainIdForProjection?.toString());
+    }
+  }, [
+    selectedTrainId,
+    currentTrainIdForProjection,
+    setParamsInUrlAndStorage,
+    getParamFromUrlOrStorage,
+  ]);
+
+  useEffect(() => {
+    if (timetableItemIds === undefined) {
+      return;
+    }
+
+    if (timetableItemIds.length === 0) {
       if (selectedTrainId) dispatch(updateSelectedTrainId(undefined));
       if (currentTrainIdForProjection) dispatch(updateTrainIdUsedForProjection(undefined));
+      setParametersLoaded(true);
+      return;
+    }
+
+    if (!parametersLoaded) {
+      setIdsFromUrlOrStorage();
+      setParametersLoaded(true);
       return;
     }
 
@@ -76,7 +169,7 @@ const useAutoUpdateProjection = (
         : formatPacedTrainIdToIndexedOccurrenceId(firstTrainCanBeUsedForProjection.id, 0);
       dispatch(updateSelectedTrainId(newTrainIdToSelect));
     }
-  }, [timetableItemIds, infra, timetableItemsWithDetails]);
+  }, [timetableItemIds, timetableItemsWithDetails, setIdsFromUrlOrStorage, parametersLoaded]);
 };
 
 export default useAutoUpdateProjection;
