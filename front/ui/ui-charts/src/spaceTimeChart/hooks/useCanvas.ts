@@ -223,7 +223,7 @@ export function useCanvas(
     // Cache latest context in ref:
     stcContextRef.current = inputStcContext;
 
-    draw();
+    scheduleRendering();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [inputStcContext.fingerprint]);
 
