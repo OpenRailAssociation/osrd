@@ -7,7 +7,6 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.Parameters;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra;
-import fr.sncf.osrd.reporting.warnings.DiagnosticRecorderImpl;
 import fr.sncf.osrd.signaling.SignalingSimulator;
 import fr.sncf.osrd.utils.jacoco.ExcludeFromGeneratedCodeCoverage;
 import java.io.IOException;
@@ -29,7 +28,6 @@ public class ValidateInfra implements CliCommand {
     @Override
     @ExcludeFromGeneratedCodeCoverage
     public int run() {
-        var recorder = new DiagnosticRecorderImpl(false);
         try {
             logger.info("parsing json");
             var rjs = parseRailJSONFromFile(infraPath);
@@ -46,8 +44,6 @@ public class ValidateInfra implements CliCommand {
         } catch (Exception e) {
             e.printStackTrace();
             return 1;
-        } finally {
-            recorder.report();
         }
     }
 

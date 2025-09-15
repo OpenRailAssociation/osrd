@@ -4,7 +4,6 @@ import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory;
 import fr.sncf.osrd.reporting.ErrorContext;
-import fr.sncf.osrd.reporting.warnings.DiagnosticRecorder;
 import fr.sncf.osrd.reporting.warnings.Warning;
 import fr.sncf.osrd.utils.json.UnitAdapterFactory;
 import java.io.IOException;
@@ -71,19 +70,6 @@ public final class OSRDError extends RuntimeException {
     public OSRDError withContext(String key, Object value) {
         this.context.put(key, value);
         return this;
-    }
-
-    /**
-     * Creates a new OSRDError for a diagnostic error.
-     *
-     * @param diagnostic the diagnostic recorder
-     * @return a new OSRDError instance
-     */
-    public static OSRDError newDiagnosticError(DiagnosticRecorder diagnostic) {
-        var error = new OSRDError(ErrorType.DiagnosticError);
-        error.context.put("diagnostic_warnings", diagnostic.getWarnings());
-        error.context.put("diagnostic_errors", diagnostic.getErrors());
-        return error;
     }
 
     /**
