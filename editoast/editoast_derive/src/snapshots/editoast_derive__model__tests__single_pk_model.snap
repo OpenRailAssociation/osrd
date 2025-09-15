@@ -22,10 +22,10 @@ impl crate::prelude::Model for Timetable {
 }
 #[doc(hidden)]
 struct _TimetableField<M, T, Column>(core::marker::PhantomData<(M, T, Column)>);
-paste::paste! {
-    impl Timetable { pub const [< id : snake : upper >] : _TimetableField < Timetable,
-    i64, database::tables::timetable::id > = _TimetableField(core::marker::PhantomData);
-    }
+impl Timetable {
+    pub const ID: _TimetableField<Timetable, i64, database::tables::timetable::id> = _TimetableField(
+        core::marker::PhantomData,
+    );
 }
 impl _TimetableField<Timetable, i64, database::tables::timetable::id> {
     pub fn eq(&self, value: i64) -> crate::prelude::FilterSetting<Timetable> {

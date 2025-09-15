@@ -28,14 +28,20 @@ impl crate::prelude::Model for Document {
 }
 #[doc(hidden)]
 struct _DocumentField<M, T, Column>(core::marker::PhantomData<(M, T, Column)>);
-paste::paste! {
-    impl Document { pub const [< id_ : snake : upper >] : _DocumentField < Document, i64,
-    id > = _DocumentField(core::marker::PhantomData); pub const [< content_type : snake :
-    upper >] : _DocumentField < Document, String,
-    database::tables::osrd_infra_document::content_type > =
-    _DocumentField(core::marker::PhantomData); pub const [< data : snake : upper >] :
-    _DocumentField < Document, Vec < u8 >, database::tables::osrd_infra_document::data >
-    = _DocumentField(core::marker::PhantomData); }
+impl Document {
+    pub const ID_: _DocumentField<Document, i64, id> = _DocumentField(
+        core::marker::PhantomData,
+    );
+    pub const CONTENT_TYPE: _DocumentField<
+        Document,
+        String,
+        database::tables::osrd_infra_document::content_type,
+    > = _DocumentField(core::marker::PhantomData);
+    pub const DATA: _DocumentField<
+        Document,
+        Vec<u8>,
+        database::tables::osrd_infra_document::data,
+    > = _DocumentField(core::marker::PhantomData);
 }
 impl _DocumentField<Document, i64, id> {
     pub fn eq(&self, value: i64) -> crate::prelude::FilterSetting<Document> {
