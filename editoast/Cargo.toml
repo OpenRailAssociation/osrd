@@ -109,7 +109,7 @@ serde_with = { version = "3.14.0", default-features = false, features = [
 stdext = "0.3.3"
 strum = { version = "0.26.3", features = ["derive"] }
 syn = "2.0"
-tempfile = "3.21.0"
+tempfile = "3.22.0"
 thiserror = "2.0.16"
 tokio = { version = "1.47.1", features = ["fs", "macros", "rt-multi-thread"] }
 tokio-postgres = "0.7.13"
