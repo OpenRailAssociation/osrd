@@ -20,22 +20,19 @@ type FormatSwitchProps = {
   label: string;
 };
 
-const FormatSwitch = ({ name, onChange, state, icon, label }: FormatSwitchProps) => {
-  const { t } = useTranslation();
-  return (
-    <div className="d-flex align-items-center">
-      <SwitchSNCF
-        id={name}
-        type={SWITCH_TYPES.switch}
-        name={name}
-        onChange={onChange}
-        checked={state}
-      />
-      <img className="map-format-switch-img ml-2 rounded" src={icon} alt="" />
-      <span className="ml-2">{t(`mapSettings.layers.${label}`)}</span>
-    </div>
-  );
-};
+const FormatSwitch = ({ name, onChange, state, icon, label }: FormatSwitchProps) => (
+  <div className="d-flex align-items-center">
+    <SwitchSNCF
+      id={name}
+      type={SWITCH_TYPES.switch}
+      name={name}
+      onChange={onChange}
+      checked={state}
+    />
+    <img className="map-format-switch-img ml-2 rounded" src={icon} alt="" />
+    <span className="ml-2">{label}</span>
+  </div>
+);
 
 const MapSettingsBackgroundSwitches = ({ mapSettings }: { mapSettings: MapSettings }) => {
   const { t } = useTranslation();
@@ -59,7 +56,7 @@ const MapSettingsBackgroundSwitches = ({ mapSettings }: { mapSettings: MapSettin
         onChange={() => dispatch(updateMapSettings({ showOSM: !showOSM }))}
         state={showOSM}
         icon={iconOSM}
-        label="showOSM"
+        label={t('mapSettings.layers.showOSM')}
       />
       <div className="my-2" />
       <FormatSwitch
@@ -67,7 +64,7 @@ const MapSettingsBackgroundSwitches = ({ mapSettings }: { mapSettings: MapSettin
         onChange={() => dispatch(updateMapSettings({ showOSM3dBuildings: !showOSM3dBuildings }))}
         state={showOSM3dBuildings}
         icon={icon3dBuildings}
-        label="showOSM3dBuildings"
+        label={t('mapSettings.layers.showOSM3dBuildings')}
       />
       <div className="my-2" />
       <FormatSwitch
@@ -77,7 +74,7 @@ const MapSettingsBackgroundSwitches = ({ mapSettings }: { mapSettings: MapSettin
         }
         state={showOSMtracksections}
         icon={iconOSMTracks}
-        label="showOSMtracksections"
+        label={t('mapSettings.layers.showOSMtracksections')}
       />
       <div className="my-2" />
       <FormatSwitch
@@ -85,7 +82,7 @@ const MapSettingsBackgroundSwitches = ({ mapSettings }: { mapSettings: MapSettin
         onChange={() => dispatch(updateMapSettings({ showIGNBDORTHO: !showIGNBDORTHO }))}
         state={showIGNBDORTHO}
         icon={iconIGNBDORTHO}
-        label="showIGNBDORTHO"
+        label={t('mapSettings.layers.showIGNBDORTHO')}
       />
       <div className="my-2" />
       <FormatSwitch
@@ -93,7 +90,7 @@ const MapSettingsBackgroundSwitches = ({ mapSettings }: { mapSettings: MapSettin
         onChange={() => dispatch(updateMapSettings({ showIGNSCAN25: !showIGNSCAN25 }))}
         state={showIGNSCAN25}
         icon={iconIGNSCAN25}
-        label="showIGNSCAN25"
+        label={t('mapSettings.layers.showIGNSCAN25')}
       />
       <div className="my-2" />
       <FormatSwitch
@@ -101,7 +98,7 @@ const MapSettingsBackgroundSwitches = ({ mapSettings }: { mapSettings: MapSettin
         onChange={() => dispatch(updateMapSettings({ showIGNCadastre: !showIGNCadastre }))}
         state={showIGNCadastre}
         icon={iconIGNCadastre}
-        label="showIGNCadastre"
+        label={t('mapSettings.layers.showIGNCadastre')}
       />
 
       <div className="my-3 pb-3">
@@ -129,7 +126,7 @@ const MapSettingsBackgroundSwitches = ({ mapSettings }: { mapSettings: MapSettin
         onChange={() => dispatch(updateMapSettings({ smoothTravel: !smoothTravel }))}
         state={smoothTravel}
         icon=""
-        label="smoothTravel"
+        label={t('mapSettings.layers.smoothTravel')}
       />
     </>
   );
