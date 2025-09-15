@@ -38,7 +38,6 @@ img {
 // __________________ Time Picker  __________________
 .ui-time-picker {
   .modal-content {
-    left: -198.4px !important;
     .time-picker-container {
       max-width: 323.2px;
     }
@@ -53,7 +52,6 @@ img {
     position: relative !important;
   }
   .modal-content {
-    top: auto !important;
     width: auto;
     z-index: 1;
   }
@@ -62,7 +60,6 @@ img {
 // __________________ Tolerance Picker  __________________
 .ui-tolerance-picker {
   .modal-content {
-    left: -376px !important;
     .tolerance-grid {
       grid-auto-rows: 32px !important;
     }
