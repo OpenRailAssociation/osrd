@@ -297,31 +297,34 @@ mod tests_persist {
     use super::*;
 
     macro_rules! test_persist {
-        ($obj:ident) => {
-            paste::paste! {
-                #[rstest::rstest]
-                async fn [<test_persist_ $obj:snake>]() {
-                    let db_pool =  database::DbConnectionPoolV2::for_tests();
-                    let infra =  crate::models::fixtures::create_empty_infra(&mut db_pool.get_ok()).await;
-                    let schemas = (0..10).map(|_| Default::default());
-                    let changesets = $obj::from_infra_schemas(infra.id, schemas);
-                    assert!($obj::create_batch::<_, Vec<_>>(&mut db_pool.get_ok(), changesets).await.is_ok());
-                }
+        ($obj:ident, $test_fn:ident) => {
+            #[rstest::rstest]
+            async fn $test_fn() {
+                let db_pool = database::DbConnectionPoolV2::for_tests();
+                let infra =
+                    crate::models::fixtures::create_empty_infra(&mut db_pool.get_ok()).await;
+                let schemas = (0..10).map(|_| Default::default());
+                let changesets = $obj::from_infra_schemas(infra.id, schemas);
+                assert!(
+                    $obj::create_batch::<_, Vec<_>>(&mut db_pool.get_ok(), changesets)
+                        .await
+                        .is_ok()
+                );
             }
         };
     }
 
-    test_persist!(TrackSectionModel);
-    test_persist!(BufferStopModel);
-    test_persist!(ElectrificationModel);
-    test_persist!(DetectorModel);
-    test_persist!(OperationalPointModel);
-    test_persist!(RouteModel);
-    test_persist!(SignalModel);
-    test_persist!(SwitchModel);
-    test_persist!(SpeedSectionModel);
-    test_persist!(SwitchTypeModel);
-    test_persist!(NeutralSectionModel);
+    test_persist!(TrackSectionModel, test_persist_track_section_model);
+    test_persist!(BufferStopModel, test_persist_buffer_stop_model);
+    test_persist!(ElectrificationModel, test_persist_electrification_model);
+    test_persist!(DetectorModel, test_persist_detector_model);
+    test_persist!(OperationalPointModel, test_persist_operational_point_model);
+    test_persist!(RouteModel, test_persist_route_model);
+    test_persist!(SignalModel, test_persist_signal_model);
+    test_persist!(SwitchModel, test_persist_switch_model);
+    test_persist!(SpeedSectionModel, test_persist_speed_section_model);
+    test_persist!(SwitchTypeModel, test_persist_switch_type_model);
+    test_persist!(NeutralSectionModel, test_persist_neutral_section_model);
 }
 
 #[cfg(test)]

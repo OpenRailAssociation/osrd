@@ -1,6 +1,19 @@
 use super::np;
+use proc_macro2::Ident;
+use proc_macro2::Span;
 use quote::ToTokens;
 use quote::quote;
+
+fn to_snake_case_upper(s: &str) -> String {
+    let mut result = String::new();
+    for c in s.chars() {
+        if c.is_uppercase() && !result.is_empty() {
+            result.push('_');
+        }
+        result.push(c.to_uppercase().next().unwrap());
+    }
+    result
+}
 
 pub(crate) struct ModelFieldsImplBlock {
     pub(super) model: syn::Ident,
@@ -25,14 +38,15 @@ impl ToTokens for ModelFieldsImplBlock {
             .iter()
             .map(|field| {
                 let ModelFieldDecl { name, ty, column } = field;
-                np!(name, ty, column)
+                let const_name =
+                    Ident::new(&to_snake_case_upper(&name.to_string()), Span::call_site());
+                np!(const_name, ty, column)
             })
             .unzip();
+
         tokens.extend(quote! {
-            paste::paste! {
-                impl #model {
-                    #(pub const [< #name:snake:upper >]: #field_wrapper<#model, #ty, #column> = #field_wrapper(core::marker::PhantomData);)*
-                }
+            impl #model {
+                #(pub const #name: #field_wrapper<#model, #ty, #column> = #field_wrapper(core::marker::PhantomData);)*
             }
         });
     }

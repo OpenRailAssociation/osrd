@@ -86,48 +86,58 @@ mod tests {
     }
 
     macro_rules! test_delete_object {
-        ($obj:ident) => {
-            paste::paste! {
-                #[rstest::rstest]
-                async fn [<test_delete_$obj:snake>]() {
-                    use diesel_async::RunQueryDsl;
-                    use std::ops::DerefMut;
+        ($obj:ident, $test_fn:ident, $obj_name:literal) => {
+            #[rstest::rstest]
+            async fn $test_fn() {
+                use diesel_async::RunQueryDsl;
+                use std::ops::DerefMut;
 
-                    let db_pool = DbConnectionPoolV2::for_tests();
-                    let infra = crate::models::fixtures::create_empty_infra(&mut db_pool.get_ok()).await;
+                let db_pool = DbConnectionPoolV2::for_tests();
+                let infra = crate::models::fixtures::create_empty_infra(&mut db_pool.get_ok()).await;
 
-                    let railjson_object = schemas::infra::InfraObject::$obj {
-                        railjson: $obj::default(),
-                    };
-                    let result = crate::infra_cache::operation::create::apply_create_operation(&railjson_object, infra.id, &mut db_pool.get_ok()).await;
-                    assert!(result.is_ok(), "Failed to create a {}", stringify!($obj));
+                let railjson_object = schemas::infra::InfraObject::$obj {
+                    railjson: $obj::default(),
+                };
+                let result = crate::infra_cache::operation::create::apply_create_operation(&railjson_object, infra.id, &mut db_pool.get_ok()).await;
+                assert!(result.is_ok(), "Failed to create a {}", stringify!($obj));
 
-                    let object_deletion: crate::infra_cache::operation::delete::DeleteOperation = railjson_object.get_ref().into();
-                    let result = object_deletion.apply(infra.id, &mut db_pool.get_ok()).await;
-                    assert!(result.is_ok(), "Failed to delete a {}", stringify!($obj));
+                let object_deletion: crate::infra_cache::operation::delete::DeleteOperation = railjson_object.get_ref().into();
+                let result = object_deletion.apply(infra.id, &mut db_pool.get_ok()).await;
+                assert!(result.is_ok(), "Failed to delete a {}", stringify!($obj));
 
-                    let res_del = diesel::sql_query(format!(
-                            "SELECT COUNT (*) AS nb FROM infra_object_{} WHERE obj_id = '{}' AND infra_id = {}",
-                            stringify!([<$obj:snake>]),
-                            railjson_object.get_id(),
-                            infra.id
-                        ))
-                        .get_result::<Count>(&mut db_pool.get_ok().write().await.deref_mut()).await.unwrap();
+                let res_del = diesel::sql_query(format!(
+                        "SELECT COUNT (*) AS nb FROM infra_object_{} WHERE obj_id = '{}' AND infra_id = {}",
+                        $obj_name,
+                        railjson_object.get_id(),
+                        infra.id
+                    ))
+                    .get_result::<Count>(&mut db_pool.get_ok().write().await.deref_mut()).await.unwrap();
 
-                    pretty_assertions::assert_eq!(res_del.nb, 0);
-                }
+                pretty_assertions::assert_eq!(res_del.nb, 0);
             }
         };
     }
 
-    test_delete_object!(TrackSection);
-    test_delete_object!(Signal);
-    test_delete_object!(SpeedSection);
-    test_delete_object!(Switch);
-    test_delete_object!(Detector);
-    test_delete_object!(BufferStop);
-    test_delete_object!(Route);
-    test_delete_object!(OperationalPoint);
-    test_delete_object!(Electrification);
-    test_delete_object!(NeutralSection);
+    test_delete_object!(TrackSection, test_delete_track_section, "track_section");
+    test_delete_object!(Signal, test_delete_signal, "signal");
+    test_delete_object!(SpeedSection, test_delete_speed_section, "speed_section");
+    test_delete_object!(Switch, test_delete_switch, "switch");
+    test_delete_object!(Detector, test_delete_detector, "detector");
+    test_delete_object!(BufferStop, test_delete_buffer_stop, "buffer_stop");
+    test_delete_object!(Route, test_delete_route, "route");
+    test_delete_object!(
+        OperationalPoint,
+        test_delete_operational_point,
+        "operational_point"
+    );
+    test_delete_object!(
+        Electrification,
+        test_delete_electrification,
+        "electrification"
+    );
+    test_delete_object!(
+        NeutralSection,
+        test_delete_neutral_section,
+        "neutral_section"
+    );
 }

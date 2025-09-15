@@ -8,7 +8,6 @@ edition.workspace = true
 
 [dependencies]
 darling.workspace = true
-paste.workspace = true
 proc-macro2.workspace = true
 quote.workspace = true
 serde_json.workspace = true

@@ -49,31 +49,35 @@ pub mod tests {
     use schemas::infra::TrackSection;
 
     macro_rules! test_create_object {
-        ($obj:ident) => {
-            paste::paste! {
-                #[rstest::rstest]
-                async fn [<test_create_ $obj:snake>]() {
-                    let db_pool = database::DbConnectionPoolV2::for_tests();
-                    let infra = crate::models::fixtures::create_empty_infra(&mut db_pool.get_ok()).await;
-                    let infra_object = schemas::infra::InfraObject::$obj {
-                        railjson: $obj::default(),
-                    };
-                    let result = crate::infra_cache::operation::create::apply_create_operation(&infra_object, infra.id, &mut db_pool.get_ok()).await;
-                    assert!(result.is_ok(), "Failed to create a {}", stringify!($obj));
-                }
+        ($obj:ident, $test_fn:ident) => {
+            #[rstest::rstest]
+            async fn $test_fn() {
+                let db_pool = database::DbConnectionPoolV2::for_tests();
+                let infra =
+                    crate::models::fixtures::create_empty_infra(&mut db_pool.get_ok()).await;
+                let infra_object = schemas::infra::InfraObject::$obj {
+                    railjson: $obj::default(),
+                };
+                let result = crate::infra_cache::operation::create::apply_create_operation(
+                    &infra_object,
+                    infra.id,
+                    &mut db_pool.get_ok(),
+                )
+                .await;
+                assert!(result.is_ok(), "Failed to create a {}", stringify!($obj));
             }
         };
     }
 
-    test_create_object!(TrackSection);
-    test_create_object!(Signal);
-    test_create_object!(SpeedSection);
-    test_create_object!(Switch);
-    test_create_object!(Detector);
-    test_create_object!(BufferStop);
-    test_create_object!(Route);
-    test_create_object!(OperationalPoint);
-    test_create_object!(SwitchType);
-    test_create_object!(Electrification);
-    test_create_object!(NeutralSection);
+    test_create_object!(TrackSection, test_create_track_section);
+    test_create_object!(Signal, test_create_signal);
+    test_create_object!(SpeedSection, test_create_speed_section);
+    test_create_object!(Switch, test_create_switch);
+    test_create_object!(Detector, test_create_detector);
+    test_create_object!(BufferStop, test_create_buffer_stop);
+    test_create_object!(Route, test_create_route);
+    test_create_object!(OperationalPoint, test_create_operational_point);
+    test_create_object!(SwitchType, test_create_switch_type);
+    test_create_object!(Electrification, test_create_electrification);
+    test_create_object!(NeutralSection, test_create_neutral_section);
 }
