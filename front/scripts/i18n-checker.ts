@@ -34,7 +34,6 @@ const IGNORE_UNUSED: RegExp[] = [
   /operational-studies:main\.pacedTrain/,
   /operational-studies:main\.pacedTrainCount/,
   /operational-studies:main\.timetable\.invalid\.pathfinding_not_found/,
-  /operational-studies:main\.timetable\.occurrenceChangeGroup\..*/,
   /operational-studies:main\.train/,
   /operational-studies:main\.trainCount/,
 
