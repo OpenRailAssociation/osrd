@@ -37,9 +37,6 @@ const IGNORE_UNUSED: RegExp[] = [
   /operational-studies:main\.train/,
   /operational-studies:main\.trainCount/,
 
-  // Study
-  /operational-studies:study\.studyStates\.nothingSelected/,
-
   // Rolling stock
   /translation:rollingStock.curves\..*/,
   /translation:rollingStock.errorMessages\..*/,
