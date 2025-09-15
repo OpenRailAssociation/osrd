@@ -34,7 +34,6 @@
     "towedRollingStock": "Towed rolling stock",
     "tractionEngine": "Traction engine"
   },
-  "datetimeOutsideWindow": "Date must be between {{low}} and {{high}}",
   "debug": {
     "simulationSettings": "Simulation settings"
   },
