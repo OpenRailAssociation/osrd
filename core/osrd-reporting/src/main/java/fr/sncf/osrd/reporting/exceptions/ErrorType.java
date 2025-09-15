@@ -23,7 +23,6 @@ public enum ErrorType {
 
     NotImplemented("not_implemented", "Not implemented", ErrorCause.INTERNAL),
     DiagnosticError("diagnostic", "A running diagnostic contains errors", ErrorCause.USER),
-    StrictWarningError("strict_warning", "Warning was reported with strict mode enabled", ErrorCause.USER),
     AssertionError("assert_error", "assert check failed", ErrorCause.INTERNAL),
     UnknownError("unknown_error", "An unknown exception was thrown", ErrorCause.INTERNAL),
     InfraSoftLoadingError("infra_loading:soft_error", "soft error while loading new infra", ErrorCause.USER, false),
