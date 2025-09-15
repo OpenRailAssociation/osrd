@@ -53,7 +53,6 @@ const IGNORE_UNUSED: RegExp[] = [
 
   // Stdcm
   /stdcm:consist\.errors\..*/,
-  /stdcm:datetimeOutsideWindow/,
   /stdcm:stdcmErrors\..*/,
   /stdcm:trainPath.asSoonAsPossible/,
   /stdcm:trainPath.preciseTime/,
