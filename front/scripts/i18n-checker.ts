@@ -16,7 +16,6 @@ const IGNORE_MISSING: RegExp[] = [
   /translation:Editor.obj-types.NeutralSection/,
   /translation:Editor.obj-types.SwitchType/,
   /translation:Editor.obj-types.OperationalPoint/,
-  /translation:mapSettings.layers.speedlimittag/,
 ];
 
 const IGNORE_UNUSED: RegExp[] = [
