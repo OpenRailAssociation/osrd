@@ -599,7 +599,6 @@
     "studyStates": {
       "finish": "Terminée",
       "inProgress": "En cours",
-      "nothingSelected": "— Aucun —",
       "started": "Démarrage"
     },
     "studyTags": "Étiquettes",
