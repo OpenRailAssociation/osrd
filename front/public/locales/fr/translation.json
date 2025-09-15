@@ -638,9 +638,7 @@
       "smoothTravel": "Transition douce",
       "sncf_psl": "Limitations permanentes de vitesse",
       "speed_limits": "Vitesses de ligne",
-      "stops": "Pancartes d'arrêt",
       "switches": "Appareils de voie",
-      "tivs": "Limites de vitesse",
       "tvds": "Circuits de voie"
     },
     "mapstyles": {

@@ -29,7 +29,6 @@ const IGNORE_UNUSED: RegExp[] = [
   // Map
   /translation:mapKey.alternatingCurrent/,
   /translation:mapKey.directCurrent/,
-  /translation:mapSettings.layers\..*/,
 
   // Manage timetable item
   /operational-studies:manageTimetableItem.errorMessages\..*/,
