@@ -90,7 +90,7 @@
     "redux-persist-transform-filter": "0.0.22",
     "remark-gfm": "^4.0.1",
     "reselect": "^5.1.0",
-    "uuid": "^11.1.0",
+    "uuid": "^13.0.0",
     "viewport-mercator-project": "^7.0.4",
     "virtua": "^0.42.0"
   },
