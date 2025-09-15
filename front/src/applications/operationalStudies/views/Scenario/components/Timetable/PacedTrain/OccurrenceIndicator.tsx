@@ -8,7 +8,7 @@ import { useTranslation } from 'react-i18next';
 import type { SubCategory } from 'common/api/osrdEditoastApi';
 import OSRDTooltip from 'common/OSRDTooltip';
 import isMainCategory from 'modules/rollingStock/helpers/category';
-import type { Occurrence } from 'modules/timetableItem/types';
+import type { Occurrence, ExceptionChangeGroups } from 'modules/timetableItem/types';
 import { getExceptionType } from 'utils/trainId';
 
 import { getTrainCategoryClassName } from '../utils';
@@ -47,7 +47,8 @@ const OccurrenceIndicator = ({ occurrence, subCategories }: OccurrenceIndicatorP
     occurrence.exceptionChangeGroups &&
     Object.entries(occurrence.exceptionChangeGroups)
       .filter(([_, isPresent]) => isPresent !== null)
-      .map(([changeGroup]) => {
+      .map(([changeGroup]) => changeGroup as keyof ExceptionChangeGroups)
+      .map((changeGroup) => {
         let occurrenceCategory;
 
         if (categoryValue && isMainCategory(categoryValue)) {
