@@ -11,7 +11,7 @@ import { useAppDispatch } from 'store';
 import { Duration } from 'utils/duration';
 import { createStandardSelectOptions } from 'utils/uiCoreHelpers';
 
-import type { ArrivalTimeTypes, ScheduleConstraint } from '../../types';
+import { ArrivalTimeTypes, type ScheduleConstraint } from '../../types';
 
 const formatDate = (date: Date) =>
   date.toLocaleDateString(undefined, { day: 'numeric', month: 'numeric', year: '2-digit' });
@@ -92,15 +92,15 @@ const StdcmOpSchedule = ({ disabled, pathStep, opId, isOrigin = false }: StdcmOp
         <Select
           id={`select-${opId}`}
           value={pathStep.arrivalType}
-          onChange={(e) => {
+          onChange={(e?: ArrivalTimeTypes) => {
             if (e) {
-              onArrivalTypeChange(e as ArrivalTimeTypes);
+              onArrivalTypeChange(e);
             }
           }}
-          {...createStandardSelectOptions(
+          {...createStandardSelectOptions<ArrivalTimeTypes>(
             isOrigin
-              ? ['preciseTime', 'respectDestinationSchedule']
-              : ['preciseTime', 'asSoonAsPossible']
+              ? [ArrivalTimeTypes.PRECISE_TIME, ArrivalTimeTypes.RESPECT_DESTINATION_SCHEDULE]
+              : [ArrivalTimeTypes.PRECISE_TIME, ArrivalTimeTypes.ASAP]
           )}
           getOptionLabel={(option) => t(`trainPath.${option}`)}
           disabled={disabled}
