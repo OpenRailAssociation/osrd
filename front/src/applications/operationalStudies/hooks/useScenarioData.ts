@@ -157,12 +157,9 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithStatus) => 
     return exception?.path_and_schedule?.path ?? pacedTrain!.path;
   }, [trainIdUsedForProjection, timetableItems]);
 
-  const timetableItemIds = useMemo(
-    () => timetableItems?.map((item) => item.id) ?? [],
-    [timetableItems]
-  );
+  const timetableItemIds = useMemo(() => timetableItems?.map((item) => item.id), [timetableItems]);
 
-  useAutoUpdateProjection(infra, timetableItemIds, timetableItemsWithDetails);
+  useAutoUpdateProjection(timetableItemIds, timetableItemsWithDetails);
 
   // first load of the summaries
   useEffect(() => {
