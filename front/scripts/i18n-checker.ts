@@ -29,7 +29,6 @@ const IGNORE_UNUSED: RegExp[] = [
   // Manage timetable item
   /operational-studies:manageTimetableItem.errorMessages\..*/,
   /operational-studies:manageTimetableItem.pathfindingErrors\.pathfinding_failure/,
-  /operational-studies:manageTimetableItem.tabs\..*/,
 
   // Project
   /operational-studies:main\.pacedTrain/,

@@ -378,8 +378,6 @@
     "showTrainSettings": "Afficher",
     "speedLimitByTagAbbrev": "Code compo.",
     "tabs": {
-      "addingSettings": "Paramètres d'ajout",
-      "allowances": "Marges",
       "pathFinding": "Itinéraire",
       "rollingStock": "Matériel",
       "simulationSettings": "Paramètres de simulation",
