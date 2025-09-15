@@ -23,7 +23,6 @@ const IGNORE_UNUSED: RegExp[] = [
   /infraEditor:.*/, // Translation of properties object for the form
   /translation:Editor\.tools\..*/, // Editor tool's label are generated
   /translation:Editor.layers\..*/,
-  /translation:common.map-actions\..*/,
   /Editor\.item-statuses\..*/,
   /translation:Editor\.infra-errors\.error-type\..*/, // Infra error types are generated
 

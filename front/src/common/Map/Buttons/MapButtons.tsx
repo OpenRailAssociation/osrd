@@ -10,6 +10,7 @@ import {
   ZoomOut,
 } from '@osrd-project/ui-icons';
 import cx from 'classnames';
+import { useTranslation } from 'react-i18next';
 import type { MapRef } from 'react-map-gl/maplibre';
 
 import EditorLayersModal from 'applications/editor/components/EditorLayersModal';
@@ -75,6 +76,7 @@ export default function MapButtons({
   compactModal = false,
   mapSettings,
 }: MapButtonsProps) {
+  const { t } = useTranslation('translation');
   const dispatch = useAppDispatch();
   const { updateViewport } = useMapSettingsActions();
 
@@ -160,13 +162,13 @@ export default function MapButtons({
           onClick={zoomInProps ?? zoomIn}
           isNewButton={isNewButtons}
           icon={<ZoomIn />}
-          tooltipKey="common.zoom-in"
+          tooltip={t('common.zoom-in')}
         />
         <MapButton
           onClick={zoomOutProps ?? zoomOut}
           isNewButton={isNewButtons}
           icon={<ZoomOut />}
-          tooltipKey="common.zoom-out"
+          tooltip={t('common.zoom-out')}
         />
         <MapButton
           onClick={resetPitchBearing}
@@ -181,7 +183,7 @@ export default function MapButtons({
               </span>
             </>
           }
-          tooltipKey="common.map-actions.reset-north"
+          tooltip={t('common.map-actions.reset-north')}
           extraClasses={isNewButtons ? 'new-btn-map-resetviewport' : 'btn-map-resetviewport'}
         />
         {withSearchButton && (
@@ -189,7 +191,7 @@ export default function MapButtons({
             onClick={() => toggleMapModal('SEARCH')}
             isNewButton={isNewButtons}
             icon={<Search />}
-            tooltipKey="common.search"
+            tooltip={t('common.search')}
           />
         )}
         {withToggleLayersButton && (
@@ -197,7 +199,7 @@ export default function MapButtons({
             onClick={openMapSettingsModal}
             isNewButton={isNewButtons}
             icon={<Sliders />}
-            tooltipKey="Editor.nav.toggle-layers"
+            tooltip={t('Editor.nav.toggle-layers')}
           />
         )}
         {withMapKeyButton && (
@@ -205,7 +207,7 @@ export default function MapButtons({
             onClick={() => toggleMapModal('KEY')}
             isNewButton={isNewButtons}
             icon={<Info />}
-            tooltipKey="common.map-actions.help-legend"
+            tooltip={t('common.map-actions.help-legend')}
           />
         )}
         {withInfraButton && <ButtonMapInfras isInEditor={!!editorProps} />}
