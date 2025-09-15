@@ -14,6 +14,7 @@ use core_client::CoreClient;
 use core_client::pathfinding::InvalidPathItem;
 use core_client::pathfinding::PathfindingResultSuccess;
 use core_client::stdcm::Request as StdcmRequest;
+use core_client::stdcm::UndirectedTrackRange;
 use database::DbConnectionPoolV2;
 use editoast_derive::EditoastError;
 use request::Request;
@@ -25,6 +26,7 @@ use schemas::train_schedule::ReceptionSignal;
 use schemas::train_schedule::ScheduleItem;
 use serde::Deserialize;
 use serde::Serialize;
+use std::cmp::max;
 use std::slice;
 use std::sync::Arc;
 use thiserror::Error;
@@ -45,6 +47,7 @@ use crate::views::timetable::PhysicsConsistParameters;
 use crate::views::timetable::simulation;
 use crate::views::timetable::simulation::SimulationResponseSuccess;
 use crate::views::timetable::simulation::consist_train_simulation_batch;
+use editoast_models::WorkSchedule;
 use editoast_models::prelude::*;
 
 #[editoast_derive::openapi_schema]
@@ -281,7 +284,7 @@ pub(in crate::views) async fn stdcm(
         work_schedules: work_schedules
             .iter()
             .filter_map(|ws| {
-                ws.as_core_work_schedule(earliest_departure_time, latest_simulation_end)
+                as_core_work_schedule(ws, earliest_departure_time, latest_simulation_end)
             })
             .collect(),
     };
@@ -392,6 +395,42 @@ fn build_single_margin(margin: Option<MarginValue>) -> Margins {
             values: vec![m],
         },
     }
+}
+
+/// Convert a WorkSchedule to a core_client WorkSchedule
+pub fn as_core_work_schedule(
+    work_schedule: &WorkSchedule,
+    earliest_departure_time: DateTime<Utc>,
+    latest_simulation_end: DateTime<Utc>,
+) -> Option<core_client::stdcm::WorkSchedule> {
+    let search_window_duration =
+        (latest_simulation_end - earliest_departure_time).num_milliseconds() as u64;
+
+    let start_time =
+        elapsed_time_since_ms(&work_schedule.start_date_time, &earliest_departure_time);
+    let end_time = elapsed_time_since_ms(&work_schedule.end_date_time, &earliest_departure_time);
+
+    if end_time == 0 || start_time >= search_window_duration {
+        return None;
+    }
+
+    Some(core_client::stdcm::WorkSchedule {
+        start_time,
+        end_time,
+        track_ranges: work_schedule
+            .track_ranges
+            .iter()
+            .map(|track| UndirectedTrackRange {
+                track_section: track.track.to_string(),
+                begin: (track.begin * 1000.0) as u64,
+                end: (track.end * 1000.0) as u64,
+            })
+            .collect(),
+    })
+}
+
+fn elapsed_time_since_ms(time: &DateTime<Utc>, since: &DateTime<Utc>) -> u64 {
+    max(0, (*time - since).num_milliseconds()) as u64
 }
 
 #[cfg(test)]
@@ -979,7 +1018,7 @@ mod tests {
         // WHEN
         let filtered: Vec<_> = work_schedules
             .iter()
-            .filter_map(|ws| ws.as_core_work_schedule(start_time, latest_simulation_end))
+            .filter_map(|ws| as_core_work_schedule(ws, start_time, latest_simulation_end))
             .collect();
 
         // THEN

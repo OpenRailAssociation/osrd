@@ -53,16 +53,3 @@ pub struct TemporarySpeedLimit {
     pub obj_id: String,
     pub temporary_speed_limit_group_id: i64,
 }
-
-impl From<TemporarySpeedLimit> for core_client::stdcm::TemporarySpeedLimit {
-    fn from(value: TemporarySpeedLimit) -> Self {
-        core_client::stdcm::TemporarySpeedLimit {
-            speed_limit: value.speed_limit,
-            track_ranges: value
-                .track_ranges
-                .into_iter()
-                .map(|track_range| track_range.into())
-                .collect(),
-        }
-    }
-}
