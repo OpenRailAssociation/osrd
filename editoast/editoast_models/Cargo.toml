@@ -10,7 +10,6 @@ testing = ["dep:serde_json"]
 [dependencies]
 chrono.workspace = true
 common.workspace = true
-core_client.workspace = true
 database.workspace = true
 diesel.workspace = true
 diesel-async.workspace = true

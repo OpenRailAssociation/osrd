@@ -1467,7 +1467,6 @@ version = "0.1.0"
 dependencies = [
  "chrono",
  "common",
- "core_client",
  "database",
  "diesel",
  "diesel-async",

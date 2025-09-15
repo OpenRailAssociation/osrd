@@ -4,7 +4,7 @@ use chrono::Utc;
 use common::units;
 use core_client::pathfinding::PathfindingInputError;
 use database::DbConnection;
-use itertools::Itertools as _;
+
 use schemas::rolling_stock::LoadingGaugeType;
 use schemas::rolling_stock::RollingStock;
 use schemas::train_schedule::Comfort;
@@ -219,7 +219,7 @@ impl Request {
                 !(end_date_time <= speed_limit.start_date_time
                     || speed_limit.end_date_time <= start_date_time)
             })
-            .map_into()
+            .map(into_core_temporary_speed_limit)
             .collect();
         Ok(applicable_speed_limits)
     }
@@ -396,5 +396,21 @@ impl Serialize for Request {
         S: Serializer,
     {
         Request::serialize(self, serializer)
+    }
+}
+
+pub fn into_core_temporary_speed_limit(
+    TemporarySpeedLimit {
+        speed_limit,
+        track_ranges,
+        ..
+    }: TemporarySpeedLimit,
+) -> core_client::stdcm::TemporarySpeedLimit {
+    core_client::stdcm::TemporarySpeedLimit {
+        speed_limit,
+        track_ranges: track_ranges
+            .into_iter()
+            .map(|track_range| track_range.into())
+            .collect(),
     }
 }
