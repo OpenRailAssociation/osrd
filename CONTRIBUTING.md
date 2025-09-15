@@ -74,6 +74,39 @@ include a Signed-off-by line. You can find more information about this [here](ht
 For more advice on how to contribute, follow that link:
 https://osrd.fr/en/docs/guides/contribute/contribute-code
 
+### Additional supported resources
+
+In addition to obvious parts (CI, compile, tests, etc.), some resources are currently officially supported.
+These mostly aim at making the developer work easier on the project.
+
+#### Official support
+
+These should work for any commit.
+
+* `kubernetes` use (main deployment target)
+* documentation (`.md` files, [OSRD website](https://osrd.fr))
+* main software build and management tools for each component (`uv`, `cargo`, `npm`, `gradle`, ...)
+* `./osrd-compose` script (and the combinations of available flags)
+* all the `.sh` scripts of the repository (except `pr-tests-compose.sh` for now)
+
+#### Nice-to-have tools
+
+Any developer has a specific (customized) setup.
+Therefore, some tools are not officially supported, but efforts are mutualized by versioning resources into the repository.
+
+> [!IMPORTANT]
+> On any important change (CLI launchers, architecture changes for components, tooling or langage version bumps, etc.), please notify at least the internal developer channel.
+
+Please try to own major changes, by notifying or getting help from unofficial maintainers (or OPS team).
+
+Nice-to-have tools (and unofficial maintainers/main users):
+
+* `pr-tests-compose.sh` script (@bougue-pe)
+* `justfile`s to run component-specific commands (@Tristramg @bougue-pe)
+* `process-compose`, a non-containerized alternative to docker-compose (@leovalais)
+* `Podman`, a container-management tool (@emersion)
+* `Nix` package-management tool (@woshilapin @Synar @flomonster)
+
 ### Pull request / code review
 
 https://osrd.fr/en/docs/guides/contribute/contribute-code/#share-your-changes
