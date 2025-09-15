@@ -4,7 +4,6 @@ import com.squareup.moshi.JsonAdapter;
 import com.squareup.moshi.Moshi;
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory;
 import fr.sncf.osrd.reporting.ErrorContext;
-import fr.sncf.osrd.reporting.warnings.Warning;
 import fr.sncf.osrd.utils.json.UnitAdapterFactory;
 import java.io.IOException;
 import java.io.ObjectInputStream;
@@ -70,18 +69,6 @@ public final class OSRDError extends RuntimeException {
     public OSRDError withContext(String key, Object value) {
         this.context.put(key, value);
         return this;
-    }
-
-    /**
-     * Creates a new OSRDError for a strict warning error.
-     *
-     * @param warning the warning
-     * @return a new OSRDError instance
-     */
-    public static OSRDError newStrictWarningError(Warning warning) {
-        var error = new OSRDError(ErrorType.StrictWarningError);
-        error.context.put("warning", warning);
-        return error;
     }
 
     /**
