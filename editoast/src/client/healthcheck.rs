@@ -18,7 +18,7 @@ pub async fn healthcheck_cmd(
     core_config: CoreArgs,
     openfga_config: OpenfgaConfig,
 ) -> anyhow::Result<()> {
-    let valkey = ValkeyClient::new(valkey_config.into())?;
+    let valkey = ValkeyClient::new(valkey_config.into());
     let core_client = CoreClient::new_mq(mq_client::Options {
         uri: core_config.mq_url,
         worker_pool_identifier: core_config.worker_pool_id,
