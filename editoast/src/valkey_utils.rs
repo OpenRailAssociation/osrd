@@ -124,8 +124,12 @@ impl ValkeyConnection {
         match value {
             Some(v) => match serde_json::from_str(&v) {
                 Ok(value) => Ok(value),
-                Err(_) => {
-                    Err(RedisError::from((ErrorKind::TypeError, "Expected valid json")).into())
+                Err(e) => {
+                    tracing::warn!(
+                        "the cached value is not a valid JSON for type '{}': {e}",
+                        std::any::type_name::<T>()
+                    );
+                    Ok(None)
                 }
             },
             None => Ok(None),
@@ -168,12 +172,12 @@ impl ValkeyConnection {
     ) -> Result<()> {
         let str_value = match serde_json::to_string(value) {
             Ok(value) => value,
-            Err(_) => {
-                return Err(RedisError::from((
-                    ErrorKind::IoError,
-                    "An error occurred serializing to json",
-                ))
-                .into());
+            Err(e) => {
+                tracing::warn!(
+                    "failed to serialize value to JSON for type '{}': {e}",
+                    std::any::type_name::<T>()
+                );
+                return Ok(());
             }
         };
         self.set::<_, _, ()>(key, str_value).await?;
@@ -192,20 +196,21 @@ impl ValkeyConnection {
         }
         let serialized_items = items
             .iter()
-            .map(|(key, value)| {
-                serde_json::to_string(value)
-                    .map(|str_value| (key, str_value))
-                    .map_err(|_| {
-                        RedisError::from((
-                            ErrorKind::IoError,
-                            "An error occurred serializing to json",
-                        ))
-                        .into()
-                    })
+            .filter_map(|(key, value)| match serde_json::to_string(value) {
+                Ok(str_value) => Some((key, str_value)),
+                Err(e) => {
+                    tracing::warn!(
+                        "failed to serialize value to JSON for type '{}': {e}",
+                        std::any::type_name::<T>()
+                    );
+                    None
+                }
             })
-            .collect::<Result<Vec<_>>>()?;
+            .collect::<Vec<_>>();
 
-        self.mset::<_, _, ()>(&serialized_items).await?;
+        if !serialized_items.is_empty() {
+            self.mset::<_, _, ()>(&serialized_items).await?;
+        }
         Ok(())
     }
 
@@ -305,12 +310,12 @@ impl ValkeyConnection {
         };
         let str_member = match serde_json::to_string(&member) {
             Ok(member) => member,
-            Err(_) => {
-                return Err(RedisError::from((
-                    ErrorKind::IoError,
-                    "An error occurred serializing to json",
-                ))
-                .into());
+            Err(e) => {
+                tracing::warn!(
+                    "failed to serialize member to JSON for type '{}': {e}",
+                    std::any::type_name::<M>()
+                );
+                return Ok(());
             }
         };
         self.zadd::<_, _, _, ()>(key, str_member, score).await?;
