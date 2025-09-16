@@ -15,7 +15,6 @@ use deadpool_redis::redis::RedisFuture;
 use deadpool_redis::redis::ToRedisArgs;
 use deadpool_redis::redis::Value;
 use deadpool_redis::redis::aio::ConnectionLike;
-use deadpool_redis::redis::cmd;
 use futures::FutureExt;
 use futures::future;
 use serde::Deserialize;
@@ -24,7 +23,6 @@ use serde::de::DeserializeOwned;
 use tracing::Level;
 use tracing::debug;
 use tracing::span;
-use tracing::trace;
 use url::Url;
 
 use crate::error::Result;
@@ -384,13 +382,5 @@ impl ValkeyClient {
             ValkeyClient::Tokio(pool) => Ok(ValkeyConnection::Tokio(pool.get().await?)),
             ValkeyClient::NoCache => Ok(ValkeyConnection::NoCache),
         }
-    }
-
-    #[tracing::instrument(skip_all)]
-    pub async fn ping_valkey(&self) -> anyhow::Result<()> {
-        let mut conn = self.get_connection().await?;
-        cmd("PING").query_async::<()>(&mut conn).await?;
-        trace!("Valkey ping successful");
-        Ok(())
     }
 }
