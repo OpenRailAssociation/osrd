@@ -230,7 +230,7 @@ async fn cache_path_properties<'a>(
         .into_iter()
         .map(|(req, resp)| (path_properties_input_hash(req, app_version), resp))
         .collect_vec();
-    conn.json_set_bulk(&data).await
+    conn.json_set_bulk(&data).await.map_err(Into::into)
 }
 
 /// Compute path properties input hash without supported electrifications
