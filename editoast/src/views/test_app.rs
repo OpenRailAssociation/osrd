@@ -167,6 +167,7 @@ impl TestAppBuilder {
                 },
             },
             valkey_config: ValkeyConfig {
+                app_version: "TEST_VERSION".to_owned(),
                 no_cache: true,
                 valkey_url: Url::parse("redis://localhost:6379").unwrap(),
             },
