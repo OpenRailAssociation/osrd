@@ -1,5 +1,6 @@
 use std::fmt::Debug;
 
+use arcstr::ArcStr;
 use deadpool_redis::Config;
 use deadpool_redis::Connection;
 use deadpool_redis::Pool;
@@ -25,7 +26,12 @@ use tracing::debug;
 use tracing::span;
 use url::Url;
 
-pub enum ValkeyConnection {
+pub struct ValkeyConnection {
+    inner: ValkeyConnectionInner,
+    app_version: ArcStr,
+}
+
+enum ValkeyConnectionInner {
     Tokio(Connection),
     NoCache,
 }
@@ -60,9 +66,9 @@ fn no_cache_cmd_handler(cmd: &Cmd) -> Result<Value, RedisError> {
 
 impl ConnectionLike for ValkeyConnection {
     fn req_packed_command<'a>(&'a mut self, cmd: &'a Cmd) -> RedisFuture<'a, Value> {
-        match self {
-            ValkeyConnection::Tokio(connection) => connection.req_packed_command(cmd),
-            ValkeyConnection::NoCache => future::ready(no_cache_cmd_handler(cmd)).boxed(),
+        match &mut self.inner {
+            ValkeyConnectionInner::Tokio(connection) => connection.req_packed_command(cmd),
+            ValkeyConnectionInner::NoCache => future::ready(no_cache_cmd_handler(cmd)).boxed(),
         }
     }
 
@@ -72,11 +78,11 @@ impl ConnectionLike for ValkeyConnection {
         offset: usize,
         count: usize,
     ) -> RedisFuture<'a, Vec<Value>> {
-        match self {
-            ValkeyConnection::Tokio(connection) => {
+        match &mut self.inner {
+            ValkeyConnectionInner::Tokio(connection) => {
                 connection.req_packed_commands(cmd, offset, count)
             }
-            ValkeyConnection::NoCache => {
+            ValkeyConnectionInner::NoCache => {
                 let responses = cmd
                     .cmd_iter()
                     .skip(offset)
@@ -89,9 +95,9 @@ impl ConnectionLike for ValkeyConnection {
     }
 
     fn get_db(&self) -> i64 {
-        match self {
-            ValkeyConnection::Tokio(connection) => connection.get_db(),
-            ValkeyConnection::NoCache => 0,
+        match &self.inner {
+            ValkeyConnectionInner::Tokio(connection) => connection.get_db(),
+            ValkeyConnectionInner::NoCache => 0,
         }
     }
 }
@@ -360,8 +366,12 @@ impl ValkeyConnection {
     }
 }
 
-#[derive(Clone)]
-pub enum ValkeyClient {
+pub struct ValkeyClient {
+    inner: ValkeyClientInner,
+    app_version: ArcStr,
+}
+
+pub enum ValkeyClientInner {
     Tokio(Pool),
     /// This doesn't cache anything. It has no backend.
     NoCache,
@@ -372,24 +382,41 @@ pub struct ValkeyConfig {
     /// Disables caching. This should not be used in production.
     pub no_cache: bool,
     pub valkey_url: Url,
+    pub app_version: String,
 }
 
 impl ValkeyClient {
-    pub fn new(valkey_config: ValkeyConfig) -> Self {
-        if valkey_config.no_cache {
-            return Self::NoCache;
+    pub fn new(
+        ValkeyConfig {
+            no_cache,
+            valkey_url,
+            app_version,
+        }: ValkeyConfig,
+    ) -> Self {
+        Self {
+            app_version: ArcStr::from(app_version),
+            inner: if no_cache {
+                ValkeyClientInner::NoCache
+            } else {
+                ValkeyClientInner::Tokio(
+                    Config::from_url(valkey_url)
+                        .create_pool(Some(Runtime::Tokio1))
+                        .unwrap(),
+                )
+            },
         }
-        Self::Tokio(
-            Config::from_url(valkey_config.valkey_url)
-                .create_pool(Some(Runtime::Tokio1))
-                .unwrap(),
-        )
     }
 
     pub async fn get_connection(&self) -> Result<ValkeyConnection, PoolError> {
-        match self {
-            ValkeyClient::Tokio(pool) => Ok(ValkeyConnection::Tokio(pool.get().await?)),
-            ValkeyClient::NoCache => Ok(ValkeyConnection::NoCache),
+        match &self.inner {
+            ValkeyClientInner::Tokio(pool) => Ok(ValkeyConnection {
+                inner: ValkeyConnectionInner::Tokio(pool.get().await?),
+                app_version: self.app_version.clone(),
+            }),
+            ValkeyClientInner::NoCache => Ok(ValkeyConnection {
+                inner: ValkeyConnectionInner::NoCache,
+                app_version: self.app_version.clone(),
+            }),
         }
     }
 }

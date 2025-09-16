@@ -4,6 +4,7 @@ use chrono::Duration;
 use clap::Args;
 use url::Url;
 
+use crate::valkey_utils;
 use crate::views;
 
 use super::PostgresConfig;
@@ -77,7 +78,10 @@ pub async fn runserver(
         dynamic_assets_path,
     }: RunserverArgs,
     postgres: PostgresConfig,
-    valkey: ValkeyConfig,
+    ValkeyConfig {
+        no_cache,
+        valkey_url,
+    }: ValkeyConfig,
     openfga: OpenfgaConfig,
     app_version: Option<String>,
 ) -> anyhow::Result<()> {
@@ -98,7 +102,11 @@ pub async fn runserver(
                 worker_pool_id,
             },
         },
-        valkey_config: valkey.into(),
+        valkey_config: valkey_utils::ValkeyConfig {
+            app_version: app_version.clone().unwrap_or_default(),
+            no_cache,
+            valkey_url,
+        },
         openfga_config: openfga.into(),
         root_url,
         dynamic_assets_path,
