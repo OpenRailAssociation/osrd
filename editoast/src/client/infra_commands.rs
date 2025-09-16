@@ -234,7 +234,7 @@ async fn build_valkey_pool_and_invalidate_all_cache(
     infra_id: i64,
     app_version: Option<&str>,
 ) -> anyhow::Result<()> {
-    let valkey = ValkeyClient::new(valkey_config.into())?;
+    let valkey = ValkeyClient::new(valkey_config.into());
     let mut conn = valkey.get_connection().await?;
     map::invalidate_all(
         &mut conn,

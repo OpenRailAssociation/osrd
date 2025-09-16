@@ -368,15 +368,15 @@ pub struct ValkeyConfig {
 }
 
 impl ValkeyClient {
-    pub fn new(valkey_config: ValkeyConfig) -> Result<ValkeyClient> {
+    pub fn new(valkey_config: ValkeyConfig) -> Self {
         if valkey_config.no_cache {
-            return Ok(ValkeyClient::NoCache);
+            return Self::NoCache;
         }
-        Ok(ValkeyClient::Tokio(
+        Self::Tokio(
             Config::from_url(valkey_config.valkey_url)
                 .create_pool(Some(Runtime::Tokio1))
                 .unwrap(),
-        ))
+        )
     }
 
     pub async fn get_connection(&self) -> std::result::Result<ValkeyConnection, PoolError> {

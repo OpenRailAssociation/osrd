@@ -204,9 +204,7 @@ impl TestAppBuilder {
         let tracing_guard = tracing::subscriber::set_default(sub);
 
         // Config valkey
-        let valkey = ValkeyClient::new(config.valkey_config.clone())
-            .expect("Could not build Valkey client")
-            .into();
+        let valkey = ValkeyClient::new(config.valkey_config.clone()).into();
 
         // Create database pool
         let db_pool_v2 = Arc::new(self.db_pool.unwrap_or_else(DbConnectionPoolV2::for_tests));
