@@ -8,7 +8,6 @@ import fr.sncf.osrd.envelope_sim.pipelines.maxEffortEnvelopeFrom
 import fr.sncf.osrd.envelope_sim.pipelines.maxSpeedEnvelopeFrom
 import fr.sncf.osrd.envelope_sim_infra.computeMRSP
 import fr.sncf.osrd.path.implementations.buildTrainPathFromChunkPath
-import fr.sncf.osrd.path.interfaces.PathProperties
 import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.pathfinding.Pathfinding
 import fr.sncf.osrd.pathfinding.Pathfinding.EdgeLocation
@@ -261,7 +260,7 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
     }
 
     /** Builds the list of stops from OP */
-    private fun makeOpStops(trainPath: PathProperties): List<TrainStop> {
+    private fun makeOpStops(trainPath: TrainPath): List<TrainStop> {
         val res = ArrayList<TrainStop>()
         for ((_, offset) in trainPath.getOperationalPointParts()) {
             res.add(TrainStop(offset.distance.meters, 0.0, OPEN))
@@ -289,7 +288,7 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
      * Make the path's ordered list of stops, in order. Both user-defined stops and operational
      * points.
      */
-    private fun makePathStops(stops: List<TrainStop>, trainPath: PathProperties): List<TrainStop> {
+    private fun makePathStops(stops: List<TrainStop>, trainPath: TrainPath): List<TrainStop> {
         val mutStops = stops.toMutableList()
         mutStops.addAll(makeOpStops(trainPath))
         return sortAndMergeStopsDuplicates(mutStops)

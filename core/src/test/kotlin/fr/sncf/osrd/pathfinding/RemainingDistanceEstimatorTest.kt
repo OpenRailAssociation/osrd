@@ -5,7 +5,7 @@ import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.path.implementations.buildTrainPathFromBlock
 import fr.sncf.osrd.path.interfaces.BlockPath
-import fr.sncf.osrd.path.interfaces.PathProperties
+import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.pathfinding.Pathfinding.EdgeLocation
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockId
@@ -26,7 +26,7 @@ import org.junit.jupiter.params.provider.MethodSource
 class RemainingDistanceEstimatorTest {
     private var smallInfra: FullInfra? = null
     private var block: BlockId? = null
-    private var path: PathProperties? = null
+    private var path: TrainPath? = null
 
     @BeforeAll
     fun setUp() {

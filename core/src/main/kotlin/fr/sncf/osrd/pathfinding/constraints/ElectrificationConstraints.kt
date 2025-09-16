@@ -5,7 +5,7 @@ import com.google.common.collect.RangeSet
 import com.google.common.collect.TreeRangeSet
 import fr.sncf.osrd.graph.PathfindingConstraint
 import fr.sncf.osrd.path.implementations.buildTrainPathFromBlock
-import fr.sncf.osrd.path.interfaces.PathProperties
+import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.pathfinding.Pathfinding
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.utils.DistanceRangeMap
@@ -30,7 +30,7 @@ data class ElectrificationConstraints(
          * some range
          */
         private fun getBlockedRanges(
-            path: PathProperties,
+            path: TrainPath,
             compatibleElectrification: Collection<String>,
         ): Set<Pathfinding.Range<Block>> {
             val res = HashSet<Pathfinding.Range<Block>>()

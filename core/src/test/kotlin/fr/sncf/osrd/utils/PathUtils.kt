@@ -5,7 +5,7 @@ import fr.sncf.osrd.path.implementations.ChunkPath
 import fr.sncf.osrd.path.implementations.buildChunkPath
 import fr.sncf.osrd.path.implementations.buildTrainPathFromChunkPath
 import fr.sncf.osrd.path.interfaces.BlockPath
-import fr.sncf.osrd.path.interfaces.PathProperties
+import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.utils.indexing.MutableDirStaticIdxArrayList
 import fr.sncf.osrd.utils.indexing.mutableDirStaticIdxArrayListOf
@@ -22,7 +22,7 @@ fun pathFromTracks(
     dir: Direction,
     start: Distance,
     end: Distance,
-): PathProperties {
+): TrainPath {
     val chunkList = mutableDirStaticIdxArrayListOf<TrackChunk>()
     trackIds
         .map { id -> infra.getTrackSectionFromName(id)!! }
@@ -38,7 +38,7 @@ fun pathFromTracks(
     dir: Direction,
     start: Distance,
     end: Distance,
-): PathProperties {
+): TrainPath {
     return pathFromTracks(infra.rawInfra, infra.blockInfra, trackIds, dir, start, end)
 }
 

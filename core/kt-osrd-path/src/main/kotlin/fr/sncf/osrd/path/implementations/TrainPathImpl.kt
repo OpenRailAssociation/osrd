@@ -113,7 +113,7 @@ data class TrainPathNoBacktrack(
     }
 
     private fun computeEnvelopeSimPath(): PhysicsPath {
-        return EnvelopeTrainPath.from(rawInfra, pathProperties, electricalProfileMapping)
+        return EnvelopeTrainPath.from(rawInfra, this, electricalProfileMapping)
     }
 
     /** Truncate the distance range maps of linear objects, updating the underlying object range */
@@ -122,42 +122,46 @@ data class TrainPathNoBacktrack(
         from: Offset<TrainPath>,
         to: Offset<TrainPath>,
     ): LinearObjectMap<GenericLinearRange<ValueType, OffsetType>> {
+        require(from >= Offset.zero())
+        require(to <= getTypedLength())
         val newMapEntries =
-            map.asMapOfRanges().mapValues { (key, value) ->
-                var value = value
+            map.asMapOfRanges().mapNotNull { (key, value) ->
                 val lower = key.lowerEndpoint()
                 val upper = key.upperEndpoint()
-                val truncatedStartDist = from.distance - lower.distance
-                val truncatedEndDist = upper.distance - to.distance
+                val truncatedStart = max(from, lower)
+                val truncatedEnd = min(to, upper)
 
-                if (truncatedStartDist > 0.meters) {
-                    value = value.copy(from = value.from + truncatedStartDist)
-                }
-                if (truncatedEndDist > 0.meters) {
-                    value = value.copy(to = value.to - truncatedStartDist)
-                }
-                value
+                if (truncatedStart > truncatedEnd) return@mapNotNull null
+
+                val value =
+                    value.copy(
+                        from = value.from + (truncatedStart - lower),
+                        to = value.to - (upper - truncatedEnd),
+                    )
+                val key =
+                    Range.range(
+                        truncatedStart - from.distance,
+                        key.lowerBoundType(),
+                        truncatedEnd - from.distance,
+                        key.upperBoundType(),
+                    )
+                if (key.isEmpty) return@mapNotNull null
+                Pair(key, value)
             }
         val builder =
             ImmutableRangeMap.builder<
                 Offset<TrainPath>,
                 GenericLinearRange<ValueType, OffsetType>,
             >()
-        for (entry in newMapEntries) {
-            val lower = max(entry.key.lowerEndpoint() - from.distance, Offset.zero())
-            val upper = min(entry.key.lowerEndpoint() - from.distance, getTypedLength())
-            if (lower <= upper) {
-                val newKey =
-                    Range.range(
-                        lower,
-                        entry.key.lowerBoundType(),
-                        upper,
-                        entry.key.upperBoundType(),
-                    )
-                builder.put(newKey, entry.value)
-            }
+        for ((key, value) in newMapEntries) {
+            builder.put(key, value)
         }
         return builder.build()
+    }
+
+    override fun withRoutes(routes: List<RouteId>): TrainPath {
+        val routeRanges = generateRouteRanges(rawInfra, chunks, routes)
+        return copy(routes = routeRanges, pathProperties = pathProperties.withRoutes(routes))
     }
 
     /** *Debugging purpose*. We try to find the actual names of underlying objects. */

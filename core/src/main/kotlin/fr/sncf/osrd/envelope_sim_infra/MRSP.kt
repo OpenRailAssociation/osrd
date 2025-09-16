@@ -5,7 +5,7 @@ import fr.sncf.osrd.envelope.MRSPEnvelopeBuilder
 import fr.sncf.osrd.envelope.part.EnvelopePart
 import fr.sncf.osrd.envelope_sim.EnvelopeProfile
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock
-import fr.sncf.osrd.path.interfaces.PathProperties
+import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.sim_infra.api.SpeedLimitProperty
 import fr.sncf.osrd.sim_infra.api.SpeedLimitSource.UnknownTag
 import fr.sncf.osrd.sim_infra.impl.TemporarySpeedLimitManager
@@ -35,7 +35,7 @@ import kotlin.math.min
  * @return the corresponding MRSP as an Envelope.
  */
 fun computeMRSP(
-    path: PathProperties,
+    path: TrainPath,
     rollingStock: PhysicsRollingStock,
     addRollingStockLength: Boolean,
     trainTag: String?,
@@ -71,7 +71,7 @@ fun computeMRSP(
  * @return the corresponding MRSP as an Envelope.
  */
 fun computeMRSP(
-    path: PathProperties,
+    path: TrainPath,
     rsMaxSpeed: Double,
     rsLength: Double,
     addRollingStockLength: Boolean,

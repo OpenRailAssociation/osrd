@@ -5,8 +5,8 @@ import com.google.common.collect.ImmutableRangeMap
 import com.google.common.collect.Range
 import com.google.common.collect.TreeRangeMap
 import fr.sncf.osrd.path.interfaces.Electrification
-import fr.sncf.osrd.path.interfaces.PathProperties
 import fr.sncf.osrd.path.interfaces.PhysicsPath
+import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.path.legacy_objects.ElectricalProfileMapping
 import fr.sncf.osrd.path.legacy_objects.buildElectrificationMap
 import fr.sncf.osrd.sim_infra.api.RawSignalingInfra
@@ -17,7 +17,7 @@ object EnvelopeTrainPath {
     /** Create EnvelopePath from a path and a ElectricalProfileMapping */
     fun from(
         infra: RawSignalingInfra,
-        path: PathProperties,
+        path: TrainPath,
         electricalProfileMapping: ElectricalProfileMapping? = null,
     ): PhysicsPath {
         val gradePositions = DoubleArrayList()

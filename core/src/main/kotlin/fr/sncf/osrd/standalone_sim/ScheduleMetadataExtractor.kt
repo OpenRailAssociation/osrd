@@ -14,7 +14,7 @@ import fr.sncf.osrd.envelope_sim.EnvelopeSimContext
 import fr.sncf.osrd.path.implementations.ChunkPath
 import fr.sncf.osrd.path.implementations.EnvelopeTrainPath
 import fr.sncf.osrd.path.interfaces.BlockPath
-import fr.sncf.osrd.path.interfaces.PathProperties
+import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.path.interfaces.TravelledPath
 import fr.sncf.osrd.signaling.SigSystemManager
 import fr.sncf.osrd.signaling.SignalingSimulator
@@ -84,7 +84,7 @@ private fun buildBlockInfoTable(
 /** Use an already computed envelope to extract various metadata about a trip. */
 fun runScheduleMetadataExtractor(
     envelope: Envelope,
-    trainPath: PathProperties,
+    trainPath: TrainPath,
     chunkPath: ChunkPath,
     fullInfra: FullInfra,
     routePath: StaticIdxList<Route>,
@@ -304,7 +304,7 @@ fun getStopTravelledPathOffset(
 fun makeSimpleReportTrain(
     fullInfra: FullInfra,
     envelope: Envelope,
-    trainPath: PathProperties,
+    trainPath: TrainPath,
     rollingStock: RollingStock,
     schedule: List<SimulationScheduleItem>,
     pathItemPositions: List<Offset<TravelledPath>>,

@@ -9,7 +9,7 @@ import fr.sncf.osrd.envelope.part.constraints.SpeedConstraint
 import fr.sncf.osrd.envelope_sim.EnvelopeProfile
 import fr.sncf.osrd.envelope_sim.overlays.EnvelopeAcceleration
 import fr.sncf.osrd.path.implementations.EnvelopeTrainPath
-import fr.sncf.osrd.path.interfaces.PathProperties
+import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.stdcm.graph.STDCMEdge
 import fr.sncf.osrd.stdcm.graph.STDCMGraph
 import fr.sncf.osrd.utils.units.Distance
@@ -107,7 +107,7 @@ fun generatePreviousSimulationSegments(
  * Compute a full acceleration for a given edge. The end speed is fixed and we simulate backwards.
  */
 private fun computeAcceleration(
-    pathProperties: PathProperties,
+    pathProperties: TrainPath,
     endSpeed: Double,
     graph: STDCMGraph,
 ): SummarizedSimulationResult {

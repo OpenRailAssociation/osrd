@@ -2,6 +2,7 @@ package fr.sncf.osrd.utils
 
 import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.api.pathfinding.PathfindingBlockSuccess
+import fr.sncf.osrd.path.implementations.buildTrainPathFromChunkPath
 import java.io.BufferedWriter
 import java.io.File
 
@@ -14,14 +15,26 @@ fun exportPathGeo(infra: FullInfra, res: PathfindingBlockSuccess) {
     File("$name-tracks.csv").printWriter().use { out ->
         out.println("index;linestring;id")
         for ((i, track) in res.trackSectionRanges.withIndex()) {
-            val geo =
-                makePathProps(infra.rawInfra, infra.blockInfra, listOf(track), routes = listOf())
-                    .getGeo()
+            val chunkPath = makeChunkPath(infra.rawInfra, listOf(track))
+            val pathProps =
+                buildTrainPathFromChunkPath(
+                    infra.rawInfra,
+                    infra.blockInfra,
+                    chunkPath,
+                    routes = listOf(),
+                )
+            val geo = pathProps.getGeo()
             out.println("$i;$geo;${track.trackSection}")
         }
     }
+    val fullChunkPath = makeChunkPath(infra.rawInfra, res.trackSectionRanges)
     val fullPath =
-        makePathProps(infra.rawInfra, infra.blockInfra, res.trackSectionRanges, routes = listOf())
+        buildTrainPathFromChunkPath(
+            infra.rawInfra,
+            infra.blockInfra,
+            fullChunkPath,
+            routes = listOf(),
+        )
     val lineString = fullPath.getGeo()
     File("$name-points.csv").printWriter().use { out ->
         out.println("index;x;y")

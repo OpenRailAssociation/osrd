@@ -2,7 +2,7 @@ package fr.sncf.osrd.api.path_properties
 
 import com.google.common.collect.Range
 import fr.sncf.osrd.api.RangeValues
-import fr.sncf.osrd.path.interfaces.PathProperties
+import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.path.interfaces.TravelledPath
 import fr.sncf.osrd.railjson.schema.geom.RJSLineString
 import fr.sncf.osrd.sim_infra.api.NeutralSection
@@ -11,10 +11,7 @@ import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.DistanceRangeMapImpl
 import fr.sncf.osrd.utils.units.Offset
 
-fun makePathPropResponse(
-    pathProperties: PathProperties,
-    rawInfra: RawSignalingInfra,
-): PathPropResponse {
+fun makePathPropResponse(pathProperties: TrainPath, rawInfra: RawSignalingInfra): PathPropResponse {
     return PathPropResponse(
         makeSlopes(pathProperties),
         makeCurves(pathProperties),
@@ -25,15 +22,15 @@ fun makePathPropResponse(
     )
 }
 
-private fun makeSlopes(pathProperties: PathProperties): RangeValues<Double> {
+private fun makeSlopes(pathProperties: TrainPath): RangeValues<Double> {
     return makeRangeValues(pathProperties.getSlopes())
 }
 
-private fun makeCurves(pathProperties: PathProperties): RangeValues<Double> {
+private fun makeCurves(pathProperties: TrainPath): RangeValues<Double> {
     return makeRangeValues(pathProperties.getCurves())
 }
 
-private fun makeElectrifications(pathProperties: PathProperties): RangeValues<Electrification> {
+private fun makeElectrifications(pathProperties: TrainPath): RangeValues<Electrification> {
     val electrifications = makeElectrificationMap(pathProperties.getElectrification())
     val neutralSections = makeElectrificationMap(pathProperties.getNeutralSections())
     val mergedMap = DistanceRangeMapImpl.toRangeMap(electrifications)
@@ -49,7 +46,7 @@ private fun makeElectrifications(pathProperties: PathProperties): RangeValues<El
     return makeRangeValues(DistanceRangeMapImpl.from(mergedMap))
 }
 
-private fun makeGeographic(path: PathProperties): RJSLineString {
+private fun makeGeographic(path: TrainPath): RJSLineString {
     val lineString = path.getGeo()
     val coordinates = ArrayList<List<Double>>()
     for (p in lineString.getPoints()) coordinates.add(listOf(p.lon, p.lat))
@@ -57,7 +54,7 @@ private fun makeGeographic(path: PathProperties): RJSLineString {
 }
 
 private fun makeOperationalPoints(
-    path: PathProperties,
+    path: TrainPath,
     rawInfra: RawSignalingInfra,
 ): List<OperationalPointResponse> {
     val res = mutableListOf<OperationalPointResponse>()
@@ -111,7 +108,7 @@ private fun makeOperationalPoints(
     return res
 }
 
-private fun makeZones(path: PathProperties, rawInfra: RawSignalingInfra): RangeValues<String> {
+private fun makeZones(path: TrainPath, rawInfra: RawSignalingInfra): RangeValues<String> {
     val zoneIds = makeRangeValues(path.getZones())
     return RangeValues(zoneIds.internalBoundaries, zoneIds.values.map { rawInfra.getZoneName(it) })
 }
