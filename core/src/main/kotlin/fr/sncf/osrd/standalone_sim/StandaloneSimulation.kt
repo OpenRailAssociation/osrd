@@ -25,7 +25,7 @@ import fr.sncf.osrd.envelope_sim_infra.HasMissingSpeedTag
 import fr.sncf.osrd.envelope_sim_infra.computeMRSP
 import fr.sncf.osrd.path.implementations.ChunkPath
 import fr.sncf.osrd.path.implementations.EnvelopeTrainPath
-import fr.sncf.osrd.path.interfaces.PathProperties
+import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.path.interfaces.TravelledPath
 import fr.sncf.osrd.path.legacy_objects.ElectricalProfileMapping
 import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
@@ -54,7 +54,7 @@ val standaloneSimLogger: Logger = LoggerFactory.getLogger("StandaloneSimulation"
 /** Run a simulation for a single train. */
 fun runStandaloneSimulation(
     infra: FullInfra,
-    pathProps: PathProperties,
+    trainPath: TrainPath,
     chunkPath: ChunkPath,
     routes: StaticIdxList<Route>,
     blockPath: StaticIdxList<Block>,
@@ -80,7 +80,7 @@ fun runStandaloneSimulation(
         makeSafetySpeedRanges(infra, chunkPath, routes, schedule, signalingRanges)
     var mrsp =
         computeMRSP(
-            pathProps,
+            trainPath,
             rollingStock,
             true,
             speedLimitTag,
@@ -92,10 +92,10 @@ fun runStandaloneSimulation(
     // We don't use speed safety ranges in the MRSP displayed in the front
     // (just like we don't add the train length)
     val speedLimits =
-        computeMRSP(pathProps, rollingStock, false, speedLimitTag, null, null, useSpeedLimits)
+        computeMRSP(trainPath, rollingStock, false, speedLimitTag, null, null, useSpeedLimits)
 
     // Build paths and contexts
-    val envelopeSimPath = EnvelopeTrainPath.from(infra.rawInfra, pathProps, electricalProfileMap)
+    val envelopeSimPath = EnvelopeTrainPath.from(infra.rawInfra, trainPath, electricalProfileMap)
     val powerRestrictionsLegacyMap = powerRestrictions.toRangeMap()
     val electrificationMap =
         envelopeSimPath.getElectrificationMap(
@@ -153,7 +153,7 @@ fun runStandaloneSimulation(
         makeSimpleReportTrain(
             infra,
             maxEffortEnvelope,
-            pathProps,
+            trainPath,
             rollingStock,
             schedule,
             pathItemPositions,
@@ -162,7 +162,7 @@ fun runStandaloneSimulation(
         makeSimpleReportTrain(
             infra,
             provisionalEnvelope,
-            pathProps,
+            trainPath,
             rollingStock,
             schedule,
             pathItemPositions,
@@ -170,7 +170,7 @@ fun runStandaloneSimulation(
     val finalEnvelopeResult =
         runScheduleMetadataExtractor(
             finalEnvelope,
-            pathProps,
+            trainPath,
             chunkPath,
             infra,
             routes,

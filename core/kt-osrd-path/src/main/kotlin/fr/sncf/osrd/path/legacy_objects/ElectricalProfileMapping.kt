@@ -1,6 +1,6 @@
 package fr.sncf.osrd.path.legacy_objects
 
-import fr.sncf.osrd.path.interfaces.PathProperties
+import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.railjson.schema.external_generated_inputs.RJSElectricalProfileSet
 import fr.sncf.osrd.sim_infra.api.RawInfra
 import fr.sncf.osrd.sim_infra.api.TrackChunkId
@@ -44,7 +44,7 @@ class ElectricalProfileMapping {
     /** Returns the electrical profiles encountered on a path */
     fun getProfilesOnPath(
         infra: RawInfra,
-        path: PathProperties,
+        path: TrainPath,
     ): HashMap<String, DistanceRangeMap<String>> {
         val res = HashMap<String, DistanceRangeMap<String>>()
         for (entry in mapping.entries) {

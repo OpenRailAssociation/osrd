@@ -247,7 +247,7 @@ private fun generateTrackChunks(
  * Generate the route ranges from given chunk ranges, with actual route IDs given as input. This
  * just maps the offsets and precise ranges.
  */
-private fun generateRouteRanges(
+internal fun generateRouteRanges(
     rawInfra: RawInfra,
     chunks: LinearObjectMap<DirChunkRange>,
     routes: List<RouteId>,

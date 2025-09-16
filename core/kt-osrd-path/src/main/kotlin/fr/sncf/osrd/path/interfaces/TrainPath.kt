@@ -42,6 +42,9 @@ interface TrainPath : PhysicsPath, PathProperties {
 
     fun getTypedLength(): Length<TrainPath>
 
+    /** Returns a copy with the specified routes instead */
+    override fun withRoutes(routes: List<RouteId>): TrainPath
+
     fun getBlocks(): LinearObjectMap<BlockRange>
 
     fun getRoutes(): LinearObjectMap<RouteRange>

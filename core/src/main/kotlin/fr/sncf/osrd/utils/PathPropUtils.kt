@@ -3,10 +3,6 @@ package fr.sncf.osrd.utils
 import fr.sncf.osrd.api.DirectionalTrackRange
 import fr.sncf.osrd.path.implementations.ChunkPath
 import fr.sncf.osrd.path.implementations.buildChunkPath
-import fr.sncf.osrd.path.implementations.buildRangeMap
-import fr.sncf.osrd.path.implementations.buildTrainPathFromChunks
-import fr.sncf.osrd.path.interfaces.DirChunkRange
-import fr.sncf.osrd.path.interfaces.PathProperties
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection
 import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
@@ -15,37 +11,7 @@ import fr.sncf.osrd.utils.indexing.DirStaticIdx
 import fr.sncf.osrd.utils.indexing.MutableDirStaticIdxArrayList
 import fr.sncf.osrd.utils.indexing.StaticIdxList
 import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
-import fr.sncf.osrd.utils.units.Distance.Companion.max
-import fr.sncf.osrd.utils.units.Distance.Companion.min
 import fr.sncf.osrd.utils.units.Offset
-import fr.sncf.osrd.utils.units.meters
-
-/** Builds a PathProperties from a List<TrackRange> */
-fun makePathProps(
-    rawInfra: RawSignalingInfra,
-    blockInfra: BlockInfra,
-    trackRanges: List<DirectionalTrackRange>,
-    routes: List<RouteId>? = null,
-): PathProperties {
-    val chunkPath = makeChunkPath(rawInfra, trackRanges)
-
-    val chunkRanges = mutableListOf<DirChunkRange>()
-    var prevChunksLength = 0.meters
-    for (chunk in chunkPath.chunks) {
-        val chunkLength = rawInfra.getTrackChunkLength(chunk.value)
-        val start = max(chunkPath.beginOffset.distance - prevChunksLength, 0.meters)
-        val end = min(chunkPath.endOffset.distance - prevChunksLength, chunkLength.distance)
-        val range = DirChunkRange(chunk, Offset(start), Offset(end))
-        chunkRanges.add(range)
-        prevChunksLength += chunkLength.distance
-    }
-    return buildTrainPathFromChunks(
-        rawInfra,
-        blockInfra,
-        buildRangeMap(chunkRanges),
-        routes = routes,
-    )
-}
 
 fun makeChunkPath(
     rawInfra: RawSignalingInfra,

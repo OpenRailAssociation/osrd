@@ -2,7 +2,8 @@ package fr.sncf.osrd.api.path_properties
 
 import fr.sncf.osrd.api.ExceptionHandler
 import fr.sncf.osrd.api.InfraProvider
-import fr.sncf.osrd.utils.makePathProps
+import fr.sncf.osrd.path.implementations.buildTrainPathFromChunkPath
+import fr.sncf.osrd.utils.makeChunkPath
 import org.takes.Request
 import org.takes.Response
 import org.takes.Take
@@ -23,8 +24,8 @@ class PathPropEndpoint(private val infraManager: InfraProvider) : Take {
             // Load infra
             val infra = infraManager.getInfra(request.infra, request.expectedVersion)
 
-            val pathProps =
-                makePathProps(infra.rawInfra, infra.blockInfra, request.trackSectionRanges)
+            val chunkPath = makeChunkPath(infra.rawInfra, request.trackSectionRanges)
+            val pathProps = buildTrainPathFromChunkPath(infra.rawInfra, infra.blockInfra, chunkPath)
             val res = makePathPropResponse(pathProps, infra.rawInfra)
 
             RsJson(RsWithBody(pathPropResponseAdapter.toJson(res)))

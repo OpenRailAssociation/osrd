@@ -6,10 +6,9 @@ import fr.sncf.osrd.conflicts.IncrementalPath
 import fr.sncf.osrd.conflicts.PathFragment
 import fr.sncf.osrd.conflicts.incrementalPathOf
 import fr.sncf.osrd.graph.PathfindingConstraint
-import fr.sncf.osrd.path.implementations.PathPropertiesView
 import fr.sncf.osrd.path.implementations.buildTrainPathFromBlock
 import fr.sncf.osrd.path.interfaces.BlockPath
-import fr.sncf.osrd.path.interfaces.PathProperties
+import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.pathfinding.PathfindingEdgeLocationId
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal.SHORT_SLIP_STOP
 import fr.sncf.osrd.sim_infra.api.*
@@ -57,7 +56,7 @@ interface InfraExplorer {
      * Get the path properties for the current edge only, starting at the given offset and for the
      * given length. If no length is given, the path covers the rest of the block.
      */
-    fun getCurrentEdgePathProperties(offset: Offset<Block>, length: Distance?): PathProperties
+    fun getCurrentEdgePathProperties(offset: Offset<Block>, length: Distance?): TrainPath
 
     /**
      * Returns an object that can be used to identify edges. The last edge contains the current
@@ -131,7 +130,7 @@ fun initInfraExplorer(
 ): Collection<InfraExplorer> {
     val infraExplorers = mutableListOf<InfraExplorer>()
     val block = location.edge
-    val pathProps: PathProperties = buildTrainPathFromBlock(rawInfra, blockInfra, block)
+    val pathProps = buildTrainPathFromBlock(rawInfra, blockInfra, block)
     val blockToPathProperties = mutableMapOf(block to pathProps)
     val routes = blockInfra.routesOnBlock(rawInfra, block)
 
@@ -164,7 +163,7 @@ private class InfraExplorerImpl(
     private var blockRoutes: AppendOnlyMap<BlockId, RouteId>,
     private var lastTrack: TrackSectionId?,
     private var incrementalPath: IncrementalPath,
-    private var pathPropertiesCache: MutableMap<BlockId, PathProperties>,
+    private var trainPathCache: MutableMap<BlockId, TrainPath>,
     private var currentIndex: Int = 0,
     private var stepTracker: StepTracker,
     private var predecessorLength: Length<BlockPath> = Length(0.meters), // to avoid re-computing it
@@ -175,31 +174,29 @@ private class InfraExplorerImpl(
         return incrementalPath
     }
 
-    override fun getCurrentEdgePathProperties(
-        offset: Offset<Block>,
-        length: Distance?,
-    ): PathProperties {
+    override fun getCurrentEdgePathProperties(offset: Offset<Block>, length: Distance?): TrainPath {
         // We re-compute the routes of the current path since the cache may be incorrect
         // because of a previous iteration.
         // We also can't set a first route for sure in initInfraExplorer, but we set the first cache
         // entry.
         // So we have to correct that here now that we now which route we're on.
         val path =
-            pathPropertiesCache.getOrElse(getCurrentBlock()) {
+            trainPathCache.getOrElse(getCurrentBlock()) {
                 val res = buildTrainPathFromBlock(rawInfra, blockInfra, getCurrentBlock())
-                pathPropertiesCache[getCurrentBlock()] = res
+                trainPathCache[getCurrentBlock()] = res
                 res
             }
         val route = blockRoutes[getCurrentBlock()]!!
-        val blockPathProperties = path.withRoutes(listOf(route))
+
+        val pathWithRoutes = path.withRoutes(listOf(route))
 
         val blockLength = blockInfra.getBlockLength(getCurrentBlock())
         val endOffset: Offset<Block> = if (length == null) blockLength else offset.plus(length)
         if (offset.distance == 0.meters && endOffset == blockLength) {
-            return blockPathProperties
+            return pathWithRoutes
         }
         // In that case, start of the block is start of the travelled path
-        return PathPropertiesView(blockPathProperties, offset.cast(), endOffset.cast())
+        return pathWithRoutes.subPath(offset.cast(), endOffset.cast())
     }
 
     override fun getLastEdgeIdentifier(): EdgeIdentifier {
@@ -263,7 +260,7 @@ private class InfraExplorerImpl(
             this.blockRoutes.shallowCopy(),
             this.lastTrack,
             this.incrementalPath.clone(),
-            this.pathPropertiesCache,
+            this.trainPathCache,
             this.currentIndex,
             this.stepTracker.clone(),
             this.predecessorLength,

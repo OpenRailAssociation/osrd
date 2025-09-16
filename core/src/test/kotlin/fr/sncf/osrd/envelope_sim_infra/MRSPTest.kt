@@ -5,7 +5,7 @@ import fr.sncf.osrd.envelope.EnvelopeTestUtils
 import fr.sncf.osrd.envelope.MRSPEnvelopeBuilder.LimitKind
 import fr.sncf.osrd.envelope_sim.EnvelopeProfile.CONSTANT_SPEED
 import fr.sncf.osrd.path.implementations.buildTrainPathFromBlock
-import fr.sncf.osrd.path.interfaces.PathProperties
+import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.railjson.schema.common.RJSWaypointRef
 import fr.sncf.osrd.railjson.schema.common.graph.ApplicableDirection
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection
@@ -33,9 +33,9 @@ import org.junit.jupiter.params.provider.MethodSource
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class MRSPTest {
     // Small_infra paths
-    private var path: PathProperties? = null
-    private var path30: PathProperties? = null
-    private var path60: PathProperties? = null
+    private var path: TrainPath? = null
+    private var path30: TrainPath? = null
+    private var path60: TrainPath? = null
 
     // Nested_switches paths
     private var pathTo1: TestPath? = null
@@ -232,7 +232,7 @@ class MRSPTest {
     @ParameterizedTest
     @MethodSource("testComputeMRSPArgs")
     fun testComputeMRSP(
-        path: PathProperties,
+        path: TrainPath,
         rollingStock: RollingStock,
         addRollingStockLength: Boolean,
         trainTag: String?,
@@ -398,7 +398,7 @@ class MRSPTest {
         // On nested_switches
         private val ROUTES = listOf("1 -> 1'", "1 -> 2", "1 -> 3", "1 -> 4", "1 -> 4'")
 
-        private data class TestPath(val path: PathProperties, val envelope: Envelope) {
+        private data class TestPath(val path: TrainPath, val envelope: Envelope) {
             fun makeArguments(): Arguments {
                 return Arguments.of(path, TestTrains.REALISTIC_FAST_TRAIN, false, null, envelope)
             }
