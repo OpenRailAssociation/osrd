@@ -224,32 +224,38 @@ impl ValkeyConnection {
         let compressed_items = span!(Level::INFO, "Compressing data").in_scope(|| {
             items
                 .iter()
-                .map(|(key, value)| {
+                .filter_map(|(key, value)| {
                     // Create a LZ4 encoder.
                     let mut encoder = lz4_flex::frame::FrameEncoder::new(Vec::new());
                     // Serialize the `value` into JSON format and write it to the encoder (which compresses it).
-                    serde_json::to_writer(&mut encoder, value).map_err(|_| {
-                        RedisError::from((
-                            ErrorKind::IoError,
-                            "An error occurred writing the value",
-                        ))
-                    })?;
+                    if let Err(e) = serde_json::to_writer(&mut encoder, value) {
+                        tracing::warn!(
+                            "failed to serialize value to JSON for type '{}': {e}",
+                            std::any::type_name::<T>()
+                        );
+                        return None;
+                    }
                     // Finalize the compression process and retrieve the compressed data.
-                    let compressed_value = encoder.finish().map_err(|_| {
-                        RedisError::from((
-                            ErrorKind::IoError,
-                            "An error occurred compressing the value",
-                        ))
-                    })?;
-                    Ok((key, compressed_value))
+                    match encoder.finish() {
+                        Ok(compressed_value) => Some((key, compressed_value)),
+                        Err(e) => {
+                            tracing::warn!(
+                                "failed to compress value for type '{}': {e}",
+                                std::any::type_name::<T>()
+                            );
+                            None
+                        }
+                    }
                 })
-                .collect::<Result<Vec<_>, RedisError>>()
-        })?;
+                .collect::<Vec<_>>()
+        });
 
         // Store the compressed values using mset
-        span!(Level::INFO, "Sending items to Redis")
-            .in_scope(|| self.mset::<_, _, ()>(&compressed_items))
-            .await?;
+        if !compressed_items.is_empty() {
+            span!(Level::INFO, "Sending items to Redis")
+                .in_scope(|| self.mset::<_, _, ()>(&compressed_items))
+                .await?;
+        }
         Ok(())
     }
 
