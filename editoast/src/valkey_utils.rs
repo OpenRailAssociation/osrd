@@ -25,14 +25,12 @@ use tracing::debug;
 use tracing::span;
 use url::Url;
 
-use crate::error::Result;
-
 pub enum ValkeyConnection {
     Tokio(Connection),
     NoCache,
 }
 
-fn no_cache_cmd_handler(cmd: &Cmd) -> std::result::Result<Value, RedisError> {
+fn no_cache_cmd_handler(cmd: &Cmd) -> Result<Value, RedisError> {
     let cmd_name = cmd
         .args_iter()
         .next()
@@ -84,7 +82,7 @@ impl ConnectionLike for ValkeyConnection {
                     .skip(offset)
                     .take(count)
                     .map(no_cache_cmd_handler)
-                    .collect::<std::result::Result<_, RedisError>>();
+                    .collect::<Result<_, RedisError>>();
                 future::ready(responses).boxed()
             }
         }
@@ -117,7 +115,7 @@ impl ValkeyConnection {
     pub async fn json_get<T: DeserializeOwned, K: Debug + ToRedisArgs + Send + Sync>(
         &mut self,
         key: K,
-    ) -> Result<Option<T>> {
+    ) -> Result<Option<T>, RedisError> {
         let value: Option<String> = self.get(key).await?;
         match value {
             Some(v) => match serde_json::from_str(&v) {
@@ -139,7 +137,7 @@ impl ValkeyConnection {
     pub async fn json_get_bulk<T: DeserializeOwned, K: Debug + ToRedisArgs + Send + Sync>(
         &mut self,
         keys: &[K],
-    ) -> Result<impl Iterator<Item = Option<T>>> {
+    ) -> Result<impl Iterator<Item = Option<T>>, RedisError> {
         let values: Vec<Option<String>> = if !keys.is_empty() {
             self.mget(keys).await?
         } else {
@@ -167,7 +165,7 @@ impl ValkeyConnection {
         &mut self,
         key: K,
         value: &T,
-    ) -> Result<()> {
+    ) -> Result<(), RedisError> {
         let str_value = match serde_json::to_string(value) {
             Ok(value) => value,
             Err(e) => {
@@ -187,7 +185,7 @@ impl ValkeyConnection {
     pub async fn json_set_bulk<K: Debug + ToRedisArgs + Send + Sync, T: Serialize>(
         &mut self,
         items: &[(K, T)],
-    ) -> Result<()> {
+    ) -> Result<(), RedisError> {
         // Avoid mset to fail if keys is empty
         if items.is_empty() {
             return Ok(());
@@ -217,7 +215,7 @@ impl ValkeyConnection {
     pub async fn compressed_set_bulk<K: Debug + ToRedisArgs + Send + Sync, T: Serialize>(
         &mut self,
         items: &[(K, T)],
-    ) -> Result<()> {
+    ) -> Result<(), RedisError> {
         // Avoid mset to fail if keys is empty
         if items.is_empty() {
             return Ok(());
@@ -230,7 +228,12 @@ impl ValkeyConnection {
                     // Create a LZ4 encoder.
                     let mut encoder = lz4_flex::frame::FrameEncoder::new(Vec::new());
                     // Serialize the `value` into JSON format and write it to the encoder (which compresses it).
-                    serde_json::to_writer(&mut encoder, value)?;
+                    serde_json::to_writer(&mut encoder, value).map_err(|_| {
+                        RedisError::from((
+                            ErrorKind::IoError,
+                            "An error occurred writing the value",
+                        ))
+                    })?;
                     // Finalize the compression process and retrieve the compressed data.
                     let compressed_value = encoder.finish().map_err(|_| {
                         RedisError::from((
@@ -240,7 +243,7 @@ impl ValkeyConnection {
                     })?;
                     Ok((key, compressed_value))
                 })
-                .collect::<Result<Vec<_>>>()
+                .collect::<Result<Vec<_>, RedisError>>()
         })?;
 
         // Store the compressed values using mset
@@ -255,7 +258,7 @@ impl ValkeyConnection {
     pub async fn compressed_get_bulk<K: Debug + ToRedisArgs + Send + Sync, T: DeserializeOwned>(
         &mut self,
         keys: &[K],
-    ) -> Result<impl Iterator<Item = Option<T>>> {
+    ) -> Result<impl Iterator<Item = Option<T>>, RedisError> {
         debug!(nb_keys = keys.len());
 
         // Fetch the values from Redis
@@ -301,7 +304,7 @@ impl ValkeyConnection {
         key: K,
         member: &M,
         score: S,
-    ) -> Result<()> {
+    ) -> Result<(), RedisError> {
         let member = ZaddWrapper {
             member,
             nonce: rand::random(),
@@ -331,7 +334,7 @@ impl ValkeyConnection {
         key: K,
         min: M,
         max: MM,
-    ) -> Result<impl Iterator<Item = Option<T>>> {
+    ) -> Result<impl Iterator<Item = Option<T>>, RedisError> {
         let serialized_members = self
             .zrangebyscore::<_, _, _, Vec<String>>(key, min, max)
             .await?;
@@ -377,7 +380,7 @@ impl ValkeyClient {
         )
     }
 
-    pub async fn get_connection(&self) -> std::result::Result<ValkeyConnection, PoolError> {
+    pub async fn get_connection(&self) -> Result<ValkeyConnection, PoolError> {
         match self {
             ValkeyClient::Tokio(pool) => Ok(ValkeyConnection::Tokio(pool.get().await?)),
             ValkeyClient::NoCache => Ok(ValkeyConnection::NoCache),
