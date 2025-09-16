@@ -673,9 +673,23 @@ pub async fn check_health(
                 }
             })
     };
+    let valkey_ping = async {
+        use deadpool_redis::redis::AsyncCommands as _;
+        let mut vkconn = valkey_client
+            .get_connection()
+            .await
+            .map_err(anyhow::Error::from)
+            .map_err(AppHealthError::Valkey)?;
+        vkconn
+            .ping::<()>()
+            .await
+            .map_err(anyhow::Error::from)
+            .map_err(AppHealthError::Valkey)?;
+        Ok(())
+    };
     tokio::try_join!(
         ping_database(&mut db_connection).map_err(AppHealthError::Database),
-        valkey_client.ping_valkey().map_err(AppHealthError::Valkey),
+        valkey_ping,
         core_client.ping().map_err(AppHealthError::Core),
         openfga_ping
     )?;
