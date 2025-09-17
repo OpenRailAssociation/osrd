@@ -33,11 +33,12 @@
   ],
   "paced_trains": [
     {
+      "category": "InterCity",
       "constraint_distribution": "STANDARD",
       "rolling_stock_name": "",
       "exceptions": [],
       "train_name": "Carotte",
-      "labels": ["InterCity"],
+      "labels": [],
       "path": [
         { "trigram": "RTR", "id": "7-0", "deleted": false, "track_reference": null },
         { "trigram": "LTH", "id": "8-1", "deleted": false, "track_reference": null },

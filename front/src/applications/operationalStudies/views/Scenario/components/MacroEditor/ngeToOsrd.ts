@@ -1,5 +1,9 @@
 import { compact, uniq } from 'lodash';
 
+import type {
+  PacedTrainFromJson,
+  TrainScheduleFromJson,
+} from 'applications/operationalStudies/types';
 import {
   osrdEditoastApi,
   type PacedTrain,
@@ -954,12 +958,11 @@ export const convertNgeDtoToOsrd = (dto: NetzgrafikDto) => {
     });
   }
 
-  const trainSchedules: TrainSchedule[] = [];
-  const pacedTrains: PacedTrain[] = [];
+  const trainSchedules: TrainScheduleFromJson[] = [];
+  const pacedTrains: PacedTrainFromJson[] = [];
   for (const trainrun of dto.trainruns) {
     const { labels, trainrunSections } = generateTrainrunProperties(dto, trainrun);
     const category = dto.metadata.trainrunCategories.find((cat) => cat.id === trainrun.categoryId);
-    if (category) labels.push(category.name);
     const directions =
       trainrun.direction === 'one_way'
         ? [TRAINRUN_DIRECTIONS.FORWARD]
@@ -974,6 +977,7 @@ export const convertNgeDtoToOsrd = (dto: NetzgrafikDto) => {
       const commonProps = {
         train_name: trainrun.name,
         labels,
+        category: category?.name,
         ...pathAndSchedule,
       };
       const paced = createPacedAttributesFromTrainrun(trainrun, dto);
