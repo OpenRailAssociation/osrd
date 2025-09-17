@@ -1,10 +1,15 @@
 package fr.sncf.osrd.api.pathfinding
 
 import com.google.common.collect.Iterables
-import fr.sncf.osrd.api.DirectionalTrackRange
 import fr.sncf.osrd.api.FullInfra
+import fr.sncf.osrd.path.implementations.buildRangeMap
+import fr.sncf.osrd.path.implementations.buildTrainPathFromBlockRanges
 import fr.sncf.osrd.path.interfaces.BlockPath
+import fr.sncf.osrd.path.interfaces.BlockRange
+import fr.sncf.osrd.path.interfaces.LinearObjectMap
 import fr.sncf.osrd.path.interfaces.TravelledPath
+import fr.sncf.osrd.path.interfaces.getLegacyBlockPath
+import fr.sncf.osrd.path.interfaces.toJsonTrainPath
 import fr.sncf.osrd.pathfinding.Pathfinding
 import fr.sncf.osrd.pathfinding.PathfindingEdgeLocationId
 import fr.sncf.osrd.pathfinding.PathfindingEdgeRangeId
@@ -44,17 +49,26 @@ fun runPathfindingBlockPostProcessing(
     infra: FullInfra,
     rawPath: PathfindingResultId<Block>,
 ): PathfindingBlockSuccess {
+    // TODO: access a `TrainPath` directly from the pathfinding result.
+    // We'd get more accurate routes in the (unlikely) case of ambiguity,
+    // and we'd save a lot of code complexity here.
+
     // We reuse some of the old function of pathfindingResultConverter,
     // there will be some cleanup to be made when the old version is removed
     val oldRoutePath = makeRoutePath(infra.blockInfra, infra.rawInfra, rawPath.ranges)
     val routeList = oldRoutePath.map { it.route }
-    val blockList = makeBlocks(infra, rawPath.ranges)
+    val blockMap = makeBlocks(rawPath.ranges)
 
-    val trackRanges = makeTrackRanges(oldRoutePath)
+    val trainPath =
+        buildTrainPathFromBlockRanges(
+            infra.rawInfra,
+            infra.blockInfra,
+            blockMap,
+            routeNames = routeList,
+        )
+
     return PathfindingBlockSuccess(
-        blockList,
-        routeList,
-        trackRanges,
+        trainPath.toJsonTrainPath(infra.rawInfra, infra.blockInfra),
         Length(rawPath.ranges.map { it.end - it.start }.sumDistances()),
         makePathItemPositions(rawPath),
     )
@@ -67,10 +81,11 @@ private fun validatePathfindingResponse(
 ) {
     if (res !is PathfindingBlockSuccess) return
 
-    for ((i, blockName) in res.blocks.withIndex()) {
-        val block = infra.blockInfra.getBlockFromName(blockName)!!
+    val trainPath = res.path.toTrainPath(infra.rawInfra, infra.blockInfra, null)
+    val blocks = trainPath.getLegacyBlockPath()
+    for ((i, block) in blocks.withIndex()) {
         val stopAtBufferStop = infra.blockInfra.blockStopAtBufferStop(block)
-        val isLastBlock = i == res.blocks.size - 1
+        val isLastBlock = i == blocks.size - 1
         if (stopAtBufferStop && !isLastBlock) {
             val zonePath = infra.blockInfra.getBlockZonePaths(block).last()
             val detector = infra.rawInfra.getZonePathExit(zonePath)
@@ -80,11 +95,6 @@ private fun validatePathfindingResponse(
             throw err
         }
     }
-
-    val trackSet = HashSet<String>()
-    for (track in res.trackSectionRanges) trackSet.add(track.trackSection)
-    if (trackSet.size != res.trackSectionRanges.size)
-        throw OSRDError(ErrorType.PathWithRepeatedTracks)
 
     if (res.pathItemPositions.size != req.pathItems.size)
         throw OSRDError(ErrorType.PathHasInvalidItemPositions)
@@ -115,39 +125,20 @@ fun makePathItemPositions(
     return res
 }
 
-private fun makeTrackRanges(oldRoutePath: List<RJSRoutePath>): List<DirectionalTrackRange> {
-    val res = mutableListOf<DirectionalTrackRange>()
-    for (routeRange in oldRoutePath) {
-        for (trackRange in routeRange.trackSections) {
-            if (res.isEmpty() || res[res.size - 1].trackSection != trackRange.trackSectionID) {
-                res.add(
-                    DirectionalTrackRange(
-                        trackRange.trackSectionID,
-                        Offset(trackRange.begin.meters),
-                        Offset(trackRange.end.meters),
-                        trackRange.direction,
-                    )
-                )
-            } else {
-                val last = res[res.size - 1]
-                last.end = max(last.end, Offset(trackRange.end.meters))
-                last.begin = min(last.begin, Offset(trackRange.begin.meters))
-            }
+private fun makeBlocks(
+    ranges: List<Pathfinding.EdgeRange<StaticIdx<Block>, Block>>
+): LinearObjectMap<BlockRange> {
+    val blockRanges = mutableListOf<BlockRange>()
+    for ((blockId, start, end) in ranges) {
+        val lastAddedRange = blockRanges.lastOrNull()
+        if (lastAddedRange == null || lastAddedRange.value != blockId) {
+            blockRanges.add(BlockRange(blockId, start, end))
+        } else {
+            require(lastAddedRange.to == start)
+            blockRanges[blockRanges.lastIndex] = lastAddedRange.copy(to = end)
         }
     }
-    return res
-}
-
-private fun makeBlocks(
-    infra: FullInfra,
-    ranges: List<Pathfinding.EdgeRange<StaticIdx<Block>, Block>>,
-): List<String> {
-    val res = mutableListOf<String>()
-    for (range in ranges) {
-        val name = infra.blockInfra.getBlockName(range.edge)
-        if (res.isEmpty() || res[res.size - 1] != name) res.add(name)
-    }
-    return res
+    return buildRangeMap(blockRanges)
 }
 
 /** Returns the route path, from the raw block pathfinding result */

@@ -1,12 +1,19 @@
 package fr.sncf.osrd.path.interfaces
 
 import com.google.common.collect.RangeMap
+import fr.sncf.osrd.path.implementations.ChunkPath
 import fr.sncf.osrd.sim_infra.api.*
+import fr.sncf.osrd.utils.entries
 import fr.sncf.osrd.utils.indexing.DirStaticIdx
 import fr.sncf.osrd.utils.indexing.StaticIdx
+import fr.sncf.osrd.utils.indexing.StaticIdxList
+import fr.sncf.osrd.utils.isSingleton
+import fr.sncf.osrd.utils.toIdxList
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
+import fr.sncf.osrd.utils.units.sumDistances
+import fr.sncf.osrd.utils.values
 
 /**
  * A `TrainPath` describes the path taken by a train and its properties. It is built in a way that
@@ -83,3 +90,32 @@ typealias RouteRange = LinearObjectRange<Route>
 typealias BlockRange = LinearObjectRange<Block>
 
 typealias DirChunkRange = LinearDirObjectRange<TrackChunk>
+
+// Extension functions that help with backward compatibility.
+// These should only exist during the migration to enable more local changes,
+// to allow partial migration while still having a working core.
+// Every call site will become a bug once we have backtracks.
+// TODO path migration: remove these.
+
+fun TrainPath.getLegacyChunkPath(): ChunkPath {
+    val chunkRanges = getChunks().values
+    val beginOffset = chunkRanges.first().from.cast<BlockPath>()
+    // Poorly optimized, we could avoid the loop if we had infra access.
+    // Should be good enough for short-lived backward compatibility method.
+    val endOffset = beginOffset + chunkRanges.map { it.length }.sumDistances()
+    return ChunkPath(
+        chunks = chunkRanges.map { it.value }.toIdxList(),
+        beginOffset = beginOffset,
+        endOffset = endOffset,
+    )
+}
+
+fun TrainPath.getLegacyBlockPath(): StaticIdxList<Block> {
+    // Legacy block list excluded blocks that were only used in 0-length segments
+    return getBlocks().entries.filter { !it.key.isSingleton }.map { it.value.value }.toIdxList()
+}
+
+fun TrainPath.getLegacyRoutePath(): StaticIdxList<Route> {
+    // Legacy route list excluded routes that were only used in 0-length segments
+    return getRoutes().entries.filter { !it.key.isSingleton }.map { it.value.value }.toIdxList()
+}

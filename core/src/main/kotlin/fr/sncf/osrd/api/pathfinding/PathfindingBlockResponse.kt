@@ -7,6 +7,7 @@ import com.squareup.moshi.Moshi
 import com.squareup.moshi.adapters.PolymorphicJsonAdapterFactory
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import fr.sncf.osrd.api.DirectionalTrackRange
+import fr.sncf.osrd.path.interfaces.JsonTrainPath
 import fr.sncf.osrd.path.interfaces.TravelledPath
 import fr.sncf.osrd.pathfinding.Pathfinding.Range
 import fr.sncf.osrd.reporting.exceptions.OSRDError
@@ -18,12 +19,7 @@ import java.util.*
 interface PathfindingBlockResponse
 
 class PathfindingBlockSuccess(
-    // Block ids
-    val blocks: List<String>,
-
-    // Route ids
-    val routes: List<String>,
-    @Json(name = "track_section_ranges") val trackSectionRanges: List<DirectionalTrackRange>,
+    val path: JsonTrainPath,
     val length: Length<TravelledPath>,
 
     /** Offsets of the waypoints given as input */
@@ -33,9 +29,7 @@ class PathfindingBlockSuccess(
         if (this === other) return true
         if (other !is PathfindingBlockSuccess) return false
 
-        if (blocks != other.blocks) return false
-        if (routes != other.routes) return false
-        if (trackSectionRanges != other.trackSectionRanges) return false
+        if (path != other.path) return false
         if (length != other.length) return false
         if (pathItemPositions != other.pathItemPositions) return false
 
@@ -43,7 +37,7 @@ class PathfindingBlockSuccess(
     }
 
     override fun hashCode(): Int {
-        return Objects.hash(blocks, routes, trackSectionRanges, length, pathItemPositions)
+        return Objects.hash(path, length, pathItemPositions)
     }
 }
 

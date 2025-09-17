@@ -7,9 +7,11 @@ import fr.sncf.osrd.envelope.part.EnvelopePart
 import fr.sncf.osrd.envelope_sim.EnvelopeProfile
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext
 import fr.sncf.osrd.envelope_sim.etcs.*
-import fr.sncf.osrd.path.implementations.buildTrainPathFromChunkPath
 import fr.sncf.osrd.path.interfaces.BlockPath
 import fr.sncf.osrd.path.interfaces.TravelledPath
+import fr.sncf.osrd.path.interfaces.getLegacyBlockPath
+import fr.sncf.osrd.path.interfaces.getLegacyChunkPath
+import fr.sncf.osrd.path.interfaces.getLegacyRoutePath
 import fr.sncf.osrd.signaling.etcs_level2.ETCS_LEVEL2
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.standalone_sim.PathOffsetBuilder
@@ -63,16 +65,11 @@ class ETCSBrakingCurvesEndpoint(
             val rollingStock = parseRawRollingStock(request.physicsConsist)
 
             // Parse path.
-            val chunkPath = makeChunkPath(infra.rawInfra, request.path.trackSectionRanges)
-            val routePath = convertRoutePath(infra.rawInfra, request.path.routes)
             val trainPath =
-                buildTrainPathFromChunkPath(
-                    infra.rawInfra,
-                    infra.blockInfra,
-                    chunkPath,
-                    routePath.toList(),
-                )
-            val blockPath = convertBlockPath(infra.blockInfra, request.path.blocks)
+                request.path.toTrainPath(infra.rawInfra, infra.blockInfra, electricalProfileMap)
+            val chunkPath = trainPath.getLegacyChunkPath()
+            val routePath = trainPath.getLegacyRoutePath()
+            val blockPath = trainPath.getLegacyBlockPath()
             val powerRestrictionsLegacyMap =
                 parsePowerRestrictions(request.powerRestrictions).toRangeMap()
             val electrificationMap =

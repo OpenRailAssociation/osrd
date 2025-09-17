@@ -255,7 +255,7 @@ internal fun generateRouteRanges(
     routes: List<RouteId>,
 ): LinearObjectMap<RouteRange> {
     val res = mutableListOf<RouteRange>()
-    val mappedChunks = chunks.entries.map { it.value }.associateBy { it.value }
+    val mappedChunks = chunks.values.associateBy { it.value }
     for (route in routes) {
         // We look for the first and last point where the route is used by a chunk.
         // We assume that the chunk list is continuous and follows the route.
@@ -286,7 +286,7 @@ internal fun generateRouteRanges(
  * instance.
  */
 private fun buildChunkPath(infra: RawInfra, chunkMap: LinearObjectMap<DirChunkRange>): ChunkPath {
-    val chunkRanges = chunkMap.entries.map { it.value }
+    val chunkRanges = chunkMap.values
     val chunkIds = chunkRanges.map { it.value }
     val beginOffset = chunkRanges.first().from
     val endOffset =

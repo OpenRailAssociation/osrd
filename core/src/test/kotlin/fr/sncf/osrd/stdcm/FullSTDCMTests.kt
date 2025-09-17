@@ -6,7 +6,9 @@ import fr.sncf.osrd.api.pathfinding.PathfindingBlockSuccess
 import fr.sncf.osrd.api.pathfinding.runPathfinding
 import fr.sncf.osrd.conflicts.SpacingRequirement
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue
-import fr.sncf.osrd.path.implementations.buildTrainPathFromChunkPath
+import fr.sncf.osrd.path.interfaces.getLegacyBlockPath
+import fr.sncf.osrd.path.interfaces.getLegacyChunkPath
+import fr.sncf.osrd.path.interfaces.getLegacyRoutePath
 import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowanceDistribution
 import fr.sncf.osrd.sim_infra.api.RawInfra
@@ -455,17 +457,14 @@ fun makeRequirementsFromPath(
         )
             as PathfindingBlockSuccess
 
-    val chunkPath = makeChunkPath(infra.rawInfra, path.trackSectionRanges)
-    val pathProperties =
-        buildTrainPathFromChunkPath(infra.rawInfra, infra.blockInfra, chunkPath, routes = listOf())
-
+    val trainPath = path.path.toTrainPath(infra.rawInfra, infra.blockInfra, null)
     val sim =
         runStandaloneSimulation(
             infra,
-            pathProperties,
-            chunkPath,
-            path.routes.map { infra.rawInfra.getRouteFromName(it) }.toIdxList(),
-            path.blocks.map { infra.blockInfra.getBlockFromName(it)!! }.toIdxList(),
+            trainPath,
+            trainPath.getLegacyChunkPath(),
+            trainPath.getLegacyRoutePath(),
+            trainPath.getLegacyBlockPath(),
             rollingStock,
             Comfort.STANDARD,
             RJSAllowanceDistribution.LINEAR,

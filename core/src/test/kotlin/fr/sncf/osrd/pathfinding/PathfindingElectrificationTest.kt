@@ -63,7 +63,7 @@ class PathfindingElectrificationTest : ApiTest() {
             )
         val normalPathSuccess = checkPathfindingSuccess(normalPathResp, 400.meters)
 
-        val normalTracks = normalPathSuccess.trackSectionRanges.map { it.trackSection }
+        val normalTracks = normalPathSuccess.path.trackSectionRanges.map { it.trackSection }
 
         // Removes electrification in the section used by the normal train
         val normalPathTrackAfterB = normalTracks.intersect(setOf("b->N", "b->S"))
@@ -83,7 +83,7 @@ class PathfindingElectrificationTest : ApiTest() {
         val electricPathSuccess = checkPathfindingSuccess(electricPathResp, 400.meters)
 
         // We check that the path is different, we need to avoid the non-electrified track
-        val electrifiedTracks = electricPathSuccess.trackSectionRanges.map { it.trackSection }
+        val electrifiedTracks = electricPathSuccess.path.trackSectionRanges.map { it.trackSection }
         assertNotEquals(normalTracks, electrifiedTracks)
 
         // Remove all electrification
@@ -223,7 +223,7 @@ class PathfindingElectrificationTest : ApiTest() {
                 ),
             )
         val normalPathSuccess = checkPathfindingSuccess(normalPathResp, 39_553.meters)
-        val normalTracks = normalPathSuccess.trackSectionRanges.map { it.trackSection }
+        val normalTracks = normalPathSuccess.path.trackSectionRanges.map { it.trackSection }
 
         // Replace with electrifications
         // Set voltage to 25000V everywhere except for trackSectionToBlock
@@ -249,7 +249,7 @@ class PathfindingElectrificationTest : ApiTest() {
 
         // Check that the paths are different, we need to avoid the non-electrified track
         val partialElectrifiedTracks =
-            partialElectricPathSuccess.trackSectionRanges.map { it.trackSection }
+            partialElectricPathSuccess.path.trackSectionRanges.map { it.trackSection }
         assertThat(normalTracks).usingRecursiveComparison().isNotEqualTo(partialElectrifiedTracks)
     }
 

@@ -1,9 +1,9 @@
 package fr.sncf.osrd.pathfinding
 
 import fr.sncf.osrd.api.ApiTest
-import fr.sncf.osrd.api.DirectionalTrackRange
 import fr.sncf.osrd.api.TrackLocation
 import fr.sncf.osrd.api.pathfinding.*
+import fr.sncf.osrd.path.interfaces.JsonTrainPath.TrackSectionRange
 import fr.sncf.osrd.path.interfaces.TravelledPath
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSLoadingGaugeLimit
@@ -47,7 +47,7 @@ fun getPathfindingBlockRequest(
 fun checkPathfindingSuccess(
     pathResp: PathfindingBlockResponse,
     expectedLength: Distance,
-    expectedTrackSectionRanges: List<DirectionalTrackRange>? = null,
+    expectedTrackSectionRanges: List<TrackSectionRange>? = null,
     expectedBlocks: List<String>? = null,
     expectedRoutes: List<String>? = null,
     expectedIntermediatePathItemPosition: List<Offset<TravelledPath>> = listOf(),
@@ -63,13 +63,16 @@ fun checkPathfindingSuccess(
     assertEquals(expectedPathItemsPos, pathSuccess.pathItemPositions)
 
     if (expectedBlocks != null) {
-        assertEquals(expectedBlocks.map { "block.${md5(it)}" }, pathSuccess.blocks)
+        assertEquals(
+            expectedBlocks.map { "block.${md5(it)}" },
+            pathSuccess.path.blocks.map { it.id },
+        )
     }
     if (expectedRoutes != null) {
-        assertEquals(expectedRoutes, pathSuccess.routes)
+        assertEquals(expectedRoutes, pathSuccess.path.routes.map { it.id })
     }
     if (expectedTrackSectionRanges != null) {
-        assertEquals(expectedTrackSectionRanges, pathSuccess.trackSectionRanges)
+        assertEquals(expectedTrackSectionRanges, pathSuccess.path.trackSectionRanges)
     }
 
     return pathSuccess
@@ -104,19 +107,19 @@ class PathfindingTest : ApiTest() {
                 ),
             expectedTrackSectionRanges =
                 listOf(
-                    DirectionalTrackRange(
+                    TrackSectionRange(
                         "ne.micro.foo_b",
                         Offset(50.meters),
                         Offset(200.meters),
                         EdgeDirection.START_TO_STOP,
                     ),
-                    DirectionalTrackRange(
+                    TrackSectionRange(
                         "ne.micro.foo_to_bar",
                         Offset(0.meters),
                         Offset(10_000.meters),
                         EdgeDirection.START_TO_STOP,
                     ),
-                    DirectionalTrackRange(
+                    TrackSectionRange(
                         "ne.micro.bar_a",
                         Offset(0.meters),
                         Offset(100.meters),
@@ -320,19 +323,19 @@ class PathfindingTest : ApiTest() {
                 ),
             expectedTrackSectionRanges =
                 listOf(
-                    DirectionalTrackRange(
+                    TrackSectionRange(
                         "ne.micro.foo_b",
                         Offset(100.meters),
                         Offset(200.meters),
                         EdgeDirection.START_TO_STOP,
                     ),
-                    DirectionalTrackRange(
+                    TrackSectionRange(
                         "ne.micro.foo_to_bar",
                         Offset(0.meters),
                         Offset(10_000.meters),
                         EdgeDirection.START_TO_STOP,
                     ),
-                    DirectionalTrackRange(
+                    TrackSectionRange(
                         "ne.micro.bar_a",
                         Offset(0.meters),
                         Offset(100.meters),
@@ -473,19 +476,19 @@ class PathfindingTest : ApiTest() {
                 ),
             expectedTrackSectionRanges =
                 listOf(
-                    DirectionalTrackRange(
+                    TrackSectionRange(
                         "ne.micro.bar_a",
                         Offset(0.meters),
                         Offset(100.meters),
                         EdgeDirection.STOP_TO_START,
                     ),
-                    DirectionalTrackRange(
+                    TrackSectionRange(
                         "ne.micro.foo_to_bar",
                         Offset(0.meters),
                         Offset(10_000.meters),
                         EdgeDirection.STOP_TO_START,
                     ),
-                    DirectionalTrackRange(
+                    TrackSectionRange(
                         "ne.micro.foo_b",
                         Offset(100.meters),
                         Offset(200.meters),
@@ -513,7 +516,7 @@ class PathfindingTest : ApiTest() {
             expectedRoutes = listOf("rt.tde.foo_a-switch_foo->buffer_stop_c"),
             expectedTrackSectionRanges =
                 listOf(
-                    DirectionalTrackRange(
+                    TrackSectionRange(
                         "ne.micro.bar_a",
                         Offset(100.meters),
                         Offset(110.meters),
@@ -540,7 +543,7 @@ class PathfindingTest : ApiTest() {
             expectedRoutes = listOf("rt.buffer_stop_c->tde.track-bar"),
             expectedTrackSectionRanges =
                 listOf(
-                    DirectionalTrackRange(
+                    TrackSectionRange(
                         "ne.micro.bar_a",
                         Offset(100.meters),
                         Offset(110.meters),
@@ -583,19 +586,19 @@ class PathfindingTest : ApiTest() {
             expectedRoutes = listOf("rt.tde.foo_a-switch_foo->buffer_stop_c"),
             expectedTrackSectionRanges =
                 listOf(
-                    DirectionalTrackRange(
+                    TrackSectionRange(
                         "ne.micro.foo_a",
                         Offset(200.meters),
                         Offset(200.meters),
                         EdgeDirection.START_TO_STOP,
                     ),
-                    DirectionalTrackRange(
+                    TrackSectionRange(
                         "ne.micro.foo_to_bar",
                         Offset(0.meters),
                         Offset(10_000.meters),
                         EdgeDirection.START_TO_STOP,
                     ),
-                    DirectionalTrackRange(
+                    TrackSectionRange(
                         "ne.micro.bar_a",
                         Offset(0.meters),
                         Offset(0.meters),
