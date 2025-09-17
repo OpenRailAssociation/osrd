@@ -14,7 +14,6 @@ import fr.sncf.osrd.envelope_sim.pipelines.SimStop
 import fr.sncf.osrd.envelope_sim.pipelines.maxEffortEnvelopeFrom
 import fr.sncf.osrd.envelope_sim.pipelines.maxSpeedEnvelopeFrom
 import fr.sncf.osrd.envelope_sim_infra.computeMRSP
-import fr.sncf.osrd.path.implementations.EnvelopeTrainPath
 import fr.sncf.osrd.path.interfaces.TravelledPath
 import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal
@@ -106,8 +105,7 @@ class STDCMSimulations {
             simLength = Distance.min(simLength, stopOffset.distance)
         }
         val path = infraExplorer.getCurrentEdgePathProperties(start, simLength)
-        val envelopePath = EnvelopeTrainPath.from(rawInfra, path)
-        val context = build(rollingStock, envelopePath, timeStep, comfort)
+        val context = build(rollingStock, path, timeStep, comfort)
         val mrsp = computeMRSP(path, rollingStock, false, trainTag, temporarySpeedLimitManager)
         return try {
             val maxSpeedEnvelope = maxSpeedEnvelopeFrom(context, stops, mrsp)
@@ -162,8 +160,7 @@ fun simulateBackwards(
     graph: STDCMGraph,
 ): Envelope {
     val path = infraExplorer.getCurrentEdgePathProperties(start, null)
-    val envelopePath = EnvelopeTrainPath.from(rawInfra, path)
-    val context = build(graph.rollingStock, envelopePath, graph.timeStep, graph.comfort)
+    val context = build(graph.rollingStock, path, graph.timeStep, graph.comfort)
     val partBuilder = EnvelopePartBuilder()
     partBuilder.setAttr(EnvelopeProfile.BRAKING)
     partBuilder.setAttr(BacktrackingSelfTypeHolder())

@@ -8,7 +8,6 @@ import fr.sncf.osrd.envelope.part.constraints.PositionConstraint
 import fr.sncf.osrd.envelope.part.constraints.SpeedConstraint
 import fr.sncf.osrd.envelope_sim.EnvelopeProfile
 import fr.sncf.osrd.envelope_sim.overlays.EnvelopeAcceleration
-import fr.sncf.osrd.path.implementations.EnvelopeTrainPath
 import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.stdcm.graph.STDCMEdge
 import fr.sncf.osrd.stdcm.graph.STDCMGraph
@@ -117,11 +116,10 @@ private fun computeAcceleration(
 
     // TODO: building an EnvelopeTrainPath each time is very expensive, we should really cache them
     // over blocks and implement views for block segments.
-    val envelopePath = EnvelopeTrainPath.from(graph.rawInfra, pathProperties)
     val context =
         fr.sncf.osrd.stdcm.graph.build(
             graph.rollingStock,
-            envelopePath,
+            pathProperties,
             graph.timeStep,
             graph.comfort,
         )

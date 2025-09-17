@@ -24,7 +24,6 @@ import fr.sncf.osrd.envelope_sim.pipelines.maxSpeedEnvelopeFrom
 import fr.sncf.osrd.envelope_sim_infra.HasMissingSpeedTag
 import fr.sncf.osrd.envelope_sim_infra.computeMRSP
 import fr.sncf.osrd.path.implementations.ChunkPath
-import fr.sncf.osrd.path.implementations.EnvelopeTrainPath
 import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.path.interfaces.TravelledPath
 import fr.sncf.osrd.path.legacy_objects.ElectricalProfileMapping
@@ -95,10 +94,9 @@ fun runStandaloneSimulation(
         computeMRSP(trainPath, rollingStock, false, speedLimitTag, null, null, useSpeedLimits)
 
     // Build paths and contexts
-    val envelopeSimPath = EnvelopeTrainPath.from(infra.rawInfra, trainPath, electricalProfileMap)
     val powerRestrictionsLegacyMap = powerRestrictions.toRangeMap()
     val electrificationMap =
-        envelopeSimPath.getElectrificationMap(
+        trainPath.getElectrificationMap(
             rollingStock.basePowerClass,
             powerRestrictionsLegacyMap,
             rollingStock.powerRestrictions,
@@ -110,7 +108,7 @@ fun runStandaloneSimulation(
     var context =
         EnvelopeSimContext(
             rollingStock,
-            envelopeSimPath,
+            trainPath,
             timeStep,
             curvesAndConditions.curves,
             makeETCSContext(rollingStock, infra, chunkPath, routes, blockPath, signalingRanges),
