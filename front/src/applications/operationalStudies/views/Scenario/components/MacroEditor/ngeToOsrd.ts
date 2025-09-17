@@ -9,7 +9,6 @@ import {
   type PacedTrain,
   type SearchResultItemOperationalPoint,
   type TrainSchedule,
-  type MacroNodeForm,
 } from 'common/api/osrdEditoastApi';
 import {
   createPacedTrain,
@@ -43,6 +42,7 @@ import {
 } from './consts';
 import type MacroEditorState from './MacroEditorState';
 import type { NodeIndexed } from './MacroEditorState';
+import { relabelDuplicateTrigrams } from './ngeImportUtils';
 import {
   createMacroNode,
   deleteMacroNodeByNgeId,
@@ -950,13 +950,14 @@ export const handleOperation = async ({
 };
 
 export const convertNgeDtoToOsrd = (dto: NetzgrafikDto) => {
-  const macroNodes: MacroNodeForm[] = [];
+  const macroNodes: Omit<NodeIndexed, 'dbId'>[] = [];
   for (const node of dto.nodes) {
     macroNodes.push({
       ...castNgeNode(node, dto.labels),
       path_item_key: `trigram:${node.betriebspunktName}`,
     });
   }
+  const macroNodesWUniqueTrigrams = relabelDuplicateTrigrams(macroNodes);
 
   const trainSchedules: TrainScheduleFromJson[] = [];
   const pacedTrains: PacedTrainFromJson[] = [];
@@ -998,5 +999,9 @@ export const convertNgeDtoToOsrd = (dto: NetzgrafikDto) => {
 
   // TODO: handle return trips by having a for example by having a return trips field in TimetableJsonPayload with [id1, id2],
   // then calling the return trip api after creating the trains in ImportTimetableItemTrainsList
-  return { macro_nodes: macroNodes, paced_trains: pacedTrains, train_schedules: trainSchedules };
+  return {
+    macro_nodes: macroNodesWUniqueTrigrams,
+    paced_trains: pacedTrains,
+    train_schedules: trainSchedules,
+  };
 };
