@@ -210,10 +210,10 @@
     {
       "id": 2,
       "name": "Carotte",
-      "categoryId": 1,
+      "categoryId": 0,
       "frequencyId": 3,
       "trainrunTimeCategoryId": 0,
-      "labelIds": [],
+      "labelIds": [0],
       "direction": "round_trip"
     }
   ],
@@ -409,7 +409,14 @@
     "netzgrafikColors": []
   },
   "freeFloatingTexts": [],
-  "labels": [],
+  "labels": [
+    {
+      "id": 0,
+      "label": "Test label",
+      "labelGroupId": 0,
+      "labelRef": "Test ref"
+    }
+  ],
   "labelGroups": [],
   "filterData": { "filterSettings": [] }
 }
