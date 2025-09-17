@@ -42,7 +42,7 @@ export const SubCategoryContextProvider = ({ children }: SubCategoryContextProvi
       );
     }
   }, [isError, dispatch, t]);
-
+  // Test
   const value = useMemo<SubCategoryContextValue>(() => subCategories, [subCategories]);
 
   return <SubCategoryContext.Provider value={value}>{children}</SubCategoryContext.Provider>;
