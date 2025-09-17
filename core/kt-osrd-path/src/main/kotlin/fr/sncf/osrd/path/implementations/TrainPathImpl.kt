@@ -178,8 +178,8 @@ data class TrainPathNoBacktrack(
             return map?.asMapOfRanges()
                 ?.mapValues {
                     PrintableRange(
-                        it.key.lowerEndpoint().distance,
-                        it.key.upperEndpoint().distance,
+                        it.value.from.distance,
+                        it.value.to.distance,
                         toPrintable(it.value.value),
                     )
                 }

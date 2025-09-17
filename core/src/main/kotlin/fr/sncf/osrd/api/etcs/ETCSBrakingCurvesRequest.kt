@@ -6,6 +6,7 @@ import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import fr.sncf.osrd.api.RangeValues
 import fr.sncf.osrd.api.standalone_sim.*
+import fr.sncf.osrd.path.interfaces.JsonTrainPath
 import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingResistance
 import fr.sncf.osrd.sim_infra.api.SpeedLimitProperty
@@ -20,7 +21,7 @@ data class ETCSBrakingCurvesRequest(
     val comfort: Comfort,
 
     // Simulation inputs
-    val path: SimulationPath,
+    val path: JsonTrainPath,
     val schedule: List<SimulationScheduleItem>,
     @Json(name = "power_restrictions") val powerRestrictions: List<SimulationPowerRestrictionItem>,
     @Json(name = "electrical_profile_set_id") val electricalProfileSetId: String?,

@@ -45,6 +45,7 @@ import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 import fr.sncf.osrd.utils.units.metersPerSecond
+import fr.sncf.osrd.utils.values
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -238,9 +239,9 @@ fun makeElectricalProfiles(
 
     val boundaries =
         profileMap.entries.map { Offset<TravelledPath>(it.key.upperEndpoint().meters) }.dropLast(1)
-    val values = profileMap.entries.map { it.value }
+    val values = profileMap.values
 
-    return RangeValues(internalBoundaries = boundaries, values = values)
+    return RangeValues(internalBoundaries = boundaries, values = values.toList())
 }
 
 fun makeMRSPResponse(speedLimits: Envelope): RangeValues<SpeedLimitProperty> {

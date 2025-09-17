@@ -60,6 +60,7 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
         val blockWaypoints = makeBlockWaypoints(path)
         val chunkPath = makeChunkPathFromEdges(graph, edges)
         val routes = edges.last().infraExplorer.getExploredRoutes()
+        // TODO path migration: use a better builder here
         val trainPath =
             buildTrainPathFromChunkPath(infra.rawInfra, infra.blockInfra, chunkPath, routes)
         // val departureTime = computeDepartureTime(edges, startTime)

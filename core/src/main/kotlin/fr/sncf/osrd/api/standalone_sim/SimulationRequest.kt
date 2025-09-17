@@ -2,8 +2,8 @@ package fr.sncf.osrd.api.standalone_sim
 
 import com.squareup.moshi.*
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
-import fr.sncf.osrd.api.DirectionalTrackRange
 import fr.sncf.osrd.api.RangeValues
+import fr.sncf.osrd.path.interfaces.JsonTrainPath
 import fr.sncf.osrd.path.interfaces.TravelledPath
 import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSEffortCurves.RJSModeEffortCurve
@@ -21,7 +21,7 @@ import fr.sncf.osrd.utils.units.TimeDelta
 class SimulationRequest(
     val infra: String,
     @Json(name = "expected_version") val expectedVersion: Int?,
-    val path: SimulationPath,
+    val path: JsonTrainPath,
     val schedule: List<SimulationScheduleItem>,
     val margins: RangeValues<MarginValue>,
     @Json(name = "initial_speed") val initialSpeed: Double,
@@ -32,6 +32,7 @@ class SimulationRequest(
     val options: TrainScheduleOptions,
     @Json(name = "physics_consist") val physicsConsist: PhysicsConsistModel,
     @Json(name = "electrical_profile_set_id") val electricalProfileSetId: String?,
+    @Json(name = "path_item_positions") val pathItemPositions: List<Offset<TravelledPath>>,
 ) {
     companion object {
         val adapter: JsonAdapter<SimulationRequest> =
@@ -78,13 +79,6 @@ class PhysicsConsistModel(
 class EffortCurve(
     val modes: Map<String, RJSModeEffortCurve>,
     @Json(name = "default_mode") val defaultMode: String,
-)
-
-class SimulationPath(
-    val blocks: List<String>,
-    val routes: List<String>,
-    @Json(name = "track_section_ranges") val trackSectionRanges: List<DirectionalTrackRange>,
-    @Json(name = "path_item_positions") val pathItemPositions: List<Offset<TravelledPath>>,
 )
 
 class SimulationScheduleItem(

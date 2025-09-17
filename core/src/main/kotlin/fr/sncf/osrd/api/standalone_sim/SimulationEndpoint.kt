@@ -1,7 +1,9 @@
 package fr.sncf.osrd.api.standalone_sim
 
 import fr.sncf.osrd.api.*
-import fr.sncf.osrd.path.implementations.buildTrainPathFromChunkPath
+import fr.sncf.osrd.path.interfaces.getLegacyBlockPath
+import fr.sncf.osrd.path.interfaces.getLegacyChunkPath
+import fr.sncf.osrd.path.interfaces.getLegacyRoutePath
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.standalone_sim.runStandaloneSimulation
 import fr.sncf.osrd.utils.*
@@ -55,22 +57,16 @@ class SimulationEndpoint(
             val rollingStock = parseRawRollingStock(request.physicsConsist)
 
             // Parse path
-            val chunkPath = makeChunkPath(infra.rawInfra, request.path.trackSectionRanges)
-            val routePath = convertRoutePath(infra.rawInfra, request.path.routes)
-            val pathProps =
-                buildTrainPathFromChunkPath(
-                    infra.rawInfra,
-                    infra.blockInfra,
-                    chunkPath,
-                    routePath.toList(),
-                    electricalProfileMapping = electricalProfileMap,
-                )
-            val blockPath = convertBlockPath(infra.blockInfra, request.path.blocks)
+            val trainPath =
+                request.path.toTrainPath(infra.rawInfra, infra.blockInfra, electricalProfileMap)
+            val chunkPath = trainPath.getLegacyChunkPath()
+            val routePath = trainPath.getLegacyRoutePath()
+            val blockPath = trainPath.getLegacyBlockPath()
 
             val res =
                 runStandaloneSimulation(
                     infra,
-                    pathProps,
+                    trainPath,
                     chunkPath,
                     routePath,
                     blockPath,
@@ -85,7 +81,7 @@ class SimulationEndpoint(
                     parseRawSimulationScheduleItems(request.schedule),
                     request.initialSpeed,
                     request.margins,
-                    request.path.pathItemPositions,
+                    request.pathItemPositions,
                 )
             return RsJson(RsWithBody(simulationResponseAdapter.toJson(res)))
         } catch (ex: Throwable) {

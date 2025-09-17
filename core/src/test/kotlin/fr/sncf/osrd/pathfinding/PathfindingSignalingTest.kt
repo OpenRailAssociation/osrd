@@ -1,10 +1,10 @@
 package fr.sncf.osrd.pathfinding
 
-import fr.sncf.osrd.api.DirectionalTrackRange
 import fr.sncf.osrd.api.TrackLocation
 import fr.sncf.osrd.api.pathfinding.IncompatibleConstraintsPathResponse
 import fr.sncf.osrd.api.pathfinding.NoPathFoundException
 import fr.sncf.osrd.api.pathfinding.runPathfinding
+import fr.sncf.osrd.path.interfaces.JsonTrainPath.*
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection.START_TO_STOP
 import fr.sncf.osrd.signaling.tvm300.TVM300
 import fr.sncf.osrd.signaling.tvm430.TVM430
@@ -96,10 +96,10 @@ class PathfindingSignalingTest {
             400.meters,
             expectedTrackSectionRanges =
                 arrayListOf(
-                    DirectionalTrackRange("a->b", Offset.zero(), Offset(100.meters), START_TO_STOP),
-                    DirectionalTrackRange("b->N", Offset.zero(), Offset(100.meters), START_TO_STOP),
-                    DirectionalTrackRange("N->d", Offset.zero(), Offset(100.meters), START_TO_STOP),
-                    DirectionalTrackRange("d->e", Offset.zero(), Offset(100.meters), START_TO_STOP),
+                    TrackSectionRange("a->b", Offset.zero(), Offset(100.meters), START_TO_STOP),
+                    TrackSectionRange("b->N", Offset.zero(), Offset(100.meters), START_TO_STOP),
+                    TrackSectionRange("N->d", Offset.zero(), Offset(100.meters), START_TO_STOP),
+                    TrackSectionRange("d->e", Offset.zero(), Offset(100.meters), START_TO_STOP),
                 ),
         )
     }
@@ -123,10 +123,10 @@ class PathfindingSignalingTest {
             400.meters,
             expectedTrackSectionRanges =
                 arrayListOf(
-                    DirectionalTrackRange("a->b", Offset.zero(), Offset(100.meters), START_TO_STOP),
-                    DirectionalTrackRange("b->S", Offset.zero(), Offset(100.meters), START_TO_STOP),
-                    DirectionalTrackRange("S->d", Offset.zero(), Offset(100.meters), START_TO_STOP),
-                    DirectionalTrackRange("d->e", Offset.zero(), Offset(100.meters), START_TO_STOP),
+                    TrackSectionRange("a->b", Offset.zero(), Offset(100.meters), START_TO_STOP),
+                    TrackSectionRange("b->S", Offset.zero(), Offset(100.meters), START_TO_STOP),
+                    TrackSectionRange("S->d", Offset.zero(), Offset(100.meters), START_TO_STOP),
+                    TrackSectionRange("d->e", Offset.zero(), Offset(100.meters), START_TO_STOP),
                 ),
         )
     }
@@ -170,20 +170,20 @@ class PathfindingSignalingTest {
             expectedIntermediatePathItemPosition = listOf(Offset(200.meters)),
             expectedTrackSectionRanges =
                 arrayListOf(
-                    DirectionalTrackRange("a->b", Offset.zero(), Offset(100.meters), START_TO_STOP),
-                    DirectionalTrackRange(
+                    TrackSectionRange("a->b", Offset.zero(), Offset(100.meters), START_TO_STOP),
+                    TrackSectionRange(
                         "b->$intermediateWaypoint",
                         Offset.zero(),
                         Offset(100.meters),
                         START_TO_STOP,
                     ),
-                    DirectionalTrackRange(
+                    TrackSectionRange(
                         "$intermediateWaypoint->d",
                         Offset.zero(),
                         Offset(100.meters),
                         START_TO_STOP,
                     ),
-                    DirectionalTrackRange("d->e", Offset.zero(), Offset(100.meters), START_TO_STOP),
+                    TrackSectionRange("d->e", Offset.zero(), Offset(100.meters), START_TO_STOP),
                 ),
         )
     }
