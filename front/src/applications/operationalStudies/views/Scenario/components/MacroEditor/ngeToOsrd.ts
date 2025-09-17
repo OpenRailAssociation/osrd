@@ -6,10 +6,10 @@ import type {
 } from 'applications/operationalStudies/types';
 import {
   osrdEditoastApi,
+  type MacroNodeForm,
   type PacedTrain,
   type SearchResultItemOperationalPoint,
   type TrainSchedule,
-  type MacroNodeForm,
 } from 'common/api/osrdEditoastApi';
 import {
   createPacedTrain,
@@ -949,9 +949,29 @@ export const handleOperation = async ({
   }
 };
 
+export const relabelDuplicateTrigrams = (nodes: NodeDto[]): NodeDto[] => {
+  const trigramsToIds = new Map<string, number[]>();
+  for (const node of nodes) {
+    if (!trigramsToIds.has(node.betriebspunktName)) trigramsToIds.set(node.betriebspunktName, []);
+    trigramsToIds.get(node.betriebspunktName)!.push(node.id);
+  }
+
+  return nodes.map((node) => {
+    const trigramIds = trigramsToIds.get(node.betriebspunktName)!;
+    if (trigramIds.length == 1) return node;
+    const idIndex = trigramIds.findIndex((id) => id === node.id);
+    const newTrigram = `${node.betriebspunktName}-${idIndex + 1}`;
+    return {
+      ...node,
+      betriebspunktName: newTrigram,
+    };
+  });
+};
+
 export const convertNgeDtoToOsrd = (dto: NetzgrafikDto) => {
+  const dedupNodes = relabelDuplicateTrigrams(dto.nodes);
   const macroNodes: MacroNodeForm[] = [];
-  for (const node of dto.nodes) {
+  for (const node of dedupNodes) {
     macroNodes.push({
       ...castNgeNode(node, dto.labels),
       path_item_key: `trigram:${node.betriebspunktName}`,
@@ -970,7 +990,7 @@ export const convertNgeDtoToOsrd = (dto: NetzgrafikDto) => {
     for (const direction of directions) {
       const pathAndSchedule = generatePathAndSchedule(
         trainrunSections,
-        dto.nodes,
+        dedupNodes,
         undefined,
         direction
       );
@@ -998,5 +1018,9 @@ export const convertNgeDtoToOsrd = (dto: NetzgrafikDto) => {
 
   // TODO: handle return trips by having a for example by having a return trips field in TimetableJsonPayload with [id1, id2],
   // then calling the return trip api after creating the trains in ImportTimetableItemTrainsList
-  return { macro_nodes: macroNodes, paced_trains: pacedTrains, train_schedules: trainSchedules };
+  return {
+    macro_nodes: macroNodes,
+    paced_trains: pacedTrains,
+    train_schedules: trainSchedules,
+  };
 };
