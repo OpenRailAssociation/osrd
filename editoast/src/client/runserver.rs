@@ -4,8 +4,8 @@ use chrono::Duration;
 use clap::Args;
 use url::Url;
 
-use crate::valkey_utils;
 use crate::views;
+use cache;
 
 use super::PostgresConfig;
 use super::ValkeyConfig;
@@ -102,7 +102,7 @@ pub async fn runserver(
                 worker_pool_id,
             },
         },
-        valkey_config: valkey_utils::ValkeyConfig {
+        valkey_config: cache::ValkeyConfig {
             app_version: app_version.clone().unwrap_or_default(),
             no_cache,
             valkey_url,

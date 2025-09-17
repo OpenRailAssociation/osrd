@@ -1,11 +1,7 @@
 use std::fmt::Debug;
 
 use arcstr::ArcStr;
-use deadpool_redis::Config;
 use deadpool_redis::Connection;
-use deadpool_redis::Pool;
-use deadpool_redis::PoolError;
-use deadpool_redis::Runtime;
 use deadpool_redis::redis::Arg;
 use deadpool_redis::redis::AsyncCommands;
 use deadpool_redis::redis::Cmd;
@@ -24,14 +20,14 @@ use serde::de::DeserializeOwned;
 use tracing::Level;
 use tracing::debug;
 use tracing::span;
-use url::Url;
 
 pub struct ValkeyConnection {
     inner: ValkeyConnectionInner,
+    #[expect(unused)]
     app_version: ArcStr,
 }
 
-enum ValkeyConnectionInner {
+pub(crate) enum ValkeyConnectionInner {
     Tokio(Connection),
     NoCache,
 }
@@ -55,11 +51,11 @@ fn no_cache_cmd_handler(cmd: &Cmd) -> Result<Value, RedisError> {
             Ok(Value::SimpleString("PONG".to_string()))
         }
         Arg::Simple(cmd_name_bytes) => unimplemented!(
-            "valkey command '{}' is not supported by editoast::valkey_utils::ValkeyConnection with '--no-cache'",
+            "valkey command '{}' is not supported by cache::ValkeyConnection with '--no-cache'",
             String::from_utf8(cmd_name_bytes.to_vec())?
         ),
         Arg::Cursor => unimplemented!(
-            "valkey cursor mode is not supported by editoast::valkey_utils::ValkeyConnection with '--no-cache'"
+            "valkey cursor mode is not supported by cache::ValkeyConnection with '--no-cache'"
         ),
     }
 }
@@ -116,6 +112,10 @@ struct ZrangebyscoreWrapper<M> {
 }
 
 impl ValkeyConnection {
+    pub(crate) fn new(inner: ValkeyConnectionInner, app_version: ArcStr) -> Self {
+        Self { inner, app_version }
+    }
+
     /// Get a deserializable value from valkey
     #[tracing::instrument(name = "cache:json_get", skip(self), err)]
     pub async fn json_get<T: DeserializeOwned, K: Debug + ToRedisArgs + Send + Sync>(
@@ -363,60 +363,5 @@ impl ValkeyConnection {
             }
         });
         Ok(deserialized_members)
-    }
-}
-
-pub struct ValkeyClient {
-    inner: ValkeyClientInner,
-    app_version: ArcStr,
-}
-
-pub enum ValkeyClientInner {
-    Tokio(Pool),
-    /// This doesn't cache anything. It has no backend.
-    NoCache,
-}
-
-#[derive(Clone)]
-pub struct ValkeyConfig {
-    /// Disables caching. This should not be used in production.
-    pub no_cache: bool,
-    pub valkey_url: Url,
-    pub app_version: String,
-}
-
-impl ValkeyClient {
-    pub fn new(
-        ValkeyConfig {
-            no_cache,
-            valkey_url,
-            app_version,
-        }: ValkeyConfig,
-    ) -> Self {
-        Self {
-            app_version: ArcStr::from(app_version),
-            inner: if no_cache {
-                ValkeyClientInner::NoCache
-            } else {
-                ValkeyClientInner::Tokio(
-                    Config::from_url(valkey_url)
-                        .create_pool(Some(Runtime::Tokio1))
-                        .unwrap(),
-                )
-            },
-        }
-    }
-
-    pub async fn get_connection(&self) -> Result<ValkeyConnection, PoolError> {
-        match &self.inner {
-            ValkeyClientInner::Tokio(pool) => Ok(ValkeyConnection {
-                inner: ValkeyConnectionInner::Tokio(pool.get().await?),
-                app_version: self.app_version.clone(),
-            }),
-            ValkeyClientInner::NoCache => Ok(ValkeyConnection {
-                inner: ValkeyConnectionInner::NoCache,
-                app_version: self.app_version.clone(),
-            }),
-        }
     }
 }

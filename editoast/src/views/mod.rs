@@ -88,7 +88,7 @@ use crate::generated_data::speed_limit_tags_config::SpeedLimitTagIds;
 use crate::infra_cache::InfraCache;
 use crate::map::MapLayers;
 use crate::models::PgAuthDriver;
-use crate::valkey_utils::ValkeyConfig;
+use cache::ValkeyConfig;
 
 fn service_router() -> router::DocumentedRouter {
     use router::delete;
