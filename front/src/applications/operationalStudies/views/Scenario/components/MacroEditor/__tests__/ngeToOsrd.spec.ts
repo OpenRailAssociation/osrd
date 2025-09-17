@@ -12,7 +12,7 @@ async function readJsonFile(path: string): Promise<unknown> {
 vi.setSystemTime(new Date('2025-06-25T13:00:00.000Z'));
 
 describe('convertNgeDtoToOsrd', () => {
-  test.each(['roundTrip', 'oneWay'])('ngeToOsrd-inputDto-$0', async (name) => {
+  test.each(['roundTrip', 'oneWay', 'duplicateTrigrams'])('ngeToOsrd-inputDto-$0', async (name) => {
     const dto = (await readJsonFile(`./ngeToOsrd-inputDto-${name}.json`)) as NetzgrafikDto;
     const expected = await readJsonFile(`./ngeToOsrd-output-${name}.json`);
     const result = convertNgeDtoToOsrd(dto);
