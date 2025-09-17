@@ -15,7 +15,7 @@ use crate::infra_cache::InfraCache;
 use crate::map;
 use crate::map::MapLayers;
 use crate::models::Infra;
-use crate::valkey_utils;
+use cache;
 use editoast_models::prelude::*;
 
 use super::ValkeyConfig;
@@ -238,7 +238,7 @@ async fn build_valkey_pool_and_invalidate_all_cache(
     infra_id: i64,
     app_version: Option<&str>,
 ) -> anyhow::Result<()> {
-    let valkey = ValkeyClient::new(valkey_utils::ValkeyConfig {
+    let valkey = ValkeyClient::new(cache::ValkeyConfig {
         app_version: app_version.map(|v| v.to_owned()).unwrap_or_default(),
         no_cache,
         valkey_url,

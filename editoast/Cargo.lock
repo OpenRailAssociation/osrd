@@ -710,6 +710,22 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fdd7a427adc0135366d99db65b36dae9237130997e560ed61118041fb72be6e8"
 
 [[package]]
+name = "cache"
+version = "0.1.0"
+dependencies = [
+ "arcstr",
+ "deadpool",
+ "deadpool-redis",
+ "futures 0.3.31",
+ "lz4_flex",
+ "rand 0.9.2",
+ "serde",
+ "serde_json",
+ "tracing",
+ "url",
+]
+
+[[package]]
 name = "cbc"
 version = "0.1.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1372,6 +1388,7 @@ dependencies = [
  "axum-extra",
  "axum-test",
  "axum-tracing-opentelemetry",
+ "cache",
  "chrono",
  "clap",
  "colored",
@@ -1402,7 +1419,6 @@ dependencies = [
  "json-patch",
  "lapin",
  "linkme",
- "lz4_flex",
  "mime",
  "mvt",
  "opentelemetry",
