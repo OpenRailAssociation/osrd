@@ -6,6 +6,7 @@ import fr.sncf.osrd.path.implementations.buildChunkPath
 import fr.sncf.osrd.path.implementations.buildTrainPathFromChunkPath
 import fr.sncf.osrd.path.interfaces.BlockPath
 import fr.sncf.osrd.path.interfaces.TrainPath
+import fr.sncf.osrd.path.legacy_objects.ElectricalProfileMapping
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.utils.indexing.MutableDirStaticIdxArrayList
 import fr.sncf.osrd.utils.indexing.mutableDirStaticIdxArrayListOf
@@ -22,6 +23,7 @@ fun pathFromTracks(
     dir: Direction,
     start: Distance,
     end: Distance,
+    electricalProfileMapping: ElectricalProfileMapping? = null,
 ): TrainPath {
     val chunkList = mutableDirStaticIdxArrayListOf<TrackChunk>()
     trackIds
@@ -29,7 +31,12 @@ fun pathFromTracks(
         .flatMap { track -> infra.getTrackSectionChunks(track).dirIter(dir) }
         .forEach { dirChunk -> chunkList.add(dirChunk) }
     val chunkPath = buildChunkPath(infra, chunkList, Offset(start), Offset(end))
-    return buildTrainPathFromChunkPath(infra, blockInfra, chunkPath)
+    return buildTrainPathFromChunkPath(
+        infra,
+        blockInfra,
+        chunkPath,
+        electricalProfileMapping = electricalProfileMapping,
+    )
 }
 
 fun pathFromTracks(
@@ -38,8 +45,17 @@ fun pathFromTracks(
     dir: Direction,
     start: Distance,
     end: Distance,
+    electricalProfileMapping: ElectricalProfileMapping? = null,
 ): TrainPath {
-    return pathFromTracks(infra.rawInfra, infra.blockInfra, trackIds, dir, start, end)
+    return pathFromTracks(
+        infra.rawInfra,
+        infra.blockInfra,
+        trackIds,
+        dir,
+        start,
+        end,
+        electricalProfileMapping = electricalProfileMapping,
+    )
 }
 
 /** Build a path from route ids */

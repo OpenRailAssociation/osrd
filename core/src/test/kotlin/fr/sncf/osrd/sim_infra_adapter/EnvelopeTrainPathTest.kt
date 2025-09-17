@@ -2,7 +2,6 @@ package fr.sncf.osrd.sim_infra_adapter
 
 import com.google.common.collect.ImmutableRangeMap
 import com.google.common.collect.Range
-import fr.sncf.osrd.path.implementations.EnvelopeTrainPath
 import fr.sncf.osrd.path.interfaces.Electrification
 import fr.sncf.osrd.path.legacy_objects.ElectricalProfileMapping
 import fr.sncf.osrd.path.legacy_objects.electrification.Electrified
@@ -46,13 +45,12 @@ class EnvelopeTrainPathTest {
                 500.meters,
                 3_500.meters,
             )
-        val envelopeSimPath = EnvelopeTrainPath.from(infra.rawInfra, path)
-        Assertions.assertEquals(5.0, envelopeSimPath.getAverageGrade(0.0, 500.0))
-        Assertions.assertEquals(15.0, envelopeSimPath.getAverageGrade(500.0, 1500.0))
-        Assertions.assertEquals(10.0, envelopeSimPath.getAverageGrade(1500.0, 2500.0))
-        Assertions.assertEquals(25.0, envelopeSimPath.getAverageGrade(2500.0, 3000.0))
-        Assertions.assertEquals(11.0, envelopeSimPath.getAverageGrade(0.0, 2500.0))
-        Assertions.assertEquals(10.0, envelopeSimPath.getAverageGrade(300.0, 700.0))
+        Assertions.assertEquals(5.0, path.getAverageGrade(0.0, 500.0))
+        Assertions.assertEquals(15.0, path.getAverageGrade(500.0, 1500.0))
+        Assertions.assertEquals(10.0, path.getAverageGrade(1500.0, 2500.0))
+        Assertions.assertEquals(25.0, path.getAverageGrade(2500.0, 3000.0))
+        Assertions.assertEquals(11.0, path.getAverageGrade(0.0, 2500.0))
+        Assertions.assertEquals(10.0, path.getAverageGrade(300.0, 700.0))
     }
 
     @ParameterizedTest
@@ -109,9 +107,8 @@ class EnvelopeTrainPathTest {
             )
         val infra = Helpers.fullInfraFromRJS(rjsInfra)
         val path = pathFromTracks(infra, tracks, direction, 500.meters, 3_600.meters)
-        val envelopeSimPath = EnvelopeTrainPath.from(infra.rawInfra, path)
 
-        assertThat(envelopeSimPath.getElectrificationMap(null, null, null)).isEqualTo(expectedMap)
+        assertThat(path.getElectrificationMap(null, null, null)).isEqualTo(expectedMap)
     }
 
     @Test
@@ -173,9 +170,9 @@ class EnvelopeTrainPathTest {
                 Direction.INCREASING,
                 1_000.meters,
                 3_500.meters,
+                electricalProfileMapping = profileMap,
             )
-        val envelopeSimPath = EnvelopeTrainPath.from(infra.rawInfra, path, profileMap)
-        val electrificationByPowerClass = envelopeSimPath.getElectrificationMap("1", null, null)
+        val electrificationByPowerClass = path.getElectrificationMap("1", null, null)
         val expected = ImmutableRangeMap.Builder<Double, Electrification>()
 
         putInElectrificationMapByPowerClass(expected, 0.0, 500.0, NonElectrified(), "A", false)
@@ -271,9 +268,9 @@ class EnvelopeTrainPathTest {
                 Direction.DECREASING,
                 1_000.meters,
                 5_000.meters,
+                electricalProfileMapping = profileMap,
             )
-        val envelopeSimPath = EnvelopeTrainPath.from(infra.rawInfra, path, profileMap)
-        val electrificationPowerClass1 = envelopeSimPath.getElectrificationMap("1", null, null)
+        val electrificationPowerClass1 = path.getElectrificationMap("1", null, null)
         val expectedElectrificationPowerClass1 =
             ImmutableRangeMap.Builder<Double, Electrification>()
         putInElectrificationMapByPowerClass(
@@ -327,7 +324,7 @@ class EnvelopeTrainPathTest {
 
         assertThat(electrificationPowerClass1).isEqualTo(expectedElectrificationPowerClass1.build())
 
-        val electrificationPowerClass2 = envelopeSimPath.getElectrificationMap("2", null, null)
+        val electrificationPowerClass2 = path.getElectrificationMap("2", null, null)
         val expectedElectrificationPowerClass2 =
             ImmutableRangeMap.Builder<Double, Electrification>()
         putInElectrificationMapByPowerClass(

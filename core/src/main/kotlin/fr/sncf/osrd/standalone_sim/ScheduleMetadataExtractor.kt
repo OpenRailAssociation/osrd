@@ -12,7 +12,6 @@ import fr.sncf.osrd.envelope.EnvelopePhysics
 import fr.sncf.osrd.envelope.EnvelopeTimeInterpolate
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext
 import fr.sncf.osrd.path.implementations.ChunkPath
-import fr.sncf.osrd.path.implementations.EnvelopeTrainPath
 import fr.sncf.osrd.path.interfaces.BlockPath
 import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.path.interfaces.TravelledPath
@@ -310,9 +309,8 @@ fun makeSimpleReportTrain(
     pathItemPositions: List<Offset<TravelledPath>>,
 ): ReportTrain {
     // Compute energy consumed
-    val envelopePath = EnvelopeTrainPath.from(fullInfra.rawInfra, trainPath)
     val mechanicalEnergyConsumed =
-        EnvelopePhysics.getMechanicalEnergyConsumed(envelope, envelopePath, rollingStock)
+        EnvelopePhysics.getMechanicalEnergyConsumed(envelope, trainPath, rollingStock)
 
     // Account for stop durations
     val stops =

@@ -63,6 +63,7 @@ class SimulationEndpoint(
                     infra.blockInfra,
                     chunkPath,
                     routePath.toList(),
+                    electricalProfileMapping = electricalProfileMap,
                 )
             val blockPath = convertBlockPath(infra.blockInfra, request.path.blocks)
 

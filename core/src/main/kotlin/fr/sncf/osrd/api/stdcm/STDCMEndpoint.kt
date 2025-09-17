@@ -13,7 +13,6 @@ import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue.Percentage
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue.TimePerDistance
 import fr.sncf.osrd.envelope_sim_infra.computeMRSP
-import fr.sncf.osrd.path.implementations.EnvelopeTrainPath
 import fr.sncf.osrd.pathfinding.Pathfinding
 import fr.sncf.osrd.pathfinding.PathfindingEdgeLocationId
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection
@@ -268,20 +267,18 @@ class STDCMEndpoint(
             provisional = simpleReportTrain,
             finalOutput = reportTrain,
             mrsp = makeMRSPResponse(speedLimits),
-            electricalProfiles = buildSTDCMElectricalProfiles(infra, path, rollingStock, comfort),
+            electricalProfiles = buildSTDCMElectricalProfiles(path, rollingStock, comfort),
         )
     }
 
     /** Build the electrical profiles from the path */
     private fun buildSTDCMElectricalProfiles(
-        infra: FullInfra,
         path: STDCMResult,
         rollingStock: RollingStock,
         comfort: Comfort,
     ): RangeValues<ElectricalProfileValue> {
-        val envelopeSimPath = EnvelopeTrainPath.from(infra.rawInfra, path.trainPath, null)
         val electrificationMap =
-            envelopeSimPath.getElectrificationMap(
+            path.trainPath.getElectrificationMap(
                 rollingStock.basePowerClass,
                 ImmutableRangeMap.of(),
                 rollingStock.powerRestrictions,
