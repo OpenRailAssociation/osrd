@@ -13,7 +13,7 @@ metadata:
   annotations:
     {{- toYaml $mergedAnnotations | nindent 4 }}
 spec:
-  replicas: 1
+  replicas: {{ .Values.services.statefulEditoast.replicas | default 2 }}
   selector:
     matchLabels:
       {{- include "osrd.selectorLabels.statefulEditoast" . | nindent 6 }}
