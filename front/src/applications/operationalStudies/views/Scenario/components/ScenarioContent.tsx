@@ -164,19 +164,19 @@ const ScenarioContent = ({ activeBoards }: ScenarioContentProps) => {
 
   return (
     <EditedElementContainerProvider>
-      {displayTimetableItemManagement !== MANAGE_TIMETABLE_ITEM_TYPES.none && (
-        <ManageTimetableItemModal
-          displayTimetableItemManagement={displayTimetableItemManagement}
-          setDisplayTimetableItemManagement={setDisplayTimetableItemManagement}
-          upsertTimetableItems={upsertTimetableItemsWithNge}
-          removeTimetableItems={removeTimetableItemsWithNge}
-          timetableItemToEditData={timetableItemToEditData}
-          setTimetableItemToEditData={setTimetableItemToEditData}
-          setCollapsedTimetableEdit={() => setCollapsedTimetableEdit(!collapsedTimetableEdit)}
-          collapsedTimetableEdit={collapsedTimetableEdit}
-        />
-      )}
       <main className="mastcontainer mastcontainer-no-mastnav scenario scenario-content-v2">
+        {displayTimetableItemManagement !== MANAGE_TIMETABLE_ITEM_TYPES.none && (
+          <ManageTimetableItemModal
+            displayTimetableItemManagement={displayTimetableItemManagement}
+            setDisplayTimetableItemManagement={setDisplayTimetableItemManagement}
+            upsertTimetableItems={upsertTimetableItemsWithNge}
+            removeTimetableItems={removeTimetableItemsWithNge}
+            timetableItemToEditData={timetableItemToEditData}
+            setTimetableItemToEditData={setTimetableItemToEditData}
+            setCollapsedTimetableEdit={() => setCollapsedTimetableEdit(!collapsedTimetableEdit)}
+            collapsedTimetableEdit={collapsedTimetableEdit}
+          />
+        )}
         <div
           data-testid="scenario-left-column"
           className="left-column"
