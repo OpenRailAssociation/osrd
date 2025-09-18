@@ -5,6 +5,8 @@ import { useTranslation } from 'react-i18next';
 
 import useModalFocusTrap from 'utils/hooks/useModalFocusTrap';
 
+import ItineraryModalMap from './ItineraryModalMap';
+
 type ItineraryModalProps = {
   itineraryModalIsOpen: boolean;
   setItineraryModalIsOpen: (isOpen: boolean) => void;
@@ -42,6 +44,9 @@ const ItineraryModal = ({ itineraryModalIsOpen, setItineraryModalIsOpen }: Itine
         <div className="itinerary-modal-form-footer">
           <Button label={t('next')} variant="Primary" size="medium" onClick={closeModal} />
         </div>
+      </div>
+      <div className="itinerary-modal-map">
+        <ItineraryModalMap />
       </div>
     </dialog>
   );
