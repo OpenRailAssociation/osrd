@@ -44,9 +44,10 @@ const LAYERS = [
 
 type LayersModalProps = {
   compactModal: boolean;
+  closePortalModal?: () => void;
 };
 
-const LayersModal = ({ compactModal }: LayersModalProps) => {
+const LayersModal = ({ compactModal, closePortalModal }: LayersModalProps) => {
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
 
@@ -85,7 +86,7 @@ const LayersModal = ({ compactModal }: LayersModalProps) => {
   );
 
   return (
-    <Modal title={t('Editor.nav.toggle-layers')}>
+    <Modal title={t('Editor.nav.toggle-layers')} closePortalModal={closePortalModal}>
       <div className="container-fluid mb-3">
         <div>
           <h4>{t('Editor.nav.osrd-layers')}</h4>

@@ -10,6 +10,7 @@ import {
   ZoomOut,
 } from '@osrd-project/ui-icons';
 import cx from 'classnames';
+import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import type { MapRef } from 'react-map-gl/maplibre';
 
@@ -53,6 +54,7 @@ type MapButtonsProps = {
   viewPort: Viewport;
   isNewButtons?: boolean;
   mapSettings: MapSettings;
+  layersModalContainer?: Element | null;
 };
 
 const ZOOM_DEFAULT = 5;
@@ -75,6 +77,7 @@ export default function MapButtons({
   isNewButtons = false,
   compactModal = false,
   mapSettings,
+  layersModalContainer,
 }: MapButtonsProps) {
   const { t } = useTranslation('translation');
   const dispatch = useAppDispatch();
@@ -93,6 +96,8 @@ export default function MapButtons({
       keyModal !== prevOpenedPopover ? keyModal : undefined
     );
   }, []);
+
+  const [showLayersModal, setShowLayersModal] = useState(false);
 
   const openMapSettingsModal = useCallback(() => {
     if (editorProps) {
@@ -120,10 +125,12 @@ export default function MapButtons({
         />,
         'lg'
       );
+    } else if (layersModalContainer) {
+      setShowLayersModal(true);
     } else {
       openModal(<LayersModal compactModal={compactModal} />, 'lg');
     }
-  }, [editorProps, openModal, toggleMapModal, dispatch, mapSettings]);
+  }, [editorProps, openModal, compactModal, layersModalContainer]);
 
   const mapButtonsRef = useRef<HTMLDivElement>(null);
 
@@ -213,6 +220,26 @@ export default function MapButtons({
         {withInfraButton && <ButtonMapInfras isInEditor={!!editorProps} />}
         {editorProps && <ButtonMapInfraErrors editorState={editorProps.editorState} />}
       </div>
+      {showLayersModal &&
+        layersModalContainer &&
+        createPortal(
+          <div
+            className="menu-overlay"
+            role="menu"
+            tabIndex={-1}
+            onClick={(e) => {
+              if (e.target === e.currentTarget) setShowLayersModal(false);
+            }}
+          >
+            <div className="layers-modal">
+              <LayersModal
+                compactModal={compactModal}
+                closePortalModal={() => setShowLayersModal(false)}
+              />
+            </div>
+          </div>,
+          layersModalContainer
+        )}
       {openedPopover === MAP_POPOVERS.SEARCH && (
         <MapSearch
           map={map}
