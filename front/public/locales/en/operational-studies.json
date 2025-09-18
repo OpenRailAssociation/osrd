@@ -330,6 +330,10 @@
     "inputOPTrigramsExample": "Ex: LSN CIG CCS",
     "invalidTimetableItemStep": "At least one of the waypoints could not be recognized",
     "inverseOD": "Reverse itinerary",
+    "itineraryModal": {
+      "next": "Next",
+      "openItineraryModal": "New interface for itinerary edition"
+    },
     "launchPathFinding": "Launch pathfinding",
     "manageVias": "Steps management",
     "missingPathSteps": "At least one pathstep wasn't found in the infrastructure",

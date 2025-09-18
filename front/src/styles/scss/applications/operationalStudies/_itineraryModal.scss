@@ -1,0 +1,50 @@
+.itinerary-modal {
+  --header-height: 164px;
+  --footer-height: 96px;
+  --footer-box-shadow-height: 1px;
+
+  margin: 16px;
+  width: 100%;
+  height: calc(100vh - 16px);
+  // The next 2 styles overrides the default max-width and max-height in browsers of the <dialog> element
+  max-width: calc(100% - 32px);
+  max-height: calc(100vh - 32px);
+  font-family: 'IBM Plex Sans', sans-serif;
+  display: flex;
+  border-radius: 8px;
+  border: 1px solid var(--black5);
+  box-shadow: 0 0 0 2px var(--black10);
+
+  &::backdrop {
+    background: var(--grey30);
+  }
+
+  .itinerary-modal-form {
+    width: 50%;
+    height: 100%;
+
+    .itinerary-modal-form-header {
+      height: var(--header-height);
+      border-bottom: 1px solid var(--gray-30);
+    }
+
+    .itinerary-modal-form-body {
+      height: calc(
+        100% - var(--header-height) - var(--footer-height) - var(--footer-box-shadow-height)
+      );
+      overflow-y: auto;
+      background-color: var(--ambientB10);
+      box-shadow: 0 calc(-1 * var(--footer-box-shadow-height)) 0 0 var(--black10);
+    }
+
+    .itinerary-modal-form-footer {
+      height: 96px;
+      display: flex;
+      justify-content: end;
+      align-items: center;
+      padding-right: 34px;
+      margin-top: var(--footer-box-shadow-height);
+      box-shadow: 0 calc(-1 * var(--footer-box-shadow-height)) 0 0 var(--black10);
+    }
+  }
+}

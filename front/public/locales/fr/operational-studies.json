@@ -330,6 +330,10 @@
     "inputOPTrigramsExample": "Ex : LSN CIG CCS",
     "invalidTimetableItemStep": "Au moins un des points de passage n'a pas été reconnu",
     "inverseOD": "Inverser l'itinéraire",
+    "itineraryModal": {
+      "next": "Suivant",
+      "openItineraryModal": "Nouvelle interface d'édition d'itinéraire"
+    },
     "launchPathFinding": "Lancer la recherche d'itinéraire",
     "manageVias": "Gestion des étapes",
     "missingPathSteps": "Au moins un point de passage n'a pas été trouvé dans l'infrastructure",

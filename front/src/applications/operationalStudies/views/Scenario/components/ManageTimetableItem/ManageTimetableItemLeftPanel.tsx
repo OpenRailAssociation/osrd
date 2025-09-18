@@ -26,6 +26,7 @@ import { isPacedTrainId, isTrainScheduleId } from 'utils/trainId';
 import CreateTimetableItemButton from './CreateTimetableItemButton';
 import { isPacedTrainToEditData } from './helpers/formatTimetableItemPayload';
 import useUpdateTimetableItem from './hooks/useUpdateTimetableItem';
+import ItineraryModal from './Itinerary/ItineraryModal';
 import PacedTrainSettings from './PacedTrainSettings';
 
 export type ManageTimetableItemLeftPanelProps = {
@@ -58,6 +59,7 @@ const ManageTimetableItemLeftPanel = ({
   const { openModal, closeModal } = useModal();
 
   const [isWorking, setIsWorking] = useState(false);
+  const [itineraryModalIsOpen, setItineraryModalIsOpen] = useState(false);
 
   const leaveManageTimetableItem = () => {
     setDisplayTimetableItemManagement(MANAGE_TIMETABLE_ITEM_TYPES.none);
@@ -177,6 +179,29 @@ const ManageTimetableItemLeftPanel = ({
           </>
         )}
       </div>
+      <div
+        className="scenario-timetable-manage-timetable-item-body"
+        role="button"
+        tabIndex={0}
+        onClick={() => setItineraryModalIsOpen(true)}
+      >
+        <button
+          className="btn btn-light btn-block text-truncate pr-2"
+          title={t('itineraryModal.openItineraryModal')}
+          type="button"
+        >
+          <span className="mr-2">
+            <ChevronLeft size="lg" />
+          </span>
+          {t('itineraryModal.openItineraryModal')}
+        </button>
+      </div>
+      {itineraryModalIsOpen && (
+        <ItineraryModal
+          itineraryModalIsOpen={itineraryModalIsOpen}
+          setItineraryModalIsOpen={setItineraryModalIsOpen}
+        />
+      )}
       <div
         className="scenario-timetable-manage-timetable-item-body"
         role="button"
