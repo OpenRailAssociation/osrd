@@ -1,22 +1,24 @@
-import type { NodeIndexed } from './MacroEditorState';
+import type { NodeDto } from '../NGE/types';
 
-export const relabelDuplicateTrigrams = (
-  macroNodes: Omit<NodeIndexed, 'dbId'>[]
-): Omit<NodeIndexed, 'dbId'>[] => {
+export const relabelDuplicateTrigrams = (nodes: NodeDto[]): NodeDto[] => {
   const trigramsToIds: Record<string, number[]> = {};
-  for (const node of macroNodes) {
-    if (!trigramsToIds[node.trigram!]) trigramsToIds[node.trigram!] = [];
-    trigramsToIds[node.trigram!].push(node.ngeId);
+  for (const node of nodes) {
+    if (!trigramsToIds[node.betriebspunktName]) trigramsToIds[node.betriebspunktName] = [];
+    trigramsToIds[node.betriebspunktName].push(node.id);
   }
 
-  const macroNodesWUniqueTrigrams = [];
-  for (const node of macroNodes) {
-    const trigramIds = trigramsToIds[node.trigram!];
-    if (trigramIds.length == 1) macroNodesWUniqueTrigrams.push(node);
+  const nodesWUniqueTrigrams = [];
+  for (const node of nodes) {
+    const trigramIds = trigramsToIds[node.betriebspunktName];
+    if (trigramIds.length == 1) nodesWUniqueTrigrams.push(node);
     else {
-      const idIndex = trigramIds.findIndex((id) => id === node.ngeId);
-      macroNodesWUniqueTrigrams.push({ ...node, trigram: `${node.trigram}-${idIndex}` });
+      const idIndex = trigramIds.findIndex((id) => id === node.id);
+      const newTrigram = `${node.betriebspunktName}-${idIndex}`;
+      nodesWUniqueTrigrams.push({
+        ...node,
+        betriebspunktName: newTrigram,
+      });
     }
   }
-  return macroNodesWUniqueTrigrams;
+  return nodesWUniqueTrigrams;
 };

@@ -4,37 +4,45 @@ import { relabelDuplicateTrigrams } from '../ngeImportUtils';
 
 describe('relabelDuplicateTrigrams', () => {
   const baseNode = {
-    path_item_key: '0',
-    connection_time: 1,
-    labels: [],
-    position_x: 0,
-    position_y: 0,
+    fullName: '',
+    positionX: 10,
+    positionY: 20,
+    ports: [],
+    transitions: [],
+    connections: [],
+    resourceId: 42,
+    perronkanten: 1,
+    connectionTime: 2,
+    trainrunCategoryHaltezeiten: {},
+    symmetryAxis: 1,
+    warnings: [],
+    labelIds: [8],
   };
   const nodes = [
-    { ...baseNode, trigram: 'AAA', ngeId: 1 },
-    { ...baseNode, trigram: 'DDD', ngeId: 2 },
-    { ...baseNode, trigram: 'BBB', ngeId: 3 },
-    { ...baseNode, trigram: 'AAA', ngeId: 4 },
-    { ...baseNode, trigram: 'AAA', ngeId: 5 },
-    { ...baseNode, trigram: 'CCC', ngeId: 6 },
-    { ...baseNode, trigram: 'DDD', ngeId: 7 },
+    { ...baseNode, betriebspunktName: 'AAA', id: 1 },
+    { ...baseNode, betriebspunktName: 'DDD', id: 2 },
+    { ...baseNode, betriebspunktName: 'BBB', id: 3 },
+    { ...baseNode, betriebspunktName: 'AAA', id: 4 },
+    { ...baseNode, betriebspunktName: 'AAA', id: 5 },
+    { ...baseNode, betriebspunktName: 'CCC', id: 6 },
+    { ...baseNode, betriebspunktName: 'DDD', id: 7 },
   ];
   const nodesWUniqueTrigrams = relabelDuplicateTrigrams(nodes);
 
-  it('shoud not add or remove nodes', () => {
+  it('should not add or remove nodes', () => {
     expect(nodesWUniqueTrigrams.length).toBe(7);
   });
 
   it('should ignore unique trigrams', () => {
-    expect(nodesWUniqueTrigrams[2]).toEqual({ ...baseNode, trigram: 'BBB', ngeId: 3 });
-    expect(nodesWUniqueTrigrams[5]).toEqual({ ...baseNode, trigram: 'CCC', ngeId: 6 });
+    expect(nodesWUniqueTrigrams[2]).toEqual({ ...baseNode, betriebspunktName: 'BBB', id: 3 });
+    expect(nodesWUniqueTrigrams[5]).toEqual({ ...baseNode, betriebspunktName: 'CCC', id: 6 });
   });
 
   it('should relabel duplicated trigrams', () => {
-    expect(nodesWUniqueTrigrams[0]).toEqual({ ...baseNode, trigram: 'AAA-0', ngeId: 1 });
-    expect(nodesWUniqueTrigrams[1]).toEqual({ ...baseNode, trigram: 'DDD-0', ngeId: 2 });
-    expect(nodesWUniqueTrigrams[3]).toEqual({ ...baseNode, trigram: 'AAA-1', ngeId: 4 });
-    expect(nodesWUniqueTrigrams[4]).toEqual({ ...baseNode, trigram: 'AAA-2', ngeId: 5 });
-    expect(nodesWUniqueTrigrams[6]).toEqual({ ...baseNode, trigram: 'DDD-1', ngeId: 7 });
+    expect(nodesWUniqueTrigrams[0]).toEqual({ ...baseNode, betriebspunktName: 'AAA-0', id: 1 });
+    expect(nodesWUniqueTrigrams[1]).toEqual({ ...baseNode, betriebspunktName: 'DDD-0', id: 2 });
+    expect(nodesWUniqueTrigrams[3]).toEqual({ ...baseNode, betriebspunktName: 'AAA-1', id: 4 });
+    expect(nodesWUniqueTrigrams[4]).toEqual({ ...baseNode, betriebspunktName: 'AAA-2', id: 5 });
+    expect(nodesWUniqueTrigrams[6]).toEqual({ ...baseNode, betriebspunktName: 'DDD-1', id: 7 });
   });
 });

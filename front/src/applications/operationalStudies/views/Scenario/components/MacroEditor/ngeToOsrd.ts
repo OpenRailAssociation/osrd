@@ -950,14 +950,14 @@ export const handleOperation = async ({
 };
 
 export const convertNgeDtoToOsrd = (dto: NetzgrafikDto) => {
+  const nodesWUniqueTrigrams = relabelDuplicateTrigrams(dto.nodes);
   const macroNodes: Omit<NodeIndexed, 'dbId'>[] = [];
-  for (const node of dto.nodes) {
+  for (const node of nodesWUniqueTrigrams) {
     macroNodes.push({
       ...castNgeNode(node, dto.labels),
       path_item_key: `trigram:${node.betriebspunktName}`,
     });
   }
-  const macroNodesWUniqueTrigrams = relabelDuplicateTrigrams(macroNodes);
 
   const trainSchedules: TrainScheduleFromJson[] = [];
   const pacedTrains: PacedTrainFromJson[] = [];
@@ -971,7 +971,7 @@ export const convertNgeDtoToOsrd = (dto: NetzgrafikDto) => {
     for (const direction of directions) {
       const pathAndSchedule = generatePathAndSchedule(
         trainrunSections,
-        dto.nodes,
+        nodesWUniqueTrigrams,
         undefined,
         direction
       );
@@ -1000,7 +1000,7 @@ export const convertNgeDtoToOsrd = (dto: NetzgrafikDto) => {
   // TODO: handle return trips by having a for example by having a return trips field in TimetableJsonPayload with [id1, id2],
   // then calling the return trip api after creating the trains in ImportTimetableItemTrainsList
   return {
-    macro_nodes: macroNodesWUniqueTrigrams,
+    macro_nodes: macroNodes,
     paced_trains: pacedTrains,
     train_schedules: trainSchedules,
   };
