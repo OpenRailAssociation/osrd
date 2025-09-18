@@ -15,7 +15,7 @@ const useTimetableItemsWithPathOps = (
     [timetableItems]
   );
 
-  const { currentData: timetableOperationalPoints } =
+  const { currentData: timetableOperationalPoints, isSuccess } =
     osrdEditoastApi.endpoints.matchAllOperationalPoints.useQuery(
       {
         infraId,
@@ -25,15 +25,16 @@ const useTimetableItemsWithPathOps = (
     );
 
   return useMemo(() => {
-    if (!timetableItems) {
+    if (!timetableItems || (!isSuccess && timetableOpRefs.length !== 0)) {
       return [];
     }
+
     return addPathOpsToTimetableItems(
       timetableItems,
       timetableOpRefs,
       timetableOperationalPoints ?? []
     );
-  }, [timetableItems, timetableOperationalPoints, timetableOpRefs]);
+  }, [timetableItems, timetableOperationalPoints, timetableOpRefs, isSuccess]);
 };
 
 export default useTimetableItemsWithPathOps;
