@@ -33,7 +33,7 @@ const useTimetableItemsWithPathOps = (
       timetableOpRefs,
       timetableOperationalPoints ?? []
     );
-  }, [timetableItems, timetableOperationalPoints]);
+  }, [timetableItems, timetableOperationalPoints, timetableOpRefs]);
 };
 
 export default useTimetableItemsWithPathOps;
