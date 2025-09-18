@@ -12,12 +12,14 @@ import { ModalContext } from './ModalProvider';
 export type ModalProps = {
   title?: string;
   withCloseButton?: boolean;
+  closePortalModal?: () => void;
 };
 
 export const Modal = ({
   children,
   title,
   withCloseButton = true,
+  closePortalModal,
 }: PropsWithChildren<ModalProps>) => {
   const { closeModal } = useContext(ModalContext);
   const { register } = useKeyboardShortcuts();
@@ -32,7 +34,7 @@ export const Modal = ({
   return (
     <>
       {title && (
-        <ModalHeaderSNCF withCloseButton={withCloseButton}>
+        <ModalHeaderSNCF withCloseButton={withCloseButton} closePortalModal={closePortalModal}>
           <h5>{title}</h5>
         </ModalHeaderSNCF>
       )}
