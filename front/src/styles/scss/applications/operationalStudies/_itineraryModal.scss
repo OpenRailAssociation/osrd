@@ -47,4 +47,19 @@
       box-shadow: 0 calc(-1 * var(--footer-box-shadow-height)) 0 0 var(--black10);
     }
   }
+
+  .itinerary-modal-map {
+    width: 50%;
+    box-shadow: calc(-1 * var(--footer-box-shadow-height)) 0 0 0 var(--black25);
+
+    .layers-modal {
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      background-color: var(--white100);
+      border-radius: 7px;
+      border: 1px solid var(--black25);
+    }
+  }
 }
