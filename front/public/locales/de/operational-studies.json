@@ -256,6 +256,10 @@
     "inputOPTrigramsExample": "Bsp: HHA HGÖ FKS",
     "invalidTimetableItemStep": "Mindestens ein Wegepunkt konnte nicht erkannt werden.",
     "inverseOD": "Route umkehren",
+    "itineraryModal": {
+      "next": "Weiter",
+      "openItineraryModal": "Neue Benutzeroberfläche für die Bearbeitung von Reiserouten"
+    },
     "launchPathFinding": "Wegefindung starten",
     "manageVias": "Wegepunkteverwaltung",
     "missingPathSteps": "Mindestens ein Wegepunkt wurde im Netz nicht gefunden.",
