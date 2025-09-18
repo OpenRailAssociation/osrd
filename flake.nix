@@ -65,7 +65,7 @@
 
               # Core
               gradle
-              jdk17
+              jdk21
 
               # Front
               fixedNode
