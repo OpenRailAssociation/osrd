@@ -8,7 +8,9 @@
     "@storybook/addon-onboarding": "^9.1.6",
     "@storybook/react-vite": "^9.1.6",
     "storybook": "^9.0.5",
-    "storybook-addon-run-script": "^0.1.4"
+    "storybook-addon-run-script": "^0.1.4",
+    "vite": "^7.1.5",
+    "vite-plugin-checker": "^0.10.3"
   },
   "scripts": {
     "clean": "rimraf storybook-static",
