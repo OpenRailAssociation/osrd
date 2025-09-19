@@ -1,0 +1,191 @@
+{
+  "macro_nodes": [
+    {
+      "ngeId": 6,
+      "trigram": "SS",
+      "full_name": "Sursee",
+      "connection_time": 6,
+      "position_x": 672,
+      "position_y": 800,
+      "labels": [],
+      "path_item_key": "trigram:SS"
+    },
+    {
+      "ngeId": 7,
+      "trigram": "RTR",
+      "full_name": "Rothrist",
+      "connection_time": 5,
+      "position_x": 320,
+      "position_y": 32,
+      "labels": [],
+      "path_item_key": "trigram:RTR"
+    },
+    {
+      "ngeId": 8,
+      "trigram": "LTH",
+      "full_name": "Langenthal",
+      "connection_time": 5,
+      "position_x": 320,
+      "position_y": 192,
+      "labels": [],
+      "path_item_key": "trigram:LTH"
+    },
+    {
+      "connection_time": 4,
+      "full_name": "Waldegg",
+      "labels": [],
+      "ngeId": 10,
+      "path_item_key": "trigram:WLD",
+      "position_x": 960,
+      "position_y": 960,
+      "trigram": "WLD"
+    },
+    {
+      "connection_time": 4,
+      "full_name": "Feldrain",
+      "labels": [],
+      "ngeId": 11,
+      "path_item_key": "trigram:FLR",
+      "position_x": 1120,
+      "position_y": 1120,
+      "trigram": "FLR"
+    }
+  ],
+  "paced_trains": [
+    {
+      "category": "InterCity",
+      "constraint_distribution": "STANDARD",
+      "rolling_stock_name": "",
+      "exceptions": [],
+      "train_name": "Carotte-1",
+      "labels": [],
+      "path": [
+        { "trigram": "RTR", "id": "7-0", "deleted": false, "track_reference": null },
+        { "trigram": "LTH", "id": "8-1", "deleted": false, "track_reference": null },
+        { "trigram": "SS", "id": "6-2", "deleted": false, "track_reference": null }
+      ],
+      "start_time": "2025-06-25T13:00:00.000Z",
+      "schedule": [
+        {
+          "at": "8-1",
+          "arrival": "PT1M",
+          "stop_for": "PT2M",
+          "locked": false,
+          "reception_signal": "OPEN"
+        },
+        {
+          "at": "6-2",
+          "arrival": "PT4M",
+          "stop_for": "P0D",
+          "locked": false,
+          "reception_signal": "OPEN"
+        }
+      ],
+      "paced": { "interval": "PT1H", "time_window": "PT2H" }
+    },
+    {
+      "category": "InterCity",
+      "constraint_distribution": "STANDARD",
+      "rolling_stock_name": "",
+      "exceptions": [],
+      "train_name": "Carotte-1",
+      "labels": [],
+      "path": [
+        { "trigram": "SS", "id": "6-0", "deleted": false, "track_reference": null },
+        { "trigram": "LTH", "id": "8-1", "deleted": false, "track_reference": null },
+        { "trigram": "RTR", "id": "7-2", "deleted": false, "track_reference": null }
+      ],
+      "start_time": "2025-06-25T13:56:00.000Z",
+      "schedule": [
+        {
+          "at": "8-1",
+          "arrival": "PT1M",
+          "stop_for": "PT2M",
+          "locked": false,
+          "reception_signal": "OPEN"
+        },
+        {
+          "at": "7-2",
+          "arrival": "PT4M",
+          "stop_for": "P0D",
+          "locked": false,
+          "reception_signal": "OPEN"
+        }
+      ],
+      "paced": { "interval": "PT1H", "time_window": "PT2H" }
+    },
+    {
+      "category": "InterCity",
+      "constraint_distribution": "STANDARD",
+      "exceptions": [],
+      "labels": [],
+      "paced": {
+        "interval": "PT1H",
+        "time_window": "PT2H"
+      },
+      "path": [
+        {
+          "deleted": false,
+          "id": "10-0",
+          "track_reference": null,
+          "trigram": "WLD"
+        },
+        {
+          "deleted": false,
+          "id": "11-1",
+          "track_reference": null,
+          "trigram": "FLR"
+        }
+      ],
+      "rolling_stock_name": "",
+      "schedule": [
+        {
+          "arrival": "PT2M",
+          "at": "11-1",
+          "locked": false,
+          "reception_signal": "OPEN",
+          "stop_for": "P0D"
+        }
+      ],
+      "start_time": "2025-06-25T13:05:00.000Z",
+      "train_name": "Carotte-2"
+    },
+    {
+      "category": "InterCity",
+      "constraint_distribution": "STANDARD",
+      "exceptions": [],
+      "labels": [],
+      "paced": {
+        "interval": "PT1H",
+        "time_window": "PT2H"
+      },
+      "path": [
+        {
+          "deleted": false,
+          "id": "11-0",
+          "track_reference": null,
+          "trigram": "FLR"
+        },
+        {
+          "deleted": false,
+          "id": "10-1",
+          "track_reference": null,
+          "trigram": "WLD"
+        }
+      ],
+      "rolling_stock_name": "",
+      "schedule": [
+        {
+          "arrival": "PT1M",
+          "at": "10-1",
+          "locked": false,
+          "reception_signal": "OPEN",
+          "stop_for": "P0D"
+        }
+      ],
+      "start_time": "2025-06-25T13:54:00.000Z",
+      "train_name": "Carotte-2"
+    }
+  ],
+  "train_schedules": []
+}
