@@ -37,13 +37,7 @@ export const OSM_LAYERS: (LayerProps & { id: string; 'source-layer': string })[]
     },
     paint: {
       'line-color': '#e9ac77',
-      'line-width': {
-        base: 1.2,
-        stops: [
-          [8, 1.5],
-          [20, 17],
-        ],
-      },
+      'line-width': ['interpolate', ['exponential', 1.2], ['zoom'], 8, 1.5, 20, 17],
     },
   },
   {
@@ -55,15 +49,19 @@ export const OSM_LAYERS: (LayerProps & { id: string; 'source-layer': string })[]
     layout: { 'line-join': 'round', visibility: 'visible' },
     paint: {
       'line-color': '#e9ac77',
-      'line-width': {
-        base: 1.2,
-        stops: [
-          [5, 0.4],
-          [6, 0.7],
-          [7, 1.75],
-          [20, 22],
-        ],
-      },
+      'line-width': [
+        'interpolate',
+        ['exponential', 1.2],
+        ['zoom'],
+        5,
+        0.4,
+        6,
+        0.7,
+        7,
+        1.75,
+        20,
+        22,
+      ],
     },
   },
   {
@@ -84,21 +82,8 @@ export const OSM_LAYERS: (LayerProps & { id: string; 'source-layer': string })[]
       visibility: 'visible',
     },
     paint: {
-      'line-color': {
-        base: 1,
-        stops: [
-          [5, 'hsl(26, 87%, 62%)'],
-          [6, '#fc8'],
-        ],
-      },
-      'line-width': {
-        base: 1.2,
-        stops: [
-          [5, 0],
-          [7, 1],
-          [20, 18],
-        ],
-      },
+      'line-color': ['interpolate', ['linear'], ['zoom'], 5, 'hsl(26,87%,62%)', 6, '#fc8'],
+      'line-width': ['interpolate', ['exponential', 1.2], ['zoom'], 5, 0, 7, 1, 20, 18],
     },
   },
   {
@@ -110,14 +95,7 @@ export const OSM_LAYERS: (LayerProps & { id: string; 'source-layer': string })[]
     layout: { visibility: 'visible' },
     paint: {
       'line-color': '#bbb',
-      'line-width': {
-        base: 1.4,
-        stops: [
-          [14, 0.4],
-          [15, 0.75],
-          [20, 2],
-        ],
-      },
+      'line-width': ['interpolate', ['exponential', 1.4], ['zoom'], 14, 0.4, 15, 0.75, 20, 2],
     },
   },
   {
@@ -130,14 +108,7 @@ export const OSM_LAYERS: (LayerProps & { id: string; 'source-layer': string })[]
     paint: {
       'line-color': '#bbb',
       'line-dasharray': [0.2, 8],
-      'line-width': {
-        base: 1.4,
-        stops: [
-          [14.5, 0],
-          [15, 3],
-          [20, 8],
-        ],
-      },
+      'line-width': ['interpolate', ['exponential', 1.4], ['zoom'], 14.5, 0, 15, 3, 20, 8],
     },
   },
   {
@@ -149,14 +120,7 @@ export const OSM_LAYERS: (LayerProps & { id: string; 'source-layer': string })[]
     layout: { visibility: 'visible' },
     paint: {
       'line-color': '#bbb',
-      'line-width': {
-        base: 1.4,
-        stops: [
-          [14, 0.4],
-          [15, 0.75],
-          [20, 2],
-        ],
-      },
+      'line-width': ['interpolate', ['exponential', 1.4], ['zoom'], 14, 0.4, 15, 0.75, 20, 2],
     },
   },
   {
@@ -169,14 +133,7 @@ export const OSM_LAYERS: (LayerProps & { id: string; 'source-layer': string })[]
     paint: {
       'line-color': '#bbb',
       'line-dasharray': [0.2, 8],
-      'line-width': {
-        base: 1.4,
-        stops: [
-          [14.5, 0],
-          [15, 3],
-          [20, 8],
-        ],
-      },
+      'line-width': ['interpolate', ['exponential', 1.4], ['zoom'], 14.5, 0, 15, 3, 20, 8],
     },
   },
   {
@@ -337,13 +294,7 @@ export const OSM_LAYERS: (LayerProps & { id: string; 'source-layer': string })[]
       'text-field': '{name}',
       'text-font': ['Roboto Regular'],
       'text-offset': [0, 0.15],
-      'text-size': {
-        base: 1,
-        stops: [
-          [13, 12],
-          [14, 13],
-        ],
-      },
+      'text-size': ['interpolate', ['linear'], ['zoom'], 13, 12, 14, 13],
     },
     paint: {
       'text-color': '#765',
@@ -385,13 +336,7 @@ export const OSM_LAYERS: (LayerProps & { id: string; 'source-layer': string })[]
       'text-font': ['Roboto Condensed Italic'],
       'text-letter-spacing': 0.1,
       'text-max-width': 9,
-      'text-size': {
-        base: 1.2,
-        stops: [
-          [12, 10],
-          [15, 14],
-        ],
-      },
+      'text-size': ['interpolate', ['exponential', 1.2], ['zoom'], 12, 10, 15, 14],
       'text-transform': 'uppercase',
     },
     paint: {
@@ -410,13 +355,7 @@ export const OSM_LAYERS: (LayerProps & { id: string; 'source-layer': string })[]
       'text-field': '{name_en}',
       'text-font': ['Roboto Regular'],
       'text-max-width': 8,
-      'text-size': {
-        base: 1.2,
-        stops: [
-          [10, 12],
-          [15, 22],
-        ],
-      },
+      'text-size': ['interpolate', ['exponential', 1.2], ['zoom'], 10, 12, 15, 22],
     },
     paint: {
       'text-color': '#333',
@@ -431,25 +370,13 @@ export const OSM_LAYERS: (LayerProps & { id: string; 'source-layer': string })[]
     'source-layer': 'place',
     filter: ['all', ['==', 'class', 'town']],
     layout: {
-      'icon-image': {
-        base: 1,
-        stops: [
-          [0, 'dot_9'],
-          [8, ''],
-        ],
-      },
+      'icon-image': ['step', ['zoom'], 'dot_9', 8, ''],
       'text-anchor': 'bottom',
       'text-field': '{name_en}',
       'text-font': ['Roboto Regular'],
       'text-max-width': 8,
       'text-offset': [0, 0],
-      'text-size': {
-        base: 1.2,
-        stops: [
-          [7, 12],
-          [11, 16],
-        ],
-      },
+      'text-size': ['interpolate', ['exponential', 1.2], ['zoom'], 7, 12, 11, 16],
     },
     paint: {
       'text-color': '#333',
@@ -465,25 +392,13 @@ export const OSM_LAYERS: (LayerProps & { id: string; 'source-layer': string })[]
     minzoom: 5,
     filter: ['all', ['==', 'class', 'city']],
     layout: {
-      'icon-image': {
-        base: 1,
-        stops: [
-          [0, 'dot_9'],
-          [8, ''],
-        ],
-      },
+      'icon-image': ['step', ['zoom'], 'dot_9', 8, ''],
       'text-anchor': 'bottom',
       'text-field': '{name_en}',
       'text-font': ['Roboto Medium'],
       'text-max-width': 8,
       'text-offset': [0, 0],
-      'text-size': {
-        base: 1.2,
-        stops: [
-          [7, 14],
-          [11, 24],
-        ],
-      },
+      'text-size': ['interpolate', ['exponential', 1.2], ['zoom'], 7, 14, 11, 24],
       'icon-allow-overlap': true,
       'icon-optional': false,
     },
@@ -503,12 +418,7 @@ export const OSM_LAYERS: (LayerProps & { id: string; 'source-layer': string })[]
     layout: {
       'text-field': '{name_en}',
       'text-font': ['Roboto Condensed Italic'],
-      'text-size': {
-        stops: [
-          [4, 11],
-          [6, 15],
-        ],
-      },
+      'text-size': ['interpolate', ['linear'], ['zoom'], 4, 11, 6, 15],
       'text-transform': 'uppercase',
     },
     paint: {
@@ -527,12 +437,7 @@ export const OSM_LAYERS: (LayerProps & { id: string; 'source-layer': string })[]
       'text-field': '{name_en}',
       'text-font': ['Roboto Condensed Italic'],
       'text-max-width': 6.25,
-      'text-size': {
-        stops: [
-          [3, 11],
-          [7, 17],
-        ],
-      },
+      'text-size': ['interpolate', ['linear'], ['zoom'], 3, 11, 7, 17],
       'text-transform': 'none',
     },
     paint: {
@@ -552,12 +457,7 @@ export const OSM_LAYERS: (LayerProps & { id: string; 'source-layer': string })[]
       'text-field': '{name_en}',
       'text-font': ['Roboto Condensed Italic'],
       'text-max-width': 6.25,
-      'text-size': {
-        stops: [
-          [2, 11],
-          [5, 17],
-        ],
-      },
+      'text-size': ['interpolate', ['linear'], ['zoom'], 2, 11, 5, 17],
       'text-transform': 'none',
     },
     paint: {
@@ -577,12 +477,7 @@ export const OSM_LAYERS: (LayerProps & { id: string; 'source-layer': string })[]
       'text-field': '{name_en}',
       'text-font': ['Roboto Condensed Italic'],
       'text-max-width': 6.25,
-      'text-size': {
-        stops: [
-          [1, 11],
-          [4, 17],
-        ],
-      },
+      'text-size': ['interpolate', ['linear'], ['zoom'], 1, 11, 4, 17],
       'text-transform': 'none',
     },
     paint: {
