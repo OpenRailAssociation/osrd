@@ -4,7 +4,7 @@ import { createPortal } from 'react-dom';
 
 type AnchoreMenuParams = {
   children?: React.ReactNode;
-  anchorRef: React.RefObject<HTMLElement>;
+  anchorRef: React.RefObject<HTMLElement | null>;
   onDismiss: () => void;
 };
 
