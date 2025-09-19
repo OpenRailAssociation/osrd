@@ -5,7 +5,10 @@ import type { TFunction } from 'i18next';
 import { useTranslation } from 'react-i18next';
 
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
-import type { TimetableJsonPayload } from 'applications/operationalStudies/types';
+import type {
+  RoundTripsFromJson,
+  TimetableJsonPayload,
+} from 'applications/operationalStudies/types';
 import type { GraouTrainSchedule } from 'common/api/graouApi';
 import {
   osrdEditoastApi,
@@ -25,10 +28,16 @@ import type {
   TrainScheduleWithTrainId,
 } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
-import { formatEditoastIdToPacedTrainId, formatEditoastIdToTrainScheduleId } from 'utils/trainId';
+import {
+  extractEditoastIdFromPacedTrainId,
+  extractEditoastIdFromTrainScheduleId,
+  formatEditoastIdToPacedTrainId,
+  formatEditoastIdToTrainScheduleId,
+} from 'utils/trainId';
 
 import generateTrainSchedulesPayloads from './generateTrainSchedulesPayloads';
 import findValidTrainNameKey from './helpers/findValidTrainNameKey';
+import { generateRoundTripsPayload } from './helpers/generatePayloads';
 import rollingstockOpenData2OSRD from './rollingstock_opendata2osrd.json';
 
 function LoadingIfSearching({
@@ -64,6 +73,7 @@ const ImportTimetableItemTrainsList = ({
     train_schedules: trainSchedulesFromJsonData,
     paced_trains: pacedTrainsFromJsonData,
     macro_nodes: macroNodes,
+    round_trips: roundTripsFromJsonData,
   } = trainsJsonData;
 
   const subCategories = useSubCategoryContext();
@@ -155,11 +165,43 @@ const ImportTimetableItemTrainsList = ({
   const [postTrainSchedule] =
     osrdEditoastApi.endpoints.postTimetableByIdTrainSchedules.useMutation();
   const [postPacedTrain] = osrdEditoastApi.endpoints.postTimetableByIdPacedTrains.useMutation();
+  const [postTrainScheduleRoundTrips] =
+    osrdEditoastApi.endpoints.postRoundTripsTrainSchedules.useMutation();
+  const [postPacedTrainRoundTrips] =
+    osrdEditoastApi.endpoints.postRoundTripsPacedTrains.useMutation();
   const [postMacroNodes] =
     osrdEditoastApi.endpoints.postProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNodes.useMutation();
 
   const dispatch = useAppDispatch();
   const timetableId = scenario.timetable_id;
+
+  const postRoundTrips = async (
+    roundTrips: RoundTripsFromJson,
+    formattedTrainSchedules: TrainScheduleWithTrainId[],
+    formattedPacedTrains: PacedTrainWithPacedTrainId[]
+  ): Promise<void> => {
+    const requests: Promise<unknown>[] = [];
+
+    if (roundTrips.train_schedules.length > 0) {
+      const payload = generateRoundTripsPayload(
+        roundTrips.train_schedules,
+        formattedTrainSchedules,
+        extractEditoastIdFromTrainScheduleId
+      );
+      requests.push(postTrainScheduleRoundTrips(payload).unwrap());
+    }
+
+    if (roundTrips.paced_trains.length > 0) {
+      const payload = generateRoundTripsPayload(
+        roundTrips.paced_trains,
+        formattedPacedTrains,
+        extractEditoastIdFromPacedTrainId
+      );
+      requests.push(postPacedTrainRoundTrips(payload).unwrap());
+    }
+
+    await Promise.all(requests);
+  };
 
   async function generateTimetableItem() {
     try {
@@ -201,6 +243,10 @@ const ImportTimetableItemTrainsList = ({
           ...pacedTrain,
           id: formatEditoastIdToPacedTrainId(pacedTrain.id),
         }));
+      }
+
+      if (roundTripsFromJsonData) {
+        await postRoundTrips(roundTripsFromJsonData, formattedTrainSchedules, formattedPacedTrains);
       }
 
       if (macroNodes && macroNodes.length > 0) {
