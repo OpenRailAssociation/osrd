@@ -996,6 +996,8 @@ export const convertNgeDtoToOsrd = (dto: NetzgrafikDto) => {
 
   const trainSchedules: TrainScheduleFromJson[] = [];
   const pacedTrains: PacedTrainFromJson[] = [];
+  const pacedTrainsRoundTrips: ([number, number] | [number, null])[] = [];
+  const trainSchedulesRoundTrips: ([number, number] | [number, null])[] = [];
   for (const trainrun of dto.trainruns) {
     const groupedTrainrunSections = getTrainrunSectionsByTrainrunId(dto, trainrun.id);
     const labels = getTrainrunLabels(dto, trainrun);
@@ -1026,21 +1028,32 @@ export const convertNgeDtoToOsrd = (dto: NetzgrafikDto) => {
             ...commonProps,
             paced,
           });
+          if (direction === TRAINRUN_DIRECTIONS.FORWARD) {
+            pacedTrainsRoundTrips.push([
+              pacedTrains.length - 1,
+              trainrun.direction === 'one_way' ? null : pacedTrains.length,
+            ]);
+          }
         } else {
           trainSchedules.push({
             ...DEFAULT_TRAIN_SCHEDULE_PAYLOAD,
             ...commonProps,
           });
+          if (direction === TRAINRUN_DIRECTIONS.FORWARD) {
+            trainSchedulesRoundTrips.push([
+              trainSchedules.length - 1,
+              trainrun.direction === 'one_way' ? null : trainSchedules.length,
+            ]);
+          }
         }
       }
     }
   }
 
-  // TODO: handle return trips by having a for example by having a return trips field in TimetableJsonPayload with [id1, id2],
-  // then calling the return trip api after creating the trains in ImportTimetableItemTrainsList
   return {
     macro_nodes: macroNodes,
     paced_trains: pacedTrains,
     train_schedules: trainSchedules,
+    round_trips: { train_schedules: trainSchedulesRoundTrips, paced_trains: pacedTrainsRoundTrips },
   };
 };

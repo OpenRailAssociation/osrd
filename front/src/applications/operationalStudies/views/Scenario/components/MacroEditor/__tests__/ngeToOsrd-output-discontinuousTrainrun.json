@@ -81,7 +81,7 @@
           "reception_signal": "OPEN"
         }
       ],
-      "paced": { "interval": "PT1H", "time_window": "PT2H" }
+      "paced": { "interval": "PT2H", "time_window": "PT2H" }
     },
     {
       "category": "InterCity",
@@ -112,7 +112,7 @@
           "reception_signal": "OPEN"
         }
       ],
-      "paced": { "interval": "PT1H", "time_window": "PT2H" }
+      "paced": { "interval": "PT2H", "time_window": "PT2H" }
     },
     {
       "category": "InterCity",
@@ -120,7 +120,7 @@
       "exceptions": [],
       "labels": [],
       "paced": {
-        "interval": "PT1H",
+        "interval": "PT2H",
         "time_window": "PT2H"
       },
       "path": [
@@ -156,7 +156,7 @@
       "exceptions": [],
       "labels": [],
       "paced": {
-        "interval": "PT1H",
+        "interval": "PT2H",
         "time_window": "PT2H"
       },
       "path": [
@@ -187,5 +187,12 @@
       "train_name": "Carotte-2"
     }
   ],
-  "train_schedules": []
+  "train_schedules": [],
+  "round_trips": {
+    "paced_trains": [
+      [0, 1],
+      [2, 3]
+    ],
+    "train_schedules": []
+  }
 }
