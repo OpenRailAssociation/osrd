@@ -2,22 +2,27 @@ import React, { useCallback, useMemo, useState, useRef } from 'react';
 
 import { Input } from '@osrd-project/ui-core';
 import * as Icons from '@osrd-project/ui-icons';
-import type { UiIcon } from '@osrd-project/ui-icons';
 
 import { ErrorBoundary } from './ErrorBoundary';
 
-const ICONS: Array<{ name: string; icon: UiIcon }> = Object.keys(Icons).map((name) => ({
-  name,
-  // eslint-disable-next-line import/namespace
-  icon: Icons[name] as UiIcon,
-}));
-
-export const SearchIcons: {
+type IconProps = {
   size: 'sm' | 'lg';
   variant: 'base' | 'fill';
   title?: string;
   iconColor: string;
-} = (args) => {
+};
+
+type IconEntry = {
+  name: string;
+  icon: React.ComponentType<IconProps>;
+};
+
+const ICONS: IconEntry[] = Object.keys(Icons).map((name) => ({
+  name,
+  icon: (Icons as Record<string, IconEntry['icon']>)[name],
+}));
+
+export const SearchIcons = (args: IconProps) => {
   // eslint-disable-next-line no-console
   console.log(args);
   const [search, setSearch] = useState('');
@@ -33,7 +38,7 @@ export const SearchIcons: {
     },
     [debounceTimer]
   );
-  const icons: Array<{ name: string; icon: UiIcon }> = useMemo(
+  const icons = useMemo(
     () => ICONS.filter((i) => i.name.toLowerCase().includes(search.toLowerCase())),
     [search]
   );
