@@ -384,6 +384,7 @@ const PacedTrainItem = ({
               nextOccurrence={occurrences[index + 1]}
               occurrenceActions={occurrenceActions}
               subCategories={subCategories}
+              pacedTrainInvalidReason={summary?.isValid ? undefined : summary?.invalidReason}
             />
           ))}
         </div>
