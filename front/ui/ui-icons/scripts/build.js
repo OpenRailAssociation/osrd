@@ -140,7 +140,6 @@ const sizesContent = `export default ${JSON.stringify(sizes, null, 2)};\n`;
 writeFileSync(sizesFile, sizesContent);
 
 // Loop over the representation to generate React component files for each icon
-let typeNames = [];
 for (const [name, currentData] of Object.entries(representation)) {
   const supportedVariants = Object.keys(currentData);
 
@@ -176,9 +175,6 @@ for (const [name, currentData] of Object.entries(representation)) {
   // Append the current icon's export statement to the index file
   appendFileSync(
     indexFile,
-    `export { ${name} } from "./components/${name}";\n` +
-      `import type { ${name}Icon } from "./components/${name}";\n`
+    `export { ${name} } from "./components/${name}";\n`
   );
-  typeNames.push(`${name}Icon`);
 }
-appendFileSync(indexFile, `export type UiIcon = ${typeNames.join(' | ')};\n`);
