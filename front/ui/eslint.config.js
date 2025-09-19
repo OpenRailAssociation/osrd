@@ -114,7 +114,7 @@ export default [
       'import/no-extraneous-dependencies': [
         'error',
         {
-          devDependencies: ['**/*.spec.ts', '**/__tests__/**'],
+          devDependencies: ['**/*.spec.ts', '**/__tests__/**', '.storybook/**'],
           packageDir: ['.', '../base'],
         },
       ],
