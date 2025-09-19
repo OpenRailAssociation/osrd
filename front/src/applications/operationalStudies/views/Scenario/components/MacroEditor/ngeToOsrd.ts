@@ -969,6 +969,8 @@ export const convertNgeDtoToOsrd = (dto: NetzgrafikDto) => {
 
   const trainSchedules: TrainScheduleFromJson[] = [];
   const pacedTrains: PacedTrainFromJson[] = [];
+  const pacedTrainsRoundTrips: ([number, number] | [number, null])[] = [];
+  const trainSchedulesRoundTrips: ([number, number] | [number, null])[] = [];
   for (const trainrun of dto.trainruns) {
     const { labels, groupedTrainrunSections } = generateTrainrunProperties(dto, trainrun);
     const category = dto.metadata.trainrunCategories.find((cat) => cat.id === trainrun.categoryId);
@@ -997,11 +999,23 @@ export const convertNgeDtoToOsrd = (dto: NetzgrafikDto) => {
             ...commonProps,
             paced,
           });
+          if (direction === TRAINRUN_DIRECTIONS.FORWARD) {
+            pacedTrainsRoundTrips.push([
+              pacedTrains.length - 1,
+              trainrun.direction === 'one_way' ? null : pacedTrains.length,
+            ]);
+          }
         } else {
           trainSchedules.push({
             ...DEFAULT_TRAIN_SCHEDULE_PAYLOAD,
             ...commonProps,
           });
+          if (direction === TRAINRUN_DIRECTIONS.FORWARD) {
+            trainSchedulesRoundTrips.push([
+              trainSchedules.length - 1,
+              trainrun.direction === 'one_way' ? null : trainSchedules.length,
+            ]);
+          }
         }
       }
     }
@@ -1013,5 +1027,6 @@ export const convertNgeDtoToOsrd = (dto: NetzgrafikDto) => {
     macro_nodes: macroNodes,
     paced_trains: pacedTrains,
     train_schedules: trainSchedules,
+    round_trips: { train_schedules: trainSchedulesRoundTrips, paced_trains: pacedTrainsRoundTrips },
   };
 };
