@@ -31,12 +31,12 @@
       "path_item_key": "trigram:SS-2"
     }
   ],
-  "paced_trains": [
+  "paced_trains": [],
+  "train_schedules": [
     {
       "category": "InterCity",
       "constraint_distribution": "STANDARD",
       "rolling_stock_name": "",
-      "exceptions": [],
       "train_name": "Carotte",
       "labels": [],
       "path": [
@@ -60,9 +60,11 @@
           "locked": false,
           "reception_signal": "OPEN"
         }
-      ],
-      "paced": { "interval": "PT1H", "time_window": "PT2H" }
+      ]
     }
   ],
-  "train_schedules": []
+  "round_trips": {
+    "paced_trains": [],
+    "train_schedules": [[0, null]]
+  }
 }

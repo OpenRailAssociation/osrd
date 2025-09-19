@@ -211,7 +211,7 @@
       "id": 1,
       "name": "Carotte",
       "categoryId": 1,
-      "frequencyId": 3,
+      "frequencyId": 6,
       "trainrunTimeCategoryId": 0,
       "labelIds": [],
       "direction": "one_way"
@@ -371,6 +371,15 @@
         "offset": 60,
         "shortName": "120+",
         "name": "verkehrt zweistündlich (ungerade)",
+        "linePatternRef": "120"
+      },
+      {
+        "id": 6,
+        "order": 0,
+        "frequency": 1440,
+        "offset": 0,
+        "shortName": "once",
+        "name": "once a day (TrainSchedule)",
         "linePatternRef": "120"
       }
     ],

@@ -64,5 +64,9 @@
       "paced": { "interval": "PT1H", "time_window": "PT2H" }
     }
   ],
-  "train_schedules": []
+  "train_schedules": [],
+  "round_trips": {
+    "paced_trains": [[0, null]],
+    "train_schedules": []
+  }
 }
