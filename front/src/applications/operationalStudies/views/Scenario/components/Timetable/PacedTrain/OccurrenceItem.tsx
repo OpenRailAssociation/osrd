@@ -23,7 +23,7 @@ import AnchoredMenu from 'common/AnchoredMenu';
 import type { SubCategory } from 'common/api/osrdEditoastApi';
 import OSRDMenu, { type OSRDMenuItem } from 'common/OSRDMenu';
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
-import type { Occurrence } from 'modules/timetableItem/types';
+import type { InvalidReason, Occurrence } from 'modules/timetableItem/types';
 import { getTrainIdUsedForProjection } from 'reducers/simulationResults/selectors';
 import { addElementAtIndex } from 'utils/array';
 import { addDurationToDate } from 'utils/duration';
@@ -60,6 +60,7 @@ type OccurrenceItemProps = {
   nextOccurrence?: Occurrence;
   occurrenceActions: ReturnType<typeof useOccurrenceActions>;
   subCategories?: SubCategory[];
+  pacedTrainInvalidReason?: InvalidReason;
 };
 
 const OccurrenceItem = ({
@@ -75,6 +76,7 @@ const OccurrenceItem = ({
     deleteAddedException,
   },
   subCategories,
+  pacedTrainInvalidReason,
 }: OccurrenceItemProps) => {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'main' });
   const menuRef = useRef<HTMLDivElement>(null);
@@ -209,7 +211,6 @@ const OccurrenceItem = ({
       <div
         className={cx('main', {
           warning: !disabled && summary && (!summary.isValid || !!summary.notHonoredReason),
-          invalid: !disabled && summary && !summary.isValid,
           'not-honored': !disabled && summary?.isValid && !!summary.notHonoredReason,
         })}
       >
@@ -269,6 +270,14 @@ const OccurrenceItem = ({
           />
         )}
       </div>
+
+      {summary && !summary.isValid && summary.invalidReason !== pacedTrainInvalidReason && (
+        <div className="invalid-reason">
+          <span title={t(`timetable.invalid.${summary.invalidReason}`)}>
+            {t(`timetable.invalid.${summary.invalidReason}`)}
+          </span>
+        </div>
+      )}
 
       {summary?.isValid && !disabled && isExceptionFromPathOrSimulation(occurrence) && (
         <div className="more-info">
