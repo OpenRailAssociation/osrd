@@ -72,7 +72,10 @@ const findConnectedPortId = (node: NodeDto, portId: number) => {
   return transition.port1Id === portId ? transition.port2Id : transition.port1Id;
 };
 
-const getTrainrunSectionsByTrainrunId = (netzgrafikDto: NetzgrafikDto, trainrunId: number) => {
+const getTrainrunSectionsByTrainrunId = (
+  netzgrafikDto: NetzgrafikDto,
+  trainrunId: number
+): TrainrunSectionDto[][] => {
   // The sections we obtain here may be out-of-order. For instance, for a path
   // A → B → C, we may get two sections B → C and then A → B. We need to
   // re-order the section A → B before B → C.
@@ -148,13 +151,7 @@ const getTrainrunSectionsByTrainrunId = (netzgrafikDto: NetzgrafikDto, trainrunI
     throw new Error('Trainrun has no path');
   }
 
-  // TODO: some train runs are made up of multiple parts. We should create one
-  // train schedule per part.
-  if (orderedSectionPaths.length > 1) {
-    throw new Error('Trainrun is not continuous');
-  }
-
-  return orderedSectionPaths[0];
+  return orderedSectionPaths;
 };
 
 const createPathItemFromNode = (node: NodeDto, index: number) => {
@@ -301,9 +298,12 @@ const generateSchedule = (
 
 /**
  * Generate properties (labels and trainrunSections) for a trainrun.
+ * Trainrun sections are split into continuous groups, and ordered in each group.
+ * For example on a train run containing (B->C, D->E, A->B),
+ * the function would group and order the sections as [[A->B, B->C], [D->E]] or [[D->E], [A->B, B->C]].
  */
 const generateTrainrunProperties = (netzgrafikDto: NetzgrafikDto, trainrun: TrainrunDto) => {
-  const trainrunSections = getTrainrunSectionsByTrainrunId(netzgrafikDto, trainrun.id);
+  const groupedTrainrunSections = getTrainrunSectionsByTrainrunId(netzgrafikDto, trainrun.id);
   const labels = compact(
     uniq(
       trainrun.labelIds.map(
@@ -312,7 +312,7 @@ const generateTrainrunProperties = (netzgrafikDto: NetzgrafikDto, trainrun: Trai
     )
   );
 
-  return { labels, trainrunSections };
+  return { labels, groupedTrainrunSections };
 };
 
 /**
@@ -392,7 +392,11 @@ const handleCreateTimetableItem = async (
   dispatch: AppDispatch,
   addUpsertedTimetableItems: (timetableItems: TimetableItem[]) => void
 ) => {
-  const { labels, trainrunSections } = generateTrainrunProperties(netzgrafikDto, trainrun);
+  const { labels, groupedTrainrunSections } = generateTrainrunProperties(netzgrafikDto, trainrun);
+  if (groupedTrainrunSections.length > 1) {
+    throw new Error('Trainrun is not continuous');
+  }
+  const trainrunSections = groupedTrainrunSections[0];
 
   if (trainrun.direction === 'one_way') {
     throw new Error(
@@ -507,7 +511,11 @@ const handleUpdateTimetableItem = async ({
 }) => {
   const timetableItemIds = state.timetableItemIdByNgeId.get(trainrun.id)!;
   const oldForwardTimetableItem = await fetchTimetableItem(timetableItemIds[0], dispatch);
-  const { labels, trainrunSections } = generateTrainrunProperties(netzgrafikDto, trainrun);
+  const { labels, groupedTrainrunSections } = generateTrainrunProperties(netzgrafikDto, trainrun);
+  if (groupedTrainrunSections.length > 1) {
+    throw new Error('Trainrun is not continuous');
+  }
+  const trainrunSections = groupedTrainrunSections[0];
   const forwardPathAndSchedule = generatePathAndSchedule(
     trainrunSections,
     netzgrafikDto.nodes,
@@ -962,37 +970,39 @@ export const convertNgeDtoToOsrd = (dto: NetzgrafikDto) => {
   const trainSchedules: TrainScheduleFromJson[] = [];
   const pacedTrains: PacedTrainFromJson[] = [];
   for (const trainrun of dto.trainruns) {
-    const { labels, trainrunSections } = generateTrainrunProperties(dto, trainrun);
+    const { labels, groupedTrainrunSections } = generateTrainrunProperties(dto, trainrun);
     const category = dto.metadata.trainrunCategories.find((cat) => cat.id === trainrun.categoryId);
     const directions =
       trainrun.direction === 'one_way'
         ? [TRAINRUN_DIRECTIONS.FORWARD]
         : [TRAINRUN_DIRECTIONS.FORWARD, TRAINRUN_DIRECTIONS.BACKWARD];
-    for (const direction of directions) {
-      const pathAndSchedule = generatePathAndSchedule(
-        trainrunSections,
-        nodesWUniqueTrigrams,
-        undefined,
-        direction
-      );
-      const commonProps = {
-        train_name: trainrun.name,
-        labels,
-        category: category?.name,
-        ...pathAndSchedule,
-      };
-      const paced = createPacedAttributesFromTrainrun(trainrun, dto);
-      if (paced) {
-        pacedTrains.push({
-          ...DEFAULT_PACED_TRAIN_PAYLOAD,
-          ...commonProps,
-          paced,
-        });
-      } else {
-        trainSchedules.push({
-          ...DEFAULT_TRAIN_SCHEDULE_PAYLOAD,
-          ...commonProps,
-        });
+    for (const trainrunSections of groupedTrainrunSections) {
+      for (const direction of directions) {
+        const pathAndSchedule = generatePathAndSchedule(
+          trainrunSections,
+          nodesWUniqueTrigrams,
+          undefined,
+          direction
+        );
+        const commonProps = {
+          train_name: trainrun.name,
+          labels,
+          category: category?.name,
+          ...pathAndSchedule,
+        };
+        const paced = createPacedAttributesFromTrainrun(trainrun, dto);
+        if (paced) {
+          pacedTrains.push({
+            ...DEFAULT_PACED_TRAIN_PAYLOAD,
+            ...commonProps,
+            paced,
+          });
+        } else {
+          trainSchedules.push({
+            ...DEFAULT_TRAIN_SCHEDULE_PAYLOAD,
+            ...commonProps,
+          });
+        }
       }
     }
   }
