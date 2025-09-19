@@ -87,11 +87,7 @@ const ManchetteWithSpaceTimeWrapper = ({
         className="header bg-ambientB-5 w-full border-b border-grey-30"
         style={{ height: '40px' }}
       ></div>
-      <div
-        ref={manchetteWithSpaceTimeChartRef}
-        className="manchette flex"
-        onScroll={handleScroll}
-      >
+      <div ref={manchetteWithSpaceTimeChartRef} className="manchette flex" onScroll={handleScroll}>
         <Manchette
           {...manchetteProps}
           contents={manchetteProps.contents.map((op) =>
