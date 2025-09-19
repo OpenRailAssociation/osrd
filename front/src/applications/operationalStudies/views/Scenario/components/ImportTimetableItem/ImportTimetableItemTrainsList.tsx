@@ -5,7 +5,10 @@ import type { TFunction } from 'i18next';
 import { useTranslation } from 'react-i18next';
 
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
-import type { TimetableJsonPayload } from 'applications/operationalStudies/types';
+import type {
+  RoundTripsFromJson,
+  TimetableJsonPayload,
+} from 'applications/operationalStudies/types';
 import type { GraouTrainSchedule } from 'common/api/graouApi';
 import {
   osrdEditoastApi,
@@ -25,7 +28,12 @@ import type {
   TrainScheduleWithTrainId,
 } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
-import { formatEditoastIdToPacedTrainId, formatEditoastIdToTrainScheduleId } from 'utils/trainId';
+import {
+  extractEditoastIdFromPacedTrainId,
+  extractEditoastIdFromTrainScheduleId,
+  formatEditoastIdToPacedTrainId,
+  formatEditoastIdToTrainScheduleId,
+} from 'utils/trainId';
 
 import generateTrainSchedulesPayloads from './generateTrainSchedulesPayloads';
 import findValidTrainNameKey from './helpers/findValidTrainNameKey';
@@ -64,6 +72,7 @@ const ImportTimetableItemTrainsList = ({
     train_schedules: trainSchedulesFromJsonData,
     paced_trains: pacedTrainsFromJsonData,
     macro_nodes: macroNodes,
+    round_trips: roundTripsFromJsonData,
   } = trainsJsonData;
 
   const subCategories = useSubCategoryContext();
@@ -147,11 +156,71 @@ const ImportTimetableItemTrainsList = ({
   const [postTrainSchedule] =
     osrdEditoastApi.endpoints.postTimetableByIdTrainSchedules.useMutation();
   const [postPacedTrain] = osrdEditoastApi.endpoints.postTimetableByIdPacedTrains.useMutation();
+  const [postTrainScheduleRoundTrips] =
+    osrdEditoastApi.endpoints.postRoundTripsTrainSchedules.useMutation();
+  const [postPacedTrainRoundTrips] =
+    osrdEditoastApi.endpoints.postRoundTripsPacedTrains.useMutation();
   const [postMacroNodes] =
     osrdEditoastApi.endpoints.postProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNodes.useMutation();
 
   const dispatch = useAppDispatch();
   const timetableId = scenario.timetable_id;
+
+  async function postRoundTrips(
+    roundTrips: RoundTripsFromJson,
+    formattedTrainSchedules: TrainScheduleWithTrainId[],
+    formattedPacedTrains: PacedTrainWithPacedTrainId[]
+  ): Promise<void> {
+    if (roundTrips.train_schedules.length > 0) {
+      const trainScheduleOneWays: number[] = [];
+      const trainScheduleRoundTrips: [number, number][] = [];
+
+      for (const [firstIndex, secondIndex] of roundTrips.train_schedules) {
+        if (secondIndex === null) {
+          trainScheduleOneWays.push(
+            extractEditoastIdFromTrainScheduleId(formattedTrainSchedules[firstIndex].id)
+          );
+        } else {
+          trainScheduleRoundTrips.push([
+            extractEditoastIdFromTrainScheduleId(formattedTrainSchedules[firstIndex].id),
+            extractEditoastIdFromTrainScheduleId(formattedTrainSchedules[secondIndex].id),
+          ]);
+        }
+      }
+
+      await postTrainScheduleRoundTrips({
+        roundTrips: {
+          one_ways: trainScheduleOneWays,
+          round_trips: trainScheduleRoundTrips,
+        },
+      }).unwrap();
+    }
+
+    if (roundTrips.paced_trains.length > 0) {
+      const pacedTrainOneWays: number[] = [];
+      const pacedTrainRoundTrips: [number, number][] = [];
+
+      for (const [firstIndex, secondIndex] of roundTrips.paced_trains) {
+        if (secondIndex === null) {
+          pacedTrainOneWays.push(
+            extractEditoastIdFromPacedTrainId(formattedPacedTrains[firstIndex].id)
+          );
+        } else {
+          pacedTrainRoundTrips.push([
+            extractEditoastIdFromPacedTrainId(formattedPacedTrains[firstIndex].id),
+            extractEditoastIdFromPacedTrainId(formattedPacedTrains[secondIndex].id),
+          ]);
+        }
+      }
+
+      await postPacedTrainRoundTrips({
+        roundTrips: {
+          one_ways: pacedTrainOneWays,
+          round_trips: pacedTrainRoundTrips,
+        },
+      }).unwrap();
+    }
+  }
 
   async function generateTimetableItem() {
     try {
@@ -195,6 +264,12 @@ const ImportTimetableItemTrainsList = ({
         }));
       }
 
+      upsertTimetableItems([...formattedTrainSchedules, ...formattedPacedTrains]);
+
+      if (roundTripsFromJsonData) {
+        await postRoundTrips(roundTripsFromJsonData, formattedTrainSchedules, formattedPacedTrains);
+      }
+
       if (macroNodes && macroNodes.length > 0) {
         await postMacroNodes({
           projectId: scenario.project.id,
@@ -203,8 +278,6 @@ const ImportTimetableItemTrainsList = ({
           macroNodeBatchForm: { macro_nodes: macroNodes },
         }).unwrap();
       }
-
-      upsertTimetableItems([...formattedTrainSchedules, ...formattedPacedTrains]);
 
       dispatch(
         setSuccess({
