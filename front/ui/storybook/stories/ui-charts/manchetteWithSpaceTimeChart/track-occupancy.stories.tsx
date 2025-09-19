@@ -141,7 +141,7 @@ const TrackOccupancyDiagramWithinSpaceTimeChartWrapper = ({ height = 561 }: { he
                 hoveredItem?.layer === 'overlay' &&
                 hoveredItem.element.type === 'occupancyZone'
               ) {
-                const newId = (hoveredItem.element as OccupancyZonePickingElement).trainId;
+                const newId = (hoveredItem.element as OccupancyZonePickingElement).pathId;
                 setSelectedTrain(newId === selectedTrain ? undefined : newId);
               }
 
