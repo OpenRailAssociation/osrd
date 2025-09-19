@@ -1,6 +1,5 @@
-import { type StyleSpecification } from '@maplibre/maplibre-gl-style-spec';
 import { type SourceDefinition } from '@osrd-project/ui-warped-map';
-import { type LayerProps } from 'react-map-gl';
+import { type StyleSpecification } from 'react-map-gl/maplibre';
 
 export const PATH_SHORT = 'nantes-ancenis';
 export const PATH_MEDIUM = 'nantes-angers';
@@ -10,7 +9,7 @@ export const PATH_NAMES = [PATH_SHORT, PATH_MEDIUM, PATH_LONG, PATH_EXTRA_LONG];
 
 export const OSM_URL = 'https://osm.osrd.fr/data/v3.json';
 
-export const OSM_LAYERS: (LayerProps & { id: string; 'source-layer': string })[] = [
+export const OSM_LAYERS: SourceDefinition['layers'] = [
   {
     id: 'water',
     type: 'fill',

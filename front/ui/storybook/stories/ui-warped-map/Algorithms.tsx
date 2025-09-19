@@ -10,14 +10,14 @@ import {
 } from '@osrd-project/ui-warped-map';
 import { featureCollection } from '@turf/helpers';
 import type { Feature, LineString } from 'geojson';
-import { Layer, type LineLayer, Source } from 'react-map-gl/maplibre';
+import { Layer, type LineLayerSpecification, Source } from 'react-map-gl/maplibre';
 
 import { OSM_BASE_MAP_STYLE, OSM_SOURCE } from './helpers';
 import { useAsyncMemo } from './useAsyncMemo';
 
 const SOURCES: SourceDefinition[] = [OSM_SOURCE];
 
-const PATH_LAYER: Omit<LineLayer, 'source-layer'> = {
+const PATH_LAYER: Omit<LineLayerSpecification, 'source-layer'> = {
   id: 'path-layer',
   source: 'path',
   type: 'line',
