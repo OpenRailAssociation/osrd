@@ -7,7 +7,7 @@ export type MenuItem = {
 };
 
 type MenuProps = {
-  menuRef: React.RefObject<HTMLDivElement>;
+  menuRef: React.RefObject<HTMLDivElement | null>;
   items: MenuItem[];
 };
 
