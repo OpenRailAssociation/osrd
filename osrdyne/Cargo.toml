@@ -6,7 +6,7 @@ version = "0.1.0"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-anyhow = "1.0.99"
+anyhow = "1.0.100"
 axum = "0.8.4"
 axum-extra = { version = "0.10.1", features = ["query"] }
 axum-tracing-opentelemetry = "0.30.0"
