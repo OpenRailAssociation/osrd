@@ -1,7 +1,6 @@
 use std::fmt::Debug;
 
 use arcstr::ArcStr;
-use deadpool_redis::Connection;
 use deadpool_redis::redis::Arg;
 use deadpool_redis::redis::AsyncCommands;
 use deadpool_redis::redis::Cmd;
@@ -21,14 +20,14 @@ use tracing::Level;
 use tracing::debug;
 use tracing::span;
 
-pub struct ValkeyConnection {
-    inner: ValkeyConnectionInner,
+pub struct Connection {
+    inner: ConnectionInner,
     #[expect(unused)]
     app_version: ArcStr,
 }
 
-pub(crate) enum ValkeyConnectionInner {
-    Tokio(Connection),
+pub(crate) enum ConnectionInner {
+    Tokio(deadpool_redis::Connection),
     NoCache,
 }
 
@@ -60,11 +59,11 @@ fn no_cache_cmd_handler(cmd: &Cmd) -> Result<Value, RedisError> {
     }
 }
 
-impl ConnectionLike for ValkeyConnection {
+impl ConnectionLike for Connection {
     fn req_packed_command<'a>(&'a mut self, cmd: &'a Cmd) -> RedisFuture<'a, Value> {
         match &mut self.inner {
-            ValkeyConnectionInner::Tokio(connection) => connection.req_packed_command(cmd),
-            ValkeyConnectionInner::NoCache => future::ready(no_cache_cmd_handler(cmd)).boxed(),
+            ConnectionInner::Tokio(connection) => connection.req_packed_command(cmd),
+            ConnectionInner::NoCache => future::ready(no_cache_cmd_handler(cmd)).boxed(),
         }
     }
 
@@ -75,10 +74,10 @@ impl ConnectionLike for ValkeyConnection {
         count: usize,
     ) -> RedisFuture<'a, Vec<Value>> {
         match &mut self.inner {
-            ValkeyConnectionInner::Tokio(connection) => {
+            ConnectionInner::Tokio(connection) => {
                 connection.req_packed_commands(cmd, offset, count)
             }
-            ValkeyConnectionInner::NoCache => {
+            ConnectionInner::NoCache => {
                 let responses = cmd
                     .cmd_iter()
                     .skip(offset)
@@ -92,8 +91,8 @@ impl ConnectionLike for ValkeyConnection {
 
     fn get_db(&self) -> i64 {
         match &self.inner {
-            ValkeyConnectionInner::Tokio(connection) => connection.get_db(),
-            ValkeyConnectionInner::NoCache => 0,
+            ConnectionInner::Tokio(connection) => connection.get_db(),
+            ConnectionInner::NoCache => 0,
         }
     }
 }
@@ -111,8 +110,8 @@ struct ZrangebyscoreWrapper<M> {
     nonce: u64,
 }
 
-impl ValkeyConnection {
-    pub(crate) fn new(inner: ValkeyConnectionInner, app_version: ArcStr) -> Self {
+impl Connection {
+    pub(crate) fn new(inner: ConnectionInner, app_version: ArcStr) -> Self {
         Self { inner, app_version }
     }
 

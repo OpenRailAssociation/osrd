@@ -5,8 +5,8 @@ use deadpool_redis::PoolError;
 use deadpool_redis::Runtime;
 use url::Url;
 
-use crate::connection::ValkeyConnection;
-use crate::connection::ValkeyConnectionInner;
+use crate::connection::Connection;
+use crate::connection::ConnectionInner;
 
 pub struct ValkeyClient {
     inner: ValkeyClientInner,
@@ -49,14 +49,14 @@ impl ValkeyClient {
         }
     }
 
-    pub async fn get_connection(&self) -> Result<ValkeyConnection, PoolError> {
+    pub async fn get_connection(&self) -> Result<Connection, PoolError> {
         match &self.inner {
-            ValkeyClientInner::Tokio(pool) => Ok(ValkeyConnection::new(
-                ValkeyConnectionInner::Tokio(pool.get().await?),
+            ValkeyClientInner::Tokio(pool) => Ok(Connection::new(
+                ConnectionInner::Tokio(pool.get().await?),
                 self.app_version.clone(),
             )),
-            ValkeyClientInner::NoCache => Ok(ValkeyConnection::new(
-                ValkeyConnectionInner::NoCache,
+            ValkeyClientInner::NoCache => Ok(Connection::new(
+                ConnectionInner::NoCache,
                 self.app_version.clone(),
             )),
         }

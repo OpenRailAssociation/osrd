@@ -33,7 +33,6 @@ use std::sync::Arc;
 use utoipa::ToSchema;
 
 use crate::AppState;
-use crate::ValkeyConnection;
 use crate::error::Result;
 use crate::views::AuthenticationExt;
 use crate::views::path::retrieve_infra_version;
@@ -194,7 +193,7 @@ pub(in crate::views) async fn post(
 /// Retrieves path properties from cache.
 #[tracing::instrument(skip_all, err)]
 async fn retrieve_path_properties_from_cache<'a>(
-    conn: &mut ValkeyConnection,
+    conn: &mut cache::Connection,
     requests: &'a [PathPropertiesRequest<'a>],
     app_version: Option<&str>,
 ) -> Result<
@@ -217,7 +216,7 @@ async fn retrieve_path_properties_from_cache<'a>(
 /// Set the cache of path properties.
 #[tracing::instrument(skip_all, err)]
 async fn cache_path_properties<'a>(
-    conn: &mut ValkeyConnection,
+    conn: &mut cache::Connection,
     properties: impl IntoIterator<
         Item = (
             &'a PathPropertiesRequest<'a>,
@@ -254,7 +253,7 @@ fn path_properties_input_hash(
 #[tracing::instrument(skip_all, err)]
 pub(in crate::views) async fn compute_path_properties_batch(
     core_client: Arc<CoreClient>,
-    conn: &mut ValkeyConnection,
+    conn: &mut cache::Connection,
     requests: &[PathPropertiesRequest<'_>],
     app_version: Option<&str>,
 ) -> Result<impl Iterator<Item = core_client::path_properties::PathPropertiesResponse>> {

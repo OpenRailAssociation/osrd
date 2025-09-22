@@ -10,7 +10,6 @@ pub use self::layer_cache::Tile;
 pub use self::layer_cache::get_cache_tile_key;
 pub use self::layer_cache::get_layer_cache_prefix;
 pub use self::layer_cache::get_view_cache_prefix;
-use crate::ValkeyConnection;
 use crate::error::Result;
 
 /// Invalidates layer cache for a specific infra and view if provided
@@ -24,7 +23,7 @@ use crate::error::Result;
 ///
 /// Returns the number of deleted keys
 async fn invalidate_full_layer_cache(
-    valkey: &mut ValkeyConnection,
+    valkey: &mut cache::Connection,
     infra_id: i64,
     layer_name: &str,
     app_version: Option<&str>,
@@ -49,7 +48,7 @@ async fn invalidate_full_layer_cache(
 ///
 /// Panics if fail
 pub async fn invalidate_all(
-    valkey: &mut ValkeyConnection,
+    valkey: &mut cache::Connection,
     layers: &Vec<String>,
     infra_id: i64,
     app_version: Option<&str>,
