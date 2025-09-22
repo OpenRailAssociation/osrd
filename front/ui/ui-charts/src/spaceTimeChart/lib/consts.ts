@@ -27,7 +27,7 @@ export const HOUR = 60 * MINUTE;
 
 export const DEFAULT_THEME: SpaceTimeChartTheme = {
   background: 'white',
-  breakpoints: [0.2, 0.5, 1, 4, 16, 48, 72, Infinity],
+  breakpoints: [0.2, 0.4, 0.7, 2, 6, 20, 60, Infinity],
   timeRanges: [
     10 * SECOND,
     30 * SECOND,
@@ -134,20 +134,20 @@ export const DEFAULT_THEME: SpaceTimeChartTheme = {
     4: {
       width: 0.5,
       color: BLUE,
-      opacity: 0.6,
+      opacity: 0.7,
       dashArray: [16, 4],
     },
     5: {
       width: 0.5,
       color: BLUE,
-      opacity: 0.6,
+      opacity: 0.7,
       dashArray: [8, 8],
     },
     6: {
       width: 0.75,
       color: BLUE,
-      opacity: 0.6,
-      dashArray: [2, 8],
+      opacity: 0.7,
+      dashArray: [3, 8],
     },
   },
 };
