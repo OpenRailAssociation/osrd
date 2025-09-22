@@ -2,11 +2,12 @@
 @use 'speedSection';
 
 .editor-root {
+  height: calc(100vh - 40px);
+
   $blue: var(--primary);
   $blue-dark: var(--primary-dark);
   $white: var(--white);
   $gray: var(--coolgray5);
-
 
   .layout {
     width: 100%;
