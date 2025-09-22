@@ -102,7 +102,7 @@ pub async fn runserver(
                 worker_pool_id,
             },
         },
-        valkey_config: cache::ValkeyConfig {
+        valkey_config: cache::Config {
             app_version: app_version.clone().unwrap_or_default(),
             no_cache,
             valkey_url,

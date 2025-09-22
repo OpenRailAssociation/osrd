@@ -41,7 +41,6 @@ use crate::infra_cache::InfraCache;
 use crate::map::MapLayers;
 use crate::models::PgAuthDriver;
 use crate::views::service_router;
-use cache::ValkeyConfig;
 use fga::client::DEFAULT_OPENFGA_MAX_CHECKS_PER_BATCH_CHECK;
 use fga::client::DEFAULT_OPENFGA_MAX_TUPLES_PER_WRITE;
 
@@ -165,7 +164,7 @@ impl TestAppBuilder {
                     worker_pool_id: "core".into(),
                 },
             },
-            valkey_config: ValkeyConfig {
+            valkey_config: cache::Config {
                 app_version: "TEST_VERSION".to_owned(),
                 no_cache: true,
                 valkey_url: Url::parse("redis://localhost:6379").unwrap(),

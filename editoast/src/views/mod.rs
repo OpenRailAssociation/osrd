@@ -87,7 +87,6 @@ use crate::generated_data::speed_limit_tags_config::SpeedLimitTagIds;
 use crate::infra_cache::InfraCache;
 use crate::map::MapLayers;
 use crate::models::PgAuthDriver;
-use cache::ValkeyConfig;
 
 fn service_router() -> router::DocumentedRouter {
     use router::delete;
@@ -759,7 +758,7 @@ pub struct ServerConfig {
     pub enable_authorization: bool,
     pub postgres_config: PostgresConfig,
     pub osrdyne_config: OsrdyneConfig,
-    pub valkey_config: ValkeyConfig,
+    pub valkey_config: cache::Config,
     pub openfga_config: OpenfgaConfig,
     pub root_url: Url,
     pub dynamic_assets_path: PathBuf,

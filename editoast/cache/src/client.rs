@@ -1,5 +1,4 @@
 use arcstr::ArcStr;
-use deadpool_redis::Config;
 use deadpool_redis::Pool;
 use deadpool_redis::PoolError;
 use deadpool_redis::Runtime;
@@ -20,7 +19,7 @@ pub enum ClientInner {
 }
 
 #[derive(Clone)]
-pub struct ValkeyConfig {
+pub struct Config {
     /// Disables caching. This should not be used in production.
     pub no_cache: bool,
     pub valkey_url: Url,
@@ -29,11 +28,11 @@ pub struct ValkeyConfig {
 
 impl Client {
     pub fn new(
-        ValkeyConfig {
+        Config {
             no_cache,
             valkey_url,
             app_version,
-        }: ValkeyConfig,
+        }: Config,
     ) -> Self {
         Self {
             app_version: ArcStr::from(app_version),
@@ -41,7 +40,7 @@ impl Client {
                 ClientInner::NoCache
             } else {
                 ClientInner::Tokio(
-                    Config::from_url(valkey_url)
+                    deadpool_redis::Config::from_url(valkey_url)
                         .create_pool(Some(Runtime::Tokio1))
                         .unwrap(),
                 )
