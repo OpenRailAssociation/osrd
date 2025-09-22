@@ -1,8 +1,6 @@
 use common::geometry::GeoJsonLineString;
 use schemas::infra::OperationalPointExtensions;
 use schemas::infra::OperationalPointPart;
-use schemas::infra::OperationalPointPartExtension;
-use schemas::infra::OperationalPointSncfExtension;
 use schemas::primitives::Identifier;
 use serde::Deserialize;
 use serde::Serialize;
@@ -11,6 +9,11 @@ use utoipa::ToSchema;
 use crate::AsCoreRequest;
 use crate::Json;
 use crate::pathfinding::TrackRange;
+
+#[cfg(feature = "mocking_client")]
+use schemas::infra::OperationalPointPartExtension;
+#[cfg(feature = "mocking_client")]
+use schemas::infra::OperationalPointSncfExtension;
 
 #[derive(Debug, Serialize)]
 pub struct PathPropertiesRequest<'a> {
