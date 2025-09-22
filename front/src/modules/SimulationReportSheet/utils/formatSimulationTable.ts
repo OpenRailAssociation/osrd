@@ -20,15 +20,15 @@ const getRowStyle = (
   const isStop = !!stepDuration && !isLast;
   const isPathStepWithoutStop = isPathStep && !isFirst && !isLast && stepDuration === null;
 
-  let passageStopStyle: Style = styles.simulation.stopColumn;
+  let passageStopStyle: Style = { ...styles.simulation.stopColumn };
   if (stepDuration && !isLast) {
+    let width = 60;
+    if (stepDuration >= new Duration({ seconds: 60000 })) width = 90;
+    else if (stepDuration >= new Duration({ seconds: 6000 })) width = 80;
+    else if (stepDuration >= new Duration({ seconds: 600 })) width = 70;
+    else if (stepDuration < new Duration({ seconds: 60 })) width = 70;
     passageStopStyle = {
-      width: `${
-        stepDuration < new Duration({ seconds: 600 }) &&
-        stepDuration >= new Duration({ seconds: 60 })
-          ? 60
-          : 70
-      }px`,
+      width: `${width}px`,
       ...styles.simulation.blueStop,
     };
   } else if (isPathStepWithoutStop) {
