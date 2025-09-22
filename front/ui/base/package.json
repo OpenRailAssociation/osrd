@@ -34,7 +34,7 @@
     "react": "^18.2.0 || ^19.1.0",
     "react-dom": "^18.2.0 || ^19.1.0",
     "rimraf": "^6.0.1",
-    "rollup": "^4.50.2",
+    "rollup": "^4.52.0",
     "rollup-plugin-livereload": "^2.0.5",
     "rollup-plugin-postcss": "^4.0.2",
     "typescript": "^5.4.2",
