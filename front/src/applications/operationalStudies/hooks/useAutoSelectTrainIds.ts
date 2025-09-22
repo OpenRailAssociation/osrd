@@ -35,7 +35,7 @@ type SimulationParams = {
  * - new trains have been loaded (if no valid train has been loaded before, selectedTrainId and
  * currentTrainIdForProjection will still be undefined and must be updated)
  */
-const useAutoUpdateProjection = (
+const useAutoSelectTrainIds = (
   timetableItemIds: TimetableItemId[] | undefined,
   timetableItemsWithDetails: TimetableItemWithDetails[]
 ) => {
@@ -172,4 +172,4 @@ const useAutoUpdateProjection = (
   }, [timetableItemIds, timetableItemsWithDetails, setIdsFromUrlOrStorage, parametersLoaded]);
 };
 
-export default useAutoUpdateProjection;
+export default useAutoSelectTrainIds;
