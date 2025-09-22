@@ -113,7 +113,7 @@
     "@types/uuid": "^10.0.0",
     "@typescript-eslint/eslint-plugin": "^8.44.0",
     "@typescript-eslint/parser": "^8.32.1",
-    "@vitejs/plugin-react-swc": "^4.0.1",
+    "@vitejs/plugin-react-swc": "^4.1.0",
     "ansi-to-html": "^0.7.2",
     "eslint": "^8.56.0",
     "eslint-config-prettier": "^10.1.5",
