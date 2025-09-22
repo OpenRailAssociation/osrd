@@ -30,7 +30,6 @@ use tracing::Instrument;
 use tracing::info;
 use utoipa::ToSchema;
 
-use crate::ValkeyClient;
 use crate::error::InternalError;
 use crate::error::Result;
 use crate::models::RollingStock;
@@ -213,7 +212,7 @@ impl SummaryResponse {
 #[allow(clippy::too_many_arguments)]
 pub async fn train_simulation_batch<T: TrainScheduleLike>(
     conn: &mut DbConnection,
-    valkey_client: Arc<ValkeyClient>,
+    valkey_client: Arc<cache::Client>,
     core: Arc<CoreClient>,
     train_schedules: &[T],
     infra: &Infra,
@@ -277,7 +276,7 @@ pub async fn train_simulation_batch<T: TrainScheduleLike>(
 #[allow(clippy::too_many_arguments)]
 pub async fn consist_train_simulation_batch<T: TrainScheduleLike>(
     conn: &mut DbConnection,
-    valkey_client: Arc<ValkeyClient>,
+    valkey_client: Arc<cache::Client>,
     core: Arc<CoreClient>,
     infra: &Infra,
     train_schedules: &[T],

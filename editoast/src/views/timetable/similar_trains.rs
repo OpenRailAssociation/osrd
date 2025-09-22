@@ -42,7 +42,6 @@ use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
 
-use crate::ValkeyClient;
 use crate::error::Result;
 use crate::generated_data::speed_limit_tags_config::SpeedLimitTagIds;
 use crate::models;
@@ -521,7 +520,7 @@ async fn search_candidate_train_schedules(
 #[tracing::instrument(skip_all, fields(infra_id = infra.id, candidate_schedules = candidate_schedules.len()), err)]
 async fn simulate_past_trains(
     conn: &mut DbConnection,
-    valkey: Arc<ValkeyClient>,
+    valkey: Arc<cache::Client>,
     core_client: Arc<CoreClient>,
     infra: &Infra,
     candidate_schedules: Vec<models::TrainSchedule>,

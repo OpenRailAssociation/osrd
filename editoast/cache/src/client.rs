@@ -8,12 +8,12 @@ use url::Url;
 use crate::connection::Connection;
 use crate::connection::ConnectionInner;
 
-pub struct ValkeyClient {
-    inner: ValkeyClientInner,
+pub struct Client {
+    inner: ClientInner,
     app_version: ArcStr,
 }
 
-pub enum ValkeyClientInner {
+pub enum ClientInner {
     Tokio(Pool),
     /// This doesn't cache anything. It has no backend.
     NoCache,
@@ -27,7 +27,7 @@ pub struct ValkeyConfig {
     pub app_version: String,
 }
 
-impl ValkeyClient {
+impl Client {
     pub fn new(
         ValkeyConfig {
             no_cache,
@@ -38,9 +38,9 @@ impl ValkeyClient {
         Self {
             app_version: ArcStr::from(app_version),
             inner: if no_cache {
-                ValkeyClientInner::NoCache
+                ClientInner::NoCache
             } else {
-                ValkeyClientInner::Tokio(
+                ClientInner::Tokio(
                     Config::from_url(valkey_url)
                         .create_pool(Some(Runtime::Tokio1))
                         .unwrap(),
@@ -51,11 +51,11 @@ impl ValkeyClient {
 
     pub async fn get_connection(&self) -> Result<Connection, PoolError> {
         match &self.inner {
-            ValkeyClientInner::Tokio(pool) => Ok(Connection::new(
+            ClientInner::Tokio(pool) => Ok(Connection::new(
                 ConnectionInner::Tokio(pool.get().await?),
                 self.app_version.clone(),
             )),
-            ValkeyClientInner::NoCache => Ok(Connection::new(
+            ClientInner::NoCache => Ok(Connection::new(
                 ConnectionInner::NoCache,
                 self.app_version.clone(),
             )),

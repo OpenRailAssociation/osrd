@@ -10,7 +10,6 @@ use database::DbConnection;
 use database::DbConnectionPoolV2;
 use schemas::infra::RailJson;
 
-use crate::ValkeyClient;
 use crate::infra_cache::InfraCache;
 use crate::map;
 use crate::map::MapLayers;
@@ -238,7 +237,7 @@ async fn build_valkey_pool_and_invalidate_all_cache(
     infra_id: i64,
     app_version: Option<&str>,
 ) -> anyhow::Result<()> {
-    let valkey = ValkeyClient::new(cache::ValkeyConfig {
+    let valkey = cache::Client::new(cache::ValkeyConfig {
         app_version: app_version.map(|v| v.to_owned()).unwrap_or_default(),
         no_cache,
         valkey_url,

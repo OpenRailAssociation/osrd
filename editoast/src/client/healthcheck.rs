@@ -5,7 +5,6 @@ use core_client::CoreClient;
 use core_client::mq_client;
 use database::DbConnectionPoolV2;
 
-use crate::ValkeyClient;
 use crate::views;
 use cache;
 
@@ -22,7 +21,7 @@ pub async fn healthcheck_cmd(
     core_config: CoreArgs,
     openfga_config: OpenfgaConfig,
 ) -> anyhow::Result<()> {
-    let valkey = ValkeyClient::new(cache::ValkeyConfig {
+    let valkey = cache::Client::new(cache::ValkeyConfig {
         app_version: "HEALTHCHECK".to_owned(),
         no_cache,
         valkey_url,
