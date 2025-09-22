@@ -48,6 +48,10 @@ const injectedRtkApi = api
         query: (queryArg) => ({ url: `/authz/me/grants`, method: 'POST', body: queryArg.body }),
         invalidatesTags: ['authz'],
       }),
+      getAuthzMeGroups: build.query<GetAuthzMeGroupsApiResponse, GetAuthzMeGroupsApiArg>({
+        query: () => ({ url: `/authz/me/groups` }),
+        providesTags: ['authz'],
+      }),
       postAuthzMePrivileges: build.mutation<
         PostAuthzMePrivilegesApiResponse,
         PostAuthzMePrivilegesApiArg
@@ -1431,6 +1435,11 @@ export type PostAuthzMeGrantsApiArg = {
     [key: string]: number[];
   };
 };
+export type GetAuthzMeGroupsApiResponse = /** status 200 Get the groups of the current user */ {
+  id: number;
+  name: string;
+}[];
+export type GetAuthzMeGroupsApiArg = void;
 export type PostAuthzMePrivilegesApiResponse =
   /** status 200 The privileges of the user sending the request over each requested resource. */ {
     [key: string]: {
