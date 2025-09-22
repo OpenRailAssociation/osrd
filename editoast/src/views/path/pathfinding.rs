@@ -40,7 +40,6 @@ use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
 use crate::views::path::PathfindingError;
 use crate::views::path::path_item_cache::PathItemCache;
-use cache::ValkeyConnection;
 use editoast_models::prelude::*;
 
 /// Path input is described by some rolling stock information
@@ -238,7 +237,7 @@ pub(in crate::views) async fn post(
 /// Pathfinding computation given a path input
 async fn pathfinding_blocks(
     conn: DbConnection,
-    valkey_conn: &mut ValkeyConnection,
+    valkey_conn: &mut cache::Connection,
     core: Arc<CoreClient>,
     infra: &Infra,
     path_input: PathfindingInput,
@@ -253,7 +252,7 @@ async fn pathfinding_blocks(
 /// Pathfinding batch computation given a list of path inputs
 async fn pathfinding_blocks_batch(
     mut conn: DbConnection,
-    valkey_conn: &mut ValkeyConnection,
+    valkey_conn: &mut cache::Connection,
     core: Arc<CoreClient>,
     infra: &Infra,
     pathfinding_inputs: &[PathfindingInput],
@@ -411,7 +410,7 @@ fn build_pathfinding_request(
 /// Compute a path given a train schedule and an infrastructure.
 pub async fn pathfinding_from_train<T: TrainScheduleLike>(
     conn: DbConnection,
-    valkey: &mut ValkeyConnection,
+    valkey: &mut cache::Connection,
     core: Arc<CoreClient>,
     infra: &Infra,
     train_schedule: T,
@@ -443,7 +442,7 @@ pub async fn pathfinding_from_train<T: TrainScheduleLike>(
 /// Compute a path given a batch of trainschedule and an infrastructure.
 pub async fn pathfinding_from_train_batch<T: TrainScheduleLike>(
     conn: DbConnection,
-    valkey: &mut ValkeyConnection,
+    valkey: &mut cache::Connection,
     core: Arc<CoreClient>,
     infra: &Infra,
     train_schedules: &[T],

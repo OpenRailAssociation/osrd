@@ -40,7 +40,6 @@ use tracing_subscriber::util::SubscriberInitExt;
 pub use views::AppState;
 
 pub use cache::ValkeyClient;
-pub use cache::ValkeyConnection;
 use opentelemetry_otlp::WithExportConfig as _;
 use std::io::IsTerminal;
 use std::process::exit;
