@@ -83,4 +83,4 @@ jobs:
           step_summary_enabled: true
         env:
           HAVE_SSH_KEY: ${{ secrets.UI_WEBSITE_SSH_KEY != '' }}
-        if: ${{ env.HAVE_PERSONAL_TOKEN == 'true' }}
+        if: ${{ env.HAVE_SSH_KEY == 'true' }}
