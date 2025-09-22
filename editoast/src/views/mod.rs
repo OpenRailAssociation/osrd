@@ -126,6 +126,7 @@ fn service_router() -> router::DocumentedRouter {
                     .route("/{resource_type}/{resource_id}", get!(authz::subjects_with_grant_on_resource))
                     .nests("/me", |path| {
                         path.route("/", get!(authz::whoami))
+                            .route("/groups", get!(authz::user_groups))
                             .route("/grants", post!(authz::user_grants))
                             .route("/privileges", post!(authz::user_privileges))
                     })

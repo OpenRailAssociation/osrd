@@ -19,6 +19,7 @@ use axum::response::Json;
 use database::DbConnectionPoolV2;
 use diesel_async::scoped_futures::ScopedFutureExt;
 use editoast_derive::EditoastError;
+use editoast_models::Group;
 use editoast_models::prelude::*;
 use itertools::Itertools;
 use serde::Deserialize;
@@ -110,6 +111,40 @@ pub(in crate::views) async fn whoami(
         name: auth.user_name()?.unwrap_or_else(|| "OSRD user".to_string()),
         roles: auth.user_roles().await?.into_iter().collect(),
     }))
+}
+
+#[editoast_derive::route]
+#[utoipa::path(
+    get,
+    path = "",
+    tag = "authz",
+    responses((
+        status = 200,
+        description = "Get the groups of the current user",
+        body = inline(Vec<Group>),
+    ))
+)]
+pub(in crate::views) async fn user_groups(
+    Extension(auth): AuthenticationExt,
+    State(AppState {
+        regulator, db_pool, ..
+    }): State<AppState>,
+) -> Result<Json<Vec<Group>>> {
+    let authorizer = auth.authorizer()?;
+    let user_id = authorizer.user_id();
+    let user_groups = regulator.user_groups(&authz::User(user_id)).await?;
+    let groups_id: Vec<i64> = user_groups.iter().map(|authz::Group(id)| *id).collect();
+
+    let (result, missing_ids) =
+        editoast_models::Group::retrieve_batch(&mut db_pool.get().await?, groups_id).await?;
+
+    if !missing_ids.is_empty() {
+        tracing::warn!(missing_count = missing_ids.len(),
+            missing_groups_id = ?missing_ids,
+             "Groups not found in database");
+    }
+
+    Ok(Json(result))
 }
 
 #[derive(Debug, Serialize, ToSchema)]
@@ -1070,5 +1105,61 @@ mod tests {
             .json_into::<WhoamiResponse>();
 
         assert_eq!(roles, vec![Role::Admin]);
+    }
+
+    #[rstest]
+    async fn user_groups_test() {
+        let app = test_app!().enable_authorization(true).build();
+        let user_1 = app.user("test1", "test1").create();
+        let user_2 = app.user("test2", "test2").create();
+        let group_1 = app
+            .group("group_1")
+            .with_members([&user_1, &user_2])
+            .create();
+        let group_2 = app.group("group_2").with_members([&user_1]).create();
+
+        let request_1 = app.get("/authz/me/groups").by_user(&user_1);
+        let request_2 = app.get("/authz/me/groups").by_user(&user_2);
+
+        let mut groups_user_1 = app
+            .fetch(request_1)
+            .assert_status(StatusCode::OK)
+            .json_into::<Vec<Group>>();
+        let groups_user_2 = app
+            .fetch(request_2)
+            .assert_status(StatusCode::OK)
+            .json_into::<Vec<Group>>();
+
+        groups_user_1.sort_by_key(|g| g.id);
+
+        assert_eq!(
+            groups_user_1,
+            vec![
+                Group {
+                    id: group_1.id,
+                    name: "group_1".to_string(),
+                },
+                Group {
+                    id: group_2.id,
+                    name: "group_2".to_string(),
+                }
+            ]
+        );
+        assert_eq!(
+            groups_user_2,
+            vec![Group {
+                id: group_1.id,
+                name: "group_1".to_string(),
+            }]
+        );
+    }
+
+    #[rstest]
+    async fn user_groups_authorization_disabled() {
+        let app = test_app!().enable_authorization(false).build();
+        let user = app.user("test", "test").create();
+
+        let request = app.get("/authz/me/groups").by_user(&user);
+        app.fetch(request).assert_status(StatusCode::UNAUTHORIZED);
     }
 }
