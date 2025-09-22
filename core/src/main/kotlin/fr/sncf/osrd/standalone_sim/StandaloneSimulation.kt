@@ -37,6 +37,7 @@ import fr.sncf.osrd.standalone_sim.result.ElectrificationRange.ElectrificationUs
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.distanceRangeMapOf
+import fr.sncf.osrd.utils.entries
 import fr.sncf.osrd.utils.indexing.StaticIdxList
 import fr.sncf.osrd.utils.toRangeMap
 import fr.sncf.osrd.utils.trainPathBlockOffset
@@ -236,11 +237,8 @@ fun makeElectricalProfiles(
     }
 
     val boundaries =
-        profileMap
-            .asMapOfRanges()
-            .map { Offset<TravelledPath>(it.key.upperEndpoint().meters) }
-            .dropLast(1)
-    val values = profileMap.asMapOfRanges().map { it.value }
+        profileMap.entries.map { Offset<TravelledPath>(it.key.upperEndpoint().meters) }.dropLast(1)
+    val values = profileMap.entries.map { it.value }
 
     return RangeValues(internalBoundaries = boundaries, values = values)
 }

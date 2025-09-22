@@ -7,6 +7,7 @@ import fr.sncf.osrd.path.interfaces.*
 import fr.sncf.osrd.path.legacy_objects.ElectricalProfileMapping
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra.impl.makeDirChunk
+import fr.sncf.osrd.utils.entries
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
@@ -42,8 +43,7 @@ data class TrainPathNoBacktrack(
             map: LinearObjectMap<GenericLinearRange<ValueType, OffsetType>>,
             objectLength: (ValueType) -> Length<OffsetType>,
         ) {
-            val entries = map.asMapOfRanges()
-            for ((key, value) in entries) {
+            for ((key, value) in map.entries) {
                 require(value.length == (key.upperEndpoint() - key.lowerEndpoint()))
                 require(value.from >= Offset.zero())
                 require(value.to <= objectLength(value.value))
@@ -125,7 +125,7 @@ data class TrainPathNoBacktrack(
         require(from >= Offset.zero())
         require(to <= getTypedLength())
         val newMapEntries =
-            map.asMapOfRanges().mapNotNull { (key, value) ->
+            map.entries.mapNotNull { (key, value) ->
                 val lower = key.lowerEndpoint()
                 val upper = key.upperEndpoint()
                 val truncatedStart = max(from, lower)

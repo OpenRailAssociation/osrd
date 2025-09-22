@@ -6,6 +6,7 @@ import com.google.common.collect.Range
 import fr.sncf.osrd.path.interfaces.*
 import fr.sncf.osrd.path.legacy_objects.ElectricalProfileMapping
 import fr.sncf.osrd.sim_infra.api.*
+import fr.sncf.osrd.utils.entries
 import fr.sncf.osrd.utils.toIdxList
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Offset
@@ -13,6 +14,7 @@ import fr.sncf.osrd.utils.units.Offset.Companion.max
 import fr.sncf.osrd.utils.units.Offset.Companion.min
 import fr.sncf.osrd.utils.units.meters
 import fr.sncf.osrd.utils.units.sumOffsets
+import fr.sncf.osrd.utils.values
 
 /**
  * This file lists all usual builder functions to generate train paths, with useful private methods
@@ -214,7 +216,7 @@ private fun generateTrackChunks(
     blocks: LinearObjectMap<BlockRange>,
 ): LinearObjectMap<DirChunkRange> {
     val res = mutableListOf<DirChunkRange>()
-    for (blockRange in blocks.asMapOfRanges().values) {
+    for (blockRange in blocks.values) {
         var currentChunkOffset = Offset<Block>(0.meters)
         for (chunk in blockInfra.getTrackChunksFromBlock(blockRange.value)) {
             val chunkLength = rawInfra.getTrackChunkLength(chunk.value)
@@ -253,7 +255,7 @@ internal fun generateRouteRanges(
     routes: List<RouteId>,
 ): LinearObjectMap<RouteRange> {
     val res = mutableListOf<RouteRange>()
-    val mappedChunks = chunks.asMapOfRanges().map { it.value }.associateBy { it.value }
+    val mappedChunks = chunks.entries.map { it.value }.associateBy { it.value }
     for (route in routes) {
         // We look for the first and last point where the route is used by a chunk.
         // We assume that the chunk list is continuous and follows the route.
@@ -284,7 +286,7 @@ internal fun generateRouteRanges(
  * instance.
  */
 private fun buildChunkPath(infra: RawInfra, chunkMap: LinearObjectMap<DirChunkRange>): ChunkPath {
-    val chunkRanges = chunkMap.asMapOfRanges().map { it.value }
+    val chunkRanges = chunkMap.entries.map { it.value }
     val chunkIds = chunkRanges.map { it.value }
     val beginOffset = chunkRanges.first().from
     val endOffset =
@@ -305,7 +307,7 @@ private fun findBlockPath(
     chunks: LinearObjectMap<DirChunkRange>,
 ): LinearObjectMap<BlockRange> {
     val res = mutableListOf<BlockRange>()
-    for (chunkEntry in chunks.asMapOfRanges()) {
+    for (chunkEntry in chunks.entries) {
         val dirChunkRange = chunkEntry.value
         val dirChunkId = dirChunkRange.value
         val block =
