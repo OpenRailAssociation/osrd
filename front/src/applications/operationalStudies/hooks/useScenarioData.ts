@@ -26,7 +26,7 @@ import {
 } from 'utils/trainId';
 import { mapBy } from 'utils/types';
 
-import useAutoUpdateProjection from './useAutoUpdateProjection';
+import useAutoSelectTrainIds from './useAutoSelectTrainIds';
 import useLazySimulateTrains from './useLazySimulateTrains';
 import usePathProjection from './usePathProjection';
 
@@ -159,7 +159,7 @@ const useScenarioData = (scenario: ScenarioResponse, infra: InfraWithStatus) => 
 
   const timetableItemIds = useMemo(() => timetableItems?.map((item) => item.id), [timetableItems]);
 
-  useAutoUpdateProjection(timetableItemIds, timetableItemsWithDetails);
+  useAutoSelectTrainIds(timetableItemIds, timetableItemsWithDetails);
 
   // first load of the summaries
   useEffect(() => {
