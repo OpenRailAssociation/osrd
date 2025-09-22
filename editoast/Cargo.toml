@@ -11,6 +11,7 @@ members = [
   "cache",
   "common",
   "core_client",
+  "core_task",
   "database",
   "editoast_derive",
   "editoast_models",
@@ -40,6 +41,7 @@ chrono = { version = "0.4.42", default-features = false, features = ["serde"] }
 clap = { version = "4.5", features = ["derive", "env"] }
 common = { path = "./common" }
 core_client = { path = "./core_client" }
+core_task = { path = "./core_task" }
 darling = "0.21"
 database = { path = "./database" }
 deadpool = { version = "0.12.3", default-features = false, features = [

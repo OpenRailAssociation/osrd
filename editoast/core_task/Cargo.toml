@@ -1,0 +1,9 @@
+[package]
+name = "core_task"
+license.workspace = true
+version.workspace = true
+edition.workspace = true
+
+[dependencies]
+cache.workspace = true
+core_client.workspace = true
