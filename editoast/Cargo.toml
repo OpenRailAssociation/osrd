@@ -110,7 +110,7 @@ reqwest = { version = "0.12.23", features = ["json"] }
 rstest = { version = "0.19.0", default-features = false }
 serde = { version = "1.0.224", features = ["derive", "rc"] }
 serde_json = "1.0.145"
-serde_with = { version = "3.14.0", default-features = false, features = [
+serde_with = { version = "3.14.1", default-features = false, features = [
   "macros",
 ] }
 stdext = "0.3.3"
