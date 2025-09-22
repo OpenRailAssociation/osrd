@@ -377,7 +377,7 @@ data class DistanceRangeMapImpl<T>(
     companion object {
         fun <T> from(map: RangeMap<Distance, T>): DistanceRangeMap<T> {
             val res = distanceRangeMapOf<T>()
-            for (entry in map.asMapOfRanges()) res.put(
+            for (entry in map.entries) res.put(
                 entry.key.lowerEndpoint(),
                 entry.key.upperEndpoint(),
                 entry.value,

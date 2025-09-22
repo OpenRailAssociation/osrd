@@ -8,6 +8,7 @@ import fr.sncf.osrd.path.interfaces.Electrification
 import fr.sncf.osrd.path.interfaces.PhysicsPath
 import fr.sncf.osrd.utils.RangeMapUtils
 import fr.sncf.osrd.utils.arePositionsEqual
+import fr.sncf.osrd.utils.entries
 import java.util.Arrays
 
 class EnvelopeSimPath(
@@ -164,13 +165,13 @@ class EnvelopeSimPath(
         )
 
         if (powerRestrictionMap != null) {
-            for (entry in powerRestrictionMap.asMapOfRanges().entries) {
+            for (entry in powerRestrictionMap.entries) {
                 val restriction = entry.value
                 val powerClass =
                     powerRestrictionToPowerClass?.getOrDefault(restriction, basePowerClass)
                 val modeAndProfileMap =
                     getModeAndProfileMap(powerClass, entry.key, ignoreElectricalProfiles)
-                for (modeAndProfileEntry in modeAndProfileMap.asMapOfRanges().entries) {
+                for (modeAndProfileEntry in modeAndProfileMap.entries) {
                     val electrification = modeAndProfileEntry.value
                     res.putCoalescing(
                         modeAndProfileEntry.key,
