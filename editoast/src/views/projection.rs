@@ -25,7 +25,7 @@ use thiserror::Error;
 use utoipa::ToSchema;
 
 use super::path::path_item_cache::PathItemCache;
-use crate::ValkeyClient;
+
 use crate::models::infra::Infra;
 use crate::views::path::pathfinding::PathfindingResult;
 use crate::views::path::projection::PathProjection;
@@ -350,7 +350,7 @@ pub fn linear_interpolate(a_x: u64, b_x: u64, a_y: u64, b_y: u64, x: u64) -> u64
 pub async fn compute_projected_train_paths<T: TrainScheduleLike>(
     conn: &mut DbConnection,
     core_client: Arc<CoreClient>,
-    valkey_client: Arc<ValkeyClient>,
+    valkey_client: Arc<cache::Client>,
     track_section_ranges: Vec<TrackRange>,
     infra: &Infra,
     train_schedules: &[T],
@@ -636,7 +636,7 @@ impl OperationalPointProjection {
 #[allow(clippy::too_many_arguments)]
 pub async fn compute_projected_train_path_op<T: TrainScheduleLike>(
     conn: &mut DbConnection,
-    valkey_client: Arc<ValkeyClient>,
+    valkey_client: Arc<cache::Client>,
     core_client: Arc<CoreClient>,
     train_schedules: &[T],
     path_item_cache: &PathItemCache,

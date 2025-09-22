@@ -82,7 +82,6 @@ use tracing::info;
 use tracing::warn;
 use url::Url;
 
-use crate::ValkeyClient;
 use crate::error::Result;
 use crate::generated_data::speed_limit_tags_config::SpeedLimitTagIds;
 use crate::infra_cache::InfraCache;
@@ -651,7 +650,7 @@ async fn health(
 
 pub async fn check_health(
     db_pool: Arc<DbConnectionPoolV2>,
-    valkey_client: Arc<ValkeyClient>,
+    valkey_client: Arc<cache::Client>,
     core_client: Arc<CoreClient>,
     openfga: &fga::Client,
 ) -> Result<()> {
@@ -781,7 +780,7 @@ pub type Regulator = ::authz::Regulator<PgAuthDriver>;
 pub struct AppState {
     pub config: Arc<ServerConfig>,
     pub db_pool: Arc<DbConnectionPoolV2>,
-    pub valkey: Arc<ValkeyClient>,
+    pub valkey: Arc<cache::Client>,
     pub infra_caches: Arc<DashMap<i64, InfraCache>>,
     pub map_layers: Arc<MapLayers>,
     pub speed_limit_tag_ids: Arc<SpeedLimitTagIds>,
@@ -887,7 +886,7 @@ impl AppState {
         // Synchronous operations
         let infra_caches = DashMap::<i64, InfraCache>::default().into();
         let speed_limit_tag_ids = Arc::new(SpeedLimitTagIds::load());
-        let valkey = ValkeyClient::new(config.valkey_config.clone()).into();
+        let valkey = cache::Client::new(config.valkey_config.clone()).into();
         let osrdyne_client = Arc::new(OsrdyneClient::new(
             config.osrdyne_config.osrdyne_api_url.clone(),
         ));

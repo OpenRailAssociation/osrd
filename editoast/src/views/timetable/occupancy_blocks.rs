@@ -14,7 +14,6 @@ use std::collections::HashSet;
 use std::sync::Arc;
 use utoipa::ToSchema;
 
-use crate::ValkeyClient;
 use crate::error::Result;
 use crate::models::infra::Infra;
 use crate::views::projection::ProjectPathInput;
@@ -71,7 +70,7 @@ pub(super) async fn compute_batch_signal_updates<'a>(
 pub(super) async fn compute_occupancy_blocks<T: TrainScheduleLike>(
     conn: &mut DbConnection,
     core_client: Arc<CoreClient>,
-    valkey_client: Arc<ValkeyClient>,
+    valkey_client: Arc<cache::Client>,
     path: ProjectPathInput,
     infra: &Infra,
     trains_schedules: &[T],

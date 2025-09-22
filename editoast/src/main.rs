@@ -36,15 +36,13 @@ use client::user::UserCommand;
 use common::tracing::TracingConfig;
 use common::tracing::create_tracing_subscriber;
 use database::DbConnectionPoolV2;
-use tracing_subscriber::util::SubscriberInitExt;
-pub use views::AppState;
-
-pub use cache::ValkeyClient;
 use opentelemetry_otlp::WithExportConfig as _;
 use std::io::IsTerminal;
 use std::process::exit;
 use std::sync::Arc;
 use tracing::error;
+use tracing_subscriber::util::SubscriberInitExt;
+pub use views::AppState;
 
 /// The mode editoast is running in
 ///

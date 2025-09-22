@@ -36,7 +36,6 @@ use tracing_subscriber::filter::Directive;
 use url::Url;
 
 use crate::AppState;
-use crate::ValkeyClient;
 use crate::generated_data::speed_limit_tags_config::SpeedLimitTagIds;
 use crate::infra_cache::InfraCache;
 use crate::map::MapLayers;
@@ -205,7 +204,7 @@ impl TestAppBuilder {
         let tracing_guard = tracing::subscriber::set_default(sub);
 
         // Config valkey
-        let valkey = ValkeyClient::new(config.valkey_config.clone()).into();
+        let valkey = cache::Client::new(config.valkey_config.clone()).into();
 
         // Create database pool
         let db_pool_v2 = Arc::new(self.db_pool.unwrap_or_else(DbConnectionPoolV2::for_tests));
@@ -335,7 +334,7 @@ impl TestApp {
         self.app_state.db_pool.clone()
     }
 
-    pub fn valkey_client(&self) -> Arc<ValkeyClient> {
+    pub fn valkey_client(&self) -> Arc<cache::Client> {
         self.app_state.valkey.clone()
     }
 

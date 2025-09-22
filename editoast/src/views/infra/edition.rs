@@ -30,7 +30,6 @@ use tracing::info;
 use uuid::Uuid;
 
 use crate::AppState;
-use crate::ValkeyClient;
 use crate::error::Result;
 use crate::generated_data;
 use crate::infra_cache::InfraCache;
@@ -869,7 +868,7 @@ async fn apply_edit(
     infra: &mut Infra,
     operations: &[Operation],
     infra_cache: &mut InfraCache,
-    valkey: Arc<ValkeyClient>,
+    valkey: Arc<cache::Client>,
     app_version: Option<&str>,
 ) -> Result<Vec<InfraObject>> {
     let infra_id = infra.id;

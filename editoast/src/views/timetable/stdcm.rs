@@ -34,7 +34,6 @@ use utoipa::IntoParams;
 use utoipa::ToSchema;
 
 use crate::AppState;
-use crate::ValkeyClient;
 use crate::error::InternalError;
 use crate::error::Result;
 use crate::models::Infra;
@@ -321,7 +320,7 @@ impl VirtualTrainRun {
     #[allow(clippy::too_many_arguments)]
     async fn simulate(
         db_pool: Arc<DbConnectionPoolV2>,
-        valkey_client: Arc<ValkeyClient>,
+        valkey_client: Arc<cache::Client>,
         core_client: Arc<CoreClient>,
         app_version: Option<&str>,
         stdcm_request: &Request,
