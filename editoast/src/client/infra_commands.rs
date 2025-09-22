@@ -237,7 +237,7 @@ async fn build_valkey_pool_and_invalidate_all_cache(
     infra_id: i64,
     app_version: Option<&str>,
 ) -> anyhow::Result<()> {
-    let valkey = cache::Client::new(cache::ValkeyConfig {
+    let valkey = cache::Client::new(cache::Config {
         app_version: app_version.map(|v| v.to_owned()).unwrap_or_default(),
         no_cache,
         valkey_url,

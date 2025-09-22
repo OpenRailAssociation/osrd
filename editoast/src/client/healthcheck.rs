@@ -21,7 +21,7 @@ pub async fn healthcheck_cmd(
     core_config: CoreArgs,
     openfga_config: OpenfgaConfig,
 ) -> anyhow::Result<()> {
-    let valkey = cache::Client::new(cache::ValkeyConfig {
+    let valkey = cache::Client::new(cache::Config {
         app_version: "HEALTHCHECK".to_owned(),
         no_cache,
         valkey_url,
