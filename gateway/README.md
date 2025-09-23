@@ -43,6 +43,7 @@ redirect_404_to_index = true
 [[targets]]
 # The request path must start with this prefix for the target to apply.
 # If omitted, the target becomes the default. There can only be a single default target.
+# Note that editoast's ROOT_URL should be specified accordingly.
 prefix = "/api"
 # The base URL requests are proxied to (must include the scheme)
 upstream = "http://localhost:8090"
