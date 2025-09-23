@@ -1,1 +1,18 @@
-{}
+{
+  "Editor": {
+    "directions": {
+      "BOTH": "Ambos",
+      "START_TO_STOP": "Arranque hacia parada",
+      "STOP_TO_START": "Parada hacia arranque"
+    },
+    "entities": {
+      "errors-linked": "Anomalías vinculadas"
+    },
+    "infra-errors": {
+      "corrector-modal": {
+        "create-actions": "{{creation_count}} creaciones de objetos",
+        "delete-actions": "{{deletion_count}} supresión de objetos"
+      }
+    }
+  }
+}
