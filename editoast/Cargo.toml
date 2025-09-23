@@ -43,12 +43,12 @@ common = { path = "./common" }
 core_client = { path = "./core_client" }
 darling = "0.21"
 database = { path = "./database" }
-deadpool = { version = "0.12.3", features = [
+deadpool = { version = "0.12.3", default-features = false, features = [
   "managed",
   "rt_tokio_1",
   "unmanaged",
 ] }
-deadpool-redis = { version = "0.22.0", features = [
+deadpool-redis = { version = "0.22.0", default-features = false, features = [
   "tokio-comp",
   "tokio-native-tls-comp",
 ] }
@@ -76,8 +76,8 @@ editoast_models = { path = "./editoast_models" }
 educe = "0.6.0"
 enum-map = "2.7.3"
 fga = { path = "./fga" }
-futures = { version = "0.3.31" }
-futures-util = { version = "0.3.30" }
+futures = "0.3.31"
+futures-util = "0.3.30"
 geojson = { version = "0.24", default-features = false }
 geos = { version = "8.3.1", features = ["json"] }
 hostname = "0.4.0"
@@ -92,7 +92,11 @@ opentelemetry = { version = "0.30.0", default-features = false, features = [
 opentelemetry-semantic-conventions = { version = "0.26", features = [
   "semconv_experimental",
 ] }
-opentelemetry_sdk = { version = "0.30.0", features = ["rt-tokio", "trace"] }
+opentelemetry_sdk = { version = "0.30.0", default-features = false, features = [
+  "internal-logs",
+  "rt-tokio",
+  "trace",
+] }
 osrdyne_client = { path = "./osrdyne_client" }
 postgis_diesel = { version = "2.5.0", features = ["serde"] }
 postgres-openssl = "0.5.1"
@@ -102,12 +106,10 @@ quote = "1.0"
 rand = "0.9.2"
 rangemap = "1.6.0"
 regex = "1.11"
-schemas = { path = "./schemas" }
-search = { path = "./search" }
-# 0.12.0 to 0.12.4 have weird timeout issues https://github.com/seanmonstar/reqwest/issues/2283
-# This bug was introduced between 0.12.0 and 0.12.3.
 reqwest = { version = "0.12.23", features = ["json"] }
 rstest = { version = "0.19.0", default-features = false }
+schemas = { path = "./schemas" }
+search = { path = "./search" }
 serde = { version = "1.0.226", features = ["derive", "rc"] }
 serde_json = "1.0.145"
 serde_with = { version = "3.14.1", default-features = false, features = [
