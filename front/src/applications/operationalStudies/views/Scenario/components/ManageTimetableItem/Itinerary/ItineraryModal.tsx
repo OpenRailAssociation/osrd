@@ -1,11 +1,13 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 
 import { Button } from '@osrd-project/ui-core';
 import { useTranslation } from 'react-i18next';
 
+import type { PathStepV2 } from 'reducers/osrdconf/types';
 import useModalFocusTrap from 'utils/hooks/useModalFocusTrap';
 
 import ItineraryModalMap from './ItineraryModalMap';
+import PathStepItem from './PathStepItem';
 
 type ItineraryModalProps = {
   itineraryModalIsOpen: boolean;
@@ -18,6 +20,8 @@ const ItineraryModal = ({ itineraryModalIsOpen, setItineraryModalIsOpen }: Itine
   });
 
   const modalRef = useRef<HTMLDialogElement>(null);
+
+  const [pathSteps] = useState<PathStepV2[]>([]);
 
   const openModal = () => {
     modalRef.current?.showModal();
@@ -40,7 +44,19 @@ const ItineraryModal = ({ itineraryModalIsOpen, setItineraryModalIsOpen }: Itine
     <dialog ref={modalRef} className="itinerary-modal">
       <div className="itinerary-modal-form">
         <div className="itinerary-modal-form-header"></div>
-        <div className="itinerary-modal-form-body"></div>
+        <div className="itinerary-modal-form-body">
+          <div className="path-step-list">
+            <div className="path-step-list-header">
+              <span>{t('opName')}</span>
+              <span>{t('secondaryCode')}</span>
+              <span>{t('track')}</span>
+            </div>
+            {pathSteps.map((pathStep, i) => (
+              <PathStepItem key={pathStep.id} pathStep={pathStep} index={i + 1} />
+            ))}
+            <PathStepItem hidePathfindingLine={pathSteps.length === 0} />
+          </div>
+        </div>
         <div className="itinerary-modal-form-footer">
           <Button label={t('next')} variant="Primary" size="medium" onClick={closeModal} />
         </div>

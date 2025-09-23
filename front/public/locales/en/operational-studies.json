@@ -331,8 +331,13 @@
     "invalidTimetableItemStep": "At least one of the waypoints could not be recognized",
     "inverseOD": "Reverse itinerary",
     "itineraryModal": {
+      "addLocationOnMap": "Add a location on the map",
+      "focusLocationOnMap": "Focus the map on this operational point",
       "next": "Next",
-      "openItineraryModal": "New interface for itinerary edition"
+      "opName": "Operational point name",
+      "openItineraryModal": "New interface for itinerary edition",
+      "secondaryCode": "Code",
+      "track": "Track"
     },
     "launchPathFinding": "Launch pathfinding",
     "manageVias": "Steps management",

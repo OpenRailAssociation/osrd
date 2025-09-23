@@ -331,8 +331,13 @@
     "invalidTimetableItemStep": "Au moins un des points de passage n'a pas été reconnu",
     "inverseOD": "Inverser l'itinéraire",
     "itineraryModal": {
+      "addLocationOnMap": "Ajouter un point remarquable sur la carte",
+      "focusLocationOnMap": "Centrer la carte sur ce point remarquable",
       "next": "Suivant",
-      "openItineraryModal": "Nouvelle interface d'édition d'itinéraire"
+      "opName": "Nom du point remarquable",
+      "openItineraryModal": "Nouvelle interface d'édition d'itinéraire",
+      "secondaryCode": "CH",
+      "track": "Voie"
     },
     "launchPathFinding": "Lancer la recherche d'itinéraire",
     "manageVias": "Gestion des étapes",
