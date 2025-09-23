@@ -1,7 +1,6 @@
 .scenario-content-v2 {
   display: flex;
-  height: calc(100vh - 32px);
-
+  height: calc(100vh - var(--header-height));
   .right-column,
   .left-column {
     width: 488px;
@@ -33,7 +32,7 @@
   .right-column,
   .left-column,
   .center-column {
-    padding: 16px 12px;
+    padding: var(--board-vertical-gap) 12px;
   }
 
   .left-column {
