@@ -59,10 +59,7 @@ diesel = { version = "2.2", default-features = false, features = [
   "serde_json",
   "uuid",
 ] }
-diesel-async = { version = "0.5", default-features = false, features = [
-  "deadpool",
-  "postgres",
-] }
+diesel-async = { version = "0.5", features = ["deadpool", "postgres"] }
 diesel_json = "0.2.1"
 editoast_derive = { path = "./editoast_derive" }
 editoast_models = { path = "./editoast_models" }
@@ -140,7 +137,7 @@ axum-extra = { version = "0.10.1", default-features = false, features = [
   "typed-header",
 ] }
 axum-test = { version = "18.0", default-features = false }
-axum-tracing-opentelemetry = { version = "0.30.0", default-features = false, features = [
+axum-tracing-opentelemetry = { version = "0.30.0", features = [
   "tracing_level_info",
 ] }
 cache.workspace = true

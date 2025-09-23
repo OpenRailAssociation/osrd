@@ -39,8 +39,8 @@ opentelemetry_sdk = { version = "0.30.0", default-features = false }
 percent-encoding = { version = "2.3.2", default-features = false }
 priority-queue = "2.6.0"
 reqwest = { version = "0.12.23", default-features = false, features = [
+  "__rustls-ring",
   "json",
-  "rustls-tls",
 ] }
 schemars = { version = "1.0.4", default-features = false }
 serde = { version = "1.0.225", default-features = false }
