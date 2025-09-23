@@ -1,6 +1,5 @@
 pub mod conflict_detection;
 pub mod etcs_braking_curves;
-pub mod infra_loading;
 pub mod mq_client;
 pub mod path_properties;
 pub mod pathfinding;
@@ -8,6 +7,7 @@ pub mod signal_projection;
 pub mod simulation;
 pub mod stdcm;
 pub mod version;
+pub mod worker_load;
 
 #[cfg(feature = "mocking_client")]
 pub mod mocking;

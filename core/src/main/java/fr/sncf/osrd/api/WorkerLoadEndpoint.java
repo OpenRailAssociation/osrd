@@ -9,14 +9,16 @@ import org.takes.Take;
 import org.takes.rq.RqPrint;
 import org.takes.rs.*;
 
-public class InfraLoadEndpoint implements Take {
+public class WorkerLoadEndpoint implements Take {
     private final InfraManager infraManager;
+    private final TimetableCacheManager timetableManager;
 
-    public static final JsonAdapter<InfraLoadRequest> adapterRequest =
-            new Moshi.Builder().build().adapter(InfraLoadRequest.class);
+    public static final JsonAdapter<WorkerLoadRequest> adapterRequest =
+            new Moshi.Builder().build().adapter(WorkerLoadRequest.class);
 
-    public InfraLoadEndpoint(InfraManager infraManager) {
+    public WorkerLoadEndpoint(InfraManager infraManager, TimetableCacheManager timetableManager) {
         this.infraManager = infraManager;
+        this.timetableManager = timetableManager;
     }
 
     @Override
@@ -27,8 +29,9 @@ public class InfraLoadEndpoint implements Take {
             var request = adapterRequest.fromJson(body);
             if (request == null) return new RsWithStatus(new RsText("missing request body"), 400);
 
-            // load infra
-            infraManager.load(request.infra, request.expectedVersion);
+            // load infra and timetable
+            var infra = infraManager.load(request.infra, request.expectedVersion);
+            if (request.timetable != null) timetableManager.load(request.infra, infra.rawInfra(), request.timetable);
 
             return new RsWithStatus(204);
         } catch (Throwable ex) {
@@ -37,7 +40,7 @@ public class InfraLoadEndpoint implements Take {
         }
     }
 
-    public static final class InfraLoadRequest {
+    public static final class WorkerLoadRequest {
         /** Infra id */
         public String infra;
 
@@ -45,10 +48,14 @@ public class InfraLoadEndpoint implements Take {
         @Json(name = "expected_version")
         public int expectedVersion;
 
+        /** Timetable ID */
+        public Integer timetable;
+
         /** Create InfraLoadRequest */
-        public InfraLoadRequest(String infra, int expectedVersion) {
+        public WorkerLoadRequest(String infra, int expectedVersion, Integer timetable) {
             this.infra = infra;
             this.expectedVersion = expectedVersion;
+            this.timetable = timetable;
         }
     }
 }
