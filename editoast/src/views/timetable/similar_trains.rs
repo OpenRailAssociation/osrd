@@ -10,7 +10,7 @@
 //! 4. **Build Graphs**: Creates a graph for each segment, mapping waypoints of past trains.
 //! 5. **Find Matches**: Identifies past trains that cover each segment of the new train's path.
 //! 6. **Select Best Trains**: Chooses the smallest set of past trains that cover all segments.
-//! 7. **Build Response**: Formats the results, combining consecutive segments with the same train.
+//! 7. **Build Response**: Formats the results.
 //!
 //! The result is a list of similar train segments with their train ids and start times.
 
@@ -65,10 +65,38 @@ use super::AuthorizationError;
 struct OperationalPoint(ArcStr);
 
 #[derive(Debug, Deserialize, ToSchema)]
-#[cfg_attr(test, derive(Serialize))]
+#[cfg_attr(test, derive(Serialize, PartialEq))]
+#[serde(remote = "Self")]
 struct RollingStockCharacteristics {
-    name: String,
+    name: Option<String>,
     speed_limit_tag: Option<String>,
+}
+
+impl<'de> Deserialize<'de> for RollingStockCharacteristics {
+    fn deserialize<D>(deserializer: D) -> std::result::Result<RollingStockCharacteristics, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let characteristics = RollingStockCharacteristics::deserialize(deserializer)?;
+
+        if characteristics.name.is_none() && characteristics.speed_limit_tag.is_none() {
+            return Err(serde::de::Error::custom(
+                "Both 'name' and 'speed_limit_tag' are missing; at least one must be provided.",
+            ));
+        }
+
+        Ok(characteristics)
+    }
+}
+
+#[cfg(test)]
+impl Serialize for RollingStockCharacteristics {
+    fn serialize<S>(&self, serializer: S) -> std::result::Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        RollingStockCharacteristics::serialize(self, serializer)
+    }
 }
 
 #[editoast_derive::openapi_schema]
@@ -367,31 +395,17 @@ pub(in crate::views) async fn similar_trains(
     // Final step: build the API response
     // ----------------------------------
 
-    // Compresses successive segments with the same retained train name
-    let similar_trains = trains
+    let response_items = trains
         .into_iter()
-        .map(|(seg, trains)| (seg, trains.intersection(&similar_trains).next().cloned()))
-        .fold(Vec::new(), |mut trains, ((begin, end), train_name)| {
-            if let Some(((_, prev_end), prev_train)) = trains.last_mut() {
-                if *prev_train == train_name {
-                    *prev_end = end;
-                } else {
-                    trains.push(((begin, end), train_name));
-                }
-            } else {
-                trains.push(((begin, end), train_name));
+        .map(|((begin, end), trains)| {
+            let train_id = trains.intersection(&similar_trains).next().cloned();
+            SimilarTrainItem {
+                train: train_id
+                    .as_ref()
+                    .and_then(|train_id| candidate_schedules_response_info.get(train_id).cloned()),
+                begin: begin.op.deref().clone(),
+                end: end.op.deref().clone(),
             }
-            trains
-        });
-
-    let response_items = similar_trains
-        .into_iter()
-        .map(|((begin, end), train_id)| SimilarTrainItem {
-            train: train_id
-                .as_ref()
-                .and_then(|train_id| candidate_schedules_response_info.get(train_id).cloned()),
-            begin: begin.op.deref().clone(),
-            end: end.op.deref().clone(),
         })
         .collect();
 
@@ -409,7 +423,9 @@ async fn validate_rolling_stock_input(
     }: &RollingStockCharacteristics,
     speed_limit_tag_ids: &SpeedLimitTagIds,
 ) -> Result<()> {
-    if !RollingStock::exists(conn, name.clone()).await? {
+    if let Some(name) = name
+        && !RollingStock::exists(conn, name.clone()).await?
+    {
         return Err(SimilarTrainsError::RollingStockNotFound {
             rolling_stock_name: name.clone(),
         }
@@ -456,17 +472,23 @@ async fn search_candidate_train_schedules(
 ) -> Result<Vec<models::TrainSchedule>> {
     let filter = SelectionSettings::new()
         .filter(move || models::TrainSchedule::TIMETABLE_ID.eq(timetable_id))
-        .filter(move || models::TrainSchedule::ROLLING_STOCK_NAME.eq(rolling_stock_name.clone()))
         .order_by(|| models::TrainSchedule::ID.asc());
-    let train_schedules = models::TrainSchedule::list(
-        conn,
-        if let Some(speed) = speed_limit_tag {
-            filter.filter(move || models::TrainSchedule::SPEED_LIMIT_TAG.eq(Some(speed.clone())))
-        } else {
-            filter
-        },
-    )
-    .await?;
+
+    let filter = if let Some(rolling_stock_name) = rolling_stock_name {
+        filter.filter(move || {
+            models::TrainSchedule::ROLLING_STOCK_NAME.eq(rolling_stock_name.clone())
+        })
+    } else {
+        filter
+    };
+
+    let filter = if let Some(speed) = speed_limit_tag {
+        filter.filter(move || models::TrainSchedule::SPEED_LIMIT_TAG.eq(Some(speed.clone())))
+    } else {
+        filter
+    };
+
+    let train_schedules = models::TrainSchedule::list(conn, filter).await?;
 
     tracing::debug!(
         n_train_schedules = train_schedules.len(),
@@ -1001,7 +1023,7 @@ mod tests {
 
         let request = Request {
             rolling_stock: RollingStockCharacteristics {
-                name: rolling_stock_names[0].clone(),
+                name: Some(rolling_stock_names[0].clone()),
                 speed_limit_tag: None,
             },
             waypoints,
@@ -1117,7 +1139,7 @@ mod tests {
 
         let request = Request {
             rolling_stock: RollingStockCharacteristics {
-                name: rolling_stock_names[index_rolling_stock_name].clone(),
+                name: Some(rolling_stock_names[index_rolling_stock_name].clone()),
                 speed_limit_tag,
             },
             waypoints,
@@ -1215,7 +1237,7 @@ mod tests {
         // WS(22):stop  MWS(33):passing_by  MES(44):stop NS(55):passing_by  SS(66):stop
         let request = Request {
             rolling_stock: RollingStockCharacteristics {
-                name: rolling_stock.name,
+                name: Some(rolling_stock.name),
                 speed_limit_tag: Some("MA100".to_string()),
             },
             waypoints: vec![
@@ -1270,7 +1292,7 @@ mod tests {
     }
 
     #[rstest]
-    async fn prefer_single_train_over_compound_result() {
+    async fn test_select_single_train_without_merging_consecutive_segments() {
         let mut core = MockingClient::new();
         core.stub("/pathfinding/blocks")
             .method(reqwest::Method::POST)
@@ -1389,7 +1411,7 @@ mod tests {
             .expect("Failed to parse datetime");
 
         // WS(22):stop  MWS(33):passing_by  MES(44):stop  NES(77):stop
-        let train_id = create_train_schedule(
+        let train_name = create_train_schedule(
             &mut db_pool.get_ok(),
             timetable.id,
             rolling_stock.name.clone(),
@@ -1403,7 +1425,7 @@ mod tests {
         // WS(22):stop  MWS(33):passing_by  MES(44):stop  NES(77):stop
         let request = Request {
             rolling_stock: RollingStockCharacteristics {
-                name: rolling_stock.name,
+                name: Some(rolling_stock.name),
                 speed_limit_tag: Some("MA100".to_string()),
             },
             waypoints: vec![
@@ -1431,14 +1453,24 @@ mod tests {
         let response: Response = app.fetch(request).assert_status(StatusCode::OK).json_into();
 
         let expected_response = Response {
-            similar_trains: vec![SimilarTrainItem {
-                train: Some(TrainInfo {
-                    train_name: train_id,
-                    start_time,
-                }),
-                begin: "West_station".into(),
-                end: "North_East_station".into(),
-            }],
+            similar_trains: vec![
+                SimilarTrainItem {
+                    train: Some(TrainInfo {
+                        train_name: train_name.clone(),
+                        start_time,
+                    }),
+                    begin: "West_station".into(),
+                    end: "Mid_East_station".into(),
+                },
+                SimilarTrainItem {
+                    train: Some(TrainInfo {
+                        train_name,
+                        start_time,
+                    }),
+                    begin: "Mid_East_station".into(),
+                    end: "North_East_station".into(),
+                },
+            ],
         };
         assert_eq!(response, expected_response);
     }
@@ -1522,7 +1554,7 @@ mod tests {
         // WS(22):stop  MWS(33):stop  MES(44):stop  NS(55):stop  SS(66):stop
         let request = Request {
             rolling_stock: RollingStockCharacteristics {
-                name: rolling_stock.name,
+                name: Some(rolling_stock.name),
                 speed_limit_tag: Some("MA100".to_string()),
             },
             waypoints: vec![
@@ -1582,6 +1614,170 @@ mod tests {
                     end: "South_station".into(),
                 },
             ],
+        };
+        assert_eq!(response, expected_response);
+    }
+
+    #[test]
+    fn test_rolling_stock_characteristics_deserialize_with_name_only() {
+        let json = r#"{"name": "rolling_stock_name"}"#;
+        let result = serde_json::from_str::<RollingStockCharacteristics>(json);
+        assert_eq!(
+            result.unwrap(),
+            RollingStockCharacteristics {
+                name: Some("rolling_stock_name".to_string()),
+                speed_limit_tag: None
+            }
+        );
+    }
+
+    #[test]
+    fn test_rolling_stock_characteristics_deserialize_with_speed_limit_tag_only() {
+        let json = r#"{"speed_limit_tag": "MA100"}"#;
+        let result = serde_json::from_str::<RollingStockCharacteristics>(json);
+        assert_eq!(
+            result.unwrap(),
+            RollingStockCharacteristics {
+                name: None,
+                speed_limit_tag: Some("MA100".to_string())
+            }
+        );
+    }
+
+    #[test]
+    fn test_rolling_stock_characteristics_deserialize_with_both_fields() {
+        let json = r#"{"name": "rolling_stock_name", "speed_limit_tag": "MA100"}"#;
+        let result = serde_json::from_str::<RollingStockCharacteristics>(json);
+        assert_eq!(
+            result.unwrap(),
+            RollingStockCharacteristics {
+                name: Some("rolling_stock_name".to_string()),
+                speed_limit_tag: Some("MA100".to_string())
+            }
+        );
+    }
+
+    #[test]
+    fn test_rolling_stock_characteristics_deserialize_missing_both_fields() {
+        let json = r#"{}"#;
+        let result = serde_json::from_str::<RollingStockCharacteristics>(json);
+        let error = result.unwrap_err();
+        assert!(error.to_string().contains(
+            "Both 'name' and 'speed_limit_tag' are missing; at least one must be provided."
+        ));
+    }
+
+    #[rstest]
+    async fn test_similar_trains_by_relaxing_name_criterion() {
+        let mut core = MockingClient::new();
+        core.stub("/pathfinding/blocks")
+            .method(reqwest::Method::POST)
+            .response(StatusCode::OK)
+            .json(PathfindingResult::Success(pathfinding_result_success()))
+            .finish();
+        let operational_points_ws_mws = vec![
+            OperationalPointOnPath::new_test("West_station", 22, "WS"),
+            OperationalPointOnPath::new_test("Mid_West_station", 33, "MWS"),
+        ];
+        core.stub("/path_properties")
+            .method(reqwest::Method::POST)
+            .response(StatusCode::OK)
+            .json(create_path_properties_response(operational_points_ws_mws)) // train_1
+            .finish();
+        let app = TestAppBuilder::new().core_client(core.into()).build();
+        let db_pool = app.db_pool();
+        let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
+        let timetable = create_timetable(&mut db_pool.get_ok()).await;
+        let rolling_stock_1 =
+            create_fast_rolling_stock(&mut db_pool.get_ok(), &Uuid::new_v4().to_string()).await;
+        let rolling_stock_2 =
+            create_fast_rolling_stock(&mut db_pool.get_ok(), &Uuid::new_v4().to_string()).await;
+
+        let path: Vec<PathItem> = vec![
+            PathItem::new_operational_point("West_station"), // WS
+            PathItem::new_operational_point("Mid_West_station"), // MWS
+        ];
+        let schedule: Vec<ScheduleItem> = vec![ScheduleItem::new_with_stop(
+            "Mid_West_station",
+            Duration::new(0, 0).expect("Failed to parse duration"),
+        )];
+        let start_time =
+            DateTime::from_str("2025-01-01T10:00:00Z").expect("Failed to parse datetime");
+
+        // WS(22):stop  MWS(33):stop
+        let train_name = create_train_schedule(
+            &mut db_pool.get_ok(),
+            timetable.id,
+            rolling_stock_2.name,
+            path,
+            start_time,
+            schedule,
+            Some("MA100".to_string()),
+        )
+        .await;
+
+        // WS(22):stop  MWS(33):stop
+        let request = Request {
+            rolling_stock: RollingStockCharacteristics {
+                name: Some(rolling_stock_1.name),
+                speed_limit_tag: Some("MA100".to_string()),
+            },
+            waypoints: vec![
+                Waypoint {
+                    id: "West_station".into(),
+                    stop: true,
+                },
+                Waypoint {
+                    id: "Mid_West_station".into(),
+                    stop: true,
+                },
+            ],
+            infra_id: small_infra.id,
+            timetable_id: timetable.id,
+        };
+        let request = app.post("/similar_trains").json(&request);
+        let response: Response = app.fetch(request).assert_status(StatusCode::OK).json_into();
+
+        let expected_response = Response {
+            similar_trains: vec![SimilarTrainItem {
+                train: None,
+                begin: "West_station".into(),
+                end: "Mid_West_station".into(),
+            }],
+        };
+        assert_eq!(response, expected_response);
+
+        // WS(22):stop  MWS(33):stop
+        let request = Request {
+            rolling_stock: RollingStockCharacteristics {
+                name: None,
+                speed_limit_tag: Some("MA100".to_string()),
+            },
+            waypoints: vec![
+                Waypoint {
+                    id: "West_station".into(),
+                    stop: true,
+                },
+                Waypoint {
+                    id: "Mid_West_station".into(),
+                    stop: true,
+                },
+            ],
+            infra_id: small_infra.id,
+            timetable_id: timetable.id,
+        };
+        let request = app.post("/similar_trains").json(&request);
+        let response: Response = app.fetch(request).assert_status(StatusCode::OK).json_into();
+
+        let expected_response = Response {
+            similar_trains: vec![SimilarTrainItem {
+                train: Some(TrainInfo {
+                    train_name,
+                    start_time,
+                }),
+                begin: "West_station".into(),
+                end: "Mid_West_station".into(),
+            }],
         };
         assert_eq!(response, expected_response);
     }

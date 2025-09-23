@@ -3109,11 +3109,10 @@ paths:
                   format: int64
                 rolling_stock:
                   type: object
-                  required:
-                  - name
                   properties:
                     name:
                       type: string
+                      nullable: true
                     speed_limit_tag:
                       type: string
                       nullable: true
