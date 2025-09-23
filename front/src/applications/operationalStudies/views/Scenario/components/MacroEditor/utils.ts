@@ -155,7 +155,7 @@ export const deleteMacroNodeByNgeId = async (
  * Get nodes of the scenario that are saved in the DB.
  */
 export const getSavedMacroNodes = async (
-  state: MacroEditorState,
+  { projectId, studyId, scenarioId }: { projectId: number; studyId: number; scenarioId: number },
   dispatch: AppDispatch
 ): Promise<MacroNodeResponse[]> => {
   const pageSize = 100;
@@ -166,9 +166,9 @@ export const getSavedMacroNodes = async (
     const promise = dispatch(
       osrdEditoastApi.endpoints.getProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNodes.initiate(
         {
-          projectId: state.projectId,
-          studyId: state.studyId,
-          scenarioId: state.scenarioId,
+          projectId,
+          studyId,
+          scenarioId,
           pageSize,
           page,
         },
