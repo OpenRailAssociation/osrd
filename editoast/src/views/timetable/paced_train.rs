@@ -992,6 +992,7 @@ mod tests {
     use core_client::mocking::MockingClient;
     use core_client::pathfinding::PathfindingInputError;
     use core_client::pathfinding::PathfindingResultSuccess;
+    use core_client::pathfinding::TrainPath;
     use core_client::simulation::CompleteReportTrain;
     use core_client::simulation::ElectricalProfiles;
     use core_client::simulation::ReportTrain;
@@ -1652,9 +1653,11 @@ mod tests {
         core.stub("/pathfinding/blocks")
             .response(StatusCode::OK)
             .json(json!({
-                "blocks":[],
-                "routes": [],
-                "track_section_ranges": [],
+                "path": {
+                    "blocks":[],
+                    "routes": [],
+                    "track_section_ranges": [],
+                },
                 "path_item_positions": [],
                 "length": 1,
                 "status": "success"
@@ -1681,9 +1684,11 @@ mod tests {
         assert_eq!(
             response,
             PathfindingResult::Success(PathfindingResultSuccess {
-                blocks: vec![],
-                routes: vec![],
-                track_section_ranges: vec![],
+                path: TrainPath {
+                    blocks: vec![],
+                    routes: vec![],
+                    track_section_ranges: vec![],
+                },
                 path_item_positions: vec![],
                 length: 1
             })
@@ -1749,9 +1754,11 @@ mod tests {
         core.stub("/pathfinding/blocks")
             .response(StatusCode::OK)
             .json(json!({
-                "blocks":[],
-                "routes": [],
-                "track_section_ranges": [],
+                "path": {
+                    "blocks":[],
+                    "routes": [],
+                    "track_section_ranges": [],
+                },
                 "path_item_positions": [],
                 "length": 1,
                 "status": "success"
@@ -1785,9 +1792,11 @@ mod tests {
         assert_eq!(
             response,
             PathfindingResult::Success(PathfindingResultSuccess {
-                blocks: vec![],
-                routes: vec![],
-                track_section_ranges: vec![],
+                path: TrainPath {
+                    blocks: vec![],
+                    routes: vec![],
+                    track_section_ranges: vec![],
+                },
                 path_item_positions: vec![],
                 length: 1
             })

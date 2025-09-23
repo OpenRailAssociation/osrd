@@ -594,8 +594,8 @@ async fn simulate_past_trains(
 
     let path_properties_requests = paths
         .iter()
-        .map(|path| PathPropertiesRequest {
-            track_section_ranges: &path.track_section_ranges,
+        .map(|pathfinding_result| PathPropertiesRequest {
+            track_section_ranges: &pathfinding_result.path.track_section_ranges,
             infra: infra.id,
             expected_version: infra.version,
         })
@@ -695,6 +695,7 @@ mod tests {
     use core_client::path_properties::PropertyValuesF64;
     use core_client::path_properties::PropertyZoneValues;
     use core_client::pathfinding::PathfindingResultSuccess;
+    use core_client::pathfinding::TrainPath;
     use pretty_assertions::assert_eq;
     use reqwest::StatusCode;
     use rstest::rstest;
@@ -842,9 +843,11 @@ mod tests {
     // Since `similar_trains` calls `/pathfinding/blocks`, we need to mock this endpoint too.
     fn pathfinding_result_success() -> PathfindingResultSuccess {
         PathfindingResultSuccess {
-            blocks: vec![],
-            routes: vec![],
-            track_section_ranges: vec![],
+            path: TrainPath {
+                blocks: vec![],
+                routes: vec![],
+                track_section_ranges: vec![],
+            },
             length: 1,
             path_item_positions: vec![0, 10],
         }

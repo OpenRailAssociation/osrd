@@ -515,6 +515,7 @@ pub mod tests {
     use core_client::pathfinding::InvalidPathItem;
     use core_client::pathfinding::PathfindingInputError;
     use core_client::pathfinding::PathfindingResultSuccess;
+    use core_client::pathfinding::TrainPath;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
     use schemas::train_schedule::OperationalPointIdentifier;
@@ -534,9 +535,11 @@ pub mod tests {
         core.stub("/pathfinding/blocks")
             .response(StatusCode::OK)
             .json(json!({
-                "blocks":[],
-                "routes": [],
-                "track_section_ranges": [],
+                "path": {
+                    "blocks":[],
+                    "routes": [],
+                    "track_section_ranges": [],
+                },
                 "path_item_positions": [],
                 "length": 0,
                 "status": "success"
@@ -669,9 +672,11 @@ pub mod tests {
         core.stub("/pathfinding/blocks")
             .response(StatusCode::OK)
             .json(json!({
-                "blocks":[],
-                "routes": [],
-                "track_section_ranges": [],
+                "path": {
+                    "blocks":[],
+                    "routes": [],
+                    "track_section_ranges": [],
+                },
                 "path_item_positions": [],
                 "length": 1,
                 "status": "success"
@@ -701,9 +706,11 @@ pub mod tests {
         assert_eq!(
             pathfinding_result,
             PathfindingResult::Success(PathfindingResultSuccess {
-                blocks: vec![],
-                routes: vec![],
-                track_section_ranges: vec![],
+                path: TrainPath {
+                    blocks: vec![],
+                    routes: vec![],
+                    track_section_ranges: vec![],
+                },
                 length: 1,
                 path_item_positions: vec![]
             })

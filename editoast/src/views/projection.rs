@@ -2,6 +2,7 @@ use crate::error::Result;
 use core_client::CoreClient;
 use core_client::pathfinding::PathfindingResultSuccess;
 use core_client::pathfinding::TrackRange;
+use core_client::pathfinding::TrainPath;
 use core_client::simulation::CompleteReportTrain;
 use core_client::simulation::ReportTrain;
 use core_client::simulation::SignalCriticalPosition;
@@ -9,7 +10,6 @@ use core_client::simulation::ZoneUpdate;
 use database::DbConnection;
 use editoast_derive::EditoastError;
 use itertools::Itertools;
-use schemas::primitives::Identifier;
 use schemas::train_schedule::OperationalPointIdentifier;
 use schemas::train_schedule::PathItemLocation;
 use schemas::train_schedule::TrainScheduleLike;
@@ -55,20 +55,6 @@ pub struct ProjectPathOperationalPointForm {
     pub operational_points_refs: Vec<OperationalPointIdentifier>,
     /// Distances between operational points in mm
     pub operational_points_distances: Vec<u64>,
-}
-
-/// Project path input is described by a list of routes and a list of track range
-#[derive(Debug, Deserialize, ToSchema)]
-pub struct ProjectPathInput {
-    /// List of track ranges
-    #[schema(min_items = 1, value_type = Vec<CoreTrackRange>)]
-    pub track_section_ranges: Vec<TrackRange>,
-    /// List of route ids
-    #[schema(inline, min_items = 1)]
-    pub routes: Vec<Identifier>,
-    /// Path description as block ids
-    #[schema(inline, min_items = 1)]
-    pub blocks: Vec<Identifier>,
 }
 
 #[editoast_derive::openapi_schema]
@@ -175,9 +161,7 @@ impl TrainSimulationDetails {
         &self,
         infra_id: i64,
         infra_version: i64,
-        path_projection_tracks: &[TrackRange],
-        path_routes: &[Identifier],
-        path_blocks: &[Identifier],
+        path: &TrainPath,
         app_version: Option<&str>,
     ) -> String {
         let osrd_version = app_version.unwrap_or_default();
@@ -185,9 +169,7 @@ impl TrainSimulationDetails {
         self.signal_critical_positions.hash(&mut hasher);
         self.zone_updates.hash(&mut hasher);
         self.train_path.hash(&mut hasher);
-        path_projection_tracks.hash(&mut hasher);
-        path_routes.hash(&mut hasher);
-        path_blocks.hash(&mut hasher);
+        path.hash(&mut hasher);
         let hash_simulation_input = hasher.finish();
         format!("occupancy_block_{osrd_version}.{infra_id}.{infra_version}.{hash_simulation_input}")
     }
@@ -756,7 +738,11 @@ pub async fn extract_train_details(
     for (sim, pathfinding_result) in simulations {
         let track_ranges = match pathfinding_result.as_ref() {
             PathfindingResult::Success(PathfindingResultSuccess {
-                track_section_ranges,
+                path:
+                    TrainPath {
+                        track_section_ranges,
+                        ..
+                    },
                 ..
             }) => track_section_ranges,
             _ => {
@@ -804,6 +790,7 @@ mod tests {
     use rstest::rstest;
     use schemas::infra::Direction;
     use schemas::infra::DirectionalTrackRange;
+    use schemas::primitives::Identifier;
     use schemas::train_schedule::OperationalPointReference;
     use schemas::train_schedule::PathItemLocation;
 

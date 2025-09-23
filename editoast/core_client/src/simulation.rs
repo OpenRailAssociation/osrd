@@ -10,7 +10,6 @@ use common::units::quantities::Mass;
 use common::units::quantities::Time;
 use common::units::quantities::Velocity;
 use educe::Educe;
-use schemas::primitives::Identifier;
 use schemas::rolling_stock::EffortCurves;
 use schemas::rolling_stock::EtcsBrakeParams;
 use schemas::rolling_stock::RollingResistance;
@@ -24,7 +23,7 @@ use serde::Serialize;
 use utoipa::ToSchema;
 
 use super::RawError;
-use super::pathfinding::TrackRange;
+use super::pathfinding::TrainPath;
 use crate::AsCoreRequest;
 use crate::Json;
 
@@ -123,16 +122,6 @@ pub struct SimulationPowerRestrictionItem {
     /// Position on the path in mm
     pub to: u64,
     pub value: String,
-}
-
-/// Path description
-#[derive(Debug, Serialize, Hash)]
-pub struct SimulationPath {
-    pub blocks: Vec<Identifier>,
-    pub routes: Vec<Identifier>,
-    pub track_section_ranges: Vec<TrackRange>,
-    /// The path offset in mm of each path item given as input of the pathfinding
-    pub path_item_positions: Vec<u64>,
 }
 
 #[editoast_derive::openapi_schema]
@@ -271,7 +260,7 @@ pub struct SimulationPowerRestrictionRange {
 pub struct Request {
     pub infra: i64,
     pub expected_version: i64,
-    pub path: SimulationPath,
+    pub path: TrainPath,
     pub schedule: Vec<SimulationScheduleItem>,
     pub margins: SimulationMargins,
     #[educe(Hash(method(common::hash_float::<3,_>)))]
@@ -283,6 +272,8 @@ pub struct Request {
     pub options: TrainScheduleOptions,
     pub physics_consist: PhysicsConsist,
     pub electrical_profile_set_id: Option<i64>,
+    /// The path offset in mm of each path item given as input of the pathfinding
+    pub path_item_positions: Vec<u64>,
 }
 
 #[derive(Serialize, Deserialize, PartialEq, Clone, Debug)]

@@ -8,9 +8,9 @@ use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
 
-use super::pathfinding::TrackRange;
 use crate::AsCoreRequest;
 use crate::Json;
+use crate::pathfinding::TrackRange;
 
 #[derive(Debug, Serialize)]
 pub struct PathPropertiesRequest<'a> {

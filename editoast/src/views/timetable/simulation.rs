@@ -2,12 +2,12 @@ use core_client::AsCoreRequest;
 use core_client::pathfinding::PathfindingInputError;
 use core_client::pathfinding::PathfindingNotFound;
 use core_client::pathfinding::PathfindingResultSuccess;
+use core_client::pathfinding::TrainPath;
 use core_client::simulation::CompleteReportTrain;
 use core_client::simulation::ElectricalProfiles;
 use core_client::simulation::PhysicsConsist;
 use core_client::simulation::ReportTrain;
 use core_client::simulation::SimulationMargins;
-use core_client::simulation::SimulationPath;
 use core_client::simulation::SimulationPowerRestrictionItem;
 use core_client::simulation::SimulationScheduleItem;
 use core_client::simulation::SpeedLimitProperties;
@@ -313,20 +313,10 @@ pub async fn consist_train_simulation_batch<T: TrainScheduleLike>(
     {
         let (path, path_item_positions) = match pathfinding.as_ref() {
             PathfindingResult::Success(PathfindingResultSuccess {
-                blocks,
-                routes,
-                track_section_ranges,
+                path,
                 path_item_positions,
                 ..
-            }) => (
-                SimulationPath {
-                    blocks: blocks.clone(),
-                    routes: routes.clone(),
-                    track_section_ranges: track_section_ranges.clone(),
-                    path_item_positions: path_item_positions.clone(),
-                },
-                path_item_positions,
-            ),
+            }) => (path, path_item_positions),
             PathfindingResult::Failure(pathfinding_failed) => {
                 simulation_results[index] =
                     Some(Arc::new(simulation::Response::PathfindingFailed {
@@ -435,7 +425,7 @@ fn build_simulation_request<T: TrainScheduleLike>(
     infra: &Infra,
     train_schedule: &T,
     path_item_positions: &[u64],
-    path: SimulationPath,
+    path: &TrainPath,
     electrical_profile_set_id: Option<i64>,
     physics_consist: PhysicsConsist,
 ) -> core_client::simulation::Request {
@@ -450,7 +440,7 @@ fn build_simulation_request<T: TrainScheduleLike>(
     core_client::simulation::Request {
         infra: infra.id,
         expected_version: infra.version,
-        path,
+        path: path.clone(),
         schedule,
         margins,
         initial_speed: train_schedule.initial_speed(),
@@ -461,6 +451,7 @@ fn build_simulation_request<T: TrainScheduleLike>(
         options: train_schedule.options().clone(),
         physics_consist,
         electrical_profile_set_id,
+        path_item_positions: path_item_positions.to_vec(),
     }
 }
 
