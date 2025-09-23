@@ -375,7 +375,7 @@ pub async fn consist_train_simulation_batch<T: TrainScheduleLike>(
         .collect();
 
     let nb_hit = cached_results.iter().flatten().count();
-    let nb_miss = to_sim.len() - nb_hit;
+    let nb_miss = cached_results.len() - nb_hit;
     info!(nb_hit, nb_miss, "Hit cache");
 
     // Compute simulation from core
