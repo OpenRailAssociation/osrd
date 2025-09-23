@@ -2165,7 +2165,7 @@ export type PostSimilarTrainsApiArg = {
   body: {
     infra_id: number;
     rolling_stock: {
-      name: string;
+      name?: string | null;
       speed_limit_tag?: string | null;
     };
     timetable_id: number;
