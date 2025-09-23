@@ -91,7 +91,7 @@ const useProjectedTrainsForStdcm = (stdcmResponse?: StdcmSuccessResponse) => {
   const { projectedTrainsById, allTrainsProjected, projectTimetableItems } = useLazyProjectTrains({
     infraId,
     electricalProfileSetId,
-    path: stdcmResponse?.path,
+    path: stdcmResponse?.pathfinding_result,
   });
 
   // Progressive loading of the trains

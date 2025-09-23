@@ -117,7 +117,7 @@ const useSimulationResults = (): SimulationResults | undefined => {
         props: ['electrifications', 'geometry', 'operational_points', 'curves', 'slopes'],
         pathPropertiesInput: {
           track_section_ranges:
-            pathfinding?.status === 'success' ? pathfinding.track_section_ranges : [],
+            pathfinding?.status === 'success' ? pathfinding.path.track_section_ranges : [],
         },
       },
       { skip: pathfinding?.status !== 'success' }

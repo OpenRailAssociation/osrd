@@ -37,7 +37,11 @@ export default class TrainOpProjectionLazyLoader extends TrainProjectionLazyLoad
   }
 
   async processBatch(batch: TimetableItemId[]) {
-    const { infraId, path, electricalProfileSetId } = this.options;
+    const {
+      infraId,
+      pathfindingResult: { path },
+      electricalProfileSetId,
+    } = this.options;
 
     if (this.opRefs.length < 2) {
       this.options.onProgress(new Map());

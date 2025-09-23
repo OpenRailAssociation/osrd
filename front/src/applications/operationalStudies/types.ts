@@ -47,7 +47,7 @@ export type ManageTimetableItemPathProperties = {
   geometry: NonNullable<PathProperties['geometry']>;
   suggestedOperationalPoints: SuggestedOP[];
   length: number;
-  trackSectionRanges: NonNullable<PathfindingResultSuccess['track_section_ranges']>;
+  trackSectionRanges: NonNullable<PathfindingResultSuccess['path']['track_section_ranges']>;
   incompatibleConstraints?: IncompatibleConstraints;
 };
 

@@ -97,9 +97,12 @@ const useStdcm = ({
         creationDate,
         speedLimitByTag: osrdconf.speedLimitByTag,
         simulationPathSteps: osrdconf.stdcmPathSteps,
-        path: response.path,
       } as StdcmSuccessResponse;
-      const pathProperties = await fetchPathProperties(formattedResponse.path, infraId, dispatch);
+      const pathProperties = await fetchPathProperties(
+        formattedResponse.pathfinding_result,
+        infraId,
+        dispatch
+      );
       const stdcmTrain: TimetableItem = {
         id: formatEditoastIdToTrainScheduleId(STDCM_TRAIN_ID),
         comfort: payload.body.comfort,

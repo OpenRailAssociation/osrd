@@ -54,7 +54,7 @@ const usePathProjection = (
         ? {
             infraId,
             props: ['geometry', 'operational_points'],
-            pathPropertiesInput: { track_section_ranges: pathfinding.track_section_ranges },
+            pathPropertiesInput: { track_section_ranges: pathfinding.path.track_section_ranges },
           }
         : skipToken
     );

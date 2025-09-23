@@ -14,7 +14,7 @@ const computeChartData = (
   rollingStock: RollingStockWithLiveries,
   pathProperties: StdcmPathProperties
 ): SpeedDistanceDiagramData => {
-  const { simulation, path: pathfindingResult } = stdcmResponse;
+  const { simulation, pathfinding_result: pathfindingResult } = stdcmResponse;
 
   /**
    * TODO:

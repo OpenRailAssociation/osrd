@@ -122,7 +122,11 @@ const StdcmSimulationReportSheet = ({
           routeTableRows={routeOperationalPoints}
         />
         <SimilarTrainsToDuplicate similarTrains={similarTrains} />
-        <SimulationTable isStdcm rows={simulationTableRows} pathLength={stdcmData.path.length} />
+        <SimulationTable
+          isStdcm
+          rows={simulationTableRows}
+          pathLength={stdcmData.pathfinding_result.length}
+        />
         <View style={styles.footer.warrantyBox}>
           <Text style={styles.footer.warrantyMessage}>{t('reportSheet.withoutWarranty')}</Text>
         </View>
