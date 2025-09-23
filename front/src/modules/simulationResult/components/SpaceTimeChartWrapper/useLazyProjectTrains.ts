@@ -51,7 +51,7 @@ const useLazyProjectTrains = ({
     const options = {
       dispatch,
       infraId,
-      path,
+      pathfindingResult: path,
       electricalProfileSetId,
       onProgress,
     };

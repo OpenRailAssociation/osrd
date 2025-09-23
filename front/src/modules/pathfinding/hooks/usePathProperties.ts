@@ -24,7 +24,7 @@ const usePathProperties = (
           infraId,
           props: properties,
           pathPropertiesInput: {
-            track_section_ranges: pathfindingResult.track_section_ranges,
+            track_section_ranges: pathfindingResult.path.track_section_ranges,
           },
         };
         const pathPropertiesResult = await postPathProperties(pathPropertiesParams).unwrap();

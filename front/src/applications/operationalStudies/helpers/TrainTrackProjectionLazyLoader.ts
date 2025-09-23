@@ -21,7 +21,11 @@ import type { ProjectionResult } from './TrainProjectionLazyLoaderAbstract';
 
 export default class TrainTrackProjectionLazyLoader extends TrainProjectionLazyLoaderAbstract {
   async processBatch(batch: TimetableItemId[]) {
-    const { infraId, path, electricalProfileSetId } = this.options;
+    const {
+      infraId,
+      pathfindingResult: { path },
+      electricalProfileSetId,
+    } = this.options;
 
     const rawTrainScheduleIds = [];
     const rawPacedTrainIds = [];

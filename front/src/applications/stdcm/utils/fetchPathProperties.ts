@@ -17,7 +17,7 @@ import type { AppDispatch } from 'store';
  *  Function to fetch and format path properties
  */
 const fetchPathProperties = async (
-  path: PathfindingResultSuccess,
+  pathfinding_result: PathfindingResultSuccess,
   infraId: number,
   dispatch: AppDispatch
 ): Promise<StdcmPathProperties> => {
@@ -25,7 +25,7 @@ const fetchPathProperties = async (
     infraId,
     props: ['geometry', 'operational_points', 'zones', 'slopes', 'curves', 'electrifications'],
     pathPropertiesInput: {
-      track_section_ranges: path.track_section_ranges,
+      track_section_ranges: pathfinding_result.path.track_section_ranges,
     },
   };
 
@@ -72,7 +72,7 @@ const fetchPathProperties = async (
     const suggestedOperationalPoints: SuggestedOP[] = formatSuggestedOperationalPoints(
       operationalPointsWithMetadata,
       result.geometry,
-      path.length
+      pathfinding_result.length
     );
 
     return {

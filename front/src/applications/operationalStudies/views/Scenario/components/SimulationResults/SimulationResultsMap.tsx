@@ -52,16 +52,19 @@ const SimulationResultMap = ({
 
   // Compute path items coordinates in order to place them on the map
   useEffect(() => {
-    const getPathItemsCoordinates = async (path: PathfindingResultSuccess) => {
+    const getPathItemsCoordinates = async ({
+      path,
+      path_item_positions,
+    }: PathfindingResultSuccess) => {
       const trackIds = path.track_section_ranges.map((range) => range.track_section);
       const tracks = await getTrackSectionsByIds(trackIds);
       const tracksLengthCumulativeSums = getTrackLengthCumulativeSums(path.track_section_ranges);
 
-      const markers = path.path_item_positions.map((position, index) => {
+      const markers = path_item_positions.map((position, index) => {
         let pointType = MARKER_TYPE.VIA;
         if (index === 0) {
           pointType = MARKER_TYPE.ORIGIN;
-        } else if (index === path.path_item_positions.length - 1) {
+        } else if (index === path_item_positions.length - 1) {
           pointType = MARKER_TYPE.DESTINATION;
         }
         return {

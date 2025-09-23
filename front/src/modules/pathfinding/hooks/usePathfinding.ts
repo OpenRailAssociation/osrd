@@ -151,7 +151,7 @@ const usePathfinding = ({
       infraId,
       props: ['electrifications', 'geometry', 'operational_points'],
       pathPropertiesInput: {
-        track_section_ranges: pathResult.track_section_ranges,
+        track_section_ranges: pathResult.path.track_section_ranges,
       },
     };
     const { electrifications, geometry, operational_points } =
@@ -161,10 +161,10 @@ const usePathfinding = ({
       return;
     }
 
-    const trackIds = pathResult.track_section_ranges.map((range) => range.track_section);
+    const trackIds = pathResult.path.track_section_ranges.map((range) => range.track_section);
     const trackSectionsById = await getTrackSectionsByIds(trackIds);
     const tracksLengthCumulativeSums = getTrackLengthCumulativeSums(
-      pathResult.track_section_ranges
+      pathResult.path.track_section_ranges
     );
 
     const suggestedOperationalPoints: SuggestedOP[] = formatSuggestedOperationalPoints(
@@ -188,7 +188,7 @@ const usePathfinding = ({
       const positionOnPath = pathResult.path_item_positions[validOpIndex];
       const coordinates = getPointOnPathCoordinates(
         trackSectionsById,
-        pathResult.track_section_ranges,
+        pathResult.path.track_section_ranges,
         tracksLengthCumulativeSums,
         positionOnPath
       );
@@ -224,7 +224,7 @@ const usePathfinding = ({
       geometry,
       suggestedOperationalPoints,
       length: pathResult.length,
-      trackSectionRanges: pathResult.track_section_ranges,
+      trackSectionRanges: pathResult.path.track_section_ranges,
       incompatibleConstraints,
     });
   };
