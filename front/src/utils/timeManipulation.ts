@@ -13,10 +13,6 @@ export function ms2sec(ms: number) {
   return ms / 1000;
 }
 
-export function sec2time(sec: number) {
-  return new Date(sec * 1000).toISOString().substr(11, 8);
-}
-
 /**
  * Given a timeString, returns the number of seconds from midnight
  *

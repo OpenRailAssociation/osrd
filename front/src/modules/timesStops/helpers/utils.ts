@@ -23,7 +23,6 @@ import { msToS } from 'utils/physics';
 import { NO_BREAK_SPACE } from 'utils/strings';
 import {
   durationInSeconds,
-  sec2time,
   SECONDS_IN_A_DAY,
   secToHoursString,
   time2sec,
@@ -175,7 +174,7 @@ export function updateRowTimesAndMargin(
     } else if (newRowData.departure) {
       if (!previousRowData.departure) {
         newRowData.arrival = {
-          time: sec2time(
+          time: secToHoursString(
             time2sec(newRowData.departure.time) - (newRowData.stopFor?.total('second') ?? 0)
           ),
         };
