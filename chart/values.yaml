@@ -134,6 +134,10 @@ services:
             provider_id: "mocked"
             username: "osrd-admin"
             require_login: false
+      railway_manager_interface:
+        enabled: false
+        prefix: "/railway-manager"
+        upstream: ""
       tracing:
         enabled: false
         type: ""

@@ -23,6 +23,14 @@ data:
     {{- end }}
     {{- end }}
 
+    {{- if $config.railway_manager_interface.enabled }}
+    [[targets]]
+    prefix = "{{ $config.railway_manager_interface.prefix }}"
+    upstream = "{{ $config.railway_manager_interface.upstream }}"
+    require_auth = true
+    blocked_headers = ["x-osrd-skip-authz"]
+    {{- end }}
+
     [[targets]]
     prefix = "/api"
     upstream = "http://{{ include "osrd.fullname" . }}-stateful-editoast"
