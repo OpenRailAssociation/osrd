@@ -135,6 +135,21 @@ docker exec osrd-editoast editoast user add 'mock/mocked' 'Example User'
 docker exec osrd-editoast editoast roles add 'mock/mocked' Admin
 ```
 
+## API's root URL
+
+Editoast provides links to its own endpoints, and for those to be correct,
+the `ROOT_URL` env-var should be specified to the client-facing root-URL
+of editoast.
+
+In the dev stack, its value is `http://localhost:4000/api` (after gateway's
+configuration for own URL and editoast's prefix).
+
+> [!TIP]
+> Cartography issues:
+> If your stack runs OK but can't display some data layers on maps (with
+> editoast authz rejecting some requests), providing the correct `ROOT_URL` to
+> editoast might be the solution.
+
 ## For M1 MacOS users
 
 Our `docker-compose.yml` at the root of the project uses the `postgis` image by default.

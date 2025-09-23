@@ -74,6 +74,7 @@ impl TracingTelemetry {
 pub struct ProxyTarget {
     /// The request path must start with this prefix for the target to apply.
     /// If omitted, the target becomes the default. There can only be a single default target.
+    /// Note that editoast's ROOT_URL should be specified accordingly.
     pub prefix: Option<String>,
     /// The base URL requests are proxied to (must include the scheme)
     pub upstream: String,
