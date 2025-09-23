@@ -1,4 +1,3 @@
-use schemas::primitives::Identifier;
 use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
@@ -8,7 +7,7 @@ use crate::Json;
 use crate::simulation::SignalCriticalPosition;
 use crate::simulation::ZoneUpdate;
 
-use super::pathfinding::TrackRange;
+use super::pathfinding::TrainPath;
 
 #[derive(Debug, Serialize)]
 pub struct SignalUpdatesRequest<'a> {
@@ -17,11 +16,7 @@ pub struct SignalUpdatesRequest<'a> {
     /// Infrastructure expected version
     pub expected_version: i64,
     /// Path description as track ranges
-    pub track_section_ranges: &'a [TrackRange],
-    /// Path description as route ids
-    pub routes: &'a [Identifier],
-    /// Path description as block ids
-    pub blocks: &'a [Identifier],
+    pub path: &'a TrainPath,
     /// List of signal critical positions and zone updates for each train
     pub train_simulations: Vec<TrainSimulation<'a>>,
 }

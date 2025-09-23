@@ -1095,9 +1095,11 @@ mod tests {
         core.stub("/pathfinding/blocks")
             .response(StatusCode::OK)
             .json(json!({
-                "blocks":[],
-                "routes": [],
-                "track_section_ranges": [],
+                "path": {
+                    "blocks":[],
+                    "routes": [],
+                    "track_section_ranges": [],
+                },
                 "path_item_positions": [0,1,2,3],
                 "length": 1,
                 "status": "success"

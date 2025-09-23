@@ -3880,7 +3880,7 @@ paths:
                 - type: object
                   required:
                   - simulation
-                  - path
+                  - pathfinding_result
                   - departure_time
                   - status
                   properties:
@@ -3891,7 +3891,7 @@ paths:
                     departure_time:
                       type: string
                       format: date-time
-                    path:
+                    pathfinding_result:
                       $ref: '#/components/schemas/PathfindingResultSuccess'
                     simulation:
                       $ref: '#/components/schemas/SimulationResponseSuccess'
@@ -10068,6 +10068,28 @@ components:
         document_key:
           type: integer
           format: int64
+    ObjectRange:
+      type: object
+      description: A range on a linear object (usually block or route)
+      required:
+      - id
+      - begin
+      - end
+      properties:
+        begin:
+          type: integer
+          format: int64
+          description: The beginning of the range in mm.
+          minimum: 0
+        end:
+          type: integer
+          format: int64
+          description: The end of the range in mm.
+          minimum: 0
+        id:
+          type: string
+          maxLength: 255
+          minLength: 1
     ObjectRef:
       type: object
       required:
@@ -10114,35 +10136,7 @@ components:
           type: integer
           format: int64
         path:
-          type: object
-          description: Project path input is described by a list of routes and a list of track range
-          required:
-          - track_section_ranges
-          - routes
-          - blocks
-          properties:
-            blocks:
-              type: array
-              items:
-                type: string
-                maxLength: 255
-                minLength: 1
-              description: Path description as block ids
-              minItems: 1
-            routes:
-              type: array
-              items:
-                type: string
-                maxLength: 255
-                minLength: 1
-              description: List of route ids
-              minItems: 1
-            track_section_ranges:
-              type: array
-              items:
-                $ref: '#/components/schemas/CoreTrackRange'
-              description: List of track ranges
-              minItems: 1
+          $ref: '#/components/schemas/TrainPath'
     OccupancyBlocksPacedTrainResult:
       type: object
       description: Occupancy blocks output is described by blocks (signal updates)
@@ -11170,24 +11164,17 @@ components:
       type: object
       description: A successful pathfinding result. This is also used for STDCM response.
       required:
-      - blocks
-      - routes
-      - track_section_ranges
+      - path
       - length
       - path_item_positions
       properties:
-        blocks:
-          type: array
-          items:
-            type: string
-            maxLength: 255
-            minLength: 1
-          description: Path description as block ids
         length:
           type: integer
           format: int64
           description: Length of the path in mm
           minimum: 0
+        path:
+          $ref: '#/components/schemas/TrainPath'
         path_item_positions:
           type: array
           items:
@@ -11197,18 +11184,6 @@ components:
           description: |-
             The path offset in mm of each path item given as input of the pathfinding
             The first value is always `0` (beginning of the path) and the last one is always equal to the `length` of the path in mm
-        routes:
-          type: array
-          items:
-            type: string
-            maxLength: 255
-            minLength: 1
-          description: Path description as route ids
-        track_section_ranges:
-          type: array
-          items:
-            $ref: '#/components/schemas/CoreTrackRange'
-          description: Path description as track ranges
     PathfindingTrackLocationInput:
       type: object
       required:
@@ -13653,7 +13628,7 @@ components:
       - type: object
         required:
         - simulation
-        - path
+        - pathfinding_result
         - departure_time
         - status
         properties:
@@ -13664,7 +13639,7 @@ components:
           departure_time:
             type: string
             format: date-time
-          path:
+          pathfinding_result:
             $ref: '#/components/schemas/PathfindingResultSuccess'
           simulation:
             $ref: '#/components/schemas/SimulationResponseSuccess'
@@ -14439,6 +14414,31 @@ components:
       properties:
         value:
           type: string
+    TrainPath:
+      type: object
+      description: |-
+        A valid train path, as returned from the pathfinding.
+        Can be used as-is as input for other endpoints.
+      required:
+      - blocks
+      - routes
+      - track_section_ranges
+      properties:
+        blocks:
+          type: array
+          items:
+            $ref: '#/components/schemas/ObjectRange'
+          description: Block ranges, in order.
+        routes:
+          type: array
+          items:
+            $ref: '#/components/schemas/ObjectRange'
+          description: Route ranges, in order.
+        track_section_ranges:
+          type: array
+          items:
+            $ref: '#/components/schemas/CoreTrackRange'
+          description: Track section ranges, in order.
     TrainRequirements:
       type: object
       required:

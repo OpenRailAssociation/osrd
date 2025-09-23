@@ -58,7 +58,7 @@ use editoast_models::prelude::*;
 pub(in crate::views) enum StdcmResponse {
     Success {
         simulation: SimulationResponseSuccess,
-        path: PathfindingResultSuccess,
+        pathfinding_result: PathfindingResultSuccess,
         departure_time: DateTime<Utc>,
         #[serde(skip_serializing_if = "Option::is_none")]
         core_payload: Option<StdcmRequest>,
@@ -302,7 +302,7 @@ pub(in crate::views) async fn stdcm(
             departure_time,
         } => Ok(Json(StdcmResponse::Success {
             simulation: simulation.into(),
-            path,
+            pathfinding_result: path,
             departure_time,
             core_payload: returned_request,
         })),
@@ -466,6 +466,7 @@ mod tests {
     use crate::views::timetable::stdcm::request::StepTimingData;
     use core_client;
     use core_client::mocking::MockingClient;
+    use core_client::pathfinding::TrainPath;
     use core_client::simulation::CompleteReportTrain;
     use core_client::simulation::ElectricalProfiles;
     use core_client::simulation::PhysicsConsist;
@@ -538,9 +539,11 @@ mod tests {
 
     fn pathfinding_result_success() -> PathfindingResultSuccess {
         PathfindingResultSuccess {
-            blocks: vec![],
-            routes: vec![],
-            track_section_ranges: vec![],
+            path: TrainPath {
+                blocks: vec![],
+                routes: vec![],
+                track_section_ranges: vec![],
+            },
             length: 1,
             path_item_positions: vec![0, 10],
         }
@@ -802,7 +805,7 @@ mod tests {
                 stdcm_response,
                 StdcmResponse::Success {
                     simulation: simulation_response().success().unwrap().into(),
-                    path,
+                    pathfinding_result: path,
                     departure_time: DateTime::from_str("2024-01-02T00:00:00Z")
                         .expect("Failed to parse datetime"),
                     core_payload: None,
@@ -934,7 +937,7 @@ mod tests {
                 stdcm_response,
                 StdcmResponse::Success {
                     simulation: simulation_response().success().unwrap().into(),
-                    path,
+                    pathfinding_result: path,
                     departure_time: DateTime::from_str("2024-01-02T00:00:00Z")
                         .expect("Failed to parse datetime"),
                     core_payload: None,

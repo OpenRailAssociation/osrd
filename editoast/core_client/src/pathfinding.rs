@@ -104,15 +104,8 @@ pub enum PathfindingCoreResult {
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, ToSchema)]
 #[cfg_attr(feature = "mocking_client", derive(Default))]
 pub struct PathfindingResultSuccess {
-    #[schema(inline)]
-    /// Path description as block ids
-    pub blocks: Vec<Identifier>,
-    #[schema(inline)]
-    /// Path description as route ids
-    pub routes: Vec<Identifier>,
-    /// Path description as track ranges
-    #[schema(value_type = Vec<CoreTrackRange>)]
-    pub track_section_ranges: Vec<TrackRange>,
+    /// Full description of the path data
+    pub path: TrainPath,
     /// Length of the path in mm
     pub length: u64,
     /// The path offset in mm of each path item given as input of the pathfinding
@@ -174,6 +167,33 @@ pub struct TrackRange {
     pub end: u64,
     /// The direction of the range.
     pub direction: Direction,
+}
+
+/// A range on a linear object (usually block or route)
+#[editoast_derive::openapi_schema]
+#[derive(Serialize, Deserialize, Clone, Debug, ToSchema, Hash, PartialEq, Eq)]
+pub struct ObjectRange {
+    /// The object identifier.
+    #[schema(inline)]
+    pub id: Identifier,
+    /// The beginning of the range in mm.
+    pub begin: u64,
+    /// The end of the range in mm.
+    pub end: u64,
+}
+
+/// A valid train path, as returned from the pathfinding.
+/// Can be used as-is as input for other endpoints.
+#[editoast_derive::openapi_schema]
+#[derive(Serialize, Deserialize, Clone, Debug, ToSchema, Hash, PartialEq, Eq, Default)]
+pub struct TrainPath {
+    /// Block ranges, in order.
+    pub blocks: Vec<ObjectRange>,
+    /// Route ranges, in order.
+    pub routes: Vec<ObjectRange>,
+    /// Track section ranges, in order.
+    #[schema(value_type = Vec<CoreTrackRange>)]
+    pub track_section_ranges: Vec<TrackRange>,
 }
 
 impl From<schemas::infra::DirectionalTrackRange> for TrackRange {

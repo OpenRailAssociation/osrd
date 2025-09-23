@@ -15,7 +15,6 @@ use core_client::AsCoreRequest;
 use core_client::pathfinding::PathfindingResultSuccess;
 use core_client::simulation::PhysicsConsist;
 use core_client::simulation::ReportTrain;
-use core_client::simulation::SimulationPath;
 
 use authz;
 use database::DbConnectionPoolV2;
@@ -408,19 +407,8 @@ pub(in crate::views) async fn etcs_braking_curves(
     .unwrap();
 
     // Extract simulation path
-    let path: SimulationPath = match pathfinding_result.as_ref() {
-        PathfindingResult::Success(PathfindingResultSuccess {
-            blocks,
-            routes,
-            track_section_ranges,
-            path_item_positions,
-            ..
-        }) => SimulationPath {
-            blocks: blocks.clone(),
-            routes: routes.clone(),
-            track_section_ranges: track_section_ranges.clone(),
-            path_item_positions: path_item_positions.clone(),
-        },
+    let pathfinding_response: PathfindingResultSuccess = match pathfinding_result.as_ref() {
+        PathfindingResult::Success(path) => path.clone(),
         _ => {
             return Err(TrainScheduleError::PathfindingFailed { train_schedule_id }.into());
         }
@@ -447,8 +435,10 @@ pub(in crate::views) async fn etcs_braking_curves(
         PhysicsConsistParameters::from_traction_engine(rs.into()).into();
 
     // Build schedule items and power restrictions
-    let path_items_to_position =
-        build_path_items_to_position(train_schedule.path(), &path.path_item_positions);
+    let path_items_to_position = build_path_items_to_position(
+        train_schedule.path(),
+        &pathfinding_response.path_item_positions,
+    );
     let schedule = build_sim_schedule_items(train_schedule.schedule(), &path_items_to_position);
     let power_restrictions = build_sim_power_restriction_items(
         train_schedule.power_restrictions(),
@@ -460,7 +450,7 @@ pub(in crate::views) async fn etcs_braking_curves(
         expected_version: infra.version,
         physics_consist,
         comfort: train_schedule.comfort,
-        path,
+        path: pathfinding_response.path,
         schedule,
         power_restrictions,
         electrical_profile_set_id,
@@ -1146,7 +1136,7 @@ fn find_track_occupancy_for_operational_point(
                 train_schedule.path.len()
             );
             (
-                &pathfinding_result_success.track_section_ranges,
+                &pathfinding_result_success.path.track_section_ranges,
                 &pathfinding_result_success.path_item_positions,
             )
         }

@@ -6,8 +6,8 @@ use utoipa::ToSchema;
 use crate::AsCoreRequest;
 use crate::Json;
 use crate::conflict_detection::ConflictType;
+use crate::pathfinding::TrainPath;
 use crate::simulation::PhysicsConsist;
-use crate::simulation::SimulationPath;
 use crate::simulation::SimulationPowerRestrictionItem;
 use crate::simulation::SimulationScheduleItem;
 use crate::simulation::SpeedLimitProperties;
@@ -18,7 +18,7 @@ pub struct Request {
     pub expected_version: i64,
     pub physics_consist: PhysicsConsist,
     pub comfort: Comfort,
-    pub path: SimulationPath,
+    pub path: TrainPath,
     pub schedule: Vec<SimulationScheduleItem>,
     pub power_restrictions: Vec<SimulationPowerRestrictionItem>,
     pub electrical_profile_set_id: Option<i64>,

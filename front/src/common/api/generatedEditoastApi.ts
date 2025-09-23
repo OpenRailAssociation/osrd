@@ -1552,7 +1552,7 @@ export type PostInfraRefreshApiResponse = /** status 200  */ {
 export type PostInfraRefreshApiArg = {
   force?: boolean;
   /** A comma-separated list of infra IDs to refresh
-    
+
     If not provided, all available infras will be refreshed. */
   infras?: number[];
 };
@@ -2308,7 +2308,7 @@ export type PostTimetableByIdStdcmApiResponse = /** status 201 The simulation re
   | {
       core_payload?: StdcmRequest | null;
       departure_time: string;
-      path: PathfindingResultSuccess;
+      pathfinding_result: PathfindingResultSuccess;
       simulation: SimulationResponseSuccess;
       status: 'success';
     }
@@ -2351,12 +2351,12 @@ export type PostTimetableByIdStdcmApiArg = {
     steps: PathfindingItem[];
     temporary_speed_limit_group_id?: number | null;
     /** Margin after the train passage in milliseconds
-        
+
         Enforces that the path used by the train should be free and
         available at least that many milliseconds after its passage. */
     time_gap_after?: number;
     /** Margin before the train passage in seconds
-        
+
         Enforces that the path used by the train should be free and
         available at least that many milliseconds before its passage. */
     time_gap_before?: number;
@@ -3341,18 +3341,28 @@ export type InfraPathfindingInput = {
   ending: PathfindingTrackLocationInput;
   starting: PathfindingTrackLocationInput;
 };
+export type ObjectRange = {
+  /** The beginning of the range in mm. */
+  begin: number;
+  /** The end of the range in mm. */
+  end: number;
+  id: string;
+};
+export type TrainPath = {
+  /** Block ranges, in order. */
+  blocks: ObjectRange[];
+  /** Route ranges, in order. */
+  routes: ObjectRange[];
+  /** Track section ranges, in order. */
+  track_section_ranges: CoreTrackRange[];
+};
 export type PathfindingResultSuccess = {
-  /** Path description as block ids */
-  blocks: string[];
   /** Length of the path in mm */
   length: number;
+  path: TrainPath;
   /** The path offset in mm of each path item given as input of the pathfinding
     The first value is always `0` (beginning of the path) and the last one is always equal to the `length` of the path in mm */
   path_item_positions: number[];
-  /** Path description as route ids */
-  routes: string[];
-  /** Path description as track ranges */
-  track_section_ranges: CoreTrackRange[];
 };
 export type TrackOffset = {
   /** Offset in mm */
@@ -3635,14 +3645,9 @@ export type OccupancyBlockForm = {
   electrical_profile_set_id?: number | null;
   ids: number[];
   infra_id: number;
-  /** Project path input is described by a list of routes and a list of track range */
+  /** Project path input, should be forwarded from a pathfinding response in the same format */
   path: {
-    /** Path description as block ids */
-    blocks: string[];
-    /** List of route ids */
-    routes: string[];
-    /** List of track ranges */
-    track_section_ranges: CoreTrackRange[];
+    path: TrainPath;
   };
 };
 export type SpaceTimeCurve = {
@@ -4361,7 +4366,7 @@ export type SearchResultItem =
 export type SearchQuery = boolean | number | number | string | (SearchQuery | null)[];
 export type SearchPayload = {
   /** Whether to return the SQL query instead of executing it
-    
+
     Only available in debug builds. */
   dry?: boolean;
   /** The object kind to query - run `editoast search list` to get all possible values */

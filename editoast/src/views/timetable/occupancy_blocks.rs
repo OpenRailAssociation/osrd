@@ -1,11 +1,10 @@
 use core_client::AsCoreRequest;
 use core_client::CoreClient;
-use core_client::pathfinding::TrackRange;
+use core_client::pathfinding::TrainPath;
 use core_client::signal_projection::SignalUpdate;
 use core_client::signal_projection::SignalUpdatesRequest;
 use core_client::signal_projection::TrainSimulation;
 use database::DbConnection;
-use schemas::primitives::Identifier;
 use schemas::train_schedule::TrainScheduleLike;
 use serde::Deserialize;
 use std::collections::HashMap;
@@ -15,7 +14,6 @@ use utoipa::ToSchema;
 
 use crate::error::Result;
 use crate::models::infra::Infra;
-use crate::views::projection::ProjectPathInput;
 use crate::views::projection::TrainSimulationDetails;
 use crate::views::projection::extract_train_details;
 use crate::views::timetable::simulation::train_simulation_batch;
@@ -29,17 +27,14 @@ pub(in crate::views) struct OccupancyBlockForm {
     pub(super) infra_id: i64,
     pub(super) electrical_profile_set_id: Option<i64>,
     pub(super) ids: HashSet<i64>,
-    #[schema(inline)]
-    pub(super) path: ProjectPathInput,
+    pub(super) path: TrainPath,
 }
 
 /// Compute the signal updates of a list of train schedules
 pub(super) async fn compute_batch_signal_updates<'a>(
     core: Arc<CoreClient>,
     infra: &Infra,
-    path_track_ranges: &'a [TrackRange],
-    path_routes: &'a [Identifier],
-    path_blocks: &'a [Identifier],
+    path: &'a TrainPath,
     trains_details: &'a [TrainSimulationDetails],
 ) -> Result<Vec<Vec<SignalUpdate>>> {
     if trains_details.is_empty() {
@@ -48,9 +43,7 @@ pub(super) async fn compute_batch_signal_updates<'a>(
     let request = SignalUpdatesRequest {
         infra: infra.id,
         expected_version: infra.version,
-        track_section_ranges: path_track_ranges,
-        routes: path_routes,
-        blocks: path_blocks,
+        path,
         train_simulations: trains_details
             .iter()
             .map(|train_details| TrainSimulation {
@@ -71,7 +64,7 @@ pub(super) async fn compute_occupancy_blocks<T: TrainScheduleLike>(
     conn: &mut DbConnection,
     core_client: Arc<CoreClient>,
     valkey_client: Arc<cache::Client>,
-    path: ProjectPathInput,
+    path: TrainPath,
     infra: &Infra,
     trains_schedules: &[T],
     electrical_profile_set_id: Option<i64>,
@@ -104,9 +97,7 @@ pub(super) async fn compute_occupancy_blocks<T: TrainScheduleLike>(
                     train_details.compute_occupancy_block_hash_with_versioning(
                         infra.id,
                         infra.version,
-                        &path.track_section_ranges,
-                        &path.routes,
-                        &path.blocks,
+                        &path,
                         app_version,
                     ),
                 )
@@ -155,9 +146,7 @@ pub(super) async fn compute_occupancy_blocks<T: TrainScheduleLike>(
     let signal_updates = compute_batch_signal_updates(
         core_client.clone(),
         infra,
-        &path.track_section_ranges,
-        &path.routes,
-        &path.blocks,
+        &path,
         &train_details_to_requests,
     )
     .await?;
