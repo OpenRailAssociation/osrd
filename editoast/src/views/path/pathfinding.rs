@@ -293,11 +293,8 @@ async fn pathfinding_blocks_batch(
 
     // Report number of hit cache
     let nb_hit = pathfinding_cached_results.values().flatten().count();
-    info!(
-        nb_hit,
-        nb_miss = pathfinding_inputs.len() - nb_hit,
-        "Hit cache"
-    );
+    let nb_miss = pathfinding_cached_results.len() - nb_hit;
+    info!(nb_hit, nb_miss, "Hit cache");
 
     // Handle miss cache:
     debug!("Extracting locations from path items");
