@@ -21,7 +21,7 @@ logback = '1.5.+'
 moshi = '1.15.2'
 junit = '5.12.+'
 mockito = '5.2.+'
-otel = '1.53.0'
+otel = '1.54.1'
 
 [libraries]
 # kotlin stuff
