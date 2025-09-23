@@ -2,6 +2,10 @@
   --header-height: 164px;
   --footer-height: 96px;
   --footer-box-shadow-height: 1px;
+  --path-step-row-gap: 8px;
+  --path-step-wrapper-padding-right: 10px;
+  --map-interactions-width: 58px;
+  --map-interactions-margin-left: 7px;
 
   margin: 16px;
   width: 100%;
@@ -20,8 +24,10 @@
   }
 
   .itinerary-modal-form {
+    min-width: 480px; // Starting this width, the map is going to shrink but not the form
     width: 50%;
     height: 100%;
+    flex-shrink: 0;
 
     .itinerary-modal-form-header {
       height: var(--header-height);
@@ -35,6 +41,117 @@
       overflow-y: auto;
       background-color: var(--ambientB10);
       box-shadow: 0 calc(-1 * var(--footer-box-shadow-height)) 0 0 var(--black10);
+
+      .path-step-list {
+        background-color: var(--ambientB15);
+        border-radius: 8px;
+        margin-top: 12px;
+        margin-inline: 8px;
+
+        .path-step-list-header {
+          display: grid;
+          grid-template-columns: minmax(184px, 1fr) 60px 76px;
+          gap: 8px;
+
+          font-size: 0.875rem;
+          color: var(--grey30);
+          padding-block: 9px 1px;
+          padding-inline: 49px
+            calc(
+              var(--map-interactions-width) + var(--map-interactions-margin-left) +
+                var(--path-step-row-gap) + var(--path-step-wrapper-padding-right)
+            );
+
+          span {
+            margin-left: 1px;
+          }
+        }
+
+        // this wrapper is being used to display the "adding location on map" style
+        .path-step-wrapper {
+          padding-inline: 12px var(--path-step-wrapper-padding-right);
+          border-radius: 6px;
+          padding-bottom: 4px;
+
+          &:last-child {
+            padding-bottom: 14px;
+          }
+
+          .path-step {
+            display: grid;
+            grid-template-columns: 24px minmax(184px, 1fr) 60px 76px auto;
+            align-items: center;
+            gap: 8px;
+            padding-block: 8px;
+
+            .path-step-counter {
+              position: relative;
+              width: 24px;
+              height: 24px;
+              border: 1px solid var(--trainParma50);
+              border-radius: 50%;
+              opacity: 0.5;
+              background-color: var(--white100);
+              margin-right: 4px;
+
+              &.pathfinding-line::before {
+                content: '';
+                position: absolute;
+                top: -1px; // relative element border width
+                left: 50%;
+                transform: translateX(-50%) translateY(-100%);
+                width: 4px;
+                height: 28px;
+                background-color: var(--trainParma50);
+              }
+
+              &.origin::before {
+                height: 16px;
+                opacity: 0.2;
+                border-radius: 2px 2px 0px 0px;
+              }
+
+              &.empty::before {
+                opacity: 0.2;
+              }
+
+              &.index {
+                font-size: 0.75rem;
+                font-weight: 600;
+                text-align: center;
+                padding-top: 1px;
+                width: 24px;
+                height: 24px;
+                border: 2px solid var(--trainParma10);
+                background-color: var(--trainParma50);
+                color: var(--white100);
+                opacity: 1;
+
+                &::before {
+                  top: -2px; // relative element border width
+                }
+              }
+            }
+
+            .path-step-op-name {
+              margin-left: 4px;
+            }
+
+            .map-interactions {
+              margin-left: 7px;
+              color: var(--primary60);
+
+              .focus-map-icon {
+                margin-left: 10px;
+
+                &.empty {
+                  color: var(--primary20);
+                }
+              }
+            }
+          }
+        }
+      }
     }
 
     .itinerary-modal-form-footer {
