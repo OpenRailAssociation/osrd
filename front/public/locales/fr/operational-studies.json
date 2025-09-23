@@ -46,6 +46,8 @@
     "trainSchedulesFound_one": "1 train trouvé",
     "trainSchedulesFound_other": "{{count}} trains trouvés",
     "warningMessages": {
+      "alreadyPresentNode_one": "Un noeud macroscopique était déjà présent et n'a pas été mis à jour.",
+      "alreadyPresentNode_other": "{{count}} noeuds macroscopiques étaient déjà présents et n'ont pas été mis à jour.",
       "warning": "Attention",
       "warningFilteredStepImport": "{{trainNumbers}} trains invalides ont été modifiés pour être importés avec succès"
     }
