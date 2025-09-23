@@ -20,7 +20,7 @@ thiserror.workspace = true
 
 # oidc
 openidconnect = { workspace = true, features = ["reqwest"] }
-reqwest = { workspace = true, features = ["json"] }
+reqwest = { workspace = true }
 url.workspace = true
 
 # bearer

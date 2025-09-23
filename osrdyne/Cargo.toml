@@ -6,46 +6,58 @@ version = "0.1.0"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-anyhow = "1.0.99"
-axum = "0.8.4"
-axum-extra = { version = "0.10.1", features = ["query"] }
+anyhow = { version = "1.0.99", default-features = false }
+axum = { version = "0.8.4", features = [
+  "http1",
+  "json",
+], default-features = false }
+axum-extra = { version = "0.10.1", features = [
+  "query",
+], default-features = false }
 axum-tracing-opentelemetry = "0.30.0"
 bollard = "0.19"
-env_logger = "0.11.8"
+env_logger = { version = "0.11.8", default-features = false }
 figment = { version = "0.10.19", features = ["env", "yaml"] }
-futures-lite = "2.6.1"
-http = "1.3.1"
+futures-lite = { version = "2.6.1", default-features = false }
+http = { version = "1.3.1", default-features = false }
 im = "15.1.0"
-k8s-openapi = { version = "0.26", features = ["v1_30"] }
+k8s-openapi = { version = "0.26", features = [
+  "v1_30",
+], default-features = false }
 kube = { version = "2.0", default-features = false, features = [
   "client",
   "derive",
-  "rustls-tls",
 ] }
-lapin = { version = "3.6.0", default-features = false, features = [
-  "default-runtime",
-  "rustls--ring",
-] }
-opentelemetry = "0.30.0"
-opentelemetry-otlp = { version = "0.30.0", features = ["grpc-tonic"] }
+lapin = { version = "3.6.0", default-features = false }
+opentelemetry = { version = "0.30.0", default-features = false }
+opentelemetry-otlp = { version = "0.30.0", features = [
+  "grpc-tonic",
+  "trace",
+], default-features = false }
 opentelemetry-semantic-conventions = "0.30.0"
-opentelemetry_sdk = { version = "0.30.0", features = ["rt-tokio"] }
-percent-encoding = "2.3.2"
+opentelemetry_sdk = { version = "0.30.0", default-features = false }
+percent-encoding = { version = "2.3.2", default-features = false }
 priority-queue = "2.6.0"
 reqwest = { version = "0.12.23", default-features = false, features = [
   "json",
   "rustls-tls",
 ] }
-schemars = "1.0.4"
-serde = "1.0.225"
+schemars = { version = "1.0.4", default-features = false }
+serde = { version = "1.0.225", default-features = false }
 serde_json = "1.0.145"
-sha2 = "0.10.9"
-smol_str = { version = "0.3.2", features = ["serde"] }
-thiserror = "2.0.16"
-thunderdome = "0.6.1"
-tokio = { version = "1.47.1", features = ["full"] }
-tracing = "0.1.41"
-tracing-opentelemetry = "0.31.0"
-tracing-subscriber = { version = "0.3.20", features = ["env-filter"] }
-url = { version = "2.5.7", features = ["serde"] }
-uuid = { version = "1.18.1", features = ["serde", "v4"] }
+sha2 = { version = "0.10.9", default-features = false }
+smol_str = { version = "0.3.2", features = ["serde"], default-features = false }
+thiserror = { version = "2.0.16", default-features = false }
+thunderdome = { version = "0.6.1", default-features = false }
+tokio = { version = "1.47.1", features = ["rt-multi-thread"] }
+tracing = { version = "0.1.41", default-features = false }
+tracing-opentelemetry = { version = "0.31.0", default-features = false }
+tracing-subscriber = { version = "0.3.20", features = [
+  "ansi",
+  "env-filter",
+], default-features = false }
+url = { version = "2.5.7", default-features = false }
+uuid = { version = "1.18.1", features = [
+  "serde",
+  "v4",
+], default-features = false }

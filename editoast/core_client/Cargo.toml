@@ -35,7 +35,7 @@ uuid.workspace = true
 
 [dev-dependencies]
 async-std.workspace = true
-core_client = { path = "./", features = ["mocking_client"] }
+core_client = { path = "./", features = ["mocking_client"], version = "*" }
 pretty_assertions.workspace = true
 rstest.workspace = true
 schemas = { workspace = true, features = ["testing"] }

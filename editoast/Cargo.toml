@@ -43,15 +43,8 @@ common = { path = "./common" }
 core_client = { path = "./core_client" }
 darling = "0.21"
 database = { path = "./database" }
-deadpool = { version = "0.12.3", features = [
-  "managed",
-  "rt_tokio_1",
-  "unmanaged",
-] }
-deadpool-redis = { version = "0.22.0", features = [
-  "tokio-comp",
-  "tokio-native-tls-comp",
-] }
+deadpool = { version = "0.12.3", features = ["rt_tokio_1"] }
+deadpool-redis = { version = "0.22.0", features = ["tokio-native-tls-comp"] }
 derive_more = { version = "2.0.1", features = [
   "debug",
   "deref",
@@ -76,8 +69,8 @@ editoast_models = { path = "./editoast_models" }
 educe = "0.6.0"
 enum-map = "2.7.3"
 fga = { path = "./fga" }
-futures = { version = "0.3.31" }
-futures-util = { version = "0.3.30" }
+futures = "0.3.31"
+futures-util = "0.3.30"
 geojson = { version = "0.24", default-features = false }
 geos = { version = "8.3.1", features = ["json"] }
 hostname = "0.4.0"
@@ -92,7 +85,7 @@ opentelemetry = { version = "0.30.0", default-features = false, features = [
 opentelemetry-semantic-conventions = { version = "0.26", features = [
   "semconv_experimental",
 ] }
-opentelemetry_sdk = { version = "0.30.0", features = ["rt-tokio", "trace"] }
+opentelemetry_sdk = { version = "0.30.0", features = ["rt-tokio"] }
 osrdyne_client = { path = "./osrdyne_client" }
 postgis_diesel = { version = "2.5.0", features = ["serde"] }
 postgres-openssl = "0.5.1"
@@ -251,7 +244,7 @@ axum = { version = "0.8.4", default-features = false, features = [
 core_client = { workspace = true, features = ["mocking_client"] }
 database = { workspace = true, features = ["testing"] }
 editoast_models = { workspace = true, features = ["testing"] }
-fga = { path = "./fga", features = ["test_utilities"] }
+fga = { path = "./fga", features = ["test_utilities"], version = "*" }
 osrdyne_client = { workspace = true, features = ["mock_client"] }
 pretty_assertions.workspace = true
 rstest.workspace = true
