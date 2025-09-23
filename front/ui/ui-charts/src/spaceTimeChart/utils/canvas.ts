@@ -361,8 +361,11 @@ export function computeVisibleTimeMarkers<T extends object = { level: number }>(
  * To get crisp horizontal or vertical lines on a canvas, we must draw them as thin as possible, in
  * terms of actual pixels on screen.
  * The best way for this is:
- * - To center lines 1, 3, 5... pixels wide in the middle of a pixel
- * - To center lines 2, 4, 6... pixels wide between two pixels
+ * - To center lines 1, 3, 5... pixels wide in the middle of a pixel (0.5, 1.5, 2.5...)
+ * - To center lines 2, 4, 6... pixels wide between two pixels (0, 1, 2, 3...)
+ * Also, for HiDPi screens:
+ * - To center lines of "integer thicknesses" between two screen pixels (0, 0.5, 1, 1.5, 2...)
+ * - To center lines with `n + 0.5` thicknesses in the middle of a screen pixel (0.25, 0.75, 1.25, 1.75...)
  * @param rawCoordinate Any input coordinate to fix
  * @param lineWidth The width of the line to draw
  * @param devicePixelRatio
@@ -372,7 +375,7 @@ export function getCrispLineCoordinate(
   lineWidth: number,
   devicePixelRatio = window.devicePixelRatio || 1
 ): number {
-  const centerOffset = lineWidth / 2;
+  const centerOffset = Math.ceil(lineWidth * devicePixelRatio) / devicePixelRatio / 2;
   return (
     Math.round((rawCoordinate - centerOffset) * devicePixelRatio) / devicePixelRatio + centerOffset
   );
