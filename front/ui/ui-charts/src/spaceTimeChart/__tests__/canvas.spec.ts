@@ -13,22 +13,28 @@ describe('getAliasedDiscShape', () => {
 });
 
 describe('getCrispLineCoordinate', () => {
-  it.each([1, 3, 99])('should align a %ipx line on a LoDPI device', (lineWidth) => {
-    const devicePixelRatio = 1;
-    expect(getCrispLineCoordinate(0, lineWidth, devicePixelRatio)).toEqual(0.5);
-    expect(getCrispLineCoordinate(0.1, lineWidth, devicePixelRatio)).toEqual(0.5);
-    expect(getCrispLineCoordinate(0.5, lineWidth, devicePixelRatio)).toEqual(0.5);
-    expect(getCrispLineCoordinate(0.9, lineWidth, devicePixelRatio)).toEqual(0.5);
-    expect(getCrispLineCoordinate(1, lineWidth, devicePixelRatio)).toEqual(1.5);
-    expect(getCrispLineCoordinate(42, lineWidth, devicePixelRatio)).toEqual(42.5);
-    expect(getCrispLineCoordinate(-0.4, lineWidth, devicePixelRatio)).toEqual(-0.5);
-    expect(getCrispLineCoordinate(-0.7, lineWidth, devicePixelRatio)).toEqual(-0.5);
-  });
+  it.each([1, 3, 99, 0.25, 0.5, 0.75])(
+    'should align a %dpx line on a LoDPI device',
+    (lineWidth) => {
+      const devicePixelRatio = 1;
+      expect(getCrispLineCoordinate(-0.4, lineWidth, devicePixelRatio)).toEqual(-0.5);
+      expect(getCrispLineCoordinate(0, lineWidth, devicePixelRatio)).toEqual(0.5);
+      expect(getCrispLineCoordinate(0.1, lineWidth, devicePixelRatio)).toEqual(0.5);
+      expect(getCrispLineCoordinate(0.2, lineWidth, devicePixelRatio)).toEqual(0.5);
+      expect(getCrispLineCoordinate(0.4, lineWidth, devicePixelRatio)).toEqual(0.5);
+      expect(getCrispLineCoordinate(0.5, lineWidth, devicePixelRatio)).toEqual(0.5);
+      expect(getCrispLineCoordinate(1.5, lineWidth, devicePixelRatio)).toEqual(1.5);
+      expect(getCrispLineCoordinate(42, lineWidth, devicePixelRatio)).toEqual(42.5);
+      expect(getCrispLineCoordinate(-0.7, lineWidth, devicePixelRatio)).toEqual(-0.5);
+    }
+  );
 
-  it.each([2, 4, 64])('should align a 2px line on a LoDPI device', (lineWidth) => {
+  it.each([2, 4, 64, 1.5])('should align a %dpx line on a LoDPI device', (lineWidth) => {
     const devicePixelRatio = 1;
     expect(getCrispLineCoordinate(-0.4, lineWidth, devicePixelRatio)).toEqual(0);
     expect(getCrispLineCoordinate(0, lineWidth, devicePixelRatio)).toEqual(0);
+    expect(getCrispLineCoordinate(0.1, lineWidth, devicePixelRatio)).toEqual(0);
+    expect(getCrispLineCoordinate(0.2, lineWidth, devicePixelRatio)).toEqual(0);
     expect(getCrispLineCoordinate(0.4, lineWidth, devicePixelRatio)).toEqual(0);
     expect(getCrispLineCoordinate(0.5, lineWidth, devicePixelRatio)).toEqual(1);
     expect(getCrispLineCoordinate(1.5, lineWidth, devicePixelRatio)).toEqual(2);
@@ -36,15 +42,29 @@ describe('getCrispLineCoordinate', () => {
     expect(getCrispLineCoordinate(-0.7, lineWidth, devicePixelRatio)).toEqual(-1);
   });
 
-  it('should align a 2px line on a HiDPI device', () => {
+  it.each([1, 2, 3, 4, 99, 0.75])('should align a %dpx line on a HiDPI device', (lineWidth) => {
     const devicePixelRatio = 2;
-    const lineWidth = 2;
+    expect(getCrispLineCoordinate(-0.4, lineWidth, devicePixelRatio)).toEqual(-0.5);
+    expect(getCrispLineCoordinate(0, lineWidth, devicePixelRatio)).toEqual(0);
+    expect(getCrispLineCoordinate(0.1, lineWidth, devicePixelRatio)).toEqual(0);
+    expect(getCrispLineCoordinate(0.2, lineWidth, devicePixelRatio)).toEqual(0);
+    expect(getCrispLineCoordinate(0.4, lineWidth, devicePixelRatio)).toEqual(0.5);
     expect(getCrispLineCoordinate(0.5, lineWidth, devicePixelRatio)).toEqual(0.5);
+    expect(getCrispLineCoordinate(1.5, lineWidth, devicePixelRatio)).toEqual(1.5);
+    expect(getCrispLineCoordinate(42, lineWidth, devicePixelRatio)).toEqual(42);
+    expect(getCrispLineCoordinate(-0.7, lineWidth, devicePixelRatio)).toEqual(-0.5);
   });
 
-  it('should align a 0.5px line on a HiDPI device', () => {
+  it.each([0.25, 0.5, 1.5])('should align a %dpx line on a HiDPI device', (lineWidth) => {
     const devicePixelRatio = 2;
-    const lineWidth = 0.5;
+    expect(getCrispLineCoordinate(-0.4, lineWidth, devicePixelRatio)).toEqual(-0.25);
     expect(getCrispLineCoordinate(0, lineWidth, devicePixelRatio)).toEqual(0.25);
+    expect(getCrispLineCoordinate(0.1, lineWidth, devicePixelRatio)).toEqual(0.25);
+    expect(getCrispLineCoordinate(0.2, lineWidth, devicePixelRatio)).toEqual(0.25);
+    expect(getCrispLineCoordinate(0.4, lineWidth, devicePixelRatio)).toEqual(0.25);
+    expect(getCrispLineCoordinate(0.5, lineWidth, devicePixelRatio)).toEqual(0.75);
+    expect(getCrispLineCoordinate(1.5, lineWidth, devicePixelRatio)).toEqual(1.75);
+    expect(getCrispLineCoordinate(42, lineWidth, devicePixelRatio)).toEqual(42.25);
+    expect(getCrispLineCoordinate(-0.7, lineWidth, devicePixelRatio)).toEqual(-0.75);
   });
 });
