@@ -3272,7 +3272,6 @@ dependencies = [
  "opentelemetry",
  "percent-encoding",
  "rand 0.9.2",
- "serde_json",
  "thiserror 2.0.16",
  "tokio",
  "tokio-stream",
