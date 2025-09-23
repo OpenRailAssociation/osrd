@@ -12,6 +12,7 @@ import type {
 import type { GraouTrainSchedule } from 'common/api/graouApi';
 import {
   osrdEditoastApi,
+  type MacroNodeForm,
   type PacedTrain,
   type TrainSchedule,
   type TrainCategory,
@@ -21,7 +22,7 @@ import { Loader } from 'common/Loaders';
 import { useSubCategoryContext } from 'common/SubCategoryContext';
 import { TrainMainCategoryDict } from 'modules/rollingStock/consts';
 import isMainCategory from 'modules/rollingStock/helpers/category';
-import { setFailure, setSuccess } from 'reducers/main';
+import { setFailure, setSuccess, setWarning } from 'reducers/main';
 import type {
   PacedTrainWithPacedTrainId,
   TimetableItem,
@@ -39,6 +40,7 @@ import generateTrainSchedulesPayloads from './generateTrainSchedulesPayloads';
 import findValidTrainNameKey from './helpers/findValidTrainNameKey';
 import { generateRoundTripsPayload } from './helpers/generatePayloads';
 import rollingstockOpenData2OSRD from './rollingstock_opendata2osrd.json';
+import { getSavedMacroNodes } from '../MacroEditor/utils';
 
 function LoadingIfSearching({
   isLoading,
@@ -203,6 +205,41 @@ const ImportTimetableItemTrainsList = ({
     await Promise.all(requests);
   };
 
+  /**
+   * Post macro nodes if their trigrams are not already present in the database.
+   * Displays a warning to the user if any nodes do not get posted.
+   */
+  const postMacroNodesIfNew = async (nodes: MacroNodeForm[]): Promise<void> => {
+    const storedNodes = await getSavedMacroNodes(
+      {
+        projectId: scenario.project.id,
+        studyId: scenario.study_id,
+        scenarioId: scenario.id,
+      },
+      dispatch
+    );
+    const storedNodesKeys = new Set(storedNodes.map((node) => node.path_item_key));
+    const newMacroNodes = nodes.filter((node) => !storedNodesKeys.has(node.path_item_key));
+    if (newMacroNodes.length > 0) {
+      await postMacroNodes({
+        projectId: scenario.project.id,
+        studyId: scenario.study_id,
+        scenarioId: scenario.id,
+        macroNodeBatchForm: { macro_nodes: newMacroNodes },
+      }).unwrap();
+    }
+    const ignoredNodesCount = nodes.length - newMacroNodes.length;
+    if (ignoredNodesCount)
+      dispatch(
+        setWarning({
+          title: t('warningMessages.warning'),
+          text: t('warningMessages.alreadyPresentNode', {
+            count: ignoredNodesCount,
+          }),
+        })
+      );
+  };
+
   async function generateTimetableItem() {
     try {
       let trainSchedulePayloads: TrainSchedule[] = [];
@@ -250,12 +287,7 @@ const ImportTimetableItemTrainsList = ({
       }
 
       if (macroNodes && macroNodes.length > 0) {
-        await postMacroNodes({
-          projectId: scenario.project.id,
-          studyId: scenario.study_id,
-          scenarioId: scenario.id,
-          macroNodeBatchForm: { macro_nodes: macroNodes },
-        }).unwrap();
+        await postMacroNodesIfNew(macroNodes);
       }
 
       upsertTimetableItems([...formattedTrainSchedules, ...formattedPacedTrains]);
