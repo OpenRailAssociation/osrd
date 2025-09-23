@@ -4,16 +4,16 @@ use super::AsCoreRequest;
 
 /// A Core infra load request
 #[derive(Debug, Serialize)]
-pub struct InfraLoadRequest {
+pub struct WorkerLoadRequest {
     pub infra: i64,
+    pub expected_version: i64,
     /// If provided, will load a core with this infra and this timetable loaded in cache
     pub timetable: Option<i64>,
-    pub expected_version: i64,
 }
 
-impl AsCoreRequest<()> for InfraLoadRequest {
+impl AsCoreRequest<()> for WorkerLoadRequest {
     const METHOD: reqwest::Method = reqwest::Method::POST;
-    const URL_PATH: &'static str = "/infra_load";
+    const URL_PATH: &'static str = "/worker_load";
 
     fn worker_id(&self) -> Option<String> {
         match self.timetable {

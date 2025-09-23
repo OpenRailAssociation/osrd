@@ -2,7 +2,7 @@ use axum::Extension;
 use axum::extract::Json;
 use axum::extract::State;
 use core_client::AsCoreRequest;
-use core_client::infra_loading::InfraLoadRequest;
+use core_client::worker_load::WorkerLoadRequest;
 use editoast_derive::EditoastError;
 use editoast_models::prelude::*;
 use serde::Deserialize;
@@ -136,7 +136,7 @@ pub(in crate::views) async fn worker_load(
         .into();
 
     if status == WorkerStatus::Error || status == WorkerStatus::NotReady {
-        let infra_request = InfraLoadRequest {
+        let infra_request = WorkerLoadRequest {
             infra: infra.id,
             expected_version: infra.version,
             timetable: timetable_id,

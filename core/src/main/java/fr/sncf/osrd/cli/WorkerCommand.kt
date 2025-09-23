@@ -136,7 +136,7 @@ class WorkerCommand : CliCommand {
                     ETCSBrakingCurvesEndpoint(infraManager, electricalProfileSetManager),
                 "/version" to VersionEndpoint(),
                 "/stdcm" to STDCMEndpoint(infraManager, timetableCache),
-                "/infra_load" to InfraLoadEndpoint(infraManager),
+                "/worker_load" to WorkerLoadEndpoint(infraManager, timetableCache),
             )
 
         val executor =
