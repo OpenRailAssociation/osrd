@@ -37,8 +37,13 @@ const SettingsPanel = ({
   };
 
   return (
-    <div className="settings-panel">
-      <button type="button" className="close-btn" onClick={onClose}>
+    <div className="settings-panel" data-testid="settings-panel">
+      <button
+        type="button"
+        className="close-btn"
+        onClick={onClose}
+        data-testid="settings-panel-close-button"
+      >
         <X />
       </button>
 

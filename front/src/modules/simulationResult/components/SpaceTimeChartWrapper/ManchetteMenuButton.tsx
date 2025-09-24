@@ -45,6 +45,7 @@ const ManchetteMenuButton = ({ setWaypointsPanelIsOpen }: ManchetteMenuButtonPro
       <button
         ref={menuButtonRef}
         type="button"
+        data-testid="manchette-menu-button"
         className={cx('manchette-menu-button', { 'menu-open': isMenuOpen })}
         aria-label={t('toggleManchetteMenu')}
         title={t('toggleManchetteMenu')}

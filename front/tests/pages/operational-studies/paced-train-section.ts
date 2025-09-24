@@ -295,7 +295,7 @@ class PacedTrainSection extends CommonPage {
     await pacedTrainItem.click();
   }
 
-  async openPacedTrainEditor(index: number = 0) {
+  async openPacedTrainEditor(index = 0) {
     const pacedTrainItem = await this.getPacedTrainToClickableZone(index);
     await expect(pacedTrainItem).toBeVisible();
     await pacedTrainItem.click();
@@ -306,6 +306,18 @@ class PacedTrainSection extends CommonPage {
     await expect(actionButtons.editItem).toBeVisible();
     await actionButtons.editItem.click();
     await expect(this.manageTimetableItemPage).toBeVisible();
+  }
+
+  async projectPacedTrain(index = 0) {
+    const pacedTrainItem = await this.getPacedTrainToClickableZone(index);
+    await expect(pacedTrainItem).toBeVisible();
+    await pacedTrainItem.click();
+    const actionButtons = await this.getActionButtonsLocators({
+      itemIndex: index,
+      itemType: 'paced-train',
+    });
+    await expect(actionButtons.projectItem).toBeVisible();
+    await actionButtons.projectItem.click();
   }
 
   async deletePacedTrain(
@@ -365,6 +377,12 @@ class PacedTrainSection extends CommonPage {
     await expect(occurrenceItem.root).toBeVisible();
     await occurrenceItem.root.hover();
     await expect(occurrenceItem.menuIcon).toBeVisible();
+  }
+
+  async clickOnOccurrence(occurrenceIndex: number) {
+    const occurrenceItem = this.getNthOccurrence(occurrenceIndex);
+    await expect(occurrenceItem.root).toBeVisible();
+    await occurrenceItem.root.click();
   }
 
   async checkOccurrenceActionMenu({

@@ -337,11 +337,6 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
       currentTrainScheduleIndex < timetableItemsCount;
       currentTrainScheduleIndex += 1
     ) {
-      const trainScheduleButton = ScenarioTimetableSection.getTrainScheduleButton(
-        this.timetableItems.nth(currentTrainScheduleIndex)
-      );
-      await expect(trainScheduleButton).toBeVisible();
-      await trainScheduleButton.click();
       await this.projectTrain(currentTrainScheduleIndex);
       await this.verifySimulationResultsVisibility();
     }
@@ -353,10 +348,14 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
     await this.editItemButton.nth(index).click();
   }
 
-  private async projectTrain(index = 0) {
-    const item = this.timetableItems.nth(index);
-    await item.scrollIntoViewIfNeeded();
-    await item.hover();
+  async projectTrain(index = 0) {
+    const trainScheduleButton = ScenarioTimetableSection.getTrainScheduleButton(
+      this.timetableItems.nth(index)
+    );
+    await expect(trainScheduleButton).toBeVisible();
+    await trainScheduleButton.click();
+    await trainScheduleButton.scrollIntoViewIfNeeded();
+    await trainScheduleButton.hover();
     await expect(this.projectItemButton.nth(index)).toBeVisible();
     await this.projectItemButton.nth(index).click();
   }
@@ -422,6 +421,12 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
 
   async verifyEditTimetableItemButtonVisibility() {
     await expect(this.editTimetableItemButton).toBeVisible();
+  }
+
+  async verifyFirstTimetableItemIsSelected() {
+    const timetableItem = this.timetableItems.first();
+    await expect(timetableItem).toBeVisible();
+    await expect(timetableItem).toHaveClass(/selected/);
   }
 }
 

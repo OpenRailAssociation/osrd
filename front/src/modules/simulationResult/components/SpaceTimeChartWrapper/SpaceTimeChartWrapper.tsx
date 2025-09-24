@@ -424,6 +424,7 @@ const SpaceTimeChartWrapper = ({
         />
       )}
       <div
+        data-testid="manchette-spacetimediagram-ref"
         ref={manchetteWithSpaceTimeChartRef}
         className="manchette flex"
         style={{ height }}
@@ -438,6 +439,7 @@ const SpaceTimeChartWrapper = ({
         >
           <div className="toolbar">
             <button
+              data-testid="zoom-reset-button"
               type="button"
               className={cx('reset-button', {
                 'reset-button-disabled': xZoom === timeScaleToZoomValue(DEFAULT_ZOOM_MS_PER_PX),
@@ -451,6 +453,7 @@ const SpaceTimeChartWrapper = ({
               <Iterations />
             </button>
             <button
+              data-testid="zoom-button"
               type="button"
               className={cx('zoom-button', {
                 'zoom-button-clicked': zoomMode,
@@ -463,6 +466,7 @@ const SpaceTimeChartWrapper = ({
             </button>
             <button
               type="button"
+              data-testid="menu-button"
               className="menu-button"
               onClick={() => setShowSettingsPanel(true)}
             >

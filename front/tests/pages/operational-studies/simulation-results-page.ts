@@ -3,15 +3,17 @@ import { expect, type Locator, type Page } from '@playwright/test';
 import CommonPage from '../common-page';
 
 class OpSimulationResultPage extends CommonPage {
+  readonly simulationResults: Locator;
+
   private readonly speedSpaceChartSettingsButton: Locator;
 
   private readonly speedSpaceChartCheckboxItems: Locator;
 
   private readonly speedSpaceChartCloseSettingsButton: Locator;
 
-  private readonly manchetteSpaceTimeChart: Locator;
+  readonly manchetteSpaceTimeChart: Locator;
 
-  private readonly spaceTimeChart: Locator;
+  readonly spaceTimeChart: Locator;
 
   readonly speedSpaceChart: Locator;
 
@@ -21,6 +23,7 @@ class OpSimulationResultPage extends CommonPage {
 
   constructor(page: Page) {
     super(page);
+    this.simulationResults = page.getByTestId('simulation-results');
     this.manchetteSpaceTimeChart = page.getByTestId('manchette-space-time-chart');
     this.speedSpaceChart = page.getByTestId('speed-space-chart');
     this.spaceTimeChart = page.getByTestId('space-time-chart-container');
