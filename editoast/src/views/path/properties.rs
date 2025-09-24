@@ -330,7 +330,6 @@ mod tests {
         let mut core = MockingClient::new();
 
         core.stub("/path_properties")
-            .method(reqwest::Method::POST)
             .response(StatusCode::OK)
             .json(path_properties_response())
             .finish();

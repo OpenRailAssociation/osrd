@@ -1650,7 +1650,6 @@ mod tests {
     async fn get_paced_train_path() {
         let mut core = MockingClient::new();
         core.stub("/pathfinding/blocks")
-            .method(reqwest::Method::POST)
             .response(StatusCode::OK)
             .json(json!({
                 "blocks":[],
@@ -1695,7 +1694,6 @@ mod tests {
     async fn get_paced_train_exception_path_rolling_stock_not_found() {
         let mut core = MockingClient::new();
         core.stub("/pathfinding/blocks")
-            .method(reqwest::Method::POST)
             .response(StatusCode::OK)
             .json(json!({
                 "blocks":[],
@@ -1749,7 +1747,6 @@ mod tests {
     async fn get_paced_train_exception_path() {
         let mut core = MockingClient::new();
         core.stub("/pathfinding/blocks")
-            .method(reqwest::Method::POST)
             .response(StatusCode::OK)
             .json(json!({
                 "blocks":[],

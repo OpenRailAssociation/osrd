@@ -44,7 +44,6 @@ impl MockingClient {
 
     pub(super) fn fetch_mocked<P: AsRef<str>, B: Serialize, R: CoreResponse>(
         &self,
-        req_method: reqwest::Method,
         req_path: P,
         req_body: Option<&B>,
     ) -> Result<Option<R::Response>, MockingError> {
@@ -54,12 +53,8 @@ impl MockingClient {
             .stubs
             .get(&req_path)
             .and_then(|stubs| stubs.deref().lock().unwrap().pop_front())
-            .filter(|StubRequest { method, .. }| match method {
-                None => true,
-                Some(method) => method == req_method,
-            })
         else {
-            panic!("could not find stub for '{req_method}' request at PATH '{req_path}'");
+            panic!("could not find stub for request at PATH '{req_path}'");
         };
 
         match (
@@ -109,7 +104,6 @@ impl MockingClient {
 /// A stub request used to assert the validity of an incoming request to mock
 #[derive(Debug, Clone)]
 pub struct StubRequest {
-    method: Option<reqwest::Method>,
     body: Option<Arc<Body>>,
     response: Option<StubResponse>,
 }
@@ -128,7 +122,6 @@ pub struct StubResponse {
 #[derive(Debug)]
 pub struct StubRequestBuilder<'a> {
     path: String,
-    method: Option<reqwest::Method>,
     body: Option<Arc<Body>>,
     client: &'a mut MockingClient,
 }
@@ -144,19 +137,9 @@ impl<'a> StubRequestBuilder<'a> {
     fn new(path: String, client: &'a mut MockingClient) -> Self {
         Self {
             path,
-            method: None,
             body: None,
             client,
         }
-    }
-
-    /// Sets the method the stub request will mock
-    ///
-    /// If no method is set, the stub works for all methods
-    #[must_use = "call .finish() to register the stub request"]
-    pub fn method(mut self, method: reqwest::Method) -> Self {
-        self.method = Some(method);
-        self
     }
 
     /// Sets the expected body of the expected outgoing request
@@ -190,7 +173,6 @@ impl<'a> StubRequestBuilder<'a> {
             .lock()
             .unwrap()
             .push_back(StubRequest {
-                method: self.method,
                 body: self.body,
                 response: None,
             })
@@ -202,7 +184,6 @@ impl<'a> StubRequestBuilder<'a> {
             .into_iter()
             .map(Some)
             .map(|response| StubRequest {
-                method: self.method.clone(),
                 body: self.body.clone(),
                 response,
             })

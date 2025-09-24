@@ -93,13 +93,11 @@ impl CoreClient {
                 todo!("TODO: handle protocol errors")
             }
             #[cfg(feature = "mocking_client")]
-            CoreClient::Mocked(client) => {
-                match client.fetch_mocked::<_, B, R>(method, path, body) {
-                    Ok(Some(response)) => Ok(response),
-                    Ok(None) => Err(Error::NoResponseContent),
-                    Err(mocking::MockingError { bytes, url }) => Err(Error::parse(&bytes, url)),
-                }
-            }
+            CoreClient::Mocked(client) => match client.fetch_mocked::<_, B, R>(path, body) {
+                Ok(Some(response)) => Ok(response),
+                Ok(None) => Err(Error::NoResponseContent),
+                Err(mocking::MockingError { bytes, url }) => Err(Error::parse(&bytes, url)),
+            },
         }
     }
 }
@@ -132,7 +130,7 @@ impl CoreClient {
 /// # let rt = tokio::runtime::Builder::new_current_thread().enable_all().build().unwrap();
 /// # rt.block_on(async {
 /// #   let mut core_mock = core_client::mocking::MockingClient::default();
-/// #   core_mock.stub("/some/path").method(reqwest::Method::POST).response(reqwest::StatusCode::OK).body("{\"message\":\"YOU WON!\"}").finish();
+/// #   core_mock.stub("/some/path").response(reqwest::StatusCode::OK).body("{\"message\":\"YOU WON!\"}").finish();
 /// #   let core_client = core_mock.into();
 /// // Builds the payload, executes the request at POST /some/path and deserializes its response
 /// let response = TestReq::default().fetch(&core_client).await.unwrap();
@@ -320,7 +318,6 @@ mod tests {
         }
         let mut core = MockingClient::default();
         core.stub("/test")
-            .method(Method::GET)
             .response(StatusCode::OK)
             .body("")
             .finish();
@@ -342,7 +339,6 @@ mod tests {
         }
         let mut core = MockingClient::default();
         core.stub("/test")
-            .method(Method::GET)
             .response(StatusCode::OK)
             .body("not JSON :)")
             .finish();
@@ -377,7 +373,6 @@ mod tests {
         });
         let mut core = MockingClient::default();
         core.stub("/test")
-            .method(Method::GET)
             .response(StatusCode::NOT_FOUND)
             .body(error.to_string())
             .finish();

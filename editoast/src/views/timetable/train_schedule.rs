@@ -1686,7 +1686,6 @@ pub mod tests {
 
         let mut core = MockingClient::new();
         core.stub("/pathfinding/blocks")
-            .method(reqwest::Method::POST)
             .response(StatusCode::OK)
             .json(json!({
                 "status": "not_found_in_tracks"
