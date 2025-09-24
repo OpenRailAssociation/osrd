@@ -9,7 +9,6 @@ use super::Json;
 pub struct CoreVersionRequest {}
 
 impl AsCoreRequest<Json<Version>> for CoreVersionRequest {
-    const METHOD: reqwest::Method = reqwest::Method::POST;
     const URL_PATH: &'static str = "/version";
 
     fn worker_id(&self) -> Option<String> {

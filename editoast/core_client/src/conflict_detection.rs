@@ -93,7 +93,6 @@ pub enum ConflictType {
 }
 
 impl AsCoreRequest<Json<ConflictDetectionResponse>> for ConflictDetectionRequest {
-    const METHOD: reqwest::Method = reqwest::Method::POST;
     const URL_PATH: &'static str = "/conflict_detection";
 
     fn worker_id(&self) -> Option<String> {

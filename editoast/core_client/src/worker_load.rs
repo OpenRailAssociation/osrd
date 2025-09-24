@@ -12,7 +12,6 @@ pub struct WorkerLoadRequest {
 }
 
 impl AsCoreRequest<()> for WorkerLoadRequest {
-    const METHOD: reqwest::Method = reqwest::Method::POST;
     const URL_PATH: &'static str = "/worker_load";
 
     fn worker_id(&self) -> Option<String> {

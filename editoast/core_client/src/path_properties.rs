@@ -145,7 +145,6 @@ impl PropertyZoneValues {
 }
 
 impl AsCoreRequest<Json<PathPropertiesResponse>> for PathPropertiesRequest<'_> {
-    const METHOD: reqwest::Method = reqwest::Method::POST;
     const URL_PATH: &'static str = "/path_properties";
 
     fn worker_id(&self) -> Option<String> {
