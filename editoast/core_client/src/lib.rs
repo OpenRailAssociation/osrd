@@ -61,7 +61,6 @@ impl CoreClient {
     )]
     async fn fetch<B: Serialize, R: CoreResponse>(
         &self,
-        method: reqwest::Method,
         path: &str,
         body: Option<&B>,
         worker_id: Option<String>,
@@ -129,7 +128,7 @@ impl CoreClient {
 /// # let rt = tokio::runtime::Builder::new_current_thread().enable_all().build().unwrap();
 /// # rt.block_on(async {
 /// #   let mut core_mock = core_client::mocking::MockingClient::default();
-/// #   core_mock.stub("/some/path").response(reqwest::StatusCode::OK).body("{\"message\":\"YOU WON!\"}").finish();
+/// #   core_mock.stub("/some/path").response(http::StatusCode::OK).body("{\"message\":\"YOU WON!\"}").finish();
 /// #   let core_client = core_mock.into();
 /// // Builds the payload, executes the request at POST /some/path and deserializes its response
 /// let response = TestReq::default().fetch(&core_client).await.unwrap();
@@ -160,13 +159,8 @@ where
     /// manage itself its expected errors. Maybe a bound error type defaulting
     /// to CoreError and a trait function handle_errors would suffice?
     async fn fetch(&self, core: &CoreClient) -> Result<R::Response, Error> {
-        core.fetch::<Self, R>(
-            reqwest::Method::POST,
-            self.url(),
-            Some(self),
-            self.worker_id(),
-        )
-        .await
+        core.fetch::<Self, R>(self.url(), Some(self), self.worker_id())
+            .await
     }
 }
 

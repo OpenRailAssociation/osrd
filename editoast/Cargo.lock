@@ -959,7 +959,6 @@ dependencies = [
  "linkme",
  "opentelemetry",
  "pretty_assertions",
- "reqwest",
  "rstest",
  "schemas",
  "serde",

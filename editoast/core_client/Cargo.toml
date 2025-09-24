@@ -21,7 +21,6 @@ itertools.workspace = true
 lapin.workspace = true
 linkme.workspace = true
 opentelemetry.workspace = true
-reqwest.workspace = true
 schemas = { workspace = true, features = ["testing"] }
 serde = { workspace = true, features = ["derive"] }
 serde_json.workspace = true
