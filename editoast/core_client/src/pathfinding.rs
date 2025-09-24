@@ -241,7 +241,6 @@ impl TrackRangeOffset<'_> {
 }
 
 impl AsCoreRequest<Json<PathfindingCoreResult>> for PathfindingRequest {
-    const METHOD: reqwest::Method = reqwest::Method::POST;
     const URL_PATH: &'static str = "/pathfinding/blocks";
 
     fn worker_id(&self) -> Option<String> {

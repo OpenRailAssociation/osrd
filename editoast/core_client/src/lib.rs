@@ -122,7 +122,6 @@ impl CoreClient {
 /// }
 ///
 /// impl AsCoreRequest<Json<Response>> for TestReq {
-///     const METHOD: reqwest::Method = reqwest::Method::POST;
 ///     const URL_PATH: &'static str = "/some/path";
 ///     fn worker_id(&self) -> std::option::Option<String> { Some("42".into()) }
 /// }
@@ -142,15 +141,8 @@ where
     Self: Serialize + Sized + Sync,
     R: CoreResponse,
 {
-    /// A shorthand for [Self::method]
-    const METHOD: reqwest::Method;
     /// A shorthand for [Self::url]
     const URL_PATH: &'static str;
-
-    /// Returns the HTTP method for this request, by default returns [Self::METHOD]
-    fn method(&self) -> reqwest::Method {
-        Self::METHOD
-    }
 
     /// Returns the URL for this request, by default returns [Self::URL_PATH]
     fn url(&self) -> &str {
@@ -159,16 +151,6 @@ where
 
     /// Returns the worker id used for the request. Must be provided.
     fn worker_id(&self) -> Option<String>;
-
-    /// Returns whether or not `self` should be serialized as JSON and used as
-    /// the request body
-    ///
-    /// By default, returns true if [Self::method] returns POST, PUT, PATCH and CONNECT, and false
-    /// for every other method.
-    fn has_body(&self) -> bool {
-        use reqwest::Method;
-        [Method::POST, Method::PUT, Method::PATCH, Method::CONNECT].contains(&self.method())
-    }
 
     /// Sends this request using the given [CoreClient] and returns the response content on success
     ///
@@ -179,9 +161,9 @@ where
     /// to CoreError and a trait function handle_errors would suffice?
     async fn fetch(&self, core: &CoreClient) -> Result<R::Response, Error> {
         core.fetch::<Self, R>(
-            self.method(),
+            reqwest::Method::POST,
             self.url(),
-            if self.has_body() { Some(self) } else { None },
+            Some(self),
             self.worker_id(),
         )
         .await
@@ -293,7 +275,6 @@ mod tests {
 
     use http::StatusCode;
     use pretty_assertions::assert_eq;
-    use reqwest::Method;
     use serde::Serialize;
     use serde_json::json;
 
@@ -309,7 +290,6 @@ mod tests {
         #[derive(Serialize)]
         struct Req;
         impl AsCoreRequest<()> for Req {
-            const METHOD: Method = Method::GET;
             const URL_PATH: &'static str = "/test";
 
             fn worker_id(&self) -> Option<String> {
@@ -330,7 +310,6 @@ mod tests {
         #[derive(Serialize)]
         struct Req;
         impl AsCoreRequest<Bytes> for Req {
-            const METHOD: Method = Method::GET;
             const URL_PATH: &'static str = "/test";
 
             fn worker_id(&self) -> Option<String> {
@@ -351,7 +330,6 @@ mod tests {
         #[derive(Serialize)]
         struct Req;
         impl AsCoreRequest<()> for Req {
-            const METHOD: Method = Method::GET;
             const URL_PATH: &'static str = "/test";
 
             fn worker_id(&self) -> Option<String> {

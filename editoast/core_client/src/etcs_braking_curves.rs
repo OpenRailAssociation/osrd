@@ -77,7 +77,6 @@ pub struct SimpleEnvelope {
 }
 
 impl AsCoreRequest<Json<Response>> for Request {
-    const METHOD: reqwest::Method = reqwest::Method::POST;
     const URL_PATH: &'static str = "/etcs_braking_curves";
 
     fn worker_id(&self) -> Option<String> {

@@ -134,7 +134,6 @@ pub enum Response {
 }
 
 impl AsCoreRequest<Json<Response>> for Request {
-    const METHOD: reqwest::Method = reqwest::Method::POST;
     const URL_PATH: &'static str = "/stdcm";
 
     fn worker_id(&self) -> Option<String> {
