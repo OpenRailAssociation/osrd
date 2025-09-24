@@ -73,9 +73,17 @@ const ImportTimetableItemTrainsList = ({
   const checkCategory = (category?: TrainCategory | string | null): TrainCategory | null => {
     if (!category) return null;
 
-    // This condition is added for train imports that still use the old format: `category: string`
+    // This condition is added for train imports that still use the old format: `category: string`, in particular imports from nge
     if (typeof category === 'string') {
-      return isTrainMainCategory(category) ? { main_category: category } : null;
+      if (isTrainMainCategory(category)) return { main_category: category };
+      let correspondingSubCategory = subCategories.find(
+        (subCategory) => subCategory.code === category
+      );
+      if (!correspondingSubCategory)
+        correspondingSubCategory = subCategories.find(
+          (subCategory) => subCategory.name === category
+        );
+      return correspondingSubCategory ? { sub_category_code: correspondingSubCategory.code } : null;
     }
 
     if (isMainCategory(category)) {
