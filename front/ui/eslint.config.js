@@ -24,7 +24,7 @@ export default [
         version: 'detect',
       },
       'import/resolver': {
-        typescript: true // uses eslint-import-resolver-typescript
+        typescript: true, // uses eslint-import-resolver-typescript
       },
     },
     rules: {
