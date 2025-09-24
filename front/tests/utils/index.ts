@@ -83,9 +83,9 @@ export async function handleAndVerifyInput(inputField: Locator, value?: string):
 }
 
 /**
- * Waits until the infrastructure state becomes 'CACHED' before proceeding to the next step.
+ * Wait until the infrastructure state becomes 'CACHED' before proceeding to the next step.
  * The function polls the `infra.status` every 10 seconds, up to a total of 60 seconds.
- * Displays the total time taken for the state to reach 'CACHED'.
+ * Display the total time taken for the state to reach 'CACHED'.
  *
  * @param infraId - The ID of the infrastructure to retrieve and check.
  * @throws {Error} - Throws an error if the state does not become 'CACHED' within 60 seconds.
@@ -113,3 +113,24 @@ export const waitForInfraStateToBeCached = async (infraId: number): Promise<void
 
   throw new Error("Infrastructure state did not reach 'CACHED' within the allotted 3 minutes.");
 };
+
+/**
+ * Get trimmed textContent from a locator
+ */
+export async function getCleanText(locator: Locator): Promise<string> {
+  return ((await locator.textContent()) ?? '').trim();
+}
+
+/**
+ * Check whether the element has the grey text class
+ */
+export async function isGreyed(locator: Locator): Promise<boolean> {
+  return locator.evaluate((el) => el.classList.contains('text-grey-30'));
+}
+
+/**
+ * Check whether the element's content vertically overflows
+ */
+export async function isOverflowing(locator: Locator): Promise<boolean> {
+  return locator.evaluate((el) => el.scrollHeight > el.clientHeight);
+}

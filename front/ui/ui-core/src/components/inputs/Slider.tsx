@@ -56,7 +56,7 @@ const Slider = ({
       style={{ width: `${width}px` }}
     >
       <input
-        data-testid="ranger-slider"
+        data-testid="range-slider"
         type="range"
         className={cx('range-slider', className)}
         id={id}

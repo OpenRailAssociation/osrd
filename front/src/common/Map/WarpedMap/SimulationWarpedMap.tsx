@@ -204,6 +204,7 @@ const SimulationWarpedMap = ({
 
   return (
     <div
+      data-testid="simulation-warped-map"
       className="warped-map position-relative d-flex flex-row"
       style={{ width: collapsed ? 0 : WIDTH }}
     >

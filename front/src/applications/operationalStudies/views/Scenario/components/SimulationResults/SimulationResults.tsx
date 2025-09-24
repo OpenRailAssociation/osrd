@@ -198,7 +198,7 @@ const SimulationResults = ({
     return null;
   }
   return (
-    <div className="simulation-results">
+    <div className="simulation-results" data-testid="simulation-results">
       {/* SIMULATION : SPACE TIME CHART */}
       {activeBoards.has('std') && projectionData && projectionData.projectedTrains.length > 0 && (
         <ResizableSection
@@ -211,6 +211,7 @@ const SimulationResults = ({
             items={[
               {
                 title: t('simulationResults.manchetteSettings.waypointsVisibility'),
+                dataTestID: 'manchette-waypoints-visibility-button',
                 icon: <Eye />,
                 onClick: () => {
                   setWaypointsPanelIsOpen(true);
@@ -224,6 +225,7 @@ const SimulationResults = ({
                 style={{ height: manchetteWithSpaceTimeChartHeight - HIDDEN_CHART_TOP_HEIGHT }}
               >
                 <button
+                  data-testid="warped-map-button"
                   type="button"
                   className="show-warped-map-button"
                   aria-label={t('simulationResults.toggleWarpedMap')}

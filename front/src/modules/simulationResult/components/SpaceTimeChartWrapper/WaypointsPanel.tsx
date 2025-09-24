@@ -124,7 +124,7 @@ const WaypointsPanel = ({
   };
 
   return (
-    <dialog ref={modalRef} className={cx('waypoints-panel')}>
+    <dialog data-testid="waypoints-panel-dialog" ref={modalRef} className={cx('waypoints-panel')}>
       <div className="waypoints-panel-header">
         <div className="name">{t('operational-studies:simulationResults.waypointsPanel.name')}</div>
         <div className="secondary-code">
@@ -136,7 +136,7 @@ const WaypointsPanel = ({
           'with-warning': selectedWaypoints.size < 2,
         })}
       >
-        <div className="waypoint-item selector-all">
+        <div className="waypoint-item selector-all" data-testid="waypoints-panel-select-all">
           <Checkbox
             small
             isIndeterminate={isIndeterminate}
@@ -145,7 +145,7 @@ const WaypointsPanel = ({
           />
         </div>
         {waypoints.map((waypoint, index) => (
-          <div className="waypoint-item" key={waypoint.waypointId}>
+          <div className="waypoint-item" key={waypoint.waypointId} data-testid="waypoint-item">
             <Checkbox
               small
               checked={selectedWaypoints.has(index)}
@@ -156,18 +156,23 @@ const WaypointsPanel = ({
                 handleWaypointClick(e, index);
               }}
             />
-            <span className="path-offset">
+            <span data-testid="waypoint-point-offset" className="path-offset">
               {/* If an offset ends with .00, we want do display only one 0 */}
               {mmToKm(waypoint.position) % 1 === 0
                 ? mmToKm(waypoint.position).toFixed(1)
                 : mmToKm(waypoint.position).toFixed(2)}
             </span>
-            <span className="name">{waypoint.extensions?.identifier?.name}</span>
-            <span className="ch">{waypoint.extensions?.sncf?.ch}</span>
+            <span className="name" data-testid="waypoint-name">
+              {waypoint.extensions?.identifier?.name}
+            </span>
+            <span className="ch" data-testid="waypoint-ch">
+              {waypoint.extensions?.sncf?.ch}
+            </span>
           </div>
         ))}
       </div>
       <div
+        data-testid="waypoints-panel-footer"
         className={cx('waypoints-panel-footer', {
           'wizz-effect': isNotEnoughSelectedWaypoints,
         })}
