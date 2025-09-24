@@ -5,7 +5,6 @@ use std::sync::Arc;
 use std::sync::Mutex;
 
 use http::StatusCode;
-use reqwest::Body;
 use serde::Serialize;
 
 use super::CoreClient;
@@ -59,14 +58,7 @@ impl MockingClient {
 
         match (
             req_body.map(|b| serde_json::to_string(b).expect("could not serialize request body")),
-            stub.body.as_ref().map(|b| {
-                String::from_utf8(
-                    b.as_bytes()
-                        .expect("expected request body should not be empty when specified")
-                        .to_vec(),
-                )
-                .expect("expected request body should serialize faultlessly")
-            }),
+            stub.body.as_ref().map(|b| b.as_str().to_string()),
         ) {
             (Some(actual), Some(expected)) => assert_eq!(actual, expected, "request body mismatch"),
             (None, Some(expected)) => panic!("missing request body: '{expected}'"),
@@ -76,10 +68,7 @@ impl MockingClient {
             .response
             .as_ref()
             .and_then(|r| r.body.as_ref())
-            .map(|b| {
-                b.as_bytes()
-                    .expect("mocked response body should not be empty when specified")
-            });
+            .map(|b| b.as_bytes());
         match stub.response {
             None => Ok(None),
             Some(StubResponse { code, .. }) if code.is_success() => Ok(Some(
@@ -104,7 +93,7 @@ impl MockingClient {
 /// A stub request used to assert the validity of an incoming request to mock
 #[derive(Debug, Clone)]
 pub struct StubRequest {
-    body: Option<Arc<Body>>,
+    body: Option<Arc<String>>,
     response: Option<StubResponse>,
 }
 
@@ -116,20 +105,20 @@ pub struct StubResponse {
     // properly handle response error cases (and Deserialize the error)
     #[allow(unused)]
     code: StatusCode,
-    body: Option<Arc<Body>>,
+    body: Option<Arc<String>>,
 }
 
 #[derive(Debug)]
 pub struct StubRequestBuilder<'a> {
     path: String,
-    body: Option<Arc<Body>>,
+    body: Option<Arc<String>>,
     client: &'a mut MockingClient,
 }
 
 #[derive(Debug)]
 pub struct StubResponseBuilder<'a> {
     code: StatusCode,
-    bodies: Vec<Option<Arc<Body>>>,
+    bodies: Vec<Option<Arc<String>>>,
     request_builder: StubRequestBuilder<'a>,
 }
 
@@ -147,8 +136,8 @@ impl<'a> StubRequestBuilder<'a> {
     /// If no expected body is set, the request actual body is ignored
     #[allow(unused)]
     #[must_use = "call .finish() to register the stub request"]
-    pub fn body<B: Into<Body>>(mut self, body: B) -> Self {
-        self.body = Some(Arc::new(body.into()));
+    pub fn body<B: AsRef<str>>(mut self, body: B) -> Self {
+        self.body = Some(Arc::new(body.as_ref().to_string()));
         self
     }
 
@@ -196,8 +185,8 @@ impl StubResponseBuilder<'_> {
     ///
     /// If none is set, `AsCoreRequest::fetch` will return an `Err(CoreError::NoResponseContent)`
     #[must_use = "call .finish() to register the stub request"]
-    pub fn body<B: Into<Body>>(mut self, body: B) -> Self {
-        self.bodies.push(Some(Arc::new(body.into())));
+    pub fn body<B: AsRef<str>>(mut self, body: B) -> Self {
+        self.bodies.push(Some(Arc::new(body.as_ref().to_string())));
         self
     }
 
@@ -205,7 +194,7 @@ impl StubResponseBuilder<'_> {
     #[must_use = "call .finish() to register the stub request"]
     pub fn json<T: Serialize>(mut self, body: T) -> Self {
         let json_body = serde_json::to_string(&body).expect("Failed to serialize JSON");
-        self.bodies.push(Some(Arc::new(Body::from(json_body))));
+        self.bodies.push(Some(Arc::new(json_body)));
         self
     }
 
