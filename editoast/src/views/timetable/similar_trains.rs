@@ -913,7 +913,6 @@ mod tests {
     async fn init_test(path: Vec<PathItem>) -> InitTestResponse {
         let mut core = MockingClient::new();
         core.stub("/pathfinding/blocks")
-            .method(reqwest::Method::POST)
             .response(StatusCode::OK)
             .json(PathfindingResult::Success(pathfinding_result_success()))
             .finish();
@@ -925,7 +924,6 @@ mod tests {
             OperationalPointOnPath::new_test("South_station", 66, "SS"),
         ];
         core.stub("/path_properties")
-            .method(reqwest::Method::POST)
             .response(StatusCode::OK)
             .json(create_path_properties_response(operational_points))
             .finish();
@@ -1155,7 +1153,6 @@ mod tests {
     async fn compound_similar_trains() {
         let mut core = MockingClient::new();
         core.stub("/pathfinding/blocks")
-            .method(reqwest::Method::POST)
             .response(StatusCode::OK)
             .json(PathfindingResult::Success(pathfinding_result_success()))
             .json(PathfindingResult::Success(pathfinding_result_success()))
@@ -1171,7 +1168,6 @@ mod tests {
             OperationalPointOnPath::new_test("South_station", 66, "SS"),
         ];
         core.stub("/path_properties")
-            .method(reqwest::Method::POST)
             .response(StatusCode::OK)
             .json(create_path_properties_response(
                 operational_points_for_train_1,
@@ -1294,7 +1290,6 @@ mod tests {
     async fn test_select_single_train_without_merging_consecutive_segments() {
         let mut core = MockingClient::new();
         core.stub("/pathfinding/blocks")
-            .method(reqwest::Method::POST)
             .response(StatusCode::OK)
             .json(PathfindingResult::Success(pathfinding_result_success()))
             .json(PathfindingResult::Success(pathfinding_result_success()))
@@ -1318,7 +1313,6 @@ mod tests {
             OperationalPointOnPath::new_test("North_East_station", 77, "NES"),
         ];
         core.stub("/path_properties")
-            .method(reqwest::Method::POST)
             .response(StatusCode::OK)
             .json(create_path_properties_response(
                 operational_points_ws_mes.clone(),
@@ -1478,7 +1472,6 @@ mod tests {
     async fn no_similar_trains_for_some_segments() {
         let mut core = MockingClient::new();
         core.stub("/pathfinding/blocks")
-            .method(reqwest::Method::POST)
             .response(StatusCode::OK)
             .json(PathfindingResult::Success(pathfinding_result_success()))
             .json(PathfindingResult::Success(pathfinding_result_success()))
@@ -1492,7 +1485,6 @@ mod tests {
             OperationalPointOnPath::new_test("North_station", 55, "NS"),
         ];
         core.stub("/path_properties")
-            .method(reqwest::Method::POST)
             .response(StatusCode::OK)
             .json(create_path_properties_response(operational_points_ws_mws)) // train_1
             .json(create_path_properties_response(operational_points_mes_ns)) // train_2
@@ -1670,7 +1662,6 @@ mod tests {
     async fn test_similar_trains_by_relaxing_name_criterion() {
         let mut core = MockingClient::new();
         core.stub("/pathfinding/blocks")
-            .method(reqwest::Method::POST)
             .response(StatusCode::OK)
             .json(PathfindingResult::Success(pathfinding_result_success()))
             .finish();
@@ -1679,7 +1670,6 @@ mod tests {
             OperationalPointOnPath::new_test("Mid_West_station", 33, "MWS"),
         ];
         core.stub("/path_properties")
-            .method(reqwest::Method::POST)
             .response(StatusCode::OK)
             .json(create_path_properties_response(operational_points_ws_mws)) // train_1
             .finish();

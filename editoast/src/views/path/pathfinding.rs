@@ -532,7 +532,6 @@ pub mod tests {
     async fn pathfinding_fails_when_core_responds_with_zero_length_path() {
         let mut core = MockingClient::new();
         core.stub("/pathfinding/blocks")
-            .method(reqwest::Method::POST)
             .response(StatusCode::OK)
             .json(json!({
                 "blocks":[],
@@ -668,7 +667,6 @@ pub mod tests {
     async fn pathfinding_with_valid_path_items_returns_successful_result() {
         let mut core = MockingClient::new();
         core.stub("/pathfinding/blocks")
-            .method(reqwest::Method::POST)
             .response(StatusCode::OK)
             .json(json!({
                 "blocks":[],

@@ -549,12 +549,10 @@ mod tests {
     fn core_mocking_client() -> MockingClient {
         let mut core = MockingClient::new();
         core.stub("/pathfinding/blocks")
-            .method(reqwest::Method::POST)
             .response(StatusCode::OK)
             .json(PathfindingResult::Success(pathfinding_result_success()))
             .finish();
         core.stub("/standalone_simulation")
-            .method(reqwest::Method::POST)
             .response(StatusCode::OK)
             .json(simulation_response())
             .finish();
@@ -774,7 +772,6 @@ mod tests {
     async fn stdcm_return_success() {
         let mut core = core_mocking_client();
         core.stub("/stdcm")
-            .method(reqwest::Method::POST)
             .response(StatusCode::OK)
             .json(core_client::stdcm::Response::Success {
                 simulation: simulation_response().success().unwrap(),
@@ -818,7 +815,6 @@ mod tests {
     async fn stdcm_request_mass_validation() {
         let mut core = core_mocking_client();
         core.stub("/stdcm")
-            .method(reqwest::Method::POST)
             .response(StatusCode::OK)
             .json(core_client::stdcm::Response::Success {
                 simulation: simulation_response().success().unwrap(),
@@ -859,7 +855,6 @@ mod tests {
     async fn stdcm_request_length_validation() {
         let mut core = core_mocking_client();
         core.stub("/stdcm")
-            .method(reqwest::Method::POST)
             .response(StatusCode::OK)
             .json(core_client::stdcm::Response::Success {
                 simulation: simulation_response().success().unwrap(),
@@ -902,7 +897,6 @@ mod tests {
     async fn stdcm_request_validation_success() {
         let mut core = core_mocking_client();
         core.stub("/stdcm")
-            .method(reqwest::Method::POST)
             .response(StatusCode::OK)
             .json(core_client::stdcm::Response::Success {
                 simulation: simulation_response().success().unwrap(),
@@ -953,7 +947,6 @@ mod tests {
     async fn stdcm_fails() {
         let mut core = core_mocking_client();
         core.stub("/stdcm")
-            .method(reqwest::Method::POST)
             .response(StatusCode::OK)
             .json(json!({"status": "path_not_found"}))
             .finish();

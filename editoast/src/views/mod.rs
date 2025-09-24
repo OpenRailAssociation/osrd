@@ -1065,7 +1065,6 @@ mod tests {
     pub fn mocked_core_pathfinding_and_sim() -> MockingClient {
         let mut core = MockingClient::new();
         core.stub("/pathfinding/blocks")
-            .method(reqwest::Method::POST)
             .response(StatusCode::OK)
             .json(
                 serde_json::from_str::<serde_json::Value>(include_str!(
@@ -1075,7 +1074,6 @@ mod tests {
             )
             .finish();
         core.stub("/standalone_simulation")
-            .method(reqwest::Method::POST)
             .response(StatusCode::OK)
             .json(
                 serde_json::from_str::<serde_json::Value>(include_str!(
@@ -1091,7 +1089,6 @@ mod tests {
     pub fn mocked_core_pathfinding_sim_and_proj() -> MockingClient {
         let mut core = MockingClient::new();
         core.stub("/pathfinding/blocks")
-            .method(reqwest::Method::POST)
             .response(StatusCode::OK)
             .json(json!({
                 "blocks":[],
@@ -1103,13 +1100,11 @@ mod tests {
             }))
             .finish();
         core.stub("/standalone_simulation")
-            .method(reqwest::Method::POST)
             .response(StatusCode::OK)
             .json(simulation_response())
             .json(simulation_response())
             .finish();
         core.stub("/signal_projection")
-            .method(reqwest::Method::POST)
             .response(StatusCode::OK)
             .json(json!({
                 "signal_updates": [[{
@@ -1147,7 +1142,6 @@ mod tests {
     async fn core_version() {
         let mut core = MockingClient::new();
         core.stub("/version")
-            .method(reqwest::Method::POST)
             .response(StatusCode::OK)
             .json(json!({"git_describe": ""}))
             .finish();
