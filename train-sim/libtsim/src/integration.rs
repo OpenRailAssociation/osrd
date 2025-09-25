@@ -1,11 +1,11 @@
-// TODO add lint for missing docs
+use std::fmt;
 
 const G: f64 = 9.81;
 const SPEED_EPSILON: f64 = 1e-5;
 const POSITION_EPSILON: f64 = 1e-2;
 
 fn are_doubles_equal(a: f64, b: f64, epsilon: f64) -> bool {
-    f64::abs(a-b) < epsilon
+    f64::abs(a - b) < epsilon
 }
 
 fn are_speeds_equal(a: f64, b: f64) -> bool {
@@ -16,49 +16,12 @@ fn are_positions_equal(a: f64, b: f64) -> bool {
     are_doubles_equal(a, b, POSITION_EPSILON)
 }
 
-pub enum RangeKind {
-    Open,
-    Closed,
-    OpenClosed,
-    ClosedOpen,
-    GreaterThan,
-    AtLeast,
-    LessThan,
-    AtMost,
-    All,
-}
-
-pub struct Range<K> {
-    start: K,
-    end: K,
-    kind: RangeKind,
-}
-
-// https://guava.dev/releases/22.0/api/docs/com/google/common/collect/RangeMap.html
-#[derive(Default)]
-pub struct RangeMap<K, V> {
-    inner: BTreeMap<Range<K>, V>,
-}
-
-impl<K: PartialOrd, V> RangeMap<K, V> {
-    pub fn new() -> Self {
-        Self::default()
-    }
-
-    pub fn insert(&mut self, range: Range<K>, value: V) {
-        // TODO
-    }
-
-    pub fn get(&self, key: K) -> Option<&V> {
-        // TODO
-    }
-}
-
 /// Davis equation coefficients used to model the resistance to motion of a rolling stock.
-/// 
+///
 /// They are usually set empirically for each type of rolling stock.
-/// 
+///
 /// See <https://en.wikipedia.org/wiki/Rail_vehicle_resistance> for details.
+#[derive(Clone, Copy)]
 struct DavisCoefficients {
     /// Speed-independent term, in newtons
     pub a: f64,
@@ -77,12 +40,21 @@ impl DavisCoefficients {
     }
 }
 
+impl fmt::Debug for DavisCoefficients {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let Self { a, b, c } = *self;
+        write!(f, "{a}+{b}*v+{c}*v²")
+    }
+}
+
 /// Characteristics of a specific rolling stock.
+#[derive(Clone, Debug)]
 struct RollingStock {
     // id: String, // TODO remove?
     davis: DavisCoefficients,
 }
 
+#[derive(Clone, Debug)]
 struct IntegrationStep {
     pub time_delta: f64,
     pub position_delta: f64,
@@ -101,14 +73,16 @@ impl IntegrationStep {
         start_speed: f64,
         end_speed: f64,
         acceleration: f64,
-        direction_sign: f64,
+        direction: Direction,
     ) -> Self {
         if end_speed < 0.0 {
             // TODO
         }
+        todo!()
     }
 }
 
+#[derive(Clone, Copy, Debug)]
 enum BrakingType {
     /// Constant deceleration
     Constant,
@@ -128,7 +102,6 @@ enum BrakingType {
     /// Service Brake Intervention 2 - SBI curve computed from EBD
     Sbi2,
 
-    /// Guidance
     Guidance,
 
     /// Permitted Speed before applying minimum with guidance
@@ -137,10 +110,10 @@ enum BrakingType {
     /// Permitted Speed
     Ps,
 
-    /// Indication
     Indication,
 }
 
+#[derive(Clone, Copy, Debug)]
 enum Action {
     Accelerate,
     Brake,
@@ -148,6 +121,7 @@ enum Action {
     Coast,
 }
 
+#[derive(Clone, Copy, Debug)]
 enum Direction {
     Forwards,
     Backwards,
@@ -168,17 +142,25 @@ fn newton_step(
     speed: f64,
     acceleration: f64,
     direction: Direction,
-) {
+) -> IntegrationStep {
     let signed_time_delta = direction.copysign(time_delta);
     let mut new_speed = speed + acceleration * signed_time_delta;
     if are_speeds_equal(new_speed, 0.0) {
         new_speed = 0.0;
     }
 
-    let mut position_delta = speed * signed_time_delta + 0.5 * acceleration * signed_time_delta * signed_time_delta;
+    let mut position_delta =
+        speed * signed_time_delta + 0.5 * acceleration * signed_time_delta * signed_time_delta;
     if are_positions_equal(position_delta, 0.0) {
         position_delta = 0.0;
     }
 
-    IntegrationStep::from_naive_step(time_delta, position_delta, speed, new_speed, acceleration, direction)
+    IntegrationStep::new(
+        time_delta,
+        position_delta,
+        speed,
+        new_speed,
+        acceleration,
+        direction,
+    )
 }
