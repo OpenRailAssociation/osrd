@@ -68,10 +68,10 @@
   "base_power_class": "1",
   "energy_sources": [],
   "supported_signaling_systems": [
-    "BAL",
-    "BAPR",
-    "TVM300",
-    "TVM430"
+    {"type": "BAL"},
+    {"type": "BAPR"},
+    {"type": "TVM300"},
+    {"type": "TVM430"}
   ],
   "primary_category": "INTERCITY_TRAIN",
   "other_categories": []

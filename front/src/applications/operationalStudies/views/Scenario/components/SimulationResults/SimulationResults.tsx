@@ -153,8 +153,16 @@ const SimulationResults = ({
     updateTrainDepartureTime,
   });
 
+  const isEtcs = useMemo(
+    () =>
+      !!simulationResults?.rollingStock?.supported_signaling_systems.find(
+        (s) => s.type === 'ETCS_LEVEL2'
+      ),
+    [simulationResults?.rollingStock?.supported_signaling_systems]
+  );
+
   const { etcsBrakingCurves, fetchEtcsBrakingCurves } = useEtcsBrakingCurves(
-    simulationResults?.rollingStock?.etcs_brake_params !== null,
+    isEtcs,
     simulationResults?.isValid ? simulationResults.simulation : undefined
   );
 

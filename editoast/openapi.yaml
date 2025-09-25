@@ -9872,7 +9872,6 @@ components:
       - startup_acceleration
       - comfort_acceleration
       - const_gamma
-      - etcs_brake_params
       - inertia_coefficient
       - mass
       - rolling_resistance
@@ -9902,10 +9901,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/EnergySource'
-        etcs_brake_params:
-          oneOf:
-          - type: 'null'
-          - $ref: '#/components/schemas/EtcsBrakeParams'
         id:
           type: integer
           format: int64
@@ -9961,7 +9956,8 @@ components:
         supported_signaling_systems:
           type: array
           items:
-            type: string
+            $ref: '#/components/schemas/SupportedSignalingSystem'
+          uniqueItems: true
     LightRollingStockWithLiveries:
       allOf:
       - $ref: '#/components/schemas/LightRollingStock'
@@ -11824,7 +11820,6 @@ components:
       - startup_acceleration
       - comfort_acceleration
       - const_gamma
-      - etcs_brake_params
       - inertia_coefficient
       - base_power_class
       - mass
@@ -11864,10 +11859,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/EnergySource'
-        etcs_brake_params:
-          oneOf:
-          - type: 'null'
-          - $ref: '#/components/schemas/EtcsBrakeParams'
         id:
           type: integer
           format: int64
@@ -11929,7 +11920,8 @@ components:
         supported_signaling_systems:
           type: array
           items:
-            type: string
+            $ref: '#/components/schemas/SupportedSignalingSystem'
+          uniqueItems: true
         version:
           type: integer
           format: int64
@@ -12003,10 +11995,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/EnergySource'
-        etcs_brake_params:
-          oneOf:
-          - type: 'null'
-          - $ref: '#/components/schemas/EtcsBrakeParams'
         inertia_coefficient:
           type: number
           format: double
@@ -12045,7 +12033,7 @@ components:
           $ref: '#/components/schemas/TrainMainCategory'
         railjson_version:
           type: string
-          default: '3.3'
+          default: '3.4'
         raise_pantograph_time:
           type:
           - number
@@ -12069,7 +12057,8 @@ components:
         supported_signaling_systems:
           type: array
           items:
-            type: string
+            $ref: '#/components/schemas/SupportedSignalingSystem'
+          uniqueItems: true
     RollingStockLivery:
       type: object
       description: |
@@ -13943,6 +13932,51 @@ components:
       enum:
       - User
       - Group
+    SupportedSignalingSystem:
+      oneOf:
+      - type: object
+        required:
+        - type
+        properties:
+          type:
+            type: string
+            enum:
+            - BAL
+      - type: object
+        required:
+        - type
+        properties:
+          type:
+            type: string
+            enum:
+            - BAPR
+      - type: object
+        required:
+        - type
+        properties:
+          type:
+            type: string
+            enum:
+            - TVM300
+      - type: object
+        required:
+        - type
+        properties:
+          type:
+            type: string
+            enum:
+            - TVM430
+      - type: object
+        required:
+        - brake_params
+        - type
+        properties:
+          brake_params:
+            $ref: '#/components/schemas/EtcsBrakeParams'
+          type:
+            type: string
+            enum:
+            - ETCS_LEVEL2
     Switch:
       type: object
       required:
@@ -14178,7 +14212,7 @@ components:
           type: string
         railjson_version:
           type: string
-          default: '3.3'
+          default: '3.4'
         rolling_resistance:
           $ref: '#/components/schemas/RollingResistancePerWeight'
         startup_acceleration:

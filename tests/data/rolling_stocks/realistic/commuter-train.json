@@ -145,7 +145,6 @@
   "startup_acceleration": 0.05,
   "comfort_acceleration": 0.25,
   "const_gamma": 0.6,
-  "etcs_brake_params": null,
   "inertia_coefficient": 1.05,
   "base_power_class": "4",
   "mass": 390000.0,
@@ -161,7 +160,10 @@
   "electrical_power_startup_time": 5.0,
   "raise_pantograph_time": 25.0,
   "version": 0,
-  "supported_signaling_systems": ["BAL", "BAPR"],
+  "supported_signaling_systems": [
+    {"type": "BAL"},
+    {"type": "BAPR"}
+  ],
   "primary_category": "COMMUTER_TRAIN",
   "other_categories": [],
   "liveries": []

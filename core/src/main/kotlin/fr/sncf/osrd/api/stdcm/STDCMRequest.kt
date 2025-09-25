@@ -32,6 +32,8 @@ class STDCMRequest(
     /// List of waypoints. Each waypoint is a list of track offsets
     @Json(name = "path_items") val pathItems: List<STDCMPathItem>,
     @Json(name = "rolling_stock_loading_gauge") val rollingStockLoadingGauge: RJSLoadingGaugeType,
+    // TODO: migrate this to structured SupportedSignalingSystem like editoast for ETCS support of
+    // brake params
     @Json(name = "rolling_stock_supported_signaling_systems")
     val rollingStockSupportedSignalingSystems: List<String>,
 

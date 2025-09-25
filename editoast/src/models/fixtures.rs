@@ -5,6 +5,18 @@ use chrono::Duration as ChronoDuration;
 use chrono::Utc;
 use database::DbConnection;
 
+use editoast_models::ElectricalProfileSet;
+use editoast_models::SubCategory;
+use editoast_models::TemporarySpeedLimitGroup;
+use editoast_models::WorkSchedule;
+use editoast_models::WorkScheduleGroup;
+use editoast_models::prelude::*;
+use editoast_models::project::Project;
+use editoast_models::rolling_stock::RollingStock;
+use editoast_models::scenario::Scenario;
+use editoast_models::study::Study;
+use editoast_models::tags::Tags;
+use editoast_models::timetable::Timetable;
 use schemas::fixtures::simple_created_exception_with_change_groups;
 use schemas::fixtures::simple_modified_exception_with_change_groups;
 use schemas::infra::InfraObject;
@@ -42,19 +54,6 @@ use schemas::train_schedule::TrainScheduleOptions;
 use crate::infra_cache::operation::create::apply_create_operation;
 use crate::models;
 use crate::models::Infra;
-use editoast_models::ElectricalProfileSet;
-use editoast_models::SubCategory;
-use editoast_models::WorkSchedule;
-use editoast_models::WorkScheduleGroup;
-use editoast_models::prelude::*;
-use editoast_models::project::Project;
-use editoast_models::rolling_stock::RollingStock;
-use editoast_models::scenario::Scenario;
-use editoast_models::study::Study;
-use editoast_models::tags::Tags;
-use editoast_models::timetable::Timetable;
-
-use editoast_models::TemporarySpeedLimitGroup;
 
 pub async fn create_project(conn: &mut DbConnection, name: &str) -> Project {
     Project::fake(name)

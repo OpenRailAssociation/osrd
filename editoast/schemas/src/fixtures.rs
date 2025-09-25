@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::collections::HashSet;
 use std::str::FromStr;
 
 use chrono::DateTime;
@@ -36,7 +37,7 @@ pub fn simple_rolling_stock() -> RollingStock {
     RollingStock {
         name: "SIMPLE_ROLLING_STOCK".to_string(),
         loading_gauge: LoadingGaugeType::G1,
-        supported_signaling_systems: vec![],
+        supported_signaling_systems: HashSet::new(),
         base_power_class: None,
         comfort_acceleration: units::meter_per_second_squared::new(0.1),
         inertia_coefficient: 1.10,
@@ -47,7 +48,6 @@ pub fn simple_rolling_stock() -> RollingStock {
         raise_pantograph_time: None,
         energy_sources: vec![],
         const_gamma: units::meter_per_second_squared::new(1.0),
-        etcs_brake_params: None,
         metadata: None,
         power_restrictions: HashMap::new(),
         railjson_version: "12".to_string(),
@@ -78,7 +78,7 @@ pub fn towed_rolling_stock() -> TowedRollingStock {
         inertia_coefficient: 1.05,
         rolling_resistance: RollingResistancePerWeight {
             rolling_resistance_type: "davis".to_string(),
-            // TODO those values are wrong, they correspond to daN/T, (daN/T)/(km/h), and (daN/T)/(km/h)² per weight
+            // TODO those values are wrong, they correspond to daN/T, (daN/T)/(km/h), and (daN/T)/(km/h)²
             // We should use more realistic values and fix the tests
             A: units::meter_per_second_squared::new(1.0),
             B: units::hertz::new(0.01),

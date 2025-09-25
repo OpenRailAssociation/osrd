@@ -36,7 +36,7 @@ export type RollingStockParametersValidValues = {
   raisePantographTime: number | null;
   basePowerClass: string | null;
   powerRestrictions: RollingStock['power_restrictions'];
-  supportedSignalingSystems: string[];
+  supportedSignalingSystems: RollingStock['supported_signaling_systems'];
   primaryCategory: TrainMainCategory;
   categories: Set<TrainMainCategory>;
 };
@@ -70,7 +70,7 @@ export type RollingStockParametersValues = {
   basePowerClass: string | null;
   powerRestrictions: RollingStock['power_restrictions'];
   etcsBrakeParams?: EtcsBrakeParams;
-  supportedSignalingSystems: string[];
+  supportedSignalingSystems: RollingStock['supported_signaling_systems'];
   primaryCategory?: TrainMainCategory;
   categories: Set<TrainMainCategory>;
 };

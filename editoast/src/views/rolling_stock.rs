@@ -18,6 +18,13 @@ use axum::response::IntoResponse;
 use database::DbConnection;
 use database::DbConnectionPoolV2;
 use editoast_derive::EditoastError;
+use editoast_models::Document;
+use editoast_models::RollingStockImage;
+use editoast_models::prelude::*;
+use editoast_models::rolling_stock;
+use editoast_models::rolling_stock::RollingStock;
+use editoast_models::rolling_stock::ScenarioReference;
+use editoast_models::rolling_stock_livery::RollingStockLivery;
 use image::DynamicImage;
 use image::GenericImage;
 use image::ImageBuffer;
@@ -34,13 +41,6 @@ use crate::error::InternalError;
 use crate::error::Result;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
-use editoast_models::Document;
-use editoast_models::RollingStockImage;
-use editoast_models::prelude::*;
-use editoast_models::rolling_stock;
-use editoast_models::rolling_stock::RollingStock;
-use editoast_models::rolling_stock::ScenarioReference;
-use editoast_models::rolling_stock_livery::RollingStockLivery;
 
 #[derive(Debug, Serialize, ToSchema)]
 pub struct RollingStockWithLiveries {
@@ -746,7 +746,6 @@ pub mod tests {
     use editoast_models::rolling_stock::TrainMainCategory;
     use itertools::Itertools;
     use pretty_assertions::assert_eq;
-
     use serde_json::json;
     use uuid::Uuid;
 
@@ -783,6 +782,13 @@ pub mod tests {
         form
     }
 
+    pub fn simple_etcs_level2_rolling_stock() -> RollingStockForm {
+        serde_json::from_str::<RollingStockForm>(include_str!(
+            "../../../tests/data/rolling_stocks/etcs_level2_rolling_stock.json"
+        ))
+        .expect("Unable to parse example rolling stock")
+    }
+
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn create_rolling_stock_successfully() {
         // GIVEN
@@ -809,6 +815,13 @@ pub mod tests {
         assert_eq!(
             fast_rolling_stock_form.startup_time,
             rolling_stock.startup_time
+        );
+        let rolling_stock: schemas::RollingStock = rolling_stock.into();
+        assert_eq!(
+            rolling_stock
+                .supported_signaling_systems()
+                .contains(&"ETCS_LEVEL2".to_string()),
+            false
         );
     }
 
@@ -1043,6 +1056,39 @@ pub mod tests {
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn create_rolling_stock_with_etcs_brake_params() {
+        // GIVEN
+        let app = TestAppBuilder::default_app();
+        let db_pool = app.db_pool();
+
+        let rolling_stock_form = simple_etcs_level2_rolling_stock();
+
+        // WHEN
+        let request = app.rolling_stock_create_request(&rolling_stock_form);
+        let raw_response = app.fetch(request);
+
+        let response: RollingStock = raw_response.await.assert_status(StatusCode::OK).json_into();
+        // Check if the rolling stock was created in the database
+        let rolling_stock = RollingStock::retrieve(db_pool.get_ok(), response.id)
+            .await
+            .expect("Failed to retrieve rolling stock")
+            .expect("Rolling stock not found");
+
+        let rolling_stock: schemas::RollingStock = rolling_stock.into();
+
+        // THEN
+        assert_eq!(
+            rolling_stock
+                .supported_signaling_systems()
+                .contains(&"ETCS_LEVEL2".to_string()),
+            true
+        );
+
+        assert_eq!(rolling_stock.name, rolling_stock_form.name);
+        assert_eq!(rolling_stock_form.startup_time, rolling_stock.startup_time);
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn get_rolling_stock_by_id() {
         // GIVEN
         let app = TestAppBuilder::default_app();
@@ -1221,9 +1267,9 @@ pub mod tests {
         // THEN
         let response = raw_response
             .assert_status(StatusCode::UNPROCESSABLE_ENTITY)
-            .bytes();
+            .string();
         assert_eq!(
-            &String::from_utf8(response).unwrap(),
+            response,
             "Failed to deserialize the JSON body into the target type: invalid rolling-stock: primary_category: The primary_category cannot be listed in other_categories for rolling stocks."
         );
 

@@ -1,5 +1,5 @@
 version = 1
-revision = 2
+revision = 3
 requires-python = ">=3.11"
 
 [[package]]
@@ -34,7 +34,7 @@ wheels = [
 
 [[package]]
 name = "osrd-schemas"
-version = "0.9.1"
+version = "0.10.0"
 source = { editable = "." }
 dependencies = [
     { name = "geojson-pydantic" },
@@ -50,7 +50,7 @@ check = [
 [package.metadata]
 requires-dist = [
     { name = "geojson-pydantic", specifier = "~=1.0.0" },
-    { name = "pydantic", specifier = "~=2.7" },
+    { name = "pydantic", specifier = "~=2.11" },
     { name = "pyright", marker = "extra == 'check'", specifier = "~=1.1.393" },
     { name = "ruff", marker = "extra == 'check'", specifier = "~=0.9.5" },
 ]

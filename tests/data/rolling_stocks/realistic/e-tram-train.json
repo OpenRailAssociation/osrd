@@ -127,7 +127,6 @@
   "startup_acceleration": 0.05,
   "comfort_acceleration": 0.3,
   "const_gamma": 0.7,
-  "etcs_brake_params": null,
   "inertia_coefficient": 1.04,
   "base_power_class": "1",
   "mass": 92000.0,
@@ -143,7 +142,10 @@
   "electrical_power_startup_time": 5.0,
   "raise_pantograph_time": 25.0,
   "version": 0,
-  "supported_signaling_systems": ["BAL", "BAPR"],
+  "supported_signaling_systems": [
+    {"type": "BAL"},
+    {"type": "BAPR"}
+  ],
   "primary_category": "TRAM_TRAIN",
   "other_categories": [],
   "liveries": []
