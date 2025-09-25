@@ -1,6 +1,7 @@
 import { type Locator, type Page, expect } from '@playwright/test';
 
 import OperationalStudiesPage from './operational-studies-page';
+import type { RoundTripCardExpected } from '../../utils/types';
 
 class RoundTripPage extends OperationalStudiesPage {
   private readonly manageRoundTripsButton: Locator;
@@ -35,6 +36,24 @@ class RoundTripPage extends OperationalStudiesPage {
 
   private readonly roundTripFilterField: Locator;
 
+  private readonly roundTripCardName: Locator;
+
+  private readonly roundTripCardInterval: Locator;
+
+  private readonly roundTripCardStops: Locator;
+
+  private readonly roundTripCardOrigin: Locator;
+
+  private readonly roundTripCardDestination: Locator;
+
+  private readonly roundTripCardStartTime: Locator;
+
+  private readonly roundTripCardRequestedArrivalTime: Locator;
+
+  private readonly intermediateStopsTooltip: Locator;
+
+  private readonly intermediateStopTooltipItem: Locator;
+
   constructor(page: Page) {
     super(page);
     this.manageRoundTripsButton = page.getByTestId('scenarios-manage-round-trips-button');
@@ -53,6 +72,17 @@ class RoundTripPage extends OperationalStudiesPage {
     this.saveRoundTripsButton = page.getByTestId('round-trips-save-button');
     this.cancelRoundTripsButton = page.getByTestId('round-trips-cancel-button');
     this.roundTripFilterField = page.getByTestId('round-trips-filter-input');
+    this.roundTripCardName = page.getByTestId('round-trips-card-name');
+    this.roundTripCardInterval = page.getByTestId('round-trips-card-interval');
+    this.roundTripCardStops = page.getByTestId('round-trips-card-stops');
+    this.roundTripCardOrigin = page.getByTestId('round-trips-card-origin');
+    this.roundTripCardDestination = page.getByTestId('round-trips-card-destination');
+    this.roundTripCardStartTime = page.getByTestId('round-trips-card-start-time');
+    this.roundTripCardRequestedArrivalTime = page.getByTestId(
+      'round-trips-card-requested-arrival-time'
+    );
+    this.intermediateStopsTooltip = page.getByTestId('osrd-tooltip');
+    this.intermediateStopTooltipItem = this.intermediateStopsTooltip.getByTestId('tooltip-item');
   }
 
   async openRoundTripModal() {
@@ -112,6 +142,64 @@ class RoundTripPage extends OperationalStudiesPage {
       expect(this.oneWaysColumnCard).toHaveCount(expectedOneWayCount),
       expect(this.roundTripPairCards).toHaveCount(expectedRoundTripCount * 2), // each pair has 2 cards
     ]);
+  }
+
+  async verifyRoundTripCardData({
+    roundTripCardIndex,
+    expectedCard,
+  }: {
+    roundTripCardIndex: number;
+    expectedCard: RoundTripCardExpected;
+  }): Promise<void> {
+    await expect(this.roundTripsCards.nth(roundTripCardIndex)).toBeVisible();
+
+    const title = this.roundTripCardName.nth(roundTripCardIndex);
+    const interval = this.roundTripCardInterval.nth(roundTripCardIndex);
+    const stops = this.roundTripCardStops.nth(roundTripCardIndex);
+    const origin = this.roundTripCardOrigin.nth(roundTripCardIndex);
+    const destination = this.roundTripCardDestination.nth(roundTripCardIndex);
+    const startTime = this.roundTripCardStartTime.nth(roundTripCardIndex);
+    const requestedArrivalTime = this.roundTripCardRequestedArrivalTime.nth(roundTripCardIndex);
+
+    await Promise.all([
+      expect(title).toHaveText(expectedCard.title),
+      expect(interval).toHaveText(expectedCard.interval),
+      expect(stops).toHaveText(expectedCard.stops),
+      expect(origin).toHaveText(expectedCard.origin),
+      expect(destination).toHaveText(expectedCard.destination),
+      expect(startTime).toHaveText(expectedCard.startTime),
+      expect(requestedArrivalTime).toHaveText(expectedCard.requestedArrivalTime),
+    ]);
+  }
+
+  private async hideOpenTooltip(): Promise<void> {
+    if (await this.intermediateStopsTooltip.isVisible()) {
+      await this.roundTripsModalPage.hover({ position: { x: 5, y: 5 } });
+      await expect(this.intermediateStopsTooltip).toBeHidden();
+    }
+  }
+
+  async checkIntermediateStopsTooltip({
+    roundTripCardIndex,
+  }: {
+    roundTripCardIndex: number;
+  }): Promise<void> {
+    const stops = this.roundTripCardStops.nth(roundTripCardIndex);
+    await stops.hover();
+    await expect(this.intermediateStopsTooltip).toBeVisible();
+    const tooltipItemsCount = await this.intermediateStopTooltipItem.count();
+    await expect(stops).toHaveText(String(tooltipItemsCount));
+    await this.hideOpenTooltip(); // dismiss the tooltip
+  }
+
+  async verifyNoTooltipDisplayed({
+    roundTripCardIndex,
+  }: {
+    roundTripCardIndex: number;
+  }): Promise<void> {
+    const stops = this.roundTripCardStops.nth(roundTripCardIndex);
+    await stops.hover({ force: true });
+    await expect(this.intermediateStopsTooltip).not.toBeVisible();
   }
 }
 

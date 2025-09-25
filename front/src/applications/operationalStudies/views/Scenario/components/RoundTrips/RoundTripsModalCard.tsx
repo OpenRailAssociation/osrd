@@ -87,6 +87,7 @@ const RoundTripsModalCard = ({
 
   const menuItems: Record<string, OSRDMenuItem> = {
     restore: {
+      dataTestID: 'round-trips-restore-menu-item',
       title: t('restore'),
       icon: <BsXCircleFill />,
       onClick: () => {
@@ -95,6 +96,7 @@ const RoundTripsModalCard = ({
       },
     },
     setOneWay: {
+      dataTestID: 'round-trips-set-one-way-menu-item',
       title: t('setOneWay'),
       icon: <ArrowRight />,
       onClick: () => {
@@ -103,6 +105,7 @@ const RoundTripsModalCard = ({
       },
     },
     pickReturn: {
+      dataTestID: 'round-trips-pick-return-menu-item',
       title: t('pickReturn'),
       icon: <ArrowSwitch />,
       onClick: () => {
@@ -145,13 +148,14 @@ const RoundTripsModalCard = ({
     >
       <div className="round-trips-card-header">
         <h3
+          data-testid="round-trips-card-name"
           title={name}
           className={cx('name', getTrainCategoryClassName(category, 'text'))}
           style={{ color: currentSubCategory?.color }}
         >
           {name}
         </h3>
-        <div className="interval" title={t('cadence')}>
+        <div data-testid="round-trips-card-interval" className="interval" title={t('cadence')}>
           {interval ? `${interval.total('minute')}\u2019` : '\u2013'}
         </div>
         <div
@@ -175,6 +179,7 @@ const RoundTripsModalCard = ({
         <button
           ref={menuButtonRef}
           type="button"
+          data-testid="round-trips-card-menu-button"
           className="card-menu"
           title={t('openRoundTripsMenu')}
           disabled={isCandidate}
@@ -194,7 +199,12 @@ const RoundTripsModalCard = ({
           onMouseEnter={() => setIsStopsTooltipOpen(true)}
           onMouseLeave={() => setIsStopsTooltipOpen(false)}
         >
-          <span className={cx({ 'no-stops': stops.length === 0 })}>{stops.length}</span>
+          <span
+            data-testid="round-trips-card-stops"
+            className={cx({ 'no-stops': stops.length === 0 })}
+          >
+            {stops.length}
+          </span>
           <Services className="stops-icon" />
         </div>
         {isStopsTooltipOpen && stops.length > 0 && (
@@ -209,16 +219,22 @@ const RoundTripsModalCard = ({
         )}
         <div className="od-infos">
           <div className="extremity">
-            <div className="times">{startTime.getMinutes().toString().padStart(2, '0')}</div>
-            <div className="location">{origin}</div>
+            <div data-testid="round-trips-card-start-time" className="times">
+              {startTime.getMinutes().toString().padStart(2, '0')}
+            </div>
+            <div data-testid="round-trips-card-origin" className="location">
+              {origin}
+            </div>
           </div>
           <div className="extremity">
-            <div className="times">
+            <div data-testid="round-trips-card-requested-arrival-time" className="times">
               {requestedArrivalTime
                 ? requestedArrivalTime.getMinutes().toString().padStart(2, '0')
                 : '?'}
             </div>
-            <div className="location">{destination}</div>
+            <div data-testid="round-trips-card-destination" className="location">
+              {destination}
+            </div>
           </div>
         </div>
       </div>

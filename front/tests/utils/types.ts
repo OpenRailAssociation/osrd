@@ -363,3 +363,13 @@ export type ChangeGroup =
   | 'speed_limit_tag'
   | 'start_time'
   | 'train_name';
+
+export type RoundTripCardExpected = {
+  title: string;
+  interval: string;
+  stops: string;
+  origin: string;
+  destination: string;
+  startTime: string;
+  requestedArrivalTime: string;
+};

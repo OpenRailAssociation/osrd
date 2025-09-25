@@ -92,7 +92,7 @@ const OSRDTooltip = ({
         <hr />
         <div className="osrd-tooltip-body">
           {items.map((item, i) => (
-            <span key={i} className="tooltip-item">
+            <span key={i} data-testid="tooltip-item" className="tooltip-item">
               {item}
             </span>
           ))}
