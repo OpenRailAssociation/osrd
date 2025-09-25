@@ -103,10 +103,12 @@ def test_get_paced_train_with_exception_path(
         f"{EDITOAST_URL}paced_train/{paced_train_id}/path?infra_id={small_infra.id}&exception_key=exception_key"
     ).json()
     base_track_sections = [
-        tsr["track_section"] for tsr in paced_train_path_result["track_section_ranges"]
+        tsr["track_section"]
+        for tsr in paced_train_path_result["path"]["track_section_ranges"]
     ]
     exception_track_sections = [
-        tsr["track_section"] for tsr in exception_path_result["track_section_ranges"]
+        tsr["track_section"]
+        for tsr in exception_path_result["path"]["track_section_ranges"]
     ]
 
     # Check if the response is different from paced train
