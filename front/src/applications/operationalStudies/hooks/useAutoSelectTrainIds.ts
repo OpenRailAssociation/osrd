@@ -105,18 +105,11 @@ const useAutoSelectTrainIds = (
 
   // Update the URL and local storage on redux store change
   useEffect(() => {
-    if (selectedTrainId?.toString() !== getParamFromUrlOrStorage('selected_train')) {
+    if (parametersLoaded) {
       setParamsInUrlAndStorage('selected_train', selectedTrainId?.toString());
-    }
-    if (currentTrainIdForProjection?.toString() !== getParamFromUrlOrStorage('projection')) {
       setParamsInUrlAndStorage('projection', currentTrainIdForProjection?.toString());
     }
-  }, [
-    selectedTrainId,
-    currentTrainIdForProjection,
-    setParamsInUrlAndStorage,
-    getParamFromUrlOrStorage,
-  ]);
+  }, [parametersLoaded, selectedTrainId, currentTrainIdForProjection, setParamsInUrlAndStorage]);
 
   useEffect(() => {
     if (timetableItemIds === undefined) {
