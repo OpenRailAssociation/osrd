@@ -14,6 +14,7 @@ export type ButtonProps = Omit<ButtonHTMLAttributes<HTMLButtonElement>, 'onClick
   leadingIcon?: ReactNode;
   counter?: number | null;
   size?: ButtonSize;
+  dataTestID?: string;
   onClick: () => void;
 };
 
@@ -26,6 +27,7 @@ const Button = ({
   counter = null,
   size = 'large',
   onClick,
+  dataTestID,
   ...btnAttrs
 }: ButtonProps) => {
   const handleClick = () => {
@@ -46,6 +48,7 @@ const Button = ({
           loading: isLoading,
         }
       )}
+      data-testid={dataTestID}
       onClick={handleClick}
       disabled={isDisabled || isLoading}
     >
