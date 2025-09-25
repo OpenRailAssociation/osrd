@@ -16,6 +16,7 @@ import fr.sncf.osrd.utils.json.UnitAdapterFactory
 import java.time.Duration
 import java.time.Instant
 import java.time.ZonedDateTime
+import kotlin.collections.flatMap
 import kotlin.io.path.Path
 import kotlin.io.path.readText
 import kotlin.math.pow
@@ -50,43 +51,18 @@ class TimetableDownloader(baseUrl: String, authenticationHeader: String, httpCli
     @OptIn(ExperimentalCoroutinesApi::class)
     private fun fetchTrainRequirements(
         infraId: String,
-        infra: RawInfra,
         timetableId: TimetableId,
-    ): Flow<SpacingRequirement> = flow {
+    ): Flow<TrainRequirementsById> = flow {
         val firstPageTrainRequirements = getTrainPaginatedRequirements(infraId, timetableId, 1)
-        emitAll(
-            firstPageTrainRequirements.results
-                .flatMap {
-                    it.spacingRequirements.map { spacingReq ->
-                        SpacingRequirement.fromRJSWithAddedTime(
-                            spacingReq,
-                            infra,
-                            it.startTime.durationSinceEpoch(),
-                        )
-                    }
-                }
-                .asFlow()
-        )
+        emitAll(firstPageTrainRequirements.results.asFlow())
         emitAll(
             (2..firstPageTrainRequirements.pageCount)
                 .asFlow()
                 // Limit the number of concurrent calls to the requirements endpoint.
                 .flatMapMerge(concurrency = 5) { page ->
-                    flow {
-                        val paginatedTrainRequirements =
-                            getTrainPaginatedRequirements(infraId, timetableId, page)
-                        paginatedTrainRequirements.results
-                            .flatMap {
-                                it.spacingRequirements.map { spacingReq ->
-                                    SpacingRequirement.fromRJSWithAddedTime(
-                                        spacingReq,
-                                        infra,
-                                        it.startTime.durationSinceEpoch(),
-                                    )
-                                }
-                            }
-                            .forEach { emit(it) }
-                    }
+                    val paginatedTrainRequirements =
+                        getTrainPaginatedRequirements(infraId, timetableId, page)
+                    paginatedTrainRequirements.results.asFlow()
                 }
         )
     }
@@ -137,10 +113,18 @@ class TimetableDownloader(baseUrl: String, authenticationHeader: String, httpCli
     ): STDCMRequirements {
         return runBlocking {
             val res = mutableMapOf<ZoneId, RangeSet<Double>>()
-            val requirements = fetchTrainRequirements(infraId, infra, timetableId)
-            requirements.collect { spacingReq ->
-                val set = res.computeIfAbsent(spacingReq.zone) { TreeRangeSet.create() }
-                set.add(Range.closedOpen(spacingReq.beginTime, spacingReq.endTime))
+            val trainRequirementsById = fetchTrainRequirements(infraId, timetableId)
+            trainRequirementsById.collect { trainRequirementById ->
+                for (rjsRequirement in trainRequirementById.spacingRequirements) {
+                    val requirement =
+                        SpacingRequirement.fromRJSWithAddedTime(
+                            rjsRequirement,
+                            infra,
+                            trainRequirementById.startTime.durationSinceEpoch(),
+                        )
+                    val set = res.computeIfAbsent(requirement.zone) { TreeRangeSet.create() }
+                    set.add(Range.closedOpen(requirement.beginTime, requirement.endTime))
+                }
             }
             STDCMRequirements(res)
         }
