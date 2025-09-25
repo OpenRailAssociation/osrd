@@ -593,7 +593,7 @@
     "train_name": "Train20",
     "labels": ["Tag-20", "SS-WS"],
     "rolling_stock_name": "ELECTRIC_RS_E2E",
-    "start_time": "2024-10-17T16:00:00Z",
+    "start_time": "2024-10-17T15:59:29Z",
     "path": [
       { "id": "id2078", "deleted": false, "uic": 8766, "secondary_code": "BV" },
       { "id": "id2124", "deleted": false, "uic": 8744, "secondary_code": "BV" },
@@ -603,24 +603,22 @@
     "schedule": [
       {
         "at": "id2124",
-        "arrival": "PT3654S",
-        "stop_for": "PT300S",
+        "arrival": "PT1H54S",
+        "locked": false,
         "reception_signal": "OPEN",
-        "locked": false
+        "stop_for": "PT5M"
       },
       {
         "at": "id2129",
-        "arrival": null,
-        "stop_for": "PT600S",
+        "locked": false,
         "reception_signal": "STOP",
-        "locked": false
+        "stop_for": "PT10M"
       },
       {
         "at": "id2079",
-        "arrival": "PT7223S",
-        "stop_for": "PT20S",
+        "arrival": "PT2H1M31S",
         "reception_signal": "OPEN",
-        "locked": false
+        "stop_for": "PT12S"
       }
     ],
     "margins": { "boundaries": ["id2079"], "values": ["4.5%", "0%"] },

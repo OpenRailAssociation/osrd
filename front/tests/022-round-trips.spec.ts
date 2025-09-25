@@ -8,6 +8,14 @@ import type {
 } from 'common/api/osrdEditoastApi';
 
 import { timetableItemProjectName, timetableItemStudyName } from './assets/constants/project-const';
+import {
+  FirstPacedTrain,
+  FirstTrainSchedule,
+  SecondPacedTrain,
+  SecondTrainSchedule,
+  ThirdPacedTrain,
+  ThirdTrainSchedule,
+} from './assets/operation-studies/round-trips/round-trip-card';
 import test from './logging-fixture';
 import RoundTripPage from './pages/operational-studies/round-trips-page';
 import { generateUniqueName, waitForInfraStateToBeCached } from './utils';
@@ -90,6 +98,56 @@ test.describe('Verify round trips', () => {
         expectedOneWayCount: 0,
         expectedRoundTripCount: 0,
       });
+    });
+  });
+
+  test('Verify round trip cards: paced trains and schedules', async () => {
+    await test.step('First paced train - data & no tooltip', async () => {
+      await roundTripPage.verifyRoundTripCardData({
+        roundTripCardIndex: 0,
+        expectedCard: FirstPacedTrain,
+      });
+      await roundTripPage.verifyNoTooltipDisplayed({ roundTripCardIndex: 0 });
+    });
+
+    await test.step('Second paced train - data & tooltip check', async () => {
+      await roundTripPage.verifyRoundTripCardData({
+        roundTripCardIndex: 1,
+        expectedCard: SecondPacedTrain,
+      });
+      await roundTripPage.checkIntermediateStopsTooltip({ roundTripCardIndex: 1 });
+    });
+
+    await test.step('Third paced train - data & no tooltip', async () => {
+      await roundTripPage.verifyRoundTripCardData({
+        roundTripCardIndex: 2,
+        expectedCard: ThirdPacedTrain,
+      });
+      await roundTripPage.verifyNoTooltipDisplayed({ roundTripCardIndex: 2 });
+    });
+
+    await test.step('First schedule - data & no tooltip', async () => {
+      await roundTripPage.verifyRoundTripCardData({
+        roundTripCardIndex: 3,
+        expectedCard: FirstTrainSchedule,
+      });
+      await roundTripPage.verifyNoTooltipDisplayed({ roundTripCardIndex: 3 });
+    });
+
+    await test.step('Second schedule - data & tooltip check', async () => {
+      await roundTripPage.verifyRoundTripCardData({
+        roundTripCardIndex: 4,
+        expectedCard: SecondTrainSchedule,
+      });
+      await roundTripPage.checkIntermediateStopsTooltip({ roundTripCardIndex: 4 });
+    });
+
+    await test.step('Third schedule - data, tooltip check & final no-tooltip', async () => {
+      await roundTripPage.verifyRoundTripCardData({
+        roundTripCardIndex: 5,
+        expectedCard: ThirdTrainSchedule,
+      });
+      await roundTripPage.checkIntermediateStopsTooltip({ roundTripCardIndex: 5 });
     });
   });
 });
