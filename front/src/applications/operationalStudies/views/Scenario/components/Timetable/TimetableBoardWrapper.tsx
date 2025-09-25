@@ -237,6 +237,7 @@ const TimetableBoardWrapper = ({
       {
         title: t('main.roundTripsModal.manageRoundTrips'),
         icon: <ArrowSwitch />,
+        dataTestID: 'scenarios-manage-round-trips-button',
         onClick: () => setRoundTripsModalIsOpen(true),
       },
       {

@@ -138,6 +138,7 @@ const RoundTripsModalCard = ({
 
   return (
     <div
+      data-testid="round-trips-card"
       className={cx('round-trips-card', {
         'pairing-item': isItemToPair,
       })}

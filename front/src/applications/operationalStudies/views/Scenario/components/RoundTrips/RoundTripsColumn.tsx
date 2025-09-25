@@ -43,11 +43,13 @@ const RoundTripsColumn = ({
       })}
     >
       <div className="scroll-container">
-        <div className="round-trips-modal-column">
+        <div data-testid="round-trips-column" className="round-trips-modal-column">
           <h2 className="column-title">
             <ArrowSwitch />
-            <span>{t('roundTrips')}</span>
-            <div className="item-count">{pairingItems.length}</div>
+            <span data-testid="round-trips-title">{t('roundTrips')}</span>
+            <div data-testid="round-trips-item-count" className="item-count">
+              {pairingItems.length}
+            </div>
           </h2>
           <div className="column-wrapper">
             {pairingItems.length === 0 ? (
@@ -58,7 +60,11 @@ const RoundTripsColumn = ({
               </div>
             ) : (
               pairingItems.map(({ pair: [pairA, pairB], isValid }) => (
-                <div className="round-trip-pair" key={`${pairA.id}-${pairB.id}`}>
+                <div
+                  data-testid="round-trips-pair"
+                  className="round-trip-pair"
+                  key={`${pairA.id}-${pairB.id}`}
+                >
                   <RoundTripsModalCard
                     pairingItem={pairA}
                     restoreItems={() => restoreItems([pairA, pairB])}

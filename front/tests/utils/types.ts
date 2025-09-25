@@ -335,6 +335,10 @@ export type ManageTimetableItemTranslations = FlatTranslations & {
   pacedTrains: FlatTranslations;
 };
 
+export type RoundTripsModalTranslations = FlatTranslations & {
+  roundTripsModal: FlatTranslations;
+};
+
 export type TimetableFilterTranslations = FlatTranslations & {
   timetable: FlatTranslations & {
     occurrenceType: FlatTranslations;
