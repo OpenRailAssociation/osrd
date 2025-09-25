@@ -73,6 +73,7 @@ export type RollingStockParametersValues = {
   supportedSignalingSystems: string[];
   primaryCategory?: TrainMainCategory;
   categories: Set<TrainMainCategory>;
+  etcsBrakeParams?: EtcsBrakeParams;
 };
 
 export type SchemaProperty = {

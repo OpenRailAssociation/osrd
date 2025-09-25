@@ -1,7 +1,7 @@
 {
     "name": "towed_rolling_stock",
     "label": "some towed rolling stock",
-    "railjson_version": "3.3",
+    "railjson_version": "3.4",
     "mass": 900000.0,
     "length": 400.0,
     "comfort_acceleration": 0.25,

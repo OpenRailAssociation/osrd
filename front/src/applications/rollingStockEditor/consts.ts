@@ -8,6 +8,7 @@ import type {
 } from './types';
 
 export const DEFAULT_SIGNALING_SYSTEMS = ['BAL', 'BAPR'];
+export const ETCS_LEVEL2_SIGNALING_SYSTEM = 'ETCS_LEVEL2';
 
 export const newRollingStockValues: RollingStockParametersValues = {
   railjsonVersion: '',

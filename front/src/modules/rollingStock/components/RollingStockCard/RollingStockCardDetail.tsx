@@ -4,6 +4,7 @@ import cx from 'classnames';
 import { isEmpty, uniq } from 'lodash';
 import { useTranslation } from 'react-i18next';
 
+import { ETCS_LEVEL2_SIGNALING_SYSTEM } from 'applications/rollingStockEditor/consts';
 import type { EffortCurveForms } from 'applications/rollingStockEditor/types';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { Comfort, RollingStockWithLiveries } from 'common/api/osrdEditoastApi';
@@ -155,7 +156,12 @@ export default function RollingStockCardDetail({
             <td className="text-primary text-nowrap pr-1">
               {t('rollingStock.supportedSignalingSystems')}
             </td>
-            <td>{rs.supported_signaling_systems.join(', ')}</td>
+            <td>
+              {[
+                ...rs.supported_signaling_systems,
+                rs.etcs_brake_params ? [ETCS_LEVEL2_SIGNALING_SYSTEM] : [],
+              ].join(', ')}
+            </td>
           </tr>
         )}
         {rs.power_restrictions && Object.keys(rs.power_restrictions).length !== 0 && (

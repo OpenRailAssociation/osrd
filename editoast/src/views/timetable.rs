@@ -931,15 +931,10 @@ impl PhysicsConsistParameters {
     pub fn compute_etcs_brake_params(&self) -> Option<EtcsBrakeParams> {
         // TODO: handle towed rolling-stock when applying ERTMS to that case
         assert!(
-            !self
-                .traction_engine
-                .supported_signaling_systems
-                .0
-                .contains(&"ETCS_LEVEL2".to_string())
-                || self.towed_rolling_stock.is_none(),
+            !(self.traction_engine.etcs_brake_params.is_some()
+                && self.towed_rolling_stock.is_some()),
             "ETCS is not handled (yet) for towed rolling-stock"
         );
-
         self.traction_engine.etcs_brake_params.clone()
     }
 }

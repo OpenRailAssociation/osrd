@@ -241,7 +241,7 @@ const RollingStockEditorForm = ({
         />
 
         <OnboardSystemEquipmentForm
-          rsSignalingSystemsList={rollingStockValues.supportedSignalingSystems}
+          rollingStockValues={rollingStockValues}
           setRollingStockValues={setRollingStockValues}
         />
 

@@ -19,6 +19,9 @@ use database::DbConnection;
 use database::DbConnectionPoolV2;
 use diesel_async::scoped_futures::ScopedFutureExt as _;
 use editoast_derive::EditoastError;
+use editoast_models::Document;
+use editoast_models::RollingStockImage;
+use editoast_models::prelude::*;
 use image::DynamicImage;
 use image::GenericImage;
 use image::ImageBuffer;
@@ -39,9 +42,6 @@ use crate::models::rolling_stock::ScenarioReference;
 use crate::models::rolling_stock_livery::RollingStockLivery;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
-use editoast_models::Document;
-use editoast_models::RollingStockImage;
-use editoast_models::prelude::*;
 
 #[derive(Debug, Serialize, ToSchema)]
 pub struct RollingStockWithLiveries {
@@ -751,7 +751,8 @@ pub mod tests {
     use editoast_models::rolling_stock::TrainMainCategory;
     use itertools::Itertools;
     use pretty_assertions::assert_eq;
-
+    use rstest::rstest;
+    use schemas::rolling_stock::RollingStockSupportedSignalingSystems;
     use serde_json::json;
     use uuid::Uuid;
 
@@ -793,7 +794,14 @@ pub mod tests {
         form
     }
 
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    pub fn simple_rolling_stock_etcs_level2() -> RollingStockForm {
+        serde_json::from_str::<RollingStockForm>(include_str!(
+            "../tests/exemple_rolling_stock_4_etcs_level2.json"
+        ))
+        .expect("Unable to parse rolling stock with etcs_brake_params")
+    }
+
+    #[rstest]
     async fn create_rolling_stock_successfully() {
         // GIVEN
         let app = TestAppBuilder::default_app();
@@ -1052,7 +1060,94 @@ pub mod tests {
             .assert_status(StatusCode::UNPROCESSABLE_ENTITY);
     }
 
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    #[rstest]
+    async fn create_rolling_stock_without_etcs_level2_signaling_system() {
+        // GIVEN
+        let app = TestAppBuilder::default_app();
+        let db_pool = app.db_pool();
+
+        let rs_name = "fast_rolling_stock_name";
+        let mut fast_rolling_stock_form = fast_rolling_stock_form(rs_name);
+        fast_rolling_stock_form.etcs_brake_params = None;
+        // WHEN
+        let raw_response = app.fetch(app.rolling_stock_create_request(&fast_rolling_stock_form));
+        // THEN
+        let response: RollingStock = raw_response.assert_status(StatusCode::OK).json_into();
+        // Check if the rolling stock was created in the database
+        let rolling_stock = RollingStock::retrieve(db_pool.get_ok(), response.id)
+            .await
+            .expect("Failed to retrieve rolling stock")
+            .expect("Rolling stock not found");
+        let rolling_stock: schemas::RollingStock = rolling_stock.into();
+        assert_eq!(
+            rolling_stock
+                .get_supported_signaling_systems()
+                .0
+                .contains(&"ETCS_LEVEL2".to_string()),
+            false
+        );
+    }
+
+    #[rstest]
+    async fn create_rolling_stock_with_etcs_level2_string() {
+        let app = TestAppBuilder::default_app();
+        let rs_name = "fast_rolling_stock_name";
+        let mut fast_rolling_stock_form = fast_rolling_stock_form(rs_name);
+        fast_rolling_stock_form.etcs_brake_params = None;
+        fast_rolling_stock_form.supported_signaling_systems = RollingStockSupportedSignalingSystems(
+            vec!["BAL", "BAPR", "ETCS_LEVEL2"]
+                .into_iter()
+                .map(String::from)
+                .collect(),
+        );
+        // WHEN
+        let response = app
+            .fetch(app.rolling_stock_create_request(&fast_rolling_stock_form))
+            .assert_status(StatusCode::UNPROCESSABLE_ENTITY)
+            .string();
+        // THEN
+        assert_eq!(
+            response,
+            "Failed to deserialize the JSON body into the target type: invalid rolling-stock: ETCS_LEVEL2 requires 'etcs_brake_params' field instead of 'ETCS_LEVEL2'."
+        );
+    }
+
+    #[rstest]
+    async fn create_rolling_stock_with_etcs_level2_signaling_system() {
+        // GIVEN
+        let app = TestAppBuilder::default_app();
+        let db_pool = app.db_pool();
+
+        let rolling_stock_etcs_level2_form = simple_rolling_stock_etcs_level2();
+
+        let request = app.rolling_stock_create_request(&rolling_stock_etcs_level2_form);
+        let raw_response = app.fetch(request);
+
+        let response: RollingStock = raw_response.assert_status(StatusCode::OK).json_into();
+        // Check if the rolling stock was created in the database
+        let rolling_stock = RollingStock::retrieve(db_pool.get_ok(), response.id)
+            .await
+            .expect("Failed to retrieve rolling stock")
+            .expect("Rolling stock not found");
+
+        let rolling_stock: schemas::RollingStock = rolling_stock.into();
+
+        assert_eq!(
+            rolling_stock
+                .get_supported_signaling_systems()
+                .0
+                .contains(&"ETCS_LEVEL2".to_string()),
+            true
+        );
+
+        assert_eq!(rolling_stock.name, rolling_stock_etcs_level2_form.name);
+        assert_eq!(
+            rolling_stock_etcs_level2_form.startup_time,
+            rolling_stock.startup_time
+        );
+    }
+
+    #[rstest]
     async fn get_rolling_stock_by_id() {
         // GIVEN
         let app = TestAppBuilder::default_app();
@@ -1237,9 +1332,9 @@ pub mod tests {
         // THEN
         let response = raw_response
             .assert_status(StatusCode::UNPROCESSABLE_ENTITY)
-            .bytes();
+            .string();
         assert_eq!(
-            &String::from_utf8(response).unwrap(),
+            response,
             "Failed to deserialize the JSON body into the target type: invalid rolling-stock: primary_category: The primary_category cannot be listed in other_categories for rolling stocks."
         );
 

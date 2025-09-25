@@ -3,19 +3,21 @@ import { useTranslation } from 'react-i18next';
 
 import CheckboxRadioSNCF from 'common/BootstrapSNCF/CheckboxRadioSNCF';
 
-import { DEFAULT_SIGNALING_SYSTEMS } from '../consts';
+import { DEFAULT_SIGNALING_SYSTEMS, ETCS_LEVEL2_SIGNALING_SYSTEM } from '../consts';
 import useCompleteRollingStockSchemasProperties from '../hooks/useCompleteRollingStockSchemasProperties';
 import type { RollingStockParametersValues } from '../types';
 
 type RollingStockEditorOnboardSystemEquipmentFormProps = {
-  rsSignalingSystemsList: RollingStockParametersValues['supportedSignalingSystems'];
+  rollingStockValues: RollingStockParametersValues;
   setRollingStockValues: (
     rollingStockValues: React.SetStateAction<RollingStockParametersValues>
   ) => void;
 };
 
+const DISABLED_SIGNALING_SYSTEMS = [...DEFAULT_SIGNALING_SYSTEMS, ETCS_LEVEL2_SIGNALING_SYSTEM];
+
 const RollingStockEditorOnboardSystemEquipmentForm = ({
-  rsSignalingSystemsList,
+  rollingStockValues,
   setRollingStockValues,
 }: RollingStockEditorOnboardSystemEquipmentFormProps) => {
   const { t } = useTranslation('translation', { keyPrefix: 'rollingStock' });
@@ -28,8 +30,8 @@ const RollingStockEditorOnboardSystemEquipmentForm = ({
 
   const updateSigSystemsList = (sigSystem: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
     const newList = e.target.checked
-      ? [...rsSignalingSystemsList, sigSystem]
-      : rsSignalingSystemsList.filter((v) => v !== sigSystem);
+      ? [...rollingStockValues.supportedSignalingSystems, sigSystem]
+      : rollingStockValues.supportedSignalingSystems.filter((v) => v !== sigSystem);
     setRollingStockValues((prevRollingStockValues) => ({
       ...prevRollingStockValues,
       supportedSignalingSystems: newList,
@@ -37,7 +39,10 @@ const RollingStockEditorOnboardSystemEquipmentForm = ({
   };
 
   const signalingSystemCheckboxes = sigSystemProperty.enum!.map((sigSystem, index) => {
-    const checked = rsSignalingSystemsList.includes(sigSystem);
+    const checked = [
+      ...rollingStockValues.supportedSignalingSystems,
+      ...(rollingStockValues?.etcsBrakeParams ? [ETCS_LEVEL2_SIGNALING_SYSTEM] : []),
+    ].includes(sigSystem);
     return (
       <div key={`${index}-${sigSystem}`} className={cx('col-6', 'col-xl-3')}>
         <CheckboxRadioSNCF
@@ -47,7 +52,7 @@ const RollingStockEditorOnboardSystemEquipmentForm = ({
           label={sigSystem}
           checked={checked}
           onChange={updateSigSystemsList(sigSystem)}
-          disabled={DEFAULT_SIGNALING_SYSTEMS.includes(sigSystem)}
+          disabled={DISABLED_SIGNALING_SYSTEMS.includes(sigSystem)}
         />
       </div>
     );

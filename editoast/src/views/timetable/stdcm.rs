@@ -294,8 +294,7 @@ pub(in crate::views) async fn stdcm_handler(
         allowed_track_sections: request.allowed_track_sections.clone(),
         rolling_stock_supported_signaling_systems: physics_consist_parameters
             .traction_engine
-            .supported_signaling_systems
-            .clone(),
+            .get_supported_signaling_systems(),
         physics_consist: physics_consist_parameters.into(),
         temporary_speed_limits: request
             .get_temporary_speed_limits(&mut conn, simulation_run_time)

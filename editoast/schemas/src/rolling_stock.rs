@@ -59,7 +59,7 @@ use serde::Serialize;
 use std::collections::HashMap;
 use utoipa::ToSchema;
 
-pub const ROLLING_STOCK_RAILJSON_VERSION: &str = "3.3";
+pub const ROLLING_STOCK_RAILJSON_VERSION: &str = "3.4";
 
 pub fn default_rolling_stock_railjson_version() -> String {
     ROLLING_STOCK_RAILJSON_VERSION.to_string()
@@ -155,13 +155,22 @@ impl<'de> Deserialize<'de> for RollingStock {
             .supported_signaling_systems
             .0
             .contains(&"ETCS_LEVEL2".to_string())
-            && rolling_stock.etcs_brake_params.is_none()
         {
             return Err(serde::de::Error::custom(
-                "invalid rolling-stock: supporting ETCS_LEVEL2 signaling system requires providing ETCS brake parameters.",
+                "invalid rolling-stock: ETCS_LEVEL2 requires 'etcs_brake_params' field instead of 'ETCS_LEVEL2'.",
             ));
         }
         Ok(rolling_stock)
+    }
+}
+
+impl RollingStock {
+    pub fn get_supported_signaling_systems(&self) -> RollingStockSupportedSignalingSystems {
+        let mut supported_signaling_systems = self.supported_signaling_systems.0.clone();
+        if self.etcs_brake_params.is_some() {
+            supported_signaling_systems.push("ETCS_LEVEL2".into());
+        }
+        RollingStockSupportedSignalingSystems(supported_signaling_systems)
     }
 }
 
