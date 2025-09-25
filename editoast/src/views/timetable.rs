@@ -700,10 +700,12 @@ pub(in crate::views) async fn requirements(
         (
             page_settings
                 .into_selection_settings()
-                .filter(move || models::TrainSchedule::TIMETABLE_ID.eq(timetable_id)),
+                .filter(move || models::TrainSchedule::TIMETABLE_ID.eq(timetable_id))
+                .order_by(move || models::TrainSchedule::ID.asc()),
             page_settings
                 .into_selection_settings()
-                .filter(move || models::PacedTrain::TIMETABLE_ID.eq(timetable_id)),
+                .filter(move || models::PacedTrain::TIMETABLE_ID.eq(timetable_id))
+                .order_by(move || models::PacedTrain::ID.asc()),
         ),
     )
     .await?;
