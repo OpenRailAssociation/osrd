@@ -19,31 +19,25 @@ pub enum ClientInner {
 }
 
 #[derive(Clone)]
-pub struct Config {
+pub enum Config {
     /// Disables caching. This should not be used in production.
-    pub no_cache: bool,
-    pub valkey_url: Url,
-    pub app_version: String,
+    NoCache,
+    Valkey {
+        url: Url,
+    },
 }
 
 impl Client {
-    pub fn new(
-        Config {
-            no_cache,
-            valkey_url,
-            app_version,
-        }: Config,
-    ) -> Self {
+    pub fn new(config: Config, app_version: &str) -> Self {
         Self {
             app_version: ArcStr::from(app_version),
-            inner: if no_cache {
-                ClientInner::NoCache
-            } else {
-                ClientInner::Tokio(
-                    deadpool_redis::Config::from_url(valkey_url)
+            inner: match config {
+                Config::NoCache => ClientInner::NoCache,
+                Config::Valkey { url } => ClientInner::Tokio(
+                    deadpool_redis::Config::from_url(url)
                         .create_pool(Some(Runtime::Tokio1))
                         .unwrap(),
-                )
+                ),
             },
         }
     }

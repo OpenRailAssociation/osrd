@@ -230,18 +230,14 @@ pub async fn generate_infra(
 }
 
 async fn build_valkey_pool_and_invalidate_all_cache(
-    ValkeyConfig {
-        no_cache,
-        valkey_url,
-    }: ValkeyConfig,
+    valkey_config: ValkeyConfig,
     infra_id: i64,
     app_version: Option<&str>,
 ) -> anyhow::Result<()> {
-    let valkey = cache::Client::new(cache::Config {
-        app_version: app_version.map(|v| v.to_owned()).unwrap_or_default(),
-        no_cache,
-        valkey_url,
-    });
+    let valkey = cache::Client::new(
+        valkey_config.into_cache_config(),
+        app_version.unwrap_or_default(),
+    );
     let mut conn = valkey.get_connection().await?;
     map::invalidate_all(
         &mut conn,

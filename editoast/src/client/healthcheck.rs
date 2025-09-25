@@ -14,18 +14,11 @@ use super::runserver::CoreArgs;
 
 pub async fn healthcheck_cmd(
     db_pool: Arc<DbConnectionPoolV2>,
-    ValkeyConfig {
-        no_cache,
-        valkey_url,
-    }: ValkeyConfig,
+    valkey_config: ValkeyConfig,
     core_config: CoreArgs,
     openfga_config: OpenfgaConfig,
 ) -> anyhow::Result<()> {
-    let valkey = cache::Client::new(cache::Config {
-        app_version: "HEALTHCHECK".to_owned(),
-        no_cache,
-        valkey_url,
-    });
+    let valkey = cache::Client::new(valkey_config.into_cache_config(), "HEALTHCHECK");
     let core_client = CoreClient::new_mq(mq_client::Options {
         uri: core_config.mq_url,
         worker_pool_identifier: core_config.worker_pool_id,
