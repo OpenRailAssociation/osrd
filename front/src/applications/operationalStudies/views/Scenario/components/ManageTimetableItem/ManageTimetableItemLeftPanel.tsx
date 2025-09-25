@@ -179,23 +179,26 @@ const ManageTimetableItemLeftPanel = ({
           </>
         )}
       </div>
-      <div
-        className="scenario-timetable-manage-timetable-item-body"
-        role="button"
-        tabIndex={0}
-        onClick={() => setItineraryModalIsOpen(true)}
-      >
-        <button
-          className="btn btn-light btn-block text-truncate pr-2"
-          title={t('itineraryModal.openItineraryModal')}
-          type="button"
+      {(displayTimetableItemManagement === MANAGE_TIMETABLE_ITEM_TYPES.add ||
+        displayTimetableItemManagement === MANAGE_TIMETABLE_ITEM_TYPES.edit) && (
+        <div
+          className="scenario-timetable-manage-timetable-item-body"
+          role="button"
+          tabIndex={0}
+          onClick={() => setItineraryModalIsOpen(true)}
         >
-          <span className="mr-2">
-            <ChevronLeft size="lg" />
-          </span>
-          {t('itineraryModal.openItineraryModal')}
-        </button>
-      </div>
+          <button
+            className="btn btn-light btn-block text-truncate pr-2"
+            title={t('itineraryModal.openItineraryModal')}
+            type="button"
+          >
+            <span className="mr-2">
+              <ChevronLeft size="lg" />
+            </span>
+            {t('itineraryModal.openItineraryModal')}
+          </button>
+        </div>
+      )}
       {itineraryModalIsOpen && (
         <ItineraryModal
           itineraryModalIsOpen={itineraryModalIsOpen}
