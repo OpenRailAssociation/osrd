@@ -20,12 +20,14 @@ import kotlin.collections.flatMap
 import kotlin.io.path.Path
 import kotlin.io.path.readText
 import kotlin.math.pow
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.asFlow
 import kotlinx.coroutines.flow.emitAll
 import kotlinx.coroutines.flow.flatMapMerge
 import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.runBlocking
 import okhttp3.OkHttpClient
 import okhttp3.Request
@@ -48,22 +50,28 @@ interface TimetableProvider {
 class TimetableDownloader(baseUrl: String, authenticationHeader: String, httpClient: OkHttpClient) :
     APIClient(baseUrl, authenticationHeader, httpClient), TimetableProvider {
 
+    val httpDispatcher = Dispatchers.IO.limitedParallelism(5)
+
     @OptIn(ExperimentalCoroutinesApi::class)
     private fun fetchTrainRequirements(
         infraId: String,
         timetableId: TimetableId,
     ): Flow<TrainRequirementsById> = flow {
         val firstPageTrainRequirements = getTrainPaginatedRequirements(infraId, timetableId, 1)
+
         emitAll(firstPageTrainRequirements.results.asFlow())
         emitAll(
             (2..firstPageTrainRequirements.pageCount)
                 .asFlow()
                 // Limit the number of concurrent calls to the requirements endpoint.
-                .flatMapMerge(concurrency = 5) { page ->
-                    val paginatedTrainRequirements =
-                        getTrainPaginatedRequirements(infraId, timetableId, page)
-                    paginatedTrainRequirements.results.asFlow()
+                .flatMapMerge { page ->
+                    flow {
+                        val paginatedTrainRequirements =
+                            getTrainPaginatedRequirements(infraId, timetableId, page)
+                        emitAll(paginatedTrainRequirements.results.asFlow())
+                    }
                 }
+                .flowOn(httpDispatcher)
         )
     }
 
@@ -88,6 +96,9 @@ class TimetableDownloader(baseUrl: String, authenticationHeader: String, httpCli
             else {
                 logger.error("Error when getting ${request.url}: $response")
                 val nextSleepDuration = 1_000 * 2.0.pow(tryCount).toLong()
+                // Thread.sleep blocks the thread, which is usually bad in the context of
+                // coroutines. But it's on purpose here: if the server has a temporary issue, we
+                // don't want the next page to immediately take over while this one is waiting.
                 Thread.sleep(nextSleepDuration)
             }
         }
