@@ -36,11 +36,13 @@ const OneWaysColumn = ({
       })}
     >
       <div className="scroll-container">
-        <div className="round-trips-modal-column">
+        <div data-testid="one-ways-column" className="round-trips-modal-column">
           <h2 className="column-title">
             <ArrowRight />
-            <span>{t('oneWays')}</span>
-            <div className="item-count">{pairingItems.length}</div>
+            <span data-testid="one-ways-title">{t('oneWays')}</span>
+            <div data-testid="one-ways-item-count" className="item-count">
+              {pairingItems.length}
+            </div>
           </h2>
           <div className="column-wrapper">
             {pairingItems.length === 0 ? (

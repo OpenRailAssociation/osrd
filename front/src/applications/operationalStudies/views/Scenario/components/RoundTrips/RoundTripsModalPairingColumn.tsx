@@ -56,7 +56,11 @@ const RoundTripsModalPairingColumn = ({
   return (
     <>
       <div className="round-trips-pairing-overlay" />
-      <div ref={modalRef} className="round-trips-pairing-column">
+      <div
+        ref={modalRef}
+        data-testid="round-trips-pairing-column"
+        className="round-trips-pairing-column"
+      >
         <Input
           id="candidates-filter"
           small

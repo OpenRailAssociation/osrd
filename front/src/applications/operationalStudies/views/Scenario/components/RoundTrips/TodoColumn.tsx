@@ -190,10 +190,12 @@ const TodoColumn = ({
         <div className="before-rounding-block" style={{ top: pairingIndicatorTop }} />
       )}
       <div className="scroll-container">
-        <div className="round-trips-modal-column">
+        <div data-testid="todo-column" className="round-trips-modal-column">
           <h2 className="column-title">
-            <span>{t('todo')}</span>
-            <div className="item-count">{pairingItems.length}</div>
+            <span data-testid="todo-title">{t('todo')}</span>
+            <div data-testid="todo-item-count" className="item-count">
+              {pairingItems.length}
+            </div>
           </h2>
           <div className="column-wrapper">
             {pairingItems.length === 0 ? (

@@ -201,7 +201,7 @@ const RoundTripsModal = ({
   }, [roundTripsModalIsOpen]);
 
   return (
-    <dialog ref={modalRef} className="round-trips-modal">
+    <dialog ref={modalRef} className="round-trips-modal" data-testid="round-trips-modal">
       <div className="round-trips-modal-header">
         <h1 className="title">{t('roundTripsModal.roundTripsManagement')}</h1>
         <Input
@@ -218,6 +218,7 @@ const RoundTripsModal = ({
             },
           ]}
           disabled={!!itemIdToPair}
+          data-testid="round-trips-filter-input"
         />
       </div>
       <div className={cx('round-trips-modal-body', { 'pairing-body': !!itemIdToPair })}>
@@ -244,8 +245,15 @@ const RoundTripsModal = ({
         />
       </div>
       <div className="round-trips-modal-footer">
-        <Button label={commonT('cancel')} variant="Cancel" size="medium" onClick={closeModal} />
         <Button
+          dataTestID="round-trips-cancel-button"
+          label={commonT('cancel')}
+          variant="Cancel"
+          size="medium"
+          onClick={closeModal}
+        />
+        <Button
+          dataTestID="round-trips-save-button"
           label={commonT('saveEdits')}
           variant="Primary"
           size="medium"
