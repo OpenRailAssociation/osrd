@@ -216,7 +216,8 @@ pub(in crate::views) async fn list(
         }
     };
 
-    let (infras, stats) = Infra::list_paginated(conn, settings).await?;
+    let (infras, stats) =
+        Infra::list_paginated(conn, settings.order_by(move || Infra::ID.asc())).await?;
 
     let response = InfraListResponse {
         stats,

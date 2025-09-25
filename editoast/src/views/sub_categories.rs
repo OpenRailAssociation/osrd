@@ -86,7 +86,9 @@ pub(in crate::views) async fn get_sub_categories(
 
     let (sub_categories, stats) = editoast_models::SubCategory::list_paginated(
         &mut conn,
-        pagination.into_selection_settings(),
+        pagination
+            .into_selection_settings()
+            .order_by(move || editoast_models::SubCategory::ID.asc()),
     )
     .await?;
 

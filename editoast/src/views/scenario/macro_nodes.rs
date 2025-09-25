@@ -171,7 +171,9 @@ pub(in crate::views) async fn list(
     let settings = pagination_params
         .into_selection_settings()
         .filter(move || MacroNode::SCENARIO_ID.eq(scenario_id));
-    let (result, stats) = MacroNode::list_paginated(&mut conn, settings).await?;
+    let (result, stats) =
+        MacroNode::list_paginated(&mut conn, settings.order_by(move || MacroNode::ID.asc()))
+            .await?;
 
     // Produce the response
     Ok(Json(MacroNodeListResponse {

@@ -38,7 +38,8 @@ impl TrainScheduleRoundTrips {
         let query = train_schedule_round_trips::table
             .inner_join(train_schedule::table)
             .select(train_schedule_round_trips::all_columns)
-            .filter(train_schedule::dsl::timetable_id.eq(timetable_id));
+            .filter(train_schedule::dsl::timetable_id.eq(timetable_id))
+            .order_by(train_schedule_round_trips::id.asc());
 
         let (results, count): (Vec<TrainScheduleRoundTripsRow>, _) =
             load_for_pagination(conn, query, page, page_size).await?;
@@ -109,7 +110,8 @@ impl PacedTrainRoundTrips {
         let query = paced_train_round_trips::table
             .inner_join(paced_train::table)
             .select(paced_train_round_trips::all_columns)
-            .filter(paced_train::dsl::timetable_id.eq(timetable_id));
+            .filter(paced_train::dsl::timetable_id.eq(timetable_id))
+            .order_by(paced_train_round_trips::id.asc());
 
         let (results, count): (Vec<PacedTrainRoundTripsRow>, _) =
             load_for_pagination(conn, query, page, page_size).await?;
