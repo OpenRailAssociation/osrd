@@ -128,7 +128,7 @@ const StcdmResultsTable = ({
       <div className={cx('results-buttons', { 'simulation-retained': isSimulationRetained })}>
         <div className="button-display-all-PR">
           <Button
-            data-testid="all-vias-button"
+            dataTestID="all-vias-button"
             variant="Normal"
             label={
               showAllOP ? t('simulation.results.displayMain') : t('simulation.results.displayAll')
@@ -139,7 +139,7 @@ const StcdmResultsTable = ({
         <div className="button-get-simulation">
           {!isSimulationRetained ? (
             <Button
-              data-testid="retain-simulation-button"
+              dataTestID="retain-simulation-button"
               label={t('simulation.results.retainThisSimulation')}
               onClick={onRetainSimulation}
             />

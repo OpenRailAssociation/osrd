@@ -317,7 +317,7 @@ const StdcmConfig = ({
                   />
                 )}
                 <Button
-                  data-testid="launch-simulation-button"
+                  dataTestID="launch-simulation-button"
                   className={cx({
                     'fade-out': !isDebugMode && !showBtnToLaunchSimulation,
                   })}

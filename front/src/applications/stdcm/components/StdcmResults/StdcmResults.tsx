@@ -212,14 +212,14 @@ const StdcmResults = ({
                   {retainedSimulationIndex !== undefined && buttonsVisible && (
                     <div className="start-new-query">
                       <Button
-                        data-testid="start-new-query-button"
+                        dataTestID="start-new-query-button"
                         variant="Primary"
                         label={t('startNewQuery')}
                         onClick={onStartNewQuery}
                       />
                       <Button
                         className="start-new-query-with-data"
-                        data-testid="start-new-query-with-data-button"
+                        dataTestID="start-new-query-with-data-button"
                         variant="Normal"
                         label={t('startNewQueryFromCurrent')}
                         onClick={onStartNewQueryWithData}
