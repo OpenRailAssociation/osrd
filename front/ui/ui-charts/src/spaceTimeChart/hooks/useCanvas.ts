@@ -274,12 +274,25 @@ export function useCanvas(
         if (a === 255) {
           const color = rgbToHex(r, g, b);
           const index = colorToIndex(color);
-          const element = stcContextRef.current.pickingElements[index];
-          newHoveredItem = {
-            layer,
-            element,
-          };
-          return true;
+          const element = stcContextRef.current.pickingElements.at(index);
+
+          // Sometimes, because of some race conditions between the update lifecycle of the
+          // pickingElements array and the React + useCanvas lifecycle, here the pickingElements
+          // array can be empty. We must check that element is non-nil before updating
+          // newHoveredItem:
+          if (element) {
+            newHoveredItem = {
+              layer,
+              element,
+            };
+            return true;
+          }
+          // If element is undefined but pickingElements is not empty, let's throw a specific error:
+          else if (stcContextRef.current.pickingElements.length > 0) {
+            throw new Error(
+              `Picking index is out of bounds (index: ${index}, registered picking elements: ${stcContextRef.current.pickingElements.length})`
+            );
+          }
         }
       }
 
