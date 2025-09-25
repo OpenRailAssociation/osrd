@@ -885,7 +885,10 @@ impl AppState {
         // Synchronous operations
         let infra_caches = DashMap::<i64, InfraCache>::default().into();
         let speed_limit_tag_ids = Arc::new(SpeedLimitTagIds::load());
-        let valkey = cache::Client::new(config.valkey_config.clone()).into();
+        let valkey = Arc::new(cache::Client::new(
+            config.valkey_config.clone(),
+            config.app_version.as_deref().unwrap_or("NO_APP_VERSION"),
+        ));
         let osrdyne_client = Arc::new(OsrdyneClient::new(
             config.osrdyne_config.osrdyne_api_url.clone(),
         ));

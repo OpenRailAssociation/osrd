@@ -13,3 +13,15 @@ pub struct ValkeyConfig {
     /// Valkey url like `redis://[:PASSWORD@]HOST[:PORT][/DATABASE]`
     pub valkey_url: Url,
 }
+
+impl ValkeyConfig {
+    pub fn into_cache_config(self) -> cache::Config {
+        if self.no_cache {
+            cache::Config::NoCache
+        } else {
+            cache::Config::Valkey {
+                url: self.valkey_url,
+            }
+        }
+    }
+}

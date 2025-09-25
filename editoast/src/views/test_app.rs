@@ -164,11 +164,7 @@ impl TestAppBuilder {
                     worker_pool_id: "core".into(),
                 },
             },
-            valkey_config: cache::Config {
-                app_version: "TEST_VERSION".to_owned(),
-                no_cache: true,
-                valkey_url: Url::parse("redis://localhost:6379").unwrap(),
-            },
+            valkey_config: cache::Config::NoCache,
             root_url: self
                 .root_url
                 .unwrap_or_else(|| Url::parse("http://localhost:8090/").unwrap()),
@@ -203,7 +199,7 @@ impl TestAppBuilder {
         let tracing_guard = tracing::subscriber::set_default(sub);
 
         // Config valkey
-        let valkey = cache::Client::new(config.valkey_config.clone()).into();
+        let valkey = cache::Client::new(config.valkey_config.clone(), "TEST_APP").into();
 
         // Create database pool
         let db_pool_v2 = Arc::new(self.db_pool.unwrap_or_else(DbConnectionPoolV2::for_tests));
