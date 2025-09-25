@@ -11,12 +11,14 @@ It will be documented on the [OSRD website](https://osrd.fr/en/docs/reference/de
 This is a rust library with bindings in kotlin, generated thanks to [uniffi](https://github.com/mozilla/uniffi-rs/). It will be used by [core](../core).
 
 ### Building the lib
-    
+
 ```shell
 cargo build --release --locked
 ```
 
 ### Building the kotlin bindings
+
+Binding generation optionally uses [ktlint] to format kotlin sources.
 
 ```shell
 cargo run -p uniffi-bindgen --release -- generate --library target/release/libtrain_sim.so --language kotlin --out-dir kotlin_bindings/src/main/kotlin
@@ -38,3 +40,5 @@ Make sure you have built the lib before running the tests. If the compiled lib i
 ```shell
 ./gradlew test -Djna.library.path=your/path/to/lib
 ```
+
+[ktlint]: https://pinterest.github.io/ktlint/latest/
