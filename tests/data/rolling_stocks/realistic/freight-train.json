@@ -206,7 +206,6 @@
   "startup_acceleration": 0.03,
   "comfort_acceleration": 0.08,
   "const_gamma": 0.3,
-  "etcs_brake_params": null,
   "inertia_coefficient": 1.048,
   "base_power_class": "4",
   "mass": 2090000.0,
@@ -222,7 +221,10 @@
   "electrical_power_startup_time": 5.0,
   "raise_pantograph_time": 25.0,
   "version": 0,
-  "supported_signaling_systems": ["BAL", "BAPR"],
+  "supported_signaling_systems": [
+    {"type": "BAL"},
+    {"type": "BAPR"}
+  ],
   "primary_category": "FREIGHT_TRAIN",
   "other_categories": [],
   "liveries": []

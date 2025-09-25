@@ -1,18 +1,19 @@
 from enum import Enum
-from typing import List, Literal, Mapping, Optional, Union, get_args
+from typing import List, Literal, Mapping, Optional, Union, Annotated, get_args
 
 from pydantic import (
     BaseModel,
     Field,
     NonNegativeFloat,
     PositiveFloat,
+    ConfigDict,
     RootModel,
     model_validator,
 )
 
 from .infra import LoadingGaugeType
 
-RAILJSON_ROLLING_STOCK_VERSION_TYPE = Literal["3.3"]
+RAILJSON_ROLLING_STOCK_VERSION_TYPE = Literal["3.4"]
 RAILJSON_ROLLING_STOCK_VERSION = get_args(RAILJSON_ROLLING_STOCK_VERSION_TYPE)[0]
 
 
@@ -169,6 +170,29 @@ class EtcsBrakeParams(BaseModel, extra="forbid"):
     t_be: float = Field(ge=0, description="T_be: safe brake build up time in s")
 
 
+class SimpleSignalingSystem(BaseModel, extra="forbid"):
+    signaling_system_type: Literal["BAL", "BAPR", "TVM300", "TVM430"] = Field(
+        serialization_alias="type", validation_alias="type"
+    )
+
+    model_config = ConfigDict(serialize_by_alias=True, validate_by_name=True)
+
+
+class EtcsSignalingSystem(BaseModel, extra="forbid"):
+    signaling_system_type: Literal["ETCS_LEVEL2"] = Field(
+        serialization_alias="type", validation_alias="type", default="ETCS_LEVEL2"
+    )
+    brake_params: EtcsBrakeParams
+
+    model_config = ConfigDict(serialize_by_alias=True, validate_by_name=True)
+
+
+SupportedSignalingSystem = Annotated[
+    Union[SimpleSignalingSystem, EtcsSignalingSystem],
+    Field(discriminator="signaling_system_type"),
+]
+
+
 class RollingStockLivery(BaseModel):
     name: str = Field(max_length=255)
 
@@ -320,9 +344,6 @@ class RollingStock(BaseModel, extra="forbid"):
         description="The constant gamma braking coefficient used when NOT circulating under "
         "ETCS/ERTMS signaling system in m/s^2"
     )
-    etcs_brake_params: Optional[EtcsBrakeParams] = Field(
-        description="Braking parameters for ERTMS ETCS Level 2", default=None
-    )
     inertia_coefficient: NonNegativeFloat = Field(
         description="The coefficient of inertia"
     )
@@ -344,7 +365,9 @@ class RollingStock(BaseModel, extra="forbid"):
         description="The time it takes to raise this train's pantograph in s. Is null if the train is not electric.",
         default=None,
     )
-    supported_signaling_systems: List[str] = Field(default_factory=list)
+    supported_signaling_systems: list[SupportedSignalingSystem] = Field(
+        default_factory=list
+    )
     primary_category: TrainMainCategory = Field(
         description="The primary category of the rolling stock."
     )

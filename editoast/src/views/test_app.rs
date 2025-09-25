@@ -692,6 +692,10 @@ impl TestResponse {
         self.inner.into_bytes().into()
     }
 
+    pub fn string(self) -> String {
+        String::from_utf8(self.bytes()).expect("body should be valid UTF-8")
+    }
+
     #[track_caller]
     pub fn content_type(&self) -> String {
         self.inner

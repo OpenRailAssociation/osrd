@@ -71,6 +71,31 @@ pub(in crate::views) struct PathfindingInput {
 }
 
 impl PathfindingInput {
+    pub fn from(
+        rolling_stock: &schemas::RollingStock,
+        train_schedule: &impl TrainScheduleLike,
+    ) -> Self {
+        Self {
+            rolling_stock_loading_gauge: rolling_stock.loading_gauge,
+            rolling_stock_is_thermal: rolling_stock.effort_curves.has_thermal_curves(),
+            rolling_stock_supported_electrifications: rolling_stock
+                .effort_curves
+                .supported_electrification(),
+            rolling_stock_supported_signaling_systems: rolling_stock.supported_signaling_systems(),
+            rolling_stock_maximum_speed: OrderedFloat(units::meter_per_second::from(
+                rolling_stock.max_speed,
+            )),
+            rolling_stock_length: OrderedFloat(units::meter::from(rolling_stock.length)),
+            path_items: train_schedule
+                .path()
+                .iter()
+                .map(|item| item.location.clone())
+                .collect(),
+            speed_limit_tag: train_schedule.speed_limit_tag().cloned(),
+            stops_at_end_of_block: Some(train_schedule.options().stops_at_end_of_block()),
+        }
+    }
+
     /// Generates a unique hash based on the pathfinding entries.
     /// We need to recalculate the path if:
     ///   - The path entry is different
@@ -464,27 +489,7 @@ pub async fn pathfinding_from_train_batch<T: TrainScheduleLike>(
         };
 
         // Create the path input
-        let path_input = PathfindingInput {
-            rolling_stock_loading_gauge: rolling_stock.loading_gauge,
-            rolling_stock_is_thermal: rolling_stock.effort_curves.has_thermal_curves(),
-            rolling_stock_supported_electrifications: rolling_stock
-                .effort_curves
-                .supported_electrification(),
-            rolling_stock_supported_signaling_systems: rolling_stock
-                .supported_signaling_systems
-                .clone(),
-            rolling_stock_maximum_speed: OrderedFloat(units::meter_per_second::from(
-                rolling_stock.max_speed,
-            )),
-            rolling_stock_length: OrderedFloat(units::meter::from(rolling_stock.length)),
-            path_items: train_schedule
-                .path()
-                .iter()
-                .map(|item| item.location.clone())
-                .collect(),
-            speed_limit_tag: train_schedule.speed_limit_tag().cloned(),
-            stops_at_end_of_block: Some(train_schedule.options().stops_at_end_of_block()),
-        };
+        let path_input = PathfindingInput::from(rolling_stock, train_schedule);
         to_compute.push(path_input);
         to_compute_index.push(index);
     }

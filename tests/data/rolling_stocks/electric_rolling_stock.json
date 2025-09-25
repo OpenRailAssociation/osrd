@@ -970,10 +970,10 @@
   "electrical_power_startup_time": 5.0,
   "raise_pantograph_time": 15.0,
   "supported_signaling_systems": [
-    "BAL",
-    "BAPR",
-    "TVM300",
-    "TVM430"
+    {"type": "BAL"},
+    {"type": "BAPR"},
+    {"type": "TVM300"},
+    {"type": "TVM430"}
   ],
   "primary_category": "FREIGHT_TRAIN",
   "other_categories": []

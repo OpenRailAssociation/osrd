@@ -69,10 +69,10 @@
   "power_restrictions": {},
   "energy_sources": [],
   "supported_signaling_systems": [
-    "BAL",
-    "BAPR",
-    "TVM300",
-    "TVM430"
+    {"type": "BAL"},
+    {"type": "BAPR"},
+    {"type": "TVM300"},
+    {"type": "TVM430"}
   ],
   "primary_category": "WORK_TRAIN",
   "other_categories": []

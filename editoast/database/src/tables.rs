@@ -568,10 +568,9 @@ diesel::table! {
         electrical_power_startup_time -> Nullable<Float8>,
         raise_pantograph_time -> Nullable<Float8>,
         version -> Int8,
-        supported_signaling_systems -> Array<Nullable<Text>>,
-        etcs_brake_params -> Jsonb,
         primary_category -> TrainMainCategory,
         other_categories -> Array<Nullable<TrainMainCategory>>,
+        supported_signaling_systems -> Jsonb,
     }
 }
 

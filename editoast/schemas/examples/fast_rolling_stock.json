@@ -10,7 +10,6 @@
     "mass": 900000.0,
     "loading_gauge": "G1",
     "const_gamma": 0.5,
-    "etcs_brake_params": null,
     "rolling_resistance": {
         "type": "davis",
         "A": 5400,
@@ -979,7 +978,7 @@
     "power_restrictions": {"C2":"2", "C5":"5"},
     "electrical_power_startup_time": 5.0,
     "raise_pantograph_time": 15.0,
-    "supported_signaling_systems": ["BAL", "BAPR", "TVM300", "TVM430"],
+    "supported_signaling_systems": [{"type": "BAL"}, {"type": "BAPR"}, {"type": "TVM300"}, {"type": "TVM430"}],
     "primary_category": "COMMUTER_TRAIN",
     "other_categories": []
 }

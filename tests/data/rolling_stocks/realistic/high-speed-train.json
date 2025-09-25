@@ -178,7 +178,6 @@
   "startup_acceleration": 0.05,
   "comfort_acceleration": 0.25,
   "const_gamma": 0.5,
-  "etcs_brake_params": null,
   "inertia_coefficient": 1.04,
   "base_power_class": "5",
   "mass": 460000.0,
@@ -194,7 +193,12 @@
   "electrical_power_startup_time": 5.0,
   "raise_pantograph_time": 25.0,
   "version": 0,
-  "supported_signaling_systems": ["BAL", "BAPR", "TVM300", "TVM430"],
+  "supported_signaling_systems": [
+    {"type": "BAL"},
+    {"type": "BAPR"},
+    {"type": "TVM300"},
+    {"type": "TVM430"}
+  ],
   "primary_category": "HIGH_SPEED_TRAIN",
   "other_categories": [],
   "liveries": []

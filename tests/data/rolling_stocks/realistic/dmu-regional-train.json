@@ -84,7 +84,6 @@
   "startup_acceleration": 0.05,
   "comfort_acceleration": 0.25,
   "const_gamma": 0.5,
-  "etcs_brake_params": null,
   "inertia_coefficient": 1.05,
   "base_power_class": "9",
   "mass": 190000.0,
@@ -100,7 +99,10 @@
   "electrical_power_startup_time": null,
   "raise_pantograph_time": null,
   "version": 0,
-  "supported_signaling_systems": ["BAL", "BAPR"],
+  "supported_signaling_systems": [
+    {"type": "BAL"},
+    {"type": "BAPR"}
+  ],
   "primary_category": "REGIONAL_TRAIN",
   "other_categories": [],
   "liveries": []

@@ -155,7 +155,7 @@ export default function RollingStockCardDetail({
             <td className="text-primary text-nowrap pr-1">
               {t('rollingStock.supportedSignalingSystems')}
             </td>
-            <td>{rs.supported_signaling_systems.join(', ')}</td>
+            <td>{rs.supported_signaling_systems.map((s) => s.type).join(', ')}</td>
           </tr>
         )}
         {rs.power_restrictions && Object.keys(rs.power_restrictions).length !== 0 && (
