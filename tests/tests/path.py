@@ -1,14 +1,13 @@
-from collections.abc import Sequence
 from dataclasses import dataclass
-from typing import Any
+from typing import Any, Dict, List
 from collections.abc import Iterable
 
 
 @dataclass(frozen=True)
 class Path:
     status: str
-    blocks: Iterable[Any]
-    routes: Iterable[Any]
-    track_section_ranges: Sequence[Any]
+    # Path contains "track_section_ranges", "blocks" and "routes".
+    # Each has a list of range (begin, end, and either id or track_section)
+    path: Dict[str, List]
     length: int
     path_item_positions: Iterable[Any]
