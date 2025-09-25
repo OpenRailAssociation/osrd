@@ -47,10 +47,14 @@ interface TimetableProvider {
     ): STDCMRequirements
 }
 
-class TimetableDownloader(baseUrl: String, authenticationHeader: String, httpClient: OkHttpClient) :
-    APIClient(baseUrl, authenticationHeader, httpClient), TimetableProvider {
+class TimetableDownloader(
+    baseUrl: String,
+    authenticationHeader: String,
+    httpClient: OkHttpClient,
+    maxParallelism: Int = 5,
+) : APIClient(baseUrl, authenticationHeader, httpClient), TimetableProvider {
 
-    val httpDispatcher = Dispatchers.IO.limitedParallelism(5)
+    val httpDispatcher = Dispatchers.IO.limitedParallelism(maxParallelism)
 
     @OptIn(ExperimentalCoroutinesApi::class)
     private fun fetchTrainRequirements(
