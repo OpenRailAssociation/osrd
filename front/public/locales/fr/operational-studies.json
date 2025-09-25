@@ -176,7 +176,7 @@
     "scenarioUpdated": "Mise à jour réussie !",
     "scenarioUpdatedDetails": "Le scénario {{ name }} a bien été mis à jour.",
     "timetable": {
-      "addTimetableItem": "Ajouter un train / service",
+      "addTimetableItem": "Ajouter un train / une mission",
       "advancedFilterLabel": "Engin moteur",
       "choosePath": "Utiliser ce chemin",
       "closeFilter": "Fermer le filtre",
