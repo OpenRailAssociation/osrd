@@ -14,7 +14,6 @@ import fr.sncf.osrd.envelope_sim.pipelines.maxSpeedEnvelopeFrom
 import fr.sncf.osrd.envelope_sim_infra.computeMRSP
 import fr.sncf.osrd.path.implementations.buildTrainPathFromChunkPath
 import fr.sncf.osrd.path.interfaces.TravelledPath
-import fr.sncf.osrd.path.legacy_objects.ElectricalProfileMapping
 import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowanceDistribution
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal.OPEN
@@ -83,7 +82,6 @@ class StandaloneSimulationTest {
                 chunkPath,
                 routes.toIdxList(),
                 blocks.toIdxList(),
-                ElectricalProfileMapping(),
                 rollingStock,
                 Comfort.STANDARD,
                 RJSAllowanceDistribution.LINEAR,
@@ -219,7 +217,6 @@ class StandaloneSimulationTest {
                 chunkPath,
                 routes.toIdxList(),
                 blocks.toIdxList(),
-                ElectricalProfileMapping(),
                 rollingStock,
                 Comfort.STANDARD,
                 testCase.allowanceDistribution,
