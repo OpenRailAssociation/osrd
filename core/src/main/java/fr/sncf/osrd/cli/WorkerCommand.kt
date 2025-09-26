@@ -286,6 +286,7 @@ class WorkerCommand : CliCommand {
                         }
                     } catch (t: Throwable) {
                         span.recordException(t)
+                        logger.error("Unexpected error: ", t)
                         payload =
                             "ERROR, exception received"
                                 .toByteArray() // TODO: have a valid payload for uncaught exceptions
