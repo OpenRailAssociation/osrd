@@ -2,7 +2,6 @@ import React, { useLayoutEffect, useRef, useState } from 'react';
 
 type OSRDTooltipProps = {
   containerRef: React.RefObject<HTMLDivElement | null>;
-  isOpen: boolean;
   header: string;
   items: string[];
   offsetRatio?: {
@@ -16,12 +15,12 @@ const TOOLTIP_BOTTOM_MARGIN = 24;
 
 const OSRDTooltip = ({
   containerRef,
-  isOpen,
   header,
   items,
   offsetRatio,
   reverseIfOverflow,
 }: OSRDTooltipProps) => {
+  const tooltipContainerRef = useRef<HTMLDivElement>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
 
   const [position, setPosition] = useState<{
@@ -34,7 +33,9 @@ const OSRDTooltip = ({
   const offsetLeftRatio = offsetRatio?.left ?? 1;
 
   useLayoutEffect(() => {
-    if (!containerRef.current || !isOpen) return;
+    if (!tooltipContainerRef.current || !containerRef.current) return;
+
+    tooltipContainerRef.current.showPopover();
 
     const rect = containerRef.current.getBoundingClientRect();
     const tooltipRect = tooltipRef.current?.getBoundingClientRect();
@@ -75,7 +76,7 @@ const OSRDTooltip = ({
       left: tooltipLeftPosition,
       bottom: undefined,
     });
-  }, [isOpen]);
+  }, []);
 
   return (
     <div
@@ -86,6 +87,8 @@ const OSRDTooltip = ({
         left: position?.left ? position.left - window.scrollX : undefined,
         bottom: position?.bottom ? position.bottom - window.scrollY : undefined,
       }}
+      popover="hint"
+      ref={tooltipContainerRef}
     >
       <div ref={tooltipRef}>
         <span className="osrd-tooltip-header">{header}</span>
