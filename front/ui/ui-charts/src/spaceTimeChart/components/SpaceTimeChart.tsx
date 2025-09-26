@@ -102,6 +102,22 @@ export const SpaceTimeChart = (props: SpaceTimeChartProps) => {
     ]
   );
 
+  const pickingState = useMemo(() => {
+    const pickingElements: PickingElement[] = [];
+    const resetPickingElements = () => {
+      pickingElements.length = 0;
+    };
+    const registerPickingElement = (element: PickingElement) => {
+      pickingElements.push(element);
+      return pickingElements.length - 1;
+    };
+    return {
+      pickingElements,
+      resetPickingElements,
+      registerPickingElement,
+    };
+  }, []);
+
   const contextState: SpaceTimeChartContextType = useMemo(() => {
     const spaceScaleTree = spaceScalesToBinaryTree(spaceOrigin, spaceScales);
     const flatSteps = getFlatSteps(spaceScales);
@@ -127,16 +143,8 @@ export const SpaceTimeChart = (props: SpaceTimeChartProps) => {
     const getSpace = getPixelToSpace(spacePixelOffset, spaceScaleTree);
     const getData = getPointToData(getTime, getSpace, timeAxis, spaceAxis);
 
-    const pickingElements: PickingElement[] = [];
-    const resetPickingElements = () => {
-      pickingElements.length = 0;
-    };
-    const registerPickingElement = (element: PickingElement) => {
-      pickingElements.push(element);
-      return pickingElements.length - 1;
-    };
-
     return {
+      ...pickingState,
       fingerprint,
       width,
       height,
@@ -146,9 +154,6 @@ export const SpaceTimeChart = (props: SpaceTimeChartProps) => {
       getTime,
       getSpace,
       getData,
-      pickingElements,
-      resetPickingElements,
-      registerPickingElement,
       operationalPoints,
       spaceOrigin,
       spaceScaleTree,
@@ -172,7 +177,7 @@ export const SpaceTimeChart = (props: SpaceTimeChartProps) => {
         : fullTheme.dateCaptionsSize + fullTheme.timeCaptionsSize,
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fingerprint]);
+  }, [fingerprint, pickingState]);
 
   const mouseState = useMouseTracking(root);
   const { position, down, isHover } = mouseState;
