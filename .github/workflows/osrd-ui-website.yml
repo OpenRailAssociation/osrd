@@ -81,6 +81,7 @@ jobs:
           linkchecker_enabled: false
           sticky_comment_enabled: false
           step_summary_enabled: true
+          gh_deployment: storybook
         env:
           HAVE_SSH_KEY: ${{ secrets.UI_WEBSITE_SSH_KEY != '' }}
         if: ${{ env.HAVE_SSH_KEY == 'true' }}
