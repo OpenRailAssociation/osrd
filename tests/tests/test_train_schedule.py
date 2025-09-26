@@ -1197,6 +1197,123 @@ def test_etcs_spacing_req(
     assert spacing_req_zone_final["end_time"] == 1042849
 
 
+def test_etcs_routing_req(
+    etcs_scenario: Scenario, etcs_rolling_stock: int, session: Session
+):
+    """
+    routing requirements should:
+    * start at the same time the braking curve starts if stopping on closed signal
+      on the signal protecting said route
+    * end when leaving the zone (routes are "softly released": as soon as possible)
+    """
+    rolling_stock_response = session.get(
+        EDITOAST_URL + f"light_rolling_stock/{etcs_rolling_stock}"
+    )
+    etcs_rolling_stock_name = rolling_stock_response.json()["name"]
+    ts_response = session.post(
+        f"{EDITOAST_URL}timetable/{etcs_scenario.timetable}/train_schedules/",
+        json=[
+            {
+                "train_name": "slowdowns to respect MRSP and ETCS with intermediate stop",
+                "labels": [],
+                "rolling_stock_name": etcs_rolling_stock_name,
+                "start_time": "2024-01-01T07:00:00Z",
+                "path": [
+                    {"id": "zero", "track": "TA0", "offset": 0},
+                    {"id": "stop", "track": "TH0", "offset": 662_000},
+                    {"id": "last", "track": "TH1", "offset": 5_000_000},
+                ],
+                "schedule": [
+                    {"at": "zero", "stop_for": "P0D"},
+                    {"at": "stop", "stop_for": "PT10S", "reception_signal": "STOP"},
+                    {"at": "last", "stop_for": "P0D"},
+                ],
+                "margins": {"boundaries": [], "values": ["0%"]},
+                "initial_speed": 0,
+                "comfort": "STANDARD",
+                "constraint_distribution": "STANDARD",
+                "speed_limit_tag": "foo",
+                "power_restrictions": [],
+            }
+        ],
+    )
+
+    schedule = ts_response.json()[0]
+    schedule_id = schedule["id"]
+    ts_id_response = session.get(f"{EDITOAST_URL}train_schedule/{schedule_id}/")
+    ts_id_response.raise_for_status()
+    simu_response = session.get(
+        f"{EDITOAST_URL}train_schedule/{schedule_id}/simulation?infra_id={etcs_scenario.infra}"
+    )
+    simulation_final_output = simu_response.json()["final_output"]
+
+    assert len(simulation_final_output["positions"]) == len(
+        simulation_final_output["speeds"]
+    )
+
+    # To debug this test: please add a breakpoint then use front to display speed-space chart
+    # (activate Context for Slopes and Speed limits).
+
+    # route entry buffer_stop.0
+    routing_req_0 = simulation_final_output["routing_requirements"][0]
+    assert routing_req_0["route"] == "rt.buffer_stop.0->DA2"
+    assert routing_req_0["begin_time"] == 0
+    assert len(routing_req_0["zones"]) == 1
+    assert (
+        routing_req_0["zones"][0]["zone"]
+        == "zone.[DA2:DECREASING, buffer_stop.0:INCREASING]"
+    )
+    assert routing_req_0["zones"][0]["end_time"] == 103_241
+
+    routing_req_1 = simulation_final_output["routing_requirements"][1]
+    assert routing_req_1["route"] == "rt.DA2->DA5"
+    assert routing_req_1["begin_time"] == 65_194
+    assert len(routing_req_1["zones"]) == 7
+
+    # zone entry DA2 (triggered by SA2)
+    assert (
+        routing_req_1["zones"][0]["zone"]
+        == "zone.[DA2:INCREASING, DA3:DECREASING, DA7:INCREASING]"
+    )
+    assert routing_req_1["zones"][0]["end_time"] == 111_927
+
+    # zone entry DA3 (triggered by SA2)
+    assert (
+        routing_req_1["zones"][1]["zone"] == "zone.[DA3:INCREASING, DA6_1:DECREASING]"
+    )
+    assert routing_req_1["zones"][1]["end_time"] == 145_858
+
+    routing_req_3 = simulation_final_output["routing_requirements"][3]
+    assert routing_req_3["route"] == "rt.DC5->DD2"
+    assert routing_req_3["begin_time"] == 214_492
+    assert len(routing_req_3["zones"]) == 17
+    # zone entry DD0_8 (triggered by SC5)
+    assert (
+        routing_req_3["zones"][9]["zone"] == "zone.[DD0_8:INCREASING, DD0_9:DECREASING]"
+    )
+    assert routing_req_3["zones"][9]["end_time"] == 464_473
+
+    routing_req_6 = simulation_final_output["routing_requirements"][6]
+    assert routing_req_6["route"] == "rt.DG0->DH2"
+    # matches the start of the braking curve if stop on closed-signal SG0
+    assert routing_req_6["begin_time"] == 535_548
+    assert len(routing_req_6["zones"]) == 2
+    # zone entry DH1 (triggered by SG0)
+    assert routing_req_6["zones"][1]["zone"] == "zone.[DH1:INCREASING, DH2:DECREASING]"
+    assert routing_req_6["zones"][1]["end_time"] == 851_123
+
+    routing_req_7 = simulation_final_output["routing_requirements"][7]
+    assert routing_req_7["route"] == "rt.DH2->buffer_stop.7"
+    assert routing_req_7["begin_time"] == 813_526
+    assert len(routing_req_7["zones"]) == 4
+    # zone entry DH1_2 (triggered by SH2)
+    assert (
+        routing_req_7["zones"][3]["zone"]
+        == "zone.[DH1_2:INCREASING, buffer_stop.7:DECREASING]"
+    )
+    assert routing_req_7["zones"][3]["end_time"] == 1_042_849
+
+
 def test_etcs_schedule_braking_curves_endpoint(
     etcs_scenario: Scenario, etcs_rolling_stock: int, session: Session
 ):
