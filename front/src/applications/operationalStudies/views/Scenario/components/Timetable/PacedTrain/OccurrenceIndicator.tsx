@@ -99,7 +99,6 @@ const OccurrenceIndicator = ({ occurrence, subCategories }: OccurrenceIndicatorP
       {isHovering && (occurrence.disabled || !isEmpty(occurrence.exceptionChangeGroups)) && (
         <OSRDTooltip
           containerRef={dotRef}
-          isOpen={isHovering}
           header={tooltipHeader()}
           items={displayedChangeGroups || []}
           offsetRatio={{ top: 0.5, left: 1 }}

@@ -169,7 +169,6 @@ const RoundTripsModalCard = ({
         {isStatusTooltipOpen && status === 'roundTrips' && pairData && (
           <OSRDTooltip
             containerRef={statusRef}
-            isOpen={isStatusTooltipOpen}
             header={t('matchedWith')}
             items={statusTooltipBody(pairData)}
             offsetRatio={{ top: 1.2, left: 0.22 }} // ratio computed based on container size and tooltip offset
@@ -210,7 +209,6 @@ const RoundTripsModalCard = ({
         {isStopsTooltipOpen && stops.length > 0 && (
           <OSRDTooltip
             containerRef={stopsRef}
-            isOpen={isStopsTooltipOpen}
             header={t('intermediateStops')}
             items={stops}
             offsetRatio={{ top: 1.2, left: 0.22 }} // ratio computed based on container size and tooltip offset

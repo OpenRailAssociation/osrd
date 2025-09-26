@@ -84,7 +84,6 @@ const ConflictCard = ({ conflict }: { conflict: ConflictWithTrainNames }) => {
             {isOthersTooltipOpen && (
               <OSRDTooltip
                 containerRef={othersTagRef}
-                isOpen={isOthersTooltipOpen}
                 header={t('conflicts.trainsInConflictTitle')}
                 items={conflict.trainsData
                   .filter((_, index) => index >= 3)
