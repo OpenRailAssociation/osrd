@@ -8,7 +8,7 @@ license = "LGPL-3.0"
 crate-type = ["cdylib", "rlib"]
 
 [workspace]
-members = [".", "uniffi-bindgen"]
+members = [".", "libtsim", "uniffi-bindgen"]
 
 [workspace.dependencies]
 uniffi = "0.29"
