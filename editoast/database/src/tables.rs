@@ -430,6 +430,21 @@ diesel::table! {
 diesel::table! {
     use diesel::sql_types::*;
     use postgis_diesel::sql_types::*;
+
+    macro_note (id) {
+        id -> Int8,
+        scenario_id -> Int8,
+        x -> Int8,
+        y -> Int8,
+        title -> Text,
+        text -> Text,
+        labels -> Array<Nullable<Text>>,
+    }
+}
+
+diesel::table! {
+    use diesel::sql_types::*;
+    use postgis_diesel::sql_types::*;
     use super::sql_types::TrainMainCategory;
 
     paced_train (id) {
@@ -899,6 +914,7 @@ diesel::joinable!(infra_object_speed_section -> infra (infra_id));
 diesel::joinable!(infra_object_switch -> infra (infra_id));
 diesel::joinable!(infra_object_track_section -> infra (infra_id));
 diesel::joinable!(macro_node -> scenario (scenario_id));
+diesel::joinable!(macro_note -> scenario (scenario_id));
 diesel::joinable!(paced_train -> timetable (timetable_id));
 diesel::joinable!(project -> document (image_id));
 diesel::joinable!(rolling_stock_livery -> document (compound_image_id));
@@ -956,6 +972,7 @@ diesel::allow_tables_to_appear_in_same_query!(
     infra_object_switch,
     infra_object_track_section,
     macro_node,
+    macro_note,
     paced_train,
     paced_train_round_trips,
     project,
