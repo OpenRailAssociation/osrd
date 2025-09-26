@@ -22,3 +22,5 @@ val <K : Comparable<K>, V> RangeMap<K, V>.entries: Iterable<Map.Entry<Range<K>, 
 /** Returns true if the range is a singleton (i.e. the range is of the form [a, a]). */
 val <K : Comparable<K>> Range<K>.isSingleton: Boolean
     get() = lowerEndpoint() == upperEndpoint()
+
+typealias RangeMapEntry<K, V> = Map.Entry<Range<K>, V>

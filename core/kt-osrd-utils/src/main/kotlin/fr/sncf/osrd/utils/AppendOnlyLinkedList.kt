@@ -57,29 +57,22 @@ class AppendOnlyLinkedList<T>(private var lastNode: Node<T>? = null, var size: I
      * calls on elements that aren't near the end.
      */
     fun toList(): List<T> {
-        val res = mutableListOf<T>()
-        var node = lastNode
-        while (node != null) {
-            res.add(node.element)
-            node = node.prev
-        }
-        return res.reversed()
+        return iterateBackwards().toList().reversed()
     }
 
     /** Converts the linked list into a set. */
     fun toSet(): Set<T> {
-        val res = mutableSetOf<T>()
-        var node = lastNode
-        while (node != null) {
-            res.add(node.element)
-            node = node.prev
-        }
-        return res
+        return iterateBackwards().toSet()
     }
 
     /** Returns the last element of the list */
     fun last(): T {
         return lastNode!!.element
+    }
+
+    /** Returns the last element of the list, or null if empty */
+    fun lastOrNull(): T? {
+        return lastNode?.element
     }
 
     /** Returns a sub list from 0 to untilIndex (excluded). */
@@ -97,17 +90,20 @@ class AppendOnlyLinkedList<T>(private var lastNode: Node<T>? = null, var size: I
      * Iterate over the list backwards, returning the first seen element that fits the predicate.
      */
     fun findLast(predicate: (T) -> Boolean): T? {
-        var node = lastNode
-        while (node != null) {
-            if (predicate.invoke(node.element)) return node.element
-            node = node.prev
-        }
-        return null
+        return iterateBackwards().firstOrNull(predicate)
     }
 
     /** Utility function for debugger views. */
     override fun toString(): String {
         return toList().toString()
+    }
+
+    fun iterateBackwards(): Sequence<T> = sequence {
+        var node = lastNode
+        while (node != null) {
+            yield(node.element)
+            node = node.prev
+        }
     }
 }
 
