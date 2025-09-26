@@ -71,7 +71,7 @@ class WorkerCommand : CliCommand {
             System.getenv("WORKER_THREADS")?.toIntOrNull()
                 ?: Runtime.getRuntime().availableProcessors()
         MAX_CONCURRENT_TIMETABLE_REQUESTS =
-            System.getenv("MAX_CONCURRENT_TIMETABLE_REQUESTS")?.toIntOrNull() ?: 5
+            System.getenv("MAX_CONCURRENT_TIMETABLE_REQUESTS")?.toIntOrNull() ?: 10
 
         WORKER_ID =
             if (WORKER_ID_USE_HOSTNAME) {
