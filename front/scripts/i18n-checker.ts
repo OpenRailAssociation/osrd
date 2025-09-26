@@ -11,6 +11,7 @@ const LANGUAGES = ['en', 'fr'];
 
 const IGNORE_MISSING: RegExp[] = [
   /stdcm-help-section:asu/,
+  /stdcm-help-section:externalSupport/,
   /stdcm-help-section:sections/,
   /stdcm:stdcmErrors\..*/,
   /translation:Editor.obj-types.NeutralSection/,

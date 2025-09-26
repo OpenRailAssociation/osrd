@@ -11,5 +11,18 @@
     {
       "title": "Fon"
     }
+  ],
+  "externalSupport": [
+    {
+      "title": "Name der Anwendung",
+      "value": "OSRD"
+    },
+    {
+      "title": "Hilfe",
+      "value": "External support email"
+    },
+    {
+      "title": "Fon"
+    }
   ]
 }
