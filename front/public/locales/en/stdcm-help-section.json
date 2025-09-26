@@ -19,7 +19,24 @@
   ],
   "asuLink": "ASU support link",
   "backToIndex": "help index",
+  "externalContact": "Contact (Clients and partners)",
+  "externalSupport": [
+    {
+      "title": "Application name",
+      "value": "OSRD"
+    },
+    {
+      "title": "Assistance",
+      "value": "External support email"
+    },
+    {
+      "title": "Phone",
+      "value": "09 72 72 27 29"
+    }
+  ],
+  "externalSupportEmail": "External support email",
   "help": "Help",
+  "internalContact": "Contact (SNCF Réseau)",
   "sections": {
     "application": {
       "content": [

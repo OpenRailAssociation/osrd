@@ -131,7 +131,17 @@
       background-color: var(--grey20);
       margin: 2px 0px;
     }
-    .support-asu__link {
+    .contact {
+      padding-top: 32px;
+    }
+    .contact_title {
+      font-size: 1.5rem;
+      font-weight: 600;
+      height: 32px;
+      margin-top: 41px;
+      margin-bottom: 7px;
+    }
+    .support__link {
       margin-top: 31px;
       text-align: right;
       color: var(--primary60);

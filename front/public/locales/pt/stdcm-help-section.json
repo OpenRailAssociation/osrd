@@ -19,6 +19,20 @@
   ],
   "asuLink": "Ligação para suporte ASU",
   "backToIndex": "índice da ajuda",
+  "externalSupport": [
+    {
+      "title": "Nome da aplicação",
+      "value": "OSRD"
+    },
+    {
+      "title": "Assistência",
+      "value": "External support email"
+    },
+    {
+      "title": "Telefone",
+      "value": "09 72 72 27 29"
+    }
+  ],
   "help": "Ajuda",
   "sections": {
     "application": {
