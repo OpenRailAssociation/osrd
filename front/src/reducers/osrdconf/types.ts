@@ -124,6 +124,15 @@ export type PathStep = {
   isFromPowerRestriction?: boolean;
 };
 
+export type PathStepV2 = {
+  id: string;
+  location: PathItemLocation | null;
+  arrival: Duration | null;
+  stopFor: Duration | null;
+  theoreticalMargin: string | null;
+  receptionSignal: ReceptionSignal | null;
+};
+
 export type StdcmPathStep = {
   id: string;
   location?: Extract<OperationalPointReference, { uic: number }> & {
