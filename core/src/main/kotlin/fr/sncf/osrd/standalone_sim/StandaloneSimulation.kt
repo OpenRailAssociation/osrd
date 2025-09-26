@@ -26,7 +26,6 @@ import fr.sncf.osrd.envelope_sim_infra.computeMRSP
 import fr.sncf.osrd.path.implementations.ChunkPath
 import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.path.interfaces.TravelledPath
-import fr.sncf.osrd.path.legacy_objects.ElectricalProfileMapping
 import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowanceDistribution
 import fr.sncf.osrd.reporting.exceptions.ErrorType.ZeroLengthPath
@@ -57,7 +56,6 @@ fun runStandaloneSimulation(
     chunkPath: ChunkPath,
     routes: StaticIdxList<Route>,
     blockPath: StaticIdxList<Block>,
-    electricalProfileMap: ElectricalProfileMapping?,
     rollingStock: RollingStock,
     comfort: Comfort,
     constraintDistribution: RJSAllowanceDistribution,
@@ -149,7 +147,6 @@ fun runStandaloneSimulation(
     // and return a result matching the expected response format
     val maxEffortResult =
         makeSimpleReportTrain(
-            infra,
             maxEffortEnvelope,
             trainPath,
             rollingStock,
@@ -158,7 +155,6 @@ fun runStandaloneSimulation(
         )
     val provisionalResult =
         makeSimpleReportTrain(
-            infra,
             provisionalEnvelope,
             trainPath,
             rollingStock,

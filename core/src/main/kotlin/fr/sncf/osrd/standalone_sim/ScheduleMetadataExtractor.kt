@@ -209,7 +209,7 @@ fun runScheduleMetadataExtractor(
 
             val stopDepartureTime =
                 envelopeWithStops
-                    .interpolateDepartureFrom(closedSignalStopOffset!!.distance.meters)
+                    .interpolateDepartureFrom(closedSignalStopOffset.distance.meters)
                     .seconds
             if (signalCriticalTime < stopDepartureTime - CLOSED_SIGNAL_RESERVATION_MARGIN.seconds) {
                 signalCriticalOffset = closedSignalStopOffset
@@ -301,7 +301,6 @@ fun getStopTravelledPathOffset(
 }
 
 fun makeSimpleReportTrain(
-    fullInfra: FullInfra,
     envelope: Envelope,
     trainPath: TrainPath,
     rollingStock: RollingStock,

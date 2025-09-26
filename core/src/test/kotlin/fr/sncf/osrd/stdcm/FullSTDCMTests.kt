@@ -466,7 +466,6 @@ fun makeRequirementsFromPath(
             chunkPath,
             path.routes.map { infra.rawInfra.getRouteFromName(it) }.toIdxList(),
             path.blocks.map { infra.blockInfra.getBlockFromName(it)!! }.toIdxList(),
-            null,
             rollingStock,
             Comfort.STANDARD,
             RJSAllowanceDistribution.LINEAR,

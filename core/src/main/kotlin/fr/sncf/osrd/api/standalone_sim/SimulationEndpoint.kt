@@ -74,7 +74,6 @@ class SimulationEndpoint(
                     chunkPath,
                     routePath,
                     blockPath,
-                    electricalProfileMap,
                     rollingStock,
                     request.comfort,
                     request.constraintDistribution.toRJS(),
