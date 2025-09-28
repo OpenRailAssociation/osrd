@@ -1,1 +1,11 @@
-{}
+{
+  "Editor": {
+    "directions": {
+      "BOTH": "Obydwa",
+      "START_TO_STOP": "Start do stop"
+    },
+    "entities": {
+      "errors-linked": "Powiązane problemy"
+    }
+  }
+}
