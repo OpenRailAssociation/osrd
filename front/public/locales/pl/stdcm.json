@@ -1,1 +1,10 @@
-{}
+{
+  "allowances": {
+    "gridMarginBeforeAfter": "Margines rozkładu przed/po",
+    "standardAllowance": "Margines Odzyskiwania"
+  },
+  "arriveAt": "Przyjedzie o {{ time ]]",
+  "consist": {
+    "consist": "Składa się z"
+  }
+}
