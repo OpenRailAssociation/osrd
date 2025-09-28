@@ -1,1 +1,14 @@
-{}
+{
+  "ApplicableDirections": {
+    "description": "Jest to używane aby znać kierunki aplikacji niektórych obiektów",
+    "title": "Aplikowalne Kierunki"
+  },
+  "ApplicableDirectionsTrackRange": {
+    "description": "Dostępny zakres kierunku torów to zakres torów z powiązanymi kierunkami.",
+    "properties": {
+      "applicable_directions": {
+        "description": "Kierunek w którym pasujący obiekt jest aplikowany"
+      }
+    }
+  }
+}
