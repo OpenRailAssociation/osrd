@@ -1,1 +1,7 @@
-{}
+{
+  "boards": {
+    "conflicts": "Konflikty",
+    "macro": "Makro",
+    "map": "Mapa"
+  }
+}
