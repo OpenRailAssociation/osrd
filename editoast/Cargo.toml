@@ -99,7 +99,7 @@ opentelemetry_sdk = { version = "0.30.0", default-features = false, features = [
 ] }
 osrdyne_client = { path = "./osrdyne_client" }
 postgis_diesel = { version = "2.5.0", features = ["serde"] }
-postgres-openssl = "0.5.1"
+postgres-openssl = "0.5.2"
 pretty_assertions = "1.4.1"
 proc-macro2 = "1.0"
 quote = "1.0"
