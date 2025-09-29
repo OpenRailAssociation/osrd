@@ -1,3 +1,5 @@
+import { useEffect, useMemo } from 'react';
+
 import { ComboBox, Input, Select } from '@osrd-project/ui-core';
 import { isEqual } from 'lodash';
 import { useTranslation } from 'react-i18next';
@@ -20,7 +22,11 @@ import {
 } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 import { useAppDispatch } from 'store';
 
-const ItineraryModalFormHeader = () => {
+type ItineraryModalFormHeaderProps = {
+  onCategoryWarningChange: (categoryWarning?: string) => void;
+};
+
+const ItineraryModalFormHeader = ({ onCategoryWarningChange }: ItineraryModalFormHeaderProps) => {
   const dispatch = useAppDispatch();
 
   const { t } = useTranslation('operational-studies', {
@@ -42,25 +48,28 @@ const ItineraryModalFormHeader = () => {
   };
 
   // Category colors
-  let colors = DEFAULT_TRAIN_PATH_COLORS;
-  if (category && isMainCategory(category)) {
-    colors = TRAIN_MAIN_CATEGORY_PATH_COLORS[category.main_category];
-  } else if (category && !isMainCategory(category) && currentSubCategory) {
-    colors = {
-      normal: currentSubCategory.color || DEFAULT_TRAIN_PATH_COLORS.normal,
-      hovered: currentSubCategory.hovered_color || DEFAULT_TRAIN_PATH_COLORS.hovered,
-      background: currentSubCategory.background_color || DEFAULT_TRAIN_PATH_COLORS.background,
-    };
-  }
+  const colors = useMemo(() => {
+    if (category && isMainCategory(category)) {
+      return TRAIN_MAIN_CATEGORY_PATH_COLORS[category.main_category];
+    }
+
+    if (category && !isMainCategory(category) && currentSubCategory) {
+      return {
+        normal: currentSubCategory.color || DEFAULT_TRAIN_PATH_COLORS.normal,
+        hovered: currentSubCategory.hovered_color || DEFAULT_TRAIN_PATH_COLORS.hovered,
+        background: currentSubCategory.background_color || DEFAULT_TRAIN_PATH_COLORS.background,
+      };
+    }
+
+    return DEFAULT_TRAIN_PATH_COLORS;
+  }, [category, currentSubCategory]);
 
   // RollingStock
   const rollingStockId = useSelector(getOperationalStudiesRollingStockID);
   const { rollingStock } = useStoreDataForRollingStockSelector({
     rollingStockId,
   });
-  const getRollingStockLabel = (option: LightRollingStockWithLiveries) => {
-    const rs = option;
-    if (!rs) return '';
+  const getRollingStockLabel = (rs: LightRollingStockWithLiveries) => {
     const secondPart = rs.metadata?.series || rs.metadata?.reference || '';
     return secondPart ? `${rs.name} - ${secondPart}` : rs.name;
   };
@@ -70,6 +79,22 @@ const ItineraryModalFormHeader = () => {
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     dispatch(updateName(e.target.value));
   };
+
+  // Category warning
+  const categoryWarningMessage = useMemo(() => {
+    if (!rollingStock || !category) return undefined;
+
+    const isMismatch = isMainCategory(category)
+      ? category.main_category !== rollingStock.primary_category &&
+        !rollingStock.other_categories.includes(category.main_category)
+      : currentSubCategory?.main_category !== rollingStock.primary_category;
+
+    return isMismatch ? t('categoryMismatch') : undefined;
+  }, [rollingStock, category, currentSubCategory, t]);
+
+  useEffect(() => {
+    onCategoryWarningChange(categoryWarningMessage);
+  }, [categoryWarningMessage]);
 
   return (
     <>

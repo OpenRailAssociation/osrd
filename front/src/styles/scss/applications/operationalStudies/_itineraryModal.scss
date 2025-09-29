@@ -62,6 +62,7 @@
         .rolling-stock-combobox {
           min-width: 257px;
           margin-right: 21px;
+          flex: 0 0 auto;
           // Fix osrd-ui styles
           label {
             margin-bottom: 0;
@@ -72,6 +73,7 @@
           width: 100%;
           min-width: 257px;
           margin-right: 39px;
+          flex: 1 1 auto;
           // Fix osrd-ui styles
           label {
             margin-bottom: 0;
