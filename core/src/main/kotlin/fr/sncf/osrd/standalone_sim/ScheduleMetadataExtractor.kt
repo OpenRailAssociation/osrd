@@ -593,7 +593,15 @@ private fun getEtcsRouteCriticalPos(
             )
             .first()
     val curvesList = etcsSimulator.computeStopBrakingCurves(envelope, listOf(eoa))
-    val reqPos = curvesList[eoa]!![IND]!!.brakingCurve.beginPos.meters
+
+    assert(curvesList.size == 1)
+    val reqPos =
+        if (curvesList[eoa]!![IND] != null) {
+            curvesList[eoa]!![IND]!!.brakingCurve.beginPos.meters
+        } else {
+            eoa.offsetEOA.distance
+        }
+
     return Offset(reqPos)
 }
 
