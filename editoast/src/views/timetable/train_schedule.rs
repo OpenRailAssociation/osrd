@@ -13,6 +13,7 @@ use chrono::Duration;
 use chrono::Utc;
 use core_client::AsCoreRequest;
 use core_client::pathfinding::PathfindingResultSuccess;
+use core_client::signal_projection::SignalUpdate;
 use core_client::simulation::PhysicsConsist;
 use core_client::simulation::ReportTrain;
 
