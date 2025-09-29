@@ -10,6 +10,7 @@ import ManageTimetableItemModal from 'applications/operationalStudies/views/Scen
 import SimulationResults from 'applications/operationalStudies/views/Scenario/components/SimulationResults';
 import type { Conflict } from 'common/api/osrdEditoastApi';
 import { Loader } from 'common/Loaders';
+import ResizableSection from 'common/ResizableSection';
 import ConflictsList from 'modules/conflict/components/ConflictsList';
 import ScenarioLoaderMessage from 'modules/scenario/components/ScenarioLoaderMessage';
 import type {
@@ -35,6 +36,7 @@ import { handleOperation } from './MacroEditor/ngeToOsrd';
 import { loadNgeDto } from './MacroEditor/osrdToNge';
 import NGE from './NGE';
 import type { NetzgrafikDto, NGEEvent } from './NGE/types';
+import { HIDDEN_CHART_TOP_HEIGHT } from './SimulationResults/SimulationResults';
 import TimetableBoardWrapper from './Timetable/TimetableBoardWrapper';
 
 type ScenarioContentProps = {
@@ -42,6 +44,7 @@ type ScenarioContentProps = {
 };
 
 const MACRO_EDITOR_HEIGHT = 776; // px
+const MACRO_MIN_HEIGHT = 500;
 
 const ScenarioContent = ({ activeBoards }: ScenarioContentProps) => {
   const { t, i18n } = useTranslation('operational-studies');
@@ -56,6 +59,8 @@ const ScenarioContent = ({ activeBoards }: ScenarioContentProps) => {
   const [collapsedTimetable, setCollapsedTimetable] = useState(false);
   const [collapsedTimetableEdit, setCollapsedTimetableEdit] = useState(false);
   const [timetableItemToEditData, setTimetableItemToEditData] = useState<TimetableItemToEditData>();
+  const [macroBoardHeight, setMacroBoardHeight] = useState<number>(MACRO_EDITOR_HEIGHT);
+
   const {
     timetableItemsWithDetails,
     timetableItems,
@@ -223,25 +228,33 @@ const ScenarioContent = ({ activeBoards }: ScenarioContentProps) => {
                 updateTrainDepartureTime={updateTrainDepartureTime}
               />
             )}
-            <BoardWrapper hidden={!activeBoards.has('macro')} name="MACRO">
-              <div className="osrd-simulation-container">
-                <div
-                  className="chart-container"
-                  style={{
-                    height: `${MACRO_EDITOR_HEIGHT}px`,
-                  }}
-                >
-                  {(!ngeDto || ngeIsLoading) && (
-                    <Loader
-                      msg={t('main.loadingMacroEditor')}
-                      className="scenario-loader"
-                      childClass="scenario-loader-msg"
-                    />
-                  )}
-                  <NGE dto={ngeDto} onOperation={handleNGEOperation} onLoad={handleNGELoad} />
-                </div>
-              </div>
-            </BoardWrapper>
+            {activeBoards.has('macro') && (
+              <ResizableSection
+                height={macroBoardHeight}
+                setHeight={setMacroBoardHeight}
+                minHeight={MACRO_MIN_HEIGHT}
+              >
+                <BoardWrapper name="MACRO">
+                  <div className="osrd-simulation-container">
+                    <div
+                      className="chart-container"
+                      style={{
+                        height: `${macroBoardHeight - HIDDEN_CHART_TOP_HEIGHT}px`,
+                      }}
+                    >
+                      {(!ngeDto || ngeIsLoading) && (
+                        <Loader
+                          msg={t('main.loadingMacroEditor')}
+                          className="scenario-loader"
+                          childClass="scenario-loader-msg"
+                        />
+                      )}
+                      <NGE dto={ngeDto} onOperation={handleNGEOperation} onLoad={handleNGELoad} />
+                    </div>
+                  </div>
+                </BoardWrapper>
+              </ResizableSection>
+            )}
           </div>
         </div>
         <div
