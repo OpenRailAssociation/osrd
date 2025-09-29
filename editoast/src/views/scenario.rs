@@ -222,7 +222,6 @@ pub(in crate::views) async fn create(
     params(ProjectIdParam, StudyIdParam, ScenarioIdParam),
     responses(
         (status = 204, description = "The scenario was deleted successfully"),
-        (status = 404, body = InternalError, description = "The requested scenario was not found"),
     )
 )]
 pub(in crate::views) async fn delete(
@@ -304,7 +303,6 @@ impl From<ScenarioPatchForm> for <Scenario as editoast_models::prelude::Model>::
     request_body = ScenarioPatchForm,
     responses(
         (status = 204, body = ScenarioResponse, description = "The scenario was updated successfully"),
-        (status = 404, body = InternalError, description = "The requested scenario was not found"),
     )
 )]
 pub(in crate::views) async fn patch(
@@ -369,7 +367,6 @@ pub(in crate::views) async fn patch(
     params(ProjectIdParam, StudyIdParam, ScenarioIdParam),
     responses(
         (status = 200, body = ScenarioResponse, description = "The requested scenario"),
-        (status = 404, body = InternalError, description = "The requested scenario was not found"),
     )
 )]
 pub(in crate::views) async fn get(
