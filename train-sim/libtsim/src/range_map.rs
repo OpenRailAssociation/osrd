@@ -4,28 +4,38 @@
 
 use std::cmp::Ordering;
 use std::collections::BTreeMap;
+use std::ops::Bound;
 
-/// A bound of a range.
-///
-/// This is a version of [`std::ops::Bound`] that implements [`Ord`] for types of interest.
 #[derive(Clone, Copy, Debug, PartialEq)]
-pub enum Bound<T> {
-    Included(T),
-    Excluded(T),
-    Unbounded,
-}
+struct LowerBound<T>(Bound<T>);
 
-impl<T> Eq for Bound<T> where T: PartialEq {}
+#[derive(Clone, Copy, Debug, PartialEq)]
+struct UpperBound<T>(Bound<T>);
 
-impl PartialOrd for Bound<f64> {
+impl<T> Eq for LowerBound<T> where T: PartialEq {}
+impl<T> Eq for UpperBound<T> where T: PartialEq {}
+
+impl<T> PartialOrd for LowerBound<T>
+where
+    LowerBound<T>: Ord,
+{
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         Some(Self::cmp(self, other))
     }
 }
 
-impl Ord for Bound<f64> {
+impl<T> PartialOrd for UpperBound<T>
+where
+    UpperBound<T>: Ord,
+{
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        Some(Self::cmp(self, other))
+    }
+}
+
+impl Ord for LowerBound<f64> {
     fn cmp(&self, other: &Self) -> Ordering {
-        match (self, other) {
+        match (&self.0, &other.0) {
             (Bound::Unbounded, Bound::Unbounded) => Ordering::Equal,
             (Bound::Unbounded, _) => Ordering::Less,
             (_, Bound::Unbounded) => Ordering::Greater,
@@ -39,15 +49,9 @@ impl Ord for Bound<f64> {
     }
 }
 
-impl PartialOrd for Bound<i64> {
-    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
-        Some(Self::cmp(self, other))
-    }
-}
-
-impl Ord for Bound<i64> {
+impl Ord for LowerBound<i64> {
     fn cmp(&self, other: &Self) -> Ordering {
-        match (self, other) {
+        match (&self.0, &other.0) {
             (Bound::Unbounded, Bound::Unbounded) => Ordering::Equal,
             (Bound::Unbounded, _) => Ordering::Less,
             (_, Bound::Unbounded) => Ordering::Greater,
@@ -59,32 +63,73 @@ impl Ord for Bound<i64> {
     }
 }
 
-impl<T> Bound<T> {
-    /// Given `self` as the upper bound of a range, return the smallest lower bound a range can
-    /// have after `self`.
-    pub fn next_up(self) -> Option<Self> {
-        match self {
-            Self::Included(t) => Some(Self::Excluded(t)),
-            Self::Excluded(t) => Some(Self::Included(t)),
-            Self::Unbounded => None,
+impl Ord for UpperBound<f64> {
+    fn cmp(&self, other: &Self) -> Ordering {
+        match (&self.0, &other.0) {
+            (Bound::Unbounded, Bound::Unbounded) => Ordering::Equal,
+            (Bound::Unbounded, _) => Ordering::Greater,
+            (_, Bound::Unbounded) => Ordering::Less,
+            (Bound::Included(s), Bound::Excluded(o)) => {
+                f64::total_cmp(s, o).then(Ordering::Greater)
+            }
+            (Bound::Excluded(s), Bound::Included(o)) => f64::total_cmp(s, o).then(Ordering::Less),
+            (Bound::Included(s), Bound::Included(o)) => f64::total_cmp(s, o),
+            (Bound::Excluded(s), Bound::Excluded(o)) => f64::total_cmp(s, o),
         }
     }
+}
 
+impl Ord for UpperBound<i64> {
+    fn cmp(&self, other: &Self) -> Ordering {
+        match (&self.0, &other.0) {
+            (Bound::Unbounded, Bound::Unbounded) => Ordering::Equal,
+            (Bound::Unbounded, _) => Ordering::Greater,
+            (_, Bound::Unbounded) => Ordering::Less,
+            (Bound::Included(s), Bound::Excluded(o)) => i64::cmp(s, o).then(Ordering::Greater),
+            (Bound::Excluded(s), Bound::Included(o)) => i64::cmp(s, o).then(Ordering::Less),
+            (Bound::Included(s), Bound::Included(o)) => i64::cmp(s, o),
+            (Bound::Excluded(s), Bound::Excluded(o)) => i64::cmp(s, o),
+        }
+    }
+}
+
+impl<T> UpperBound<T> {
+    /// Given `self` as the upper bound of a range, return the smallest lower bound a range can
+    /// have after `self`.
+    pub fn next_up(self) -> Option<LowerBound<T>> {
+        match self.0 {
+            Bound::Included(t) => Some(LowerBound(Bound::Excluded(t))),
+            Bound::Excluded(t) => Some(LowerBound(Bound::Included(t))),
+            Bound::Unbounded => None,
+        }
+    }
+}
+
+impl<T> LowerBound<T> {
     /// Given `self` as the lower bound of a range, return the highest upper bound a range can have
     /// before `self`.
-    pub fn next_down(self) -> Option<Self> {
-        match self {
-            Self::Included(t) => Some(Self::Excluded(t)),
-            Self::Excluded(t) => Some(Self::Included(t)),
-            Self::Unbounded => None,
+    pub fn next_down(self) -> Option<UpperBound<T>> {
+        match self.0 {
+            Bound::Included(t) => Some(UpperBound(Bound::Excluded(t))),
+            Bound::Excluded(t) => Some(UpperBound(Bound::Included(t))),
+            Bound::Unbounded => None,
         }
     }
 }
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub struct Range<T> {
-    pub start: Bound<T>,
-    pub end: Bound<T>,
+    pub start: LowerBound<T>,
+    pub end: UpperBound<T>,
+}
+
+impl<T> Range<T> {
+    pub fn new(start: Bound<T>, end: Bound<T>) -> Self {
+        Self {
+            start: LowerBound(start),
+            end: UpperBound(end),
+        }
+    }
 }
 
 impl<T> Range<T>
@@ -92,7 +137,7 @@ where
     T: PartialOrd,
 {
     pub fn is_empty(&self) -> bool {
-        !match (&self.start, &self.end) {
+        !match (&self.start.0, &self.end.0) {
             (Bound::Unbounded, _) | (_, Bound::Unbounded) => true,
             (Bound::Included(start), Bound::Excluded(end))
             | (Bound::Excluded(start), Bound::Included(end))
@@ -102,11 +147,11 @@ where
     }
 
     pub fn contains(&self, value: T) -> bool {
-        (match &self.start {
+        (match &self.start.0 {
             Bound::Included(start) => start <= &value,
             Bound::Excluded(start) => start < &value,
             Bound::Unbounded => true,
-        }) && (match &self.end {
+        }) && (match &self.end.0 {
             Bound::Included(end) => &value <= end,
             Bound::Excluded(end) => &value < end,
             Bound::Unbounded => true,
@@ -119,7 +164,7 @@ where
 /// Queries look up the value associated with the range (if any) that contains a specified key.
 pub struct RangeMap<K, V> {
     /// start of the range --> (end of the range, value associated with the range)
-    inner: BTreeMap<Bound<K>, (Bound<K>, V)>,
+    inner: BTreeMap<LowerBound<K>, (UpperBound<K>, V)>,
 }
 
 impl<K, V> Default for RangeMap<K, V> {
@@ -139,7 +184,8 @@ impl<K, V> RangeMap<K, V> {
 
 impl<K, V> RangeMap<K, V>
 where
-    Bound<K>: Ord,
+    LowerBound<K>: Ord,
+    UpperBound<K>: Ord,
     K: Copy + PartialOrd,
 {
     /// Insert the given `value` at the given `range`, such that subsequent calls to
@@ -164,7 +210,7 @@ where
 
         let mut r = self.inner.range((
             std::ops::Bound::Unbounded,
-            std::ops::Bound::Included(Bound::Included(key)),
+            std::ops::Bound::Included(LowerBound(Bound::Included(key))),
         ));
 
         let (&start, &(end, ref value)) = r.next_back()?;
@@ -182,38 +228,44 @@ where
     where
         V: Clone,
     {
-        // TODO: change this function once [BTreeMap::lower_bound] is stable
-        // https://github.com/rust-lang/rust/issues/107540
-
         if range.is_empty() {
             // Prevent panics in the BTreeMap::range call.
             return;
         }
 
-        let mut to_remove: Vec<Bound<K>> = Vec::new();
-        let mut to_update: Option<(Bound<K>, Bound<K>)> = None;
+        let mut to_remove: Vec<LowerBound<K>> = Vec::new();
+        let mut to_update: Option<(LowerBound<K>, LowerBound<K>)> = None;
 
         // First part: remove or truncate ranges that start in `range`.
 
-        let mut overlaps = self.inner.range((
+        // TODO: use [BTreeMap::lower_bound] once it is stable
+        // https://github.com/rust-lang/rust/issues/107540
+        let overlaps = self.inner.range((
             std::ops::Bound::Included(range.start),
-            std::ops::Bound::Included(range.end),
+            std::ops::Bound::Unbounded,
         ));
 
-        if let Some(last) = overlaps.next_back() {
-            // `last` is the last range that starts in [range.start..range.end]
-            // It might not end in [range.start..range.end]
-
-            let (last_start, (last_end, _)) = last;
-            if *last_end <= range.end {
-                // `last` is fully contained by `range`, let's remove it.
-                to_remove.push(*last_start);
-            } else {
-                // `last` and `range` overlap, let's truncate `last`.
-                if let Some(new_last_start) = range.end.next_up() {
-                    to_update = Some((*last_start, new_last_start));
-                }
+        for (start, (end, _value)) in overlaps {
+            // TODO impl this PartialOrd GOOD LUCK
+            if range.end < start {
+                break;
             }
+            if &range.end < end {
+                // start..end is the last range that starts in [range.start..range.end] since it
+                // does not end in [range.start..range.end], so let's truncate `last`.
+
+                if let Some(new_start) = range.end.next_up() {
+                    to_update = Some((*start, new_start));
+                }
+
+                break;
+            }
+
+            to_remove.push(*start);
+        }
+
+        if let Some(last) = overlaps.next_back() {
+            let (last_start, (last_end, _)) = last;
         }
 
         // All other ranges are for sure fully contained in `range`.
@@ -236,7 +288,12 @@ where
         ));
         if let Some((_before_start, (before_end, value))) = overlaps.next_back() {
             let old_before_end = *before_end;
-            if range.start <= *before_end {
+            if !(Range {
+                start: range.start,
+                end: *before_end,
+            })
+            .is_empty()
+            {
                 // The range overlaps `range`, truncate it.
                 if let Some(new_before_end) = range.start.next_down() {
                     *before_end = new_before_end
