@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState, useRef } from 'react';
 
+import { skipToken } from '@reduxjs/toolkit/query';
 import { keyBy, sortBy } from 'lodash';
 import { useSelector } from 'react-redux';
 
@@ -118,14 +119,13 @@ const useScenarioData = (scenario: ScenarioResponse, infraId: number) => {
   });
 
   // TODO Paced trains : adapt this to handle paced trains in the conflicts issue
-  const [fetchConflicts, { data: conflicts, isLoading, isFetching }] =
-    osrdEditoastApi.endpoints.getTimetableByIdConflicts.useLazyQuery();
-
-  const safeFetchConflicts = useCallback(() => {
-    if (allTrainsSimulated) {
-      fetchConflicts({ id: scenario.timetable_id, infraId: scenario.infra_id });
-    }
-  }, [allTrainsSimulated, scenario.timetable_id, scenario.infra_id, fetchConflicts]);
+  const {
+    data: conflicts,
+    isLoading,
+    isFetching,
+  } = osrdEditoastApi.endpoints.getTimetableByIdConflicts.useQuery(
+    allTrainsSimulated ? { id: scenario.timetable_id, infraId: scenario.infra_id } : skipToken
+  );
 
   const isConflictsLoading = isLoading || isFetching;
 
@@ -169,49 +169,37 @@ const useScenarioData = (scenario: ScenarioResponse, infraId: number) => {
     }
   }, [timetableItems, workerStatus, simulatedTrainsById]);
 
-  useEffect(() => {
-    safeFetchConflicts();
-  }, [safeFetchConflicts]);
-
   const broadcastChannel = useRef<BroadcastChannel>(null);
 
   const broadcastScenarioMessage = (msg: ScenarioBroadcastMessage) => {
     broadcastChannel.current?.postMessage(msg);
   };
 
-  const upsertTimetableItems = useCallback(
-    (timetableItemsToUpsert: TimetableItem[]) => {
-      setTimetableItems((prev) =>
-        sortBy(
-          Object.values({ ...keyBy(prev, 'id'), ...keyBy(timetableItemsToUpsert, 'id') }),
-          'start_time'
-        )
-      );
+  const upsertTimetableItems = useCallback((timetableItemsToUpsert: TimetableItem[]) => {
+    setTimetableItems((prev) =>
+      sortBy(
+        Object.values({ ...keyBy(prev, 'id'), ...keyBy(timetableItemsToUpsert, 'id') }),
+        'start_time'
+      )
+    );
 
-      removeProjectedTimetableItems(timetableItemsToUpsert.map((item) => item.id));
+    removeProjectedTimetableItems(timetableItemsToUpsert.map((item) => item.id));
 
-      simulateTimetableItems(timetableItemsToUpsert);
-      safeFetchConflicts();
-    },
-    [safeFetchConflicts]
-  );
+    simulateTimetableItems(timetableItemsToUpsert);
+  }, []);
 
-  const removeTimetableItems = useCallback(
-    (_timetableItemsToRemove: TimetableItemId[]) => {
-      setTimetableItems((prev) => {
-        const prevTimetableItemsById = mapBy(prev, 'id');
-        _timetableItemsToRemove.forEach((timetableItemId) => {
-          prevTimetableItemsById.delete(timetableItemId);
-        });
-        return Array.from(prevTimetableItemsById.values());
+  const removeTimetableItems = useCallback((_timetableItemsToRemove: TimetableItemId[]) => {
+    setTimetableItems((prev) => {
+      const prevTimetableItemsById = mapBy(prev, 'id');
+      _timetableItemsToRemove.forEach((timetableItemId) => {
+        prevTimetableItemsById.delete(timetableItemId);
       });
+      return Array.from(prevTimetableItemsById.values());
+    });
 
-      removeSimulatedTimetableItems(_timetableItemsToRemove);
-      removeProjectedTimetableItems(_timetableItemsToRemove);
-      safeFetchConflicts();
-    },
-    [safeFetchConflicts]
-  );
+    removeSimulatedTimetableItems(_timetableItemsToRemove);
+    removeProjectedTimetableItems(_timetableItemsToRemove);
+  }, []);
 
   const setTimetableItemDepartureTime = useCallback(
     (timetableItemId: TimetableItemId, newDeparture: Date) => {
@@ -233,9 +221,8 @@ const useScenarioData = (scenario: ScenarioResponse, infraId: number) => {
 
       updateSimulatedTimetableItemDepartureTime(timetableItemId, newDeparture);
       updateProjectedTimetableItemDepartureTime(timetableItemId, newDeparture);
-      safeFetchConflicts();
     },
-    [safeFetchConflicts]
+    []
   );
 
   /** Update only departure time of a timetable item */
