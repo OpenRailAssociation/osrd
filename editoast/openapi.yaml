@@ -1,4 +1,4 @@
-openapi: 3.0.3
+openapi: 3.1.0
 info:
   title: OSRD Editoast
   description: All HTTP endpoints of Editoast
@@ -80,6 +80,10 @@ paths:
                 items:
                   type: integer
                   format: int64
+              propertyNames:
+                type: string
+                enum:
+                - infra
         required: true
       responses:
         '200':
@@ -101,6 +105,10 @@ paths:
                       id:
                         type: integer
                         format: int64
+                propertyNames:
+                  type: string
+                  enum:
+                  - infra
   /authz/me/groups:
     get:
       tags:
@@ -138,6 +146,10 @@ paths:
                 items:
                   type: integer
                   format: int64
+              propertyNames:
+                type: string
+                enum:
+                - infra
         required: true
       responses:
         '200':
@@ -162,6 +174,10 @@ paths:
                       resource_id:
                         type: integer
                         format: int64
+                propertyNames:
+                  type: string
+                  enum:
+                  - infra
   /authz/{resource_type}/{resource_id}:
     get:
       tags:
@@ -193,7 +209,6 @@ paths:
           type: integer
           format: int64
           default: 100
-          nullable: true
           maximum: 100
           minimum: 1
       responses:
@@ -245,7 +260,6 @@ paths:
           application/octet-stream:
             schema:
               type: string
-              format: binary
         required: true
       responses:
         '201':
@@ -269,12 +283,11 @@ paths:
           format: int64
       responses:
         '200':
-          description: The document's binary content
+          description: Document content
           content:
             application/octet-stream:
               schema:
                 type: string
-                format: binary
     delete:
       tags:
       - documents
@@ -381,6 +394,8 @@ paths:
                 type: object
                 additionalProperties:
                   $ref: '#/components/schemas/LevelValues'
+                propertyNames:
+                  type: string
               example:
                 1500V:
                 - A
@@ -443,7 +458,6 @@ paths:
           type: integer
           format: int64
           default: 1000
-          nullable: true
           maximum: 1000
           minimum: 1
       responses:
@@ -611,6 +625,39 @@ paths:
                 $ref: '#/components/schemas/Infra'
         '404':
           description: Infra ID not found
+    put:
+      tags:
+      - infra
+      summary: Rename an infra
+      parameters:
+      - name: infra_id
+        in: path
+        description: An existing infra ID
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - name
+              properties:
+                name:
+                  type: string
+                  description: The new name to give the infra
+        required: true
+      responses:
+        '200':
+          description: The infra has been renamed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Infra'
+        '404':
+          description: Infra ID not found
     post:
       tags:
       - infra
@@ -649,39 +696,6 @@ paths:
                 type: array
                 items:
                   $ref: '#/components/schemas/InfraObject'
-    put:
-      tags:
-      - infra
-      summary: Rename an infra
-      parameters:
-      - name: infra_id
-        in: path
-        description: An existing infra ID
-        required: true
-        schema:
-          type: integer
-          format: int64
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-              - name
-              properties:
-                name:
-                  type: string
-                  description: The new name to give the infra
-        required: true
-      responses:
-        '200':
-          description: The infra has been renamed
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Infra'
-        '404':
-          description: Infra ID not found
     delete:
       tags:
       - infra
@@ -737,6 +751,20 @@ paths:
                   type: array
                   items:
                     type: string
+                propertyNames:
+                  type: string
+                  enum:
+                  - TrackSection
+                  - Signal
+                  - SpeedSection
+                  - Detector
+                  - NeutralSection
+                  - Switch
+                  - SwitchType
+                  - BufferStop
+                  - Route
+                  - OperationalPoint
+                  - Electrification
   /infra/{infra_id}/auto_fixes:
     get:
       tags:
@@ -862,7 +890,6 @@ paths:
           type: integer
           format: int64
           default: 100
-          nullable: true
           maximum: 100
           minimum: 1
       - name: level
@@ -880,16 +907,13 @@ paths:
         description: The type of error to filter on
         required: false
         schema:
-          allOf:
-          - $ref: '#/components/schemas/InfraErrorTypeLabel'
-          nullable: true
+          $ref: '#/components/schemas/InfraErrorTypeLabel'
       - name: object_id
         in: query
         description: Filter errors and warnings related to a given object
         required: false
         schema:
           type: string
-          nullable: true
       responses:
         '200':
           description: A paginated list of errors
@@ -1009,8 +1033,13 @@ paths:
                   track_names:
                     type: object
                     additionalProperties:
+                      type:
+                      - string
+                      - 'null'
+                    propertyNames:
                       type: string
-                      nullable: true
+                      maxLength: 255
+                      minLength: 1
   /infra/{infra_id}/objects/{object_type}:
     post:
       tags:
@@ -1135,7 +1164,6 @@ paths:
         schema:
           type: integer
           format: int32
-          nullable: true
           minimum: 0
       requestBody:
         content:
@@ -1221,8 +1249,11 @@ paths:
             schema:
               type: object
               additionalProperties:
+                type:
+                - string
+                - 'null'
+              propertyNames:
                 type: string
-                nullable: true
         required: true
       responses:
         '200':
@@ -1243,6 +1274,8 @@ paths:
                       items:
                         type: string
                       uniqueItems: true
+                    propertyNames:
+                      type: string
                   routes:
                     type: array
                     items:
@@ -1279,6 +1312,7 @@ paths:
                   oneOf:
                   - allOf:
                     - $ref: '#/components/schemas/RoutePath'
+                      description: RoutePath contains N track ranges with the N-1 switches found inbetween, in the order they appear on the route
                     - type: object
                       required:
                       - type
@@ -1287,6 +1321,7 @@ paths:
                           type: string
                           enum:
                           - Computed
+                    description: RoutePath contains N track ranges with the N-1 switches found inbetween, in the order they appear on the route
                   - type: object
                     required:
                     - type
@@ -1451,8 +1486,9 @@ paths:
     get:
       tags:
       - infra
-      summary: Returns the set of voltages for a given infra and/or rolling_stocks modes.
-      description: If include_rolling_stocks_modes is true, it returns also rolling_stocks modes.
+      summary: |-
+        Returns the set of voltages for a given infra and/or rolling_stocks modes.
+        If include_rolling_stocks_modes is true, it returns also rolling_stocks modes.
       parameters:
       - name: infra_id
         in: path
@@ -1538,6 +1574,8 @@ paths:
                     type: object
                     additionalProperties:
                       type: string
+                    propertyNames:
+                      type: string
                   scheme:
                     type: string
                     example: xyz
@@ -1594,12 +1632,11 @@ paths:
           minimum: 0
       responses:
         '200':
-          description: Successful Response
+          description: ''
           content:
             application/octet-stream:
               schema:
                 type: string
-                format: binary
   /light_rolling_stock:
     get:
       tags:
@@ -1621,7 +1658,6 @@ paths:
           type: integer
           format: int64
           default: 1000
-          nullable: true
           maximum: 1000
           minimum: 1
       responses:
@@ -1720,6 +1756,9 @@ paths:
                 type: object
                 additionalProperties:
                   $ref: '#/components/schemas/OccupancyBlocksPacedTrainResult'
+                propertyNames:
+                  type: integer
+                  format: int64
   /paced_train/project_path:
     post:
       tags:
@@ -1748,6 +1787,9 @@ paths:
                 type: object
                 additionalProperties:
                   $ref: '#/components/schemas/ProjectPathPacedTrainResult'
+                propertyNames:
+                  type: integer
+                  format: int64
   /paced_train/project_path_op:
     post:
       tags:
@@ -1764,9 +1806,10 @@ paths:
               - operational_points_distances
               properties:
                 electrical_profile_set_id:
-                  type: integer
+                  type:
+                  - integer
+                  - 'null'
                   format: int64
-                  nullable: true
                 infra_id:
                   type: integer
                   format: int64
@@ -1786,28 +1829,34 @@ paths:
                       - operational_point
                       properties:
                         operational_point:
-                          type: string
-                          maxLength: 255
-                          minLength: 1
+                          oneOf:
+                          - type: string
+                            maxLength: 255
+                            minLength: 1
+                          description: The object id of an operational point
                     - type: object
                       required:
                       - trigram
                       properties:
                         secondary_code:
-                          type: string
+                          type:
+                          - string
+                          - 'null'
                           description: An optional secondary code to identify a more specific location
-                          nullable: true
                         trigram:
-                          type: string
-                          minLength: 1
+                          oneOf:
+                          - type: string
+                            minLength: 1
+                          description: The operational point trigram
                     - type: object
                       required:
                       - uic
                       properties:
                         secondary_code:
-                          type: string
+                          type:
+                          - string
+                          - 'null'
                           description: An optional secondary code to identify a more specific location
-                          nullable: true
                         uic:
                           type: integer
                           format: int32
@@ -1829,12 +1878,16 @@ paths:
                 type: object
                 additionalProperties:
                   $ref: '#/components/schemas/ProjectPathPacedTrainResult'
+                propertyNames:
+                  type: integer
+                  format: int64
   /paced_train/simulation_summary:
     post:
       tags:
       - paced_train
-      summary: Associate each paced train id with its simulation summaries response
-      description: 'If the simulation fails, it associates the reason: pathfinding failed or running time failed'
+      summary: |-
+        Associate each paced train id with its simulation summaries response
+        If the simulation fails, it associates the reason: pathfinding failed or running time failed
       requestBody:
         content:
           application/json:
@@ -1845,9 +1898,10 @@ paths:
               - ids
               properties:
                 electrical_profile_set_id:
-                  type: integer
+                  type:
+                  - integer
+                  - 'null'
                   format: int64
-                  nullable: true
                 ids:
                   type: array
                   items:
@@ -1867,6 +1921,9 @@ paths:
                 type: object
                 additionalProperties:
                   $ref: '#/components/schemas/PacedTrainSimulationSummaryResult'
+                propertyNames:
+                  type: integer
+                  format: int64
   /paced_train/{id}:
     get:
       tags:
@@ -1922,8 +1979,10 @@ paths:
                     properties:
                       interval:
                         $ref: '#/components/schemas/PositiveDuration'
+                        description: Time between two occurrences, an ISO 8601 format is expected
                       time_window:
                         $ref: '#/components/schemas/PositiveDuration'
+                        description: Duration of the paced train, an ISO 8601 format is expected
         required: true
       responses:
         '204':
@@ -1952,7 +2011,6 @@ paths:
         required: false
         schema:
           type: string
-          nullable: true
       responses:
         '200':
           description: The path
@@ -1986,13 +2044,11 @@ paths:
         schema:
           type: integer
           format: int64
-          nullable: true
       - name: exception_key
         in: query
         required: false
         schema:
           type: string
-          nullable: true
       responses:
         '200':
           description: Simulation Output
@@ -2021,7 +2077,6 @@ paths:
           type: integer
           format: int64
           default: 1000
-          nullable: true
           maximum: 1000
           minimum: 1
       - name: ordering
@@ -2151,7 +2206,6 @@ paths:
           type: integer
           format: int64
           default: 1000
-          nullable: true
           maximum: 1000
           minimum: 1
       - name: ordering
@@ -2312,7 +2366,6 @@ paths:
           type: integer
           format: int64
           default: 1000
-          nullable: true
           maximum: 1000
           minimum: 1
       - name: ordering
@@ -2505,7 +2558,6 @@ paths:
           type: integer
           format: int64
           default: 100
-          nullable: true
           maximum: 100
           minimum: 1
       responses:
@@ -2968,16 +3020,16 @@ paths:
       description: |-
         # Payload
 
-        {
-        "object": string,
-        "query": query,
-        "dry": boolean, # default: false
-        }
+            {
+                "object": string,
+                "query": query,
+                "dry": boolean, # default: false
+            }
 
         Where:
         - `object` can be any search object declared in `search.yml`
         - `query` is a JSON document which can be deserialized into a [search::SearchAst].
-        Check out examples below.
+          Check out examples below.
 
         # Response
 
@@ -3000,9 +3052,9 @@ paths:
 
         * The railway station PNO: `["=", ["trigram"], "pno"]`
         * The railway stations with either "Paris" or "Lyon" (or both) in their name:
-        `["or", ["search", ["name"], "Paris"], ["search", ["name"], "Lyon"]]`
+          `["or", ["search", ["name"], "Paris"], ["search", ["name"], "Lyon"]]`
         * All railway stations with "Paris" in their name but not PNO :
-        `["and", ["search", ["name"], "Paris"], ["not", ["=", ["trigram"], "pno"]]]`
+          `["and", ["search", ["name"], "Paris"], ["not", ["=", ["trigram"], "pno"]]]`
 
         See [search::SearchAst] for a more detailed view of the query language.
       parameters:
@@ -3021,7 +3073,6 @@ paths:
           type: integer
           format: int64
           default: 1000
-          nullable: true
           maximum: 1000
           minimum: 1
       requestBody:
@@ -3063,11 +3114,13 @@ paths:
                   type: object
                   properties:
                     name:
-                      type: string
-                      nullable: true
+                      type:
+                      - string
+                      - 'null'
                     speed_limit_tag:
-                      type: string
-                      nullable: true
+                      type:
+                      - string
+                      - 'null'
                 timetable_id:
                   type: integer
                   format: int64
@@ -3099,7 +3152,8 @@ paths:
                         end:
                           type: string
                         train:
-                          allOf:
+                          oneOf:
+                          - type: 'null'
                           - type: object
                             required:
                             - train_name
@@ -3110,7 +3164,9 @@ paths:
                                 format: date-time
                               train_name:
                                 type: string
-                          nullable: true
+                          description: |-
+                            `train` is `None` if no similar train
+                            was found for the segment; otherwise, it is `Some`.
   /sprites/signaling_systems:
     get:
       tags:
@@ -3200,7 +3256,6 @@ paths:
           type: integer
           format: int64
           default: 1000
-          nullable: true
           maximum: 1000
           minimum: 1
       responses:
@@ -3254,7 +3309,6 @@ paths:
           type: integer
           format: int64
           default: 1000
-          nullable: true
           maximum: 1000
           minimum: 1
       responses:
@@ -3409,7 +3463,6 @@ paths:
         schema:
           type: integer
           format: int64
-          nullable: true
       responses:
         '200':
           description: List of conflicts
@@ -3447,7 +3500,6 @@ paths:
           type: integer
           format: int64
           default: 200
-          nullable: true
           maximum: 200
           minimum: 1
       responses:
@@ -3526,7 +3578,6 @@ paths:
           type: integer
           format: int64
           default: 200
-          nullable: true
           maximum: 200
           minimum: 1
       - name: infra_id
@@ -3541,7 +3592,6 @@ paths:
         schema:
           type: integer
           format: int64
-          nullable: true
       responses:
         '200':
           description: The paginated list of timetable requirements
@@ -3587,7 +3637,6 @@ paths:
           type: integer
           format: int64
           default: 1000
-          nullable: true
           maximum: 1000
           minimum: 1
       responses:
@@ -3634,7 +3683,6 @@ paths:
           type: integer
           format: int64
           default: 1000
-          nullable: true
           maximum: 1000
           minimum: 1
       responses:
@@ -3656,13 +3704,13 @@ paths:
     post:
       tags:
       - stdcm
-      summary: This function computes a STDCM and returns the result.
-      description: |-
+      summary: |-
+        This function computes a STDCM and returns the result.
         It first checks user authorization, then retrieves timetable, infrastructure,
         train schedules, and rolling stock data, and runs train simulations.
         The result contains the simulation output based on the train schedules
         and infrastructure provided.
-
+      description: |-
         If the simulation fails, the function uses a virtual train to detect conflicts
         with existing train schedules. It then returns both the conflict information
         and the pathfinding result from the virtual train's simulation.
@@ -3686,8 +3734,9 @@ paths:
         description: If true, extra payloads are returned to help with debugging
         required: false
         schema:
-          type: boolean
-          nullable: true
+          type:
+          - boolean
+          - 'null'
       requestBody:
         content:
           application/json:
@@ -3702,63 +3751,71 @@ paths:
                 comfort:
                   $ref: '#/components/schemas/Comfort'
                 electrical_profile_set_id:
-                  type: integer
+                  type:
+                  - integer
+                  - 'null'
                   format: int64
-                  nullable: true
                 loading_gauge_type:
-                  allOf:
+                  oneOf:
+                  - type: 'null'
                   - $ref: '#/components/schemas/LoadingGaugeType'
-                  nullable: true
                 margin:
-                  type: string
+                  type:
+                  - string
+                  - 'null'
                   description: Can be a percentage `X%`, a time in minutes per 100 kilometer `Xmin/100km`
                   example:
                   - 5%
                   - 2min/100km
-                  nullable: true
                 max_speed:
-                  type: number
+                  type:
+                  - number
+                  - 'null'
                   format: double
-                  description: |-
-                    Maximum speed of the consist in km/h
+                  description: |2-
+                     Maximum speed of the consist in km/h
                     Velocity in m·s⁻¹
-                  nullable: true
                 maximum_departure_delay:
-                  type: integer
+                  type:
+                  - integer
+                  - 'null'
                   format: int64
                   description: |-
                     By how long we can shift the departure time in milliseconds
                     Deprecated, first step data should be used instead
-                  nullable: true
                   minimum: 0
                 maximum_run_time:
-                  type: integer
+                  type:
+                  - integer
+                  - 'null'
                   format: int64
                   description: |-
                     Specifies how long the total run time can be in milliseconds
                     Deprecated, first step data should be used instead
-                  nullable: true
                   minimum: 0
                 rolling_stock_id:
                   type: integer
                   format: int64
                 speed_limit_tags:
-                  type: string
+                  type:
+                  - string
+                  - 'null'
                   description: Train categories for speed limits
-                  nullable: true
                 start_time:
-                  type: string
+                  type:
+                  - string
+                  - 'null'
                   format: date-time
                   description: Deprecated, first step arrival time should be used instead
-                  nullable: true
                 steps:
                   type: array
                   items:
                     $ref: '#/components/schemas/PathfindingItem'
                 temporary_speed_limit_group_id:
-                  type: integer
+                  type:
+                  - integer
+                  - 'null'
                   format: int64
-                  nullable: true
                 time_gap_after:
                   type: integer
                   format: int64
@@ -3778,27 +3835,31 @@ paths:
                     available at least that many milliseconds before its passage.
                   minimum: 0
                 total_length:
-                  type: number
+                  type:
+                  - number
+                  - 'null'
                   format: double
-                  description: |-
-                    Total length of the consist in meters
+                  description: |2-
+                     Total length of the consist in meters
                     Length in m
-                  nullable: true
                 total_mass:
-                  type: number
+                  type:
+                  - number
+                  - 'null'
                   format: double
-                  description: |-
-                    Total mass of the consist
+                  description: |2-
+                     Total mass of the consist
                     Mass in kg
-                  nullable: true
                 towed_rolling_stock_id:
-                  type: integer
+                  type:
+                  - integer
+                  - 'null'
                   format: int64
-                  nullable: true
                 work_schedule_group_id:
-                  type: integer
+                  type:
+                  - integer
+                  - 'null'
                   format: int64
-                  nullable: true
         required: true
       responses:
         '201':
@@ -3815,9 +3876,9 @@ paths:
                   - status
                   properties:
                     core_payload:
-                      allOf:
+                      oneOf:
+                      - type: 'null'
                       - $ref: '#/components/schemas/StdcmRequest'
-                      nullable: true
                     departure_time:
                       type: string
                       format: date-time
@@ -3834,9 +3895,9 @@ paths:
                   - status
                   properties:
                     core_payload:
-                      allOf:
+                      oneOf:
+                      - type: 'null'
                       - $ref: '#/components/schemas/StdcmRequest'
-                      nullable: true
                     status:
                       type: string
                       enum:
@@ -3847,9 +3908,9 @@ paths:
                   - status
                   properties:
                     core_payload:
-                      allOf:
+                      oneOf:
+                      - type: 'null'
                       - $ref: '#/components/schemas/StdcmRequest'
-                      nullable: true
                     error:
                       $ref: '#/components/schemas/SimulationResponse'
                     status:
@@ -3884,7 +3945,6 @@ paths:
           type: integer
           format: int64
           default: 200
-          nullable: true
           maximum: 200
           minimum: 1
       responses:
@@ -3955,7 +4015,6 @@ paths:
           type: integer
           format: int64
           default: 50
-          nullable: true
           maximum: 50
           minimum: 1
       responses:
@@ -4103,6 +4162,9 @@ paths:
                   type: array
                   items:
                     $ref: '#/components/schemas/SignalUpdate'
+                propertyNames:
+                  type: integer
+                  format: int64
   /train_schedule/project_path:
     post:
       tags:
@@ -4130,6 +4192,9 @@ paths:
                   type: array
                   items:
                     $ref: '#/components/schemas/SpaceTimeCurve'
+                propertyNames:
+                  type: integer
+                  format: int64
   /train_schedule/project_path_op:
     post:
       tags:
@@ -4146,9 +4211,10 @@ paths:
               - operational_points_distances
               properties:
                 electrical_profile_set_id:
-                  type: integer
+                  type:
+                  - integer
+                  - 'null'
                   format: int64
-                  nullable: true
                 infra_id:
                   type: integer
                   format: int64
@@ -4168,28 +4234,34 @@ paths:
                       - operational_point
                       properties:
                         operational_point:
-                          type: string
-                          maxLength: 255
-                          minLength: 1
+                          oneOf:
+                          - type: string
+                            maxLength: 255
+                            minLength: 1
+                          description: The object id of an operational point
                     - type: object
                       required:
                       - trigram
                       properties:
                         secondary_code:
-                          type: string
+                          type:
+                          - string
+                          - 'null'
                           description: An optional secondary code to identify a more specific location
-                          nullable: true
                         trigram:
-                          type: string
-                          minLength: 1
+                          oneOf:
+                          - type: string
+                            minLength: 1
+                          description: The operational point trigram
                     - type: object
                       required:
                       - uic
                       properties:
                         secondary_code:
-                          type: string
+                          type:
+                          - string
+                          - 'null'
                           description: An optional secondary code to identify a more specific location
-                          nullable: true
                         uic:
                           type: integer
                           format: int32
@@ -4213,12 +4285,16 @@ paths:
                   type: array
                   items:
                     $ref: '#/components/schemas/SpaceTimeCurve'
+                propertyNames:
+                  type: integer
+                  format: int64
   /train_schedule/simulation_summary:
     post:
       tags:
       - train_schedule
-      summary: Associate each train id with its simulation summary response
-      description: 'If the simulation fails, it associates the reason: pathfinding failed or running time failed'
+      summary: |-
+        Associate each train id with its simulation summary response
+        If the simulation fails, it associates the reason: pathfinding failed or running time failed
       requestBody:
         content:
           application/json:
@@ -4229,9 +4305,10 @@ paths:
               - ids
               properties:
                 electrical_profile_set_id:
-                  type: integer
+                  type:
+                  - integer
+                  - 'null'
                   format: int64
-                  nullable: true
                 ids:
                   type: array
                   items:
@@ -4251,17 +4328,20 @@ paths:
                 type: object
                 additionalProperties:
                   $ref: '#/components/schemas/SimulationSummaryResult'
+                propertyNames:
+                  type: integer
+                  format: int64
   /train_schedule/track_occupancy:
     post:
       tags:
       - train_schedule
-      summary: Calculates when and for how long trains occupy track sections at a specific operational point.
-      description: |-
+      summary: |-
+        Calculates when and for how long trains occupy track sections at a specific operational point.
         Returns a map of track sections to their occupation periods, containing:
         - time_begin: Start of occupation
         - duration: Length of occupation (includes stops)
         - train_schedule_id: Train schedule ID
-
+      description: |-
         If a path item ID is provided, it uses schedule data to determine stop duration and location.
         If not, it infers the position and time based on track offsets and interpolation.
       requestBody:
@@ -4275,9 +4355,10 @@ paths:
               - infra_id
               properties:
                 electrical_profile_set_id:
-                  type: integer
+                  type:
+                  - integer
+                  - 'null'
                   format: int64
-                  nullable: true
                 infra_id:
                   type: integer
                   format: int64
@@ -4314,6 +4395,8 @@ paths:
                       train_schedule_id:
                         type: integer
                         format: int64
+                propertyNames:
+                  type: string
   /train_schedule/{id}:
     get:
       tags:
@@ -4530,8 +4613,9 @@ paths:
               type: object
               properties:
                 work_schedule_group_name:
-                  type: string
-                  nullable: true
+                  type:
+                  - string
+                  - 'null'
         required: true
       responses:
         '200':
@@ -4566,7 +4650,6 @@ paths:
           type: integer
           format: int64
           default: 100
-          nullable: true
           maximum: 100
           minimum: 1
       - name: id
@@ -4699,10 +4782,12 @@ paths:
                       format: date-time
                       description: The date and time when the work schedule takes effect.
                     type:
-                      type: string
-                      enum:
-                      - CATENARY
-                      - TRACK
+                      oneOf:
+                      - type: string
+                        enum:
+                        - CATENARY
+                        - TRACK
+                      description: The type of the work schedule.
   /worker_load:
     post:
       tags:
@@ -4721,10 +4806,11 @@ paths:
                   format: int64
                   description: The infra id of the worker to load
                 timetable_id:
-                  type: integer
+                  type:
+                  - integer
+                  - 'null'
                   format: int64
                   description: The timetable id to load, if any
-                  nullable: true
         required: true
       responses:
         '204':
@@ -4847,12 +4933,12 @@ components:
       type: array
       items:
         type: array
-        items:
-          allOf:
-          - type: number
-            format: double
-          - type: number
-            format: double
+        items: false
+        prefixItems:
+        - type: number
+          format: double
+        - type: number
+          format: double
         description: A bounding box
       description: A bounding box
       maxItems: 2
@@ -4868,7 +4954,8 @@ components:
           type: object
           properties:
             sncf:
-              allOf:
+              oneOf:
+              - type: 'null'
               - type: object
                 required:
                 - kp
@@ -4876,7 +4963,6 @@ components:
                   kp:
                     type: string
                 additionalProperties: false
-              nullable: true
           additionalProperties: false
         id:
           type: string
@@ -4945,10 +5031,12 @@ components:
       - requirements
       properties:
         conflict_type:
-          type: string
-          enum:
-          - Spacing
-          - Routing
+          oneOf:
+          - type: string
+            enum:
+            - Spacing
+            - Routing
+          description: Type of the conflict
         end_time:
           type: string
           format: date-time
@@ -5032,10 +5120,12 @@ components:
             - requirements
             properties:
               conflict_type:
-                type: string
-                enum:
-                - Spacing
-                - Routing
+                oneOf:
+                - type: string
+                  enum:
+                  - Spacing
+                  - Routing
+                description: Type of the conflict
               end_time:
                 type: string
                 format: date-time
@@ -5122,15 +5212,18 @@ components:
           minimum: 0
         direction:
           $ref: '#/components/schemas/Direction'
+          description: The direction of the range.
         end:
           type: integer
           format: int64
           description: The end of the range in mm.
           minimum: 0
         track_section:
-          type: string
-          maxLength: 255
-          minLength: 1
+          oneOf:
+          - type: string
+            maxLength: 255
+            minLength: 1
+          description: The track section identifier.
     Curve:
       type: object
       required:
@@ -5405,7 +5498,8 @@ components:
                 minimum: 0
               description: List of times (in ms) associated to a position
         indication:
-          allOf:
+          oneOf:
+          - type: 'null'
           - type: object
             required:
             - positions
@@ -5434,7 +5528,6 @@ components:
                   format: int64
                   minimum: 0
                 description: List of times (in ms) associated to a position
-          nullable: true
         permitted_speed:
           type: object
           required:
@@ -8747,15 +8840,17 @@ components:
       - power_restriction_code
       properties:
         comfort:
-          allOf:
+          oneOf:
+          - type: 'null'
           - $ref: '#/components/schemas/Comfort'
-          nullable: true
         electrical_profile_level:
-          type: string
-          nullable: true
+          type:
+          - string
+          - 'null'
         power_restriction_code:
-          type: string
-          nullable: true
+          type:
+          - string
+          - 'null'
       additionalProperties: false
     EffortCurves:
       type: object
@@ -8769,6 +8864,8 @@ components:
           type: object
           additionalProperties:
             $ref: '#/components/schemas/ModeEffortCurves'
+          propertyNames:
+            type: string
       additionalProperties: false
     ElectricalProfile:
       type: object
@@ -8811,6 +8908,8 @@ components:
           type: object
           additionalProperties:
             $ref: '#/components/schemas/LevelValues'
+          propertyNames:
+            type: string
         levels:
           type: array
           items:
@@ -8819,9 +8918,10 @@ components:
       type: object
       properties:
         electrical_profile_set_id:
-          type: integer
+          type:
+          - integer
+          - 'null'
           format: int64
-          nullable: true
     Electrification:
       type: object
       required:
@@ -8931,9 +9031,9 @@ components:
           type: number
           format: double
         refill_law:
-          allOf:
+          oneOf:
+          - type: 'null'
           - $ref: '#/components/schemas/RefillLaw'
-          nullable: true
         soc:
           type: number
           format: double
@@ -8984,18 +9084,35 @@ components:
       properties:
         gamma_emergency:
           $ref: '#/components/schemas/SpeedIntervalValueCurve'
+          description: 'A_brake_emergency: the emergency deceleration curve (values > 0 m/s²)'
         gamma_normal_service:
           $ref: '#/components/schemas/SpeedIntervalValueCurve'
+          description: 'A_brake_normal_service: the normal service deceleration curve used to compute guidance curve (values > 0 m/s²)'
         gamma_service:
           $ref: '#/components/schemas/SpeedIntervalValueCurve'
+          description: 'A_brake_service: the full service deceleration curve (values > 0 m/s²)'
         k_dry:
           $ref: '#/components/schemas/SpeedIntervalValueCurve'
+          description: |-
+            Kdry_rst: the rolling stock deceleration correction factors for dry rails
+            Boundaries should be the same as gammaEmergency
+            Values (no unit) should be contained in [0, 1]
         k_n_neg:
           $ref: '#/components/schemas/SpeedIntervalValueCurve'
+          description: |-
+            Kn-: the correction acceleration factor on normal service deceleration in negative gradients
+            Values (in m/s²) should be contained in [0, 10]
         k_n_pos:
           $ref: '#/components/schemas/SpeedIntervalValueCurve'
+          description: |-
+            Kn+: the correction acceleration factor on normal service deceleration in positive gradients
+            Values (in m/s²) should be contained in [0, 10]
         k_wet:
           $ref: '#/components/schemas/SpeedIntervalValueCurve'
+          description: |-
+            Kwet_rst: the rolling stock deceleration correction factors for wet rails
+            Boundaries should be the same as gammaEmergency
+            Values (no unit) should be contained in [0, 1]
         t_be:
           type: number
           format: double
@@ -9017,8 +9134,9 @@ components:
       type: object
       properties:
         exception_key:
-          type: string
-          nullable: true
+          type:
+          - string
+          - 'null'
     GeoJson:
       oneOf:
       - $ref: '#/components/schemas/GeoJsonPoint'
@@ -9032,8 +9150,8 @@ components:
       oneOf:
       - type: object
         required:
-        - type
         - coordinates
+        - type
         properties:
           coordinates:
             $ref: '#/components/schemas/GeoJsonLineStringValue'
@@ -9049,8 +9167,8 @@ components:
       oneOf:
       - type: object
         required:
-        - type
         - coordinates
+        - type
         properties:
           coordinates:
             $ref: '#/components/schemas/GeoJsonMultiLineStringValue'
@@ -9066,8 +9184,8 @@ components:
       oneOf:
       - type: object
         required:
-        - type
         - coordinates
+        - type
         properties:
           coordinates:
             $ref: '#/components/schemas/GeoJsonMultiPointValue'
@@ -9083,8 +9201,8 @@ components:
       oneOf:
       - type: object
         required:
-        - type
         - coordinates
+        - type
         properties:
           coordinates:
             $ref: '#/components/schemas/GeoJsonMultiPolygonValue'
@@ -9100,8 +9218,8 @@ components:
       oneOf:
       - type: object
         required:
-        - type
         - coordinates
+        - type
         properties:
           coordinates:
             $ref: '#/components/schemas/GeoJsonPointValue'
@@ -9118,8 +9236,8 @@ components:
       oneOf:
       - type: object
         required:
-        - type
         - coordinates
+        - type
         properties:
           coordinates:
             $ref: '#/components/schemas/GeoJsonPolygonValue'
@@ -9201,9 +9319,10 @@ components:
           type: string
           format: date-time
         generated_version:
-          type: integer
+          type:
+          - integer
+          - 'null'
           format: int64
-          nullable: true
         id:
           type: integer
           format: int64
@@ -9230,8 +9349,9 @@ components:
         - is_warning
         properties:
           field:
-            type: string
-            nullable: true
+            type:
+            - string
+            - 'null'
           is_warning:
             type: boolean
           obj_id:
@@ -9654,6 +9774,8 @@ components:
         context:
           type: object
           additionalProperties: {}
+          propertyNames:
+            type: string
         message:
           type: string
         status:
@@ -9705,6 +9827,8 @@ components:
           type: object
           additionalProperties:
             $ref: '#/components/schemas/LightModeEffortCurves'
+          propertyNames:
+            type: string
       additionalProperties: false
     LightElectricalProfileSet:
       type: object
@@ -9752,8 +9876,9 @@ components:
       - other_categories
       properties:
         base_power_class:
-          type: string
-          nullable: true
+          type:
+          - string
+          - 'null'
         comfort_acceleration:
           type: number
           format: double
@@ -9769,9 +9894,9 @@ components:
           items:
             $ref: '#/components/schemas/EnergySource'
         etcs_brake_params:
-          allOf:
+          oneOf:
+          - type: 'null'
           - $ref: '#/components/schemas/EtcsBrakeParams'
-          nullable: true
         id:
           type: integer
           format: int64
@@ -9795,9 +9920,9 @@ components:
           format: double
           description: Velocity in m·s⁻¹
         metadata:
-          allOf:
+          oneOf:
+          - type: 'null'
           - $ref: '#/components/schemas/RollingStockMetadata'
-          nullable: true
         name:
           type: string
         other_categories:
@@ -9805,6 +9930,8 @@ components:
         power_restrictions:
           type: object
           additionalProperties:
+            type: string
+          propertyNames:
             type: string
         primary_category:
           $ref: '#/components/schemas/TrainMainCategory'
@@ -9892,8 +10019,9 @@ components:
           type: integer
           format: int64
         full_name:
-          type: string
-          nullable: true
+          type:
+          - string
+          - 'null'
         labels:
           $ref: '#/components/schemas/Tags'
         path_item_key:
@@ -9905,8 +10033,9 @@ components:
           type: integer
           format: int64
         trigram:
-          type: string
-          nullable: true
+          type:
+          - string
+          - 'null'
     MacroNodeListResponse:
       allOf:
       - $ref: '#/components/schemas/PaginationStats'
@@ -9932,8 +10061,9 @@ components:
           type: integer
           format: int64
         full_name:
-          type: string
-          nullable: true
+          type:
+          - string
+          - 'null'
         id:
           type: integer
           format: int64
@@ -9948,8 +10078,9 @@ components:
           type: integer
           format: int64
         trigram:
-          type: string
-          nullable: true
+          type:
+          - string
+          - 'null'
     MacroNoteResponse:
       type: object
       required:
@@ -10052,7 +10183,8 @@ components:
           type: object
           properties:
             neutral_sncf:
-              allOf:
+              oneOf:
+              - type: 'null'
               - type: object
                 required:
                 - announcement
@@ -10075,7 +10207,6 @@ components:
                     items:
                       $ref: '#/components/schemas/Sign'
                 additionalProperties: false
-              nullable: true
           additionalProperties: false
         id:
           type: string
@@ -10115,9 +10246,11 @@ components:
           description: The end of the range in mm.
           minimum: 0
         id:
-          type: string
-          maxLength: 255
-          minLength: 1
+          oneOf:
+          - type: string
+            maxLength: 255
+            minLength: 1
+          description: The object identifier.
     ObjectRef:
       type: object
       required:
@@ -10151,9 +10284,10 @@ components:
       - path
       properties:
         electrical_profile_set_id:
-          type: integer
+          type:
+          - integer
+          - 'null'
           format: int64
-          nullable: true
         ids:
           type: array
           items:
@@ -10179,6 +10313,8 @@ components:
             type: array
             items:
               $ref: '#/components/schemas/SignalUpdate'
+          propertyNames:
+            type: string
         paced_train:
           type: array
           items:
@@ -10265,7 +10401,8 @@ components:
           type: object
           properties:
             identifier:
-              allOf:
+              oneOf:
+              - type: 'null'
               - type: object
                 required:
                 - name
@@ -10279,9 +10416,9 @@ components:
                     format: int32
                     minimum: 0
                 additionalProperties: false
-              nullable: true
             sncf:
-              allOf:
+              oneOf:
+              - type: 'null'
               - type: object
                 required:
                 - ci
@@ -10304,7 +10441,6 @@ components:
                   trigram:
                     type: string
                 additionalProperties: false
-              nullable: true
           additionalProperties: false
         id:
           type: string
@@ -10315,16 +10451,18 @@ components:
           items:
             $ref: '#/components/schemas/OperationalPointPart'
         weight:
-          type: integer
+          type:
+          - integer
+          - 'null'
           format: int32
-          nullable: true
           minimum: 0
       additionalProperties: false
     OperationalPointExtensions:
       type: object
       properties:
         identifier:
-          allOf:
+          oneOf:
+          - type: 'null'
           - type: object
             required:
             - name
@@ -10338,9 +10476,9 @@ components:
                 format: int32
                 minimum: 0
             additionalProperties: false
-          nullable: true
         sncf:
-          allOf:
+          oneOf:
+          - type: 'null'
           - type: object
             required:
             - ci
@@ -10363,7 +10501,6 @@ components:
               trigram:
                 type: string
             additionalProperties: false
-          nullable: true
       additionalProperties: false
     OperationalPointPart:
       type: object
@@ -10375,7 +10512,8 @@ components:
           type: object
           properties:
             sncf:
-              allOf:
+              oneOf:
+              - type: 'null'
               - type: object
                 required:
                 - kp
@@ -10383,7 +10521,6 @@ components:
                   kp:
                     type: string
                 additionalProperties: false
-              nullable: true
           additionalProperties: false
         position:
           type: number
@@ -10401,28 +10538,34 @@ components:
           - operational_point
           properties:
             operational_point:
-              type: string
-              maxLength: 255
-              minLength: 1
+              oneOf:
+              - type: string
+                maxLength: 255
+                minLength: 1
+              description: The object id of an operational point
         - type: object
           required:
           - trigram
           properties:
             secondary_code:
-              type: string
+              type:
+              - string
+              - 'null'
               description: An optional secondary code to identify a more specific location
-              nullable: true
             trigram:
-              type: string
-              minLength: 1
+              oneOf:
+              - type: string
+                minLength: 1
+              description: The operational point trigram
         - type: object
           required:
           - uic
           properties:
             secondary_code:
-              type: string
+              type:
+              - string
+              - 'null'
               description: An optional secondary code to identify a more specific location
-              nullable: true
             uic:
               type: integer
               format: int32
@@ -10431,9 +10574,9 @@ components:
       - type: object
         properties:
           track_reference:
-            allOf:
+            oneOf:
+            - type: 'null'
             - $ref: '#/components/schemas/TrackReference'
-            nullable: true
     OptionsChangeGroup:
       type: object
       required:
@@ -10470,8 +10613,10 @@ components:
             properties:
               interval:
                 $ref: '#/components/schemas/PositiveDuration'
+                description: Time between two occurrences, an ISO 8601 format is expected
               time_window:
                 $ref: '#/components/schemas/PositiveDuration'
+                description: Duration of the paced train, an ISO 8601 format is expected
     PacedTrainException:
       allOf:
       - type: object
@@ -10483,40 +10628,30 @@ components:
         - key
         properties:
           constraint_distribution:
-            allOf:
-            - $ref: '#/components/schemas/ConstraintDistributionChangeGroup'
+            $ref: '#/components/schemas/ConstraintDistributionChangeGroup'
           disabled:
             type: boolean
           initial_speed:
-            allOf:
-            - $ref: '#/components/schemas/InitialSpeedChangeGroup'
+            $ref: '#/components/schemas/InitialSpeedChangeGroup'
           key:
             type: string
             description: Unique key for the exception within the paced train, required and generated by the frontend.
           labels:
-            allOf:
-            - $ref: '#/components/schemas/LabelsChangeGroup'
+            $ref: '#/components/schemas/LabelsChangeGroup'
           options:
-            allOf:
-            - $ref: '#/components/schemas/OptionsChangeGroup'
+            $ref: '#/components/schemas/OptionsChangeGroup'
           path_and_schedule:
-            allOf:
-            - $ref: '#/components/schemas/PathAndScheduleChangeGroup'
+            $ref: '#/components/schemas/PathAndScheduleChangeGroup'
           rolling_stock:
-            allOf:
-            - $ref: '#/components/schemas/RollingStockChangeGroup'
+            $ref: '#/components/schemas/RollingStockChangeGroup'
           rolling_stock_category:
-            allOf:
-            - $ref: '#/components/schemas/RollingStockCategoryChangeGroup'
+            $ref: '#/components/schemas/RollingStockCategoryChangeGroup'
           speed_limit_tag:
-            allOf:
-            - $ref: '#/components/schemas/SpeedLimitTagChangeGroup'
+            $ref: '#/components/schemas/SpeedLimitTagChangeGroup'
           start_time:
-            allOf:
-            - $ref: '#/components/schemas/StartTimeChangeGroup'
+            $ref: '#/components/schemas/StartTimeChangeGroup'
           train_name:
-            allOf:
-            - $ref: '#/components/schemas/TrainNameChangeGroup'
+            $ref: '#/components/schemas/TrainNameChangeGroup'
       description: |-
         Represents an exception for a paced train occurrence.
         Occurrences are normally generated from a base paced train.
@@ -10531,10 +10666,11 @@ components:
       - type: object
         properties:
           timetable_id:
-            type: integer
+            type:
+            - integer
+            - 'null'
             format: int64
             description: Timetable attached to the paced train
-            nullable: true
     PacedTrainResponse:
       allOf:
       - $ref: '#/components/schemas/PacedTrain'
@@ -10560,6 +10696,8 @@ components:
           description: The key is the `exception_key`
           additionalProperties:
             $ref: '#/components/schemas/SimulationSummaryResult'
+          propertyNames:
+            type: string
         paced_train:
           $ref: '#/components/schemas/SimulationSummaryResult'
     PaginationStats:
@@ -10577,10 +10715,10 @@ components:
         ```
         #[derive(Serialize, ToSchema)]
         struct MyPaginatedResponse {
-        #[schema(flatten)]
-        pagination: PaginationStats,
-        result: Vec<MyData>,
-        // any other field that makes sense in a paginated response
+            #[schema(flatten)]
+            pagination: PaginationStats,
+            result: Vec<MyData>,
+            // any other field that makes sense in a paginated response
         }
         ```
 
@@ -10605,10 +10743,11 @@ components:
           description: The current page number
           minimum: 1
         next:
-          type: integer
+          type:
+          - integer
+          - 'null'
           format: int64
           description: The next page number, if any
-          nullable: true
           minimum: 1
         page_count:
           type: integer
@@ -10621,10 +10760,11 @@ components:
           description: The number of items per page
           minimum: 1
         previous:
-          type: integer
+          type:
+          - integer
+          - 'null'
           format: int64
           description: The previous page number, if any
-          nullable: true
           minimum: 1
     Patch:
       type: array
@@ -10635,6 +10775,7 @@ components:
       oneOf:
       - allOf:
         - $ref: '#/components/schemas/AddOperation'
+          description: '''add'' operation'
         - type: object
           required:
           - op
@@ -10643,8 +10784,10 @@ components:
               type: string
               enum:
               - add
+        description: '''add'' operation'
       - allOf:
         - $ref: '#/components/schemas/RemoveOperation'
+          description: '''remove'' operation'
         - type: object
           required:
           - op
@@ -10653,8 +10796,10 @@ components:
               type: string
               enum:
               - remove
+        description: '''remove'' operation'
       - allOf:
         - $ref: '#/components/schemas/ReplaceOperation'
+          description: '''replace'' operation'
         - type: object
           required:
           - op
@@ -10663,8 +10808,10 @@ components:
               type: string
               enum:
               - replace
+        description: '''replace'' operation'
       - allOf:
         - $ref: '#/components/schemas/MoveOperation'
+          description: '''move'' operation'
         - type: object
           required:
           - op
@@ -10673,8 +10820,10 @@ components:
               type: string
               enum:
               - move
+        description: '''move'' operation'
       - allOf:
         - $ref: '#/components/schemas/CopyOperation'
+          description: '''copy'' operation'
         - type: object
           required:
           - op
@@ -10683,8 +10832,10 @@ components:
               type: string
               enum:
               - copy
+        description: '''copy'' operation'
       - allOf:
         - $ref: '#/components/schemas/TestOperation'
+          description: '''test'' operation'
         - type: object
           required:
           - op
@@ -10693,6 +10844,7 @@ components:
               type: string
               enum:
               - test
+        description: '''test'' operation'
       description: JSON Patch single patch operation
     PathAndScheduleChangeGroup:
       type: object
@@ -10730,20 +10882,85 @@ components:
               It's useful for soft deleting the point (waiting to fix / remove all references)
               If true, the train schedule is consider as invalid and must be edited
           id:
-            type: string
-            minLength: 1
+            oneOf:
+            - type: string
+              minLength: 1
+            description: |-
+              The unique identifier of the path item.
+              This is used to reference path items in the train schedule.
       description: A location on the path of a train
     PathItemLocation:
       oneOf:
-      - $ref: '#/components/schemas/TrackOffset'
-      - $ref: '#/components/schemas/OperationalPointReference'
+      - type: object
+        required:
+        - track
+        - offset
+        properties:
+          offset:
+            type: integer
+            format: int64
+            description: Offset in mm
+            minimum: 0
+          track:
+            oneOf:
+            - type: string
+              maxLength: 255
+              minLength: 1
+            description: Track section identifier
+      - allOf:
+        - oneOf:
+          - type: object
+            required:
+            - operational_point
+            properties:
+              operational_point:
+                oneOf:
+                - type: string
+                  maxLength: 255
+                  minLength: 1
+                description: The object id of an operational point
+          - type: object
+            required:
+            - trigram
+            properties:
+              secondary_code:
+                type:
+                - string
+                - 'null'
+                description: An optional secondary code to identify a more specific location
+              trigram:
+                oneOf:
+                - type: string
+                  minLength: 1
+                description: The operational point trigram
+          - type: object
+            required:
+            - uic
+            properties:
+              secondary_code:
+                type:
+                - string
+                - 'null'
+                description: An optional secondary code to identify a more specific location
+              uic:
+                type: integer
+                format: int32
+                description: The [UIC](https://en.wikipedia.org/wiki/List_of_UIC_country_codes) code of an operational point
+                minimum: 0
+        - type: object
+          properties:
+            track_reference:
+              oneOf:
+              - type: 'null'
+              - $ref: '#/components/schemas/TrackReference'
       description: The location of a path waypoint
     PathProperties:
       type: object
       description: Properties along a path. Each property is optional since it depends on what the user requests.
       properties:
         curves:
-          allOf:
+          oneOf:
+          - type: 'null'
           - type: object
             description: Property f64 values along a path. Each value is associated to a range of the path.
             required:
@@ -10765,9 +10982,10 @@ components:
                   type: number
                   format: double
                 description: List of `n+1` values associated to the ranges
-          nullable: true
+          description: Curves along the path
         electrifications:
-          allOf:
+          oneOf:
+          - type: 'null'
           - type: object
             description: Electrification property along a path. Each value is associated to a range of the path.
             required:
@@ -10812,6 +11030,7 @@ components:
                         enum:
                         - neutral_section
                   - type: object
+                    description: Non electrified section
                     required:
                     - type
                     properties:
@@ -10820,13 +11039,16 @@ components:
                         enum:
                         - non_electrified
                 description: List of `n+1` values associated to the ranges
-          nullable: true
+          description: Electrification modes and neutral section along the path
         geometry:
-          allOf:
+          oneOf:
+          - type: 'null'
           - $ref: '#/components/schemas/GeoJsonLineString'
-          nullable: true
+            description: Geometry of the path
         operational_points:
-          type: array
+          type:
+          - array
+          - 'null'
           items:
             type: object
             description: Operational point along a path.
@@ -10838,28 +11060,33 @@ components:
             properties:
               extensions:
                 $ref: '#/components/schemas/OperationalPointExtensions'
+                description: Extensions associated to the operational point
               id:
-                type: string
-                maxLength: 255
-                minLength: 1
+                oneOf:
+                - type: string
+                  maxLength: 255
+                  minLength: 1
+                description: Id of the operational point
               part:
                 $ref: '#/components/schemas/OperationalPointPart'
+                description: The part along the path
               position:
                 type: integer
                 format: int64
                 description: Distance from the beginning of the path in mm
                 minimum: 0
               weight:
-                type: integer
+                type:
+                - integer
+                - 'null'
                 format: int32
                 description: Importance of the operational point
-                nullable: true
                 maximum: 100
                 minimum: 0
           description: Operational points along the path
-          nullable: true
         slopes:
-          allOf:
+          oneOf:
+          - type: 'null'
           - type: object
             description: Property f64 values along a path. Each value is associated to a range of the path.
             required:
@@ -10881,9 +11108,10 @@ components:
                   type: number
                   format: double
                 description: List of `n+1` values associated to the ranges
-          nullable: true
+          description: Slopes along the path
         zones:
-          allOf:
+          oneOf:
+          - type: 'null'
           - type: object
             description: Zones along a path. Each value is associated to a range of the path.
             required:
@@ -10904,7 +11132,7 @@ components:
                 items:
                   type: string
                 description: List of `n+1` values associated to the ranges
-          nullable: true
+          description: Zones along the path
     PathPropertiesInput:
       type: object
       required:
@@ -10976,6 +11204,7 @@ components:
           description: Rolling stock length
         rolling_stock_loading_gauge:
           $ref: '#/components/schemas/LoadingGaugeType'
+          description: The loading gauge of the rolling stock
         rolling_stock_maximum_speed:
           type: number
           format: double
@@ -10993,9 +11222,10 @@ components:
             type: string
           description: List of supported signaling systems
         speed_limit_tag:
-          type: string
+          type:
+          - string
+          - 'null'
           description: Speed limit tag, used to estimate the travel time
-          nullable: true
     PathfindingInputError:
       oneOf:
       - type: object
@@ -11053,15 +11283,18 @@ components:
       - location
       properties:
         duration:
-          type: integer
+          type:
+          - integer
+          - 'null'
           format: int64
           description: The stop duration in milliseconds, None if the train does not stop.
-          nullable: true
           minimum: 0
         location:
           $ref: '#/components/schemas/PathItemLocation'
+          description: The associated location
         timing_data:
-          allOf:
+          oneOf:
+          - type: 'null'
           - type: object
             required:
             - arrival_time
@@ -11082,7 +11315,7 @@ components:
                 format: int64
                 description: The train may arrive up to this duration before the expected arrival time
                 minimum: 0
-          nullable: true
+          description: Time at which the train should arrive at the location, if specified
     PathfindingNotFound:
       oneOf:
       - type: object
@@ -11162,6 +11395,10 @@ components:
             type: string
             maxLength: 255
             minLength: 1
+          propertyNames:
+            type: string
+            maxLength: 255
+            minLength: 1
         track_ranges:
           type: array
           items:
@@ -11203,6 +11440,7 @@ components:
           minimum: 0
         path:
           $ref: '#/components/schemas/TrainPath'
+          description: Full description of the path data
         path_item_positions:
           type: array
           items:
@@ -11229,7 +11467,8 @@ components:
     PositiveDuration:
       type: string
       description: Duration in ISO 8601 format (e.g. PT2H for 2 hours)
-      example: PT2H
+      examples:
+      - PT2H
     PowerRestriction:
       type: object
       required:
@@ -11263,33 +11502,38 @@ components:
       - tags
       properties:
         budget:
-          type: integer
+          type:
+          - integer
+          - 'null'
           format: int32
-          nullable: true
         creation_date:
           type: string
           format: date-time
         description:
-          type: string
-          nullable: true
+          type:
+          - string
+          - 'null'
         funders:
-          type: string
-          nullable: true
+          type:
+          - string
+          - 'null'
         id:
           type: integer
           format: int64
         image:
-          type: integer
+          type:
+          - integer
+          - 'null'
           format: int64
-          nullable: true
         last_modification:
           type: string
           format: date-time
         name:
           type: string
         objectives:
-          type: string
-          nullable: true
+          type:
+          - string
+          - 'null'
         tags:
           $ref: '#/components/schemas/Tags'
     ProjectCreateForm:
@@ -11299,28 +11543,33 @@ components:
       - name
       properties:
         budget:
-          type: integer
+          type:
+          - integer
+          - 'null'
           format: int32
-          nullable: true
         description:
-          type: string
-          nullable: true
+          type:
+          - string
+          - 'null'
           maxLength: 1024
         funders:
-          type: string
-          nullable: true
+          type:
+          - string
+          - 'null'
           maxLength: 1024
         image:
-          type: integer
+          type:
+          - integer
+          - 'null'
           format: int64
           description: The id of the image document
-          nullable: true
         name:
           type: string
           maxLength: 128
         objectives:
-          type: string
-          nullable: true
+          type:
+          - string
+          - 'null'
           maxLength: 4096
         tags:
           $ref: '#/components/schemas/Tags'
@@ -11329,34 +11578,40 @@ components:
       description: Patch form for a project
       properties:
         budget:
-          type: integer
+          type:
+          - integer
+          - 'null'
           format: int32
-          nullable: true
         description:
-          type: string
-          nullable: true
+          type:
+          - string
+          - 'null'
           maxLength: 1024
         funders:
-          type: string
-          nullable: true
+          type:
+          - string
+          - 'null'
           maxLength: 1024
         image:
-          type: integer
+          type:
+          - integer
+          - 'null'
           format: int64
           description: The id of the image document
-          nullable: true
         name:
-          type: string
-          nullable: true
+          type:
+          - string
+          - 'null'
           maxLength: 128
         objectives:
-          type: string
-          nullable: true
+          type:
+          - string
+          - 'null'
           maxLength: 4096
         tags:
-          allOf:
+          oneOf:
+          - type: 'null'
           - $ref: '#/components/schemas/Tags'
-          nullable: true
     ProjectPathForm:
       type: object
       required:
@@ -11365,9 +11620,10 @@ components:
       - track_section_ranges
       properties:
         electrical_profile_set_id:
-          type: integer
+          type:
+          - integer
+          - 'null'
           format: int64
-          nullable: true
         ids:
           type: array
           items:
@@ -11397,15 +11653,18 @@ components:
                 minimum: 0
               direction:
                 $ref: '#/components/schemas/Direction'
+                description: The direction of the range.
               end:
                 type: integer
                 format: int64
                 description: The end of the range in mm.
                 minimum: 0
               track_section:
-                type: string
-                maxLength: 255
-                minLength: 1
+                oneOf:
+                - type: string
+                  maxLength: 255
+                  minLength: 1
+                description: The track section identifier.
     ProjectPathPacedTrainResult:
       type: object
       description: Project path output is described by time-space points and blocks
@@ -11420,6 +11679,8 @@ components:
             type: array
             items:
               $ref: '#/components/schemas/SpaceTimeCurve'
+          propertyNames:
+            type: string
         paced_train:
           type: array
           items:
@@ -11569,9 +11830,9 @@ components:
       - type: object
         properties:
           geo:
-            allOf:
+            oneOf:
+            - type: 'null'
             - $ref: '#/components/schemas/GeoJsonPoint'
-            nullable: true
     RemoveOperation:
       type: object
       description: JSON Patch 'remove' operation representation
@@ -11699,20 +11960,20 @@ components:
         A:
           type: number
           format: double
-          description: |-
-            Solid friction
+          description: |2-
+             Solid friction
             Solid Friction in N
         B:
           type: number
           format: double
-          description: |-
-            Viscosity friction in N·(m/s)⁻¹; N = kg⋅m⋅s⁻²
+          description: |2-
+             Viscosity friction in N·(m/s)⁻¹; N = kg⋅m⋅s⁻²
             Viscosity friction in kg·s⁻¹
         C:
           type: number
           format: double
-          description: |-
-            Aerodynamic drag in N·(m/s)⁻²; N = kg⋅m⋅s⁻²
+          description: |2-
+             Aerodynamic drag in N·(m/s)⁻²; N = kg⋅m⋅s⁻²
             Aerodynamic drag in kg·m⁻¹
         type:
           type: string
@@ -11728,20 +11989,20 @@ components:
         A:
           type: number
           format: double
-          description: |-
-            Solid friction in N·kg⁻¹; N = kg⋅m⋅s⁻²
+          description: |2-
+             Solid friction in N·kg⁻¹; N = kg⋅m⋅s⁻²
             Acceleration in m·s⁻²
         B:
           type: number
           format: double
-          description: |-
-            Viscosity friction in (N·kg⁻¹)·(m/s)⁻¹; N = kg⋅m⋅s⁻²
+          description: |2-
+             Viscosity friction in (N·kg⁻¹)·(m/s)⁻¹; N = kg⋅m⋅s⁻²
             Viscosity friction per weight in s⁻¹
         C:
           type: number
           format: double
-          description: |-
-            Aerodynamic drag per kg in (N·kg⁻¹)·(m/s)⁻²; N = kg⋅m⋅s⁻²
+          description: |2-
+             Aerodynamic drag per kg in (N·kg⁻¹)·(m/s)⁻²; N = kg⋅m⋅s⁻²
             Aerodynamic drag per kg in m⁻¹
         type:
           type: string
@@ -11777,8 +12038,9 @@ components:
       - other_categories
       properties:
         base_power_class:
-          type: string
-          nullable: true
+          type:
+          - string
+          - 'null'
         comfort_acceleration:
           type: number
           format: double
@@ -11790,18 +12052,19 @@ components:
         effort_curves:
           $ref: '#/components/schemas/EffortCurves'
         electrical_power_startup_time:
-          type: number
+          type:
+          - number
+          - 'null'
           format: double
           description: Duration in s
-          nullable: true
         energy_sources:
           type: array
           items:
             $ref: '#/components/schemas/EnergySource'
         etcs_brake_params:
-          allOf:
+          oneOf:
+          - type: 'null'
           - $ref: '#/components/schemas/EtcsBrakeParams'
-          nullable: true
         id:
           type: integer
           format: int64
@@ -11825,9 +12088,9 @@ components:
           format: double
           description: Velocity in m·s⁻¹
         metadata:
-          allOf:
+          oneOf:
+          - type: 'null'
           - $ref: '#/components/schemas/RollingStockMetadata'
-          nullable: true
         name:
           type: string
         other_categories:
@@ -11836,15 +12099,18 @@ components:
           type: object
           additionalProperties:
             type: string
+          propertyNames:
+            type: string
         primary_category:
           $ref: '#/components/schemas/TrainMainCategory'
         railjson_version:
           type: string
         raise_pantograph_time:
-          type: number
+          type:
+          - number
+          - 'null'
           format: double
           description: Duration in s
-          nullable: true
         rolling_resistance:
           $ref: '#/components/schemas/RollingResistance'
         startup_acceleration:
@@ -11866,9 +12132,9 @@ components:
       type: object
       properties:
         value:
-          allOf:
+          oneOf:
+          - type: 'null'
           - $ref: '#/components/schemas/TrainCategory'
-          nullable: true
     RollingStockChangeGroup:
       type: object
       required:
@@ -11901,9 +12167,10 @@ components:
       - other_categories
       properties:
         base_power_class:
-          type: string
+          type:
+          - string
+          - 'null'
           example: '5'
-          nullable: true
         comfort_acceleration:
           type: number
           format: double
@@ -11911,29 +12178,30 @@ components:
         const_gamma:
           type: number
           format: double
-          description: |-
-            The constant gamma braking coefficient used when NOT circulating
-            under ETCS/ERTMS signaling system
+          description: |2-
+             The constant gamma braking coefficient used when NOT circulating
+             under ETCS/ERTMS signaling system
             Acceleration in m·s⁻²
         effort_curves:
           $ref: '#/components/schemas/EffortCurves'
         electrical_power_startup_time:
-          type: number
+          type:
+          - number
+          - 'null'
           format: double
-          description: |-
-            The time the train takes before actually using electrical power (in seconds).
-            Is null if the train is not electric.
+          description: |2-
+             The time the train takes before actually using electrical power (in seconds).
+             Is null if the train is not electric.
             Duration in s
           example: 5.0
-          nullable: true
         energy_sources:
           type: array
           items:
             $ref: '#/components/schemas/EnergySource'
         etcs_brake_params:
-          allOf:
+          oneOf:
+          - type: 'null'
           - $ref: '#/components/schemas/EtcsBrakeParams'
-          nullable: true
         inertia_coefficient:
           type: number
           format: double
@@ -11952,9 +12220,9 @@ components:
           format: double
           description: Velocity in m·s⁻¹
         metadata:
-          allOf:
+          oneOf:
+          - type: 'null'
           - $ref: '#/components/schemas/RollingStockMetadata'
-          nullable: true
         name:
           type: string
         other_categories:
@@ -11964,20 +12232,23 @@ components:
           description: Mapping of power restriction code to power class
           additionalProperties:
             type: string
+          propertyNames:
+            type: string
         primary_category:
           $ref: '#/components/schemas/TrainMainCategory'
         railjson_version:
           type: string
           default: '3.3'
         raise_pantograph_time:
-          type: number
+          type:
+          - number
+          - 'null'
           format: double
-          description: |-
-            The time it takes to raise this train's pantograph in seconds.
-            Is null if the train is not electric.
+          description: |2-
+             The time it takes to raise this train's pantograph in seconds.
+             Is null if the train is not electric.
             Duration in s
           example: 15.0
-          nullable: true
         rolling_resistance:
           $ref: '#/components/schemas/RollingResistance'
         startup_acceleration:
@@ -11998,9 +12269,10 @@ components:
       - rolling_stock_id
       properties:
         compound_image_id:
-          type: integer
+          type:
+          - integer
+          - 'null'
           format: int64
-          nullable: true
         id:
           type: integer
           format: int64
@@ -12018,8 +12290,11 @@ components:
         images:
           type: array
           items:
-            type: string
-            format: binary
+            type: array
+            items:
+              type: integer
+              format: int32
+              minimum: 0
         name:
           type: string
     RollingStockLiveryMetadata:
@@ -12029,9 +12304,10 @@ components:
       - name
       properties:
         compound_image_id:
-          type: integer
+          type:
+          - integer
+          - 'null'
           format: int64
-          nullable: true
         id:
           type: integer
           format: int64
@@ -12146,6 +12422,10 @@ components:
             type: string
             maxLength: 255
             minLength: 1
+          propertyNames:
+            type: string
+            maxLength: 255
+            minLength: 1
       additionalProperties: false
     RoutePath:
       type: object
@@ -12157,10 +12437,10 @@ components:
           type: array
           items:
             type: array
-            items:
-              allOf:
-              - type: string
-              - type: string
+            items: false
+            prefixItems:
+            - type: string
+            - type: string
         track_ranges:
           type: array
           items:
@@ -12204,6 +12484,8 @@ components:
         switches:
           type: object
           additionalProperties:
+            type: string
+          propertyNames:
             type: string
         zone:
           type: string
@@ -12258,9 +12540,10 @@ components:
         description:
           type: string
         electrical_profile_set_id:
-          type: integer
+          type:
+          - integer
+          - 'null'
           format: int64
-          nullable: true
         infra_id:
           type: integer
           format: int64
@@ -12276,23 +12559,27 @@ components:
       description: This structure is used by the patch endpoint to patch a scenario
       properties:
         description:
-          type: string
-          nullable: true
+          type:
+          - string
+          - 'null'
         electrical_profile_set_id:
-          type: integer
+          type:
+          - integer
+          - 'null'
           format: int64
-          nullable: true
         infra_id:
-          type: integer
+          type:
+          - integer
+          - 'null'
           format: int64
-          nullable: true
         name:
-          type: string
-          nullable: true
+          type:
+          - string
+          - 'null'
         tags:
-          allOf:
+          oneOf:
+          - type: 'null'
           - $ref: '#/components/schemas/Tags'
-          nullable: true
     ScenarioReference:
       type: object
       required:
@@ -12364,21 +12651,31 @@ components:
       - at
       properties:
         arrival:
-          allOf:
+          oneOf:
+          - type: 'null'
           - $ref: '#/components/schemas/PositiveDuration'
-          nullable: true
+            description: |-
+              The expected arrival time at the stop.
+              This will be used to compute the final simulation time.
         at:
-          type: string
-          minLength: 1
+          oneOf:
+          - type: string
+            minLength: 1
+          description: Position on the path of the schedule item.
         locked:
           type: boolean
           description: Whether the schedule item is locked (only for display purposes)
         reception_signal:
           $ref: '#/components/schemas/ReceptionSignal'
         stop_for:
-          allOf:
+          oneOf:
+          - type: 'null'
           - $ref: '#/components/schemas/PositiveDuration'
-          nullable: true
+            description: |-
+              Duration of the stop.
+              Can be `None` if the train does not stop.
+              If `None`, `reception_signal` must be `Open`.
+              `Some("PT0S")` means the train stops for 0 seconds.
       additionalProperties: false
     SearchPayload:
       type: object
@@ -12398,6 +12695,7 @@ components:
           description: The object kind to query - run `editoast search list` to get all possible values
         query:
           $ref: '#/components/schemas/SearchQuery'
+          description: The query to run
       example:
         object: operationalpoint
         query:
@@ -12418,9 +12716,9 @@ components:
       - type: string
       - type: array
         items:
-          allOf:
+          oneOf:
+          - type: 'null'
           - $ref: '#/components/schemas/SearchQuery'
-          nullable: true
       description: A search query
       example:
       - and
@@ -12508,9 +12806,10 @@ components:
           format: int64
           minimum: 0
         image:
-          type: integer
+          type:
+          - integer
+          - 'null'
           format: int64
-          nullable: true
           minimum: 0
         last_modification:
           type: string
@@ -12543,9 +12842,10 @@ components:
         description:
           type: string
         electrical_profile_set_id:
-          type: integer
+          type:
+          - integer
+          - 'null'
           format: int64
-          nullable: true
           minimum: 0
         id:
           type: integer
@@ -12612,11 +12912,13 @@ components:
           items:
             type: string
         sprite:
-          type: string
-          nullable: true
+          type:
+          - string
+          - 'null'
         sprite_signaling_system:
-          type: string
-          nullable: true
+          type:
+          - string
+          - 'null'
     SearchResultItemStudy:
       type: object
       description: A search result item for a query with `object = "study"`
@@ -12631,13 +12933,15 @@ components:
       - budget
       properties:
         budget:
-          type: integer
+          type:
+          - integer
+          - 'null'
           format: int32
-          nullable: true
           minimum: 0
         description:
-          type: string
-          nullable: true
+          type:
+          - string
+          - 'null'
         id:
           type: integer
           format: int64
@@ -12711,8 +13015,9 @@ components:
         labels:
           type: array
           items:
-            type: string
-            nullable: true
+            type:
+            - string
+            - 'null'
         margins:
           $ref: '#/components/schemas/Margins'
         options:
@@ -12732,8 +13037,9 @@ components:
           items:
             $ref: '#/components/schemas/ScheduleItem'
         speed_limit_tag:
-          type: string
-          nullable: true
+          type:
+          - string
+          - 'null'
         start_time:
           type: string
           format: date-time
@@ -12809,7 +13115,8 @@ components:
           type: object
           properties:
             sncf:
-              allOf:
+              oneOf:
+              - type: 'null'
               - type: object
                 required:
                 - label
@@ -12822,7 +13129,6 @@ components:
                   side:
                     $ref: '#/components/schemas/Side'
                 additionalProperties: false
-              nullable: true
           additionalProperties: false
         id:
           type: string
@@ -12855,9 +13161,15 @@ components:
                       additionalProperties:
                         type: string
                         minLength: 1
+                      propertyNames:
+                        type: string
+                        minLength: 1
               default_parameters:
                 type: object
                 additionalProperties:
+                  type: string
+                  minLength: 1
+                propertyNames:
                   type: string
                   minLength: 1
               next_signaling_systems:
@@ -12867,6 +13179,9 @@ components:
               settings:
                 type: object
                 additionalProperties:
+                  type: string
+                  minLength: 1
+                propertyNames:
                   type: string
                   minLength: 1
               signaling_system:
@@ -13013,6 +13328,7 @@ components:
       properties:
         base:
           $ref: '#/components/schemas/ReportTrain'
+          description: Simulation without any regularity margins
         electrical_profiles:
           type: object
           required:
@@ -13052,35 +13368,38 @@ components:
                     handled:
                       type: boolean
                     profile:
-                      type: string
-                      nullable: true
+                      type:
+                      - string
+                      - 'null'
               description: List of `n+1` values associated to the ranges
         final_output:
-          allOf:
-          - $ref: '#/components/schemas/ReportTrain'
-          - type: object
-            required:
-            - signal_critical_positions
-            - zone_updates
-            - spacing_requirements
-            - routing_requirements
-            properties:
-              routing_requirements:
-                type: array
-                items:
-                  $ref: '#/components/schemas/RoutingRequirement'
-              signal_critical_positions:
-                type: array
-                items:
-                  $ref: '#/components/schemas/SignalCriticalPosition'
-              spacing_requirements:
-                type: array
-                items:
-                  $ref: '#/components/schemas/SpacingRequirement'
-              zone_updates:
-                type: array
-                items:
-                  $ref: '#/components/schemas/ZoneUpdate'
+          oneOf:
+          - allOf:
+            - $ref: '#/components/schemas/ReportTrain'
+            - type: object
+              required:
+              - signal_critical_positions
+              - zone_updates
+              - spacing_requirements
+              - routing_requirements
+              properties:
+                routing_requirements:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/RoutingRequirement'
+                signal_critical_positions:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/SignalCriticalPosition'
+                spacing_requirements:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/SpacingRequirement'
+                zone_updates:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/ZoneUpdate'
+          description: 'User-selected simulation: can be base or provisional'
         mrsp:
           type: object
           description: A MRSP computation result (Most Restrictive Speed Profile)
@@ -13105,7 +13424,8 @@ components:
                 - speed
                 properties:
                   source:
-                    allOf:
+                    oneOf:
+                    - type: 'null'
                     - oneOf:
                       - type: object
                         required:
@@ -13137,7 +13457,7 @@ components:
                             type: string
                             enum:
                             - unknown_tag
-                    nullable: true
+                    description: source of the speed-limit if relevant (tag used)
                   speed:
                     type: number
                     format: double
@@ -13145,6 +13465,7 @@ components:
               description: List of `n+1` values associated to the ranges
         provisional:
           $ref: '#/components/schemas/ReportTrain'
+          description: Simulation that takes into account the regularity margins
     SimulationSummaryResult:
       oneOf:
       - type: object
@@ -13215,6 +13536,7 @@ components:
             minimum: 0
       - allOf:
         - $ref: '#/components/schemas/PathfindingNotFound'
+          description: Pathfinding not found
         - type: object
           required:
           - status
@@ -13223,6 +13545,7 @@ components:
               type: string
               enum:
               - pathfinding_not_found
+        description: Pathfinding not found
       - type: object
         description: An error has occurred during pathfinding
         required:
@@ -13249,6 +13572,7 @@ components:
             - simulation_failed
       - allOf:
         - $ref: '#/components/schemas/PathfindingInputError'
+          description: InputError
         - type: object
           required:
           - status
@@ -13257,6 +13581,7 @@ components:
               type: string
               enum:
               - pathfinding_input_error
+        description: InputError
     Slope:
       type: object
       required:
@@ -13369,10 +13694,10 @@ components:
       type: object
       properties:
         value:
-          allOf:
+          oneOf:
+          - type: 'null'
           - type: string
             minLength: 1
-          nullable: true
     SpeedSection:
       type: object
       required:
@@ -13384,7 +13709,8 @@ components:
           type: object
           properties:
             psl_sncf:
-              allOf:
+              oneOf:
+              - type: 'null'
               - type: object
                 required:
                 - announcement
@@ -13402,29 +13728,32 @@ components:
                   z:
                     $ref: '#/components/schemas/Sign'
                 additionalProperties: false
-              nullable: true
           additionalProperties: false
         id:
           type: string
           maxLength: 255
           minLength: 1
         on_routes:
-          type: array
+          type:
+          - array
+          - 'null'
           items:
             type: string
             maxLength: 255
             minLength: 1
-          nullable: true
         speed_limit:
-          allOf:
+          oneOf:
+          - type: 'null'
           - type: number
             format: double
-          nullable: true
         speed_limit_by_tag:
           type: object
           additionalProperties:
             type: number
             format: double
+          propertyNames:
+            type: string
+            minLength: 1
         track_ranges:
           type: array
           items:
@@ -13477,6 +13806,7 @@ components:
       properties:
         comfort:
           $ref: '#/components/schemas/Comfort'
+          description: The comfort of the train
         expected_version:
           type: integer
           format: int64
@@ -13486,7 +13816,8 @@ components:
           format: int64
           description: Infrastructure id
         margin:
-          allOf:
+          oneOf:
+          - type: 'null'
           - oneOf:
             - type: object
               required:
@@ -13502,7 +13833,7 @@ components:
                 MinPer100Km:
                   type: number
                   format: double
-          nullable: true
+          description: Margin to apply to the whole train
         maximum_departure_delay:
           type: integer
           format: int64
@@ -13533,8 +13864,9 @@ components:
           - rolling_resistance
           properties:
             base_power_class:
-              type: string
-              nullable: true
+              type:
+              - string
+              - 'null'
             comfort_acceleration:
               type: number
               format: double
@@ -13547,17 +13879,18 @@ components:
             effort_curves:
               $ref: '#/components/schemas/EffortCurves'
             electrical_power_startup_time:
-              type: integer
+              type:
+              - integer
+              - 'null'
               format: int64
               description: |-
                 The time the train takes before actually using electrical power.
                 Is null if the train is not electric or the value not specified.
-              nullable: true
               minimum: 0
             etcs_brake_params:
-              allOf:
+              oneOf:
+              - type: 'null'
               - $ref: '#/components/schemas/EtcsBrakeParams'
-              nullable: true
             inertia_coefficient:
               type: number
               format: double
@@ -13580,13 +13913,16 @@ components:
               description: Mapping of power restriction code to power class
               additionalProperties:
                 type: string
+              propertyNames:
+                type: string
             raise_pantograph_time:
-              type: integer
+              type:
+              - integer
+              - 'null'
               format: int64
               description: |-
                 The time it takes to raise this train's pantograph.
                 Is null if the train is not electric or the value not specified.
-              nullable: true
               minimum: 0
             rolling_resistance:
               $ref: '#/components/schemas/RollingResistance'
@@ -13599,11 +13935,14 @@ components:
               minimum: 0
         rolling_stock_loading_gauge:
           $ref: '#/components/schemas/LoadingGaugeType'
+          description: The loading gauge of the rolling stock
         rolling_stock_supported_signaling_systems:
           $ref: '#/components/schemas/RollingStockSupportedSignalingSystems'
+          description: List of supported signaling systems
         speed_limit_tag:
-          type: string
-          nullable: true
+          type:
+          - string
+          - 'null'
         start_time:
           type: string
           format: date-time
@@ -13637,10 +13976,11 @@ components:
           description: Gap between the created train and previous trains in milliseconds
           minimum: 0
         time_step:
-          type: integer
+          type:
+          - integer
+          - 'null'
           format: int64
           description: Numerical integration time step in milliseconds. Use default value if not specified.
-          nullable: true
           minimum: 0
         timetable_id:
           type: integer
@@ -13661,9 +14001,9 @@ components:
         - status
         properties:
           core_payload:
-            allOf:
+            oneOf:
+            - type: 'null'
             - $ref: '#/components/schemas/StdcmRequest'
-            nullable: true
           departure_time:
             type: string
             format: date-time
@@ -13680,9 +14020,9 @@ components:
         - status
         properties:
           core_payload:
-            allOf:
+            oneOf:
+            - type: 'null'
             - $ref: '#/components/schemas/StdcmRequest'
-            nullable: true
           status:
             type: string
             enum:
@@ -13693,9 +14033,9 @@ components:
         - status
         properties:
           core_payload:
-            allOf:
+            oneOf:
+            - type: 'null'
             - $ref: '#/components/schemas/StdcmRequest'
-            nullable: true
           error:
             $ref: '#/components/schemas/SimulationResponse'
           status:
@@ -13762,14 +14102,16 @@ components:
       - search_window_end
       - enabled_from
       - enabled_until
-      - active_perimeter
       properties:
         active_perimeter:
-          $ref: '#/components/schemas/GeoJson'
+          oneOf:
+          - type: 'null'
+          - $ref: '#/components/schemas/GeoJson'
         electrical_profile_set_id:
-          type: integer
+          type:
+          - integer
+          - 'null'
           format: int64
-          nullable: true
         enabled_from:
           type: string
           format: date-time
@@ -13786,16 +14128,18 @@ components:
           type: string
           format: date-time
         temporary_speed_limit_group_id:
-          type: integer
+          type:
+          - integer
+          - 'null'
           format: int64
-          nullable: true
         timetable_id:
           type: integer
           format: int64
         work_schedule_group_id:
-          type: integer
+          type:
+          - integer
+          - 'null'
           format: int64
-          nullable: true
     Study:
       type: object
       required:
@@ -13808,26 +14152,31 @@ components:
       - project_id
       properties:
         actual_end_date:
-          type: string
+          type:
+          - string
+          - 'null'
           format: date
-          nullable: true
         budget:
-          type: integer
+          type:
+          - integer
+          - 'null'
           format: int32
-          nullable: true
         business_code:
-          type: string
-          nullable: true
+          type:
+          - string
+          - 'null'
         creation_date:
           type: string
           format: date-time
         description:
-          type: string
-          nullable: true
+          type:
+          - string
+          - 'null'
         expected_end_date:
-          type: string
+          type:
+          - string
+          - 'null'
           format: date
-          nullable: true
         id:
           type: integer
           format: int64
@@ -13840,17 +14189,20 @@ components:
           type: integer
           format: int64
         service_code:
-          type: string
-          nullable: true
+          type:
+          - string
+          - 'null'
         start_date:
-          type: string
+          type:
+          - string
+          - 'null'
           format: date
-          nullable: true
         state:
           type: string
         study_type:
-          type: string
-          nullable: true
+          type:
+          - string
+          - 'null'
         tags:
           $ref: '#/components/schemas/Tags'
     StudyCreateForm:
@@ -13861,37 +14213,45 @@ components:
       - state
       properties:
         actual_end_date:
-          type: string
+          type:
+          - string
+          - 'null'
           format: date
-          nullable: true
         budget:
-          type: integer
+          type:
+          - integer
+          - 'null'
           format: int32
-          nullable: true
         business_code:
-          type: string
-          nullable: true
+          type:
+          - string
+          - 'null'
         description:
-          type: string
-          nullable: true
+          type:
+          - string
+          - 'null'
         expected_end_date:
-          type: string
+          type:
+          - string
+          - 'null'
           format: date
-          nullable: true
         name:
           type: string
         service_code:
-          type: string
-          nullable: true
+          type:
+          - string
+          - 'null'
         start_date:
-          type: string
+          type:
+          - string
+          - 'null'
           format: date
-          nullable: true
         state:
           type: string
         study_type:
-          type: string
-          nullable: true
+          type:
+          - string
+          - 'null'
         tags:
           $ref: '#/components/schemas/Tags'
     StudyPatchForm:
@@ -13899,43 +14259,53 @@ components:
       description: This structure is used by the patch endpoint to patch a study
       properties:
         actual_end_date:
-          type: string
+          type:
+          - string
+          - 'null'
           format: date
-          nullable: true
         budget:
-          type: integer
+          type:
+          - integer
+          - 'null'
           format: int32
-          nullable: true
         business_code:
-          type: string
-          nullable: true
+          type:
+          - string
+          - 'null'
         description:
-          type: string
-          nullable: true
+          type:
+          - string
+          - 'null'
         expected_end_date:
-          type: string
+          type:
+          - string
+          - 'null'
           format: date
-          nullable: true
         name:
-          type: string
-          nullable: true
+          type:
+          - string
+          - 'null'
         service_code:
-          type: string
-          nullable: true
+          type:
+          - string
+          - 'null'
         start_date:
-          type: string
+          type:
+          - string
+          - 'null'
           format: date
-          nullable: true
         state:
-          type: string
-          nullable: true
+          type:
+          - string
+          - 'null'
         study_type:
-          type: string
-          nullable: true
+          type:
+          - string
+          - 'null'
         tags:
-          allOf:
+          oneOf:
+          - type: 'null'
           - $ref: '#/components/schemas/Tags'
-          nullable: true
     StudyResponse:
       allOf:
       - $ref: '#/components/schemas/Study'
@@ -14014,7 +14384,8 @@ components:
           type: object
           properties:
             sncf:
-              allOf:
+              oneOf:
+              - type: 'null'
               - type: object
                 required:
                 - label
@@ -14023,7 +14394,6 @@ components:
                     type: string
                     minLength: 1
                 additionalProperties: false
-              nullable: true
           additionalProperties: false
         group_change_delay:
           type: number
@@ -14036,6 +14406,10 @@ components:
           type: object
           additionalProperties:
             $ref: '#/components/schemas/TrackEndpoint'
+          propertyNames:
+            type: string
+            maxLength: 255
+            minLength: 1
         switch_type:
           type: string
           maxLength: 255
@@ -14069,6 +14443,10 @@ components:
             type: array
             items:
               $ref: '#/components/schemas/SwitchPortConnection'
+          propertyNames:
+            type: string
+            maxLength: 255
+            minLength: 1
         id:
           type: string
           maxLength: 255
@@ -14164,10 +14542,11 @@ components:
           format: double
           description: Mass in kg
         max_speed:
-          type: number
+          type:
+          - number
+          - 'null'
           format: double
           description: Velocity in m·s⁻¹
-          nullable: true
         name:
           type: string
         railjson_version:
@@ -14212,9 +14591,9 @@ components:
         const_gamma:
           type: number
           format: double
-          description: |-
-            The constant gamma braking coefficient used when NOT circulating
-            under ETCS/ERTMS signaling system
+          description: |2-
+             The constant gamma braking coefficient used when NOT circulating
+             under ETCS/ERTMS signaling system
             Acceleration in m·s⁻²
         inertia_coefficient:
           type: number
@@ -14230,10 +14609,11 @@ components:
           format: double
           description: Mass in kg
         max_speed:
-          type: number
+          type:
+          - number
+          - 'null'
           format: double
           description: Velocity in m·s⁻¹
-          nullable: true
         name:
           type: string
         railjson_version:
@@ -14279,9 +14659,11 @@ components:
           format: double
           description: The offset on the track section in meters
         track_section:
-          type: string
-          maxLength: 255
-          minLength: 1
+          oneOf:
+          - type: string
+            maxLength: 255
+            minLength: 1
+          description: The track section UUID
     TrackOffset:
       type: object
       required:
@@ -14294,9 +14676,11 @@ components:
           description: Offset in mm
           minimum: 0
         track:
-          type: string
-          maxLength: 255
-          minLength: 1
+          oneOf:
+          - type: string
+            maxLength: 255
+            minLength: 1
+          description: Track section identifier
     TrackRange:
       type: object
       required:
@@ -14348,7 +14732,8 @@ components:
           type: object
           properties:
             sncf:
-              allOf:
+              oneOf:
+              - type: 'null'
               - type: object
                 required:
                 - line_code
@@ -14369,9 +14754,9 @@ components:
                     type: integer
                     format: int32
                 additionalProperties: false
-              nullable: true
             source:
-              allOf:
+              oneOf:
+              - type: 'null'
               - type: object
                 required:
                 - name
@@ -14384,7 +14769,6 @@ components:
                     type: string
                     minLength: 1
                 additionalProperties: false
-              nullable: true
           additionalProperties: false
         geo:
           $ref: '#/components/schemas/GeoJsonLineString'
@@ -14516,9 +14900,9 @@ components:
       - constraint_distribution
       properties:
         category:
-          allOf:
+          oneOf:
+          - type: 'null'
           - $ref: '#/components/schemas/TrainCategory'
-          nullable: true
         comfort:
           $ref: '#/components/schemas/Comfort'
         constraint_distribution:
@@ -14576,8 +14960,12 @@ components:
                     It's useful for soft deleting the point (waiting to fix / remove all references)
                     If true, the train schedule is consider as invalid and must be edited
                 id:
-                  type: string
-                  minLength: 1
+                  oneOf:
+                  - type: string
+                    minLength: 1
+                  description: |-
+                    The unique identifier of the path item.
+                    This is used to reference path items in the train schedule.
             description: A location on the path of a train
         power_restrictions:
           type: array
@@ -14607,27 +14995,37 @@ components:
             - at
             properties:
               arrival:
-                allOf:
+                oneOf:
+                - type: 'null'
                 - $ref: '#/components/schemas/PositiveDuration'
-                nullable: true
+                  description: |-
+                    The expected arrival time at the stop.
+                    This will be used to compute the final simulation time.
               at:
-                type: string
-                minLength: 1
+                oneOf:
+                - type: string
+                  minLength: 1
+                description: Position on the path of the schedule item.
               locked:
                 type: boolean
                 description: Whether the schedule item is locked (only for display purposes)
               reception_signal:
                 $ref: '#/components/schemas/ReceptionSignal'
               stop_for:
-                allOf:
+                oneOf:
+                - type: 'null'
                 - $ref: '#/components/schemas/PositiveDuration'
-                nullable: true
+                  description: |-
+                    Duration of the stop.
+                    Can be `None` if the train does not stop.
+                    If `None`, `reception_signal` must be `Open`.
+                    `Some("PT0S")` means the train stops for 0 seconds.
             additionalProperties: false
         speed_limit_tag:
-          allOf:
+          oneOf:
+          - type: 'null'
           - type: string
             minLength: 1
-          nullable: true
         start_time:
           type: string
           format: date-time
@@ -14639,10 +15037,11 @@ components:
       - type: object
         properties:
           timetable_id:
-            type: integer
+            type:
+            - integer
+            - 'null'
             format: int64
             description: Timetable attached to the train schedule
-            nullable: true
     TrainScheduleOptions:
       type: object
       properties:
@@ -14671,8 +15070,9 @@ components:
       - git_describe
       properties:
         git_describe:
-          type: string
-          nullable: true
+          type:
+          - string
+          - 'null'
     Waypoint:
       oneOf:
       - type: object

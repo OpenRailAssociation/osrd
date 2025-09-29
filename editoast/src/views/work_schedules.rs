@@ -176,7 +176,6 @@ pub(in crate::views) async fn create(
 #[derive(Serialize, Deserialize, ToSchema)]
 pub(in crate::views) struct WorkScheduleProjectForm {
     work_schedule_group_id: i64,
-    #[schema(value_type = Vec<CoreTrackRange>)]
     path_track_ranges: Vec<core_client::pathfinding::TrackRange>,
 }
 

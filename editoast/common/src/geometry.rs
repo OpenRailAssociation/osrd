@@ -3,43 +3,96 @@ use serde::Serialize;
 use utoipa::ToSchema;
 
 #[linkme::distributed_slice(crate::OPENAPI_SCHEMAS)]
-static _GEOJSON_SLICE_ITEM: crate::OpenApiSchemaSliceItem = <GeoJson as utoipa::ToSchema>::schema;
+static _GEOJSON_SLICE_ITEM: crate::OpenApiSchemaSliceItem = || {
+    (
+        <GeoJson as utoipa::ToSchema>::name(),
+        <GeoJson as utoipa::PartialSchema>::schema(),
+    )
+};
 #[linkme::distributed_slice(crate::OPENAPI_SCHEMAS)]
-static _GEOJSONPOINT_SLICE_ITEM: crate::OpenApiSchemaSliceItem =
-    <GeoJsonPoint as utoipa::ToSchema>::schema;
+static _GEOJSONPOINT_SLICE_ITEM: crate::OpenApiSchemaSliceItem = || {
+    (
+        <GeoJsonPoint as utoipa::ToSchema>::name(),
+        <GeoJsonPoint as utoipa::PartialSchema>::schema(),
+    )
+};
 #[linkme::distributed_slice(crate::OPENAPI_SCHEMAS)]
-static _GEOJSONMULTIPOINT_SLICE_ITEM: crate::OpenApiSchemaSliceItem =
-    <GeoJsonMultiPoint as utoipa::ToSchema>::schema;
+static _GEOJSONMULTIPOINT_SLICE_ITEM: crate::OpenApiSchemaSliceItem = || {
+    (
+        <GeoJsonMultiPoint as utoipa::ToSchema>::name(),
+        <GeoJsonMultiPoint as utoipa::PartialSchema>::schema(),
+    )
+};
 #[linkme::distributed_slice(crate::OPENAPI_SCHEMAS)]
-static _GEOJSONLINESTRING_SLICE_ITEM: crate::OpenApiSchemaSliceItem =
-    <GeoJsonLineString as utoipa::ToSchema>::schema;
+static _GEOJSONLINESTRING_SLICE_ITEM: crate::OpenApiSchemaSliceItem = || {
+    (
+        <GeoJsonLineString as utoipa::ToSchema>::name(),
+        <GeoJsonLineString as utoipa::PartialSchema>::schema(),
+    )
+};
 #[linkme::distributed_slice(crate::OPENAPI_SCHEMAS)]
-static _GEOJSONMULTILINESTRING_SLICE_ITEM: crate::OpenApiSchemaSliceItem =
-    <GeoJsonMultiLineString as utoipa::ToSchema>::schema;
+static _GEOJSONMULTILINESTRING_SLICE_ITEM: crate::OpenApiSchemaSliceItem = || {
+    (
+        <GeoJsonMultiLineString as utoipa::ToSchema>::name(),
+        <GeoJsonMultiLineString as utoipa::PartialSchema>::schema(),
+    )
+};
 #[linkme::distributed_slice(crate::OPENAPI_SCHEMAS)]
-static _GEOJSONPOLYGON_SLICE_ITEM: crate::OpenApiSchemaSliceItem =
-    <GeoJsonPolygon as utoipa::ToSchema>::schema;
+static _GEOJSONPOLYGON_SLICE_ITEM: crate::OpenApiSchemaSliceItem = || {
+    (
+        <GeoJsonPolygon as utoipa::ToSchema>::name(),
+        <GeoJsonPolygon as utoipa::PartialSchema>::schema(),
+    )
+};
 #[linkme::distributed_slice(crate::OPENAPI_SCHEMAS)]
-static _GEOJSONMULTIPOLYGON_SLICE_ITEM: crate::OpenApiSchemaSliceItem =
-    <GeoJsonMultiPolygon as utoipa::ToSchema>::schema;
+static _GEOJSONMULTIPOLYGON_SLICE_ITEM: crate::OpenApiSchemaSliceItem = || {
+    (
+        <GeoJsonMultiPolygon as utoipa::ToSchema>::name(),
+        <GeoJsonMultiPolygon as utoipa::PartialSchema>::schema(),
+    )
+};
 #[linkme::distributed_slice(crate::OPENAPI_SCHEMAS)]
-static _GEOJSONPOINTVALUE_SLICE_ITEM: crate::OpenApiSchemaSliceItem =
-    <GeoJsonPointValue as utoipa::ToSchema>::schema;
+static _GEOJSONPOINTVALUE_SLICE_ITEM: crate::OpenApiSchemaSliceItem = || {
+    (
+        <GeoJsonPointValue as utoipa::ToSchema>::name(),
+        <GeoJsonPointValue as utoipa::PartialSchema>::schema(),
+    )
+};
 #[linkme::distributed_slice(crate::OPENAPI_SCHEMAS)]
-static _GEOJSONMULTIPOINTVALUE_SLICE_ITEM: crate::OpenApiSchemaSliceItem =
-    <GeoJsonMultiPointValue as utoipa::ToSchema>::schema;
+static _GEOJSONMULTIPOINTVALUE_SLICE_ITEM: crate::OpenApiSchemaSliceItem = || {
+    (
+        <GeoJsonMultiPointValue as utoipa::ToSchema>::name(),
+        <GeoJsonMultiPointValue as utoipa::PartialSchema>::schema(),
+    )
+};
 #[linkme::distributed_slice(crate::OPENAPI_SCHEMAS)]
-static _GEOJSONLINESTRINGVALUE_SLICE_ITEM: crate::OpenApiSchemaSliceItem =
-    <GeoJsonLineStringValue as utoipa::ToSchema>::schema;
+static _GEOJSONLINESTRINGVALUE_SLICE_ITEM: crate::OpenApiSchemaSliceItem = || {
+    (
+        <GeoJsonLineStringValue as utoipa::ToSchema>::name(),
+        <GeoJsonLineStringValue as utoipa::PartialSchema>::schema(),
+    )
+};
 #[linkme::distributed_slice(crate::OPENAPI_SCHEMAS)]
-static _GEOJSONMULTILINESTRINGVALUE_SLICE_ITEM: crate::OpenApiSchemaSliceItem =
-    <GeoJsonMultiLineStringValue as utoipa::ToSchema>::schema;
+static _GEOJSONMULTILINESTRINGVALUE_SLICE_ITEM: crate::OpenApiSchemaSliceItem = || {
+    (
+        <GeoJsonMultiLineStringValue as utoipa::ToSchema>::name(),
+        <GeoJsonMultiLineStringValue as utoipa::PartialSchema>::schema(),
+    )
+};
 #[linkme::distributed_slice(crate::OPENAPI_SCHEMAS)]
-static _GEOJSONPOLYGONVALUE_SLICE_ITEM: crate::OpenApiSchemaSliceItem =
-    <GeoJsonPolygonValue as utoipa::ToSchema>::schema;
+static _GEOJSONPOLYGONVALUE_SLICE_ITEM: crate::OpenApiSchemaSliceItem = || {
+    (
+        <GeoJsonPolygonValue as utoipa::ToSchema>::name(),
+        <GeoJsonPolygonValue as utoipa::PartialSchema>::schema(),
+    )
+};
 #[linkme::distributed_slice(crate::OPENAPI_SCHEMAS)]
-static _GEOJSONMULTIPOLYGONVALUE_SLICE_ITEM: crate::OpenApiSchemaSliceItem =
-    <GeoJsonMultiPolygonValue as utoipa::ToSchema>::schema;
+static _GEOJSONMULTIPOLYGONVALUE_SLICE_ITEM: crate::OpenApiSchemaSliceItem = || {
+    (
+        <GeoJsonMultiPolygonValue as utoipa::ToSchema>::name(),
+        <GeoJsonMultiPolygonValue as utoipa::PartialSchema>::schema(),
+    )
+};
 
 // Schema of a GeoJson value meant to be used **exclusively** in the OpenApi
 /// A GeoJSON geometry item
@@ -91,19 +144,19 @@ pub enum GeoJsonMultiPolygon {
 }
 
 #[derive(Serialize, Deserialize, ToSchema, Debug, Clone, PartialEq)]
-pub struct GeoJsonPointValue(#[schema(min_items = 2, max_items = 2)] pub Vec<f64>);
+pub struct GeoJsonPointValue(pub Vec<f64>);
 
 #[derive(Serialize, ToSchema)]
-pub struct GeoJsonMultiPointValue(#[schema(min_items = 1)] Vec<GeoJsonPointValue>);
+pub struct GeoJsonMultiPointValue(Vec<GeoJsonPointValue>);
 
 #[derive(Serialize, Deserialize, ToSchema, Debug, Clone, PartialEq)]
-pub struct GeoJsonLineStringValue(#[schema(min_items = 2)] pub Vec<GeoJsonPointValue>);
+pub struct GeoJsonLineStringValue(pub Vec<GeoJsonPointValue>);
 
 #[derive(Serialize, ToSchema)]
-pub struct GeoJsonMultiLineStringValue(#[schema(min_items = 1)] Vec<GeoJsonLineStringValue>);
+pub struct GeoJsonMultiLineStringValue(Vec<GeoJsonLineStringValue>);
 
 #[derive(Serialize, ToSchema)]
-pub struct GeoJsonPolygonValue(#[schema(min_items = 1)] Vec<GeoJsonLineStringValue>);
+pub struct GeoJsonPolygonValue(Vec<GeoJsonLineStringValue>);
 
 #[derive(Serialize, ToSchema)]
-pub struct GeoJsonMultiPolygonValue(#[schema(min_items = 1)] Vec<GeoJsonPolygonValue>);
+pub struct GeoJsonMultiPolygonValue(Vec<GeoJsonPolygonValue>);

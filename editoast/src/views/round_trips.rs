@@ -78,7 +78,9 @@ fn schema_round_trips() -> RefOr<Schema> {
             utoipa::openapi::schema::ArrayBuilder::new()
                 .items(
                     utoipa::openapi::ObjectBuilder::new()
-                        .schema_type(utoipa::openapi::SchemaType::Integer)
+                        .schema_type(utoipa::openapi::schema::SchemaType::Type(
+                            utoipa::openapi::schema::Type::Integer,
+                        ))
                         .format(Some(utoipa::openapi::SchemaFormat::KnownFormat(
                             utoipa::openapi::KnownFormat::Int64,
                         )))

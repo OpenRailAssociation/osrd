@@ -69,7 +69,6 @@ pub(in crate::views) enum StdcmResponse {
         core_payload: Option<StdcmRequest>,
     },
     PreprocessingSimulationError {
-        #[schema(value_type = SimulationResponse)]
         error: simulation::Response,
         #[serde(skip_serializing_if = "Option::is_none")]
         core_payload: Option<StdcmRequest>,

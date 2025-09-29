@@ -9,6 +9,7 @@ use axum::extract::Path;
 use axum::extract::Query;
 use axum::extract::State;
 use axum::response::IntoResponse;
+use core_client::signal_projection::SignalUpdate;
 use database::DbConnectionPoolV2;
 use editoast_derive::EditoastError;
 use schemas::paced_train::PacedTrain;
@@ -221,9 +222,7 @@ pub(in crate::views) struct SimulationBatchForm {
 #[cfg_attr(test, derive(PartialEq, serde::Deserialize))]
 #[schema(as = PacedTrainSimulationSummaryResult)]
 pub(in crate::views) struct PacedTrainSummaryResponse {
-    #[schema(value_type = SimulationSummaryResult)]
     pub paced_train: SummaryResponse,
-    #[schema(value_type = HashMap<String, SimulationSummaryResult>)]
     /// The key is the `exception_key`
     pub exceptions: HashMap<String, SummaryResponse>,
 }
@@ -243,7 +242,7 @@ struct SimulationContext {
     tag = "paced_train",
     request_body = inline(SimulationBatchForm),
     responses(
-        (status = 200, description = "Associate each paced train id with its simulation summaries", body = HashMap<i64, PacedTrainSimulationSummaryResult>),
+        (status = 200, description = "Associate each paced train id with its simulation summaries", body = HashMap<i64, PacedTrainSummaryResponse>),
     ),
 )]
 pub(in crate::views) async fn simulation_summary(
@@ -465,7 +464,7 @@ pub struct ElectricalProfileSetIdQueryParam {
     tag = "paced_train",
     params(PacedTrainIdParam, InfraIdQueryParam, ElectricalProfileSetIdQueryParam, ExceptionQueryParam),
     responses(
-        (status = 200, description = "Simulation Output", body = SimulationResponse),
+        (status = 200, description = "Simulation Output", body = simulation::Response),
     ),
 )]
 pub(in crate::views) async fn simulation(

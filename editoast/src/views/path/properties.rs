@@ -41,7 +41,6 @@ use crate::views::path::retrieve_infra_version;
 #[derive(Debug, Serialize, Deserialize, ToSchema, Hash)]
 pub struct PathPropertiesInput {
     /// List of track sections
-    #[schema(value_type = Vec<CoreTrackRange>)]
     pub track_section_ranges: Vec<TrackRange>,
 }
 

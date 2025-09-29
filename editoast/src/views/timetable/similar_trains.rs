@@ -119,7 +119,6 @@ impl std::fmt::Debug for Waypoint {
 pub(in crate::views) struct Request {
     #[schema(inline)]
     rolling_stock: RollingStockCharacteristics,
-    #[schema(value_type = Vec<SimilarTrainWaypoint>)]
     waypoints: Vec<Waypoint>,
     infra_id: i64,
     timetable_id: i64,

@@ -271,7 +271,7 @@ pub struct ElectricalProfileSetIdQueryParam {
     tag = "train_schedule",
     params(TrainScheduleIdParam, InfraIdQueryParam, ElectricalProfileSetIdQueryParam),
     responses(
-        (status = 200, description = "Simulation Output", body = SimulationResponse),
+        (status = 200, description = "Simulation Output", body = simulation::Response),
     ),
 )]
 pub(in crate::views) async fn simulation(
@@ -344,7 +344,7 @@ pub(in crate::views) async fn simulation(
     tag = "train_schedule,etcs_braking_curves",
     params(TrainScheduleIdParam, InfraIdQueryParam, ElectricalProfileSetIdQueryParam),
     responses(
-        (status = 200, description = "ETCS Braking Curves Output", body = ETCSBrakingCurvesResponse),
+        (status = 200, description = "ETCS Braking Curves Output", body = core_client::etcs_braking_curves::Response),
     ),
 )]
 pub(in crate::views) async fn etcs_braking_curves(
@@ -481,7 +481,7 @@ pub(in crate::views) struct SimulationBatchForm {
     tag = "train_schedule",
     request_body = inline(SimulationBatchForm),
     responses(
-        (status = 200, description = "Associate each train id with its simulation summary", body = HashMap<i64, SimulationSummaryResult>),
+        (status = 200, description = "Associate each train id with its simulation summary", body = HashMap<i64, simulation::SummaryResponse>),
     ),
 )]
 pub(in crate::views) async fn simulation_summary(

@@ -2,6 +2,7 @@ use database::DbConnection;
 use editoast_derive::Model;
 use editoast_models::Document;
 use editoast_models::prelude::*;
+use utoipa::ToSchema;
 
 #[cfg(test)]
 use serde::Deserialize;
@@ -17,7 +18,7 @@ use serde::Deserialize;
 ///
 /// /!\ Its compound image is not deleted by cascade if the livery is removed.
 ///
-#[derive(Debug, Clone, Default, Model)]
+#[derive(Debug, Clone, Default, Model, ToSchema)]
 #[cfg_attr(test, derive(Deserialize))]
 #[model(table = database::tables::rolling_stock_livery)]
 #[model(gen(ops = crd, list))]

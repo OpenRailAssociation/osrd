@@ -101,18 +101,19 @@ impl Display for Identifier {
     }
 }
 
-impl<'a> utoipa::ToSchema<'a> for Identifier {
-    fn schema() -> (&'a str, RefOr<Schema>) {
-        (
-            "NonBlankString",
-            ObjectBuilder::new()
-                .schema_type(utoipa::openapi::SchemaType::String)
-                .min_length(Some(1))
-                .max_length(Some(255))
-                .into(),
-        )
+impl utoipa::PartialSchema for Identifier {
+    fn schema() -> RefOr<Schema> {
+        ObjectBuilder::new()
+            .schema_type(utoipa::openapi::schema::SchemaType::Type(
+                utoipa::openapi::schema::Type::String,
+            ))
+            .min_length(Some(1))
+            .max_length(Some(255))
+            .into()
     }
 }
+
+impl utoipa::ToSchema for Identifier {}
 
 #[cfg(test)]
 mod tests {

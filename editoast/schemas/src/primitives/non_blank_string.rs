@@ -96,17 +96,18 @@ impl PartialEq<NonBlankString> for &str {
     }
 }
 
-impl<'a> utoipa::ToSchema<'a> for NonBlankString {
-    fn schema() -> (&'a str, RefOr<Schema>) {
-        (
-            "NonBlankString",
-            ObjectBuilder::new()
-                .schema_type(utoipa::openapi::SchemaType::String)
-                .min_length(Some(1))
-                .into(),
-        )
+impl utoipa::PartialSchema for NonBlankString {
+    fn schema() -> RefOr<Schema> {
+        ObjectBuilder::new()
+            .schema_type(utoipa::openapi::schema::SchemaType::Type(
+                utoipa::openapi::schema::Type::String,
+            ))
+            .min_length(Some(1))
+            .into()
     }
 }
+
+impl utoipa::ToSchema for NonBlankString {}
 
 #[cfg(test)]
 mod tests {

@@ -44,11 +44,8 @@ pub enum Operation {
 //   quite dependant on the current schema
 // - So we have to manually define the schema for the `Operation` to keep the current schema but without
 //   the need to declare `UpdateOperation` and `DeleteOperation` as components
-impl<'s> ToSchema<'s> for Operation {
-    fn schema() -> (
-        &'s str,
-        utoipa::openapi::RefOr<utoipa::openapi::schema::Schema>,
-    ) {
+impl utoipa::PartialSchema for Operation {
+    fn schema() -> utoipa::openapi::RefOr<utoipa::openapi::schema::Schema> {
         #[derive(ToSchema, Serialize)]
         #[serde(rename_all = "UPPERCASE")]
         #[allow(unused)]
@@ -96,9 +93,11 @@ impl<'s> ToSchema<'s> for Operation {
             },
         }
 
-        Operation::schema()
+        <Operation as utoipa::PartialSchema>::schema()
     }
 }
+
+impl utoipa::ToSchema for Operation {}
 
 #[derive(Clone, Deserialize, Serialize)]
 pub enum CacheOperation {

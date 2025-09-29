@@ -167,7 +167,7 @@ struct TileParams {
     tag = "layers",
     params(InfraQueryParam, TileParams),
     responses(
-        (status = 200, body = Vec<u8>, description = "Successful Response"),
+        (status = 200, content_type = "application/octet-stream", body = String),
     )
 )]
 pub(in crate::views) async fn cache_and_get_mvt_tile(

@@ -1,5 +1,6 @@
 use std::ops::DerefMut;
 
+use common::geometry::GeoJson;
 use database::DbConnection;
 use diesel::QueryableByName;
 use diesel::sql_query;

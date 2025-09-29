@@ -42,7 +42,12 @@ pub enum DocumentErrors {
         ("document_key" = i64, Path, description = "The document's key"),
     ),
     responses(
-        (status = 200, description = "The document's binary content", body = [u8]),
+        (
+            status = 200,
+            description = "Document content",
+            content_type = "application/octet-stream",
+            body = String,
+        ),
     )
 )]
 pub(in crate::views) async fn get(
@@ -86,7 +91,7 @@ struct NewDocumentResponse {
     params(
         ("content_type" = String, Header, description = "The document's content type"),
     ),
-    request_body = [u8],
+    request_body(content_type = "application/octet-stream", content = String),
     responses(
         (status = 201, description = "The document was created", body = NewDocumentResponse),
     )

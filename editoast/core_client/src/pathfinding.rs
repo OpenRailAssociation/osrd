@@ -135,12 +135,10 @@ pub enum PathfindingInputError {
 #[serde(tag = "error_type", rename_all = "snake_case")]
 pub enum PathfindingNotFound {
     NotFoundInBlocks {
-        #[schema(value_type = Vec<CoreTrackRange>)]
         track_section_ranges: Vec<TrackRange>,
         length: u64,
     },
     NotFoundInRoutes {
-        #[schema(value_type = Vec<CoreTrackRange>)]
         track_section_ranges: Vec<TrackRange>,
         length: u64,
     },
@@ -192,7 +190,6 @@ pub struct TrainPath {
     /// Route ranges, in order.
     pub routes: Vec<ObjectRange>,
     /// Track section ranges, in order.
-    #[schema(value_type = Vec<CoreTrackRange>)]
     pub track_section_ranges: Vec<TrackRange>,
 }
 

@@ -2,17 +2,19 @@ use std::collections::BTreeMap;
 
 use itertools::Itertools as _;
 use tracing::debug;
-use tracing::warn;
 use utoipa::OpenApi;
 use utoipa::openapi::AllOf;
 use utoipa::openapi::Array;
+use utoipa::openapi::HttpMethod;
 use utoipa::openapi::Object;
 use utoipa::openapi::OneOf;
 use utoipa::openapi::PathItem;
 use utoipa::openapi::RefOr;
 use utoipa::openapi::Schema;
+use utoipa::openapi::path::Operation;
 use utoipa::openapi::path::PathItemBuilder;
 use utoipa::openapi::schema::AnyOf;
+use utoipa::openapi::schema::ArrayItems;
 
 use crate::error::ErrorDefinition;
 use crate::views::service_router;
@@ -25,7 +27,35 @@ fn concat_path<A: AsRef<str>, B: AsRef<str>>(a: A, b: B) -> String {
     }
 }
 
-fn merge_path_items(a: PathItem, b: PathItem) -> PathItem {
+fn path_item_operations(path_item: PathItem) -> BTreeMap<HttpMethod, Operation> {
+    let mut operations = BTreeMap::new();
+    operations.extend(path_item.get.map(|op| (HttpMethod::Get, op)));
+    operations.extend(path_item.put.map(|op| (HttpMethod::Put, op)));
+    operations.extend(path_item.post.map(|op| (HttpMethod::Post, op)));
+    operations.extend(path_item.delete.map(|op| (HttpMethod::Delete, op)));
+    operations.extend(path_item.options.map(|op| (HttpMethod::Options, op)));
+    operations.extend(path_item.head.map(|op| (HttpMethod::Head, op)));
+    operations.extend(path_item.patch.map(|op| (HttpMethod::Patch, op)));
+    operations.extend(path_item.trace.map(|op| (HttpMethod::Trace, op)));
+    operations
+}
+
+fn path_item_operations_mut(path_item: &mut PathItem) -> Vec<&mut Operation> {
+    let mut operations = Vec::new();
+    operations.extend(path_item.get.as_mut());
+    operations.extend(path_item.put.as_mut());
+    operations.extend(path_item.post.as_mut());
+    operations.extend(path_item.delete.as_mut());
+    operations.extend(path_item.options.as_mut());
+    operations.extend(path_item.head.as_mut());
+    operations.extend(path_item.patch.as_mut());
+    operations.extend(path_item.trace.as_mut());
+    operations
+}
+
+fn merge_path_items(mut a: PathItem, b: PathItem) -> PathItem {
+    a.merge_operations(b.clone());
+    let operations = path_item_operations(a.clone());
     let mut builder = PathItemBuilder::new()
         .summary(a.summary.or(b.summary))
         .description(a.description.or(b.description))
@@ -39,16 +69,6 @@ fn merge_path_items(a: PathItem, b: PathItem) -> PathItem {
             (Some(s), None) | (None, Some(s)) => Some(s),
             (None, None) => None,
         });
-    let mut operations: BTreeMap<_, _> = a.operations;
-    for (method, operation) in b.operations {
-        if operations.contains_key(&method) {
-            warn!(
-                "duplicate operation for method {}",
-                serde_json::to_string(&method).unwrap() // PathItemType does not implement Display or Debug :(
-            );
-        }
-        operations.insert(method, operation);
-    }
     for (method, operation) in operations {
         builder = builder.operation(method, operation);
     }
@@ -82,8 +102,11 @@ fn remove_discriminator(schema: &mut RefOr<Schema>) {
                 remove_discriminator(property);
             }
         }
-        RefOr::T(Schema::Array(Array { items, .. })) => {
-            remove_discriminator(items);
+        RefOr::T(Schema::Array(Array {
+            items: ArrayItems::RefOrSchema(schema),
+            ..
+        })) => {
+            remove_discriminator(schema.as_mut());
         }
         _ => (),
     }
@@ -114,17 +137,21 @@ impl OpenApiRoot {
     // puts it. So we remove it, even though utoipa is correct.
     fn remove_discrimators(openapi: &mut utoipa::openapi::OpenApi) {
         for (_, endpoint) in openapi.paths.paths.iter_mut() {
-            for (_, operation) in endpoint.operations.iter_mut() {
+            for operation in path_item_operations_mut(endpoint) {
                 if let Some(request_body) = operation.request_body.as_mut() {
                     for (_, content) in request_body.content.iter_mut() {
-                        remove_discriminator(&mut content.schema);
+                        if let Some(schema) = content.schema.as_mut() {
+                            remove_discriminator(schema);
+                        }
                     }
                 }
                 for (_, response) in operation.responses.responses.iter_mut() {
                     match response {
                         RefOr::T(response) => {
                             for (_, content) in response.content.iter_mut() {
-                                remove_discriminator(&mut content.schema);
+                                if let Some(schema) = content.schema.as_mut() {
+                                    remove_discriminator(schema);
+                                }
                             }
                         }
                         RefOr::Ref { .. } => panic!("editoast doesn't support response references"),
@@ -144,7 +171,7 @@ impl OpenApiRoot {
     // Split comma-separated tags into multiple tags
     fn split_tags(openapi: &mut utoipa::openapi::OpenApi) {
         for (_, endpoint) in openapi.paths.paths.iter_mut() {
-            for (_, operation) in endpoint.operations.iter_mut() {
+            for operation in path_item_operations_mut(endpoint) {
                 operation.tags = operation.tags.as_ref().map(|tags| {
                     tags.iter()
                         .flat_map(|tag| tag.split(','))
@@ -160,30 +187,20 @@ impl OpenApiRoot {
         // We write openapi properties by alpha order, to keep the same yml file
         for prop_name in error_def.get_context().keys().sorted() {
             let prop_type = &error_def.get_context()[prop_name];
+            let utoipa_type = match prop_type.as_ref() {
+                "bool" => utoipa::openapi::schema::Type::Boolean,
+                "isize" | "i8" | "i16" | "i32" | "i64" | "usize" | "u8" | "u16" | "u32" | "u64" => {
+                    utoipa::openapi::schema::Type::Integer
+                }
+                "f8" | "f16" | "f32" | "f64" => utoipa::openapi::schema::Type::Number,
+                "Vec" => utoipa::openapi::schema::Type::Array,
+                "char" | "String" => utoipa::openapi::schema::Type::String,
+                _ => utoipa::openapi::schema::Type::Object,
+            };
             context.properties.insert(
                 prop_name.clone(),
                 utoipa::openapi::ObjectBuilder::new()
-                    .schema_type(match prop_type.as_ref() {
-                        "bool" => utoipa::openapi::SchemaType::Boolean,
-                        "isize" => utoipa::openapi::SchemaType::Integer,
-                        "i8" => utoipa::openapi::SchemaType::Integer,
-                        "i16" => utoipa::openapi::SchemaType::Integer,
-                        "i32" => utoipa::openapi::SchemaType::Integer,
-                        "i64" => utoipa::openapi::SchemaType::Integer,
-                        "usize" => utoipa::openapi::SchemaType::Integer,
-                        "u8" => utoipa::openapi::SchemaType::Integer,
-                        "u16" => utoipa::openapi::SchemaType::Integer,
-                        "u32" => utoipa::openapi::SchemaType::Integer,
-                        "u64" => utoipa::openapi::SchemaType::Integer,
-                        "f8" => utoipa::openapi::SchemaType::Number,
-                        "f16" => utoipa::openapi::SchemaType::Number,
-                        "f32" => utoipa::openapi::SchemaType::Number,
-                        "f64" => utoipa::openapi::SchemaType::Number,
-                        "Vec" => utoipa::openapi::SchemaType::Array,
-                        "char" => utoipa::openapi::SchemaType::String,
-                        "String" => utoipa::openapi::SchemaType::String,
-                        _ => utoipa::openapi::SchemaType::Object,
-                    })
+                    .schema_type(utoipa::openapi::schema::SchemaType::Type(utoipa_type))
                     .into(),
             );
             context.required.push(prop_name.clone());
@@ -212,19 +229,26 @@ impl OpenApiRoot {
                     .property(
                         "type",
                         utoipa::openapi::ObjectBuilder::new()
-                            .schema_type(utoipa::openapi::SchemaType::String)
+                            .schema_type(utoipa::openapi::schema::SchemaType::Type(
+                                utoipa::openapi::schema::Type::String,
+                            ))
                             .enum_values(Some([error_def.id])),
                     )
                     .property(
                         "status",
                         utoipa::openapi::ObjectBuilder::new()
-                            .schema_type(utoipa::openapi::SchemaType::Integer)
+                            .schema_type(utoipa::openapi::schema::SchemaType::Type(
+                                utoipa::openapi::schema::Type::Integer,
+                            ))
                             .enum_values(Some([error_def.status])),
                     )
                     .property(
                         "message",
-                        utoipa::openapi::ObjectBuilder::new()
-                            .schema_type(utoipa::openapi::SchemaType::String),
+                        utoipa::openapi::ObjectBuilder::new().schema_type(
+                            utoipa::openapi::schema::SchemaType::Type(
+                                utoipa::openapi::schema::Type::String,
+                            ),
+                        ),
                     )
                     .property("context", Self::error_context_to_openapi_object(error_def))
                     .required("type")
@@ -296,7 +320,7 @@ impl OpenApiRoot {
     // so that it doesn't override the RTK methods names.
     fn remove_operation_id(openapi: &mut utoipa::openapi::OpenApi) {
         for (_, endpoint) in openapi.paths.paths.iter_mut() {
-            for (_, operation) in endpoint.operations.iter_mut() {
+            for operation in path_item_operations_mut(endpoint) {
                 operation.operation_id = None;
                 // By default utoipa adds a tag "crate" to operations that don't have
                 // any. That causes problems with RTK tag management.

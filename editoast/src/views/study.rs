@@ -374,7 +374,6 @@ impl StudyWithScenarioCount {
 #[derive(Serialize, ToSchema)]
 #[cfg_attr(test, derive(Deserialize))]
 pub(in crate::views) struct StudyListResponse {
-    #[schema(value_type = Vec<StudyWithScenarios>)]
     results: Vec<StudyWithScenarioCount>,
     #[serde(flatten)]
     stats: PaginationStats,

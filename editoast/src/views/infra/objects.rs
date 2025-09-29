@@ -48,7 +48,7 @@ pub(in crate::views) struct ObjectTypeParam {
     params(InfraIdParam, ObjectTypeParam),
     request_body = Vec<String>,
     responses(
-        (status = 200, description = "The list of objects", body = Vec<InfraObjectWithGeometry>),
+        (status = 200, description = "The list of objects", body = Vec<ObjectQueryable>),
         (status = 400, description = "Duplicate object ids provided"),
         (status = 404, description = "Object ID or infra ID invalid")
     )

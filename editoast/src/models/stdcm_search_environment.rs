@@ -1,5 +1,6 @@
 use chrono::DateTime;
 use chrono::Utc;
+use common::geometry::GeoJson;
 use database::DbConnection;
 use diesel::ExpressionMethods;
 use diesel::QueryDsl;

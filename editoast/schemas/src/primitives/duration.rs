@@ -34,7 +34,6 @@ use utoipa::ToSchema;
 use utoipa::openapi::ObjectBuilder;
 use utoipa::openapi::RefOr;
 use utoipa::openapi::Schema;
-use utoipa::openapi::SchemaType;
 
 #[derive(Debug, Error)]
 pub enum PositiveDurationError {
@@ -89,19 +88,20 @@ impl Default for PositiveDuration {
 /// directly via `#[derive(ToSchema)]`.
 ///
 /// TODO: Upgrade `utoipa` to version 5.3.1 or later to
-impl ToSchema<'_> for PositiveDuration {
-    fn schema() -> (&'static str, RefOr<Schema>) {
-        (
-            "PositiveDuration",
-            ObjectBuilder::new()
-                .schema_type(SchemaType::String)
-                .description(Some("Duration in ISO 8601 format (e.g. PT2H for 2 hours)"))
-                .example(Some(serde_json::Value::String("PT2H".to_string())))
-                .build()
-                .into(),
-        )
+impl utoipa::PartialSchema for PositiveDuration {
+    fn schema() -> RefOr<Schema> {
+        ObjectBuilder::new()
+            .schema_type(utoipa::openapi::schema::SchemaType::Type(
+                utoipa::openapi::schema::Type::String,
+            ))
+            .description(Some("Duration in ISO 8601 format (e.g. PT2H for 2 hours)"))
+            .examples([serde_json::Value::String("PT2H".to_string())])
+            .build()
+            .into()
     }
 }
+
+impl ToSchema for PositiveDuration {}
 
 impl TryFrom<ChronoDuration> for PositiveDuration {
     type Error = PositiveDurationError;
