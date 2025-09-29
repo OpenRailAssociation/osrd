@@ -41,7 +41,7 @@ import BoardWrapper from '../BoardWrapper';
 import SimulationResultsExport from './SimulationResultsExport';
 import SimulationResultsMap from './SimulationResultsMap';
 
-const HIDDEN_CHART_TOP_HEIGHT = 35;
+export const HIDDEN_CHART_TOP_HEIGHT = 35;
 const SDD_INITIAL_HEIGHT = 460;
 const SDD_MIN_HEIGHT = 400;
 
