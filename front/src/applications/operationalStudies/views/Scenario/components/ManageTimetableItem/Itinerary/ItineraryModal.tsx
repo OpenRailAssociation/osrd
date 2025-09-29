@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import { Button } from '@osrd-project/ui-core';
 import { useTranslation } from 'react-i18next';
 
+import AlertBox from 'common/AlertBox';
 import type { PathStepV2 } from 'reducers/osrdconf/types';
 import useModalFocusTrap from 'utils/hooks/useModalFocusTrap';
 
@@ -23,6 +24,7 @@ const ItineraryModal = ({ itineraryModalIsOpen, setItineraryModalIsOpen }: Itine
   const modalRef = useRef<HTMLDialogElement>(null);
 
   const [pathSteps] = useState<PathStepV2[]>([]);
+  const [categoryWarning, setCategoryWarning] = useState<string | undefined>(undefined);
 
   const openModal = () => {
     modalRef.current?.showModal();
@@ -45,9 +47,10 @@ const ItineraryModal = ({ itineraryModalIsOpen, setItineraryModalIsOpen }: Itine
     <dialog ref={modalRef} className="itinerary-modal">
       <div className="itinerary-modal-form">
         <div className="itinerary-modal-form-header">
-          <ItineraryModalFormHeader />
+          <ItineraryModalFormHeader onCategoryWarningChange={setCategoryWarning} />
         </div>
         <div className="itinerary-modal-form-body">
+          {categoryWarning && <AlertBox message={categoryWarning} closeable />}
           <div className="path-step-list">
             <div className="path-step-list-header">
               <span>{t('opName')}</span>
