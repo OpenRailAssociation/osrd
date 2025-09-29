@@ -220,7 +220,6 @@ pub struct ProjectIdParam {
     params(ProjectIdParam),
     responses(
         (status = 200, body = ProjectWithStudies, description = "The requested project"),
-        (status = 404, body = InternalError, description = "The requested project was not found"),
     )
 )]
 pub(in crate::views) async fn get(
@@ -253,7 +252,6 @@ pub(in crate::views) async fn get(
     params(ProjectIdParam),
     responses(
         (status = 204, description = "The project was deleted successfully"),
-        (status = 404, body = InternalError, description = "The requested project was not found"),
     )
 )]
 pub(in crate::views) async fn delete(
@@ -338,7 +336,6 @@ impl From<ProjectPatchForm> for Changeset<Project> {
     ),
     responses(
         (status = 200, body = ProjectWithStudies, description = "The updated project"),
-        (status = 404, body = InternalError, description = "The requested project was not found"),
     )
 )]
 pub(in crate::views) async fn patch(

@@ -143,7 +143,6 @@ pub(in crate::views) struct MacroNodeListResponse {
     params(ProjectIdParam, StudyIdParam, ScenarioIdParam, PaginationQueryParams<100>),
     responses(
         (status = 200, body = MacroNodeListResponse, description = "List of macro nodes for the requested scenario"),
-        (status = 404, body = InternalError, description = "The requested scenario was not found"),
     )
 )]
 pub(in crate::views) async fn list(
@@ -251,7 +250,6 @@ pub(in crate::views) async fn create(
     params(ProjectIdParam, StudyIdParam, ScenarioIdParam, MacroNodeIdParam),
     responses(
         (status = 200, body = MacroNodeResponse, description = "The requested Macro node"),
-        (status = 404, body = InternalError, description = "The macro node was not found"),
     )
 )]
 pub(in crate::views) async fn get(
@@ -286,7 +284,6 @@ pub(in crate::views) async fn get(
     request_body = MacroNodeForm,
     responses(
         (status = 200, body = MacroNodeResponse, description = "The requested scenario"),
-        (status = 404, body = InternalError, description = "The macro node was not found"),
     )
 )]
 pub(in crate::views) async fn update(
@@ -348,7 +345,6 @@ pub(in crate::views) async fn update(
     params(ProjectIdParam, StudyIdParam, ScenarioIdParam, MacroNodeIdParam),
     responses(
         (status = 204, description = "The macro node was deleted successfully"),
-        (status = 404, body = InternalError, description = "The macro node was not found"),
     )
 )]
 pub(in crate::views) async fn delete(

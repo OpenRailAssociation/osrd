@@ -173,7 +173,6 @@ pub struct StudyIdParam {
     params(ProjectIdParam, StudyIdParam),
     responses(
         (status = 204, description = "The study was deleted successfully"),
-        (status = 404, body = InternalError, description = "The requested study was not found"),
     )
 )]
 pub(in crate::views) async fn delete(
@@ -210,7 +209,6 @@ pub(in crate::views) async fn delete(
     params(ProjectIdParam, StudyIdParam),
     responses(
         (status = 200, body = StudyResponse, description = "The requested study"),
-        (status = 404, body = InternalError, description = "The requested study was not found"),
     )
 )]
 pub(in crate::views) async fn get(
@@ -312,7 +310,6 @@ impl StudyPatchForm {
     ),
     responses(
         (status = 200, body = StudyResponse, description = "The updated study"),
-        (status = 404, body = InternalError, description = "The requested study was not found"),
     )
 )]
 pub(in crate::views) async fn patch(

@@ -1485,8 +1485,7 @@ export type PostDocumentsApiArg = {
   contentType: string;
   body: Blob;
 };
-export type GetDocumentsByDocumentKeyApiResponse =
-  /** status 200 The document's binary content */ Blob;
+export type GetDocumentsByDocumentKeyApiResponse = unknown;
 export type GetDocumentsByDocumentKeyApiArg = {
   /** The document's key */
   documentKey: number;
@@ -2658,14 +2657,6 @@ export type SubjectType = 'User' | 'Group';
 export type NewDocumentResponse = {
   document_key: number;
 };
-export type InternalError = {
-  context: {
-    [key: string]: unknown;
-  };
-  message: string;
-  status?: number;
-  type: string;
-};
 export type LightElectricalProfileSet = {
   id: number;
   name: string;
@@ -3441,6 +3432,14 @@ export type PathfindingNotFound =
       incompatible_constraints: IncompatibleConstraints;
       relaxed_constraints_path: PathfindingResultSuccess;
     };
+export type InternalError = {
+  context: {
+    [key: string]: unknown;
+  };
+  message: string;
+  status?: number;
+  type: string;
+};
 export type PathfindingFailure =
   | (PathfindingInputError & {
       failed_status: 'pathfinding_input_error';

@@ -43,7 +43,6 @@ pub enum DocumentErrors {
     ),
     responses(
         (status = 200, description = "The document's binary content", body = [u8]),
-        (status = 404, description = "Document not found", body = InternalError),
     )
 )]
 pub(in crate::views) async fn get(
@@ -134,7 +133,6 @@ pub(in crate::views) async fn post(
     ),
     responses(
         (status = 204, description = "The document was deleted"),
-        (status = 404, description = "Document not found", body = InternalError),
     )
 )]
 pub(in crate::views) async fn delete(

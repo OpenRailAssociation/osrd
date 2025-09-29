@@ -62,7 +62,6 @@ pub(in crate::views) async fn list(
     params(ElectricalProfileSetId),
     responses(
         (status = 200, body = ElectricalProfileSetData, description = "The list of electrical profiles in the set"),
-        (status = 404, body = InternalError, description = "The requested electrical profile set was not found"),
     )
 )]
 pub(in crate::views) async fn get(
@@ -103,7 +102,6 @@ pub(in crate::views) async fn get(
                 "25000V": ["25000V", "22500V", "20000V"]
             })
         ),
-        (status = 404, body = InternalError, description = "The requested electrical profile set was not found"),
     )
 )]
 pub(in crate::views) async fn get_level_order(
@@ -137,7 +135,6 @@ pub(in crate::views) async fn get_level_order(
     params(ElectricalProfileSetId),
     responses(
         (status = 204, description = "The electrical profile was deleted successfully"),
-        (status = 404, body = InternalError, description = "The requested electrical profile was not found"),
     )
 )]
 pub(in crate::views) async fn delete(

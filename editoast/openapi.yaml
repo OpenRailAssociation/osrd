@@ -275,12 +275,6 @@ paths:
               schema:
                 type: string
                 format: binary
-        '404':
-          description: Document not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalError'
     delete:
       tags:
       - documents
@@ -296,12 +290,6 @@ paths:
       responses:
         '204':
           description: The document was deleted
-        '404':
-          description: Document not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalError'
   /electrical_profile_set:
     get:
       tags:
@@ -358,12 +346,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ElectricalProfileSetData'
-        '404':
-          description: The requested electrical profile set was not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalError'
     delete:
       tags:
       - electrical_profiles
@@ -378,12 +360,6 @@ paths:
       responses:
         '204':
           description: The electrical profile was deleted successfully
-        '404':
-          description: The requested electrical profile was not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalError'
   /electrical_profile_set/{electrical_profile_set_id}/level_order:
     get:
       tags:
@@ -414,12 +390,6 @@ paths:
                 - 25000V
                 - 22500V
                 - 20000V
-        '404':
-          description: The requested electrical profile set was not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalError'
   /fonts/{font}/{glyph}:
     get:
       tags:
@@ -2112,12 +2082,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProjectWithStudies'
-        '404':
-          description: The requested project was not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalError'
     delete:
       tags:
       - projects
@@ -2133,12 +2097,6 @@ paths:
       responses:
         '204':
           description: The project was deleted successfully
-        '404':
-          description: The requested project was not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalError'
     patch:
       tags:
       - projects
@@ -2165,12 +2123,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ProjectWithStudies'
-        '404':
-          description: The requested project was not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalError'
   /projects/{project_id}/studies:
     get:
       tags:
@@ -2273,12 +2225,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/StudyResponse'
-        '404':
-          description: The requested study was not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalError'
     delete:
       tags:
       - studies
@@ -2300,12 +2246,6 @@ paths:
       responses:
         '204':
           description: The study was deleted successfully
-        '404':
-          description: The requested study was not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalError'
     patch:
       tags:
       - studies
@@ -2338,12 +2278,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/StudyResponse'
-        '404':
-          description: The requested study was not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalError'
   /projects/{project_id}/studies/{study_id}/scenarios:
     get:
       tags:
@@ -2467,12 +2401,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ScenarioResponse'
-        '404':
-          description: The requested scenario was not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalError'
     delete:
       tags:
       - scenarios
@@ -2500,12 +2428,6 @@ paths:
       responses:
         '204':
           description: The scenario was deleted successfully
-        '404':
-          description: The requested scenario was not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalError'
     patch:
       tags:
       - scenarios
@@ -2543,12 +2465,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ScenarioResponse'
-        '404':
-          description: The requested scenario was not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalError'
   /projects/{project_id}/studies/{study_id}/scenarios/{scenario_id}/macro_nodes:
     get:
       tags:
@@ -2599,12 +2515,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/MacroNodeListResponse'
-        '404':
-          description: The requested scenario was not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalError'
     post:
       tags:
       - scenarios
@@ -2678,12 +2588,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/MacroNodeResponse'
-        '404':
-          description: The macro node was not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalError'
     put:
       tags:
       - scenarios
@@ -2726,12 +2630,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/MacroNodeResponse'
-        '404':
-          description: The macro node was not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalError'
     delete:
       tags:
       - scenarios
@@ -2764,12 +2662,6 @@ paths:
       responses:
         '204':
           description: The macro node was deleted successfully
-        '404':
-          description: The macro node was not found
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/InternalError'
   /projects/{project_id}/studies/{study_id}/scenarios/{scenario_id}/macro_notes/{note_id}:
     get:
       tags:
