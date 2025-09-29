@@ -1,1 +1,46 @@
-{}
+{
+  "401": "Nieautoryzowany użytkownik",
+  "403": "Odmowa Dostępu",
+  "404": "Nie znaleziono zasobu",
+  "500": "Błąd serwera",
+  "502": "Błędy serwera",
+  "503": "Błędy Serwera",
+  "504": "Serwer nie odpowiedział.",
+  "core": {
+    "missing_last_stdcm_stop": "Żądania STDCM które nie kończą się na postoju nie są jeszcze wspierane"
+  },
+  "default": "Wystąpił błąd.",
+  "editoast": {
+    "DatabaseAccessError": "Błąd krytyczny przy próbie uzyskania dostępu do bazy danych",
+    "app_health": {
+      "Core": "Błąd Rdzenia",
+      "Database": "Błąd bazy danych",
+      "Openfga": "Błąd OpenFGA",
+      "Timeout": "Serwer nie odpowiedział w oczekiwanym czasie",
+      "Valkey": "Błąd Valkey"
+    },
+    "attached": {
+      "TrackNotFound": "Odcinek toru {{track_id}} nie został znaleziony"
+    },
+    "authz": {
+      "AuthError": "Wewnętrzny błąd autoryzacji/autentykacji. Spróbuj ponownie później lub skontaktuj się z pomocą techniczną",
+      "Authorizer": "Wewnętrzny błąd",
+      "Authz": "Wewnętrzny błąd autoryzacji/autentykacji. Spróbuj ponownie później lub skontaktuj się z pomocą techniczną",
+      "DbError": "Błąd krytyczny dostępu do bazy danych",
+      "Driver": "Wewnętrzny błąd autoryzacji/autentykacji. Spróbuj ponownie później lub skontaktuj się z pomocą techniczną",
+      "Forbidden": "Odmowa dostępu",
+      "ForbiddenImpersonation": "Uzurpacja odrzucona",
+      "GrantsApiMisuse": "Nieprawidłowy sposób użycia API",
+      "ImpersonatedUserNotFound": "Nieznany podszyty użytkownik",
+      "NoSuchUser": "Nieznany Użytkownik",
+      "Unauthorized": "Nieautoryzowany użytkownik",
+      "UnknownResource": "Nienznany zasób",
+      "UnknownResourceType": "Nieznany typ zasobu",
+      "UnknownSubject": "Nieznany Obiekt"
+    },
+    "auto_fixes": {
+      "ConflictingFixesOnSameObject": "Konfliktujace poprawki dla tego samego obiektu na tej samej iteracji poprawki",
+      "FixTrialFailure": "Nie udalo sie nalozyc poprawki"
+    }
+  }
+}
