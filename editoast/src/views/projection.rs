@@ -34,8 +34,6 @@ use crate::views::timetable::simulation;
 use crate::views::timetable::simulation::SimulationResponseSuccess;
 use crate::views::timetable::simulation::train_simulation_batch;
 
-pub type SpaceTimeCurves = Vec<SpaceTimeCurve>;
-
 #[editoast_derive::openapi_schema]
 #[derive(Debug, Deserialize, ToSchema)]
 pub struct ProjectPathForm {
@@ -179,7 +177,7 @@ impl TrainSimulationDetails {
 fn compute_space_time_curves(
     project_path_input: &TrainSimulationDetails,
     path_projection: &PathProjection,
-) -> SpaceTimeCurves {
+) -> Vec<SpaceTimeCurve> {
     let train_path = PathProjection::new(&project_path_input.train_path);
     let intersections = path_projection.get_intersections(&project_path_input.train_path);
     let positions = &project_path_input.positions;
@@ -338,7 +336,7 @@ pub async fn compute_projected_train_paths<T: TrainScheduleLike>(
     train_schedules: &[T],
     electrical_profile_set_id: Option<i64>,
     app_version: Option<&str>,
-) -> Result<Vec<Arc<SpaceTimeCurves>>> {
+) -> Result<Vec<Arc<Vec<SpaceTimeCurve>>>> {
     let path_projection = PathProjection::new(&track_section_ranges);
     let mut valkey_conn = valkey_client.get_connection().await?;
 
@@ -384,10 +382,10 @@ pub async fn compute_projected_train_paths<T: TrainScheduleLike>(
     let cached_projections = valkey_conn
         .json_get_bulk(&train_hashes)
         .await?
-        .collect::<Vec<Option<SpaceTimeCurves>>>();
+        .collect::<Vec<Option<Vec<SpaceTimeCurve>>>>();
 
     let mut projection_request_map: HashMap<String, TrainSimulationDetails> = HashMap::new();
-    let mut project_path_result: Vec<Arc<SpaceTimeCurves>> =
+    let mut project_path_result: Vec<Arc<Vec<SpaceTimeCurve>>> =
         vec![Arc::default(); train_schedules.len()];
     for (hash, projection) in train_hashes.into_iter().zip(cached_projections) {
         if let Some(projection) = projection {
@@ -626,7 +624,7 @@ pub async fn compute_projected_train_path_op<T: TrainScheduleLike>(
     infra: &Infra,
     electrical_profile_set_id: Option<i64>,
     app_version: Option<&str>,
-) -> Result<Vec<Arc<SpaceTimeCurves>>> {
+) -> Result<Vec<Arc<Vec<SpaceTimeCurve>>>> {
     let simulations = train_simulation_batch(
         conn,
         valkey_client.clone(),
@@ -675,7 +673,7 @@ fn project_train_path_op(
     }: &TrainToProjectOnOperationalPoint,
     path_item_cache: &PathItemCache,
     projection_op_id_to_positions: &OperationalPointProjection,
-) -> SpaceTimeCurves {
+) -> Vec<SpaceTimeCurve> {
     // Match operational point references with operational point ids
     let matching_ops = refs.iter().map(|op| {
         projection_op_id_to_positions

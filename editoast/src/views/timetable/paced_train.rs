@@ -34,7 +34,8 @@ use crate::views::path::pathfinding::pathfinding_from_train;
 use crate::views::projection::OperationalPointProjection;
 use crate::views::projection::ProjectPathForm;
 use crate::views::projection::ProjectPathOperationalPointForm;
-use crate::views::projection::SpaceTimeCurves;
+use crate::views::projection::SpaceTimeCurve;
+
 use crate::views::projection::compute_projected_train_path_op;
 use crate::views::projection::compute_projected_train_paths;
 use crate::views::timetable::occupancy_blocks::OccupancyBlockForm;
@@ -549,11 +550,9 @@ pub(in crate::views) async fn simulation(
 #[derive(Debug, Deserialize, Serialize, ToSchema)]
 pub struct ProjectPathPacedTrainResult {
     /// Paced train
-    #[schema(value_type = Vec<SpaceTimeCurve>)]
-    pub paced_train: SpaceTimeCurves,
+    pub paced_train: Vec<SpaceTimeCurve>,
     /// Exceptions whose projection is different from the paced train
-    #[schema(value_type = HashMap<String, Vec<SpaceTimeCurve>>)]
-    pub exceptions: HashMap<String, SpaceTimeCurves>,
+    pub exceptions: HashMap<String, Vec<SpaceTimeCurve>>,
 }
 
 /// Projects the space-time curves and paths of a number of paced trains onto a given path.
