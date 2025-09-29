@@ -81,6 +81,8 @@ const MapUnplugged = ({
   const editorState = useSelector(getEditorState);
   const {
     showOSM,
+    showOSM3dBuildings,
+    showOSMtracksections,
     terrain3DExaggeration,
     mapSearchMarker,
     lineSearchCode,
@@ -293,7 +295,13 @@ const MapUnplugged = ({
             }}
           />
 
-          <OSMLayers mapStyle={mapStyle} showOSM={showOSM} hidePlatforms />
+          <OSMLayers
+            mapStyle={mapStyle}
+            showOSM={showOSM}
+            showOSM3dBuildings={showOSM3dBuildings}
+            showOSMtracksections={showOSMtracksections}
+            hidePlatforms
+          />
           <IGNLayers
             showIGNBDORTHO={showIGNBDORTHO}
             showIGNCadastre={showIGNCadastre}

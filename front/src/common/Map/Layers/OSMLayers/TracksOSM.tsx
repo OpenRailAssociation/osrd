@@ -7,7 +7,7 @@ import OrderedLayer from '../OrderedLayer';
 type TracksOSMProps = {
   colors: Theme;
   layerOrder: number;
-  showOSMtracksections?: boolean;
+  showOSMtracksections: boolean;
 };
 
 function TracksOSM({ colors, layerOrder, showOSMtracksections }: TracksOSMProps) {

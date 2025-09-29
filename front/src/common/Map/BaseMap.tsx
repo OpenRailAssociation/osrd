@@ -76,6 +76,8 @@ const BaseMap = ({
     mapStyle,
     layersSettings,
     showOSM,
+    showOSM3dBuildings,
+    showOSMtracksections,
     terrain3DExaggeration,
     mapSearchMarker,
     lineSearchCode,
@@ -163,6 +165,8 @@ const BaseMap = ({
         hidePlatforms={!layersSettings.platforms}
         mapStyle={mapStyle}
         showOSM={showOSM && mapIsLoaded}
+        showOSM3dBuildings={showOSM3dBuildings && mapIsLoaded}
+        showOSMtracksections={showOSMtracksections && mapIsLoaded}
       />
       <IGNLayers
         showIGNBDORTHO={showIGNBDORTHO}

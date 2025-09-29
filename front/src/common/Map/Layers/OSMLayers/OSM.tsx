@@ -10,7 +10,7 @@ type OSMProps = {
   mapIsLoaded?: boolean;
   layerOrder?: number;
   mapStyle: MapStyle;
-  showOSM3dBuildings?: boolean;
+  showOSM3dBuildings: boolean;
 };
 
 type FullLayerProps = OrderedLayerProps & { key?: string };
