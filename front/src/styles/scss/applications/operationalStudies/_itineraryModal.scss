@@ -90,6 +90,10 @@
       background-color: var(--ambientB10);
       box-shadow: 0 calc(-1 * var(--footer-box-shadow-height)) 0 0 var(--black10);
 
+      .alert-box {
+        margin-top: -1px;
+      }
+
       .path-step-list {
         background-color: var(--ambientB15);
         border-radius: 8px;
