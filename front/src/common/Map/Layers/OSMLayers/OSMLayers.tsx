@@ -13,10 +13,18 @@ import TracksOSM from './TracksOSM';
 type OSMLayersProps = {
   mapStyle: MapStyle;
   showOSM: boolean;
-  hidePlatforms?: boolean;
+  showOSM3dBuildings: boolean;
+  showOSMtracksections: boolean;
+  hidePlatforms: boolean;
 };
 
-const OSMLayers = ({ mapStyle, showOSM, hidePlatforms }: OSMLayersProps) => (
+const OSMLayers = ({
+  mapStyle,
+  showOSM,
+  showOSM3dBuildings,
+  showOSMtracksections,
+  hidePlatforms,
+}: OSMLayersProps) => (
   <>
     <OpenStreetMapSource />
     <TerrainSource />
@@ -33,11 +41,19 @@ const OSMLayers = ({ mapStyle, showOSM, hidePlatforms }: OSMLayersProps) => (
       />
     )}
 
-    <TracksOSM colors={colors[mapStyle]} layerOrder={LAYER_GROUPS_ORDER[LAYERS.TRACKS_OSM.GROUP]} />
+    <TracksOSM
+      colors={colors[mapStyle]}
+      layerOrder={LAYER_GROUPS_ORDER[LAYERS.TRACKS_OSM.GROUP]}
+      showOSMtracksections={showOSMtracksections}
+    />
 
     {!showOSM ? null : (
       <>
-        <OSM mapStyle={mapStyle} layerOrder={LAYER_GROUPS_ORDER[LAYERS.BACKGROUND.GROUP]} />
+        <OSM
+          mapStyle={mapStyle}
+          layerOrder={LAYER_GROUPS_ORDER[LAYERS.BACKGROUND.GROUP]}
+          showOSM3dBuildings={showOSM3dBuildings}
+        />
         <Hillshade mapStyle={mapStyle} layerOrder={LAYER_GROUPS_ORDER[LAYERS.BACKGROUND.GROUP]} />
       </>
     )}
