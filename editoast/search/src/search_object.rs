@@ -50,7 +50,7 @@ pub enum SearchType {
     Textual,
 }
 
-pub trait SearchObject: ToSchema<'static> {
+pub trait SearchObject: ToSchema {
     fn search_config() -> SearchConfig;
 }
 

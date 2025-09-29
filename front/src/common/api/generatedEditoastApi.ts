@@ -201,18 +201,18 @@ const injectedRtkApi = api
         query: (queryArg) => ({ url: `/infra/${queryArg.infraId}` }),
         providesTags: ['infra'],
       }),
-      postInfraByInfraId: build.mutation<PostInfraByInfraIdApiResponse, PostInfraByInfraIdApiArg>({
-        query: (queryArg) => ({
-          url: `/infra/${queryArg.infraId}`,
-          method: 'POST',
-          body: queryArg.body,
-        }),
-        invalidatesTags: ['infra'],
-      }),
       putInfraByInfraId: build.mutation<PutInfraByInfraIdApiResponse, PutInfraByInfraIdApiArg>({
         query: (queryArg) => ({
           url: `/infra/${queryArg.infraId}`,
           method: 'PUT',
+          body: queryArg.body,
+        }),
+        invalidatesTags: ['infra'],
+      }),
+      postInfraByInfraId: build.mutation<PostInfraByInfraIdApiResponse, PostInfraByInfraIdApiArg>({
+        query: (queryArg) => ({
+          url: `/infra/${queryArg.infraId}`,
+          method: 'POST',
           body: queryArg.body,
         }),
         invalidatesTags: ['infra'],
@@ -1476,14 +1476,14 @@ export type GetAuthzByResourceTypeAndResourceIdApiArg = {
   resourceType: ResourceType;
   resourceId: number;
   page?: number;
-  pageSize?: number | null;
+  pageSize?: number;
 };
 export type PostDocumentsApiResponse =
   /** status 201 The document was created */ NewDocumentResponse;
 export type PostDocumentsApiArg = {
   /** The document's content type */
   contentType: string;
-  body: Blob;
+  body: string;
 };
 export type GetDocumentsByDocumentKeyApiResponse = unknown;
 export type GetDocumentsByDocumentKeyApiArg = {
@@ -1534,7 +1534,7 @@ export type GetInfraApiResponse = /** status 200 All infras, paginated */ Pagina
 };
 export type GetInfraApiArg = {
   page?: number;
-  pageSize?: number | null;
+  pageSize?: number;
 };
 export type PostInfraApiResponse = /** status 201 The created infra */ Infra;
 export type PostInfraApiArg = {
@@ -1571,13 +1571,6 @@ export type GetInfraByInfraIdApiArg = {
   /** An existing infra ID */
   infraId: number;
 };
-export type PostInfraByInfraIdApiResponse =
-  /** status 200 The result of the operations */ InfraObject[];
-export type PostInfraByInfraIdApiArg = {
-  /** An existing infra ID */
-  infraId: number;
-  body: Operation[];
-};
 export type PutInfraByInfraIdApiResponse = /** status 200 The infra has been renamed */ Infra;
 export type PutInfraByInfraIdApiArg = {
   /** An existing infra ID */
@@ -1586,6 +1579,13 @@ export type PutInfraByInfraIdApiArg = {
     /** The new name to give the infra */
     name: string;
   };
+};
+export type PostInfraByInfraIdApiResponse =
+  /** status 200 The result of the operations */ InfraObject[];
+export type PostInfraByInfraIdApiArg = {
+  /** An existing infra ID */
+  infraId: number;
+  body: Operation[];
 };
 export type DeleteInfraByInfraIdApiResponse = unknown;
 export type DeleteInfraByInfraIdApiArg = {
@@ -1636,13 +1636,13 @@ export type GetInfraByInfraIdErrorsApiArg = {
   /** An existing infra ID */
   infraId: number;
   page?: number;
-  pageSize?: number | null;
+  pageSize?: number;
   /** Whether the response should include errors or warnings */
   level?: 'warnings' | 'errors' | 'all';
   /** The type of error to filter on */
-  errorType?: InfraErrorTypeLabel | null;
+  errorType?: InfraErrorTypeLabel;
   /** Filter errors and warnings related to a given object */
-  objectId?: string | null;
+  objectId?: string;
 };
 export type GetInfraByInfraIdLinesAndLineCodeBboxApiResponse =
   /** status 200 The BBox of the line */ BoundingBox;
@@ -1709,7 +1709,7 @@ export type PostInfraByInfraIdPathfindingApiResponse =
 export type PostInfraByInfraIdPathfindingApiArg = {
   /** An existing infra ID */
   infraId: number;
-  number?: number | null;
+  number?: number;
   infraPathfindingInput: InfraPathfindingInput;
 };
 export type PostInfraByInfraIdPathfindingBlocksApiResponse =
@@ -1835,7 +1835,7 @@ export type GetLightRollingStockApiResponse = /** status 200  */ PaginationStats
 };
 export type GetLightRollingStockApiArg = {
   page?: number;
-  pageSize?: number | null;
+  pageSize?: number;
 };
 export type GetLightRollingStockNameByRollingStockNameApiResponse =
   /** status 200 The rolling stock with their simplified effort curves */ LightRollingStockWithLiveries;
@@ -1877,11 +1877,13 @@ export type PostPacedTrainProjectPathOpApiArg = {
     operational_points_distances: number[];
     operational_points_refs: (
       | {
+          /** The object id of an operational point */
           operational_point: string;
         }
       | {
           /** An optional secondary code to identify a more specific location */
           secondary_code?: string | null;
+          /** The operational point trigram */
           trigram: string;
         }
       | {
@@ -1916,7 +1918,9 @@ export type PutPacedTrainByIdApiArg = {
   body: TrainSchedule & {
     exceptions: PacedTrainException[];
     paced: {
+      /** Time between two occurrences, an ISO 8601 format is expected */
       interval: PositiveDuration;
+      /** Duration of the paced train, an ISO 8601 format is expected */
       time_window: PositiveDuration;
     };
   };
@@ -1925,22 +1929,22 @@ export type GetPacedTrainByIdPathApiResponse = /** status 200 The path */ Pathfi
 export type GetPacedTrainByIdPathApiArg = {
   id: number;
   infraId: number;
-  exceptionKey?: string | null;
+  exceptionKey?: string;
 };
 export type GetPacedTrainByIdSimulationApiResponse =
   /** status 200 Simulation Output */ SimulationResponse;
 export type GetPacedTrainByIdSimulationApiArg = {
   id: number;
   infraId: number;
-  electricalProfileSetId?: number | null;
-  exceptionKey?: string | null;
+  electricalProfileSetId?: number;
+  exceptionKey?: string;
 };
 export type GetProjectsApiResponse = /** status 200 The list of projects */ PaginationStats & {
   results: ProjectWithStudies[];
 };
 export type GetProjectsApiArg = {
   page?: number;
-  pageSize?: number | null;
+  pageSize?: number;
   ordering?: Ordering;
 };
 export type PostProjectsApiResponse = /** status 201 The created project */ ProjectWithStudies;
@@ -1974,7 +1978,7 @@ export type GetProjectsByProjectIdStudiesApiArg = {
   /** The id of a project */
   projectId: number;
   page?: number;
-  pageSize?: number | null;
+  pageSize?: number;
   ordering?: Ordering;
 };
 export type PostProjectsByProjectIdStudiesApiResponse =
@@ -2015,7 +2019,7 @@ export type GetProjectsByProjectIdStudiesAndStudyIdScenariosApiArg = {
   projectId: number;
   studyId: number;
   page?: number;
-  pageSize?: number | null;
+  pageSize?: number;
   ordering?: Ordering;
 };
 export type PostProjectsByProjectIdStudiesAndStudyIdScenariosApiResponse =
@@ -2058,7 +2062,7 @@ export type GetProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNodes
   studyId: number;
   scenarioId: number;
   page?: number;
-  pageSize?: number | null;
+  pageSize?: number;
 };
 export type PostProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNodesApiResponse =
   /** status 201 Macro nodes created */ MacroNodeBatchResponse;
@@ -2173,7 +2177,7 @@ export type PostRoundTripsTrainSchedulesDeleteApiArg = {
 export type PostSearchApiResponse = /** status 200 The search results */ SearchResultItem[];
 export type PostSearchApiArg = {
   page?: number;
-  pageSize?: number | null;
+  pageSize?: number;
   searchPayload: SearchPayload;
 };
 export type PostSimilarTrainsApiResponse =
@@ -2181,10 +2185,12 @@ export type PostSimilarTrainsApiResponse =
     similar_trains: {
       begin: string;
       end: string;
-      train?: {
+      /** `train` is `None` if no similar train
+        was found for the segment; otherwise, it is `Some`. */
+      train?: null | {
         start_time: string;
         train_name: string;
-      } | null;
+      };
     }[];
   };
 export type PostSimilarTrainsApiArg = {
@@ -2220,7 +2226,7 @@ export type GetStdcmSearchEnvironmentListApiResponse =
   };
 export type GetStdcmSearchEnvironmentListApiArg = {
   page?: number;
-  pageSize?: number | null;
+  pageSize?: number;
 };
 export type DeleteStdcmSearchEnvironmentByEnvIdApiResponse = unknown;
 export type DeleteStdcmSearchEnvironmentByEnvIdApiArg = {
@@ -2231,7 +2237,7 @@ export type GetSubCategoryApiResponse =
   /** status 200 The list of sub categories */ SubCategoryPage;
 export type GetSubCategoryApiArg = {
   page?: number;
-  pageSize?: number | null;
+  pageSize?: number;
 };
 export type PostSubCategoryApiResponse = /** status 200 Create sub categories */ SubCategory[];
 export type PostSubCategoryApiArg = {
@@ -2270,7 +2276,7 @@ export type GetTimetableByIdConflictsApiArg = {
   /** A timetable ID */
   id: number;
   infraId: number;
-  electricalProfileSetId?: number | null;
+  electricalProfileSetId?: number;
 };
 export type GetTimetableByIdPacedTrainsApiResponse =
   /** status 200 Timetable with paced train ids */ PaginationStats & {
@@ -2280,7 +2286,7 @@ export type GetTimetableByIdPacedTrainsApiArg = {
   /** A timetable ID */
   id: number;
   page?: number;
-  pageSize?: number | null;
+  pageSize?: number;
 };
 export type PostTimetableByIdPacedTrainsApiResponse =
   /** status 200 The created paced trains */ PacedTrainResponse[];
@@ -2297,9 +2303,9 @@ export type GetTimetableByIdRequirementsApiArg = {
   /** A timetable ID */
   id: number;
   page?: number;
-  pageSize?: number | null;
+  pageSize?: number;
   infraId: number;
-  electricalProfileSetId?: number | null;
+  electricalProfileSetId?: number;
 };
 export type GetTimetableByIdRoundTripsPacedTrainsApiResponse =
   /** status 200  */ PaginationStats & {
@@ -2309,7 +2315,7 @@ export type GetTimetableByIdRoundTripsPacedTrainsApiArg = {
   /** A timetable ID */
   id: number;
   page?: number;
-  pageSize?: number | null;
+  pageSize?: number;
 };
 export type GetTimetableByIdRoundTripsTrainSchedulesApiResponse =
   /** status 200  */ PaginationStats & {
@@ -2319,22 +2325,22 @@ export type GetTimetableByIdRoundTripsTrainSchedulesApiArg = {
   /** A timetable ID */
   id: number;
   page?: number;
-  pageSize?: number | null;
+  pageSize?: number;
 };
 export type PostTimetableByIdStdcmApiResponse = /** status 201 The simulation result */
   | {
-      core_payload?: StdcmRequest | null;
+      core_payload?: null | StdcmRequest;
       departure_time: string;
       pathfinding_result: PathfindingResultSuccess;
       simulation: SimulationResponseSuccess;
       status: 'success';
     }
   | {
-      core_payload?: StdcmRequest | null;
+      core_payload?: null | StdcmRequest;
       status: 'path_not_found';
     }
   | {
-      core_payload?: StdcmRequest | null;
+      core_payload?: null | StdcmRequest;
       error: SimulationResponse;
       status: 'preprocessing_simulation_error';
     };
@@ -2348,10 +2354,10 @@ export type PostTimetableByIdStdcmApiArg = {
   body: {
     comfort: Comfort;
     electrical_profile_set_id?: number | null;
-    loading_gauge_type?: LoadingGaugeType | null;
+    loading_gauge_type?: null | LoadingGaugeType;
     /** Can be a percentage `X%`, a time in minutes per 100 kilometer `Xmin/100km` */
     margin?: string | null;
-    /** Maximum speed of the consist in km/h
+    /**  Maximum speed of the consist in km/h
         Velocity in m·s⁻¹ */
     max_speed?: number | null;
     /** By how long we can shift the departure time in milliseconds
@@ -2377,10 +2383,10 @@ export type PostTimetableByIdStdcmApiArg = {
         Enforces that the path used by the train should be free and
         available at least that many milliseconds before its passage. */
     time_gap_before?: number;
-    /** Total length of the consist in meters
+    /**  Total length of the consist in meters
         Length in m */
     total_length?: number | null;
-    /** Total mass of the consist
+    /**  Total mass of the consist
         Mass in kg */
     total_mass?: number | null;
     towed_rolling_stock_id?: number | null;
@@ -2395,7 +2401,7 @@ export type GetTimetableByIdTrainSchedulesApiArg = {
   /** A timetable ID */
   id: number;
   page?: number;
-  pageSize?: number | null;
+  pageSize?: number;
 };
 export type PostTimetableByIdTrainSchedulesApiResponse =
   /** status 200 The created train schedules */ TrainScheduleResponse[];
@@ -2409,7 +2415,7 @@ export type GetTowedRollingStockApiResponse = /** status 200  */ PaginationStats
 };
 export type GetTowedRollingStockApiArg = {
   page?: number;
-  pageSize?: number | null;
+  pageSize?: number;
 };
 export type PostTowedRollingStockApiResponse =
   /** status 200 The created towed rolling stock */ TowedRollingStock;
@@ -2463,11 +2469,13 @@ export type PostTrainScheduleProjectPathOpApiArg = {
     operational_points_distances: number[];
     operational_points_refs: (
       | {
+          /** The object id of an operational point */
           operational_point: string;
         }
       | {
           /** An optional secondary code to identify a more specific location */
           secondary_code?: string | null;
+          /** The operational point trigram */
           trigram: string;
         }
       | {
@@ -2574,7 +2582,7 @@ export type GetWorkSchedulesGroupByIdApiResponse =
   };
 export type GetWorkSchedulesGroupByIdApiArg = {
   page?: number;
-  pageSize?: number | null;
+  pageSize?: number;
   /** A work schedule group ID */
   id: number;
   ordering?: Ordering;
@@ -2601,6 +2609,7 @@ export type PostWorkSchedulesProjectPathApiResponse =
     path_position_ranges: Intersection[];
     /** The date and time when the work schedule takes effect. */
     start_date_time: string;
+    /** The type of the work schedule. */
     type: 'CATENARY' | 'TRACK';
   }[];
 export type PostWorkSchedulesProjectPathApiArg = {
@@ -2695,9 +2704,9 @@ export type Infra = {
 };
 export type BufferStop = {
   extensions?: {
-    sncf?: {
+    sncf?: null | {
       kp: string;
-    } | null;
+    };
   };
   id: string;
   position: number;
@@ -2756,12 +2765,12 @@ export type Sign = {
 export type NeutralSection = {
   announcement_track_ranges: DirectionalTrackRange[];
   extensions?: {
-    neutral_sncf?: {
+    neutral_sncf?: null | {
       announcement: Sign[];
       end: Sign[];
       exe: Sign;
       rev: Sign[];
-    } | null;
+    };
   };
   id: string;
   lower_pantograph: boolean;
@@ -2769,26 +2778,26 @@ export type NeutralSection = {
 };
 export type OperationalPointPart = {
   extensions?: {
-    sncf?: {
+    sncf?: null | {
       kp: string;
-    } | null;
+    };
   };
   position: number;
   track: string;
 };
 export type OperationalPoint = {
   extensions?: {
-    identifier?: {
+    identifier?: null | {
       name: string;
       uic: number;
-    } | null;
-    sncf?: {
+    };
+    sncf?: null | {
       ch: string;
       ch_long_label: string;
       ch_short_label: string;
       ci: number;
       trigram: string;
-    } | null;
+    };
   };
   id: string;
   parts: OperationalPointPart[];
@@ -2816,11 +2825,11 @@ export type Route = {
 export type Signal = {
   direction: Direction;
   extensions?: {
-    sncf?: {
+    sncf?: null | {
       kp: string;
       label: string;
       side?: Side;
-    } | null;
+    };
   };
   id: string;
   logical_signals?: {
@@ -2845,15 +2854,15 @@ export type Signal = {
 };
 export type SpeedSection = {
   extensions?: {
-    psl_sncf?: {
+    psl_sncf?: null | {
       announcement: Sign[];
       r: Sign[];
       z: Sign;
-    } | null;
+    };
   };
   id: string;
-  on_routes?: string[] | null;
-  speed_limit?: number | null;
+  on_routes?: string[];
+  speed_limit?: null | number;
   speed_limit_by_tag: {
     [key: string]: number;
   };
@@ -2866,9 +2875,9 @@ export type TrackEndpoint = {
 };
 export type Switch = {
   extensions?: {
-    sncf?: {
+    sncf?: null | {
       label: string;
-    } | null;
+    };
   };
   group_change_delay: number;
   id: string;
@@ -2911,16 +2920,16 @@ export type Slope = {
 export type TrackSection = {
   curves: Curve[];
   extensions?: {
-    sncf?: {
+    sncf?: null | {
       line_code: number;
       line_name: string;
       track_name: string;
       track_number: number;
-    } | null;
-    source?: {
+    };
+    source?: null | {
       id: string;
       name: string;
-    } | null;
+    };
   };
   geo: GeoJsonLineString;
   id: string;
@@ -3183,13 +3192,13 @@ export type InfraErrorTypeLabel =
   | 'overlapping_switches'
   | 'unknown_port_name'
   | 'unused_port';
-export type BoundingBox = (number & number)[][];
+export type BoundingBox = never[][];
 export type GeoJsonPoint = {
   coordinates: GeoJsonPointValue;
   type: 'Point';
 };
 export type RelatedOperationalPoint = OperationalPoint & {
-  geo?: GeoJsonPoint | null;
+  geo?: null | GeoJsonPoint;
 };
 export type TrackReference =
   | {
@@ -3200,11 +3209,13 @@ export type TrackReference =
     };
 export type OperationalPointReference = (
   | {
+      /** The object id of an operational point */
       operational_point: string;
     }
   | {
       /** An optional secondary code to identify a more specific location */
       secondary_code?: string | null;
+      /** The operational point trigram */
       trigram: string;
     }
   | {
@@ -3214,7 +3225,7 @@ export type OperationalPointReference = (
       uic: number;
     }
 ) & {
-  track_reference?: TrackReference | null;
+  track_reference?: null | TrackReference;
 };
 export type GeoJsonMultiPointValue = GeoJsonPointValue[];
 export type GeoJsonMultiPoint = {
@@ -3249,27 +3260,29 @@ export type InfraObjectWithGeometry = {
   railjson: object;
 };
 export type OperationalPointExtensions = {
-  identifier?: {
+  identifier?: null | {
     name: string;
     uic: number;
-  } | null;
-  sncf?: {
+  };
+  sncf?: null | {
     ch: string;
     ch_long_label: string;
     ch_short_label: string;
     ci: number;
     trigram: string;
-  } | null;
+  };
 };
 export type PathProperties = {
-  curves?: {
+  /** Curves along the path */
+  curves?: null | {
     /** List of `n` boundaries of the ranges.
         A boundary is a distance from the beginning of the path in mm. */
     boundaries: number[];
     /** List of `n+1` values associated to the ranges */
     values: number[];
-  } | null;
-  electrifications?: {
+  };
+  /** Electrification modes and neutral section along the path */
+  electrifications?: null | {
     /** List of `n` boundaries of the ranges.
         A boundary is a distance from the beginning of the path in mm. */
     boundaries: number[];
@@ -3287,34 +3300,37 @@ export type PathProperties = {
           type: 'non_electrified';
         }
     )[];
-  } | null;
-  geometry?: GeoJsonLineString | null;
+  };
+  geometry?: null | GeoJsonLineString;
   /** Operational points along the path */
-  operational_points?:
-    | {
-        extensions?: OperationalPointExtensions;
-        id: string;
-        part: OperationalPointPart;
-        /** Distance from the beginning of the path in mm */
-        position: number;
-        /** Importance of the operational point */
-        weight: number | null;
-      }[]
-    | null;
-  slopes?: {
+  operational_points?: {
+    /** Extensions associated to the operational point */
+    extensions?: OperationalPointExtensions;
+    /** Id of the operational point */
+    id: string;
+    /** The part along the path */
+    part: OperationalPointPart;
+    /** Distance from the beginning of the path in mm */
+    position: number;
+    /** Importance of the operational point */
+    weight: number | null;
+  }[];
+  /** Slopes along the path */
+  slopes?: null | {
     /** List of `n` boundaries of the ranges.
         A boundary is a distance from the beginning of the path in mm. */
     boundaries: number[];
     /** List of `n+1` values associated to the ranges */
     values: number[];
-  } | null;
-  zones?: {
+  };
+  /** Zones along the path */
+  zones?: null | {
     /** List of `n` boundaries of the ranges.
         A boundary is a distance from the beginning of the path in mm. */
     boundaries: number[];
     /** List of `n+1` values associated to the ranges */
     values: string[];
-  } | null;
+  };
 };
 export type Property =
   | 'slopes'
@@ -3326,9 +3342,11 @@ export type Property =
 export type CoreTrackRange = {
   /** The beginning of the range in mm. */
   begin: number;
+  /** The direction of the range. */
   direction: Direction;
   /** The end of the range in mm. */
   end: number;
+  /** The track section identifier. */
   track_section: string;
 };
 export type PathPropertiesInput = {
@@ -3355,6 +3373,7 @@ export type ObjectRange = {
   begin: number;
   /** The end of the range in mm. */
   end: number;
+  /** The object identifier. */
   id: string;
 };
 export type TrainPath = {
@@ -3368,17 +3387,39 @@ export type TrainPath = {
 export type PathfindingResultSuccess = {
   /** Length of the path in mm */
   length: number;
+  /** Full description of the path data */
   path: TrainPath;
   /** The path offset in mm of each path item given as input of the pathfinding
     The first value is always `0` (beginning of the path) and the last one is always equal to the `length` of the path in mm */
   path_item_positions: number[];
 };
-export type TrackOffset = {
-  /** Offset in mm */
-  offset: number;
-  track: string;
-};
-export type PathItemLocation = TrackOffset | OperationalPointReference;
+export type PathItemLocation =
+  | {
+      /** Offset in mm */
+      offset: number;
+      /** Track section identifier */
+      track: string;
+    }
+  | ((
+      | {
+          /** The object id of an operational point */
+          operational_point: string;
+        }
+      | {
+          /** An optional secondary code to identify a more specific location */
+          secondary_code?: string | null;
+          /** The operational point trigram */
+          trigram: string;
+        }
+      | {
+          /** An optional secondary code to identify a more specific location */
+          secondary_code?: string | null;
+          /** The [UIC](https://en.wikipedia.org/wiki/List_of_UIC_country_codes) code of an operational point */
+          uic: number;
+        }
+    ) & {
+      track_reference?: null | TrackReference;
+    });
 export type PathfindingInputError =
   | {
       error_type: 'invalid_path_items';
@@ -3465,6 +3506,7 @@ export type PathfindingInput = {
   rolling_stock_is_thermal: boolean;
   /** Rolling stock length */
   rolling_stock_length: number;
+  /** The loading gauge of the rolling stock */
   rolling_stock_loading_gauge: LoadingGaugeType;
   /** Rolling stock maximum speed */
   rolling_stock_maximum_speed: number;
@@ -3477,8 +3519,14 @@ export type PathfindingInput = {
   speed_limit_tag?: string | null;
 };
 export type RoutePath = {
-  switches_directions: (string & string)[][];
+  switches_directions: never[][];
   track_ranges: DirectionalTrackRange[];
+};
+export type TrackOffset = {
+  /** Offset in mm */
+  offset: number;
+  /** Track section identifier */
+  track: string;
 };
 export type LightModeEffortCurves = {
   is_electric: boolean;
@@ -3499,7 +3547,7 @@ export type RefillLaw = {
 };
 export type EnergyStorage = {
   capacity: number;
-  refill_law: RefillLaw | null;
+  refill_law: null | RefillLaw;
   soc: number;
   soc_max: number;
   soc_min: number;
@@ -3534,12 +3582,25 @@ export type SpeedIntervalValueCurve = {
   values: number[];
 };
 export type EtcsBrakeParams = {
+  /** A_brake_emergency: the emergency deceleration curve (values > 0 m/s²) */
   gamma_emergency: SpeedIntervalValueCurve;
+  /** A_brake_normal_service: the normal service deceleration curve used to compute guidance curve (values > 0 m/s²) */
   gamma_normal_service: SpeedIntervalValueCurve;
+  /** A_brake_service: the full service deceleration curve (values > 0 m/s²) */
   gamma_service: SpeedIntervalValueCurve;
+  /** Kdry_rst: the rolling stock deceleration correction factors for dry rails
+    Boundaries should be the same as gammaEmergency
+    Values (no unit) should be contained in [0, 1] */
   k_dry: SpeedIntervalValueCurve;
+  /** Kn-: the correction acceleration factor on normal service deceleration in negative gradients
+    Values (in m/s²) should be contained in [0, 10] */
   k_n_neg: SpeedIntervalValueCurve;
+  /** Kn+: the correction acceleration factor on normal service deceleration in positive gradients
+    Values (in m/s²) should be contained in [0, 10] */
   k_n_pos: SpeedIntervalValueCurve;
+  /** Kwet_rst: the rolling stock deceleration correction factors for wet rails
+    Boundaries should be the same as gammaEmergency
+    Values (no unit) should be contained in [0, 1] */
   k_wet: SpeedIntervalValueCurve;
   /** T_be: safe brake build up time in s */
   t_be: number;
@@ -3574,13 +3635,13 @@ export type TrainMainCategory =
   | 'WORK_TRAIN';
 export type TrainMainCategories = TrainMainCategory[];
 export type RollingResistance = {
-  /** Solid friction
+  /**  Solid friction
     Solid Friction in N */
   A: number;
-  /** Viscosity friction in N·(m/s)⁻¹; N = kg⋅m⋅s⁻²
+  /**  Viscosity friction in N·(m/s)⁻¹; N = kg⋅m⋅s⁻²
     Viscosity friction in kg·s⁻¹ */
   B: number;
-  /** Aerodynamic drag in N·(m/s)⁻²; N = kg⋅m⋅s⁻²
+  /**  Aerodynamic drag in N·(m/s)⁻²; N = kg⋅m⋅s⁻²
     Aerodynamic drag in kg·m⁻¹ */
   C: number;
   type: string;
@@ -3594,7 +3655,7 @@ export type LightRollingStock = {
   const_gamma: number;
   effort_curves: LightEffortCurves;
   energy_sources: EnergySource[];
-  etcs_brake_params: EtcsBrakeParams | null;
+  etcs_brake_params: null | EtcsBrakeParams;
   id: number;
   inertia_coefficient: number;
   /** Length in m */
@@ -3605,7 +3666,7 @@ export type LightRollingStock = {
   mass: number;
   /** Velocity in m·s⁻¹ */
   max_speed: number;
-  metadata: RollingStockMetadata | null;
+  metadata: null | RollingStockMetadata;
   name: string;
   other_categories: TrainMainCategories;
   power_restrictions: {
@@ -3686,9 +3747,11 @@ export type ProjectPathForm = {
   track_section_ranges: {
     /** The beginning of the range in mm. */
     begin: number;
+    /** The direction of the range. */
     direction: Direction;
     /** The end of the range in mm. */
     end: number;
+    /** The track section identifier. */
     track_section: string;
   }[];
 };
@@ -3747,7 +3810,7 @@ export type Distribution = 'STANDARD' | 'MARECO';
 export type PositiveDuration = string;
 export type ReceptionSignal = 'OPEN' | 'STOP' | 'SHORT_SLIP_STOP';
 export type TrainSchedule = {
-  category?: TrainCategory | null;
+  category?: null | TrainCategory;
   comfort?: Comfort;
   constraint_distribution: Distribution;
   initial_speed?: number;
@@ -3767,6 +3830,8 @@ export type TrainSchedule = {
         It's useful for soft deleting the point (waiting to fix / remove all references)
         If true, the train schedule is consider as invalid and must be edited */
     deleted?: boolean;
+    /** The unique identifier of the path item.
+        This is used to reference path items in the train schedule. */
     id: string;
   })[];
   power_restrictions?: {
@@ -3776,14 +3841,15 @@ export type TrainSchedule = {
   }[];
   rolling_stock_name: string;
   schedule?: {
-    arrival?: PositiveDuration | null;
+    arrival?: null | PositiveDuration;
+    /** Position on the path of the schedule item. */
     at: string;
     /** Whether the schedule item is locked (only for display purposes) */
     locked?: boolean;
     reception_signal?: ReceptionSignal;
-    stop_for?: PositiveDuration | null;
+    stop_for?: null | PositiveDuration;
   }[];
-  speed_limit_tag?: string | null;
+  speed_limit_tag?: null | string;
   start_time: string;
   train_name: string;
 };
@@ -3814,6 +3880,8 @@ export type PathItem = PathItemLocation & {
     It's useful for soft deleting the point (waiting to fix / remove all references)
     If true, the train schedule is consider as invalid and must be edited */
   deleted?: boolean;
+  /** The unique identifier of the path item.
+    This is used to reference path items in the train schedule. */
   id: string;
 };
 export type PowerRestrictionItem = {
@@ -3822,12 +3890,13 @@ export type PowerRestrictionItem = {
   value: string;
 };
 export type ScheduleItem = {
-  arrival?: PositiveDuration | null;
+  arrival?: null | PositiveDuration;
+  /** Position on the path of the schedule item. */
   at: string;
   /** Whether the schedule item is locked (only for display purposes) */
   locked?: boolean;
   reception_signal?: ReceptionSignal;
-  stop_for?: PositiveDuration | null;
+  stop_for?: null | PositiveDuration;
 };
 export type PathAndScheduleChangeGroup = {
   margins: Margins;
@@ -3840,10 +3909,10 @@ export type RollingStockChangeGroup = {
   rolling_stock_name: string;
 };
 export type RollingStockCategoryChangeGroup = {
-  value?: TrainCategory | null;
+  value?: null | TrainCategory;
 };
 export type SpeedLimitTagChangeGroup = {
-  value?: string | null;
+  value?: null | string;
 };
 export type StartTimeChangeGroup = {
   value: string;
@@ -3871,7 +3940,9 @@ export type PacedTrainException = {
 export type PacedTrain = TrainSchedule & {
   exceptions: PacedTrainException[];
   paced: {
+    /** Time between two occurrences, an ISO 8601 format is expected */
     interval: PositiveDuration;
+    /** Duration of the paced train, an ISO 8601 format is expected */
     time_window: PositiveDuration;
   };
 };
@@ -3928,6 +3999,7 @@ export type ZoneUpdate = {
   zone: string;
 };
 export type SimulationResponseSuccess = {
+  /** Simulation without any regularity margins */
   base: ReportTrain;
   electrical_profiles: {
     /** List of `n` boundaries of the ranges (block path).
@@ -3945,6 +4017,7 @@ export type SimulationResponseSuccess = {
         }
     )[];
   };
+  /** User-selected simulation: can be base or provisional */
   final_output: ReportTrain & {
     routing_requirements: RoutingRequirement[];
     signal_critical_positions: SignalCriticalPosition[];
@@ -3958,7 +4031,9 @@ export type SimulationResponseSuccess = {
     boundaries: number[];
     /** List of `n+1` values associated to the ranges */
     values: {
+      /** source of the speed-limit if relevant (tag used) */
       source?:
+        | null
         | (
             | {
                 speed_limit_source_type: 'given_train_tag';
@@ -3971,12 +4046,12 @@ export type SimulationResponseSuccess = {
             | {
                 speed_limit_source_type: 'unknown_tag';
               }
-          )
-        | null;
+          );
       /** in meters per second */
       speed: number;
     }[];
   };
+  /** Simulation that takes into account the regularity margins */
   provisional: ReportTrain;
 };
 export type SimulationResponse =
@@ -4032,7 +4107,7 @@ export type ProjectPatchForm = {
   image?: number | null;
   name?: string | null;
   objectives?: string | null;
-  tags?: Tags | null;
+  tags?: null | Tags;
 };
 export type Study = {
   actual_end_date?: string | null;
@@ -4082,7 +4157,7 @@ export type StudyPatchForm = {
   start_date?: string | null;
   state?: string | null;
   study_type?: string | null;
-  tags?: Tags | null;
+  tags?: null | Tags;
 };
 export type Scenario = {
   creation_date: string;
@@ -4121,7 +4196,7 @@ export type ScenarioPatchForm = {
   electrical_profile_set_id?: number | null;
   infra_id?: number | null;
   name?: string | null;
-  tags?: Tags | null;
+  tags?: null | Tags;
 };
 export type MacroNodeResponse = {
   connection_time: number;
@@ -4160,7 +4235,7 @@ export type MacroNoteResponse = {
   y: number;
 };
 export type EffortCurveConditions = {
-  comfort: Comfort | null;
+  comfort: null | Comfort;
   electrical_profile_level: string | null;
   power_restriction_code: string | null;
 };
@@ -4195,7 +4270,7 @@ export type RollingStock = {
   /** Duration in s */
   electrical_power_startup_time: number | null;
   energy_sources: EnergySource[];
-  etcs_brake_params: EtcsBrakeParams | null;
+  etcs_brake_params: null | EtcsBrakeParams;
   id: number;
   inertia_coefficient: number;
   /** Length in m */
@@ -4206,7 +4281,7 @@ export type RollingStock = {
   mass: number;
   /** Velocity in m·s⁻¹ */
   max_speed: number;
-  metadata: RollingStockMetadata | null;
+  metadata: null | RollingStockMetadata;
   name: string;
   other_categories: TrainMainCategories;
   power_restrictions: {
@@ -4228,17 +4303,17 @@ export type RollingStockForm = {
   base_power_class: string | null;
   /** Acceleration in m·s⁻² */
   comfort_acceleration: number;
-  /** The constant gamma braking coefficient used when NOT circulating
-    under ETCS/ERTMS signaling system
+  /**  The constant gamma braking coefficient used when NOT circulating
+     under ETCS/ERTMS signaling system
     Acceleration in m·s⁻² */
   const_gamma: number;
   effort_curves: EffortCurves;
-  /** The time the train takes before actually using electrical power (in seconds).
-    Is null if the train is not electric.
+  /**  The time the train takes before actually using electrical power (in seconds).
+     Is null if the train is not electric.
     Duration in s */
   electrical_power_startup_time?: number | null;
   energy_sources?: EnergySource[];
-  etcs_brake_params?: EtcsBrakeParams | null;
+  etcs_brake_params?: null | EtcsBrakeParams;
   inertia_coefficient: number;
   /** Length in m */
   length: number;
@@ -4247,7 +4322,7 @@ export type RollingStockForm = {
   mass: number;
   /** Velocity in m·s⁻¹ */
   max_speed: number;
-  metadata?: RollingStockMetadata | null;
+  metadata?: null | RollingStockMetadata;
   name: string;
   other_categories: TrainMainCategories;
   /** Mapping of power restriction code to power class */
@@ -4256,8 +4331,8 @@ export type RollingStockForm = {
   };
   primary_category: TrainMainCategory;
   railjson_version?: string;
-  /** The time it takes to raise this train's pantograph in seconds.
-    Is null if the train is not electric.
+  /**  The time it takes to raise this train's pantograph in seconds.
+     Is null if the train is not electric.
     Duration in s */
   raise_pantograph_time?: number | null;
   rolling_resistance: RollingResistance;
@@ -4271,7 +4346,7 @@ export type RollingStockWithLiveries = RollingStock & {
   liveries: RollingStockLivery[];
 };
 export type RollingStockLiveryCreateForm = {
-  images: Blob[];
+  images: number[][];
   name: string;
 };
 export type RollingStockLockedUpdateForm = {
@@ -4385,7 +4460,7 @@ export type SearchResultItem =
   | SearchResultItemScenario
   | SearchResultItemTrainSchedule
   | SearchResultItemUser;
-export type SearchQuery = boolean | number | number | string | (SearchQuery | null)[];
+export type SearchQuery = boolean | number | number | string | (null | SearchQuery)[];
 export type SearchPayload = {
   /** Whether to return the SQL query instead of executing it
     
@@ -4393,6 +4468,7 @@ export type SearchPayload = {
   dry?: boolean;
   /** The object kind to query - run `editoast search list` to get all possible values */
   object: string;
+  /** The query to run */
   query: SearchQuery;
 };
 export type SimilarTrainWaypoint = {
@@ -4419,7 +4495,7 @@ export type StdcmSearchEnvironment = {
   work_schedule_group_id?: number;
 };
 export type StdcmSearchEnvironmentCreateForm = {
-  active_perimeter: GeoJson;
+  active_perimeter?: null | GeoJson;
   electrical_profile_set_id?: number | null;
   enabled_from: string;
   enabled_until: string;
@@ -4451,6 +4527,7 @@ export type ConflictRequirement = {
   zone: string;
 };
 export type Conflict = {
+  /** Type of the conflict */
   conflict_type: 'Spacing' | 'Routing';
   /** Datetime of the end of the conflict */
   end_time: string;
@@ -4496,12 +4573,15 @@ export type WorkSchedule = {
   work_schedule_type: WorkScheduleType;
 };
 export type StdcmRequest = {
+  /** The comfort of the train */
   comfort: Comfort;
   /** Infrastructure expected version */
   expected_version: number;
   /** Infrastructure id */
   infra: number;
+  /** Margin to apply to the whole train */
   margin?:
+    | null
     | (
         | {
             Percentage: number;
@@ -4509,8 +4589,7 @@ export type StdcmRequest = {
         | {
             MinPer100Km: number;
           }
-      )
-    | null;
+      );
   /** Maximum departure delay in milliseconds. */
   maximum_departure_delay: number;
   /** Maximum run time of the simulation in milliseconds */
@@ -4527,7 +4606,7 @@ export type StdcmRequest = {
     /** The time the train takes before actually using electrical power.
         Is null if the train is not electric or the value not specified. */
     electrical_power_startup_time?: number | null;
-    etcs_brake_params?: EtcsBrakeParams | null;
+    etcs_brake_params?: null | EtcsBrakeParams;
     inertia_coefficient: number;
     /** Length of the rolling stock */
     length: number;
@@ -4546,7 +4625,9 @@ export type StdcmRequest = {
     startup_acceleration: number;
     startup_time: number;
   };
+  /** The loading gauge of the rolling stock */
   rolling_stock_loading_gauge: LoadingGaugeType;
+  /** List of supported signaling systems */
   rolling_stock_supported_signaling_systems: RollingStockSupportedSignalingSystems;
   speed_limit_tag?: string | null;
   start_time: string;
@@ -4571,28 +4652,30 @@ export type StdcmRequest = {
 export type PathfindingItem = {
   /** The stop duration in milliseconds, None if the train does not stop. */
   duration?: number | null;
+  /** The associated location */
   location: PathItemLocation;
-  timing_data?: {
+  /** Time at which the train should arrive at the location, if specified */
+  timing_data?: null | {
     /** Time at which the train should arrive at the location */
     arrival_time: string;
     /** The train may arrive up to this duration after the expected arrival time */
     arrival_time_tolerance_after: number;
     /** The train may arrive up to this duration before the expected arrival time */
     arrival_time_tolerance_before: number;
-  } | null;
+  };
 };
 export type TrainScheduleResponse = TrainSchedule & {
   id: number;
   timetable_id: number;
 };
 export type RollingResistancePerWeight = {
-  /** Solid friction in N·kg⁻¹; N = kg⋅m⋅s⁻²
+  /**  Solid friction in N·kg⁻¹; N = kg⋅m⋅s⁻²
     Acceleration in m·s⁻² */
   A: number;
-  /** Viscosity friction in (N·kg⁻¹)·(m/s)⁻¹; N = kg⋅m⋅s⁻²
+  /**  Viscosity friction in (N·kg⁻¹)·(m/s)⁻¹; N = kg⋅m⋅s⁻²
     Viscosity friction per weight in s⁻¹ */
   B: number;
-  /** Aerodynamic drag per kg in (N·kg⁻¹)·(m/s)⁻²; N = kg⋅m⋅s⁻²
+  /**  Aerodynamic drag per kg in (N·kg⁻¹)·(m/s)⁻²; N = kg⋅m⋅s⁻²
     Aerodynamic drag per kg in m⁻¹ */
   C: number;
   type: string;
@@ -4622,8 +4705,8 @@ export type TowedRollingStock = {
 export type TowedRollingStockForm = {
   /** Acceleration in m·s⁻² */
   comfort_acceleration: number;
-  /** The constant gamma braking coefficient used when NOT circulating
-    under ETCS/ERTMS signaling system
+  /**  The constant gamma braking coefficient used when NOT circulating
+     under ETCS/ERTMS signaling system
     Acceleration in m·s⁻² */
   const_gamma: number;
   inertia_coefficient: number;
@@ -4688,7 +4771,7 @@ export type EtcsCurves = {
     /** List of times (in ms) associated to a position */
     times: number[];
   };
-  indication?: {
+  indication?: null | {
     /** List of positions of a train
         Both positions (in mm) and times (in ms) must have the same length */
     positions: number[];
@@ -4696,7 +4779,7 @@ export type EtcsCurves = {
     speeds: number[];
     /** List of times (in ms) associated to a position */
     times: number[];
-  } | null;
+  };
   permitted_speed: {
     /** List of positions of a train
         Both positions (in mm) and times (in ms) must have the same length */

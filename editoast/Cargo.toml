@@ -133,7 +133,7 @@ tracing-subscriber = { version = "0.3.20", features = ["env-filter"] }
 uom = { version = "0.36.0", default-features = false, features = ["f64", "si"] }
 url = { version = "2.5.7", features = ["serde"] }
 urlencoding = "2.1.3"
-utoipa = { version = "4.2.3", features = ["chrono", "uuid"] }
+utoipa = { version = "5.4.0", features = ["chrono", "uuid"] }
 uuid = { version = "1.18.1", features = ["serde", "v4"] }
 
 [dependencies]
@@ -187,7 +187,7 @@ image = { version = "0.25.6", default-features = false, features = [
 ] }
 inventory = "0.3"
 itertools.workspace = true
-json-patch = { version = "4.0.0", default-features = false, features = [
+json-patch = { version = "4.1.0", default-features = false, features = [
   "utoipa",
 ] }
 lapin.workspace = true

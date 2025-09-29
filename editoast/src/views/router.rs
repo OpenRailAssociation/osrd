@@ -6,23 +6,37 @@ use std::collections::VecDeque;
 // constness is unstable. So O(n^2) here we go...
 //
 // If this takes too long, we can always optimize it later (structure, search algorithm, featuring utoipa).
-pub(in crate::views) type OpenApiRouteSliceItem =
-    fn(&str) -> Option<fn(Option<&str>) -> utoipa::openapi::path::PathItem>;
+pub(in crate::views) type OpenApiRouteSliceItem = fn(
+    &str,
+) -> Option<
+    fn(
+        Option<&str>, // TODO: not necessary for utoipa 5.X, remove
+    ) -> (
+        Vec<utoipa::openapi::path::HttpMethod>,
+        utoipa::openapi::path::Operation,
+        Vec<&'static str>, // tags
+    ),
+>;
 
 #[linkme::distributed_slice]
 pub(in crate::views) static OPENAPI_ROUTES: [OpenApiRouteSliceItem];
 
-#[derive(Debug, Default)]
+#[derive(Default)]
 pub(super) struct DocumentedRouter {
     pub(super) router: axum::Router<super::AppState>,
     pub(super) path_trees: Vec<PathTree>,
 }
 
-#[derive(Debug)]
 pub(super) enum PathTree {
     Leaf {
         path_segment: &'static str,
-        openapi: fn(Option<&str>) -> utoipa::openapi::path::PathItem,
+        path_item: fn(
+            Option<&str>,
+        ) -> (
+            Vec<utoipa::openapi::path::HttpMethod>,
+            utoipa::openapi::path::Operation,
+            Vec<&'static str>,
+        ),
     },
     Branch {
         path_segment: &'static str,
@@ -35,8 +49,18 @@ impl PathTree {
         match self {
             PathTree::Leaf {
                 path_segment,
-                openapi,
-            } => vec![(VecDeque::from([path_segment]), openapi(None))],
+                path_item,
+            } => {
+                let (http_methods, mut operation, tags) = path_item(None);
+                // Since utoipa 5.x, tags are provided separately and need to be added to the operation manually                                                              ║
+                // as we're not collecting using the standard OpenApi macro.
+                if !tags.is_empty() {
+                    operation.tags = Some(tags.iter().map(|s| s.to_string()).collect());
+                }
+                let path_item =
+                    utoipa::openapi::path::PathItem::from_http_methods(http_methods, operation);
+                vec![(VecDeque::from([path_segment]), path_item)]
+            }
             PathTree::Branch {
                 path_segment,
                 sub_paths,
@@ -66,27 +90,23 @@ impl DocumentedRouter {
         (type_name, method_router, expected_method): (
             &str,
             axum::routing::MethodRouter<super::AppState>,
-            utoipa::openapi::PathItemType,
+            utoipa::openapi::HttpMethod,
         ),
     ) -> Self {
-        let Some(openapi) = OPENAPI_ROUTES.iter().find_map(|matcher| matcher(type_name)) else {
+        let Some(path_item) = OPENAPI_ROUTES.iter().find_map(|matcher| matcher(type_name)) else {
             panic!("no openapi found for route {path} with type {type_name}!");
         };
-        let operation_key = openapi(None)
-            .operations
-            .into_keys()
-            .next()
-            .expect("an utoipa path created using the path macro must have a method");
-        if operation_key != expected_method {
+        let (http_methods, _, _) = path_item(None);
+        if !http_methods.contains(&expected_method) {
             panic!(
                 "expected method {} in the router at \"{path}\" but found {} in utoipa path",
                 serde_json::to_string(&expected_method).unwrap(), // does not impl debug or display
-                serde_json::to_string(&operation_key).unwrap()
+                serde_json::to_string(&http_methods).unwrap()
             );
         }
         self.path_trees.push(PathTree::Leaf {
             path_segment: path,
-            openapi,
+            path_item,
         });
         Self {
             router: self.router.route(path, method_router),
@@ -112,7 +132,7 @@ macro_rules! get {
         (
             std::any::type_name_of_val(&$f),
             axum::routing::get($f),
-            utoipa::openapi::PathItemType::Get,
+            utoipa::openapi::HttpMethod::Get,
         )
     };
 }
@@ -122,7 +142,7 @@ macro_rules! post {
         (
             std::any::type_name_of_val(&$f),
             axum::routing::post($f),
-            utoipa::openapi::PathItemType::Post,
+            utoipa::openapi::HttpMethod::Post,
         )
     };
 }
@@ -132,7 +152,7 @@ macro_rules! delete {
         (
             std::any::type_name_of_val(&$f),
             axum::routing::delete($f),
-            utoipa::openapi::PathItemType::Delete,
+            utoipa::openapi::HttpMethod::Delete,
         )
     };
 }
@@ -142,7 +162,7 @@ macro_rules! put {
         (
             std::any::type_name_of_val(&$f),
             axum::routing::put($f),
-            utoipa::openapi::PathItemType::Put,
+            utoipa::openapi::HttpMethod::Put,
         )
     };
 }
@@ -152,7 +172,7 @@ macro_rules! patch {
         (
             std::any::type_name_of_val(&$f),
             axum::routing::patch($f),
-            utoipa::openapi::PathItemType::Patch,
+            utoipa::openapi::HttpMethod::Patch,
         )
     };
 }

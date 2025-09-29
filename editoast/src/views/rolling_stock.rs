@@ -676,7 +676,7 @@ struct MultipartImage {
     data: Vec<u8>,
 }
 
-#[derive(Clone, Debug, ToSchema)]
+#[derive(Clone, Debug)]
 struct FormattedImages {
     compound_image_height: u32,
     compound_image_width: u32,

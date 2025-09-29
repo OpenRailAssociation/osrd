@@ -12,7 +12,7 @@ use serde::Serialize;
 use utoipa::ToSchema;
 
 pub type OpenApiSchemaSliceItem = fn() -> (
-    &'static str,
+    std::borrow::Cow<'static, str>,
     utoipa::openapi::RefOr<utoipa::openapi::schema::Schema>,
 );
 
@@ -29,7 +29,12 @@ pub fn setup_tracing_for_test() {
 }
 
 #[linkme::distributed_slice(OPENAPI_SCHEMAS)]
-static _SCHEMA: OpenApiSchemaSliceItem = <Version as utoipa::ToSchema>::schema;
+static _SCHEMA: OpenApiSchemaSliceItem = || {
+    (
+        <Version as utoipa::ToSchema>::name(),
+        <Version as utoipa::PartialSchema>::schema(),
+    )
+};
 
 #[derive(ToSchema, Serialize, Deserialize)]
 pub struct Version {

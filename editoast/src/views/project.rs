@@ -126,7 +126,7 @@ impl ProjectWithStudyCount {
     tag = "projects",
     request_body = ProjectCreateForm,
     responses(
-        (status = 201, body = ProjectWithStudies, description = "The created project"),
+        (status = 201, body = ProjectWithStudyCount, description = "The created project"),
     )
 )]
 pub(in crate::views) async fn create(
@@ -155,7 +155,6 @@ pub(in crate::views) async fn create(
 #[derive(Serialize, ToSchema)]
 #[cfg_attr(test, derive(Deserialize))]
 pub(in crate::views) struct ProjectWithStudyCountList {
-    #[schema(value_type = Vec<ProjectWithStudies>)]
     results: Vec<ProjectWithStudyCount>,
     #[serde(flatten)]
     stats: PaginationStats,
@@ -219,7 +218,7 @@ pub struct ProjectIdParam {
     tag = "projects",
     params(ProjectIdParam),
     responses(
-        (status = 200, body = ProjectWithStudies, description = "The requested project"),
+        (status = 200, body = ProjectWithStudyCount, description = "The requested project"),
     )
 )]
 pub(in crate::views) async fn get(
@@ -335,7 +334,7 @@ impl From<ProjectPatchForm> for Changeset<Project> {
         description = "The fields to update"
     ),
     responses(
-        (status = 200, body = ProjectWithStudies, description = "The updated project"),
+        (status = 200, body = ProjectWithStudyCount, description = "The updated project"),
     )
 )]
 pub(in crate::views) async fn patch(

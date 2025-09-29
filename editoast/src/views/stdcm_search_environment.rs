@@ -56,7 +56,7 @@ pub(in crate::views) struct StdcmSearchEnvironmentCreateForm {
     search_window_end: DateTime<Utc>,
     enabled_from: DateTime<Utc>,
     enabled_until: DateTime<Utc>,
-    #[schema(value_type = GeoJson)]
+    #[schema(value_type = Option<common::geometry::GeoJson>)]
     active_perimeter: Option<geos::geojson::Geometry>,
 }
 

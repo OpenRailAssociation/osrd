@@ -9,7 +9,6 @@ use serde_with::skip_serializing_none;
 use utoipa::ToSchema;
 use utoipa::openapi::ObjectBuilder;
 use utoipa::openapi::RefOr;
-use utoipa::openapi::SchemaType;
 use utoipa::openapi::schema::Schema;
 
 use crate::primitives::NonBlankString;
@@ -150,17 +149,21 @@ impl Default for ExceptionType {
     }
 }
 
-impl ToSchema<'_> for ExceptionType {
-    fn schema() -> (&'static str, RefOr<Schema>) {
+impl utoipa::PartialSchema for ExceptionType {
+    fn schema() -> RefOr<Schema> {
         let modified_schema = ObjectBuilder::new()
             .property(
                 "occurrence_index",
-                ObjectBuilder::new().schema_type(SchemaType::Integer),
+                ObjectBuilder::new().schema_type(utoipa::openapi::schema::SchemaType::Type(
+                    utoipa::openapi::schema::Type::Integer,
+                )),
             )
             .build();
-        ("PacedTrainExceptionType", modified_schema.into())
+        modified_schema.into()
     }
 }
+
+impl ToSchema for ExceptionType {}
 
 #[editoast_derive::openapi_schema]
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]

@@ -14,6 +14,7 @@ use crate::primitives::Identifier;
 use crate::primitives::OSRDIdentified;
 use crate::primitives::OSRDTyped;
 use crate::primitives::ObjectType;
+use common::geometry::GeoJsonLineString;
 
 #[editoast_derive::openapi_schema]
 #[derive(Debug, Educe, Clone, Deserialize, Serialize, PartialEq, ToSchema)]

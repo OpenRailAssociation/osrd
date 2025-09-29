@@ -220,9 +220,10 @@ impl<const MAX_PAGE_SIZE: u64> utoipa::IntoParams for PaginationQueryParams<MAX_
         use utoipa::openapi::ObjectBuilder;
         use utoipa::openapi::Required;
         use utoipa::openapi::SchemaFormat;
-        use utoipa::openapi::SchemaType;
         use utoipa::openapi::path::ParameterBuilder;
         use utoipa::openapi::path::ParameterIn;
+        use utoipa::openapi::schema::SchemaType;
+        use utoipa::openapi::schema::Type;
 
         [
             ParameterBuilder::new()
@@ -231,7 +232,7 @@ impl<const MAX_PAGE_SIZE: u64> utoipa::IntoParams for PaginationQueryParams<MAX_
                 .required(Required::False)
                 .schema(Some(
                     ObjectBuilder::new()
-                        .schema_type(SchemaType::Integer)
+                        .schema_type(SchemaType::Type(Type::Integer))
                         .format(Some(SchemaFormat::KnownFormat(KnownFormat::Int64)))
                         .minimum(Some(1f64))
                         .default(Some(json!(1))),
@@ -243,12 +244,11 @@ impl<const MAX_PAGE_SIZE: u64> utoipa::IntoParams for PaginationQueryParams<MAX_
                 .required(Required::False)
                 .schema(Some(
                     ObjectBuilder::new()
-                        .schema_type(SchemaType::Integer)
+                        .schema_type(SchemaType::Type(Type::Integer))
                         .format(Some(SchemaFormat::KnownFormat(KnownFormat::Int64)))
                         .minimum(Some(1f64))
                         .maximum(Some(MAX_PAGE_SIZE as f64))
-                        .default(Some(json!(MAX_PAGE_SIZE)))
-                        .nullable(true),
+                        .default(Some(json!(MAX_PAGE_SIZE))),
                 ))
                 .build(),
         ]

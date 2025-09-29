@@ -1,6 +1,8 @@
 mod tracing_instrumentation;
 
-use std::hash::{DefaultHasher, Hash, Hasher};
+use std::hash::DefaultHasher;
+use std::hash::Hash;
+use std::hash::Hasher;
 use std::ops::Deref;
 use std::ops::DerefMut;
 use std::sync::Arc;

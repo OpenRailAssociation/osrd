@@ -13,7 +13,9 @@ use diesel::serialize::ToSql;
 use serde::Deserialize;
 use serde::Serialize;
 
-#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, FromSqlRow, AsExpression)]
+#[derive(
+    Debug, Clone, PartialEq, Serialize, Deserialize, FromSqlRow, AsExpression, utoipa::ToSchema,
+)]
 #[diesel(sql_type = sql_types::TrainMainCategory)]
 pub struct TrainMainCategory(pub schemas::rolling_stock::TrainMainCategory);
 
@@ -42,7 +44,7 @@ impl Deref for TrainMainCategory {
     }
 }
 
-#[derive(Clone, Debug, PartialEq, Deserialize, Serialize)]
+#[derive(Clone, Debug, PartialEq, Deserialize, Serialize, utoipa::ToSchema)]
 pub struct TrainMainCategories(pub Vec<TrainMainCategory>);
 
 impl From<Vec<Option<TrainMainCategory>>> for TrainMainCategories {
