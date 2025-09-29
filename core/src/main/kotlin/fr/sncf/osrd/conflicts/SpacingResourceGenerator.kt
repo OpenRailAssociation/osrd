@@ -445,7 +445,12 @@ class SpacingRequirementAutomaton(
         val curvesList = etcsSimulator.computeStopBrakingCurves(envelope, listOf(eoa))
 
         assert(curvesList.size == 1)
-        val reqPos = curvesList[eoa]!![IND]!!.brakingCurve.beginPos.meters
+        val reqPos =
+            if (curvesList[eoa]!![IND] != null) {
+                curvesList[eoa]!![IND]!!.brakingCurve.beginPos.meters
+            } else {
+                eoa.offsetEOA.distance
+            }
 
         // Find the first zone of the block protected by signal
         val firstRequiredZone = getSignalFirstProtectedZone(pathSignal)

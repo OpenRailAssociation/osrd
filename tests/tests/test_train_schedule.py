@@ -1197,6 +1197,9 @@ def test_etcs_spacing_req(
     assert spacing_req_zone_final["end_time"] == 1042849
 
 
+TIME_START_BRAKING_ETCS_FROM_BUFFER0_TO_SG0 = 535_548
+
+
 def test_etcs_routing_req(
     etcs_scenario: Scenario, etcs_rolling_stock: int, session: Session
 ):
@@ -1296,7 +1299,7 @@ def test_etcs_routing_req(
     routing_req_6 = simulation_final_output["routing_requirements"][6]
     assert routing_req_6["route"] == "rt.DG0->DH2"
     # matches the start of the braking curve if stop on closed-signal SG0
-    assert routing_req_6["begin_time"] == 535_548
+    assert routing_req_6["begin_time"] == TIME_START_BRAKING_ETCS_FROM_BUFFER0_TO_SG0
     assert len(routing_req_6["zones"]) == 2
     # zone entry DH1 (triggered by SG0)
     assert routing_req_6["zones"][1]["zone"] == "zone.[DH1:INCREASING, DH2:DECREASING]"
@@ -1312,6 +1315,104 @@ def test_etcs_routing_req(
         == "zone.[DH1_2:INCREASING, buffer_stop.7:DECREASING]"
     )
     assert routing_req_7["zones"][3]["end_time"] == 1_042_849
+
+
+def test_etcs_stop_at_requirements_eoa(
+    etcs_scenario: Scenario, etcs_rolling_stock: int, session: Session
+):
+    """
+    Stopping exactly at the EoA from routing and spacing requirements (route-delimiter signal): SG0
+
+    Reserving route/spacing at the moment of the stop (speed == 0km/h) for now.
+    Note: no specification was written on that, it could change (start of the braking curve?) when
+      the curves are a complete match.
+    """
+    rolling_stock_response = session.get(
+        EDITOAST_URL + f"light_rolling_stock/{etcs_rolling_stock}"
+    )
+    etcs_rolling_stock_name = rolling_stock_response.json()["name"]
+    ts_response = session.post(
+        f"{EDITOAST_URL}timetable/{etcs_scenario.timetable}/train_schedules/",
+        json=[
+            {
+                "train_name": "stop exactly at EoA from requirements",
+                "labels": [],
+                "rolling_stock_name": etcs_rolling_stock_name,
+                "start_time": "2024-01-01T07:00:00Z",
+                "path": [
+                    {"id": "zero", "track": "TA0", "offset": 0},
+                    {"id": "stop", "track": "TG0", "offset": 800_000},
+                    {"id": "last", "track": "TH1", "offset": 5_000_000},
+                ],
+                "schedule": [
+                    {"at": "zero", "stop_for": "P0D"},
+                    {"at": "stop", "stop_for": "PT10S", "reception_signal": "STOP"},
+                    {"at": "last", "stop_for": "P0D"},
+                ],
+                "margins": {"boundaries": [], "values": ["0%"]},
+                "initial_speed": 0,
+                "comfort": "STANDARD",
+                "constraint_distribution": "STANDARD",
+                "speed_limit_tag": "foo",
+                "power_restrictions": [],
+            }
+        ],
+    )
+
+    schedule = ts_response.json()[0]
+    schedule_id = schedule["id"]
+    ts_id_response = session.get(f"{EDITOAST_URL}train_schedule/{schedule_id}/")
+    ts_id_response.raise_for_status()
+    simu_response = session.get(
+        f"{EDITOAST_URL}train_schedule/{schedule_id}/simulation?infra_id={etcs_scenario.infra}"
+    )
+    simulation_final_output = simu_response.json()["final_output"]
+
+    assert len(simulation_final_output["positions"]) == len(
+        simulation_final_output["speeds"]
+    )
+
+    # To debug this test: please add a breakpoint then use front to display speed-space chart
+    # (activate Context for Slopes and Speed limits).
+
+    # Middle stop on SG0 braking curve
+    offset_start_brake_288_to_0 = 33_123_530
+    speed_start_brake_288_to_0 = _get_current_or_next_speed_at(
+        simulation_final_output, offset_start_brake_288_to_0
+    )
+    _assert_equal_speeds(speed_start_brake_288_to_0, MAX_SPEED_288)
+    assert (
+        _get_current_or_next_speed_at(
+            simulation_final_output, offset_start_brake_288_to_0 + 1
+        )
+        < speed_start_brake_288_to_0
+    )
+    time_start_brake_288_to_0 = _get_current_or_next_time_at(
+        simulation_final_output, offset_start_brake_288_to_0
+    )
+    # matching the reservation time for spacing and routing if no stop
+    assert time_start_brake_288_to_0 == TIME_START_BRAKING_ETCS_FROM_BUFFER0_TO_SG0
+
+    routing_req_6 = simulation_final_output["routing_requirements"][6]
+    assert routing_req_6["route"] == "rt.DG0->DH2"
+    assert routing_req_6["begin_time"] == 772_852
+    assert len(routing_req_6["zones"]) == 2
+    assert (
+        routing_req_6["zones"][0]["zone"]
+        == "zone.[DG0:INCREASING, DG1:DECREASING, DH0:INCREASING, DH1:DECREASING]"
+    )
+    assert routing_req_6["zones"][0]["end_time"] == 842_038
+    assert routing_req_6["zones"][1]["zone"] == "zone.[DH1:INCREASING, DH2:DECREASING]"
+    assert routing_req_6["zones"][1]["end_time"] == 864_137
+
+    # zone entry DG0 (triggered by SG0)
+    spacing_req_zone_stop = simulation_final_output["spacing_requirements"][31]
+    assert (
+        spacing_req_zone_stop["zone"]
+        == "zone.[DG0:INCREASING, DG1:DECREASING, DH0:INCREASING, DH1:DECREASING]"
+    )
+    assert spacing_req_zone_stop["begin_time"] == 772_852
+    assert spacing_req_zone_stop["end_time"] == 842_038
 
 
 def test_etcs_schedule_braking_curves_endpoint(
@@ -1491,3 +1592,10 @@ def _get_current_or_prev_speed_at(
         return simulation_final_output["speeds"][idx - 1]
     else:
         return simulation_final_output["speeds"][idx]
+
+
+def _get_current_or_next_time_at(
+    simulation_final_output: dict[str, Any], position: int
+) -> int:
+    idx = bisect.bisect_left(simulation_final_output["positions"], position)
+    return simulation_final_output["times"][idx]
