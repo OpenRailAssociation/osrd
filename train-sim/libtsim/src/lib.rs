@@ -1,6 +1,7 @@
 // TODO add lint for missing docs
 
-pub use crate::range::Range;
+#![warn(missing_docs)]
+
 pub use crate::range::RangeMap;
 
 mod integration;
