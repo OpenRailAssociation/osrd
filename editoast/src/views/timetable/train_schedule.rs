@@ -51,7 +51,7 @@ use crate::views::path::projection::TrackLocationFromPath;
 use crate::views::projection::OperationalPointProjection;
 use crate::views::projection::ProjectPathForm;
 use crate::views::projection::ProjectPathOperationalPointForm;
-use crate::views::projection::SpaceTimeCurves;
+use crate::views::projection::SpaceTimeCurve;
 use crate::views::projection::compute_projected_train_path_op;
 use crate::views::projection::compute_projected_train_paths;
 use crate::views::projection::find_index_upper;
@@ -650,7 +650,7 @@ pub(in crate::views) async fn project_path(
         track_section_ranges,
         electrical_profile_set_id,
     }): Json<ProjectPathForm>,
-) -> Result<Json<HashMap<i64, SpaceTimeCurves>>> {
+) -> Result<Json<HashMap<i64, Vec<SpaceTimeCurve>>>> {
     let infra = &Infra::retrieve_or_fail(db_pool.get().await?, infra_id, || {
         TrainScheduleError::InfraNotFound { infra_id }
     })
@@ -726,7 +726,7 @@ pub(in crate::views) async fn project_path_op(
         operational_points_refs,
         operational_points_distances,
     }): Json<ProjectPathOperationalPointForm>,
-) -> Result<Json<HashMap<i64, Arc<SpaceTimeCurves>>>> {
+) -> Result<Json<HashMap<i64, Arc<Vec<SpaceTimeCurve>>>>> {
     let infra = &Infra::retrieve_or_fail(db_pool.get().await?, infra_id, || {
         TrainScheduleError::InfraNotFound { infra_id }
     })
@@ -1599,7 +1599,7 @@ pub mod tests {
                 },
             ],
         }));
-        let response: HashMap<i64, SpaceTimeCurves> =
+        let response: HashMap<i64, Vec<SpaceTimeCurve>> =
             app.fetch(request).assert_status(StatusCode::OK).json_into();
 
         // EXPECT
