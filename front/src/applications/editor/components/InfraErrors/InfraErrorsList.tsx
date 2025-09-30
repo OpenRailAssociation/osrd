@@ -7,11 +7,7 @@ import InfiniteScroll from 'react-infinite-scroll-component';
 import { useSelector } from 'react-redux';
 
 import { EDITOAST_TYPES, type EditoastType } from 'applications/editor/consts';
-import {
-  osrdEditoastApi,
-  type InfraErrorTypeLabel,
-  type InfraError,
-} from 'common/api/osrdEditoastApi';
+import { osrdEditoastApi, type InfraError } from 'common/api/osrdEditoastApi';
 import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
 import { LoaderFill, Spinner } from 'common/Loaders';
 import { getEditorIssues } from 'reducers/editor/selectors';
@@ -20,7 +16,7 @@ import { useAppDispatch } from 'store';
 
 import { INFRA_ERRORS, INFRA_ERRORS_BY_LEVEL } from './consts';
 import { InfraErrorBox } from './InfraError';
-import type { InfraErrorLevel } from './types';
+import type { InfraErrorLevel, InfraErrorTypeLabel } from './types';
 
 const INFRA_ERROR_LEVELS: Array<NonNullable<InfraErrorLevel>> = ['all', 'errors', 'warnings'];
 
