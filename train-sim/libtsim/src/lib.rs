@@ -1,4 +1,4 @@
-// TODO add lint for missing docs
+//! Train simulation
 
 #![warn(missing_docs)]
 
