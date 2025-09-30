@@ -19,11 +19,10 @@ use thiserror::Error;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
 
+use super::check_project_study_scenario;
 use crate::error::InternalError;
 use crate::error::Result;
-use crate::models::Project;
 use crate::models::Scenario;
-use crate::models::Study;
 use crate::models::macro_node::MacroNode;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
@@ -399,35 +398,6 @@ pub(in crate::views) async fn delete(
     Ok(StatusCode::NO_CONTENT)
 }
 
-async fn check_project_study_scenario(
-    conn: DbConnection,
-    project_id: i64,
-    study_id: i64,
-    scenario_id: i64,
-) -> Result<(Project, Study, Scenario)> {
-    let project = Project::retrieve_or_fail(conn.clone(), project_id, || ProjectError::NotFound {
-        project_id,
-    })
-    .await?;
-    let study =
-        Study::retrieve_or_fail(conn.clone(), study_id, || StudyError::NotFound { study_id })
-            .await?;
-
-    if study.project_id != project_id {
-        return Err(StudyError::NotFound { study_id }.into());
-    }
-
-    let scenario = Scenario::retrieve_or_fail(conn, scenario_id, || ScenarioError::NotFound {
-        scenario_id,
-    })
-    .await?;
-    if scenario.study_id != study_id {
-        return Err(ScenarioError::NotFound { scenario_id }.into());
-    }
-
-    Ok((project, study, scenario))
-}
-
 async fn retrieve_macro_node_and_check_scenario(
     conn: DbConnection,
     scenario_id: i64,
@@ -451,6 +421,8 @@ pub mod test {
     use rstest::rstest;
 
     use super::*;
+    use crate::models::Project;
+    use crate::models::Study;
     use crate::models::fixtures::create_scenario_fixtures_set;
     use crate::views::test_app::TestAppBuilder;
 

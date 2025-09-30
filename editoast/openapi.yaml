@@ -2770,6 +2770,44 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalError'
+  /projects/{project_id}/studies/{study_id}/scenarios/{scenario_id}/macro_notes/{note_id}:
+    get:
+      tags:
+      - scenarios
+      summary: Return a specific note
+      parameters:
+      - name: project_id
+        in: path
+        description: The id of a project
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: study_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: scenario_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: note_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: The requested macro note
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MacroNoteResponse'
   /rolling_stock:
     post:
       tags:
@@ -6319,6 +6357,9 @@ components:
       - $ref: '#/components/schemas/EditoastListErrorsErrorsWrongErrorTypeProvided'
       - $ref: '#/components/schemas/EditoastMacroNodeErrorDatabase'
       - $ref: '#/components/schemas/EditoastMacroNodeErrorNotFound'
+      - $ref: '#/components/schemas/EditoastMacroNoteErrorDatabase'
+      - $ref: '#/components/schemas/EditoastMacroNoteErrorNotFound'
+      - $ref: '#/components/schemas/EditoastMacroNoteErrorWrongScenario'
       - $ref: '#/components/schemas/EditoastModelError'
       - $ref: '#/components/schemas/EditoastOperationErrorEmptyId'
       - $ref: '#/components/schemas/EditoastOperationErrorInvalidPatch'
@@ -6715,6 +6756,76 @@ components:
           type: string
           enum:
           - editoast:macro_node:NotFound
+    EditoastMacroNoteErrorDatabase:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 500
+        type:
+          type: string
+          enum:
+          - editoast:macro_note:Database
+    EditoastMacroNoteErrorNotFound:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          required:
+          - note_id
+          properties:
+            note_id:
+              type: integer
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 404
+        type:
+          type: string
+          enum:
+          - editoast:macro_note:NotFound
+    EditoastMacroNoteErrorWrongScenario:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          required:
+          - note_id
+          - scenario_id
+          properties:
+            note_id:
+              type: integer
+            scenario_id:
+              type: integer
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 404
+        type:
+          type: string
+          enum:
+          - editoast:macro_note:WrongScenario
     EditoastModelError:
       type: object
       required:
@@ -9947,6 +10058,31 @@ components:
         trigram:
           type: string
           nullable: true
+    MacroNoteResponse:
+      type: object
+      required:
+      - id
+      - x
+      - y
+      - title
+      - text
+      - labels
+      properties:
+        id:
+          type: integer
+          format: int64
+        labels:
+          $ref: '#/components/schemas/Tags'
+        text:
+          type: string
+        title:
+          type: string
+        x:
+          type: integer
+          format: int64
+        y:
+          type: integer
+          format: int64
     Margins:
       type: object
       required:
