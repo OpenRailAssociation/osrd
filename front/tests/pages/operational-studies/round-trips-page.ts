@@ -10,7 +10,7 @@ class RoundTripPage extends OperationalStudiesPage {
 
   private readonly roundTripsCards: Locator;
 
-  private roundTripsParingColumn: Locator;
+  private roundTripsPairingColumn: Locator;
 
   private roundTripPairs: Locator;
 
@@ -54,6 +54,18 @@ class RoundTripPage extends OperationalStudiesPage {
 
   private readonly intermediateStopTooltipItem: Locator;
 
+  private oneWayButton: Locator;
+
+  private roundTripButton: Locator;
+
+  private restoreButton: Locator;
+
+  private pairingColumnCard: Locator;
+
+  private pairingFilterField: Locator;
+
+  private roundTripPairCards: Locator;
+
   constructor(page: Page) {
     super(page);
     this.manageRoundTripsButton = page.getByTestId('scenarios-manage-round-trips-button');
@@ -83,6 +95,32 @@ class RoundTripPage extends OperationalStudiesPage {
     );
     this.intermediateStopsTooltip = page.getByTestId('osrd-tooltip');
     this.intermediateStopTooltipItem = this.intermediateStopsTooltip.getByTestId('tooltip-item');
+    this.oneWayButton = page.getByTestId('round-trips-set-one-way-menu-item');
+    this.roundTripButton = page.getByTestId('round-trips-pick-return-menu-item');
+    this.restoreButton = page.getByTestId('round-trips-restore-menu-item');
+    this.roundTripsPairingColumn = page.getByTestId('round-trips-pairing-column');
+    this.pairingColumnCard = this.roundTripsPairingColumn.getByTestId('round-trips-card');
+    this.pairingFilterField = page.getByTestId('pairing-card-filter-input');
+  }
+
+  private getToDoCardMenuButton(roundTripCardIndex: number): Locator {
+    return this.toDoColumnCard.getByTestId('round-trips-card-menu-button').nth(roundTripCardIndex);
+  }
+
+  private getOneWaysCardMenuButton(roundTripCardIndex: number): Locator {
+    return this.oneWaysColumnCard
+      .getByTestId('round-trips-card-menu-button')
+      .nth(roundTripCardIndex);
+  }
+
+  private getRoundTripPairCard(pairIndex: number, cardIndex: number): Locator {
+    return this.roundTripPairs.nth(pairIndex).getByTestId('round-trips-card').nth(cardIndex);
+  }
+
+  private getRoundTripPairCardMenuButton(pairIndex: number, cardIndex: number): Locator {
+    return this.getRoundTripPairCard(pairIndex, cardIndex).getByTestId(
+      'round-trips-card-menu-button'
+    );
   }
 
   async openRoundTripModal() {
@@ -93,6 +131,11 @@ class RoundTripPage extends OperationalStudiesPage {
 
   async cancelRoundTripModal() {
     await this.cancelRoundTripsButton.click();
+    await expect(this.roundTripsModalPage).not.toBeVisible();
+  }
+
+  async saveRoundTripModal() {
+    await this.saveRoundTripsButton.click();
     await expect(this.roundTripsModalPage).not.toBeVisible();
   }
 
@@ -200,6 +243,168 @@ class RoundTripPage extends OperationalStudiesPage {
     const stops = this.roundTripCardStops.nth(roundTripCardIndex);
     await stops.hover({ force: true });
     await expect(this.intermediateStopsTooltip).not.toBeVisible();
+  }
+
+  private async openToDoCardMenuButtonMenu({ cardIndex }: { cardIndex: number }): Promise<void> {
+    await this.getToDoCardMenuButton(cardIndex).click();
+
+    await expect(this.oneWayButton).toBeVisible();
+    await expect(this.roundTripButton).toBeVisible();
+    await expect(this.restoreButton).not.toBeVisible();
+  }
+
+  private async openOneWaysCardMenuButtonMenu({ cardIndex }: { cardIndex: number }): Promise<void> {
+    await this.getOneWaysCardMenuButton(cardIndex).click();
+
+    await expect(this.oneWayButton).not.toBeVisible();
+    await expect(this.roundTripButton).not.toBeVisible();
+    await expect(this.restoreButton).toBeVisible();
+  }
+
+  private async openRoundTripPairCardMenuButtonMenu({
+    pairIndex,
+    cardIndex,
+  }: {
+    pairIndex: number;
+    cardIndex: number;
+  }): Promise<void> {
+    await expect(this.roundTripPairs.nth(pairIndex)).toBeVisible();
+    await this.getRoundTripPairCardMenuButton(pairIndex, cardIndex).click();
+
+    await expect(this.oneWayButton).not.toBeVisible();
+    await expect(this.roundTripButton).not.toBeVisible();
+    await expect(this.restoreButton).toBeVisible();
+  }
+
+  async setTodoCardToOneWay({
+    index,
+    toDoCount,
+    oneWayCount,
+    roundTripCount,
+  }: {
+    index: number;
+    toDoCount: number;
+    oneWayCount: number;
+    roundTripCount: number;
+  }): Promise<void> {
+    await this.openToDoCardMenuButtonMenu({ cardIndex: index });
+    await this.oneWayButton.click();
+    await this.assertRoundTripColumnCounts({
+      expectedToDoCount: toDoCount,
+      expectedOneWayCount: oneWayCount,
+      expectedRoundTripCount: roundTripCount,
+    });
+  }
+
+  async restoreOneWayCardToTodo({
+    index,
+    toDoCount,
+    oneWayCount,
+    roundTripCount,
+  }: {
+    index: number;
+    toDoCount: number;
+    oneWayCount: number;
+    roundTripCount: number;
+  }): Promise<void> {
+    await this.openOneWaysCardMenuButtonMenu({ cardIndex: index });
+    await this.restoreButton.click();
+    await this.assertRoundTripColumnCounts({
+      expectedToDoCount: toDoCount,
+      expectedOneWayCount: oneWayCount,
+      expectedRoundTripCount: roundTripCount,
+    });
+  }
+
+  async restoreRoundTripCardsToTodo({
+    index,
+    toDoCount,
+    oneWayCount,
+    roundTripCount,
+  }: {
+    index: number;
+    toDoCount: number;
+    oneWayCount: number;
+    roundTripCount: number;
+  }): Promise<void> {
+    await this.openRoundTripPairCardMenuButtonMenu({ pairIndex: index, cardIndex: index });
+    await this.restoreButton.click();
+    await this.assertRoundTripColumnCounts({
+      expectedToDoCount: toDoCount,
+      expectedOneWayCount: oneWayCount,
+      expectedRoundTripCount: roundTripCount,
+    });
+  }
+
+  async pickReturnForOneWayCard({
+    index,
+    pairingCardCount,
+    pairingCardIndex,
+    expectedToDoCount,
+    expectedOneWayCount,
+    expectedRoundTripCount,
+  }: {
+    index: number;
+    pairingCardCount: number;
+    pairingCardIndex: number;
+    expectedToDoCount: number;
+    expectedOneWayCount: number;
+    expectedRoundTripCount: number;
+  }): Promise<void> {
+    await this.openToDoCardMenuButtonMenu({ cardIndex: index });
+    await this.roundTripButton.click();
+    await expect(this.roundTripsPairingColumn).toBeVisible();
+    await expect(this.pairingFilterField).toBeVisible();
+    await expect(this.pairingColumnCard).toHaveCount(pairingCardCount);
+    await this.pairingColumnCard.nth(pairingCardIndex).click();
+    await this.assertRoundTripColumnCounts({
+      expectedToDoCount,
+      expectedOneWayCount,
+      expectedRoundTripCount,
+    });
+  }
+
+  async searchForRoundTripsCard({
+    searchText,
+    expectedToDoCount,
+    expectedOneWayCount,
+    expectedRoundTripCount,
+  }: {
+    searchText: string;
+    expectedToDoCount: number;
+    expectedOneWayCount: number;
+    expectedRoundTripCount: number;
+  }): Promise<void> {
+    await expect(this.roundTripFilterField).toBeVisible();
+    await this.roundTripFilterField.fill(searchText);
+
+    await expect(this.roundTripCardName.first()).toContainText(searchText, { ignoreCase: true });
+
+    await this.assertRoundTripColumnCounts({
+      expectedToDoCount,
+      expectedOneWayCount,
+      expectedRoundTripCount,
+    });
+  }
+
+  async clearRoundTripSearchField({
+    expectedToDoCount,
+    expectedOneWayCount,
+    expectedRoundTripCount,
+  }: {
+    expectedToDoCount: number;
+    expectedOneWayCount: number;
+    expectedRoundTripCount: number;
+  }): Promise<void> {
+    await expect(this.roundTripFilterField).toBeVisible();
+    await this.roundTripFilterField.fill('');
+    await expect(this.roundTripFilterField).toHaveValue('');
+
+    await this.assertRoundTripColumnCounts({
+      expectedToDoCount,
+      expectedOneWayCount,
+      expectedRoundTripCount,
+    });
   }
 }
 
