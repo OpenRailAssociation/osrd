@@ -290,6 +290,28 @@ export function getOSMStyle(mapStyle: MapStyle): LayerProps[] {
       },
     },
     {
+      id: 'building-3d',
+      type: 'fill-extrusion',
+      source: 'openmaptiles',
+      'source-layer': 'building',
+      minzoom: 17,
+      layout: {
+        visibility: 'visible',
+      },
+      paint: {
+        'fill-extrusion-color': 'rgba(239, 236, 236, 1)',
+        'fill-extrusion-height': {
+          type: 'identity',
+          property: 'render_height',
+        },
+        'fill-extrusion-base': {
+          property: 'render_min_height',
+          type: 'identity',
+        },
+        'fill-extrusion-opacity': 0.8,
+      },
+    },
+    {
       id: 'housenumber',
       type: 'symbol',
       source: 'openmaptiles',
