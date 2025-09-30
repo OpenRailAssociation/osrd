@@ -17,6 +17,7 @@ use utoipa::openapi::schema::AnyOf;
 use utoipa::openapi::schema::ArrayItems;
 
 use crate::error::ErrorDefinition;
+use crate::views::router::FlattenedPath;
 use crate::views::service_router;
 
 fn concat_path<A: AsRef<str>, B: AsRef<str>>(a: A, b: B) -> String {
@@ -259,22 +260,21 @@ impl OpenApiRoot {
     }
 
     fn insert_routes(openapi: &mut utoipa::openapi::OpenApi) -> Vec<(String, RefOr<Schema>)> {
-        let paths = service_router()
+        let flattened_paths = service_router()
             .path_trees
             .into_iter()
-            .flat_map(|t| t.flatten())
-            .map(|(parts, item, schemas)| {
-                (
-                    parts
-                        .into_iter()
-                        .map(String::from)
-                        .fold(String::new(), concat_path),
-                    item,
-                    schemas,
-                )
-            });
+            .flat_map(|t| t.flatten());
         let mut all_schemas = Vec::new();
-        for (mut path, path_item, schemas) in paths {
+        for FlattenedPath {
+            path_segments,
+            path_item,
+            schemas,
+        } in flattened_paths
+        {
+            let mut path = path_segments
+                .into_iter()
+                .map(String::from)
+                .fold(String::new(), concat_path);
             // We are required by axum to have trailing slashes in the `Router`s.
             // But that's not OpenApi compliant, so we remove them here.
             if path.ends_with('/') {
