@@ -12821,11 +12821,7 @@ components:
       - type: integer
         format: int64
       - type: string
-      - type: array
-        items:
-          oneOf:
-          - type: 'null'
-          - $ref: '#/components/schemas/SearchQuery'
+      - type: object
       description: A search query
       example:
       - and
@@ -14247,6 +14243,28 @@ components:
           - integer
           - 'null'
           format: int64
+    StepTimingData:
+      type: object
+      description: Contains the data of a step timing, when it is specified
+      required:
+      - arrival_time
+      - arrival_time_tolerance_before
+      - arrival_time_tolerance_after
+      properties:
+        arrival_time:
+          type: string
+          format: date-time
+          description: Time the train should arrive at this point
+        arrival_time_tolerance_after:
+          type: integer
+          format: int64
+          description: Tolerance for the arrival time, when it arrives after the expected time, in ms
+          minimum: 0
+        arrival_time_tolerance_before:
+          type: integer
+          format: int64
+          description: Tolerance for the arrival time, when it arrives before the expected time, in ms
+          minimum: 0
     Study:
       type: object
       required:
@@ -15171,6 +15189,29 @@ components:
           timetable_id:
             type: integer
             format: int64
+    UndirectedTrackRange:
+      type: object
+      description: |-
+        A range on a track section.
+        `begin` is always less than `end`.
+      required:
+      - track_section
+      - begin
+      - end
+      properties:
+        begin:
+          type: integer
+          format: int64
+          description: The beginning of the range in mm.
+          minimum: 0
+        end:
+          type: integer
+          format: int64
+          description: The end of the range in mm.
+          minimum: 0
+        track_section:
+          type: string
+          description: The track section identifier.
     Version:
       type: object
       required:

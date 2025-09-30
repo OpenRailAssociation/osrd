@@ -31,7 +31,11 @@ pub(super) fn route(input: &ItemFn) -> darling::Result<TokenStream> {
             (type_name == std::any::type_name_of_val(&#name)).then_some(|| {
                 use utoipa::Path;
                 use utoipa::__dev::Tags; // private API, but can't find another way :/
-                (<#path_name as Path>::methods(), <#path_name as Path>::operation(), <#path_name as Tags>::tags())
+                use utoipa::__dev::SchemaReferences; // same...
+
+                let mut schemas = Vec::new();
+                <#path_name as SchemaReferences>::schemas(&mut schemas);
+                (<#path_name as Path>::methods(), <#path_name as Path>::operation(), <#path_name as Tags>::tags(), schemas)
             })
         };
 
