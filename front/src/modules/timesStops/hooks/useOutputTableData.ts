@@ -4,8 +4,8 @@ import { keyBy } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
+import usePathOps from 'applications/operationalStudies/hooks/usePathOps';
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
-import useTrainOps from 'applications/operationalStudies/hooks/useTrainOps';
 import type { PathPropertiesFormatted } from 'applications/operationalStudies/types';
 import type { SimulationResponseSuccess } from 'common/api/osrdEditoastApi';
 import { matchPathStepAndOp } from 'modules/pathfinding/utils';
@@ -34,7 +34,7 @@ const useOutputTableData = (
   const { getTrackSectionsByIds } = useScenarioContext();
   const displayOnlyPathSteps = useSelector(getDisplayOnlyPathSteps);
 
-  const pathStepOps = useTrainOps(infraId, selectedTrain);
+  const pathStepOps = usePathOps(infraId, selectedTrain?.path);
 
   const [rows, setRows] = useState<TimesStopsRow[]>([]);
 
