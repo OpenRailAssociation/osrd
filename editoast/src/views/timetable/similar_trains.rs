@@ -183,7 +183,7 @@ enum SimilarTrainsError {
 #[editoast_derive::route]
 #[utoipa::path(
     post, path = "",
-    tag = "similar_trains,stdcm,sncf",
+    tags = ["similar_trains", "stdcm", "sncf"],
     request_body = inline(Request),
     responses(
         (

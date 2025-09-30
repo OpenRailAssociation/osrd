@@ -53,7 +53,7 @@ pub(in crate::views) struct RoutesResponse {
 #[editoast_derive::route]
 #[utoipa::path(
     get, path = "",
-    tag = "infra,routes",
+    tags = ["infra", "routes"],
     params(RoutesFromWaypointParams),
     responses(
         (status = 200, body = inline(RoutesResponse), description = "All routes that starting and ending by the given waypoint")
@@ -136,7 +136,7 @@ pub(in crate::views) struct RoutesFromNodesPositions {
 #[editoast_derive::route]
 #[utoipa::path(
     get, path = "",
-    tag = "infra,routes",
+    tags = ["infra", "routes"],
     params(InfraIdParam, RouteTrackRangesParams),
     responses(
         (
@@ -210,7 +210,7 @@ pub(in crate::views) async fn get_routes_track_ranges(
 #[editoast_derive::route]
 #[utoipa::path(
     post, path = "",
-    tag = "infra,routes",
+    tags = ["infra", "routes"],
     params(InfraIdParam),
     request_body(content = HashMap<String, Option<String>>, description = "A mapping node_id -> node_state | null"),
     responses(

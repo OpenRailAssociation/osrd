@@ -190,7 +190,7 @@ pub(in crate::views) struct TrainScheduleIds {
 #[editoast_derive::route]
 #[utoipa::path(
     delete, path = "",
-    tag = "timetable,train_schedule",
+    tags = ["timetable", "train_schedule"],
     request_body = inline(TrainScheduleIds),
     responses(
         (status = 204, description = "All train schedules have been deleted")
@@ -222,7 +222,7 @@ pub(in crate::views) async fn delete(
 #[editoast_derive::route]
 #[utoipa::path(
     put, path = "",
-    tag = "train_schedule,timetable",
+    tags = ["train_schedule", "timetable"],
     request_body = TrainScheduleForm,
     params(TrainScheduleIdParam),
     responses(
@@ -341,7 +341,7 @@ pub(in crate::views) async fn simulation(
 #[editoast_derive::route]
 #[utoipa::path(
     get, path = "",
-    tag = "train_schedule,etcs_braking_curves",
+    tags = ["train_schedule", "etcs_braking_curves"],
     params(TrainScheduleIdParam, InfraIdQueryParam, ElectricalProfileSetIdQueryParam),
     responses(
         (status = 200, description = "ETCS Braking Curves Output", body = core_client::etcs_braking_curves::Response),
@@ -558,7 +558,7 @@ pub(in crate::views) async fn simulation_summary(
 #[editoast_derive::route]
 #[utoipa::path(
     get, path = "",
-    tag = "train_schedule,pathfinding",
+    tags = ["train_schedule", "pathfinding"],
     params(TrainScheduleIdParam, InfraIdQueryParam),
     responses(
         (status = 200, description = "The path", body = PathfindingResult),

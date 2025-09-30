@@ -82,7 +82,7 @@ pub(in crate::views) struct QueryParam {
 #[editoast_derive::route]
 #[utoipa::path(
     post, path = "",
-    tag = "infra,pathfinding",
+    tags = ["infra", "pathfinding"],
     params(InfraIdParam, QueryParam),
     request_body = InfraPathfindingInput,
     responses(

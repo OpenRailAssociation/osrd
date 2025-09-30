@@ -292,7 +292,7 @@ pub(in crate::views) struct RoundTripsPage {
 #[editoast_derive::route]
 #[utoipa::path(
     get, path = "",
-    tag = "timetable,round_trips",
+    tags = ["timetable", "round_trips"],
     params(TimetableIdParam, PaginationQueryParams<1000>),
     responses((status = 200, body = inline(RoundTripsPage)))
 )]
@@ -338,7 +338,7 @@ pub(in crate::views) async fn list_train_schedules(
 #[editoast_derive::route]
 #[utoipa::path(
     get, path = "",
-    tag = "timetable,round_trips",
+    tags = ["timetable", "round_trips"],
     params(TimetableIdParam, PaginationQueryParams<1000>),
     responses((status = 200, body = inline(RoundTripsPage)))
 )]

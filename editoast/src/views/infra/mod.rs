@@ -657,7 +657,7 @@ pub(in crate::views) async fn get_voltages(
 #[editoast_derive::route]
 #[utoipa::path(
     get, path = "",
-    tag = "infra,rolling_stock",
+    tags = ["infra", "rolling_stock"],
     responses(
         (status = 200,  description = "Voltages list", body = Vec<String>, example = json!(["750V", "1500V", "2500.5V"])),
         (status = 404, description = "The infra was not found",),

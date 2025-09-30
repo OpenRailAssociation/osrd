@@ -104,7 +104,7 @@ pub(in crate::views) struct PacedTrainIdParam {
 #[editoast_derive::route]
 #[utoipa::path(
     get, path = "",
-    tag = "timetable,paced_train",
+    tags = ["timetable", "paced_train"],
     params(PacedTrainIdParam),
     responses(
         (status = 204, body = PacedTrainResponse, description = "The requested paced train")
@@ -139,7 +139,7 @@ pub(in crate::views) async fn get_by_id(
 #[editoast_derive::route]
 #[utoipa::path(
     put, path = "",
-    tag = "timetable,paced_train",
+    tags = ["timetable", "paced_train"],
     params(PacedTrainIdParam),
     request_body = inline(PacedTrain),
     responses(
@@ -180,7 +180,7 @@ pub(in crate::views) struct PacedTrainIds {
 #[editoast_derive::route]
 #[utoipa::path(
     delete, path = "",
-    tag = "timetable,paced_train",
+    tags = ["timetable", "paced_train"],
     request_body = inline(PacedTrainIds),
     responses(
         (status = 204, description = "All paced_trains have been deleted")
@@ -375,7 +375,7 @@ pub(in crate::views) struct ExceptionQueryParam {
 #[editoast_derive::route]
 #[utoipa::path(
     get, path = "",
-    tag = "paced_train,pathfinding",
+    tags = ["paced_train", "pathfinding"],
     params(PacedTrainIdParam, InfraIdQueryParam, ExceptionQueryParam),
     responses(
         (status = 200, description = "The path", body = PathfindingResult),
