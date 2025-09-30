@@ -4,13 +4,14 @@
 
 use std::cmp::Ordering;
 use std::collections::BTreeMap;
+use std::fmt;
 use std::ops::Bound;
 
 #[derive(Clone, Copy, Debug, PartialEq)]
-struct LowerBound<T>(Bound<T>);
+pub struct LowerBound<T>(Bound<T>);
 
 #[derive(Clone, Copy, Debug, PartialEq)]
-struct UpperBound<T>(Bound<T>);
+pub struct UpperBound<T>(Bound<T>);
 
 impl<T> Eq for LowerBound<T> where T: PartialEq {}
 impl<T> Eq for UpperBound<T> where T: PartialEq {}
@@ -117,13 +118,41 @@ impl<T> LowerBound<T> {
     }
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+/// Given `(-∞..left` and `right..+∞)`, return whether both range intersect.
+///
+/// This function returns
+/// - [`Ordering::Less`] if both ranges do not intersect
+/// - [`Ordering::Equal`] if both ranges intersect on one point only
+/// - [`Ordering::Greater`] if both ranges intersect on more than one point
+fn cmplr<T>(left: UpperBound<T>, right: LowerBound<T>) -> Ordering
+where
+    T: PartialOrd,
+{
+    match (&left.0, &right.0) {
+        (Bound::Unbounded, _) | (_, Bound::Unbounded) => Ordering::Less,
+        (Bound::Included(s), Bound::Included(o)) => T::partial_cmp(s, o).unwrap_or(Ordering::Less),
+        (Bound::Included(s), Bound::Excluded(o))
+        | (Bound::Excluded(s), Bound::Included(o))
+        | (Bound::Excluded(s), Bound::Excluded(o)) => {
+            T::partial_cmp(s, o).map_or(Ordering::Less, |cmp| cmp.then(Ordering::Less))
+        }
+    }
+}
+
+/// An interval/continuous span of values between two bounds.
+///
+/// `start` may be greater than `end`, in which case the range is considered empty.
+#[derive(Clone, Copy, PartialEq, Eq)]
 pub struct Range<T> {
+    /// Lower bound
     pub start: LowerBound<T>,
+
+    /// Upper bound
     pub end: UpperBound<T>,
 }
 
 impl<T> Range<T> {
+    /// Create a new [`Range`].
     pub fn new(start: Bound<T>, end: Bound<T>) -> Self {
         Self {
             start: LowerBound(start),
@@ -136,16 +165,27 @@ impl<T> Range<T>
 where
     T: PartialOrd,
 {
-    pub fn is_empty(&self) -> bool {
-        !match (&self.start.0, &self.end.0) {
-            (Bound::Unbounded, _) | (_, Bound::Unbounded) => true,
-            (Bound::Included(start), Bound::Excluded(end))
-            | (Bound::Excluded(start), Bound::Included(end))
-            | (Bound::Excluded(start), Bound::Excluded(end)) => start < end,
-            (Bound::Included(start), Bound::Included(end)) => start <= end,
-        }
+    /// Check for `NaN`, or whether the range bounds are valid with regards to [`Eq`] requirements.
+    ///
+    /// This doesn't check whether `start` is greater than `end`.
+    #[allow(clippy::eq_op)]
+    pub fn is_valid(&self) -> bool {
+        self.start.0 == self.start.0 && self.end.0 == self.end.0
     }
 
+    /// Return whether the range does not contain any element.
+    pub fn is_empty(&self) -> bool {
+        !self.is_valid()
+            || !match (&self.start.0, &self.end.0) {
+                (Bound::Unbounded, _) | (_, Bound::Unbounded) => true,
+                (Bound::Included(start), Bound::Excluded(end))
+                | (Bound::Excluded(start), Bound::Included(end))
+                | (Bound::Excluded(start), Bound::Excluded(end)) => start < end,
+                (Bound::Included(start), Bound::Included(end)) => start <= end,
+            }
+    }
+
+    /// Return whether the range contains the given `value`.
     pub fn contains(&self, value: T) -> bool {
         (match &self.start.0 {
             Bound::Included(start) => start <= &value,
@@ -156,6 +196,25 @@ where
             Bound::Excluded(end) => &value < end,
             Bound::Unbounded => true,
         })
+    }
+}
+
+impl<T> fmt::Debug for Range<T>
+where
+    T: fmt::Debug,
+{
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match &self.start.0 {
+            Bound::Included(t) => write!(f, "[{t:?}")?,
+            Bound::Excluded(t) => write!(f, "({t:?}")?,
+            Bound::Unbounded => write!(f, "(-∞")?,
+        }
+        write!(f, "..")?;
+        match &self.end.0 {
+            Bound::Included(t) => write!(f, "{t:?}]"),
+            Bound::Excluded(t) => write!(f, "{t:?})"),
+            Bound::Unbounded => write!(f, "+∞)"),
+        }
     }
 }
 
@@ -246,13 +305,12 @@ where
         ));
 
         for (start, (end, _value)) in overlaps {
-            // TODO impl this PartialOrd GOOD LUCK
-            if range.end < start {
+            if cmplr(range.end, *start) == Ordering::Less {
                 break;
             }
             if &range.end < end {
                 // start..end is the last range that starts in [range.start..range.end] since it
-                // does not end in [range.start..range.end], so let's truncate `last`.
+                // does not end in [range.start..range.end], so let's truncate it.
 
                 if let Some(new_start) = range.end.next_up() {
                     to_update = Some((*start, new_start));
@@ -263,13 +321,6 @@ where
 
             to_remove.push(*start);
         }
-
-        if let Some(last) = overlaps.next_back() {
-            let (last_start, (last_end, _)) = last;
-        }
-
-        // All other ranges are for sure fully contained in `range`.
-        to_remove.extend(overlaps.map(|(start, _)| *start));
 
         for start in to_remove {
             self.inner.remove(&start);
@@ -312,20 +363,24 @@ where
     }
 }
 
+impl<K, V> fmt::Debug for RangeMap<K, V>
+where
+    K: fmt::Debug,
+    V: fmt::Debug,
+{
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        self.inner.fmt(f)
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
-    fn test_THIS() {
+    fn test_this() {
         let mut rm = RangeMap::<f64, bool>::new();
-        rm.insert(
-            Range {
-                start: Bound::Excluded(0.0),
-                end: Bound::Excluded(1.0),
-            },
-            true,
-        );
+        rm.insert(Range::new(Bound::Excluded(0.0), Bound::Excluded(1.0)), true);
         assert!(rm.get(0.0).is_none());
         assert!(rm.get(f64::next_up(0.0)) == Some(&true));
         assert!(rm.get(0.25) == Some(&true));
@@ -333,13 +388,7 @@ mod tests {
         assert!(rm.get(f64::next_down(1.0)) == Some(&true));
         assert!(rm.get(1.0).is_none());
 
-        rm.insert(
-            Range {
-                start: Bound::Included(0.5),
-                end: Bound::Unbounded,
-            },
-            false,
-        );
+        rm.insert(Range::new(Bound::Included(0.5), Bound::Unbounded), false);
         assert!(rm.get(0.0).is_none());
         assert!(rm.get(f64::next_up(0.0)) == Some(&true));
         assert!(rm.get(0.25) == Some(&true));
