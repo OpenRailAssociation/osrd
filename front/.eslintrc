@@ -27,6 +27,14 @@
     "project": true
   },
   "rules": {
+    /*"camelcase": [
+      "error",
+      {
+        "properties": "never",
+        "ignoreDestructuring": true,
+        "ignoreImports": true
+      }
+    ],*/
     "import/no-named-as-default": "off",
     "import/no-named-as-default-member": "off",
     "react-hooks/exhaustive-deps": "off",
@@ -58,6 +66,13 @@
     "@typescript-eslint/no-unsafe-return": "error",
     "@typescript-eslint/no-unsafe-call": "error",
     "@typescript-eslint/non-nullable-type-assertion-style": "error",
+    "@typescript-eslint/naming-convention": [
+      "error",
+      { "selector": ["function"], "format": ["camelCase", "PascalCase"] },
+      { "selector": ["variable"], "format": ["camelCase", "UPPER_CASE", "PascalCase"], "leadingUnderscore": "allow" },
+      { "selector": ["variable"], "modifiers": ["global"], "format": ["camelCase", "UPPER_CASE", "PascalCase"] },
+      { "selector": ["variable"], "modifiers": ["destructured"], "format": ["camelCase", "UPPER_CASE", "PascalCase", "snake_case"] }
+    ],
 
     "@typescript-eslint/no-restricted-types": [
       "error",
@@ -152,7 +167,6 @@
         "@typescript-eslint/no-explicit-any": 2,
         "@typescript-eslint/explicit-module-boundary-types": 0,
         "@typescript-eslint/space-before-blocks": 0,
-        "camelcase": 0,
         "no-nonoctal-decimal-escape": 0,
         "no-param-reassign": 0,
         "no-unsafe-optional-chaining": 0,
