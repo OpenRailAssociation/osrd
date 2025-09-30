@@ -1,5 +1,6 @@
 {
   "ApplicableDirections": {
+    "description": "Wird verwendet, um die Anwendungsrichtung bestimmter Objekte zu kennen",
     "title": "Verwendbare Ausrichtung"
   },
   "ApplicableDirectionsTrackRange": {
