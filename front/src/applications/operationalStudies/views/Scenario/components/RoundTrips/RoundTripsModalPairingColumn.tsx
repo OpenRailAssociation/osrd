@@ -62,6 +62,7 @@ const RoundTripsModalPairingColumn = ({
         className="round-trips-pairing-column"
       >
         <Input
+          testIdPrefix="pairing-card-filter"
           id="candidates-filter"
           small
           narrow
