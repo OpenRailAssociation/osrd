@@ -28,7 +28,7 @@ pub(super) fn route(input: &ItemFn) -> darling::Result<TokenStream> {
         #[doc(hidden)]
         #[linkme::distributed_slice(crate::views::router::OPENAPI_ROUTES)]
         static #static_name: crate::views::router::OpenApiRouteSliceItem = |type_name: &str| {
-            (type_name == std::any::type_name_of_val(&#name)).then_some(|_tag: Option<&str>| {
+            (type_name == std::any::type_name_of_val(&#name)).then_some(|| {
                 use utoipa::Path;
                 use utoipa::__dev::Tags; // private API, but can't find another way :/
                 (<#path_name as Path>::methods(), <#path_name as Path>::operation(), <#path_name as Tags>::tags())
