@@ -1,4 +1,5 @@
 pub mod macro_nodes;
+pub mod macro_notes;
 
 use authz::Role;
 use axum::Extension;
@@ -484,6 +485,36 @@ pub(in crate::views) async fn list(
     let results = futures::future::try_join_all(futs).await?;
 
     Ok(Json(ListScenariosResponse { stats, results }))
+}
+
+/// Validate that the project exists, the study exists and belongs to the project and the scenarios exists and belongs to the study
+async fn check_project_study_scenario(
+    conn: DbConnection,
+    project_id: i64,
+    study_id: i64,
+    scenario_id: i64,
+) -> Result<(Project, Study, Scenario)> {
+    let project = Project::retrieve_or_fail(conn.clone(), project_id, || ProjectError::NotFound {
+        project_id,
+    })
+    .await?;
+    let study =
+        Study::retrieve_or_fail(conn.clone(), study_id, || StudyError::NotFound { study_id })
+            .await?;
+
+    if study.project_id != project_id {
+        return Err(StudyError::NotFound { study_id }.into());
+    }
+
+    let scenario = Scenario::retrieve_or_fail(conn, scenario_id, || ScenarioError::NotFound {
+        scenario_id,
+    })
+    .await?;
+    if scenario.study_id != study_id {
+        return Err(ScenarioError::NotFound { scenario_id }.into());
+    }
+
+    Ok((project, study, scenario))
 }
 
 #[cfg(test)]

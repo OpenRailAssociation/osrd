@@ -58,6 +58,11 @@
         "InfraIsLocked": "Infraestructura bloqueada"
       }
     },
+    "macro_note": {
+      "Database": "Error interno (base de datos)",
+      "NotFound": "No se encontró la nota «{{note_id}}»",
+      "WrongScenario": "La nota «{note_id}» no pertenece al escenario «{scenario_id}»"
+    },
     "paced_train": {
       "Database": "Error interno (de la base de datos)",
       "InfraNotFound": "No se pudo encontrar la infraestructura «{{infra_id}}»"

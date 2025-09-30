@@ -792,6 +792,15 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ['scenarios'],
       }),
+      getProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNotesNoteId: build.query<
+        GetProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNotesNoteIdApiResponse,
+        GetProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNotesNoteIdApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios/${queryArg.scenarioId}/macro_notes/${queryArg.noteId}`,
+        }),
+        providesTags: ['scenarios'],
+      }),
       postRollingStock: build.mutation<PostRollingStockApiResponse, PostRollingStockApiArg>({
         query: (queryArg) => ({
           url: `/rolling_stock`,
@@ -2088,6 +2097,15 @@ export type DeleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNo
   studyId: number;
   scenarioId: number;
   nodeId: number;
+};
+export type GetProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNotesNoteIdApiResponse =
+  /** status 200 The requested macro note */ MacroNoteResponse;
+export type GetProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNotesNoteIdApiArg = {
+  /** The id of a project */
+  projectId: number;
+  studyId: number;
+  scenarioId: number;
+  noteId: number;
 };
 export type PostRollingStockApiResponse = /** status 200 The created rolling stock */ RollingStock;
 export type PostRollingStockApiArg = {
@@ -4131,6 +4149,14 @@ export type MacroNodeForm = {
 };
 export type MacroNodeBatchForm = {
   macro_nodes: MacroNodeForm[];
+};
+export type MacroNoteResponse = {
+  id: number;
+  labels: Tags;
+  text: string;
+  title: string;
+  x: number;
+  y: number;
 };
 export type EffortCurveConditions = {
   comfort: Comfort | null;

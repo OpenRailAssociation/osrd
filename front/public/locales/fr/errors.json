@@ -115,6 +115,11 @@
       "Database": "Erreur interne",
       "NotFound": "Noeud {{node_id}} non trouvé."
     },
+    "macro_note": {
+      "Database": "Erreur interne (base de données)",
+      "NotFound": "Note '{{note_id}}' non trouvée.",
+      "WrongScenario": "La note '{note_id}' n'appartient pas au scénario '{scenario_id}'"
+    },
     "model": {
       "ModelError": "Erreur interne (requêtage base de données)"
     },
