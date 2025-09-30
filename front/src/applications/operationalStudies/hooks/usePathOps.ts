@@ -1,5 +1,7 @@
 import { useMemo } from 'react';
 
+import { skipToken } from '@reduxjs/toolkit/query';
+
 import {
   osrdEditoastApi,
   type OperationalPoint,
@@ -27,13 +29,14 @@ const usePathOps = (infraId: number, path?: Train['path']): OperationalPoint[] =
 
   const { data: operationalPoints } =
     osrdEditoastApi.endpoints.postInfraByInfraIdMatchOperationalPoints.useQuery(
-      {
-        infraId,
-        body: {
-          operational_point_references: operationalPointReferences,
-        },
-      },
-      { skip: operationalPointReferences.length === 0 }
+      operationalPointReferences.length > 0
+        ? {
+            infraId,
+            body: {
+              operational_point_references: operationalPointReferences,
+            },
+          }
+        : skipToken
     );
 
   return useMemo(() => {
