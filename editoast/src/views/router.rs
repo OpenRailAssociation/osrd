@@ -9,12 +9,10 @@ use std::collections::VecDeque;
 pub(in crate::views) type OpenApiRouteSliceItem = fn(
     &str,
 ) -> Option<
-    fn(
-        Option<&str>, // TODO: not necessary for utoipa 5.X, remove
-    ) -> (
+    fn() -> (
         Vec<utoipa::openapi::path::HttpMethod>,
         utoipa::openapi::path::Operation,
-        Vec<&'static str>, // tags
+        Vec<&'static str>,
     ),
 >;
 
@@ -30,9 +28,7 @@ pub(super) struct DocumentedRouter {
 pub(super) enum PathTree {
     Leaf {
         path_segment: &'static str,
-        path_item: fn(
-            Option<&str>,
-        ) -> (
+        path_item: fn() -> (
             Vec<utoipa::openapi::path::HttpMethod>,
             utoipa::openapi::path::Operation,
             Vec<&'static str>,
@@ -51,7 +47,7 @@ impl PathTree {
                 path_segment,
                 path_item,
             } => {
-                let (http_methods, mut operation, tags) = path_item(None);
+                let (http_methods, mut operation, tags) = path_item();
                 // Since utoipa 5.x, tags are provided separately and need to be added to the operation manually                                                              ║
                 // as we're not collecting using the standard OpenApi macro.
                 if !tags.is_empty() {
@@ -96,7 +92,7 @@ impl DocumentedRouter {
         let Some(path_item) = OPENAPI_ROUTES.iter().find_map(|matcher| matcher(type_name)) else {
             panic!("no openapi found for route {path} with type {type_name}!");
         };
-        let (http_methods, _, _) = path_item(None);
+        let (http_methods, _, _) = path_item();
         if !http_methods.contains(&expected_method) {
             panic!(
                 "expected method {} in the router at \"{path}\" but found {} in utoipa path",
