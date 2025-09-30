@@ -1671,7 +1671,24 @@ export type GetInfraByInfraIdErrorsApiArg = {
   /** Whether the response should include errors or warnings */
   level?: 'warnings' | 'errors' | 'all';
   /** The type of error to filter on */
-  errorType?: InfraErrorTypeLabel;
+  errorType?:
+    | 'duplicated_group'
+    | 'empty_object'
+    | 'invalid_group'
+    | 'invalid_reference'
+    | 'invalid_route'
+    | 'invalid_switch_ports'
+    | 'missing_route'
+    | 'missing_buffer_stop'
+    | 'node_endpoints_not_unique'
+    | 'object_out_of_path'
+    | 'odd_buffer_stop_location'
+    | 'out_of_range'
+    | 'overlapping_electrifications'
+    | 'overlapping_speed_sections'
+    | 'overlapping_switches'
+    | 'unknown_port_name'
+    | 'unused_port';
   /** Filter errors and warnings related to a given object */
   objectId?: string;
 };
@@ -1974,7 +1991,13 @@ export type GetProjectsApiResponse = /** status 200 The list of projects */ Pagi
 export type GetProjectsApiArg = {
   page?: number;
   pageSize?: number;
-  ordering?: Ordering;
+  ordering?:
+    | 'NameAsc'
+    | 'NameDesc'
+    | 'CreationDateAsc'
+    | 'CreationDateDesc'
+    | 'LastModifiedDesc'
+    | 'LastModifiedAsc';
 };
 export type PostProjectsApiResponse = /** status 201 The created project */ ProjectWithStudies;
 export type PostProjectsApiArg = {
@@ -2008,7 +2031,13 @@ export type GetProjectsByProjectIdStudiesApiArg = {
   projectId: number;
   page?: number;
   pageSize?: number;
-  ordering?: Ordering;
+  ordering?:
+    | 'NameAsc'
+    | 'NameDesc'
+    | 'CreationDateAsc'
+    | 'CreationDateDesc'
+    | 'LastModifiedDesc'
+    | 'LastModifiedAsc';
 };
 export type PostProjectsByProjectIdStudiesApiResponse =
   /** status 201 The created study */ StudyResponse;
@@ -2049,7 +2078,13 @@ export type GetProjectsByProjectIdStudiesAndStudyIdScenariosApiArg = {
   studyId: number;
   page?: number;
   pageSize?: number;
-  ordering?: Ordering;
+  ordering?:
+    | 'NameAsc'
+    | 'NameDesc'
+    | 'CreationDateAsc'
+    | 'CreationDateDesc'
+    | 'LastModifiedDesc'
+    | 'LastModifiedAsc';
 };
 export type PostProjectsByProjectIdStudiesAndStudyIdScenariosApiResponse =
   /** status 201 The created scenario */ ScenarioResponse;
@@ -2642,7 +2677,13 @@ export type GetWorkSchedulesGroupByIdApiArg = {
   pageSize?: number;
   /** A work schedule group ID */
   id: number;
-  ordering?: Ordering;
+  ordering?:
+    | 'NameAsc'
+    | 'NameDesc'
+    | 'CreationDateAsc'
+    | 'CreationDateDesc'
+    | 'LastModifiedDesc'
+    | 'LastModifiedAsc';
 };
 export type PutWorkSchedulesGroupByIdApiResponse =
   /** status 200 The work schedules have been created */ WorkSchedule[];
@@ -3231,24 +3272,6 @@ export type InfraError = InfraErrorType & {
   obj_id: string;
   obj_type: ObjectType;
 };
-export type InfraErrorTypeLabel =
-  | 'duplicated_group'
-  | 'empty_object'
-  | 'invalid_group'
-  | 'invalid_reference'
-  | 'invalid_route'
-  | 'invalid_switch_ports'
-  | 'missing_route'
-  | 'missing_buffer_stop'
-  | 'node_endpoints_not_unique'
-  | 'object_out_of_path'
-  | 'odd_buffer_stop_location'
-  | 'out_of_range'
-  | 'overlapping_electrifications'
-  | 'overlapping_speed_sections'
-  | 'overlapping_switches'
-  | 'unknown_port_name'
-  | 'unused_port';
 export type BoundingBox = {
   max_lat: number;
   max_lon: number;
@@ -4114,13 +4137,6 @@ export type Project = {
 export type ProjectWithStudies = Project & {
   studies_count: number;
 };
-export type Ordering =
-  | 'NameAsc'
-  | 'NameDesc'
-  | 'CreationDateAsc'
-  | 'CreationDateDesc'
-  | 'LastModifiedDesc'
-  | 'LastModifiedAsc';
 export type ProjectCreateForm = {
   budget?: number | null;
   description?: string | null;

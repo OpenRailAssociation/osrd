@@ -1,4 +1,4 @@
-import type { InfraErrorTypeLabel } from 'common/api/osrdEditoastApi';
+import type { InfraErrorTypeLabel } from './types';
 
 export const INFRA_ERRORS_BY_LEVEL: Record<'errors' | 'warnings', Set<InfraErrorTypeLabel>> = {
   errors: new Set([

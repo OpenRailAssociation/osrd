@@ -442,6 +442,7 @@ pub(in crate::views) struct GroupContentResponse {
 #[into_params(parameter_in = Query)]
 pub struct WorkScheduleOrderingParam {
     #[serde(default)]
+    #[param(inline)]
     pub ordering: Ordering,
 }
 

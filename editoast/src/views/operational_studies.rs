@@ -20,6 +20,7 @@ pub enum Ordering {
 #[into_params(parameter_in = Query)]
 pub struct OperationalStudiesOrderingParam {
     #[serde(default)]
+    #[param(inline)]
     pub ordering: Ordering,
 }
 

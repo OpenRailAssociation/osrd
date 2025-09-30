@@ -36,7 +36,7 @@ pub(in crate::views) struct ErrorListQueryParams {
     #[param(inline)]
     level: Level,
     /// The type of error to filter on
-    #[param(value_type = Option<InfraErrorTypeLabel>)]
+    #[param(value_type = Option<InfraErrorTypeLabel>, inline)]
     error_type: Option<String>,
     /// Filter errors and warnings related to a given object
     #[param(value_type = Option<String>)]

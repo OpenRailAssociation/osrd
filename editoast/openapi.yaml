@@ -907,7 +907,26 @@ paths:
         description: The type of error to filter on
         required: false
         schema:
-          $ref: '#/components/schemas/InfraErrorTypeLabel'
+          type: string
+          description: Auto-generated discriminant enum variants
+          enum:
+          - duplicated_group
+          - empty_object
+          - invalid_group
+          - invalid_reference
+          - invalid_route
+          - invalid_switch_ports
+          - missing_route
+          - missing_buffer_stop
+          - node_endpoints_not_unique
+          - object_out_of_path
+          - odd_buffer_stop_location
+          - out_of_range
+          - overlapping_electrifications
+          - overlapping_speed_sections
+          - overlapping_switches
+          - unknown_port_name
+          - unused_port
       - name: object_id
         in: query
         description: Filter errors and warnings related to a given object
@@ -2075,7 +2094,14 @@ paths:
         in: query
         required: false
         schema:
-          $ref: '#/components/schemas/Ordering'
+          type: string
+          enum:
+          - NameAsc
+          - NameDesc
+          - CreationDateAsc
+          - CreationDateDesc
+          - LastModifiedDesc
+          - LastModifiedAsc
       responses:
         '200':
           description: The list of projects
@@ -2204,7 +2230,14 @@ paths:
         in: query
         required: false
         schema:
-          $ref: '#/components/schemas/Ordering'
+          type: string
+          enum:
+          - NameAsc
+          - NameDesc
+          - CreationDateAsc
+          - CreationDateDesc
+          - LastModifiedDesc
+          - LastModifiedAsc
       responses:
         '200':
           description: The list of studies
@@ -2364,7 +2397,14 @@ paths:
         in: query
         required: false
         schema:
-          $ref: '#/components/schemas/Ordering'
+          type: string
+          enum:
+          - NameAsc
+          - NameDesc
+          - CreationDateAsc
+          - CreationDateDesc
+          - LastModifiedDesc
+          - LastModifiedAsc
       responses:
         '200':
           description: A paginated list of scenarios
@@ -4775,7 +4815,14 @@ paths:
         in: query
         required: false
         schema:
-          $ref: '#/components/schemas/Ordering'
+          type: string
+          enum:
+          - NameAsc
+          - NameDesc
+          - CreationDateAsc
+          - CreationDateDesc
+          - LastModifiedDesc
+          - LastModifiedAsc
       responses:
         '200':
           description: The work schedules in the group
