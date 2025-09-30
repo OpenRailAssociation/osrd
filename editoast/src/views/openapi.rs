@@ -258,21 +258,23 @@ impl OpenApiRoot {
         );
     }
 
-    fn insert_routes(openapi: &mut utoipa::openapi::OpenApi) {
+    fn insert_routes(openapi: &mut utoipa::openapi::OpenApi) -> Vec<(String, RefOr<Schema>)> {
         let paths = service_router()
             .path_trees
             .into_iter()
             .flat_map(|t| t.flatten())
-            .map(|(parts, item)| {
+            .map(|(parts, item, schemas)| {
                 (
                     parts
                         .into_iter()
                         .map(String::from)
                         .fold(String::new(), concat_path),
                     item,
+                    schemas,
                 )
             });
-        for (mut path, path_item) in paths {
+        let mut all_schemas = Vec::new();
+        for (mut path, path_item, schemas) in paths {
             // We are required by axum to have trailing slashes in the `Router`s.
             // But that's not OpenApi compliant, so we remove them here.
             if path.ends_with('/') {
@@ -286,18 +288,28 @@ impl OpenApiRoot {
             } else {
                 openapi.paths.paths.insert(path, path_item);
             }
+            all_schemas.extend(schemas);
         }
+        all_schemas
     }
 
-    fn insert_schemas(openapi: &mut utoipa::openapi::OpenApi) {
+    fn insert_schemas(
+        openapi: &mut utoipa::openapi::OpenApi,
+        routes_schemas: Vec<(String, RefOr<Schema>)>,
+    ) {
         if openapi.components.is_none() {
             openapi.components = Some(Default::default());
         }
         let schemas = &mut openapi.components.as_mut().unwrap().schemas;
+        // Manually collected schemas first
         schemas.extend(common::OPENAPI_SCHEMAS.iter().map(|f| {
             let (name, schema) = f();
             (name.to_string(), schema)
         }));
+        // Schemas from routes (won't override existing)
+        for (name, schema) in routes_schemas {
+            schemas.entry(name).or_insert(schema);
+        }
     }
 
     // Remove the operation_id that defaults to the endpoint function name
@@ -320,8 +332,8 @@ impl OpenApiRoot {
 
     pub fn build_openapi() -> utoipa::openapi::OpenApi {
         let mut openapi = OpenApiRoot::openapi();
-        Self::insert_routes(&mut openapi);
-        Self::insert_schemas(&mut openapi);
+        let routes_schemas = Self::insert_routes(&mut openapi);
+        Self::insert_schemas(&mut openapi, routes_schemas);
         Self::remove_discrimators(&mut openapi);
         Self::add_errors_in_schema(&mut openapi);
         Self::remove_operation_id(&mut openapi);

@@ -4508,7 +4508,7 @@ export type SearchResultItem =
   | SearchResultItemScenario
   | SearchResultItemTrainSchedule
   | SearchResultItemUser;
-export type SearchQuery = boolean | number | number | string | (null | SearchQuery)[];
+export type SearchQuery = boolean | number | number | string | object;
 export type SearchPayload = {
   /** Whether to return the SQL query instead of executing it
     

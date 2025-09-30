@@ -258,6 +258,7 @@ enum SearchQuery {
     Number(f64),
     Int(i64),
     String(String),
+    #[schema(value_type = Object)] // prevents infinite recursion with sub-schema collection
     Array(Vec<Option<SearchQuery>>),
 }
 

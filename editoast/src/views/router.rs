@@ -13,6 +13,10 @@ pub(in crate::views) type OpenApiRouteSliceItem = fn(
         Vec<utoipa::openapi::path::HttpMethod>,
         utoipa::openapi::path::Operation,
         Vec<&'static str>,
+        Vec<(
+            String,
+            utoipa::openapi::RefOr<utoipa::openapi::schema::Schema>,
+        )>,
     ),
 >;
 
@@ -32,6 +36,10 @@ pub(super) enum PathTree {
             Vec<utoipa::openapi::path::HttpMethod>,
             utoipa::openapi::path::Operation,
             Vec<&'static str>,
+            Vec<(
+                String,
+                utoipa::openapi::RefOr<utoipa::openapi::schema::Schema>,
+            )>,
         ),
     },
     Branch {
@@ -41,13 +49,22 @@ pub(super) enum PathTree {
 }
 
 impl PathTree {
-    pub(super) fn flatten(self) -> Vec<(VecDeque<&'static str>, utoipa::openapi::path::PathItem)> {
+    pub(super) fn flatten(
+        self,
+    ) -> Vec<(
+        VecDeque<&'static str>,
+        utoipa::openapi::path::PathItem,
+        Vec<(
+            String,
+            utoipa::openapi::RefOr<utoipa::openapi::schema::Schema>,
+        )>,
+    )> {
         match self {
             PathTree::Leaf {
                 path_segment,
                 path_item,
             } => {
-                let (http_methods, mut operation, tags) = path_item();
+                let (http_methods, mut operation, tags, schemas) = path_item();
                 // Since utoipa 5.x, tags are provided separately and need to be added to the operation manually                                                              ║
                 // as we're not collecting using the standard OpenApi macro.
                 if !tags.is_empty() {
@@ -55,7 +72,7 @@ impl PathTree {
                 }
                 let path_item =
                     utoipa::openapi::path::PathItem::from_http_methods(http_methods, operation);
-                vec![(VecDeque::from([path_segment]), path_item)]
+                vec![(VecDeque::from([path_segment]), path_item, schemas)]
             }
             PathTree::Branch {
                 path_segment,
@@ -63,9 +80,9 @@ impl PathTree {
             } => {
                 let mut paths = Vec::new();
                 for sub_path in sub_paths {
-                    for (mut path, item) in sub_path.flatten() {
+                    for (mut path, item, schemas) in sub_path.flatten() {
                         path.push_front(path_segment);
-                        paths.push((path, item));
+                        paths.push((path, item, schemas));
                     }
                 }
                 paths
@@ -92,7 +109,7 @@ impl DocumentedRouter {
         let Some(path_item) = OPENAPI_ROUTES.iter().find_map(|matcher| matcher(type_name)) else {
             panic!("no openapi found for route {path} with type {type_name}!");
         };
-        let (http_methods, _, _) = path_item();
+        let (http_methods, _, _, _) = path_item();
         if !http_methods.contains(&expected_method) {
             panic!(
                 "expected method {} in the router at \"{path}\" but found {} in utoipa path",
