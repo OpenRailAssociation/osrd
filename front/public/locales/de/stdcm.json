@@ -1,4 +1,7 @@
 {
+  "allowances": {
+    "gridMarginBeforeAfter": "Fahrplanabstand vorher/nachher"
+  },
   "arriveAt": "Ankunft um {{ time }}",
   "consist": {
     "compositionCode": "Baureihe",
