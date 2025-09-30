@@ -35,7 +35,13 @@ pub(super) fn route(input: &ItemFn) -> darling::Result<TokenStream> {
 
                 let mut schemas = Vec::new();
                 <#path_name as SchemaReferences>::schemas(&mut schemas);
-                (<#path_name as Path>::methods(), <#path_name as Path>::operation(), <#path_name as Tags>::tags(), schemas)
+
+                crate::views::router::RouteDocumentation {
+                    http_methods: <#path_name as Path>::methods(),
+                    operation: <#path_name as Path>::operation(),
+                    tags: <#path_name as Tags>::tags(),
+                    schemas,
+                }
             })
         };
 
