@@ -1,22 +1,101 @@
+import { useMemo } from 'react';
+
 import { ComboBox, Select } from '@osrd-project/ui-core';
 import { AddLocation, FocusLocation } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 
 import type { CategoryColors } from 'applications/operationalStudies/types';
-import type { PathStepV2 } from 'reducers/osrdconf/types';
+import type { PathStepMetadata, PathStepV2 } from 'reducers/osrdconf/types';
+
+import { isOpRefMetadata } from './utils';
+
+const EMPTY_OPTION = { label: '', id: '' };
 
 type PathStepProps = {
   pathStep?: PathStepV2;
+  pathStepMetadata?: PathStepMetadata;
   index?: number;
   hidePathfindingLine?: boolean;
   categoryColors: CategoryColors;
 };
 
-const PathStepItem = ({ pathStep, index, hidePathfindingLine, categoryColors }: PathStepProps) => {
+const PathStepItem = ({
+  pathStep,
+  pathStepMetadata,
+  index,
+  hidePathfindingLine,
+  categoryColors,
+}: PathStepProps) => {
   const { t } = useTranslation('operational-studies', {
     keyPrefix: 'manageTimetableItem.itineraryModal',
   });
+
+  const secondaryCodeSuggestions = useMemo(() => {
+    if (!isOpRefMetadata(pathStepMetadata)) return [];
+    return [
+      { label: '', id: '' },
+      ...Array.from(pathStepMetadata.locationsBySecondaryCode.keys()).map((key) => ({
+        label: key,
+        id: key,
+      })),
+    ];
+  }, [pathStepMetadata]);
+
+  const selectedSecondaryCodeOption = useMemo(() => {
+    if (!isOpRefMetadata(pathStepMetadata)) return { label: '', id: '' };
+
+    return {
+      label: pathStepMetadata?.secondaryCode ?? '',
+      id: pathStepMetadata?.secondaryCode ?? '',
+    };
+  }, [pathStep, pathStepMetadata]);
+
+  const trackNameSuggestions = useMemo(() => {
+    const selectedSecondaryCode = selectedSecondaryCodeOption.id;
+    if (!selectedSecondaryCode) return [];
+
+    const selectedSecondaryCodeLocations =
+      (isOpRefMetadata(pathStepMetadata) &&
+        pathStepMetadata.locationsBySecondaryCode.get(selectedSecondaryCode)) ||
+      [];
+
+    const sortedSuggestions = selectedSecondaryCodeLocations
+      .map((location, i) => ({
+        label: location.trackName,
+        id: `${location.trackId}-${i}`,
+      }))
+      // Sort with numbers first in ascending order, then alphabetically
+      .sort((a, b) => {
+        const isANumber = !isNaN(Number(a.label));
+        const isBNumber = !isNaN(Number(b.label));
+
+        if (isANumber && isBNumber) {
+          return parseInt(a.label) - parseInt(b.label);
+        } else if (isANumber) {
+          return -1;
+        } else if (isBNumber) {
+          return 1;
+        } else {
+          return a.label.localeCompare(b.label);
+        }
+      });
+    return [{ label: '', id: '' }, ...sortedSuggestions];
+  }, [pathStepMetadata, selectedSecondaryCodeOption]);
+
+  const selectedTrackNameOption = useMemo(() => {
+    // No track should be selected if the path step is invalid or has no secondary code
+    // or is a step added by map click
+
+    if (!isOpRefMetadata(pathStepMetadata) || !pathStepMetadata.trackName) {
+      return EMPTY_OPTION;
+    }
+
+    return (
+      trackNameSuggestions.find((track) => track.label === pathStepMetadata.trackName) ||
+      EMPTY_OPTION
+    );
+  }, [pathStep, pathStepMetadata]);
 
   return (
     <div className="path-step-wrapper">
@@ -39,7 +118,7 @@ const PathStepItem = ({ pathStep, index, hidePathfindingLine, categoryColors }: 
         <div className="path-step-op-name">
           <ComboBox
             id={`pathStep-name-${pathStep?.id ?? 'empty'}`}
-            value={''}
+            value={isOpRefMetadata(pathStepMetadata) ? pathStepMetadata.name : ''}
             suggestions={[]}
             getSuggestionLabel={(option) => String(option)}
             onSelectSuggestion={() => {}}
@@ -51,9 +130,10 @@ const PathStepItem = ({ pathStep, index, hidePathfindingLine, categoryColors }: 
         </div>
         <Select
           id={`pathStep-type-${pathStep?.id ?? 'empty'}`}
-          options={[]}
-          getOptionLabel={(option) => String(option)}
-          getOptionValue={(option) => String(option)}
+          value={selectedSecondaryCodeOption}
+          options={secondaryCodeSuggestions}
+          getOptionLabel={(option) => option.label}
+          getOptionValue={(option) => option.id}
           onChange={() => {}}
           small
           narrow
@@ -61,9 +141,10 @@ const PathStepItem = ({ pathStep, index, hidePathfindingLine, categoryColors }: 
         />
         <Select
           id={`pathStep-status-${pathStep?.id ?? 'empty'}`}
-          options={[]}
-          getOptionLabel={(option) => String(option)}
-          getOptionValue={(option) => String(option)}
+          value={selectedTrackNameOption}
+          options={trackNameSuggestions}
+          getOptionLabel={(option) => option.label}
+          getOptionValue={(option) => option.id}
           onChange={() => {}}
           small
           narrow

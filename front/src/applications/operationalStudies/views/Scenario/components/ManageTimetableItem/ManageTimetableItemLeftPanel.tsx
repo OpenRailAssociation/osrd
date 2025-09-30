@@ -203,6 +203,7 @@ const ManageTimetableItemLeftPanel = ({
         <ItineraryModal
           itineraryModalIsOpen={itineraryModalIsOpen}
           setItineraryModalIsOpen={setItineraryModalIsOpen}
+          displayTimetableItemManagement={displayTimetableItemManagement}
         />
       )}
       <div
