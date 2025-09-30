@@ -1,8 +1,5 @@
 mod tracing_instrumentation;
 
-use std::hash::DefaultHasher;
-use std::hash::Hash;
-use std::hash::Hasher;
 use std::ops::Deref;
 use std::ops::DerefMut;
 use std::sync::Arc;
@@ -13,7 +10,6 @@ use diesel::sql_query;
 use diesel_async::AsyncConnection;
 use diesel_async::AsyncPgConnection;
 use diesel_async::RunQueryDsl;
-use diesel_async::SimpleAsyncConnection;
 use diesel_async::pooled_connection::AsyncDieselConnectionManager;
 use diesel_async::pooled_connection::ManagerConfig;
 use diesel_async::pooled_connection::deadpool::Object;
@@ -25,7 +21,6 @@ use futures_util::FutureExt as _;
 use openssl::ssl::SslConnector;
 use openssl::ssl::SslMethod;
 use openssl::ssl::SslVerifyMode;
-use tokio::sync::Mutex;
 use tokio::sync::OwnedRwLockWriteGuard;
 use tokio::sync::RwLock;
 use tracing::trace;
@@ -36,7 +31,7 @@ use crate::DatabaseError;
 pub type DbConnectionConfig = AsyncDieselConnectionManager<AsyncPgConnection>;
 
 #[cfg(any(test, feature = "testing"))]
-static TEMPLATE_CREATION_MUTEX: Mutex<()> = Mutex::const_new(());
+static TEMPLATE_CREATION_MUTEX: tokio::sync::Mutex<()> = tokio::sync::Mutex::const_new(());
 
 #[cfg(any(test, feature = "testing"))]
 fn get_migrations() -> (diesel_async_migrations::EmbeddedMigrations, String) {
@@ -47,7 +42,9 @@ fn get_migrations() -> (diesel_async_migrations::EmbeddedMigrations, String) {
         hash_data.push((name, up, down))
     }
 
-    let mut hasher = DefaultHasher::new();
+    use std::hash::Hash as _;
+    use std::hash::Hasher as _;
+    let mut hasher = std::hash::DefaultHasher::new();
     hash_data.hash(&mut hasher);
     let hash = format!("{}", hasher.finish());
 
@@ -101,6 +98,7 @@ async fn template_creation(osrd_conn: DbConnection) -> Result<String, Box<dyn st
         let template_pool = create_connection_pool(template_url_postgres.clone(), 1)?;
         let mut conn = template_pool.get().await?;
 
+        use diesel_async::SimpleAsyncConnection as _;
         let sql_content = include_str!("../sql/init_test_db.sql");
         conn.batch_execute(sql_content).await?;
     }
