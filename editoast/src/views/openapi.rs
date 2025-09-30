@@ -166,22 +166,6 @@ impl OpenApiRoot {
         }
     }
 
-    // utoipa::path doesn't support multiple tags, so this is a hack to split them
-    // A PR on utoipa might be a good idea
-    // Split comma-separated tags into multiple tags
-    fn split_tags(openapi: &mut utoipa::openapi::OpenApi) {
-        for (_, endpoint) in openapi.paths.paths.iter_mut() {
-            for operation in path_item_operations_mut(endpoint) {
-                operation.tags = operation.tags.as_ref().map(|tags| {
-                    tags.iter()
-                        .flat_map(|tag| tag.split(','))
-                        .map(|tag| tag.trim().to_owned())
-                        .collect()
-                });
-            }
-        }
-    }
-
     fn error_context_to_openapi_object(error_def: &ErrorDefinition) -> utoipa::openapi::Object {
         let mut context = utoipa::openapi::Object::new();
         // We write openapi properties by alpha order, to keep the same yml file
@@ -339,7 +323,6 @@ impl OpenApiRoot {
         Self::insert_routes(&mut openapi);
         Self::insert_schemas(&mut openapi);
         Self::remove_discrimators(&mut openapi);
-        Self::split_tags(&mut openapi);
         Self::add_errors_in_schema(&mut openapi);
         Self::remove_operation_id(&mut openapi);
         openapi

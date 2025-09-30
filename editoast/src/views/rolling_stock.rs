@@ -546,7 +546,7 @@ async fn parse_multipart_content(
 #[editoast_derive::route]
 #[utoipa::path(
     post, path = "",
-    tag = "rolling_stock,rolling_stock_livery",
+    tags = ["rolling_stock", "rolling_stock_livery"],
     params(RollingStockIdParam),
     request_body = RollingStockLiveryCreateForm,
     responses(

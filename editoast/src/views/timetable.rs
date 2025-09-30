@@ -228,7 +228,7 @@ pub(in crate::views) async fn delete(
 #[editoast_derive::route]
 #[utoipa::path(
     post, path = "",
-    tag = "timetable,train_schedule",
+    tags = ["timetable", "train_schedule"],
     params(TimetableIdParam),
     request_body = Vec<TrainSchedule>,
     responses(
@@ -274,7 +274,7 @@ pub(in crate::views) async fn post_train_schedule(
 #[editoast_derive::route]
 #[utoipa::path(
     post, path = "",
-    tag = "timetable,paced_train",
+    tags = ["timetable", "paced_train"],
     params(TimetableIdParam),
     request_body = Vec<PacedTrain>,
     responses(
