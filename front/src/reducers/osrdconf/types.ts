@@ -133,6 +133,41 @@ export type PathStepV2 = {
   receptionSignal: ReceptionSignal | null;
 };
 
+export type PathStepMetadata =
+  | { isInvalid: true }
+  | {
+      type: 'trackOffset';
+      isInvalid: false;
+      label: string;
+      coordinates: Position;
+    }
+  | {
+      type: 'opRef';
+      isInvalid: false;
+      name: string;
+      /** Store the UIC for cases where we modify a step that was defined by an op id / trigram */
+      uic?: number;
+      /** Required when the corresponding path step is an operational_point since it won't
+       * be in the path step location
+       */
+      secondaryCode?: string;
+      /** Required when the corresponding path step has a track_reference with track_id since
+       * we won't have access to the corresponding track name in the path step location
+       */
+      trackName?: string;
+      /**
+       * An OperationalPoint is not unique by its UIC but by its UIC + secondary code.
+       *
+       * However, it can contains multiple parts since it can be referenced on multiple tracks.
+       *
+       * This Map stores all possible locations for a given op's secondary code.
+       */
+      locationsBySecondaryCode: Map<
+        string,
+        { trackId: string; trackName: string; lineName: string; coordinates: Position }[]
+      >;
+    };
+
 export type StdcmPathStep = {
   id: string;
   location?: Extract<OperationalPointReference, { uic: number }> & {
