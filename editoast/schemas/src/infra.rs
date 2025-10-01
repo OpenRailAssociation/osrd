@@ -58,6 +58,7 @@ pub use railjson::RailJson;
 pub use railjson::major_version;
 pub use route::Route;
 pub use route::RoutePath;
+pub use route::SwitchDirection;
 pub use side::Side;
 pub use sign::Sign;
 pub use signal::LogicalSignal;

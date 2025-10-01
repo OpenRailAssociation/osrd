@@ -192,12 +192,8 @@ pub(in crate::views) async fn get_routes_track_ranges(
         .map(|route| {
             if let Some(route) = routes_cache.get(route) {
                 let route = route.unwrap_route();
-                let route_path = infra_cache.compute_track_ranges_on_route(route, &graph);
-                if let Some(route_path) = route_path {
-                    RouteTrackRangesResult::Computed(RoutePath {
-                        track_ranges: route_path.track_ranges,
-                        switches_directions: route_path.switches_directions,
-                    })
+                if let Some(route_path) = infra_cache.compute_track_ranges_on_route(route, &graph) {
+                    RouteTrackRangesResult::Computed(route_path)
                 } else {
                     RouteTrackRangesResult::CantComputePath
                 }

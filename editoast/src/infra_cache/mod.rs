@@ -38,6 +38,7 @@ use schemas::infra::Route;
 use schemas::infra::RoutePath;
 use schemas::infra::SingleSlipSwitch;
 use schemas::infra::SpeedSection;
+use schemas::infra::SwitchDirection;
 use schemas::infra::SwitchType;
 use schemas::infra::TrackEndpoint;
 use schemas::infra::Waypoint;
@@ -860,7 +861,10 @@ impl InfraCache {
                 // Check we found the switch in the route
                 route.switches_directions.get(&switch_id.clone().into())?
             };
-            used_switches.push((switch_id.clone().into(), group.clone()));
+            used_switches.push(SwitchDirection {
+                switch_id: switch_id.clone().into(),
+                group_id: group.clone(),
+            });
             let next_endpoint = graph.get_neighbour(&endpoint, group)?;
 
             // Update current track section, offset and direction

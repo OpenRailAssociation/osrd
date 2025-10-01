@@ -405,7 +405,7 @@ export const makeRouteElements = (
   trackRangesResults.reduce((acc, cur, index) => {
     if (cur.type === 'Computed') {
       const trackRanges = cur.track_ranges.map((trackRange) => renameDirection(trackRange));
-      const switches = cur.switches_directions.map((sw) => sw[0]);
+      const switches = cur.switches_directions.map(({ switch_id }) => switch_id);
       return {
         ...acc,
         [routes[index]]: {

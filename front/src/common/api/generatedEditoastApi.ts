@@ -3519,7 +3519,10 @@ export type PathfindingInput = {
   speed_limit_tag?: string | null;
 };
 export type RoutePath = {
-  switches_directions: never[][];
+  switches_directions: {
+    group_id: string;
+    switch_id: string;
+  }[];
   track_ranges: DirectionalTrackRange[];
 };
 export type TrackOffset = {

@@ -16,6 +16,7 @@ impl Cache for Route {
 
 #[cfg(test)]
 mod tests {
+    use schemas::infra::SwitchDirection;
 
     use crate::infra_cache::Graph;
     use crate::infra_cache::tests::create_small_infra_cache;
@@ -39,7 +40,7 @@ mod tests {
         assert!(
             path.switches_directions
                 .iter()
-                .any(|(k, _)| k == &"link".into())
+                .any(|SwitchDirection { switch_id, .. }| switch_id == &"link".into())
         );
     }
 
@@ -62,7 +63,7 @@ mod tests {
         assert!(
             path.switches_directions
                 .iter()
-                .any(|(k, _)| k == &"switch".into())
+                .any(|SwitchDirection { switch_id, .. }| switch_id == &"switch".into())
         );
     }
 }
