@@ -284,28 +284,24 @@ const SimulationResults = ({
             <>
               {/* SIMULATION : SPEED SPACE CHART */}
               {activeBoards.has('sdd') && (
-                <div className="speed-distance-diagram-section">
-                  <ResizableSection
-                    height={SDDHeight}
-                    setHeight={setSDDHeight}
-                    minHeight={SDD_MIN_HEIGHT}
-                  >
-                    <BoardWrapper name={t('simulationResults.speedDistanceDiagram')}>
-                      <div className="osrd-simulation-container">
-                        <SpeedDistanceDiagramWrapper
-                          timetableItemSimulation={simulationResults.simulation}
-                          selectedTimetableItemPowerRestrictions={
-                            simulationResults.powerRestrictions
-                          }
-                          rollingStock={simulationResults.rollingStock}
-                          pathProperties={simulationResults.pathProperties}
-                          height={SDDHeight}
-                          setHeight={setSDDHeight}
-                        />
-                      </div>
-                    </BoardWrapper>
-                  </ResizableSection>
-                </div>
+                <ResizableSection
+                  height={SDDHeight}
+                  setHeight={setSDDHeight}
+                  minHeight={SDD_MIN_HEIGHT}
+                >
+                  <BoardWrapper name={t('simulationResults.speedDistanceDiagram')}>
+                    <div className="osrd-simulation-container">
+                      <SpeedDistanceDiagramWrapper
+                        timetableItemSimulation={simulationResults.simulation}
+                        selectedTimetableItemPowerRestrictions={simulationResults.powerRestrictions}
+                        rollingStock={simulationResults.rollingStock}
+                        pathProperties={simulationResults.pathProperties}
+                        height={SDDHeight - HIDDEN_CHART_TOP_HEIGHT}
+                        setHeight={setSDDHeight}
+                      />
+                    </div>
+                  </BoardWrapper>
+                </ResizableSection>
               )}
 
               {/* SIMULATION : MAP */}

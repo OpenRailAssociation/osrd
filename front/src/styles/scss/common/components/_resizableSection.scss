@@ -1,17 +1,21 @@
-.resizable-section-handle {
-  display: flex;
-  justify-content: center;
-  align-items: center;
+.resizable-section {
+  position: relative;
 
-  &::after {
-    content: '';
-    width: 72px;
-    height: 4px;
-    border-radius: 2px;
-    margin-bottom: 6px;
-    background-color: var(--coolgray3);
-  }
-  &:hover::after {
-    background-color: var(--coolgray9);
+  .resizable-section-handle {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    &::after {
+      content: '';
+      width: 72px;
+      height: 4px;
+      border-radius: 2px;
+      margin-bottom: 6px;
+      background-color: var(--coolgray3);
+    }
+    &:hover::after {
+      background-color: var(--coolgray9);
+    }
   }
 }
