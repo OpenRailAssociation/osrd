@@ -47,9 +47,15 @@
     "Routing": "Reiserouten",
     "Spacing": "Abstand",
     "advancedFiltersPlaceholder": "Filtern nach Baureihe, Serie, Detail",
-    "conflictsCount_one": "1 Konflikt",
-    "conflictsCount_other": "{{count}} Konflikte",
-    "conflictsCount_zero": "Keine Konflikte",
+    "conflicts": {
+      "conflictsCount_one": "{{count}} Konflikt",
+      "conflictsCount_other": "{{count}} Konflikte",
+      "conflictsCount_zero": "keine Konflikte",
+      "filterWithSelectedTrain": "liste mit ausgewähltem Zug filtern",
+      "for": "für",
+      "otherTrains": "+{{count}} weitere",
+      "trainsInConflictTitle": "ZUG(E) IM KONFLIKT"
+    },
     "description": {
       "electricalProfileWithId": "Bahnstromprofile: ID{{id}}",
       "electricalProfileWithName": "Bahnstromprofile: {{name}} | ID{{id}}"

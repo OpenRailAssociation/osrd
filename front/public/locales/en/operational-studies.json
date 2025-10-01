@@ -55,9 +55,15 @@
   "main": {
     "Routing": "Itineraries",
     "Spacing": "Spacing",
-    "conflictsCount_one": "1 conflict",
-    "conflictsCount_other": "{{count}} conflicts",
-    "conflictsCount_zero": "No conflict",
+    "conflicts": {
+      "conflictsCount_one": "{{count}} conflict",
+      "conflictsCount_other": "{{count}} conflicts",
+      "conflictsCount_zero": "no conflicts",
+      "filterWithSelectedTrain": "filter list with selected train",
+      "for": "for",
+      "otherTrains": "+{{count}} others",
+      "trainsInConflictTitle": "TRAIN(S) IN CONFLICT"
+    },
     "description": {
       "electricalProfileWithId": "Electrical profiles : ID{{id}}",
       "electricalProfileWithName": "Electrical profiles : {{name}} | ID{{id}}"

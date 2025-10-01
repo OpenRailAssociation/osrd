@@ -171,6 +171,7 @@ const TrainScheduleItem = ({
   return (
     <div
       data-testid="scenario-timetable-item"
+      data-train-id={train.id}
       className={cx('scenario-timetable-train', {
         selected: isSelected,
         modified: isModified,

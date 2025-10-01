@@ -8,25 +8,18 @@ import useScenarioData from 'applications/operationalStudies/hooks/useScenarioDa
 import type { Board } from 'applications/operationalStudies/types';
 import ManageTimetableItemModal from 'applications/operationalStudies/views/Scenario/components/ManageTimetableItem';
 import SimulationResults from 'applications/operationalStudies/views/Scenario/components/SimulationResults';
-import type { Conflict } from 'common/api/osrdEditoastApi';
 import { Loader } from 'common/Loaders';
 import ResizableSection from 'common/ResizableSection';
-import ConflictsList from 'modules/conflict/components/ConflictsList';
+import Conflicts from 'modules/conflict/components/Conflicts';
+import useConflictsFilter from 'modules/conflict/hooks/useConflictsFilter';
 import ScenarioLoaderMessage from 'modules/scenario/components/ScenarioLoaderMessage';
 import type {
   TimetableItemId,
   TimetableItem,
   TimetableItemToEditData,
-  TrainId,
 } from 'reducers/osrdconf/types';
-import { updateSelectedTrainId } from 'reducers/simulationResults';
 import { useAppDispatch } from 'store';
 import { usePrevious } from 'utils/hooks/state';
-import {
-  formatEditoastIdToExceptionId,
-  formatEditoastIdToIndexedOccurrenceId,
-  formatEditoastIdToTrainScheduleId,
-} from 'utils/trainId';
 
 import { MANAGE_TIMETABLE_ITEM_TYPES } from '../consts';
 import BoardWrapper from './BoardWrapper';
@@ -71,6 +64,15 @@ const ScenarioContent = ({ activeBoards }: ScenarioContentProps) => {
     removeTimetableItems,
     updateTrainDepartureTime,
   } = useScenarioData(scenario, infraId);
+
+  const {
+    showOnlySelectedTrain,
+    handleToggleConflictsFilter,
+    selectedTrainName,
+    totalConflictsCount,
+    selectedTrainConflictsCount,
+    displayedConflicts,
+  } = useConflictsFilter(timetableItems || [], conflicts);
 
   const macroEditorState = useRef<MacroEditorState>(null);
   const [ngeDto, setNgeDto] = useState<NetzgrafikDto>();
@@ -145,27 +147,6 @@ const ScenarioContent = ({ activeBoards }: ScenarioContentProps) => {
   };
 
   const handleNGELoad = () => setNGEIsLoading(false);
-
-  const handleConflictClick = (conflict: Conflict) => {
-    let formattedFirstTrainId: TrainId | undefined;
-    if (conflict.train_schedule_ids.length > 0) {
-      formattedFirstTrainId = formatEditoastIdToTrainScheduleId(conflict.train_schedule_ids[0]);
-    } else {
-      const firstPacedTrainOccurrenceId = conflict.paced_train_occurrence_ids[0];
-      if ('index' in firstPacedTrainOccurrenceId) {
-        formattedFirstTrainId = formatEditoastIdToIndexedOccurrenceId({
-          pacedTrainId: firstPacedTrainOccurrenceId.paced_train_id,
-          occurrenceIndex: firstPacedTrainOccurrenceId.index,
-        });
-      } else {
-        formattedFirstTrainId = formatEditoastIdToExceptionId({
-          pacedTrainId: firstPacedTrainOccurrenceId.paced_train_id,
-          exceptionId: firstPacedTrainOccurrenceId.exception_key,
-        });
-      }
-    }
-    dispatch(updateSelectedTrainId(formattedFirstTrainId));
-  };
 
   return (
     <EditedElementContainerProvider>
@@ -264,7 +245,7 @@ const ScenarioContent = ({ activeBoards }: ScenarioContentProps) => {
         >
           <BoardWrapper
             hidden={!activeBoards.has('conflicts')}
-            name={t('main.conflictsCount', { count: conflicts?.length ?? 0 })}
+            name={t('main.conflicts.conflictsCount', { count: totalConflictsCount })}
             withFooter
           >
             <div className="conflicts-wrapper">
@@ -275,10 +256,12 @@ const ScenarioContent = ({ activeBoards }: ScenarioContentProps) => {
                   childClass="scenario-loader-msg"
                 />
               ) : (
-                <ConflictsList
-                  conflicts={conflicts ?? []}
-                  timetableItems={timetableItemsWithDetails}
-                  onConflictClick={handleConflictClick}
+                <Conflicts
+                  showOnlySelectedTrain={showOnlySelectedTrain}
+                  onToggleFilter={handleToggleConflictsFilter}
+                  selectedTrainName={selectedTrainName}
+                  conflictsCount={selectedTrainConflictsCount}
+                  displayedConflicts={displayedConflicts}
                 />
               )}
             </div>
