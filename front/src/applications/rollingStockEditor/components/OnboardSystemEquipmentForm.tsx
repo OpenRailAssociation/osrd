@@ -8,7 +8,10 @@ import useCompleteRollingStockSchemasProperties from '../hooks/useCompleteRollin
 import type { RollingStockParametersValues } from '../types';
 
 type RollingStockEditorOnboardSystemEquipmentFormProps = {
-  rollingStockValues: RollingStockParametersValues;
+  rollingStockValues: Pick<
+    RollingStockParametersValues,
+    'supportedSignalingSystems' | 'etcsBrakeParams'
+  >;
   setRollingStockValues: (
     rollingStockValues: React.SetStateAction<RollingStockParametersValues>
   ) => void;
@@ -17,7 +20,7 @@ type RollingStockEditorOnboardSystemEquipmentFormProps = {
 const DISABLED_SIGNALING_SYSTEMS = [...DEFAULT_SIGNALING_SYSTEMS, ETCS_LEVEL2_SIGNALING_SYSTEM];
 
 const RollingStockEditorOnboardSystemEquipmentForm = ({
-  rollingStockValues,
+  rollingStockValues: { supportedSignalingSystems, etcsBrakeParams },
   setRollingStockValues,
 }: RollingStockEditorOnboardSystemEquipmentFormProps) => {
   const { t } = useTranslation('translation', { keyPrefix: 'rollingStock' });
@@ -30,8 +33,8 @@ const RollingStockEditorOnboardSystemEquipmentForm = ({
 
   const updateSigSystemsList = (sigSystem: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
     const newList = e.target.checked
-      ? [...rollingStockValues.supportedSignalingSystems, sigSystem]
-      : rollingStockValues.supportedSignalingSystems.filter((v) => v !== sigSystem);
+      ? [...supportedSignalingSystems, sigSystem]
+      : supportedSignalingSystems.filter((v) => v !== sigSystem);
     setRollingStockValues((prevRollingStockValues) => ({
       ...prevRollingStockValues,
       supportedSignalingSystems: newList,
@@ -40,8 +43,8 @@ const RollingStockEditorOnboardSystemEquipmentForm = ({
 
   const signalingSystemCheckboxes = sigSystemProperty.enum!.map((sigSystem, index) => {
     const checked = [
-      ...rollingStockValues.supportedSignalingSystems,
-      ...(rollingStockValues?.etcsBrakeParams ? [ETCS_LEVEL2_SIGNALING_SYSTEM] : []),
+      ...supportedSignalingSystems,
+      ...(etcsBrakeParams ? [ETCS_LEVEL2_SIGNALING_SYSTEM] : []),
     ].includes(sigSystem);
     return (
       <div key={`${index}-${sigSystem}`} className={cx('col-6', 'col-xl-3')}>

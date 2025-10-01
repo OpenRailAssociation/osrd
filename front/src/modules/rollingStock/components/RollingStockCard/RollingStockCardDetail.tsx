@@ -159,7 +159,7 @@ export default function RollingStockCardDetail({
             <td>
               {[
                 ...rs.supported_signaling_systems,
-                rs.etcs_brake_params ? [ETCS_LEVEL2_SIGNALING_SYSTEM] : [],
+                ...(rs.etcs_brake_params ? [ETCS_LEVEL2_SIGNALING_SYSTEM] : []),
               ].join(', ')}
             </td>
           </tr>

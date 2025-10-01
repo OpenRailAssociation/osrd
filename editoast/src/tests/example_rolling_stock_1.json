@@ -1,5 +1,5 @@
 {
-    "railjson_version": "3.4",
+    "railjson_version": "3.3",
     "length": 400.0,
     "max_speed": 80.0,
     "startup_time": 10.0,
@@ -10,7 +10,40 @@
     "mass": 900000.0,
     "loading_gauge": "G1",
     "const_gamma": 0.5,
-    "etcs_brake_params": null,
+    "etcs_brake_params": {
+      "gamma_emergency": {
+        "boundaries": [8.333333, 16.666667, 55.555556, 61.111111],
+        "values": [1.11, 1.25, 1.34, 1.17, 0.94]
+      },
+      "gamma_service": {
+        "boundaries": [8.333333, 16.666667, 55.555556, 61.111111],
+        "values": [0.74, 0.833333, 0.983333, 0.78, 0.626667]
+      },
+      "gamma_normal_service": {
+        "boundaries": [61.111111],
+        "values": [0.6, 0.35]
+      },
+      "k_dry": {
+        "boundaries": [8.333333, 61.111111],
+        "values": [0.72, 0.69, 0.7]
+      },
+      "k_wet": {
+        "boundaries": [],
+        "values": [0.89]
+      },
+      "k_n_pos": {
+        "boundaries": [],
+        "values": [6.74e-3]
+      },
+      "k_n_neg": {
+        "boundaries": [],
+        "values": [1.74e-3]
+      },
+      "t_traction_cut_off": 1,
+      "t_bs1": 2,
+      "t_bs2": 2,
+      "t_be": 2.5
+    },
     "rolling_resistance": {
         "type": "davis",
         "A": 5400,

@@ -12406,7 +12406,7 @@ components:
           $ref: '#/components/schemas/TrainMainCategory'
         railjson_version:
           type: string
-          default: '3.4'
+          default: '3.3'
         raise_pantograph_time:
           type:
           - number
@@ -14901,7 +14901,7 @@ components:
           type: string
         railjson_version:
           type: string
-          default: '3.4'
+          default: '3.3'
         rolling_resistance:
           $ref: '#/components/schemas/RollingResistancePerWeight'
         startup_acceleration:

@@ -4,7 +4,7 @@
   "rolling_stock": {
     "id": 899,
     "name": "TC64700",
-    "version": "3.4",
+    "version": "3.3",
     "effort_curves": {
       "modes": {
         "thermal": {

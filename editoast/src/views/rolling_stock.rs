@@ -794,13 +794,6 @@ pub mod tests {
         form
     }
 
-    pub fn simple_rolling_stock_etcs_level2() -> RollingStockForm {
-        serde_json::from_str::<RollingStockForm>(include_str!(
-            "../tests/exemple_rolling_stock_4_etcs_level2.json"
-        ))
-        .expect("Unable to parse rolling stock with etcs_brake_params")
-    }
-
     #[rstest]
     async fn create_rolling_stock_successfully() {
         // GIVEN
@@ -827,6 +820,15 @@ pub mod tests {
         assert_eq!(
             fast_rolling_stock_form.startup_time,
             rolling_stock.startup_time
+        );
+
+        let rolling_stock: schemas::RollingStock = rolling_stock.into();
+        assert_eq!(
+            rolling_stock
+                .get_supported_signaling_systems()
+                .0
+                .contains(&"ETCS_LEVEL2".to_string()),
+            true
         );
     }
 
@@ -856,6 +858,15 @@ pub mod tests {
 
         assert_eq!(rolling_stock.name, locked_rs_name);
         assert_eq!(rolling_stock.locked, true);
+
+        let rolling_stock: schemas::RollingStock = rolling_stock.into();
+        assert_eq!(
+            rolling_stock
+                .get_supported_signaling_systems()
+                .0
+                .contains(&"ETCS_LEVEL2".to_string()),
+            true
+        );
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -1108,7 +1119,7 @@ pub mod tests {
         // THEN
         assert_eq!(
             response,
-            "Failed to deserialize the JSON body into the target type: invalid rolling-stock: ETCS_LEVEL2 requires 'etcs_brake_params' field instead of 'ETCS_LEVEL2'."
+            "Failed to deserialize the JSON body into the target type: invalid rolling-stock: 'ETCS_LEVEL2' can't be listed in 'supported_signaling_systems', providing 'etcs_brake_params' field is the (only) way to trigger ETCS_LEVEL2 support."
         );
     }
 
@@ -1118,7 +1129,7 @@ pub mod tests {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
 
-        let rolling_stock_etcs_level2_form = simple_rolling_stock_etcs_level2();
+        let rolling_stock_etcs_level2_form = fast_rolling_stock_form("fast_rolling_stock_name");
 
         let request = app.rolling_stock_create_request(&rolling_stock_etcs_level2_form);
         let raw_response = app.fetch(request);

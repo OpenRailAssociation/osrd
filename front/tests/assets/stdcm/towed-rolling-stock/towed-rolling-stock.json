@@ -1,7 +1,7 @@
 {
   "name": "TOWED-TEST-E2E",
   "label": "",
-  "railjson_version": "3.4",
+  "railjson_version": "3.3",
   "mass": 46000.0,
   "length": 26.4,
   "comfort_acceleration": 0.2,

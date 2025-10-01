@@ -59,7 +59,7 @@ use serde::Serialize;
 use std::collections::HashMap;
 use utoipa::ToSchema;
 
-pub const ROLLING_STOCK_RAILJSON_VERSION: &str = "3.4";
+pub const ROLLING_STOCK_RAILJSON_VERSION: &str = "3.3";
 
 pub fn default_rolling_stock_railjson_version() -> String {
     ROLLING_STOCK_RAILJSON_VERSION.to_string()
@@ -110,6 +110,8 @@ pub struct RollingStock {
     #[schema(example = 15.0)]
     #[serde(default, with = "units::second::option")]
     pub raise_pantograph_time: Option<Time>,
+    /// List of supported signaling systems
+    /// Note: 'ETCS_LEVEL2' can't be listed, providing 'etcs_brake_params' field is the (only) way to trigger ETCS_LEVEL2 support
     pub supported_signaling_systems: RollingStockSupportedSignalingSystems,
     #[schema(default = default_rolling_stock_railjson_version)]
     #[serde(default = "default_rolling_stock_railjson_version")]
@@ -157,7 +159,7 @@ impl<'de> Deserialize<'de> for RollingStock {
             .contains(&"ETCS_LEVEL2".to_string())
         {
             return Err(serde::de::Error::custom(
-                "invalid rolling-stock: ETCS_LEVEL2 requires 'etcs_brake_params' field instead of 'ETCS_LEVEL2'.",
+                "invalid rolling-stock: 'ETCS_LEVEL2' can't be listed in 'supported_signaling_systems', providing 'etcs_brake_params' field is the (only) way to trigger ETCS_LEVEL2 support.",
             ));
         }
         Ok(rolling_stock)

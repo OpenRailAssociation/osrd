@@ -1,6 +1,6 @@
 {
   "id": 480,
-  "railjson_version": "3.4",
+  "railjson_version": "3.3",
   "name": "fast_rolling_stock",
   "effort_curves": {
     "modes": {
