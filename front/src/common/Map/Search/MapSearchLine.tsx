@@ -65,7 +65,10 @@ const MapSearchLine = ({
       });
   };
 
-  const coordinates = (search: BoundingBox) => search;
+  const coordinates = ({ min_lon, max_lon, min_lat, max_lat }: BoundingBox) => [
+    [min_lon, min_lat],
+    [max_lon, max_lat],
+  ];
 
   const onResultClick = async (searchResultItem: SearchResultItemTrack) => {
     if (mapSettings.mapSearchMarker) {

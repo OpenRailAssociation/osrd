@@ -11,33 +11,47 @@ use crate::errors::GeometryError;
 /// A bounding box
 #[editoast_derive::openapi_schema]
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq, ToSchema)]
-pub struct BoundingBox(pub (f64, f64), pub (f64, f64));
+pub struct BoundingBox {
+    pub min_lon: f64,
+    pub min_lat: f64,
+    pub max_lon: f64,
+    pub max_lat: f64,
+}
 
 impl FromIterator<(f64, f64)> for BoundingBox {
     fn from_iter<I: IntoIterator<Item = (f64, f64)>>(iter: I) -> Self {
-        let mut min: (f64, f64) = (f64::MAX, f64::MAX);
-        let mut max: (f64, f64) = (f64::MIN, f64::MIN);
+        let mut min_lon = f64::MAX;
+        let mut min_lat = f64::MAX;
+        let mut max_lon = f64::MIN;
+        let mut max_lat = f64::MIN;
 
         for (x, y) in iter {
-            min.0 = min.0.min(x);
-            max.0 = max.0.max(x);
-            min.1 = min.1.min(y);
-            max.1 = max.1.max(y);
+            min_lon = min_lon.min(x);
+            max_lon = max_lon.max(x);
+            min_lat = min_lat.min(y);
+            max_lat = max_lat.max(y);
         }
 
-        BoundingBox(min, max)
+        BoundingBox {
+            min_lon,
+            min_lat,
+            max_lon,
+            max_lat,
+        }
     }
 }
 
 impl BoundingBox {
     pub fn union(&mut self, b: &Self) -> &mut Self {
-        self.0 = (self.0.0.min(b.0.0), self.0.1.min(b.0.1));
-        self.1 = (self.1.0.max(b.1.0), self.1.1.max(b.1.1));
+        self.min_lon = self.min_lon.min(b.min_lon);
+        self.min_lat = self.min_lat.min(b.min_lat);
+        self.max_lon = self.max_lon.max(b.max_lon);
+        self.max_lat = self.max_lat.max(b.max_lat);
         self
     }
 
     pub fn is_valid(&self) -> bool {
-        self.0.0 <= self.1.0 && self.0.1 <= self.1.1
+        self.min_lon <= self.max_lon && self.min_lat <= self.max_lat
     }
 
     pub fn from_geojson(value: geojson::Value) -> Result<Self, GeometryError> {
@@ -70,7 +84,12 @@ impl BoundingBox {
     /// ```
     /// use schemas::primitives::BoundingBox;
     ///
-    /// let bbox = BoundingBox((40.0, -75.0), (42.0, -73.0));
+    /// let bbox = BoundingBox {
+    ///     min_lon: 40.0,
+    ///     min_lat: -75.0,
+    ///     max_lon: 42.0,
+    ///     max_lat: -73.0,
+    /// };
     /// let diagonal_length = bbox.diagonal_length();
     /// assert_eq!(diagonal_length, 230908.62753622115);
     /// ```
@@ -78,10 +97,10 @@ impl BoundingBox {
         // Earth's mean radius in meters
         let r: f64 = 6_378_100.0;
 
-        let a_lon = self.0.0;
-        let a_lat = self.0.1;
-        let b_lon = self.1.0;
-        let b_lat = self.1.1;
+        let a_lon = self.min_lon;
+        let a_lat = self.min_lat;
+        let b_lon = self.max_lon;
+        let b_lat = self.max_lat;
 
         // Calculate differences in longitude and latitude in radians
         let d_lon: f64 = (b_lon - a_lon).to_radians();
@@ -103,10 +122,12 @@ impl BoundingBox {
 
 impl Default for BoundingBox {
     fn default() -> Self {
-        Self(
-            (f64::INFINITY, f64::INFINITY),
-            (f64::NEG_INFINITY, f64::NEG_INFINITY),
-        )
+        Self {
+            min_lon: f64::INFINITY,
+            min_lat: f64::INFINITY,
+            max_lon: f64::NEG_INFINITY,
+            max_lat: f64::NEG_INFINITY,
+        }
     }
 }
 
@@ -116,25 +137,72 @@ mod tests {
 
     #[test]
     fn test_bounding_box_union() {
-        let mut a = BoundingBox((0., 0.), (1., 1.));
-        let b = BoundingBox((2., 2.), (3., 3.));
+        let mut a = BoundingBox {
+            min_lon: 0.,
+            min_lat: 0.,
+            max_lon: 1.,
+            max_lat: 1.,
+        };
+        let b = BoundingBox {
+            min_lon: 2.,
+            min_lat: 2.,
+            max_lon: 3.,
+            max_lat: 3.,
+        };
         a.union(&b);
-        assert_eq!(a, BoundingBox((0., 0.), (3., 3.)));
+        assert_eq!(
+            a,
+            BoundingBox {
+                min_lon: 0.,
+                min_lat: 0.,
+                max_lon: 3.,
+                max_lat: 3.,
+            }
+        );
     }
 
     #[test]
     fn test_bounding_box_min() {
         let mut min = BoundingBox::default();
-        let a = BoundingBox((0., 0.), (1., 1.));
+        let a = BoundingBox {
+            min_lon: 0.,
+            min_lat: 0.,
+            max_lon: 1.,
+            max_lat: 1.,
+        };
         min.union(&a);
         assert_eq!(min, a);
     }
 
     #[test]
     fn test_validity() {
-        assert!(BoundingBox((0., 0.), (1., 1.)).is_valid());
-        assert!(!BoundingBox((1., 0.), (0., 1.)).is_valid());
-        assert!(!BoundingBox((0., 1.), (1., 0.)).is_valid());
+        assert!(
+            BoundingBox {
+                min_lon: 0.,
+                min_lat: 0.,
+                max_lon: 1.,
+                max_lat: 1.,
+            }
+            .is_valid()
+        );
+        assert!(
+            !BoundingBox {
+                min_lon: 1.,
+                min_lat: 0.,
+                max_lon: 0.,
+                max_lat: 1.,
+            }
+            .is_valid()
+        );
+        assert!(
+            !BoundingBox {
+                min_lon: 0.,
+                min_lat: 1.,
+                max_lon: 1.,
+                max_lat: 0.,
+            }
+            .is_valid()
+        );
         assert!(!BoundingBox::default().is_valid());
     }
 }

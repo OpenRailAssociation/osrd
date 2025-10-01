@@ -3192,7 +3192,12 @@ export type InfraErrorTypeLabel =
   | 'overlapping_switches'
   | 'unknown_port_name'
   | 'unused_port';
-export type BoundingBox = never[][];
+export type BoundingBox = {
+  max_lat: number;
+  max_lon: number;
+  min_lat: number;
+  min_lon: number;
+};
 export type GeoJsonPoint = {
   coordinates: GeoJsonPointValue;
   type: 'Point';
