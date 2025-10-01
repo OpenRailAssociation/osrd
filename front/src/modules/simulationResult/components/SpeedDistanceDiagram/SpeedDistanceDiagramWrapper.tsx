@@ -92,7 +92,6 @@ const SpeedDistanceDiagramWrapper = ({
       ref={root}
       id="container-SpeedSpaceChart"
       data-testid="speed-space-chart"
-      className="chart"
       style={{ height: `${height}px` }}
     >
       {containerWidth > 0 && (
