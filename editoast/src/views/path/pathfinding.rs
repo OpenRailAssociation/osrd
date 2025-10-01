@@ -44,7 +44,6 @@ use editoast_models::prelude::*;
 
 /// Path input is described by some rolling stock information
 /// and a list of path waypoints
-#[editoast_derive::openapi_schema]
 #[derive(Deserialize, Clone, Debug, Hash, ToSchema)]
 pub(in crate::views) struct PathfindingInput {
     /// The loading gauge of the rolling stock
@@ -89,7 +88,6 @@ impl PathfindingInput {
     }
 }
 
-#[editoast_derive::openapi_schema]
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, ToSchema)]
 #[serde(tag = "status", rename_all = "snake_case")]
 pub enum PathfindingResult {
@@ -160,7 +158,6 @@ impl From<PathfindingCoreResult> for PathfindingResult {
     }
 }
 
-#[editoast_derive::openapi_schema]
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, ToSchema, Educe)]
 #[educe(Default)]
 #[serde(tag = "failed_status", rename_all = "snake_case")]

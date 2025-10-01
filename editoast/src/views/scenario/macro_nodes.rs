@@ -56,7 +56,6 @@ struct MacroNodeIdParam {
     node_id: i64,
 }
 
-#[editoast_derive::openapi_schema]
 #[derive(Debug, Deserialize, ToSchema, Clone)]
 #[cfg_attr(test, derive(Serialize, PartialEq))]
 pub(in crate::views) struct MacroNodeForm {
@@ -69,7 +68,6 @@ pub(in crate::views) struct MacroNodeForm {
     path_item_key: String,
 }
 
-#[editoast_derive::openapi_schema]
 #[derive(Debug, Deserialize, ToSchema)]
 #[cfg_attr(test, derive(Serialize, PartialEq))]
 pub(in crate::views) struct MacroNodeBatchForm {
@@ -90,7 +88,6 @@ impl MacroNodeForm {
     }
 }
 
-#[editoast_derive::openapi_schema]
 #[derive(Debug, Serialize, ToSchema)]
 #[cfg_attr(test, derive(Deserialize, PartialEq))]
 pub(in crate::views) struct MacroNodeResponse {
@@ -104,7 +101,6 @@ pub(in crate::views) struct MacroNodeResponse {
     path_item_key: String,
 }
 
-#[editoast_derive::openapi_schema]
 #[derive(Debug, Serialize, ToSchema)]
 #[cfg_attr(test, derive(Deserialize, PartialEq))]
 pub(in crate::views) struct MacroNodeBatchResponse {
@@ -126,7 +122,6 @@ impl From<MacroNode> for MacroNodeResponse {
     }
 }
 
-#[editoast_derive::openapi_schema]
 #[derive(Debug, Serialize, ToSchema)]
 #[cfg_attr(test, derive(Deserialize))]
 pub(in crate::views) struct MacroNodeListResponse {

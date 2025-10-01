@@ -15,7 +15,6 @@ use crate::views::project::ProjectError;
 use editoast_models::Document;
 use editoast_models::tags::Tags;
 
-#[editoast_derive::openapi_schema]
 #[derive(Clone, Debug, Serialize, Deserialize, Model, ToSchema, PartialEq)]
 #[model(table = database::tables::project)]
 #[model(gen(ops = crud, list))]

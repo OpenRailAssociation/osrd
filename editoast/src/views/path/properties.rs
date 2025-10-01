@@ -34,7 +34,6 @@ use crate::error::Result;
 use crate::views::AuthenticationExt;
 use crate::views::path::retrieve_infra_version;
 
-#[editoast_derive::openapi_schema]
 #[derive(Debug, Serialize, Deserialize, ToSchema, Hash)]
 pub struct PathPropertiesInput {
     /// List of track sections
@@ -42,7 +41,6 @@ pub struct PathPropertiesInput {
 }
 
 /// Properties along a path. Each property is optional since it depends on what the user requests.
-#[editoast_derive::openapi_schema]
 #[derive(Debug, Clone, Serialize, Deserialize, ToSchema, Default)]
 pub(in crate::views) struct PathProperties {
     #[schema(inline)]

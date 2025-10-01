@@ -64,7 +64,6 @@ impl From<WsGroupError> for WorkScheduleError {
     }
 }
 
-#[editoast_derive::openapi_schema]
 #[derive(Serialize, Deserialize, ToSchema)]
 #[serde(remote = "Self")]
 pub(in crate::views) struct WorkScheduleItemForm {

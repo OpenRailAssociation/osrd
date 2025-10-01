@@ -49,7 +49,6 @@ use utoipa::ToSchema;
 use crate::primitives::NonBlankString;
 use crate::rolling_stock::TrainCategory;
 
-#[editoast_derive::openapi_schema]
 #[derive(Debug, Default, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
 #[serde(remote = "Self")]
 pub struct TrainSchedule {

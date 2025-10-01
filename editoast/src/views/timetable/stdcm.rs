@@ -50,7 +50,6 @@ use crate::views::timetable::simulation::consist_train_simulation_batch;
 use editoast_models::WorkSchedule;
 use editoast_models::prelude::*;
 
-#[editoast_derive::openapi_schema]
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, ToSchema)]
 #[serde(tag = "status", rename_all = "snake_case")]
 // We accepted the difference of memory size taken by variants

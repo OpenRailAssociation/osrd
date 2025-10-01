@@ -10,7 +10,6 @@ use crate::primitives::OSRDIdentified;
 use crate::primitives::OSRDTyped;
 use crate::primitives::ObjectType;
 
-#[editoast_derive::openapi_schema]
 #[derive(Debug, Default, Clone, Deserialize, Serialize, PartialEq, ToSchema)]
 #[serde(deny_unknown_fields)]
 pub struct OperationalPoint {
@@ -24,7 +23,6 @@ pub struct OperationalPoint {
     pub weight: Option<u8>,
 }
 
-#[editoast_derive::openapi_schema]
 #[derive(Debug, Educe, Clone, PartialEq, Deserialize, Serialize, ToSchema)]
 #[serde(deny_unknown_fields)]
 #[educe(Default)]
@@ -51,7 +49,6 @@ pub struct OperationalPointPartSncfExtension {
     pub kp: String,
 }
 
-#[editoast_derive::openapi_schema]
 #[derive(Debug, Default, Clone, Deserialize, Serialize, PartialEq, Eq, ToSchema)]
 #[serde(deny_unknown_fields)]
 pub struct OperationalPointExtensions {

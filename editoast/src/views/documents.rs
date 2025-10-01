@@ -77,7 +77,6 @@ pub(in crate::views) async fn get(
     ))
 }
 
-#[editoast_derive::openapi_schema]
 #[derive(Serialize, ToSchema)]
 struct NewDocumentResponse {
     document_key: i64,

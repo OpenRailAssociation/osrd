@@ -8,7 +8,6 @@ use utoipa::ToSchema;
 use super::Direction;
 use super::Side;
 
-#[editoast_derive::openapi_schema]
 #[derive(Debug, Educe, Clone, Deserialize, Serialize, PartialEq, ToSchema)]
 #[educe(Default)]
 #[serde(deny_unknown_fields)]

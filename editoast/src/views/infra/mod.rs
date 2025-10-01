@@ -75,7 +75,6 @@ pub enum InfraApiError {
     Database(#[from] editoast_models::Error),
 }
 
-#[editoast_derive::openapi_schema]
 #[derive(Debug, Default, Clone, Serialize, Deserialize, IntoParams, ToSchema)]
 #[into_params(parameter_in = Query)]
 pub(in crate::views) struct InfraIdQueryParam {
@@ -768,7 +767,6 @@ pub(in crate::views) struct MatchOperationalPointsForm {
     operational_point_references: Vec<OperationalPointReference>,
 }
 
-#[editoast_derive::openapi_schema]
 #[derive(Serialize, ToSchema)]
 #[cfg_attr(test, derive(Deserialize))]
 struct RelatedOperationalPoint {

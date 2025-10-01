@@ -59,7 +59,6 @@ struct MacroNoteIdParam {
     note_id: i64,
 }
 
-#[editoast_derive::openapi_schema]
 #[derive(Debug, Deserialize, ToSchema)]
 #[cfg_attr(test, derive(Serialize, PartialEq, Clone))]
 pub(in crate::views) struct MacroNoteForm {
@@ -70,7 +69,6 @@ pub(in crate::views) struct MacroNoteForm {
     labels: Tags,
 }
 
-#[editoast_derive::openapi_schema]
 #[derive(Debug, Deserialize, ToSchema)]
 #[cfg_attr(test, derive(Serialize, PartialEq, Clone))]
 pub(in crate::views) struct MacroNoteBatchForm {
@@ -89,7 +87,6 @@ impl MacroNoteForm {
     }
 }
 
-#[editoast_derive::openapi_schema]
 #[derive(Debug, Serialize, ToSchema)]
 #[cfg_attr(test, derive(Deserialize, PartialEq))]
 pub(in crate::views) struct MacroNoteResponse {
@@ -101,7 +98,6 @@ pub(in crate::views) struct MacroNoteResponse {
     labels: Tags,
 }
 
-#[editoast_derive::openapi_schema]
 #[derive(Debug, Serialize, ToSchema)]
 #[cfg_attr(test, derive(Deserialize, PartialEq))]
 pub(in crate::views) struct MacroNoteBatchResponse {
@@ -121,7 +117,6 @@ impl From<MacroNote> for MacroNoteResponse {
     }
 }
 
-#[editoast_derive::openapi_schema]
 #[derive(Debug, Serialize, ToSchema)]
 #[cfg_attr(test, derive(Deserialize))]
 pub(in crate::views) struct MacroNoteListResponse {

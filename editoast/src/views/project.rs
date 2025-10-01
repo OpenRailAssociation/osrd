@@ -50,7 +50,6 @@ pub enum ProjectError {
 }
 
 /// Creation form for a project
-#[editoast_derive::openapi_schema]
 #[derive(Serialize, Deserialize, Default, ToSchema)]
 pub(in crate::views) struct ProjectCreateForm {
     #[schema(max_length = 128)]
@@ -99,7 +98,6 @@ async fn check_image_content(conn: &mut DbConnection, document_key: i64) -> Resu
     Ok(())
 }
 
-#[editoast_derive::openapi_schema]
 #[derive(Debug, Clone, Serialize, ToSchema)]
 #[schema(as = ProjectWithStudies)]
 #[cfg_attr(test, derive(Deserialize))]
@@ -286,7 +284,6 @@ pub(in crate::views) async fn delete(
 }
 
 /// Patch form for a project
-#[editoast_derive::openapi_schema]
 #[derive(Serialize, Deserialize, ToSchema)]
 pub(in crate::views) struct ProjectPatchForm {
     #[schema(max_length = 128)]

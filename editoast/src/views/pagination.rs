@@ -30,7 +30,6 @@ use editoast_models::prelude::*;
 ///
 /// We named the data field `result` to cope with the old pagination schema which
 /// enforced this name. For new paginated responses, the field name is up to your imagination :)
-#[editoast_derive::openapi_schema]
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, ToSchema)]
 #[cfg_attr(test, derive(Deserialize))]
 pub struct PaginationStats {

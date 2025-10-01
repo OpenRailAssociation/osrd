@@ -34,7 +34,6 @@ use crate::views::timetable::simulation;
 use crate::views::timetable::simulation::SimulationResponseSuccess;
 use crate::views::timetable::simulation::train_simulation_batch;
 
-#[editoast_derive::openapi_schema]
 #[derive(Debug, Deserialize, ToSchema)]
 pub struct ProjectPathForm {
     pub infra_id: i64,
@@ -55,7 +54,6 @@ pub struct ProjectPathOperationalPointForm {
     pub operational_points_distances: Vec<u64>,
 }
 
-#[editoast_derive::openapi_schema]
 #[derive(Default, Debug, Clone, Deserialize, Serialize, ToSchema)]
 pub struct SpaceTimeCurve {
     /// List of positions of a train in mm

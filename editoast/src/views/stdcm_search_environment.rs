@@ -42,7 +42,6 @@ enum StdcmSearchEnvError {
     Database(#[from] editoast_models::Error),
 }
 
-#[editoast_derive::openapi_schema]
 #[derive(Deserialize, ToSchema)]
 #[serde(remote = "Self")]
 #[cfg_attr(test, derive(Serialize))]

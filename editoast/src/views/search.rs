@@ -248,7 +248,6 @@ enum SearchApiError {
 }
 
 /// A search query
-#[editoast_derive::openapi_schema]
 #[derive(ToSchema, Serialize)]
 #[schema(example = json!(["and", ["=", ["infra_id"], 2], ["search", ["name"], "plop"]]))]
 #[serde(untagged)]
@@ -263,7 +262,6 @@ enum SearchQuery {
 }
 
 /// The payload of a search request
-#[editoast_derive::openapi_schema]
 #[derive(Debug, Clone, Deserialize, ToSchema)]
 #[schema(example = json!({
     "object": "operationalpoint",
@@ -409,7 +407,6 @@ pub(in crate::views) async fn search(
 // annotations to alter the schema. That's not ideal since none of them are ever
 // serialized, but that's life.
 
-#[editoast_derive::openapi_schema]
 #[derive(Search, Serialize, ToSchema)]
 #[search(
     table = "search_track",
@@ -429,7 +426,6 @@ pub(super) struct SearchResultItemTrack {
     line_code: i64,
 }
 
-#[editoast_derive::openapi_schema]
 #[derive(Search, Serialize, ToSchema)]
 #[search(
     table = "search_operational_point",
@@ -505,7 +501,6 @@ pub(super) struct SearchResultItemOperationalPointTrackSections {
     position: f64,
 }
 
-#[editoast_derive::openapi_schema]
 #[derive(Search, Serialize, ToSchema)]
 #[search(
     table = "search_signal",
@@ -584,7 +579,6 @@ pub(super) struct SearchResultItemSignal {
     sprite: Option<String>,
 }
 
-#[editoast_derive::openapi_schema]
 #[derive(Search, Serialize, ToSchema)]
 #[search(
     table = "search_project",
@@ -615,7 +609,6 @@ pub(super) struct SearchResultItemProject {
     tags: Vec<String>,
 }
 
-#[editoast_derive::openapi_schema]
 #[derive(Search, Serialize, ToSchema)]
 #[search(
     table = "search_user",
@@ -643,7 +636,6 @@ pub(super) struct SearchResultItemUser {
     name: String,
 }
 
-#[editoast_derive::openapi_schema]
 #[derive(Search, Serialize, ToSchema)]
 #[search(
     table = "search_study",
@@ -682,7 +674,6 @@ pub(super) struct SearchResultItemStudy {
     budget: Option<u32>,
 }
 
-#[editoast_derive::openapi_schema]
 #[derive(Search, Serialize, ToSchema)]
 #[search(
     table = "search_scenario",
@@ -736,7 +727,6 @@ pub(super) struct SearchResultItemScenario {
     tags: Vec<String>,
 }
 
-#[editoast_derive::openapi_schema]
 #[derive(Search, Serialize, ToSchema)]
 #[cfg_attr(test, derive(serde::Deserialize))]
 #[search(

@@ -4,7 +4,6 @@ use crate::models::Study;
 use editoast_models::WorkSchedule;
 use editoast_models::prelude::*;
 
-#[editoast_derive::openapi_schema]
 #[derive(Debug, Clone, serde::Deserialize, Default, utoipa::ToSchema)]
 pub enum Ordering {
     NameAsc,

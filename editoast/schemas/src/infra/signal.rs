@@ -13,7 +13,6 @@ use crate::primitives::OSRDIdentified;
 use crate::primitives::OSRDTyped;
 use crate::primitives::ObjectType;
 
-#[editoast_derive::openapi_schema]
 #[derive(Debug, Educe, Clone, Deserialize, Serialize, PartialEq, ToSchema)]
 #[serde(deny_unknown_fields)]
 #[educe(Default)]

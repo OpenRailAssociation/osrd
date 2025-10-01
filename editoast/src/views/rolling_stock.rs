@@ -43,7 +43,6 @@ use editoast_models::Document;
 use editoast_models::RollingStockImage;
 use editoast_models::prelude::*;
 
-#[editoast_derive::openapi_schema]
 #[derive(Debug, Serialize, ToSchema)]
 pub struct RollingStockWithLiveries {
     #[serde(flatten)]
@@ -379,7 +378,6 @@ pub(in crate::views) async fn update(
     Ok(Json(new_rolling_stock_with_liveries))
 }
 
-#[editoast_derive::openapi_schema]
 #[derive(Deserialize, IntoParams, ToSchema)]
 #[into_params(parameter_in = Query)]
 pub(in crate::views) struct DeleteRollingStockQueryParams {
@@ -451,7 +449,6 @@ async fn delete_rolling_stock(conn: &mut DbConnection, rolling_stock_id: i64) ->
     Ok(())
 }
 
-#[editoast_derive::openapi_schema]
 #[derive(Debug, Deserialize, ToSchema)]
 #[serde(deny_unknown_fields)]
 pub(in crate::views) struct RollingStockLockedUpdateForm {
@@ -496,7 +493,6 @@ pub(in crate::views) async fn update_locked(
     Ok(StatusCode::NO_CONTENT)
 }
 
-#[editoast_derive::openapi_schema]
 #[derive(ToSchema)]
 #[allow(unused)] // Schema only
 struct RollingStockLiveryCreateForm {

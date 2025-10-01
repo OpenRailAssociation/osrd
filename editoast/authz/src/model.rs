@@ -69,7 +69,6 @@ pub struct Group(pub i64);
 #[derive(fga::Type, fga::User, fga::Object, derive_more::FromStr, Debug, Clone, Copy)]
 pub struct Infra(pub i64);
 
-#[editoast_derive::openapi_schema]
 #[derive(Debug, Clone, Copy, Display, PartialEq, Eq, Hash, Serialize, Deserialize, ToSchema)]
 #[serde(rename_all = "snake_case")]
 #[strum(serialize_all = "snake_case")]
@@ -83,7 +82,6 @@ pub enum InfraPrivilege {
     CanShareOwnership,
 }
 
-#[editoast_derive::openapi_schema]
 #[derive(
     Debug,
     Display,
@@ -106,7 +104,6 @@ pub enum InfraGrant {
     Owner,
 }
 
-#[editoast_derive::openapi_schema]
 #[derive(
     fga::User,
     Debug,

@@ -86,7 +86,6 @@ pub struct PhysicsConsist {
     pub raise_pantograph_time: Option<Time>,
 }
 
-#[editoast_derive::openapi_schema]
 #[derive(Debug, Clone, Hash, PartialEq, Serialize, Deserialize, ToSchema)]
 pub struct ZoneUpdate {
     pub zone: String,
@@ -124,7 +123,6 @@ pub struct SimulationPowerRestrictionItem {
     pub value: String,
 }
 
-#[editoast_derive::openapi_schema]
 #[derive(Deserialize, Default, PartialEq, Serialize, Clone, Debug, ToSchema)]
 pub struct ReportTrain {
     /// List of positions of a train
@@ -140,7 +138,6 @@ pub struct ReportTrain {
     pub path_item_times: Vec<u64>,
 }
 
-#[editoast_derive::openapi_schema]
 #[derive(Deserialize, Default, PartialEq, Serialize, Clone, Debug, ToSchema)]
 pub struct CompleteReportTrain {
     #[serde(flatten)]
@@ -151,7 +148,6 @@ pub struct CompleteReportTrain {
     pub routing_requirements: Vec<RoutingRequirement>,
 }
 
-#[editoast_derive::openapi_schema]
 #[derive(Debug, Clone, PartialEq, Hash, Serialize, Deserialize, ToSchema)]
 /// First position (space and time) along the path where given signal must
 /// be free (sighting time or closed-signal stop ending)
@@ -164,7 +160,6 @@ pub struct SignalCriticalPosition {
     pub state: String,
 }
 
-#[editoast_derive::openapi_schema]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
 pub struct SpacingRequirement {
     pub zone: String,
@@ -174,7 +169,6 @@ pub struct SpacingRequirement {
     pub end_time: u64,
 }
 
-#[editoast_derive::openapi_schema]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
 pub struct RoutingRequirement {
     pub route: String,
@@ -183,7 +177,6 @@ pub struct RoutingRequirement {
     pub zones: Vec<RoutingZoneRequirement>,
 }
 
-#[editoast_derive::openapi_schema]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
 pub struct RoutingZoneRequirement {
     pub zone: String,

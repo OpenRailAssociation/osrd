@@ -4,7 +4,6 @@ use utoipa::ToSchema;
 
 use crate::primitives::Identifier;
 
-#[editoast_derive::openapi_schema]
 #[derive(Debug, PartialEq, Eq, Clone, Serialize, Deserialize, ToSchema, Hash)]
 pub struct TrackOffset {
     /// Track section identifier

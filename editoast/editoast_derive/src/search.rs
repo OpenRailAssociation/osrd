@@ -354,7 +354,6 @@ pub fn expand_store(input: &DeriveInput) -> Result<TokenStream> {
             }
         }
 
-        #[editoast_derive::openapi_schema]
         #[derive(Serialize, ToSchema)]
         #[serde(untagged)]
         #[allow(unused, clippy::enum_variant_names)]

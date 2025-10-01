@@ -9,7 +9,6 @@ use utoipa::ToSchema;
 use crate::errors::GeometryError;
 
 /// A bounding box
-#[editoast_derive::openapi_schema]
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq, ToSchema)]
 pub struct BoundingBox {
     pub min_lon: f64,

@@ -45,7 +45,6 @@ use editoast_models::prelude::*;
 
 pub const TRAIN_SIZE_BATCH: usize = 100;
 
-#[editoast_derive::openapi_schema]
 #[derive(Serialize, Deserialize, PartialEq, Clone, Debug, ToSchema)]
 pub struct SimulationResponseSuccess {
     /// Simulation without any regularity margins
@@ -61,7 +60,6 @@ pub struct SimulationResponseSuccess {
     pub electrical_profiles: ElectricalProfiles,
 }
 
-#[editoast_derive::openapi_schema]
 #[derive(Serialize, Deserialize, PartialEq, Clone, Debug, ToSchema)]
 #[serde(tag = "status", rename_all = "snake_case")]
 // We accepted the difference of memory size taken by variants
@@ -120,7 +118,6 @@ impl From<core_client::simulation::Response> for Response {
     }
 }
 
-#[editoast_derive::openapi_schema]
 #[derive(Debug, Serialize, ToSchema)]
 #[cfg_attr(test, derive(PartialEq, serde::Deserialize))]
 #[serde(tag = "status", rename_all = "snake_case")]

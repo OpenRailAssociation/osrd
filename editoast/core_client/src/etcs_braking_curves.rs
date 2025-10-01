@@ -26,7 +26,6 @@ pub struct Request {
     pub mrsp: SpeedLimitProperties,
 }
 
-#[editoast_derive::openapi_schema]
 #[derive(Serialize, Deserialize, PartialEq, Clone, Debug, ToSchema)]
 #[schema(as = ETCSBrakingCurvesResponse)]
 pub struct Response {
@@ -41,7 +40,6 @@ pub struct Response {
     pub conflicts: Vec<ETCSConflictCurves>,
 }
 
-#[editoast_derive::openapi_schema]
 #[derive(Serialize, Deserialize, PartialEq, Clone, Debug, ToSchema)]
 pub struct ETCSCurves {
     #[schema(inline)]
@@ -52,7 +50,6 @@ pub struct ETCSCurves {
     pub guidance: SimpleEnvelope,
 }
 
-#[editoast_derive::openapi_schema]
 #[derive(Serialize, Deserialize, PartialEq, Clone, Debug, ToSchema)]
 pub struct ETCSConflictCurves {
     #[schema(inline)]

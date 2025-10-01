@@ -301,12 +301,7 @@ impl OpenApiRoot {
             openapi.components = Some(Default::default());
         }
         let schemas = &mut openapi.components.as_mut().unwrap().schemas;
-        // Manually collected schemas first
-        schemas.extend(common::OPENAPI_SCHEMAS.iter().map(|f| {
-            let (name, schema) = f();
-            (name.to_string(), schema)
-        }));
-        // Schemas from routes (won't override existing)
+        // Insert automatically collected schemas from routes
         for (name, schema) in routes_schemas {
             schemas.entry(name).or_insert(schema);
         }

@@ -7,7 +7,6 @@ use crate::primitives::OSRDObject;
 use crate::primitives::ObjectType;
 use utoipa::ToSchema;
 
-#[editoast_derive::openapi_schema]
 #[derive(Deserialize, Serialize, Clone, Debug, PartialEq, Eq, Hash, ToSchema)]
 #[serde(tag = "type", deny_unknown_fields)]
 pub enum Waypoint {

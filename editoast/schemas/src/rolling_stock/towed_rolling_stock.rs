@@ -8,7 +8,6 @@ use common::units::quantities::Length;
 use common::units::quantities::Mass;
 use common::units::quantities::Velocity;
 
-#[editoast_derive::openapi_schema]
 #[editoast_derive::annotate_units]
 #[derive(Debug, Clone, PartialEq, serde::Deserialize, serde::Serialize, utoipa::ToSchema)]
 #[schema(as = TowedRollingStockForm)]

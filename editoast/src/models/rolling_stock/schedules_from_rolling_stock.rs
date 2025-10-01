@@ -16,7 +16,6 @@ use database::tables::scenario;
 use database::tables::study;
 use database::tables::train_schedule;
 
-#[editoast_derive::openapi_schema]
 #[derive(Debug, Serialize, ToSchema)]
 #[cfg_attr(test, derive(PartialEq, Eq, PartialOrd, Ord, Deserialize))]
 pub struct ScenarioReference {

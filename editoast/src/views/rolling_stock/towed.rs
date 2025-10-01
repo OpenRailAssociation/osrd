@@ -85,7 +85,6 @@ pub(in crate::views) async fn post(
     Ok(Json(rolling_stock))
 }
 
-#[editoast_derive::openapi_schema]
 #[derive(Serialize, ToSchema)]
 #[cfg_attr(test, derive(Deserialize))]
 pub(in crate::views) struct TowedRollingStockCountList {
@@ -236,7 +235,6 @@ pub(in crate::views) async fn put_by_id(
     Ok(Json(new_towed_rolling_stock))
 }
 
-#[editoast_derive::openapi_schema]
 #[derive(Debug, Deserialize, ToSchema)]
 #[serde(deny_unknown_fields)]
 pub(in crate::views) struct TowedRollingStockLockedForm {
