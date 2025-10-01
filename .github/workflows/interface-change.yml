@@ -44,7 +44,7 @@ jobs:
           echo '- [ ] the version of the Python package in [`osrd_schemas::pyproject.toml`](https://github.com/OpenRailAssociation/osrd/tree/dev/python/osrd_schemas/pyproject.toml#L3) should be bumped on any change' >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
       - name: Find comment
-        uses: peter-evans/find-comment@v3
+        uses: peter-evans/find-comment@v4
         id: find-comment
         with:
           issue-number: ${{ github.event.pull_request.number }}
