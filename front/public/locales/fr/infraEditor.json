@@ -648,6 +648,12 @@
   "Switch": {
     "description": "Les aiguilles sont des appareils permettant de changer de voie.",
     "properties": {
+      "port::A": { "title": "Port A" },
+      "port::A1": { "title": "Port A1" },
+      "port::A2": { "title": "Port A2" },
+      "port::B": { "title": "Port B" },
+      "port::B1": { "title": "Port B1" },
+      "port::B2": { "title": "Port B2" },
       "group_change_delay": {
         "description": "Temps nécessaire pour changer la configuration d’une aiguille",
         "title": "Délai de changement de configuration d’un groupe d’aiguilles"

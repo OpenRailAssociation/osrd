@@ -170,10 +170,13 @@
       "BufferStop": "Heurtoir",
       "Detector": "Détecteur",
       "Electrification": "Électrification",
+      "NeutralSection": "Section neutre",
+      "OperationalPoint": "Point remarquable",
       "Route": "Itinéraire",
       "Signal": "Signal",
       "SpeedSection": "Vitesse limite",
       "Switch": "Aiguillage",
+      "SwitchType": "Type d'aiguillage",
       "TrackSection": "Section de voie"
     },
     "tools": {

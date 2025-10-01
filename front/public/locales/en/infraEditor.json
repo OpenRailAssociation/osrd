@@ -628,6 +628,12 @@
   "Switch": {
     "description": "Switches are devices used for track changes.",
     "properties": {
+      "port::A": { "title": "Port A" },
+      "port::A1": { "title": "Port A1" },
+      "port::A2": { "title": "Port A2" },
+      "port::B": { "title": "Port B" },
+      "port::B1": { "title": "Port B1" },
+      "port::B2": { "title": "Port B2" },
       "group_change_delay": {
         "description": "Time it takes to change which group of the switch is activated",
         "title": "Group change delay"

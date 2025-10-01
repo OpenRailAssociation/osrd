@@ -170,10 +170,13 @@
       "BufferStop": "Buffer stop",
       "Detector": "Detector",
       "Electrification": "Electrification",
+      "NeutralSection": "Neutral section",
+      "OperationalPoint": "Operational point",
       "Route": "Route",
       "Signal": "Signal",
       "SpeedSection": "Speed limit",
       "Switch": "Switch",
+      "SwitchType": "Switch type",
       "TrackSection": "Track section"
     },
     "tools": {
