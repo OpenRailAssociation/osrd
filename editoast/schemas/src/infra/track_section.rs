@@ -81,7 +81,12 @@ mod tests {
 
         assert_eq!(
             BoundingBox::from_geojson(line_string).unwrap(),
-            BoundingBox((2.4, 49.0), (3.0, 49.3))
+            BoundingBox {
+                min_lon: 2.4,
+                min_lat: 49.0,
+                max_lon: 3.0,
+                max_lat: 49.3,
+            }
         );
     }
 

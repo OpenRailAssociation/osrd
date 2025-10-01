@@ -4930,19 +4930,26 @@ components:
           minLength: 1
       additionalProperties: false
     BoundingBox:
-      type: array
-      items:
-        type: array
-        items: false
-        prefixItems:
-        - type: number
-          format: double
-        - type: number
-          format: double
-        description: A bounding box
+      type: object
       description: A bounding box
-      maxItems: 2
-      minItems: 2
+      required:
+      - min_lon
+      - min_lat
+      - max_lon
+      - max_lat
+      properties:
+        max_lat:
+          type: number
+          format: double
+        max_lon:
+          type: number
+          format: double
+        min_lat:
+          type: number
+          format: double
+        min_lon:
+          type: number
+          format: double
     BufferStop:
       type: object
       required:

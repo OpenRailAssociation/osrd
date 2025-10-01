@@ -139,7 +139,15 @@ mod tests {
             app.get(format!("/infra/{}/lines/{line_code}/bbox/", empty_infra.id).as_str());
         let bounding_box: BoundingBox =
             app.fetch(request).assert_status(StatusCode::OK).json_into();
-        assert_eq!(bounding_box, BoundingBox((1., 2.), (3., 4.)));
+        assert_eq!(
+            bounding_box,
+            BoundingBox {
+                min_lon: 1.,
+                min_lat: 2.,
+                max_lon: 3.,
+                max_lat: 4.,
+            }
+        );
     }
 
     #[rstest]
