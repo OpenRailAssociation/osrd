@@ -2,7 +2,7 @@ import { useCallback, useEffect, useState } from 'react';
 
 import { useDispatch } from 'react-redux';
 
-import STDCM_PERIMETER_OPERATIONAL_POINTS from 'assets/operationStudies/stdcmPerimeterOperationalPoints';
+import STDCM_PERIMETER_OPERATIONAL_POINTS from 'assets/stdcm/stdcmPerimeterOperationalPoints';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import {
   resetStdcmSimulations,

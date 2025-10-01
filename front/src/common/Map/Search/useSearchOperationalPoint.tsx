@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo, useCallback } from 'react';
 
 import { useSelector } from 'react-redux';
 
-import STDCM_PERIMETER_OPERATIONAL_POINTS from 'assets/operationStudies/stdcmPerimeterOperationalPoints';
+import STDCM_PERIMETER_OPERATIONAL_POINTS from 'assets/stdcm/stdcmPerimeterOperationalPoints';
 import { type SearchResultItemOperationalPoint, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useInfraID } from 'common/osrdContext';
 import { setFailure } from 'reducers/main';
