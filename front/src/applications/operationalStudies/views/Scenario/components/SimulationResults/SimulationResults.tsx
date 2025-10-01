@@ -240,40 +240,38 @@ const SimulationResults = ({
                 />
               </div>
               <div className="osrd-simulation-container d-flex flex-grow-1 flex-shrink-1">
-                <div className="chart-container">
-                  {trainIdUsedForProjection && (
-                    <SpaceTimeChartWrapper
-                      operationalPoints={projectedOperationalPoints}
-                      projectPathTrainResult={projectPathTrainResult}
-                      selectedTrainId={selectedTrainId}
-                      timetableItemsWithDetails={timetableItemsWithDetails}
-                      waypointsPanelData={{
-                        filteredWaypoints: filteredOperationalPoints,
-                        setFilteredWaypoints: setFilteredOperationalPoints,
-                        projectionPath: projectionData.path,
-                        deployedWaypoints: new Set(
-                          deployedWaypoints.map(({ waypointId }) => waypointId)
-                        ),
-                        toggleDeployedWaypoint: toggleWaypoint,
-                        timetableId,
-                      }}
-                      trackOccupancyDiagramsData={deployedWaypoints}
-                      onCloseOccupancyLayer={(waypointId: string) =>
-                        toggleWaypoint(waypointId, false)
-                      }
-                      conflicts={conflictZones}
-                      projectionLoaderData={projectionData.projectionLoaderData}
-                      height={manchetteWithSpaceTimeChartHeight - HIDDEN_CHART_TOP_HEIGHT}
-                      handleTrainDrag={handleTrainDrag}
-                      onTrainClick={(trainId) => {
-                        dispatch(updateSelectedTrainId(trainId));
-                      }}
-                      selectedProjectionId={trainIdUsedForProjection}
-                      waypointsPanelIsOpen={waypointsPanelIsOpen}
-                      setWaypointsPanelIsOpen={setWaypointsPanelIsOpen}
-                    />
-                  )}
-                </div>
+                {trainIdUsedForProjection && (
+                  <SpaceTimeChartWrapper
+                    operationalPoints={projectedOperationalPoints}
+                    projectPathTrainResult={projectPathTrainResult}
+                    selectedTrainId={selectedTrainId}
+                    timetableItemsWithDetails={timetableItemsWithDetails}
+                    waypointsPanelData={{
+                      filteredWaypoints: filteredOperationalPoints,
+                      setFilteredWaypoints: setFilteredOperationalPoints,
+                      projectionPath: projectionData.path,
+                      deployedWaypoints: new Set(
+                        deployedWaypoints.map(({ waypointId }) => waypointId)
+                      ),
+                      toggleDeployedWaypoint: toggleWaypoint,
+                      timetableId,
+                    }}
+                    trackOccupancyDiagramsData={deployedWaypoints}
+                    onCloseOccupancyLayer={(waypointId: string) =>
+                      toggleWaypoint(waypointId, false)
+                    }
+                    conflicts={conflictZones}
+                    projectionLoaderData={projectionData.projectionLoaderData}
+                    height={manchetteWithSpaceTimeChartHeight - HIDDEN_CHART_TOP_HEIGHT}
+                    handleTrainDrag={handleTrainDrag}
+                    onTrainClick={(trainId) => {
+                      dispatch(updateSelectedTrainId(trainId));
+                    }}
+                    selectedProjectionId={trainIdUsedForProjection}
+                    waypointsPanelIsOpen={waypointsPanelIsOpen}
+                    setWaypointsPanelIsOpen={setWaypointsPanelIsOpen}
+                  />
+                )}
               </div>
             </div>
           </BoardWrapper>
@@ -294,18 +292,16 @@ const SimulationResults = ({
                   >
                     <BoardWrapper name={t('simulationResults.speedDistanceDiagram')}>
                       <div className="osrd-simulation-container">
-                        <div className="chart-container">
-                          <SpeedDistanceDiagramWrapper
-                            timetableItemSimulation={simulationResults.simulation}
-                            selectedTimetableItemPowerRestrictions={
-                              simulationResults.powerRestrictions
-                            }
-                            rollingStock={simulationResults.rollingStock}
-                            pathProperties={simulationResults.pathProperties}
-                            height={SDDHeight}
-                            setHeight={setSDDHeight}
-                          />
-                        </div>
+                        <SpeedDistanceDiagramWrapper
+                          timetableItemSimulation={simulationResults.simulation}
+                          selectedTimetableItemPowerRestrictions={
+                            simulationResults.powerRestrictions
+                          }
+                          rollingStock={simulationResults.rollingStock}
+                          pathProperties={simulationResults.pathProperties}
+                          height={SDDHeight}
+                          setHeight={setSDDHeight}
+                        />
                       </div>
                     </BoardWrapper>
                   </ResizableSection>

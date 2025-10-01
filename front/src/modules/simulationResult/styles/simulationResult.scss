@@ -1,13 +1,6 @@
 @use './timeline';
 @use './manchetteWithSpaceTimeChart';
 
-.chart-container {
-  display: block;
-  position: relative;
-  width: 100%;
-  transition: 0.2s;
-}
-
 .speed-distance-diagram-section {
   margin-bottom: 24px;
   position: relative;
