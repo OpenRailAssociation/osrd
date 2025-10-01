@@ -16,7 +16,6 @@ use super::simulation::SimulationSuccess;
 use crate::AsCoreRequest;
 use crate::Json;
 
-#[editoast_derive::openapi_schema]
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
 #[schema(as = StdcmRequest)]
 pub struct Request {

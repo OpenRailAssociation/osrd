@@ -55,7 +55,6 @@ pub struct ScenarioIdParam {
 }
 
 /// This structure is used by the post endpoint to create a scenario
-#[editoast_derive::openapi_schema]
 #[derive(Serialize, Deserialize, Default, ToSchema)]
 pub(in crate::views) struct ScenarioCreateForm {
     pub name: String,
@@ -103,7 +102,6 @@ pub enum ScenarioError {
     Database(#[from] editoast_models::Error),
 }
 
-#[editoast_derive::openapi_schema]
 #[derive(Debug, Clone, Deserialize, Serialize, ToSchema)]
 pub struct ScenarioWithDetails {
     #[serde(flatten)]
@@ -124,7 +122,6 @@ impl ScenarioWithDetails {
     }
 }
 
-#[editoast_derive::openapi_schema]
 #[derive(Debug, Clone, Deserialize, Serialize, ToSchema)]
 pub struct ScenarioResponse {
     #[serde(flatten)]
@@ -271,7 +268,6 @@ pub(in crate::views) async fn delete(
 }
 
 /// This structure is used by the patch endpoint to patch a scenario
-#[editoast_derive::openapi_schema]
 #[derive(Serialize, Deserialize, Default, ToSchema)]
 pub(in crate::views) struct ScenarioPatchForm {
     pub name: Option<String>,

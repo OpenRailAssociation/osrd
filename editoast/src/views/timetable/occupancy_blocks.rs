@@ -21,7 +21,6 @@ use crate::views::timetable::simulation::train_simulation_batch;
 /// Occupancy block output is described by time-space points and blocks
 pub type OccupancyBlocks = Vec<SignalUpdate>;
 
-#[editoast_derive::openapi_schema]
 #[derive(Debug, Deserialize, ToSchema)]
 pub(in crate::views) struct OccupancyBlockForm {
     pub(super) infra_id: i64,

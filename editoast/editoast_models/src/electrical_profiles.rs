@@ -16,7 +16,6 @@ use crate::Error;
 #[cfg(any(test, feature = "testing"))]
 use crate::prelude::*;
 
-#[editoast_derive::openapi_schema]
 #[derive(Clone, Debug, Serialize, Deserialize, Model, ToSchema)]
 #[model(table = database::tables::electrical_profile_set)]
 #[model(changeset(derive(Deserialize)))]
@@ -41,7 +40,6 @@ impl ElectricalProfileSet {
     }
 }
 
-#[editoast_derive::openapi_schema]
 #[derive(Debug, Queryable, Identifiable, Serialize, Deserialize, PartialEq, ToSchema)]
 #[diesel(table_name = electrical_profile_set)]
 pub struct LightElectricalProfileSet {

@@ -17,7 +17,6 @@ diesel_json.workspace = true
 editoast_derive.workspace = true
 futures.workspace = true
 futures-util.workspace = true
-linkme.workspace = true
 openssl.workspace = true
 opentelemetry-semantic-conventions.workspace = true
 postgis_diesel.workspace = true

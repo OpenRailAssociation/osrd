@@ -16,7 +16,6 @@ use crate::primitives::ObjectType;
 #[derive(Debug, Clone, Serialize, PartialEq, Copy, ToSchema)]
 pub struct Speed(pub f64);
 
-#[editoast_derive::openapi_schema]
 #[derive(Debug, Educe, Clone, Deserialize, Serialize, PartialEq, ToSchema)]
 #[educe(Default)]
 #[serde(deny_unknown_fields)]

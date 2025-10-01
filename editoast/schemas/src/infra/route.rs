@@ -13,7 +13,6 @@ use crate::primitives::OSRDIdentified;
 use crate::primitives::OSRDTyped;
 use crate::primitives::ObjectType;
 
-#[editoast_derive::openapi_schema]
 #[derive(Debug, Educe, Clone, Deserialize, Serialize, PartialEq, Eq, ToSchema)]
 #[serde(deny_unknown_fields)]
 #[educe(Default)]
@@ -42,7 +41,6 @@ impl OSRDIdentified for Route {
     }
 }
 
-#[editoast_derive::openapi_schema]
 #[derive(Debug, Clone, Serialize, PartialEq, ToSchema)]
 pub struct RoutePath {
     pub track_ranges: Vec<DirectionalTrackRange>,

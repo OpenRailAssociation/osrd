@@ -3,7 +3,6 @@ use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
 
-#[editoast_derive::openapi_schema]
 #[derive(Debug, Educe, Clone, PartialEq, Eq, Serialize, Deserialize, ToSchema, Hash)]
 #[serde(deny_unknown_fields)]
 #[educe(Default)]

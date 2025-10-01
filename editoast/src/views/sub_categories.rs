@@ -51,7 +51,6 @@ impl From<editoast_models::sub_category::Error> for SubCategoryError {
     }
 }
 
-#[editoast_derive::openapi_schema]
 #[derive(Debug, Serialize, ToSchema)]
 #[cfg_attr(test, derive(serde::Deserialize))]
 pub(in crate::views) struct SubCategoryPage {

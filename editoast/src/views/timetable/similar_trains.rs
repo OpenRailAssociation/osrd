@@ -98,7 +98,6 @@ impl Serialize for RollingStockCharacteristics {
     }
 }
 
-#[editoast_derive::openapi_schema]
 #[derive(Clone, Deserialize, ToSchema)]
 #[cfg_attr(test, derive(PartialEq, Serialize))]
 #[schema(as = SimilarTrainWaypoint)]

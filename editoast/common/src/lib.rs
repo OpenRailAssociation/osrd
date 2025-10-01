@@ -11,14 +11,6 @@ use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
 
-pub type OpenApiSchemaSliceItem = fn() -> (
-    std::borrow::Cow<'static, str>,
-    utoipa::openapi::RefOr<utoipa::openapi::schema::Schema>,
-);
-
-#[linkme::distributed_slice]
-pub static OPENAPI_SCHEMAS: [OpenApiSchemaSliceItem];
-
 pub fn setup_tracing_for_test() {
     tracing_subscriber::fmt()
         .with_env_filter(tracing_subscriber::EnvFilter::from_default_env())
@@ -27,14 +19,6 @@ pub fn setup_tracing_for_test() {
         .try_init()
         .ok();
 }
-
-#[linkme::distributed_slice(OPENAPI_SCHEMAS)]
-static _SCHEMA: OpenApiSchemaSliceItem = || {
-    (
-        <Version as utoipa::ToSchema>::name(),
-        <Version as utoipa::PartialSchema>::schema(),
-    )
-};
 
 #[derive(ToSchema, Serialize, Deserialize)]
 pub struct Version {

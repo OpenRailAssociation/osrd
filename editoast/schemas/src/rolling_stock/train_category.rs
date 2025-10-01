@@ -4,7 +4,6 @@ use utoipa::ToSchema;
 
 use crate::rolling_stock::TrainMainCategory;
 
-#[editoast_derive::openapi_schema]
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, ToSchema)]
 #[serde(untagged)]
 pub enum TrainCategory {

@@ -25,7 +25,6 @@ pub(in crate::views) struct WorkerLoadForm {
     timetable_id: Option<i64>,
 }
 
-#[editoast_derive::openapi_schema]
 #[derive(Debug, Clone, Copy, Default, Deserialize, PartialEq, Eq, Serialize, ToSchema)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum WorkerStatus {

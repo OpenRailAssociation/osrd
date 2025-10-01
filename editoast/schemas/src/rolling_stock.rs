@@ -65,7 +65,6 @@ pub fn default_rolling_stock_railjson_version() -> String {
     ROLLING_STOCK_RAILJSON_VERSION.to_string()
 }
 
-#[editoast_derive::openapi_schema]
 #[editoast_derive::annotate_units]
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize, ToSchema)]
 #[serde(remote = "Self")]

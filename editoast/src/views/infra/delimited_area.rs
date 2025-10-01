@@ -45,13 +45,11 @@ pub(in crate::views) struct DelimitedAreaForm {
     exits: Vec<DirectedLocation>,
 }
 
-#[editoast_derive::openapi_schema]
 #[derive(Deserialize, Serialize, ToSchema)]
 pub(in crate::views) struct DelimitedAreaResponse {
     track_ranges: Vec<DirectionalTrackRange>,
 }
 
-#[editoast_derive::openapi_schema]
 #[derive(Debug, Deserialize, Serialize, ToSchema)]
 struct DirectedLocation {
     #[schema(inline)]
@@ -70,7 +68,6 @@ enum DelimitedAreaError {
     },
 }
 
-#[editoast_derive::openapi_schema]
 #[derive(Debug, Error, Serialize, Deserialize, ToSchema)]
 enum InputError {
     #[error("Track '{0}' does not exist")]

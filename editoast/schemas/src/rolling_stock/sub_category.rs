@@ -9,7 +9,6 @@ use utoipa::ToSchema;
 
 use crate::rolling_stock::TrainMainCategory;
 
-#[editoast_derive::openapi_schema]
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize, ToSchema)]
 pub struct SubCategory {
     pub name: String,
@@ -21,7 +20,6 @@ pub struct SubCategory {
 }
 
 /// Represents a color for a sub-category in hexadecimal format #RRGGBB.
-#[editoast_derive::openapi_schema]
 #[derive(Clone, Debug, PartialEq, Serialize, ToSchema)]
 pub struct SubCategoryColor(String);
 

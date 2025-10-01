@@ -18,7 +18,6 @@ use editoast_models::tags::Tags;
 
 use super::Project;
 
-#[editoast_derive::openapi_schema]
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Model, ToSchema)]
 #[model(table = database::tables::study)]
 #[model(gen(ops = crud, list))]

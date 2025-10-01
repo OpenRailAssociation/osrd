@@ -4626,15 +4626,21 @@ export type TrainRequirementsById = {
   start_time: string;
   train_id: string;
 };
-export type WorkScheduleType = 'CATENARY' | 'TRACK';
+export type UndirectedTrackRange = {
+  /** The beginning of the range in mm. */
+  begin: number;
+  /** The end of the range in mm. */
+  end: number;
+  /** The track section identifier. */
+  track_section: string;
+};
 export type WorkSchedule = {
-  end_date_time: string;
-  id: number;
-  obj_id: string;
-  start_date_time: string;
-  track_ranges: TrackRange[];
-  work_schedule_group_id: number;
-  work_schedule_type: WorkScheduleType;
+  /** End time as a time delta from the stdcm start time in ms */
+  end_time: number;
+  /** Start time as a time delta from the stdcm start time in ms */
+  start_time: number;
+  /** List of unavailable track ranges */
+  track_ranges: UndirectedTrackRange[];
 };
 export type StdcmRequest = {
   /** The comfort of the train */

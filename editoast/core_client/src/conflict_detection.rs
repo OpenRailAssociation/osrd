@@ -23,7 +23,6 @@ pub struct ConflictDetectionRequest {
     pub work_schedules: Option<WorkSchedulesRequest>,
 }
 
-#[editoast_derive::openapi_schema]
 #[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
 pub struct TrainRequirements {
     pub start_time: DateTime<Utc>,
@@ -32,7 +31,6 @@ pub struct TrainRequirements {
 }
 
 // TODO: use struct in conflict detection instead of a Map<String, TrainRequirements>.
-#[editoast_derive::openapi_schema]
 #[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
 pub struct TrainRequirementsById {
     pub train_id: String,
@@ -47,7 +45,6 @@ pub struct WorkSchedulesRequest {
     pub work_schedule_requirements: HashMap<String, WorkSchedule>,
 }
 
-#[editoast_derive::openapi_schema]
 #[derive(Debug, Serialize, Deserialize, ToSchema)]
 pub struct ConflictDetectionResponse {
     /// List of conflicts detected
@@ -76,7 +73,6 @@ pub struct Conflict {
 ///
 /// The start and end time describe the conflicting time span (not the full
 /// requirement's time span).
-#[editoast_derive::openapi_schema]
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize, ToSchema)]
 pub struct ConflictRequirement {
     pub zone: String,

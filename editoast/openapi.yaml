@@ -4996,71 +4996,6 @@ components:
             within the target document where the operation is performed.
         value:
           description: Value to add to the target location.
-    Allowance:
-      oneOf:
-      - allOf:
-        - $ref: '#/components/schemas/EngineeringAllowance'
-        - type: object
-          required:
-          - allowance_type
-          properties:
-            allowance_type:
-              type: string
-              enum:
-              - engineering
-      - allOf:
-        - $ref: '#/components/schemas/StandardAllowance'
-        - type: object
-          required:
-          - allowance_type
-          properties:
-            allowance_type:
-              type: string
-              enum:
-              - standard
-    AllowanceDistribution:
-      type: string
-      enum:
-      - MARECO
-      - LINEAR
-    AllowanceValue:
-      oneOf:
-      - type: object
-        required:
-        - minutes
-        - value_type
-        properties:
-          minutes:
-            type: number
-            format: double
-          value_type:
-            type: string
-            enum:
-            - time_per_distance
-      - type: object
-        required:
-        - seconds
-        - value_type
-        properties:
-          seconds:
-            type: number
-            format: double
-          value_type:
-            type: string
-            enum:
-            - time
-      - type: object
-        required:
-        - percentage
-        - value_type
-        properties:
-          percentage:
-            type: number
-            format: double
-          value_type:
-            type: string
-            enum:
-            - percentage
     ApplicableDirections:
       type: string
       enum:
@@ -5148,32 +5083,6 @@ components:
       - STANDARD
       - AIR_CONDITIONING
       - HEATING
-    CompleteReportTrain:
-      allOf:
-      - $ref: '#/components/schemas/ReportTrain'
-      - type: object
-        required:
-        - signal_critical_positions
-        - zone_updates
-        - spacing_requirements
-        - routing_requirements
-        properties:
-          routing_requirements:
-            type: array
-            items:
-              $ref: '#/components/schemas/RoutingRequirement'
-          signal_critical_positions:
-            type: array
-            items:
-              $ref: '#/components/schemas/SignalCriticalPosition'
-          spacing_requirements:
-            type: array
-            items:
-              $ref: '#/components/schemas/SpacingRequirement'
-          zone_updates:
-            type: array
-            items:
-              $ref: '#/components/schemas/ZoneUpdate'
     ConditionalEffortCurve:
       type: object
       required:
@@ -5268,54 +5177,6 @@ components:
             type: integer
             format: int64
           description: List of work schedule ids involved in the conflict
-    ConflictDetectionResponse:
-      type: object
-      required:
-      - conflicts
-      properties:
-        conflicts:
-          type: array
-          items:
-            type: object
-            required:
-            - train_ids
-            - work_schedule_ids
-            - start_time
-            - end_time
-            - conflict_type
-            - requirements
-            properties:
-              conflict_type:
-                oneOf:
-                - type: string
-                  enum:
-                  - Spacing
-                  - Routing
-                description: Type of the conflict
-              end_time:
-                type: string
-                format: date-time
-                description: Datetime of the end of the conflict
-              requirements:
-                type: array
-                items:
-                  $ref: '#/components/schemas/ConflictRequirement'
-                description: List of requirements causing the conflict
-              start_time:
-                type: string
-                format: date-time
-                description: Datetime of the start of the conflict
-              train_ids:
-                type: array
-                items:
-                  type: string
-                description: List of train schedule ids and paced train generated occurrences involved in the conflict
-              work_schedule_ids:
-                type: array
-                items:
-                  type: string
-                description: List of work schedule ids involved in the conflict
-          description: List of conflicts detected
     ConflictRequirement:
       type: object
       description: |-
@@ -5407,21 +5268,6 @@ components:
           type: number
           format: double
       additionalProperties: false
-    DeleteRollingStockQueryParams:
-      type: object
-      properties:
-        force:
-          type: boolean
-          description: force the deletion even if it's used
-    DelimitedAreaResponse:
-      type: object
-      required:
-      - track_ranges
-      properties:
-        track_ranges:
-          type: array
-          items:
-            $ref: '#/components/schemas/DirectionalTrackRange'
     Detector:
       type: object
       required:
@@ -5455,22 +5301,6 @@ components:
           maxLength: 255
           minLength: 1
       additionalProperties: false
-    DirectedLocation:
-      type: object
-      required:
-      - track
-      - position
-      - direction
-      properties:
-        direction:
-          $ref: '#/components/schemas/Direction'
-        position:
-          type: number
-          format: double
-        track:
-          type: string
-          maxLength: 255
-          minLength: 1
     Direction:
       type: string
       enum:
@@ -9080,14 +8910,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ElectricalProfile'
-    ElectricalProfileSetIdQueryParam:
-      type: object
-      properties:
-        electrical_profile_set_id:
-          type:
-          - integer
-          - 'null'
-          format: int64
     Electrification:
       type: object
       required:
@@ -9216,19 +9038,6 @@ components:
           maximum: 1
           minimum: 0
       additionalProperties: false
-    EngineeringAllowance:
-      allOf:
-      - $ref: '#/components/schemas/RangeAllowance'
-      - type: object
-        required:
-        - distribution
-        properties:
-          capacity_speed_limit:
-            type: number
-            format: double
-            default: -1.0
-          distribution:
-            $ref: '#/components/schemas/AllowanceDistribution'
     EtcsBrakeParams:
       type: object
       description: |-
@@ -9296,13 +9105,6 @@ components:
           format: double
           description: 'T_traction_cut_off: time delay in s from the traction cut-off command to the moment the acceleration due to traction is zero'
       additionalProperties: false
-    ExceptionQueryParam:
-      type: object
-      properties:
-        exception_key:
-          type:
-          - string
-          - 'null'
     GeoJson:
       oneOf:
       - $ref: '#/components/schemas/GeoJsonPoint'
@@ -9705,41 +9507,12 @@ components:
             - unused_port
           port_name:
             type: string
-    InfraErrorTypeLabel:
-      type: string
-      description: Auto-generated discriminant enum variants
-      enum:
-      - duplicated_group
-      - empty_object
-      - invalid_group
-      - invalid_reference
-      - invalid_route
-      - invalid_switch_ports
-      - missing_route
-      - missing_buffer_stop
-      - node_endpoints_not_unique
-      - object_out_of_path
-      - odd_buffer_stop_location
-      - out_of_range
-      - overlapping_electrifications
-      - overlapping_speed_sections
-      - overlapping_switches
-      - unknown_port_name
-      - unused_port
     InfraGrant:
       type: string
       enum:
       - READER
       - WRITER
       - OWNER
-    InfraIdQueryParam:
-      type: object
-      required:
-      - infra_id
-      properties:
-        infra_id:
-          type: integer
-          format: int64
     InfraObject:
       oneOf:
       - type: object
@@ -9903,33 +9676,6 @@ components:
         value:
           type: number
           format: double
-    InputError:
-      oneOf:
-      - type: object
-        required:
-        - TrackDoesNotExist
-        properties:
-          TrackDoesNotExist:
-            type: string
-      - type: object
-        required:
-        - LocationOutOfBounds
-        properties:
-          LocationOutOfBounds:
-            type: object
-            required:
-            - track
-            - position
-            - track_length
-            properties:
-              position:
-                type: number
-                format: double
-              track:
-                type: string
-              track_length:
-                type: number
-                format: double
     InternalError:
       type: object
       required:
@@ -10800,15 +10546,6 @@ components:
       properties:
         value:
           $ref: '#/components/schemas/TrainScheduleOptions'
-    Ordering:
-      type: string
-      enum:
-      - NameAsc
-      - NameDesc
-      - CreationDateAsc
-      - CreationDateDesc
-      - LastModifiedDesc
-      - LastModifiedAsc
     PacedTrain:
       allOf:
       - $ref: '#/components/schemas/TrainSchedule'
@@ -10876,17 +10613,6 @@ components:
         that may deviate from the paced train.
         - Created: A new occurrence manually added by the user, not originally present in the automatically generated occurrences based on the paced train.
         - Modified: An existing occurrence that has been changed
-    PacedTrainForm:
-      allOf:
-      - $ref: '#/components/schemas/PacedTrain'
-      - type: object
-        properties:
-          timetable_id:
-            type:
-            - integer
-            - 'null'
-            format: int64
-            description: Timetable attached to the paced train
     PacedTrainResponse:
       allOf:
       - $ref: '#/components/schemas/PacedTrain'
@@ -11625,13 +11351,6 @@ components:
       description: Duration in ISO 8601 format (e.g. PT2H for 2 hours)
       examples:
       - PT2H
-    PowerRestriction:
-      type: object
-      required:
-      - power_restriction
-      properties:
-        power_restriction:
-          type: string
     PowerRestrictionItem:
       type: object
       required:
@@ -11929,21 +11648,6 @@ components:
           type: string
           description: The version of the RailJSON format. Defaults to the current version.
       additionalProperties: false
-    RangeAllowance:
-      type: object
-      required:
-      - begin_position
-      - end_position
-      - value
-      properties:
-        begin_position:
-          type: number
-          format: double
-        end_position:
-          type: number
-          format: double
-        value:
-          $ref: '#/components/schemas/AllowanceValue'
     ReceptionSignal:
       type: string
       description: |-
@@ -12066,29 +11770,6 @@ components:
         subject_id:
           type: integer
           format: int64
-    RjsPowerRestrictionRange:
-      type: object
-      description: A range along the train path where a power restriction is applied.
-      required:
-      - begin_position
-      - end_position
-      - power_restriction_code
-      properties:
-        begin_position:
-          type: number
-          format: float
-          description: Offset from the start of the path, in meters.
-        end_position:
-          type: number
-          format: float
-          description: Offset from the start of the path, in meters.
-        power_restriction_code:
-          type: string
-          description: The power restriction code to apply.
-      example:
-        begin_position: 0.0
-        end_position: 1000.0
-        power_restriction_code: C1US
     Role:
       type: string
       enum:
@@ -12409,6 +12090,17 @@ components:
           $ref: '#/components/schemas/RollingStockSupportedSignalingSystems'
     RollingStockLivery:
       type: object
+      description: |
+        Rolling Stock Livery
+
+        A rolling stock can have several liveries, which are deleted on cascade if the rolling stock is removed.
+        It can have several liveries, and each livery can have one or several separated
+        images and one compound image (created by aggregating the separated images together).
+
+        A livery has a compound_image_id field which refers to a document. The separated images of the livery also have
+        a image_id field which refers to a document.
+
+        /!\ Its compound image is not deleted by cascade if the livery is removed.
       required:
       - id
       - name
@@ -12441,22 +12133,6 @@ components:
               type: integer
               format: int32
               minimum: 0
-        name:
-          type: string
-    RollingStockLiveryMetadata:
-      type: object
-      required:
-      - id
-      - name
-      properties:
-        compound_image_id:
-          type:
-          - integer
-          - 'null'
-          format: int64
-        id:
-          type: integer
-          format: int64
         name:
           type: string
     RollingStockLockedUpdateForm:
@@ -13909,24 +13585,6 @@ components:
           items:
             $ref: '#/components/schemas/ApplicableDirectionsTrackRange'
       additionalProperties: false
-    StandardAllowance:
-      type: object
-      required:
-      - default_value
-      - ranges
-      - distribution
-      properties:
-        capacity_speed_limit:
-          type: number
-          format: double
-        default_value:
-          $ref: '#/components/schemas/AllowanceValue'
-        distribution:
-          $ref: '#/components/schemas/AllowanceDistribution'
-        ranges:
-          type: array
-          items:
-            $ref: '#/components/schemas/RangeAllowance'
     StartTimeChangeGroup:
       type: object
       required:
@@ -14141,57 +13799,6 @@ components:
           items:
             $ref: '#/components/schemas/WorkSchedule'
           description: List of planned work schedules
-    StdcmResponse:
-      oneOf:
-      - type: object
-        required:
-        - simulation
-        - pathfinding_result
-        - departure_time
-        - status
-        properties:
-          core_payload:
-            oneOf:
-            - type: 'null'
-            - $ref: '#/components/schemas/StdcmRequest'
-          departure_time:
-            type: string
-            format: date-time
-          pathfinding_result:
-            $ref: '#/components/schemas/PathfindingResultSuccess'
-          simulation:
-            $ref: '#/components/schemas/SimulationResponseSuccess'
-          status:
-            type: string
-            enum:
-            - success
-      - type: object
-        required:
-        - status
-        properties:
-          core_payload:
-            oneOf:
-            - type: 'null'
-            - $ref: '#/components/schemas/StdcmRequest'
-          status:
-            type: string
-            enum:
-            - path_not_found
-      - type: object
-        required:
-        - error
-        - status
-        properties:
-          core_payload:
-            oneOf:
-            - type: 'null'
-            - $ref: '#/components/schemas/StdcmRequest'
-          error:
-            $ref: '#/components/schemas/SimulationResponse'
-          status:
-            type: string
-            enum:
-            - preprocessing_simulation_error
     StdcmSearchEnvironment:
       type: object
       required:
@@ -14732,17 +14339,6 @@ components:
         version:
           type: integer
           format: int64
-    TowedRollingStockCountList:
-      allOf:
-      - $ref: '#/components/schemas/PaginationStats'
-      - type: object
-        required:
-        - results
-        properties:
-          results:
-            type: array
-            items:
-              $ref: '#/components/schemas/TowedRollingStock'
     TowedRollingStockForm:
       type: object
       required:
@@ -14819,23 +14415,6 @@ components:
           maxLength: 255
           minLength: 1
       additionalProperties: false
-    TrackLocation:
-      type: object
-      description: A track location is a track section and an offset
-      required:
-      - track_section
-      - offset
-      properties:
-        offset:
-          type: number
-          format: double
-          description: The offset on the track section in meters
-        track_section:
-          oneOf:
-          - type: string
-            maxLength: 255
-            minLength: 1
-          description: The track section UUID
     TrackOffset:
       type: object
       required:
@@ -15023,24 +14602,6 @@ components:
           items:
             $ref: '#/components/schemas/CoreTrackRange'
           description: Track section ranges, in order.
-    TrainRequirements:
-      type: object
-      required:
-      - start_time
-      - spacing_requirements
-      - routing_requirements
-      properties:
-        routing_requirements:
-          type: array
-          items:
-            $ref: '#/components/schemas/RoutingRequirement'
-        spacing_requirements:
-          type: array
-          items:
-            $ref: '#/components/schemas/SpacingRequirement'
-        start_time:
-          type: string
-          format: date-time
     TrainRequirementsById:
       type: object
       required:
@@ -15298,35 +14859,27 @@ components:
             - Detector
     WorkSchedule:
       type: object
+      description: Lighter description of a work schedule, with only the relevant information for core
       required:
-      - id
-      - start_date_time
-      - end_date_time
+      - start_time
+      - end_time
       - track_ranges
-      - obj_id
-      - work_schedule_type
-      - work_schedule_group_id
       properties:
-        end_date_time:
-          type: string
-          format: date-time
-        id:
+        end_time:
           type: integer
           format: int64
-        obj_id:
-          type: string
-        start_date_time:
-          type: string
-          format: date-time
+          description: End time as a time delta from the stdcm start time in ms
+          minimum: 0
+        start_time:
+          type: integer
+          format: int64
+          description: Start time as a time delta from the stdcm start time in ms
+          minimum: 0
         track_ranges:
           type: array
           items:
-            $ref: '#/components/schemas/TrackRange'
-        work_schedule_group_id:
-          type: integer
-          format: int64
-        work_schedule_type:
-          $ref: '#/components/schemas/WorkScheduleType'
+            $ref: '#/components/schemas/UndirectedTrackRange'
+          description: List of unavailable track ranges
     WorkScheduleItemForm:
       type: object
       required:

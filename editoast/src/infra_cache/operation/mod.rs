@@ -24,7 +24,6 @@ use schemas::infra::InfraObject;
 use schemas::primitives::ObjectRef;
 use schemas::primitives::ObjectType;
 
-#[editoast_derive::openapi_schema]
 #[derive(Clone, Debug, Deserialize, Serialize, PartialEq)]
 #[serde(tag = "operation_type", deny_unknown_fields, rename_all = "UPPERCASE")]
 pub enum Operation {

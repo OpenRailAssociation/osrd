@@ -49,7 +49,6 @@ pub(crate) fn default_status_code() -> StatusCode {
     StatusCode::INTERNAL_SERVER_ERROR
 }
 
-#[editoast_derive::openapi_schema]
 #[derive(Debug, Clone, Serialize, Deserialize, ToSchema, PartialEq)]
 pub struct InternalError {
     #[serde(with = "StatusCodeRemoteDef", default = "default_status_code")]

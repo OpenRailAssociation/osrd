@@ -43,7 +43,6 @@ impl From<crate::Error> for WsGroupError {
     }
 }
 
-#[editoast_derive::openapi_schema]
 #[derive(Debug, Default, Clone, Copy, Serialize, Deserialize, FromRepr, ToSchema, PartialEq)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum WorkScheduleType {
@@ -52,7 +51,6 @@ pub enum WorkScheduleType {
     Track,
 }
 
-#[editoast_derive::openapi_schema]
 #[derive(Debug, Default, Clone, Model, Serialize, Deserialize, ToSchema)]
 #[model(table = database::tables::work_schedule)]
 #[model(gen(batch_ops = c, list))]

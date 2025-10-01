@@ -14,7 +14,6 @@ use crate::primitives::ObjectType;
 /// In practice, neutral sections are delimited by signs. In OSRD, neutral sections are directional to allow accounting for different sign placement depending on the direction.
 ///
 /// For more details see [the documentation](https://osrd.fr/en/docs/explanation/neutral_sections/).
-#[editoast_derive::openapi_schema]
 #[derive(Debug, Default, Clone, Deserialize, Serialize, PartialEq, ToSchema)]
 #[serde(deny_unknown_fields)]
 pub struct NeutralSection {

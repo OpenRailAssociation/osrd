@@ -36,27 +36,23 @@ pub struct PathfindingRequest {
     pub speed_limit_tag: Option<String>,
 }
 
-#[editoast_derive::openapi_schema]
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
 pub struct OffsetRange {
     start: u64,
     end: u64,
 }
 
-#[editoast_derive::openapi_schema]
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
 pub struct IncompatibleOffsetRangeWithValue {
     range: OffsetRange,
     value: String,
 }
 
-#[editoast_derive::openapi_schema]
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
 pub struct IncompatibleOffsetRange {
     range: OffsetRange,
 }
 
-#[editoast_derive::openapi_schema]
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
 pub struct IncompatibleConstraints {
     incompatible_electrification_ranges: Vec<IncompatibleOffsetRangeWithValue>,
@@ -100,7 +96,6 @@ pub enum PathfindingCoreResult {
 }
 
 /// A successful pathfinding result. This is also used for STDCM response.
-#[editoast_derive::openapi_schema]
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, ToSchema)]
 #[cfg_attr(feature = "mocking_client", derive(Default))]
 pub struct PathfindingResultSuccess {
@@ -114,7 +109,6 @@ pub struct PathfindingResultSuccess {
 }
 
 // Enum for input-related errors
-#[editoast_derive::openapi_schema]
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, ToSchema)]
 #[serde(tag = "error_type", rename_all = "snake_case")]
 pub enum PathfindingInputError {
@@ -130,7 +124,6 @@ pub enum PathfindingInputError {
 }
 
 // Enum for not-found results and incompatible constraints
-#[editoast_derive::openapi_schema]
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, ToSchema, Default)]
 #[serde(tag = "error_type", rename_all = "snake_case")]
 pub enum PathfindingNotFound {
@@ -152,7 +145,6 @@ pub enum PathfindingNotFound {
 
 /// An oriented range on a track section.
 /// `begin` is always less than `end`.
-#[editoast_derive::openapi_schema]
 #[derive(Serialize, Deserialize, Clone, Debug, ToSchema, Hash, PartialEq, Eq)]
 #[schema(as = CoreTrackRange)]
 pub struct TrackRange {
@@ -168,7 +160,6 @@ pub struct TrackRange {
 }
 
 /// A range on a linear object (usually block or route)
-#[editoast_derive::openapi_schema]
 #[derive(Serialize, Deserialize, Clone, Debug, ToSchema, Hash, PartialEq, Eq)]
 pub struct ObjectRange {
     /// The object identifier.
@@ -182,7 +173,6 @@ pub struct ObjectRange {
 
 /// A valid train path, as returned from the pathfinding.
 /// Can be used as-is as input for other endpoints.
-#[editoast_derive::openapi_schema]
 #[derive(Serialize, Deserialize, Clone, Debug, ToSchema, Hash, PartialEq, Eq, Default)]
 pub struct TrainPath {
     /// Block ranges, in order.

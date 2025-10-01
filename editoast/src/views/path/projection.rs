@@ -208,7 +208,6 @@ impl<'a> PathProjection<'a> {
 }
 
 /// Represent the intersection between a track range and a path, relative to the beginning of the path
-#[editoast_derive::openapi_schema]
 #[derive(Debug, serde::Serialize, serde::Deserialize, PartialEq, utoipa::ToSchema)]
 pub struct Intersection {
     /// Distance of the beginning of the intersection relative to the beginning of the path

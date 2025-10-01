@@ -5,7 +5,6 @@ use utoipa::ToSchema;
 
 use super::ObjectType;
 
-#[editoast_derive::openapi_schema]
 #[derive(Deserialize, Educe, Serialize, Clone, Debug, PartialEq, Eq, Hash, ToSchema)]
 #[educe(Default)]
 #[serde(deny_unknown_fields)]

@@ -31,7 +31,6 @@ use editoast_models::prelude::*;
 
 use super::StdcmError;
 
-#[editoast_derive::openapi_schema]
 #[derive(Debug, Serialize, Deserialize, PartialEq, Clone, ToSchema)]
 pub(crate) struct PathfindingItem {
     /// The stop duration in milliseconds, None if the train does not stop.

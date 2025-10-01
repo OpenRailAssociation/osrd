@@ -5,7 +5,6 @@ use utoipa::ToSchema;
 // Energy sources schema
 
 /// energy source of a rolling stock
-#[editoast_derive::openapi_schema]
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize, ToSchema)]
 #[serde(tag = "energy_source_type", deny_unknown_fields)]
 pub enum EnergySource {
@@ -34,7 +33,6 @@ pub enum EnergySource {
 }
 
 /// power-speed curve (in an energy source)
-#[editoast_derive::openapi_schema]
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize, ToSchema)]
 #[serde(deny_unknown_fields)]
 pub struct SpeedDependantPower {
@@ -43,7 +41,6 @@ pub struct SpeedDependantPower {
 }
 
 /// energy storage of an energy source (of a rolling stock, can be a electrical battery or a hydrogen/fuel powerPack)
-#[editoast_derive::openapi_schema]
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize, ToSchema)]
 #[serde(deny_unknown_fields)]
 pub struct EnergyStorage {
@@ -59,7 +56,6 @@ pub struct EnergyStorage {
 }
 
 /// physical law defining how the storage can be refilled
-#[editoast_derive::openapi_schema]
 #[derive(Clone, Debug, PartialEq, Deserialize, Serialize, ToSchema)]
 #[serde(deny_unknown_fields)]
 pub struct RefillLaw {

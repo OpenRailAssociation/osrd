@@ -3,7 +3,6 @@ use serde::Serialize;
 use utoipa::ToSchema;
 
 /// A range along the train path where a power restriction is applied.
-#[editoast_derive::openapi_schema]
 #[derive(Debug, Clone, Serialize, Deserialize, ToSchema, PartialEq)]
 #[schema(example = json!({
     "begin_position": 0.0,

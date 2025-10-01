@@ -7,7 +7,6 @@ use crate::primitives::PositiveDuration;
 
 /// State of the signal where the train is received for its stop.
 /// For (important) details, see <https://osrd.fr/en/docs/reference/design-docs/timetable/#modifiable-fields>.
-#[editoast_derive::openapi_schema]
 #[derive(Default, Debug, Hash, Copy, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
 #[serde(rename_all = "SCREAMING_SNAKE_CASE")]
 pub enum ReceptionSignal {
@@ -17,7 +16,6 @@ pub enum ReceptionSignal {
     ShortSlipStop,
 }
 
-#[editoast_derive::openapi_schema]
 #[derive(Debug, Default, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
 #[serde(deny_unknown_fields)]
 #[serde(remote = "Self")]

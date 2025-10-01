@@ -15,7 +15,6 @@ educe.workspace = true
 enum-map.workspace = true
 geojson.workspace = true
 iso8601 = "0.6.3"
-linkme.workspace = true
 rand.workspace = true
 regex.workspace = true
 rstest.workspace = true

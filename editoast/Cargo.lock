@@ -438,7 +438,6 @@ dependencies = [
  "fga",
  "futures 0.3.31",
  "itertools",
- "linkme",
  "pretty_assertions",
  "serde",
  "stdext",
@@ -855,7 +854,6 @@ dependencies = [
 name = "common"
 version = "0.1.0"
 dependencies = [
- "linkme",
  "opentelemetry",
  "opentelemetry-semantic-conventions",
  "opentelemetry_sdk",
@@ -947,7 +945,6 @@ dependencies = [
  "http",
  "itertools",
  "lapin",
- "linkme",
  "opentelemetry",
  "pretty_assertions",
  "rstest",
@@ -1515,7 +1512,6 @@ dependencies = [
  "editoast_models",
  "futures 0.3.31",
  "futures-util",
- "linkme",
  "openssl",
  "opentelemetry-semantic-conventions",
  "postgis_diesel",
@@ -4250,7 +4246,6 @@ dependencies = [
  "enum-map",
  "geojson",
  "iso8601",
- "linkme",
  "rand 0.9.2",
  "regex",
  "rstest",

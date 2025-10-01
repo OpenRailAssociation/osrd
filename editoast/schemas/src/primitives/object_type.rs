@@ -5,7 +5,6 @@ use strum::Display;
 use strum::EnumIter;
 use utoipa::ToSchema;
 
-#[editoast_derive::openapi_schema]
 #[derive(
     Debug,
     Clone,

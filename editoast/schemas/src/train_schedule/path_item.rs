@@ -7,7 +7,6 @@ use utoipa::ToSchema;
 use crate::infra::TrackOffset;
 
 /// A location on the path of a train
-#[editoast_derive::openapi_schema]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
 pub struct PathItem {
     /// The unique identifier of the path item.
@@ -40,7 +39,6 @@ impl PathItem {
 }
 
 /// The location of a path waypoint
-#[editoast_derive::openapi_schema]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema, Hash)]
 #[serde(untagged, deny_unknown_fields)]
 pub enum PathItemLocation {
@@ -48,7 +46,6 @@ pub enum PathItemLocation {
     OperationalPointReference(OperationalPointReference),
 }
 
-#[editoast_derive::openapi_schema]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema, Hash)]
 pub struct OperationalPointReference {
     #[serde(flatten)]
@@ -58,7 +55,6 @@ pub struct OperationalPointReference {
     pub track_reference: Option<TrackReference>,
 }
 
-#[editoast_derive::openapi_schema]
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema, Hash)]
 #[serde(untagged, deny_unknown_fields)]
 pub enum TrackReference {

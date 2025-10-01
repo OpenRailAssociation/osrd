@@ -49,7 +49,6 @@ use schemas::primitives::ObjectType;
 #[cfg(test)]
 pub const DEFAULT_INFRA_VERSION: i64 = 0;
 
-#[editoast_derive::openapi_schema]
 #[derive(Debug, Clone, Educe, Serialize, Deserialize, Model, utoipa::ToSchema)]
 #[model(table = database::tables::infra)]
 #[model(gen(ops = crud, batch_ops = r, list))]
