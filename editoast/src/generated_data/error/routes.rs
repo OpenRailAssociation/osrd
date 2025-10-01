@@ -7,6 +7,7 @@ use crate::generated_data::infra_error::InfraError;
 use crate::infra_cache::Graph;
 use crate::infra_cache::InfraCache;
 use crate::infra_cache::ObjectCache;
+use schemas::infra::SwitchDirection;
 use schemas::infra::Waypoint;
 use schemas::primitives::Identifier;
 use schemas::primitives::OSRDIdentified;
@@ -159,7 +160,7 @@ fn check_path(
         route_path
             .switches_directions
             .iter()
-            .map(|(k, _)| k.clone()),
+            .map(|SwitchDirection { switch_id, .. }| switch_id.clone()),
     );
     // Search for switches out of the path
     let mut res = vec![];

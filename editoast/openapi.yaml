@@ -12436,11 +12436,19 @@ components:
         switches_directions:
           type: array
           items:
-            type: array
-            items: false
-            prefixItems:
-            - type: string
-            - type: string
+            type: object
+            required:
+            - switch_id
+            - group_id
+            properties:
+              group_id:
+                type: string
+                maxLength: 255
+                minLength: 1
+              switch_id:
+                type: string
+                maxLength: 255
+                minLength: 1
         track_ranges:
           type: array
           items:

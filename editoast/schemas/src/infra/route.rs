@@ -46,8 +46,14 @@ impl OSRDIdentified for Route {
 #[derive(Debug, Clone, Serialize, PartialEq, ToSchema)]
 pub struct RoutePath {
     pub track_ranges: Vec<DirectionalTrackRange>,
-    // ToSchema isn’t derived correctly with tuples (inline doesn’t work)
-    // so we need to specify the value_type
-    #[schema(inline, value_type = Vec<(String, String)>)]
-    pub switches_directions: Vec<(Identifier, Identifier)>,
+    #[schema(inline)]
+    pub switches_directions: Vec<SwitchDirection>,
+}
+
+#[derive(Debug, Clone, Serialize, PartialEq, ToSchema)]
+pub struct SwitchDirection {
+    #[schema(inline)]
+    pub switch_id: Identifier,
+    #[schema(inline)]
+    pub group_id: Identifier,
 }
