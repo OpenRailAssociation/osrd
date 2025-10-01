@@ -452,7 +452,7 @@ dependencies = [
  "thiserror 2.0.17",
  "tokio",
  "tracing",
- "utoipa",
+ "utoipa 4.2.3",
 ]
 
 [[package]]
@@ -875,7 +875,7 @@ dependencies = [
  "tracing-subscriber",
  "uom",
  "url",
- "utoipa",
+ "utoipa 4.2.3",
 ]
 
 [[package]]
@@ -966,7 +966,7 @@ dependencies = [
  "tracing",
  "tracing-opentelemetry",
  "url",
- "utoipa",
+ "utoipa 4.2.3",
  "uuid",
 ]
 
@@ -1492,7 +1492,7 @@ dependencies = [
  "tracing-subscriber",
  "uom",
  "url",
- "utoipa",
+ "utoipa 4.2.3",
  "uuid",
 ]
 
@@ -1539,7 +1539,7 @@ dependencies = [
  "tokio-postgres",
  "tracing",
  "url",
- "utoipa",
+ "utoipa 4.2.3",
 ]
 
 [[package]]
@@ -2713,15 +2713,15 @@ dependencies = [
 
 [[package]]
 name = "json-patch"
-version = "4.0.0"
+version = "4.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "159294d661a039f7644cea7e4d844e6b25aaf71c1ffe9d73a96d768c24b0faf4"
+checksum = "f300e415e2134745ef75f04562dd0145405c2f7fd92065db029ac4b16b57fe90"
 dependencies = [
  "jsonptr",
  "serde",
  "serde_json",
  "thiserror 1.0.69",
- "utoipa",
+ "utoipa 5.4.0",
 ]
 
 [[package]]
@@ -4316,7 +4316,7 @@ dependencies = [
  "strum",
  "thiserror 2.0.17",
  "uom",
- "utoipa",
+ "utoipa 4.2.3",
  "uuid",
 ]
 
@@ -4361,7 +4361,7 @@ dependencies = [
  "serde_json",
  "strum",
  "thiserror 2.0.17",
- "utoipa",
+ "utoipa 4.2.3",
 ]
 
 [[package]]
@@ -5408,7 +5408,19 @@ dependencies = [
  "indexmap",
  "serde",
  "serde_json",
- "utoipa-gen",
+ "utoipa-gen 4.3.1",
+]
+
+[[package]]
+name = "utoipa"
+version = "5.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2fcc29c80c21c31608227e0912b2d7fddba57ad76b606890627ba8ee7964e993"
+dependencies = [
+ "indexmap",
+ "serde",
+ "serde_json",
+ "utoipa-gen 5.4.0",
 ]
 
 [[package]]
@@ -5422,6 +5434,17 @@ dependencies = [
  "quote",
  "syn 2.0.106",
  "uuid",
+]
+
+[[package]]
+name = "utoipa-gen"
+version = "5.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6d79d08d92ab8af4c5e8a6da20c47ae3f61a0f1dabc1997cdf2d082b757ca08b"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn 2.0.106",
 ]
 
 [[package]]
