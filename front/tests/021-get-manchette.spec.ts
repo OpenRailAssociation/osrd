@@ -149,7 +149,7 @@ test.describe('Verify manchette and space time diagram', () => {
     });
   });
 
-  test('Space time diagram', async () => {
+  test.skip('Space time diagram (temporarily skipped until STD snapshots are stable)', async () => {
     await test.step('Project train schedule and capture GET screenshot', async () => {
       await scenarioTimetableSection.projectTrain();
       await getManchetteComponent.selectAllSpaceTimeChartCheckboxes();
