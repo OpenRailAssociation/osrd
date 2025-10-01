@@ -1,106 +1,177 @@
-use serde::Deserialize;
-use std::{fs::File, io::BufReader};
-
 uniffi::setup_scaffolding!();
 
-#[derive(uniffi::Record, Deserialize)]
-pub struct Person {
-    name: String,
-    surname: String,
+#[derive(uniffi::Record, Clone, Copy)]
+pub struct DavisCoefficients {
+    pub a: f64,
+    pub b: f64,
+    pub c: f64,
 }
 
-#[derive(uniffi::Record, Deserialize, PartialEq, Debug)]
-pub struct Greetings {
-    formal: String,
-    informal: String,
+impl From<DavisCoefficients> for libtsim::DavisCoefficients {
+    fn from(value: DavisCoefficients) -> Self {
+        libtsim::DavisCoefficients {
+            a: value.a,
+            b: value.b,
+            c: value.c,
+        }
+    }
+}
+
+#[derive(uniffi::Record)]
+pub struct RollingStock {
+    pub davis: DavisCoefficients,
+    pub const_gamma: f64,
+    pub length: f64,
+    pub mass: f64,
+    pub inertia: f64,
 }
 
 #[uniffi::export]
-pub fn make_greeting(person: &Person) -> Greetings {
-    Greetings {
-        formal: format!("Hello, {} {}!", person.name, person.surname),
-        informal: format!("Hi, {}!", person.name),
-    }
-}
+pub trait TrainPath: libtsim::TrainPath + Send + Sync {}
 
-// =========================================================================================================
-// These are used for tests both in rust and kotlin. Maybe we could mark them with #[cfg(test)]
-// but then we'd need to specifically build the debug version of the library for testing on the kotlin side.
-
-#[derive(Debug, thiserror::Error, uniffi::Error)]
-pub enum TrainSimFromFileError {
-    #[error("Could not open file at path: {file_path} due to:\n {reason}")]
-    OpeningFileError { file_path: String, reason: String },
-    #[error("Could not deserialize file at path: {file_path} due to:\n {reason}")]
-    DeserializingError { file_path: String, reason: String },
-}
-
-impl TrainSimFromFileError {
-    pub fn new_opening_file_error(file_path: String, reason: String) -> Self {
-        TrainSimFromFileError::OpeningFileError { file_path, reason }
-    }
-
-    pub fn new_deserializing_error(file_path: String, reason: String) -> Self {
-        TrainSimFromFileError::DeserializingError { file_path, reason }
-    }
-}
-
-pub fn deserialize_from_file<T>(file_path: String) -> Result<T, TrainSimFromFileError>
-where
-    T: for<'de> Deserialize<'de>,
-{
-    let file = File::open(file_path.clone()).map_err(|e| {
-        TrainSimFromFileError::new_opening_file_error(file_path.clone(), e.to_string())
-    })?;
-    let reader = BufReader::new(file);
-    let t = serde_json::from_reader(reader)
-        .map_err(|e| TrainSimFromFileError::new_deserializing_error(file_path, e.to_string()))?;
-    Ok(t)
+/// XXX: generics when???? https://github.com/mozilla/uniffi-rs/issues/1755
+#[derive(uniffi::Object)]
+pub struct TractiveEffortCurveMap {
+    inner: libtsim::RangeMap<f64, Box<[libtsim::TractiveEffortPoint]>>,
 }
 
 #[uniffi::export]
-pub fn person_from_json_file(file_path: String) -> Result<Person, TrainSimFromFileError> {
-    deserialize_from_file(file_path)
+impl TractiveEffortCurveMap {
+    #[uniffi::constructor]
+    fn new() -> Self {
+        Self {
+            inner: libtsim::RangeMap::new(),
+        }
+    }
+}
+
+#[derive(uniffi::Enum)]
+pub enum Action {
+    Accelerate,
+    Brake,
+    Maintain,
+    Coast,
+}
+
+impl From<Action> for libtsim::Action {
+    fn from(value: Action) -> Self {
+        match value {
+            Action::Accelerate => libtsim::Action::Accelerate,
+            Action::Brake => libtsim::Action::Brake,
+            Action::Maintain => libtsim::Action::Maintain,
+            Action::Coast => libtsim::Action::Coast,
+        }
+    }
+}
+
+#[derive(uniffi::Enum)]
+pub enum Direction {
+    Forwards,
+    Backwards,
+}
+
+impl From<Direction> for libtsim::Direction {
+    fn from(value: Direction) -> Self {
+        match value {
+            Direction::Forwards => libtsim::Direction::Forwards,
+            Direction::Backwards => libtsim::Direction::Backwards,
+        }
+    }
+}
+
+impl From<libtsim::Direction> for Direction {
+    fn from(value: libtsim::Direction) -> Self {
+        match value {
+            libtsim::Direction::Forwards => Direction::Forwards,
+            libtsim::Direction::Backwards => Direction::Backwards,
+        }
+    }
+}
+
+#[derive(uniffi::Enum)]
+pub enum BrakingType {
+    Constant,
+    Ebd,
+    Ebi,
+    Sbd,
+    Sbi1,
+    Sbi2,
+    Guidance,
+    PrePs,
+    Ps,
+    Indication,
+}
+
+impl From<BrakingType> for libtsim::BrakingType {
+    fn from(value: BrakingType) -> Self {
+        match value {
+            BrakingType::Constant => libtsim::BrakingType::Constant,
+            BrakingType::Ebd => libtsim::BrakingType::Ebd,
+            BrakingType::Ebi => libtsim::BrakingType::Ebi,
+            BrakingType::Sbd => libtsim::BrakingType::Sbd,
+            BrakingType::Sbi1 => libtsim::BrakingType::Sbi1,
+            BrakingType::Sbi2 => libtsim::BrakingType::Sbi2,
+            BrakingType::Guidance => libtsim::BrakingType::Guidance,
+            BrakingType::PrePs => libtsim::BrakingType::PrePs,
+            BrakingType::Ps => libtsim::BrakingType::Ps,
+            BrakingType::Indication => libtsim::BrakingType::Indication,
+        }
+    }
+}
+
+#[derive(uniffi::Record)]
+pub struct IntegrationStep {
+    pub time_delta: f64,
+    pub position_delta: f64,
+    pub start_speed: f64,
+    pub end_speed: f64,
+    pub acceleration: f64,
+    pub direction: Direction,
+}
+
+impl From<libtsim::IntegrationStep> for IntegrationStep {
+    fn from(value: libtsim::IntegrationStep) -> Self {
+        IntegrationStep {
+            time_delta: value.time_delta,
+            position_delta: value.position_delta,
+            start_speed: value.start_speed,
+            end_speed: value.end_speed,
+            acceleration: value.acceleration,
+            direction: value.direction.into(),
+        }
+    }
 }
 
 #[uniffi::export]
-pub fn greetings_from_json_file(file_path: String) -> Result<Greetings, TrainSimFromFileError> {
-    deserialize_from_file(file_path)
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_make_greeting() {
-        let person = Person {
-            name: "John".to_string(),
-            surname: "Doe".to_string(),
-        };
-        assert_eq!(
-            make_greeting(&person),
-            Greetings {
-                formal: "Hello, John Doe!".to_string(),
-                informal: "Hi, John!".to_string(),
-            }
-        );
-    }
-
-    macro_rules! test_file {
-        ($fname:expr) => {
-            concat!(env!("CARGO_MANIFEST_DIR"), "/cross_language_tests/", $fname)
-        };
-    }
-
-    #[test]
-    fn test_cross_language() {
-        let person_path = test_file!("input.json");
-        let person = person_from_json_file(person_path.to_string()).unwrap();
-
-        let greetings_path = test_file!("expected_output.json");
-        let greetings = greetings_from_json_file(greetings_path.to_string()).unwrap();
-
-        assert_eq!(make_greeting(&person), greetings);
-    }
+#[allow(clippy::too_many_arguments)]
+pub fn step(
+    rolling_stock: &RollingStock,
+    path: &dyn TrainPath,
+    time_delta: f64,
+    tractive_effort_curve_map: &TractiveEffortCurveMap,
+    initial_position: f64,
+    initial_speed: f64,
+    action: Action,
+    direction: Direction,
+    braking_type: BrakingType,
+) -> IntegrationStep {
+    let rolling_stock = libtsim::RollingStock {
+        davis: rolling_stock.davis.into(),
+        const_gamma: rolling_stock.const_gamma,
+        length: rolling_stock.length,
+        mass: rolling_stock.mass,
+        inertia: rolling_stock.inertia,
+    };
+    libtsim::step(
+        &rolling_stock,
+        path,
+        time_delta,
+        &tractive_effort_curve_map.inner,
+        initial_position,
+        initial_speed,
+        action.into(),
+        direction.into(),
+        braking_type.into(),
+    )
+    .into()
 }

@@ -11,9 +11,11 @@ crate-type = ["cdylib", "rlib"]
 members = [".", "libtsim", "uniffi-bindgen"]
 
 [workspace.dependencies]
+libtsim = { version = "3.0.0", path = "libtsim" }
 uniffi = "0.29"
 
 [dependencies]
+libtsim.workspace = true
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 thiserror = "1.0"
