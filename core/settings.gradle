@@ -15,6 +15,9 @@ include 'osrd-railjson'
 include 'envelope-sim'
 include 'osrd-reporting'
 
+include 'train-sim'
+project(':train-sim').projectDir = file('train-sim/kotlin_bindings')
+
 
 dependencyResolutionManagement {
     versionCatalogs
