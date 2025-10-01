@@ -1,0 +1,43 @@
+.conflicts-toolbar {
+  display: flex;
+  align-items: center;
+  background-color: var(--ambientB5);
+  border-bottom: 1px solid white;
+  position: relative;
+
+  &::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background-color: var(--black10);
+  }
+
+  .filter-label {
+    display: flex;
+    align-items: center;
+    white-space: nowrap;
+    margin-left: 6px;
+    gap: 4px;
+    font-size: 0.875rem;
+    color: var(--grey80);
+    line-height: 16px;
+  }
+
+  .filter-label .train-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 180px;
+    display: inline-block;
+  }
+
+  .filter {
+    height: 32px;
+    display: flex;
+    align-items: center;
+    width: 100%;
+    padding: 0 6px;
+  }
+}

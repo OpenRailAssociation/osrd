@@ -194,6 +194,7 @@ const OccurrenceItem = ({
   return (
     <div
       data-testid="occurrence-item"
+      data-train-id={occurrence.id}
       className={cx('occurrence-item', {
         'after-midnight': isAfterMidnight,
         'next-after-midnight': isNextAfterMidnight,

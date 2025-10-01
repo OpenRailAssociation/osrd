@@ -157,7 +157,7 @@ const Timetable = ({
         />
         <Virtualizer overscan={15}>
           {filteredTimetableItems.map((timetableItem, index) => (
-            <div key={`timetable-train-card-${timetableItem.id}`}>
+            <div key={`timetable-train-card-${timetableItem.id}`} data-train-id={timetableItem.id}>
               {showDepartureDates[index] && (
                 <div className="scenario-timetable-departure-date">
                   {currentDepartureDates[index]}

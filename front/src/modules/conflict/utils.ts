@@ -1,30 +1,29 @@
 import type { Conflict, TrainCategory } from 'common/api/osrdEditoastApi';
 import computeOccurrenceName from 'modules/timetableItem/helpers/computeOccurrenceName';
-import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
-import type { TimetableItemId } from 'reducers/osrdconf/types';
+import type { TimetableItem, TimetableItemId, TrainId } from 'reducers/osrdconf/types';
 import {
   formatEditoastIdToTrainScheduleId,
   formatEditoastIdToPacedTrainId,
-  isPacedTrainWithDetails,
+  isPacedTrainResponseWithPacedTrainId,
 } from 'utils/trainId';
 
 import type { ConflictWithTrainNames } from './types';
 
 function getConflictTrainNames(
   conflict: Conflict,
-  trainMap: Map<TimetableItemId, TimetableItemWithDetails>
+  trainMap: Map<TimetableItemId, TimetableItem>
 ): string[] {
   const timetableItemNames = conflict.train_schedule_ids.map(
-    (id) => trainMap.get(formatEditoastIdToTrainScheduleId(id))?.name
+    (id) => trainMap.get(formatEditoastIdToTrainScheduleId(id))?.train_name
   );
 
   const occurrenceNames = conflict.paced_train_occurrence_ids.map((occurrence) => {
     const pacedTrain = trainMap.get(formatEditoastIdToPacedTrainId(occurrence.paced_train_id));
-    if (!pacedTrain || !isPacedTrainWithDetails(pacedTrain)) return undefined;
+    if (!pacedTrain || !isPacedTrainResponseWithPacedTrainId(pacedTrain)) return undefined;
 
     if (!('exception_key' in occurrence)) {
       // Standard occurrence
-      return computeOccurrenceName(pacedTrain.name, occurrence.index);
+      return computeOccurrenceName(pacedTrain.train_name, occurrence.index);
     }
 
     if ('index' in occurrence) {
@@ -37,7 +36,7 @@ function getConflictTrainNames(
       if (namedException) {
         return namedException.train_name!.value;
       }
-      return computeOccurrenceName(pacedTrain.name, occurrence.index);
+      return computeOccurrenceName(pacedTrain.train_name, occurrence.index);
     }
 
     // Added exception
@@ -50,7 +49,7 @@ function getConflictTrainNames(
     if (namedException) {
       return namedException.train_name!.value;
     }
-    return `${pacedTrain.name}/+`;
+    return `${pacedTrain.train_name}/+`;
   });
 
   const trainNames = [...timetableItemNames, ...occurrenceNames];
@@ -59,7 +58,7 @@ function getConflictTrainNames(
 
 function getConflictTrainCategories(
   conflict: Conflict,
-  trainMap: Map<TimetableItemId, TimetableItemWithDetails>
+  trainMap: Map<TimetableItemId, TimetableItem>
 ): (TrainCategory | null)[] {
   const timetableItemCategories: (TrainCategory | null)[] = conflict.train_schedule_ids.map(
     (id) => {
@@ -71,27 +70,64 @@ function getConflictTrainCategories(
   const occurrenceCategories: (TrainCategory | null)[] = conflict.paced_train_occurrence_ids.map(
     (occurrence) => {
       const pacedTrain = trainMap.get(formatEditoastIdToPacedTrainId(occurrence.paced_train_id));
-      if (!pacedTrain || !isPacedTrainWithDetails(pacedTrain)) return null;
+      if (!pacedTrain || !isPacedTrainResponseWithPacedTrainId(pacedTrain)) return null;
       return pacedTrain?.category ?? null;
     }
   );
 
-  return [...timetableItemCategories, ...occurrenceCategories];
+  const allTrainCategories: (TrainCategory | null)[] = [
+    ...timetableItemCategories,
+    ...occurrenceCategories,
+  ];
+  return allTrainCategories;
 }
 
 export default function addTrainNamesToConflicts(
   conflicts: Conflict[],
-  timetableItems: TimetableItemWithDetails[]
+  timetableItems: TimetableItem[]
 ): ConflictWithTrainNames[] {
-  const trainMap: Map<TimetableItemId, TimetableItemWithDetails> = new Map();
+  const trainMap: Map<TimetableItemId, TimetableItem> = new Map();
 
   for (const timetableItem of timetableItems) {
     trainMap.set(timetableItem.id, timetableItem);
   }
 
-  return conflicts.map((conflict) => ({
+  return conflicts.map((conflict) => {
+    const names = getConflictTrainNames(conflict, trainMap);
+    const categories = getConflictTrainCategories(conflict, trainMap);
+    return {
+      ...conflict,
+      trainsData: names.map((name, idx) => ({ name, category: categories[idx] ?? null })),
+    };
+  });
+}
+
+export function filterAndReorderConflict(
+  conflict: ConflictWithTrainNames,
+  selectedTrainId: TrainId,
+  selectedTrainName: string
+): ConflictWithTrainNames | null {
+  if (!selectedTrainId || !selectedTrainName) return null;
+
+  const isInvolved = conflict.trainsData.some((train) => train.name === selectedTrainName);
+  if (!isInvolved) return null;
+
+  // If already at the front, no reorder
+  if (conflict.trainsData[0]?.name === selectedTrainName) {
+    return conflict;
+  }
+
+  // Find the selected train and move it to the front
+  const trainsData = [...conflict.trainsData];
+  const selectedTrainIndex = trainsData.findIndex((train) => train.name === selectedTrainName);
+  if (selectedTrainIndex > 0) {
+    const trainToMove = trainsData[selectedTrainIndex];
+    trainsData.splice(selectedTrainIndex, 1);
+    trainsData.unshift(trainToMove);
+  }
+
+  return {
     ...conflict,
-    trainNames: getConflictTrainNames(conflict, trainMap),
-    trainCategories: getConflictTrainCategories(conflict, trainMap),
-  }));
+    trainsData,
+  };
 }
