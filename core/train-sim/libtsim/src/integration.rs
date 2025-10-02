@@ -115,6 +115,7 @@ pub struct IntegrationStep {
 }
 
 impl IntegrationStep {
+    /// Make a new [`IntegrationStep`], ensuring `end_speed` is positive.
     pub fn new(
         mut time_delta: f64,
         mut position_delta: f64,
@@ -123,11 +124,13 @@ impl IntegrationStep {
         acceleration: f64,
         direction: Direction,
     ) -> Self {
+        let signed_acceleration = direction.sign(acceleration);
+
         if end_speed < 0.0 {
             // The end of the step dips below zero, so cut the step in half
-            assert!(direction.sign() * acceleration < 0.0);
+            assert!(signed_acceleration < 0.0);
             end_speed = 0.0;
-            time_delta = -start_speed / direction.sign() * acceleration;
+            time_delta = -start_speed / signed_acceleration;
             position_delta =
                 start_speed * time_delta + 0.5 * acceleration * time_delta * time_delta;
             position_delta = direction.copysign(position_delta);
@@ -135,7 +138,7 @@ impl IntegrationStep {
 
         assert!(are_speeds_equal(
             end_speed,
-            start_speed + direction.sign() * acceleration * time_delta,
+            start_speed + signed_acceleration * time_delta,
         ));
 
         Self {
@@ -195,15 +198,24 @@ pub enum Direction {
 }
 
 impl Direction {
-    pub fn sign(self) -> f64 {
+    /// Multiply the given `value` by `-1.0` if the direction is backwards.
+    pub fn sign(self, value: f64) -> f64 {
         match self {
-            Self::Forwards => 1.0,
-            Self::Backwards => -1.0,
+            Self::Forwards => value,
+            Self::Backwards => -value,
         }
     }
 
+    /// Set the sign of the given `value` to positive if the direction is forwards, and to negative
+    /// if the direction is backwards.
     pub fn copysign(self, value: f64) -> f64 {
-        f64::copysign(value, self.sign())
+        f64::copysign(
+            value,
+            match self {
+                Self::Forwards => 1.0,
+                Self::Backwards => -1.0,
+            },
+        )
     }
 }
 
@@ -250,8 +262,8 @@ pub trait TrainPath {
     fn electrification_map(
         &self,
         base_power_class: &str,
-        power_restrictions: &RangeMap<f64, &str>,
-        power_restriction_to_power_class: &RangeMap<&str, &str>,
+        power_restrictions: &RangeMap<f64, String>,
+        power_restriction_to_power_class: &RangeMap<String, String>,
         ignore_electrical_profiles: bool,
     ) -> RangeMap<f64, Option<Electrification>>;
 }
@@ -267,7 +279,7 @@ pub struct TractiveEffortPoint {
 #[allow(clippy::too_many_arguments)]
 pub fn step(
     rolling_stock: &RollingStock,
-    path: &dyn TrainPath,
+    path: &dyn TrainPath, // TODO juste go faire une struct
     time_delta: f64,
     tractive_effort_curve_map: &RangeMap<f64, Box<[TractiveEffortPoint]>>,
     initial_position: f64,
