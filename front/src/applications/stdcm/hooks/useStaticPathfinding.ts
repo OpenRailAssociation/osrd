@@ -15,6 +15,7 @@ import {
   getStdcmPathSteps,
   getStdcmRollingStockID,
   getLoadingGauge,
+  getStdcmSpeedLimitByTag,
 } from 'reducers/osrdconf/stdcmConf/selectors';
 import type { StdcmPathStep } from 'reducers/osrdconf/types';
 
@@ -32,6 +33,7 @@ const useStaticPathfinding = (workerStatus: WorkerStatus, infra: Infra | undefin
   const [pathStepsLocations, setPathStepsLocations] = useState(pathStepsToLocations(pathSteps));
 
   const rollingStockId = useSelector(getStdcmRollingStockID);
+  const speedLimitByTag = useSelector(getStdcmSpeedLimitByTag);
   const { rollingStock } = useStoreDataForRollingStockSelector({ rollingStockId });
   const loadingGauge = useSelector(getLoadingGauge);
 
@@ -72,6 +74,7 @@ const useStaticPathfinding = (workerStatus: WorkerStatus, infra: Infra | undefin
         rollingStock,
         pathSteps: pathStepsLocations,
         loadingGauge,
+        speedLimitByTag,
       });
 
       if (payload === null) {
@@ -84,7 +87,7 @@ const useStaticPathfinding = (workerStatus: WorkerStatus, infra: Infra | undefin
     };
 
     launchPathfinding();
-  }, [pathStepsLocations, rollingStock, loadingGauge, infra, workerStatus]);
+  }, [pathStepsLocations, rollingStock, speedLimitByTag, loadingGauge, infra, workerStatus]);
 
   return { pathfinding, isPathFindingLoading: isFetching };
 };
