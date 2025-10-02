@@ -69,7 +69,7 @@ export const getPathfindingQuery = ({
   rollingStock?: RollingStockWithLiveries;
   pathSteps: (PathItemLocation | null)[];
   loadingGauge?: LoadingGaugeType;
-  speedLimitByTag?: string;
+  speedLimitByTag?: string | null;
 }): PostInfraByInfraIdPathfindingBlocksApiArg | null => {
   const origin = pathSteps.at(0);
   const destination = pathSteps.at(-1);

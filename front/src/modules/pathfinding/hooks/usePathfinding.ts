@@ -236,7 +236,10 @@ const usePathfinding = ({
     async (
       steps: (PathStep | null)[],
       rollingStockId = currentRollingStockId,
-      options = { isInitialization: false }
+      options: { isInitialization: boolean; speedLimitTag?: string | null } = {
+        isInitialization: false,
+        speedLimitTag: undefined,
+      }
     ) => {
       if (!options.isInitialization) {
         dispatch(replaceItinerary(steps));
@@ -269,7 +272,8 @@ const usePathfinding = ({
         infraId,
         rollingStock,
         pathSteps: steps.filter((step) => !step.isInvalid).map((step) => step?.location),
-        speedLimitByTag,
+        speedLimitByTag:
+          options.speedLimitTag !== undefined ? options.speedLimitTag : speedLimitByTag,
       });
 
       if (!pathfindingInput) {

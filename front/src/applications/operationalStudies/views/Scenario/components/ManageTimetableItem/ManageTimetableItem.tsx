@@ -106,6 +106,17 @@ const ManageTimetableItem = () => {
     [pathSteps]
   );
 
+  const onSelectSpeedLimitTag = useCallback(
+    (newTag: string | null) => {
+      dispatchUpdateSpeedLimitByTag(newTag);
+      launchPathfinding(pathSteps, rollingStockId, {
+        isInitialization: false,
+        speedLimitTag: newTag,
+      });
+    },
+    [pathSteps, rollingStockId]
+  );
+
   const tabRollingStock = {
     id: 'rollingstock',
     title: rollingStock ? (
@@ -202,7 +213,7 @@ const ManageTimetableItem = () => {
         <SimulationSettings
           selectedSpeedLimitByTag={speedLimitByTag}
           speedLimitsByTags={speedLimitsByTags}
-          dispatchUpdateSpeedLimitByTag={dispatchUpdateSpeedLimitByTag}
+          dispatchUpdateSpeedLimitByTag={onSelectSpeedLimitTag}
           constraintDistribution={constraintDistribution}
         />
         {rollingStock && isElectric(rollingStock.effort_curves.modes) && pathProperties && (
