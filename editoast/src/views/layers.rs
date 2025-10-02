@@ -174,7 +174,7 @@ pub(in crate::views) async fn cache_and_get_mvt_tile(
     State(AppState {
         map_layers,
         db_pool,
-        valkey,
+        valkey_client,
         config,
         ..
     }): State<AppState>,
@@ -208,7 +208,7 @@ pub(in crate::views) async fn cache_and_get_mvt_tile(
         &Tile { x, y, z },
     );
 
-    let mut valkey = valkey.get_connection().await?;
+    let mut valkey = valkey_client.get_connection().await?;
     let cached_value: Option<Vec<u8>> = valkey.get(&cache_key).await?;
 
     if let Some(value) = cached_value {

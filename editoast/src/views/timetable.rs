@@ -481,7 +481,7 @@ pub(in crate::views) async fn conflicts(
     State(AppState {
         config,
         db_pool,
-        valkey: valkey_client,
+        valkey_client,
         core_client,
         ..
     }): State<AppState>,
@@ -654,7 +654,7 @@ fn build_conflict_core_request(
 pub(in crate::views) async fn requirements(
     State(AppState {
         db_pool,
-        valkey: valkey_client,
+        valkey_client,
         core_client,
         config,
         ..

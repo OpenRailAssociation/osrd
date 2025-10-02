@@ -146,7 +146,7 @@ type Properties = EnumSet<Property>;
 pub(in crate::views) async fn post(
     State(AppState {
         db_pool,
-        valkey,
+        valkey_client,
         core_client,
         config,
         ..
@@ -169,7 +169,7 @@ pub(in crate::views) async fn post(
     .await?;
 
     let query_props: Properties = props.into();
-    let mut valkey_conn = valkey.get_connection().await?;
+    let mut valkey_conn = valkey_client.get_connection().await?;
 
     let request = PathPropertiesRequest {
         track_section_ranges: &path_properties_input.track_section_ranges,

@@ -115,7 +115,7 @@ pub(in crate::views) struct RefreshResponse {
 pub(in crate::views) async fn refresh(
     State(AppState {
         db_pool,
-        valkey: valkey_client,
+        valkey_client,
         infra_caches,
         map_layers,
         config,
