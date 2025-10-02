@@ -4,8 +4,8 @@ import { skipToken } from '@reduxjs/toolkit/query';
 
 import {
   osrdEditoastApi,
-  type OperationalPoint,
   type OperationalPointReference,
+  type RelatedOperationalPoint,
 } from 'common/api/osrdEditoastApi';
 import type { Train } from 'reducers/osrdconf/types';
 
@@ -20,7 +20,7 @@ const usePathOps = (
   options?: {
     returnAllOps: boolean;
   }
-): OperationalPoint[] => {
+): RelatedOperationalPoint[] => {
   const operationalPointReferences: OperationalPointReference[] = useMemo(
     () =>
       (path ?? []).reduce<OperationalPointReference[]>((acc, pathItem) => {
