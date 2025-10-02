@@ -14,7 +14,13 @@ import { getStationFromOps, isOperationalPointReference } from '../utils';
 /**
  * Given a train's path, return the operational points corresponding to the pathSteps of this train
  */
-const usePathOps = (infraId: number, path?: Train['path']): OperationalPoint[] => {
+const usePathOps = (
+  infraId: number,
+  path?: Train['path'],
+  options?: {
+    returnAllOps: boolean;
+  }
+): OperationalPoint[] => {
   const operationalPointReferences: OperationalPointReference[] = useMemo(
     () =>
       (path ?? []).reduce<OperationalPointReference[]>((acc, pathItem) => {
@@ -46,9 +52,16 @@ const usePathOps = (infraId: number, path?: Train['path']): OperationalPoint[] =
     )
       return [];
 
-    return operationalPoints.related_operational_points
-      .filter((ops) => ops.length !== 0) // To remove empty arrays related to invalid step
-      .map((matchingOps) => getStationFromOps(matchingOps)!);
+    // To remove empty arrays related to invalid step
+    const allValidOps = operationalPoints.related_operational_points.filter(
+      (ops) => ops.length !== 0
+    );
+
+    if (options?.returnAllOps) {
+      return allValidOps.flat();
+    }
+
+    return allValidOps.map((matchingOps) => getStationFromOps(matchingOps)!);
   }, [operationalPoints]);
 };
 
