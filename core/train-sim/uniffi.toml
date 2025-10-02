@@ -1,2 +1,2 @@
 [bindings.kotlin]
-package_name = "sncf.osrd.train_sim"
+package_name = "fr.sncf.osrd.train_sim"

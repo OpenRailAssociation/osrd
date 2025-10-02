@@ -3,7 +3,7 @@
 
 @file:Suppress("NAME_SHADOWING")
 
-package sncf.osrd.train_sim
+package fr.sncf.osrd.train_sim
 
 // Common helper code.
 //
@@ -751,16 +751,53 @@ internal interface UniffiForeignFutureCompleteVoid : com.sun.jna.Callback {
     )
 }
 
-@Structure.FieldOrder("uniffiFree")
+internal interface UniffiCallbackInterfaceTrainPathMethod0 : com.sun.jna.Callback {
+    fun callback(
+        `uniffiHandle`: Long,
+        `uniffiOutReturn`: DoubleByReference,
+        uniffiCallStatus: UniffiRustCallStatus,
+    )
+}
+
+internal interface UniffiCallbackInterfaceTrainPathMethod1 : com.sun.jna.Callback {
+    fun callback(
+        `uniffiHandle`: Long,
+        `start`: Double,
+        `end`: Double,
+        `uniffiOutReturn`: DoubleByReference,
+        uniffiCallStatus: UniffiRustCallStatus,
+    )
+}
+
+internal interface UniffiCallbackInterfaceTrainPathMethod2 : com.sun.jna.Callback {
+    fun callback(
+        `uniffiHandle`: Long,
+        `start`: Double,
+        `end`: Double,
+        `uniffiOutReturn`: DoubleByReference,
+        uniffiCallStatus: UniffiRustCallStatus,
+    )
+}
+
+@Structure.FieldOrder("length", "avgGrade", "minGrade", "uniffiFree")
 internal open class UniffiVTableCallbackInterfaceTrainPath(
+    @JvmField internal var `length`: UniffiCallbackInterfaceTrainPathMethod0? = null,
+    @JvmField internal var `avgGrade`: UniffiCallbackInterfaceTrainPathMethod1? = null,
+    @JvmField internal var `minGrade`: UniffiCallbackInterfaceTrainPathMethod2? = null,
     @JvmField internal var `uniffiFree`: UniffiCallbackInterfaceFree? = null,
 ) : Structure() {
     class UniffiByValue(
+        `length`: UniffiCallbackInterfaceTrainPathMethod0? = null,
+        `avgGrade`: UniffiCallbackInterfaceTrainPathMethod1? = null,
+        `minGrade`: UniffiCallbackInterfaceTrainPathMethod2? = null,
         `uniffiFree`: UniffiCallbackInterfaceFree? = null,
-    ) : UniffiVTableCallbackInterfaceTrainPath(`uniffiFree`),
+    ) : UniffiVTableCallbackInterfaceTrainPath(`length`, `avgGrade`, `minGrade`, `uniffiFree`),
         Structure.ByValue
 
     internal fun uniffiSetValue(other: UniffiVTableCallbackInterfaceTrainPath) {
+        `length` = other.`length`
+        `avgGrade` = other.`avgGrade`
+        `minGrade` = other.`minGrade`
         `uniffiFree` = other.`uniffiFree`
     }
 }
@@ -781,6 +818,14 @@ internal open class UniffiVTableCallbackInterfaceTrainPath(
 internal interface IntegrityCheckingUniffiLib : Library {
     // Integrity check functions only
     fun uniffi_train_sim_checksum_func_step(): Short
+
+    fun uniffi_train_sim_checksum_method_tractiveeffortcurvemap_insert(): Short
+
+    fun uniffi_train_sim_checksum_method_trainpath_length(): Short
+
+    fun uniffi_train_sim_checksum_method_trainpath_avg_grade(): Short
+
+    fun uniffi_train_sim_checksum_method_trainpath_min_grade(): Short
 
     fun uniffi_train_sim_checksum_constructor_tractiveeffortcurvemap_new(): Short
 
@@ -820,6 +865,7 @@ internal interface UniffiLib : Library {
             val lib = loadIndirect<UniffiLib>(componentName)
             // No need to check the contract version and checksums, since
             // we already did that with `IntegrityCheckingUniffiLib` above.
+            uniffiCallbackInterfaceTrainPath.register(lib)
             // Loading of library with integrity check done.
             lib
         }
@@ -843,6 +889,13 @@ internal interface UniffiLib : Library {
 
     fun uniffi_train_sim_fn_constructor_tractiveeffortcurvemap_new(uniffi_out_err: UniffiRustCallStatus): Pointer
 
+    fun uniffi_train_sim_fn_method_tractiveeffortcurvemap_insert(
+        `ptr`: Pointer,
+        `range`: RustBuffer.ByValue,
+        `value`: RustBuffer.ByValue,
+        uniffi_out_err: UniffiRustCallStatus,
+    ): Unit
+
     fun uniffi_train_sim_fn_clone_trainpath(
         `ptr`: Pointer,
         uniffi_out_err: UniffiRustCallStatus,
@@ -852,6 +905,27 @@ internal interface UniffiLib : Library {
         `ptr`: Pointer,
         uniffi_out_err: UniffiRustCallStatus,
     ): Unit
+
+    fun uniffi_train_sim_fn_init_callback_vtable_trainpath(`vtable`: UniffiVTableCallbackInterfaceTrainPath): Unit
+
+    fun uniffi_train_sim_fn_method_trainpath_length(
+        `ptr`: Pointer,
+        uniffi_out_err: UniffiRustCallStatus,
+    ): Double
+
+    fun uniffi_train_sim_fn_method_trainpath_avg_grade(
+        `ptr`: Pointer,
+        `start`: Double,
+        `end`: Double,
+        uniffi_out_err: UniffiRustCallStatus,
+    ): Double
+
+    fun uniffi_train_sim_fn_method_trainpath_min_grade(
+        `ptr`: Pointer,
+        `start`: Double,
+        `end`: Double,
+        uniffi_out_err: UniffiRustCallStatus,
+    ): Double
 
     fun uniffi_train_sim_fn_func_step(
         `rollingStock`: RustBuffer.ByValue,
@@ -1095,7 +1169,19 @@ private fun uniffiCheckContractApiVersion(lib: IntegrityCheckingUniffiLib) {
 
 @Suppress("UNUSED_PARAMETER")
 private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
-    if (lib.uniffi_train_sim_checksum_func_step() != 64430.toShort()) {
+    if (lib.uniffi_train_sim_checksum_func_step() != 33849.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_train_sim_checksum_method_tractiveeffortcurvemap_insert() != 25188.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_train_sim_checksum_method_trainpath_length() != 57131.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_train_sim_checksum_method_trainpath_avg_grade() != 17237.toShort()) {
+        throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
+    }
+    if (lib.uniffi_train_sim_checksum_method_trainpath_min_grade() != 1841.toShort()) {
         throw RuntimeException("UniFFI API checksum mismatch: try cleaning and rebuilding your project")
     }
     if (lib.uniffi_train_sim_checksum_constructor_tractiveeffortcurvemap_new() != 37781.toShort()) {
@@ -1178,7 +1264,41 @@ inline fun <T : Disposable?, R> T.use(block: (T) -> R) =
  *
  * @suppress
  * */
-object NoPointer
+object NoPointer // Magic number for the Rust proxy to call using the same mechanism as every other method,
+
+// to free the callback once it's dropped by Rust.
+internal const val IDX_CALLBACK_FREE = 0
+
+// Callback return codes
+internal const val UNIFFI_CALLBACK_SUCCESS = 0
+internal const val UNIFFI_CALLBACK_ERROR = 1
+internal const val UNIFFI_CALLBACK_UNEXPECTED_ERROR = 2
+
+/**
+ * @suppress
+ */
+public abstract class FfiConverterCallbackInterface<CallbackInterface : Any> : FfiConverter<CallbackInterface, Long> {
+    internal val handleMap = UniffiHandleMap<CallbackInterface>()
+
+    internal fun drop(handle: Long) {
+        handleMap.remove(handle)
+    }
+
+    override fun lift(value: Long): CallbackInterface = handleMap.get(value)
+
+    override fun read(buf: ByteBuffer) = lift(buf.getLong())
+
+    override fun lower(value: CallbackInterface) = handleMap.insert(value)
+
+    override fun allocationSize(value: CallbackInterface) = 8UL
+
+    override fun write(
+        value: CallbackInterface,
+        buf: ByteBuffer,
+    ) {
+        buf.putLong(lower(value))
+    }
+}
 
 /**
  * The cleaner interface for Object finalization code to run.
@@ -1436,6 +1556,11 @@ public object FfiConverterString : FfiConverter<String, RustBuffer.ByValue> {
  * XXX: generics when???? https://github.com/mozilla/uniffi-rs/issues/1755
  */
 public interface TractiveEffortCurveMapInterface {
+    fun `insert`(
+        `range`: HalfOpenRangeF64,
+        `value`: List<TractiveEffortPoint>,
+    )
+
     companion object
 }
 
@@ -1531,6 +1656,20 @@ open class TractiveEffortCurveMap :
         uniffiRustCall { status ->
             UniffiLib.INSTANCE.uniffi_train_sim_fn_clone_tractiveeffortcurvemap(pointer!!, status)
         }
+
+    override fun `insert`(
+        `range`: HalfOpenRangeF64,
+        `value`: List<TractiveEffortPoint>,
+    ) = callWithPointer {
+        uniffiRustCall { _status ->
+            UniffiLib.INSTANCE.uniffi_train_sim_fn_method_tractiveeffortcurvemap_insert(
+                it,
+                FfiConverterTypeHalfOpenRangeF64.lower(`range`),
+                FfiConverterSequenceTypeTractiveEffortPoint.lower(`value`),
+                _status,
+            )
+        }
+    }
 
     companion object
 }
@@ -1658,14 +1797,26 @@ public object FfiConverterTypeTractiveEffortCurveMap : FfiConverter<TractiveEffo
 // [1] https://stackoverflow.com/questions/24376768/can-java-finalize-an-object-when-it-is-still-in-scope/24380219
 //
 
-public interface TrainPathInterface {
+public interface TrainPath {
+    fun `length`(): kotlin.Double
+
+    fun `avgGrade`(
+        `start`: kotlin.Double,
+        `end`: kotlin.Double,
+    ): kotlin.Double
+
+    fun `minGrade`(
+        `start`: kotlin.Double,
+        `end`: kotlin.Double,
+    ): kotlin.Double
+
     companion object
 }
 
-open class TrainPath :
+open class TrainPathImpl :
     Disposable,
     AutoCloseable,
-    TrainPathInterface {
+    TrainPath {
     constructor(pointer: Pointer) {
         this.pointer = pointer
         this.cleanable = UniffiLib.CLEANER.register(this, UniffiCleanAction(pointer))
@@ -1746,16 +1897,135 @@ open class TrainPath :
             UniffiLib.INSTANCE.uniffi_train_sim_fn_clone_trainpath(pointer!!, status)
         }
 
+    override fun `length`(): kotlin.Double =
+        FfiConverterDouble.lift(
+            callWithPointer {
+                uniffiRustCall { _status ->
+                    UniffiLib.INSTANCE.uniffi_train_sim_fn_method_trainpath_length(it, _status)
+                }
+            },
+        )
+
+    override fun `avgGrade`(
+        `start`: kotlin.Double,
+        `end`: kotlin.Double,
+    ): kotlin.Double =
+        FfiConverterDouble.lift(
+            callWithPointer {
+                uniffiRustCall { _status ->
+                    UniffiLib.INSTANCE.uniffi_train_sim_fn_method_trainpath_avg_grade(
+                        it,
+                        FfiConverterDouble.lower(`start`),
+                        FfiConverterDouble.lower(`end`),
+                        _status,
+                    )
+                }
+            },
+        )
+
+    override fun `minGrade`(
+        `start`: kotlin.Double,
+        `end`: kotlin.Double,
+    ): kotlin.Double =
+        FfiConverterDouble.lift(
+            callWithPointer {
+                uniffiRustCall { _status ->
+                    UniffiLib.INSTANCE.uniffi_train_sim_fn_method_trainpath_min_grade(
+                        it,
+                        FfiConverterDouble.lower(`start`),
+                        FfiConverterDouble.lower(`end`),
+                        _status,
+                    )
+                }
+            },
+        )
+
     companion object
+}
+
+// Put the implementation in an object so we don't pollute the top-level namespace
+internal object uniffiCallbackInterfaceTrainPath {
+    internal object `length` : UniffiCallbackInterfaceTrainPathMethod0 {
+        override fun callback(
+            `uniffiHandle`: Long,
+            `uniffiOutReturn`: DoubleByReference,
+            uniffiCallStatus: UniffiRustCallStatus,
+        ) {
+            val uniffiObj = FfiConverterTypeTrainPath.handleMap.get(uniffiHandle)
+            val makeCall = { uniffiObj.`length`() }
+            val writeReturn = { value: kotlin.Double -> uniffiOutReturn.setValue(FfiConverterDouble.lower(value)) }
+            uniffiTraitInterfaceCall(uniffiCallStatus, makeCall, writeReturn)
+        }
+    }
+
+    internal object `avgGrade` : UniffiCallbackInterfaceTrainPathMethod1 {
+        override fun callback(
+            `uniffiHandle`: Long,
+            `start`: Double,
+            `end`: Double,
+            `uniffiOutReturn`: DoubleByReference,
+            uniffiCallStatus: UniffiRustCallStatus,
+        ) {
+            val uniffiObj = FfiConverterTypeTrainPath.handleMap.get(uniffiHandle)
+            val makeCall = {  uniffiObj.`avgGrade`(
+                FfiConverterDouble.lift(`start`),
+                FfiConverterDouble.lift(`end`),
+            )
+            }
+            val writeReturn = { value: kotlin.Double -> uniffiOutReturn.setValue(FfiConverterDouble.lower(value)) }
+            uniffiTraitInterfaceCall(uniffiCallStatus, makeCall, writeReturn)
+        }
+    }
+
+    internal object `minGrade` : UniffiCallbackInterfaceTrainPathMethod2 {
+        override fun callback(
+            `uniffiHandle`: Long,
+            `start`: Double,
+            `end`: Double,
+            `uniffiOutReturn`: DoubleByReference,
+            uniffiCallStatus: UniffiRustCallStatus,
+        ) {
+            val uniffiObj = FfiConverterTypeTrainPath.handleMap.get(uniffiHandle)
+            val makeCall = {  uniffiObj.`minGrade`(
+                FfiConverterDouble.lift(`start`),
+                FfiConverterDouble.lift(`end`),
+            )
+            }
+            val writeReturn = { value: kotlin.Double -> uniffiOutReturn.setValue(FfiConverterDouble.lower(value)) }
+            uniffiTraitInterfaceCall(uniffiCallStatus, makeCall, writeReturn)
+        }
+    }
+
+    internal object uniffiFree : UniffiCallbackInterfaceFree {
+        override fun callback(handle: Long) {
+            FfiConverterTypeTrainPath.handleMap.remove(handle)
+        }
+    }
+
+    internal var vtable =
+        UniffiVTableCallbackInterfaceTrainPath.UniffiByValue(
+            `length`,
+            `avgGrade`,
+            `minGrade`,
+            uniffiFree,
+        )
+
+    // Registers the foreign callback with the Rust side.
+    // This method is generated for each callback interface.
+    internal fun register(lib: UniffiLib) {
+        lib.uniffi_train_sim_fn_init_callback_vtable_trainpath(vtable)
+    }
 }
 
 /**
  * @suppress
  */
 public object FfiConverterTypeTrainPath : FfiConverter<TrainPath, Pointer> {
-    override fun lower(value: TrainPath): Pointer = value.uniffiClonePointer()
+    internal val handleMap = UniffiHandleMap<TrainPath>()
 
-    override fun lift(value: Pointer): TrainPath = TrainPath(value)
+    override fun lower(value: TrainPath): Pointer = Pointer(handleMap.insert(value))
+
+    override fun lift(value: Pointer): TrainPath = TrainPathImpl(value)
 
     override fun read(buf: ByteBuffer): TrainPath {
         // The Rust code always writes pointers as 8 bytes, and will
@@ -1808,6 +2078,38 @@ public object FfiConverterTypeDavisCoefficients : FfiConverterRustBuffer<DavisCo
         FfiConverterDouble.write(value.`a`, buf)
         FfiConverterDouble.write(value.`b`, buf)
         FfiConverterDouble.write(value.`c`, buf)
+    }
+}
+
+data class HalfOpenRangeF64(
+    var `start`: kotlin.Double,
+    var `end`: kotlin.Double,
+) {
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeHalfOpenRangeF64 : FfiConverterRustBuffer<HalfOpenRangeF64> {
+    override fun read(buf: ByteBuffer): HalfOpenRangeF64 =
+        HalfOpenRangeF64(
+            FfiConverterDouble.read(buf),
+            FfiConverterDouble.read(buf),
+        )
+
+    override fun allocationSize(value: HalfOpenRangeF64) =
+        (
+            FfiConverterDouble.allocationSize(value.`start`) +
+                FfiConverterDouble.allocationSize(value.`end`)
+        )
+
+    override fun write(
+        value: HalfOpenRangeF64,
+        buf: ByteBuffer,
+    ) {
+        FfiConverterDouble.write(value.`start`, buf)
+        FfiConverterDouble.write(value.`end`, buf)
     }
 }
 
@@ -1900,6 +2202,38 @@ public object FfiConverterTypeRollingStock : FfiConverterRustBuffer<RollingStock
         FfiConverterDouble.write(value.`length`, buf)
         FfiConverterDouble.write(value.`mass`, buf)
         FfiConverterDouble.write(value.`inertia`, buf)
+    }
+}
+
+data class TractiveEffortPoint(
+    var `speed`: kotlin.Double,
+    var `maxEffort`: kotlin.Double,
+) {
+    companion object
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterTypeTractiveEffortPoint : FfiConverterRustBuffer<TractiveEffortPoint> {
+    override fun read(buf: ByteBuffer): TractiveEffortPoint =
+        TractiveEffortPoint(
+            FfiConverterDouble.read(buf),
+            FfiConverterDouble.read(buf),
+        )
+
+    override fun allocationSize(value: TractiveEffortPoint) =
+        (
+            FfiConverterDouble.allocationSize(value.`speed`) +
+                FfiConverterDouble.allocationSize(value.`maxEffort`)
+        )
+
+    override fun write(
+        value: TractiveEffortPoint,
+        buf: ByteBuffer,
+    ) {
+        FfiConverterDouble.write(value.`speed`, buf)
+        FfiConverterDouble.write(value.`maxEffort`, buf)
     }
 }
 
@@ -1997,6 +2331,34 @@ public object FfiConverterTypeDirection : FfiConverterRustBuffer<Direction> {
         buf: ByteBuffer,
     ) {
         buf.putInt(value.ordinal + 1)
+    }
+}
+
+/**
+ * @suppress
+ */
+public object FfiConverterSequenceTypeTractiveEffortPoint : FfiConverterRustBuffer<List<TractiveEffortPoint>> {
+    override fun read(buf: ByteBuffer): List<TractiveEffortPoint> {
+        val len = buf.getInt()
+        return List<TractiveEffortPoint>(len) {
+            FfiConverterTypeTractiveEffortPoint.read(buf)
+        }
+    }
+
+    override fun allocationSize(value: List<TractiveEffortPoint>): ULong {
+        val sizeForLength = 4UL
+        val sizeForItems = value.map { FfiConverterTypeTractiveEffortPoint.allocationSize(it) }.sum()
+        return sizeForLength + sizeForItems
+    }
+
+    override fun write(
+        value: List<TractiveEffortPoint>,
+        buf: ByteBuffer,
+    ) {
+        buf.putInt(value.size)
+        value.iterator().forEach {
+            FfiConverterTypeTractiveEffortPoint.write(it, buf)
+        }
     }
 }
 
