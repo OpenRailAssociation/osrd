@@ -26,7 +26,7 @@ type ManageTimetableItemContext = {
   launchPathfinding: (
     steps: (PathStep | null)[],
     rollingStockId?: number,
-    options?: { isInitialization: boolean }
+    options?: { isInitialization: boolean; speedLimitTag?: string | null }
   ) => void;
   pathfindingState: PathfindingState;
   workerStatus: WorkerStatus;
