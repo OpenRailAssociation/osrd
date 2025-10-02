@@ -161,7 +161,7 @@ pub(in crate::views) async fn stdcm(
     State(AppState {
         config,
         db_pool,
-        valkey: valkey_client,
+        valkey_client,
         core_client,
         ..
     }): State<AppState>,

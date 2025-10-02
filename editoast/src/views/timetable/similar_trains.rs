@@ -199,7 +199,7 @@ pub(in crate::views) async fn similar_trains(
     State(AppState {
         db_pool,
         speed_limit_tag_ids,
-        valkey,
+        valkey_client,
         core_client,
         config,
         ..
@@ -301,7 +301,7 @@ pub(in crate::views) async fn similar_trains(
 
     let selected_past_trains = simulate_past_trains(
         &mut conn,
-        valkey,
+        valkey_client,
         core_client,
         &infra,
         candidate_schedules,

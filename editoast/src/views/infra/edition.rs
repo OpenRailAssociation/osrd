@@ -74,7 +74,7 @@ pub(in crate::views) async fn edit(
     State(AppState {
         db_pool,
         infra_caches,
-        valkey,
+        valkey_client,
         map_layers,
         config,
         ..
@@ -110,12 +110,12 @@ pub(in crate::views) async fn edit(
         &mut infra,
         &operations,
         &mut infra_cache,
-        valkey.clone(),
+        valkey_client.clone(),
         config.app_version.as_deref(),
     )
     .await?;
 
-    let mut conn = valkey.get_connection().await?;
+    let mut conn = valkey_client.get_connection().await?;
     map::invalidate_all(
         &mut conn,
         &map_layers.layers.keys().cloned().collect(),
@@ -142,7 +142,7 @@ pub(in crate::views) async fn split_track_section(
     State(AppState {
         db_pool,
         infra_caches,
-        valkey,
+        valkey_client,
         map_layers,
         config,
         ..
@@ -356,11 +356,11 @@ pub(in crate::views) async fn split_track_section(
         &mut infra,
         &operations,
         &mut infra_cache,
-        valkey.clone(),
+        valkey_client.clone(),
         config.app_version.as_deref(),
     )
     .await?;
-    let mut conn = valkey.get_connection().await?;
+    let mut conn = valkey_client.get_connection().await?;
     map::invalidate_all(
         &mut conn,
         &map_layers.layers.keys().cloned().collect(),
@@ -868,7 +868,7 @@ async fn apply_edit(
     infra: &mut Infra,
     operations: &[Operation],
     infra_cache: &mut InfraCache,
-    valkey: Arc<cache::Client>,
+    valkey_client: Arc<cache::Client>,
     app_version: Option<&str>,
 ) -> Result<Vec<InfraObject>> {
     let infra_id = infra.id;
@@ -912,7 +912,7 @@ async fn apply_edit(
 
                 infra_cache.infra_version = infra.version;
                 let osrd_version = app_version.unwrap_or("default");
-                let mut valkey_conn = valkey.get_connection().await?;
+                let mut valkey_conn = valkey_client.get_connection().await?;
                 let _ = valkey_conn
                     .json_zadd(
                         format!("infra_patches.{osrd_version}.{infra_id})"),

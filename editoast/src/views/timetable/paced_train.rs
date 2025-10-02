@@ -249,7 +249,7 @@ pub(in crate::views) async fn simulation_summary(
     State(AppState {
         config,
         db_pool,
-        valkey: valkey_client,
+        valkey_client,
         core_client,
         ..
     }): State<AppState>,
@@ -385,7 +385,7 @@ pub(in crate::views) struct ExceptionQueryParam {
 pub(in crate::views) async fn get_path(
     State(AppState {
         db_pool,
-        valkey: valkey_client,
+        valkey_client,
         core_client,
         config,
         ..
@@ -470,7 +470,7 @@ pub struct ElectricalProfileSetIdQueryParam {
 pub(in crate::views) async fn simulation(
     State(AppState {
         config,
-        valkey: valkey_client,
+        valkey_client,
         core_client,
         db_pool,
         ..
@@ -576,7 +576,7 @@ pub struct ProjectPathPacedTrainResult {
 pub(in crate::views) async fn project_path(
     State(AppState {
         db_pool,
-        valkey: valkey_client,
+        valkey_client,
         core_client,
         config,
         ..
@@ -711,7 +711,7 @@ enum BaseOrExceptionId {
 pub(in crate::views) async fn project_path_op(
     State(AppState {
         db_pool,
-        valkey: valkey_client,
+        valkey_client,
         core_client,
         config,
         ..
@@ -874,7 +874,7 @@ pub struct OccupancyBlocksPacedTrainResult {
 pub(in crate::views) async fn occupancy_blocks(
     State(AppState {
         db_pool,
-        valkey: valkey_client,
+        valkey_client,
         core_client,
         config,
         ..

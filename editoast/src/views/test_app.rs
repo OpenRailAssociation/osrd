@@ -255,7 +255,7 @@ impl TestAppBuilder {
             db_pool: db_pool_v2.clone(),
             core_client: core_client.clone(),
             osrdyne_client,
-            valkey,
+            valkey_client: valkey,
             regulator,
             infra_caches,
             map_layers: Arc::new(MapLayers::default()),
@@ -330,7 +330,7 @@ impl TestApp {
     }
 
     pub fn valkey_client(&self) -> Arc<cache::Client> {
-        self.app_state.valkey.clone()
+        self.app_state.valkey_client.clone()
     }
 
     pub fn speed_limit_tag_ids(&self) -> Arc<SpeedLimitTagIds> {

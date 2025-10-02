@@ -276,7 +276,7 @@ pub struct ElectricalProfileSetIdQueryParam {
 pub(in crate::views) async fn simulation(
     State(AppState {
         config,
-        valkey: valkey_client,
+        valkey_client,
         core_client,
         db_pool,
         ..
@@ -349,7 +349,7 @@ pub(in crate::views) async fn simulation(
 pub(in crate::views) async fn etcs_braking_curves(
     State(AppState {
         config,
-        valkey: valkey_client,
+        valkey_client,
         core_client,
         db_pool,
         ..
@@ -487,7 +487,7 @@ pub(in crate::views) async fn simulation_summary(
     State(AppState {
         config,
         db_pool,
-        valkey: valkey_client,
+        valkey_client,
         core_client: core,
         ..
     }): State<AppState>,
@@ -568,7 +568,7 @@ pub(in crate::views) async fn get_path(
     State(AppState {
         config,
         db_pool,
-        valkey: valkey_client,
+        valkey_client,
         core_client: core,
         ..
     }): State<AppState>,
@@ -639,7 +639,7 @@ pub(in crate::views) async fn project_path(
     State(AppState {
         config,
         db_pool,
-        valkey: valkey_client,
+        valkey_client,
         core_client,
         ..
     }): State<AppState>,
@@ -713,7 +713,7 @@ pub(in crate::views) async fn project_path(
 pub(in crate::views) async fn project_path_op(
     State(AppState {
         db_pool,
-        valkey: valkey_client,
+        valkey_client,
         core_client,
         config,
         ..
@@ -816,7 +816,7 @@ pub(in crate::views) async fn project_path_op(
 pub(in crate::views) async fn occupancy_blocks(
     State(AppState {
         db_pool,
-        valkey: valkey_client,
+        valkey_client,
         core_client,
         config,
         ..
@@ -919,7 +919,7 @@ pub(in crate::views) async fn track_occupancy(
     State(AppState {
         config,
         db_pool,
-        valkey,
+        valkey_client,
         core_client,
         ..
     }): State<AppState>,
@@ -974,7 +974,7 @@ pub(in crate::views) async fn track_occupancy(
     // Retrieve simulations
     let simulations_result = train_simulation_batch(
         &mut db_pool.get().await?,
-        valkey,
+        valkey_client,
         core_client,
         &train_schedules,
         &infra,

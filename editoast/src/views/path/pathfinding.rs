@@ -189,7 +189,7 @@ pub enum PathfindingFailure {
 pub(in crate::views) async fn post(
     State(AppState {
         db_pool,
-        valkey,
+        valkey_client,
         core_client,
         config,
         ..
@@ -207,7 +207,7 @@ pub(in crate::views) async fn post(
     }
 
     let conn = db_pool.get().await?;
-    let mut valkey_conn = valkey.get_connection().await?;
+    let mut valkey_conn = valkey_client.get_connection().await?;
     let infra = Infra::retrieve_or_fail(conn.clone(), infra_id, || {
         PathfindingError::InfraNotFound { infra_id }
     })

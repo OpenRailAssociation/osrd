@@ -630,7 +630,7 @@ pub enum AppHealthError {
 async fn health(
     State(AppState {
         db_pool,
-        valkey,
+        valkey_client,
         health_check_timeout,
         core_client,
         regulator,
@@ -641,7 +641,7 @@ async fn health(
         health_check_timeout
             .to_std()
             .expect("timeout should be valid at this point"),
-        check_health(db_pool, valkey, core_client, regulator.openfga()),
+        check_health(db_pool, valkey_client, core_client, regulator.openfga()),
     )
     .await
     .map_err(|_| AppHealthError::Timeout)??;
@@ -780,7 +780,7 @@ pub type Regulator = ::authz::Regulator<PgAuthDriver>;
 pub struct AppState {
     pub config: Arc<ServerConfig>,
     pub db_pool: Arc<DbConnectionPoolV2>,
-    pub valkey: Arc<cache::Client>,
+    pub valkey_client: Arc<cache::Client>,
     pub infra_caches: Arc<DashMap<i64, InfraCache>>,
     pub map_layers: Arc<MapLayers>,
     pub speed_limit_tag_ids: Arc<SpeedLimitTagIds>,
@@ -886,7 +886,7 @@ impl AppState {
         // Synchronous operations
         let infra_caches = DashMap::<i64, InfraCache>::default().into();
         let speed_limit_tag_ids = Arc::new(SpeedLimitTagIds::load());
-        let valkey = Arc::new(cache::Client::new(
+        let valkey_client = Arc::new(cache::Client::new(
             config.valkey_config.clone(),
             config.app_version.as_deref().unwrap_or("NO_APP_VERSION"),
         ));
@@ -902,7 +902,7 @@ impl AppState {
 
         Ok(Self {
             regulator: Regulator::new(openfga, PgAuthDriver::new(db_pool.clone())),
-            valkey,
+            valkey_client,
             db_pool,
             infra_caches,
             core_client,
