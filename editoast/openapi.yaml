@@ -10898,68 +10898,8 @@ components:
       description: A location on the path of a train
     PathItemLocation:
       oneOf:
-      - type: object
-        required:
-        - track
-        - offset
-        properties:
-          offset:
-            type: integer
-            format: int64
-            description: Offset in mm
-            minimum: 0
-          track:
-            oneOf:
-            - type: string
-              maxLength: 255
-              minLength: 1
-            description: Track section identifier
-      - allOf:
-        - oneOf:
-          - type: object
-            required:
-            - operational_point
-            properties:
-              operational_point:
-                oneOf:
-                - type: string
-                  maxLength: 255
-                  minLength: 1
-                description: The object id of an operational point
-          - type: object
-            required:
-            - trigram
-            properties:
-              secondary_code:
-                type:
-                - string
-                - 'null'
-                description: An optional secondary code to identify a more specific location
-              trigram:
-                oneOf:
-                - type: string
-                  minLength: 1
-                description: The operational point trigram
-          - type: object
-            required:
-            - uic
-            properties:
-              secondary_code:
-                type:
-                - string
-                - 'null'
-                description: An optional secondary code to identify a more specific location
-              uic:
-                type: integer
-                format: int32
-                description: The [UIC](https://en.wikipedia.org/wiki/List_of_UIC_country_codes) code of an operational point
-                minimum: 0
-        - type: object
-          properties:
-            track_reference:
-              oneOf:
-              - type: 'null'
-              - $ref: '#/components/schemas/TrackReference'
+      - $ref: '#/components/schemas/TrackOffset'
+      - $ref: '#/components/schemas/OperationalPointReference'
       description: The location of a path waypoint
     PathProperties:
       type: object

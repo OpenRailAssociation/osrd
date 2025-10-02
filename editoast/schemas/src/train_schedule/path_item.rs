@@ -44,8 +44,8 @@ impl PathItem {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema, Hash)]
 #[serde(untagged, deny_unknown_fields)]
 pub enum PathItemLocation {
-    TrackOffset(#[schema(inline)] TrackOffset),
-    OperationalPointReference(#[schema(inline)] OperationalPointReference),
+    TrackOffset(TrackOffset),
+    OperationalPointReference(OperationalPointReference),
 }
 
 #[editoast_derive::openapi_schema]

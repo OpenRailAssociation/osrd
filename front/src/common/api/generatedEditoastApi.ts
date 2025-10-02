@@ -3398,33 +3398,13 @@ export type PathfindingResultSuccess = {
     The first value is always `0` (beginning of the path) and the last one is always equal to the `length` of the path in mm */
   path_item_positions: number[];
 };
-export type PathItemLocation =
-  | {
-      /** Offset in mm */
-      offset: number;
-      /** Track section identifier */
-      track: string;
-    }
-  | ((
-      | {
-          /** The object id of an operational point */
-          operational_point: string;
-        }
-      | {
-          /** An optional secondary code to identify a more specific location */
-          secondary_code?: string | null;
-          /** The operational point trigram */
-          trigram: string;
-        }
-      | {
-          /** An optional secondary code to identify a more specific location */
-          secondary_code?: string | null;
-          /** The [UIC](https://en.wikipedia.org/wiki/List_of_UIC_country_codes) code of an operational point */
-          uic: number;
-        }
-    ) & {
-      track_reference?: null | TrackReference;
-    });
+export type TrackOffset = {
+  /** Offset in mm */
+  offset: number;
+  /** Track section identifier */
+  track: string;
+};
+export type PathItemLocation = TrackOffset | OperationalPointReference;
 export type PathfindingInputError =
   | {
       error_type: 'invalid_path_items';
@@ -3529,12 +3509,6 @@ export type RoutePath = {
     switch_id: string;
   }[];
   track_ranges: DirectionalTrackRange[];
-};
-export type TrackOffset = {
-  /** Offset in mm */
-  offset: number;
-  /** Track section identifier */
-  track: string;
 };
 export type LightModeEffortCurves = {
   is_electric: boolean;
