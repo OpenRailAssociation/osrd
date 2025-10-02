@@ -63,11 +63,13 @@ export const getPathfindingQuery = ({
   rollingStock,
   pathSteps,
   loadingGauge,
+  speedLimitByTag,
 }: {
   infraId?: number;
   rollingStock?: RollingStockWithLiveries;
   pathSteps: (PathItemLocation | null)[];
   loadingGauge?: LoadingGaugeType;
+  speedLimitByTag?: string;
 }): PostInfraByInfraIdPathfindingBlocksApiArg | null => {
   const origin = pathSteps.at(0);
   const destination = pathSteps.at(-1);
@@ -89,6 +91,7 @@ export const getPathfindingQuery = ({
         rolling_stock_supported_signaling_systems: rollingStock.supported_signaling_systems,
         rolling_stock_maximum_speed: rollingStock.max_speed,
         rolling_stock_length: rollingStock.length,
+        speed_limit_tag: speedLimitByTag,
       },
     };
   }

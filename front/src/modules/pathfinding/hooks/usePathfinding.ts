@@ -24,6 +24,7 @@ import type { SuggestedOP } from 'modules/timetableItem/types';
 import { setFailure, setWarning } from 'reducers/main';
 import { replaceItinerary, updatePathSteps } from 'reducers/osrdconf/operationalStudiesConf';
 import {
+  getOperationalStudiesSpeedLimitByTag,
   getPathSteps,
   getPowerRestrictions,
 } from 'reducers/osrdconf/operationalStudiesConf/selectors';
@@ -51,6 +52,8 @@ const usePathfinding = ({
   const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTimetableItem' });
   const dispatch = useAppDispatch();
   const pathSteps = useSelector(getPathSteps);
+  const speedLimitByTag = useSelector(getOperationalStudiesSpeedLimitByTag);
+
   const powerRestrictions = useSelector(getPowerRestrictions);
   const { infraId, getTrackSectionsByIds, workerStatus } = useScenarioContext();
   const [pathfindingState, setPathfindingState] =
@@ -266,6 +269,7 @@ const usePathfinding = ({
         infraId,
         rollingStock,
         pathSteps: steps.filter((step) => !step.isInvalid).map((step) => step?.location),
+        speedLimitByTag,
       });
 
       if (!pathfindingInput) {
@@ -333,7 +337,7 @@ const usePathfinding = ({
         }
       }
     },
-    [currentRollingStockId, workerStatus]
+    [currentRollingStockId, workerStatus, speedLimitByTag]
   );
 
   useEffect(() => {
