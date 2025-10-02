@@ -1,12 +1,27 @@
 package fr.sncf.osrd.envelope_sim
 
-import com.google.common.collect.RangeMap
-import fr.sncf.osrd.envelope_sim.PhysicsRollingStock.TractiveEffortPoint
 import fr.sncf.osrd.envelope_sim.etcs.BrakingType
 import fr.sncf.osrd.path.interfaces.PhysicsPath
-import fr.sncf.osrd.utils.POSITION_EPSILON
-import fr.sncf.osrd.utils.SPEED_EPSILON
+import fr.sncf.osrd.train_sim.DavisCoefficients
+import fr.sncf.osrd.train_sim.Direction
+import fr.sncf.osrd.train_sim.HalfOpenRangeF64
+import fr.sncf.osrd.train_sim.IntegrationStep
+import fr.sncf.osrd.train_sim.RollingStock
+import fr.sncf.osrd.train_sim.TractiveEffortCurveMap
+import fr.sncf.osrd.train_sim.TractiveEffortPoint
+import fr.sncf.osrd.train_sim.TrainPath
 import kotlin.math.*
+
+/**
+ * Wrapper around a `PhysicsPath` that implements rust-side's `TrainPath`
+ */
+class MyFirstPath(val p: PhysicsPath) : TrainPath {
+    override fun length(): Double = this.p.length
+
+    override fun avgGrade(start: Double, end: Double): Double = this.p.getAverageGrade(start, end)
+
+    override fun minGrade(start: Double, end: Double): Double = this.p.getMinGrade(start, end)
+}
 
 /**
  * A utility class to help simulate the train, using numerical integration. It's used when
@@ -14,76 +29,7 @@ import kotlin.math.*
  * action to make. Once speed controllers took a decision, this same class is used to compute the
  * next position and speed of the train.
  */
-class TrainPhysicsIntegrator private constructor(
-    private val rollingStock: PhysicsRollingStock,
-    private val path: PhysicsPath,
-    private val action: Action?,
-    private val directionSign: Double,
-    private val tractiveEffortCurveMap: RangeMap<Double, Array<TractiveEffortPoint>>,
-    private val brakingType: BrakingType?
-) {
-    /** Simulates train movement  */
-    private fun step(
-        timeStep: Double,
-        initialLocation: Double,
-        initialSpeed: Double,
-        directionSign: Double
-    ): IntegrationStep {
-        val halfStep = timeStep / 2
-        val step1 = step(halfStep, initialLocation, initialSpeed)
-        val step2 = step(halfStep, initialLocation + step1.positionDelta, step1.endSpeed)
-        val step3 = step(timeStep, initialLocation + step2.positionDelta, step2.endSpeed)
-        val step4 = step(timeStep, initialLocation + step3.positionDelta, step3.endSpeed)
-
-        val meanAcceleration =
-            (step1.acceleration + 2 * step2.acceleration + 2 * step3.acceleration + step4.acceleration) / 6.0
-        return newtonStep(timeStep, initialSpeed, meanAcceleration, directionSign)
-    }
-
-    private fun step(timeStep: Double, position: Double, speed: Double): IntegrationStep {
-        if (action == Action.BRAKE) return newtonStep(timeStep, speed, getDeceleration(speed, position), directionSign)
-
-        var tractionForce = 0.0
-        val tractiveEffortCurve: Array<TractiveEffortPoint> =
-            tractiveEffortCurveMap.get(min(max(0.0, position), path.length))!!
-        val maxTractionForce = PhysicsRollingStock.getMaxEffort(speed, tractiveEffortCurve)
-        val rollingResistance = rollingStock.getRollingResistance(speed)
-        val averageGrade: Double = getAverageGrade(rollingStock, path, position)
-        val weightForce: Double = getWeightForce(rollingStock, averageGrade)
-
-        if (action == Action.MAINTAIN) {
-            tractionForce = rollingResistance - weightForce
-            if (tractionForce <= maxTractionForce) return newtonStep(timeStep, speed, 0.0, directionSign)
-            else tractionForce = maxTractionForce
-        }
-
-        if (action == Action.ACCELERATE) tractionForce = maxTractionForce
-        val acceleration: Double =
-            computeAcceleration(rollingStock, rollingResistance, weightForce, speed, tractionForce, directionSign)
-        return newtonStep(timeStep, speed, acceleration, directionSign)
-    }
-
-    private fun getDeceleration(speed: Double, position: Double): Double {
-        assert(action == Action.BRAKE)
-        if (brakingType == BrakingType.CONSTANT) return rollingStock.getDeceleration()
-
-        val grade: Double = getMinGrade(rollingStock, path, position)
-        val gradientAcceleration = PhysicsRollingStock.getGradientAcceleration(grade)
-        return when (brakingType) {
-            BrakingType.EBD -> -rollingStock.getRJSEtcsBrakeParams()
-                .getSafeBrakingAcceleration(speed) + gradientAcceleration
-
-            BrakingType.SBD -> -rollingStock.getRJSEtcsBrakeParams()
-                .getServiceBrakingAcceleration(speed) + gradientAcceleration
-
-            BrakingType.GUI -> (-rollingStock.getRJSEtcsBrakeParams()
-                .getNormalServiceBrakingAcceleration(speed) + gradientAcceleration
-                    + rollingStock.getRJSEtcsBrakeParams().getGradientAccelerationCorrection(grade, speed))
-
-            else -> throw UnsupportedOperationException("Braking type not supported: $brakingType")
-        }
-    }
-
+class TrainPhysicsIntegrator {
     companion object {
         // Gravity acceleration, in m/s²
         const val GRAVITY_ACCELERATION: Double = 9.81
@@ -99,18 +45,55 @@ class TrainPhysicsIntegrator private constructor(
             directionSign: Double,
             brakingType: BrakingType = BrakingType.CONSTANT
         ): IntegrationStep {
-            val integrator = TrainPhysicsIntegrator(
-                context.rollingStock, context.path, action, directionSign, context.tractiveEffortCurveMap, brakingType
+            val tecm = TractiveEffortCurveMap()
+            for (x in context.tractiveEffortCurveMap.asMapOfRanges()) {
+                val range = HalfOpenRangeF64(x.key.lowerEndpoint(), x.key.upperEndpoint())
+                // TODO use custom types? https://mozilla.github.io/uniffi-rs/latest/kotlin/configuration.html
+                val value = List(size = x.value.size) {
+                    TractiveEffortPoint(
+                        speed = x.value[it].speed,
+                        maxEffort = x.value[it].maxEffort
+                    )
+                }
+                tecm.insert(range, value)
+            }
+            return fr.sncf.osrd.train_sim.step(
+                rollingStock = RollingStock(
+                    davis = DavisCoefficients(
+                        a = 1.0,
+                        b = 1.0,
+                        c = 1.0
+                    ),
+                    constGamma = -context.rollingStock.deceleration,
+                    length = context.rollingStock.length,
+                    mass = context.rollingStock.mass,
+                    inertia = context.rollingStock.inertia,
+                ),
+                path = MyFirstPath(context.path),
+                timeDelta = context.timeStep,
+                tractiveEffortCurveMap = tecm,
+                initialPosition = initialLocation,
+                initialSpeed = initialSpeed,
+                action = when (action) {
+                    Action.ACCELERATE -> fr.sncf.osrd.train_sim.Action.ACCELERATE
+                    Action.BRAKE -> fr.sncf.osrd.train_sim.Action.BRAKE
+                    Action.MAINTAIN -> fr.sncf.osrd.train_sim.Action.MAINTAIN
+                    Action.COAST -> fr.sncf.osrd.train_sim.Action.COAST
+                },
+                direction = if (directionSign >= 0.0) Direction.FORWARDS else Direction.BACKWARDS,
+                brakingType = when (brakingType) {
+                    BrakingType.CONSTANT -> fr.sncf.osrd.train_sim.BrakingType.CONSTANT
+                    BrakingType.EBD -> fr.sncf.osrd.train_sim.BrakingType.EBD
+                    BrakingType.EBI -> fr.sncf.osrd.train_sim.BrakingType.EBI
+                    BrakingType.SBD -> fr.sncf.osrd.train_sim.BrakingType.SBD
+                    BrakingType.SBI_1 -> fr.sncf.osrd.train_sim.BrakingType.SBI1
+                    BrakingType.SBI_2 -> fr.sncf.osrd.train_sim.BrakingType.SBI2
+                    BrakingType.GUI -> fr.sncf.osrd.train_sim.BrakingType.GUIDANCE
+                    BrakingType.PRE_PS -> fr.sncf.osrd.train_sim.BrakingType.PRE_PS
+                    BrakingType.PS -> fr.sncf.osrd.train_sim.BrakingType.PS
+                    BrakingType.IND -> fr.sncf.osrd.train_sim.BrakingType.INDICATION
+                }
             )
-            return integrator.step(context.timeStep, initialLocation, initialSpeed, directionSign)
-        }
-
-        /** Compute the average grade of a rolling stock at a given position on a given path in m/km  */
-        fun getAverageGrade(rollingStock: PhysicsRollingStock, path: PhysicsPath, headPosition: Double): Double {
-            var headPosition = headPosition
-            val tailPosition = min(max(0.0, headPosition - rollingStock.getLength()), path.length)
-            headPosition = min(max(0.0, headPosition), path.length)
-            return path.getAverageGrade(tailPosition, headPosition)
         }
 
         /** Compute the weight force of a rolling stock at a given position on a given path  */
@@ -159,25 +142,6 @@ class TrainPhysicsIntegrator private constructor(
                 // if the train is moving backwards, the opposite forces are positive
                 (tractionForce + weightForce + rollingResistance) / rollingStock.getInertia()
             }
-        }
-
-        /** Integrate the Newton movement equations  */
-        fun newtonStep(
-            timeStep: Double, currentSpeed: Double, acceleration: Double, directionSign: Double
-        ): IntegrationStep {
-            val signedTimeStep = timeStep.withSign(directionSign)
-            var newSpeed = currentSpeed + acceleration * signedTimeStep
-            if (abs(newSpeed) < SPEED_EPSILON) newSpeed = 0.0
-
-            // dx = currentSpeed * dt + 1/2 * acceleration * dt * dt
-            var positionDelta = currentSpeed * signedTimeStep + 0.5 * acceleration * signedTimeStep * signedTimeStep
-
-            if (abs(positionDelta) < POSITION_EPSILON) positionDelta = 0.0
-            return IntegrationStep.fromNaiveStep(
-                timeStep, positionDelta,
-                currentSpeed, newSpeed,
-                acceleration, directionSign
-            )
         }
     }
 }

@@ -20,6 +20,7 @@ dependencies {
 
     implementation project(':osrd-reporting')
     implementation project(":kt-osrd-path")
+    implementation project(':train-sim')
     api project(":kt-osrd-sim-infra")
     api project(":osrd-railjson")
     api project(":kt-osrd-utils")
