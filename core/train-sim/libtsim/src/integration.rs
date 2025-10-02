@@ -248,6 +248,34 @@ pub enum Electrification {
     Neutral(Neutral),
 }
 
+/// A `TrainPath` describes the path taken by a train and its properties. It is built in a way that
+/// can easily be mapped to train simulations, where we track the distance travelled by the train
+/// head.
+///
+/// `Offset<TrainPath>` is the correct typing to locate elements on a path.
+///
+/// We consider that 1m of train path means 1m of train movement, not necessarily 1m of actual track
+/// length. Specifically, when a train turns around at a station, no distance is travelled. See
+/// below, where a train goes up to a point and turn around:
+///
+/// ```text
+///                         backtrack
+///                         location
+/// ========================>|
+/// -------------------------|-----    track section
+/// <============############|
+///              ^   train   ^
+///              ^   length  ^
+///             new         old
+///             head        head
+/// ```
+///
+/// What we consider the "train path" is marked with `===>` symbols. The area covered by the train
+/// itself ('#') is excluded from the path after turning around. 1m after the backtrack offset is
+/// already `train length + 1m` away from the previous location.
+///
+/// `getBlocks` and similar methods only return block ranges that are part of the train path. This
+/// may include partial blocks, especially at the edges of the path or around backtracks.
 pub trait TrainPath {
     /// The length of the path, in meters.
     fn length(&self) -> f64;

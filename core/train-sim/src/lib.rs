@@ -1,3 +1,6 @@
+use std::ops::Bound;
+use std::sync::Mutex;
+
 uniffi::setup_scaffolding!();
 
 #[derive(uniffi::Record, Clone, Copy)]
@@ -26,13 +29,58 @@ pub struct RollingStock {
     pub inertia: f64,
 }
 
-#[uniffi::export]
-pub trait TrainPath: libtsim::TrainPath + Send + Sync {}
+#[uniffi::export(with_foreign)]
+pub trait TrainPath: Send + Sync {
+    fn length(&self) -> f64;
+
+    fn avg_grade(&self, start: f64, end: f64) -> f64;
+
+    fn min_grade(&self, start: f64, end: f64) -> f64;
+}
+
+struct SalutÀTous<'a>(&'a dyn TrainPath);
+
+impl libtsim::TrainPath for SalutÀTous<'_> {
+    fn length(&self) -> f64 {
+        TrainPath::length(self.0)
+    }
+
+    fn avg_grade(&self, start: f64, end: f64) -> f64 {
+        TrainPath::avg_grade(self.0, start, end)
+    }
+
+    fn min_grade(&self, start: f64, end: f64) -> f64 {
+        TrainPath::min_grade(self.0, start, end)
+    }
+
+    fn electrification_map(
+        &self,
+        _base_power_class: &str,
+        _power_restrictions: &libtsim::RangeMap<f64, String>,
+        _power_restriction_to_power_class: &libtsim::RangeMap<String, String>,
+        _ignore_electrical_profiles: bool,
+    ) -> libtsim::RangeMap<f64, Option<libtsim::Electrification>> {
+        todo!()
+    }
+}
+
+#[derive(uniffi::Record, Debug)]
+pub struct HalfOpenRangeF64 {
+    pub start: f64,
+    pub end: f64,
+}
+
+#[derive(uniffi::Record, Debug)]
+pub struct TractiveEffortPoint {
+    pub speed: f64,
+    pub max_effort: f64,
+}
 
 /// XXX: generics when???? https://github.com/mozilla/uniffi-rs/issues/1755
 #[derive(uniffi::Object)]
 pub struct TractiveEffortCurveMap {
-    inner: libtsim::RangeMap<f64, Box<[libtsim::TractiveEffortPoint]>>,
+    // XXX: https://mozilla.github.io/uniffi-rs/latest/types/interfaces.html#concurrent-access
+    inner: Mutex<libtsim::RangeMap<f64, Box<[libtsim::TractiveEffortPoint]>>>,
 }
 
 #[uniffi::export]
@@ -40,8 +88,21 @@ impl TractiveEffortCurveMap {
     #[uniffi::constructor]
     fn new() -> Self {
         Self {
-            inner: libtsim::RangeMap::new(),
+            inner: Mutex::new(libtsim::RangeMap::new()),
         }
+    }
+
+    fn insert(&self, range: HalfOpenRangeF64, value: Vec<TractiveEffortPoint>) {
+        let range = libtsim::Range::new(Bound::Included(range.start), Bound::Excluded(range.end));
+        let value = value
+            .into_iter()
+            .map(|pt| libtsim::TractiveEffortPoint {
+                speed: pt.speed,
+                max_effort: pt.max_effort,
+            })
+            .collect::<Vec<libtsim::TractiveEffortPoint>>()
+            .into_boxed_slice();
+        self.inner.lock().unwrap().insert(range, value);
     }
 }
 
@@ -145,7 +206,7 @@ impl From<libtsim::IntegrationStep> for IntegrationStep {
 #[uniffi::export]
 #[allow(clippy::too_many_arguments)]
 pub fn step(
-    rolling_stock: &RollingStock,
+    rolling_stock: RollingStock,
     path: &dyn TrainPath,
     time_delta: f64,
     tractive_effort_curve_map: &TractiveEffortCurveMap,
@@ -164,9 +225,9 @@ pub fn step(
     };
     libtsim::step(
         &rolling_stock,
-        path,
+        &SalutÀTous(path),
         time_delta,
-        &tractive_effort_curve_map.inner,
+        &tractive_effort_curve_map.inner.lock().unwrap(),
         initial_position,
         initial_speed,
         action.into(),

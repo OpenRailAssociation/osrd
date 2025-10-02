@@ -14,6 +14,7 @@ pub use crate::integration::RollingStock;
 pub use crate::integration::TractiveEffortPoint;
 pub use crate::integration::TrainPath;
 pub use crate::integration::step;
+pub use crate::range_map::Range;
 pub use crate::range_map::RangeMap;
 
 mod integration;
