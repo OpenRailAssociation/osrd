@@ -30,6 +30,7 @@ use std::cmp::max;
 use std::slice;
 use std::sync::Arc;
 use thiserror::Error;
+use tracing::Span;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
 
@@ -142,6 +143,7 @@ pub(in crate::views) struct StdcmQueryParams {
         request = serde_json::to_string(&request)?,
         timetable_id = id,
         infra_id = query.infra,
+        path_found,
     )
 )]
 #[editoast_derive::route]
@@ -295,20 +297,27 @@ pub(in crate::views) async fn stdcm(
         .map_err(Into::into);
 
     // 6. Handle STDCM Core Response
+    let span = Span::current();
     match stdcm_response? {
         core_client::stdcm::Response::Success {
             simulation,
             path,
             departure_time,
-        } => Ok(Json(StdcmResponse::Success {
-            simulation: simulation.into(),
-            pathfinding_result: path,
-            departure_time,
-            core_payload: returned_request,
-        })),
-        core_client::stdcm::Response::PathNotFound => Ok(Json(StdcmResponse::PathNotFound {
-            core_payload: returned_request,
-        })),
+        } => {
+            span.record("path_found", true);
+            Ok(Json(StdcmResponse::Success {
+                simulation: simulation.into(),
+                pathfinding_result: path,
+                departure_time,
+                core_payload: returned_request,
+            }))
+        }
+        core_client::stdcm::Response::PathNotFound => {
+            span.record("path_found", false);
+            Ok(Json(StdcmResponse::PathNotFound {
+                core_payload: returned_request,
+            }))
+        }
     }
 }
 
