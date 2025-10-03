@@ -101,7 +101,7 @@ describe('reversePathSteps', () => {
       },
       name: 'Carantilly-Marigny',
       arrival: null,
-      stopFor: new Duration({ milliseconds: 0 }),
+      stopFor: null,
       locked: false,
       receptionSignal: 'OPEN',
       theoreticalMargin: '2min/100km',
@@ -178,13 +178,14 @@ describe('reversePathSteps', () => {
     ...pathStep,
     arrival: null,
   }));
+  expectedTwiceReversedPathSteps[pathSteps.length - 1].stopFor = null; // The 0ms stop on the last step will get add back later by another function
 
   it('should reverse path steps with times and margins correctly', () => {
     const reversedPathSteps = reversePathSteps(pathSteps);
     expect(reversedPathSteps).toEqual(expectedReversedPathSteps);
   });
 
-  it('should equal itself with arrival times removed when reversed twice', () => {
+  it('should equal itself with arrival times removed and last step 0ms stop missing when reversed twice', () => {
     const twiceReversedPathSteps = reversePathSteps(reversePathSteps(pathSteps));
     expect(twiceReversedPathSteps).toEqual(expectedTwiceReversedPathSteps);
   });
