@@ -5,6 +5,7 @@ import fr.sncf.osrd.conflicts.SpacingRequirementAutomaton
 import fr.sncf.osrd.envelope.Envelope.Companion.make
 import fr.sncf.osrd.envelope.EnvelopeTestUtils
 import fr.sncf.osrd.envelope_sim.SimpleRollingStock.STANDARD_TRAIN
+import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue
 import fr.sncf.osrd.pathfinding.PathfindingEdgeLocationId
 import fr.sncf.osrd.stdcm.STDCMAStarHeuristic
 import fr.sncf.osrd.stdcm.STDCMHeuristicBuilder
@@ -80,6 +81,7 @@ class STDCMHeuristicTests {
                     Double.POSITIVE_INFINITY,
                     STANDARD_TRAIN,
                     mrspBuilder = CachedBlockMRSPBuilder(infra, infra, null),
+                    allowance = null,
                 )
                 .build()
 
@@ -107,6 +109,66 @@ class STDCMHeuristicTests {
 
         explorer = explorer.cloneAndExtendLookahead().single().moveForward()
         assertEquals(0.0, getLocationRemainingTime(infra, explorer, null, heuristic))
+    }
+
+    @Test
+    fun allowanceTest() {
+        /*
+        a ------> b ------> c
+         */
+        val infra = DummyInfra()
+        val blocks =
+            listOf(
+                infra.addBlock("a", "b", allowedSpeed = 1.0),
+                infra.addBlock("b", "c", allowedSpeed = 1.0),
+            )
+
+        val steps =
+            listOf(
+                STDCMStep(
+                    listOf(PathfindingEdgeLocationId(blocks[0], Offset(0.meters))),
+                    null,
+                    false,
+                ),
+                STDCMStep(
+                    listOf(PathfindingEdgeLocationId(blocks[1], Offset(100.meters))),
+                    null,
+                    true,
+                ),
+            )
+
+        val heuristicWithAllowance =
+            STDCMHeuristicBuilder(
+                    infra,
+                    infra,
+                    steps,
+                    Double.POSITIVE_INFINITY,
+                    STANDARD_TRAIN,
+                    mrspBuilder = CachedBlockMRSPBuilder(infra, infra, null),
+                    allowance = AllowanceValue.Percentage(100.0),
+                )
+                .build()
+        val heuristicWithoutAllowance =
+            STDCMHeuristicBuilder(
+                    infra,
+                    infra,
+                    steps,
+                    Double.POSITIVE_INFINITY,
+                    STANDARD_TRAIN,
+                    mrspBuilder = CachedBlockMRSPBuilder(infra, infra, null),
+                    allowance = null,
+                )
+                .build()
+
+        val explorer =
+            initInfraExplorer(infra, infra, steps.first().locations.first(), steps).single()
+
+        val resWithAllowance =
+            getLocationRemainingTime(infra, explorer, 50.meters, heuristicWithAllowance)
+        val resWithoutAllowance =
+            getLocationRemainingTime(infra, explorer, 50.meters, heuristicWithoutAllowance)
+
+        assertEquals(resWithoutAllowance * 2, resWithAllowance, 1e-5)
     }
 
     @Test
@@ -158,6 +220,7 @@ class STDCMHeuristicTests {
                     Double.POSITIVE_INFINITY,
                     STANDARD_TRAIN,
                     mrspBuilder = CachedBlockMRSPBuilder(infra, infra, null),
+                    allowance = null,
                 )
                 .build()
 
@@ -166,10 +229,9 @@ class STDCMHeuristicTests {
 
         for (i in 1 until blocks.size) {
             explorer =
-                explorer
-                    .cloneAndExtendLookahead()
-                    .filter { candidate -> candidate.getLookahead().all { blocks.contains(it) } }
-                    .single()
+                explorer.cloneAndExtendLookahead().single { candidate ->
+                    candidate.getLookahead().all { blocks.contains(it) }
+                }
 
             // While the lookahead is on the right path, the remaining distance shouldn't change
             assertEquals(

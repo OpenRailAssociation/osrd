@@ -82,6 +82,7 @@ class STDCMGraph(
                     rollingStock,
                     temporarySpeedLimitManager,
                     mrspBuilder,
+                    standardAllowance,
                 )
                 .build()
         bestPossibleTime = remainingTimeEstimator.bestTravelTime
