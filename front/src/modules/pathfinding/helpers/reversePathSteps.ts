@@ -22,11 +22,15 @@ function reversePathSteps(pathSteps: PathStep[]): PathStep[] {
   });
 
   return pathSteps
-    .map((pathStep, index) => ({
-      ...pathStep,
-      arrival: null, // Remove arrival times set as they may become incoherent when reversing
-      theoreticalMargin: newMargins[index],
-    }))
+    .map((pathStep, index) => {
+      const isLastStepZeroStop = index === pathSteps.length - 1 && pathStep.stopFor?.ms === 0;
+      return {
+        ...pathStep,
+        arrival: null, // Remove arrival times set as they may become incoherent when reversing
+        stopFor: isLastStepZeroStop ? null : pathStep.stopFor, // We automatically insert a 0ms stop on the last step, which should be dropped before reversing
+        theoreticalMargin: newMargins[index],
+      };
+    })
     .reverse();
 }
 
