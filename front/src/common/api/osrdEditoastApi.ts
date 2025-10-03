@@ -67,28 +67,27 @@ const compressedQuery = async <Response>(
   return result as { data: Response } | { error: ApiError };
 };
 
-const fetchAllPages = async <
-  QueryArgs extends {
-    page?: number;
-    pageSize?: number | null;
-  },
-  Result extends { results: unknown[] } & PaginationStats,
-  Endpoint extends {
-    initiate: (
-      arg: QueryArgs,
-      options: StartQueryActionCreatorOptions
-    ) => ThunkAction<{ unwrap: () => Promise<Result> }, unknown, unknown, Action>;
-  },
-  //ResultItems = Awaited<ReturnType<ReturnType<Endpoint['initiate']>>['unwrap']>['results']
-  ResultItems = ReturnType<ReturnType<Endpoint['initiate']>>['unwrap']
->(
+//type Foo = typeof generatedEditoastApi.endpoints.getTimetableByIdTrainSchedules.Types.ResultType;
+//const foo: Foo = 42;
+
+type PaginatedEndpoint =
+  | typeof generatedEditoastApi.endpoints.getTimetableByIdTrainSchedules
+  | typeof generatedEditoastApi.endpoints.getInfra;
+
+/*const foo = <const Endpoint extends PaginatedEndpoint>(endpoint: Endpoint): Endpoint['Types']['ResultType'] => {
+  return null as unknown as Endpoint['Types']['ResultType'];
+};*/
+
+//const a: number = foo/*<typeof generatedEditoastApi.endpoints.getTimetableByIdTrainSchedules>*/(generatedEditoastApi.endpoints.getTimetableByIdTrainSchedules);
+
+const fetchAllPages = async <Endpoint extends PaginatedEndpoint>(
   endpoint: Endpoint,
-  args: QueryArgs,
+  args: Endpoint['Types']['QueryArg'],
   dispatch: ThunkDispatch<unknown, unknown, Action>
-): Promise<ResultItems> => {
+): Promise<Endpoint['Types']['ResultType']['results']> => {
   let page = 1;
   let reachEnd = false;
-  const results: ResultItems = [];
+  const results: Endpoint['Types']['ResultType']['results'] = [];
   while (!reachEnd) {
     const data = await dispatch(
       endpoint.initiate(
@@ -114,7 +113,7 @@ const osrdEditoastApi = generatedEditoastApi
         { timetableId: number }
       >({
         queryFn: async ({ timetableId }, { dispatch }): Promise<{ data: TrainScheduleResponse[] }> => {
-          const data = await fetchAllPages(
+          const data: TrainScheduleResponse[] /* TODO: drop */ = await fetchAllPages(
             osrdEditoastApi.endpoints.getTimetableByIdTrainSchedules,
             { id: timetableId, pageSize: 200 },
             dispatch
