@@ -104,11 +104,16 @@ export const upsertPathStepsInOPs = (
   t: TFunction<'operational-studies'>
 ): SuggestedOP[] => {
   let updatedOPs = [...ops];
-  let waypointCounter = 1;
-  pathSteps.forEach((step) => {
+  pathSteps.map((step, stepIndex) => {
     const { arrival, stopFor, receptionSignal, theoreticalMargin } = step;
     // We check only for pathSteps added by map click
     if ('track' in step.location) {
+      let stepName = t('main.requestedPoint', { count: stepIndex });
+      if (stepIndex === 0) {
+        stepName = t('main.requestedOrigin');
+      } else if (stepIndex === pathSteps.length - 1) {
+        stepName = t('main.requestedDestination');
+      }
       const formattedStep: SuggestedOP = {
         pathStepId: step.id,
         opId: undefined,
@@ -120,9 +125,8 @@ export const upsertPathStepsInOPs = (
         arrival,
         receptionSignal,
         theoreticalMargin,
-        name: t('main.requestedPoint', { count: waypointCounter }),
+        name: stepName,
       };
-      waypointCounter += 1;
       // If it hasn't an uic, the step has been added by map click,
       // we know we have its position on path so we can insert it
       // at the good index in the existing operational points

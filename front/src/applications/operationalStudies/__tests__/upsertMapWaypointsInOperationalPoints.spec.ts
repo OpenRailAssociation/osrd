@@ -194,7 +194,7 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
         id: '1',
         extensions: {
           identifier: {
-            name: 't_requestedPoint',
+            name: 't_requestedOrigin',
             uic: 0,
           },
         },
@@ -239,7 +239,7 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
         id: '3',
         extensions: {
           identifier: {
-            name: 't_requestedPoint',
+            name: 't_requestedDestination',
             uic: 0,
           },
         },
@@ -281,7 +281,7 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
         id: '1',
         extensions: {
           identifier: {
-            name: 't_requestedPoint',
+            name: 't_requestedOrigin',
             uic: 0,
           },
         },
@@ -296,7 +296,7 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
         id: '2',
         extensions: {
           identifier: {
-            name: 't_requestedPoint',
+            name: 't_requestedDestination',
             uic: 0,
           },
         },

@@ -376,15 +376,23 @@ export const getTrackReferenceLabel = (trackReference?: TrackReference | null) =
 export const getOperationalPointName = (
   op: OperationalPoint | undefined,
   step: PathItemLocation,
-  mapWaypointCount: number,
+  stepIndex: number,
+  totalStepCount: number,
   t: TFunction<'operational-studies'>
 ) => {
   // We have a matching operational point
   if (op) return op.extensions?.identifier?.name;
 
   // TrackOffset
-  if (!isOperationalPointReference(step))
-    return t('main.requestedPoint', { count: mapWaypointCount });
+  if (!isOperationalPointReference(step)) {
+    if (stepIndex === 0) {
+      return t('main.requestedOrigin');
+    } else if (stepIndex === totalStepCount - 1) {
+      return t('main.requestedDestination');
+    } else {
+      return t('main.requestedPoint', { count: stepIndex });
+    }
+  }
 
   // Invalid step
   return getInvalidStepLabel(step);
