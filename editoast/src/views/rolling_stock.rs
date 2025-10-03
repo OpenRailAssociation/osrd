@@ -1124,6 +1124,29 @@ pub mod tests {
     }
 
     #[rstest]
+    async fn create_rolling_stock_with_etcs_level2_with_etcs_brake_params() {
+        let app = TestAppBuilder::default_app();
+        let rs_name = "fast_rolling_stock_name";
+        let mut fast_rolling_stock_form = fast_rolling_stock_form(rs_name);
+        fast_rolling_stock_form.supported_signaling_systems = RollingStockSupportedSignalingSystems(
+            vec!["BAL", "BAPR", "ETCS_LEVEL2"]
+                .into_iter()
+                .map(String::from)
+                .collect(),
+        );
+        // WHEN
+        let response = app
+            .fetch(app.rolling_stock_create_request(&fast_rolling_stock_form))
+            .assert_status(StatusCode::UNPROCESSABLE_ENTITY)
+            .string();
+        // THEN
+        assert_eq!(
+            response,
+            "Failed to deserialize the JSON body into the target type: invalid rolling-stock: 'ETCS_LEVEL2' can't be listed in 'supported_signaling_systems', providing 'etcs_brake_params' field is the (only) way to trigger ETCS_LEVEL2 support."
+        );
+    }
+
+    #[rstest]
     async fn create_rolling_stock_with_etcs_level2_signaling_system() {
         // GIVEN
         let app = TestAppBuilder::default_app();
