@@ -31,7 +31,7 @@ images:
   gateway: ghcr.io/openrailassociation/osrd-edge/osrd-gateway:dev-front
   core: ghcr.io/openrailassociation/osrd-edge/osrd-core:dev
   osrdyne: ghcr.io/openrailassociation/osrd-edge/osrd-osrdyne:dev
-  images: ghcr.io/openrailassociation/osrd-edge/osrd-images:v1.0.2
+  images: ghcr.io/openrailassociation/osrd-stable/osrd-images:v1.0.2
   openfga: openfga/openfga:v1.8.6
 
 # Services direct settings and overides
