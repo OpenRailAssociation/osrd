@@ -7,6 +7,7 @@ import { VscJson } from 'react-icons/vsc';
 import { type Infra, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import useAuthz from 'common/authorization/hooks/useAuthz';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
+import { Loader } from 'common/Loaders/Loader';
 import { useAsyncMemo } from 'utils/useAsyncMemo';
 
 import InfraSelectorEditionItem from './InfraSelectorEditionItem';
@@ -26,9 +27,11 @@ const InfraSelectorModalBodyEdition = ({
   const [nameNewInfra, setNameNewInfra] = useState<string | undefined>('');
   const [errorMessage, setErrorMessage] = useState<string | undefined>('');
   const [selectedFile, setSelectedFile] = useState<File | undefined>(undefined);
+
   const { t } = useTranslation();
-  const [postInfraRailjson] = osrdEditoastApi.endpoints.postInfraRailjson.useMutation();
   const [postInfra] = osrdEditoastApi.endpoints.postInfra.useMutation();
+  const [postInfraRailjson, { isLoading: isInfraLoading }] =
+    osrdEditoastApi.endpoints.postInfraRailjson.useMutation();
 
   // Get the user privileges for infras
   const { getUserPrivileges } = useAuthz();
@@ -171,13 +174,17 @@ const InfraSelectorModalBodyEdition = ({
               </>
             )}
           </div>
-          <button
-            className="btn btn-sm btn-success btn-block text-wrap"
-            onClick={addNewInfra}
-            type="button"
-          >
-            {selectedFile ? t('infraManagement.addInfraJSON') : t('infraManagement.addInfra')}
-          </button>
+          {isInfraLoading ? (
+            <Loader />
+          ) : (
+            <button
+              className="btn btn-sm btn-success btn-block text-wrap"
+              onClick={addNewInfra}
+              type="button"
+            >
+              {selectedFile ? t('infraManagement.addInfraJSON') : t('infraManagement.addInfra')}
+            </button>
+          )}
         </div>
       </div>
     </div>
