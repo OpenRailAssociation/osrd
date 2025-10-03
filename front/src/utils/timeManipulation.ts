@@ -47,10 +47,7 @@ export function calculateTimeDifferenceInDays(datetime1?: Date, datetime2?: Date
  *
  * using the param withSeconds returns the longer format "HH:MM:SS"
  */
-export function secToHoursString(sec: number | null): TimeString {
-  if (!sec) {
-    return '';
-  }
+export function secToHoursString(sec: number): TimeString {
   const date = new Date(sec * 1000);
   return dayjs(date).utc().format('HH:mm:ss');
 }
