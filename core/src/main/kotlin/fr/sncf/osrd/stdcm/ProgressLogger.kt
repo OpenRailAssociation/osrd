@@ -6,6 +6,8 @@ import fr.sncf.osrd.stdcm.graph.STDCMNode
 import fr.sncf.osrd.stdcm.graph.logger
 import fr.sncf.osrd.utils.units.Duration
 import fr.sncf.osrd.utils.units.seconds
+import io.opentelemetry.api.common.Attributes
+import io.opentelemetry.api.trace.Span
 import java.time.Duration.*
 import java.time.Instant
 import kotlin.math.pow
@@ -48,6 +50,18 @@ data class ProgressLogger(
                     "loc=$geo, " +
                     "#visited nodes=$seenSteps"
             logger.info(str)
+
+            val eventAttributes =
+                Attributes.builder()
+                    .put("progress", nSamplesReached.toDouble() / nStepsProgress.toDouble())
+                    .put("time", node.timeData.earliestReachableTime.toLong())
+                    .put("time since departure", node.timeData.timeSinceDeparture.toLong())
+                    .put("best remaining time", node.remainingTimeEstimation.toLong())
+                    .put("location", geo.toString())
+                    .put("n visited nodes", seenSteps.toLong())
+                    .build()
+            Span.current().addEvent("progress $nSamplesReached/$nStepsProgress", eventAttributes)
+
             while (progress >= thresholdDistance * nSamplesReached) nSamplesReached++
         }
 
