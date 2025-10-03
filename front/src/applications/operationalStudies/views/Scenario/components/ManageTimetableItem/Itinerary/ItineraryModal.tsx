@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import type { PathStepV2 } from 'reducers/osrdconf/types';
 import useModalFocusTrap from 'utils/hooks/useModalFocusTrap';
 
+import ItineraryModalFormHeader from './ItineraryModalFormHeader';
 import ItineraryModalMap from './ItineraryModalMap';
 import PathStepItem from './PathStepItem';
 
@@ -43,7 +44,9 @@ const ItineraryModal = ({ itineraryModalIsOpen, setItineraryModalIsOpen }: Itine
   return (
     <dialog ref={modalRef} className="itinerary-modal">
       <div className="itinerary-modal-form">
-        <div className="itinerary-modal-form-header"></div>
+        <div className="itinerary-modal-form-header">
+          <ItineraryModalFormHeader />
+        </div>
         <div className="itinerary-modal-form-body">
           <div className="path-step-list">
             <div className="path-step-list-header">

@@ -337,7 +337,8 @@
       "opName": "Operational point name",
       "openItineraryModal": "New interface for itinerary edition",
       "secondaryCode": "Code",
-      "track": "Track"
+      "track": "Track",
+      "trainName": "Train name"
     },
     "launchPathFinding": "Launch pathfinding",
     "manageVias": "Steps management",
