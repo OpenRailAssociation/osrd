@@ -186,6 +186,13 @@ const StdcmConfig = ({
 
   // Checks for live warnings regarding pathSteps
   useEffect(() => {
+    if (pathfindingWorkerStatus !== 'READY' || stdcmWorkerStatus !== 'READY') {
+      setFormErrors({ errorType: StdcmConfigErrorTypes.INFRA_NOT_LOADED });
+      return;
+    } else {
+      setFormErrors(undefined);
+    }
+
     if (!origin.location || !destination.location) return;
 
     const formErrorsStatus = checkStdcmConfigErrors({
@@ -198,15 +205,7 @@ const StdcmConfig = ({
       shouldCheckMandatoryFields: false,
     });
     setFormErrors(formErrorsStatus);
-  }, [pathfinding, pathSteps, t, consistErrors]);
-
-  useEffect(() => {
-    if (pathfindingWorkerStatus === 'READY' && stdcmWorkerStatus === 'READY') {
-      setFormErrors(undefined);
-    } else {
-      setFormErrors({ errorType: StdcmConfigErrorTypes.INFRA_NOT_LOADED });
-    }
-  }, [pathfindingWorkerStatus, stdcmWorkerStatus]);
+  }, [pathfinding, pathSteps, t, consistErrors, pathfindingWorkerStatus, stdcmWorkerStatus]);
 
   useEffect(() => {
     if (!isDebugMode) {
@@ -270,7 +269,7 @@ const StdcmConfig = ({
     if (!isEqual(updatedErrors, formErrors)) {
       setFormErrors(updatedErrors);
     }
-  }, [t, formErrors, consistErrors, rollingStock, stdcmConf, setFormErrors]);
+  }, [t, formErrors, consistErrors, rollingStock, stdcmConf]);
 
   return (
     <div className="stdcm__body">
