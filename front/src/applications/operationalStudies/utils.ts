@@ -390,7 +390,8 @@ export const checkRoundTripCompatible = (
   if (
     isPacedTrainResponseWithPacedTrainId(timetableItemA) &&
     isPacedTrainResponseWithPacedTrainId(timetableItemB) &&
-    timetableItemA.paced.interval !== timetableItemB.paced.interval
+    Duration.parse(timetableItemA.paced.interval).ms !==
+      Duration.parse(timetableItemB.paced.interval).ms
   ) {
     return false;
   }
