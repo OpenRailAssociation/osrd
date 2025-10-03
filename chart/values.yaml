@@ -138,6 +138,7 @@ services:
         enabled: false
         prefix: "/railway-manager"
         upstream: ""
+      secret_key: "NOT+A+SECRET++NOT+A+SECRET++NOT+A+SECRET++NOT+A+SECRET++NOT+A+SECRET++NOT+A+SECRET++NOT+A+SECRET" # See https://github.com/OpenRailAssociation/osrd/blob/dev/gateway/README.md#config 
       tracing:
         enabled: false
         type: ""
