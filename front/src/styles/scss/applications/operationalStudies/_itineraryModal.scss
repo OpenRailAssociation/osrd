@@ -30,8 +30,54 @@
     flex-shrink: 0;
 
     .itinerary-modal-form-header {
+      display: flex;
+      flex-direction: column;
       height: var(--header-height);
       border-bottom: 1px solid var(--gray-30);
+
+      .category-row {
+        display: flex;
+        align-items: center;
+        margin-top: 32px;
+        margin-left: 22px;
+
+        .category-color {
+          width: 6px;
+          height: 16px;
+          border-radius: 4px;
+          margin-right: 12px;
+        }
+        .category-select {
+          width: 257px;
+          height: 32px;
+        }
+      }
+
+      .rolling-stock-and-name-row {
+        display: flex;
+        align-items: center;
+        margin-top: 17px;
+        margin-left: 40px;
+
+        .rolling-stock-combobox {
+          min-width: 257px;
+          margin-right: 21px;
+          // Fix osrd-ui styles
+          label {
+            margin-bottom: 0;
+          }
+        }
+
+        .train-name-input {
+          width: 100%;
+          min-width: 257px;
+          margin-right: 39px;
+          // Fix osrd-ui styles
+          label {
+            margin-bottom: 0;
+          }
+        }
+      }
     }
 
     .itinerary-modal-form-body {

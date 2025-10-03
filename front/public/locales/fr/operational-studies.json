@@ -337,7 +337,8 @@
       "opName": "Nom du point remarquable",
       "openItineraryModal": "Nouvelle interface d'édition d'itinéraire",
       "secondaryCode": "CH",
-      "track": "Voie"
+      "track": "Voie",
+      "trainName": "Nom du train"
     },
     "launchPathFinding": "Lancer la recherche d'itinéraire",
     "manageVias": "Gestion des étapes",
