@@ -213,7 +213,8 @@
 
   .itinerary-modal-map {
     width: 50%;
-    box-shadow: calc(-1 * var(--footer-box-shadow-height)) 0 0 0 var(--black25);
+    box-shadow: inset (var(--footer-box-shadow-height)) 0 0 0 var(--black25);
+    padding-left: 1px;
 
     .layers-modal {
       position: fixed;
