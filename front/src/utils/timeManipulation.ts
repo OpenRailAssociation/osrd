@@ -39,9 +39,7 @@ export function calculateTimeDifferenceInDays(datetime1?: Date, datetime2?: Date
 }
 
 /**
- * converts a value in seconds to a timeString "HH:MM"
- *
- * using the param withSeconds returns the longer format "HH:MM:SS"
+ * converts a value in seconds to a time string "HH:MM:SS"
  */
 export function secToHoursString(sec: number): TimeString {
   const date = new Date(sec * 1000);
