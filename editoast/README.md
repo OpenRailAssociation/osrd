@@ -52,19 +52,6 @@ To avoid thread conflicts while accessing the database, use serial_test
 cargo test --workspace -- --test-threads=4
 ```
 
-# Debugging
-
-:warning: For improving compilation time and therefore the developer experience, the project
-choose to strip out debug information by default, resulting in [about 20%
-shorter compilation time](https://github.com/OpenRailAssociation/osrd/pull/8579).
-
-If you need to debug the project, you might want to activate the `dev-for-debug` profile
-which will build with debug information.
-
-```
-cargo build --profile dev-for-debug
-```
-
 ## Useful tools
 
 Here a list of components to help you in your development (see CI jobs if necessary):
@@ -87,6 +74,92 @@ cargo install --locked taplo-cli
 ```
 
 To setup `grcov`, please see [its documentation](https://github.com/mozilla/grcov#how-to-get-grcov)
+
+## Debugging
+
+:warning: For improving compilation time and therefore the developer experience, the project
+choose to strip out debug information by default, resulting in [about 10%
+shorter compilation time](https://github.com/OpenRailAssociation/osrd/pull/13513).
+
+If you need to debug the project, you might want to activate the `dev-for-debug` profile
+which will build with debug information.
+
+```
+cargo build --profile dev-for-debug
+```
+
+### Tooling/IDE configurations
+
+Here are some useful tips grouped by tool (click to expand).
+
+<details>
+  <summary>Visual Studio Code</summary>
+
+  First, open only `./editoast` directory in VSCode:
+  * allows finding `Cargo.toml` (it may be possible to configure work directory when necessary, though)
+  * avoids loading all the projects (multiple cargo, npm, gradle) which consume lot of RAM and processor.
+
+  Useful extensions:
+  * `rust-analyzer`
+  * `CodeLLDB` (did not try `LLDB DAP`)
+  * `Rust Syntax`
+  * `Even Better TOML`
+  * `crates`
+  * (`Rust Macro Expand`: not tested, but promising)
+
+  For step-by-step debugging under VS Code, you need to change the debug level
+  to `full` in order to get the variable content.
+
+  This can be done by changing the **profile** in debugger launch tasks. \
+  Here is an example of configurations to put in `launch.json` for `CodeLLDB` extension:
+  ```json
+          {
+              "type": "lldb",
+              "request": "launch",
+              "name": "Debug single 'cargo test'",
+              "cargo": {
+                  "args": [
+                      "test",
+                      "--profile",
+                      "dev-for-debug",
+                      "--no-run",
+                  ]
+              },
+              // optional tests name filter
+              "args": ["create_locked_rolling_stock_successfully"]
+          },
+          {
+              "type": "lldb",
+              "request": "launch",
+              "name": "Debug 'editoast runserver' no-cache/single-worker",
+              "cargo": {
+                  "args": [
+                      "build",
+                      "--profile",
+                      "dev-for-debug",
+                  ]
+              },
+              "env": {
+                  "ROOT_URL": "http://localhost:4000/api",
+                  "EDITOAST_CORE_SINGLE_WORKER": "true",
+                  "EDITOAST_NO_CACHE": "true"
+              },
+              "args": ["runserver"],
+              "cwd": "${workspaceFolder}"
+          },
+  ```
+  Here is some configuration example of workspace's `settings.json` for
+  `rust-analyzer`'s code lens (`▶️ Run Test | ⚙ Debug`):
+  ```json
+      "rust-analyzer.runnables.extraArgs": [
+          "--profile=dev-for-debug"
+      ]
+  ```
+
+  Note: it's also possible to pass environment variables to change the **debug
+  level** of the profile used, but it's a bit less clean.
+
+</details>
 
 ## No-cache mode
 
