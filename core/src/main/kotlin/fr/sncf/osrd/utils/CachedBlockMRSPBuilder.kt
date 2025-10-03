@@ -2,6 +2,7 @@ package fr.sncf.osrd.utils
 
 import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock
+import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue
 import fr.sncf.osrd.envelope_sim_infra.computeMRSP
 import fr.sncf.osrd.path.implementations.buildTrainPathFromBlock
 import fr.sncf.osrd.sim_infra.api.Block
@@ -61,11 +62,17 @@ data class CachedBlockMRSPBuilder(
     }
 
     /** Returns the time it takes to go through the given block, until `endOffset` if specified. */
-    fun getBlockTime(block: BlockId, endOffset: Offset<Block>?): Double {
+    fun getBlockTime(
+        block: BlockId,
+        endOffset: Offset<Block>?,
+        allowanceValue: AllowanceValue? = null,
+    ): Double {
         if (endOffset?.distance == 0.meters) return 0.0
         val actualLength = endOffset ?: blockInfra.getBlockLength(block)
         val mrsp = getMRSP(block)
-        return mrsp.interpolateArrivalAtClamp(actualLength.distance.meters)
+        val time = mrsp.interpolateArrivalAtClamp(actualLength.distance.meters)
+        val allowanceTime = allowanceValue?.getAllowanceTime(time, actualLength.distance.meters)
+        return time + (allowanceTime ?: 0.0)
     }
 
     companion object {

@@ -1,6 +1,7 @@
 package fr.sncf.osrd.stdcm
 
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock
+import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.sim_infra.api.BlockInfra
@@ -26,6 +27,7 @@ data class STDCMAStarHeuristic(
     val nPlannedSteps: Int,
     val mrspBuilder: CachedBlockMRSPBuilder,
     val bestTravelTime: Double,
+    val allowanceValue: AllowanceValue?,
 ) {
     /**
      * Defines a function that can be used as a heuristic for an A* pathfinding. It takes an edge,
@@ -54,9 +56,10 @@ data class STDCMAStarHeuristic(
         // of the last block of the lookahead, then from that point the destination.
         var timeUntilStartOfLastBlock = 0.0
         for (j in 0 until allBlocks.size - 1) {
-            timeUntilStartOfLastBlock += mrspBuilder.getBlockTime(allBlocks[j], null)
+            timeUntilStartOfLastBlock +=
+                mrspBuilder.getBlockTime(allBlocks[j], null, allowanceValue)
         }
-        val timeSinceFirstBlock = mrspBuilder.getBlockTime(edge.block, offset)
+        val timeSinceFirstBlock = mrspBuilder.getBlockTime(edge.block, offset, allowanceValue)
         timeUntilStartOfLastBlock -= timeSinceFirstBlock
 
         val remainingTime = timeUntilStartOfLastBlock + timeAfterStartOfLastBlock
@@ -95,6 +98,7 @@ class STDCMHeuristicBuilder(
     private val temporarySpeedLimitManager: TemporarySpeedLimitManager =
         TemporarySpeedLimitManager(),
     private val mrspBuilder: CachedBlockMRSPBuilder,
+    val allowance: AllowanceValue?,
 ) {
     private val logger: Logger = LoggerFactory.getLogger("STDCMHeuristic")
 
@@ -135,7 +139,7 @@ class STDCMHeuristicBuilder(
             steps.first().locations.minOfOrNull {
                 val remainingTimeSinceBlockStart =
                     remainingTimeEstimations.first()[it.edge] ?: Double.POSITIVE_INFINITY
-                val timeSinceBlockStart = mrspBuilder.getBlockTime(it.edge, it.offset)
+                val timeSinceBlockStart = mrspBuilder.getBlockTime(it.edge, it.offset, allowance)
                 remainingTimeSinceBlockStart - timeSinceBlockStart
             } ?: Double.POSITIVE_INFINITY
         logger.info(
@@ -148,6 +152,7 @@ class STDCMHeuristicBuilder(
             steps.size,
             mrspBuilder,
             bestTravelTime,
+            allowance,
         )
     }
 
@@ -214,7 +219,7 @@ class STDCMHeuristicBuilder(
         return PendingBlock(
             block,
             newIndex,
-            remainingTime + mrspBuilder.getBlockTime(block, offset),
+            remainingTime + mrspBuilder.getBlockTime(block, offset, allowance),
         )
     }
 }
