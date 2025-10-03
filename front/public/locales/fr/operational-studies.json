@@ -141,6 +141,8 @@
     "pacedTrain_one": "1 mission",
     "pacedTrain_other": "{{count}} missions",
     "pacedTrain_zero": "0 mission",
+    "requestedDestination": "destination demandée",
+    "requestedOrigin": "origine demandée",
     "requestedPoint": "point demandé ({{ count }})",
     "requestedPointUnknown": "point demandé",
     "roundTripsModal": {

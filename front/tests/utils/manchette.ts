@@ -13,13 +13,16 @@ export type Waypoint = {
   checked?: boolean;
 };
 
-const firstRequestedPointKey = `${frScenarioTranslations.requestedPointUnknown} (1)`;
-const secondRequestedPointKey = `${frScenarioTranslations.requestedPointUnknown} (2)`;
+const requestedDestination = frScenarioTranslations.requestedDestination;
+
+function requestedPoint(number: string): string {
+  return frScenarioTranslations.requestedPoint.replaceAll('{{ count }}', number);
+}
 
 export const expectedWaypointsPanelDataForTrainSchedule: Record<string, Partial<Waypoint>> = {
   North_East_station: { ch: 'BV', offset: '0.0', checked: true },
   Mid_East_station: { ch: 'BV', offset: '19.55', checked: true },
-  [firstRequestedPointKey]: { ch: '', offset: '22.47', checked: true },
+  [requestedPoint('2')]: { ch: '', offset: '22.47', checked: true },
   Mid_West_station: { ch: 'BV', offset: '34.0', checked: true },
   North_West_station: { ch: 'BC', offset: '47.55', checked: true },
 };
@@ -27,17 +30,17 @@ export const expectedWaypointsPanelDataForTrainSchedule: Record<string, Partial<
 export const expectedWaypointsPanelDataForPacedTrain: Record<string, Partial<Waypoint>> = {
   North_East_station: { ch: 'BV', offset: '0.0', checked: true },
   Mid_East_station: { ch: 'BV', offset: '19.55', checked: true },
-  [firstRequestedPointKey]: { ch: '', offset: '22.47', checked: true },
+  [requestedPoint('1')]: { ch: '', offset: '22.47', checked: true },
   Mid_West_station: { ch: 'BV', offset: '34.0', checked: true },
   North_West_station: { ch: 'BC', offset: '47.55', checked: true },
-  [secondRequestedPointKey]: { ch: '', offset: '47.65', checked: true },
+  [requestedDestination]: { ch: '', offset: '47.65', checked: true },
 };
 
 export const expectedWaypointsListDataForPacedTrain: Record<string, Partial<Waypoint>> = {
   North_East_station: { ch: 'BV', offset: '0' },
-  [firstRequestedPointKey]: { ch: '', offset: '22.5' },
+  [requestedPoint('1')]: { ch: '', offset: '22.5' },
   Mid_West_station: { ch: 'BV', offset: '34' },
-  [secondRequestedPointKey]: { ch: '', offset: '47.7' },
+  [requestedDestination]: { ch: '', offset: '47.7' },
 };
 
 export const expectedWaypointsListDataForTrainSchedule: Record<string, Partial<Waypoint>> = {

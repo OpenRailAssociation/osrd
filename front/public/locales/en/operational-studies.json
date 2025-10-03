@@ -141,6 +141,8 @@
     "pacedTrain_one": "1 service",
     "pacedTrain_other": "{{count}} services",
     "pacedTrain_zero": "0 service",
+    "requestedDestination": "requested destination",
+    "requestedOrigin": "requested origin",
     "requestedPoint": "requested point ({{ count }})",
     "requestedPointUnknown": "requested point",
     "roundTripsModal": {

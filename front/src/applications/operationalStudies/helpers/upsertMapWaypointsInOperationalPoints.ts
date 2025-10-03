@@ -33,10 +33,8 @@ export function upsertMapWaypointsInOperationalPoints(
   operationalPoints: (PathOperationalPoint | EditoastPathOperationalPoint)[],
   t: TFunction<'operational-studies'>
 ): (PathOperationalPoint | EditoastPathOperationalPoint)[] {
-  let waypointCounter = 1;
-
   return path.reduce(
-    (operationalPointsWithAllWaypoints, step, i) => {
+    (operationalPointsWithAllWaypoints, step, stepIndex) => {
       if ('uic' in step) {
         const matchedIndex = operationalPointsWithAllWaypoints.findIndex(
           (op) =>
@@ -58,15 +56,21 @@ export function upsertMapWaypointsInOperationalPoints(
       }
 
       if ('track' in step) {
-        const positionOnPath = pathItemsPositions[i];
+        const positionOnPath = pathItemsPositions[stepIndex];
         const indexToInsert = operationalPointsWithAllWaypoints.findIndex(
           (op) => op.position >= positionOnPath
         );
+        let stepName = t('main.requestedPoint', { count: stepIndex });
+        if (stepIndex === 0) {
+          stepName = t('main.requestedOrigin');
+        } else if (stepIndex === path.length - 1) {
+          stepName = t('main.requestedDestination');
+        }
 
         const baseFormattedStep = {
           extensions: {
             identifier: {
-              name: t('main.requestedPoint', { count: waypointCounter }),
+              name: stepName,
               uic: 0,
             },
           },
@@ -85,8 +89,6 @@ export function upsertMapWaypointsInOperationalPoints(
                 ...baseFormattedStep,
                 id: step.id,
               };
-
-        waypointCounter += 1;
 
         // If we can't find any op position greater than the current step position, we add it at the end
         if (indexToInsert === -1) {

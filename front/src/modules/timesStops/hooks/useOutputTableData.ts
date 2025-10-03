@@ -53,17 +53,16 @@ const useOutputTableData = (
 
       const startDatetime = new Date(train.start_time);
       let lastReferenceDate = startDatetime;
-      let mapWaypointCount = 0;
 
       return new Map(
-        train.path.map((pathStep, index) => {
+        train.path.map((pathStep, stepIndex) => {
           const matchingOperationalPoint = pathStepOps.find((op) => matchOpRefAndOp(op, pathStep));
 
-          if ('track' in pathStep) mapWaypointCount += 1;
           const name = getOperationalPointName(
             matchingOperationalPoint,
             pathStep,
-            mapWaypointCount,
+            stepIndex,
+            train.path.length,
             t
           );
           const trackName =
@@ -73,7 +72,7 @@ const useOutputTableData = (
 
           const schedule = scheduleByAt[pathStep.id];
           const computedArrival = simulatedPathItemTimes
-            ? new Date(startDatetime.getTime() + simulatedPathItemTimes.final[index])
+            ? new Date(startDatetime.getTime() + simulatedPathItemTimes.final[stepIndex])
             : undefined;
           const { stopFor, shortSlipDistance, onStopSignal, calculatedDeparture } = formatSchedule(
             computedArrival,
@@ -84,7 +83,7 @@ const useOutputTableData = (
             lastReferenceDate,
             schedule,
             {
-              isDeparture: index === 0,
+              isDeparture: stepIndex === 0,
             }
           );
           lastReferenceDate = refDate;
@@ -99,7 +98,7 @@ const useOutputTableData = (
             theoreticalMargins,
             train,
             scheduleByAt,
-            index,
+            stepIndex,
             simulatedPathItemTimes
           );
 
