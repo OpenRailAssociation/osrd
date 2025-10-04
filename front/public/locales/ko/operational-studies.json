@@ -3,5 +3,11 @@
     "conflicts": "충돌",
     "macro": "매크로",
     "map": "지도"
+  },
+  "importTrains": {
+    "errorMessages": {
+      "errorNoDate": "날짜를 입력해야 합니다."
+    },
+    "importTimetable": "시간표 불러오기"
   }
 }
