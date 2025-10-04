@@ -8,7 +8,7 @@
   "type": "module",
   "devDependencies": {
     "@eslint/js": "^8.57.1",
-    "@rollup/plugin-eslint": "^9.0.5",
+    "@rollup/plugin-eslint": "^9.1.0",
     "@rollup/plugin-node-resolve": "^16.0.0",
     "@rollup/plugin-typescript": "^12.1.0",
     "@types/lodash": "^4.17.17",
