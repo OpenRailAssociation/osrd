@@ -38,6 +38,12 @@ export const NODE_LABEL_GROUP: LabelGroupDto = {
   labelRef: 'Node',
 };
 
+export const NOTE_LABEL_GROUP: LabelGroupDto = {
+  id: 3,
+  name: 'Note',
+  labelRef: 'Note',
+};
+
 export const DEFAULT_TRAINRUN_CATEGORY: TrainrunCategory = {
   id: 1, // In NGE, Trainrun.DEFAULT_TRAINRUN_CATEGORY
   order: 0,

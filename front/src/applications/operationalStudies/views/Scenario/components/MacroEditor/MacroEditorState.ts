@@ -70,6 +70,16 @@ export default class MacroEditorState {
   trainrunLabels: Set<string>;
 
   /**
+   * Storing labels for notes
+   */
+  noteLabels: Set<string>;
+
+  /**
+   * Mapping from NGE note ID to OSRD DB ID
+   */
+  ngeNoteIdToDbId: Map<number, number>;
+
+  /**
    * NGE resource
    */
   ngeResource: { id: number; capacity: number };
@@ -85,9 +95,11 @@ export default class MacroEditorState {
   constructor(infraId: number, scenarioId: number, studyId: number, projectId: number) {
     this.nodeLabels = new Set<string>([]);
     this.trainrunLabels = new Set<string>([]);
+    this.noteLabels = new Set<string>([]);
     this.nodes = [];
     this.indexByPathKey = {};
     this.indexByNgeId = {};
+    this.ngeNoteIdToDbId = new Map();
     this.infraId = infraId;
     this.scenarioId = scenarioId;
     this.studyId = studyId;
@@ -214,6 +226,18 @@ export default class MacroEditorState {
   getNodeByNgeId(id: number): NodeIndexed | null {
     const index = this.indexByNgeId[id];
     return this.nodes[index] || null;
+  }
+
+  getDbIdForNote(ngeId: number): number | undefined {
+    return this.ngeNoteIdToDbId.get(ngeId);
+  }
+
+  setDbIdForNote(ngeId: number, dbId: number): void {
+    this.ngeNoteIdToDbId.set(ngeId, dbId);
+  }
+
+  removeNoteMapping(ngeId: number): void {
+    this.ngeNoteIdToDbId.delete(ngeId);
   }
 
   private deleteByIndexStorage(indexInStorage: number) {

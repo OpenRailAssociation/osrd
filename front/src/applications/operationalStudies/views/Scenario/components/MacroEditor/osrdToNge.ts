@@ -8,7 +8,12 @@ import {
   groupRoundTrips,
   checkRoundTripCompatible,
 } from 'applications/operationalStudies/utils';
-import { osrdEditoastApi, type SubCategory, type TrainSchedule } from 'common/api/osrdEditoastApi';
+import {
+  osrdEditoastApi,
+  type SubCategory,
+  type TrainSchedule,
+  type MacroNoteResponse,
+} from 'common/api/osrdEditoastApi';
 import type { TimetableItem, TimetableItemWithPathOps } from 'reducers/osrdconf/types';
 import type { AppDispatch } from 'store';
 import { Duration, addDurationToDate } from 'utils/duration';
@@ -22,6 +27,7 @@ import {
   TRAINRUN_CATEGORY_HALTEZEITEN,
   NODE_LABEL_GROUP,
   TRAINRUN_LABEL_GROUP,
+  NOTE_LABEL_GROUP,
   DEFAULT_TIME_LOCK,
   DEFAULT_TRAINRUN_TIME_CATEGORIES,
   OSRD_TRAINRUN_MAIN_CATEGORY_CODE_MAPPING,
@@ -44,6 +50,7 @@ import {
   PortAlignment,
   type LabelDto,
   type TrainrunCategory,
+  type FreeFloatingTextDto,
 } from '../NGE/types';
 
 type ScheduleItem = NonNullable<TrainSchedule['schedule']>[number];
@@ -279,8 +286,13 @@ export const loadAndIndexNge = async (
   timetableItems: TimetableItemWithPathOps[],
   dispatch: AppDispatch,
   t: TFunction<'operational-studies'>,
-  subCategories: SubCategory[]
+  subCategories: SubCategory[],
+  notes: MacroNoteResponse[]
 ): Promise<void> => {
+  notes.forEach((note) => {
+    state.setDbIdForNote(note.id, note.id);
+  });
+
   // Load path items
   let nbNodesIndexed = 0;
   timetableItems
@@ -588,7 +600,19 @@ const getNgeLabels = (state: MacroEditorState): LabelDto[] =>
       labelGroupId: TRAINRUN_LABEL_GROUP.id,
       labelRef: 'Trainrun',
     })),
+    ...Array.from(state.noteLabels).map((l) => ({
+      label: l,
+      labelGroupId: NOTE_LABEL_GROUP.id,
+      labelRef: 'Note',
+    })),
   ].map((l, i) => ({ ...l, id: i }));
+
+const getNoteLabelIds = (labelTexts: string[], state: MacroEditorState): number[] => {
+  const labels = getNgeLabels(state);
+  return labelTexts
+    .map((text) => labels.find((label) => label.label === text)?.id)
+    .filter((id): id is number => id !== undefined);
+};
 
 /**
  * Return a compatible object for NGE.
@@ -596,9 +620,24 @@ const getNgeLabels = (state: MacroEditorState): LabelDto[] =>
 export const getNgeDto = (
   state: MacroEditorState,
   groupedTimetableItems: (readonly [TimetableItem, TimetableItem | null])[],
-  subCategories: SubCategory[]
+  subCategories: SubCategory[],
+  notes: MacroNoteResponse[]
 ): NetzgrafikDto => {
   const labels = getNgeLabels(state);
+
+  const freeFloatingTexts: FreeFloatingTextDto[] = notes.map((note) => ({
+    id: note.id,
+    x: note.x,
+    y: note.y,
+    width: 200,
+    height: 100,
+    title: note.title,
+    text: note.text,
+    backgroundColor: '#ffffff',
+    textColor: '#000000',
+    labelIds: getNoteLabelIds(note.labels, state),
+  }));
+
   return {
     ...getNgeTrainrunSectionsWithNodes(state, groupedTimetableItems, labels),
     trainruns: getNgeTrainruns(state, groupedTimetableItems, labels),
@@ -609,9 +648,9 @@ export const getNgeDto = (
       trainrunFrequencies: state.trainrunFrequencies,
       trainrunTimeCategories: DEFAULT_TRAINRUN_TIME_CATEGORIES,
     },
-    freeFloatingTexts: [],
+    freeFloatingTexts,
     labels,
-    labelGroups: [NODE_LABEL_GROUP, TRAINRUN_LABEL_GROUP],
+    labelGroups: [NODE_LABEL_GROUP, TRAINRUN_LABEL_GROUP, NOTE_LABEL_GROUP],
     filterData: {
       filterSettings: [],
     },
@@ -660,6 +699,19 @@ export const loadNgeDto = async (
   dispatch: AppDispatch,
   t: TFunction<'operational-studies'>
 ): Promise<NetzgrafikDto> => {
+  const notesResult = await dispatch(
+    osrdEditoastApi.endpoints.getProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNotes.initiate(
+      {
+        projectId: state.projectId,
+        studyId: state.studyId,
+        scenarioId: state.scenarioId,
+      },
+      { subscribe: false }
+    )
+  ).unwrap();
+
+  const notes = notesResult.results;
+
   const trainSchedulesPromise = dispatch(
     osrdEditoastApi.endpoints.getAllTimetableByIdTrainSchedules.initiate(
       { timetableId },
@@ -720,6 +772,6 @@ export const loadNgeDto = async (
     osrdEditoastApi.endpoints.getSubCategory.initiate({ page: 1 }, { subscribe: false })
   ).unwrap();
 
-  await loadAndIndexNge(state, timetableItems, dispatch, t, subCategories);
-  return await getNgeDto(state, groupedTimetableItems, subCategories);
+  await loadAndIndexNge(state, timetableItems, dispatch, t, subCategories, notes);
+  return await getNgeDto(state, groupedTimetableItems, subCategories, notes);
 };

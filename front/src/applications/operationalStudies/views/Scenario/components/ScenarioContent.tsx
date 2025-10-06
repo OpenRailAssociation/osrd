@@ -88,6 +88,7 @@ const ScenarioContent = ({ activeBoards }: ScenarioContentProps) => {
       scenario.study_id,
       scenario.project.id
     );
+
     const dto = await loadNgeDto(state, scenario.timetable_id, dispatch, t);
     macroEditorState.current = state;
     setNgeDto(dto);
