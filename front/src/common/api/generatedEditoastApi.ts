@@ -4457,12 +4457,15 @@ export type SearchResultItemProject = {
 };
 export type SearchResultItemStudy = {
   budget: number | null;
+  business_code: string | null;
   description: string | null;
   id: number;
   last_modification: string;
   name: string;
   project_id: number;
   scenarios_count: number;
+  service_code: string | null;
+  study_type: string | null;
   tags: string[];
 };
 export type SearchResultItemScenario = {
@@ -4473,6 +4476,7 @@ export type SearchResultItemScenario = {
   infra_name: string;
   last_modification: string;
   name: string;
+  paced_trains_count: number;
   study_id: number;
   tags: string[];
   trains_count: number;

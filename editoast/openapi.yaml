@@ -12941,6 +12941,7 @@ components:
       - electrical_profile_set_id
       - infra_id
       - infra_name
+      - paced_trains_count
       - trains_count
       - description
       - last_modification
@@ -12969,6 +12970,10 @@ components:
           format: date-time
         name:
           type: string
+        paced_trains_count:
+          type: integer
+          format: int64
+          minimum: 0
         study_id:
           type: integer
           format: int64
@@ -13038,6 +13043,9 @@ components:
       - last_modification
       - tags
       - budget
+      - business_code
+      - service_code
+      - study_type
       properties:
         budget:
           type:
@@ -13045,6 +13053,10 @@ components:
           - 'null'
           format: int32
           minimum: 0
+        business_code:
+          type:
+          - string
+          - 'null'
         description:
           type:
           - string
@@ -13066,6 +13078,14 @@ components:
           type: integer
           format: int64
           minimum: 0
+        service_code:
+          type:
+          - string
+          - 'null'
+        study_type:
+          type:
+          - string
+          - 'null'
         tags:
           type: array
           items:
