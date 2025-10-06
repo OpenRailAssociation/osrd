@@ -79,7 +79,7 @@ impl PathfindingInput {
                 .effort_curves
                 .supported_electrification(),
             rolling_stock_supported_signaling_systems: rolling_stock
-                .get_supported_signaling_systems()
+                .get_all_supported_signaling_systems()
                 .0,
             rolling_stock_maximum_speed: OrderedFloat(units::meter_per_second::from(
                 rolling_stock.max_speed,

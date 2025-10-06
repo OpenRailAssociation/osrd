@@ -1,0 +1,33 @@
+{
+  "name": "SIMPLE_ROLLING_STOCK",
+  "loading_gauge": "G1",
+  "supported_signaling_systems": [],
+  "base_power_class": null,
+  "comfort_acceleration": 0.1,
+  "inertia_coefficient": 1.1,
+  "startup_acceleration": 0.04,
+  "startup_time": 1.0,
+  "effort_curves": {
+    "default_mode": "thermal",
+    "modes": {}
+  },
+  "electrical_power_startup_time": null,
+  "raise_pantograph_time": null,
+  "energy_sources": [],
+  "const_gamma": 1.0,
+  "etcs_brake_params": null,
+  "metadata": null,
+  "power_restrictions": { "C2": "2", "C5": "5" },
+  "railjson_version": "12",
+  "rolling_resistance": {
+    "type": "davis",
+    "A": 1.0,
+    "B": 0.01,
+    "C": 0.0005
+  },
+  "length": 140.0,
+  "mass": 15000.0,
+  "max_speed": 20.0,
+  "primary_category": "HIGH_SPEED_TRAIN",
+  "other_categories": []
+}

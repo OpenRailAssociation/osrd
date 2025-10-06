@@ -130,42 +130,43 @@ impl From<editoast_models::Error> for Error {
 
 impl From<RollingStock> for schemas::RollingStock {
     fn from(rolling_stock: RollingStock) -> Self {
-        schemas::RollingStock {
-            railjson_version: rolling_stock.railjson_version,
-            metadata: rolling_stock.metadata,
-            name: rolling_stock.name,
-            effort_curves: rolling_stock.effort_curves,
-            base_power_class: rolling_stock.base_power_class,
-            length: rolling_stock.length,
-            max_speed: rolling_stock.max_speed,
-            startup_time: rolling_stock.startup_time,
-            startup_acceleration: rolling_stock.startup_acceleration,
-            comfort_acceleration: rolling_stock.comfort_acceleration,
-            const_gamma: rolling_stock.const_gamma,
-            etcs_brake_params: rolling_stock.etcs_brake_params,
-            inertia_coefficient: rolling_stock.inertia_coefficient,
-            mass: rolling_stock.mass,
-            rolling_resistance: rolling_stock.rolling_resistance,
-            loading_gauge: rolling_stock.loading_gauge,
-            power_restrictions: rolling_stock.power_restrictions,
-            energy_sources: rolling_stock.energy_sources,
-            electrical_power_startup_time: rolling_stock.electrical_power_startup_time,
-            raise_pantograph_time: rolling_stock.raise_pantograph_time,
-            supported_signaling_systems: rolling_stock.supported_signaling_systems,
-            primary_category: *rolling_stock.primary_category,
-            other_categories: schemas::rolling_stock::TrainMainCategories(
+        schemas::RollingStock::new(
+            rolling_stock.name,
+            rolling_stock.effort_curves,
+            rolling_stock.base_power_class,
+            rolling_stock.length,
+            rolling_stock.max_speed,
+            rolling_stock.startup_time,
+            rolling_stock.startup_acceleration,
+            rolling_stock.comfort_acceleration,
+            rolling_stock.const_gamma,
+            rolling_stock.etcs_brake_params,
+            rolling_stock.inertia_coefficient,
+            rolling_stock.mass,
+            rolling_stock.rolling_resistance,
+            rolling_stock.loading_gauge,
+            rolling_stock.power_restrictions,
+            rolling_stock.energy_sources,
+            rolling_stock.electrical_power_startup_time,
+            rolling_stock.raise_pantograph_time,
+            rolling_stock.supported_signaling_systems,
+            rolling_stock.railjson_version,
+            rolling_stock.metadata,
+            rolling_stock.primary_category.0,
+            schemas::rolling_stock::TrainMainCategories(
                 rolling_stock
                     .other_categories
                     .iter()
                     .map(|c| c.0)
                     .collect::<Vec<_>>(),
             ),
-        }
+        )
     }
 }
 
 impl From<schemas::RollingStock> for RollingStockChangeset {
     fn from(rolling_stock: schemas::RollingStock) -> Self {
+        let supported_signaling_systems = rolling_stock.get_row_supported_signaling_systems();
         RollingStock::changeset()
             .railjson_version(rolling_stock.railjson_version)
             .metadata(rolling_stock.metadata)
@@ -187,7 +188,7 @@ impl From<schemas::RollingStock> for RollingStockChangeset {
             .energy_sources(rolling_stock.energy_sources)
             .electrical_power_startup_time(rolling_stock.electrical_power_startup_time)
             .raise_pantograph_time(rolling_stock.raise_pantograph_time)
-            .supported_signaling_systems(rolling_stock.supported_signaling_systems)
+            .supported_signaling_systems(supported_signaling_systems)
             .primary_category(TrainMainCategory(rolling_stock.primary_category))
             .other_categories(TrainMainCategories(
                 rolling_stock

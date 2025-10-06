@@ -830,7 +830,7 @@ pub mod tests {
         let rolling_stock: schemas::RollingStock = rolling_stock.into();
         assert_eq!(
             rolling_stock
-                .get_supported_signaling_systems()
+                .get_all_supported_signaling_systems()
                 .0
                 .contains(&"ETCS_LEVEL2".to_string()),
             false
@@ -1073,11 +1073,13 @@ pub mod tests {
         let rs_name = "fast_rolling_stock_name";
         let mut fast_rolling_stock_form = fast_rolling_stock_form(rs_name);
         fast_rolling_stock_form.etcs_brake_params = None;
-        fast_rolling_stock_form.supported_signaling_systems = RollingStockSupportedSignalingSystems(
-            vec!["BAL", "BAPR", "ETCS_LEVEL2"]
-                .into_iter()
-                .map(String::from)
-                .collect(),
+        fast_rolling_stock_form.set_row_supported_signaling_systems(
+            RollingStockSupportedSignalingSystems(
+                vec!["BAL", "BAPR", "ETCS_LEVEL2"]
+                    .into_iter()
+                    .map(String::from)
+                    .collect(),
+            ),
         );
         // WHEN
         let response = app
@@ -1097,11 +1099,13 @@ pub mod tests {
         let app = TestAppBuilder::default_app();
         let mut fast_rolling_stock_form = fast_rolling_stock_form("fast_rolling_stock_name");
         fast_rolling_stock_form.etcs_brake_params = Some(simple_etcs_brake_params());
-        fast_rolling_stock_form.supported_signaling_systems = RollingStockSupportedSignalingSystems(
-            vec!["BAL", "BAPR", "ETCS_LEVEL2"]
-                .into_iter()
-                .map(String::from)
-                .collect(),
+        fast_rolling_stock_form.set_row_supported_signaling_systems(
+            RollingStockSupportedSignalingSystems(
+                vec!["BAL", "BAPR", "ETCS_LEVEL2"]
+                    .into_iter()
+                    .map(String::from)
+                    .collect(),
+            ),
         );
         // WHEN
         let response = app
@@ -1140,7 +1144,7 @@ pub mod tests {
         // THEN
         assert_eq!(
             rolling_stock
-                .get_supported_signaling_systems()
+                .get_all_supported_signaling_systems()
                 .0
                 .contains(&"ETCS_LEVEL2".to_string()),
             true
@@ -1174,7 +1178,7 @@ pub mod tests {
         let rolling_stock: schemas::RollingStock = rolling_stock.into();
         assert_eq!(
             rolling_stock
-                .get_supported_signaling_systems()
+                .get_all_supported_signaling_systems()
                 .0
                 .contains(&"ETCS_LEVEL2".to_string()),
             false
