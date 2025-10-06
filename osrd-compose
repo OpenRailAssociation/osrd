@@ -9,7 +9,7 @@ OVERRIDE_DIR="${BASE_PATH}/docker"
 
 # Help
 show_help() {
-    cat << EOF
+    cat <<EOF
 
 Usage: $0 [FLAGS] [DOCKER_COMPOSE_COMMANDS]
 
@@ -53,20 +53,56 @@ fi
 compose_files=("$BASE_COMPOSE")
 flags=()
 
+# Given the array of compose files, and according to the STATE_FILE,
+# down every services actually running that could conflict with the new configuration.
+# This is needed to avoid conflicts when switching between configuration's
+# (e.g. switching from host to non-host mode)
+if [ -f "$STATE_FILE" ]; then
+    mapfile -t previous_flags <"$STATE_FILE"
+    for flag in "${previous_flags[@]}"; do
+        case $flag in
+        dev-front)
+            if grep -q "dev-front" "$STATE_FILE" 2>/dev/null; then
+                echo "Stopping front service to avoid conflicts with new configuration"
+                docker compose -f "${BASE_COMPOSE}" -f "${OVERRIDE_DIR}/docker-compose.front.yml" down front --remove-orphans
+            fi
+            ;;
+        host)
+            if grep -q "host" "$STATE_FILE" 2>/dev/null; then
+                echo "Stopping host services to avoid conflicts with new configuration"
+                docker compose -f "${BASE_COMPOSE}" -f "${OVERRIDE_DIR}/docker-compose.host.yml" down --remove-orphans
+            fi
+            ;;
+        sw)
+            if grep -q "sw" "$STATE_FILE" 2>/dev/null; then
+                echo "Stopping single-worker services to avoid conflicts with new configuration"
+                docker compose -f "${BASE_COMPOSE}" -f "${OVERRIDE_DIR}/docker-compose.single-worker.yml" down --remove-orphans
+            fi
+            ;;
+        playwright)
+            if grep -q "playwright" "$STATE_FILE" 2>/dev/null; then
+                echo "Stopping playwright service to avoid conflicts with new configuration"
+                docker compose -f "${BASE_COMPOSE}" -f "${OVERRIDE_DIR}/docker-compose.playwright.yml" down playwright --remove-orphans
+            fi
+            ;;
+        esac
+    done
+fi
+
 # Parse command line arguments for flags first
 while [[ $# -gt 0 ]]; do
     case $1 in
-        default)
-            DEFAULT_FLAG=true
-            shift
-            ;;
-        dev-front|sw|host|playwright)
-            flags+=("$1")
-            shift
-            ;;
-        *)
-            break
-            ;;
+    default)
+        DEFAULT_FLAG=true
+        shift
+        ;;
+    dev-front | sw | host | playwright)
+        flags+=("$1")
+        shift
+        ;;
+    *)
+        break
+        ;;
     esac
 done
 
@@ -83,10 +119,10 @@ fi
 
 # If flags were provided, save them
 if [ ${#flags[@]} -gt 0 ]; then
-    printf "%s\n" "${flags[@]}" > "$STATE_FILE"
+    printf "%s\n" "${flags[@]}" >"$STATE_FILE"
 # If no flags but state exists, load it
 elif [ -f "$STATE_FILE" ]; then
-    mapfile -t flags < "$STATE_FILE"
+    mapfile -t flags <"$STATE_FILE"
 fi
 
 has_flag() {
@@ -144,13 +180,13 @@ fi
 
 # Check if DOCKER_SOCKET is already set
 if [ -z "$DOCKER_SOCKET" ]; then
-  # Check if /var/run/docker.sock exists
-  if [ -e "/var/run/docker.sock" ]; then
-    export DOCKER_SOCKET="/var/run/docker.sock"
-  # Check if $XDG_RUNTIME_DIR/podman/podman.sock exists
-  elif [ -e "$XDG_RUNTIME_DIR/podman/podman.sock" ]; then
-    export DOCKER_SOCKET="$XDG_RUNTIME_DIR/podman/podman.sock"
-  fi
+    # Check if /var/run/docker.sock exists
+    if [ -e "/var/run/docker.sock" ]; then
+        export DOCKER_SOCKET="/var/run/docker.sock"
+    # Check if $XDG_RUNTIME_DIR/podman/podman.sock exists
+    elif [ -e "$XDG_RUNTIME_DIR/podman/podman.sock" ]; then
+        export DOCKER_SOCKET="$XDG_RUNTIME_DIR/podman/podman.sock"
+    fi
 fi
 
 # Build compose command.
