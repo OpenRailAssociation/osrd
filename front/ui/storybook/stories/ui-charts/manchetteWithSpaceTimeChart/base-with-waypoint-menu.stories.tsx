@@ -3,7 +3,6 @@ import React, { useRef, useState } from 'react';
 import {
   SpaceTimeChart,
   Manchette,
-  type ProjectPathTrainResult,
   type Waypoint,
   useManchetteWithSpaceTimeChart,
   isInteractiveWaypoint,
@@ -15,12 +14,12 @@ import '@osrd-project/ui-core/dist/theme.css';
 import '@osrd-project/ui-charts/dist/theme.css';
 
 import AnchoredMenu from './AnchoredMenu';
-import { SAMPLE_CHART_PATHS, SAMPLE_PATHS_DATA, SAMPLE_WAYPOINTS } from './assets/sampleData';
+import { type ChartPath, SAMPLE_CHART_PATHS, SAMPLE_WAYPOINTS } from './assets/sampleData';
 import Menu, { type MenuItem } from './Menu';
 
 type ManchetteWithSpaceTimeWrapperProps = {
   waypoints: Waypoint[];
-  projectPathTrainResult: ProjectPathTrainResult[];
+  paths: ChartPath[];
   selectedTrain: number;
 };
 
@@ -32,7 +31,7 @@ type ManchetteWithSpaceTimeWrapperProps = {
 
 const ManchetteWithSpaceTimeWrapper = ({
   waypoints,
-  projectPathTrainResult,
+  paths,
   selectedTrain,
 }: ManchetteWithSpaceTimeWrapperProps) => {
   const manchetteWithSpaceTimeChartRef = useRef<HTMLDivElement>(null);
@@ -71,11 +70,10 @@ const ManchetteWithSpaceTimeWrapper = ({
     setActiveWaypointId(waypointId);
   };
 
-  const paths = SAMPLE_CHART_PATHS;
   const { manchetteProps, spaceTimeChartProps, handleScroll } = useManchetteWithSpaceTimeChart({
     waypoints,
     manchetteWithSpaceTimeChartRef,
-    defaultTimeOrigin: Math.min(...projectPathTrainResult.map((p) => +p.departureTime)),
+    defaultTimeOrigin: Math.min(...paths.map((p) => +p.points[0]?.time)),
   });
 
   const selectedPath = paths[selectedTrain].id;
@@ -132,7 +130,7 @@ export default meta;
 export const WaypointMenu = {
   args: {
     waypoints: SAMPLE_WAYPOINTS,
-    projectPathTrainResult: SAMPLE_PATHS_DATA,
+    paths: SAMPLE_CHART_PATHS,
     selectedTrain: 1,
   },
 };

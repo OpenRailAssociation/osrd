@@ -4,7 +4,6 @@ import {
   SpaceTimeChart,
   Manchette,
   useManchetteWithSpaceTimeChart,
-  type ProjectPathTrainResult,
   type Waypoint,
   ZoomRect,
   PathLayer,
@@ -14,7 +13,7 @@ import { ZoomIn } from '@osrd-project/ui-icons';
 import type { Meta } from '@storybook/react-vite';
 import cx from 'classnames';
 
-import { SAMPLE_WAYPOINTS, SAMPLE_PATHS_DATA, SAMPLE_CHART_PATHS } from './assets/sampleData';
+import { SAMPLE_WAYPOINTS, SAMPLE_CHART_PATHS, type ChartPath } from './assets/sampleData';
 import { MouseTracker } from '../spaceTimeChart/helpers/components';
 
 import '@osrd-project/ui-core/dist/theme.css';
@@ -23,7 +22,7 @@ import './styles/rectangle-zoom.css';
 
 type ManchetteWithSpaceTimeWrapperProps = {
   waypoints: Waypoint[];
-  projectPathTrainResult: ProjectPathTrainResult[];
+  paths: ChartPath[];
   selectedTrain: number;
 };
 
@@ -31,12 +30,11 @@ const DEFAULT_HEIGHT = 561;
 
 const ManchetteWithSpaceTimeWrapper = ({
   waypoints,
-  projectPathTrainResult,
+  paths,
   selectedTrain,
 }: ManchetteWithSpaceTimeWrapperProps) => {
   const manchetteWithSpaceTimeChartRef = useRef<HTMLDivElement>(null);
   const spaceTimeChartRef = useRef<HTMLDivElement>(null);
-  const paths = SAMPLE_CHART_PATHS;
   const {
     manchetteProps,
     spaceTimeChartProps,
@@ -53,7 +51,7 @@ const ManchetteWithSpaceTimeWrapper = ({
     manchetteWithSpaceTimeChartRef,
     height: DEFAULT_HEIGHT,
     spaceTimeChartRef,
-    defaultTimeOrigin: Math.min(...projectPathTrainResult.map((p) => +p.departureTime)),
+    defaultTimeOrigin: Math.min(...paths.map((p) => p.points[0]?.time)),
   });
   const selectedPath = paths[selectedTrain].id;
   return (
@@ -126,7 +124,7 @@ export default meta;
 export const Default = {
   args: {
     waypoints: SAMPLE_WAYPOINTS,
-    projectPathTrainResult: SAMPLE_PATHS_DATA,
+    paths: SAMPLE_CHART_PATHS,
     selectedTrain: 1,
   },
 };

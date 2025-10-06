@@ -6,17 +6,16 @@ import {
   SpaceTimeChart,
   Manchette,
   useManchetteWithSpaceTimeChart,
-  type ProjectPathTrainResult,
   type Waypoint,
   PathLayer,
 } from '@osrd-project/ui-charts';
 import type { Meta } from '@storybook/react-vite';
 
-import { SAMPLE_WAYPOINTS, SAMPLE_PATHS_DATA, SAMPLE_CHART_PATHS } from './assets/sampleData';
+import { SAMPLE_WAYPOINTS, SAMPLE_CHART_PATHS, type ChartPath } from './assets/sampleData';
 
 type ManchetteWithSpaceTimeWrapperProps = {
   waypoints: Waypoint[];
-  projectPathTrainResult: ProjectPathTrainResult[];
+  paths: ChartPath[];
   selectedTrain: number;
   hidePositions?: boolean;
 };
@@ -25,17 +24,16 @@ const DEFAULT_HEIGHT = 561;
 
 const ManchetteWithSpaceTimeWrapper = ({
   waypoints,
-  projectPathTrainResult,
+  paths,
   selectedTrain,
   hidePositions = false,
 }: ManchetteWithSpaceTimeWrapperProps) => {
   const manchetteWithSpaceTimeChartRef = useRef<HTMLDivElement>(null);
 
-  const paths = SAMPLE_CHART_PATHS;
   const { manchetteProps, spaceTimeChartProps, handleScroll } = useManchetteWithSpaceTimeChart({
     waypoints,
     manchetteWithSpaceTimeChartRef,
-    defaultTimeOrigin: Math.min(...projectPathTrainResult.map((p) => +p.departureTime)),
+    defaultTimeOrigin: Math.min(...paths.map((p) => +p.points[0]?.time)),
   });
 
   const selectedPath = paths[selectedTrain].id;
@@ -88,7 +86,7 @@ export default meta;
 export const Default = {
   args: {
     waypoints: SAMPLE_WAYPOINTS,
-    projectPathTrainResult: SAMPLE_PATHS_DATA,
+    path: SAMPLE_CHART_PATHS,
     selectedTrain: 1,
     hidePositions: false,
   },

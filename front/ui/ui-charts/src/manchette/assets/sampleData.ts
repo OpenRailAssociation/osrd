@@ -1,20 +1,10 @@
+export type ChartPoint = { time: number; position: number };
 export type ChartPath = {
   id: string;
   label: string;
   color: string;
   points: { time: number; position: number }[];
 };
-
-const departureTime1 = +new Date('2024-10-23T09:00:00Z');
-const departureTime2 = +new Date('2024-10-23T09:15:00Z');
-const departureTime3 = +new Date('2024-10-23T09:30:00Z');
-
-function buildPoints(departureTime: number, positions: number[], times: number[]) {
-  return positions.map((position, i) => ({
-    time: departureTime + times[i],
-    position: position,
-  }));
-}
 
 const positions = [
   0, 973, 3888, 8737, 24205, 47311, 96148, 138058, 214779, 307916, 417225, 587701, 785672, 1189417,
@@ -38,23 +28,30 @@ const times = [
   3914480, 3922480, 3926480, 3930480, 3934480, 3938480, 3942480, 3944480, 3946480,
 ];
 
+const PATH_COLOR_DEFAULT = '#8A714B';
+
+const buildPoints = (departureISO: string): ChartPoint[] => {
+  const t0 = +new Date(departureISO);
+  return positions.map((position, i) => ({ position, time: t0 + times[i] }));
+};
+
 export const SAMPLE_CHART_PATHS: ChartPath[] = [
   {
     id: '1',
     label: 'Train 1',
-    color: '#8A714B',
-    points: buildPoints(departureTime1, positions, times),
+    color: PATH_COLOR_DEFAULT,
+    points: buildPoints('2024-10-23T09:00:00Z'),
   },
   {
     id: '2',
     label: 'Train 2',
-    color: '#8A714B',
-    points: buildPoints(departureTime2, positions, times),
+    color: PATH_COLOR_DEFAULT,
+    points: buildPoints('2024-10-23T09:15:00Z'),
   },
   {
     id: '3',
     label: 'Train 3',
-    color: '#8A714B',
-    points: buildPoints(departureTime3, positions, times),
+    color: PATH_COLOR_DEFAULT,
+    points: buildPoints('2024-10-23T09:30:00Z'),
   },
 ];

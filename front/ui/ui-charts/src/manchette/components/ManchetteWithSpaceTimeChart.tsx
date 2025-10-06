@@ -2,16 +2,16 @@ import React, { useRef } from 'react';
 
 import Manchette, { type ManchetteProps } from './Manchette';
 import { PathLayer, SpaceTimeChart, type SpaceTimeChartProps } from '../../spaceTimeChart';
+import { type ChartPath } from '../assets/sampleData';
 import { INITIAL_SPACE_TIME_CHART_HEIGHT } from '../consts';
-import { SAMPLE_CHART_PATHS } from '../assets/sampleData';
 import useManchetteWithSpaceTimeChart, {
   type SplitPoint,
 } from '../hooks/useManchetteWithSpaceTimeChart';
-import { type ProjectPathTrainResult, type Waypoint } from '../types';
+import { type Waypoint } from '../types';
 
 export type ManchetteWithSpaceTimeChartProps = {
   waypoints: Waypoint[];
-  projectPathTrainResult: ProjectPathTrainResult[];
+  paths: ChartPath[];
   height?: number;
   children?: React.ReactNode;
   header?: React.ReactNode;
@@ -28,7 +28,7 @@ export type ManchetteWithSpaceTimeChartProps = {
  */
 const ManchetteWithSpaceTimeChart = ({
   waypoints,
-  projectPathTrainResult,
+  paths,
   height = INITIAL_SPACE_TIME_CHART_HEIGHT,
   children,
   header,
@@ -39,14 +39,13 @@ const ManchetteWithSpaceTimeChart = ({
   const manchetteWithSpaceTimeChartRef = useRef<HTMLDivElement>(null);
   const spaceTimeChartRef = useRef<HTMLDivElement>(null);
 
-  const paths = SAMPLE_CHART_PATHS;
   const { manchetteProps, spaceTimeChartProps, handleScroll } = useManchetteWithSpaceTimeChart({
     waypoints,
     manchetteWithSpaceTimeChartRef,
     height,
     spaceTimeChartRef,
     splitPoints,
-    defaultTimeOrigin: Math.min(...projectPathTrainResult.map((p) => +p.departureTime)),
+    defaultTimeOrigin: Math.min(...paths.map((p) => p.points[0]?.time)),
   });
 
   return (
