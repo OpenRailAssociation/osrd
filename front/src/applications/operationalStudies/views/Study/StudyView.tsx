@@ -8,10 +8,11 @@ import AddNewCard from 'applications/operationalStudies/components/AddNewCard';
 import BreadCrumbs from 'applications/operationalStudies/components/BreadCrumbs';
 import FilterTextField from 'applications/operationalStudies/components/FilterTextField';
 import AddOrEditStudyModal from 'applications/operationalStudies/components/Study/AddOrEditStudyModal';
+import type { ScenarioCardDetails } from 'applications/operationalStudies/types';
 import {
   type PostSearchApiArg,
   osrdEditoastApi,
-  type ScenarioWithDetails,
+  type SearchResultItemScenario,
 } from 'common/api/osrdEditoastApi';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import OptionsSNCF from 'common/BootstrapSNCF/OptionsSNCF';
@@ -97,7 +98,7 @@ const StudyView = () => {
     setItems: setScenariosList,
     toggleSelection: toggleScenarioSelection,
     deleteItems,
-  } = useMultiSelection<ScenarioWithDetails>((scenarioId) => {
+  } = useMultiSelection<ScenarioCardDetails>((scenarioId) => {
     deleteScenario({ projectId: projectId!, studyId: studyId!, scenarioId });
 
     // For each scenarios, clean the local storage if a manchette is saved
@@ -153,7 +154,9 @@ const StudyView = () => {
           },
         };
         try {
-          let filteredScenarios = (await postSearch(payload).unwrap()) as ScenarioWithDetails[];
+          let filteredScenarios = (await postSearch(
+            payload
+          ).unwrap()) as SearchResultItemScenario[];
           if (sortOption === 'LastModifiedDesc') {
             filteredScenarios = [...filteredScenarios].sort((a, b) =>
               b.last_modification.localeCompare(a.last_modification)

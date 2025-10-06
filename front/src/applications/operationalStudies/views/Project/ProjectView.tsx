@@ -12,10 +12,11 @@ import BreadCrumbs from 'applications/operationalStudies/components/BreadCrumbs'
 import FilterTextField from 'applications/operationalStudies/components/FilterTextField';
 import AddOrEditStudyModal from 'applications/operationalStudies/components/Study/AddOrEditStudyModal';
 import useMultiSelection from 'applications/operationalStudies/hooks/useMultiSelection';
+import type { StudyCardDetails } from 'applications/operationalStudies/types';
 import { getDocument } from 'common/api/documentApi';
 import {
   type PostSearchApiArg,
-  type StudyWithScenarios,
+  type SearchResultItemStudy,
   osrdEditoastApi,
 } from 'common/api/osrdEditoastApi';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
@@ -92,7 +93,7 @@ const ProjectView = () => {
     setItems: setStudiesList,
     toggleSelection: toggleStudySelection,
     deleteItems,
-  } = useMultiSelection<StudyWithScenarios>(async (studyId) => {
+  } = useMultiSelection<StudyCardDetails>(async (studyId) => {
     const { data: scenarios } = await getScenarios({ projectId: projectId!, studyId });
 
     deleteStudy({ projectId: projectId!, studyId });
@@ -149,7 +150,7 @@ const ProjectView = () => {
           },
         };
         try {
-          let filteredStudies = (await postSearch(payload).unwrap()) as StudyWithScenarios[];
+          let filteredStudies = (await postSearch(payload).unwrap()) as SearchResultItemStudy[];
           if (sortOption === 'LastModifiedDesc') {
             filteredStudies = [...filteredStudies].sort((a, b) =>
               b.last_modification.localeCompare(a.last_modification)

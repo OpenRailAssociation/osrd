@@ -3,14 +3,14 @@ import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 
+import type { StudyCardDetails } from 'applications/operationalStudies/types';
 import studyLogo from 'assets/pictures/views/study.svg';
-import type { StudyWithScenarios } from 'common/api/osrdEditoastApi';
 import { useDateTimeLocale } from 'utils/date';
 import { budgetFormat } from 'utils/numbers';
 
 type StudyCardProps = {
   setFilterChips: (filterChips: string) => void;
-  study: StudyWithScenarios;
+  study: StudyCardDetails;
   isSelected: boolean;
   toggleSelect: (id: number) => void;
 };

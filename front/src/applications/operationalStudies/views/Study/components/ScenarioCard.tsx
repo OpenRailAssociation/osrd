@@ -5,13 +5,13 @@ import { MdTrain } from 'react-icons/md';
 import { RiFolderChartLine } from 'react-icons/ri';
 import { useNavigate } from 'react-router-dom';
 
+import type { ScenarioCardDetails } from 'applications/operationalStudies/types';
 import infraLogo from 'assets/pictures/components/tracks.svg';
-import type { ScenarioWithDetails } from 'common/api/osrdEditoastApi';
 import { useDateTimeLocale } from 'utils/date';
 
 type ScenarioCardProps = {
   setFilterChips: (filterChips: string) => void;
-  scenario: ScenarioWithDetails;
+  scenario: ScenarioCardDetails;
   isSelected: boolean;
   toggleSelect: (id: number) => void;
 };
