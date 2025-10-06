@@ -753,7 +753,7 @@ jobs:
         run: |
           docker run --name=front-test --net=host \
             ${{ fromJSON(needs.build.outputs.stable_tags).front-tests }} \
-            sh -c "npx vitest run"
+            sh -c "npm run test"
 
           exit $(docker wait front-test)
 
