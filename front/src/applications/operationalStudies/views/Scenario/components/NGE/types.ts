@@ -212,7 +212,7 @@ export type NetzgrafikDto = {
     trainrunFrequencies: TrainrunFrequency[];
     trainrunTimeCategories: TrainrunTimeCategory[];
   };
-  freeFloatingTexts: unknown[];
+  freeFloatingTexts: FreeFloatingTextDto[];
   labels: LabelDto[];
   labelGroups: LabelGroupDto[];
   filterData: {
@@ -229,6 +229,7 @@ export type NGEEvent = {
     }
   | { objectType: 'node'; node: NodeDto }
   | { objectType: 'label'; label: LabelDto }
+  | { objectType: 'note'; note: FreeFloatingTextDto }
 );
 
 export type LabelDto = {
@@ -242,4 +243,17 @@ export type LabelGroupDto = {
   id: number;
   name: string;
   labelRef: string;
+};
+
+export type FreeFloatingTextDto = {
+  id: number;
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+  title: string;
+  text: string;
+  backgroundColor: string;
+  textColor: string;
+  labelIds: number[];
 };
