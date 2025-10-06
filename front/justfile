@@ -24,7 +24,10 @@ format:
 # Verify code lints without applying any fix
 lint:
     npm run lint
+    ./scripts/i18n-order-checker.sh
+    npm run i18n-checker
 
 # Fix all the lints that can be automatically applied
 fix-lint:
     npm run lint-fix
+    scripts/i18n-order-checker.sh --fix
