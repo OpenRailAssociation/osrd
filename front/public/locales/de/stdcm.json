@@ -1,14 +1,20 @@
 {
   "allowances": {
-    "gridMarginBeforeAfter": "Fahrplanabstand vorher/nachher"
+    "gridMarginBeforeAfter": "Fahrplanabstand vorher/nachher",
+    "standardAllowance": "Pufferzeit"
   },
   "arriveAt": "Ankunft um {{ time }}",
   "consist": {
     "compositionCode": "Baureihe",
-    "consist": "Zusammensetzung",
+    "consist": "Zugbildung",
     "errors": {
       "maxSpeed": {
-        "negative": "Wert muss positiv sein."
+        "negative": "Wert muss positiv sein.",
+        "range": "Die Höchstgeschwindigkeit muss zwischen {{low}} und {{high}} km/h liegen"
+      },
+      "missingValue": "Fehlender Wert",
+      "totalLength": {
+        "negative": "Muss positiv sein."
       }
     }
   },
