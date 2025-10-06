@@ -1123,14 +1123,6 @@ paths:
         schema:
           type: integer
           format: int64
-      - name: props
-        in: query
-        description: Path properties
-        required: true
-        schema:
-          type: array
-          items:
-            $ref: '#/components/schemas/Property'
       requestBody:
         content:
           application/json:
@@ -11778,16 +11770,6 @@ components:
             type: integer
             format: int64
             minimum: 0
-    Property:
-      type: string
-      description: Enum representing the various associated properties that can be returned
-      enum:
-      - slopes
-      - curves
-      - electrifications
-      - geometry
-      - operational_points
-      - zones
     RailJson:
       type: object
       description: An infrastructure description in the RailJson format

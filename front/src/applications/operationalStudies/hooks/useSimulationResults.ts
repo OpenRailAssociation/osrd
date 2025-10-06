@@ -114,7 +114,6 @@ const useSimulationResults = (): SimulationResults | undefined => {
     osrdEditoastApi.endpoints.postInfraByInfraIdPathProperties.useQuery(
       {
         infraId,
-        props: ['electrifications', 'geometry', 'operational_points', 'curves', 'slopes'],
         pathPropertiesInput: {
           track_section_ranges:
             pathfinding?.status === 'success' ? pathfinding.path.track_section_ranges : [],

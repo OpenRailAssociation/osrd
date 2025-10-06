@@ -332,9 +332,6 @@ const injectedRtkApi = api
           url: `/infra/${queryArg.infraId}/path_properties`,
           method: 'POST',
           body: queryArg.pathPropertiesInput,
-          params: {
-            props: queryArg.props,
-          },
         }),
         providesTags: ['pathfinding'],
       }),
@@ -1724,8 +1721,6 @@ export type PostInfraByInfraIdPathPropertiesApiResponse =
 export type PostInfraByInfraIdPathPropertiesApiArg = {
   /** The infra id */
   infraId: number;
-  /** Path properties */
-  props: Property[];
   pathPropertiesInput: PathPropertiesInput;
 };
 export type PostInfraByInfraIdPathfindingApiResponse =
@@ -3380,13 +3375,6 @@ export type PathProperties = {
     values: string[];
   };
 };
-export type Property =
-  | 'slopes'
-  | 'curves'
-  | 'electrifications'
-  | 'geometry'
-  | 'operational_points'
-  | 'zones';
 export type CoreTrackRange = {
   /** The beginning of the range in mm. */
   begin: number;

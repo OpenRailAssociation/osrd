@@ -12,7 +12,6 @@ import {
   type GetLightRollingStockApiResponse,
   type GetSpritesSignalingSystemsApiResponse,
   generatedEditoastApi,
-  type Property,
   type TrainScheduleResponse,
   type PacedTrainResponse,
   type PathfindingResult,
@@ -20,9 +19,6 @@ import {
   type RelatedOperationalPoint,
   type OperationalPointReference,
 } from './generatedEditoastApi';
-
-const formatPathPropertiesProps = (props: Property[]) =>
-  props.map((prop) => `props[]=${prop}`).join('&');
 
 const osrdEditoastApi = generatedEditoastApi
   .injectEndpoints({
@@ -234,18 +230,6 @@ const osrdEditoastApi = generatedEditoastApi
       getSpritesSignalingSystems: {
         transformResponse: (response: GetSpritesSignalingSystemsApiResponse) => response.sort(),
       },
-      // This endpoint will return only the props we ask for and the url needs to be build in a specific way
-      // See https://osrd.fr/en/docs/reference/design-docs/timetable/#path
-      postInfraByInfraIdPathProperties: {
-        query: (queryArg) => ({
-          // We currently can't build the url path the way we want with rtk query with the regular endpoint
-          // so we need to do it manually with this function and enhanced endpoint
-          url: `/infra/${queryArg.infraId}/path_properties?${formatPathPropertiesProps(queryArg.props)}`,
-          method: 'POST',
-          body: queryArg.pathPropertiesInput,
-        }),
-      },
-
       // As we always use all get trainSchedule/pacedTrain endpoints after updating the timetable,
       // we don't want to invalidate the train_schedule/paced_train tags here to prevent multiple calls
       deleteTrainSchedule: {

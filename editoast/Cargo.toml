@@ -170,7 +170,6 @@ editoast_derive.workspace = true
 editoast_models.workspace = true
 educe.workspace = true
 enum-map.workspace = true
-enumset = "1.1.7"
 fga.workspace = true
 futures.workspace = true
 futures-util.workspace = true
@@ -214,11 +213,6 @@ schemas.workspace = true
 search = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
 serde_json.workspace = true
-# official serde_qs seems unmaintained. Bump to `axum:0.8` is an opened PR waiting to be merged.
-# https://github.com/samscott89/serde_qs/pull/118
-serde_qs = { version = "0.13.0", git = "https://github.com/Atrox/serde_qs", rev = "2cfa3ee0", features = [
-  "axum",
-] }
 serde_with.workspace = true
 serde_yaml = "0.9.34"
 sha1 = "0.10"

@@ -23,7 +23,6 @@ const fetchPathProperties = async (
 ): Promise<StdcmPathProperties> => {
   const pathPropertiesParams: PostInfraByInfraIdPathPropertiesApiArg = {
     infraId,
-    props: ['geometry', 'operational_points', 'zones', 'slopes', 'curves', 'electrifications'],
     pathPropertiesInput: {
       track_section_ranges: pathfinding_result.path.track_section_ranges,
     },
