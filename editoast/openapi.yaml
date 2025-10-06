@@ -12521,6 +12521,9 @@ components:
       type: array
       items:
         type: string
+      description: |-
+        List of supported signaling systems
+        Note: 'ETCS_LEVEL2' can't be listed, providing 'etcs_brake_params' field is the (only) way to trigger ETCS_LEVEL2 support
     RollingStockWithLiveries:
       allOf:
       - $ref: '#/components/schemas/RollingStock'

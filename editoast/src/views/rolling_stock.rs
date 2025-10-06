@@ -752,6 +752,7 @@ pub mod tests {
     use itertools::Itertools;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
+    use schemas::rolling_stock::EtcsBrakeParams;
     use schemas::rolling_stock::RollingStockSupportedSignalingSystems;
     use serde_json::json;
     use uuid::Uuid;
@@ -794,6 +795,11 @@ pub mod tests {
         form
     }
 
+    pub fn simple_etcs_brake_params() -> EtcsBrakeParams {
+        serde_json::from_str::<EtcsBrakeParams>(include_str!("../tests/etcs_brake_params.json"))
+            .expect("Unable to parse example rolling stock")
+    }
+
     #[rstest]
     async fn create_rolling_stock_successfully() {
         // GIVEN
@@ -821,14 +827,13 @@ pub mod tests {
             fast_rolling_stock_form.startup_time,
             rolling_stock.startup_time
         );
-
         let rolling_stock: schemas::RollingStock = rolling_stock.into();
         assert_eq!(
             rolling_stock
                 .get_supported_signaling_systems()
                 .0
                 .contains(&"ETCS_LEVEL2".to_string()),
-            true
+            false
         );
     }
 
@@ -858,15 +863,6 @@ pub mod tests {
 
         assert_eq!(rolling_stock.name, locked_rs_name);
         assert_eq!(rolling_stock.locked, true);
-
-        let rolling_stock: schemas::RollingStock = rolling_stock.into();
-        assert_eq!(
-            rolling_stock
-                .get_supported_signaling_systems()
-                .0
-                .contains(&"ETCS_LEVEL2".to_string()),
-            true
-        );
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -1072,34 +1068,6 @@ pub mod tests {
     }
 
     #[rstest]
-    async fn create_rolling_stock_without_etcs_level2_signaling_system() {
-        // GIVEN
-        let app = TestAppBuilder::default_app();
-        let db_pool = app.db_pool();
-
-        let rs_name = "fast_rolling_stock_name";
-        let mut fast_rolling_stock_form = fast_rolling_stock_form(rs_name);
-        fast_rolling_stock_form.etcs_brake_params = None;
-        // WHEN
-        let raw_response = app.fetch(app.rolling_stock_create_request(&fast_rolling_stock_form));
-        // THEN
-        let response: RollingStock = raw_response.assert_status(StatusCode::OK).json_into();
-        // Check if the rolling stock was created in the database
-        let rolling_stock = RollingStock::retrieve(db_pool.get_ok(), response.id)
-            .await
-            .expect("Failed to retrieve rolling stock")
-            .expect("Rolling stock not found");
-        let rolling_stock: schemas::RollingStock = rolling_stock.into();
-        assert_eq!(
-            rolling_stock
-                .get_supported_signaling_systems()
-                .0
-                .contains(&"ETCS_LEVEL2".to_string()),
-            false
-        );
-    }
-
-    #[rstest]
     async fn create_rolling_stock_with_etcs_level2_string() {
         let app = TestAppBuilder::default_app();
         let rs_name = "fast_rolling_stock_name";
@@ -1124,10 +1092,11 @@ pub mod tests {
     }
 
     #[rstest]
-    async fn create_rolling_stock_with_etcs_level2_with_etcs_brake_params() {
+    async fn create_rolling_stock_with_etcs_level2_and_etcs_brake_params() {
+        // GIVEN
         let app = TestAppBuilder::default_app();
-        let rs_name = "fast_rolling_stock_name";
-        let mut fast_rolling_stock_form = fast_rolling_stock_form(rs_name);
+        let mut fast_rolling_stock_form = fast_rolling_stock_form("fast_rolling_stock_name");
+        fast_rolling_stock_form.etcs_brake_params = Some(simple_etcs_brake_params());
         fast_rolling_stock_form.supported_signaling_systems = RollingStockSupportedSignalingSystems(
             vec!["BAL", "BAPR", "ETCS_LEVEL2"]
                 .into_iter()
@@ -1147,13 +1116,15 @@ pub mod tests {
     }
 
     #[rstest]
-    async fn create_rolling_stock_with_etcs_level2_signaling_system() {
+    async fn create_rolling_stock_with_etcs_brake_params() {
         // GIVEN
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
 
-        let rolling_stock_etcs_level2_form = fast_rolling_stock_form("fast_rolling_stock_name");
+        let mut rolling_stock_etcs_level2_form = fast_rolling_stock_form("fast_rolling_stock_name");
+        rolling_stock_etcs_level2_form.etcs_brake_params = Some(simple_etcs_brake_params());
 
+        // WHEN
         let request = app.rolling_stock_create_request(&rolling_stock_etcs_level2_form);
         let raw_response = app.fetch(request);
 
@@ -1166,6 +1137,7 @@ pub mod tests {
 
         let rolling_stock: schemas::RollingStock = rolling_stock.into();
 
+        // THEN
         assert_eq!(
             rolling_stock
                 .get_supported_signaling_systems()
@@ -1178,6 +1150,34 @@ pub mod tests {
         assert_eq!(
             rolling_stock_etcs_level2_form.startup_time,
             rolling_stock.startup_time
+        );
+    }
+
+    #[rstest]
+    async fn create_rolling_stock_without_etcs_brake_params() {
+        // GIVEN
+        let app = TestAppBuilder::default_app();
+        let db_pool = app.db_pool();
+
+        let rs_name = "fast_rolling_stock_name";
+        let mut fast_rolling_stock_form = fast_rolling_stock_form(rs_name);
+        fast_rolling_stock_form.etcs_brake_params = None;
+        // WHEN
+        let raw_response = app.fetch(app.rolling_stock_create_request(&fast_rolling_stock_form));
+        // THEN
+        let response: RollingStock = raw_response.assert_status(StatusCode::OK).json_into();
+        // Check if the rolling stock was created in the database
+        let rolling_stock = RollingStock::retrieve(db_pool.get_ok(), response.id)
+            .await
+            .expect("Failed to retrieve rolling stock")
+            .expect("Rolling stock not found");
+        let rolling_stock: schemas::RollingStock = rolling_stock.into();
+        assert_eq!(
+            rolling_stock
+                .get_supported_signaling_systems()
+                .0
+                .contains(&"ETCS_LEVEL2".to_string()),
+            false
         );
     }
 
