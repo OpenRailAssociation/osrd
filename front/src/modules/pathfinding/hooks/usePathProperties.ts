@@ -4,14 +4,9 @@ import {
   osrdEditoastApi,
   type PathfindingResultSuccess,
   type PathProperties,
-  type Property,
 } from 'common/api/osrdEditoastApi';
 
-const usePathProperties = (
-  infraId?: number,
-  pathfindingResult?: PathfindingResultSuccess,
-  properties: Property[] = []
-) => {
+const usePathProperties = (infraId?: number, pathfindingResult?: PathfindingResultSuccess) => {
   const [pathProperties, setPathProperties] = useState<PathProperties>();
 
   const [postPathProperties] =
@@ -19,10 +14,9 @@ const usePathProperties = (
 
   useEffect(() => {
     const getPathProperties = async () => {
-      if (infraId && pathfindingResult && properties.length) {
+      if (infraId && pathfindingResult) {
         const pathPropertiesParams = {
           infraId,
-          props: properties,
           pathPropertiesInput: {
             track_section_ranges: pathfindingResult.path.track_section_ranges,
           },

@@ -19,13 +19,10 @@ use core_client::path_properties::PropertyElectrificationValues;
 use core_client::path_properties::PropertyValuesF64;
 use core_client::path_properties::PropertyZoneValues;
 use core_client::pathfinding::TrackRange;
-use enumset::EnumSet;
-use enumset::EnumSetType;
 use itertools::Either;
 use itertools::Itertools;
 use serde::Deserialize;
 use serde::Serialize;
-use serde_qs::axum::QsQuery;
 use std::collections::hash_map::DefaultHasher;
 use std::hash::Hash;
 use std::hash::Hasher;
@@ -80,54 +77,6 @@ impl From<core_client::path_properties::PathPropertiesResponse> for PathProperti
     }
 }
 
-impl PathProperties {
-    /// Filter properties not requested
-    pub fn filter_properties(mut self, properties: Properties) -> Self {
-        let to_clear = properties.complement();
-        for property in to_clear.iter() {
-            match property {
-                Property::Slopes => self.slopes = None,
-                Property::Curves => self.curves = None,
-                Property::Electrifications => self.electrifications = None,
-                Property::Geometry => self.geometry = None,
-                Property::OperationalPoints => self.operational_points = None,
-                Property::Zones => self.zones = None,
-            }
-        }
-        self
-    }
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub(in crate::views) struct Props {
-    props: Vec<Property>,
-}
-
-impl From<Props> for Properties {
-    fn from(value: Props) -> Self {
-        value
-            .props
-            .into_iter()
-            .map_into::<Self>()
-            .fold(Self::default(), |acc, e| acc | e)
-    }
-}
-
-/// Enum representing the various associated properties that can be returned
-#[editoast_derive::openapi_schema]
-#[derive(Debug, Serialize, Deserialize, ToSchema, EnumSetType)]
-#[serde(rename_all = "snake_case")]
-pub(in crate::views) enum Property {
-    Slopes,
-    Curves,
-    Electrifications,
-    Geometry,
-    OperationalPoints,
-    Zones,
-}
-
-type Properties = EnumSet<Property>;
-
 /// Compute path properties
 #[editoast_derive::route]
 #[utoipa::path(
@@ -136,7 +85,6 @@ type Properties = EnumSet<Property>;
     request_body = PathPropertiesInput,
     params(
         ("infra_id" = i64, Path, description = "The infra id"),
-        ("props" = Vec<Property>, Query, description = "Path properties"),
     ),
     responses(
         (status = 200, description = "Path properties", body = PathProperties),
@@ -152,7 +100,6 @@ pub(in crate::views) async fn post(
     }): State<AppState>,
     Extension(auth): AuthenticationExt,
     Path(infra_id): Path<i64>,
-    QsQuery(props): QsQuery<Props>,
     Json(path_properties_input): Json<PathPropertiesInput>,
 ) -> Result<Json<PathProperties>> {
     // Extract information from parameters
@@ -167,7 +114,6 @@ pub(in crate::views) async fn post(
     })
     .await?;
 
-    let query_props: Properties = props.into();
     let mut valkey_conn = valkey_client.get_connection().await?;
 
     let request = PathPropertiesRequest {
@@ -185,9 +131,7 @@ pub(in crate::views) async fn post(
     .next()
     .unwrap();
 
-    Ok(Json(
-        PathProperties::from(path_properties).filter_properties(query_props),
-    ))
+    Ok(Json(PathProperties::from(path_properties)))
 }
 
 /// Retrieves path properties from cache.
@@ -368,10 +312,7 @@ mod tests {
     async fn returns_only_requested_path_properties() {
         let app = init_test_app();
         let infra = create_small_infra(&mut app.db_pool().get_ok()).await;
-        let url = format!(
-            "/infra/{}/path_properties?props[]=electrifications&props[]=geometry&props[]=operational_points",
-            infra.id
-        );
+        let url = format!("/infra/{}/path_properties", infra.id);
 
         // Should succeed
         let request = app.post(&url).json(&json!(
@@ -379,8 +320,8 @@ mod tests {
         );
         let response: PathProperties = app.fetch(request).assert_status(StatusCode::OK).json_into();
         let path_properties_response = path_properties_response();
-        assert!(response.slopes.is_none());
-        assert!(response.curves.is_none());
+        assert_eq!(response.slopes, Some(path_properties_response.slopes));
+        assert_eq!(response.curves, Some(path_properties_response.curves));
         assert_eq!(
             response.electrifications,
             Some(path_properties_response.electrifications)

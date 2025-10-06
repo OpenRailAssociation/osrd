@@ -23,7 +23,6 @@ const useProjectedConflicts = (
     }: PathfindingResultSuccess) => {
       const { zones } = await postPathProperties({
         infraId,
-        props: ['zones'],
         pathPropertiesInput: {
           track_section_ranges,
         },
