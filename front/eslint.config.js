@@ -5,7 +5,7 @@ import prettierPluginRecommended from 'eslint-plugin-prettier/recommended';
 import reactPlugin from 'eslint-plugin-react';
 import reactHooksPlugin from 'eslint-plugin-react-hooks';
 import tseslint from 'typescript-eslint';
-import vitestPlugin from 'eslint-plugin-vitest';
+import vitestPlugin from '@vitest/eslint-plugin';
 
 export default [
   {
