@@ -672,6 +672,15 @@ pub(super) struct SearchResultItemStudy {
     #[search(sql = "study.budget")]
     #[schema(required)]
     budget: Option<u32>,
+    #[search(sql = "study.business_code")]
+    #[schema(required)]
+    business_code: Option<String>,
+    #[search(sql = "study.service_code")]
+    #[schema(required)]
+    service_code: Option<String>,
+    #[search(sql = "study.study_type")]
+    #[schema(required)]
+    study_type: Option<String>,
 }
 
 #[derive(Search, Serialize, ToSchema)]
@@ -715,6 +724,10 @@ pub(super) struct SearchResultItemScenario {
     infra_id: u64,
     #[search(sql = "infra.name")]
     infra_name: String,
+    #[search(
+        sql = "(SELECT COUNT(trains.id) FROM paced_train AS trains WHERE scenario.timetable_id = trains.timetable_id)"
+    )]
+    paced_trains_count: u64,
     #[search(
         sql = "(SELECT COUNT(trains.id) FROM train_schedule AS trains WHERE scenario.timetable_id = trains.timetable_id)"
     )]
