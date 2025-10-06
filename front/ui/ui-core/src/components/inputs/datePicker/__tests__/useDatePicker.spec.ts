@@ -120,7 +120,7 @@ describe('useDatePicker', () => {
             status: 'error',
             message: 'Invalid input',
           });
-          expect(onDayChange).not.toBeCalled();
+          expect(onDayChange).toHaveBeenCalledWith(undefined);
         }
       );
 
@@ -140,7 +140,7 @@ describe('useDatePicker', () => {
 
         expect(result.current.inputValue).toBe('3/04/24');
         expect(result.current.statusWithMessage).toBe(undefined);
-        expect(onDayChange).not.toBeCalled();
+        expect(onDayChange).toHaveBeenCalledWith(undefined);
       });
 
       it('should show an error if the date is not within the selectable slot', () => {
@@ -163,7 +163,7 @@ describe('useDatePicker', () => {
           status: 'error',
           message: 'Invalid date',
         });
-        expect(onDayChange).not.toBeCalled();
+        expect(onDayChange).toHaveBeenCalledWith(undefined);
       });
 
       it('should update the parent value is the date is valid', () => {
