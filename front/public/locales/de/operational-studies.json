@@ -3,7 +3,10 @@
     "conflicts": "Konflikte",
     "macro": "Makro",
     "map": "Karte",
-    "tables": "Fahrplan/Tabelle"
+    "sdd": "GSD",
+    "std": "SZD",
+    "tables": "Fahrpläne",
+    "trains": "Züge"
   },
   "importTrains": {
     "and": "und",
