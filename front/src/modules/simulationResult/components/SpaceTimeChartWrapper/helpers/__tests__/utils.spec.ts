@@ -101,7 +101,7 @@ describe('batchFetch', () => {
     expect(fetchSpy).toHaveBeenCalledTimes(2);
     expect(fetchSpy).toHaveBeenNthCalledWith(1, ['1', '2']);
     expect(fetchSpy).toHaveBeenNthCalledWith(2, ['3', '4']);
-    expect(onComplete).toHaveBeenCalledWith(['a', 'b', 'c', 'd']);
+    expect(onComplete).toHaveBeenCalledExactlyOnceWith(['a', 'b', 'c', 'd']);
   });
 
   it('should stop fetching once the abort function is called', async () => {
@@ -149,7 +149,7 @@ describe('batchFetch', () => {
     expect(onProgress).toHaveBeenCalledTimes(2);
     expect(onProgress).toHaveBeenNthCalledWith(1, ['a', 'b']);
     expect(onProgress).toHaveBeenNthCalledWith(2, ['a', 'b', 'c', 'd']);
-    expect(onComplete).toHaveBeenCalledWith(['a', 'b', 'c', 'd']);
+    expect(onComplete).toHaveBeenCalledExactlyOnceWith(['a', 'b', 'c', 'd']);
   });
 
   it('should call onError (and not call onComplete) when an error occurs', async () => {
@@ -163,7 +163,7 @@ describe('batchFetch', () => {
 
     await vi.waitFor(() => expect(onError).toHaveBeenCalled());
 
-    expect(onError).toHaveBeenCalledWith(error);
+    expect(onError).toHaveBeenCalledExactlyOnceWith(error);
     expect(onComplete).not.toHaveBeenCalled();
   });
 });
