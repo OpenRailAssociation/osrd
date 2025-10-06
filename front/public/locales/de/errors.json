@@ -4,5 +4,6 @@
   "404": "Quelle nicht gefunden",
   "500": "Serverfehler",
   "502": "Serverfehler",
-  "503": "Serverfehler"
+  "503": "Serverfehler",
+  "504": "Der Server hat nicht geantwortet."
 }
