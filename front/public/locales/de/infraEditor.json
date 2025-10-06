@@ -12,6 +12,9 @@
       "begin": {
         "description": "Anfangsversatz (Kilometersprung?) in Metern des entsprechenden Gleisabschnitts",
         "title": "Anfang"
+      },
+      "end": {
+        "title": "Ende"
       }
     }
   }
