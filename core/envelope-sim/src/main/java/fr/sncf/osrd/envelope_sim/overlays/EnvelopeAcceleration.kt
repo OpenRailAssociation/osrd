@@ -6,13 +6,13 @@ import fr.sncf.osrd.envelope_sim.EnvelopeSimContext
 import fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.Companion.step
 
 object EnvelopeAcceleration {
-    /** Accelerate, storing the resulting steps into consumer  */
+    /** Accelerate, storing the resulting steps into consumer */
     fun accelerate(
         context: EnvelopeSimContext,
         startPosition: Double,
         startSpeed: Double,
         consumer: InteractiveEnvelopePartConsumer,
-        direction: Double
+        direction: Double,
     ) {
         consumer.checkConstraints()
         if (!consumer.initEnvelopePart(startPosition, startSpeed, direction)) return

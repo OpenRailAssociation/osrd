@@ -6,13 +6,13 @@ import fr.sncf.osrd.envelope_sim.EnvelopeSimContext
 import fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.Companion.step
 
 object EnvelopeMaintain {
-    /** Maintain the speed, storing the resulting steps into consumer  */
+    /** Maintain the speed, storing the resulting steps into consumer */
     fun maintain(
         context: EnvelopeSimContext,
         startPosition: Double,
         startSpeed: Double,
         consumer: InteractiveEnvelopePartConsumer,
-        direction: Double
+        direction: Double,
     ) {
         consumer.checkConstraints()
         if (!consumer.initEnvelopePart(startPosition, startSpeed, direction)) return

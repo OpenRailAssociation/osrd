@@ -7,7 +7,7 @@ import fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator.Companion.step
 import fr.sncf.osrd.envelope_sim.etcs.BrakingType
 
 object EnvelopeDeceleration {
-    /** Generate a deceleration curve overlay  */
+    /** Generate a deceleration curve overlay */
     @JvmOverloads
     fun decelerate(
         context: EnvelopeSimContext,
@@ -15,7 +15,7 @@ object EnvelopeDeceleration {
         startSpeed: Double,
         consumer: InteractiveEnvelopePartConsumer,
         direction: Double,
-        brakingType: BrakingType = BrakingType.CONSTANT
+        brakingType: BrakingType = BrakingType.CONSTANT,
     ) {
         consumer.checkConstraints()
         if (!consumer.initEnvelopePart(startPosition, startSpeed, direction)) return
