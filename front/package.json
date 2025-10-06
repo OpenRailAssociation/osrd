@@ -125,7 +125,7 @@
     "eslint-plugin-react-hooks": "^5.2.0",
     "eslint-plugin-vitest": "^0.5.4",
     "glob": "^11.0.3",
-    "happy-dom": "^18.0.1",
+    "happy-dom": "^19.0.2",
     "i18next-fs-backend": "^2.6.0",
     "json-key-path-list": "^2.0.3",
     "license-checker-rseidelsohn": "^4.4.2",
