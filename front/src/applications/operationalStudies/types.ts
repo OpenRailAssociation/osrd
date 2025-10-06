@@ -11,6 +11,10 @@ import type {
   MacroNodeForm,
   RollingStockWithLiveries,
   TrainCategory,
+  SearchResultItemStudy,
+  StudyWithScenarios,
+  ScenarioWithDetails,
+  SearchResultItemScenario,
 } from 'common/api/osrdEditoastApi';
 import type { RangedValue } from 'common/types';
 import type { PathOperationalPoint } from 'modules/simulationResult/types';
@@ -144,3 +148,7 @@ export type TimetableItemRoundTripGroups = {
   roundTrips: (readonly [TimetableItemWithPathOps, TimetableItemWithPathOps])[];
   others: TimetableItemWithPathOps[];
 };
+
+export type StudyCardDetails = SearchResultItemStudy | StudyWithScenarios;
+
+export type ScenarioCardDetails = SearchResultItemScenario | ScenarioWithDetails;
