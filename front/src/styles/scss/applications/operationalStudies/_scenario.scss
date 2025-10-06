@@ -183,6 +183,10 @@
       &:first-child {
         margin-left: 0;
       }
+
+      &:last-child {
+        margin-left: 24px;
+      }
     }
   }
 
