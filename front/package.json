@@ -111,7 +111,7 @@
     "@types/react-dom": "^19.1.9",
     "@types/tether": "^1.4.9",
     "@typescript-eslint/eslint-plugin": "^8.44.0",
-    "@typescript-eslint/parser": "^8.32.1",
+    "@typescript-eslint/parser": "^8.46.0",
     "@vitejs/plugin-react-swc": "^4.1.0",
     "ansi-to-html": "^0.7.2",
     "eslint": "^8.56.0",
