@@ -330,7 +330,8 @@ fn service_router() -> router::DocumentedRouter {
                                                                     })
                                                             })
                                                             .nests("/macro_notes", |path| {
-                                                                path.nests("/{note_id}", |path| {
+                                                                path.route("/", post!(scenario::macro_notes::create))
+                                                                    .nests("/{note_id}", |path| {
                                                                     path.route("/", get!(scenario::macro_notes::get))
                                                                 })
                                                             })

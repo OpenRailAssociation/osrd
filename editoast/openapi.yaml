@@ -2714,6 +2714,43 @@ paths:
       responses:
         '204':
           description: The macro node was deleted successfully
+  /projects/{project_id}/studies/{study_id}/scenarios/{scenario_id}/macro_notes:
+    post:
+      tags:
+      - scenarios
+      parameters:
+      - name: project_id
+        in: path
+        description: The id of a project
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: study_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: scenario_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MacroNoteBatchForm'
+        required: true
+      responses:
+        '201':
+          description: Macro notes created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MacroNoteBatchResponse'
   /projects/{project_id}/studies/{study_id}/scenarios/{scenario_id}/macro_notes/{note_id}:
     get:
       tags:
@@ -10088,6 +10125,45 @@ components:
           type:
           - string
           - 'null'
+    MacroNoteBatchForm:
+      type: object
+      required:
+      - macro_notes
+      properties:
+        macro_notes:
+          type: array
+          items:
+            $ref: '#/components/schemas/MacroNoteForm'
+    MacroNoteBatchResponse:
+      type: object
+      required:
+      - macro_notes
+      properties:
+        macro_notes:
+          type: array
+          items:
+            $ref: '#/components/schemas/MacroNoteResponse'
+    MacroNoteForm:
+      type: object
+      required:
+      - x
+      - y
+      - title
+      - text
+      - labels
+      properties:
+        labels:
+          $ref: '#/components/schemas/Tags'
+        text:
+          type: string
+        title:
+          type: string
+        x:
+          type: integer
+          format: int64
+        y:
+          type: integer
+          format: int64
     MacroNoteResponse:
       type: object
       required:

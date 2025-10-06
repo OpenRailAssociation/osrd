@@ -792,6 +792,17 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ['scenarios'],
       }),
+      postProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNotes: build.mutation<
+        PostProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNotesApiResponse,
+        PostProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNotesApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios/${queryArg.scenarioId}/macro_notes`,
+          method: 'POST',
+          body: queryArg.macroNoteBatchForm,
+        }),
+        invalidatesTags: ['scenarios'],
+      }),
       getProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNotesNoteId: build.query<
         GetProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNotesNoteIdApiResponse,
         GetProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNotesNoteIdApiArg
@@ -2100,6 +2111,15 @@ export type DeleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNo
   studyId: number;
   scenarioId: number;
   nodeId: number;
+};
+export type PostProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNotesApiResponse =
+  /** status 201 Macro notes created */ MacroNoteBatchResponse;
+export type PostProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNotesApiArg = {
+  /** The id of a project */
+  projectId: number;
+  studyId: number;
+  scenarioId: number;
+  macroNoteBatchForm: MacroNoteBatchForm;
 };
 export type GetProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNotesNoteIdApiResponse =
   /** status 200 The requested macro note */ MacroNoteResponse;
@@ -4215,6 +4235,19 @@ export type MacroNoteResponse = {
   title: string;
   x: number;
   y: number;
+};
+export type MacroNoteBatchResponse = {
+  macro_notes: MacroNoteResponse[];
+};
+export type MacroNoteForm = {
+  labels: Tags;
+  text: string;
+  title: string;
+  x: number;
+  y: number;
+};
+export type MacroNoteBatchForm = {
+  macro_notes: MacroNoteForm[];
 };
 export type EffortCurveConditions = {
   comfort: null | Comfort;
