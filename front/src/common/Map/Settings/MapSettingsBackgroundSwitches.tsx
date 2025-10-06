@@ -49,11 +49,29 @@ const MapSettingsBackgroundSwitches = ({ mapSettings }: { mapSettings: MapSettin
     terrain3DExaggeration,
   } = mapSettings;
 
+  const onShowOSMToggled = () => {
+    dispatch(
+      updateMapSettings({
+        showOSM: !showOSM,
+        ...(showOSM ? { showOSM3dBuildings: false } : undefined),
+      })
+    );
+  };
+
+  const onShow3dBuildingsToggled = () => {
+    dispatch(
+      updateMapSettings({
+        showOSM3dBuildings: !showOSM3dBuildings,
+        ...(!showOSM3dBuildings ? { showOSM: true } : undefined),
+      })
+    );
+  };
+
   return (
     <>
       <FormatSwitch
         name="show-osm-switch"
-        onChange={() => dispatch(updateMapSettings({ showOSM: !showOSM }))}
+        onChange={() => onShowOSMToggled()}
         state={showOSM}
         icon={iconOSM}
         label={t('mapSettings.layers.showOSM')}
@@ -61,7 +79,7 @@ const MapSettingsBackgroundSwitches = ({ mapSettings }: { mapSettings: MapSettin
       <div className="my-2" />
       <FormatSwitch
         name="show3dBuildings"
-        onChange={() => dispatch(updateMapSettings({ showOSM3dBuildings: !showOSM3dBuildings }))}
+        onChange={() => onShow3dBuildingsToggled()}
         state={showOSM3dBuildings}
         icon={icon3dBuildings}
         label={t('mapSettings.layers.showOSM3dBuildings')}
