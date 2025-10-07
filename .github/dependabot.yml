@@ -47,12 +47,22 @@ updates:
     schedule:
       interval: "weekly"
     groups:
+      eslint:
+        patterns:
+          - "@eslint/js"
+          - "eslint"
       nivo:
         patterns:
           - "@nivo/*"
       osrd-ui:
         patterns:
           - "@osrd-project/ui-*"
+      react:
+        patterns:
+          - "react"
+          - "react-dom"
+          - "@types/react"
+          - "@types/react-dom"
       rjsf:
         patterns:
           - "@rjsf/*"
