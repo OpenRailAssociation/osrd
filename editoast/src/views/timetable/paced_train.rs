@@ -68,14 +68,6 @@ enum PacedTrainError {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
-pub struct PacedTrainForm {
-    /// Timetable attached to the paced train
-    pub timetable_id: Option<i64>,
-    #[serde(flatten)]
-    pub paced_train_base: PacedTrain,
-}
-
-#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
 pub(in crate::views) struct PacedTrainResponse {
     id: i64,
     timetable_id: i64,
