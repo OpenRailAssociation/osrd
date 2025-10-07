@@ -43,6 +43,7 @@
       0px 0px 0px rgba(0, 0, 0, 0.2),
       0px 1px 0px rgba(0, 0, 0, 0.1);
     @apply text-grey-50;
+    background: inline('../assets/triangle-up-down-read-only.svg') no-repeat right 12px center;
   }
 
   &:disabled {
@@ -51,6 +52,7 @@
       0px 0px 0px rgba(0, 0, 0, 0.2),
       0px 1px 0px rgba(0, 0, 0, 0.1);
     @apply text-grey-30;
+    background: inline('../assets/triangle-up-down-disabled.svg') no-repeat right 12px center;
   }
 
   &.success {
@@ -84,5 +86,13 @@
     font-size: 0.875rem;
     line-height: 20px;
     background: inline('../assets/triangle-up-down.svg') no-repeat right 8px center;
+
+    &.read-only {
+      background: inline('../assets/triangle-up-down-read-only.svg') no-repeat right 8px center;
+    }
+
+    &:disabled {
+      background: inline('../assets/triangle-up-down-disabled.svg') no-repeat right 8px center;
+    }
   }
 }
