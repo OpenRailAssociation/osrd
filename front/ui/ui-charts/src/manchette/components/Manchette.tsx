@@ -21,6 +21,7 @@ export type ManchetteProps = {
   isProportional?: boolean;
   testIdPrefix?: string;
   toggleMode: () => void;
+  hidePositions?: boolean;
 };
 
 const Manchette = ({
@@ -35,6 +36,7 @@ const Manchette = ({
   toggleMode,
   children,
   height = INITIAL_OP_LIST_HEIGHT,
+  hidePositions = false,
 }: ManchetteProps) => (
   <div className="ui-manchette-container">
     <div
@@ -51,6 +53,7 @@ const Manchette = ({
                 isActive={activeWaypointId === content.id}
                 isMenuActive={!!activeWaypointId}
                 testIdPrefix="waypoint"
+                hidePositions={hidePositions}
               />
             </div>
           ) : (
