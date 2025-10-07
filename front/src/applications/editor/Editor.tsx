@@ -423,32 +423,31 @@ const Editor = () => {
                 : actions;
             })}
           </div>
-          {showPanelContainer && (
-            <div className="panel-container">
-              <button
-                type="button"
-                className="panel-container-collapse-button"
-                onClick={() => setShowPanelContainer(false)}
-              >
-                <ChevronLeft />
-              </button>
-              {!userCanEditInfra && (
-                <div className="infra-editor-warning-banner bg-yellow">
-                  {t('Editor.infra-errors.infra-readonly')}
-                </div>
-              )}
-              {isLocked && userCanEditInfra && (
-                <div className="infra-editor-warning-banner bg-yellow">
-                  {t('Editor.infra-errors.infra-locked')}
-                </div>
-              )}
-              {toolAndState.tool.leftPanelComponent && (
-                <div className="panel-box">
-                  <toolAndState.tool.leftPanelComponent />
-                </div>
-              )}
-            </div>
-          )}
+          {/* we hide the panel instead of conditionaly rendering it to be able to keep the informations of the selected object inside the url*/}
+          <div className={cx('panel-container', { hidden: !showPanelContainer })}>
+            <button
+              type="button"
+              className="panel-container-collapse-button"
+              onClick={() => setShowPanelContainer(false)}
+            >
+              <ChevronLeft />
+            </button>
+            {!userCanEditInfra && (
+              <div className="infra-editor-warning-banner bg-yellow">
+                {t('Editor.infra-errors.infra-readonly')}
+              </div>
+            )}
+            {isLocked && userCanEditInfra && (
+              <div className="infra-editor-warning-banner bg-yellow">
+                {t('Editor.infra-errors.infra-locked')}
+              </div>
+            )}
+            {toolAndState.tool.leftPanelComponent && (
+              <div className="panel-box">
+                <toolAndState.tool.leftPanelComponent />
+              </div>
+            )}
+          </div>
           <div className="map-wrapper">
             {!showPanelContainer && (
               <button
