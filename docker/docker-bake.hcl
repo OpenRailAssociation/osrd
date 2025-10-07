@@ -46,7 +46,6 @@ target "core-build" {
   contexts = {
     test_data = "./tests/data"
     static_assets = "./assets"
-    train_sim_dir = "./core/train-sim"
   }
 }
 
@@ -60,7 +59,6 @@ target "core" {
   contexts = {
     test_data = "./tests/data"
     static_assets = "./assets"
-    train_sim_dir = "./core/train-sim"
   }
 }
 
@@ -77,7 +75,6 @@ target "train-sim-rust-test" {
   target = "train_sim_rust_env"
   contexts = {
     test_data = "./tests/data"
-    train_sim_dir = "./core/train-sim"
   }
 }
 
@@ -90,7 +87,6 @@ target "train-sim-bindings-test" {
   target = "train_sim_gradle_env"
   contexts = {
     test_data = "./tests/data"
-    train_sim_dir = "./core/train-sim"
   }
 }
 

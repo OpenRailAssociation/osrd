@@ -97,7 +97,6 @@ services:
       additional_contexts:
         test_data: tests/data
         static_assets: assets
-        train_sim_dir: core/train-sim
       args:
         OSRD_GIT_DESCRIBE: development
     environment:

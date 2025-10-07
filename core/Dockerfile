@@ -10,7 +10,7 @@ RUN rustup component add llvm-tools && \
 ENV RUSTFLAGS="-Cinstrument-coverage"
 ENV LLVM_PROFILE_FILE="train-sim-%p-%m.profraw"
 
-COPY --from=train_sim_dir . .
+COPY train-sim .
 
 RUN cargo build -p uniffi-bindgen --release
 RUN cargo build -p train-sim --release --locked
