@@ -1,4 +1,3 @@
-/* eslint-disable prefer-destructuring, no-plusplus */
 import bbox from '@turf/bbox';
 import type { Feature, FeatureCollection, GeoJsonProperties, Geometry, Position } from 'geojson';
 

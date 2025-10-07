@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-non-null-asserted-optional-chain */
 import { useEffect, useMemo } from 'react';
 
 import { useParams } from 'react-router-dom';

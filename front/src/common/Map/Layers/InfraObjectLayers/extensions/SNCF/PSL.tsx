@@ -1,4 +1,3 @@
-/* eslint-disable react/jsx-pascal-case */
 import type { Geometry } from 'geojson';
 import type { TFunction } from 'i18next';
 import { isNil } from 'lodash';

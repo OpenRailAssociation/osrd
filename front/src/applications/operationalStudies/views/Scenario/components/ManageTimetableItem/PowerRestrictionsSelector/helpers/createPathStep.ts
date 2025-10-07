@@ -31,7 +31,6 @@ export const cutRange = (
     ];
   }
 
-  // eslint-disable-next-line no-plusplus
   for (let i = 0; i < allRanges.length; i++) {
     // if the cut position is smaller than the current range begin, we insert new ranges before the current one
     if (allRanges[i].begin < newCutPosition && newCutPosition < allRanges[i].end) {

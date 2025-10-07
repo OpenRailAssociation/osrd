@@ -121,7 +121,6 @@ export default function App() {
   const dispatch = useAppDispatch();
 
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     // Blindly dispatch current front version for storage
     dispatch(updateLastInterfaceVersion(import.meta.env.VITE_OSRD_GIT_DESCRIBE));
   }, []);

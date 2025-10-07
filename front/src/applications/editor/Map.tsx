@@ -269,7 +269,7 @@ const MapUnplugged = ({
                       // instead. This fixes it:
                       entity = {
                         ...entity,
-                        // eslint-disable-next-line no-underscore-dangle,@typescript-eslint/no-explicit-any
+                        // eslint-disable-next-line @typescript-eslint/no-explicit-any
                         geometry: entity.geometry || (entity as any)._geometry,
                       };
                       activeTool.onClickEntity(entity, eventWithFeature, extendedContext);

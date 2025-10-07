@@ -145,7 +145,7 @@ const InfraSelectorModalBodyEdition = ({
           <div className="infra-add-import">
             {selectedFile ? (
               <>
-                {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
+                {}
                 <label className="infra-add-import-input-file with-file">
                   <VscJson />
                   <span className="ml-2" title={selectedFile.name}>
@@ -163,7 +163,7 @@ const InfraSelectorModalBodyEdition = ({
               </>
             ) : (
               <>
-                {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
+                {}
                 <label className="infra-add-import-input-file">
                   <VscJson />
                   <span className="flex-grow-1 text-center">

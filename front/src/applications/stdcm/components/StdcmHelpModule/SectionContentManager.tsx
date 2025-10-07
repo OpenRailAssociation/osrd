@@ -18,7 +18,6 @@ const SectionContentManager = ({ content }: SectionContentManagerProps) => (
           );
 
         case 'text':
-          // eslint-disable-next-line react/no-danger
           return <p dangerouslySetInnerHTML={{ __html: content.value }} />;
         case 'faq':
           return (

@@ -194,7 +194,6 @@ const useFilterRollingStock = ({ isStdcm } = { isStdcm: false }) => {
       setFilteredRollingStockList(newFilteredRollingStock);
       setSearchIsLoading(false);
     }, 0);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [filters, usefulRollingStocks]);
 
   return {

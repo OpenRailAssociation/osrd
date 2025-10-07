@@ -1,4 +1,3 @@
-/* eslint-disable no-nested-ternary */
 import { useRef, useState } from 'react';
 
 import cx from 'classnames';

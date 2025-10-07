@@ -1,5 +1,3 @@
-/* eslint-disable import/prefer-default-export */
-
 export const electricalProfilesDesignValues = {
   '25000V': { color: 'rgb(228, 178, 132)', heightLevel: 0 },
   '22500V': { color: 'rgb(202, 149, 109)', heightLevel: 1 },

@@ -50,12 +50,10 @@ export const SpaceTimeChart = (props: SpaceTimeChartProps) => {
     showTicks,
     hideDates,
     theme,
-    /* eslint-disable @typescript-eslint/no-unused-vars */
     onPan,
     onZoom,
     onClick,
     onMouseMove,
-    /* eslint-enable @typescript-eslint/no-unused-vars */
     ...attr
   } = props;
 
