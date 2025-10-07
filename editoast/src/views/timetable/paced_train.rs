@@ -2,6 +2,9 @@ use std::collections::HashMap;
 use std::collections::HashSet;
 use std::sync::Arc;
 
+use core_client::pathfinding::PathfindingResultSuccess;
+use core_client::simulation::PhysicsConsist;
+
 use authz;
 use axum::Extension;
 use axum::extract::Json;
@@ -9,6 +12,7 @@ use axum::extract::Path;
 use axum::extract::Query;
 use axum::extract::State;
 use axum::response::IntoResponse;
+use core_client::AsCoreRequest;
 use core_client::signal_projection::SignalUpdate;
 use database::DbConnectionPoolV2;
 use editoast_derive::EditoastError;
@@ -26,7 +30,15 @@ use super::AuthenticationExt;
 use crate::error::Result;
 use crate::models;
 use crate::models::Infra;
+use crate::models::RollingStock;
 use crate::models::paced_train::PacedTrainChangeset;
+
+use crate::views::timetable::PhysicsConsistParameters;
+use crate::views::timetable::simulation::SimulationResponseSuccess;
+use crate::views::timetable::simulation::build_path_items_to_position;
+use crate::views::timetable::simulation::build_sim_power_restriction_items;
+use crate::views::timetable::simulation::build_sim_schedule_items;
+
 use crate::views::AuthorizationError;
 use crate::views::infra::InfraIdQueryParam;
 use crate::views::path::path_item_cache::PathItemCache;
@@ -62,6 +74,15 @@ enum PacedTrainError {
     #[error("Exception '{exception_key}', could not be found")]
     #[editoast_error(status = 404)]
     ExceptionNotFound { exception_key: String },
+    #[error("Rolling stock '{rolling_stock_name}', could not be found")]
+    #[editoast_error(status = 404)]
+    RollingStockNotFound { rolling_stock_name: String },
+    #[error("Pathfinding failed for paced train '{paced_train_id}'")]
+    #[editoast_error(status = 404)]
+    PathfindingFailed { paced_train_id: i64 },
+    #[error("Simulation failed for train schedule '{paced_train_id}'")]
+    #[editoast_error(status = 404)]
+    SimulationFailed { paced_train_id: i64 },
     #[error(transparent)]
     #[editoast_error(status = 500)]
     Database(#[from] editoast_models::Error),
@@ -542,6 +563,149 @@ pub(in crate::views) async fn simulation(
     .unwrap();
 
     Ok(Json(Arc::unwrap_or_clone(simulation)))
+}
+
+/// Retrieve the etcs braking curves of an etcs train on etcs portions of the path
+#[editoast_derive::route]
+#[utoipa::path(
+    get, path = "",
+    tags = ["paced_train", "etcs_braking_curves"],
+    params(PacedTrainIdParam, InfraIdQueryParam, ElectricalProfileSetIdQueryParam, ExceptionQueryParam),
+    responses(
+        (status = 200, description = "ETCS Braking Curves Output", body = core_client::etcs_braking_curves::Response),
+    ),
+)]
+pub(in crate::views) async fn etcs_braking_curves(
+    State(AppState {
+        config,
+        valkey_client,
+        core_client,
+        db_pool,
+        ..
+    }): State<AppState>,
+    Extension(auth): AuthenticationExt,
+    Path(PacedTrainIdParam { id: paced_train_id }): Path<PacedTrainIdParam>,
+    Query(InfraIdQueryParam { infra_id }): Query<InfraIdQueryParam>,
+    Query(ElectricalProfileSetIdQueryParam {
+        electrical_profile_set_id,
+    }): Query<ElectricalProfileSetIdQueryParam>,
+    Query(ExceptionQueryParam { exception_key }): Query<ExceptionQueryParam>,
+) -> Result<Json<core_client::etcs_braking_curves::Response>> {
+    let authorized = auth
+        .check_roles([authz::Role::OperationalStudies, authz::Role::Stdcm].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Forbidden.into());
+    }
+
+    // Retrieve infra or fail
+    let infra = Infra::retrieve_or_fail(db_pool.get().await?, infra_id, || {
+        PacedTrainError::InfraNotFound { infra_id }
+    })
+    .await?;
+
+    // Check user privilege on infra
+    auth.check_authorization(async |authorizer| {
+        authorizer
+            .authorize_infra(&authz::Infra(infra_id), authz::InfraPrivilege::CanRead)
+            .await
+    })
+    .await?;
+
+    // Retrieve paced_train or fail
+    let paced_train =
+        models::PacedTrain::retrieve_or_fail(db_pool.get().await?, paced_train_id, || {
+            PacedTrainError::NotFound { paced_train_id }
+        })
+        .await?;
+
+    let train_schedule = match exception_key {
+        Some(exception_key) => {
+            let exception = paced_train
+                .exceptions
+                .iter()
+                .find(|e| e.key == exception_key)
+                .ok_or_else(|| PacedTrainError::ExceptionNotFound {
+                    exception_key: exception_key.clone(),
+                })?;
+
+            paced_train.apply_exception(exception)
+        }
+        None => paced_train.into_train_schedule(),
+    };
+
+    // Compute simulation of a train schedule
+    let (simulation_result, pathfinding_result) = train_simulation_batch(
+        &mut db_pool.get().await?,
+        valkey_client,
+        core_client.clone(),
+        std::slice::from_ref(&train_schedule),
+        &infra,
+        electrical_profile_set_id,
+        config.app_version.as_deref(),
+    )
+    .await?
+    .pop()
+    .unwrap();
+
+    // Extract simulation path
+    let pathfinding_response: PathfindingResultSuccess = match pathfinding_result.as_ref() {
+        PathfindingResult::Success(path) => path.clone(),
+        _ => {
+            return Err(PacedTrainError::PathfindingFailed { paced_train_id }.into());
+        }
+    };
+
+    // Extract mrsp
+    let mrsp = match simulation_result.as_ref() {
+        simulation::Response::Success(SimulationResponseSuccess { mrsp, .. }) => mrsp.clone(),
+        _ => {
+            return Err(PacedTrainError::SimulationFailed { paced_train_id }.into());
+        }
+    };
+
+    // Build physics consist
+    let rs = RollingStock::retrieve_or_fail(
+        db_pool.get().await?,
+        train_schedule.rolling_stock_name.clone(),
+        || PacedTrainError::RollingStockNotFound {
+            rolling_stock_name: train_schedule.rolling_stock_name.clone(),
+        },
+    )
+    .await?;
+    let physics_consist: PhysicsConsist =
+        PhysicsConsistParameters::from_traction_engine(rs.into()).into();
+
+    // Build schedule items and power restrictions
+    let path_items_to_position = build_path_items_to_position(
+        &train_schedule.path,
+        &pathfinding_response.path_item_positions,
+    );
+    let schedule = build_sim_schedule_items(&train_schedule.schedule, &path_items_to_position);
+    let power_restrictions = build_sim_power_restriction_items(
+        &train_schedule.power_restrictions,
+        &path_items_to_position,
+    );
+
+    let etcs_braking_curves_request = core_client::etcs_braking_curves::Request {
+        infra: infra.id,
+        expected_version: infra.version,
+        physics_consist,
+        comfort: train_schedule.comfort,
+        path: pathfinding_response.path,
+        schedule,
+        power_restrictions,
+        electrical_profile_set_id,
+        use_electrical_profiles: train_schedule.options.use_electrical_profiles,
+        mrsp,
+    };
+
+    let etcs_braking_curves_response = etcs_braking_curves_request
+        .fetch(core_client.as_ref())
+        .await?;
+
+    Ok(Json(etcs_braking_curves_response))
 }
 
 /// Project path output is described by time-space points and blocks
