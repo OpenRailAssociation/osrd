@@ -17,8 +17,8 @@ use serde::Deserialize;
 use serde::Serialize;
 use serde_json::Value as JsonValue;
 
-use crate::map::Layer;
-use crate::map::View;
+use super::Layer;
+use super::View;
 
 #[derive(Clone, QueryableByName, Queryable, Debug, Serialize, Deserialize)]
 pub struct GeoJsonAndData {
@@ -213,10 +213,11 @@ pub fn get_geo_json_sql_query(table_name: &str, view: &View) -> String {
 mod tests {
     use serde_json::json;
 
+    use crate::models::layers::MapLayers;
+
     use super::GeoJsonAndData;
     use super::create_and_fill_mvt_tile;
     use super::get_geo_json_sql_query;
-    use crate::map::MapLayers;
 
     #[test]
     fn test_query_creation() {
