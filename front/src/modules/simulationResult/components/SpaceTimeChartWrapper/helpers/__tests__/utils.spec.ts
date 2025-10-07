@@ -1,5 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
+import { formatEditoastIdToTrainScheduleId } from 'utils/trainId';
+
 import { cutSpaceTimeRect, batchFetchTrackOccupancy } from '../utils';
 
 describe('interpolateRange', () => {
@@ -94,13 +96,16 @@ describe('batchFetch', () => {
     const fetchSpy = vi.fn().mockResolvedValueOnce(['a', 'b']).mockResolvedValueOnce(['c', 'd']);
 
     const onComplete = vi.fn();
-    batchFetchTrackOccupancy(['1', '2', '3', '4'], fetchSpy, { batchSize: 2, onComplete });
+    batchFetchTrackOccupancy([1, 2, 3, 4].map(formatEditoastIdToTrainScheduleId), fetchSpy, {
+      batchSize: 2,
+      onComplete,
+    });
 
     await vi.waitFor(() => expect(onComplete).toHaveBeenCalled());
 
     expect(fetchSpy).toHaveBeenCalledTimes(2);
-    expect(fetchSpy).toHaveBeenNthCalledWith(1, ['1', '2']);
-    expect(fetchSpy).toHaveBeenNthCalledWith(2, ['3', '4']);
+    expect(fetchSpy).toHaveBeenNthCalledWith(1, [1, 2].map(formatEditoastIdToTrainScheduleId));
+    expect(fetchSpy).toHaveBeenNthCalledWith(2, [3, 4].map(formatEditoastIdToTrainScheduleId));
     expect(onComplete).toHaveBeenCalledExactlyOnceWith(['a', 'b', 'c', 'd']);
   });
 
@@ -115,7 +120,8 @@ describe('batchFetch', () => {
     );
     const onComplete = vi.fn();
 
-    const abort = batchFetchTrackOccupancy(['1', '2', '3', '4'], fetchSpy, {
+    const ids = [1, 2, 3, 4].map(formatEditoastIdToTrainScheduleId);
+    const abort = batchFetchTrackOccupancy(ids, fetchSpy, {
       batchSize: 2,
       onComplete,
     });
@@ -138,7 +144,7 @@ describe('batchFetch', () => {
     const onProgress = vi.fn();
     const onComplete = vi.fn();
 
-    batchFetchTrackOccupancy(['1', '2', '3', '4'], fetchSpy, {
+    batchFetchTrackOccupancy([1, 2, 3, 4].map(formatEditoastIdToTrainScheduleId), fetchSpy, {
       batchSize: 2,
       onProgress,
       onComplete,
@@ -159,7 +165,10 @@ describe('batchFetch', () => {
     const onError = vi.fn();
     const onComplete = vi.fn();
 
-    batchFetchTrackOccupancy(['1', '2'], fetchSpy, { onError, onComplete });
+    batchFetchTrackOccupancy([1, 2].map(formatEditoastIdToTrainScheduleId), fetchSpy, {
+      onError,
+      onComplete,
+    });
 
     await vi.waitFor(() => expect(onError).toHaveBeenCalled());
 

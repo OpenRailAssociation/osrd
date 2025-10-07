@@ -2,7 +2,12 @@ import type { Conflict, OccupancyBlock } from '@osrd-project/ui-charts';
 import { chunk, compact, noop, omit } from 'lodash';
 
 import { ASPECT_LABELS_COLORS } from 'modules/simulationResult/consts';
-import type { OccurrenceId, TimetableItem, TrainScheduleId } from 'reducers/osrdconf/types';
+import type {
+  OccurrenceId,
+  TimetableItem,
+  TimetableItemId,
+  TrainScheduleId,
+} from 'reducers/osrdconf/types';
 import { isOccurrenceId, isTrainScheduleId } from 'utils/trainId';
 
 import type { MovableOccupancyZone } from './zones';
@@ -61,8 +66,8 @@ export const getWaypointsLocalStorageKey = (
  * overwhelming the server or API.
  */
 export function batchFetchTrackOccupancy(
-  allIDs: string[],
-  fetchTrackOccupancy: (ids: string[]) => Promise<MovableOccupancyZone[]>,
+  allIDs: TimetableItemId[],
+  fetchTrackOccupancy: (ids: TimetableItemId[]) => Promise<MovableOccupancyZone[]>,
   {
     batchSize = 50,
     onProgress = noop,
