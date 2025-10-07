@@ -13,7 +13,6 @@ import type {
   PacedTrainId,
   PacedTrainWithPacedTrainId,
   TimetableItem,
-  TimetableItemId,
   TrainId,
   TrainScheduleId,
 } from 'reducers/osrdconf/types';
@@ -215,15 +214,6 @@ export const extractEditoastIdFromTrainId = (id: TrainId): number =>
   isTrainScheduleId(id)
     ? extractEditoastIdFromTrainScheduleId(id)
     : extractEditoastIdFromPacedTrainId(extractPacedTrainIdFromOccurrenceId(id));
-
-/**
- * Given a timetable item id with a TimetableItemId format (either TrainScheduleId or PacedTrainId),
- * returns the Editoast id (used for api).
- */
-export const extractEditoastIdFromTimetableItemId = (id: TimetableItemId): number =>
-  isTrainScheduleId(id)
-    ? extractEditoastIdFromTrainScheduleId(id)
-    : extractEditoastIdFromPacedTrainId(id);
 
 /**
  * Given a occurrence id with an OccurrenceId format (used across the front),

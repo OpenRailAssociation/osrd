@@ -10,9 +10,7 @@ import {
   isEqual,
   isFunction,
   keyBy,
-  keys,
   noop,
-  pick,
   uniqBy,
 } from 'lodash';
 import { useTranslation } from 'react-i18next';
@@ -24,7 +22,11 @@ import {
   type PathItemLocation,
 } from 'common/api/osrdEditoastApi';
 import type { TimetableItemId, TrainId } from 'reducers/osrdconf/types';
-import { extractEditoastIdFromTimetableItemId, extractEditoastIdFromTrainId } from 'utils/trainId';
+import {
+  extractEditoastIdFromTrainScheduleId,
+  formatEditoastIdToTrainScheduleId,
+  isTrainScheduleId,
+} from 'utils/trainId';
 
 import type { PathOperationalPoint, TrainSpaceTimeData } from '../../types';
 import { batchFetchTrackOccupancy } from './helpers/utils';
@@ -120,8 +122,8 @@ const useTrackOccupancy = ({
     osrdEditoastApi.endpoints.postTrainScheduleTrackOccupancy.useMutation();
   const [postInfraByInfraIdMatchOperationalPoints] =
     osrdEditoastApi.endpoints.postInfraByInfraIdMatchOperationalPoints.useLazyQuery();
-  const timetableItemsById = useMemo(
-    () => keyBy(timetableItemProjections, ({ id }) => extractEditoastIdFromTimetableItemId(id)),
+  const timetableItemsById: Map<TimetableItemId, OccupancyTrainSpaceTimeData> = useMemo(
+    () => new Map(timetableItemProjections.map((item) => [item.id, item])),
     [timetableItemProjections]
   );
 
@@ -163,8 +165,8 @@ const useTrackOccupancy = ({
   const fetchTrackOccupancy = useCallback(
     async (
       opId: string | undefined | null,
-      trainsCollection: Record<string, TrainSpaceTimeData>
-    ) =>
+      trainsCollection: Record<TimetableItemId, TrainSpaceTimeData>
+    ): Promise<MovableOccupancyZone[]> =>
       opId
         ? flatMap(
             (
@@ -172,15 +174,21 @@ const useTrackOccupancy = ({
                 body: {
                   operational_point_id: opId,
                   infra_id: infraId,
-                  train_schedule_ids: Object.keys(trainsCollection).map((id) => +id),
+                  train_schedule_ids: Object.keys(trainsCollection)
+                    .filter((id) => isTrainScheduleId(id))
+                    .map((id) => extractEditoastIdFromTrainScheduleId(id)),
                 },
               })
             ).data,
             (entries, trackId) =>
               entries.map((entry) =>
-                getMovableOccupancyZone(trackId, entry, trainsCollection[entry.train_schedule_id])
+                getMovableOccupancyZone(
+                  trackId,
+                  entry,
+                  trainsCollection[formatEditoastIdToTrainScheduleId(entry.train_schedule_id)]
+                )
               )
-          )
+          ) // TODO : append result of postPacedTrainTrackOccupancy
         : [],
     [infraId]
   );
@@ -228,11 +236,11 @@ const useTrackOccupancy = ({
       // Start fetching data:
       if (!currentState) {
         const abort = batchFetchTrackOccupancy(
-          keys(timetableItemsById),
+          Array.from(timetableItemsById.keys()),
           (ids) =>
             fetchTrackOccupancy(
               pathOperationalPointsDict[waypointId]?.opId,
-              pick(timetableItemsById, ids)
+              Object.fromEntries(ids.map((id) => [id, timetableItemsById.get(id)!]))
             ),
           {
             batchSize: 50,
@@ -319,7 +327,7 @@ const useTrackOccupancy = ({
 
       // Fetch new occupation if dragging has stopped:
       if (stopPanning) {
-        const draggedTrainEditoastId = extractEditoastIdFromTrainId(draggedTrainId);
+        const draggedTrainEditoastId = draggedTrainId;
         await Promise.all(
           [...impactedPathOperationalPointIDs].map(async (waypointId) => {
             const newZones = await fetchTrackOccupancy(
@@ -425,16 +433,17 @@ const useTrackOccupancy = ({
     )
       return;
 
-    const previousTimetableItemsDict = keyBy(previousTimetableItems, (timetableItem) =>
-      extractEditoastIdFromTimetableItemId(timetableItem.id)
+    const previousTimetableItemsDict = keyBy(
+      previousTimetableItems,
+      (timetableItem) => timetableItem.id
     );
 
-    const addedTrainIDs = new Set<number>();
-    const removedTrainIDs = new Set<number>();
-    const modifiedTrainIDs = new Set<number>();
+    const addedTrainIDs = new Set<TimetableItemId>();
+    const removedTrainIDs = new Set<TimetableItemId>();
+    const modifiedTrainIDs = new Set<TimetableItemId>();
 
     timetableItemProjections.forEach((timetableItem) => {
-      const id = extractEditoastIdFromTimetableItemId(timetableItem.id);
+      const id = timetableItem.id;
       const previousTimetableItem = previousTimetableItemsDict[id];
       if (!previousTimetableItem) addedTrainIDs.add(id);
       else if (
@@ -459,8 +468,8 @@ const useTrackOccupancy = ({
     });
 
     previousTimetableItems.forEach((timetableItem) => {
-      const id = extractEditoastIdFromTimetableItemId(timetableItem.id);
-      if (!timetableItemsById[id]) {
+      const id = timetableItem.id;
+      if (!timetableItemsById.has(id)) {
         removedTrainIDs.add(id);
         // Remove cached station labels for this train:
         trainsStationLabelsRef.current[timetableItem.id] = undefined;
@@ -472,7 +481,9 @@ const useTrackOccupancy = ({
       forEach(pathOperationalPointsState, async (_, waypointId) => {
         const newZones = await fetchTrackOccupancy(
           pathOperationalPointsDict[waypointId]?.opId,
-          pick(timetableItemsById, [...addedTrainIDs, ...modifiedTrainIDs])
+          Object.fromEntries(
+            [...addedTrainIDs, ...modifiedTrainIDs].map((id) => [id, timetableItemsById.get(id)!])
+          )
         );
 
         if (newZones.length)
@@ -483,9 +494,7 @@ const useTrackOccupancy = ({
                   zones: {
                     ...state.zones,
                     data: (state.zones.data || [])
-                      .filter(
-                        (zone) => !modifiedTrainIDs.has(extractEditoastIdFromTrainId(zone.trainId))
-                      )
+                      .filter((zone) => !modifiedTrainIDs.has(zone.trainId))
                       .concat(newZones),
                   },
                 }
@@ -504,9 +513,7 @@ const useTrackOccupancy = ({
                 zones: {
                   ...state.zones,
                   data:
-                    state.zones.data?.filter(
-                      (zone) => !removedTrainIDs.has(extractEditoastIdFromTrainId(zone.trainId))
-                    ) || [],
+                    state.zones.data?.filter((zone) => !removedTrainIDs.has(zone.trainId)) || [],
                 },
               }
             : undefined
