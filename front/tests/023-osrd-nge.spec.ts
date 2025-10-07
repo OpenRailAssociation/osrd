@@ -40,6 +40,10 @@ test.describe('Verify osrd nge conversion', () => {
   test.beforeEach('Open scenario and enable only macro view ', async ({ page }) => {
     ngePage = new NGEPage(page);
     scenarioTimetableSection = new ScenarioTimetableSection(page);
+    // scenario header is persisted in local storage, clear it before loading the scenario
+    await page.addInitScript(() => {
+      window.localStorage.clear();
+    });
     await test.step('Create, open scenario and wait for infra to be loaded', async () => {
       scenarioItems = (
         await createScenario(generateUniqueName('nge-scenario'), project.id, study.id, infra.id)
