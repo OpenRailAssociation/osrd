@@ -169,7 +169,7 @@ pub fn create_and_fill_mvt_tile<T: AsRef<str>>(
 ///
 /// * `table_name` - Table containing the data
 /// * `view` - View containing info to get the data
-pub fn get_geo_json_sql_query(table_name: &str, view: &View) -> String {
+fn get_geo_json_sql_query(table_name: &str, view: &View) -> String {
     format!(
         "
         WITH bbox AS (
@@ -212,12 +212,10 @@ pub fn get_geo_json_sql_query(table_name: &str, view: &View) -> String {
 
 #[cfg(test)]
 mod tests {
+    use super::*;
     use serde_json::json;
 
-    use crate::map::GeoJsonAndData;
     use crate::map::MapLayers;
-    use crate::map::create_and_fill_mvt_tile;
-    use crate::map::get_geo_json_sql_query;
 
     #[test]
     fn test_query_creation() {
