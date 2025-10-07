@@ -83,12 +83,19 @@ data class STDCMNode(
         else if (timeData.earliestReachableTime != other.timeData.earliestReachableTime)
             timeData.earliestReachableTime.compareTo(other.timeData.earliestReachableTime)
 
-        // In the end, prioritize the highest number of reached targets.
-        // This doesn't define the priority between different paths,
-        // it just minimizes the chance of evaluating redundant nodes
-        else
+        // From this point, the order doesn't define the "best solution" anymore, just which
+        // scenario is picked first by the A* loop.
+
+        // Prioritize the highest number of reached targets, to avoid paths that have missed a step
+        else if (
+            other.infraExplorer.getStepTracker().nStepsExcludingLookahead !=
+                infraExplorer.getStepTracker().nStepsExcludingLookahead
+        )
             other.infraExplorer.getStepTracker().nStepsExcludingLookahead -
                 infraExplorer.getStepTracker().nStepsExcludingLookahead
+
+        // Prioritize the path furthest from the start. Avoids exploring several paths in parallel.
+        else -timeData.timeSinceDeparture.compareTo(other.timeData.timeSinceDeparture)
     }
 
     override fun toString(): String {
