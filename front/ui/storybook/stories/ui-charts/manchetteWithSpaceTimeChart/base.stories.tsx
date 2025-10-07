@@ -19,6 +19,7 @@ type ManchetteWithSpaceTimeWrapperProps = {
   waypoints: Waypoint[];
   projectPathTrainResult: ProjectPathTrainResult[];
   selectedTrain: number;
+  hidePositions?: boolean;
 };
 
 const DEFAULT_HEIGHT = 561;
@@ -27,6 +28,7 @@ const ManchetteWithSpaceTimeWrapper = ({
   waypoints,
   projectPathTrainResult,
   selectedTrain,
+  hidePositions = false,
 }: ManchetteWithSpaceTimeWrapperProps) => {
   const manchetteWithSpaceTimeChartRef = useRef<HTMLDivElement>(null);
 
@@ -35,6 +37,7 @@ const ManchetteWithSpaceTimeWrapper = ({
     waypoints,
     manchetteWithSpaceTimeChartRef,
     defaultTimeOrigin: Math.min(...projectPathTrainResult.map((p) => +p.departureTime)),
+    hidePositions,
   });
 
   const selectedPath = paths[selectedTrain].id;
@@ -72,6 +75,14 @@ const ManchetteWithSpaceTimeWrapper = ({
 const meta: Meta<typeof ManchetteWithSpaceTimeWrapper> = {
   title: 'Manchette with SpaceTimeChart/Hook API',
   component: ManchetteWithSpaceTimeWrapper,
+  argTypes: {
+    hidePositions: {
+      name: 'Hide Positions',
+      description: 'Hide position/distance information (km) on waypoints',
+      defaultValue: false,
+      control: { type: 'boolean' },
+    },
+  },
 };
 
 export default meta;
@@ -81,5 +92,6 @@ export const Default = {
     waypoints: SAMPLE_WAYPOINTS,
     projectPathTrainResult: SAMPLE_PATHS_DATA,
     selectedTrain: 1,
+    hidePositions: false,
   },
 };

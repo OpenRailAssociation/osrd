@@ -11,6 +11,7 @@ type WaypointProps = {
   isActive: boolean;
   isMenuActive?: boolean;
   testIdPrefix?: string;
+  hidePositions?: boolean;
 };
 
 const Waypoint = ({
@@ -19,6 +20,7 @@ const Waypoint = ({
   isActive,
   isMenuActive,
   testIdPrefix,
+  hidePositions = false,
 }: WaypointProps) => (
   <div
     data-testid={testIdPrefix ? `${testIdPrefix}-base-info` : undefined}
@@ -32,12 +34,14 @@ const Waypoint = ({
       if (onClick && !isMenuActive) onClick(id);
     }}
   >
-    <div
-      data-testid={testIdPrefix ? `${testIdPrefix}-position` : undefined}
-      className="waypoint-position justify-self-start text-end"
-    >
-      {positionMmToKm(position)}
-    </div>
+    {!hidePositions && (
+      <div
+        data-testid={testIdPrefix ? `${testIdPrefix}-position` : undefined}
+        className="waypoint-position justify-self-start text-end"
+      >
+        {positionMmToKm(position)}
+      </div>
+    )}
 
     <div
       data-testid={testIdPrefix ? `${testIdPrefix}-name` : undefined}
