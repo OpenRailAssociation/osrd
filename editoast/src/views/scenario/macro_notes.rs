@@ -276,6 +276,71 @@ pub(in crate::views) async fn get(
     Ok(Json(MacroNoteResponse::from(macro_note)))
 }
 
+#[editoast_derive::route]
+#[utoipa::path(
+    put, path = "",
+    tag = "scenarios",
+    params(ProjectIdParam, StudyIdParam, ScenarioIdParam, MacroNoteIdParam),
+    responses(
+        (status = 200, body = MacroNoteResponse, description = "The updated macro note"),
+    )
+)]
+pub(in crate::views) async fn update(
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    Extension(auth): AuthenticationExt,
+    Path((project_id, study_id, scenario_id, note_id)): Path<(i64, i64, i64, i64)>,
+    Json(note_form): Json<MacroNoteForm>,
+) -> Result<Json<MacroNoteResponse>> {
+    let authorized = auth
+        .check_roles([Role::OperationalStudies].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Forbidden.into());
+    }
+
+    let updated = Scenario::transactional_content_update(
+        db_pool.get().await?,
+        scenario_id,
+        move |mut conn, scenario, study, project| {
+            async move {
+                let note = MacroNote::retrieve_or_fail(conn.clone(), note_id, || {
+                    MacroNoteError::NotFound { note_id }
+                })
+                .await?;
+
+                if project.id != project_id {
+                    return Err::<_, InternalError>(ProjectError::NotFound { project_id }.into());
+                }
+                if study.id != study_id {
+                    return Err(StudyError::NotFound { study_id }.into());
+                }
+                if scenario.id != scenario_id {
+                    return Err(ScenarioError::NotFound { scenario_id }.into());
+                }
+                if note.scenario_id != scenario_id {
+                    return Err(MacroNoteError::WrongScenario {
+                        note_id,
+                        scenario_id,
+                    }
+                    .into());
+                }
+
+                let updated_note = note_form
+                    .into_macro_note_changeset(scenario_id)
+                    .update_or_fail(&mut conn, note_id, || MacroNoteError::NotFound { note_id })
+                    .await?;
+
+                Ok(updated_note)
+            }
+            .scope_boxed()
+        },
+    )
+    .await?;
+
+    Ok(Json(MacroNoteResponse::from(updated)))
+}
+
 #[cfg(test)]
 pub mod test {
     use axum::http::StatusCode;
@@ -501,6 +566,75 @@ pub mod test {
             "/projects/{}/studies/{}/scenarios/{}/macro_notes/{}",
             fixtures_2.project.id, fixtures_2.study.id, fixtures_2.scenario.id, note.id
         ));
+
+        app.fetch(request).assert_status(StatusCode::NOT_FOUND);
+    }
+
+    #[rstest]
+    async fn update_note() {
+        let app = TestAppBuilder::default_app();
+        let db_pool = app.db_pool();
+        let fixtures =
+            create_scenario_fixtures_set(&mut db_pool.get_ok(), "test_scenario_name").await;
+
+        let note = MacroNote::changeset()
+            .scenario_id(fixtures.scenario.id)
+            .x(10)
+            .y(20)
+            .title("Note title".to_string())
+            .text("Note text".to_string())
+            .labels(Tags::new(vec!["A".to_string(), "B".to_string()]))
+            .create(&mut db_pool.get_ok())
+            .await
+            .expect("Failed to create macro note");
+        let update = MacroNoteForm {
+            x: 30,
+            y: 30,
+            title: "New title".to_string(),
+            text: "New text".to_string(),
+            labels: Tags::new(vec!["New label".to_string(), "B".to_string()]),
+        };
+
+        let request = app
+            .put(&format!(
+                "/projects/{}/studies/{}/scenarios/{}/macro_notes/{}",
+                fixtures.project.id, fixtures.study.id, fixtures.scenario.id, note.id
+            ))
+            .json(&update);
+
+        let response: MacroNoteResponse =
+            app.fetch(request).assert_status(StatusCode::OK).json_into();
+
+        let note = MacroNote::retrieve(db_pool.get_ok(), note.id)
+            .await
+            .unwrap()
+            .expect("Failed to retrieve note");
+
+        assert_eq!(update, response);
+        assert_eq!(MacroNoteResponse::from(note), response);
+    }
+
+    #[rstest]
+    async fn update_note_not_found() {
+        let app = TestAppBuilder::default_app();
+        let db_pool = app.db_pool();
+        let fixtures =
+            create_scenario_fixtures_set(&mut db_pool.get_ok(), "test_scenario_name").await;
+
+        let update = MacroNoteForm {
+            x: 30,
+            y: 30,
+            title: "New title".to_string(),
+            text: "New text".to_string(),
+            labels: Tags::new(vec!["New label".to_string(), "B".to_string()]),
+        };
+
+        let request = app
+            .put(&format!(
+                "/projects/{}/studies/{}/scenarios/{}/macro_notes/999999",
+                fixtures.project.id, fixtures.study.id, fixtures.scenario.id
+            ))
+            .json(&update);
 
         app.fetch(request).assert_status(StatusCode::NOT_FOUND);
     }

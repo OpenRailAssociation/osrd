@@ -825,6 +825,16 @@ const injectedRtkApi = api
         }),
         providesTags: ['scenarios'],
       }),
+      putProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNotesNoteId: build.mutation<
+        PutProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNotesNoteIdApiResponse,
+        PutProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNotesNoteIdApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios/${queryArg.scenarioId}/macro_notes/${queryArg.noteId}`,
+          method: 'PUT',
+        }),
+        invalidatesTags: ['scenarios'],
+      }),
       postRollingStock: build.mutation<PostRollingStockApiResponse, PostRollingStockApiArg>({
         query: (queryArg) => ({
           url: `/rolling_stock`,
@@ -2147,6 +2157,15 @@ export type PostProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNote
 export type GetProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNotesNoteIdApiResponse =
   /** status 200 The requested macro note */ MacroNoteResponse;
 export type GetProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNotesNoteIdApiArg = {
+  /** The id of a project */
+  projectId: number;
+  studyId: number;
+  scenarioId: number;
+  noteId: number;
+};
+export type PutProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNotesNoteIdApiResponse =
+  /** status 200 The updated macro note */ MacroNoteResponse;
+export type PutProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNotesNoteIdApiArg = {
   /** The id of a project */
   projectId: number;
   studyId: number;

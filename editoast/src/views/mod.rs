@@ -334,6 +334,7 @@ fn service_router() -> router::DocumentedRouter {
                                                                     .route("/", post!(scenario::macro_notes::create))
                                                                     .nests("/{note_id}", |path| {
                                                                     path.route("/", get!(scenario::macro_notes::get))
+                                                                        .route("/", put!(scenario::macro_notes::update))
                                                                 })
                                                             })
                                                     })

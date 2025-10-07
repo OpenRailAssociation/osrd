@@ -2836,6 +2836,42 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/MacroNoteResponse'
+    put:
+      tags:
+      - scenarios
+      parameters:
+      - name: project_id
+        in: path
+        description: The id of a project
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: study_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: scenario_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: note_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '200':
+          description: The updated macro note
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MacroNoteResponse'
   /rolling_stock:
     post:
       tags:
