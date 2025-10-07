@@ -24,6 +24,8 @@ import type {
   PacedTrainWithPacedTrainId,
   TimetableItemId,
   TimetableItem,
+  TrainScheduleId,
+  PacedTrainId,
 } from 'reducers/osrdconf/types';
 import type { AppDispatch } from 'store';
 import { Duration } from 'utils/duration';
@@ -33,6 +35,7 @@ import {
   formatEditoastIdToPacedTrainId,
   isPacedTrainId,
   isPacedTrainResponseWithPacedTrainId,
+  isTrainScheduleId,
 } from 'utils/trainId';
 
 import {
@@ -496,6 +499,62 @@ const handleDeleteTimetableItem = async (
   state.timetableItemIdByNgeId.delete(trainrunId);
 };
 
+const storeRoundTrip = async (
+  dispatch: AppDispatch,
+  forwardId: TrainScheduleId | PacedTrainId,
+  returnId?: TrainScheduleId | PacedTrainId
+) => {
+  if (isPacedTrainId(forwardId)) {
+    let roundTrips;
+    if (returnId) {
+      if (!isPacedTrainId(returnId)) {
+        throw new Error('Type mismatch: forward is PacedTrain but return is not');
+      }
+      roundTrips = {
+        round_trips: [
+          [
+            extractEditoastIdFromPacedTrainId(forwardId),
+            extractEditoastIdFromPacedTrainId(returnId),
+          ],
+        ],
+      };
+    } else {
+      roundTrips = {
+        one_ways: [extractEditoastIdFromPacedTrainId(forwardId)],
+      };
+    }
+    await dispatch(
+      osrdEditoastApi.endpoints.postRoundTripsPacedTrains.initiate({
+        roundTrips,
+      })
+    ).unwrap();
+  } else {
+    let roundTrips;
+    if (returnId) {
+      if (!isTrainScheduleId(returnId)) {
+        throw new Error('Type mismatch: forward is TrainSchedule but return is not');
+      }
+      roundTrips = {
+        round_trips: [
+          [
+            extractEditoastIdFromTrainScheduleId(forwardId),
+            extractEditoastIdFromTrainScheduleId(returnId),
+          ],
+        ],
+      };
+    } else {
+      roundTrips = {
+        one_ways: [extractEditoastIdFromTrainScheduleId(forwardId)],
+      };
+    }
+    await dispatch(
+      osrdEditoastApi.endpoints.postRoundTripsTrainSchedules.initiate({
+        roundTrips,
+      })
+    ).unwrap();
+  }
+};
+
 /**
  * Handle the following cases:
  * - if the TimetableItem is initially a PacedTrain and the frequency is still PacedTrain (`paced` time window is keep identical and interval to corresponding TrainrunFrequency)
@@ -557,8 +616,11 @@ const handleUpdateTimetableItem = async ({
   const paced = createPacedAttributesFromTrainrun(trainrun, netzgrafikDto);
 
   let newForwardPacedTrain: PacedTrain | undefined;
+  // Track the updated forward item to preserve its (potentially new) id when changing type
+
+  let updatedForwardTrainId: TrainScheduleId | PacedTrainId;
   if (!paced) {
-    await storeTrainSchedule(
+    const updatedTrainSchedule = await storeTrainSchedule(
       oldForwardTimetableItem.id,
       newForwardTimetableItem,
       timetableId,
@@ -566,6 +628,7 @@ const handleUpdateTimetableItem = async ({
       addUpsertedTimetableItems,
       addDeletedTimetableItemIds
     );
+    updatedForwardTrainId = updatedTrainSchedule.id;
   } else {
     if (isPacedTrainResponseWithPacedTrainId(oldForwardTimetableItem)) {
       paced.time_window = oldForwardTimetableItem.paced.time_window;
@@ -580,7 +643,7 @@ const handleUpdateTimetableItem = async ({
         ? checkChangeGroups(newForwardPacedTrainBase, oldForwardTimetableItem.exceptions)
         : [],
     };
-    await storePacedTrain(
+    const updatedPacedTrain = await storePacedTrain(
       oldForwardTimetableItem.id,
       newForwardPacedTrain,
       timetableId,
@@ -588,33 +651,19 @@ const handleUpdateTimetableItem = async ({
       addUpsertedTimetableItems,
       addDeletedTimetableItemIds
     );
+    updatedForwardTrainId = updatedPacedTrain.id;
   }
 
   if (trainrun.direction === 'one_way') {
     if (timetableItemIds[1]) {
       // NGE always selects the forward trip by default when going from round trip to one way trip,
       // thus the trip that needs to be deleted is always the return trip
-      if (isPacedTrainId(oldForwardTimetableItem.id)) {
-        await dispatch(
-          osrdEditoastApi.endpoints.postRoundTripsPacedTrains.initiate({
-            roundTrips: {
-              one_ways: [extractEditoastIdFromPacedTrainId(oldForwardTimetableItem.id)],
-            },
-          })
-        ).unwrap();
-      } else {
-        await dispatch(
-          osrdEditoastApi.endpoints.postRoundTripsTrainSchedules.initiate({
-            roundTrips: {
-              one_ways: [extractEditoastIdFromTrainScheduleId(oldForwardTimetableItem.id)],
-            },
-          })
-        ).unwrap();
-      }
+      await storeRoundTrip(dispatch, updatedForwardTrainId);
       await deleteTimetableItemById(timetableItemIds[1], dispatch, addDeletedTimetableItemIds);
     }
 
-    state.timetableItemIdByNgeId.set(trainrun.id, [oldForwardTimetableItem.id, null]);
+    const forwardId: TimetableItemId = updatedForwardTrainId;
+    state.timetableItemIdByNgeId.set(trainrun.id, [forwardId, null]);
     return;
   }
 
@@ -672,18 +721,6 @@ const handleUpdateTimetableItem = async ({
       };
 
       newReturnTimetableItem = await createPacedTrain(dispatch, timetableId, returnPacedTrain);
-      await dispatch(
-        osrdEditoastApi.endpoints.postRoundTripsPacedTrains.initiate({
-          roundTrips: {
-            round_trips: [
-              [
-                extractEditoastIdFromPacedTrainId(oldForwardTimetableItem.id),
-                extractEditoastIdFromPacedTrainId(newReturnTimetableItem.id),
-              ],
-            ],
-          },
-        })
-      ).unwrap();
     } else {
       if (isPacedTrainId(oldForwardTimetableItem.id)) {
         throw new Error(
@@ -700,28 +737,15 @@ const handleUpdateTimetableItem = async ({
         timetableId,
         returnTrainSchedule
       );
-
-      await dispatch(
-        osrdEditoastApi.endpoints.postRoundTripsTrainSchedules.initiate({
-          roundTrips: {
-            round_trips: [
-              [
-                extractEditoastIdFromTrainScheduleId(oldForwardTimetableItem.id),
-                extractEditoastIdFromTrainScheduleId(newReturnTimetableItem.id),
-              ],
-            ],
-          },
-        })
-      ).unwrap();
     }
 
     addUpsertedTimetableItems([newReturnTimetableItem]);
   }
 
-  state.timetableItemIdByNgeId.set(trainrun.id, [
-    oldForwardTimetableItem.id,
-    newReturnTimetableItem.id,
-  ]);
+  // Ensure the round-trip association is kept after updates/conversions
+  await storeRoundTrip(dispatch, updatedForwardTrainId, newReturnTimetableItem.id);
+
+  state.timetableItemIdByNgeId.set(trainrun.id, [updatedForwardTrainId, newReturnTimetableItem.id]);
 };
 
 const handleTrainrunOperation = async ({
