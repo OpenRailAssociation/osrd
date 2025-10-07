@@ -44,6 +44,7 @@ type TimetableProps = {
   timetableItemToEditData?: TimetableItemToEditData;
   timetableItems?: TimetableItem[];
   selectedTimetableItemIds: TimetableItemId[];
+  projectingOnSimulatedPathException: boolean | undefined;
 };
 
 const formatDepartureDate = (d: Date, locale: Intl.Locale) =>
@@ -61,6 +62,7 @@ const Timetable = ({
   timetableItemToEditData,
   timetableItems = [],
   selectedTimetableItemIds,
+  projectingOnSimulatedPathException,
 }: TimetableProps) => {
   const dateTimeLocale = useDateTimeLocale();
 
@@ -192,6 +194,7 @@ const Timetable = ({
                   removePacedTrains={removeAndUnselectTrains}
                   infraIsCached={workerStatus === 'READY'}
                   subCategories={subCategories}
+                  projectingOnSimulatedPathException={projectingOnSimulatedPathException}
                 />
               )}
             </div>
