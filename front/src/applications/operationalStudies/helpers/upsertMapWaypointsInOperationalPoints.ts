@@ -1,4 +1,3 @@
-/* eslint-disable import/prefer-default-export */
 import type { TFunction } from 'i18next';
 
 import type { PathfindingResultSuccess, TrainSchedule } from 'common/api/osrdEditoastApi';

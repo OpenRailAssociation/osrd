@@ -76,7 +76,6 @@ const TrackSplitLeftPanel = () => {
             submit(state);
           }}
         >
-          {/* eslint-disable-next-line jsx-a11y/label-has-associated-control */}
           <label className="font-weight-medium" htmlFor="offset">
             {t('Editor.tools.track-split.offset.label')}
           </label>

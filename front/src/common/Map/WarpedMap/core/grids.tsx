@@ -1,4 +1,3 @@
-/* eslint-disable prefer-destructuring, no-plusplus */
 import bearing from '@turf/bearing';
 import center from '@turf/center';
 import destination from '@turf/destination';

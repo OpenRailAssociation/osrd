@@ -112,7 +112,6 @@ const WayPointInput = ({ endPoint, wayPoint, onChange }: WayPointInputProps) => 
         onChange(null);
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [wayPoint]);
 
   return (

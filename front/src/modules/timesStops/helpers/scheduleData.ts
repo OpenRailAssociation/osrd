@@ -1,4 +1,3 @@
-/* eslint-disable import/prefer-default-export */
 import { Duration, addDurationToDate } from 'utils/duration';
 
 import type { ScheduleEntry } from '../types';

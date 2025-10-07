@@ -1,5 +1,3 @@
-/* eslint-disable import/prefer-default-export */
-
 import { v4 as uuidV4 } from 'uuid';
 
 import type { GraouTrainSchedule } from 'common/api/graouApi';

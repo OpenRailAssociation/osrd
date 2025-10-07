@@ -1,5 +1,3 @@
-/* eslint-disable import/prefer-default-export */
-
 import dayjs from 'dayjs';
 // eslint-disable-next-line import/extensions
 import duration from 'dayjs/plugin/duration.js';

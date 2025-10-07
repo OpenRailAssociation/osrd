@@ -170,7 +170,6 @@ export default function InputGroupSNCF<U extends string | MultiUnit>({
           </div>
         </div>
         {isDropdownShown && (
-          // eslint-disable-next-line jsx-a11y/control-has-associated-label
           <div
             style={{
               position: 'fixed',

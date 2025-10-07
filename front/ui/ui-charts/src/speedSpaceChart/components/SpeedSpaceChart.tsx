@@ -211,7 +211,6 @@ const SpeedSpaceChart = ({
     if (fetchEtcsBrakingCurves && shouldFetchEtcsCurves) {
       fetchEtcsBrakingCurves();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [fetchEtcsBrakingCurves, store.etcsLayersDisplay]);
 
   useEffect(() => {

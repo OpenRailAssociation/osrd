@@ -1,4 +1,3 @@
-/* eslint-disable prefer-destructuring, no-plusplus */
 import type { Feature, FeatureCollection, Geometry, Position } from 'geojson';
 import { keyBy } from 'lodash';
 

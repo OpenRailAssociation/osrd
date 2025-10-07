@@ -1,4 +1,3 @@
-/* eslint-disable import/prefer-default-export */
 import type { MapPathProperties } from 'applications/operationalStudies/types';
 import { insertViaFromMap } from 'reducers/osrdconf/helpers';
 import type { PathStep } from 'reducers/osrdconf/types';
