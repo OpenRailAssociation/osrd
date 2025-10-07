@@ -1,6 +1,7 @@
 pub mod authn;
 pub mod document;
 pub mod electrical_profiles;
+pub mod map;
 pub mod pagination;
 pub mod prelude;
 pub mod rolling_stock;

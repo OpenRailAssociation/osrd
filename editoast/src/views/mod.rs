@@ -86,7 +86,7 @@ use crate::error::Result;
 use crate::generated_data::speed_limit_tags_config::SpeedLimitTagIds;
 use crate::infra_cache::InfraCache;
 use crate::models::PgAuthDriver;
-use crate::models::layers::MapLayers;
+use editoast_models::map::MapLayers;
 
 fn service_router() -> router::DocumentedRouter {
     use router::delete;

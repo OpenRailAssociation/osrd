@@ -20,12 +20,12 @@ use crate::AppState;
 use crate::error::Result;
 use crate::map::get_cache_tile_key;
 use crate::map::get_view_cache_prefix;
-use crate::models::layers::Layer;
-use crate::models::layers::MapLayers;
-use crate::models::layers::geo_json_and_data::GeoJsonAndData;
-use crate::models::layers::geo_json_and_data::create_and_fill_mvt_tile;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
+use editoast_models::map::GeoJsonAndData;
+use editoast_models::map::Layer;
+use editoast_models::map::MapLayers;
+use editoast_models::map::create_and_fill_mvt_tile;
 
 #[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "layers", default_status = 404)]
@@ -238,8 +238,8 @@ mod tests {
     use super::LayersError;
     use super::ViewMetadata;
     use crate::error::InternalError;
-    use crate::models::layers::MapLayers;
     use crate::views::test_app;
+    use editoast_models::map::MapLayers;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn layer_error_view_not_found() {

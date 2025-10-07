@@ -1,5 +1,3 @@
-pub mod geo_json_and_data;
-
 use std::collections::HashMap;
 
 use serde::Deserialize;
@@ -47,7 +45,7 @@ impl MapLayers {
 
 impl Default for MapLayers {
     fn default() -> Self {
-        serde_yaml::from_str(include_str!("../../map_layers.yml"))
+        serde_yaml::from_str(include_str!("../../../map_layers.yml"))
             .expect("static data should be valid")
     }
 }

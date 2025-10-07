@@ -3,7 +3,6 @@
 pub mod fixtures;
 pub mod infra;
 pub mod infra_objects;
-pub mod layers;
 pub mod macro_node;
 pub mod macro_note;
 pub mod round_trips;
