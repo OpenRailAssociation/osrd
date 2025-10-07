@@ -77,6 +77,7 @@ updates:
       typescript-eslint:
         patterns:
           - "@typescript-eslint/*"
+          - "typescript-eslint"
       vitest:
         patterns:
           - "vitest"
