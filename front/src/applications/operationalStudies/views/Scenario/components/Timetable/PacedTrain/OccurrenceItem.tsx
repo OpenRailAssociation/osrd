@@ -61,6 +61,7 @@ type OccurrenceItemProps = {
   occurrenceActions: ReturnType<typeof useOccurrenceActions>;
   subCategories?: SubCategory[];
   pacedTrainInvalidReason?: InvalidReason;
+  pathUsedForProjectionIsException?: boolean;
 };
 
 const OccurrenceItem = ({
@@ -77,6 +78,7 @@ const OccurrenceItem = ({
   },
   subCategories,
   pacedTrainInvalidReason,
+  pathUsedForProjectionIsException,
 }: OccurrenceItemProps) => {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'main' });
   const menuRef = useRef<HTMLDivElement>(null);
@@ -217,12 +219,11 @@ const OccurrenceItem = ({
       >
         <div className="title-img">
           <div className="indicator-title">
-            {trainIdUsedForProjection === occurrence.id &&
-              !!exceptionChangeGroups?.path_and_schedule && (
-                <div className="occurrence-projected">
-                  <Manchette iconColor="var(--white100)" />
-                </div>
-              )}
+            {trainIdUsedForProjection === occurrence.id && pathUsedForProjectionIsException && (
+              <div className="occurrence-projected">
+                <Manchette iconColor="var(--white100)" />
+              </div>
+            )}
             <OccurrenceIndicator occurrence={occurrence} subCategories={subCategories} />
 
             <div className="label">

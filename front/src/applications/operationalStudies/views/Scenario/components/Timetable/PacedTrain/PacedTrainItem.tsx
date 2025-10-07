@@ -3,7 +3,7 @@ import { useContext, useMemo } from 'react';
 import { Checkbox } from '@osrd-project/ui-core';
 import { ChevronDown, ChevronRight, Clock, Flame, Manchette } from '@osrd-project/ui-icons';
 import cx from 'classnames';
-import { omit } from 'lodash';
+import { isEqual, omit } from 'lodash';
 import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
@@ -75,6 +75,7 @@ type PacedTrainItemProps = {
   removePacedTrains: (pacedTrainIdsToRemove: TimetableItemId[]) => void;
   subCategories: SubCategory[];
   infraIsCached: boolean;
+  projectingOnSimulatedPathException: boolean | undefined;
 };
 
 const PacedTrainItem = ({
@@ -90,6 +91,7 @@ const PacedTrainItem = ({
   removePacedTrains,
   subCategories,
   infraIsCached,
+  projectingOnSimulatedPathException,
 }: PacedTrainItemProps) => {
   const { editedElementContainer } = useContext(EditedElementContainerContext);
   const { t } = useTranslation('operational-studies', { keyPrefix: 'main' });
@@ -113,10 +115,18 @@ const PacedTrainItem = ({
     const exception = pacedTrain.exceptions.find(
       (ex) => formatPacedTrainIdToOccurrenceId(pacedTrain.id, ex) === trainIdUsedForProjection
     );
+    const pacedTrainTrackOffsets = pacedTrain.path.filter((step) => 'track' in step);
+    const exceptionTrackOffsets = exception?.path_and_schedule?.path?.filter(
+      (step) => 'track' in step
+    );
+    const isTrackOffsetsException = // This will affect the manchette even if the computed projection path is not affected
+      exceptionTrackOffsets && !isEqual(pacedTrainTrackOffsets, exceptionTrackOffsets);
+
     return {
       showPacedTrainProjectionIcon:
         extractPacedTrainIdFromOccurrenceId(trainIdUsedForProjection) === pacedTrain.id,
-      pathUsedForProjectionIsException: !!exception?.path_and_schedule,
+      pathUsedForProjectionIsException:
+        projectingOnSimulatedPathException || isTrackOffsetsException,
     };
   }, [trainIdUsedForProjection, pacedTrain]);
 
@@ -386,6 +396,7 @@ const PacedTrainItem = ({
               occurrenceActions={occurrenceActions}
               subCategories={subCategories}
               pacedTrainInvalidReason={summary?.isValid ? undefined : summary?.invalidReason}
+              pathUsedForProjectionIsException={pathUsedForProjectionIsException}
             />
           ))}
         </div>

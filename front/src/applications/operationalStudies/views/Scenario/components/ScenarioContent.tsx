@@ -178,6 +178,9 @@ const ScenarioContent = ({ activeBoards }: ScenarioContentProps) => {
               setTimetableItemToEditData={setTimetableItemToEditData}
               timetableItemToEditData={timetableItemToEditData}
               refreshNge={refreshNge}
+              projectingOnSimulatedPathException={
+                projectionData?.projectingOnSimulatedPathException
+              }
             />
           </div>
         </div>
