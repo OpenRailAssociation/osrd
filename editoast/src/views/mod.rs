@@ -232,6 +232,7 @@ fn service_router() -> router::DocumentedRouter {
                     .nests("/{id}", |path| {
                         path.route("/", get!(timetable::paced_train::get_by_id))
                             .route("/", put!(timetable::paced_train::update_paced_train))
+                            .route("/etcs_braking_curves", get!(timetable::paced_train::etcs_braking_curves))
                             .route("/path", get!(timetable::paced_train::get_path))
                             .route("/simulation", get!(timetable::paced_train::simulation))
                     })

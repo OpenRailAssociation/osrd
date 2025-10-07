@@ -1998,6 +1998,43 @@ paths:
       responses:
         '204':
           description: The paced train has been updated
+  /paced_train/{id}/etcs_braking_curves:
+    get:
+      tags:
+      - paced_train
+      - etcs_braking_curves
+      summary: Retrieve the etcs braking curves of an etcs train on etcs portions of the path
+      parameters:
+      - name: id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: infra_id
+        in: query
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: electrical_profile_set_id
+        in: query
+        required: false
+        schema:
+          type: integer
+          format: int64
+      - name: exception_key
+        in: query
+        required: false
+        schema:
+          type: string
+      responses:
+        '200':
+          description: ETCS Braking Curves Output
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ETCSBrakingCurvesResponse'
   /paced_train/{id}/path:
     get:
       tags:
@@ -6385,6 +6422,9 @@ components:
       - $ref: '#/components/schemas/EditoastPacedTrainErrorExceptionNotFound'
       - $ref: '#/components/schemas/EditoastPacedTrainErrorInfraNotFound'
       - $ref: '#/components/schemas/EditoastPacedTrainErrorNotFound'
+      - $ref: '#/components/schemas/EditoastPacedTrainErrorPathfindingFailed'
+      - $ref: '#/components/schemas/EditoastPacedTrainErrorRollingStockNotFound'
+      - $ref: '#/components/schemas/EditoastPacedTrainErrorSimulationFailed'
       - $ref: '#/components/schemas/EditoastPathfindingErrorDatabase'
       - $ref: '#/components/schemas/EditoastPathfindingErrorInfraNotFound'
       - $ref: '#/components/schemas/EditoastPathfindingViewErrorsEndingTrackLocationNotFound'
@@ -7108,6 +7148,78 @@ components:
           type: string
           enum:
           - editoast:paced_train:NotFound
+    EditoastPacedTrainErrorPathfindingFailed:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          required:
+          - paced_train_id
+          properties:
+            paced_train_id:
+              type: integer
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 404
+        type:
+          type: string
+          enum:
+          - editoast:paced_train:PathfindingFailed
+    EditoastPacedTrainErrorRollingStockNotFound:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          required:
+          - rolling_stock_name
+          properties:
+            rolling_stock_name:
+              type: string
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 404
+        type:
+          type: string
+          enum:
+          - editoast:paced_train:RollingStockNotFound
+    EditoastPacedTrainErrorSimulationFailed:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          required:
+          - paced_train_id
+          properties:
+            paced_train_id:
+              type: integer
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 404
+        type:
+          type: string
+          enum:
+          - editoast:paced_train:SimulationFailed
     EditoastPathfindingErrorDatabase:
       type: object
       required:
