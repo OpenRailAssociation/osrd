@@ -159,6 +159,34 @@ pub(in crate::views) struct StdcmQueryParams {
     )
 )]
 pub(in crate::views) async fn stdcm(
+    state: State<AppState>,
+    extension: AuthenticationExt,
+    Path(id): Path<i64>,
+    Query(query): Query<StdcmQueryParams>,
+    Json(request): Json<Request>,
+) -> Result<Json<StdcmResponse>> {
+    let mut returned_request: Option<core_client::stdcm::Request> = None;
+    stdcm_handler(
+        state,
+        extension,
+        Path(id),
+        Query(query),
+        Json(request),
+        &mut returned_request,
+    )
+    .await
+    .map_err(|mut err| {
+        if let Some(request) = returned_request {
+            err.context.insert(
+                String::from("core_payload"),
+                serde_json::to_value(request).unwrap_or(serde_json::Value::Null),
+            );
+        }
+        err
+    })
+}
+
+pub(in crate::views) async fn stdcm_handler(
     State(AppState {
         config,
         db_pool,
@@ -170,6 +198,7 @@ pub(in crate::views) async fn stdcm(
     Path(id): Path<i64>,
     Query(query): Query<StdcmQueryParams>,
     Json(request): Json<Request>,
+    returned_request: &mut Option<core_client::stdcm::Request>,
 ) -> Result<Json<StdcmResponse>> {
     let authorized = auth
         .check_roles([authz::Role::Stdcm].into())
@@ -288,7 +317,7 @@ pub(in crate::views) async fn stdcm(
             })
             .collect(),
     };
-    let returned_request = query.return_debug_payloads.then_some(stdcm_request.clone());
+    *returned_request = query.return_debug_payloads.then_some(stdcm_request.clone());
 
     let stdcm_response: Result<core_client::stdcm::Response, InternalError> = stdcm_request
         .fetch(core_client.as_ref())
@@ -308,13 +337,13 @@ pub(in crate::views) async fn stdcm(
                 simulation: simulation.into(),
                 pathfinding_result: path,
                 departure_time,
-                core_payload: returned_request,
+                core_payload: returned_request.clone(),
             }))
         }
         core_client::stdcm::Response::PathNotFound => {
             span.record("path_found", false);
             Ok(Json(StdcmResponse::PathNotFound {
-                core_payload: returned_request,
+                core_payload: returned_request.clone(),
             }))
         }
     }
