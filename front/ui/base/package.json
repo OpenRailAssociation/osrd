@@ -9,7 +9,7 @@
   "devDependencies": {
     "@eslint/js": "^8.57.1",
     "@rollup/plugin-eslint": "^9.1.0",
-    "@rollup/plugin-node-resolve": "^16.0.0",
+    "@rollup/plugin-node-resolve": "^16.0.2",
     "@rollup/plugin-typescript": "^12.1.0",
     "@types/lodash": "^4.17.17",
     "@types/react": "^19.1.15",
@@ -34,10 +34,10 @@
     "react": "^18.2.0 || ^19.1.0",
     "react-dom": "^18.2.0 || ^19.1.0",
     "rimraf": "^6.0.1",
-    "rollup": "^4.52.3",
+    "rollup": "^4.52.4",
     "rollup-plugin-livereload": "^2.0.5",
     "rollup-plugin-postcss": "^4.0.2",
-    "typescript": "^5.4.2",
+    "typescript": "^5.9.3",
     "typescript-eslint": "^8.46.0",
     "vitest": "^3.2.3"
   }
