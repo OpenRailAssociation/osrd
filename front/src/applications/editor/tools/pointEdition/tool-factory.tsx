@@ -272,7 +272,6 @@ function getPointEditionTool<T extends EditorPoint>({
           typeof computedPosition === 'number' &&
           Math.abs(dbPosition - computedPosition) >= 1
         ) {
-          // eslint-disable-next-line no-console
           console.warn(
             `
       The entity ${entity.properties.id} position computed by Turf.js does not match the one from the database:

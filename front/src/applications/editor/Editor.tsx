@@ -315,7 +315,6 @@ const Editor = () => {
     return () => {
       if (toolAndState.tool.onUnmount) toolAndState.tool.onUnmount(extendedContext);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [toolAndState.tool]);
 
   /**

@@ -1,4 +1,3 @@
-/* eslint-disable prefer-destructuring, no-plusplus */
 import along from '@turf/along';
 import distance from '@turf/distance';
 import { point } from '@turf/helpers';
@@ -182,7 +181,6 @@ export function simplifyFeature(feature: GeoJSONFeature, sourceLayer?: string): 
     type: 'Feature',
     id: feature.id,
     properties: { ...feature.properties, sourceLayer },
-    // eslint-disable-next-line no-underscore-dangle
     geometry: feature.geometry || feature._geometry,
   };
 }

@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-non-null-asserted-optional-chain */
 import { useEffect, useMemo } from 'react';
 
 import { skipToken } from '@reduxjs/toolkit/query';

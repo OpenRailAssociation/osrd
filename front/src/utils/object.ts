@@ -1,4 +1,3 @@
-/* eslint-disable import/prefer-default-export */
 import { isEqual, pick } from 'lodash';
 /**
   compare two objects based on a list of keys

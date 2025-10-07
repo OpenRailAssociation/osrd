@@ -103,7 +103,6 @@ const DataLoader = ({ bbox, getGeoJSONs, layers }: DataLoaderProps) => {
                       m
                         .querySourceFeatures('osm', { sourceLayer })
                         .map((f) => simplifyFeature(f, sourceLayer)),
-                      // eslint-disable-next-line no-plusplus
                       (f) => (f.id ? `osm-${f.id}` : `generated-${++incrementalID}`) // only deduplicate features with IDs
                     )
                   ),

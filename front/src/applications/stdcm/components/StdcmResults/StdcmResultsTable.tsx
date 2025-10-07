@@ -101,14 +101,11 @@ const StcdmResultsTable = ({
                         step.duration !== null && !isLastStep ? 'stop-with-duration ml-n2' : 'stop'
                       }
                     >
-                      {
-                        // eslint-disable-next-line no-nested-ternary
-                        isNotExtremity || !isRequestedPathStep
-                          ? step.duration !== null
-                            ? getStopDurationTime(step.duration)
-                            : step.time
-                          : ''
-                      }
+                      {isNotExtremity || !isRequestedPathStep
+                        ? step.duration !== null
+                          ? getStopDurationTime(step.duration)
+                          : step.time
+                        : ''}
                     </div>
                   </td>
                   <td className="stop">

@@ -1,4 +1,3 @@
-/* eslint-disable import/prefer-default-export */
 import { compact, uniq } from 'lodash';
 
 import type { RollingStock } from 'common/api/osrdEditoastApi';

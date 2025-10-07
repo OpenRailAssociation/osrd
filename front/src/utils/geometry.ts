@@ -15,7 +15,6 @@ import { minBy } from 'lodash';
 
 import type { GeoJsonLineString } from 'common/api/osrdEditoastApi';
 
-// eslint-disable-next-line import/prefer-default-export
 export function getTangent(
   tangentPoint: Position,
   line: Feature<LineString>

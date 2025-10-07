@@ -1,4 +1,3 @@
-/* eslint-disable import/prefer-default-export */
 import { isNil } from 'lodash';
 
 import type { RootState } from 'reducers';

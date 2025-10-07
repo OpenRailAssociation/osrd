@@ -1,4 +1,3 @@
-/* eslint-disable import/prefer-default-export */
 import { formatLocalTime } from 'utils/date';
 import { Duration, addDurationToDate } from 'utils/duration';
 import { calculateTimeDifferenceInDays } from 'utils/timeManipulation';
