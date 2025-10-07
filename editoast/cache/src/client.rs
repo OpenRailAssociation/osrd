@@ -16,6 +16,8 @@ pub enum ClientInner {
     Tokio(Pool),
     /// This doesn't cache anything. It has no backend.
     NoCache,
+    #[cfg(feature = "mock")]
+    Mock(redis_test::MockRedisConnection),
 }
 
 #[derive(Clone)]
@@ -42,6 +44,14 @@ impl Client {
         }
     }
 
+    #[cfg(feature = "mock")]
+    pub fn new_mock(commands: Vec<crate::MockCmd>, app_version: &str) -> Self {
+        Self {
+            app_version: ArcStr::from(app_version),
+            inner: ClientInner::Mock(redis_test::MockRedisConnection::new(commands)),
+        }
+    }
+
     pub async fn get_connection(&self) -> Result<Connection, PoolError> {
         match &self.inner {
             ClientInner::Tokio(pool) => Ok(Connection::new(
@@ -50,6 +60,11 @@ impl Client {
             )),
             ClientInner::NoCache => Ok(Connection::new(
                 ConnectionInner::NoCache,
+                self.app_version.clone(),
+            )),
+            #[cfg(feature = "mock")]
+            ClientInner::Mock(mock_conn) => Ok(Connection::new(
+                ConnectionInner::Mock(mock_conn.clone()),
                 self.app_version.clone(),
             )),
         }
