@@ -91,7 +91,7 @@ const DetailsBox = ({
       {declivities && (
         <>
           <hr />
-          <span id="previous-gradient-text">{`${previousGradientText} ‰` || '--'}</span>
+          <span id="previous-gradient-text">{`${previousGradientText} ‰`}</span>
         </>
       )}
     </div>
