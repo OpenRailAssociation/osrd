@@ -4,6 +4,7 @@ use authz::Role;
 use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
+use axum::extract::Query;
 use axum::extract::State;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
@@ -24,6 +25,9 @@ use crate::models::Scenario;
 use crate::models::macro_note::MacroNote;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
+use crate::views::pagination::PaginatedList;
+use crate::views::pagination::PaginationQueryParams;
+use crate::views::pagination::PaginationStats;
 use crate::views::project::ProjectError;
 use crate::views::project::ProjectIdParam;
 use crate::views::scenario::ScenarioError;
@@ -115,6 +119,57 @@ impl From<MacroNote> for MacroNoteResponse {
             labels: note.labels,
         }
     }
+}
+
+#[editoast_derive::openapi_schema]
+#[derive(Debug, Serialize, ToSchema)]
+#[cfg_attr(test, derive(Deserialize))]
+pub(in crate::views) struct MacroNoteListResponse {
+    #[serde(flatten)]
+    stats: PaginationStats,
+    results: Vec<MacroNoteResponse>,
+}
+
+#[editoast_derive::route]
+#[utoipa::path(
+    get, path = "",
+    tag = "scenarios",
+    params(ProjectIdParam, StudyIdParam, ScenarioIdParam, PaginationQueryParams<100>),
+    responses(
+        (status = 200, body = MacroNoteListResponse, description = "List of macro notes for the requested scenario"),
+    )
+)]
+pub(in crate::views) async fn list(
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    Extension(auth): AuthenticationExt,
+    Path((project_id, study_id, scenario_id)): Path<(i64, i64, i64)>,
+    Query(pagination_params): Query<PaginationQueryParams<100>>,
+) -> Result<Json<MacroNoteListResponse>> {
+    let authorized = auth
+        .check_roles([Role::OperationalStudies].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Forbidden.into());
+    }
+
+    let mut conn = db_pool.get().await?;
+
+    check_project_study_scenario(conn.clone(), project_id, study_id, scenario_id).await?;
+
+    let settings = pagination_params
+        .into_selection_settings()
+        .filter(move || MacroNote::SCENARIO_ID.eq(scenario_id))
+        .order_by(move || MacroNote::ID.asc());
+    let (result, stats) = MacroNote::list_paginated(&mut conn, settings).await?;
+
+    Ok(Json(MacroNoteListResponse {
+        stats,
+        results: result
+            .into_iter()
+            .map(MacroNoteResponse::from)
+            .collect_vec(),
+    }))
 }
 
 #[editoast_derive::route]
@@ -241,6 +296,64 @@ pub mod test {
                 && self.text == other.text
                 && self.labels == other.labels
         }
+    }
+
+    #[rstest]
+    async fn list_notes() {
+        let app = TestAppBuilder::default_app();
+        let db_pool = app.db_pool();
+
+        let fixtures1 =
+            create_scenario_fixtures_set(&mut db_pool.get_ok(), "test_scenario_name").await;
+        let fixtures2 =
+            create_scenario_fixtures_set(&mut db_pool.get_ok(), "test_scenario_name2").await;
+
+        for i in 0..5 {
+            MacroNote::changeset()
+                .scenario_id(fixtures1.scenario.id)
+                .x(rng().random_range(0..100))
+                .y(rng().random_range(0..100))
+                .title(format!("Note title 1{}", i))
+                .text(format!("Note text 1{}", i))
+                .labels(Tags::new(vec!["A".to_string(), format!("Label {}", i)]))
+                .create(&mut db_pool.get_ok())
+                .await
+                .expect("Failed to create macro note");
+        }
+
+        for i in 0..5 {
+            MacroNote::changeset()
+                .scenario_id(fixtures2.scenario.id)
+                .x(rng().random_range(0..100))
+                .y(rng().random_range(0..100))
+                .title(format!("Note title 2{}", i))
+                .text(format!("Note text 2{}", i))
+                .labels(Tags::new(vec!["A".to_string(), format!("Label 2{}", i)]))
+                .create(&mut db_pool.get_ok())
+                .await
+                .expect("Failed to create macro note");
+        }
+
+        let request = app.get(&format!(
+            "/projects/{}/studies/{}/scenarios/{}/macro_notes?page=1&page_size=3",
+            fixtures1.project.id, fixtures1.study.id, fixtures1.scenario.id
+        ));
+        let response: MacroNoteListResponse =
+            app.fetch(request).assert_status(StatusCode::OK).json_into();
+
+        let ids: Vec<i64> = response.results.iter().map(|note| note.id).collect();
+        let mut sorted_ids = ids.clone();
+        sorted_ids.sort();
+
+        assert_eq!(ids, sorted_ids);
+        assert_eq!(5, response.stats.count);
+        assert_eq!(3, response.results.len());
+        assert!(
+            response
+                .results
+                .iter()
+                .all(|note| note.title.starts_with("Note title 1"))
+        );
     }
 
     #[rstest]

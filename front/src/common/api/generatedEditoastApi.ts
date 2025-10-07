@@ -792,6 +792,19 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ['scenarios'],
       }),
+      getProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNotes: build.query<
+        GetProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNotesApiResponse,
+        GetProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNotesApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios/${queryArg.scenarioId}/macro_notes`,
+          params: {
+            page: queryArg.page,
+            page_size: queryArg.pageSize,
+          },
+        }),
+        providesTags: ['scenarios'],
+      }),
       postProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNotes: build.mutation<
         PostProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNotesApiResponse,
         PostProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNotesApiArg
@@ -2111,6 +2124,16 @@ export type DeleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNo
   studyId: number;
   scenarioId: number;
   nodeId: number;
+};
+export type GetProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNotesApiResponse =
+  /** status 200 List of macro notes for the requested scenario */ MacroNoteListResponse;
+export type GetProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNotesApiArg = {
+  /** The id of a project */
+  projectId: number;
+  studyId: number;
+  scenarioId: number;
+  page?: number;
+  pageSize?: number;
 };
 export type PostProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNotesApiResponse =
   /** status 201 Macro notes created */ MacroNoteBatchResponse;
@@ -4235,6 +4258,9 @@ export type MacroNoteResponse = {
   title: string;
   x: number;
   y: number;
+};
+export type MacroNoteListResponse = PaginationStats & {
+  results: MacroNoteResponse[];
 };
 export type MacroNoteBatchResponse = {
   macro_notes: MacroNoteResponse[];
