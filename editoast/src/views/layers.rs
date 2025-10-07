@@ -18,10 +18,10 @@ use utoipa::ToSchema;
 
 use crate::AppState;
 use crate::error::Result;
-use crate::map::Layer;
-use crate::map::MapLayers;
 use crate::map::get_cache_tile_key;
 use crate::map::get_view_cache_prefix;
+use crate::models::layers::Layer;
+use crate::models::layers::MapLayers;
 use crate::models::layers::geo_json_and_data::GeoJsonAndData;
 use crate::models::layers::geo_json_and_data::create_and_fill_mvt_tile;
 use crate::views::AuthenticationExt;
@@ -238,7 +238,7 @@ mod tests {
     use super::LayersError;
     use super::ViewMetadata;
     use crate::error::InternalError;
-    use crate::map::MapLayers;
+    use crate::models::layers::MapLayers;
     use crate::views::test_app;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]

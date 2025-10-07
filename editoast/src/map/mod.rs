@@ -1,9 +1,4 @@
-mod layers;
-
 use deadpool_redis::redis::AsyncCommands;
-pub use layers::Layer;
-pub use layers::MapLayers;
-pub use layers::View;
 
 use crate::error::Result;
 
