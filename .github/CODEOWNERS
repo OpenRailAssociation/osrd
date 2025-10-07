@@ -37,7 +37,6 @@
 
 # --- CORE ---
 /core                                                    @openrailassociation/OSRD-Core
-/train-sim                                               @openrailassociation/OSRD-Core
 
 # --- OSRDYNE ---
 /osrdyne                                                 @openrailassociation/OSRD-DevOps
