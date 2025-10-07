@@ -39,8 +39,8 @@ use crate::AppState;
 use crate::generated_data::speed_limit_tags_config::SpeedLimitTagIds;
 use crate::infra_cache::InfraCache;
 use crate::models::PgAuthDriver;
-use crate::models::layers::MapLayers;
 use crate::views::service_router;
+use editoast_models::map::MapLayers;
 use fga::client::DEFAULT_OPENFGA_MAX_CHECKS_PER_BATCH_CHECK;
 use fga::client::DEFAULT_OPENFGA_MAX_TUPLES_PER_WRITE;
 

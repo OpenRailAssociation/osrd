@@ -1,6 +1,7 @@
 use std::ops::DerefMut;
 
 use database::DbConnection;
+use diesel::prelude::*;
 use diesel::sql_query;
 use diesel::sql_types::Integer;
 use diesel::sql_types::Jsonb;
@@ -213,11 +214,10 @@ pub fn get_geo_json_sql_query(table_name: &str, view: &View) -> String {
 mod tests {
     use serde_json::json;
 
-    use crate::models::layers::MapLayers;
-
-    use super::GeoJsonAndData;
-    use super::create_and_fill_mvt_tile;
-    use super::get_geo_json_sql_query;
+    use crate::map::GeoJsonAndData;
+    use crate::map::MapLayers;
+    use crate::map::create_and_fill_mvt_tile;
+    use crate::map::get_geo_json_sql_query;
 
     #[test]
     fn test_query_creation() {

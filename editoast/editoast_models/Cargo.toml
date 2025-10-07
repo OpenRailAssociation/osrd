@@ -5,7 +5,7 @@ version.workspace = true
 edition.workspace = true
 
 [features]
-testing = ["dep:serde_json"]
+testing = []
 
 [dependencies]
 chrono.workspace = true
@@ -17,6 +17,8 @@ diesel_json.workspace = true
 editoast_derive.workspace = true
 futures.workspace = true
 futures-util.workspace = true
+geos.workspace = true
+mvt.workspace = true
 openssl.workspace = true
 opentelemetry-semantic-conventions.workspace = true
 postgis_diesel.workspace = true
@@ -24,7 +26,8 @@ postgres-openssl.workspace = true
 regex.workspace = true
 schemas.workspace = true
 serde.workspace = true
-serde_json = { workspace = true, optional = true }
+serde_json.workspace = true
+serde_yaml.workspace = true
 strum.workspace = true
 thiserror.workspace = true
 tokio.workspace = true

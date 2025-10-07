@@ -13,8 +13,8 @@ use schemas::infra::RailJson;
 use crate::infra_cache::InfraCache;
 use crate::map;
 use crate::models::Infra;
-use crate::models::layers::MapLayers;
 use cache;
+use editoast_models::map::MapLayers;
 use editoast_models::prelude::*;
 
 use super::ValkeyConfig;
