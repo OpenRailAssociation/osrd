@@ -29,6 +29,8 @@ pub struct Connection {
 pub(crate) enum ConnectionInner {
     Tokio(deadpool_redis::Connection),
     NoCache,
+    #[cfg(feature = "mock")]
+    Mock(redis_test::MockRedisConnection),
 }
 
 fn no_cache_cmd_handler(cmd: &Cmd) -> Result<Value, RedisError> {
@@ -64,6 +66,14 @@ impl ConnectionLike for Connection {
         match &mut self.inner {
             ConnectionInner::Tokio(connection) => connection.req_packed_command(cmd),
             ConnectionInner::NoCache => future::ready(no_cache_cmd_handler(cmd)).boxed(),
+            #[cfg(feature = "mock")]
+            ConnectionInner::Mock(mock_conn) => {
+                let result = deadpool_redis::redis::ConnectionLike::req_packed_command(
+                    mock_conn,
+                    &cmd.get_packed_command(),
+                );
+                future::ready(result).boxed()
+            }
         }
     }
 
@@ -86,6 +96,16 @@ impl ConnectionLike for Connection {
                     .collect::<Result<_, RedisError>>();
                 future::ready(responses).boxed()
             }
+            #[cfg(feature = "mock")]
+            ConnectionInner::Mock(mock_conn) => {
+                let result = deadpool_redis::redis::ConnectionLike::req_packed_commands(
+                    mock_conn,
+                    &cmd.get_packed_pipeline(),
+                    offset,
+                    count,
+                );
+                future::ready(result).boxed()
+            }
         }
     }
 
@@ -93,6 +113,10 @@ impl ConnectionLike for Connection {
         match &self.inner {
             ConnectionInner::Tokio(connection) => connection.get_db(),
             ConnectionInner::NoCache => 0,
+            #[cfg(feature = "mock")]
+            ConnectionInner::Mock(mock_conn) => {
+                deadpool_redis::redis::ConnectionLike::get_db(mock_conn)
+            }
         }
     }
 }
