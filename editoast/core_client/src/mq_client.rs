@@ -132,7 +132,7 @@ impl ChannelWorker {
     }
 
     pub fn should_reuse(&self) -> bool {
-        self.channel.status().state() == lapin::ChannelState::Connected
+        self.channel.status().connected()
     }
 
     async fn dispatching_loop(&self) {
@@ -142,8 +142,8 @@ impl ChannelWorker {
 
         let mut consumer = channel
             .basic_consume(
-                "amq.rabbitmq.reply-to",
-                consumer_tag.as_str(),
+                "amq.rabbitmq.reply-to".into(),
+                consumer_tag.into(),
                 BasicConsumeOptions {
                     no_ack: true,
                     ..Default::default()
@@ -280,18 +280,9 @@ impl RabbitMQClient {
     async fn connection_ok(connection: &Arc<RwLock<Option<Connection>>>) -> bool {
         let guard = connection.as_ref().read().await;
         let conn = guard.as_ref();
-        let status = match conn {
-            None => return false,
-            Some(conn) => conn.status().state(),
-        };
-        match status {
-            lapin::ConnectionState::Initial => false,
-            lapin::ConnectionState::Connecting => false,
-            lapin::ConnectionState::Connected => true,
-            lapin::ConnectionState::Closing => false,
-            lapin::ConnectionState::Closed => false,
-            lapin::ConnectionState::Reconnecting => false,
-            lapin::ConnectionState::Error => false,
+        match conn {
+            None => false,
+            Some(conn) => conn.status().connected(),
         }
     }
 
@@ -381,11 +372,11 @@ impl RabbitMQClient {
 
         channel
             .basic_publish(
-                self.exchange.as_str(),
+                self.exchange.clone().into(),
                 if self.single_worker {
-                    SINGLE_WORKER_KEY
+                    SINGLE_WORKER_KEY.into()
                 } else {
-                    routing_key.as_str()
+                    routing_key.into()
                 },
                 options,
                 serialized_payload,
@@ -447,11 +438,11 @@ impl RabbitMQClient {
         // Publish the message
         channel
             .basic_publish(
-                self.exchange.as_str(),
+                self.exchange.clone().into(),
                 if self.single_worker {
-                    SINGLE_WORKER_KEY
+                    SINGLE_WORKER_KEY.into()
                 } else {
-                    routing_key.as_str()
+                    routing_key.into()
                 },
                 options,
                 serialized_payload,
