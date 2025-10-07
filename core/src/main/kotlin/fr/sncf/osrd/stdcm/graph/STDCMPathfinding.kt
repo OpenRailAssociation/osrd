@@ -18,6 +18,7 @@ import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelope
 import fr.sncf.osrd.stdcm.infra_exploration.initInfraExplorerWithEnvelope
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
 import fr.sncf.osrd.train.RollingStock
+import fr.sncf.osrd.utils.LogAggregator
 import fr.sncf.osrd.utils.units.Offset
 import io.opentelemetry.api.trace.SpanKind
 import io.opentelemetry.instrumentation.annotations.WithSpan
@@ -181,6 +182,7 @@ class STDCMPathfinding(
         val queue = PriorityQueue<STDCMNode>()
 
         val progressLogger = ProgressLogger(graph)
+        val fValueLogger = LogAggregator({ logger.error(it) })
 
         for (location in starts) {
             queue.add(location)
@@ -190,14 +192,18 @@ class STDCMPathfinding(
         while (true) {
             if (Duration.between(start, Instant.now()).toSeconds() >= pathfindingTimeout)
                 throw OSRDError(ErrorType.PathfindingTimeoutError)
-            val endNode = queue.poll() ?: return null
+            val endNode = queue.poll()
+            if (endNode == null) {
+                fValueLogger.logAggregatedSummary()
+                return null
+            }
 
             // Checks that the f-value (best anticipated final value on path) only goes up,
             // otherwise the A* heuristic isn't admissible
             val fValue = endNode.timeData.totalRunningTime + endNode.remainingTimeEstimation
             if (fValue + 1.0 < lastFValue) { // Small tolerance
                 // We don't need to crash, logging an error is enough
-                logger.error("f-value decreases: new=$fValue, previous=$lastFValue")
+                fValueLogger.registerError("f-value decreases: new=$fValue, previous=$lastFValue")
             }
             lastFValue = fValue
 
