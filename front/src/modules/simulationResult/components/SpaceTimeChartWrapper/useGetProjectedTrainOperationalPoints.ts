@@ -82,7 +82,7 @@ const useGetProjectedTrainOperationalPoints = ({
     };
 
     getOperationalPoints();
-  }, [path, pathfinding, infraId, t, projectionType]);
+  }, [path, pathfinding, infraId, projectedOperationalPoints, timetableId, t, projectionType]);
 
   return { operationalPoints, filteredOperationalPoints, setFilteredOperationalPoints };
 };

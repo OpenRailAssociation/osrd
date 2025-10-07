@@ -32,7 +32,7 @@ export const expectedWaypointsPanelDataForPacedTrain: Record<string, Partial<Way
   Mid_East_station: { ch: 'BV', offset: '19.55', checked: true },
   [requestedPoint('1')]: { ch: '', offset: '22.47', checked: true },
   Mid_West_station: { ch: 'BV', offset: '34.0', checked: true },
-  North_West_station: { ch: 'BC', offset: '47.55', checked: true },
+  North_West_station: { ch: 'BV', offset: '47.60', checked: true },
   [requestedDestination]: { ch: '', offset: '47.65', checked: true },
 };
 
