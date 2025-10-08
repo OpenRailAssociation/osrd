@@ -1,7 +1,5 @@
-import org.gradle.api.tasks.testing.logging.TestLogEvent
-
 plugins {
-    id 'org.jetbrains.kotlin.jvm' version '2.2.20'
+    alias(libs.plugins.kotlin.jvm)
 }
 
 repositories {
@@ -9,21 +7,36 @@ repositories {
 }
 
 dependencies {
-    implementation group: 'net.java.dev.jna', name: 'jna', version: '5.14.0'
-    testImplementation group: 'org.jetbrains.kotlin', name: 'kotlin-test', version: '1.9.23'
+    implementation libs.jna
+    testImplementation libs.kotlin.test
 }
 
-sourceSets {
-    test {
-        resources {
-            srcDirs = ["../cross_language_tests/"]
-        }
-    }
+tasks.register('rustBuild', Exec) {
+    description = 'Builds the rust binary'
+
+    workingDir '..'
+    commandLine 'cargo', 'build', '--release'
+    outputs.file '../target/release/libtrain_sim.so'
+
+    // Always run the task and rely on cargo to build when necessary
+    outputs.upToDateWhen { false }
 }
 
-test {
-    systemProperty "jna.library.path", System.getProperty("jna.library.path")
-    testLogging {
-        events TestLogEvent.FAILED, TestLogEvent.PASSED, TestLogEvent.SKIPPED
-    }
+tasks.register('generateKotlinBindings', Exec) {
+    description = 'Re-generate the kotlin bindings'
+
+    workingDir '..'
+    commandLine 'cargo', 'run', '--package', 'uniffi-bindgen', '--',
+                'generate',
+                '--library', 'target/release/libtrain_sim.so',
+                '--language', 'kotlin',
+                '--out-dir', 'kotlin_bindings/src/main/kotlin'
+
+    inputs.file '../target/release/libtrain_sim.so'
+
+    // Register the train-sim crate sources as inputs of this task so that it
+    // runs when the API changes
+    inputs.dir '../src'
+
+    outputs.dir 'src/main/kotlin'
 }
