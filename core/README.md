@@ -116,6 +116,11 @@ For core:
 ./gradlew shadowJar && ALL_INFRA=true java -jar -ea -Xmx12g -XX:+HeapDumpOnOutOfMemoryError -XX:HeapDumpPath=dump.hprof build/libs/osrd-all.jar worker --editoast-url http://localhost:8090/
 ```
 
+For STDCM tests, it's possible to store (heavy) timetable data locally to save
+important I/O time.
+Set `LOCAL_TIMETABLE_CACHE` to some location (like `timetable_cache`) where
+core will read timetable cache (or create for later use).
+
 No-cache mode on editoast is also usually helpful to repeat requests. \
 One may want to combine it with single-worker mode and probably manage authz. \
 Please check [editoast's README](../editoast/README.md) for all that.
