@@ -2904,6 +2904,38 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/MacroNoteResponse'
+    delete:
+      tags:
+      - scenarios
+      parameters:
+      - name: project_id
+        in: path
+        description: The id of a project
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: study_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: scenario_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      - name: note_id
+        in: path
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '204':
+          description: The macro note was deleted successfully
   /rolling_stock:
     post:
       tags:
