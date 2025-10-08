@@ -22,7 +22,6 @@ use tracing::span;
 
 pub struct Connection {
     inner: ConnectionInner,
-    #[expect(unused)]
     app_version: ArcStr,
 }
 
@@ -137,6 +136,10 @@ struct ZrangebyscoreWrapper<M> {
 impl Connection {
     pub(crate) fn new(inner: ConnectionInner, app_version: ArcStr) -> Self {
         Self { inner, app_version }
+    }
+
+    pub fn app_version(&self) -> &str {
+        &self.app_version
     }
 
     /// Get a deserializable value from valkey
