@@ -3,8 +3,9 @@ package fr.sncf.osrd.stdcm
 import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.path.implementations.ChunkPath
 import fr.sncf.osrd.path.interfaces.TrainPath
-import fr.sncf.osrd.pathfinding.PathfindingResultId
+import fr.sncf.osrd.pathfinding.Pathfinding
 import fr.sncf.osrd.sim_infra.api.Block
+import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.sim_infra.api.RouteId
 import fr.sncf.osrd.train.TrainStop
 
@@ -13,7 +14,7 @@ import fr.sncf.osrd.train.TrainStop
  * well as different representations of the same data that can be reused in later steps.
  */
 data class STDCMResult(
-    val blocks: PathfindingResultId<Block>,
+    val blocks: Pathfinding.Result<BlockId, Block>,
     val envelope: Envelope,
     val trainPath: TrainPath,
     val chunkPath: ChunkPath,

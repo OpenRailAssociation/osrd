@@ -4,7 +4,7 @@ import fr.sncf.osrd.geom.Point
 import fr.sncf.osrd.graph.AStarHeuristic
 import fr.sncf.osrd.graph.GraphAdapter
 import fr.sncf.osrd.pathfinding.Pathfinding
-import fr.sncf.osrd.pathfinding.PathfindingEdgeLocationId
+import fr.sncf.osrd.pathfinding.Pathfinding.EdgeLocation
 import fr.sncf.osrd.pathfinding.RemainingDistanceEstimator
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockId
@@ -93,8 +93,8 @@ class AStarTests {
 
         // ---------- ----------- ----------
 
-        val origin = mutableSetOf(PathfindingEdgeLocationId(startBlock, Offset(0.meters)))
-        val destination = mutableSetOf(PathfindingEdgeLocationId(endBlock, Offset(100.meters)))
+        val origin = mutableSetOf(EdgeLocation(startBlock, Offset<Block>(0.meters)))
+        val destination = mutableSetOf(EdgeLocation(endBlock, Offset<Block>(100.meters)))
 
         val remainingDistanceEstimator =
             RemainingDistanceEstimator(

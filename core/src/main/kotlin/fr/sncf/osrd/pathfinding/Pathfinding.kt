@@ -6,7 +6,6 @@ import fr.sncf.osrd.graph.*
 import fr.sncf.osrd.pathfinding.constraints.ConstraintCombiner
 import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
-import fr.sncf.osrd.utils.indexing.StaticIdx
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 import io.opentelemetry.api.trace.SpanKind
@@ -393,10 +392,3 @@ class Pathfinding<NodeT : Any, EdgeT : Any, OffsetType>(
         const val TIMEOUT = 180.0
     }
 }
-
-// Type aliases to avoid repeating `StaticIdx<T>, T` when edge types are static idx
-typealias PathfindingResultId<T> = Pathfinding.Result<StaticIdx<T>, T>
-
-typealias PathfindingEdgeLocationId<T> = Pathfinding.EdgeLocation<StaticIdx<T>, T>
-
-typealias PathfindingEdgeRangeId<T> = Pathfinding.EdgeRange<StaticIdx<T>, T>

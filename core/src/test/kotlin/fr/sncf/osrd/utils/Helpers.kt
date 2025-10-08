@@ -7,7 +7,7 @@ import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.api.TrackLocation
 import fr.sncf.osrd.api.makeSignalingSimulator
 import fr.sncf.osrd.api.standalone_sim.PhysicsConsistModel
-import fr.sncf.osrd.pathfinding.PathfindingEdgeLocationId
+import fr.sncf.osrd.pathfinding.Pathfinding.EdgeLocation
 import fr.sncf.osrd.railjson.schema.external_generated_inputs.RJSElectricalProfileSet
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingResistance
@@ -128,7 +128,7 @@ object Helpers {
     }
 
     data class LocationPair(
-        val blockLocations: Set<PathfindingEdgeLocationId<Block>>,
+        val blockLocations: Set<EdgeLocation<BlockId, Block>>,
         val trackLocations: Set<TrackLocation>,
     )
 
@@ -137,13 +137,12 @@ object Helpers {
         infra: FullInfra,
         routeName: String,
         offset: Offset<Route>,
-    ): PathfindingEdgeLocationId<Block> {
+    ): EdgeLocation<BlockId, Block> {
         var mutOffset = offset
         val blocks = getBlocksOnRoutes(infra, listOf(routeName))
         for (block in blocks) {
             val blockLength = infra.blockInfra.getBlockLength(block)
-            if (mutOffset <= blockLength.cast())
-                return PathfindingEdgeLocationId(block, mutOffset.cast())
+            if (mutOffset <= blockLength.cast()) return EdgeLocation(block, mutOffset.cast())
             mutOffset -= blockLength.distance
         }
         throw RuntimeException("Couldn't find route location")

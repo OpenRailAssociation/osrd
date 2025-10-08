@@ -6,6 +6,7 @@ import fr.sncf.osrd.graph.GraphAdapter
 import fr.sncf.osrd.graph.NetworkGraphAdapter
 import fr.sncf.osrd.pathfinding.Pathfinding
 import fr.sncf.osrd.pathfinding.Pathfinding.EdgeLocation
+import fr.sncf.osrd.pathfinding.Pathfinding.Result
 import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.utils.CachedBlockMRSPBuilder
@@ -93,7 +94,7 @@ class PathfindingTests {
         val g = builder.build()
         val res =
             Pathfinding(g)
-                .setEdgeToLength { edge -> edge.length }
+                .setEdgeToLength { it.length }
                 .runPathfindingEdgesOnly(
                     listOf(
                         listOf(builder.getEdgeLocation("0-1")),
@@ -122,7 +123,7 @@ class PathfindingTests {
         val g = builder.build()
         val res =
             Pathfinding(g)
-                .setEdgeToLength { edge -> edge.length }
+                .setEdgeToLength { it.length }
                 .runPathfindingEdgesOnly(
                     listOf(
                         listOf(builder.getEdgeLocation("0-1")),
@@ -143,7 +144,7 @@ class PathfindingTests {
         val g = builder.build()
         val res =
             Pathfinding(g)
-                .setEdgeToLength { edge -> edge.length }
+                .setEdgeToLength { it.length }
                 .runPathfindingEdgesOnly(
                     listOf(
                         listOf(builder.getEdgeLocation("0-1", 10.meters)),
@@ -177,7 +178,7 @@ class PathfindingTests {
         val g = builder.build()
         val res =
             Pathfinding(g)
-                .setEdgeToLength { edge -> edge.length }
+                .setEdgeToLength { it.length }
                 .runPathfindingEdgesOnly(
                     listOf(
                         listOf(builder.getEdgeLocation("0-1"), builder.getEdgeLocation("2-3")),
@@ -208,7 +209,7 @@ class PathfindingTests {
         val g = builder.build()
         val res =
             Pathfinding(g)
-                .setEdgeToLength { edge -> edge.length }
+                .setEdgeToLength { it.length }
                 .runPathfindingEdgesOnly(
                     listOf(
                         listOf(builder.getEdgeLocation("0-1")),
@@ -236,7 +237,7 @@ class PathfindingTests {
         val g = builder.build()
         val res =
             Pathfinding(g)
-                .setEdgeToLength { edge -> edge.length }
+                .setEdgeToLength { it.length }
                 .runPathfindingEdgesOnly(
                     listOf(
                         listOf(builder.getEdgeLocation("0-1")),
@@ -261,7 +262,7 @@ class PathfindingTests {
         val g = builder.build()
         val res =
             Pathfinding(g)
-                .setEdgeToLength { edge -> edge.length }
+                .setEdgeToLength { it.length }
                 .runPathfindingEdgesOnly(
                     listOf(
                         listOf(builder.getEdgeLocation("2-3")),
@@ -285,7 +286,7 @@ class PathfindingTests {
         val g = builder.build()
         val res =
             Pathfinding(g)
-                .setEdgeToLength { edge -> edge.length }
+                .setEdgeToLength { it.length }
                 .runPathfindingEdgesOnly(
                     listOf(
                         listOf(builder.getEdgeLocation("0-1")),
@@ -308,7 +309,7 @@ class PathfindingTests {
         val g = builder.build()
         val res =
             Pathfinding(g)
-                .setEdgeToLength { edge -> edge.length }
+                .setEdgeToLength { it.length }
                 .runPathfindingEdgesOnly(
                     listOf(
                         listOf(builder.getEdgeLocation("0-1", 60.meters)),
@@ -331,7 +332,7 @@ class PathfindingTests {
         val g = builder.build()
         val res =
             Pathfinding(g)
-                .setEdgeToLength { edge -> edge.length }
+                .setEdgeToLength { it.length }
                 .runPathfindingEdgesOnly(
                     listOf(
                         listOf(builder.getEdgeLocation("0-1", 10.meters)),
@@ -359,7 +360,7 @@ class PathfindingTests {
         val g = builder.build()
         val res =
             Pathfinding(g)
-                .setEdgeToLength { edge -> edge.length }
+                .setEdgeToLength { it.length }
                 .runPathfindingEdgesOnly(
                     listOf(
                         listOf(builder.getEdgeLocation("0-1", 60.meters)),
@@ -389,7 +390,7 @@ class PathfindingTests {
         val g = builder.build()
         val res =
             Pathfinding(g)
-                .setEdgeToLength { edge -> edge.length }
+                .setEdgeToLength { it.length }
                 .runPathfinding(
                     listOf(
                         listOf(builder.getEdgeLocation("0-1")),
@@ -429,7 +430,7 @@ class PathfindingTests {
         val g = builder.build()
         val res =
             Pathfinding(g)
-                .setEdgeToLength { edge -> edge.length }
+                .setEdgeToLength { it.length }
                 .runPathfinding(
                     listOf(
                         listOf(builder.getEdgeLocation("0-1", 5.meters)),
@@ -475,7 +476,7 @@ class PathfindingTests {
         val g = builder.build()
         val res =
             Pathfinding(g)
-                .setEdgeToLength { edge -> edge.length }
+                .setEdgeToLength { it.length }
                 .addBlockedRangeOnEdges { edge -> edge.blockedRanges }
                 .runPathfindingEdgesOnly(
                     listOf(
@@ -504,7 +505,7 @@ class PathfindingTests {
         val g = builder.build()
         val res =
             Pathfinding(g)
-                .setEdgeToLength { edge -> edge.length }
+                .setEdgeToLength { it.length }
                 .addBlockedRangeOnEdges { edge -> edge.blockedRanges }
                 .runPathfindingEdgesOnly(
                     listOf(
@@ -535,7 +536,7 @@ class PathfindingTests {
         val g = builder.build()
         val res =
             Pathfinding(g)
-                .setEdgeToLength { edge -> edge.length }
+                .setEdgeToLength { it.length }
                 .addBlockedRangeOnEdges { edge -> edge.blockedRanges }
                 .runPathfindingEdgesOnly(
                     listOf(
@@ -564,7 +565,7 @@ class PathfindingTests {
         val g = builder.build()
         val res =
             Pathfinding(g)
-                .setEdgeToLength { edge -> edge.length }
+                .setEdgeToLength { it.length }
                 .addBlockedRangeOnEdges { edge -> edge.blockedRanges }
                 .runPathfindingEdgesOnly(
                     listOf(
@@ -593,7 +594,7 @@ class PathfindingTests {
         val g = builder.build()
         val res =
             Pathfinding(g)
-                .setEdgeToLength { edge -> edge.length }
+                .setEdgeToLength { it.length }
                 .addBlockedRangeOnEdges { edge -> edge.blockedRanges }
                 .runPathfindingEdgesOnly(
                     listOf(
@@ -621,7 +622,7 @@ class PathfindingTests {
         val g = builder.build()
         val res =
             Pathfinding(g)
-                .setEdgeToLength { edge -> edge.length }
+                .setEdgeToLength { it.length }
                 .addBlockedRangeOnEdges { edge -> edge.blockedRanges }
                 .runPathfindingEdgesOnly(
                     listOf(
@@ -657,7 +658,7 @@ class PathfindingTests {
         val g = builder.build()
         val res =
             Pathfinding(g)
-                .setEdgeToLength { edge -> edge.length }
+                .setEdgeToLength { it.length }
                 .addBlockedRangeOnEdges { edge -> edge.blockedRanges }
                 .runPathfindingEdgesOnly(
                     listOf(
@@ -684,7 +685,7 @@ class PathfindingTests {
         val g = builder.build()
         val res =
             Pathfinding(g)
-                .setEdgeToLength { edge -> edge.length }
+                .setEdgeToLength { it.length }
                 .runPathfindingEdgesOnly(
                     listOf(
                         listOf(
@@ -709,7 +710,7 @@ class PathfindingTests {
         builder.makeEdge(0, 1, 100.meters)
         val g = builder.build()
         val pathfinding =
-            Pathfinding(g).setEdgeToLength { edge -> edge.length }.setTimeout(timeout?.toDouble())
+            Pathfinding(g).setEdgeToLength { it.length }.setTimeout(timeout?.toDouble())
         if (!timesOut) {
             val res =
                 pathfinding.runPathfindingEdgesOnly(listOf(listOf(builder.getEdgeLocation("0-1"))))
@@ -771,7 +772,7 @@ class PathfindingTests {
     }
 
     companion object {
-        private fun convertRes(res: Pathfinding.Result<Edge, Edge>): List<SimpleRange> {
+        private fun convertRes(res: Result<Edge, Edge>): List<SimpleRange> {
             return res.ranges
                 .stream()
                 .map { x -> SimpleRange(x.edge.label, x.start, x.end) }

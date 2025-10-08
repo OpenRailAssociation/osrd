@@ -38,7 +38,7 @@ class RemainingDistanceEstimatorTest {
     @ParameterizedTest
     @MethodSource("testRemainingDistanceEstimatorArgs")
     fun testRemainingDistanceEstimator(
-        edgeLocations: Collection<PathfindingEdgeLocationId<Block>>,
+        edgeLocations: Collection<EdgeLocation<BlockId, Block>>,
         remainingDistance: Distance,
         expectedDistance: Distance,
         blockOffset: Offset<Block>,

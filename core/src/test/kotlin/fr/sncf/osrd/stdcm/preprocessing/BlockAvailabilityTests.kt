@@ -4,7 +4,7 @@ import fr.sncf.osrd.conflicts.SpacingRequirement
 import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope.part.EnvelopePart
 import fr.sncf.osrd.envelope_sim.EnvelopeProfile
-import fr.sncf.osrd.pathfinding.PathfindingEdgeLocationId
+import fr.sncf.osrd.pathfinding.Pathfinding.EdgeLocation
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.sim_infra.api.DirDetectorId
@@ -117,10 +117,7 @@ class BlockAvailabilityTests {
         val steps = originalSteps.toMutableList()
         val lastStep =
             stepsFromLocations(
-                    PathfindingEdgeLocationId(
-                        blocks.last(),
-                        infra.blockInfra.getBlockLength(blocks.last()),
-                    )
+                    EdgeLocation(blocks.last(), infra.blockInfra.getBlockLength(blocks.last()))
                 )
                 .single()
         if (steps.none { it.locations == lastStep.locations }) steps.add(lastStep)
@@ -128,7 +125,7 @@ class BlockAvailabilityTests {
         var infraExplorer =
             initInfraExplorerWithEnvelope(
                     infra,
-                    PathfindingEdgeLocationId(blocks[0], startOffset),
+                    EdgeLocation(blocks[0], startOffset),
                     rollingStock,
                     steps,
                 )
@@ -583,13 +580,10 @@ class BlockAvailabilityTests {
         var explorer =
             initInfraExplorerWithEnvelope(
                     infra,
-                    PathfindingEdgeLocationId(blocks[2], Offset(50.meters)),
+                    EdgeLocation(blocks[2], Offset(50.meters)),
                     REALISTIC_FAST_TRAIN,
                     stepsFromLocations(
-                        PathfindingEdgeLocationId(
-                            blocks.last(),
-                            infra.blockInfra.getBlockLength(blocks.last()),
-                        )
+                        EdgeLocation(blocks.last(), infra.blockInfra.getBlockLength(blocks.last()))
                     ),
                 )
                 .first { filterExplorer(it) }
@@ -630,7 +624,7 @@ class BlockAvailabilityTests {
         val steps =
             listOf(
                 STDCMStep(
-                    listOf(PathfindingEdgeLocationId(blocks[0], plannedStepOffset)),
+                    listOf(EdgeLocation(blocks[0], plannedStepOffset)),
                     null,
                     false,
                     PlannedTimingData(0.seconds, 0.seconds, timeAtZoneEnd.seconds),
@@ -657,13 +651,13 @@ class BlockAvailabilityTests {
         val steps =
             listOf(
                 STDCMStep(
-                    listOf(PathfindingEdgeLocationId(blocks[0], outOfBoundsStepOffset)),
+                    listOf(EdgeLocation(blocks[0], outOfBoundsStepOffset)),
                     null,
                     false,
                     PlannedTimingData(0.seconds, 0.seconds, 0.seconds),
                 ),
                 STDCMStep(
-                    listOf(PathfindingEdgeLocationId(blocks[1], Offset(0.meters))),
+                    listOf(EdgeLocation(blocks[1], Offset(0.meters))),
                     null,
                     false,
                     PlannedTimingData(0.seconds, 0.seconds, 0.seconds),
@@ -694,7 +688,7 @@ class BlockAvailabilityTests {
         val steps =
             listOf(
                 STDCMStep(
-                    listOf(PathfindingEdgeLocationId(blocks[0], plannedStepOffset)),
+                    listOf(EdgeLocation(blocks[0], plannedStepOffset)),
                     null,
                     false,
                     PlannedTimingData(
@@ -744,7 +738,7 @@ class BlockAvailabilityTests {
         val steps =
             listOf(
                 STDCMStep(
-                    listOf(PathfindingEdgeLocationId(blocks[0], plannedStepOffset)),
+                    listOf(EdgeLocation(blocks[0], plannedStepOffset)),
                     null,
                     false,
                     PlannedTimingData(0.seconds, 0.seconds, 0.seconds),
@@ -781,7 +775,7 @@ class BlockAvailabilityTests {
         val steps =
             listOf(
                 STDCMStep(
-                    listOf(PathfindingEdgeLocationId(blocks[0], plannedStepOffset)),
+                    listOf(EdgeLocation(blocks[0], plannedStepOffset)),
                     null,
                     false,
                     PlannedTimingData(0.seconds, 0.seconds, 0.seconds),
@@ -820,7 +814,7 @@ class BlockAvailabilityTests {
         val steps =
             listOf(
                 STDCMStep(
-                    listOf(PathfindingEdgeLocationId(blocks[0], plannedStepOffset)),
+                    listOf(EdgeLocation(blocks[0], plannedStepOffset)),
                     null,
                     false,
                     PlannedTimingData(minDelay.seconds, 0.seconds, 10.seconds),
@@ -855,7 +849,7 @@ class BlockAvailabilityTests {
             listOf(
                 // We need to add delay = timeAtZoneEnd + internal margin
                 STDCMStep(
-                    listOf(PathfindingEdgeLocationId(blocks[0], plannedStepOffset)),
+                    listOf(EdgeLocation(blocks[0], plannedStepOffset)),
                     null,
                     false,
                     PlannedTimingData(
@@ -866,7 +860,7 @@ class BlockAvailabilityTests {
                 ),
                 // If we add delay = timeAtZoneEnd + internal margin, this step is not respected
                 STDCMStep(
-                    listOf(PathfindingEdgeLocationId(blocks[0], secondPlannedStepOffset)),
+                    listOf(EdgeLocation(blocks[0], secondPlannedStepOffset)),
                     null,
                     false,
                     PlannedTimingData(0.seconds, 0.seconds, timeAtZoneEnd.seconds),
@@ -905,7 +899,7 @@ class BlockAvailabilityTests {
         val steps =
             listOf(
                 STDCMStep(
-                    listOf(PathfindingEdgeLocationId(blocks[0], Offset(100.meters))),
+                    listOf(EdgeLocation(blocks[0], Offset(100.meters))),
                     null,
                     false,
                     PlannedTimingData(

@@ -14,7 +14,7 @@ import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue.Percentage
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue.TimePerDistance
 import fr.sncf.osrd.envelope_sim_infra.computeMRSP
 import fr.sncf.osrd.pathfinding.Pathfinding
-import fr.sncf.osrd.pathfinding.PathfindingEdgeLocationId
+import fr.sncf.osrd.pathfinding.Pathfinding.EdgeLocation
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection
 import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop
@@ -22,6 +22,7 @@ import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.signaling.etcs_level2.ETCS_LEVEL2
 import fr.sncf.osrd.sim_infra.api.Block
+import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.sim_infra.api.DirTrackChunkId
 import fr.sncf.osrd.sim_infra.api.SpeedLimitProperty
 import fr.sncf.osrd.sim_infra.api.ZoneId
@@ -414,8 +415,8 @@ private fun parseSimulationScheduleItems(
 private fun findWaypointBlocks(
     infra: FullInfra,
     waypoints: Collection<TrackLocation>,
-): Set<PathfindingEdgeLocationId<Block>> {
-    val waypointBlocks = HashSet<PathfindingEdgeLocationId<Block>>()
+): Set<EdgeLocation<BlockId, Block>> {
+    val waypointBlocks = HashSet<EdgeLocation<BlockId, Block>>()
     for (waypoint in waypoints) {
         for (direction in Direction.entries) {
             waypointBlocks.addAll(findWaypointBlocks(infra, waypoint, direction))
