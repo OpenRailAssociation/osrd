@@ -1,13 +1,11 @@
 package fr.sncf.osrd.path.implementations
 
 import com.google.common.collect.ImmutableRangeMap
-import com.google.common.collect.Range
 import com.google.common.collect.RangeMap
 import fr.sncf.osrd.path.interfaces.*
 import fr.sncf.osrd.path.legacy_objects.ElectricalProfileMapping
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra.impl.makeDirChunk
-import fr.sncf.osrd.utils.entries
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
@@ -23,9 +21,9 @@ data class TrainPathNoBacktrack(
     private val rawInfra: RawInfra,
     private val blockInfra: BlockInfra,
     private val pathProperties: PathProperties,
-    private val routes: LinearObjectMap<RouteRange>?,
-    private val blocks: LinearObjectMap<BlockRange>,
-    private val chunks: LinearObjectMap<DirChunkRange>,
+    private val routes: List<RouteRange>?,
+    private val blocks: List<BlockRange>,
+    private val chunks: List<DirChunkRange>,
     private val electricalProfileMapping: ElectricalProfileMapping?,
     // Set to true if the blocks have been generated from the track path. Throws an error if the
     // routes are read. Note: we may eventually want to turn the error into a warning, if we do want
@@ -39,24 +37,25 @@ data class TrainPathNoBacktrack(
     init {
         // The sanity checks here are quite exhaustive and might be expensive to compute.
         // Once the path types are stable, we can remove some of the tests.
-        fun <ValueType, OffsetType> checkRangeMap(
-            map: LinearObjectMap<GenericLinearRange<ValueType, OffsetType>>,
+        fun <ValueType, OffsetType> checkRangeList(
+            list: List<GenericLinearRange<ValueType, OffsetType>>,
             objectLength: (ValueType) -> Length<OffsetType>,
         ) {
-            for ((key, value) in map.entries) {
-                require(value.length == (key.upperEndpoint() - key.lowerEndpoint()))
-                require(value.from >= Offset.zero())
-                require(value.to <= objectLength(value.value))
+            var previousRange: GenericLinearRange<ValueType, OffsetType>? = null
+            for (range in list) {
+                previousRange?.let { require(range.pathBegin == it.pathEnd) }
+                require(range.objectBegin >= Offset.zero())
+                require(range.objectEnd <= objectLength(range.value))
+                previousRange = range
             }
-            require(map.span().lowerEndpoint() == Offset.zero<TrainPath>())
-            require(map.span().upperEndpoint() == getTypedLength())
+            require(list.first().pathBegin == Offset.zero<TrainPath>())
+            require(list.last().pathEnd == getTypedLength())
         }
         routes?.let {
-            if (!routes.asMapOfRanges().isEmpty())
-                checkRangeMap(routes) { rawInfra.getRouteLength(it) }
+            if (!routes.isEmpty()) checkRangeList(routes) { rawInfra.getRouteLength(it) }
         }
-        checkRangeMap(blocks) { blockInfra.getBlockLength(it) }
-        checkRangeMap(chunks) { rawInfra.getTrackChunkLength(it.value) }
+        checkRangeList(blocks) { blockInfra.getBlockLength(it) }
+        checkRangeList(chunks) { rawInfra.getTrackChunkLength(it.value) }
     }
 
     override fun subPath(from: Offset<TrainPath>?, to: Offset<TrainPath>?): TrainPath {
@@ -66,9 +65,9 @@ data class TrainPathNoBacktrack(
             rawInfra = rawInfra,
             blockInfra = blockInfra,
             pathProperties = PathPropertiesView(pathProperties, fromDist.cast(), toDist.cast()),
-            routes = routes?.let { linearObjectSubMap(it, fromDist, toDist) },
-            blocks = linearObjectSubMap(blocks, fromDist, toDist),
-            chunks = linearObjectSubMap(chunks, fromDist, toDist),
+            routes = routes?.let { linearObjectListSubRange(it, fromDist, toDist) },
+            blocks = linearObjectListSubRange(blocks, fromDist, toDist),
+            chunks = linearObjectListSubRange(chunks, fromDist, toDist),
             electricalProfileMapping = electricalProfileMapping,
             haveApproximateBlocks = haveApproximateBlocks,
         )
@@ -78,14 +77,14 @@ data class TrainPathNoBacktrack(
         return Length(getLength())
     }
 
-    override fun getBlocks(): LinearObjectMap<BlockRange> {
+    override fun getBlocks(): List<BlockRange> {
         require(!haveApproximateBlocks)
         return blocks
     }
 
-    override fun getRoutes(): LinearObjectMap<RouteRange> = routes!!
+    override fun getRoutes(): List<RouteRange> = routes!!
 
-    override fun getChunks(): LinearObjectMap<DirChunkRange> = chunks
+    override fun getChunks(): List<DirChunkRange> = chunks
 
     override val length: Double
         get() = pathProperties.getLength().meters
@@ -116,47 +115,28 @@ data class TrainPathNoBacktrack(
         return EnvelopeTrainPath.from(rawInfra, this, electricalProfileMapping)
     }
 
-    /** Truncate the distance range maps of linear objects, updating the underlying object range */
-    private fun <ValueType, OffsetType> linearObjectSubMap(
-        map: LinearObjectMap<GenericLinearRange<ValueType, OffsetType>>,
+    /** Truncate the list of linear objects, updating the underlying object ranges */
+    private fun <ValueType, OffsetType> linearObjectListSubRange(
+        list: List<GenericLinearRange<ValueType, OffsetType>>,
         from: Offset<TrainPath>,
         to: Offset<TrainPath>,
-    ): LinearObjectMap<GenericLinearRange<ValueType, OffsetType>> {
+    ): List<GenericLinearRange<ValueType, OffsetType>> {
         require(from >= Offset.zero())
         require(to <= getTypedLength())
-        val newMapEntries =
-            map.entries.mapNotNull { (key, value) ->
-                val lower = key.lowerEndpoint()
-                val upper = key.upperEndpoint()
-                val truncatedStart = max(from, lower)
-                val truncatedEnd = min(to, upper)
+        return list.mapNotNull { (value, objectBegin, objectEnd, pathBegin, pathEnd) ->
+            val truncatedStart = max(from, pathBegin)
+            val truncatedEnd = min(to, pathEnd)
 
-                if (truncatedStart > truncatedEnd) return@mapNotNull null
+            if (truncatedStart > truncatedEnd) return@mapNotNull null
 
-                val value =
-                    value.copy(
-                        from = value.from + (truncatedStart - lower),
-                        to = value.to - (upper - truncatedEnd),
-                    )
-                val key =
-                    Range.range(
-                        truncatedStart - from.distance,
-                        key.lowerBoundType(),
-                        truncatedEnd - from.distance,
-                        key.upperBoundType(),
-                    )
-                if (key.isEmpty) return@mapNotNull null
-                Pair(key, value)
-            }
-        val builder =
-            ImmutableRangeMap.builder<
-                Offset<TrainPath>,
-                GenericLinearRange<ValueType, OffsetType>,
-            >()
-        for ((key, value) in newMapEntries) {
-            builder.put(key, value)
+            GenericLinearRange(
+                value = value,
+                objectBegin = objectBegin + (truncatedStart - pathBegin),
+                objectEnd = objectEnd - (pathEnd - truncatedEnd),
+                pathBegin = truncatedStart - from.distance,
+                pathEnd = truncatedEnd - from.distance,
+            )
         }
-        return builder.build()
     }
 
     override fun withRoutes(routes: List<RouteId>): TrainPath {
@@ -166,28 +146,36 @@ data class TrainPathNoBacktrack(
 
     /** *Debugging purpose*. We try to find the actual names of underlying objects. */
     override fun toString(): String {
-        data class PrintableRange<T>(val from: Distance, val to: Distance, val value: T) {
+        data class PrintableRange<T>(
+            val objectBegin: Distance,
+            val objectEnd: Distance,
+            val pathBegin: Distance,
+            val pathEnd: Distance,
+            val value: T,
+        ) {
             override fun toString(): String {
-                return "($value[$from,$to])"
+                return "(path[$pathBegin;$pathEnd]:$value[$objectBegin,$objectEnd])"
             }
         }
-        fun <T, U> mapToPrintable(
-            map: LinearObjectMap<GenericLinearRange<T, U>>?,
+        fun <T, U> listToPrintable(
+            list: List<GenericLinearRange<T, U>>?,
             toPrintable: (T) -> String,
         ): String {
-            return map?.asMapOfRanges()
-                ?.mapValues {
+            return list
+                ?.map {
                     PrintableRange(
-                        it.value.from.distance,
-                        it.value.to.distance,
-                        toPrintable(it.value.value),
+                        it.objectBegin.distance,
+                        it.objectEnd.distance,
+                        it.pathBegin.distance,
+                        it.pathEnd.distance,
+                        toPrintable(it.value),
                     )
                 }
                 .toString()
         }
-        val chunks = mapToPrintable(chunks) { makeDirChunk(rawInfra, it).toString() }
-        val blocks = mapToPrintable(blocks) { "block=${it.index.toInt()}" }
-        val routes = mapToPrintable(routes) { rawInfra.getRouteName(it) }
+        val chunks = listToPrintable(chunks) { makeDirChunk(rawInfra, it).toString() }
+        val blocks = listToPrintable(blocks) { "block=${it.index.toInt()}" }
+        val routes = listToPrintable(routes) { rawInfra.getRouteName(it) }
         return "$chunks ; blocks=$blocks ; routes=$routes"
     }
 }

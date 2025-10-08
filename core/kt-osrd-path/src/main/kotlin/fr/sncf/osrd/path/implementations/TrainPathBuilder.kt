@@ -1,19 +1,16 @@
 package fr.sncf.osrd.path.implementations
 
-import com.google.common.collect.BoundType
-import com.google.common.collect.ImmutableRangeMap
-import com.google.common.collect.Range
 import fr.sncf.osrd.path.interfaces.*
 import fr.sncf.osrd.path.legacy_objects.ElectricalProfileMapping
 import fr.sncf.osrd.sim_infra.api.*
-import fr.sncf.osrd.utils.entries
+import fr.sncf.osrd.utils.indexing.DirStaticIdx
+import fr.sncf.osrd.utils.indexing.StaticIdx
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.Offset.Companion.max
 import fr.sncf.osrd.utils.units.Offset.Companion.min
 import fr.sncf.osrd.utils.units.meters
 import fr.sncf.osrd.utils.units.sumOffsets
-import fr.sncf.osrd.utils.values
 
 /**
  * This file lists all usual builder functions to generate train paths, with useful private methods
@@ -34,15 +31,20 @@ fun buildTrainPathFromBlock(
     routeNames: List<String>? = null,
     electricalProfileMapping: ElectricalProfileMapping? = null,
 ): TrainPath {
-    val blockMap =
-        ImmutableRangeMap.of(
-            Range.closed(Offset<TrainPath>(0.meters), Offset(endOffset - beginOffset)),
-            BlockRange(blockId, beginOffset, endOffset),
+    val blockList =
+        listOf(
+            BlockRange(
+                blockId,
+                beginOffset,
+                endOffset,
+                Offset.zero(),
+                Offset(endOffset - beginOffset),
+            )
         )
     return buildTrainPathFromBlockRanges(
         rawInfra,
         blockInfra,
-        blockMap,
+        blockList,
         routes,
         routeNames,
         electricalProfileMapping,
@@ -59,20 +61,24 @@ fun buildTrainPathFromBlocks(
     electricalProfileMapping: ElectricalProfileMapping? = null,
 ): TrainPath {
     var prevBlockFinalOffset: Offset<TrainPath> = Offset.zero()
-    val builder = ImmutableRangeMap.builder<Offset<TrainPath>, BlockRange>()
+    val blockRanges = mutableListOf<BlockRange>()
     for (block in blocks) {
         val blockLength = blockInfra.getBlockLength(block)
-        builder.put(
-            Range.closedOpen(prevBlockFinalOffset, prevBlockFinalOffset + blockLength.distance),
-            BlockRange(block, Offset.zero(), blockLength),
+        blockRanges.add(
+            BlockRange(
+                block,
+                Offset.zero(),
+                blockLength,
+                prevBlockFinalOffset,
+                prevBlockFinalOffset + blockLength.distance,
+            )
         )
         prevBlockFinalOffset += blockLength.distance
     }
-    val blockMap = builder.build()
     return buildTrainPathFromBlockRanges(
         rawInfra,
         blockInfra,
-        blockMap,
+        blockRanges,
         routes,
         routeNames,
         electricalProfileMapping,
@@ -83,23 +89,23 @@ fun buildTrainPathFromBlocks(
 fun buildTrainPathFromBlockRanges(
     rawInfra: RawInfra,
     blockInfra: BlockInfra,
-    blockRanges: LinearObjectMap<BlockRange>,
+    blockRanges: List<BlockRange>,
     routes: List<RouteId>? = null,
     routeNames: List<String>? = null,
     electricalProfileMapping: ElectricalProfileMapping? = null,
     haveApproximateBlocks: Boolean = false,
 ): TrainPath {
     require(routes == null || routeNames == null)
-    val chunkMap = generateTrackChunks(rawInfra, blockInfra, blockRanges)
+    val chunks = generateTrackChunks(rawInfra, blockInfra, blockRanges)
     val routeIds = routes ?: routeNames?.map { rawInfra.getRouteFromName(it) }
-    val routeMap = routeIds?.let { generateRouteRanges(rawInfra, chunkMap, it) }
+    val routes = routeIds?.let { generateRouteRanges(rawInfra, chunks, it) }
     return TrainPathNoBacktrack(
         rawInfra,
         blockInfra,
-        makePathProperties(rawInfra, buildChunkPath(rawInfra, chunkMap), routeIds),
-        routeMap,
+        makePathProperties(rawInfra, buildChunkPath(rawInfra, chunks), routeIds),
+        routes,
         blockRanges,
-        chunkMap,
+        chunks,
         electricalProfileMapping,
         haveApproximateBlocks = haveApproximateBlocks,
     )
@@ -112,7 +118,7 @@ fun buildTrainPathFromBlockRanges(
 fun buildTrainPathFromChunks(
     rawInfra: RawInfra,
     blockInfra: BlockInfra,
-    chunkRanges: LinearObjectMap<DirChunkRange>,
+    chunkRanges: List<DirChunkRange>,
     routes: List<RouteId>? = null,
     routeNames: List<String>? = null,
     electricalProfileMapping: ElectricalProfileMapping? = null,
@@ -141,7 +147,7 @@ fun buildTrainPathFromChunkPath(
     routeNames: List<String>? = null,
     electricalProfileMapping: ElectricalProfileMapping? = null,
 ): TrainPath {
-    val chunkRanges = mutableListOf<DirChunkRange>()
+    val chunkRanges = mutableListOf<PartialDirChunkRange>()
     var prevChunkFinalOffset = 0.meters
     for ((i, chunk) in chunkPath.chunks.withIndex()) {
         val isFirst = i == 0
@@ -150,85 +156,72 @@ fun buildTrainPathFromChunkPath(
         val from = if (isFirst) chunkPath.beginOffset.cast<TrackChunk>() else Offset.zero()
         var to = chunkLength
         if (isLast) to = Offset(chunkPath.endOffset.distance - prevChunkFinalOffset)
-        chunkRanges.add(DirChunkRange(chunk, from, to))
+        chunkRanges.add(PartialDirChunkRange(chunk, from, to))
         prevChunkFinalOffset += chunkLength.distance
     }
     return buildTrainPathFromChunks(
         rawInfra,
         blockInfra,
-        buildRangeMap(chunkRanges),
+        buildRangeList(chunkRanges),
         routes,
         routeNames,
         electricalProfileMapping,
     )
 }
 
-/** Create a range map from list of ranges, mapping them to the path offset (starting at 0). */
-fun <ValueType, OffsetType> buildRangeMap(
-    ranges: List<GenericLinearRange<ValueType, OffsetType>>
-): LinearObjectMap<GenericLinearRange<ValueType, OffsetType>> {
+/** Create a list of ranges from a list of partial ranges, mapping path offsets (starting at 0). */
+fun <ValueType, OffsetType> buildRangeList(
+    ranges: List<PartialGenericLinearRange<ValueType, OffsetType>>
+): List<GenericLinearRange<ValueType, OffsetType>> {
     // Merge adjacent ranges of the same object
-    val merged = mutableListOf<GenericLinearRange<ValueType, OffsetType>>()
+    val merged = mutableListOf<PartialGenericLinearRange<ValueType, OffsetType>>()
     for (range in ranges) {
         if (merged.isEmpty() || merged.last().value != range.value) merged.add(range)
-        else merged[merged.size - 1] = merged.last().copy(to = range.to)
-    }
-
-    // We need to adjust which intervals are closed or open to keep 0-length ranges
-    val zeroLengthIndexes = merged.map { it.from == it.to }
-    for ((i, isZeroLength) in zeroLengthIndexes.withIndex()) {
-        // This case *could* be supported, but it's a sign something is likely to be wrong.
-        // The test can be removed if we need to support it, in the meantime it's a good smoke test.
-        assert(!isZeroLength || i == 0 || i == zeroLengthIndexes.size - 1) {
-            "Zero length range that isn't first or last"
-        }
+        else merged[merged.lastIndex] = merged.last().copy(objectEnd = range.objectEnd)
     }
 
     var prevRangeLength: Offset<TrainPath> = Offset.zero()
-    val builder =
-        ImmutableRangeMap.builder<Offset<TrainPath>, GenericLinearRange<ValueType, OffsetType>>()
-    for ((i, value) in merged.withIndex()) {
-        // In normal cases, we always include lower bound and never include upper bound.
-        // Exceptions: the very first and last bounds are included, and a zero-length range is
-        // included in both directions. The next range then needs to have its lower bound excluded.
-        // Two consecutive zero-length ranges are not supported.
-        val includeLowerEndpoint = i == 0 || !zeroLengthIndexes[i - 1]
-        val includeUpperEndpoint = i == merged.size - 1 || zeroLengthIndexes[i]
-        fun mapBoundType(included: Boolean) = if (included) BoundType.CLOSED else BoundType.OPEN
-        val range =
-            Range.range(
+    val res = mutableListOf<GenericLinearRange<ValueType, OffsetType>>()
+    for (range in merged) {
+        res.add(
+            GenericLinearRange(
+                range.value,
+                range.objectBegin,
+                range.objectEnd,
                 prevRangeLength,
-                mapBoundType(includeLowerEndpoint),
-                prevRangeLength + value.length,
-                mapBoundType(includeUpperEndpoint),
+                prevRangeLength + range.length,
             )
-        builder.put(range, value)
-        prevRangeLength += value.length
+        )
+        prevRangeLength += range.length
     }
-    return builder.build()
+    return res
 }
 
 /** Generate the chunk ranges from given block ranges. */
 private fun generateTrackChunks(
     rawInfra: RawInfra,
     blockInfra: BlockInfra,
-    blocks: LinearObjectMap<BlockRange>,
-): LinearObjectMap<DirChunkRange> {
-    val res = mutableListOf<DirChunkRange>()
-    for (blockRange in blocks.values) {
+    blocks: List<BlockRange>,
+): List<DirChunkRange> {
+    val res = mutableListOf<PartialDirChunkRange>()
+    for (blockRange in blocks) {
         var currentChunkOffset = Offset<Block>(0.meters)
         for (chunk in blockInfra.getTrackChunksFromBlock(blockRange.value)) {
             val chunkLength = rawInfra.getTrackChunkLength(chunk.value)
 
-            val chunkStart = Offset<TrackChunk>(blockRange.from - currentChunkOffset)
-            val chunkEnd = Offset<TrackChunk>(blockRange.to - currentChunkOffset)
+            val chunkStart = Offset<TrackChunk>(blockRange.objectBegin - currentChunkOffset)
+            val chunkEnd = Offset<TrackChunk>(blockRange.objectEnd - currentChunkOffset)
             if (
                 chunkStart <= chunkEnd &&
                     Offset.zero<TrackChunk>() <= chunkEnd &&
                     chunkStart <= chunkLength
             ) {
                 val chunkRange =
-                    DirChunkRange(chunk, max(chunkStart, Offset.zero()), min(chunkEnd, chunkLength))
+                    PartialDirChunkRange(
+                        chunk,
+                        max(chunkStart, Offset.zero()),
+                        min(chunkEnd, chunkLength),
+                    )
                 res.add(chunkRange)
             }
 
@@ -237,11 +230,11 @@ private fun generateTrackChunks(
     }
 
     // We need to filter out zero-length ranges that aren't first or last
-    val filtered = mutableListOf<DirChunkRange>()
+    val filtered = mutableListOf<PartialDirChunkRange>()
     for ((i, chunkRange) in res.withIndex()) {
         if (i == 0 || i == res.size - 1 || chunkRange.length > 0.meters) filtered.add(chunkRange)
     }
-    return buildRangeMap(filtered)
+    return buildRangeList(filtered)
 }
 
 /**
@@ -250,11 +243,11 @@ private fun generateTrackChunks(
  */
 internal fun generateRouteRanges(
     rawInfra: RawInfra,
-    chunks: LinearObjectMap<DirChunkRange>,
+    chunks: List<DirChunkRange>,
     routes: List<RouteId>,
-): LinearObjectMap<RouteRange> {
-    val res = mutableListOf<RouteRange>()
-    val mappedChunks = chunks.values.associateBy { it.value }
+): List<RouteRange> {
+    val res = mutableListOf<PartialRouteRange>()
+    val mappedChunks = chunks.associateBy { it.value }
     for (route in routes) {
         // We look for the first and last point where the route is used by a chunk.
         // We assume that the chunk list is continuous and follows the route.
@@ -266,30 +259,29 @@ internal fun generateRouteRanges(
         for (chunk in chunksOnRoute) {
             mappedChunks[chunk]?.let { locatedChunk ->
                 usedRouteStart =
-                    min(usedRouteStart, chunkOffsetOnRoute + locatedChunk.from.distance)
-                usedRouteEnd = max(usedRouteEnd, chunkOffsetOnRoute + locatedChunk.to.distance)
+                    min(usedRouteStart, chunkOffsetOnRoute + locatedChunk.objectBegin.distance)
+                usedRouteEnd =
+                    max(usedRouteEnd, chunkOffsetOnRoute + locatedChunk.objectEnd.distance)
             }
             chunkOffsetOnRoute += rawInfra.getTrackChunkLength(chunk.value).distance
         }
 
         val usedRouteLength = usedRouteEnd - usedRouteStart
         if (usedRouteLength > 0.meters) {
-            res.add(RouteRange(route, usedRouteStart, usedRouteEnd))
+            res.add(PartialRouteRange(route, usedRouteStart, usedRouteEnd))
         }
     }
-    return buildRangeMap(res)
+    return buildRangeList(res)
 }
 
 /**
  * Build a ChunkPath from the given chunk ranges. Used to instantiate the internal `PathProperties`
  * instance.
  */
-private fun buildChunkPath(infra: RawInfra, chunkMap: LinearObjectMap<DirChunkRange>): ChunkPath {
-    val chunkRanges = chunkMap.values
-    val chunkIds = chunkRanges.map { it.value }
-    val beginOffset = chunkRanges.first().from
-    val endOffset =
-        beginOffset + (chunkMap.span().upperEndpoint() - chunkMap.span().lowerEndpoint())
+private fun buildChunkPath(infra: RawInfra, chunks: List<DirChunkRange>): ChunkPath {
+    val chunkIds = chunks.map { it.value }
+    val beginOffset = chunks.first().objectBegin
+    val endOffset = beginOffset + (chunks.last().pathEnd - chunks.first().pathBegin)
     return buildChunkPath(infra, chunkIds, beginOffset.cast(), endOffset.cast())
 }
 
@@ -303,11 +295,10 @@ private fun buildChunkPath(infra: RawInfra, chunkMap: LinearObjectMap<DirChunkRa
 private fun findBlockPath(
     infra: RawInfra,
     blockInfra: BlockInfra,
-    chunks: LinearObjectMap<DirChunkRange>,
-): LinearObjectMap<BlockRange> {
-    val res = mutableListOf<BlockRange>()
-    for (chunkEntry in chunks.entries) {
-        val dirChunkRange = chunkEntry.value
+    chunks: List<DirChunkRange>,
+): List<BlockRange> {
+    val res = mutableListOf<PartialBlockRange>()
+    for (dirChunkRange in chunks) {
         val dirChunkId = dirChunkRange.value
         val block =
             blockInfra.getBlocksFromTrackChunk(dirChunkId.value, dirChunkId.direction).first()
@@ -319,12 +310,33 @@ private fun findBlockPath(
                 .sumOffsets()
                 .cast<Block>()
         val newRange =
-            BlockRange(
+            PartialBlockRange(
                 block,
-                chunkOffsetOnBlock + dirChunkRange.from.distance,
-                chunkOffsetOnBlock + dirChunkRange.to.distance,
+                chunkOffsetOnBlock + dirChunkRange.objectBegin.distance,
+                chunkOffsetOnBlock + dirChunkRange.objectEnd.distance,
             )
         res.add(newRange)
     }
-    return buildRangeMap(res)
+    return buildRangeList(res)
 }
+
+/**
+ * Intermediate object used to build lists of `GenericLinearRange`. The path offsets aren't set yet.
+ */
+data class PartialGenericLinearRange<ValueType, OffsetType>(
+    val value: ValueType,
+    val objectBegin: Offset<OffsetType>,
+    val objectEnd: Offset<OffsetType>,
+) {
+    val length = objectEnd - objectBegin
+}
+
+typealias PartialLinearObjectRange<T> = PartialGenericLinearRange<StaticIdx<T>, T>
+
+typealias PartialLinearDirObjectRange<T> = PartialGenericLinearRange<DirStaticIdx<T>, T>
+
+typealias PartialRouteRange = PartialLinearObjectRange<Route>
+
+typealias PartialBlockRange = PartialLinearObjectRange<Block>
+
+typealias PartialDirChunkRange = PartialLinearDirObjectRange<TrackChunk>
