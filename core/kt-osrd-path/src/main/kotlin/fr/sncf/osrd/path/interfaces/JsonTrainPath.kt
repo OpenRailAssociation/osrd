@@ -1,7 +1,8 @@
 package fr.sncf.osrd.path.interfaces
 
 import com.squareup.moshi.Json
-import fr.sncf.osrd.path.implementations.buildRangeMap
+import fr.sncf.osrd.path.implementations.PartialBlockRange
+import fr.sncf.osrd.path.implementations.buildRangeList
 import fr.sncf.osrd.path.implementations.buildTrainPathFromBlockRanges
 import fr.sncf.osrd.path.legacy_objects.ElectricalProfileMapping
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection
@@ -14,7 +15,6 @@ import fr.sncf.osrd.utils.Direction
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.Offset.Companion.max
 import fr.sncf.osrd.utils.units.Offset.Companion.min
-import fr.sncf.osrd.utils.values
 
 data class JsonTrainPath(
     val blocks: List<ObjectRange<Block>>,
@@ -44,8 +44,10 @@ data class JsonTrainPath(
         electricalProfileMapping: ElectricalProfileMapping?,
     ): TrainPath {
         val blockRanges =
-            buildRangeMap(
-                blocks.map { BlockRange(blockInfra.getBlockFromName(it.id)!!, it.begin, it.end) }
+            buildRangeList(
+                blocks.map {
+                    PartialBlockRange(blockInfra.getBlockFromName(it.id)!!, it.begin, it.end)
+                }
             )
         return buildTrainPathFromBlockRanges(
             rawInfra,
@@ -59,7 +61,7 @@ data class JsonTrainPath(
 
 fun TrainPath.toJsonTrainPath(rawInfra: RawInfra, blockInfra: BlockInfra): JsonTrainPath {
     val tracks = mutableListOf<JsonTrainPath.TrackSectionRange>()
-    for ((dirChunk, from, to) in getChunks().values) {
+    for ((dirChunk, from, to) in getChunks()) {
         val track = rawInfra.getTrackFromChunk(dirChunk.value)
         val trackName = rawInfra.getTrackSectionName(track)
         val chunkStartOffset = rawInfra.getTrackChunkOffset(dirChunk.value)
@@ -100,11 +102,15 @@ fun TrainPath.toJsonTrainPath(rawInfra: RawInfra, blockInfra: BlockInfra): JsonT
         }
     }
     return JsonTrainPath(
-        getBlocks().values.map {
-            JsonTrainPath.ObjectRange(blockInfra.getBlockName(it.value), it.from, it.to)
+        getBlocks().map {
+            JsonTrainPath.ObjectRange(
+                blockInfra.getBlockName(it.value),
+                it.objectBegin,
+                it.objectEnd,
+            )
         },
-        getRoutes().values.map {
-            JsonTrainPath.ObjectRange(rawInfra.getRouteName(it.value), it.from, it.to)
+        getRoutes().map {
+            JsonTrainPath.ObjectRange(rawInfra.getRouteName(it.value), it.objectBegin, it.objectEnd)
         },
         tracks,
     )

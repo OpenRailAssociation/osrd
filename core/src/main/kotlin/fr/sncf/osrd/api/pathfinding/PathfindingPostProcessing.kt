@@ -2,11 +2,11 @@ package fr.sncf.osrd.api.pathfinding
 
 import com.google.common.collect.Iterables
 import fr.sncf.osrd.api.FullInfra
-import fr.sncf.osrd.path.implementations.buildRangeMap
+import fr.sncf.osrd.path.implementations.PartialBlockRange
+import fr.sncf.osrd.path.implementations.buildRangeList
 import fr.sncf.osrd.path.implementations.buildTrainPathFromBlockRanges
 import fr.sncf.osrd.path.interfaces.BlockPath
 import fr.sncf.osrd.path.interfaces.BlockRange
-import fr.sncf.osrd.path.interfaces.LinearObjectMap
 import fr.sncf.osrd.path.interfaces.TravelledPath
 import fr.sncf.osrd.path.interfaces.getLegacyBlockPath
 import fr.sncf.osrd.path.interfaces.toJsonTrainPath
@@ -126,18 +126,18 @@ fun makePathItemPositions(
 
 private fun makeBlocks(
     ranges: List<Pathfinding.EdgeRange<StaticIdx<Block>, Block>>
-): LinearObjectMap<BlockRange> {
-    val blockRanges = mutableListOf<BlockRange>()
+): List<BlockRange> {
+    val blockRanges = mutableListOf<PartialBlockRange>()
     for ((blockId, start, end) in ranges) {
         val lastAddedRange = blockRanges.lastOrNull()
         if (lastAddedRange == null || lastAddedRange.value != blockId) {
-            blockRanges.add(BlockRange(blockId, start, end))
+            blockRanges.add(PartialBlockRange(blockId, start, end))
         } else {
-            require(lastAddedRange.to == start)
-            blockRanges[blockRanges.lastIndex] = lastAddedRange.copy(to = end)
+            require(lastAddedRange.objectEnd == start)
+            blockRanges[blockRanges.lastIndex] = lastAddedRange.copy(objectEnd = end)
         }
     }
-    return buildRangeMap(blockRanges)
+    return buildRangeList(blockRanges)
 }
 
 /** Returns the route path, from the raw block pathfinding result */

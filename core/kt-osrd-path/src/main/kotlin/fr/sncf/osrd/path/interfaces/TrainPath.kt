@@ -1,9 +1,7 @@
 package fr.sncf.osrd.path.interfaces
 
-import com.google.common.collect.RangeMap
 import fr.sncf.osrd.path.implementations.ChunkPath
 import fr.sncf.osrd.sim_infra.api.*
-import fr.sncf.osrd.utils.entries
 import fr.sncf.osrd.utils.indexing.DirStaticIdx
 import fr.sncf.osrd.utils.indexing.StaticIdx
 import fr.sncf.osrd.utils.isSingleton
@@ -11,7 +9,6 @@ import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 import fr.sncf.osrd.utils.units.sumDistances
-import fr.sncf.osrd.utils.values
 
 /**
  * A `TrainPath` describes the path taken by a train and its properties. It is built in a way that
@@ -50,11 +47,11 @@ interface TrainPath : PhysicsPath, PathProperties {
     /** Returns a copy with the specified routes instead */
     override fun withRoutes(routes: List<RouteId>): TrainPath
 
-    fun getBlocks(): LinearObjectMap<BlockRange>
+    fun getBlocks(): List<BlockRange>
 
-    fun getRoutes(): LinearObjectMap<RouteRange>
+    fun getRoutes(): List<RouteRange>
 
-    fun getChunks(): LinearObjectMap<DirChunkRange>
+    fun getChunks(): List<DirChunkRange>
     // To be expanded as needed with other linear objects
 }
 
@@ -64,20 +61,20 @@ fun concat(vararg paths: TrainPath): TrainPath {
 
 data class GenericLinearRange<ValueType, OffsetType>(
     val value: ValueType,
-    val from: Offset<OffsetType>,
-    val to: Offset<OffsetType>,
+    val objectBegin: Offset<OffsetType>,
+    val objectEnd: Offset<OffsetType>,
+    val pathBegin: Offset<TrainPath>,
+    val pathEnd: Offset<TrainPath>,
 ) {
-    val length = to - from
+    val length = objectEnd - objectBegin
 
     init {
         require(length >= 0.meters)
+        require(pathEnd - pathBegin == length)
     }
-}
 
-// We'd normally use `DistanceRangeMap` here, but supporting zero-length ranges is required.
-// Note: kotlin doesn't allow type arguments on type parameters, so we can't easily make it explicit
-// that T is meant to be a `GenericLinearRange` without having repeated parameters
-typealias LinearObjectMap<T> = RangeMap<Offset<TrainPath>, T>
+    fun isSingleton() = length == 0.meters
+}
 
 typealias LinearObjectRange<T> = GenericLinearRange<StaticIdx<T>, T>
 
@@ -96,8 +93,8 @@ typealias DirChunkRange = LinearDirObjectRange<TrackChunk>
 // TODO path migration: remove these.
 
 fun TrainPath.getLegacyChunkPath(): ChunkPath {
-    val chunkRanges = getChunks().values
-    val beginOffset = chunkRanges.first().from.cast<BlockPath>()
+    val chunkRanges = getChunks()
+    val beginOffset = chunkRanges.first().objectBegin.cast<BlockPath>()
     // Poorly optimized, we could avoid the loop if we had infra access.
     // Should be good enough for short-lived backward compatibility method.
     val endOffset = beginOffset + chunkRanges.map { it.length }.sumDistances()
@@ -110,10 +107,10 @@ fun TrainPath.getLegacyChunkPath(): ChunkPath {
 
 fun TrainPath.getLegacyBlockPath(): List<BlockId> {
     // Legacy block list excluded blocks that were only used in 0-length segments
-    return getBlocks().entries.filter { !it.key.isSingleton }.map { it.value.value }
+    return getBlocks().filter { !it.isSingleton() }.map { it.value }
 }
 
 fun TrainPath.getLegacyRoutePath(): List<RouteId> {
     // Legacy route list excluded routes that were only used in 0-length segments
-    return getRoutes().entries.filter { !it.key.isSingleton }.map { it.value.value }
+    return getRoutes().filter { !it.isSingleton() }.map { it.value }
 }
