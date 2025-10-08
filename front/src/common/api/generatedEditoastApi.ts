@@ -832,6 +832,16 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ['scenarios'],
       }),
+      deleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNotesNoteId: build.mutation<
+        DeleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNotesNoteIdApiResponse,
+        DeleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNotesNoteIdApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios/${queryArg.scenarioId}/macro_notes/${queryArg.noteId}`,
+          method: 'DELETE',
+        }),
+        invalidatesTags: ['scenarios'],
+      }),
       postRollingStock: build.mutation<PostRollingStockApiResponse, PostRollingStockApiArg>({
         query: (queryArg) => ({
           url: `/rolling_stock`,
@@ -2196,6 +2206,15 @@ export type GetProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNotes
 export type PutProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNotesNoteIdApiResponse =
   /** status 200 The updated macro note */ MacroNoteResponse;
 export type PutProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNotesNoteIdApiArg = {
+  /** The id of a project */
+  projectId: number;
+  studyId: number;
+  scenarioId: number;
+  noteId: number;
+};
+export type DeleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNotesNoteIdApiResponse =
+  unknown;
+export type DeleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNotesNoteIdApiArg = {
   /** The id of a project */
   projectId: number;
   studyId: number;

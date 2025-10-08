@@ -336,6 +336,64 @@ pub(in crate::views) async fn update(
     Ok(Json(MacroNoteResponse::from(updated)))
 }
 
+#[editoast_derive::route]
+#[utoipa::path(
+    delete, path = "",
+    tag = "scenarios",
+    params(ProjectIdParam, StudyIdParam, ScenarioIdParam, MacroNoteIdParam),
+    responses((status = 204, description = "The macro note was deleted successfully"),)
+)]
+pub(in crate::views) async fn delete(
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
+    Extension(auth): AuthenticationExt,
+    Path((project_id, study_id, scenario_id, note_id)): Path<(i64, i64, i64, i64)>,
+) -> Result<impl IntoResponse> {
+    let authorized = auth
+        .check_roles([Role::OperationalStudies].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Forbidden.into());
+    }
+
+    Scenario::transactional_content_update(
+        db_pool.get().await?,
+        scenario_id,
+        move |mut conn, scenario, study, project| {
+            async move {
+                let note = MacroNote::retrieve_or_fail(conn.clone(), note_id, || {
+                    MacroNoteError::NotFound { note_id }
+                })
+                .await?;
+
+                if project.id != project_id {
+                    return Err::<_, InternalError>(ProjectError::NotFound { project_id }.into());
+                }
+                if study.id != study_id {
+                    return Err(StudyError::NotFound { study_id }.into());
+                }
+                if scenario.id != scenario_id {
+                    return Err(ScenarioError::NotFound { scenario_id }.into());
+                }
+                if note.scenario_id != scenario_id {
+                    return Err(MacroNoteError::WrongScenario {
+                        note_id,
+                        scenario_id,
+                    }
+                    .into());
+                }
+
+                note.delete(&mut conn).await?;
+                Ok(())
+            }
+            .scope_boxed()
+        },
+    )
+    .await?;
+
+    Ok(StatusCode::NO_CONTENT)
+}
+
 #[cfg(test)]
 pub mod test {
     use axum::http::StatusCode;
@@ -630,6 +688,52 @@ pub mod test {
                 fixtures.project.id, fixtures.study.id, fixtures.scenario.id
             ))
             .json(&update);
+
+        app.fetch(request).assert_status(StatusCode::NOT_FOUND);
+    }
+
+    #[rstest]
+    async fn delete_note() {
+        let app = TestAppBuilder::default_app();
+        let db_pool = app.db_pool();
+        let fixtures =
+            create_scenario_fixtures_set(&mut db_pool.get_ok(), "test_scenario_name").await;
+
+        let note = MacroNote::changeset()
+            .scenario_id(fixtures.scenario.id)
+            .x(10)
+            .y(20)
+            .title("Note title".to_string())
+            .text("Note text".to_string())
+            .labels(Tags::new(vec!["A".to_string(), "B".to_string()]))
+            .create(&mut db_pool.get_ok())
+            .await
+            .expect("Failed to create macro note");
+
+        let request = app.delete(&format!(
+            "/projects/{}/studies/{}/scenarios/{}/macro_notes/{}",
+            fixtures.project.id, fixtures.study.id, fixtures.scenario.id, note.id
+        ));
+
+        app.fetch(request).assert_status(StatusCode::NO_CONTENT);
+
+        let still_exists = MacroNote::exists(&mut db_pool.get_ok(), note.id)
+            .await
+            .expect("Failed to check if macro note still exists");
+        assert!(!still_exists);
+    }
+
+    #[rstest]
+    async fn delete_note_not_found() {
+        let app = TestAppBuilder::default_app();
+        let db_pool = app.db_pool();
+        let fixtures =
+            create_scenario_fixtures_set(&mut db_pool.get_ok(), "test_scenario_name").await;
+
+        let request = app.delete(&format!(
+            "/projects/{}/studies/{}/scenarios/{}/macro_notes/999999",
+            fixtures.project.id, fixtures.study.id, fixtures.scenario.id
+        ));
 
         app.fetch(request).assert_status(StatusCode::NOT_FOUND);
     }
