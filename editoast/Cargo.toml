@@ -43,6 +43,7 @@ common = { path = "./common" }
 core_client = { path = "./core_client" }
 core_task = { path = "./core_task" }
 darling = "0.21"
+dashmap = "6.1.0"
 database = { path = "./database" }
 deadpool = { version = "0.12.3", default-features = false, features = [
   "managed",
@@ -162,7 +163,7 @@ clap.workspace = true
 colored = "3.0.0"
 common = { workspace = true }
 core_client = { workspace = true, features = ["mocking_client"] }
-dashmap = "6.1.0"
+dashmap.workspace = true
 database.workspace = true
 deadpool.workspace = true
 deadpool-redis.workspace = true
