@@ -110,8 +110,6 @@ pub struct RollingStock {
     #[schema(example = 15.0)]
     #[serde(default, with = "units::second::option")]
     pub raise_pantograph_time: Option<Time>,
-    /// List of supported signaling systems
-    /// Note: 'ETCS_LEVEL2' can't be listed, providing 'etcs_brake_params' field is the (only) way to trigger ETCS_LEVEL2 support
     supported_signaling_systems: RollingStockSupportedSignalingSystems,
     #[schema(default = default_rolling_stock_railjson_version)]
     #[serde(default = "default_rolling_stock_railjson_version")]
@@ -185,11 +183,12 @@ impl RollingStock {
         RollingStockSupportedSignalingSystems(supported_signaling_systems)
     }
 
-    pub fn get_row_supported_signaling_systems(&self) -> RollingStockSupportedSignalingSystems {
+    pub fn raw_supported_signaling_systems(&self) -> RollingStockSupportedSignalingSystems {
         self.supported_signaling_systems.clone()
     }
 
-    pub fn set_row_supported_signaling_systems(
+    #[cfg(any(test, feature = "testing"))]
+    pub fn set_raw_supported_signaling_systems(
         &mut self,
         supported_signaling_systems: RollingStockSupportedSignalingSystems,
     ) {

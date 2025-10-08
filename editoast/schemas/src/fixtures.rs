@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use std::str::FromStr;
 
 use chrono::DateTime;
@@ -18,8 +19,13 @@ use crate::paced_train::SpeedLimitTagChangeGroup;
 use crate::paced_train::StartTimeChangeGroup;
 use crate::paced_train::TrainNameChangeGroup;
 use crate::primitives::NonBlankString;
+use crate::rolling_stock::EffortCurves;
+use crate::rolling_stock::LoadingGaugeType;
+use crate::rolling_stock::RollingResistance;
 use crate::rolling_stock::RollingResistancePerWeight;
+use crate::rolling_stock::RollingStockSupportedSignalingSystems;
 use crate::rolling_stock::TowedRollingStock;
+use crate::rolling_stock::TrainMainCategories;
 use crate::rolling_stock::default_rolling_stock_railjson_version;
 use crate::train_schedule::Comfort;
 use crate::train_schedule::Distribution;
@@ -28,8 +34,38 @@ use crate::train_schedule::Margins;
 use crate::train_schedule::TrainScheduleOptions;
 
 pub fn simple_rolling_stock() -> RollingStock {
-    serde_json::from_str::<RollingStock>(include_str!("./tests/rolling_stock_simple.json"))
-        .expect("Unable to parse example rolling stock")
+    RollingStock::new(
+        "SIMPLE_ROLLING_STOCK".to_string(),
+        EffortCurves::default(),
+        None,
+        units::meter::new(140.0),
+        units::meter_per_second::new(20.0),
+        units::second::new(1.0),
+        units::meter_per_second_squared::new(0.04),
+        units::meter_per_second_squared::new(0.1),
+        units::meter_per_second_squared::new(1.0),
+        None,
+        1.1,
+        units::kilogram::new(15000.0),
+        RollingResistance {
+            rolling_resistance_type: "davis".to_string(),
+            // TODO those values are wrong, they correspond to daN/T, (daN/T)/(km/h), and (daN/T)/(km/h)² per weight
+            // We should use more realistic values and fix the tests
+            A: units::newton::new(1.0),
+            B: units::kilogram_per_second::new(0.01),
+            C: units::kilogram_per_meter::new(0.0005),
+        },
+        LoadingGaugeType::G1,
+        HashMap::new(),
+        vec![],
+        None,
+        None,
+        RollingStockSupportedSignalingSystems(vec![]),
+        default_rolling_stock_railjson_version(),
+        None,
+        crate::rolling_stock::TrainMainCategory::HighSpeedTrain,
+        TrainMainCategories(vec![]),
+    )
 }
 
 pub fn towed_rolling_stock() -> TowedRollingStock {

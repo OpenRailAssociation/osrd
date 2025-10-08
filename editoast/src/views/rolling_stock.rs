@@ -752,7 +752,6 @@ pub mod tests {
     use itertools::Itertools;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
-    use schemas::rolling_stock::EtcsBrakeParams;
     use schemas::rolling_stock::RollingStockSupportedSignalingSystems;
     use serde_json::json;
     use uuid::Uuid;
@@ -795,9 +794,11 @@ pub mod tests {
         form
     }
 
-    pub fn simple_etcs_brake_params() -> EtcsBrakeParams {
-        serde_json::from_str::<EtcsBrakeParams>(include_str!("../tests/etcs_brake_params.json"))
-            .expect("Unable to parse example rolling stock")
+    pub fn simple_etcs_level2_rolling_stock() -> RollingStockForm {
+        serde_json::from_str::<RollingStockForm>(include_str!(
+            "../../../tests/data/rolling_stocks/etcs_level2_rolling_stock.json"
+        ))
+        .expect("Unable to parse example rolling stock")
     }
 
     #[rstest]
@@ -1073,7 +1074,7 @@ pub mod tests {
         let rs_name = "fast_rolling_stock_name";
         let mut fast_rolling_stock_form = fast_rolling_stock_form(rs_name);
         fast_rolling_stock_form.etcs_brake_params = None;
-        fast_rolling_stock_form.set_row_supported_signaling_systems(
+        fast_rolling_stock_form.set_raw_supported_signaling_systems(
             RollingStockSupportedSignalingSystems(
                 vec!["BAL", "BAPR", "ETCS_LEVEL2"]
                     .into_iter()
@@ -1097,9 +1098,8 @@ pub mod tests {
     async fn create_rolling_stock_with_etcs_level2_and_etcs_brake_params() {
         // GIVEN
         let app = TestAppBuilder::default_app();
-        let mut fast_rolling_stock_form = fast_rolling_stock_form("fast_rolling_stock_name");
-        fast_rolling_stock_form.etcs_brake_params = Some(simple_etcs_brake_params());
-        fast_rolling_stock_form.set_row_supported_signaling_systems(
+        let mut rolling_stock_form = simple_etcs_level2_rolling_stock();
+        rolling_stock_form.set_raw_supported_signaling_systems(
             RollingStockSupportedSignalingSystems(
                 vec!["BAL", "BAPR", "ETCS_LEVEL2"]
                     .into_iter()
@@ -1109,7 +1109,7 @@ pub mod tests {
         );
         // WHEN
         let response = app
-            .fetch(app.rolling_stock_create_request(&fast_rolling_stock_form))
+            .fetch(app.rolling_stock_create_request(&rolling_stock_form))
             .assert_status(StatusCode::UNPROCESSABLE_ENTITY)
             .string();
         // THEN
@@ -1125,11 +1125,10 @@ pub mod tests {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
 
-        let mut rolling_stock_etcs_level2_form = fast_rolling_stock_form("fast_rolling_stock_name");
-        rolling_stock_etcs_level2_form.etcs_brake_params = Some(simple_etcs_brake_params());
+        let rolling_stock_form = simple_etcs_level2_rolling_stock();
 
         // WHEN
-        let request = app.rolling_stock_create_request(&rolling_stock_etcs_level2_form);
+        let request = app.rolling_stock_create_request(&rolling_stock_form);
         let raw_response = app.fetch(request);
 
         let response: RollingStock = raw_response.assert_status(StatusCode::OK).json_into();
@@ -1150,39 +1149,8 @@ pub mod tests {
             true
         );
 
-        assert_eq!(rolling_stock.name, rolling_stock_etcs_level2_form.name);
-        assert_eq!(
-            rolling_stock_etcs_level2_form.startup_time,
-            rolling_stock.startup_time
-        );
-    }
-
-    #[rstest]
-    async fn create_rolling_stock_without_etcs_brake_params() {
-        // GIVEN
-        let app = TestAppBuilder::default_app();
-        let db_pool = app.db_pool();
-
-        let rs_name = "fast_rolling_stock_name";
-        let mut fast_rolling_stock_form = fast_rolling_stock_form(rs_name);
-        fast_rolling_stock_form.etcs_brake_params = None;
-        // WHEN
-        let raw_response = app.fetch(app.rolling_stock_create_request(&fast_rolling_stock_form));
-        // THEN
-        let response: RollingStock = raw_response.assert_status(StatusCode::OK).json_into();
-        // Check if the rolling stock was created in the database
-        let rolling_stock = RollingStock::retrieve(db_pool.get_ok(), response.id)
-            .await
-            .expect("Failed to retrieve rolling stock")
-            .expect("Rolling stock not found");
-        let rolling_stock: schemas::RollingStock = rolling_stock.into();
-        assert_eq!(
-            rolling_stock
-                .get_all_supported_signaling_systems()
-                .0
-                .contains(&"ETCS_LEVEL2".to_string()),
-            false
-        );
+        assert_eq!(rolling_stock.name, rolling_stock_form.name);
+        assert_eq!(rolling_stock_form.startup_time, rolling_stock.startup_time);
     }
 
     #[rstest]

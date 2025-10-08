@@ -166,7 +166,7 @@ impl From<RollingStock> for schemas::RollingStock {
 
 impl From<schemas::RollingStock> for RollingStockChangeset {
     fn from(rolling_stock: schemas::RollingStock) -> Self {
-        let supported_signaling_systems = rolling_stock.get_row_supported_signaling_systems();
+        let supported_signaling_systems = rolling_stock.raw_supported_signaling_systems();
         RollingStock::changeset()
             .railjson_version(rolling_stock.railjson_version)
             .metadata(rolling_stock.metadata)
