@@ -3,18 +3,12 @@ use std::collections::BTreeMap;
 use itertools::Itertools as _;
 use tracing::debug;
 use utoipa::OpenApi;
-use utoipa::openapi::AllOf;
-use utoipa::openapi::Array;
 use utoipa::openapi::HttpMethod;
-use utoipa::openapi::Object;
-use utoipa::openapi::OneOf;
 use utoipa::openapi::PathItem;
 use utoipa::openapi::RefOr;
 use utoipa::openapi::Schema;
 use utoipa::openapi::path::Operation;
 use utoipa::openapi::path::PathItemBuilder;
-use utoipa::openapi::schema::AnyOf;
-use utoipa::openapi::schema::ArrayItems;
 
 use crate::error::ErrorDefinition;
 use crate::views::router::FlattenedPath;
@@ -76,43 +70,6 @@ fn merge_path_items(mut a: PathItem, b: PathItem) -> PathItem {
     builder.build()
 }
 
-fn remove_discriminator(schema: &mut RefOr<Schema>) {
-    match schema {
-        RefOr::T(Schema::AllOf(AllOf {
-            items,
-            discriminator,
-            ..
-        }))
-        | RefOr::T(Schema::AnyOf(AnyOf {
-            items,
-            discriminator,
-            ..
-        }))
-        | RefOr::T(Schema::OneOf(OneOf {
-            items,
-            discriminator,
-            ..
-        })) => {
-            let _ = discriminator.take();
-            for item in items.iter_mut() {
-                remove_discriminator(item);
-            }
-        }
-        RefOr::T(Schema::Object(Object { properties, .. })) => {
-            for property in properties.values_mut() {
-                remove_discriminator(property);
-            }
-        }
-        RefOr::T(Schema::Array(Array {
-            items: ArrayItems::RefOrSchema(schema),
-            ..
-        })) => {
-            remove_discriminator(schema.as_mut());
-        }
-        _ => (),
-    }
-}
-
 #[derive(OpenApi)]
 #[openapi(
     info(
@@ -134,39 +91,6 @@ fn remove_discriminator(schema: &mut RefOr<Schema>) {
 pub struct OpenApiRoot;
 
 impl OpenApiRoot {
-    // RTK doesn't support the discriminator: property everywhere utoipa
-    // puts it. So we remove it, even though utoipa is correct.
-    fn remove_discrimators(openapi: &mut utoipa::openapi::OpenApi) {
-        for (_, endpoint) in openapi.paths.paths.iter_mut() {
-            for operation in path_item_operations_mut(endpoint) {
-                if let Some(request_body) = operation.request_body.as_mut() {
-                    for (_, content) in request_body.content.iter_mut() {
-                        if let Some(schema) = content.schema.as_mut() {
-                            remove_discriminator(schema);
-                        }
-                    }
-                }
-                for (_, response) in operation.responses.responses.iter_mut() {
-                    match response {
-                        RefOr::T(response) => {
-                            for (_, content) in response.content.iter_mut() {
-                                if let Some(schema) = content.schema.as_mut() {
-                                    remove_discriminator(schema);
-                                }
-                            }
-                        }
-                        RefOr::Ref { .. } => panic!("editoast doesn't support response references"),
-                    }
-                }
-            }
-        }
-        if let Some(components) = openapi.components.as_mut() {
-            for component in components.schemas.values_mut() {
-                remove_discriminator(component);
-            }
-        }
-    }
-
     fn error_context_to_openapi_object(error_def: &ErrorDefinition) -> utoipa::openapi::Object {
         let mut context = utoipa::openapi::Object::new();
         // We write openapi properties by alpha order, to keep the same yml file
@@ -329,7 +253,6 @@ impl OpenApiRoot {
         let mut openapi = OpenApiRoot::openapi();
         let routes_schemas = Self::insert_routes(&mut openapi);
         Self::insert_schemas(&mut openapi, routes_schemas);
-        Self::remove_discrimators(&mut openapi);
         Self::add_errors_in_schema(&mut openapi);
         Self::remove_operation_id(&mut openapi);
         openapi
