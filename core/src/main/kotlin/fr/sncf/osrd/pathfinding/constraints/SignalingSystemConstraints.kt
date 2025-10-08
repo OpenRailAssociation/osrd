@@ -1,7 +1,7 @@
 package fr.sncf.osrd.pathfinding.constraints
 
 import fr.sncf.osrd.graph.PathfindingConstraint
-import fr.sncf.osrd.pathfinding.Pathfinding
+import fr.sncf.osrd.pathfinding.DeprecatedPathfinding
 import fr.sncf.osrd.signaling.SignalingSimulator
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockId
@@ -15,8 +15,8 @@ data class SignalingSystemConstraints(
     val blockInfra: BlockInfra,
     val rollingStocksSupportedSigSystems: List<List<SignalingSystemId>>,
 ) : PathfindingConstraint<Block> {
-    override fun apply(edge: BlockId): MutableCollection<Pathfinding.Range<Block>> {
-        val res = HashSet<Pathfinding.Range<Block>>()
+    override fun apply(edge: BlockId): MutableCollection<DeprecatedPathfinding.Range<Block>> {
+        val res = HashSet<DeprecatedPathfinding.Range<Block>>()
         for (rollingStockSigSystems in rollingStocksSupportedSigSystems) {
             val edgeBlockedRanges = getBlockedRanges(edge, blockInfra, rollingStockSigSystems)
             if (edgeBlockedRanges.isNotEmpty()) {
@@ -34,13 +34,13 @@ data class SignalingSystemConstraints(
         edge: BlockId,
         blockInfra: BlockInfra,
         rollingStockSigSystems: List<SignalingSystemId>,
-    ): Set<Pathfinding.Range<Block>> {
+    ): Set<DeprecatedPathfinding.Range<Block>> {
         val blockSigSystem = blockInfra.getBlockSignalingSystem(edge)
         val isRSCompatibleWithBlock = rollingStockSigSystems.contains(blockSigSystem)
         if (isRSCompatibleWithBlock) {
             return setOf()
         }
-        return setOf(Pathfinding.Range(Offset(0.meters), blockInfra.getBlockLength(edge)))
+        return setOf(DeprecatedPathfinding.Range(Offset(0.meters), blockInfra.getBlockLength(edge)))
     }
 }
 

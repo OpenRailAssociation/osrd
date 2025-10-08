@@ -190,7 +190,7 @@ class PathfindingTest : ApiTest() {
                     incompatibleElectrificationRanges =
                         listOf(
                             RangeValue(
-                                Pathfinding.Range(Offset.zero(), Offset(10250.meters)),
+                                DeprecatedPathfinding.Range(Offset.zero(), Offset(10250.meters)),
                                 "", // range not electrified
                             )
                         ),
@@ -261,35 +261,50 @@ class PathfindingTest : ApiTest() {
                     incompatibleElectrificationRanges =
                         listOf(
                             RangeValue(
-                                Pathfinding.Range(Offset.zero(), Offset(1960.meters)),
+                                DeprecatedPathfinding.Range(Offset.zero(), Offset(1960.meters)),
                                 "1500V",
                             ),
                             // neutral section in-between
                             RangeValue(
-                                Pathfinding.Range(Offset(2010.meters), Offset(4000.meters)),
+                                DeprecatedPathfinding.Range(
+                                    Offset(2010.meters),
+                                    Offset(4000.meters),
+                                ),
                                 "25000V",
                             ),
                         ),
                     // multiple different loading gauges on the track
                     incompatibleGaugeRanges =
                         listOf(
-                            RangeValue(Pathfinding.Range(Offset.zero(), Offset(100.meters)), null),
                             RangeValue(
-                                Pathfinding.Range(Offset(100.meters), Offset(200.meters)),
+                                DeprecatedPathfinding.Range(Offset.zero(), Offset(100.meters)),
                                 null,
                             ),
                             RangeValue(
-                                Pathfinding.Range(Offset(200.meters), Offset(1500.meters)),
+                                DeprecatedPathfinding.Range(Offset(100.meters), Offset(200.meters)),
                                 null,
                             ),
                             RangeValue(
-                                Pathfinding.Range(Offset(1500.meters), Offset(1900.meters)),
+                                DeprecatedPathfinding.Range(
+                                    Offset(200.meters),
+                                    Offset(1500.meters),
+                                ),
+                                null,
+                            ),
+                            RangeValue(
+                                DeprecatedPathfinding.Range(
+                                    Offset(1500.meters),
+                                    Offset(1900.meters),
+                                ),
                                 null,
                             ),
                         ),
                     incompatibleSignalingSystemRanges =
                         listOf(
-                            RangeValue(Pathfinding.Range(Offset.zero(), Offset(4000.meters)), "BAL")
+                            RangeValue(
+                                DeprecatedPathfinding.Range(Offset.zero(), Offset(4000.meters)),
+                                "BAL",
+                            )
                         ),
                 )
         )
@@ -430,7 +445,7 @@ class PathfindingTest : ApiTest() {
                 assert(
                     resp.incompatibleConstraints.incompatibleGaugeRanges.single() ==
                         RangeValue<String>(
-                            Pathfinding.Range(Offset(1100.meters), Offset(2100.meters)),
+                            DeprecatedPathfinding.Range(Offset(1100.meters), Offset(2100.meters)),
                             null,
                         )
                 )

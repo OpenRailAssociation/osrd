@@ -1,6 +1,6 @@
 package fr.sncf.osrd.pathfinding.constraints
 
-import fr.sncf.osrd.pathfinding.Pathfinding
+import fr.sncf.osrd.pathfinding.DeprecatedPathfinding
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.sim_infra.api.TrackChunk
@@ -66,7 +66,7 @@ class LoadingGaugeConstraintsTest {
     @MethodSource("testLoadingGaugeArgs")
     fun testLoadingGaugeBlockedRanges(
         blockId: BlockId,
-        expectedBlockedRanges: Collection<Pathfinding.Range<Block>>,
+        expectedBlockedRanges: Collection<DeprecatedPathfinding.Range<Block>>,
     ) {
         val blockedRanges = loadingGaugeConstraints!!.apply(blockId)
         Assertions.assertThat(blockedRanges).isEqualTo(expectedBlockedRanges)
@@ -84,15 +84,15 @@ class LoadingGaugeConstraintsTest {
             Arguments.of(
                 ta0Chunk0block!!.index.toInt(),
                 setOf(
-                    Pathfinding.Range(Length(0.meters), Length(100.meters)),
-                    Pathfinding.Range(Length(100.meters), Length(200.meters)),
-                    Pathfinding.Range(Length(200.meters), Length(1500.meters)),
-                    Pathfinding.Range(Length(1500.meters), ta0Chunk0Length),
+                    DeprecatedPathfinding.Range(Length(0.meters), Length(100.meters)),
+                    DeprecatedPathfinding.Range(Length(100.meters), Length(200.meters)),
+                    DeprecatedPathfinding.Range(Length(200.meters), Length(1500.meters)),
+                    DeprecatedPathfinding.Range(Length(1500.meters), ta0Chunk0Length),
                 ),
             ), // Different loading gauge constraints applied to all block
             Arguments.of(
                 ta0Chunk1block!!.index.toInt(),
-                setOf(Pathfinding.Range(Length<TrackChunk>(0.meters), Length(80.meters))),
+                setOf(DeprecatedPathfinding.Range(Length<TrackChunk>(0.meters), Length(80.meters))),
             ), // Loading gauge constraints partially applied to block
             Arguments.of(
                 ta1Chunk0block!!.index.toInt(),

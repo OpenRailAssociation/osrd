@@ -3,7 +3,7 @@ package fr.sncf.osrd.pathfinding
 import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.api.TrackLocation
 import fr.sncf.osrd.api.pathfinding.findWaypointBlocks
-import fr.sncf.osrd.pathfinding.Pathfinding.EdgeLocation
+import fr.sncf.osrd.pathfinding.DeprecatedPathfinding.EdgeLocation
 import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.sim_infra.api.Block

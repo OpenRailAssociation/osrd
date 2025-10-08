@@ -6,7 +6,7 @@ import com.google.common.collect.TreeRangeSet
 import fr.sncf.osrd.graph.PathfindingConstraint
 import fr.sncf.osrd.path.implementations.buildTrainPathFromBlock
 import fr.sncf.osrd.path.interfaces.TrainPath
-import fr.sncf.osrd.pathfinding.Pathfinding
+import fr.sncf.osrd.pathfinding.DeprecatedPathfinding
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.units.Distance
@@ -18,7 +18,7 @@ data class ElectrificationConstraints(
     val rawInfra: RawSignalingInfra,
     val compatibleElectrification: Collection<String>,
 ) : PathfindingConstraint<Block> {
-    override fun apply(edge: BlockId): Collection<Pathfinding.Range<Block>> {
+    override fun apply(edge: BlockId): Collection<DeprecatedPathfinding.Range<Block>> {
         val path = buildTrainPathFromBlock(rawInfra, blockInfra, edge)
         return getBlockedRanges(path, compatibleElectrification)
     }
@@ -32,8 +32,8 @@ data class ElectrificationConstraints(
         private fun getBlockedRanges(
             path: TrainPath,
             compatibleElectrification: Collection<String>,
-        ): Set<Pathfinding.Range<Block>> {
-            val res = HashSet<Pathfinding.Range<Block>>()
+        ): Set<DeprecatedPathfinding.Range<Block>> {
+            val res = HashSet<DeprecatedPathfinding.Range<Block>>()
             val voltages = path.getElectrification()
             val neutralSections = rangeSetFromMap(path.getNeutralSections())
             for ((lower, upper, value) in voltages) {
@@ -45,7 +45,7 @@ data class ElectrificationConstraints(
                     for (blockingRange in blockingRanges) {
                         assert(blockingRange.lowerEndpoint() < blockingRange.upperEndpoint())
                         res.add(
-                            Pathfinding.Range(
+                            DeprecatedPathfinding.Range(
                                 Offset(blockingRange.lowerEndpoint()),
                                 Offset(blockingRange.upperEndpoint()),
                             )

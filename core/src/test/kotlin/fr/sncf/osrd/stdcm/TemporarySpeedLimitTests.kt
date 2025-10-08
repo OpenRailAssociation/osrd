@@ -4,7 +4,7 @@ import fr.sncf.osrd.api.DirectionalTrackRange
 import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.api.stdcm.STDCMTemporarySpeedLimit
 import fr.sncf.osrd.api.stdcm.buildTemporarySpeedLimitManager
-import fr.sncf.osrd.pathfinding.Pathfinding.EdgeLocation
+import fr.sncf.osrd.pathfinding.DeprecatedPathfinding.EdgeLocation
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.utils.Direction

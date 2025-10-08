@@ -2,7 +2,7 @@ package fr.sncf.osrd.utils
 
 import fr.sncf.osrd.path.implementations.ChunkPath
 import fr.sncf.osrd.path.interfaces.BlockPath
-import fr.sncf.osrd.pathfinding.Pathfinding.EdgeRange
+import fr.sncf.osrd.pathfinding.DeprecatedPathfinding.EdgeRange
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters

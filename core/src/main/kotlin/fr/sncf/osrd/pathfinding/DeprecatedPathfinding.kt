@@ -29,7 +29,7 @@ import kotlin.math.max
     value = ["FE_FLOATING_POINT_EQUALITY"],
     justification = "No arithmetic is done on values where we test for equality, only copies",
 )
-class Pathfinding<NodeT : Any, EdgeT : Any, OffsetType>(
+class DeprecatedPathfinding<NodeT : Any, EdgeT : Any, OffsetType>(
     private val graph: Graph<NodeT, EdgeT, OffsetType>
 ) {
     /** Pathfinding step */
@@ -120,12 +120,14 @@ class Pathfinding<NodeT : Any, EdgeT : Any, OffsetType>(
     /** Sets the functor used to estimate the remaining distance for A* */
     fun setEdgeToLength(
         f: EdgeToLength<EdgeT, OffsetType>?
-    ): Pathfinding<NodeT, EdgeT, OffsetType> {
+    ): DeprecatedPathfinding<NodeT, EdgeT, OffsetType> {
         edgeToLength = f
         return this
     }
 
-    fun setComparisonFallback(f: (EdgeT, EdgeT) -> Int): Pathfinding<NodeT, EdgeT, OffsetType> {
+    fun setComparisonFallback(
+        f: (EdgeT, EdgeT) -> Int
+    ): DeprecatedPathfinding<NodeT, EdgeT, OffsetType> {
         comparisonFallback = f
         return this
     }
@@ -133,7 +135,7 @@ class Pathfinding<NodeT : Any, EdgeT : Any, OffsetType>(
     /** Sets the functor used to define the cost of an edge range */
     fun setRangeCost(
         f: (EdgeRange<EdgeT, OffsetType>) -> Double
-    ): Pathfinding<NodeT, EdgeT, OffsetType> {
+    ): DeprecatedPathfinding<NodeT, EdgeT, OffsetType> {
         rangeCost = f
         return this
     }
@@ -141,7 +143,7 @@ class Pathfinding<NodeT : Any, EdgeT : Any, OffsetType>(
     /** Sets functors used to estimate the remaining distance for A* */
     fun setRemainingDistanceEstimator(
         f: List<AStarHeuristic<EdgeT, OffsetType>>?
-    ): Pathfinding<NodeT, EdgeT, OffsetType> {
+    ): DeprecatedPathfinding<NodeT, EdgeT, OffsetType> {
         estimateRemainingDistance = f
         return this
     }
@@ -149,13 +151,13 @@ class Pathfinding<NodeT : Any, EdgeT : Any, OffsetType>(
     /** Sets the functor used to determine which ranges are blocked on an edge */
     fun addBlockedRangeOnEdges(
         f: EdgeToRanges<EdgeT, OffsetType>
-    ): Pathfinding<NodeT, EdgeT, OffsetType> {
+    ): DeprecatedPathfinding<NodeT, EdgeT, OffsetType> {
         blockedRangesOnEdge.functions.add(f)
         return this
     }
 
     /** Sets the pathfinding's timeout */
-    fun setTimeout(timeout: Double?): Pathfinding<NodeT, EdgeT, OffsetType> {
+    fun setTimeout(timeout: Double?): DeprecatedPathfinding<NodeT, EdgeT, OffsetType> {
         if (timeout != null) this.timeout = timeout
         return this
     }

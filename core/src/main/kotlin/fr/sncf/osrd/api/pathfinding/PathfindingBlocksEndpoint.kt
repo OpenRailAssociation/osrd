@@ -6,9 +6,9 @@ import fr.sncf.osrd.api.InfraProvider
 import fr.sncf.osrd.api.TrackLocation
 import fr.sncf.osrd.graph.*
 import fr.sncf.osrd.path.interfaces.TrainPath
-import fr.sncf.osrd.pathfinding.Pathfinding
-import fr.sncf.osrd.pathfinding.Pathfinding.EdgeLocation
-import fr.sncf.osrd.pathfinding.Pathfinding.EdgeRange
+import fr.sncf.osrd.pathfinding.DeprecatedPathfinding
+import fr.sncf.osrd.pathfinding.DeprecatedPathfinding.EdgeLocation
+import fr.sncf.osrd.pathfinding.DeprecatedPathfinding.EdgeRange
 import fr.sncf.osrd.pathfinding.PathfindingEdge
 import fr.sncf.osrd.pathfinding.PathfindingGraph
 import fr.sncf.osrd.pathfinding.RemainingDistanceEstimator
@@ -148,7 +148,7 @@ private fun computePaths(
     val constraintCombiner = ConstraintCombiner(constraints.toMutableList())
 
     val pathFound =
-        Pathfinding(PathfindingGraph())
+        DeprecatedPathfinding(PathfindingGraph())
             .setTimeout(timeout)
             .setEdgeToLength { it.length }
             .setRangeCost { getRangeCost(it, mrspBuilder, infra) }
@@ -273,7 +273,7 @@ private fun throwNoPathFoundException(
 ): Nothing {
     try {
         val possiblePathWithoutErrorNoConstraints =
-            Pathfinding(PathfindingGraph())
+            DeprecatedPathfinding(PathfindingGraph())
                 .setTimeout(timeout)
                 .setEdgeToLength { it.length }
                 .setRangeCost { range ->
@@ -308,7 +308,7 @@ data class ProcessedPathfindingResponse(val path: TrainPath, val offsets: List<O
 
 private fun processPathfindingResponse(
     infra: FullInfra,
-    path: Pathfinding.Result<PathfindingEdge, Block>,
+    path: DeprecatedPathfinding.Result<PathfindingEdge, Block>,
 ): ProcessedPathfindingResponse {
     val explorer = path.ranges.last().edge.infraExplorer
     val trainPath = explorer.buildFullPath(infra.rawInfra, infra.blockInfra)
@@ -317,10 +317,10 @@ private fun processPathfindingResponse(
 }
 
 private fun makeBlockPath(
-    path: Pathfinding.Result<PathfindingEdge, Block>?
-): Pathfinding.Result<BlockId, Block>? {
+    path: DeprecatedPathfinding.Result<PathfindingEdge, Block>?
+): DeprecatedPathfinding.Result<BlockId, Block>? {
     if (path == null) return null
-    return Pathfinding.Result(
+    return DeprecatedPathfinding.Result(
         path.ranges.map { EdgeRange(it.edge.block, it.start, it.end) },
         path.waypoints.map { EdgeLocation(it.edge.block, it.offset) },
     )

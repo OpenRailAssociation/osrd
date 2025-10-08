@@ -3,7 +3,7 @@ package fr.sncf.osrd.stdcm
 import com.google.common.collect.ImmutableMultimap
 import com.google.common.collect.Iterables
 import fr.sncf.osrd.geom.Point
-import fr.sncf.osrd.pathfinding.Pathfinding.EdgeLocation
+import fr.sncf.osrd.pathfinding.DeprecatedPathfinding.EdgeLocation
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.stdcm.preprocessing.OccupancySegment

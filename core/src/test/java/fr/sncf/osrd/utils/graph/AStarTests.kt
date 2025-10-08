@@ -3,8 +3,8 @@ package fr.sncf.osrd.utils.graph
 import fr.sncf.osrd.geom.Point
 import fr.sncf.osrd.graph.AStarHeuristic
 import fr.sncf.osrd.graph.GraphAdapter
-import fr.sncf.osrd.pathfinding.Pathfinding
-import fr.sncf.osrd.pathfinding.Pathfinding.EdgeLocation
+import fr.sncf.osrd.pathfinding.DeprecatedPathfinding
+import fr.sncf.osrd.pathfinding.DeprecatedPathfinding.EdgeLocation
 import fr.sncf.osrd.pathfinding.RemainingDistanceEstimator
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockId
@@ -107,7 +107,7 @@ class AStarTests {
         val seenWithoutHeuristic = HashSet<BlockId>()
         val mrspBuilder =
             CachedBlockMRSPBuilder(fullDummyInfra.rawInfra, fullDummyInfra.blockInfra, null)
-        Pathfinding(GraphAdapter(fullDummyInfra.blockInfra, fullDummyInfra.rawInfra))
+        DeprecatedPathfinding(GraphAdapter(fullDummyInfra.blockInfra, fullDummyInfra.rawInfra))
             .setEdgeToLength { blockId -> fullDummyInfra.blockInfra.getBlockLength(blockId) }
             .setRangeCost { range ->
                 mrspBuilder.getBlockTime(range.edge, range.end) -
@@ -123,7 +123,7 @@ class AStarTests {
                 )
             )
             .runPathfinding(listOf(origin, destination))
-        Pathfinding(GraphAdapter(fullDummyInfra.blockInfra, fullDummyInfra.rawInfra))
+        DeprecatedPathfinding(GraphAdapter(fullDummyInfra.blockInfra, fullDummyInfra.rawInfra))
             .setEdgeToLength { blockId -> fullDummyInfra.blockInfra.getBlockLength(blockId) }
             .setRemainingDistanceEstimator(
                 listOf(

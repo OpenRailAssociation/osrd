@@ -7,7 +7,7 @@ import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.api.TrackLocation
 import fr.sncf.osrd.api.makeSignalingSimulator
 import fr.sncf.osrd.api.standalone_sim.PhysicsConsistModel
-import fr.sncf.osrd.pathfinding.Pathfinding.EdgeLocation
+import fr.sncf.osrd.pathfinding.DeprecatedPathfinding.EdgeLocation
 import fr.sncf.osrd.railjson.schema.external_generated_inputs.RJSElectricalProfileSet
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingResistance

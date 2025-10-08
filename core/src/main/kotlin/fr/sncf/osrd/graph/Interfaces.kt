@@ -1,7 +1,7 @@
 package fr.sncf.osrd.graph
 
-import fr.sncf.osrd.pathfinding.Pathfinding
-import fr.sncf.osrd.pathfinding.Pathfinding.EdgeLocation
+import fr.sncf.osrd.pathfinding.DeprecatedPathfinding
+import fr.sncf.osrd.pathfinding.DeprecatedPathfinding.EdgeLocation
 import fr.sncf.osrd.utils.indexing.StaticIdx
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
@@ -25,7 +25,7 @@ fun interface EdgeToLength<EdgeT, OffsetType> {
  * an edge
  */
 fun interface EdgeToRanges<EdgeT, OffsetType> {
-    fun apply(edge: EdgeT): Collection<Pathfinding.Range<OffsetType>>
+    fun apply(edge: EdgeT): Collection<DeprecatedPathfinding.Range<OffsetType>>
 }
 
 /**

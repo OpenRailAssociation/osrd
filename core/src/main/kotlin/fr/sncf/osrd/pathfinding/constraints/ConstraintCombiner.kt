@@ -3,7 +3,7 @@ package fr.sncf.osrd.pathfinding.constraints
 import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.graph.EdgeToRanges
 import fr.sncf.osrd.graph.PathfindingConstraint
-import fr.sncf.osrd.pathfinding.Pathfinding
+import fr.sncf.osrd.pathfinding.DeprecatedPathfinding
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.TrackSectionId
@@ -12,12 +12,12 @@ import fr.sncf.osrd.train.RollingStock
 class ConstraintCombiner<EdgeT, OffsetType>(
     val functions: MutableList<EdgeToRanges<EdgeT, OffsetType>> = ArrayList()
 ) : EdgeToRanges<EdgeT, OffsetType> {
-    private val cache = mutableMapOf<EdgeT, Collection<Pathfinding.Range<OffsetType>>>()
+    private val cache = mutableMapOf<EdgeT, Collection<DeprecatedPathfinding.Range<OffsetType>>>()
 
-    override fun apply(edge: EdgeT): Collection<Pathfinding.Range<OffsetType>> {
+    override fun apply(edge: EdgeT): Collection<DeprecatedPathfinding.Range<OffsetType>> {
         val cached = cache[edge]
         if (cached != null) return cached
-        val res = HashSet<Pathfinding.Range<OffsetType>>()
+        val res = HashSet<DeprecatedPathfinding.Range<OffsetType>>()
         for (f in functions) res.addAll(f.apply(edge))
         cache[edge] = res
         return res

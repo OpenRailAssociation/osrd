@@ -3,7 +3,7 @@ package fr.sncf.osrd.stdcm.graph
 import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue
 import fr.sncf.osrd.graph.PathfindingConstraint
-import fr.sncf.osrd.pathfinding.Pathfinding
+import fr.sncf.osrd.pathfinding.DeprecatedPathfinding
 import fr.sncf.osrd.pathfinding.constraints.ConstraintCombiner
 import fr.sncf.osrd.pathfinding.constraints.initConstraints
 import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
@@ -93,7 +93,7 @@ class STDCMPathfinding(
     private val maxRunTime: Double,
     tag: String?,
     standardAllowance: AllowanceValue?,
-    private val pathfindingTimeout: Double = Pathfinding.TIMEOUT,
+    private val pathfindingTimeout: Double = DeprecatedPathfinding.TIMEOUT,
     private val temporarySpeedLimitManager: TemporarySpeedLimitManager,
     private val allowedTrackSections: Set<TrackSectionId>?,
 ) {

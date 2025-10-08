@@ -4,8 +4,8 @@ import com.google.common.collect.ImmutableMultimap
 import com.google.common.collect.Multimap
 import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue
-import fr.sncf.osrd.pathfinding.Pathfinding
-import fr.sncf.osrd.pathfinding.Pathfinding.EdgeLocation
+import fr.sncf.osrd.pathfinding.DeprecatedPathfinding
+import fr.sncf.osrd.pathfinding.DeprecatedPathfinding.EdgeLocation
 import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockId
@@ -35,7 +35,7 @@ data class STDCMPathfindingBuilder(
     var rollingStock: RollingStock = TestTrains.REALISTIC_FAST_TRAIN,
     var startTime: Double = 0.0,
     var comfort: Comfort = Comfort.STANDARD,
-    var pathfindingTimeout: Double = Pathfinding.TIMEOUT,
+    var pathfindingTimeout: Double = DeprecatedPathfinding.TIMEOUT,
     var unavailableTimes: Multimap<BlockId, OccupancySegment> = ImmutableMultimap.of(),
     var timeStep: Double = 2.0,
     var maxDepartureDelay: Double = (3600 * 2).toDouble(),

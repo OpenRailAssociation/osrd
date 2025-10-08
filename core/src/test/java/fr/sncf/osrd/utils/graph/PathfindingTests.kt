@@ -4,9 +4,9 @@ import com.google.common.graph.NetworkBuilder
 import fr.sncf.osrd.graph.Graph
 import fr.sncf.osrd.graph.GraphAdapter
 import fr.sncf.osrd.graph.NetworkGraphAdapter
-import fr.sncf.osrd.pathfinding.Pathfinding
-import fr.sncf.osrd.pathfinding.Pathfinding.EdgeLocation
-import fr.sncf.osrd.pathfinding.Pathfinding.Result
+import fr.sncf.osrd.pathfinding.DeprecatedPathfinding
+import fr.sncf.osrd.pathfinding.DeprecatedPathfinding.EdgeLocation
+import fr.sncf.osrd.pathfinding.DeprecatedPathfinding.Result
 import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.utils.CachedBlockMRSPBuilder
@@ -28,7 +28,7 @@ class PathfindingTests {
         data class Edge(
             val length: Length<Edge>,
             val label: String,
-            val blockedRanges: Set<Pathfinding.Range<Edge>>,
+            val blockedRanges: Set<DeprecatedPathfinding.Range<Edge>>,
         )
 
         class Node
@@ -52,7 +52,7 @@ class PathfindingTests {
             n1: Int,
             n2: Int,
             length: Distance,
-            blockedRanges: Set<Pathfinding.Range<Edge>> = setOf(),
+            blockedRanges: Set<DeprecatedPathfinding.Range<Edge>> = setOf(),
         ) {
             val label = String.format("%d-%s", n1, n2)
             val res = Edge(Length(length), label, blockedRanges)
@@ -93,7 +93,7 @@ class PathfindingTests {
         builder.makeEdge(3, 4, 0.meters)
         val g = builder.build()
         val res =
-            Pathfinding(g)
+            DeprecatedPathfinding(g)
                 .setEdgeToLength { it.length }
                 .runPathfindingEdgesOnly(
                     listOf(
@@ -122,7 +122,7 @@ class PathfindingTests {
         builder.makeEdge(3, 4, 0.meters)
         val g = builder.build()
         val res =
-            Pathfinding(g)
+            DeprecatedPathfinding(g)
                 .setEdgeToLength { it.length }
                 .runPathfindingEdgesOnly(
                     listOf(
@@ -143,7 +143,7 @@ class PathfindingTests {
         builder.makeEdge(2, 3, 10.meters)
         val g = builder.build()
         val res =
-            Pathfinding(g)
+            DeprecatedPathfinding(g)
                 .setEdgeToLength { it.length }
                 .runPathfindingEdgesOnly(
                     listOf(
@@ -177,7 +177,7 @@ class PathfindingTests {
         builder.makeEdge(5, 6, 0.meters)
         val g = builder.build()
         val res =
-            Pathfinding(g)
+            DeprecatedPathfinding(g)
                 .setEdgeToLength { it.length }
                 .runPathfindingEdgesOnly(
                     listOf(
@@ -208,7 +208,7 @@ class PathfindingTests {
         builder.makeEdge(5, 6, 0.meters)
         val g = builder.build()
         val res =
-            Pathfinding(g)
+            DeprecatedPathfinding(g)
                 .setEdgeToLength { it.length }
                 .runPathfindingEdgesOnly(
                     listOf(
@@ -236,7 +236,7 @@ class PathfindingTests {
         builder.makeEdge(1, 0, (-100).meters)
         val g = builder.build()
         val res =
-            Pathfinding(g)
+            DeprecatedPathfinding(g)
                 .setEdgeToLength { it.length }
                 .runPathfindingEdgesOnly(
                     listOf(
@@ -261,7 +261,7 @@ class PathfindingTests {
         builder.makeEdge(2, 3, 100.meters)
         val g = builder.build()
         val res =
-            Pathfinding(g)
+            DeprecatedPathfinding(g)
                 .setEdgeToLength { it.length }
                 .runPathfindingEdgesOnly(
                     listOf(
@@ -285,7 +285,7 @@ class PathfindingTests {
         builder.makeEdge(2, 3, 100.meters)
         val g = builder.build()
         val res =
-            Pathfinding(g)
+            DeprecatedPathfinding(g)
                 .setEdgeToLength { it.length }
                 .runPathfindingEdgesOnly(
                     listOf(
@@ -308,7 +308,7 @@ class PathfindingTests {
         builder.makeEdge(0, 1, 100.meters)
         val g = builder.build()
         val res =
-            Pathfinding(g)
+            DeprecatedPathfinding(g)
                 .setEdgeToLength { it.length }
                 .runPathfindingEdgesOnly(
                     listOf(
@@ -331,7 +331,7 @@ class PathfindingTests {
         builder.makeEdge(1, 2, 100.meters)
         val g = builder.build()
         val res =
-            Pathfinding(g)
+            DeprecatedPathfinding(g)
                 .setEdgeToLength { it.length }
                 .runPathfindingEdgesOnly(
                     listOf(
@@ -359,7 +359,7 @@ class PathfindingTests {
         builder.makeEdge(2, 0, 100.meters)
         val g = builder.build()
         val res =
-            Pathfinding(g)
+            DeprecatedPathfinding(g)
                 .setEdgeToLength { it.length }
                 .runPathfindingEdgesOnly(
                     listOf(
@@ -389,7 +389,7 @@ class PathfindingTests {
         builder.makeEdge(4, 5, 1000.meters)
         val g = builder.build()
         val res =
-            Pathfinding(g)
+            DeprecatedPathfinding(g)
                 .setEdgeToLength { it.length }
                 .runPathfinding(
                     listOf(
@@ -429,7 +429,7 @@ class PathfindingTests {
         builder.makeEdge(5, 2, 1000.meters)
         val g = builder.build()
         val res =
-            Pathfinding(g)
+            DeprecatedPathfinding(g)
                 .setEdgeToLength { it.length }
                 .runPathfinding(
                     listOf(
@@ -467,7 +467,7 @@ class PathfindingTests {
             0,
             1,
             100.meters,
-            setOf(Pathfinding.Range(Offset(50.meters), Offset(50.meters))),
+            setOf(DeprecatedPathfinding.Range(Offset(50.meters), Offset(50.meters))),
         )
         builder.makeEdge(1, 4, 100.meters)
         builder.makeEdge(2, 3, 100.meters)
@@ -475,7 +475,7 @@ class PathfindingTests {
         builder.makeEdge(4, 5, 0.meters)
         val g = builder.build()
         val res =
-            Pathfinding(g)
+            DeprecatedPathfinding(g)
                 .setEdgeToLength { it.length }
                 .addBlockedRangeOnEdges { edge -> edge.blockedRanges }
                 .runPathfindingEdgesOnly(
@@ -500,11 +500,11 @@ class PathfindingTests {
             0,
             1,
             100.meters,
-            setOf(Pathfinding.Range(Offset(0.meters), Offset(10.meters))),
+            setOf(DeprecatedPathfinding.Range(Offset(0.meters), Offset(10.meters))),
         )
         val g = builder.build()
         val res =
-            Pathfinding(g)
+            DeprecatedPathfinding(g)
                 .setEdgeToLength { it.length }
                 .addBlockedRangeOnEdges { edge -> edge.blockedRanges }
                 .runPathfindingEdgesOnly(
@@ -529,13 +529,13 @@ class PathfindingTests {
             1,
             100.meters,
             setOf(
-                Pathfinding.Range(Offset(0.meters), Offset(30.meters)),
-                Pathfinding.Range(Offset(70.meters), Offset(100.meters)),
+                DeprecatedPathfinding.Range(Offset(0.meters), Offset(30.meters)),
+                DeprecatedPathfinding.Range(Offset(70.meters), Offset(100.meters)),
             ),
         )
         val g = builder.build()
         val res =
-            Pathfinding(g)
+            DeprecatedPathfinding(g)
                 .setEdgeToLength { it.length }
                 .addBlockedRangeOnEdges { edge -> edge.blockedRanges }
                 .runPathfindingEdgesOnly(
@@ -560,11 +560,11 @@ class PathfindingTests {
             1,
             2,
             100.meters,
-            setOf(Pathfinding.Range(Offset(70.meters), Offset(100.meters))),
+            setOf(DeprecatedPathfinding.Range(Offset(70.meters), Offset(100.meters))),
         )
         val g = builder.build()
         val res =
-            Pathfinding(g)
+            DeprecatedPathfinding(g)
                 .setEdgeToLength { it.length }
                 .addBlockedRangeOnEdges { edge -> edge.blockedRanges }
                 .runPathfindingEdgesOnly(
@@ -589,11 +589,11 @@ class PathfindingTests {
             1,
             2,
             100.meters,
-            setOf(Pathfinding.Range(Offset(10.meters), Offset(20.meters))),
+            setOf(DeprecatedPathfinding.Range(Offset(10.meters), Offset(20.meters))),
         )
         val g = builder.build()
         val res =
-            Pathfinding(g)
+            DeprecatedPathfinding(g)
                 .setEdgeToLength { it.length }
                 .addBlockedRangeOnEdges { edge -> edge.blockedRanges }
                 .runPathfindingEdgesOnly(
@@ -617,11 +617,11 @@ class PathfindingTests {
             0,
             1,
             100.meters,
-            setOf(Pathfinding.Range(Offset(10.meters), Offset(20.meters))),
+            setOf(DeprecatedPathfinding.Range(Offset(10.meters), Offset(20.meters))),
         )
         val g = builder.build()
         val res =
-            Pathfinding(g)
+            DeprecatedPathfinding(g)
                 .setEdgeToLength { it.length }
                 .addBlockedRangeOnEdges { edge -> edge.blockedRanges }
                 .runPathfindingEdgesOnly(
@@ -651,13 +651,13 @@ class PathfindingTests {
             1,
             100.meters,
             setOf(
-                Pathfinding.Range(Offset(10.meters), Offset(50.meters)),
-                Pathfinding.Range(Offset(30.meters), Offset(80.meters)),
+                DeprecatedPathfinding.Range(Offset(10.meters), Offset(50.meters)),
+                DeprecatedPathfinding.Range(Offset(30.meters), Offset(80.meters)),
             ),
         )
         val g = builder.build()
         val res =
-            Pathfinding(g)
+            DeprecatedPathfinding(g)
                 .setEdgeToLength { it.length }
                 .addBlockedRangeOnEdges { edge -> edge.blockedRanges }
                 .runPathfindingEdgesOnly(
@@ -684,7 +684,7 @@ class PathfindingTests {
         builder.makeEdge(4, 5, 1000.meters)
         val g = builder.build()
         val res =
-            Pathfinding(g)
+            DeprecatedPathfinding(g)
                 .setEdgeToLength { it.length }
                 .runPathfindingEdgesOnly(
                     listOf(
@@ -710,7 +710,7 @@ class PathfindingTests {
         builder.makeEdge(0, 1, 100.meters)
         val g = builder.build()
         val pathfinding =
-            Pathfinding(g).setEdgeToLength { it.length }.setTimeout(timeout?.toDouble())
+            DeprecatedPathfinding(g).setEdgeToLength { it.length }.setTimeout(timeout?.toDouble())
         if (!timesOut) {
             val res =
                 pathfinding.runPathfindingEdgesOnly(listOf(listOf(builder.getEdgeLocation("0-1"))))
@@ -751,7 +751,9 @@ class PathfindingTests {
         val mrspBuilder =
             CachedBlockMRSPBuilder(infra.fullInfra().rawInfra, infra.fullInfra().blockInfra, null)
         val res =
-            Pathfinding(GraphAdapter(infra.fullInfra().blockInfra, infra.fullInfra().rawInfra))
+            DeprecatedPathfinding(
+                    GraphAdapter(infra.fullInfra().blockInfra, infra.fullInfra().rawInfra)
+                )
                 .setEdgeToLength { block -> infra.fullInfra().blockInfra.getBlockLength(block) }
                 .setRangeCost { range ->
                     val start = mrspBuilder.getBlockTime(range.edge, range.start)

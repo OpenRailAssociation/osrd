@@ -13,8 +13,8 @@ import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue.Percentage
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue.TimePerDistance
 import fr.sncf.osrd.envelope_sim_infra.computeMRSP
-import fr.sncf.osrd.pathfinding.Pathfinding
-import fr.sncf.osrd.pathfinding.Pathfinding.EdgeLocation
+import fr.sncf.osrd.pathfinding.DeprecatedPathfinding
+import fr.sncf.osrd.pathfinding.DeprecatedPathfinding.EdgeLocation
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection
 import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop
@@ -138,7 +138,7 @@ class STDCMEndpoint(
                     request.maximumRunTime.seconds,
                     request.speedLimitTag,
                     parseMarginValue(request.margin),
-                    Pathfinding.TIMEOUT,
+                    DeprecatedPathfinding.TIMEOUT,
                     temporarySpeedLimitManager,
                     allowedTrackSections,
                 )
