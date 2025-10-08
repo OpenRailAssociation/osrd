@@ -9,7 +9,7 @@ import type { SimilarTrainWithSecondaryCode, StdcmResultsOutput } from 'applicat
 import { extractMarkersInfo } from 'applications/stdcm/utils';
 import { addSecondaryCodesToSimilarTrains } from 'applications/stdcm/utils/addSecondaryCodesToSimilarTrains';
 import { hasResults } from 'applications/stdcm/utils/simulationOutputUtils';
-import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { osrdEditoastApi, type PostSimilarTrainsApiResponse } from 'common/api/osrdEditoastApi';
 import DefaultBaseMap from 'common/Map/DefaultBaseMap';
 import {
   generateCodeNumber,
@@ -124,21 +124,64 @@ const StdcmResults = ({
         };
       });
 
-      const request = {
+      const baseRequest = {
         infra_id: infraId,
-        rolling_stock: {
-          name: consist.tractionEngine?.name ?? '',
-          speed_limit_tag: consist.speedLimitByTag,
-        },
         timetable_id: timetableId,
         waypoints,
       };
 
-      const response = await postSimilarTrains({ body: request });
-      const rawSimilarTrains = response.data?.similar_trains ?? [];
+      const results: PostSimilarTrainsApiResponse['similar_trains'] = [];
+
+      const addUniqueTrains = (segmentTrains: PostSimilarTrainsApiResponse['similar_trains']) => {
+        segmentTrains.forEach((segment) => {
+          if (
+            segment.train &&
+            !results.some((result) => result.begin === segment.begin && result.end === segment.end)
+          ) {
+            results.push(segment);
+          }
+        });
+      };
+
+      const hasNullTrains = (trains: PostSimilarTrainsApiResponse['similar_trains']) =>
+        trains.some((segment) => segment.train === null);
+
+      // Call 1: Full criteria
+      let response = await postSimilarTrains({
+        body: {
+          ...baseRequest,
+          rolling_stock: {
+            name: consist.tractionEngine?.name ?? '',
+            speed_limit_tag: consist.speedLimitByTag,
+          },
+        },
+      });
+      addUniqueTrains(response.data?.similar_trains ?? []);
+
+      // Call 2: Retry without speed_limit_tag if there are null trains
+      if (hasNullTrains(response.data?.similar_trains ?? [])) {
+        response = await postSimilarTrains({
+          body: {
+            ...baseRequest,
+            rolling_stock: { name: consist.tractionEngine?.name ?? '' },
+          },
+        });
+        addUniqueTrains(response.data?.similar_trains ?? []);
+      }
+
+      // Call 3: Retry without name if there are still null trains
+      if (hasNullTrains(response.data?.similar_trains ?? [])) {
+        response = await postSimilarTrains({
+          body: {
+            ...baseRequest,
+            rolling_stock: { speed_limit_tag: consist.speedLimitByTag },
+          },
+        });
+        addUniqueTrains(response.data?.similar_trains ?? []);
+      }
 
       const enrichedSimilarTrains = addSecondaryCodesToSimilarTrains(
-        rawSimilarTrains,
+        results,
         (selectedSimulation.outputs as StdcmResultsOutput).pathProperties.manchetteOperationalPoints
       );
 
