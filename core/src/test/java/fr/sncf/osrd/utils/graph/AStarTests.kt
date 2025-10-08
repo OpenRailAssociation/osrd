@@ -122,7 +122,7 @@ class AStarTests {
                     }
                 )
             )
-            .runPathfinding(listOf<Set<PathfindingEdgeLocationId<Block>>>(origin, destination))
+            .runPathfinding(listOf(origin, destination))
         Pathfinding(GraphAdapter(fullDummyInfra.blockInfra, fullDummyInfra.rawInfra))
             .setEdgeToLength { blockId -> fullDummyInfra.blockInfra.getBlockLength(blockId) }
             .setRemainingDistanceEstimator(
@@ -133,7 +133,7 @@ class AStarTests {
                     }
                 )
             )
-            .runPathfinding(listOf<Set<PathfindingEdgeLocationId<Block>>>(origin, destination))
+            .runPathfinding(listOf(origin, destination))
         Assertions.assertTrue(seenWithHeuristic.size < seenWithoutHeuristic.size)
     }
 }

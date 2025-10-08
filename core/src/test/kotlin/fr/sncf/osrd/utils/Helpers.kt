@@ -53,7 +53,7 @@ object Helpers {
     fun getExampleElectricalProfiles(externalGeneratedInputsPath: String): RJSElectricalProfileSet {
         return deserializeResource(
             RJSElectricalProfileSet.adapter,
-            "infras/" + externalGeneratedInputsPath,
+            "infras/$externalGeneratedInputsPath",
         )
     }
 

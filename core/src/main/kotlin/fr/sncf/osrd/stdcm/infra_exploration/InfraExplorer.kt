@@ -94,7 +94,7 @@ interface InfraExplorer {
     /** Returns a copy of the current instance. */
     fun clone(): InfraExplorer
 
-    /** Returns the list of routes that are the current exploration follows. */
+    /** Returns the list of routes that the current exploration follows. */
     fun getExploredRoutes(): List<RouteId>
 
     /** Returns the step tracker, giving data about the steps on the path (including lookahead) */
@@ -347,7 +347,7 @@ private class InfraExplorerImpl(
         for (block in addedBlocks) {
             blockRoutes[block] = route
         }
-        for (i in 0..<nBlocksToSkip) moveForward()
+        repeat(nBlocksToSkip) { moveForward() }
         for (pathFragment in pathFragments) incrementalPath.extend(pathFragment)
 
         return true
