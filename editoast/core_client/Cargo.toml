@@ -5,7 +5,7 @@ edition.workspace = true
 license.workspace = true
 
 [features]
-mocking_client = []
+mocking_client = ["dep:http"]
 
 [dependencies]
 approx.workspace = true
@@ -16,7 +16,7 @@ editoast_derive.workspace = true
 educe.workspace = true
 futures-util.workspace = true
 hostname.workspace = true
-http = "1.3.1"
+http = { workspace = true, optional = true }
 itertools.workspace = true
 lapin.workspace = true
 opentelemetry.workspace = true
