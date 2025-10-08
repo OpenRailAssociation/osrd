@@ -26,7 +26,8 @@ export default function RollingStockInformationPanel({
   const { t } = useTranslation();
 
   const exportRollingStock = () => {
-    const jsonString = JSON.stringify(rollingStock);
+    const { id: _id, locked: _locked, version: _version, ...exportable } = rollingStock;
+    const jsonString = JSON.stringify(exportable);
     const blob = new Blob([jsonString], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');

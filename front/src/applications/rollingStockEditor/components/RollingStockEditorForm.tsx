@@ -1,9 +1,7 @@
 import { useEffect, useState } from 'react';
 
-import { Upload } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 
-import { handleFileReadingError } from 'applications/operationalStudies/views/Scenario/components/ManageTimetableItem/helpers/handleParseFiles';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type {
   RollingStock,
@@ -13,7 +11,6 @@ import type {
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import Tabs from 'common/Tabs';
 import type { TabProps } from 'common/Tabs';
-import UploadFileModal from 'common/uploadFileModal';
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
 import { addFailureNotification, setFailure, setSuccess } from 'reducers/main';
 import { useAppDispatch } from 'store';
@@ -51,7 +48,7 @@ const RollingStockEditorForm = ({
   const dispatch = useAppDispatch();
   const { t } = useTranslation();
   const { t: rollingStockT } = useTranslation('translation', { keyPrefix: 'rollingStock' });
-  const { openModal, closeModal } = useModal();
+  const { openModal } = useModal();
   const [postRollingstock] = osrdEditoastApi.endpoints.postRollingStock.useMutation();
   const [putRollingStock] = osrdEditoastApi.endpoints.putRollingStockByRollingStockId.useMutation();
 
@@ -282,37 +279,12 @@ const RollingStockEditorForm = ({
     ),
   };
 
-  const importFile = async (file: File) => {
-    closeModal();
-    try {
-      const fileContent = await file.text();
-      const data = JSON.parse(fileContent);
-      setRollingStockValues(getRollingStockEditorDefaultValues(data));
-      setEffortCurves(data.effort_curves.modes);
-      setSelectedTractionMode(data.effort_curves.default_mode);
-    } catch (error) {
-      handleFileReadingError(error as Error);
-    }
-  };
-
   return (
     <form
       className="d-flex flex-column form-control rollingstock-editor-form p-0"
       onSubmit={(e) => submit(e, rollingStockValues)}
     >
-      <div>
-        <button
-          type="button"
-          className="d-flex justify-content-start mb-2 py-1 px-2"
-          aria-label={t('rollingStock.importRollingStock')}
-          title={t('rollingStock.importRollingStock')}
-          onClick={() => openModal(<UploadFileModal handleSubmit={importFile} />)}
-        >
-          <Upload className="mr-2" />
-          {t('rollingStock.importRollingStock')}
-        </button>
-        <Tabs pills fullWidth tabs={[tabRollingStockDetails, tabRollingStockCurves]} />
-      </div>
+      <Tabs pills fullWidth tabs={[tabRollingStockDetails, tabRollingStockCurves]} />
       <div className="d-flex justify-content-end mt-2">
         <div className="d-flex flex-column justify-content-end">
           {errorMessage && <p className="text-danger mb-1 p-3">{errorMessage}</p>}
