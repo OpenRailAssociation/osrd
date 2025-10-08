@@ -211,7 +211,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - name: Set up 'uv'
-        uses: astral-sh/setup-uv@v6
+        uses: astral-sh/setup-uv@v7
         with:
           python-version: "3.11"
           enable-cache: true
@@ -234,7 +234,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - name: Set up 'uv'
-        uses: astral-sh/setup-uv@v6
+        uses: astral-sh/setup-uv@v7
         with:
           python-version: "3.11"
           enable-cache: true
@@ -316,7 +316,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
       - name: Set up 'uv'
-        uses: astral-sh/setup-uv@v6
+        uses: astral-sh/setup-uv@v7
         with:
           python-version: "3.11"
           enable-cache: true
@@ -337,7 +337,7 @@ jobs:
     steps:
       - uses: actions/checkout@v5
       - name: Set up 'uv'
-        uses: astral-sh/setup-uv@v6
+        uses: astral-sh/setup-uv@v7
         with:
           python-version: "3.11"
           enable-cache: true
@@ -373,7 +373,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v5
       - name: Set up 'uv'
-        uses: astral-sh/setup-uv@v6
+        uses: astral-sh/setup-uv@v7
         with:
           python-version: "3.11"
           enable-cache: true
@@ -792,7 +792,7 @@ jobs:
           docker load --input ./osrd-core.tar
           docker load --input ./osrd-osrdyne.tar
       - name: Set up 'uv'
-        uses: astral-sh/setup-uv@v6
+        uses: astral-sh/setup-uv@v7
         with:
           python-version: "3.11"
           enable-cache: true
