@@ -63,18 +63,6 @@ impl Study {
         Ok(count)
     }
 
-    pub fn validate(study_changeset: &Changeset<Self>) -> Result<(), StartDateAfterEndDateError> {
-        if !dates_in_order(
-            study_changeset.start_date,
-            study_changeset.expected_end_date,
-        ) || !dates_in_order(study_changeset.start_date, study_changeset.actual_end_date)
-        {
-            return Err(StartDateAfterEndDateError);
-        }
-
-        Ok(())
-    }
-
     /// Opens a transaction, retrieves the [Study] and its [Project] and calls the provided closure with these
     ///
     /// The last modification field of these objects are updated before the transaction is committed.
@@ -118,18 +106,6 @@ impl Study {
         .await
     }
 }
-
-fn dates_in_order(a: Option<Option<NaiveDate>>, b: Option<Option<NaiveDate>>) -> bool {
-    match (a, b) {
-        (Some(Some(a)), Some(Some(b))) => a <= b,
-        _ => true,
-    }
-}
-
-// TODO: Remove this struct the day we add validation to the study deserialize.
-#[derive(Debug, thiserror::Error)]
-#[error("The study start date must be before the end date")]
-pub struct StartDateAfterEndDateError;
 
 #[cfg(test)]
 pub mod tests {

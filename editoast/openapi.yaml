@@ -6480,7 +6480,6 @@ components:
       - $ref: '#/components/schemas/EditoastStdcmSearchEnvErrorNotFound'
       - $ref: '#/components/schemas/EditoastStudyErrorDatabase'
       - $ref: '#/components/schemas/EditoastStudyErrorNotFound'
-      - $ref: '#/components/schemas/EditoastStudyErrorStartDateAfterEndDate'
       - $ref: '#/components/schemas/EditoastSubCategoryErrorCodeAlreadyUsed'
       - $ref: '#/components/schemas/EditoastSubCategoryErrorDatabase'
       - $ref: '#/components/schemas/EditoastSubCategoryErrorNotFound'
@@ -8322,25 +8321,6 @@ components:
           type: string
           enum:
           - editoast:study:NotFound
-    EditoastStudyErrorStartDateAfterEndDate:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 400
-        type:
-          type: string
-          enum:
-          - editoast:study:StartDateAfterEndDate
     EditoastSubCategoryErrorCodeAlreadyUsed:
       type: object
       required:
