@@ -32,9 +32,11 @@ data class TrainPathNoBacktrack(
     // approximate blocks along the path (when we lack context and don't have the actual ones).
     // TODO: always forward actual blocks, from pathfinding to any Train Path constructor
     private val haveApproximateBlocks: Boolean,
+    private val stops: List<PathStopData> = listOf(),
 ) : PathProperties by pathProperties, TrainPath {
 
     private val cachedEnvelopeSimPath by lazy { computeEnvelopeSimPath() }
+    private val cachedZonePaths by lazy { computeZonePaths() }
 
     init {
         // The sanity checks here are quite exhaustive and might be expensive to compute.
@@ -62,6 +64,10 @@ data class TrainPathNoBacktrack(
     override fun subPath(from: Offset<TrainPath>?, to: Offset<TrainPath>?): TrainPath {
         val fromDist = from ?: Offset(0.meters)
         val toDist = to ?: Offset(getLength())
+        val stops =
+            stops
+                .filter { it.offset in fromDist..toDist }
+                .map { it.copy(offset = it.offset - fromDist.distance) }
         return TrainPathNoBacktrack(
             rawInfra = rawInfra,
             blockInfra = blockInfra,
@@ -71,6 +77,7 @@ data class TrainPathNoBacktrack(
             chunks = linearObjectSubMap(chunks, fromDist, toDist),
             electricalProfileMapping = electricalProfileMapping,
             haveApproximateBlocks = haveApproximateBlocks,
+            stops = stops,
         )
     }
 
@@ -86,6 +93,18 @@ data class TrainPathNoBacktrack(
     override fun getRoutes(): LinearObjectMap<RouteRange> = routes!!
 
     override fun getChunks(): LinearObjectMap<DirChunkRange> = chunks
+
+    override fun getZonePaths(): LinearObjectMap<ZonePathRange> {
+        return cachedZonePaths
+    }
+
+    override fun isComplete(): Boolean {
+        return true
+    }
+
+    override fun getStops(): List<PathStopData> {
+        TODO("Not yet implemented")
+    }
 
     override val length: Double
         get() = pathProperties.getLength().meters
@@ -110,6 +129,30 @@ data class TrainPathNoBacktrack(
             powerRestrictionToPowerClass,
             ignoreElectricalProfiles,
         )
+    }
+
+    private fun computeZonePaths(): LinearObjectMap<ZonePathRange> {
+        val zonePathRanges = mutableListOf<ZonePathRange>()
+        for ((_, blockRange) in blocks.entries) {
+            val zonePaths = blockInfra.getBlockZonePaths(blockRange.value)
+            var nextZonePathBlockOffset = Offset<Block>(0.meters)
+            for (zonePath in zonePaths) {
+                val zonePathLength = rawInfra.getZonePathLength(zonePath)
+
+                val zonePathBeginOffset =
+                    Offset<ZonePath>(blockRange.from.distance - nextZonePathBlockOffset.distance)
+                val zonePathEndOffset =
+                    Offset<ZonePath>(blockRange.to.distance - nextZonePathBlockOffset.distance)
+                if (zonePathBeginOffset < zonePathLength && zonePathEndOffset > Offset.zero()) {
+                    zonePathRanges.add(
+                        ZonePathRange(zonePath, zonePathBeginOffset, zonePathEndOffset)
+                    )
+                }
+
+                nextZonePathBlockOffset += zonePathLength.distance
+            }
+        }
+        return buildRangeMap(zonePathRanges)
     }
 
     private fun computeEnvelopeSimPath(): PhysicsPath {
@@ -162,6 +205,10 @@ data class TrainPathNoBacktrack(
     override fun withRoutes(routes: List<RouteId>): TrainPath {
         val routeRanges = generateRouteRanges(rawInfra, chunks, routes)
         return copy(routes = routeRanges, pathProperties = pathProperties.withRoutes(routes))
+    }
+
+    override fun withStops(stops: List<PathStopData>): TrainPath {
+        return copy(stops = stops)
     }
 
     /** *Debugging purpose*. We try to find the actual names of underlying objects. */

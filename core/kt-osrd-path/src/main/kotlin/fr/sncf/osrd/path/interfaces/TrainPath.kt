@@ -2,6 +2,7 @@ package fr.sncf.osrd.path.interfaces
 
 import com.google.common.collect.RangeMap
 import fr.sncf.osrd.path.implementations.ChunkPath
+import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.utils.entries
 import fr.sncf.osrd.utils.indexing.DirStaticIdx
@@ -50,17 +51,30 @@ interface TrainPath : PhysicsPath, PathProperties {
     /** Returns a copy with the specified routes instead */
     override fun withRoutes(routes: List<RouteId>): TrainPath
 
+    /** Returns a copy with the specified stops instead */
+    fun withStops(stops: List<PathStopData>): TrainPath
+
     fun getBlocks(): LinearObjectMap<BlockRange>
 
     fun getRoutes(): LinearObjectMap<RouteRange>
 
     fun getChunks(): LinearObjectMap<DirChunkRange>
-    // To be expanded as needed with other linear objects
+
+    fun getZonePaths(): LinearObjectMap<ZonePathRange>
+
+    fun isComplete(): Boolean
+
+    fun getStops(): List<PathStopData>
 }
 
 fun concat(vararg paths: TrainPath): TrainPath {
     TODO("Required for actual backtracks, not necessary earlier than that")
 }
+
+data class PathStopData(
+    val offset: Offset<TrainPath>,
+    val receptionSignal: RJSTrainStop.RJSReceptionSignal,
+)
 
 data class GenericLinearRange<ValueType, OffsetType>(
     val value: ValueType,
@@ -88,6 +102,8 @@ typealias RouteRange = LinearObjectRange<Route>
 typealias BlockRange = LinearObjectRange<Block>
 
 typealias DirChunkRange = LinearDirObjectRange<TrackChunk>
+
+typealias ZonePathRange = LinearObjectRange<ZonePath>
 
 // Extension functions that help with backward compatibility.
 // These should only exist during the migration to enable more local changes,
