@@ -1,3 +1,4 @@
+use ordered_float::OrderedFloat;
 use schemas::infra::Direction;
 use schemas::infra::TrackOffset;
 use schemas::primitives::Identifier;
@@ -11,7 +12,7 @@ use crate::AsCoreRequest;
 use crate::Json;
 use crate::RawError;
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Hash, Serialize)]
 pub struct PathfindingRequest {
     /// Infrastructure id
     pub infra: i64,
@@ -29,9 +30,9 @@ pub struct PathfindingRequest {
     /// List of supported signaling systems
     pub rolling_stock_supported_signaling_systems: Vec<String>,
     /// Maximum speed of the rolling stock
-    pub rolling_stock_maximum_speed: f64,
+    pub rolling_stock_maximum_speed: OrderedFloat<f64>,
     /// Rolling stock length in meters:
-    pub rolling_stock_length: f64,
+    pub rolling_stock_length: OrderedFloat<f64>,
     /// Speed limit tag, used to estimate the max speed and travel time
     pub speed_limit_tag: Option<String>,
 }

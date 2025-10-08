@@ -100,6 +100,7 @@ opentelemetry_sdk = { version = "0.31.0", default-features = false, features = [
   "rt-tokio",
   "trace",
 ] }
+ordered-float = { version = "5.0.0", features = ["serde"] }
 osrdyne_client = { path = "./osrdyne_client" }
 postgis_diesel = { version = "3.0.2", features = ["serde"] }
 postgres-openssl = "0.5.2"
@@ -204,7 +205,7 @@ opentelemetry-otlp = { version = "0.31.0", default-features = false, features = 
 ] }
 opentelemetry-semantic-conventions.workspace = true
 opentelemetry_sdk.workspace = true
-ordered-float = { version = "5.0.0", features = ["serde"] }
+ordered-float.workspace = true
 osrdyne_client.workspace = true
 pathfinding = "4.14.0"
 petgraph = "0.8.2"

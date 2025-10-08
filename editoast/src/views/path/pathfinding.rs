@@ -395,8 +395,8 @@ fn build_pathfinding_request(
         rolling_stock_supported_signaling_systems: pathfinding_input
             .rolling_stock_supported_signaling_systems
             .clone(),
-        rolling_stock_maximum_speed: pathfinding_input.rolling_stock_maximum_speed.0,
-        rolling_stock_length: pathfinding_input.rolling_stock_length.0,
+        rolling_stock_maximum_speed: pathfinding_input.rolling_stock_maximum_speed,
+        rolling_stock_length: pathfinding_input.rolling_stock_length,
         speed_limit_tag: pathfinding_input.speed_limit_tag.clone(),
     })
 }
