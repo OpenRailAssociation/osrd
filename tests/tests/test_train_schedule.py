@@ -4,7 +4,7 @@ from collections.abc import Sequence
 from typing import Any
 
 import pytest
-from requests import Session
+from requests import Session, Response
 
 from tests.infra import Infra
 
@@ -26,9 +26,9 @@ SPEED_0 = kph2ms(0)
 
 
 def _update_simulation_with_mareco_allowances(
-    editoast_url, train_Schedule_id, session: Session
+    editoast_url, train_schedule_id, session: Session
 ):
-    response = session.get(editoast_url + f"/train_schedule/{train_Schedule_id}/")
+    response = session.get(editoast_url + f"/train_schedule/{train_schedule_id}/")
     assert response.status_code == 200
     train_schedule = response.json()
     train_schedule["margins"] = {
@@ -37,13 +37,13 @@ def _update_simulation_with_mareco_allowances(
     }
     train_schedule["constraint_distribution"] = "MARECO"
     r = session.put(
-        editoast_url + f"/train_schedule/{train_Schedule_id}", json=train_schedule
+        editoast_url + f"/train_schedule/{train_schedule_id}", json=train_schedule
     )
     if r.status_code // 100 != 2:
         raise RuntimeError(
             f"Schedule error {r.status_code}: {r.content}, payload={json.dumps(train_schedule)}"
         )
-    r = session.get(editoast_url + f"/train_schedule/{train_Schedule_id}/")
+    r = session.get(editoast_url + f"/train_schedule/{train_schedule_id}/")
     body = r.json()
     assert body["constraint_distribution"] == "MARECO"
     return body
@@ -1424,32 +1424,7 @@ def test_etcs_schedule_braking_curves_endpoint(
     etcs_rolling_stock_name = rolling_stock_response.json()["name"]
     ts_response = session.post(
         f"{EDITOAST_URL}timetable/{etcs_scenario.timetable}/train_schedules/",
-        json=[
-            {
-                "train_name": "3 brakes + 2 slowdowns + 29 signals",
-                "labels": [],
-                "rolling_stock_name": etcs_rolling_stock_name,
-                "start_time": "2024-01-01T07:00:00Z",
-                "path": [
-                    {"id": "zero", "track": "TA0", "offset": 862_000},
-                    {"id": "first", "track": "TD0", "offset": 1_7156_000},
-                    {"id": "second", "track": "TH1", "offset": 1_177_000},
-                    {"id": "last", "track": "TH1", "offset": 3_922_000},
-                ],
-                "schedule": [
-                    {"at": "zero", "stop_for": "P0D"},
-                    {"at": "first", "stop_for": "PT10S", "reception_signal": "STOP"},
-                    {"at": "second", "stop_for": "PT10S", "reception_signal": "STOP"},
-                    {"at": "last", "stop_for": "P0D"},
-                ],
-                "margins": {"boundaries": [], "values": ["0%"]},
-                "initial_speed": 0,
-                "comfort": "STANDARD",
-                "constraint_distribution": "STANDARD",
-                "speed_limit_tag": "foo",
-                "power_restrictions": [],
-            }
-        ],
+        json=[_get_etcs_braking_curves_train_data(etcs_rolling_stock_name)],
     )
 
     schedule = ts_response.json()[0]
@@ -1459,6 +1434,37 @@ def test_etcs_schedule_braking_curves_endpoint(
     etcs_braking_curves_response = session.get(
         f"{EDITOAST_URL}train_schedule/{schedule_id}/etcs_braking_curves?infra_id={etcs_scenario.infra}"
     )
+    _check_etcs_braking_curves_response(etcs_braking_curves_response)
+
+
+def _get_etcs_braking_curves_train_data(rolling_stock_name: str) -> dict[str, Any]:
+    return {
+        "train_name": "3 brakes + 2 slowdowns + 29 signals",
+        "labels": [],
+        "rolling_stock_name": rolling_stock_name,
+        "start_time": "2024-01-01T07:00:00Z",
+        "path": [
+            {"id": "zero", "track": "TA0", "offset": 862_000},
+            {"id": "first", "track": "TD0", "offset": 1_7156_000},
+            {"id": "second", "track": "TH1", "offset": 1_177_000},
+            {"id": "last", "track": "TH1", "offset": 3_922_000},
+        ],
+        "schedule": [
+            {"at": "zero", "stop_for": "P0D"},
+            {"at": "first", "stop_for": "PT10S", "reception_signal": "STOP"},
+            {"at": "second", "stop_for": "PT10S", "reception_signal": "STOP"},
+            {"at": "last", "stop_for": "P0D"},
+        ],
+        "margins": {"boundaries": [], "values": ["0%"]},
+        "initial_speed": 0,
+        "comfort": "STANDARD",
+        "constraint_distribution": "STANDARD",
+        "speed_limit_tag": "foo",
+        "power_restrictions": [],
+    }
+
+
+def _check_etcs_braking_curves_response(etcs_braking_curves_response: Response):
     slowdowns = etcs_braking_curves_response.json()["slowdowns"]
     stops = etcs_braking_curves_response.json()["stops"]
     conflicts = etcs_braking_curves_response.json()["conflicts"]
