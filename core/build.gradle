@@ -1,4 +1,5 @@
 plugins {
+    id 'base'
     id 'java'
     alias(libs.plugins.kotlin.jvm)
     alias(libs.plugins.ksp) apply false
@@ -119,7 +120,7 @@ application {
     mainClass = 'fr.sncf.osrd.App'
 }
 
-archivesBaseName = "osrd"
+base.archivesName = "osrd"
 
 run {
     enableAssertions = true
