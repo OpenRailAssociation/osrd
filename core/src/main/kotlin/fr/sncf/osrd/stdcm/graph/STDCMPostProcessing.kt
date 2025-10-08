@@ -158,7 +158,7 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
             return timeData
         }
         // Either departure or arrival
-        val plannedNodeIndex = maybeIndex!!
+        val plannedNodeIndex = maybeIndex
         val plannedNode = nodes[plannedNodeIndex]
 
         // Figure out how much time we'd like to add

@@ -227,7 +227,7 @@ class STDCMHeuristicTests {
         var explorer =
             initInfraExplorer(infra, infra, steps.first().locations.first(), steps).single()
 
-        for (i in 1 until blocks.size) {
+        repeat(blocks.size - 1) {
             explorer =
                 explorer.cloneAndExtendLookahead().single { candidate ->
                     candidate.getLookahead().all { blocks.contains(it) }
@@ -242,7 +242,7 @@ class STDCMHeuristicTests {
 
         var wrongPathExplorer =
             initInfraExplorer(infra, infra, steps.first().locations.first(), steps).single()
-        for (i in 0..<2) {
+        repeat(2) {
             wrongPathExplorer =
                 wrongPathExplorer.cloneAndExtendLookahead().single {
                     it.getLookahead().last() != blocks[1]

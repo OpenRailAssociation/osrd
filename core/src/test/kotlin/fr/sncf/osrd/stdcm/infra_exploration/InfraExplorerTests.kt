@@ -74,7 +74,7 @@ class InfraExplorerTests {
         assertFalse { explorer.getIncrementalPath().pathComplete }
 
         // Fully extend lookahead
-        for (i in 0..<3) {
+        repeat(3) {
             val extended = explorer.cloneAndExtendLookahead()
             assertEquals(1, extended.size)
             explorer = extended.first()
@@ -166,7 +166,7 @@ class InfraExplorerTests {
         )
 
         // Move forward 2 times, both explorers should be at current block d->e and no lookahead
-        for (i in 0..<2) {
+        repeat(2) {
             extendedUntilEnd[0].moveForward()
             extendedUntilEnd[1].moveForward()
         }
@@ -291,7 +291,7 @@ class InfraExplorerTests {
             Helpers.fullInfraFromRJS(Helpers.getExampleInfra("overlapping_routes/infra.json"))
         val detector =
             infra.rawInfra.detectors.first { det ->
-                infra.rawInfra.getDetectorName(det).equals("det.center.1")
+                infra.rawInfra.getDetectorName(det) == "det.center.1"
             }
         val blocks =
             infra.blockInfra.getBlocksStartingAtDetector(
@@ -331,9 +331,7 @@ class InfraExplorerTests {
             Helpers.fullInfraFromRJS(Helpers.getExampleInfra("overlapping_routes/infra.json"))
 
         val detector =
-            infra.rawInfra.detectors.first { det ->
-                infra.rawInfra.getDetectorName(det).equals("bf.a1")
-            }
+            infra.rawInfra.detectors.first { det -> infra.rawInfra.getDetectorName(det) == "bf.a1" }
         val blocks =
             infra.blockInfra.getBlocksStartingAtDetector(
                 DirDetectorId(detector, Direction.INCREASING)

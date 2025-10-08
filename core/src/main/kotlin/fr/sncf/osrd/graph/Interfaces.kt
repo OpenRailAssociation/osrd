@@ -36,6 +36,4 @@ fun interface TargetsOnEdge<EdgeT, OffsetType> {
 }
 
 // Type aliases to avoid repeating `StaticIdx<T>, T` when edge types are static idx
-typealias AStarHeuristicId<T> = AStarHeuristic<StaticIdx<T>, T>
-
 typealias PathfindingConstraint<T> = EdgeToRanges<StaticIdx<T>, T>

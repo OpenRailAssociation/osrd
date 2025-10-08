@@ -155,14 +155,6 @@ class Pathfinding<NodeT : Any, EdgeT : Any, OffsetType>(
         return this
     }
 
-    /** Sets the functor used to determine which ranges are blocked on an edge */
-    fun addBlockedRangeOnEdges(
-        f: Collection<EdgeToRanges<EdgeT, OffsetType>>
-    ): Pathfinding<NodeT, EdgeT, OffsetType> {
-        blockedRangesOnEdge.functions.addAll(f)
-        return this
-    }
-
     /** Sets the pathfinding's timeout */
     fun setTimeout(timeout: Double?): Pathfinding<NodeT, EdgeT, OffsetType> {
         if (timeout != null) this.timeout = timeout

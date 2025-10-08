@@ -44,7 +44,7 @@ class PathfindingTests {
         }
 
         fun makeNodes(n: Int) {
-            for (i in 0 until n) makeNode()
+            repeat(n) { makeNode() }
         }
 
         fun makeEdge(
