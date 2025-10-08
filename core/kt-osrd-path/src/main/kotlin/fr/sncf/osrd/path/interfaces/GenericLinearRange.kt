@@ -1,12 +1,15 @@
 package fr.sncf.osrd.path.interfaces
 
+import fr.sncf.osrd.path.implementations.PartialGenericLinearRange
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockInfra
 import fr.sncf.osrd.sim_infra.api.RawInfra
 import fr.sncf.osrd.sim_infra.api.Route
+import fr.sncf.osrd.sim_infra.api.RouteId
 import fr.sncf.osrd.sim_infra.api.TrackChunk
 import fr.sncf.osrd.sim_infra.api.Zone
 import fr.sncf.osrd.sim_infra.api.ZonePath
+import fr.sncf.osrd.sim_infra.utils.getRouteBlocks
 import fr.sncf.osrd.utils.indexing.DirStaticIdx
 import fr.sncf.osrd.utils.indexing.StaticIdx
 import fr.sncf.osrd.utils.units.Length
@@ -14,6 +17,7 @@ import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.Offset.Companion.max
 import fr.sncf.osrd.utils.units.Offset.Companion.min
 import fr.sncf.osrd.utils.units.meters
+import fr.sncf.osrd.utils.units.sumDistances
 
 /**
  * Describes an object range on the train path. Located on both the object itself, and the global
@@ -111,9 +115,35 @@ data class GenericLinearRange<ValueType, OffsetType>(
         return res
     }
 
+    /**
+     * When the given object (`this.value`) is one element in a sequence of smaller objects, this
+     * method turns an inner object range into an outer object range.
+     *
+     * For example, this can turn a block range into a route ranges.
+     */
+    fun <OuterObjectType, OuterObjectOffset> mapOuterObject(
+        outerObject: OuterObjectType,
+        subObjectList: List<ValueType>,
+        getSubObjectLength: (ValueType) -> Length<OffsetType>,
+    ): GenericLinearRange<OuterObjectType, OuterObjectOffset> {
+        val thisIndex = subObjectList.indexOf(value)
+        assert(thisIndex >= 0)
+        val thisOffset =
+            Offset<OuterObjectOffset>(
+                subObjectList.drop(thisIndex).map { getSubObjectLength(it).distance }.sumDistances()
+            )
+        val rangeBegin = thisOffset + objectBegin.distance
+        val rangeEnd = thisOffset + objectEnd.distance
+        return GenericLinearRange(outerObject, rangeBegin, rangeEnd, pathBegin, pathEnd)
+    }
+
     /** Maps the value, while keeping all offsets identical. */
     fun <T, NewOffsetType> mapValue(value: T): GenericLinearRange<T, NewOffsetType> {
         return GenericLinearRange(value, objectBegin.cast(), objectEnd.cast(), pathBegin, pathEnd)
+    }
+
+    fun withoutPathOffsets(): PartialGenericLinearRange<ValueType, OffsetType> {
+        return PartialGenericLinearRange(value, objectBegin, objectEnd)
     }
 }
 
@@ -187,4 +217,13 @@ fun RouteRange.getRouteAbsolutePathEnd(infra: RawInfra): Offset<TrainPath> {
 
 fun BlockRange.getBlockAbsolutePathEnd(blockInfra: BlockInfra): Offset<TrainPath> {
     return getObjectAbsolutePathEnd(blockInfra.getBlockLength(value))
+}
+
+fun BlockRange.mapRouteRange(
+    rawInfra: RawInfra,
+    blockInfra: BlockInfra,
+    route: RouteId,
+): RouteRange {
+    val routeBlocks = blockInfra.getRouteBlocks(rawInfra, route)
+    return mapOuterObject(route, routeBlocks, blockInfra::getBlockLength)
 }

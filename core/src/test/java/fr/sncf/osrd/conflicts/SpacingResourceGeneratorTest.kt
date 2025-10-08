@@ -5,6 +5,7 @@ import fr.sncf.osrd.envelope.part.EnvelopePart
 import fr.sncf.osrd.envelope_sim.EnvelopeProfile
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock
 import fr.sncf.osrd.envelope_sim.SimpleRollingStock
+import fr.sncf.osrd.path.implementations.buildTrainPathFromBlocks
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal.SHORT_SLIP_STOP
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.standalone_sim.CLOSED_SIGNAL_RESERVATION_MARGIN
@@ -81,17 +82,8 @@ class SpacingResourceGeneratorTest {
                 infra.rawInfra.getRouteFromName(it)
             }
         val path = incrementalPathOf(infra.rawInfra, infra.blockInfra)
-        path.extend(
-            PathFragment(
-                routes,
-                blocks,
-                stops = listOf(),
-                containsStart = true,
-                containsEnd = true,
-                0.meters,
-                0.meters,
-            )
-        )
+        val trainPath = buildTrainPathFromBlocks(infra.rawInfra, infra.blockInfra, blocks, routes)
+        path.extend(trainPath.generatePathFragment(listOf(), true))
         val length = Distance(millimeters = blockLengths.sumOf { it.distance.millimeters })
         val automaton =
             SpacingRequirementAutomaton(
@@ -129,17 +121,9 @@ class SpacingResourceGeneratorTest {
                     blocks.size - 1 -> mutableStaticIdxArrayListOf(routes[1])
                     else -> mutableStaticIdxArrayListOf()
                 }
-            path.extend(
-                PathFragment(
-                    routeList,
-                    mutableStaticIdxArrayListOf(block),
-                    stops = listOf(),
-                    containsStart = i == 0,
-                    containsEnd = i == blocks.size - 1,
-                    0.meters,
-                    0.meters,
-                )
-            )
+            val trainPath =
+                buildTrainPathFromBlocks(infra.rawInfra, infra.blockInfra, listOf(block), routeList)
+            path.extend(trainPath.generatePathFragment(listOf(), i == blocks.lastIndex))
             val iterationResult = automaton.processPathUpdate()
             res.add(iterationResult)
         }
@@ -157,17 +141,8 @@ class SpacingResourceGeneratorTest {
         // The path is complete right from the start, the simulation moves forward one block at a
         // time
         val path = incrementalPathOf(infra.rawInfra, infra.blockInfra)
-        path.extend(
-            PathFragment(
-                routes,
-                blocks,
-                stops = listOf(),
-                containsStart = true,
-                containsEnd = true,
-                0.meters,
-                0.meters,
-            )
-        )
+        val trainPath = buildTrainPathFromBlocks(infra.rawInfra, infra.blockInfra, blocks, routes)
+        path.extend(trainPath.generatePathFragment(listOf(), true))
         val automaton =
             SpacingRequirementAutomaton(
                 infra.rawInfra,
@@ -203,17 +178,8 @@ class SpacingResourceGeneratorTest {
         // This isn't a realistic way to use the API, but it's an easy way to look for incomplete
         // resource use.
         val path = incrementalPathOf(infra.rawInfra, infra.blockInfra)
-        path.extend(
-            PathFragment(
-                routes,
-                blocks,
-                stops = listOf(),
-                containsStart = true,
-                containsEnd = true,
-                0.meters,
-                0.meters,
-            )
-        )
+        val trainPath = buildTrainPathFromBlocks(infra.rawInfra, infra.blockInfra, blocks, routes)
+        path.extend(trainPath.generatePathFragment(listOf(), true))
         val automaton =
             SpacingRequirementAutomaton(
                 infra.rawInfra,
@@ -252,17 +218,8 @@ class SpacingResourceGeneratorTest {
     fun testVeryLongTrain() {
         // The rolling stock is longer than the train path, every resource use should be incomplete
         val path = incrementalPathOf(infra.rawInfra, infra.blockInfra)
-        path.extend(
-            PathFragment(
-                routes,
-                blocks,
-                stops = listOf(),
-                containsStart = true,
-                containsEnd = true,
-                0.meters,
-                0.meters,
-            )
-        )
+        val trainPath = buildTrainPathFromBlocks(infra.rawInfra, infra.blockInfra, blocks, routes)
+        path.extend(trainPath.generatePathFragment(listOf(), true))
         val length = Distance(blockLengths.sumOf { it.distance.millimeters }) - 1.meters
         val callbacks = makeCallbacks(length, false, rollingStock = TestTrains.VERY_LONG_FAST_TRAIN)
         val automaton =
@@ -294,17 +251,9 @@ class SpacingResourceGeneratorTest {
                 path,
             )
         val blocks = mutableStaticIdxArrayListOf(blocks[0], blocks[1], blocks[2])
-        path.extend(
-            PathFragment(
-                mutableStaticIdxArrayListOf(routes[0]),
-                blocks,
-                stops = listOf(),
-                containsStart = true,
-                containsEnd = false,
-                0.meters,
-                0.meters,
-            )
-        )
+        val trainPath =
+            buildTrainPathFromBlocks(infra.rawInfra, infra.blockInfra, blocks, listOf(routes[0]))
+        path.extend(trainPath.generatePathFragment(listOf(), false))
         val iterationResult = automaton.processPathUpdate()
 
         // We should have just enough data to generate resource use
@@ -331,15 +280,11 @@ class SpacingResourceGeneratorTest {
         val stops = listOf(TrainStop(stopOffset.meters, stopDuration, SHORT_SLIP_STOP))
 
         // Build path
+        val trainPath = buildTrainPathFromBlocks(infra.rawInfra, infra.blockInfra, blocks, routes)
         path.extend(
-            PathFragment(
-                routes,
-                blocks,
-                stops = listOf(FragmentStop(Offset(stopOffset), SHORT_SLIP_STOP)),
-                containsStart = true,
-                containsEnd = true,
-                0.meters,
-                0.meters,
+            trainPath.generatePathFragment(
+                listOf(PathStop(Offset(stopOffset), SHORT_SLIP_STOP)),
+                true,
             )
         )
 

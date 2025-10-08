@@ -171,7 +171,8 @@ fun buildTrainPathFromChunkPath(
 
 /** Create a list of ranges from a list of partial ranges, mapping path offsets (starting at 0). */
 fun <ValueType, OffsetType> buildRangeList(
-    ranges: List<PartialGenericLinearRange<ValueType, OffsetType>>
+    ranges: List<PartialGenericLinearRange<ValueType, OffsetType>>,
+    pathOffsetStart: Offset<TrainPath> = Offset.zero(),
 ): List<GenericLinearRange<ValueType, OffsetType>> {
     // Merge adjacent ranges of the same object
     val merged = mutableListOf<PartialGenericLinearRange<ValueType, OffsetType>>()
@@ -180,7 +181,7 @@ fun <ValueType, OffsetType> buildRangeList(
         else merged[merged.lastIndex] = merged.last().copy(objectEnd = range.objectEnd)
     }
 
-    var prevRangeLength: Offset<TrainPath> = Offset.zero()
+    var prevRangeLength = pathOffsetStart
     val res = mutableListOf<GenericLinearRange<ValueType, OffsetType>>()
     for (range in merged) {
         res.add(

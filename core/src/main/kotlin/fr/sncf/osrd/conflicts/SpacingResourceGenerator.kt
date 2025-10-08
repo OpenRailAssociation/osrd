@@ -5,7 +5,8 @@ import fr.sncf.osrd.envelope_sim.etcs.BrakingType.IND
 import fr.sncf.osrd.envelope_sim.etcs.ETCSBrakingSimulator
 import fr.sncf.osrd.envelope_sim.etcs.ETCSBrakingSimulatorImpl
 import fr.sncf.osrd.envelope_sim.etcs.EoaType
-import fr.sncf.osrd.path.interfaces.BlockPath
+import fr.sncf.osrd.path.interfaces.TrainPath
+import fr.sncf.osrd.path.interfaces.TravelledPath
 import fr.sncf.osrd.signaling.SignalingSimulator
 import fr.sncf.osrd.signaling.SignalingTrainState
 import fr.sncf.osrd.signaling.ZoneStatus
@@ -40,13 +41,13 @@ val logger = KotlinLogging.logger {}
 
 data class PendingSpacingRequirement(
     val zoneIndex: Int,
-    val zoneEntryOffset: Offset<BlockPath>,
-    val zoneExitOffset: Offset<BlockPath>,
+    val zoneEntryOffset: Offset<TrainPath>,
+    val zoneExitOffset: Offset<TrainPath>,
     val beginTime: Double,
 )
 
 data class ProcessedStop(
-    val offset: Offset<BlockPath>,
+    val offset: Offset<TrainPath>,
     val nextBlockIdx: Int,
     val nextZoneIdx: Int,
 )
@@ -68,7 +69,7 @@ class SpacingRequirementAutomaton(
     private var lastEmittedZone = -1
 
     // the queue of signals awaiting processing
-    private val pendingSignals = ArrayDeque<PathSignal>()
+    private val pendingSignals = ArrayDeque<TrainPathSignal>()
 
     // requirements that need to be returned on the next successful pathUpdate
     private val pendingRequirements = ArrayDeque<PendingSpacingRequirement>()
@@ -77,15 +78,10 @@ class SpacingRequirementAutomaton(
     private var processedStops = ArrayDeque<ProcessedStop>()
 
     private fun registerPathExtension() {
-        // if the path has not yet started, skip signal processing
-        if (!incrementalPath.pathStarted) {
-            nextProcessedBlock = incrementalPath.blockCount
-            return
-        }
-
         // queue signals
-        for (blockIndex in nextProcessedBlock until incrementalPath.blockCount) {
-            val block = incrementalPath.getBlock(blockIndex)
+        for (blockIndex in nextProcessedBlock until incrementalPath.blocks.size) {
+            val blockRange = incrementalPath.blocks[blockIndex]
+            val block = blockRange.value
             val signals = blockInfra.getBlockSignals(block)
             val signalBlockPositions = blockInfra.getSignalsPositions(block)
             for (signalBlockIndex in 0 until signals.size) {
@@ -99,21 +95,19 @@ class SpacingRequirementAutomaton(
                 )
                     continue
 
-                val signalPathOffset =
-                    incrementalPath.convertBlockOffset(blockIndex, signalBlockPosition)
+                val signalPathOffset = blockRange.offsetToTrainPath(signalBlockPosition)
                 // skip signals outside the path
-                if (signalPathOffset < incrementalPath.travelledPathBegin) continue
-                if (
-                    incrementalPath.pathComplete &&
-                        signalPathOffset >= incrementalPath.travelledPathEnd
-                )
+                if (signalPathOffset < Offset.zero()) continue
+                if (incrementalPath.pathComplete && signalPathOffset >= incrementalPath.length)
                     continue
-                pendingSignals.addLast(PathSignal(signal, signalPathOffset, blockIndex))
+                pendingSignals.addLast(TrainPathSignal(signal, signalPathOffset, blockIndex))
             }
 
-            val blockEndOffset = incrementalPath.getBlockEndOffset(blockIndex)
+            // TODO path migration: figure out how to handle block ranges that will be expanded in
+            // later path extensions
+            val blockEndOffset = blockRange.pathEnd
             val nextZoneIdx = incrementalPath.getBlockEndZone(blockIndex)
-            while (incrementalPath.stopCount > nextStopToProcess) {
+            while (incrementalPath.stops.size > nextStopToProcess) {
                 val stopOffset = incrementalPath.getStopOffset(nextStopToProcess)
                 if (stopOffset >= blockEndOffset) break
                 if (!incrementalPath.isStopOnClosedSignal(nextStopToProcess)) {
@@ -124,14 +118,14 @@ class SpacingRequirementAutomaton(
                 nextStopToProcess++
             }
         }
-        nextProcessedBlock = incrementalPath.blockCount
+        nextProcessedBlock = incrementalPath.blocks.size
     }
 
     private fun addZonePendingRequirement(zoneIndex: Int, zoneRequirementTime: Double) {
         assert(zoneRequirementTime.isFinite())
 
-        val zoneEntryOffset = incrementalPath.getZonePathStartOffset(zoneIndex)
-        val zoneExitOffset = incrementalPath.getZonePathEndOffset(zoneIndex)
+        val zoneEntryOffset = incrementalPath.zones[zoneIndex].pathBegin
+        val zoneExitOffset = incrementalPath.zones[zoneIndex].pathEnd
         val req =
             PendingSpacingRequirement(
                 zoneIndex,
@@ -142,15 +136,15 @@ class SpacingRequirementAutomaton(
         pendingRequirements.add(req)
     }
 
-    private fun getSignalFirstProtectedZone(signal: PathSignal): Int {
+    private fun getSignalFirstProtectedZone(signal: TrainPathSignal): Int {
         // the signal protects all zone inside the block
         // if a signal is at a block boundary,
         return incrementalPath.getBlockEndZone(signal.minBlockPathIndex)
     }
 
-    private fun getSignalFirstProtectedBlockLastZone(signal: PathSignal): Int {
-        if (signal.minBlockPathIndex >= incrementalPath.blockCount) {
-            return incrementalPath.zonePathCount - 1
+    private fun getSignalFirstProtectedBlockLastZone(signal: TrainPathSignal): Int {
+        if (signal.minBlockPathIndex >= incrementalPath.blocks.size) {
+            return incrementalPath.zones.size - 1
         }
         return incrementalPath.getBlockEndZone(signal.minBlockPathIndex + 1) - 1
     }
@@ -163,17 +157,6 @@ class SpacingRequirementAutomaton(
         // when the simulation starts, the train occupies a single point on the tracks, as if it
         // were contained
         // inside a magic portal until the train entirely moved out of it
-        var startZone = -1
-        val startingPoint = incrementalPath.travelledPathBegin
-        for (i in 0 until incrementalPath.zonePathCount) {
-            val zonePathStartOffset = incrementalPath.getZonePathStartOffset(i)
-            val zonePathEndOffset = incrementalPath.getZonePathEndOffset(i)
-            if (startingPoint >= zonePathStartOffset && startingPoint < zonePathEndOffset) {
-                startZone = i
-                break
-            }
-        }
-        assert(startZone != -1)
 
         // We need to add a requirement for each zone between the start
         // and the first required zone
@@ -182,10 +165,10 @@ class SpacingRequirementAutomaton(
             if (firstSignal != null) {
                 getSignalFirstProtectedZone(firstSignal)
             } else {
-                startZone + 1
+                1
             }
 
-        for (i in startZone until firstProtectedZone) {
+        for (i in 0 until firstProtectedZone) {
             // The simulation start time is 0.
             // The zones are not all reached right at the start, but
             // because they're part of the block the train starts on,
@@ -202,15 +185,12 @@ class SpacingRequirementAutomaton(
         // first zone required by this signal. This is sometimes somewhat fine, such as at the
         // beginning of a simulation
         for (unprotectedZoneIndex in lastEmittedZone + 1 until beginZoneIndex) {
-            val zoneEntryOffset =
-                incrementalPath.toTravelledPath(
-                    incrementalPath.getZonePathStartOffset(unprotectedZoneIndex)
-                )
-            val zoneExitOffset =
-                incrementalPath.toTravelledPath(
-                    incrementalPath.getZonePathEndOffset(unprotectedZoneIndex)
-                )
-            val unprotectedReqTime = callbacks.arrivalTimeInRange(zoneEntryOffset, zoneExitOffset)
+            val zoneEntryOffset = incrementalPath.zones[unprotectedZoneIndex].pathBegin
+            val zoneExitOffset = incrementalPath.zones[unprotectedZoneIndex].pathEnd
+            // TODO path migration: merge Offset<TravelledPath> and Offset<TrainPath>
+            // (and grep for `cast` in this file)
+            val unprotectedReqTime =
+                callbacks.arrivalTimeInRange(zoneEntryOffset.cast(), zoneExitOffset.cast())
             // TODO: emit a warning message if the unprotected zone is after the first processed
             // signal
             if (unprotectedReqTime.isFinite()) { // The train may not even reach the zone
@@ -231,14 +211,14 @@ class SpacingRequirementAutomaton(
     // Returns null if we need more path
     private fun isZoneIndexRequiredForSignal(
         probedZoneIndex: Int,
-        pathSignal: PathSignal,
+        pathSignal: TrainPathSignal,
         routes: List<RouteId>,
         trainState: SignalingTrainState,
     ): Boolean? {
         val firstBlockIndex = pathSignal.minBlockPathIndex
 
         // List of blocks to include in the simulator call
-        val blocks = mutableStaticIdxArrayListOf(incrementalPath.getBlock(firstBlockIndex))
+        val blocks = mutableStaticIdxArrayListOf(incrementalPath.blocks[firstBlockIndex].value)
 
         // Index of the first zone included in the block path,
         // used to properly index the zone state array
@@ -249,11 +229,11 @@ class SpacingRequirementAutomaton(
 
         // Add blocks in the block path until the probed zone is covered
         while (probedZoneIndex - firstSimulatedZone > nSimulatedZones) {
-            if (firstBlockIndex + blocks.size >= incrementalPath.blockCount) {
+            if (firstBlockIndex + blocks.size >= incrementalPath.blocks.size) {
                 // exiting, the end of the block path has been reached
                 return null
             }
-            val newBlock = incrementalPath.getBlock(firstBlockIndex + blocks.size)
+            val newBlock = incrementalPath.blocks[firstBlockIndex + blocks.size].value
             blocks.add(newBlock)
             nSimulatedZones += blockInfra.getBlockZonePaths(newBlock).size
         }
@@ -286,13 +266,13 @@ class SpacingRequirementAutomaton(
     // or null if we need more path to determine it. The returned value may be one index
     // further than the end of the path, if we need the whole path but nothing more.
     private fun findFirstNonRequiredZoneIndex(
-        pathSignal: PathSignal,
+        pathSignal: TrainPathSignal,
         routes: List<RouteId>,
         trainState: SignalingTrainState,
     ): Int? {
         // Check if more path is needed for a valid solution
         // (i.e. the zone after the end of the path is required)
-        val lastZoneIndex = incrementalPath.getBlockEndZone(incrementalPath.blockCount - 1)
+        val lastZoneIndex = incrementalPath.getBlockEndZone(incrementalPath.blocks.size - 1)
         if (
             !incrementalPath.pathComplete &&
                 isZoneIndexRequiredForSignal(lastZoneIndex, pathSignal, routes, trainState) != false
@@ -341,7 +321,7 @@ class SpacingRequirementAutomaton(
         // initialize requirements which only apply before the train sees any signal
         setupInitialRequirements()
 
-        val routes = incrementalPath.routes.toList()
+        val routes = incrementalPath.routes.toList().map { it.value }
         val etcsSimulator = context?.let { ETCSBrakingSimulatorImpl(it) }
 
         // for all signals, update zone requirement times until a signal is found for which
@@ -388,7 +368,7 @@ class SpacingRequirementAutomaton(
     }
 
     private fun addSignalRequirements(
-        pathSignal: PathSignal,
+        pathSignal: TrainPathSignal,
         routes: List<RouteId>,
         etcsSimulator: ETCSBrakingSimulator?,
     ): SignalRequirementsCreationStatus {
@@ -411,10 +391,10 @@ class SpacingRequirementAutomaton(
     }
 
     private fun addEtcsSignalRequirements(
-        pathSignal: PathSignal,
+        pathSignal: TrainPathSignal,
         etcsSimulator: ETCSBrakingSimulator,
     ): SignalRequirementsCreationStatus {
-        val signalOffset = incrementalPath.toTravelledPath(pathSignal.pathOffset)
+        val signalOffset = pathSignal.pathOffset
         var isRouteDelimiter = true
         try {
             isRouteDelimiter = loadedSignalInfra.getSettings(pathSignal.signal).getFlag("Nf")
@@ -437,7 +417,7 @@ class SpacingRequirementAutomaton(
             etcsSimulator
                 .computeEoaLocations(
                     envelope!!,
-                    listOf(signalOffset),
+                    listOf(signalOffset.cast()),
                     listOf(isRouteDelimiter),
                     EoaType.SPACING,
                 )
@@ -465,13 +445,13 @@ class SpacingRequirementAutomaton(
     }
 
     private fun addSightSignalRequirements(
-        pathSignal: PathSignal,
+        pathSignal: TrainPathSignal,
         routes: List<RouteId>,
     ): SignalRequirementsCreationStatus {
         val physicalSignal = loadedSignalInfra.getPhysicalSignal(pathSignal.signal)
 
         // figure out when the signal is first seen
-        val signalOffset = incrementalPath.toTravelledPath(pathSignal.pathOffset)
+        val signalOffset = pathSignal.pathOffset.cast<TravelledPath>()
         val sightOffset = signalOffset - rawInfra.getSignalSightDistance(physicalSignal)
         // If the train's simulation hasn't reached the point where the signal is seen, bail out
         if (callbacks.currentPathOffset <= sightOffset) {
@@ -484,13 +464,13 @@ class SpacingRequirementAutomaton(
         // complete path.
         val nextSignalOffset =
             if (pendingSignals.size > 1) {
-                incrementalPath.toTravelledPath(pendingSignals[1].pathOffset)
+                pendingSignals[1].pathOffset
             } else if (incrementalPath.pathComplete) {
-                incrementalPath.toTravelledPath(incrementalPath.travelledPathEnd)
+                incrementalPath.length
             } else {
                 return SignalRequirementsCreationStatus.NOT_ENOUGH_PATH
             }
-        val maxSpeedInSignalArea = callbacks.maxSpeedInRange(sightOffset, nextSignalOffset)
+        val maxSpeedInSignalArea = callbacks.maxSpeedInRange(sightOffset, nextSignalOffset.cast())
 
         class SignalingTrainStateImpl(override val speed: Speed) : SignalingTrainState
         val trainState = SignalingTrainStateImpl(speed = maxSpeedInSignalArea.metersPerSecond)
@@ -509,15 +489,10 @@ class SpacingRequirementAutomaton(
     private fun postProcessRequirement(
         pendingRequirement: PendingSpacingRequirement
     ): SpacingRequirement? {
-        val zonePath = incrementalPath.getZonePath(pendingRequirement.zoneIndex)
-        val zone = rawInfra.getZonePathZone(zonePath)
-        val zoneEntryPathOffset =
-            incrementalPath.getZonePathStartOffset(pendingRequirement.zoneIndex)
-        val zoneEntryOffset = incrementalPath.toTravelledPath(zoneEntryPathOffset)
-        val zoneExitOffset =
-            incrementalPath.toTravelledPath(
-                incrementalPath.getZonePathEndOffset(pendingRequirement.zoneIndex)
-            )
+        val locatedZone = incrementalPath.zones[pendingRequirement.zoneIndex]
+        val zone = locatedZone.value
+        val zoneEntryOffset = locatedZone.pathBegin
+        val zoneExitOffset = locatedZone.pathEnd
 
         var beginTime = pendingRequirement.beginTime
 
@@ -533,15 +508,16 @@ class SpacingRequirementAutomaton(
 
         val stop = findLastStopBeforeZone()
         if (stop != null) {
-            val stopOffset = incrementalPath.toTravelledPath(stop.offset)
-            val stopEndTime = callbacks.departureFromStop(stopOffset)
+            val stopOffset = stop.offset
+            val stopEndTime = callbacks.departureFromStop(stopOffset.cast())
             if (stopEndTime.isInfinite()) {
                 return null
             }
             beginTime = maxOf(beginTime, stopEndTime - CLOSED_SIGNAL_RESERVATION_MARGIN)
         }
 
-        val departureTime = callbacks.departureTimeFromRange(zoneEntryOffset, zoneExitOffset)
+        val departureTime =
+            callbacks.departureTimeFromRange(zoneEntryOffset.cast(), zoneExitOffset.cast())
 
         // three cases, to be evaluated **in order**:
         // - (COMPLETE) the train left the zone (endTime = time the train left the zone)

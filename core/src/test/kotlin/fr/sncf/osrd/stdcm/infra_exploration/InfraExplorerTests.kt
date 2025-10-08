@@ -383,7 +383,7 @@ class InfraExplorerTests {
         while (true) explorer = explorer.cloneAndExtendLookahead().firstOrNull() ?: break
 
         val incrementalPath = explorer.getIncrementalPath()
-        assertEquals(4, incrementalPath.stopCount)
+        assertEquals(4, incrementalPath.stops.size)
         assertEquals(Offset(50.meters), incrementalPath.getStopOffset(0))
         assertEquals(Offset(150.meters), incrementalPath.getStopOffset(1))
         assertEquals(Offset(200.meters), incrementalPath.getStopOffset(2))
@@ -414,11 +414,8 @@ class InfraExplorerTests {
                 )
                 .first()
         val incrementalPath = explorers.getIncrementalPath()
-        assertEquals(1, incrementalPath.stopCount)
-        assertEquals(
-            Offset(10.meters),
-            incrementalPath.toTravelledPath(incrementalPath.getStopOffset(0)),
-        )
+        assertEquals(1, incrementalPath.stops.size)
+        assertEquals(Offset(10.meters), incrementalPath.getStopOffset(0))
     }
 
     private fun <T> allEqual(list: List<T>): Boolean {

@@ -2,6 +2,7 @@ package fr.sncf.osrd.conflicts
 
 import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.path.interfaces.BlockPath
+import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.path.interfaces.TravelledPath
 import fr.sncf.osrd.sim_infra.api.LogicalSignalId
 import fr.sncf.osrd.utils.units.Offset
@@ -43,6 +44,13 @@ interface IncrementalRequirementCallbacks {
 data class PathSignal(
     val signal: LogicalSignalId,
     val pathOffset: Offset<BlockPath>,
+    // when a signal is between blocks, prefer the index of the first block
+    val minBlockPathIndex: Int,
+)
+
+data class TrainPathSignal(
+    val signal: LogicalSignalId,
+    val pathOffset: Offset<TrainPath>,
     // when a signal is between blocks, prefer the index of the first block
     val minBlockPathIndex: Int,
 )

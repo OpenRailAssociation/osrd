@@ -47,6 +47,12 @@ class AppendOnlyLinkedList<T>(private var lastNode: Node<T>? = null, var size: I
         size++
     }
 
+    /** Drop the last element. Cannot be called on an empty list. */
+    fun dropLast() {
+        lastNode = lastNode!!.prev
+        size--
+    }
+
     /** Add all elements to the end of the list, in order. */
     fun addAll(elements: Iterable<T>) {
         for (e in elements) add(e)
