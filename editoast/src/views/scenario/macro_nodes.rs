@@ -193,7 +193,7 @@ pub(in crate::views) async fn create(
     Extension(auth): AuthenticationExt,
     Path((project_id, study_id, scenario_id)): Path<(i64, i64, i64)>,
     Json(data): Json<MacroNodeBatchForm>,
-) -> Result<Json<MacroNodeBatchResponse>> {
+) -> Result<impl IntoResponse> {
     // Checking role
     let authorized = auth
         .check_roles([Role::OperationalStudies].into())
@@ -233,9 +233,12 @@ pub(in crate::views) async fn create(
     )
     .await?;
 
-    Ok(Json(MacroNodeBatchResponse {
-        macro_nodes: created.into_iter().map_into().collect(),
-    }))
+    Ok((
+        StatusCode::CREATED,
+        Json(MacroNodeBatchResponse {
+            macro_nodes: created.into_iter().map_into().collect(),
+        }),
+    ))
 }
 
 #[editoast_derive::route]
@@ -404,7 +407,6 @@ async fn retrieve_macro_node_and_check_scenario(
 
 #[cfg(test)]
 pub mod test {
-    use axum::http::StatusCode;
     use pretty_assertions::assert_eq;
     use rand::Rng;
     use rand::distr::Alphanumeric;
@@ -468,8 +470,10 @@ pub mod test {
             .json(&MacroNodeBatchForm {
                 macro_nodes: nodes_data.clone(),
             });
-        let response: MacroNodeBatchResponse =
-            app.fetch(request).assert_status(StatusCode::OK).json_into();
+        let response: MacroNodeBatchResponse = app
+            .fetch(request)
+            .assert_status(StatusCode::CREATED)
+            .json_into();
 
         let node = MacroNode::retrieve(db_pool.get_ok(), response.macro_nodes[0].id)
             .await

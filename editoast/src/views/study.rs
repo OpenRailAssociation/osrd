@@ -4,6 +4,7 @@ use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::Query;
 use axum::extract::State;
+use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use chrono::NaiveDate;
 use chrono::Utc;
@@ -122,7 +123,7 @@ pub(in crate::views) async fn create(
     Extension(auth): AuthenticationExt,
     Path(project_id): Path<i64>,
     Json(data): Json<StudyCreateForm>,
-) -> Result<Json<StudyResponse>> {
+) -> Result<impl IntoResponse> {
     let authorized = auth
         .check_roles([Role::OperationalStudies].into())
         .await
@@ -154,7 +155,7 @@ pub(in crate::views) async fn create(
         project,
     };
 
-    Ok(Json(study_response))
+    Ok((StatusCode::CREATED, Json(study_response)))
 }
 
 #[derive(IntoParams)]
@@ -196,7 +197,7 @@ pub(in crate::views) async fn delete(
     })
     .await?;
 
-    Ok(axum::http::StatusCode::NO_CONTENT)
+    Ok(StatusCode::NO_CONTENT)
 }
 
 /// Return a specific study
@@ -426,7 +427,6 @@ pub(in crate::views) async fn list(
 
 #[cfg(test)]
 pub mod tests {
-    use axum::http::StatusCode;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
     use serde_json::json;
@@ -454,7 +454,10 @@ pub mod tests {
                 "service_code": "",
                 "study_type": "",
             }));
-        let response: StudyResponse = app.fetch(request).assert_status(StatusCode::OK).json_into();
+        let response: StudyResponse = app
+            .fetch(request)
+            .assert_status(StatusCode::CREATED)
+            .json_into();
 
         let study = Study::retrieve(db_pool.get_ok(), response.study.id)
             .await
