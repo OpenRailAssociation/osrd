@@ -6,10 +6,10 @@ import { useTranslation, Trans } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
 import type { SimilarTrainWithSecondaryCode, StdcmResultsOutput } from 'applications/stdcm/types';
-import { extractMarkersInfo } from 'applications/stdcm/utils';
+import { extractMarkersInfo, mergeSimilarTrainSegments } from 'applications/stdcm/utils';
 import { addSecondaryCodesToSimilarTrains } from 'applications/stdcm/utils/addSecondaryCodesToSimilarTrains';
 import { hasResults } from 'applications/stdcm/utils/simulationOutputUtils';
-import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import { osrdEditoastApi, type PostSimilarTrainsApiResponse } from 'common/api/osrdEditoastApi';
 import DefaultBaseMap from 'common/Map/DefaultBaseMap';
 import {
   generateCodeNumber,
@@ -96,54 +96,107 @@ const StdcmResults = ({
   }, [hasSimulationResults, outputs]);
 
   const [similarTrains, setSimilarTrains] = useState<SimilarTrainWithSecondaryCode[]>([]);
+  const [areSegmentsLoading, setAreSegmentsLoading] = useState(true);
 
   const [postSimilarTrains] = osrdEditoastApi.endpoints.postSimilarTrains.useMutation();
 
   useEffect(() => {
     const searchForSimilarTrains = async () => {
-      const { consist, pathSteps } = selectedSimulation.inputs;
-      if (!consist || !hasSimulationResults) {
-        return;
-      }
-      const key = (uic: number | undefined, ch: string) => `${uic}-${ch}`;
+      try {
+        const { consist, pathSteps } = selectedSimulation.inputs;
+        if (!consist || !hasSimulationResults) {
+          return;
+        }
 
-      const isStopByOpKey = pathSteps.reduce((acc, ps) => {
-        const k = key(ps.location?.uic, ps.location?.secondary_code ?? '');
-        acc.set(k, !ps.isVia || ps.stopFor !== undefined);
-        return acc;
-      }, new Map<string, boolean>());
+        const key = (uic: number | undefined, ch: string) => `${uic}-${ch}`;
 
-      const waypoints = (
-        (selectedSimulation.outputs as StdcmResultsOutput).pathProperties
-          .manchetteOperationalPoints ?? []
-      ).map((op) => {
-        const k = key(op.extensions?.identifier?.uic, op.extensions?.sncf?.ch ?? '');
-        return {
-          id: op.opId!,
-          stop: isStopByOpKey.get(k) ?? false,
+        const isStopByOpKey = pathSteps.reduce((acc, ps) => {
+          const k = key(ps.location?.uic, ps.location?.secondary_code ?? '');
+          acc.set(k, !ps.isVia || ps.stopFor !== undefined);
+          return acc;
+        }, new Map<string, boolean>());
+
+        const waypoints = (
+          (selectedSimulation.outputs as StdcmResultsOutput).pathProperties
+            .manchetteOperationalPoints ?? []
+        ).map((op) => {
+          const k = key(op.extensions?.identifier?.uic, op.extensions?.sncf?.ch ?? '');
+          return {
+            id: op.opId!,
+            stop: isStopByOpKey.get(k) ?? false,
+          };
+        });
+
+        const baseRequest = {
+          infra_id: infraId,
+          timetable_id: timetableId,
+          waypoints,
         };
-      });
 
-      const request = {
-        infra_id: infraId,
-        rolling_stock: {
-          name: consist.tractionEngine?.name ?? '',
-          speed_limit_tag: consist.speedLimitByTag,
-        },
-        timetable_id: timetableId,
-        waypoints,
-      };
+        const hasNullTrains = (trains: PostSimilarTrainsApiResponse['similar_trains']) =>
+          trains.some((segment) => segment.train === null);
 
-      const response = await postSimilarTrains({ body: request });
-      const rawSimilarTrains = response.data?.similar_trains ?? [];
+        // Call 1: Full criteria
+        const fullCriteriaResponse = await postSimilarTrains({
+          body: {
+            ...baseRequest,
+            rolling_stock: {
+              name: consist.tractionEngine?.name ?? '',
+              speed_limit_tag: consist.speedLimitByTag,
+            },
+          },
+        });
 
-      const enrichedSimilarTrains = addSecondaryCodesToSimilarTrains(
-        rawSimilarTrains,
-        (selectedSimulation.outputs as StdcmResultsOutput).pathProperties.manchetteOperationalPoints
-      );
+        const fullCriteriaSegments = fullCriteriaResponse.data?.similar_trains ?? [];
 
-      setSimilarTrains(enrichedSimilarTrains);
+        // Call 2: Only speed_limit_tag (if needed)
+        const segmentsWithSpeedLimitTagConstraint =
+          hasNullTrains(fullCriteriaSegments) && consist.speedLimitByTag
+            ? (
+                await postSimilarTrains({
+                  body: {
+                    ...baseRequest,
+                    rolling_stock: { speed_limit_tag: consist.speedLimitByTag },
+                  },
+                })
+              ).data?.similar_trains
+            : null;
+
+        // Call 3: Only name (if still needed)
+        const segmentsWithRsNameConstraint =
+          segmentsWithSpeedLimitTagConstraint &&
+          hasNullTrains(segmentsWithSpeedLimitTagConstraint) &&
+          consist.tractionEngine?.name
+            ? (
+                await postSimilarTrains({
+                  body: {
+                    ...baseRequest,
+                    rolling_stock: { name: consist.tractionEngine.name },
+                  },
+                })
+              ).data?.similar_trains
+            : null;
+
+        const mergedTrains = mergeSimilarTrainSegments(
+          fullCriteriaSegments,
+          segmentsWithSpeedLimitTagConstraint ?? null,
+          segmentsWithRsNameConstraint ?? null
+        );
+
+        const enrichedSimilarTrains = addSecondaryCodesToSimilarTrains(
+          mergedTrains,
+          (selectedSimulation.outputs as StdcmResultsOutput).pathProperties
+            .manchetteOperationalPoints
+        );
+
+        setSimilarTrains(enrichedSimilarTrains);
+      } catch (err) {
+        console.error('Searching for similar trains failed', err);
+      } finally {
+        setAreSegmentsLoading(false);
+      }
     };
+
     if (isSelectedSimulationRetained) {
       searchForSimilarTrains();
     }
@@ -203,6 +256,7 @@ const StdcmResults = ({
                             data-testid="download-simulation-button"
                             label={t('downloadSimulationSheet')}
                             onClick={() => {}}
+                            isDisabled={areSegmentsLoading}
                           />
                         </PDFDownloadLink>
                       </div>
