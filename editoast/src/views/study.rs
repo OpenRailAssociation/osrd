@@ -34,6 +34,24 @@ use crate::views::project::ProjectIdParam;
 use editoast_models::prelude::*;
 use editoast_models::tags::Tags;
 
+fn validate_study_dates(
+    start: Option<NaiveDate>,
+    expected_end: Option<NaiveDate>,
+    actual_end: Option<NaiveDate>,
+) -> Result<(), &'static str> {
+    if let Some((start, expected_end)) = start.zip(expected_end)
+        && start > expected_end
+    {
+        return Err("The study start date must be before the expected end date");
+    }
+    if let Some((start, actual_end)) = start.zip(actual_end)
+        && start > actual_end
+    {
+        return Err("The study start date must be before the actual end date");
+    }
+    Ok(())
+}
+
 #[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "study")]
 pub enum StudyError {
@@ -41,10 +59,6 @@ pub enum StudyError {
     #[error("Study '{study_id}', could not be found")]
     #[editoast_error(status = 404)]
     NotFound { study_id: i64 },
-    // The study start and end date are in the wrong order
-    #[error("The study start date must be before the end date")]
-    #[editoast_error(status = 400)]
-    StartDateAfterEndDate,
     #[error(transparent)]
     #[editoast_error(status = 500)]
     Database(#[from] editoast_models::Error),
@@ -69,7 +83,8 @@ impl StudyResponse {
 }
 
 /// This structure is used by the post endpoint to create a study
-#[derive(Serialize, Deserialize, Default, ToSchema)]
+#[derive(Deserialize, Default, ToSchema)]
+#[serde(remote = "Self")]
 pub(in crate::views) struct StudyCreateForm {
     pub name: String,
     pub description: Option<String>,
@@ -83,6 +98,22 @@ pub(in crate::views) struct StudyCreateForm {
     pub tags: Tags,
     pub state: String,
     pub study_type: Option<String>,
+}
+
+impl<'de> Deserialize<'de> for StudyCreateForm {
+    fn deserialize<D>(deserializer: D) -> Result<StudyCreateForm, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let form = StudyCreateForm::deserialize(deserializer)?;
+        validate_study_dates(
+            form.start_date,
+            form.expected_end_date,
+            form.actual_end_date,
+        )
+        .map_err(<D::Error as serde::de::Error>::custom)?;
+        Ok(form)
+    }
 }
 
 impl StudyCreateForm {
@@ -102,7 +133,6 @@ impl StudyCreateForm {
             .state(self.state)
             .study_type(self.study_type)
             .project_id(project_id);
-        Study::validate(&study_changeset).map_err(|_| StudyError::StartDateAfterEndDate)?;
         Ok(study_changeset)
     }
 }
@@ -253,7 +283,8 @@ pub(in crate::views) async fn get(
 }
 
 /// This structure is used by the patch endpoint to patch a study
-#[derive(Serialize, Deserialize, Default, ToSchema)]
+#[derive(Deserialize, Default, ToSchema)]
+#[serde(remote = "Self")]
 pub(in crate::views) struct StudyPatchForm {
     pub name: Option<String>,
     #[serde(default, with = "double_option")]
@@ -276,6 +307,22 @@ pub(in crate::views) struct StudyPatchForm {
     pub study_type: Option<Option<String>>,
 }
 
+impl<'de> Deserialize<'de> for StudyPatchForm {
+    fn deserialize<D>(deserializer: D) -> Result<StudyPatchForm, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let form = StudyPatchForm::deserialize(deserializer)?;
+        validate_study_dates(
+            form.start_date.flatten(),
+            form.expected_end_date.flatten(),
+            form.actual_end_date.flatten(),
+        )
+        .map_err(<D::Error as serde::de::Error>::custom)?;
+        Ok(form)
+    }
+}
+
 impl StudyPatchForm {
     pub fn into_study_changeset(self) -> Result<Changeset<Study>> {
         let study_changeset = Study::changeset()
@@ -290,7 +337,6 @@ impl StudyPatchForm {
             .flat_tags(self.tags)
             .flat_state(self.state)
             .flat_study_type(self.study_type);
-        Study::validate(&study_changeset).map_err(|_| StudyError::StartDateAfterEndDate)?;
         Ok(study_changeset)
     }
 }
