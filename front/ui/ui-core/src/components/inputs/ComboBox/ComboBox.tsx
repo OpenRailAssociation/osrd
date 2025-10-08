@@ -104,7 +104,7 @@ const ComboBox = <T,>({
       setActiveSuggestionIndex((prev) => {
         const newIndex = prev < suggestions.length - 1 ? prev + 1 : prev;
         if (suggestionRefs.current[newIndex]) {
-          (suggestionRefs.current[newIndex] as HTMLLIElement).scrollIntoView({
+          suggestionRefs.current[newIndex].scrollIntoView({
             block: 'nearest',
           });
         }
@@ -114,7 +114,7 @@ const ComboBox = <T,>({
       setActiveSuggestionIndex((prev) => {
         const newIndex = prev > 0 ? prev - 1 : prev;
         if (suggestionRefs.current[newIndex]) {
-          (suggestionRefs.current[newIndex] as HTMLLIElement).scrollIntoView({
+          suggestionRefs.current[newIndex].scrollIntoView({
             block: 'nearest',
           });
         }
@@ -141,8 +141,9 @@ const ComboBox = <T,>({
 
   useOutsideClick(wrapperRef, closeSuggestions);
 
-  const inputIcons = useMemo(
-    () => [
+  const inputIcons = useMemo(() => {
+    if (inputProps.readOnly || inputProps.disabled) return undefined;
+    return [
       // Conditionally include the clear icon only when input is not empty
       ...(value
         ? [
@@ -161,9 +162,8 @@ const ComboBox = <T,>({
           disabled: inputProps.disabled,
         }),
       },
-    ],
-    [value]
-  );
+    ];
+  }, [inputProps.readOnly, inputProps.disabled, clearInput, value, small, focusInput]);
 
   return (
     <div

@@ -8,7 +8,7 @@
     position: absolute;
     width: calc(100% - 1.55rem);
     top: calc(100% - 1.4rem);
-    right: 0.70rem;
+    right: 0.7rem;
     z-index: 1000;
     list-style: none;
     max-height: calc(2.5rem * var(--number-of-suggestions));
