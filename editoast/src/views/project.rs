@@ -4,6 +4,7 @@ use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::Query;
 use axum::extract::State;
+use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use chrono::Utc;
 use database::DbConnection;
@@ -131,7 +132,7 @@ pub(in crate::views) async fn create(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
     Json(project_create_form): Json<ProjectCreateForm>,
-) -> Result<Json<ProjectWithStudyCount>> {
+) -> Result<impl IntoResponse> {
     let authorized = auth
         .check_roles([Role::OperationalStudies].into())
         .await
@@ -147,7 +148,7 @@ pub(in crate::views) async fn create(
     let project = project.create(conn).await.map_err(ProjectError::from)?;
     let project_with_studies = ProjectWithStudyCount::try_fetch(conn, project).await?;
 
-    Ok(Json(project_with_studies))
+    Ok((StatusCode::CREATED, Json(project_with_studies)))
 }
 
 #[derive(Serialize, ToSchema)]
@@ -280,7 +281,7 @@ pub(in crate::views) async fn delete(
         })
         .await?;
 
-    Ok(axum::http::StatusCode::NO_CONTENT)
+    Ok(StatusCode::NO_CONTENT)
 }
 
 /// Patch form for a project
@@ -394,7 +395,6 @@ pub(in crate::views) async fn patch(
 pub mod tests {
     use super::*;
 
-    use axum::http::StatusCode;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
     use serde_json::json;
@@ -418,8 +418,10 @@ pub mod tests {
             "funders": "",
         }));
 
-        let response: ProjectWithStudyCount =
-            app.fetch(request).assert_status(StatusCode::OK).json_into();
+        let response: ProjectWithStudyCount = app
+            .fetch(request)
+            .assert_status(StatusCode::CREATED)
+            .json_into();
 
         let project = Project::retrieve(pool.get_ok(), response.project.id)
             .await

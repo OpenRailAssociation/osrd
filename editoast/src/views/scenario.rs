@@ -7,6 +7,7 @@ use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::Query;
 use axum::extract::State;
+use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use chrono::Utc;
 use database::DbConnection;
@@ -166,7 +167,7 @@ pub(in crate::views) async fn create(
     Extension(auth): AuthenticationExt,
     Path((project_id, study_id)): Path<(i64, i64)>,
     Json(data): Json<ScenarioCreateForm>,
-) -> Result<Json<ScenarioResponse>> {
+) -> Result<impl IntoResponse> {
     let authorized = auth
         .check_roles([Role::OperationalStudies].into())
         .await
@@ -208,7 +209,10 @@ pub(in crate::views) async fn create(
     )
     .await?;
 
-    Ok(Json(ScenarioResponse::new(details, project, study)))
+    Ok((
+        StatusCode::CREATED,
+        Json(ScenarioResponse::new(details, project, study)),
+    ))
 }
 
 /// Delete a scenario
@@ -264,7 +268,7 @@ pub(in crate::views) async fn delete(
     )
     .await?;
 
-    Ok(axum::http::StatusCode::NO_CONTENT)
+    Ok(StatusCode::NO_CONTENT)
 }
 
 /// This structure is used by the patch endpoint to patch a scenario
@@ -512,7 +516,6 @@ async fn check_project_study_scenario(
 
 #[cfg(test)]
 mod tests {
-    use axum::http::StatusCode;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
     use serde_json::json;
@@ -619,8 +622,10 @@ mod tests {
             "tags": study_tags
         }));
 
-        let response: ScenarioResponse =
-            app.fetch(request).assert_status(StatusCode::OK).json_into();
+        let response: ScenarioResponse = app
+            .fetch(request)
+            .assert_status(StatusCode::CREATED)
+            .json_into();
 
         assert_eq!(response.scenario.name, study_name);
         assert_eq!(response.scenario.description, study_description);
