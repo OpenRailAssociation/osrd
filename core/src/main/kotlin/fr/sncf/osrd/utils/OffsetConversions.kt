@@ -2,7 +2,7 @@ package fr.sncf.osrd.utils
 
 import fr.sncf.osrd.path.implementations.ChunkPath
 import fr.sncf.osrd.path.interfaces.BlockPath
-import fr.sncf.osrd.pathfinding.PathfindingEdgeRangeId
+import fr.sncf.osrd.pathfinding.Pathfinding.EdgeRange
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
@@ -69,7 +69,7 @@ fun getBlockChunkOffset(
     blockInfra: BlockInfra,
     rawInfra: RawSignalingInfra,
     chunk: DirTrackChunkId,
-    range: PathfindingEdgeRangeId<Block>,
+    range: EdgeRange<BlockId, Block>,
 ): Offset<Block> {
     var offset = Offset<Block>(0.meters)
     for (dirChunkId in blockInfra.getTrackChunksFromBlock(range.edge)) {

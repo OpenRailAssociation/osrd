@@ -12,8 +12,6 @@ import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.pathfinding.Pathfinding
 import fr.sncf.osrd.pathfinding.Pathfinding.EdgeLocation
 import fr.sncf.osrd.pathfinding.Pathfinding.EdgeRange
-import fr.sncf.osrd.pathfinding.PathfindingEdgeLocationId
-import fr.sncf.osrd.pathfinding.PathfindingEdgeRangeId
 import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal.OPEN
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal.SHORT_SLIP_STOP
@@ -131,8 +129,8 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
     }
 
     /** Creates the list of waypoints on the path */
-    private fun makeBlockWaypoints(path: Result): List<PathfindingEdgeLocationId<Block>> {
-        val res = ArrayList<PathfindingEdgeLocationId<Block>>()
+    private fun makeBlockWaypoints(path: Result): List<EdgeLocation<BlockId, Block>> {
+        val res = ArrayList<EdgeLocation<BlockId, Block>>()
         for (waypoint in path.waypoints) {
             val blockOffset = waypoint.edge.blockOffsetFromEdge(waypoint.offset)
             res.add(EdgeLocation(waypoint.edge.block, blockOffset))
@@ -240,8 +238,8 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
     }
 
     /** Builds the list of block ranges, merging the ranges on the same block */
-    private fun makeBlockRanges(edges: List<STDCMEdge>): List<PathfindingEdgeRangeId<Block>> {
-        val res = ArrayList<PathfindingEdgeRangeId<Block>>()
+    private fun makeBlockRanges(edges: List<STDCMEdge>): List<EdgeRange<BlockId, Block>> {
+        val res = ArrayList<EdgeRange<BlockId, Block>>()
         var i = 0
         while (i < edges.size) {
             val edge = edges[i]

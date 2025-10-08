@@ -1,6 +1,7 @@
 package fr.sncf.osrd.pathfinding
 
 import fr.sncf.osrd.geom.Point
+import fr.sncf.osrd.pathfinding.Pathfinding.EdgeLocation
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.sim_infra.api.BlockInfra
@@ -18,7 +19,7 @@ import kotlin.math.min
 class RemainingDistanceEstimator(
     private val blockInfra: BlockInfra,
     private val rawInfra: RawSignalingInfra,
-    edgeLocations: Collection<PathfindingEdgeLocationId<Block>>,
+    edgeLocations: Collection<EdgeLocation<BlockId, Block>>,
     private val remainingDistance: Distance,
 ) {
     private val targets: MutableCollection<Point> = ArrayList()
@@ -54,8 +55,8 @@ class RemainingDistanceEstimator(
 fun minDistanceBetweenSteps(
     blockInfra: BlockInfra,
     rawInfra: RawSignalingInfra,
-    step1: Collection<PathfindingEdgeLocationId<Block>>,
-    step2: Collection<PathfindingEdgeLocationId<Block>>,
+    step1: Collection<EdgeLocation<BlockId, Block>>,
+    step2: Collection<EdgeLocation<BlockId, Block>>,
 ): Distance {
     val step1Points = step1.map { blockOffsetToPoint(blockInfra, rawInfra, it.edge, it.offset) }
     val step2Points = step2.map { blockOffsetToPoint(blockInfra, rawInfra, it.edge, it.offset) }

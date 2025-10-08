@@ -4,7 +4,7 @@ import fr.sncf.osrd.api.DirectionalTrackRange
 import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.api.stdcm.STDCMTemporarySpeedLimit
 import fr.sncf.osrd.api.stdcm.buildTemporarySpeedLimitManager
-import fr.sncf.osrd.pathfinding.Pathfinding
+import fr.sncf.osrd.pathfinding.Pathfinding.EdgeLocation
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.utils.Direction
@@ -39,8 +39,8 @@ class TemporarySpeedLimitTests {
         val endBlock = blocksOnEnd[0]
         return STDCMPathfindingBuilder()
             .setInfra(infra)
-            .setStartLocations(setOf(Pathfinding.EdgeLocation(startBlock, Offset(Distance(0L)))))
-            .setEndLocations(setOf(Pathfinding.EdgeLocation(endBlock, Offset(Distance(0L)))))
+            .setStartLocations(setOf(EdgeLocation(startBlock, Offset(Distance(0L)))))
+            .setEndLocations(setOf(EdgeLocation(endBlock, Offset(Distance(0L)))))
             .setTemporarySpeedLimitManager(temporarySpeedLimitManager)
             .run()!!
     }

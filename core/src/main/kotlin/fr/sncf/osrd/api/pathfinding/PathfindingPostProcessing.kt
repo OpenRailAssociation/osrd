@@ -11,9 +11,8 @@ import fr.sncf.osrd.path.interfaces.TravelledPath
 import fr.sncf.osrd.path.interfaces.getLegacyBlockPath
 import fr.sncf.osrd.path.interfaces.toJsonTrainPath
 import fr.sncf.osrd.pathfinding.Pathfinding
-import fr.sncf.osrd.pathfinding.PathfindingEdgeLocationId
-import fr.sncf.osrd.pathfinding.PathfindingEdgeRangeId
-import fr.sncf.osrd.pathfinding.PathfindingResultId
+import fr.sncf.osrd.pathfinding.Pathfinding.EdgeLocation
+import fr.sncf.osrd.pathfinding.Pathfinding.EdgeRange
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection
 import fr.sncf.osrd.railjson.schema.infra.RJSRoutePath
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSDirectionalTrackRange
@@ -25,7 +24,6 @@ import fr.sncf.osrd.sim_infra.utils.chunksToRoutes
 import fr.sncf.osrd.utils.Direction
 import fr.sncf.osrd.utils.getBlockChunkOffset
 import fr.sncf.osrd.utils.getRouteChunkOffset
-import fr.sncf.osrd.utils.indexing.StaticIdx
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.Offset.Companion.max
@@ -37,7 +35,7 @@ import kotlin.math.abs
 fun runPathfindingPostProcessing(
     infra: FullInfra,
     initialRequest: PathfindingBlockRequest,
-    rawPath: PathfindingResultId<Block>,
+    rawPath: Pathfinding.Result<BlockId, Block>,
 ): PathfindingBlockSuccess {
     val res = runPathfindingBlockPostProcessing(infra, rawPath)
     validatePathfindingResponse(infra, initialRequest, res)
@@ -46,7 +44,7 @@ fun runPathfindingPostProcessing(
 
 fun runPathfindingBlockPostProcessing(
     infra: FullInfra,
-    rawPath: PathfindingResultId<Block>,
+    rawPath: Pathfinding.Result<BlockId, Block>,
 ): PathfindingBlockSuccess {
     // TODO: access a `TrainPath` directly from the pathfinding result.
     // We'd get more accurate routes in the (unlikely) case of ambiguity,
@@ -105,10 +103,8 @@ private fun validatePathfindingResponse(
         throw OSRDError(ErrorType.PathHasInvalidItemPositions)
 }
 
-fun makePathItemPositions(
-    path: Pathfinding.Result<StaticIdx<Block>, Block>
-): List<Offset<TravelledPath>> {
-    val pathItemLocations = mutableMapOf<BlockId, MutableList<PathfindingEdgeLocationId<Block>>>()
+fun makePathItemPositions(path: Pathfinding.Result<BlockId, Block>): List<Offset<TravelledPath>> {
+    val pathItemLocations = mutableMapOf<BlockId, MutableList<EdgeLocation<BlockId, Block>>>()
     for (waypoint in path.waypoints) {
         val edgeWaypoints = pathItemLocations.computeIfAbsent(waypoint.edge) { mutableListOf() }
         edgeWaypoints.add(waypoint)
@@ -124,9 +120,7 @@ fun makePathItemPositions(
     return res
 }
 
-private fun makeBlocks(
-    ranges: List<Pathfinding.EdgeRange<StaticIdx<Block>, Block>>
-): List<BlockRange> {
+private fun makeBlocks(ranges: List<EdgeRange<BlockId, Block>>): List<BlockRange> {
     val blockRanges = mutableListOf<PartialBlockRange>()
     for ((blockId, start, end) in ranges) {
         val lastAddedRange = blockRanges.lastOrNull()
@@ -144,7 +138,7 @@ private fun makeBlocks(
 private fun makeRoutePath(
     blockInfra: BlockInfra,
     rawInfra: RawSignalingInfra,
-    ranges: List<PathfindingEdgeRangeId<Block>>,
+    ranges: List<EdgeRange<BlockId, Block>>,
 ): List<RJSRoutePath> {
     val blocks = ranges.stream().map { x -> x.edge }.toList()
     val chunkPath = blockInfra.chunksOnBlocks(blocks)
@@ -268,7 +262,7 @@ private fun findStartOffset(
     rawInfra: RawSignalingInfra,
     firstChunk: DirTrackChunkId,
     routeStaticIdx: RouteId,
-    range: PathfindingEdgeRangeId<Block>,
+    range: EdgeRange<BlockId, Block>,
 ): Offset<Route> {
     return getRouteChunkOffset(rawInfra, routeStaticIdx, firstChunk) -
         getBlockChunkOffset(blockInfra, rawInfra, firstChunk, range).distance + range.start.distance
@@ -280,7 +274,7 @@ private fun findEndOffset(
     rawInfra: RawSignalingInfra,
     lastChunk: DirTrackChunkId,
     routeStaticIdx: RouteId,
-    range: PathfindingEdgeRangeId<Block>,
+    range: EdgeRange<BlockId, Block>,
 ): Offset<Route> {
     return getRouteChunkOffset(rawInfra, routeStaticIdx, lastChunk) -
         getBlockChunkOffset(blockInfra, rawInfra, lastChunk, range).distance + range.end.distance

@@ -1,6 +1,7 @@
 package fr.sncf.osrd.graph
 
 import fr.sncf.osrd.pathfinding.Pathfinding
+import fr.sncf.osrd.pathfinding.Pathfinding.EdgeLocation
 import fr.sncf.osrd.utils.indexing.StaticIdx
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
@@ -32,7 +33,7 @@ fun interface EdgeToRanges<EdgeT, OffsetType> {
  * edge
  */
 fun interface TargetsOnEdge<EdgeT, OffsetType> {
-    fun apply(edge: EdgeT): Collection<Pathfinding.EdgeLocation<EdgeT, OffsetType>>
+    fun apply(edge: EdgeT): Collection<EdgeLocation<EdgeT, OffsetType>>
 }
 
 // Type aliases to avoid repeating `StaticIdx<T>, T` when edge types are static idx
