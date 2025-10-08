@@ -5,8 +5,13 @@ from typing import Any
 from requests import Session
 
 from tests.infra import Infra
+from .scenario import Scenario
 
 from .services import EDITOAST_URL
+from .test_train_schedule import (
+    _get_etcs_braking_curves_train_data,
+    _check_etcs_braking_curves_response,
+)
 
 
 def _update_simulation_with_mareco_allowances(
@@ -236,3 +241,35 @@ def test_editoast_delete(
         f"{EDITOAST_URL}paced_train/{paced_trains_ids[1]}",
     )
     assert r.status_code == 404
+
+
+def test_etcs_paced_train_braking_curves_endpoint(
+    etcs_scenario: Scenario, etcs_rolling_stock: int, session: Session
+):
+    rolling_stock_response = session.get(
+        EDITOAST_URL + f"light_rolling_stock/{etcs_rolling_stock}"
+    )
+    etcs_rolling_stock_name = rolling_stock_response.json()["name"]
+    ts_response = session.post(
+        f"{EDITOAST_URL}timetable/{etcs_scenario.timetable}/paced_trains/",
+        json=[
+            {
+                **_get_etcs_braking_curves_train_data(etcs_rolling_stock_name),
+                "paced": {
+                    "time_window": "PT2H",
+                    "interval": "PT15M",
+                },
+            }
+        ],
+    )
+
+    paced_train = ts_response.json()[0]
+    paced_train_id = paced_train["id"]
+    paced_train_id_response = session.get(
+        f"{EDITOAST_URL}paced_train/{paced_train_id}/"
+    )
+    paced_train_id_response.raise_for_status()
+    etcs_braking_curves_response = session.get(
+        f"{EDITOAST_URL}paced_train/{paced_train_id}/etcs_braking_curves?infra_id={etcs_scenario.infra}"
+    )
+    _check_etcs_braking_curves_response(etcs_braking_curves_response)
