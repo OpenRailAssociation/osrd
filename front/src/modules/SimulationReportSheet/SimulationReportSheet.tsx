@@ -6,7 +6,7 @@ import type { TFunction } from 'i18next';
 import type { OperationalPointWithTimeAndSpeed } from 'applications/operationalStudies/types';
 import type { PathfindingResultSuccess } from 'common/api/osrdEditoastApi';
 import { useDateTimeLocale } from 'utils/date';
-import { msToKmh, tToKg } from 'utils/physics';
+import { msToKmh, kgToT } from 'utils/physics';
 
 import ConsistAndRoute from './ConsistAndRoute';
 import Header from './Header';
@@ -38,7 +38,7 @@ const SimulationReportSheet = ({
 
   const consistData = {
     rollingStockName: rollingStock.name,
-    mass: Math.floor(tToKg(rollingStock.mass)),
+    mass: Math.floor(kgToT(rollingStock.mass)),
     length: Math.floor(rollingStock.length),
     maxSpeed: Math.floor(msToKmh(rollingStock.max_speed)),
     speedLimitByTag,
