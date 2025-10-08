@@ -237,14 +237,6 @@ impl OpenApiRoot {
         for (_, endpoint) in openapi.paths.paths.iter_mut() {
             for operation in path_item_operations_mut(endpoint) {
                 operation.operation_id = None;
-                // By default utoipa adds a tag "crate" to operations that don't have
-                // any. That causes problems with RTK tag management.
-                match &operation.tags {
-                    Some(tags) if tags.len() == 1 && tags.first().unwrap() == "crate" => {
-                        operation.tags = None;
-                    }
-                    _ => (),
-                }
             }
         }
     }
