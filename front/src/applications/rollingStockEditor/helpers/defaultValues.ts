@@ -95,6 +95,7 @@ export const getRollingStockEditorDefaultValues = (
         basePowerClass: rollingStockData.base_power_class || null,
         powerRestrictions: rollingStockData.power_restrictions,
         supportedSignalingSystems: rollingStockData.supported_signaling_systems,
+        etcsBrakeParams: rollingStockData.etcs_brake_params || undefined,
         primaryCategory: rollingStockData.primary_category,
         categories: new Set([
           ...rollingStockData.other_categories,

@@ -237,6 +237,10 @@
     }
   }
 
+  &-actions {
+    justify-content: space-around;
+  }
+
   &-disablelist {
     @media screen and (min-width: 767px) {
       position: fixed;
@@ -251,6 +255,8 @@
         opacity: 0.3;
         transition: opacity 0.2s;
         background-color: white;
+        padding-top: 45px;
+        padding-left: 1.5rem;
       }
     }
 

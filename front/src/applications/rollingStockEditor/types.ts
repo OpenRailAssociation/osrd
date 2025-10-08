@@ -4,6 +4,7 @@ import type {
   Comfort,
   RollingStock,
   TrainMainCategory,
+  EtcsBrakeParams,
 } from 'common/api/osrdEditoastApi';
 import type { MultiUnitsParameter, MultiUnit } from 'modules/rollingStock/types';
 
@@ -68,6 +69,7 @@ export type RollingStockParametersValues = {
   raisePantographTime: number | null;
   basePowerClass: string | null;
   powerRestrictions: RollingStock['power_restrictions'];
+  etcsBrakeParams?: EtcsBrakeParams;
   supportedSignalingSystems: string[];
   primaryCategory?: TrainMainCategory;
   categories: Set<TrainMainCategory>;

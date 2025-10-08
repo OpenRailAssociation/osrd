@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 
+import { Upload } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
@@ -7,9 +8,13 @@ import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { ModalProvider } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import { Loader } from 'common/Loaders/Loader';
 import NavBar from 'common/NavBar';
+import UploadFileModal from 'common/uploadFileModal';
 import { RollingStockCard } from 'modules/rollingStock/components/RollingStockCard';
 import { SearchRollingStock } from 'modules/rollingStock/components/RollingStockSelector';
 import useFilterRollingStock from 'modules/rollingStock/hooks/useFilterRollingStock';
+import { setFailure, setSuccess } from 'reducers/main';
+import { useAppDispatch } from 'store';
+import { castErrorToFailure } from 'utils/error';
 
 import {
   RollingStockEditorForm,
@@ -23,9 +28,11 @@ const RollingStockEditor = () => {
   const ref2scroll = useRef<HTMLInputElement>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
-  const { openModal } = useModal();
+  const { openModal, closeModal } = useModal();
+  const dispatch = useAppDispatch();
 
   const [openedRollingStockCardId, setOpenedRollingStockCardId] = useState<number>();
+  const [postRollingstock] = osrdEditoastApi.endpoints.postRollingStock.useMutation();
 
   const { data: selectedRollingStock } =
     osrdEditoastApi.endpoints.getRollingStockByRollingStockId.useQuery(
@@ -130,8 +137,46 @@ const RollingStockEditor = () => {
     }
   }, [ref2scroll.current]);
 
+  const importFile = async (file: File) => {
+    closeModal();
+    const failure = (error: unknown) => {
+      dispatch(
+        setFailure(
+          castErrorToFailure(error, {
+            name: t('rollingStock.messages.failure'),
+          })
+        )
+      );
+    };
+    try {
+      const fileContent = await file.text();
+      const data = JSON.parse(fileContent);
+      postRollingstock({
+        locked: false,
+        rollingStockForm: data,
+      })
+        .unwrap()
+        .then((res) => {
+          if (setOpenedRollingStockCardId) setOpenedRollingStockCardId(res.id);
+          dispatch(
+            setSuccess({
+              title: t('rollingStock.messages.success'),
+              text: t('rollingStock.messages.rollingStockAdded'),
+            })
+          );
+        })
+        .catch((error) => {
+          console.error('Error posting rolling stock:', error);
+          failure(error);
+        });
+    } catch (error) {
+      console.error('Error reading file:', error);
+      failure(error);
+    }
+  };
+
   return (
-    <ModalProvider>
+    <>
       <NavBar appName={<>{t('rollingStockEditor')}</>} />
       <div className="d-flex rollingstock-editor">
         <div className="d-flex ml-4 flex-column rollingstock-editor-left-container">
@@ -156,10 +201,10 @@ const RollingStockEditor = () => {
               <span>{t('rollingStock.listDisabled')}</span>
             </div>
           )}
-          <div className="d-flex justify-content-center w-100">
+          <div className="d-flex items-center gap-x-8 gap-y-4 mb-4 w-100 rollingstock-editor-actions">
             <button
               type="button"
-              className="btn btn-primary mb-4"
+              className="btn btn-primary"
               data-testid="new-rollingstock-button"
               onClick={() => {
                 setIsAdding(true);
@@ -167,6 +212,18 @@ const RollingStockEditor = () => {
               }}
             >
               {t('rollingStock.addNewRollingStock')}
+            </button>
+            <button
+              type="button"
+              className="d-flex justify-content-start mb-2 py-1 px-2"
+              aria-label={t('rollingStock.importRollingStock')}
+              title={t('rollingStock.importRollingStock')}
+              onClick={() => {
+                openModal(<UploadFileModal handleSubmit={importFile} />);
+              }}
+            >
+              <Upload className="mr-2" />
+              {t('rollingStock.importRollingStock')}
             </button>
           </div>
           {isAdding && (
@@ -193,8 +250,14 @@ const RollingStockEditor = () => {
           </p>
         )}
       </div>
-    </ModalProvider>
+    </>
   );
 };
 
-export default RollingStockEditor;
+const RollingStockEditorWrapper = () => (
+  <ModalProvider>
+    <RollingStockEditor />
+  </ModalProvider>
+);
+
+export default RollingStockEditorWrapper;
