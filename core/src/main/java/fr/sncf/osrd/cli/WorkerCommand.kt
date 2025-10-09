@@ -53,6 +53,7 @@ class WorkerCommand : CliCommand {
     val ALL_INFRA: Boolean
     val WORKER_THREADS: Int
     val MAX_CONCURRENT_TIMETABLE_REQUESTS: Int
+    val DISABLE_ALL_TIMETABLE_CACHE: Boolean
 
     init {
         LOCAL_TIMETABLE_CACHE = System.getenv("LOCAL_TIMETABLE_CACHE")
@@ -72,6 +73,8 @@ class WorkerCommand : CliCommand {
                 ?: Runtime.getRuntime().availableProcessors()
         MAX_CONCURRENT_TIMETABLE_REQUESTS =
             System.getenv("MAX_CONCURRENT_TIMETABLE_REQUESTS")?.toIntOrNull() ?: 10
+        DISABLE_ALL_TIMETABLE_CACHE =
+            System.getenv("DISABLE_ALL_TIMETABLE_CACHE")?.lowercase() == "true"
 
         WORKER_ID =
             if (WORKER_ID_USE_HOSTNAME) {
@@ -120,6 +123,7 @@ class WorkerCommand : CliCommand {
                     MAX_CONCURRENT_TIMETABLE_REQUESTS,
                 ),
                 LOCAL_TIMETABLE_CACHE,
+                DISABLE_ALL_TIMETABLE_CACHE,
             )
         val electricalProfileSetManager =
             ElectricalProfileSetManager(editoastUrl, editoastAuthorization, httpClient)

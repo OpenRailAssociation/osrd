@@ -69,6 +69,7 @@ value class STDCMRequirements(val map: Map<ZoneId, RangeSet<Double>>) :
 class TimetableCacheManager(
     val timetableProvider: TimetableProvider,
     val localCacheLocation: String? = null,
+    val disableAllCaching: Boolean = false,
 ) {
     private val cache = ConcurrentHashMap<TimetableId, STDCMRequirements>()
     private val mutexes = ConcurrentHashMap<TimetableId, Mutex>()
@@ -84,6 +85,12 @@ class TimetableCacheManager(
     @WithSpan(value = "Accessing timetable content", kind = SpanKind.SERVER)
     suspend fun get(infraId: String, infra: RawInfra, timetableId: TimetableId): STDCMRequirements =
         coroutineScope {
+            if (disableAllCaching) {
+                logger.info("Cache disabled")
+                return@coroutineScope withContext(fetchDispatcher) {
+                    return@withContext fetchTimetableRequirements(infraId, infra, timetableId)
+                }
+            }
             logger.info("Start computing timetable requirements")
             cache[timetableId]?.let {
                 logger.info("Timetable cache hit for ID $timetableId")
@@ -112,7 +119,7 @@ class TimetableCacheManager(
     /** Load given timetable ID. */
     @WithSpan(value = "Preloading timetable content", kind = SpanKind.SERVER)
     fun load(infraId: String, infra: RawInfra, timetableId: TimetableId) {
-        runBlocking { get(infraId, infra, timetableId) }
+        if (!disableAllCaching) runBlocking { get(infraId, infra, timetableId) }
     }
 
     @WithSpan(value = "Fetching timetable content", kind = SpanKind.SERVER)
@@ -123,8 +130,9 @@ class TimetableCacheManager(
     ): STDCMRequirements {
         logger.info("Fetching timetable requirements for $timetableId")
 
+        val cacheFile = if (disableAllCaching) null else "$timetableId.cbor"
         val requirements =
-            withLocalCache(localCacheLocation, "$timetableId.cbor") {
+            withLocalCache(localCacheLocation, cacheFile) {
                 timetableProvider.getTimetableRequirements(infraId, infra, timetableId)
             }
 
