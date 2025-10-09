@@ -4083,7 +4083,7 @@ paths:
                   format: int64
         required: true
       responses:
-        '201':
+        '200':
           description: The simulation result
           content:
             application/json:
@@ -4815,7 +4815,7 @@ paths:
       tags:
       - work_schedules
       responses:
-        '201':
+        '200':
           description: The existing work schedule group ids
           content:
             application/json:
@@ -4978,7 +4978,7 @@ paths:
                   format: int64
         required: true
       responses:
-        '201':
+        '200':
           description: Returns a list of work schedules whose track ranges intersect the given path
           content:
             application/json:

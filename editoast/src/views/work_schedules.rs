@@ -13,6 +13,7 @@ use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::Query;
 use axum::extract::State;
+use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use chrono::DateTime;
 use chrono::Utc;
@@ -144,7 +145,7 @@ pub(in crate::views) async fn create(
         work_schedule_group_name,
         work_schedules,
     }): Json<WorkScheduleCreateForm>,
-) -> Result<Json<WorkScheduleCreateResponse>> {
+) -> Result<impl IntoResponse> {
     // Create the group (using the method for the create group endpoint)
     let work_schedule_group = create_group(
         State(db_pool.clone()),
@@ -167,9 +168,12 @@ pub(in crate::views) async fn create(
     let _work_schedules: Vec<_> =
         WorkSchedule::create_batch(conn, work_schedules_changesets).await?;
 
-    Ok(Json(WorkScheduleCreateResponse {
-        work_schedule_group_id: work_schedule_group.work_schedule_group_id,
-    }))
+    Ok((
+        StatusCode::CREATED,
+        Json(WorkScheduleCreateResponse {
+            work_schedule_group_id: work_schedule_group.work_schedule_group_id,
+        }),
+    ))
 }
 
 #[derive(Serialize, Deserialize, ToSchema)]
@@ -202,7 +206,7 @@ pub(in crate::views) struct WorkScheduleProjection {
     request_body = inline(WorkScheduleProjectForm),
     responses(
         (
-            status = 201,
+            status = 200,
             body = inline(Vec<WorkScheduleProjection>),
             description = "Returns a list of work schedules whose track ranges intersect the given path"
         ),
@@ -344,7 +348,7 @@ pub(in crate::views) async fn delete_group(
     })
     .await?;
 
-    Ok(axum::http::StatusCode::NO_CONTENT)
+    Ok(StatusCode::NO_CONTENT)
 }
 
 #[editoast_derive::route]
@@ -352,7 +356,7 @@ pub(in crate::views) async fn delete_group(
     get, path = "",
     tag = "work_schedules",
     responses(
-        (status = 201, body = Vec<i64>, description = "The existing work schedule group ids"),
+        (status = 200, body = Vec<i64>, description = "The existing work schedule group ids"),
     )
 )]
 pub(in crate::views) async fn list_groups(
@@ -494,7 +498,6 @@ pub(in crate::views) async fn get_group(
 
 #[cfg(test)]
 pub mod tests {
-    use axum::http::StatusCode;
     use chrono::NaiveDate;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
@@ -524,7 +527,7 @@ pub mod tests {
         // WHEN
         let work_schedule_response = app
             .fetch(request)
-            .assert_status(StatusCode::OK)
+            .assert_status(StatusCode::CREATED)
             .json_into::<WorkScheduleCreateResponse>();
 
         // THEN

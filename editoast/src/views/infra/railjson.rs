@@ -173,7 +173,7 @@ pub(in crate::views) async fn post_railjson(
     Extension(auth): AuthenticationExt,
     Query(params): Query<PostRailjsonQueryParams>,
     Json(railjson): Json<RailJson>,
-) -> Result<Json<PostRailjsonResponse>> {
+) -> Result<impl IntoResponse> {
     let authorized = auth
         .check_roles([authz::Role::OperationalStudies].into())
         .await?;
@@ -209,12 +209,14 @@ pub(in crate::views) async fn post_railjson(
         infra.refresh(db_pool, true, &infra_cache).await?;
     }
 
-    Ok(Json(PostRailjsonResponse { infra: infra.id }))
+    Ok((
+        StatusCode::CREATED,
+        Json(PostRailjsonResponse { infra: infra.id }),
+    ))
 }
 
 #[cfg(test)]
 mod tests {
-    use axum::http::StatusCode;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
 
@@ -274,7 +276,10 @@ mod tests {
             .post("/infra/railjson?name=post_railjson_test")
             .json(&railjson);
 
-        let res: PostRailjsonResponse = app.fetch(req).assert_status(StatusCode::OK).json_into();
+        let res: PostRailjsonResponse = app
+            .fetch(req)
+            .assert_status(StatusCode::CREATED)
+            .json_into();
 
         assert!(
             Infra::delete_static(&mut db_pool.get_ok(), res.infra)

@@ -1,6 +1,8 @@
 use axum::Extension;
 use axum::extract::Json;
 use axum::extract::State;
+use axum::http::StatusCode;
+use axum::response::IntoResponse;
 use chrono::DateTime;
 use chrono::Utc;
 use database::DbConnectionPoolV2;
@@ -126,7 +128,7 @@ pub(in crate::views) async fn create_temporary_speed_limit_group(
         speed_limit_group_name,
         speed_limits,
     }): Json<TemporarySpeedLimitCreateForm>,
-) -> Result<Json<TemporarySpeedLimitCreateResponse>> {
+) -> Result<impl IntoResponse> {
     let authorized = auth
         .check_roles([Role::OperationalStudies].into())
         .await
@@ -154,7 +156,10 @@ pub(in crate::views) async fn create_temporary_speed_limit_group(
         .await
         .map_err(TemporarySpeedLimitError::from)?;
 
-    Ok(Json(TemporarySpeedLimitCreateResponse { group_id }))
+    Ok((
+        StatusCode::CREATED,
+        Json(TemporarySpeedLimitCreateResponse { group_id }),
+    ))
 }
 
 #[cfg(test)]
@@ -162,7 +167,6 @@ mod tests {
     use super::*;
 
     use crate::views::test_app::TestApp;
-    use axum::http::StatusCode;
     use axum_test::TestRequest;
     use chrono::DateTime;
     use chrono::Duration;
@@ -282,8 +286,10 @@ mod tests {
 
         // Speed limit group checks
 
-        let TemporarySpeedLimitCreateResponse { group_id } =
-            app.fetch(request).assert_status(StatusCode::OK).json_into();
+        let TemporarySpeedLimitCreateResponse { group_id } = app
+            .fetch(request)
+            .assert_status(StatusCode::CREATED)
+            .json_into();
         let created_group = TemporarySpeedLimitGroup::retrieve(pool.get_ok(), group_id)
             .await
             .expect("Failed to retrieve the created temporary speed limit group")
@@ -313,10 +319,10 @@ mod tests {
         let request = app.create_temporary_speed_limit_group_request(
             RequestParameters::new().with_group_name(group_name.clone()),
         );
-        let _ = app.fetch(request).assert_status(StatusCode::OK);
+        let _ = app.fetch(request).assert_status(StatusCode::CREATED);
 
         let request = app.create_temporary_speed_limit_group_request(RequestParameters::new());
-        let _ = app.fetch(request).assert_status(StatusCode::OK);
+        let _ = app.fetch(request).assert_status(StatusCode::CREATED);
 
         let request = app.create_temporary_speed_limit_group_request(
             RequestParameters::new().with_group_name(group_name.clone()),
