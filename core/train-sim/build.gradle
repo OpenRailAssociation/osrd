@@ -42,7 +42,7 @@ tasks.register('generateKotlinBindings', Exec) {
                 '--language', 'kotlin',
                 '--out-dir', '../src/main/kotlin'
 
-    inputs.files tasks.named('rustBuildRelease').map { it.outputs.getFiles() }
+    inputs.file tasks.named('rustBuildRelease').map { it.outputs.getFiles()[0] }
 
     // Register tsim-ffi crate sources as inputs of this task so that it runs
     // when the FFI changes

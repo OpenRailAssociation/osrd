@@ -1,3 +1,13 @@
+buildscript {
+    dependencies {
+        // We need to get the platform prefix for the native library path in the
+        // jar (see shadowJar below)
+        classpath libs.jna
+    }
+}
+
+import com.sun.jna.Platform
+
 plugins {
     id 'base'
     id 'java'
@@ -124,6 +134,14 @@ base.archivesName = "osrd"
 
 run {
     enableAssertions = true
+}
+
+tasks.named('shadowJar') {
+    // TODO make this lazy somehow.... tasks.named doesn't work
+    from(tasks.getByPath(':train-sim:rustBuildRelease').outputs.getFiles()) {
+        def prefix = Platform.getNativeLibraryResourcePrefix()
+        into 'fr/sncf/osrd/train_sim/' + prefix
+    }
 }
 
 // endregion
