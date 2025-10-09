@@ -5,8 +5,8 @@ import com.google.common.collect.RangeSet
 import com.google.common.collect.TreeRangeSet
 import com.squareup.moshi.Json
 import com.squareup.moshi.JsonAdapter
+import com.squareup.moshi.JsonReader
 import com.squareup.moshi.Moshi
-import com.squareup.moshi.Types
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import fr.sncf.osrd.api.conflicts.TrainRequirementsById
 import fr.sncf.osrd.conflicts.SpacingRequirement
@@ -16,9 +16,7 @@ import fr.sncf.osrd.utils.json.UnitAdapterFactory
 import java.time.Duration
 import java.time.Instant
 import java.time.ZonedDateTime
-import kotlin.collections.flatMap
 import kotlin.io.path.Path
-import kotlin.io.path.readText
 import kotlin.math.pow
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi
@@ -32,6 +30,8 @@ import kotlinx.coroutines.runBlocking
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
+import okio.buffer
+import okio.source
 import org.slf4j.LoggerFactory
 
 private const val PAGE_SIZE = 100
@@ -152,31 +152,33 @@ class JsonTimetableProvider(val timetableDirectory: String) : TimetableProvider 
         infra: RawInfra,
         timetableId: TimetableId,
     ): STDCMRequirements {
-        val type = Types.newParameterizedType(List::class.java, TrainRequirementsById::class.java)
-        val adapter: JsonAdapter<List<TrainRequirementsById>> =
+        val adapter: JsonAdapter<TrainRequirementsById> =
             Moshi.Builder()
                 .addLast(UnitAdapterFactory())
                 .addLast(KotlinJsonAdapterFactory())
                 .build()
-                .adapter(type)
+                .adapter(TrainRequirementsById::class.java)
         val filePath = Path("$timetableDirectory/$timetableId.json")
         logger.info("Fetching timetable requirements at json file $filePath")
-        val trains = adapter.fromJson(filePath.readText())!!
+
+        val source = filePath.source().buffer()
+        val jsonReader = JsonReader.of(source)
+        jsonReader.beginArray()
         val res = mutableMapOf<ZoneId, RangeSet<Double>>()
-        val requirements =
-            trains.flatMap {
-                it.spacingRequirements.map { spacingReq ->
+        while (jsonReader.hasNext()) {
+            val train = adapter.fromJson(jsonReader)!!
+            for (rjsSpacingReq in train.spacingRequirements) {
+                val spacingReq =
                     SpacingRequirement.fromRJSWithAddedTime(
-                        spacingReq,
+                        rjsSpacingReq,
                         infra,
-                        it.startTime.durationSinceEpoch(),
+                        train.startTime.durationSinceEpoch(),
                     )
-                }
+                val set = res.computeIfAbsent(spacingReq.zone) { TreeRangeSet.create() }
+                set.add(Range.closedOpen(spacingReq.beginTime, spacingReq.endTime))
             }
-        for (spacingReq in requirements) {
-            val set = res.computeIfAbsent(spacingReq.zone) { TreeRangeSet.create() }
-            set.add(Range.closedOpen(spacingReq.beginTime, spacingReq.endTime))
         }
+
         return STDCMRequirements(res)
     }
 }
