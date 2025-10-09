@@ -281,7 +281,7 @@ pub(in crate::views) async fn get(
     params(ProjectIdParam, StudyIdParam, ScenarioIdParam, MacroNodeIdParam),
     request_body = MacroNodeForm,
     responses(
-        (status = 200, body = MacroNodeResponse, description = "The requested scenario"),
+        (status = 200, body = MacroNodeResponse, description = "The updated macro note"),
     )
 )]
 pub(in crate::views) async fn update(
