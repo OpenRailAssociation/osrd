@@ -2179,7 +2179,7 @@ export type GetProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNodes
   nodeId: number;
 };
 export type PutProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNodesNodeIdApiResponse =
-  /** status 200 The requested scenario */ MacroNodeResponse;
+  /** status 200 The updated macro note */ MacroNodeResponse;
 export type PutProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNodesNodeIdApiArg = {
   /** The id of a project */
   projectId: number;
