@@ -15,6 +15,7 @@ from typing import Dict, Any
 
 import click
 import aiohttp
+from aiohttp import ClientSession
 
 from download_stdcm_requirements import get_paginated
 
@@ -68,7 +69,11 @@ from download_stdcm_requirements import get_paginated
     default=5,
 )
 @click.option("--page-size", "-s", type=int, default=100)
-def main(
+def main(*args, **kwargs):
+    asyncio.run(async_main(*args, **kwargs))
+
+
+async def async_main(
     editoast_url,
     span_attributes,
     infra_id,
@@ -81,7 +86,7 @@ def main(
 ):
     aiohttp_params: Dict[str, Any] = {
         "trust_env": True,
-        "raise_for_status": True,
+        "raise_for_status": False,
     }
     if gateway_cookie is not None:
         cookies = {"gateway": gateway_cookie}
@@ -123,45 +128,43 @@ def main(
 
     timetable_dir.mkdir(exist_ok=True)
 
-    asyncio.run(
-        save_core_payload(
+    async with aiohttp.ClientSession(**aiohttp_params) as session:
+        timetable_coroutine = save_timetable(
+            timetable_dir,
+            editoast_url,
+            timetable_id,
+            page_size,
+            infra_id,
+            n_threads,
+            session,
+        )
+        payload_coroutine = save_core_payload(
             editoast_url,
             timetable_id,
             infra_id,
             input_payload,
-            aiohttp_params,
             core_request_file,
+            session,
         )
-    )
-    save_timetable(
-        timetable_dir,
-        editoast_url,
-        timetable_id,
-        page_size,
-        infra_id,
-        n_threads,
-        aiohttp_params,
-    )
+        await asyncio.gather(payload_coroutine, timetable_coroutine)
 
 
-def save_timetable(
+async def save_timetable(
     timetable_dir: Path,
     editoast_url: str,
     timetable_id: int,
     page_size: int,
     infra_id: int,
     n_threads: int,
-    aiohttp_params: Dict,
+    session: ClientSession,
 ):
     timetable_file = timetable_dir / f"{timetable_id}.json"
-    if timetable_dir.is_file():
+    if timetable_file.is_file():
         print(f"Timetable already saved at {timetable_file}")
     else:
         print("Downloading requirements...")
         requirements_url = f"{editoast_url}api/timetable/{timetable_id}/requirements/?page=$page&{page_size=}&{infra_id=}"
-        requirements = asyncio.run(
-            get_paginated(requirements_url, n_threads, **aiohttp_params)
-        )
+        requirements = await get_paginated(requirements_url, session, n_threads)
         with open(timetable_file, "w", encoding="utf-8") as jsonfile:
             json.dump(requirements, jsonfile)
         print(
@@ -174,17 +177,21 @@ async def save_core_payload(
     timetable_id: int,
     infra_id: int,
     input_payload: Dict,
-    aiohttp_params: Dict,
     save_into: Path,
+    session: ClientSession,
 ):
     url = f"{editoast_url}api/timetable/{timetable_id}/stdcm?infra={infra_id}&return_debug_payloads=true"
-    async with aiohttp.ClientSession(**aiohttp_params) as session:
-        async with session.post(url, json=input_payload) as response:
-            json_response = await response.json()
+    async with session.post(url, json=input_payload) as response:
+        json_response = await response.json()
+        if "core_payload" in json_response:
             core_payload = json_response["core_payload"]
-            with open(save_into, "w", encoding="utf-8") as jsonfile:
-                json.dump(core_payload, jsonfile)
-            print(f"Saved core payload to {save_into}")
+        elif "context" in json_response and "core_payload" in json_response["context"]:
+            core_payload = json_response["context"]["core_payload"]
+        else:
+            raise RuntimeError(f"error in core response: {json_response}")
+        with open(save_into, "w", encoding="utf-8") as jsonfile:
+            json.dump(core_payload, jsonfile)
+        print(f"Saved core payload to {save_into}")
 
 
 if __name__ == "__main__":

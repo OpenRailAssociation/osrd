@@ -13,6 +13,7 @@ from typing import List, Dict
 
 import click
 import aiohttp
+from aiohttp import ClientSession
 
 
 @click.command()
@@ -39,9 +40,10 @@ async def async_main(
     else:
         cookies = None
         connector = None
-    requirements = await get_paginated(
-        url, trust_env=True, raise_for_status=True, cookies=cookies, connector=connector
-    )
+    async with aiohttp.ClientSession(
+        trust_env=True, raise_for_status=True, cookies=cookies, connector=connector
+    ) as session:
+        requirements = await get_paginated(url, session)
     with open(path, "w", encoding="utf-8") as jsonfile:
         json.dump(requirements, jsonfile, ensure_ascii=False)
     print(
@@ -66,28 +68,32 @@ async def get_with_retries(
                 raise e
 
 
-async def get_paginated(url: str, n_workers: int = 5, *args, **kwargs) -> List[Dict]:
-    async with aiohttp.ClientSession(*args, **kwargs) as session:
-        initial_url = url.replace("$page", "1")
-        print("downloading first page")
-        initial_response = await get_with_retries(session, initial_url)
-        page_count = initial_response["page_count"]
-        print(f"first page done, {page_count} total pages")
+async def get_paginated(
+    url: str, session: ClientSession, n_workers: int = 5
+) -> List[Dict]:
+    initial_url = url.replace("$page", "1")
+    print("downloading first page")
+    initial_response = await get_with_retries(session, initial_url)
+    page_count = initial_response["page_count"]
+    print(f"first page done, {page_count} total pages")
 
-        semaphore = asyncio.Semaphore(n_workers)
+    semaphore = asyncio.Semaphore(n_workers)
 
-        async def fetch_page(page):
-            async with semaphore:
-                url_page = url.replace("$page", str(page))
-                print(f"downloading page {page}/{page_count}")
-                json_response = await get_with_retries(session, url_page)
-                return json_response["results"]
+    async def fetch_page(page):
+        async with semaphore:
+            url_page = url.replace("$page", str(page))
+            print(f"downloading page {page}/{page_count}")
+            json_response = await get_with_retries(session, url_page)
+            return json_response["results"]
 
-        all_pages = list(range(2, page_count + 1))
-        tasks = [fetch_page(page) for page in all_pages]
-        results = await asyncio.gather(*tasks)
+    all_pages = list(range(2, page_count + 1))
+    tasks = [fetch_page(page) for page in all_pages]
+    page_contents = await asyncio.gather(*tasks)
 
-        return initial_response["results"] + results
+    res = initial_response["results"]
+    for page_content in page_contents:
+        res += page_content
+    return res
 
 
 if __name__ == "__main__":
