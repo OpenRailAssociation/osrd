@@ -2746,7 +2746,7 @@ paths:
         required: true
       responses:
         '200':
-          description: The updated macro note
+          description: The updated macro node
           content:
             application/json:
               schema:
