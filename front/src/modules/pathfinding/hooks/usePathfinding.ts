@@ -102,7 +102,7 @@ const usePathfinding = ({
 
       let opIndex = 0;
       const updatedSteps = steps.map((step): PathStep => {
-        if ('track' in step) return step;
+        if ('track' in step.location) return step;
 
         const op = ops[opIndex].at(0);
         opIndex++;
