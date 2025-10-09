@@ -2460,7 +2460,7 @@ export type GetTimetableByIdRoundTripsTrainSchedulesApiArg = {
   page?: number;
   pageSize?: number;
 };
-export type PostTimetableByIdStdcmApiResponse = /** status 201 The simulation result */
+export type PostTimetableByIdStdcmApiResponse = /** status 200 The simulation result */
   | {
       core_payload?: null | StdcmRequest;
       departure_time: string;
@@ -2698,7 +2698,7 @@ export type PostWorkSchedulesApiArg = {
   };
 };
 export type GetWorkSchedulesGroupApiResponse =
-  /** status 201 The existing work schedule group ids */ number[];
+  /** status 200 The existing work schedule group ids */ number[];
 export type GetWorkSchedulesGroupApiArg = void;
 export type PostWorkSchedulesGroupApiResponse =
   /** status 200 The id of the created work schedule group */ {
@@ -2739,7 +2739,7 @@ export type DeleteWorkSchedulesGroupByIdApiArg = {
   id: number;
 };
 export type PostWorkSchedulesProjectPathApiResponse =
-  /** status 201 Returns a list of work schedules whose track ranges intersect the given path */ {
+  /** status 200 Returns a list of work schedules whose track ranges intersect the given path */ {
     /** The date and time when the work schedule ends. */
     end_date_time: string;
     /** a list of intervals `(a, b)` that represent the projections of the work schedule track ranges:

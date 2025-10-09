@@ -154,7 +154,7 @@ pub(in crate::views) struct StdcmQueryParams {
         StdcmQueryParams,
     ),
     responses(
-        (status = 201, body = inline(StdcmResponse), description = "The simulation result"),
+        (status = 200, body = inline(StdcmResponse), description = "The simulation result"),
     )
 )]
 pub(in crate::views) async fn stdcm(
