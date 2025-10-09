@@ -1,25 +1,11 @@
-[package]
-name = "train-sim"
-version = "0.1.0"
-edition = "2021"
+[workspace]
+resolver = "3"
+members = ["crates/*"]
+
+[workspace.package]
+edition = "2024"
 license = "LGPL-3.0"
 
-[lib]
-crate-type = ["cdylib", "rlib"]
-
-[workspace]
-members = [".", "libtsim", "uniffi-bindgen"]
-
 [workspace.dependencies]
-libtsim = { version = "3.0.0", path = "libtsim" }
-uniffi = "0.29"
-
-[dependencies]
-libtsim.workspace = true
-serde = { version = "1.0", features = ["derive"] }
-serde_json = "1.0"
-thiserror = "1.0"
-uniffi.workspace = true
-
-[build-dependencies]
-uniffi = { workspace = true, features = ["build"] }
+tsim = { version = "3.0.0", path = "crates/tsim" }
+uniffi = "0.29.4"

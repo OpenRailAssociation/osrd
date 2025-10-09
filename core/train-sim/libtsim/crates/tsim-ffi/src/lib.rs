@@ -10,9 +10,9 @@ pub struct DavisCoefficients {
     pub c: f64,
 }
 
-impl From<DavisCoefficients> for libtsim::DavisCoefficients {
+impl From<DavisCoefficients> for tsim::DavisCoefficients {
     fn from(value: DavisCoefficients) -> Self {
-        libtsim::DavisCoefficients {
+        tsim::DavisCoefficients {
             a: value.a,
             b: value.b,
             c: value.c,
@@ -40,7 +40,7 @@ pub trait TrainPath: Send + Sync {
 
 struct SalutÀTous<'a>(&'a dyn TrainPath);
 
-impl libtsim::TrainPath for SalutÀTous<'_> {
+impl tsim::TrainPath for SalutÀTous<'_> {
     fn length(&self) -> f64 {
         TrainPath::length(self.0)
     }
@@ -56,10 +56,10 @@ impl libtsim::TrainPath for SalutÀTous<'_> {
     fn electrification_map(
         &self,
         _base_power_class: &str,
-        _power_restrictions: &libtsim::RangeMap<f64, String>,
-        _power_restriction_to_power_class: &libtsim::RangeMap<String, String>,
+        _power_restrictions: &tsim::RangeMap<f64, String>,
+        _power_restriction_to_power_class: &tsim::RangeMap<String, String>,
         _ignore_electrical_profiles: bool,
-    ) -> libtsim::RangeMap<f64, Option<libtsim::Electrification>> {
+    ) -> tsim::RangeMap<f64, Option<tsim::Electrification>> {
         todo!()
     }
 }
@@ -80,7 +80,7 @@ pub struct TractiveEffortPoint {
 #[derive(uniffi::Object)]
 pub struct TractiveEffortCurveMap {
     // XXX: https://mozilla.github.io/uniffi-rs/latest/types/interfaces.html#concurrent-access
-    inner: Mutex<libtsim::RangeMap<f64, Box<[libtsim::TractiveEffortPoint]>>>,
+    inner: Mutex<tsim::RangeMap<f64, Box<[tsim::TractiveEffortPoint]>>>,
 }
 
 #[uniffi::export]
@@ -88,19 +88,19 @@ impl TractiveEffortCurveMap {
     #[uniffi::constructor]
     fn new() -> Self {
         Self {
-            inner: Mutex::new(libtsim::RangeMap::new()),
+            inner: Mutex::new(tsim::RangeMap::new()),
         }
     }
 
     fn insert(&self, range: HalfOpenRangeF64, value: Vec<TractiveEffortPoint>) {
-        let range = libtsim::Range::new(Bound::Included(range.start), Bound::Excluded(range.end));
+        let range = tsim::Range::new(Bound::Included(range.start), Bound::Excluded(range.end));
         let value = value
             .into_iter()
-            .map(|pt| libtsim::TractiveEffortPoint {
+            .map(|pt| tsim::TractiveEffortPoint {
                 speed: pt.speed,
                 max_effort: pt.max_effort,
             })
-            .collect::<Vec<libtsim::TractiveEffortPoint>>()
+            .collect::<Vec<tsim::TractiveEffortPoint>>()
             .into_boxed_slice();
         self.inner.lock().unwrap().insert(range, value);
     }
@@ -114,13 +114,13 @@ pub enum Action {
     Coast,
 }
 
-impl From<Action> for libtsim::Action {
+impl From<Action> for tsim::Action {
     fn from(value: Action) -> Self {
         match value {
-            Action::Accelerate => libtsim::Action::Accelerate,
-            Action::Brake => libtsim::Action::Brake,
-            Action::Maintain => libtsim::Action::Maintain,
-            Action::Coast => libtsim::Action::Coast,
+            Action::Accelerate => tsim::Action::Accelerate,
+            Action::Brake => tsim::Action::Brake,
+            Action::Maintain => tsim::Action::Maintain,
+            Action::Coast => tsim::Action::Coast,
         }
     }
 }
@@ -131,20 +131,20 @@ pub enum Direction {
     Backwards,
 }
 
-impl From<Direction> for libtsim::Direction {
+impl From<Direction> for tsim::Direction {
     fn from(value: Direction) -> Self {
         match value {
-            Direction::Forwards => libtsim::Direction::Forwards,
-            Direction::Backwards => libtsim::Direction::Backwards,
+            Direction::Forwards => tsim::Direction::Forwards,
+            Direction::Backwards => tsim::Direction::Backwards,
         }
     }
 }
 
-impl From<libtsim::Direction> for Direction {
-    fn from(value: libtsim::Direction) -> Self {
+impl From<tsim::Direction> for Direction {
+    fn from(value: tsim::Direction) -> Self {
         match value {
-            libtsim::Direction::Forwards => Direction::Forwards,
-            libtsim::Direction::Backwards => Direction::Backwards,
+            tsim::Direction::Forwards => Direction::Forwards,
+            tsim::Direction::Backwards => Direction::Backwards,
         }
     }
 }
@@ -163,19 +163,19 @@ pub enum BrakingType {
     Indication,
 }
 
-impl From<BrakingType> for libtsim::BrakingType {
+impl From<BrakingType> for tsim::BrakingType {
     fn from(value: BrakingType) -> Self {
         match value {
-            BrakingType::Constant => libtsim::BrakingType::Constant,
-            BrakingType::Ebd => libtsim::BrakingType::Ebd,
-            BrakingType::Ebi => libtsim::BrakingType::Ebi,
-            BrakingType::Sbd => libtsim::BrakingType::Sbd,
-            BrakingType::Sbi1 => libtsim::BrakingType::Sbi1,
-            BrakingType::Sbi2 => libtsim::BrakingType::Sbi2,
-            BrakingType::Guidance => libtsim::BrakingType::Guidance,
-            BrakingType::PrePs => libtsim::BrakingType::PrePs,
-            BrakingType::Ps => libtsim::BrakingType::Ps,
-            BrakingType::Indication => libtsim::BrakingType::Indication,
+            BrakingType::Constant => tsim::BrakingType::Constant,
+            BrakingType::Ebd => tsim::BrakingType::Ebd,
+            BrakingType::Ebi => tsim::BrakingType::Ebi,
+            BrakingType::Sbd => tsim::BrakingType::Sbd,
+            BrakingType::Sbi1 => tsim::BrakingType::Sbi1,
+            BrakingType::Sbi2 => tsim::BrakingType::Sbi2,
+            BrakingType::Guidance => tsim::BrakingType::Guidance,
+            BrakingType::PrePs => tsim::BrakingType::PrePs,
+            BrakingType::Ps => tsim::BrakingType::Ps,
+            BrakingType::Indication => tsim::BrakingType::Indication,
         }
     }
 }
@@ -190,8 +190,8 @@ pub struct IntegrationStep {
     pub direction: Direction,
 }
 
-impl From<libtsim::IntegrationStep> for IntegrationStep {
-    fn from(value: libtsim::IntegrationStep) -> Self {
+impl From<tsim::IntegrationStep> for IntegrationStep {
+    fn from(value: tsim::IntegrationStep) -> Self {
         IntegrationStep {
             time_delta: value.time_delta,
             position_delta: value.position_delta,
@@ -216,14 +216,14 @@ pub fn step(
     direction: Direction,
     braking_type: BrakingType,
 ) -> IntegrationStep {
-    let rolling_stock = libtsim::RollingStock {
+    let rolling_stock = tsim::RollingStock {
         davis: rolling_stock.davis.into(),
         const_gamma: rolling_stock.const_gamma,
         length: rolling_stock.length,
         mass: rolling_stock.mass,
         inertia: rolling_stock.inertia,
     };
-    libtsim::step(
+    tsim::step(
         &rolling_stock,
         &SalutÀTous(path),
         time_delta,

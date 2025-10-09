@@ -1,44 +1,39 @@
-# Train Simulator
+# libtsim
 
-This module is a work in progress.
+libtsim simulates the behavior of a train along a given path, and according to
+given schedule and driver behavior.
 
-It will be responsible for simulating the behavior of a train along a given path, and according to given schedule and behavior.
+Languages bindings are provided by `tsim-ffi` using [uniffi].
 
-It will be documented on the [OSRD website](https://osrd.fr/en/docs/reference/design-docs/) once [this pull request](https://github.com/OpenRailAssociation/osrd-website/pull/168) is merged.
+## Usage
 
-## Contributing
+### From rust
 
-This is a rust library with bindings in kotlin, generated thanks to [uniffi](https://github.com/mozilla/uniffi-rs/). It will be used by [core](../core).
+For rust projects, add `tsim` to your dependencies:
 
-### Building the lib
-
-```shell
-cargo build --release --locked
+```sh
+cargo add tsim
 ```
 
-### Building the kotlin bindings
+### From other languages
 
-Binding generation optionally uses [ktlint] to format kotlin sources.
+For other languages (kotlin, python, ...) build `tsim-ffi` to produce the
+shared library:
 
-```shell
-cargo run -p uniffi-bindgen --release -- generate --library target/release/libtrain_sim.so --language kotlin --out-dir kotlin_bindings/src/main/kotlin
+```sh
+cargo build -p tsim-ffi --release
 ```
 
-### Running the tests
+You can then generate the bindings for your language. Here is an example with
+kotlin on linux. Make sure to use the correct path and extension for the
+`tsim_ffi` library according to your platform:
 
-The rust ones:
-```shell
-cargo test
+```sh
+cargo run -p uniffi-bindgen -- \
+    generate \
+    --library libtsim_ffi.so \
+    --language kotlin \
+    --out-dir out/src/main/kotlin
 ```
 
-The kotlin ones (tests that are based on the [cross_language_tests](cross_language_tests) folder, which are also run in rust):
-```shell
-cd kotlin_bindings
-./gradlew test
-```
-Make sure you have built the lib before running the tests. If the compiled lib is not in `target/release/', you can specify the path to the parent folder of your lib with:
-```shell
-./gradlew test -Djna.library.path=your/path/to/lib
-```
-
-[ktlint]: https://pinterest.github.io/ktlint/latest/
+[uniffi]: https://github.com/mozilla/uniffi-rs
