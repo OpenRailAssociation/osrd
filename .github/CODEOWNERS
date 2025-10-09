@@ -11,6 +11,7 @@
 
 # -- Scripts --
 /scripts                                                 @openrailassociation/OSRD-DevOps
+osrd-compose                                            @openrailassociation/OSRD-DevOps
 
 # --- NIX ---
 /nix                                                     @openrailassociation/OSRD-DevOps
