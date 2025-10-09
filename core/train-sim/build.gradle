@@ -11,32 +11,42 @@ dependencies {
     testImplementation libs.kotlin.test
 }
 
-tasks.register('rustBuild', Exec) {
-    description = 'Builds the rust binary'
+tasks.register('rustBuildRelease', Exec) {
+    group = 'build'
+    description = 'Builds the rust binary with optimizations enabled'
 
-    workingDir '..'
-    commandLine 'cargo', 'build', '--release'
-    outputs.file '../target/release/libtrain_sim.so'
+    workingDir 'libtsim'
+    commandLine 'cargo', 'build', '--package', 'tsim-ffi', '--release'
+
+    // Hard-code `build/` instead of using layout.buildDirectory, because we
+    // don't really care about where libtsim_ffi.so gets built as long as cargo
+    // and gradle agree on a location. Otherwise we could set the env var
+    // CARGO_TARGET_DIR to match gradle's layout.buildDirectory here, but then
+    // running cargo outside of gradle would recompile everything in `build/`,
+    // as configured in `.cargo/config.toml`.
+    outputs.file 'build/rust/release/libtsim_ffi.so'
 
     // Always run the task and rely on cargo to build when necessary
     outputs.upToDateWhen { false }
 }
 
 tasks.register('generateKotlinBindings', Exec) {
-    description = 'Re-generate the kotlin bindings'
+    group = 'build'
+    description = 'Re-generates and overwrites the kotlin bindings. Use this during development'
 
-    workingDir '..'
+    workingDir 'libtsim'
     commandLine 'cargo', 'run', '--package', 'uniffi-bindgen', '--',
                 'generate',
-                '--library', 'target/release/libtrain_sim.so',
+                '--no-format', // let spotless format it
+                '--library', '../build/rust/release/libtsim_ffi.so',
                 '--language', 'kotlin',
-                '--out-dir', 'kotlin_bindings/src/main/kotlin'
+                '--out-dir', '../src/main/kotlin'
 
-    inputs.file '../target/release/libtrain_sim.so'
+    inputs.files tasks.named('rustBuildRelease').map { it.outputs.getFiles() }
 
-    // Register the train-sim crate sources as inputs of this task so that it
-    // runs when the API changes
-    inputs.dir '../src'
+    // Register tsim-ffi crate sources as inputs of this task so that it runs
+    // when the FFI changes
+    inputs.dir 'libtsim/crates/tsim-ffi/src'
 
     outputs.dir 'src/main/kotlin'
 }

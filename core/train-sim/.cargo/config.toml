@@ -1,0 +1,4 @@
+[build]
+# build.gradle relies on the location of cargo's target directory. Override any
+# custom user configuration.
+target-dir = "build/rust"
