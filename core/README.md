@@ -120,6 +120,8 @@ For STDCM tests, it's possible to store (heavy) timetable data locally to save
 important I/O time.
 Set `LOCAL_TIMETABLE_CACHE` to some location (like `timetable_cache`) where
 core will read timetable cache (or create for later use).
+If timetables can be modified between STDCM requests, `DISABLE_ALL_TIMETABLE_CACHE`
+should be set to `true`, as there's currently no cache invalidation.
 
 No-cache mode on editoast is also usually helpful to repeat requests. \
 One may want to combine it with single-worker mode and probably manage authz. \
