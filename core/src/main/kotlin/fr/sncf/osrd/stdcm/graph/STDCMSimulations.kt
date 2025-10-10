@@ -106,7 +106,7 @@ class STDCMSimulations {
         }
         val path = infraExplorer.getCurrentEdgePathProperties(start, simLength)
         val context = build(rollingStock, path, timeStep, comfort)
-        val mrsp = computeMRSP(path, rollingStock, true, trainTag, temporarySpeedLimitManager)
+        val mrsp = computeMRSP(path, rollingStock, false, trainTag, temporarySpeedLimitManager)
         return try {
             val maxSpeedEnvelope = maxSpeedEnvelopeFrom(context, stops, mrsp)
             maxEffortEnvelopeFrom(context, initialSpeed, maxSpeedEnvelope)

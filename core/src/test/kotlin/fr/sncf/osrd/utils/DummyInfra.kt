@@ -45,19 +45,23 @@ class DummyInfra : RawInfra, BlockInfra {
         length: Distance = 100.meters,
         allowedSpeed: Double = Double.POSITIVE_INFINITY,
         signalingSystemName: String = BAL.id,
+        detailedSpeedLimits: DistanceRangeMap<SpeedLimitProperty>? = null,
     ): BlockId {
         val name = String.format("%s->%s", entry, exit)
         val entryId = getOrCreateDetectorId(entry)
         val exitId = getOrCreateDetectorId(exit)
         val id = BlockId(blockPool.size.toUInt())
         val signalingSystemId = getSignalingSystemIdfromName(signalingSystemName)
+        val speedLimits =
+            detailedSpeedLimits
+                ?: makeRangeMap(length, SpeedLimitProperty(allowedSpeed.metersPerSecond, null))
         blockPool.add(
             DummyBlockDescriptor(
                 length,
                 name,
                 entryId,
                 exitId,
-                allowedSpeed,
+                speedLimits,
                 0.0,
                 signalingSystemId,
                 signalingSystemName,
@@ -91,7 +95,7 @@ class DummyInfra : RawInfra, BlockInfra {
         val name: String,
         val entry: DirDetectorId,
         val exit: DirDetectorId,
-        val allowedSpeed: Double,
+        val allowedSpeed: DistanceRangeMap<SpeedLimitProperty>,
         var gradient: Double,
         var signalingSystemId: SignalingSystemId,
         var signalingSystemName: String,
@@ -440,10 +444,7 @@ class DummyInfra : RawInfra, BlockInfra {
         route: String?,
     ): DistanceRangeMap<SpeedLimitProperty> {
         val desc = blockPool[trackChunk.value.index]
-        return makeRangeMap(
-            desc.length,
-            SpeedLimitProperty(desc.allowedSpeed.metersPerSecond, null),
-        )
+        return desc.allowedSpeed
     }
 
     override fun getTrackChunkGeom(trackChunk: TrackChunkId): LineString {
