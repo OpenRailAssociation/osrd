@@ -3,10 +3,15 @@ package fr.sncf.osrd.stdcm
 import com.google.common.collect.ImmutableMultimap
 import fr.sncf.osrd.pathfinding.Pathfinding.EdgeLocation
 import fr.sncf.osrd.sim_infra.api.BlockId
+import fr.sncf.osrd.sim_infra.api.SpeedLimitProperty
 import fr.sncf.osrd.stdcm.preprocessing.OccupancySegment
+import fr.sncf.osrd.train.TestTrains
+import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.DummyInfra
+import fr.sncf.osrd.utils.distanceRangeMapOf
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
+import fr.sncf.osrd.utils.units.metersPerSecond
 import fr.sncf.osrd.utils.units.seconds
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
@@ -784,5 +789,68 @@ class STDCMPathfindingTests {
                 .run()!!
 
         assertEquals(totalDelay, res.departureTime)
+    }
+
+    /**
+     * Reproduce https://github.com/OpenRailAssociation/osrd/issues/13628
+     *
+     * ```
+     * infra:            a ----------------> b -----> c -----> d
+     * speed limits:       [][                               ]
+     *                    1m/s             50m/s
+     * ```
+     *
+     * The train is extremely long and the speed limit *should* keep going for the entirety of the
+     * path. But for stdcm, we can't properly carry this data across blocks, so for consistency we
+     * dismiss speed limits as soon as the train head leaves it (instead of its tail).
+     *
+     * If we try to extend the speed limit, then mismatches will happen in the second block. During
+     * the exploration it will start at 1m/s, while in post-processing it will either start at high
+     * speed or remain at 1m/s for the entire path. Either way, the conflict halfway through the
+     * second block won't be properly timed.
+     */
+    @Test
+    fun reproduceMRSPMismatch() {
+        val infra = DummyInfra()
+        val firstBlockSpeedLimit =
+            distanceRangeMapOf(
+                DistanceRangeMap.RangeMapEntry(
+                    0.meters,
+                    1.meters,
+                    SpeedLimitProperty(1.0.metersPerSecond, null),
+                ),
+                DistanceRangeMap.RangeMapEntry(
+                    1.meters,
+                    10_000.meters,
+                    SpeedLimitProperty(50.0.metersPerSecond, null),
+                ),
+            )
+        val blocks =
+            listOf(
+                infra.addBlock(
+                    "a",
+                    "b",
+                    length = 10_000.meters,
+                    detailedSpeedLimits = firstBlockSpeedLimit,
+                ),
+                infra.addBlock("b", "c", length = 1_000.meters, allowedSpeed = 50.0),
+                infra.addBlock("c", "d", length = 1_000.meters, allowedSpeed = 50.0),
+            )
+        val occupancyGraph =
+            ImmutableMultimap.of(
+                blocks[1],
+                OccupancySegment(0.0, 11_000.0, 100.meters, 1_000.meters),
+            )
+        STDCMPathfindingBuilder()
+            .setInfra(infra.fullInfra())
+            .setStartLocations(
+                setOf(EdgeLocation(blocks[0], Offset(0.meters))),
+                PlannedTimingData(0.seconds, 0.seconds, 0.seconds),
+            )
+            .setEndLocations(setOf(EdgeLocation(blocks[2], Offset(1_000.meters))))
+            .setUnavailableTimes(occupancyGraph)
+            .setRollingStock(TestTrains.VERY_LONG_FAST_TRAIN)
+            .setMaxDepartureDelay(0.0)
+            .run()!!
     }
 }

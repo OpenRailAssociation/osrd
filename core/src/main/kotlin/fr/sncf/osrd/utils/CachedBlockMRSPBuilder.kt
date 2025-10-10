@@ -27,6 +27,7 @@ data class CachedBlockMRSPBuilder(
     private val rsLength: Double,
     private val speedLimitTag: String? = null,
     val temporarySpeedLimitManager: TemporarySpeedLimitManager = TemporarySpeedLimitManager(),
+    val addRollingStockLength: Boolean = true,
 ) {
     private val mrspCache = mutableMapOf<BlockId, Envelope>()
 
@@ -36,6 +37,7 @@ data class CachedBlockMRSPBuilder(
         rollingStock: PhysicsRollingStock?,
         speedLimitTag: String? = null,
         temporarySpeedLimitManager: TemporarySpeedLimitManager = TemporarySpeedLimitManager(),
+        addRollingStockLength: Boolean = true,
     ) : this(
         rawInfra,
         blockInfra,
@@ -43,6 +45,7 @@ data class CachedBlockMRSPBuilder(
         rollingStock?.length ?: 0.0,
         speedLimitTag,
         temporarySpeedLimitManager,
+        addRollingStockLength,
     )
 
     /** Returns the speed limits for the given block (cached). */
@@ -54,7 +57,7 @@ data class CachedBlockMRSPBuilder(
                 pathProps,
                 rsMaxSpeed,
                 rsLength,
-                addRollingStockLength = true,
+                addRollingStockLength = addRollingStockLength,
                 speedLimitTag,
                 temporarySpeedLimitManager,
             )

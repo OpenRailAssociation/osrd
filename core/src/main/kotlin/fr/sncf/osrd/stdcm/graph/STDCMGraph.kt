@@ -56,6 +56,7 @@ class STDCMGraph(
             rollingStock,
             speedLimitTag = tag,
             temporarySpeedLimitManager = temporarySpeedLimitManager,
+            addRollingStockLength = false,
         )
 
     // min 30s between two edges, determined empirically
