@@ -127,7 +127,7 @@ mod tests {
     use diesel::sql_types::Text;
     use diesel_async::RunQueryDsl;
     use pretty_assertions::assert_eq;
-    use rstest::rstest;
+
     use schemas::infra::Signal;
     use schemas::infra::SpeedSection;
     use schemas::infra::Switch;
@@ -156,7 +156,7 @@ mod tests {
         label: String,
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn valid_update_track() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let infra = create_empty_infra(&mut db_pool.get_ok()).await;
@@ -190,7 +190,7 @@ mod tests {
         assert_eq!(updated_length.val, 80.0);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn invalid_update_track() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let infra = create_empty_infra(&mut db_pool.get_ok()).await;
@@ -215,7 +215,7 @@ mod tests {
         );
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn valid_update_signal() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let infra = create_empty_infra(&mut db_pool.get_ok()).await;
@@ -248,7 +248,7 @@ mod tests {
         assert_eq!(updated_length.val, 15.0);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn valid_update_switch_extension() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let infra = create_empty_infra(&mut db_pool.get_ok()).await;
@@ -281,7 +281,7 @@ mod tests {
         assert_eq!(updated_comment.label, "Switch Label");
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn valid_update_speed() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let infra = create_empty_infra(&mut db_pool.get_ok()).await;
@@ -315,7 +315,7 @@ mod tests {
         assert_eq!(updated_speed.val, 80.0);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn wrong_id_update_track() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let infra = create_empty_infra(&mut db_pool.get_ok()).await;

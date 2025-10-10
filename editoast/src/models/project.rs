@@ -183,11 +183,10 @@ pub mod tests {
 
     use database::DbConnectionPoolV2;
     use pretty_assertions::assert_eq;
-    use rstest::rstest;
 
     use crate::models::fixtures::create_project;
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn project_creation() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let project_name = "test_project_name";
@@ -195,7 +194,7 @@ pub mod tests {
         assert_eq!(created_project.name, project_name);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn project_retrieve() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let created_project = create_project(&mut db_pool.get_ok(), "test_project_name").await;
@@ -209,7 +208,7 @@ pub mod tests {
         assert_eq!(&created_project, &project);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn project_update() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let mut created_project = create_project(&mut db_pool.get_ok(), "test_project_name").await;
@@ -234,7 +233,7 @@ pub mod tests {
         assert_eq!(project.budget, project_budget);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn sort_project() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let _created_project_1 = create_project(&mut db_pool.get_ok(), "test_project_name_1").await;

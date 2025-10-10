@@ -59,12 +59,11 @@ pub mod tests {
     use super::*;
 
     use database::DbConnectionPoolV2;
-    use rstest::rstest;
 
     use crate::models::fixtures::create_rolling_stock_livery_fixture;
     use editoast_models::Document;
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn create_delete_rolling_stock_livery() {
         let db_pool = DbConnectionPoolV2::for_tests();
 

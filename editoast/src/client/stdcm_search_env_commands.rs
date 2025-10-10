@@ -327,6 +327,7 @@ mod tests {
     }
 
     #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     #[case::both_none(
         None,
         None,
@@ -382,7 +383,7 @@ mod tests {
         assert_eq!(end, expected_end);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn fail_resolve_search_window_on_empty_timetable() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let conn = &mut db_pool.get_ok();
@@ -397,6 +398,7 @@ mod tests {
     }
 
     #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     #[case::both_some(
         Some(make_datetime("2000-02-01 08:00:00Z")),
         Some(make_datetime("2000-02-01 00:00:00Z"))
@@ -426,7 +428,7 @@ mod tests {
         );
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn test_stdcm_set_search_env_from_scenario_with_perimeter() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let conn = &mut db_pool.get_ok();
@@ -507,7 +509,7 @@ mod tests {
         );
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn test_set_stdcm_search_env_from_scratch() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let conn = &mut db_pool.get_ok();

@@ -331,13 +331,12 @@ pub mod tests {
     use chrono::TimeZone;
     use chrono::Utc;
     use pretty_assertions::assert_eq;
-    use rstest::rstest;
 
     use super::*;
     use crate::models::stdcm_search_environment::tests::stdcm_search_env_fixtures;
     use crate::views::test_app::TestAppBuilder;
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn create_stdcm_search_env() {
         // GIVEN
         let app = TestAppBuilder::default_app();
@@ -388,7 +387,7 @@ pub mod tests {
         assert_eq!(stdcm_search_env, stdcm_search_env_in_db);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn create_stdcm_search_env_with_bad_default_speed_limit_tag() {
         // GIVEN
         let app = TestAppBuilder::default_app();
@@ -429,7 +428,7 @@ pub mod tests {
             .assert_status(StatusCode::UNPROCESSABLE_ENTITY);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn retrieve_stdcm_search_env() {
         // GIVEN
         let app = TestAppBuilder::default_app();
@@ -487,7 +486,7 @@ pub mod tests {
         assert_eq!(stdcm_search_env.enabled_until, enabled_until);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn retrieve_stdcm_search_env_not_found() {
         // GIVEN
         let app = TestAppBuilder::default_app();
@@ -505,7 +504,7 @@ pub mod tests {
         response.assert_status(StatusCode::NO_CONTENT);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn delete_stdcm_search_env() {
         // GIVEN
         let app = TestAppBuilder::default_app();
@@ -546,7 +545,7 @@ pub mod tests {
         assert_eq!(deleted_env_exists, false);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn list_stdcm_search_env() {
         // GIVEN
         let app = TestAppBuilder::default_app();

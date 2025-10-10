@@ -206,7 +206,6 @@ impl From<schemas::RollingStock> for RollingStockChangeset {
 pub mod tests {
     use editoast_models::rolling_stock::TrainMainCategories;
     use editoast_models::rolling_stock::TrainMainCategory;
-    use rstest::rstest;
 
     use super::RollingStock;
     use crate::models::fixtures::create_fast_rolling_stock;
@@ -216,7 +215,7 @@ pub mod tests {
     use database::DbConnectionPoolV2;
     use editoast_models::prelude::*;
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn update_rolling_stock() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let rs_name = "fast_rolling_stock_name";
@@ -242,7 +241,7 @@ pub mod tests {
         assert_eq!(updated_rolling_stock.name, rs_name_with_energy_sources_name);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn update_rolling_stock_failure_name_already_used() {
         let db_pool = DbConnectionPoolV2::for_tests();
 
@@ -271,7 +270,7 @@ pub mod tests {
         );
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn test_primary_category_with_empty_other_categories() {
         let db_pool = DbConnectionPoolV2::for_tests();
 
@@ -288,7 +287,7 @@ pub mod tests {
         );
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn create_rolling_stock_with_categories() {
         let db_pool = DbConnectionPoolV2::for_tests();
 

@@ -302,7 +302,7 @@ impl Infra {
 #[cfg(test)]
 pub mod tests {
     use pretty_assertions::assert_eq;
-    use rstest::rstest;
+
     use schemas::infra::BufferStop;
     use schemas::infra::Detector;
     use schemas::infra::Electrification;
@@ -328,7 +328,7 @@ pub mod tests {
     use database::DbConnectionPoolV2;
     use editoast_models::prelude::*;
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn create_infra() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let infra = create_empty_infra(&mut db_pool.get_ok()).await;
@@ -340,7 +340,7 @@ pub mod tests {
         assert!(!infra.locked);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     // PostgreSQL deadlock can happen in this test, see section `Deadlock` of [DbConnectionPoolV2::get] for more information
     async fn clone_infra_with_new_name_returns_new_cloned_infra() {
         // GIVEN
@@ -360,7 +360,7 @@ pub mod tests {
         assert!(old_modification_date < result.modified);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn persists_railjson_ko_version() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let railjson_with_invalid_version = RailJson {
@@ -394,7 +394,7 @@ pub mod tests {
         assert!(infra.modified > old);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn persist_railjson_ok() {
         // GIVEN
         let railjson = RailJson {

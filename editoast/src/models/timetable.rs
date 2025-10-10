@@ -174,7 +174,7 @@ pub mod tests {
     use chrono::TimeZone;
     use chrono::Utc;
     use pretty_assertions::assert_eq;
-    use rstest::rstest;
+
     use std::collections::HashSet;
 
     use super::*;
@@ -183,7 +183,7 @@ pub mod tests {
     use crate::models::train_schedule::TrainScheduleChangeset;
     use database::DbConnectionPoolV2;
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn test_schedules_in_time_window() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let timetable = create_timetable(&mut db_pool.get_ok()).await;

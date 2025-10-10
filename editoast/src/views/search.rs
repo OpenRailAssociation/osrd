@@ -800,7 +800,7 @@ pub mod tests {
 
     use axum::http::StatusCode;
     use pretty_assertions::assert_eq;
-    use rstest::rstest;
+
     use serde_json::json;
 
     use super::*;
@@ -808,7 +808,7 @@ pub mod tests {
     use crate::models::fixtures::create_timetable;
     use crate::views::test_app::TestAppBuilder;
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn search_trainschedule_post_found() {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();
@@ -834,7 +834,7 @@ pub mod tests {
         assert_eq!(response[0].train_name, train.train_name);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn search_trainschedule_post_not_found() {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();

@@ -243,7 +243,7 @@ mod tests {
     use core_client::path_properties::PropertyValuesF64;
     use core_client::path_properties::PropertyZoneValues;
     use pretty_assertions::assert_eq;
-    use rstest::rstest;
+
     use serde_json::json;
 
     use super::PathProperties;
@@ -278,7 +278,7 @@ mod tests {
         TestAppBuilder::new().core_client(core.into()).build()
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn returns_all_path_properties() {
         let app = init_test_app();
         let infra = create_small_infra(&mut app.db_pool().get_ok()).await;
@@ -306,7 +306,7 @@ mod tests {
         );
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn returns_only_requested_path_properties() {
         let app = init_test_app();
         let infra = create_small_infra(&mut app.db_pool().get_ok()).await;

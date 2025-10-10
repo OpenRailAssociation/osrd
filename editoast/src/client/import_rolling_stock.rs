@@ -124,7 +124,6 @@ mod tests {
 
         use common::units;
         use database::DbConnectionPoolV2;
-        use rstest::rstest;
 
         fn get_fast_rolling_stock_schema(name: &str) -> schemas::RollingStock {
             let mut rolling_stock_form: schemas::RollingStock =
@@ -134,7 +133,7 @@ mod tests {
             rolling_stock_form
         }
 
-        #[rstest]
+        #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
         async fn import_rolling_stock_ko_file_not_found() {
             // GIVEN
             let db_pool = DbConnectionPoolV2::for_tests();
@@ -150,7 +149,7 @@ mod tests {
             assert!(result.is_err())
         }
 
-        #[rstest]
+        #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
         async fn import_non_electric_rs_without_startup_and_panto_values() {
             // GIVEN
             let db_pool = DbConnectionPoolV2::for_tests();
@@ -181,7 +180,7 @@ mod tests {
             assert!(created_rs.is_some());
         }
 
-        #[rstest]
+        #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
         async fn import_non_electric_rs_with_startup_and_panto_values() {
             // GIVEN
             let db_pool = DbConnectionPoolV2::for_tests();
@@ -216,7 +215,7 @@ mod tests {
             assert!(raise_pantograph_time.is_some());
         }
 
-        #[rstest]
+        #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
         async fn import_electric_rs_without_startup_and_panto_values() {
             // GIVEN
             let db_pool = DbConnectionPoolV2::for_tests();
@@ -247,7 +246,7 @@ mod tests {
             assert!(created_rs.is_none());
         }
 
-        #[rstest]
+        #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
         async fn import_electric_rs_with_startup_and_panto_values() {
             // GIVEN
             let db_pool = DbConnectionPoolV2::for_tests();
@@ -280,7 +279,7 @@ mod tests {
             assert!(raise_pantograph_time.is_some());
         }
 
-        #[rstest]
+        #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
         async fn import_existing_rolling_stock_without_force() {
             // GIVEN
             let db_pool = DbConnectionPoolV2::for_tests();
@@ -323,7 +322,7 @@ mod tests {
             assert!(rolling_stock.unwrap().length == units::meter::new(400.0));
         }
 
-        #[rstest]
+        #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
         async fn import_existing_rolling_stock_with_force() {
             // GIVEN
             let db_pool = DbConnectionPoolV2::for_tests();
@@ -372,9 +371,8 @@ mod tests {
         use crate::client::generate_temp_file;
 
         use database::DbConnectionPoolV2;
-        use rstest::rstest;
 
-        #[rstest]
+        #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
         async fn import_towed_rolling_stock_ko_file_not_found() {
             // GIVEN
             let db_pool = DbConnectionPoolV2::for_tests();
@@ -390,7 +388,7 @@ mod tests {
             assert!(result.is_err())
         }
 
-        #[rstest]
+        #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
         async fn import_valid_towed_rolling_stock() {
             // GIVEN
             let db_pool = DbConnectionPoolV2::for_tests();

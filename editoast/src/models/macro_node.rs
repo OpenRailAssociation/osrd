@@ -28,11 +28,10 @@ pub mod test {
     use database::DbConnectionPoolV2;
     use editoast_models::prelude::*;
     use pretty_assertions::assert_eq;
-    use rstest::rstest;
 
     use crate::models::fixtures::create_scenario_fixtures_set;
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn macro_node_create_and_get() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let fixtures =

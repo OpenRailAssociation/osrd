@@ -514,7 +514,7 @@ pub mod tests {
     use core_client::pathfinding::PathfindingResultSuccess;
     use core_client::pathfinding::TrainPath;
     use pretty_assertions::assert_eq;
-    use rstest::rstest;
+
     use schemas::train_schedule::OperationalPointIdentifier;
     use schemas::train_schedule::OperationalPointReference;
     use schemas::train_schedule::PathItemLocation;
@@ -526,7 +526,7 @@ pub mod tests {
     use crate::views::path::pathfinding::PathfindingResult;
     use crate::views::test_app::TestAppBuilder;
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn pathfinding_fails_when_core_responds_with_zero_length_path() {
         let mut core = MockingClient::new();
         core.stub("/pathfinding/blocks")
@@ -571,7 +571,7 @@ pub mod tests {
         );
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn pathfinding_with_invalid_path_items_returns_invalid_path_items() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
@@ -617,7 +617,7 @@ pub mod tests {
         );
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn pathfinding_with_invalid_path_items_due_to_track_reference() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
@@ -663,7 +663,7 @@ pub mod tests {
         );
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn pathfinding_with_valid_path_items_returns_successful_result() {
         let mut core = MockingClient::new();
         core.stub("/pathfinding/blocks")

@@ -807,7 +807,7 @@ mod tests {
         );
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn stdcm_return_success() {
         let mut core = core_mocking_client();
         core.stub("/stdcm")
@@ -850,7 +850,7 @@ mod tests {
         }
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn stdcm_request_mass_validation() {
         let mut core = core_mocking_client();
         core.stub("/stdcm")
@@ -890,7 +890,7 @@ mod tests {
         );
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn stdcm_request_length_validation() {
         let mut core = core_mocking_client();
         core.stub("/stdcm")
@@ -932,7 +932,7 @@ mod tests {
         assert_eq!(stdcm_response.context["expected_min"].as_f64(), Some(400.0));
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn stdcm_request_validation_success() {
         let mut core = core_mocking_client();
         core.stub("/stdcm")
@@ -982,7 +982,7 @@ mod tests {
         }
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn stdcm_fails() {
         let mut core = core_mocking_client();
         core.stub("/stdcm")

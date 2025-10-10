@@ -1004,7 +1004,7 @@ pub mod tests {
         }
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn infra_clone_empty() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
@@ -1027,7 +1027,7 @@ pub mod tests {
         nb: i64,
     }
 
-    #[rstest] // Slow test
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn infra_clone() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
@@ -1100,7 +1100,7 @@ pub mod tests {
         }
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn infra_delete() {
         let pool = DbConnectionPoolV2::for_tests();
         let app = TestAppBuilder::new()
@@ -1117,14 +1117,14 @@ pub mod tests {
             .assert_status(StatusCode::NOT_FOUND);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn infra_list() {
         let app = TestAppBuilder::default_app();
         let request = app.get("/infra/");
         app.fetch(request).assert_status(StatusCode::OK);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn default_infra_create() {
         let app = TestAppBuilder::default_app();
 
@@ -1143,7 +1143,7 @@ pub mod tests {
         assert!(!infra.locked);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn infra_get() {
         let core_client = CoreClient::Mocked(MockingClient::default());
 
@@ -1162,7 +1162,7 @@ pub mod tests {
         app.fetch(req).assert_status(StatusCode::NOT_FOUND);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn infra_rename() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
@@ -1182,7 +1182,7 @@ pub mod tests {
         infra_refreshed: Vec<i64>,
     }
 
-    #[rstest]
+    #[rstest] // TODO: fix deadlock with tokio::test
     async fn infra_refresh() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
@@ -1195,7 +1195,7 @@ pub mod tests {
         assert_eq!(refreshed_infras.infra_refreshed, vec![empty_infra.id]);
     }
 
-    #[rstest]
+    #[rstest] // TODO: fix deadlock with tokio::test
     // Slow test
     // PostgreSQL deadlock can happen in this test, see section `Deadlock` of [DbConnectionPoolV2::get] for more information
     async fn infra_refresh_force() {
@@ -1210,7 +1210,7 @@ pub mod tests {
         assert!(refreshed_infras.infra_refreshed.contains(&empty_infra.id));
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn infra_get_speed_limit_tags() {
         let app = TestAppBuilder::default_app();
         let builtin_tags = app.speed_limit_tag_ids();
@@ -1237,7 +1237,7 @@ pub mod tests {
         assert_eq!(speed_limit_tags.sort(), test_tags.sort());
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn infra_get_all_voltages() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
@@ -1283,6 +1283,7 @@ pub mod tests {
     }
 
     #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     #[case(true)]
     #[case(false)]
     async fn infra_get_voltages(#[case] include_rolling_stock_modes: bool) {
@@ -1327,7 +1328,7 @@ pub mod tests {
         }
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn infra_get_switch_types() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
@@ -1341,7 +1342,7 @@ pub mod tests {
         assert_eq!(switch_types.len(), 5);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn infra_lock() {
         let core_client = CoreClient::Mocked(MockingClient::default());
 
@@ -1374,7 +1375,7 @@ pub mod tests {
         assert!(!infra.locked);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn match_operational_points() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
@@ -1446,7 +1447,7 @@ pub mod tests {
         assert_eq!(response.track_names, expected_track_names);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn match_operational_point_input_with_incompatible_op_id_and_track_reference_gets_filtered_out()
      {
         let app = TestAppBuilder::default_app();

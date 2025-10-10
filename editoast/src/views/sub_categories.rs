@@ -223,7 +223,7 @@ pub mod tests {
     use axum::http::StatusCode;
     use editoast_models::rolling_stock::TrainMainCategory;
     use pretty_assertions::assert_eq;
-    use rstest::rstest;
+
     use schemas::rolling_stock::SubCategory;
     use serde_json::json;
 
@@ -236,7 +236,7 @@ pub mod tests {
     use crate::views::test_app::TestAppBuilder;
     use editoast_models::prelude::*;
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn sub_category_post() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
@@ -288,7 +288,7 @@ pub mod tests {
         assert_eq!(created_sub_category2, &sub_category_2);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn sub_category_duplicated_post() {
         let app = TestAppBuilder::default_app();
 
@@ -314,7 +314,7 @@ pub mod tests {
         app.fetch(request).assert_status(StatusCode::BAD_REQUEST);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn sub_category_get() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
@@ -344,7 +344,7 @@ pub mod tests {
         );
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn sub_category_delete() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();

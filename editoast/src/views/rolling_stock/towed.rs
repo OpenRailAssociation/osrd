@@ -288,7 +288,7 @@ mod tests {
     use axum::http::StatusCode;
     use common::units;
     use editoast_models::TowedRollingStock;
-    use rstest::rstest;
+
     use serde_json::json;
     use uuid::Uuid;
 
@@ -322,7 +322,7 @@ mod tests {
         app.fetch(request).assert_status(StatusCode::OK).json_into()
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn create_and_list_towed_rolling_stock() {
         let app = TestAppBuilder::default_app();
 
@@ -345,7 +345,7 @@ mod tests {
         );
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn get_unknown_towed_rolling_stock() {
         let app = TestAppBuilder::default_app();
 
@@ -355,7 +355,7 @@ mod tests {
             .assert_status(StatusCode::NOT_FOUND);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn create_and_get_towed_rolling_stock() {
         let app = TestAppBuilder::default_app();
 
@@ -374,7 +374,7 @@ mod tests {
         assert_eq!(get_towed_rolling_stock, created_towed_rolling_stock);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn modify_unknown_towed_rolling_stock() {
         let app = TestAppBuilder::default_app();
 
@@ -389,7 +389,7 @@ mod tests {
         .assert_status(StatusCode::NOT_FOUND);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn modify_towed_rolling_stock() {
         let app = TestAppBuilder::default_app();
 
@@ -413,7 +413,7 @@ mod tests {
         );
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn modify_lock_on_unknown_towed_rolling_stock() {
         let app = TestAppBuilder::default_app();
 
@@ -425,7 +425,7 @@ mod tests {
         .assert_status(StatusCode::NOT_FOUND);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn modify_locked_towed_rolling_stock_fails() {
         let app = TestAppBuilder::default_app();
 
@@ -441,7 +441,7 @@ mod tests {
         .assert_status(StatusCode::CONFLICT);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn modify_locked_towed_rolling_stock_after_unlocked() {
         let app = TestAppBuilder::default_app();
 

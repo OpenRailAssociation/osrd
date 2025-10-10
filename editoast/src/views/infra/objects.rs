@@ -173,7 +173,7 @@ pub(in crate::views) async fn list_objects_ids(
 mod tests {
     use axum::http::StatusCode;
     use pretty_assertions::assert_eq;
-    use rstest::rstest;
+
     use schemas::primitives::Identifier;
     use serde_json::Value as JsonValue;
     use serde_json::json;
@@ -186,7 +186,7 @@ mod tests {
     use schemas::infra::SwitchType;
     use schemas::primitives::OSRDIdentified;
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn check_invalid_ids() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
@@ -199,7 +199,7 @@ mod tests {
         app.fetch(request).assert_status(StatusCode::BAD_REQUEST);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn get_objects_no_ids() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
@@ -212,7 +212,7 @@ mod tests {
         app.fetch(request).assert_status(StatusCode::OK);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn get_objects_should_return_switch() {
         // GIVEN
         let app = TestAppBuilder::default_app();
@@ -256,7 +256,7 @@ mod tests {
         assert_eq!(switch_object, expected_switch_object);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn get_objects_duplicate_ids() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
@@ -269,7 +269,7 @@ mod tests {
         app.fetch(request).assert_status(StatusCode::BAD_REQUEST);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn get_switch_types() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
@@ -303,7 +303,7 @@ mod tests {
         assert_eq!(switch_type_object, expected_switch_type_object);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn test_list_ids() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();

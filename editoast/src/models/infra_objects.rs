@@ -298,7 +298,7 @@ mod tests_persist {
 
     macro_rules! test_persist {
         ($obj:ident, $test_fn:ident) => {
-            #[rstest::rstest]
+            #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
             async fn $test_fn() {
                 let db_pool = database::DbConnectionPoolV2::for_tests();
                 let infra =
@@ -331,12 +331,11 @@ mod tests_persist {
 mod tests_retrieve {
     use database::DbConnectionPoolV2;
     use pretty_assertions::assert_eq;
-    use rstest::rstest;
 
     use super::*;
     use crate::models::fixtures::create_small_infra;
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn from_trigrams() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
@@ -353,7 +352,7 @@ mod tests_retrieve {
         assert_eq!(res.len(), 2);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn from_uic() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;

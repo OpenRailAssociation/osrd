@@ -139,12 +139,11 @@ pub(in crate::views) async fn query_errors(
 #[cfg(test)]
 mod tests {
     use axum::http::StatusCode;
-    use rstest::rstest;
 
     use crate::models::fixtures::create_empty_infra;
     use crate::views::test_app::TestAppBuilder;
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn list_errors_get() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();

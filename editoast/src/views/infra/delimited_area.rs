@@ -514,7 +514,7 @@ mod tests {
     use crate::views::infra::delimited_area::DelimitedAreaResponse;
     use crate::views::test_app::TestAppBuilder;
     use axum::http::StatusCode;
-    use rstest::rstest;
+
     use schemas::infra::Direction;
     use schemas::infra::DirectionalTrackRange;
     use serde_json::json;
@@ -544,7 +544,7 @@ mod tests {
         track_ranges
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn same_track_start_to_stop() {
         let entries = vec![DirectedLocation {
             track: "TH1".into(),
@@ -566,7 +566,7 @@ mod tests {
         assert_eq!(expected_track_ranges, retrieved_track_ranges);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn same_track_stop_to_start() {
         let entries = vec![DirectedLocation {
             track: "TH1".into(),
@@ -588,7 +588,7 @@ mod tests {
         assert_eq!(expected_track_ranges, retrieved_track_ranges);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn tunnel_on_two_tracks() {
         let entries = vec![DirectedLocation {
             track: "TF1".into(),
@@ -618,7 +618,7 @@ mod tests {
         assert_eq!(expected_track_ranges, retrieved_track_ranges);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn both_point_switch_directions_get_explored() {
         let entries = vec![DirectedLocation {
             track: "TG1".into(),
@@ -663,7 +663,7 @@ mod tests {
         assert_eq!(expected_track_ranges, retrieved_track_ranges);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn multiple_isolated_entry_signals() {
         let entries = vec![
             DirectedLocation {
@@ -732,7 +732,7 @@ mod tests {
         assert_eq!(expected_track_ranges, retrieved_track_ranges);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn signals_facing_opposite_direction_are_ignored() {
         let entries = vec![DirectedLocation {
             track: "TF1".into(),
@@ -769,7 +769,7 @@ mod tests {
         assert_eq!(expected_track_ranges, retrieved_track_ranges);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn track_range_is_built_from_the_closest_exit() {
         let entries = vec![DirectedLocation {
             track: "TF1".into(),
@@ -806,7 +806,7 @@ mod tests {
         assert_eq!(expected_track_ranges, retrieved_track_ranges);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn exit_before_entry_is_ignored() {
         // The graph exploration should not stop if there is an exit signal on the same track
         // as the entry signal when the exit signal is behind the entry signal.
@@ -845,7 +845,7 @@ mod tests {
         assert_eq!(expected_track_ranges, retrieved_track_ranges);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn closest_exit_ignores_exits_before_entry() {
         // If the LTV is a single track range, it should ignore the signals behind it when
         // checking which one is the closest.
@@ -876,7 +876,7 @@ mod tests {
         assert_eq!(expected_track_ranges, retrieved_track_ranges);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn exploration_stops_when_resume_signal_is_missing_and_maximum_distance_is_reached() {
         let entries = vec![DirectedLocation {
             track: "TE0".into(),
@@ -909,14 +909,14 @@ mod tests {
         assert_eq!(expected_track_ranges, retrieved_track_ranges);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     #[ignore]
     async fn track_section_can_be_explored_in_both_directions() {
         // TODO find a way to test it on small_infra or make a specific infra for this test
         todo!()
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     #[ignore]
     async fn adjacent_track_ranges_are_merged() {
         // If two directional track ranges are adjacent and have the same direction,
@@ -925,7 +925,7 @@ mod tests {
         unimplemented!();
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     #[ignore]
     async fn request_with_invalid_locations_is_rejected() {
         // Invalid locations (invalid track number, location position not on the track...)

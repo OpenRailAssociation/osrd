@@ -977,6 +977,7 @@ mod tests {
     }
 
     #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     // MWS(33):stop  MES(44):passing_by  NS(55):stop
     #[case(
         vec![
@@ -1045,6 +1046,7 @@ mod tests {
     }
 
     #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     // Different rolling stock
     #[case(
         1,
@@ -1150,7 +1152,7 @@ mod tests {
         assert_eq!(response, Response { similar_trains });
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn compound_similar_trains() {
         let mut core = MockingClient::new();
         core.stub("/pathfinding/blocks")
@@ -1287,7 +1289,7 @@ mod tests {
         assert_eq!(response, expected_response);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn test_select_single_train_without_merging_consecutive_segments() {
         let mut core = MockingClient::new();
         core.stub("/pathfinding/blocks")
@@ -1469,7 +1471,7 @@ mod tests {
         assert_eq!(response, expected_response);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn no_similar_trains_for_some_segments() {
         let mut core = MockingClient::new();
         core.stub("/pathfinding/blocks")
@@ -1659,7 +1661,7 @@ mod tests {
         ));
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn test_similar_trains_by_relaxing_name_criterion() {
         let mut core = MockingClient::new();
         core.stub("/pathfinding/blocks")

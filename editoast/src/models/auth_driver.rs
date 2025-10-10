@@ -255,7 +255,7 @@ mod tests {
     use super::*;
     use database::DbConnectionPoolV2;
 
-    #[rstest::rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn test_auth_driver() {
         let pool = DbConnectionPoolV2::for_tests();
         let driver = PgAuthDriver::new(pool.into());

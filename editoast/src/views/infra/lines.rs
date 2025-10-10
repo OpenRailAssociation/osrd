@@ -93,7 +93,7 @@ mod tests {
     use axum::http::StatusCode;
     use geos::geojson::Geometry;
     use pretty_assertions::assert_eq;
-    use rstest::rstest;
+
     use schemas::infra::TrackSectionSncfExtension;
     use schemas::primitives::Identifier;
     use serde_json::json;
@@ -106,7 +106,7 @@ mod tests {
     use schemas::infra::TrackSectionExtensions;
     use schemas::primitives::BoundingBox;
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn returns_correct_bbox_for_existing_line_code() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
@@ -150,7 +150,7 @@ mod tests {
         );
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn returns_bad_request_when_line_code_not_found() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();

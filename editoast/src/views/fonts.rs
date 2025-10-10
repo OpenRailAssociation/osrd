@@ -53,9 +53,8 @@ mod tests {
     use crate::views::test_app::TestAppBuilder;
 
     use axum::http::StatusCode;
-    use rstest::rstest;
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn test_font() {
         let app = TestAppBuilder::default_app();
         let request = app.get("/fonts/IBMPlexSans/0-255.pbf");
@@ -71,7 +70,7 @@ mod tests {
         assert_eq!(response, expected);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn test_font_not_found() {
         let app = TestAppBuilder::default_app();
         let request = app.get("/fonts/Comic%20Sans/0-255.pbf");

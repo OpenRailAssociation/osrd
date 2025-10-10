@@ -438,7 +438,7 @@ mod tests {
         }
     }
 
-    #[rstest]
+    #[tokio::test]
     async fn paced_train_main_category_apply_exception() {
         let mut exception = create_created_exception_with_change_groups("key_1");
 
@@ -462,6 +462,7 @@ mod tests {
     }
 
     #[rstest]
+    #[tokio::test]
     #[case::created(create_created_exception_with_change_groups("key_1"))]
     #[case::modified(create_modified_exception_with_change_groups("key_2", 0))]
     async fn paced_train_apply_exception(#[case] exception: PacedTrainException) {
@@ -524,13 +525,13 @@ mod tests {
         );
     }
 
-    #[rstest]
+    #[tokio::test]
     async fn num_base_occurrences_without_exceptions() {
         let paced_train = create_paced_train(vec![]);
         assert_eq!(paced_train.num_base_occurrences(), 4);
     }
 
-    #[rstest]
+    #[tokio::test]
     async fn num_base_occurrences_with_exceptions() {
         let paced_train = create_paced_train(vec![
             create_created_exception_with_change_groups("key_2"),
@@ -539,7 +540,7 @@ mod tests {
         assert_eq!(paced_train.num_base_occurrences(), 4);
     }
 
-    #[rstest]
+    #[tokio::test]
     async fn iter_occurrences_with_exceptions() {
         let exception_1 = create_modified_exception_with_change_groups("key_1", 1);
         let exception_2 = create_created_exception_with_change_groups("key_2");
@@ -605,7 +606,7 @@ mod tests {
         );
     }
 
-    #[rstest]
+    #[tokio::test]
     async fn iter_occurrences_with_modified_start_time_exception() {
         let mut exception_1 = create_modified_exception_with_change_groups("key_1", 1);
         exception_1.start_time = Some(StartTimeChangeGroup {
@@ -670,7 +671,7 @@ mod tests {
         );
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn paced_train_both_categories_check_post() {
         let pool = DbConnectionPoolV2::for_tests();
 

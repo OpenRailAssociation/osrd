@@ -590,6 +590,7 @@ mod tests {
     use std::collections::HashSet;
 
     use axum::http::StatusCode;
+    use rstest::rstest;
 
     use crate::models::fixtures::create_empty_infra;
     use crate::views::test_app::test_app;
@@ -598,7 +599,7 @@ mod tests {
     use crate::models::fixtures::create_small_infra;
     use crate::views::test_app::TestRequestExt;
     use pretty_assertions::assert_eq;
-    use rstest::rstest;
+
     use serde_json::json;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -760,7 +761,7 @@ mod tests {
         );
     }
 
-    #[rstest]
+    #[rstest] // TODO: fix deadlock with tokio::test
     async fn user_me_grants() {
         let app = test_app!().enable_authorization(true).build();
         let db_pool = app.db_pool();
@@ -810,7 +811,7 @@ mod tests {
         );
     }
 
-    #[rstest]
+    #[rstest] // TODO: fix deadlock with tokio::test
     async fn users_grants_for_resource_id_test() {
         // This test start with an infra with one owner, one writer, and 5 readers
         let app = test_app!().enable_authorization(true).build();
@@ -860,7 +861,7 @@ mod tests {
         assert_eq!(subjects.len(), 1);
     }
 
-    #[rstest]
+    #[rstest] // TODO: fix deadlock with tokio::test
     async fn groups_grants_on_resource() {
         let app = test_app!().enable_authorization(true).build();
         let infra = create_small_infra(&mut app.db_pool().get_ok()).await;
@@ -911,7 +912,7 @@ mod tests {
         assert_eq!(grants.get(&tom_and_jerry.id), None); // no group grant (not even there in the response)
     }
 
-    #[rstest]
+    #[rstest] // TODO: fix deadlock with tokio::test
     async fn grants_test() {
         // This test starts with a user that is the owner of an infra.
         // Then it creates a new user and adds it as a writer to the infra.
@@ -959,7 +960,7 @@ mod tests {
         app.assert_infra_direct_grant(infra.id, writer.id, None);
     }
 
-    #[rstest]
+    #[rstest] // TODO: fix deadlock with tokio::test
     async fn give_grant_to_groups() {
         let app = test_app!().enable_authorization(true).build();
         let infra = create_small_infra(&mut app.db_pool().get_ok()).await;
@@ -1013,7 +1014,7 @@ mod tests {
         app.assert_infra_direct_grant(infra.id, bob.id, Some(InfraGrant::Reader)); // bob's direct grant is still there
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn adding_a_grant_that_already_exists() {
         let app = test_app!().enable_authorization(true).build();
         let db_pool = app.db_pool();
@@ -1038,7 +1039,7 @@ mod tests {
         app.fetch(request_revoke).assert_status(StatusCode::CREATED);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn remove_a_grant_that_doesnt_exists() {
         let app = test_app!().enable_authorization(true).build();
         let db_pool = app.db_pool();
@@ -1065,7 +1066,7 @@ mod tests {
             .assert_status(StatusCode::NO_CONTENT);
     }
 
-    #[rstest]
+    #[rstest] // TODO: fix deadlock with tokio::test
     async fn whoami_test() {
         let app = test_app!().enable_authorization(true).build();
         let user = app
@@ -1089,7 +1090,7 @@ mod tests {
         );
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn whoami_authorization_disabled() {
         let app = test_app!().enable_authorization(false).build();
         let user = app.user("test", "test").create();
@@ -1103,7 +1104,7 @@ mod tests {
         assert_eq!(roles, vec![Role::Admin]);
     }
 
-    #[rstest]
+    #[rstest] // TODO: fix deadlock with tokio::test
     async fn user_groups_test() {
         let app = test_app!().enable_authorization(true).build();
         let user_1 = app.user("test1", "test1").create();
@@ -1150,7 +1151,7 @@ mod tests {
         );
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn user_groups_authorization_disabled() {
         let app = test_app!().enable_authorization(false).build();
         let user = app.user("test", "test").create();

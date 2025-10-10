@@ -218,7 +218,6 @@ pub(in crate::views) async fn post_railjson(
 #[cfg(test)]
 mod tests {
     use pretty_assertions::assert_eq;
-    use rstest::rstest;
 
     use super::*;
     use crate::infra_cache::operation::create::apply_create_operation;
@@ -227,7 +226,7 @@ mod tests {
     use schemas::infra::RAILJSON_VERSION;
     use schemas::infra::SwitchType;
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     // PostgreSQL deadlock can happen in this test, see section `Deadlock` of [DbConnectionPoolV2::get] for more information
     async fn test_get_railjson() {
         let app = TestAppBuilder::default_app();
@@ -250,7 +249,7 @@ mod tests {
         assert_eq!(railjson.extended_switch_types.len(), 1);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     // PostgreSQL deadlock can happen in this test, see section `Deadlock` of [DbConnectionPoolV2::get] for more information
     async fn test_post_railjson() {
         let app = TestAppBuilder::default_app();

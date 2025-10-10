@@ -50,7 +50,7 @@ pub mod tests {
 
     macro_rules! test_create_object {
         ($obj:ident, $test_fn:ident) => {
-            #[rstest::rstest]
+            #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
             async fn $test_fn() {
                 let db_pool = database::DbConnectionPoolV2::for_tests();
                 let infra =
