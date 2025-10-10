@@ -802,7 +802,8 @@ mod tests {
             .group("Group")
             .with_members([&user])
             .with_infra_grant(infra.id, InfraGrant::Writer)
-            .create();
+            .create()
+            .await;
         tracing::warn!("second call");
 
         // Ask the grant of the user for the infra again
@@ -905,11 +906,13 @@ mod tests {
             .group("Alice and Bob")
             .with_members([&alice, &bob])
             .with_infra_grant(infra.id, InfraGrant::Writer)
-            .create();
+            .create()
+            .await;
         let tom_and_jerry = app
             .group("Tom and Jerry")
             .with_members([&tom, &jerry])
-            .create();
+            .create()
+            .await;
 
         let SubjectsWithGrantOnResource { subjects, .. } = app
             .fetch(
@@ -998,7 +1001,8 @@ mod tests {
         let alice_and_bob = app
             .group("Alice and Bob")
             .with_members([&alice, &bob])
-            .create();
+            .create()
+            .await;
 
         app.fetch(app.post("/authz/grants").by_user(&alice).json(&json!({
             "grant": [
@@ -1079,7 +1083,8 @@ mod tests {
             .user("owner", "Owner")
             .with_roles([Role::OperationalStudies])
             .with_infra_grant(infra.id, InfraGrant::Owner)
-            .create();
+            .create()
+            .await;
 
         let other = app.user("other", "Other").create().await;
 
@@ -1147,8 +1152,9 @@ mod tests {
         let group_1 = app
             .group("group_1")
             .with_members([&user_1, &user_2])
-            .create();
-        let group_2 = app.group("group_2").with_members([&user_1]).create();
+            .create()
+            .await;
+        let group_2 = app.group("group_2").with_members([&user_1]).create().await;
 
         let request_1 = app.get("/authz/me/groups").by_user(&user_1);
         let request_2 = app.get("/authz/me/groups").by_user(&user_2);

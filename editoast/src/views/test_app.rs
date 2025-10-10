@@ -560,7 +560,7 @@ impl<'a> GroupBuilder<'a> {
         self
     }
 
-    pub fn create(self) -> authz::identity::Group {
+    pub async fn create(self) -> authz::identity::Group {
         let Self {
             app,
             info,
@@ -577,41 +577,39 @@ impl<'a> GroupBuilder<'a> {
         }
         let regulator = &app.app_state.regulator;
 
-        block_on(async move {
-            let id = regulator
-                .driver()
-                .ensure_group(&info)
+        let id = regulator
+            .driver()
+            .ensure_group(&info)
+            .await
+            .expect("Group should be created successfully");
+        let group = authz::identity::Group { id, info };
+        if !authz_disabled {
+            let group_auth = authz::Group(group.id);
+            regulator
+                .grant_group_roles(&group_auth, roles)
                 .await
-                .expect("Group should be created successfully");
-            let group = authz::identity::Group { id, info };
-            if !authz_disabled {
-                let group = authz::Group(group.id);
-                regulator
-                    .grant_group_roles(&group, roles)
-                    .await
-                    .expect("roles should be granted successfully");
+                .expect("roles should be granted successfully");
 
-                regulator
-                    .add_members(
-                        &group,
-                        members
-                            .into_iter()
-                            .map(|authz::identity::User { id, .. }| authz::User(*id))
-                            .collect(),
-                    )
-                    .await
-                    .expect("members should be added successfully");
+            regulator
+                .add_members(
+                    &group_auth,
+                    members
+                        .into_iter()
+                        .map(|authz::identity::User { id, .. }| authz::User(*id))
+                        .collect(),
+                )
+                .await
+                .expect("members should be added successfully");
 
-                let subject = authz::Subject::Group(group);
-                for (infra_id, grant) in infras_grant.into_iter() {
-                    regulator
-                        .give_infra_grant_unchecked(&subject, &authz::Infra(infra_id), grant)
-                        .await
-                        .expect("Infra grant should be given successfully")
-                }
+            let subject = authz::Subject::Group(group_auth);
+            for (infra_id, grant) in infras_grant.into_iter() {
+                regulator
+                    .give_infra_grant_unchecked(&subject, &authz::Infra(infra_id), grant)
+                    .await
+                    .expect("Infra grant should be given successfully")
             }
-            group
-        })
+        }
+        group
     }
 }
 
