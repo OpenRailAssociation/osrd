@@ -527,6 +527,7 @@ pub mod tests {
         // WHEN
         let work_schedule_response = app
             .fetch(request)
+            .await
             .assert_status(StatusCode::CREATED)
             .json_into::<WorkScheduleCreateResponse>();
 
@@ -556,6 +557,7 @@ pub mod tests {
         }));
 
         app.fetch(request)
+            .await
             .assert_status(StatusCode::UNPROCESSABLE_ENTITY);
     }
 
@@ -585,6 +587,7 @@ pub mod tests {
 
         let work_schedule_response = app
             .fetch(request)
+            .await
             .assert_status(StatusCode::BAD_REQUEST)
             .json_into::<crate::error::InternalError>();
 
@@ -710,6 +713,7 @@ pub mod tests {
         // WHEN
         let work_schedule_project_response = app
             .fetch(request)
+            .await
             .assert_status(StatusCode::OK)
             .json_into::<Vec<WorkScheduleProjection>>();
 
@@ -739,6 +743,7 @@ pub mod tests {
         let create_group_request = app.post("/work_schedules/group").json(&json!({}));
         let group_creation_response = app
             .fetch(create_group_request)
+            .await
             .assert_status(StatusCode::OK)
             .json_into::<WorkScheduleGroupCreateResponse>();
         let group_id = group_creation_response.work_schedule_group_id;
@@ -754,12 +759,13 @@ pub mod tests {
                 "work_schedule_type": "CATENARY"
             }]
         ));
-        app.fetch(request).assert_status(StatusCode::OK);
+        app.fetch(request).await.assert_status(StatusCode::OK);
 
         // Get the content of the group
         let request = app.get(&work_schedule_url);
         let response = app
             .fetch(request)
+            .await
             .assert_status(StatusCode::OK)
             .json_into::<GroupContentResponse>();
         let work_schedules = response.results;
@@ -768,10 +774,14 @@ pub mod tests {
 
         // Delete it
         let request = app.delete(&work_schedule_url);
-        app.fetch(request).assert_status(StatusCode::NO_CONTENT);
+        app.fetch(request)
+            .await
+            .assert_status(StatusCode::NO_CONTENT);
 
         // Try to access it
         let request = app.get(&work_schedule_url);
-        app.fetch(request).assert_status(StatusCode::NOT_FOUND);
+        app.fetch(request)
+            .await
+            .assert_status(StatusCode::NOT_FOUND);
     }
 }

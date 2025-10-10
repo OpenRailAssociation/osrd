@@ -421,6 +421,7 @@ pub mod tests {
 
         let response: ProjectWithStudyCount = app
             .fetch(request)
+            .await
             .assert_status(StatusCode::CREATED)
             .json_into();
 
@@ -445,7 +446,9 @@ pub mod tests {
         }));
 
         // OpsWrite is required to complete this request successfully.
-        app.fetch(request).assert_status(StatusCode::FORBIDDEN);
+        app.fetch(request)
+            .await
+            .assert_status(StatusCode::FORBIDDEN);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -457,8 +460,11 @@ pub mod tests {
 
         let request = app.get("/projects/");
 
-        let response: ProjectWithStudyCountList =
-            app.fetch(request).assert_status(StatusCode::OK).json_into();
+        let response: ProjectWithStudyCountList = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into();
 
         let project_retrieved = response
             .results
@@ -478,8 +484,11 @@ pub mod tests {
 
         let request = app.get(format!("/projects/{}", created_project.id).as_str());
 
-        let response: ProjectWithStudyCount =
-            app.fetch(request).assert_status(StatusCode::OK).json_into();
+        let response: ProjectWithStudyCount = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into();
 
         assert_eq!(response.project, created_project);
     }
@@ -493,7 +502,9 @@ pub mod tests {
 
         let request = app.delete(format!("/projects/{}", created_project.id).as_str());
 
-        app.fetch(request).assert_status(StatusCode::NO_CONTENT);
+        app.fetch(request)
+            .await
+            .assert_status(StatusCode::NO_CONTENT);
 
         let exists = Project::exists(&mut db_pool.get_ok(), created_project.id)
             .await
@@ -519,8 +530,11 @@ pub mod tests {
                 "budget": updated_budget
             }));
 
-        let response: ProjectWithStudyCount =
-            app.fetch(request).assert_status(StatusCode::OK).json_into();
+        let response: ProjectWithStudyCount = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into();
 
         let project = Project::retrieve(db_pool.get_ok(), response.project.id)
             .await
@@ -587,7 +601,7 @@ pub mod tests {
             .json(&json!({
                 "image": image.id
             }));
-        app.fetch(request).assert_status(StatusCode::OK);
+        app.fetch(request).await.assert_status(StatusCode::OK);
 
         check_image(db_pool.get_ok(), Some(image.id)).await;
 
@@ -605,7 +619,7 @@ pub mod tests {
             .json(&json!({
                 "image": new_image.id
             }));
-        app.fetch(request).assert_status(StatusCode::OK);
+        app.fetch(request).await.assert_status(StatusCode::OK);
 
         check_image(db_pool.get_ok(), Some(new_image.id)).await;
         assert!(
@@ -620,7 +634,7 @@ pub mod tests {
             .json(&json!({
                 "image": null
             }));
-        app.fetch(request).assert_status(StatusCode::OK);
+        app.fetch(request).await.assert_status(StatusCode::OK);
 
         check_image(db_pool.get_ok(), None).await;
         assert!(

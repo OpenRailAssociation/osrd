@@ -455,8 +455,11 @@ pub mod test {
             "/projects/{}/studies/{}/scenarios/{}/macro_notes?page=1&page_size=3",
             fixtures1.project.id, fixtures1.study.id, fixtures1.scenario.id
         ));
-        let response: MacroNoteListResponse =
-            app.fetch(request).assert_status(StatusCode::OK).json_into();
+        let response: MacroNoteListResponse = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into();
 
         let ids: Vec<i64> = response.results.iter().map(|note| note.id).collect();
         let mut sorted_ids = ids.clone();
@@ -508,6 +511,7 @@ pub mod test {
             });
         let response: MacroNoteBatchResponse = app
             .fetch(request)
+            .await
             .assert_status(StatusCode::CREATED)
             .json_into();
 
@@ -548,7 +552,9 @@ pub mod test {
             .json(&MacroNoteBatchForm {
                 macro_notes: notes_data.clone(),
             });
-        app.fetch(request).assert_status(StatusCode::NOT_FOUND);
+        app.fetch(request)
+            .await
+            .assert_status(StatusCode::NOT_FOUND);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -573,8 +579,11 @@ pub mod test {
             fixtures.project.id, fixtures.study.id, fixtures.scenario.id, note.id
         ));
 
-        let response: MacroNoteResponse =
-            app.fetch(request).assert_status(StatusCode::OK).json_into();
+        let response: MacroNoteResponse = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into();
 
         assert_eq!(MacroNoteResponse::from(note), response);
     }
@@ -591,7 +600,9 @@ pub mod test {
             fixtures.project.id, fixtures.study.id, fixtures.scenario.id
         ));
 
-        app.fetch(request).assert_status(StatusCode::NOT_FOUND);
+        app.fetch(request)
+            .await
+            .assert_status(StatusCode::NOT_FOUND);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -619,7 +630,9 @@ pub mod test {
             fixtures_2.project.id, fixtures_2.study.id, fixtures_2.scenario.id, note.id
         ));
 
-        app.fetch(request).assert_status(StatusCode::NOT_FOUND);
+        app.fetch(request)
+            .await
+            .assert_status(StatusCode::NOT_FOUND);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -654,8 +667,11 @@ pub mod test {
             ))
             .json(&update);
 
-        let response: MacroNoteResponse =
-            app.fetch(request).assert_status(StatusCode::OK).json_into();
+        let response: MacroNoteResponse = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into();
 
         let note = MacroNote::retrieve(db_pool.get_ok(), note.id)
             .await
@@ -688,7 +704,9 @@ pub mod test {
             ))
             .json(&update);
 
-        app.fetch(request).assert_status(StatusCode::NOT_FOUND);
+        app.fetch(request)
+            .await
+            .assert_status(StatusCode::NOT_FOUND);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -714,7 +732,9 @@ pub mod test {
             fixtures.project.id, fixtures.study.id, fixtures.scenario.id, note.id
         ));
 
-        app.fetch(request).assert_status(StatusCode::NO_CONTENT);
+        app.fetch(request)
+            .await
+            .assert_status(StatusCode::NO_CONTENT);
 
         let still_exists = MacroNote::exists(&mut db_pool.get_ok(), note.id)
             .await
@@ -734,6 +754,8 @@ pub mod test {
             fixtures.project.id, fixtures.study.id, fixtures.scenario.id
         ));
 
-        app.fetch(request).assert_status(StatusCode::NOT_FOUND);
+        app.fetch(request)
+            .await
+            .assert_status(StatusCode::NOT_FOUND);
     }
 }

@@ -159,6 +159,6 @@ mod tests {
             )
             .as_str(),
         );
-        app.fetch(req).assert_status(StatusCode::OK);
+        app.fetch(req).await.assert_status(StatusCode::OK);
     }
 }

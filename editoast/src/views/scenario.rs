@@ -551,8 +551,11 @@ mod tests {
         );
         let request = app.get(&url);
 
-        let response: ScenarioResponse =
-            app.fetch(request).assert_status(StatusCode::OK).json_into();
+        let response: ScenarioResponse = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into();
 
         assert_eq!(response.scenario, fixtures.scenario);
     }
@@ -567,8 +570,11 @@ mod tests {
         let url = scenario_url(fixtures.project.id, fixtures.study.id, None);
         let request = app.get(&url);
 
-        let mut response: ListScenariosResponse =
-            app.fetch(request).assert_status(StatusCode::OK).json_into();
+        let mut response: ListScenariosResponse = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into();
 
         assert!(!response.results.is_empty());
         assert_eq!(
@@ -592,7 +598,9 @@ mod tests {
 
         let request = app.get(&url);
 
-        app.fetch(request).assert_status(StatusCode::NOT_FOUND);
+        app.fetch(request)
+            .await
+            .assert_status(StatusCode::NOT_FOUND);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -624,6 +632,7 @@ mod tests {
 
         let response: ScenarioResponse = app
             .fetch(request)
+            .await
             .assert_status(StatusCode::CREATED)
             .json_into();
 
@@ -668,8 +677,11 @@ mod tests {
             "description": study_description,
             "tags": study_tags
         }));
-        let response: ScenarioResponse =
-            app.fetch(request).assert_status(StatusCode::OK).json_into();
+        let response: ScenarioResponse = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into();
 
         assert_eq!(response.scenario.name, study_name);
         assert_eq!(response.scenario.description, study_description);
@@ -695,7 +707,9 @@ mod tests {
             "infra_id": 999999999,
         }));
 
-        app.fetch(request).assert_status(StatusCode::NOT_FOUND);
+        app.fetch(request)
+            .await
+            .assert_status(StatusCode::NOT_FOUND);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -722,8 +736,11 @@ mod tests {
             "name": study_name,
             "infra_id": study_other_infra_id,
         }));
-        let response: ScenarioResponse =
-            app.fetch(request).assert_status(StatusCode::OK).json_into();
+        let response: ScenarioResponse = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into();
 
         assert_eq!(response.scenario.infra_id, study_other_infra_id);
         assert_eq!(response.scenario.name, study_name);
@@ -743,7 +760,9 @@ mod tests {
         );
         let request = app.delete(&url);
 
-        app.fetch(request).assert_status(StatusCode::NO_CONTENT);
+        app.fetch(request)
+            .await
+            .assert_status(StatusCode::NO_CONTENT);
 
         let exists = Scenario::exists(&mut pool.get_ok(), fixtures.scenario.id)
             .await

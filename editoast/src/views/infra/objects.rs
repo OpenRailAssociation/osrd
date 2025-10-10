@@ -196,7 +196,9 @@ mod tests {
             .post(format!("/infra/{}/objects/TrackSection", empty_infra.id).as_str())
             .json(&["invalid_id"]);
 
-        app.fetch(request).assert_status(StatusCode::BAD_REQUEST);
+        app.fetch(request)
+            .await
+            .assert_status(StatusCode::BAD_REQUEST);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -209,7 +211,7 @@ mod tests {
             .post(format!("/infra/{}/objects/TrackSection", empty_infra.id).as_str())
             .json(&vec![""; 0]);
 
-        app.fetch(request).assert_status(StatusCode::OK);
+        app.fetch(request).await.assert_status(StatusCode::OK);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -238,8 +240,11 @@ mod tests {
             .json(&vec!["switch_001"]);
 
         // THEN
-        let switch_object: Vec<ObjectQueryable> =
-            app.fetch(request).assert_status(StatusCode::OK).json_into();
+        let switch_object: Vec<ObjectQueryable> = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into();
         let expected_switch_object = vec![ObjectQueryable {
             obj_id: switch.get_id().to_string(),
             railjson: json!({
@@ -266,7 +271,9 @@ mod tests {
             .post(format!("/infra/{}/objects/TrackSection", empty_infra.id).as_str())
             .json(&vec!["id"; 2]);
 
-        app.fetch(request).assert_status(StatusCode::BAD_REQUEST);
+        app.fetch(request)
+            .await
+            .assert_status(StatusCode::BAD_REQUEST);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -289,8 +296,11 @@ mod tests {
             .post(format!("/infra/{}/objects/SwitchType", empty_infra.id).as_str())
             .json(&vec![switch_type.id.clone()]);
 
-        let switch_type_object: Vec<ObjectQueryable> =
-            app.fetch(request).assert_status(StatusCode::OK).json_into();
+        let switch_type_object: Vec<ObjectQueryable> = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into();
         let expected_switch_type_object = vec![ObjectQueryable {
             obj_id: switch_type.get_id().to_string(),
             railjson: json!({
@@ -330,6 +340,7 @@ mod tests {
 
         let response = app
             .fetch(request)
+            .await
             .assert_status(StatusCode::OK)
             .json_into::<JsonValue>();
 

@@ -471,6 +471,7 @@ pub mod test {
             });
         let response: MacroNodeBatchResponse = app
             .fetch(request)
+            .await
             .assert_status(StatusCode::CREATED)
             .json_into();
 
@@ -504,8 +505,11 @@ pub mod test {
                 fixtures.project.id, fixtures.study.id, fixtures.scenario.id, fixtures.nodes[0].id
             ))
             .json(&node_data);
-        let response: MacroNodeResponse =
-            app.fetch(request).assert_status(StatusCode::OK).json_into();
+        let response: MacroNodeResponse = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into();
 
         let node = MacroNode::retrieve(db_pool.get_ok(), fixtures.nodes[0].id)
             .await
@@ -526,8 +530,11 @@ pub mod test {
             "/projects/{}/studies/{}/scenarios/{}/macro_nodes/{}",
             fixtures.project.id, fixtures.study.id, fixtures.scenario.id, fixtures.nodes[0].id
         ));
-        let response: MacroNodeResponse =
-            app.fetch(request).assert_status(StatusCode::OK).json_into();
+        let response: MacroNodeResponse = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into();
 
         assert!(fixtures.nodes[0] == response);
     }
@@ -542,8 +549,11 @@ pub mod test {
             "/projects/{}/studies/{}/scenarios/{}/macro_nodes?page=1&page_size=5",
             fixtures.project.id, fixtures.study.id, fixtures.scenario.id
         ));
-        let response: MacroNodeListResponse =
-            app.fetch(request).assert_status(StatusCode::OK).json_into();
+        let response: MacroNodeListResponse = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into();
 
         assert_eq!(10, response.stats.count);
         assert_eq!(5, response.results.len());
@@ -559,7 +569,9 @@ pub mod test {
             "/projects/{}/studies/{}/scenarios/{}/macro_nodes/{}",
             fixtures.project.id, fixtures.study.id, fixtures.scenario.id, fixtures.nodes[0].id
         ));
-        app.fetch(request).assert_status(StatusCode::NO_CONTENT);
+        app.fetch(request)
+            .await
+            .assert_status(StatusCode::NO_CONTENT);
 
         let found = MacroNode::exists(&mut db_pool.get_ok(), fixtures.nodes[0].id)
             .await

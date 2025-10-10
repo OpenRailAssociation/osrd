@@ -539,8 +539,11 @@ mod tests {
                 "exits": exits,
             }
             ));
-        let DelimitedAreaResponse { track_ranges } =
-            app.fetch(request).assert_status(StatusCode::OK).json_into();
+        let DelimitedAreaResponse { track_ranges } = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into();
         track_ranges
     }
 

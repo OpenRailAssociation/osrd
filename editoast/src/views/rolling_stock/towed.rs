@@ -295,7 +295,11 @@ mod tests {
     const LOCKED: bool = true;
     const UNLOCKED: bool = false;
 
-    fn create_towed_rolling_stock(app: &TestApp, name: &str, locked: bool) -> TowedRollingStock {
+    async fn create_towed_rolling_stock(
+        app: &TestApp,
+        name: &str,
+        locked: bool,
+    ) -> TowedRollingStock {
         let towed_rolling_stock_json = json!({
             "name": name,
             "label": name,
@@ -319,7 +323,10 @@ mod tests {
             .add_query_param("locked", locked)
             .json(&towed_rolling_stock_json);
 
-        app.fetch(request).assert_status(StatusCode::OK).json_into()
+        app.fetch(request)
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into()
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -327,13 +334,14 @@ mod tests {
         let app = TestAppBuilder::default_app();
 
         let name = Uuid::new_v4().to_string();
-        let towed_rolling_stock = create_towed_rolling_stock(&app, &name, LOCKED);
+        let towed_rolling_stock = create_towed_rolling_stock(&app, &name, LOCKED).await;
 
         let towed_rolling_stocks: TowedRollingStockCountList = app
             .fetch(
                 app.get("/towed_rolling_stock")
                     .add_query_param("page_size", 50),
             )
+            .await
             .assert_status(StatusCode::OK)
             .json_into();
 
@@ -352,6 +360,7 @@ mod tests {
         let id: i64 = rand::random();
 
         app.fetch(app.get(&format!("/towed_rolling_stock/{id}")))
+            .await
             .assert_status(StatusCode::NOT_FOUND);
     }
 
@@ -360,7 +369,7 @@ mod tests {
         let app = TestAppBuilder::default_app();
 
         let name = Uuid::new_v4().to_string();
-        let created_towed_rolling_stock = create_towed_rolling_stock(&app, &name, LOCKED);
+        let created_towed_rolling_stock = create_towed_rolling_stock(&app, &name, LOCKED).await;
 
         assert_eq!(created_towed_rolling_stock.name, name);
 
@@ -368,6 +377,7 @@ mod tests {
 
         let get_towed_rolling_stock: TowedRollingStock = app
             .fetch(app.get(&format!("/towed_rolling_stock/{id}")))
+            .await
             .assert_status(StatusCode::OK)
             .json_into();
 
@@ -379,13 +389,14 @@ mod tests {
         let app = TestAppBuilder::default_app();
 
         let name = Uuid::new_v4().to_string();
-        let towed_rolling_stock = create_towed_rolling_stock(&app, &name, UNLOCKED);
+        let towed_rolling_stock = create_towed_rolling_stock(&app, &name, UNLOCKED).await;
 
         let id: i64 = rand::random(); // <-- doesn't exist
         app.fetch(
             app.put(&format!("/towed_rolling_stock/{id}"))
                 .json(&towed_rolling_stock),
         )
+        .await
         .assert_status(StatusCode::NOT_FOUND);
     }
 
@@ -394,7 +405,7 @@ mod tests {
         let app = TestAppBuilder::default_app();
 
         let name = Uuid::new_v4().to_string();
-        let mut towed_rolling_stock = create_towed_rolling_stock(&app, &name, UNLOCKED);
+        let mut towed_rolling_stock = create_towed_rolling_stock(&app, &name, UNLOCKED).await;
 
         let id = towed_rolling_stock.id;
         towed_rolling_stock.mass = units::kilogram::new(13000.0);
@@ -403,6 +414,7 @@ mod tests {
                 app.put(&format!("/towed_rolling_stock/{id}"))
                     .json(&towed_rolling_stock),
             )
+            .await
             .assert_status(StatusCode::OK)
             .json_into();
 
@@ -422,6 +434,7 @@ mod tests {
             app.patch(&format!("/towed_rolling_stock/{id}/locked"))
                 .json(&json!({ "locked": false })),
         )
+        .await
         .assert_status(StatusCode::NOT_FOUND);
     }
 
@@ -430,7 +443,7 @@ mod tests {
         let app = TestAppBuilder::default_app();
 
         let name = Uuid::new_v4().to_string();
-        let mut towed_rolling_stock = create_towed_rolling_stock(&app, &name, LOCKED);
+        let mut towed_rolling_stock = create_towed_rolling_stock(&app, &name, LOCKED).await;
 
         let id = towed_rolling_stock.id;
         towed_rolling_stock.mass = units::kilogram::new(13000.0);
@@ -438,6 +451,7 @@ mod tests {
             app.put(&format!("/towed_rolling_stock/{id}"))
                 .json(&towed_rolling_stock),
         )
+        .await
         .assert_status(StatusCode::CONFLICT);
     }
 
@@ -446,7 +460,7 @@ mod tests {
         let app = TestAppBuilder::default_app();
 
         let name = Uuid::new_v4().to_string();
-        let mut towed_rolling_stock = create_towed_rolling_stock(&app, &name, LOCKED);
+        let mut towed_rolling_stock = create_towed_rolling_stock(&app, &name, LOCKED).await;
 
         let id = towed_rolling_stock.id;
         towed_rolling_stock.mass = units::kilogram::new(13000.0);
@@ -454,11 +468,13 @@ mod tests {
             app.patch(&format!("/towed_rolling_stock/{id}/locked"))
                 .json(&json!({ "locked": false })),
         )
+        .await
         .assert_status(StatusCode::NO_CONTENT);
         app.fetch(
             app.put(&format!("/towed_rolling_stock/{id}"))
                 .json(&towed_rolling_stock),
         )
+        .await
         .assert_status(StatusCode::OK);
     }
 }

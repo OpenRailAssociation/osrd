@@ -561,8 +561,11 @@ pub mod tests {
                 "rolling_stock_length":26.00
             }));
 
-        let pathfinding_result: PathfindingResult =
-            app.fetch(request).assert_status(StatusCode::OK).json_into();
+        let pathfinding_result: PathfindingResult = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into();
         assert_eq!(
             pathfinding_result,
             PathfindingResult::Failure(PathfindingFailure::PathfindingInputError(
@@ -593,8 +596,11 @@ pub mod tests {
                 "rolling_stock_length":26.00
             }));
 
-        let pathfinding_result: PathfindingResult =
-            app.fetch(request).assert_status(StatusCode::OK).json_into();
+        let pathfinding_result: PathfindingResult = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into();
         assert_eq!(
             pathfinding_result,
             PathfindingResult::Failure(PathfindingFailure::PathfindingInputError(
@@ -638,8 +644,11 @@ pub mod tests {
                 "rolling_stock_length":26.00
             }));
 
-        let pathfinding_result: PathfindingResult =
-            app.fetch(request).assert_status(StatusCode::OK).json_into();
+        let pathfinding_result: PathfindingResult = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into();
         assert_eq!(
             pathfinding_result,
             PathfindingResult::Failure(PathfindingFailure::PathfindingInputError(
@@ -698,8 +707,11 @@ pub mod tests {
                 "rolling_stock_length":26.00
             }));
 
-        let pathfinding_result: PathfindingResult =
-            app.fetch(request).assert_status(StatusCode::OK).json_into();
+        let pathfinding_result: PathfindingResult = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into();
         assert_eq!(
             pathfinding_result,
             PathfindingResult::Success(PathfindingResultSuccess {

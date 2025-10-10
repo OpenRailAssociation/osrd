@@ -831,8 +831,11 @@ mod tests {
             .post(format!("/timetable/{}/stdcm?infra={}", timetable.id, small_infra.id).as_str())
             .json(&get_stdcm_payload(rolling_stock.id, None, None, None));
 
-        let stdcm_response: StdcmResponse =
-            app.fetch(request).assert_status(StatusCode::OK).json_into();
+        let stdcm_response: StdcmResponse = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into();
 
         if let PathfindingResult::Success(path) =
             PathfindingResult::Success(pathfinding_result_success())
@@ -877,6 +880,7 @@ mod tests {
 
         let stdcm_response: InternalError = app
             .fetch(request)
+            .await
             .assert_status(StatusCode::BAD_REQUEST)
             .json_into();
 
@@ -922,6 +926,7 @@ mod tests {
 
         let stdcm_response: InternalError = app
             .fetch(request)
+            .await
             .assert_status(StatusCode::BAD_REQUEST)
             .json_into();
 
@@ -963,8 +968,11 @@ mod tests {
                 total_length,
             ));
 
-        let stdcm_response: StdcmResponse =
-            app.fetch(request).assert_status(StatusCode::OK).json_into();
+        let stdcm_response: StdcmResponse = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into();
 
         if let PathfindingResult::Success(path) =
             PathfindingResult::Success(pathfinding_result_success())
@@ -1001,8 +1009,11 @@ mod tests {
             .post(format!("/timetable/{}/stdcm?infra={}", timetable.id, small_infra.id).as_str())
             .json(&get_stdcm_payload(rolling_stock.id, None, None, None));
 
-        let stdcm_response: StdcmResponse =
-            app.fetch(request).assert_status(StatusCode::OK).json_into();
+        let stdcm_response: StdcmResponse = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into();
 
         assert_eq!(
             stdcm_response,

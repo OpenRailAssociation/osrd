@@ -627,6 +627,7 @@ mod tests {
                        "infra": [infra1, infra2, infra3, infra4]
                     })),
             )
+            .await
             .assert_status(StatusCode::OK)
             .json_into::<HashMap<ResourceType, Vec<ResourcePrivileges>>>()
             .remove(&ResourceType::Infra)
@@ -693,6 +694,7 @@ mod tests {
                        "infra": [infra1, infra2, infra3, infra4]
                     })),
             )
+            .await
             .assert_status(StatusCode::OK)
             .json_into::<HashMap<ResourceType, Vec<ResourcePrivileges>>>()
             .remove(&ResourceType::Infra)
@@ -736,6 +738,7 @@ mod tests {
             .fetch(app.post("/authz/me/privileges").json(&json!({
                "infra": [infra]
             })))
+            .await
             .assert_status(StatusCode::OK)
             .json_into::<HashMap<ResourceType, Vec<ResourcePrivileges>>>()
             .remove(&ResourceType::Infra)
@@ -776,8 +779,11 @@ mod tests {
         let request = app.post("/authz/me/grants").by_user(&user).json(&json!({
             "infra": [infra.id],
         }));
-        let response: HashMap<ResourceType, Vec<UserResourceGrant>> =
-            app.fetch(request).assert_status(StatusCode::OK).json_into();
+        let response: HashMap<ResourceType, Vec<UserResourceGrant>> = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into();
 
         // Check the direct grant is there
         assert_eq!(
@@ -798,8 +804,11 @@ mod tests {
         let request = app.post("/authz/me/grants").by_user(&user).json(&json!({
             "infra": [infra.id],
         }));
-        let response: HashMap<ResourceType, Vec<UserResourceGrant>> =
-            app.fetch(request).assert_status(StatusCode::OK).json_into();
+        let response: HashMap<ResourceType, Vec<UserResourceGrant>> = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into();
 
         // Check the inherited grant from the group has overridden by the user's direct grant
         assert_eq!(
@@ -842,6 +851,7 @@ mod tests {
             .by_user(&user);
         let SubjectsWithGrantOnResource { subjects, .. } = app
             .fetch(request_all)
+            .await
             .assert_status(StatusCode::OK)
             .json_into();
         assert_eq!(subjects.len(), 6);
@@ -856,6 +866,7 @@ mod tests {
             .by_user(&user);
         let SubjectsWithGrantOnResource { subjects, .. } = app
             .fetch(request_all)
+            .await
             .assert_status(StatusCode::OK)
             .json_into();
         assert_eq!(subjects.len(), 1);
@@ -896,6 +907,7 @@ mod tests {
                 app.get(&format!("/authz/{}/{}", ResourceType::Infra, infra.id))
                     .by_user(&alice),
             )
+            .await
             .assert_status(StatusCode::OK)
             .json_into();
 
@@ -938,7 +950,9 @@ mod tests {
                 }
             ]
         }));
-        app.fetch(request_grant).assert_status(StatusCode::CREATED);
+        app.fetch(request_grant)
+            .await
+            .assert_status(StatusCode::CREATED);
 
         // Check that the new user has the good grant
         app.assert_infra_direct_grant(infra.id, writer.id, Some(InfraGrant::Writer));
@@ -954,6 +968,7 @@ mod tests {
             ]
         }));
         app.fetch(request_revoke)
+            .await
             .assert_status(StatusCode::NO_CONTENT);
 
         // Check that the new user has the good grant
@@ -990,6 +1005,7 @@ mod tests {
                 }
             ]
         })))
+        .await
         .assert_status(StatusCode::CREATED);
 
         app.assert_infra_direct_grant(infra.id, alice.id, Some(InfraGrant::Owner)); // still owner
@@ -1008,6 +1024,7 @@ mod tests {
                 }
             ]
         })))
+        .await
         .assert_status(StatusCode::NO_CONTENT);
 
         app.assert_infra_direct_grant(infra.id, alice_and_bob.id, None); // group grant removed
@@ -1036,7 +1053,9 @@ mod tests {
                 }
             ]
         }));
-        app.fetch(request_revoke).assert_status(StatusCode::CREATED);
+        app.fetch(request_revoke)
+            .await
+            .assert_status(StatusCode::CREATED);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -1063,6 +1082,7 @@ mod tests {
             ]
         }));
         app.fetch(request_grant)
+            .await
             .assert_status(StatusCode::NO_CONTENT);
     }
 
@@ -1077,6 +1097,7 @@ mod tests {
         let request = app.get("/authz/me").by_user(&user);
         let user_data = app
             .fetch(request)
+            .await
             .assert_status(StatusCode::OK)
             .json_into::<WhoamiResponse>();
 
@@ -1098,6 +1119,7 @@ mod tests {
         let request = app.get("/authz/me").by_user(&user);
         let WhoamiResponse { roles, .. } = app
             .fetch(request)
+            .await
             .assert_status(StatusCode::OK)
             .json_into::<WhoamiResponse>();
 
@@ -1120,10 +1142,12 @@ mod tests {
 
         let mut groups_user_1 = app
             .fetch(request_1)
+            .await
             .assert_status(StatusCode::OK)
             .json_into::<Vec<Group>>();
         let groups_user_2 = app
             .fetch(request_2)
+            .await
             .assert_status(StatusCode::OK)
             .json_into::<Vec<Group>>();
 
@@ -1157,6 +1181,8 @@ mod tests {
         let user = app.user("test", "test").create();
 
         let request = app.get("/authz/me/groups").by_user(&user);
-        app.fetch(request).assert_status(StatusCode::UNAUTHORIZED);
+        app.fetch(request)
+            .await
+            .assert_status(StatusCode::UNAUTHORIZED);
     }
 }

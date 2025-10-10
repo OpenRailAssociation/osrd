@@ -1143,14 +1143,14 @@ mod tests {
     async fn health() {
         let app = TestAppBuilder::default_app();
         let request = app.get("/health");
-        app.fetch(request).assert_status(StatusCode::OK);
+        app.fetch(request).await.assert_status(StatusCode::OK);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn version() {
         let app = TestAppBuilder::default_app();
         let request = app.get("/version");
-        let response: HashMap<String, Option<String>> = app.fetch(request).json_into();
+        let response: HashMap<String, Option<String>> = app.fetch(request).await.json_into();
         assert!(response.contains_key("git_describe"));
     }
 
@@ -1166,7 +1166,7 @@ mod tests {
             .db_pool(DbConnectionPoolV2::for_tests())
             .build();
         let request = app.get("/version/core");
-        let response: HashMap<String, Option<String>> = app.fetch(request).json_into();
+        let response: HashMap<String, Option<String>> = app.fetch(request).await.json_into();
         assert!(response.contains_key("git_describe"));
     }
 }

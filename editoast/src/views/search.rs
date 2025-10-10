@@ -827,8 +827,11 @@ pub mod tests {
                              ["=", ["timetable_id"], timetable_id]],
         }));
 
-        let response: Vec<SearchResultItemTrainSchedule> =
-            app.fetch(request).assert_status(StatusCode::OK).json_into();
+        let response: Vec<SearchResultItemTrainSchedule> = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into();
 
         assert_eq!(response.len(), 1);
         assert_eq!(response[0].train_name, train.train_name);
@@ -855,8 +858,11 @@ pub mod tests {
                              ["=", ["timetable_id"], timetable_id]],
         }));
 
-        let response: Vec<SearchResultItemTrainSchedule> =
-            app.fetch(request).assert_status(StatusCode::OK).json_into();
+        let response: Vec<SearchResultItemTrainSchedule> = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into();
 
         assert_eq!(response.len(), 0);
     }
