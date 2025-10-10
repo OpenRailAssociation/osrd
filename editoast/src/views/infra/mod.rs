@@ -1005,7 +1005,6 @@ pub mod tests {
     }
 
     #[rstest]
-    #[serial_test::serial]
     async fn infra_clone_empty() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
@@ -1029,7 +1028,6 @@ pub mod tests {
     }
 
     #[rstest] // Slow test
-    #[serial_test::serial]
     async fn infra_clone() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
@@ -1200,7 +1198,6 @@ pub mod tests {
     #[rstest]
     // Slow test
     // PostgreSQL deadlock can happen in this test, see section `Deadlock` of [DbConnectionPoolV2::get] for more information
-    #[serial_test::serial]
     async fn infra_refresh_force() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();

@@ -41,13 +41,6 @@ $ curl -f http://localhost:8090/health
 
 ## Tests
 
-To avoid thread conflicts while accessing the database, use serial_test
-
-```rust
-#[test]
-#[serial_test::serial]
-```
-
 ```sh
 cargo test --workspace -- --test-threads=4
 ```

@@ -1267,7 +1267,6 @@ pub mod tests {
     }
 
     #[rstest]
-    #[serial_test::serial]
     async fn update_locked_rolling_stock_fails() {
         // GIVEN
         let app = TestAppBuilder::default_app();
@@ -1337,7 +1336,6 @@ pub mod tests {
     }
 
     #[rstest]
-    #[serial_test::serial]
     async fn patch_unlock_rolling_stock_successfully() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
@@ -1392,7 +1390,6 @@ pub mod tests {
     }
 
     #[rstest]
-    #[serial_test::serial]
     async fn delete_locked_rolling_stock_fails() {
         // GIVEN
         let app = TestAppBuilder::default_app();
@@ -1426,7 +1423,6 @@ pub mod tests {
     }
 
     #[rstest]
-    #[serial_test::serial]
     async fn delete_unlocked_unused_rolling_stock_succeeds() {
         // GIVEN
         let app = TestAppBuilder::default_app();
@@ -1452,7 +1448,6 @@ pub mod tests {
     }
 
     #[rstest]
-    #[serial_test::serial]
     async fn delete_unlocked_used_rolling_stock_requires_force_flag() {
         // GIVEN
         let app = TestAppBuilder::default_app();
