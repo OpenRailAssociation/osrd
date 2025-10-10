@@ -590,7 +590,6 @@ mod tests {
     use std::collections::HashSet;
 
     use axum::http::StatusCode;
-    use rstest::rstest;
 
     use crate::models::fixtures::create_empty_infra;
     use crate::views::test_app::test_app;
@@ -826,7 +825,7 @@ mod tests {
         );
     }
 
-    #[rstest] // TODO: fix deadlock with tokio::test
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn users_grants_for_resource_id_test() {
         // This test start with an infra with one owner, one writer, and 5 readers
         let app = test_app!().enable_authorization(true).build();
@@ -878,7 +877,7 @@ mod tests {
         assert_eq!(subjects.len(), 1);
     }
 
-    #[rstest] // TODO: fix deadlock with tokio::test
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn groups_grants_on_resource() {
         let app = test_app!().enable_authorization(true).build();
         let infra = create_small_infra(&mut app.db_pool().get_ok()).await;
@@ -1144,7 +1143,7 @@ mod tests {
         assert_eq!(roles, vec![Role::Admin]);
     }
 
-    #[rstest] // TODO: fix deadlock with tokio::test
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn user_groups_test() {
         let app = test_app!().enable_authorization(true).build();
         let user_1 = app.user("test1", "test1").create().await;

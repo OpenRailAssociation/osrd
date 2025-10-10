@@ -32,7 +32,6 @@ utoipa.workspace = true
 uuid.workspace = true
 
 [dev-dependencies]
-async-std.workspace = true
 core_client = { path = "./", features = ["mocking_client"] }
 pretty_assertions.workspace = true
 schemas = { workspace = true, features = ["testing"] }

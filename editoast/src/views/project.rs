@@ -396,7 +396,6 @@ pub mod tests {
     use super::*;
 
     use pretty_assertions::assert_eq;
-    use rstest::rstest;
 
     use serde_json::json;
 
@@ -433,7 +432,7 @@ pub mod tests {
         assert_eq!(project.name, project_name);
     }
 
-    #[rstest] // TODO: fix deadlock with tokio::test
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn project_post_should_fail_when_authorization_is_enabled() {
         let app = test_app!().enable_authorization(true).build();
         let user = app
