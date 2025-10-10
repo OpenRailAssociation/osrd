@@ -464,6 +464,7 @@ mod tests {
     #[rstest]
     #[tokio::test]
     #[case::created(create_created_exception_with_change_groups("key_1"))]
+    #[tokio::test]
     #[case::modified(create_modified_exception_with_change_groups("key_2", 0))]
     async fn paced_train_apply_exception(#[case] exception: PacedTrainException) {
         let paced_train = create_paced_train(vec![exception.clone()]);

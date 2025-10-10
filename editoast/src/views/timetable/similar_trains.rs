@@ -977,8 +977,8 @@ mod tests {
     }
 
     #[rstest]
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     // MWS(33):stop  MES(44):passing_by  NS(55):stop
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     #[case(
         vec![
             PathItem::new_operational_point("Mid_West_station"), // MWS
@@ -993,6 +993,7 @@ mod tests {
         "North_station",
     )]
     // NS(55):stop SS(66):stop
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     #[case(
         vec![
             PathItem::new_operational_point("North_station"), // NS
@@ -1050,8 +1051,8 @@ mod tests {
     }
 
     #[rstest]
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     // Different rolling stock
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     #[case(
         1,
         Some("MA100".to_string()),
@@ -1068,6 +1069,7 @@ mod tests {
         ],
     )]
     // Different speed limit tag
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     #[case(
         0,
         Some("MA90".to_string()),
@@ -1085,6 +1087,7 @@ mod tests {
     )]
     // Different schedule
     // MWS(33):stop  MES(44):stop  NS(55):stop
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     #[case(
         0,
         Some("MA100".to_string()),
@@ -1103,6 +1106,7 @@ mod tests {
     )]
     // Same schedule but too much stops
     // MWS(33):stop  MES(44):passing_by  NS(55):passing_by  SS(66):stop
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     #[case(
         0,
         Some("MA100".to_string()),

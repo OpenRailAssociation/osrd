@@ -903,6 +903,7 @@ mod tests {
     #[rstest]
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     #[case(250., 1)]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     #[case(1250., 5)]
     async fn out_of_range_must_be_deleted(#[case] pos: f64, #[case] error_count: usize) {
         let app = TestAppBuilder::default_app();

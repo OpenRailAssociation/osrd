@@ -1310,6 +1310,7 @@ pub mod tests {
     #[rstest]
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     #[case(true)]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     #[case(false)]
     async fn infra_get_voltages(#[case] include_rolling_stock_modes: bool) {
         let app = TestAppBuilder::default_app();
