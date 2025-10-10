@@ -144,7 +144,7 @@ struct SubCategoryCodeParam {
     tag = "sub_categories",
     params(SubCategoryCodeParam),
     responses(
-        (status = 200, description = "Delete a sub category"),
+        (status = 204, description = "Delete a sub category"),
     ),
 )]
 pub(in crate::views) async fn delete_sub_category(

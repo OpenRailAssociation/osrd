@@ -1949,7 +1949,7 @@ paths:
           type: integer
           format: int64
       responses:
-        '204':
+        '200':
           description: The requested paced train
           content:
             application/json:
@@ -2581,7 +2581,7 @@ paths:
               $ref: '#/components/schemas/ScenarioPatchForm'
         required: true
       responses:
-        '204':
+        '200':
           description: The scenario was updated successfully
           content:
             application/json:
@@ -3570,7 +3570,7 @@ paths:
         schema:
           type: string
       responses:
-        '200':
+        '204':
           description: Delete a sub category
   /temporary_speed_limit_group:
     post:
@@ -5041,7 +5041,7 @@ paths:
                   description: The timetable id to load, if any
         required: true
       responses:
-        '204':
+        '200':
           description: The worker status
           content:
             application/json:
