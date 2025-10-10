@@ -8,7 +8,6 @@ repositories {
 
 dependencies {
     implementation libs.jna
-    testImplementation libs.kotlin.test
 }
 
 tasks.register('rustBuildRelease', Exec) {
