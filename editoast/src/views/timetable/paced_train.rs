@@ -118,7 +118,7 @@ pub(in crate::views) struct PacedTrainIdParam {
     tags = ["timetable", "paced_train"],
     params(PacedTrainIdParam),
     responses(
-        (status = 204, body = PacedTrainResponse, description = "The requested paced train")
+        (status = 200, body = PacedTrainResponse, description = "The requested paced train")
     )
 )]
 pub(in crate::views) async fn get_by_id(

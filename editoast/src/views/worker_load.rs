@@ -76,7 +76,7 @@ pub enum WorkerLoadError {
     tag = "worker",
     request_body = inline(WorkerLoadForm),
     responses(
-        (status = 204, description = "The worker status", body = WorkerStatus),
+        (status = 200, description = "The worker status", body = WorkerStatus),
         (status = 404, description = "The infra was not found"),
         (status = 404, description = "The timetable was not found"),
     )

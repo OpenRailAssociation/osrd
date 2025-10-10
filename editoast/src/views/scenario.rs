@@ -302,7 +302,7 @@ impl From<ScenarioPatchForm> for <Scenario as editoast_models::prelude::Model>::
     params(ProjectIdParam, StudyIdParam, ScenarioIdParam),
     request_body = ScenarioPatchForm,
     responses(
-        (status = 204, body = ScenarioResponse, description = "The scenario was updated successfully"),
+        (status = 200, body = ScenarioResponse, description = "The scenario was updated successfully"),
     )
 )]
 pub(in crate::views) async fn patch(

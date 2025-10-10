@@ -1979,7 +1979,7 @@ export type PostPacedTrainSimulationSummaryApiArg = {
   };
 };
 export type GetPacedTrainByIdApiResponse =
-  /** status 204 The requested paced train */ PacedTrainResponse;
+  /** status 200 The requested paced train */ PacedTrainResponse;
 export type GetPacedTrainByIdApiArg = {
   id: number;
 };
@@ -2143,7 +2143,7 @@ export type DeleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiArg 
   scenarioId: number;
 };
 export type PatchProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiResponse =
-  /** status 204 The scenario was updated successfully */ ScenarioResponse;
+  /** status 200 The scenario was updated successfully */ ScenarioResponse;
 export type PatchProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiArg = {
   /** The id of a project */
   projectId: number;
@@ -2760,7 +2760,7 @@ export type PostWorkSchedulesProjectPathApiArg = {
     work_schedule_group_id: number;
   };
 };
-export type PostWorkerLoadApiResponse = /** status 204 The worker status */ WorkerStatus;
+export type PostWorkerLoadApiResponse = /** status 200 The worker status */ WorkerStatus;
 export type PostWorkerLoadApiArg = {
   body: {
     /** The infra id of the worker to load */
