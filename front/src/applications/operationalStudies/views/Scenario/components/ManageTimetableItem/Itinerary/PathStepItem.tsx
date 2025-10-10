@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 
 import { ComboBox, Select } from '@osrd-project/ui-core';
-import { AddLocation, FocusLocation } from '@osrd-project/ui-icons';
+import { AddedLocation, AddLocation, FocusLocation } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 
@@ -99,7 +99,11 @@ const PathStepItem = ({
 
   return (
     <div className="path-step-wrapper">
-      <div className="path-step">
+      <div
+        className={cx('path-step', {
+          'requested-point': pathStep?.location && 'track' in pathStep.location,
+        })}
+      >
         <div
           className={cx('path-step-counter', {
             index,
@@ -128,30 +132,50 @@ const PathStepItem = ({
             readOnly
           />
         </div>
-        <Select
-          id={`pathStep-type-${pathStep?.id ?? 'empty'}`}
-          value={selectedSecondaryCodeOption}
-          options={secondaryCodeSuggestions}
-          getOptionLabel={(option) => option.label}
-          getOptionValue={(option) => option.id}
-          onChange={() => {}}
-          small
-          narrow
-          readOnly
-        />
-        <Select
-          id={`pathStep-status-${pathStep?.id ?? 'empty'}`}
-          value={selectedTrackNameOption}
-          options={trackNameSuggestions}
-          getOptionLabel={(option) => option.label}
-          getOptionValue={(option) => option.id}
-          onChange={() => {}}
-          small
-          narrow
-          readOnly
-        />
+        {pathStep?.location && 'track' in pathStep.location ? (
+          <div className="requested-point-block" />
+        ) : (
+          <>
+            <Select
+              id={`pathStep-type-${pathStep?.id ?? 'empty'}`}
+              value={selectedSecondaryCodeOption}
+              options={secondaryCodeSuggestions}
+              getOptionLabel={(option) => option.label}
+              getOptionValue={(option) => option.id}
+              onChange={() => {}}
+              small
+              narrow
+              readOnly
+            />
+            <Select
+              id={`pathStep-status-${pathStep?.id ?? 'empty'}`}
+              value={selectedTrackNameOption}
+              options={trackNameSuggestions}
+              getOptionLabel={(option) => option.label}
+              getOptionValue={(option) => option.id}
+              onChange={() => {}}
+              small
+              narrow
+              readOnly
+            />
+          </>
+        )}
         <div className="map-interactions">
-          <AddLocation size="lg" title={t('addLocationOnMap')} aria-label={t('addLocationOnMap')} />
+          {pathStep?.location && 'track' in pathStep.location ? (
+            <AddedLocation
+              size="lg"
+              variant="fill"
+              className="added-location-icon"
+              title={t('moveLocationOnMap')}
+              aria-label={t('moveLocationOnMap')}
+            />
+          ) : (
+            <AddLocation
+              size="lg"
+              title={t('addLocationOnMap')}
+              aria-label={t('addLocationOnMap')}
+            />
+          )}
           <FocusLocation
             size="lg"
             className={cx('focus-map-icon', { empty: !pathStep })}
