@@ -1,5 +1,6 @@
 use crate::models::Infra;
 use crate::models::Scenario;
+use crate::models::stdcm_search_environment::OperationalPointIds;
 use crate::models::stdcm_search_environment::StdcmSearchEnvironment;
 use crate::models::timetable::Timetable;
 use chrono::DateTime;
@@ -109,7 +110,10 @@ pub struct SetSTDCMSearchEnvFromScenarioArgs {
     pub search_window_end: Option<DateTime<Utc>>,
     /// List of operational points
     #[arg(long, num_args = 1.., value_delimiter = ' ')]
-    pub operation_points: Option<Vec<i64>>,
+    pub operational_points: Option<Vec<i64>>,
+    /// List of operational points uuid that are filtered in the result
+    #[arg(long, num_args = 1.., value_delimiter = ' ')]
+    pub operational_points_id_filtered: Option<Vec<String>>,
     /// List of speed limit tags defined by tag|speed. ex: `MA100|100`
     #[arg(long, num_args = 1.., value_delimiter = ' ')]
     pub speed_limit_tags: Option<Vec<String>>,
@@ -153,7 +157,10 @@ async fn set_stdcm_search_env_from_scenario(
         .active_perimeter(parse_active_perimeter(args.active_perimeter_geojson_path)?)
         .speed_limit_tags(parse_speed_limit_tags(args.speed_limit_tags)?)
         .default_speed_limit_tag(args.default_speed_limit_tag)
-        .operational_points(args.operation_points.into())
+        .operational_points(args.operational_points.into())
+        .operational_points_id_filtered(OperationalPointIds::new(
+            args.operational_points_id_filtered.unwrap_or_default(),
+        ))
         .create(conn)
         .await?;
 
@@ -177,7 +184,10 @@ pub struct SetSTDCMSearchEnvFromScratchArgs {
     pub timetable_id: i64,
     /// List of operational points
     #[arg(long, num_args = 1.., value_delimiter = ' ')]
-    pub operation_points: Option<Vec<i64>>,
+    pub operational_points: Option<Vec<i64>>,
+    /// List of operational points uuid that are filtered in the result
+    #[arg(long, num_args = 1.., value_delimiter = ' ')]
+    pub operational_points_id_filtered: Option<Vec<String>>,
     /// List of speed limit tags
     #[arg(long, num_args = 1.., value_delimiter = ' ')]
     pub speed_limit_tags: Option<Vec<String>>,
@@ -233,7 +243,10 @@ async fn set_stdcm_search_env_from_scratch(
         .search_window_end(end)
         .enabled_from(Utc::now())
         .enabled_until(Utc::now() + Duration::days(1000))
-        .operational_points(args.operation_points.into())
+        .operational_points(args.operational_points.into())
+        .operational_points_id_filtered(OperationalPointIds::new(
+            args.operational_points_id_filtered.unwrap_or_default(),
+        ))
         .active_perimeter(parse_active_perimeter(args.active_perimeter_geojson_path)?)
         .speed_limit_tags(parse_speed_limit_tags(args.speed_limit_tags)?)
         .default_speed_limit_tag(args.default_speed_limit_tag)
@@ -466,7 +479,9 @@ mod tests {
             serde_json::from_value(perimeter_json).expect("Failed to parse geometry");
         let perimeter_file = generate_temp_file(&perimeter);
 
-        let operation_points = Vec::from([1, 2, 3, 4]);
+        let operational_points = Vec::from([1, 2, 3, 4]);
+        let operational_points_id_filtered =
+            Vec::from(["uuid-1".to_string(), "uuid-2".to_string()]);
         let speed_limit_tags = Vec::from(["MA80|80".to_string(), "MA90|90".to_string()]);
         let default_speed_limit_tag = "MA90".to_string();
 
@@ -475,7 +490,8 @@ mod tests {
             work_schedule_group_id: Some(work_schedule_group.id),
             search_window_begin: None,
             search_window_end: None,
-            operation_points: Some(operation_points.clone()),
+            operational_points: Some(operational_points.clone()),
+            operational_points_id_filtered: Some(operational_points_id_filtered.clone()),
             speed_limit_tags: Some(speed_limit_tags),
             default_speed_limit_tag: Some(default_speed_limit_tag.clone()),
             active_perimeter_geojson_path: Some(perimeter_file.path().into()),
@@ -499,7 +515,11 @@ mod tests {
         );
 
         assert_eq!(search_env.active_perimeter, Some(perimeter));
-        assert_eq!(search_env.operational_points.to_vec(), operation_points);
+        assert_eq!(search_env.operational_points.to_vec(), operational_points);
+        assert_eq!(
+            search_env.operational_points_id_filtered.to_vec(),
+            operational_points_id_filtered
+        );
         assert_eq!(
             search_env.speed_limit_tags,
             vec![("MA80".to_string(), 80), ("MA90".to_string(), 90),]
@@ -528,7 +548,9 @@ mod tests {
         ];
 
         create_train_schedules_from_start_times(start_times, timetable.id, conn).await;
-        let operation_points = Vec::from([1, 2, 3, 4]);
+        let operational_points = Vec::from([1, 2, 3, 4]);
+        let operational_points_id_filtered =
+            Vec::from(["uuid-1".to_string(), "uuid-2".to_string()]);
         let speed_limit_tags = Vec::from(["MA80|80".to_string(), "MA90|90".to_string()]);
         let default_speed_limit_tag = "MA90".to_string();
 
@@ -539,7 +561,8 @@ mod tests {
             timetable_id: timetable.id,
             search_window_begin: None,
             search_window_end: None,
-            operation_points: Some(operation_points.clone()),
+            operational_points: Some(operational_points.clone()),
+            operational_points_id_filtered: Some(operational_points_id_filtered.clone()),
             speed_limit_tags: Some(speed_limit_tags),
             default_speed_limit_tag: Some(default_speed_limit_tag.clone()),
             active_perimeter_geojson_path: None,
@@ -562,7 +585,11 @@ mod tests {
             make_datetime("2000-02-03 08:00:00Z")
         );
 
-        assert_eq!(search_env.operational_points.to_vec(), operation_points);
+        assert_eq!(search_env.operational_points.to_vec(), operational_points);
+        assert_eq!(
+            search_env.operational_points_id_filtered.to_vec(),
+            operational_points_id_filtered
+        );
         assert_eq!(
             search_env.speed_limit_tags,
             vec![("MA80".to_string(), 80), ("MA90".to_string(), 90),]

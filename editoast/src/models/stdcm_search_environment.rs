@@ -50,7 +50,40 @@ impl From<Option<Vec<Option<i64>>>> for OperationalPoints {
     }
 }
 
-#[derive(Debug, Clone, Model, ToSchema, Serialize)]
+#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, Default, ToSchema)]
+pub struct OperationalPointIds(Vec<String>);
+
+impl OperationalPointIds {
+    pub fn new(value: Vec<String>) -> Self {
+        Self(value)
+    }
+    pub fn to_vec(&self) -> Vec<String> {
+        self.0.clone()
+    }
+}
+
+impl From<OperationalPointIds> for Vec<Option<String>> {
+    fn from(value: OperationalPointIds) -> Self {
+        value.0.into_iter().map(Some).collect()
+    }
+}
+impl From<Vec<Option<String>>> for OperationalPointIds {
+    fn from(value: Vec<Option<String>>) -> Self {
+        Self(value.into_iter().flatten().collect())
+    }
+}
+impl From<Option<Vec<String>>> for OperationalPointIds {
+    fn from(value: Option<Vec<String>>) -> Self {
+        Self(value.unwrap_or_default())
+    }
+}
+impl From<Option<Vec<Option<String>>>> for OperationalPointIds {
+    fn from(value: Option<Vec<Option<String>>>) -> Self {
+        Self(value.unwrap_or_default().into_iter().flatten().collect())
+    }
+}
+
+#[derive(Clone, Debug, Serialize, Model, ToSchema)]
 #[model(table = database::tables::stdcm_search_environment)]
 #[model(gen(ops = crd, list))]
 #[cfg_attr(test, derive(Deserialize, PartialEq), model(changeset(derive(Clone))))]
@@ -86,6 +119,8 @@ pub struct StdcmSearchEnvironment {
     #[model(json)]
     pub speed_limit_tags: HashMap<String, i64>,
     pub default_speed_limit_tag: Option<String>,
+    #[model(remote = "Vec<Option<String>>")]
+    pub operational_points_id_filtered: OperationalPointIds,
 }
 
 impl StdcmSearchEnvironment {

@@ -67,6 +67,8 @@ pub(in crate::views) struct StdcmSearchEnvironmentCreateForm {
     active_perimeter: Option<geos::geojson::Geometry>,
     operational_points: Option<Vec<i64>>,
     speed_limits: Option<SpeedLimits>,
+    #[serde(default)]
+    operational_points_id_filtered: Option<Vec<String>>,
 }
 
 #[derive(Serialize, Deserialize, ToSchema)]
@@ -85,6 +87,7 @@ struct StdcmSearchEnvironmentResponse {
     active_perimeter: Option<geos::geojson::Geometry>,
     operational_points: Option<Vec<i64>>,
     speed_limits: Option<SpeedLimits>,
+    operational_points_id_filtered: Option<Vec<String>>,
 }
 
 impl<'de> Deserialize<'de> for StdcmSearchEnvironmentCreateForm {
@@ -145,6 +148,7 @@ impl From<StdcmSearchEnvironmentCreateForm> for Changeset<StdcmSearchEnvironment
             .enabled_until(form.enabled_until)
             .active_perimeter(form.active_perimeter)
             .operational_points(form.operational_points.into())
+            .operational_points_id_filtered(form.operational_points_id_filtered.into())
             .speed_limit_tags(speed_limits.speed_limit_tags)
             .default_speed_limit_tag(speed_limits.default_speed_limit_tag)
     }
@@ -178,6 +182,7 @@ impl From<StdcmSearchEnvironment> for StdcmSearchEnvironmentResponse {
             } else {
                 None
             },
+            operational_points_id_filtered: Some(from.operational_points_id_filtered.to_vec()),
             speed_limits,
         }
     }
@@ -360,6 +365,8 @@ pub mod tests {
             enabled_from: Utc.with_ymd_and_hms(2024, 1, 1, 0, 0, 0).unwrap(),
             enabled_until: Utc.with_ymd_and_hms(2024, 1, 1, 23, 59, 59).unwrap(),
             operational_points: Some(Vec::from([1, 2, 3])),
+            operational_points_id_filtered: Vec::from(["uuid-1".to_string(), "uuid-2".to_string()])
+                .into(),
             speed_limits: Some(SpeedLimits {
                 speed_limit_tags: vec![("MA80".to_string(), 80), ("MA90".to_string(), 90)]
                     .into_iter()
@@ -412,6 +419,8 @@ pub mod tests {
             enabled_from: Utc.with_ymd_and_hms(2024, 1, 1, 0, 0, 0).unwrap(),
             enabled_until: Utc.with_ymd_and_hms(2024, 1, 1, 23, 59, 59).unwrap(),
             operational_points: Some(Vec::from([1, 2, 3])),
+            operational_points_id_filtered: Vec::from(["uuid-1".to_string(), "uuid-2".to_string()])
+                .into(),
             speed_limits: Some(SpeedLimits {
                 speed_limit_tags: vec![("MA80".to_string(), 80), ("MA90".to_string(), 90)]
                     .into_iter()
