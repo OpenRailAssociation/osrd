@@ -139,8 +139,7 @@ run {
 tasks.named('shadowJar') {
     // TODO make this lazy somehow.... tasks.named doesn't work
     from(tasks.getByPath(':train-sim:rustBuildRelease').outputs.getFiles()) {
-        def prefix = Platform.getNativeLibraryResourcePrefix()
-        into 'fr/sncf/osrd/train_sim/' + prefix
+        into Platform.getNativeLibraryResourcePrefix()
     }
 }
 
