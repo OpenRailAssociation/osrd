@@ -74,4 +74,6 @@ test {
     useJUnitPlatform {
         includeEngines 'jqwik', 'junit-jupiter'
     }
+
+    systemProperty 'jna.library.path', '../train-sim/build/rust/release'
 }
