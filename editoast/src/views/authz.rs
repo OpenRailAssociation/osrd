@@ -764,7 +764,7 @@ mod tests {
         );
     }
 
-    #[rstest] // TODO: fix deadlock with tokio::test
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn user_me_grants() {
         let app = test_app!().enable_authorization(true).build();
         let db_pool = app.db_pool();
@@ -924,7 +924,7 @@ mod tests {
         assert_eq!(grants.get(&tom_and_jerry.id), None); // no group grant (not even there in the response)
     }
 
-    #[rstest] // TODO: fix deadlock with tokio::test
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn grants_test() {
         // This test starts with a user that is the owner of an infra.
         // Then it creates a new user and adds it as a writer to the infra.
@@ -975,7 +975,7 @@ mod tests {
         app.assert_infra_direct_grant(infra.id, writer.id, None);
     }
 
-    #[rstest] // TODO: fix deadlock with tokio::test
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn give_grant_to_groups() {
         let app = test_app!().enable_authorization(true).build();
         let infra = create_small_infra(&mut app.db_pool().get_ok()).await;
@@ -1086,7 +1086,7 @@ mod tests {
             .assert_status(StatusCode::NO_CONTENT);
     }
 
-    #[rstest] // TODO: fix deadlock with tokio::test
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn whoami_test() {
         let app = test_app!().enable_authorization(true).build();
         let user = app
