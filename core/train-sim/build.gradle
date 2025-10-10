@@ -29,6 +29,18 @@ tasks.register('rustBuildRelease', Exec) {
     outputs.upToDateWhen { false }
 }
 
+tasks.register('rustTest', Exec) {
+    group = 'verification'
+    description = 'Runs the rust tests'
+
+    workingDir 'libtsim'
+    commandLine 'cargo', 'test'
+    inputs.dir 'libtsim'
+}
+tasks.named('test') {
+    dependsOn tasks.named('rustTest')
+}
+
 tasks.register('generateKotlinBindings', Exec) {
     group = 'build'
     description = 'Re-generates and overwrites the kotlin bindings. Use this during development'
