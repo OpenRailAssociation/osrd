@@ -436,7 +436,11 @@ pub mod tests {
     #[rstest] // TODO: fix deadlock with tokio::test
     async fn project_post_should_fail_when_authorization_is_enabled() {
         let app = test_app!().enable_authorization(true).build();
-        let user = app.user("bob", "Bob").with_roles([Role::Stdcm]).create();
+        let user = app
+            .user("bob", "Bob")
+            .with_roles([Role::Stdcm])
+            .create()
+            .await;
 
         let request = app.post("/projects").by_user(&user).json(&json!({
             "name": "test_project_failed",

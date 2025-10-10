@@ -487,7 +487,7 @@ impl<'a> UserBuilder<'a> {
         self
     }
 
-    pub fn create(self) -> authz::identity::User {
+    pub async fn create(self) -> authz::identity::User {
         let Self {
             app,
             info,
@@ -504,31 +504,29 @@ impl<'a> UserBuilder<'a> {
         }
         let regulator = &app.app_state.regulator;
 
-        block_on(async move {
-            let user = regulator
-                .driver()
-                .ensure_user(&info.clone())
+        let user = regulator
+            .driver()
+            .ensure_user(&info.clone())
+            .await
+            .expect("User should be created successfully");
+        if !authz_disabled {
+            regulator
+                .grant_user_roles(&authz::User(user.id), roles)
                 .await
-                .expect("User should be created successfully");
-            if !authz_disabled {
-                regulator
-                    .grant_user_roles(&authz::User(user.id), roles)
-                    .await
-                    .expect("roles should be granted successfully");
+                .expect("roles should be granted successfully");
 
-                for (infra_id, grant) in infras_grant.into_iter() {
-                    regulator
-                        .give_infra_grant_unchecked(
-                            &authz::Subject::User(authz::User(user.id)),
-                            &authz::Infra(infra_id),
-                            grant,
-                        )
-                        .await
-                        .expect("Infra grant should be given successfully")
-                }
+            for (infra_id, grant) in infras_grant.into_iter() {
+                regulator
+                    .give_infra_grant_unchecked(
+                        &authz::Subject::User(authz::User(user.id)),
+                        &authz::Infra(infra_id),
+                        grant,
+                    )
+                    .await
+                    .expect("Infra grant should be given successfully")
             }
-            user
-        })
+        }
+        user
     }
 }
 
