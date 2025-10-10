@@ -27,15 +27,12 @@ in their respective classes.
 
 ## Getting Started
 
-You'll need **Java 21**
+You'll need **Java 21** and latest **Rust**.
 
 
 ### Server usage (preferred)
 
 ```sh
-# build libtrain_sim.so
-cd train-sim && cargo build
-
 # on Linux / MacOS
 ./gradlew shadowJar
 
@@ -43,9 +40,7 @@ cd train-sim && cargo build
 gradlew.bat shadowJar
 
 # Run as a RabbitMQ single worker for all infra
-# Point jna.library.path to the directory where libtrain_sim.so is located
-# in case it is not a standard library directory.
-ALL_INFRA=true java -jar build/libs/osrd-all.jar -Djna.library.path=train-sim/target/debug worker --editoast-url http://localhost:8090/
+ALL_INFRA=true java -jar build/libs/osrd-all.jar worker --editoast-url http://localhost:8090/
 
 # Check that an infra can be loaded
 java -jar build/libs/osrd-all.jar load-infra --path infra.json
