@@ -33,8 +33,6 @@ class Target:
 
 TARGETS = [
     Target(name="core", image="core", release=True),
-    Target(name="train-sim-rust-test", image="core", variant="test-rust"),
-    Target(name="train-sim-bindings-test", image="core", variant="test-bindings"),
     Target(name="core-build", image="core", variant="build"),
 
     Target(name="editoast", image="editoast", release=True),
@@ -294,7 +292,7 @@ def parse_event(context) -> Event:
     raise ValueError(f"unknown event type: {event_name}")
 
 
-def generate_bake_file(event: Event, targets: list[Target]):
+def generate_bake_file(event, targets):
     bake_targets = {}
     for target in targets:
         # TODO: add labels
