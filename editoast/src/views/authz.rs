@@ -617,7 +617,8 @@ mod tests {
             .with_infra_grant(infra1, InfraGrant::Owner)
             .with_infra_grant(infra2, InfraGrant::Writer)
             .with_infra_grant(infra3, InfraGrant::Reader)
-            .create();
+            .create()
+            .await;
 
         let mut privileges = app
             .fetch(
@@ -684,7 +685,8 @@ mod tests {
             .with_infra_grant(infra1, InfraGrant::Reader)
             .with_infra_grant(infra3, InfraGrant::Reader)
             .with_infra_grant(infra4, InfraGrant::Owner)
-            .create();
+            .create()
+            .await;
 
         let mut privileges = app
             .fetch(
@@ -773,7 +775,8 @@ mod tests {
             .user("test", "Test")
             .with_roles([Role::OperationalStudies])
             .with_infra_grant(infra.id, InfraGrant::Reader)
-            .create();
+            .create()
+            .await;
 
         // Ask the grant of the user for the infra
         let request = app.post("/authz/me/grants").by_user(&user).json(&json!({
@@ -832,16 +835,16 @@ mod tests {
             .user("authz", "Authz")
             .with_roles([Role::OperationalStudies])
             .with_infra_grant(infra.id, InfraGrant::Owner)
-            .create();
+            .create()
+            .await;
 
-        Vec::from(["ben", "hal", "joe", "luc", "mar"])
-            .into_iter()
-            .for_each(|name| {
-                app.user(name, name)
-                    .with_roles([Role::OperationalStudies])
-                    .with_infra_grant(infra.id, InfraGrant::Reader)
-                    .create();
-            });
+        for name in ["ben", "hal", "joe", "luc", "mar"] {
+            app.user(name, name)
+                .with_roles([Role::OperationalStudies])
+                .with_infra_grant(infra.id, InfraGrant::Reader)
+                .create()
+                .await;
+        }
 
         // Get the full user list for the infra
         let request_all = app
@@ -881,19 +884,23 @@ mod tests {
         let alice = app
             .user("alice", "Alice")
             .with_infra_grant(infra.id, InfraGrant::Reader)
-            .create();
+            .create()
+            .await;
         let bob = app
             .user("bob", "Bob")
             .with_infra_grant(infra.id, InfraGrant::Owner)
-            .create();
+            .create()
+            .await;
         let tom = app
             .user("tom", "Tom")
             .with_infra_grant(infra.id, InfraGrant::Owner)
-            .create();
+            .create()
+            .await;
         let jerry = app
             .user("jerry", "Jerry")
             .with_infra_grant(infra.id, InfraGrant::Reader)
-            .create();
+            .create()
+            .await;
         let alice_and_bob = app
             .group("Alice and Bob")
             .with_members([&alice, &bob])
@@ -938,10 +945,11 @@ mod tests {
             .user("owner", "Owner")
             .with_roles([Role::OperationalStudies])
             .with_infra_grant(infra.id, InfraGrant::Owner)
-            .create();
+            .create()
+            .await;
 
         // Create a new user and add it as a writer to the infra with the grant API
-        let writer = app.user("writer", "Writer").create();
+        let writer = app.user("writer", "Writer").create().await;
         let request_grant = app.post("/authz/grants").by_user(&owner).json(&json!({
             "grant": [
                 {
@@ -984,8 +992,9 @@ mod tests {
         let alice = app
             .user("alice", "Alice")
             .with_infra_grant(infra.id, InfraGrant::Owner)
-            .create();
-        let bob = app.user("bob", "Bob").create();
+            .create()
+            .await;
+        let bob = app.user("bob", "Bob").create().await;
         let alice_and_bob = app
             .group("Alice and Bob")
             .with_members([&alice, &bob])
@@ -1042,7 +1051,8 @@ mod tests {
             .user("authz", "Authz")
             .with_roles([Role::OperationalStudies])
             .with_infra_grant(infra.id, InfraGrant::Owner)
-            .create();
+            .create()
+            .await;
 
         // Adding OWNER on the same user/infra
         let request_revoke = app.post("/authz/grants").by_user(&user).json(&json!({
@@ -1071,7 +1081,7 @@ mod tests {
             .with_infra_grant(infra.id, InfraGrant::Owner)
             .create();
 
-        let other = app.user("other", "Other").create();
+        let other = app.user("other", "Other").create().await;
 
         // Remove the READER grant should not fail
         let request_grant = app.post("/authz/grants").by_user(&owner).json(&json!({
@@ -1094,7 +1104,8 @@ mod tests {
         let user = app
             .user("test", "test")
             .with_roles([Role::OperationalStudies])
-            .create();
+            .create()
+            .await;
 
         let request = app.get("/authz/me").by_user(&user);
         let user_data = app
@@ -1116,7 +1127,7 @@ mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn whoami_authorization_disabled() {
         let app = test_app!().enable_authorization(false).build();
-        let user = app.user("test", "test").create();
+        let user = app.user("test", "test").create().await;
 
         let request = app.get("/authz/me").by_user(&user);
         let WhoamiResponse { roles, .. } = app
@@ -1131,8 +1142,8 @@ mod tests {
     #[rstest] // TODO: fix deadlock with tokio::test
     async fn user_groups_test() {
         let app = test_app!().enable_authorization(true).build();
-        let user_1 = app.user("test1", "test1").create();
-        let user_2 = app.user("test2", "test2").create();
+        let user_1 = app.user("test1", "test1").create().await;
+        let user_2 = app.user("test2", "test2").create().await;
         let group_1 = app
             .group("group_1")
             .with_members([&user_1, &user_2])
@@ -1180,7 +1191,7 @@ mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn user_groups_authorization_disabled() {
         let app = test_app!().enable_authorization(false).build();
-        let user = app.user("test", "test").create();
+        let user = app.user("test", "test").create().await;
 
         let request = app.get("/authz/me/groups").by_user(&user);
         app.fetch(request)
