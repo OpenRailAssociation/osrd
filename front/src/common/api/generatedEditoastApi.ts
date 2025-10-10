@@ -4691,6 +4691,7 @@ export type StdcmSearchEnvironmentResponse = {
   id: number;
   infra_id: number;
   operational_points?: number[] | null;
+  operational_points_id_filtered?: string[] | null;
   search_window_begin: string;
   search_window_end: string;
   speed_limits?: null | SpeedLimits;
@@ -4699,6 +4700,7 @@ export type StdcmSearchEnvironmentResponse = {
   work_schedule_group_id?: number | null;
 };
 export type OperationalPoints = number[];
+export type OperationalPointIds = string[];
 export type StdcmSearchEnvironment = {
   active_perimeter?: null | GeoJson;
   default_speed_limit_tag?: string | null;
@@ -4711,6 +4713,7 @@ export type StdcmSearchEnvironment = {
   id: number;
   infra_id: number;
   operational_points: OperationalPoints;
+  operational_points_id_filtered: OperationalPointIds;
   /** The start of the search time window.
     Usually, trains schedules from the `timetable_id` runs within this window. */
   search_window_begin: string;
@@ -4731,6 +4734,7 @@ export type StdcmSearchEnvironmentCreateForm = {
   enabled_until: string;
   infra_id: number;
   operational_points?: number[] | null;
+  operational_points_id_filtered?: string[] | null;
   search_window_begin: string;
   search_window_end: string;
   speed_limits?: null | SpeedLimits;

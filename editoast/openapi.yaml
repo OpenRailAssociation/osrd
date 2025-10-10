@@ -10594,6 +10594,10 @@ components:
                 type: string
             additionalProperties: false
       additionalProperties: false
+    OperationalPointIds:
+      type: array
+      items:
+        type: string
     OperationalPointPart:
       type: object
       required:
@@ -14050,6 +14054,7 @@ components:
       - enabled_until
       - operational_points
       - speed_limit_tags
+      - operational_points_id_filtered
       properties:
         active_perimeter:
           oneOf:
@@ -14080,6 +14085,8 @@ components:
           format: int64
         operational_points:
           $ref: '#/components/schemas/OperationalPoints'
+        operational_points_id_filtered:
+          $ref: '#/components/schemas/OperationalPointIds'
         search_window_begin:
           type: string
           format: date-time
@@ -14142,6 +14149,12 @@ components:
           items:
             type: integer
             format: int64
+        operational_points_id_filtered:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
         search_window_begin:
           type: string
           format: date-time
@@ -14204,6 +14217,12 @@ components:
           items:
             type: integer
             format: int64
+        operational_points_id_filtered:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
         search_window_begin:
           type: string
           format: date-time
