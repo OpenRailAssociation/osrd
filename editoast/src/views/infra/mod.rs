@@ -855,8 +855,13 @@ pub(in crate::views) async fn match_operational_points(
                 .into_iter()
                 .flat_map(|(_, op_models)| op_models)
                 .map(|op_model| op_model.schema)
-                .filter(|op| {
-                    op.extensions.sncf.as_ref().map(|ext| &ext.ch) == secondary_code.as_ref()
+                .filter(|op| match secondary_code.as_ref() {
+                    Some(secondary_code) => op
+                        .extensions
+                        .sncf
+                        .as_ref()
+                        .is_some_and(|ext| &ext.ch == secondary_code),
+                    None => true,
                 })
                 .collect::<Vec<_>>(),
             OperationalPointIdentifier::OperationalPointUic {
@@ -867,8 +872,13 @@ pub(in crate::views) async fn match_operational_points(
                 .into_iter()
                 .flat_map(|(_, op_models)| op_models)
                 .map(|op_model| op_model.schema)
-                .filter(|op| {
-                    op.extensions.sncf.as_ref().map(|ext| &ext.ch) == secondary_code.as_ref()
+                .filter(|op| match secondary_code.as_ref() {
+                    Some(secondary_code) => op
+                        .extensions
+                        .sncf
+                        .as_ref()
+                        .is_some_and(|ext| &ext.ch == secondary_code),
+                    None => true,
                 })
                 .collect::<Vec<_>>(),
         };
