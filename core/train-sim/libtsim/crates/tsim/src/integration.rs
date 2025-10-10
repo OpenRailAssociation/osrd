@@ -325,9 +325,15 @@ pub fn step(
             return newton_step(time_delta, speed, acceleration, direction);
         }
 
-        let tractive_effort_curve = tractive_effort_curve_map
-            .get(f64::clamp(position, 0.0, path.length()))
-            .unwrap();
+        let tractive_effort_curve = {
+            let position = f64::clamp(position, 0.0, path.length());
+            match tractive_effort_curve_map.get(position) {
+                None => {
+                    panic!("position {position} not found on curve {tractive_effort_curve_map:#?}");
+                }
+                Some(x) => x,
+            }
+        };
         let max_traction = max_effort(speed, tractive_effort_curve);
         let rolling_resistance = rolling_stock.davis.rolling_resistance(speed);
         let average_grade = {
