@@ -961,7 +961,6 @@ enum EditionError {
 pub mod tests {
     use axum::http::StatusCode;
     use pretty_assertions::assert_eq;
-    use rstest::rstest;
 
     use super::*;
     use crate::generated_data::infra_error::InfraError;
@@ -1032,7 +1031,8 @@ pub mod tests {
             .assert_status(StatusCode::BAD_REQUEST);
     }
 
-    #[rstest] // TODO: fix deadlock with tokio::test
+    #[rstest::rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     #[case("TA0", 1000000)]
     #[case("TD1", 15500000)]
     async fn split_track_section_should_work(#[case] track: &str, #[case] offset: u64) {

@@ -338,7 +338,6 @@ mod tests {
 
     use axum::http::StatusCode;
     use pretty_assertions::assert_eq;
-    use rstest::rstest;
 
     use super::LightRollingStockWithLiveries;
     use super::LightRollingStockWithLiveriesCountList;
@@ -419,7 +418,7 @@ mod tests {
             .assert_status(StatusCode::NOT_FOUND);
     }
 
-    #[rstest] // TODO: fix deadlock with tokio::test
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn list_light_rolling_stock_increasing_ids() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();

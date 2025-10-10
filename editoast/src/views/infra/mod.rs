@@ -1194,7 +1194,7 @@ pub mod tests {
         infra_refreshed: Vec<i64>,
     }
 
-    #[rstest] // TODO: fix deadlock with tokio::test
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn infra_refresh() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
@@ -1210,7 +1210,7 @@ pub mod tests {
         assert_eq!(refreshed_infras.infra_refreshed, vec![empty_infra.id]);
     }
 
-    #[rstest] // TODO: fix deadlock with tokio::test
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     // Slow test
     // PostgreSQL deadlock can happen in this test, see section `Deadlock` of [DbConnectionPoolV2::get] for more information
     async fn infra_refresh_force() {
