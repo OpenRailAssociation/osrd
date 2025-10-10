@@ -360,7 +360,7 @@ mod tests {
     async fn list_light_rolling_stock() {
         let app = TestAppBuilder::default_app();
         let request = app.get("/light_rolling_stock");
-        app.fetch(request).assert_status(StatusCode::OK);
+        app.fetch(request).await.assert_status(StatusCode::OK);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -375,8 +375,11 @@ mod tests {
         let request = app.get(format!("/light_rolling_stock/{}", fast_rolling_stock.id).as_str());
 
         // WHEN
-        let response: LightRollingStockWithLiveries =
-            app.fetch(request).assert_status(StatusCode::OK).json_into();
+        let response: LightRollingStockWithLiveries = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into();
 
         // THEN
         assert_eq!(response.rolling_stock.id, fast_rolling_stock.id);
@@ -394,8 +397,11 @@ mod tests {
         let request = app.get(format!("/light_rolling_stock/name/{rs_name}").as_str());
 
         // WHEN
-        let response: LightRollingStockWithLiveries =
-            app.fetch(request).assert_status(StatusCode::OK).json_into();
+        let response: LightRollingStockWithLiveries = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into();
 
         // THEN
         assert_eq!(response.rolling_stock.id, fast_rolling_stock.id);
@@ -408,7 +414,9 @@ mod tests {
 
         let request = app.get(format!("/light_rolling_stock/{}", -1).as_str());
 
-        app.fetch(request).assert_status(StatusCode::NOT_FOUND);
+        app.fetch(request)
+            .await
+            .assert_status(StatusCode::NOT_FOUND);
     }
 
     #[rstest] // TODO: fix deadlock with tokio::test
@@ -438,13 +446,19 @@ mod tests {
             .collect::<HashSet<_>>();
 
         let request = app.get("/light_rolling_stock/");
-        let response: LightRollingStockWithLiveriesCountList =
-            app.fetch(request).assert_status(StatusCode::OK).json_into();
+        let response: LightRollingStockWithLiveriesCountList = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into();
         let count = response.stats.count;
         let uri = format!("/light_rolling_stock/?page_size={count}");
         let request = app.get(&uri);
-        let response: LightRollingStockWithLiveriesCountList =
-            app.fetch(request).assert_status(StatusCode::OK).json_into();
+        let response: LightRollingStockWithLiveriesCountList = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into();
 
         // Ensure that AT LEAST all the rolling stocks create above are returned, in order
         let vec_ids = response
@@ -465,6 +479,8 @@ mod tests {
 
         let request = app.get("/light_rolling_stock/?page_size=1010");
 
-        app.fetch(request).assert_status(StatusCode::BAD_REQUEST);
+        app.fetch(request)
+            .await
+            .assert_status(StatusCode::BAD_REQUEST);
     }
 }

@@ -805,7 +805,7 @@ pub mod tests {
         let request = app.rolling_stock_create_request(&fast_rolling_stock_form);
 
         // WHEN
-        let raw_response = app.fetch(request);
+        let raw_response = app.fetch(request).await;
 
         // THEN
         let response: RollingStock = raw_response.assert_status(StatusCode::OK).json_into();
@@ -836,7 +836,7 @@ pub mod tests {
             .json(&locked_fast_rolling_stock_form);
 
         // WHEN
-        let raw_response = app.fetch(request);
+        let raw_response = app.fetch(request).await;
 
         // THEN
         let response: RollingStock = raw_response.assert_status(StatusCode::OK).json_into();
@@ -863,6 +863,7 @@ pub mod tests {
 
         let response: InternalError = app
             .fetch(request)
+            .await
             .assert_status(StatusCode::BAD_REQUEST)
             .json_into();
 
@@ -878,10 +879,17 @@ pub mod tests {
         let stock_name = Uuid::new_v4().to_string();
         let rolling_stock = fast_rolling_stock_form(stock_name.as_str());
         let request = app.rolling_stock_create_request(&rolling_stock);
-        let RollingStock { id, .. } = app.fetch(request).assert_status(StatusCode::OK).json_into();
+        let RollingStock { id, .. } = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into();
         let request = app.get(&format!("/rolling_stock/{id}/usage"));
-        let related_schedules: Vec<ScenarioReference> =
-            app.fetch(request).assert_status(StatusCode::OK).json_into();
+        let related_schedules: Vec<ScenarioReference> = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into();
         assert!(related_schedules.is_empty());
     }
 
@@ -894,12 +902,14 @@ pub mod tests {
             app.rolling_stock_create_request(&fast_rolling_stock_form(&Uuid::new_v4().to_string()));
         let rolling_stock: RollingStock = app
             .fetch(create_rolling_stock_request)
+            .await
             .assert_status(StatusCode::OK)
             .json_into();
         let create_other_rolling_stock_request =
             app.rolling_stock_create_request(&fast_rolling_stock_form(&Uuid::new_v4().to_string()));
         let other_rolling_stock: RollingStock = app
             .fetch(create_other_rolling_stock_request)
+            .await
             .assert_status(StatusCode::OK)
             .json_into();
 
@@ -957,8 +967,11 @@ pub mod tests {
             .unwrap();
 
         let request = app.get(&format!("/rolling_stock/{}/usage", rolling_stock.id));
-        let related_scenarios: Vec<ScenarioReference> =
-            app.fetch(request).assert_status(StatusCode::OK).json_into();
+        let related_scenarios: Vec<ScenarioReference> = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into();
         let expected_scenarios = [
             ScenarioReference {
                 project_id: project.id,
@@ -990,7 +1003,9 @@ pub mod tests {
         let _ = RollingStock::delete_static(&mut db_pool.get_ok(), 1).await;
 
         let request = app.get("/rolling_stock/1/usage");
-        app.fetch(request).assert_status(StatusCode::NOT_FOUND);
+        app.fetch(request)
+            .await
+            .assert_status(StatusCode::NOT_FOUND);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -1005,7 +1020,7 @@ pub mod tests {
         let request = app.rolling_stock_create_request(&fast_rolling_stock_form);
 
         // WHEN
-        let raw_response = app.fetch(request);
+        let raw_response = app.fetch(request).await;
 
         // THEN
         let response: InternalError = raw_response
@@ -1033,6 +1048,7 @@ pub mod tests {
             .bytes(invalid_payload.into());
 
         app.fetch(request)
+            .await
             .assert_status(StatusCode::UNPROCESSABLE_ENTITY);
     }
 
@@ -1048,7 +1064,7 @@ pub mod tests {
         let request = app.rolling_stock_get_by_id_request(fast_rolling_stock.id);
 
         // WHEN
-        let raw_response = app.fetch(request);
+        let raw_response = app.fetch(request).await;
 
         // THEN
         let response: RollingStock = raw_response.assert_status(StatusCode::OK).json_into();
@@ -1068,7 +1084,7 @@ pub mod tests {
         let request = app.get(format!("/rolling_stock/name/{rs_name}").as_str());
 
         // WHEN
-        let raw_response = app.fetch(request);
+        let raw_response = app.fetch(request).await;
 
         // THEN
         let response: RollingStock = raw_response.assert_status(StatusCode::OK).json_into();
@@ -1082,7 +1098,9 @@ pub mod tests {
 
         let request = app.rolling_stock_get_by_id_request(0);
 
-        app.fetch(request).assert_status(StatusCode::NOT_FOUND);
+        app.fetch(request)
+            .await
+            .assert_status(StatusCode::NOT_FOUND);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -1092,7 +1110,9 @@ pub mod tests {
         let request =
             app.get(format!("/rolling_stock/name/{}", "unexisting_rolling_stock_name").as_str());
 
-        app.fetch(request).assert_status(StatusCode::NOT_FOUND);
+        app.fetch(request)
+            .await
+            .assert_status(StatusCode::NOT_FOUND);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -1114,7 +1134,7 @@ pub mod tests {
             .json(&&rolling_stock_form);
 
         // WHEN
-        let raw_response = app.fetch(request);
+        let raw_response = app.fetch(request).await;
 
         // THEN
         raw_response.assert_status(StatusCode::OK);
@@ -1165,7 +1185,7 @@ pub mod tests {
             .json(&&rolling_stock_form);
 
         // WHEN
-        let raw_response = app.fetch(request);
+        let raw_response = app.fetch(request).await;
 
         // THEN
         raw_response.assert_status(StatusCode::OK);
@@ -1212,7 +1232,7 @@ pub mod tests {
             .json(&&rolling_stock_form);
 
         // WHEN
-        let raw_response = app.fetch(request);
+        let raw_response = app.fetch(request).await;
 
         // THEN
         let response = raw_response
@@ -1253,7 +1273,7 @@ pub mod tests {
             .json(&second_fast_rolling_stock_form);
 
         // WHEN
-        let raw_response = app.fetch(request);
+        let raw_response = app.fetch(request).await;
 
         // THEN
         let response: InternalError = raw_response
@@ -1291,7 +1311,7 @@ pub mod tests {
             .json(&second_fast_rolling_stock_form);
 
         // WHEN
-        let raw_response = app.fetch(request);
+        let raw_response = app.fetch(request).await;
 
         // THEN
         let response: InternalError = raw_response.assert_status(StatusCode::CONFLICT).json_into();
@@ -1307,7 +1327,9 @@ pub mod tests {
             .patch(&format!("/rolling_stock/{id}/locked"))
             .json(&json!({ "locked": true }));
 
-        app.fetch(request).assert_status(StatusCode::NOT_FOUND);
+        app.fetch(request)
+            .await
+            .assert_status(StatusCode::NOT_FOUND);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -1324,7 +1346,9 @@ pub mod tests {
             .patch(format!("/rolling_stock/{}/locked", fast_rolling_stock.id).as_str())
             .json(&json!({ "locked": true }));
 
-        app.fetch(request).assert_status(StatusCode::NO_CONTENT);
+        app.fetch(request)
+            .await
+            .assert_status(StatusCode::NO_CONTENT);
 
         let fast_rolling_stock: RollingStock =
             RollingStock::retrieve(db_pool.get_ok(), fast_rolling_stock.id)
@@ -1353,7 +1377,9 @@ pub mod tests {
             .patch(format!("/rolling_stock/{}/locked", locked_fast_rolling_stock.id).as_str())
             .json(&json!({ "locked": false }));
 
-        app.fetch(request).assert_status(StatusCode::NO_CONTENT);
+        app.fetch(request)
+            .await
+            .assert_status(StatusCode::NO_CONTENT);
 
         let fast_rolling_stock: RollingStock =
             RollingStock::retrieve(db_pool.get_ok(), locked_fast_rolling_stock.id)
@@ -1377,7 +1403,7 @@ pub mod tests {
         let request = app.get("/rolling_stock/power_restrictions");
 
         // WHEN
-        let raw_response = app.fetch(request);
+        let raw_response = app.fetch(request).await;
 
         // THEN
         let response: Vec<String> = raw_response.assert_status(StatusCode::OK).json_into();
@@ -1407,7 +1433,7 @@ pub mod tests {
             app.delete(format!("/rolling_stock/{}", locked_fast_rolling_stock.id).as_str());
 
         // WHEN
-        let raw_response = app.fetch(request);
+        let raw_response = app.fetch(request).await;
 
         // THEN
         let response: InternalError = raw_response.assert_status(StatusCode::CONFLICT).json_into();
@@ -1435,7 +1461,7 @@ pub mod tests {
         let request = app.delete(format!("/rolling_stock/{}", fast_rolling_stock.id).as_str());
 
         // WHEN
-        let raw_response = app.fetch(request);
+        let raw_response = app.fetch(request).await;
 
         // THEN
         raw_response.assert_status(StatusCode::NO_CONTENT);
@@ -1486,7 +1512,7 @@ pub mod tests {
             app.delete(format!("/rolling_stock/{}?force=true", fast_rolling_stock.id).as_str());
 
         // WHEN
-        let raw_response = app.fetch(request);
+        let raw_response = app.fetch(request).await;
 
         // THEN
         let response: InternalError = raw_response.assert_status(StatusCode::CONFLICT).json_into();
@@ -1500,7 +1526,7 @@ pub mod tests {
         assert!(rolling_stock_exists);
 
         // WHEN
-        let raw_response_forced = app.fetch(request_forced);
+        let raw_response_forced = app.fetch(request_forced).await;
 
         // THEN
         raw_response_forced.assert_status(StatusCode::NO_CONTENT);

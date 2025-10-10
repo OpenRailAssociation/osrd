@@ -1201,8 +1201,11 @@ mod tests {
             .post(format!("/timetable/{}/paced_trains", timetable.id).as_str())
             .json(&json!(vec![paced_train_base]));
 
-        let response: Vec<PacedTrainResponse> =
-            app.fetch(request).assert_status(StatusCode::OK).json_into();
+        let response: Vec<PacedTrainResponse> = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into();
         assert_eq!(response.len(), 1);
     }
 
@@ -1230,8 +1233,11 @@ mod tests {
             .post(format!("/timetable/{}/paced_trains", timetable.id).as_str())
             .json(&json!(vec![paced_train_base]));
 
-        let response: Vec<PacedTrainResponse> =
-            app.fetch(request).assert_status(StatusCode::OK).json_into();
+        let response: Vec<PacedTrainResponse> = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into();
 
         assert_eq!(response.len(), 1);
 
@@ -1278,7 +1284,9 @@ mod tests {
             .put(format!("/paced_train/{}", simple_paced_train.id).as_str())
             .json(&json!(&paced_train));
 
-        app.fetch(request).assert_status(StatusCode::NO_CONTENT);
+        app.fetch(request)
+            .await
+            .assert_status(StatusCode::NO_CONTENT);
 
         let created_paced_train =
             models::PacedTrain::retrieve(pool.get_ok(), simple_paced_train.id)
@@ -1309,7 +1317,9 @@ mod tests {
             .put(format!("/paced_train/{}", paced_train.id).as_str())
             .json(&json!(&paced_train_base));
 
-        app.fetch(request).assert_status(StatusCode::NO_CONTENT);
+        app.fetch(request)
+            .await
+            .assert_status(StatusCode::NO_CONTENT);
 
         let updated_paced_train = models::PacedTrain::retrieve(pool.get_ok(), paced_train.id)
             .await
@@ -1341,6 +1351,7 @@ mod tests {
 
         let response = app
             .fetch(request)
+            .await
             .assert_status(StatusCode::UNPROCESSABLE_ENTITY)
             .bytes();
         assert_eq!(
@@ -1369,6 +1380,7 @@ mod tests {
 
         let response = app
             .fetch(request)
+            .await
             .assert_status(StatusCode::UNPROCESSABLE_ENTITY)
             .bytes();
 
@@ -1390,7 +1402,10 @@ mod tests {
             .delete("/paced_train/")
             .json(&json!({"ids": vec![paced_train.id]}));
 
-        let _ = app.fetch(request).assert_status(StatusCode::NO_CONTENT);
+        let _ = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::NO_CONTENT);
 
         let exists = models::PacedTrain::exists(&mut pool.get_ok(), paced_train.id)
             .await
@@ -1406,6 +1421,7 @@ mod tests {
 
         let response: InternalError = app
             .fetch(request)
+            .await
             .assert_status(StatusCode::NOT_FOUND)
             .json_into();
 
@@ -1424,6 +1440,7 @@ mod tests {
 
         let response = app
             .fetch(request)
+            .await
             .assert_status(StatusCode::OK)
             .json_into::<PacedTrainResponse>();
 
@@ -1471,8 +1488,11 @@ mod tests {
         let request = app.get(
             format!("/paced_train/{train_schedule_id}/simulation/?infra_id={infra_id}").as_str(),
         );
-        let response: core_client::simulation::Response =
-            app.fetch(request).assert_status(StatusCode::OK).json_into();
+        let response: core_client::simulation::Response = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into();
 
         assert_eq!(
             response,
@@ -1528,6 +1548,7 @@ mod tests {
         );
         let response: InternalError = app
             .fetch(request)
+            .await
             .assert_status(StatusCode::NOT_FOUND)
             .json_into();
 
@@ -1544,8 +1565,11 @@ mod tests {
         let request = app.get(
             format!("/paced_train/{train_schedule_id}/simulation/?infra_id={infra_id}&exception_key=created_exception_key").as_str(),
         );
-        let response: simulation::Response =
-            app.fetch(request).assert_status(StatusCode::OK).json_into();
+        let response: simulation::Response = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into();
 
         assert_eq!(
             response,
@@ -1595,8 +1619,11 @@ mod tests {
         let (app, infra_id, train_schedule_id) =
             app_infra_id_paced_train_id_for_simulation_tests().await;
         let request = app.get(format!("/paced_train/{train_schedule_id}").as_str());
-        let mut paced_train_response: PacedTrainResponse =
-            app.fetch(request).assert_status(StatusCode::OK).json_into();
+        let mut paced_train_response: PacedTrainResponse = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into();
         paced_train_response.paced_train.exceptions[0].rolling_stock =
             Some(RollingStockChangeGroup {
                 rolling_stock_name: "R2D2".into(),
@@ -1605,13 +1632,18 @@ mod tests {
         let request = app
             .put(format!("/paced_train/{train_schedule_id}").as_str())
             .json(&json!(paced_train_response.paced_train));
-        app.fetch(request).assert_status(StatusCode::NO_CONTENT);
+        app.fetch(request)
+            .await
+            .assert_status(StatusCode::NO_CONTENT);
         // WHEN
         let request = app.get(
             format!("/paced_train/{train_schedule_id}/simulation/?infra_id={infra_id}&exception_key=created_exception_key").as_str(),
         );
-        let response: simulation::Response =
-            app.fetch(request).assert_status(StatusCode::OK).json_into();
+        let response: simulation::Response = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into();
 
         // THEN
         assert_eq!(
@@ -1635,6 +1667,7 @@ mod tests {
 
         let response: InternalError = app
             .fetch(request)
+            .await
             .assert_status(StatusCode::NOT_FOUND)
             .json_into();
 
@@ -1646,8 +1679,11 @@ mod tests {
         let (app, infra_id, paced_train_id) =
             app_infra_id_paced_train_id_for_simulation_tests().await;
         let request = app.get(format!("/paced_train/{paced_train_id}").as_str());
-        let mut paced_train_response: PacedTrainResponse =
-            app.fetch(request).assert_status(StatusCode::OK).json_into();
+        let mut paced_train_response: PacedTrainResponse = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into();
         // First remove all already generated exceptions
         paced_train_response.paced_train.exceptions.clear();
         // Add one exception which will not change the simulation from base
@@ -1674,14 +1710,19 @@ mod tests {
         let request = app
             .put(format!("/paced_train/{paced_train_id}").as_str())
             .json(&json!(paced_train_response.paced_train));
-        app.fetch(request).assert_status(StatusCode::NO_CONTENT);
+        app.fetch(request)
+            .await
+            .assert_status(StatusCode::NO_CONTENT);
         let request = app.post("/paced_train/simulation_summary").json(&json!({
             "infra_id": infra_id,
             "ids": vec![paced_train_id],
         }));
 
-        let response: HashMap<i64, PacedTrainSummaryResponse> =
-            app.fetch(request).assert_status(StatusCode::OK).json_into();
+        let response: HashMap<i64, PacedTrainSummaryResponse> = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into();
         assert_eq!(response.len(), 1);
         assert_eq!(
             *response.get(&paced_train_id).unwrap(),
@@ -1725,6 +1766,7 @@ mod tests {
         }));
         let response: InternalError = app
             .fetch(request)
+            .await
             .assert_status(StatusCode::NOT_FOUND)
             .json_into();
 
@@ -1745,6 +1787,7 @@ mod tests {
 
         let response: InternalError = app
             .fetch(request)
+            .await
             .assert_status(StatusCode::NOT_FOUND)
             .json_into();
 
@@ -1764,6 +1807,7 @@ mod tests {
 
         let response: InternalError = app
             .fetch(request)
+            .await
             .assert_status(StatusCode::NOT_FOUND)
             .json_into();
 
@@ -1786,6 +1830,7 @@ mod tests {
         );
         let response: InternalError = app
             .fetch(request)
+            .await
             .assert_status(StatusCode::NOT_FOUND)
             .json_into();
 
@@ -1826,6 +1871,7 @@ mod tests {
 
         let response = app
             .fetch(request)
+            .await
             .assert_status(StatusCode::OK)
             .json_into::<PathfindingResult>();
 
@@ -1883,6 +1929,7 @@ mod tests {
 
         let response = app
             .fetch(request)
+            .await
             .assert_status(StatusCode::OK)
             .json_into::<PathfindingResult>();
 
@@ -1934,6 +1981,7 @@ mod tests {
 
         let response = app
             .fetch(request)
+            .await
             .assert_status(StatusCode::OK)
             .json_into::<PathfindingResult>();
 
@@ -1988,8 +2036,11 @@ mod tests {
                 }
             ],
         }));
-        let response: HashMap<i64, ProjectPathPacedTrainResult> =
-            app.fetch(request).assert_status(StatusCode::OK).json_into();
+        let response: HashMap<i64, ProjectPathPacedTrainResult> = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into();
         // EXPECT
         // TODO: improve this test
         assert_eq!(response.len(), 2);
@@ -2001,8 +2052,11 @@ mod tests {
             app_infra_id_paced_train_id_for_simulation_tests().await;
 
         let request = app.get(format!("/paced_train/{paced_train_id}").as_str());
-        let mut paced_train_response: PacedTrainResponse =
-            app.fetch(request).assert_status(StatusCode::OK).json_into();
+        let mut paced_train_response: PacedTrainResponse = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into();
         // First remove all already generated exceptions
         paced_train_response.paced_train.exceptions.clear();
 
@@ -2030,7 +2084,9 @@ mod tests {
         let request = app
             .put(format!("/paced_train/{paced_train_id}").as_str())
             .json(&json!(paced_train_response.paced_train));
-        app.fetch(request).assert_status(StatusCode::NO_CONTENT);
+        app.fetch(request)
+            .await
+            .assert_status(StatusCode::NO_CONTENT);
 
         let request =
             app.post("/paced_train/occupancy_blocks")
@@ -2047,7 +2103,7 @@ mod tests {
                         "blocks":[],
                     },
                 }));
-        let response = app.fetch(request);
+        let response = app.fetch(request).await;
         let response: HashMap<i64, OccupancyBlocksPacedTrainResult> =
             response.assert_status(StatusCode::OK).json_into();
         assert_eq!(response.len(), 1);

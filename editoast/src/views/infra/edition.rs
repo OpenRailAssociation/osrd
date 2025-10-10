@@ -985,7 +985,9 @@ pub mod tests {
             }));
 
         // Check that we receive a 404
-        app.fetch(request).assert_status(StatusCode::NOT_FOUND);
+        app.fetch(request)
+            .await
+            .assert_status(StatusCode::NOT_FOUND);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -1004,7 +1006,9 @@ pub mod tests {
             }));
 
         // Check that we receive a 404
-        app.fetch(request).assert_status(StatusCode::NOT_FOUND);
+        app.fetch(request)
+            .await
+            .assert_status(StatusCode::NOT_FOUND);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -1023,7 +1027,9 @@ pub mod tests {
             }));
 
         // Check that we receive an error
-        app.fetch(request).assert_status(StatusCode::BAD_REQUEST);
+        app.fetch(request)
+            .await
+            .assert_status(StatusCode::BAD_REQUEST);
     }
 
     #[rstest] // TODO: fix deadlock with tokio::test
@@ -1038,7 +1044,7 @@ pub mod tests {
         // Refresh the infra to get the good number of infra errors
         let req_refresh =
             app.post(format!("/infra/refresh/?infras={}&force=true", small_infra.id).as_str());
-        app.fetch(req_refresh).assert_status(StatusCode::OK);
+        app.fetch(req_refresh).await.assert_status(StatusCode::OK);
 
         // Get infra errors
         let (init_errors, _) = query_errors(&mut db_pool.get_ok(), &small_infra).await;
@@ -1050,7 +1056,11 @@ pub mod tests {
                 "track": track,
                 "offset": offset,
             }));
-        let res: Vec<String> = app.fetch(request).assert_status(StatusCode::OK).json_into();
+        let res: Vec<String> = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into();
 
         // Check the response
         assert_eq!(res.len(), 2);

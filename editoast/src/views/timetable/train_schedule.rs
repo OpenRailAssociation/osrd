@@ -1270,6 +1270,7 @@ pub mod tests {
 
         let response = app
             .fetch(request)
+            .await
             .assert_status(StatusCode::OK)
             .json_into::<TrainScheduleResponse>();
 
@@ -1294,8 +1295,11 @@ pub mod tests {
             .post(format!("/timetable/{}/train_schedules", timetable.id).as_str())
             .json(&json!(vec![train_schedule_base]));
 
-        let response: Vec<TrainScheduleResponse> =
-            app.fetch(request).assert_status(StatusCode::OK).json_into();
+        let response: Vec<TrainScheduleResponse> = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into();
         assert_eq!(response.len(), 1);
     }
 
@@ -1323,8 +1327,11 @@ pub mod tests {
             .post(format!("/timetable/{}/train_schedules", timetable.id).as_str())
             .json(&json!(vec![train_schedule_base]));
 
-        let response: Vec<TrainScheduleResponse> =
-            app.fetch(request).assert_status(StatusCode::OK).json_into();
+        let response: Vec<TrainScheduleResponse> = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into();
 
         assert_eq!(response.len(), 1);
 
@@ -1360,7 +1367,10 @@ pub mod tests {
             .delete("/train_schedule/")
             .json(&json!({"ids": vec![train_schedule.id]}));
 
-        let _ = app.fetch(request).assert_status(StatusCode::NO_CONTENT);
+        let _ = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::NO_CONTENT);
 
         let exists = models::TrainSchedule::exists(&mut pool.get_ok(), train_schedule.id)
             .await
@@ -1389,8 +1399,11 @@ pub mod tests {
             .put(format!("/train_schedule/{}", train_schedule.id).as_str())
             .json(&json!(update_train_schedule_form));
 
-        let response: TrainScheduleResponse =
-            app.fetch(request).assert_status(StatusCode::OK).json_into();
+        let response: TrainScheduleResponse = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into();
         assert_eq!(
             response.train_schedule.rolling_stock_name,
             update_train_schedule_form.train_schedule.rolling_stock_name
@@ -1434,8 +1447,11 @@ pub mod tests {
             .put(format!("/train_schedule/{train_schedule_id}").as_str())
             .json(&json!(update_train_schedule_form));
 
-        let response: TrainScheduleResponse =
-            app.fetch(request).assert_status(StatusCode::OK).json_into();
+        let response: TrainScheduleResponse = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into();
         assert_eq!(
             response.train_schedule.category,
             update_train_schedule_form.train_schedule.category
@@ -1477,8 +1493,11 @@ pub mod tests {
             .put(format!("/train_schedule/{train_schedule_id}").as_str())
             .json(&json!(update_train_schedule_form));
 
-        let response: TrainScheduleResponse =
-            app.fetch(request).assert_status(StatusCode::OK).json_into();
+        let response: TrainScheduleResponse = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into();
 
         let updated_train_schedule = models::TrainSchedule::retrieve(pool.get_ok(), response.id)
             .await
@@ -1524,7 +1543,7 @@ pub mod tests {
         let request = app.get(
             format!("/train_schedule/{train_schedule_id}/simulation/?infra_id={infra_id}").as_str(),
         );
-        app.fetch(request).assert_status(StatusCode::OK);
+        app.fetch(request).await.assert_status(StatusCode::OK);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -1535,7 +1554,7 @@ pub mod tests {
             "infra_id": infra_id,
             "ids": vec![train_schedule_id],
         }));
-        app.fetch(request).assert_status(StatusCode::OK);
+        app.fetch(request).await.assert_status(StatusCode::OK);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -1597,8 +1616,11 @@ pub mod tests {
                 },
             ],
         }));
-        let response: HashMap<i64, Vec<SpaceTimeCurve>> =
-            app.fetch(request).assert_status(StatusCode::OK).json_into();
+        let response: HashMap<i64, Vec<SpaceTimeCurve>> = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into();
 
         // EXPECT
         // TODO: improve this test
@@ -1644,7 +1666,9 @@ pub mod tests {
             }),
         );
 
-        app.fetch(request).assert_status(StatusCode::NOT_FOUND);
+        app.fetch(request)
+            .await
+            .assert_status(StatusCode::NOT_FOUND);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -1691,8 +1715,11 @@ pub mod tests {
                 "infra_id": small_infra.id
             }),
         );
-        let response: HashMap<String, Vec<TrackOccupancy>> =
-            app.fetch(request).assert_status(StatusCode::OK).json_into();
+        let response: HashMap<String, Vec<TrackOccupancy>> = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into();
         assert_eq!(response.len(), 0);
     }
 
@@ -1886,7 +1913,7 @@ pub mod tests {
                         "blocks":[],
                     },
                 }));
-        let response = app.fetch(request);
+        let response = app.fetch(request).await;
         let response: HashMap<i64, OccupancyBlocks> =
             response.assert_status(StatusCode::OK).json_into();
         assert_eq!(response.len(), 1);

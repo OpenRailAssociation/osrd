@@ -360,12 +360,10 @@ impl TestApp {
         )
     }
 
-    pub fn fetch(&self, req: TestRequest) -> TestResponse {
-        futures::executor::block_on(async move {
-            tracing::trace!(request = ?req);
-            let response = req.await;
-            TestResponse::new(response)
-        })
+    pub async fn fetch(&self, req: TestRequest) -> TestResponse {
+        tracing::trace!(request = ?req);
+        let response = req.await;
+        TestResponse::new(response)
     }
 
     pub fn get(&self, path: &str) -> TestRequest {

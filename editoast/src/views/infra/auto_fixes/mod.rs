@@ -390,6 +390,7 @@ mod tests {
 
         let operations: Vec<Operation> = app
             .fetch(app.auto_fixes_request(small_infra_id))
+            .await
             .assert_status(StatusCode::OK)
             .json_into();
 
@@ -446,6 +447,7 @@ mod tests {
         // WHEN
         let operations: Vec<Operation> = app
             .fetch(app.auto_fixes_request(small_infra_id))
+            .await
             .assert_status(StatusCode::OK)
             .json_into();
 
@@ -489,6 +491,7 @@ mod tests {
 
         let operations: Vec<Operation> = app
             .fetch(app.auto_fixes_request(small_infra_id))
+            .await
             .assert_status(StatusCode::OK)
             .json_into();
 
@@ -732,6 +735,7 @@ mod tests {
 
         let operations: Vec<Operation> = app
             .fetch(app.auto_fixes_request(small_infra_id))
+            .await
             .assert_status(StatusCode::OK)
             .json_into();
 
@@ -784,6 +788,7 @@ mod tests {
 
         let operations: Vec<Operation> = app
             .fetch(app.auto_fixes_request(empty_infra_id))
+            .await
             .assert_status(StatusCode::OK)
             .json_into();
 
@@ -812,6 +817,7 @@ mod tests {
 
         let operations: Vec<Operation> = app
             .fetch(app.auto_fixes_request(empty_infra_id))
+            .await
             .assert_status(StatusCode::OK)
             .json_into();
 
@@ -882,6 +888,7 @@ mod tests {
 
         let operations: Vec<Operation> = app
             .fetch(app.auto_fixes_request(empty_infra_id))
+            .await
             .assert_status(StatusCode::OK)
             .json_into();
 
@@ -943,6 +950,7 @@ mod tests {
 
         let operations: Vec<Operation> = app
             .fetch(app.auto_fixes_request(empty_infra_id))
+            .await
             .assert_status(StatusCode::OK)
             .json_into();
 
@@ -979,6 +987,7 @@ mod tests {
         // WHEN
         let operations: Vec<Operation> = app
             .fetch(app.auto_fixes_request(empty_infra_id))
+            .await
             .assert_status(StatusCode::OK)
             .json_into();
 

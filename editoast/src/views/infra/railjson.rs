@@ -243,7 +243,11 @@ mod tests {
 
         let request = app.get(&format!("/infra/{}/railjson", empty_infra.id));
 
-        let railjson: RailJson = app.fetch(request).assert_status(StatusCode::OK).json_into();
+        let railjson: RailJson = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into();
 
         assert_eq!(railjson.version, RAILJSON_VERSION);
         assert_eq!(railjson.extended_switch_types.len(), 1);
@@ -275,6 +279,7 @@ mod tests {
 
         let res: PostRailjsonResponse = app
             .fetch(req)
+            .await
             .assert_status(StatusCode::CREATED)
             .json_into();
 

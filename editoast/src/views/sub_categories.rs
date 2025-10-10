@@ -260,8 +260,11 @@ pub mod tests {
             }
         ]));
 
-        let response: Vec<SubCategory> =
-            app.fetch(request).assert_status(StatusCode::OK).json_into();
+        let response: Vec<SubCategory> = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into();
         let created_sub_category1 = response.first().unwrap();
 
         let sub_category_1 = editoast_models::SubCategory::retrieve(
@@ -311,7 +314,9 @@ pub mod tests {
             }
         ]));
 
-        app.fetch(request).assert_status(StatusCode::BAD_REQUEST);
+        app.fetch(request)
+            .await
+            .assert_status(StatusCode::BAD_REQUEST);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -336,8 +341,11 @@ pub mod tests {
         .expect("Failed to create sub category");
 
         let request = app.get("/sub_category");
-        let response: SubCategoryPage =
-            app.fetch(request).assert_status(StatusCode::OK).json_into();
+        let response: SubCategoryPage = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into();
         assert_eq!(
             response.results,
             vec![created_sub_category_1.into(), created_sub_category_2.into()]
@@ -395,7 +403,9 @@ pub mod tests {
             "/sub_category/{}",
             created_sub_category.code.clone()
         ));
-        app.fetch(request).assert_status(StatusCode::NO_CONTENT);
+        app.fetch(request)
+            .await
+            .assert_status(StatusCode::NO_CONTENT);
 
         let paced_train_1 = models::PacedTrain::retrieve(db_pool.get_ok(), paced_train_1.id)
             .await

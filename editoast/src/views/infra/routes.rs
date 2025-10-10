@@ -440,8 +440,11 @@ mod tests {
                 .json(&params);
             println!("{request:?}  body:\n    {params}");
 
-            let got: RoutesFromNodesPositions =
-                app.fetch(request).assert_status(StatusCode::OK).json_into();
+            let got: RoutesFromNodesPositions = app
+                .fetch(request)
+                .await
+                .assert_status(StatusCode::OK)
+                .json_into();
             compare_result(got, expected_result)
         }
     }
@@ -505,7 +508,11 @@ mod tests {
         let request =
             app.get(format!("/infra/{empty_infra_id}/routes/{waypoint_type}/bs_stop").as_str());
 
-        let routes: RoutesResponse = app.fetch(request).assert_status(StatusCode::OK).json_into();
+        let routes: RoutesResponse = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into();
 
         assert_eq!(
             routes,
@@ -520,7 +527,11 @@ mod tests {
         let request = app
             .get(format!("/infra/{empty_infra_id}/routes/{waypoint_type}/detector_001").as_str());
 
-        let routes: RoutesResponse = app.fetch(request).assert_status(StatusCode::OK).json_into();
+        let routes: RoutesResponse = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into();
 
         assert_eq!(
             routes,
@@ -546,7 +557,11 @@ mod tests {
             .as_str(),
         );
 
-        let routes: RoutesResponse = app.fetch(request).assert_status(StatusCode::OK).json_into();
+        let routes: RoutesResponse = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into();
 
         assert_eq!(
             routes,

@@ -375,6 +375,7 @@ pub mod tests {
         // WHEN
         let stdcm_search_env = app
             .fetch(request)
+            .await
             .assert_status(StatusCode::CREATED)
             .json_into::<StdcmSearchEnvironment>();
 
@@ -425,6 +426,7 @@ pub mod tests {
 
         // WHEN
         app.fetch(request)
+            .await
             .assert_status(StatusCode::UNPROCESSABLE_ENTITY);
     }
 
@@ -478,6 +480,7 @@ pub mod tests {
         // WHEN
         let stdcm_search_env = app
             .fetch(request)
+            .await
             .assert_status(StatusCode::OK)
             .json_into::<StdcmSearchEnvironmentResponse>();
 
@@ -498,7 +501,7 @@ pub mod tests {
 
         // WHEN
         let request = app.get("/stdcm/search_environment");
-        let response = app.fetch(request);
+        let response = app.fetch(request).await;
 
         // THEN
         response.assert_status(StatusCode::NO_CONTENT);
@@ -535,7 +538,9 @@ pub mod tests {
         let request = app.delete(&format!("/stdcm/search_environment/{}", env.id));
 
         // WHEN
-        app.fetch(request).assert_status(StatusCode::NO_CONTENT);
+        app.fetch(request)
+            .await
+            .assert_status(StatusCode::NO_CONTENT);
 
         // THEN
         let deleted_env_exists = StdcmSearchEnvironment::exists(&mut pool.get_ok(), env.id)
@@ -593,6 +598,7 @@ pub mod tests {
         // WHEN
         let stdcm_search_env_response = app
             .fetch(request)
+            .await
             .assert_status(StatusCode::OK)
             .json_into::<SdcmSearchEnvListResponse>();
 

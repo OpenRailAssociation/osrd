@@ -58,7 +58,7 @@ mod tests {
     async fn test_font() {
         let app = TestAppBuilder::default_app();
         let request = app.get("/fonts/IBMPlexSans/0-255.pbf");
-        let response = app.fetch(request).assert_status(StatusCode::OK);
+        let response = app.fetch(request).await.assert_status(StatusCode::OK);
         assert_eq!("application/octet-stream", response.content_type());
         let response = response.bytes();
         let expected = std::fs::read(
@@ -74,6 +74,8 @@ mod tests {
     async fn test_font_not_found() {
         let app = TestAppBuilder::default_app();
         let request = app.get("/fonts/Comic%20Sans/0-255.pbf");
-        app.fetch(request).assert_status(StatusCode::NOT_FOUND);
+        app.fetch(request)
+            .await
+            .assert_status(StatusCode::NOT_FOUND);
     }
 }

@@ -182,7 +182,11 @@ mod tests {
             infra_id: empty_infra.id,
             timetable_id: None,
         });
-        let response: WorkerStatus = app.fetch(req).assert_status(StatusCode::OK).json_into();
+        let response: WorkerStatus = app
+            .fetch(req)
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into();
         assert_eq!(response, WorkerStatus::Ready);
     }
 }

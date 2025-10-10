@@ -82,7 +82,11 @@ mod tests {
     async fn test_signaling_systems() {
         let app = TestAppBuilder::default_app();
         let request = app.get("/sprites/signaling_systems");
-        let response: Vec<String> = app.fetch(request).assert_status(StatusCode::OK).json_into();
+        let response: Vec<String> = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into();
 
         assert!(response.contains(&"BAL".to_string()));
         assert!(response.contains(&"BAPR".to_string()));
@@ -95,7 +99,7 @@ mod tests {
     async fn test_sprites() {
         let app = TestAppBuilder::default_app();
         let request = app.get("/sprites/TVM300/REP%20TGV.svg");
-        let response = app.fetch(request).assert_status(StatusCode::OK);
+        let response = app.fetch(request).await.assert_status(StatusCode::OK);
         assert_eq!("image/svg+xml", response.content_type());
         let response = response.bytes();
         let expected = std::fs::read(
@@ -111,6 +115,8 @@ mod tests {
     async fn test_sprites_not_found() {
         let app = TestAppBuilder::default_app();
         let request = app.get("/sprites/TVM300/NOT_A_THING.svg");
-        app.fetch(request).assert_status(StatusCode::NOT_FOUND);
+        app.fetch(request)
+            .await
+            .assert_status(StatusCode::NOT_FOUND);
     }
 }

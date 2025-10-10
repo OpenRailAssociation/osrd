@@ -288,6 +288,7 @@ mod tests {
 
         let TemporarySpeedLimitCreateResponse { group_id } = app
             .fetch(request)
+            .await
             .assert_status(StatusCode::CREATED)
             .json_into();
         let created_group = TemporarySpeedLimitGroup::retrieve(pool.get_ok(), group_id)
@@ -319,15 +320,18 @@ mod tests {
         let request = app.create_temporary_speed_limit_group_request(
             RequestParameters::new().with_group_name(group_name.clone()),
         );
-        let _ = app.fetch(request).assert_status(StatusCode::CREATED);
+        let _ = app.fetch(request).await.assert_status(StatusCode::CREATED);
 
         let request = app.create_temporary_speed_limit_group_request(RequestParameters::new());
-        let _ = app.fetch(request).assert_status(StatusCode::CREATED);
+        let _ = app.fetch(request).await.assert_status(StatusCode::CREATED);
 
         let request = app.create_temporary_speed_limit_group_request(
             RequestParameters::new().with_group_name(group_name.clone()),
         );
-        let _ = app.fetch(request).assert_status(StatusCode::BAD_REQUEST);
+        let _ = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::BAD_REQUEST);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -345,6 +349,7 @@ mod tests {
 
         let _ = app
             .fetch(request)
+            .await
             .assert_status(StatusCode::UNPROCESSABLE_ENTITY);
     }
 
@@ -359,6 +364,7 @@ mod tests {
 
         let _ = app
             .fetch(request)
+            .await
             .assert_status(StatusCode::UNPROCESSABLE_ENTITY);
     }
 }

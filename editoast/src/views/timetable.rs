@@ -994,8 +994,11 @@ mod tests {
 
         let request = app.get(&format!("/timetable/{}/train_schedules", timetable.id));
 
-        let timetable_from_response: ListTrainSchedulesResponse =
-            app.fetch(request).assert_status(StatusCode::OK).json_into();
+        let timetable_from_response: ListTrainSchedulesResponse = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into();
         assert_eq!(timetable_from_response.results.len(), 0);
     }
 
@@ -1003,7 +1006,9 @@ mod tests {
     async fn get_unexisting_timetable() {
         let app = TestAppBuilder::default_app();
         let request = app.get(&format!("/timetable/{}/train_schedules", 0));
-        app.fetch(request).assert_status(StatusCode::NOT_FOUND);
+        app.fetch(request)
+            .await
+            .assert_status(StatusCode::NOT_FOUND);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -1014,8 +1019,11 @@ mod tests {
         // Insert timetable
         let request = app.post("/timetable");
 
-        let created_timetable: TimetableResult =
-            app.fetch(request).assert_status(StatusCode::OK).json_into();
+        let created_timetable: TimetableResult = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into();
 
         let retrieved_timetable =
             Timetable::retrieve(pool.get_ok(), created_timetable.timetable_id)
@@ -1035,7 +1043,9 @@ mod tests {
 
         let request = app.delete(format!("/timetable/{}", timetable.id).as_str());
 
-        app.fetch(request).assert_status(StatusCode::NO_CONTENT);
+        app.fetch(request)
+            .await
+            .assert_status(StatusCode::NO_CONTENT);
 
         let exists = Timetable::exists(&mut pool.get_ok(), timetable.id)
             .await
@@ -1099,8 +1109,11 @@ mod tests {
             .post(format!("/timetable/{}/paced_trains", timetable.id).as_str())
             .json(&vec![paced_train_1.clone()]);
 
-        let _: Vec<PacedTrainResponse> =
-            app.fetch(request).assert_status(StatusCode::OK).json_into();
+        let _: Vec<PacedTrainResponse> = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into();
 
         let settings = SelectionSettings::default()
             .filter(move || models::PacedTrain::TIMETABLE_ID.eq(timetable.id))
@@ -1134,6 +1147,7 @@ mod tests {
 
         let response = app
             .fetch(request)
+            .await
             .assert_status(StatusCode::UNPROCESSABLE_ENTITY)
             .bytes();
         assert_eq!(
@@ -1159,8 +1173,11 @@ mod tests {
             .post(format!("/timetable/{}/paced_trains", timetable.id).as_str())
             .json(&paced_trains);
 
-        let response: Vec<PacedTrainResponse> =
-            app.fetch(request).assert_status(StatusCode::OK).json_into();
+        let response: Vec<PacedTrainResponse> = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into();
 
         assert!(response.len() == 2);
 
@@ -1204,8 +1221,11 @@ mod tests {
                 .expect("Failed to create paced trains");
 
         let request = app.get(format!("/timetable/{}/paced_trains", timetable.id).as_str());
-        let list: ListPacedTrainsResponse =
-            app.fetch(request).assert_status(StatusCode::OK).json_into();
+        let list: ListPacedTrainsResponse = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into();
 
         assert_eq!(list.results.len(), 2);
     }
@@ -1216,6 +1236,7 @@ mod tests {
         let request = app.get(format!("/timetable/{}/paced_trains", 0).as_str());
         let response: InternalError = app
             .fetch(request)
+            .await
             .assert_status(StatusCode::NOT_FOUND)
             .json_into();
         assert_eq!(&response.error_type, "editoast:timetable:NotFound")

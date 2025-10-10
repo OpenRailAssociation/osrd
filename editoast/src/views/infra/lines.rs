@@ -137,8 +137,11 @@ mod tests {
 
         let request =
             app.get(format!("/infra/{}/lines/{line_code}/bbox/", empty_infra.id).as_str());
-        let bounding_box: BoundingBox =
-            app.fetch(request).assert_status(StatusCode::OK).json_into();
+        let bounding_box: BoundingBox = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into();
         assert_eq!(
             bounding_box,
             BoundingBox {
@@ -164,6 +167,8 @@ mod tests {
             )
             .as_str(),
         );
-        app.fetch(request).assert_status(StatusCode::BAD_REQUEST);
+        app.fetch(request)
+            .await
+            .assert_status(StatusCode::BAD_REQUEST);
     }
 }

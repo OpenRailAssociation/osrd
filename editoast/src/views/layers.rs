@@ -253,6 +253,7 @@ mod tests {
         let request = app.get("/layers/layer/track_sections/mvt/does_not_exist?infra=2");
         let body: InternalError = app
             .fetch(request)
+            .await
             .assert_status(StatusCode::NOT_FOUND)
             .json_into();
         assert_eq!(body, error);
@@ -283,7 +284,11 @@ mod tests {
 
         let app = test_app!().root_url(root_url).build();
         let request = app.get("/layers/layer/track_sections/mvt/geo?infra=2");
-        let body: ViewMetadata = app.fetch(request).assert_status(StatusCode::OK).json_into();
+        let body: ViewMetadata = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into();
         assert_eq!(expected_body, body);
     }
 }

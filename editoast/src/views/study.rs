@@ -456,6 +456,7 @@ pub mod tests {
             }));
         let response: StudyResponse = app
             .fetch(request)
+            .await
             .assert_status(StatusCode::CREATED)
             .json_into();
 
@@ -480,8 +481,11 @@ pub mod tests {
 
         let request = app.get(&format!("/projects/{}/studies/", created_project.id));
 
-        let response: StudyListResponse =
-            app.fetch(request).assert_status(StatusCode::OK).json_into();
+        let response: StudyListResponse = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into();
 
         let studies_retrieved = response
             .results
@@ -507,7 +511,11 @@ pub mod tests {
             created_project.id, created_study.id
         ));
 
-        let response: StudyResponse = app.fetch(request).assert_status(StatusCode::OK).json_into();
+        let response: StudyResponse = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into();
 
         assert_eq!(response.study, created_study);
         assert_eq!(response.study.project_id, created_project.id);
@@ -530,7 +538,9 @@ pub mod tests {
             created_study.id + 1000
         ));
 
-        app.fetch(request).assert_status(StatusCode::NOT_FOUND);
+        app.fetch(request)
+            .await
+            .assert_status(StatusCode::NOT_FOUND);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -548,7 +558,9 @@ pub mod tests {
             created_project.id, created_study.id
         ));
 
-        app.fetch(request).assert_status(StatusCode::NO_CONTENT);
+        app.fetch(request)
+            .await
+            .assert_status(StatusCode::NO_CONTENT);
 
         let exists = Study::exists(&mut db_pool.get_ok(), created_study.id)
             .await
@@ -580,7 +592,7 @@ pub mod tests {
                 "budget": study_budget,
             }));
 
-        app.fetch(request).assert_status(StatusCode::OK);
+        app.fetch(request).await.assert_status(StatusCode::OK);
 
         let updated_study = Study::retrieve(db_pool.get_ok(), created_study.id)
             .await

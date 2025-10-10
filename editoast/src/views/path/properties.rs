@@ -291,7 +291,11 @@ mod tests {
         let request = app.post(&url).json(&json!(
             {"track_section_ranges": [{ "track_section": "TD0", "begin": 0, "end": 20000, "direction": "START_TO_STOP" }]})
         );
-        let response: PathProperties = app.fetch(request).assert_status(StatusCode::OK).json_into();
+        let response: PathProperties = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into();
         let path_properties_response = path_properties_response();
         assert_eq!(response.slopes, Some(path_properties_response.slopes));
         assert_eq!(response.curves, Some(path_properties_response.curves));
@@ -316,7 +320,11 @@ mod tests {
         let request = app.post(&url).json(&json!(
             {"track_section_ranges": [{ "track_section": "TD0", "begin": 0, "end": 20000, "direction": "START_TO_STOP" }]})
         );
-        let response: PathProperties = app.fetch(request).assert_status(StatusCode::OK).json_into();
+        let response: PathProperties = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into();
         let path_properties_response = path_properties_response();
         assert_eq!(response.slopes, Some(path_properties_response.slopes));
         assert_eq!(response.curves, Some(path_properties_response.curves));
