@@ -1034,6 +1034,7 @@ pub mod tests {
     #[rstest::rstest]
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     #[case("TA0", 1000000)]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     #[case("TD1", 15500000)]
     async fn split_track_section_should_work(#[case] track: &str, #[case] offset: u64) {
         // Init
