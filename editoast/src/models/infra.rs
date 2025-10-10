@@ -395,10 +395,6 @@ pub mod tests {
     }
 
     #[rstest]
-    // The fixture leaks the persisted infra because we explicitly opened a
-    // connection. This should be fixed by the testing utils rework. The ignore
-    // should be removed after.
-    #[ignore]
     async fn persist_railjson_ok() {
         // GIVEN
         let railjson = RailJson {
