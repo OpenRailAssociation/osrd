@@ -428,7 +428,7 @@ pub(in crate::views) async fn list(
 #[cfg(test)]
 pub mod tests {
     use pretty_assertions::assert_eq;
-    use rstest::rstest;
+
     use serde_json::json;
 
     use super::*;
@@ -437,7 +437,7 @@ pub mod tests {
     use crate::models::fixtures::create_study;
     use crate::views::test_app::TestAppBuilder;
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn study_post() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
@@ -468,7 +468,7 @@ pub mod tests {
         assert_eq!(study.project_id, created_project.id);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn study_list() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
@@ -492,7 +492,7 @@ pub mod tests {
         assert_eq!(studies_retrieved.study, created_study);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn study_get() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
@@ -514,7 +514,7 @@ pub mod tests {
         assert_eq!(response.project, created_project);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn study_get_not_found() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
@@ -533,7 +533,7 @@ pub mod tests {
         app.fetch(request).assert_status(StatusCode::NOT_FOUND);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn study_delete() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
@@ -557,7 +557,7 @@ pub mod tests {
         assert!(!exists);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn study_patch() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();

@@ -203,14 +203,13 @@ mod tests {
     use database::DbConnectionPoolV2;
     use editoast_models::rolling_stock::TrainMainCategory;
     use pretty_assertions::assert_eq;
-    use rstest::rstest;
 
     use crate::models::fixtures::create_timetable;
     use crate::models::fixtures::simple_sub_category;
     use crate::models::fixtures::simple_train_schedule_changeset;
     use editoast_models::prelude::*;
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn train_schedule_both_categories_check_post() {
         let pool = DbConnectionPoolV2::for_tests();
 

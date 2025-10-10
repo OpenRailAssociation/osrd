@@ -163,7 +163,7 @@ pub(in crate::views) async fn delete(
 mod tests {
     use axum::http::StatusCode;
     use axum::http::header;
-    use rstest::rstest;
+
     use serde::Deserialize;
 
     use super::*;
@@ -174,7 +174,7 @@ mod tests {
         document_key: i64,
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn document_post() {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();
@@ -201,7 +201,7 @@ mod tests {
         assert_eq!(document.data, b"Document post test data".to_vec());
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn get_document() {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();
@@ -222,7 +222,7 @@ mod tests {
         assert_eq!(response.as_ref(), b"Document post test data");
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn document_delete() {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();

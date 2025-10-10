@@ -87,7 +87,7 @@ mod tests {
 
     macro_rules! test_delete_object {
         ($obj:ident, $test_fn:ident, $obj_name:literal) => {
-            #[rstest::rstest]
+            #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
             async fn $test_fn() {
                 use diesel_async::RunQueryDsl;
                 use std::ops::DerefMut;

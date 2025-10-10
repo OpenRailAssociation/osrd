@@ -985,7 +985,7 @@ mod tests {
     use crate::models::fixtures::simple_paced_train_base;
     use crate::views::test_app::TestAppBuilder;
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn get_timetable() {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();
@@ -999,14 +999,14 @@ mod tests {
         assert_eq!(timetable_from_response.results.len(), 0);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn get_unexisting_timetable() {
         let app = TestAppBuilder::default_app();
         let request = app.get(&format!("/timetable/{}/train_schedules", 0));
         app.fetch(request).assert_status(StatusCode::NOT_FOUND);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn timetable_post() {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();
@@ -1026,7 +1026,7 @@ mod tests {
         assert_eq!(created_timetable, retrieved_timetable.into());
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn timetable_delete() {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();
@@ -1044,7 +1044,7 @@ mod tests {
         assert!(!exists);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn create_paced_train_exceptions() {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();
@@ -1115,7 +1115,7 @@ mod tests {
         assert_eq!(&list_result[0].exceptions[1], &exception_2);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn create_paced_train_with_duplicated_exceptions() {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();
@@ -1142,7 +1142,7 @@ mod tests {
         )
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn create_paced_train() {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();
@@ -1177,7 +1177,7 @@ mod tests {
         assert_eq!(list_result[0].exceptions, paced_train_2.exceptions);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn get_timetable_paced_trains() {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();
@@ -1210,7 +1210,7 @@ mod tests {
         assert_eq!(list.results.len(), 2);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn get_not_found_timetable_paced_trains() {
         let app = TestAppBuilder::default_app();
         let request = app.get(format!("/timetable/{}/paced_trains", 0).as_str());

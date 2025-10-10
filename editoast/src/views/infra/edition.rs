@@ -971,7 +971,7 @@ pub mod tests {
     use crate::views::infra::errors::query_errors;
     use crate::views::test_app::TestAppBuilder;
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn split_track_section_should_return_404_with_bad_infra() {
         // Init
         let app = TestAppBuilder::default_app();
@@ -988,7 +988,7 @@ pub mod tests {
         app.fetch(request).assert_status(StatusCode::NOT_FOUND);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn split_track_section_should_return_404_with_bad_id() {
         // Init
         let app = TestAppBuilder::default_app();
@@ -1007,7 +1007,7 @@ pub mod tests {
         app.fetch(request).assert_status(StatusCode::NOT_FOUND);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn split_track_section_should_fail_with_bad_distance() {
         // Init
         let app = TestAppBuilder::default_app();
@@ -1026,7 +1026,7 @@ pub mod tests {
         app.fetch(request).assert_status(StatusCode::BAD_REQUEST);
     }
 
-    #[rstest]
+    #[rstest] // TODO: fix deadlock with tokio::test
     #[case("TA0", 1000000)]
     #[case("TD1", 15500000)]
     async fn split_track_section_should_work(#[case] track: &str, #[case] offset: u64) {
@@ -1110,7 +1110,7 @@ pub mod tests {
         assert!(small_infra.modified > old_modified);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn apply_edit_transaction_should_work() {
         // Init
         let app = TestAppBuilder::default_app();
@@ -1153,7 +1153,7 @@ pub mod tests {
         assert_eq!(1234.0, result[0].get_data()["length"]);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn apply_edit_transaction_should_rollback() {
         // Init
         let app = TestAppBuilder::default_app();

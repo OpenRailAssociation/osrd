@@ -279,7 +279,7 @@ mod tests {
 
     use super::Error;
 
-    #[rstest::rstest]
+    #[tokio::test]
     async fn test_expected_empty_response() {
         #[derive(Serialize)]
         struct Req;
@@ -299,7 +299,7 @@ mod tests {
         Req.fetch(&core.into()).await.unwrap();
     }
 
-    #[rstest::rstest]
+    #[tokio::test]
     async fn test_bytes_response() {
         #[derive(Serialize)]
         struct Req;
@@ -319,7 +319,7 @@ mod tests {
         assert_eq!(&String::from_utf8(bytes).unwrap(), "not JSON :)");
     }
 
-    #[rstest::rstest]
+    #[tokio::test]
     async fn test_core_osrd_error() {
         #[derive(Serialize)]
         struct Req;

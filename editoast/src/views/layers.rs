@@ -242,7 +242,7 @@ mod tests {
     use crate::map::MapLayers;
     use crate::views::test_app;
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn layer_error_view_not_found() {
         let map_layers = MapLayers::default();
         let error: InternalError =
@@ -259,6 +259,7 @@ mod tests {
     }
 
     #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     #[case("http://localhost:8090", "http://localhost:8090/")]
     #[case("http://localhost:8090/", "http://localhost:8090/")]
     #[case("http://localhost:8090/test", "http://localhost:8090/test/")]

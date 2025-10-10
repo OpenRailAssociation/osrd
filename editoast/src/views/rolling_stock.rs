@@ -751,7 +751,7 @@ pub mod tests {
     use editoast_models::rolling_stock::TrainMainCategory;
     use itertools::Itertools;
     use pretty_assertions::assert_eq;
-    use rstest::rstest;
+
     use serde_json::json;
     use uuid::Uuid;
 
@@ -793,7 +793,7 @@ pub mod tests {
         form
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn create_rolling_stock_successfully() {
         // GIVEN
         let app = TestAppBuilder::default_app();
@@ -822,7 +822,7 @@ pub mod tests {
         );
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn create_locked_rolling_stock_successfully() {
         // GIVEN
         let app = TestAppBuilder::default_app();
@@ -850,7 +850,7 @@ pub mod tests {
         assert_eq!(rolling_stock.locked, true);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn create_rolling_stock_with_duplicate_name() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
@@ -872,7 +872,7 @@ pub mod tests {
         );
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn get_rolling_stock_usage_with_no_usage_returns_empty_ok() {
         let app = TestAppBuilder::default_app();
         let stock_name = Uuid::new_v4().to_string();
@@ -885,7 +885,7 @@ pub mod tests {
         assert!(related_schedules.is_empty());
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn get_rolling_stock_usage_with_related_schedules_returns_schedules_list() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
@@ -983,7 +983,7 @@ pub mod tests {
         );
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn get_invalid_rolling_stock_id_returns_404_not_found() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
@@ -993,7 +993,7 @@ pub mod tests {
         app.fetch(request).assert_status(StatusCode::NOT_FOUND);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn create_rolling_stock_with_base_power_class_empty() {
         // GIVEN
         let app = TestAppBuilder::default_app();
@@ -1018,7 +1018,7 @@ pub mod tests {
         );
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn create_rolling_stock_with_invalid_effort_curve() {
         let app = TestAppBuilder::default_app();
 
@@ -1036,7 +1036,7 @@ pub mod tests {
             .assert_status(StatusCode::UNPROCESSABLE_ENTITY);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn get_rolling_stock_by_id() {
         // GIVEN
         let app = TestAppBuilder::default_app();
@@ -1056,7 +1056,7 @@ pub mod tests {
         assert_eq!(response, fast_rolling_stock);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn get_rolling_stock_by_name() {
         // GIVEN
         let app = TestAppBuilder::default_app();
@@ -1076,7 +1076,7 @@ pub mod tests {
         assert_eq!(response, fast_rolling_stock);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn get_unexisting_rolling_stock_by_id() {
         let app = TestAppBuilder::default_app();
 
@@ -1085,7 +1085,7 @@ pub mod tests {
         app.fetch(request).assert_status(StatusCode::NOT_FOUND);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn get_unexisting_rolling_stock_by_name() {
         let app = TestAppBuilder::default_app();
 
@@ -1095,7 +1095,7 @@ pub mod tests {
         app.fetch(request).assert_status(StatusCode::NOT_FOUND);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn update_unlocked_rolling_stock() {
         // GIVEN
         let app = TestAppBuilder::default_app();
@@ -1132,7 +1132,7 @@ pub mod tests {
         );
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn update_rolling_stock_with_new_categories() {
         // GIVEN
         let app = TestAppBuilder::default_app();
@@ -1189,7 +1189,7 @@ pub mod tests {
         );
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn update_rolling_stock_categories_should_fail_when_invalid() {
         // GIVEN
         let app = TestAppBuilder::default_app();
@@ -1232,7 +1232,7 @@ pub mod tests {
         assert_eq!(updated_rolling_stock.version, fast_rolling_stock.version);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn update_rolling_stock_failure_name_already_used() {
         // GIVEN
         let app = TestAppBuilder::default_app();
@@ -1266,7 +1266,7 @@ pub mod tests {
         );
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn update_locked_rolling_stock_fails() {
         // GIVEN
         let app = TestAppBuilder::default_app();
@@ -1298,7 +1298,7 @@ pub mod tests {
         assert_eq!(response.error_type, "editoast:rollingstocks:IsLocked");
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn patch_lock_rolling_stock_failed() {
         let app = TestAppBuilder::default_app();
 
@@ -1310,7 +1310,7 @@ pub mod tests {
         app.fetch(request).assert_status(StatusCode::NOT_FOUND);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn patch_lock_rolling_stock_successfully() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
@@ -1335,7 +1335,7 @@ pub mod tests {
         assert_eq!(fast_rolling_stock.locked, true)
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn patch_unlock_rolling_stock_successfully() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
@@ -1364,7 +1364,7 @@ pub mod tests {
         assert!(!fast_rolling_stock.locked);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn get_power_restrictions_list() {
         // GIVEN
         let app = TestAppBuilder::default_app();
@@ -1389,7 +1389,7 @@ pub mod tests {
         assert!(response.contains(&"C5".to_string()));
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn delete_locked_rolling_stock_fails() {
         // GIVEN
         let app = TestAppBuilder::default_app();
@@ -1422,7 +1422,7 @@ pub mod tests {
         assert!(rolling_stock_exists);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn delete_unlocked_unused_rolling_stock_succeeds() {
         // GIVEN
         let app = TestAppBuilder::default_app();
@@ -1447,7 +1447,7 @@ pub mod tests {
         assert!(!rolling_stock_exists);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn delete_unlocked_used_rolling_stock_requires_force_flag() {
         // GIVEN
         let app = TestAppBuilder::default_app();

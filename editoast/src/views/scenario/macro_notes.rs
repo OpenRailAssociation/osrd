@@ -400,7 +400,6 @@ pub mod test {
     use pretty_assertions::assert_eq;
     use rand::Rng;
     use rand::rng;
-    use rstest::rstest;
 
     use super::*;
     use crate::models::fixtures::create_scenario_fixtures_set;
@@ -416,7 +415,7 @@ pub mod test {
         }
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn list_notes() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
@@ -474,7 +473,7 @@ pub mod test {
         );
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn create_note() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
@@ -524,7 +523,7 @@ pub mod test {
         }
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn create_note_scenario_not_found() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
@@ -552,7 +551,7 @@ pub mod test {
         app.fetch(request).assert_status(StatusCode::NOT_FOUND);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn get_note() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
@@ -580,7 +579,7 @@ pub mod test {
         assert_eq!(MacroNoteResponse::from(note), response);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn get_note_not_found() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
@@ -595,7 +594,7 @@ pub mod test {
         app.fetch(request).assert_status(StatusCode::NOT_FOUND);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn get_note_wrong_scenario() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
@@ -623,7 +622,7 @@ pub mod test {
         app.fetch(request).assert_status(StatusCode::NOT_FOUND);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn update_note() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
@@ -667,7 +666,7 @@ pub mod test {
         assert_eq!(MacroNoteResponse::from(note), response);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn update_note_not_found() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
@@ -692,7 +691,7 @@ pub mod test {
         app.fetch(request).assert_status(StatusCode::NOT_FOUND);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn delete_note() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
@@ -723,7 +722,7 @@ pub mod test {
         assert!(!still_exists);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn delete_note_not_found() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();

@@ -105,7 +105,7 @@ mod tests {
 
     use super::*;
 
-    #[rstest::rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn test_electrical_profile_set_delete() {
         // GIVEN
         let db_pool = DbConnectionPoolV2::for_tests();
@@ -130,7 +130,7 @@ mod tests {
         assert!(empty);
     }
 
-    #[rstest::rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn test_electrical_profile_set_list_doesnt_fail() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let db_pool = Arc::new(db_pool);

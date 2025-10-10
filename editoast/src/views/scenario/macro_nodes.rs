@@ -411,7 +411,6 @@ pub mod test {
     use rand::Rng;
     use rand::distr::Alphanumeric;
     use rand::rng;
-    use rstest::rstest;
 
     use super::*;
     use crate::models::Project;
@@ -444,7 +443,7 @@ pub mod test {
         }
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn create() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
@@ -484,7 +483,7 @@ pub mod test {
         assert_eq!(node, response.macro_nodes[0]);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn update() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
@@ -517,7 +516,7 @@ pub mod test {
         assert_eq!(node, response);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn get() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
@@ -533,7 +532,7 @@ pub mod test {
         assert!(fixtures.nodes[0] == response);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn list() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
@@ -550,7 +549,7 @@ pub mod test {
         assert_eq!(5, response.results.len());
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn delete() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
@@ -568,7 +567,7 @@ pub mod test {
         assert_eq!(false, found)
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn retrieve_with_bad_scenario() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();

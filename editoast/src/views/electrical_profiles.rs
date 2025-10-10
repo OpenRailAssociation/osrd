@@ -212,7 +212,6 @@ mod tests {
 
     use axum::http::StatusCode;
     use pretty_assertions::assert_eq;
-    use rstest::rstest;
 
     use super::*;
     use crate::models::fixtures::create_electrical_profile_set;
@@ -220,7 +219,7 @@ mod tests {
     use schemas::infra::ElectricalProfile;
     use schemas::infra::TrackRange;
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn get_electrical_profile_list() {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();
@@ -235,7 +234,7 @@ mod tests {
         assert!(response.len() >= 2);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn get_unexisting_electrical_profile() {
         let app = TestAppBuilder::default_app();
 
@@ -243,7 +242,7 @@ mod tests {
         response.assert_status(StatusCode::NOT_FOUND);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn get_electrical_profile() {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();
@@ -259,7 +258,7 @@ mod tests {
         response.assert_status(StatusCode::OK);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn get_unexisting_electrical_profile_level_order() {
         let app = TestAppBuilder::default_app();
 
@@ -267,7 +266,7 @@ mod tests {
         response.assert_status(StatusCode::NOT_FOUND);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn test_get_level_order_some() {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();
@@ -290,14 +289,14 @@ mod tests {
         );
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn delete_unexisting_electrical_profile() {
         let app = TestAppBuilder::default_app();
         let response = app.delete("/electrical_profile_set/666").await;
         response.assert_status(StatusCode::NOT_FOUND);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn delete_electrical_profile() {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();
@@ -319,7 +318,7 @@ mod tests {
         assert!(!exists);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn test_post() {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();

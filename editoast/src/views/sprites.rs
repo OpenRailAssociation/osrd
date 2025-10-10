@@ -77,9 +77,8 @@ mod tests {
     use crate::views::test_app::TestAppBuilder;
 
     use axum::http::StatusCode;
-    use rstest::rstest;
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn test_signaling_systems() {
         let app = TestAppBuilder::default_app();
         let request = app.get("/sprites/signaling_systems");
@@ -92,7 +91,7 @@ mod tests {
         assert!(response.contains(&"ETCS_LEVEL2".to_string()));
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn test_sprites() {
         let app = TestAppBuilder::default_app();
         let request = app.get("/sprites/TVM300/REP%20TGV.svg");
@@ -108,7 +107,7 @@ mod tests {
         assert_eq!(response, expected);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn test_sprites_not_found() {
         let app = TestAppBuilder::default_app();
         let request = app.get("/sprites/TVM300/NOT_A_THING.svg");

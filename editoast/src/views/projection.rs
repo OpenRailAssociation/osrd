@@ -820,7 +820,7 @@ mod tests {
         assert_eq!(find_index_lower(&values, value), expected);
     }
 
-    #[rstest]
+    #[test]
     fn test_compute_space_time_curves_case_1() {
         let positions: Vec<u64> = vec![0, 100, 200, 300, 400, 600, 730, 1_000_000];
         let times: Vec<u64> = vec![0, 10, 20, 30, 40, 50, 70, 90];
@@ -858,7 +858,7 @@ mod tests {
         );
     }
 
-    #[rstest]
+    #[test]
     fn test_compute_space_time_curves_case_2() {
         let positions: Vec<u64> = vec![0, 100, 200, 300, 400, 730_000];
         let times: Vec<u64> = vec![0, 10, 20, 30, 40, 70];
@@ -892,7 +892,7 @@ mod tests {
         assert_eq!(curve.times, times);
     }
 
-    #[rstest]
+    #[test]
     fn test_compute_space_time_curves_case_3() {
         let positions: Vec<u64> = vec![
             0, 100_000, 200_000, 300_000, 400_000, 450_000, 500_000, 600_000, 720_000,
@@ -984,7 +984,7 @@ mod tests {
         }
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn test_simple_project_train_path_op() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
@@ -1047,7 +1047,7 @@ mod tests {
         );
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn test_simple_reverse_project_train_path_op() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
@@ -1111,7 +1111,7 @@ mod tests {
         );
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn test_points_project_train_path_op() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
@@ -1170,7 +1170,7 @@ mod tests {
         assert_eq!(curves[3].positions, vec![400_000, 400_000]);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn test_no_matching_points_project_train_path_op() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();

@@ -158,12 +158,11 @@ mod tests {
     use database::DbConnectionPoolV2;
     use osrdyne_client::OsrdyneClient;
     use reqwest::StatusCode;
-    use rstest::rstest;
 
     use crate::models::fixtures::create_empty_infra;
     use crate::views::test_app::TestAppBuilder;
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn worker_load_test() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;

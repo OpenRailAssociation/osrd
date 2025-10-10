@@ -507,7 +507,7 @@ pub mod tests {
     use crate::models::fixtures::create_work_schedules_fixture_set;
     use crate::views::test_app::TestAppBuilder;
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn work_schedule_create() {
         // GIVEN
         let app = TestAppBuilder::default_app();
@@ -540,7 +540,7 @@ pub mod tests {
         assert!(created_group.is_some());
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn work_schedule_create_fail_start_date_after_end_date() {
         let app = TestAppBuilder::default_app();
 
@@ -559,7 +559,7 @@ pub mod tests {
             .assert_status(StatusCode::UNPROCESSABLE_ENTITY);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn work_schedule_create_fail_name_already_used() {
         // GIVEN
         let app = TestAppBuilder::default_app();
@@ -595,6 +595,7 @@ pub mod tests {
     }
 
     #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     #[case::one_work_schedule_with_two_track_ranges(
         vec![
             vec![
@@ -730,7 +731,7 @@ pub mod tests {
         assert_eq!(work_schedule_project_response, expected);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn work_schedule_endpoints_workflow() {
         let app = TestAppBuilder::default_app();
 

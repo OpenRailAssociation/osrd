@@ -136,7 +136,6 @@ pub mod tests {
     use chrono::TimeZone;
     use chrono::Utc;
     use pretty_assertions::assert_eq;
-    use rstest::rstest;
 
     use super::*;
     use crate::models::Infra;
@@ -175,7 +174,7 @@ pub mod tests {
         )
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn test_retrieve_latest() {
         let db_pool = DbConnectionPoolV2::for_tests();
 
@@ -239,7 +238,7 @@ pub mod tests {
         assert_eq!(result.enabled_until, enabled_until);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn test_retrieve_latest_empty() {
         let db_pool = DbConnectionPoolV2::for_tests();
         StdcmSearchEnvironment::delete_all(&mut db_pool.get_ok())

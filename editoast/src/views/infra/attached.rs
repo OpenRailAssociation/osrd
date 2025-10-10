@@ -122,8 +122,6 @@ pub(in crate::views) async fn attached(
 mod tests {
     use std::collections::HashMap;
 
-    use rstest::rstest;
-
     use crate::infra_cache::operation::create::apply_create_operation;
     use crate::models::Infra;
     use crate::views::test_app::TestAppBuilder;
@@ -133,7 +131,7 @@ mod tests {
     use schemas::primitives::OSRDIdentified;
     use schemas::primitives::ObjectType;
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn get_attached_detector() {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();
