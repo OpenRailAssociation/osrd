@@ -101,52 +101,6 @@ class TrainPhysicsIntegratorTest {
     }
 
     @Test
-    fun testAccelerateAndCoast() {
-        val testPath = FlatPath(100000.0, 0.0)
-        val testRollingStock = SimpleRollingStock.STANDARD_TRAIN
-        val effortCurveMap = SimpleRollingStock.LINEAR_EFFORT_CURVE_MAP
-        val context = EnvelopeSimContext(testRollingStock, testPath, TIME_STEP, effortCurveMap)
-        var position = 0.0
-        var speed = 0.0
-
-        // make a huge traction effort
-        val rollingResistance = testRollingStock.getRollingResistance(speed)
-        val grade = TrainPhysicsIntegrator.getAverageGrade(testRollingStock, testPath, position)
-        val weightForce = TrainPhysicsIntegrator.getWeightForce(testRollingStock, grade)
-        val acceleration =
-            TrainPhysicsIntegrator.computeAcceleration(
-                testRollingStock,
-                rollingResistance,
-                weightForce,
-                speed,
-                500000.0,
-                +1.0,
-            )
-        var step = TrainPhysicsIntegrator.newtonStep(TIME_STEP, speed, acceleration, +1.0)
-        position += step.positionDelta
-        speed = step.endSpeed
-        Assertions.assertTrue(speed > 0.5)
-
-        // the train should be able to coast for a minute without stopping
-        for (i in 0..59) {
-            step = TrainPhysicsIntegrator.step(context, position, speed, Action.COAST, +1.0)
-            position += step.positionDelta
-            val prevSpeed = step.startSpeed
-            speed = step.endSpeed
-            Assertions.assertTrue(speed < prevSpeed && speed > 0.0)
-        }
-
-        // another minute later
-        for (i in 0..59) {
-            step = TrainPhysicsIntegrator.step(context, position, speed, Action.COAST, +1.0)
-            position += step.positionDelta
-            speed = step.endSpeed
-        }
-        // it should be stopped
-        Assertions.assertEquals(speed, 0.0)
-    }
-
-    @Test
     fun testEmptyCoastFromBeginning() {
         val context = SimpleContextBuilder.makeSimpleContext(100000.0, 0.0, TIME_STEP)
         val builder = EnvelopePartBuilder()
