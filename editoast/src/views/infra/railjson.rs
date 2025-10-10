@@ -229,7 +229,6 @@ mod tests {
 
     #[rstest]
     // PostgreSQL deadlock can happen in this test, see section `Deadlock` of [DbConnectionPoolV2::get] for more information
-    #[serial_test::serial]
     async fn test_get_railjson() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
@@ -253,7 +252,6 @@ mod tests {
 
     #[rstest]
     // PostgreSQL deadlock can happen in this test, see section `Deadlock` of [DbConnectionPoolV2::get] for more information
-    #[serial_test::serial]
     async fn test_post_railjson() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();

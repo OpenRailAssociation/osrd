@@ -342,7 +342,6 @@ pub mod tests {
 
     #[rstest]
     // PostgreSQL deadlock can happen in this test, see section `Deadlock` of [DbConnectionPoolV2::get] for more information
-    #[serial_test::serial]
     async fn clone_infra_with_new_name_returns_new_cloned_infra() {
         // GIVEN
         let db_pool = DbConnectionPoolV2::for_tests();
@@ -362,7 +361,6 @@ pub mod tests {
     }
 
     #[rstest]
-    #[serial_test::serial]
     async fn persists_railjson_ko_version() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let railjson_with_invalid_version = RailJson {

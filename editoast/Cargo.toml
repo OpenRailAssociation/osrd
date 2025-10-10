@@ -252,7 +252,6 @@ osrdyne_client = { workspace = true, features = ["mock_client"] }
 pretty_assertions.workspace = true
 rstest.workspace = true
 schemas = { workspace = true, features = ["testing"] }
-serial_test = "3.2.0"
 stdext.workspace = true
 tempfile.workspace = true
 

@@ -169,7 +169,6 @@ pub mod tests {
     #[rstest]
     // Slow test
     // PostgreSQL deadlock can happen in this test, see section `Deadlock` of [DbConnectionPoolV2::get] for more information
-    #[serial_test::serial]
     async fn refresh_all_test() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let infra = create_empty_infra(&mut db_pool.get_ok()).await;
