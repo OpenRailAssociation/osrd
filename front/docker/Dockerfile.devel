@@ -1,6 +1,6 @@
 FROM alpine AS exec_as_builder
 
-RUN apk add build-base
+RUN apk add --no-cache build-base
 COPY docker/exec-as.c .
 RUN gcc -std=c99 -static -o /exec-as exec-as.c
 
