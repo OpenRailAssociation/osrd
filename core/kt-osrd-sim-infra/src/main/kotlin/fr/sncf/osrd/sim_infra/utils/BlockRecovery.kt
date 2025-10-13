@@ -14,7 +14,7 @@ data class BlockPathElement(
     val routeEndZoneOffset: Int,
 )
 
-fun BlockPathElement.toBlockList(): StaticIdxList<Block> {
+fun BlockPathElement.toBlockList(): List<BlockId> {
     val res = mutableStaticIdxArrayListOf(this.block)
     var cur = this.prev
     while (cur != null) {

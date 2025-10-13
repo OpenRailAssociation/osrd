@@ -49,15 +49,34 @@ private fun CollectionItemType.generateArrayList(context: GeneratorContext, curr
                 public constructor() : this(${DEFAULT_CAPACITY})
 
                 override val size get() = usedElements
-                fun isEmpty() = size == 0
+                override fun isEmpty() = size == 0
                 fun isNotEmpty() = size != 0
 
                 /** GENERATED CODE */
-                override fun iterator(): Iterator<$type> {
-                    return object : Iterator<$type> {
-                        var i = 0
+                override fun listIterator(index: Int): ListIterator<$type> {
+                    return object : ListIterator<$type> {
+                        var i = index
                         override fun hasNext(): Boolean {
                             return i < size
+                        }
+
+                        override fun hasPrevious(): Boolean {
+                            return i > 0
+                        }
+
+                        override fun previous(): $type {
+                            return if (i > 0)
+                                get(i--)
+                            else
+                                throw NoSuchElementException(i.toString())
+                        }
+
+                        override fun nextIndex(): Int {
+                            return i + 1
+                        }
+
+                        override fun previousIndex(): Int {
+                            return i - 1
                         }
 
                         override fun next(): $type = if (i < size) {
@@ -152,6 +171,7 @@ private fun CollectionItemType.generateArrayList(context: GeneratorContext, curr
                 }
 
                 /** GENERATED CODE */
+                @JvmName("removeAt")
                 override fun remove(index: Int): $type {
                     assert(index < usedElements)
                     val oldValue = buffer[index]
@@ -227,6 +247,48 @@ private fun CollectionItemType.generateArrayList(context: GeneratorContext, curr
                 /** GENERATED CODE */
                 fun clear() {
                     usedElements = 0
+                }
+
+                /** GENERATED CODE */
+                override fun containsAll(elements: Collection<$type>): Boolean {
+                    return elements.all { contains(it) }
+                }
+
+                /** GENERATED CODE */
+                override fun indexOf(element: $type): Int {
+                    return withIndex().firstOrNull()?.index ?: return -1
+                }
+
+                /** GENERATED CODE */
+                override fun lastIndexOf(element: $type): Int {
+                    return withIndex().lastOrNull()?.index ?: return -1
+                }
+
+                /** GENERATED CODE */
+                override fun iterator(): ListIterator<$type> {
+                    return listIterator()
+                }
+
+                /** GENERATED CODE */
+                override fun listIterator(): ListIterator<$type> {
+                    return listIterator(0)
+                }
+
+                /** GENERATED CODE */
+                override fun subList(
+                    fromIndex: Int,
+                    toIndex: Int
+                ): List<$type> {
+                    // TODO: we could skip the copy by implementing a "viewer"
+                    val res = Mutable${simpleName}ArrayList${paramsDecl}(toIndex - fromIndex)
+                    for (i in fromIndex until toIndex)
+                        res.add(get(i))
+                    return res
+                }
+
+                /** GENERATED CODE */
+                override fun contains(element: $type): Boolean {
+                    return any { it == element }
                 }
             }
 

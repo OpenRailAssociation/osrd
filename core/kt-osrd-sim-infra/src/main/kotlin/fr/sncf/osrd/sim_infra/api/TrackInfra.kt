@@ -47,7 +47,7 @@ val <T> StaticIdx<T>.decreasing
 
 /** Iterates over the elements in the right direction */
 fun <T> StaticIdxList<T>.dirIter(direction: Direction): Iterable<DirStaticIdx<T>> {
-    var list = this
+    var list: List<StaticIdx<T>> = this
     if (direction == Direction.DECREASING) list = list.reversed()
     val res = mutableDirStaticIdxArrayListOf<T>()
     for (element in list) res.add(DirStaticIdx(element, direction))

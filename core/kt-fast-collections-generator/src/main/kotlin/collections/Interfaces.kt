@@ -37,9 +37,9 @@ private fun CollectionItemType.generateInterfaces(context: GeneratorContext, cur
 
             /** GENERATED CODE */
             @Suppress("INAPPLICABLE_JVM_NAME")
-            interface ${simpleName}List${paramsDecl} : ${simpleName}Collection${paramsUse} {
+            interface ${simpleName}List${paramsDecl} : ${simpleName}Collection${paramsUse}, List<$type> {
                 @JvmName("get")
-                operator fun get(index: Int): $type
+                override operator fun get(index: Int): $type
                 fun clone(): Mutable${simpleName}List${paramsUse}
                 fun reversed() : Mutable${simpleName}ArrayList${paramsUse}
             }
@@ -56,6 +56,7 @@ private fun CollectionItemType.generateInterfaces(context: GeneratorContext, cur
                 @JvmName("insert")
                 fun insert(index: Int, elem: ${type})
                 fun set(index: Int, element: ${type}): $type
+                @JvmName("removeAt") // Avoids a symbol name clash
                 fun remove(index: Int): $type
             }
 

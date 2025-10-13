@@ -82,7 +82,7 @@ fun BlockInfra.getRouteBlocks(
     rawInfra: RawInfra,
     route: RouteId,
     allowedSigSystems: StaticIdxList<SignalingSystem>? = null,
-): StaticIdxList<Block> {
+): List<BlockId> {
     val blockPaths =
         recoverBlocks(rawInfra, this, mutableStaticIdxArrayListOf(route), allowedSigSystems)
     if (blockPaths.isEmpty()) return mutableStaticIdxArrayListOf()
