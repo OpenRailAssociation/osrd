@@ -9,7 +9,6 @@ type TimetableItemActionsProps = {
   duplicateTimetableItem: () => Promise<void>;
   editTimetableItem: () => void;
   deleteTimetableItem: () => Promise<void>;
-  canBeUsedForProjection?: boolean;
   showResetExceptionsButton?: boolean;
   resetAllExceptions?: () => void;
 };
@@ -19,7 +18,6 @@ const TimetableItemActions = ({
   duplicateTimetableItem,
   editTimetableItem,
   deleteTimetableItem,
-  canBeUsedForProjection = true,
   showResetExceptionsButton,
   resetAllExceptions,
 }: TimetableItemActionsProps) => {
@@ -44,7 +42,6 @@ const TimetableItemActions = ({
         title={t('timetable.choosePath')}
         onClick={selectPathProjection}
         data-testid="project-item"
-        disabled={!canBeUsedForProjection}
       >
         <GiPathDistance />
       </button>

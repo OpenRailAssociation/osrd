@@ -37,7 +37,6 @@ const ManchetteWithSpaceTimeWrapper = ({
     waypoints,
     manchetteWithSpaceTimeChartRef,
     defaultTimeOrigin: Math.min(...projectPathTrainResult.map((p) => +p.departureTime)),
-    hidePositions,
   });
 
   const selectedPath = paths[selectedTrain].id;
@@ -54,7 +53,7 @@ const ManchetteWithSpaceTimeWrapper = ({
         style={{ height: `${DEFAULT_HEIGHT}px` }}
         onScroll={handleScroll}
       >
-        <Manchette {...manchetteProps} />
+        <Manchette {...manchetteProps} hidePositions={hidePositions} />
         <div className="space-time-chart-container w-full sticky">
           <SpaceTimeChart className="inset-0 absolute h-full" {...spaceTimeChartProps}>
             {paths.map((path) => (

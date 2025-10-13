@@ -6,6 +6,7 @@ import {
   type PostTrainScheduleOccupancyBlocksApiResponse,
   type PostPacedTrainProjectPathApiResponse,
   type PostPacedTrainOccupancyBlocksApiResponse,
+  type TrainPath,
 } from 'common/api/osrdEditoastApi';
 import type { TimetableItemId } from 'reducers/osrdconf/types';
 import {
@@ -17,15 +18,31 @@ import {
 } from 'utils/trainId';
 
 import TrainProjectionLazyLoaderAbstract from './TrainProjectionLazyLoaderAbstract';
-import type { ProjectionResult } from './TrainProjectionLazyLoaderAbstract';
+import type {
+  ProjectionResult,
+  TrainProjectionLazyLoaderOptions,
+} from './TrainProjectionLazyLoaderAbstract';
+
+export type TrainTrackProjectionLazyLoaderOptions = Omit<
+  TrainProjectionLazyLoaderOptions,
+  'path'
+> & {
+  path: TrainPath;
+};
 
 export default class TrainTrackProjectionLazyLoader extends TrainProjectionLazyLoaderAbstract {
+  /**
+   * The `declare` keyword tells TypeScript this is a type refinement, not a new property.
+   * @see https://www.typescriptlang.org/docs/handbook/2/classes.html#type-only-field-declarations
+   */
+  declare readonly options: TrainTrackProjectionLazyLoaderOptions;
+
+  constructor(options: TrainTrackProjectionLazyLoaderOptions) {
+    super(options);
+  }
+
   async processBatch(batch: TimetableItemId[]) {
-    const {
-      infraId,
-      pathfindingResult: { path },
-      electricalProfileSetId,
-    } = this.options;
+    const { infraId, path, electricalProfileSetId } = this.options;
 
     const rawTrainScheduleIds = [];
     const rawPacedTrainIds = [];

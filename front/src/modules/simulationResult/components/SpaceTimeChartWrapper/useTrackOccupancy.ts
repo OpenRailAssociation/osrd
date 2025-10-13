@@ -89,10 +89,12 @@ const useTrackOccupancy = ({
   infraId,
   timetableItemProjections,
   pathOperationalPoints,
+  pathfindingHasFailed = false,
 }: {
   infraId: number;
   timetableItemProjections: OccupancyTrainSpaceTimeData[];
   pathOperationalPoints: PathOperationalPoint[];
+  pathfindingHasFailed?: boolean;
 }): {
   deployedWaypoints: DeployedWaypoint[];
   toggleWaypoint: (waypointId: string, selectedState?: boolean) => void;
@@ -363,6 +365,10 @@ const useTrackOccupancy = ({
 
   // Load all tracks from all waypoints on mount / waypoints update:
   useEffect(() => {
+    if (pathfindingHasFailed) {
+      return;
+    }
+
     let aborted = false;
 
     const pathOperationalPointsWithoutTracks = pathOperationalPoints.filter(
@@ -422,7 +428,7 @@ const useTrackOccupancy = ({
     return () => {
       aborted = true;
     };
-  }, [pathOperationalPoints]);
+  }, [pathOperationalPoints, pathfindingHasFailed]);
 
   // Update train data for all deployed waypoints on trains update:
   useEffect(() => {

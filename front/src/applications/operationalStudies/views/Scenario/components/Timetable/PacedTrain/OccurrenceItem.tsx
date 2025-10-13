@@ -35,7 +35,7 @@ import {
 
 import OccurrenceIndicator from './OccurrenceIndicator';
 import ArrivalTimeLoader from '../ArrivalTimeLoader';
-import { formatTrainDuration, isValidPathfinding, roundAndFormatToNearestMinute } from '../utils';
+import { formatTrainDuration, roundAndFormatToNearestMinute } from '../utils';
 import type useOccurrenceActions from './hooks/useOccurrenceActions';
 
 const ConsecutiveDayDateDisplay = ({
@@ -150,7 +150,6 @@ const OccurrenceItem = ({
         closeMenu();
       },
       dataTestID: 'occurrence-project-button',
-      disabled: !isValidPathfinding(summary),
     },
     delete: {
       title: t('occurrenceMenu.delete'),

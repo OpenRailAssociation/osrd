@@ -103,6 +103,7 @@ type SpaceTimeChartWrapperBaseProps = {
   onTrainClick?: (trainId: TrainId) => void;
   selectedProjectionId: TrainScheduleId | PacedTrainId | OccurrenceId;
   timetableItemsWithDetails?: TimetableItemWithDetails[];
+  pathfindingHasFailed?: boolean;
 };
 
 type SpaceTimeChartWrapperProps = SpaceTimeChartWrapperBaseProps &
@@ -138,6 +139,7 @@ const SpaceTimeChartWrapper = ({
   timetableItemsWithDetails,
   waypointsPanelIsOpen,
   setWaypointsPanelIsOpen,
+  pathfindingHasFailed = false,
 }: SpaceTimeChartWrapperProps) => {
   const dispatch = useAppDispatch();
 
@@ -189,7 +191,7 @@ const SpaceTimeChartWrapper = ({
   const { filteredProjectPathTrainResult: cutProjectedTrains, filteredConflicts: cutConflicts } =
     useMemo(
       () => cutSpaceTimeChart(projectedTrains, conflicts, operationalPoints, waypointsPanelData),
-      [waypointsPanelData?.filteredWaypoints, projectedTrains, conflicts]
+      [waypointsPanelData?.filteredWaypoints, projectedTrains, conflicts, operationalPoints]
     );
 
   const paths = usePaths(cutProjectedTrains);
@@ -208,7 +210,8 @@ const SpaceTimeChartWrapper = ({
   const { waypointMenu, activeWaypointId, handleWaypointClick } = useWaypointMenu(
     activeWaypointRef,
     waypointsPanelData,
-    allTrainsProjected
+    allTrainsProjected,
+    pathfindingHasFailed
   );
 
   const splitPoints = useMemo<SplitPoint[]>(() => {
@@ -414,6 +417,7 @@ const SpaceTimeChartWrapper = ({
             setWaypointsPanelIsOpen={setWaypointsPanelIsOpen}
             waypoints={operationalPoints}
             waypointsPanelData={waypointsPanelData}
+            hideOffsets={pathfindingHasFailed}
           />,
           document.body
         )}
@@ -430,7 +434,7 @@ const SpaceTimeChartWrapper = ({
         style={{ height }}
         onScroll={handleScroll}
       >
-        <Manchette {...manchettePropsWithWaypointMenu} />
+        <Manchette {...manchettePropsWithWaypointMenu} hidePositions={pathfindingHasFailed} />
         {waypointMenu}
         <div
           ref={spaceTimeChartRef}

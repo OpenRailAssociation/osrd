@@ -16,6 +16,7 @@ type WaypointsPanelProps = {
   setWaypointsPanelIsOpen: (open: boolean) => void;
   waypoints: PathOperationalPoint[];
   waypointsPanelData: WaypointsPanelData;
+  hideOffsets?: boolean;
 };
 
 const WaypointsPanel = ({
@@ -23,6 +24,7 @@ const WaypointsPanel = ({
   setWaypointsPanelIsOpen,
   waypoints,
   waypointsPanelData: { filteredWaypoints, setFilteredWaypoints, projectionPath, timetableId },
+  hideOffsets = false,
 }: WaypointsPanelProps) => {
   const { t } = useTranslation();
 
@@ -46,9 +48,12 @@ const WaypointsPanel = ({
 
   const openModal = () => {
     modalRef.current?.showModal();
-    const filteredWaypointsIds = new Set(filteredWaypoints.map((waypoint) => waypoint.waypointId));
+    // Use opId instead of waypointId for comparison to handle position changes
+    const filteredOpIds = new Set(
+      filteredWaypoints.map((waypoint) => waypoint.opId).filter((id): id is string => id !== null)
+    );
     const filteredWaypointsIndexes = waypoints
-      .map((waypoint, index) => (filteredWaypointsIds.has(waypoint.waypointId) ? index : -1))
+      .map((waypoint, index) => (filteredOpIds.has(waypoint.opId || '') ? index : -1))
       .filter((index) => index !== -1);
 
     setSelectedWaypoints(new Set(filteredWaypointsIndexes));
@@ -156,12 +161,14 @@ const WaypointsPanel = ({
                 handleWaypointClick(e, index);
               }}
             />
-            <span data-testid="waypoint-point-offset" className="path-offset">
-              {/* If an offset ends with .00, we want do display only one 0 */}
-              {mmToKm(waypoint.position) % 1 === 0
-                ? mmToKm(waypoint.position).toFixed(1)
-                : mmToKm(waypoint.position).toFixed(2)}
-            </span>
+            {!hideOffsets && (
+              <span data-testid="waypoint-point-offset" className="path-offset">
+                {/* If an offset ends with .00, we want do display only one 0 */}
+                {mmToKm(waypoint.position) % 1 === 0
+                  ? mmToKm(waypoint.position).toFixed(1)
+                  : mmToKm(waypoint.position).toFixed(2)}
+              </span>
+            )}
             <span className="name" data-testid="waypoint-name">
               {waypoint.extensions?.identifier?.name}
             </span>

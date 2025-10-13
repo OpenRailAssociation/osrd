@@ -30,6 +30,21 @@
           }
         }
 
+        .warped-map-unavailable-message {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          background-color: var(--ambientB5);
+          color: var(--black50);
+          text-align: center;
+          width: 300px;
+
+          p {
+            margin: 0;
+            font-style: italic;
+          }
+        }
+
         .warped-map {
           overflow: hidden;
           transition: 0.2s;

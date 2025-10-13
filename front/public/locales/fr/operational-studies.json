@@ -142,6 +142,7 @@
       "project": "Projeter",
       "restore": "Rétablir sur le modèle"
     },
+    "operationalPointIdentifier": "Identifiant de point",
     "pacedTrainAndTrainCount": "$t(main.pacedTrainCount, { 'count': {{pacedTrainCount}}, 'totalCount': {{totalPacedTrainCount}} }), $t(main.trainCount, { 'count': {{trainCount}}, 'totalCount': {{totalTrainScheduleCount}} }) sélectionnés",
     "pacedTrainCountSelected_one": "1/{{totalCount}} mission sélectionnée",
     "pacedTrainCountSelected_other": "{{count}}/{{totalCount}} missions sélectionnées",
@@ -574,6 +575,7 @@
     "timetableOutput": "Table horaire de sortie",
     "toggleManchetteMenu": "Basculer l'affichage du menu de la manchette",
     "toggleWarpedMap": "Basculer l'affichage de la carte déformée",
+    "warpedMapUnavailable": "La carte déformée n'est pas disponible pour les trains en non calcul",
     "waypointMenu": {
       "hide": "Masquer ce PR",
       "hideOccupancy": "Masquer le GOV",

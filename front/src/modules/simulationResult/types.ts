@@ -2,23 +2,20 @@ import type { Dispatch, SetStateAction } from 'react';
 
 import type { LayerData, PowerRestrictionValues } from '@osrd-project/ui-charts';
 
-import type { PathPropertiesFormatted } from 'applications/operationalStudies/types';
+import type {
+  PathProjectionResult,
+  PathPropertiesFormatted,
+} from 'applications/operationalStudies/types';
 import type {
   PacedTrainException,
   SignalUpdate,
   PathProperties,
-  PathfindingResultSuccess,
   RollingStockWithLiveries,
   SimulationResponseSuccess,
   TrainSchedule,
 } from 'common/api/osrdEditoastApi';
 import type { PacedTrainWithDetails } from 'modules/timetableItem/types';
-import type {
-  OccurrenceId,
-  PacedTrainId,
-  TimetableItem,
-  TrainScheduleId,
-} from 'reducers/osrdconf/types';
+import type { OccurrenceId, PacedTrainId, TrainScheduleId } from 'reducers/osrdconf/types';
 import type { ArrayElement } from 'utils/types';
 
 // This alias refers to an operational point, in the context of a given path, from Edistoast:
@@ -83,16 +80,15 @@ export type SpeedDistanceDiagramData = {
   formattedPathProperties: PathPropertiesFormatted;
 };
 
-export type ProjectionData = {
-  path: TimetableItem['path'];
+export type ProjectionData = Omit<
+  PathProjectionResult,
+  'operationalPointDistances' | 'operationalPointReferences'
+> & {
   projectedTrains: TrainSpaceTimeData[];
-  pathfinding: PathfindingResultSuccess;
-  geometry: PathProperties['geometry'];
   projectionLoaderData: {
     allTrainsProjected: boolean;
     totalTrains: number;
   };
-  operationalPoints: PathProperties['operational_points'];
 };
 
 export type WaypointsPanelData = {

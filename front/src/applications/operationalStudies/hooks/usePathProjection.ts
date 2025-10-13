@@ -1,20 +1,94 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 
 import { skipToken } from '@reduxjs/toolkit/query/react';
+import type { TFunction } from 'i18next';
 import { isEqual } from 'lodash';
+import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
-import { osrdEditoastApi, type PathfindingResult } from 'common/api/osrdEditoastApi';
+import {
+  osrdEditoastApi,
+  type PathfindingResult,
+  type OperationalPointReference,
+  type PathProperties,
+} from 'common/api/osrdEditoastApi';
 import { getExceptionFromOccurrenceId } from 'modules/timetableItem/helpers/pacedTrain';
 import type { TimetableItemId, TimetableItem } from 'reducers/osrdconf/types';
-import { getTrainIdUsedForProjection } from 'reducers/simulationResults/selectors';
+import { updateProjectionType } from 'reducers/simulationResults';
+import {
+  getProjectionType,
+  getTrainIdUsedForProjection,
+} from 'reducers/simulationResults/selectors';
+import { useAppDispatch } from 'store';
+import { formatUicToCi } from 'utils/strings';
 import {
   extractEditoastIdFromPacedTrainId,
   extractEditoastIdFromTrainScheduleId,
   extractPacedTrainIdFromOccurrenceId,
+  isOccurrenceId,
   isPacedTrainId,
   isTrainScheduleId,
 } from 'utils/trainId';
+
+import type { PathProjectionResult } from '../types';
+import { getStationFromOps, isOperationalPointReference } from '../utils';
+
+/**
+ * Generates a display name for a virtual operational point based on available reference data.
+ * Uses trigram --> UIC --> operational_point --> position-based fallbacks in priority order.
+ */
+const getVirtualOpName = (
+  opRef: OperationalPointReference,
+  index: number,
+  totalCount: number,
+  t: TFunction<'operational-studies'>
+): string => {
+  if ('trigram' in opRef && opRef.trigram) return opRef.trigram;
+  if ('uic' in opRef && opRef.uic) return opRef.uic.toString();
+  if ('operational_point' in opRef && opRef.operational_point)
+    return t('main.operationalPointIdentifier');
+  if (index === 0) return t('main.requestedOrigin');
+  if (index === totalCount - 1) return t('main.requestedDestination');
+  return t('main.requestedPoint', { count: index + 1 });
+};
+
+// Fallback distance between operational points when pathfinding fails (100km in mm)
+const FALLBACK_DISTANCE_MM = 100_000_000;
+
+/**
+ * Creates a virtual operational point with complete extensions when no infrastructure match is found.
+ */
+const createVirtualOp = (
+  opRef: OperationalPointReference,
+  index: number,
+  totalCount: number,
+  position: number,
+  weight: number,
+  t: TFunction<'operational-studies'>
+): PathProperties['operational_points'][0] => {
+  const virtualName = getVirtualOpName(opRef, index, totalCount, t);
+  const virtualId = `virtual_op_${virtualName}`;
+
+  return {
+    id: virtualId,
+    extensions: {
+      identifier: {
+        name: virtualName,
+        uic: ('uic' in opRef && opRef.uic) || 0,
+      },
+      sncf: {
+        ch: ('secondary_code' in opRef && opRef.secondary_code) || '',
+        ch_long_label: '',
+        ch_short_label: '',
+        ci: 'uic' in opRef && opRef.uic ? Number(formatUicToCi(opRef.uic)) : 0,
+        trigram: ('trigram' in opRef && opRef.trigram) || '',
+      },
+    },
+    part: { track: '', position: 0 },
+    position,
+    weight,
+  };
+};
 
 /**
  * Indicates whether two pathfinding results share the same status and simulated path (but not necessarily the same requested path steps).
@@ -33,8 +107,11 @@ const pathfindingResultsDiffer = (
 const usePathProjection = (
   infraId: number,
   timetableItemsById: Map<TimetableItemId, TimetableItem>
-) => {
+): PathProjectionResult | undefined => {
+  const { t } = useTranslation('operational-studies');
   const trainIdUsedForProjection = useSelector(getTrainIdUsedForProjection);
+  const projectionType = useSelector(getProjectionType);
+  const dispatch = useAppDispatch();
 
   let rawTrainScheduleId: number | undefined;
   let rawPacedTrainId: number | undefined;
@@ -78,17 +155,135 @@ const usePathProjection = (
 
   const projectingOnSimulatedPathException = pathfindingResultsDiffer(basePacedPath, pacedPath);
 
+  const pathUsedForProjection = useMemo(() => {
+    if (!trainIdUsedForProjection) return undefined;
+    if (!isOccurrenceId(trainIdUsedForProjection)) {
+      return timetableItemsById.get(trainIdUsedForProjection)?.path;
+    }
+    const pacedTrain = timetableItemsById.get(
+      extractPacedTrainIdFromOccurrenceId(trainIdUsedForProjection)
+    );
+    const exception = getExceptionFromOccurrenceId(timetableItemsById, trainIdUsedForProjection);
+    return exception?.path_and_schedule?.path ?? pacedTrain!.path;
+  }, [trainIdUsedForProjection, timetableItemsById]);
+
+  const opRefs = useMemo(() => {
+    const refs: OperationalPointReference[] = [];
+    pathUsedForProjection?.forEach((step) => {
+      if (isOperationalPointReference(step)) {
+        const {
+          id: _id,
+          track_reference: _track_reference,
+          ...cleanOperationalPointReference
+        } = step;
+        refs.push(cleanOperationalPointReference);
+      }
+    });
+    return refs;
+  }, [pathUsedForProjection]);
+
+  const { data: matchedOperationalPoints } =
+    osrdEditoastApi.endpoints.postInfraByInfraIdMatchOperationalPoints.useQuery(
+      opRefs.length > 0
+        ? {
+            infraId,
+            body: {
+              operational_point_references: opRefs,
+            },
+          }
+        : skipToken
+    );
+
+  useEffect(() => {
+    if (pathfinding?.status === 'failure' && projectionType === 'trackProjection') {
+      dispatch(updateProjectionType('operationalPointProjection'));
+    }
+  }, [pathfinding, projectionType]);
+
   return useMemo(() => {
-    if (pathfinding?.status !== 'success' || !pathProperties) {
+    if (!pathUsedForProjection) {
       return undefined;
     }
+
+    const operationalPointDistances: number[] = [];
+
+    // ===========================
+    // SUCCESSFUL PATHFINDING
+    // ===========================
+    // Use backend-provided operational points with accurate positions and geometry
+    if (pathfinding?.status === 'success' && pathProperties) {
+      const { operational_points: operationalPoints } = pathProperties;
+
+      const pathfindingOpRefs: OperationalPointReference[] = [];
+      operationalPoints.forEach((op, index) => {
+        pathfindingOpRefs.push({ operational_point: op.id });
+        if (index > 0) {
+          operationalPointDistances.push(op.position - operationalPoints[index - 1].position);
+        }
+      });
+
+      return {
+        pathfindingStatus: 'succeeded',
+        pathfinding,
+        path: pathUsedForProjection,
+        geometry: pathProperties.geometry,
+        operationalPoints,
+        operationalPointReferences: pathfindingOpRefs,
+        projectingOnSimulatedPathException,
+        operationalPointDistances,
+      };
+    }
+
+    // ===========================
+    // FAILED PATHFINDING HANDLING
+    // ===========================
+    // When pathfinding fails or path properties are unavailable, we still need to display
+    // operational points in the manchette and allow projection in the STD
+    // Strategy:
+    // 1. For each point in the path, try to match with infrastructure data
+    // 2. If a point is matched → use matched data with full extensions
+    // 3. If a point is not matched (e.g., NGE) → create a virtual point from the reference
+    const normalizedOps: PathProperties['operational_points'] = [];
+
+    opRefs.forEach((opRef, index) => {
+      const matchedOps = matchedOperationalPoints?.related_operational_points[index] || [];
+      const matchedOp = getStationFromOps(matchedOps);
+      const weight = 0; // Uniform weight for consistent manchette spacing
+      const position = index * FALLBACK_DISTANCE_MM; // Sequential positioning in manchette
+      if (index > 0) {
+        operationalPointDistances.push(FALLBACK_DISTANCE_MM); // Add distance for fallback positioning
+      }
+
+      if (matchedOp) {
+        // MATCHED: Point exists in infrastructure
+        normalizedOps.push({
+          id: matchedOp.id,
+          extensions: matchedOp.extensions,
+          part: matchedOp.parts.at(0) || { track: '', position: 0, extensions: undefined },
+          position,
+          weight,
+        });
+      } else {
+        // NOT MATCHED: Point doesn't exist in infrastructure (e.g., NGE point)
+        // Create virtual point from the reference
+        normalizedOps.push(createVirtualOp(opRef, index, opRefs.length, position, weight, t));
+      }
+    });
+
     return {
-      pathfinding,
-      geometry: pathProperties.geometry,
-      operationalPoints: pathProperties.operational_points,
-      projectingOnSimulatedPathException,
+      pathfindingStatus: 'failed',
+      path: pathUsedForProjection,
+      operationalPoints: normalizedOps,
+      operationalPointReferences: opRefs,
+      operationalPointDistances,
     };
-  }, [pathfinding, pathProperties]);
+  }, [
+    pathfinding,
+    pathProperties,
+    matchedOperationalPoints,
+    pathUsedForProjection,
+    projectingOnSimulatedPathException,
+  ]);
 };
 
 export default usePathProjection;

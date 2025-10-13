@@ -142,6 +142,7 @@
       "project": "Project",
       "restore": "Restore to template"
     },
+    "operationalPointIdentifier": "Operational point identifier",
     "pacedTrainAndTrainCount": "$t(main.pacedTrainCount, { 'count': {{pacedTrainCount}}, 'totalCount': {{totalPacedTrainCount}} }), $t(main.trainCount, { 'count': {{trainCount}}, 'totalCount': {{totalTrainScheduleCount}} }) selected",
     "pacedTrainCountSelected_one": "1/{{totalCount}} service selected",
     "pacedTrainCountSelected_other": "{{count}}/{{totalCount}} services selected",
@@ -574,6 +575,7 @@
     "timetableOutput": "Timetable Output",
     "toggleManchetteMenu": "Toggle manchette menu",
     "toggleWarpedMap": "Toggle the warped map",
+    "warpedMapUnavailable": "The warped map is not available for trains that are not calculated",
     "waypointMenu": {
       "hide": "Hide this OP",
       "hideOccupancy": "Hide tracks occupancy",

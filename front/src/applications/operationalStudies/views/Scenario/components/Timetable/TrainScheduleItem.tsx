@@ -40,7 +40,6 @@ import TimetableItemActions from './TimetableItemActions';
 import {
   formatTrainDuration,
   getTrainCategoryClassName,
-  isValidPathfinding,
   roundAndFormatToNearestMinute,
 } from './utils';
 
@@ -293,7 +292,6 @@ const TrainScheduleItem = ({
         duplicateTimetableItem={duplicateTrain}
         editTimetableItem={() => selectTrainToEdit(train)}
         deleteTimetableItem={deleteTrain}
-        canBeUsedForProjection={isValidPathfinding(summary)}
       />
     </div>
   );
