@@ -19,10 +19,14 @@ use axum::extract::State;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use common::geometry::GeoJsonPoint;
+use common::geometry::GeoJsonPointValue;
 use database::DbConnection;
 use database::DbConnectionPoolV2;
 use editoast_derive::EditoastError;
 use editoast_models::prelude::*;
+use geos::CoordSeq;
+use geos::Geom;
+use geos::Geometry;
 use itertools::Itertools;
 use schemas::infra::SwitchType;
 use schemas::primitives::Identifier;
@@ -938,6 +942,36 @@ async fn find_track_names(
     )))
 }
 
+fn compute_operational_point_geo(points: &[GeoJsonPoint]) -> Option<GeoJsonPoint> {
+    if points.is_empty() {
+        return None;
+    } else if points.len() == 1 {
+        return Some(points[0].clone());
+    }
+    let geo_points = points
+        .iter()
+        .map(|geojson_point| {
+            let GeoJsonPoint::Point(GeoJsonPointValue(xy)) = geojson_point;
+            let coords = CoordSeq::new_from_vec(&[xy]).expect("invalid point coords");
+            Geometry::create_point(coords).expect("invalid point geometry")
+        })
+        .collect();
+    let center = Geometry::create_multipoint(geo_points)
+        .expect("invalid multi-point geometry")
+        .get_centroid()
+        .expect("failed to get centroid")
+        .get_coord_seq()
+        .expect("invalid centroid coords");
+    Some(GeoJsonPoint::Point(GeoJsonPointValue(vec![
+        center
+            .get_x(0)
+            .expect("failed to get centroid X coordinate"),
+        center
+            .get_y(0)
+            .expect("failed to get centroid Y coordinate"),
+    ])))
+}
+
 async fn populate_op_geo(
     conn: &mut DbConnection,
     infra_id: i64,
@@ -956,7 +990,9 @@ async fn populate_op_geo(
             ops.iter()
                 .map(|op| RelatedOperationalPoint {
                     op: op.clone(),
-                    geo: geo_points.get(op.id.as_str()).cloned(),
+                    geo: geo_points
+                        .get(op.id.as_str())
+                        .and_then(|points| compute_operational_point_geo(points)),
                 })
                 .collect_vec()
         })
@@ -1473,8 +1509,8 @@ pub mod tests {
         assert_eq!(
             response.related_operational_points[0][0].geo,
             Some(GeoJsonPoint::Point(GeoJsonPointValue(vec!(
-                -0.392307692,
-                49.4998
+                -0.3907884613333333,
+                49.4999,
             ))))
         );
         let expected_track_names: HashMap<Identifier, Option<String>> = HashMap::from([
