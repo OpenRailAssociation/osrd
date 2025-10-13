@@ -65,9 +65,17 @@ impl tsim::TrainPath for SalutÀTous<'_> {
 }
 
 #[derive(uniffi::Record, Debug)]
-pub struct HalfOpenRangeF64 {
-    pub start: f64,
-    pub end: f64,
+pub struct ClosedRangeF64 {
+    pub start: Option<f64>,
+    pub end: Option<f64>,
+}
+
+impl From<ClosedRangeF64> for tsim::Range<f64> {
+    fn from(r: ClosedRangeF64) -> Self {
+        let start = r.start.map_or(Bound::Unbounded, Bound::Included);
+        let end = r.end.map_or(Bound::Unbounded, Bound::Included);
+        Self::new(start, end)
+    }
 }
 
 #[derive(uniffi::Record, Debug)]
@@ -92,8 +100,8 @@ impl TractiveEffortCurveMap {
         }
     }
 
-    fn insert(&self, range: HalfOpenRangeF64, value: Vec<TractiveEffortPoint>) {
-        let range = tsim::Range::new(Bound::Included(range.start), Bound::Excluded(range.end));
+    fn insert(&self, range: ClosedRangeF64, value: Vec<TractiveEffortPoint>) {
+        let range = tsim::Range::from(range);
         let value = value
             .into_iter()
             .map(|pt| tsim::TractiveEffortPoint {

@@ -1117,7 +1117,7 @@ private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
             "UniFFI API checksum mismatch: try cleaning and rebuilding your project"
         )
     }
-    if (lib.uniffi_tsim_ffi_checksum_method_tractiveeffortcurvemap_insert() != 3013.toShort()) {
+    if (lib.uniffi_tsim_ffi_checksum_method_tractiveeffortcurvemap_insert() != 62745.toShort()) {
         throw RuntimeException(
             "UniFFI API checksum mismatch: try cleaning and rebuilding your project"
         )
@@ -1502,7 +1502,7 @@ public object FfiConverterString : FfiConverter<String, RustBuffer.ByValue> {
 /** XXX: generics when???? https://github.com/mozilla/uniffi-rs/issues/1755 */
 public interface TractiveEffortCurveMapInterface {
 
-    fun `insert`(`range`: HalfOpenRangeF64, `value`: List<TractiveEffortPoint>)
+    fun `insert`(`range`: ClosedRangeF64, `value`: List<TractiveEffortPoint>)
 
     companion object
 }
@@ -1602,12 +1602,12 @@ open class TractiveEffortCurveMap : Disposable, AutoCloseable, TractiveEffortCur
         }
     }
 
-    override fun `insert`(`range`: HalfOpenRangeF64, `value`: List<TractiveEffortPoint>) =
+    override fun `insert`(`range`: ClosedRangeF64, `value`: List<TractiveEffortPoint>) =
         callWithPointer {
             uniffiRustCall() { _status ->
                 UniffiLib.INSTANCE.uniffi_tsim_ffi_fn_method_tractiveeffortcurvemap_insert(
                     it,
-                    FfiConverterTypeHalfOpenRangeF64.lower(`range`),
+                    FfiConverterTypeClosedRangeF64.lower(`range`),
                     FfiConverterSequenceTypeTractiveEffortPoint.lower(`value`),
                     _status,
                 )
@@ -2001,6 +2001,30 @@ public object FfiConverterTypeTrainPath : FfiConverter<TrainPath, Pointer> {
     }
 }
 
+data class ClosedRangeF64(var `start`: kotlin.Double?, var `end`: kotlin.Double?) {
+
+    companion object
+}
+
+/** @suppress */
+public object FfiConverterTypeClosedRangeF64 : FfiConverterRustBuffer<ClosedRangeF64> {
+    override fun read(buf: ByteBuffer): ClosedRangeF64 {
+        return ClosedRangeF64(
+            FfiConverterOptionalDouble.read(buf),
+            FfiConverterOptionalDouble.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: ClosedRangeF64) =
+        (FfiConverterOptionalDouble.allocationSize(value.`start`) +
+            FfiConverterOptionalDouble.allocationSize(value.`end`))
+
+    override fun write(value: ClosedRangeF64, buf: ByteBuffer) {
+        FfiConverterOptionalDouble.write(value.`start`, buf)
+        FfiConverterOptionalDouble.write(value.`end`, buf)
+    }
+}
+
 data class DavisCoefficients(
     var `a`: kotlin.Double,
     var `b`: kotlin.Double,
@@ -2029,27 +2053,6 @@ public object FfiConverterTypeDavisCoefficients : FfiConverterRustBuffer<DavisCo
         FfiConverterDouble.write(value.`a`, buf)
         FfiConverterDouble.write(value.`b`, buf)
         FfiConverterDouble.write(value.`c`, buf)
-    }
-}
-
-data class HalfOpenRangeF64(var `start`: kotlin.Double, var `end`: kotlin.Double) {
-
-    companion object
-}
-
-/** @suppress */
-public object FfiConverterTypeHalfOpenRangeF64 : FfiConverterRustBuffer<HalfOpenRangeF64> {
-    override fun read(buf: ByteBuffer): HalfOpenRangeF64 {
-        return HalfOpenRangeF64(FfiConverterDouble.read(buf), FfiConverterDouble.read(buf))
-    }
-
-    override fun allocationSize(value: HalfOpenRangeF64) =
-        (FfiConverterDouble.allocationSize(value.`start`) +
-            FfiConverterDouble.allocationSize(value.`end`))
-
-    override fun write(value: HalfOpenRangeF64, buf: ByteBuffer) {
-        FfiConverterDouble.write(value.`start`, buf)
-        FfiConverterDouble.write(value.`end`, buf)
     }
 }
 
@@ -2235,6 +2238,33 @@ public object FfiConverterTypeDirection : FfiConverterRustBuffer<Direction> {
 
     override fun write(value: Direction, buf: ByteBuffer) {
         buf.putInt(value.ordinal + 1)
+    }
+}
+
+/** @suppress */
+public object FfiConverterOptionalDouble : FfiConverterRustBuffer<kotlin.Double?> {
+    override fun read(buf: ByteBuffer): kotlin.Double? {
+        if (buf.get().toInt() == 0) {
+            return null
+        }
+        return FfiConverterDouble.read(buf)
+    }
+
+    override fun allocationSize(value: kotlin.Double?): ULong {
+        if (value == null) {
+            return 1UL
+        } else {
+            return 1UL + FfiConverterDouble.allocationSize(value)
+        }
+    }
+
+    override fun write(value: kotlin.Double?, buf: ByteBuffer) {
+        if (value == null) {
+            buf.put(0)
+        } else {
+            buf.put(1)
+            FfiConverterDouble.write(value, buf)
+        }
     }
 }
 

@@ -2,9 +2,9 @@ package fr.sncf.osrd.envelope_sim
 
 import fr.sncf.osrd.envelope_sim.etcs.BrakingType
 import fr.sncf.osrd.path.interfaces.PhysicsPath
+import fr.sncf.osrd.train_sim.ClosedRangeF64
 import fr.sncf.osrd.train_sim.DavisCoefficients
 import fr.sncf.osrd.train_sim.Direction
-import fr.sncf.osrd.train_sim.HalfOpenRangeF64
 import fr.sncf.osrd.train_sim.IntegrationStep
 import fr.sncf.osrd.train_sim.RollingStock
 import fr.sncf.osrd.train_sim.TractiveEffortCurveMap
@@ -45,7 +45,11 @@ class TrainPhysicsIntegrator {
         ): IntegrationStep {
             val tecm = TractiveEffortCurveMap()
             for (x in context.tractiveEffortCurveMap.asMapOfRanges()) {
-                val range = HalfOpenRangeF64(x.key.lowerEndpoint(), x.key.upperEndpoint())
+                val range =
+                    ClosedRangeF64(
+                        start = if (x.key.hasLowerBound()) x.key.lowerEndpoint() else null,
+                        end = if (x.key.hasUpperBound()) x.key.upperEndpoint() else null,
+                    )
                 // TODO use custom types?
                 // https://mozilla.github.io/uniffi-rs/latest/kotlin/configuration.html
                 val value =
