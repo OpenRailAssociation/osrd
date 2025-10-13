@@ -9,13 +9,13 @@
   "devDependencies": {
     "@eslint/js": "^8.57.1",
     "@rollup/plugin-eslint": "^9.1.0",
-    "@rollup/plugin-node-resolve": "^16.0.2",
+    "@rollup/plugin-node-resolve": "^16.0.3",
     "@rollup/plugin-typescript": "^12.1.0",
     "@types/lodash": "^4.17.17",
     "@types/react": "^19.1.15",
     "@types/react-dom": "^19.1.9",
-    "@typescript-eslint/eslint-plugin": "^8.44.0",
-    "@typescript-eslint/parser": "^8.46.0",
+    "@typescript-eslint/eslint-plugin": "^8.46.1",
+    "@typescript-eslint/parser": "^8.46.1",
     "autoprefixer": "^10.4.20",
     "eslint": "^8.24.0",
     "eslint-config-prettier": "^10.1.5",
@@ -38,7 +38,7 @@
     "rollup-plugin-livereload": "^2.0.5",
     "rollup-plugin-postcss": "^4.0.2",
     "typescript": "^5.9.3",
-    "typescript-eslint": "^8.46.0",
+    "typescript-eslint": "^8.46.1",
     "vitest": "^3.2.3"
   }
 }
