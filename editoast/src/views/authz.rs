@@ -796,14 +796,12 @@ mod tests {
             }]
         );
 
-        tracing::warn!("second group");
         let _group = app
             .group("Group")
             .with_members([&user])
             .with_infra_grant(infra.id, InfraGrant::Writer)
             .create()
             .await;
-        tracing::warn!("second call");
 
         // Ask the grant of the user for the infra again
         let request = app.post("/authz/me/grants").by_user(&user).json(&json!({
