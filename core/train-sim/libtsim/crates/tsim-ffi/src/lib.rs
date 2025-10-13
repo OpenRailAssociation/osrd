@@ -38,9 +38,9 @@ pub trait TrainPath: Send + Sync {
     fn min_grade(&self, start: f64, end: f64) -> f64;
 }
 
-struct SalutÀTous<'a>(&'a dyn TrainPath);
+struct TrainPathWrapper<'a>(&'a dyn TrainPath);
 
-impl tsim::TrainPath for SalutÀTous<'_> {
+impl tsim::TrainPath for TrainPathWrapper<'_> {
     fn length(&self) -> f64 {
         TrainPath::length(self.0)
     }
@@ -233,7 +233,7 @@ pub fn step(
     };
     tsim::step(
         &rolling_stock,
-        &SalutÀTous(path),
+        &TrainPathWrapper(path),
         time_delta,
         &tractive_effort_curve_map.inner.lock().unwrap(),
         initial_position,
