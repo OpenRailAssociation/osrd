@@ -1,6 +1,7 @@
 .rollingstock-editor {
+  --header-height: 40px;
   padding-top: 80px;
-  max-height: 100vh;
+  max-height: calc(100dvh - var(--header-height));
 
   &-list {
     height: 100%;
