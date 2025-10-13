@@ -6,6 +6,7 @@ import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
 import type { LightRollingStockWithLiveries } from 'common/api/osrdEditoastApi';
+import useStoreDataForSpeedLimitByTagSelector from 'common/SpeedLimitByTagSelector/useStoreDataForSpeedLimitByTagSelector';
 import { useSubCategoryContext } from 'common/SubCategoryContext';
 import useStoreDataForRollingStockSelector from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
 import isMainCategory from 'modules/rollingStock/helpers/category';
@@ -19,8 +20,10 @@ import {
   getCategory,
   getName,
   getOperationalStudiesRollingStockID,
+  getOperationalStudiesSpeedLimitByTag,
 } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 import { useAppDispatch } from 'store';
+import { createStandardSelectOptions } from 'utils/uiCoreHelpers';
 
 type ItineraryModalFormHeaderProps = {
   onCategoryWarningChange: (categoryWarning?: string) => void;
@@ -74,6 +77,13 @@ const ItineraryModalFormHeader = ({ onCategoryWarningChange }: ItineraryModalFor
     return secondPart ? `${rs.name} - ${secondPart}` : rs.name;
   };
 
+  // Composition code/speed limit by tag
+  const speedLimitByTag = useSelector(getOperationalStudiesSpeedLimitByTag);
+  const { speedLimitsByTags, dispatchUpdateSpeedLimitByTag } =
+    useStoreDataForSpeedLimitByTagSelector({
+      speedLimitByTag,
+    });
+
   // Timetable item name
   const name = useSelector(getName);
   const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -119,7 +129,7 @@ const ItineraryModalFormHeader = ({ onCategoryWarningChange }: ItineraryModalFor
           ></Select>
         </div>
       </div>
-      <div className="rolling-stock-and-name-row">
+      <div className="rolling-stock-cc-name-row">
         <div className="rolling-stock-combobox">
           <ComboBox
             id="itinerary-modal-rolling-stock"
@@ -135,7 +145,25 @@ const ItineraryModalFormHeader = ({ onCategoryWarningChange }: ItineraryModalFor
             readOnly
           />
         </div>
-
+        <div className="composition-code-select">
+          <Select
+            id="itinerary-modal-composition-code"
+            label={t('speedLimitByTagAbbrev')}
+            narrow
+            small
+            placeholder={t('noSpeedLimitByTag')}
+            value={speedLimitByTag || ''}
+            {...createStandardSelectOptions(speedLimitsByTags)}
+            onChange={(e) => {
+              if (e) {
+                dispatchUpdateSpeedLimitByTag(e);
+              } else {
+                dispatchUpdateSpeedLimitByTag(null);
+              }
+            }}
+            readOnly
+          ></Select>
+        </div>
         <div className="train-name-input">
           <Input
             narrow
@@ -143,6 +171,7 @@ const ItineraryModalFormHeader = ({ onCategoryWarningChange }: ItineraryModalFor
             id="itinerary-modal-timetable-item-name"
             label={t('itineraryModal.trainName')}
             value={name}
+            title={name}
             onChange={handleNameChange}
             readOnly
           />
