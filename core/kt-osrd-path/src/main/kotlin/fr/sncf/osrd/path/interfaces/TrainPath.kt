@@ -2,12 +2,8 @@ package fr.sncf.osrd.path.interfaces
 
 import fr.sncf.osrd.path.implementations.ChunkPath
 import fr.sncf.osrd.sim_infra.api.*
-import fr.sncf.osrd.utils.indexing.DirStaticIdx
-import fr.sncf.osrd.utils.indexing.StaticIdx
-import fr.sncf.osrd.utils.isSingleton
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
-import fr.sncf.osrd.utils.units.meters
 import fr.sncf.osrd.utils.units.sumDistances
 
 /**
@@ -59,33 +55,6 @@ fun concat(vararg paths: TrainPath): TrainPath {
     TODO("Required for actual backtracks, not necessary earlier than that")
 }
 
-data class GenericLinearRange<ValueType, OffsetType>(
-    val value: ValueType,
-    val objectBegin: Offset<OffsetType>,
-    val objectEnd: Offset<OffsetType>,
-    val pathBegin: Offset<TrainPath>,
-    val pathEnd: Offset<TrainPath>,
-) {
-    val length = objectEnd - objectBegin
-
-    init {
-        require(length >= 0.meters)
-        require(pathEnd - pathBegin == length)
-    }
-
-    fun isSingleton() = length == 0.meters
-}
-
-typealias LinearObjectRange<T> = GenericLinearRange<StaticIdx<T>, T>
-
-typealias LinearDirObjectRange<T> = GenericLinearRange<DirStaticIdx<T>, T>
-
-typealias RouteRange = LinearObjectRange<Route>
-
-typealias BlockRange = LinearObjectRange<Block>
-
-typealias DirChunkRange = LinearDirObjectRange<TrackChunk>
-
 // Extension functions that help with backward compatibility.
 // These should only exist during the migration to enable more local changes,
 // to allow partial migration while still having a working core.
@@ -107,10 +76,10 @@ fun TrainPath.getLegacyChunkPath(): ChunkPath {
 
 fun TrainPath.getLegacyBlockPath(): List<BlockId> {
     // Legacy block list excluded blocks that were only used in 0-length segments
-    return getBlocks().filter { !it.isSingleton() }.map { it.value }
+    return getBlocks().filter { !it.isSinglePoint() }.map { it.value }
 }
 
 fun TrainPath.getLegacyRoutePath(): List<RouteId> {
     // Legacy route list excluded routes that were only used in 0-length segments
-    return getRoutes().filter { !it.isSingleton() }.map { it.value }
+    return getRoutes().filter { !it.isSinglePoint() }.map { it.value }
 }
