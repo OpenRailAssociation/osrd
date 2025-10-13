@@ -275,6 +275,7 @@ pub(in crate::views) async fn get(
 #[utoipa::path(
     put, path = "",
     tag = "scenarios",
+    request_body = MacroNoteForm,
     params(ProjectIdParam, StudyIdParam, ScenarioIdParam, MacroNoteIdParam),
     responses(
         (status = 200, body = MacroNoteResponse, description = "The updated macro note"),

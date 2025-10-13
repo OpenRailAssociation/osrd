@@ -843,6 +843,7 @@ const injectedRtkApi = api
         query: (queryArg) => ({
           url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios/${queryArg.scenarioId}/macro_notes/${queryArg.noteId}`,
           method: 'PUT',
+          body: queryArg.macroNoteForm,
         }),
         invalidatesTags: ['scenarios'],
       }),
@@ -2233,6 +2234,7 @@ export type PutProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNotes
   studyId: number;
   scenarioId: number;
   noteId: number;
+  macroNoteForm: MacroNoteForm;
 };
 export type DeleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNotesNoteIdApiResponse =
   unknown;
