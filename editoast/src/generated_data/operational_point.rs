@@ -12,6 +12,7 @@ use diesel::sql_types::BigInt;
 use diesel::sql_types::Jsonb;
 use diesel::sql_types::Text;
 use diesel_async::RunQueryDsl;
+use itertools::Itertools;
 use schemas::primitives::ObjectType;
 
 use super::GeneratedData;
@@ -87,7 +88,7 @@ impl OperationalPointLayer {
         conn: &mut DbConnection,
         infra_id: i64,
         ids: &[&str],
-    ) -> Result<HashMap<String, GeoJsonPoint>> {
+    ) -> Result<HashMap<String, Vec<GeoJsonPoint>>> {
         Ok(sql_query(
             "SELECT obj_id, ST_AsGeoJSON(ST_Transform(geographic, 4326))::jsonb AS geo
                 FROM infra_layer_operational_point
@@ -99,6 +100,7 @@ impl OperationalPointLayer {
         .await?
         .into_iter()
         .map(|op| (op.obj_id, op.geo.0))
+        .into_grouping_map()
         .collect())
     }
 }
