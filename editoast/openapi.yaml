@@ -11830,8 +11830,77 @@ components:
           minimum: 0
       additionalProperties: false
     RelatedOperationalPoint:
+      type: object
+      required:
+      - id
+      - parts
+      properties:
+        extensions:
+          type: object
+          properties:
+            identifier:
+              oneOf:
+              - type: 'null'
+              - type: object
+                required:
+                - name
+                - uic
+                properties:
+                  name:
+                    type: string
+                    minLength: 1
+                  uic:
+                    type: integer
+                    format: int32
+                    minimum: 0
+                additionalProperties: false
+            sncf:
+              oneOf:
+              - type: 'null'
+              - type: object
+                required:
+                - ci
+                - ch
+                - ch_short_label
+                - ch_long_label
+                - trigram
+                properties:
+                  ch:
+                    type: string
+                  ch_long_label:
+                    type: string
+                    minLength: 1
+                  ch_short_label:
+                    type: string
+                    minLength: 1
+                  ci:
+                    type: integer
+                    format: int64
+                  trigram:
+                    type: string
+                additionalProperties: false
+          additionalProperties: false
+        geo:
+          oneOf:
+          - type: 'null'
+          - $ref: '#/components/schemas/GeoJsonPoint'
+        id:
+          type: string
+          maxLength: 255
+          minLength: 1
+        parts:
+          type: array
+          items:
+            $ref: '#/components/schemas/RelatedOperationalPointPart'
+        weight:
+          type:
+          - integer
+          - 'null'
+          format: int32
+          minimum: 0
+    RelatedOperationalPointPart:
       allOf:
-      - $ref: '#/components/schemas/OperationalPoint'
+      - $ref: '#/components/schemas/OperationalPointPart'
       - type: object
         properties:
           geo:

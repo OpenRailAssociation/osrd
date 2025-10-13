@@ -3326,8 +3326,27 @@ export type GeoJsonPoint = {
   coordinates: GeoJsonPointValue;
   type: 'Point';
 };
-export type RelatedOperationalPoint = OperationalPoint & {
+export type RelatedOperationalPointPart = OperationalPointPart & {
   geo?: null | GeoJsonPoint;
+};
+export type RelatedOperationalPoint = {
+  extensions?: {
+    identifier?: null | {
+      name: string;
+      uic: number;
+    };
+    sncf?: null | {
+      ch: string;
+      ch_long_label: string;
+      ch_short_label: string;
+      ci: number;
+      trigram: string;
+    };
+  };
+  geo?: null | GeoJsonPoint;
+  id: string;
+  parts: RelatedOperationalPointPart[];
+  weight?: number | null;
 };
 export type TrackReference =
   | {

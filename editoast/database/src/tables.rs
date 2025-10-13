@@ -184,6 +184,7 @@ diesel::table! {
         infra_id -> Int8,
         kp -> Nullable<Text>,
         track_section -> Text,
+        part_index -> Int8,
     }
 }
 

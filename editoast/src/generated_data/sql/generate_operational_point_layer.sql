@@ -1,5 +1,6 @@
 WITH ops AS (
     SELECT obj_id AS op_id,
+        generate_series(0, jsonb_array_length(data->'parts') - 1) AS part_index,
         (
             jsonb_array_elements(data->'parts')->'position'
         )::float AS position,
@@ -21,17 +22,19 @@ collect AS (
             )
         ) AS geo,
         ops.kp AS kp,
-        ops.track_id AS track_section
+        ops.track_id AS track_section,
+        ops.part_index AS part_index
     FROM ops
         INNER JOIN infra_object_track_section AS tracks ON tracks.obj_id = ops.track_id
         AND tracks.infra_id = $1
         INNER JOIN infra_layer_track_section AS tracks_layer ON tracks.obj_id = tracks_layer.obj_id
         AND tracks.infra_id = tracks_layer.infra_id
 )
-INSERT INTO infra_layer_operational_point (obj_id, infra_id, geographic, kp, track_section)
+INSERT INTO infra_layer_operational_point (obj_id, infra_id, geographic, kp, track_section, part_index)
 SELECT op_id,
     $1,
     geo,
     kp,
-    track_section
+    track_section,
+    part_index
 FROM collect
