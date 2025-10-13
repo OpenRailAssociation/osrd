@@ -3,7 +3,6 @@ package fr.sncf.osrd.envelope_sim
 import fr.sncf.osrd.envelope_sim.etcs.BrakingType
 import fr.sncf.osrd.path.interfaces.PhysicsPath
 import fr.sncf.osrd.train_sim.ClosedRangeF64
-import fr.sncf.osrd.train_sim.DavisCoefficients
 import fr.sncf.osrd.train_sim.Direction
 import fr.sncf.osrd.train_sim.IntegrationStep
 import fr.sncf.osrd.train_sim.RollingStock
@@ -11,6 +10,24 @@ import fr.sncf.osrd.train_sim.TractiveEffortCurveMap
 import fr.sncf.osrd.train_sim.TractiveEffortPoint
 import fr.sncf.osrd.train_sim.TrainPath
 import kotlin.math.*
+
+/** Wrapper around a `PhysicsRollingSock` that implements rust-side's `RollingSock` */
+class MyFirstRollingStock(val p: PhysicsRollingStock) : RollingStock {
+    override fun mass(): Double = this.p.mass
+
+    override fun inertia(): Double = this.p.inertia
+
+    override fun length(): Double = this.p.length
+
+    override fun maxSpeed(): Double = this.p.maxSpeed
+
+    override fun rollingResistance(speed: Double): Double = this.p.getRollingResistance(speed)
+
+    override fun rollingResistanceDeriv(speed: Double): Double =
+        this.p.getRollingResistanceDeriv(speed)
+
+    override fun deceleration(): Double = this.p.deceleration
+}
 
 /** Wrapper around a `PhysicsPath` that implements rust-side's `TrainPath` */
 class MyFirstPath(val p: PhysicsPath) : TrainPath {
@@ -62,14 +79,7 @@ class TrainPhysicsIntegrator {
                 tecm.insert(range, value)
             }
             return fr.sncf.osrd.train_sim.step(
-                rollingStock =
-                    RollingStock(
-                        davis = DavisCoefficients(a = 1.0, b = 1.0, c = 1.0),
-                        constGamma = -context.rollingStock.deceleration,
-                        length = context.rollingStock.length,
-                        mass = context.rollingStock.mass,
-                        inertia = context.rollingStock.inertia,
-                    ),
+                rollingStock = MyFirstRollingStock(context.rollingStock),
                 path = MyFirstPath(context.path),
                 timeDelta = context.timeStep,
                 tractiveEffortCurveMap = tecm,

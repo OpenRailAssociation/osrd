@@ -1,6 +1,5 @@
 use crate::RangeMap;
 use std::cmp::Ordering;
-use std::fmt;
 
 const G: f64 = 9.80665;
 const SPEED_EPSILON: f64 = 1e-5;
@@ -18,54 +17,27 @@ fn are_positions_equal(a: f64, b: f64) -> bool {
     are_doubles_equal(a, b, POSITION_EPSILON)
 }
 
-/// Davis equation coefficients used to model the resistance to motion of a rolling stock.
-///
-/// They are usually set empirically for each type of rolling stock.
-///
-/// See <https://en.wikipedia.org/wiki/Rail_vehicle_resistance> for details.
-#[derive(Clone, Copy)]
-pub struct DavisCoefficients {
-    /// Speed-independent term, in newtons
-    pub a: f64,
+pub trait RollingStock {
+    /// The mass of the train, in kilograms
+    fn mass(&self) -> f64;
 
-    /// Speed-linear term, in newtons / (m/s) = kg/s
-    pub b: f64,
+    /// The inertia of the train, in newtons (usually computed from mass * inertiaCoefficient)
+    fn inertia(&self) -> f64;
 
-    /// Acceleration-linear term, in newtons / (m/s²) = kg
-    pub c: f64,
-}
+    /// The length of the train, in meters
+    fn length(&self) -> f64;
 
-impl DavisCoefficients {
-    /// The resistance to motion of the rolling stock, given its current `speed`, in newtons.
-    pub fn rolling_resistance(&self, speed: f64) -> f64 {
-        self.a + self.b * f64::abs(speed) + self.c * speed * speed
-    }
-}
+    /// The maximum speed the train can reach, in m/s
+    fn max_speed(&self) -> f64;
 
-impl fmt::Debug for DavisCoefficients {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        let Self { a, b, c } = *self;
-        write!(f, "{a}+{b}*v+{c}*v²")
-    }
-}
+    /// The resistance to movement at a given speed, in newtons
+    fn rolling_resistance(&self, speed: f64) -> f64;
 
-/// Characteristics of a specific rolling stock.
-#[derive(Clone, Debug)]
-pub struct RollingStock {
-    /// Rolling resistance coefficients
-    pub davis: DavisCoefficients,
+    /// The first derivative of the resistance to movement at a given speed, in kg/s
+    fn rolling_resistance_deriv(&self, speed: f64) -> f64;
 
-    /// the deceleration of the train, in m/s^2
-    pub const_gamma: f64,
-
-    /// Length of the rolling stock in meters
-    pub length: f64,
-
-    /// Mass of the rolling stock in kilograms
-    pub mass: f64,
-
-    /// Defined as mass * inertiaCoefficient
-    pub inertia: f64,
+    /// The maximum constant deceleration, in m/s^2
+    fn deceleration(&self) -> f64;
 }
 
 /// The effort a rolling stock can apply at a given speed, in newtons.
@@ -303,23 +275,27 @@ pub struct TractiveEffortPoint {
     pub max_effort: f64,
 }
 
-fn average_grade(rolling_stock: &RollingStock, path: &dyn TrainPath, head_position: f64) -> f64 {
-    let tail_position = f64::clamp(head_position - rolling_stock.length, 0.0, path.length());
+fn average_grade(
+    rolling_stock: &dyn RollingStock,
+    path: &dyn TrainPath,
+    head_position: f64,
+) -> f64 {
+    let tail_position = f64::clamp(head_position - rolling_stock.length(), 0.0, path.length());
     let head_position = f64::clamp(head_position, 0.0, path.length());
     path.avg_grade(head_position, tail_position)
 }
 
-fn weight_force(rolling_stock: &RollingStock, grade: f64) -> f64 {
+fn weight_force(rolling_stock: &dyn RollingStock, grade: f64) -> f64 {
     // get an angle from a m/km elevation difference
     // the curve's radius is taken into account in meanTrainGrade
     let angle = f64::atan(grade / 1000.0); // m/km -> m/m
-    -rolling_stock.mass * G * f64::sin(angle)
+    -rolling_stock.mass() * G * f64::sin(angle)
 }
 
 /// Simulate train movement using Runge-Kutta 4
 #[allow(clippy::too_many_arguments)]
 pub fn step(
-    rolling_stock: &RollingStock,
+    rolling_stock: &dyn RollingStock,
     path: &dyn TrainPath,
     time_delta: f64,
     tractive_effort_curve_map: &RangeMap<f64, Box<[TractiveEffortPoint]>>,
@@ -332,7 +308,7 @@ pub fn step(
     let step_part = |time_delta: f64, position: f64, speed: f64| -> IntegrationStep {
         if matches!(action, Action::Brake) {
             let acceleration = match braking_type {
-                BrakingType::Constant => -rolling_stock.const_gamma,
+                BrakingType::Constant => rolling_stock.deceleration(),
                 _ => panic!("TODO support other braking types"),
             };
             return newton_step(time_delta, speed, acceleration, direction);
@@ -348,7 +324,7 @@ pub fn step(
             }
         };
         let max_traction = max_effort(speed, tractive_effort_curve);
-        let rolling_resistance = rolling_stock.davis.rolling_resistance(speed);
+        let rolling_resistance = rolling_stock.rolling_resistance(speed);
         let average_grade = average_grade(rolling_stock, path, position);
         let weight_force = weight_force(rolling_stock, average_grade);
 
@@ -376,7 +352,7 @@ pub fn step(
             0.0
         } else {
             (traction + weight_force - f64::signum(speed) * rolling_resistance)
-                / rolling_stock.inertia
+                / rolling_stock.inertia()
         };
 
         newton_step(time_delta, speed, acceleration, direction)
@@ -493,22 +469,65 @@ mod tests {
         map
     }
 
-    const STANDARD_TRAIN: RollingStock = {
+    struct TheOnlyRollingStockImpl {
+        // Davis coefficients
+        a: f64,
+        b: f64,
+        c: f64,
+
+        const_gamma: f64,
+        length: f64,
+        mass: f64,
+        inertia: f64,
+        max_speed: f64,
+    }
+
+    impl RollingStock for TheOnlyRollingStockImpl {
+        fn mass(&self) -> f64 {
+            self.mass
+        }
+
+        fn inertia(&self) -> f64 {
+            self.inertia
+        }
+
+        fn length(&self) -> f64 {
+            self.length
+        }
+
+        fn max_speed(&self) -> f64 {
+            self.max_speed
+        }
+
+        fn rolling_resistance(&self, speed: f64) -> f64 {
+            let speed = f64::abs(speed);
+            self.a + self.b * speed + self.c * speed * speed
+        }
+
+        fn rolling_resistance_deriv(&self, speed: f64) -> f64 {
+            self.b + 2.0 * self.c * f64::abs(speed)
+        }
+
+        fn deceleration(&self) -> f64 {
+            -self.const_gamma
+        }
+    }
+
+    const MAX_SPEED: f64 = 300.0 / 3.6;
+    const STANDARD_TRAIN: TheOnlyRollingStockImpl = {
         let mass = 850_000.0;
-        RollingStock {
-            davis: DavisCoefficients {
-                a: (0.65 * mass) / 100.0,
-                b: ((0.008 * mass) / 100.0) * 3.6,
-                c: (((0.00012 * mass) / 100.0) * 3.6) * 3.6,
-            },
+        TheOnlyRollingStockImpl {
+            a: (0.65 * mass) / 100.0,
+            b: ((0.008 * mass) / 100.0) * 3.6,
+            c: (((0.00012 * mass) / 100.0) * 3.6) * 3.6,
             const_gamma: 0.5,
             length: 400.0,
             mass,
             inertia: mass * 1.05,
+            max_speed: MAX_SPEED,
         }
     };
     const TIME_DELTA: f64 = 1.0;
-    const MAX_SPEED: f64 = 300.0 / 3.6;
 
     #[test]
     fn negative_speed_forward() {
@@ -582,7 +601,7 @@ mod tests {
         let mut speed = 0.0;
 
         // make a huge traction effort
-        let rolling_resistance = rolling_stock.davis.rolling_resistance(speed);
+        let rolling_resistance = rolling_stock.rolling_resistance(speed);
         let grade = average_grade(&rolling_stock, &path, position);
         let weight_force = weight_force(&rolling_stock, grade);
         let acceleration = (500_000.0 + weight_force - f64::signum(speed) * rolling_resistance)

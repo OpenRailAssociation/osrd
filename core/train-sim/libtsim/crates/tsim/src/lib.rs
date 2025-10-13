@@ -4,7 +4,6 @@
 
 pub use crate::integration::Action;
 pub use crate::integration::BrakingType;
-pub use crate::integration::DavisCoefficients;
 pub use crate::integration::Direction;
 pub use crate::integration::Electrification;
 pub use crate::integration::Electrified;

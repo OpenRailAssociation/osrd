@@ -3,30 +3,60 @@ use std::sync::Mutex;
 
 uniffi::setup_scaffolding!();
 
-#[derive(uniffi::Record, Clone, Copy)]
-pub struct DavisCoefficients {
-    pub a: f64,
-    pub b: f64,
-    pub c: f64,
+#[uniffi::export(with_foreign)]
+pub trait RollingStock: Send + Sync {
+    /// The mass of the train, in kilograms
+    fn mass(&self) -> f64;
+
+    /// The inertia of the train, in newtons (usually computed from mass * inertiaCoefficient)
+    fn inertia(&self) -> f64;
+
+    /// The length of the train, in meters
+    fn length(&self) -> f64;
+
+    /// The maximum speed the train can reach, in m/s
+    fn max_speed(&self) -> f64;
+
+    /// The resistance to movement at a given speed, in newtons
+    fn rolling_resistance(&self, speed: f64) -> f64;
+
+    /// The first derivative of the resistance to movement at a given speed, in kg/s
+    fn rolling_resistance_deriv(&self, speed: f64) -> f64;
+
+    /// The maximum constant deceleration, in m/s^2
+    fn deceleration(&self) -> f64;
 }
 
-impl From<DavisCoefficients> for tsim::DavisCoefficients {
-    fn from(value: DavisCoefficients) -> Self {
-        tsim::DavisCoefficients {
-            a: value.a,
-            b: value.b,
-            c: value.c,
-        }
+struct RollingStockWrapper<'a>(&'a dyn RollingStock);
+
+impl tsim::RollingStock for RollingStockWrapper<'_> {
+    fn mass(&self) -> f64 {
+        RollingStock::mass(self.0)
     }
-}
 
-#[derive(uniffi::Record)]
-pub struct RollingStock {
-    pub davis: DavisCoefficients,
-    pub const_gamma: f64,
-    pub length: f64,
-    pub mass: f64,
-    pub inertia: f64,
+    fn inertia(&self) -> f64 {
+        RollingStock::inertia(self.0)
+    }
+
+    fn length(&self) -> f64 {
+        RollingStock::length(self.0)
+    }
+
+    fn max_speed(&self) -> f64 {
+        RollingStock::max_speed(self.0)
+    }
+
+    fn rolling_resistance(&self, speed: f64) -> f64 {
+        RollingStock::rolling_resistance(self.0, speed)
+    }
+
+    fn rolling_resistance_deriv(&self, speed: f64) -> f64 {
+        RollingStock::rolling_resistance_deriv(self.0, speed)
+    }
+
+    fn deceleration(&self) -> f64 {
+        RollingStock::deceleration(self.0)
+    }
 }
 
 #[uniffi::export(with_foreign)]
@@ -214,7 +244,7 @@ impl From<tsim::IntegrationStep> for IntegrationStep {
 #[uniffi::export]
 #[allow(clippy::too_many_arguments)]
 pub fn step(
-    rolling_stock: RollingStock,
+    rolling_stock: &dyn RollingStock,
     path: &dyn TrainPath,
     time_delta: f64,
     tractive_effort_curve_map: &TractiveEffortCurveMap,
@@ -224,15 +254,8 @@ pub fn step(
     direction: Direction,
     braking_type: BrakingType,
 ) -> IntegrationStep {
-    let rolling_stock = tsim::RollingStock {
-        davis: rolling_stock.davis.into(),
-        const_gamma: rolling_stock.const_gamma,
-        length: rolling_stock.length,
-        mass: rolling_stock.mass,
-        inertia: rolling_stock.inertia,
-    };
     tsim::step(
-        &rolling_stock,
+        &RollingStockWrapper(rolling_stock),
         &TrainPathWrapper(path),
         time_delta,
         &tractive_effort_curve_map.inner.lock().unwrap(),
