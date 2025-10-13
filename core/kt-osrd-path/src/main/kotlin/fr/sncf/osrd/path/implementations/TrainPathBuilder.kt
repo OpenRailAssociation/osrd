@@ -203,38 +203,18 @@ private fun generateTrackChunks(
     blockInfra: BlockInfra,
     blocks: List<BlockRange>,
 ): List<DirChunkRange> {
-    val res = mutableListOf<PartialDirChunkRange>()
-    for (blockRange in blocks) {
-        var currentChunkOffset = Offset<Block>(0.meters)
-        for (chunk in blockInfra.getTrackChunksFromBlock(blockRange.value)) {
-            val chunkLength = rawInfra.getTrackChunkLength(chunk.value)
-
-            val chunkStart = Offset<TrackChunk>(blockRange.objectBegin - currentChunkOffset)
-            val chunkEnd = Offset<TrackChunk>(blockRange.objectEnd - currentChunkOffset)
-            if (
-                chunkStart <= chunkEnd &&
-                    Offset.zero<TrackChunk>() <= chunkEnd &&
-                    chunkStart <= chunkLength
-            ) {
-                val chunkRange =
-                    PartialDirChunkRange(
-                        chunk,
-                        max(chunkStart, Offset.zero()),
-                        min(chunkEnd, chunkLength),
-                    )
-                res.add(chunkRange)
-            }
-
-            currentChunkOffset += chunkLength.distance
-        }
-    }
-
+    val res =
+        mapSubObjects(
+            blocks,
+            blockInfra::getTrackChunksFromBlock,
+            { rawInfra.getTrackChunkLength(it.value) },
+        )
     // We need to filter out zero-length ranges that aren't first or last
-    val filtered = mutableListOf<PartialDirChunkRange>()
+    val filtered = mutableListOf<DirChunkRange>()
     for ((i, chunkRange) in res.withIndex()) {
         if (i == 0 || i == res.size - 1 || chunkRange.length > 0.meters) filtered.add(chunkRange)
     }
-    return buildRangeList(filtered)
+    return filtered
 }
 
 /**
