@@ -9,7 +9,7 @@ version = "0.1.0"
 anyhow = "1.0.100"
 axum = "0.8.4"
 axum-extra = { version = "0.10.1", features = ["query"] }
-axum-tracing-opentelemetry = "0.30.0"
+axum-tracing-opentelemetry = "0.32.0"
 bollard = "0.19"
 env_logger = "0.11.8"
 figment = { version = "0.10.19", features = ["env", "yaml"] }
@@ -26,10 +26,10 @@ lapin = { version = "3.7.1", default-features = false, features = [
   "default-runtime",
   "rustls--ring",
 ] }
-opentelemetry = "0.30.0"
-opentelemetry-otlp = { version = "0.30.0", features = ["grpc-tonic"] }
-opentelemetry-semantic-conventions = "0.30.0"
-opentelemetry_sdk = { version = "0.30.0", features = ["rt-tokio"] }
+opentelemetry = "0.31.0"
+opentelemetry-otlp = { version = "0.31.0", features = ["grpc-tonic"] }
+opentelemetry-semantic-conventions = "0.31.0"
+opentelemetry_sdk = { version = "0.31.0", features = ["rt-tokio"] }
 percent-encoding = "2.3.2"
 priority-queue = "2.6.0"
 reqwest = { version = "0.12.23", default-features = false, features = [
@@ -45,7 +45,7 @@ thiserror = "2.0.17"
 thunderdome = "0.6.1"
 tokio = { version = "1.47.1", features = ["full"] }
 tracing = "0.1.41"
-tracing-opentelemetry = "0.31.0"
+tracing-opentelemetry = "0.32.0"
 tracing-subscriber = { version = "0.3.20", features = ["env-filter"] }
 url = { version = "2.5.7", features = ["serde"] }
 uuid = { version = "1.18.1", features = ["serde", "v4"] }
