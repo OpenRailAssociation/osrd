@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="32px" height="64px" viewBox="0 0 32 64" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>Trains/OP marker/Regular/Hover</title>
+    <defs>
+        <path d="M0,0 L29.863456,0 L29.863456,48 L0,48 L0,0 Z" id="path-1"></path>
+        <linearGradient x1="100%" y1="50%" x2="0.494427448%" y2="50%" id="linearGradient-2">
+            <stop stop-color="#000000" stop-opacity="0" offset="0%"></stop>
+            <stop stop-color="#000000" stop-opacity="0.199409965" offset="60.623361%"></stop>
+            <stop stop-color="#000000" stop-opacity="0.543597028" offset="100%"></stop>
+        </linearGradient>
+        <linearGradient x1="50%" y1="0%" x2="50%" y2="100%" id="linearGradient-3">
+            <stop stop-color="#000000" stop-opacity="0.496448864" offset="0%"></stop>
+            <stop stop-color="#000000" stop-opacity="0" offset="100%"></stop>
+        </linearGradient>
+    </defs>
+    <g id="Trains/OP-marker/Regular/Hover" stroke="none" fill="none" fill-rule="evenodd">
+        <rect id="Footprint" fill-opacity="0.05" fill="#FF0000" opacity="0" x="0" y="5" width="32" height="44"></rect>
+        <g id="Pin" transform="translate(2, 5)" xlink:href="#path-1">
+            <polygon id="Pin-drop-shadow" fill="url(#linearGradient-2)" transform="translate(21.7317, 39.8388) rotate(-45) translate(-21.7317, -39.8388)" points="11.231728 38.8388348 32.231728 38.8388348 32.231728 40.8388348 11.231728 40.8388348"></polygon>
+            <polygon id="Pin-border" fill="#FFFFFF" points="12 26 16 26 16 44 15 48 13 48 12 44"></polygon>
+            <polygon id="Pin-light-side" fill="#B6B3AF" points="13 26 14 26 14 48 13.5 48 13 44"></polygon>
+            <polygon id="Pin-dark-side" fill="#797671" points="14 26 15 26 15 44 14.5 48 14 48"></polygon>
+            <rect id="Marker-shadow" fill="url(#linearGradient-3)" x="13" y="28" width="2" height="6"></rect>
+            <circle id="Badge-border" fill="#FFFFFF" cx="14" cy="14" r="14"></circle>
+        </g>
+        <g id="Step-badge" transform="translate(4, 7)" fill="#312E2B" stroke="#D3D1CF" stroke-width="2">
+            <circle id="Background" cx="12" cy="12" r="11"></circle>
+        </g>
+    </g>
+</svg>

@@ -162,3 +162,10 @@ export function getPointOnTrackCoordinates(
   return along(pathLineString, geometryDistanceAlongTrack, { units: 'millimeters' }).geometry
     .coordinates;
 }
+
+export function getBarycenter(coords: Position[]): Position {
+  const n = coords.length;
+  if (n === 0) throw new Error('No coordinates provided');
+  const sum = coords.reduce((acc, [lon, lat]) => [acc[0] + lon, acc[1] + lat], [0, 0]);
+  return [sum[0] / n, sum[1] / n];
+}

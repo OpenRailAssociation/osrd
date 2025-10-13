@@ -132,7 +132,7 @@ const ItineraryModal = ({
       </div>
       {!isMapDisabled && (
         <div className="itinerary-modal-map">
-          <ItineraryModalMap />
+          <ItineraryModalMap pathSteps={pathSteps} pathStepsMetadata={pathStepsMetadataById} />
         </div>
       )}
     </dialog>

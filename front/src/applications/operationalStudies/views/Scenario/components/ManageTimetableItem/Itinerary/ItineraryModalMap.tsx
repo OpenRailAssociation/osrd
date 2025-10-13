@@ -1,5 +1,6 @@
-import { useCallback, useMemo, useRef, useState, type PropsWithChildren } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 
+import { useTranslation } from 'react-i18next';
 import type { MapLayerMouseEvent, MapRef } from 'react-map-gl/maplibre';
 
 import BaseMap from 'common/Map/BaseMap';
@@ -7,17 +8,34 @@ import MapButtons from 'common/Map/Buttons/MapButtons';
 import { useInfraID } from 'common/osrdContext';
 import { useMapSettings, useMapSettingsActions } from 'reducers/commonMap';
 import type { Viewport } from 'reducers/commonMap/types';
+import type { PathStepMetadata, PathStepV2 } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
+import { getBarycenter } from 'utils/geometry';
 import { getMapMouseEventNearestFeature } from 'utils/mapHelper';
 
 import type { FeatureInfoClick } from '../types';
+import PathStepMarker from './PathStepMarker';
+import { computePathStepCoordinates } from './utils';
 
 const OPERATIONAL_POINT_LAYERS = [
   'chartis/osrd_operational_point/geo',
   'chartis/osrd_operational_point_name/geo',
 ];
 
-const ItineraryModalMap = ({ children }: PropsWithChildren) => {
+const computeOpRefMarkerName = (
+  pathStepMetadata: Extract<PathStepMetadata, { isInvalid: false; type: 'opRef' }>
+) =>
+  `${pathStepMetadata.name}${pathStepMetadata.secondaryCode ? ` ${pathStepMetadata.secondaryCode}` : ''}${pathStepMetadata.trackName ? ` \u00B7 ${pathStepMetadata.trackName}` : ''}`;
+
+type ItineraryModalMapProps = {
+  pathSteps?: PathStepV2[];
+  pathStepsMetadata?: Map<string, PathStepMetadata>;
+};
+
+const ItineraryModalMap = ({ pathSteps, pathStepsMetadata }: ItineraryModalMapProps) => {
+  const { t } = useTranslation('operational-studies', {
+    keyPrefix: 'main',
+  });
   const dispatch = useAppDispatch();
 
   const infraID = useInfraID();
@@ -129,7 +147,43 @@ const ItineraryModalMap = ({ children }: PropsWithChildren) => {
         mapSettings={mapSettings}
         updatePartialViewPort={updateViewportChange}
       >
-        {children}
+        {pathSteps &&
+          pathStepsMetadata &&
+          pathSteps.map((step, index) => {
+            const pathStepMetadata = pathStepsMetadata.get(step.id);
+            const pathStepLocation = step.location;
+            if (!pathStepLocation || !pathStepMetadata || pathStepMetadata?.isInvalid) return null;
+
+            const allCoordinates = computePathStepCoordinates(pathStepMetadata);
+
+            const coordinates =
+              allCoordinates.length === 1 ? allCoordinates[0] : getBarycenter(allCoordinates);
+
+            let name = '';
+            if (pathStepMetadata.type === 'trackOffset') {
+              if (pathStepMetadata.label) {
+                name = pathStepMetadata.label;
+              } else if (index === 0) {
+                name = t('requestedOrigin');
+              } else if (index === pathSteps.length - 1) {
+                name = t('requestedDestination');
+              } else {
+                name = t('requestedPoint', { count: index + 1 });
+              }
+            } else {
+              name = computeOpRefMarkerName(pathStepMetadata);
+            }
+
+            return (
+              <PathStepMarker
+                key={step.id}
+                id={step.id}
+                markerIndicator={(index + 1).toString()}
+                name={name}
+                coordinates={coordinates}
+              />
+            );
+          })}
       </BaseMap>
     </>
   );
