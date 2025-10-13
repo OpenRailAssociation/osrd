@@ -46,8 +46,8 @@
     "@tailwindcss/postcss": "^4.1.14",
     "@testing-library/dom": "^10.1.0",
     "@testing-library/react": "^16.0.0",
-    "@types/react": "^19.1.15",
-    "@types/react-dom": "^19.1.9",
+    "@types/react": "^19.2.2",
+    "@types/react-dom": "^19.2.2",
     "jsdom": "^27.0.0",
     "tailwindcss": "^4.1.13"
   }
