@@ -434,6 +434,75 @@ fn newton_step(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::Range;
+    use std::ops::Bound;
+
+    struct FlatPath {
+        length: f64,
+        slope: f64,
+    }
+
+    impl TrainPath for FlatPath {
+        fn length(&self) -> f64 {
+            self.length
+        }
+
+        fn avg_grade(&self, _start: f64, _end: f64) -> f64 {
+            self.slope
+        }
+
+        fn min_grade(&self, _start: f64, _end: f64) -> f64 {
+            self.slope
+        }
+
+        fn electrification_map(
+            &self,
+            _base_power_class: &str,
+            _power_restrictions: &RangeMap<f64, String>,
+            _power_restriction_to_power_class: &RangeMap<String, String>,
+            _ignore_electrical_profiles: bool,
+        ) -> RangeMap<f64, Option<Electrification>> {
+            RangeMap::new()
+        }
+    }
+
+    fn dummy_effort_speed_curve(max_speed: f64) -> Box<[TractiveEffortPoint]> {
+        std::iter::successors(Some(0.0), |prev| Some(*prev + 1.0))
+            .take_while(|speed| *speed < max_speed)
+            .chain([max_speed])
+            .map(|speed| {
+                let max_effort = 450_000.0;
+                let min_effort = 180_000.0;
+                let max_effort = max_effort + (min_effort - max_effort) * speed / max_speed;
+                TractiveEffortPoint { speed, max_effort }
+            })
+            .collect::<Vec<_>>()
+            .into_boxed_slice()
+    }
+
+    fn dummy_effort_curve_map() -> RangeMap<f64, Box<[TractiveEffortPoint]>> {
+        let mut map = RangeMap::new();
+        let all = Range::new(Bound::Unbounded, Bound::Unbounded);
+        map.insert(all, dummy_effort_speed_curve(MAX_SPEED));
+        map
+    }
+
+    const STANDARD_TRAIN: RollingStock = {
+        let mass = 850_000.0;
+        RollingStock {
+            davis: DavisCoefficients {
+                a: (0.65 * mass) / 100.0,
+                b: ((0.008 * mass) / 100.0) * 3.6,
+                c: (((0.00012 * mass) / 100.0) * 3.6) * 3.6,
+            },
+            const_gamma: 0.5,
+            length: 400.0,
+            mass,
+            inertia: mass * 1.05,
+        }
+    };
+    const TIME_DELTA: f64 = 1.0;
+    const MAX_SPEED: f64 = 300.0 / 3.6;
 
     #[test]
     fn negative_speed_forward() {
@@ -493,5 +562,69 @@ mod tests {
         let expected_end_speed =
             step.start_speed + direction.sign(step.time_delta * step.acceleration);
         assert_eq!(expected_end_speed, 0.0);
+    }
+
+    #[test]
+    fn accelerate_and_coast() {
+        let path = FlatPath {
+            length: 100_000.0,
+            slope: 0.0,
+        };
+        let rolling_stock = STANDARD_TRAIN;
+        let effort_curve_map = dummy_effort_curve_map();
+        let mut position = 0.0;
+        let mut speed = 0.0;
+
+        // make a huge traction effort
+        let rolling_resistance = rolling_stock.davis.rolling_resistance(speed);
+        let grade = average_grade(&rolling_stock, &path, position);
+        let weight_force = weight_force(&rolling_stock, grade);
+        let acceleration = (500_000.0 + weight_force - f64::signum(speed) * rolling_resistance)
+            / rolling_stock.inertia;
+        let s = newton_step(TIME_DELTA, speed, acceleration, Direction::Forwards);
+
+        position += s.position_delta;
+        speed = s.end_speed;
+        assert!(speed > 0.5);
+
+        // the train should be able to coast for a minute without stopping
+        for _ in 0..59 {
+            let s = step(
+                &rolling_stock,
+                &path,
+                TIME_DELTA,
+                &effort_curve_map,
+                position,
+                speed,
+                Action::Coast,
+                Direction::Forwards,
+                BrakingType::Constant,
+            );
+            position += s.position_delta;
+            let prev_speed = s.start_speed;
+            speed = s.end_speed;
+            assert!(speed < prev_speed);
+            assert!(speed > 0.0);
+        }
+
+        // another minute later
+        for _ in 0..59 {
+            let s = step(
+                &rolling_stock,
+                &path,
+                TIME_DELTA,
+                &effort_curve_map,
+                position,
+                speed,
+                Action::Coast,
+                Direction::Forwards,
+                BrakingType::Constant,
+            );
+            position += s.position_delta;
+            speed = s.end_speed;
+        }
+
+        // it should be stopped
+        assert_eq!(speed, 0.0);
     }
 }
