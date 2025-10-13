@@ -17,6 +17,13 @@ tasks.register('rustBuildRelease', Exec) {
     workingDir 'libtsim'
     commandLine 'cargo', 'build', '--package', 'tsim-ffi', '--release'
 
+    // Register all crates as input to avoid having to maintain the list, should
+    // the number of crates increase. In any case, cargo build incrementally
+    // and false positives won't incur great timelosses.
+    inputs.dir 'libtsim/crates'
+    inputs.file 'libtsim/Cargo.toml'
+    inputs.file 'libtsim/Cargo.lock'
+
     // Hard-code `build/` instead of using layout.buildDirectory, because we
     // don't really care about where libtsim_ffi.so gets built as long as cargo
     // and gradle agree on a location. Otherwise we could set the env var
@@ -24,9 +31,6 @@ tasks.register('rustBuildRelease', Exec) {
     // running cargo outside of gradle would recompile everything in `build/`,
     // as configured in `.cargo/config.toml`.
     outputs.file 'build/rust/release/libtsim_ffi.so'
-
-    // Always run the task and rely on cargo to build when necessary
-    outputs.upToDateWhen { false }
 }
 
 tasks.register('rustTest', Exec) {
@@ -35,7 +39,9 @@ tasks.register('rustTest', Exec) {
 
     workingDir 'libtsim'
     commandLine 'cargo', 'test'
-    inputs.dir 'libtsim'
+    inputs.dir 'libtsim/crates'
+    inputs.file 'libtsim/Cargo.toml'
+    inputs.file 'libtsim/Cargo.lock'
 }
 tasks.named('test') {
     dependsOn tasks.named('rustTest')
@@ -57,7 +63,9 @@ tasks.register('generateKotlinBindings', Exec) {
 
     // Register tsim-ffi crate sources as inputs of this task so that it runs
     // when the FFI changes
-    inputs.dir 'libtsim/crates/tsim-ffi/src'
+    inputs.dir 'libtsim/crates/tsim-ffi'
+    inputs.file 'libtsim/Cargo.toml'
+    inputs.file 'libtsim/Cargo.lock'
 
     outputs.dir 'src/main/kotlin'
 }
