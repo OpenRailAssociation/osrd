@@ -801,7 +801,7 @@ pub mod tests {
         .expect("Unable to parse example rolling stock")
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn create_rolling_stock_successfully() {
         // GIVEN
         let app = TestAppBuilder::default_app();
@@ -1069,6 +1069,7 @@ pub mod tests {
     }
 
     #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn create_rolling_stock_with_etcs_level2_string() {
         let app = TestAppBuilder::default_app();
         let rs_name = "fast_rolling_stock_name";
@@ -1085,6 +1086,7 @@ pub mod tests {
         // WHEN
         let response = app
             .fetch(app.rolling_stock_create_request(&fast_rolling_stock_form))
+            .await
             .assert_status(StatusCode::UNPROCESSABLE_ENTITY)
             .string();
         // THEN
@@ -1094,7 +1096,7 @@ pub mod tests {
         );
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn create_rolling_stock_with_etcs_level2_and_etcs_brake_params() {
         // GIVEN
         let app = TestAppBuilder::default_app();
@@ -1110,6 +1112,7 @@ pub mod tests {
         // WHEN
         let response = app
             .fetch(app.rolling_stock_create_request(&rolling_stock_form))
+            .await
             .assert_status(StatusCode::UNPROCESSABLE_ENTITY)
             .string();
         // THEN
@@ -1119,7 +1122,7 @@ pub mod tests {
         );
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn create_rolling_stock_with_etcs_brake_params() {
         // GIVEN
         let app = TestAppBuilder::default_app();
@@ -1131,7 +1134,7 @@ pub mod tests {
         let request = app.rolling_stock_create_request(&rolling_stock_form);
         let raw_response = app.fetch(request);
 
-        let response: RollingStock = raw_response.assert_status(StatusCode::OK).json_into();
+        let response: RollingStock = raw_response.await.assert_status(StatusCode::OK).json_into();
         // Check if the rolling stock was created in the database
         let rolling_stock = RollingStock::retrieve(db_pool.get_ok(), response.id)
             .await
@@ -1153,7 +1156,7 @@ pub mod tests {
         assert_eq!(rolling_stock_form.startup_time, rolling_stock.startup_time);
     }
 
-    #[rstest]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn get_rolling_stock_by_id() {
         // GIVEN
         let app = TestAppBuilder::default_app();
