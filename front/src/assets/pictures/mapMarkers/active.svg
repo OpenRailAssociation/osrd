@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="32px" height="64px" viewBox="0 0 32 64" version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink">
+    <title>Trains/OP marker/Regular/Active</title>
+    <defs>
+        <path d="M0,0 L28,0 L28,58.9330127 L0,58.9330127 L0,0 Z" id="path-1"></path>
+        <linearGradient x1="100%" y1="50%" x2="0.494427448%" y2="50%" id="linearGradient-2">
+            <stop stop-color="#000000" stop-opacity="0" offset="0%"></stop>
+            <stop stop-color="#000000" stop-opacity="0.199409965" offset="23.3746722%"></stop>
+            <stop stop-color="#000000" stop-opacity="0.674360795" offset="50.1584353%"></stop>
+            <stop stop-color="#000000" stop-opacity="0.2" offset="72.2383086%"></stop>
+            <stop stop-color="#000000" stop-opacity="0" offset="100%"></stop>
+        </linearGradient>
+        <linearGradient x1="50%" y1="0%" x2="50%" y2="100%" id="linearGradient-3">
+            <stop stop-color="#000000" stop-opacity="0.496448864" offset="0%"></stop>
+            <stop stop-color="#000000" stop-opacity="0" offset="100%"></stop>
+        </linearGradient>
+    </defs>
+    <g id="Trains/OP-marker/Regular/Active" stroke="none" fill="none" fill-rule="evenodd">
+        <rect id="Footprint" fill-opacity="0.05" fill="#FF0000" opacity="0" x="0" y="0" width="32" height="44"></rect>
+        <g id="Pin" transform="translate(2, 0)" xlink:href="#path-1">
+            <path d="M15.4749915,52.7742223 L24.6423048,58.0669873 L24.1423048,58.9330127 L14.9739773,53.6408126 C15.2298904,53.4221166 15.411332,53.1188163 15.4749915,52.7742223 Z M13.0253999,53.6402801 L3.85769515,58.9330127 L3.35769515,58.0669873 L12.5250085,52.7742223 C12.5886164,53.1185367 12.7698153,53.4216244 13.0253999,53.6402801 Z M3.85769515,46.0669873 L13.0253999,51.3597199 C12.7695717,51.5785839 12.5882711,51.8820409 12.524827,52.226762 L3.35769515,46.9330127 L3.85769515,46.0669873 Z M24.1423048,46.0669873 L24.6423048,46.9330127 L15.475173,52.226762 C15.4117585,51.8822019 15.2305976,51.5788674 14.9749585,51.3600266 L24.1423048,46.0669873 Z" id="Pin-drop-shadow" fill="url(#linearGradient-2)"></path>
+            <polygon id="Pin-border" fill="#FFFFFF" points="12 18 16 18 16 36 15 40 13 40 12 36"></polygon>
+            <polygon id="Pin-light-side" fill="#B6B3AF" points="13 18 14 18 14 40 13.5 40 13 36"></polygon>
+            <polygon id="Pin-dark-side" fill="#797671" points="14 18 15 18 15 36 14.5 40 14 40"></polygon>
+            <rect id="Marker-shadow" fill="url(#linearGradient-3)" x="13" y="28" width="2" height="6"></rect>
+            <circle id="Badge-border" fill="#FFF700" cx="14" cy="14" r="14"></circle>
+        </g>
+        <g id="Step-badge" transform="translate(4, 2)" fill="#1F1B17" stroke="#FFF700" stroke-width="2">
+            <circle id="Background" cx="12" cy="12" r="11"></circle>
+        </g>
+    </g>
+</svg>
