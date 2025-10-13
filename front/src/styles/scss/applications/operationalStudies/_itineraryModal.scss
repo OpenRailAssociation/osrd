@@ -24,7 +24,7 @@
   }
 
   .itinerary-modal-form {
-    min-width: 480px; // Starting this width, the map is going to shrink but not the form
+    min-width: 628px;
     width: 50%;
     height: 100%;
     flex-shrink: 0;
@@ -48,21 +48,28 @@
           margin-right: 12px;
         }
         .category-select {
-          width: 257px;
+          width: 217px;
           height: 32px;
         }
       }
 
-      .rolling-stock-and-name-row {
+      .rolling-stock-cc-name-row {
         display: flex;
         align-items: center;
         margin-top: 17px;
         margin-left: 40px;
+        gap: 32px;
 
         .rolling-stock-combobox {
-          min-width: 257px;
-          margin-right: 21px;
-          flex: 0 0 auto;
+          min-width: 217px;
+          // Fix osrd-ui styles
+          label {
+            margin-bottom: 0;
+          }
+        }
+
+        .composition-code-select {
+          min-width: 120px;
           // Fix osrd-ui styles
           label {
             margin-bottom: 0;
@@ -70,9 +77,8 @@
         }
 
         .train-name-input {
-          width: 100%;
-          min-width: 257px;
-          margin-right: 39px;
+          min-width: 148px;
+          margin-right: 40px;
           flex: 1 1 auto;
           // Fix osrd-ui styles
           label {
