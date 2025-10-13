@@ -430,3 +430,68 @@ fn newton_step(
         direction,
     )
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn negative_speed_forward() {
+        let initial_time_delta = 1.0;
+        let start_speed = 1.0;
+        let acceleration = -2.0;
+        let direction = Direction::Forwards;
+        let end_speed = start_speed + direction.sign(initial_time_delta * acceleration);
+        let initial_position_delta = direction.sign(
+            start_speed * initial_time_delta
+                + 0.5 * acceleration * initial_time_delta * initial_time_delta,
+        );
+
+        let step = IntegrationStep::new(
+            initial_time_delta,
+            initial_position_delta,
+            start_speed,
+            end_speed,
+            acceleration,
+            direction,
+        );
+
+        assert_eq!(step.end_speed, 0.0);
+        assert!(step.time_delta < initial_time_delta);
+        assert!(direction.sign(step.position_delta) > 0.0);
+
+        let expected_end_speed =
+            step.start_speed + direction.sign(step.time_delta * step.acceleration);
+        assert_eq!(expected_end_speed, 0.0);
+    }
+
+    #[test]
+    fn negative_speed_backward() {
+        let initial_time_delta = 1.0;
+        let start_speed = 1.0;
+        let acceleration = 2.0;
+        let direction = Direction::Backwards;
+        let end_speed = start_speed + direction.sign(initial_time_delta * acceleration);
+        let initial_position_delta = direction.sign(
+            start_speed * initial_time_delta
+                + 0.5 * acceleration * initial_time_delta * initial_time_delta,
+        );
+
+        let step = IntegrationStep::new(
+            initial_time_delta,
+            initial_position_delta,
+            start_speed,
+            end_speed,
+            acceleration,
+            direction,
+        );
+
+        assert_eq!(step.end_speed, 0.0);
+        assert!(step.time_delta < initial_time_delta);
+        assert!(direction.sign(step.position_delta) > 0.0);
+
+        let expected_end_speed =
+            step.start_speed + direction.sign(step.time_delta * step.acceleration);
+        assert_eq!(expected_end_speed, 0.0);
+    }
+}
