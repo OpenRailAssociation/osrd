@@ -6,7 +6,7 @@ import { useTranslation, Trans } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
 import type { SimilarTrainWithSecondaryCode, StdcmResultsOutput } from 'applications/stdcm/types';
-import { extractMarkersInfo } from 'applications/stdcm/utils';
+import { extractMarkersInfo, mergeSimilarTrainSegments } from 'applications/stdcm/utils';
 import { addSecondaryCodesToSimilarTrains } from 'applications/stdcm/utils/addSecondaryCodesToSimilarTrains';
 import { hasResults } from 'applications/stdcm/utils/simulationOutputUtils';
 import { osrdEditoastApi, type PostSimilarTrainsApiResponse } from 'common/api/osrdEditoastApi';
@@ -180,13 +180,16 @@ const StdcmResults = ({
         addUniqueTrains(response.data?.similar_trains ?? []);
       }
 
+      const mergedTrains = mergeSimilarTrainSegments(results);
+
       const enrichedSimilarTrains = addSecondaryCodesToSimilarTrains(
-        results,
+        mergedTrains,
         (selectedSimulation.outputs as StdcmResultsOutput).pathProperties.manchetteOperationalPoints
       );
 
       setSimilarTrains(enrichedSimilarTrains);
     };
+
     if (isSelectedSimulationRetained) {
       searchForSimilarTrains();
     }
