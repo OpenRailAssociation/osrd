@@ -104,7 +104,7 @@ proc-macro2 = "1.0"
 quote = "1.0"
 rand = "0.9.2"
 rangemap = "1.6.0"
-regex = "1.11"
+regex = "1.12"
 reqwest = { version = "0.12.24", features = ["json"] }
 rstest = { version = "0.19.0", default-features = false }
 schemas = { path = "./schemas" }
