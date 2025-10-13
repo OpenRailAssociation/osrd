@@ -7,6 +7,8 @@ RUN gcc -std=c99 -static -o /exec-as exec-as.c
 
 FROM node:24-alpine
 
+RUN apk add --no-cache curl
+
 COPY --from=exec_as_builder /exec-as /
 
 WORKDIR /app
