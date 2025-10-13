@@ -49,7 +49,7 @@ pub fn simple_rolling_stock() -> RollingStock {
         units::kilogram::new(15000.0),
         RollingResistance {
             rolling_resistance_type: "davis".to_string(),
-            // TODO those values are wrong, they correspond to daN/T, (daN/T)/(km/h), and (daN/T)/(km/h)² per weight
+            // TODO those values are wrong, they correspond to daN/T, (daN/T)/(km/h), and (daN/T)/(km/h)²
             // We should use more realistic values and fix the tests
             A: units::newton::new(1.0),
             B: units::kilogram_per_second::new(0.01),
@@ -79,7 +79,7 @@ pub fn towed_rolling_stock() -> TowedRollingStock {
         inertia_coefficient: 1.05,
         rolling_resistance: RollingResistancePerWeight {
             rolling_resistance_type: "davis".to_string(),
-            // TODO those values are wrong, they correspond to daN/T, (daN/T)/(km/h), and (daN/T)/(km/h)² per weight
+            // TODO those values are wrong, they correspond to daN/T, (daN/T)/(km/h), and (daN/T)/(km/h)²
             // We should use more realistic values and fix the tests
             A: units::meter_per_second_squared::new(1.0),
             B: units::hertz::new(0.01),

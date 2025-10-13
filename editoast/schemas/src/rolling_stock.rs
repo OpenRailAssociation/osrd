@@ -221,12 +221,6 @@ impl RollingStock {
         primary_category: TrainMainCategory,
         other_categories: TrainMainCategories,
     ) -> Self {
-        assert!(
-            !supported_signaling_systems
-                .0
-                .contains(&"ETCS_LEVEL2".to_string()),
-            "'ETCS_LEVEL2' can't be listed in 'supported_signaling_systems', providing 'etcs_brake_params' field is the (only) way to trigger ETCS_LEVEL2 support."
-        );
         Self {
             name,
             effort_curves,
