@@ -2934,6 +2934,12 @@ paths:
         schema:
           type: integer
           format: int64
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MacroNoteForm'
+        required: true
       responses:
         '200':
           description: The updated macro note
