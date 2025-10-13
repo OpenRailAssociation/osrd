@@ -61,6 +61,8 @@ use crate::views::path::path_item_cache::retrieve_op_from_trigrams;
 use crate::views::path::path_item_cache::retrieve_op_from_uic;
 use authz::Role;
 use schemas::infra::OperationalPoint;
+use schemas::infra::OperationalPointExtensions;
+use schemas::infra::OperationalPointPart;
 use schemas::infra::builtin_node_types_list;
 use schemas::train_schedule::OperationalPointIdentifier;
 use schemas::train_schedule::OperationalPointReference;
@@ -773,9 +775,23 @@ pub(in crate::views) struct MatchOperationalPointsForm {
 
 #[derive(Serialize, ToSchema)]
 #[cfg_attr(test, derive(Deserialize))]
-struct RelatedOperationalPoint {
+struct RelatedOperationalPointPart {
     #[serde(flatten)]
-    op: OperationalPoint,
+    part: OperationalPointPart,
+    geo: Option<GeoJsonPoint>,
+}
+
+#[derive(Serialize, ToSchema)]
+#[cfg_attr(test, derive(Deserialize))]
+struct RelatedOperationalPoint {
+    #[schema(inline)]
+    id: Identifier,
+    parts: Vec<RelatedOperationalPointPart>,
+    #[serde(default)]
+    #[schema(inline)]
+    extensions: OperationalPointExtensions,
+    #[serde(default)]
+    weight: Option<u8>,
     geo: Option<GeoJsonPoint>,
 }
 
@@ -972,6 +988,27 @@ fn compute_operational_point_geo(points: &[GeoJsonPoint]) -> Option<GeoJsonPoint
     ])))
 }
 
+fn build_related_operational_point(
+    op: &OperationalPoint,
+    geo_points: Option<&Vec<GeoJsonPoint>>,
+) -> RelatedOperationalPoint {
+    RelatedOperationalPoint {
+        id: op.id.clone(),
+        parts: op
+            .parts
+            .iter()
+            .enumerate()
+            .map(|(i, part)| RelatedOperationalPointPart {
+                part: part.clone(),
+                geo: geo_points.and_then(|points| points.get(i).cloned()),
+            })
+            .collect(),
+        extensions: op.extensions.clone(),
+        weight: op.weight,
+        geo: geo_points.and_then(|points| compute_operational_point_geo(points)),
+    }
+}
+
 async fn populate_op_geo(
     conn: &mut DbConnection,
     infra_id: i64,
@@ -988,12 +1025,7 @@ async fn populate_op_geo(
         .iter()
         .map(|ops| {
             ops.iter()
-                .map(|op| RelatedOperationalPoint {
-                    op: op.clone(),
-                    geo: geo_points
-                        .get(op.id.as_str())
-                        .and_then(|points| compute_operational_point_geo(points)),
-                })
+                .map(|op| build_related_operational_point(op, geo_points.get(op.id.as_str())))
                 .collect_vec()
         })
         .collect_vec())
@@ -1497,12 +1529,7 @@ pub mod tests {
         let response_op_identifiers = response
             .related_operational_points
             .iter()
-            .map(|op_ref| {
-                op_ref
-                    .iter()
-                    .map(|op| op.op.id.as_str())
-                    .collect::<Vec<_>>()
-            })
+            .map(|op_ref| op_ref.iter().map(|op| op.id.as_str()).collect::<Vec<_>>())
             .collect_vec();
         let expected_identifiers = [vec!["West_station"], vec!["Mid_East_station"], vec![]];
         assert_eq!(response_op_identifiers, expected_identifiers);
@@ -1510,6 +1537,13 @@ pub mod tests {
             response.related_operational_points[0][0].geo,
             Some(GeoJsonPoint::Point(GeoJsonPointValue(vec!(
                 -0.3907884613333333,
+                49.4999,
+            ))))
+        );
+        assert_eq!(
+            response.related_operational_points[0][0].parts[1].geo,
+            Some(GeoJsonPoint::Point(GeoJsonPointValue(vec!(
+                -0.392307692,
                 49.4999,
             ))))
         );
@@ -1567,12 +1601,7 @@ pub mod tests {
         let response_op_identifiers = response
             .related_operational_points
             .iter()
-            .map(|op_ref| {
-                op_ref
-                    .iter()
-                    .map(|op| op.op.id.as_str())
-                    .collect::<Vec<_>>()
-            })
+            .map(|op_ref| op_ref.iter().map(|op| op.id.as_str()).collect::<Vec<_>>())
             .collect::<Vec<_>>();
         let expected_identifiers: [Vec<&str>; 3] = [vec![], vec![], vec![]];
         assert_eq!(response_op_identifiers, expected_identifiers);

@@ -92,7 +92,8 @@ impl OperationalPointLayer {
         Ok(sql_query(
             "SELECT obj_id, ST_AsGeoJSON(ST_Transform(geographic, 4326))::jsonb AS geo
                 FROM infra_layer_operational_point
-                WHERE infra_id = $1 AND obj_id = ANY($2)",
+                WHERE infra_id = $1 AND obj_id = ANY($2)
+                ORDER BY obj_id, part_index",
         )
         .bind::<BigInt, _>(infra_id)
         .bind::<Array<Text>, _>(ids)

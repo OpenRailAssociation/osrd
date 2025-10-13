@@ -152,8 +152,8 @@ impl Infra {
                                 }
                         ,
                         ObjectType::OperationalPoint => {
-                            format!("INSERT INTO {layer_table}(obj_id,geographic,infra_id, kp, track_section)
-                                    SELECT obj_id,geographic,$1,kp, track_section FROM {layer_table} WHERE infra_id = $2")
+                            format!("INSERT INTO {layer_table}(obj_id,geographic,infra_id, kp, track_section, part_index)
+                                    SELECT obj_id,geographic,$1,kp, track_section, part_index FROM {layer_table} WHERE infra_id = $2")
                                 }
                         _ => {
                             format!("INSERT INTO {layer_table}(obj_id,geographic,infra_id) SELECT obj_id,geographic,$1 FROM {layer_table} WHERE infra_id=$2")
