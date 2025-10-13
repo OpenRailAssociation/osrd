@@ -2,7 +2,6 @@ import { useCallback, useEffect, useMemo, useState, useRef } from 'react';
 
 import { skipToken } from '@reduxjs/toolkit/query';
 import { keyBy, sortBy } from 'lodash';
-import { useSelector } from 'react-redux';
 
 import { osrdEditoastApi, type ScenarioResponse } from 'common/api/osrdEditoastApi';
 import { useRollingStockContext } from 'common/RollingStockContext';
@@ -11,9 +10,7 @@ import {
   formatPacedTrainWithDetails,
   formatTrainScheduleWithDetails,
 } from 'modules/timetableItem/helpers/formatTimetableItemWithDetails';
-import { getExceptionFromOccurrenceId } from 'modules/timetableItem/helpers/pacedTrain';
 import type { TimetableItemId, TimetableItem } from 'reducers/osrdconf/types';
-import { getTrainIdUsedForProjection } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
 import {
   formatEditoastIdToPacedTrainId,
@@ -21,8 +18,6 @@ import {
   extractEditoastIdFromTrainScheduleId,
   extractEditoastIdFromPacedTrainId,
   isPacedTrainResponseWithPacedTrainId,
-  isOccurrenceId,
-  extractPacedTrainIdFromOccurrenceId,
 } from 'utils/trainId';
 import { mapBy } from 'utils/types';
 
@@ -38,7 +33,6 @@ type ScenarioBroadcastMessage =
 
 const useScenarioData = (scenario: ScenarioResponse, infraId: number) => {
   const dispatch = useAppDispatch();
-  const trainIdUsedForProjection = useSelector(getTrainIdUsedForProjection);
 
   const [timetableItems, setTimetableItems] = useState<TimetableItem[]>();
   const timetableItemsById = useMemo(() => mapBy(timetableItems, 'id'), [timetableItems]);
@@ -99,8 +93,12 @@ const useScenarioData = (scenario: ScenarioResponse, infraId: number) => {
   } = useLazyProjectTrains({
     infraId,
     electricalProfileSetId: scenario.electrical_profile_set_id,
-    path: projectionPath?.pathfinding,
-    operationalPoints: projectionPath?.operationalPoints,
+    path:
+      projectionPath?.pathfindingStatus === 'succeeded'
+        ? projectionPath.pathfinding.path
+        : undefined,
+    operationalPointDistances: projectionPath?.operationalPointDistances,
+    operationalPointReferences: projectionPath?.operationalPointReferences,
   });
 
   const {
@@ -145,18 +143,6 @@ const useScenarioData = (scenario: ScenarioResponse, infraId: number) => {
     () => Array.from(projectedTrainsById.values()),
     [projectedTrainsById]
   );
-
-  const pathUsedForProjection = useMemo(() => {
-    if (!trainIdUsedForProjection) return undefined;
-    if (!isOccurrenceId(trainIdUsedForProjection)) {
-      return timetableItemsById.get(trainIdUsedForProjection)?.path;
-    }
-    const pacedTrain = timetableItemsById.get(
-      extractPacedTrainIdFromOccurrenceId(trainIdUsedForProjection)
-    );
-    const exception = getExceptionFromOccurrenceId(timetableItemsById, trainIdUsedForProjection);
-    return exception?.path_and_schedule?.path ?? pacedTrain!.path;
-  }, [trainIdUsedForProjection, timetableItems]);
 
   const timetableItemIds = useMemo(() => timetableItems?.map((item) => item.id), [timetableItems]);
 
@@ -336,18 +322,16 @@ const useScenarioData = (scenario: ScenarioResponse, infraId: number) => {
     () => ({
       timetableItemsWithDetails,
       timetableItems,
-      projectionData:
-        pathUsedForProjection && projectionPath
-          ? {
-              path: pathUsedForProjection,
-              ...projectionPath,
-              projectedTrains,
-              projectionLoaderData: {
-                allTrainsProjected,
-                totalTrains: timetableItems?.length ?? 0,
-              },
-            }
-          : undefined,
+      projectionData: projectionPath
+        ? {
+            ...projectionPath,
+            projectedTrains,
+            projectionLoaderData: {
+              allTrainsProjected,
+              totalTrains: timetableItems?.length ?? 0,
+            },
+          }
+        : undefined,
       conflicts,
       isConflictsLoading,
       removeTimetableItems: removeTimetableItemsWithBroadcast,
@@ -357,7 +341,6 @@ const useScenarioData = (scenario: ScenarioResponse, infraId: number) => {
     [
       timetableItemsWithDetails,
       timetableItems,
-      pathUsedForProjection,
       projectionPath,
       projectedTrains,
       allTrainsProjected,

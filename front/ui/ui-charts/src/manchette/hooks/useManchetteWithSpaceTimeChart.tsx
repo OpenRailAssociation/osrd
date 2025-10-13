@@ -106,7 +106,6 @@ const useManchetteWithSpaceTimeChart = ({
   verticalPadding = BASE_WAYPOINT_HEIGHT / 2,
   splitPoints = [],
   options = {},
-  hidePositions = false,
 }: {
   waypoints: Waypoint[];
   manchetteWithSpaceTimeChartRef: React.RefObject<HTMLDivElement | null>;
@@ -118,7 +117,6 @@ const useManchetteWithSpaceTimeChart = ({
   verticalPadding?: number;
   splitPoints?: SplitPoint[];
   options?: Partial<ManchetteWithSpaceTimeChartOptions>;
-  hidePositions?: boolean;
 }) => {
   const { displayTimeCaptions, enableTimePan, enableSpacePan, enableTimeZoom } = useMemo(
     () => ({
@@ -583,7 +581,6 @@ const useManchetteWithSpaceTimeChart = ({
         yZoom,
         isProportional,
         yOffset,
-        hidePositions,
       },
       spaceTimeChartProps: {
         operationalPoints: waypointsToDisplay.map((waypoint) => ({
@@ -708,7 +705,6 @@ const useManchetteWithSpaceTimeChart = ({
       yZoom,
       isProportional,
       yOffset,
-      hidePositions,
       waypointsToDisplay,
       splitPoints,
       displayTimeCaptions,

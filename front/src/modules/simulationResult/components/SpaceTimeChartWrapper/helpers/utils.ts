@@ -136,10 +136,15 @@ export const cutSpaceTimeChart = (
   let filteredProjectPathTrainResult = projectedTrains;
   let filteredConflicts = conflicts;
 
-  if (!waypointsPanelData || waypointsPanelData.filteredWaypoints.length < 2)
+  if (
+    !waypointsPanelData ||
+    waypointsPanelData.filteredWaypoints.length < 2 ||
+    operationalPoints.length < 2
+  )
     return { filteredProjectPathTrainResult, filteredConflicts };
 
   const { filteredWaypoints } = waypointsPanelData;
+
   const firstPosition = filteredWaypoints.at(0)!.position;
   const lastPosition = filteredWaypoints.at(-1)!.position;
 

@@ -48,7 +48,7 @@ const SDD_MIN_HEIGHT = 400;
 
 type SimulationResultsProps = {
   scenarioData: { name: string; infraName: string };
-  projectionData?: ProjectionData;
+  projectionData: ProjectionData | undefined;
   timetableItemsWithDetails: TimetableItemWithDetails[];
   conflicts?: Conflict[];
   activeBoards: Set<Board>;
@@ -123,6 +123,7 @@ const SimulationResults = ({
     updateTrackOccupanciesOnDrag: handleTrainDragInTrackOccupancy,
   } = useTrackOccupancy({
     infraId,
+    pathfindingHasFailed: projectionData?.pathfindingStatus === 'failed',
     pathOperationalPoints: filteredOperationalPoints,
     timetableItemProjections: projectPathTrainResult,
   });
@@ -203,10 +204,11 @@ const SimulationResults = ({
   if (!simulationResults && !projectionData) {
     return null;
   }
+
   return (
     <div className="simulation-results" data-testid="simulation-results">
       {/* SIMULATION : SPACE TIME CHART */}
-      {activeBoards.has('std') && projectionData && projectionData.projectedTrains.length > 0 && (
+      {activeBoards.has('std') && (
         <ResizableSection
           height={manchetteWithSpaceTimeChartHeight}
           setHeight={setManchetteWithSpaceTimeChartHeight}
@@ -240,13 +242,21 @@ const SimulationResults = ({
                 >
                   {showWarpedMap ? <ChevronLeft /> : <ChevronRight />}
                 </button>
-                <SimulationWarpedMap
-                  collapsed={!showWarpedMap}
-                  pathGeometry={projectionData.geometry}
-                />
+                {projectionData?.geometry ? (
+                  <SimulationWarpedMap
+                    collapsed={!showWarpedMap}
+                    pathGeometry={projectionData?.geometry}
+                  />
+                ) : (
+                  showWarpedMap && (
+                    <div className="warped-map-unavailable-message">
+                      <p>{t('simulationResults.warpedMapUnavailable')}</p>
+                    </div>
+                  )
+                )}
               </div>
               <div className="osrd-simulation-container d-flex flex-grow-1 flex-shrink-1">
-                {trainIdUsedForProjection && (
+                {trainIdUsedForProjection && projectionData && (
                   <SpaceTimeChartWrapper
                     operationalPoints={projectedOperationalPoints}
                     projectPathTrainResult={projectPathTrainResult}
@@ -276,6 +286,7 @@ const SimulationResults = ({
                     selectedProjectionId={trainIdUsedForProjection}
                     waypointsPanelIsOpen={waypointsPanelIsOpen}
                     setWaypointsPanelIsOpen={setWaypointsPanelIsOpen}
+                    pathfindingHasFailed={projectionData?.pathfindingStatus === 'failed'}
                   />
                 )}
               </div>

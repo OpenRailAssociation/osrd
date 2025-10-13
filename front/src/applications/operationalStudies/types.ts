@@ -15,6 +15,8 @@ import type {
   StudyWithScenarios,
   ScenarioWithDetails,
   SearchResultItemScenario,
+  PathItem,
+  OperationalPointReference,
 } from 'common/api/osrdEditoastApi';
 import type { RangedValue } from 'common/types';
 import type { PathOperationalPoint } from 'modules/simulationResult/types';
@@ -159,3 +161,22 @@ export type ItineraryPathProperties = PathProperties & {
   length: number;
   incompatibleConstraints?: IncompatibleConstraints;
 };
+export type PathProjectionResult = {
+  path: PathItem[];
+  operationalPoints: PathProperties['operational_points'];
+  operationalPointDistances: number[];
+  operationalPointReferences: OperationalPointReference[];
+} & (
+  | {
+      pathfindingStatus: 'succeeded';
+      pathfinding: PathfindingResultSuccess;
+      geometry: PathProperties['geometry'];
+      projectingOnSimulatedPathException: boolean | undefined;
+    }
+  | {
+      pathfindingStatus: 'failed';
+      pathfinding: undefined;
+      geometry: undefined;
+      projectingOnSimulatedPathException: undefined;
+    }
+);

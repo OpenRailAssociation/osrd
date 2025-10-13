@@ -55,7 +55,7 @@ import TimetableItemActions from '../TimetableItemActions';
 import useOccurrences from './hooks/useOccurrences';
 import OccurrenceItem from './OccurrenceItem';
 import { TIMETABLE_ITEM_DELTA } from '../consts';
-import { formatTrainDuration, getTrainCategoryClassName, isValidPathfinding } from '../utils';
+import { formatTrainDuration, getTrainCategoryClassName } from '../utils';
 import useOccurrenceActions from './hooks/useOccurrenceActions';
 
 type PacedTrainItemProps = {
@@ -357,7 +357,6 @@ const PacedTrainItem = ({
               'sm'
             );
           }}
-          canBeUsedForProjection={isValidPathfinding(summary)}
           showResetExceptionsButton={pacedTrain.exceptions.length > 0}
           resetAllExceptions={() => {
             openModal(

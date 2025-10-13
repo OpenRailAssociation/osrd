@@ -14,7 +14,8 @@ import { getWaypointsLocalStorageKey } from './helpers/utils';
 const useWaypointMenu = (
   activeWaypointRef: RefObject<HTMLDivElement | null>,
   waypointsPanelData?: WaypointsPanelData,
-  allTrainsProjected?: boolean
+  allTrainsProjected?: boolean,
+  pathfindingHasFailed?: boolean
 ) => {
   const {
     filteredWaypoints,
@@ -97,7 +98,7 @@ const useWaypointMenu = (
       const isDeployed = deployedWaypoints.has(activeWaypointId);
 
       menuItems.push({
-        disabled: !isDeployed && !allTrainsProjected,
+        disabled: pathfindingHasFailed || (!isDeployed && !allTrainsProjected),
         title: isDeployed
           ? t('simulationResults.waypointMenu.hideOccupancy')
           : t('simulationResults.waypointMenu.showOccupancy'),

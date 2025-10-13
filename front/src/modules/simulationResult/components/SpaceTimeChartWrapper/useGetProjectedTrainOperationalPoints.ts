@@ -12,7 +12,6 @@ import type { TimetableItem } from 'reducers/osrdconf/types';
 import { getProjectionType } from 'reducers/simulationResults/selectors';
 
 import { getWaypointsLocalStorageKey } from './helpers/utils';
-
 const useGetProjectedTrainOperationalPoints = ({
   infraId,
   timetableId,
@@ -35,8 +34,6 @@ const useGetProjectedTrainOperationalPoints = ({
 
   useEffect(() => {
     const getOperationalPoints = async () => {
-      if (!path || !pathfinding) return;
-
       let operationalPointsWithUniqueIds: PathOperationalPoint[] =
         projectedOperationalPoints?.map((op, i) => ({
           ...omit(op, 'id'),
@@ -45,7 +42,7 @@ const useGetProjectedTrainOperationalPoints = ({
         })) || [];
 
       operationalPointsWithUniqueIds =
-        projectionType === 'trackProjection'
+        projectionType === 'trackProjection' && path && pathfinding
           ? upsertMapWaypointsInOperationalPoints(
               'PathOperationalPoint',
               path,
@@ -60,6 +57,7 @@ const useGetProjectedTrainOperationalPoints = ({
       const stringifiedSavedWaypoints = localStorage.getItem(
         getWaypointsLocalStorageKey(timetableId, path)
       );
+
       if (stringifiedSavedWaypoints) {
         operationalPointsWithUniqueIds = JSON.parse(
           stringifiedSavedWaypoints
