@@ -365,11 +365,15 @@ where
 
 impl<K, V> fmt::Debug for RangeMap<K, V>
 where
-    K: fmt::Debug,
+    K: fmt::Debug + Copy,
     V: fmt::Debug,
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        self.inner.fmt(f)
+        let entries = self
+            .inner
+            .iter()
+            .map(|(&start, &(end, ref value))| (Range { start, end }, value));
+        f.debug_map().entries(entries).finish()
     }
 }
 
