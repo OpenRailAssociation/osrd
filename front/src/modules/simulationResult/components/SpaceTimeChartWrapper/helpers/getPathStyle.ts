@@ -1,11 +1,11 @@
 import type { PathLevel, HoveredItem } from '@osrd-project/ui-charts';
 
-import type { SubCategory } from 'common/api/osrdEditoastApi';
-import isMainCategory from 'modules/rollingStock/helpers/category';
 import {
   DEFAULT_TRAIN_PATH_COLORS,
   TRAIN_MAIN_CATEGORY_PATH_COLORS,
-} from 'modules/simulationResult/consts';
+} from 'applications/operationalStudies/consts';
+import type { SubCategory } from 'common/api/osrdEditoastApi';
+import isMainCategory from 'modules/rollingStock/helpers/category';
 import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
 import type { TrainId } from 'reducers/osrdconf/types';
 import { extractPacedTrainIdFromOccurrenceId, isOccurrenceId } from 'utils/trainId';

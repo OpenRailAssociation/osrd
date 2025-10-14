@@ -2,8 +2,11 @@ import { useEffect, useRef, useState } from 'react';
 
 import { Button } from '@osrd-project/ui-core';
 import { useTranslation } from 'react-i18next';
+import { useSelector } from 'react-redux';
 
+import useCategoryColors from 'applications/operationalStudies/hooks/useCategoryColors';
 import AlertBox from 'common/AlertBox';
+import { getCategory } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 import type { PathStepV2 } from 'reducers/osrdconf/types';
 import useModalFocusTrap from 'utils/hooks/useModalFocusTrap';
 
@@ -20,6 +23,9 @@ const ItineraryModal = ({ itineraryModalIsOpen, setItineraryModalIsOpen }: Itine
   const { t } = useTranslation('operational-studies', {
     keyPrefix: 'manageTimetableItem.itineraryModal',
   });
+  const category = useSelector(getCategory);
+
+  const { categoryColors, currentSubCategory } = useCategoryColors(category);
 
   const modalRef = useRef<HTMLDialogElement>(null);
 
@@ -47,7 +53,12 @@ const ItineraryModal = ({ itineraryModalIsOpen, setItineraryModalIsOpen }: Itine
     <dialog ref={modalRef} className="itinerary-modal">
       <div className="itinerary-modal-form">
         <div className="itinerary-modal-form-header">
-          <ItineraryModalFormHeader onCategoryWarningChange={setCategoryWarning} />
+          <ItineraryModalFormHeader
+            onCategoryWarningChange={setCategoryWarning}
+            category={category}
+            currentSubCategory={currentSubCategory}
+            categoryColors={categoryColors}
+          />
         </div>
         <div className="itinerary-modal-form-body">
           {categoryWarning && <AlertBox message={categoryWarning} closeable />}
