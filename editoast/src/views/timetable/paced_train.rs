@@ -1643,8 +1643,7 @@ mod tests {
         let paced_train_base = PacedTrain {
             train_schedule_base: TrainSchedule {
                 rolling_stock_name: rolling_stock.name.clone(),
-                ..serde_json::from_str(include_str!("../../tests/train_schedules/simple.json"))
-                    .expect("Unable to parse")
+                ..TrainSchedule::fake()
             },
             exceptions: vec![create_created_exception_with_change_groups(
                 "created_exception_key",

@@ -1044,7 +1044,6 @@ pub mod tests {
     use crate::models::fixtures::create_small_infra;
     use crate::models::fixtures::create_timetable;
     use crate::models::fixtures::simple_sub_category;
-    use crate::models::fixtures::simple_train_schedule_base;
     use crate::models::fixtures::simple_train_schedule_changeset;
     use crate::views::test_app::TestApp;
     use crate::views::test_app::TestAppBuilder;
@@ -1082,7 +1081,7 @@ pub mod tests {
         let pool = app.db_pool();
 
         let timetable = create_timetable(&mut pool.get_ok()).await;
-        let train_schedule_base = simple_train_schedule_base();
+        let train_schedule_base = schemas::TrainSchedule::fake();
 
         // Insert train_schedule
         let request = app
@@ -1111,10 +1110,12 @@ pub mod tests {
         .expect("Failed to create sub category");
 
         let timetable = create_timetable(&mut pool.get_ok()).await;
-        let mut train_schedule_base = simple_train_schedule_base();
-        train_schedule_base.category = Some(TrainCategory::Sub {
-            sub_category_code: created_sub_category.code.clone(),
-        });
+        let train_schedule_base = schemas::TrainSchedule {
+            category: Some(TrainCategory::Sub {
+                sub_category_code: created_sub_category.code.clone(),
+            }),
+            ..schemas::TrainSchedule::fake()
+        };
 
         // Insert train_schedule
         let request = app
@@ -1181,8 +1182,10 @@ pub mod tests {
         let timetable = create_timetable(&mut pool.get_ok()).await;
         let train_schedule = create_simple_train_schedule(&mut pool.get_ok(), timetable.id).await;
 
-        let mut update_train_schedule_base = simple_train_schedule_base();
-        update_train_schedule_base.rolling_stock_name = String::from("NEW ROLLING_STOCK");
+        let update_train_schedule_base = schemas::TrainSchedule {
+            rolling_stock_name: String::from("NEW ROLLING_STOCK"),
+            ..schemas::TrainSchedule::fake()
+        };
 
         let update_train_schedule_form = TrainScheduleForm {
             timetable_id: Some(timetable.id),
@@ -1310,8 +1313,7 @@ pub mod tests {
         let timetable = create_timetable(&mut db_pool.get_ok()).await;
         let train_schedule_base = TrainSchedule {
             rolling_stock_name: rolling_stock.name.clone(),
-            ..serde_json::from_str(include_str!("../../tests/train_schedules/simple.json"))
-                .expect("Unable to parse")
+            ..TrainSchedule::fake()
         };
         let train_schedule: Changeset<models::TrainSchedule> = TrainScheduleForm {
             timetable_id: Some(timetable.id),
@@ -1362,8 +1364,7 @@ pub mod tests {
         let timetable = create_timetable(&mut db_pool.get_ok()).await;
         let train_schedule_base = TrainSchedule {
             rolling_stock_name: rolling_stock.name.clone(),
-            ..serde_json::from_str(include_str!("../../tests/train_schedules/simple.json"))
-                .expect("Unable to parse")
+            ..TrainSchedule::fake()
         };
         let train_schedule: Changeset<models::TrainSchedule> = TrainScheduleForm {
             timetable_id: Some(timetable.id),
