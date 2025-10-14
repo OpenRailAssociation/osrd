@@ -220,6 +220,116 @@ impl Serialize for TrainSchedule {
     }
 }
 
+#[cfg(any(test, feature = "testing"))]
+impl TrainSchedule {
+    pub fn fake() -> Self {
+        use crate::infra::TrackOffset;
+        use crate::primitives::Identifier;
+
+        Self {
+            train_name: "ABC3615".to_string(),
+            labels: vec!["choo-choo".to_string(), "tchou-tchou".to_string()],
+            rolling_stock_name: "R2D2".to_string(),
+            start_time: chrono::DateTime::parse_from_rfc3339("2023-12-21T08:51:30+00:00")
+                .unwrap()
+                .with_timezone(&Utc),
+            path: vec![
+                PathItem {
+                    id: NonBlankString::from("a"),
+                    location: PathItemLocation::OperationalPointReference(
+                        OperationalPointReference {
+                            operational_point: OperationalPointIdentifier::OperationalPointUic {
+                                uic: 8711,
+                                secondary_code: None,
+                            },
+                            track_reference: None,
+                        },
+                    ),
+                },
+                PathItem {
+                    id: NonBlankString::from("b"),
+                    location: PathItemLocation::TrackOffset(TrackOffset {
+                        track: Identifier::from("TC0"),
+                        offset: 340,
+                    }),
+                },
+                PathItem {
+                    id: NonBlankString::from("c"),
+                    location: PathItemLocation::OperationalPointReference(
+                        OperationalPointReference {
+                            operational_point:
+                                OperationalPointIdentifier::OperationalPointDescription {
+                                    trigram: NonBlankString::from("MWS"),
+                                    secondary_code: None,
+                                },
+                            track_reference: None,
+                        },
+                    ),
+                },
+                PathItem {
+                    id: NonBlankString::from("d"),
+                    location: PathItemLocation::OperationalPointReference(
+                        OperationalPointReference {
+                            operational_point: OperationalPointIdentifier::OperationalPointId {
+                                operational_point: Identifier::from("Mid_East_station"),
+                            },
+                            track_reference: None,
+                        },
+                    ),
+                },
+            ],
+            schedule: vec![
+                ScheduleItem {
+                    at: NonBlankString::from("a"),
+                    arrival: None,
+                    stop_for: Some(chrono::Duration::minutes(5).try_into().unwrap()),
+                    reception_signal: ReceptionSignal::Open,
+                },
+                ScheduleItem {
+                    at: NonBlankString::from("b"),
+                    arrival: Some(chrono::Duration::minutes(10).try_into().unwrap()),
+                    stop_for: Some(chrono::Duration::minutes(5).try_into().unwrap()),
+                    reception_signal: ReceptionSignal::Open,
+                },
+                ScheduleItem {
+                    at: NonBlankString::from("c"),
+                    arrival: None,
+                    stop_for: Some(chrono::Duration::minutes(5).try_into().unwrap()),
+                    reception_signal: ReceptionSignal::Open,
+                },
+                ScheduleItem {
+                    at: NonBlankString::from("d"),
+                    arrival: Some(chrono::Duration::minutes(50).try_into().unwrap()),
+                    stop_for: None,
+                    reception_signal: ReceptionSignal::Open,
+                },
+            ],
+            margins: Margins {
+                boundaries: vec![NonBlankString::from("b"), NonBlankString::from("c")],
+                values: vec![
+                    MarginValue::Percentage(5.0),
+                    MarginValue::MinPer100Km(3.0),
+                    MarginValue::Percentage(0.0),
+                ],
+            },
+            initial_speed: 2.5,
+            comfort: Comfort::AirConditioning,
+            constraint_distribution: Distribution::Mareco,
+            speed_limit_tag: Some(NonBlankString("MA100".to_string())),
+            power_restrictions: vec![PowerRestrictionItem {
+                from: NonBlankString::from("b"),
+                to: NonBlankString::from("c"),
+                value: "M1C1".to_string(),
+            }],
+            options: TrainScheduleOptions {
+                use_electrical_profiles: true,
+                use_speed_limits_for_simulation: true,
+            },
+            category: None,
+        }
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use chrono::Duration;
@@ -235,13 +345,6 @@ mod tests {
     use crate::train_schedule::schedule_item::ReceptionSignal;
 
     use super::PathItem;
-
-    /// Test deserialize a valid train schedule example
-    #[test]
-    fn deserialize_train_schedule() {
-        let train_schedule = include_str!("./tests/train_schedule_simple.json");
-        assert!(from_str::<TrainSchedule>(train_schedule).is_ok());
-    }
 
     /// Test deserialize an invalid train schedule
     #[test]

@@ -201,7 +201,6 @@ pub mod tests {
 
     use super::*;
     use crate::models::fixtures::create_timetable;
-    use crate::models::fixtures::simple_train_schedule_base;
     use crate::models::train_schedule::TrainScheduleChangeset;
     use database::DbConnectionPoolV2;
 
@@ -212,7 +211,7 @@ pub mod tests {
         // Note that this train has a last arrival at PT50M
         let min_time = Utc.with_ymd_and_hms(2025, 1, 1, 12, 0, 0).unwrap();
         let max_time = Utc.with_ymd_and_hms(2025, 1, 1, 14, 0, 0).unwrap();
-        let base_ts = simple_train_schedule_base();
+        let base_ts = schemas::TrainSchedule::fake();
         TrainScheduleChangeset::from(base_ts.clone())
             .timetable_id(timetable.id)
             .train_name("Train 1".into())

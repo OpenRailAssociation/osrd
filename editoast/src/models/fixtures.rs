@@ -117,11 +117,6 @@ pub async fn create_timetable(conn: &mut DbConnection) -> Timetable {
         .expect("Failed to create timetable")
 }
 
-pub fn simple_train_schedule_base() -> TrainSchedule {
-    serde_json::from_str(include_str!("../tests/train_schedules/simple.json"))
-        .expect("Unable to parse test train schedule")
-}
-
 pub fn create_created_exception_with_change_groups(key: &str) -> PacedTrainException {
     PacedTrainException {
         key: key.into(),
@@ -227,11 +222,8 @@ pub fn create_modified_exception_with_change_groups(
 }
 
 pub fn simple_paced_train_base() -> PacedTrain {
-    let train_schedule_base =
-        serde_json::from_str(include_str!("../tests/train_schedules/simple.json"))
-            .expect("Unable to parse test train schedule");
     PacedTrain {
-        train_schedule_base,
+        train_schedule_base: schemas::TrainSchedule::fake(),
         exceptions: vec![
             simple_created_exception_with_change_groups("exception_key_1"),
             simple_modified_exception_with_change_groups("exception_key_2", 0),
@@ -244,7 +236,7 @@ pub fn simple_paced_train_base() -> PacedTrain {
 }
 
 pub fn simple_train_schedule_changeset(timetable_id: i64) -> Changeset<models::TrainSchedule> {
-    Changeset::<models::TrainSchedule>::from(simple_train_schedule_base())
+    Changeset::<models::TrainSchedule>::from(schemas::TrainSchedule::fake())
         .timetable_id(timetable_id)
 }
 
