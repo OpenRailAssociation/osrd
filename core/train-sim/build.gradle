@@ -2,14 +2,6 @@ plugins {
     alias(libs.plugins.kotlin.jvm)
 }
 
-repositories {
-    mavenCentral()
-}
-
-dependencies {
-    implementation libs.jna
-}
-
 tasks.register('rustBuildRelease', Exec) {
     group = 'build'
     description = 'Builds the rust binary with optimizations enabled'
@@ -52,14 +44,16 @@ tasks.register('generateKotlinBindings', Exec) {
     description = 'Re-generates and overwrites the kotlin bindings. Use this during development'
 
     workingDir 'libtsim'
-    commandLine 'cargo', 'run', '--package', 'uniffi-bindgen', '--',
-                'generate',
-                '--no-format', // let spotless format it
-                '--library', '../build/rust/release/libtsim_ffi.so',
-                '--language', 'kotlin',
-                '--out-dir', '../src/main/kotlin'
+    commandLine tasks.named('rustBuildRelease').map { [
+            'cargo', 'run', '--package', 'uniffi-bindgen', '--',
+            'generate',
+            '--no-format', // let spotless format it
+            '--library', it.outputs.files[0],
+            '--language', 'kotlin',
+            '--out-dir', '../src/main/kotlin'
+    ]}
 
-    inputs.file tasks.named('rustBuildRelease').map { it.outputs.getFiles()[0] }
+    inputs.file tasks.named('rustBuildRelease').map { it.outputs.files[0] }
 
     // Register tsim-ffi crate sources as inputs of this task so that it runs
     // when the FFI changes
@@ -68,4 +62,16 @@ tasks.register('generateKotlinBindings', Exec) {
     inputs.file 'libtsim/Cargo.lock'
 
     outputs.dir 'src/main/kotlin'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation libs.jna
+}
+
+artifacts {
+    add('implementation', tasks.named('rustBuildRelease'))
 }

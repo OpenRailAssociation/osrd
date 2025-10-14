@@ -6,8 +6,6 @@ buildscript {
     }
 }
 
-import com.sun.jna.Platform
-
 plugins {
     id 'base'
     id 'java'
@@ -138,8 +136,8 @@ run {
 
 tasks.named('shadowJar') {
     // TODO make this lazy somehow.... tasks.named doesn't work
-    from(tasks.getByPath(':train-sim:rustBuildRelease').outputs.getFiles()) {
-        into Platform.getNativeLibraryResourcePrefix()
+    from(tasks.getByPath(':train-sim:rustBuildRelease').outputs.files) {
+        into com.sun.jna.Platform.getNativeLibraryResourcePrefix()
     }
 }
 
