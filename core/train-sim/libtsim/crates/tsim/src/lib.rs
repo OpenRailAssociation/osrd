@@ -1,7 +1,5 @@
 //! Train simulation
 
-#![warn(missing_docs)]
-
 pub use crate::integration::Action;
 pub use crate::integration::BrakingType;
 pub use crate::integration::Direction;
