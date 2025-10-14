@@ -67,7 +67,7 @@
     "js-file-download": "^0.4.12",
     "json-schema": "^0.4.0",
     "lodash": "^4.17.21",
-    "maplibre-gl": "^5.8.0",
+    "maplibre-gl": "^5.9.0",
     "party-js": "^2.2.0",
     "pmtiles": "^4.3.0",
     "rc-slider": "^11.1.9",
