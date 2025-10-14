@@ -320,7 +320,7 @@ fn weight_force(rolling_stock: &RollingStock, grade: f64) -> f64 {
 #[allow(clippy::too_many_arguments)]
 pub fn step(
     rolling_stock: &RollingStock,
-    path: &dyn TrainPath, // TODO juste go faire une struct
+    path: &dyn TrainPath,
     time_delta: f64,
     tractive_effort_curve_map: &RangeMap<f64, Box<[TractiveEffortPoint]>>,
     initial_position: f64,
