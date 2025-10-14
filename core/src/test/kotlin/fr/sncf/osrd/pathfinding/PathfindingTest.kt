@@ -32,7 +32,7 @@ fun getPathfindingBlockRequest(
     return PathfindingBlockRequest(
         rs.loadingGaugeType,
         rs.isThermal,
-        rs.modeNames.filterNot { it == "thermal" }.toList(),
+        rs.modeNames.filterNot { it == "thermal" },
         rs.supportedSignalingSystems.toList(),
         rs.maxSpeed,
         rs.length,

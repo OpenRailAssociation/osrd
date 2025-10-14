@@ -632,7 +632,7 @@ private fun getSightRouteCriticalPos(
             loadedSignalInfra,
             blockInfra,
             blockPath,
-            routePath.toList(),
+            routePath,
             routeStartBlockIndex,
             zoneStates,
             ZoneStatus.INCOMPATIBLE,

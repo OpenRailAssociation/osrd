@@ -109,16 +109,13 @@ private fun getChunkDirectionalDistanceRange(
     return DirectionalMap(
         increasingChunkRange,
         DistanceRangeMapImpl(
-            increasingChunkRange
-                .reversed()
-                .map {
-                    DistanceRangeMap.RangeMapEntry(
-                        chunkLength - it.upper,
-                        chunkLength - it.lower,
-                        if (it.value == 0.0) 0.0 else -it.value,
-                    )
-                }
-                .toList()
+            increasingChunkRange.reversed().map {
+                DistanceRangeMap.RangeMapEntry(
+                    chunkLength - it.upper,
+                    chunkLength - it.lower,
+                    if (it.value == 0.0) 0.0 else -it.value,
+                )
+            }
         ),
     )
 }
@@ -570,7 +567,7 @@ fun parseTrackNode(
         configs.add(
             TrackNodeConfigDescriptor(
                 group.key,
-                group.value.map { Pair(portMap[it.src]!!, portMap[it.dst]!!) }.toList(),
+                group.value.map { Pair(portMap[it.src]!!, portMap[it.dst]!!) },
             )
         )
     }

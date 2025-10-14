@@ -34,7 +34,7 @@ class BlockInfraBuilderImpl(val loadedSignalInfra: LoadedSignalInfra, val rawInf
             error.context["signalingSystems"] = signals.map { rawInfra.getSignalingSystemId(it) }
             error.context["startAtBufferStop"] = startAtBufferStop
             error.context["stopsAtBufferStop"] = stopsAtBufferStop
-            error.context["signalsDistances"] = signalsDistances.toList()
+            error.context["signalsDistances"] = signalsDistances
             throw error
         }
 
