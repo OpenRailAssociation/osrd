@@ -72,6 +72,7 @@ dependencies {
     implementation libs.jna
 }
 
-artifacts {
-    add('implementation', tasks.named('rustBuildRelease'))
-}
+// Ensure rustBuildRelease is ran whenever the rust files change.
+// We hook onto the java plugin's processResources task so that we run cargo
+// both for shadowJar and for tests.
+tasks.processResources.dependsOn tasks.named('rustBuildRelease')
