@@ -303,6 +303,19 @@ pub struct TractiveEffortPoint {
     pub max_effort: f64,
 }
 
+fn average_grade(rolling_stock: &RollingStock, path: &dyn TrainPath, head_position: f64) -> f64 {
+    let tail_position = f64::clamp(head_position - rolling_stock.length, 0.0, path.length());
+    let head_position = f64::clamp(head_position, 0.0, path.length());
+    path.avg_grade(head_position, tail_position)
+}
+
+fn weight_force(rolling_stock: &RollingStock, grade: f64) -> f64 {
+    // get an angle from a m/km elevation difference
+    // the curve's radius is taken into account in meanTrainGrade
+    let angle = f64::atan(grade / 1000.0); // m/km -> m/m
+    -rolling_stock.mass * G * f64::sin(angle)
+}
+
 /// Simulate train movement using Runge-Kutta 4
 #[allow(clippy::too_many_arguments)]
 pub fn step(
@@ -336,15 +349,8 @@ pub fn step(
         };
         let max_traction = max_effort(speed, tractive_effort_curve);
         let rolling_resistance = rolling_stock.davis.rolling_resistance(speed);
-        let average_grade = {
-            let tail_position = f64::clamp(position - rolling_stock.length, 0.0, path.length());
-            let head_position = f64::clamp(position, 0.0, path.length());
-            path.avg_grade(head_position, tail_position)
-        };
-        let weight_force = {
-            let angle = f64::atan(average_grade / 1000.0); // m/km -> m/m
-            -rolling_stock.mass * G * f64::sin(angle)
-        };
+        let average_grade = average_grade(rolling_stock, path, position);
+        let weight_force = weight_force(rolling_stock, average_grade);
 
         let mut traction = 0.0;
         if matches!(action, Action::Maintain) {
