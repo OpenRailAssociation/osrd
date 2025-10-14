@@ -65,21 +65,21 @@ private fun CollectionItemType.generateArrayList(context: GeneratorContext, curr
                         }
 
                         override fun previous(): $type {
-                            return if (i > 0)
-                                get(i--)
+                            return if (hasPrevious())
+                                get(--i)
                             else
                                 throw NoSuchElementException(i.toString())
                         }
 
                         override fun nextIndex(): Int {
-                            return i + 1
+                            return i
                         }
 
                         override fun previousIndex(): Int {
                             return i - 1
                         }
 
-                        override fun next(): $type = if (i < size) {
+                        override fun next(): $type = if (hasNext()) {
                             get(i++)
                         } else {
                             throw NoSuchElementException(i.toString())
@@ -256,12 +256,12 @@ private fun CollectionItemType.generateArrayList(context: GeneratorContext, curr
 
                 /** GENERATED CODE */
                 override fun indexOf(element: $type): Int {
-                    return withIndex().firstOrNull()?.index ?: return -1
+                    return withIndex().firstOrNull { it.value == element }?.index ?: -1
                 }
 
                 /** GENERATED CODE */
                 override fun lastIndexOf(element: $type): Int {
-                    return withIndex().lastOrNull()?.index ?: return -1
+                    return withIndex().lastOrNull { it.value == element }?.index ?: -1
                 }
 
                 /** GENERATED CODE */
