@@ -27,8 +27,7 @@ private class PrimitiveSymbolProcessor(val context: GeneratorContext) : SymbolPr
                 val toPrimitive = "(%s)"
                 val toPrimitiveFun: (String) -> String = { toPrimitive.format(it) }
                 val fromPrimitiveFun: (String) -> String = { fromPrimitive.format(it) }
-                val collections =
-                    (annotation.arguments[1].value as List<*>).map { it as String }.toList()
+                val collections = (annotation.arguments[1].value as List<*>).map { it as String }
                 generateCollections(
                     context,
                     file,

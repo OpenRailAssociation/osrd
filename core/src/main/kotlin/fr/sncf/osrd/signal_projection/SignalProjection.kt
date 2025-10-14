@@ -128,7 +128,7 @@ private fun computeSignalAspectChangeEvents(
     loadedSignalInfra: LoadedSignalInfra,
     leastConstrainingStates: Map<SignalingSystemId, SigState>,
 ): Map<PathSignal, MutableList<SignalAspectChangeEvent>> {
-    val routes = routePath.toList()
+    val routes = routePath
     val zoneCount = blockPath.sumOf { blockInfra.getBlockZonePaths(it).size }
     val zoneStates = ArrayList<ZoneStatus>(zoneCount)
     for (i in 0 until zoneCount) zoneStates.add(ZoneStatus.CLEAR)

@@ -51,12 +51,10 @@ fun generateCollections(
         GeneratorType(
             wrapperTypeDecl.packageName.asString(),
             wrapperTypeDecl.simpleName.getShortName(),
-            wrapperTypeDecl.typeParameters
-                .map {
-                    // TODO: implement type bounds
-                    TypeParameter(it.name.getShortName(), listOf())
-                }
-                .toList(),
+            wrapperTypeDecl.typeParameters.map {
+                // TODO: implement type bounds
+                TypeParameter(it.name.getShortName(), listOf())
+            },
         )
 
     // parse the type of the underlying storage array
@@ -99,8 +97,7 @@ private class WrapperSymbolProcessor(val context: GeneratorContext) : SymbolProc
                 val toPrimitive = rawToPrimitive.value as String
                 val toPrimitiveFun: (String) -> String = { toPrimitive.format(it) }
                 val fromPrimitiveFun: (String) -> String = { fromPrimitive.format(it) }
-                val collections =
-                    (annotation.arguments[4].value as List<*>).map { it as String }.toList()
+                val collections = (annotation.arguments[4].value as List<*>).map { it as String }
                 generateCollections(
                     context,
                     file,

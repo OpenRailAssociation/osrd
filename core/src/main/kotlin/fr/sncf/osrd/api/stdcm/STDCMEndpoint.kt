@@ -371,22 +371,20 @@ private fun parseSteps(
     // that it's not a stop.
     pathItems.first().stopDuration = null
 
-    return pathItems
-        .map {
-            STDCMStep(
-                findWaypointBlocks(infra, it.locations),
-                it.stopDuration?.seconds,
-                it.stopDuration != null,
-                if (it.stepTimingData != null)
-                    PlannedTimingData(
-                        TimeDelta(between(startTime, it.stepTimingData.arrivalTime).toMillis()),
-                        it.stepTimingData.arrivalTimeToleranceBefore,
-                        it.stepTimingData.arrivalTimeToleranceAfter,
-                    )
-                else null,
-            )
-        }
-        .toList()
+    return pathItems.map {
+        STDCMStep(
+            findWaypointBlocks(infra, it.locations),
+            it.stopDuration?.seconds,
+            it.stopDuration != null,
+            if (it.stepTimingData != null)
+                PlannedTimingData(
+                    TimeDelta(between(startTime, it.stepTimingData.arrivalTime).toMillis()),
+                    it.stepTimingData.arrivalTimeToleranceBefore,
+                    it.stepTimingData.arrivalTimeToleranceAfter,
+                )
+            else null,
+        )
+    }
 }
 
 private fun parseMarginValue(margin: MarginValue): AllowanceValue? {

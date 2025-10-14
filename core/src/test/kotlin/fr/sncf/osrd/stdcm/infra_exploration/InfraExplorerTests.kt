@@ -303,11 +303,10 @@ class InfraExplorerTests {
         // block 1->2, lookahead 2->3->bx
         val explorers =
             initInfraExplorer(
-                    infra.rawInfra,
-                    infra.blockInfra,
-                    PathfindingEdgeLocationId(block, Offset(0.meters)),
-                )
-                .toList()
+                infra.rawInfra,
+                infra.blockInfra,
+                PathfindingEdgeLocationId(block, Offset(0.meters)),
+            )
         assertEquals(4, explorers.size) // There should be one instance per route
         assertFalse { allEqual(explorers.map { it.getLastEdgeIdentifier() }) }
         assertTrue { allEqual(explorers.map { it.getCurrentBlock() }) }
