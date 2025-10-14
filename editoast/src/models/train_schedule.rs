@@ -201,10 +201,10 @@ impl TrainSchedule {
 #[cfg(test)]
 mod tests {
     use database::DbConnectionPoolV2;
+    use diesel_async::RunQueryDsl;
     use editoast_models::rolling_stock::TrainMainCategory;
     use pretty_assertions::assert_eq;
 
-    use crate::models::fixtures::create_timetable;
     use crate::models::fixtures::simple_sub_category;
     use crate::models::fixtures::simple_train_schedule_changeset;
     use editoast_models::prelude::*;
@@ -213,8 +213,14 @@ mod tests {
     async fn train_schedule_both_categories_check_post() {
         let pool = DbConnectionPoolV2::for_tests();
 
-        let timetable = create_timetable(&mut pool.get_ok()).await;
-        let train_schedule_changeset = simple_train_schedule_changeset(timetable.id);
+        let timetable_id = diesel::insert_into(database::tables::timetable::table)
+            .default_values()
+            .returning(database::tables::timetable::id)
+            .get_result::<i64>(&mut pool.get_ok().write().await)
+            .await
+            .expect("Failed to create timetable");
+
+        let train_schedule_changeset = simple_train_schedule_changeset(timetable_id);
         let created_sub_category = simple_sub_category(
             "tjv",
             TrainMainCategory(schemas::rolling_stock::TrainMainCategory::HighSpeedTrain),
