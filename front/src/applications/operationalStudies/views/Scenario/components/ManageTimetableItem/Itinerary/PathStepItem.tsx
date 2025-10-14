@@ -3,15 +3,17 @@ import { AddLocation, FocusLocation } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 
+import type { CategoryColors } from 'applications/operationalStudies/types';
 import type { PathStepV2 } from 'reducers/osrdconf/types';
 
 type PathStepProps = {
   pathStep?: PathStepV2;
   index?: number;
   hidePathfindingLine?: boolean;
+  categoryColors: CategoryColors;
 };
 
-const PathStepItem = ({ pathStep, index, hidePathfindingLine }: PathStepProps) => {
+const PathStepItem = ({ pathStep, index, hidePathfindingLine, categoryColors }: PathStepProps) => {
   const { t } = useTranslation('operational-studies', {
     keyPrefix: 'manageTimetableItem.itineraryModal',
   });
@@ -26,6 +28,11 @@ const PathStepItem = ({ pathStep, index, hidePathfindingLine }: PathStepProps) =
             origin: index === 1,
             empty: !pathStep,
           })}
+          style={{
+            borderColor: index ? categoryColors.background : categoryColors.normal,
+            // @ts-expect-error: variable CSS custom property to be used to style ::before
+            '--pathBackground': categoryColors.normal,
+          }}
         >
           {index}
         </div>

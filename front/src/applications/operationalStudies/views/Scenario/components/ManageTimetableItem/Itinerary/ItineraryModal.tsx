@@ -69,9 +69,17 @@ const ItineraryModal = ({ itineraryModalIsOpen, setItineraryModalIsOpen }: Itine
               <span>{t('track')}</span>
             </div>
             {pathSteps.map((pathStep, i) => (
-              <PathStepItem key={pathStep.id} pathStep={pathStep} index={i + 1} />
+              <PathStepItem
+                key={pathStep.id}
+                pathStep={pathStep}
+                index={i + 1}
+                categoryColors={categoryColors}
+              />
             ))}
-            <PathStepItem hidePathfindingLine={pathSteps.length === 0} />
+            <PathStepItem
+              hidePathfindingLine={pathSteps.length === 0}
+              categoryColors={categoryColors}
+            />
           </div>
         </div>
         <div className="itinerary-modal-form-footer">

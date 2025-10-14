@@ -146,7 +146,8 @@
               position: relative;
               width: 24px;
               height: 24px;
-              border: 1px solid var(--trainParma50);
+              border-width: 1px;
+              border-style: solid;
               border-radius: 50%;
               opacity: 0.5;
               background-color: var(--white100);
@@ -160,7 +161,7 @@
                 transform: translateX(-50%) translateY(-100%);
                 width: 4px;
                 height: 28px;
-                background-color: var(--trainParma50);
+                background-color: var(--pathBackground);
               }
 
               &.origin::before {
@@ -180,8 +181,9 @@
                 padding-top: 1px;
                 width: 24px;
                 height: 24px;
-                border: 2px solid var(--trainParma10);
-                background-color: var(--trainParma50);
+                border-width: 2px;
+                border-style: solid;
+                background-color: var(--pathBackground);
                 color: var(--white100);
                 opacity: 1;
 
