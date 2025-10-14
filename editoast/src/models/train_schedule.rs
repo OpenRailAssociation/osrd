@@ -200,14 +200,14 @@ impl TrainSchedule {
 
 #[cfg(test)]
 mod tests {
+    use super::*;
+
     use database::DbConnectionPoolV2;
     use diesel_async::RunQueryDsl;
     use editoast_models::SubCategory;
+    use editoast_models::prelude::*;
     use editoast_models::rolling_stock::TrainMainCategory;
     use pretty_assertions::assert_eq;
-
-    use crate::models::fixtures::simple_train_schedule_changeset;
-    use editoast_models::prelude::*;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn train_schedule_both_categories_check_post() {
@@ -220,7 +220,6 @@ mod tests {
             .await
             .expect("Failed to create timetable");
 
-        let train_schedule_changeset = simple_train_schedule_changeset(timetable_id);
         let subcategory = SubCategory::fake(
             "tjv",
             "TJV",
@@ -230,12 +229,12 @@ mod tests {
         .await
         .expect("Failed to create sub category");
 
-        let train_schedule_changeset = train_schedule_changeset
+        let error = Changeset::<TrainSchedule>::from(schemas::TrainSchedule::fake())
+            .timetable_id(timetable_id)
             .sub_category(Some(subcategory.code))
             .main_category(Some(TrainMainCategory(
                 schemas::rolling_stock::TrainMainCategory::HighSpeedTrain,
-            )));
-        let error = train_schedule_changeset
+            )))
             .create(&mut pool.get_ok())
             .await
             .unwrap_err();
