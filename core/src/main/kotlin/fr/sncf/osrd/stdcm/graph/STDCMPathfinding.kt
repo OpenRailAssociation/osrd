@@ -20,6 +20,7 @@ import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.utils.LogAggregator
 import fr.sncf.osrd.utils.units.Offset
+import io.opentelemetry.api.trace.Span
 import io.opentelemetry.api.trace.SpanKind
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import java.time.Duration
@@ -141,10 +142,19 @@ class STDCMPathfinding(
                     graph.tag,
                     temporarySpeedLimitManager,
                 ) ?: return null
+        val travelTime = res.envelope.totalTime
+        val stopTime = res.stopResults.sumOf { it.duration }
+        val relativeTimeUsed = (travelTime + stopTime) / maxRunTime
+        Span.current().setAttribute("departure delay", res.departureTime.toString())
+        Span.current().setAttribute("total movement duration", travelTime.toString())
+        Span.current().setAttribute("total stops duration", stopTime.toString())
+        Span.current()
+            .setAttribute("(arrival time - departure time) / duration limit", relativeTimeUsed)
         logger.info(
-            "departure time = +${res.departureTime.toInt()}s, " +
-                "total travel time = ${res.envelope.totalTime.toInt()}s, " +
-                "total stop time = ${res.stopResults.sumOf { it.duration }.toInt()}s"
+            "departure delay = +${res.departureTime.toInt()}s, " +
+                "total movement duration = ${res.envelope.totalTime.toInt()}s, " +
+                "total stops duration = $stopTime, " +
+                "(arrival time - departure time) / duration limit = ${relativeTimeUsed.toInt()}s"
         )
         return res
     }
