@@ -309,6 +309,8 @@ const SpaceTimeChartWrapper = ({
   );
 
   const handlePan = useCallback(
+    // TODO: fix this lint
+    // eslint-disable-next-line react-hooks/use-memo
     configureHandlePan({
       spaceTimeChartOnPan: spaceTimeChartProps.onPan,
       handleTrainDrag,

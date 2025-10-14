@@ -216,6 +216,8 @@ const SpeedSpaceChart = ({
   }, [fetchEtcsBrakingCurves, store.etcsLayersDisplay]);
 
   useEffect(() => {
+    // TODO: fix this lint
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setStore((prev) => ({
       ...prev,
       etcsBrakingCurves: etcsBrakingCurves,
@@ -223,6 +225,8 @@ const SpeedSpaceChart = ({
   }, [etcsBrakingCurves]);
 
   useEffect(() => {
+    // TODO: fix this lint
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setStore((prev) => ({
       ...prev,
       ...data,

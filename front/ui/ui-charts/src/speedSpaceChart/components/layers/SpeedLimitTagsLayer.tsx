@@ -92,6 +92,8 @@ const SpeedLimitTagsLayer = ({ width, marginTop, store }: SpeedLimitTagsLayerPro
         height={LINEAR_LAYERS_HEIGHTS.SPEED_LIMIT_TAGS_HEIGHT}
         style={{ marginTop }}
       />
+      {/* TODO: fix this lint */}
+      {/* eslint-disable react-hooks/refs */}
       {tooltip.current && (
         <Tooltip
           cursorX={tooltip.current.cursorX}

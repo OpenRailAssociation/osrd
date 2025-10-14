@@ -67,6 +67,8 @@ const Editor = () => {
     state: TOOLS[TOOL_NAMES.SELECTION].getInitialState({ infraID, switchTypes }),
   });
   const [isSearchToolOpened, setIsSearchToolOpened] = useState(false);
+  // TODO: fix this lint
+  // eslint-disable-next-line react-hooks/purity
   const [renderingFingerprint, setRenderingFingerprint] = useState(Date.now());
   const forceRender = useCallback(() => {
     setRenderingFingerprint(Date.now());

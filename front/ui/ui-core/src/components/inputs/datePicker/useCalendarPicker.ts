@@ -49,6 +49,8 @@ export default function useCalendarPicker({
   };
 
   useEffect(() => {
+    // TODO: fix this lint
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setActiveDate(initialDate ?? selectedSlot?.start ?? selectableSlot?.start ?? new Date());
   }, [initialDate, selectedSlot, selectableSlot]);
 

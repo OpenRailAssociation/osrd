@@ -62,6 +62,8 @@ const IncompatibleConstraintItem = ({
         onClick={onClick}
       >
         <div className="flex-grow-0 flex-shrink-0 icon">
+          {/* TODO: fix this lint */}
+          {/* eslint-disable-next-line react-hooks/static-components */}
           <Icon
             className="text-danger"
             size="lg"

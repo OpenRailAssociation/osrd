@@ -18,6 +18,8 @@ const TolerancePickerStory = (props: TolerancePickerProps) => {
   };
 
   useEffect(() => {
+    // TODO: fix this lint
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     if (props.toleranceValues) setToleranceValues(props.toleranceValues);
   }, [props.toleranceValues]);
 
