@@ -36,6 +36,8 @@ function OpTooltips({ opList }: { opList: SearchResultItemOperationalPoint[] }) 
     <div className="op-tooltips">
       {opList.map((op, idx) => {
         const leftMargin = calcLeftMargin(charsFromLeft, op.trigram.length);
+        // TODO: fix this lint
+        // eslint-disable-next-line react-hooks/immutability
         charsFromLeft = charsFromLeft + op.trigram.length + 1;
         return (
           op.trigram !== '' && (

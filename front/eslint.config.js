@@ -27,7 +27,7 @@ export default [
   importPlugin.flatConfigs.recommended,
   importPlugin.flatConfigs.typescript,
   reactPlugin.configs.flat.recommended,
-  reactHooksPlugin.configs['recommended-latest'],
+  reactHooksPlugin.configs.flat.recommended,
   vitestPlugin.configs.recommended,
   jsxA11yPlugin.flatConfigs.recommended,
   {
@@ -53,7 +53,11 @@ export default [
     rules: {
       'import/no-named-as-default': 'off',
       'import/no-named-as-default-member': 'off',
+      // TODO: re-enable all react-hooks lints
       'react-hooks/exhaustive-deps': 'off',
+      'react-hooks/set-state-in-effect': 'off',
+      'react-hooks/refs': 'off',
+      'react-hooks/preserve-manual-memoization': 'off',
       'import/order': [
         'error',
         {

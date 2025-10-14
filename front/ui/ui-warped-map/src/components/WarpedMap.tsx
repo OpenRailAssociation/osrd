@@ -78,6 +78,8 @@ const WarpedMap = ({
     const { warpedPathBBox, transform } = getWarping(path, warpingOptions);
     const warpedPath = transform(path) as typeof path;
 
+    // TODO: fix this lint
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setState({ type: 'pathLoaded', path, warpedPath, pathBBox, warpedPathBBox, transform });
   }, [path, warpingOptions]);
 

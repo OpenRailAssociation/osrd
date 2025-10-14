@@ -18,7 +18,7 @@ export default [
   importPlugin.flatConfigs.recommended,
   importPlugin.flatConfigs.typescript,
   reactPlugin.configs.flat.recommended,
-  reactHooksPlugin.configs['recommended-latest'],
+  reactHooksPlugin.configs.flat.recommended,
   ...storybookPlugin.configs['flat/recommended'],
   {
     settings: {

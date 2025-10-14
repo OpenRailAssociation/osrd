@@ -112,6 +112,8 @@ const CalendarTrainList = ({
     let previousDepartureDate = '';
     return currentDepartureDates.map((date) => {
       const show = date !== previousDepartureDate;
+      // TODO: fix this lint
+      // eslint-disable-next-line react-hooks/immutability
       if (show) previousDepartureDate = date;
       return show;
     });
