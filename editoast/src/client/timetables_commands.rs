@@ -126,10 +126,6 @@ mod tests {
 
     use super::*;
 
-    fn get_trainschedule_json_array() -> &'static str {
-        include_str!("../tests/train_schedules/simple_array.json")
-    }
-
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn import_export_timetable_schedule() {
         let db_pool = DbConnectionPoolV2::for_tests();
@@ -140,9 +136,9 @@ mod tests {
             .await
             .unwrap();
 
+        let schedules = serde_json::to_string(&[schemas::TrainSchedule::fake()]).unwrap();
         let mut file = NamedTempFile::new().unwrap();
-        file.write_all(get_trainschedule_json_array().as_bytes())
-            .unwrap();
+        file.write_all(schedules.as_bytes()).unwrap();
 
         // Test import
         let args = ImportTimetableArgs {
