@@ -703,7 +703,7 @@ diesel::table! {
         temporary_speed_limit_group_id -> Nullable<Int8>,
         enabled_from -> Timestamptz,
         enabled_until -> Timestamptz,
-        active_perimeter -> Nullable<Jsonb>,
+        active_perimeter -> Jsonb,
         operational_points -> Array<Nullable<Int8>>,
         speed_limit_tags -> Jsonb,
         #[max_length = 25]

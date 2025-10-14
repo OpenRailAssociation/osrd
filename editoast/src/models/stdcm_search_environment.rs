@@ -77,10 +77,9 @@ pub struct StdcmSearchEnvironment {
     /// The time window end point where the environment is enabled.
     /// This value is usually lower than the `search_window_begin`, since a search is performed before the train rolls.
     pub enabled_until: DateTime<Utc>,
-    /// TODO: here we should not use diesel_json::Json, but the #[model(json)] instead
-    #[schema(value_type = GeoJson)]
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub active_perimeter: Option<diesel_json::Json<geos::geojson::Geometry>>,
+    #[schema(value_type = Option<GeoJson>)]
+    #[model(json)]
+    pub active_perimeter: Option<geos::geojson::Geometry>,
     #[model(remote = "Vec<Option<i64>>")]
     pub operational_points: OperationalPoints,
     /// Map of speed limit tag with their value

@@ -9,7 +9,6 @@ use clap::Args;
 use clap::Subcommand;
 use database::DbConnection;
 use database::DbConnectionPoolV2;
-use diesel_json::Json;
 use editoast_models::ElectricalProfileSet;
 use editoast_models::WorkScheduleGroup;
 use editoast_models::prelude::*;
@@ -58,14 +57,14 @@ where
 
 fn parse_active_perimeter(
     file_path: Option<PathBuf>,
-) -> anyhow::Result<Option<Json<geos::geojson::Geometry>>> {
+) -> anyhow::Result<Option<geos::geojson::Geometry>> {
     match file_path {
         None => Ok(None),
         Some(perimeter_path) => {
             let perimeter_file = File::open(perimeter_path)
                 .map_err(|_| anyhow::anyhow!("Perimeter file must exist"))?;
 
-            let geometry: Option<Json<geos::geojson::Geometry>> =
+            let geometry: Option<geos::geojson::Geometry> =
                 serde_json::from_reader(BufReader::new(perimeter_file))
                     .map_err(|_| anyhow::anyhow!("Perimeter file can't be read"))?;
 
@@ -303,7 +302,6 @@ mod tests {
     use chrono::Utc;
     use database::DbConnection;
     use database::DbConnectionPoolV2;
-    use diesel_json::Json;
     use geos::geojson::Geometry;
     use rstest::rstest;
     use serde_json::json;
@@ -464,8 +462,8 @@ mod tests {
                 [ -1, 47 ]
             ]]
         });
-        let perimeter: Json<Geometry> =
-            Json(serde_json::from_value(perimeter_json).expect("Failed to parse geometry"));
+        let perimeter: Geometry =
+            serde_json::from_value(perimeter_json).expect("Failed to parse geometry");
         let perimeter_file = generate_temp_file(&perimeter);
 
         let operation_points = Vec::from([1, 2, 3, 4]);

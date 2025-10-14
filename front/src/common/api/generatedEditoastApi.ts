@@ -4680,8 +4680,7 @@ export type StdcmSearchEnvironmentResponse = {
 };
 export type OperationalPoints = number[];
 export type StdcmSearchEnvironment = {
-  /** TODO: here we should not use diesel_json::Json, but the #[model(json)] instead */
-  active_perimeter?: GeoJson;
+  active_perimeter?: null | GeoJson;
   default_speed_limit_tag?: string | null;
   electrical_profile_set_id?: number;
   /** The time window start point where the environment is enabled. */
