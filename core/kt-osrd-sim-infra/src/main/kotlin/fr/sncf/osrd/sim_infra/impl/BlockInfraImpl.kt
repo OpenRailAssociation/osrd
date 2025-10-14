@@ -11,8 +11,8 @@ class BlockDescriptor(
     val length: Length<Block>,
     val startAtBufferStop: Boolean,
     val stopsAtBufferStop: Boolean,
-    val path: StaticIdxList<ZonePath>,
-    val signals: StaticIdxList<LogicalSignal>,
+    val path: List<ZonePathId>,
+    val signals: List<LogicalSignalId>,
     val signalsPositions: OffsetList<Block>,
 ) {
     override fun equals(other: Any?): Boolean {
@@ -105,15 +105,15 @@ class BlockInfraImpl(
     override val blocks: StaticIdxSpace<Block>
         get() = blockPool.space()
 
-    override fun getBlockZonePaths(block: BlockId): StaticIdxList<ZonePath> {
+    override fun getBlockZonePaths(block: BlockId): List<ZonePathId> {
         return blockPool[block].path
     }
 
-    override fun getBlocksInZone(zone: ZoneId): StaticIdxList<Block> {
+    override fun getBlocksInZone(zone: ZoneId): List<BlockId> {
         return zoneToBlockMap[zone]!!
     }
 
-    override fun getBlockSignals(block: BlockId): StaticIdxList<LogicalSignal> {
+    override fun getBlockSignals(block: BlockId): List<LogicalSignalId> {
         return blockPool[block].signals
     }
 
@@ -129,15 +129,15 @@ class BlockInfraImpl(
         return loadedSignalInfra.getSignalingSystem(blockPool[block].signals[0])
     }
 
-    override fun getBlocksStartingAtDetector(detector: DirDetectorId): StaticIdxList<Block> {
+    override fun getBlocksStartingAtDetector(detector: DirDetectorId): List<BlockId> {
         return blockEntryDetectorMap[detector] ?: mutableStaticIdxArrayListOf()
     }
 
-    override fun getBlocksEndingAtDetector(detector: DirDetectorId): StaticIdxList<Block> {
+    override fun getBlocksEndingAtDetector(detector: DirDetectorId): List<BlockId> {
         return blockExitDetectorMap[detector] ?: mutableStaticIdxArrayListOf()
     }
 
-    override fun getBlocksAtSignal(signal: LogicalSignalId): StaticIdxList<Block> {
+    override fun getBlocksAtSignal(signal: LogicalSignalId): List<BlockId> {
         return blockEntrySignalMap[signal] ?: mutableStaticIdxArrayListOf()
     }
 
@@ -153,7 +153,7 @@ class BlockInfraImpl(
             ?: mutableStaticIdxArraySetOf()
     }
 
-    override fun getTrackChunksFromBlock(block: BlockId): DirStaticIdxList<TrackChunk> {
+    override fun getTrackChunksFromBlock(block: BlockId): List<DirTrackChunkId> {
         return blockToTrackChunkMap[block] ?: mutableDirStaticIdxArrayListOf()
     }
 

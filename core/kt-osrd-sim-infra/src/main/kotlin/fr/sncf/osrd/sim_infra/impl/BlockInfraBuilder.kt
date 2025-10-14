@@ -10,8 +10,8 @@ interface BlockInfraBuilder {
     fun block(
         startAtBufferStop: Boolean,
         stopsAtBufferStop: Boolean,
-        path: StaticIdxList<ZonePath>,
-        signals: StaticIdxList<LogicalSignal>,
+        path: List<ZonePathId>,
+        signals: List<LogicalSignalId>,
         signalsDistances: OffsetList<Block>,
     ): BlockId
 }
@@ -24,8 +24,8 @@ class BlockInfraBuilderImpl(val loadedSignalInfra: LoadedSignalInfra, val rawInf
     override fun block(
         startAtBufferStop: Boolean,
         stopsAtBufferStop: Boolean,
-        path: StaticIdxList<ZonePath>,
-        signals: StaticIdxList<LogicalSignal>,
+        path: List<ZonePathId>,
+        signals: List<LogicalSignalId>,
         signalsDistances: OffsetList<Block>,
     ): BlockId {
         if (path.size == 0) {

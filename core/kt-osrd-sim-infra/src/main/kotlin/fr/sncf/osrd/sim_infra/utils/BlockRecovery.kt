@@ -1,7 +1,6 @@
 package fr.sncf.osrd.sim_infra.utils
 
 import fr.sncf.osrd.sim_infra.api.*
-import fr.sncf.osrd.utils.indexing.StaticIdxList
 import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
 import java.util.*
 
@@ -25,12 +24,12 @@ fun BlockPathElement.toBlockList(): List<BlockId> {
 }
 
 private fun filterBlocks(
-    allowedSignalingSystems: StaticIdxList<SignalingSystem>?,
+    allowedSignalingSystems: List<SignalingSystemId>?,
     blockInfra: BlockInfra,
-    blocks: StaticIdxList<Block>,
-    routePath: StaticIdxList<ZonePath>,
+    blocks: List<BlockId>,
+    routePath: List<ZonePathId>,
     routeOffset: Int,
-): StaticIdxList<Block> {
+): List<BlockId> {
     val remainingZonePaths = routePath.size - routeOffset
     val res = mutableStaticIdxArrayListOf<Block>()
     blockLoop@ for (block in blocks) {
@@ -51,7 +50,7 @@ private fun filterBlocks(
 private fun findRouteBlocks(
     signalingInfra: RawSignalingInfra,
     blockInfra: BlockInfra,
-    allowedSignalingSystems: StaticIdxList<SignalingSystem>?,
+    allowedSignalingSystems: List<SignalingSystemId>?,
     previousPaths: List<BlockPathElement>?,
     route: RouteId,
     routeIndex: Int,
@@ -112,8 +111,8 @@ private fun findRouteBlocks(
 fun recoverBlocks(
     sigInfra: RawSignalingInfra,
     blockInfra: BlockInfra,
-    routes: StaticIdxList<Route>,
-    allowedSigSystems: StaticIdxList<SignalingSystem>?,
+    routes: List<RouteId>,
+    allowedSigSystems: List<SignalingSystemId>?,
 ): List<BlockPathElement> {
     var candidates: List<BlockPathElement>? = null
 

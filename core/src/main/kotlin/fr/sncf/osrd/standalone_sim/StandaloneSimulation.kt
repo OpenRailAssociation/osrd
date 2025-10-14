@@ -38,7 +38,6 @@ import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.distanceRangeMapOf
 import fr.sncf.osrd.utils.entries
-import fr.sncf.osrd.utils.indexing.StaticIdxList
 import fr.sncf.osrd.utils.toRangeMap
 import fr.sncf.osrd.utils.trainPathBlockOffset
 import fr.sncf.osrd.utils.units.Distance
@@ -56,8 +55,8 @@ fun runStandaloneSimulation(
     infra: FullInfra,
     trainPath: TrainPath,
     chunkPath: ChunkPath,
-    routes: StaticIdxList<Route>,
-    blockPath: StaticIdxList<Block>,
+    routes: List<RouteId>,
+    blockPath: List<BlockId>,
     rollingStock: RollingStock,
     comfort: Comfort,
     constraintDistribution: RJSAllowanceDistribution,
@@ -189,7 +188,7 @@ fun runStandaloneSimulation(
 /** Returns the ranges where each signaling system is encountered, as travelled path offsets. */
 fun buildSignalingRanges(
     infra: FullInfra,
-    blockPath: StaticIdxList<Block>,
+    blockPath: List<BlockId>,
     chunkPath: ChunkPath,
 ): DistanceRangeMap<String> {
     val blockInfra = infra.blockInfra

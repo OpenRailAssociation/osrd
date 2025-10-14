@@ -14,7 +14,6 @@ import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.standalone_sim.PathOffsetBuilder
 import fr.sncf.osrd.standalone_sim.PathSignal
 import fr.sncf.osrd.standalone_sim.pathSignalsInRange
-import fr.sncf.osrd.utils.indexing.StaticIdxList
 import fr.sncf.osrd.utils.trainPathBlockOffset
 import fr.sncf.osrd.utils.units.Duration
 import fr.sncf.osrd.utils.units.Length
@@ -27,8 +26,8 @@ data class SignalAspectChangeEvent(val newAspect: String, val time: TimeDelta)
 fun projectSignals(
     fullInfra: FullInfra,
     chunkPath: ChunkPath,
-    blockPath: StaticIdxList<Block>,
-    routePath: StaticIdxList<Route>,
+    blockPath: List<BlockId>,
+    routePath: List<RouteId>,
     signalCriticalPositions: Collection<SignalCriticalPosition>,
     zoneUpdates: Collection<ZoneUpdate>,
     simulationEndTime: TimeDelta,
@@ -117,8 +116,8 @@ fun projectSignals(
 }
 
 private fun computeSignalAspectChangeEvents(
-    blockPath: StaticIdxList<Block>,
-    routePath: StaticIdxList<Route>,
+    blockPath: List<BlockId>,
+    routePath: List<RouteId>,
     zoneToPathIndexMap: Map<String, Int>,
     blockInfra: BlockInfra,
     pathSignals: List<PathSignal>,

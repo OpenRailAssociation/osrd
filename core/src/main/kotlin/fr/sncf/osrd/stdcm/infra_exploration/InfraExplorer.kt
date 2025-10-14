@@ -19,7 +19,6 @@ import fr.sncf.osrd.utils.AppendOnlyLinkedList
 import fr.sncf.osrd.utils.AppendOnlyMap
 import fr.sncf.osrd.utils.appendOnlyLinkedListOf
 import fr.sncf.osrd.utils.appendOnlyMapOf
-import fr.sncf.osrd.utils.indexing.StaticIdxList
 import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Length
@@ -90,7 +89,7 @@ interface InfraExplorer {
     fun getPredecessorBlocks(): AppendOnlyLinkedList<BlockId>
 
     /** Returns all the blocks after the current one */
-    fun getLookahead(): StaticIdxList<Block>
+    fun getLookahead(): List<BlockId>
 
     /** Returns a copy of the current instance. */
     fun clone(): InfraExplorer
@@ -245,7 +244,7 @@ private class InfraExplorerImpl(
         return blocks.subList(currentIndex)
     }
 
-    override fun getLookahead(): StaticIdxList<Block> {
+    override fun getLookahead(): List<BlockId> {
         val res = mutableStaticIdxArrayListOf<Block>()
         for (i in currentIndex + 1..<blocks.size) res.add(blocks[i])
         return res

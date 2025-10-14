@@ -11,7 +11,6 @@ import fr.sncf.osrd.sim_infra.utils.getNextTrackSections
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.utils.*
 import fr.sncf.osrd.utils.indexing.DirStaticIdx
-import fr.sncf.osrd.utils.indexing.StaticIdxList
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Offset
 
@@ -20,8 +19,8 @@ fun makeETCSContext(
     rollingStock: RollingStock,
     infra: FullInfra,
     chunkPath: ChunkPath,
-    routePath: StaticIdxList<Route>,
-    blockPath: StaticIdxList<Block>,
+    routePath: List<RouteId>,
+    blockPath: List<BlockId>,
     signalingRanges: DistanceRangeMap<String>,
 ): EnvelopeSimContext.ETCSContext? {
     val etcsRanges = signalingRanges.mapToRangeSet { it == ETCS_LEVEL2.id }
@@ -49,7 +48,7 @@ fun makeETCSContext(
 fun buildETCSDangerPoints(
     infra: RawInfra,
     chunkPath: ChunkPath,
-    routePath: StaticIdxList<Route>,
+    routePath: List<RouteId>,
 ): List<Offset<TravelledPath>> {
     val zonePaths = routePath.flatMap { infra.getRoutePath(it) }
     var currentZonePathStartOffset = -getRoutePathStartOffset(infra, chunkPath, routePath).distance
@@ -72,7 +71,7 @@ fun buildETCSDangerPoints(
 /** Builds the offset list of detectors for ETCS blocks on the block path. */
 fun buildETCSBlockDetectors(
     infra: FullInfra,
-    blockPath: StaticIdxList<Block>,
+    blockPath: List<BlockId>,
     chunkPath: ChunkPath,
 ): List<Offset<TravelledPath>> {
     val etcsBlockDetectors = mutableListOf<Offset<BlockPath>>()

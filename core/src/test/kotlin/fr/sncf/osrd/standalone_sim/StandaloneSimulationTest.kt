@@ -80,8 +80,8 @@ class StandaloneSimulationTest {
                 infra,
                 trainPath,
                 chunkPath,
-                routes.toIdxList(),
-                blocks.toIdxList(),
+                routes,
+                blocks,
                 rollingStock,
                 Comfort.STANDARD,
                 RJSAllowanceDistribution.LINEAR,
@@ -215,8 +215,8 @@ class StandaloneSimulationTest {
                 infra,
                 trainPath,
                 chunkPath,
-                routes.toIdxList(),
-                blocks.toIdxList(),
+                routes,
+                blocks,
                 rollingStock,
                 Comfort.STANDARD,
                 testCase.allowanceDistribution,
@@ -303,9 +303,9 @@ class StandaloneSimulationTest {
                 SimulationScheduleItem(Offset(10_300.meters), 42.seconds, 42.seconds, STOP),
             )
 
-        val signalingRanges = buildSignalingRanges(infra, blocks.toIdxList(), chunkPath)
+        val signalingRanges = buildSignalingRanges(infra, blocks, chunkPath)
         val safetySpeedRanges =
-            makeSafetySpeedRanges(infra, chunkPath, routes.toIdxList(), schedule, signalingRanges)
+            makeSafetySpeedRanges(infra, chunkPath, routes, schedule, signalingRanges)
         val expected =
             distanceRangeMapOf(
                 DistanceRangeMap.RangeMapEntry(0.meters, 50.meters, 30.kilometersPerHour),
@@ -342,19 +342,13 @@ class StandaloneSimulationTest {
                 SimulationScheduleItem(Offset(10_300.meters), 42.seconds, 42.seconds, STOP),
             )
 
-        val signalingRangesBAL = buildSignalingRanges(infra, blocks.toIdxList(), chunkPath)
+        val signalingRangesBAL = buildSignalingRanges(infra, blocks, chunkPath)
 
         // ETCS_LEVEL2 range covers the first stop only: getting safetySpeed for the other stops
         val signalingRangesEtcsHappyPath = signalingRangesBAL.clone()
         signalingRangesEtcsHappyPath.put(10.meters, 1_000.meters, ETCS_LEVEL2.id)
         val safetySpeedRangesEtcsHappyPath =
-            makeSafetySpeedRanges(
-                infra,
-                chunkPath,
-                routes.toIdxList(),
-                schedule,
-                signalingRangesEtcsHappyPath,
-            )
+            makeSafetySpeedRanges(infra, chunkPath, routes, schedule, signalingRangesEtcsHappyPath)
         val expectedEtcsHappyPath =
             distanceRangeMapOf(
                 DistanceRangeMap.RangeMapEntry(9_950.meters, 10_050.meters, 30.kilometersPerHour),
@@ -369,13 +363,7 @@ class StandaloneSimulationTest {
         val signalingRangesEndFullEtcs = signalingRangesBAL.clone()
         signalingRangesEndFullEtcs.put(9_500.meters, 10_400.meters, ETCS_LEVEL2.id)
         val safetySpeedRangesEndFullEtcs =
-            makeSafetySpeedRanges(
-                infra,
-                chunkPath,
-                routes.toIdxList(),
-                schedule,
-                signalingRangesEndFullEtcs,
-            )
+            makeSafetySpeedRanges(infra, chunkPath, routes, schedule, signalingRangesEndFullEtcs)
         val expectedEndFullEtcs =
             distanceRangeMapOf(
                 DistanceRangeMap.RangeMapEntry(0.meters, 150.meters, 30.kilometersPerHour)
@@ -390,7 +378,7 @@ class StandaloneSimulationTest {
             makeSafetySpeedRanges(
                 infra,
                 chunkPath,
-                routes.toIdxList(),
+                routes,
                 schedule,
                 signalingRangesEndEtcsExceptFinalBuffer,
             )
@@ -416,7 +404,7 @@ class StandaloneSimulationTest {
             makeSafetySpeedRanges(
                 infra,
                 chunkPath,
-                routes.toIdxList(),
+                routes,
                 schedule,
                 signalingRangesEtcsStartingBetweenPenultimateStopAndItsSignal,
             )
@@ -443,7 +431,7 @@ class StandaloneSimulationTest {
             makeSafetySpeedRanges(
                 infra,
                 chunkPath,
-                routes.toIdxList(),
+                routes,
                 schedule,
                 signalingRangesEtcsStartingBetweenLastStopAndBuffer,
             )

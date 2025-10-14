@@ -8,7 +8,6 @@ import fr.sncf.osrd.signaling.impl.MockSigSystemManager
 import fr.sncf.osrd.signaling.impl.SignalingSimulatorImpl
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra.impl.blockInfraBuilder
-import fr.sncf.osrd.utils.indexing.StaticIdxList
 import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
 import fr.sncf.osrd.utils.units.*
 import kotlin.test.Test
@@ -145,10 +144,7 @@ class BlockBuilderTest {
         assertTrue(blockInfraEquals(blockInfra, testResultBlockInfra))
     }
 
-    data class BlockDescriptor(
-        val path: StaticIdxList<ZonePath>,
-        val signals: StaticIdxList<LogicalSignal>,
-    )
+    data class BlockDescriptor(val path: List<ZonePathId>, val signals: List<LogicalSignalId>)
 
     private fun blockInfraToSet(infra: BlockInfra): MutableSet<BlockDescriptor> {
         val res: MutableSet<BlockDescriptor> = mutableSetOf()

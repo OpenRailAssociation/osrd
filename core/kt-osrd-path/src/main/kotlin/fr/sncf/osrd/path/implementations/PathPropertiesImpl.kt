@@ -7,7 +7,6 @@ import fr.sncf.osrd.sim_infra.impl.TemporarySpeedLimitManager
 import fr.sncf.osrd.utils.Direction
 import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.distanceRangeMapOf
-import fr.sncf.osrd.utils.indexing.DirStaticIdxList
 import fr.sncf.osrd.utils.indexing.mutableDirStaticIdxArrayListOf
 import fr.sncf.osrd.utils.mergeDistanceRangeMaps
 import fr.sncf.osrd.utils.units.Distance
@@ -24,7 +23,7 @@ data class ChunkPath(
      * when the path starts or ends precisely at the border between two chunks, the extra bordering
      * chunks are included. But code that uses this class should ideally work with either version.
      */
-    val chunks: DirStaticIdxList<TrackChunk>,
+    val chunks: List<DirTrackChunkId>,
 
     /**
      * Offset of the head of the train when it starts its path, compared to the start of the first
@@ -318,7 +317,7 @@ data class PathPropertiesImpl(
 fun getOffsetOfTrackLocationOnChunks(
     infra: TrackProperties,
     location: TrackLocation,
-    chunks: DirStaticIdxList<TrackChunk>,
+    chunks: List<DirTrackChunkId>,
 ): Offset<BlockPath>? {
     var offsetAfterFirstChunk = Offset<BlockPath>(0.meters)
     for (dirChunk in chunks) {
@@ -346,7 +345,7 @@ fun getOffsetOfTrackLocationOnChunks(
  */
 fun buildChunkPath(
     infra: TrackProperties,
-    chunks: DirStaticIdxList<TrackChunk>,
+    chunks: List<DirTrackChunkId>,
     pathBeginOffset: Offset<BlockPath>,
     pathEndOffset: Offset<BlockPath>,
 ): ChunkPath {

@@ -6,9 +6,7 @@ import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.utils.entries
 import fr.sncf.osrd.utils.indexing.DirStaticIdx
 import fr.sncf.osrd.utils.indexing.StaticIdx
-import fr.sncf.osrd.utils.indexing.StaticIdxList
 import fr.sncf.osrd.utils.isSingleton
-import fr.sncf.osrd.utils.toIdxList
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
@@ -104,18 +102,18 @@ fun TrainPath.getLegacyChunkPath(): ChunkPath {
     // Should be good enough for short-lived backward compatibility method.
     val endOffset = beginOffset + chunkRanges.map { it.length }.sumDistances()
     return ChunkPath(
-        chunks = chunkRanges.map { it.value }.toIdxList(),
+        chunks = chunkRanges.map { it.value },
         beginOffset = beginOffset,
         endOffset = endOffset,
     )
 }
 
-fun TrainPath.getLegacyBlockPath(): StaticIdxList<Block> {
+fun TrainPath.getLegacyBlockPath(): List<BlockId> {
     // Legacy block list excluded blocks that were only used in 0-length segments
-    return getBlocks().entries.filter { !it.key.isSingleton }.map { it.value.value }.toIdxList()
+    return getBlocks().entries.filter { !it.key.isSingleton }.map { it.value.value }
 }
 
-fun TrainPath.getLegacyRoutePath(): StaticIdxList<Route> {
+fun TrainPath.getLegacyRoutePath(): List<RouteId> {
     // Legacy route list excluded routes that were only used in 0-length segments
-    return getRoutes().entries.filter { !it.key.isSingleton }.map { it.value.value }.toIdxList()
+    return getRoutes().entries.filter { !it.key.isSingleton }.map { it.value.value }
 }

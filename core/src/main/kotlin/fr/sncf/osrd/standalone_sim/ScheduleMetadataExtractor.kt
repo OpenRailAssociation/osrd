@@ -24,13 +24,11 @@ import fr.sncf.osrd.signaling.SignalingTrainState
 import fr.sncf.osrd.signaling.ZoneStatus
 import fr.sncf.osrd.signaling.etcs_level2.ETCS_LEVEL2
 import fr.sncf.osrd.sim_infra.api.*
-import fr.sncf.osrd.sim_infra.api.Route
 import fr.sncf.osrd.sim_infra.utils.routesOnBlock
 import fr.sncf.osrd.standalone_sim.result.ResultPosition
 import fr.sncf.osrd.standalone_sim.result.ResultSpeed
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.train.TrainStop
-import fr.sncf.osrd.utils.indexing.StaticIdxList
 import fr.sncf.osrd.utils.simplifyEnvelopePoints
 import fr.sncf.osrd.utils.trainPathBlockOffset
 import fr.sncf.osrd.utils.units.*
@@ -61,8 +59,8 @@ private data class BlockInfo(
 private fun buildBlockInfoTable(
     blockInfra: BlockInfra,
     rawInfra: RawInfra,
-    routePath: StaticIdxList<Route>,
-    blockPath: StaticIdxList<Block>,
+    routePath: List<RouteId>,
+    blockPath: List<BlockId>,
 ): List<BlockInfo> {
     val detailedBlocks = mutableListOf<BlockInfo>()
 
@@ -91,8 +89,8 @@ fun runScheduleMetadataExtractor(
     trainPath: TrainPath,
     chunkPath: ChunkPath,
     fullInfra: FullInfra,
-    routePath: StaticIdxList<Route>,
-    blockPath: StaticIdxList<Block>,
+    routePath: List<RouteId>,
+    blockPath: List<BlockId>,
     rollingStock: RollingStock,
     schedule: List<SimulationScheduleItem>,
     pathItemPositions: List<Offset<TravelledPath>>,
@@ -339,7 +337,7 @@ fun makeSimpleReportTrain(
 }
 
 fun getBlockOffsets(
-    blockPath: StaticIdxList<Block>,
+    blockPath: List<BlockId>,
     pathOffsetBuilder: PathOffsetBuilder,
     blockInfra: BlockInfra,
 ): OffsetArray<TravelledPath> {
@@ -356,8 +354,8 @@ fun getBlockOffsets(
 fun routingRequirements(
     pathOffsetBuilder: PathOffsetBuilder,
     fullInfra: FullInfra,
-    routePath: StaticIdxList<Route>,
-    blockPath: StaticIdxList<Block>,
+    routePath: List<RouteId>,
+    blockPath: List<BlockId>,
     sortedClosedSignalStops: List<PathStop>,
     envelope: EnvelopeInterpolate,
     // TODO: Required for ETCS (STDCM doesn't provide it currently, will have to eventually)
@@ -523,8 +521,8 @@ fun routingRequirements(
 
 private fun getRouteCriticalPos(
     fullInfra: FullInfra,
-    routePath: StaticIdxList<Route>,
-    blockPath: StaticIdxList<Block>,
+    routePath: List<RouteId>,
+    blockPath: List<BlockId>,
     blockOffsets: OffsetArray<TravelledPath>,
     zoneCount: Int,
     signalingTrainStates: Map<LogicalSignalId, SignalingTrainState>,
@@ -607,8 +605,8 @@ private fun getEtcsRouteCriticalPos(
 
 private fun getSightRouteCriticalPos(
     fullInfra: FullInfra,
-    routePath: StaticIdxList<Route>,
-    blockPath: StaticIdxList<Block>,
+    routePath: List<RouteId>,
+    blockPath: List<BlockId>,
     blockOffsets: OffsetArray<TravelledPath>,
     signalingTrainStates: Map<LogicalSignalId, SignalingTrainState>,
     zoneCount: Int,
@@ -692,7 +690,7 @@ private fun findLimitingSignal(
     blockInfra: BlockInfra,
     sigSystemManager: SigSystemManager,
     simulatedSignalStates: Map<LogicalSignalId, SigState>,
-    blockPath: StaticIdxList<Block>,
+    blockPath: List<BlockId>,
     blockOffsets: OffsetArray<TravelledPath>,
     routeStartBlockIndex: Int,
     signalingTrainStates: Map<LogicalSignalId, SignalingTrainState>,
@@ -736,7 +734,7 @@ data class ZoneOccupationChangeEvent(
 
 fun zoneOccupationChangeEvents(
     pathOffsetBuilder: PathOffsetBuilder,
-    blockPath: StaticIdxList<Block>,
+    blockPath: List<BlockId>,
     blockInfra: BlockInfra,
     envelope: EnvelopeTimeInterpolate,
     rawInfra: RawInfra,
@@ -795,7 +793,7 @@ data class PathSignal(
 // Returns all the signals on the path
 fun pathSignals(
     pathOffsetBuilder: PathOffsetBuilder,
-    blockPath: StaticIdxList<Block>,
+    blockPath: List<BlockId>,
     blockInfra: BlockInfra,
 ): List<PathSignal> {
     val pathSignals = mutableListOf<PathSignal>()
@@ -822,7 +820,7 @@ fun pathSignals(
 // matter since the train was going to stop before it anyway
 fun pathSignalsInEnvelope(
     pathOffsetBuilder: PathOffsetBuilder,
-    blockPath: StaticIdxList<Block>,
+    blockPath: List<BlockId>,
     blockInfra: BlockInfra,
     envelope: EnvelopeTimeInterpolate,
 ): List<PathSignal> {
@@ -837,7 +835,7 @@ fun pathSignalsInEnvelope(
 
 fun pathSignalsInRange(
     pathOffsetBuilder: PathOffsetBuilder,
-    blockPath: StaticIdxList<Block>,
+    blockPath: List<BlockId>,
     blockInfra: BlockInfra,
     rangeStart: Distance,
     rangeEnd: Distance,

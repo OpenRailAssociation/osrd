@@ -12,7 +12,6 @@ import fr.sncf.osrd.sim_infra.impl.TemporarySpeedLimitManager
 import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.SelfTypeHolder
 import fr.sncf.osrd.utils.distanceRangeMapOf
-import fr.sncf.osrd.utils.rangeMapEntryToSpeedLimitProperty
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Distance.Companion.toMeters
 import fr.sncf.osrd.utils.units.Speed
@@ -91,7 +90,7 @@ fun computeMRSP(
         // Compute where this limit is active from and to
         val start = toMeters(speedLimitPropertyRange.lower)
         val end = min(pathLength, offset + toMeters(speedLimitPropertyRange.upper))
-        val speedLimitProp = rangeMapEntryToSpeedLimitProperty(speedLimitPropertyRange)
+        val speedLimitProp = speedLimitPropertyRange.value
         val speed = toMetersPerSecond(speedLimitProp.speed)
         val attrs =
             mutableListOf<SelfTypeHolder>(

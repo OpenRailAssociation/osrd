@@ -14,7 +14,7 @@ class OffsetConversionTests {
 
     @Test
     fun testStartOnFirstZone() {
-        val chunkPath = ChunkPath(chunks.toIdxList(), Offset(500.meters), Offset(950.meters))
+        val chunkPath = ChunkPath(chunks, Offset(500.meters), Offset(950.meters))
         val res = trainPathZonePathOffset(infra, zones, chunkPath)
         assertEquals(Offset(500.meters), res)
     }
@@ -22,14 +22,14 @@ class OffsetConversionTests {
     @Test
     fun testStartOnSecondZone() {
         val partialChunks = chunks.subList(1, chunks.size)
-        val chunkPath = ChunkPath(partialChunks.toIdxList(), Offset(500.meters), Offset(850.meters))
+        val chunkPath = ChunkPath(partialChunks, Offset(500.meters), Offset(850.meters))
         val res = trainPathZonePathOffset(infra, zones, chunkPath)
         assertEquals(Offset(1_500.meters), res)
     }
 
     @Test
     fun testStartEndOfZone() {
-        val chunkPath = ChunkPath(chunks.toIdxList(), Offset(1_000.meters), Offset(10_000.meters))
+        val chunkPath = ChunkPath(chunks, Offset(1_000.meters), Offset(10_000.meters))
         val res = trainPathZonePathOffset(infra, zones, chunkPath)
         assertEquals(Offset(1_000.meters), res)
     }
@@ -37,7 +37,7 @@ class OffsetConversionTests {
     @Test
     fun testStartNotIncludedInZonePath() {
         val partialZones = zones.subList(1, zones.size)
-        val chunkPath = ChunkPath(chunks.toIdxList(), Offset(1_000.meters), Offset(850.meters))
+        val chunkPath = ChunkPath(chunks, Offset(1_000.meters), Offset(850.meters))
         val res = trainPathZonePathOffset(infra, partialZones, chunkPath)
         assertEquals(Offset(0.meters), res)
     }
@@ -48,8 +48,7 @@ class OffsetConversionTests {
         // but it's nice to know that it works
         val partialZones = zones.subList(0, 1)
         val partialChunks = chunks.subList(0, 1)
-        val chunkPath =
-            ChunkPath(partialChunks.toIdxList(), Offset(1_000.meters), Offset(1_000.meters))
+        val chunkPath = ChunkPath(partialChunks, Offset(1_000.meters), Offset(1_000.meters))
         val res = trainPathZonePathOffset(infra, partialZones, chunkPath)
         assertEquals(Offset(1_000.meters), res)
     }

@@ -68,7 +68,7 @@ interface LoadedSignalInfra {
     val physicalSignals: StaticIdxSpace<PhysicalSignal>
     val logicalSignals: StaticIdxSpace<LogicalSignal>
 
-    fun getLogicalSignals(signal: PhysicalSignalId): StaticIdxList<LogicalSignal>
+    fun getLogicalSignals(signal: PhysicalSignalId): List<LogicalSignalId>
 
     fun getPhysicalSignal(signal: LogicalSignalId): PhysicalSignalId
 
@@ -78,7 +78,7 @@ interface LoadedSignalInfra {
 
     fun getParameters(signal: StaticIdx<LogicalSignal>): SignalParameters
 
-    fun getDrivers(signal: LogicalSignalId): StaticIdxList<SignalDriver>
+    fun getDrivers(signal: LogicalSignalId): List<SignalDriverId>
 
     fun isBlockDelimiter(signal: LogicalSignalId): Boolean
 }
@@ -87,11 +87,11 @@ interface LoadedSignalInfra {
 interface BlockInfra {
     val blocks: StaticIdxSpace<Block>
 
-    fun getBlockZonePaths(block: BlockId): StaticIdxList<ZonePath>
+    fun getBlockZonePaths(block: BlockId): List<ZonePathId>
 
-    fun getBlocksInZone(zone: ZoneId): StaticIdxList<Block>
+    fun getBlocksInZone(zone: ZoneId): List<BlockId>
 
-    fun getBlockSignals(block: BlockId): StaticIdxList<LogicalSignal>
+    fun getBlockSignals(block: BlockId): List<LogicalSignalId>
 
     fun blockStartAtBufferStop(block: BlockId): Boolean
 
@@ -99,11 +99,11 @@ interface BlockInfra {
 
     fun getBlockSignalingSystem(block: BlockId): SignalingSystemId
 
-    fun getBlocksStartingAtDetector(detector: DirDetectorId): StaticIdxList<Block>
+    fun getBlocksStartingAtDetector(detector: DirDetectorId): List<BlockId>
 
-    fun getBlocksEndingAtDetector(detector: DirDetectorId): StaticIdxList<Block>
+    fun getBlocksEndingAtDetector(detector: DirDetectorId): List<BlockId>
 
-    fun getBlocksAtSignal(signal: LogicalSignalId): StaticIdxList<Block>
+    fun getBlocksAtSignal(signal: LogicalSignalId): List<BlockId>
 
     fun getSignalsPositions(block: BlockId): OffsetList<Block>
 
@@ -112,7 +112,7 @@ interface BlockInfra {
         direction: Direction,
     ): MutableStaticIdxArraySet<Block>
 
-    fun getTrackChunksFromBlock(block: BlockId): DirStaticIdxList<TrackChunk>
+    fun getTrackChunksFromBlock(block: BlockId): List<DirTrackChunkId>
 
     fun getBlockLength(block: BlockId): Length<Block>
 

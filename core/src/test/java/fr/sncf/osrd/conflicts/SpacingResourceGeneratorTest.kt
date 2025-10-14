@@ -15,7 +15,6 @@ import fr.sncf.osrd.utils.Direction.INCREASING
 import fr.sncf.osrd.utils.Helpers
 import fr.sncf.osrd.utils.indexing.StaticIdx
 import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
-import fr.sncf.osrd.utils.toIdxList
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
@@ -84,8 +83,8 @@ class SpacingResourceGeneratorTest {
         val path = incrementalPathOf(infra.rawInfra, infra.blockInfra)
         path.extend(
             PathFragment(
-                routes.toIdxList(),
-                blocks.toIdxList(),
+                routes,
+                blocks,
                 stops = listOf(),
                 containsStart = true,
                 containsEnd = true,
@@ -160,8 +159,8 @@ class SpacingResourceGeneratorTest {
         val path = incrementalPathOf(infra.rawInfra, infra.blockInfra)
         path.extend(
             PathFragment(
-                routes.toIdxList(),
-                blocks.toIdxList(),
+                routes,
+                blocks,
                 stops = listOf(),
                 containsStart = true,
                 containsEnd = true,
@@ -206,8 +205,8 @@ class SpacingResourceGeneratorTest {
         val path = incrementalPathOf(infra.rawInfra, infra.blockInfra)
         path.extend(
             PathFragment(
-                routes.toIdxList(),
-                blocks.toIdxList(),
+                routes,
+                blocks,
                 stops = listOf(),
                 containsStart = true,
                 containsEnd = true,
@@ -255,8 +254,8 @@ class SpacingResourceGeneratorTest {
         val path = incrementalPathOf(infra.rawInfra, infra.blockInfra)
         path.extend(
             PathFragment(
-                routes.toIdxList(),
-                blocks.toIdxList(),
+                routes,
+                blocks,
                 stops = listOf(),
                 containsStart = true,
                 containsEnd = true,
@@ -334,8 +333,8 @@ class SpacingResourceGeneratorTest {
         // Build path
         path.extend(
             PathFragment(
-                routes.toIdxList(),
-                blocks.toIdxList(),
+                routes,
+                blocks,
                 stops = listOf(FragmentStop(Offset(stopOffset), SHORT_SLIP_STOP)),
                 containsStart = true,
                 containsEnd = true,

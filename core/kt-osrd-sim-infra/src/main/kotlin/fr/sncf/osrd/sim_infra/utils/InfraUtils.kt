@@ -3,14 +3,12 @@ package fr.sncf.osrd.sim_infra.utils
 import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.sim_infra.api.*
-import fr.sncf.osrd.utils.indexing.DirStaticIdxList
-import fr.sncf.osrd.utils.indexing.StaticIdxList
 import fr.sncf.osrd.utils.indexing.mutableDirStaticIdxArrayListOf
 import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
 
 fun TrackNetworkInfra.getNextTrackSections(
     trackSection: DirTrackSectionId
-): DirStaticIdxList<TrackSection> {
+): List<DirTrackSectionId> {
     val nextTrackSections = mutableDirStaticIdxArrayListOf<TrackSection>()
     val node = getNextTrackNode(trackSection)
     if (!node.isNone) {
@@ -26,8 +24,8 @@ fun TrackNetworkInfra.getNextTrackSections(
 /** Converts a list of dir chunks into a list of routes */
 fun BlockInfra.chunksToRoutes(
     infra: RawSignalingInfra,
-    pathChunks: DirStaticIdxList<TrackChunk>,
-): StaticIdxList<Route> {
+    pathChunks: List<DirTrackChunkId>,
+): List<RouteId> {
     var chunkStartIndex = 0
     val res = mutableStaticIdxArrayListOf<Route>()
     while (chunkStartIndex < pathChunks.size) {
@@ -44,14 +42,14 @@ fun BlockInfra.chunksToRoutes(
 }
 
 /** Returns the list of dir chunk id on the given block list */
-fun BlockInfra.chunksOnBlocks(blockIds: List<BlockId>): DirStaticIdxList<TrackChunk> {
+fun BlockInfra.chunksOnBlocks(blockIds: List<BlockId>): List<DirTrackChunkId> {
     val res = mutableDirStaticIdxArrayListOf<TrackChunk>()
     for (block in blockIds) for (chunk in getTrackChunksFromBlock(block)) res.add(chunk)
     return res
 }
 
 /** Returns all routes that cover the given block */
-fun BlockInfra.routesOnBlock(rawInfra: RawInfra, block: BlockId): StaticIdxList<Route> {
+fun BlockInfra.routesOnBlock(rawInfra: RawInfra, block: BlockId): List<RouteId> {
     val chunks = getTrackChunksFromBlock(block)
     val routes = rawInfra.getRoutesOnTrackChunk(chunks[0])
     val res = mutableStaticIdxArrayListOf<Route>()
@@ -65,14 +63,14 @@ fun BlockInfra.routesOnBlock(rawInfra: RawInfra, block: BlockId): StaticIdxList<
 
 /** Returns the block's entry detector */
 fun BlockInfra.getBlockEntry(rawInfra: RawInfra, block: BlockId): DirDetectorId {
-    val blockZonePaths: StaticIdxList<ZonePath> = getBlockZonePaths(block)
+    val blockZonePaths = getBlockZonePaths(block)
     val firstZone: ZonePathId = blockZonePaths[0]
     return rawInfra.getZonePathEntry(firstZone)
 }
 
 /** Returns the block's exit detector */
 fun BlockInfra.getBlockExit(rawInfra: RawInfra, block: BlockId): DirDetectorId {
-    val blockZonePaths: StaticIdxList<ZonePath> = getBlockZonePaths(block)
+    val blockZonePaths = getBlockZonePaths(block)
     val lastZonePath: ZonePathId = blockZonePaths[blockZonePaths.size - 1]
     return rawInfra.getZonePathExit(lastZonePath)
 }
@@ -81,7 +79,7 @@ fun BlockInfra.getBlockExit(rawInfra: RawInfra, block: BlockId): DirDetectorId {
 fun BlockInfra.getRouteBlocks(
     rawInfra: RawInfra,
     route: RouteId,
-    allowedSigSystems: StaticIdxList<SignalingSystem>? = null,
+    allowedSigSystems: List<SignalingSystemId>? = null,
 ): List<BlockId> {
     val blockPaths =
         recoverBlocks(rawInfra, this, mutableStaticIdxArrayListOf(route), allowedSigSystems)
@@ -96,7 +94,7 @@ fun BlockInfra.getRouteBlocks(
 private fun findRoute(
     infra: RawSignalingInfra,
     blockInfra: BlockInfra,
-    chunks: DirStaticIdxList<TrackChunk>,
+    chunks: List<DirTrackChunkId>,
     startIndex: Int,
     routeMustIncludeStart: Boolean,
 ): RouteId {
@@ -116,7 +114,7 @@ private fun findRoute(
 private fun routeMatchPath(
     infra: RawSignalingInfra,
     blockInfra: BlockInfra,
-    chunks: DirStaticIdxList<TrackChunk>,
+    chunks: List<DirTrackChunkId>,
     chunkIndex: Int,
     routeMustIncludeStart: Boolean,
     routeId: RouteId,

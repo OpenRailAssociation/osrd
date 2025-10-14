@@ -154,7 +154,7 @@ private class DetectorBuilder(
 
 private class TrackSectionBuilder(
     val name: String,
-    val chunks: StaticIdxList<TrackChunk>,
+    val chunks: List<TrackChunkId>,
     val detectors: MutableStaticIdxList<Detector> = mutableStaticIdxArrayListOf(),
     // a lookup table which acts as a reverse index for detectorBoundary: for a given chunk
     // boundary, find the associated detector
@@ -338,11 +338,11 @@ class RawInfraBuilder {
         return newDetId
     }
 
-    fun getTrackSectionDetectors(trackSection: TrackSectionId): StaticIdxList<Detector> {
+    fun getTrackSectionDetectors(trackSection: TrackSectionId): List<DetectorId> {
         return trackSectionPool[trackSection].detectors
     }
 
-    fun getTrackSectionChunks(trackSection: TrackSectionId): StaticIdxList<TrackChunk> {
+    fun getTrackSectionChunks(trackSection: TrackSectionId): List<TrackChunkId> {
         return trackSectionPool[trackSection].chunks
     }
 
@@ -382,10 +382,10 @@ class RawInfraBuilder {
     fun zonePath(
         entry: DirDetectorId,
         exit: DirDetectorId,
-        movableElements: StaticIdxList<TrackNode>,
-        movableElementsConfigs: StaticIdxList<TrackNodeConfig>,
+        movableElements: List<TrackNodeId>,
+        movableElementsConfigs: List<TrackNodeConfigId>,
         movableElementsDistances: OffsetList<ZonePath>,
-        chunks: DirStaticIdxList<TrackChunk>,
+        chunks: List<DirTrackChunkId>,
     ): ZonePathId {
         val zonePathDesc =
             ZonePathDescriptor(
@@ -436,7 +436,7 @@ class RawInfraBuilder {
         speedLimitTagPool[tagId] = tagDescriptor
     }
 
-    fun trackSection(name: String, chunks: StaticIdxList<TrackChunk>): TrackSectionId {
+    fun trackSection(name: String, chunks: List<TrackChunkId>): TrackSectionId {
         val chunkBoundaryToDetector = MutableList<DetectorId?>(chunks.size + 1) { null }
         val detectors = mutableStaticIdxArrayListOf<Detector>()
         val trackSectionBuilder =
@@ -578,7 +578,7 @@ class RawInfraBuilder {
     }
 
     /** Create the mapping from each dir detector to routes that start there */
-    private fun makeDetEntryToRouteMap(): Map<DirStaticIdx<Detector>, StaticIdxList<Route>> {
+    private fun makeDetEntryToRouteMap(): Map<DirStaticIdx<Detector>, List<RouteId>> {
         val res = HashMap<DirStaticIdx<Detector>, MutableStaticIdxArrayList<Route>>()
         for (routeId in routePool) {
             val firstZonePath = routePool[routeId].path.first()
@@ -589,7 +589,7 @@ class RawInfraBuilder {
     }
 
     /** Create the mapping from each dir detector to routes that end there */
-    private fun makeDetExitToRouteMap(): Map<DirStaticIdx<Detector>, StaticIdxList<Route>> {
+    private fun makeDetExitToRouteMap(): Map<DirStaticIdx<Detector>, List<RouteId>> {
         val res = HashMap<DirStaticIdx<Detector>, MutableStaticIdxArrayList<Route>>()
         for (routeId in routePool) {
             val lastZonePath = routePool[routeId].path.last()

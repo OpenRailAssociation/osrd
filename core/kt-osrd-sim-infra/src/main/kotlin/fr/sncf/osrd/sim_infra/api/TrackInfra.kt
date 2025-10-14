@@ -23,7 +23,7 @@ interface TrackInfra {
 
     fun getTrackSectionFromName(name: String): TrackSectionId?
 
-    fun getTrackSectionChunks(trackSection: TrackSectionId): StaticIdxList<TrackChunk>
+    fun getTrackSectionChunks(trackSection: TrackSectionId): List<TrackChunkId>
 
     fun getTrackSectionLength(trackSection: TrackSectionId): Length<TrackSection>
 }
@@ -46,7 +46,7 @@ val <T> StaticIdx<T>.decreasing
     get() = DirStaticIdx(this, Direction.DECREASING)
 
 /** Iterates over the elements in the right direction */
-fun <T> StaticIdxList<T>.dirIter(direction: Direction): Iterable<DirStaticIdx<T>> {
+fun <T> List<StaticIdx<T>>.dirIter(direction: Direction): Iterable<DirStaticIdx<T>> {
     var list: List<StaticIdx<T>> = this
     if (direction == Direction.DECREASING) list = list.reversed()
     val res = mutableDirStaticIdxArrayListOf<T>()

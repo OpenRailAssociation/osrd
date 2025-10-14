@@ -1,7 +1,6 @@
 package fr.sncf.osrd.signaling
 
 import fr.sncf.osrd.sim_infra.api.*
-import fr.sncf.osrd.utils.indexing.StaticIdxList
 
 /*
  * val signalingModuleManager = SignalingModuleManager()
@@ -66,7 +65,7 @@ interface SignalingSimulator {
         infra: RawInfra,
         loadedSignalInfra: LoadedSignalInfra,
         blocks: BlockInfra,
-        fullPath: StaticIdxList<Block>,
+        fullPath: List<BlockId>,
         routes: List<RouteId>,
         evaluatedPathEnd: Int,
         zoneStates: List<ZoneStatus>,
