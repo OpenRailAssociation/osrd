@@ -25,7 +25,6 @@ use serde_json::json;
 use std::collections::HashMap;
 use std::sync::Arc;
 use thiserror::Error;
-use tracing::error;
 use tracing::info;
 use uuid::Uuid;
 

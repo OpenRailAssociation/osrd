@@ -432,7 +432,7 @@ mod tests {
             .await
             .expect("Failed to delete a track");
         infra_cache
-            .apply_operations(&vec![CacheOperation::Delete(delete_operation.into())])
+            .apply_operations(&[CacheOperation::Delete(delete_operation.into())])
             .expect("Failed to apply operations");
         small_infra
             .refresh(db_pool.clone(), true, &infra_cache)

@@ -21,10 +21,8 @@ use schemas::rolling_stock::RollingStockMetadata;
 use schemas::rolling_stock::RollingStockSupportedSignalingSystems;
 use serde::Deserialize;
 use serde::Serialize;
-
 use utoipa::ToSchema;
 
-use crate::error;
 use editoast_models::prelude::*;
 
 mod schedules_from_rolling_stock;

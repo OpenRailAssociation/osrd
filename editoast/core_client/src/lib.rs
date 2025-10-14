@@ -20,7 +20,6 @@ use std::collections::HashMap;
 use std::fmt::Display;
 use std::marker::PhantomData;
 use thiserror::Error;
-use tracing::error;
 use tracing::trace;
 
 pub use mq_client::RabbitMQClient;
