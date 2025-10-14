@@ -81,9 +81,8 @@ struct StdcmSearchEnvironmentResponse {
     search_window_end: DateTime<Utc>,
     enabled_from: DateTime<Utc>,
     enabled_until: DateTime<Utc>,
-    // TODO: diesel_json should be removed when it will be removed from the model
     #[schema(value_type = Option<common::geometry::GeoJson>)]
-    active_perimeter: Option<diesel_json::Json<geos::geojson::Geometry>>,
+    active_perimeter: Option<geos::geojson::Geometry>,
     operational_points: Option<Vec<i64>>,
     speed_limits: Option<SpeedLimits>,
 }
@@ -144,7 +143,7 @@ impl From<StdcmSearchEnvironmentCreateForm> for Changeset<StdcmSearchEnvironment
             .search_window_end(form.search_window_end)
             .enabled_from(form.enabled_from)
             .enabled_until(form.enabled_until)
-            .active_perimeter(form.active_perimeter.map(diesel_json::Json))
+            .active_perimeter(form.active_perimeter)
             .operational_points(form.operational_points.into())
             .speed_limit_tags(speed_limits.speed_limit_tags)
             .default_speed_limit_tag(speed_limits.default_speed_limit_tag)

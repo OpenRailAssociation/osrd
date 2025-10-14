@@ -13984,8 +13984,9 @@ components:
       - speed_limit_tags
       properties:
         active_perimeter:
-          $ref: '#/components/schemas/GeoJson'
-          description: 'TODO: here we should not use diesel_json::Json, but the #[model(json)] instead'
+          oneOf:
+          - type: 'null'
+          - $ref: '#/components/schemas/GeoJson'
         default_speed_limit_tag:
           type:
           - string
