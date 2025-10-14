@@ -16,11 +16,11 @@ import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.sim_infra.api.Route
 import fr.sncf.osrd.sim_infra.api.SignalingSystem
+import fr.sncf.osrd.sim_infra.api.SignalingSystemId
 import fr.sncf.osrd.sim_infra.utils.recoverBlocks
 import fr.sncf.osrd.sim_infra.utils.toBlockList
 import fr.sncf.osrd.utils.indexing.MutableStaticIdxArrayList
 import fr.sncf.osrd.utils.indexing.StaticIdx
-import fr.sncf.osrd.utils.indexing.StaticIdxList
 import fr.sncf.osrd.utils.json.UnitAdapterFactory
 import fr.sncf.osrd.utils.moshi.MoshiUtils
 import fr.sncf.osrd.utils.units.Offset
@@ -119,7 +119,7 @@ object Helpers {
     }
 
     /** Returns the idx list of signaling systems */
-    private fun getSignalingSystems(infra: FullInfra): StaticIdxList<SignalingSystem> {
+    private fun getSignalingSystems(infra: FullInfra): List<SignalingSystemId> {
         val res = MutableStaticIdxArrayList<SignalingSystem>()
         for (i in
             0 until infra.signalingSimulator.sigModuleManager.signalingSystems.size.toInt()) res

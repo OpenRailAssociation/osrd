@@ -10,11 +10,11 @@ data class SignalParameters(
 
 class LoadedSignalingInfraImpl(
     val logicalSignalSpace: StaticIdxSpace<LogicalSignal>,
-    val physicalSignalPool: StaticPool<PhysicalSignal, StaticIdxList<LogicalSignal>>,
+    val physicalSignalPool: StaticPool<PhysicalSignal, List<LogicalSignalId>>,
     val signalSettingsMap: IdxMap<LogicalSignalId, SigSettings>,
     val signalParametersMap: IdxMap<LogicalSignalId, SignalParameters>,
     val signalingSystemMap: IdxMap<LogicalSignalId, SignalingSystemId>,
-    val driverMap: IdxMap<LogicalSignalId, StaticIdxList<SignalDriver>>,
+    val driverMap: IdxMap<LogicalSignalId, List<SignalDriverId>>,
     val blockDelimiterMap: IdxMap<LogicalSignalId, Boolean>,
 ) : LoadedSignalInfra {
     private val parentSignalMap: IdxMap<LogicalSignalId, PhysicalSignalId> = IdxMap()
@@ -31,7 +31,7 @@ class LoadedSignalingInfraImpl(
     override val logicalSignals: StaticIdxSpace<LogicalSignal>
         get() = logicalSignalSpace
 
-    override fun getLogicalSignals(signal: PhysicalSignalId): StaticIdxList<LogicalSignal> {
+    override fun getLogicalSignals(signal: PhysicalSignalId): List<LogicalSignalId> {
         return physicalSignalPool[signal]
     }
 
@@ -51,7 +51,7 @@ class LoadedSignalingInfraImpl(
         return signalParametersMap[signal]!!
     }
 
-    override fun getDrivers(signal: LogicalSignalId): StaticIdxList<SignalDriver> {
+    override fun getDrivers(signal: LogicalSignalId): List<SignalDriverId> {
         return driverMap[signal]!!
     }
 

@@ -4,7 +4,6 @@ import fr.sncf.osrd.geom.LineString
 import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.SelfTypeHolder
 import fr.sncf.osrd.utils.indexing.StaticIdx
-import fr.sncf.osrd.utils.indexing.StaticIdxList
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.Speed
@@ -89,9 +88,7 @@ interface TrackProperties {
     fun getTrackChunkGeom(trackChunk: TrackChunkId): LineString
 
     // Operational points
-    fun getTrackChunkOperationalPointParts(
-        trackChunk: TrackChunkId
-    ): StaticIdxList<OperationalPointPart>
+    fun getTrackChunkOperationalPointParts(trackChunk: TrackChunkId): List<OperationalPointPartId>
 
     fun getOperationalPointPartChunk(operationalPointPart: OperationalPointPartId): TrackChunkId
 

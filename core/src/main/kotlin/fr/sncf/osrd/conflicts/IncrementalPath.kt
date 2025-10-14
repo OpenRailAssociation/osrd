@@ -8,7 +8,6 @@ import fr.sncf.osrd.sim_infra.utils.getBlockEntry
 import fr.sncf.osrd.sim_infra.utils.getBlockExit
 import fr.sncf.osrd.utils.AppendOnlyLinkedList
 import fr.sncf.osrd.utils.appendOnlyLinkedListOf
-import fr.sncf.osrd.utils.indexing.StaticIdxList
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
@@ -24,8 +23,8 @@ data class FragmentStop(
 )
 
 class PathFragment(
-    val routes: StaticIdxList<Route>,
-    val blocks: StaticIdxList<Block>,
+    val routes: List<RouteId>,
+    val blocks: List<BlockId>,
     val stops: List<FragmentStop>,
     val containsStart: Boolean,
     val containsEnd: Boolean,

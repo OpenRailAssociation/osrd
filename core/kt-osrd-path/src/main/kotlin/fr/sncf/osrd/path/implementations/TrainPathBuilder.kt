@@ -7,7 +7,6 @@ import fr.sncf.osrd.path.interfaces.*
 import fr.sncf.osrd.path.legacy_objects.ElectricalProfileMapping
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.utils.entries
-import fr.sncf.osrd.utils.toIdxList
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.Offset.Companion.max
@@ -291,7 +290,7 @@ private fun buildChunkPath(infra: RawInfra, chunkMap: LinearObjectMap<DirChunkRa
     val beginOffset = chunkRanges.first().from
     val endOffset =
         beginOffset + (chunkMap.span().upperEndpoint() - chunkMap.span().lowerEndpoint())
-    return buildChunkPath(infra, chunkIds.toIdxList(), beginOffset.cast(), endOffset.cast())
+    return buildChunkPath(infra, chunkIds, beginOffset.cast(), endOffset.cast())
 }
 
 /**

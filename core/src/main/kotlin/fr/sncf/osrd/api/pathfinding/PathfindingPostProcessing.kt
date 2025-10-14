@@ -26,7 +26,6 @@ import fr.sncf.osrd.utils.Direction
 import fr.sncf.osrd.utils.getBlockChunkOffset
 import fr.sncf.osrd.utils.getRouteChunkOffset
 import fr.sncf.osrd.utils.indexing.StaticIdx
-import fr.sncf.osrd.utils.indexing.StaticIdxList
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.Offset.Companion.max
@@ -165,7 +164,7 @@ private fun makeRoutePath(
 /** Converts a list of route with start/end offsets into a list of RJSRoutePath */
 private fun convertRoutesToRJS(
     infra: RawSignalingInfra,
-    routes: StaticIdxList<Route>,
+    routes: List<RouteId>,
     startOffset: Offset<Route>,
     endOffset: Offset<Route>,
 ): List<RJSRoutePath> {

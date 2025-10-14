@@ -161,7 +161,7 @@ class SignalingSimulatorImpl(override val sigModuleManager: SigSystemManager) : 
         infra: RawInfra,
         loadedSignalInfra: LoadedSignalInfra,
         blocks: BlockInfra,
-        fullPath: StaticIdxList<Block>,
+        fullPath: List<BlockId>,
         routes: List<RouteId>,
         evaluatedPathEnd: Int,
         zoneStates: List<ZoneStatus>,

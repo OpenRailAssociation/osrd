@@ -12,7 +12,6 @@ import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.distanceRangeMapOf
 import fr.sncf.osrd.utils.getRoutePathStartOffset
 import fr.sncf.osrd.utils.indexing.StaticIdx
-import fr.sncf.osrd.utils.indexing.StaticIdxList
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.Speed
 import fr.sncf.osrd.utils.units.kilometersPerHour
@@ -32,7 +31,7 @@ private data class SafetySpeedStop(val offset: Offset<TravelledPath>, val isShor
 fun makeSafetySpeedRanges(
     infra: FullInfra,
     chunkPath: ChunkPath,
-    routes: StaticIdxList<Route>,
+    routes: List<RouteId>,
     schedule: List<SimulationScheduleItem>,
     signalingRanges: DistanceRangeMap<String>,
 ): DistanceRangeMap<Speed> {
@@ -107,7 +106,7 @@ private fun isStopInSignalingSystemRange(
  */
 private fun makeEndOfPathStop(
     infra: RawSignalingInfra,
-    routes: StaticIdxList<Route>,
+    routes: List<RouteId>,
     signalOffsets: List<Offset<TravelledPath>>,
 ): SafetySpeedStop? {
     val lastRouteExit = infra.getRouteExit(routes.last())

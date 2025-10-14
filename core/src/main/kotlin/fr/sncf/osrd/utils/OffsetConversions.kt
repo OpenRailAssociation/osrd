@@ -4,7 +4,6 @@ import fr.sncf.osrd.path.implementations.ChunkPath
 import fr.sncf.osrd.path.interfaces.BlockPath
 import fr.sncf.osrd.pathfinding.PathfindingEdgeRangeId
 import fr.sncf.osrd.sim_infra.api.*
-import fr.sncf.osrd.utils.indexing.StaticIdxList
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 
@@ -14,7 +13,7 @@ import fr.sncf.osrd.utils.units.meters
 fun getRoutePathStartOffset(
     infra: RawInfra,
     chunkPath: ChunkPath,
-    routes: StaticIdxList<Route>,
+    routes: List<RouteId>,
 ): Offset<BlockPath> {
     val zonePaths = routes.flatMap { infra.getRoutePath(it) }
     return trainPathZonePathOffset(infra, zonePaths, chunkPath)
@@ -26,7 +25,7 @@ fun getRoutePathStartOffset(
 fun trainPathBlockOffset(
     infra: RawInfra,
     blockInfra: BlockInfra,
-    blockPath: StaticIdxList<Block>,
+    blockPath: List<BlockId>,
     chunkPath: ChunkPath,
 ): Offset<BlockPath> {
     val zonePaths = blockPath.flatMap { blockInfra.getBlockZonePaths(it) }

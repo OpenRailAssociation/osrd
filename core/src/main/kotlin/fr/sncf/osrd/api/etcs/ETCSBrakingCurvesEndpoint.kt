@@ -19,7 +19,6 @@ import fr.sncf.osrd.standalone_sim.buildSignalingRanges
 import fr.sncf.osrd.standalone_sim.getSimStops
 import fr.sncf.osrd.standalone_sim.makeETCSContext
 import fr.sncf.osrd.utils.*
-import fr.sncf.osrd.utils.indexing.StaticIdxList
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
@@ -176,7 +175,7 @@ class ETCSBrakingCurvesEndpoint(
      */
     private fun getTravelledPathSignals(
         fullInfra: FullInfra,
-        blockPath: StaticIdxList<Block>,
+        blockPath: List<BlockId>,
         pathOffsetBuilder: PathOffsetBuilder,
         signalingSystemId: String? = null,
     ): List<TravelledPathSignal> {

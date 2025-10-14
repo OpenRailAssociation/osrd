@@ -45,8 +45,8 @@ interface ReservationInfra : LocationInfra {
     fun findZonePath(
         entry: DirDetectorId,
         exit: DirDetectorId,
-        movableElements: StaticIdxList<TrackNode>,
-        trackNodeConfigs: StaticIdxList<TrackNodeConfig>,
+        movableElements: List<TrackNodeId>,
+        trackNodeConfigs: List<TrackNodeConfigId>,
     ): ZonePathId?
 
     fun getZonePathEntry(zonePath: ZonePathId): DirDetectorId
@@ -56,16 +56,16 @@ interface ReservationInfra : LocationInfra {
     fun getZonePathLength(zonePath: ZonePathId): Length<ZonePath>
 
     /** The movable elements in the order encountered when traversing the zone from entry to exit */
-    fun getZonePathMovableElements(zonePath: ZonePathId): StaticIdxList<TrackNode>
+    fun getZonePathMovableElements(zonePath: ZonePathId): List<TrackNodeId>
 
     /** The movable element configs in the same order as movable elements */
-    fun getZonePathMovableElementsConfigs(zonePath: ZonePathId): StaticIdxList<TrackNodeConfig>
+    fun getZonePathMovableElementsConfigs(zonePath: ZonePathId): List<TrackNodeConfigId>
 
     /** The distances from the beginning of the zone path to its switches, in encounter order */
     fun getZonePathMovableElementsPositions(zonePath: ZonePathId): OffsetList<ZonePath>
 
     /** Returns the list of track chunks on the zone path */
-    fun getZonePathChunks(zonePath: ZonePathId): DirStaticIdxList<TrackChunk>
+    fun getZonePathChunks(zonePath: ZonePathId): List<DirTrackChunkId>
 }
 
 fun ReservationInfra.getZonePathZone(zonePath: ZonePathId): ZoneId {
@@ -86,7 +86,7 @@ typealias RouteId = StaticIdx<Route>
 interface RoutingInfra : ReservationInfra {
     val routes: StaticIdxSpace<Route>
 
-    fun getRoutePath(route: RouteId): StaticIdxList<ZonePath>
+    fun getRoutePath(route: RouteId): List<ZonePathId>
 
     fun getRouteName(route: RouteId): String
 
@@ -100,13 +100,13 @@ interface RoutingInfra : ReservationInfra {
      */
     fun getRouteReleaseZones(route: RouteId): IntArray
 
-    fun getChunksOnRoute(route: RouteId): DirStaticIdxList<TrackChunk>
+    fun getChunksOnRoute(route: RouteId): List<DirTrackChunkId>
 
-    fun getRoutesOnTrackChunk(trackChunk: DirTrackChunkId): StaticIdxList<Route>
+    fun getRoutesOnTrackChunk(trackChunk: DirTrackChunkId): List<RouteId>
 
-    fun getRoutesStartingAtDet(dirDetector: DirDetectorId): StaticIdxList<Route>
+    fun getRoutesStartingAtDet(dirDetector: DirDetectorId): List<RouteId>
 
-    fun getRoutesEndingAtDet(dirDetector: DirDetectorId): StaticIdxList<Route>
+    fun getRoutesEndingAtDet(dirDetector: DirDetectorId): List<RouteId>
 }
 
 fun ReservationInfra.findZonePath(entry: DirDetectorId, exit: DirDetectorId): ZonePathId? {

@@ -1,7 +1,6 @@
 package fr.sncf.osrd.sim_infra.api
 
 import fr.sncf.osrd.utils.indexing.StaticIdx
-import fr.sncf.osrd.utils.indexing.StaticIdxList
 import fr.sncf.osrd.utils.indexing.StaticIdxSpace
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Offset
@@ -31,11 +30,11 @@ data class RawSignalParameters(
 )
 
 interface RawSignalingInfra : RoutingInfra {
-    fun getSignals(zonePath: ZonePathId): StaticIdxList<PhysicalSignal>
+    fun getSignals(zonePath: ZonePathId): List<PhysicalSignalId>
 
     fun getSignalPositions(zonePath: ZonePathId): OffsetList<ZonePath>
 
-    fun getSpeedLimits(route: RouteId): StaticIdxList<SpeedLimit>
+    fun getSpeedLimits(route: RouteId): List<SpeedLimitId>
 
     fun getSpeedLimitStarts(route: RouteId): OffsetList<Route>
 
@@ -44,7 +43,7 @@ interface RawSignalingInfra : RoutingInfra {
     val physicalSignals: StaticIdxSpace<PhysicalSignal>
     val logicalSignals: StaticIdxSpace<LogicalSignal>
 
-    fun getLogicalSignals(signal: PhysicalSignalId): StaticIdxList<LogicalSignal>
+    fun getLogicalSignals(signal: PhysicalSignalId): List<LogicalSignalId>
 
     fun getPhysicalSignal(signal: LogicalSignalId): PhysicalSignalId
 

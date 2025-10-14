@@ -43,7 +43,7 @@ private class LoadedPhysicalSignalBuilderImpl(
         return id
     }
 
-    fun build(): StaticIdxList<LogicalSignal> {
+    fun build(): List<LogicalSignalId> {
         return children
     }
 }
@@ -89,11 +89,11 @@ class LoadedSignalingInfraBuilderImpl
 internal constructor(
     val sigSystemManager: InfraSigSystemManager,
     var logicalSignalSpace: UInt,
-    val physicalSignalPool: StaticPool<PhysicalSignal, StaticIdxList<LogicalSignal>>,
+    val physicalSignalPool: StaticPool<PhysicalSignal, List<LogicalSignalId>>,
     val signalSettingsMap: IdxMap<LogicalSignalId, SigSettings>,
     val signalParametersMap: IdxMap<LogicalSignalId, SignalParameters>,
     val signalingSystemMap: IdxMap<LogicalSignalId, SignalingSystemId>,
-    val driverMap: IdxMap<LogicalSignalId, StaticIdxList<SignalDriver>>,
+    val driverMap: IdxMap<LogicalSignalId, List<SignalDriverId>>,
 ) : LoadedSignalingInfraBuilder {
     constructor(
         sigSystemManager: InfraSigSystemManager

@@ -106,7 +106,7 @@ class DummyInfra : RawInfra, BlockInfra {
 
     // region inherited
 
-    override fun getSignals(zonePath: ZonePathId): StaticIdxList<PhysicalSignal> {
+    override fun getSignals(zonePath: ZonePathId): List<PhysicalSignalId> {
         return makeIndexList(zonePath)
     }
 
@@ -114,7 +114,7 @@ class DummyInfra : RawInfra, BlockInfra {
         return mutableOffsetArrayListOf(Offset(0.meters))
     }
 
-    override fun getSpeedLimits(route: RouteId): StaticIdxList<SpeedLimit> {
+    override fun getSpeedLimits(route: RouteId): List<SpeedLimitId> {
         TODO("Not yet implemented")
     }
 
@@ -132,7 +132,7 @@ class DummyInfra : RawInfra, BlockInfra {
     override val logicalSignals: StaticIdxSpace<LogicalSignal>
         get() = StaticIdxSpace(blockPool.size.toUInt())
 
-    override fun getLogicalSignals(signal: PhysicalSignalId): StaticIdxList<LogicalSignal> {
+    override fun getLogicalSignals(signal: PhysicalSignalId): List<LogicalSignalId> {
         return makeIndexList(signal)
     }
 
@@ -182,7 +182,7 @@ class DummyInfra : RawInfra, BlockInfra {
     override val routes: StaticIdxSpace<Route>
         get() = TODO("Not yet implemented")
 
-    override fun getRoutePath(route: RouteId): StaticIdxList<ZonePath> {
+    override fun getRoutePath(route: RouteId): List<ZonePathId> {
         return makeIndexList(route)
     }
 
@@ -205,21 +205,21 @@ class DummyInfra : RawInfra, BlockInfra {
         TODO("Not yet implemented")
     }
 
-    override fun getChunksOnRoute(route: RouteId): DirStaticIdxList<TrackChunk> {
+    override fun getChunksOnRoute(route: RouteId): List<DirTrackChunkId> {
         return makeDirIndexList(route)
     }
 
-    override fun getRoutesOnTrackChunk(trackChunk: DirTrackChunkId): StaticIdxList<Route> {
+    override fun getRoutesOnTrackChunk(trackChunk: DirTrackChunkId): List<RouteId> {
         return makeIndexList(trackChunk.value)
     }
 
-    override fun getRoutesStartingAtDet(dirDetector: DirDetectorId): StaticIdxList<Route> {
+    override fun getRoutesStartingAtDet(dirDetector: DirDetectorId): List<RouteId> {
         val res = mutableStaticIdxArrayListOf<Route>()
         for (x in entryMap.get(dirDetector)) res.add(StaticIdx(x.index))
         return res
     }
 
-    override fun getRoutesEndingAtDet(dirDetector: DirDetectorId): StaticIdxList<Route> {
+    override fun getRoutesEndingAtDet(dirDetector: DirDetectorId): List<RouteId> {
         val res = mutableStaticIdxArrayListOf<Route>()
         for (x in exitMap.get(dirDetector)) res.add(StaticIdx(x.index))
         return res
@@ -231,8 +231,8 @@ class DummyInfra : RawInfra, BlockInfra {
     override fun findZonePath(
         entry: DirDetectorId,
         exit: DirDetectorId,
-        movableElements: StaticIdxList<TrackNode>,
-        trackNodeConfigs: StaticIdxList<TrackNodeConfig>,
+        movableElements: List<TrackNodeId>,
+        trackNodeConfigs: List<TrackNodeConfigId>,
     ): ZonePathId? {
         TODO("Not yet implemented")
     }
@@ -253,13 +253,11 @@ class DummyInfra : RawInfra, BlockInfra {
         return Length(blockPool[zonePath.index].length)
     }
 
-    override fun getZonePathMovableElements(zonePath: ZonePathId): StaticIdxList<TrackNode> {
+    override fun getZonePathMovableElements(zonePath: ZonePathId): List<TrackNodeId> {
         TODO("Not yet implemented")
     }
 
-    override fun getZonePathMovableElementsConfigs(
-        zonePath: ZonePathId
-    ): StaticIdxList<TrackNodeConfig> {
+    override fun getZonePathMovableElementsConfigs(zonePath: ZonePathId): List<TrackNodeConfigId> {
         TODO("Not yet implemented")
     }
 
@@ -267,7 +265,7 @@ class DummyInfra : RawInfra, BlockInfra {
         TODO("Not yet implemented")
     }
 
-    override fun getZonePathChunks(zonePath: ZonePathId): DirStaticIdxList<TrackChunk> {
+    override fun getZonePathChunks(zonePath: ZonePathId): List<DirTrackChunkId> {
         return makeDirIndexList(zonePath)
     }
 
@@ -379,7 +377,7 @@ class DummyInfra : RawInfra, BlockInfra {
         return TrackSectionId(getRouteFromName(name).index)
     }
 
-    override fun getTrackSectionChunks(trackSection: TrackSectionId): StaticIdxList<TrackChunk> {
+    override fun getTrackSectionChunks(trackSection: TrackSectionId): List<TrackChunkId> {
         return mutableStaticIdxArrayListOf(StaticIdx(trackSection.index))
     }
 
@@ -457,7 +455,7 @@ class DummyInfra : RawInfra, BlockInfra {
 
     override fun getTrackChunkOperationalPointParts(
         trackChunk: TrackChunkId
-    ): StaticIdxList<OperationalPointPart> {
+    ): List<OperationalPointPartId> {
         return mutableStaticIdxArrayListOf()
     }
 
@@ -486,15 +484,15 @@ class DummyInfra : RawInfra, BlockInfra {
     override val blocks: StaticIdxSpace<Block>
         get() = TODO("Not yet implemented")
 
-    override fun getBlockZonePaths(block: BlockId): StaticIdxList<ZonePath> {
+    override fun getBlockZonePaths(block: BlockId): List<ZonePathId> {
         return makeIndexList(block)
     }
 
-    override fun getBlocksInZone(zone: ZoneId): StaticIdxList<Block> {
+    override fun getBlocksInZone(zone: ZoneId): List<BlockId> {
         return mutableStaticIdxArrayListOf(BlockId(zone.index))
     }
 
-    override fun getBlockSignals(block: BlockId): StaticIdxList<LogicalSignal> {
+    override fun getBlockSignals(block: BlockId): List<LogicalSignalId> {
         TODO("Not yet implemented")
     }
 
@@ -510,19 +508,19 @@ class DummyInfra : RawInfra, BlockInfra {
         return blockPool[block.index].signalingSystemId
     }
 
-    override fun getBlocksStartingAtDetector(detector: DirDetectorId): StaticIdxList<Block> {
+    override fun getBlocksStartingAtDetector(detector: DirDetectorId): List<BlockId> {
         val res = mutableStaticIdxArrayListOf<Block>()
         for (x in entryMap.get(detector)) res.add(x)
         return res
     }
 
-    override fun getBlocksEndingAtDetector(detector: DirDetectorId): StaticIdxList<Block> {
+    override fun getBlocksEndingAtDetector(detector: DirDetectorId): List<BlockId> {
         val res = mutableStaticIdxArrayListOf<Block>()
         for (id in getRoutesEndingAtDet(detector)) res.add(BlockId(id.index))
         return res
     }
 
-    override fun getBlocksAtSignal(signal: LogicalSignalId): StaticIdxList<Block> {
+    override fun getBlocksAtSignal(signal: LogicalSignalId): List<BlockId> {
         TODO("Not yet implemented")
     }
 
@@ -539,7 +537,7 @@ class DummyInfra : RawInfra, BlockInfra {
         return mutableStaticIdxArraySetOf(StaticIdx(trackChunk.index))
     }
 
-    override fun getTrackChunksFromBlock(block: BlockId): DirStaticIdxList<TrackChunk> {
+    override fun getTrackChunksFromBlock(block: BlockId): List<DirTrackChunkId> {
         return makeDirIndexList(block)
     }
 
@@ -564,13 +562,11 @@ class DummyInfra : RawInfra, BlockInfra {
         return res
     }
 
-    private fun <T, U> makeIndexList(id: StaticIdx<T>): StaticIdxList<U> {
-        val res = MutableStaticIdxArrayList<U>()
-        res.add(StaticIdx(id.index))
-        return res
+    private fun <T, U> makeIndexList(id: StaticIdx<T>): List<StaticIdx<U>> {
+        return listOf(StaticIdx(id.index))
     }
 
-    private fun <T, U> makeDirIndexList(id: StaticIdx<T>): DirStaticIdxList<U> {
+    private fun <T, U> makeDirIndexList(id: StaticIdx<T>): List<DirStaticIdx<U>> {
         val res = MutableDirStaticIdxArrayList<U>()
         res.add(DirStaticIdx(StaticIdx(id.index), Direction.INCREASING))
         return res
