@@ -152,3 +152,5 @@ export type TimetableItemRoundTripGroups = {
 export type StudyCardDetails = SearchResultItemStudy | StudyWithScenarios;
 
 export type ScenarioCardDetails = SearchResultItemScenario | ScenarioWithDetails;
+
+export type CategoryColors = { normal: string; hovered: string; background: string };

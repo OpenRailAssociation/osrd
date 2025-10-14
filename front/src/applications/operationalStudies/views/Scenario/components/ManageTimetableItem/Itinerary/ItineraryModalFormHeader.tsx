@@ -5,19 +5,18 @@ import { isEqual } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
-import type { LightRollingStockWithLiveries } from 'common/api/osrdEditoastApi';
+import type { CategoryColors } from 'applications/operationalStudies/types';
+import type {
+  LightRollingStockWithLiveries,
+  SubCategory,
+  TrainCategory,
+} from 'common/api/osrdEditoastApi';
 import useStoreDataForSpeedLimitByTagSelector from 'common/SpeedLimitByTagSelector/useStoreDataForSpeedLimitByTagSelector';
-import { useSubCategoryContext } from 'common/SubCategoryContext';
 import useStoreDataForRollingStockSelector from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
 import isMainCategory from 'modules/rollingStock/helpers/category';
 import useCategoryOptions from 'modules/rollingStock/hooks/useCategoryOptions';
-import {
-  DEFAULT_TRAIN_PATH_COLORS,
-  TRAIN_MAIN_CATEGORY_PATH_COLORS,
-} from 'modules/simulationResult/consts';
 import { updateCategory, updateName } from 'reducers/osrdconf/operationalStudiesConf';
 import {
-  getCategory,
   getName,
   getOperationalStudiesRollingStockID,
   getOperationalStudiesSpeedLimitByTag,
@@ -27,9 +26,17 @@ import { createStandardSelectOptions } from 'utils/uiCoreHelpers';
 
 type ItineraryModalFormHeaderProps = {
   onCategoryWarningChange: (categoryWarning?: string) => void;
+  category: TrainCategory | null;
+  currentSubCategory?: SubCategory;
+  categoryColors: CategoryColors;
 };
 
-const ItineraryModalFormHeader = ({ onCategoryWarningChange }: ItineraryModalFormHeaderProps) => {
+const ItineraryModalFormHeader = ({
+  onCategoryWarningChange,
+  category,
+  currentSubCategory,
+  categoryColors,
+}: ItineraryModalFormHeaderProps) => {
   const dispatch = useAppDispatch();
 
   const { t } = useTranslation('operational-studies', {
@@ -38,34 +45,12 @@ const ItineraryModalFormHeader = ({ onCategoryWarningChange }: ItineraryModalFor
 
   // Category
   const categoryOptions = useCategoryOptions();
-  const category = useSelector(getCategory);
-  const subCategories = useSubCategoryContext();
-  const currentSubCategory =
-    category && !isMainCategory(category)
-      ? subCategories.find((option) => option.code === category.sub_category_code)
-      : undefined;
+
   const handleCategoryChange = (option?: (typeof categoryOptions)[number]) => {
     if (option !== undefined) {
       dispatch(updateCategory(option.category));
     }
   };
-
-  // Category colors
-  const colors = useMemo(() => {
-    if (category && isMainCategory(category)) {
-      return TRAIN_MAIN_CATEGORY_PATH_COLORS[category.main_category];
-    }
-
-    if (category && !isMainCategory(category) && currentSubCategory) {
-      return {
-        normal: currentSubCategory.color || DEFAULT_TRAIN_PATH_COLORS.normal,
-        hovered: currentSubCategory.hovered_color || DEFAULT_TRAIN_PATH_COLORS.hovered,
-        background: currentSubCategory.background_color || DEFAULT_TRAIN_PATH_COLORS.background,
-      };
-    }
-
-    return DEFAULT_TRAIN_PATH_COLORS;
-  }, [category, currentSubCategory]);
 
   // RollingStock
   const rollingStockId = useSelector(getOperationalStudiesRollingStockID);
@@ -112,7 +97,7 @@ const ItineraryModalFormHeader = ({ onCategoryWarningChange }: ItineraryModalFor
         <div
           className="category-color"
           style={{
-            backgroundColor: colors.normal,
+            backgroundColor: categoryColors.normal,
           }}
         />
         <div className="category-select">
