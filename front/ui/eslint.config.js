@@ -9,6 +9,8 @@ import tseslint from 'typescript-eslint';
 export default [
   {
     files: ['**/*.ts', '**/*.tsx', '**/*.js'],
+  },
+  {
     ignores: ['ui-icons/src/'],
   },
   ...tseslint.config(js.configs.recommended, ...tseslint.configs.recommended),

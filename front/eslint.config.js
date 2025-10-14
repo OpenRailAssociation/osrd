@@ -10,6 +10,8 @@ import vitestPlugin from '@vitest/eslint-plugin';
 export default [
   {
     files: ['**/*.ts', '**/*.tsx', '**/*.js'],
+  },
+  {
     ignores: [
       'src/common/api/generatedEditoastApi.ts',
       'src/common/api/osrdGatewayApi.ts',
