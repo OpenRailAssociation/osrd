@@ -77,6 +77,30 @@ class TrainPhysicsIntegratorTest {
     }
 
     @Test
+    fun benchSlopeChangeVMax() {
+        val startTime = System.currentTimeMillis()
+        var warmupCount: Long = 0
+
+        do {
+            testSlopeChangeVMax()
+            warmupCount++
+        } while (warmupCount < 3 && System.currentTimeMillis() - startTime < 1000)
+
+        val benchCount = Math.clamp(warmupCount * 5, 10, 100)
+        var totalTime: Long = 0
+
+        for (i in 1..benchCount) {
+            val startTime = System.currentTimeMillis()
+            testSlopeChangeVMax()
+            val time = System.currentTimeMillis() - startTime
+            totalTime += time
+        }
+
+        val avg = totalTime / benchCount
+        println("Average time: $avg")
+    }
+
+    @Test
     fun testAccelerateAndCoast() {
         val testPath = FlatPath(100000.0, 0.0)
         val testRollingStock = SimpleRollingStock.STANDARD_TRAIN
