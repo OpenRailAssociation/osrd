@@ -239,6 +239,8 @@
 
   &-actions {
     justify-content: space-around;
+    gap: 8px;
+    flex-wrap: wrap;
   }
 
   &-disablelist {

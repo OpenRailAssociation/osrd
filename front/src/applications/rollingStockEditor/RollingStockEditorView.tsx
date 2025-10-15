@@ -201,7 +201,7 @@ const RollingStockEditor = () => {
               <span>{t('rollingStock.listDisabled')}</span>
             </div>
           )}
-          <div className="d-flex items-center gap-x-8 gap-y-4 mb-4 w-100 rollingstock-editor-actions">
+          <div className="d-flex items-center mb-4 w-100 rollingstock-editor-actions">
             <button
               type="button"
               className="btn btn-primary"
