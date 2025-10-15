@@ -1,4 +1,4 @@
-import { useContext, useState } from 'react';
+import { useContext, useId, useState } from 'react';
 
 import { Download } from '@osrd-project/ui-icons';
 import { isNil } from 'lodash';
@@ -16,29 +16,47 @@ const UploadFileModal = ({ handleSubmit }: UploadFileModalProps) => {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'importTrains' });
   const { closeModal } = useContext(ModalContext);
   const [selectedFile, setSelectedFile] = useState<File | undefined>(undefined);
+  const inputId = useId();
+
+  const handleDrop = (event: React.DragEvent<HTMLLabelElement>) => {
+    event.preventDefault();
+    const droppedFiles = event.dataTransfer.files;
+    if (droppedFiles.length > 0) {
+      const newFiles = Array.from(droppedFiles);
+      setSelectedFile(newFiles[0]);
+    }
+  };
 
   return (
     <>
       <ModalBodySNCF>
-        <>
-          <div className="h1 modal-title text-center mb-4">
-            <span className="text-primary">
-              <Download />
-            </span>
+        <label
+          htmlFor={inputId}
+          className="input-file"
+          onDrop={handleDrop}
+          onDragOver={(event) => event.preventDefault()}
+        >
+          <div className="text-primary text-center">
+            <Download />
           </div>
+
+          <span className="">
+            {selectedFile ? t('selectedFile', { fileName: selectedFile.name }) : t('chooseFile')}
+          </span>
+
           <input
+            id={inputId}
             type="file"
             name="file"
+            hidden
             accept=".json,.txt,.xml,.railml"
-            onChange={async (e) => {
-              if (e.target.files && e.target.files.length > 0) {
-                setSelectedFile(e.target.files[0]);
-              } else {
-                setSelectedFile(undefined);
-              }
-            }}
+            onChange={(e) =>
+              setSelectedFile(
+                e.target.files && e.target.files.length > 0 ? e.target.files[0] : undefined
+              )
+            }
           />
-        </>
+        </label>
       </ModalBodySNCF>
       <ModalFooterSNCF>
         <div className="w-100">

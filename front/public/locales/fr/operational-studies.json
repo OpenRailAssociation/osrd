@@ -10,6 +10,7 @@
   },
   "importTrains": {
     "cancel": "Annuler",
+    "chooseFile": "Parcourir... Aucun fichier sélectionné.",
     "date": "DATE",
     "datetime": "Date & horaires",
     "download": "Télécharger",
@@ -33,6 +34,7 @@
     "pacedTrainsFound_other": "{{count}} missions trouvées",
     "searchTimetable": "Rechercher la grille horaire",
     "selectStation": "Sélectionner cette station",
+    "selectedFile": "Fichier sélectionné : {{fileName}}",
     "startTime": "DÉBUT",
     "status": {
       "invalidTimetableItems_one": "La circulation à importer n'est pas au bon format.",

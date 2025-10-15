@@ -1,0 +1,16 @@
+.input-file {
+  display: flex;
+  flex-direction: column;
+  cursor: pointer;
+  height: auto;
+  border: 2px dashed var(--coolgray3);
+  border-radius: 7px;
+  padding: 16px;
+  gap: 16px;
+  transition: border-color 0.1s;
+  margin-bottom: 16px;
+
+  &:hover {
+    border-color: var(--coolgray7);
+  }
+}

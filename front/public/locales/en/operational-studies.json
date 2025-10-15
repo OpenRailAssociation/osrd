@@ -10,6 +10,7 @@
   },
   "importTrains": {
     "cancel": "Cancel",
+    "chooseFile": "Browse... No file selected.",
     "date": "DATE",
     "datetime": "Date & time",
     "download": "Download",
@@ -33,6 +34,7 @@
     "pacedTrainsFound_other": "{{count}} services found",
     "searchTimetable": "Search timetable",
     "selectStation": "Select this station",
+    "selectedFile": "Selected file: {{fileName}}",
     "startTime": "START",
     "status": {
       "invalidTimetableItems_one": "Invalid timetable item.",
