@@ -46,6 +46,7 @@ const StcdmResultsTable = ({
             <th aria-label="line-count" />
             <th>{t('reportSheet.operationalPoint')}</th>
             <th>{t('reportSheet.code')}</th>
+            <th>{t('reportSheet.track')}</th>
             <th className="head-stop">{t('reportSheet.endStop')}</th>
             <th className="head-stop">{t('reportSheet.passageStop')}</th>
             <th className="head-stop">{t('reportSheet.startStop')}</th>
@@ -53,7 +54,7 @@ const StcdmResultsTable = ({
             <th>{t('reportSheet.refEngine')}</th>
           </tr>
         </thead>
-        <tbody className="table-results">
+        <tbody>
           {operationalPointsList.map((step, index) => {
             const isFirstStep = index === 0;
             const isLastStep = index === operationalPointsList.length - 1;
@@ -92,6 +93,7 @@ const StcdmResultsTable = ({
                       : step.name || t('reportSheet.unknown')}
                   </td>
                   <td className="ch">{step.ch}</td>
+                  <td className="track">{step.trackName}</td>
                   <td className="stop">{isLastStep || step.duration !== null ? step.time : ''}</td>
                   <td className="stop">
                     <div

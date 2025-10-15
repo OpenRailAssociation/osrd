@@ -86,11 +86,12 @@ class SimulationResultPage extends STDCMPage {
           index: Number(cells[0]?.textContent?.trim()) || 0,
           operationalPoint: cells[1]?.textContent?.trim() || '',
           code: cells[2]?.textContent?.trim() || '',
-          endStop: cells[3]?.textContent?.trim() || '',
-          passageStop: cells[4]?.textContent?.trim() || '',
-          startStop: cells[5]?.textContent?.trim() || '',
-          weight: cells[6]?.textContent?.trim() || '',
-          refEngine: cells[7]?.textContent?.trim() || '',
+          track: cells[3]?.textContent?.trim() || '',
+          endStop: cells[4]?.textContent?.trim() || '',
+          passageStop: cells[5]?.textContent?.trim() || '',
+          startStop: cells[6]?.textContent?.trim() || '',
+          weight: cells[7]?.textContent?.trim() || '',
+          refEngine: cells[8]?.textContent?.trim() || '',
         };
       })
     );
@@ -106,6 +107,7 @@ class SimulationResultPage extends STDCMPage {
       }
       expect(tableRow.operationalPoint).toBe(jsonRow.operationalPoint);
       expect(tableRow.code).toBe(jsonRow.code);
+      expect(tableRow.track).toBe(jsonRow.track);
       expect(tableRow.endStop).toBe(jsonRow.endStop);
       expect(tableRow.passageStop).toBe(jsonRow.passageStop);
       expect(tableRow.startStop).toBe(jsonRow.startStop);
