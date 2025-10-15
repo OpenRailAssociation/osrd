@@ -39,6 +39,7 @@ import {
   getTrainrunCategoryId,
   getTrainrunFrequencyFromTimetableItem,
   getTrainrunTimeCategoryFromFrequency,
+  storeTrainPathNodes,
 } from './utils';
 import {
   type PortDto,
@@ -372,6 +373,8 @@ export const loadAndIndexNge = async (
 
   // Now that we have all nodes, we apply a layout
   applyLayout(state, timetableItems);
+
+  await storeTrainPathNodes(state, dispatch);
 };
 
 /**

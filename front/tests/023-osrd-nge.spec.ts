@@ -124,8 +124,8 @@ test.describe('Verify osrd nge conversion', () => {
       await ngePage.enableMacroViewWithDefaultTrainList();
     });
 
-    await test.step('Verify NGE graph is empty (no nodes or train lines)', async () => {
-      await ngePage.verifyNodeAndLinesCount({ nodes: 0, lines: 0 });
+    await test.step('Verify NGE lines are deleted (no train lines but nodes are persisted)', async () => {
+      await ngePage.verifyNodeAndLinesCount({ nodes: 3, lines: 0 });
     });
   });
 
@@ -151,9 +151,9 @@ test.describe('Verify osrd nge conversion', () => {
       await scenarioTimetableSection.verifyTimetableIsEmpty(frTranslations.timetable.noTrain);
     });
 
-    await test.step('Re-toggle macro layout and re-assert graph is empty', async () => {
+    await test.step('Re-toggle macro layout and re-assert graph is empty (no lines, nodes are persisted)', async () => {
       await ngePage.enableMacroViewWithDefaultTrainList();
-      await ngePage.verifyNodeAndLinesCount({ nodes: 0, lines: 0 });
+      await ngePage.verifyNodeAndLinesCount({ nodes: 3, lines: 0 });
     });
   });
 });
