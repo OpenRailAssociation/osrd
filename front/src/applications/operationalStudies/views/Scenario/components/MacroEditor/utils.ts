@@ -149,6 +149,24 @@ export const storeRoundTrip = async (
 };
 
 /**
+ * Check if every new nodes (from import) are already in the DB (by path_item_key).
+ * If not we persist them.
+ */
+export const storeTrainPathNodes = async (state: MacroEditorState, dispatch: AppDispatch) => {
+  const allNodes = state.nodes.filter((n) => !n?.dbId);
+
+  if (!allNodes.length) return;
+
+  const payload = allNodes.map((n) => omit(n, ['ngeId', 'geocoord']));
+
+  await dispatch(
+    osrdEditoastApi.endpoints.postMacroNodes.initiate({
+      macroNodeBatchForm: { macro_nodes: payload, scenario_id: state.scenarioId },
+    })
+  ).unwrap();
+};
+
+/**
  * Return the default TrainrunFrequencies with their translated names.
  */
 export const getDefaultTrainrunFrequencies = (
