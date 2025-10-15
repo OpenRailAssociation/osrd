@@ -37,7 +37,6 @@ export default function useStdcmEnvironment() {
             begin: new Date(data.search_window_begin),
             end: new Date(data.search_window_end),
           },
-          activePerimeter: data.active_perimeter ?? undefined,
           operationalPoints: data.operational_points ?? undefined,
           speedLimitTags: data.speed_limits ? data.speed_limits.speed_limit_tags : undefined,
           defaultSpeedLimitTag: data.speed_limits

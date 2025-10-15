@@ -291,6 +291,7 @@ pub(in crate::views) async fn stdcm_handler(
         rolling_stock_loading_gauge: request
             .loading_gauge_type
             .unwrap_or(physics_consist_parameters.traction_engine.loading_gauge),
+        allowed_track_sections: request.allowed_track_sections.clone(),
         rolling_stock_supported_signaling_systems: physics_consist_parameters
             .traction_engine
             .supported_signaling_systems
@@ -570,6 +571,7 @@ mod tests {
             total_length: total_length.map(Length::new::<meter>),
             max_speed: None,
             loading_gauge_type: None,
+            allowed_track_sections: None,
         }
     }
 

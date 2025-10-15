@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use chrono::DateTime;
 use chrono::Utc;
 use schemas::infra::TrackOffset;
@@ -31,6 +33,8 @@ pub struct Request {
     pub path_items: Vec<PathItem>, // FIXME: the schema is referenced in the openapi, not the struct below
     /// The loading gauge of the rolling stock
     pub rolling_stock_loading_gauge: LoadingGaugeType,
+    /// Set of authorized track section ids for the current request
+    pub allowed_track_sections: Option<HashSet<String>>,
     /// List of supported signaling systems
     pub rolling_stock_supported_signaling_systems: RollingStockSupportedSignalingSystems,
 

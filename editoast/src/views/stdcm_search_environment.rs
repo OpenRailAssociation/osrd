@@ -20,6 +20,7 @@ use serde::Deserialize;
 use serde::Serialize;
 use serde::de::Error as SerdeError;
 use std::collections::HashMap;
+use std::collections::HashSet;
 use std::result::Result as StdResult;
 use std::sync::Arc;
 use thiserror::Error;
@@ -63,8 +64,7 @@ pub(in crate::views) struct StdcmSearchEnvironmentCreateForm {
     search_window_end: DateTime<Utc>,
     enabled_from: DateTime<Utc>,
     enabled_until: DateTime<Utc>,
-    #[schema(value_type = Option<common::geometry::GeoJson>)]
-    active_perimeter: Option<geos::geojson::Geometry>,
+    allowed_tracks: Option<HashMap<String, HashSet<String>>>,
     operational_points: Option<Vec<i64>>,
     speed_limits: Option<SpeedLimits>,
     #[serde(default)]
@@ -83,8 +83,10 @@ struct StdcmSearchEnvironmentResponse {
     search_window_end: DateTime<Utc>,
     enabled_from: DateTime<Utc>,
     enabled_until: DateTime<Utc>,
-    #[schema(value_type = Option<common::geometry::GeoJson>)]
-    active_perimeter: Option<geos::geojson::Geometry>,
+    /// Map of a gauge with their authorized track section ids.
+    /// None means no zones restrictions.
+    #[schema(required)]
+    allowed_tracks: Option<HashMap<String, HashSet<String>>>,
     operational_points: Option<Vec<i64>>,
     speed_limits: Option<SpeedLimits>,
     operational_points_id_filtered: Option<Vec<String>>,
@@ -146,7 +148,7 @@ impl From<StdcmSearchEnvironmentCreateForm> for Changeset<StdcmSearchEnvironment
             .search_window_end(form.search_window_end)
             .enabled_from(form.enabled_from)
             .enabled_until(form.enabled_until)
-            .active_perimeter(form.active_perimeter)
+            .allowed_tracks(form.allowed_tracks)
             .operational_points(form.operational_points.into())
             .operational_points_id_filtered(form.operational_points_id_filtered.into())
             .speed_limit_tags(speed_limits.speed_limit_tags)
@@ -176,7 +178,7 @@ impl From<StdcmSearchEnvironment> for StdcmSearchEnvironmentResponse {
             search_window_end: from.search_window_end,
             enabled_from: from.enabled_from,
             enabled_until: from.enabled_until,
-            active_perimeter: from.active_perimeter,
+            allowed_tracks: from.allowed_tracks,
             operational_points: if !from.operational_points.is_empty() {
                 Some(from.operational_points.to_vec())
             } else {
@@ -373,7 +375,7 @@ pub mod tests {
                     .collect::<HashMap<String, i64>>(),
                 default_speed_limit_tag: Some("MA80".to_string()),
             }),
-            active_perimeter: None,
+            allowed_tracks: None,
         };
 
         let request = app.post("/stdcm/search_environment").json(&form);
@@ -427,7 +429,7 @@ pub mod tests {
                     .collect::<HashMap<String, i64>>(),
                 default_speed_limit_tag: Some("MA100".to_string()),
             }),
-            active_perimeter: None,
+            allowed_tracks: None,
         };
 
         let request = app.post("/stdcm/search_environment").json(&form);

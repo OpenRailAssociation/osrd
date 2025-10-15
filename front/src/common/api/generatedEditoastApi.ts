@@ -2530,6 +2530,9 @@ export type PostTimetableByIdStdcmApiArg = {
   /** If true, extra payloads are returned to help with debugging */
   returnDebugPayloads?: boolean | null;
   body: {
+    /** Set of authorized track section ids for the current loading gauge,
+        None value means no zone restriction. */
+    allowed_track_sections?: string[] | null;
     comfort: Comfort;
     electrical_profile_set_id?: number | null;
     loading_gauge_type?: null | LoadingGaugeType;
@@ -4727,7 +4730,15 @@ export type SpeedLimits = {
   };
 };
 export type StdcmSearchEnvironmentResponse = {
-  active_perimeter?: null | GeoJson;
+  /** Map of a gauge with their authorized track section ids.
+    None means no zones restrictions. */
+  allowed_tracks:
+    | {
+        [key: string]: string[];
+      }
+    | {
+        [key: string]: string[];
+      };
   electrical_profile_set_id?: number | null;
   enabled_from: string;
   enabled_until: string;
@@ -4745,7 +4756,14 @@ export type StdcmSearchEnvironmentResponse = {
 export type OperationalPoints = number[];
 export type OperationalPointIds = string[];
 export type StdcmSearchEnvironment = {
-  active_perimeter?: null | GeoJson;
+  /** Map of a key (ex. loading gauge) with their allowed track section ids. */
+  allowed_tracks:
+    | {
+        [key: string]: string[];
+      }
+    | {
+        [key: string]: string[];
+      };
   default_speed_limit_tag?: string | null;
   electrical_profile_set_id?: number;
   /** The time window start point where the environment is enabled. */
@@ -4771,7 +4789,13 @@ export type StdcmSearchEnvironment = {
   work_schedule_group_id?: number;
 };
 export type StdcmSearchEnvironmentCreateForm = {
-  active_perimeter?: null | GeoJson;
+  allowed_tracks?:
+    | {
+        [key: string]: string[];
+      }
+    | {
+        [key: string]: string[];
+      };
   electrical_profile_set_id?: number | null;
   enabled_from: string;
   enabled_until: string;
@@ -4858,6 +4882,8 @@ export type WorkSchedule = {
   track_ranges: UndirectedTrackRange[];
 };
 export type StdcmRequest = {
+  /** Set of authorized track section ids for the current request */
+  allowed_track_sections?: string[] | null;
   /** The comfort of the train */
   comfort: Comfort;
   /** Infrastructure expected version */

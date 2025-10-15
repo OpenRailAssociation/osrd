@@ -4077,6 +4077,16 @@ paths:
               - rolling_stock_id
               - comfort
               properties:
+                allowed_track_sections:
+                  type:
+                  - array
+                  - 'null'
+                  items:
+                    type: string
+                  description: |-
+                    Set of authorized track section ids for the current loading gauge,
+                    None value means no zone restriction.
+                  uniqueItems: true
                 comfort:
                   $ref: '#/components/schemas/Comfort'
                 electrical_profile_set_id:
@@ -13986,6 +13996,14 @@ components:
       - work_schedules
       - temporary_speed_limits
       properties:
+        allowed_track_sections:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: Set of authorized track section ids for the current request
+          uniqueItems: true
         comfort:
           $ref: '#/components/schemas/Comfort'
           description: The comfort of the train
@@ -14186,11 +14204,20 @@ components:
       - operational_points
       - speed_limit_tags
       - operational_points_id_filtered
+      - allowed_tracks
       properties:
-        active_perimeter:
-          oneOf:
-          - type: 'null'
-          - $ref: '#/components/schemas/GeoJson'
+        allowed_tracks:
+          type:
+          - object
+          - 'null'
+          description: Map of a key (ex. loading gauge) with their allowed track section ids.
+          additionalProperties:
+            type: array
+            items:
+              type: string
+            uniqueItems: true
+          propertyNames:
+            type: string
         default_speed_limit_tag:
           type:
           - string
@@ -14255,10 +14282,17 @@ components:
       - enabled_from
       - enabled_until
       properties:
-        active_perimeter:
-          oneOf:
-          - type: 'null'
-          - $ref: '#/components/schemas/GeoJson'
+        allowed_tracks:
+          type:
+          - object
+          - 'null'
+          additionalProperties:
+            type: array
+            items:
+              type: string
+            uniqueItems: true
+          propertyNames:
+            type: string
         electrical_profile_set_id:
           type:
           - integer
@@ -14319,11 +14353,22 @@ components:
       - search_window_end
       - enabled_from
       - enabled_until
+      - allowed_tracks
       properties:
-        active_perimeter:
-          oneOf:
-          - type: 'null'
-          - $ref: '#/components/schemas/GeoJson'
+        allowed_tracks:
+          type:
+          - object
+          - 'null'
+          description: |-
+            Map of a gauge with their authorized track section ids.
+            None means no zones restrictions.
+          additionalProperties:
+            type: array
+            items:
+              type: string
+            uniqueItems: true
+          propertyNames:
+            type: string
         electrical_profile_set_id:
           type:
           - integer
