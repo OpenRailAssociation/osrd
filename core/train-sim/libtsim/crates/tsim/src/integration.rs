@@ -652,4 +652,66 @@ mod tests {
         // it should be stopped
         assert_eq!(speed, 0.0);
     }
+
+    #[test]
+    fn slope_change_vmax() {
+        let path = FlatPath {
+            length: 100_000.0,
+            slope: 0.0,
+        };
+        let rolling_stock = STANDARD_TRAIN;
+        let effort_curve_map = dummy_effort_curve_map();
+
+        let mut position = 0.0;
+        let mut speed = 0.0;
+
+        // go to full speed by cruising for 20 minutes
+        for _ in 0..20 * 60 {
+            let s = step(
+                &rolling_stock,
+                &path,
+                TIME_DELTA,
+                &effort_curve_map,
+                position,
+                speed,
+                Action::Accelerate,
+                Direction::Forwards,
+                BrakingType::Constant,
+            );
+            position += s.position_delta;
+            speed = s.end_speed;
+        }
+
+        let full_throttle = speed;
+
+        // we expect the train to go pretty fast
+        assert!(speed > 100.0, "{speed}");
+
+        // continue the simulation, but with some slope
+        let path = FlatPath {
+            length: 100_000.0,
+            slope: 35.0,
+        };
+
+        // go to full speed by cruising for 20 minutes
+        for _ in 0..20 * 60 {
+            let s = step(
+                &rolling_stock,
+                &path,
+                TIME_DELTA,
+                &effort_curve_map,
+                position,
+                speed,
+                Action::Accelerate,
+                Direction::Forwards,
+                BrakingType::Constant,
+            );
+            position += s.position_delta;
+            speed = s.end_speed;
+        }
+
+        // we expect the train to run at less than half the speed, but still decently fast
+        assert!(speed < full_throttle / 2.0, "{speed}");
+        assert!(speed > full_throttle / 3.0, "{speed}");
+    }
 }
