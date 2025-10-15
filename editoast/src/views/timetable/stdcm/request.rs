@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use chrono::DateTime;
 use chrono::Duration;
 use chrono::Utc;
@@ -112,6 +114,9 @@ pub(crate) struct Request {
     #[serde(default, with = "units::meter_per_second::option")]
     pub(crate) max_speed: Option<quantities::Velocity>,
     pub(crate) loading_gauge_type: Option<LoadingGaugeType>,
+    /// Set of authorized track section ids for the current loading gauge,
+    /// None value means no zone restriction.
+    pub(crate) allowed_track_sections: Option<HashSet<String>>,
 }
 
 impl Request {

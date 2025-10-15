@@ -1,6 +1,5 @@
 use chrono::DateTime;
 use chrono::Utc;
-use common::geometry::GeoJson;
 use database::DbConnection;
 use diesel::ExpressionMethods;
 use diesel::QueryDsl;
@@ -9,6 +8,7 @@ use editoast_derive::Model;
 use serde::Deserialize;
 use serde::Serialize;
 use std::collections::HashMap;
+use std::collections::HashSet;
 use std::ops::DerefMut;
 use utoipa::ToSchema;
 
@@ -110,9 +110,6 @@ pub struct StdcmSearchEnvironment {
     /// The time window end point where the environment is enabled.
     /// This value is usually lower than the `search_window_begin`, since a search is performed before the train rolls.
     pub enabled_until: DateTime<Utc>,
-    #[schema(value_type = Option<GeoJson>)]
-    #[model(json)]
-    pub active_perimeter: Option<geos::geojson::Geometry>,
     #[model(remote = "Vec<Option<i64>>")]
     pub operational_points: OperationalPoints,
     /// Map of speed limit tag with their value
@@ -121,6 +118,10 @@ pub struct StdcmSearchEnvironment {
     pub default_speed_limit_tag: Option<String>,
     #[model(remote = "Vec<Option<String>>")]
     pub operational_points_id_filtered: OperationalPointIds,
+    /// Map of a key (ex. loading gauge) with their allowed track section ids.
+    #[model(json)]
+    #[schema(required)]
+    pub allowed_tracks: Option<HashMap<String, HashSet<String>>>,
 }
 
 impl StdcmSearchEnvironment {
