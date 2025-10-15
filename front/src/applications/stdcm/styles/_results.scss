@@ -157,7 +157,6 @@
     display: flex;
 
     .results-with-feedback {
-      width: 804px;
       margin-right: 32px;
 
       .results-and-sheet {
@@ -180,7 +179,6 @@
               top: 0;
               background-color: #dde3e6;
             }
-
             th {
               height: 32px;
               font-size: 0.875rem;
@@ -220,7 +218,10 @@
               width: 232px;
             }
             .ch {
-              width: 56px;
+              width: 48px;
+            }
+            .track {
+              width: 64px;
             }
             .stop {
               font-size: 0.875rem;

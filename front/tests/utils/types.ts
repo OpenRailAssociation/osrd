@@ -230,6 +230,7 @@ export type STDCMResultTableRow = {
   index: number;
   operationalPoint: string;
   code: string;
+  track: string;
   endStop: string | null;
   passageStop: string | null;
   startStop: string | null;
