@@ -714,4 +714,33 @@ mod tests {
         assert!(speed < full_throttle / 2.0, "{speed}");
         assert!(speed > full_throttle / 3.0, "{speed}");
     }
+
+    #[test]
+    fn bench_slope_change_vmax() {
+        use std::time::Duration;
+        use std::time::Instant;
+
+        let start_time = Instant::now();
+        let mut warmup_count = 0;
+
+        loop {
+            slope_change_vmax();
+            warmup_count += 1;
+            if warmup_count >= 3 || start_time.elapsed() > Duration::from_secs(1) {
+                break;
+            }
+        }
+
+        let bench_count = u32::clamp(warmup_count * 5, 10, 100);
+        let mut total_time = Duration::ZERO;
+
+        for _ in 0..bench_count {
+            let start_time = Instant::now();
+            slope_change_vmax();
+            total_time += start_time.elapsed();
+        }
+
+        let avg = total_time / bench_count;
+        println!("Average time: {avg:?}");
+    }
 }
