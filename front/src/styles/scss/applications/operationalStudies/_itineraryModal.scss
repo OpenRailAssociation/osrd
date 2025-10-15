@@ -232,6 +232,10 @@
               .focus-map-icon {
                 margin-left: 10px;
 
+                &:not(.empty):hover {
+                  color: var(--primary80);
+                }
+
                 &.empty {
                   color: var(--primary20);
                 }

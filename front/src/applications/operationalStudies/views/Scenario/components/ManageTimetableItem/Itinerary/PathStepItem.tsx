@@ -2,13 +2,18 @@ import { useMemo } from 'react';
 
 import { ComboBox, Select } from '@osrd-project/ui-core';
 import { AddedLocation, AddLocation, FocusLocation } from '@osrd-project/ui-icons';
+import bbox from '@turf/bbox';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 
 import type { CategoryColors } from 'applications/operationalStudies/types';
+import { computeBBoxViewport } from 'common/Map/WarpedMap/core/helpers';
+import { useMapSettings, useMapSettingsActions } from 'reducers/commonMap';
+import type { Viewport } from 'reducers/commonMap/types';
 import type { PathStepMetadata, PathStepV2 } from 'reducers/osrdconf/types';
+import { useAppDispatch } from 'store';
 
-import { isOpRefMetadata } from './utils';
+import { computePathStepCoordinates, isOpRefMetadata } from './utils';
 
 const EMPTY_OPTION = { label: '', id: '' };
 
@@ -30,6 +35,9 @@ const PathStepItem = ({
   const { t } = useTranslation('operational-studies', {
     keyPrefix: 'manageTimetableItem.itineraryModal',
   });
+  const dispatch = useAppDispatch();
+  const mapSettings = useMapSettings();
+  const { updateViewport } = useMapSettingsActions();
 
   const secondaryCodeSuggestions = useMemo(() => {
     if (!isOpRefMetadata(pathStepMetadata)) return [];
@@ -96,6 +104,26 @@ const PathStepItem = ({
       EMPTY_OPTION
     );
   }, [pathStep, pathStepMetadata]);
+
+  const handleFocusClick = () => {
+    if (!pathStepMetadata) return;
+
+    const coordinates = computePathStepCoordinates(pathStepMetadata);
+    let viewport: Partial<Viewport> = mapSettings.viewport;
+    if (coordinates.length === 1) {
+      viewport = {
+        longitude: coordinates[0][0],
+        latitude: coordinates[0][1],
+      };
+    } else {
+      const box = bbox({
+        type: 'MultiPoint',
+        coordinates,
+      });
+      viewport = computeBBoxViewport(box, mapSettings.viewport);
+    }
+    dispatch(updateViewport(viewport));
+  };
 
   return (
     <div className="path-step-wrapper">
@@ -176,12 +204,17 @@ const PathStepItem = ({
               aria-label={t('addLocationOnMap')}
             />
           )}
-          <FocusLocation
-            size="lg"
+          <button
             className={cx('focus-map-icon', { empty: !pathStep })}
-            title={t('focusLocationOnMap')}
-            aria-label={t('focusLocationOnMap')}
-          />
+            disabled={!pathStep}
+            onClick={handleFocusClick}
+          >
+            <FocusLocation
+              size="lg"
+              title={t('focusLocationOnMap')}
+              aria-label={t('focusLocationOnMap')}
+            />
+          </button>
         </div>
       </div>
     </div>
