@@ -35,7 +35,7 @@ class STDCMGraph(
     val comfort: Comfort?,
     val timeStep: Double,
     blockAvailability: BlockAvailabilityInterface,
-    maxRunTime: Double,
+    val maxRunTime: Double,
     minScheduleTimeStart: Double,
     steps: List<STDCMStep>,
     val tag: String?,

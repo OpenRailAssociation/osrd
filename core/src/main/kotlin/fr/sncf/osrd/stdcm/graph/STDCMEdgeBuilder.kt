@@ -228,8 +228,7 @@ internal constructor(
                 allowanceData,
                 envelope!!,
             )
-        res = graph.backtrackingManager.backtrack(res!!, envelope!!)
-        return if (res == null || graph.delayManager.isRunTimeTooLong(res)) null else res
+        return graph.backtrackingManager.backtrack(res!!, envelope!!)
     }
 
     companion object {

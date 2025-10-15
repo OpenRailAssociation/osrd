@@ -197,6 +197,8 @@ class STDCMPathfinding(
                 fValueLogger.logAggregatedSummary()
                 return null
             }
+            if (endNode.getMinTotalSimulationTime(graph.remainingTimeEstimator) > maxRunTime)
+                continue
 
             // Checks that the f-value (best anticipated final value on path) only goes up,
             // otherwise the A* heuristic isn't admissible

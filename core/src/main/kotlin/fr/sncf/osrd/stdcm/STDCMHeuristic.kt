@@ -9,6 +9,7 @@ import fr.sncf.osrd.sim_infra.api.RawInfra
 import fr.sncf.osrd.sim_infra.impl.TemporarySpeedLimitManager
 import fr.sncf.osrd.sim_infra.utils.getBlockEntry
 import fr.sncf.osrd.stdcm.graph.STDCMEdge
+import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelope
 import fr.sncf.osrd.stdcm.infra_exploration.StepTracker
 import fr.sncf.osrd.utils.CachedBlockMRSPBuilder
 import fr.sncf.osrd.utils.indexing.StaticIdx
@@ -28,6 +29,7 @@ data class STDCMAStarHeuristic(
     val mrspBuilder: CachedBlockMRSPBuilder,
     val bestTravelTime: Double,
     val allowanceValue: AllowanceValue?,
+    val stopDurations: List<Double>,
 ) {
     /**
      * Defines a function that can be used as a heuristic for an A* pathfinding. It takes an edge,
@@ -65,6 +67,14 @@ data class STDCMAStarHeuristic(
         val remainingTime = timeUntilStartOfLastBlock + timeAfterStartOfLastBlock
 
         return remainingTime
+    }
+
+    /** Estimates the minimum remaining stop time. */
+    fun minRemainingStopTime(explorer: InfraExplorerWithEnvelope): Double {
+        val nSimulatedStops = explorer.generateReachedTrainStops().size
+        return stopDurations
+            .subList(min(nSimulatedStops, stopDurations.size), stopDurations.size)
+            .sum()
     }
 
     /** Returns the numbers of passed waypoints at the end of the block list */
@@ -153,6 +163,7 @@ class STDCMHeuristicBuilder(
             mrspBuilder,
             bestTravelTime,
             allowance,
+            steps.filter { it.stop }.map { it.duration ?: 0.0 },
         )
     }
 

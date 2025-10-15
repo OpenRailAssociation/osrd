@@ -84,16 +84,6 @@ internal constructor(
     }
 
     /**
-     * Returns true if the total run time at the start of the edge is above the specified threshold
-     */
-    fun isRunTimeTooLong(edge: STDCMEdge): Boolean {
-        val totalRunTime = edge.timeData.timeSinceDeparture
-
-        // TODO: we should use the A* heuristic here, but that requires a small refactoring
-        return totalRunTime > maxRunTime
-    }
-
-    /**
      * Returns by how much we can shift this envelope (in time) before causing a conflict.
      *
      * e.g. if the train takes 42s to go through the block, enters the block at t=10s, and we need

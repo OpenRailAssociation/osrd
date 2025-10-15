@@ -2,6 +2,7 @@ package fr.sncf.osrd.stdcm.graph
 
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.stdcm.PlannedTimingData
+import fr.sncf.osrd.stdcm.STDCMAStarHeuristic
 import fr.sncf.osrd.stdcm.graph.engineering_allowance.generatePreviousSimulationSegments
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelope
 import fr.sncf.osrd.utils.SoftLazy
@@ -204,5 +205,11 @@ data class STDCMNode(
             .allowanceManager
             .generateAllowanceOpportunities(previousSimulationSegments, speed)
             .cacheable()
+    }
+
+    fun getMinTotalSimulationTime(heuristic: STDCMAStarHeuristic): Double {
+        return timeData.totalRunningTime +
+            remainingTimeEstimation +
+            heuristic.minRemainingStopTime(infraExplorer)
     }
 }
