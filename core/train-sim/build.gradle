@@ -35,9 +35,7 @@ tasks.register('rustTest', Exec) {
     inputs.file 'libtsim/Cargo.toml'
     inputs.file 'libtsim/Cargo.lock'
 }
-tasks.named('test') {
-    dependsOn tasks.named('rustTest')
-}
+tasks.test.dependsOn tasks.named('rustTest')
 
 tasks.register('generateKotlinBindings', Exec) {
     group = 'build'
