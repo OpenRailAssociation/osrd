@@ -9,8 +9,9 @@ export const logger = {
 };
 
 // Extend baseTest with logging inside the test hooks
-const testWithLogging = baseTest.extend<{ page: Page }>({
-  page: async ({ page, browserName }, use, testInfo) => {
+const testWithLogging = baseTest.extend<{ page: Page; ignorePageErrors: boolean }>({
+  ignorePageErrors: [false, { option: true }],
+  page: async ({ page, browserName, ignorePageErrors }, use, testInfo) => {
     const startTime = Date.now(); // Record the start time
 
     // Log before the test starts
@@ -25,12 +26,14 @@ const testWithLogging = baseTest.extend<{ page: Page }>({
     });
 
     // Handle uncaught exceptions
-    page.on('pageerror', (exception) => {
-      logger.error('🚨Uncaught page error:', exception);
-      throw new Error(
-        `Test failed due to uncaught exception:\n${exception.message}\n${exception.stack}`
-      );
-    });
+    if (!ignorePageErrors) {
+      page.on('pageerror', (exception) => {
+        logger.error('🚨Uncaught page error:', exception);
+        throw new Error(
+          `Test failed due to uncaught exception:\n${exception.message}\n${exception.stack}`
+        );
+      });
+    }
 
     // Run the actual test
     await use(page);

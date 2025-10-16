@@ -261,7 +261,11 @@ const TrainScheduleItem = ({
             </div>
           )}
           {summary && !summary.isValid && (
-            <div className="invalid-reason" title={t(`timetable.invalid.${summary.invalidReason}`)}>
+            <div
+              data-testid="invalid-reason"
+              className="invalid-reason"
+              title={t(`timetable.invalid.${summary.invalidReason}`)}
+            >
               <span>{t(`timetable.invalid.${summary.invalidReason}`)}</span>
             </div>
           )}

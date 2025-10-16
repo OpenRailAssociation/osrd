@@ -344,6 +344,7 @@ export type TimetableFilterTranslations = FlatTranslations & {
   timetable: FlatTranslations & {
     occurrenceType: FlatTranslations;
     occurrenceChangeGroup: FlatTranslations;
+    invalid: FlatTranslations;
   };
   occurrenceMenu: FlatTranslations;
 };

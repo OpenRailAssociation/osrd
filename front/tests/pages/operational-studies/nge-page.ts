@@ -11,20 +11,25 @@ enum TrainTabs {
 
 class NGEPage extends OpSimulationResultPage {
   private readonly ngeFrame;
-  private readonly nodeCards: Locator;
+  readonly nodeCards: Locator;
   private readonly nodeTexts: Locator;
-  private readonly trainLines: Locator;
+  readonly trainLines: Locator;
   private readonly trainLabelRows: Locator;
   private readonly trainDetailTabs: Locator;
   private readonly activeTabPanel: Locator;
-  private readonly trainDetailsGroup: Locator;
+  readonly trainDetailsGroup: Locator;
   private readonly oneWayCardMuted: Locator;
   private readonly oneWayCardSelected: Locator;
   private readonly nodeSummaryTitle: Locator;
   private readonly deleteNodeButton: Locator;
   private readonly confirmDeleteButton: Locator;
   private readonly closeDialogButton: Locator;
-
+  private readonly topologyEditorToggle: Locator;
+  private readonly graphContainer: Locator;
+  private readonly textInputs: Locator;
+  private readonly closeAsideButton: Locator;
+  private readonly trainTitleField: Locator;
+  private readonly frequency30Btn: Locator;
   private readonly stationLeftArrow: Locator;
   private readonly stationRightArrow: Locator;
   constructor(page: Page) {
@@ -48,6 +53,13 @@ class NGEPage extends OpSimulationResultPage {
       'button.sbb-button[tabindex="0"][type="button"]'
     );
     this.closeDialogButton = this.ngeFrame.getByRole('img', { name: 'Close Dialog' });
+    this.topologyEditorToggle = this.ngeFrame.locator('.ButtonTopologieEditor.NetzgrafikEditing');
+    this.graphContainer = this.ngeFrame.locator('#graphContainer');
+    this.textInputs = this.ngeFrame.locator('.sbb-input-element');
+    this.closeAsideButton = this.ngeFrame.locator('#cd-layout-close-aside');
+
+    this.trainTitleField = this.ngeFrame.locator('#trainrunTitleField');
+    this.frequency30Btn = this.ngeFrame.locator('.Frequency.Frequency_30');
     this.stationLeftArrow = this.ngeFrame.locator('[data-sbb-icon-name="arrow-left-medium"]');
     this.stationRightArrow = this.ngeFrame.locator('[data-sbb-icon-name="arrow-right-medium"]');
   }
@@ -162,6 +174,36 @@ class NGEPage extends OpSimulationResultPage {
     await this.page.keyboard.press('Delete');
 
     await this.verifyNodeAndLinesCount(expected);
+  }
+
+  async connectNodesByIndex(fromIndex: number, toIndex: number) {
+    const from = this.nodeCards.nth(fromIndex);
+    const to = this.nodeCards.nth(toIndex);
+
+    await Promise.all([expect(from).toBeVisible(), expect(to).toBeVisible()]);
+
+    const fromBox = await from.boundingBox();
+    const toBox = await to.boundingBox();
+    if (!fromBox || !toBox) throw new Error('Element not visible on screen');
+
+    await this.page.mouse.move(fromBox.x + fromBox.width / 2, fromBox.y + fromBox.height / 2);
+    await this.page.mouse.down();
+    await this.page.mouse.move(toBox.x + toBox.width / 2, toBox.y + toBox.height / 2, {
+      steps: 15,
+    });
+    await this.page.mouse.up();
+  }
+
+  async createNode(position: { x: number; y: number }, trigram: string, name: string) {
+    await this.toggleTopologyEditor();
+    await this.clickGraphAt(position);
+    await this.fillNodeDetails(trigram, name);
+    await this.closeAside();
+  }
+
+  async setTrainBasics({ name, isFrequency30 }: { name: string; isFrequency30?: boolean }) {
+    await this.trainTitleField.fill(name);
+    if (isFrequency30) await this.frequency30Btn.click();
   }
 }
 
