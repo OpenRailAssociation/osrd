@@ -209,7 +209,7 @@ test.describe('Verify simulation configuration in operational studies for train 
 
     await test.step('Open first occurrence and verify its simulation results (screenshot comparison for the GEV)', async () => {
       await pacedTrainSection.selectOccurrence({ pacedTrainIndex: 0, occurrenceIndex: 0 });
-      await simulationResultPage.toggleTrainList();
+      await simulationResultPage.setTrainListVisible();
       if (browserName === 'chromium') {
         await expect(simulationResultPage.speedSpaceChart).toHaveScreenshot(
           'SpeedSpaceChart-InitialInputs.png'

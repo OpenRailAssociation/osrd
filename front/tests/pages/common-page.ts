@@ -87,10 +87,10 @@ class CommonPage {
     await expect(this.navigationBackButton).toBeVisible();
   }
 
-  async waitForLoaderToDisappear() {
+  async waitForLoaderToDisappear({ timeout }: { timeout?: number } = {}): Promise<void> {
     const count = await this.loader.count();
     if (count > 0) {
-      await expect(this.loader).not.toBeVisible({ timeout: 120000 });
+      await expect(this.loader).not.toBeVisible({ timeout });
     }
   }
 }
