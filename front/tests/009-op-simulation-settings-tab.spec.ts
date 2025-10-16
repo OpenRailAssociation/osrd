@@ -12,7 +12,6 @@ import { improbableRollingStockName } from './assets/constants/project-const';
 import test from './logging-fixture';
 import OperationalStudiesPage from './pages/operational-studies/operational-studies-page';
 import RouteTab from './pages/operational-studies/route-tab';
-import ScenarioPage from './pages/operational-studies/scenario-page';
 import ScenarioTimetableSection from './pages/operational-studies/scenario-timetable-section';
 import OpSimulationResultPage from './pages/operational-studies/simulation-results-page';
 import SimulationSettingsTab from './pages/operational-studies/simulation-settings-tab';
@@ -68,7 +67,6 @@ test.describe('Simulation Settings Tab Verification', () => {
   let simulationSettingsTab: SimulationSettingsTab;
   let simulationResultPage: OpSimulationResultPage;
   let scenarioTimetableSection: ScenarioTimetableSection;
-  let scenarioPage: ScenarioPage;
 
   let electricalProfileSet: ElectricalProfileSet;
   let project: Project;
@@ -106,7 +104,6 @@ test.describe('Simulation Settings Tab Verification', () => {
       simulationSettingsTab,
       simulationResultPage,
       scenarioTimetableSection,
-      scenarioPage,
     ] = [
       new OperationalStudiesPage(page),
       new RouteTab(page),
@@ -116,7 +113,6 @@ test.describe('Simulation Settings Tab Verification', () => {
       new SimulationSettingsTab(page),
       new OpSimulationResultPage(page),
       new ScenarioTimetableSection(page),
-      new ScenarioPage(page),
     ];
 
     await test.step('Create then navigate to scenario page', async () => {
@@ -177,7 +173,7 @@ test.describe('Simulation Settings Tab Verification', () => {
       await operationalStudiesPage.closeToastNotification();
       await operationalStudiesPage.returnSimulationResult();
       await scenarioTimetableSection.getTimetableItemArrivalTime('11:48');
-      await scenarioPage.toggleTrainList();
+      await simulationResultPage.toggleTrainList();
 
       await timeAndStopSimulationOutputs.verifyTimesStopsDataSheetVisibility();
       await simulationResultPage.selectAllSpeedSpaceChartCheckboxes();
@@ -188,7 +184,7 @@ test.describe('Simulation Settings Tab Verification', () => {
       }
       await scrollContainer(page, '.time-stop-outputs .time-stops-datasheet .dsg-container');
       await timeAndStopSimulationOutputs.getOutputTableData(expectedCellDataElectricalProfileON);
-      await scenarioPage.toggleTrainList(false);
+      await simulationResultPage.toggleTrainList(false);
     });
 
     await test.step('Deactivate electrical profiles and verify (OFF)', async () => {
@@ -196,7 +192,7 @@ test.describe('Simulation Settings Tab Verification', () => {
       await operationalStudiesPage.openSimulationSettingsTab();
       await simulationSettingsTab.deactivateElectricalProfile();
       await operationalStudiesPage.submitTimetableItemEdit();
-      await scenarioPage.toggleTrainList();
+      await simulationResultPage.toggleTrainList();
 
       await timeAndStopSimulationOutputs.verifyTimesStopsDataSheetVisibility();
       await simulationResultPage.selectAllSpeedSpaceChartCheckboxes();
@@ -206,7 +202,7 @@ test.describe('Simulation Settings Tab Verification', () => {
         );
       }
       await timeAndStopSimulationOutputs.getOutputTableData(expectedCellDataElectricalProfileOFF);
-      await scenarioPage.toggleTrainList(false);
+      await simulationResultPage.toggleTrainList(false);
       await scenarioTimetableSection.getTimetableItemArrivalTime('11:48');
     });
   });
@@ -235,7 +231,7 @@ test.describe('Simulation Settings Tab Verification', () => {
       await operationalStudiesPage.closeToastNotification();
       await operationalStudiesPage.returnSimulationResult();
       await scenarioTimetableSection.getTimetableItemArrivalTime('11:49');
-      await scenarioPage.toggleTrainList();
+      await simulationResultPage.toggleTrainList();
 
       await timeAndStopSimulationOutputs.verifyTimesStopsDataSheetVisibility();
       await simulationResultPage.selectAllSpeedSpaceChartCheckboxes();
@@ -246,7 +242,7 @@ test.describe('Simulation Settings Tab Verification', () => {
       }
       await scrollContainer(page, '.time-stop-outputs .time-stops-datasheet .dsg-container');
       await timeAndStopSimulationOutputs.getOutputTableData(expectedCellDataCodeCompoON);
-      await scenarioPage.toggleTrainList(false);
+      await simulationResultPage.toggleTrainList(false);
     });
 
     await test.step('Remove speed limit tag and verify (speed limit tag OFF)', async () => {
@@ -254,7 +250,7 @@ test.describe('Simulation Settings Tab Verification', () => {
       await operationalStudiesPage.openSimulationSettingsTab();
       await simulationSettingsTab.selectSpeedLimitTagOption('__PLACEHOLDER__');
       await operationalStudiesPage.submitTimetableItemEdit();
-      await scenarioPage.toggleTrainList();
+      await simulationResultPage.toggleTrainList();
 
       await timeAndStopSimulationOutputs.verifyTimesStopsDataSheetVisibility();
       await simulationResultPage.selectAllSpeedSpaceChartCheckboxes();
@@ -264,7 +260,7 @@ test.describe('Simulation Settings Tab Verification', () => {
         );
       }
       await timeAndStopSimulationOutputs.getOutputTableData(expectedCellDataCodeCompoOFF);
-      await scenarioPage.toggleTrainList(false);
+      await simulationResultPage.toggleTrainList(false);
       await scenarioTimetableSection.getTimetableItemArrivalTime('11:48');
     });
   });
@@ -303,7 +299,7 @@ test.describe('Simulation Settings Tab Verification', () => {
       await operationalStudiesPage.closeToastNotification();
       await operationalStudiesPage.returnSimulationResult();
       await scenarioTimetableSection.getTimetableItemArrivalTime('11:51');
-      await scenarioPage.toggleTrainList();
+      await simulationResultPage.toggleTrainList();
 
       await timeAndStopSimulationOutputs.verifyTimesStopsDataSheetVisibility();
       await simulationResultPage.selectAllSpeedSpaceChartCheckboxes();
@@ -314,7 +310,7 @@ test.describe('Simulation Settings Tab Verification', () => {
       }
       await scrollContainer(page, '.time-stop-outputs .time-stops-datasheet .dsg-container');
       await timeAndStopSimulationOutputs.getOutputTableData(expectedCellDataLinearMargin);
-      await scenarioPage.toggleTrainList(false);
+      await simulationResultPage.toggleTrainList(false);
     });
 
     await test.step('Edit to Mareco margin and verify', async () => {
@@ -322,7 +318,7 @@ test.describe('Simulation Settings Tab Verification', () => {
       await operationalStudiesPage.openSimulationSettingsTab();
       await simulationSettingsTab.activateMarecoMargin();
       await operationalStudiesPage.submitTimetableItemEdit();
-      await scenarioPage.toggleTrainList();
+      await simulationResultPage.toggleTrainList();
 
       await timeAndStopSimulationOutputs.verifyTimesStopsDataSheetVisibility();
       await simulationResultPage.selectAllSpeedSpaceChartCheckboxes();
@@ -332,7 +328,7 @@ test.describe('Simulation Settings Tab Verification', () => {
         );
       }
       await timeAndStopSimulationOutputs.getOutputTableData(expectedCellDataMarecoMargin);
-      await scenarioPage.toggleTrainList(false);
+      await simulationResultPage.toggleTrainList(false);
       await scenarioTimetableSection.getTimetableItemArrivalTime('11:51');
     });
   });
@@ -371,7 +367,7 @@ test.describe('Simulation Settings Tab Verification', () => {
       await operationalStudiesPage.createTimetableItem();
       await operationalStudiesPage.closeToastNotification();
       await operationalStudiesPage.returnSimulationResult();
-      await scenarioPage.toggleTrainList();
+      await simulationResultPage.toggleTrainList();
 
       await timeAndStopSimulationOutputs.verifyTimesStopsDataSheetVisibility();
       await simulationResultPage.selectAllSpeedSpaceChartCheckboxes();
@@ -382,7 +378,7 @@ test.describe('Simulation Settings Tab Verification', () => {
       }
       await scrollContainer(page, '.time-stop-outputs .time-stops-datasheet .dsg-container');
       await timeAndStopSimulationOutputs.getOutputTableData(expectedCellDataForAllSettings);
-      await scenarioPage.toggleTrainList(false);
+      await simulationResultPage.toggleTrainList(false);
       await scenarioTimetableSection.getTimetableItemArrivalTime('11:50');
     });
   });

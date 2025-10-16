@@ -1,8 +1,9 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 
-import CommonPage from '../common-page';
+import ScenarioPage from './scenario-page';
+import { toggleByState } from '../../utils';
 
-class OpSimulationResultPage extends CommonPage {
+class OpSimulationResultPage extends ScenarioPage {
   readonly simulationResults: Locator;
 
   private readonly speedSpaceChartSettingsButton: Locator;
@@ -21,6 +22,14 @@ class OpSimulationResultPage extends CommonPage {
 
   private readonly simulationMap: Locator;
 
+  private readonly trainList: Locator;
+
+  private readonly timeStopsOutputs: Locator;
+
+  private readonly macroEditor: Locator;
+
+  private readonly conflictsList: Locator;
+
   constructor(page: Page) {
     super(page);
     this.simulationResults = page.getByTestId('simulation-results');
@@ -32,6 +41,11 @@ class OpSimulationResultPage extends CommonPage {
     this.speedSpaceChartSettingsButton = page.getByTestId('interaction-settings');
     this.speedSpaceChartCloseSettingsButton = page.getByTestId('settings-panel-close');
     this.speedSpaceChartCheckboxItems = page.locator('#settings-panel .selection .checkmark');
+    this.conflictsList = page.getByTestId('conflicts-list');
+    this.trainList = page.getByTestId('scenario-left-column');
+    this.simulationMap = page.getByTestId('simulation-map');
+    this.timeStopsOutputs = page.getByTestId('time-stop-outputs');
+    this.macroEditor = page.getByTestId('macro-editor');
   }
 
   private async openSettingsPanel(): Promise<void> {
@@ -65,6 +79,47 @@ class OpSimulationResultPage extends CommonPage {
     await Promise.all(checkboxes.map((checkbox) => checkbox.setChecked(true, { force: true })));
     await this.closeSettingsPanel();
     await this.speedSpaceChartSettingsButton.hover(); // Hover over the element to prevent the tooltip from displaying
+  }
+
+  async setConflictsListVisible(isVisible = false) {
+    await toggleByState(this.conflictsButton, this.conflictsList, isVisible);
+  }
+
+  async setTrainListVisible(isVisible = true) {
+    await toggleByState(this.trainsButton, this.trainList, isVisible);
+  }
+
+  async setStdVisible(isVisible = true) {
+    await toggleByState(
+      this.stdButton,
+      [this.spaceTimeChart, this.manchetteSpaceTimeChart],
+      isVisible
+    );
+  }
+
+  async setSddVisible(isVisible = true) {
+    await toggleByState(this.sddButton, this.speedSpaceChart, isVisible);
+  }
+
+  async setMapVisible(isVisible = true) {
+    await toggleByState(this.simulationMapButton, this.simulationMap, isVisible);
+  }
+
+  async setTableOutputVisible(isVisible = true) {
+    await toggleByState(this.timeStopsOutputsButton, this.timeStopsOutputs, isVisible);
+  }
+
+  async setMacroVisible(isVisible = false) {
+    await toggleByState(this.macroEditorButton, this.macroEditor, isVisible);
+  }
+
+  async enableMacroViewWithDefaultTrainList(): Promise<void> {
+    await this.setStdVisible();
+    await this.setMapVisible();
+    await this.setSddVisible();
+    await this.setTableOutputVisible();
+    await this.setMacroVisible();
+    await this.waitForLoaderToDisappear();
   }
 }
 
