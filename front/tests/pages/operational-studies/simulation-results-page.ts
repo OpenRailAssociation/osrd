@@ -119,7 +119,7 @@ class OpSimulationResultPage extends ScenarioPage {
     await this.setSddVisible();
     await this.setTableOutputVisible();
     await this.setMacroVisible();
-    await this.waitForLoaderToDisappear();
+    await this.waitForLoaderToDisappear({ timeout: 15_000 });
   }
 }
 

@@ -173,7 +173,7 @@ test.describe('Simulation Settings Tab Verification', () => {
       await operationalStudiesPage.closeToastNotification();
       await operationalStudiesPage.returnSimulationResult();
       await scenarioTimetableSection.getTimetableItemArrivalTime('11:48');
-      await simulationResultPage.toggleTrainList();
+      await simulationResultPage.setTrainListVisible();
 
       await timeAndStopSimulationOutputs.verifyTimesStopsDataSheetVisibility();
       await simulationResultPage.selectAllSpeedSpaceChartCheckboxes();
@@ -184,7 +184,7 @@ test.describe('Simulation Settings Tab Verification', () => {
       }
       await scrollContainer(page, '.time-stop-outputs .time-stops-datasheet .dsg-container');
       await timeAndStopSimulationOutputs.getOutputTableData(expectedCellDataElectricalProfileON);
-      await simulationResultPage.toggleTrainList(false);
+      await simulationResultPage.setTrainListVisible(false);
     });
 
     await test.step('Deactivate electrical profiles and verify (OFF)', async () => {
@@ -192,7 +192,7 @@ test.describe('Simulation Settings Tab Verification', () => {
       await operationalStudiesPage.openSimulationSettingsTab();
       await simulationSettingsTab.deactivateElectricalProfile();
       await operationalStudiesPage.submitTimetableItemEdit();
-      await simulationResultPage.toggleTrainList();
+      await simulationResultPage.setTrainListVisible();
 
       await timeAndStopSimulationOutputs.verifyTimesStopsDataSheetVisibility();
       await simulationResultPage.selectAllSpeedSpaceChartCheckboxes();
@@ -202,7 +202,7 @@ test.describe('Simulation Settings Tab Verification', () => {
         );
       }
       await timeAndStopSimulationOutputs.getOutputTableData(expectedCellDataElectricalProfileOFF);
-      await simulationResultPage.toggleTrainList(false);
+      await simulationResultPage.setTrainListVisible(false);
       await scenarioTimetableSection.getTimetableItemArrivalTime('11:48');
     });
   });
@@ -231,7 +231,7 @@ test.describe('Simulation Settings Tab Verification', () => {
       await operationalStudiesPage.closeToastNotification();
       await operationalStudiesPage.returnSimulationResult();
       await scenarioTimetableSection.getTimetableItemArrivalTime('11:49');
-      await simulationResultPage.toggleTrainList();
+      await simulationResultPage.setTrainListVisible();
 
       await timeAndStopSimulationOutputs.verifyTimesStopsDataSheetVisibility();
       await simulationResultPage.selectAllSpeedSpaceChartCheckboxes();
@@ -242,7 +242,7 @@ test.describe('Simulation Settings Tab Verification', () => {
       }
       await scrollContainer(page, '.time-stop-outputs .time-stops-datasheet .dsg-container');
       await timeAndStopSimulationOutputs.getOutputTableData(expectedCellDataCodeCompoON);
-      await simulationResultPage.toggleTrainList(false);
+      await simulationResultPage.setTrainListVisible(false);
     });
 
     await test.step('Remove speed limit tag and verify (speed limit tag OFF)', async () => {
@@ -250,7 +250,7 @@ test.describe('Simulation Settings Tab Verification', () => {
       await operationalStudiesPage.openSimulationSettingsTab();
       await simulationSettingsTab.selectSpeedLimitTagOption('__PLACEHOLDER__');
       await operationalStudiesPage.submitTimetableItemEdit();
-      await simulationResultPage.toggleTrainList();
+      await simulationResultPage.setTrainListVisible();
 
       await timeAndStopSimulationOutputs.verifyTimesStopsDataSheetVisibility();
       await simulationResultPage.selectAllSpeedSpaceChartCheckboxes();
@@ -260,7 +260,7 @@ test.describe('Simulation Settings Tab Verification', () => {
         );
       }
       await timeAndStopSimulationOutputs.getOutputTableData(expectedCellDataCodeCompoOFF);
-      await simulationResultPage.toggleTrainList(false);
+      await simulationResultPage.setTrainListVisible(false);
       await scenarioTimetableSection.getTimetableItemArrivalTime('11:48');
     });
   });
@@ -299,7 +299,7 @@ test.describe('Simulation Settings Tab Verification', () => {
       await operationalStudiesPage.closeToastNotification();
       await operationalStudiesPage.returnSimulationResult();
       await scenarioTimetableSection.getTimetableItemArrivalTime('11:51');
-      await simulationResultPage.toggleTrainList();
+      await simulationResultPage.setTrainListVisible();
 
       await timeAndStopSimulationOutputs.verifyTimesStopsDataSheetVisibility();
       await simulationResultPage.selectAllSpeedSpaceChartCheckboxes();
@@ -310,7 +310,7 @@ test.describe('Simulation Settings Tab Verification', () => {
       }
       await scrollContainer(page, '.time-stop-outputs .time-stops-datasheet .dsg-container');
       await timeAndStopSimulationOutputs.getOutputTableData(expectedCellDataLinearMargin);
-      await simulationResultPage.toggleTrainList(false);
+      await simulationResultPage.setTrainListVisible(false);
     });
 
     await test.step('Edit to Mareco margin and verify', async () => {
@@ -318,7 +318,7 @@ test.describe('Simulation Settings Tab Verification', () => {
       await operationalStudiesPage.openSimulationSettingsTab();
       await simulationSettingsTab.activateMarecoMargin();
       await operationalStudiesPage.submitTimetableItemEdit();
-      await simulationResultPage.toggleTrainList();
+      await simulationResultPage.setTrainListVisible();
 
       await timeAndStopSimulationOutputs.verifyTimesStopsDataSheetVisibility();
       await simulationResultPage.selectAllSpeedSpaceChartCheckboxes();
@@ -328,7 +328,7 @@ test.describe('Simulation Settings Tab Verification', () => {
         );
       }
       await timeAndStopSimulationOutputs.getOutputTableData(expectedCellDataMarecoMargin);
-      await simulationResultPage.toggleTrainList(false);
+      await simulationResultPage.setTrainListVisible(false);
       await scenarioTimetableSection.getTimetableItemArrivalTime('11:51');
     });
   });
@@ -367,7 +367,7 @@ test.describe('Simulation Settings Tab Verification', () => {
       await operationalStudiesPage.createTimetableItem();
       await operationalStudiesPage.closeToastNotification();
       await operationalStudiesPage.returnSimulationResult();
-      await simulationResultPage.toggleTrainList();
+      await simulationResultPage.setTrainListVisible();
 
       await timeAndStopSimulationOutputs.verifyTimesStopsDataSheetVisibility();
       await simulationResultPage.selectAllSpeedSpaceChartCheckboxes();
@@ -378,7 +378,7 @@ test.describe('Simulation Settings Tab Verification', () => {
       }
       await scrollContainer(page, '.time-stop-outputs .time-stops-datasheet .dsg-container');
       await timeAndStopSimulationOutputs.getOutputTableData(expectedCellDataForAllSettings);
-      await simulationResultPage.toggleTrainList(false);
+      await simulationResultPage.setTrainListVisible(false);
       await scenarioTimetableSection.getTimetableItemArrivalTime('11:50');
     });
   });
