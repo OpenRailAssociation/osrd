@@ -1,10 +1,10 @@
 {
   "boards": {
-    "conflicts": "conflictos",
+    "conflicts": "Conflictos",
     "macro": "Macro",
     "map": "Mapa",
-    "sdd": "GEV",
-    "std": "GET",
+    "sdd": "DEV",
+    "std": "DET",
     "tables": "Cuadros"
   }
 }
