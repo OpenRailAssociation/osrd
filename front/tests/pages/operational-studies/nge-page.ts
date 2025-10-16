@@ -13,6 +13,7 @@ class NGEPage extends OpSimulationResultPage {
   private readonly ngeFrame;
   private readonly nodeCards: Locator;
   private readonly nodeTexts: Locator;
+  private readonly trainLines: Locator;
   private readonly trainLabelRows: Locator;
   private readonly trainDetailTabs: Locator;
   private readonly activeTabPanel: Locator;
@@ -32,17 +33,18 @@ class NGEPage extends OpSimulationResultPage {
     this.ngeFrame = page.frameLocator('iframe[title="NGE"]');
     this.nodeCards = this.ngeFrame.locator('.root_container_nodes');
     this.nodeTexts = this.nodeCards.locator('.node_text');
+    this.trainLines = this.ngeFrame.locator('.edge.Lines');
     this.trainLabelRows = this.ngeFrame.locator('.edge.Labels');
     this.trainDetailTabs = this.ngeFrame.getByRole('tab');
     this.activeTabPanel = this.ngeFrame.getByRole('tabpanel');
     this.trainDetailsGroup = this.ngeFrame.locator('.TrainrunTabGrupe');
     this.oneWayCardMuted = this.ngeFrame.locator('.OneWayCard.muted');
     this.oneWayCardSelected = this.ngeFrame.locator('.OneWayCard.selected');
-    this.nodeSummaryTitle = this.dialog.locator('.SummaryTitle');
-    this.deleteNodeButton = this.dialog.locator(
+    this.nodeSummaryTitle = this.ngeFrame.locator('.SummaryTitle');
+    this.deleteNodeButton = this.ngeFrame.locator(
       'button[sbb-secondary-button][svgicon="trash-small"]'
     );
-    this.confirmDeleteButton = this.dialog.locator(
+    this.confirmDeleteButton = this.ngeFrame.locator(
       'button.sbb-button[tabindex="0"][type="button"]'
     );
     this.closeDialogButton = this.ngeFrame.getByRole('img', { name: 'Close Dialog' });
@@ -135,6 +137,31 @@ class NGEPage extends OpSimulationResultPage {
   async closeDetailsDialogIfVisible() {
     const visible = await this.trainDetailsGroup.isVisible().catch(() => false);
     if (visible) await this.closeDialogButton.click();
+  }
+
+  async verifyNodeAndLinesCount(expected: { nodes: number; lines: number }) {
+    await expect(this.nodeCards).toHaveCount(expected.nodes);
+    await expect(this.trainLines).toHaveCount(expected.lines);
+  }
+
+  async deleteNodeByIndexViaDialog(index: number, expected: { nodes: number; lines: number }) {
+    await this.nodeTexts.nth(index).dblclick();
+    await expect(this.nodeSummaryTitle).toBeVisible();
+
+    await expect(this.deleteNodeButton).toBeEnabled();
+    await this.deleteNodeButton.click();
+
+    await expect(this.confirmDeleteButton).toBeEnabled();
+    await this.confirmDeleteButton.click();
+
+    await this.verifyNodeAndLinesCount(expected);
+  }
+
+  async deleteFocusedNodeWithKeyboard(expected: { nodes: number; lines: number }) {
+    await this.nodeTexts.first().hover();
+    await this.page.keyboard.press('Delete');
+
+    await this.verifyNodeAndLinesCount(expected);
   }
 }
 

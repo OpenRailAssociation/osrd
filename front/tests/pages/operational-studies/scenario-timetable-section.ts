@@ -64,6 +64,8 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
 
   private readonly projectItemButton: Locator;
 
+  private readonly deleteItemButton: Locator;
+
   readonly editTimetableItemButton: Locator;
 
   private readonly timetableItemArrivalTime: Locator;
@@ -106,6 +108,7 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
     );
     this.editItemButton = page.getByTestId('edit-item');
     this.projectItemButton = page.getByTestId('project-item');
+    this.deleteItemButton = page.getByTestId('delete-item');
     this.editTimetableItemButton = page.getByTestId('submit-edit-timetable-item');
     this.timetableItemArrivalTime = page.getByTestId('timetable-item-arrival-time');
     this.timetableItemArrivalTimeLoader = page.getByTestId('arrival-time-loader');
@@ -121,6 +124,10 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
 
   static getOccurrences(pacedTrain: Locator): Locator {
     return pacedTrain.getByTestId('occurrence-item');
+  }
+
+  getItemInvalidlyReason(itemIndex = 0): Locator {
+    return this.timetableItems.nth(itemIndex).getByTestId('invalidity-reason');
   }
 
   async verifyInvalidTrainsMessageVisibility(): Promise<void> {
@@ -346,6 +353,12 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
     await expect(this.timetableItems.nth(index)).toBeVisible();
     await this.timetableItems.nth(index).click();
     await this.editItemButton.nth(index).click();
+  }
+
+  async deleteTimetableItem(index = 0) {
+    await expect(this.timetableItems.nth(index)).toBeVisible();
+    await this.timetableItems.nth(index).click();
+    await this.deleteItemButton.nth(index).click();
   }
 
   async projectTrain(index = 0) {
