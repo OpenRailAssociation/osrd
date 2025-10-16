@@ -14,13 +14,12 @@ import fr.sncf.osrd.pathfinding.PathfindingGraph
 import fr.sncf.osrd.pathfinding.RemainingDistanceEstimator
 import fr.sncf.osrd.pathfinding.constraints.ConstraintCombiner
 import fr.sncf.osrd.pathfinding.constraints.initConstraintsFromRSProps
+import fr.sncf.osrd.pathfinding.getStartLocations
+import fr.sncf.osrd.pathfinding.getTargetsOnEdges
 import fr.sncf.osrd.pathfinding.minDistanceBetweenSteps
 import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.sim_infra.api.*
-import fr.sncf.osrd.stdcm.STDCMStep
-import fr.sncf.osrd.stdcm.graph.extendLookaheadUntil
-import fr.sncf.osrd.stdcm.infra_exploration.initInfraExplorer
 import fr.sncf.osrd.utils.*
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
@@ -208,57 +207,14 @@ private fun getRangeCost(
     infra: FullInfra,
 ): Double {
     val edgeDuration =
-        mrspBuilder.getBlockTime(range.edge.block, Offset(range.end.distance)) -
-            mrspBuilder.getBlockTime(range.edge.block, Offset(range.start.distance))
+        mrspBuilder.getBlockTime(range.edge.block, range.end) -
+            mrspBuilder.getBlockTime(range.edge.block, range.start)
     val signalingSystemPenaltyFactor =
         SIGNALING_SYSTEM_COST_WEIGHTING *
             infra.signalingSimulator.sigModuleManager.getCost(
                 infra.blockInfra.getBlockSignalingSystem(range.edge.block)
             )
     return (edgeDuration) * (1 + signalingSystemPenaltyFactor)
-}
-
-private fun getStartLocations(
-    rawInfra: RawSignalingInfra,
-    blockInfra: BlockInfra,
-    waypoints: ArrayList<Collection<EdgeLocation<BlockId, Block>>>,
-    constraints: List<PathfindingConstraint<Block>>,
-): Collection<EdgeLocation<PathfindingEdge, Block>> {
-    val res = mutableListOf<EdgeLocation<PathfindingEdge, Block>>()
-    val firstStep = waypoints[0]
-    val steps = waypoints.map { STDCMStep(it) }
-    for (location in firstStep) {
-        val infraExplorers =
-            initInfraExplorer(
-                rawInfra,
-                blockInfra,
-                location,
-                steps = steps,
-                constraints = constraints,
-            )
-        val extended = infraExplorers.flatMap { extendLookaheadUntil(it, 1) }
-        for (explorer in extended) {
-            val edge = PathfindingEdge(explorer)
-            res.add(EdgeLocation(edge, location.offset))
-        }
-    }
-    return res
-}
-
-private fun getTargetsOnEdges(
-    waypoints: ArrayList<Collection<EdgeLocation<BlockId, Block>>>
-): List<TargetsOnEdge<PathfindingEdge, Block>> {
-    val targetsOnEdges = ArrayList<TargetsOnEdge<PathfindingEdge, Block>>()
-    for (i in 1 until waypoints.size) {
-        targetsOnEdges.add { edge: PathfindingEdge ->
-            val res = HashSet<EdgeLocation<PathfindingEdge, Block>>()
-            for (target in waypoints[i]) {
-                if (target.edge == edge.block) res.add(EdgeLocation(edge, target.offset))
-            }
-            res
-        }
-    }
-    return targetsOnEdges
 }
 
 @WithSpan(value = "Identifying why no path was found")
@@ -314,16 +270,6 @@ private fun processPathfindingResponse(
     val trainPath = explorer.buildFullPath(infra.rawInfra, infra.blockInfra)
     val stepOffsets = explorer.getStepTracker().getSeenSteps().map { it.travelledPathOffset }
     return ProcessedPathfindingResponse(trainPath, stepOffsets)
-}
-
-private fun makeBlockPath(
-    path: DeprecatedPathfinding.Result<PathfindingEdge, Block>?
-): DeprecatedPathfinding.Result<BlockId, Block>? {
-    if (path == null) return null
-    return DeprecatedPathfinding.Result(
-        path.ranges.map { EdgeRange(it.edge.block, it.start, it.end) },
-        path.waypoints.map { EdgeLocation(it.edge.block, it.offset) },
-    )
 }
 
 /**

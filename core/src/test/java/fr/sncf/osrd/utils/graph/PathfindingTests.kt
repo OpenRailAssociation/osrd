@@ -2,13 +2,18 @@ package fr.sncf.osrd.utils.graph
 
 import com.google.common.graph.NetworkBuilder
 import fr.sncf.osrd.graph.Graph
-import fr.sncf.osrd.graph.GraphAdapter
 import fr.sncf.osrd.graph.NetworkGraphAdapter
 import fr.sncf.osrd.pathfinding.DeprecatedPathfinding
 import fr.sncf.osrd.pathfinding.DeprecatedPathfinding.EdgeLocation
+import fr.sncf.osrd.pathfinding.DeprecatedPathfinding.EdgeRange
 import fr.sncf.osrd.pathfinding.DeprecatedPathfinding.Result
+import fr.sncf.osrd.pathfinding.PathfindingGraph
+import fr.sncf.osrd.pathfinding.getStartLocations
+import fr.sncf.osrd.pathfinding.getTargetsOnEdges
 import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
+import fr.sncf.osrd.sim_infra.api.Block
+import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.utils.CachedBlockMRSPBuilder
 import fr.sncf.osrd.utils.DummyInfra
 import fr.sncf.osrd.utils.graph.PathfindingTests.SimpleGraphBuilder.Edge
@@ -750,27 +755,36 @@ class PathfindingTests {
         val secondBlock = infra.addBlock("b", "c")
         val mrspBuilder =
             CachedBlockMRSPBuilder(infra.fullInfra().rawInfra, infra.fullInfra().blockInfra, null)
+        val waypoints =
+            arrayListOf<Collection<EdgeLocation<BlockId, Block>>>(
+                listOf(EdgeLocation(slow, Offset.zero()), EdgeLocation(fast, Offset.zero())),
+                listOf(EdgeLocation(secondBlock, Offset.zero())),
+            )
         val res =
-            DeprecatedPathfinding(
-                    GraphAdapter(infra.fullInfra().blockInfra, infra.fullInfra().rawInfra)
-                )
-                .setEdgeToLength { block -> infra.fullInfra().blockInfra.getBlockLength(block) }
+            DeprecatedPathfinding(PathfindingGraph())
+                .setEdgeToLength { it.length }
                 .setRangeCost { range ->
-                    val start = mrspBuilder.getBlockTime(range.edge, range.start)
-                    val end = mrspBuilder.getBlockTime(range.edge, range.end)
+                    val start = mrspBuilder.getBlockTime(range.edge.block, range.start)
+                    val end = mrspBuilder.getBlockTime(range.edge.block, range.end)
                     val res = end - start
                     return@setRangeCost res
                 }
-                .runPathfindingEdgesOnly(
-                    listOf(
-                        listOf(
-                            EdgeLocation(slow, Offset(0.meters)),
-                            EdgeLocation(fast, Offset(0.meters)),
-                        ),
-                        listOf(EdgeLocation(secondBlock, Offset(0.meters))),
-                    )
+                .runPathfinding(
+                    getStartLocations(
+                        infra.fullInfra().rawInfra,
+                        infra.fullInfra().blockInfra,
+                        waypoints,
+                        listOf(),
+                    ),
+                    getTargetsOnEdges(waypoints),
                 )
-        Assertions.assertEquals(listOf(fast, secondBlock), res)
+        Assertions.assertEquals(
+            arrayListOf(
+                EdgeRange(fast, Offset.zero(), Offset<Block>(4999.meters)),
+                EdgeRange(secondBlock, Offset.zero(), Offset.zero()),
+            ),
+            res!!.ranges.map { EdgeRange(it.edge.block, it.start, it.end) },
+        )
     }
 
     companion object {
