@@ -30,6 +30,7 @@
     width: 50%;
     height: 100%;
     flex-shrink: 0;
+    flex-grow: 1;
 
     .itinerary-modal-form-header {
       display: flex;
@@ -266,5 +267,11 @@
       border-radius: 7px;
       border: 1px solid var(--black25);
     }
+  }
+}
+
+@media (max-width: 1028px) {
+  .itinerary-modal-form {
+    width: 100%;
   }
 }

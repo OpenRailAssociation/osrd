@@ -43,6 +43,8 @@ const ItineraryModal = ({
 
   const { pathStepsMetadataById } = usePathStepsMetadata(pathSteps);
 
+  const isMapDisabled = window.matchMedia('(max-width: 1028px)').matches;
+
   useEffect(() => {
     if (
       displayTimetableItemManagement === MANAGE_TIMETABLE_ITEM_TYPES.edit ||
@@ -128,9 +130,11 @@ const ItineraryModal = ({
           <Button label={t('next')} variant="Primary" size="medium" onClick={closeModal} />
         </div>
       </div>
-      <div className="itinerary-modal-map">
-        <ItineraryModalMap />
-      </div>
+      {!isMapDisabled && (
+        <div className="itinerary-modal-map">
+          <ItineraryModalMap />
+        </div>
+      )}
     </dialog>
   );
 };
