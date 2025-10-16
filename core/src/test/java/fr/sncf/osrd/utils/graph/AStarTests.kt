@@ -2,10 +2,13 @@ package fr.sncf.osrd.utils.graph
 
 import fr.sncf.osrd.geom.Point
 import fr.sncf.osrd.graph.AStarHeuristic
-import fr.sncf.osrd.graph.GraphAdapter
 import fr.sncf.osrd.pathfinding.Pathfinding
 import fr.sncf.osrd.pathfinding.Pathfinding.EdgeLocation
+import fr.sncf.osrd.pathfinding.PathfindingEdge
+import fr.sncf.osrd.pathfinding.PathfindingGraph
 import fr.sncf.osrd.pathfinding.RemainingDistanceEstimator
+import fr.sncf.osrd.pathfinding.getStartLocations
+import fr.sncf.osrd.pathfinding.getTargetsOnEdges
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.utils.CachedBlockMRSPBuilder
@@ -95,6 +98,7 @@ class AStarTests {
 
         val origin = mutableSetOf(EdgeLocation(startBlock, Offset<Block>(0.meters)))
         val destination = mutableSetOf(EdgeLocation(endBlock, Offset<Block>(100.meters)))
+        val waypoints = arrayListOf<Collection<EdgeLocation<BlockId, Block>>>(origin, destination)
 
         val remainingDistanceEstimator =
             RemainingDistanceEstimator(
@@ -103,37 +107,53 @@ class AStarTests {
                 destination,
                 0.meters,
             )
-        val seenWithHeuristic = HashSet<BlockId>()
-        val seenWithoutHeuristic = HashSet<BlockId>()
+        val seenWithHeuristic = HashSet<PathfindingEdge>()
+        val seenWithoutHeuristic = HashSet<PathfindingEdge>()
         val mrspBuilder =
             CachedBlockMRSPBuilder(fullDummyInfra.rawInfra, fullDummyInfra.blockInfra, null)
-        Pathfinding(GraphAdapter(fullDummyInfra.blockInfra, fullDummyInfra.rawInfra))
-            .setEdgeToLength { blockId -> fullDummyInfra.blockInfra.getBlockLength(blockId) }
+        Pathfinding(PathfindingGraph())
+            .setEdgeToLength { it.length }
             .setRangeCost { range ->
-                mrspBuilder.getBlockTime(range.edge, range.end) -
-                    mrspBuilder.getBlockTime(range.edge, range.start)
+                mrspBuilder.getBlockTime(range.edge.block, range.end) -
+                    mrspBuilder.getBlockTime(range.edge.block, range.start)
             }
             .setRemainingDistanceEstimator(
                 listOf(
-                    AStarHeuristic { block, offset ->
-                        seenWithHeuristic.add(block)
-                        remainingDistanceEstimator.apply(block, offset).meters /
+                    AStarHeuristic { edge, offset ->
+                        seenWithHeuristic.add(edge)
+                        remainingDistanceEstimator.apply(edge.block, offset).meters /
                             DEFAULT_MAX_ROLLING_STOCK_SPEED
                     }
                 )
             )
-            .runPathfinding(listOf(origin, destination))
-        Pathfinding(GraphAdapter(fullDummyInfra.blockInfra, fullDummyInfra.rawInfra))
-            .setEdgeToLength { blockId -> fullDummyInfra.blockInfra.getBlockLength(blockId) }
+            .runPathfinding(
+                getStartLocations(
+                    dummyInfra.fullInfra().rawInfra,
+                    dummyInfra.fullInfra().blockInfra,
+                    waypoints,
+                    listOf(),
+                ),
+                getTargetsOnEdges(waypoints),
+            )
+        Pathfinding(PathfindingGraph())
+            .setEdgeToLength { it.length }
             .setRemainingDistanceEstimator(
                 listOf(
-                    AStarHeuristic { block, _ ->
-                        seenWithoutHeuristic.add(block)
+                    AStarHeuristic { edge, _ ->
+                        seenWithoutHeuristic.add(edge)
                         0.0
                     }
                 )
             )
-            .runPathfinding(listOf(origin, destination))
+            .runPathfinding(
+                getStartLocations(
+                    dummyInfra.fullInfra().rawInfra,
+                    dummyInfra.fullInfra().blockInfra,
+                    waypoints,
+                    listOf(),
+                ),
+                getTargetsOnEdges(waypoints),
+            )
         Assertions.assertTrue(seenWithHeuristic.size < seenWithoutHeuristic.size)
     }
 }
