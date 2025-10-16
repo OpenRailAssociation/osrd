@@ -134,3 +134,25 @@ export async function isGreyed(locator: Locator): Promise<boolean> {
 export async function isOverflowing(locator: Locator): Promise<boolean> {
   return locator.evaluate((el) => el.scrollHeight > el.clientHeight);
 }
+
+/**
+ * Generic toggle helper for visibility-based UI components.
+ * @param button - The locator of the toggle button to click.
+ * @param targetLocators - One or multiple locators whose visibility changes when toggled.
+ * @param isOpen - Whether the panel is currently open (true) or closed (false).
+ */
+export async function toggleByState(
+  button: Locator,
+  targetLocators: Locator | Locator[],
+  isOpen: boolean
+): Promise<void> {
+  const list = Array.isArray(targetLocators) ? targetLocators : [targetLocators];
+
+  await button.click();
+
+  const assertFn = isOpen
+    ? (t: Locator) => expect(t).toBeHidden()
+    : (t: Locator) => expect(t).toBeVisible();
+
+  await Promise.all(list.map(assertFn));
+}

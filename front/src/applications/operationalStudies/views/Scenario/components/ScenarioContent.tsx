@@ -233,6 +233,7 @@ const ScenarioContent = ({ activeBoards }: ScenarioContentProps) => {
                 <BoardWrapper name="MACRO">
                   <div className="osrd-simulation-container">
                     <div
+                      data-testid="macro-editor"
                       className="chart-container"
                       style={{
                         height: `${macroBoardHeight - HIDDEN_CHART_TOP_HEIGHT}px`,

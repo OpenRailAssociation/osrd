@@ -90,7 +90,7 @@ class CommonPage {
   async waitForLoaderToDisappear() {
     const count = await this.loader.count();
     if (count > 0) {
-      await expect(this.loader).not.toBeVisible();
+      await expect(this.loader).not.toBeVisible({ timeout: 120000 });
     }
   }
 }

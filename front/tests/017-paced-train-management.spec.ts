@@ -18,7 +18,6 @@ import test from './logging-fixture';
 import OperationalStudiesPage from './pages/operational-studies/operational-studies-page';
 import PacedTrainSection from './pages/operational-studies/paced-train-section';
 import RouteTab from './pages/operational-studies/route-tab';
-import ScenarioPage from './pages/operational-studies/scenario-page';
 import ScenarioTimetableSection from './pages/operational-studies/scenario-timetable-section';
 import OpSimulationResultPage from './pages/operational-studies/simulation-results-page';
 import TimeAndStopSimulationOutputs from './pages/operational-studies/time-stop-simulation-outputs';
@@ -84,7 +83,6 @@ test.describe('Verify simulation configuration in operational studies for train 
   let timesAndStopsTab: TimesAndStopsTab;
   let simulationResultPage: OpSimulationResultPage;
   let timeAndStopSimulationOutputs: TimeAndStopSimulationOutputs;
-  let scenarioPage: ScenarioPage;
 
   let project: Project;
   let study: Study;
@@ -112,7 +110,6 @@ test.describe('Verify simulation configuration in operational studies for train 
         timesAndStopsTab,
         simulationResultPage,
         timeAndStopSimulationOutputs,
-        scenarioPage,
       ] = [
         new RollingStockSelector(page),
         new OperationalStudiesPage(page),
@@ -122,7 +119,6 @@ test.describe('Verify simulation configuration in operational studies for train 
         new TimesAndStopsTab(page),
         new OpSimulationResultPage(page),
         new TimeAndStopSimulationOutputs(page),
-        new ScenarioPage(page),
       ];
 
       await page.goto(
@@ -213,7 +209,7 @@ test.describe('Verify simulation configuration in operational studies for train 
 
     await test.step('Open first occurrence and verify its simulation results (screenshot comparison for the GEV)', async () => {
       await pacedTrainSection.selectOccurrence({ pacedTrainIndex: 0, occurrenceIndex: 0 });
-      await scenarioPage.toggleTrainList();
+      await simulationResultPage.toggleTrainList();
       if (browserName === 'chromium') {
         await expect(simulationResultPage.speedSpaceChart).toHaveScreenshot(
           'SpeedSpaceChart-InitialInputs.png'

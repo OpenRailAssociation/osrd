@@ -333,7 +333,7 @@ const SimulationResults = ({
               },
             ]}
           >
-            <div className="time-stop-outputs">
+            <div data-testid="time-stop-outputs" className="time-stop-outputs">
               <TimesStopsOutput
                 infraId={infraId}
                 selectedTrain={simulationResults?.train}

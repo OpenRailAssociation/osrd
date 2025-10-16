@@ -34,15 +34,21 @@ class ScenarioPage extends CommonPage {
 
   private readonly scenarioTagsLabel: Locator;
 
-  private readonly conflictsButton: Locator;
-
-  private readonly conflictsList: Locator;
-
-  private readonly trainsButton: Locator;
-
-  private readonly trainList: Locator;
-
   private readonly scenarioConfirmDeleteButton: Locator;
+
+  readonly conflictsButton: Locator;
+
+  readonly trainsButton: Locator;
+
+  readonly simulationMapButton: Locator;
+
+  readonly timeStopsOutputsButton: Locator;
+
+  readonly macroEditorButton: Locator;
+
+  readonly stdButton: Locator;
+
+  readonly sddButton: Locator;
 
   constructor(readonly page: Page) {
     super(page);
@@ -62,11 +68,14 @@ class ScenarioPage extends CommonPage {
     this.scenarioConfirmUpdateButton = this.scenarioEditionModal.getByTestId('update-scenario');
     this.createScenarioButton = page.getByTestId('create-scenario');
     this.scenarioTagsLabel = page.getByTestId('scenario-details-tag');
-    this.conflictsButton = page.getByTestId('conflicts-button');
-    this.conflictsList = page.getByTestId('conflicts-list');
-    this.trainsButton = page.getByTestId('trains-button');
-    this.trainList = page.getByTestId('scenario-left-column');
     this.scenarioConfirmDeleteButton = page.getByTestId('confirm-delete-button');
+    this.conflictsButton = page.getByTestId('conflicts-button');
+    this.trainsButton = page.getByTestId('trains-button');
+    this.simulationMapButton = page.getByTestId('map-button');
+    this.timeStopsOutputsButton = page.getByTestId('tables-button');
+    this.macroEditorButton = page.getByTestId('macro-button');
+    this.stdButton = page.getByTestId('std-button');
+    this.sddButton = page.getByTestId('sdd-button');
   }
 
   // Create a scenario based on the provided details.
@@ -140,24 +149,6 @@ class ScenarioPage extends CommonPage {
     expect(await this.scenarioInfraName.textContent()).toContain(infraName);
     if (tags) {
       expect(await this.scenarioTagsLabel.textContent()).toContain(tags.join(''));
-    }
-  }
-
-  async toggleConflictsList(isOpen: boolean = false) {
-    await this.conflictsButton.click();
-    if (isOpen) {
-      await expect(this.conflictsList).not.toBeVisible();
-    } else {
-      await expect(this.conflictsList).toBeVisible();
-    }
-  }
-
-  async toggleTrainList(isOpen: boolean = true) {
-    await this.trainsButton.click();
-    if (isOpen) {
-      await expect(this.trainList).not.toBeVisible();
-    } else {
-      await expect(this.trainList).toBeVisible();
     }
   }
 
