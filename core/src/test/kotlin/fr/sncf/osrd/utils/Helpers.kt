@@ -12,7 +12,6 @@ import fr.sncf.osrd.railjson.schema.external_generated_inputs.RJSElectricalProfi
 import fr.sncf.osrd.railjson.schema.infra.RJSInfra
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSRollingResistance
 import fr.sncf.osrd.reporting.exceptions.OSRDError
-import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.sim_infra.api.Route
 import fr.sncf.osrd.sim_infra.api.SignalingSystem
@@ -128,7 +127,7 @@ object Helpers {
     }
 
     data class LocationPair(
-        val blockLocations: Set<EdgeLocation<BlockId, Block>>,
+        val blockLocations: Set<EdgeLocation<BlockId>>,
         val trackLocations: Set<TrackLocation>,
     )
 
@@ -137,7 +136,7 @@ object Helpers {
         infra: FullInfra,
         routeName: String,
         offset: Offset<Route>,
-    ): EdgeLocation<BlockId, Block> {
+    ): EdgeLocation<BlockId> {
         var mutOffset = offset
         val blocks = getBlocksOnRoutes(infra, listOf(routeName))
         for (block in blocks) {

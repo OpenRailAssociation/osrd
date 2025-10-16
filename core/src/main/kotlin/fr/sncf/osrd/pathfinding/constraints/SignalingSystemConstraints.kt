@@ -15,8 +15,8 @@ data class SignalingSystemConstraints(
     val blockInfra: BlockInfra,
     val rollingStocksSupportedSigSystems: List<List<SignalingSystemId>>,
 ) : PathfindingConstraint<Block> {
-    override fun apply(edge: BlockId): MutableCollection<DeprecatedPathfinding.Range<Block>> {
-        val res = HashSet<DeprecatedPathfinding.Range<Block>>()
+    override fun apply(edge: BlockId): MutableCollection<DeprecatedPathfinding.Range> {
+        val res = HashSet<DeprecatedPathfinding.Range>()
         for (rollingStockSigSystems in rollingStocksSupportedSigSystems) {
             val edgeBlockedRanges = getBlockedRanges(edge, blockInfra, rollingStockSigSystems)
             if (edgeBlockedRanges.isNotEmpty()) {
@@ -34,7 +34,7 @@ data class SignalingSystemConstraints(
         edge: BlockId,
         blockInfra: BlockInfra,
         rollingStockSigSystems: List<SignalingSystemId>,
-    ): Set<DeprecatedPathfinding.Range<Block>> {
+    ): Set<DeprecatedPathfinding.Range> {
         val blockSigSystem = blockInfra.getBlockSignalingSystem(edge)
         val isRSCompatibleWithBlock = rollingStockSigSystems.contains(blockSigSystem)
         if (isRSCompatibleWithBlock) {

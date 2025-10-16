@@ -1,7 +1,6 @@
 package fr.sncf.osrd.pathfinding.constraints
 
 import fr.sncf.osrd.pathfinding.DeprecatedPathfinding
-import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.sim_infra.api.TrackChunk
 import fr.sncf.osrd.sim_infra.api.TrackChunkId
@@ -38,7 +37,7 @@ class ElectrificationConstraintsTest {
     @MethodSource("testDeadSectionArgs")
     fun testDeadSectionAndElectrificationBlockedRanges(
         blockId: BlockId,
-        expectedBlockedRanges: Collection<DeprecatedPathfinding.Range<Block>>,
+        expectedBlockedRanges: Collection<DeprecatedPathfinding.Range>,
     ) {
         val blockedRanges = electrificationConstraints!!.apply(blockId)
         AssertionsForClassTypes.assertThat(blockedRanges).isEqualTo(expectedBlockedRanges)
@@ -48,14 +47,12 @@ class ElectrificationConstraintsTest {
         return Stream.of( // No corresponding electrification ranges without dead sections
             Arguments.of(
                 0,
-                mutableSetOf(DeprecatedPathfinding.Range(Offset(0.meters), chunk0Length)),
+                mutableSetOf(DeprecatedPathfinding.Range(Offset(0.meters), Offset.zero())),
             ), // Partially corresponding electrification ranges with dead
             // section
             Arguments.of(
                 1,
-                mutableSetOf(
-                    DeprecatedPathfinding.Range(Offset<Block>(0.meters), Offset(140.meters))
-                ),
+                mutableSetOf(DeprecatedPathfinding.Range(Offset(0.meters), Offset(140.meters))),
             ), // Fully corresponding electrification ranges without dead
             // sections
             Arguments.of(2, HashSet<Any>()),

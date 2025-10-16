@@ -24,17 +24,17 @@ fun interface EdgeToLength<EdgeT, OffsetType> {
  * Function that takes an edge and returns a collection of ranges, used to define blocked ranges on
  * an edge
  */
-fun interface EdgeToRanges<EdgeT, OffsetType> {
-    fun apply(edge: EdgeT): Collection<DeprecatedPathfinding.Range<OffsetType>>
+fun interface EdgeToRanges<EdgeT> {
+    fun apply(edge: EdgeT): Collection<DeprecatedPathfinding.Range>
 }
 
 /**
  * Functions that takes an edge and returns the offset of any target for the current step on the
  * edge
  */
-fun interface TargetsOnEdge<EdgeT, OffsetType> {
-    fun apply(edge: EdgeT): Collection<EdgeLocation<EdgeT, OffsetType>>
+fun interface TargetsOnEdge<EdgeT> {
+    fun apply(edge: EdgeT): Collection<EdgeLocation<EdgeT>>
 }
 
 // Type aliases to avoid repeating `StaticIdx<T>, T` when edge types are static idx
-typealias PathfindingConstraint<T> = EdgeToRanges<StaticIdx<T>, T>
+typealias PathfindingConstraint<T> = EdgeToRanges<StaticIdx<T>>

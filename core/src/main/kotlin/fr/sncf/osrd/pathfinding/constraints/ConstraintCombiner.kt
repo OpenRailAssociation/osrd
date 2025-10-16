@@ -9,15 +9,14 @@ import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.TrackSectionId
 import fr.sncf.osrd.train.RollingStock
 
-class ConstraintCombiner<EdgeT, OffsetType>(
-    val functions: MutableList<EdgeToRanges<EdgeT, OffsetType>> = ArrayList()
-) : EdgeToRanges<EdgeT, OffsetType> {
-    private val cache = mutableMapOf<EdgeT, Collection<DeprecatedPathfinding.Range<OffsetType>>>()
+class ConstraintCombiner<EdgeT>(val functions: MutableList<EdgeToRanges<EdgeT>> = ArrayList()) :
+    EdgeToRanges<EdgeT> {
+    private val cache = mutableMapOf<EdgeT, Collection<DeprecatedPathfinding.Range>>()
 
-    override fun apply(edge: EdgeT): Collection<DeprecatedPathfinding.Range<OffsetType>> {
+    override fun apply(edge: EdgeT): Collection<DeprecatedPathfinding.Range> {
         val cached = cache[edge]
         if (cached != null) return cached
-        val res = HashSet<DeprecatedPathfinding.Range<OffsetType>>()
+        val res = HashSet<DeprecatedPathfinding.Range>()
         for (f in functions) res.addAll(f.apply(edge))
         cache[edge] = res
         return res

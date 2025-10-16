@@ -1,5 +1,5 @@
 package fr.sncf.osrd.pathfinding
-
+/*
 import fr.sncf.osrd.graph.AStarHeuristic
 import fr.sncf.osrd.graph.Graph
 import fr.sncf.osrd.reporting.exceptions.ErrorType
@@ -107,3 +107,4 @@ class Pathfinding<NodeT : Any, EdgeT : Any, OffsetType>(
         const val TIMEOUT = 180.0
     }
 }
+*/

@@ -58,10 +58,10 @@ class PathfindingGraph : Graph<PathfindingEdge, PathfindingEdge, Block> {
 fun getStartLocations(
     rawInfra: RawSignalingInfra,
     blockInfra: BlockInfra,
-    waypoints: ArrayList<Collection<EdgeLocation<BlockId, Block>>>,
+    waypoints: ArrayList<Collection<EdgeLocation<BlockId>>>,
     constraints: List<PathfindingConstraint<Block>>,
-): Collection<EdgeLocation<PathfindingEdge, Block>> {
-    val res = mutableListOf<EdgeLocation<PathfindingEdge, Block>>()
+): Collection<EdgeLocation<PathfindingEdge>> {
+    val res = mutableListOf<EdgeLocation<PathfindingEdge>>()
     val firstStep = waypoints[0]
     val steps = waypoints.map { STDCMStep(it) }
     for (location in firstStep) {
@@ -83,12 +83,12 @@ fun getStartLocations(
 }
 
 fun getTargetsOnEdges(
-    waypoints: ArrayList<Collection<EdgeLocation<BlockId, Block>>>
-): List<TargetsOnEdge<PathfindingEdge, Block>> {
-    val targetsOnEdges = ArrayList<TargetsOnEdge<PathfindingEdge, Block>>()
+    waypoints: ArrayList<Collection<EdgeLocation<BlockId>>>
+): List<TargetsOnEdge<PathfindingEdge>> {
+    val targetsOnEdges = ArrayList<TargetsOnEdge<PathfindingEdge>>()
     for (i in 1 until waypoints.size) {
         targetsOnEdges.add { edge: PathfindingEdge ->
-            val res = HashSet<EdgeLocation<PathfindingEdge, Block>>()
+            val res = HashSet<EdgeLocation<PathfindingEdge>>()
             for (target in waypoints[i]) {
                 if (target.edge == edge.block) res.add(EdgeLocation(edge, target.offset))
             }

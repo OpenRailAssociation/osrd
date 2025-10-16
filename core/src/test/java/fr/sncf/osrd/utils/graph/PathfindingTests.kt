@@ -31,9 +31,9 @@ import org.junit.jupiter.params.provider.CsvSource
 class PathfindingTests {
     class SimpleGraphBuilder {
         data class Edge(
-            val length: Length<Edge>,
+            val length: Length<Block>,
             val label: String,
-            val blockedRanges: Set<DeprecatedPathfinding.Range<Edge>>,
+            val blockedRanges: Set<DeprecatedPathfinding.Range>,
         )
 
         class Node
@@ -57,7 +57,7 @@ class PathfindingTests {
             n1: Int,
             n2: Int,
             length: Distance,
-            blockedRanges: Set<DeprecatedPathfinding.Range<Edge>> = setOf(),
+            blockedRanges: Set<DeprecatedPathfinding.Range> = setOf(),
         ) {
             val label = String.format("%d-%s", n1, n2)
             val res = Edge(Length(length), label, blockedRanges)
@@ -69,17 +69,17 @@ class PathfindingTests {
             return NetworkGraphAdapter(builder.build())
         }
 
-        fun getEdgeLocation(id: String, offset: Distance): EdgeLocation<Edge, Edge> {
+        fun getEdgeLocation(id: String, offset: Distance): EdgeLocation<Edge> {
             return EdgeLocation(edges[id]!!, Offset(offset))
         }
 
-        fun getEdgeLocation(id: String): EdgeLocation<Edge, Edge> {
+        fun getEdgeLocation(id: String): EdgeLocation<Edge> {
             return EdgeLocation(edges[id]!!, Offset(0.meters))
         }
     }
 
     /** A range where the edge is only referenced by its ID (for easier equality check) */
-    data class SimpleRange(val id: String, val begin: Offset<Edge>, val end: Offset<Edge>)
+    data class SimpleRange(val id: String, val begin: Offset<Block>, val end: Offset<Block>)
 
     @Test
     fun pathfindingShortestTwoStepsTest() {
@@ -756,7 +756,7 @@ class PathfindingTests {
         val mrspBuilder =
             CachedBlockMRSPBuilder(infra.fullInfra().rawInfra, infra.fullInfra().blockInfra, null)
         val waypoints =
-            arrayListOf<Collection<EdgeLocation<BlockId, Block>>>(
+            arrayListOf<Collection<EdgeLocation<BlockId>>>(
                 listOf(EdgeLocation(slow, Offset.zero()), EdgeLocation(fast, Offset.zero())),
                 listOf(EdgeLocation(secondBlock, Offset.zero())),
             )
@@ -788,7 +788,7 @@ class PathfindingTests {
     }
 
     companion object {
-        private fun convertRes(res: Result<Edge, Edge>): List<SimpleRange> {
+        private fun convertRes(res: Result<Edge>): List<SimpleRange> {
             return res.ranges
                 .stream()
                 .map { x -> SimpleRange(x.edge.label, x.start, x.end) }

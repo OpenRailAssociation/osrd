@@ -3,7 +3,6 @@ package fr.sncf.osrd.api.pathfinding
 import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.graph.*
 import fr.sncf.osrd.path.interfaces.TrainPath
-import fr.sncf.osrd.pathfinding.DeprecatedPathfinding
 import fr.sncf.osrd.pathfinding.constraints.ElectrificationConstraints
 import fr.sncf.osrd.pathfinding.constraints.LoadingGaugeConstraints
 import fr.sncf.osrd.pathfinding.constraints.SignalingSystemConstraints
@@ -28,7 +27,7 @@ fun buildIncompatibleConstraintsResponse(
         getConstraintsDistanceRange(path, path.getElectrification(), elecConstraints.firstOrNull())
             .map {
                 RangeValue(
-                    DeprecatedPathfinding.Range(Offset(it.lower), Offset(it.upper)),
+                    TravelledPathRange(Offset(it.lower), Offset(it.upper)),
                     it.value.joinToString(","),
                 )
             }
@@ -38,10 +37,7 @@ fun buildIncompatibleConstraintsResponse(
     val gaugeBlockedRanges =
         getConstraintsDistanceRange(path, path.getLoadingGauge(), gaugeConstraints.firstOrNull())
             .map {
-                RangeValue<String>(
-                    DeprecatedPathfinding.Range(Offset(it.lower), Offset(it.upper)),
-                    null,
-                )
+                RangeValue<String>(TravelledPathRange(Offset(it.lower), Offset(it.upper)), null)
             }
 
     val signalingSystemConstraints = constraints.filterIsInstance<SignalingSystemConstraints>()
@@ -53,12 +49,7 @@ fun buildIncompatibleConstraintsResponse(
                 pathSignalingSystem,
                 signalingSystemConstraints.firstOrNull(),
             )
-            .map {
-                RangeValue(
-                    DeprecatedPathfinding.Range(Offset(it.lower), Offset(it.upper)),
-                    it.value,
-                )
-            }
+            .map { RangeValue(TravelledPathRange(Offset(it.lower), Offset(it.upper)), it.value) }
 
     if (
         listOf(elecBlockedRangeValues, gaugeBlockedRanges, signalingSystemBlockedRangeValues).all {

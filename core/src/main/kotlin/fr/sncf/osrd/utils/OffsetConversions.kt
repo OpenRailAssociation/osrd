@@ -57,7 +57,7 @@ fun getBlockChunkOffset(
     blockInfra: BlockInfra,
     rawInfra: RawSignalingInfra,
     chunk: DirTrackChunkId,
-    range: EdgeRange<BlockId, Block>,
+    range: EdgeRange<BlockId>,
 ): Offset<Block> {
     var offset = Offset<Block>(0.meters)
     for (dirChunkId in blockInfra.getTrackChunksFromBlock(range.edge)) {

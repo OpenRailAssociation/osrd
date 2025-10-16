@@ -29,7 +29,7 @@ class PathfindingBlocksEndpointTest {
     fun testFindWaypointBlocks(
         pathfindingWaypoint: TrackLocation,
         direction: Direction,
-        expectedEdgeLocations: Set<EdgeLocation<BlockId, Block>>,
+        expectedEdgeLocations: Set<EdgeLocation<BlockId>>,
     ) {
         val blocks = findWaypointBlocks(smallInfra, pathfindingWaypoint, direction)
         Assertions.assertThat(blocks).containsExactlyInAnyOrderElementsOf(expectedEdgeLocations)

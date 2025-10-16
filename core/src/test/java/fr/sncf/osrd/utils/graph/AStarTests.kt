@@ -98,7 +98,7 @@ class AStarTests {
 
         val origin = mutableSetOf(EdgeLocation(startBlock, Offset<Block>(0.meters)))
         val destination = mutableSetOf(EdgeLocation(endBlock, Offset<Block>(100.meters)))
-        val waypoints = arrayListOf<Collection<EdgeLocation<BlockId, Block>>>(origin, destination)
+        val waypoints = arrayListOf<Collection<EdgeLocation<BlockId>>>(origin, destination)
 
         val remainingDistanceEstimator =
             RemainingDistanceEstimator(

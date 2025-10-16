@@ -19,7 +19,7 @@ import kotlin.math.min
 class RemainingDistanceEstimator(
     private val blockInfra: BlockInfra,
     private val rawInfra: RawSignalingInfra,
-    edgeLocations: Collection<EdgeLocation<BlockId, Block>>,
+    edgeLocations: Collection<EdgeLocation<BlockId>>,
     private val remainingDistance: Distance,
 ) {
     private val targets: MutableCollection<Point> = ArrayList()
@@ -55,8 +55,8 @@ class RemainingDistanceEstimator(
 fun minDistanceBetweenSteps(
     blockInfra: BlockInfra,
     rawInfra: RawSignalingInfra,
-    step1: Collection<EdgeLocation<BlockId, Block>>,
-    step2: Collection<EdgeLocation<BlockId, Block>>,
+    step1: Collection<EdgeLocation<BlockId>>,
+    step2: Collection<EdgeLocation<BlockId>>,
 ): Distance {
     val step1Points = step1.map { blockOffsetToPoint(blockInfra, rawInfra, it.edge, it.offset) }
     val step2Points = step2.map { blockOffsetToPoint(blockInfra, rawInfra, it.edge, it.offset) }

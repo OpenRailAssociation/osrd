@@ -1,9 +1,8 @@
 package fr.sncf.osrd.pathfinding.constraints
 
+import fr.sncf.osrd.api.pathfinding.TravelledPathRange
 import fr.sncf.osrd.pathfinding.DeprecatedPathfinding
-import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockId
-import fr.sncf.osrd.sim_infra.api.TrackChunk
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.train.TestTrains
 import fr.sncf.osrd.utils.DummyInfra
@@ -26,7 +25,7 @@ class SignalingSystemConstraintsTest {
     fun testSignalingSystemBlockedRanges(
         blockId: BlockId,
         rollingStock: RollingStock,
-        expectedBlockedRanges: Collection<DeprecatedPathfinding.Range<Block>>,
+        expectedBlockedRanges: Collection<DeprecatedPathfinding.Range>,
     ) {
         /*
 
@@ -54,7 +53,7 @@ class SignalingSystemConstraintsTest {
             Arguments.of(
                 1,
                 TestTrains.TRAIN_WITHOUT_TVM,
-                setOf(DeprecatedPathfinding.Range<TrackChunk>(Offset(0.meters), Offset(100.meters))),
+                setOf(TravelledPathRange(Offset(0.meters), Offset(100.meters))),
             ),
             Arguments.of(0, TestTrains.FAST_ELECTRIC_TRAIN, HashSet<Any>()),
             Arguments.of(1, TestTrains.FAST_ELECTRIC_TRAIN, HashSet<Any>()),

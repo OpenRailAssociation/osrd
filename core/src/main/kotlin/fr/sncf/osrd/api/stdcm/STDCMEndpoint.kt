@@ -21,7 +21,6 @@ import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop
 import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.signaling.etcs_level2.ETCS_LEVEL2
-import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.sim_infra.api.DirTrackChunkId
 import fr.sncf.osrd.sim_infra.api.SpeedLimitProperty
@@ -416,8 +415,8 @@ private fun parseSimulationScheduleItems(
 private fun findWaypointBlocks(
     infra: FullInfra,
     waypoints: Collection<TrackLocation>,
-): Set<EdgeLocation<BlockId, Block>> {
-    val waypointBlocks = HashSet<EdgeLocation<BlockId, Block>>()
+): Set<EdgeLocation<BlockId>> {
+    val waypointBlocks = HashSet<EdgeLocation<BlockId>>()
     for (waypoint in waypoints) {
         for (direction in Direction.entries) {
             waypointBlocks.addAll(findWaypointBlocks(infra, waypoint, direction))

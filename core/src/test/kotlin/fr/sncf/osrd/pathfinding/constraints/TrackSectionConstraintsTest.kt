@@ -1,7 +1,6 @@
 package fr.sncf.osrd.pathfinding.constraints
 
 import fr.sncf.osrd.pathfinding.DeprecatedPathfinding
-import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.sim_infra.api.TrackChunk
 import fr.sncf.osrd.utils.Direction
@@ -84,7 +83,7 @@ class TrackSectionConstraintsTest {
     @MethodSource("testZonesArgs")
     fun testRestrictedTrackSectionBlockedRanges(
         blockId: BlockId,
-        expectedBlockedRanges: Collection<DeprecatedPathfinding.Range<Block>>,
+        expectedBlockedRanges: Collection<DeprecatedPathfinding.Range>,
     ) {
         val blockedRanges = trackSectionConstraints!!.apply(blockId)
         Assertions.assertThat(blockedRanges).isEqualTo(expectedBlockedRanges)
@@ -94,11 +93,13 @@ class TrackSectionConstraintsTest {
         return Stream.of(
             Arguments.of(
                 ta0Chunk0block!!.index.toInt(),
-                setOf(DeprecatedPathfinding.Range(Length(0.meters), ta0Chunk0Length)),
+                setOf(
+                    DeprecatedPathfinding.Range(Length(0.meters), Length(ta0Chunk0Length.distance))
+                ),
             ),
             Arguments.of(
                 ta0Chunk1block!!.index.toInt(),
-                setOf(DeprecatedPathfinding.Range(Length<TrackChunk>(0.meters), Length(180.meters))),
+                setOf(DeprecatedPathfinding.Range(Length(0.meters), Length(180.meters))),
             ),
             Arguments.of(ta1Chunk0block!!.index.toInt(), HashSet<Any>()),
         )

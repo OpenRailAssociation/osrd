@@ -18,7 +18,7 @@ data class ElectrificationConstraints(
     val rawInfra: RawSignalingInfra,
     val compatibleElectrification: Collection<String>,
 ) : PathfindingConstraint<Block> {
-    override fun apply(edge: BlockId): Collection<DeprecatedPathfinding.Range<Block>> {
+    override fun apply(edge: BlockId): Collection<DeprecatedPathfinding.Range> {
         val path = buildTrainPathFromBlock(rawInfra, blockInfra, edge)
         return getBlockedRanges(path, compatibleElectrification)
     }
@@ -32,8 +32,8 @@ data class ElectrificationConstraints(
         private fun getBlockedRanges(
             path: TrainPath,
             compatibleElectrification: Collection<String>,
-        ): Set<DeprecatedPathfinding.Range<Block>> {
-            val res = HashSet<DeprecatedPathfinding.Range<Block>>()
+        ): Set<DeprecatedPathfinding.Range> {
+            val res = HashSet<DeprecatedPathfinding.Range>()
             val voltages = path.getElectrification()
             val neutralSections = rangeSetFromMap(path.getNeutralSections())
             for ((lower, upper, value) in voltages) {

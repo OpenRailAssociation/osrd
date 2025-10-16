@@ -9,7 +9,6 @@ import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import fr.sncf.osrd.api.DirectionalTrackRange
 import fr.sncf.osrd.path.interfaces.JsonTrainPath
 import fr.sncf.osrd.path.interfaces.TravelledPath
-import fr.sncf.osrd.pathfinding.DeprecatedPathfinding
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.utils.json.UnitAdapterFactory
 import fr.sncf.osrd.utils.units.Length
@@ -66,9 +65,11 @@ data class IncompatibleConstraints(
     val incompatibleSignalingSystemRanges: List<RangeValue<String>>,
 )
 
-data class RangeValue<T>(val range: DeprecatedPathfinding.Range<TravelledPath>, val value: T?) {
+data class TravelledPathRange(val start: Offset<TravelledPath>, val end: Offset<TravelledPath>)
+
+data class RangeValue<T>(val range: TravelledPathRange, val value: T?) {
     @FromJson
-    fun fromJson(range: DeprecatedPathfinding.Range<TravelledPath>): RangeValue<T> {
+    fun fromJson(range: TravelledPathRange): RangeValue<T> {
         return RangeValue(range, null)
     }
 }

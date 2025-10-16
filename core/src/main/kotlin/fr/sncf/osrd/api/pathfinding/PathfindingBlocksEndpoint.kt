@@ -100,9 +100,9 @@ class PathfindingBlocksEndpoint(private val infraManager: InfraProvider) : Take 
 @Throws(OSRDError::class)
 fun runPathfinding(infra: FullInfra, request: PathfindingBlockRequest): PathfindingBlockResponse {
     // Parse the waypoints
-    val waypoints = ArrayList<Collection<EdgeLocation<BlockId, Block>>>()
+    val waypoints = ArrayList<Collection<EdgeLocation<BlockId>>>()
     for (step in request.pathItems) {
-        val allStarts = HashSet<EdgeLocation<BlockId, Block>>()
+        val allStarts = HashSet<EdgeLocation<BlockId>>()
         for (direction in Direction.entries) {
             for (waypoint in step) allStarts.addAll(findWaypointBlocks(infra, waypoint, direction))
         }
@@ -129,7 +129,7 @@ fun runPathfinding(infra: FullInfra, request: PathfindingBlockRequest): Pathfind
 @Throws(OSRDError::class)
 private fun computePaths(
     infra: FullInfra,
-    waypoints: ArrayList<Collection<EdgeLocation<BlockId, Block>>>,
+    waypoints: ArrayList<Collection<EdgeLocation<BlockId>>>,
     constraints: List<PathfindingConstraint<Block>>,
     remainingDistanceEstimators: List<AStarHeuristic<PathfindingEdge, Block>>,
     initialRequest: PathfindingBlockRequest,
@@ -202,7 +202,7 @@ fun hasDuplicateTracks(infra: FullInfra, path: TrainPath): Boolean {
 const val SIGNALING_SYSTEM_COST_WEIGHTING = 1e-2
 
 private fun getRangeCost(
-    range: EdgeRange<PathfindingEdge, Block>,
+    range: EdgeRange<PathfindingEdge>,
     mrspBuilder: CachedBlockMRSPBuilder,
     infra: FullInfra,
 ): Double {
@@ -220,7 +220,7 @@ private fun getRangeCost(
 @WithSpan(value = "Identifying why no path was found")
 private fun throwNoPathFoundException(
     infra: FullInfra,
-    waypoints: ArrayList<Collection<EdgeLocation<BlockId, Block>>>,
+    waypoints: ArrayList<Collection<EdgeLocation<BlockId>>>,
     constraints: Collection<PathfindingConstraint<Block>>,
     mrspBuilder: CachedBlockMRSPBuilder,
     remainingDistanceEstimators: List<AStarHeuristic<PathfindingEdge, Block>>,
@@ -264,7 +264,7 @@ data class ProcessedPathfindingResponse(val path: TrainPath, val offsets: List<O
 
 private fun processPathfindingResponse(
     infra: FullInfra,
-    path: DeprecatedPathfinding.Result<PathfindingEdge, Block>,
+    path: DeprecatedPathfinding.Result<PathfindingEdge>,
 ): ProcessedPathfindingResponse {
     val explorer = path.ranges.last().edge.infraExplorer
     val trainPath = explorer.buildFullPath(infra.rawInfra, infra.blockInfra)
@@ -283,8 +283,8 @@ fun findWaypointBlocks(
     infra: FullInfra,
     waypoint: TrackLocation,
     direction: Direction,
-): Set<EdgeLocation<BlockId, Block>> {
-    val res = HashSet<EdgeLocation<BlockId, Block>>()
+): Set<EdgeLocation<BlockId>> {
+    val res = HashSet<EdgeLocation<BlockId>>()
     val trackSectionId =
         infra.rawInfra.getTrackSectionFromName(waypoint.track)
             ?: throw OSRDError.newUnknownTrackSectionError(waypoint.track)
@@ -361,7 +361,7 @@ private fun getBlockOffset(
 @WithSpan(value = "Building heuristic")
 private fun makeHeuristicsForPathfindingEdges(
     infra: FullInfra,
-    waypoints: List<Collection<EdgeLocation<BlockId, Block>>>,
+    waypoints: List<Collection<EdgeLocation<BlockId>>>,
     rollingStockMaxSpeed: Double,
 ): ArrayList<AStarHeuristic<PathfindingEdge, Block>> {
     // Compute the minimum distance between steps

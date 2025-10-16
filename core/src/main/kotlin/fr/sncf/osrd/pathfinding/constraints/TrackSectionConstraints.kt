@@ -15,8 +15,8 @@ data class TrackSectionConstraints(
     val infra: RawSignalingInfra,
     val allowedTrackSections: Set<TrackSectionId>,
 ) : PathfindingConstraint<Block> {
-    override fun apply(edge: BlockId): Collection<DeprecatedPathfinding.Range<Block>> {
-        val res = HashSet<DeprecatedPathfinding.Range<Block>>()
+    override fun apply(edge: BlockId): Collection<DeprecatedPathfinding.Range> {
+        val res = HashSet<DeprecatedPathfinding.Range>()
         val path = buildTrainPathFromBlock(infra, blockInfra, edge)
         res.addAll(getBlockedRanges(allowedTrackSections, path))
 
@@ -26,8 +26,8 @@ data class TrackSectionConstraints(
     private fun getBlockedRanges(
         allowedTrackSections: Set<TrackSectionId>,
         path: TrainPath,
-    ): Collection<DeprecatedPathfinding.Range<Block>> {
-        val res = HashSet<DeprecatedPathfinding.Range<Block>>()
+    ): Collection<DeprecatedPathfinding.Range> {
+        val res = HashSet<DeprecatedPathfinding.Range>()
 
         val invalidTrackChunks =
             path.getChunks().filter {
