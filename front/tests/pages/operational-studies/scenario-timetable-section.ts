@@ -126,8 +126,8 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
     return pacedTrain.getByTestId('occurrence-item');
   }
 
-  getItemInvalidlyReason(itemIndex = 0): Locator {
-    return this.timetableItems.nth(itemIndex).getByTestId('invalidity-reason');
+  getItemInvalidReason(itemIndex = 0): Locator {
+    return this.timetableItems.nth(itemIndex).getByTestId('invalid-reason');
   }
 
   async verifyInvalidTrainsMessageVisibility(): Promise<void> {

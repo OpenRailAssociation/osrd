@@ -336,7 +336,7 @@ const PacedTrainItem = ({
           </div>
         )}
         {summary && !summary.isValid && (
-          <div className="invalid-reason">
+          <div data-testid="invalid-reason" className="invalid-reason">
             <span title={t(`timetable.invalid.${summary.invalidReason}`)}>
               {t(`timetable.invalid.${summary.invalidReason}`)}
             </span>
