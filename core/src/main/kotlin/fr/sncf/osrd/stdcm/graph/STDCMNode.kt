@@ -209,6 +209,7 @@ data class STDCMNode(
 
     fun getMinTotalSimulationTime(heuristic: STDCMAStarHeuristic): Double {
         return timeData.totalRunningTime +
+            timeData.totalStopDuration +
             remainingTimeEstimation +
             heuristic.minRemainingStopTime(infraExplorer)
     }
