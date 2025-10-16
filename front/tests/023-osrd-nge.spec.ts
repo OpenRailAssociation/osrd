@@ -3,21 +3,29 @@ import type { Scenario, Project, Study, Infra, TrainSchedule } from 'common/api/
 import { timetableItemProjectName, timetableItemStudyName } from './assets/constants/project-const';
 import test from './logging-fixture';
 import NGEPage from './pages/operational-studies/nge-page';
+import ScenarioTimetableSection from './pages/operational-studies/scenario-timetable-section';
 import { generateUniqueName, waitForInfraStateToBeCached } from './utils';
 import { getInfra, getProject, getStudy } from './utils/api-utils';
 import readJsonFile from './utils/file-utils';
 import createScenario from './utils/scenario';
 import { deleteScenario } from './utils/teardown-utils';
 import sendTrainSchedules from './utils/train-schedule';
+import type { TimetableFilterTranslations } from './utils/types';
 
 const trainSchedulesJson = readJsonFile<TrainSchedule[]>(
   './tests/assets/train-schedule/train_schedules.json'
 );
 
+const frTranslations: TimetableFilterTranslations = readJsonFile<{
+  main: TimetableFilterTranslations;
+}>('public/locales/fr/operational-studies.json').main;
+
 test.describe('Verify osrd nge conversion', () => {
   test.use({ viewport: { width: 1920, height: 1080 } });
+  test.use({ ignorePageErrors: true });
 
   let ngePage: NGEPage;
+  let scenarioTimetableSection: ScenarioTimetableSection;
 
   let project: Project;
   let study: Study;
@@ -32,12 +40,14 @@ test.describe('Verify osrd nge conversion', () => {
 
   test.beforeEach('Open scenario and enable only macro view ', async ({ page }) => {
     ngePage = new NGEPage(page);
+    scenarioTimetableSection = new ScenarioTimetableSection(page);
     await test.step('Create, open scenario and wait for infra to be loaded', async () => {
       scenarioItems = (
         await createScenario(generateUniqueName('nge-scenario'), project.id, study.id, infra.id)
       ).scenario;
 
       await sendTrainSchedules(scenarioItems.timetable_id, trainSchedulesJson.slice(4, 5));
+
       await page.goto(
         `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenarioItems.id}`
       );
@@ -92,6 +102,56 @@ test.describe('Verify osrd nge conversion', () => {
       await ngePage.openTrainDetailsFromLine(1);
       await ngePage.expectDialogHeaderTrainName('Train5');
       await ngePage.expectStationsTabShows(['Mid_East_station', 'Mid_West_station']);
+    });
+  });
+
+  test('Delete a train from train list', async ({ page }) => {
+    await test.step('Delete train from timetable list', async () => {
+      await scenarioTimetableSection.deleteTimetableItem();
+    });
+
+    await test.step('Reload page to refresh timetable state', async () => {
+      await page.reload(); // Should be removed once issue #13758 is resolved
+    });
+
+    await test.step('Verify timetable is empty (UI message)', async () => {
+      await scenarioTimetableSection.verifyTimetableIsEmpty(frTranslations.timetable.noTrain);
+    });
+
+    await test.step('Enable macro view while keeping the default train list visible', async () => {
+      await ngePage.enableMacroViewWithDefaultTrainList();
+    });
+
+    await test.step('Verify NGE graph is empty (no nodes or train lines)', async () => {
+      await ngePage.verifyNodeAndLinesCount({ nodes: 0, lines: 0 });
+    });
+  });
+
+  test('Delete a train from NGE', async ({ page }) => {
+    await test.step('Delete first node via dialog (expect 2 nodes, 1 line)', async () => {
+      await ngePage.deleteNodeByIndexViaDialog(0, { nodes: 2, lines: 1 });
+    });
+
+    await test.step('Delete next node via dialog (expect 1 node, 0 line)', async () => {
+      await ngePage.deleteNodeByIndexViaDialog(0, { nodes: 1, lines: 0 });
+    });
+
+    await test.step('Delete last node using keyboard (expect 0 nodes, 0 line)', async () => {
+      await ngePage.deleteFocusedNodeWithKeyboard({ nodes: 0, lines: 0 });
+    });
+
+    await test.step('Verify timetable is empty (UI)', async () => {
+      await scenarioTimetableSection.verifyTimetableIsEmpty(frTranslations.timetable.noTrain);
+    });
+
+    await test.step('Reload and re-assert timetable is empty', async () => {
+      await page.reload();
+      await scenarioTimetableSection.verifyTimetableIsEmpty(frTranslations.timetable.noTrain);
+    });
+
+    await test.step('Re-toggle macro layout and re-assert graph is empty', async () => {
+      await ngePage.enableMacroViewWithDefaultTrainList();
+      await ngePage.verifyNodeAndLinesCount({ nodes: 0, lines: 0 });
     });
   });
 });
