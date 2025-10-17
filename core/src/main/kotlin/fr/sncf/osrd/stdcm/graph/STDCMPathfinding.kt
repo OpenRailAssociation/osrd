@@ -116,7 +116,7 @@ class STDCMPathfinding(
         runInputSanityChecks()
 
         val constraints =
-            ConstraintCombiner(initConstraints(fullInfra, listOf(rollingStock)).toMutableList())
+            ConstraintCombiner(initConstraints(fullInfra, rollingStock).toMutableList())
 
         assert(steps.last().stop) { "The last stop is supposed to be an actual stop" }
         starts = getStartNodes(graph, listOf(constraints))

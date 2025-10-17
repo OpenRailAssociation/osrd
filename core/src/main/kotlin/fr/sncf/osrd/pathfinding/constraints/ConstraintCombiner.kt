@@ -4,6 +4,7 @@ import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.graph.EdgeToRanges
 import fr.sncf.osrd.graph.PathfindingConstraint
 import fr.sncf.osrd.pathfinding.Pathfinding
+import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.train.RollingStock
 
@@ -22,36 +23,42 @@ class ConstraintCombiner<EdgeT, OffsetType>(
     }
 }
 
-/** Initialize the constraints used to determine whether a block can be explored of not */
+/** Initialize the constraints used to determine whether a block can be explored */
 fun initConstraints(
     fullInfra: FullInfra,
-    rollingStockList: Collection<RollingStock>,
+    rollingStock: RollingStock,
 ): List<PathfindingConstraint<Block>> {
-    if (rollingStockList.isEmpty()) return listOf()
-    assert(rollingStockList.size == 1)
-    val rollingStock = rollingStockList.first()
+    return initConstraintsFromRSProps(
+        fullInfra,
+        rollingStock.isThermal,
+        rollingStock.loadingGaugeType,
+        rollingStock.modeNames.toList(),
+        rollingStock.supportedSignalingSystems.toList(),
+    )
+}
 
-    val loadingGaugeConstraints =
-        LoadingGaugeConstraints(
-            fullInfra.blockInfra,
-            fullInfra.rawInfra,
-            rollingStock.loadingGaugeType,
-        )
-    val signalisationSystemConstraints =
-        makeSignalingSystemConstraints(
-            fullInfra.blockInfra,
-            fullInfra.signalingSimulator,
-            rollingStockList,
-        )
-
-    val res = mutableListOf(loadingGaugeConstraints, signalisationSystemConstraints)
-    if (!rollingStock.isThermal)
+fun initConstraintsFromRSProps(
+    infra: FullInfra,
+    rollingStockIsThermal: Boolean,
+    rollingStockLoadingGauge: RJSLoadingGaugeType,
+    rollingStockSupportedElectrification: List<String>,
+    rollingStockSupportedSignalingSystems: List<String>,
+): List<PathfindingConstraint<Block>> {
+    val res = mutableListOf<PathfindingConstraint<Block>>()
+    if (!rollingStockIsThermal) {
         res.add(
             ElectrificationConstraints(
-                fullInfra.blockInfra,
-                fullInfra.rawInfra,
-                rollingStock.modeNames,
+                infra.blockInfra,
+                infra.rawInfra,
+                rollingStockSupportedElectrification,
             )
         )
+    }
+    res.add(LoadingGaugeConstraints(infra.blockInfra, infra.rawInfra, rollingStockLoadingGauge))
+    val sigSystemIds =
+        rollingStockSupportedSignalingSystems.mapNotNull {
+            infra.signalingSimulator.sigModuleManager.findSignalingSystem(it)
+        }
+    res.add(SignalingSystemConstraints(infra.blockInfra, listOf(sigSystemIds)))
     return res
 }
