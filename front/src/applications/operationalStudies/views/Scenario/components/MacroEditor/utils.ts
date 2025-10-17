@@ -163,7 +163,7 @@ export const getSavedMacroNodes = async (
   let reachEnd = false;
   const result: MacroNodeResponse[] = [];
   while (!reachEnd) {
-    const promise = dispatch(
+    const data = await dispatch(
       osrdEditoastApi.endpoints.getProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNodes.initiate(
         {
           projectId,
@@ -174,10 +174,8 @@ export const getSavedMacroNodes = async (
         },
         { subscribe: false }
       )
-    );
-    // need to unsubscribe on get call to avoid cache issue
-    const { data } = await promise;
-    if (data) result.push(...data.results);
+    ).unwrap();
+    result.push(...data.results);
     reachEnd = isNil(data?.next);
     page += 1;
   }
