@@ -4,6 +4,7 @@ import fr.sncf.osrd.envelope.Envelope.Companion.make
 import fr.sncf.osrd.envelope.part.ConstrainedEnvelopePartBuilder
 import fr.sncf.osrd.envelope.part.EnvelopePartBuilder
 import fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType
+import fr.sncf.osrd.envelope.part.constraints.PositionConstraint
 import fr.sncf.osrd.envelope.part.constraints.SpeedConstraint
 import fr.sncf.osrd.envelope_sim.allowances.mareco_impl.CoastingGenerator.coastFromBeginning
 import fr.sncf.osrd.envelope_sim.overlays.EnvelopeDeceleration
@@ -129,6 +130,7 @@ class TrainPhysicsIntegratorTest {
             ConstrainedEnvelopePartBuilder(
                 builder,
                 SpeedConstraint(0.0, EnvelopePartConstraintType.FLOOR),
+                PositionConstraint(0.0, 10_000.0),
             )
         EnvelopeDeceleration.decelerate(context, 0.0, 10.0, constrainedBuilder, 1.0)
         builder.setAttr(EnvelopeProfile.BRAKING)

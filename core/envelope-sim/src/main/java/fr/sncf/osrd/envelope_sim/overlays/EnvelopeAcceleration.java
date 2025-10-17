@@ -22,6 +22,7 @@ public class EnvelopeAcceleration {
             position += step.positionDelta;
             speed = step.endSpeed;
             if (!consumer.addStep(position, speed, step.timeDelta)) break;
+            assert (step.positionDelta != 0.0);
         }
     }
 }
