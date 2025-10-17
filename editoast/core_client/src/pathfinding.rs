@@ -159,6 +159,18 @@ pub struct TrackRange {
     pub direction: Direction,
 }
 
+#[cfg(feature = "mocking_client")]
+impl TrackRange {
+    pub fn new(track_section: &str, begin: u64, end: u64) -> Self {
+        Self {
+            track_section: track_section.into(),
+            begin,
+            end,
+            direction: Direction::StartToStop,
+        }
+    }
+}
+
 /// A range on a linear object (usually block or route)
 #[derive(Serialize, Deserialize, Clone, Debug, ToSchema, Hash, PartialEq, Eq)]
 pub struct ObjectRange {

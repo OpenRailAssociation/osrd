@@ -1935,6 +1935,98 @@ paths:
                 propertyNames:
                   type: integer
                   format: int64
+  /paced_train/track_occupancy:
+    post:
+      tags:
+      - paced_train
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - paced_train_ids
+              - operational_point_id
+              - infra_id
+              properties:
+                electrical_profile_set_id:
+                  type:
+                  - integer
+                  - 'null'
+                  format: int64
+                infra_id:
+                  type: integer
+                  format: int64
+                operational_point_id:
+                  type: string
+                paced_train_ids:
+                  type: array
+                  items:
+                    type: integer
+                    format: int64
+        required: true
+      responses:
+        '200':
+          description: Track section occupancy periods for paced trains
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: array
+                  items:
+                    allOf:
+                    - oneOf:
+                      - type: object
+                        required:
+                        - paced_train_id
+                        - index
+                        properties:
+                          index:
+                            type: integer
+                            format: int64
+                            minimum: 0
+                          paced_train_id:
+                            type: integer
+                            format: int64
+                      - type: object
+                        required:
+                        - paced_train_id
+                        - index
+                        - exception_key
+                        properties:
+                          exception_key:
+                            type: string
+                          index:
+                            type: integer
+                            format: int64
+                            minimum: 0
+                          paced_train_id:
+                            type: integer
+                            format: int64
+                      - type: object
+                        required:
+                        - paced_train_id
+                        - exception_key
+                        properties:
+                          exception_key:
+                            type: string
+                          paced_train_id:
+                            type: integer
+                            format: int64
+                    - type: object
+                      required:
+                      - time_begin
+                      - duration
+                      properties:
+                        duration:
+                          type: string
+                          example: PT5M
+                        time_begin:
+                          type: string
+                          format: date-time
+                propertyNames:
+                  type: string
   /paced_train/{id}:
     get:
       tags:
@@ -6428,6 +6520,7 @@ components:
       - $ref: '#/components/schemas/EditoastPacedTrainErrorExceptionNotFound'
       - $ref: '#/components/schemas/EditoastPacedTrainErrorInfraNotFound'
       - $ref: '#/components/schemas/EditoastPacedTrainErrorNotFound'
+      - $ref: '#/components/schemas/EditoastPacedTrainErrorOperationalPointNotFound'
       - $ref: '#/components/schemas/EditoastPacedTrainErrorPathfindingFailed'
       - $ref: '#/components/schemas/EditoastPacedTrainErrorRollingStockNotFound'
       - $ref: '#/components/schemas/EditoastPacedTrainErrorSimulationFailed'
@@ -7153,6 +7246,30 @@ components:
           type: string
           enum:
           - editoast:paced_train:NotFound
+    EditoastPacedTrainErrorOperationalPointNotFound:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          required:
+          - operational_point_id
+          properties:
+            operational_point_id:
+              type: string
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 404
+        type:
+          type: string
+          enum:
+          - editoast:paced_train:OperationalPointNotFound
     EditoastPacedTrainErrorPathfindingFailed:
       type: object
       required:

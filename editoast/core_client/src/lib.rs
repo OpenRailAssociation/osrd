@@ -10,6 +10,8 @@ pub mod version;
 pub mod worker_load;
 
 #[cfg(feature = "mocking_client")]
+pub mod fixtures;
+#[cfg(feature = "mocking_client")]
 pub mod mocking;
 
 use mq_client::MqClientError;
