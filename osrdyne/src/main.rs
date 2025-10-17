@@ -9,7 +9,6 @@ use opentelemetry_sdk::resource::ResourceDetector;
 use opentelemetry_sdk::resource::SdkProvidedResourceDetector;
 use opentelemetry_sdk::resource::TelemetryResourceDetector;
 use std::collections::BTreeMap;
-use std::collections::HashMap;
 use std::path::PathBuf;
 use std::sync::Arc;
 use std::time::Duration;
@@ -42,7 +41,6 @@ mod key;
 mod management_client;
 mod pool;
 mod queue_controller;
-mod status_tracker;
 mod target_tracker;
 mod watch_logger;
 
@@ -112,20 +110,7 @@ async fn main() -> Result<(), anyhow::Error> {
     ));
 
     let (worker_list_send, worker_list_recv) = tokio::sync::watch::channel(Arc::new(vec![]));
-    let (worker_activity_send, worker_activity_recv) = tokio::sync::mpsc::channel(512);
-    let (worker_status_send, worker_status_recv) =
-        tokio::sync::watch::channel(Arc::new(HashMap::new()));
-    tokio::spawn(status_tracker::status_tracker(
-        worker_list_recv.clone(),
-        worker_activity_recv,
-        worker_status_send,
-    ));
-    tokio::spawn(api::create_server(
-        config.api_address,
-        worker_list_recv,
-        worker_status_recv,
-        matches!(config.worker_driver, WorkerDriverConfig::Noop),
-    ));
+    tokio::spawn(api::create_server(config.api_address, worker_list_recv));
 
     'reconnect_loop: loop {
         // connect to rabbitmq
@@ -177,7 +162,6 @@ async fn main() -> Result<(), anyhow::Error> {
                 &management_client,
                 target_tracker_client.clone(),
                 worker_list_send.clone(),
-                worker_activity_send.clone(),
             )
             .await?;
 
