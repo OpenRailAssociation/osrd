@@ -1,22 +1,23 @@
 import type { Feature, LineString } from 'geojson';
 import { Source } from 'react-map-gl/maplibre';
 
+import type { GeoJsonLineString } from 'common/api/osrdEditoastApi';
 import { OrderedLayer } from 'common/Map/Layers';
 
 type ItineraryProps = {
-  geojsonPath: Feature<LineString>;
+  geojsonPath: Feature<LineString> | GeoJsonLineString;
   layerOrder: number;
 };
 
 const Itinerary = ({ geojsonPath, layerOrder }: ItineraryProps) => {
   const paintBackgroundLine = {
-    'line-width': 4,
-    'line-color': '#EDF9FF',
+    'line-width': 5,
+    'line-color': '#CEF6FF',
   };
 
   const paintLine = {
-    'line-width': 1,
-    'line-color': '#158DCF',
+    'line-width': 1.5,
+    'line-color': '#3C8AFF',
   };
 
   return (
