@@ -231,7 +231,6 @@ impl Pool {
         management_client: &ManagementClient,
         tracker_client: TargetTrackerClient,
         running_worker_watch: tokio::sync::watch::Sender<Arc<Vec<WorkerMetadata>>>,
-        status_tracker: tokio::sync::mpsc::Sender<ActivityMessage>,
     ) -> anyhow::Result<JoinSet<anyhow::Result<()>>> {
         let worker_loop_interval = self.worker_loop_interval;
 
@@ -301,7 +300,6 @@ impl Pool {
             self.clone(),
             activity_channel,
             tracker_client.clone(),
-            status_tracker,
             self.extra_lifetime,
         ));
         tasks.spawn(orphan_processor(
@@ -375,31 +373,10 @@ async fn orphan_processor(
     Ok(())
 }
 
-pub struct ActivityMessage {
-    pub kind: ActivityMessageKind,
-    pub worker_key: Key,
-    pub worker_id: String,
-}
-
-pub enum ActivityMessageKind {
-    Ready,
-    Unknown,
-}
-
-impl ActivityMessageKind {
-    pub fn from_bytes(s: &[u8]) -> Self {
-        match s {
-            b"ready" => Self::Ready,
-            _ => Self::Unknown,
-        }
-    }
-}
-
 async fn activity_processor(
     pool: Arc<Pool>,
     chan: Channel,
     client: TargetTrackerClient,
-    status_tracker: tokio::sync::mpsc::Sender<ActivityMessage>,
     extra_lifetime: Duration,
 ) -> anyhow::Result<()> {
     chan.basic_qos(200, BasicQosOptions::default()).await?;
@@ -425,33 +402,6 @@ async fn activity_processor(
         let routing_key = delivery.routing_key.as_str();
         let key = Key::new(routing_key);
         let now = std::time::Instant::now();
-
-        let headers = delivery.properties.headers();
-        let worker_id = headers
-            .as_ref()
-            .and_then(|h| h.inner().get("x-worker-id"))
-            .and_then(|v| v.as_long_string().map(|s| s.as_bytes()));
-
-        if let Some(worker_id) = worker_id {
-            let Ok(worker_id) = String::from_utf8(worker_id.to_vec()) else {
-                continue;
-            };
-
-            let kind = headers
-                .as_ref()
-                .and_then(|h| h.inner().get("x-event"))
-                .and_then(|v| v.as_long_string())
-                .map(|s| s.as_bytes())
-                .map(ActivityMessageKind::from_bytes)
-                .unwrap_or(ActivityMessageKind::Unknown);
-
-            let activity = ActivityMessage {
-                kind,
-                worker_key: key.clone(),
-                worker_id,
-            };
-            status_tracker.send(activity).await?;
-        }
 
         // debouncing
         if let Some(&last_activity) = last_activities.get(&key)
