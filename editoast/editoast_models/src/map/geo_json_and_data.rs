@@ -101,7 +101,16 @@ fn geometry_into_mvt_geom_type(geometry: &Geometry) -> GeomType {
 /// * `feature` - Feature on which tags must be added
 /// * `tags` - JsonValue containing tags to add
 /// * `key` - Name of the tag
-fn add_tags_to_feature(feature: &mut Feature, tags: JsonValue, tag_name: String) {
+fn add_tags_to_feature(
+    feature: &mut Feature,
+    #[cfg(not(test))] tags: JsonValue,
+    #[cfg(test)] mut tags: JsonValue,
+    tag_name: String,
+) {
+    // Other editoast crates rely on 'preserve_order' feature of serde_json which then cascades to this crate.
+    // Then we need to sort them in order to deterministically generate the snapshot used in tests below.
+    #[cfg(test)]
+    tags.sort_all_objects();
     match tags {
         JsonValue::Bool(bool) => feature.add_tag_bool(&tag_name, bool),
         JsonValue::Number(number) => {
