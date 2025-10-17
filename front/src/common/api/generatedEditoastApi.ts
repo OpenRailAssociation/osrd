@@ -2637,11 +2637,12 @@ export type PostTrainScheduleSimulationSummaryApiArg = {
 };
 export type PostTrainScheduleTrackOccupancyApiResponse =
   /** status 200 Track section occupancy periods for a set of train schedules */ {
-    [key: string]: {
+    [key: string]: ({
       duration: string;
       time_begin: string;
+    } & {
       train_schedule_id: number;
-    }[];
+    })[];
   };
 export type PostTrainScheduleTrackOccupancyApiArg = {
   body: {

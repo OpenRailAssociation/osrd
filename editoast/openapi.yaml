@@ -4607,21 +4607,25 @@ paths:
                 additionalProperties:
                   type: array
                   items:
-                    type: object
-                    required:
-                    - time_begin
-                    - duration
-                    - train_schedule_id
-                    properties:
-                      duration:
-                        type: string
-                        example: PT5M
-                      time_begin:
-                        type: string
-                        format: date-time
-                      train_schedule_id:
-                        type: integer
-                        format: int64
+                    allOf:
+                    - type: object
+                      required:
+                      - time_begin
+                      - duration
+                      properties:
+                        duration:
+                          type: string
+                          example: PT5M
+                        time_begin:
+                          type: string
+                          format: date-time
+                    - type: object
+                      required:
+                      - train_schedule_id
+                      properties:
+                        train_schedule_id:
+                          type: integer
+                          format: int64
                 propertyNames:
                   type: string
   /train_schedule/{id}:
