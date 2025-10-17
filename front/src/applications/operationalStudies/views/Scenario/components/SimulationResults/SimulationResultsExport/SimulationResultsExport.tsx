@@ -49,8 +49,17 @@ const exportTrainPDF = async (
 
   const blob = await pdf(doc).toBlob();
   const url = URL.createObjectURL(blob);
-  window.open(url, '_blank');
-  URL.revokeObjectURL(url);
+
+  // Create a temporary link element for better browser compatibility
+  const link = document.createElement('a');
+  link.href = url;
+  link.target = '_blank';
+  link.rel = 'noreferrer';
+  link.click();
+
+  // Keep the blob alive so Chrome viewer can download it later
+  const onPageHide = () => URL.revokeObjectURL(url);
+  window.addEventListener('pagehide', onPageHide, { once: true });
 };
 
 type SimulationResultsExportProps = {
