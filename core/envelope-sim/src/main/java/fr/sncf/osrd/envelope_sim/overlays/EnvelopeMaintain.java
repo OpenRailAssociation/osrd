@@ -13,6 +13,7 @@ public class EnvelopeMaintain {
             double startSpeed,
             InteractiveEnvelopePartConsumer consumer,
             double direction) {
+        consumer.checkConstraints();
         if (!consumer.initEnvelopePart(startPosition, startSpeed, direction)) return;
         double position = startPosition;
         double speed = startSpeed;

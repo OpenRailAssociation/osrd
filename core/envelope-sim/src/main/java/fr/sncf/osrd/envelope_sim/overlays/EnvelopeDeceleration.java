@@ -15,6 +15,7 @@ public class EnvelopeDeceleration {
             InteractiveEnvelopePartConsumer consumer,
             double direction,
             BrakingType brakingType) {
+        consumer.checkConstraints();
         if (!consumer.initEnvelopePart(startPosition, startSpeed, direction)) return;
         double position = startPosition;
         double speed = startSpeed;

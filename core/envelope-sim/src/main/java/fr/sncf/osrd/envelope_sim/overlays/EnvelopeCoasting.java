@@ -13,6 +13,7 @@ public class EnvelopeCoasting {
             double startSpeed,
             InteractiveEnvelopePartConsumer consumer,
             double directionSign) {
+        consumer.checkConstraints();
         if (!consumer.initEnvelopePart(startPosition, startSpeed, directionSign)) return;
         double position = startPosition;
         double speed = startSpeed;

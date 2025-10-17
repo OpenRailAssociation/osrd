@@ -8,6 +8,7 @@ import fr.sncf.osrd.envelope.EnvelopePoint;
 import fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraint;
 import fr.sncf.osrd.envelope_utils.DoubleUtils;
 import fr.sncf.osrd.utils.SelfTypeHolder;
+import java.util.Arrays;
 
 public final class ConstrainedEnvelopePartBuilder implements InteractiveEnvelopePartConsumer {
     public EnvelopePartConstraint[] constraints;
@@ -121,5 +122,13 @@ public final class ConstrainedEnvelopePartBuilder implements InteractiveEnvelope
     @Override
     public void setAttrs(Iterable<SelfTypeHolder> attrs) {
         sink.setAttrs(attrs);
+    }
+
+    @Override
+    public void checkConstraints() {
+        assert Arrays.stream(constraints).anyMatch(EnvelopePartConstraint::isFloor)
+                : "Simulation without speed floor can cause infinite loops at speed=0";
+        assert Arrays.stream(constraints).anyMatch(EnvelopePartConstraint::hasPositionConstraint)
+                : "Simulations without position constraints can cause infinite loops";
     }
 }

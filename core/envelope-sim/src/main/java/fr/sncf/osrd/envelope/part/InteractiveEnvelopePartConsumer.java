@@ -32,4 +32,7 @@ public interface InteractiveEnvelopePartConsumer {
 
     /** Sets envelope part attributes */
     void setAttrs(Iterable<SelfTypeHolder> attrs);
+
+    /** Runs some assertions on the constraints, to make sure there's no risk of infinite loops. */
+    void checkConstraints();
 }
