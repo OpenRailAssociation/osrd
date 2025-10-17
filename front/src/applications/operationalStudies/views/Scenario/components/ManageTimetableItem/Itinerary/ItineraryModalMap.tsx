@@ -3,9 +3,12 @@ import { useCallback, useMemo, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import type { MapLayerMouseEvent, MapRef } from 'react-map-gl/maplibre';
 
+import type { PathProperties } from 'common/api/osrdEditoastApi';
 import BaseMap from 'common/Map/BaseMap';
 import MapButtons from 'common/Map/Buttons/MapButtons';
 import { useInfraID } from 'common/osrdContext';
+import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
+import Itinerary from 'modules/simulationResult/components/SimulationResultsMap/RenderItinerary';
 import { useMapSettings, useMapSettingsActions } from 'reducers/commonMap';
 import type { Viewport } from 'reducers/commonMap/types';
 import type { PathStepMetadata, PathStepV2 } from 'reducers/osrdconf/types';
@@ -30,9 +33,14 @@ const computeOpRefMarkerName = (
 type ItineraryModalMapProps = {
   pathSteps?: PathStepV2[];
   pathStepsMetadata?: Map<string, PathStepMetadata>;
+  pathProperties?: PathProperties;
 };
 
-const ItineraryModalMap = ({ pathSteps, pathStepsMetadata }: ItineraryModalMapProps) => {
+const ItineraryModalMap = ({
+  pathSteps,
+  pathStepsMetadata,
+  pathProperties,
+}: ItineraryModalMapProps) => {
   const { t } = useTranslation('operational-studies', {
     keyPrefix: 'main',
   });
@@ -147,6 +155,12 @@ const ItineraryModalMap = ({ pathSteps, pathStepsMetadata }: ItineraryModalMapPr
         mapSettings={mapSettings}
         updatePartialViewPort={updateViewportChange}
       >
+        {pathProperties && pathProperties.geometry && (
+          <Itinerary
+            layerOrder={LAYER_GROUPS_ORDER[LAYERS.PATH.GROUP]}
+            geojsonPath={pathProperties.geometry}
+          />
+        )}
         {pathSteps &&
           pathStepsMetadata &&
           pathSteps.map((step, index) => {

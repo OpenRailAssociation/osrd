@@ -6,8 +6,15 @@ import { useSelector } from 'react-redux';
 import { v4 as uuidV4 } from 'uuid';
 
 import useCategoryColors from 'applications/operationalStudies/hooks/useCategoryColors';
+import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import AlertBox from 'common/AlertBox';
-import { getCategory, getPathSteps } from 'reducers/osrdconf/operationalStudiesConf/selectors';
+import usePathfindingV2 from 'modules/pathfinding/hooks/usePathfindingV2';
+import {
+  getCategory,
+  getOperationalStudiesRollingStockID,
+  getOperationalStudiesSpeedLimitByTag,
+  getPathSteps,
+} from 'reducers/osrdconf/operationalStudiesConf/selectors';
 import type { PathStepV2 } from 'reducers/osrdconf/types';
 import useModalFocusTrap from 'utils/hooks/useModalFocusTrap';
 
@@ -33,6 +40,9 @@ const ItineraryModal = ({
   });
   const storePathSteps = useSelector(getPathSteps);
   const category = useSelector(getCategory);
+  const { workerStatus } = useScenarioContext();
+  const rollingStockId = useSelector(getOperationalStudiesRollingStockID);
+  const speedLimitTag = useSelector(getOperationalStudiesSpeedLimitByTag);
 
   const { categoryColors, currentSubCategory } = useCategoryColors(category);
 
@@ -42,6 +52,7 @@ const ItineraryModal = ({
   const [categoryWarning, setCategoryWarning] = useState<string | undefined>(undefined);
 
   const { pathStepsMetadataById } = usePathStepsMetadata(pathSteps);
+  const { launchPathfindingV2, pathProperties } = usePathfindingV2();
 
   const isMapDisabled = window.matchMedia('(max-width: 1028px)').matches;
 
@@ -74,6 +85,29 @@ const ItineraryModal = ({
       setPathSteps(formattedPathSteps);
     }
   }, [storePathSteps]);
+
+  useEffect(() => {
+    if (
+      workerStatus === 'READY' &&
+      pathSteps.length >= 2 &&
+      pathStepsMetadataById.size === pathSteps.length &&
+      rollingStockId
+    ) {
+      launchPathfindingV2({
+        pathSteps: pathSteps.map((step) => step.location),
+        pathStepsMetadataById,
+        rollingStockId,
+        speedLimitTag,
+      });
+    }
+  }, [
+    workerStatus,
+    pathSteps,
+    pathStepsMetadataById,
+    rollingStockId,
+    speedLimitTag,
+    launchPathfindingV2,
+  ]);
 
   const openModal = () => {
     modalRef.current?.showModal();
@@ -132,7 +166,11 @@ const ItineraryModal = ({
       </div>
       {!isMapDisabled && (
         <div className="itinerary-modal-map">
-          <ItineraryModalMap pathSteps={pathSteps} pathStepsMetadata={pathStepsMetadataById} />
+          <ItineraryModalMap
+            pathSteps={pathSteps}
+            pathStepsMetadata={pathStepsMetadataById}
+            pathProperties={pathProperties}
+          />
         </div>
       )}
     </dialog>
