@@ -38,6 +38,16 @@ public class EnvelopeConstraint implements EnvelopePartConstraint {
         };
     }
 
+    @Override
+    public boolean isFloor() {
+        return type != CEILING;
+    }
+
+    @Override
+    public boolean hasPositionConstraint() {
+        return true;
+    }
+
     // region INTERSECTION
 
     private enum NextPointKind {

@@ -25,6 +25,16 @@ public class SpeedConstraint implements EnvelopePartConstraint {
     }
 
     @Override
+    public boolean isFloor() {
+        return type != EnvelopePartConstraintType.CEILING;
+    }
+
+    @Override
+    public boolean hasPositionConstraint() {
+        return false;
+    }
+
+    @Override
     public EnvelopePoint stepCheck(double startPos, double startSpeed, double endPos, double endSpeed) {
         switch (type) {
             case CEILING:

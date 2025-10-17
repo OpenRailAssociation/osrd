@@ -19,6 +19,16 @@ public class PositionConstraint implements EnvelopePartConstraint {
     }
 
     @Override
+    public boolean isFloor() {
+        return false;
+    }
+
+    @Override
+    public boolean hasPositionConstraint() {
+        return true;
+    }
+
+    @Override
     @SuppressFBWarnings({"FE_FLOATING_POINT_EQUALITY"})
     public EnvelopePoint stepCheck(double startPos, double startSpeed, double endPos, double endSpeed) {
         if (endPos > rangeBegin && endPos < rangeEnd) return null;
