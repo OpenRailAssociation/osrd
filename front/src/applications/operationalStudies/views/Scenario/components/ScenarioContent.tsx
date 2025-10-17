@@ -13,12 +13,14 @@ import ResizableSection from 'common/ResizableSection';
 import Conflicts from 'modules/conflict/components/Conflicts';
 import useConflictsFilter from 'modules/conflict/hooks/useConflictsFilter';
 import ScenarioLoaderMessage from 'modules/scenario/components/ScenarioLoaderMessage';
+import { setFailure } from 'reducers/main';
 import type {
   TimetableItemId,
   TimetableItem,
   TimetableItemToEditData,
 } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
+import { castErrorToFailure } from 'utils/error';
 import { usePrevious } from 'utils/hooks/state';
 
 import { MANAGE_TIMETABLE_ITEM_TYPES } from '../consts';
@@ -133,17 +135,22 @@ const ScenarioContent = ({ activeBoards }: ScenarioContentProps) => {
     }
   }, [activeBoards.has('macro')]);
 
-  const handleNGEOperation = (event: NGEEvent, netzgrafikDto: NetzgrafikDto) => {
-    handleOperation({
-      event,
-      netzgrafikDto,
-      timetableId: scenario.timetable_id,
-      infraId,
-      state: macroEditorState.current!,
-      dispatch,
-      addUpsertedTimetableItems: upsertTimetableItems,
-      addDeletedTimetableItemIds: removeTimetableItems,
-    });
+  const handleNGEOperation = async (event: NGEEvent, netzgrafikDto: NetzgrafikDto) => {
+    try {
+      await handleOperation({
+        event,
+        netzgrafikDto,
+        timetableId: scenario.timetable_id,
+        infraId,
+        state: macroEditorState.current!,
+        dispatch,
+        addUpsertedTimetableItems: upsertTimetableItems,
+        addDeletedTimetableItemIds: removeTimetableItems,
+      });
+    } catch (err) {
+      console.error(err);
+      dispatch(setFailure(castErrorToFailure(err)));
+    }
   };
 
   const handleNGELoad = () => setNGEIsLoading(false);
