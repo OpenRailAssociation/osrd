@@ -42,14 +42,12 @@ tasks.register('generateKotlinBindings', Exec) {
     description = 'Re-generates and overwrites the kotlin bindings. Use this during development'
 
     workingDir 'libtsim'
-    commandLine tasks.named('rustBuildRelease').map { [
-            'cargo', 'run', '--package', 'uniffi-bindgen', '--',
+    commandLine 'cargo', 'run', '--package', 'uniffi-bindgen', '--',
             'generate',
             '--no-format', // let spotless format it
-            '--library', it.outputs.files[0],
+            '--library', tasks.rustBuildRelease.outputs.files[0],
             '--language', 'kotlin',
             '--out-dir', '../src/main/kotlin'
-    ]}
 
     inputs.file tasks.named('rustBuildRelease').map { it.outputs.files[0] }
 
