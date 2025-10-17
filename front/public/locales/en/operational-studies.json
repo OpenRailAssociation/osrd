@@ -345,6 +345,7 @@
     "itineraryModal": {
       "addLocationOnMap": "Add a location on the map",
       "focusLocationOnMap": "Focus the map on this operational point",
+      "frameAll": "Center on all path steps on map",
       "moveLocationOnMap": "Move location on the map",
       "next": "Next",
       "opName": "Operational point name",
