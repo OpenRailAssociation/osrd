@@ -108,10 +108,10 @@ impl IntegrationStep {
             position_delta = direction.copysign(position_delta);
         }
 
-        assert!(are_speeds_equal(
-            end_speed,
-            start_speed + signed_acceleration * time_delta,
-        ));
+        assert!(
+            are_speeds_equal(end_speed, start_speed + signed_acceleration * time_delta,),
+            "{end_speed} != {start_speed} + {signed_acceleration} * {time_delta}"
+        );
 
         Self {
             time_delta,
