@@ -5,7 +5,9 @@ use chrono::DateTime;
 use chrono::Duration as ChronoDuration;
 use chrono::Utc;
 use editoast_derive::Model;
+use editoast_models::prelude::*;
 use editoast_models::rolling_stock::TrainMainCategory;
+use editoast_models::tags::Tags;
 use itertools::Itertools;
 use schemas;
 use schemas::paced_train;
@@ -23,9 +25,7 @@ use schemas::train_schedule::TrainSchedule;
 use schemas::train_schedule::TrainScheduleOptions;
 use serde::Deserialize;
 use serde::Serialize;
-
-use editoast_models::prelude::*;
-use editoast_models::tags::Tags;
+use utoipa::ToSchema;
 
 #[derive(Debug, Clone, Model)]
 #[cfg_attr(test, derive(Default, PartialEq))]
@@ -298,7 +298,7 @@ impl From<PacedTrain> for paced_train::PacedTrain {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
 #[serde(untagged)]
 pub enum OccurrenceId {
     BaseOccurrence {
