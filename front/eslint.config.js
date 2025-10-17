@@ -173,12 +173,6 @@ export default [
     },
   },
   {
-    files: ['src/common/api/generatedEditoastApi.ts', 'src/common/api/osrdGatewayApi.ts'],
-    rules: {
-      '@typescript-eslint/no-explicit-any': ['error', { fixToUnknown: true }],
-    },
-  },
-  {
     files: ['tests/**/*.ts', 'tests/**/*.tsx'],
     rules: {
       '@typescript-eslint/no-floating-promises': 'error',
