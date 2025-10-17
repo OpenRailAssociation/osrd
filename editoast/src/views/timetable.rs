@@ -552,6 +552,7 @@ pub(in crate::views) async fn conflicts(
     // Concatenate paced trains occurrences with train schedules
     let train_ids: Vec<_> = occurrence_ids
         .into_iter()
+        .map(TrainId::PacedTrain)
         .chain(trains.iter().map(|ts| TrainId::TrainSchedule(ts.id)))
         .collect();
     let start_times = occurrence_trains
@@ -712,7 +713,12 @@ pub(in crate::views) async fn requirements(
     let (train_ids, trains): (Vec<_>, Vec<_>) = trains
         .flat_map(|train| match train {
             Either::Left(ts) => vec![(TrainId::TrainSchedule(ts.id), ts.into())],
-            Either::Right(pt) => pt.iter_occurrences().collect(),
+            Either::Right(pt) => pt
+                .iter_occurrences()
+                .map(|(occurrence_id, train_schedule)| {
+                    (TrainId::PacedTrain(occurrence_id), train_schedule)
+                })
+                .collect(),
         })
         .unzip();
 

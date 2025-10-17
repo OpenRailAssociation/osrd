@@ -88,9 +88,6 @@ enum PacedTrainError {
     #[error("Simulation failed for train schedule '{paced_train_id}'")]
     #[editoast_error(status = 404)]
     SimulationFailed { paced_train_id: i64 },
-    #[error("Unexpected train schedule ID in paced train context")]
-    #[editoast_error(status = 500)]
-    UnexpectedTrainScheduleId,
     #[error(transparent)]
     #[editoast_error(status = 500)]
     Database(#[from] editoast_models::Error),
@@ -1226,7 +1223,7 @@ pub(in crate::views) async fn track_occupancy(
     .await?;
 
     // Collect all occurrences from all paced trains using iter_occurrences()
-    let train_occurrences: Vec<(models::paced_train::TrainId, schemas::TrainSchedule)> =
+    let train_occurrences: Vec<(models::paced_train::OccurrenceId, schemas::TrainSchedule)> =
         paced_trains
             .iter()
             .flat_map(|paced_train| paced_train.iter_occurrences())
@@ -1263,43 +1260,36 @@ pub(in crate::views) async fn track_occupancy(
     let all_occupancies: Vec<(String, TrackOccupancy)> = train_occurrences
         .iter()
         .zip(simulations_result)
-        .map(|((train_id, train_schedule), (simulation, pathfinding))| {
-            let occurrence_id: OccurrenceId = match train_id {
-                models::paced_train::TrainId::TrainSchedule(_) => {
-                    return Err(PacedTrainError::UnexpectedTrainScheduleId);
-                }
-                models::paced_train::TrainId::PacedTrain(occurrence_id) => occurrence_id.clone(),
-            };
-
-            Ok(track_occupancy_utils::find_track_occupancy_for_operational_point(
-                &operational_point_id,
-                &operational_point_track_offsets,
-                &path_item_cache,
-                &simulation,
-                &pathfinding,
-                train_schedule,
-            )
-            .into_iter()
-            .map(
-                move |TrackOccupancyResult {
-                          track_section,
-                          time_begin,
-                          duration,
-                      }| {
-                    (
-                        track_section,
-                        TrackOccupancy {
-                            occurrence_id: occurrence_id.clone(),
-                            time_begin,
-                            duration,
-                        },
-                    )
-                },
-            )
-            .collect::<Vec<_>>())
-        })
-        .collect::<Result<Vec<_>, _>>()?
-        .into_iter()
+        .map(
+            |((occurrence_id, train_schedule), (simulation, pathfinding))| {
+                track_occupancy_utils::find_track_occupancy_for_operational_point(
+                    &operational_point_id,
+                    &operational_point_track_offsets,
+                    &path_item_cache,
+                    &simulation,
+                    &pathfinding,
+                    train_schedule,
+                )
+                .into_iter()
+                .map(
+                    move |TrackOccupancyResult {
+                              track_section,
+                              time_begin,
+                              duration,
+                          }| {
+                        (
+                            track_section,
+                            TrackOccupancy {
+                                occurrence_id: occurrence_id.clone(),
+                                time_begin,
+                                duration,
+                            },
+                        )
+                    },
+                )
+                .collect::<Vec<_>>()
+            },
+        )
         .flatten()
         .collect();
 

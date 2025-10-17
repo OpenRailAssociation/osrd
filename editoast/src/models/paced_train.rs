@@ -136,16 +136,18 @@ impl PacedTrain {
     }
 
     /// Returns an iterator over "created" train exceptions with their IDs and schedules.
-    fn get_created_occurrences_exceptions(&self) -> impl Iterator<Item = (TrainId, TrainSchedule)> {
+    fn get_created_occurrences_exceptions(
+        &self,
+    ) -> impl Iterator<Item = (OccurrenceId, TrainSchedule)> {
         self.exceptions
             .iter()
             .filter(|exception| matches!(exception.exception_type, ExceptionType::Created { .. }))
             .map(|exception| {
                 (
-                    TrainId::PacedTrain(OccurrenceId::CreatedException {
+                    OccurrenceId::CreatedException {
                         paced_train_id: self.id,
                         exception_key: exception.key.clone(),
-                    }),
+                    },
                     self.apply_exception(exception),
                 )
             })
@@ -156,14 +158,14 @@ impl PacedTrain {
     }
 
     /// Returns all base train occurrences without any exceptions applied.
-    fn get_base_occurrences(&self) -> Vec<(TrainId, TrainSchedule)> {
+    fn get_base_occurrences(&self) -> Vec<(OccurrenceId, TrainSchedule)> {
         (0..self.num_base_occurrences())
             .map(move |occurrence_idx| {
                 let base_start_time = self.get_occurrence_start_time(occurrence_idx as i32);
-                let train_id = TrainId::PacedTrain(OccurrenceId::BaseOccurrence {
+                let train_id = OccurrenceId::BaseOccurrence {
                     paced_train_id: self.id,
                     index: occurrence_idx as u64,
-                });
+                };
                 let train_schedule = TrainSchedule {
                     start_time: base_start_time,
                     ..self.clone().into_train_schedule()
@@ -182,7 +184,7 @@ impl PacedTrain {
     /// and appends any `Created` exceptions as new trains.
     ///
     /// The result is sorted by `start_time` to reflect the chronological order of the trains.
-    pub fn iter_occurrences(&self) -> impl Iterator<Item = (TrainId, TrainSchedule)> {
+    pub fn iter_occurrences(&self) -> impl Iterator<Item = (OccurrenceId, TrainSchedule)> {
         let mut base_occurrences = self.get_base_occurrences();
 
         let modified_exceptions = self
@@ -200,12 +202,12 @@ impl PacedTrain {
                 if exception.disabled {
                     to_remove[occurrence_index as usize] = true;
                 } else {
-                    let train_id = TrainId::PacedTrain(OccurrenceId::ModifiedException {
+                    let occurrence_id = OccurrenceId::ModifiedException {
                         paced_train_id: self.id,
                         index: occurrence_index as u64,
                         exception_key: exception.key.clone(),
-                    });
-                    *occurrence = (train_id, self.apply_exception(exception));
+                    };
+                    *occurrence = (occurrence_id, self.apply_exception(exception));
                 }
             }
         }
@@ -560,7 +562,7 @@ mod tests {
 
         let paced_train =
             create_paced_train(vec![exception_1.clone(), exception_2.clone(), exception_3]);
-        let occurrences: Vec<(TrainId, schemas::TrainSchedule)> =
+        let occurrences: Vec<(OccurrenceId, schemas::TrainSchedule)> =
             paced_train.iter_occurrences().collect();
 
         assert_eq!(occurrences.len(), 4);
@@ -571,7 +573,7 @@ mod tests {
             .iter()
             .map(|(_, o)| o.train_name.clone())
             .collect();
-        let types: Vec<TrainId> = occurrences.iter().map(|(t, _)| t.clone()).collect();
+        let types: Vec<OccurrenceId> = occurrences.iter().map(|(t, _)| t.clone()).collect();
 
         assert_eq!(
             start_times,
