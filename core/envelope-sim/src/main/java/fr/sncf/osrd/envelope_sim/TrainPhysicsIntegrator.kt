@@ -11,32 +11,33 @@ import fr.sncf.osrd.train_sim.TractiveEffortPoint
 import fr.sncf.osrd.train_sim.TrainPath
 import kotlin.math.*
 
-/** Wrapper around a `PhysicsRollingSock` that implements rust-side's `RollingSock` */
-class MyFirstRollingStock(val p: PhysicsRollingStock) : RollingStock {
-    override fun mass(): Double = this.p.mass
+fun simpleAs(rs: PhysicsRollingStock): RollingStock {
+    // assuming the rolling resistance follow a quadratic polynomial as per
+    // davis' equation which is the case in the only implementation of
+    // PhysicsRollingStock used in production since 2021
 
-    override fun inertia(): Double = this.p.inertia
+    val y0 = rs.getRollingResistance(1.0)
+    val y1 = rs.getRollingResistance(2.0)
+    val y2 = rs.getRollingResistance(3.0)
 
-    override fun length(): Double = this.p.length
+    val a = 3.0 * y0 - 3.0 * y1 + y2
+    val b = 0.5 * (-5.0 * y0 + 8.0 * y1 - 3.0 * y2)
+    val c = 0.5 * (y0 - 2.0 * y1 + y2)
 
-    override fun maxSpeed(): Double = this.p.maxSpeed
-
-    override fun rollingResistance(speed: Double): Double = this.p.getRollingResistance(speed)
-
-    override fun rollingResistanceDeriv(speed: Double): Double =
-        this.p.getRollingResistanceDeriv(speed)
-
-    override fun deceleration(): Double = this.p.deceleration
+    return RollingStock(
+        mass = rs.mass,
+        inertia = rs.inertia,
+        length = rs.length,
+        maxSpeed = rs.maxSpeed,
+        a = a,
+        b = b,
+        c = c,
+        constGamma = -rs.deceleration,
+    )
 }
 
-/** Wrapper around a `PhysicsPath` that implements rust-side's `TrainPath` */
-class MyFirstPath(val p: PhysicsPath) : TrainPath {
-    override fun length(): Double = this.p.length
-
-    override fun avgGrade(start: Double, end: Double): Double = this.p.getAverageGrade(start, end)
-
-    override fun minGrade(start: Double, end: Double): Double = this.p.getMinGrade(start, end)
-}
+fun flattenPath(p: PhysicsPath): TrainPath =
+    TrainPath(length = p.length, grade = p.getAverageGrade(0.0, p.length))
 
 /**
  * A utility class to help simulate the train, using numerical integration. It's used when
@@ -79,8 +80,8 @@ class TrainPhysicsIntegrator {
                 tecm.insert(range, value)
             }
             return fr.sncf.osrd.train_sim.step(
-                rollingStock = MyFirstRollingStock(context.rollingStock),
-                path = MyFirstPath(context.path),
+                rollingStock = simpleAs(context.rollingStock),
+                path = flattenPath(context.path),
                 timeDelta = context.timeStep,
                 tractiveEffortCurveMap = tecm,
                 initialPosition = initialLocation,

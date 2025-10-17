@@ -688,171 +688,6 @@ internal interface UniffiForeignFutureCompleteVoid : com.sun.jna.Callback {
     fun callback(`callbackData`: Long, `result`: UniffiForeignFutureStructVoid.UniffiByValue)
 }
 
-internal interface UniffiCallbackInterfaceRollingStockMethod0 : com.sun.jna.Callback {
-    fun callback(
-        `uniffiHandle`: Long,
-        `uniffiOutReturn`: DoubleByReference,
-        uniffiCallStatus: UniffiRustCallStatus,
-    )
-}
-
-internal interface UniffiCallbackInterfaceRollingStockMethod1 : com.sun.jna.Callback {
-    fun callback(
-        `uniffiHandle`: Long,
-        `uniffiOutReturn`: DoubleByReference,
-        uniffiCallStatus: UniffiRustCallStatus,
-    )
-}
-
-internal interface UniffiCallbackInterfaceRollingStockMethod2 : com.sun.jna.Callback {
-    fun callback(
-        `uniffiHandle`: Long,
-        `uniffiOutReturn`: DoubleByReference,
-        uniffiCallStatus: UniffiRustCallStatus,
-    )
-}
-
-internal interface UniffiCallbackInterfaceRollingStockMethod3 : com.sun.jna.Callback {
-    fun callback(
-        `uniffiHandle`: Long,
-        `uniffiOutReturn`: DoubleByReference,
-        uniffiCallStatus: UniffiRustCallStatus,
-    )
-}
-
-internal interface UniffiCallbackInterfaceRollingStockMethod4 : com.sun.jna.Callback {
-    fun callback(
-        `uniffiHandle`: Long,
-        `speed`: Double,
-        `uniffiOutReturn`: DoubleByReference,
-        uniffiCallStatus: UniffiRustCallStatus,
-    )
-}
-
-internal interface UniffiCallbackInterfaceRollingStockMethod5 : com.sun.jna.Callback {
-    fun callback(
-        `uniffiHandle`: Long,
-        `speed`: Double,
-        `uniffiOutReturn`: DoubleByReference,
-        uniffiCallStatus: UniffiRustCallStatus,
-    )
-}
-
-internal interface UniffiCallbackInterfaceRollingStockMethod6 : com.sun.jna.Callback {
-    fun callback(
-        `uniffiHandle`: Long,
-        `uniffiOutReturn`: DoubleByReference,
-        uniffiCallStatus: UniffiRustCallStatus,
-    )
-}
-
-internal interface UniffiCallbackInterfaceTrainPathMethod0 : com.sun.jna.Callback {
-    fun callback(
-        `uniffiHandle`: Long,
-        `uniffiOutReturn`: DoubleByReference,
-        uniffiCallStatus: UniffiRustCallStatus,
-    )
-}
-
-internal interface UniffiCallbackInterfaceTrainPathMethod1 : com.sun.jna.Callback {
-    fun callback(
-        `uniffiHandle`: Long,
-        `start`: Double,
-        `end`: Double,
-        `uniffiOutReturn`: DoubleByReference,
-        uniffiCallStatus: UniffiRustCallStatus,
-    )
-}
-
-internal interface UniffiCallbackInterfaceTrainPathMethod2 : com.sun.jna.Callback {
-    fun callback(
-        `uniffiHandle`: Long,
-        `start`: Double,
-        `end`: Double,
-        `uniffiOutReturn`: DoubleByReference,
-        uniffiCallStatus: UniffiRustCallStatus,
-    )
-}
-
-@Structure.FieldOrder(
-    "mass",
-    "inertia",
-    "length",
-    "maxSpeed",
-    "rollingResistance",
-    "rollingResistanceDeriv",
-    "deceleration",
-    "uniffiFree",
-)
-internal open class UniffiVTableCallbackInterfaceRollingStock(
-    @JvmField internal var `mass`: UniffiCallbackInterfaceRollingStockMethod0? = null,
-    @JvmField internal var `inertia`: UniffiCallbackInterfaceRollingStockMethod1? = null,
-    @JvmField internal var `length`: UniffiCallbackInterfaceRollingStockMethod2? = null,
-    @JvmField internal var `maxSpeed`: UniffiCallbackInterfaceRollingStockMethod3? = null,
-    @JvmField internal var `rollingResistance`: UniffiCallbackInterfaceRollingStockMethod4? = null,
-    @JvmField
-    internal var `rollingResistanceDeriv`: UniffiCallbackInterfaceRollingStockMethod5? = null,
-    @JvmField internal var `deceleration`: UniffiCallbackInterfaceRollingStockMethod6? = null,
-    @JvmField internal var `uniffiFree`: UniffiCallbackInterfaceFree? = null,
-) : Structure() {
-    class UniffiByValue(
-        `mass`: UniffiCallbackInterfaceRollingStockMethod0? = null,
-        `inertia`: UniffiCallbackInterfaceRollingStockMethod1? = null,
-        `length`: UniffiCallbackInterfaceRollingStockMethod2? = null,
-        `maxSpeed`: UniffiCallbackInterfaceRollingStockMethod3? = null,
-        `rollingResistance`: UniffiCallbackInterfaceRollingStockMethod4? = null,
-        `rollingResistanceDeriv`: UniffiCallbackInterfaceRollingStockMethod5? = null,
-        `deceleration`: UniffiCallbackInterfaceRollingStockMethod6? = null,
-        `uniffiFree`: UniffiCallbackInterfaceFree? = null,
-    ) :
-        UniffiVTableCallbackInterfaceRollingStock(
-            `mass`,
-            `inertia`,
-            `length`,
-            `maxSpeed`,
-            `rollingResistance`,
-            `rollingResistanceDeriv`,
-            `deceleration`,
-            `uniffiFree`,
-        ),
-        Structure.ByValue
-
-    internal fun uniffiSetValue(other: UniffiVTableCallbackInterfaceRollingStock) {
-        `mass` = other.`mass`
-        `inertia` = other.`inertia`
-        `length` = other.`length`
-        `maxSpeed` = other.`maxSpeed`
-        `rollingResistance` = other.`rollingResistance`
-        `rollingResistanceDeriv` = other.`rollingResistanceDeriv`
-        `deceleration` = other.`deceleration`
-        `uniffiFree` = other.`uniffiFree`
-    }
-}
-
-@Structure.FieldOrder("length", "avgGrade", "minGrade", "uniffiFree")
-internal open class UniffiVTableCallbackInterfaceTrainPath(
-    @JvmField internal var `length`: UniffiCallbackInterfaceTrainPathMethod0? = null,
-    @JvmField internal var `avgGrade`: UniffiCallbackInterfaceTrainPathMethod1? = null,
-    @JvmField internal var `minGrade`: UniffiCallbackInterfaceTrainPathMethod2? = null,
-    @JvmField internal var `uniffiFree`: UniffiCallbackInterfaceFree? = null,
-) : Structure() {
-    class UniffiByValue(
-        `length`: UniffiCallbackInterfaceTrainPathMethod0? = null,
-        `avgGrade`: UniffiCallbackInterfaceTrainPathMethod1? = null,
-        `minGrade`: UniffiCallbackInterfaceTrainPathMethod2? = null,
-        `uniffiFree`: UniffiCallbackInterfaceFree? = null,
-    ) :
-        UniffiVTableCallbackInterfaceTrainPath(`length`, `avgGrade`, `minGrade`, `uniffiFree`),
-        Structure.ByValue
-
-    internal fun uniffiSetValue(other: UniffiVTableCallbackInterfaceTrainPath) {
-        `length` = other.`length`
-        `avgGrade` = other.`avgGrade`
-        `minGrade` = other.`minGrade`
-        `uniffiFree` = other.`uniffiFree`
-    }
-}
-
 // For large crates we prevent `MethodTooLargeException` (see #2340)
 // N.B. the name of the extension is very misleading, since it is
 // rather `InterfaceTooLargeException`, caused by too many methods
@@ -870,27 +705,7 @@ internal interface IntegrityCheckingUniffiLib : Library {
     // Integrity check functions only
     fun uniffi_tsim_ffi_checksum_func_step(): Short
 
-    fun uniffi_tsim_ffi_checksum_method_rollingstock_mass(): Short
-
-    fun uniffi_tsim_ffi_checksum_method_rollingstock_inertia(): Short
-
-    fun uniffi_tsim_ffi_checksum_method_rollingstock_length(): Short
-
-    fun uniffi_tsim_ffi_checksum_method_rollingstock_max_speed(): Short
-
-    fun uniffi_tsim_ffi_checksum_method_rollingstock_rolling_resistance(): Short
-
-    fun uniffi_tsim_ffi_checksum_method_rollingstock_rolling_resistance_deriv(): Short
-
-    fun uniffi_tsim_ffi_checksum_method_rollingstock_deceleration(): Short
-
     fun uniffi_tsim_ffi_checksum_method_tractiveeffortcurvemap_insert(): Short
-
-    fun uniffi_tsim_ffi_checksum_method_trainpath_length(): Short
-
-    fun uniffi_tsim_ffi_checksum_method_trainpath_avg_grade(): Short
-
-    fun uniffi_tsim_ffi_checksum_method_trainpath_min_grade(): Short
 
     fun uniffi_tsim_ffi_checksum_constructor_tractiveeffortcurvemap_new(): Short
 
@@ -931,8 +746,6 @@ internal interface UniffiLib : Library {
             val lib = loadIndirect<UniffiLib>(componentName)
             // No need to check the contract version and checksums, since
             // we already did that with `IntegrityCheckingUniffiLib` above.
-            uniffiCallbackInterfaceRollingStock.register(lib)
-            uniffiCallbackInterfaceTrainPath.register(lib)
             // Loading of library with integrity check done.
             lib
         }
@@ -942,57 +755,6 @@ internal interface UniffiLib : Library {
     }
 
     // FFI functions
-    fun uniffi_tsim_ffi_fn_clone_rollingstock(
-        `ptr`: Pointer,
-        uniffi_out_err: UniffiRustCallStatus,
-    ): Pointer
-
-    fun uniffi_tsim_ffi_fn_free_rollingstock(
-        `ptr`: Pointer,
-        uniffi_out_err: UniffiRustCallStatus,
-    ): Unit
-
-    fun uniffi_tsim_ffi_fn_init_callback_vtable_rollingstock(
-        `vtable`: UniffiVTableCallbackInterfaceRollingStock
-    ): Unit
-
-    fun uniffi_tsim_ffi_fn_method_rollingstock_mass(
-        `ptr`: Pointer,
-        uniffi_out_err: UniffiRustCallStatus,
-    ): Double
-
-    fun uniffi_tsim_ffi_fn_method_rollingstock_inertia(
-        `ptr`: Pointer,
-        uniffi_out_err: UniffiRustCallStatus,
-    ): Double
-
-    fun uniffi_tsim_ffi_fn_method_rollingstock_length(
-        `ptr`: Pointer,
-        uniffi_out_err: UniffiRustCallStatus,
-    ): Double
-
-    fun uniffi_tsim_ffi_fn_method_rollingstock_max_speed(
-        `ptr`: Pointer,
-        uniffi_out_err: UniffiRustCallStatus,
-    ): Double
-
-    fun uniffi_tsim_ffi_fn_method_rollingstock_rolling_resistance(
-        `ptr`: Pointer,
-        `speed`: Double,
-        uniffi_out_err: UniffiRustCallStatus,
-    ): Double
-
-    fun uniffi_tsim_ffi_fn_method_rollingstock_rolling_resistance_deriv(
-        `ptr`: Pointer,
-        `speed`: Double,
-        uniffi_out_err: UniffiRustCallStatus,
-    ): Double
-
-    fun uniffi_tsim_ffi_fn_method_rollingstock_deceleration(
-        `ptr`: Pointer,
-        uniffi_out_err: UniffiRustCallStatus,
-    ): Double
-
     fun uniffi_tsim_ffi_fn_clone_tractiveeffortcurvemap(
         `ptr`: Pointer,
         uniffi_out_err: UniffiRustCallStatus,
@@ -1014,42 +776,9 @@ internal interface UniffiLib : Library {
         uniffi_out_err: UniffiRustCallStatus,
     ): Unit
 
-    fun uniffi_tsim_ffi_fn_clone_trainpath(
-        `ptr`: Pointer,
-        uniffi_out_err: UniffiRustCallStatus,
-    ): Pointer
-
-    fun uniffi_tsim_ffi_fn_free_trainpath(
-        `ptr`: Pointer,
-        uniffi_out_err: UniffiRustCallStatus,
-    ): Unit
-
-    fun uniffi_tsim_ffi_fn_init_callback_vtable_trainpath(
-        `vtable`: UniffiVTableCallbackInterfaceTrainPath
-    ): Unit
-
-    fun uniffi_tsim_ffi_fn_method_trainpath_length(
-        `ptr`: Pointer,
-        uniffi_out_err: UniffiRustCallStatus,
-    ): Double
-
-    fun uniffi_tsim_ffi_fn_method_trainpath_avg_grade(
-        `ptr`: Pointer,
-        `start`: Double,
-        `end`: Double,
-        uniffi_out_err: UniffiRustCallStatus,
-    ): Double
-
-    fun uniffi_tsim_ffi_fn_method_trainpath_min_grade(
-        `ptr`: Pointer,
-        `start`: Double,
-        `end`: Double,
-        uniffi_out_err: UniffiRustCallStatus,
-    ): Double
-
     fun uniffi_tsim_ffi_fn_func_step(
-        `rollingStock`: Pointer,
-        `path`: Pointer,
+        `rollingStock`: RustBuffer.ByValue,
+        `path`: RustBuffer.ByValue,
         `timeDelta`: Double,
         `tractiveEffortCurveMap`: Pointer,
         `initialPosition`: Double,
@@ -1291,65 +1020,12 @@ private fun uniffiCheckContractApiVersion(lib: IntegrityCheckingUniffiLib) {
 
 @Suppress("UNUSED_PARAMETER")
 private fun uniffiCheckApiChecksums(lib: IntegrityCheckingUniffiLib) {
-    if (lib.uniffi_tsim_ffi_checksum_func_step() != 15752.toShort()) {
-        throw RuntimeException(
-            "UniFFI API checksum mismatch: try cleaning and rebuilding your project"
-        )
-    }
-    if (lib.uniffi_tsim_ffi_checksum_method_rollingstock_mass() != 20728.toShort()) {
-        throw RuntimeException(
-            "UniFFI API checksum mismatch: try cleaning and rebuilding your project"
-        )
-    }
-    if (lib.uniffi_tsim_ffi_checksum_method_rollingstock_inertia() != 55621.toShort()) {
-        throw RuntimeException(
-            "UniFFI API checksum mismatch: try cleaning and rebuilding your project"
-        )
-    }
-    if (lib.uniffi_tsim_ffi_checksum_method_rollingstock_length() != 37004.toShort()) {
-        throw RuntimeException(
-            "UniFFI API checksum mismatch: try cleaning and rebuilding your project"
-        )
-    }
-    if (lib.uniffi_tsim_ffi_checksum_method_rollingstock_max_speed() != 28211.toShort()) {
-        throw RuntimeException(
-            "UniFFI API checksum mismatch: try cleaning and rebuilding your project"
-        )
-    }
-    if (lib.uniffi_tsim_ffi_checksum_method_rollingstock_rolling_resistance() != 26820.toShort()) {
-        throw RuntimeException(
-            "UniFFI API checksum mismatch: try cleaning and rebuilding your project"
-        )
-    }
-    if (
-        lib.uniffi_tsim_ffi_checksum_method_rollingstock_rolling_resistance_deriv() !=
-            38188.toShort()
-    ) {
-        throw RuntimeException(
-            "UniFFI API checksum mismatch: try cleaning and rebuilding your project"
-        )
-    }
-    if (lib.uniffi_tsim_ffi_checksum_method_rollingstock_deceleration() != 18048.toShort()) {
+    if (lib.uniffi_tsim_ffi_checksum_func_step() != 57419.toShort()) {
         throw RuntimeException(
             "UniFFI API checksum mismatch: try cleaning and rebuilding your project"
         )
     }
     if (lib.uniffi_tsim_ffi_checksum_method_tractiveeffortcurvemap_insert() != 62745.toShort()) {
-        throw RuntimeException(
-            "UniFFI API checksum mismatch: try cleaning and rebuilding your project"
-        )
-    }
-    if (lib.uniffi_tsim_ffi_checksum_method_trainpath_length() != 9711.toShort()) {
-        throw RuntimeException(
-            "UniFFI API checksum mismatch: try cleaning and rebuilding your project"
-        )
-    }
-    if (lib.uniffi_tsim_ffi_checksum_method_trainpath_avg_grade() != 15093.toShort()) {
-        throw RuntimeException(
-            "UniFFI API checksum mismatch: try cleaning and rebuilding your project"
-        )
-    }
-    if (lib.uniffi_tsim_ffi_checksum_method_trainpath_min_grade() != 18534.toShort()) {
         throw RuntimeException(
             "UniFFI API checksum mismatch: try cleaning and rebuilding your project"
         )
@@ -1432,40 +1108,7 @@ inline fun <T : Disposable?, R> T.use(block: (T) -> R) =
  *
  * @suppress
  */
-object NoPointer // Magic number for the Rust proxy to call using the same mechanism as every other
-
-// method,
-
-// to free the callback once it's dropped by Rust.
-internal const val IDX_CALLBACK_FREE = 0
-// Callback return codes
-internal const val UNIFFI_CALLBACK_SUCCESS = 0
-internal const val UNIFFI_CALLBACK_ERROR = 1
-internal const val UNIFFI_CALLBACK_UNEXPECTED_ERROR = 2
-
-/** @suppress */
-public abstract class FfiConverterCallbackInterface<CallbackInterface : Any> :
-    FfiConverter<CallbackInterface, Long> {
-    internal val handleMap = UniffiHandleMap<CallbackInterface>()
-
-    internal fun drop(handle: Long) {
-        handleMap.remove(handle)
-    }
-
-    override fun lift(value: Long): CallbackInterface {
-        return handleMap.get(value)
-    }
-
-    override fun read(buf: ByteBuffer) = lift(buf.getLong())
-
-    override fun lower(value: CallbackInterface) = handleMap.insert(value)
-
-    override fun allocationSize(value: CallbackInterface) = 8UL
-
-    override fun write(value: CallbackInterface, buf: ByteBuffer) {
-        buf.putLong(lower(value))
-    }
-}
+object NoPointer
 
 /**
  * The cleaner interface for Object finalization code to run. This is the entry point to any
@@ -1604,481 +1247,6 @@ public object FfiConverterString : FfiConverter<String, RustBuffer.ByValue> {
         val byteBuf = toUtf8(value)
         buf.putInt(byteBuf.limit())
         buf.put(byteBuf)
-    }
-}
-
-// This template implements a class for working with a Rust struct via a Pointer/Arc<T>
-// to the live Rust struct on the other side of the FFI.
-//
-// Each instance implements core operations for working with the Rust `Arc<T>` and the
-// Kotlin Pointer to work with the live Rust struct on the other side of the FFI.
-//
-// There's some subtlety here, because we have to be careful not to operate on a Rust
-// struct after it has been dropped, and because we must expose a public API for freeing
-// theq Kotlin wrapper object in lieu of reliable finalizers. The core requirements are:
-//
-//   * Each instance holds an opaque pointer to the underlying Rust struct.
-//     Method calls need to read this pointer from the object's state and pass it in to
-//     the Rust FFI.
-//
-//   * When an instance is no longer needed, its pointer should be passed to a
-//     special destructor function provided by the Rust FFI, which will drop the
-//     underlying Rust struct.
-//
-//   * Given an instance, calling code is expected to call the special
-//     `destroy` method in order to free it after use, either by calling it explicitly
-//     or by using a higher-level helper like the `use` method. Failing to do so risks
-//     leaking the underlying Rust struct.
-//
-//   * We can't assume that calling code will do the right thing, and must be prepared
-//     to handle Kotlin method calls executing concurrently with or even after a call to
-//     `destroy`, and to handle multiple (possibly concurrent!) calls to `destroy`.
-//
-//   * We must never allow Rust code to operate on the underlying Rust struct after
-//     the destructor has been called, and must never call the destructor more than once.
-//     Doing so may trigger memory unsafety.
-//
-//   * To mitigate many of the risks of leaking memory and use-after-free unsafety, a `Cleaner`
-//     is implemented to call the destructor when the Kotlin object becomes unreachable.
-//     This is done in a background thread. This is not a panacea, and client code should be aware
-// that
-//      1. the thread may starve if some there are objects that have poorly performing
-//     `drop` methods or do significant work in their `drop` methods.
-//      2. the thread is shared across the whole library. This can be tuned by using
-// `android_cleaner = true`,
-//         or `android = true` in the [`kotlin` section of the `uniffi.toml`
-// file](https://mozilla.github.io/uniffi-rs/kotlin/configuration.html).
-//
-// If we try to implement this with mutual exclusion on access to the pointer, there is the
-// possibility of a race between a method call and a concurrent call to `destroy`:
-//
-//    * Thread A starts a method call, reads the value of the pointer, but is interrupted
-//      before it can pass the pointer over the FFI to Rust.
-//    * Thread B calls `destroy` and frees the underlying Rust struct.
-//    * Thread A resumes, passing the already-read pointer value to Rust and triggering
-//      a use-after-free.
-//
-// One possible solution would be to use a `ReadWriteLock`, with each method call taking
-// a read lock (and thus allowed to run concurrently) and the special `destroy` method
-// taking a write lock (and thus blocking on live method calls). However, we aim not to
-// generate methods with any hidden blocking semantics, and a `destroy` method that might
-// block if called incorrectly seems to meet that bar.
-//
-// So, we achieve our goals by giving each instance an associated `AtomicLong` counter to track
-// the number of in-flight method calls, and an `AtomicBoolean` flag to indicate whether `destroy`
-// has been called. These are updated according to the following rules:
-//
-//    * The initial value of the counter is 1, indicating a live object with no in-flight calls.
-//      The initial value for the flag is false.
-//
-//    * At the start of each method call, we atomically check the counter.
-//      If it is 0 then the underlying Rust struct has already been destroyed and the call is
-// aborted.
-//      If it is nonzero them we atomically increment it by 1 and proceed with the method call.
-//
-//    * At the end of each method call, we atomically decrement and check the counter.
-//      If it has reached zero then we destroy the underlying Rust struct.
-//
-//    * When `destroy` is called, we atomically flip the flag from false to true.
-//      If the flag was already true we silently fail.
-//      Otherwise we atomically decrement and check the counter.
-//      If it has reached zero then we destroy the underlying Rust struct.
-//
-// Astute readers may observe that this all sounds very similar to the way that Rust's `Arc<T>`
-// works,
-// and indeed it is, with the addition of a flag to guard against multiple calls to `destroy`.
-//
-// The overall effect is that the underlying Rust struct is destroyed only when `destroy` has been
-// called *and* all in-flight method calls have completed, avoiding violating any of the
-// expectations
-// of the underlying Rust code.
-//
-// This makes a cleaner a better alternative to _not_ calling `destroy()` as
-// and when the object is finished with, but the abstraction is not perfect: if the Rust object's
-// `drop`
-// method is slow, and/or there are many objects to cleanup, and it's on a low end Android device,
-// then the cleaner
-// thread may be starved, and the app will leak memory.
-//
-// In this case, `destroy`ing manually may be a better solution.
-//
-// The cleaner can live side by side with the manual calling of `destroy`. In the order of
-// responsiveness, uniffi objects
-// with Rust peers are reclaimed:
-//
-// 1. By calling the `destroy` method of the object, which calls `rustObject.free()`. If that
-// doesn't happen:
-// 2. When the object becomes unreachable, AND the Cleaner thread gets to call `rustObject.free()`.
-// If the thread is starved then:
-// 3. The memory is reclaimed when the process terminates.
-//
-// [1]
-// https://stackoverflow.com/questions/24376768/can-java-finalize-an-object-when-it-is-still-in-scope/24380219
-//
-
-public interface RollingStock {
-
-    /** The mass of the train, in kilograms */
-    fun `mass`(): kotlin.Double
-
-    /** The inertia of the train, in newtons (usually computed from mass * inertiaCoefficient) */
-    fun `inertia`(): kotlin.Double
-
-    /** The length of the train, in meters */
-    fun `length`(): kotlin.Double
-
-    /** The maximum speed the train can reach, in m/s */
-    fun `maxSpeed`(): kotlin.Double
-
-    /** The resistance to movement at a given speed, in newtons */
-    fun `rollingResistance`(`speed`: kotlin.Double): kotlin.Double
-
-    /** The first derivative of the resistance to movement at a given speed, in kg/s */
-    fun `rollingResistanceDeriv`(`speed`: kotlin.Double): kotlin.Double
-
-    /** The maximum constant deceleration, in m/s^2 */
-    fun `deceleration`(): kotlin.Double
-
-    companion object
-}
-
-open class RollingStockImpl : Disposable, AutoCloseable, RollingStock {
-
-    constructor(pointer: Pointer) {
-        this.pointer = pointer
-        this.cleanable = UniffiLib.CLEANER.register(this, UniffiCleanAction(pointer))
-    }
-
-    /**
-     * This constructor can be used to instantiate a fake object. Only used for tests. Any attempt
-     * to actually use an object constructed this way will fail as there is no connected Rust
-     * object.
-     */
-    @Suppress("UNUSED_PARAMETER")
-    constructor(noPointer: NoPointer) {
-        this.pointer = null
-        this.cleanable = UniffiLib.CLEANER.register(this, UniffiCleanAction(pointer))
-    }
-
-    protected val pointer: Pointer?
-    protected val cleanable: UniffiCleaner.Cleanable
-
-    private val wasDestroyed = AtomicBoolean(false)
-    private val callCounter = AtomicLong(1)
-
-    override fun destroy() {
-        // Only allow a single call to this method.
-        // TODO: maybe we should log a warning if called more than once?
-        if (this.wasDestroyed.compareAndSet(false, true)) {
-            // This decrement always matches the initial count of 1 given at creation time.
-            if (this.callCounter.decrementAndGet() == 0L) {
-                cleanable.clean()
-            }
-        }
-    }
-
-    @Synchronized
-    override fun close() {
-        this.destroy()
-    }
-
-    internal inline fun <R> callWithPointer(block: (ptr: Pointer) -> R): R {
-        // Check and increment the call counter, to keep the object alive.
-        // This needs a compare-and-set retry loop in case of concurrent updates.
-        do {
-            val c = this.callCounter.get()
-            if (c == 0L) {
-                throw IllegalStateException(
-                    "${this.javaClass.simpleName} object has already been destroyed"
-                )
-            }
-            if (c == Long.MAX_VALUE) {
-                throw IllegalStateException(
-                    "${this.javaClass.simpleName} call counter would overflow"
-                )
-            }
-        } while (!this.callCounter.compareAndSet(c, c + 1L))
-        // Now we can safely do the method call without the pointer being freed concurrently.
-        try {
-            return block(this.uniffiClonePointer())
-        } finally {
-            // This decrement always matches the increment we performed above.
-            if (this.callCounter.decrementAndGet() == 0L) {
-                cleanable.clean()
-            }
-        }
-    }
-
-    // Use a static inner class instead of a closure so as not to accidentally
-    // capture `this` as part of the cleanable's action.
-    private class UniffiCleanAction(private val pointer: Pointer?) : Runnable {
-        override fun run() {
-            pointer?.let { ptr ->
-                uniffiRustCall { status ->
-                    UniffiLib.INSTANCE.uniffi_tsim_ffi_fn_free_rollingstock(ptr, status)
-                }
-            }
-        }
-    }
-
-    fun uniffiClonePointer(): Pointer {
-        return uniffiRustCall() { status ->
-            UniffiLib.INSTANCE.uniffi_tsim_ffi_fn_clone_rollingstock(pointer!!, status)
-        }
-    }
-
-    /** The mass of the train, in kilograms */
-    override fun `mass`(): kotlin.Double {
-        return FfiConverterDouble.lift(
-            callWithPointer {
-                uniffiRustCall() { _status ->
-                    UniffiLib.INSTANCE.uniffi_tsim_ffi_fn_method_rollingstock_mass(it, _status)
-                }
-            }
-        )
-    }
-
-    /** The inertia of the train, in newtons (usually computed from mass * inertiaCoefficient) */
-    override fun `inertia`(): kotlin.Double {
-        return FfiConverterDouble.lift(
-            callWithPointer {
-                uniffiRustCall() { _status ->
-                    UniffiLib.INSTANCE.uniffi_tsim_ffi_fn_method_rollingstock_inertia(it, _status)
-                }
-            }
-        )
-    }
-
-    /** The length of the train, in meters */
-    override fun `length`(): kotlin.Double {
-        return FfiConverterDouble.lift(
-            callWithPointer {
-                uniffiRustCall() { _status ->
-                    UniffiLib.INSTANCE.uniffi_tsim_ffi_fn_method_rollingstock_length(it, _status)
-                }
-            }
-        )
-    }
-
-    /** The maximum speed the train can reach, in m/s */
-    override fun `maxSpeed`(): kotlin.Double {
-        return FfiConverterDouble.lift(
-            callWithPointer {
-                uniffiRustCall() { _status ->
-                    UniffiLib.INSTANCE.uniffi_tsim_ffi_fn_method_rollingstock_max_speed(it, _status)
-                }
-            }
-        )
-    }
-
-    /** The resistance to movement at a given speed, in newtons */
-    override fun `rollingResistance`(`speed`: kotlin.Double): kotlin.Double {
-        return FfiConverterDouble.lift(
-            callWithPointer {
-                uniffiRustCall() { _status ->
-                    UniffiLib.INSTANCE.uniffi_tsim_ffi_fn_method_rollingstock_rolling_resistance(
-                        it,
-                        FfiConverterDouble.lower(`speed`),
-                        _status,
-                    )
-                }
-            }
-        )
-    }
-
-    /** The first derivative of the resistance to movement at a given speed, in kg/s */
-    override fun `rollingResistanceDeriv`(`speed`: kotlin.Double): kotlin.Double {
-        return FfiConverterDouble.lift(
-            callWithPointer {
-                uniffiRustCall() { _status ->
-                    UniffiLib.INSTANCE
-                        .uniffi_tsim_ffi_fn_method_rollingstock_rolling_resistance_deriv(
-                            it,
-                            FfiConverterDouble.lower(`speed`),
-                            _status,
-                        )
-                }
-            }
-        )
-    }
-
-    /** The maximum constant deceleration, in m/s^2 */
-    override fun `deceleration`(): kotlin.Double {
-        return FfiConverterDouble.lift(
-            callWithPointer {
-                uniffiRustCall() { _status ->
-                    UniffiLib.INSTANCE.uniffi_tsim_ffi_fn_method_rollingstock_deceleration(
-                        it,
-                        _status,
-                    )
-                }
-            }
-        )
-    }
-
-    companion object
-}
-
-// Put the implementation in an object so we don't pollute the top-level namespace
-internal object uniffiCallbackInterfaceRollingStock {
-    internal object `mass` : UniffiCallbackInterfaceRollingStockMethod0 {
-        override fun callback(
-            `uniffiHandle`: Long,
-            `uniffiOutReturn`: DoubleByReference,
-            uniffiCallStatus: UniffiRustCallStatus,
-        ) {
-            val uniffiObj = FfiConverterTypeRollingStock.handleMap.get(uniffiHandle)
-            val makeCall = { -> uniffiObj.`mass`() }
-            val writeReturn = { value: kotlin.Double ->
-                uniffiOutReturn.setValue(FfiConverterDouble.lower(value))
-            }
-            uniffiTraitInterfaceCall(uniffiCallStatus, makeCall, writeReturn)
-        }
-    }
-
-    internal object `inertia` : UniffiCallbackInterfaceRollingStockMethod1 {
-        override fun callback(
-            `uniffiHandle`: Long,
-            `uniffiOutReturn`: DoubleByReference,
-            uniffiCallStatus: UniffiRustCallStatus,
-        ) {
-            val uniffiObj = FfiConverterTypeRollingStock.handleMap.get(uniffiHandle)
-            val makeCall = { -> uniffiObj.`inertia`() }
-            val writeReturn = { value: kotlin.Double ->
-                uniffiOutReturn.setValue(FfiConverterDouble.lower(value))
-            }
-            uniffiTraitInterfaceCall(uniffiCallStatus, makeCall, writeReturn)
-        }
-    }
-
-    internal object `length` : UniffiCallbackInterfaceRollingStockMethod2 {
-        override fun callback(
-            `uniffiHandle`: Long,
-            `uniffiOutReturn`: DoubleByReference,
-            uniffiCallStatus: UniffiRustCallStatus,
-        ) {
-            val uniffiObj = FfiConverterTypeRollingStock.handleMap.get(uniffiHandle)
-            val makeCall = { -> uniffiObj.`length`() }
-            val writeReturn = { value: kotlin.Double ->
-                uniffiOutReturn.setValue(FfiConverterDouble.lower(value))
-            }
-            uniffiTraitInterfaceCall(uniffiCallStatus, makeCall, writeReturn)
-        }
-    }
-
-    internal object `maxSpeed` : UniffiCallbackInterfaceRollingStockMethod3 {
-        override fun callback(
-            `uniffiHandle`: Long,
-            `uniffiOutReturn`: DoubleByReference,
-            uniffiCallStatus: UniffiRustCallStatus,
-        ) {
-            val uniffiObj = FfiConverterTypeRollingStock.handleMap.get(uniffiHandle)
-            val makeCall = { -> uniffiObj.`maxSpeed`() }
-            val writeReturn = { value: kotlin.Double ->
-                uniffiOutReturn.setValue(FfiConverterDouble.lower(value))
-            }
-            uniffiTraitInterfaceCall(uniffiCallStatus, makeCall, writeReturn)
-        }
-    }
-
-    internal object `rollingResistance` : UniffiCallbackInterfaceRollingStockMethod4 {
-        override fun callback(
-            `uniffiHandle`: Long,
-            `speed`: Double,
-            `uniffiOutReturn`: DoubleByReference,
-            uniffiCallStatus: UniffiRustCallStatus,
-        ) {
-            val uniffiObj = FfiConverterTypeRollingStock.handleMap.get(uniffiHandle)
-            val makeCall = { -> uniffiObj.`rollingResistance`(FfiConverterDouble.lift(`speed`)) }
-            val writeReturn = { value: kotlin.Double ->
-                uniffiOutReturn.setValue(FfiConverterDouble.lower(value))
-            }
-            uniffiTraitInterfaceCall(uniffiCallStatus, makeCall, writeReturn)
-        }
-    }
-
-    internal object `rollingResistanceDeriv` : UniffiCallbackInterfaceRollingStockMethod5 {
-        override fun callback(
-            `uniffiHandle`: Long,
-            `speed`: Double,
-            `uniffiOutReturn`: DoubleByReference,
-            uniffiCallStatus: UniffiRustCallStatus,
-        ) {
-            val uniffiObj = FfiConverterTypeRollingStock.handleMap.get(uniffiHandle)
-            val makeCall = { ->
-                uniffiObj.`rollingResistanceDeriv`(FfiConverterDouble.lift(`speed`))
-            }
-            val writeReturn = { value: kotlin.Double ->
-                uniffiOutReturn.setValue(FfiConverterDouble.lower(value))
-            }
-            uniffiTraitInterfaceCall(uniffiCallStatus, makeCall, writeReturn)
-        }
-    }
-
-    internal object `deceleration` : UniffiCallbackInterfaceRollingStockMethod6 {
-        override fun callback(
-            `uniffiHandle`: Long,
-            `uniffiOutReturn`: DoubleByReference,
-            uniffiCallStatus: UniffiRustCallStatus,
-        ) {
-            val uniffiObj = FfiConverterTypeRollingStock.handleMap.get(uniffiHandle)
-            val makeCall = { -> uniffiObj.`deceleration`() }
-            val writeReturn = { value: kotlin.Double ->
-                uniffiOutReturn.setValue(FfiConverterDouble.lower(value))
-            }
-            uniffiTraitInterfaceCall(uniffiCallStatus, makeCall, writeReturn)
-        }
-    }
-
-    internal object uniffiFree : UniffiCallbackInterfaceFree {
-        override fun callback(handle: Long) {
-            FfiConverterTypeRollingStock.handleMap.remove(handle)
-        }
-    }
-
-    internal var vtable =
-        UniffiVTableCallbackInterfaceRollingStock.UniffiByValue(
-            `mass`,
-            `inertia`,
-            `length`,
-            `maxSpeed`,
-            `rollingResistance`,
-            `rollingResistanceDeriv`,
-            `deceleration`,
-            uniffiFree,
-        )
-
-    // Registers the foreign callback with the Rust side.
-    // This method is generated for each callback interface.
-    internal fun register(lib: UniffiLib) {
-        lib.uniffi_tsim_ffi_fn_init_callback_vtable_rollingstock(vtable)
-    }
-}
-
-/** @suppress */
-public object FfiConverterTypeRollingStock : FfiConverter<RollingStock, Pointer> {
-    internal val handleMap = UniffiHandleMap<RollingStock>()
-
-    override fun lower(value: RollingStock): Pointer {
-        return Pointer(handleMap.insert(value))
-    }
-
-    override fun lift(value: Pointer): RollingStock {
-        return RollingStockImpl(value)
-    }
-
-    override fun read(buf: ByteBuffer): RollingStock {
-        // The Rust code always writes pointers as 8 bytes, and will
-        // fail to compile if they don't fit.
-        return lift(Pointer(buf.getLong()))
-    }
-
-    override fun allocationSize(value: RollingStock) = 8UL
-
-    override fun write(value: RollingStock, buf: ByteBuffer) {
-        // The Rust code always expects pointers written as 8 bytes,
-        // and will fail to compile if they don't fit.
-        buf.putLong(Pointer.nativeValue(lower(value)))
     }
 }
 
@@ -2336,363 +1504,6 @@ public object FfiConverterTypeTractiveEffortCurveMap :
     }
 }
 
-// This template implements a class for working with a Rust struct via a Pointer/Arc<T>
-// to the live Rust struct on the other side of the FFI.
-//
-// Each instance implements core operations for working with the Rust `Arc<T>` and the
-// Kotlin Pointer to work with the live Rust struct on the other side of the FFI.
-//
-// There's some subtlety here, because we have to be careful not to operate on a Rust
-// struct after it has been dropped, and because we must expose a public API for freeing
-// theq Kotlin wrapper object in lieu of reliable finalizers. The core requirements are:
-//
-//   * Each instance holds an opaque pointer to the underlying Rust struct.
-//     Method calls need to read this pointer from the object's state and pass it in to
-//     the Rust FFI.
-//
-//   * When an instance is no longer needed, its pointer should be passed to a
-//     special destructor function provided by the Rust FFI, which will drop the
-//     underlying Rust struct.
-//
-//   * Given an instance, calling code is expected to call the special
-//     `destroy` method in order to free it after use, either by calling it explicitly
-//     or by using a higher-level helper like the `use` method. Failing to do so risks
-//     leaking the underlying Rust struct.
-//
-//   * We can't assume that calling code will do the right thing, and must be prepared
-//     to handle Kotlin method calls executing concurrently with or even after a call to
-//     `destroy`, and to handle multiple (possibly concurrent!) calls to `destroy`.
-//
-//   * We must never allow Rust code to operate on the underlying Rust struct after
-//     the destructor has been called, and must never call the destructor more than once.
-//     Doing so may trigger memory unsafety.
-//
-//   * To mitigate many of the risks of leaking memory and use-after-free unsafety, a `Cleaner`
-//     is implemented to call the destructor when the Kotlin object becomes unreachable.
-//     This is done in a background thread. This is not a panacea, and client code should be aware
-// that
-//      1. the thread may starve if some there are objects that have poorly performing
-//     `drop` methods or do significant work in their `drop` methods.
-//      2. the thread is shared across the whole library. This can be tuned by using
-// `android_cleaner = true`,
-//         or `android = true` in the [`kotlin` section of the `uniffi.toml`
-// file](https://mozilla.github.io/uniffi-rs/kotlin/configuration.html).
-//
-// If we try to implement this with mutual exclusion on access to the pointer, there is the
-// possibility of a race between a method call and a concurrent call to `destroy`:
-//
-//    * Thread A starts a method call, reads the value of the pointer, but is interrupted
-//      before it can pass the pointer over the FFI to Rust.
-//    * Thread B calls `destroy` and frees the underlying Rust struct.
-//    * Thread A resumes, passing the already-read pointer value to Rust and triggering
-//      a use-after-free.
-//
-// One possible solution would be to use a `ReadWriteLock`, with each method call taking
-// a read lock (and thus allowed to run concurrently) and the special `destroy` method
-// taking a write lock (and thus blocking on live method calls). However, we aim not to
-// generate methods with any hidden blocking semantics, and a `destroy` method that might
-// block if called incorrectly seems to meet that bar.
-//
-// So, we achieve our goals by giving each instance an associated `AtomicLong` counter to track
-// the number of in-flight method calls, and an `AtomicBoolean` flag to indicate whether `destroy`
-// has been called. These are updated according to the following rules:
-//
-//    * The initial value of the counter is 1, indicating a live object with no in-flight calls.
-//      The initial value for the flag is false.
-//
-//    * At the start of each method call, we atomically check the counter.
-//      If it is 0 then the underlying Rust struct has already been destroyed and the call is
-// aborted.
-//      If it is nonzero them we atomically increment it by 1 and proceed with the method call.
-//
-//    * At the end of each method call, we atomically decrement and check the counter.
-//      If it has reached zero then we destroy the underlying Rust struct.
-//
-//    * When `destroy` is called, we atomically flip the flag from false to true.
-//      If the flag was already true we silently fail.
-//      Otherwise we atomically decrement and check the counter.
-//      If it has reached zero then we destroy the underlying Rust struct.
-//
-// Astute readers may observe that this all sounds very similar to the way that Rust's `Arc<T>`
-// works,
-// and indeed it is, with the addition of a flag to guard against multiple calls to `destroy`.
-//
-// The overall effect is that the underlying Rust struct is destroyed only when `destroy` has been
-// called *and* all in-flight method calls have completed, avoiding violating any of the
-// expectations
-// of the underlying Rust code.
-//
-// This makes a cleaner a better alternative to _not_ calling `destroy()` as
-// and when the object is finished with, but the abstraction is not perfect: if the Rust object's
-// `drop`
-// method is slow, and/or there are many objects to cleanup, and it's on a low end Android device,
-// then the cleaner
-// thread may be starved, and the app will leak memory.
-//
-// In this case, `destroy`ing manually may be a better solution.
-//
-// The cleaner can live side by side with the manual calling of `destroy`. In the order of
-// responsiveness, uniffi objects
-// with Rust peers are reclaimed:
-//
-// 1. By calling the `destroy` method of the object, which calls `rustObject.free()`. If that
-// doesn't happen:
-// 2. When the object becomes unreachable, AND the Cleaner thread gets to call `rustObject.free()`.
-// If the thread is starved then:
-// 3. The memory is reclaimed when the process terminates.
-//
-// [1]
-// https://stackoverflow.com/questions/24376768/can-java-finalize-an-object-when-it-is-still-in-scope/24380219
-//
-
-public interface TrainPath {
-
-    fun `length`(): kotlin.Double
-
-    fun `avgGrade`(`start`: kotlin.Double, `end`: kotlin.Double): kotlin.Double
-
-    fun `minGrade`(`start`: kotlin.Double, `end`: kotlin.Double): kotlin.Double
-
-    companion object
-}
-
-open class TrainPathImpl : Disposable, AutoCloseable, TrainPath {
-
-    constructor(pointer: Pointer) {
-        this.pointer = pointer
-        this.cleanable = UniffiLib.CLEANER.register(this, UniffiCleanAction(pointer))
-    }
-
-    /**
-     * This constructor can be used to instantiate a fake object. Only used for tests. Any attempt
-     * to actually use an object constructed this way will fail as there is no connected Rust
-     * object.
-     */
-    @Suppress("UNUSED_PARAMETER")
-    constructor(noPointer: NoPointer) {
-        this.pointer = null
-        this.cleanable = UniffiLib.CLEANER.register(this, UniffiCleanAction(pointer))
-    }
-
-    protected val pointer: Pointer?
-    protected val cleanable: UniffiCleaner.Cleanable
-
-    private val wasDestroyed = AtomicBoolean(false)
-    private val callCounter = AtomicLong(1)
-
-    override fun destroy() {
-        // Only allow a single call to this method.
-        // TODO: maybe we should log a warning if called more than once?
-        if (this.wasDestroyed.compareAndSet(false, true)) {
-            // This decrement always matches the initial count of 1 given at creation time.
-            if (this.callCounter.decrementAndGet() == 0L) {
-                cleanable.clean()
-            }
-        }
-    }
-
-    @Synchronized
-    override fun close() {
-        this.destroy()
-    }
-
-    internal inline fun <R> callWithPointer(block: (ptr: Pointer) -> R): R {
-        // Check and increment the call counter, to keep the object alive.
-        // This needs a compare-and-set retry loop in case of concurrent updates.
-        do {
-            val c = this.callCounter.get()
-            if (c == 0L) {
-                throw IllegalStateException(
-                    "${this.javaClass.simpleName} object has already been destroyed"
-                )
-            }
-            if (c == Long.MAX_VALUE) {
-                throw IllegalStateException(
-                    "${this.javaClass.simpleName} call counter would overflow"
-                )
-            }
-        } while (!this.callCounter.compareAndSet(c, c + 1L))
-        // Now we can safely do the method call without the pointer being freed concurrently.
-        try {
-            return block(this.uniffiClonePointer())
-        } finally {
-            // This decrement always matches the increment we performed above.
-            if (this.callCounter.decrementAndGet() == 0L) {
-                cleanable.clean()
-            }
-        }
-    }
-
-    // Use a static inner class instead of a closure so as not to accidentally
-    // capture `this` as part of the cleanable's action.
-    private class UniffiCleanAction(private val pointer: Pointer?) : Runnable {
-        override fun run() {
-            pointer?.let { ptr ->
-                uniffiRustCall { status ->
-                    UniffiLib.INSTANCE.uniffi_tsim_ffi_fn_free_trainpath(ptr, status)
-                }
-            }
-        }
-    }
-
-    fun uniffiClonePointer(): Pointer {
-        return uniffiRustCall() { status ->
-            UniffiLib.INSTANCE.uniffi_tsim_ffi_fn_clone_trainpath(pointer!!, status)
-        }
-    }
-
-    override fun `length`(): kotlin.Double {
-        return FfiConverterDouble.lift(
-            callWithPointer {
-                uniffiRustCall() { _status ->
-                    UniffiLib.INSTANCE.uniffi_tsim_ffi_fn_method_trainpath_length(it, _status)
-                }
-            }
-        )
-    }
-
-    override fun `avgGrade`(`start`: kotlin.Double, `end`: kotlin.Double): kotlin.Double {
-        return FfiConverterDouble.lift(
-            callWithPointer {
-                uniffiRustCall() { _status ->
-                    UniffiLib.INSTANCE.uniffi_tsim_ffi_fn_method_trainpath_avg_grade(
-                        it,
-                        FfiConverterDouble.lower(`start`),
-                        FfiConverterDouble.lower(`end`),
-                        _status,
-                    )
-                }
-            }
-        )
-    }
-
-    override fun `minGrade`(`start`: kotlin.Double, `end`: kotlin.Double): kotlin.Double {
-        return FfiConverterDouble.lift(
-            callWithPointer {
-                uniffiRustCall() { _status ->
-                    UniffiLib.INSTANCE.uniffi_tsim_ffi_fn_method_trainpath_min_grade(
-                        it,
-                        FfiConverterDouble.lower(`start`),
-                        FfiConverterDouble.lower(`end`),
-                        _status,
-                    )
-                }
-            }
-        )
-    }
-
-    companion object
-}
-
-// Put the implementation in an object so we don't pollute the top-level namespace
-internal object uniffiCallbackInterfaceTrainPath {
-    internal object `length` : UniffiCallbackInterfaceTrainPathMethod0 {
-        override fun callback(
-            `uniffiHandle`: Long,
-            `uniffiOutReturn`: DoubleByReference,
-            uniffiCallStatus: UniffiRustCallStatus,
-        ) {
-            val uniffiObj = FfiConverterTypeTrainPath.handleMap.get(uniffiHandle)
-            val makeCall = { -> uniffiObj.`length`() }
-            val writeReturn = { value: kotlin.Double ->
-                uniffiOutReturn.setValue(FfiConverterDouble.lower(value))
-            }
-            uniffiTraitInterfaceCall(uniffiCallStatus, makeCall, writeReturn)
-        }
-    }
-
-    internal object `avgGrade` : UniffiCallbackInterfaceTrainPathMethod1 {
-        override fun callback(
-            `uniffiHandle`: Long,
-            `start`: Double,
-            `end`: Double,
-            `uniffiOutReturn`: DoubleByReference,
-            uniffiCallStatus: UniffiRustCallStatus,
-        ) {
-            val uniffiObj = FfiConverterTypeTrainPath.handleMap.get(uniffiHandle)
-            val makeCall = { ->
-                uniffiObj.`avgGrade`(
-                    FfiConverterDouble.lift(`start`),
-                    FfiConverterDouble.lift(`end`),
-                )
-            }
-            val writeReturn = { value: kotlin.Double ->
-                uniffiOutReturn.setValue(FfiConverterDouble.lower(value))
-            }
-            uniffiTraitInterfaceCall(uniffiCallStatus, makeCall, writeReturn)
-        }
-    }
-
-    internal object `minGrade` : UniffiCallbackInterfaceTrainPathMethod2 {
-        override fun callback(
-            `uniffiHandle`: Long,
-            `start`: Double,
-            `end`: Double,
-            `uniffiOutReturn`: DoubleByReference,
-            uniffiCallStatus: UniffiRustCallStatus,
-        ) {
-            val uniffiObj = FfiConverterTypeTrainPath.handleMap.get(uniffiHandle)
-            val makeCall = { ->
-                uniffiObj.`minGrade`(
-                    FfiConverterDouble.lift(`start`),
-                    FfiConverterDouble.lift(`end`),
-                )
-            }
-            val writeReturn = { value: kotlin.Double ->
-                uniffiOutReturn.setValue(FfiConverterDouble.lower(value))
-            }
-            uniffiTraitInterfaceCall(uniffiCallStatus, makeCall, writeReturn)
-        }
-    }
-
-    internal object uniffiFree : UniffiCallbackInterfaceFree {
-        override fun callback(handle: Long) {
-            FfiConverterTypeTrainPath.handleMap.remove(handle)
-        }
-    }
-
-    internal var vtable =
-        UniffiVTableCallbackInterfaceTrainPath.UniffiByValue(
-            `length`,
-            `avgGrade`,
-            `minGrade`,
-            uniffiFree,
-        )
-
-    // Registers the foreign callback with the Rust side.
-    // This method is generated for each callback interface.
-    internal fun register(lib: UniffiLib) {
-        lib.uniffi_tsim_ffi_fn_init_callback_vtable_trainpath(vtable)
-    }
-}
-
-/** @suppress */
-public object FfiConverterTypeTrainPath : FfiConverter<TrainPath, Pointer> {
-    internal val handleMap = UniffiHandleMap<TrainPath>()
-
-    override fun lower(value: TrainPath): Pointer {
-        return Pointer(handleMap.insert(value))
-    }
-
-    override fun lift(value: Pointer): TrainPath {
-        return TrainPathImpl(value)
-    }
-
-    override fun read(buf: ByteBuffer): TrainPath {
-        // The Rust code always writes pointers as 8 bytes, and will
-        // fail to compile if they don't fit.
-        return lift(Pointer(buf.getLong()))
-    }
-
-    override fun allocationSize(value: TrainPath) = 8UL
-
-    override fun write(value: TrainPath, buf: ByteBuffer) {
-        // The Rust code always expects pointers written as 8 bytes,
-        // and will fail to compile if they don't fit.
-        buf.putLong(Pointer.nativeValue(lower(value)))
-    }
-}
-
 data class ClosedRangeF64(var `start`: kotlin.Double?, var `end`: kotlin.Double?) {
 
     companion object
@@ -2760,6 +1571,57 @@ public object FfiConverterTypeIntegrationStep : FfiConverterRustBuffer<Integrati
     }
 }
 
+data class RollingStock(
+    var `mass`: kotlin.Double,
+    var `inertia`: kotlin.Double,
+    var `length`: kotlin.Double,
+    var `maxSpeed`: kotlin.Double,
+    var `a`: kotlin.Double,
+    var `b`: kotlin.Double,
+    var `c`: kotlin.Double,
+    var `constGamma`: kotlin.Double,
+) {
+
+    companion object
+}
+
+/** @suppress */
+public object FfiConverterTypeRollingStock : FfiConverterRustBuffer<RollingStock> {
+    override fun read(buf: ByteBuffer): RollingStock {
+        return RollingStock(
+            FfiConverterDouble.read(buf),
+            FfiConverterDouble.read(buf),
+            FfiConverterDouble.read(buf),
+            FfiConverterDouble.read(buf),
+            FfiConverterDouble.read(buf),
+            FfiConverterDouble.read(buf),
+            FfiConverterDouble.read(buf),
+            FfiConverterDouble.read(buf),
+        )
+    }
+
+    override fun allocationSize(value: RollingStock) =
+        (FfiConverterDouble.allocationSize(value.`mass`) +
+            FfiConverterDouble.allocationSize(value.`inertia`) +
+            FfiConverterDouble.allocationSize(value.`length`) +
+            FfiConverterDouble.allocationSize(value.`maxSpeed`) +
+            FfiConverterDouble.allocationSize(value.`a`) +
+            FfiConverterDouble.allocationSize(value.`b`) +
+            FfiConverterDouble.allocationSize(value.`c`) +
+            FfiConverterDouble.allocationSize(value.`constGamma`))
+
+    override fun write(value: RollingStock, buf: ByteBuffer) {
+        FfiConverterDouble.write(value.`mass`, buf)
+        FfiConverterDouble.write(value.`inertia`, buf)
+        FfiConverterDouble.write(value.`length`, buf)
+        FfiConverterDouble.write(value.`maxSpeed`, buf)
+        FfiConverterDouble.write(value.`a`, buf)
+        FfiConverterDouble.write(value.`b`, buf)
+        FfiConverterDouble.write(value.`c`, buf)
+        FfiConverterDouble.write(value.`constGamma`, buf)
+    }
+}
+
 data class TractiveEffortPoint(var `speed`: kotlin.Double, var `maxEffort`: kotlin.Double) {
 
     companion object
@@ -2778,6 +1640,27 @@ public object FfiConverterTypeTractiveEffortPoint : FfiConverterRustBuffer<Tract
     override fun write(value: TractiveEffortPoint, buf: ByteBuffer) {
         FfiConverterDouble.write(value.`speed`, buf)
         FfiConverterDouble.write(value.`maxEffort`, buf)
+    }
+}
+
+data class TrainPath(var `length`: kotlin.Double, var `grade`: kotlin.Double) {
+
+    companion object
+}
+
+/** @suppress */
+public object FfiConverterTypeTrainPath : FfiConverterRustBuffer<TrainPath> {
+    override fun read(buf: ByteBuffer): TrainPath {
+        return TrainPath(FfiConverterDouble.read(buf), FfiConverterDouble.read(buf))
+    }
+
+    override fun allocationSize(value: TrainPath) =
+        (FfiConverterDouble.allocationSize(value.`length`) +
+            FfiConverterDouble.allocationSize(value.`grade`))
+
+    override fun write(value: TrainPath, buf: ByteBuffer) {
+        FfiConverterDouble.write(value.`length`, buf)
+        FfiConverterDouble.write(value.`grade`, buf)
     }
 }
 

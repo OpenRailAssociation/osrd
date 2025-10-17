@@ -3,84 +3,65 @@ use std::sync::Mutex;
 
 uniffi::setup_scaffolding!();
 
-#[uniffi::export(with_foreign)]
-pub trait RollingStock: Send + Sync {
-    /// The mass of the train, in kilograms
-    fn mass(&self) -> f64;
-
-    /// The inertia of the train, in newtons (usually computed from mass * inertiaCoefficient)
-    fn inertia(&self) -> f64;
-
-    /// The length of the train, in meters
-    fn length(&self) -> f64;
-
-    /// The maximum speed the train can reach, in m/s
-    fn max_speed(&self) -> f64;
-
-    /// The resistance to movement at a given speed, in newtons
-    fn rolling_resistance(&self, speed: f64) -> f64;
-
-    /// The first derivative of the resistance to movement at a given speed, in kg/s
-    fn rolling_resistance_deriv(&self, speed: f64) -> f64;
-
-    /// The maximum constant deceleration, in m/s^2
-    fn deceleration(&self) -> f64;
+#[derive(uniffi::Record)]
+pub struct RollingStock {
+    mass: f64,
+    inertia: f64,
+    length: f64,
+    max_speed: f64,
+    a: f64,
+    b: f64,
+    c: f64,
+    const_gamma: f64,
 }
 
-struct RollingStockWrapper<'a>(&'a dyn RollingStock);
-
-impl tsim::RollingStock for RollingStockWrapper<'_> {
+impl tsim::RollingStock for RollingStock {
     fn mass(&self) -> f64 {
-        RollingStock::mass(self.0)
+        self.mass
     }
 
     fn inertia(&self) -> f64 {
-        RollingStock::inertia(self.0)
+        self.inertia
     }
 
     fn length(&self) -> f64 {
-        RollingStock::length(self.0)
+        self.length
     }
 
     fn max_speed(&self) -> f64 {
-        RollingStock::max_speed(self.0)
+        self.max_speed
     }
 
     fn rolling_resistance(&self, speed: f64) -> f64 {
-        RollingStock::rolling_resistance(self.0, speed)
+        self.a + self.b * f64::abs(speed) + self.c * speed * speed
     }
 
     fn rolling_resistance_deriv(&self, speed: f64) -> f64 {
-        RollingStock::rolling_resistance_deriv(self.0, speed)
+        self.b + 2.0 * self.c * f64::abs(speed)
     }
 
     fn deceleration(&self) -> f64 {
-        RollingStock::deceleration(self.0)
+        -self.const_gamma
     }
 }
 
-#[uniffi::export(with_foreign)]
-pub trait TrainPath: Send + Sync {
-    fn length(&self) -> f64;
-
-    fn avg_grade(&self, start: f64, end: f64) -> f64;
-
-    fn min_grade(&self, start: f64, end: f64) -> f64;
+#[derive(uniffi::Record)]
+pub struct TrainPath {
+    length: f64,
+    grade: f64,
 }
 
-struct TrainPathWrapper<'a>(&'a dyn TrainPath);
-
-impl tsim::TrainPath for TrainPathWrapper<'_> {
+impl tsim::TrainPath for TrainPath {
     fn length(&self) -> f64 {
-        TrainPath::length(self.0)
+        self.length
     }
 
     fn avg_grade(&self, start: f64, end: f64) -> f64 {
-        TrainPath::avg_grade(self.0, start, end)
+        self.grade
     }
 
     fn min_grade(&self, start: f64, end: f64) -> f64 {
-        TrainPath::min_grade(self.0, start, end)
+        self.grade
     }
 
     fn electrification_map(
@@ -244,8 +225,8 @@ impl From<tsim::IntegrationStep> for IntegrationStep {
 #[uniffi::export]
 #[allow(clippy::too_many_arguments)]
 pub fn step(
-    rolling_stock: &dyn RollingStock,
-    path: &dyn TrainPath,
+    rolling_stock: &RollingStock,
+    path: &TrainPath,
     time_delta: f64,
     tractive_effort_curve_map: &TractiveEffortCurveMap,
     initial_position: f64,
@@ -255,8 +236,8 @@ pub fn step(
     braking_type: BrakingType,
 ) -> IntegrationStep {
     tsim::step(
-        &RollingStockWrapper(rolling_stock),
-        &TrainPathWrapper(path),
+        rolling_stock,
+        path,
         time_delta,
         &tractive_effort_curve_map.inner.lock().unwrap(),
         initial_position,
