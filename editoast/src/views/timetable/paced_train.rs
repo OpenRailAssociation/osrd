@@ -2,9 +2,6 @@ use std::collections::HashMap;
 use std::collections::HashSet;
 use std::sync::Arc;
 
-use core_client::pathfinding::PathfindingResultSuccess;
-use core_client::simulation::PhysicsConsist;
-
 use authz;
 use axum::Extension;
 use axum::extract::Json;
@@ -12,11 +9,17 @@ use axum::extract::Path;
 use axum::extract::Query;
 use axum::extract::State;
 use axum::response::IntoResponse;
+use chrono::DateTime;
+use chrono::Utc;
 use core_client::AsCoreRequest;
+use core_client::pathfinding::PathfindingResultSuccess;
 use core_client::signal_projection::SignalUpdate;
+use core_client::simulation::PhysicsConsist;
 use database::DbConnectionPoolV2;
 use editoast_derive::EditoastError;
+use editoast_models::prelude::*;
 use schemas::paced_train::PacedTrain;
+use schemas::primitives::PositiveDuration;
 use schemas::train_schedule::OperationalPointReference;
 use schemas::train_schedule::PathItemLocation;
 use serde::Deserialize;
@@ -31,14 +34,8 @@ use crate::error::Result;
 use crate::models;
 use crate::models::Infra;
 use crate::models::RollingStock;
+use crate::models::paced_train::OccurrenceId;
 use crate::models::paced_train::PacedTrainChangeset;
-
-use crate::views::timetable::PhysicsConsistParameters;
-use crate::views::timetable::simulation::SimulationResponseSuccess;
-use crate::views::timetable::simulation::build_path_items_to_position;
-use crate::views::timetable::simulation::build_sim_power_restriction_items;
-use crate::views::timetable::simulation::build_sim_schedule_items;
-
 use crate::views::AuthorizationError;
 use crate::views::infra::InfraIdQueryParam;
 use crate::views::path::path_item_cache::PathItemCache;
@@ -48,16 +45,21 @@ use crate::views::projection::OperationalPointProjection;
 use crate::views::projection::ProjectPathForm;
 use crate::views::projection::ProjectPathOperationalPointForm;
 use crate::views::projection::SpaceTimeCurve;
-
 use crate::views::projection::compute_projected_train_path_op;
 use crate::views::projection::compute_projected_train_paths;
+use crate::views::timetable::PhysicsConsistParameters;
 use crate::views::timetable::occupancy_blocks::OccupancyBlockForm;
 use crate::views::timetable::occupancy_blocks::OccupancyBlocks;
 use crate::views::timetable::occupancy_blocks::compute_occupancy_blocks;
 use crate::views::timetable::simulation;
+use crate::views::timetable::simulation::SimulationResponseSuccess;
 use crate::views::timetable::simulation::SummaryResponse;
+use crate::views::timetable::simulation::build_path_items_to_position;
+use crate::views::timetable::simulation::build_sim_power_restriction_items;
+use crate::views::timetable::simulation::build_sim_schedule_items;
 use crate::views::timetable::simulation::train_simulation_batch;
-use editoast_models::prelude::*;
+use crate::views::timetable::track_occupancy_utils;
+use crate::views::timetable::track_occupancy_utils::TrackOccupancyResult;
 
 #[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "paced_train")]
@@ -74,6 +76,9 @@ enum PacedTrainError {
     #[error("Exception '{exception_key}', could not be found")]
     #[editoast_error(status = 404)]
     ExceptionNotFound { exception_key: String },
+    #[error("Operational point '{operational_point_id}', could not be found")]
+    #[editoast_error(status = 404)]
+    OperationalPointNotFound { operational_point_id: String },
     #[error("Rolling stock '{rolling_stock_name}', could not be found")]
     #[editoast_error(status = 404)]
     RollingStockNotFound { rolling_stock_name: String },
@@ -83,6 +88,9 @@ enum PacedTrainError {
     #[error("Simulation failed for train schedule '{paced_train_id}'")]
     #[editoast_error(status = 404)]
     SimulationFailed { paced_train_id: i64 },
+    #[error("Unexpected train schedule ID in paced train context")]
+    #[editoast_error(status = 500)]
+    UnexpectedTrainScheduleId,
     #[error(transparent)]
     #[editoast_error(status = 500)]
     Database(#[from] editoast_models::Error),
@@ -1130,6 +1138,183 @@ pub(in crate::views) async fn occupancy_blocks(
     Ok(Json(results))
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+#[schema(as = PacedTrainTrackOccupancyForm)]
+pub(in crate::views) struct TrackOccupancyForm {
+    paced_train_ids: Vec<i64>,
+    operational_point_id: String,
+    infra_id: i64,
+    electrical_profile_set_id: Option<i64>,
+}
+
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
+#[schema(as = PacedTrainTrackOccupancy)]
+pub(in crate::views) struct TrackOccupancy {
+    #[serde(flatten)]
+    #[schema(inline)]
+    occurrence_id: OccurrenceId,
+    time_begin: DateTime<Utc>,
+    #[schema(value_type = chrono::Duration, example = "PT5M")]
+    duration: PositiveDuration,
+}
+
+#[editoast_derive::route]
+#[utoipa::path(
+    post, path = "",
+    tag = "paced_train",
+    request_body = inline(TrackOccupancyForm),
+    responses(
+        (status = 200, description = "Track section occupancy periods for paced trains",
+         body = inline(HashMap<String, Vec<TrackOccupancy>>)),
+    ),
+)]
+pub(in crate::views) async fn track_occupancy(
+    State(AppState {
+        config,
+        db_pool,
+        valkey_client,
+        core_client,
+        ..
+    }): State<AppState>,
+    Extension(auth): AuthenticationExt,
+    Json(TrackOccupancyForm {
+        paced_train_ids,
+        operational_point_id,
+        infra_id,
+        electrical_profile_set_id,
+    }): Json<TrackOccupancyForm>,
+) -> Result<Json<HashMap<String, Vec<TrackOccupancy>>>> {
+    let authorized = auth
+        .check_roles([authz::Role::OperationalStudies].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Forbidden.into());
+    }
+
+    auth.check_authorization(async |authorizer| {
+        authorizer
+            .authorize_infra(&authz::Infra(infra_id), authz::InfraPrivilege::CanRead)
+            .await
+    })
+    .await?;
+
+    // Load infrastructure and paced trains
+    let infra = Infra::retrieve_or_fail(db_pool.get().await?, infra_id, || {
+        PacedTrainError::InfraNotFound { infra_id }
+    })
+    .await?;
+
+    let conn = &mut db_pool.get().await?;
+
+    let paced_trains: Vec<models::PacedTrain> =
+        models::PacedTrain::retrieve_batch_or_fail(conn, paced_train_ids, |missing| {
+            PacedTrainError::BatchNotFound {
+                count: missing.len(),
+            }
+        })
+        .await?;
+
+    // Get the operational point
+    let operational_point = models::OperationalPointModel::retrieve_or_fail(
+        db_pool.get().await?,
+        (infra_id, operational_point_id.clone()),
+        || PacedTrainError::OperationalPointNotFound {
+            operational_point_id: operational_point_id.clone(),
+        },
+    )
+    .await?;
+
+    // Collect all occurrences from all paced trains using iter_occurrences()
+    let train_occurrences: Vec<(models::paced_train::TrainId, schemas::TrainSchedule)> =
+        paced_trains
+            .iter()
+            .flat_map(|paced_train| paced_train.iter_occurrences())
+            .collect();
+
+    // Extract train schedules for simulation
+    let train_schedules: Vec<schemas::TrainSchedule> = train_occurrences
+        .iter()
+        .map(|(_, train_schedule)| train_schedule.clone())
+        .collect();
+
+    let simulations_result = train_simulation_batch(
+        conn,
+        valkey_client,
+        core_client,
+        &train_schedules,
+        &infra,
+        electrical_profile_set_id,
+        config.app_version.as_deref(),
+    )
+    .await?;
+
+    // Get track positions at the operational point
+    let operational_point_track_offsets = operational_point.schema.track_offset();
+
+    let path_items = train_schedules
+        .iter()
+        .flat_map(|ts| ts.path.iter().map(|p| &p.location))
+        .collect::<Vec<_>>();
+
+    let path_item_cache = PathItemCache::load(conn, infra_id, &path_items).await?;
+
+    // For each occurrence + simulation result, compute track occupancies
+    let all_occupancies: Vec<(String, TrackOccupancy)> = train_occurrences
+        .iter()
+        .zip(simulations_result)
+        .map(|((train_id, train_schedule), (simulation, pathfinding))| {
+            let occurrence_id: OccurrenceId = match train_id {
+                models::paced_train::TrainId::TrainSchedule(_) => {
+                    return Err(PacedTrainError::UnexpectedTrainScheduleId);
+                }
+                models::paced_train::TrainId::PacedTrain(occurrence_id) => occurrence_id.clone(),
+            };
+
+            Ok(track_occupancy_utils::find_track_occupancy_for_operational_point(
+                &operational_point_id,
+                &operational_point_track_offsets,
+                &path_item_cache,
+                &simulation,
+                &pathfinding,
+                train_schedule,
+            )
+            .into_iter()
+            .map(
+                move |TrackOccupancyResult {
+                          track_section,
+                          time_begin,
+                          duration,
+                      }| {
+                    (
+                        track_section,
+                        TrackOccupancy {
+                            occurrence_id: occurrence_id.clone(),
+                            time_begin,
+                            duration,
+                        },
+                    )
+                },
+            )
+            .collect::<Vec<_>>())
+        })
+        .collect::<Result<Vec<_>, _>>()?
+        .into_iter()
+        .flatten()
+        .collect();
+
+    // Group occupancies by track section
+    let results: HashMap<String, Vec<TrackOccupancy>> =
+        all_occupancies
+            .into_iter()
+            .fold(HashMap::new(), |mut map, (track_section, occupancy)| {
+                map.entry(track_section).or_default().push(occupancy);
+                map
+            });
+
+    Ok(Json(results))
+}
+
 #[cfg(test)]
 mod tests {
     use std::collections::HashMap;
@@ -1137,9 +1322,11 @@ mod tests {
     use axum::http::StatusCode;
     use chrono::DateTime;
     use chrono::Duration;
+    use chrono::TimeDelta;
     use core_client::mocking::MockingClient;
     use core_client::pathfinding::PathfindingInputError;
     use core_client::pathfinding::PathfindingResultSuccess;
+    use core_client::pathfinding::TrackRange;
     use core_client::pathfinding::TrainPath;
     use core_client::simulation::CompleteReportTrain;
     use core_client::simulation::ElectricalProfiles;
@@ -1147,6 +1334,7 @@ mod tests {
     use core_client::simulation::SimulationSuccess;
     use core_client::simulation::SpeedLimitProperties;
     use database::DbConnectionPoolV2;
+    use editoast_models::prelude::*;
     use editoast_models::rolling_stock::TrainMainCategory;
     use pretty_assertions::assert_eq;
 
@@ -1160,6 +1348,8 @@ mod tests {
     use schemas::paced_train::TrainNameChangeGroup;
     use schemas::rolling_stock::TrainCategory;
     use schemas::train_schedule::Comfort;
+    use schemas::train_schedule::PathItem;
+    use schemas::train_schedule::ScheduleItem;
     use schemas::train_schedule::TrainSchedule;
     use serde_json::json;
 
@@ -1184,10 +1374,11 @@ mod tests {
     use crate::views::timetable::paced_train::PacedTrainResponse;
     use crate::views::timetable::paced_train::PacedTrainSummaryResponse;
     use crate::views::timetable::paced_train::ProjectPathPacedTrainResult;
+    use crate::views::timetable::paced_train::TrackOccupancy;
+    use crate::views::timetable::paced_train::TrackOccupancyForm;
     use crate::views::timetable::simulation;
     use crate::views::timetable::simulation::SimulationResponseSuccess;
     use crate::views::timetable::simulation::SummaryResponse;
-    use editoast_models::prelude::*;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn paced_train_post() {
@@ -2109,5 +2300,119 @@ mod tests {
         assert_eq!(response.len(), 1);
         assert_eq!(response.get(&paced_train_id).unwrap().paced_train.len(), 1);
         assert_eq!(response.get(&paced_train_id).unwrap().exceptions.len(), 0);
+    }
+
+    fn simulation_response() -> core_client::simulation::Response {
+        core_client::simulation::Response::Success(SimulationSuccess {
+            base: ReportTrain {
+                positions: vec![],
+                times: vec![],
+                speeds: vec![],
+                energy_consumption: 0.0,
+                path_item_times: vec![0, 1],
+            },
+            provisional: ReportTrain {
+                positions: vec![],
+                times: vec![],
+                speeds: vec![],
+                energy_consumption: 0.0,
+                path_item_times: vec![0, 1],
+            },
+            final_output: CompleteReportTrain {
+                report_train: ReportTrain {
+                    positions: vec![],
+                    times: vec![],
+                    speeds: vec![],
+                    energy_consumption: 0.0,
+                    path_item_times: vec![0, 1],
+                },
+                signal_critical_positions: vec![],
+                zone_updates: vec![],
+                spacing_requirements: vec![],
+                routing_requirements: vec![],
+            },
+            mrsp: SpeedLimitProperties {
+                boundaries: vec![],
+                values: vec![],
+            },
+            electrical_profiles: ElectricalProfiles {
+                boundaries: vec![],
+                values: vec![],
+            },
+        })
+    }
+
+    fn pathfinding_result_success() -> PathfindingResultSuccess {
+        PathfindingResultSuccess {
+            path: TrainPath {
+                blocks: vec![],
+                routes: vec![],
+                track_section_ranges: vec![
+                    TrackRange::new("TA0", 700000, 2000000),
+                    TrackRange::new("TA6", 0, 10000000),
+                    TrackRange::new("TC1", 0, 550000),
+                ],
+            },
+            length: 11850000,
+            path_item_positions: vec![0, 11850000],
+        }
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn paced_train_track_occupancy() {
+        let mut core = MockingClient::new();
+        core.stub("/pathfinding/blocks")
+            .response(StatusCode::OK)
+            .json(PathfindingResult::Success(pathfinding_result_success()))
+            .finish();
+        core.stub("/standalone_simulation")
+            .response(StatusCode::OK)
+            .json(simulation_response())
+            .finish();
+        let app = TestAppBuilder::new().core_client(core.into()).build();
+        let db_pool = app.db_pool();
+        let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
+        let rolling_stock =
+            create_fast_rolling_stock(&mut db_pool.get_ok(), "simulation_rolling_stock").await;
+        let timetable = create_timetable(&mut db_pool.get_ok()).await;
+        let paced_train = models::PacedTrain::default()
+            .into_changeset()
+            .timetable_id(timetable.id)
+            .rolling_stock_name(rolling_stock.name)
+            .path(vec![
+                PathItem::new_operational_point("West_station"),
+                PathItem::new_operational_point("Mid_West_station"),
+            ])
+            .schedule(vec![ScheduleItem::new_with_stop(
+                "Mid_West_station",
+                Duration::new(0, 0).expect("Failed to parse duration"),
+            )])
+            .interval(TimeDelta::new(800, 0).expect("Failed to create interval TimeDelta"))
+            .time_window(TimeDelta::new(3600, 0).expect("Failed to create time_window TimeDelta"))
+            .create(&mut db_pool.get_ok())
+            .await
+            .expect("Failed to create paced train");
+
+        let request = app
+            .post("/paced_train/track_occupancy")
+            .json(&TrackOccupancyForm {
+                paced_train_ids: vec![paced_train.id],
+                operational_point_id: "West_station".to_string(),
+                infra_id: small_infra.id,
+                electrical_profile_set_id: None,
+            });
+
+        let response = app.fetch(request);
+        let track_occupancies: HashMap<String, Vec<TrackOccupancy>> =
+            response.await.assert_status(StatusCode::OK).json_into();
+
+        assert_eq!(track_occupancies.len(), 1);
+        assert_eq!(
+            track_occupancies
+                .get("TA0")
+                .expect("Expected track occupancies for TA0 but none were found")
+                .len(),
+            4
+        );
     }
 }
