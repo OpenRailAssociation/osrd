@@ -11,6 +11,7 @@ import fr.sncf.osrd.envelope.part.constraints.EnvelopeConstraint
 import fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraint
 import fr.sncf.osrd.envelope.part.constraints.EnvelopePartConstraintType
 import fr.sncf.osrd.envelope.part.constraints.PositionConstraint
+import fr.sncf.osrd.envelope.part.constraints.SpeedConstraint
 import fr.sncf.osrd.envelope_sim.EnvelopeProfile
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock
@@ -528,6 +529,7 @@ protected constructor(
         } else if (imposedBeginSpeed < envelopeSection.beginSpeed) {
             constraints.add(EnvelopeConstraint(envelopeTarget, EnvelopePartConstraintType.CEILING))
             constraints.add(EnvelopeConstraint(envelopeSection, EnvelopePartConstraintType.CEILING))
+            constraints.add(SpeedConstraint(0.0, EnvelopePartConstraintType.FLOOR))
             val constrainedBuilder =
                 ConstrainedEnvelopePartBuilder(
                     partBuilder,
@@ -588,6 +590,7 @@ protected constructor(
             partBuilder.setAttr(EnvelopeProfile.ACCELERATING)
             lastIntersection = constrainedBuilder.lastIntersection
         } else if (imposedEndSpeed < envelopeSection.endSpeed) {
+            constraints.add(SpeedConstraint(0.0, EnvelopePartConstraintType.FLOOR))
             constraints.add(EnvelopeConstraint(envelopeTarget, EnvelopePartConstraintType.CEILING))
             val constrainedBuilder =
                 ConstrainedEnvelopePartBuilder(
