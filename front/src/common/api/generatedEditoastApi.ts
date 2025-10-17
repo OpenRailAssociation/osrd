@@ -3003,7 +3003,7 @@ export type SpeedSection = {
     };
   };
   id: string;
-  on_routes?: string[];
+  on_routes?: string[] | null;
   speed_limit?: null | number;
   speed_limit_by_tag: {
     [key: string]: number;
@@ -3451,18 +3451,20 @@ export type PathProperties = {
   };
   geometry?: null | GeoJsonLineString;
   /** Operational points along the path */
-  operational_points?: {
-    /** Extensions associated to the operational point */
-    extensions?: OperationalPointExtensions;
-    /** Id of the operational point */
-    id: string;
-    /** The part along the path */
-    part: OperationalPointPart;
-    /** Distance from the beginning of the path in mm */
-    position: number;
-    /** Importance of the operational point */
-    weight: number | null;
-  }[];
+  operational_points?:
+    | {
+        /** Extensions associated to the operational point */
+        extensions?: OperationalPointExtensions;
+        /** Id of the operational point */
+        id: string;
+        /** The part along the path */
+        part: OperationalPointPart;
+        /** Distance from the beginning of the path in mm */
+        position: number;
+        /** Importance of the operational point */
+        weight: number | null;
+      }[]
+    | null;
   /** Slopes along the path */
   slopes?: null | {
     /** List of `n` boundaries of the ranges.
@@ -4689,7 +4691,7 @@ export type StdcmSearchEnvironmentResponse = {
   enabled_until: string;
   id: number;
   infra_id: number;
-  operational_points?: number[];
+  operational_points?: number[] | null;
   search_window_begin: string;
   search_window_end: string;
   speed_limits?: null | SpeedLimits;
@@ -4729,7 +4731,7 @@ export type StdcmSearchEnvironmentCreateForm = {
   enabled_from: string;
   enabled_until: string;
   infra_id: number;
-  operational_points?: number[];
+  operational_points?: number[] | null;
   search_window_begin: string;
   search_window_end: string;
   speed_limits?: null | SpeedLimits;
