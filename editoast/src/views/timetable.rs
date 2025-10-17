@@ -3,6 +3,7 @@ pub mod paced_train;
 pub(in crate::views) mod similar_trains;
 pub mod simulation;
 pub mod stdcm;
+mod track_occupancy_utils;
 pub mod train_schedule;
 
 use std::sync::Arc;
