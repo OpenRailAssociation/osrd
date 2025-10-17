@@ -10,10 +10,7 @@ import fr.sncf.osrd.pathfinding.*
 import fr.sncf.osrd.pathfinding.Pathfinding.EdgeLocation
 import fr.sncf.osrd.pathfinding.Pathfinding.EdgeRange
 import fr.sncf.osrd.pathfinding.constraints.ConstraintCombiner
-import fr.sncf.osrd.pathfinding.constraints.ElectrificationConstraints
-import fr.sncf.osrd.pathfinding.constraints.LoadingGaugeConstraints
-import fr.sncf.osrd.pathfinding.constraints.SignalingSystemConstraints
-import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType
+import fr.sncf.osrd.pathfinding.constraints.initConstraintsFromRSProps
 import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.sim_infra.api.*
@@ -125,32 +122,6 @@ fun runPathfinding(infra: FullInfra, request: PathfindingBlockRequest): Pathfind
     // Compute the paths from the entry waypoint to the exit waypoint
     val path = computePaths(infra, waypoints, constraints, heuristics, request, request.timeout)
     return runPathfindingPostProcessing(infra, request, path)
-}
-
-private fun initConstraintsFromRSProps(
-    infra: FullInfra,
-    rollingStockIsThermal: Boolean,
-    rollingStockLoadingGauge: RJSLoadingGaugeType,
-    rollingStockSupportedElectrification: List<String>,
-    rollingStockSupportedSignalingSystems: List<String>,
-): List<PathfindingConstraint<Block>> {
-    val res = mutableListOf<PathfindingConstraint<Block>>()
-    if (!rollingStockIsThermal) {
-        res.add(
-            ElectrificationConstraints(
-                infra.blockInfra,
-                infra.rawInfra,
-                rollingStockSupportedElectrification,
-            )
-        )
-    }
-    res.add(LoadingGaugeConstraints(infra.blockInfra, infra.rawInfra, rollingStockLoadingGauge))
-    val sigSystemIds =
-        rollingStockSupportedSignalingSystems.mapNotNull {
-            infra.signalingSimulator.sigModuleManager.findSignalingSystem(it)
-        }
-    res.add(SignalingSystemConstraints(infra.blockInfra, listOf(sigSystemIds)))
-    return res
 }
 
 @Throws(OSRDError::class)

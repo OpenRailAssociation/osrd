@@ -6,7 +6,6 @@ import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.pathfinding.Pathfinding
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType
 import fr.sncf.osrd.sim_infra.api.*
-import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.units.Offset
 
 data class LoadingGaugeConstraints(
@@ -28,12 +27,8 @@ data class LoadingGaugeConstraints(
     ): Collection<Pathfinding.Range<Block>> {
         return path
             .getLoadingGauge()
-            .filter { (_, _, value): DistanceRangeMap.RangeMapEntry<LoadingGaugeConstraint> ->
-                !value.isCompatibleWith(LoadingGaugeTypeId(type.ordinal.toUInt()))
-            }
-            .map { (lower, upper): DistanceRangeMap.RangeMapEntry<LoadingGaugeConstraint> ->
-                Pathfinding.Range(Offset<Block>(lower), Offset(upper))
-            }
             .toSet()
+            .filter { !it.value.isCompatibleWith(LoadingGaugeTypeId(type.ordinal.toUInt())) }
+            .map { (lower, upper) -> Pathfinding.Range(Offset(lower), Offset(upper)) }
     }
 }
