@@ -61,6 +61,7 @@ class TrainPhysicsIntegratorTest {
         }
         val fullThrottle = speed
         // we expect the train to go pretty fast
+        Assertions.assertTrue(speed > 100, speed.toString())
 
         // continue the simulation, but with some slope
         val newContext = SimpleContextBuilder.makeSimpleContext(100000.0, 35.0, TIME_STEP)
@@ -71,6 +72,8 @@ class TrainPhysicsIntegratorTest {
             speed = step.endSpeed
         }
         // we expect the train to run at less than half the speed, but still decently fast
+        Assertions.assertTrue(speed < fullThrottle / 2, speed.toString())
+        Assertions.assertTrue(speed > fullThrottle / 3, speed.toString())
     }
 
     @Test

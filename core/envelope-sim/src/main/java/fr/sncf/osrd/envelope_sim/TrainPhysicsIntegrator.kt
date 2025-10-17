@@ -78,22 +78,22 @@ class TrainPhysicsIntegrator {
                     }
                 tecm.insert(range, value)
             }
-            println(mapOf(
-                "rollingStock" to MyFirstRollingStock(context.rollingStock),
-                "path" to MyFirstPath(context.path),
-                "timeDelta" to context.timeStep,
-                "tractiveEffortCurveMap" to tecm,
-                "initialPosition" to initialLocation,
-                "initialSpeed" to initialSpeed,
-                "action" to
+            return fr.sncf.osrd.train_sim.step(
+                rollingStock = MyFirstRollingStock(context.rollingStock),
+                path = MyFirstPath(context.path),
+                timeDelta = context.timeStep,
+                tractiveEffortCurveMap = tecm,
+                initialPosition = initialLocation,
+                initialSpeed = initialSpeed,
+                action =
                     when (action) {
                         Action.ACCELERATE -> fr.sncf.osrd.train_sim.Action.ACCELERATE
                         Action.BRAKE -> fr.sncf.osrd.train_sim.Action.BRAKE
                         Action.MAINTAIN -> fr.sncf.osrd.train_sim.Action.MAINTAIN
                         Action.COAST -> fr.sncf.osrd.train_sim.Action.COAST
                     },
-                "direction" to if (directionSign >= 0.0) Direction.FORWARDS else Direction.BACKWARDS,
-                "brakingType" to
+                direction = if (directionSign >= 0.0) Direction.FORWARDS else Direction.BACKWARDS,
+                brakingType =
                     when (brakingType) {
                         BrakingType.CONSTANT -> fr.sncf.osrd.train_sim.BrakingType.CONSTANT
                         BrakingType.EBD -> fr.sncf.osrd.train_sim.BrakingType.EBD
@@ -106,14 +106,6 @@ class TrainPhysicsIntegrator {
                         BrakingType.PS -> fr.sncf.osrd.train_sim.BrakingType.PS
                         BrakingType.IND -> fr.sncf.osrd.train_sim.BrakingType.INDICATION
                     },
-            ))
-            return IntegrationStep(
-                timeDelta = 1.0,
-                positionDelta = 1.0,
-                startSpeed = 1.0,
-                endSpeed = 1.0,
-                acceleration = 1.0,
-                direction = Direction.FORWARDS,
             )
         }
 
