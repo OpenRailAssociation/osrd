@@ -1,7 +1,9 @@
 import { useEffect, useEffectEvent, useRef, useState } from 'react';
 
 import { Button } from '@osrd-project/ui-core';
+import { FrameAll } from '@osrd-project/ui-icons';
 import bbox from '@turf/bbox';
+import type { Position } from 'geojson';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import { v4 as uuidV4 } from 'uuid';
@@ -27,6 +29,7 @@ import { usePathStepsMetadata } from './hooks/usePathStepsMetadata';
 import ItineraryModalFormHeader from './ItineraryModalFormHeader';
 import ItineraryModalMap from './ItineraryModalMap';
 import PathStepItem from './PathStepItem';
+import { computePathStepCoordinates } from './utils';
 import { MANAGE_TIMETABLE_ITEM_TYPES } from '../../../consts';
 
 type ItineraryModalProps = {
@@ -63,6 +66,29 @@ const ItineraryModal = ({
   const { launchPathfindingV2, pathProperties } = usePathfindingV2();
 
   const isMapDisabled = window.matchMedia('(max-width: 1028px)').matches;
+
+  const frameAllPathSteps = () => {
+    if (pathProperties && pathProperties.geometry) {
+      const newViewport = computeBBoxViewport(bbox(pathProperties.geometry), mapSettings.viewport, {
+        padding: 64,
+      });
+      dispatch(updateViewport(newViewport));
+    } else {
+      // Zoom on all path steps markers
+      const allMarkersCoordinates = pathStepsMetadataById
+        .values()
+        .reduce<Position[]>((acc, pathStepMetadata) => {
+          acc.push(...computePathStepCoordinates(pathStepMetadata));
+          return acc;
+        }, []);
+      const box = bbox({
+        type: 'MultiPoint',
+        coordinates: allMarkersCoordinates,
+      });
+      const newViewport = computeBBoxViewport(box, mapSettings.viewport, { padding: 64 });
+      dispatch(updateViewport(newViewport));
+    }
+  };
 
   useEffect(() => {
     if (
@@ -161,6 +187,11 @@ const ItineraryModal = ({
         <div className="itinerary-modal-form-body">
           {categoryWarning && <AlertBox message={categoryWarning} closeable />}
           <div className="path-step-list">
+            <div className="itinerary-icons">
+              <button className="frame-all" onClick={frameAllPathSteps}>
+                <FrameAll title={t('frameAll')} aria-label={t('frameAll')} />
+              </button>
+            </div>
             <div className="path-step-list-header">
               <span>{t('opName')}</span>
               <span>{t('secondaryCode')}</span>

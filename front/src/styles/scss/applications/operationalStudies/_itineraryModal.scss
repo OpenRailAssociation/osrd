@@ -108,6 +108,24 @@
         border-radius: 8px;
         margin-top: 12px;
         margin-inline: 8px;
+        padding-top: 16px;
+
+        .itinerary-icons {
+          display: flex;
+          justify-content: end;
+          align-items: center;
+          padding-inline: 16px;
+
+          .frame-all span {
+            display: flex;
+            align-items: center;
+            color: var(--grey30);
+
+            &:hover {
+              color: var(--black100);
+            }
+          }
+        }
 
         .path-step-list-header {
           display: grid;

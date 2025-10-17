@@ -345,6 +345,7 @@
     "itineraryModal": {
       "addLocationOnMap": "Ajouter un point remarquable sur la carte",
       "focusLocationOnMap": "Centrer la carte sur ce point remarquable",
+      "frameAll": "Centrer sur tous les points de passage sur la carte",
       "moveLocationOnMap": "Déplacer le point remarquable sur la carte",
       "next": "Suivant",
       "opName": "Nom du point remarquable",
