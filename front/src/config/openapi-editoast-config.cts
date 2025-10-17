@@ -8,6 +8,7 @@ const config: ConfigFile = {
   exportName: 'generatedEditoastApi',
   hooks: false,
   tag: true,
+  useUnknown: true,
   endpointOverrides: [
     {
       pattern: [

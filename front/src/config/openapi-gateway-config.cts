@@ -8,6 +8,7 @@ const config: ConfigFile = {
   exportName: 'osrdGatewayApi',
   hooks: false,
   tag: true,
+  useUnknown: true,
 };
 
 exports.default = config;
