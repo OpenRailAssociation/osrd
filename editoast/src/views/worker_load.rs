@@ -2,6 +2,8 @@ use axum::Extension;
 use axum::extract::Json;
 use axum::extract::State;
 use core_client::AsCoreRequest;
+use core_client::Error as CoreClientError;
+use core_client::mq_client::MqClientError;
 use core_client::worker_load::WorkerLoadRequest;
 use editoast_derive::EditoastError;
 use editoast_models::prelude::*;
@@ -65,7 +67,7 @@ pub enum WorkerLoadError {
 
     #[error(transparent)]
     #[editoast_error(status = 500)]
-    FetchStatusError(#[from] osrdyne_client::Error),
+    FetchStatusError(#[from] CoreClientError),
 }
 
 /// Ensure a worker for the given infra (and stdcm timetable) is ready
@@ -85,7 +87,6 @@ pub(in crate::views) async fn worker_load(
     State(AppState {
         db_pool,
         core_client,
-        osrdyne_client,
         ..
     }): State<AppState>,
     Extension(auth): AuthenticationExt,
@@ -123,29 +124,22 @@ pub(in crate::views) async fn worker_load(
         .await?;
     }
 
-    // Fetch status of the worker
-    let worker_key = match timetable_id {
-        Some(timetable_id) => format!("{infra_id}-{timetable_id}"),
-        None => infra_id.to_string(),
+    let infra_request = WorkerLoadRequest {
+        infra: infra.id,
+        expected_version: infra.version,
+        timetable: timetable_id,
     };
-    let status = osrdyne_client
-        .get_worker_status(&worker_key)
-        .await
-        .map_err(WorkerLoadError::FetchStatusError)?
-        .into();
 
-    if status == WorkerStatus::Error || status == WorkerStatus::NotReady {
-        let infra_request = WorkerLoadRequest {
-            infra: infra.id,
-            expected_version: infra.version,
-            timetable: timetable_id,
-        };
+    let status = infra_request.fetch(core_client.as_ref()).await;
 
-        // Send message to load worker in background
-        tokio::spawn(async move {
-            let _ = infra_request.fetch(core_client.as_ref()).await;
-        });
-    }
+    let status = match status {
+        Ok(()) => WorkerStatus::Ready,
+        Err(CoreClientError::MqClientError(MqClientError::ResponseTimeout)) => {
+            // Treat timeout as NotReady
+            WorkerStatus::NotReady
+        }
+        Err(e) => return Err(e.into()),
+    };
 
     Ok(Json(status))
 }
@@ -156,7 +150,6 @@ mod tests {
     use core_client::CoreClient;
     use core_client::mocking::MockingClient;
     use database::DbConnectionPoolV2;
-    use osrdyne_client::OsrdyneClient;
     use reqwest::StatusCode;
 
     use crate::models::fixtures::create_empty_infra;
@@ -167,16 +160,15 @@ mod tests {
         let db_pool = DbConnectionPoolV2::for_tests();
         let empty_infra = create_empty_infra(&mut db_pool.get_ok()).await;
 
-        let osrdyne_client = OsrdyneClient::mock()
-            .with_status(
-                &empty_infra.id.to_string(),
-                osrdyne_client::WorkerStatus::Ready,
-            )
-            .build();
+        let mut core = MockingClient::default();
+        core.stub("/worker_load")
+            .response(StatusCode::OK)
+            .body("")
+            .finish();
+
         let app = TestAppBuilder::new()
             .db_pool(db_pool)
-            .core_client(CoreClient::Mocked(MockingClient::default()))
-            .osrdyne_client(osrdyne_client)
+            .core_client(CoreClient::Mocked(core))
             .build();
         let req = app.post("/worker_load").json(&WorkerLoadForm {
             infra_id: empty_infra.id,
