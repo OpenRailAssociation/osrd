@@ -393,7 +393,7 @@ impl RabbitMQClient {
         path: &str,
         published_payload: &Option<T>,
         mandatory: bool,
-        override_timeout: Option<u64>,
+        override_timeout: Option<Duration>,
     ) -> Result<MQResponse, MqClientError>
     where
         T: Serialize,
@@ -452,7 +452,7 @@ impl RabbitMQClient {
         drop(channel_worker);
 
         match timeout(
-            Duration::from_secs(override_timeout.unwrap_or(self.timeout)),
+            override_timeout.unwrap_or_else(|| Duration::from_secs(self.timeout)),
             rx,
         )
         .await
