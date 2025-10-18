@@ -18,6 +18,7 @@ use serde::de::DeserializeOwned;
 use std::collections::HashMap;
 use std::fmt::Display;
 use std::marker::PhantomData;
+use std::time::Duration;
 use thiserror::Error;
 use tracing::trace;
 
@@ -62,6 +63,7 @@ impl CoreClient {
         path: &str,
         body: Option<&B>,
         worker_id: Option<String>,
+        override_timeout: Option<Duration>,
     ) -> Result<R::Response, Error> {
         trace!(
             target: "editoast::coreclient",
@@ -75,7 +77,7 @@ impl CoreClient {
                 // TODO: tracing: use correlation id
 
                 let response = client
-                    .call_with_response(worker_id, path, &body, true, None)
+                    .call_with_response(worker_id, path, &body, true, override_timeout)
                     .await
                     .map_err(Error::MqClientError)?;
 
@@ -149,6 +151,11 @@ where
     /// Returns the worker id used for the request. Must be provided.
     fn worker_id(&self) -> Option<String>;
 
+    /// Returns the timeout override for this request, if any.
+    fn override_timeout(&self) -> Option<Duration> {
+        None
+    }
+
     /// Sends this request using the given [CoreClient] and returns the response content on success
     ///
     /// Raises a [enum@Error] if the request is not a success.
@@ -157,8 +164,13 @@ where
     /// manage itself its expected errors. Maybe a bound error type defaulting
     /// to CoreError and a trait function handle_errors would suffice?
     async fn fetch(&self, core: &CoreClient) -> Result<R::Response, Error> {
-        core.fetch::<Self, R>(self.url(), Some(self), self.worker_id())
-            .await
+        core.fetch::<Self, R>(
+            self.url(),
+            Some(self),
+            self.worker_id(),
+            self.override_timeout(),
+        )
+        .await
     }
 }
 
