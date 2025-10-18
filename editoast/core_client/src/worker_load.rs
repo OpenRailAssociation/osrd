@@ -20,4 +20,8 @@ impl AsCoreRequest<()> for WorkerLoadRequest {
             None => Some(self.infra.to_string()),
         }
     }
+
+    fn override_timeout(&self) -> Option<std::time::Duration> {
+        Some(std::time::Duration::from_secs(10))
+    }
 }
