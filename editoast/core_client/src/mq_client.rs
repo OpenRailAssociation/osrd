@@ -1,3 +1,4 @@
+use dashmap::DashMap;
 use deadpool::managed::Manager;
 use deadpool::managed::Metrics;
 use deadpool::managed::Pool;
@@ -18,7 +19,6 @@ use lapin::types::FieldTable;
 use lapin::types::ShortString;
 use serde::Serialize;
 use serde_json::to_vec;
-use std::collections::HashMap;
 use std::fmt::Debug;
 use std::sync::Arc;
 use thiserror::Error;
@@ -93,7 +93,7 @@ impl Manager for ChannelManager {
 #[derive(Debug)]
 pub struct ChannelWorker {
     channel: Arc<Channel>,
-    response_tracker: Arc<RwLock<HashMap<String, oneshot::Sender<Delivery>>>>,
+    response_tracker: Arc<DashMap<String, oneshot::Sender<Delivery>>>,
     consumer_tag: String,
 }
 
@@ -101,7 +101,7 @@ impl ChannelWorker {
     pub async fn new(channel: Arc<Channel>, hostname: String) -> Self {
         let worker = ChannelWorker {
             channel,
-            response_tracker: Arc::new(RwLock::new(HashMap::new())),
+            response_tracker: Arc::new(DashMap::new()),
             consumer_tag: format!("{}-{}", hostname, Uuid::new_v4()),
         };
         worker.dispatching_loop().await;
@@ -117,8 +117,7 @@ impl ChannelWorker {
         correlation_id: String,
         tx: oneshot::Sender<Delivery>,
     ) {
-        let mut response_tracker = self.response_tracker.write().await;
-        response_tracker.insert(correlation_id, tx);
+        self.response_tracker.insert(correlation_id, tx);
     }
 
     pub fn should_reuse(&self) -> bool {
@@ -147,8 +146,7 @@ impl ChannelWorker {
             while let Some(delivery) = consumer.next().await {
                 let delivery = delivery.expect("Error in receiving message");
                 if let Some(correlation_id) = delivery.properties.correlation_id().as_ref() {
-                    let mut tracker = response_tracker.write().await;
-                    if let Some(sender) = tracker.remove(correlation_id.as_str()) {
+                    if let Some((_, sender)) = response_tracker.remove(correlation_id.as_str()) {
                         let _ = sender.send(delivery);
                     }
                 } else {

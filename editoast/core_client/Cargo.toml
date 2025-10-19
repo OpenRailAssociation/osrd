@@ -10,6 +10,7 @@ mocking_client = ["dep:http"]
 [dependencies]
 chrono.workspace = true
 common = { workspace = true }
+dashmap.workspace = true
 deadpool.workspace = true
 educe.workspace = true
 futures-util.workspace = true
