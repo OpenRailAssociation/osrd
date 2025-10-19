@@ -26,7 +26,6 @@ use tokio::sync::RwLock;
 use tokio::sync::oneshot;
 use tokio::task;
 use tokio::time::Duration;
-use tokio::time::timeout;
 use tracing::Instrument;
 use url::Url;
 use uuid::Uuid;
@@ -399,6 +398,7 @@ impl RabbitMQClient {
         T: Serialize,
     {
         let correlation_id = Uuid::new_v4().to_string();
+        let timeout = override_timeout.unwrap_or_else(|| Duration::from_secs(self.timeout));
 
         // Get the next channel
         let channel_worker = self
@@ -425,6 +425,7 @@ impl RabbitMQClient {
         let properties = BasicProperties::default()
             .with_reply_to(ShortString::from("amq.rabbitmq.reply-to"))
             .with_correlation_id(ShortString::from(correlation_id.clone()))
+            .with_expiration(timeout.as_millis().to_string().into())
             .with_headers(headers);
 
         let (tx, rx) = oneshot::channel();
@@ -451,12 +452,7 @@ impl RabbitMQClient {
         // Release from the pool
         drop(channel_worker);
 
-        match timeout(
-            override_timeout.unwrap_or_else(|| Duration::from_secs(self.timeout)),
-            rx,
-        )
-        .await
-        {
+        match tokio::time::timeout(timeout, rx).await {
             Ok(Ok(delivery)) => {
                 let status = delivery
                     .properties
