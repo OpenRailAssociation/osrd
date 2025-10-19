@@ -180,6 +180,8 @@ pub enum MqClientError {
     Serialization(#[educe(PartialEq(ignore))] serde_json::Error),
     #[error("Cannot parse response status")]
     StatusParsing,
+    #[error("Response channel was closed due to a delivery error")]
+    ResponseChannelClosed,
     #[error("Response timeout")]
     ResponseTimeout,
     #[error("Connection does not exist")]
@@ -468,7 +470,8 @@ impl RabbitMQClient {
                     status,
                 })
             }
-            Ok(Err(_)) | Err(_) => Err(MqClientError::ResponseTimeout),
+            Ok(Err(_)) => Err(MqClientError::ResponseChannelClosed),
+            Err(_) => Err(MqClientError::ResponseTimeout),
         }
     }
 }

@@ -274,6 +274,7 @@ impl Clone for Error {
                 MqClientError::ResponseTimeout => MqClientError::ResponseTimeout,
                 MqClientError::ConnectionDoesNotExist => MqClientError::ConnectionDoesNotExist,
                 MqClientError::PoolChannelFail => MqClientError::PoolChannelFail,
+                MqClientError::ResponseChannelClosed => MqClientError::ResponseChannelClosed,
             }),
         }
     }
