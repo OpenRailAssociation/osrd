@@ -919,6 +919,7 @@ dependencies = [
  "chrono",
  "common",
  "core_client",
+ "dashmap",
  "deadpool",
  "educe",
  "futures-util",
