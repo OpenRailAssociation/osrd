@@ -159,10 +159,6 @@ const usePathfinding = ({
     const { electrifications, geometry, operational_points } =
       await postPathProperties(pathPropertiesParams).unwrap();
 
-    if (!electrifications || !geometry || !operational_points) {
-      return;
-    }
-
     const trackIds = pathResult.path.track_section_ranges.map((range) => range.track_section);
     const trackSectionsById = await getTrackSectionsByIds(trackIds);
     const tracksLengthCumulativeSums = getTrackLengthCumulativeSums(

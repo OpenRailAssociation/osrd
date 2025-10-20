@@ -3422,7 +3422,7 @@ export type OperationalPointExtensions = {
 };
 export type PathProperties = {
   /** Curves along the path */
-  curves?: null | {
+  curves: {
     /** List of `n` boundaries of the ranges.
         A boundary is a distance from the beginning of the path in mm. */
     boundaries: number[];
@@ -3430,7 +3430,7 @@ export type PathProperties = {
     values: number[];
   };
   /** Electrification modes and neutral section along the path */
-  electrifications?: null | {
+  electrifications: {
     /** List of `n` boundaries of the ranges.
         A boundary is a distance from the beginning of the path in mm. */
     boundaries: number[];
@@ -3449,24 +3449,23 @@ export type PathProperties = {
         }
     )[];
   };
-  geometry?: null | GeoJsonLineString;
+  /** Geometry of the path */
+  geometry: GeoJsonLineString;
   /** Operational points along the path */
-  operational_points?:
-    | {
-        /** Extensions associated to the operational point */
-        extensions?: OperationalPointExtensions;
-        /** Id of the operational point */
-        id: string;
-        /** The part along the path */
-        part: OperationalPointPart;
-        /** Distance from the beginning of the path in mm */
-        position: number;
-        /** Importance of the operational point */
-        weight: number | null;
-      }[]
-    | null;
+  operational_points: {
+    /** Extensions associated to the operational point */
+    extensions?: OperationalPointExtensions;
+    /** Id of the operational point */
+    id: string;
+    /** The part along the path */
+    part: OperationalPointPart;
+    /** Distance from the beginning of the path in mm */
+    position: number;
+    /** Importance of the operational point */
+    weight: number | null;
+  }[];
   /** Slopes along the path */
-  slopes?: null | {
+  slopes: {
     /** List of `n` boundaries of the ranges.
         A boundary is a distance from the beginning of the path in mm. */
     boundaries: number[];
@@ -3474,7 +3473,7 @@ export type PathProperties = {
     values: number[];
   };
   /** Zones along the path */
-  zones?: null | {
+  zones: {
     /** List of `n` boundaries of the ranges.
         A boundary is a distance from the beginning of the path in mm. */
     boundaries: number[];
