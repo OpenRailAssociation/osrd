@@ -69,7 +69,7 @@ diesel-async = { version = "0.5", default-features = false, features = [
   "deadpool",
   "postgres",
 ] }
-diesel_json = "0.2.1"
+diesel_json = "0.3.0"
 editoast_derive = { path = "./editoast_derive" }
 editoast_models = { path = "./editoast_models" }
 educe = "0.6.0"
