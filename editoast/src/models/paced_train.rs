@@ -21,6 +21,8 @@ use schemas::train_schedule::PowerRestrictionItem;
 use schemas::train_schedule::ScheduleItem;
 use schemas::train_schedule::TrainSchedule;
 use schemas::train_schedule::TrainScheduleOptions;
+use serde::Deserialize;
+use serde::Serialize;
 
 use editoast_models::prelude::*;
 use editoast_models::tags::Tags;
@@ -134,13 +136,15 @@ impl PacedTrain {
     }
 
     /// Returns an iterator over "created" train exceptions with their IDs and schedules.
-    fn get_created_occurrences_exceptions(&self) -> impl Iterator<Item = (TrainId, TrainSchedule)> {
+    fn get_created_occurrences_exceptions(
+        &self,
+    ) -> impl Iterator<Item = (OccurrenceId, TrainSchedule)> {
         self.exceptions
             .iter()
             .filter(|exception| matches!(exception.exception_type, ExceptionType::Created { .. }))
             .map(|exception| {
                 (
-                    TrainId::PacedTrainCreatedException {
+                    OccurrenceId::CreatedException {
                         paced_train_id: self.id,
                         exception_key: exception.key.clone(),
                     },
@@ -154,11 +158,11 @@ impl PacedTrain {
     }
 
     /// Returns all base train occurrences without any exceptions applied.
-    fn get_base_occurrences(&self) -> Vec<(TrainId, TrainSchedule)> {
+    fn get_base_occurrences(&self) -> Vec<(OccurrenceId, TrainSchedule)> {
         (0..self.num_base_occurrences())
             .map(move |occurrence_idx| {
                 let base_start_time = self.get_occurrence_start_time(occurrence_idx as i32);
-                let train_id = TrainId::PacedTrainBaseOccurrence {
+                let train_id = OccurrenceId::BaseOccurrence {
                     paced_train_id: self.id,
                     index: occurrence_idx as u64,
                 };
@@ -180,7 +184,7 @@ impl PacedTrain {
     /// and appends any `Created` exceptions as new trains.
     ///
     /// The result is sorted by `start_time` to reflect the chronological order of the trains.
-    pub fn iter_occurrences(&self) -> impl Iterator<Item = (TrainId, TrainSchedule)> {
+    pub fn iter_occurrences(&self) -> impl Iterator<Item = (OccurrenceId, TrainSchedule)> {
         let mut base_occurrences = self.get_base_occurrences();
 
         let modified_exceptions = self
@@ -198,12 +202,12 @@ impl PacedTrain {
                 if exception.disabled {
                     to_remove[occurrence_index as usize] = true;
                 } else {
-                    let train_id = TrainId::PacedTrainModifiedException {
+                    let occurrence_id = OccurrenceId::ModifiedException {
                         paced_train_id: self.id,
                         index: occurrence_index as u64,
                         exception_key: exception.key.clone(),
                     };
-                    *occurrence = (train_id, self.apply_exception(exception));
+                    *occurrence = (occurrence_id, self.apply_exception(exception));
                 }
             }
         }
@@ -294,42 +298,48 @@ impl From<PacedTrain> for paced_train::PacedTrain {
     }
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[serde(untagged)]
+pub enum OccurrenceId {
+    BaseOccurrence {
+        paced_train_id: i64,
+        index: u64,
+    },
+    ModifiedException {
+        paced_train_id: i64,
+        index: u64,
+        exception_key: String,
+    },
+    CreatedException {
+        paced_train_id: i64,
+        exception_key: String,
+    },
+}
+
 #[derive(Debug, Clone, PartialEq)]
 /// This ID is used to identify paced train occurrences and exceptions when sending them to the core API for conflict detection.
 pub enum TrainId {
     TrainSchedule(i64),
-    PacedTrainBaseOccurrence {
-        paced_train_id: i64,
-        index: u64,
-    },
-    PacedTrainModifiedException {
-        paced_train_id: i64,
-        index: u64,
-        exception_key: String,
-    },
-    PacedTrainCreatedException {
-        paced_train_id: i64,
-        exception_key: String,
-    },
+    PacedTrain(OccurrenceId),
 }
 
 impl Display for TrainId {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::TrainSchedule(id) => write!(f, "{id}"),
-            Self::PacedTrainBaseOccurrence {
+            Self::PacedTrain(OccurrenceId::BaseOccurrence {
                 paced_train_id,
                 index,
-            } => write!(f, "{paced_train_id}#{index}"),
-            Self::PacedTrainCreatedException {
+            }) => write!(f, "{paced_train_id}#{index}"),
+            Self::PacedTrain(OccurrenceId::CreatedException {
                 paced_train_id,
                 exception_key,
-            } => write!(f, "{paced_train_id}@{exception_key}"),
-            Self::PacedTrainModifiedException {
+            }) => write!(f, "{paced_train_id}@{exception_key}"),
+            Self::PacedTrain(OccurrenceId::ModifiedException {
                 paced_train_id,
                 exception_key,
                 index,
-            } => write!(f, "{paced_train_id}@{exception_key}#{index}"),
+            }) => write!(f, "{paced_train_id}@{exception_key}#{index}"),
         }
     }
 }
@@ -348,17 +358,17 @@ impl FromStr for TrainId {
                 let index = index_str
                     .parse::<u64>()
                     .map_err(|_| "Invalid exception index")?;
-                Ok(TrainId::PacedTrainModifiedException {
+                Ok(TrainId::PacedTrain(OccurrenceId::ModifiedException {
                     paced_train_id,
                     exception_key: exception_key.to_string(),
                     index,
-                })
+                }))
             } else {
                 let exception_key = exception_str.to_string();
-                Ok(TrainId::PacedTrainCreatedException {
+                Ok(TrainId::PacedTrain(OccurrenceId::CreatedException {
                     paced_train_id,
                     exception_key,
-                })
+                }))
             }
         } else {
             // Is it a base paced train exception?
@@ -369,10 +379,10 @@ impl FromStr for TrainId {
                 let index = index_str
                     .parse::<u64>()
                     .map_err(|_| "Invalid occurrence index")?;
-                Ok(TrainId::PacedTrainBaseOccurrence {
+                Ok(TrainId::PacedTrain(OccurrenceId::BaseOccurrence {
                     paced_train_id,
                     index,
-                })
+                }))
             } else {
                 let train_id = s.parse::<i64>().map_err(|_| "Invalid train id")?;
                 Ok(TrainId::TrainSchedule(train_id))
@@ -391,7 +401,7 @@ mod tests {
     use crate::models::fixtures::create_timetable;
     use crate::models::fixtures::simple_paced_train_changeset;
     use crate::models::fixtures::simple_sub_category;
-    use crate::models::paced_train::TrainId;
+    use crate::models::paced_train::OccurrenceId;
     use chrono::DateTime;
     use chrono::Utc;
     use database::DbConnectionPoolV2;
@@ -550,7 +560,7 @@ mod tests {
 
         let paced_train =
             create_paced_train(vec![exception_1.clone(), exception_2.clone(), exception_3]);
-        let occurrences: Vec<(TrainId, schemas::TrainSchedule)> =
+        let occurrences: Vec<(OccurrenceId, schemas::TrainSchedule)> =
             paced_train.iter_occurrences().collect();
 
         assert_eq!(occurrences.len(), 4);
@@ -561,7 +571,7 @@ mod tests {
             .iter()
             .map(|(_, o)| o.train_name.clone())
             .collect();
-        let types: Vec<TrainId> = occurrences.iter().map(|(t, _)| t.clone()).collect();
+        let types: Vec<OccurrenceId> = occurrences.iter().map(|(t, _)| t.clone()).collect();
 
         assert_eq!(
             start_times,
@@ -586,20 +596,20 @@ mod tests {
         assert_eq!(
             types,
             vec![
-                TrainId::PacedTrainModifiedException {
+                OccurrenceId::ModifiedException {
                     paced_train_id: paced_train.id,
                     index: 1,
                     exception_key: "key_1".to_string()
                 },
-                TrainId::PacedTrainBaseOccurrence {
+                OccurrenceId::BaseOccurrence {
                     paced_train_id: paced_train.id,
                     index: 2
                 },
-                TrainId::PacedTrainCreatedException {
+                OccurrenceId::CreatedException {
                     paced_train_id: paced_train.id,
                     exception_key: "key_2".to_string()
                 },
-                TrainId::PacedTrainBaseOccurrence {
+                OccurrenceId::BaseOccurrence {
                     paced_train_id: paced_train.id,
                     index: 3
                 },
@@ -615,7 +625,7 @@ mod tests {
         });
 
         let paced_train = create_paced_train(vec![exception_1.clone()]);
-        let occurrences: Vec<(TrainId, schemas::TrainSchedule)> =
+        let occurrences: Vec<(OccurrenceId, schemas::TrainSchedule)> =
             paced_train.iter_occurrences().collect();
 
         assert_eq!(occurrences.len(), 4);
@@ -626,7 +636,7 @@ mod tests {
             .iter()
             .map(|(_, o)| o.train_name.clone())
             .collect();
-        let types: Vec<TrainId> = occurrences.iter().map(|(t, _)| t.clone()).collect();
+        let types: Vec<OccurrenceId> = occurrences.iter().map(|(t, _)| t.clone()).collect();
 
         assert_eq!(
             start_times,
@@ -651,20 +661,20 @@ mod tests {
         assert_eq!(
             types,
             vec![
-                TrainId::PacedTrainBaseOccurrence {
+                OccurrenceId::BaseOccurrence {
                     paced_train_id: paced_train.id,
                     index: 0
                 },
-                TrainId::PacedTrainModifiedException {
+                OccurrenceId::ModifiedException {
                     paced_train_id: paced_train.id,
                     index: 1,
                     exception_key: "key_1".to_string()
                 },
-                TrainId::PacedTrainBaseOccurrence {
+                OccurrenceId::BaseOccurrence {
                     paced_train_id: paced_train.id,
                     index: 2
                 },
-                TrainId::PacedTrainBaseOccurrence {
+                OccurrenceId::BaseOccurrence {
                     paced_train_id: paced_train.id,
                     index: 3
                 },
