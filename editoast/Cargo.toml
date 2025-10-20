@@ -84,7 +84,7 @@ itertools = "0.14.0"
 lapin = "2.5.5"
 linkme = "0.3.35"
 mvt = "0.10.3"
-openssl = "0.10.73"
+openssl = "0.10.74"
 opentelemetry = { version = "0.30.0", default-features = false, features = [
   "trace",
 ] }
