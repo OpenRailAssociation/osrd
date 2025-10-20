@@ -162,8 +162,8 @@ export const preparePathPropertiesData = (
   trainSchedulePath: TrainSchedule['path'],
   t: TFunction<'operational-studies'>
 ): PathPropertiesFormatted => {
-  const formattedSlopes = transformBoundariesDataToPositionDataArray(slopes!, length, 'gradient');
-  const formattedCurves = transformBoundariesDataToPositionDataArray(curves!, length, 'radius');
+  const formattedSlopes = transformBoundariesDataToPositionDataArray(slopes, length, 'gradient');
+  const formattedCurves = transformBoundariesDataToPositionDataArray(curves, length, 'radius');
 
   const mergedElectrificationAndProfiles = mergeElectrificationAndProfiles(
     electrifications,
@@ -175,13 +175,13 @@ export const preparePathPropertiesData = (
     length
   );
 
-  const voltageRanges = getPathVoltages(electrifications!, length);
+  const voltageRanges = getPathVoltages(electrifications, length);
 
   const operationalPointsWithAllWaypoints = upsertMapWaypointsInOperationalPoints(
     'EditoastPathOperationalPoint',
     trainSchedulePath,
     path_item_positions,
-    operational_points!,
+    operational_points,
     t
   );
 
@@ -190,7 +190,7 @@ export const preparePathPropertiesData = (
     curves: formattedCurves,
     slopes: formattedSlopes,
     operationalPoints: operationalPointsWithAllWaypoints,
-    geometry: geometry!,
+    geometry,
     voltages: voltageRanges,
   };
 };

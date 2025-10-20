@@ -10974,10 +10974,16 @@ components:
     PathProperties:
       type: object
       description: Properties along a path. Each property is optional since it depends on what the user requests.
+      required:
+      - slopes
+      - curves
+      - electrifications
+      - geometry
+      - operational_points
+      - zones
       properties:
         curves:
           oneOf:
-          - type: 'null'
           - type: object
             description: Property f64 values along a path. Each value is associated to a range of the path.
             required:
@@ -11002,7 +11008,6 @@ components:
           description: Curves along the path
         electrifications:
           oneOf:
-          - type: 'null'
           - type: object
             description: Electrification property along a path. Each value is associated to a range of the path.
             required:
@@ -11058,14 +11063,10 @@ components:
                 description: List of `n+1` values associated to the ranges
           description: Electrification modes and neutral section along the path
         geometry:
-          oneOf:
-          - type: 'null'
-          - $ref: '#/components/schemas/GeoJsonLineString'
-            description: Geometry of the path
+          $ref: '#/components/schemas/GeoJsonLineString'
+          description: Geometry of the path
         operational_points:
-          type:
-          - array
-          - 'null'
+          type: array
           items:
             type: object
             description: Operational point along a path.
@@ -11103,7 +11104,6 @@ components:
           description: Operational points along the path
         slopes:
           oneOf:
-          - type: 'null'
           - type: object
             description: Property f64 values along a path. Each value is associated to a range of the path.
             required:
@@ -11128,7 +11128,6 @@ components:
           description: Slopes along the path
         zones:
           oneOf:
-          - type: 'null'
           - type: object
             description: Zones along a path. Each value is associated to a range of the path.
             required:

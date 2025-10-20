@@ -41,36 +41,36 @@ pub struct PathPropertiesInput {
 }
 
 /// Properties along a path. Each property is optional since it depends on what the user requests.
-#[derive(Debug, Clone, Serialize, Deserialize, ToSchema, Default)]
+#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
 pub(in crate::views) struct PathProperties {
     #[schema(inline)]
     /// Slopes along the path
-    slopes: Option<PropertyValuesF64>,
+    slopes: PropertyValuesF64,
     #[schema(inline)]
     /// Curves along the path
-    curves: Option<PropertyValuesF64>,
+    curves: PropertyValuesF64,
     /// Electrification modes and neutral section along the path
     #[schema(inline)]
-    electrifications: Option<PropertyElectrificationValues>,
+    electrifications: PropertyElectrificationValues,
     /// Geometry of the path
-    geometry: Option<GeoJsonLineString>,
+    geometry: GeoJsonLineString,
     /// Operational points along the path
     #[schema(inline)]
-    operational_points: Option<Vec<OperationalPointOnPath>>,
+    operational_points: Vec<OperationalPointOnPath>,
     /// Zones along the path
     #[schema(inline)]
-    zones: Option<PropertyZoneValues>,
+    zones: PropertyZoneValues,
 }
 
 impl From<core_client::path_properties::PathPropertiesResponse> for PathProperties {
     fn from(response: core_client::path_properties::PathPropertiesResponse) -> Self {
         PathProperties {
-            slopes: Some(response.slopes),
-            curves: Some(response.curves),
-            electrifications: Some(response.electrifications),
-            geometry: Some(response.geometry),
-            operational_points: Some(response.operational_points),
-            zones: Some(response.zones),
+            slopes: response.slopes,
+            curves: response.curves,
+            electrifications: response.electrifications,
+            geometry: response.geometry,
+            operational_points: response.operational_points,
+            zones: response.zones,
         }
     }
 }
@@ -282,10 +282,7 @@ mod tests {
     async fn returns_all_path_properties() {
         let app = init_test_app();
         let infra = create_small_infra(&mut app.db_pool().get_ok()).await;
-        let url = format!(
-            "/infra/{}/path_properties?props[]=slopes&props[]=curves&props[]=electrifications&props[]=geometry&props[]=operational_points",
-            infra.id
-        );
+        let url = format!("/infra/{}/path_properties", infra.id);
 
         // Should succeed
         let request = app.post(&url).json(&json!(
@@ -297,16 +294,16 @@ mod tests {
             .assert_status(StatusCode::OK)
             .json_into();
         let path_properties_response = path_properties_response();
-        assert_eq!(response.slopes, Some(path_properties_response.slopes));
-        assert_eq!(response.curves, Some(path_properties_response.curves));
+        assert_eq!(response.slopes, path_properties_response.slopes);
+        assert_eq!(response.curves, path_properties_response.curves);
         assert_eq!(
             response.electrifications,
-            Some(path_properties_response.electrifications)
+            path_properties_response.electrifications
         );
-        assert_eq!(response.geometry, Some(path_properties_response.geometry));
+        assert_eq!(response.geometry, path_properties_response.geometry);
         assert_eq!(
             response.operational_points,
-            Some(path_properties_response.operational_points)
+            path_properties_response.operational_points
         );
     }
 
@@ -326,16 +323,16 @@ mod tests {
             .assert_status(StatusCode::OK)
             .json_into();
         let path_properties_response = path_properties_response();
-        assert_eq!(response.slopes, Some(path_properties_response.slopes));
-        assert_eq!(response.curves, Some(path_properties_response.curves));
+        assert_eq!(response.slopes, path_properties_response.slopes);
+        assert_eq!(response.curves, path_properties_response.curves);
         assert_eq!(
             response.electrifications,
-            Some(path_properties_response.electrifications)
+            path_properties_response.electrifications
         );
-        assert_eq!(response.geometry, Some(path_properties_response.geometry));
+        assert_eq!(response.geometry, path_properties_response.geometry);
         assert_eq!(
             response.operational_points,
-            Some(path_properties_response.operational_points)
+            path_properties_response.operational_points
         );
     }
 }

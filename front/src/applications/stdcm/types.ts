@@ -39,11 +39,9 @@ export type StdcmPathNotFound = Extract<
 
 export type StdcmResponse = StdcmPathNotFound | StdcmSuccessResponse;
 
-export type StdcmPathProperties = {
+export type StdcmPathProperties = PathProperties & {
   manchetteOperationalPoints?: PathOperationalPoint[];
-  geometry: NonNullable<PathProperties['geometry']>;
   suggestedOperationalPoints: SuggestedOP[];
-  zones: NonNullable<PathProperties['zones']>;
 };
 
 type WaypointWithSecondaryCode = {

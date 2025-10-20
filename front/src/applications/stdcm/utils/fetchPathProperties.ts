@@ -33,10 +33,6 @@ const fetchPathProperties = async (
       osrdEditoastApi.endpoints.postInfraByInfraIdPathProperties.initiate(pathPropertiesParams)
     ).unwrap();
 
-    if (!result.geometry || !result.operational_points || !result.zones || !infraId) {
-      throw new Error('Missing infraId or pathProperties .');
-    }
-
     const trackIds = result.operational_points.map((op) => op.part.track);
     const trackSections = await getEntities<TrackSectionEntity>(
       infraId,
@@ -83,7 +79,7 @@ const fetchPathProperties = async (
       curves: result.curves,
       electrifications: result.electrifications,
       operational_points: result.operational_points,
-    } as StdcmPathProperties;
+    };
   } catch (error) {
     console.error('Error fetching path properties:', error);
     throw new Error('Path properties could not be fetched.');
