@@ -42,6 +42,7 @@ pub struct RabbitMQClient {
 pub struct ChannelManager {
     connection: Arc<RwLock<Option<Connection>>>,
     hostname: String,
+    response_tracker: Arc<DashMap<String, oneshot::Sender<Delivery>>>,
 }
 
 impl ChannelManager {
@@ -49,6 +50,7 @@ impl ChannelManager {
         ChannelManager {
             connection,
             hostname,
+            response_tracker: Arc::new(DashMap::new()),
         }
     }
 }
@@ -71,7 +73,12 @@ impl Manager for ChannelManager {
                 .await
                 .map_err(|_| ChannelManagerError::Lapin)?;
 
-            Ok(ChannelWorker::new(Arc::new(channel), self.hostname.clone()).await)
+            Ok(ChannelWorker::new(
+                Arc::new(channel),
+                self.hostname.clone(),
+                self.response_tracker.clone(),
+            )
+            .await)
         } else {
             Err(ChannelManagerError::ConnectionNotFound)
         }
@@ -98,10 +105,14 @@ pub struct ChannelWorker {
 }
 
 impl ChannelWorker {
-    pub async fn new(channel: Arc<Channel>, hostname: String) -> Self {
+    pub async fn new(
+        channel: Arc<Channel>,
+        hostname: String,
+        response_tracker: Arc<DashMap<String, oneshot::Sender<Delivery>>>,
+    ) -> Self {
         let worker = ChannelWorker {
             channel,
-            response_tracker: Arc::new(DashMap::new()),
+            response_tracker,
             consumer_tag: format!("{}-{}", hostname, Uuid::new_v4()),
         };
         worker.dispatching_loop().await;
