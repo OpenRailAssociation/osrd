@@ -1938,9 +1938,9 @@ dependencies = [
 
 [[package]]
 name = "geos"
-version = "8.3.1"
+version = "10.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b57a162bbfe8866b1ab898aad47e7fe634a9177c4b1bacc80af04d2b45772a46"
+checksum = "0473e63acafe4109b096ab8c1e6b8151e1cb25397811525779a9bc7187382a7b"
 dependencies = [
  "c_vec",
  "geojson",
