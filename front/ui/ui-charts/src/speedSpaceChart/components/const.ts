@@ -76,6 +76,9 @@ export const GREY_80 = chroma(49, 46, 43);
 export const LIGHT_BLUE = chroma(33, 112, 185);
 export const WARNING_30 = chroma(234, 167, 43);
 export const WHITE = chroma(255, 255, 255);
+export const BASE_SPEED_COLOR = chroma(17, 101, 180);
+export const ECO_SPEED_COLOR = chroma(7, 69, 128);
+export const BASE_SPEED_FILL_ALPHA = 0.15;
 
 /**
  * COLOR_DICTIONARY maps specific colors to their corresponding secondary colors used for speed limit tags.
@@ -93,3 +96,5 @@ export const ZOOM_CONFIG = {
   MAX_RATIO: 50,
   SLIDER_WIDTH: 100,
 };
+
+export const CURVE_LINEWIDTH = 0.5;
