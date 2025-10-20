@@ -19,6 +19,14 @@ import fr.sncf.osrd.fast_collections.PrimitiveWrapperCollections
 import fr.sncf.osrd.utils.Direction
 import kotlin.math.absoluteValue
 
+/**
+ * Describes a distance.
+ *
+ * This is an inlined value class: the JVM sees this as a simple Long. When interfacing with Java or
+ * other languages, this is typed as a Long and the unit is millimeters.
+ *
+ * When this appears in a JSON payload, the unit is millimeters typed as a Long.
+ */
 @JvmInline
 value class Distance(val millimeters: Long) : Comparable<Distance> {
     val absoluteValue
@@ -80,6 +88,19 @@ val Double.meters: Distance
 val Int.meters: Distance
     get() = Distance(this.toLong() * 1000)
 
+/**
+ * Describes an offset on a given object. Typing is strictly enforced and mismatches will fail to
+ * compile, though `.cast<T>()` can be used.
+ *
+ * This is an inlined value class: the JVM sees this as a simple Long. When interfacing with Java or
+ * other languages, this is typed as a Long and the unit is millimeters.
+ *
+ * When this appears in a JSON payload, the unit is millimeters typed as a Long.
+ *
+ * Note: projecting an offset from one object to another is an error-prone operation when done by
+ * hand, it's recommended to heavily factorize and test such code. "Train path" classes are
+ * generally meant to handle such projection.
+ */
 @JvmInline
 value class Offset<T>(val distance: Distance) : Comparable<Offset<T>> {
     operator fun plus(value: Distance): Offset<T> {

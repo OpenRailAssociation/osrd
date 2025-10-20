@@ -2,6 +2,14 @@ package fr.sncf.osrd.utils.units
 
 import kotlin.math.absoluteValue
 
+/**
+ * Describes a duration.
+ *
+ * This is an inlined value class: the JVM sees this as a simple Long. When interfacing with Java or
+ * other languages, this is typed as a Long and the unit is milliseconds.
+ *
+ * When this appears in a JSON payload, the unit is milliseconds typed as a Long.
+ */
 @JvmInline
 value class Duration(val milliseconds: Long) : Comparable<Duration> {
 
