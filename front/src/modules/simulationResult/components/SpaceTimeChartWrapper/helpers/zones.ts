@@ -1,16 +1,19 @@
 import type { OccupancyZone } from '@osrd-project/ui-charts';
 
-import { type PostTrainScheduleTrackOccupancyApiResponse } from 'common/api/osrdEditoastApi';
-import type { TrainScheduleId } from 'reducers/osrdconf/types';
+import {
+  type PostPacedTrainTrackOccupancyApiResponse,
+  type PostTrainScheduleTrackOccupancyApiResponse,
+} from 'common/api/osrdEditoastApi';
+import type { TimetableItemId } from 'reducers/osrdconf/types';
 import { Duration } from 'utils/duration';
-import { formatEditoastIdToTrainScheduleId } from 'utils/trainId';
+import { formatEditoastIdToPacedTrainId, formatEditoastIdToTrainScheduleId } from 'utils/trainId';
 
 import type { TrainSpaceTimeData } from '../../../types';
 
 export type MovableOccupancyZone = Omit<OccupancyZone, 'trainId'> & {
   dbStartTime: number;
   dbEndTime: number;
-  trainId: TrainScheduleId;
+  trainId: TimetableItemId;
 };
 
 const EPSILON = 1e-5;
@@ -46,17 +49,20 @@ function getTimeToPosition(
 }
 export function getMovableOccupancyZone(
   trackId: string,
-  {
-    duration,
-    time_begin,
-    train_schedule_id,
-  }: PostTrainScheduleTrackOccupancyApiResponse[string][number],
+  entry:
+    | PostTrainScheduleTrackOccupancyApiResponse[string][number]
+    | PostPacedTrainTrackOccupancyApiResponse[string][number],
   { name, spaceTimeCurves, departureTime }: TrainSpaceTimeData
 ): MovableOccupancyZone {
   const trainTimeOrigin = departureTime.getTime();
-  const startTime = +new Date(time_begin);
-  const endTime = +new Date(time_begin) + Duration.parse(duration).ms;
+  const startTime = +new Date(entry.time_begin);
+  const endTime = +new Date(entry.time_begin) + Duration.parse(entry.duration).ms;
   const timeToPosition = getTimeToPosition(spaceTimeCurves);
+
+  const trainId =
+    'train_schedule_id' in entry
+      ? formatEditoastIdToTrainScheduleId(entry.train_schedule_id)
+      : formatEditoastIdToPacedTrainId(entry.paced_train_id);
 
   // Search for arrival and departure directions:
   let startDirection: OccupancyZone['startDirection'];
@@ -84,7 +90,7 @@ export function getMovableOccupancyZone(
 
   return {
     trackId,
-    trainId: formatEditoastIdToTrainScheduleId(train_schedule_id),
+    trainId,
     startTime,
     startDirection,
     endTime,

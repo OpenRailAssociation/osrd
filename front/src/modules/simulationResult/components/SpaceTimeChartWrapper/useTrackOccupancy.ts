@@ -1,18 +1,9 @@
+/* eslint-disable @typescript-eslint/no-unsafe-call */
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import type { OccupancyZone, Track } from '@osrd-project/ui-charts';
 import type { TFunction } from 'i18next';
-import {
-  flatMap,
-  forEach,
-  fromPairs,
-  isEmpty,
-  isEqual,
-  isFunction,
-  keyBy,
-  noop,
-  uniqBy,
-} from 'lodash';
+import { forEach, fromPairs, isEmpty, isEqual, isFunction, keyBy, noop, uniqBy } from 'lodash';
 import { useTranslation } from 'react-i18next';
 
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
@@ -21,10 +12,18 @@ import {
   osrdEditoastApi,
   type PathItemLocation,
 } from 'common/api/osrdEditoastApi';
-import type { TimetableItemId, TrainId } from 'reducers/osrdconf/types';
+import type {
+  PacedTrainId,
+  TimetableItemId,
+  TrainId,
+  TrainScheduleId,
+} from 'reducers/osrdconf/types';
 import {
+  extractEditoastIdFromPacedTrainId,
   extractEditoastIdFromTrainScheduleId,
+  formatEditoastIdToPacedTrainId,
   formatEditoastIdToTrainScheduleId,
+  isPacedTrainId,
   isTrainScheduleId,
 } from 'utils/trainId';
 
@@ -120,6 +119,8 @@ const useTrackOccupancy = ({
   );
   const [postTrainScheduleTrackOccupancy] =
     osrdEditoastApi.endpoints.postTrainScheduleTrackOccupancy.useMutation();
+  const [postPacedTrainTrackOccupancy] =
+    osrdEditoastApi.endpoints.postPacedTrainTrackOccupancy.useMutation();
   const [postInfraByInfraIdMatchOperationalPoints] =
     osrdEditoastApi.endpoints.postInfraByInfraIdMatchOperationalPoints.useLazyQuery();
   const timetableItemsById: Map<TimetableItemId, OccupancyTrainSpaceTimeData> = useMemo(
@@ -166,31 +167,70 @@ const useTrackOccupancy = ({
     async (
       opId: string | undefined | null,
       trainsCollection: Record<TimetableItemId, TrainSpaceTimeData>
-    ): Promise<MovableOccupancyZone[]> =>
-      opId
-        ? flatMap(
-            (
-              await postTrainScheduleTrackOccupancy({
-                body: {
-                  operational_point_id: opId,
-                  infra_id: infraId,
-                  train_schedule_ids: Object.keys(trainsCollection)
-                    .filter((id) => isTrainScheduleId(id))
-                    .map((id) => extractEditoastIdFromTrainScheduleId(id)),
-                },
-              })
-            ).data,
-            (entries, trackId) =>
-              entries.map((entry) =>
-                getMovableOccupancyZone(
-                  trackId,
-                  entry,
-                  trainsCollection[formatEditoastIdToTrainScheduleId(entry.train_schedule_id)]
-                )
-              )
-          ) // TODO : append result of postPacedTrainTrackOccupancy
-        : [],
-    [infraId]
+    ): Promise<MovableOccupancyZone[]> => {
+      if (!opId) return [];
+
+      const scheduleIds: TrainScheduleId[] = [];
+      const pacedIds: PacedTrainId[] = [];
+      for (const id of Object.keys(trainsCollection)) {
+        if (isTrainScheduleId(id)) scheduleIds.push(id);
+        else if (isPacedTrainId(id)) pacedIds.push(id);
+      }
+
+      const bodyForTrainSchedules =
+        scheduleIds.length > 0
+          ? {
+              operational_point_id: opId,
+              infra_id: infraId,
+              train_schedule_ids: scheduleIds.map(extractEditoastIdFromTrainScheduleId),
+            }
+          : null;
+
+      const bodyForPaced =
+        pacedIds.length > 0
+          ? {
+              operational_point_id: opId,
+              infra_id: infraId,
+              paced_train_ids: pacedIds.map(extractEditoastIdFromPacedTrainId),
+            }
+          : null;
+
+      const [trainScheduleResp, pacedResp] = await Promise.all([
+        bodyForTrainSchedules
+          ? postTrainScheduleTrackOccupancy({ body: bodyForTrainSchedules })
+          : Promise.resolve(undefined),
+        bodyForPaced
+          ? postPacedTrainTrackOccupancy({ body: bodyForPaced })
+          : Promise.resolve(undefined),
+      ]);
+
+      const zones: MovableOccupancyZone[] = [];
+
+      if (trainScheduleResp?.data) {
+        for (const [trackId, entries] of Object.entries(trainScheduleResp.data)) {
+          for (const entry of entries) {
+            const Id = formatEditoastIdToTrainScheduleId(entry.train_schedule_id);
+            const train = trainsCollection[Id];
+            if (!train) continue;
+            zones.push(getMovableOccupancyZone(trackId, entry, train));
+          }
+        }
+      }
+
+      if (pacedResp?.data) {
+        for (const [trackId, entries] of Object.entries(pacedResp.data)) {
+          for (const entry of entries) {
+            const Id = formatEditoastIdToPacedTrainId(entry.paced_train_id);
+            const train = trainsCollection[Id];
+            if (!train) continue;
+            zones.push(getMovableOccupancyZone(trackId, entry, train));
+          }
+        }
+      }
+
+      return zones;
+    },
+    [infraId, postTrainScheduleTrackOccupancy, postPacedTrainTrackOccupancy]
   );
 
   const deployedWaypoints = useMemo(() => {
