@@ -1,7 +1,12 @@
-import chroma from 'chroma-js';
-
 import type { DrawFunctionParams, LayerData } from '../../../types';
-import { MARGINS } from '../../const';
+import {
+  BASE_SPEED_COLOR,
+  BASE_SPEED_FILL_ALPHA,
+  ECO_SPEED_COLOR,
+  CURVE_LINEWIDTH,
+  MARGINS,
+  WHITE,
+} from '../../const';
 import { clearCanvas, maxPositionValue, maxSpeedValue } from '../../utils';
 
 const { CURVE_MARGIN_TOP, CURVE_MARGIN_SIDES } = MARGINS;
@@ -36,8 +41,6 @@ const computeCurvePoints = (
 
 export const drawCurve = ({ ctx, width, height, store }: DrawFunctionParams) => {
   const { speeds, ecoSpeeds, ratioX, leftOffset } = store;
-  const baseSpeedColor = chroma(17, 101, 180);
-  const ecoSpeedColor = chroma(7, 69, 128);
 
   clearCanvas(ctx, width, height);
 
@@ -58,27 +61,26 @@ export const drawCurve = ({ ctx, width, height, store }: DrawFunctionParams) => 
     ecoSpeeds
   );
 
-  // Curves must be drawn twice one for the fill and one for the stroke
+  // Curves must be drawn twice, once for the fill and once for the stroke.
   // The stroke must not draw the last two points. They're only present to close the shape but are not part of the curve.
+  ctx.lineWidth = CURVE_LINEWIDTH;
 
   ctx.beginPath();
-  ctx.lineWidth = 0.5;
-  ctx.strokeStyle = baseSpeedColor.hex();
-  ctx.fillStyle = baseSpeedColor.alpha(0.15).hex();
+  ctx.fillStyle = BASE_SPEED_COLOR.alpha(BASE_SPEED_FILL_ALPHA).hex();
   curvePoints.forEach(({ x, y }) => {
     ctx.lineTo(x, y);
   });
   ctx.fill();
 
   ctx.beginPath();
+  ctx.strokeStyle = BASE_SPEED_COLOR.hex();
   curvePoints.slice(0, curvePoints.length - 2).forEach(({ x, y }) => {
     ctx.lineTo(x, y);
   });
   ctx.stroke();
 
   ctx.beginPath();
-  ctx.fillStyle = 'rgba(255, 255, 255)';
-  ctx.strokeStyle = ecoSpeedColor.hex();
+  ctx.fillStyle = WHITE.hex();
   ctx.globalCompositeOperation = 'destination-out';
   ecoCurvePoints.forEach(({ x, y }) => {
     ctx.lineTo(x, y);
@@ -86,6 +88,7 @@ export const drawCurve = ({ ctx, width, height, store }: DrawFunctionParams) => 
   ctx.fill();
 
   ctx.beginPath();
+  ctx.strokeStyle = ECO_SPEED_COLOR.hex();
   ctx.globalCompositeOperation = 'source-over';
   ecoCurvePoints.slice(0, ecoCurvePoints.length - 2).forEach(({ x, y }) => {
     ctx.lineTo(x, y);
