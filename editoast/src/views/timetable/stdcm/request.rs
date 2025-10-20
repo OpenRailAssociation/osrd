@@ -160,8 +160,14 @@ impl Request {
 
     // Maximum duration between train departure and arrival, including all stops
     pub(super) fn get_maximum_run_time(&self, simulation_run_time: u64) -> u64 {
+        let constant_margin = 3_600_000; // 1h
+        let fastest_run_time_multiplier = 1.4;
+
+        let stop_time = self.get_total_stop_time();
+        let scaled_run_time = (fastest_run_time_multiplier * simulation_run_time as f64) as u64;
+
         self.maximum_run_time
-            .unwrap_or(2 * simulation_run_time + self.get_total_stop_time())
+            .unwrap_or(stop_time + constant_margin + scaled_run_time)
     }
 
     /// Returns the earliest time at which the train may start
