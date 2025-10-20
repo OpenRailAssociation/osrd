@@ -2,6 +2,15 @@ package fr.sncf.osrd.utils.units
 
 private const val multiplier = 1000.0
 
+/**
+ * Describes a speed.
+ *
+ * This is an inlined value class (where the inner type is itself an inlined value class). The JVM
+ * sees this as a simple Long. When interfacing with Java or other languages, this is typed as a
+ * Long and the unit is millimeters.
+ *
+ * When this appears in a JSON payload, the unit is mm/s typed as a Long.
+ */
 @JvmInline
 value class Speed(val millimetersPerSecond: ULong) : Comparable<Speed> {
     val metersPerSecond

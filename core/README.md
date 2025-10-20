@@ -22,7 +22,9 @@ surroundings
 The API itself isn't extensively documented in an openapi file
 or similar (that's one big TODO). Existing endpoints are listed in
 the `WorkerCommand.kt` file, and the inputs/outputs are described
-in their respective classes.
+in their respective classes. Note: some numerical values have their
+own types, such as `Distance`. See their docstring for the
+expected unit and underlying type (generally Long and mm/ms).
 
 
 ## Getting Started
@@ -142,6 +144,10 @@ The most important interfaces/classes are the ones describing the infrastructure
 instead of nested object (the plan being to enable possible future FFI there).
 The downside is that we can't just view object properties in the debugger, but the
 functions in `DebugViewers` can map IDs to nested objects for this purpose.
+
+We do our best to type numerical values, using inlined value types such as `Distance`
+or `Duration`. Type mismatches would fail to compile. Object offsets are typed with
+the reference object, using `Offset<T>`.
 
 Requests processed by the worker can be written to disk by setting these environments
 variables to true: `LOG_STDCM_REQUESTS`, `LOG_PATHFINDING_REQUESTS`,
