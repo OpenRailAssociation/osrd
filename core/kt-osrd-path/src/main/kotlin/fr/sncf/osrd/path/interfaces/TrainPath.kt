@@ -48,11 +48,17 @@ interface TrainPath : PhysicsPath, PathProperties {
     fun getRoutes(): List<RouteRange>
 
     fun getChunks(): List<DirChunkRange>
+
+    fun getZonePaths(): List<ZonePathRange>
     // To be expanded as needed with other linear objects
 }
 
 fun concat(vararg paths: TrainPath): TrainPath {
     TODO("Required for actual backtracks, not necessary earlier than that")
+}
+
+fun TrainPath.getZones(rawInfra: RawInfra): List<ZoneRange> {
+    return getZonePaths().map { it.mapValue(rawInfra.getZonePathZone(it.value)) }
 }
 
 // Extension functions that help with backward compatibility.

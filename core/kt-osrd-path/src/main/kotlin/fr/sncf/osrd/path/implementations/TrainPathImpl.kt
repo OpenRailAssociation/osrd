@@ -34,6 +34,11 @@ data class TrainPathNoBacktrack(
 
     private val cachedEnvelopeSimPath by lazy { computeEnvelopeSimPath() }
 
+    private val cachedZonePaths by lazy {
+        assert(routes!!.isNotEmpty())
+        mapSubObjects(routes, rawInfra::getRoutePath, rawInfra::getZonePathLength)
+    }
+
     init {
         // The sanity checks here are quite exhaustive and might be expensive to compute.
         // Once the path types are stable, we can remove some of the tests.
@@ -85,6 +90,8 @@ data class TrainPathNoBacktrack(
     override fun getRoutes(): List<RouteRange> = routes!!
 
     override fun getChunks(): List<DirChunkRange> = chunks
+
+    override fun getZonePaths(): List<ZonePathRange> = cachedZonePaths
 
     override val length: Double
         get() = pathProperties.getLength().meters

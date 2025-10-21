@@ -28,7 +28,8 @@ sealed interface BlockPath
  * A marker type for Length and Offset. In TravelledPath, start refers to the real start of the head
  * of the train.
  */
-sealed interface TravelledPath
+// TODO path migration: remove TravelledPath entirely
+typealias TravelledPath = TrainPath
 
 @Suppress("INAPPLICABLE_JVM_NAME")
 interface PathProperties {
