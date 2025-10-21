@@ -24,6 +24,7 @@ fun pathFromTracks(
     start: Distance,
     end: Distance,
     electricalProfileMapping: ElectricalProfileMapping? = null,
+    routeNames: List<String>? = null,
 ): TrainPath {
     val chunkList = mutableDirStaticIdxArrayListOf<TrackChunk>()
     trackIds
@@ -36,6 +37,7 @@ fun pathFromTracks(
         blockInfra,
         chunkPath,
         electricalProfileMapping = electricalProfileMapping,
+        routeNames = routeNames,
     )
 }
 
@@ -46,6 +48,7 @@ fun pathFromTracks(
     start: Distance,
     end: Distance,
     electricalProfileMapping: ElectricalProfileMapping? = null,
+    routeNames: List<String>? = null,
 ): TrainPath {
     return pathFromTracks(
         infra.rawInfra,
@@ -55,6 +58,7 @@ fun pathFromTracks(
         start,
         end,
         electricalProfileMapping = electricalProfileMapping,
+        routeNames = routeNames,
     )
 }
 
