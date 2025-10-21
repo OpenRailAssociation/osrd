@@ -284,7 +284,7 @@ const useScenarioData = (scenario: ScenarioResponse, infraId: number) => {
 
   const updateTrainDepartureTimeWithBroadcast = useCallback(
     async (timetableItemId: TimetableItemId, newDeparture: Date) => {
-      updateTrainDepartureTime(timetableItemId, newDeparture);
+      await updateTrainDepartureTime(timetableItemId, newDeparture);
       broadcastScenarioMessage({
         type: 'setTimetableItemDepartureTime',
         timetableItemId,
