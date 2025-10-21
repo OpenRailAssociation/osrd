@@ -25,6 +25,7 @@ import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.sim_infra.api.DirTrackChunkId
 import fr.sncf.osrd.sim_infra.api.SpeedLimitProperty
+import fr.sncf.osrd.sim_infra.api.TrackSectionId
 import fr.sncf.osrd.sim_infra.api.ZoneId
 import fr.sncf.osrd.sim_infra.impl.TemporarySpeedLimitManager
 import fr.sncf.osrd.standalone_sim.makeElectricalProfiles
@@ -116,6 +117,7 @@ class STDCMEndpoint(
                 )
             val steps = parseSteps(infra, request.pathItems, request.startTime)
             val requirements = getRequirements(request, infra)
+            val allowedTrackSections = parseTrackSectionIds(infra, request.allowedTrackSections)
 
             // Run the STDCM pathfinding
             val path =
@@ -138,6 +140,7 @@ class STDCMEndpoint(
                     parseMarginValue(request.margin),
                     Pathfinding.TIMEOUT,
                     temporarySpeedLimitManager,
+                    allowedTrackSections,
                 )
             if (path == null || hasDuplicateTracks(infra, path.trainPath)) {
                 val response = PathNotFound()
@@ -421,4 +424,11 @@ private fun findWaypointBlocks(
         }
     }
     return waypointBlocks
+}
+
+private fun parseTrackSectionIds(
+    infra: FullInfra,
+    trackSectionName: Set<String>?,
+): Set<TrackSectionId>? {
+    return trackSectionName?.mapNotNull { infra.rawInfra.getTrackSectionFromName(it) }?.toSet()
 }

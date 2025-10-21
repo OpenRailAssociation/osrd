@@ -6,6 +6,7 @@ import fr.sncf.osrd.graph.PathfindingConstraint
 import fr.sncf.osrd.pathfinding.Pathfinding
 import fr.sncf.osrd.railjson.schema.rollingstock.RJSLoadingGaugeType
 import fr.sncf.osrd.sim_infra.api.Block
+import fr.sncf.osrd.sim_infra.api.TrackSectionId
 import fr.sncf.osrd.train.RollingStock
 
 class ConstraintCombiner<EdgeT, OffsetType>(
@@ -27,6 +28,7 @@ class ConstraintCombiner<EdgeT, OffsetType>(
 fun initConstraints(
     fullInfra: FullInfra,
     rollingStock: RollingStock,
+    allowedTrackSections: Set<TrackSectionId>? = null,
 ): List<PathfindingConstraint<Block>> {
     return initConstraintsFromRSProps(
         fullInfra,
@@ -34,6 +36,7 @@ fun initConstraints(
         rollingStock.loadingGaugeType,
         rollingStock.modeNames.toList(),
         rollingStock.supportedSignalingSystems.toList(),
+        allowedTrackSections,
     )
 }
 
@@ -43,6 +46,7 @@ fun initConstraintsFromRSProps(
     rollingStockLoadingGauge: RJSLoadingGaugeType,
     rollingStockSupportedElectrification: List<String>,
     rollingStockSupportedSignalingSystems: List<String>,
+    allowedTrackSections: Set<TrackSectionId>? = null,
 ): List<PathfindingConstraint<Block>> {
     val res = mutableListOf<PathfindingConstraint<Block>>()
     if (!rollingStockIsThermal) {
@@ -60,5 +64,7 @@ fun initConstraintsFromRSProps(
             infra.signalingSimulator.sigModuleManager.findSignalingSystem(it)
         }
     res.add(SignalingSystemConstraints(infra.blockInfra, listOf(sigSystemIds)))
+    if (allowedTrackSections != null)
+        res.add(TrackSectionConstraints(infra.blockInfra, infra.rawInfra, allowedTrackSections))
     return res
 }
