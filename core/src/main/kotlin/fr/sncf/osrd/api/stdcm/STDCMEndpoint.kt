@@ -137,6 +137,7 @@ class STDCMEndpoint(
                     parseMarginValue(request.margin),
                     Pathfinding.TIMEOUT,
                     temporarySpeedLimitManager,
+                    request.zones,
                 )
             if (path == null || hasDuplicateTracks(infra, path.blocks)) {
                 val response = PathNotFound()

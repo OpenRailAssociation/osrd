@@ -31,7 +31,7 @@ class STDCMRequest(
     // Pathfinding inputs
     /// List of waypoints. Each waypoint is a list of track offsets
     @Json(name = "path_items") val pathItems: List<STDCMPathItem>,
-    @Json(name = "rolling_stock_loading_gauge") val rollingStockLoadingGauge: RJSLoadingGaugeType,
+    @Json(name = "rolling_stock_loading_gauge") val rollingStockLoadingGauge: RJSLoadingGaugeType?,
     @Json(name = "rolling_stock_supported_signaling_systems")
     val rollingStockSupportedSignalingSystems: List<String>,
 
@@ -57,6 +57,7 @@ class STDCMRequest(
     @Json(name = "temporary_speed_limits")
     val temporarySpeedLimits: Collection<STDCMTemporarySpeedLimit>,
     @Json(name = "work_schedules") val workSchedules: Collection<WorkSchedule> = listOf(),
+    val zones: HashSet<String>?,
 )
 
 data class STDCMTemporarySpeedLimit(

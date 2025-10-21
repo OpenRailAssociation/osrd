@@ -177,6 +177,7 @@ data class STDCMPathfindingBuilder(
             standardAllowance,
             pathfindingTimeout,
             temporarySpeedLimitManager,
+            null,
         )
     }
 }

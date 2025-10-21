@@ -27,6 +27,7 @@ class ConstraintCombiner<EdgeT, OffsetType>(
 fun initConstraints(
     fullInfra: FullInfra,
     rollingStock: RollingStock,
+    zones: HashSet<String>?,
 ): List<PathfindingConstraint<Block>> {
     return initConstraintsFromRSProps(
         fullInfra,
@@ -34,6 +35,7 @@ fun initConstraints(
         rollingStock.loadingGaugeType,
         rollingStock.modeNames.toList(),
         rollingStock.supportedSignalingSystems.toList(),
+        zones,
     )
 }
 
@@ -43,6 +45,7 @@ fun initConstraintsFromRSProps(
     rollingStockLoadingGauge: RJSLoadingGaugeType,
     rollingStockSupportedElectrification: List<String>,
     rollingStockSupportedSignalingSystems: List<String>,
+    zones: HashSet<String>?,
 ): List<PathfindingConstraint<Block>> {
     val res = mutableListOf<PathfindingConstraint<Block>>()
     if (!rollingStockIsThermal) {
@@ -60,5 +63,6 @@ fun initConstraintsFromRSProps(
             infra.signalingSimulator.sigModuleManager.findSignalingSystem(it)
         }
     res.add(SignalingSystemConstraints(infra.blockInfra, listOf(sigSystemIds)))
+    res.add(ZonesConstraints(infra.blockInfra, infra.rawInfra, zones))
     return res
 }

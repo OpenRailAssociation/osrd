@@ -14,7 +14,7 @@ import fr.sncf.osrd.train.RollingStock.*
 /** Parse the rolling stock model into something the backend can work with */
 fun parseRawRollingStock(
     rawPhysicsConsist: PhysicsConsistModel,
-    loadingGaugeType: RJSLoadingGaugeType = RJSLoadingGaugeType.G1,
+    loadingGaugeType: RJSLoadingGaugeType? = RJSLoadingGaugeType.G1,
     rollingStockSupportedSignalingSystems: List<String> = listOf(),
 ): RollingStock {
     // Parse effort_curves

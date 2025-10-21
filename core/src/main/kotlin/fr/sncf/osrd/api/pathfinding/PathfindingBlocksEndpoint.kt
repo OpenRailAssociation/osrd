@@ -114,6 +114,7 @@ fun runPathfinding(infra: FullInfra, request: PathfindingBlockRequest): Pathfind
             request.rollingStockLoadingGauge,
             request.rollingStockSupportedElectrifications,
             request.rollingStockSupportedSignalingSystems,
+            null,
         )
 
     val heuristics =

@@ -59,6 +59,7 @@ fun findPath(
     standardAllowance: AllowanceValue?,
     pathfindingTimeout: Double,
     temporarySpeedLimitManager: TemporarySpeedLimitManager,
+    zones: HashSet<String>?,
 ): STDCMResult? {
     return STDCMPathfinding(
             fullInfra,
@@ -74,6 +75,7 @@ fun findPath(
             standardAllowance,
             pathfindingTimeout,
             temporarySpeedLimitManager,
+            zones,
         )
         .findPath()
 }
@@ -92,6 +94,7 @@ class STDCMPathfinding(
     standardAllowance: AllowanceValue?,
     private val pathfindingTimeout: Double = Pathfinding.TIMEOUT,
     private val temporarySpeedLimitManager: TemporarySpeedLimitManager,
+    private val zones: HashSet<String>?,
 ) {
 
     private var starts: Set<STDCMNode> = HashSet()
@@ -116,7 +119,7 @@ class STDCMPathfinding(
         runInputSanityChecks()
 
         val constraints =
-            ConstraintCombiner(initConstraints(fullInfra, rollingStock).toMutableList())
+            ConstraintCombiner(initConstraints(fullInfra, rollingStock, zones).toMutableList())
 
         assert(steps.last().stop) { "The last stop is supposed to be an actual stop" }
         starts = getStartNodes(graph, listOf(constraints))
