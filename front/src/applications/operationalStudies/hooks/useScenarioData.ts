@@ -229,9 +229,8 @@ const useScenarioData = (scenario: ScenarioResponse, infraId: number) => {
   const updateTrainDepartureTime = useCallback(
     async (timetableItemId: TimetableItemId, newDeparture: Date) => {
       const timetableItem = timetableItems?.find((item) => item.id === timetableItemId);
-
       if (!timetableItem) {
-        throw new Error('Item non trouvé');
+        throw new Error(`Timetable item "${timetableItemId}" not found`);
       }
 
       if (isPacedTrainResponseWithPacedTrainId(timetableItem)) {
