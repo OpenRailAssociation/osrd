@@ -12,7 +12,7 @@ import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue.TimePerDistance
 import fr.sncf.osrd.envelope_sim.pipelines.maxEffortEnvelopeFrom
 import fr.sncf.osrd.envelope_sim.pipelines.maxSpeedEnvelopeFrom
 import fr.sncf.osrd.envelope_sim_infra.computeMRSP
-import fr.sncf.osrd.path.implementations.buildTrainPathFromChunkPath
+import fr.sncf.osrd.path.implementations.buildTrainPathFromBlocks
 import fr.sncf.osrd.path.interfaces.TravelledPath
 import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowanceDistribution
@@ -51,9 +51,8 @@ class StandaloneSimulationTest {
             )
             .map { infra.blockInfra.getBlockFromName("block.${md5(it)}")!! }
 
-    private val chunkPath = pathFromRoutes(infra.rawInfra, routes)
     private val trainPath =
-        buildTrainPathFromChunkPath(infra.rawInfra, infra.blockInfra, chunkPath, routes)
+        buildTrainPathFromBlocks(infra.rawInfra, infra.blockInfra, blocks, routes)
     private val pathLength = trainPath.getLength()
 
     // Build a reference max speed envelope
@@ -79,9 +78,6 @@ class StandaloneSimulationTest {
             runStandaloneSimulation(
                 infra,
                 trainPath,
-                chunkPath,
-                routes,
-                blocks,
                 rollingStock,
                 Comfort.STANDARD,
                 RJSAllowanceDistribution.LINEAR,
@@ -212,9 +208,6 @@ class StandaloneSimulationTest {
             runStandaloneSimulation(
                 infra,
                 trainPath,
-                chunkPath,
-                routes,
-                blocks,
                 rollingStock,
                 Comfort.STANDARD,
                 testCase.allowanceDistribution,
@@ -301,9 +294,8 @@ class StandaloneSimulationTest {
                 SimulationScheduleItem(Offset(10_300.meters), 42.seconds, 42.seconds, STOP),
             )
 
-        val signalingRanges = buildSignalingRanges(infra, blocks, chunkPath)
-        val safetySpeedRanges =
-            makeSafetySpeedRanges(infra, chunkPath, routes, schedule, signalingRanges)
+        val signalingRanges = buildSignalingRanges(infra, trainPath)
+        val safetySpeedRanges = makeSafetySpeedRanges(infra, trainPath, schedule, signalingRanges)
         val expected =
             distanceRangeMapOf(
                 DistanceRangeMap.RangeMapEntry(0.meters, 50.meters, 30.kilometersPerHour),
@@ -340,13 +332,13 @@ class StandaloneSimulationTest {
                 SimulationScheduleItem(Offset(10_300.meters), 42.seconds, 42.seconds, STOP),
             )
 
-        val signalingRangesBAL = buildSignalingRanges(infra, blocks, chunkPath)
+        val signalingRangesBAL = buildSignalingRanges(infra, trainPath)
 
         // ETCS_LEVEL2 range covers the first stop only: getting safetySpeed for the other stops
         val signalingRangesEtcsHappyPath = signalingRangesBAL.clone()
         signalingRangesEtcsHappyPath.put(10.meters, 1_000.meters, ETCS_LEVEL2.id)
         val safetySpeedRangesEtcsHappyPath =
-            makeSafetySpeedRanges(infra, chunkPath, routes, schedule, signalingRangesEtcsHappyPath)
+            makeSafetySpeedRanges(infra, trainPath, schedule, signalingRangesEtcsHappyPath)
         val expectedEtcsHappyPath =
             distanceRangeMapOf(
                 DistanceRangeMap.RangeMapEntry(9_950.meters, 10_050.meters, 30.kilometersPerHour),
@@ -361,7 +353,7 @@ class StandaloneSimulationTest {
         val signalingRangesEndFullEtcs = signalingRangesBAL.clone()
         signalingRangesEndFullEtcs.put(9_500.meters, 10_400.meters, ETCS_LEVEL2.id)
         val safetySpeedRangesEndFullEtcs =
-            makeSafetySpeedRanges(infra, chunkPath, routes, schedule, signalingRangesEndFullEtcs)
+            makeSafetySpeedRanges(infra, trainPath, schedule, signalingRangesEndFullEtcs)
         val expectedEndFullEtcs =
             distanceRangeMapOf(
                 DistanceRangeMap.RangeMapEntry(0.meters, 150.meters, 30.kilometersPerHour)
@@ -375,8 +367,7 @@ class StandaloneSimulationTest {
         val safetySpeedRangesEndFullEtcsExceptFinalBuffer =
             makeSafetySpeedRanges(
                 infra,
-                chunkPath,
-                routes,
+                trainPath,
                 schedule,
                 signalingRangesEndEtcsExceptFinalBuffer,
             )
@@ -401,8 +392,7 @@ class StandaloneSimulationTest {
         val safetySpeedRangesEtcsStartingBetweenPenultimateStopAndItsSignal =
             makeSafetySpeedRanges(
                 infra,
-                chunkPath,
-                routes,
+                trainPath,
                 schedule,
                 signalingRangesEtcsStartingBetweenPenultimateStopAndItsSignal,
             )
@@ -428,8 +418,7 @@ class StandaloneSimulationTest {
         val safetySpeedRangesEtcsStartingBetweenLastStopAndBuffer =
             makeSafetySpeedRanges(
                 infra,
-                chunkPath,
-                routes,
+                trainPath,
                 schedule,
                 signalingRangesEtcsStartingBetweenLastStopAndBuffer,
             )

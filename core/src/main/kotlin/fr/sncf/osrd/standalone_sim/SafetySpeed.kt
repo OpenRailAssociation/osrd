@@ -2,16 +2,12 @@ package fr.sncf.osrd.standalone_sim
 
 import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.api.standalone_sim.SimulationScheduleItem
-import fr.sncf.osrd.path.implementations.ChunkPath
-import fr.sncf.osrd.path.interfaces.BlockPath
-import fr.sncf.osrd.path.interfaces.TravelledPath
+import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop
 import fr.sncf.osrd.signaling.etcs_level2.ETCS_LEVEL2
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.distanceRangeMapOf
-import fr.sncf.osrd.utils.getRoutePathStartOffset
-import fr.sncf.osrd.utils.indexing.StaticIdx
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.Speed
 import fr.sncf.osrd.utils.units.kilometersPerHour
@@ -21,7 +17,7 @@ import fr.sncf.osrd.utils.units.meters
  * Simple internal class representing a stop with safety speed. Makes the function logic more
  * straightforward.
  */
-private data class SafetySpeedStop(val offset: Offset<TravelledPath>, val isShortSlip: Boolean)
+private data class SafetySpeedStop(val offset: Offset<TrainPath>, val isShortSlip: Boolean)
 
 /**
  * Compute safety speed ranges, areas where the train has a lower speed limit because of a scheduled
@@ -30,15 +26,12 @@ private data class SafetySpeedStop(val offset: Offset<TravelledPath>, val isShor
  */
 fun makeSafetySpeedRanges(
     infra: FullInfra,
-    chunkPath: ChunkPath,
-    routes: List<RouteId>,
+    trainPath: TrainPath,
     schedule: List<SimulationScheduleItem>,
     signalingRanges: DistanceRangeMap<String>,
 ): DistanceRangeMap<Speed> {
     val rawInfra = infra.rawInfra
-    val zonePaths = routes.flatMap { rawInfra.getRoutePath(it) }
-    val zonePathStartOffset = getRoutePathStartOffset(rawInfra, chunkPath, routes)
-    val signalOffsets = getSignalOffsets(infra, zonePaths, zonePathStartOffset)
+    val signalOffsets = getSignalOffsets(infra, trainPath)
 
     val stopsWithSafetySpeed =
         schedule
@@ -66,7 +59,7 @@ fun makeSafetySpeedRanges(
                 ETCS_LEVEL2.id,
             )
     ) {
-        makeEndOfPathStop(rawInfra, routes, signalOffsets)?.let { stopsWithSafetySpeed.add(it) }
+        makeEndOfPathStop(rawInfra, trainPath, signalOffsets)?.let { stopsWithSafetySpeed.add(it) }
     }
 
     val res = distanceRangeMapOf<Speed>()
@@ -88,12 +81,12 @@ fun makeSafetySpeedRanges(
         }
     }
     // Safety speed areas may extend outside the path
-    return res.subMap(0.meters, chunkPath.length)
+    return res.subMap(0.meters, trainPath.getLength())
 }
 
 /** Check if a given stop is in a range of a given signaling system. */
 private fun isStopInSignalingSystemRange(
-    stopOffset: Offset<TravelledPath>,
+    stopOffset: Offset<TrainPath>,
     signalingRanges: DistanceRangeMap<String>,
     signalingSystem: String,
 ): Boolean {
@@ -106,41 +99,38 @@ private fun isStopInSignalingSystemRange(
  */
 private fun makeEndOfPathStop(
     infra: RawSignalingInfra,
-    routes: List<RouteId>,
-    signalOffsets: List<Offset<TravelledPath>>,
+    trainPath: TrainPath,
+    signalOffsets: List<Offset<TrainPath>>,
 ): SafetySpeedStop? {
-    val lastRouteExit = infra.getRouteExit(routes.last())
+    val lastRouteExit = infra.getRouteExit(trainPath.getRoutes().last().value)
     val isBufferStop = infra.isBufferStop(lastRouteExit.value)
     if (isBufferStop) return SafetySpeedStop(signalOffsets.last(), true)
     return null
 }
 
 /** Return the offsets of block-delimiting signals on the path. */
-private fun getSignalOffsets(
-    infra: FullInfra,
-    zonePaths: List<StaticIdx<ZonePath>>,
-    pathStartOffset: Offset<BlockPath>,
-): List<Offset<TravelledPath>> {
-    val res = mutableListOf<Offset<TravelledPath>>()
+private fun getSignalOffsets(infra: FullInfra, trainPath: TrainPath): List<Offset<TrainPath>> {
+    val res = mutableListOf<Offset<TrainPath>>()
     val rawInfra = infra.rawInfra
     val signalingInfra = infra.loadedSignalInfra
     var prevZonePathsLength = 0.meters
-    for (zonePath in zonePaths) {
+    for (zonePathRange in trainPath.getZonePaths()) {
+        val zonePath = zonePathRange.value
         val signalPositions = rawInfra.getSignalPositions(zonePath)
         val signals = rawInfra.getSignals(zonePath)
         for ((signal, signalPosition) in signals zip signalPositions) {
             val isDelimiter =
-                signalingInfra.getLogicalSignals(signal).any { signalingInfra.isBlockDelimiter(it) }
+                signalingInfra.getLogicalSignals(signal).any(signalingInfra::isBlockDelimiter)
             if (isDelimiter) {
-                res.add(
-                    Offset(prevZonePathsLength + signalPosition.distance - pathStartOffset.distance)
-                )
+                res.add(zonePathRange.offsetToTrainPath(signalPosition))
             }
         }
         prevZonePathsLength += rawInfra.getZonePathLength(zonePath).distance
     }
     // Add one "signal" at the end of the last route no matter what.
     // There must be either a signal or a buffer stop, on which we may end safety speed ranges.
-    res.add(Offset(prevZonePathsLength - pathStartOffset.distance))
+    val lastRouteRange = trainPath.getRoutes().last()
+    res.add(lastRouteRange.getObjectAbsolutePathEnd(rawInfra.getRouteLength(lastRouteRange.value)))
+
     return res.filter { it.distance >= 0.meters }
 }

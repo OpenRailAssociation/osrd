@@ -7,7 +7,9 @@ import fr.sncf.osrd.envelope_sim.pipelines.SimStop
 import fr.sncf.osrd.envelope_sim.pipelines.maxEffortEnvelopeFrom
 import fr.sncf.osrd.envelope_sim.pipelines.maxSpeedEnvelopeFrom
 import fr.sncf.osrd.envelope_sim_infra.computeMRSP
-import fr.sncf.osrd.path.implementations.buildTrainPathFromChunkPath
+import fr.sncf.osrd.path.implementations.PartialBlockRange
+import fr.sncf.osrd.path.implementations.buildRangeList
+import fr.sncf.osrd.path.implementations.buildTrainPathFromBlockRanges
 import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.pathfinding.Pathfinding
 import fr.sncf.osrd.pathfinding.Pathfinding.EdgeLocation
@@ -58,10 +60,8 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
         val blockWaypoints = makeBlockWaypoints(path)
         val chunkPath = makeChunkPathFromEdges(graph, edges)
         val routes = edges.last().infraExplorer.getExploredRoutes()
-        // TODO path migration: use a better builder here
-        val trainPath =
-            buildTrainPathFromChunkPath(infra.rawInfra, infra.blockInfra, chunkPath, routes)
-        // val departureTime = computeDepartureTime(edges, startTime)
+        val trainPath = buildTrainPath(infra, blockRanges, routes)
+
         val updatedTimeData = computeTimeData(edges)
         val stops = makeStops(edges, updatedTimeData)
         val maxSpeedEnvelope =
@@ -107,6 +107,27 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
             // as we only check the time at the start of an edge when exploring the graph
             null
         } else res
+    }
+
+    /** Build a `TrainPath` from the search result. */
+    private fun buildTrainPath(
+        infra: FullInfra,
+        blockRanges: List<EdgeRange<BlockId, Block>>,
+        routes: List<RouteId>,
+    ): TrainPath {
+        val partialRanges =
+            blockRanges.map {
+                PartialBlockRange(value = it.edge, objectBegin = it.start, objectEnd = it.end)
+            }
+        val rangeList = buildRangeList(partialRanges)
+
+        // TODO: if we want electrical profiles in STDCM, we'd need to input it there
+        return buildTrainPathFromBlockRanges(
+            infra.rawInfra,
+            infra.blockInfra,
+            rangeList,
+            routes = routes,
+        )
     }
 
     private fun makeMaxSpeedEnvelope(
