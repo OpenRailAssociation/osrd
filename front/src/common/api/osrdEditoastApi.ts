@@ -9,15 +9,16 @@ import {
 } from 'utils/trainId';
 
 import {
+  generatedEditoastApi,
   type GetLightRollingStockApiResponse,
   type GetSpritesSignalingSystemsApiResponse,
-  generatedEditoastApi,
-  type TrainScheduleResponse,
+  type MacroNodeResponse,
+  type OperationalPointReference,
   type PacedTrainResponse,
   type PathfindingResult,
-  type SimulationResponse,
   type RelatedOperationalPoint,
-  type OperationalPointReference,
+  type SimulationResponse,
+  type TrainScheduleResponse,
 } from './generatedEditoastApi';
 
 const osrdEditoastApi = generatedEditoastApi
@@ -214,6 +215,36 @@ const osrdEditoastApi = generatedEditoastApi
           return { data: result };
         },
         providesTags: ['infra'],
+      }),
+      getAllMacroNodes: builder.query<
+        MacroNodeResponse[],
+        { projectId: number; studyId: number; scenarioId: number }
+      >({
+        queryFn: async ({ projectId, studyId, scenarioId }, { dispatch }) => {
+          const pageSize = 100;
+          let page = 1;
+          let reachEnd = false;
+          const result: MacroNodeResponse[] = [];
+          while (!reachEnd) {
+            const data = await dispatch(
+              osrdEditoastApi.endpoints.getProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNodes.initiate(
+                {
+                  projectId,
+                  studyId,
+                  scenarioId,
+                  pageSize,
+                  page,
+                },
+                { subscribe: false }
+              )
+            ).unwrap();
+            result.push(...data.results);
+            reachEnd = isNil(data.next);
+            page += 1;
+          }
+          return { data: result };
+        },
+        providesTags: ['scenarios'],
       }),
     }),
   })

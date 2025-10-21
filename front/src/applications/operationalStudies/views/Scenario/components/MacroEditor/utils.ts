@@ -1,5 +1,5 @@
 import type { TFunction } from 'i18next';
-import { isNil, omit } from 'lodash';
+import { omit } from 'lodash';
 
 import {
   osrdEditoastApi,
@@ -133,37 +133,6 @@ export const deleteMacroNodeByNgeId = async (
   const indexedNode = state.getNodeByNgeId(ngeId);
   if (indexedNode?.dbId) await deleteMacroNodeByDbId(state, dispatch, indexedNode.dbId);
   state.deleteNodeByNgeId(ngeId);
-};
-
-/**
- * Get nodes of the scenario that are saved in the DB.
- */
-export const getSavedMacroNodes = async (
-  { projectId, studyId, scenarioId }: { projectId: number; studyId: number; scenarioId: number },
-  dispatch: AppDispatch
-): Promise<MacroNodeResponse[]> => {
-  const pageSize = 100;
-  let page = 1;
-  let reachEnd = false;
-  const result: MacroNodeResponse[] = [];
-  while (!reachEnd) {
-    const data = await dispatch(
-      osrdEditoastApi.endpoints.getProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNodes.initiate(
-        {
-          projectId,
-          studyId,
-          scenarioId,
-          pageSize,
-          page,
-        },
-        { subscribe: false }
-      )
-    ).unwrap();
-    result.push(...data.results);
-    reachEnd = isNil(data?.next);
-    page += 1;
-  }
-  return result;
 };
 
 /**

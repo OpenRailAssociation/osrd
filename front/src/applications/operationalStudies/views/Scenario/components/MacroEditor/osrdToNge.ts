@@ -30,7 +30,6 @@ import MacroEditorState, { type NodeIndexed } from './MacroEditorState';
 import {
   getDefaultTrainrunFrequencies,
   getNetzgrafikColors,
-  getSavedMacroNodes,
   getTrainrunCategoryId,
   getTrainrunFrequencyFromTimetableItem,
   getTrainrunTimeCategoryFromFrequency,
@@ -318,7 +317,16 @@ export const loadAndIndexNge = async (
   // Load saved nodes and update the indexed nodes
   // If a saved node is not present in the timetableItems, we delete it.
   // This can happen if we delete a timetableItem on which a node was saved.
-  const savedNodes = await getSavedMacroNodes(state, dispatch);
+  const savedNodes = await dispatch(
+    osrdEditoastApi.endpoints.getAllMacroNodes.initiate(
+      {
+        projectId: state.projectId,
+        studyId: state.studyId,
+        scenarioId: state.scenarioId,
+      },
+      { subscribe: false }
+    )
+  ).unwrap();
   await Promise.all(
     savedNodes.map(async (n) => {
       if (state.getNodeByKey(n.path_item_key) !== null) {
