@@ -117,6 +117,14 @@ const ScenarioContent = ({ activeBoards }: ScenarioContentProps) => {
     [removeTimetableItems, refreshNge]
   );
 
+  const updateTrainDepartureTimeWithNge = useCallback(
+    async (timetableItemId: TimetableItemId, newDeparture: Date) => {
+      await updateTrainDepartureTime(timetableItemId, newDeparture);
+      refreshNge();
+    },
+    [updateTrainDepartureTime, refreshNge]
+  );
+
   // To update dynamic translations in NGE when language changes
   useEffect(() => {
     refreshNge();
@@ -212,7 +220,7 @@ const ScenarioContent = ({ activeBoards }: ScenarioContentProps) => {
                 conflicts={conflicts}
                 timetableItemsWithDetails={timetableItemsWithDetails}
                 activeBoards={activeBoards}
-                updateTrainDepartureTime={updateTrainDepartureTime}
+                updateTrainDepartureTime={updateTrainDepartureTimeWithNge}
               />
             )}
             {activeBoards.has('macro') && (
