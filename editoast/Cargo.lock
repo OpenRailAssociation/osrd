@@ -1027,7 +1027,7 @@ name = "database"
 version = "0.1.0"
 dependencies = [
  "diesel",
- "diesel-async",
+ "diesel-async 0.6.1",
  "diesel_async_migrations",
  "diesel_migrations",
  "futures 0.3.31",
@@ -1187,8 +1187,20 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "51a307ac00f7c23f526a04a77761a0519b9f0eb2838ebf5b905a58580095bdcb"
 dependencies = [
  "async-trait",
+ "diesel",
+ "futures-util",
+ "scoped-futures",
+]
+
+[[package]]
+name = "diesel-async"
+version = "0.6.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7fcc26599f590c7e5b182a05061cfb445f216bb069df72eb31f38cffde8ca598"
+dependencies = [
  "deadpool",
  "diesel",
+ "futures-core",
  "futures-util",
  "scoped-futures",
  "tokio",
@@ -1202,7 +1214,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b99915cbb9455e8fd56f12edc58f92bbdf8161e4363cb2000cf4308aa6358ff4"
 dependencies = [
  "diesel",
- "diesel-async",
+ "diesel-async 0.5.2",
  "diesel_async_migrations_macros",
  "scoped-futures",
  "tracing",
@@ -1334,7 +1346,7 @@ dependencies = [
  "deadpool-redis",
  "derive_more",
  "diesel",
- "diesel-async",
+ "diesel-async 0.6.1",
  "diesel_json",
  "editoast_derive",
  "editoast_models",
@@ -1415,7 +1427,7 @@ dependencies = [
  "common",
  "database",
  "diesel",
- "diesel-async",
+ "diesel-async 0.6.1",
  "diesel_json",
  "editoast_derive",
  "editoast_models",
@@ -1546,7 +1558,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "778e2ac28f6c47af28e4907f13ffd1e1ddbd400980a9abd7c8df189bf578a5ad"
 dependencies = [
  "libc",
- "windows-sys 0.52.0",
+ "windows-sys 0.60.2",
 ]
 
 [[package]]
@@ -3992,7 +4004,7 @@ dependencies = [
  "errno",
  "libc",
  "linux-raw-sys 0.9.4",
- "windows-sys 0.52.0",
+ "windows-sys 0.60.2",
 ]
 
 [[package]]
