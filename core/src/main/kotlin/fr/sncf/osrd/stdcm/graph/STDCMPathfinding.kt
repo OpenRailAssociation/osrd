@@ -10,6 +10,7 @@ import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
 import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.sim_infra.api.Block
+import fr.sncf.osrd.sim_infra.api.TrackSectionId
 import fr.sncf.osrd.sim_infra.impl.TemporarySpeedLimitManager
 import fr.sncf.osrd.stdcm.ProgressLogger
 import fr.sncf.osrd.stdcm.STDCMResult
@@ -59,6 +60,7 @@ fun findPath(
     standardAllowance: AllowanceValue?,
     pathfindingTimeout: Double,
     temporarySpeedLimitManager: TemporarySpeedLimitManager,
+    allowedTrackSections: Set<TrackSectionId>? = null,
 ): STDCMResult? {
     return STDCMPathfinding(
             fullInfra,
@@ -74,6 +76,7 @@ fun findPath(
             standardAllowance,
             pathfindingTimeout,
             temporarySpeedLimitManager,
+            allowedTrackSections,
         )
         .findPath()
 }
@@ -92,6 +95,7 @@ class STDCMPathfinding(
     standardAllowance: AllowanceValue?,
     private val pathfindingTimeout: Double = Pathfinding.TIMEOUT,
     private val temporarySpeedLimitManager: TemporarySpeedLimitManager,
+    private val allowedTrackSections: Set<TrackSectionId>?,
 ) {
 
     private var starts: Set<STDCMNode> = HashSet()
@@ -116,7 +120,9 @@ class STDCMPathfinding(
         runInputSanityChecks()
 
         val constraints =
-            ConstraintCombiner(initConstraints(fullInfra, rollingStock).toMutableList())
+            ConstraintCombiner(
+                initConstraints(fullInfra, rollingStock, allowedTrackSections).toMutableList()
+            )
 
         assert(steps.last().stop) { "The last stop is supposed to be an actual stop" }
         starts = getStartNodes(graph, listOf(constraints))
