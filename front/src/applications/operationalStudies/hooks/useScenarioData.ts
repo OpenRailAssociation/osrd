@@ -237,17 +237,13 @@ const useScenarioData = (scenario: ScenarioResponse, infraId: number) => {
       if (isPacedTrainResponseWithPacedTrainId(timetableItem)) {
         const editoastPacedTrainId = extractEditoastIdFromPacedTrainId(timetableItem.id);
 
-        try {
-          await putPacedTrainById({
-            id: editoastPacedTrainId,
-            body: {
-              ...timetableItem,
-              start_time: newDeparture.toISOString(),
-            },
-          });
-        } catch (error) {
-          console.error('Error updating paced train:', error);
-        }
+        await putPacedTrainById({
+          id: editoastPacedTrainId,
+          body: {
+            ...timetableItem,
+            start_time: newDeparture.toISOString(),
+          },
+        }).unwrap();
       } else {
         const editoastTrainId = extractEditoastIdFromTrainScheduleId(timetableItem.id);
 
