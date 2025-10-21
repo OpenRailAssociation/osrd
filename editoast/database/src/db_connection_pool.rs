@@ -34,22 +34,7 @@ pub type DbConnectionConfig = AsyncDieselConnectionManager<AsyncPgConnection>;
 static TEMPLATE_CREATION_MUTEX: tokio::sync::Mutex<()> = tokio::sync::Mutex::const_new(());
 
 #[cfg(any(test, feature = "testing"))]
-fn get_migrations() -> (diesel_async_migrations::EmbeddedMigrations, String) {
-    let migrations = diesel_async_migrations::embed_migrations!();
-    let mut hash_data = vec![];
-
-    for diesel_async_migrations::EmbeddedMigration { name, up, down } in migrations.migrations {
-        hash_data.push((name, up, down))
-    }
-
-    use std::hash::Hash as _;
-    use std::hash::Hasher as _;
-    let mut hasher = std::hash::DefaultHasher::new();
-    hash_data.hash(&mut hasher);
-    let hash = format!("{}", hasher.finish());
-
-    (migrations, hash)
-}
+const MIGRATIONS: diesel_migrations::EmbeddedMigrations = diesel_migrations::embed_migrations!();
 
 #[cfg(any(test, feature = "testing"))]
 async fn db_exists(url: &str) -> bool {
@@ -64,11 +49,24 @@ async fn db_exists(url: &str) -> bool {
 }
 
 #[cfg(any(test, feature = "testing"))]
-async fn template_creation(osrd_conn: DbConnection) -> Result<String, Box<dyn std::error::Error>> {
+async fn template_creation(
+    osrd_conn: DbConnection,
+) -> Result<String, Box<dyn std::error::Error + Send + Sync>> {
     // Prevents other tests from interfering during template creation and avoids conflicts
+
+    use diesel::migration::MigrationSource;
+    use diesel::pg::Pg;
+    use diesel_async::AsyncMigrationHarness;
+    use diesel_migrations::MigrationHarness as _;
+
     let _lock = TEMPLATE_CREATION_MUTEX.lock().await;
-    let (migrations, hash) = get_migrations();
-    let template_name = format!("osrd_template_{hash}");
+    let last_migration_name = MigrationSource::<Pg>::migrations(&MIGRATIONS)?
+        .last()
+        .map(|migration| migration.name())
+        .map(ToString::to_string)
+        .map(|name| name.replace('-', "_"))
+        .unwrap_or_else(|| String::from("no_migration"));
+    let template_name = format!("osrd_template_{last_migration_name}");
 
     let template_url_postgres: Url =
         format!("postgresql://postgres:password@localhost/{template_name}")
@@ -90,9 +88,10 @@ async fn template_creation(osrd_conn: DbConnection) -> Result<String, Box<dyn st
                 if let diesel::result::Error::DatabaseError(_, ref err) = e
                     && err.message().ends_with("already exists")
                 {
-                    return Ok(0);
+                    Ok(0)
+                } else {
+                    Err(e)
                 }
-                Err(e)
             })?;
 
         let template_pool = create_connection_pool(template_url_postgres.clone(), 1)?;
@@ -104,9 +103,8 @@ async fn template_creation(osrd_conn: DbConnection) -> Result<String, Box<dyn st
     }
 
     let template_pool = create_connection_pool(template_url_osrd, 1)?;
-    let mut conn = template_pool.get().await?;
-
-    migrations.run_pending_migrations(&mut conn).await?;
+    let mut migration_harness = AsyncMigrationHarness::new(template_pool.get().await?);
+    migration_harness.run_pending_migrations(MIGRATIONS)?;
 
     Ok(template_name)
 }
@@ -115,7 +113,7 @@ async fn template_creation(osrd_conn: DbConnection) -> Result<String, Box<dyn st
 async fn create_test_database(
     osrd_conn: DbConnection,
     db_name: String,
-) -> Result<(String, String), Box<dyn std::error::Error>> {
+) -> Result<(String, String), Box<dyn std::error::Error + Send + Sync>> {
     let template_name = template_creation(osrd_conn.clone()).await?;
 
     diesel::sql_query(format!(
@@ -351,7 +349,7 @@ impl DbConnectionPoolV2 {
     }
 
     #[cfg(any(test, feature = "testing"))]
-    async fn new_test(test_name: String) -> Result<Self, Box<dyn std::error::Error>> {
+    async fn new_test(test_name: String) -> Result<Self, Box<dyn std::error::Error + Send + Sync>> {
         let osrd_pool = Arc::new(create_connection_pool(
             "postgresql://postgres:password@localhost/osrd"
                 .parse()
