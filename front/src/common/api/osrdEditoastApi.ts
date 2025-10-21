@@ -33,7 +33,7 @@ const osrdEditoastApi = generatedEditoastApi
           let reachEnd = false;
           const result: TrainScheduleResponse[] = [];
           while (!reachEnd) {
-            const promise = dispatch(
+            const data = await dispatch(
               osrdEditoastApi.endpoints.getTimetableByIdTrainSchedules.initiate(
                 {
                   id: timetableId,
@@ -42,10 +42,9 @@ const osrdEditoastApi = generatedEditoastApi
                 },
                 { subscribe: false }
               )
-            );
-            const { data } = await promise;
-            if (data) result.push(...data.results);
-            reachEnd = isNil(data?.next);
+            ).unwrap();
+            result.push(...data.results);
+            reachEnd = isNil(data.next);
             page += 1;
           }
           return { data: result };
@@ -59,7 +58,7 @@ const osrdEditoastApi = generatedEditoastApi
           let reachEnd = false;
           const result: PacedTrainResponse[] = [];
           while (!reachEnd) {
-            const promise = dispatch(
+            const data = await dispatch(
               osrdEditoastApi.endpoints.getTimetableByIdPacedTrains.initiate(
                 {
                   id: timetableId,
@@ -68,10 +67,9 @@ const osrdEditoastApi = generatedEditoastApi
                 },
                 { subscribe: false }
               )
-            );
-            const { data } = await promise;
-            if (data) result.push(...data.results);
-            reachEnd = isNil(data?.next);
+            ).unwrap();
+            result.push(...data.results);
+            reachEnd = isNil(data.next);
             page += 1;
           }
           return { data: result };
