@@ -81,6 +81,7 @@ const ScenarioContent = ({ activeBoards }: ScenarioContentProps) => {
   const [ngeIsLoading, setNGEIsLoading] = useState(true);
 
   const refreshNge = useCallback(async () => {
+    if (!activeBoards.has('macro')) return;
     const state = new MacroEditorState(
       infraId,
       scenario.id,
@@ -97,33 +98,28 @@ const ScenarioContent = ({ activeBoards }: ScenarioContentProps) => {
     scenario.project.id,
     scenario.id,
     scenario.timetable_id,
+    activeBoards.has('macro'),
   ]);
 
   const upsertTimetableItemsWithNge = useCallback(
     (updatedTimetableItems: TimetableItem[]) => {
       upsertTimetableItems(updatedTimetableItems);
-      if (activeBoards.has('macro')) {
-        refreshNge();
-      }
+      refreshNge();
     },
-    [upsertTimetableItems, refreshNge, activeBoards]
+    [upsertTimetableItems, refreshNge]
   );
 
   const removeTimetableItemsWithNge = useCallback(
     (timetableItemIds: TimetableItemId[]) => {
       removeTimetableItems(timetableItemIds);
-      if (activeBoards.has('macro')) {
-        refreshNge();
-      }
+      refreshNge();
     },
-    [removeTimetableItems, refreshNge, activeBoards]
+    [removeTimetableItems, refreshNge]
   );
 
   // To update dynamic translations in NGE when language changes
   useEffect(() => {
-    if (activeBoards.has('macro')) {
-      refreshNge();
-    }
+    refreshNge();
   }, [i18n.language]);
 
   const prevMacroActive = usePrevious(activeBoards.has('macro'));
