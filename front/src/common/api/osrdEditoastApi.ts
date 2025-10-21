@@ -10,6 +10,7 @@ import {
 
 import {
   generatedEditoastApi,
+  type EtcsBrakingCurvesResponse,
   type GetLightRollingStockApiResponse,
   type GetSpritesSignalingSystemsApiResponse,
   type MacroNodeResponse,
@@ -179,6 +180,46 @@ const osrdEditoastApi = generatedEditoastApi
             ).unwrap();
           }
           return { data: simulation };
+        },
+        providesTags: (_result, _error, arg) => [
+          isTrainScheduleId(arg.id) ? 'train_schedule' : 'paced_train',
+        ],
+      }),
+      getEtcsBrakingCurves: builder.query<
+        EtcsBrakingCurvesResponse,
+        { id: TrainId; infraId: number; electricalProfileSetId?: number; exceptionKey?: string }
+      >({
+        queryFn: async (
+          { id: trainId, infraId, electricalProfileSetId, exceptionKey },
+          { dispatch }
+        ) => {
+          let etcsBrakingCurves: EtcsBrakingCurvesResponse;
+          if (isTrainScheduleId(trainId)) {
+            etcsBrakingCurves = await dispatch(
+              generatedEditoastApi.endpoints.getTrainScheduleByIdEtcsBrakingCurves.initiate(
+                {
+                  id: extractEditoastIdFromTrainScheduleId(trainId),
+                  infraId,
+                  electricalProfileSetId,
+                },
+                { subscribe: false }
+              )
+            ).unwrap();
+          } else {
+            const pacedTrainId = extractPacedTrainIdFromOccurrenceId(trainId);
+            etcsBrakingCurves = await dispatch(
+              generatedEditoastApi.endpoints.getPacedTrainByIdEtcsBrakingCurves.initiate(
+                {
+                  id: extractEditoastIdFromPacedTrainId(pacedTrainId),
+                  infraId,
+                  electricalProfileSetId,
+                  exceptionKey,
+                },
+                { subscribe: false }
+              )
+            ).unwrap();
+          }
+          return { data: etcsBrakingCurves };
         },
         providesTags: (_result, _error, arg) => [
           isTrainScheduleId(arg.id) ? 'train_schedule' : 'paced_train',
