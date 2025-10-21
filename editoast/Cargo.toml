@@ -58,15 +58,16 @@ derive_more = { version = "2.0.1", features = [
   "from",
   "from_str",
 ] }
-diesel = { version = "2.2", default-features = false, features = [
+diesel = { version = "2.3", default-features = false, features = [
   "32-column-tables",
   "chrono",
   "postgres",
   "serde_json",
   "uuid",
 ] }
-diesel-async = { version = "0.5", default-features = false, features = [
+diesel-async = { version = "0.7", default-features = false, features = [
   "deadpool",
+  "migrations",
   "postgres",
 ] }
 diesel_json = "0.3.0"
