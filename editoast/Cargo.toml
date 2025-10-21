@@ -85,13 +85,13 @@ lapin = "2.5.5"
 linkme = "0.3.35"
 mvt = "0.10.3"
 openssl = "0.10.74"
-opentelemetry = { version = "0.30.0", default-features = false, features = [
+opentelemetry = { version = "0.31.0", default-features = false, features = [
   "trace",
 ] }
-opentelemetry-semantic-conventions = { version = "0.26", features = [
+opentelemetry-semantic-conventions = { version = "0.31", features = [
   "semconv_experimental",
 ] }
-opentelemetry_sdk = { version = "0.30.0", default-features = false, features = [
+opentelemetry_sdk = { version = "0.31.0", default-features = false, features = [
   "internal-logs",
   "rt-tokio",
   "trace",
@@ -126,7 +126,7 @@ tracing = { version = "0.1.41", default-features = false, features = [
   "attributes",
   "log",
 ] }
-tracing-opentelemetry = { version = "0.31.0", default-features = false, features = [
+tracing-opentelemetry = { version = "0.32.0", default-features = false, features = [
   "tracing-log",
 ] }
 tracing-subscriber = { version = "0.3.20", features = ["env-filter"] }
@@ -149,7 +149,7 @@ axum-extra = { version = "0.10.1", default-features = false, features = [
   "typed-header",
 ] }
 axum-test = { version = "18.0", default-features = false }
-axum-tracing-opentelemetry = { version = "0.30.0", default-features = false, features = [
+axum-tracing-opentelemetry = { version = "0.32.0", default-features = false, features = [
   "tracing_level_info",
 ] }
 cache.workspace = true
@@ -194,7 +194,7 @@ linkme.workspace = true
 mime = "0.3.17"
 mvt.workspace = true
 opentelemetry.workspace = true
-opentelemetry-otlp = { version = "0.30.0", default-features = false, features = [
+opentelemetry-otlp = { version = "0.31.0", default-features = false, features = [
   "grpc-tonic",
   "trace",
 ] }

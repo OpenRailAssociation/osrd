@@ -29,7 +29,8 @@ impl Instrumentation for TracingInstrumentation {
                 let url = Url::parse(url).unwrap();
                 let span = tracing::trace_span!(
                     "connection",
-                    { opentelemetry_semantic_conventions::attribute::DB_SYSTEM } = "postgresql",
+                    { opentelemetry_semantic_conventions::attribute::DB_SYSTEM_NAME } =
+                        "postgresql",
                     { opentelemetry_semantic_conventions::attribute::NETWORK_PEER_ADDRESS } =
                         tracing::field::display(url.host().unwrap()),
                     { opentelemetry_semantic_conventions::attribute::NETWORK_PEER_PORT } =
