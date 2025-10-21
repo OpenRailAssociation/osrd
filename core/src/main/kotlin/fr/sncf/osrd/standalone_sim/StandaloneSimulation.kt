@@ -23,9 +23,11 @@ import fr.sncf.osrd.envelope_sim.pipelines.maxEffortEnvelopeFrom
 import fr.sncf.osrd.envelope_sim.pipelines.maxSpeedEnvelopeFrom
 import fr.sncf.osrd.envelope_sim_infra.HasMissingSpeedTag
 import fr.sncf.osrd.envelope_sim_infra.computeMRSP
-import fr.sncf.osrd.path.implementations.ChunkPath
 import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.path.interfaces.TravelledPath
+import fr.sncf.osrd.path.interfaces.getLegacyBlockPath
+import fr.sncf.osrd.path.interfaces.getLegacyChunkPath
+import fr.sncf.osrd.path.interfaces.getLegacyRoutePath
 import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowanceDistribution
 import fr.sncf.osrd.reporting.exceptions.ErrorType.ZeroLengthPath
@@ -39,7 +41,6 @@ import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.distanceRangeMapOf
 import fr.sncf.osrd.utils.entries
 import fr.sncf.osrd.utils.toRangeMap
-import fr.sncf.osrd.utils.trainPathBlockOffset
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
@@ -54,9 +55,6 @@ val standaloneSimLogger: Logger = LoggerFactory.getLogger("StandaloneSimulation"
 fun runStandaloneSimulation(
     infra: FullInfra,
     trainPath: TrainPath,
-    chunkPath: ChunkPath,
-    routes: List<RouteId>,
-    blockPath: List<BlockId>,
     rollingStock: RollingStock,
     comfort: Comfort,
     constraintDistribution: RJSAllowanceDistribution,
@@ -71,11 +69,10 @@ fun runStandaloneSimulation(
     pathItemPositions: List<Offset<TravelledPath>>,
     driverBehaviour: DriverBehaviour = DriverBehaviour(),
 ): SimulationSuccess {
-    if (chunkPath.length == 0.meters) throw OSRDError(ZeroLengthPath)
-    val signalingRanges = buildSignalingRanges(infra, blockPath, chunkPath)
+    if (trainPath.getLength() == 0.meters) throw OSRDError(ZeroLengthPath)
+    val signalingRanges = buildSignalingRanges(infra, trainPath)
     // MRSP & SpeedLimits
-    val safetySpeedRanges =
-        makeSafetySpeedRanges(infra, chunkPath, routes, schedule, signalingRanges)
+    val safetySpeedRanges = makeSafetySpeedRanges(infra, trainPath, schedule, signalingRanges)
     var mrsp =
         computeMRSP(
             trainPath,
@@ -110,7 +107,7 @@ fun runStandaloneSimulation(
             trainPath,
             timeStep,
             curvesAndConditions.curves,
-            makeETCSContext(rollingStock, infra, chunkPath, routes, blockPath, signalingRanges),
+            makeETCSContext(rollingStock, infra, trainPath, signalingRanges),
         )
 
     // Max speed envelope
@@ -166,10 +163,10 @@ fun runStandaloneSimulation(
         runScheduleMetadataExtractor(
             finalEnvelope,
             trainPath,
-            chunkPath,
+            trainPath.getLegacyChunkPath(), // TODO path migration
             infra,
-            routes,
-            blockPath,
+            trainPath.getLegacyRoutePath(),
+            trainPath.getLegacyBlockPath(),
             rollingStock,
             schedule,
             pathItemPositions,
@@ -185,30 +182,14 @@ fun runStandaloneSimulation(
     )
 }
 
-/** Returns the ranges where each signaling system is encountered, as travelled path offsets. */
-fun buildSignalingRanges(
-    infra: FullInfra,
-    blockPath: List<BlockId>,
-    chunkPath: ChunkPath,
-): DistanceRangeMap<String> {
+/** Returns the ranges where each signaling system is encountered. */
+fun buildSignalingRanges(infra: FullInfra, trainPath: TrainPath): DistanceRangeMap<String> {
     val blockInfra = infra.blockInfra
-    var blockStartOffset =
-        Offset<TravelledPath>(
-            trainPathBlockOffset(infra.rawInfra, infra.blockInfra, blockPath, chunkPath).distance *
-                -1.0
-        )
     val res = distanceRangeMapOf<String>()
-    for (blockId in blockPath) {
-        val blockLength = blockInfra.getBlockLength(blockId)
-        val blockEndOffset = blockStartOffset + blockLength.distance
-        val sigSystem = blockInfra.getBlockSignalingSystem(blockId)
-        val name = infra.signalingSimulator.sigModuleManager.getName(sigSystem)
-        res.put(
-            Distance.max(blockStartOffset.distance, Distance.ZERO),
-            Distance.min(blockEndOffset.distance, chunkPath.length),
-            name,
-        )
-        blockStartOffset += blockLength.distance
+    for (blockRange in trainPath.getBlocks()) {
+        val sigSystem = blockInfra.getBlockSignalingSystem(blockRange.value)
+        val sigSystemName = infra.signalingSimulator.sigModuleManager.getName(sigSystem)
+        res.put(blockRange.pathBegin.distance, blockRange.pathEnd.distance, sigSystemName)
     }
     return res
 }

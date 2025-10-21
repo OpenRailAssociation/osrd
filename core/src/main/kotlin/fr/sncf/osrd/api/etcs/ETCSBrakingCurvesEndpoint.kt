@@ -7,14 +7,10 @@ import fr.sncf.osrd.envelope.part.EnvelopePart
 import fr.sncf.osrd.envelope_sim.EnvelopeProfile
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext
 import fr.sncf.osrd.envelope_sim.etcs.*
-import fr.sncf.osrd.path.interfaces.BlockPath
+import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.path.interfaces.TravelledPath
-import fr.sncf.osrd.path.interfaces.getLegacyBlockPath
-import fr.sncf.osrd.path.interfaces.getLegacyChunkPath
-import fr.sncf.osrd.path.interfaces.getLegacyRoutePath
 import fr.sncf.osrd.signaling.etcs_level2.ETCS_LEVEL2
 import fr.sncf.osrd.sim_infra.api.*
-import fr.sncf.osrd.standalone_sim.PathOffsetBuilder
 import fr.sncf.osrd.standalone_sim.buildSignalingRanges
 import fr.sncf.osrd.standalone_sim.getSimStops
 import fr.sncf.osrd.standalone_sim.makeETCSContext
@@ -66,9 +62,6 @@ class ETCSBrakingCurvesEndpoint(
             // Parse path.
             val trainPath =
                 request.path.toTrainPath(infra.rawInfra, infra.blockInfra, electricalProfileMap)
-            val chunkPath = trainPath.getLegacyChunkPath()
-            val routePath = trainPath.getLegacyRoutePath()
-            val blockPath = trainPath.getLegacyBlockPath()
             val powerRestrictionsLegacyMap =
                 parsePowerRestrictions(request.powerRestrictions).toRangeMap()
             val electrificationMap =
@@ -80,7 +73,7 @@ class ETCSBrakingCurvesEndpoint(
                 )
             val curvesAndConditions =
                 rollingStock.mapTractiveEffortCurves(electrificationMap, request.comfort)
-            val signalingRanges = buildSignalingRanges(infra, blockPath, chunkPath)
+            val signalingRanges = buildSignalingRanges(infra, trainPath)
             val stops = getSimStops(parseRawSimulationScheduleItems(request.schedule))
             val context =
                 EnvelopeSimContext(
@@ -88,14 +81,7 @@ class ETCSBrakingCurvesEndpoint(
                     trainPath,
                     2.0,
                     curvesAndConditions.curves,
-                    makeETCSContext(
-                        rollingStock,
-                        infra,
-                        chunkPath,
-                        routePath,
-                        blockPath,
-                        signalingRanges,
-                    ),
+                    makeETCSContext(rollingStock, infra, trainPath, signalingRanges),
                 )
 
             // Parse mrsp.
@@ -115,17 +101,11 @@ class ETCSBrakingCurvesEndpoint(
                     EoaType.STOP,
                 )
             val stopBrakingCurves = etcsSimulator.computeStopBrakingCurves(mrsp, etcsStops)
-            // Compute conflict braking curves on each of the path's ETCS signals.
-            val pathOffsetBuilder =
-                PathOffsetBuilder(
-                    trainPathBlockOffset(infra.rawInfra, infra.blockInfra, blockPath, chunkPath)
-                        .distance
-                )
-            val etcsSignals =
-                getTravelledPathSignals(infra, blockPath, pathOffsetBuilder, ETCS_LEVEL2.id)
+            val etcsSignals = getTravelledPathSignals(infra, trainPath, ETCS_LEVEL2.id)
             val etcsSignalsOnPath =
                 etcsSignals.filter {
-                    it.offset.distance > Distance.ZERO && it.offset.distance <= chunkPath.length
+                    it.offset.distance > Distance.ZERO &&
+                        it.offset.distance <= trainPath.getLength()
                 }
             val etcsSignalOffsets = etcsSignalsOnPath.map { it.offset }
             val areEtcsSignalRouteDelimiters = etcsSignalsOnPath.map { it.isRouteDelimiter }
@@ -175,13 +155,12 @@ class ETCSBrakingCurvesEndpoint(
      */
     private fun getTravelledPathSignals(
         fullInfra: FullInfra,
-        blockPath: List<BlockId>,
-        pathOffsetBuilder: PathOffsetBuilder,
+        trainPath: TrainPath,
         signalingSystemId: String? = null,
     ): List<TravelledPathSignal> {
         val res = mutableSetOf<TravelledPathSignal>()
-        var currentOffset = Offset<BlockPath>(Distance.ZERO)
-        for (block in blockPath) {
+        for (blockRange in trainPath.getBlocks()) {
+            val block = blockRange.value
             val blockSignalsPositions = fullInfra.blockInfra.getSignalsPositions(block)
             val blockSignals = fullInfra.blockInfra.getBlockSignals(block)
             assert(blockSignalsPositions.size == blockSignals.size)
@@ -189,12 +168,10 @@ class ETCSBrakingCurvesEndpoint(
                 val signSystemId = fullInfra.rawInfra.getSignalingSystemId(signal)
                 val isRouteDelimiter = fullInfra.loadedSignalInfra.getSettings(signal).getFlag("Nf")
                 if (signalingSystemId == null || signSystemId == signalingSystemId) {
-                    val signalOffset =
-                        pathOffsetBuilder.toTravelledPath(currentOffset + signalPosition.distance)
+                    val signalOffset = blockRange.offsetToTrainPath(signalPosition)
                     res.add(TravelledPathSignal(signalOffset, isRouteDelimiter))
                 }
             }
-            currentOffset += fullInfra.blockInfra.getBlockLength(block).distance
         }
         return res.sorted()
     }

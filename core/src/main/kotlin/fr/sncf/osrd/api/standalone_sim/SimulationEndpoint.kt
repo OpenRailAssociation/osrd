@@ -2,8 +2,6 @@ package fr.sncf.osrd.api.standalone_sim
 
 import fr.sncf.osrd.api.*
 import fr.sncf.osrd.path.interfaces.getLegacyBlockPath
-import fr.sncf.osrd.path.interfaces.getLegacyChunkPath
-import fr.sncf.osrd.path.interfaces.getLegacyRoutePath
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.standalone_sim.runStandaloneSimulation
 import fr.sncf.osrd.utils.*
@@ -59,17 +57,12 @@ class SimulationEndpoint(
             // Parse path
             val trainPath =
                 request.path.toTrainPath(infra.rawInfra, infra.blockInfra, electricalProfileMap)
-            val chunkPath = trainPath.getLegacyChunkPath()
-            val routePath = trainPath.getLegacyRoutePath()
             val blockPath = trainPath.getLegacyBlockPath()
 
             val res =
                 runStandaloneSimulation(
                     infra,
                     trainPath,
-                    chunkPath,
-                    routePath,
-                    blockPath,
                     rollingStock,
                     request.comfort,
                     request.constraintDistribution.toRJS(),
