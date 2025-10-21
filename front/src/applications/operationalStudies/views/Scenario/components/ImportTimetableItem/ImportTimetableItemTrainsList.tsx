@@ -40,7 +40,6 @@ import generateTrainSchedulesPayloads from './generateTrainSchedulesPayloads';
 import findValidTrainNameKey from './helpers/findValidTrainNameKey';
 import { generateRoundTripsPayload } from './helpers/generatePayloads';
 import rollingstockOpenData2OSRD from './rollingstock_opendata2osrd.json';
-import { getSavedMacroNodes } from '../MacroEditor/utils';
 
 function LoadingIfSearching({
   isLoading,
@@ -210,14 +209,16 @@ const ImportTimetableItemTrainsList = ({
    * Displays a warning to the user if any nodes do not get posted.
    */
   const postMacroNodesIfNew = async (nodes: MacroNodeForm[]): Promise<void> => {
-    const storedNodes = await getSavedMacroNodes(
-      {
-        projectId: scenario.project.id,
-        studyId: scenario.study_id,
-        scenarioId: scenario.id,
-      },
-      dispatch
-    );
+    const storedNodes = await dispatch(
+      osrdEditoastApi.endpoints.getAllMacroNodes.initiate(
+        {
+          projectId: scenario.project.id,
+          studyId: scenario.study_id,
+          scenarioId: scenario.id,
+        },
+        { subscribe: false }
+      )
+    ).unwrap();
     const storedNodesKeys = new Set(storedNodes.map((node) => node.path_item_key));
     const newMacroNodes = nodes.filter((node) => !storedNodesKeys.has(node.path_item_key));
     if (newMacroNodes.length > 0) {
