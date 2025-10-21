@@ -2,8 +2,8 @@ package fr.sncf.osrd.standalone_sim
 
 import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext
-import fr.sncf.osrd.path.implementations.ChunkPath
-import fr.sncf.osrd.path.interfaces.BlockPath
+import fr.sncf.osrd.path.interfaces.DirChunkRange
+import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.path.interfaces.TravelledPath
 import fr.sncf.osrd.signaling.etcs_level2.ETCS_LEVEL2
 import fr.sncf.osrd.sim_infra.api.*
@@ -18,9 +18,7 @@ import fr.sncf.osrd.utils.units.Offset
 fun makeETCSContext(
     rollingStock: RollingStock,
     infra: FullInfra,
-    chunkPath: ChunkPath,
-    routePath: List<RouteId>,
-    blockPath: List<BlockId>,
+    trainPath: TrainPath,
     signalingRanges: DistanceRangeMap<String>,
 ): EnvelopeSimContext.ETCSContext? {
     val etcsRanges = signalingRanges.mapToRangeSet { it == ETCS_LEVEL2.id }
@@ -34,8 +32,8 @@ fun makeETCSContext(
     }
     return EnvelopeSimContext.ETCSContext(
         etcsRanges,
-        buildETCSDangerPoints(infra.rawInfra, chunkPath, routePath),
-        buildETCSBlockDetectors(infra, blockPath, chunkPath),
+        buildETCSDangerPoints(infra.rawInfra, trainPath),
+        buildETCSBlockDetectors(infra, trainPath),
     )
 }
 
@@ -45,53 +43,36 @@ fun makeETCSContext(
  * May return any number of point beyond the end of the path, specifically any point covered by the
  * routes used by the path.
  */
-fun buildETCSDangerPoints(
-    infra: RawInfra,
-    chunkPath: ChunkPath,
-    routePath: List<RouteId>,
-): List<Offset<TravelledPath>> {
-    val zonePaths = routePath.flatMap { infra.getRoutePath(it) }
-    var currentZonePathStartOffset = -getRoutePathStartOffset(infra, chunkPath, routePath).distance
-
+fun buildETCSDangerPoints(infra: RawInfra, trainPath: TrainPath): List<Offset<TravelledPath>> {
     val res = mutableSetOf<Offset<TravelledPath>>()
-    for (zonePath in zonePaths) {
+    for (zonePathRange in trainPath.getZonePaths()) {
+        val zonePath = zonePathRange.value
         val movableElements = infra.getZonePathMovableElements(zonePath)
         val movableElementPositions = infra.getZonePathMovableElementsPositions(zonePath)
         for ((element, position) in movableElements zip movableElementPositions) {
             if (infra.getTrackNodeConfigs(element).size <= 1U) continue
-            res.add(Offset(position.distance + currentZonePathStartOffset))
+            res.add(zonePathRange.offsetToTrainPath(position))
         }
-        currentZonePathStartOffset += infra.getZonePathLength(zonePath).distance
     }
 
-    findLastDangerPoint(infra, chunkPath)?.let { res.add(it) }
+    findLastDangerPoint(infra, trainPath)?.let { res.add(it) }
     return res.sorted()
 }
 
 /** Builds the offset list of detectors for ETCS blocks on the block path. */
-fun buildETCSBlockDetectors(
-    infra: FullInfra,
-    blockPath: List<BlockId>,
-    chunkPath: ChunkPath,
-): List<Offset<TravelledPath>> {
-    val etcsBlockDetectors = mutableListOf<Offset<BlockPath>>()
-    var currentOffset = Offset.zero<BlockPath>()
-    for (block in blockPath) {
+fun buildETCSBlockDetectors(infra: FullInfra, trainPath: TrainPath): List<Offset<TrainPath>> {
+    val etcsBlockDetectors = mutableListOf<Offset<TrainPath>>()
+    for (blockRange in trainPath.getBlocks()) {
+        val block = blockRange.value
         if (isETCSBlock(block, infra)) {
-            // Add entry detector
-            etcsBlockDetectors.add(currentOffset)
-            currentOffset += infra.blockInfra.getBlockLength(block).distance
-            // Add exit detector
-            etcsBlockDetectors.add(currentOffset)
+            // Add entry and exit detectors
+            etcsBlockDetectors.add(blockRange.getObjectAbsolutePathStart())
+            etcsBlockDetectors.add(
+                blockRange.getObjectAbsolutePathEnd(infra.blockInfra.getBlockLength(block))
+            )
         }
     }
-    val pathOffsetBuilder =
-        PathOffsetBuilder(
-            trainPathBlockOffset(infra.rawInfra, infra.blockInfra, blockPath, chunkPath).distance
-        )
-    return etcsBlockDetectors
-        .map { pathOffsetBuilder.toTravelledPath(it) }
-        .filter { it.distance >= Distance.ZERO }
+    return etcsBlockDetectors.filter { it.distance >= Distance.ZERO }
 }
 
 private fun isETCSBlock(block: BlockId, infra: FullInfra): Boolean {
@@ -104,20 +85,18 @@ private fun isETCSBlock(block: BlockId, infra: FullInfra): Boolean {
  * Find the last danger point, which may extend beyond the end of the path. Null if tracks are
  * circular with no switch nor buffer stop.
  */
-private fun findLastDangerPoint(infra: RawInfra, chunkPath: ChunkPath): Offset<TravelledPath>? {
+private fun findLastDangerPoint(infra: RawInfra, trainPath: TrainPath): Offset<TravelledPath>? {
     // Find the offset of the last chunk on the path
-    val lastChunk = chunkPath.chunks.last()
-    var lastChunkEndOffset = Offset<TravelledPath>(chunkPath.beginOffset.distance * -1.0)
-    for (chunk in chunkPath.chunks) {
-        lastChunkEndOffset += infra.getTrackChunkLength(chunk.value).distance
-    }
-    val lastTrack = infra.getTrackFromChunk(lastChunk.value)
-    val endOfLastTrackPathOffset =
-        getEndOfLastTrackPathOffset(infra, lastTrack, lastChunk, lastChunkEndOffset)
+    val chunkRanges = trainPath.getChunks()
+    val lastChunkRange = chunkRanges.last()
+    val dirLastChunk = lastChunkRange.value
+    val lastChunk = dirLastChunk.value
+    val lastTrack = infra.getTrackFromChunk(lastChunk)
+    val endOfLastTrackPathOffset = getEndOfLastTrackPathOffset(infra, lastTrack, lastChunkRange)
 
     // Iterate on the tracks until finding either a switch or a buffer stop
     var currentTrackEndOffset = endOfLastTrackPathOffset
-    var track = DirStaticIdx(lastTrack, lastChunk.direction)
+    var track = DirStaticIdx(lastTrack, dirLastChunk.direction)
     while (true) {
         val nextTracks = infra.getNextTrackSections(track)
         val endAtDangerPoint = nextTracks.size != 1
@@ -134,18 +113,22 @@ private fun findLastDangerPoint(infra: RawInfra, chunkPath: ChunkPath): Offset<T
 private fun getEndOfLastTrackPathOffset(
     infra: RawInfra,
     lastTrack: TrackSectionId,
-    lastChunk: DirStaticIdx<TrackChunk>,
-    lastChunkEndOffset: Offset<TravelledPath>,
+    lastChunkRange: DirChunkRange,
 ): Offset<TravelledPath> {
+    // Note: this function alone doesn't quite justify it,
+    // but we could add a List<DirTrackRange> to TrainPath instead
+    val dirLastChunk = lastChunkRange.value
+    val lastChunk = dirLastChunk.value
     val lastTrackLength = infra.getTrackSectionLength(lastTrack)
-    val lastChunkLength = infra.getTrackChunkLength(lastChunk.value)
+    val lastChunkLength = infra.getTrackChunkLength(lastChunkRange.value.value)
+    val lastChunkEndOffset = lastChunkRange.getObjectAbsolutePathEnd(lastChunkLength)
 
     // As an offset on the undirected last track, where the start of the (undirected) last chunk is
     // located
-    val lastUndirectedChunkStartOffsetOnTrack = infra.getTrackChunkOffset(lastChunk.value)
+    val lastUndirectedChunkStartOffsetOnTrack = infra.getTrackChunkOffset(lastChunk)
 
     val distanceFromChunkEndToTrackEnd =
-        if (lastChunk.direction == Direction.INCREASING)
+        if (dirLastChunk.direction == Direction.INCREASING)
             lastTrackLength.distance -
                 (lastUndirectedChunkStartOffsetOnTrack.distance + lastChunkLength.distance)
         else lastUndirectedChunkStartOffsetOnTrack.distance
