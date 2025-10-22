@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useEffectEvent, useRef, useState } from 'react';
 
 import { Button } from '@osrd-project/ui-core';
+import bbox from '@turf/bbox';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import { v4 as uuidV4 } from 'uuid';
@@ -8,7 +9,10 @@ import { v4 as uuidV4 } from 'uuid';
 import useCategoryColors from 'applications/operationalStudies/hooks/useCategoryColors';
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import AlertBox from 'common/AlertBox';
+import type { PathProperties } from 'common/api/osrdEditoastApi';
+import { computeBBoxViewport } from 'common/Map/WarpedMap/core/helpers';
 import usePathfindingV2 from 'modules/pathfinding/hooks/usePathfindingV2';
+import { useMapSettings, useMapSettingsActions } from 'reducers/commonMap';
 import {
   getCategory,
   getOperationalStudiesRollingStockID,
@@ -16,6 +20,7 @@ import {
   getPathSteps,
 } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 import type { PathStepV2 } from 'reducers/osrdconf/types';
+import { useAppDispatch } from 'store';
 import useModalFocusTrap from 'utils/hooks/useModalFocusTrap';
 
 import { usePathStepsMetadata } from './hooks/usePathStepsMetadata';
@@ -43,6 +48,9 @@ const ItineraryModal = ({
   const { workerStatus } = useScenarioContext();
   const rollingStockId = useSelector(getOperationalStudiesRollingStockID);
   const speedLimitTag = useSelector(getOperationalStudiesSpeedLimitByTag);
+  const mapSettings = useMapSettings();
+  const dispatch = useAppDispatch();
+  const { updateViewport } = useMapSettingsActions();
 
   const { categoryColors, currentSubCategory } = useCategoryColors(category);
 
@@ -108,6 +116,19 @@ const ItineraryModal = ({
     speedLimitTag,
     launchPathfindingV2,
   ]);
+
+  const onPathfindingLoad = useEffectEvent((geometry: PathProperties['geometry']) => {
+    const newViewport = computeBBoxViewport(bbox(geometry), mapSettings.viewport, {
+      padding: 64,
+    });
+    dispatch(updateViewport(newViewport));
+  });
+
+  useEffect(() => {
+    if (pathProperties?.geometry) {
+      onPathfindingLoad(pathProperties.geometry);
+    }
+  }, [pathProperties]);
 
   const openModal = () => {
     modalRef.current?.showModal();
