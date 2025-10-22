@@ -30,6 +30,7 @@ import kotlinx.coroutines.runBlocking
 import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.Response
+import okio.IOException
 import okio.buffer
 import okio.source
 import org.slf4j.LoggerFactory
@@ -95,16 +96,23 @@ class TimetableDownloader(
     private fun getWithRetries(request: Request, nRetries: Int = N_RETRIES): Response {
         var response: Response? = null
         for (tryCount in 1..<nRetries) {
-            response = httpClient.newCall(request).execute()
-            if (response.isSuccessful) return response
-            else {
-                logger.error("Error when getting ${request.url}: $response")
-                val nextSleepDuration = 1_000 * 2.0.pow(tryCount).toLong()
-                // Thread.sleep blocks the thread, which is usually bad in the context of
-                // coroutines. But it's on purpose here: if the server has a temporary issue, we
-                // don't want the next page to immediately take over while this one is waiting.
-                Thread.sleep(nextSleepDuration)
+            try {
+                response = httpClient.newCall(request).execute()
+                if (response.isSuccessful) {
+                    return response
+                } else {
+                    logger.error("Error when getting ${request.url}: $response")
+                }
+            } catch (e: IOException) {
+                // This block is especially important for timeout errors, but we can retry after any
+                // kind of IO error anyway
+                logger.error("Exception when getting ${request.url}: $e")
             }
+            val nextSleepDuration = 1_000 * 2.0.pow(tryCount).toLong()
+            // Thread.sleep blocks the thread, which is usually bad in the context of
+            // coroutines. But it's on purpose here: if the server has a temporary issue, we
+            // don't want the next page to immediately take over while this one is waiting.
+            Thread.sleep(nextSleepDuration)
         }
         throw UnexpectedHttpResponse(response)
     }
