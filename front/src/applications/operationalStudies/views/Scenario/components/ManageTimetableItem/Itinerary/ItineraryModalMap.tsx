@@ -1,8 +1,10 @@
 import { useCallback, useMemo, useRef, useState } from 'react';
 
+import type { Position } from 'geojson';
 import { useTranslation } from 'react-i18next';
 import type { MapLayerMouseEvent, MapRef } from 'react-map-gl/maplibre';
 
+import { matchOpRefAndOp } from 'applications/operationalStudies/utils';
 import type { PathProperties } from 'common/api/osrdEditoastApi';
 import BaseMap from 'common/Map/BaseMap';
 import MapButtons from 'common/Map/Buttons/MapButtons';
@@ -168,10 +170,32 @@ const ItineraryModalMap = ({
             const pathStepLocation = step.location;
             if (!pathStepLocation || !pathStepMetadata || pathStepMetadata?.isInvalid) return null;
 
-            const allCoordinates = computePathStepCoordinates(pathStepMetadata);
+            let coordinates: Position | undefined;
+            if (pathProperties?.operational_points) {
+              // If there is a pathfinding, we use it to get the simulated coordinates
+              if (pathStepMetadata.type == 'trackOffset') {
+                coordinates = pathStepMetadata.coordinates;
+              } else {
+                const matchedOp = pathProperties.operational_points.find((op) =>
+                  matchOpRefAndOp(pathStepLocation, op)
+                );
+                const secondaryCodeMetadata = pathStepMetadata.locationsBySecondaryCode.get(
+                  matchedOp?.extensions?.sncf?.ch || ''
+                );
+                const trackMetadata = secondaryCodeMetadata?.find(
+                  (metadata) => metadata.trackId === matchedOp?.part.track
+                );
+                coordinates = trackMetadata?.coordinates;
+              }
+            } else {
+              // If not, we use the input informations to compute them
+              const allCoordinates = computePathStepCoordinates(pathStepMetadata);
 
-            const coordinates =
-              allCoordinates.length === 1 ? allCoordinates[0] : getBarycenter(allCoordinates);
+              coordinates =
+                allCoordinates.length === 1 ? allCoordinates[0] : getBarycenter(allCoordinates);
+            }
+
+            if (!coordinates) return null;
 
             let name = '';
             if (pathStepMetadata.type === 'trackOffset') {
