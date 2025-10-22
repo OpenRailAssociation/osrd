@@ -83,7 +83,7 @@ const SettingsPanel = ({
           </div>
         ))}
       </div>
-      <div className="settings-panel-section right">
+      <div className="settings-panel-section">
         <div className="settings-panel-section-title">
           <span>{translations?.detailsBoxDisplay.reticleInfos || 'Reticle infos'}</span>
         </div>
