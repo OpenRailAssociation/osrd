@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 
 import { keyBy } from 'lodash';
 import { useTranslation } from 'react-i18next';
@@ -7,7 +7,7 @@ import { useSelector } from 'react-redux';
 import usePathOps from 'applications/operationalStudies/hooks/usePathOps';
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import type { PathPropertiesFormatted } from 'applications/operationalStudies/types';
-import type { SimulationResponseSuccess } from 'common/api/osrdEditoastApi';
+import type { SimulationResponseSuccess, TrackSection } from 'common/api/osrdEditoastApi';
 import { matchPathStepAndOp } from 'modules/pathfinding/utils';
 import { interpolateValue } from 'modules/simulationResult/helpers/utils';
 import type { SimulationSummary } from 'modules/timetableItem/types';
@@ -36,6 +36,20 @@ const useOutputTableData = (
 
   const pathStepOps = usePathOps(infraId, selectedTrain?.path);
 
+  const trackIds = useMemo(() => {
+    const path = selectedTrain?.path || [];
+    return path.flatMap((step) => ('track' in step ? [step.track] : []));
+  }, [selectedTrain?.path]);
+
+  const [trackSections, setTrackSections] = useState<Record<string, TrackSection>>({});
+  useEffect(() => {
+    const fetchTrackSections = async () => {
+      const sections = await getTrackSectionsByIds(trackIds);
+      setTrackSections(sections);
+    };
+    fetchTrackSections();
+  }, [trackIds]);
+
   const [rows, setRows] = useState<TimesStopsRow[]>([]);
 
   // Extract common properties between valid and invalid trains
@@ -44,10 +58,7 @@ const useOutputTableData = (
 
   // Format input path step rows
   useEffect(() => {
-    const formatPathStepRows = async (train: Train): Promise<Map<string, TimesStopsRow>> => {
-      const trackIds = train.path.flatMap((step) => 'track' in step ? [step.track] : []);
-      const trackSections = await getTrackSectionsByIds(trackIds);
-
+    const formatPathStepRows = (train: Train): Map<string, TimesStopsRow> => {
       const startDatetime = new Date(train.start_time);
       let lastReferenceDate = startDatetime;
 
@@ -143,14 +154,14 @@ const useOutputTableData = (
         return;
       }
 
-      const pathStepRowsById = await formatPathStepRows(selectedTrain);
+      const pathStepRowsById = formatPathStepRows(selectedTrain);
 
       let formattedRows: TimesStopsRow[] = [];
 
       // For valid trains, complete the rows with the simulated path's operational points and tracks information
       if (isValid && simulatedTrain && operationalPointsOnPath) {
-        const trackIds = operationalPointsOnPath.map((op) => op.part.track);
-        const trackSectionsOnPath = await getTrackSectionsByIds(trackIds);
+        const trackIdsOnPath = operationalPointsOnPath.map((op) => op.part.track);
+        const trackSectionsOnPath = await getTrackSectionsByIds(trackIdsOnPath);
 
         for (const op of operationalPointsOnPath) {
           const trackName = trackSectionsOnPath[op.part.track]?.extensions?.sncf?.track_name;
@@ -210,6 +221,7 @@ const useOutputTableData = (
     simulatedTrain,
     getTrackSectionsByIds,
     displayOnlyPathSteps,
+    trackSections,
   ]);
 
   return rows;
