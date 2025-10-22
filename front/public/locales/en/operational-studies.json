@@ -535,6 +535,16 @@
       "context": "Context",
       "electricalProfiles": "Electrical profiles",
       "energySource": "Energy source",
+      "etcs": {
+        "guidance": "GUI",
+        "indication": "IND",
+        "permittedSpeed": "PS",
+        "routing": "Routing",
+        "signals": "Signals",
+        "spacing": "Spacing",
+        "stopsAndTransitions": "Stops and transitions",
+        "title": "ETCS"
+      },
       "powerRestrictions": "Power restrictions",
       "reticleInfos": "Reticle infos",
       "slopes": "Slopes",

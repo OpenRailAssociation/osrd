@@ -81,14 +81,17 @@ const formatSpeedLimitTags = (
     return mergedPositions;
   }, [] as LayerData<SpeedLimitTagValues>[]);
 
-export const formatSpeeds = (simulation: ReportTrain) => {
-  const { positions, speeds } = simulation;
-  return speeds.map((value, index) => ({
+export const formatSpeedCurve = (positions: number[], speeds: number[]) =>
+  speeds.map((value, index) => ({
     position: {
       start: mmToKm(positions[index]),
     },
     value: msToKmh(value),
   }));
+
+export const formatSpeeds = (simulation: ReportTrain) => {
+  const { positions, speeds } = simulation;
+  return formatSpeedCurve(positions, speeds);
 };
 
 const formatMrsp = (mrsp: SimulationResponseSuccess['mrsp']) => ({
@@ -146,11 +149,7 @@ export const getProfileValue = (
   if (electricalProfileValue.electrical_profile_type === 'no_profile') {
     return { electricalProfile: 'neutral' };
   }
-  if (
-    !electricalProfileValue.handled ||
-    !electricalProfileValue.profile ||
-    electricalProfileValue.profile === null
-  ) {
+  if (!electricalProfileValue.handled || !electricalProfileValue.profile) {
     return {
       electricalProfile: 'incompatible',
       color:

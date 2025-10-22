@@ -25,6 +25,7 @@ type DetailsBoxProps = {
   modeText: string;
 };
 
+// TODO: add ETCS details
 const DetailsBox = ({
   width,
   height,

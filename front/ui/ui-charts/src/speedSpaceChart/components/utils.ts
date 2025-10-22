@@ -4,8 +4,10 @@ import {
   LINEAR_LAYERS_HEIGHTS,
   MARGINS,
   type LAYERS_SELECTION,
+  ETCS_BRAKING_SELECTION,
+  ETCS_CURVE_SELECTION,
 } from './const';
-import type { LayerData, OperationalPoints, Store } from '../types';
+import type { EtcsLayersDisplay, LayerData, OperationalPoints, Store } from '../types';
 
 type SlopesValues = {
   minGradient: number;
@@ -382,3 +384,15 @@ export const getSnappedStop = (cursorX: number, width: number, store: Store) => 
   }
   return null;
 };
+
+/** Retrieve list of active EtcsBrakingTypes. */
+export const getActiveEtcsBrakingTypes = (layers: EtcsLayersDisplay) =>
+  (Object.entries(layers.etcsBrakingTypes) as [keyof typeof ETCS_BRAKING_SELECTION, boolean][])
+    .filter(([_, isActive]) => isActive)
+    .flatMap(([key]) => ETCS_BRAKING_SELECTION[key]);
+
+/** Retrieve list of active EtcsBrakingCurveTypes. */
+export const getActiveEtcsBrakingCurveTypes = (layers: EtcsLayersDisplay) =>
+  (Object.entries(layers.etcsBrakingCurveTypes) as [keyof typeof ETCS_CURVE_SELECTION, boolean][])
+    .filter(([_, isActive]) => isActive)
+    .map(([key]) => ETCS_CURVE_SELECTION[key]);

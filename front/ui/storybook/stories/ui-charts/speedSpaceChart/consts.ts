@@ -4,6 +4,7 @@ export const defaultTranslations = {
     energySource: 'Energy Source',
     tractionStatus: 'Traction Status',
     declivities: 'Declivities',
+    etcs: 'ETCS',
     electricalProfiles: 'Electrical Profiles',
     powerRestrictions: 'Power Restrictions',
   },
@@ -16,6 +17,20 @@ export const defaultTranslations = {
     electricalProfiles: 'Electrical Profiles',
     powerRestrictions: 'Power Restrictions',
     speedLimitTags: 'Speed Limit Tags',
+  },
+  etcsLayersDisplay: {
+    title: 'ETCS',
+    etcsBrakingTypes: {
+      stopsAndTransitions: 'Stops and transitions',
+      signals: 'Signals',
+      spacing: 'Spacing',
+      routing: 'Routing',
+    },
+    etcsBrakingCurveTypes: {
+      indication: 'IND',
+      permittedSpeed: 'PS',
+      guidance: 'GUI',
+    },
   },
 };
 

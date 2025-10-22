@@ -1,13 +1,21 @@
-import type { DrawFunctionParams, LayerData } from '../../../types';
+import type { DrawFunctionParams, EtcsBrakingCurveType, LayerData } from '../../../types';
 import {
   BASE_SPEED_COLOR,
   BASE_SPEED_FILL_ALPHA,
   ECO_SPEED_COLOR,
-  CURVE_LINEWIDTH,
+  SPEEDS_LINEWIDTH,
   MARGINS,
   WHITE,
+  ETCS_COLOR_DICTIONARY,
+  ETCS_LINEWIDTH,
 } from '../../const';
-import { clearCanvas, maxPositionValue, maxSpeedValue } from '../../utils';
+import {
+  clearCanvas,
+  getActiveEtcsBrakingCurveTypes,
+  getActiveEtcsBrakingTypes,
+  maxPositionValue,
+  maxSpeedValue,
+} from '../../utils';
 
 const { CURVE_MARGIN_TOP, CURVE_MARGIN_SIDES } = MARGINS;
 
@@ -40,7 +48,7 @@ const computeCurvePoints = (
 };
 
 export const drawCurve = ({ ctx, width, height, store }: DrawFunctionParams) => {
-  const { speeds, ecoSpeeds, ratioX, leftOffset } = store;
+  const { speeds, ecoSpeeds, etcsBrakingCurves, ratioX, leftOffset } = store;
 
   clearCanvas(ctx, width, height);
 
@@ -63,15 +71,16 @@ export const drawCurve = ({ ctx, width, height, store }: DrawFunctionParams) => 
 
   // Curves must be drawn twice, once for the fill and once for the stroke.
   // The stroke must not draw the last two points. They're only present to close the shape but are not part of the curve.
-  ctx.lineWidth = CURVE_LINEWIDTH;
+  ctx.lineWidth = SPEEDS_LINEWIDTH;
 
+  // Fill speed curve.
   ctx.beginPath();
   ctx.fillStyle = BASE_SPEED_COLOR.alpha(BASE_SPEED_FILL_ALPHA).hex();
   curvePoints.forEach(({ x, y }) => {
     ctx.lineTo(x, y);
   });
   ctx.fill();
-
+  // Stroke speed curve.
   ctx.beginPath();
   ctx.strokeStyle = BASE_SPEED_COLOR.hex();
   curvePoints.slice(0, curvePoints.length - 2).forEach(({ x, y }) => {
@@ -79,6 +88,7 @@ export const drawCurve = ({ ctx, width, height, store }: DrawFunctionParams) => 
   });
   ctx.stroke();
 
+  // Fill eco speed curve.
   ctx.beginPath();
   ctx.fillStyle = WHITE.hex();
   ctx.globalCompositeOperation = 'destination-out';
@@ -86,7 +96,7 @@ export const drawCurve = ({ ctx, width, height, store }: DrawFunctionParams) => 
     ctx.lineTo(x, y);
   });
   ctx.fill();
-
+  // Stroke eco speed curve.
   ctx.beginPath();
   ctx.strokeStyle = ECO_SPEED_COLOR.hex();
   ctx.globalCompositeOperation = 'source-over';
@@ -94,6 +104,38 @@ export const drawCurve = ({ ctx, width, height, store }: DrawFunctionParams) => 
     ctx.lineTo(x, y);
   });
   ctx.stroke();
+
+  // Stroke etcs curves.
+  if (etcsBrakingCurves) {
+    const strokeEtcsCurve = (
+      etcsBrakingCurveType: EtcsBrakingCurveType,
+      etcsCurve: LayerData<number>[]
+    ) => {
+      const etcsCurvePoints = computeCurvePoints(
+        { width, height },
+        { maxSpeed, maxPosition, ratioX },
+        etcsCurve
+      );
+      ctx.beginPath();
+      ctx.lineWidth = ETCS_LINEWIDTH;
+      ctx.strokeStyle = ETCS_COLOR_DICTIONARY[etcsBrakingCurveType].hex();
+      etcsCurvePoints.slice(0, etcsCurvePoints.length - 2).forEach(({ x, y }) => {
+        ctx.lineTo(x, y);
+      });
+      ctx.stroke();
+    };
+
+    const activeEtcsBrakingTypes = getActiveEtcsBrakingTypes(store.etcsLayersDisplay);
+    const activeEtcsBrakingCurveTypes = getActiveEtcsBrakingCurveTypes(store.etcsLayersDisplay);
+    activeEtcsBrakingTypes.forEach((brakingType) => {
+      const etcsCurves = etcsBrakingCurves[brakingType];
+      etcsCurves.forEach((etcsCurve) => {
+        activeEtcsBrakingCurveTypes.forEach((curveType) => {
+          strokeEtcsCurve(curveType, etcsCurve[curveType]);
+        });
+      });
+    });
+  }
 
   ctx.restore();
 };
