@@ -52,17 +52,14 @@ const useOutputTableData = (
     fetchTrackSections();
   }, [trackIds]);
 
-  const [rows, setRows] = useState<TimesStopsRow[]>([]);
-
   // Extract common properties between valid and invalid trains
   const scheduleByAt: Record<string, ScheduleEntry> = keyBy(selectedTrain?.schedule, 'at');
   const theoreticalMargins = selectedTrain && getTheoreticalMargins(selectedTrain);
 
   // Format input path step rows
-  useEffect(() => {
+  const rows = useMemo(() => {
     if (!selectedTrain) {
-      setRows([]);
-      return;
+      return [];
     }
 
     const startDatetime = new Date(selectedTrain.start_time);
@@ -205,7 +202,7 @@ const useOutputTableData = (
       formattedRows = Array.from(pathStepRowsById.values());
     }
 
-    setRows(formattedRows);
+    return formattedRows;
   }, [
     pathStepOps,
     operationalPointsOnPath,
