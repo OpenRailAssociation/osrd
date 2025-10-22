@@ -1,6 +1,13 @@
 import chroma from 'chroma-js';
 
-import { type ColorDictionary, type Store } from '../types';
+import {
+  type ColorDictionary,
+  EtcsBrakingCurveType,
+  EtcsBrakingType,
+  type EtcsColorDictionary,
+  type EtcsLayersDisplay,
+  type Store,
+} from '../types';
 
 export const SLOPE_FILL_COLOR = '#CFDDCE';
 
@@ -33,12 +40,6 @@ export const LINEAR_LAYERS_HEIGHTS = {
   SPEED_LIMIT_TAGS_HEIGHT: 40,
 };
 
-export const LINEAR_LAYERS_HEIGHTS_BY_NAME = {
-  electricalProfiles: LINEAR_LAYERS_HEIGHTS.ELECTRICAL_PROFILES_HEIGHT,
-  powerRestrictions: LINEAR_LAYERS_HEIGHTS.POWER_RESTRICTIONS_HEIGHT,
-  speedLimitTags: LINEAR_LAYERS_HEIGHTS.SPEED_LIMIT_TAGS_HEIGHT,
-};
-
 export const LINEAR_LAYER_SEPARATOR_HEIGHT = 1;
 
 export const LINEAR_LAYERS_BACKGROUND_COLOR = {
@@ -53,6 +54,7 @@ export const DETAILS_BOX_SELECTION: Array<keyof Store['detailsBoxDisplay']> = [
   'energySource',
   'tractionStatus',
   'declivities',
+  'etcs',
   'electricalProfiles',
   'powerRestrictions',
 ];
@@ -66,6 +68,37 @@ export const LAYERS_SELECTION: Array<keyof Store['layersDisplay']> = [
   'speedLimitTags',
 ];
 
+export const DEFAULT_ETCS_LAYERS_DISPLAY = {
+  etcsBrakingTypes: {
+    stopsAndTransitions: false,
+    spacing: false,
+    routing: false,
+  },
+  etcsBrakingCurveTypes: {
+    indication: true,
+    permittedSpeed: true,
+    guidance: true,
+  },
+};
+
+export const ETCS_BRAKING_SELECTION: Record<
+  keyof EtcsLayersDisplay['etcsBrakingTypes'],
+  EtcsBrakingType[]
+> = {
+  stopsAndTransitions: [EtcsBrakingType.STOP, EtcsBrakingType.SLOWDOWN],
+  spacing: [EtcsBrakingType.SPACING],
+  routing: [EtcsBrakingType.ROUTING],
+};
+
+export const ETCS_CURVE_SELECTION: Record<
+  keyof EtcsLayersDisplay['etcsBrakingCurveTypes'],
+  EtcsBrakingCurveType
+> = {
+  indication: EtcsBrakingCurveType.IND,
+  permittedSpeed: EtcsBrakingCurveType.PS,
+  guidance: EtcsBrakingCurveType.GUI,
+};
+
 // Colors
 
 export const BLACK = chroma(0, 0, 0);
@@ -78,7 +111,20 @@ export const WARNING_30 = chroma(234, 167, 43);
 export const WHITE = chroma(255, 255, 255);
 export const BASE_SPEED_COLOR = chroma(17, 101, 180);
 export const ECO_SPEED_COLOR = chroma(7, 69, 128);
+const IND_COLOR = chroma(3, 222, 255);
+const PS_COLOR = chroma(0, 87, 218);
+const GUI_COLOR = chroma(255, 192, 3);
+const IND_ALPHA = 0.3;
+const PS_ALPHA = 0.24;
+const GUI_ALPHA = 0.4;
 export const BASE_SPEED_FILL_ALPHA = 0.15;
+
+// Etcs color dictionary
+export const ETCS_COLOR_DICTIONARY: EtcsColorDictionary = {
+  [EtcsBrakingCurveType.IND]: IND_COLOR.alpha(IND_ALPHA),
+  [EtcsBrakingCurveType.PS]: PS_COLOR.alpha(PS_ALPHA),
+  [EtcsBrakingCurveType.GUI]: GUI_COLOR.alpha(GUI_ALPHA),
+};
 
 /**
  * COLOR_DICTIONARY maps specific colors to their corresponding secondary colors used for speed limit tags.
@@ -97,4 +143,5 @@ export const ZOOM_CONFIG = {
   SLIDER_WIDTH: 100,
 };
 
-export const CURVE_LINEWIDTH = 0.5;
+export const SPEEDS_LINEWIDTH = 0.5;
+export const ETCS_LINEWIDTH = 3;

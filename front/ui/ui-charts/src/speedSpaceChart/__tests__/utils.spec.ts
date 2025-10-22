@@ -1,6 +1,6 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import { MARGINS } from '../components/const';
+import { DEFAULT_ETCS_LAYERS_DISPLAY, MARGINS } from '../components/const';
 import {
   clearCanvas,
   getGraphOffsets,
@@ -47,6 +47,7 @@ const store: Store = {
     energySource: true,
     tractionStatus: true,
     electricalProfiles: true,
+    etcs: false,
     powerRestrictions: true,
     declivities: true,
   },
@@ -58,6 +59,7 @@ const store: Store = {
     speedLimitTags: false,
     steps: true,
   },
+  etcsLayersDisplay: DEFAULT_ETCS_LAYERS_DISPLAY,
   isSettingsPanelOpened: false,
 };
 

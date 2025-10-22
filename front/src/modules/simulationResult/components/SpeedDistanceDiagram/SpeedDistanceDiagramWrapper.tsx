@@ -4,6 +4,7 @@ import {
   SpeedSpaceChart,
   type LayerData,
   type PowerRestrictionValues,
+  type EtcsBrakingCurves,
 } from '@osrd-project/ui-charts';
 import { useTranslation } from 'react-i18next';
 
@@ -22,6 +23,8 @@ export type SpeedDistanceDiagramWrapperProps = {
   height: number;
   rollingStock: RollingStockWithLiveries;
   setHeight: React.Dispatch<React.SetStateAction<number>>;
+  fetchEtcsBrakingCurves?: () => Promise<void>;
+  etcsBrakingCurves?: EtcsBrakingCurves;
 };
 
 const SPEED_DISTANCE_DIAGRAM_MIN_HEIGHT = 400;
@@ -34,6 +37,8 @@ const SpeedDistanceDiagramWrapper = ({
   height,
   rollingStock,
   setHeight,
+  fetchEtcsBrakingCurves,
+  etcsBrakingCurves,
 }: SpeedDistanceDiagramWrapperProps) => {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'simulationResults' });
 
@@ -53,6 +58,7 @@ const SpeedDistanceDiagramWrapper = ({
       energySource: t('speedDistanceSettings.energySource'),
       tractionStatus: t('speedDistanceSettings.tractionStatus'),
       declivities: t('speedDistanceSettings.slopes'),
+      etcs: t('speedDistanceSettings.etcs.title'),
       electricalProfiles: t('speedDistanceSettings.electricalProfiles'),
       powerRestrictions: t('speedDistanceSettings.powerRestrictions'),
     },
@@ -65,6 +71,20 @@ const SpeedDistanceDiagramWrapper = ({
       electricalProfiles: t('speedDistanceSettings.electricalProfiles'),
       powerRestrictions: t('speedDistanceSettings.powerRestrictions'),
       speedLimitTags: t('speedDistanceSettings.speedLimitTags'),
+    },
+    etcsLayersDisplay: {
+      title: t('speedDistanceSettings.etcs.title'),
+      etcsBrakingTypes: {
+        stopsAndTransitions: t('speedDistanceSettings.etcs.stopsAndTransitions'),
+        signals: t('speedDistanceSettings.etcs.signals'),
+        spacing: t('speedDistanceSettings.etcs.spacing'),
+        routing: t('speedDistanceSettings.etcs.routing'),
+      },
+      etcsBrakingCurveTypes: {
+        indication: t('speedDistanceSettings.etcs.indication'),
+        permittedSpeed: t('speedDistanceSettings.etcs.permittedSpeed'),
+        guidance: t('speedDistanceSettings.etcs.guidance'),
+      },
     },
   };
 
@@ -102,6 +122,8 @@ const SpeedDistanceDiagramWrapper = ({
           backgroundColor={SPEED_DISTANCE_DIAGRAM_BACKGROUND_COLOR}
           data={data}
           translations={translations}
+          fetchEtcsBrakingCurves={fetchEtcsBrakingCurves}
+          etcsBrakingCurves={etcsBrakingCurves}
         />
       )}
     </div>

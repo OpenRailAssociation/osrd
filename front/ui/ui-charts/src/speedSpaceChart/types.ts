@@ -1,3 +1,5 @@
+import type chroma from 'chroma-js';
+
 export type ElectricalProfileValues = {
   electricalProfile: string;
   color?: string;
@@ -54,6 +56,7 @@ type SpeedLimit = {
 export type Data = {
   speeds: LayerData<number>[];
   ecoSpeeds: LayerData<number>[];
+  etcsBrakingCurves?: EtcsBrakingCurves;
   stops: LayerData<OperationalPoints>[];
   electrifications: LayerData<ElectrificationValues>[];
   slopes: LayerData<number>[];
@@ -76,6 +79,7 @@ export type Store = Data & {
     energySource: boolean;
     tractionStatus: boolean;
     declivities: boolean;
+    etcs: boolean;
     electricalProfiles: boolean;
     powerRestrictions: boolean;
   };
@@ -87,6 +91,7 @@ export type Store = Data & {
     powerRestrictions: boolean;
     speedLimitTags: boolean;
   };
+  etcsLayersDisplay: EtcsLayersDisplay;
   isSettingsPanelOpened: boolean;
 };
 
@@ -135,3 +140,39 @@ export type tooltipInfos = {
 export type ColorDictionary = {
   [key: string]: string;
 };
+
+export type EtcsBrakingCurve = {
+  [key in EtcsBrakingCurveType]: LayerData<number>[];
+};
+
+export type EtcsBrakingCurves = {
+  [key in EtcsBrakingType]: EtcsBrakingCurve[];
+};
+
+export enum EtcsBrakingType {
+  STOP,
+  SLOWDOWN,
+  SPACING,
+  ROUTING,
+}
+
+export enum EtcsBrakingCurveType {
+  IND,
+  PS,
+  GUI,
+}
+
+export type EtcsLayersDisplay = {
+  etcsBrakingTypes: {
+    stopsAndTransitions: boolean;
+    spacing: boolean;
+    routing: boolean;
+  };
+  etcsBrakingCurveTypes: {
+    indication: boolean;
+    permittedSpeed: boolean;
+    guidance: boolean;
+  };
+};
+
+export type EtcsColorDictionary = Record<EtcsBrakingCurveType, chroma.Color>;

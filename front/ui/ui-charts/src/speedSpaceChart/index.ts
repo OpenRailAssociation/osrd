@@ -12,4 +12,7 @@ export type {
   ElectrificationValues,
   SpeedLimitTagValues,
   Data as SpeedSpaceChartData,
+  EtcsBrakingCurve,
+  EtcsBrakingCurves,
 } from './types';
+export { EtcsBrakingCurveType, EtcsBrakingType } from './types';

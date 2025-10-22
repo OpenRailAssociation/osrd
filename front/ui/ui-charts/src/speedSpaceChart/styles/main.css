@@ -116,7 +116,8 @@
   display: flex;
   min-width: 32.875rem;
   max-width: 100%;
-  padding-left: 16px;
+  padding-left: 12px;
+  padding-right: 28px;
   margin-right: 20px;
   color: rgb(49, 46, 43);
   border-radius: 0 0.625rem 0 0;
@@ -128,14 +129,22 @@
   .settings-panel-section {
     min-width: 227px;
     margin-top: 29px;
-    margin-left: 16px;
+    margin-left: 20px;
+    margin-right: 20px;
 
     .settings-panel-section-title {
-      height: 1.5rem;
-      line-height: 1.5rem;
-      font-size: 1rem;
+      height: 24px;
+      font-size: 16px;
       font-weight: 600;
-      margin-bottom: 0.4375rem;
+      margin-bottom: 7px;
+    }
+
+    .ui-feedback {
+      padding: 0 0 0 0;
+    }
+
+    .bottom-panel {
+      margin-top: 36px;
     }
   }
 

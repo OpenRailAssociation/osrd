@@ -4,6 +4,7 @@ import { ChevronLeft, ChevronRight, Eye } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
+import useEtcsBrakingCurves from 'applications/operationalStudies/hooks/useEtcsBrakingCurves';
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import useSimulationResults from 'applications/operationalStudies/hooks/useSimulationResults';
 import type { Board } from 'applications/operationalStudies/types';
@@ -194,6 +195,11 @@ const SimulationResults = ({
     }
   };
 
+  const { etcsBrakingCurves, fetchEtcsBrakingCurves } = useEtcsBrakingCurves(
+    simulationResults?.rollingStock?.etcs_brake_params !== null,
+    simulationResults?.isValid ? simulationResults.simulation : undefined
+  );
+
   if (!simulationResults && !projectionData) {
     return null;
   }
@@ -298,6 +304,8 @@ const SimulationResults = ({
                         pathProperties={simulationResults.pathProperties}
                         height={SDDHeight - HIDDEN_CHART_TOP_HEIGHT}
                         setHeight={setSDDHeight}
+                        fetchEtcsBrakingCurves={fetchEtcsBrakingCurves}
+                        etcsBrakingCurves={etcsBrakingCurves}
                       />
                     </div>
                   </BoardWrapper>

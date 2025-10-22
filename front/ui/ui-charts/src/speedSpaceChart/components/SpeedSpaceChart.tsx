@@ -2,10 +2,10 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { Slider } from '@osrd-project/ui-core';
 
-import type { Data, Store } from '../types';
+import type { Data, EtcsBrakingCurves, Store } from '../types';
 import InteractionButtons from './common/InteractionButtons';
 import SettingsPanel from './common/SettingsPanel';
-import { LINEAR_LAYERS_HEIGHTS, MARGINS, ZOOM_CONFIG } from './const';
+import { DEFAULT_ETCS_LAYERS_DISPLAY, LINEAR_LAYERS_HEIGHTS, MARGINS, ZOOM_CONFIG } from './const';
 import { computeLeftOffsetOnZoom, resetZoom } from './helpers/layersManager';
 import {
   AxisLayerY,
@@ -21,13 +21,15 @@ import {
   TickLayerX,
   TickLayerYRight,
 } from './layers/index';
-import { clamp, getGraphOffsets } from './utils';
+import { clamp, getActiveEtcsBrakingTypes, getGraphOffsets } from './utils';
 
 export type SpeedSpaceChartProps = {
   width: number;
   height: number;
   backgroundColor: string;
   setHeight: React.Dispatch<React.SetStateAction<number>>;
+  fetchEtcsBrakingCurves?: () => Promise<void>;
+  etcsBrakingCurves?: EtcsBrakingCurves;
   data: Data;
   translations?: {
     detailsBoxDisplay: {
@@ -35,6 +37,7 @@ export type SpeedSpaceChartProps = {
       energySource: string;
       tractionStatus: string;
       declivities: string;
+      etcs: string;
       electricalProfiles: string;
       powerRestrictions: string;
     };
@@ -48,6 +51,20 @@ export type SpeedSpaceChartProps = {
       powerRestrictions: string;
       speedLimitTags: string;
     };
+    etcsLayersDisplay: {
+      title: string;
+      etcsBrakingTypes: {
+        stopsAndTransitions: string;
+        signals: string;
+        spacing: string;
+        routing: string;
+      };
+      etcsBrakingCurveTypes: {
+        indication: string;
+        permittedSpeed: string;
+        guidance: string;
+      };
+    };
   };
 };
 
@@ -58,6 +75,8 @@ const SpeedSpaceChart = ({
   data,
   setHeight,
   translations,
+  fetchEtcsBrakingCurves,
+  etcsBrakingCurves,
 }: SpeedSpaceChartProps) => {
   const [store, setStore] = useState<Store>({
     speeds: [],
@@ -80,6 +99,7 @@ const SpeedSpaceChart = ({
       energySource: true,
       tractionStatus: true,
       declivities: true,
+      etcs: false,
       electricalProfiles: true,
       powerRestrictions: true,
     },
@@ -91,6 +111,7 @@ const SpeedSpaceChart = ({
       powerRestrictions: false,
       speedLimitTags: false,
     },
+    etcsLayersDisplay: DEFAULT_ETCS_LAYERS_DISPLAY,
     isSettingsPanelOpened: false,
   });
 
@@ -186,6 +207,21 @@ const SpeedSpaceChart = ({
   );
 
   useEffect(() => {
+    const shouldFetchEtcsCurves = getActiveEtcsBrakingTypes(store.etcsLayersDisplay).length > 0;
+    if (fetchEtcsBrakingCurves && shouldFetchEtcsCurves) {
+      fetchEtcsBrakingCurves();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [fetchEtcsBrakingCurves, store.etcsLayersDisplay]);
+
+  useEffect(() => {
+    setStore((prev) => ({
+      ...prev,
+      etcsBrakingCurves: etcsBrakingCurves,
+    }));
+  }, [etcsBrakingCurves]);
+
+  useEffect(() => {
     setStore((prev) => ({
       ...prev,
       ...data,
@@ -247,6 +283,7 @@ const SpeedSpaceChart = ({
             translations={translations}
             testIdPrefix="settings-panel"
             adjustHeightOnLayerChange={adjustHeightOnLayerChange}
+            displayEtcs={fetchEtcsBrakingCurves !== undefined}
           />
         </div>
       )}
