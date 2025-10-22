@@ -1,7 +1,11 @@
 import { sortBy } from 'lodash';
 
-import type { MacroNodeResponse, OperationalPoint } from 'common/api/osrdEditoastApi';
-import type { TimetableItemId, TimetableItem } from 'reducers/osrdconf/types';
+import type {
+  MacroNodeResponse,
+  OperationalPoint,
+  PathItemLocation,
+} from 'common/api/osrdEditoastApi';
+import type { TimetableItemId } from 'reducers/osrdconf/types';
 
 import type { TrainrunCategory, TrainrunFrequency } from '../NGE/types';
 
@@ -254,7 +258,7 @@ export default class MacroEditorState {
   /**
    * Given an path step, returns its pathKey
    */
-  static getPathKey(item: TimetableItem['path'][0]): string {
+  static getPathKey(item: PathItemLocation): string {
     if ('trigram' in item)
       return `trigram:${item.trigram}${item.secondary_code ? `/${item.secondary_code}` : ''}`;
     if ('operational_point' in item) return `op_id:${item.operational_point}`;
@@ -279,5 +283,29 @@ export default class MacroEditorState {
       result.push(`track_offset:${opPart.track}+${opPart.position}`);
     }
     return result;
+  }
+
+  static parsePathKey(key: string): PathItemLocation {
+    const [type, value] = key.split(':');
+    if (!value) throw new Error('Invalid path key');
+    switch (type) {
+      case 'op_id': {
+        return { operational_point: value };
+      }
+      case 'trigram': {
+        const [trigram, secondary_code] = value.split('/');
+        return { trigram, secondary_code };
+      }
+      case 'uic': {
+        const [uic, secondary_code] = value.split('/');
+        return { uic: Number(uic), secondary_code };
+      }
+      case 'track_offset': {
+        const [track, offset] = value.split('+');
+        return { track, offset: Number(offset) };
+      }
+      default:
+        throw new Error(`Invalid path key type "${type}"`);
+    }
   }
 }
