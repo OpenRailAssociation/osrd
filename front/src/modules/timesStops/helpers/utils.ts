@@ -351,23 +351,6 @@ export function receptionSignalToSignalBooleans(receptionSignal?: ReceptionSigna
   return { shortSlipDistance: false, onStopSignal: false };
 }
 
-export const matchOpRefAndOp = (op: OperationalPoint, opRef: PathItemLocation): boolean => {
-  if ('operational_point' in opRef) return op.id === opRef.operational_point;
-  if ('trigram' in opRef) {
-    return (
-      opRef.trigram === op.extensions?.sncf?.trigram &&
-      (opRef.secondary_code ? opRef.secondary_code === op.extensions.sncf?.ch : true)
-    );
-  }
-  if ('uic' in opRef) {
-    return (
-      opRef.uic === op.extensions?.identifier?.uic &&
-      (opRef.secondary_code ? opRef.secondary_code === op.extensions.sncf?.ch : true)
-    );
-  }
-  return false;
-};
-
 export const getTrackReferenceLabel = (trackReference?: TrackReference | null) => {
   if (!trackReference) return undefined;
   return 'track_id' in trackReference ? trackReference.track_id : trackReference.track_name;
