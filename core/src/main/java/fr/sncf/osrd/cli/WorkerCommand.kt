@@ -204,6 +204,10 @@ class WorkerCommand : CliCommand {
 
             val activityChannel = connection.createChannel()
             val channel = connection.createChannel()
+            // Set the prefetch count to something reasonable (ie. disable prefetching)
+            // The default would be unlimited, which is very good for high throughput
+            // queues, but that's not our usecase here.
+            channel.basicQos(WORKER_THREADS)
             val callback =
                 fun(message: Delivery) {
                     val startTimeMS = System.currentTimeMillis()
