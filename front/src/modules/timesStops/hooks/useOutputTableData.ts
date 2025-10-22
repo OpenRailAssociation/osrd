@@ -38,8 +38,10 @@ const useOutputTableData = (
 
   const trackIds = useMemo(() => {
     const path = selectedTrain?.path || [];
-    return path.flatMap((step) => ('track' in step ? [step.track] : []));
-  }, [selectedTrain?.path]);
+    const trackIdsInPathSteps = path.flatMap((step) => ('track' in step ? [step.track] : []));
+    const trackIdsOnPath = (operationalPointsOnPath || []).map((op) => op.part.track);
+    return [...trackIdsInPathSteps, ...trackIdsOnPath];
+  }, [selectedTrain?.path, operationalPointsOnPath]);
 
   const [trackSections, setTrackSections] = useState<Record<string, TrackSection>>({});
   useEffect(() => {
@@ -148,7 +150,7 @@ const useOutputTableData = (
       );
     };
 
-    const formatRows = async () => {
+    const formatRows = () => {
       if (!selectedTrain) {
         setRows([]);
         return;
@@ -160,11 +162,8 @@ const useOutputTableData = (
 
       // For valid trains, complete the rows with the simulated path's operational points and tracks information
       if (isValid && simulatedTrain && operationalPointsOnPath) {
-        const trackIdsOnPath = operationalPointsOnPath.map((op) => op.part.track);
-        const trackSectionsOnPath = await getTrackSectionsByIds(trackIdsOnPath);
-
         for (const op of operationalPointsOnPath) {
-          const trackName = trackSectionsOnPath[op.part.track]?.extensions?.sncf?.track_name;
+          const trackName = trackSections[op.part.track]?.extensions?.sncf?.track_name;
 
           // early return if the op matches a pathStep (handled in formatPathStepRows)
           // only add the trackName which has been found by the pathfinding (if not precised in the pathStep)
