@@ -52,15 +52,15 @@ const useOutputTableData = (
     fetchTrackSections();
   }, [trackIds]);
 
-  // Extract common properties between valid and invalid trains
-  const scheduleByAt: Record<string, ScheduleEntry> = keyBy(selectedTrain?.schedule, 'at');
-  const theoreticalMargins = selectedTrain && getTheoreticalMargins(selectedTrain);
-
   // Format input path step rows
   const rows = useMemo(() => {
     if (!selectedTrain) {
       return [];
     }
+
+    // Extract common properties between valid and invalid trains
+    const scheduleByAt: Record<string, ScheduleEntry> = keyBy(selectedTrain.schedule, 'at');
+    const theoreticalMargins = selectedTrain && getTheoreticalMargins(selectedTrain);
 
     const startDatetime = new Date(selectedTrain.start_time);
     let lastReferenceDate = startDatetime;
@@ -204,6 +204,7 @@ const useOutputTableData = (
 
     return formattedRows;
   }, [
+    selectedTrain,
     pathStepOps,
     operationalPointsOnPath,
     simulatedTrain,
