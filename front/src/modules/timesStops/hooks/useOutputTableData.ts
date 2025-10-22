@@ -150,70 +150,66 @@ const useOutputTableData = (
       );
     };
 
-    const formatRows = () => {
-      if (!selectedTrain) {
-        setRows([]);
-        return;
-      }
+    if (!selectedTrain) {
+      setRows([]);
+      return;
+    }
 
-      const pathStepRowsById = formatPathStepRows(selectedTrain);
+    const pathStepRowsById = formatPathStepRows(selectedTrain);
 
-      let formattedRows: TimesStopsRow[] = [];
+    let formattedRows: TimesStopsRow[] = [];
 
-      // For valid trains, complete the rows with the simulated path's operational points and tracks information
-      if (isValid && simulatedTrain && operationalPointsOnPath) {
-        for (const op of operationalPointsOnPath) {
-          const trackName = trackSections[op.part.track]?.extensions?.sncf?.track_name;
+    // For valid trains, complete the rows with the simulated path's operational points and tracks information
+    if (isValid && simulatedTrain && operationalPointsOnPath) {
+      for (const op of operationalPointsOnPath) {
+        const trackName = trackSections[op.part.track]?.extensions?.sncf?.track_name;
 
-          // early return if the op matches a pathStep (handled in formatPathStepRows)
-          // only add the trackName which has been found by the pathfinding (if not precised in the pathStep)
-          const matchingPathStep = selectedTrain.path.find((pathStep) =>
-            matchPathStepAndOp(pathStep, {
-              opId: op.id,
-              uic: op.extensions?.identifier?.uic,
-              ch: op.extensions?.sncf?.ch,
-              trigram: op.extensions?.sncf?.trigram,
-              track: op.part.track,
-              offsetOnTrack: op.part.position,
-            })
+        // early return if the op matches a pathStep (handled in formatPathStepRows)
+        // only add the trackName which has been found by the pathfinding (if not precised in the pathStep)
+        const matchingPathStep = selectedTrain.path.find((pathStep) =>
+          matchPathStepAndOp(pathStep, {
+            opId: op.id,
+            uic: op.extensions?.identifier?.uic,
+            ch: op.extensions?.sncf?.ch,
+            trigram: op.extensions?.sncf?.trigram,
+            track: op.part.track,
+            offsetOnTrack: op.part.position,
+          })
+        );
+        const matchingPathStepRow = matchingPathStep
+          ? pathStepRowsById.get(matchingPathStep.id)
+          : undefined;
+        if (matchingPathStepRow) {
+          formattedRows.push({
+            ...matchingPathStepRow,
+            trackName,
+          });
+        } else if (!displayOnlyPathSteps) {
+          // Compute arrival time when the operational point comes from the simulation
+          const matchingReportTrainIndex = simulatedTrain.positions.findIndex(
+            (position) => position === op.position
           );
-          const matchingPathStepRow = matchingPathStep
-            ? pathStepRowsById.get(matchingPathStep.id)
-            : undefined;
-          if (matchingPathStepRow) {
-            formattedRows.push({
-              ...matchingPathStepRow,
-              trackName,
-            });
-          } else if (!displayOnlyPathSteps) {
-            // Compute arrival time when the operational point comes from the simulation
-            const matchingReportTrainIndex = simulatedTrain.positions.findIndex(
-              (position) => position === op.position
-            );
-            const time =
-              matchingReportTrainIndex === -1
-                ? interpolateValue(simulatedTrain, op.position, 'times')
-                : simulatedTrain.times[matchingReportTrainIndex];
-            const calculatedArrival = new Date(new Date(selectedTrain.start_time).getTime() + time);
+          const time =
+            matchingReportTrainIndex === -1
+              ? interpolateValue(simulatedTrain, op.position, 'times')
+              : simulatedTrain.times[matchingReportTrainIndex];
+          const calculatedArrival = new Date(new Date(selectedTrain.start_time).getTime() + time);
 
-            formattedRows.push({
-              opId: op.id,
-              pathStepId: undefined,
-              name: op.extensions?.identifier?.name,
-              ch: op.extensions?.sncf?.ch,
-              trackName,
-              calculatedArrival,
-            });
-          }
+          formattedRows.push({
+            opId: op.id,
+            pathStepId: undefined,
+            name: op.extensions?.identifier?.name,
+            ch: op.extensions?.sncf?.ch,
+            trackName,
+            calculatedArrival,
+          });
         }
-      } else {
-        formattedRows = Array.from(pathStepRowsById.values());
       }
+    } else {
+      formattedRows = Array.from(pathStepRowsById.values());
+    }
 
-      setRows(formattedRows);
-    };
-
-    formatRows();
+    setRows(formattedRows);
   }, [
     pathStepOps,
     operationalPointsOnPath,
