@@ -56,31 +56,30 @@ const SettingsPanel = ({
           <span>{translations?.layersDisplay.context || 'Context'}</span>
         </div>
         {LAYERS_SELECTION.map((selection) => (
-          <div key={selection} className="selection">
-            <Checkbox
-              data-testid={testIdPrefix ? `${testIdPrefix}-layer-${selection}` : undefined}
-              label={translations?.layersDisplay[selection] || selection}
-              checked={store.layersDisplay[selection]}
-              disabled={!isLayerActive(store, selection)}
-              onChange={() => {
-                setStore((prev) => ({
-                  ...prev,
-                  layersDisplay: {
-                    ...prev.layersDisplay,
-                    [selection]: !prev.layersDisplay[selection],
-                  },
-                }));
+          <Checkbox
+            key={selection}
+            data-testid={testIdPrefix ? `${testIdPrefix}-layer-${selection}` : undefined}
+            label={translations?.layersDisplay[selection] || selection}
+            checked={store.layersDisplay[selection]}
+            disabled={!isLayerActive(store, selection)}
+            onChange={() => {
+              setStore((prev) => ({
+                ...prev,
+                layersDisplay: {
+                  ...prev.layersDisplay,
+                  [selection]: !prev.layersDisplay[selection],
+                },
+              }));
 
-                if (
-                  selection === 'electricalProfiles' ||
-                  selection === 'powerRestrictions' ||
-                  selection === 'speedLimitTags'
-                ) {
-                  adjustHeightOnLayerChange(selection, store.layersDisplay[selection]);
-                }
-              }}
-            />
-          </div>
+              if (
+                selection === 'electricalProfiles' ||
+                selection === 'powerRestrictions' ||
+                selection === 'speedLimitTags'
+              ) {
+                adjustHeightOnLayerChange(selection, store.layersDisplay[selection]);
+              }
+            }}
+          />
         ))}
       </div>
       <div className="settings-panel-section">
@@ -88,21 +87,20 @@ const SettingsPanel = ({
           <span>{translations?.detailsBoxDisplay.reticleInfos || 'Reticle infos'}</span>
         </div>
         {DETAILS_BOX_SELECTION.map((selection) => (
-          <div key={selection} className="selection">
-            <Checkbox
-              label={translations?.detailsBoxDisplay[selection] || selection}
-              checked={store.detailsBoxDisplay[selection]}
-              onChange={() => {
-                setStore((prev) => ({
-                  ...prev,
-                  detailsBoxDisplay: {
-                    ...prev.detailsBoxDisplay,
-                    [selection]: !prev.detailsBoxDisplay[selection],
-                  },
-                }));
-              }}
-            />
-          </div>
+          <Checkbox
+            key={selection}
+            label={translations?.detailsBoxDisplay[selection] || selection}
+            checked={store.detailsBoxDisplay[selection]}
+            onChange={() => {
+              setStore((prev) => ({
+                ...prev,
+                detailsBoxDisplay: {
+                  ...prev.detailsBoxDisplay,
+                  [selection]: !prev.detailsBoxDisplay[selection],
+                },
+              }));
+            }}
+          />
         ))}
       </div>
       <button
