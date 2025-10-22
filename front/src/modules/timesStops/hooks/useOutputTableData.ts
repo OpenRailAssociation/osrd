@@ -39,7 +39,12 @@ const useOutputTableData = (
 
   const trackIds = useMemo(() => {
     const path = selectedTrain?.path || [];
-    const trackIdsInPathSteps = path.flatMap((step) => ('track' in step ? [step.track] : []));
+    const trackIdsInPathSteps = path.flatMap((step) => [
+      ...('track' in step ? [step.track] : []),
+      ...('track_reference' in step && step.track_reference && 'track_id' in step.track_reference
+        ? [step.track_reference.track_id]
+        : []),
+    ]);
     const trackIdsOnPath = (operationalPointsOnPath || []).map((op) => op.part.track);
     return [...trackIdsInPathSteps, ...trackIdsOnPath];
   }, [selectedTrain?.path, operationalPointsOnPath]);
@@ -80,7 +85,7 @@ const useOutputTableData = (
         const trackName =
           'track' in pathStep
             ? trackSections[pathStep.track]?.extensions?.sncf?.track_name
-            : getTrackReferenceLabel(pathStep.track_reference);
+            : getTrackReferenceLabel(trackSections, pathStep.track_reference);
 
         const schedule = scheduleByAt[pathStep.id];
         const computedArrival = simulatedPathItemTimes
