@@ -123,7 +123,6 @@
   backdrop-filter: blur(0.3125rem);
   box-shadow: inset 0 0 0 0.0625rem rgb(255, 255, 255);
   border: solid 0.0625rem rgba(0, 0, 0, 0.1);
-  box-shadow: 0 0 0 0.0625rem rgb(250, 249, 245);
   z-index: 10;
 
   .settings-panel-section {
@@ -137,23 +136,6 @@
       font-size: 1rem;
       font-weight: 600;
       margin-bottom: 0.4375rem;
-    }
-  }
-
-  .selection {
-    height: 1.75rem;
-    padding-top: 0.1875rem;
-    padding-bottom: 0.3125rem;
-    margin-bottom: 0.25rem;
-
-    .selection-checkbox {
-      height: 1.125rem;
-      margin-left: 0.5rem;
-    }
-
-    .selection-label {
-      font-weight: 400;
-      margin-left: 0.5rem;
     }
   }
 
