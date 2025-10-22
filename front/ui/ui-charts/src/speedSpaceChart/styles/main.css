@@ -114,7 +114,9 @@
 #settings-panel {
   position: absolute;
   display: flex;
-  width: 32.875rem;
+  min-width: 32.875rem;
+  max-width: 100%;
+  padding-left: 16px;
   margin-right: 20px;
   color: rgb(49, 46, 43);
   border-radius: 0 0.625rem 0 0;
@@ -125,13 +127,9 @@
   z-index: 10;
 
   .settings-panel-section {
-    width: 227px;
-    margin-left: 32px;
+    min-width: 227px;
     margin-top: 29px;
-
-    .right {
-      margin-left: 16px;
-    }
+    margin-left: 16px;
 
     .settings-panel-section-title {
       height: 1.5rem;
@@ -161,12 +159,10 @@
 
   #close-settings-panel {
     position: absolute;
-    align-self: flex-start;
-    height: 1rem;
-    width: 1rem;
-    margin-left: 30.625rem;
-    margin-top: 0.875rem;
-    margin-right: 0.875rem;
+    top: 14px;
+    right: 14px;
+    height: 16px;
+    width: 16px;
     border: none;
     cursor: pointer;
 
