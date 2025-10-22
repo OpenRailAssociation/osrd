@@ -10,6 +10,7 @@ import {
   type PacedTrain,
   type SearchResultItemOperationalPoint,
   type TrainSchedule,
+  type PathItemLocation,
 } from 'common/api/osrdEditoastApi';
 import {
   createPacedTrain,
@@ -44,7 +45,7 @@ import {
   DEFAULT_TIME_WINDOW,
   TRAINRUN_DIRECTIONS,
 } from './consts';
-import type MacroEditorState from './MacroEditorState';
+import MacroEditorState from './MacroEditorState';
 import type { NodeIndexed } from './MacroEditorState';
 import {
   createMacroNode,
@@ -165,11 +166,21 @@ const getTrainrunSectionsByTrainrunId = (
   return orderedSectionPaths;
 };
 
-const createPathItemFromNode = (node: NodeDto, index: number) => {
-  const [trigram, secondaryCode] = node.betriebspunktName.split('/');
+const createPathItemFromNode = (
+  node: NodeDto,
+  index: number,
+  state?: MacroEditorState
+): TrainSchedule['path'][number] => {
+  let pathItemLocation: PathItemLocation;
+  if (state) {
+    const indexedNode = state.getNodeByNgeId(node.id)!;
+    pathItemLocation = MacroEditorState.parsePathKey(indexedNode.path_item_key);
+  } else {
+    const [trigram, secondary_code] = node.betriebspunktName.split('/');
+    pathItemLocation = { trigram, secondary_code };
+  }
   return {
-    trigram,
-    secondary_code: secondaryCode,
+    ...pathItemLocation,
     id: `${node.id}-${index}`,
     deleted: false,
     // TODO : handle this case in xml import refacto
@@ -196,16 +207,17 @@ const formatDateDifferenceFrom = (start: Date, stop: Date) =>
 export const generatePath = (
   trainrunSections: TrainrunSectionDto[],
   nodes: NodeDto[],
-  trainrunDirection: TRAINRUN_DIRECTIONS
+  trainrunDirection: TRAINRUN_DIRECTIONS,
+  state?: MacroEditorState
 ): TrainSchedule['path'] => {
   const isForward = trainrunDirection === TRAINRUN_DIRECTIONS.FORWARD;
   const path = trainrunSections.map((section, index) => {
     const fromNode = getNodeById(nodes, isForward ? section.sourceNodeId : section.targetNodeId);
     const toNode = getNodeById(nodes, isForward ? section.targetNodeId : section.sourceNodeId);
     if (!fromNode || !toNode) return [];
-    const originPathItem = createPathItemFromNode(fromNode, index);
+    const originPathItem = createPathItemFromNode(fromNode, index, state);
     if (index === trainrunSections.length - 1) {
-      const destinationPathItem = createPathItemFromNode(toNode, index + 1);
+      const destinationPathItem = createPathItemFromNode(toNode, index + 1, state);
       return [originPathItem, destinationPathItem];
     }
     return [originPathItem];
@@ -341,7 +353,8 @@ const generatePathAndSchedule = (
   trainrunSections: TrainrunSectionDto[],
   nodes: NodeDto[],
   baseDate?: Date,
-  trainrunDirection: TRAINRUN_DIRECTIONS = TRAINRUN_DIRECTIONS.FORWARD
+  trainrunDirection: TRAINRUN_DIRECTIONS = TRAINRUN_DIRECTIONS.FORWARD,
+  state?: MacroEditorState
 ) => {
   let sections = trainrunSections;
   if (trainrunDirection === TRAINRUN_DIRECTIONS.BACKWARD) {
@@ -349,7 +362,7 @@ const generatePathAndSchedule = (
   }
 
   const startDate = calculateStartDate(sections, baseDate ?? new Date(), trainrunDirection);
-  const path = generatePath(sections, nodes, trainrunDirection);
+  const path = generatePath(sections, nodes, trainrunDirection, state);
   const schedule = generateSchedule(sections, nodes, startDate, trainrunDirection);
   return { start_time: startDate.toISOString(), path, schedule };
 };
@@ -418,13 +431,20 @@ const handleCreateTimetableItem = async (
       'ngeToOsrd handleCreateTimetableItem received a one_way train dto instead of a round trip'
     );
   }
-  const pathAndSchedule = generatePathAndSchedule(trainrunSections, netzgrafikDto.nodes);
+  const pathAndSchedule = generatePathAndSchedule(
+    trainrunSections,
+    netzgrafikDto.nodes,
+    undefined,
+    TRAINRUN_DIRECTIONS.FORWARD,
+    state
+  );
 
   const returnPathAndSchedule = generatePathAndSchedule(
     trainrunSections,
     netzgrafikDto.nodes,
     undefined,
-    TRAINRUN_DIRECTIONS.BACKWARD
+    TRAINRUN_DIRECTIONS.BACKWARD,
+    state
   );
 
   await populateSecondaryCodesInPath(
@@ -590,7 +610,9 @@ const handleUpdateTimetableItem = async ({
   const forwardPathAndSchedule = generatePathAndSchedule(
     trainrunSections,
     netzgrafikDto.nodes,
-    new Date(oldForwardTimetableItem.start_time)
+    new Date(oldForwardTimetableItem.start_time),
+    TRAINRUN_DIRECTIONS.FORWARD,
+    state
   );
   await populateSecondaryCodesInPath(forwardPathAndSchedule.path, infraId, dispatch);
 
@@ -672,7 +694,8 @@ const handleUpdateTimetableItem = async ({
     trainrunSections,
     netzgrafikDto.nodes,
     new Date(oldForwardTimetableItem.start_time),
-    TRAINRUN_DIRECTIONS.BACKWARD
+    TRAINRUN_DIRECTIONS.BACKWARD,
+    state
   );
 
   await populateSecondaryCodesInPath(returnPathAndSchedule.path, infraId, dispatch);
