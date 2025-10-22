@@ -45,10 +45,7 @@ const useOutputTableData = (
   // Format input path step rows
   useEffect(() => {
     const formatPathStepRows = async (train: Train): Promise<Map<string, TimesStopsRow>> => {
-      const trackIds = train.path.reduce<string[]>((ids, step) => {
-        if ('track' in step) ids.push(step.track);
-        return ids;
-      }, []);
+      const trackIds = train.path.flatMap((step) => 'track' in step ? [step.track] : []);
       const trackSections = await getTrackSectionsByIds(trackIds);
 
       const startDatetime = new Date(train.start_time);
