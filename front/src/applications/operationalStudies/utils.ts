@@ -499,3 +499,25 @@ export const getInvalidStepLabel = (step: OperationalPointReference) => {
   if ('trigram' in step) return step.trigram;
   return step.operational_point;
 };
+
+export const matchOpRefAndOp = (
+  location: PathItemLocation,
+  op: PathProperties['operational_points'][number] | OperationalPoint
+) => {
+  if ('operational_point' in location) {
+    return location.operational_point === op.id;
+  }
+  if ('uic' in location) {
+    return (
+      location.uic === op.extensions?.identifier?.uic &&
+      location.secondary_code === op.extensions?.sncf?.ch
+    );
+  }
+  if ('trigram' in location) {
+    return (
+      location.trigram === op.extensions?.sncf?.trigram &&
+      location.secondary_code === op.extensions?.sncf?.ch
+    );
+  }
+  return false;
+};

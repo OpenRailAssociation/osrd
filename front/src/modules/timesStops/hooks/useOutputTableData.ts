@@ -7,6 +7,7 @@ import { useSelector } from 'react-redux';
 import usePathOps from 'applications/operationalStudies/hooks/usePathOps';
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import type { PathPropertiesFormatted } from 'applications/operationalStudies/types';
+import { matchOpRefAndOp } from 'applications/operationalStudies/utils';
 import type { SimulationResponseSuccess, TrackSection } from 'common/api/osrdEditoastApi';
 import { matchPathStepAndOp } from 'modules/pathfinding/utils';
 import { interpolateValue } from 'modules/simulationResult/helpers/utils';
@@ -19,7 +20,7 @@ import { ARRIVAL_TIME_ACCEPTABLE_ERROR } from '../consts';
 import { computeInputDatetimes } from '../helpers/arrivalTime';
 import computeMargins, { getTheoreticalMargins } from '../helpers/computeMargins';
 import { formatSchedule } from '../helpers/scheduleData';
-import { matchOpRefAndOp, getTrackReferenceLabel, getOperationalPointName } from '../helpers/utils';
+import { getTrackReferenceLabel, getOperationalPointName } from '../helpers/utils';
 import { type ScheduleEntry, type TimesStopsRow } from '../types';
 
 const useOutputTableData = (
@@ -67,7 +68,7 @@ const useOutputTableData = (
 
     const pathStepRowsById = new Map(
       selectedTrain.path.map((pathStep, stepIndex) => {
-        const matchingOperationalPoint = pathStepOps.find((op) => matchOpRefAndOp(op, pathStep));
+        const matchingOperationalPoint = pathStepOps.find((op) => matchOpRefAndOp(pathStep, op));
 
         const name = getOperationalPointName(
           matchingOperationalPoint,
