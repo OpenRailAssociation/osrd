@@ -13,6 +13,7 @@ import type {
   PathItemLocation,
   ReceptionSignal,
   TrackReference,
+  TrackSection,
 } from 'common/api/osrdEditoastApi';
 import type { TimeString } from 'common/types';
 import { matchPathStepAndOp } from 'modules/pathfinding/utils';
@@ -351,9 +352,15 @@ export function receptionSignalToSignalBooleans(receptionSignal?: ReceptionSigna
   return { shortSlipDistance: false, onStopSignal: false };
 }
 
-export const getTrackReferenceLabel = (trackReference?: TrackReference | null) => {
+export const getTrackReferenceLabel = (
+  trackSections: Record<string, TrackSection>,
+  trackReference?: TrackReference | null
+) => {
   if (!trackReference) return undefined;
-  return 'track_id' in trackReference ? trackReference.track_id : trackReference.track_name;
+  if ('track_name' in trackReference) return trackReference.track_name;
+  return (
+    trackSections[trackReference.track_id]?.extensions?.sncf?.track_name ?? trackReference.track_id
+  );
 };
 
 export const getOperationalPointName = (
