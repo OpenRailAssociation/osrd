@@ -6,6 +6,7 @@ import com.google.common.collect.TreeRangeSet
 import fr.sncf.osrd.conflicts.*
 import fr.sncf.osrd.envelope_utils.DoubleBinarySearch
 import fr.sncf.osrd.path.interfaces.BlockPath
+import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.path.interfaces.TravelledPath
 import fr.sncf.osrd.sim_infra.api.ZoneId
 import fr.sncf.osrd.standalone_sim.CLOSED_SIGNAL_RESERVATION_MARGIN
@@ -28,13 +29,12 @@ data class BlockAvailability(
 
     override fun getAvailability(
         infraExplorer: InfraExplorerWithEnvelope,
-        startOffset: Offset<BlockPath>,
-        endOffset: Offset<BlockPath>,
+        startOffset: Offset<TrainPath>,
+        endOffset: Offset<TrainPath>,
         startTime: Double,
     ): BlockAvailabilityInterface.Availability {
         var timeShift = 0.0
         var firstConflictOffset: Offset<TravelledPath>? = null
-        val defaultOffset = infraExplorer.getIncrementalPath().toTravelledPath(startOffset)
         while (timeShift.isFinite()) {
             val shiftedStartTime = startTime + timeShift
             val pathStartTime =
@@ -61,7 +61,7 @@ data class BlockAvailability(
                     ) { // Availability is available due to adding a delay: timeShift
                         return BlockAvailabilityInterface.Unavailable(
                             timeShift,
-                            firstConflictOffset ?: defaultOffset,
+                            firstConflictOffset ?: startOffset,
                         )
                     }
                     // Availability is directly available without adding any delay
@@ -78,7 +78,7 @@ data class BlockAvailability(
         // No available solution with a finite delay was found
         return BlockAvailabilityInterface.Unavailable(
             Double.POSITIVE_INFINITY,
-            firstConflictOffset ?: defaultOffset,
+            firstConflictOffset ?: startOffset,
         )
     }
 
@@ -94,8 +94,8 @@ data class BlockAvailability(
      */
     private fun getStepAvailability(
         infraExplorer: InfraExplorerWithEnvelope,
-        startOffset: Offset<BlockPath>,
-        endOffset: Offset<BlockPath>,
+        startOffset: Offset<TrainPath>,
+        endOffset: Offset<TrainPath>,
         pathStartTime: Double,
     ): BlockAvailabilityInterface.Availability {
         var minimumDelayToBecomeAvailable = 0.0
@@ -156,22 +156,19 @@ data class BlockAvailability(
     private fun getStepAvailabilityProperties(
         step: LocatedStep,
         infraExplorer: InfraExplorerWithEnvelope,
-        startOffset: Offset<BlockPath>,
-        endOffset: Offset<BlockPath>,
+        startOffset: Offset<TrainPath>,
+        endOffset: Offset<TrainPath>,
         pathStartTime: Double,
     ): AvailabilityProperties? {
-        val incrementalPath = infraExplorer.getIncrementalPath()
         val plannedTimingData = step.originalStep.plannedTimingData ?: return null
         if (infraExplorer.getLookahead().contains(step.location.edge)) return null
 
-        val stepPathOffset = incrementalPath.fromTravelledPath(step.travelledPathOffset)
+        val stepPathOffset = step.travelledPathOffset
         if (stepPathOffset !in startOffset..endOffset) return null
 
-        val stepOffsetOnTravelledPath = step.travelledPathOffset
-        val stepOffsetOnPath =
-            infraExplorer.getIncrementalPath().fromTravelledPath(stepOffsetOnTravelledPath)
+        val stepOffset = step.travelledPathOffset
         val timeAtStep =
-            infraExplorer.interpolateDepartureFromClamp(stepOffsetOnPath) + pathStartTime
+            infraExplorer.interpolateDepartureFromClamp(stepOffset) + pathStartTime
         val plannedMinTimeAtStep =
             (plannedTimingData.arrivalTime - plannedTimingData.arrivalTimeToleranceBefore).seconds -
                 internalMarginForSteps
@@ -182,7 +179,7 @@ data class BlockAvailability(
             // Train passes through planned timing data before it is available
             return AvailabilityProperties(
                 max(plannedMinTimeAtStep - timeAtStep, 0.0),
-                stepOffsetOnTravelledPath,
+                stepOffset,
                 0.0,
                 0.0,
             )
@@ -191,7 +188,7 @@ data class BlockAvailability(
             // block is forever unavailable
             return AvailabilityProperties(
                 Double.POSITIVE_INFINITY,
-                stepOffsetOnTravelledPath,
+                stepOffset,
                 0.0,
                 0.0,
             )
@@ -208,7 +205,7 @@ data class BlockAvailability(
     /** Check the conflicts on the given path and return the corresponding availability. */
     private fun getConflictAvailability(
         infraExplorer: InfraExplorerWithEnvelope,
-        startOffset: Offset<BlockPath>,
+        startOffset: Offset<TrainPath>,
         pathStartTime: Double,
         startTime: Double,
         endTime: Double,
@@ -228,7 +225,7 @@ data class BlockAvailability(
                 .drop(1) // Skip departure step
                 .filter { it.originalStep.stop }
                 .map {
-                    infraExplorer.getIncrementalPath().fromTravelledPath(it.travelledPathOffset)
+                    it.travelledPathOffset
                 }
                 .contains(startOffset)
         var minRelevantTime = startTime

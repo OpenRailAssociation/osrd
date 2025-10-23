@@ -9,6 +9,7 @@ import fr.sncf.osrd.envelope.EnvelopeTimeInterpolate
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock
 import fr.sncf.osrd.graph.PathfindingConstraint
 import fr.sncf.osrd.path.interfaces.BlockPath
+import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.path.interfaces.TravelledPath
 import fr.sncf.osrd.pathfinding.PathfindingEdgeLocationId
 import fr.sncf.osrd.sim_infra.api.Block
@@ -57,7 +58,7 @@ interface InfraExplorerWithEnvelope : InfraExplorer {
      * Calls `InterpolateDepartureFromClamp` on the underlying envelope, taking the BlockPath offset
      * into account and transforms it into TravelledPath.
      */
-    fun interpolateDepartureFromClamp(pathOffset: Offset<BlockPath>): Double
+    fun interpolateDepartureFromClamp(pathOffset: Offset<TrainPath>): Double
 
     /** Returns the spacing requirements since the last update */
     fun getSpacingRequirements(): List<SpacingRequirement>

@@ -171,11 +171,9 @@ class SignalingSimulatorImpl(override val sigModuleManager: SigSystemManager) : 
         // TODO path migration: consider migrating the "zone states"
         //  from list of state to a (ZoneId -> state) map?
         val blockRanges = trainPath.getBlocks()
-        val routeRanges = trainPath.getRoutes()
         val zoneRanges = trainPath.getZoneRanges()
-        val routeSet by lazy { routeRanges.map { it.value }.toSet() }
+        val routeSet by lazy { trainPath.getRoutes().map { it.value }.toSet() }
         assert(zoneStates.size == zoneRanges.size)
-
 
         // compute the index of each block's first zone inside the path
         // TODO path migration: double-check that this would work out with actual backtracks

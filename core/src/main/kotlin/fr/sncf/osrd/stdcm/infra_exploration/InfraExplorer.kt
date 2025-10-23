@@ -5,6 +5,7 @@ import fr.sncf.osrd.conflicts.FragmentStop
 import fr.sncf.osrd.conflicts.IncrementalPath
 import fr.sncf.osrd.conflicts.PathFragment
 import fr.sncf.osrd.conflicts.incrementalPathOf
+import fr.sncf.osrd.conflicts.tmp.IncrementalPath
 import fr.sncf.osrd.graph.PathfindingConstraint
 import fr.sncf.osrd.path.implementations.buildTrainPathFromBlock
 import fr.sncf.osrd.path.interfaces.BlockPath
@@ -84,6 +85,9 @@ interface InfraExplorer {
 
     /** Returns the length of all blocks before the current one */
     fun getPredecessorLength(): Length<BlockPath>
+
+    /** Returns the length of all block ranges before the current one */
+    fun getCurrentBlockPathOffset(): Offset<TrainPath>
 
     /** Returns all the blocks before the current one */
     fun getPredecessorBlocks(): AppendOnlyLinkedList<BlockId>
@@ -166,6 +170,7 @@ private class InfraExplorerImpl(
     private var currentIndex: Int = 0,
     private var stepTracker: StepTracker,
     private var predecessorLength: Length<BlockPath> = Length(0.meters), // to avoid re-computing it
+    private var currentBlockOffset: Offset<TrainPath> = Length(0.meters), // to avoid re-computing it
     private var constraints: List<PathfindingConstraint<Block>>,
 ) : InfraExplorer {
 

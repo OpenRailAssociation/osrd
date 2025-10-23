@@ -7,6 +7,7 @@ import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue
 import fr.sncf.osrd.envelope_sim.allowances.LinearAllowance
 import fr.sncf.osrd.envelope_sim.allowances.MarecoAllowance
 import fr.sncf.osrd.path.interfaces.PhysicsPath
+import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.path.interfaces.TravelledPath
 import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
 import fr.sncf.osrd.reporting.exceptions.ErrorType
@@ -20,6 +21,7 @@ import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
+import fr.sncf.osrd.utils.units.sumDistances
 import java.util.*
 import kotlin.math.max
 import org.slf4j.Logger
@@ -320,20 +322,14 @@ private fun findConflictOffsets(
     edges: List<STDCMEdge>,
     updatedTimeData: TimeData,
 ): Offset<TravelledPath>? {
-    val startOffset = edges[0].fromTravelledOffset(Offset(0.meters))
-    val endOffset =
-        startOffset +
-            Distance(
-                millimeters =
-                    edges.stream().mapToLong { edge -> edge.length.distance.millimeters }.sum()
-            )
+    val endOffset = Offset<TrainPath>(edges.map { it.length.distance }.sumDistances())
     val explorer = getUpdatedExplorer(edges, envelope, updatedTimeData)
-    assert(arePositionsEqual(envelope.endPos, (endOffset - startOffset).meters))
+    assert(arePositionsEqual(envelope.endPos, endOffset.distance.meters))
     val availability =
         blockAvailability.getAvailability(
             explorer,
-            startOffset.cast(),
-            endOffset.cast(),
+            Offset.zero(),
+            endOffset,
             updatedTimeData.departureTime,
         )
     val offsetDistance =
