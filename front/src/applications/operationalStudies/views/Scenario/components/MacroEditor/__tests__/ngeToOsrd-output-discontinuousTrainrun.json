@@ -94,9 +94,18 @@
       "train_name": "Carotte-1",
       "labels": [],
       "path": [
-        { "trigram": "SS", "id": "6-0", "track_reference": null },
-        { "trigram": "LTH", "id": "8-1", "track_reference": null },
-        { "trigram": "RTR", "id": "7-2", "track_reference": null }
+        {
+          "location": { "reference": { "trigram": "SS" }, "track_reference": null },
+          "id": "6-0"
+        },
+        {
+          "location": { "reference": { "trigram": "LTH" }, "track_reference": null },
+          "id": "8-1"
+        },
+        {
+          "location": { "reference": { "trigram": "RTR" }, "track_reference": null },
+          "id": "7-2"
+        }
       ],
       "start_time": "2025-06-25T13:56:00.000Z",
       "schedule": [
@@ -129,13 +138,11 @@
       "path": [
         {
           "id": "10-0",
-          "track_reference": null,
-          "trigram": "WLD"
+          "location": { "reference": { "trigram": "WLD" }, "track_reference": null }
         },
         {
           "id": "11-1",
-          "track_reference": null,
-          "trigram": "FLR"
+          "location": { "reference": { "trigram": "FLR" }, "track_reference": null }
         }
       ],
       "rolling_stock_name": "",
@@ -164,13 +171,11 @@
       "path": [
         {
           "id": "11-0",
-          "track_reference": null,
-          "trigram": "FLR"
+          "location": { "reference": { "trigram": "FLR" }, "track_reference": null }
         },
         {
           "id": "10-1",
-          "track_reference": null,
-          "trigram": "WLD"
+          "location": { "reference": { "trigram": "WLD" }, "track_reference": null }
         }
       ],
       "rolling_stock_name": "",

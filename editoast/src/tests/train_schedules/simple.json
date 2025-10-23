@@ -1,29 +1,40 @@
 {
   "train_name": "ABC3615",
   "rolling_stock_name": "R2D2",
-  "labels": [
-    "choo-choo",
-    "tchou-tchou"
-  ],
+  "labels": ["choo-choo", "tchou-tchou"],
   "speed_limit_tag": "MA100",
   "start_time": "2023-12-21T08:51:30+00:00",
   "path": [
     {
       "id": "a",
-      "uic": 8711
+      "location": {
+        "reference": {
+          "uic": 8711
+        }
+      }
     },
     {
       "id": "b",
-      "track": "TC0",
-      "offset": 340
+      "location": {
+        "track": "TC0",
+        "offset": 340
+      }
     },
     {
       "id": "c",
-      "trigram": "MWS"
+      "location": {
+        "reference": {
+          "trigram": "MWS"
+        }
+      }
     },
     {
       "id": "d",
-      "operational_point": "Mid_East_station"
+      "location": {
+        "reference": {
+          "operational_point": "Mid_East_station"
+        }
+      }
     }
   ],
   "constraint_distribution": "MARECO",
@@ -47,15 +58,8 @@
     }
   ],
   "margins": {
-    "boundaries": [
-      "b",
-      "c"
-    ],
-    "values": [
-      "5%",
-      "3min/100km",
-      "0%"
-    ]
+    "boundaries": ["b", "c"],
+    "values": ["5%", "3min/100km", "0%"]
   },
   "initial_speed": 2.5,
   "power_restrictions": [

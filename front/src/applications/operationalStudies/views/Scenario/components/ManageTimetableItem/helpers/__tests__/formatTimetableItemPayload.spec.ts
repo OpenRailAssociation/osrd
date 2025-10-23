@@ -214,15 +214,23 @@ describe('formatTimetableItemPayload', () => {
         path: [
           {
             id: '0-0',
-            trigram: 'WS',
-            secondary_code: 'BV',
-            track_reference: null,
+            location: {
+              reference: {
+                trigram: 'WS',
+                secondary_code: 'BV',
+              },
+              track_reference: null,
+            },
           },
           {
             id: '1-1',
-            trigram: 'SS',
-            secondary_code: 'BV',
-            track_reference: null,
+            location: {
+              reference: {
+                trigram: 'SS',
+                secondary_code: 'BV',
+              },
+              track_reference: null,
+            },
           },
         ],
         power_restrictions: [],

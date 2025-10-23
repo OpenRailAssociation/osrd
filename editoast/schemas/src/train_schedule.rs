@@ -57,12 +57,9 @@ pub struct TrainSchedule {
     pub labels: Vec<String>,
     pub rolling_stock_name: String,
     pub start_time: DateTime<Utc>,
-    #[schema(inline)]
     pub path: Vec<PathItem>,
-    #[schema(inline)]
     #[serde(default)]
     pub schedule: Vec<ScheduleItem>,
-    #[schema(inline)]
     #[serde(default)]
     pub margins: Margins,
     #[serde(default)]
@@ -76,7 +73,6 @@ pub struct TrainSchedule {
     #[schema(inline)]
     #[serde(default)]
     pub power_restrictions: Vec<PowerRestrictionItem>,
-    #[schema(inline)]
     #[serde(default)]
     pub options: TrainScheduleOptions,
     pub category: Option<TrainCategory>,

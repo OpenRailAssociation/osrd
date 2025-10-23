@@ -541,8 +541,8 @@ pub mod tests {
             .post(format!("/infra/{}/pathfinding/blocks", small_infra.id).as_str())
             .json(&json!({
                 "path_items":[
-                {"trigram":"WS","secondary_code":"BV"},
-                {"trigram":"WS","secondary_code":"BV"}
+                {"reference": {"trigram":"WS","secondary_code":"BV"}},
+                {"reference": {"trigram":"WS","secondary_code":"BV"}}
             ],
                 "rolling_stock_is_thermal":true,
                 "rolling_stock_loading_gauge":"G1",
@@ -575,9 +575,9 @@ pub mod tests {
             .post(format!("/infra/{}/pathfinding/blocks", small_infra.id).as_str())
             .json(&json!({
                 "path_items":[
-                    {"trigram":"WS","secondary_code":"BV"},
-                    {"trigram":"NO_TRIGRAM","secondary_code":null},
-                    {"trigram":"SWS","secondary_code":"BV"}
+                    {"reference": {"trigram":"WS","secondary_code":"BV"}},
+                    {"reference": {"trigram":"NO_TRIGRAM","secondary_code":null}},
+                    {"reference": {"trigram":"SWS","secondary_code":"BV"}}
                 ],
                 "rolling_stock_is_thermal":true,
                 "rolling_stock_loading_gauge":"G1",
@@ -624,8 +624,8 @@ pub mod tests {
             .post(format!("/infra/{}/pathfinding/blocks", small_infra.id).as_str())
             .json(&json!({
                 "path_items":[
-                    {"uic":8733,"secondary_code":"BV", "track_reference": {"track_name": "V2"}},
-                    {"uic":8788 ,"secondary_code":"BV", "track_reference": {"track_name": "V_INVALID"}},
+                    {"reference": {"uic":8733,"secondary_code":"BV"}, "track_reference": {"track_name": "V2"}},
+                    {"reference": {"uic":8788 ,"secondary_code":"BV"}, "track_reference": {"track_name": "V_INVALID"}},
                 ],
                 "rolling_stock_is_thermal":true,
                 "rolling_stock_loading_gauge":"G1",
@@ -687,8 +687,8 @@ pub mod tests {
             .post(format!("/infra/{}/pathfinding/blocks", small_infra.id).as_str())
             .json(&json!({
                 "path_items":[
-                    {"trigram":"WS","secondary_code":"BV"},
-                    {"trigram":"SWS","secondary_code":"BV"}
+                    {"reference": {"trigram":"WS","secondary_code":"BV"}},
+                    {"reference": {"trigram":"SWS","secondary_code":"BV"}}
                 ],
                 "rolling_stock_is_thermal":true,
                 "rolling_stock_loading_gauge":"G1",
