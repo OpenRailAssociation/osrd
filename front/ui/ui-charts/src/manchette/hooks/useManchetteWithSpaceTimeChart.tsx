@@ -103,7 +103,7 @@ const useManchetteWithSpaceTimeChart = ({
   defaultTimeOrigin = 0,
   defaultSpaceOrigin = 0,
   defaultXOffset = 0,
-  verticalPadding = BASE_WAYPOINT_HEIGHT / 2,
+  verticalPadding = BASE_WAYPOINT_HEIGHT * 1.5,
   splitPoints = [],
   options = {},
 }: {
@@ -161,10 +161,10 @@ const useManchetteWithSpaceTimeChart = ({
   const setTimeOrigin = useCallback((newTimeOrigin: number) => {
     setState((prev) => ({ ...prev, timeOrigin: newTimeOrigin }));
   }, []);
-
   const canvasDrawingHeight = Math.max(1 + BASE_WAYPOINT_HEIGHT, height - FOOTER_HEIGHT); // 521
-  const drawingHeightWithoutTopPadding = canvasDrawingHeight - BASE_WAYPOINT_HEIGHT / 2; // 505
-  const drawingHeightWithoutBothPadding = canvasDrawingHeight - BASE_WAYPOINT_HEIGHT; // 489
+  const drawingHeightWithoutTopPadding = canvasDrawingHeight - verticalPadding; // 473
+  const drawingHeightWithoutBothPadding =
+    canvasDrawingHeight - (verticalPadding + BASE_WAYPOINT_HEIGHT); // 441
   const totalDistance = calcTotalDistance(waypoints);
 
   const { minZoomMillimeterPerPx, maxZoomMillimeterPerPx } = getExtremaScales(
@@ -470,12 +470,12 @@ const useManchetteWithSpaceTimeChart = ({
 
   const { manchetteContents, manchetteHeight } = useMemo(() => {
     const spaceScaleTree = spaceScalesToBinaryTree(spaceOrigin, spaceScales);
-    const getSpacePixel = getSpaceToPixel(0, spaceScaleTree);
+    const getSpacePixel = getSpaceToPixel(BASE_WAYPOINT_HEIGHT, spaceScaleTree);
     let totalManchetteHeight = height - FOOTER_HEIGHT;
     if (spaceScales.length > 0) {
       totalManchetteHeight = Math.max(
         totalManchetteHeight,
-        getSpacePixel(spaceScales.at(-1)!.to, true) + verticalPadding * 2
+        getSpacePixel(spaceScales.at(-1)!.to, true) + BASE_WAYPOINT_HEIGHT
       );
     }
 
@@ -533,11 +533,11 @@ const useManchetteWithSpaceTimeChart = ({
             <div
               style={{
                 // This verticalPadding correction is there because:
-                // - Waypoints are positioned so that their lines (at verticalPadding pixels from
+                // - Waypoints are positioned so that their lines (at 16 pixels from
                 //   the top) are aligned with SpaceTimeChart's space lines
                 // - Split points are positioned so that their top is aligned with SpaceTimeChart's
                 //   space lines
-                top: `${top + verticalPadding}px`,
+                top: `${top + BASE_WAYPOINT_HEIGHT / 2}px`,
                 height: `${getSpacePixel(position, true) - top}px`,
                 position: 'absolute',
                 width: '100%',
@@ -555,7 +555,7 @@ const useManchetteWithSpaceTimeChart = ({
       manchetteHeight: totalManchetteHeight,
       manchetteContents: finalContents,
     };
-  }, [spaceOrigin, spaceScales, verticalPadding, height, splitPoints, waypointsToDisplay]);
+  }, [spaceOrigin, spaceScales, height, splitPoints, waypointsToDisplay]);
 
   return useMemo<{
     manchetteProps: ManchetteProps;
