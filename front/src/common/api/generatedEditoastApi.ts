@@ -1995,15 +1995,18 @@ export type PostPacedTrainTrackOccupancyApiResponse =
       | {
           index: number;
           paced_train_id: number;
+          type: 'BaseOccurrence';
         }
       | {
           exception_key: string;
           index: number;
           paced_train_id: number;
+          type: 'ModifiedException';
         }
       | {
           exception_key: string;
           paced_train_id: number;
+          type: 'CreatedException';
         }
     ) & {
       duration: string;

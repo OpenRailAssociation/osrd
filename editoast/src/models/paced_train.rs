@@ -299,7 +299,7 @@ impl From<PacedTrain> for paced_train::PacedTrain {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
-#[serde(untagged)]
+#[serde(tag = "type")]
 pub enum OccurrenceId {
     BaseOccurrence {
         paced_train_id: i64,
