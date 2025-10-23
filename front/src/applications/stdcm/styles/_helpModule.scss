@@ -1,10 +1,12 @@
 .stdcm__help-module {
+  --panel-width: 520px;
   transition: all 0.3s;
   position: fixed;
   top: 0;
-  right: -100%;
+  z-index: 1;
+  right: calc(-1 * var(--panel-width));
   height: 100vh;
-  width: 520px;
+  width: var(--panel-width);
   background-color: var(--white100);
   box-shadow:
     0 6px 21px -5px rgba(24, 68, 239, 0.26),
@@ -14,6 +16,11 @@
   display: flex;
   flex-direction: column;
   overflow: auto;
+
+  @media screen and (max-width: 640px) {
+    --panel-width: 100%;
+  }
+
   &.active {
     right: 0;
   }
@@ -54,7 +61,7 @@
     position: fixed;
     top: 72px;
     padding-left: 24px;
-    right: -100%;
+    right: calc(-1 * var(--panel-width));
     height: calc(100vh - 72px);
     overflow-y: hidden;
     width: inherit;
