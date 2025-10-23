@@ -1,11 +1,13 @@
 package fr.sncf.osrd.signaling.impl
 
+import fr.sncf.osrd.path.interfaces.TrainPath
+import fr.sncf.osrd.path.interfaces.getLegacyBlockPath
+import fr.sncf.osrd.path.interfaces.getLegacyRoutePath
 import fr.sncf.osrd.signaling.*
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra.impl.SignalParameters
 import fr.sncf.osrd.sim_infra.impl.loadedSignalInfra
 import fr.sncf.osrd.utils.LogAggregator
-import fr.sncf.osrd.utils.indexing.*
 import fr.sncf.osrd.utils.units.Distance
 import mu.KotlinLogging
 
@@ -161,6 +163,33 @@ class SignalingSimulatorImpl(override val sigModuleManager: SigSystemManager) : 
         infra: RawInfra,
         loadedSignalInfra: LoadedSignalInfra,
         blocks: BlockInfra,
+        trainPath: TrainPath,
+        zoneStates: List<ZoneStatus>,
+        followingZoneState: ZoneStatus,
+        followingSignalState: SigState?,
+        followingSignalSettings: SigSettings?,
+    ): Map<LogicalSignalId, SigState> {
+        val fullPath = trainPath.getLegacyBlockPath()
+        val routes = trainPath.getLegacyRoutePath()
+        val evaluatedPathEnd = fullPath.size
+        return evaluate(
+            infra,
+            loadedSignalInfra,
+            blocks,
+            fullPath,
+            routes,
+            evaluatedPathEnd,
+            zoneStates,
+            followingZoneState,
+            followingSignalState,
+            followingSignalSettings,
+        )
+    }
+
+    override fun evaluate(
+        infra: RawInfra,
+        loadedSignalInfra: LoadedSignalInfra,
+        blocks: BlockInfra,
         fullPath: List<BlockId>,
         routes: List<RouteId>,
         evaluatedPathEnd: Int,
@@ -169,6 +198,7 @@ class SignalingSimulatorImpl(override val sigModuleManager: SigSystemManager) : 
         followingSignalState: SigState?,
         followingSignalSettings: SigSettings?,
     ): Map<LogicalSignalId, SigState> {
+        // TODO path migration: remove this overload
         assert(evaluatedPathEnd > 0)
         assert(evaluatedPathEnd <= fullPath.size)
         val routeSet by lazy { routes.toSet() }

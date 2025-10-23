@@ -1,5 +1,6 @@
 package fr.sncf.osrd.signaling.bal
 
+import fr.sncf.osrd.path.implementations.buildTrainPathFromBlocks
 import fr.sncf.osrd.railjson.builder.begin
 import fr.sncf.osrd.railjson.builder.buildParseRJSInfra
 import fr.sncf.osrd.railjson.builder.end
@@ -8,11 +9,9 @@ import fr.sncf.osrd.signaling.ZoneStatus
 import fr.sncf.osrd.signaling.impl.SigSystemManagerImpl
 import fr.sncf.osrd.signaling.impl.SignalingSimulatorImpl
 import fr.sncf.osrd.signaling.tvm300.TVM300
-import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.LogicalSignalId
 import fr.sncf.osrd.sim_infra.api.SigState
 import fr.sncf.osrd.sim_infra.api.increasing
-import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -69,19 +68,21 @@ class TestTVM300toBAL {
         val simulator = SignalingSimulatorImpl(sigSystemManager)
         val loadedSignalInfra = simulator.loadSignals(infra)
         val blockInfra = simulator.buildBlocks(infra, loadedSignalInfra)
-        val fullPath = mutableStaticIdxArrayListOf<Block>()
-        fullPath.add(blockInfra.getBlocksStartingAtDetector(detectorW.increasing).first())
-        fullPath.add(blockInfra.getBlocksStartingAtDetector(detectorX.increasing).first())
-        fullPath.add(blockInfra.getBlocksStartingAtDetector(detectorY.increasing).first())
+        val blocks =
+            listOf(
+                blockInfra.getBlocksStartingAtDetector(detectorW.increasing).first(),
+                blockInfra.getBlocksStartingAtDetector(detectorX.increasing).first(),
+                blockInfra.getBlocksStartingAtDetector(detectorY.increasing).first(),
+            )
         val zoneStates = mutableListOf(ZoneStatus.CLEAR, ZoneStatus.CLEAR, ZoneStatus.INCOMPATIBLE)
+        val trainPath =
+            buildTrainPathFromBlocks(infra, blockInfra, blocks, routeNames = listOf("W-Z"))
         val res =
             simulator.evaluate(
                 infra,
                 loadedSignalInfra,
                 blockInfra,
-                fullPath,
-                listOf(), // we don't use parameters here
-                fullPath.size,
+                trainPath,
                 zoneStates,
                 ZoneStatus.INCOMPATIBLE,
             )

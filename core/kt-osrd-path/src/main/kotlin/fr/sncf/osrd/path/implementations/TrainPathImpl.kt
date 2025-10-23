@@ -39,6 +39,10 @@ data class TrainPathNoBacktrack(
         mapSubObjects(routes, rawInfra::getRoutePath, rawInfra::getZonePathLength)
     }
 
+    private val cachedZoneRanges by lazy {
+        cachedZonePaths.map { it.mapValue<ZoneId, Zone>(rawInfra.getZonePathZone(it.value)) }
+    }
+
     init {
         // The sanity checks here are quite exhaustive and might be expensive to compute.
         // Once the path types are stable, we can remove some of the tests.
@@ -92,6 +96,8 @@ data class TrainPathNoBacktrack(
     override fun getChunks(): List<DirChunkRange> = chunks
 
     override fun getZonePaths(): List<ZonePathRange> = cachedZonePaths
+
+    override fun getZoneRanges(): List<ZoneRange> = cachedZoneRanges
 
     override val length: Double
         get() = pathProperties.getLength().meters

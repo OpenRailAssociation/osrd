@@ -1,5 +1,6 @@
 package fr.sncf.osrd.signaling
 
+import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.sim_infra.api.*
 
 /*
@@ -68,6 +69,17 @@ interface SignalingSimulator {
         fullPath: List<BlockId>,
         routes: List<RouteId>,
         evaluatedPathEnd: Int,
+        zoneStates: List<ZoneStatus>,
+        followingZoneState: ZoneStatus,
+        followingSignalState: SigState? = null,
+        followingSignalSettings: SigSettings? = null,
+    ): Map<LogicalSignalId, SigState>
+
+    fun evaluate(
+        infra: RawInfra,
+        loadedSignalInfra: LoadedSignalInfra,
+        blocks: BlockInfra,
+        trainPath: TrainPath,
         zoneStates: List<ZoneStatus>,
         followingZoneState: ZoneStatus,
         followingSignalState: SigState? = null,

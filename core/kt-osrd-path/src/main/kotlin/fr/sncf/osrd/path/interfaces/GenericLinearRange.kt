@@ -1,6 +1,8 @@
 package fr.sncf.osrd.path.interfaces
 
 import fr.sncf.osrd.sim_infra.api.Block
+import fr.sncf.osrd.sim_infra.api.BlockInfra
+import fr.sncf.osrd.sim_infra.api.RawInfra
 import fr.sncf.osrd.sim_infra.api.Route
 import fr.sncf.osrd.sim_infra.api.TrackChunk
 import fr.sncf.osrd.sim_infra.api.Zone
@@ -169,4 +171,20 @@ fun <ValueType, OffsetType, SubObjectType, SubObjectOffset> mapSubObjects(
         res.addAll(subRanges)
     }
     return mergeLinearRanges(res)
+}
+
+// Some extension functions to make `getObjectAbsolutePathEnd` calls less verbose. We could instead
+// put the object length in the range itself, but that would waste some memory for a value that's
+// rarely accessed in practice.
+
+fun ZonePathRange.getZonePathAbsolutePathEnd(infra: RawInfra): Offset<TrainPath> {
+    return getObjectAbsolutePathEnd(infra.getZonePathLength(value))
+}
+
+fun RouteRange.getRouteAbsolutePathEnd(infra: RawInfra): Offset<TrainPath> {
+    return getObjectAbsolutePathEnd(infra.getRouteLength(value))
+}
+
+fun BlockRange.getBlockAbsolutePathEnd(blockInfra: BlockInfra): Offset<TrainPath> {
+    return getObjectAbsolutePathEnd(blockInfra.getBlockLength(value))
 }
