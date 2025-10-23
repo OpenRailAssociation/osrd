@@ -234,10 +234,7 @@ class STDCMEndpoint(
             runScheduleMetadataExtractor(
                 path.envelope,
                 path.trainPath,
-                path.chunkPath,
                 infra,
-                path.routePath,
-                path.blocks.ranges.map { it.edge },
                 rollingStock,
                 scheduleItems,
                 listOf(),

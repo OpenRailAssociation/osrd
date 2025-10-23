@@ -5,6 +5,7 @@ import fr.sncf.osrd.envelope_sim.EnvelopeSimContext
 import fr.sncf.osrd.path.interfaces.DirChunkRange
 import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.path.interfaces.TravelledPath
+import fr.sncf.osrd.path.interfaces.getBlockAbsolutePathEnd
 import fr.sncf.osrd.signaling.etcs_level2.ETCS_LEVEL2
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra.utils.getNextTrackSections
@@ -67,9 +68,7 @@ fun buildETCSBlockDetectors(infra: FullInfra, trainPath: TrainPath): List<Offset
         if (isETCSBlock(block, infra)) {
             // Add entry and exit detectors
             etcsBlockDetectors.add(blockRange.getObjectAbsolutePathStart())
-            etcsBlockDetectors.add(
-                blockRange.getObjectAbsolutePathEnd(infra.blockInfra.getBlockLength(block))
-            )
+            etcsBlockDetectors.add(blockRange.getBlockAbsolutePathEnd(infra.blockInfra))
         }
     }
     return etcsBlockDetectors.filter { it.distance >= Distance.ZERO }

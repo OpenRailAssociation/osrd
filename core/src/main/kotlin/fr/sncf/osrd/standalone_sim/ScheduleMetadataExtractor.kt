@@ -15,16 +15,20 @@ import fr.sncf.osrd.envelope_sim.etcs.BrakingType.IND
 import fr.sncf.osrd.envelope_sim.etcs.ETCSBrakingSimulator
 import fr.sncf.osrd.envelope_sim.etcs.ETCSBrakingSimulatorImpl
 import fr.sncf.osrd.envelope_sim.etcs.EoaType
-import fr.sncf.osrd.path.implementations.ChunkPath
 import fr.sncf.osrd.path.interfaces.BlockPath
+import fr.sncf.osrd.path.interfaces.BlockRange
+import fr.sncf.osrd.path.interfaces.RouteRange
 import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.path.interfaces.TravelledPath
+import fr.sncf.osrd.path.interfaces.getLegacyBlockPath
+import fr.sncf.osrd.path.interfaces.getLegacyChunkPath
+import fr.sncf.osrd.path.interfaces.getLegacyRoutePath
+import fr.sncf.osrd.path.interfaces.getZonePathAbsolutePathEnd
 import fr.sncf.osrd.signaling.SigSystemManager
 import fr.sncf.osrd.signaling.SignalingTrainState
 import fr.sncf.osrd.signaling.ZoneStatus
 import fr.sncf.osrd.signaling.etcs_level2.ETCS_LEVEL2
 import fr.sncf.osrd.sim_infra.api.*
-import fr.sncf.osrd.sim_infra.utils.routesOnBlock
 import fr.sncf.osrd.standalone_sim.result.ResultPosition
 import fr.sncf.osrd.standalone_sim.result.ResultSpeed
 import fr.sncf.osrd.train.RollingStock
@@ -47,50 +51,11 @@ class PathOffsetBuilder(val startOffset: Distance) {
     }
 }
 
-// For a path (sequence of blocks and matching sequence of routes)
-// Wrap information about a block, to be used in a lookup table (sorted by block index in
-// block-path).
-private data class BlockInfo(
-    val block: BlockId,
-    // the index of the route in the path
-    val routeIndex: Int,
-)
-
-private fun buildBlockInfoTable(
-    blockInfra: BlockInfra,
-    rawInfra: RawInfra,
-    routePath: List<RouteId>,
-    blockPath: List<BlockId>,
-): List<BlockInfo> {
-    val detailedBlocks = mutableListOf<BlockInfo>()
-
-    var currentRouteIdx = 0
-
-    for (blockId in blockPath) {
-
-        val blockRoutes = blockInfra.routesOnBlock(rawInfra, blockId)
-        if (!blockRoutes.contains(routePath[currentRouteIdx])) {
-            currentRouteIdx++
-        }
-        assert(currentRouteIdx < routePath.size)
-        val routeId = routePath[currentRouteIdx]
-        assert(blockRoutes.contains(routeId))
-
-        val element = BlockInfo(blockId, currentRouteIdx)
-        detailedBlocks.add(element)
-    }
-
-    return detailedBlocks
-}
-
 /** Use an already computed envelope to extract various metadata about a trip. */
 fun runScheduleMetadataExtractor(
     envelope: Envelope,
     trainPath: TrainPath,
-    chunkPath: ChunkPath,
     fullInfra: FullInfra,
-    routePath: List<RouteId>,
-    blockPath: List<BlockId>,
     rollingStock: RollingStock,
     schedule: List<SimulationScheduleItem>,
     pathItemPositions: List<Offset<TravelledPath>>,
@@ -119,23 +84,25 @@ fun runScheduleMetadataExtractor(
     }
 
     // Compute signal updates
-    val startOffset = trainPathBlockOffset(rawInfra, blockInfra, blockPath, chunkPath).distance
+    // TODO path migration: remove this convertor (and this whole block).
+    //  That requires migrating IncrementalPath.
+    val startOffset =
+        trainPathBlockOffset(
+                rawInfra,
+                blockInfra,
+                trainPath.getLegacyBlockPath(),
+                trainPath.getLegacyChunkPath(),
+            )
+            .distance
     val pathOffsetBuilder = PathOffsetBuilder(startOffset)
     var blockPathLength = 0.meters
-    for (block in blockPath) blockPathLength += blockInfra.getBlockLength(block).distance
+    for (block in trainPath.getLegacyBlockPath()) blockPathLength +=
+        blockInfra.getBlockLength(block).distance
     val endOffset = blockPathLength - startOffset - (envelope.endPos - envelope.beginPos).meters
 
-    val pathSignals =
-        pathSignalsInEnvelope(pathOffsetBuilder, blockPath, blockInfra, envelopeWithStops)
+    val pathSignals = pathSignalsInEnvelope(trainPath, blockInfra, envelopeWithStops)
     val zoneOccupationChangeEvents =
-        zoneOccupationChangeEvents(
-            pathOffsetBuilder,
-            blockPath,
-            blockInfra,
-            envelopeWithStops,
-            rawInfra,
-            trainLength,
-        )
+        zoneOccupationChangeEvents(trainPath, envelopeWithStops, trainLength)
 
     val zoneUpdates =
         zoneOccupationChangeEvents.map {
@@ -149,6 +116,7 @@ fun runScheduleMetadataExtractor(
     val fragmentStops =
         pathStops.map {
             // All blocks are in the fragment, Offset<Path> == Offset<FragmentBlocks> here
+            // TODO path migration: remove this weird conversion once IncrementalPath is migrated
             val fragmentOffset = it.pathOffset.cast<FragmentBlocks>()
             FragmentStop(fragmentOffset, it.receptionSignal)
         }
@@ -243,8 +211,8 @@ fun runScheduleMetadataExtractor(
         )
     incrementalPath.extend(
         PathFragment(
-            routePath,
-            blockPath,
+            trainPath.getLegacyRoutePath(),
+            trainPath.getLegacyBlockPath(),
             fragmentStops,
             containsStart = true,
             containsEnd = true,
@@ -259,8 +227,7 @@ fun runScheduleMetadataExtractor(
         routingRequirements(
             pathOffsetBuilder,
             fullInfra,
-            routePath,
-            blockPath,
+            trainPath,
             closedSignalStops,
             envelopeWithStops,
             context,
@@ -328,26 +295,10 @@ fun makeSimpleReportTrain(
     )
 }
 
-fun getBlockOffsets(
-    blockPath: List<BlockId>,
-    pathOffsetBuilder: PathOffsetBuilder,
-    blockInfra: BlockInfra,
-): OffsetArray<TravelledPath> {
-    val blockOffsets = MutableOffsetArray(blockPath.size) { Offset.zero<TravelledPath>() }
-    var curOffset = Offset.zero<BlockPath>()
-    for (i in 0 until blockPath.size) {
-        blockOffsets[i] = pathOffsetBuilder.toTravelledPath(curOffset)
-        val blockLength = blockInfra.getBlockLength(blockPath[i])
-        curOffset += blockLength.distance
-    }
-    return blockOffsets.immutableCopyOf()
-}
-
 fun routingRequirements(
     pathOffsetBuilder: PathOffsetBuilder,
     fullInfra: FullInfra,
-    routePath: List<RouteId>,
-    blockPath: List<BlockId>,
+    trainPath: TrainPath,
     sortedClosedSignalStops: List<PathStop>,
     envelope: EnvelopeInterpolate,
     // TODO: Required for ETCS (STDCM doesn't provide it currently, will have to eventually)
@@ -357,71 +308,57 @@ fun routingRequirements(
     val rawInfra = fullInfra.rawInfra
     val blockInfra = fullInfra.blockInfra
 
-    // count the number of zones in the path
-    val zoneCount = routePath.sumOf { rawInfra.getRoutePath(it).size }
-
-    // recover blocks info from the route and block paths into a lookup table
-    val blockInfoTable = buildBlockInfoTable(blockInfra, rawInfra, routePath, blockPath)
-
-    // fill a lookup table mapping route indices to the index of the route's first block
-    val routeBlockBounds = IntArray(routePath.size + 1)
-    var lastRoute = -1
-    for (blockIndex in blockInfoTable.indices) {
-        val block = blockInfoTable[blockIndex]
-        if (block.routeIndex == lastRoute) continue
-        lastRoute = block.routeIndex
-        routeBlockBounds[lastRoute] = blockIndex
-    }
-    routeBlockBounds[routePath.size] = blockInfoTable.size
-
-    val blockOffsets = getBlockOffsets(blockPath, pathOffsetBuilder, blockInfra)
+    val blockRanges = trainPath.getBlocks()
 
     // compute the signaling train state for each signal
     data class SignalingTrainStateImpl(override val speed: Speed) : SignalingTrainState
 
     val signalingTrainStates = mutableMapOf<LogicalSignalId, SignalingTrainState>()
-    for (i in 0 until blockPath.size) {
-        val block = blockPath[i]
-        val blockOffset = blockOffsets[i]
-        val blockEndOffset =
-            Offset.min(
-                Offset(envelope.endPos.meters),
-                blockOffset + blockInfra.getBlockLength(block).distance,
-            )
-        val signals = blockInfra.getBlockSignals(blockPath[i])
+    for (blockRange in blockRanges) {
+        val block = blockRange.value
+        val signals = blockInfra.getBlockSignals(block)
+        val signalPositions = blockInfra.getSignalsPositions(block)
         val consideredSignals =
             if (blockInfra.blockStopAtBufferStop(block)) signals.size else signals.size - 1
         for (signalIndex in 0 until consideredSignals) {
             val signal = signals[signalIndex]
-            val signalOffset = blockInfra.getSignalsPositions(block)[signalIndex].distance
-            val signalPathOffset = blockOffset + signalOffset
+            val signalOffset = signalPositions[signalIndex]
+            val signalPathOffset = blockRange.offsetToTrainPath(signalOffset)
             val sightDistance = rawInfra.getSignalSightDistance(rawInfra.getPhysicalSignal(signal))
             val sightOffset = Offset.max(Offset.zero(), signalPathOffset - sightDistance)
-            if (sightOffset >= blockEndOffset) {
+            if (sightOffset >= blockRange.pathEnd) {
                 val state = SignalingTrainStateImpl(speed = 0.0.metersPerSecond)
                 signalingTrainStates[signal] = state
                 continue
             }
             val maxSpeed =
-                envelope.maxSpeedInRange(sightOffset.meters, blockEndOffset.meters).metersPerSecond
+                envelope
+                    .maxSpeedInRange(sightOffset.meters, blockRange.pathEnd.meters)
+                    .metersPerSecond
             val state = SignalingTrainStateImpl(speed = maxSpeed)
             signalingTrainStates[signal] = state
         }
     }
 
-    fun findRouteSetDeadline(routeIndex: Int): TimeDelta? {
-        if (routeIndex == 0) {
+    fun findRouteSetDeadline(routeRange: RouteRange): TimeDelta? {
+        if (routeRange.pathBegin == Offset.zero<TrainPath>()) {
             // TODO: this isn't quite true when the path starts with a stop
+            //  Actually, there should be no routing requirement at all on the first route (when
+            //  the train doesn't see any route entry signal). But the implications are weird and
+            //  counterintuitive.
             return TimeDelta.ZERO
         }
 
-        // find the first block of the route
-        val routeStartBlockIndex = routeBlockBounds[routeIndex]
-        val firstRouteBlock = blockInfoTable[routeStartBlockIndex].block
+        val firstBlockRange =
+            trainPath
+                .getBlocks()
+                .withIndex()
+                .first { it.value.pathBegin >= routeRange.pathBegin }
+                .value
 
         // find the entry signal for this route. if there is no entry signal,
         // the set deadline is the start of the simulation
-        if (blockInfra.blockStartAtBufferStop(firstRouteBlock)) return TimeDelta.ZERO
+        if (blockInfra.blockStartAtBufferStop(firstBlockRange.value)) return TimeDelta.ZERO
         val etcsSimulator = context?.let { ETCSBrakingSimulatorImpl(it) }
 
         val singleEnvelope = envelope.rawEnvelopeIfSingle
@@ -432,15 +369,11 @@ fun routingRequirements(
         val routeCriticalPos =
             getRouteCriticalPos(
                 fullInfra,
-                routePath,
-                blockPath,
-                blockOffsets,
-                zoneCount,
+                trainPath,
+                firstBlockRange,
                 signalingTrainStates,
                 singleEnvelope!!,
                 etcsSimulator,
-                routeStartBlockIndex,
-                firstRouteBlock,
             )
 
         if (routeCriticalPos == null) return null
@@ -451,8 +384,9 @@ fun routingRequirements(
         // the entry signal of the route (both position and time, as there is a time margin) in this
         // case, just move the route critical position to the stop
         val entrySignalOffset =
-            blockOffsets[routeStartBlockIndex] +
-                blockInfra.getSignalsPositions(firstRouteBlock).first().distance
+            firstBlockRange.offsetToTrainPath(
+                blockInfra.getSignalsPositions(firstBlockRange.value).first()
+            )
         for (stop in sortedClosedSignalStops.reversed()) {
             val stopTravelledOffset = pathOffsetBuilder.toTravelledPath(stop.pathOffset)
             if (stopTravelledOffset <= entrySignalOffset) {
@@ -472,29 +406,28 @@ fun routingRequirements(
     }
 
     val res = mutableListOf<RoutingRequirement>()
-    var routePathOffset = Offset.zero<BlockPath>()
     // for all routes, generate requirements
-    for (routeIndex in 0 until routePath.size) {
+    for (routeRange in trainPath.getRoutes()) {
         // start out by figuring out when the route needs to be set
         // when the route is set, signaling can allow the train to proceed
-        val routeSetDeadline = findRouteSetDeadline(routeIndex) ?: continue
+        val routeSetDeadline = findRouteSetDeadline(routeRange) ?: continue
 
         // find the release time of the last zone of each release group
-        val route = routePath[routeIndex]
+        val route = routeRange.value
         val routeZonePath = rawInfra.getRoutePath(route)
+        val zoneRanges = routeRange.mapSubObject(routeZonePath, rawInfra::getZonePathLength)
         val zoneRequirements = mutableListOf<RoutingZoneRequirement>()
-        for (zonePathIndex in 0 until routeZonePath.size) {
-            val zonePath = routeZonePath[zonePathIndex]
-            routePathOffset += rawInfra.getZonePathLength(zonePath).distance
+        for (zoneRange in zoneRanges) {
+            val zonePath = zoneRange.value
             // the distance to the end of the zone from the start of the train path
-            val travelPathOffset = pathOffsetBuilder.toTravelledPath(routePathOffset)
+            val zoneEndOffset = zoneRange.getZonePathAbsolutePathEnd(rawInfra)
             // the point in the train path at which the zone is released
-            val exitCriticalPos = travelPathOffset + rollingStock.length.meters
+            val exitCriticalPos = zoneEndOffset + rollingStock.length.meters
             // if the zones are never occupied by the train, no requirement is emitted
             // Note: the train is considered starting from a "portal", so "growing" from its start
             // offset
-            if (travelPathOffset < Offset.zero()) {
-                assert(routeIndex == 0)
+            if (zoneEndOffset < Offset.zero()) {
+                assert(routeRange.pathBegin == Offset.zero<TrainPath>())
                 continue
             }
             val exitCriticalTime =
@@ -508,20 +441,16 @@ fun routingRequirements(
 
 private fun getRouteCriticalPos(
     fullInfra: FullInfra,
-    routePath: List<RouteId>,
-    blockPath: List<BlockId>,
-    blockOffsets: OffsetArray<TravelledPath>,
-    zoneCount: Int,
+    trainPath: TrainPath,
+    firstBlockRange: BlockRange,
     signalingTrainStates: Map<LogicalSignalId, SignalingTrainState>,
     envelope: Envelope,
     etcsSimulator: ETCSBrakingSimulator?,
-    routeStartBlockIndex: Int,
-    firstRouteBlock: BlockId,
 ): Offset<TravelledPath>? {
     val blockInfra = fullInfra.blockInfra
     val simulator = fullInfra.signalingSimulator
 
-    val sigSystemId = blockInfra.getBlockSignalingSystem(firstRouteBlock)
+    val sigSystemId = blockInfra.getBlockSignalingSystem(firstBlockRange.value)
     val isCurveBased = simulator.sigModuleManager.isCurveBased(sigSystemId)
     return if (isCurveBased) {
         if (
@@ -533,40 +462,24 @@ private fun getRouteCriticalPos(
                     "ETCS_LEVEL2 and through StandaloneSimulation"
             )
         }
-        getEtcsRouteCriticalPos(
-            blockInfra,
-            blockOffsets,
-            envelope,
-            etcsSimulator,
-            routeStartBlockIndex,
-            firstRouteBlock,
-        )
+        getEtcsRouteCriticalPos(blockInfra, firstBlockRange, envelope, etcsSimulator)
     } else {
-        getSightRouteCriticalPos(
-            fullInfra,
-            routePath,
-            blockPath,
-            blockOffsets,
-            signalingTrainStates,
-            zoneCount,
-            routeStartBlockIndex,
-        )
+        getSightRouteCriticalPos(fullInfra, trainPath, firstBlockRange, signalingTrainStates)
     }
 }
 
 private fun getEtcsRouteCriticalPos(
     blockInfra: BlockInfra,
-    blockOffsets: OffsetArray<TravelledPath>,
+    firstBlockRange: BlockRange,
     envelope: Envelope,
     etcsSimulator: ETCSBrakingSimulator,
-    routeStartBlockIndex: Int,
-    firstRouteBlock: BlockId,
 ): Offset<TravelledPath> {
 
     // The braking curve targets the entry signal of the route's first block
     val signalOffset =
-        blockOffsets[routeStartBlockIndex] +
-            blockInfra.getSignalsPositions(firstRouteBlock).first().distance
+        firstBlockRange.offsetToTrainPath(
+            blockInfra.getSignalsPositions(firstBlockRange.value).first()
+        )
 
     val eoa =
         etcsSimulator
@@ -592,12 +505,9 @@ private fun getEtcsRouteCriticalPos(
 
 private fun getSightRouteCriticalPos(
     fullInfra: FullInfra,
-    routePath: List<RouteId>,
-    blockPath: List<BlockId>,
-    blockOffsets: OffsetArray<TravelledPath>,
+    trainPath: TrainPath,
+    firstBlockRange: BlockRange,
     signalingTrainStates: Map<LogicalSignalId, SignalingTrainState>,
-    zoneCount: Int,
-    routeStartBlockIndex: Int,
 ): Offset<TravelledPath>? {
     val simulator = fullInfra.signalingSimulator
     val rawInfra = fullInfra.rawInfra
@@ -606,7 +516,12 @@ private fun getSightRouteCriticalPos(
 
     // simulate signaling on the train's path with all zones free,
     // until the start of the route, which is INCOMPATIBLE
+    val zoneCount = trainPath.getZoneRanges().size
     val zoneStates = MutableList(zoneCount) { ZoneStatus.CLEAR }
+
+    // We only want the path up to the route offset of the given route
+    val subTrainPath =
+        trainPath.subPath(Offset.zero(), firstBlockRange.getObjectAbsolutePathStart())
 
     // TODO: the complexity of finding route set deadlines is currently n^2 of the
     //   number of blocks in the path. it can be improved upon by only simulating blocks
@@ -616,9 +531,7 @@ private fun getSightRouteCriticalPos(
             rawInfra,
             loadedSignalInfra,
             blockInfra,
-            blockPath,
-            routePath,
-            routeStartBlockIndex,
+            subTrainPath,
             zoneStates,
             ZoneStatus.INCOMPATIBLE,
         )
@@ -631,21 +544,19 @@ private fun getSightRouteCriticalPos(
             blockInfra,
             simulator.sigModuleManager,
             simulatedSignalStates,
-            blockPath,
-            blockOffsets,
-            routeStartBlockIndex,
+            subTrainPath,
             signalingTrainStates,
         ) ?: return null
-    val limitingBlock = blockPath[limitingSignalSpec.blockIndex]
-    val signal = blockInfra.getBlockSignals(limitingBlock)[limitingSignalSpec.signalIndex]
+    val limitingBlockRange = subTrainPath.getBlocks()[limitingSignalSpec.blockIndex]
+    val signal =
+        blockInfra.getBlockSignals(limitingBlockRange.value)[limitingSignalSpec.signalIndex]
     val limitingSignalOffsetInBlock =
-        blockInfra.getSignalsPositions(limitingBlock)[limitingSignalSpec.signalIndex].distance
+        blockInfra.getSignalsPositions(limitingBlockRange.value)[limitingSignalSpec.signalIndex]
 
-    val limitingBlockOffset = blockOffsets[limitingSignalSpec.blockIndex]
     val signalSightDistance = rawInfra.getSignalSightDistance(rawInfra.getPhysicalSignal(signal))
 
     // find the location at which establishing the route becomes necessary
-    return limitingBlockOffset + limitingSignalOffsetInBlock - signalSightDistance
+    return limitingBlockRange.offsetToTrainPath(limitingSignalOffsetInBlock - signalSightDistance)
 }
 
 /** Create a zone requirement, which embeds all needed properties for conflict detection */
@@ -677,24 +588,23 @@ private fun findLimitingSignal(
     blockInfra: BlockInfra,
     sigSystemManager: SigSystemManager,
     simulatedSignalStates: Map<LogicalSignalId, SigState>,
-    blockPath: List<BlockId>,
-    blockOffsets: OffsetArray<TravelledPath>,
-    routeStartBlockIndex: Int,
+    trainPath: TrainPath,
     signalingTrainStates: Map<LogicalSignalId, SignalingTrainState>,
 ): LimitingSignal? {
     var lastSignalBlockIndex = -1
     var lastSignalIndex = -1
-    for (curBlockIndex in (0 until routeStartBlockIndex).reversed()) {
-        val curBlock = blockPath[curBlockIndex]
+    for ((curBlockIndex, blockRange) in trainPath.getBlocks().withIndex().reversed()) {
+        if (blockRange.isSinglePoint()) continue
+        val curBlock = blockRange.value
         val blockSignals = blockInfra.getBlockSignals(curBlock)
+        val blockSignalOffsets = blockInfra.getSignalsPositions(curBlock)
         val signalIndexStart = if (curBlockIndex == 0) 0 else 1
         for (curSignalIndex in (signalIndexStart until blockSignals.size).reversed()) {
             val signal = blockSignals[curSignalIndex]
 
             // ignore unseen signals before the start of the travelled path
             val signalTravelledOffset =
-                blockOffsets[curBlockIndex] +
-                    blockInfra.getSignalsPositions(curBlock)[curSignalIndex].distance
+                blockRange.offsetToTrainPath(blockSignalOffsets[curSignalIndex])
             if (signalTravelledOffset < Offset.zero()) break
 
             val ssid = loadedSignalInfra.getSignalingSystem(signal)
@@ -706,64 +616,40 @@ private fun findLimitingSignal(
         }
     }
     // Limiting signal not found
-    if (lastSignalBlockIndex == -1 || lastSignalIndex == -1) return null
+    if (lastSignalBlockIndex == -1) return null
     return LimitingSignal(lastSignalBlockIndex, lastSignalIndex)
 }
 
 data class ZoneOccupationChangeEvent(
     val time: TimeDelta,
     val offset: Offset<TravelledPath>,
-    val zoneIndexInPath: Int,
     val isEntry: Boolean,
-    val blockIdx: Int,
     val zone: ZoneId,
 )
 
 fun zoneOccupationChangeEvents(
-    pathOffsetBuilder: PathOffsetBuilder,
-    blockPath: List<BlockId>,
-    blockInfra: BlockInfra,
+    trainPath: TrainPath,
     envelope: EnvelopeTimeInterpolate,
-    rawInfra: RawInfra,
     trainLength: Distance,
 ): MutableList<ZoneOccupationChangeEvent> {
-    var zoneCount = 0
-    var currentOffset = pathOffsetBuilder.toTravelledPath(Offset.zero())
     val zoneOccupationChangeEvents = mutableListOf<ZoneOccupationChangeEvent>()
-    for ((blockIdx, block) in blockPath.withIndex()) {
-        for (zonePath in blockInfra.getBlockZonePaths(block)) {
-            // Compute occupation change event
-            if (currentOffset.distance > envelope.endPos.meters) break
-            val entryOffset = Offset.max(Offset.zero(), currentOffset)
-            val entryTime = envelope.interpolateArrivalAtUS(entryOffset.meters).microseconds
-            val zone = rawInfra.getNextZone(rawInfra.getZonePathEntry(zonePath))!!
-            zoneOccupationChangeEvents.add(
-                ZoneOccupationChangeEvent(entryTime, entryOffset, zoneCount, true, blockIdx, zone)
-            )
-            currentOffset += rawInfra.getZonePathLength(zonePath).distance
-            if (currentOffset.distance > envelope.endPos.meters) {
-                zoneCount++
-                break
-            }
-            val exitOffset = Offset.max(Offset.zero(), currentOffset + trainLength)
-            if (exitOffset.distance <= envelope.endPos.meters) {
-                val exitTime = envelope.interpolateDepartureFromUS(exitOffset.meters).microseconds
-                zoneOccupationChangeEvents.add(
-                    ZoneOccupationChangeEvent(
-                        exitTime,
-                        exitOffset,
-                        zoneCount,
-                        false,
-                        blockIdx,
-                        zone,
-                    )
-                )
-            }
-            zoneCount++
-        }
+    for (zoneRange in trainPath.getZoneRanges()) {
+        val entryOffset = zoneRange.pathBegin
+        val exitOffset = zoneRange.pathEnd + trainLength
+        val entryTime = envelope.interpolateArrivalAtClamp(entryOffset.meters).seconds
+        val exitTime = envelope.interpolateDepartureFromClamp(exitOffset.meters).seconds
+
+        // Avoid generating entry + exit at the same time
+        if (exitTime <= entryTime) continue
+
+        zoneOccupationChangeEvents.add(
+            ZoneOccupationChangeEvent(entryTime, entryOffset, isEntry = true, zoneRange.value)
+        )
+        zoneOccupationChangeEvents.add(
+            ZoneOccupationChangeEvent(exitTime, exitOffset, isEntry = false, zoneRange.value)
+        )
     }
     zoneOccupationChangeEvents.sortBy { it.time }
-    // TODO: verify we don't generate entry and exits at the same time (especially at 0)
 
     return zoneOccupationChangeEvents
 }
@@ -776,26 +662,20 @@ data class PathSignal(
 )
 
 // Returns all the signals on the path
-fun pathSignals(
-    pathOffsetBuilder: PathOffsetBuilder,
-    blockPath: List<BlockId>,
-    blockInfra: BlockInfra,
-): List<PathSignal> {
+fun pathSignals(trainPath: TrainPath, blockInfra: BlockInfra): List<PathSignal> {
     val pathSignals = mutableListOf<PathSignal>()
-    var currentOffset = pathOffsetBuilder.toTravelledPath(Offset.zero())
-    for ((blockIdx, block) in blockPath.withIndex()) {
+    for ((blockIndex, blockRange) in trainPath.getBlocks().withIndex()) {
+        val block = blockRange.value
         val blockSignals = blockInfra.getBlockSignals(block)
         val blockSignalPositions = blockInfra.getSignalsPositions(block)
         for (signalIndex in 0 until blockSignals.size) {
-            // as consecutive blocks share a signal, skip the first signal of each block, except the
-            // first
-            // this way, each signal is only iterated on once
-            if (signalIndex == 0 && blockIdx != 0) continue
+            // As consecutive blocks share a signal, skip the first signal of each block, except the
+            // first. This way, each signal is only iterated on once
+            if (signalIndex == 0 && blockIndex != 0) continue
             val signal = blockSignals[signalIndex]
-            val position = blockSignalPositions[signalIndex].distance
-            pathSignals.add(PathSignal(signal, currentOffset + position, blockIdx))
+            val position = blockSignalPositions[signalIndex]
+            pathSignals.add(PathSignal(signal, blockRange.offsetToTrainPath(position), blockIndex))
         }
-        currentOffset += blockInfra.getBlockLength(block).distance
     }
     return pathSignals
 }
@@ -804,28 +684,20 @@ fun pathSignals(
 // The reason being that even if a train see a red signal, it won't
 // matter since the train was going to stop before it anyway
 fun pathSignalsInEnvelope(
-    pathOffsetBuilder: PathOffsetBuilder,
-    blockPath: List<BlockId>,
+    trainPath: TrainPath,
     blockInfra: BlockInfra,
     envelope: EnvelopeTimeInterpolate,
 ): List<PathSignal> {
-    return pathSignalsInRange(
-        pathOffsetBuilder,
-        blockPath,
-        blockInfra,
-        0.meters,
-        envelope.endPos.meters,
-    )
+    return pathSignalsInRange(trainPath, blockInfra, 0.meters, envelope.endPos.meters)
 }
 
 fun pathSignalsInRange(
-    pathOffsetBuilder: PathOffsetBuilder,
-    blockPath: List<BlockId>,
+    trainPath: TrainPath,
     blockInfra: BlockInfra,
     rangeStart: Distance,
     rangeEnd: Distance,
 ): List<PathSignal> {
-    return pathSignals(pathOffsetBuilder, blockPath, blockInfra).filter { signal ->
+    return pathSignals(trainPath, blockInfra).filter { signal ->
         signal.pathOffset.distance in rangeStart..rangeEnd
     }
 }

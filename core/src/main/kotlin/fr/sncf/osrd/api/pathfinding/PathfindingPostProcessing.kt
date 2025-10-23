@@ -8,7 +8,6 @@ import fr.sncf.osrd.path.implementations.buildTrainPathFromBlockRanges
 import fr.sncf.osrd.path.interfaces.BlockPath
 import fr.sncf.osrd.path.interfaces.BlockRange
 import fr.sncf.osrd.path.interfaces.TravelledPath
-import fr.sncf.osrd.path.interfaces.getLegacyBlockPath
 import fr.sncf.osrd.path.interfaces.toJsonTrainPath
 import fr.sncf.osrd.pathfinding.Pathfinding
 import fr.sncf.osrd.pathfinding.Pathfinding.EdgeLocation
@@ -76,11 +75,13 @@ private fun validatePathfindingResponse(
     req: PathfindingBlockRequest,
     res: PathfindingBlockResponse,
 ) {
+    // TODO path migrations: some of those checks won't be true anymore with backtracks
     if (res !is PathfindingBlockSuccess) return
 
     val trainPath = res.path.toTrainPath(infra.rawInfra, infra.blockInfra, null)
-    val blocks = trainPath.getLegacyBlockPath()
-    for ((i, block) in blocks.withIndex()) {
+    val blocks = trainPath.getBlocks()
+    for ((i, blockRange) in blocks.withIndex()) {
+        val block = blockRange.value
         val stopAtBufferStop = infra.blockInfra.blockStopAtBufferStop(block)
         val isLastBlock = i == blocks.size - 1
         if (stopAtBufferStop && !isLastBlock) {

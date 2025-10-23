@@ -25,9 +25,6 @@ import fr.sncf.osrd.envelope_sim_infra.HasMissingSpeedTag
 import fr.sncf.osrd.envelope_sim_infra.computeMRSP
 import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.path.interfaces.TravelledPath
-import fr.sncf.osrd.path.interfaces.getLegacyBlockPath
-import fr.sncf.osrd.path.interfaces.getLegacyChunkPath
-import fr.sncf.osrd.path.interfaces.getLegacyRoutePath
 import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowanceDistribution
 import fr.sncf.osrd.reporting.exceptions.ErrorType.ZeroLengthPath
@@ -163,10 +160,8 @@ fun runStandaloneSimulation(
         runScheduleMetadataExtractor(
             finalEnvelope,
             trainPath,
-            trainPath.getLegacyChunkPath(), // TODO path migration
+            // TODO path migration
             infra,
-            trainPath.getLegacyRoutePath(),
-            trainPath.getLegacyBlockPath(),
             rollingStock,
             schedule,
             pathItemPositions,

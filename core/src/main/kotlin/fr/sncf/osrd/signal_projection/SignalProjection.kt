@@ -4,17 +4,15 @@ import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.api.SignalCriticalPosition
 import fr.sncf.osrd.api.ZoneUpdate
 import fr.sncf.osrd.api.project_signals.SignalUpdate
-import fr.sncf.osrd.path.implementations.ChunkPath
+import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.path.interfaces.TravelledPath
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.signaling.SigSystemManager
 import fr.sncf.osrd.signaling.SignalingSimulator
 import fr.sncf.osrd.signaling.ZoneStatus
 import fr.sncf.osrd.sim_infra.api.*
-import fr.sncf.osrd.standalone_sim.PathOffsetBuilder
 import fr.sncf.osrd.standalone_sim.PathSignal
 import fr.sncf.osrd.standalone_sim.pathSignalsInRange
-import fr.sncf.osrd.utils.trainPathBlockOffset
 import fr.sncf.osrd.utils.units.Duration
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.TimeDelta
@@ -25,9 +23,7 @@ data class SignalAspectChangeEvent(val newAspect: String, val time: TimeDelta)
 
 fun projectSignals(
     fullInfra: FullInfra,
-    chunkPath: ChunkPath,
-    blockPath: List<BlockId>,
-    routePath: List<RouteId>,
+    trainPath: TrainPath,
     signalCriticalPositions: Collection<SignalCriticalPosition>,
     zoneUpdates: Collection<ZoneUpdate>,
     simulationEndTime: TimeDelta,
@@ -62,36 +58,19 @@ fun projectSignals(
     }
 
     val zoneMap = mutableMapOf<String, Int>()
-    var zoneCount = 0
-    for (block in blockPath) {
-        for (zonePath in blockInfra.getBlockZonePaths(block)) {
-            val zone = rawInfra.getNextZone(rawInfra.getZonePathEntry(zonePath))!!
-            val zoneName = rawInfra.getZoneName(zone)
-            zoneMap[zoneName] = zoneCount
-            zoneCount++
-        }
+    for ((i, zoneRange) in trainPath.getZoneRanges().withIndex()) {
+        val zoneName = rawInfra.getZoneName(zoneRange.value)
+        zoneMap[zoneName] = i
     }
 
     // Compute signal updates
-    val startOffset =
-        trainPathBlockOffset(fullInfra.rawInfra, fullInfra.blockInfra, blockPath, chunkPath)
-            .distance
     // Compute path signals on path
-    val pathOffsetBuilder = PathOffsetBuilder(startOffset)
-    val pathSignals =
-        pathSignalsInRange(
-            pathOffsetBuilder,
-            blockPath,
-            blockInfra,
-            0.meters,
-            chunkPath.endOffset - chunkPath.beginOffset,
-        )
+    val pathSignals = pathSignalsInRange(trainPath, blockInfra, 0.meters, trainPath.getLength())
     if (pathSignals.isEmpty()) return emptyList()
 
     val signalAspectChangeEvents =
         computeSignalAspectChangeEvents(
-            blockPath,
-            routePath,
+            trainPath,
             zoneMap,
             blockInfra,
             pathSignals,
@@ -109,15 +88,14 @@ fun projectSignals(
             sigSystemManager,
             rawInfra,
             signalCriticalPositions,
-            Length(chunkPath.endOffset - chunkPath.beginOffset),
+            trainPath.getTypedLength(),
             simulationEndTime,
         )
     return signalUpdates
 }
 
 private fun computeSignalAspectChangeEvents(
-    blockPath: List<BlockId>,
-    routePath: List<RouteId>,
+    trainPath: TrainPath,
     zoneToPathIndexMap: Map<String, Int>,
     blockInfra: BlockInfra,
     pathSignals: List<PathSignal>,
@@ -127,10 +105,8 @@ private fun computeSignalAspectChangeEvents(
     loadedSignalInfra: LoadedSignalInfra,
     leastConstrainingStates: Map<SignalingSystemId, SigState>,
 ): Map<PathSignal, MutableList<SignalAspectChangeEvent>> {
-    val routes = routePath
-    val zoneCount = blockPath.sumOf { blockInfra.getBlockZonePaths(it).size }
-    val zoneStates = ArrayList<ZoneStatus>(zoneCount)
-    for (i in 0 until zoneCount) zoneStates.add(ZoneStatus.CLEAR)
+    val zoneCount = trainPath.getZonePaths().size
+    val zoneStates = MutableList(zoneCount) { ZoneStatus.CLEAR }
 
     val signalAspects =
         pathSignals
@@ -143,8 +119,10 @@ private fun computeSignalAspectChangeEvents(
             )
             .toMutableMap()
 
-    val blockSignals = blockInfra.getBlockSignals(blockPath.last())
+    val lastBlockRange = trainPath.getBlocks().last()
+    val blockSignals = blockInfra.getBlockSignals(lastBlockRange.value)
     // We can't just `pathSignals.last().signal` as the simulation includes the whole block
+    // TODO path migration: double check that this is still relevant
     val lastSignal = blockSignals[blockSignals.size - 1]
     val lastSignalDriver = loadedSignalInfra.getDrivers(lastSignal).lastOrNull()
     val lastSignalInputSystem =
@@ -169,9 +147,7 @@ private fun computeSignalAspectChangeEvents(
                 rawInfra,
                 loadedSignalInfra,
                 blockInfra,
-                blockPath,
-                routes,
-                blockPath.size,
+                trainPath,
                 zoneStates,
                 ZoneStatus.CLEAR,
                 nextSignalState,
