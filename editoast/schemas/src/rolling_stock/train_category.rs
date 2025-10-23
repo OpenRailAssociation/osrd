@@ -7,7 +7,9 @@ use crate::rolling_stock::TrainMainCategory;
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, ToSchema)]
 #[serde(untagged)]
 pub enum TrainCategory {
+    #[schema(title = "TrainCategoryMain")]
     Main { main_category: TrainMainCategory },
+    #[schema(title = "TrainCategorySub")]
     Sub { sub_category_code: String },
 }
 

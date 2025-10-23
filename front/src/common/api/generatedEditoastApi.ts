@@ -3389,14 +3389,7 @@ export type RelatedOperationalPoint = {
   parts: RelatedOperationalPointPart[];
   weight?: number | null;
 };
-export type TrackReference =
-  | {
-      track_id: string;
-    }
-  | {
-      track_name: string;
-    };
-export type OperationalPointReference = (
+export type OperationalPointIdentifier =
   | {
       /** The object id of an operational point */
       operational_point: string;
@@ -3412,8 +3405,16 @@ export type OperationalPointReference = (
       secondary_code?: string | null;
       /** The [UIC](https://en.wikipedia.org/wiki/List_of_UIC_country_codes) code of an operational point */
       uic: number;
+    };
+export type TrackReference =
+  | {
+      track_id: string;
     }
-) & {
+  | {
+      track_name: string;
+    };
+export type OperationalPointReference = {
+  reference: OperationalPointIdentifier;
   track_reference?: null | TrackReference;
 };
 export type GeoJsonMultiPointValue = GeoJsonPointValue[];
@@ -3967,42 +3968,47 @@ export type TrainCategory =
     };
 export type Comfort = 'STANDARD' | 'AIR_CONDITIONING' | 'HEATING';
 export type Distribution = 'STANDARD' | 'MARECO';
+export type Margins = {
+  boundaries: string[];
+  /** The values of the margins. Must contains one more element than the boundaries
+    Can be a percentage `X%` or a time in minutes per 100 kilometer `Xmin/100km` */
+  values: string[];
+};
+export type TrainScheduleOptions = {
+  use_electrical_profiles?: boolean;
+  use_speed_limits_for_simulation?: boolean;
+};
+export type PathItem = {
+  /** The unique identifier of the path item.
+    This is used to reference path items in the train schedule. */
+  id: string;
+  location: PathItemLocation;
+};
 export type PositiveDuration = string;
 export type ReceptionSignal = 'OPEN' | 'STOP' | 'SHORT_SLIP_STOP';
+export type ScheduleItem = {
+  arrival?: null | PositiveDuration;
+  /** Position on the path of the schedule item. */
+  at: string;
+  reception_signal?: ReceptionSignal;
+  stop_for?: null | PositiveDuration;
+};
 export type TrainSchedule = {
   category?: null | TrainCategory;
   comfort?: Comfort;
   constraint_distribution: Distribution;
   initial_speed?: number;
   labels?: string[];
-  margins?: {
-    boundaries: string[];
-    /** The values of the margins. Must contains one more element than the boundaries
-        Can be a percentage `X%` or a time in minutes per 100 kilometer `Xmin/100km` */
-    values: string[];
-  };
-  options?: {
-    use_electrical_profiles?: boolean;
-    use_speed_limits_for_simulation?: boolean;
-  };
-  path: (PathItemLocation & {
-    /** The unique identifier of the path item.
-        This is used to reference path items in the train schedule. */
-    id: string;
-  })[];
+  margins?: Margins;
+  options?: TrainScheduleOptions;
+  path: PathItem[];
   power_restrictions?: {
     from: string;
     to: string;
     value: string;
   }[];
   rolling_stock_name: string;
-  schedule?: {
-    arrival?: null | PositiveDuration;
-    /** Position on the path of the schedule item. */
-    at: string;
-    reception_signal?: ReceptionSignal;
-    stop_for?: null | PositiveDuration;
-  }[];
+  schedule?: ScheduleItem[];
   speed_limit_tag?: null | string;
   start_time: string;
   train_name: string;
@@ -4016,35 +4022,13 @@ export type InitialSpeedChangeGroup = {
 export type LabelsChangeGroup = {
   value: string[];
 };
-export type TrainScheduleOptions = {
-  use_electrical_profiles?: boolean;
-  use_speed_limits_for_simulation?: boolean;
-};
 export type OptionsChangeGroup = {
   value: TrainScheduleOptions;
-};
-export type Margins = {
-  boundaries: string[];
-  /** The values of the margins. Must contains one more element than the boundaries
-    Can be a percentage `X%` or a time in minutes per 100 kilometer `Xmin/100km` */
-  values: string[];
-};
-export type PathItem = PathItemLocation & {
-  /** The unique identifier of the path item.
-    This is used to reference path items in the train schedule. */
-  id: string;
 };
 export type PowerRestrictionItem = {
   from: string;
   to: string;
   value: string;
-};
-export type ScheduleItem = {
-  arrival?: null | PositiveDuration;
-  /** Position on the path of the schedule item. */
-  at: string;
-  reception_signal?: ReceptionSignal;
-  stop_for?: null | PositiveDuration;
 };
 export type PathAndScheduleChangeGroup = {
   margins: Margins;

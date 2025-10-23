@@ -1835,6 +1835,7 @@ paths:
                   items:
                     oneOf:
                     - type: object
+                      title: OperationalPointIdentifierOperationalPointId
                       required:
                       - operational_point
                       properties:
@@ -1845,6 +1846,7 @@ paths:
                             minLength: 1
                           description: The object id of an operational point
                     - type: object
+                      title: OperationalPointIdentifierOperationalPointDescription
                       required:
                       - trigram
                       properties:
@@ -1859,6 +1861,7 @@ paths:
                             minLength: 1
                           description: The operational point trigram
                     - type: object
+                      title: OperationalPointIdentifierOperationalPointUic
                       required:
                       - uic
                       properties:
@@ -4568,6 +4571,7 @@ paths:
                   items:
                     oneOf:
                     - type: object
+                      title: OperationalPointIdentifierOperationalPointId
                       required:
                       - operational_point
                       properties:
@@ -4578,6 +4582,7 @@ paths:
                             minLength: 1
                           description: The object id of an operational point
                     - type: object
+                      title: OperationalPointIdentifierOperationalPointDescription
                       required:
                       - trigram
                       properties:
@@ -4592,6 +4597,7 @@ paths:
                             minLength: 1
                           description: The operational point trigram
                     - type: object
+                      title: OperationalPointIdentifierOperationalPointUic
                       required:
                       - uic
                       properties:
@@ -10727,6 +10733,49 @@ components:
                 type: string
             additionalProperties: false
       additionalProperties: false
+    OperationalPointIdentifier:
+      oneOf:
+      - type: object
+        title: OperationalPointIdentifierOperationalPointId
+        required:
+        - operational_point
+        properties:
+          operational_point:
+            oneOf:
+            - type: string
+              maxLength: 255
+              minLength: 1
+            description: The object id of an operational point
+      - type: object
+        title: OperationalPointIdentifierOperationalPointDescription
+        required:
+        - trigram
+        properties:
+          secondary_code:
+            type:
+            - string
+            - 'null'
+            description: An optional secondary code to identify a more specific location
+          trigram:
+            oneOf:
+            - type: string
+              minLength: 1
+            description: The operational point trigram
+      - type: object
+        title: OperationalPointIdentifierOperationalPointUic
+        required:
+        - uic
+        properties:
+          secondary_code:
+            type:
+            - string
+            - 'null'
+            description: An optional secondary code to identify a more specific location
+          uic:
+            type: integer
+            format: int32
+            description: The [UIC](https://en.wikipedia.org/wiki/List_of_UIC_country_codes) code of an operational point
+            minimum: 0
     OperationalPointPart:
       type: object
       required:
@@ -10756,52 +10805,16 @@ components:
           minLength: 1
       additionalProperties: false
     OperationalPointReference:
-      allOf:
-      - oneOf:
-        - type: object
-          required:
-          - operational_point
-          properties:
-            operational_point:
-              oneOf:
-              - type: string
-                maxLength: 255
-                minLength: 1
-              description: The object id of an operational point
-        - type: object
-          required:
-          - trigram
-          properties:
-            secondary_code:
-              type:
-              - string
-              - 'null'
-              description: An optional secondary code to identify a more specific location
-            trigram:
-              oneOf:
-              - type: string
-                minLength: 1
-              description: The operational point trigram
-        - type: object
-          required:
-          - uic
-          properties:
-            secondary_code:
-              type:
-              - string
-              - 'null'
-              description: An optional secondary code to identify a more specific location
-            uic:
-              type: integer
-              format: int32
-              description: The [UIC](https://en.wikipedia.org/wiki/List_of_UIC_country_codes) code of an operational point
-              minimum: 0
-      - type: object
-        properties:
-          track_reference:
-            oneOf:
-            - type: 'null'
-            - $ref: '#/components/schemas/TrackReference'
+      type: object
+      required:
+      - reference
+      properties:
+        reference:
+          $ref: '#/components/schemas/OperationalPointIdentifier'
+        track_reference:
+          oneOf:
+          - type: 'null'
+          - $ref: '#/components/schemas/TrackReference'
     OptionsChangeGroup:
       type: object
       required:
@@ -11074,20 +11087,21 @@ components:
           items:
             $ref: '#/components/schemas/ScheduleItem'
     PathItem:
-      allOf:
-      - $ref: '#/components/schemas/PathItemLocation'
-      - type: object
-        required:
-        - id
-        properties:
-          id:
-            oneOf:
-            - type: string
-              minLength: 1
-            description: |-
-              The unique identifier of the path item.
-              This is used to reference path items in the train schedule.
+      type: object
       description: A location on the path of a train
+      required:
+      - id
+      - location
+      properties:
+        id:
+          oneOf:
+          - type: string
+            minLength: 1
+          description: |-
+            The unique identifier of the path item.
+            This is used to reference path items in the train schedule.
+        location:
+          $ref: '#/components/schemas/PathItemLocation'
     PathItemLocation:
       oneOf:
       - $ref: '#/components/schemas/TrackOffset'
@@ -14957,6 +14971,7 @@ components:
     TrackReference:
       oneOf:
       - type: object
+        title: TrackReferenceId
         required:
         - track_id
         properties:
@@ -14965,6 +14980,7 @@ components:
             maxLength: 255
             minLength: 1
       - type: object
+        title: TrackReferenceName
         required:
         - track_name
         properties:
@@ -15047,12 +15063,14 @@ components:
     TrainCategory:
       oneOf:
       - type: object
+        title: TrainCategoryMain
         required:
         - main_category
         properties:
           main_category:
             $ref: '#/components/schemas/TrainMainCategory'
       - type: object
+        title: TrainCategorySub
         required:
         - sub_category_code
         properties:
@@ -15153,52 +15171,13 @@ components:
           items:
             type: string
         margins:
-          type: object
-          required:
-          - boundaries
-          - values
-          properties:
-            boundaries:
-              type: array
-              items:
-                type: string
-                minLength: 1
-            values:
-              type: array
-              items:
-                type: string
-              description: |-
-                The values of the margins. Must contains one more element than the boundaries
-                Can be a percentage `X%` or a time in minutes per 100 kilometer `Xmin/100km`
-              example:
-              - 5%
-              - 2min/100km
-          additionalProperties: false
+          $ref: '#/components/schemas/Margins'
         options:
-          type: object
-          properties:
-            use_electrical_profiles:
-              type: boolean
-            use_speed_limits_for_simulation:
-              type: boolean
-          additionalProperties: false
+          $ref: '#/components/schemas/TrainScheduleOptions'
         path:
           type: array
           items:
-            allOf:
-            - $ref: '#/components/schemas/PathItemLocation'
-            - type: object
-              required:
-              - id
-              properties:
-                id:
-                  oneOf:
-                  - type: string
-                    minLength: 1
-                  description: |-
-                    The unique identifier of the path item.
-                    This is used to reference path items in the train schedule.
-            description: A location on the path of a train
+            $ref: '#/components/schemas/PathItem'
         power_restrictions:
           type: array
           items:
@@ -15222,34 +15201,7 @@ components:
         schedule:
           type: array
           items:
-            type: object
-            required:
-            - at
-            properties:
-              arrival:
-                oneOf:
-                - type: 'null'
-                - $ref: '#/components/schemas/PositiveDuration'
-                  description: |-
-                    The expected arrival time at the stop.
-                    This will be used to compute the final simulation time.
-              at:
-                oneOf:
-                - type: string
-                  minLength: 1
-                description: Position on the path of the schedule item.
-              reception_signal:
-                $ref: '#/components/schemas/ReceptionSignal'
-              stop_for:
-                oneOf:
-                - type: 'null'
-                - $ref: '#/components/schemas/PositiveDuration'
-                  description: |-
-                    Duration of the stop.
-                    Can be `None` if the train does not stop.
-                    If `None`, `reception_signal` must be `Open`.
-                    `Some("PT0S")` means the train stops for 0 seconds.
-            additionalProperties: false
+            $ref: '#/components/schemas/ScheduleItem'
         speed_limit_tag:
           oneOf:
           - type: 'null'

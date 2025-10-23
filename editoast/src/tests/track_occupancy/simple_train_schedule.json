@@ -1,54 +1,55 @@
 {
-    "train_name": "track occupancy",
-    "rolling_stock_name": "TRACKOCCUPANCY",
-    "labels": [],
-    "speed_limit_tag": null,
-    "start_time": "2025-05-24T10:00:21+00:00",
-    "path": [
-        {
-            "id": "id8",
-            "uic": 8711,
-            "secondary_code": "BV",
-            "track_reference": null
-        },
-        {
-            "id": "id5",
-            "uic": 8733,
-            "secondary_code": "BV",
-            "track_reference": null
-        },
-        {
-            "id": "id7",
-            "uic": 8788,
-            "secondary_code": "BV",
-            "track_reference": null
+  "train_name": "track occupancy",
+  "rolling_stock_name": "TRACKOCCUPANCY",
+  "labels": [],
+  "speed_limit_tag": null,
+  "start_time": "2025-05-24T10:00:21+00:00",
+  "path": [
+    {
+      "id": "id8",
+      "location": {
+        "reference": {
+          "uic": 8711,
+          "secondary_code": "BV"
         }
-    ],
-    "schedule": [
-        {
-            "at": "id5",
-            "arrival": null,
-            "stop_for": "PT120S",
-            "reception_signal": "OPEN"
-        },
-        {
-            "at": "id7",
-            "arrival": null,
-            "stop_for": "P0D",
-            "reception_signal": "OPEN"
-        }
-    ],
-    "constraint_distribution": "STANDARD",
-    "margins": {
-        "boundaries": [],
-        "values": [
-            "0%"
-        ]
+      }
     },
-    "initial_speed": 0,
-    "power_restrictions": [],
-    "comfort": "AIR_CONDITIONING",
-    "options": {
-        "use_electrical_profiles": true
+    {
+      "id": "id5",
+      "location": {
+        "reference": {
+          "uic": 8733,
+          "secondary_code": "BV"
+        }
+      }
+    },
+    {
+      "id": "id7",
+      "location": {
+        "reference": {
+          "uic": 8788,
+          "secondary_code": "BV"
+        }
+      }
     }
+  ],
+  "schedule": [
+    {
+      "at": "id5",
+      "arrival": null,
+      "stop_for": "PT120S",
+      "reception_signal": "OPEN"
+    },
+    {
+      "at": "id7",
+      "arrival": null,
+      "stop_for": "P0D",
+      "reception_signal": "OPEN"
+    }
+  ],
+  "constraint_distribution": "STANDARD",
+  "margins": {
+    "boundaries": [],
+    "values": ["0%"]
+  }
 }

@@ -13,7 +13,6 @@ pub struct PathItem {
     /// This is used to reference path items in the train schedule.
     #[schema(inline)]
     pub id: NonBlankString,
-    #[serde(flatten)]
     pub location: PathItemLocation,
 }
 
@@ -42,8 +41,6 @@ pub enum PathItemLocation {
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema, Hash)]
 pub struct OperationalPointReference {
-    #[serde(flatten)]
-    #[schema(inline)]
     pub reference: OperationalPointIdentifier,
     #[serde(default)]
     pub track_reference: Option<TrackReference>,
@@ -52,10 +49,12 @@ pub struct OperationalPointReference {
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema, Hash)]
 #[serde(untagged, deny_unknown_fields)]
 pub enum TrackReference {
+    #[schema(title = "TrackReferenceId")]
     Id {
         #[schema(inline)]
         track_id: Identifier,
     },
+    #[schema(title = "TrackReferenceName")]
     Name {
         #[schema(inline)]
         track_name: NonBlankString,
@@ -65,11 +64,13 @@ pub enum TrackReference {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, ToSchema, Hash)]
 #[serde(untagged, deny_unknown_fields)]
 pub enum OperationalPointIdentifier {
+    #[schema(title = "OperationalPointIdentifierOperationalPointId")]
     OperationalPointId {
         /// The object id of an operational point
         #[schema(inline)]
         operational_point: Identifier,
     },
+    #[schema(title = "OperationalPointIdentifierOperationalPointDescription")]
     OperationalPointDescription {
         /// The operational point trigram
         #[schema(inline)]
@@ -77,6 +78,7 @@ pub enum OperationalPointIdentifier {
         /// An optional secondary code to identify a more specific location
         secondary_code: Option<String>,
     },
+    #[schema(title = "OperationalPointIdentifierOperationalPointUic")]
     OperationalPointUic {
         /// The [UIC](https://en.wikipedia.org/wiki/List_of_UIC_country_codes) code of an operational point
         uic: u32,
