@@ -1,5 +1,6 @@
 package fr.sncf.osrd.signaling.bal
 
+import fr.sncf.osrd.path.implementations.buildTrainPathFromBlocks
 import fr.sncf.osrd.railjson.builder.begin
 import fr.sncf.osrd.railjson.builder.buildParseRJSInfra
 import fr.sncf.osrd.railjson.builder.end
@@ -7,9 +8,7 @@ import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection
 import fr.sncf.osrd.signaling.ZoneStatus
 import fr.sncf.osrd.signaling.impl.SigSystemManagerImpl
 import fr.sncf.osrd.signaling.impl.SignalingSimulatorImpl
-import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.decreasing
-import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
 import kotlin.test.Test
 import kotlin.test.assertEquals
 
@@ -77,18 +76,19 @@ class TestBALtoBAL {
         val simulator = SignalingSimulatorImpl(sigSystemManager)
         val loadedSignalInfra = simulator.loadSignals(infra)
         val blockInfra = simulator.buildBlocks(infra, loadedSignalInfra)
-        val fullPath = mutableStaticIdxArrayListOf<Block>()
-        fullPath.add(blockInfra.getBlocksStartingAtDetector(detU.decreasing).first())
-        fullPath.add(blockInfra.getBlocksStartingAtDetector(detV.decreasing).first())
+        val blocks =
+            listOf(
+                blockInfra.getBlocksStartingAtDetector(detU.decreasing).first(),
+                blockInfra.getBlocksStartingAtDetector(detV.decreasing).first(),
+            )
+        val trainPath = buildTrainPathFromBlocks(infra, blockInfra, blocks)
         val zoneStates = mutableListOf(ZoneStatus.CLEAR, ZoneStatus.CLEAR, ZoneStatus.CLEAR)
         val res =
             simulator.evaluate(
                 infra,
                 loadedSignalInfra,
                 blockInfra,
-                fullPath,
-                listOf(), // we don't use parameters here
-                fullPath.size,
+                trainPath,
                 zoneStates,
                 ZoneStatus.INCOMPATIBLE,
             )

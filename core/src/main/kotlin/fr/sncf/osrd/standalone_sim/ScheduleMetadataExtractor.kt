@@ -127,8 +127,7 @@ fun runScheduleMetadataExtractor(
     for (block in blockPath) blockPathLength += blockInfra.getBlockLength(block).distance
     val endOffset = blockPathLength - startOffset - (envelope.endPos - envelope.beginPos).meters
 
-    val pathSignals =
-        pathSignalsInEnvelope(pathOffsetBuilder, blockPath, blockInfra, envelopeWithStops)
+    val pathSignals = pathSignalsInEnvelope(trainPath, blockInfra, envelopeWithStops)
     val zoneOccupationChangeEvents =
         zoneOccupationChangeEvents(
             pathOffsetBuilder,
@@ -263,6 +262,7 @@ fun runScheduleMetadataExtractor(
         routingRequirements(
             pathOffsetBuilder,
             fullInfra,
+            trainPath,
             routePath,
             blockPath,
             closedSignalStops,
@@ -354,6 +354,7 @@ fun getBlockOffsets(
 fun routingRequirements(
     pathOffsetBuilder: PathOffsetBuilder,
     fullInfra: FullInfra,
+    trainPath: TrainPath,
     routePath: List<RouteId>,
     blockPath: List<BlockId>,
     sortedClosedSignalStops: List<PathStop>,
@@ -442,6 +443,7 @@ fun routingRequirements(
         val routeCriticalPos =
             getRouteCriticalPos(
                 fullInfra,
+                trainPath,
                 routePath,
                 blockPath,
                 blockOffsets,
@@ -521,6 +523,7 @@ fun routingRequirements(
 
 private fun getRouteCriticalPos(
     fullInfra: FullInfra,
+    trainPath: TrainPath,
     routePath: List<RouteId>,
     blockPath: List<BlockId>,
     blockOffsets: OffsetArray<TravelledPath>,
@@ -557,6 +560,7 @@ private fun getRouteCriticalPos(
     } else {
         getSightRouteCriticalPos(
             fullInfra,
+            trainPath,
             routePath,
             blockPath,
             blockOffsets,
@@ -605,6 +609,7 @@ private fun getEtcsRouteCriticalPos(
 
 private fun getSightRouteCriticalPos(
     fullInfra: FullInfra,
+    trainPath: TrainPath,
     routePath: List<RouteId>,
     blockPath: List<BlockId>,
     blockOffsets: OffsetArray<TravelledPath>,
@@ -629,9 +634,7 @@ private fun getSightRouteCriticalPos(
             rawInfra,
             loadedSignalInfra,
             blockInfra,
-            blockPath,
-            routePath,
-            routeStartBlockIndex,
+            trainPath,
             zoneStates,
             ZoneStatus.INCOMPATIBLE,
         )
@@ -791,26 +794,20 @@ data class PathSignal(
 )
 
 // Returns all the signals on the path
-fun pathSignals(
-    pathOffsetBuilder: PathOffsetBuilder,
-    blockPath: List<BlockId>,
-    blockInfra: BlockInfra,
-): List<PathSignal> {
+fun pathSignals(trainPath: TrainPath, blockInfra: BlockInfra): List<PathSignal> {
     val pathSignals = mutableListOf<PathSignal>()
-    var currentOffset = pathOffsetBuilder.toTravelledPath(Offset.zero())
-    for ((blockIdx, block) in blockPath.withIndex()) {
+    for ((blockIndex, blockRange) in trainPath.getBlocks().withIndex()) {
+        val block = blockRange.value
         val blockSignals = blockInfra.getBlockSignals(block)
         val blockSignalPositions = blockInfra.getSignalsPositions(block)
         for (signalIndex in 0 until blockSignals.size) {
-            // as consecutive blocks share a signal, skip the first signal of each block, except the
-            // first
-            // this way, each signal is only iterated on once
-            if (signalIndex == 0 && blockIdx != 0) continue
+            // As consecutive blocks share a signal, skip the first signal of each block, except the
+            // first. This way, each signal is only iterated on once
+            if (signalIndex == 0 && blockIndex != 0) continue
             val signal = blockSignals[signalIndex]
-            val position = blockSignalPositions[signalIndex].distance
-            pathSignals.add(PathSignal(signal, currentOffset + position, blockIdx))
+            val position = blockSignalPositions[signalIndex]
+            pathSignals.add(PathSignal(signal, blockRange.offsetToTrainPath(position), blockIndex))
         }
-        currentOffset += blockInfra.getBlockLength(block).distance
     }
     return pathSignals
 }
@@ -819,28 +816,20 @@ fun pathSignals(
 // The reason being that even if a train see a red signal, it won't
 // matter since the train was going to stop before it anyway
 fun pathSignalsInEnvelope(
-    pathOffsetBuilder: PathOffsetBuilder,
-    blockPath: List<BlockId>,
+    trainPath: TrainPath,
     blockInfra: BlockInfra,
     envelope: EnvelopeTimeInterpolate,
 ): List<PathSignal> {
-    return pathSignalsInRange(
-        pathOffsetBuilder,
-        blockPath,
-        blockInfra,
-        0.meters,
-        envelope.endPos.meters,
-    )
+    return pathSignalsInRange(trainPath, blockInfra, 0.meters, envelope.endPos.meters)
 }
 
 fun pathSignalsInRange(
-    pathOffsetBuilder: PathOffsetBuilder,
-    blockPath: List<BlockId>,
+    trainPath: TrainPath,
     blockInfra: BlockInfra,
     rangeStart: Distance,
     rangeEnd: Distance,
 ): List<PathSignal> {
-    return pathSignals(pathOffsetBuilder, blockPath, blockInfra).filter { signal ->
+    return pathSignals(trainPath, blockInfra).filter { signal ->
         signal.pathOffset.distance in rangeStart..rangeEnd
     }
 }

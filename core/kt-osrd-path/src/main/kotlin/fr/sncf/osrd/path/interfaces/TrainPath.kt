@@ -50,6 +50,8 @@ interface TrainPath : PhysicsPath, PathProperties {
     fun getChunks(): List<DirChunkRange>
 
     fun getZonePaths(): List<ZonePathRange>
+
+    fun getZoneRanges(): List<ZoneRange>
     // To be expanded as needed with other linear objects
 }
 

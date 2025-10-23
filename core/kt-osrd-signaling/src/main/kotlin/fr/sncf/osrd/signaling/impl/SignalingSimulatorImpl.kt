@@ -1,5 +1,6 @@
 package fr.sncf.osrd.signaling.impl
 
+import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.signaling.*
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra.impl.SignalParameters
@@ -158,68 +159,82 @@ class SignalingSimulatorImpl(override val sigModuleManager: SigSystemManager) : 
     }
 
     override fun evaluate(
-        infra: RawInfra,
+        rawInfra: RawInfra,
         loadedSignalInfra: LoadedSignalInfra,
-        blocks: BlockInfra,
-        fullPath: List<BlockId>,
-        routes: List<RouteId>,
-        evaluatedPathEnd: Int,
+        blockInfra: BlockInfra,
+        trainPath: TrainPath,
         zoneStates: List<ZoneStatus>,
         followingZoneState: ZoneStatus,
         followingSignalState: SigState?,
         followingSignalSettings: SigSettings?,
     ): Map<LogicalSignalId, SigState> {
-        assert(evaluatedPathEnd > 0)
-        assert(evaluatedPathEnd <= fullPath.size)
-        val routeSet by lazy { routes.toSet() }
+        // TODO path migration: consider migrating the "zone states"
+        //  from list of state to a (ZoneId -> state) map?
+        val blockRanges = trainPath.getBlocks()
+        val routeRanges = trainPath.getRoutes()
+        val zoneRanges = trainPath.getZoneRanges()
+        val routeSet by lazy { routeRanges.map { it.value }.toSet() }
+        assert(zoneStates.size == zoneRanges.size)
 
-        // compute the offset of each block's first zone inside the partial path
-        val blockZoneMap = IntArray(evaluatedPathEnd + 1)
-        var blockZoneOffset = 0
-        for (i in 0 until evaluatedPathEnd) {
-            blockZoneMap[i] = blockZoneOffset
-            blockZoneOffset += blocks.getBlockZonePaths(fullPath[i]).size
+
+        // compute the index of each block's first zone inside the path
+        // TODO path migration: double-check that this would work out with actual backtracks
+        val blockToFirstZoneIndex = mutableMapOf<BlockId, Int>()
+        val blockToLastZoneIndex = mutableMapOf<BlockId, Int>()
+        val zoneIndexMap = zoneRanges.withIndex().associate { it.value.value to it.index }
+        for (blockRange in blockRanges) {
+            val blockId = blockRange.value
+            for (zonePath in blockInfra.getBlockZonePaths(blockId)) {
+                val zoneId = rawInfra.getZonePathZone(zonePath)
+                val zoneIndex = zoneIndexMap[zoneId]!!
+                blockToFirstZoneIndex[blockId] =
+                    blockToFirstZoneIndex[blockId]?.let { minOf(it, zoneIndex) } ?: zoneIndex
+                blockToLastZoneIndex[blockId] =
+                    blockToFirstZoneIndex[blockId]?.let { maxOf(it, zoneIndex) } ?: zoneIndex
+            }
         }
-        blockZoneMap[evaluatedPathEnd] = blockZoneOffset
 
-        // region compute each signal's protection status
-        // first, find all the signals we need to evaluate in this call, and which block they belong
-        // to
+        // region compute each signal's protection status first, find all the signals we need to
+        // evaluate in this call, and which block they belong to
         data class SignalEvalTask(
             val signal: LogicalSignalId,
             val protectionStatus: ProtectionStatus,
         )
 
         val signalEvalSequence = ArrayDeque<SignalEvalTask>()
-        val lastBlock = fullPath[evaluatedPathEnd - 1]
-        val lastBlockEndsAtBufferStop = blocks.blockStopAtBufferStop(lastBlock)
+        val lastBlockRange = blockRanges.last()
+        val lastBlock = lastBlockRange.value
+        val lastBlockEndsAtBufferStop = blockInfra.blockStopAtBufferStop(lastBlock)
         if (!lastBlockEndsAtBufferStop) {
-            val blockSignals = blocks.getBlockSignals(lastBlock)
-            val lastSignal = blockSignals[blockSignals.size - 1]
+            val blockSignals = blockInfra.getBlockSignals(lastBlock)
+            val lastSignal = blockSignals.last()
             signalEvalSequence.add(
                 SignalEvalTask(lastSignal, followingZoneState.toProtectionStatus())
             )
         }
 
-        for (blockIndex in (0 until evaluatedPathEnd).reversed()) {
-            val curBlock = fullPath[blockIndex]
-            val startAtBufferStop = blocks.blockStartAtBufferStop(curBlock)
-            val endsAtBufferStop = blocks.blockStopAtBufferStop(curBlock)
-            val blockSignals = blocks.getBlockSignals(curBlock)
+        for (blockRange in blockRanges.reversed()) {
+            val curBlock = blockRange.value
+            val startAtBufferStop = blockInfra.blockStartAtBufferStop(curBlock)
+            val endsAtBufferStop = blockInfra.blockStopAtBufferStop(curBlock)
+            val blockSignals = blockInfra.getBlockSignals(curBlock)
             // the end signal was already processed at the last iteration,
             // or in the last path signal special case
 
             // intermediary signals
             val interRangeStart = if (startAtBufferStop) 0 else 1
             val interRangeEnd = if (endsAtBufferStop) blockSignals.size else blockSignals.size - 1
-            for (signalIndex in (interRangeStart until interRangeEnd).reversed()) signalEvalSequence
-                .add(SignalEvalTask(blockSignals[signalIndex], ProtectionStatus.NO_PROTECTED_ZONES))
+            for (signalIndex in (interRangeStart until interRangeEnd).reversed()) {
+                signalEvalSequence.add(
+                    SignalEvalTask(blockSignals[signalIndex], ProtectionStatus.NO_PROTECTED_ZONES)
+                )
+            }
 
             // entry signal
             if (!startAtBufferStop) {
                 val entrySignal = blockSignals[0]
-                val protectedZonesStart = blockZoneMap[blockIndex]
-                val protectedZonesEnd = blockZoneMap[blockIndex + 1]
+                val protectedZonesStart = blockToFirstZoneIndex[curBlock]!!
+                val protectedZonesEnd = blockToLastZoneIndex[curBlock]!! + 1
                 var zoneStatus = zoneStates[protectedZonesStart]
                 for (i in protectedZonesStart + 1 until protectedZonesEnd) zoneStatus =
                     zoneStatus.reduce(zoneStates[i])

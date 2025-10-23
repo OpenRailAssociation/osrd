@@ -2,9 +2,6 @@ package fr.sncf.osrd.api.project_signals
 
 import fr.sncf.osrd.api.ExceptionHandler
 import fr.sncf.osrd.api.InfraProvider
-import fr.sncf.osrd.path.interfaces.getLegacyBlockPath
-import fr.sncf.osrd.path.interfaces.getLegacyChunkPath
-import fr.sncf.osrd.path.interfaces.getLegacyRoutePath
 import fr.sncf.osrd.signal_projection.projectSignals
 import org.takes.Request
 import org.takes.Response
@@ -33,18 +30,13 @@ class SignalProjectionEndpoint(private val infraManager: InfraProvider) : Take {
                     infra.blockInfra,
                     electricalProfileMapping = null,
                 )
-            val chunkPath = trainPath.getLegacyChunkPath()
-            val blockPath = trainPath.getLegacyBlockPath()
-            val routePath = trainPath.getLegacyRoutePath()
 
             val signalProjections = mutableListOf<List<SignalUpdate>>()
             for (trainSimulation in request.trainSimulations) {
                 val signalProjection =
                     projectSignals(
                         infra,
-                        chunkPath,
-                        blockPath,
-                        routePath,
+                        trainPath,
                         trainSimulation.signalCriticalPositions,
                         trainSimulation.zoneUpdates,
                         trainSimulation.simulationEndTime,

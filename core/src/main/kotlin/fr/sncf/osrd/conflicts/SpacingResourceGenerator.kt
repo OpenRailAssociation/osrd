@@ -267,9 +267,7 @@ class SpacingRequirementAutomaton(
                 rawInfra,
                 loadedSignalInfra,
                 blockInfra,
-                blocks,
-                routes,
-                blocks.size,
+                TODO(),
                 zoneStates,
                 ZoneStatus.OCCUPIED,
             )
