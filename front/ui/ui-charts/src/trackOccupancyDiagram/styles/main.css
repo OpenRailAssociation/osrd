@@ -38,51 +38,50 @@
   .waypoint-separator::after {
     height: 0;
   }
+  .track {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+
+    &.track-line {
+      margin-right: 16px;
+      font-family: 'IBM Plex Sans';
+      font-weight: 400;
+      font-size: 12px;
+      @apply text-grey-50;
+    }
+
+    &.track-name {
+      height: 24px;
+      @apply bg-grey-70;
+      border-radius: 4px;
+      box-shadow:
+        0 0 0 2px rgb(255, 255, 255),
+        0 0 0 2.5px rgb(182, 178, 175);
+      padding: 2px 6px;
+      font-weight: 600;
+      font-size: 14px;
+      line-height: 20px;
+      @apply text-white-100;
+    }
+
+    &.track-rail {
+      align-self: center;
+      height: 9px;
+      width: 17px;
+      margin-left: 2.5px;
+      margin-right: 1px;
+      @apply bg-white-50;
+      border-top: solid 1px rgb(211, 209, 207);
+      border-bottom: solid 1px rgb(211, 209, 207);
+    }
+  }
 }
 
 .close-track-occupancy-panel {
   position: absolute;
   right: 0;
   margin: 0.875rem;
-}
-
-.track {
-  display: flex;
-  justify-content: flex-end;
-  align-items: center;
-
-  &.track-line {
-    margin-right: 16px;
-    font-family: 'IBM Plex Sans';
-    font-weight: 400;
-    font-size: 12px;
-    @apply text-grey-50;
-  }
-
-  &.track-name {
-    height: 24px;
-    @apply bg-grey-70;
-    border-radius: 4px;
-    box-shadow:
-      0 0 0 2px rgb(255, 255, 255),
-      0 0 0 2.5px rgb(182, 178, 175);
-    padding: 2px 6px;
-    font-weight: 600;
-    font-size: 14px;
-    line-height: 20px;
-    @apply text-white-100;
-  }
-
-  &.track-rail {
-    align-self: center;
-    height: 9px;
-    width: 17px;
-    margin-left: 2.5px;
-    margin-right: 1px;
-    @apply bg-white-50;
-    border-top: solid 1px rgb(211, 209, 207);
-    border-bottom: solid 1px rgb(211, 209, 207);
-  }
 }
 
 #tracks-layer,
