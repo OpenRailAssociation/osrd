@@ -134,20 +134,29 @@ const PathStepItem = ({
       >
         <div
           className={cx('path-step-counter', {
+            invalid: pathStepMetadata?.isInvalid,
             index,
             'pathfinding-line': !hidePathfindingLine,
             origin: index === 1,
             empty: !pathStep,
           })}
           style={{
-            borderColor: index ? categoryColors.background : categoryColors.normal,
+            borderColor: !pathStepMetadata?.isInvalid
+              ? index
+                ? categoryColors.background
+                : categoryColors.normal
+              : '',
             // @ts-expect-error: variable CSS custom property to be used to style ::before
             '--pathBackground': categoryColors.normal,
           }}
         >
           {index}
         </div>
-        <div className="path-step-op-name">
+        <div
+          className={cx('path-step-op-name', {
+            invalid: pathStepMetadata?.isInvalid,
+          })}
+        >
           <ComboBox
             id={`pathStep-name-${pathStep?.id ?? 'empty'}`}
             value={isOpRefMetadata(pathStepMetadata) ? pathStepMetadata.name : ''}
@@ -164,28 +173,40 @@ const PathStepItem = ({
           <div className="requested-point-block" />
         ) : (
           <>
-            <Select
-              id={`pathStep-type-${pathStep?.id ?? 'empty'}`}
-              value={selectedSecondaryCodeOption}
-              options={secondaryCodeSuggestions}
-              getOptionLabel={(option) => option.label}
-              getOptionValue={(option) => option.id}
-              onChange={() => {}}
-              small
-              narrow
-              readOnly
-            />
-            <Select
-              id={`pathStep-status-${pathStep?.id ?? 'empty'}`}
-              value={selectedTrackNameOption}
-              options={trackNameSuggestions}
-              getOptionLabel={(option) => option.label}
-              getOptionValue={(option) => option.id}
-              onChange={() => {}}
-              small
-              narrow
-              readOnly
-            />
+            <div
+              className={cx('secondary-code', {
+                invalid: pathStepMetadata?.isInvalid,
+              })}
+            >
+              <Select
+                id={`pathStep-type-${pathStep?.id ?? 'empty'}`}
+                value={selectedSecondaryCodeOption}
+                options={secondaryCodeSuggestions}
+                getOptionLabel={(option) => option.label}
+                getOptionValue={(option) => option.id}
+                onChange={() => {}}
+                small
+                narrow
+                readOnly
+              />
+            </div>
+            <div
+              className={cx('track-name', {
+                invalid: pathStepMetadata?.isInvalid,
+              })}
+            >
+              <Select
+                id={`pathStep-status-${pathStep?.id ?? 'empty'}`}
+                value={selectedTrackNameOption}
+                options={trackNameSuggestions}
+                getOptionLabel={(option) => option.label}
+                getOptionValue={(option) => option.id}
+                onChange={() => {}}
+                small
+                narrow
+                readOnly
+              />
+            </div>
           </>
         )}
         <div className="map-interactions">

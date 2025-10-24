@@ -223,10 +223,28 @@
                   top: -2px; // relative element border width
                 }
               }
+
+              &.invalid {
+                background-color: var(--error60);
+                border-color: var(--error30);
+              }
             }
 
             .path-step-op-name {
               margin-left: 4px;
+
+              &.invalid {
+                border-radius: 3px;
+                box-shadow: 0 0 0 1.5px rgba(255, 104, 104, 1);
+              }
+            }
+
+            .secondary-code,
+            .track-name {
+              &.invalid {
+                border-radius: 4px;
+                box-shadow: 0 0 0 1.5px rgba(255, 104, 104, 1);
+              }
             }
 
             .requested-point-block {
