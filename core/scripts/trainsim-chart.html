@@ -1,0 +1,46 @@
+<!--
+    Inspector for trace logs from the new train simulation module. Simulation
+    logs usually lie in `/tmp/sim.log`.
+    Before use: compile the typescript sources with the following command:
+
+        tsc
+
+    Then run `python -m http.server` and open this link to use the inspector:
+
+        http://localhost:8000/trainsim-chart.html
+-->
+
+<!DOCTYPE html>
+<html lang="en-US">
+<meta charset="UTF-8">
+<title>Trainsim inspector</title>
+
+<style>
+body {
+    background-color: #eee;
+}
+#layers {
+    position: relative;
+}
+#layers > canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+}
+#graph {
+    background-color: #fff;
+}
+</style>
+
+<form id="form">
+    <input type="file" name="file" required>
+    <input type="submit" value="Submit">
+    <span id="status"></span>
+</form>
+
+<div id="layers">
+    <canvas id="graph" width="1280" height="720"></canvas>
+    <canvas id="hover" width="1280" height="720"></canvas>
+</div>
+
+<script src="./trainsim-chart.js" type="module"></script>
