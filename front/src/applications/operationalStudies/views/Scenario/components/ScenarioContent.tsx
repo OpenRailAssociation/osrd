@@ -111,8 +111,11 @@ const ScenarioContent = ({ activeBoards }: ScenarioContentProps) => {
 
   const removeTimetableItemsWithNge = useCallback(
     (timetableItemIds: TimetableItemId[]) => {
+      console.log('removeTimetableItemsWithNge', timetableItemIds);
       removeTimetableItems(timetableItemIds);
-      refreshNge();
+      //setTimeout(() => {
+        refreshNge();
+      //}, 1000);
     },
     [removeTimetableItems, refreshNge]
   );

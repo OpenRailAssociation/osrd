@@ -73,6 +73,7 @@ const osrdEditoastApi = generatedEditoastApi
             reachEnd = isNil(data.next);
             page += 1;
           }
+          console.log('getAllTimetableByIdPacedTrains', result);
           return { data: result };
         },
         providesTags: ['timetable'],

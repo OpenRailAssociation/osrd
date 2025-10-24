@@ -673,6 +673,7 @@ export const loadNgeDto = async (
       id: formatEditoastIdToTrainScheduleId(trainSchedule.id),
     }));
 
+  console.log('refresh nge start');
   const pacedTrainsPromise = dispatch(
     osrdEditoastApi.endpoints.getAllTimetableByIdPacedTrains.initiate(
       { timetableId },
@@ -685,6 +686,8 @@ export const loadNgeDto = async (
       ...pacedTrain,
       id: formatEditoastIdToPacedTrainId(pacedTrain.id),
     }));
+
+  console.log('pacedTrains', pacedTrains);
 
   const timetableItems = await fetchTimetableItemPathOps(
     state.infraId,

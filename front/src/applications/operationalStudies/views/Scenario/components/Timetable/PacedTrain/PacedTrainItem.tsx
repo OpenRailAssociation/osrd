@@ -142,6 +142,7 @@ const PacedTrainItem = ({
   });
 
   const [postPacedTrain] = osrdEditoastApi.endpoints.postTimetableByIdPacedTrains.useMutation();
+  //const [deletePacedTrains] = osrdEditoastApi.endpoints.deletePacedTrain.useMutation();
   const [getPacedTrainById] = osrdEditoastApi.endpoints.getPacedTrainById.useLazyQuery();
 
   const selectPathProjection = async () => {
@@ -149,9 +150,13 @@ const PacedTrainItem = ({
     if (!summary?.isValid) dispatch(updateProjectionType('operationalPointProjection'));
   };
 
-  const deletePacedTrain = async () => {
+  const deleteTrain = async () => {
     try {
       await deletePacedTrains(dispatch, [pacedTrain.id]);
+      /*await deletePacedTrains({
+        body: { ids: [extractEditoastIdFromPacedTrainId(pacedTrain.id)] },
+      });*/
+      console.log('deletePacedTrains DONE');
       removePacedTrains([pacedTrain.id]);
       dispatch(
         setSuccess({
@@ -350,7 +355,7 @@ const PacedTrainItem = ({
           deleteTimetableItem={async () => {
             openModal(
               <DeleteModal
-                handleDelete={async () => deletePacedTrain()}
+                handleDelete={async () => deleteTrain()}
                 selectedPacedTrainIds={[pacedTrain.id]}
                 selectedTrainScheduleIds={[]}
               />,
