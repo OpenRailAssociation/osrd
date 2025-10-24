@@ -31,6 +31,7 @@ class SimpleRollingStock(
     override val maxSpeed: Double,
     /** the deceleration of the train, in m/s^2 */
     constGamma: Double,
+    override val raisePantographTime: Double? = null,
 ) : PhysicsRollingStock {
     /** Defined as mass * inertiaCoefficient */
     override val inertia: Double = mass * inertiaCoefficient
