@@ -9,15 +9,17 @@ import fr.sncf.osrd.cli.RsWithBody
 import fr.sncf.osrd.cli.RsWithStatus
 import fr.sncf.osrd.cli.Take
 import fr.sncf.osrd.reporting.exceptions.OSRDError
-import fr.sncf.osrd.standalone_sim.runStandaloneSimulation
+import fr.sncf.osrd.trainsim.Tracer
 import io.opentelemetry.api.trace.Span
 import java.io.File
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import okio.Path.Companion.toPath
 
 class SimulationEndpoint(
     private val infraManager: InfraProvider,
     private val electricalProfileSetManager: ElectricalProfileSetManager,
+    private val trainSimV3LogPath: String? = null,
 ) : Take {
     override fun act(req: Request, ctx: Take.QueueContext?): Response {
         // Parse request input
@@ -66,21 +68,43 @@ class SimulationEndpoint(
                 )
 
             val res =
-                runStandaloneSimulation(
-                    infra,
-                    trainPath,
-                    rollingStock,
-                    request.comfort,
-                    request.constraintDistribution.toRJS(),
-                    request.speedLimitTag,
-                    parsePowerRestrictions(request.powerRestrictions),
-                    request.options.useElectricalProfiles,
-                    request.options.useSpeedLimits ?: true,
-                    2.0,
-                    request.schedule,
-                    request.initialSpeed,
-                    request.margins,
-                )
+                if (trainSimV3LogPath != null) {
+                    okio.FileSystem.SYSTEM.write(trainSimV3LogPath.toPath()) {
+                        val tracer = Tracer(this)
+                        fr.sncf.osrd.trainsim.runStandaloneSimulation(
+                            infra,
+                            trainPath,
+                            rollingStock,
+                            request.comfort,
+                            request.speedLimitTag,
+                            parsePowerRestrictions(request.powerRestrictions),
+                            request.options.useElectricalProfiles,
+                            request.options.useSpeedLimits ?: true,
+                            2.0,
+                            request.schedule,
+                            request.initialSpeed,
+                            request.margins,
+                            tracer,
+                        )
+                    }
+                } else {
+                    fr.sncf.osrd.standalone_sim.runStandaloneSimulation(
+                        infra,
+                        trainPath,
+                        rollingStock,
+                        request.comfort,
+                        request.constraintDistribution.toRJS(),
+                        request.speedLimitTag,
+                        parsePowerRestrictions(request.powerRestrictions),
+                        request.options.useElectricalProfiles,
+                        request.options.useSpeedLimits ?: true,
+                        2.0,
+                        request.schedule,
+                        request.initialSpeed,
+                        request.margins,
+                    )
+                }
+
             return RsJson(RsWithBody(simulationResponseAdapter.toJson(res)))
         } catch (ex: Throwable) {
             if (ex is OSRDError && ex.osrdErrorType.isRecoverable) {
