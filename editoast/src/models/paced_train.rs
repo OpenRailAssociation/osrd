@@ -145,7 +145,6 @@ impl PacedTrain {
             .map(|exception| {
                 (
                     OccurrenceId::CreatedException {
-                        paced_train_id: self.id,
                         exception_key: exception.key.clone(),
                     },
                     self.apply_exception(exception),
@@ -163,7 +162,6 @@ impl PacedTrain {
             .map(move |occurrence_idx| {
                 let base_start_time = self.get_occurrence_start_time(occurrence_idx as i32);
                 let train_id = OccurrenceId::BaseOccurrence {
-                    paced_train_id: self.id,
                     index: occurrence_idx as u64,
                 };
                 let train_schedule = TrainSchedule {
@@ -203,7 +201,6 @@ impl PacedTrain {
                     to_remove[occurrence_index as usize] = true;
                 } else {
                     let occurrence_id = OccurrenceId::ModifiedException {
-                        paced_train_id: self.id,
                         index: occurrence_index as u64,
                         exception_key: exception.key.clone(),
                     };
@@ -301,45 +298,41 @@ impl From<PacedTrain> for paced_train::PacedTrain {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
 #[serde(tag = "type")]
 pub enum OccurrenceId {
-    BaseOccurrence {
-        paced_train_id: i64,
-        index: u64,
-    },
-    ModifiedException {
-        paced_train_id: i64,
-        index: u64,
-        exception_key: String,
-    },
-    CreatedException {
-        paced_train_id: i64,
-        exception_key: String,
-    },
+    BaseOccurrence { index: u64 },
+    ModifiedException { index: u64, exception_key: String },
+    CreatedException { exception_key: String },
 }
 
 #[derive(Debug, Clone, PartialEq)]
 /// This ID is used to identify paced train occurrences and exceptions when sending them to the core API for conflict detection.
 pub enum TrainId {
     TrainSchedule(i64),
-    PacedTrain(OccurrenceId),
+    PacedTrain {
+        paced_train_id: i64,
+        occurrence_id: OccurrenceId,
+    },
 }
 
 impl Display for TrainId {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::TrainSchedule(id) => write!(f, "{id}"),
-            Self::PacedTrain(OccurrenceId::BaseOccurrence {
+            Self::PacedTrain {
                 paced_train_id,
-                index,
-            }) => write!(f, "{paced_train_id}#{index}"),
-            Self::PacedTrain(OccurrenceId::CreatedException {
+                occurrence_id: OccurrenceId::BaseOccurrence { index },
+            } => write!(f, "{paced_train_id}#{index}"),
+            Self::PacedTrain {
                 paced_train_id,
-                exception_key,
-            }) => write!(f, "{paced_train_id}@{exception_key}"),
-            Self::PacedTrain(OccurrenceId::ModifiedException {
+                occurrence_id: OccurrenceId::CreatedException { exception_key },
+            } => write!(f, "{paced_train_id}@{exception_key}"),
+            Self::PacedTrain {
                 paced_train_id,
-                exception_key,
-                index,
-            }) => write!(f, "{paced_train_id}@{exception_key}#{index}"),
+                occurrence_id:
+                    OccurrenceId::ModifiedException {
+                        exception_key,
+                        index,
+                    },
+            } => write!(f, "{paced_train_id}@{exception_key}#{index}"),
         }
     }
 }
@@ -358,17 +351,19 @@ impl FromStr for TrainId {
                 let index = index_str
                     .parse::<u64>()
                     .map_err(|_| "Invalid exception index")?;
-                Ok(TrainId::PacedTrain(OccurrenceId::ModifiedException {
+                Ok(TrainId::PacedTrain {
                     paced_train_id,
-                    exception_key: exception_key.to_string(),
-                    index,
-                }))
+                    occurrence_id: OccurrenceId::ModifiedException {
+                        exception_key: exception_key.to_string(),
+                        index,
+                    },
+                })
             } else {
                 let exception_key = exception_str.to_string();
-                Ok(TrainId::PacedTrain(OccurrenceId::CreatedException {
+                Ok(TrainId::PacedTrain {
                     paced_train_id,
-                    exception_key,
-                }))
+                    occurrence_id: OccurrenceId::CreatedException { exception_key },
+                })
             }
         } else {
             // Is it a base paced train exception?
@@ -379,10 +374,10 @@ impl FromStr for TrainId {
                 let index = index_str
                     .parse::<u64>()
                     .map_err(|_| "Invalid occurrence index")?;
-                Ok(TrainId::PacedTrain(OccurrenceId::BaseOccurrence {
+                Ok(TrainId::PacedTrain {
                     paced_train_id,
-                    index,
-                }))
+                    occurrence_id: OccurrenceId::BaseOccurrence { index },
+                })
             } else {
                 let train_id = s.parse::<i64>().map_err(|_| "Invalid train id")?;
                 Ok(TrainId::TrainSchedule(train_id))
@@ -597,22 +592,14 @@ mod tests {
             types,
             vec![
                 OccurrenceId::ModifiedException {
-                    paced_train_id: paced_train.id,
                     index: 1,
                     exception_key: "key_1".to_string()
                 },
-                OccurrenceId::BaseOccurrence {
-                    paced_train_id: paced_train.id,
-                    index: 2
-                },
+                OccurrenceId::BaseOccurrence { index: 2 },
                 OccurrenceId::CreatedException {
-                    paced_train_id: paced_train.id,
                     exception_key: "key_2".to_string()
                 },
-                OccurrenceId::BaseOccurrence {
-                    paced_train_id: paced_train.id,
-                    index: 3
-                },
+                OccurrenceId::BaseOccurrence { index: 3 },
             ]
         );
     }
@@ -661,23 +648,13 @@ mod tests {
         assert_eq!(
             types,
             vec![
-                OccurrenceId::BaseOccurrence {
-                    paced_train_id: paced_train.id,
-                    index: 0
-                },
+                OccurrenceId::BaseOccurrence { index: 0 },
                 OccurrenceId::ModifiedException {
-                    paced_train_id: paced_train.id,
                     index: 1,
                     exception_key: "key_1".to_string()
                 },
-                OccurrenceId::BaseOccurrence {
-                    paced_train_id: paced_train.id,
-                    index: 2
-                },
-                OccurrenceId::BaseOccurrence {
-                    paced_train_id: paced_train.id,
-                    index: 3
-                },
+                OccurrenceId::BaseOccurrence { index: 2 },
+                OccurrenceId::BaseOccurrence { index: 3 },
             ]
         );
     }
