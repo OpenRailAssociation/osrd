@@ -84,22 +84,23 @@ const TrainScheduleItem = ({
   };
 
   const deleteTrain = async () => {
-    deleteTrainSchedules(dispatch, [train.id])
-      .then(() => {
-        removeTrains([train.id]);
-        dispatch(
-          setSuccess({
-            title: t('timetable.trainDeleted', { name: train.name }),
-            text: '',
-          })
-        );
+    try {
+      await deleteTrainSchedules(dispatch, [train.id]);
+    } catch (e) {
+      dispatch(setFailure(castErrorToFailure(e)));
+      if (isSelected) {
+        dispatch(updateSelectedTrainId(train.id));
+      }
+      return;
+    }
+
+    removeTrains([train.id]);
+    dispatch(
+      setSuccess({
+        title: t('timetable.trainDeleted', { name: train.name }),
+        text: '',
       })
-      .catch((e) => {
-        dispatch(setFailure(castErrorToFailure(e)));
-        if (isSelected) {
-          dispatch(updateSelectedTrainId(train.id));
-        }
-      });
+    );
   };
 
   const duplicateTrain = async () => {
