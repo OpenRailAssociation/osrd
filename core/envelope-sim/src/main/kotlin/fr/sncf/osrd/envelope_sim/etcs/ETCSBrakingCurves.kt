@@ -47,7 +47,7 @@ fun computeBrakingCurvesAtLOA(
     maxSpeedEnvelope: Envelope,
     beginPos: Double,
 ): BrakingCurves {
-    val targetPosition = limitOfAuthority.offset.distance.meters
+    val targetPosition = limitOfAuthority.offset.meters
     assert(targetPosition > 0.0)
     val targetSpeed = limitOfAuthority.speed
     assert(targetSpeed > 0.0)
@@ -70,7 +70,7 @@ fun computeBrakingCurvesAtEOA(
     maxSpeedEnvelope: Envelope,
     beginPos: Double,
 ): BrakingCurves {
-    val targetPosition = endOfAuthority.offsetEOA.distance.meters
+    val targetPosition = endOfAuthority.offsetEOA.meters
     assert(targetPosition > 0.0)
     val targetSpeed = 0.0
     val eoaBrakingCurves = computeSbdBrakingCurves(context, targetPosition, maxSpeedEnvelope)
@@ -80,7 +80,7 @@ fun computeBrakingCurvesAtEOA(
         else
             computeEbdBrakingCurves(
                 context,
-                endOfAuthority.offsetSVL.distance.meters,
+                endOfAuthority.offsetSVL.meters,
                 targetSpeed,
                 maxSpeedEnvelope,
             )

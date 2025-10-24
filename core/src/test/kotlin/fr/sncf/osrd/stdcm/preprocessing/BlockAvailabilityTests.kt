@@ -136,8 +136,8 @@ class BlockAvailabilityTests {
         while (infraExplorer.getLookahead().size + 1 < nBlocksInPath) infraExplorer =
             infraExplorer.cloneAndExtendLookahead().find { filterExplorer(it) }!!
         for (i in 0..<nBlocksSimulated) {
-            var envelopeLength = blockLengths[i].distance.meters
-            if (i == 0) envelopeLength -= startOffset.distance.meters
+            var envelopeLength = blockLengths[i].meters
+            if (i == 0) envelopeLength -= startOffset.meters
             infraExplorer =
                 infraExplorer.addEnvelope(
                     Envelope.make(
@@ -346,7 +346,7 @@ class BlockAvailabilityTests {
                 Envelope.make(
                     EnvelopePart.generateTimes(
                         listOf(EnvelopeProfile.CONSTANT_SPEED),
-                        doubleArrayOf(0.0, blockLengths.last().distance.meters),
+                        doubleArrayOf(0.0, blockLengths.last().meters),
                         doubleArrayOf(30.0, 30.0),
                     )
                 )
@@ -377,7 +377,7 @@ class BlockAvailabilityTests {
                     Envelope.make(
                         EnvelopePart.generateTimes(
                             listOf(EnvelopeProfile.CONSTANT_SPEED),
-                            doubleArrayOf(0.0, blockLengths[1].distance.meters),
+                            doubleArrayOf(0.0, blockLengths[1].meters),
                             doubleArrayOf(30.0, 30.0),
                         )
                     )
@@ -559,7 +559,7 @@ class BlockAvailabilityTests {
                     Envelope.make(
                         EnvelopePart.generateTimes(
                             listOf(EnvelopeProfile.CONSTANT_SPEED),
-                            doubleArrayOf(0.0, blockLengths.last().distance.meters),
+                            doubleArrayOf(0.0, blockLengths.last().meters),
                             doubleArrayOf(30.0, 30.0),
                         )
                     )

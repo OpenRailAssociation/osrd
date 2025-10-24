@@ -187,7 +187,7 @@ data class PathPropertiesImpl(
             beginChunkOffset: Offset<TrackChunk>?,
             endChunkOffset: Offset<TrackChunk>?,
         ): LineString {
-            val chunkLength = infra.getTrackChunkLength(dirChunkId.value).distance.meters
+            val chunkLength = infra.getTrackChunkLength(dirChunkId.value).meters
             val beginSliceOffset = beginChunkOffset?.distance?.meters ?: 0.0
             val endSliceOffset = endChunkOffset?.distance?.meters ?: chunkLength
             return getDirData(dirChunkId)

@@ -41,7 +41,7 @@ class CSVLogger(filename: String, private val keys: List<String>) {
         val geo = buildTrainPathFromBlock(rawInfra, blockInfra, block).getGeo()
         val blockLength = blockInfra.getBlockLength(block)
         val offset = node.locationOnEdge ?: Offset.zero()
-        var p = geo.interpolateNormalized(offset.distance.meters / blockLength.distance.meters)
+        var p = geo.interpolateNormalized(offset.meters / blockLength.meters)
         if (p.lat.isNaN() || p.lon.isNaN()) p = geo.getPoints().first()
 
         val data = mutableMapOf(*entries)

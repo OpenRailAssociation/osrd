@@ -68,7 +68,7 @@ data class InfraExplorerWithEnvelopeImpl(
         // We want the intersection, which is what `zip` does here.
         assert(stopDurations.size <= stopOffsets.size)
         return (stopOffsets zip stopDurations).map {
-            TrainStop(it.first.distance.meters, it.second, SHORT_SLIP_STOP)
+            TrainStop(it.first.meters, it.second, SHORT_SLIP_STOP)
         }
     }
 
@@ -117,9 +117,7 @@ data class InfraExplorerWithEnvelopeImpl(
 
     override fun interpolateDepartureFromClamp(pathOffset: Offset<BlockPath>): Double {
         return getFullEnvelope()
-            .interpolateDepartureFromClamp(
-                getIncrementalPath().toTravelledPath(pathOffset).distance.meters
-            )
+            .interpolateDepartureFromClamp(getIncrementalPath().toTravelledPath(pathOffset).meters)
     }
 
     override fun getSpacingRequirements(): List<SpacingRequirement> {

@@ -87,7 +87,7 @@ class StopTests {
 
         // Check that we stop
         for (offset in stopsOffsets) Assertions.assertTrue(
-            areSpeedsEqual(0.0, res.envelope.interpolateSpeed(100.0 + offset.distance.meters))
+            areSpeedsEqual(0.0, res.envelope.interpolateSpeed(100.0 + offset.meters))
         )
     }
 

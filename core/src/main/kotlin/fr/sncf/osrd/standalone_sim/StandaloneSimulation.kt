@@ -285,10 +285,10 @@ fun buildFinalEnvelope(
     scheduledPoints: List<SimulationScheduleItem>,
 ): Envelope {
     fun getEnvelopeTimeAt(offset: Offset<TravelledPath>): Double {
-        return provisionalEnvelope.interpolateDepartureFromClamp(offset.distance.meters)
+        return provisionalEnvelope.interpolateDepartureFromClamp(offset.meters)
     }
     fun getMaxEffortEnvelopeTimeAt(offset: Offset<TravelledPath>): Double {
-        return maxEffortEnvelope.interpolateDepartureFromClamp(offset.distance.meters)
+        return maxEffortEnvelope.interpolateDepartureFromClamp(offset.meters)
     }
     var prevFixedPointOffset = Offset<TravelledPath>(0.meters)
     var prevFixedPointDepartureTime = 0.0
@@ -339,8 +339,8 @@ fun buildFinalEnvelope(
             }
             marginRanges.add(
                 AllowanceRange(
-                    prevFixedPointOffset.distance.meters,
-                    point.pathOffset.distance.meters,
+                    prevFixedPointOffset.meters,
+                    point.pathOffset.meters,
                     FixedTime(maxEffortExtraTime),
                 )
             )
@@ -401,8 +401,8 @@ fun distributeAllowance(
         envelope: Envelope = provisionalEnvelope,
     ): Double {
         assert(from < to)
-        val start = envelope.interpolateDepartureFromClamp(from.distance.meters)
-        val end = envelope.interpolateDepartureFromClamp(to.distance.meters)
+        val start = envelope.interpolateDepartureFromClamp(from.meters)
+        val end = envelope.interpolateDepartureFromClamp(to.meters)
         return end - start
     }
     val rangeEnds =
@@ -418,8 +418,8 @@ fun distributeAllowance(
             rangeTime(rangeStart, rangeEnd) - rangeTime(rangeStart, rangeEnd, maxEffortEnvelope)
         res.add(
             AllowanceRange(
-                rangeStart.distance.meters,
-                rangeEnd.distance.meters,
+                rangeStart.meters,
+                rangeEnd.meters,
                 FixedTime(baseAllowanceValue + extraTime * ratio),
             )
         )
@@ -458,7 +458,7 @@ fun buildProvisionalEnvelope(
                 is MarginValue.Percentage -> Percentage(rawValue.percentage)
                 is MarginValue.None -> Percentage(0.0)
             }
-        marginRanges.add(AllowanceRange(start.distance.meters, end.distance.meters, value))
+        marginRanges.add(AllowanceRange(start.meters, end.meters, value))
     }
     val margin =
         if (constraintDistribution == RJSAllowanceDistribution.MARECO)

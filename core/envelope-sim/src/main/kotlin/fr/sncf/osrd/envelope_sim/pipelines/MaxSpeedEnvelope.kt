@@ -142,7 +142,7 @@ private fun addConstStopBrakingCurves(
                 SpeedConstraint(0.0, EnvelopePartConstraintType.FLOOR),
                 EnvelopeConstraint(envelope, EnvelopePartConstraintType.CEILING),
             )
-        EnvelopeDeceleration.decelerate(context, stop.distance.meters, 0.0, overlayBuilder, -1.0)
+        EnvelopeDeceleration.decelerate(context, stop.meters, 0.0, overlayBuilder, -1.0)
 
         val builder = OverlayEnvelopeBuilder.backward(envelope)
         builder.addPart(partBuilder.build())

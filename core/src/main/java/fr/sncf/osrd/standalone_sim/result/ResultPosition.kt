@@ -36,7 +36,7 @@ private constructor(time: Double, pathOffset: Double, trackSection: String?, off
                 time,
                 pathOffset,
                 rawInfra.getTrackSectionName(location.trackId),
-                location.offset.distance.meters,
+                location.offset.meters,
             )
         }
     }

@@ -77,10 +77,8 @@ fun buildFinalEnvelope(
             stops,
             pathLength,
             standardAllowance != null &&
-                standardAllowance.getAllowanceTime(
-                    maxSpeedEnvelope.totalTime,
-                    pathLength.distance.meters,
-                ) > 0.0,
+                standardAllowance.getAllowanceTime(maxSpeedEnvelope.totalTime, pathLength.meters) >
+                    0.0,
             updatedTimeData,
         )
 
@@ -386,22 +384,18 @@ private fun makeAllowanceRanges(
     val res = ArrayList<AllowanceRange>()
     for (point in fixedPoints) {
         val baseTime =
-            envelope.interpolateArrivalAtClamp(point.offset.distance.meters) -
+            envelope.interpolateArrivalAtClamp(point.offset.meters) -
                 envelope.interpolateDepartureFromClamp(transition)
         val pointArrivalTime = transitionTime + baseTime
         val neededDelay = max(0.0, point.time - pointArrivalTime - prevAddedTime)
 
         res.add(
-            AllowanceRange(
-                transition,
-                point.offset.distance.meters,
-                AllowanceValue.FixedTime(neededDelay),
-            )
+            AllowanceRange(transition, point.offset.meters, AllowanceValue.FixedTime(neededDelay))
         )
         prevAddedTime += neededDelay
 
         transitionTime += baseTime + (point.stopTime ?: 0.0)
-        transition = point.offset.distance.meters
+        transition = point.offset.meters
     }
     if (transition < envelope.endPos)
         res.add(AllowanceRange(transition, envelope.endPos, AllowanceValue.FixedTime(0.0)))

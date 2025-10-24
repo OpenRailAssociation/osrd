@@ -36,7 +36,7 @@ class DepartureTimeShiftTests {
                 .run()!!
         val secondBlockEntryTime =
             (res.departureTime +
-                res.envelope.interpolateArrivalAt(infra.getBlockLength(firstBlock).distance.meters))
+                res.envelope.interpolateArrivalAt(infra.getBlockLength(firstBlock).meters))
         Assertions.assertTrue(secondBlockEntryTime >= 3600)
         occupancyTest(res, occupancyGraph)
     }
@@ -69,7 +69,7 @@ class DepartureTimeShiftTests {
                 .run()!!
         val secondBlockEntryTime =
             (res.departureTime +
-                res.envelope.interpolateArrivalAt(infra.getBlockLength(firstBlock).distance.meters))
+                res.envelope.interpolateArrivalAt(infra.getBlockLength(firstBlock).meters))
         Assertions.assertTrue(secondBlockEntryTime >= 3600)
         occupancyTest(res, occupancyGraph)
     }

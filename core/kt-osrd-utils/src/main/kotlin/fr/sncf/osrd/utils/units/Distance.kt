@@ -103,6 +103,9 @@ val Int.meters: Distance
  */
 @JvmInline
 value class Offset<T>(val distance: Distance) : Comparable<Offset<T>> {
+    val meters: Double
+        get() = distance.meters
+
     operator fun plus(value: Distance): Offset<T> {
         return Offset(distance + value)
     }

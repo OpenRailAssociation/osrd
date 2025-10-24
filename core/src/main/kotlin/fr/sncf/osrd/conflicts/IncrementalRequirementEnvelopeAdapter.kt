@@ -28,8 +28,8 @@ class IncrementalRequirementEnvelopeAdapter(
         if (envelopeWithStops == null) {
             return Double.POSITIVE_INFINITY
         }
-        val begin = pathBeginOff.distance.meters
-        val end = pathEndOff.distance.meters
+        val begin = pathBeginOff.meters
+        val end = pathEndOff.meters
         if (max(0.0, begin) >= min(envelopeWithStops.endPos, end)) {
             return Double.POSITIVE_INFINITY // no overlap
         }
@@ -44,7 +44,7 @@ class IncrementalRequirementEnvelopeAdapter(
             return Double.POSITIVE_INFINITY
         }
         val endPos = envelopeWithStops.endPos
-        if (stopOffset.distance.meters > endPos) {
+        if (stopOffset.meters > endPos) {
             return Double.POSITIVE_INFINITY
         }
         // stop duration is included in interpolateDepartureFrom()
@@ -71,11 +71,11 @@ class IncrementalRequirementEnvelopeAdapter(
     ): Double {
         if (envelopeWithStops == null) return Double.POSITIVE_INFINITY
         // if the head of the train enters the zone at some point, use that
-        val begin = pathBeginOff.distance.meters
+        val begin = pathBeginOff.meters
         if (begin >= 0.0 && begin <= envelopeWithStops.endPos)
             return envelopeWithStops.interpolateArrivalAt(begin)
 
-        val end = pathEndOff.distance.meters
+        val end = pathEndOff.meters
 
         val trainBegin = -rollingStock.length
         val trainEnd = 0.0
@@ -90,7 +90,7 @@ class IncrementalRequirementEnvelopeAdapter(
         pathEndOff: Offset<TravelledPath>,
     ): Double {
         if (envelopeWithStops == null) return Double.POSITIVE_INFINITY
-        val end = pathEndOff.distance.meters
+        val end = pathEndOff.meters
 
         val criticalPoint = end + rollingStock.length
         if (criticalPoint >= 0.0 && criticalPoint <= envelopeWithStops.endPos)
