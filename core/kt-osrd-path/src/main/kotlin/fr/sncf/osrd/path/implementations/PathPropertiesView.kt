@@ -42,9 +42,7 @@ data class PathPropertiesView(
 
     override fun getGeo(): LineString {
         val baseLength = base.getLength().meters
-        return base
-            .getGeo()
-            .slice(startOffset.distance.meters / baseLength, endOffset.distance.meters / baseLength)
+        return base.getGeo().slice(startOffset.meters / baseLength, endOffset.meters / baseLength)
     }
 
     override fun getLoadingGauge(): DistanceRangeMap<LoadingGaugeConstraint> {

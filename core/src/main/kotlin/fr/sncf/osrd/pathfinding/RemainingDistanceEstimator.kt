@@ -98,7 +98,7 @@ private fun blockOffsetToPoint(
                 chunkLength.distance - remainingOffsetOnBlock
             }
         val lineString = rawInfra.getTrackChunkGeom(chunk.value)
-        return lineString.interpolateNormalized(chunkOffset.meters / chunkLength.distance.meters)
+        return lineString.interpolateNormalized(chunkOffset.meters / chunkLength.meters)
     }
     throw RuntimeException("Unreachable (block offset outside of block)")
 }

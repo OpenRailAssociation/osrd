@@ -133,7 +133,7 @@ data class STDCMEdge(
     fun getApproximateTimeAtLocation(offset: Offset<STDCMEdge>, updatedTimeData: TimeData): Double {
         val updatedEarliestTime = timeData.getUpdatedEarliestReachableTime(updatedTimeData)
         if (length.distance == 0.meters) return updatedEarliestTime // Avoids division by 0
-        val offsetRatio = offset.distance.meters / length.distance.meters
+        val offsetRatio = offset.meters / length.meters
         return updatedEarliestTime + (totalTime * offsetRatio)
     }
 

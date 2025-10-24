@@ -120,17 +120,15 @@ class StandaloneSimulationTest {
             listOf(
                 SimulationScheduleItem(
                     thirdDistance,
-                    maxEffortEnvelope
-                        .interpolateDepartureFrom(thirdDistance.distance.meters)
-                        .seconds + 60.seconds,
+                    maxEffortEnvelope.interpolateDepartureFrom(thirdDistance.meters).seconds +
+                        60.seconds,
                     null,
                     OPEN,
                 ),
                 SimulationScheduleItem(
                     halfDistance,
-                    maxEffortEnvelope
-                        .interpolateDepartureFrom(halfDistance.distance.meters)
-                        .seconds + 120.seconds,
+                    maxEffortEnvelope.interpolateDepartureFrom(halfDistance.meters).seconds +
+                        120.seconds,
                     15.seconds,
                     OPEN,
                 ),

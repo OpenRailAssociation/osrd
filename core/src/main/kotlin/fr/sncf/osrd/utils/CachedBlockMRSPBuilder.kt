@@ -73,8 +73,8 @@ data class CachedBlockMRSPBuilder(
         if (endOffset?.distance == 0.meters) return 0.0
         val actualLength = endOffset ?: blockInfra.getBlockLength(block)
         val mrsp = getMRSP(block)
-        val time = mrsp.interpolateArrivalAtClamp(actualLength.distance.meters)
-        val allowanceTime = allowanceValue?.getAllowanceTime(time, actualLength.distance.meters)
+        val time = mrsp.interpolateArrivalAtClamp(actualLength.meters)
+        val allowanceTime = allowanceValue?.getAllowanceTime(time, actualLength.meters)
         return time + (allowanceTime ?: 0.0)
     }
 

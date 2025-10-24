@@ -176,7 +176,7 @@ class MRSPTest {
 
         fun routeLen(route: String): Double {
             return Helpers.getBlocksOnRoutes(infra, listOf(route)).sumOf { block ->
-                infra.blockInfra.getBlockLength(block).distance.meters
+                infra.blockInfra.getBlockLength(block).meters
             }
         }
 

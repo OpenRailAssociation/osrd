@@ -178,7 +178,7 @@ class ETCSBrakingSimulatorImpl(override val context: EnvelopeSimContext) : ETCSB
 
             // We build EOAs along the path. We need to handle overlaps with the next EOA. To do so,
             // we shift the left position constraint, beginPos, to this EOA's target position.
-            beginPos = endOfAuthority.offsetEOA.distance.meters
+            beginPos = endOfAuthority.offsetEOA.meters
         }
         return builder.build()
     }
@@ -232,11 +232,10 @@ class ETCSBrakingSimulatorImpl(override val context: EnvelopeSimContext) : ETCSB
         for (stop in orderedStops) {
             var stopOffset = stop.first
             val isStopSignalRestrictive = stop.second
-            val isBeginPos = arePositionsEqual(stopOffset.distance.meters, envelope.beginPos)
-            val isEndPos = arePositionsEqual(stopOffset.distance.meters, envelope.endPos)
+            val isBeginPos = arePositionsEqual(stopOffset.meters, envelope.beginPos)
+            val isEndPos = arePositionsEqual(stopOffset.meters, envelope.endPos)
             val isOutOfBounds =
-                stopOffset.distance.meters < envelope.beginPos ||
-                    stopOffset.distance.meters > envelope.endPos
+                stopOffset.meters < envelope.beginPos || stopOffset.meters > envelope.endPos
             if (isBeginPos) {
                 // Offset is equal to begin position to within an epsilon.
                 continue
@@ -245,10 +244,7 @@ class ETCSBrakingSimulatorImpl(override val context: EnvelopeSimContext) : ETCSB
                 stopOffset = Offset(envelope.endPos.meters)
             } else if (isOutOfBounds) {
                 // Stop location is out of bounds of the envelope: throw exception.
-                throw OSRDError.envelopeStopOutOfBoundsError(
-                    stopOffset.distance.meters,
-                    envelope.endPos,
-                )
+                throw OSRDError.envelopeStopOutOfBoundsError(stopOffset.meters, envelope.endPos)
             }
             if (etcsRanges.contains(stopOffset.distance)) {
                 val eoa =
@@ -309,7 +305,7 @@ class ETCSBrakingSimulatorImpl(override val context: EnvelopeSimContext) : ETCSB
                 usedCurveType = IND,
                 eoaType = EoaType.SPACING,
             )
-        } else if (nextDetector.distance.meters <= endPos) {
+        } else if (nextDetector.meters <= endPos) {
             // On a non-route delimiter signal for spacing requirements, EoA = SvL = next detector.
             EndOfAuthority(
                 offsetEOA = nextDetector,

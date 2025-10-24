@@ -104,7 +104,7 @@ class StandardAllowanceTests {
         val secondBlockEntryTime =
             (res.withAllowance.departureTime +
                 res.withAllowance.envelope.interpolateArrivalAt(
-                    infra.getBlockLength(firstBlock).distance.meters
+                    infra.getBlockLength(firstBlock).meters
                 ))
         Assertions.assertTrue(secondBlockEntryTime >= 3600 - TIME_STEP)
         occupancyTest(res.withAllowance, occupancyGraph, TIME_STEP)

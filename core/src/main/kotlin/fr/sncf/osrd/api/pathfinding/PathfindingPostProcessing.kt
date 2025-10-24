@@ -234,8 +234,8 @@ private fun makeRJSTrackRanges(
             res.add(
                 RJSDirectionalTrackRange(
                     trackName,
-                    rangeStartOnTrack.distance.meters,
-                    rangeEndOnTrack.distance.meters,
+                    rangeStartOnTrack.meters,
+                    rangeEndOnTrack.meters,
                     direction,
                 )
             )

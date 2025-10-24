@@ -36,7 +36,7 @@ fun parseRawRollingStock(
 
     return RollingStock(
         "placeholder_name",
-        rawPhysicsConsist.length.distance.meters,
+        rawPhysicsConsist.length.meters,
         rawPhysicsConsist.mass.toDouble(),
         rawPhysicsConsist.inertiaCoefficient,
         rollingResistance.A,
