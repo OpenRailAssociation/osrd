@@ -5,8 +5,8 @@ import fr.sncf.osrd.utils.units.MutableDistanceArrayList
 import kotlin.math.min
 
 data class DistanceRangeMapImpl<T>(
-    private val bounds: MutableDistanceArrayList,
-    private val values: MutableList<T?>,
+    val bounds: MutableDistanceArrayList,
+    val values: MutableList<T?>,
 ) : DistanceRangeMap<T> {
 
     constructor(
