@@ -144,10 +144,9 @@ export const DEFAULT_THEME: SpaceTimeChartTheme = {
       dashArray: [8, 8],
     },
     6: {
-      width: 0.75,
+      width: 0.5,
       color: BLUE,
-      opacity: 0.7,
-      dashArray: [3, 8],
+      opacity: 0.25,
     },
   },
 };
