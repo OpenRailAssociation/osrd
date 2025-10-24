@@ -1,6 +1,7 @@
 package fr.sncf.osrd.envelope_sim
 
 import fr.sncf.osrd.path.interfaces.PhysicsPath
+import fr.sncf.osrd.trainsim.Driver
 import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.DistanceRangeSet
 import fr.sncf.osrd.utils.units.Offset
@@ -18,6 +19,7 @@ constructor(
     val tractiveEffortCurveMap: DistanceRangeMap<Array<PhysicsRollingStock.TractiveEffortPoint>>,
     /** If the train should follow ETCS rules, this contains some extra context */
     val etcsContext: ETCSContext? = null,
+    val driver: Driver = Driver(),
 ) {
 
     data class ETCSContext(
