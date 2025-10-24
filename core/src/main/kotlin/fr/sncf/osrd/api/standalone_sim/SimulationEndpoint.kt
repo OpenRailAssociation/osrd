@@ -9,11 +9,14 @@ import fr.sncf.osrd.cli.RsWithBody
 import fr.sncf.osrd.cli.RsWithStatus
 import fr.sncf.osrd.cli.Take
 import fr.sncf.osrd.reporting.exceptions.OSRDError
-import fr.sncf.osrd.standalone_sim.runStandaloneSimulation
+import fr.sncf.osrd.trainsim.Tracer
+import fr.sncf.osrd.trainsim.runSimulation
+import fr.sncf.osrd.utils.*
 import io.opentelemetry.api.trace.Span
 import java.io.File
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
+import okio.Path.Companion.toPath
 
 class SimulationEndpoint(
     private val infraManager: InfraProvider,
@@ -66,7 +69,10 @@ class SimulationEndpoint(
                 )
 
             val res =
-                runStandaloneSimulation(
+            okio.FileSystem.SYSTEM.write("/tmp/sim.log".toPath()) {
+                val tracer = Tracer(this)
+
+                runSimulation(
                     infra,
                     trainPath,
                     rollingStock,
@@ -80,7 +86,9 @@ class SimulationEndpoint(
                     request.schedule,
                     request.initialSpeed,
                     request.margins,
+                    tracer = tracer,
                 )
+            }
             return RsJson(RsWithBody(simulationResponseAdapter.toJson(res)))
         } catch (ex: Throwable) {
             if (ex is OSRDError && ex.osrdErrorType.isRecoverable) {
