@@ -197,15 +197,22 @@ const ItineraryModal = ({
               <span>{t('secondaryCode')}</span>
               <span>{t('track')}</span>
             </div>
-            {pathSteps.map((pathStep, i) => (
-              <PathStepItem
-                key={pathStep.id}
-                pathStep={pathStep}
-                pathStepMetadata={pathStepsMetadataById.get(pathStep.id)}
-                index={i + 1}
-                categoryColors={categoryColors}
-              />
-            ))}
+            {pathSteps.map((pathStep, i) => {
+              const pathStepMetadata = pathStepsMetadataById.get(pathStep.id);
+              const previousPathStepMetadata = pathStepsMetadataById.get(pathSteps[i - 1]?.id);
+              return (
+                <PathStepItem
+                  key={pathStep.id}
+                  pathStep={pathStep}
+                  pathStepMetadata={pathStepMetadata}
+                  index={i + 1}
+                  categoryColors={categoryColors}
+                  hidePathfindingLine={
+                    i > 0 && (pathStepMetadata?.isInvalid || previousPathStepMetadata?.isInvalid)
+                  }
+                />
+              );
+            })}
             <PathStepItem
               hidePathfindingLine={pathSteps.length === 0}
               categoryColors={categoryColors}
