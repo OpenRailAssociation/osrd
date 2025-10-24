@@ -242,8 +242,7 @@ constructor(
     val modeNames: Set<String>
         get() = modes.keys
 
-    val isThermal: Boolean
-        /** Return whether this rolling stock's default mode is thermal */
+    override val isThermal: Boolean
         get() = !modes[defaultMode]!!.isElectric
 
     val isElectric: Boolean
