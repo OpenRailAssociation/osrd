@@ -65,6 +65,9 @@ interface PhysicsRollingStock {
     val lowerPantographTime: Double?
         get() = raisePantographTime
 
+    /** Whether this rolling stock's default mode is thermal */
+    val isThermal: Boolean
+
     /** The maximum acceleration, in m/s^2, which can be applied at a given speed, in m/s */
     data class TractiveEffortPoint(val speed: Double, val maxEffort: Double)
 
