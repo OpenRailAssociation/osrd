@@ -62,6 +62,9 @@ class SimpleRollingStock(
         return CurvesAndConditions(distanceRangeMapOf(), distanceRangeMapOf())
     }
 
+    override val isThermal: Boolean
+        get() = true
+
     /**
      * The tractive effort curve shape. It can be either linear (effort proportional to speed), or
      * hyperbolic (effort inversely proportional to speed -> constant power)
