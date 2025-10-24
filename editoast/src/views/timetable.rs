@@ -408,25 +408,28 @@ impl Conflict {
             .iter()
             .partition_map(|train_id| match train_id.parse() {
                 Ok(TrainId::TrainSchedule(id)) => Either::Left(id),
-                Ok(TrainId::PacedTrain(OccurrenceId::BaseOccurrence {
+                Ok(TrainId::PacedTrain {
                     paced_train_id,
-                    index,
-                })) => Either::Right(PacedTrainOccurrenceId {
+                    occurrence_id: OccurrenceId::BaseOccurrence { index },
+                }) => Either::Right(PacedTrainOccurrenceId {
                     paced_train_id,
                     occurrence_ref: PacedTrainOccurrenceRef::BaseOccurrence { index },
                 }),
-                Ok(TrainId::PacedTrain(OccurrenceId::CreatedException {
+                Ok(TrainId::PacedTrain {
                     paced_train_id,
-                    exception_key,
-                })) => Either::Right(PacedTrainOccurrenceId {
+                    occurrence_id: OccurrenceId::CreatedException { exception_key },
+                }) => Either::Right(PacedTrainOccurrenceId {
                     paced_train_id,
                     occurrence_ref: PacedTrainOccurrenceRef::CreatedException { exception_key },
                 }),
-                Ok(TrainId::PacedTrain(OccurrenceId::ModifiedException {
+                Ok(TrainId::PacedTrain {
                     paced_train_id,
-                    exception_key,
-                    index,
-                })) => Either::Right(PacedTrainOccurrenceId {
+                    occurrence_id:
+                        OccurrenceId::ModifiedException {
+                            exception_key,
+                            index,
+                        },
+                }) => Either::Right(PacedTrainOccurrenceId {
                     paced_train_id,
                     occurrence_ref: PacedTrainOccurrenceRef::ModifiedException {
                         index,
@@ -524,9 +527,20 @@ pub(in crate::views) async fn conflicts(
     let (trains, paced_trains) = retrieve_trains_and_paced_trains(conn, timetable_id).await?;
 
     // Flatten paced trains occurrences
-    let (occurrence_ids, occurrence_trains): (Vec<_>, Vec<_>) = paced_trains
+    let (paced_train_ids, occurrence_trains): (Vec<_>, Vec<_>) = paced_trains
         .iter()
-        .flat_map(|pt| pt.iter_occurrences())
+        .flat_map(|pt| {
+            pt.iter_occurrences()
+                .map(|(occurrence_id, train_schedule)| {
+                    (
+                        TrainId::PacedTrain {
+                            paced_train_id: pt.id,
+                            occurrence_id,
+                        },
+                        train_schedule,
+                    )
+                })
+        })
         .unzip();
     let occurrence_simulations: Vec<_> = train_simulation_batch(
         &mut db_pool.get().await?,
@@ -556,9 +570,8 @@ pub(in crate::views) async fn conflicts(
     .collect();
 
     // Concatenate paced trains occurrences with train schedules
-    let train_ids: Vec<_> = occurrence_ids
+    let train_ids: Vec<_> = paced_train_ids
         .into_iter()
-        .map(TrainId::PacedTrain)
         .chain(trains.iter().map(|ts| TrainId::TrainSchedule(ts.id)))
         .collect();
     let start_times = occurrence_trains
@@ -722,7 +735,13 @@ pub(in crate::views) async fn requirements(
             Either::Right(pt) => pt
                 .iter_occurrences()
                 .map(|(occurrence_id, train_schedule)| {
-                    (TrainId::PacedTrain(occurrence_id), train_schedule)
+                    (
+                        TrainId::PacedTrain {
+                            paced_train_id: pt.id,
+                            occurrence_id,
+                        },
+                        train_schedule,
+                    )
                 })
                 .collect(),
         })
@@ -1347,14 +1366,14 @@ mod tests {
         ];
         // Train IDs
         let train_ids = vec![
-            TrainId::PacedTrain(OccurrenceId::BaseOccurrence {
+            TrainId::PacedTrain {
                 paced_train_id,
-                index: 0,
-            }),
-            TrainId::PacedTrain(OccurrenceId::BaseOccurrence {
+                occurrence_id: OccurrenceId::BaseOccurrence { index: 0 },
+            },
+            TrainId::PacedTrain {
                 paced_train_id,
-                index: 1,
-            }),
+                occurrence_id: OccurrenceId::BaseOccurrence { index: 1 },
+            },
             TrainId::TrainSchedule(ts_id),
         ];
 

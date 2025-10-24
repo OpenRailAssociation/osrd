@@ -1144,6 +1144,7 @@ pub(in crate::views) struct TrackOccupancyForm {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
 #[schema(as = PacedTrainTrackOccupancy)]
 pub(in crate::views) struct TrackOccupancy {
+    paced_train_id: i64,
     #[serde(flatten)]
     #[schema(inline)]
     occurrence_id: OccurrenceId,
@@ -1220,16 +1221,22 @@ pub(in crate::views) async fn track_occupancy(
     .await?;
 
     // Collect all occurrences from all paced trains using iter_occurrences()
-    let train_occurrences: Vec<(OccurrenceId, schemas::TrainSchedule)> = paced_trains
+    let train_occurrences = paced_trains
         .iter()
-        .flat_map(|paced_train| paced_train.iter_occurrences())
-        .collect();
+        .flat_map(|paced_train| {
+            paced_train
+                .iter_occurrences()
+                .map(|(occurrence_id, train_schedule)| {
+                    (paced_train.id, occurrence_id, train_schedule)
+                })
+        })
+        .collect_vec();
 
     // Extract train schedules for simulation
-    let train_schedules: Vec<schemas::TrainSchedule> = train_occurrences
+    let train_schedules = train_occurrences
         .iter()
-        .map(|(_, train_schedule)| train_schedule.clone())
-        .collect();
+        .map(|(_, _, train_schedule)| train_schedule.clone())
+        .collect_vec();
 
     let simulations_result = train_simulation_batch(
         conn,
@@ -1247,7 +1254,8 @@ pub(in crate::views) async fn track_occupancy(
 
     let path_items = train_schedules
         .iter()
-        .flat_map(|ts| ts.path.iter().map(|p| &p.location))
+        .flat_map(|ts| &ts.path)
+        .map(|p| &p.location)
         .collect_vec();
 
     let path_item_cache = PathItemCache::load(conn, infra_id, &path_items).await?;
@@ -1257,7 +1265,7 @@ pub(in crate::views) async fn track_occupancy(
         .into_iter()
         .zip(simulations_result)
         .flat_map(
-            |((occurrence_id, train_schedule), (simulation, pathfinding))| {
+            |((paced_train_id, occurrence_id, train_schedule), (simulation, pathfinding))| {
                 track_occupancy::find_track_occupancy_for_operational_point(
                     &operational_point_id,
                     &operational_point_track_offsets,
@@ -1275,6 +1283,7 @@ pub(in crate::views) async fn track_occupancy(
                         (
                             track_section,
                             TrackOccupancy {
+                                paced_train_id,
                                 occurrence_id: occurrence_id.clone(),
                                 time_window,
                             },

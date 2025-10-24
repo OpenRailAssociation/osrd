@@ -1979,7 +1979,6 @@ paths:
                     - oneOf:
                       - type: object
                         required:
-                        - paced_train_id
                         - index
                         - type
                         properties:
@@ -1987,16 +1986,12 @@ paths:
                             type: integer
                             format: int64
                             minimum: 0
-                          paced_train_id:
-                            type: integer
-                            format: int64
                           type:
                             type: string
                             enum:
                             - BaseOccurrence
                       - type: object
                         required:
-                        - paced_train_id
                         - index
                         - exception_key
                         - type
@@ -2007,24 +2002,17 @@ paths:
                             type: integer
                             format: int64
                             minimum: 0
-                          paced_train_id:
-                            type: integer
-                            format: int64
                           type:
                             type: string
                             enum:
                             - ModifiedException
                       - type: object
                         required:
-                        - paced_train_id
                         - exception_key
                         - type
                         properties:
                           exception_key:
                             type: string
-                          paced_train_id:
-                            type: integer
-                            format: int64
                           type:
                             type: string
                             enum:
@@ -2040,6 +2028,13 @@ paths:
                         time_begin:
                           type: string
                           format: date-time
+                    - type: object
+                      required:
+                      - paced_train_id
+                      properties:
+                        paced_train_id:
+                          type: integer
+                          format: int64
                 propertyNames:
                   type: string
   /paced_train/{id}:
