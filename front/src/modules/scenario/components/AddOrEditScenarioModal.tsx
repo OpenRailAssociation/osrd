@@ -12,7 +12,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import {
   osrdEditoastApi,
   type ScenarioPatchForm,
-  type ScenarioResponse,
+  type ScenarioWithDetails,
 } from 'common/api/osrdEditoastApi';
 import ChipsSNCF from 'common/BootstrapSNCF/ChipsSNCF';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
@@ -36,7 +36,6 @@ import useOutsideClick from 'utils/hooks/useOutsideClick';
 import { checkScenarioFields, cleanScenarioLocalStorage } from '../helpers/utils';
 
 // TODO: use ScenarioCreateForm from osrdEditoastApi to harmonize with study and project
-// and then change checkNameInvalidity
 export type ScenarioForm = ScenarioPatchForm & {
   id?: number;
   infra_id?: number;
@@ -45,7 +44,7 @@ export type ScenarioForm = ScenarioPatchForm & {
 
 type AddOrEditScenarioModalProps = {
   editionMode?: boolean;
-  scenario?: ScenarioResponse;
+  scenario?: ScenarioWithDetails;
 };
 
 type createScenarioParams = {
@@ -87,16 +86,9 @@ const AddOrEditScenarioModal = ({ editionMode = false, scenario }: AddOrEditScen
   );
 
   const [postTimetable] = osrdEditoastApi.endpoints.postTimetable.useMutation({});
-  const [postScenario] =
-    osrdEditoastApi.endpoints.postProjectsByProjectIdStudiesAndStudyIdScenarios.useMutation({});
-  const [patchScenario] =
-    osrdEditoastApi.endpoints.patchProjectsByProjectIdStudiesAndStudyIdScenariosScenarioId.useMutation(
-      {}
-    );
-  const [deleteScenario] =
-    osrdEditoastApi.endpoints.deleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioId.useMutation(
-      {}
-    );
+  const [postScenario] = osrdEditoastApi.endpoints.postScenarios.useMutation({});
+  const [patchScenario] = osrdEditoastApi.endpoints.patchScenariosByScenarioId.useMutation({});
+  const [deleteScenario] = osrdEditoastApi.endpoints.deleteScenariosByScenarioId.useMutation({});
 
   const { electricalProfilOptions = [] } =
     osrdEditoastApi.endpoints.getElectricalProfileSet.useQuery(undefined, {
@@ -160,14 +152,13 @@ const AddOrEditScenarioModal = ({ editionMode = false, scenario }: AddOrEditScen
     if (!currentScenario.infra_id || hasErrors) {
       setDisplayErrors(true);
     } else if (projectId && studyId && currentScenario && currentScenario.name) {
-      const ids = { projectId, studyId };
       const timetable = await postTimetable().unwrap();
       postScenario({
-        ...ids,
         scenarioCreateForm: {
           description: currentScenario.description || '',
           infra_id: currentScenario.infra_id,
           name: currentScenario.name,
+          study_id: studyId,
           tags: currentScenario.tags || [],
           timetable_id: timetable.timetable_id,
           electrical_profile_set_id: currentScenario.electrical_profile_set_id,
@@ -187,11 +178,9 @@ const AddOrEditScenarioModal = ({ editionMode = false, scenario }: AddOrEditScen
   const updateScenario = () => {
     if (hasErrors) {
       setDisplayErrors(true);
-    } else if (scenario && projectId && studyId && scenario.id) {
-      const ids = { projectId, studyId, scenarioId: scenario.id };
-
+    } else if (scenario) {
       patchScenario({
-        ...ids,
+        scenarioId: scenario.id,
         scenarioPatchForm: {
           description: currentScenario.description,
           infra_id: currentScenario.infra_id,
@@ -217,7 +206,7 @@ const AddOrEditScenarioModal = ({ editionMode = false, scenario }: AddOrEditScen
 
   const removeScenario = () => {
     if (projectId && studyId && scenario?.id) {
-      deleteScenario({ projectId, studyId, scenarioId: scenario.id })
+      deleteScenario({ scenarioId: scenario.id })
         .unwrap()
         .then(() => {
           cleanScenarioLocalStorage(scenario.timetable_id);

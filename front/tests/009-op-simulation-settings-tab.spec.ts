@@ -141,7 +141,7 @@ test.describe('Simulation Settings Tab Verification', () => {
   });
 
   test.afterEach('Delete the created scenario', async () => {
-    await deleteScenario(project.id, study.id, scenario.name);
+    await deleteScenario(study.id, scenario.name);
   });
 
   test('Activate electrical profiles', async ({ browserName }) => {

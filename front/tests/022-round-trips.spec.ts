@@ -77,7 +77,7 @@ test.describe('Verify round trips', () => {
   });
 
   test.afterEach('Delete the created scenario', async () => {
-    await deleteScenario(project.id, study.id, scenarioItems.name);
+    await deleteScenario(study.id, scenarioItems.name);
   });
 
   test('Basic checks round trips', async () => {

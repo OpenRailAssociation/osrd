@@ -67,14 +67,9 @@ export const createMacroNode = async (
   ngeNodeId: number
 ) => {
   const createPromise = dispatch(
-    osrdEditoastApi.endpoints.postProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNodes.initiate(
-      {
-        projectId: state.projectId,
-        studyId: state.studyId,
-        scenarioId: state.scenarioId,
-        macroNodeBatchForm: { macro_nodes: [node] },
-      }
-    )
+    osrdEditoastApi.endpoints.postMacroNodes.initiate({
+      macroNodeBatchForm: { macro_nodes: [node], scenario_id: state.scenarioId },
+    })
   );
   const result = await createPromise.unwrap();
   const newNode = result.macro_nodes[0];
@@ -95,33 +90,19 @@ export const updateMacroNode = async (
   if (!indexedNode.dbId) throw new Error(`Node ${node.ngeId} is not saved in the DB`);
 
   await dispatch(
-    osrdEditoastApi.endpoints.putProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNodesNodeId.initiate(
-      {
-        projectId: state.projectId,
-        studyId: state.studyId,
-        scenarioId: state.scenarioId,
-        nodeId: indexedNode.dbId,
-        macroNodeForm: node,
-      }
-    )
+    osrdEditoastApi.endpoints.putMacroNodesByNodeId.initiate({
+      nodeId: indexedNode.dbId,
+      macroNodeForm: node,
+    })
   );
   state.indexNodeByKey(indexedNode.path_item_key, node);
 };
 
-export const deleteMacroNodeByDbId = async (
-  state: MacroEditorState,
-  dispatch: AppDispatch,
-  dbId: number
-) => {
+export const deleteMacroNodeByDbId = async (dispatch: AppDispatch, dbId: number) => {
   await dispatch(
-    osrdEditoastApi.endpoints.deleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNodesNodeId.initiate(
-      {
-        projectId: state.projectId,
-        studyId: state.studyId,
-        scenarioId: state.scenarioId,
-        nodeId: dbId,
-      }
-    )
+    osrdEditoastApi.endpoints.deleteMacroNodesByNodeId.initiate({
+      nodeId: dbId,
+    })
   );
 };
 
@@ -131,7 +112,7 @@ export const deleteMacroNodeByNgeId = async (
   ngeId: number
 ) => {
   const indexedNode = state.getNodeByNgeId(ngeId);
-  if (indexedNode?.dbId) await deleteMacroNodeByDbId(state, dispatch, indexedNode.dbId);
+  if (indexedNode?.dbId) await deleteMacroNodeByDbId(dispatch, indexedNode.dbId);
   state.deleteNodeByNgeId(ngeId);
 };
 

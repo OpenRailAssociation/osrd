@@ -121,7 +121,7 @@ test.describe('Paced trains and exception management', () => {
   );
 
   test.afterAll('Delete the created scenario', async () => {
-    await deleteScenario(project.id, study.id, scenarioItems.name);
+    await deleteScenario(study.id, scenarioItems.name);
   });
 
   /** *************** Test 1 **************** */

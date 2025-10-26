@@ -213,7 +213,7 @@ export default function AddOrEditProjectModal({
   const removeProject = async () => {
     if (projectStudies) {
       // For each scenario in the project, clean the local storage if a manchette is saved
-      cleanLocalStorageByProject(project!.id, projectStudies, dispatch);
+      cleanLocalStorageByProject(projectStudies, dispatch);
     }
 
     await deleteProject({ projectId: project!.id })

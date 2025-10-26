@@ -37,21 +37,11 @@ use crate::views::pagination::PaginatedList as _;
 use crate::views::pagination::PaginationQueryParams;
 use crate::views::pagination::PaginationStats;
 use crate::views::project::ProjectError;
-use crate::views::project::ProjectIdParam;
 use crate::views::study::StudyError;
-use crate::views::study::StudyIdParam;
 use editoast_models::tags::Tags;
 
 #[derive(IntoParams, Deserialize)]
-pub(in crate::views) struct ScenarioPathParam {
-    project_id: i64,
-    study_id: i64,
-    scenario_id: i64,
-}
-
-#[derive(IntoParams)]
-#[allow(unused)]
-pub struct ScenarioIdParam {
+pub(in crate::views) struct ScenarioIdParam {
     scenario_id: i64,
 }
 
@@ -63,6 +53,7 @@ pub(in crate::views) struct ScenarioCreateForm {
     pub description: String,
     pub infra_id: i64,
     pub timetable_id: i64,
+    pub study_id: i64,
     #[serde(default)]
     pub tags: Tags,
     pub electrical_profile_set_id: Option<i64>,
@@ -79,6 +70,7 @@ impl From<ScenarioCreateForm> for Changeset<Scenario> {
             .timetable_id(scenario.timetable_id)
             .tags(scenario.tags)
             .electrical_profile_set_id(scenario.electrical_profile_set_id)
+            .study_id(scenario.study_id)
     }
 }
 
@@ -108,8 +100,8 @@ pub struct ScenarioWithDetails {
     #[serde(flatten)]
     pub scenario: Scenario,
     pub infra_name: String,
-    pub trains_count: i64,
     pub paced_trains_count: i64,
+    pub trains_count: i64,
 }
 
 impl ScenarioWithDetails {
@@ -156,16 +148,14 @@ impl ScenarioResponse {
 #[utoipa::path(
     post, path = "",
     tag = "scenarios",
-    params(ProjectIdParam, StudyIdParam),
     request_body = ScenarioCreateForm,
     responses(
-        (status = 201, body = ScenarioResponse, description = "The created scenario"),
+        (status = 201, body = ScenarioWithDetails, description = "The created scenario"),
     )
 )]
 pub(in crate::views) async fn create(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
-    Path((project_id, study_id)): Path<(i64, i64)>,
     Json(data): Json<ScenarioCreateForm>,
 ) -> Result<impl IntoResponse> {
     let authorized = auth
@@ -178,17 +168,14 @@ pub(in crate::views) async fn create(
 
     let timetable_id = data.timetable_id;
     let infra_id = data.infra_id;
+    let study_id = data.study_id;
     let scenario_cs: Changeset<Scenario> = data.into();
 
-    let (details, study, project) = Study::transactional_content_update(
+    let details = Study::transactional_content_update(
         db_pool.get().await?,
         study_id,
-        move |mut conn, study, project| {
+        move |mut conn, study, _project| {
             async move {
-                if project.id != project_id {
-                    return Err::<_, InternalError>(ProjectError::NotFound { project_id }.into());
-                }
-
                 Timetable::exists_or_fail(&mut conn, timetable_id, || {
                     ScenarioError::TimetableNotFound { timetable_id }
                 })
@@ -202,17 +189,14 @@ pub(in crate::views) async fn create(
                 let scenario = scenario_cs.study_id(study.id).create(&mut conn).await?;
 
                 let details = ScenarioWithDetails::from_scenario(scenario, &mut conn).await?;
-                Ok((details, study, project))
+                Ok::<_, InternalError>(details)
             }
             .scope_boxed()
         },
     )
     .await?;
 
-    Ok((
-        StatusCode::CREATED,
-        Json(ScenarioResponse::new(details, project, study)),
-    ))
+    Ok((StatusCode::CREATED, Json(details)))
 }
 
 /// Delete a scenario
@@ -220,7 +204,7 @@ pub(in crate::views) async fn create(
 #[utoipa::path(
     delete, path = "",
     tag = "scenarios",
-    params(ProjectIdParam, StudyIdParam, ScenarioIdParam),
+    params(ScenarioIdParam),
     responses(
         (status = 204, description = "The scenario was deleted successfully"),
     )
@@ -228,11 +212,7 @@ pub(in crate::views) async fn create(
 pub(in crate::views) async fn delete(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
-    Path(ScenarioPathParam {
-        project_id,
-        study_id,
-        scenario_id,
-    }): Path<ScenarioPathParam>,
+    Path(ScenarioIdParam { scenario_id }): Path<ScenarioIdParam>,
 ) -> Result<impl IntoResponse> {
     let authorized = auth
         .check_roles([Role::OperationalStudies].into())
@@ -242,30 +222,32 @@ pub(in crate::views) async fn delete(
         return Err(AuthorizationError::Forbidden.into());
     }
 
-    Study::transactional_content_update(
-        db_pool.get().await?,
-        study_id,
-        move |mut conn, study, project| {
-            async move {
-                if project.id != project_id {
-                    return Err::<_, InternalError>(ProjectError::NotFound { project_id }.into());
-                }
+    let conn = db_pool.get().await?;
 
-                let scenario = Scenario::retrieve_or_fail(conn.clone(), scenario_id, || {
-                    ScenarioError::NotFound { scenario_id }
-                })
-                .await?;
+    conn.transaction(|conn| {
+        async move {
+            let scenario = Scenario::retrieve_or_fail(conn.clone(), scenario_id, || {
+                ScenarioError::NotFound { scenario_id }
+            })
+            .await?;
 
-                if scenario.study_id != study.id {
-                    return Err(ScenarioError::NotFound { scenario_id }.into());
-                }
+            Study::transactional_content_update(
+                conn,
+                scenario.study_id,
+                move |mut conn, _study, _project| {
+                    async move {
+                        scenario.delete(&mut conn).await?;
+                        Ok::<_, ScenarioError>(())
+                    }
+                    .scope_boxed()
+                },
+            )
+            .await?;
 
-                scenario.delete(&mut conn).await?;
-                Ok::<_, InternalError>(())
-            }
-            .scope_boxed()
-        },
-    )
+            Ok::<_, InternalError>(())
+        }
+        .scope_boxed()
+    })
     .await?;
 
     Ok(StatusCode::NO_CONTENT)
@@ -299,22 +281,18 @@ impl From<ScenarioPatchForm> for <Scenario as editoast_models::prelude::Model>::
 #[utoipa::path(
     patch, path = "",
     tag = "scenarios",
-    params(ProjectIdParam, StudyIdParam, ScenarioIdParam),
+    params(ScenarioIdParam),
     request_body = ScenarioPatchForm,
     responses(
-        (status = 200, body = ScenarioResponse, description = "The scenario was updated successfully"),
+        (status = 200, body = ScenarioWithDetails, description = "The scenario was updated successfully"),
     )
 )]
 pub(in crate::views) async fn patch(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
-    Path(ScenarioPathParam {
-        project_id,
-        study_id,
-        scenario_id,
-    }): Path<ScenarioPathParam>,
+    Path(ScenarioIdParam { scenario_id }): Path<ScenarioIdParam>,
     Json(form): Json<ScenarioPatchForm>,
-) -> Result<Json<ScenarioResponse>> {
+) -> Result<impl IntoResponse> {
     let authorized = auth
         .check_roles([Role::OperationalStudies].into())
         .await
@@ -323,17 +301,11 @@ pub(in crate::views) async fn patch(
         return Err(AuthorizationError::Forbidden.into());
     }
 
-    let (details, study, project) = Scenario::transactional_content_update(
+    let details = Scenario::transactional_content_update(
         db_pool.get().await?,
         scenario_id,
-        move |mut conn, _scenario, study, project| {
+        move |mut conn, _scenario, _study, _project| {
             async move {
-                if project.id != project_id {
-                    return Err::<_, InternalError>(ProjectError::NotFound { project_id }.into());
-                }
-                if study.id != study_id {
-                    return Err(StudyError::NotFound { study_id }.into());
-                }
                 if let Some(infra_id) = form.infra_id {
                     Infra::exists_or_fail(&mut conn, infra_id, || ScenarioError::InfraNotFound {
                         infra_id,
@@ -349,14 +321,14 @@ pub(in crate::views) async fn patch(
                     .await?;
 
                 let details = ScenarioWithDetails::from_scenario(scenario, &mut conn).await?;
-                Ok((details, study, project))
+                Ok::<_, InternalError>(details)
             }
             .scope_boxed()
         },
     )
     .await?;
 
-    Ok(Json(ScenarioResponse::new(details, project, study)))
+    Ok(Json(details))
 }
 
 /// Return a specific scenario
@@ -364,7 +336,7 @@ pub(in crate::views) async fn patch(
 #[utoipa::path(
     get, path = "",
     tag = "scenarios",
-    params(ProjectIdParam, StudyIdParam, ScenarioIdParam),
+    params(ScenarioIdParam),
     responses(
         (status = 200, body = ScenarioResponse, description = "The requested scenario"),
     )
@@ -372,11 +344,7 @@ pub(in crate::views) async fn patch(
 pub(in crate::views) async fn get(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
-    Path(ScenarioPathParam {
-        project_id,
-        study_id,
-        scenario_id,
-    }): Path<ScenarioPathParam>,
+    Path(ScenarioIdParam { scenario_id }): Path<ScenarioIdParam>,
 ) -> Result<Json<ScenarioResponse>> {
     let authorized = auth
         .check_roles([Role::OperationalStudies].into())
@@ -386,35 +354,32 @@ pub(in crate::views) async fn get(
         return Err(AuthorizationError::Forbidden.into());
     }
 
-    let (details, study, project) = db_pool
+    let (details, project, study) = db_pool
         .get()
         .await?
         .transaction(|mut conn| {
             async move {
-                let project = Project::retrieve_or_fail(conn.clone(), project_id, || {
-                    ProjectError::NotFound { project_id }
-                })
-                .await?;
-                let study = Study::retrieve_or_fail(conn.clone(), study_id, || {
-                    StudyError::NotFound { study_id }
-                })
-                .await?;
-                if study.project_id != project.id {
-                    return Err::<_, InternalError>(ProjectError::NotFound { project_id }.into());
-                }
-
                 let scenario = Scenario::retrieve_or_fail(conn.clone(), scenario_id, || {
                     ScenarioError::NotFound { scenario_id }
                 })
                 .await?;
-                if scenario.study_id != study_id {
-                    return Err(ScenarioError::NotFound { scenario_id }.into());
-                }
+                let study = Study::retrieve_or_fail(conn.clone(), scenario.study_id, || {
+                    StudyError::NotFound {
+                        study_id: scenario.study_id,
+                    }
+                })
+                .await?;
+                let project = Project::retrieve_or_fail(conn.clone(), study.project_id, || {
+                    ProjectError::NotFound {
+                        project_id: study.project_id,
+                    }
+                })
+                .await?;
 
                 Ok::<_, InternalError>((
                     ScenarioWithDetails::from_scenario(scenario, &mut conn).await?,
-                    study,
                     project,
+                    study,
                 ))
             }
             .scope_boxed()
@@ -432,12 +397,19 @@ pub(in crate::views) struct ListScenariosResponse {
     results: Vec<ScenarioWithDetails>,
 }
 
+#[derive(IntoParams, Deserialize)]
+#[into_params(parameter_in = Query)]
+pub(in crate::views) struct ListScenariosQueryParams {
+    #[param(inline)]
+    study_id: i64,
+}
+
 /// Return a list of scenarios
 #[editoast_derive::route]
 #[utoipa::path(
     get, path = "",
     tag = "scenarios",
-    params(ProjectIdParam, StudyIdParam, PaginationQueryParams<1000>, OperationalStudiesOrderingParam),
+    params(ListScenariosQueryParams, PaginationQueryParams<1000>, OperationalStudiesOrderingParam),
     responses(
         (status = 200, description = "A paginated list of scenarios", body = inline(ListScenariosResponse)),
         (status = 404, description = "Project or study doesn't exist")
@@ -446,7 +418,7 @@ pub(in crate::views) struct ListScenariosResponse {
 pub(in crate::views) async fn list(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
-    Path((project_id, study_id)): Path<(i64, i64)>,
+    Query(ListScenariosQueryParams { study_id }): Query<ListScenariosQueryParams>,
     Query(pagination_params): Query<PaginationQueryParams<1000>>,
     Query(OperationalStudiesOrderingParam { ordering }): Query<OperationalStudiesOrderingParam>,
 ) -> Result<Json<ListScenariosResponse>> {
@@ -459,13 +431,6 @@ pub(in crate::views) async fn list(
     }
 
     let conn = &mut db_pool.get().await?;
-
-    let study =
-        Study::retrieve_or_fail(conn.clone(), study_id, || StudyError::NotFound { study_id })
-            .await?;
-    if study.project_id != project_id {
-        return Err(ProjectError::NotFound { project_id }.into());
-    }
 
     let settings = pagination_params
         .into_selection_settings()
@@ -484,36 +449,6 @@ pub(in crate::views) async fn list(
     Ok(Json(ListScenariosResponse { stats, results }))
 }
 
-/// Validate that the project exists, the study exists and belongs to the project and the scenarios exists and belongs to the study
-async fn check_project_study_scenario(
-    conn: DbConnection,
-    project_id: i64,
-    study_id: i64,
-    scenario_id: i64,
-) -> Result<(Project, Study, Scenario)> {
-    let project = Project::retrieve_or_fail(conn.clone(), project_id, || ProjectError::NotFound {
-        project_id,
-    })
-    .await?;
-    let study =
-        Study::retrieve_or_fail(conn.clone(), study_id, || StudyError::NotFound { study_id })
-            .await?;
-
-    if study.project_id != project_id {
-        return Err(StudyError::NotFound { study_id }.into());
-    }
-
-    let scenario = Scenario::retrieve_or_fail(conn, scenario_id, || ScenarioError::NotFound {
-        scenario_id,
-    })
-    .await?;
-    if scenario.study_id != study_id {
-        return Err(ScenarioError::NotFound { scenario_id }.into());
-    }
-
-    Ok((project, study, scenario))
-}
-
 #[cfg(test)]
 mod tests {
     use pretty_assertions::assert_eq;
@@ -528,11 +463,9 @@ mod tests {
     use crate::models::fixtures::create_timetable;
     use crate::views::test_app::TestAppBuilder;
 
-    pub fn scenario_url(project_id: i64, study_id: i64, scenario_id: Option<i64>) -> String {
+    pub fn scenario_url(scenario_id: Option<i64>) -> String {
         format!(
-            "/projects/{}/studies/{}/scenarios/{}",
-            project_id,
-            study_id,
+            "/scenarios/{}",
             scenario_id.map_or_else(|| "".to_owned(), |v| v.to_string())
         )
     }
@@ -544,11 +477,7 @@ mod tests {
 
         let fixtures = create_scenario_fixtures_set(&mut pool.get_ok(), "test_scenario_name").await;
 
-        let url = scenario_url(
-            fixtures.project.id,
-            fixtures.study.id,
-            Some(fixtures.scenario.id),
-        );
+        let url = scenario_url(Some(fixtures.scenario.id));
         let request = app.get(&url);
 
         let response: ScenarioResponse = app
@@ -567,8 +496,10 @@ mod tests {
 
         let fixtures = create_scenario_fixtures_set(&mut pool.get_ok(), "test_scenario_name").await;
 
-        let url = scenario_url(fixtures.project.id, fixtures.study.id, None);
-        let request = app.get(&url);
+        let url = scenario_url(None);
+        let request = app
+            .get(&url)
+            .add_query_params(json!({"study_id": fixtures.scenario.study_id}));
 
         let mut response: ListScenariosResponse = app
             .fetch(request)
@@ -588,22 +519,6 @@ mod tests {
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn get_scenarios_with_wrong_study() {
-        let app = TestAppBuilder::default_app();
-        let pool = app.db_pool();
-
-        let fixtures = create_scenario_fixtures_set(&mut pool.get_ok(), "test_scenario_name").await;
-
-        let url = scenario_url(fixtures.project.id, 99999999, Some(fixtures.scenario.id));
-
-        let request = app.get(&url);
-
-        app.fetch(request)
-            .await
-            .assert_status(StatusCode::NOT_FOUND);
-    }
-
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn post_scenario() {
         let app = TestAppBuilder::default_app();
         let pool = app.db_pool();
@@ -613,45 +528,48 @@ mod tests {
         let infra = create_empty_infra(&mut pool.get_ok()).await;
         let timetable = create_timetable(&mut pool.get_ok()).await;
 
-        let url = scenario_url(project.id, study.id, None);
+        let url = scenario_url(None);
 
-        let study_name = "new created scenario";
-        let study_description = "new created scenario description";
-        let study_timetable_id = timetable.id;
-        let study_infra_id = infra.id;
-        let study_tags = Tags::new(vec!["tag1".to_string(), "tag2".to_string()]);
+        let scenario_name = "new created scenario";
+        let scenario_description = "new created scenario description";
+        let scenario_timetable_id = timetable.id;
+        let scenario_infra_id = infra.id;
+        let scenario_tags = Tags::new(vec!["tag1".to_string(), "tag2".to_string()]);
 
         // Insert scenario
         let request = app.post(&url).json(&json!({
-            "name": study_name,
-            "description": study_description,
-            "infra_id": study_infra_id,
-            "timetable_id": study_timetable_id,
-            "tags": study_tags
+            "name": scenario_name,
+            "description": scenario_description,
+            "infra_id": scenario_infra_id,
+            "timetable_id": scenario_timetable_id,
+            "tags": scenario_tags,
+            "study_id": study.id
         }));
 
-        let response: ScenarioResponse = app
+        let response: ScenarioWithDetails = app
             .fetch(request)
             .await
             .assert_status(StatusCode::CREATED)
             .json_into();
 
-        assert_eq!(response.scenario.name, study_name);
-        assert_eq!(response.scenario.description, study_description);
-        assert_eq!(response.scenario.infra_id, study_infra_id);
-        assert_eq!(response.scenario.timetable_id, study_timetable_id);
-        assert_eq!(response.scenario.tags, study_tags);
+        assert_eq!(response.scenario.name, scenario_name);
+        assert_eq!(response.scenario.description, scenario_description);
+        assert_eq!(response.scenario.infra_id, scenario_infra_id);
+        assert_eq!(response.scenario.timetable_id, scenario_timetable_id);
+        assert_eq!(response.scenario.tags, scenario_tags);
+        assert_eq!(response.scenario.study_id, study.id);
 
         let created_scenario = Scenario::retrieve(pool.get_ok(), response.scenario.id)
             .await
             .expect("Failed to retrieve scenario")
             .expect("Scenario not found");
 
-        assert_eq!(created_scenario.name, study_name);
-        assert_eq!(created_scenario.description, study_description);
-        assert_eq!(created_scenario.infra_id, study_infra_id);
-        assert_eq!(created_scenario.timetable_id, study_timetable_id);
-        assert_eq!(created_scenario.tags, study_tags);
+        assert_eq!(created_scenario.name, scenario_name);
+        assert_eq!(created_scenario.description, scenario_description);
+        assert_eq!(created_scenario.infra_id, scenario_infra_id);
+        assert_eq!(created_scenario.timetable_id, scenario_timetable_id);
+        assert_eq!(created_scenario.tags, scenario_tags);
+        assert_eq!(created_scenario.study_id, study.id);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -661,31 +579,27 @@ mod tests {
 
         let fixtures = create_scenario_fixtures_set(&mut pool.get_ok(), "test_scenario_name").await;
 
-        let url = scenario_url(
-            fixtures.project.id,
-            fixtures.study.id,
-            Some(fixtures.scenario.id),
-        );
+        let url = scenario_url(Some(fixtures.scenario.id));
 
-        let study_name = "new patched scenario";
-        let study_description = "new patched scenario description";
-        let study_tags = Tags::new(vec!["patched_tag1".to_string(), "patched_tag2".to_string()]);
+        let scenario_name = "new patched scenario";
+        let scenario_description = "new patched scenario description";
+        let scenario_tags = Tags::new(vec!["patched_tag1".to_string(), "patched_tag2".to_string()]);
 
         // Update scenario
         let request = app.patch(&url).json(&json!({
-            "name": study_name,
-            "description": study_description,
-            "tags": study_tags
+            "name": scenario_name,
+            "description": scenario_description,
+            "tags": scenario_tags
         }));
-        let response: ScenarioResponse = app
+        let response: ScenarioWithDetails = app
             .fetch(request)
             .await
             .assert_status(StatusCode::OK)
             .json_into();
 
-        assert_eq!(response.scenario.name, study_name);
-        assert_eq!(response.scenario.description, study_description);
-        assert_eq!(response.scenario.tags, study_tags);
+        assert_eq!(response.scenario.name, scenario_name);
+        assert_eq!(response.scenario.description, scenario_description);
+        assert_eq!(response.scenario.tags, scenario_tags);
         assert!(response.scenario.last_modification > fixtures.scenario.last_modification);
     }
 
@@ -696,11 +610,7 @@ mod tests {
 
         let fixtures = create_scenario_fixtures_set(&mut pool.get_ok(), "test_scenario_name").await;
 
-        let url = scenario_url(
-            fixtures.project.id,
-            fixtures.study.id,
-            Some(fixtures.scenario.id),
-        );
+        let url = scenario_url(Some(fixtures.scenario.id));
 
         // Update scenario
         let request = app.patch(&url).json(&json!({
@@ -723,27 +633,23 @@ mod tests {
         assert_eq!(fixtures.scenario.infra_id, fixtures.infra.id);
         assert_ne!(fixtures.scenario.infra_id, other_infra.id);
 
-        let url = scenario_url(
-            fixtures.project.id,
-            fixtures.study.id,
-            Some(fixtures.scenario.id),
-        );
+        let url = scenario_url(Some(fixtures.scenario.id));
 
-        let study_name = "new patched scenario V2";
-        let study_other_infra_id = other_infra.id;
+        let scenario_name = "new patched scenario V2";
+        let scenario_other_infra_id = other_infra.id;
 
         let request = app.patch(&url).json(&json!({
-            "name": study_name,
-            "infra_id": study_other_infra_id,
+            "name": scenario_name,
+            "infra_id": scenario_other_infra_id,
         }));
-        let response: ScenarioResponse = app
+        let response: ScenarioWithDetails = app
             .fetch(request)
             .await
             .assert_status(StatusCode::OK)
             .json_into();
 
-        assert_eq!(response.scenario.infra_id, study_other_infra_id);
-        assert_eq!(response.scenario.name, study_name);
+        assert_eq!(response.scenario.infra_id, scenario_other_infra_id);
+        assert_eq!(response.scenario.name, scenario_name);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -753,11 +659,7 @@ mod tests {
 
         let fixtures = create_scenario_fixtures_set(&mut pool.get_ok(), "test_scenario_name").await;
 
-        let url = scenario_url(
-            fixtures.project.id,
-            fixtures.study.id,
-            Some(fixtures.scenario.id),
-        );
+        let url = scenario_url(Some(fixtures.scenario.id));
         let request = app.delete(&url);
 
         app.fetch(request)

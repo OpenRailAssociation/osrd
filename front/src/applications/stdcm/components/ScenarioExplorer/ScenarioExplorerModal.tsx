@@ -53,9 +53,8 @@ const ScenarioExplorerModal = ({
     }
   );
 
-  const [getStudiesList] = osrdEditoastApi.endpoints.getProjectsByProjectIdStudies.useLazyQuery();
-  const [getScenariosList] =
-    osrdEditoastApi.endpoints.getProjectsByProjectIdStudiesAndStudyIdScenarios.useLazyQuery();
+  const [getStudiesList] = osrdEditoastApi.endpoints.getStudies.useLazyQuery();
+  const [getScenariosList] = osrdEditoastApi.endpoints.getScenarios.useLazyQuery();
 
   useEffect(() => {
     if (isProjectsError) {
@@ -80,7 +79,6 @@ const ScenarioExplorerModal = ({
   useEffect(() => {
     if (projectID && studyID && !isProjectsError) {
       getScenariosList({
-        projectId: projectID,
         studyId: studyID,
         ordering: 'LastModifiedDesc',
         pageSize: 1000,

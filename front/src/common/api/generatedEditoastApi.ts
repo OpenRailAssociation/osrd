@@ -10,13 +10,12 @@ export const addTagTypes = [
   'pathfinding',
   'routes',
   'layers',
+  'scenarios',
   'timetable',
   'paced_train',
   'train_schedule',
   'etcs_braking_curves',
   'projects',
-  'studies',
-  'scenarios',
   'rolling_stock_livery',
   'round_trips',
   'search',
@@ -25,6 +24,7 @@ export const addTagTypes = [
   'sncf',
   'sprites',
   'stdcm_search_environment',
+  'studies',
   'sub_categories',
   'temporary_speed_limits',
   'work_schedules',
@@ -494,6 +494,94 @@ const injectedRtkApi = api
         query: (queryArg) => ({ url: `/light_rolling_stock/${queryArg.rollingStockId}` }),
         providesTags: ['rolling_stock'],
       }),
+      getMacroNodes: build.query<GetMacroNodesApiResponse, GetMacroNodesApiArg>({
+        query: (queryArg) => ({
+          url: `/macro_nodes`,
+          params: {
+            scenario_id: queryArg.scenarioId,
+            page: queryArg.page,
+            page_size: queryArg.pageSize,
+          },
+        }),
+        providesTags: ['scenarios'],
+      }),
+      postMacroNodes: build.mutation<PostMacroNodesApiResponse, PostMacroNodesApiArg>({
+        query: (queryArg) => ({
+          url: `/macro_nodes`,
+          method: 'POST',
+          body: queryArg.macroNodeBatchForm,
+        }),
+        invalidatesTags: ['scenarios'],
+      }),
+      getMacroNodesByNodeId: build.query<
+        GetMacroNodesByNodeIdApiResponse,
+        GetMacroNodesByNodeIdApiArg
+      >({
+        query: (queryArg) => ({ url: `/macro_nodes/${queryArg.nodeId}` }),
+        providesTags: ['scenarios'],
+      }),
+      putMacroNodesByNodeId: build.mutation<
+        PutMacroNodesByNodeIdApiResponse,
+        PutMacroNodesByNodeIdApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/macro_nodes/${queryArg.nodeId}`,
+          method: 'PUT',
+          body: queryArg.macroNodeForm,
+        }),
+        invalidatesTags: ['scenarios'],
+      }),
+      deleteMacroNodesByNodeId: build.mutation<
+        DeleteMacroNodesByNodeIdApiResponse,
+        DeleteMacroNodesByNodeIdApiArg
+      >({
+        query: (queryArg) => ({ url: `/macro_nodes/${queryArg.nodeId}`, method: 'DELETE' }),
+        invalidatesTags: ['scenarios'],
+      }),
+      getMacroNotes: build.query<GetMacroNotesApiResponse, GetMacroNotesApiArg>({
+        query: (queryArg) => ({
+          url: `/macro_notes`,
+          params: {
+            scenario_id: queryArg.scenarioId,
+            page: queryArg.page,
+            page_size: queryArg.pageSize,
+          },
+        }),
+        providesTags: ['scenarios'],
+      }),
+      postMacroNotes: build.mutation<PostMacroNotesApiResponse, PostMacroNotesApiArg>({
+        query: (queryArg) => ({
+          url: `/macro_notes`,
+          method: 'POST',
+          body: queryArg.macroNoteBatchForm,
+        }),
+        invalidatesTags: ['scenarios'],
+      }),
+      getMacroNotesByNoteId: build.query<
+        GetMacroNotesByNoteIdApiResponse,
+        GetMacroNotesByNoteIdApiArg
+      >({
+        query: (queryArg) => ({ url: `/macro_notes/${queryArg.noteId}` }),
+        providesTags: ['scenarios'],
+      }),
+      putMacroNotesByNoteId: build.mutation<
+        PutMacroNotesByNoteIdApiResponse,
+        PutMacroNotesByNoteIdApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/macro_notes/${queryArg.noteId}`,
+          method: 'PUT',
+          body: queryArg.macroNoteForm,
+        }),
+        invalidatesTags: ['scenarios'],
+      }),
+      deleteMacroNotesByNoteId: build.mutation<
+        DeleteMacroNotesByNoteIdApiResponse,
+        DeleteMacroNotesByNoteIdApiArg
+      >({
+        query: (queryArg) => ({ url: `/macro_notes/${queryArg.noteId}`, method: 'DELETE' }),
+        invalidatesTags: ['scenarios'],
+      }),
       deletePacedTrain: build.mutation<DeletePacedTrainApiResponse, DeletePacedTrainApiArg>({
         query: (queryArg) => ({ url: `/paced_train`, method: 'DELETE', body: queryArg.body }),
         invalidatesTags: ['timetable', 'paced_train'],
@@ -650,224 +738,6 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ['projects'],
       }),
-      getProjectsByProjectIdStudies: build.query<
-        GetProjectsByProjectIdStudiesApiResponse,
-        GetProjectsByProjectIdStudiesApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/projects/${queryArg.projectId}/studies`,
-          params: {
-            page: queryArg.page,
-            page_size: queryArg.pageSize,
-            ordering: queryArg.ordering,
-          },
-        }),
-        providesTags: ['studies'],
-      }),
-      postProjectsByProjectIdStudies: build.mutation<
-        PostProjectsByProjectIdStudiesApiResponse,
-        PostProjectsByProjectIdStudiesApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/projects/${queryArg.projectId}/studies`,
-          method: 'POST',
-          body: queryArg.studyCreateForm,
-        }),
-        invalidatesTags: ['studies'],
-      }),
-      getProjectsByProjectIdStudiesAndStudyId: build.query<
-        GetProjectsByProjectIdStudiesAndStudyIdApiResponse,
-        GetProjectsByProjectIdStudiesAndStudyIdApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}`,
-        }),
-        providesTags: ['studies'],
-      }),
-      deleteProjectsByProjectIdStudiesAndStudyId: build.mutation<
-        DeleteProjectsByProjectIdStudiesAndStudyIdApiResponse,
-        DeleteProjectsByProjectIdStudiesAndStudyIdApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}`,
-          method: 'DELETE',
-        }),
-        invalidatesTags: ['studies'],
-      }),
-      patchProjectsByProjectIdStudiesAndStudyId: build.mutation<
-        PatchProjectsByProjectIdStudiesAndStudyIdApiResponse,
-        PatchProjectsByProjectIdStudiesAndStudyIdApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}`,
-          method: 'PATCH',
-          body: queryArg.studyPatchForm,
-        }),
-        invalidatesTags: ['studies'],
-      }),
-      getProjectsByProjectIdStudiesAndStudyIdScenarios: build.query<
-        GetProjectsByProjectIdStudiesAndStudyIdScenariosApiResponse,
-        GetProjectsByProjectIdStudiesAndStudyIdScenariosApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios`,
-          params: {
-            page: queryArg.page,
-            page_size: queryArg.pageSize,
-            ordering: queryArg.ordering,
-          },
-        }),
-        providesTags: ['scenarios'],
-      }),
-      postProjectsByProjectIdStudiesAndStudyIdScenarios: build.mutation<
-        PostProjectsByProjectIdStudiesAndStudyIdScenariosApiResponse,
-        PostProjectsByProjectIdStudiesAndStudyIdScenariosApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios`,
-          method: 'POST',
-          body: queryArg.scenarioCreateForm,
-        }),
-        invalidatesTags: ['scenarios'],
-      }),
-      getProjectsByProjectIdStudiesAndStudyIdScenariosScenarioId: build.query<
-        GetProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiResponse,
-        GetProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios/${queryArg.scenarioId}`,
-        }),
-        providesTags: ['scenarios'],
-      }),
-      deleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioId: build.mutation<
-        DeleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiResponse,
-        DeleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios/${queryArg.scenarioId}`,
-          method: 'DELETE',
-        }),
-        invalidatesTags: ['scenarios'],
-      }),
-      patchProjectsByProjectIdStudiesAndStudyIdScenariosScenarioId: build.mutation<
-        PatchProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiResponse,
-        PatchProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios/${queryArg.scenarioId}`,
-          method: 'PATCH',
-          body: queryArg.scenarioPatchForm,
-        }),
-        invalidatesTags: ['scenarios'],
-      }),
-      getProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNodes: build.query<
-        GetProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNodesApiResponse,
-        GetProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNodesApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios/${queryArg.scenarioId}/macro_nodes`,
-          params: {
-            page: queryArg.page,
-            page_size: queryArg.pageSize,
-          },
-        }),
-        providesTags: ['scenarios'],
-      }),
-      postProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNodes: build.mutation<
-        PostProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNodesApiResponse,
-        PostProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNodesApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios/${queryArg.scenarioId}/macro_nodes`,
-          method: 'POST',
-          body: queryArg.macroNodeBatchForm,
-        }),
-        invalidatesTags: ['scenarios'],
-      }),
-      getProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNodesNodeId: build.query<
-        GetProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNodesNodeIdApiResponse,
-        GetProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNodesNodeIdApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios/${queryArg.scenarioId}/macro_nodes/${queryArg.nodeId}`,
-        }),
-        providesTags: ['scenarios'],
-      }),
-      putProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNodesNodeId: build.mutation<
-        PutProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNodesNodeIdApiResponse,
-        PutProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNodesNodeIdApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios/${queryArg.scenarioId}/macro_nodes/${queryArg.nodeId}`,
-          method: 'PUT',
-          body: queryArg.macroNodeForm,
-        }),
-        invalidatesTags: ['scenarios'],
-      }),
-      deleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNodesNodeId: build.mutation<
-        DeleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNodesNodeIdApiResponse,
-        DeleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNodesNodeIdApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios/${queryArg.scenarioId}/macro_nodes/${queryArg.nodeId}`,
-          method: 'DELETE',
-        }),
-        invalidatesTags: ['scenarios'],
-      }),
-      getProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNotes: build.query<
-        GetProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNotesApiResponse,
-        GetProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNotesApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios/${queryArg.scenarioId}/macro_notes`,
-          params: {
-            page: queryArg.page,
-            page_size: queryArg.pageSize,
-          },
-        }),
-        providesTags: ['scenarios'],
-      }),
-      postProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNotes: build.mutation<
-        PostProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNotesApiResponse,
-        PostProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNotesApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios/${queryArg.scenarioId}/macro_notes`,
-          method: 'POST',
-          body: queryArg.macroNoteBatchForm,
-        }),
-        invalidatesTags: ['scenarios'],
-      }),
-      getProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNotesNoteId: build.query<
-        GetProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNotesNoteIdApiResponse,
-        GetProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNotesNoteIdApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios/${queryArg.scenarioId}/macro_notes/${queryArg.noteId}`,
-        }),
-        providesTags: ['scenarios'],
-      }),
-      putProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNotesNoteId: build.mutation<
-        PutProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNotesNoteIdApiResponse,
-        PutProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNotesNoteIdApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios/${queryArg.scenarioId}/macro_notes/${queryArg.noteId}`,
-          method: 'PUT',
-          body: queryArg.macroNoteForm,
-        }),
-        invalidatesTags: ['scenarios'],
-      }),
-      deleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNotesNoteId: build.mutation<
-        DeleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNotesNoteIdApiResponse,
-        DeleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNotesNoteIdApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/projects/${queryArg.projectId}/studies/${queryArg.studyId}/scenarios/${queryArg.scenarioId}/macro_notes/${queryArg.noteId}`,
-          method: 'DELETE',
-        }),
-        invalidatesTags: ['scenarios'],
-      }),
       postRollingStock: build.mutation<PostRollingStockApiResponse, PostRollingStockApiArg>({
         query: (queryArg) => ({
           url: `/rolling_stock`,
@@ -997,6 +867,51 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ['round_trips'],
       }),
+      getScenarios: build.query<GetScenariosApiResponse, GetScenariosApiArg>({
+        query: (queryArg) => ({
+          url: `/scenarios`,
+          params: {
+            study_id: queryArg.studyId,
+            page: queryArg.page,
+            page_size: queryArg.pageSize,
+            ordering: queryArg.ordering,
+          },
+        }),
+        providesTags: ['scenarios'],
+      }),
+      postScenarios: build.mutation<PostScenariosApiResponse, PostScenariosApiArg>({
+        query: (queryArg) => ({
+          url: `/scenarios`,
+          method: 'POST',
+          body: queryArg.scenarioCreateForm,
+        }),
+        invalidatesTags: ['scenarios'],
+      }),
+      getScenariosByScenarioId: build.query<
+        GetScenariosByScenarioIdApiResponse,
+        GetScenariosByScenarioIdApiArg
+      >({
+        query: (queryArg) => ({ url: `/scenarios/${queryArg.scenarioId}` }),
+        providesTags: ['scenarios'],
+      }),
+      deleteScenariosByScenarioId: build.mutation<
+        DeleteScenariosByScenarioIdApiResponse,
+        DeleteScenariosByScenarioIdApiArg
+      >({
+        query: (queryArg) => ({ url: `/scenarios/${queryArg.scenarioId}`, method: 'DELETE' }),
+        invalidatesTags: ['scenarios'],
+      }),
+      patchScenariosByScenarioId: build.mutation<
+        PatchScenariosByScenarioIdApiResponse,
+        PatchScenariosByScenarioIdApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/scenarios/${queryArg.scenarioId}`,
+          method: 'PATCH',
+          body: queryArg.scenarioPatchForm,
+        }),
+        invalidatesTags: ['scenarios'],
+      }),
       postSearch: build.mutation<PostSearchApiResponse, PostSearchApiArg>({
         query: (queryArg) => ({
           url: `/search`,
@@ -1067,6 +982,44 @@ const injectedRtkApi = api
           method: 'DELETE',
         }),
         invalidatesTags: ['stdcm_search_environment'],
+      }),
+      getStudies: build.query<GetStudiesApiResponse, GetStudiesApiArg>({
+        query: (queryArg) => ({
+          url: `/studies`,
+          params: {
+            project_id: queryArg.projectId,
+            page: queryArg.page,
+            page_size: queryArg.pageSize,
+            ordering: queryArg.ordering,
+          },
+        }),
+        providesTags: ['studies'],
+      }),
+      postStudies: build.mutation<PostStudiesApiResponse, PostStudiesApiArg>({
+        query: (queryArg) => ({ url: `/studies`, method: 'POST', body: queryArg.studyCreateForm }),
+        invalidatesTags: ['studies'],
+      }),
+      getStudiesByStudyId: build.query<GetStudiesByStudyIdApiResponse, GetStudiesByStudyIdApiArg>({
+        query: (queryArg) => ({ url: `/studies/${queryArg.studyId}` }),
+        providesTags: ['studies'],
+      }),
+      deleteStudiesByStudyId: build.mutation<
+        DeleteStudiesByStudyIdApiResponse,
+        DeleteStudiesByStudyIdApiArg
+      >({
+        query: (queryArg) => ({ url: `/studies/${queryArg.studyId}`, method: 'DELETE' }),
+        invalidatesTags: ['studies'],
+      }),
+      patchStudiesByStudyId: build.mutation<
+        PatchStudiesByStudyIdApiResponse,
+        PatchStudiesByStudyIdApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/studies/${queryArg.studyId}`,
+          method: 'PATCH',
+          body: queryArg.studyPatchForm,
+        }),
+        invalidatesTags: ['studies'],
       }),
       getSubCategory: build.query<GetSubCategoryApiResponse, GetSubCategoryApiArg>({
         query: (queryArg) => ({
@@ -1926,6 +1879,60 @@ export type GetLightRollingStockByRollingStockIdApiResponse =
 export type GetLightRollingStockByRollingStockIdApiArg = {
   rollingStockId: number;
 };
+export type GetMacroNodesApiResponse =
+  /** status 200 List of macro nodes for the requested scenario */ MacroNodeListResponse;
+export type GetMacroNodesApiArg = {
+  scenarioId: number;
+  page?: number;
+  pageSize?: number;
+};
+export type PostMacroNodesApiResponse =
+  /** status 201 Macro nodes created */ MacroNodeBatchResponse;
+export type PostMacroNodesApiArg = {
+  macroNodeBatchForm: MacroNodeBatchForm;
+};
+export type GetMacroNodesByNodeIdApiResponse =
+  /** status 200 The requested Macro node */ MacroNodeResponse;
+export type GetMacroNodesByNodeIdApiArg = {
+  nodeId: number;
+};
+export type PutMacroNodesByNodeIdApiResponse =
+  /** status 200 The updated macro node */ MacroNodeResponse;
+export type PutMacroNodesByNodeIdApiArg = {
+  nodeId: number;
+  macroNodeForm: MacroNodeForm;
+};
+export type DeleteMacroNodesByNodeIdApiResponse = unknown;
+export type DeleteMacroNodesByNodeIdApiArg = {
+  nodeId: number;
+};
+export type GetMacroNotesApiResponse =
+  /** status 200 List of macro notes for the requested scenario */ MacroNoteListResponse;
+export type GetMacroNotesApiArg = {
+  scenarioId: number;
+  page?: number;
+  pageSize?: number;
+};
+export type PostMacroNotesApiResponse =
+  /** status 201 Macro notes created */ MacroNoteBatchResponse;
+export type PostMacroNotesApiArg = {
+  macroNoteBatchForm: MacroNoteBatchForm;
+};
+export type GetMacroNotesByNoteIdApiResponse =
+  /** status 200 The requested macro note */ MacroNoteResponse;
+export type GetMacroNotesByNoteIdApiArg = {
+  noteId: number;
+};
+export type PutMacroNotesByNoteIdApiResponse =
+  /** status 200 The updated macro note */ MacroNoteResponse;
+export type PutMacroNotesByNoteIdApiArg = {
+  noteId: number;
+  macroNoteForm: MacroNoteForm;
+};
+export type DeleteMacroNotesByNoteIdApiResponse = unknown;
+export type DeleteMacroNotesByNoteIdApiArg = {
+  noteId: number;
+};
 export type DeletePacedTrainApiResponse = unknown;
 export type DeletePacedTrainApiArg = {
   body: {
@@ -2094,196 +2101,6 @@ export type PatchProjectsByProjectIdApiArg = {
   /** The fields to update */
   projectPatchForm: ProjectPatchForm;
 };
-export type GetProjectsByProjectIdStudiesApiResponse =
-  /** status 200 The list of studies */ PaginationStats & {
-    results: StudyWithScenarios[];
-  };
-export type GetProjectsByProjectIdStudiesApiArg = {
-  /** The id of a project */
-  projectId: number;
-  page?: number;
-  pageSize?: number;
-  ordering?:
-    | 'NameAsc'
-    | 'NameDesc'
-    | 'CreationDateAsc'
-    | 'CreationDateDesc'
-    | 'LastModifiedDesc'
-    | 'LastModifiedAsc';
-};
-export type PostProjectsByProjectIdStudiesApiResponse =
-  /** status 201 The created study */ StudyResponse;
-export type PostProjectsByProjectIdStudiesApiArg = {
-  /** The id of a project */
-  projectId: number;
-  studyCreateForm: StudyCreateForm;
-};
-export type GetProjectsByProjectIdStudiesAndStudyIdApiResponse =
-  /** status 200 The requested study */ StudyResponse;
-export type GetProjectsByProjectIdStudiesAndStudyIdApiArg = {
-  /** The id of a project */
-  projectId: number;
-  studyId: number;
-};
-export type DeleteProjectsByProjectIdStudiesAndStudyIdApiResponse = unknown;
-export type DeleteProjectsByProjectIdStudiesAndStudyIdApiArg = {
-  /** The id of a project */
-  projectId: number;
-  studyId: number;
-};
-export type PatchProjectsByProjectIdStudiesAndStudyIdApiResponse =
-  /** status 200 The updated study */ StudyResponse;
-export type PatchProjectsByProjectIdStudiesAndStudyIdApiArg = {
-  /** The id of a project */
-  projectId: number;
-  studyId: number;
-  /** The fields to update */
-  studyPatchForm: StudyPatchForm;
-};
-export type GetProjectsByProjectIdStudiesAndStudyIdScenariosApiResponse =
-  /** status 200 A paginated list of scenarios */ PaginationStats & {
-    results: ScenarioWithDetails[];
-  };
-export type GetProjectsByProjectIdStudiesAndStudyIdScenariosApiArg = {
-  /** The id of a project */
-  projectId: number;
-  studyId: number;
-  page?: number;
-  pageSize?: number;
-  ordering?:
-    | 'NameAsc'
-    | 'NameDesc'
-    | 'CreationDateAsc'
-    | 'CreationDateDesc'
-    | 'LastModifiedDesc'
-    | 'LastModifiedAsc';
-};
-export type PostProjectsByProjectIdStudiesAndStudyIdScenariosApiResponse =
-  /** status 201 The created scenario */ ScenarioResponse;
-export type PostProjectsByProjectIdStudiesAndStudyIdScenariosApiArg = {
-  /** The id of a project */
-  projectId: number;
-  studyId: number;
-  scenarioCreateForm: ScenarioCreateForm;
-};
-export type GetProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiResponse =
-  /** status 200 The requested scenario */ ScenarioResponse;
-export type GetProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiArg = {
-  /** The id of a project */
-  projectId: number;
-  studyId: number;
-  scenarioId: number;
-};
-export type DeleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiResponse = unknown;
-export type DeleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiArg = {
-  /** The id of a project */
-  projectId: number;
-  studyId: number;
-  scenarioId: number;
-};
-export type PatchProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiResponse =
-  /** status 200 The scenario was updated successfully */ ScenarioResponse;
-export type PatchProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdApiArg = {
-  /** The id of a project */
-  projectId: number;
-  studyId: number;
-  scenarioId: number;
-  scenarioPatchForm: ScenarioPatchForm;
-};
-export type GetProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNodesApiResponse =
-  /** status 200 List of macro nodes for the requested scenario */ MacroNodeListResponse;
-export type GetProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNodesApiArg = {
-  /** The id of a project */
-  projectId: number;
-  studyId: number;
-  scenarioId: number;
-  page?: number;
-  pageSize?: number;
-};
-export type PostProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNodesApiResponse =
-  /** status 201 Macro nodes created */ MacroNodeBatchResponse;
-export type PostProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNodesApiArg = {
-  /** The id of a project */
-  projectId: number;
-  studyId: number;
-  scenarioId: number;
-  macroNodeBatchForm: MacroNodeBatchForm;
-};
-export type GetProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNodesNodeIdApiResponse =
-  /** status 200 The requested Macro node */ MacroNodeResponse;
-export type GetProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNodesNodeIdApiArg = {
-  /** The id of a project */
-  projectId: number;
-  studyId: number;
-  scenarioId: number;
-  nodeId: number;
-};
-export type PutProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNodesNodeIdApiResponse =
-  /** status 200 The updated macro node */ MacroNodeResponse;
-export type PutProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNodesNodeIdApiArg = {
-  /** The id of a project */
-  projectId: number;
-  studyId: number;
-  scenarioId: number;
-  nodeId: number;
-  macroNodeForm: MacroNodeForm;
-};
-export type DeleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNodesNodeIdApiResponse =
-  unknown;
-export type DeleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNodesNodeIdApiArg = {
-  /** The id of a project */
-  projectId: number;
-  studyId: number;
-  scenarioId: number;
-  nodeId: number;
-};
-export type GetProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNotesApiResponse =
-  /** status 200 List of macro notes for the requested scenario */ MacroNoteListResponse;
-export type GetProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNotesApiArg = {
-  /** The id of a project */
-  projectId: number;
-  studyId: number;
-  scenarioId: number;
-  page?: number;
-  pageSize?: number;
-};
-export type PostProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNotesApiResponse =
-  /** status 201 Macro notes created */ MacroNoteBatchResponse;
-export type PostProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNotesApiArg = {
-  /** The id of a project */
-  projectId: number;
-  studyId: number;
-  scenarioId: number;
-  macroNoteBatchForm: MacroNoteBatchForm;
-};
-export type GetProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNotesNoteIdApiResponse =
-  /** status 200 The requested macro note */ MacroNoteResponse;
-export type GetProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNotesNoteIdApiArg = {
-  /** The id of a project */
-  projectId: number;
-  studyId: number;
-  scenarioId: number;
-  noteId: number;
-};
-export type PutProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNotesNoteIdApiResponse =
-  /** status 200 The updated macro note */ MacroNoteResponse;
-export type PutProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNotesNoteIdApiArg = {
-  /** The id of a project */
-  projectId: number;
-  studyId: number;
-  scenarioId: number;
-  noteId: number;
-  macroNoteForm: MacroNoteForm;
-};
-export type DeleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNotesNoteIdApiResponse =
-  unknown;
-export type DeleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNotesNoteIdApiArg = {
-  /** The id of a project */
-  projectId: number;
-  studyId: number;
-  scenarioId: number;
-  noteId: number;
-};
 export type PostRollingStockApiResponse = /** status 200 The created rolling stock */ RollingStock;
 export type PostRollingStockApiArg = {
   locked?: boolean;
@@ -2348,6 +2165,41 @@ export type PostRoundTripsTrainSchedulesDeleteApiArg = {
   /** IDs of train schedules to remove from round trips or one-way. */
   body: number[];
 };
+export type GetScenariosApiResponse =
+  /** status 200 A paginated list of scenarios */ PaginationStats & {
+    results: ScenarioWithDetails[];
+  };
+export type GetScenariosApiArg = {
+  studyId: number;
+  page?: number;
+  pageSize?: number;
+  ordering?:
+    | 'NameAsc'
+    | 'NameDesc'
+    | 'CreationDateAsc'
+    | 'CreationDateDesc'
+    | 'LastModifiedDesc'
+    | 'LastModifiedAsc';
+};
+export type PostScenariosApiResponse = /** status 201 The created scenario */ ScenarioWithDetails;
+export type PostScenariosApiArg = {
+  scenarioCreateForm: ScenarioCreateForm;
+};
+export type GetScenariosByScenarioIdApiResponse =
+  /** status 200 The requested scenario */ ScenarioResponse;
+export type GetScenariosByScenarioIdApiArg = {
+  scenarioId: number;
+};
+export type DeleteScenariosByScenarioIdApiResponse = unknown;
+export type DeleteScenariosByScenarioIdApiArg = {
+  scenarioId: number;
+};
+export type PatchScenariosByScenarioIdApiResponse =
+  /** status 200 The scenario was updated successfully */ ScenarioWithDetails;
+export type PatchScenariosByScenarioIdApiArg = {
+  scenarioId: number;
+  scenarioPatchForm: ScenarioPatchForm;
+};
 export type PostSearchApiResponse = /** status 200 The search results */ SearchResultItem[];
 export type PostSearchApiArg = {
   page?: number;
@@ -2407,6 +2259,40 @@ export type DeleteStdcmSearchEnvironmentByEnvIdApiResponse = unknown;
 export type DeleteStdcmSearchEnvironmentByEnvIdApiArg = {
   /** An stdcm search environment ID */
   envId: number;
+};
+export type GetStudiesApiResponse = /** status 200 The list of studies */ PaginationStats & {
+  results: StudyWithScenarios[];
+};
+export type GetStudiesApiArg = {
+  projectId: number;
+  page?: number;
+  pageSize?: number;
+  ordering?:
+    | 'NameAsc'
+    | 'NameDesc'
+    | 'CreationDateAsc'
+    | 'CreationDateDesc'
+    | 'LastModifiedDesc'
+    | 'LastModifiedAsc';
+};
+export type PostStudiesApiResponse = /** status 201 The created study */ StudyWithScenarios;
+export type PostStudiesApiArg = {
+  studyCreateForm: StudyCreateForm;
+};
+export type GetStudiesByStudyIdApiResponse = /** status 200 The requested study */ StudyResponse;
+export type GetStudiesByStudyIdApiArg = {
+  studyId: number;
+};
+export type DeleteStudiesByStudyIdApiResponse = unknown;
+export type DeleteStudiesByStudyIdApiArg = {
+  studyId: number;
+};
+export type PatchStudiesByStudyIdApiResponse =
+  /** status 200 The updated study */ StudyWithScenarios;
+export type PatchStudiesByStudyIdApiArg = {
+  studyId: number;
+  /** The fields to update */
+  studyPatchForm: StudyPatchForm;
 };
 export type GetSubCategoryApiResponse =
   /** status 200 The list of sub categories */ SubCategoryPage;
@@ -3850,6 +3736,61 @@ export type RollingStockLivery = {
 export type LightRollingStockWithLiveries = LightRollingStock & {
   liveries: RollingStockLivery[];
 };
+export type Tags = string[];
+export type MacroNodeResponse = {
+  connection_time: number;
+  full_name?: string | null;
+  id: number;
+  labels: Tags;
+  path_item_key: string;
+  position_x: number;
+  position_y: number;
+  trigram?: string | null;
+};
+export type MacroNodeListResponse = PaginationStats & {
+  results: MacroNodeResponse[];
+};
+export type MacroNodeBatchResponse = {
+  macro_nodes: MacroNodeResponse[];
+};
+export type MacroNodeForm = {
+  connection_time: number;
+  full_name?: string | null;
+  labels: Tags;
+  path_item_key: string;
+  position_x: number;
+  position_y: number;
+  trigram?: string | null;
+};
+export type MacroNodeBatchForm = {
+  macro_nodes: MacroNodeForm[];
+  scenario_id: number;
+};
+export type MacroNoteResponse = {
+  id: number;
+  labels: Tags;
+  text: string;
+  title: string;
+  x: number;
+  y: number;
+};
+export type MacroNoteListResponse = PaginationStats & {
+  results: MacroNoteResponse[];
+};
+export type MacroNoteBatchResponse = {
+  macro_notes: MacroNoteResponse[];
+};
+export type MacroNoteForm = {
+  labels: Tags;
+  text: string;
+  title: string;
+  x: number;
+  y: number;
+};
+export type MacroNoteBatchForm = {
+  macro_notes: MacroNoteForm[];
+  scenario_id: number;
+};
 export type SignalUpdate = {
   /** The labels of the new aspect */
   aspect_label: string;
@@ -4284,7 +4225,6 @@ export type SimulationResponse =
       core_error: InternalError;
       status: 'simulation_failed';
     };
-export type Tags = string[];
 export type Project = {
   budget?: number | null;
   creation_date: string;
@@ -4319,147 +4259,6 @@ export type ProjectPatchForm = {
   name?: string | null;
   objectives?: string | null;
   tags?: null | Tags;
-};
-export type Study = {
-  actual_end_date?: string | null;
-  budget?: number | null;
-  business_code?: string | null;
-  creation_date: string;
-  description?: string | null;
-  expected_end_date?: string | null;
-  id: number;
-  last_modification: string;
-  name: string;
-  project_id: number;
-  service_code?: string | null;
-  start_date?: string | null;
-  state: string;
-  study_type?: string | null;
-  tags: Tags;
-};
-export type StudyWithScenarios = Study & {
-  scenarios_count: number;
-};
-export type StudyResponse = Study & {
-  project: Project;
-  scenarios_count: number;
-};
-export type StudyCreateForm = {
-  actual_end_date?: string | null;
-  budget?: number | null;
-  business_code?: string | null;
-  description?: string | null;
-  expected_end_date?: string | null;
-  name: string;
-  service_code?: string | null;
-  start_date?: string | null;
-  state: string;
-  study_type?: string | null;
-  tags?: Tags;
-};
-export type StudyPatchForm = {
-  actual_end_date?: string | null;
-  budget?: number | null;
-  business_code?: string | null;
-  description?: string | null;
-  expected_end_date?: string | null;
-  name?: string | null;
-  service_code?: string | null;
-  start_date?: string | null;
-  state?: string | null;
-  study_type?: string | null;
-  tags?: null | Tags;
-};
-export type Scenario = {
-  creation_date: string;
-  description: string;
-  electrical_profile_set_id?: number;
-  id: number;
-  infra_id: number;
-  last_modification: string;
-  name: string;
-  study_id: number;
-  tags: Tags;
-  timetable_id: number;
-};
-export type ScenarioWithDetails = Scenario & {
-  infra_name: string;
-  paced_trains_count: number;
-  trains_count: number;
-};
-export type ScenarioResponse = Scenario & {
-  infra_name: string;
-  paced_trains_count: number;
-  project: Project;
-  study: Study;
-  trains_count: number;
-};
-export type ScenarioCreateForm = {
-  description?: string;
-  electrical_profile_set_id?: number | null;
-  infra_id: number;
-  name: string;
-  tags?: Tags;
-  timetable_id: number;
-};
-export type ScenarioPatchForm = {
-  description?: string | null;
-  electrical_profile_set_id?: number | null;
-  infra_id?: number | null;
-  name?: string | null;
-  tags?: null | Tags;
-};
-export type MacroNodeResponse = {
-  connection_time: number;
-  full_name?: string | null;
-  id: number;
-  labels: Tags;
-  path_item_key: string;
-  position_x: number;
-  position_y: number;
-  trigram?: string | null;
-};
-export type MacroNodeListResponse = PaginationStats & {
-  results: MacroNodeResponse[];
-};
-export type MacroNodeBatchResponse = {
-  macro_nodes: MacroNodeResponse[];
-};
-export type MacroNodeForm = {
-  connection_time: number;
-  full_name?: string | null;
-  labels: Tags;
-  path_item_key: string;
-  position_x: number;
-  position_y: number;
-  trigram?: string | null;
-};
-export type MacroNodeBatchForm = {
-  macro_nodes: MacroNodeForm[];
-};
-export type MacroNoteResponse = {
-  id: number;
-  labels: Tags;
-  text: string;
-  title: string;
-  x: number;
-  y: number;
-};
-export type MacroNoteListResponse = PaginationStats & {
-  results: MacroNoteResponse[];
-};
-export type MacroNoteBatchResponse = {
-  macro_notes: MacroNoteResponse[];
-};
-export type MacroNoteForm = {
-  labels: Tags;
-  text: string;
-  title: string;
-  x: number;
-  y: number;
-};
-export type MacroNoteBatchForm = {
-  macro_notes: MacroNoteForm[];
 };
 export type EffortCurveConditions = {
   comfort: null | Comfort;
@@ -4593,6 +4392,63 @@ export type RoundTrips = {
   one_ways?: number[];
   /** List of round trips, each represented by a tuple */
   round_trips?: number[][];
+};
+export type Scenario = {
+  creation_date: string;
+  description: string;
+  electrical_profile_set_id?: number;
+  id: number;
+  infra_id: number;
+  last_modification: string;
+  name: string;
+  study_id: number;
+  tags: Tags;
+  timetable_id: number;
+};
+export type ScenarioWithDetails = Scenario & {
+  infra_name: string;
+  paced_trains_count: number;
+  trains_count: number;
+};
+export type ScenarioCreateForm = {
+  description?: string;
+  electrical_profile_set_id?: number | null;
+  infra_id: number;
+  name: string;
+  study_id: number;
+  tags?: Tags;
+  timetable_id: number;
+};
+export type Study = {
+  actual_end_date?: string | null;
+  budget?: number | null;
+  business_code?: string | null;
+  creation_date: string;
+  description?: string | null;
+  expected_end_date?: string | null;
+  id: number;
+  last_modification: string;
+  name: string;
+  project_id: number;
+  service_code?: string | null;
+  start_date?: string | null;
+  state: string;
+  study_type?: string | null;
+  tags: Tags;
+};
+export type ScenarioResponse = Scenario & {
+  infra_name: string;
+  paced_trains_count: number;
+  project: Project;
+  study: Study;
+  trains_count: number;
+};
+export type ScenarioPatchForm = {
+  description?: string | null;
+  electrical_profile_set_id?: number | null;
+  infra_id?: number | null;
+  name?: string | null;
+  tags?: null | Tags;
 };
 export type SearchResultItemTrack = {
   infra_id: number;
@@ -4789,6 +4645,40 @@ export type StdcmSearchEnvironmentCreateForm = {
   temporary_speed_limit_group_id?: number | null;
   timetable_id: number;
   work_schedule_group_id?: number | null;
+};
+export type StudyWithScenarios = Study & {
+  scenarios_count: number;
+};
+export type StudyCreateForm = {
+  actual_end_date?: string | null;
+  budget?: number | null;
+  business_code?: string | null;
+  description?: string | null;
+  expected_end_date?: string | null;
+  name: string;
+  project_id: number;
+  service_code?: string | null;
+  start_date?: string | null;
+  state: string;
+  study_type?: string | null;
+  tags?: Tags;
+};
+export type StudyResponse = Study & {
+  project: Project;
+  scenarios_count: number;
+};
+export type StudyPatchForm = {
+  actual_end_date?: string | null;
+  budget?: number | null;
+  business_code?: string | null;
+  description?: string | null;
+  expected_end_date?: string | null;
+  name?: string | null;
+  service_code?: string | null;
+  start_date?: string | null;
+  state?: string | null;
+  study_type?: string | null;
+  tags?: null | Tags;
 };
 export type SubCategoryColor = string;
 export type SubCategory = {

@@ -82,25 +82,12 @@ const ScenarioContent = ({ activeBoards }: ScenarioContentProps) => {
 
   const refreshNge = useCallback(async () => {
     if (!activeBoards.has('macro')) return;
-    const state = new MacroEditorState(
-      infraId,
-      scenario.id,
-      scenario.study_id,
-      scenario.project.id
-    );
+    const state = new MacroEditorState(infraId, scenario.id);
 
     const dto = await loadNgeDto(state, scenario.timetable_id, dispatch, t);
     macroEditorState.current = state;
     setNgeDto(dto);
-  }, [
-    dispatch,
-    infraId,
-    scenario.study_id,
-    scenario.project.id,
-    scenario.id,
-    scenario.timetable_id,
-    activeBoards.has('macro'),
-  ]);
+  }, [dispatch, infraId, scenario.id, scenario.timetable_id, activeBoards.has('macro')]);
 
   const upsertTimetableItemsWithNge = useCallback(
     (updatedTimetableItems: TimetableItem[]) => {

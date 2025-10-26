@@ -32,26 +32,20 @@ const ScenarioExplorer = ({
     globalProjectId ? { projectId: globalProjectId } : skipToken
   );
 
-  const { data: studyDetails } =
-    osrdEditoastApi.endpoints.getProjectsByProjectIdStudiesAndStudyId.useQuery(
-      globalProjectId && globalStudyId
-        ? { projectId: globalProjectId, studyId: globalStudyId }
-        : skipToken
-    );
+  const { data: studyDetails } = osrdEditoastApi.endpoints.getStudiesByStudyId.useQuery(
+    globalStudyId ? { studyId: globalStudyId } : skipToken
+  );
 
-  const { currentData: scenario } =
-    osrdEditoastApi.endpoints.getProjectsByProjectIdStudiesAndStudyIdScenariosScenarioId.useQuery(
-      globalProjectId && globalStudyId && globalScenarioId
-        ? {
-            projectId: globalProjectId,
-            studyId: globalStudyId,
-            scenarioId: globalScenarioId,
-          }
-        : skipToken,
-      {
-        refetchOnMountOrArgChange: true,
-      }
-    );
+  const { currentData: scenario } = osrdEditoastApi.endpoints.getScenariosByScenarioId.useQuery(
+    globalScenarioId
+      ? {
+          scenarioId: globalScenarioId,
+        }
+      : skipToken,
+    {
+      refetchOnMountOrArgChange: true,
+    }
+  );
 
   const getProjectImage = async (imageId: number) => {
     try {

@@ -106,7 +106,7 @@ test.describe('Verify manchette and space time diagram', () => {
   });
 
   test.afterAll('Delete the created scenario', async () => {
-    await deleteScenario(project.id, study.id, scenarioItems.name);
+    await deleteScenario(study.id, scenarioItems.name);
   });
 
   test('Basic checks for STD/Manchette', async () => {

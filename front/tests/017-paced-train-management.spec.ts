@@ -91,7 +91,7 @@ test.describe('Verify simulation configuration in operational studies for train 
   });
 
   test.afterAll('Delete the created scenario', async () => {
-    await deleteScenario(project.id, study.id, scenario.name);
+    await deleteScenario(study.id, scenario.name);
   });
 
   test.beforeEach(

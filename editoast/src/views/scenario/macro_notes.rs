@@ -18,7 +18,6 @@ use thiserror::Error;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
 
-use super::check_project_study_scenario;
 use crate::error::InternalError;
 use crate::error::Result;
 use crate::models::Scenario;
@@ -28,12 +27,6 @@ use crate::views::AuthorizationError;
 use crate::views::pagination::PaginatedList;
 use crate::views::pagination::PaginationQueryParams;
 use crate::views::pagination::PaginationStats;
-use crate::views::project::ProjectError;
-use crate::views::project::ProjectIdParam;
-use crate::views::scenario::ScenarioError;
-use crate::views::scenario::ScenarioIdParam;
-use crate::views::study::StudyError;
-use crate::views::study::StudyIdParam;
 use editoast_models::prelude::*;
 use editoast_models::tags::Tags;
 
@@ -44,18 +37,13 @@ enum MacroNoteError {
     #[editoast_error(status = 404)]
     NotFound { note_id: i64 },
 
-    #[error("Note '{note_id}' does not belong to scenario '{scenario_id}'")]
-    #[editoast_error(status = 404)]
-    WrongScenario { note_id: i64, scenario_id: i64 },
-
     #[error(transparent)]
     #[editoast_error(status = 500)]
     Database(#[from] editoast_models::Error),
 }
 
 #[derive(IntoParams, Deserialize)]
-#[allow(unused)]
-struct MacroNoteIdParam {
+pub(in crate::views) struct MacroNoteIdParam {
     note_id: i64,
 }
 
@@ -73,6 +61,7 @@ pub(in crate::views) struct MacroNoteForm {
 #[cfg_attr(test, derive(Serialize, PartialEq, Clone))]
 pub(in crate::views) struct MacroNoteBatchForm {
     macro_notes: Vec<MacroNoteForm>,
+    scenario_id: i64,
 }
 
 impl MacroNoteForm {
@@ -125,11 +114,19 @@ pub(in crate::views) struct MacroNoteListResponse {
     results: Vec<MacroNoteResponse>,
 }
 
+#[derive(IntoParams, Deserialize)]
+#[into_params(parameter_in = Query)]
+pub(in crate::views) struct ListMacroNotesQueryParams {
+    #[param(inline)]
+    scenario_id: i64,
+}
+
+/// Return a list of notes for a given scenario
 #[editoast_derive::route]
 #[utoipa::path(
     get, path = "",
     tag = "scenarios",
-    params(ProjectIdParam, StudyIdParam, ScenarioIdParam, PaginationQueryParams<100>),
+    params(ListMacroNotesQueryParams, PaginationQueryParams<100>),
     responses(
         (status = 200, body = MacroNoteListResponse, description = "List of macro notes for the requested scenario"),
     )
@@ -137,7 +134,7 @@ pub(in crate::views) struct MacroNoteListResponse {
 pub(in crate::views) async fn list(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
-    Path((project_id, study_id, scenario_id)): Path<(i64, i64, i64)>,
+    Query(ListMacroNotesQueryParams { scenario_id }): Query<ListMacroNotesQueryParams>,
     Query(pagination_params): Query<PaginationQueryParams<100>>,
 ) -> Result<Json<MacroNoteListResponse>> {
     let authorized = auth
@@ -149,8 +146,6 @@ pub(in crate::views) async fn list(
     }
 
     let mut conn = db_pool.get().await?;
-
-    check_project_study_scenario(conn.clone(), project_id, study_id, scenario_id).await?;
 
     let settings = pagination_params
         .into_selection_settings()
@@ -167,12 +162,12 @@ pub(in crate::views) async fn list(
     }))
 }
 
+/// Create a note in batch
 #[editoast_derive::route]
 #[utoipa::path(
     post, path = "",
     tag = "scenarios",
     request_body = MacroNoteBatchForm,
-    params(ProjectIdParam, StudyIdParam, ScenarioIdParam),
     responses(
         (status = 201, body = MacroNoteBatchResponse, description = "Macro notes created"),
     )
@@ -180,8 +175,10 @@ pub(in crate::views) async fn list(
 pub(in crate::views) async fn create(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
-    Path((project_id, study_id, scenario_id)): Path<(i64, i64, i64)>,
-    Json(MacroNoteBatchForm { macro_notes }): Json<MacroNoteBatchForm>,
+    Json(MacroNoteBatchForm {
+        macro_notes,
+        scenario_id,
+    }): Json<MacroNoteBatchForm>,
 ) -> Result<impl IntoResponse> {
     let authorized = auth
         .check_roles([Role::OperationalStudies].into())
@@ -194,18 +191,8 @@ pub(in crate::views) async fn create(
     let created = Scenario::transactional_content_update(
         db_pool.get().await?,
         scenario_id,
-        move |mut conn, scenario, study, project| {
+        move |mut conn, _scenario, _study, _project| {
             async move {
-                if project.id != project_id {
-                    return Err::<_, InternalError>(ProjectError::NotFound { project_id }.into());
-                }
-                if study.id != study_id {
-                    return Err(StudyError::NotFound { study_id }.into());
-                }
-                if scenario.id != scenario_id {
-                    return Err(ScenarioError::NotFound { scenario_id }.into());
-                }
-
                 let changesets: Vec<_> = macro_notes
                     .into_iter()
                     .map(|note| note.into_macro_note_changeset(scenario_id))
@@ -214,7 +201,7 @@ pub(in crate::views) async fn create(
                 let created_macro_notes: Vec<_> =
                     MacroNote::create_batch(&mut conn, changesets).await?;
 
-                Ok(created_macro_notes)
+                Ok::<_, InternalError>(created_macro_notes)
             }
             .scope_boxed()
         },
@@ -234,7 +221,7 @@ pub(in crate::views) async fn create(
 #[utoipa::path(
     get, path = "",
     tag = "scenarios",
-    params(ProjectIdParam, StudyIdParam, ScenarioIdParam, MacroNoteIdParam),
+    params(MacroNoteIdParam),
     responses(
         (status = 200, body = MacroNoteResponse, description = "The requested macro note"),
     )
@@ -242,7 +229,7 @@ pub(in crate::views) async fn create(
 pub(in crate::views) async fn get(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
-    Path((project_id, study_id, scenario_id, note_id)): Path<(i64, i64, i64, i64)>,
+    Path(MacroNoteIdParam { note_id }): Path<MacroNoteIdParam>,
 ) -> Result<Json<MacroNoteResponse>> {
     // Checking role
     let authorized = auth
@@ -253,30 +240,22 @@ pub(in crate::views) async fn get(
         return Err(AuthorizationError::Forbidden.into());
     }
 
-    // Check for project / study / scenario
     let conn = db_pool.get().await?;
-    check_project_study_scenario(conn.clone(), project_id, study_id, scenario_id).await?;
 
-    // Get / check the note
+    // Get the note
     let macro_note =
         MacroNote::retrieve_or_fail(conn, note_id, || MacroNoteError::NotFound { note_id }).await?;
-    if macro_note.scenario_id != scenario_id {
-        return Err(MacroNoteError::WrongScenario {
-            note_id,
-            scenario_id,
-        }
-        .into());
-    }
 
     Ok(Json(MacroNoteResponse::from(macro_note)))
 }
 
+/// Update a note
 #[editoast_derive::route]
 #[utoipa::path(
     put, path = "",
     tag = "scenarios",
     request_body = MacroNoteForm,
-    params(ProjectIdParam, StudyIdParam, ScenarioIdParam, MacroNoteIdParam),
+    params(MacroNoteIdParam),
     responses(
         (status = 200, body = MacroNoteResponse, description = "The updated macro note"),
     )
@@ -284,7 +263,7 @@ pub(in crate::views) async fn get(
 pub(in crate::views) async fn update(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
-    Path((project_id, study_id, scenario_id, note_id)): Path<(i64, i64, i64, i64)>,
+    Path(MacroNoteIdParam { note_id }): Path<MacroNoteIdParam>,
     Json(note_form): Json<MacroNoteForm>,
 ) -> Result<Json<MacroNoteResponse>> {
     let authorized = auth
@@ -295,59 +274,58 @@ pub(in crate::views) async fn update(
         return Err(AuthorizationError::Forbidden.into());
     }
 
-    let updated = Scenario::transactional_content_update(
-        db_pool.get().await?,
-        scenario_id,
-        move |mut conn, scenario, study, project| {
+    let conn = db_pool.get().await?;
+
+    let updated_macro_note = conn
+        .transaction(|conn| {
             async move {
                 let note = MacroNote::retrieve_or_fail(conn.clone(), note_id, || {
                     MacroNoteError::NotFound { note_id }
                 })
                 .await?;
 
-                if project.id != project_id {
-                    return Err::<_, InternalError>(ProjectError::NotFound { project_id }.into());
-                }
-                if study.id != study_id {
-                    return Err(StudyError::NotFound { study_id }.into());
-                }
-                if scenario.id != scenario_id {
-                    return Err(ScenarioError::NotFound { scenario_id }.into());
-                }
-                if note.scenario_id != scenario_id {
-                    return Err(MacroNoteError::WrongScenario {
-                        note_id,
-                        scenario_id,
-                    }
-                    .into());
-                }
+                let updated_macro_note = Scenario::transactional_content_update(
+                    conn,
+                    note.scenario_id,
+                    move |mut conn, scenario, _study, _project| {
+                        async move {
+                            let updated_note = note_form
+                                .into_macro_note_changeset(scenario.id)
+                                .update_or_fail(&mut conn, note_id, || MacroNoteError::NotFound {
+                                    note_id,
+                                })
+                                .await?;
 
-                let updated_note = note_form
-                    .into_macro_note_changeset(scenario_id)
-                    .update_or_fail(&mut conn, note_id, || MacroNoteError::NotFound { note_id })
-                    .await?;
+                            Ok::<_, InternalError>(updated_note)
+                        }
+                        .scope_boxed()
+                    },
+                )
+                .await?;
 
-                Ok(updated_note)
+                Ok::<_, InternalError>(updated_macro_note)
             }
             .scope_boxed()
-        },
-    )
-    .await?;
+        })
+        .await?;
 
-    Ok(Json(MacroNoteResponse::from(updated)))
+    Ok(Json(MacroNoteResponse::from(updated_macro_note)))
 }
 
+/// Delete a note
 #[editoast_derive::route]
 #[utoipa::path(
     delete, path = "",
     tag = "scenarios",
-    params(ProjectIdParam, StudyIdParam, ScenarioIdParam, MacroNoteIdParam),
-    responses((status = 204, description = "The macro note was deleted successfully"),)
+    params(MacroNoteIdParam),
+    responses(
+        (status = 204, description = "The macro note was deleted successfully"),
+    )
 )]
 pub(in crate::views) async fn delete(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
-    Path((project_id, study_id, scenario_id, note_id)): Path<(i64, i64, i64, i64)>,
+    Path(MacroNoteIdParam { note_id }): Path<MacroNoteIdParam>,
 ) -> Result<impl IntoResponse> {
     let authorized = auth
         .check_roles([Role::OperationalStudies].into())
@@ -357,39 +335,32 @@ pub(in crate::views) async fn delete(
         return Err(AuthorizationError::Forbidden.into());
     }
 
-    Scenario::transactional_content_update(
-        db_pool.get().await?,
-        scenario_id,
-        move |mut conn, scenario, study, project| {
-            async move {
-                let note = MacroNote::retrieve_or_fail(conn.clone(), note_id, || {
-                    MacroNoteError::NotFound { note_id }
-                })
-                .await?;
+    let conn = db_pool.get().await?;
 
-                if project.id != project_id {
-                    return Err::<_, InternalError>(ProjectError::NotFound { project_id }.into());
-                }
-                if study.id != study_id {
-                    return Err(StudyError::NotFound { study_id }.into());
-                }
-                if scenario.id != scenario_id {
-                    return Err(ScenarioError::NotFound { scenario_id }.into());
-                }
-                if note.scenario_id != scenario_id {
-                    return Err(MacroNoteError::WrongScenario {
-                        note_id,
-                        scenario_id,
+    conn.transaction(|conn| {
+        async move {
+            let note = MacroNote::retrieve_or_fail(conn.clone(), note_id, || {
+                MacroNoteError::NotFound { note_id }
+            })
+            .await?;
+
+            Scenario::transactional_content_update(
+                conn,
+                note.scenario_id,
+                move |mut conn, _scenario, _study, _project| {
+                    async move {
+                        note.delete(&mut conn).await?;
+                        Ok::<_, InternalError>(())
                     }
-                    .into());
-                }
+                    .scope_boxed()
+                },
+            )
+            .await?;
 
-                note.delete(&mut conn).await?;
-                Ok(())
-            }
-            .scope_boxed()
-        },
-    )
+            Ok::<_, InternalError>(())
+        }
+        .scope_boxed()
+    })
     .await?;
 
     Ok(StatusCode::NO_CONTENT)
@@ -453,8 +424,8 @@ pub mod test {
         }
 
         let request = app.get(&format!(
-            "/projects/{}/studies/{}/scenarios/{}/macro_notes?page=1&page_size=3",
-            fixtures1.project.id, fixtures1.study.id, fixtures1.scenario.id
+            "/macro_notes?page=1&page_size=3&scenario_id={}",
+            fixtures1.scenario.id
         ));
         let response: MacroNoteListResponse = app
             .fetch(request)
@@ -502,14 +473,10 @@ pub mod test {
             },
         ];
 
-        let request = app
-            .post(&format!(
-                "/projects/{}/studies/{}/scenarios/{}/macro_notes",
-                fixtures.project.id, fixtures.study.id, fixtures.scenario.id
-            ))
-            .json(&MacroNoteBatchForm {
-                macro_notes: notes_data.clone(),
-            });
+        let request = app.post("/macro_notes").json(&MacroNoteBatchForm {
+            macro_notes: notes_data.clone(),
+            scenario_id: fixtures.scenario.id,
+        });
         let response: MacroNoteBatchResponse = app
             .fetch(request)
             .await
@@ -543,16 +510,10 @@ pub mod test {
             labels: Tags::new(vec!["A".to_string()]),
         }];
 
-        let request = app
-            .post(&format!(
-                "/projects/{}/studies/{}/scenarios/{}/macro_notes",
-                fixtures.project.id,
-                fixtures.study.id,
-                fixtures.scenario.id + 1
-            ))
-            .json(&MacroNoteBatchForm {
-                macro_notes: notes_data.clone(),
-            });
+        let request = app.post("/macro_notes").json(&MacroNoteBatchForm {
+            macro_notes: notes_data.clone(),
+            scenario_id: fixtures.scenario.id + 1,
+        });
         app.fetch(request)
             .await
             .assert_status(StatusCode::NOT_FOUND);
@@ -575,10 +536,7 @@ pub mod test {
             .await
             .expect("Failed to create macro note");
 
-        let request = app.get(&format!(
-            "/projects/{}/studies/{}/scenarios/{}/macro_notes/{}",
-            fixtures.project.id, fixtures.study.id, fixtures.scenario.id, note.id
-        ));
+        let request = app.get(&format!("/macro_notes/{}", note.id));
 
         let response: MacroNoteResponse = app
             .fetch(request)
@@ -592,44 +550,8 @@ pub mod test {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn get_note_not_found() {
         let app = TestAppBuilder::default_app();
-        let db_pool = app.db_pool();
-        let fixtures =
-            create_scenario_fixtures_set(&mut db_pool.get_ok(), "test_scenario_name").await;
 
-        let request = app.get(&format!(
-            "/projects/{}/studies/{}/scenarios/{}/macro_notes/999999",
-            fixtures.project.id, fixtures.study.id, fixtures.scenario.id
-        ));
-
-        app.fetch(request)
-            .await
-            .assert_status(StatusCode::NOT_FOUND);
-    }
-
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn get_note_wrong_scenario() {
-        let app = TestAppBuilder::default_app();
-        let db_pool = app.db_pool();
-        let fixtures =
-            create_scenario_fixtures_set(&mut db_pool.get_ok(), "test_scenario_name").await;
-        let fixtures_2 =
-            create_scenario_fixtures_set(&mut db_pool.get_ok(), "test_scenario_name_2").await;
-
-        let note = MacroNote::changeset()
-            .scenario_id(fixtures.scenario.id)
-            .x(rng().random_range(0..100))
-            .y(rng().random_range(0..100))
-            .title("Note title".to_string())
-            .text("Note text".to_string())
-            .labels(Tags::new(vec!["A".to_string(), "B".to_string()]))
-            .create(&mut db_pool.get_ok())
-            .await
-            .expect("Failed to create macro note");
-
-        let request = app.get(&format!(
-            "/projects/{}/studies/{}/scenarios/{}/macro_notes/{}",
-            fixtures_2.project.id, fixtures_2.study.id, fixtures_2.scenario.id, note.id
-        ));
+        let request = app.get("/macro_notes/999999");
 
         app.fetch(request)
             .await
@@ -661,12 +583,7 @@ pub mod test {
             labels: Tags::new(vec!["New label".to_string(), "B".to_string()]),
         };
 
-        let request = app
-            .put(&format!(
-                "/projects/{}/studies/{}/scenarios/{}/macro_notes/{}",
-                fixtures.project.id, fixtures.study.id, fixtures.scenario.id, note.id
-            ))
-            .json(&update);
+        let request = app.put(&format!("/macro_notes/{}", note.id)).json(&update);
 
         let response: MacroNoteResponse = app
             .fetch(request)
@@ -686,9 +603,6 @@ pub mod test {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn update_note_not_found() {
         let app = TestAppBuilder::default_app();
-        let db_pool = app.db_pool();
-        let fixtures =
-            create_scenario_fixtures_set(&mut db_pool.get_ok(), "test_scenario_name").await;
 
         let update = MacroNoteForm {
             x: 30,
@@ -698,12 +612,7 @@ pub mod test {
             labels: Tags::new(vec!["New label".to_string(), "B".to_string()]),
         };
 
-        let request = app
-            .put(&format!(
-                "/projects/{}/studies/{}/scenarios/{}/macro_notes/999999",
-                fixtures.project.id, fixtures.study.id, fixtures.scenario.id
-            ))
-            .json(&update);
+        let request = app.put("/macro_notes/999999999").json(&update);
 
         app.fetch(request)
             .await
@@ -728,10 +637,7 @@ pub mod test {
             .await
             .expect("Failed to create macro note");
 
-        let request = app.delete(&format!(
-            "/projects/{}/studies/{}/scenarios/{}/macro_notes/{}",
-            fixtures.project.id, fixtures.study.id, fixtures.scenario.id, note.id
-        ));
+        let request = app.delete(&format!("/macro_notes/{}", note.id));
 
         app.fetch(request)
             .await
@@ -746,14 +652,8 @@ pub mod test {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn delete_note_not_found() {
         let app = TestAppBuilder::default_app();
-        let db_pool = app.db_pool();
-        let fixtures =
-            create_scenario_fixtures_set(&mut db_pool.get_ok(), "test_scenario_name").await;
 
-        let request = app.delete(&format!(
-            "/projects/{}/studies/{}/scenarios/{}/macro_notes/999999",
-            fixtures.project.id, fixtures.study.id, fixtures.scenario.id
-        ));
+        let request = app.delete("/macro_notes/999999");
 
         app.fetch(request)
             .await

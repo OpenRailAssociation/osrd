@@ -92,15 +92,14 @@ def foo_project_id(session: Session) -> Iterator[int]:
 @pytest.fixture
 def foo_study_id(foo_project_id: int, session: Session) -> Iterator[int]:
     payload = {
+        "project_id": foo_project_id,
         "name": "_@Test integration study",
         "state": "Starting",
         "service_code": "AAA",
         "business_code": "BBB",
         "tags": [],
     }
-    res = session.post(
-        EDITOAST_URL + f"projects/{foo_project_id}/studies/", json=payload
-    )
+    res = session.post(EDITOAST_URL + "studies/", json=payload)
     yield res.json()["id"]
 
 
@@ -109,7 +108,7 @@ def tiny_scenario(
     tiny_infra: Infra, foo_project_id: int, foo_study_id: int, session: Session
 ) -> Iterator[Scenario]:
     scenario_id, timetable_id = create_scenario(
-        EDITOAST_URL, tiny_infra.id, foo_project_id, foo_study_id, session
+        EDITOAST_URL, tiny_infra.id, foo_study_id, session
     )
     yield Scenario(
         foo_project_id, foo_study_id, scenario_id, tiny_infra.id, timetable_id
@@ -121,7 +120,7 @@ def small_scenario(
     small_infra: Infra, foo_project_id: int, foo_study_id: int, session: Session
 ) -> Iterator[Scenario]:
     scenario_id, timetable_id = create_scenario(
-        EDITOAST_URL, small_infra.id, foo_project_id, foo_study_id, session
+        EDITOAST_URL, small_infra.id, foo_study_id, session
     )
     yield Scenario(
         foo_project_id, foo_study_id, scenario_id, small_infra.id, timetable_id
@@ -133,7 +132,7 @@ def etcs_scenario(
     etcs_infra: Infra, foo_project_id: int, foo_study_id: int, session: Session
 ) -> Iterator[Scenario]:
     scenario_id, timetable_id = create_scenario(
-        EDITOAST_URL, etcs_infra.id, foo_project_id, foo_study_id, session
+        EDITOAST_URL, etcs_infra.id, foo_study_id, session
     )
     yield Scenario(
         foo_project_id, foo_study_id, scenario_id, etcs_infra.id, timetable_id

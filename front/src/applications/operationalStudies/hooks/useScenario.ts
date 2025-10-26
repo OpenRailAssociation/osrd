@@ -10,8 +10,6 @@ import { useAppDispatch } from 'store';
 import { parseNumber } from 'utils/strings';
 
 type SimulationParams = {
-  projectId: string;
-  studyId: string;
   scenarioId: string;
 };
 
@@ -19,30 +17,17 @@ const useScenario = () => {
   const dispatch = useAppDispatch();
   const { updateInfraID } = useOsrdConfActions();
 
-  const {
-    projectId: urlProjectId,
-    studyId: urlStudyId,
-    scenarioId: urlScenarioId,
-  } = useParams() as SimulationParams;
+  const { scenarioId: urlScenarioId } = useParams() as SimulationParams;
 
-  const { projectId, studyId, scenarioId } = useMemo(
-    () => ({
-      projectId: parseNumber(urlProjectId),
-      studyId: parseNumber(urlStudyId),
-      scenarioId: parseNumber(urlScenarioId),
-    }),
-    [urlStudyId, urlProjectId, urlScenarioId]
-  );
+  const scenarioId = useMemo(() => parseNumber(urlScenarioId), [urlScenarioId]);
 
   const {
     data: scenario,
     isError: isScenarioError,
     error: errorScenario,
-  } = osrdEditoastApi.endpoints.getProjectsByProjectIdStudiesAndStudyIdScenariosScenarioId.useQuery(
-    projectId && studyId && scenarioId
+  } = osrdEditoastApi.endpoints.getScenariosByScenarioId.useQuery(
+    scenarioId
       ? {
-          projectId: projectId,
-          studyId: studyId,
           scenarioId: scenarioId,
         }
       : skipToken
@@ -62,10 +47,10 @@ const useScenario = () => {
   }, [isScenarioError, errorScenario]);
 
   useEffect(() => {
-    if (!projectId || !studyId || !scenarioId) {
-      throw new Error('Missing projectId, studyId or scenarioId');
+    if (!scenarioId) {
+      throw new Error('Missing scenarioId');
     }
-  }, [projectId, studyId, scenarioId]);
+  }, [scenarioId]);
 
   return { scenario };
 };

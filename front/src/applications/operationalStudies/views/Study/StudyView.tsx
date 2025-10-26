@@ -65,32 +65,26 @@ const StudyView = () => {
     data: study,
     isError: isCurrentStudyError,
     error: studyError,
-  } = osrdEditoastApi.endpoints.getProjectsByProjectIdStudiesAndStudyId.useQuery(
-    projectId && studyId
+  } = osrdEditoastApi.endpoints.getStudiesByStudyId.useQuery(
+    studyId
       ? {
-          projectId,
-          studyId,
+          studyId: studyId,
         }
       : skipToken
   );
 
   const [postSearch] = osrdEditoastApi.endpoints.postSearch.useMutation();
-  const [deleteScenario] =
-    osrdEditoastApi.endpoints.deleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioId.useMutation(
-      {}
-    );
+  const [deleteScenario] = osrdEditoastApi.endpoints.deleteScenariosByScenarioId.useMutation({});
 
-  const { data: scenarios } =
-    osrdEditoastApi.endpoints.getProjectsByProjectIdStudiesAndStudyIdScenarios.useQuery(
-      projectId && studyId
-        ? {
-            projectId,
-            studyId,
-            ordering: sortOption,
-            pageSize: 1000,
-          }
-        : skipToken
-    );
+  const { data: scenarios } = osrdEditoastApi.endpoints.getScenarios.useQuery(
+    studyId
+      ? {
+          studyId: studyId,
+          ordering: sortOption,
+          pageSize: 1000,
+        }
+      : skipToken
+  );
 
   const {
     selectedItemIds: selectedScenarioIds,
@@ -100,7 +94,7 @@ const StudyView = () => {
     toggleSelection: toggleScenarioSelection,
     deleteItems,
   } = useMultiSelection<ScenarioCardDetails>((scenarioId) => {
-    deleteScenario({ projectId: projectId!, studyId: studyId!, scenarioId });
+    deleteScenario({ scenarioId });
 
     // For each scenarios, clean the local storage if a manchette is saved
     const deletedScenario = scenarios!.results.find((scenario) => scenario.id === scenarioId);
@@ -284,7 +278,6 @@ const StudyView = () => {
                   <div className="study-details-state">
                     {studyStates.map(
                       (state, idx) =>
-                        study.project.id &&
                         study.id &&
                         study.state && (
                           <StateStep

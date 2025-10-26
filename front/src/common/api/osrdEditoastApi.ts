@@ -257,21 +257,16 @@ const osrdEditoastApi = generatedEditoastApi
         },
         providesTags: ['infra'],
       }),
-      getAllMacroNodes: builder.query<
-        MacroNodeResponse[],
-        { projectId: number; studyId: number; scenarioId: number }
-      >({
-        queryFn: async ({ projectId, studyId, scenarioId }, { dispatch }) => {
+      getAllMacroNodes: builder.query<MacroNodeResponse[], { scenarioId: number }>({
+        queryFn: async ({ scenarioId }, { dispatch }) => {
           const pageSize = 100;
           let page = 1;
           let reachEnd = false;
           const result: MacroNodeResponse[] = [];
           while (!reachEnd) {
             const data = await dispatch(
-              osrdEditoastApi.endpoints.getProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNodes.initiate(
+              osrdEditoastApi.endpoints.getMacroNodes.initiate(
                 {
-                  projectId,
-                  studyId,
                   scenarioId,
                   pageSize,
                   page,
@@ -339,7 +334,7 @@ const osrdEditoastApi = generatedEditoastApi
       },
 
       // Studies handling
-      getProjectsByProjectIdStudies: {
+      getStudies: {
         providesTags: (result) => [
           { type: 'studies', id: 'LIST' },
           ...(result?.results || []).map(({ id }) => ({
@@ -348,30 +343,30 @@ const osrdEditoastApi = generatedEditoastApi
           })),
         ],
       },
-      getProjectsByProjectIdStudiesAndStudyId: {
+      getStudiesByStudyId: {
         providesTags: (_result, _error, args) => [{ type: 'studies', id: args.studyId }],
       },
-      postProjectsByProjectIdStudies: {
-        invalidatesTags: (_result, _error, args) => [
-          { type: 'projects', id: args.projectId },
+      postStudies: {
+        invalidatesTags: () => [
+          { type: 'projects', id: 'LIST' },
           { type: 'studies', id: 'LIST' },
         ],
       },
-      patchProjectsByProjectIdStudiesAndStudyId: {
+      patchStudiesByStudyId: {
         invalidatesTags: (_result, _error, args) => [
-          { type: 'projects', id: args.projectId },
+          { type: 'projects', id: 'LIST' },
           { type: 'studies', id: args.studyId },
         ],
       },
-      deleteProjectsByProjectIdStudiesAndStudyId: {
-        invalidatesTags: (_result, _error, args) => [
-          { type: 'projects', id: args.projectId },
+      deleteStudiesByStudyId: {
+        invalidatesTags: () => [
+          { type: 'projects', id: 'LIST' },
           { type: 'studies', id: 'LIST' },
         ],
       },
 
       // Scenari handling
-      getProjectsByProjectIdStudiesAndStudyIdScenarios: {
+      getScenarios: {
         providesTags: (result) => [
           { type: 'scenarios', id: 'LIST' },
           ...(result?.results || []).map(({ id }) => ({
@@ -380,24 +375,24 @@ const osrdEditoastApi = generatedEditoastApi
           })),
         ],
       },
-      getProjectsByProjectIdStudiesAndStudyIdScenariosScenarioId: {
+      getScenariosByScenarioId: {
         providesTags: (_result, _error, args) => [{ type: 'scenarios', id: args.scenarioId }],
       },
-      postProjectsByProjectIdStudiesAndStudyIdScenarios: {
-        invalidatesTags: (_result, _error, args) => [
-          { type: 'studies', id: args.studyId },
+      postScenarios: {
+        invalidatesTags: () => [
+          { type: 'studies', id: 'LIST' },
           { type: 'scenarios', id: 'LIST' },
         ],
       },
-      patchProjectsByProjectIdStudiesAndStudyIdScenariosScenarioId: {
+      patchScenariosByScenarioId: {
         invalidatesTags: (_result, _error, args) => [
-          { type: 'studies', id: args.studyId },
+          { type: 'studies', id: 'LIST' },
           { type: 'scenarios', id: args.scenarioId },
         ],
       },
-      deleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioId: {
-        invalidatesTags: (_result, _error, args) => [
-          { type: 'studies', id: args.studyId },
+      deleteScenariosByScenarioId: {
+        invalidatesTags: () => [
+          { type: 'studies', id: 'LIST' },
           { type: 'scenarios', id: 'LIST' },
         ],
       },

@@ -98,7 +98,7 @@ test.describe('Edit train schedules and paced trains', () => {
   );
 
   test.afterEach('Delete the created scenario', async () => {
-    await deleteScenario(project.id, study.id, scenarioItems.name);
+    await deleteScenario(study.id, scenarioItems.name);
   });
 
   /** *************** Test 1 **************** */

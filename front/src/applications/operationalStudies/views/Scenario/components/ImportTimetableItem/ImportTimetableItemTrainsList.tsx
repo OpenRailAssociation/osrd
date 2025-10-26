@@ -168,10 +168,8 @@ const ImportTimetableItemTrainsList = ({
     osrdEditoastApi.endpoints.postRoundTripsTrainSchedules.useMutation();
   const [postPacedTrainRoundTrips] =
     osrdEditoastApi.endpoints.postRoundTripsPacedTrains.useMutation();
-  const [postMacroNodes] =
-    osrdEditoastApi.endpoints.postProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNodes.useMutation();
-  const [postMacroNotes] =
-    osrdEditoastApi.endpoints.postProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNotes.useMutation();
+  const [postMacroNodes] = osrdEditoastApi.endpoints.postMacroNodes.useMutation();
+  const [postMacroNotes] = osrdEditoastApi.endpoints.postMacroNotes.useMutation();
 
   const timetableId = scenario.timetable_id;
 
@@ -211,8 +209,6 @@ const ImportTimetableItemTrainsList = ({
     const storedNodes = await dispatch(
       osrdEditoastApi.endpoints.getAllMacroNodes.initiate(
         {
-          projectId: scenario.project.id,
-          studyId: scenario.study_id,
           scenarioId: scenario.id,
         },
         { subscribe: false }
@@ -222,10 +218,7 @@ const ImportTimetableItemTrainsList = ({
     const newMacroNodes = nodes.filter((node) => !storedNodesKeys.has(node.path_item_key));
     if (newMacroNodes.length > 0) {
       await postMacroNodes({
-        projectId: scenario.project.id,
-        studyId: scenario.study_id,
-        scenarioId: scenario.id,
-        macroNodeBatchForm: { macro_nodes: newMacroNodes },
+        macroNodeBatchForm: { macro_nodes: newMacroNodes, scenario_id: scenario.id },
       }).unwrap();
     }
     const ignoredNodesCount = nodes.length - newMacroNodes.length;
@@ -272,10 +265,7 @@ const ImportTimetableItemTrainsList = ({
 
       if (macroNotes && macroNotes.length > 0) {
         await postMacroNotes({
-          projectId: scenario.project.id,
-          studyId: scenario.study_id,
-          scenarioId: scenario.id,
-          macroNoteBatchForm: { macro_notes: macroNotes },
+          macroNoteBatchForm: { macro_notes: macroNotes, scenario_id: scenario.id },
         }).unwrap();
       }
 

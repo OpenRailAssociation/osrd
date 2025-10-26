@@ -3,14 +3,12 @@ import { cleanScenarioLocalStorage } from 'modules/scenario/helpers/utils';
 import type { AppDispatch } from 'store';
 
 const cleanLocalStorageByProject = async (
-  projectId: number,
   projectStudies: StudyWithScenarios[],
   dispatch: AppDispatch
 ) => {
   const promisedScenarios = projectStudies.map(async (study) => {
     const data = await dispatch(
-      osrdEditoastApi.endpoints.getProjectsByProjectIdStudiesAndStudyIdScenarios.initiate({
-        projectId,
+      osrdEditoastApi.endpoints.getScenarios.initiate({
         studyId: study.id,
       })
     ).unwrap();

@@ -3,7 +3,7 @@ import { useCallback, useEffect, useMemo, useState, useRef } from 'react';
 import { skipToken } from '@reduxjs/toolkit/query';
 import { keyBy, sortBy } from 'lodash';
 
-import { osrdEditoastApi, type ScenarioResponse } from 'common/api/osrdEditoastApi';
+import { osrdEditoastApi, type ScenarioWithDetails } from 'common/api/osrdEditoastApi';
 import { useRollingStockContext } from 'common/RollingStockContext';
 import useLazyProjectTrains from 'modules/simulationResult/components/SpaceTimeChartWrapper/useLazyProjectTrains';
 import {
@@ -31,7 +31,7 @@ type ScenarioBroadcastMessage =
   | { type: 'removeTimetableItems'; timetableItemIds: TimetableItemId[] }
   | { type: 'setTimetableItemDepartureTime'; timetableItemId: TimetableItemId; newDeparture: Date };
 
-const useScenarioData = (scenario: ScenarioResponse, infraId: number) => {
+const useScenarioData = (scenario: ScenarioWithDetails, infraId: number) => {
   const dispatch = useAppDispatch();
 
   const [timetableItems, setTimetableItems] = useState<TimetableItem[]>();
