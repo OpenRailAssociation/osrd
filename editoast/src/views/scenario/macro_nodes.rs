@@ -8,7 +8,6 @@ use axum::extract::Query;
 use axum::extract::State;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
-use database::DbConnection;
 use database::DbConnectionPoolV2;
 use diesel_async::scoped_futures::ScopedFutureExt;
 use editoast_derive::EditoastError;
@@ -19,7 +18,6 @@ use thiserror::Error;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
 
-use super::check_project_study_scenario;
 use crate::error::InternalError;
 use crate::error::Result;
 use crate::models::Scenario;
@@ -29,12 +27,6 @@ use crate::views::AuthorizationError;
 use crate::views::pagination::PaginatedList;
 use crate::views::pagination::PaginationQueryParams;
 use crate::views::pagination::PaginationStats;
-use crate::views::project::ProjectError;
-use crate::views::project::ProjectIdParam;
-use crate::views::scenario::ScenarioError;
-use crate::views::scenario::ScenarioIdParam;
-use crate::views::study::StudyError;
-use crate::views::study::StudyIdParam;
 use editoast_models::prelude::*;
 use editoast_models::tags::Tags;
 
@@ -51,8 +43,7 @@ enum MacroNodeError {
 }
 
 #[derive(IntoParams, Deserialize)]
-#[allow(unused)]
-struct MacroNodeIdParam {
+pub(in crate::views) struct MacroNodeIdParam {
     node_id: i64,
 }
 
@@ -72,6 +63,7 @@ pub(in crate::views) struct MacroNodeForm {
 #[cfg_attr(test, derive(Serialize, PartialEq))]
 pub(in crate::views) struct MacroNodeBatchForm {
     macro_nodes: Vec<MacroNodeForm>,
+    scenario_id: i64,
 }
 
 impl MacroNodeForm {
@@ -130,12 +122,19 @@ pub(in crate::views) struct MacroNodeListResponse {
     results: Vec<MacroNodeResponse>,
 }
 
+#[derive(IntoParams, Deserialize)]
+#[into_params(parameter_in = Query)]
+pub(in crate::views) struct ListMacroNodesQueryParams {
+    #[param(inline)]
+    scenario_id: i64,
+}
+
 /// Get macro node list by scenario id
 #[editoast_derive::route]
 #[utoipa::path(
     get, path = "",
     tag = "scenarios",
-    params(ProjectIdParam, StudyIdParam, ScenarioIdParam, PaginationQueryParams<100>),
+    params(ListMacroNodesQueryParams, PaginationQueryParams<100>),
     responses(
         (status = 200, body = MacroNodeListResponse, description = "List of macro nodes for the requested scenario"),
     )
@@ -143,7 +142,7 @@ pub(in crate::views) struct MacroNodeListResponse {
 pub(in crate::views) async fn list(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
-    Path((project_id, study_id, scenario_id)): Path<(i64, i64, i64)>,
+    Query(ListMacroNodesQueryParams { scenario_id }): Query<ListMacroNodesQueryParams>,
     Query(pagination_params): Query<PaginationQueryParams<100>>,
 ) -> Result<Json<MacroNodeListResponse>> {
     // Checking role
@@ -156,9 +155,6 @@ pub(in crate::views) async fn list(
     }
 
     let mut conn = db_pool.get().await?;
-
-    // Check for project / study / scenario
-    check_project_study_scenario(conn.clone(), project_id, study_id, scenario_id).await?;
 
     // Ask the db
     let settings = pagination_params
@@ -178,12 +174,12 @@ pub(in crate::views) async fn list(
     }))
 }
 
+/// Create macro nodes in batch
 #[editoast_derive::route]
 #[utoipa::path(
     post, path = "",
     tag = "scenarios",
     request_body = MacroNodeBatchForm,
-    params(ProjectIdParam, StudyIdParam, ScenarioIdParam),
     responses(
         (status = 201, body = MacroNodeBatchResponse, description = "Macro nodes created"),
     )
@@ -191,8 +187,10 @@ pub(in crate::views) async fn list(
 pub(in crate::views) async fn create(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
-    Path((project_id, study_id, scenario_id)): Path<(i64, i64, i64)>,
-    Json(data): Json<MacroNodeBatchForm>,
+    Json(MacroNodeBatchForm {
+        macro_nodes,
+        scenario_id,
+    }): Json<MacroNodeBatchForm>,
 ) -> Result<impl IntoResponse> {
     // Checking role
     let authorized = auth
@@ -206,27 +204,16 @@ pub(in crate::views) async fn create(
     let created = Scenario::transactional_content_update(
         db_pool.get().await?,
         scenario_id,
-        move |mut conn, scenario, study, project| {
+        move |mut conn, _scenario, _study, _project| {
             async move {
-                if project.id != project_id {
-                    return Err::<_, InternalError>(ProjectError::NotFound { project_id }.into());
-                }
-                if study.id != study_id {
-                    return Err(StudyError::NotFound { study_id }.into());
-                }
-                if scenario.id != scenario_id {
-                    return Err(ScenarioError::NotFound { scenario_id }.into());
-                }
-
-                let changesets: Vec<_> = data
-                    .macro_nodes
+                let changesets: Vec<_> = macro_nodes
                     .into_iter()
                     .map(|node| node.into_macro_node_changeset(scenario_id))
                     .collect();
 
                 let macro_nodes: Vec<_> = MacroNode::create_batch(&mut conn, changesets).await?;
 
-                Ok(macro_nodes)
+                Ok::<_, InternalError>(macro_nodes)
             }
             .scope_boxed()
         },
@@ -241,11 +228,12 @@ pub(in crate::views) async fn create(
     ))
 }
 
+/// Retrieve a macro node by id
 #[editoast_derive::route]
 #[utoipa::path(
     get, path = "",
     tag = "scenarios",
-    params(ProjectIdParam, StudyIdParam, ScenarioIdParam, MacroNodeIdParam),
+    params(MacroNodeIdParam),
     responses(
         (status = 200, body = MacroNodeResponse, description = "The requested Macro node"),
     )
@@ -253,7 +241,7 @@ pub(in crate::views) async fn create(
 pub(in crate::views) async fn get(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
-    Path((project_id, study_id, scenario_id, node_id)): Path<(i64, i64, i64, i64)>,
+    Path(MacroNodeIdParam { node_id }): Path<MacroNodeIdParam>,
 ) -> Result<Json<MacroNodeResponse>> {
     // Checking role
     let authorized = auth
@@ -264,21 +252,21 @@ pub(in crate::views) async fn get(
         return Err(AuthorizationError::Forbidden.into());
     }
 
-    // Check for project / study / scenario
     let conn = db_pool.get().await?;
-    check_project_study_scenario(conn.clone(), project_id, study_id, scenario_id).await?;
 
-    // Get / check the node
-    let macro_node = retrieve_macro_node_and_check_scenario(conn, scenario_id, node_id).await?;
+    // Get the node
+    let macro_node =
+        MacroNode::retrieve_or_fail(conn, node_id, || MacroNodeError::NotFound { node_id }).await?;
 
     Ok(Json(MacroNodeResponse::from(macro_node)))
 }
 
+/// Update a macro node
 #[editoast_derive::route]
 #[utoipa::path(
     put, path = "",
     tag = "scenarios",
-    params(ProjectIdParam, StudyIdParam, ScenarioIdParam, MacroNodeIdParam),
+    params(MacroNodeIdParam),
     request_body = MacroNodeForm,
     responses(
         (status = 200, body = MacroNodeResponse, description = "The updated macro node"),
@@ -287,7 +275,7 @@ pub(in crate::views) async fn get(
 pub(in crate::views) async fn update(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
-    Path((project_id, study_id, scenario_id, node_id)): Path<(i64, i64, i64, i64)>,
+    Path(MacroNodeIdParam { node_id }): Path<MacroNodeIdParam>,
     Json(data): Json<MacroNodeForm>,
 ) -> Result<Json<MacroNodeResponse>> {
     let authorized = auth
@@ -298,49 +286,50 @@ pub(in crate::views) async fn update(
         return Err(AuthorizationError::Forbidden.into());
     }
 
-    let updated = Scenario::transactional_content_update(
-        db_pool.get().await?,
-        scenario_id,
-        move |mut conn, scenario, study, project| {
+    let conn = db_pool.get().await?;
+
+    let updated_macro_node = conn
+        .transaction(|conn| {
             async move {
                 let node = MacroNode::retrieve_or_fail(conn.clone(), node_id, || {
                     MacroNodeError::NotFound { node_id }
                 })
                 .await?;
 
-                if project.id != project_id {
-                    return Err::<_, InternalError>(ProjectError::NotFound { project_id }.into());
-                }
-                if study.id != study_id {
-                    return Err(StudyError::NotFound { study_id }.into());
-                }
-                if scenario.id != scenario_id {
-                    return Err(ScenarioError::NotFound { scenario_id }.into());
-                }
-                if node.scenario_id != scenario_id {
-                    return Err(MacroNodeError::NotFound { node_id }.into());
-                }
+                let updated_macro_node = Scenario::transactional_content_update(
+                    conn,
+                    node.scenario_id,
+                    move |mut conn, scenario, _study, _project| {
+                        async move {
+                            let node = data
+                                .into_macro_node_changeset(scenario.id)
+                                .update_or_fail(&mut conn, node_id, || MacroNodeError::NotFound {
+                                    node_id,
+                                })
+                                .await?;
 
-                let node = data
-                    .into_macro_node_changeset(scenario_id)
-                    .update_or_fail(&mut conn, node_id, || MacroNodeError::NotFound { node_id })
-                    .await?;
+                            Ok::<_, InternalError>(node)
+                        }
+                        .scope_boxed()
+                    },
+                )
+                .await?;
 
-                Ok(node)
+                Ok::<_, InternalError>(updated_macro_node)
             }
             .scope_boxed()
-        },
-    )
-    .await?;
+        })
+        .await?;
 
-    Ok(Json(MacroNodeResponse::from(updated)))
+    Ok(Json(MacroNodeResponse::from(updated_macro_node)))
 }
 
+/// Delete a macro node
 #[editoast_derive::route]
 #[utoipa::path(
     delete, path = "",
     tag = "scenarios",
-    params(ProjectIdParam, StudyIdParam, ScenarioIdParam, MacroNodeIdParam),
+    params(MacroNodeIdParam),
     responses(
         (status = 204, description = "The macro node was deleted successfully"),
     )
@@ -348,7 +337,7 @@ pub(in crate::views) async fn update(
 pub(in crate::views) async fn delete(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
-    Path((project_id, study_id, scenario_id, node_id)): Path<(i64, i64, i64, i64)>,
+    Path(MacroNodeIdParam { node_id }): Path<MacroNodeIdParam>,
 ) -> Result<impl IntoResponse> {
     let authorized = auth
         .check_roles([Role::OperationalStudies].into())
@@ -358,51 +347,35 @@ pub(in crate::views) async fn delete(
         return Err(AuthorizationError::Forbidden.into());
     }
 
-    Scenario::transactional_content_update(
-        db_pool.get().await?,
-        scenario_id,
-        move |mut conn, scenario, study, project| {
-            async move {
-                let node = MacroNode::retrieve_or_fail(conn.clone(), node_id, || {
-                    MacroNodeError::NotFound { node_id }
-                })
-                .await?;
+    let conn = db_pool.get().await?;
 
-                if project.id != project_id {
-                    return Err::<_, InternalError>(ProjectError::NotFound { project_id }.into());
-                }
-                if study.id != study_id {
-                    return Err(StudyError::NotFound { study_id }.into());
-                }
-                if scenario.id != scenario_id {
-                    return Err(ScenarioError::NotFound { scenario_id }.into());
-                }
-                if node.scenario_id != scenario_id {
-                    return Err(MacroNodeError::NotFound { node_id }.into());
-                }
+    conn.transaction(|conn| {
+        async move {
+            let node = MacroNode::retrieve_or_fail(conn.clone(), node_id, || {
+                MacroNodeError::NotFound { node_id }
+            })
+            .await?;
 
-                node.delete(&mut conn).await?;
-                Ok(())
-            }
-            .scope_boxed()
-        },
-    )
+            Scenario::transactional_content_update(
+                conn,
+                node.scenario_id,
+                move |mut conn, _scenario, _study, _project| {
+                    async move {
+                        node.delete(&mut conn).await?;
+                        Ok::<_, InternalError>(())
+                    }
+                    .scope_boxed()
+                },
+            )
+            .await?;
+
+            Ok::<_, InternalError>(())
+        }
+        .scope_boxed()
+    })
     .await?;
 
     Ok(StatusCode::NO_CONTENT)
-}
-
-async fn retrieve_macro_node_and_check_scenario(
-    conn: DbConnection,
-    scenario_id: i64,
-    node_id: i64,
-) -> Result<MacroNode> {
-    let node =
-        MacroNode::retrieve_or_fail(conn, node_id, || MacroNodeError::NotFound { node_id }).await?;
-    if node.scenario_id != scenario_id {
-        return Err(MacroNodeError::NotFound { node_id }.into());
-    }
-    Ok(node)
 }
 
 #[cfg(test)]
@@ -413,8 +386,6 @@ pub mod test {
     use rand::rng;
 
     use super::*;
-    use crate::models::Project;
-    use crate::models::Study;
     use crate::models::fixtures::create_scenario_fixtures_set;
     use crate::views::test_app::TestAppBuilder;
 
@@ -461,14 +432,10 @@ pub mod test {
             path_item_key: "->".to_string(),
         }];
 
-        let request = app
-            .post(&format!(
-                "/projects/{}/studies/{}/scenarios/{}/macro_nodes",
-                fixtures.project.id, fixtures.study.id, fixtures.scenario.id
-            ))
-            .json(&MacroNodeBatchForm {
-                macro_nodes: nodes_data.clone(),
-            });
+        let request = app.post("/macro_nodes").json(&MacroNodeBatchForm {
+            macro_nodes: nodes_data.clone(),
+            scenario_id: fixtures.scenario.id,
+        });
         let response: MacroNodeBatchResponse = app
             .fetch(request)
             .await
@@ -500,10 +467,7 @@ pub mod test {
             path_item_key: "A->B".to_string(),
         };
         let request = app
-            .put(&format!(
-                "/projects/{}/studies/{}/scenarios/{}/macro_nodes/{}",
-                fixtures.project.id, fixtures.study.id, fixtures.scenario.id, fixtures.nodes[0].id
-            ))
+            .put(&format!("/macro_nodes/{}", fixtures.nodes[0].id))
             .json(&node_data);
         let response: MacroNodeResponse = app
             .fetch(request)
@@ -526,10 +490,7 @@ pub mod test {
         let db_pool = app.db_pool();
         let fixtures = create_macro_node_fixtures_set(&mut db_pool.get_ok(), 1).await;
 
-        let request = app.get(&format!(
-            "/projects/{}/studies/{}/scenarios/{}/macro_nodes/{}",
-            fixtures.project.id, fixtures.study.id, fixtures.scenario.id, fixtures.nodes[0].id
-        ));
+        let request = app.get(&format!("/macro_nodes/{}", fixtures.nodes[0].id));
         let response: MacroNodeResponse = app
             .fetch(request)
             .await
@@ -540,14 +501,25 @@ pub mod test {
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn get_node_not_found() {
+        let app = TestAppBuilder::default_app();
+
+        let request = app.get("/macro_nodes/999999");
+
+        app.fetch(request)
+            .await
+            .assert_status(StatusCode::NOT_FOUND);
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn list() {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
         let fixtures = create_macro_node_fixtures_set(&mut db_pool.get_ok(), 10).await;
 
         let request = app.get(&format!(
-            "/projects/{}/studies/{}/scenarios/{}/macro_nodes?page=1&page_size=5",
-            fixtures.project.id, fixtures.study.id, fixtures.scenario.id
+            "/macro_nodes?page=1&page_size=5&scenario_id={}",
+            fixtures.scenario.id
         ));
         let response: MacroNodeListResponse = app
             .fetch(request)
@@ -565,10 +537,7 @@ pub mod test {
         let db_pool = app.db_pool();
         let fixtures = create_macro_node_fixtures_set(&mut db_pool.get_ok(), 1).await;
 
-        let request = app.delete(&format!(
-            "/projects/{}/studies/{}/scenarios/{}/macro_nodes/{}",
-            fixtures.project.id, fixtures.study.id, fixtures.scenario.id, fixtures.nodes[0].id
-        ));
+        let request = app.delete(&format!("/macro_nodes/{}", fixtures.nodes[0].id));
         app.fetch(request)
             .await
             .assert_status(StatusCode::NO_CONTENT);
@@ -577,22 +546,6 @@ pub mod test {
             .await
             .unwrap();
         assert_eq!(false, found)
-    }
-
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn retrieve_with_bad_scenario() {
-        let app = TestAppBuilder::default_app();
-        let db_pool = app.db_pool();
-        let fixtures = create_macro_node_fixtures_set(&mut db_pool.get_ok(), 1).await;
-
-        let result = retrieve_macro_node_and_check_scenario(
-            db_pool.get_ok(),
-            fixtures.scenario.id + 1,
-            fixtures.nodes[0].id,
-        )
-        .await;
-
-        assert!(result.is_err());
     }
 
     fn random_string(n: usize) -> String {
@@ -604,14 +557,12 @@ pub mod test {
     }
 
     struct MacroNodeFixtureSet {
-        project: Project,
-        study: Study,
         scenario: Scenario,
         nodes: Vec<MacroNode>,
     }
 
     async fn create_macro_node_fixtures_set(
-        conn: &mut DbConnection,
+        conn: &mut database::DbConnection,
         number: usize,
     ) -> MacroNodeFixtureSet {
         let mut rng = rand::rng();
@@ -637,8 +588,6 @@ pub mod test {
         }
 
         MacroNodeFixtureSet {
-            project: fixtures.project,
-            study: fixtures.study,
             scenario: fixtures.scenario,
             nodes,
         }

@@ -107,7 +107,7 @@ test.describe('Times and Stops Tab Verification', () => {
   });
 
   test.afterEach('Delete the created scenario', async () => {
-    await deleteScenario(project.id, study.id, scenario.name);
+    await deleteScenario(study.id, scenario.name);
   });
 
   test('should correctly set and display times and stops tables', async () => {

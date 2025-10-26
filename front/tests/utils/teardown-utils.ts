@@ -45,37 +45,41 @@ export async function deleteRollingStocks(rollingStockNames: string[]): Promise<
 }
 
 /**
- * Delete a study by name if it exists.
+ * Deletes a study by name within a given project, if it exists.
  *
+ * The function uses the provided `projectId` to retrieve all scenarios for that study,
+ * finds the one matching `studyName`, and deletes it if found.
+ * Logs a warning if no matching study is found.
+ *
+ * @param projectId - The ID of the project containing the study.
  * @param studyName - The name of the study to delete.
- * @returns {Promise<void>} - A promise that resolves when the study is deleted or if not found.
+ * @returns {Promise<void>} - Resolves once the study is deleted or if not found.
  */
 export async function deleteStudy(projectId: number, studyName: string): Promise<void> {
   const study = await getStudy(projectId, studyName);
 
   if (study) {
-    await deleteApiRequest(`/api/projects/${projectId}/studies/${study.id}`);
+    await deleteApiRequest(`/api/studies/${study.id}`);
   } else {
     logger.warn(`Study "${studyName}" not found for deletion.`);
   }
 }
 
 /**
- * Delete a scenario by name if it exists.
+ * Deletes a scenario by name within a given study, if it exists.
  *
+ * The function uses the provided `studyId` to retrieve all scenarios for that study,
+ * finds the one matching `scenarioName`, and deletes it if found.
+ * Logs a warning if no matching scenario is found.
+ *
+ * @param studyId - The ID of the study containing the scenario.
  * @param scenarioName - The name of the scenario to delete.
- * @returns {Promise<void>} - A promise that resolves when the scenario is deleted or if not found.
+ * @returns {Promise<void>} - Resolves once the scenario is deleted or if not found.
  */
-export async function deleteScenario(
-  projectId: number,
-  studyId: number,
-  scenarioName: string
-): Promise<void> {
-  const scenario = await getScenario(projectId, studyId, scenarioName);
+export async function deleteScenario(studyId: number, scenarioName: string): Promise<void> {
+  const scenario = await getScenario(studyId, scenarioName);
   if (scenario?.id) {
-    await deleteApiRequest(
-      `/api/projects/${projectId}/studies/${studyId}/scenarios/${scenario.id}`
-    );
+    await deleteApiRequest(`/api/scenarios/${scenario.id}`);
   } else {
     logger.warn(`Scenario "${scenarioName}" not found for deletion.`);
   }

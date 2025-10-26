@@ -47,9 +47,10 @@ export default async function createScenario(
 
   // Create a new scenario with the provided or generated name
   const scenario: Scenario = await postApiRequest(
-    `/api/projects/${project.id}/studies/${study.id}/scenarios`,
+    `/api/scenarios`,
     {
       ...scenarioData,
+      study_id: study.id,
       name: scenarioNameFinal,
       infra_id: mediumInfra.id,
       timetable_id: timetableResult.timetable_id,

@@ -27,16 +27,6 @@ export default class MacroEditorState {
   scenarioId: number;
 
   /**
-   * Study id
-   */
-  studyId: number;
-
-  /**
-   * Project id
-   */
-  projectId: number;
-
-  /**
    * Nodes storage
    * Type null is here due to deletion, to avoid recomputing indices.
    * We are not building a db engine, so we can afford to have some null values.
@@ -96,7 +86,7 @@ export default class MacroEditorState {
   /**
    * Default constructor
    */
-  constructor(infraId: number, scenarioId: number, studyId: number, projectId: number) {
+  constructor(infraId: number, scenarioId: number) {
     this.nodeLabels = new Set<string>([]);
     this.trainrunLabels = new Set<string>([]);
     this.noteLabels = new Set<string>([]);
@@ -106,8 +96,6 @@ export default class MacroEditorState {
     this.ngeNoteIdToDbId = new Map();
     this.infraId = infraId;
     this.scenarioId = scenarioId;
-    this.studyId = studyId;
-    this.projectId = projectId;
     this.trainrunFrequencies = [];
     this.trainrunCategories = [];
     this.ngeResource = { id: 1, capacity: 0 };

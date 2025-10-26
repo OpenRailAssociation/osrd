@@ -55,7 +55,7 @@ const ScenarioHeader = ({ activeBoards, toggleBoard }: ScenarioHeaderProps) => {
   };
 
   const closeScenario = () => {
-    navigate(`/operational-studies/projects/${scenario.project.id}/studies/${scenario.study.id}`);
+    navigate(`/operational-studies/projects/${scenario.project.id}/studies/${scenario.study_id}`);
   };
 
   useEffect(() => {

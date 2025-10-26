@@ -53,8 +53,7 @@ const ProjectView = () => {
   const [isLoading, setIsLoading] = useState(true);
 
   const { projectId: urlProjectId } = useParams() as ProjectParams;
-  const [deleteStudy] =
-    osrdEditoastApi.endpoints.deleteProjectsByProjectIdStudiesAndStudyId.useMutation();
+  const [deleteStudy] = osrdEditoastApi.endpoints.deleteStudiesByStudyId.useMutation();
   const [postSearch] = osrdEditoastApi.endpoints.postSearch.useMutation();
 
   const { projectId } = useMemo(
@@ -72,7 +71,7 @@ const ProjectView = () => {
     projectId ? { projectId: +projectId } : skipToken
   );
 
-  const { data: projectStudies } = osrdEditoastApi.endpoints.getProjectsByProjectIdStudies.useQuery(
+  const { data: projectStudies } = osrdEditoastApi.endpoints.getStudies.useQuery(
     projectId
       ? {
           projectId: Number(projectId),
@@ -82,8 +81,7 @@ const ProjectView = () => {
       : skipToken
   );
 
-  const [getScenarios] =
-    osrdEditoastApi.endpoints.getProjectsByProjectIdStudiesAndStudyIdScenarios.useLazyQuery();
+  const [getScenarios] = osrdEditoastApi.endpoints.getScenarios.useLazyQuery();
 
   const {
     selectedItemIds: selectedStudyIds,
@@ -93,9 +91,9 @@ const ProjectView = () => {
     toggleSelection: toggleStudySelection,
     deleteItems,
   } = useMultiSelection<StudyCardDetails>(async (studyId) => {
-    const { data: scenarios } = await getScenarios({ projectId: projectId!, studyId });
+    const { data: scenarios } = await getScenarios({ studyId });
 
-    deleteStudy({ projectId: projectId!, studyId });
+    deleteStudy({ studyId });
 
     // For each scenario in the selected studies, clean the local storage if a manchette is saved
     if (scenarios) {

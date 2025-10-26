@@ -860,16 +860,12 @@ export const createMacroNote = async (
   note: FreeFloatingTextDto
 ) => {
   const response = await dispatch(
-    osrdEditoastApi.endpoints.postProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNotes.initiate(
-      {
-        projectId: state.projectId,
-        studyId: state.studyId,
-        scenarioId: state.scenarioId,
-        macroNoteBatchForm: {
-          macro_notes: [castNgeNoteToOsrd(note, netzgrafikDto)],
-        },
-      }
-    )
+    osrdEditoastApi.endpoints.postMacroNotes.initiate({
+      macroNoteBatchForm: {
+        scenario_id: state.scenarioId,
+        macro_notes: [castNgeNoteToOsrd(note, netzgrafikDto)],
+      },
+    })
   ).unwrap();
 
   const createdNote = response.macro_notes[0];
@@ -886,15 +882,10 @@ export const updateMacroNote = async (
   if (!dbId) throw new Error(`Note ${note.id} is not saved in the DB`);
 
   await dispatch(
-    osrdEditoastApi.endpoints.putProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNotesNoteId.initiate(
-      {
-        projectId: state.projectId,
-        studyId: state.studyId,
-        scenarioId: state.scenarioId,
-        noteId: dbId,
-        macroNoteForm: castNgeNoteToOsrd(note, netzgrafikDto),
-      }
-    )
+    osrdEditoastApi.endpoints.putMacroNotesByNoteId.initiate({
+      noteId: dbId,
+      macroNoteForm: castNgeNoteToOsrd(note, netzgrafikDto),
+    })
   ).unwrap();
 };
 
@@ -907,14 +898,9 @@ export const deleteMacroNote = async (
   if (!noteId) throw new Error(`Note ${ngeId} is not saved in the DB`);
 
   await dispatch(
-    osrdEditoastApi.endpoints.deleteProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNotesNoteId.initiate(
-      {
-        projectId: state.projectId,
-        studyId: state.studyId,
-        scenarioId: state.scenarioId,
-        noteId: noteId,
-      }
-    )
+    osrdEditoastApi.endpoints.deleteMacroNotesByNoteId.initiate({
+      noteId: noteId,
+    })
   ).unwrap();
 
   state.removeNoteMapping(ngeId);

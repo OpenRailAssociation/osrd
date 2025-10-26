@@ -60,7 +60,7 @@ test.describe('Verify train schedule elements and filters', () => {
   test.beforeAll('Fetch project, study and scenario with train schedule', async () => {
     project = await getProject(timetableItemProjectName);
     study = await getStudy(project.id, timetableItemStudyName);
-    scenario = await getScenario(project.id, study.id, timetableItemScenarioName);
+    scenario = await getScenario(study.id, timetableItemScenarioName);
     infra = await getInfra();
   });
 

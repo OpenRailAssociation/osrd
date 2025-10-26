@@ -339,11 +339,7 @@ export const loadAndIndexNge = async (
   // This can happen if we delete a timetableItem on which a node was saved.
   const savedNodes = await dispatch(
     osrdEditoastApi.endpoints.getAllMacroNodes.initiate(
-      {
-        projectId: state.projectId,
-        studyId: state.studyId,
-        scenarioId: state.scenarioId,
-      },
+      { scenarioId: state.scenarioId },
       { subscribe: false }
     )
   ).unwrap();
@@ -707,10 +703,8 @@ export const loadNgeDto = async (
   t: TFunction<'operational-studies'>
 ): Promise<NetzgrafikDto> => {
   const notesResult = await dispatch(
-    osrdEditoastApi.endpoints.getProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNotes.initiate(
+    osrdEditoastApi.endpoints.getMacroNotes.initiate(
       {
-        projectId: state.projectId,
-        studyId: state.studyId,
         scenarioId: state.scenarioId,
       },
       { subscribe: false }

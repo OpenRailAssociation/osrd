@@ -31,7 +31,6 @@ use crate::models::Study;
 use crate::views::pagination::PaginatedList as _;
 use crate::views::pagination::PaginationQueryParams;
 use crate::views::project::ProjectError;
-use crate::views::project::ProjectIdParam;
 use editoast_models::prelude::*;
 use editoast_models::tags::Tags;
 
@@ -99,6 +98,7 @@ pub(in crate::views) struct StudyCreateForm {
     pub tags: Tags,
     pub state: String,
     pub study_type: Option<String>,
+    pub project_id: i64,
 }
 
 impl<'de> Deserialize<'de> for StudyCreateForm {
@@ -118,8 +118,8 @@ impl<'de> Deserialize<'de> for StudyCreateForm {
 }
 
 impl StudyCreateForm {
-    pub fn into_study_changeset(self, project_id: i64) -> Result<Changeset<Study>> {
-        let study_changeset = Study::changeset()
+    pub fn into_study_changeset(self) -> Changeset<Study> {
+        Study::changeset()
             .name(self.name)
             .description(self.description)
             .business_code(self.business_code)
@@ -133,25 +133,23 @@ impl StudyCreateForm {
             .tags(self.tags)
             .state(self.state)
             .study_type(self.study_type)
-            .project_id(project_id);
-        Ok(study_changeset)
+            .project_id(self.project_id)
     }
 }
 
+/// Create a new study
 #[editoast_derive::route]
 #[utoipa::path(
     post, path = "",
     tag = "studies",
-    params(ProjectIdParam),
     request_body = StudyCreateForm,
     responses(
-        (status = 201, body = StudyResponse, description = "The created study"),
+        (status = 201, body = StudyWithScenarioCount, description = "The created study"),
     )
 )]
 pub(in crate::views) async fn create(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
-    Path(project_id): Path<i64>,
     Json(data): Json<StudyCreateForm>,
 ) -> Result<impl IntoResponse> {
     let authorized = auth
@@ -162,16 +160,13 @@ pub(in crate::views) async fn create(
         return Err(AuthorizationError::Forbidden.into());
     }
 
-    let (study, project) = Project::transactional_content_update(
+    let study = Project::transactional_content_update(
         db_pool.get().await?,
-        project_id,
-        |mut conn, project| {
+        data.project_id,
+        |mut conn, _project| {
             async move {
-                let study = data
-                    .into_study_changeset(project.id)?
-                    .create(&mut conn)
-                    .await?;
-                Ok::<_, InternalError>((study, project))
+                let study = data.into_study_changeset().create(&mut conn).await?;
+                Ok::<_, InternalError>(study)
             }
             .scope_boxed()
         },
@@ -179,18 +174,16 @@ pub(in crate::views) async fn create(
     .await?;
 
     // Return study with list of scenarios
-    let study_response = StudyResponse {
+    let study_response = StudyWithScenarioCount {
         study,
         scenarios_count: 0,
-        project,
     };
 
     Ok((StatusCode::CREATED, Json(study_response)))
 }
 
-#[derive(IntoParams)]
-#[allow(unused)]
-pub struct StudyIdParam {
+#[derive(IntoParams, Deserialize)]
+pub(in crate::views) struct StudyIdParam {
     study_id: i64,
 }
 
@@ -199,7 +192,7 @@ pub struct StudyIdParam {
 #[utoipa::path(
     delete, path = "",
     tag = "studies",
-    params(ProjectIdParam, StudyIdParam),
+    params(StudyIdParam),
     responses(
         (status = 204, description = "The study was deleted successfully"),
     )
@@ -207,7 +200,7 @@ pub struct StudyIdParam {
 pub(in crate::views) async fn delete(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
-    Path((project_id, study_id)): Path<(i64, i64)>,
+    Path(StudyIdParam { study_id }): Path<StudyIdParam>,
 ) -> Result<impl IntoResponse> {
     let authorized = auth
         .check_roles([Role::OperationalStudies].into())
@@ -217,11 +210,28 @@ pub(in crate::views) async fn delete(
         return Err(AuthorizationError::Forbidden.into());
     }
 
-    Project::transactional_content_update(db_pool.get().await?, project_id, |mut conn, _| {
+    let conn = db_pool.get().await?;
+
+    conn.transaction(|conn| {
         async move {
-            Study::delete_static_or_fail(&mut conn, study_id, || StudyError::NotFound { study_id })
-                .await?;
-            Ok::<_, StudyError>(())
+            let study = Study::retrieve_or_fail(conn.clone(), study_id, || StudyError::NotFound {
+                study_id,
+            })
+            .await?;
+
+            Project::transactional_content_update(conn, study.project_id, |mut conn, _| {
+                async move {
+                    Study::delete_static_or_fail(&mut conn, study_id, || StudyError::NotFound {
+                        study_id,
+                    })
+                    .await?;
+                    Ok::<_, StudyError>(())
+                }
+                .scope_boxed()
+            })
+            .await?;
+
+            Ok::<_, InternalError>(())
         }
         .scope_boxed()
     })
@@ -235,7 +245,7 @@ pub(in crate::views) async fn delete(
 #[utoipa::path(
     get, path = "",
     tag = "studies",
-    params(ProjectIdParam, StudyIdParam),
+    params(StudyIdParam),
     responses(
         (status = 200, body = StudyResponse, description = "The requested study"),
     )
@@ -243,7 +253,7 @@ pub(in crate::views) async fn delete(
 pub(in crate::views) async fn get(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
-    Path((project_id, study_id)): Path<(i64, i64)>,
+    Path(StudyIdParam { study_id }): Path<StudyIdParam>,
 ) -> Result<Json<StudyResponse>> {
     let authorized = auth
         .check_roles([Role::OperationalStudies].into())
@@ -253,27 +263,24 @@ pub(in crate::views) async fn get(
         return Err(AuthorizationError::Forbidden.into());
     }
 
-    let (project, study_scenarios) = db_pool
+    let (study_scenarios, project) = db_pool
         .get()
         .await?
         .transaction(|mut conn| {
             async move {
-                let project = Project::retrieve_or_fail(conn.clone(), project_id, || {
-                    ProjectError::NotFound { project_id }
-                })
-                .await?;
                 let study = Study::retrieve_or_fail(conn.clone(), study_id, || {
                     StudyError::NotFound { study_id }
                 })
                 .await?;
-
-                // Check if the study belongs to the project
-                if study.project_id != project_id {
-                    return Err::<_, InternalError>(StudyError::NotFound { study_id }.into());
-                }
+                let project = Project::retrieve_or_fail(conn.clone(), study.project_id, || {
+                    ProjectError::NotFound {
+                        project_id: study.project_id,
+                    }
+                })
+                .await?;
 
                 let study_scenarios = StudyWithScenarioCount::try_fetch(&mut conn, study).await?;
-                Ok((project, study_scenarios))
+                Ok::<_, InternalError>((study_scenarios, project))
             }
             .scope_boxed()
         })
@@ -347,21 +354,21 @@ impl StudyPatchForm {
 #[utoipa::path(
     patch, path = "",
     tag = "studies",
-    params(ProjectIdParam, StudyIdParam),
+    params(StudyIdParam),
     request_body(
         content = StudyPatchForm,
         description = "The fields to update"
     ),
     responses(
-        (status = 200, body = StudyResponse, description = "The updated study"),
+        (status = 200, body = StudyWithScenarioCount, description = "The updated study"),
     )
 )]
 pub(in crate::views) async fn patch(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
-    Path((project_id, study_id)): Path<(i64, i64)>,
+    Path(StudyIdParam { study_id }): Path<StudyIdParam>,
     Json(data): Json<StudyPatchForm>,
-) -> Result<Json<StudyResponse>> {
+) -> Result<Json<StudyWithScenarioCount>> {
     let authorized = auth
         .check_roles([Role::OperationalStudies].into())
         .await
@@ -370,27 +377,24 @@ pub(in crate::views) async fn patch(
         return Err(AuthorizationError::Forbidden.into());
     }
 
-    let (response, project) = Study::transactional_content_update(
+    let response = Study::transactional_content_update(
         db_pool.get().await?,
         study_id,
-        move |mut conn, _study, project| {
+        move |mut conn, _study, _project| {
             async move {
-                if project.id != project_id {
-                    return Err::<_, InternalError>(StudyError::NotFound { study_id }.into());
-                }
                 let study = data
                     .into_study_changeset()?
                     .update_or_fail(&mut conn, study_id, || StudyError::NotFound { study_id })
                     .await?;
                 let study_scenarios = StudyWithScenarioCount::try_fetch(&mut conn, study).await?;
-                Ok::<_, InternalError>((study_scenarios, project))
+                Ok::<_, InternalError>(study_scenarios)
             }
             .scope_boxed()
         },
     )
     .await?;
 
-    Ok(Json(StudyResponse::new(response, project)))
+    Ok(Json(response))
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
@@ -422,12 +426,19 @@ pub(in crate::views) struct StudyListResponse {
     stats: PaginationStats,
 }
 
+#[derive(IntoParams, Deserialize)]
+#[into_params(parameter_in = Query)]
+pub(in crate::views) struct ListStudiesQueryParams {
+    #[param(inline)]
+    project_id: i64,
+}
+
 /// Return a list of studies
 #[editoast_derive::route]
 #[utoipa::path(
     get, path = "",
     tag = "studies",
-    params(ProjectIdParam, PaginationQueryParams<1000>, OperationalStudiesOrderingParam),
+    params(ListStudiesQueryParams, PaginationQueryParams<1000>, OperationalStudiesOrderingParam),
     responses(
         (status = 200, body = inline(StudyListResponse), description = "The list of studies"),
     )
@@ -435,7 +446,7 @@ pub(in crate::views) struct StudyListResponse {
 pub(in crate::views) async fn list(
     State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
-    Path(project_id): Path<i64>,
+    Query(ListStudiesQueryParams { project_id }): Query<ListStudiesQueryParams>,
     Query(pagination_params): Query<PaginationQueryParams<1000>>,
     Query(ordering_params): Query<OperationalStudiesOrderingParam>,
 ) -> Result<Json<StudyListResponse>> {
@@ -490,17 +501,16 @@ pub mod tests {
 
         let created_project = create_project(&mut db_pool.get_ok(), "test_project_name").await;
 
-        let request = app
-            .post(&format!("/projects/{}/studies/", created_project.id))
-            .json(&json!({
-                "name": "study_test",
-                "description": "Study description",
-                "state": "Starting",
-                "business_code": "",
-                "service_code": "",
-                "study_type": "",
-            }));
-        let response: StudyResponse = app
+        let request = app.post("/studies/").json(&json!({
+            "name": "study_test",
+            "description": "Study description",
+            "state": "Starting",
+            "business_code": "",
+            "service_code": "",
+            "study_type": "",
+            "project_id": created_project.id,
+        }));
+        let response: StudyWithScenarioCount = app
             .fetch(request)
             .await
             .assert_status(StatusCode::CREATED)
@@ -525,7 +535,9 @@ pub mod tests {
         let created_study =
             create_study(&mut db_pool.get_ok(), "test_study_name", created_project.id).await;
 
-        let request = app.get(&format!("/projects/{}/studies/", created_project.id));
+        let request = app
+            .get("/studies")
+            .add_query_param("project_id", created_project.id);
 
         let response: StudyListResponse = app
             .fetch(request)
@@ -552,10 +564,7 @@ pub mod tests {
         let created_study =
             create_study(&mut db_pool.get_ok(), "test_study_name", created_project.id).await;
 
-        let request = app.get(&format!(
-            "/projects/{}/studies/{}",
-            created_project.id, created_study.id
-        ));
+        let request = app.get(&format!("/studies/{}", created_study.id));
 
         let response: StudyResponse = app
             .fetch(request)
@@ -565,7 +574,6 @@ pub mod tests {
 
         assert_eq!(response.study, created_study);
         assert_eq!(response.study.project_id, created_project.id);
-        assert_eq!(response.project, created_project);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -578,11 +586,7 @@ pub mod tests {
         let created_study =
             create_study(&mut db_pool.get_ok(), "test_study_name", created_project.id).await;
 
-        let request = app.get(&format!(
-            "/projects/{}/studies/{}",
-            created_project.id,
-            created_study.id + 1000
-        ));
+        let request = app.get(&format!("/studies/{}", created_study.id + 1000));
 
         app.fetch(request)
             .await
@@ -599,10 +603,7 @@ pub mod tests {
         let created_study =
             create_study(&mut db_pool.get_ok(), "test_study_name", created_project.id).await;
 
-        let request = app.delete(&format!(
-            "/projects/{}/studies/{}",
-            created_project.id, created_study.id
-        ));
+        let request = app.delete(&format!("/studies/{}", created_study.id));
 
         app.fetch(request)
             .await
@@ -629,10 +630,7 @@ pub mod tests {
         let study_budget = 20000;
 
         let request = app
-            .patch(&format!(
-                "/projects/{}/studies/{}",
-                created_project.id, created_study.id
-            ))
+            .patch(&format!("/studies/{}", created_study.id))
             .json(&json!({
                 "name": study_name,
                 "budget": study_budget,

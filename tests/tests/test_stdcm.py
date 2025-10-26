@@ -54,9 +54,7 @@ def test_empty_timetable(
     session: Session,
 ):
     op_study = create_op_study(EDITOAST_URL, foo_project_id, session)
-    _, timetable = create_scenario(
-        EDITOAST_URL, small_infra.id, foo_project_id, op_study, session
-    )
+    _, timetable = create_scenario(EDITOAST_URL, small_infra.id, op_study, session)
     payload = {
         "rolling_stock_id": fast_rolling_stock,
         "timetable_id": timetable,
@@ -85,9 +83,7 @@ def test_empty_timetable_with_stop(
     session: Session,
 ):
     op_study = create_op_study(EDITOAST_URL, foo_project_id, session)
-    _, timetable = create_scenario(
-        EDITOAST_URL, small_infra.id, foo_project_id, op_study, session
-    )
+    _, timetable = create_scenario(EDITOAST_URL, small_infra.id, op_study, session)
     payload = {
         "rolling_stock_id": fast_rolling_stock,
         "timetable_id": timetable,

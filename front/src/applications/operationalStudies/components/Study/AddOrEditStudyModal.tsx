@@ -35,7 +35,7 @@ import useOutsideClick from 'utils/hooks/useOutsideClick';
 
 import { createSelectOptions, checkStudyFields } from './utils';
 
-export type StudyForm = StudyCreateForm & {
+export type StudyForm = Omit<StudyCreateForm, 'project_id'> & {
   id?: number;
 };
 
@@ -67,18 +67,18 @@ const AddOrEditStudyModal = ({ editionMode, study, scenarios }: AddOrEditStudyMo
   const { t } = useTranslation(['operational-studies', 'translation']);
   const { openModal } = useModal();
   const { closeModal, isOpen } = useContext(ModalContext);
+  const { projectId } = useParams() as StudyParams;
   const [currentStudy, setCurrentStudy] = useState<StudyForm>(study || emptyStudy);
   const [displayErrors, setDisplayErrors] = useState(false);
-  const { projectId } = useParams() as StudyParams;
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
 
   const [createStudies, { error: createStudyError }] =
-    osrdEditoastApi.endpoints.postProjectsByProjectIdStudies.useMutation();
+    osrdEditoastApi.endpoints.postStudies.useMutation();
   const [patchStudies, { error: patchStudyError }] =
-    osrdEditoastApi.endpoints.patchProjectsByProjectIdStudiesAndStudyId.useMutation();
+    osrdEditoastApi.endpoints.patchStudiesByStudyId.useMutation();
   const [deleteStudies, { error: deleteStudyError }] =
-    osrdEditoastApi.endpoints.deleteProjectsByProjectIdStudiesAndStudyId.useMutation();
+    osrdEditoastApi.endpoints.deleteStudiesByStudyId.useMutation();
 
   const studyStateOptions = createSelectOptions(t, studyStates);
 
@@ -115,8 +115,7 @@ const AddOrEditStudyModal = ({ editionMode, study, scenarios }: AddOrEditStudyMo
       setDisplayErrors(true);
     } else {
       createStudies({
-        projectId: +projectId,
-        studyCreateForm: currentStudy,
+        studyCreateForm: { ...currentStudy, project_id: parseInt(projectId, 10) },
       })
         .unwrap()
         .then((createdStudy) => {
@@ -131,7 +130,6 @@ const AddOrEditStudyModal = ({ editionMode, study, scenarios }: AddOrEditStudyMo
       setDisplayErrors(true);
     } else if (study?.id && projectId) {
       patchStudies({
-        projectId: +projectId,
         studyId: study.id,
         studyPatchForm: currentStudy,
       })
@@ -151,7 +149,6 @@ const AddOrEditStudyModal = ({ editionMode, study, scenarios }: AddOrEditStudyMo
   const deleteStudy = () => {
     if (study?.id && projectId) {
       deleteStudies({
-        projectId: +projectId,
         studyId: study.id,
       })
         .unwrap()

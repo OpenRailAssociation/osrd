@@ -112,15 +112,21 @@ fn service_router() -> router::DocumentedRouter {
 
     router::DocumentedRouter::root(|path| {
         path
+            //
             // random stuff
+            //
             .route("/health", get!(health))
             .route("/version", get!(version))
             .route("/worker_load", post!(worker_load::worker_load))
-
+            //
             // authorization
+            //
             .nests("/authz", |path| {
                 path.route("/grants", post!(authz::update_grants))
-                    .route("/{resource_type}/{resource_id}", get!(authz::subjects_with_grant_on_resource))
+                    .route(
+                        "/{resource_type}/{resource_id}",
+                        get!(authz::subjects_with_grant_on_resource),
+                    )
                     .nests("/me", |path| {
                         path.route("/", get!(authz::whoami))
                             .route("/groups", get!(authz::user_groups))
@@ -128,12 +134,19 @@ fn service_router() -> router::DocumentedRouter {
                             .route("/privileges", post!(authz::user_privileges))
                     })
             })
-
+            //
             // infra & map
+            //
             .route("/fonts/{font}/{glyph}", get!(fonts::fonts))
             .nests("/layers", |path| {
-                path.route("/layer/{layer_slug}/mvt/{view_slug}", get!(layers::layer_view))
-                    .route("/tile/{layer_slug}/{view_slug}/{z}/{x}/{y}", get!(layers::cache_and_get_mvt_tile))
+                path.route(
+                    "/layer/{layer_slug}/mvt/{view_slug}",
+                    get!(layers::layer_view),
+                )
+                .route(
+                    "/tile/{layer_slug}/{view_slug}/{z}/{x}/{y}",
+                    get!(layers::cache_and_get_mvt_tile),
+                )
             })
             .nests("/sprites", |path| {
                 path.route("/signaling_systems", get!(sprites::signaling_systems))
@@ -153,27 +166,42 @@ fn service_router() -> router::DocumentedRouter {
                             .route("/", put!(infra::put))
                             .route("/auto_fixes", get!(infra::auto_fixes::list_auto_fixes))
                             .route("/clone", post!(infra::clone))
-                            .route("/delimited_area", get!(infra::delimited_area::delimited_area))
+                            .route(
+                                "/delimited_area",
+                                get!(infra::delimited_area::delimited_area),
+                            )
                             .route("/errors", get!(infra::errors::list_errors))
                             .route("/lock", post!(infra::lock))
-                            .route("/match_operational_points", post!(infra::match_operational_points))
+                            .route(
+                                "/match_operational_points",
+                                post!(infra::match_operational_points),
+                            )
                             .route("/path_properties", post!(path::properties::post))
                             .route("/railjson", get!(infra::railjson::get_railjson))
                             .route("/speed_limit_tags", get!(infra::get_speed_limit_tags))
-                            .route("/split_track_section", post!(infra::edition::split_track_section))
+                            .route(
+                                "/split_track_section",
+                                post!(infra::edition::split_track_section),
+                            )
                             .route("/switch_types", get!(infra::get_switch_types))
                             .route("/unlock", post!(infra::unlock))
                             .route("/voltages", get!(infra::get_voltages))
                             .route("/attached/{track_id}", get!(infra::attached::attached))
-                            .route("/lines/{line_code}/bbox",  get!(infra::lines::get_line_bbox))
+                            .route("/lines/{line_code}/bbox", get!(infra::lines::get_line_bbox))
                             .nests("/pathfinding", |path| {
                                 path.route("/", post!(infra::pathfinding::pathfinding_view))
                                     .route("/blocks", post!(path::pathfinding::post))
                             })
                             .nests("/routes", |path| {
                                 path.route("/nodes", post!(infra::routes::get_routes_nodes))
-                                    .route("/track_ranges", get!(infra::routes::get_routes_track_ranges))
-                                    .route("/{waypoint_type}/{waypoint_id}", get!(infra::routes::get_routes_from_waypoint))
+                                    .route(
+                                        "/track_ranges",
+                                        get!(infra::routes::get_routes_track_ranges),
+                                    )
+                                    .route(
+                                        "/{waypoint_type}/{waypoint_id}",
+                                        get!(infra::routes::get_routes_from_waypoint),
+                                    )
                             })
                             .nests("/objects/{object_type}", |path| {
                                 path.route("/", post!(infra::objects::get_objects))
@@ -181,8 +209,9 @@ fn service_router() -> router::DocumentedRouter {
                             })
                     })
             })
-
+            //
             // timetable & simulations
+            //
             .nests("/timetable", |path| {
                 path.route("/", post!(timetable::post))
                     .nests("/{id}", |path| {
@@ -196,7 +225,10 @@ fn service_router() -> router::DocumentedRouter {
                             })
                             .nests("/round_trips", |path| {
                                 path.route("/paced_trains", get!(round_trips::list_paced_trains))
-                                    .route("/train_schedules", get!(round_trips::list_train_schedules))
+                                    .route(
+                                        "/train_schedules",
+                                        get!(round_trips::list_train_schedules),
+                                    )
                             })
                             .nests("/train_schedules", |path| {
                                 path.route("/", get!(timetable::get_train_schedules))
@@ -204,33 +236,69 @@ fn service_router() -> router::DocumentedRouter {
                             })
                     })
             })
-            .route("/similar_trains", post!(timetable::similar_trains::similar_trains)) // TODO: put under /timtable
+            .route(
+                "/similar_trains", // TODO: put under /timetable
+                post!(timetable::similar_trains::similar_trains),
+            )
             .nests("/train_schedule", |path| {
                 path.route("/", delete!(timetable::train_schedule::delete))
-                    .route("/occupancy_blocks", post!(timetable::train_schedule::occupancy_blocks))
-                    .route("/project_path", post!(timetable::train_schedule::project_path))
-                    .route("/project_path_op", post!(timetable::train_schedule::project_path_op))
-                    .route("/simulation_summary", post!(timetable::train_schedule::simulation_summary))
-                    .route("/track_occupancy", post!(timetable::train_schedule::track_occupancy))
+                    .route(
+                        "/occupancy_blocks",
+                        post!(timetable::train_schedule::occupancy_blocks),
+                    )
+                    .route(
+                        "/project_path",
+                        post!(timetable::train_schedule::project_path),
+                    )
+                    .route(
+                        "/project_path_op",
+                        post!(timetable::train_schedule::project_path_op),
+                    )
+                    .route(
+                        "/simulation_summary",
+                        post!(timetable::train_schedule::simulation_summary),
+                    )
+                    .route(
+                        "/track_occupancy",
+                        post!(timetable::train_schedule::track_occupancy),
+                    )
                     .nests("/{id}", |path| {
                         path.route("/", get!(timetable::train_schedule::get))
                             .route("/", put!(timetable::train_schedule::put))
-                            .route("/etcs_braking_curves", get!(timetable::train_schedule::etcs_braking_curves))
+                            .route(
+                                "/etcs_braking_curves",
+                                get!(timetable::train_schedule::etcs_braking_curves),
+                            )
                             .route("/path", get!(timetable::train_schedule::get_path))
                             .route("/simulation", get!(timetable::train_schedule::simulation))
                     })
             })
             .nests("/paced_train", |path| {
                 path.route("/", delete!(timetable::paced_train::delete))
-                    .route("/occupancy_blocks", post!(timetable::paced_train::occupancy_blocks))
+                    .route(
+                        "/occupancy_blocks",
+                        post!(timetable::paced_train::occupancy_blocks),
+                    )
                     .route("/project_path", post!(timetable::paced_train::project_path))
-                    .route("/project_path_op", post!(timetable::paced_train::project_path_op))
-                    .route("/simulation_summary", post!(timetable::paced_train::simulation_summary))
-                    .route("/track_occupancy", post!(timetable::paced_train::track_occupancy))
+                    .route(
+                        "/project_path_op",
+                        post!(timetable::paced_train::project_path_op),
+                    )
+                    .route(
+                        "/simulation_summary",
+                        post!(timetable::paced_train::simulation_summary),
+                    )
+                    .route(
+                        "/track_occupancy",
+                        post!(timetable::paced_train::track_occupancy),
+                    )
                     .nests("/{id}", |path| {
                         path.route("/", get!(timetable::paced_train::get_by_id))
                             .route("/", put!(timetable::paced_train::update_paced_train))
-                            .route("/etcs_braking_curves", get!(timetable::paced_train::etcs_braking_curves))
+                            .route(
+                                "/etcs_braking_curves",
+                                get!(timetable::paced_train::etcs_braking_curves),
+                            )
                             .route("/path", get!(timetable::paced_train::get_path))
                             .route("/simulation", get!(timetable::paced_train::simulation))
                     })
@@ -252,8 +320,9 @@ fn service_router() -> router::DocumentedRouter {
                         path.route("/", delete!(sub_categories::delete_sub_category))
                     })
             })
-
+            //
             // simulation environment
+            //
             .nests("/stdcm/search_environment", |path| {
                 path.route("/", get!(stdcm_search_environment::retrieve_latest))
                     .route("/", post!(stdcm_search_environment::create))
@@ -273,7 +342,10 @@ fn service_router() -> router::DocumentedRouter {
                             })
                     })
             })
-            .route("/temporary_speed_limit_group", post!(temporary_speed_limits::create_temporary_speed_limit_group))
+            .route(
+                "/temporary_speed_limit_group",
+                post!(temporary_speed_limits::create_temporary_speed_limit_group),
+            )
             .nests("/electrical_profile_set", |path| {
                 path.route("/", get!(electrical_profiles::list))
                     .route("/", post!(electrical_profiles::post_electrical_profile))
@@ -283,8 +355,9 @@ fn service_router() -> router::DocumentedRouter {
                             .route("/level_order", get!(electrical_profiles::get_level_order))
                     })
             })
-
+            //
             // operational studies
+            //
             .nests("/documents", |path| {
                 path.route("/", post!(documents::post))
                     .nests("/{document_key}", |path| {
@@ -299,52 +372,47 @@ fn service_router() -> router::DocumentedRouter {
                         path.route("/", get!(project::get))
                             .route("/", delete!(project::delete))
                             .route("/", patch!(project::patch))
-                            .nests("/studies", |path| {
-                                path.route("/", post!(study::create))
-                                    .route("/", get!(study::list))
-                                    .nests("/{study_id}", |path| {
-                                        path.route("/", get!(study::get))
-                                            .route("/", delete!(study::delete))
-                                            .route("/", patch!(study::patch))
-                                            .nests("/scenarios", |path| {
-                                                path.route("/", post!(scenario::create))
-                                                    .route("/", get!(scenario::list))
-                                                    .nests("/{scenario_id}", |path| {
-                                                        path.route("/", get!(scenario::get))
-                                                            .route("/", delete!(scenario::delete))
-                                                            .route("/", patch!(scenario::patch))
-                                                            .nests("/macro_nodes", |path| {
-                                                                path.route("/", get!(scenario::macro_nodes::list))
-                                                                    .route("/", post!(scenario::macro_nodes::create))
-                                                                    .nests("/{node_id}", |path| {
-                                                                        path.route("/", get!(scenario::macro_nodes::get))
-                                                                            .route(
-                                                                                "/",
-                                                                                put!(scenario::macro_nodes::update),
-                                                                            )
-                                                                            .route(
-                                                                                "/",
-                                                                                delete!(scenario::macro_nodes::delete),
-                                                                            )
-                                                                    })
-                                                            })
-                                                            .nests("/macro_notes", |path| {
-                                                                path.route("/", get!(scenario::macro_notes::list))
-                                                                    .route("/", post!(scenario::macro_notes::create))
-                                                                    .nests("/{note_id}", |path| {
-                                                                    path.route("/", get!(scenario::macro_notes::get))
-                                                                        .route("/", put!(scenario::macro_notes::update))
-                                                                        .route("/", delete!(scenario::macro_notes::delete))
-                                                                })
-                                                            })
-                                                    })
-                                            })
-                                    })
-                            })
                     })
             })
-
+            .nests("/studies", |path| {
+                path.route("/", post!(study::create))
+                    .route("/", get!(study::list))
+                    .nests("/{study_id}", |path| {
+                        path.route("/", get!(study::get))
+                            .route("/", delete!(study::delete))
+                            .route("/", patch!(study::patch))
+                    })
+            })
+            .nests("/scenarios", |path| {
+                path.route("/", post!(scenario::create))
+                    .route("/", get!(scenario::list))
+                    .nests("/{scenario_id}", |path| {
+                        path.route("/", get!(scenario::get))
+                            .route("/", delete!(scenario::delete))
+                            .route("/", patch!(scenario::patch))
+                    })
+            })
+            .nests("/macro_nodes", |path| {
+                path.route("/", get!(scenario::macro_nodes::list))
+                    .route("/", post!(scenario::macro_nodes::create))
+                    .nests("/{node_id}", |path| {
+                        path.route("/", get!(scenario::macro_nodes::get))
+                            .route("/", put!(scenario::macro_nodes::update))
+                            .route("/", delete!(scenario::macro_nodes::delete))
+                    })
+            })
+            .nests("/macro_notes", |path| {
+                path.route("/", get!(scenario::macro_notes::list))
+                    .route("/", post!(scenario::macro_notes::create))
+                    .nests("/{note_id}", |path| {
+                        path.route("/", get!(scenario::macro_notes::get))
+                            .route("/", put!(scenario::macro_notes::update))
+                            .route("/", delete!(scenario::macro_notes::delete))
+                    })
+            })
+            //
             // rolling stock
+            //
             .nests("/rolling_stock", |path| {
                 path.route("/", post!(rolling_stock::create))
                     .route(
@@ -367,7 +435,10 @@ fn service_router() -> router::DocumentedRouter {
             .nests("/light_rolling_stock", |path| {
                 path.route("/", get!(rolling_stock::light::list))
                     // /!\ Order
-                    .route("/name/{rolling_stock_name}", get!(rolling_stock::light::get_by_name))
+                    .route(
+                        "/name/{rolling_stock_name}",
+                        get!(rolling_stock::light::get_by_name),
+                    )
                     .route("/{rolling_stock_id}", get!(rolling_stock::light::get))
             })
             .nests("/towed_rolling_stock", |path| {

@@ -58,7 +58,7 @@ test.describe('Verify train schedule elements and filters', () => {
   );
 
   test.afterAll('Delete the created scenario', async () => {
-    await deleteScenario(project.id, study.id, scenarioItems.name);
+    await deleteScenario(study.id, scenarioItems.name);
   });
 
   test.beforeEach('Go to scenario page', async ({ page }) => {

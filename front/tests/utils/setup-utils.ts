@@ -138,9 +138,10 @@ export async function createProject(projectName = globalProjectName): Promise<Pr
  */
 export async function createStudy(projectId: number, studyName = globalStudyName): Promise<Study> {
   const study: Study = await postApiRequest(
-    `/api/projects/${projectId}/studies`,
+    `/api/studies`,
     {
       ...studyData,
+      project_id: projectId,
       name: studyName,
       budget: 1234567890,
     } as StudyCreateForm,

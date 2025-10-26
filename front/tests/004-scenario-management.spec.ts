@@ -78,7 +78,7 @@ test.describe('Validate the Scenario creation workflow', () => {
     });
 
     await test.step('Delete created scenario', async () => {
-      await deleteScenario(project.id, study.id, scenarioName);
+      await deleteScenario(study.id, scenarioName);
     });
   });
 
@@ -129,7 +129,7 @@ test.describe('Validate the Scenario creation workflow', () => {
     });
 
     await test.step('Delete updated scenario', async () => {
-      await deleteScenario(project.id, study.id, updatedScenarioName);
+      await deleteScenario(study.id, updatedScenarioName);
     });
   });
 

@@ -62,7 +62,7 @@ test.describe('Verify osrd nge conversion', () => {
   });
 
   test.afterEach('Delete the created scenario', async () => {
-    await deleteScenario(project.id, study.id, scenarioItems.name);
+    await deleteScenario(study.id, scenarioItems.name);
   });
 
   test('Verify NGE train data', async () => {

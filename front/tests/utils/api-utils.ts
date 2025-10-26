@@ -4,8 +4,6 @@ import { v4 as uuidv4 } from 'uuid';
 import type {
   ElectricalProfileSet,
   GetProjectsApiResponse,
-  GetProjectsByProjectIdStudiesApiResponse,
-  GetProjectsByProjectIdStudiesAndStudyIdScenariosApiResponse,
   LightElectricalProfileSet,
   GetInfraApiResponse,
   ProjectWithStudies,
@@ -22,6 +20,8 @@ import type {
   PaginationStats,
   WorkerStatus,
   StdcmSearchEnvironmentCreateForm,
+  GetStudiesApiResponse,
+  GetScenariosApiResponse,
 } from 'common/api/osrdEditoastApi';
 
 import {
@@ -189,28 +189,24 @@ export const getProject = async (projectName = globalProjectName): Promise<Proje
  * @returns {Promise<Study>} - The matching study data.
  */
 export const getStudy = async (projectId: number, studyName = globalStudyName): Promise<Study> => {
-  const studies: GetProjectsByProjectIdStudiesApiResponse = await getApiRequest(
-    `/api/projects/${projectId}/studies`
+  const studies: GetStudiesApiResponse = await getApiRequest(
+    `/api/studies?project_id=${projectId}`
   );
   const study = studies.results.find((s: StudyWithScenarios) => s.name === studyName);
   return study as Study;
 };
 
 /**
- * Retrieve scenario data by project ID, study ID, and scenario name.
+ * Retrieve scenario data by study ID, and scenario name.
  *
- * @param projectId - The ID of the project.
  * @param studyId - The ID of the study.
  * @param scenarioName - The name of the scenario to retrieve.
  * @returns {Promise<Scenario>} - The matching scenario data.
  */
-export const getScenario = async (
-  projectId: number,
-  studyId: number,
-  scenarioName: string
-): Promise<Scenario> => {
-  const scenarios: GetProjectsByProjectIdStudiesAndStudyIdScenariosApiResponse =
-    await getApiRequest(`/api/projects/${projectId}/studies/${studyId}/scenarios`);
+export const getScenario = async (studyId: number, scenarioName: string): Promise<Scenario> => {
+  const scenarios: GetScenariosApiResponse = await getApiRequest(
+    `/api/scenarios?study_id=${studyId}`
+  );
   const scenario = scenarios.results.find((s: ScenarioWithDetails) => s.name === scenarioName);
   return scenario as Scenario;
 };

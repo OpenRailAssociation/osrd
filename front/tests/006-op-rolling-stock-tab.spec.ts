@@ -37,7 +37,7 @@ test.describe('Rolling stock Tab Verification', () => {
   });
 
   test.afterAll('Delete the created scenario', async () => {
-    await deleteScenario(project.id, study.id, scenario.name);
+    await deleteScenario(study.id, scenario.name);
   });
 
   test.beforeEach('Navigate to the scenario page', async ({ page }) => {

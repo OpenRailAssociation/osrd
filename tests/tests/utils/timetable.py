@@ -5,12 +5,13 @@ from requests import Session
 
 def create_op_study(editoast_url, project_id: int, session: Session) -> int:
     payload = {
+        "project_id": project_id,
         "name": "foo",
         "state": "Starting",
         "service_code": "AAA",
         "business_code": "BBB",
     }
-    res = session.post(editoast_url + f"projects/{project_id}/studies/", json=payload)
+    res = session.post(editoast_url + "studies/", json=payload)
     if res.status_code // 100 != 2:
         err = f"Error creating operational study {res.status_code}: {res.content}, payload={json.dumps(payload)}"
         raise RuntimeError(err)
@@ -20,7 +21,6 @@ def create_op_study(editoast_url, project_id: int, session: Session) -> int:
 def create_scenario(
     editoast_url: str,
     infra_id: int,
-    project_id: int,
     op_study_id: int,
     session: Session,
 ) -> tuple[int, int]:
@@ -36,9 +36,10 @@ def create_scenario(
         "name": "_@Test integration scenario",
         "infra_id": infra_id,
         "timetable_id": timetable_id,
+        "study_id": op_study_id,
     }
     r = session.post(
-        editoast_url + f"/projects/{project_id}/studies/{op_study_id}/scenarios/",
+        editoast_url + "scenarios/",
         json=scenario_payload,
     )
     r.raise_for_status()

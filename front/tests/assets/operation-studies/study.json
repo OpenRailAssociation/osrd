@@ -7,7 +7,7 @@
   "start_date": "2023-02-02",
   "expected_end_date": "2023-02-02",
   "actual_end_date": "2023-02-02",
-  "state": "Démarrage",
-  "study_type": "Débit",
+  "state": "started",
+  "study_type": "flowRate",
   "tags": ["tag1", "tag2", "tag3"]
 }

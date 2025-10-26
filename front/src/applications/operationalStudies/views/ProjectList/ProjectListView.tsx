@@ -40,7 +40,7 @@ const ProjectListView = () => {
   const [filterChips, setFilterChips] = useState('');
   const [deleteProject] = osrdEditoastApi.endpoints.deleteProjectsByProjectId.useMutation();
 
-  const [getStudies] = osrdEditoastApi.endpoints.getProjectsByProjectIdStudies.useLazyQuery();
+  const [getStudies] = osrdEditoastApi.endpoints.getStudies.useLazyQuery();
 
   const {
     selectedItemIds: selectedProjectIds,
@@ -53,7 +53,7 @@ const ProjectListView = () => {
     // For each scenario in the selected projects, clean the local storage if a manchette is saved
     const { data: studies } = await getStudies({ projectId });
     if (studies) {
-      cleanLocalStorageByProject(projectId, studies.results, dispatch);
+      cleanLocalStorageByProject(studies.results, dispatch);
     }
 
     deleteProject({ projectId });
