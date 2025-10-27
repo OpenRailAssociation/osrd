@@ -35,6 +35,7 @@ const UploadFileModal = ({ handleSubmit }: UploadFileModalProps) => {
           className="input-file"
           onDrop={handleDrop}
           onDragOver={(event) => event.preventDefault()}
+          data-testid="upload-file-modal-dropzone"
         >
           <div className="text-primary text-center">
             <Download />
@@ -66,6 +67,7 @@ const UploadFileModal = ({ handleSubmit }: UploadFileModalProps) => {
                 type="button"
                 className="btn btn-block btn-sm btn-secondary"
                 onClick={closeModal}
+                data-testid="upload-file-modal-cancel-button"
               >
                 {t('cancel')}
               </button>
@@ -78,6 +80,7 @@ const UploadFileModal = ({ handleSubmit }: UploadFileModalProps) => {
                 onClick={() => {
                   if (selectedFile) handleSubmit(selectedFile);
                 }}
+                data-testid="upload-file-modal-download-button"
               >
                 {t('download')}
               </button>

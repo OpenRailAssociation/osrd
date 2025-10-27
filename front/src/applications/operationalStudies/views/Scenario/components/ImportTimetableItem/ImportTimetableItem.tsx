@@ -24,7 +24,7 @@ const ImportTimetableItem = ({ upsertTimetableItems }: ImportTimetableItemProps)
   const { rollingStocks } = useRollingStockContext();
 
   return rollingStocks ? (
-    <main className="import-timetable-item">
+    <main className="import-timetable-item" data-testid="import-timetable-item">
       <ImportTimetableItemConfig
         setIsLoading={setIsLoading}
         setTrainsList={setTrainsList}

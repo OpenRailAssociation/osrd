@@ -330,6 +330,7 @@ const ImportTimetableItemConfig = ({
               aria-label={t('importTimetable')}
               title={t('importTimetable')}
               onClick={() => openModal(<UploadFileModal handleSubmit={importFile} />)}
+              data-testid="import-timetable-item-upload-button"
             >
               <Download />
             </button>
