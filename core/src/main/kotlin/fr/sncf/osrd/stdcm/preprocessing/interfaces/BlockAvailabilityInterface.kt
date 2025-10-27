@@ -1,6 +1,6 @@
 package fr.sncf.osrd.stdcm.preprocessing.interfaces
 
-import fr.sncf.osrd.path.interfaces.BlockPath
+import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.path.interfaces.TravelledPath
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelope
 import fr.sncf.osrd.utils.units.Offset
@@ -38,8 +38,8 @@ interface BlockAvailabilityInterface {
      */
     fun getAvailability(
         infraExplorer: InfraExplorerWithEnvelope,
-        startOffset: Offset<BlockPath>,
-        endOffset: Offset<BlockPath>,
+        startOffset: Offset<TrainPath>,
+        endOffset: Offset<TrainPath>,
         startTime: Double,
     ): Availability
 

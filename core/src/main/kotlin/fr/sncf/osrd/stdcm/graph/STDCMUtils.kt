@@ -1,16 +1,8 @@
 package fr.sncf.osrd.stdcm.graph
 
-import fr.sncf.osrd.path.implementations.ChunkPath
-import fr.sncf.osrd.path.implementations.buildChunkPath
-import fr.sncf.osrd.path.interfaces.BlockPath
-import fr.sncf.osrd.path.interfaces.TravelledPath
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorer
-import fr.sncf.osrd.utils.indexing.MutableDirStaticIdxArrayList
-import fr.sncf.osrd.utils.units.Distance
-import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
-import fr.sncf.osrd.utils.withoutConsecutiveDuplicates
 
 /** Returns the offset of the next stop (if any) on the current block, starting at startOffset */
 fun getNextStopOnCurrentBlock(infraExplorer: InfraExplorer): Offset<Block>? {
@@ -21,25 +13,6 @@ fun getNextStopOnCurrentBlock(infraExplorer: InfraExplorer): Offset<Block>? {
         .filter { it.location.edge == infraExplorer.getCurrentBlock() }
         .map { it.location.offset }
         .minOrNull()
-}
-
-/** Create a TrainPath instance from a list of edge ranges */
-fun makeChunkPathFromEdges(graph: STDCMGraph, edges: List<STDCMEdge>): ChunkPath {
-    val blocks = edges.map { edge -> edge.block }.withoutConsecutiveDuplicates()
-    val totalPathLength =
-        Length<TravelledPath>(
-            Distance(
-                millimeters =
-                    edges.stream().mapToLong { edge -> (edge.length.distance).millimeters }.sum()
-            )
-        )
-    val firstOffset = Offset<BlockPath>(edges[0].envelopeStartOffset.distance)
-    val lastOffset = firstOffset + totalPathLength.distance
-    val chunks = MutableDirStaticIdxArrayList<TrackChunk>()
-    for (block in blocks) for (chunk in graph.blockInfra.getTrackChunksFromBlock(block)) chunks.add(
-        chunk
-    )
-    return buildChunkPath(graph.rawInfra, chunks, firstOffset, lastOffset)
 }
 
 /**

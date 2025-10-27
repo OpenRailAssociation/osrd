@@ -15,7 +15,6 @@ import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelope
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.train.TrainStop
-import fr.sncf.osrd.utils.arePositionsEqual
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
@@ -318,20 +317,12 @@ private fun findConflictOffsets(
     edges: List<STDCMEdge>,
     updatedTimeData: TimeData,
 ): Offset<TravelledPath>? {
-    val startOffset = edges[0].fromTravelledOffset(Offset(0.meters))
-    val endOffset =
-        startOffset +
-            Distance(
-                millimeters =
-                    edges.stream().mapToLong { edge -> edge.length.distance.millimeters }.sum()
-            )
     val explorer = getUpdatedExplorer(edges, envelope, updatedTimeData)
-    assert(arePositionsEqual(envelope.endPos, (endOffset - startOffset).meters))
     val availability =
         blockAvailability.getAvailability(
             explorer,
-            startOffset.cast(),
-            endOffset.cast(),
+            Offset.zero(),
+            explorer.getSimulatedLength(),
             updatedTimeData.departureTime,
         )
     val offsetDistance =

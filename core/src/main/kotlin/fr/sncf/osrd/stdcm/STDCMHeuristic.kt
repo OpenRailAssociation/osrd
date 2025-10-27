@@ -40,7 +40,7 @@ data class STDCMAStarHeuristic(
         val lookahead = edge.infraExplorer.getLookahead()
         val currentBlock = edge.block
         val allBlocks = mutableListOf(currentBlock)
-        allBlocks.addAll(lookahead)
+        for (blockRange in lookahead) allBlocks.add(blockRange.value)
 
         // We don't consider the time of the last lookahead block to avoid issues
         // if it contains the destination, and we don't need it (the destination is

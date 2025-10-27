@@ -1,7 +1,6 @@
 package fr.sncf.osrd.stdcm
 
 import fr.sncf.osrd.envelope.Envelope
-import fr.sncf.osrd.path.implementations.ChunkPath
 import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.pathfinding.Pathfinding
 import fr.sncf.osrd.sim_infra.api.Block
@@ -17,7 +16,6 @@ data class STDCMResult(
     val blocks: Pathfinding.Result<BlockId, Block>,
     val envelope: Envelope,
     val trainPath: TrainPath,
-    val chunkPath: ChunkPath,
     val routePath: List<RouteId>,
     val departureTime: Double,
     val stopResults: List<TrainStop>,

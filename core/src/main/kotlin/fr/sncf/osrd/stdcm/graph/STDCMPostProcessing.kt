@@ -58,7 +58,6 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
         val edges = path.edges
         val blockRanges = makeBlockRanges(edges)
         val blockWaypoints = makeBlockWaypoints(path)
-        val chunkPath = makeChunkPathFromEdges(graph, edges)
         val routes = edges.last().infraExplorer.getExploredRoutes()
         val trainPath = buildTrainPath(infra, blockRanges, routes)
 
@@ -94,7 +93,6 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
                 Pathfinding.Result(blockRanges, blockWaypoints),
                 withAllowance,
                 trainPath,
-                chunkPath,
                 routes,
                 updatedTimeData.departureTime,
 

@@ -117,13 +117,13 @@ internal constructor(
         endOffset: Offset<Block>,
         startTime: Double,
     ): Availability {
-        val startOffsetOnPath =
-            startOffset + explorerWithNewEnvelope.getPredecessorLength().distance
-        val endOffsetOnPath = startOffsetOnPath + (endOffset - startOffset)
+        val blockRange = explorerWithNewEnvelope.getCurrentBlockRange()
+        val startOffsetOnPath = blockRange.offsetToTrainPath(startOffset)
+        val endOffsetOnPath = blockRange.offsetToTrainPath(endOffset)
         return blockAvailability.getAvailability(
             explorerWithNewEnvelope,
-            startOffsetOnPath.cast(),
-            endOffsetOnPath.cast(),
+            startOffsetOnPath,
+            endOffsetOnPath,
             startTime,
         )
     }
@@ -136,8 +136,8 @@ internal constructor(
         val availability =
             blockAvailability.getAvailability(
                 explorerWithNewEnvelope,
-                explorerWithNewEnvelope.getSimulationEndPathOffset() - 10.meters,
-                explorerWithNewEnvelope.getSimulationEndPathOffset(),
+                explorerWithNewEnvelope.getSimulatedLength() - 10.meters,
+                explorerWithNewEnvelope.getSimulatedLength(),
                 endTime,
             )
         if (availability is BlockAvailabilityInterface.Available) return availability.maximumDelay
