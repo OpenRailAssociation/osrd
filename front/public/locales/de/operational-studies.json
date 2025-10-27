@@ -56,7 +56,7 @@
       "conflictsCount_zero": "keine Konflikte",
       "filterWithSelectedTrain": "liste mit ausgewähltem Zug filtern",
       "for": "für",
-      "otherTrains": "+{{count}} weitere",
+      "otherTrains": "+{{count}}",
       "trainsInConflictTitle": "ZUG(E) IM KONFLIKT"
     },
     "description": {

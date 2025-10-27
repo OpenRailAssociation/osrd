@@ -63,7 +63,7 @@
       "conflictsCount_zero": "no conflicts",
       "filterWithSelectedTrain": "filter list with selected train",
       "for": "for",
-      "otherTrains": "+{{count}} others",
+      "otherTrains": "+{{count}}",
       "trainsInConflictTitle": "TRAIN(S) IN CONFLICT"
     },
     "description": {
