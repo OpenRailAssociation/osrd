@@ -313,10 +313,14 @@ const ImportTimetableItemTrainsList = ({
     <div className="container-fluid mb-2">
       <div className="osrd-config-item-container import-timetable-item-trainlist">
         <div className="import-timetable-item-trainlist-launchbar">
-          <span className="import-timetable-item-trainlist-launchbar-nbresults">
+          <span
+            className="import-timetable-item-trainlist-launchbar-nbresults"
+            data-testid="import-timetable-item-results"
+          >
             {computedItemImportLabel()}
           </span>
           <button
+            data-testid="launch-import-button"
             className="btn btn-primary btn-sm ml-auto"
             type="button"
             onClick={() => generateTimetableItem()}

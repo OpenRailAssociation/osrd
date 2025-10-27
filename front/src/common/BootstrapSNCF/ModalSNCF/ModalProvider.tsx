@@ -68,7 +68,7 @@ export const ModalSNCF = () => {
         className={cx('modal-dialog modal-dialog-centered', className, size && `modal-${size}`)}
         role="document"
       >
-        <div id="modal-content" className="modal-content">
+        <div id="modal-content" className="modal-content" data-testid="modal-content">
           {content}
         </div>
       </div>
