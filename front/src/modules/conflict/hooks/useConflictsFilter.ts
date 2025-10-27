@@ -15,7 +15,10 @@ import {
   extractOccurrenceIndexFromOccurrenceId,
 } from 'utils/trainId';
 
-import addTrainNamesToConflicts, { filterAndReorderConflict } from '../utils';
+import addTrainNamesToConflicts, {
+  filterAndReorderConflict,
+  reorderConflictTrains,
+} from '../utils';
 
 const useConflictsFilter = (timetableItems: TimetableItem[], conflicts: Conflict[] | undefined) => {
   const selectedTrainId = useSelector(getSelectedTrainId);
@@ -76,7 +79,11 @@ const useConflictsFilter = (timetableItems: TimetableItem[], conflicts: Conflict
 
   const displayedConflicts = useMemo(() => {
     if (!showOnlySelectedTrain || !selectedTrainName) {
-      return enrichedConflicts;
+      return enrichedConflicts.map((conflict) => ({
+        ...conflict,
+        // Always put selected train first, then sort remaining by name length
+        trainsData: reorderConflictTrains(conflict.trainsData, selectedTrainName),
+      }));
     }
     return selectedEnrichedConflicts;
   }, [enrichedConflicts, selectedEnrichedConflicts, showOnlySelectedTrain, selectedTrainName]);

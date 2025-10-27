@@ -102,6 +102,29 @@ export default function addTrainNamesToConflicts(
   });
 }
 
+export const reorderConflictTrains = (
+  trainsData: ConflictWithTrainNames['trainsData'],
+  selectedTrainName?: string | null
+): ConflictWithTrainNames['trainsData'] => {
+  if (!trainsData.length) return trainsData;
+  if (!selectedTrainName) {
+    return [...trainsData].sort((a, b) => a.name.length - b.name.length);
+  }
+
+  // Find the selected train
+  const selectedTrainIndex = trainsData.findIndex((train) => train.name === selectedTrainName);
+  if (selectedTrainIndex < 0) {
+    // IF not found or already first, sort by name length
+    return [...trainsData].sort((a, b) => a.name.length - b.name.length);
+  }
+
+  // Move selected train to front, then sort remaining by name length
+  const copy = [...trainsData];
+  const [selectedTrain] = copy.splice(selectedTrainIndex, 1);
+  const remainingTrains = copy.sort((a, b) => a.name.length - b.name.length);
+  return [selectedTrain, ...remainingTrains];
+};
+
 export function filterAndReorderConflict(
   conflict: ConflictWithTrainNames,
   selectedTrainId: TrainId,
@@ -112,20 +135,7 @@ export function filterAndReorderConflict(
   const isInvolved = conflict.trainsData.some((train) => train.name === selectedTrainName);
   if (!isInvolved) return null;
 
-  // If already at the front, no reorder
-  if (conflict.trainsData[0]?.name === selectedTrainName) {
-    return conflict;
-  }
-
-  // Find the selected train and move it to the front
-  const trainsData = [...conflict.trainsData];
-  const selectedTrainIndex = trainsData.findIndex((train) => train.name === selectedTrainName);
-  if (selectedTrainIndex > 0) {
-    const trainToMove = trainsData[selectedTrainIndex];
-    trainsData.splice(selectedTrainIndex, 1);
-    trainsData.unshift(trainToMove);
-  }
-
+  const trainsData = reorderConflictTrains(conflict.trainsData, selectedTrainName);
   return {
     ...conflict,
     trainsData,

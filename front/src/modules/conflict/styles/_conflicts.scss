@@ -91,8 +91,8 @@
 
       .train-name-card {
         box-sizing: border-box;
-        flex: 0 0 calc((100% - var(--tag-gap)) / 2); // 2 columns layout
-        max-width: calc((100% - var(--tag-gap)) / 2); // Ensure it doesn't exceed half width
+        flex: 0 0 auto;
+        max-width: 125px;
         height: 20px;
         display: flex;
         align-items: center;
@@ -104,7 +104,6 @@
         background-color: transparent;
         position: relative;
         z-index: 1;
-        // min-width: 0;
 
         span {
           position: relative;
@@ -154,6 +153,14 @@
               0 5px
             );
             z-index: -1;
+          }
+        }
+
+        &.other-trains {
+          // Fixed width for "+NN" (3 characters) + padding (3px 5px)
+          span {
+            min-width: calc(3ch + 10px);
+            text-align: center;
           }
         }
       }
