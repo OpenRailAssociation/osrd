@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 
 import cx from 'classnames';
 
@@ -12,7 +12,7 @@ const CHAR_COUNT_ERROR_THRESHOLD = 40;
 const TextArea = ({
   id,
   label,
-  value: initialValue,
+  value = '',
   hint,
   required,
   disabled,
@@ -23,14 +23,8 @@ const TextArea = ({
   onBlur,
   ...rest
 }: TextAreaProps) => {
-  const [value, setValue] = useState<string>(initialValue as string);
-  const charCount = value?.length || 0;
+  const charCount = (value as string)?.length || 0;
   const { handleKeyUp, handleBlur, isFocusByTab } = useFocusByTab({ onBlur, onKeyUp });
-
-  const handleChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-    setValue(e.target.value);
-    onChange?.(e);
-  };
 
   return (
     <FieldWrapper
@@ -59,7 +53,7 @@ const TextArea = ({
           value={value}
           disabled={disabled}
           maxLength={maxLength}
-          onChange={handleChange}
+          onChange={onChange}
           onBlur={handleBlur}
           onKeyUp={handleKeyUp}
           {...rest}

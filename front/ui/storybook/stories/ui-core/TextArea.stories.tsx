@@ -1,9 +1,22 @@
-import React from 'react';
+import React, { useState } from 'react';
 
 import { TextArea } from '@osrd-project/ui-core';
-import { type Meta, type StoryObj } from '@storybook/react-vite';
+import { type Meta, type StoryObj, type Decorator } from '@storybook/react-vite';
 
 import '@osrd-project/ui-core/dist/theme.css';
+
+const withControlledValue: Decorator = (Story, ctx) => {
+  const [value, setValue] = useState<string>(String(ctx.args.value ?? ''));
+  return (
+    <Story
+      args={{
+        ...ctx.args,
+        value,
+        onChange: (e: React.ChangeEvent<HTMLTextAreaElement>) => setValue(e.target.value),
+      }}
+    />
+  );
+};
 
 const meta: Meta<typeof TextArea> = {
   component: TextArea,
@@ -13,6 +26,7 @@ const meta: Meta<typeof TextArea> = {
     label: 'Description',
   },
   decorators: [
+    withControlledValue,
     (Story) => (
       <div style={{ maxWidth: 'fit-content' }}>
         <Story />
