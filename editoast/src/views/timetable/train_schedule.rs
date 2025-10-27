@@ -885,13 +885,15 @@ pub(in crate::views) struct TrackOccupancy {
 }
 
 /// Calculates when and for how long trains occupy track sections at a specific operational point.
-/// Returns a map of track sections to their occupation periods, containing:
-/// - time_begin: Start of occupation
-/// - duration: Length of occupation (includes stops)
-/// - train_schedule_id: Train schedule ID
+/// Returns a map of track sections to their occupation periods, each containing:
+/// - `time_begin`: Start of occupation
+/// - `duration`: Length of occupation (includes stops)
+/// - `train_schedule_id`: Train schedule ID
 ///
-/// If a path item ID is provided, it uses schedule data to determine stop duration and location.
-/// If not, it infers the position and time based on track offsets and interpolation.
+/// - Looks for direct matches in the train's path
+/// - Uses simulation results for timing for valid trains or scheduled arrival times for invalid trains
+/// - Uses track_reference from path item, or pathfinding if available for track determination
+/// - Falls back to interpolation if the train is valid and passes through without stopping
 #[editoast_derive::route]
 #[utoipa::path(
     post, path = "",
