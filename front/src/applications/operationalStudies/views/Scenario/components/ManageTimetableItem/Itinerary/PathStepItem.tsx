@@ -39,6 +39,39 @@ const PathStepItem = ({
   const mapSettings = useMapSettings();
   const { updateViewport } = useMapSettingsActions();
 
+  const getInvalidMessage = () => {
+    let message = t('invalidOP');
+    if (!pathStepMetadata?.isInvalid || !pathStep?.location) return message;
+
+    const { location } = pathStep;
+
+    if ('track' in location) {
+      return (message += t('requestedPoint'));
+    }
+
+    const trackInfo = location.track_reference
+      ? 'track_name' in location.track_reference
+        ? `, ${t('track')} ${location.track_reference.track_name}`
+        : `, ${t('trackId')}`
+      : '';
+
+    if ('operational_point' in location) {
+      return (message += t('opId') + trackInfo);
+    }
+
+    const secondaryCodeInfo = location.secondary_code ? `/${location.secondary_code}` : '';
+
+    if ('trigram' in location) {
+      message += t('trigram') + ' ' + location.trigram;
+    }
+
+    if ('uic' in location) {
+      message += t('uic') + ' ' + location.uic;
+    }
+
+    return (message += secondaryCodeInfo + trackInfo);
+  };
+
   const secondaryCodeSuggestions = useMemo(() => {
     if (!isOpRefMetadata(pathStepMetadata)) return [];
     return [
@@ -238,6 +271,9 @@ const PathStepItem = ({
           </button>
         </div>
       </div>
+      {pathStepMetadata?.isInvalid && (
+        <span className="invalid-step-message">{getInvalidMessage()}</span>
+      )}
     </div>
   );
 };

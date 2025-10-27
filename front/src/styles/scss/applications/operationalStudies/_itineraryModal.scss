@@ -3,6 +3,7 @@
   --footer-height: 96px;
   --footer-box-shadow-height: 1px;
   --path-step-row-gap: 8px;
+  --path-step-wrapper-padding-left: 12px;
   --path-step-wrapper-padding-right: 10px;
   --path-step-secondary-code-width: 60px;
   --path-step-track-name-width: 76px;
@@ -148,7 +149,8 @@
 
         // this wrapper is being used to display the "adding location on map" style
         .path-step-wrapper {
-          padding-inline: 12px var(--path-step-wrapper-padding-right);
+          padding-inline: var(--path-step-wrapper-padding-left)
+            var(--path-step-wrapper-padding-right);
           border-radius: 6px;
           padding-bottom: 4px;
 
@@ -277,6 +279,11 @@
                 }
               }
             }
+          }
+
+          .invalid-step-message {
+            color: var(--error60);
+            padding-left: calc(51px - var(--path-step-wrapper-padding-left));
           }
         }
       }
