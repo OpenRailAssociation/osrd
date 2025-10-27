@@ -9,7 +9,7 @@ import fr.sncf.osrd.envelope.EnvelopeConcat
 import fr.sncf.osrd.envelope.EnvelopeConcat.LocatedEnvelopeInterpolate
 import fr.sncf.osrd.envelope.EnvelopeInterpolate
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock
-import fr.sncf.osrd.path.interfaces.BlockPath
+import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.path.interfaces.TravelledPath
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal.SHORT_SLIP_STOP
 import fr.sncf.osrd.standalone_sim.EnvelopeStopWrapper
@@ -115,9 +115,8 @@ data class InfraExplorerWithEnvelopeImpl(
         return this
     }
 
-    override fun interpolateDepartureFromClamp(pathOffset: Offset<BlockPath>): Double {
-        return getFullEnvelope()
-            .interpolateDepartureFromClamp(getIncrementalPath().toTravelledPath(pathOffset).meters)
+    override fun interpolateDepartureFromClamp(pathOffset: Offset<TrainPath>): Double {
+        return getFullEnvelope().interpolateDepartureFromClamp(pathOffset.meters)
     }
 
     override fun getSpacingRequirements(): List<SpacingRequirement> {
@@ -178,10 +177,6 @@ data class InfraExplorerWithEnvelopeImpl(
         if (envelopes.isEmpty()) return Length(0.meters)
         val lastEnvelope = envelopes[envelopes.size - 1]
         return Length(Distance.fromMeters(lastEnvelope.startOffset + lastEnvelope.envelope.endPos))
-    }
-
-    override fun getSimulationEndPathOffset(): Offset<BlockPath> {
-        return getIncrementalPath().fromTravelledPath(getSimulatedLength())
     }
 
     override fun clone(): InfraExplorerWithEnvelope {

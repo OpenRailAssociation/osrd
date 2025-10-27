@@ -190,7 +190,7 @@ class STDCMHeuristicTests {
         repeat(blocks.size - 1) {
             explorer =
                 explorer.cloneAndExtendLookahead().single { candidate ->
-                    candidate.getLookahead().all { blocks.contains(it) }
+                    candidate.getLookahead().all { blocks.contains(it.value) }
                 }
 
             // While the lookahead is on the right path, the remaining distance shouldn't change
@@ -205,7 +205,7 @@ class STDCMHeuristicTests {
         repeat(2) {
             wrongPathExplorer =
                 wrongPathExplorer.cloneAndExtendLookahead().single {
-                    it.getLookahead().last() != blocks[1]
+                    it.getLookahead().last().value != blocks[1]
                 }
         }
         // Lookahead on the wrong path, no possible result
@@ -285,7 +285,7 @@ class STDCMHeuristicTests {
 
         val stepTracker = infraExplorer.getStepTracker().clone()
         for (block in infraExplorer.getPredecessorBlocks().toList()) {
-            stepTracker.moveForward(block, Offset.zero(), infra.getBlockLength(block))
+            stepTracker.moveForward(block.value, Offset.zero(), infra.getBlockLength(block.value))
         }
         val blockOffset =
             offset?.let { Offset(it) } ?: infra.getBlockLength(infraExplorer.getCurrentBlock())
