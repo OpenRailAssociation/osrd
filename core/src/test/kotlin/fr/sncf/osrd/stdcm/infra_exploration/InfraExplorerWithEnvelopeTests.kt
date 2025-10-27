@@ -225,7 +225,6 @@ class InfraExplorerWithEnvelopeTests {
         )
         explorer.moveForward()
         assertEquals(Offset(70.meters), explorer.getSimulatedLength())
-        assertEquals(Offset(100.meters), explorer.getSimulationEndPathOffset())
     }
 
     /**

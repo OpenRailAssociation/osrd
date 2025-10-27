@@ -79,7 +79,12 @@ class AppendOnlyLinkedList<T>(private var lastNode: Node<T>? = null, var size: I
 
     /** Returns the last element of the list */
     fun last(): T {
-        return lastNode!!.element
+        return lastOrNull()!!
+    }
+
+    /** Returns the last element of the list, null if empty */
+    fun lastOrNull(): T? {
+        return lastNode?.element
     }
 
     /** Returns a sub list from 0 to untilIndex (excluded). */

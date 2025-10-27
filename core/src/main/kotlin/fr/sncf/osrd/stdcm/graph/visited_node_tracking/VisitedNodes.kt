@@ -103,7 +103,7 @@ data class VisitedNodes(
         // Check if this node has a chance of opening new time ranges
         // at the very end of the lookahead section.
         if (parameters.explorer != null && infra != null) {
-            val lastLookaheadBlock = parameters.explorer.getLookahead().lastOrNull()
+            val lastLookaheadBlock = parameters.explorer.getLookahead().lastOrNull()?.value
             if (lastLookaheadBlock != null) {
                 val exitDet = infra.blockInfra.getBlockExit(infra.rawInfra, lastLookaheadBlock)
                 val mapAtStepIndex = visitedAtDetector[parameters.fingerprint!!.waypointIndex]

@@ -8,18 +8,6 @@ import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 
 /**
- * Computes the offset between the beginning of the first route and the beginning of the train path
- */
-fun getRoutePathStartOffset(
-    infra: RawInfra,
-    chunkPath: ChunkPath,
-    routes: List<RouteId>,
-): Offset<BlockPath> {
-    val zonePaths = routes.flatMap { infra.getRoutePath(it) }
-    return trainPathZonePathOffset(infra, zonePaths, chunkPath)
-}
-
-/**
  * Computes the offset between the beginning of the first block and the beginning of the train path
  */
 fun trainPathBlockOffset(

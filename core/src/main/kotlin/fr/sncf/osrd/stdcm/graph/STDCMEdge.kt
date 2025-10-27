@@ -1,8 +1,6 @@
 package fr.sncf.osrd.stdcm.graph
 
 import fr.sncf.osrd.envelope.Envelope
-import fr.sncf.osrd.path.interfaces.BlockPath
-import fr.sncf.osrd.path.interfaces.TravelledPath
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelope
 import fr.sncf.osrd.utils.units.Distance
@@ -154,22 +152,6 @@ data class STDCMEdge(
     /** Returns the offset on the block referential from a given edge offset. */
     fun blockOffsetFromEdge(edgeOffset: Offset<STDCMEdge>): Offset<Block> {
         return envelopeStartOffset + edgeOffset.distance
-    }
-
-    /**
-     * Converts from BlockPath Offset (references start of first route) to Travelled path offset
-     * (references train departure point)
-     */
-    fun toTravelledOffset(pathOffset: Offset<BlockPath>): Offset<TravelledPath> {
-        return infraExplorer.getIncrementalPath().toTravelledPath(pathOffset)
-    }
-
-    /**
-     * Converts from Travelled path offset (references train departure point) to BlockPath Offset
-     * (references start of first route)
-     */
-    fun fromTravelledOffset(travelledPathOffset: Offset<TravelledPath>): Offset<BlockPath> {
-        return infraExplorer.getIncrementalPath().fromTravelledPath(travelledPathOffset)
     }
 
     /** Return the time at which the train quits this edge and moves on to the next. */
