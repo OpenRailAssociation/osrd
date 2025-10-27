@@ -165,8 +165,7 @@ class PacedTrainSection extends CommonPage {
   async verifyOccurrencesCount(expectedOccurrencesCount: number, index: number) {
     const pacedTrainOccurrencesCount = this.occurrencesCount.nth(index);
     await expect(pacedTrainOccurrencesCount).toBeVisible();
-    const occurrencesCount = await pacedTrainOccurrencesCount.textContent();
-    expect(+occurrencesCount!).toEqual(expectedOccurrencesCount);
+    await expect(pacedTrainOccurrencesCount).toHaveText(String(expectedOccurrencesCount));
   }
 
   async verifyOccurrenceName(
