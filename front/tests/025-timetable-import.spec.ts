@@ -1,8 +1,15 @@
 import type { Scenario, Project, Study, Infra } from 'common/api/osrdEditoastApi';
 
 import { timetableItemProjectName, timetableItemStudyName } from './assets/constants/project-const';
+import {
+  EXPECTED_COUNTS,
+  PACED_DETAILS,
+  TRAIN_SCHEDULE_DETAILS,
+} from './assets/constants/timetable-items-details';
 import test from './logging-fixture';
 import ImportPage from './pages/import-page';
+import PacedTrainSection from './pages/operational-studies/paced-train-section';
+import TimetableItemDetailSection from './pages/operational-studies/timetable-items-details-section';
 import { generateUniqueName, waitForInfraStateToBeCached } from './utils';
 import { getInfra, getProject, getStudy } from './utils/api-utils';
 import readJsonFile from './utils/file-utils';
@@ -24,6 +31,8 @@ test.describe('Verify timetable items import', () => {
   test.use({ viewport: { width: 1920, height: 1080 } });
 
   let importPage: ImportPage;
+  let timetableItemDetailSection: TimetableItemDetailSection;
+  let pacedTrainSection: PacedTrainSection;
 
   let project: Project;
   let study: Study;
@@ -38,6 +47,8 @@ test.describe('Verify timetable items import', () => {
 
   test.beforeEach('Open scenario ', async ({ page }) => {
     importPage = new ImportPage(page);
+    timetableItemDetailSection = new TimetableItemDetailSection(page);
+    pacedTrainSection = new PacedTrainSection(page);
 
     await test.step('Create, open scenario and wait for infra to be loaded', async () => {
       scenario = (
@@ -63,21 +74,25 @@ test.describe('Verify timetable items import', () => {
       await importPage.openUploadDialog();
       await importPage.uploadTimetableItemFile(
         './tests/assets/operation-studies/timetable-items.json',
-        {
-          totalPacedTrainCount: 4,
-          totalTrainScheduleCount: 12,
-        }
+        EXPECTED_COUNTS
       );
       await importPage.launchTimetableItemImport(frTranslations.success);
       await importPage.returnSimulationResult();
     });
 
     await test.step('Verify timetable items count after import', async () => {
-      await importPage.returnSimulationResult();
-      await importPage.verifyTotalItemsLabel(frTranslations, {
-        totalPacedTrainCount: 4,
-        totalTrainScheduleCount: 12,
-      });
+      await importPage.verifyTotalItemsLabel(frTranslations, EXPECTED_COUNTS);
+    });
+
+    await test.step('Verify details for valid imported paced trains', async () => {
+      await timetableItemDetailSection.showTimetableItemsDetails();
+      await timetableItemDetailSection.verifyPacedTrainDetails(0, PACED_DETAILS[0]);
+      await pacedTrainSection.verifyOccurrencesCount(3, 0);
+      await timetableItemDetailSection.verifyPacedTrainDetails(1, PACED_DETAILS[1]);
+      await pacedTrainSection.verifyOccurrencesCount(5, 3);
+    });
+    await test.step('Verify details for valid imported train schedules', async () => {
+      await timetableItemDetailSection.verifyTrainSchedulesDetails(TRAIN_SCHEDULE_DETAILS);
     });
   });
 });

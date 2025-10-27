@@ -370,16 +370,21 @@ const PacedTrainItem = ({
       </div>
       {summary?.isValid && (
         <div className="more-info">
-          <div className="more-info-left">
-            <span className="more-info-item">
+          <div data-testid="paced-train-more-info" className="more-info-left">
+            <span data-testid="paced-train-stop-count" className="more-info-item">
               {t('timetable.stopsCount', { count: pacedTrain.stopsCount })}
             </span>
-            <span className="more-info-item">{summary.pathLength}</span>
-            <span className="more-info-item m-0" data-testid="allowance-energy-consumed">
+            <span data-testid="paced-train-path-length" className="more-info-item">
+              {summary.pathLength}
+            </span>
+            <span
+              className="more-info-item m-0"
+              data-testid="paced-train-allowance-energy-consumed"
+            >
               {summary.mechanicalEnergyConsumed}&nbsp;kWh
             </span>
           </div>
-          <div className="duration-time">
+          <div data-testid="paced-train-duration-time" className="duration-time">
             <span data-testid="train-duration">{formatTrainDuration(summary.duration)}</span>
           </div>
         </div>

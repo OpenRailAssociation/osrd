@@ -272,16 +272,21 @@ const TrainScheduleItem = ({
 
         {summary?.isValid && (
           <div className="more-info">
-            <div className="more-info-left">
-              <span className="more-info-item">
+            <div data-testid="train-schedule-more-info" className="more-info-left">
+              <span data-testid="train-schedule-stop-count" className="more-info-item">
                 {t('timetable.stopsCount', { count: train.stopsCount })}
               </span>
-              <span className="more-info-item">{summary.pathLength}</span>
-              <span className="more-info-item m-0" data-testid="allowance-energy-consumed">
+              <span data-testid="train-schedule-path-length" className="more-info-item">
+                {summary.pathLength}
+              </span>
+              <span
+                className="more-info-item m-0"
+                data-testid="train-schedule-allowance-energy-consumed"
+              >
                 {summary.mechanicalEnergyConsumed}&nbsp;kWh
               </span>
             </div>
-            <div className="duration-time">
+            <div data-testid="train-schedule-duration-time" className="duration-time">
               <span data-testid="train-duration">{formatTrainDuration(summary.duration)}</span>
             </div>
           </div>
