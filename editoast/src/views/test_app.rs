@@ -6,6 +6,7 @@ use std::collections::HashMap;
 use std::collections::HashSet;
 use std::path::PathBuf;
 use std::sync::Arc;
+use tokio::sync::RwLock;
 
 use authz::InfraGrant;
 use authz::Role;
@@ -39,6 +40,8 @@ use crate::generated_data::speed_limit_tags_config::SpeedLimitTagIds;
 use crate::infra_cache::InfraCache;
 use crate::models::PgAuthDriver;
 use crate::views::service_router;
+use crate::views::timetable::similar_trains::trains_traffic::TrainTraffic;
+use crate::views::timetable::similar_trains::trains_traffic::TrainsTrafficPool;
 use editoast_models::map::MapLayers;
 use fga::client::DEFAULT_OPENFGA_MAX_CHECKS_PER_BATCH_CHECK;
 use fga::client::DEFAULT_OPENFGA_MAX_TUPLES_PER_WRITE;
@@ -85,6 +88,7 @@ pub(crate) struct TestAppBuilder {
     enable_authorization: bool,
     enable_telemetry: bool,
     root_url: Option<Url>,
+    trains_traffic: TrainsTrafficPool,
 }
 
 impl TestAppBuilder {
@@ -96,6 +100,7 @@ impl TestAppBuilder {
             enable_authorization: false,
             enable_telemetry: true,
             root_url: None,
+            trains_traffic: TrainsTrafficPool::new(),
         }
     }
 
@@ -124,6 +129,19 @@ impl TestAppBuilder {
 
     pub fn root_url(mut self, root_url: Url) -> Self {
         self.root_url = Some(root_url);
+        self
+    }
+
+    pub fn with_trains_traffic(mut self, trains_traffic: Vec<TrainTraffic>) -> Self {
+        for train in trains_traffic {
+            if let Err(e) = self.trains_traffic.add_train_traffic(train) {
+                panic!("Failed to add train traffic: {:?}", e);
+            }
+        }
+        tracing::debug!(
+            nb_traffic = self.trains_traffic.len(),
+            "Train traffic loaded"
+        );
         self
     }
 
@@ -164,6 +182,7 @@ impl TestAppBuilder {
                 max_checks_per_batch_check: DEFAULT_OPENFGA_MAX_CHECKS_PER_BATCH_CHECK,
                 max_tuples_per_write: DEFAULT_OPENFGA_MAX_TUPLES_PER_WRITE,
             },
+            trains_traffic: Arc::new(RwLock::new(self.trains_traffic)),
         };
 
         // Setup tracing
@@ -247,6 +266,7 @@ impl TestAppBuilder {
             map_layers: Arc::new(MapLayers::default()),
             speed_limit_tag_ids,
             health_check_timeout: config.health_check_timeout,
+            trains_traffic: config.trains_traffic.clone(),
             config: Arc::new(config),
         };
 

@@ -12,6 +12,7 @@ pub mod search_commands;
 pub mod stdcm_search_env_commands;
 mod telemetry_config;
 pub mod timetables_commands;
+mod trains_traffic;
 pub mod user;
 mod valkey_config;
 

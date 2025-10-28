@@ -162,31 +162,6 @@ impl PathItemCache {
         self.track_ids_to_name.contains_key(track)
     }
 
-    pub fn get_from_path_location(
-        &self,
-        path_item: &PathItemLocation,
-    ) -> Option<Vec<&OperationalPointModel>> {
-        match path_item {
-            PathItemLocation::TrackOffset(_) => None,
-            PathItemLocation::OperationalPointReference(OperationalPointReference {
-                operational_point:
-                    OperationalPointIdentifier::OperationalPointId {
-                        operational_point, ..
-                    },
-                ..
-            }) => self.get_from_id(&operational_point.0).map(|op| vec![op]),
-            PathItemLocation::OperationalPointReference(OperationalPointReference {
-                operational_point:
-                    OperationalPointIdentifier::OperationalPointDescription { trigram, .. },
-                ..
-            }) => self.get_from_trigram(&trigram.0).map(|op| op.collect()),
-            PathItemLocation::OperationalPointReference(OperationalPointReference {
-                operational_point: OperationalPointIdentifier::OperationalPointUic { uic, .. },
-                ..
-            }) => self.get_from_uic(*uic).map(|op| op.collect()),
-        }
-    }
-
     /// Retrieve the operational point ID given a reference
     pub fn get_op_ref_id(&self, op_ref: &OperationalPointIdentifier) -> Option<String> {
         let (ops, secondary_code) = match op_ref {
@@ -212,19 +187,6 @@ impl PathItemCache {
             .into_iter()
             .next()
             .map(|op| op.obj_id.clone())
-    }
-
-    /// Retrieve an operational point identifier from a path item location using the cache
-    pub fn op_identifier(&self, path_item: &PathItemLocation) -> Option<String> {
-        if let PathItemLocation::OperationalPointReference(OperationalPointReference {
-            operational_point,
-            ..
-        }) = path_item
-        {
-            self.get_op_ref_id(operational_point)
-        } else {
-            None
-        }
     }
 
     /// Extract locations from path items
