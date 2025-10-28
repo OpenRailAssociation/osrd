@@ -277,8 +277,8 @@ export default class MacroEditorState {
 
     const result = [];
     result.push(`op_id:${op.id}`);
-    result.push(`trigram:${trigram}${ch ? `/${ch}` : ''}`);
-    result.push(`uic:${uic}${ch ? `/${ch}` : ''}`);
+    if (trigram) result.push(`trigram:${trigram}${ch ? `/${ch}` : ''}`);
+    if (uic) result.push(`uic:${uic}${ch ? `/${ch}` : ''}`);
     for (const opPart of op.parts) {
       result.push(`track_offset:${opPart.track}+${opPart.position}`);
     }
