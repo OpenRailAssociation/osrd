@@ -46,7 +46,13 @@ import type {
   DraggingState,
 } from 'modules/simulationResult/types';
 import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
-import type { OccurrenceId, PacedTrainId, TrainId, TrainScheduleId } from 'reducers/osrdconf/types';
+import type {
+  OccurrenceId,
+  PacedTrainId,
+  TimetableItemId,
+  TrainId,
+  TrainScheduleId,
+} from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import {
   isTrainId,
@@ -214,10 +220,28 @@ const SpaceTimeChartWrapper = ({
     pathfindingHasFailed
   );
 
-  const splitPoints = useMemo<SplitPoint[]>(() => {
-    const pathsIndex = keyBy(paths, ({ id }) => id);
+  const pathsById = useMemo(() => keyBy(paths, ({ id }) => id), [paths]);
 
-    return (
+  const countZonesByPacedTrainId = (zones: OccupancyZone[] = []) => {
+    const counts = new Map<TimetableItemId, Map<string, number>>();
+    for (const zone of zones) {
+      if (isOccurrenceId(zone.trainId)) {
+        const pacedTrainId = extractPacedTrainIdFromOccurrenceId(zone.trainId);
+        const pacedTrainIdCounts = counts.get(pacedTrainId) ?? new Map();
+        pacedTrainIdCounts.set(zone.trackId, (pacedTrainIdCounts.get(zone.trackId) ?? 0) + 1);
+        counts.set(pacedTrainId, pacedTrainIdCounts);
+      }
+    }
+    return counts;
+  };
+
+  const hoveredPathId = useMemo(() => {
+    const element = hoveredItem?.element;
+    return element && 'pathId' in element ? element.pathId : undefined;
+  }, [hoveredItem]);
+
+  const splitPoints = useMemo<SplitPoint[]>(
+    () =>
       sortBy(
         trackOccupancyDiagramsData || [],
         ({ operationalPointPosition }) => operationalPointPosition
@@ -230,70 +254,93 @@ const SpaceTimeChartWrapper = ({
           zones,
           tracks,
           loading,
-        }) => ({
-          id: operationalPointId,
-          position: operationalPointPosition,
-          size: (tracks?.length || 0) * TRACK_HEIGHT_CONTAINER + DEFAULT_THEME.timeCaptionsSize,
-          spaceTimeChartNode: (
-            <TrackOccupancyCanvas
-              position={operationalPointPosition}
-              tracks={tracks || []}
-              occupancyZones={(zones || []).map((zone) => {
-                const path = pathsIndex[zone.trainId];
-                if (!path) return zone;
-                const pathStyle = getPathStyle(
-                  hoveredItem,
-                  path,
-                  !!draggingState,
-                  subCategories,
-                  timetableItemsWithDetails,
-                  selectedTrainId
-                );
-                return {
-                  ...zone,
-                  color: pathStyle.color,
-                  size: pathStyle.level === 1 ? 2 : undefined,
-                };
-              })}
-              selectedTrainId={selectedTrainId}
-              onClose={() => onCloseOccupancyLayer?.(waypointId)}
-              topPadding={BASE_WAYPOINT_HEIGHT}
-            />
-          ),
-          manchetteNode: (
-            <TrackOccupancyManchette tracks={tracks || []}>
-              <div className="waypoint-wrapper flex justify-start">
-                <WaypointComponent
-                  waypoint={{
-                    id: waypointId,
-                    name: (
-                      <div className="d-flex flex-row align-items-center">
-                        {operationalPointName || operationalPointId}
-                        {loading && (
-                          <Spinner className="ml-2 small" spinnerClassName="spinner-border-sm" />
-                        )}
-                      </div>
-                    ),
-                    position: operationalPointPosition,
-                    onClick: handleWaypointClick,
-                  }}
-                  waypointRef={activeWaypointRef}
-                  isActive={false}
-                  isMenuActive={false}
-                />
-              </div>
-            </TrackOccupancyManchette>
-          ),
-        })
-      ) || []
-    );
-  }, [
-    trackOccupancyDiagramsData,
-    activeWaypointId,
-    timetableItemsWithDetails,
-    selectedTrainId,
-    hoveredItem,
-  ]);
+        }) => {
+          const baseZones = zones ?? [];
+          const zonesCountByPacedTrainId = countZonesByPacedTrainId(baseZones);
+
+          const styledZones = baseZones.map((zone) => {
+            const path = pathsById[zone.trainId];
+
+            const isHovered = hoveredPathId === zone.trainId;
+            const isSelected = selectedTrainId === zone.trainId;
+
+            let totalOccurrencesOnTrack = 0;
+            if (isOccurrenceId(zone.trainId)) {
+              const pacedTrainId = extractPacedTrainIdFromOccurrenceId(zone.trainId);
+              totalOccurrencesOnTrack =
+                zonesCountByPacedTrainId.get(pacedTrainId)?.get(zone.trackId) ?? 0;
+            }
+            if (!path) return zone;
+
+            const pathStyle = getPathStyle(
+              hoveredItem,
+              path,
+              !!draggingState,
+              subCategories,
+              timetableItemsWithDetails,
+              selectedTrainId
+            );
+            return {
+              ...zone,
+              trailingText:
+                isHovered && totalOccurrencesOnTrack > 1
+                  ? `+${Math.max(0, totalOccurrencesOnTrack - 1)}`
+                  : undefined,
+              color: pathStyle.color,
+              size: isSelected || isHovered ? 2 : undefined,
+            };
+          });
+
+          return {
+            id: operationalPointId,
+            position: operationalPointPosition,
+            size: (tracks?.length || 0) * TRACK_HEIGHT_CONTAINER + DEFAULT_THEME.timeCaptionsSize,
+            spaceTimeChartNode: (
+              <TrackOccupancyCanvas
+                position={operationalPointPosition}
+                tracks={tracks || []}
+                occupancyZones={styledZones}
+                selectedTrainId={selectedTrainId}
+                onClose={() => onCloseOccupancyLayer?.(waypointId)}
+                topPadding={BASE_WAYPOINT_HEIGHT}
+              />
+            ),
+            manchetteNode: (
+              <TrackOccupancyManchette tracks={tracks || []}>
+                <div className="waypoint-wrapper flex justify-start">
+                  <WaypointComponent
+                    waypoint={{
+                      id: waypointId,
+                      name: (
+                        <div className="d-flex flex-row align-items-center">
+                          {operationalPointName || operationalPointId}
+                          {loading && (
+                            <Spinner className="ml-2 small" spinnerClassName="spinner-border-sm" />
+                          )}
+                        </div>
+                      ),
+                      position: operationalPointPosition,
+                      onClick: handleWaypointClick,
+                    }}
+                    waypointRef={activeWaypointRef}
+                    isActive={false}
+                    isMenuActive={false}
+                  />
+                </div>
+              </TrackOccupancyManchette>
+            ),
+          };
+        }
+      ),
+    [
+      trackOccupancyDiagramsData,
+      activeWaypointId,
+      timetableItemsWithDetails,
+      pathsById,
+      hoveredPathId,
+      selectedTrainId,
+    ]
+  );
 
   const {
     manchetteProps,

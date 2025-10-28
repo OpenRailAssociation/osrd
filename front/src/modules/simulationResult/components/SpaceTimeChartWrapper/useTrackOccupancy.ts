@@ -2,17 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
 import type { OccupancyZone, Track } from '@osrd-project/ui-charts';
 import type { TFunction } from 'i18next';
-import {
-  flatMap,
-  forEach,
-  fromPairs,
-  isEmpty,
-  isEqual,
-  isFunction,
-  keyBy,
-  noop,
-  uniqBy,
-} from 'lodash';
+import { forEach, fromPairs, isEmpty, isEqual, isFunction, keyBy, noop, uniqBy } from 'lodash';
 import { useTranslation } from 'react-i18next';
 
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
@@ -21,15 +11,29 @@ import {
   osrdEditoastApi,
   type PathItemLocation,
 } from 'common/api/osrdEditoastApi';
-import type { TimetableItemId, TrainId } from 'reducers/osrdconf/types';
+import computeOccurrenceName from 'modules/timetableItem/helpers/computeOccurrenceName';
+import { computeIndexedOccurrenceStartTime } from 'modules/timetableItem/helpers/pacedTrain';
+import type {
+  PacedTrainId,
+  TimetableItemId,
+  TrainId,
+  TrainScheduleId,
+} from 'reducers/osrdconf/types';
 import {
+  extractEditoastIdFromPacedTrainId,
   extractEditoastIdFromTrainScheduleId,
+  extractPacedTrainIdFromOccurrenceId,
+  formatEditoastIdToPacedTrainId,
   formatEditoastIdToTrainScheduleId,
+  formatPacedTrainIdToExceptionId,
+  formatPacedTrainIdToIndexedOccurrenceId,
+  isOccurrenceId,
+  isPacedTrainId,
   isTrainScheduleId,
 } from 'utils/trainId';
 
 import type { PathOperationalPoint, TrainSpaceTimeData } from '../../types';
-import { batchFetchTrackOccupancy } from './helpers/utils';
+import { batchFetchTrackOccupancy, isTrainScheduleProjection } from './helpers/utils';
 import { getMovableOccupancyZone, type MovableOccupancyZone } from './helpers/zones';
 import { usePrevious } from '../../../../utils/hooks/state';
 
@@ -111,9 +115,8 @@ const useTrackOccupancy = ({
   }) => Promise<void>;
 } => {
   const { t, i18n } = useTranslation('operational-studies');
-  const draggedTrains = useRef(new Set<string>());
+  const draggedTimetableItemIds = useRef(new Set<TimetableItemId>());
   const previousTimetableItems = usePrevious(timetableItemProjections);
-
   const { getTrackSectionsByIds } = useScenarioContext();
 
   const pathOperationalPointsDict = useMemo(
@@ -122,13 +125,14 @@ const useTrackOccupancy = ({
   );
   const [postTrainScheduleTrackOccupancy] =
     osrdEditoastApi.endpoints.postTrainScheduleTrackOccupancy.useMutation();
+  const [postPacedTrainTrackOccupancy] =
+    osrdEditoastApi.endpoints.postPacedTrainTrackOccupancy.useMutation();
   const [postInfraByInfraIdMatchOperationalPoints] =
     osrdEditoastApi.endpoints.postInfraByInfraIdMatchOperationalPoints.useLazyQuery();
   const timetableItemsById: Map<TimetableItemId, OccupancyTrainSpaceTimeData> = useMemo(
     () => new Map(timetableItemProjections.map((item) => [item.id, item])),
     [timetableItemProjections]
   );
-
   const [tracksState, setTracksState] = useState<AsyncState<Record<string, Track[]>>>({
     type: 'loading',
   });
@@ -164,35 +168,136 @@ const useTrackOccupancy = ({
     []
   );
 
+  const toOwnerTimetableItemId = (id: TrainId): TimetableItemId =>
+    isTrainScheduleId(id) ? id : extractPacedTrainIdFromOccurrenceId(id);
+
   const fetchTrackOccupancy = useCallback(
     async (
       opId: string | undefined | null,
       trainsCollection: Record<TimetableItemId, TrainSpaceTimeData>
-    ): Promise<MovableOccupancyZone[]> =>
-      opId
-        ? flatMap(
-            (
-              await postTrainScheduleTrackOccupancy({
-                body: {
-                  operational_point_id: opId,
-                  infra_id: infraId,
-                  train_schedule_ids: Object.keys(trainsCollection)
-                    .filter((id) => isTrainScheduleId(id))
-                    .map((id) => extractEditoastIdFromTrainScheduleId(id)),
-                },
-              })
-            ).data,
-            (entries, trackId) =>
-              entries.map((entry) =>
-                getMovableOccupancyZone(
-                  trackId,
-                  entry,
-                  trainsCollection[formatEditoastIdToTrainScheduleId(entry.train_schedule_id)]
-                )
+    ): Promise<MovableOccupancyZone[]> => {
+      if (!opId) return [];
+
+      const trainScheduleIds: TrainScheduleId[] = [];
+      const pacedTrainIds: PacedTrainId[] = [];
+      for (const id of Object.keys(trainsCollection)) {
+        if (isTrainScheduleId(id)) trainScheduleIds.push(id);
+        else if (isPacedTrainId(id)) pacedTrainIds.push(id);
+      }
+
+      const bodyForTrainSchedules =
+        trainScheduleIds.length > 0
+          ? {
+              operational_point_id: opId,
+              infra_id: infraId,
+              train_schedule_ids: trainScheduleIds.map(extractEditoastIdFromTrainScheduleId),
+            }
+          : null;
+
+      const bodyForPaced =
+        pacedTrainIds.length > 0
+          ? {
+              operational_point_id: opId,
+              infra_id: infraId,
+              paced_train_ids: pacedTrainIds.map(extractEditoastIdFromPacedTrainId),
+            }
+          : null;
+
+      const [trainScheduleResp, pacedResp] = await Promise.all([
+        bodyForTrainSchedules
+          ? postTrainScheduleTrackOccupancy({ body: bodyForTrainSchedules })
+          : Promise.resolve(undefined),
+        bodyForPaced
+          ? postPacedTrainTrackOccupancy({ body: bodyForPaced })
+          : Promise.resolve(undefined),
+      ]);
+
+      const zones: MovableOccupancyZone[] = [];
+
+      if (trainScheduleResp?.data) {
+        for (const [trackId, occupations] of Object.entries(trainScheduleResp.data)) {
+          for (const occupation of occupations) {
+            const trainId = formatEditoastIdToTrainScheduleId(occupation.train_schedule_id);
+            const train = trainsCollection[trainId];
+            if (!train) continue;
+
+            zones.push(
+              getMovableOccupancyZone(
+                trackId,
+                trainId,
+                occupation,
+                train.spaceTimeCurves,
+                train.name,
+                train.departureTime
               )
-          ) // TODO : append result of postPacedTrainTrackOccupancy
-        : [],
-    [infraId]
+            );
+          }
+        }
+      }
+
+      if (pacedResp?.data) {
+        for (const [trackId, occupations] of Object.entries(pacedResp.data)) {
+          for (const occupation of occupations) {
+            const pacedId = formatEditoastIdToPacedTrainId(occupation.paced_train_id);
+            const train = trainsCollection[pacedId];
+            if (!train || isTrainScheduleProjection(train)) {
+              continue;
+            }
+
+            const exception =
+              occupation.type === 'BaseOccurrence'
+                ? undefined
+                : train.exceptions.find((e) => e.key === occupation.exception_key);
+
+            const exceptionProjection =
+              occupation.type !== 'BaseOccurrence'
+                ? train.exceptionProjections.get(occupation.exception_key)
+                : undefined;
+
+            const { spaceTimeCurves } = exceptionProjection ?? train;
+
+            let trainId: TrainId;
+            let trainName: string;
+            let startTime: Date;
+
+            if (occupation.type === 'CreatedException') {
+              if (!exception?.start_time?.value) continue;
+
+              trainId = formatPacedTrainIdToExceptionId(pacedId, occupation.exception_key);
+              trainName = exception.train_name?.value ?? `${train.name}/+`;
+              startTime = new Date(exception.start_time.value);
+            } else {
+              trainId = formatPacedTrainIdToIndexedOccurrenceId(pacedId, occupation.index);
+              trainName =
+                exception?.train_name?.value ?? computeOccurrenceName(train.name, occupation.index);
+
+              startTime = exception?.start_time?.value
+                ? new Date(exception.start_time.value)
+                : computeIndexedOccurrenceStartTime(
+                    new Date(train.departureTime),
+                    train.paced.interval,
+                    occupation.index
+                  );
+            }
+
+            zones.push(
+              getMovableOccupancyZone(
+                trackId,
+                trainId,
+                occupation,
+                spaceTimeCurves,
+                trainName,
+                startTime,
+                exception
+              )
+            );
+          }
+        }
+      }
+
+      return zones;
+    },
+    [infraId, postTrainScheduleTrackOccupancy, postPacedTrainTrackOccupancy]
   );
 
   const deployedWaypoints = useMemo(() => {
@@ -307,8 +412,9 @@ const useTrackOccupancy = ({
       newTrainData: TrainSpaceTimeData;
       stopPanning: boolean;
     }) => {
-      if (stopPanning) draggedTrains.current.delete(draggedTrainId);
-      else draggedTrains.current.add(draggedTrainId);
+      const draggedTimetableItemId = toOwnerTimetableItemId(draggedTrainId);
+      if (stopPanning) draggedTimetableItemIds.current.delete(draggedTimetableItemId);
+      else draggedTimetableItemIds.current.add(draggedTimetableItemId);
 
       // Update actual state:
       const impactedPathOperationalPointIDs = new Set<string>();
@@ -316,7 +422,12 @@ const useTrackOccupancy = ({
       forEach(newState, (opState, waypointId) => {
         if (opState.selected) {
           forEach(opState.zones.data, (zone) => {
-            if (zone.trainId === draggedTrainId) {
+            if (
+              (isTrainScheduleId(zone.trainId) && zone.trainId === draggedTrainId) ||
+              (isOccurrenceId(zone.trainId) &&
+                extractPacedTrainIdFromOccurrenceId(zone.trainId) === draggedTimetableItemId &&
+                !zone.isStartTimeException)
+            ) {
               impactedPathOperationalPointIDs.add(waypointId);
               const offset = newTrainData.departureTime.getTime() - initialDepartureTime.getTime();
               zone.startTime = zone.dbStartTime + offset;
@@ -447,14 +558,13 @@ const useTrackOccupancy = ({
     const addedTrainIDs = new Set<TimetableItemId>();
     const removedTrainIDs = new Set<TimetableItemId>();
     const modifiedTrainIDs = new Set<TimetableItemId>();
-
     timetableItemProjections.forEach((timetableItem) => {
       const id = timetableItem.id;
       const previousTimetableItem = previousTimetableItemsDict[id];
       if (!previousTimetableItem) addedTrainIDs.add(id);
       else if (
         !isEqual(timetableItem, previousTimetableItem) &&
-        !draggedTrains.current.has(timetableItem.id)
+        !draggedTimetableItemIds.current.has(timetableItem.id)
       ) {
         modifiedTrainIDs.add(id);
         if (
@@ -491,8 +601,7 @@ const useTrackOccupancy = ({
             [...addedTrainIDs, ...modifiedTrainIDs].map((id) => [id, timetableItemsById.get(id)!])
           )
         );
-
-        if (newZones.length)
+        if (newZones.length) {
           updatePathOperationalPointState(waypointId, (state) =>
             state
               ? {
@@ -500,12 +609,13 @@ const useTrackOccupancy = ({
                   zones: {
                     ...state.zones,
                     data: (state.zones.data || [])
-                      .filter((zone) => !modifiedTrainIDs.has(zone.trainId))
+                      .filter((zone) => !modifiedTrainIDs.has(toOwnerTimetableItemId(zone.trainId)))
                       .concat(newZones),
                   },
                 }
               : undefined
           );
+        }
       });
     }
 
@@ -519,7 +629,9 @@ const useTrackOccupancy = ({
                 zones: {
                   ...state.zones,
                   data:
-                    state.zones.data?.filter((zone) => !removedTrainIDs.has(zone.trainId)) || [],
+                    state.zones.data?.filter(
+                      (zone) => !removedTrainIDs.has(toOwnerTimetableItemId(zone.trainId))
+                    ) || [],
                 },
               }
             : undefined

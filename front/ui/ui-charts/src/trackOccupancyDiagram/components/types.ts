@@ -19,6 +19,7 @@ export type OccupancyZone = {
   endTime: number;
   startDirection?: 'up' | 'down';
   endDirection?: 'up' | 'down';
+  trailingText?: string;
 };
 
 export type OccupancyZonePickingElement = PickingElement & {
