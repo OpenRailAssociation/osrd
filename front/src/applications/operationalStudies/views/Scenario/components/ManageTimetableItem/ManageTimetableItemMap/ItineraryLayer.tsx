@@ -22,29 +22,30 @@ export default function ItineraryLayer({
   showStdcmAssets = false,
   isFeasible = true,
 }: ItineraryLayerProps) {
-  if (geometry) {
-    const lineWidth = showStdcmAssets ? 3 : 5;
-
-    let lineColor = FEASIBLE_COLOR;
-    if (!isFeasible) {
-      lineColor = INFEASIBLE_COLOR;
-    } else if (showStdcmAssets) {
-      lineColor = STDCM_ASSETS_COLOR;
-    }
-    return (
-      <Source type="geojson" data={geometry}>
-        {!hideItineraryLine && (
-          <OrderedLayer
-            type="line"
-            paint={{
-              'line-width': lineWidth,
-              'line-color': lineColor,
-            }}
-            layerOrder={layerOrder}
-          />
-        )}
-      </Source>
-    );
+  if (!geometry) {
+    return null;
   }
-  return null;
+
+  const lineWidth = showStdcmAssets ? 3 : 5;
+
+  let lineColor = FEASIBLE_COLOR;
+  if (!isFeasible) {
+    lineColor = INFEASIBLE_COLOR;
+  } else if (showStdcmAssets) {
+    lineColor = STDCM_ASSETS_COLOR;
+  }
+  return (
+    <Source type="geojson" data={geometry}>
+      {!hideItineraryLine && (
+        <OrderedLayer
+          type="line"
+          paint={{
+            'line-width': lineWidth,
+            'line-color': lineColor,
+          }}
+          layerOrder={layerOrder}
+        />
+      )}
+    </Source>
+  );
 }
