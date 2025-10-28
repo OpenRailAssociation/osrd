@@ -139,11 +139,12 @@ class STDCMEndpoint(
                     Pathfinding.TIMEOUT,
                     temporarySpeedLimitManager,
                 )
-            if (path == null || hasDuplicateTracks(infra, path.blocks)) {
+            if (path == null || hasDuplicateTracks(infra, path.trainPath)) {
                 val response = PathNotFound()
                 return RsJson(RsWithBody(stdcmResponseAdapter.toJson(response)))
             }
-            val pathfindingResponse = runPathfindingBlockPostProcessing(infra, path.blocks)
+            val pathfindingResponse =
+                runPathfindingBlockPostProcessing(infra, path.trainPath, path.waypointOffsets)
 
             val simulationResponse =
                 buildSimResponse(

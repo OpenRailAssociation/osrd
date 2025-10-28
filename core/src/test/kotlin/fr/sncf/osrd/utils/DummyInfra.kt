@@ -546,11 +546,11 @@ class DummyInfra : RawInfra, BlockInfra {
     }
 
     override fun getBlockName(block: BlockId): String {
-        return block.index.toString() // We don't actually need persistence here
+        return blockPool[block.index].name
     }
 
     override fun getBlockFromName(name: String): BlockId {
-        return BlockId(name.toUInt()) // We don't actually need persistence here
+        return convertId(getRouteFromName(name))
     }
 
     // endregion

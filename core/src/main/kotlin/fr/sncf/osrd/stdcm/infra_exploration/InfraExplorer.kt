@@ -7,8 +7,10 @@ import fr.sncf.osrd.conflicts.PathFragment
 import fr.sncf.osrd.conflicts.incrementalPathOf
 import fr.sncf.osrd.graph.PathfindingConstraint
 import fr.sncf.osrd.path.implementations.buildTrainPathFromBlock
+import fr.sncf.osrd.path.implementations.buildTrainPathFromBlockRanges
 import fr.sncf.osrd.path.interfaces.BlockRange
 import fr.sncf.osrd.path.interfaces.TrainPath
+import fr.sncf.osrd.path.legacy_objects.ElectricalProfileMapping
 import fr.sncf.osrd.pathfinding.Pathfinding.EdgeLocation
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal.SHORT_SLIP_STOP
 import fr.sncf.osrd.sim_infra.api.*
@@ -82,6 +84,8 @@ interface InfraExplorer {
     /** Returns the current block. */
     fun getCurrentBlockRange(): BlockRange
 
+    fun getAllBlocks(): List<BlockRange>
+
     /** Returns the length of the current block. */
     fun getCurrentBlockLength(): Length<Block>
 
@@ -99,6 +103,16 @@ interface InfraExplorer {
 
     /** Returns the step tracker, giving data about the steps on the path (including lookahead) */
     fun getStepTracker(): StepTracker
+
+    /**
+     * Build a full train path from the explored path. The resulting data is copied and this is not
+     * cached, should not be called too often.
+     */
+    fun buildFullPath(
+        rawInfra: RawInfra,
+        blockInfra: BlockInfra,
+        electricalProfileMapping: ElectricalProfileMapping? = null,
+    ): TrainPath
 }
 
 /** Returns the current block and the lookahead blocks */
@@ -236,6 +250,10 @@ private class InfraExplorerImpl(
         return blockRanges[currentIndex]
     }
 
+    override fun getAllBlocks(): List<BlockRange> {
+        return blockRanges.toList()
+    }
+
     override fun getCurrentBlockLength(): Length<Block> {
         return blockInfra.getBlockLength(getCurrentBlock())
     }
@@ -272,6 +290,21 @@ private class InfraExplorerImpl(
 
     override fun getStepTracker(): StepTracker {
         return stepTracker
+    }
+
+    override fun buildFullPath(
+        rawInfra: RawInfra,
+        blockInfra: BlockInfra,
+        electricalProfileMapping: ElectricalProfileMapping?,
+    ): TrainPath {
+        val blocks = blockRanges.toList()
+        return buildTrainPathFromBlockRanges(
+            rawInfra,
+            blockInfra,
+            blocks,
+            getExploredRoutes(),
+            electricalProfileMapping = electricalProfileMapping,
+        )
     }
 
     /**
@@ -318,18 +351,19 @@ private class InfraExplorerImpl(
                 val endPath = arrivalLocation != null
                 val travelledPathEndBlockOffset = arrivalLocation?.offset ?: blockLength
 
-                val pathBegin = blockRanges.lastOrNull()?.pathEnd ?: Offset.zero()
-                val pathEnd = pathBegin + (travelledPathEndBlockOffset - travelledPathBegin)
+                val rangePathBegin = blockRanges.lastOrNull()?.pathEnd ?: Offset.zero()
+                val rangePathEnd =
+                    rangePathBegin + (travelledPathEndBlockOffset - travelledPathBegin)
 
-                if (pathBegin > pathEnd) continue
+                if (rangePathBegin > rangePathEnd) continue
 
                 val blockRange =
                     BlockRange(
                         value = block,
                         objectBegin = travelledPathBegin,
                         objectEnd = travelledPathEndBlockOffset,
-                        pathBegin = pathBegin,
-                        pathEnd = pathEnd,
+                        pathBegin = rangePathBegin,
+                        pathEnd = rangePathEnd,
                     )
                 blockRanges.add(blockRange)
 
