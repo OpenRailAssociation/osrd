@@ -75,7 +75,7 @@ const OperationalPointsLayer = ({
     minzoom: 8,
     paint: {
       'circle-stroke-color': colors.op.stroke,
-      'circle-stroke-width': 1.5,
+      'circle-stroke-width': ['step', ['zoom'], 0.5, 16.5, 1.5],
       'circle-color': getColorByHighlighted({
         highlightedArea,
         highlightedOperationalPoints,
@@ -87,7 +87,7 @@ const OperationalPointsLayer = ({
         ],
         outColor: colors.muted.color,
       }),
-      'circle-radius': 3,
+      'circle-radius': ['step', ['zoom'], 1.5, 16.5, 3],
     },
   };
 
