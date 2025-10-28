@@ -5,6 +5,8 @@ import fr.sncf.osrd.pathfinding.Pathfinding.EdgeLocation
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.stdcm.STDCMStep
+import fr.sncf.osrd.utils.AppendOnlyLinkedList
+import fr.sncf.osrd.utils.appendOnlyLinkedListOf
 import fr.sncf.osrd.utils.units.Offset
 
 /**
@@ -18,10 +20,10 @@ import fr.sncf.osrd.utils.units.Offset
  *
  * Unless specified otherwise, fields and methods refer to the whole path (including lookahead).
  */
-class StepTracker(private val inputSteps: List<STDCMStep>) {
-    // If copying this is too expensive, it may be changed to an AppendOnlyLinkedList.
-    // But the list should be small.
-    private val seenSteps: MutableList<LocatedStep> = mutableListOf()
+class StepTracker(
+    private val inputSteps: List<STDCMStep>,
+    private val seenSteps: AppendOnlyLinkedList<LocatedStep> = appendOnlyLinkedListOf(),
+) {
     private val nSeenSteps: Int
         get() = seenSteps.size
 
@@ -33,7 +35,7 @@ class StepTracker(private val inputSteps: List<STDCMStep>) {
 
     /** Returns all the steps that have been passed on the path, in order. */
     fun getSeenSteps(): List<LocatedStep> {
-        return seenSteps
+        return seenSteps.toList()
     }
 
     /** True if the last step has been encountered (including lookahead). */
@@ -79,8 +81,7 @@ class StepTracker(private val inputSteps: List<STDCMStep>) {
     /** Integrate a part of the lookahead into the "actually visited" steps. */
     fun moveForward(block: BlockId, start: Offset<Block>, end: Offset<Block>) {
         nStepsExcludingLookahead +=
-            seenSteps
-                .drop(nStepsExcludingLookahead)
+            getStepsInLookahead()
                 .takeWhile { it.location.edge == block && it.location.offset in start..end }
                 .count()
     }
@@ -90,7 +91,7 @@ class StepTracker(private val inputSteps: List<STDCMStep>) {
      * we know their path offset)
      */
     fun getStepsInLookahead(): List<LocatedStep> {
-        return seenSteps.drop(nStepsExcludingLookahead)
+        return seenSteps.toList().drop(nStepsExcludingLookahead)
     }
 
     /** Returns all the steps excluding lookahead, in order. */
@@ -99,10 +100,7 @@ class StepTracker(private val inputSteps: List<STDCMStep>) {
     }
 
     fun clone(): StepTracker {
-        // If clone() performances become an issue,
-        // reachedSteps can be changed to an AppendOnlyLinkedList
-        val res = StepTracker(inputSteps)
-        res.seenSteps.addAll(seenSteps)
+        val res = StepTracker(inputSteps, seenSteps.shallowCopy())
         res.currentPathOffset = currentPathOffset
         res.nStepsExcludingLookahead = nStepsExcludingLookahead
         return res
