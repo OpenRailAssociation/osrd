@@ -1299,6 +1299,7 @@ dependencies = [
  "colored",
  "common",
  "core_client",
+ "core_task",
  "dashmap",
  "database",
  "deadpool",

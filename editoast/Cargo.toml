@@ -164,6 +164,7 @@ clap.workspace = true
 colored = "3.0.0"
 common = { workspace = true }
 core_client = { workspace = true, features = ["mocking_client"] }
+core_task = { path = "./core_task" }
 dashmap.workspace = true
 database.workspace = true
 deadpool.workspace = true
