@@ -317,10 +317,7 @@ export const getStationFromOps = (ops: OperationalPoint[]): OperationalPoint | u
  * Get a path item location (without ID) from a train's path
  * item.
  */
-const getPathItemLocation = (pathItem: TrainSchedule['path'][number]) => {
-  const { id: _id, ...pathItemLocation } = pathItem;
-  return pathItemLocation;
-};
+const getPathItemLocation = (pathItem: TrainSchedule['path'][number]) => pathItem.location;
 
 /**
  * Get a list of unique OP references from timetable items paths.
@@ -492,30 +489,29 @@ export const groupRoundTrips = (
   return { oneWays, roundTrips, others };
 };
 
-export const getInvalidStepLabel = (step: OperationalPointReference) => {
-  if ('uic' in step) return step.uic.toString();
-  if ('trigram' in step) return step.trigram;
-  return step.operational_point;
+export const getInvalidStepLabel = ({ reference }: OperationalPointReference) => {
+  if ('uic' in reference) return reference.uic.toString();
+  if ('trigram' in reference) return reference.trigram;
+  return reference.operational_point;
 };
 
 export const matchOpRefAndOp = (
   location: PathItemLocation,
   op: PathProperties['operational_points'][number] | OperationalPoint
 ) => {
-  if ('operational_point' in location) {
-    return location.operational_point === op.id;
+  if ('track' in location) return false;
+
+  if ('operational_point' in location.reference) {
+    return location.reference.operational_point === op.id;
   }
-  if ('uic' in location) {
+  if ('uic' in location.reference) {
     return (
-      location.uic === op.extensions?.identifier?.uic &&
-      location.secondary_code === op.extensions?.sncf?.ch
+      location.reference.uic === op.extensions?.identifier?.uic &&
+      location.reference.secondary_code === op.extensions?.sncf?.ch
     );
   }
-  if ('trigram' in location) {
-    return (
-      location.trigram === op.extensions?.sncf?.trigram &&
-      location.secondary_code === op.extensions?.sncf?.ch
-    );
-  }
-  return false;
+  return (
+    location.reference.trigram === op.extensions?.sncf?.trigram &&
+    location.reference.secondary_code === op.extensions?.sncf?.ch
+  );
 };

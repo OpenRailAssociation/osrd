@@ -304,7 +304,10 @@ export const loadAndIndexNge = async (
         const macroNode: NodeIndexed = {
           ngeId: index,
           path_item_key: key,
-          trigram: 'trigram' in pathItem ? pathItem.trigram : null,
+          trigram:
+            'reference' in pathItem.location && 'trigram' in pathItem.location.reference
+              ? pathItem.location.reference.trigram
+              : null,
           connection_time: 0,
           labels: [],
           // we put the nodes on a grid

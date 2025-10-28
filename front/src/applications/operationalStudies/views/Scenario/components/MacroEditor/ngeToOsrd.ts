@@ -177,13 +177,12 @@ const createPathItemFromNode = (
     pathItemLocation = MacroEditorState.parsePathKey(indexedNode.path_item_key);
   } else {
     const [trigram, secondary_code] = node.betriebspunktName.split('/');
-    pathItemLocation = { trigram, secondary_code };
+    // TODO : handle this case in xml import refacto
+    pathItemLocation = { reference: { trigram, secondary_code }, track_reference: null };
   }
   return {
-    ...pathItemLocation,
+    location: pathItemLocation,
     id: `${node.id}-${index}`,
-    // TODO : handle this case in xml import refacto
-    track_reference: null,
   };
 };
 
@@ -391,10 +390,18 @@ const populateSecondaryCodesInPath = async (
   dispatch: AppDispatch
 ) => {
   const promises = path.map(async (pathItem) => {
-    if (!('trigram' in pathItem) || pathItem.secondary_code) {
+    if (
+      !('operational_point' in pathItem.location) ||
+      !('trigram' in pathItem.location.operational_point) ||
+      pathItem.location.operational_point.secondary_code
+    ) {
       return;
     }
-    pathItem.secondary_code = await fetchStationSecondaryCode(pathItem.trigram, infraId, dispatch);
+    pathItem.location.operational_point.secondary_code = await fetchStationSecondaryCode(
+      pathItem.location.operational_point.trigram,
+      infraId,
+      dispatch
+    );
   });
 
   await Promise.all(promises);

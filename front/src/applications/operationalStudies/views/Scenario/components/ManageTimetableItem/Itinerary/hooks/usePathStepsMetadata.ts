@@ -29,23 +29,22 @@ export const usePathStepsMetadata = (pathSteps: PathStepV2[]) => {
   const strippedTrainPath: TrainSchedule['path'] = useMemo(
     () =>
       pathSteps.reduce<TrainSchedule['path']>((acc, step) => {
-        if (!step.location) return acc;
-        if ('uic' in step.location || 'trigram' in step.location) {
+        if (!step.location || 'track' in step.location) return acc;
+        if ('uic' in step.location.reference || 'trigram' in step.location.reference) {
           // strip location from its secondary_code so we can have all matchs for an uic or trigram
-          const {
-            secondary_code: _secCode,
-            track_reference: _trackRef,
-            ...location
-          } = step.location;
+          const { secondary_code: _secCode, ...reference } = step.location.reference;
           acc.push({
             id: step.id,
-            ...location,
+            location: {
+              reference,
+            },
           });
           return acc;
         }
+
         acc.push({
           id: step.id,
-          ...step.location,
+          location: step.location,
         });
         return acc;
       }, []),
@@ -60,20 +59,24 @@ export const usePathStepsMetadata = (pathSteps: PathStepV2[]) => {
   // with postInfraByInfraIdMatchOperationalPoints, we need to call the endpoint again with
   // the opId corresponding uic in order to get all the possible matches and have
   // all the secondary codes and track names
-  const uicPayload: Extract<OperationalPointReference, { uic: number }>[] = useMemo(() => {
+  const uicPayload: OperationalPointReference[] = useMemo(() => {
     const opIds = pathSteps.reduce<string[]>((acc, step) => {
-      if (step.location && 'operational_point' in step.location) {
-        acc.push(step.location.operational_point);
+      if (
+        step.location &&
+        'reference' in step.location &&
+        'operational_point' in step.location.reference
+      ) {
+        acc.push(step.location.reference.operational_point);
       }
       return acc;
     }, []);
 
     if (opIds.length === 0) return [];
 
-    return pathStepsOperationalPoints.reduce<{ uic: number }[]>((acc, op) => {
+    return pathStepsOperationalPoints.reduce<OperationalPointReference[]>((acc, op) => {
       const uic = op.extensions?.identifier?.uic;
       if (uic && opIds.includes(op.id)) {
-        acc.push({ uic });
+        acc.push({ reference: { uic } });
       }
       return acc;
     }, []);
@@ -169,18 +172,18 @@ export const usePathStepsMetadata = (pathSteps: PathStepV2[]) => {
         // Find the matching operational point for this pathStep to get
         // its valid status and its name
         const matchedOp = allOps.find((op) => {
-          if ('operational_point' in location) {
-            return location.operational_point === op.id;
+          if ('operational_point' in location.reference) {
+            return location.reference.operational_point === op.id;
           }
-          if ('uic' in location) {
+          if ('uic' in location.reference) {
             return (
-              location.uic === op.extensions?.identifier?.uic &&
-              location.secondary_code === op.extensions?.sncf?.ch
+              location.reference.uic === op.extensions?.identifier?.uic &&
+              location.reference.secondary_code === op.extensions?.sncf?.ch
             );
           }
           return (
-            location.trigram === op.extensions?.sncf?.trigram &&
-            location.secondary_code === op.extensions?.sncf?.ch
+            location.reference.trigram === op.extensions?.sncf?.trigram &&
+            location.reference.secondary_code === op.extensions?.sncf?.ch
           );
         });
 

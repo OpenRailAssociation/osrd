@@ -38,25 +38,25 @@ export const findOpFromPathItem = (
   // When a path item doesn't specify a secondary code, mimick what editoast
   // does: pick 'BV', '00' or an OP without a ch.
   let chs: (string | null)[] = [];
-  if ('uic' in pathItem || 'trigram' in pathItem) {
-    if (pathItem.secondary_code) {
-      chs = [pathItem.secondary_code];
-    } else {
-      chs = ['BV', '00', null];
+  if ('reference' in pathItem) {
+    if ('uic' in pathItem.reference || 'trigram' in pathItem.reference) {
+      if (pathItem.reference.secondary_code) {
+        chs = [pathItem.reference.secondary_code];
+      } else {
+        chs = ['BV', '00', null];
+      }
     }
   }
 
   return searchResults.find((searchResult) => {
-    if ('uic' in pathItem) {
-      return searchResult.uic === pathItem.uic && chs.includes(searchResult.ch);
+    if ('track' in pathItem) return false;
+    if ('uic' in pathItem.reference) {
+      return searchResult.uic === pathItem.reference.uic && chs.includes(searchResult.ch);
     }
-    if ('trigram' in pathItem) {
-      return searchResult.trigram === pathItem.trigram && chs.includes(searchResult.ch);
+    if ('trigram' in pathItem.reference) {
+      return searchResult.trigram === pathItem.reference.trigram && chs.includes(searchResult.ch);
     }
-    if ('operational_point' in pathItem) {
-      return searchResult.obj_id === pathItem.operational_point;
-    }
-    return false;
+    return searchResult.obj_id === pathItem.reference.operational_point;
   });
 };
 

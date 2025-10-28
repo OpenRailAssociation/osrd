@@ -99,7 +99,7 @@ const StdcmOperationalPoint = ({
           const newObject = {
             label: [p.trigram, p.name].join(' '),
             trigram: p.trigram,
-            uic: p.uic,
+            reference: { uic: p.uic },
             secondary_code: p.ch,
             name: p.name,
             coordinates: p.geographic.coordinates as [number, number],

@@ -137,8 +137,10 @@ const AddPathStepPopup = ({
       setClickedOp({
         id: uuidV4(),
         location: {
-          secondary_code: operationalPoint.extensions!.sncf!.ch,
-          uic: operationalPoint.extensions!.identifier!.uic,
+          reference: {
+            secondary_code: operationalPoint.extensions!.sncf!.ch,
+            uic: operationalPoint.extensions!.identifier!.uic,
+          },
         },
         tracks: trackPartCoordinates,
       });

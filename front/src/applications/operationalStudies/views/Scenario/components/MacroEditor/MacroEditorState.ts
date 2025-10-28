@@ -259,13 +259,11 @@ export default class MacroEditorState {
    * Given an path step, returns its pathKey
    */
   static getPathKey(item: PathItemLocation): string {
-    if ('trigram' in item)
-      return `trigram:${item.trigram}${item.secondary_code ? `/${item.secondary_code}` : ''}`;
-    if ('operational_point' in item) return `op_id:${item.operational_point}`;
-    if ('uic' in item)
-      return `uic:${item.uic}${item.secondary_code ? `/${item.secondary_code}` : ''}`;
-
-    return `track_offset:${item.track}+${item.offset}`;
+    if ('track' in item) return `track_offset:${item.track}+${item.offset}`;
+    if ('trigram' in item.reference)
+      return `trigram:${item.reference.trigram}${item.reference.secondary_code ? `/${item.reference.secondary_code}` : ''}`;
+    if ('operational_point' in item.reference) return `op_id:${item.reference.operational_point}`;
+    return `uic:${item.reference.uic}${item.reference.secondary_code ? `/${item.reference.secondary_code}` : ''}`;
   }
 
   /**
@@ -290,15 +288,15 @@ export default class MacroEditorState {
     if (!value) throw new Error('Invalid path key');
     switch (type) {
       case 'op_id': {
-        return { operational_point: value };
+        return { reference: { operational_point: value } };
       }
       case 'trigram': {
         const [trigram, secondary_code] = value.split('/');
-        return { trigram, secondary_code };
+        return { reference: { trigram, secondary_code } };
       }
       case 'uic': {
         const [uic, secondary_code] = value.split('/');
-        return { uic: Number(uic), secondary_code };
+        return { reference: { uic: Number(uic), secondary_code } };
       }
       case 'track_offset': {
         const [track, offset] = value.split('+');

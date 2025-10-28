@@ -46,16 +46,16 @@ export const matchPathStepAndOp = (
   step: PathItemLocation,
   op: Pick<SuggestedOP, 'opId' | 'uic' | 'ch' | 'trigram' | 'track' | 'offsetOnTrack'>
 ) => {
-  if ('operational_point' in step) {
-    return step.operational_point === op.opId;
+  if ('track' in step) {
+    return step.track === op.track && step.offset === op.offsetOnTrack;
   }
-  if ('uic' in step) {
-    return step.uic === op.uic && step.secondary_code === op.ch;
+  if ('operational_point' in step.reference) {
+    return step.reference.operational_point === op.opId;
   }
-  if ('trigram' in step) {
-    return step.trigram === op.trigram && step.secondary_code === op.ch;
+  if ('uic' in step.reference) {
+    return step.reference.uic === op.uic && step.reference.secondary_code === op.ch;
   }
-  return step.track === op.track && step.offset === op.offsetOnTrack;
+  return step.reference.trigram === op.trigram && step.reference.secondary_code === op.ch;
 };
 
 export const getPathfindingQuery = ({

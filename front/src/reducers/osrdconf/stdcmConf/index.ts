@@ -254,13 +254,19 @@ export const stdcmConfSlice = createSlice({
       }>
     ) {
       const { linkedTrainExtremity, trainName, pathStep, pathStepId } = action.payload;
-      const { name, ch, uic, geographic, arrivalDate, date, time, trigram } = pathStep;
+      const { name, ch, geographic, arrivalDate, date, time, trigram } = pathStep;
 
       const newPathStep = {
-        location: { name, coordinates: geographic.coordinates, uic, secondary_code: ch, trigram },
+        location: {
+          name,
+          coordinates: geographic.coordinates as [number, number],
+          reference: { trigram, secondary_code: ch },
+        },
         id: pathStepId,
         arrival: arrivalDate,
-        ...(linkedTrainExtremity === 'origin' && { arrivalType: ArrivalTimeTypes.PRECISE_TIME }),
+        ...(linkedTrainExtremity === 'origin' && {
+          arrivalType: ArrivalTimeTypes.PRECISE_TIME,
+        }),
       };
 
       const newLinkedTrain = { date, time, trainName };
@@ -270,11 +276,12 @@ export const stdcmConfSlice = createSlice({
       } else {
         state.linkedTrains.posteriorTrain = newLinkedTrain;
       }
-      const newPathSteps = state.stdcmPathSteps.map((step) =>
-        step.id === action.payload.pathStepId
-          ? ({ ...step, ...newPathStep } as StdcmPathStep)
-          : step
-      );
+      const newPathSteps = state.stdcmPathSteps.map((step) => {
+        if (step.id === action.payload.pathStepId) {
+          return { ...step, ...newPathStep };
+        }
+        return step;
+      });
       state.stdcmPathSteps = newPathSteps;
     },
     addStdcmSimulations(

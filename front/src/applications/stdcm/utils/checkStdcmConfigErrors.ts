@@ -65,8 +65,8 @@ const checkStdcmConfigErrors = ({
 
   if (origin.location && destination.location) {
     if (
-      origin.location.uic === destination.location.uic &&
-      origin.location.secondary_code === destination.location.secondary_code
+      origin.location.reference.uic === destination.location.reference.uic &&
+      origin.location.reference.secondary_code === destination.location.reference.secondary_code
     ) {
       routeErrors.push(StdcmConfigErrorTypes.ZERO_LENGTH_PATH);
     }

@@ -23,7 +23,7 @@ const computeBasePathStep = (
   timetableItem: Pick<TrainSchedule, 'path' | 'schedule' | 'margins'>,
   pathItemIndex: number
 ): PathStep => {
-  const { id, ...location } = timetableItem.path[pathItemIndex];
+  const { id, location } = timetableItem.path[pathItemIndex];
   const correspondingSchedule = timetableItem.schedule?.find((schedule) => schedule.at === id);
 
   const {
@@ -33,12 +33,16 @@ const computeBasePathStep = (
   } = correspondingSchedule || {};
 
   let name;
-  if ('trigram' in location) {
-    name = location.trigram + (location.secondary_code ? `/${location.secondary_code}` : '');
-  } else if ('uic' in location) {
-    name = location.uic.toString();
-  } else if ('operational_point' in location) {
-    name = location.operational_point;
+  if ('reference' in location) {
+    if ('trigram' in location.reference) {
+      name =
+        location.reference.trigram +
+        (location.reference.secondary_code ? `/${location.reference.secondary_code}` : '');
+    } else if ('uic' in location.reference) {
+      name = location.reference.uic.toString();
+    } else if ('operational_point' in location.reference) {
+      name = location.reference.operational_point;
+    }
   }
 
   let theoreticalMargin;
@@ -49,8 +53,10 @@ const computeBasePathStep = (
   return {
     id,
     name,
-
-    location: { ...location, ...('track' in location ? { offset: mmToM(location.offset) } : null) },
+    location: {
+      ...location,
+      ...('track' in location ? { offset: mmToM(location.offset) } : null),
+    },
     arrival: arrival ? Duration.parse(arrival) : null,
     stopFor: stopFor ? Duration.parse(stopFor) : null,
     // If not provided, we set receptionSignal to its default value

@@ -10,23 +10,43 @@ describe('computeMargins', () => {
   const path = [
     {
       id: 'a',
-      uic: 1,
+      location: {
+        reference: {
+          uic: 1,
+        },
+      },
     },
     {
       id: 'b',
-      uic: 2,
+      location: {
+        reference: {
+          uic: 2,
+        },
+      },
     },
     {
       id: 'c',
-      uic: 3,
+      location: {
+        reference: {
+          uic: 3,
+        },
+      },
     },
     {
       id: 'd',
-      uic: 4,
+      location: {
+        reference: {
+          uic: 4,
+        },
+      },
     },
     {
       id: 'e',
-      uic: 5,
+      location: {
+        reference: {
+          uic: 5,
+        },
+      },
     },
   ];
   const margins = { boundaries: ['c'], values: ['10%', '5%'] };

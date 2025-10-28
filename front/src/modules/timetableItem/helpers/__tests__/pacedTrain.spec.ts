@@ -49,8 +49,8 @@ describe('extractOccurrenceDetailsFromPacedTrain', () => {
     rolling_stock_name: '',
     start_time: '2024-10-15T03:00:00Z',
     path: [
-      { id: 'id227', uic: 6, secondary_code: 'BV' },
-      { id: 'id228', uic: 5, secondary_code: 'BV' },
+      { id: 'id227', location: { reference: { uic: 6, secondary_code: 'BV' } } },
+      { id: 'id228', location: { reference: { uic: 5, secondary_code: 'BV' } } },
     ],
     schedule: [
       {
@@ -112,8 +112,14 @@ describe('extractOccurrenceDetailsFromPacedTrain', () => {
       key: '123123',
       path_and_schedule: {
         path: [
-          { id: 'id225', uic: 6, secondary_code: 'BV' },
-          { id: 'id228', uic: 5, secondary_code: 'BV' },
+          {
+            id: 'id225',
+            location: { reference: { uic: 6, secondary_code: 'BV' } },
+          },
+          {
+            id: 'id228',
+            location: { reference: { uic: 5, secondary_code: 'BV' } },
+          },
         ],
         schedule: [
           {
