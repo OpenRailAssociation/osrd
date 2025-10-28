@@ -43,7 +43,7 @@ sha2 = "0.10.9"
 smol_str = { version = "0.3.4", features = ["serde"] }
 thiserror = "2.0.17"
 thunderdome = "0.6.1"
-tokio = { version = "1.47.1", features = ["full"] }
+tokio = { version = "1.48.0", features = ["full"] }
 tracing = "0.1.41"
 tracing-opentelemetry = "0.32.0"
 tracing-subscriber = { version = "0.3.20", features = ["env-filter"] }
