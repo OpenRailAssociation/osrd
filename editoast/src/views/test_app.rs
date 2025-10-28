@@ -193,7 +193,7 @@ impl TestAppBuilder {
         };
         let sub = create_tracing_subscriber(
             tracing_config,
-            tracing_subscriber::filter::LevelFilter::DEBUG,
+            tracing_subscriber::filter::LevelFilter::TRACE,
             NoopSpanExporter::new(),
         );
         let tracing_guard = tracing::subscriber::set_default(sub);
