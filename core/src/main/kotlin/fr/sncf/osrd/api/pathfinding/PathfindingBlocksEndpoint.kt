@@ -5,6 +5,7 @@ import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.api.InfraProvider
 import fr.sncf.osrd.api.TrackLocation
 import fr.sncf.osrd.graph.*
+import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.pathfinding.Pathfinding
 import fr.sncf.osrd.pathfinding.Pathfinding.EdgeLocation
 import fr.sncf.osrd.pathfinding.Pathfinding.EdgeRange
@@ -134,7 +135,7 @@ private fun computePaths(
     remainingDistanceEstimators: List<AStarHeuristic<PathfindingEdge, Block>>,
     initialRequest: PathfindingBlockRequest,
     timeout: Double?,
-): Pathfinding.Result<BlockId, Block> {
+): ProcessedPathfindingResponse {
     val start = Instant.now()
     val mrspBuilder =
         CachedBlockMRSPBuilder(
@@ -165,8 +166,8 @@ private fun computePaths(
 
     if (pathFound != null) {
         pathfindingLogger.info("Path found, start postprocessing")
-        val res = makeBlockPath(pathFound)!!
-        if (!hasDuplicateTracks(infra, res)) return res
+        val res = processPathfindingResponse(infra, pathFound)
+        if (!hasDuplicateTracks(infra, res.path)) return res
         else pathfindingLogger.info("Path has duplicate tracks, dismissing")
     }
 
@@ -189,27 +190,14 @@ private fun computePaths(
  * Return true if the path contains a duplicated track. This kind of path is not supported by OSRD
  * yet.
  */
-fun hasDuplicateTracks(infra: FullInfra, path: Pathfinding.Result<BlockId, Block>): Boolean {
-    val seenTracks = mutableSetOf<TrackSectionId>()
-    var lastTrack: TrackSectionId? = null
-    for (blockRange in path.ranges) {
-        val zonePaths = infra.blockInfra.getBlockZonePaths(blockRange.edge)
-        for (zonePath in zonePaths) {
-            val chunks = infra.rawInfra.getZonePathChunks(zonePath)
-            val tracks = chunks.map { infra.rawInfra.getTrackFromChunk(it.value) }
-            for (track in tracks) {
-                if (lastTrack == track) {
-                    continue
-                }
-                if (seenTracks.contains(track)) {
-                    return true
-                }
-                seenTracks.add(track)
-                lastTrack = track
-            }
-        }
-    }
-    return false
+fun hasDuplicateTracks(infra: FullInfra, path: TrainPath): Boolean {
+    val tracks =
+        path
+            .getChunks()
+            .map { it.value }
+            .map { infra.rawInfra.getTrackFromChunk(it.value) }
+            .withoutConsecutiveDuplicates()
+    return tracks.toSet().size < tracks.size
 }
 
 const val SIGNALING_SYSTEM_COST_WEIGHTING = 1e-2
@@ -238,7 +226,7 @@ private fun getStartLocations(
 ): Collection<EdgeLocation<PathfindingEdge, Block>> {
     val res = mutableListOf<EdgeLocation<PathfindingEdge, Block>>()
     val firstStep = waypoints[0]
-    val steps = listOf(STDCMStep(waypoints.last()))
+    val steps = waypoints.map { STDCMStep(it) }
     for (location in firstStep) {
         val infraExplorers =
             initInfraExplorer(
@@ -297,15 +285,14 @@ private fun throwNoPathFoundException(
                     getStartLocations(infra.rawInfra, infra.blockInfra, waypoints, listOf()),
                     getTargetsOnEdges(waypoints),
                 )
-        val incompatibleConstraintsResponse =
+        if (possiblePathWithoutErrorNoConstraints != null) {
             buildIncompatibleConstraintsResponse(
-                infra,
-                makeBlockPath(possiblePathWithoutErrorNoConstraints),
-                constraints,
-                initialRequest,
-            )
-        if (incompatibleConstraintsResponse != null) {
-            throw NoPathFoundException(incompatibleConstraintsResponse)
+                    infra,
+                    processPathfindingResponse(infra, possiblePathWithoutErrorNoConstraints),
+                    constraints,
+                    initialRequest,
+                )
+                ?.let { throw NoPathFoundException(it) }
         }
     } catch (error: OSRDError) {
         if (error.osrdErrorType == ErrorType.PathfindingTimeoutError) {
@@ -315,6 +302,18 @@ private fun throwNoPathFoundException(
     }
     // It didn’t fail due to an incompatible constraint, no path exists
     throw NoPathFoundException(NotFoundInBlocks(listOf(), Length(0.meters)))
+}
+
+data class ProcessedPathfindingResponse(val path: TrainPath, val offsets: List<Offset<TrainPath>>)
+
+private fun processPathfindingResponse(
+    infra: FullInfra,
+    path: Pathfinding.Result<PathfindingEdge, Block>,
+): ProcessedPathfindingResponse {
+    val explorer = path.ranges.last().edge.infraExplorer
+    val trainPath = explorer.buildFullPath(infra.rawInfra, infra.blockInfra)
+    val stepOffsets = explorer.getStepTracker().getSeenSteps().map { it.travelledPathOffset }
+    return ProcessedPathfindingResponse(trainPath, stepOffsets)
 }
 
 private fun makeBlockPath(

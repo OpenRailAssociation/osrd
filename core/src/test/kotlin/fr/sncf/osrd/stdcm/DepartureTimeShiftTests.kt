@@ -9,7 +9,6 @@ import fr.sncf.osrd.train.TestTrains
 import fr.sncf.osrd.utils.DummyInfra
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
-import java.util.stream.Collectors
 import kotlin.test.assertNull
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
@@ -106,11 +105,7 @@ class DepartureTimeShiftTests {
                 .setStartLocations(setOf(EdgeLocation(firstBlock, Offset<Block>(0.meters))))
                 .setEndLocations(setOf(EdgeLocation(lastBlock, Offset<Block>(1000.meters))))
                 .run()!!
-        val blocks =
-            res.blocks.ranges
-                .stream()
-                .map { edgeRange -> infra.blockPool[edgeRange.edge.index.toInt()].name }
-                .collect(Collectors.toSet())
+        val blocks = res.trainPath.getBlocks().map { infra.getBlockName(it.value) }.toSet()
         Assertions.assertTrue(blocks.contains("b->c2"))
         Assertions.assertTrue(blocks.contains("c2->d"))
         Assertions.assertFalse(blocks.contains("b->c1"))
@@ -154,11 +149,7 @@ class DepartureTimeShiftTests {
                 .setEndLocations(setOf(EdgeLocation(lastBlock, Offset<Block>(1000.meters))))
                 .setUnavailableTimes(occupancyGraph)
                 .run()!!
-        val blocks =
-            res.blocks.ranges
-                .stream()
-                .map { edgeRange -> infra.blockPool[edgeRange.edge.index.toInt()].name }
-                .collect(Collectors.toSet())
+        val blocks = res.trainPath.getBlocks().map { infra.getBlockName(it.value) }.toSet()
         Assertions.assertTrue(blocks.contains("b->c1"))
         Assertions.assertTrue(blocks.contains("c1->d"))
         Assertions.assertFalse(blocks.contains("b->c2"))

@@ -166,11 +166,7 @@ class StopTests {
                     STDCMStep(setOf(EdgeLocation(blocksDirectPath[3], Offset(0.meters))), 0.0, true)
                 )
                 .run()!!
-        val blocks =
-            res.blocks.ranges
-                .stream()
-                .map { edgeRange -> infra.blockPool[edgeRange.edge.index.toInt()].name }
-                .toList()
+        val blocks = res.trainPath.getBlocks().map { infra.getBlockName(it.value) }
         Assertions.assertEquals(listOf("a->b", "b->x", "x->d", "d->e"), blocks)
         Assertions.assertNotEquals(stop, res.stopResults.isEmpty())
         Assertions.assertEquals(stop, res.envelope.interpolateSpeed(101100.0) == 0.0)
@@ -788,8 +784,7 @@ class StopTests {
                 )
                 .addStep(STDCMStep(setOf(EdgeLocation(lastBlock, Offset(100.meters))), 0.0, true))
                 .run()!!
-        val blocks =
-            res.blocks.ranges.map { block -> infra.blockPool[block.edge.index.toInt()].name }
+        val blocks = res.trainPath.getBlocks().map { infra.getBlockName(it.value) }
         val useBotPath = blocks.contains("x->y")
         assertTrue { useBotPath }
     }
