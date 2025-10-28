@@ -14,6 +14,8 @@ const X_TROUGHTRAIN_BACKGROUND_PADDING = 8;
 const BACKGROUND_HEIGHT = 40;
 const SELECTED_TRAIN_ID_GRADIANT = 2;
 const PATH_SIZE_DEFAULT = 1;
+const LABEL_OFFSET_X = 10;
+const LABEL_OFFSET_Y = 50;
 
 const drawDefaultZone = (
   ctx: CanvasRenderingContext2D,
@@ -166,7 +168,6 @@ export const drawOccupationZone = (
     ctx.stroke();
   }
   ctx.setLineDash([]);
-
   // Draw texts:
   drawOccupancyZonesTexts({
     ctx,
@@ -177,4 +178,46 @@ export const drawOccupationZone = (
     yPosition: y,
     isSelected,
   });
+};
+
+export const drawZoneTrailingText = (
+  ctx: CanvasRenderingContext2D,
+  { getTimePixel, getSpacePixel }: SpaceTimeChartContextType,
+  {
+    zone,
+    position,
+    yOffset,
+    trailingText,
+  }: {
+    zone: OccupancyZone;
+    position: number;
+    yOffset: number;
+    trailingText: string;
+  }
+) => {
+  const xEnd = getTimePixel(zone.endTime) + LABEL_OFFSET_X;
+  const yCenter = getSpacePixel(position) + yOffset + OCCUPANCY_ZONE_Y_START - LABEL_OFFSET_Y;
+
+  ctx.save();
+  ctx.font = '600 12px IBM Plex Mono';
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'middle';
+
+  const text = trailingText;
+  const paddingX = 6;
+  const textW = ctx.measureText(text).width;
+  const boxW = textW + paddingX * 2;
+  const boxH = 18;
+  const radius = 3;
+  const x = xEnd;
+  const yTop = yCenter - boxH / 2;
+
+  ctx.fillStyle = 'rgba(0,0,0,0.55)';
+  ctx.beginPath();
+  ctx.roundRect(x, yTop, boxW, boxH, radius);
+  ctx.fill();
+
+  ctx.fillStyle = '#FFFFFF';
+  ctx.fillText(trailingText, x + paddingX, yCenter + 0.5);
+  ctx.restore();
 };

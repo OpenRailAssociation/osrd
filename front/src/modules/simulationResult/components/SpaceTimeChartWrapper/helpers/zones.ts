@@ -1,16 +1,20 @@
 import type { OccupancyZone } from '@osrd-project/ui-charts';
 
-import { type PostTrainScheduleTrackOccupancyApiResponse } from 'common/api/osrdEditoastApi';
-import type { TrainScheduleId } from 'reducers/osrdconf/types';
+import {
+  type PacedTrainException,
+  type PostPacedTrainTrackOccupancyApiResponse,
+  type PostTrainScheduleTrackOccupancyApiResponse,
+} from 'common/api/osrdEditoastApi';
+import type { TrainId } from 'reducers/osrdconf/types';
 import { Duration } from 'utils/duration';
-import { formatEditoastIdToTrainScheduleId } from 'utils/trainId';
 
-import type { TrainSpaceTimeData } from '../../../types';
+import type { BaseTrainProjection } from '../../../types';
 
 export type MovableOccupancyZone = Omit<OccupancyZone, 'trainId'> & {
   dbStartTime: number;
   dbEndTime: number;
-  trainId: TrainScheduleId;
+  trainId: TrainId;
+  isStartTimeException?: boolean;
 };
 
 const EPSILON = 1e-5;
@@ -46,16 +50,18 @@ function getTimeToPosition(
 }
 export function getMovableOccupancyZone(
   trackId: string,
-  {
-    duration,
-    time_begin,
-    train_schedule_id,
-  }: PostTrainScheduleTrackOccupancyApiResponse[string][number],
-  { name, spaceTimeCurves, departureTime }: TrainSpaceTimeData
+  trainId: TrainId,
+  occupation:
+    | PostTrainScheduleTrackOccupancyApiResponse[string][number]
+    | PostPacedTrainTrackOccupancyApiResponse[string][number],
+  spaceTimeCurves: BaseTrainProjection['spaceTimeCurves'],
+  trainName: string,
+  departureTime: Date,
+  exception?: PacedTrainException
 ): MovableOccupancyZone {
   const trainTimeOrigin = departureTime.getTime();
-  const startTime = +new Date(time_begin);
-  const endTime = +new Date(time_begin) + Duration.parse(duration).ms;
+  const startTime = +new Date(occupation.time_begin);
+  const endTime = startTime + Duration.parse(occupation.duration).ms;
   const timeToPosition = getTimeToPosition(spaceTimeCurves);
 
   // Search for arrival and departure directions:
@@ -84,13 +90,14 @@ export function getMovableOccupancyZone(
 
   return {
     trackId,
-    trainId: formatEditoastIdToTrainScheduleId(train_schedule_id),
+    trainId,
     startTime,
     startDirection,
     endTime,
     endDirection,
-    trainName: name,
+    trainName,
     dbStartTime: startTime,
     dbEndTime: endTime,
+    isStartTimeException: exception?.start_time !== undefined,
   };
 }

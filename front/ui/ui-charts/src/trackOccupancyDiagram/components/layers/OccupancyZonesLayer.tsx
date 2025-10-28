@@ -20,6 +20,7 @@ import {
 import {
   drawOccupationZone,
   drawRemainingTrainsBox,
+  drawZoneTrailingText,
 } from '../helpers/drawElements/drawOccupancyZones';
 import type { OccupancyZone, OccupancyZonePickingElement, Track } from '../types';
 
@@ -29,6 +30,7 @@ type RenderingInstruction =
       zone: OccupancyZone;
       isSelected: boolean;
       offsetY: number;
+      trailingText?: string;
     }
   | {
       type: 'remainingTrains';
@@ -106,6 +108,7 @@ const OccupancyZonesLayer = ({
             zone,
             offsetY: trackY + yPosition,
             isSelected: zone.trainId === selectedTrainId,
+            trailingText: zone.trailingText,
           });
 
           zoneIndex++;
@@ -165,14 +168,23 @@ const OccupancyZonesLayer = ({
     (ctx, stcContext) => {
       instructionsToDraw.forEach((instruction) => {
         switch (instruction.type) {
-          case 'occupancyZone':
+          case 'occupancyZone': {
             drawOccupationZone(ctx, stcContext, {
               zone: instruction.zone,
               position,
               yOffset: instruction.offsetY,
               isSelected: instruction.isSelected,
             });
+            if (instruction.trailingText) {
+              drawZoneTrailingText(ctx, stcContext, {
+                zone: instruction.zone,
+                position,
+                yOffset: instruction.offsetY,
+                trailingText: instruction.trailingText,
+              });
+            }
             break;
+          }
           case 'remainingTrains':
             drawRemainingTrainsBox(ctx, stcContext, {
               position,
