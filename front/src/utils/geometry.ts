@@ -151,10 +151,15 @@ export function getPointOnTrackCoordinates(
   geometry: GeoJsonLineString,
   trackLength: number, // in mm
   infraPositionOnTrack: number // in mm
-): Position {
+): Position | null {
   const pathLineString = lineString(geometry.coordinates);
   const geometryTrackLength = length(pathLineString, { units: 'millimeters' });
   const infraTrackLength = trackLength;
+
+  // Should only happen when importing an json that has been manually altered
+  if (infraPositionOnTrack > trackLength) {
+    return null;
+  }
   // TODO TS2 : when adapting train update check that this computation works properly
   const geometryDistanceAlongTrack =
     infraPositionOnTrack * (geometryTrackLength / infraTrackLength);

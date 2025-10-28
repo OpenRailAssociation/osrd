@@ -24,7 +24,7 @@ const getPointOnPathCoordinates = (
 
   const track = tracks[trackOffset.track];
 
-  return getPointOnTrackCoordinates(track.geo, mToMm(track.length), trackOffset.offset);
+  return getPointOnTrackCoordinates(track.geo, mToMm(track.length), trackOffset.offset)!;
 };
 
 export default getPointOnPathCoordinates;

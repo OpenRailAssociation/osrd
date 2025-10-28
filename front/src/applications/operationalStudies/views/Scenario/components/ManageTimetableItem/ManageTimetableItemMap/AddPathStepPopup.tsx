@@ -126,7 +126,7 @@ const AddPathStepPopup = ({
           tracks[part.track]?.geo,
           tracks[part.track]?.length,
           part.position
-        ),
+        )!,
       }));
 
       trackPartCoordinates.unshift({
