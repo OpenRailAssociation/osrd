@@ -38,7 +38,7 @@ export const formatSuggestedOperationalPoints = (
     offsetOnTrack: op.part.position,
     track: op.part.track,
     positionOnPath: op.position,
-    coordinates: getPointOnTrackCoordinates(geometry, pathLength, op.position),
+    coordinates: getPointOnTrackCoordinates(geometry, pathLength, op.position)!,
     metadata: op?.metadata,
   }));
 
