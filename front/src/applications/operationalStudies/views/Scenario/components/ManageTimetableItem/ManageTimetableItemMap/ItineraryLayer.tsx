@@ -6,7 +6,6 @@ import { OrderedLayer } from 'common/Map/Layers';
 type ItineraryLayerProps = {
   layerOrder: number;
   geometry?: GeoJsonLineString;
-  hideItineraryLine?: boolean;
   showStdcmAssets?: boolean;
   isFeasible?: boolean;
 };
@@ -18,7 +17,6 @@ const STDCM_ASSETS_COLOR = 'rgb(21, 141, 207)';
 export default function ItineraryLayer({
   layerOrder,
   geometry,
-  hideItineraryLine = false,
   showStdcmAssets = false,
   isFeasible = true,
 }: ItineraryLayerProps) {
@@ -36,16 +34,14 @@ export default function ItineraryLayer({
   }
   return (
     <Source type="geojson" data={geometry}>
-      {!hideItineraryLine && (
-        <OrderedLayer
-          type="line"
-          paint={{
-            'line-width': lineWidth,
-            'line-color': lineColor,
-          }}
-          layerOrder={layerOrder}
-        />
-      )}
+      <OrderedLayer
+        type="line"
+        paint={{
+          'line-width': lineWidth,
+          'line-color': lineColor,
+        }}
+        layerOrder={layerOrder}
+      />
     </Source>
   );
 }
