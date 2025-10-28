@@ -170,7 +170,7 @@ const normal = {
     text: '#a1006b',
   },
   track: {
-    major: '#404040',
+    major: '#6A707D',
   },
   trackname: {
     text: '#555555',
