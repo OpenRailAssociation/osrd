@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 
 import { Button } from '@osrd-project/ui-core';
 import { PDFDownloadLink } from '@react-pdf/renderer';
+import { head, last } from 'lodash';
 import { useTranslation, Trans } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
@@ -24,7 +25,6 @@ import {
   getRetainedSimulationIndex,
   getSelectedSimulation,
   getStdcmInfraID,
-  getStdcmTimetableID,
 } from 'reducers/osrdconf/stdcmConf/selectors';
 import useDeploymentSettings from 'utils/hooks/useDeploymentSettings';
 
@@ -57,7 +57,6 @@ const StdcmResults = ({
   displayInfoMessage,
 }: StcdmResultsProps) => {
   const infraId = useSelector(getStdcmInfraID);
-  const timetableId = useSelector(getStdcmTimetableID);
   const { openModal, closeModal } = useModal();
   const railwayManagerUrl = useSelector(getRailwayManagerInterfaceUrl);
 
@@ -139,19 +138,13 @@ const StdcmResults = ({
           };
         });
 
-        const baseRequest = {
-          infra_id: infraId,
-          timetable_id: timetableId,
-          waypoints,
-        };
-
         const hasNullTrains = (trains: PostSimilarTrainsApiResponse['similar_trains']) =>
           trains.some((segment) => segment.train === null);
 
         // Call 1: Full criteria
         const fullCriteriaResponse = await postSimilarTrains({
           body: {
-            ...baseRequest,
+            waypoints,
             rolling_stock: {
               name: consist.tractionEngine?.name ?? '',
               speed_limit_tag: consist.speedLimitByTag,
@@ -161,13 +154,37 @@ const StdcmResults = ({
 
         const fullCriteriaSegments = fullCriteriaResponse.data?.similar_trains ?? [];
 
+        // Checking if similar train API has data or not
+        // If not, we can skip others call and set the similar train with the default value
+        if (
+          fullCriteriaResponse &&
+          fullCriteriaResponse.error &&
+          'data' in fullCriteriaResponse.error &&
+          fullCriteriaResponse.error.data.type ===
+            'editoast:timetable:similar_trains:EmptyTrainsTraffic'
+        ) {
+          const emptySimilarTrains = addSecondaryCodesToSimilarTrains(
+            [
+              {
+                train: null,
+                begin: head(waypoints)!.id,
+                end: last(waypoints)!.id,
+              },
+            ],
+            (selectedSimulation.outputs as StdcmResultsOutput).pathProperties
+              .manchetteOperationalPoints
+          );
+          setSimilarTrains(emptySimilarTrains);
+          return;
+        }
+
         // Call 2: Only speed_limit_tag (if needed)
         const segmentsWithSpeedLimitTagConstraint =
           hasNullTrains(fullCriteriaSegments) && consist.speedLimitByTag
             ? (
                 await postSimilarTrains({
                   body: {
-                    ...baseRequest,
+                    waypoints,
                     rolling_stock: { speed_limit_tag: consist.speedLimitByTag },
                   },
                 })
@@ -182,7 +199,7 @@ const StdcmResults = ({
             ? (
                 await postSimilarTrains({
                   body: {
-                    ...baseRequest,
+                    waypoints,
                     rolling_stock: { name: consist.tractionEngine.name },
                   },
                 })

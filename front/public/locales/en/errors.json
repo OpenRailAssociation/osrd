@@ -257,11 +257,10 @@
       "ParseError": "Failed to parse train_id: '{{train_id}}'",
       "similar_trains": {
         "Database": "Internal error (database)",
-        "InfraNotFound": "Infrastructure '{{infra_id}}' does not exist",
+        "EmptyTrainsTraffic": "Trains traffic data are empty",
         "InvalidPath": "Invalid path in schedule",
         "RollingStockNotFound": "Rolling stock '{{rolling_stock_name}}' does not exist",
-        "SpeedLimitNotFound": "Speed limit tag '{{speed_limit_tag}}' does not exist",
-        "TimetableNotFound": "Timetable '{{timetable_id}}' could not be found"
+        "SpeedLimitNotFound": "Speed limit tag '{{speed_limit_tag}}' does not exist"
       }
     },
     "towedrollingstocks": {

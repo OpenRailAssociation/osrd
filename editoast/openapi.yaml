@@ -3042,12 +3042,7 @@ paths:
               required:
               - rolling_stock
               - waypoints
-              - infra_id
-              - timetable_id
               properties:
-                infra_id:
-                  type: integer
-                  format: int64
                 rolling_stock:
                   type: object
                   properties:
@@ -3059,9 +3054,6 @@ paths:
                       type:
                       - string
                       - 'null'
-                timetable_id:
-                  type: integer
-                  format: int64
                 waypoints:
                   type: array
                   items:
@@ -6313,11 +6305,10 @@ components:
       - $ref: '#/components/schemas/EditoastSearchApiErrorObjectType'
       - $ref: '#/components/schemas/EditoastSearchApiErrorSearchEngineError'
       - $ref: '#/components/schemas/EditoastSimilarTrainsErrorDatabase'
-      - $ref: '#/components/schemas/EditoastSimilarTrainsErrorInfraNotFound'
+      - $ref: '#/components/schemas/EditoastSimilarTrainsErrorEmptyTrainsTraffic'
       - $ref: '#/components/schemas/EditoastSimilarTrainsErrorInvalidPath'
       - $ref: '#/components/schemas/EditoastSimilarTrainsErrorRollingStockNotFound'
       - $ref: '#/components/schemas/EditoastSimilarTrainsErrorSpeedLimitNotFound'
-      - $ref: '#/components/schemas/EditoastSimilarTrainsErrorTimetableNotFound'
       - $ref: '#/components/schemas/EditoastSpriteErrorsFileNotFound'
       - $ref: '#/components/schemas/EditoastSpriteErrorsUnknownSignalingSystem'
       - $ref: '#/components/schemas/EditoastStdcmErrorDatabase'
@@ -7710,7 +7701,7 @@ components:
           type: string
           enum:
           - editoast:timetable:similar_trains:Database
-    EditoastSimilarTrainsErrorInfraNotFound:
+    EditoastSimilarTrainsErrorEmptyTrainsTraffic:
       type: object
       required:
       - type
@@ -7719,11 +7710,6 @@ components:
       properties:
         context:
           type: object
-          required:
-          - infra_id
-          properties:
-            infra_id:
-              type: integer
         message:
           type: string
         status:
@@ -7733,7 +7719,7 @@ components:
         type:
           type: string
           enum:
-          - editoast:timetable:similar_trains:InfraNotFound
+          - editoast:timetable:similar_trains:EmptyTrainsTraffic
     EditoastSimilarTrainsErrorInvalidPath:
       type: object
       required:
@@ -7801,30 +7787,6 @@ components:
           type: string
           enum:
           - editoast:timetable:similar_trains:SpeedLimitNotFound
-    EditoastSimilarTrainsErrorTimetableNotFound:
-      type: object
-      required:
-      - type
-      - status
-      - message
-      properties:
-        context:
-          type: object
-          required:
-          - timetable_id
-          properties:
-            timetable_id:
-              type: integer
-        message:
-          type: string
-        status:
-          type: integer
-          enum:
-          - 404
-        type:
-          type: string
-          enum:
-          - editoast:timetable:similar_trains:TimetableNotFound
     EditoastSpriteErrorsFileNotFound:
       type: object
       required:

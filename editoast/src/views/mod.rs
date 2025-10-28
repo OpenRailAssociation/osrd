@@ -41,6 +41,7 @@ use std::collections::HashSet;
 use std::env;
 use std::path::PathBuf;
 use std::sync::Arc;
+use tokio::sync::RwLock;
 
 use ::authz::Authorizer;
 use ::authz::Role;
@@ -236,7 +237,7 @@ fn service_router() -> router::DocumentedRouter {
                     })
             })
             .route(
-                "/similar_trains", // TODO: put under /timetable
+                "/similar_trains",
                 post!(timetable::similar_trains::similar_trains),
             )
             .nests("/train_schedule", |path| {
@@ -828,6 +829,7 @@ pub struct ServerConfig {
     pub root_url: Url,
     pub dynamic_assets_path: PathBuf,
     pub app_version: Option<String>,
+    pub trains_traffic: Arc<RwLock<timetable::similar_trains::trains_traffic::TrainsTrafficPool>>,
 }
 
 pub struct Server {
@@ -851,6 +853,7 @@ pub struct AppState {
     pub core_client: Arc<CoreClient>,
     pub health_check_timeout: Duration,
     pub regulator: Regulator,
+    pub trains_traffic: Arc<RwLock<timetable::similar_trains::trains_traffic::TrainsTrafficPool>>,
 }
 
 impl FromRef<AppState> for Arc<DbConnectionPoolV2> {
@@ -949,7 +952,7 @@ impl AppState {
         let (db_pool, core_client, openfga) = tokio::try_join!(
             async { db_pool_fut.await? },
             async { core_client_fut.await? },
-            async { openfga_fut.await? }
+            async { openfga_fut.await? },
         )?;
 
         Ok(Self {
@@ -961,6 +964,7 @@ impl AppState {
             map_layers: Arc::new(MapLayers::default()),
             speed_limit_tag_ids,
             health_check_timeout: config.health_check_timeout,
+            trains_traffic: config.trains_traffic.clone(),
             config: Arc::new(config),
         })
     }

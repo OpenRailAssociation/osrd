@@ -8,9 +8,9 @@ use crate::views::timetable::similar_trains::new_train::Segment;
 
 use super::graph;
 
-pub(super) type Id = i64;
+pub(super) type Id = usize;
 
-#[derive(Debug)]
+#[derive(Clone, Debug)]
 pub(super) struct PastTrain {
     id: Id,
     path: Vec<graph::Waypoint>,
@@ -28,7 +28,7 @@ impl PastTrain {
         self.id
     }
 
-    fn iter_stops(&self) -> impl Iterator<Item = &graph::Waypoint> {
+    pub(super) fn iter_stops(&self) -> impl Iterator<Item = &graph::Waypoint> {
         self.path.iter().filter(|wp| wp.stop)
     }
 

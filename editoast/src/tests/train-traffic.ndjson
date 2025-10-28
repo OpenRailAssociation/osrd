@@ -1,0 +1,3 @@
+{"train_name": "TEST_123", "date": "2025-03-26", "rolling_stock_name": "RS_V1", "speed_limit_tag": "MA100", "operational_points": [{"id": "A"}, {"id": "B"}, {"id": "C", "stop":true}, {"id": "D", "stop":true}]}
+{"train_name": "TEST_321",  "date": "2025-07-14", "rolling_stock_name": "RS_V2", "speed_limit_tag": "MA100", "operational_points": [{"id": "A"}, {"id": "B"}, {"id": "C", "stop":true}, {"id": "D", "stop":true}]}
+{"train_name": "OUTDATED",  "date": "2025-02-01", "rolling_stock_name": "RS_V2", "speed_limit_tag": "MA100", "operational_points": [{"id": "A"}, {"id": "B"}, {"id": "C","stop":true}, {"id": "D", "stop":true}]}

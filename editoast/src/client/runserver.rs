@@ -1,10 +1,15 @@
 use std::path::PathBuf;
+use std::sync::Arc;
 
 use chrono::Duration;
 use clap::Args;
+use tokio::sync::RwLock;
+use tracing::Instrument;
 use url::Url;
 
+use crate::client::trains_traffic;
 use crate::views;
+use crate::views::timetable::similar_trains::trains_traffic::TrainsTrafficPool;
 
 use super::PostgresConfig;
 use super::ValkeyConfig;
@@ -52,6 +57,8 @@ pub struct RunserverArgs {
     /// The timeout to use when performing the healthcheck, in milliseconds
     #[clap(long, env = "EDITOAST_HEALTH_CHECK_TIMEOUT_MS", default_value_t = 1000)]
     health_check_timeout_ms: u64,
+    #[clap(long, env = "EDITOAST_TRAINS_TRAFFIC_PATH")]
+    trains_traffic_path: Option<PathBuf>,
 }
 
 /// Create and run the server
@@ -72,12 +79,20 @@ pub async fn runserver(
         health_check_timeout_ms,
         root_url,
         dynamic_assets_path,
+        trains_traffic_path,
     }: RunserverArgs,
     postgres: PostgresConfig,
     valkey_config: ValkeyConfig,
     openfga: OpenfgaConfig,
     app_version: Option<String>,
 ) -> anyhow::Result<()> {
+    let trains_traffic = Arc::new(RwLock::new(TrainsTrafficPool::new()));
+    if let Some(traffic_file) = trains_traffic_path.clone() {
+        tokio::spawn({
+            let trains_traffic = Arc::clone(&trains_traffic);
+            async move { trains_traffic::import_trains_traffic(trains_traffic, traffic_file).await }
+        }.in_current_span());
+    }
     let config = views::ServerConfig {
         port,
         address,
@@ -99,6 +114,7 @@ pub async fn runserver(
         root_url,
         dynamic_assets_path,
         app_version,
+        trains_traffic,
     };
 
     let server = views::Server::new(config).await?;

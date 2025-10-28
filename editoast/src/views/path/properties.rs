@@ -11,21 +11,15 @@ use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::State;
 use common::geometry::GeoJsonLineString;
-use core_client::AsCoreRequest;
-use core_client::CoreClient;
 use core_client::path_properties::OperationalPointOnPath;
 use core_client::path_properties::PathPropertiesRequest;
 use core_client::path_properties::PropertyElectrificationValues;
 use core_client::path_properties::PropertyValuesF64;
 use core_client::path_properties::PropertyZoneValues;
 use core_client::pathfinding::TrackRange;
-use itertools::Either;
-use itertools::Itertools;
 use serde::Deserialize;
 use serde::Serialize;
-use std::collections::hash_map::DefaultHasher;
 use std::hash::Hash;
-use std::hash::Hasher;
 use std::sync::Arc;
 use utoipa::ToSchema;
 
@@ -122,104 +116,6 @@ pub(in crate::views) async fn post(
     .await?;
 
     Ok(Json(PathProperties::from(path_properties)))
-}
-
-/// Retrieves path properties from cache.
-#[tracing::instrument(skip_all, err)]
-async fn retrieve_path_properties_from_cache<'a>(
-    conn: &mut cache::Connection,
-    requests: &'a [PathPropertiesRequest<'a>],
-    app_version: Option<&str>,
-) -> Result<
-    impl Iterator<
-        Item = (
-            &'a PathPropertiesRequest<'a>,
-            Option<core_client::path_properties::PathPropertiesResponse>,
-        ),
-    >,
-> {
-    let keys = requests
-        .iter()
-        .map(|req| path_properties_input_hash(req, app_version))
-        .collect_vec();
-    // required to collect because json_get_bulk takes a slice...
-    let cached = conn.json_get_bulk(&keys).await?.collect_vec();
-    Ok(requests.iter().zip(cached.into_iter()))
-}
-
-/// Set the cache of path properties.
-#[tracing::instrument(skip_all, err)]
-async fn cache_path_properties<'a>(
-    conn: &mut cache::Connection,
-    properties: impl IntoIterator<
-        Item = (
-            &'a PathPropertiesRequest<'a>,
-            &'a core_client::path_properties::PathPropertiesResponse,
-        ),
-    >,
-    app_version: Option<&str>,
-) -> Result<()> {
-    let data = properties
-        .into_iter()
-        .map(|(req, resp)| (path_properties_input_hash(req, app_version), resp))
-        .collect_vec();
-    conn.json_set_bulk(&data).await.map_err(Into::into)
-}
-
-/// Compute path properties input hash without supported electrifications
-fn path_properties_input_hash(
-    path_properties_request: &PathPropertiesRequest<'_>,
-    app_version: Option<&str>,
-) -> String {
-    let osrd_version = app_version.unwrap_or_default();
-    let mut hasher = DefaultHasher::new();
-    path_properties_request
-        .track_section_ranges
-        .hash(&mut hasher);
-    let hash_track_ranges = hasher.finish();
-    format!(
-        "path_properties.{osrd_version}.{infra}.{infra_version}.{hash_track_ranges}",
-        infra = path_properties_request.infra,
-        infra_version = path_properties_request.expected_version
-    )
-}
-
-#[tracing::instrument(skip_all, err)]
-pub(in crate::views) async fn compute_path_properties_batch(
-    core_client: Arc<CoreClient>,
-    conn: &mut cache::Connection,
-    requests: &[PathPropertiesRequest<'_>],
-    app_version: Option<&str>,
-) -> Result<impl Iterator<Item = core_client::path_properties::PathPropertiesResponse>> {
-    let (cached, to_compute): (Vec<_>, Vec<_>) =
-        retrieve_path_properties_from_cache(conn, requests, app_version)
-            .await?
-            .partition_map(|(req, res)| match res {
-                Some(res) => Either::Left(res),
-                None => Either::Right(req),
-            });
-
-    tracing::debug!(
-        hit = cached.len(),
-        miss = to_compute.len(),
-        "retrieved path properties from cache"
-    );
-
-    let futures = to_compute.iter().map(|req| req.fetch(&core_client));
-    let computed = futures::future::try_join_all(futures).await?;
-
-    tracing::debug!(computed = computed.len(), "computed path properties");
-
-    cache_path_properties(
-        conn,
-        to_compute.into_iter().zip(computed.iter()),
-        app_version,
-    )
-    .await?;
-
-    tracing::debug!("cached path properties");
-
-    Ok(cached.into_iter().chain(computed.into_iter()))
 }
 
 #[cfg(test)]

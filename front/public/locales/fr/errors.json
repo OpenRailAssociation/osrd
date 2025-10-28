@@ -257,11 +257,10 @@
       "ParseError": "Impossible de parser train_id : '{{train_id}}'",
       "similar_trains": {
         "Database": "Erreur interne (base de données)",
-        "InfraNotFound": "Infrastructure '{{infra_id}}' non trouvée",
+        "EmptyTrainsTraffic": "Les données de circulation sont vides",
         "InvalidPath": "Chemin invalide dans la circulation",
         "RollingStockNotFound": "Matériel roulant '{{rolling_stock_name}}' non trouvé",
-        "SpeedLimitNotFound": "Code de composition '{{speed_limit_tag}}' non trouvé",
-        "TimetableNotFound": "Grille horaire '{{timetable_id}}' non trouvée"
+        "SpeedLimitNotFound": "Code de composition '{{speed_limit_tag}}' non trouvé"
       }
     },
     "towedrollingstocks": {
