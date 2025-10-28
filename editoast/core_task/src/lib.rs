@@ -72,8 +72,12 @@ pub trait Task: Sized + Send {
                 tracing::error!(?e, key, "cache read error — computing task output");
                 None
             }) {
-            Some(value) => Ok(value),
+            Some(value) => {
+                tracing::trace!(key, "cache hit");
+                Ok(value)
+            }
             None => {
+                tracing::trace!(key, "cache miss");
                 let value = self.compute(ctx).await?;
                 match serde_json::to_string(&value) {
                     Err(e) => {
