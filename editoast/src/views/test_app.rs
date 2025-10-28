@@ -32,7 +32,6 @@ use opentelemetry_sdk::trace::SpanExporter;
 use osrdyne_client::OsrdyneClient;
 use serde::de::DeserializeOwned;
 use tower_http::trace::TraceLayer;
-use tracing_subscriber::filter::Directive;
 use url::Url;
 
 use crate::AppState;
@@ -86,7 +85,6 @@ pub(crate) struct TestAppBuilder {
     osrdyne_client: Option<OsrdyneClient>,
     authorization_model: Option<&'static str>,
     enable_telemetry: bool,
-    telemetry_directives: Vec<Directive>,
     root_url: Option<Url>,
 }
 
@@ -99,7 +97,6 @@ impl TestAppBuilder {
             osrdyne_client: None,
             authorization_model: None,
             enable_telemetry: true,
-            telemetry_directives: vec![],
             root_url: None,
         }
     }
@@ -189,7 +186,7 @@ impl TestAppBuilder {
         let tracing_config = TracingConfig {
             stream: Stream::Stdout,
             telemetry,
-            directives: self.telemetry_directives,
+            directives: vec![],
         };
         let sub = create_tracing_subscriber(
             tracing_config,
