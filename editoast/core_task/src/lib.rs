@@ -59,6 +59,7 @@ pub trait Task: Sized + Send {
     /// Should any caching error occur while reading, the task output is computed.
     /// Cache write errors are ignored. So are serde errors for caching.
     /// All errors are logged.
+    #[tracing::instrument(skip_all, err)]
     #[expect(async_fn_in_trait)] // not for public (ie. outside editoast) use, no auto traits bounds to specify on the resulting future
     async fn run(
         self,
