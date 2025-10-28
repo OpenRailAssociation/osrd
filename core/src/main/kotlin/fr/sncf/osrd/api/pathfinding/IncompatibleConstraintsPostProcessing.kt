@@ -2,46 +2,30 @@ package fr.sncf.osrd.api.pathfinding
 
 import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.graph.*
-import fr.sncf.osrd.path.implementations.buildTrainPathFromBlocks
+import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.pathfinding.Pathfinding
-import fr.sncf.osrd.pathfinding.Pathfinding.EdgeRange
 import fr.sncf.osrd.pathfinding.constraints.ElectrificationConstraints
 import fr.sncf.osrd.pathfinding.constraints.LoadingGaugeConstraints
 import fr.sncf.osrd.pathfinding.constraints.SignalingSystemConstraints
 import fr.sncf.osrd.sim_infra.api.Block
-import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.distanceRangeMapOf
 import fr.sncf.osrd.utils.filterIntersection
-import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Offset
 
 fun buildIncompatibleConstraintsResponse(
     infra: FullInfra,
-    possiblePathWithoutErrorNoConstraints: Pathfinding.Result<BlockId, Block>?,
+    possiblePathWithoutErrorNoConstraints: ProcessedPathfindingResponse,
     constraints: Collection<PathfindingConstraint<Block>>,
     initialRequest: PathfindingBlockRequest,
 ): IncompatibleConstraintsPathResponse? {
-    if (
-        possiblePathWithoutErrorNoConstraints == null ||
-            possiblePathWithoutErrorNoConstraints.ranges.isEmpty() ||
-            hasDuplicateTracks(infra, possiblePathWithoutErrorNoConstraints)
-    )
-        return null
-
-    val pathRanges = possiblePathWithoutErrorNoConstraints.ranges
-    val pathProps =
-        buildTrainPathFromBlocks(infra.rawInfra, infra.blockInfra, pathRanges.map { it.edge })
+    val path = possiblePathWithoutErrorNoConstraints.path
+    if (hasDuplicateTracks(infra, path)) return null
 
     val elecConstraints = constraints.filterIsInstance<ElectrificationConstraints>()
     assert(elecConstraints.size < 2)
     val elecBlockedRangeValues =
-        getConstraintsDistanceRange(
-                infra,
-                pathRanges,
-                pathProps.getElectrification(),
-                elecConstraints.firstOrNull(),
-            )
+        getConstraintsDistanceRange(path, path.getElectrification(), elecConstraints.firstOrNull())
             .map {
                 RangeValue(
                     Pathfinding.Range(Offset(it.lower), Offset(it.upper)),
@@ -52,22 +36,15 @@ fun buildIncompatibleConstraintsResponse(
     val gaugeConstraints = constraints.filterIsInstance<LoadingGaugeConstraints>()
     assert(gaugeConstraints.size < 2)
     val gaugeBlockedRanges =
-        getConstraintsDistanceRange(
-                infra,
-                pathRanges,
-                pathProps.getLoadingGauge(),
-                gaugeConstraints.firstOrNull(),
-            )
+        getConstraintsDistanceRange(path, path.getLoadingGauge(), gaugeConstraints.firstOrNull())
             .map { RangeValue<String>(Pathfinding.Range(Offset(it.lower), Offset(it.upper)), null) }
 
     val signalingSystemConstraints = constraints.filterIsInstance<SignalingSystemConstraints>()
     assert(signalingSystemConstraints.size < 2)
-    val blockList = pathRanges.map { it.edge }
-    val pathSignalingSystem = getPathSignalingSystems(infra, blockList)
+    val pathSignalingSystem = getPathSignalingSystems(infra, path)
     val signalingSystemBlockedRangeValues =
         getConstraintsDistanceRange(
-                infra,
-                pathRanges,
+                path,
                 pathSignalingSystem,
                 signalingSystemConstraints.firstOrNull(),
             )
@@ -92,8 +69,7 @@ fun buildIncompatibleConstraintsResponse(
 }
 
 private fun <T> getConstraintsDistanceRange(
-    infra: FullInfra,
-    pathRanges: List<EdgeRange<BlockId, Block>>,
+    path: TrainPath,
     pathConstrainedValues: DistanceRangeMap<T>,
     constraint: PathfindingConstraint<Block>?,
 ): DistanceRangeMap<T> {
@@ -101,56 +77,40 @@ private fun <T> getConstraintsDistanceRange(
         return distanceRangeMapOf()
     }
 
-    val blockedRanges = getBlockedRanges(infra, pathRanges, constraint)
+    val blockedRanges = getBlockedRanges(path, constraint)
     val filteredRangeValues = filterIntersection(pathConstrainedValues, blockedRanges)
-    val travelledPathOffset = pathRanges.first().start.distance
-    filteredRangeValues.shiftPositions(-travelledPathOffset)
     return filteredRangeValues
 }
 
 private fun getBlockedRanges(
-    infra: FullInfra,
-    pathRanges: List<EdgeRange<BlockId, Block>>,
+    path: TrainPath,
     currentConstraint: PathfindingConstraint<Block>,
 ): DistanceRangeMap<Boolean> {
-    val blockList = pathRanges.map { it.edge }
+    val blockList = path.getBlocks()
     val blockedRanges = distanceRangeMapOf<Boolean>()
-    var startBlockPathOffset = Distance.ZERO
-    for (block in blockList) {
-        currentConstraint.apply(block).map {
+    for (blockRange in blockList) {
+        currentConstraint.apply(blockRange.value).map {
             blockedRanges.put(
-                startBlockPathOffset + it.start.distance,
-                startBlockPathOffset + it.end.distance,
+                blockRange.offsetToTrainPath(it.start).distance,
+                blockRange.offsetToTrainPath(it.end).distance,
                 true,
             )
         }
-        startBlockPathOffset += infra.blockInfra.getBlockLength(block).distance
     }
-    blockedRanges.truncate(
-        pathRanges.first().start.distance,
-        startBlockPathOffset - infra.blockInfra.getBlockLength(blockList.last()).distance +
-            pathRanges.last().end.distance,
-    )
     return blockedRanges
 }
 
-private fun getPathSignalingSystems(
-    infra: FullInfra,
-    blockList: List<BlockId>,
-): DistanceRangeMap<String> {
+private fun getPathSignalingSystems(infra: FullInfra, path: TrainPath): DistanceRangeMap<String> {
     val pathSignalingSystem = distanceRangeMapOf<String>()
-    var startBlockPathOffset = Distance.ZERO
-    for (block in blockList) {
-        val blockLength = infra.blockInfra.getBlockLength(block).distance
-        val blockSignalingSystemIdx = infra.blockInfra.getBlockSignalingSystem(block)
+    for (blockRange in path.getBlocks()) {
+        val blockSignalingSystemIdx = infra.blockInfra.getBlockSignalingSystem(blockRange.value)
         val blockSignalingSystemName =
             infra.signalingSimulator.sigModuleManager.getName(blockSignalingSystemIdx)
         pathSignalingSystem.put(
-            startBlockPathOffset,
-            startBlockPathOffset + blockLength,
+            blockRange.pathBegin.distance,
+            blockRange.pathEnd.distance,
             blockSignalingSystemName,
         )
-        startBlockPathOffset += blockLength
     }
     return pathSignalingSystem
 }

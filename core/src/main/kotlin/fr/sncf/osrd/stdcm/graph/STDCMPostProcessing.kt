@@ -7,17 +7,11 @@ import fr.sncf.osrd.envelope_sim.pipelines.SimStop
 import fr.sncf.osrd.envelope_sim.pipelines.maxEffortEnvelopeFrom
 import fr.sncf.osrd.envelope_sim.pipelines.maxSpeedEnvelopeFrom
 import fr.sncf.osrd.envelope_sim_infra.computeMRSP
-import fr.sncf.osrd.path.implementations.PartialBlockRange
-import fr.sncf.osrd.path.implementations.buildRangeList
 import fr.sncf.osrd.path.implementations.buildTrainPathFromBlockRanges
 import fr.sncf.osrd.path.interfaces.TrainPath
-import fr.sncf.osrd.pathfinding.Pathfinding
-import fr.sncf.osrd.pathfinding.Pathfinding.EdgeLocation
-import fr.sncf.osrd.pathfinding.Pathfinding.EdgeRange
 import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal.OPEN
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal.SHORT_SLIP_STOP
-import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra.impl.TemporarySpeedLimitManager
 import fr.sncf.osrd.stdcm.STDCMResult
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
@@ -56,10 +50,16 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
         temporarySpeedLimitManager: TemporarySpeedLimitManager,
     ): STDCMResult? {
         val edges = path.edges
-        val blockRanges = makeBlockRanges(edges)
-        val blockWaypoints = makeBlockWaypoints(path)
-        val routes = edges.last().infraExplorer.getExploredRoutes()
-        val trainPath = buildTrainPath(infra, blockRanges, routes)
+        val lastExplorer = edges.last().infraExplorer
+        val blockRanges = lastExplorer.getAllBlocks()
+        val routes = lastExplorer.getExploredRoutes()
+        val trainPath =
+            buildTrainPathFromBlockRanges(
+                infra.rawInfra,
+                infra.blockInfra,
+                blockRanges,
+                routes = routes,
+            )
 
         val updatedTimeData = computeTimeData(edges)
         val stops = makeStops(edges, updatedTimeData)
@@ -90,7 +90,6 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
             )
         val res =
             STDCMResult(
-                Pathfinding.Result(blockRanges, blockWaypoints),
                 withAllowance,
                 trainPath,
                 routes,
@@ -99,33 +98,13 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
                 // Allow us to display OP, a hack that will be fixed
                 // after the redesign of simulation data models
                 makePathStops(stops, trainPath),
+                lastExplorer.getStepTracker().getSeenSteps().map { it.travelledPathOffset },
             )
         return if (res.envelope.totalTime > maxRunTime) {
             // This can happen if the destination is one edge away from being reachable in time,
             // as we only check the time at the start of an edge when exploring the graph
             null
         } else res
-    }
-
-    /** Build a `TrainPath` from the search result. */
-    private fun buildTrainPath(
-        infra: FullInfra,
-        blockRanges: List<EdgeRange<BlockId, Block>>,
-        routes: List<RouteId>,
-    ): TrainPath {
-        val partialRanges =
-            blockRanges.map {
-                PartialBlockRange(value = it.edge, objectBegin = it.start, objectEnd = it.end)
-            }
-        val rangeList = buildRangeList(partialRanges)
-
-        // TODO: if we want electrical profiles in STDCM, we'd need to input it there
-        return buildTrainPathFromBlockRanges(
-            infra.rawInfra,
-            infra.blockInfra,
-            rangeList,
-            routes = routes,
-        )
     }
 
     private fun makeMaxSpeedEnvelope(
@@ -145,16 +124,6 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
         if (stopAtEnd) stopInfos.add(SimStop(Offset(trainPath.getLength()), SHORT_SLIP_STOP))
         val maxSpeedEnvelope = maxSpeedEnvelopeFrom(context, stopInfos, mrsp)
         return maxEffortEnvelopeFrom(context, 0.0, maxSpeedEnvelope)
-    }
-
-    /** Creates the list of waypoints on the path */
-    private fun makeBlockWaypoints(path: Result): List<EdgeLocation<BlockId, Block>> {
-        val res = ArrayList<EdgeLocation<BlockId, Block>>()
-        for (waypoint in path.waypoints) {
-            val blockOffset = waypoint.edge.blockOffsetFromEdge(waypoint.offset)
-            res.add(EdgeLocation(waypoint.edge.block, blockOffset))
-        }
-        return res
     }
 
     /**
@@ -252,27 +221,6 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
                     )
                 )
             offset += edge.length.distance
-        }
-        return res
-    }
-
-    /** Builds the list of block ranges, merging the ranges on the same block */
-    private fun makeBlockRanges(edges: List<STDCMEdge>): List<EdgeRange<BlockId, Block>> {
-        val res = ArrayList<EdgeRange<BlockId, Block>>()
-        var i = 0
-        while (i < edges.size) {
-            val edge = edges[i]
-            val start = edge.envelopeStartOffset
-            var length = edge.length
-            while (i + 1 < edges.size) {
-                val nextEdge = edges[i + 1]
-                if (edge.block != nextEdge.block) break
-                length += nextEdge.length.distance
-                i++
-            }
-            val end = start + length.distance
-            res.add(EdgeRange(edge.block, start, end))
-            i++
         }
         return res
     }

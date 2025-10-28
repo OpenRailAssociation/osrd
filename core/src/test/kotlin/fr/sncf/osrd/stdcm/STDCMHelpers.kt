@@ -87,23 +87,20 @@ fun occupancyTest(
     tolerance: Double = 0.0,
 ) {
     val envelopeWrapper = EnvelopeStopWrapper(res.envelope, res.stopResults)
-    val blocks = res.blocks.ranges
-    var currentBlockOffset = 0.meters
+    val blocks = res.trainPath.getBlocks()
     for (blockRange in blocks) {
-        val block = blockRange.edge
-        val startBlockPosition = currentBlockOffset
-        currentBlockOffset += blockRange.end - blockRange.start
+        val block = blockRange.value
         val blockOccupancies = occupancyGraph[block]
         for ((timeStart, timeEnd, distanceStart, distanceEnd) in blockOccupancies) {
             val enterTime =
                 res.departureTime +
                     envelopeWrapper.interpolateArrivalAtClamp(
-                        (startBlockPosition + distanceStart).meters
+                        (blockRange.getObjectAbsolutePathStart() + distanceStart).meters
                     )
             val exitTime =
                 res.departureTime +
                     envelopeWrapper.interpolateDepartureFromClamp(
-                        (startBlockPosition + distanceEnd).meters
+                        (blockRange.getObjectAbsolutePathStart() + distanceEnd).meters
                     )
             Assertions.assertTrue(
                 enterTime + tolerance >= timeEnd || exitTime - tolerance <= timeStart

@@ -202,16 +202,8 @@ class STDCMPathfindingTests {
                 .setEndLocations(setOf(EdgeLocation(lastBlock, Offset(50.meters))))
                 .setUnavailableTimes(occupancyGraph2)
                 .run()!!
-        val blocks1 =
-            res1.blocks.ranges
-                .stream()
-                .map { block -> infra.blockPool[block.edge.index.toInt()].name }
-                .toList()
-        val blocks2 =
-            res2.blocks.ranges
-                .stream()
-                .map { block -> infra.blockPool[block.edge.index.toInt()].name }
-                .toList()
+        val blocks1 = res1.trainPath.getBlocks().map { infra.getBlockName(it.value) }
+        val blocks2 = res2.trainPath.getBlocks().map { infra.getBlockName(it.value) }
         assertFalse(blocks1.contains("b->c1"))
         assertTrue(blocks1.contains("b->c2"))
         occupancyTest(res1, occupancyGraph1)
