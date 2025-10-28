@@ -3811,7 +3811,8 @@ export type RollingResistance = {
   C: number;
   type: string;
 };
-export type RollingStockSupportedSignalingSystems = string[];
+export type SignalingSystem = 'BAL' | 'BAPR' | 'TVM300' | 'TVM430';
+export type RollingStockSupportedSignalingSystems = SignalingSystem[];
 export type LightRollingStock = {
   base_power_class: string | null;
   /** Acceleration in m·s⁻² */
@@ -4528,7 +4529,7 @@ export type RollingStock = {
   startup_acceleration: number;
   /** Duration in s */
   startup_time: number;
-  supported_signaling_systems: string[];
+  supported_signaling_systems: SignalingSystem[];
   version: number;
 };
 export type RollingStockForm = {
@@ -4927,7 +4928,7 @@ export type StdcmRequest = {
   /** The loading gauge of the rolling stock */
   rolling_stock_loading_gauge: LoadingGaugeType;
   /** List of supported signaling systems */
-  rolling_stock_supported_signaling_systems: RollingStockSupportedSignalingSystems;
+  rolling_stock_supported_signaling_systems: string[];
   speed_limit_tag?: string | null;
   start_time: string;
   /** List of applicable temporary speed limits between the train departure and arrival */

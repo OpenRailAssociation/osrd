@@ -751,8 +751,6 @@ pub mod tests {
     use editoast_models::rolling_stock::TrainMainCategory;
     use itertools::Itertools;
     use pretty_assertions::assert_eq;
-    use rstest::rstest;
-    use schemas::rolling_stock::RollingStockSupportedSignalingSystems;
     use serde_json::json;
     use uuid::Uuid;
 
@@ -832,7 +830,6 @@ pub mod tests {
         assert_eq!(
             rolling_stock
                 .get_all_supported_signaling_systems()
-                .0
                 .contains(&"ETCS_LEVEL2".to_string()),
             false
         );
@@ -1068,60 +1065,6 @@ pub mod tests {
             .assert_status(StatusCode::UNPROCESSABLE_ENTITY);
     }
 
-    #[rstest]
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn create_rolling_stock_with_etcs_level2_string() {
-        let app = TestAppBuilder::default_app();
-        let rs_name = "fast_rolling_stock_name";
-        let mut fast_rolling_stock_form = fast_rolling_stock_form(rs_name);
-        fast_rolling_stock_form.etcs_brake_params = None;
-        fast_rolling_stock_form.set_raw_supported_signaling_systems(
-            RollingStockSupportedSignalingSystems(
-                vec!["BAL", "BAPR", "ETCS_LEVEL2"]
-                    .into_iter()
-                    .map(String::from)
-                    .collect(),
-            ),
-        );
-        // WHEN
-        let response = app
-            .fetch(app.rolling_stock_create_request(&fast_rolling_stock_form))
-            .await
-            .assert_status(StatusCode::UNPROCESSABLE_ENTITY)
-            .string();
-        // THEN
-        assert_eq!(
-            response,
-            "Failed to deserialize the JSON body into the target type: invalid rolling-stock: 'ETCS_LEVEL2' can't be listed in 'supported_signaling_systems', providing 'etcs_brake_params' field is the (only) way to trigger ETCS_LEVEL2 support."
-        );
-    }
-
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn create_rolling_stock_with_etcs_level2_and_etcs_brake_params() {
-        // GIVEN
-        let app = TestAppBuilder::default_app();
-        let mut rolling_stock_form = simple_etcs_level2_rolling_stock();
-        rolling_stock_form.set_raw_supported_signaling_systems(
-            RollingStockSupportedSignalingSystems(
-                vec!["BAL", "BAPR", "ETCS_LEVEL2"]
-                    .into_iter()
-                    .map(String::from)
-                    .collect(),
-            ),
-        );
-        // WHEN
-        let response = app
-            .fetch(app.rolling_stock_create_request(&rolling_stock_form))
-            .await
-            .assert_status(StatusCode::UNPROCESSABLE_ENTITY)
-            .string();
-        // THEN
-        assert_eq!(
-            response,
-            "Failed to deserialize the JSON body into the target type: invalid rolling-stock: 'ETCS_LEVEL2' can't be listed in 'supported_signaling_systems', providing 'etcs_brake_params' field is the (only) way to trigger ETCS_LEVEL2 support."
-        );
-    }
-
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn create_rolling_stock_with_etcs_brake_params() {
         // GIVEN
@@ -1147,7 +1090,6 @@ pub mod tests {
         assert_eq!(
             rolling_stock
                 .get_all_supported_signaling_systems()
-                .0
                 .contains(&"ETCS_LEVEL2".to_string()),
             true
         );

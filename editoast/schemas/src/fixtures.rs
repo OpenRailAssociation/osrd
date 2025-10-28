@@ -26,6 +26,7 @@ use crate::rolling_stock::RollingResistancePerWeight;
 use crate::rolling_stock::RollingStockSupportedSignalingSystems;
 use crate::rolling_stock::TowedRollingStock;
 use crate::rolling_stock::TrainMainCategories;
+use crate::rolling_stock::TrainMainCategory;
 use crate::rolling_stock::default_rolling_stock_railjson_version;
 use crate::train_schedule::Comfort;
 use crate::train_schedule::Distribution;
@@ -34,20 +35,25 @@ use crate::train_schedule::Margins;
 use crate::train_schedule::TrainScheduleOptions;
 
 pub fn simple_rolling_stock() -> RollingStock {
-    RollingStock::new(
-        "SIMPLE_ROLLING_STOCK".to_string(),
-        EffortCurves::default(),
-        None,
-        units::meter::new(140.0),
-        units::meter_per_second::new(20.0),
-        units::second::new(1.0),
-        units::meter_per_second_squared::new(0.04),
-        units::meter_per_second_squared::new(0.1),
-        units::meter_per_second_squared::new(1.0),
-        None,
-        1.1,
-        units::kilogram::new(15000.0),
-        RollingResistance {
+    RollingStock {
+        name: "SIMPLE_ROLLING_STOCK".to_string(),
+        loading_gauge: LoadingGaugeType::G1,
+        supported_signaling_systems: RollingStockSupportedSignalingSystems(vec![]),
+        base_power_class: None,
+        comfort_acceleration: units::meter_per_second_squared::new(0.1),
+        inertia_coefficient: 1.10,
+        startup_acceleration: units::meter_per_second_squared::new(0.04),
+        startup_time: units::second::new(1.0),
+        effort_curves: EffortCurves::default(),
+        electrical_power_startup_time: None,
+        raise_pantograph_time: None,
+        energy_sources: vec![],
+        const_gamma: units::meter_per_second_squared::new(1.0),
+        etcs_brake_params: None,
+        metadata: None,
+        power_restrictions: HashMap::new(),
+        railjson_version: "12".to_string(),
+        rolling_resistance: RollingResistance {
             rolling_resistance_type: "davis".to_string(),
             // TODO those values are wrong, they correspond to daN/T, (daN/T)/(km/h), and (daN/T)/(km/h)²
             // We should use more realistic values and fix the tests
@@ -55,17 +61,12 @@ pub fn simple_rolling_stock() -> RollingStock {
             B: units::kilogram_per_second::new(0.01),
             C: units::kilogram_per_meter::new(0.0005),
         },
-        LoadingGaugeType::G1,
-        HashMap::new(),
-        vec![],
-        None,
-        None,
-        RollingStockSupportedSignalingSystems(vec![]),
-        default_rolling_stock_railjson_version(),
-        None,
-        crate::rolling_stock::TrainMainCategory::HighSpeedTrain,
-        TrainMainCategories(vec![]),
-    )
+        length: units::meter::new(140.0),
+        mass: units::kilogram::new(15000.0),
+        max_speed: units::meter_per_second::new(20.0),
+        primary_category: TrainMainCategory::HighSpeedTrain,
+        other_categories: TrainMainCategories(vec![]),
+    }
 }
 
 pub fn towed_rolling_stock() -> TowedRollingStock {

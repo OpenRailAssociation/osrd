@@ -5,6 +5,7 @@ import type {
   RollingStock,
   TrainMainCategory,
   EtcsBrakeParams,
+  SignalingSystem,
 } from 'common/api/osrdEditoastApi';
 import type { MultiUnitsParameter, MultiUnit } from 'modules/rollingStock/types';
 
@@ -36,7 +37,7 @@ export type RollingStockParametersValidValues = {
   raisePantographTime: number | null;
   basePowerClass: string | null;
   powerRestrictions: RollingStock['power_restrictions'];
-  supportedSignalingSystems: string[];
+  supportedSignalingSystems: SignalingSystem[];
   primaryCategory: TrainMainCategory;
   categories: Set<TrainMainCategory>;
 };
@@ -73,7 +74,6 @@ export type RollingStockParametersValues = {
   supportedSignalingSystems: string[];
   primaryCategory?: TrainMainCategory;
   categories: Set<TrainMainCategory>;
-  etcsBrakeParams?: EtcsBrakeParams;
 };
 
 export type SchemaProperty = {

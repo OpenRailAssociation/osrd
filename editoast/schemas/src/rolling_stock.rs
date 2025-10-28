@@ -22,6 +22,7 @@ mod supported_signaling_systems;
 use serde::Deserializer;
 use serde::Serializer;
 pub use supported_signaling_systems::RollingStockSupportedSignalingSystems;
+pub use supported_signaling_systems::SignalingSystem;
 
 mod rolling_stock_metadata;
 pub use rolling_stock_metadata::RollingStockMetadata;
@@ -110,7 +111,7 @@ pub struct RollingStock {
     #[schema(example = 15.0)]
     #[serde(default, with = "units::second::option")]
     pub raise_pantograph_time: Option<Time>,
-    supported_signaling_systems: RollingStockSupportedSignalingSystems,
+    pub supported_signaling_systems: RollingStockSupportedSignalingSystems,
     #[schema(default = default_rolling_stock_railjson_version)]
     #[serde(default = "default_rolling_stock_railjson_version")]
     pub railjson_version: String,
@@ -150,16 +151,6 @@ impl<'de> Deserialize<'de> for RollingStock {
                 "invalid rolling-stock: primary_category: The primary_category cannot be listed in other_categories for rolling stocks.",
             ));
         }
-
-        if rolling_stock
-            .supported_signaling_systems
-            .0
-            .contains(&"ETCS_LEVEL2".to_string())
-        {
-            return Err(serde::de::Error::custom(
-                "invalid rolling-stock: 'ETCS_LEVEL2' can't be listed in 'supported_signaling_systems', providing 'etcs_brake_params' field is the (only) way to trigger ETCS_LEVEL2 support.",
-            ));
-        }
         Ok(rolling_stock)
     }
 }
@@ -175,76 +166,16 @@ impl Serialize for RollingStock {
 
 impl RollingStock {
     /// Returns the supported signaling systems, including "ETCS_LEVEL2" if `etcs_brake_params` is set.
-    pub fn get_all_supported_signaling_systems(&self) -> RollingStockSupportedSignalingSystems {
-        let mut supported_signaling_systems = self.supported_signaling_systems.0.clone();
+    pub fn get_all_supported_signaling_systems(&self) -> Vec<String> {
+        let mut supported_signaling_systems: Vec<String> = self
+            .supported_signaling_systems
+            .0
+            .iter()
+            .map(|s| s.to_string())
+            .collect();
         if self.etcs_brake_params.is_some() {
             supported_signaling_systems.push("ETCS_LEVEL2".into());
         }
-        RollingStockSupportedSignalingSystems(supported_signaling_systems)
-    }
-
-    pub fn raw_supported_signaling_systems(&self) -> RollingStockSupportedSignalingSystems {
-        self.supported_signaling_systems.clone()
-    }
-
-    #[cfg(any(test, feature = "testing"))]
-    pub fn set_raw_supported_signaling_systems(
-        &mut self,
-        supported_signaling_systems: RollingStockSupportedSignalingSystems,
-    ) {
-        self.supported_signaling_systems = supported_signaling_systems;
-    }
-
-    #[allow(clippy::too_many_arguments)]
-    pub fn new(
-        name: String,
-        effort_curves: EffortCurves,
-        base_power_class: Option<String>,
-        length: Length,
-        max_speed: Velocity,
-        startup_time: Time,
-        startup_acceleration: Acceleration,
-        comfort_acceleration: Acceleration,
-        const_gamma: Deceleration,
-        etcs_brake_params: Option<EtcsBrakeParams>,
-        inertia_coefficient: f64,
-        mass: Mass,
-        rolling_resistance: RollingResistance,
-        loading_gauge: LoadingGaugeType,
-        power_restrictions: HashMap<String, String>,
-        energy_sources: Vec<EnergySource>,
-        electrical_power_startup_time: Option<Time>,
-        raise_pantograph_time: Option<Time>,
-        supported_signaling_systems: RollingStockSupportedSignalingSystems,
-        railjson_version: String,
-        metadata: Option<RollingStockMetadata>,
-        primary_category: TrainMainCategory,
-        other_categories: TrainMainCategories,
-    ) -> Self {
-        Self {
-            name,
-            effort_curves,
-            base_power_class,
-            length,
-            max_speed,
-            startup_time,
-            startup_acceleration,
-            comfort_acceleration,
-            const_gamma,
-            etcs_brake_params,
-            inertia_coefficient,
-            mass,
-            rolling_resistance,
-            loading_gauge,
-            power_restrictions,
-            energy_sources,
-            electrical_power_startup_time,
-            raise_pantograph_time,
-            supported_signaling_systems,
-            railjson_version,
-            metadata,
-            primary_category,
-            other_categories,
-        }
+        supported_signaling_systems
     }
 }

@@ -12292,7 +12292,7 @@ components:
         supported_signaling_systems:
           type: array
           items:
-            type: string
+            $ref: '#/components/schemas/SignalingSystem'
         version:
           type: integer
           format: int64
@@ -12520,10 +12520,7 @@ components:
     RollingStockSupportedSignalingSystems:
       type: array
       items:
-        type: string
-      description: |-
-        List of supported signaling systems
-        Note: 'ETCS_LEVEL2' can't be listed, providing 'etcs_brake_params' field is the (only) way to trigger ETCS_LEVEL2 support
+        $ref: '#/components/schemas/SignalingSystem'
     RollingStockWithLiveries:
       allOf:
       - $ref: '#/components/schemas/RollingStock'
@@ -13460,6 +13457,13 @@ components:
           format: int64
           description: The aspects start being displayed at this time (number of ms since `departure_time`)
           minimum: 0
+    SignalingSystem:
+      type: string
+      enum:
+      - BAL
+      - BAPR
+      - TVM300
+      - TVM430
     SimilarTrainWaypoint:
       type: object
       required:
@@ -14130,7 +14134,9 @@ components:
           $ref: '#/components/schemas/LoadingGaugeType'
           description: The loading gauge of the rolling stock
         rolling_stock_supported_signaling_systems:
-          $ref: '#/components/schemas/RollingStockSupportedSignalingSystems'
+          type: array
+          items:
+            type: string
           description: List of supported signaling systems
         speed_limit_tag:
           type:
