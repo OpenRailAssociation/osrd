@@ -142,11 +142,22 @@ export const usePathStepsMetadata = (pathSteps: PathStepV2[]) => {
         if ('track' in location) {
           // TODO : replace the name by the track offset label when provided by backend
           const correspondingTrack = trackSectionsById[location.track];
-          const coordinates = getPointOnTrackCoordinates(
-            correspondingTrack.geo,
-            correspondingTrack.length,
-            location.offset
-          );
+
+          const coordinates = correspondingTrack
+            ? getPointOnTrackCoordinates(
+                correspondingTrack.geo,
+                correspondingTrack.length,
+                location.offset
+              )
+            : null;
+
+          if (!correspondingTrack || !coordinates) {
+            // Can happen in case of track offset id does not exist in infra or
+            // if its offset is greater than the track length
+            newPathStepsMetadataById.set(pathStep.id, { isInvalid: true });
+            return;
+          }
+
           newPathStepsMetadataById.set(pathStep.id, {
             type: 'trackOffset',
             isInvalid: false,
@@ -173,8 +184,20 @@ export const usePathStepsMetadata = (pathSteps: PathStepV2[]) => {
           );
         });
 
-        // If no op is found, it means the path step is invalid
-        if (!matchedOp) {
+        const trackRef = location.track_reference;
+        const isValidTrackReference = trackRef
+          ? matchedOp?.parts.some((part) => {
+              const track = trackSectionsById[part.track];
+              if (!track) return false;
+              if ('track_name' in trackRef) {
+                return trackRef.track_name === track.extensions?.sncf?.track_name;
+              }
+              return trackRef.track_id === track.id;
+            })
+          : true;
+
+        // If no op is found or if its track_reference is invalid, it means the path step is invalid
+        if (!isValidTrackReference || !matchedOp) {
           newPathStepsMetadataById.set(pathStep.id, { isInvalid: true });
           return;
         }
