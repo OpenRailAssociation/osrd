@@ -91,14 +91,12 @@ export const buildSteps = (
     if (!Number.isNaN(step.uic)) {
       path.push({
         id,
-        uic: step.uic,
-        secondary_code: step.chCode,
+        location: { reference: { uic: step.uic, secondary_code: step.chCode } },
       });
     } else {
       path.push({
         id,
-        trigram: step.name,
-        secondary_code: step.chCode,
+        location: { reference: { trigram: step.name, secondary_code: step.chCode } },
       });
     }
     if (path.length > 1) {

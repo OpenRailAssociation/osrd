@@ -35,9 +35,7 @@ describe('formatTimetableItemPayload', () => {
       {
         id: '0-0',
         location: {
-          uic: 2,
-          trigram: 'WS',
-          secondary_code: 'BV',
+          reference: { uic: 2, secondary_code: 'BV', trigram: 'WS' },
           track_reference: null,
         },
         name: 'West_station',
@@ -50,9 +48,7 @@ describe('formatTimetableItemPayload', () => {
       {
         id: '1-1',
         location: {
-          uic: 6,
-          trigram: 'SS',
-          secondary_code: 'BV',
+          reference: { uic: 6, secondary_code: 'BV', trigram: 'SS' },
           track_reference: null,
         },
         name: 'South_station',
@@ -100,15 +96,11 @@ describe('formatTimetableItemPayload', () => {
       path: [
         {
           id: '0-0',
-          trigram: 'WS',
-          secondary_code: 'BV',
-          track_reference: null,
+          location: { reference: { trigram: 'WS', secondary_code: 'BV' }, track_reference: null },
         },
         {
           id: '1-1',
-          trigram: 'SS',
-          secondary_code: 'BV',
-          track_reference: null,
+          location: { reference: { trigram: 'SS', secondary_code: 'BV' }, track_reference: null },
         },
       ],
       power_restrictions: [],
@@ -305,15 +297,23 @@ describe('formatTimetableItemPayload', () => {
           path: [
             {
               id: '0-0',
-              trigram: 'WS',
-              secondary_code: 'BV',
-              track_reference: null,
+              location: {
+                reference: {
+                  trigram: 'WS',
+                  secondary_code: 'BV',
+                },
+                track_reference: null,
+              },
             },
             {
               id: '1-1',
-              trigram: 'SS',
-              secondary_code: 'BV',
-              track_reference: null,
+              location: {
+                reference: {
+                  trigram: 'SS',
+                  secondary_code: 'BV',
+                },
+                track_reference: null,
+              },
             },
           ],
           power_restrictions: [],
@@ -500,8 +500,7 @@ describe('formatTimetableItemPayload', () => {
             {
               id: '1-1',
               location: {
-                trigram: 'SS',
-                secondary_code: 'BV',
+                reference: { trigram: 'SS', secondary_code: 'BV' },
                 track_reference: null,
               },
               arrival: null,
@@ -543,15 +542,17 @@ describe('formatTimetableItemPayload', () => {
               path: [
                 {
                   id: '0-0',
-                  trigram: 'WS',
-                  secondary_code: 'BV',
-                  track_reference: null,
+                  location: {
+                    reference: { trigram: 'WS', secondary_code: 'BV' },
+                    track_reference: null,
+                  },
                 },
                 {
                   id: '1-1',
-                  trigram: 'SS',
-                  secondary_code: 'BV',
-                  track_reference: null,
+                  location: {
+                    reference: { trigram: 'SS', secondary_code: 'BV' },
+                    track_reference: null,
+                  },
                 },
               ],
               schedule: [

@@ -107,7 +107,7 @@ const useStdcm = ({
         id: formatEditoastIdToTrainScheduleId(STDCM_TRAIN_ID),
         comfort: payload.body.comfort,
         constraint_distribution: 'MARECO',
-        path: payload.body.steps.map((step) => ({ ...step.location, id: uuidV4() })),
+        path: payload.body.steps.map((step) => ({ location: step.location, id: uuidV4() })),
         rolling_stock_name: stdcmRollingStock!.name,
         start_time: formattedResponse.departure_time,
         train_name: 'stdcm',

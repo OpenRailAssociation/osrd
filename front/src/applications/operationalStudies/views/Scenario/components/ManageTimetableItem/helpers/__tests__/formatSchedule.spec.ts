@@ -12,8 +12,7 @@ describe('formatSchedule', () => {
         {
           id: 'id331',
           location: {
-            uic: 8706,
-            secondary_code: 'BV',
+            reference: { uic: 8706, secondary_code: 'BV' },
           },
           kp: '130+538',
           name: 'G',
@@ -28,8 +27,7 @@ describe('formatSchedule', () => {
         {
           id: 'id332',
           location: {
-            uic: 8737,
-            secondary_code: 'BV',
+            reference: { uic: 8737, secondary_code: 'BV' },
           },
           kp: '117+422',
           name: 'V',

@@ -34,27 +34,8 @@ export function upsertMapWaypointsInOperationalPoints(
 ): (PathOperationalPoint | EditoastPathOperationalPoint)[] {
   return path.reduce(
     (operationalPointsWithAllWaypoints, step, stepIndex) => {
-      if ('uic' in step) {
-        const matchedIndex = operationalPointsWithAllWaypoints.findIndex(
-          (op) =>
-            'uic' in step &&
-            'secondary_code' in step &&
-            step.uic === op.extensions?.identifier?.uic &&
-            step.secondary_code === op.extensions?.sncf?.ch
-        );
-
-        if (matchedIndex !== -1) {
-          // Replace the operational point at its original index with updated weight
-          operationalPointsWithAllWaypoints[matchedIndex] = {
-            ...operationalPointsWithAllWaypoints[matchedIndex],
-            weight: HIGHEST_PRIORITY_WEIGHT,
-          };
-        }
-
-        return operationalPointsWithAllWaypoints;
-      }
-
-      if ('track' in step) {
+      const location = step.location;
+      if ('track' in location) {
         const positionOnPath = pathItemsPositions[stepIndex];
         const indexToInsert = operationalPointsWithAllWaypoints.findIndex(
           (op) => op.position >= positionOnPath
@@ -73,7 +54,7 @@ export function upsertMapWaypointsInOperationalPoints(
               uic: 0,
             },
           },
-          part: { track: step.track, position: step.offset },
+          part: { track: location.track, position: location.offset },
           position: positionOnPath,
           weight: HIGHEST_PRIORITY_WEIGHT,
         };
@@ -94,6 +75,26 @@ export function upsertMapWaypointsInOperationalPoints(
           operationalPointsWithAllWaypoints.push(formattedStep);
         } else {
           operationalPointsWithAllWaypoints.splice(indexToInsert, 0, formattedStep);
+        }
+
+        return operationalPointsWithAllWaypoints;
+      }
+
+      if ('uic' in location.reference) {
+        const matchedIndex = operationalPointsWithAllWaypoints.findIndex(
+          (op) =>
+            'uic' in location.reference &&
+            'secondary_code' in location.reference &&
+            location.reference.uic === op.extensions?.identifier?.uic &&
+            location.reference.secondary_code === op.extensions?.sncf?.ch
+        );
+
+        if (matchedIndex !== -1) {
+          // Replace the operational point at its original index with updated weight
+          operationalPointsWithAllWaypoints[matchedIndex] = {
+            ...operationalPointsWithAllWaypoints[matchedIndex],
+            weight: HIGHEST_PRIORITY_WEIGHT,
+          };
         }
 
         return operationalPointsWithAllWaypoints;

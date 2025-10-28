@@ -94,7 +94,7 @@ export const formatOperationalPoints = (
     // Get duration
     let stepDuration: Duration | undefined;
     const correspondingStep = timetableItem.path.find((step) =>
-      matchPathStepAndOp(step, {
+      matchPathStepAndOp(step.location, {
         opId: op.id,
         uic: op.extensions?.identifier?.uic,
         ch: op.extensions?.sncf?.ch,

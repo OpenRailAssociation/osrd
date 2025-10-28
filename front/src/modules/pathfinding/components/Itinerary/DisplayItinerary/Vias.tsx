@@ -43,12 +43,16 @@ const Vias = ({ zoomToFeaturePoint }: ViasProps) => {
               <small data-testid="via-dropped-name" className="mr-1 text-nowrap">
                 {`${via.name || (via.positionOnPath && `KM ${(Math.round(via.positionOnPath) / 1000000).toFixed(3)}`) || t('unavailableDistance')}`}
               </small>
-              {'secondary_code' in via.location && via.location.secondary_code && (
-                <small data-testid="via-dropped-ch">{via.location.secondary_code}</small>
-              )}
-              {'uic' in via.location && (
+              {'reference' in via.location &&
+                'secondary_code' in via.location.reference &&
+                via.location.reference.secondary_code && (
+                  <small data-testid="via-dropped-ch">
+                    {via.location.reference.secondary_code}
+                  </small>
+                )}
+              {'reference' in via.location && 'uic' in via.location.reference && (
                 <small data-testid="via-dropped-uic" className="text-muted ml-3">
-                  {formatUicToCi(via.location.uic)}
+                  {formatUicToCi(via.location.reference.uic)}
                 </small>
               )}
             </div>

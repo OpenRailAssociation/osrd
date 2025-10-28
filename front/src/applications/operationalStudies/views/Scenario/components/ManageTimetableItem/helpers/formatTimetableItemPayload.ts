@@ -43,7 +43,7 @@ export function formatTimetableItemPayload(
     },
     path: compact(osrdconf.pathSteps).map((step) => ({
       id: step.id,
-      ...getStepLocation(step.location),
+      location: getStepLocation(step.location),
     })),
     power_restrictions: osrdconf.powerRestriction,
     rolling_stock_name: rollingStockName,

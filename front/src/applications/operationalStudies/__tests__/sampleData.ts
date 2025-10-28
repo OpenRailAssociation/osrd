@@ -324,18 +324,23 @@ export const trainScheduleTooFast: TrainScheduleWithTrainId = {
   path: [
     {
       id: 'id440',
-      track: 'TA0',
-      offset: 1299000,
+      location: {
+        track: 'TA0',
+        offset: 1299000,
+      },
     },
     {
       id: 'id935',
-      uic: 4,
-      secondary_code: 'BV',
+      location: {
+        reference: { uic: 4, secondary_code: 'BV' },
+      },
     },
     {
       id: 'id916',
-      track: 'TH1',
-      offset: 4095000,
+      location: {
+        track: 'TH1',
+        offset: 4095000,
+      },
     },
   ],
   schedule: [
@@ -386,21 +391,21 @@ export const trainScheduleTooFastOnInterval: TrainScheduleWithTrainId = {
   path: [
     {
       id: 'idA',
-      uic: 87700000,
-      secondary_code: 'BV',
-      track_reference: null,
+      location: {
+        reference: { uic: 87700000, secondary_code: 'BV' },
+      },
     },
     {
       id: 'idB',
-      uic: 87700001,
-      secondary_code: 'BV',
-      track_reference: null,
+      location: {
+        reference: { uic: 87700001, secondary_code: 'BV' },
+      },
     },
     {
       id: 'idC',
-      uic: 87700002,
-      secondary_code: 'BV',
-      track_reference: null,
+      location: {
+        reference: { uic: 87700002, secondary_code: 'BV' },
+      },
     },
   ],
   schedule: [
@@ -418,7 +423,7 @@ export const trainScheduleTooFastOnInterval: TrainScheduleWithTrainId = {
     },
   ],
   margins: {
-    boundaries: ['idC'],
+    boundaries: [],
     values: ['6.5min/100km', '0%'],
   },
   initial_speed: 0,
@@ -456,18 +461,23 @@ export const trainScheduleNotHonored: TrainScheduleWithTrainId = {
   path: [
     {
       id: 'id440',
-      track: 'TA0',
-      offset: 1299000,
+      location: {
+        track: 'TA0',
+        offset: 1299000,
+      },
     },
     {
       id: 'id584',
-      uic: 4,
-      secondary_code: 'BV',
+      location: {
+        reference: { uic: 4, secondary_code: 'BV' },
+      },
     },
     {
       id: 'id450',
-      track: 'TG1',
-      offset: 644000,
+      location: {
+        track: 'TG1',
+        offset: 644000,
+      },
     },
   ],
   schedule: [
@@ -518,13 +528,17 @@ export const trainScheduleHonored: TrainScheduleWithTrainId = {
   path: [
     {
       id: 'id440',
-      track: 'TA0',
-      offset: 1299000,
+      location: {
+        track: 'TA0',
+        offset: 1299000,
+      },
     },
     {
       id: 'id450',
-      track: 'TG1',
-      offset: 644000,
+      location: {
+        track: 'TG1',
+        offset: 644000,
+      },
     },
   ],
   schedule: [

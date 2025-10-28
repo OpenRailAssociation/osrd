@@ -97,8 +97,8 @@ const SimulationResults = ({
           const timetableItem = timetableItemsById.get(train.id);
           return {
             ...train,
-            originPathItemLocation: timetableItem?.path.at(0),
-            destinationPathItemLocation: timetableItem?.path.at(-1),
+            originPathItemLocation: timetableItem?.path.at(0)?.location,
+            destinationPathItemLocation: timetableItem?.path.at(-1)?.location,
           };
         })
       );

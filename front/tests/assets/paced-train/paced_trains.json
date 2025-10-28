@@ -5,8 +5,14 @@
     "rolling_stock_name": "SLOW_RS_E2E",
     "start_time": "2024-10-15T03:00:00Z",
     "path": [
-      { "id": "id227", "uic": 8766, "secondary_code": "BV" },
-      { "id": "id228", "uic": 8755, "secondary_code": "BV" }
+      {
+        "id": "id227",
+        "location": { "reference": { "uic": 8766, "secondary_code": "BV" } }
+      },
+      {
+        "id": "id228",
+        "location": { "reference": { "uic": 8755, "secondary_code": "BV" } }
+      }
     ],
     "schedule": [
       {
@@ -31,8 +37,14 @@
     "rolling_stock_name": "SLOW_RS_E2E",
     "start_time": "2024-10-15T04:00:00Z",
     "path": [
-      { "id": "id227", "uic": 8766, "secondary_code": "BV" },
-      { "id": "id228", "uic": 8755, "secondary_code": "BV" }
+      {
+        "id": "id227",
+        "location": { "reference": { "uic": 8766, "secondary_code": "BV" } }
+      },
+      {
+        "id": "id228",
+        "location": { "reference": { "uic": 8755, "secondary_code": "BV" } }
+      }
     ],
     "schedule": [
       {
@@ -68,9 +80,18 @@
     "rolling_stock_name": "DUAL-MODE_RS_E2E",
     "start_time": "2024-10-15T05:00:00Z",
     "path": [
-      { "id": "id744", "uic": 8733, "secondary_code": "BV" },
-      { "id": "id765", "uic": 8744, "secondary_code": "BV" },
-      { "id": "id745", "uic": 8777, "secondary_code": "BV" }
+      {
+        "id": "id744",
+        "location": { "reference": { "uic": 8733, "secondary_code": "BV" } }
+      },
+      {
+        "id": "id765",
+        "location": { "reference": { "uic": 8744, "secondary_code": "BV" } }
+      },
+      {
+        "id": "id745",
+        "location": { "reference": { "uic": 8777, "secondary_code": "BV" } }
+      }
     ],
     "schedule": [
       {
@@ -109,9 +130,9 @@
     "rolling_stock_name": "",
     "start_time": "2024-10-15T09:45:43Z",
     "path": [
-      { "id": "id3807", "track": "TA6", "offset": 8058000 },
-      { "id": "id3822", "track": "TD0", "offset": 10809000 },
-      { "id": "id3855", "track": "TG2", "offset": 1686000 }
+      { "id": "id3807", "location": { "track": "TA6", "offset": 8058000 } },
+      { "id": "id3822", "location": { "track": "TD0", "offset": 10809000 } },
+      { "id": "id3855", "location": { "track": "TG2", "offset": 1686000 } }
     ],
     "schedule": [
       {
@@ -146,15 +167,17 @@
     "path": [
       {
         "id": "id227",
-        "uic": 8766,
-        "secondary_code": "BV",
-        "track_reference": null
+        "location": {
+          "reference": { "uic": 8766, "secondary_code": "BV" },
+          "track_reference": null
+        }
       },
       {
         "id": "id228",
-        "uic": 8755,
-        "secondary_code": "BV",
-        "track_reference": null
+        "location": {
+          "reference": { "uic": 8755, "secondary_code": "BV" },
+          "track_reference": null
+        }
       }
     ],
     "schedule": [
@@ -201,15 +224,17 @@
           "path": [
             {
               "id": "id227",
-              "uic": 8766,
-              "secondary_code": "BV",
-              "track_reference": null
+              "location": {
+                "reference": { "uic": 8766, "secondary_code": "BV" },
+                "track_reference": null
+              }
             },
             {
               "id": "id228",
-              "uic": 8755,
-              "secondary_code": "BV",
-              "track_reference": null
+              "location": {
+                "reference": { "uic": 8755, "secondary_code": "BV" },
+                "track_reference": null
+              }
             }
           ],
           "schedule": [
@@ -235,8 +260,14 @@
     "rolling_stock_name": "DUAL-MODE_RS_E2E",
     "start_time": "2024-10-17T11:00:00Z",
     "path": [
-      { "id": "id227", "uic": 8766, "secondary_code": "BV" },
-      { "id": "id228", "uic": 8755, "secondary_code": "BV" }
+      {
+        "id": "id227",
+        "location": { "reference": { "uic": 8766, "secondary_code": "BV" } }
+      },
+      {
+        "id": "id228",
+        "location": { "reference": { "uic": 8755, "secondary_code": "BV" } }
+      }
     ],
     "schedule": [
       {
@@ -279,19 +310,18 @@
     "path": [
       {
         "id": "8bf52569-50a5-46a5-8e62-b5626460cfba",
-        "uic": 8777,
-        "secondary_code": "BV",
-        "track_reference": null
+        "location": {
+          "reference": { "uic": 8777, "secondary_code": "BV" },
+          "track_reference": null
+        }
       },
       {
         "id": "id2492",
-        "track": "TD0",
-        "offset": 11080000
+        "location": { "track": "TD0", "offset": 11080000 }
       },
       {
         "id": "3cbdab53-120e-460b-8f4b-e0ecc7cae836",
-        "track": "TI0",
-        "offset": 246000
+        "location": { "track": "TI0", "offset": 246000 }
       }
     ],
     "schedule": [
@@ -343,20 +373,21 @@
           "path": [
             {
               "id": "id2458",
-              "track": "TG4",
-              "offset": 1549000
+              "location": { "track": "TG4", "offset": 1549000 }
             },
             {
               "id": "id2570",
-              "uic": 8733,
-              "secondary_code": "BV",
-              "track_reference": null
+              "location": {
+                "reference": { "uic": 8733, "secondary_code": "BV" },
+                "track_reference": null
+              }
             },
             {
               "id": "8369cfc6-e667-4b6b-965a-79795c94dd18",
-              "uic": 8799,
-              "secondary_code": "BV",
-              "track_reference": null
+              "location": {
+                "reference": { "uic": 8799, "secondary_code": "BV" },
+                "track_reference": null
+              }
             }
           ],
           "schedule": [
@@ -392,31 +423,32 @@
           "path": [
             {
               "id": "id2458",
-              "track": "TG4",
-              "offset": 1549000
+              "location": { "track": "TG4", "offset": 1549000 }
             },
             {
               "id": "id2659",
-              "uic": 8744,
-              "secondary_code": "BV",
-              "track_reference": null
+              "location": {
+                "reference": { "uic": 8744, "secondary_code": "BV" },
+                "track_reference": null
+              }
             },
             {
               "id": "id2492",
-              "track": "TD0",
-              "offset": 11080000
+              "location": { "track": "TD0", "offset": 11080000 }
             },
             {
               "id": "id2570",
-              "uic": 8733,
-              "secondary_code": "BV",
-              "track_reference": null
+              "location": {
+                "reference": { "uic": 8733, "secondary_code": "BV" },
+                "track_reference": null
+              }
             },
             {
               "id": "b174dfa7-f6e7-45d9-9545-469a64e675b9",
-              "uic": 8799,
-              "secondary_code": "BC",
-              "track_reference": null
+              "location": {
+                "reference": { "uic": 8799, "secondary_code": "BC" },
+                "track_reference": null
+              }
             }
           ],
           "schedule": [

@@ -65,18 +65,28 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
     const pathSteps = [
       {
         id: '1',
-        secondary_code: 'BV',
-        uic: 2,
+        location: {
+          reference: {
+            uic: 2,
+            secondary_code: 'BV',
+          },
+        },
       },
       {
         id: '2',
-        offset: 7746000,
-        track: 'TA6',
+        location: {
+          track: 'TA6',
+          offset: 7746000,
+        },
       },
       {
         id: '3',
-        secondary_code: 'BV',
-        uic: 4,
+        location: {
+          reference: {
+            uic: 4,
+            secondary_code: 'BV',
+          },
+        },
       },
     ];
     const pathItemPositions = [0, 9246000, 26500000];
@@ -157,18 +167,24 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
     const pathSteps = [
       {
         id: '1',
-        offset: 6481000,
-        track: 'TA6',
+        location: {
+          track: 'TA6',
+          offset: 6481000,
+        },
       },
       {
         id: '2',
-        offset: 679000,
-        track: 'TC0',
+        location: {
+          track: 'TC0',
+          offset: 679000,
+        },
       },
       {
         id: '3',
-        offset: 883000,
-        track: 'TC0',
+        location: {
+          track: 'TC0',
+          offset: 883000,
+        },
       },
     ];
     const pathItemPositions = [0, 4198000, 4402000];
@@ -257,13 +273,17 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
     const pathSteps = [
       {
         id: '1',
-        offset: 6481000,
-        track: 'TA6',
+        location: {
+          track: 'TA6',
+          offset: 6481000,
+        },
       },
       {
         id: '2',
-        offset: 4733000,
-        track: 'TA6',
+        location: {
+          track: 'TA6',
+          offset: 4733000,
+        },
       },
     ];
     const pathItemPositions = [0, 1748000];
@@ -314,18 +334,30 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
     const pathSteps = [
       {
         id: '1',
-        secondary_code: 'BV',
-        uic: 2,
+        location: {
+          reference: {
+            uic: 2,
+            secondary_code: 'BV',
+          },
+        },
       },
       {
         id: '2',
-        secondary_code: 'BV',
-        uic: 3,
+        location: {
+          reference: {
+            uic: 3,
+            secondary_code: 'BV',
+          },
+        },
       },
       {
         id: '3',
-        secondary_code: 'BV',
-        uic: 4,
+        location: {
+          reference: {
+            uic: 4,
+            secondary_code: 'BV',
+          },
+        },
       },
     ];
     const pathItemPositions = [0, 12050000, 26500000];

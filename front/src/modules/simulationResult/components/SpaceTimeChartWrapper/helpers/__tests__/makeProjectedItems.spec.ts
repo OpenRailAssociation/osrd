@@ -21,13 +21,21 @@ describe('makeProjectedItems', () => {
         path: [
           {
             id: 'a496f3a6-4eea-45f8-a83c-5472d9adcd6d',
-            uic: 11,
-            secondary_code: 'BV',
+            location: {
+              reference: {
+                uic: 11,
+                secondary_code: 'BV',
+              },
+            },
           },
           {
             id: 'e18f50f3-2b40-451e-9726-e4dd29459bf0',
-            uic: 12,
-            secondary_code: 'BV',
+            location: {
+              reference: {
+                uic: 12,
+                secondary_code: 'BV',
+              },
+            },
           },
         ],
         schedule: [
@@ -125,13 +133,21 @@ describe('makeProjectedItems', () => {
         path: [
           {
             id: '3e6c78c6-89a9-462f-a0b3-1e4253cb6386',
-            uic: 11,
-            secondary_code: 'BV',
+            location: {
+              reference: {
+                uic: 11,
+                secondary_code: 'BV',
+              },
+            },
           },
           {
             id: '00fd1b82-32ca-43fd-a46e-24b5bc6f0fd3',
-            uic: 14,
-            secondary_code: 'BV',
+            location: {
+              reference: {
+                uic: 14,
+                secondary_code: 'BV',
+              },
+            },
           },
         ],
         power_restrictions: [],

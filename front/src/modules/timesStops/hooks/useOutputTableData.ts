@@ -39,10 +39,12 @@ const useOutputTableData = (
 
   const trackIds = useMemo(() => {
     const path = selectedTrain?.path || [];
-    const trackIdsInPathSteps = path.flatMap((step) => [
-      ...('track' in step ? [step.track] : []),
-      ...('track_reference' in step && step.track_reference && 'track_id' in step.track_reference
-        ? [step.track_reference.track_id]
+    const trackIdsInPathSteps = path.flatMap(({ location }) => [
+      ...('track' in location ? [location.track] : []),
+      ...('track_reference' in location &&
+      location.track_reference &&
+      'track_id' in location.track_reference
+        ? [location.track_reference.track_id]
         : []),
     ]);
     const trackIdsOnPath = (operationalPointsOnPath || []).map((op) => op.part.track);
@@ -73,19 +75,21 @@ const useOutputTableData = (
 
     const pathStepRowsById = new Map(
       selectedTrain.path.map((pathStep, stepIndex) => {
-        const matchingOperationalPoint = pathStepOps.find((op) => matchOpRefAndOp(pathStep, op));
+        const matchingOperationalPoint = pathStepOps.find((op) =>
+          matchOpRefAndOp(pathStep.location, op)
+        );
 
         const name = getOperationalPointName(
           matchingOperationalPoint,
-          pathStep,
+          pathStep.location,
           stepIndex,
           selectedTrain.path.length,
           t
         );
         const trackName =
-          'track' in pathStep
-            ? trackSections[pathStep.track]?.extensions?.sncf?.track_name
-            : getTrackReferenceLabel(trackSections, pathStep.track_reference);
+          'track' in pathStep.location
+            ? trackSections[pathStep.location.track]?.extensions?.sncf?.track_name
+            : getTrackReferenceLabel(trackSections, pathStep.location.track_reference);
 
         const schedule = scheduleByAt[pathStep.id];
         const computedArrival = simulatedPathItemTimes
@@ -166,7 +170,7 @@ const useOutputTableData = (
         // early return if the op matches a pathStep (handled above)
         // only add the trackName which has been found by the pathfinding (if not precised in the pathStep)
         const matchingPathStep = selectedTrain.path.find((pathStep) =>
-          matchPathStepAndOp(pathStep, {
+          matchPathStepAndOp(pathStep.location, {
             opId: op.id,
             uic: op.extensions?.identifier?.uic,
             ch: op.extensions?.sncf?.ch,

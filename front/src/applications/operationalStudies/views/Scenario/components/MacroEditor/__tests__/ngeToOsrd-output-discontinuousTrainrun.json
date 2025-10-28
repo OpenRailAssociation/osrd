@@ -62,9 +62,18 @@
       "train_name": "Carotte-1",
       "labels": [],
       "path": [
-        { "trigram": "RTR", "id": "7-0", "track_reference": null },
-        { "trigram": "LTH", "id": "8-1", "track_reference": null },
-        { "trigram": "SS", "id": "6-2", "track_reference": null }
+        {
+          "location": { "reference": { "trigram": "RTR" }, "track_reference": null },
+          "id": "7-0"
+        },
+        {
+          "location": { "reference": { "trigram": "LTH" }, "track_reference": null },
+          "id": "8-1"
+        },
+        {
+          "location": { "reference": { "trigram": "SS" }, "track_reference": null },
+          "id": "6-2"
+        }
       ],
       "start_time": "2025-06-25T13:00:00.000Z",
       "schedule": [
