@@ -15,7 +15,7 @@ use schemas::infra::OperationalPointPartExtension;
 #[cfg(feature = "mocking_client")]
 use schemas::infra::OperationalPointSncfExtension;
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Hash, Serialize)]
 pub struct PathPropertiesRequest<'a> {
     pub track_section_ranges: &'a Vec<TrackRange>,
     pub infra: i64,

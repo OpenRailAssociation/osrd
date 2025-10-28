@@ -93,7 +93,6 @@ pub(in crate::views) async fn post(
         db_pool,
         valkey_client,
         core_client,
-        config,
         ..
     }): State<AppState>,
     Extension(auth): AuthenticationExt,
@@ -112,22 +111,15 @@ pub(in crate::views) async fn post(
     })
     .await?;
 
-    let mut valkey_conn = valkey_client.get_connection().await?;
-
-    let request = PathPropertiesRequest {
+    use core_task::Task as _;
+    let vkconn = valkey_client.get_connection().await?;
+    let path_properties = PathPropertiesRequest {
         track_section_ranges: &path_properties_input.track_section_ranges,
         infra: infra_id,
         expected_version: infra_version,
-    };
-    let path_properties = compute_path_properties_batch(
-        core_client,
-        &mut valkey_conn,
-        &[request],
-        config.app_version.as_deref(),
-    )
-    .await?
-    .next()
-    .unwrap();
+    }
+    .run(vkconn, core_client)
+    .await?;
 
     Ok(Json(PathProperties::from(path_properties)))
 }
@@ -278,7 +270,7 @@ mod tests {
         TestAppBuilder::new().core_client(core.into()).build()
     }
 
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
     async fn returns_all_path_properties() {
         let app = init_test_app();
         let infra = create_small_infra(&mut app.db_pool().get_ok()).await;
@@ -307,7 +299,7 @@ mod tests {
         );
     }
 
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    #[tokio::test(flavor = "multi_thread", worker_threads = 2)]
     async fn returns_only_requested_path_properties() {
         let app = init_test_app();
         let infra = create_small_infra(&mut app.db_pool().get_ok()).await;
