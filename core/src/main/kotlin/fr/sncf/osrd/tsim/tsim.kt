@@ -140,8 +140,6 @@ data class Instructions(
      * Most-Restrictive Speed Profile.
      *
      * Maps positions of the head of the train along the path to the highest allowed speed.
-     *
-     * This doesn't need to account for the train's max speed.
      */
     val mrsp: RangeMap<Meters, MetersPerSecond> = TreeRangeMap.create(),
 

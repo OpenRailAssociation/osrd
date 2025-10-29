@@ -59,6 +59,7 @@ fun onetrain(
     val ctx = Context(path = trainPath, stock = rollingStock, effortCurveMap = effortCurveMap)
 
     var mrsp: RangeMap<Meters, MetersPerSecond> = TreeRangeMap.create()
+    mrsp.put(Range.all(), rollingStock.maxSpeed)
     if (useSpeedLimits) {
         val props = trainPath.getSpeedLimitProperties(speedLimitTag, null)
         for (prop in props) {
