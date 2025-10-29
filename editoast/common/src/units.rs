@@ -121,6 +121,10 @@ macro_rules! define_unit {
                 crate::hash_float::<5, H>(&from(*value), state);
             }
 
+            pub fn eq(a: &$quantity, b: &$quantity) -> bool {
+                $crate::float_eq(&a.get::<Unit>(), &b.get::<Unit>())
+            }
+
             pub mod option {
                 use super::*;
                 pub type ReprType = Option<super::ReprType>;
@@ -153,6 +157,13 @@ macro_rules! define_unit {
 
                 pub fn hash<H: std::hash::Hasher>(value: &Option<$quantity>, state: &mut H) {
                     super::hash(&value.unwrap_or_default(), state);
+                }
+
+                pub fn eq(a: &Option<$quantity>, b: &Option<$quantity>) -> bool {
+                    a.as_ref()
+                        .zip(b.as_ref())
+                        .map(|(a, b)| $crate::float_eq(&a.get::<Unit>(), &b.get::<Unit>()))
+                        .unwrap_or(false)
                 }
             }
 

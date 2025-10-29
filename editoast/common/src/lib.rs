@@ -25,3 +25,10 @@ pub struct Version {
     #[schema(required)] // Options are by default not required, but this one is
     pub git_describe: Option<String>,
 }
+
+/// Allows implementing Eq for floats considering all NaN values to be equal
+///
+/// Tip: provide this to Educe.
+pub fn float_eq(a: &f64, b: &f64) -> bool {
+    (a.is_nan() && b.is_nan()) || (a == b)
+}

@@ -923,6 +923,7 @@ dependencies = [
  "core_client",
  "dashmap",
  "deadpool",
+ "editoast_derive",
  "educe",
  "futures-util",
  "hostname",
