@@ -28,58 +28,73 @@ use crate::AsCoreRequest;
 use crate::Json;
 use crate::WorkerKey;
 
-#[derive(Debug, Clone, Serialize, Deserialize, Educe, PartialEq, ToSchema)]
+#[derive(Debug, Clone, Serialize, Deserialize, Educe, ToSchema)]
+#[educe(Hash, PartialEq, Eq)]
 #[schema(as = core::PhysicsConsist)]
-#[educe(Hash)]
 pub struct PhysicsConsist {
     pub effort_curves: EffortCurves,
     pub base_power_class: Option<String>,
-    /// Length of the rolling stock
+
     #[educe(Hash(method(units::millimeter::hash)))]
     #[serde(with = "units::millimeter::u64")]
     #[schema(value_type = u64)]
     pub length: Length,
-    /// Maximum speed of the rolling stock
+
     #[educe(Hash(method(units::meter_per_second::hash)))]
+    #[educe(PartialEq(method(units::meter_per_second::eq)))]
     #[serde(with = "units::meter_per_second")]
     #[schema(value_type = f64)]
     pub max_speed: Velocity,
+
     #[educe(Hash(method(units::millisecond::hash)))]
     #[serde(with = "units::millisecond::u64")]
     #[schema(value_type = u64)]
     pub startup_time: Time,
+
     #[educe(Hash(method(units::meter_per_second_squared::hash)))]
+    #[educe(PartialEq(method(units::meter_per_second_squared::eq)))]
     #[serde(with = "units::meter_per_second_squared")]
     #[schema(value_type = f64)]
     pub startup_acceleration: Acceleration,
+
     #[educe(Hash(method(units::meter_per_second_squared::hash)))]
+    #[educe(PartialEq(method(units::meter_per_second_squared::eq)))]
     #[serde(with = "units::meter_per_second_squared")]
     #[schema(value_type = f64)]
     pub comfort_acceleration: Acceleration,
+
     /// The constant gamma braking coefficient used when NOT circulating
     /// under ETCS/ERTMS signaling system
     #[educe(Hash(method(units::meter_per_second_squared::hash)))]
+    #[educe(PartialEq(method(units::meter_per_second_squared::eq)))]
     #[serde(with = "units::meter_per_second_squared")]
     #[schema(value_type = f64)]
     pub const_gamma: Deceleration,
+
     pub etcs_brake_params: Option<EtcsBrakeParams>,
+
     #[educe(Hash(method(common::hash_float::<5,_>)))]
+    #[educe(PartialEq(method(common::float_eq)))]
     pub inertia_coefficient: f64,
-    /// Mass of the rolling stock
+
     #[educe(Hash(method(units::kilogram::hash)))]
     #[serde(with = "units::kilogram::u64")]
     #[schema(value_type = u64)]
     pub mass: Mass,
+
     pub rolling_resistance: RollingResistance,
+
     /// Mapping of power restriction code to power class
     #[serde(default)]
     pub power_restrictions: BTreeMap<String, String>,
+
     /// The time the train takes before actually using electrical power.
     /// Is null if the train is not electric or the value not specified.
     #[educe(Hash(method(units::millisecond::option::hash)))]
     #[serde(default, with = "units::millisecond::u64::option")]
     #[schema(value_type = Option<u64>)]
     pub electrical_power_startup_time: Option<Time>,
+
     /// The time it takes to raise this train's pantograph.
     /// Is null if the train is not electric or the value not specified.
     #[educe(Hash(method(units::millisecond::option::hash)))]
