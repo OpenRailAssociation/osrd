@@ -3,10 +3,12 @@ package fr.sncf.osrd.tsim
 import com.google.common.collect.ImmutableRangeMap
 import com.google.common.collect.Range
 import com.google.common.collect.RangeMap
+import com.google.common.collect.TreeRangeMap
 import fr.sncf.osrd.envelope_sim.*
 import fr.sncf.osrd.envelope_sim.etcs.BrakingType
 import fr.sncf.osrd.path.interfaces.PhysicsPath
 import fr.sncf.osrd.train.RollingStock
+import java.util.function.BiFunction
 
 typealias Seconds = Double
 
@@ -20,21 +22,135 @@ typealias MeterArray = DoubleArray
 
 typealias MeterPerSecondArray = DoubleArray
 
+/**
+ * Update a [RangeMap] representing a Speed Profile, accounting for the length of the rolling stock.
+ *
+ * The given [RangeMap] contains the ranges on the path with speed limits (indicated by signs or
+ * signals). The returned [RangeMap] will report, for given positions of the rolling stock's head,
+ * ranges on the path where the rolling stock cannot exceed a certain speed limit, because even if
+ * pass the sign, as long as its tail is behind the sign the speed limit is still enforced.
+ */
+fun RangeMap<Meters, MetersPerSecond>.withStockLength(
+    stockLength: Meters
+): RangeMap<Meters, MetersPerSecond> {
+    val map = TreeRangeMap.create<Meters, MetersPerSecond>()
+    for (entry in asMapOfRanges()) {
+        val range = entry.key
+        val speedLimit = entry.value
+
+        // The speed limit is enforced as long as part of the rolling stock is behind the reset sign
+        // TODO what's the name of the sign that reset a speed limit?
+        val enforcementRange =
+            Range.closed(range.lowerEndpointOrInf(), range.upperEndpointOrInf() + stockLength)
+        val newSubMap = ImmutableRangeMap.builder<Meters, MetersPerSecond>()
+        newSubMap.put(enforcementRange, speedLimit)
+
+        // Other, more restrictive speed limits might be in place
+        for (e in map.subRangeMap(enforcementRange).asMapOfRanges()) {
+            if (e.value < speedLimit) {
+                newSubMap.put(e.key, e.value)
+            }
+        }
+
+        map.putAll(newSubMap.build())
+    }
+    return map
+}
+
+/**
+ * A [RangeMap] of neutral zones accounting for the positions of the pantographs on the rolling
+ * stock.
+ *
+ * This class will report, for given positions of its head, ranges on the path where the rolling
+ * stock isn't electrified.
+ *
+ * This is meant to be immutable (but isn't because [ImmutableRangeMap] inherits from [RangeMap] and
+ * not the other way around)
+ */
+class NeutralZonesWithPantographs(
+    /** ranges on the path with neutral zones */
+    private val inner: RangeMap<Meters, Boolean>,
+
+    /**
+     * list of positions of pantographs, where 0.0 is the head of the stock and `stock.length` is
+     * its tail
+     */
+    vararg pantographPositions: Meters,
+) : RangeMap<Meters, Boolean> {
+    private val frontPantograph: Meters = pantographPositions.maxOrNull()!!
+    private val rearPantograph: Meters = pantographPositions.minOrNull()!!
+
+    constructor() : this(inner = ImmutableRangeMap.of(), 0.0)
+
+    override fun get(head: Meters): Boolean? = getEntry(head)?.value
+
+    override fun getEntry(head: Meters): Map.Entry<Range<Meters>?, Boolean>? =
+        inner
+            .subRangeMap(Range.closed(head - frontPantograph, head - rearPantograph))
+            .asMapOfRanges()
+            .maxByOrNull { entry -> entry.value }
+
+    override fun span(): Range<Meters> = inner.span()
+
+    override fun put(range: Range<Meters>, value: Boolean): Unit =
+        throw UnsupportedOperationException()
+
+    override fun putCoalescing(range: Range<Meters>, value: Boolean): Unit =
+        throw UnsupportedOperationException()
+
+    override fun putAll(rangeMap: RangeMap<Meters, out Boolean>): Unit =
+        throw UnsupportedOperationException()
+
+    override fun clear() = inner.clear()
+
+    override fun remove(range: Range<Meters>): Unit = throw UnsupportedOperationException()
+
+    override fun merge(
+        range: Range<Meters>,
+        value: Boolean?,
+        remappingFunction: BiFunction<in Boolean, in Boolean?, out Boolean?>,
+    ): Unit = throw UnsupportedOperationException()
+
+    override fun asMapOfRanges(): Map<Range<Meters>?, Boolean> {
+        TODO("Not yet implemented")
+    }
+
+    override fun asDescendingMapOfRanges(): Map<Range<Meters>?, Boolean> {
+        TODO("Not yet implemented")
+    }
+
+    override fun subRangeMap(range: Range<Meters>): RangeMap<Meters, Boolean> =
+        NeutralZonesWithPantographs(inner.subRangeMap(range), frontPantograph, rearPantograph)
+}
+
+/**
+ * Update a [RangeMap] representing neutral zones along a path, to account for the position of the
+ * pantographs on the rolling stock.
+ *
+ * This is needed to account for neutral zones that require lowering pantographs: they must be
+ * lowered before going TODO: can they be lowered last minute, eg the pantograph is on the back, the
+ * train head is in the neutral zone and the pantograph is lowered right before it goes in too?
+ */
+fun RangeMap<Meters, Boolean>.withPantographPositions(
+    vararg positions: Meters
+): NeutralZonesWithPantographs = NeutralZonesWithPantographs(this, *positions)
+
 data class Instructions(
     /**
      * Most-Restrictive Speed Profile.
      *
+     * Maps positions of the head of the train along the path to the highest allowed speed.
+     *
      * This doesn't need to account for the train's max speed.
      */
-    // ?? ImmutableRangeMap inherits RangeMap and not the other way around?
-    val mrsp: RangeMap<Meters, MetersPerSecond> = ImmutableRangeMap.of(),
+    val mrsp: RangeMap<Meters, MetersPerSecond> = TreeRangeMap.create(),
 
     /**
      * Ranges of the path that aren't electrified.
      *
      * Maps ranges of the path to whether the neutral zone requires lowering the pantograph.
      */
-    val neutralZones: RangeMap<Meters, Boolean> = ImmutableRangeMap.of(),
+    val neutralZones: NeutralZonesWithPantographs = NeutralZonesWithPantographs(),
 
     // TODO Stop?
 )
@@ -185,8 +301,6 @@ fun step(
     require(dt > 0.0) { "dt must be strictly positive" }
     require(position >= 0.0) { "position must be positive" }
     require(speed >= 0.0) { "speed must be positive" }
-
-    // TODO update mrsp to account for the whole stock length
 
     var action = Action.ACCELERATE
 
