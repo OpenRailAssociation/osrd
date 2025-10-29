@@ -181,11 +181,11 @@ where
          *                      [task]
          *                      not_a_task
          *                      (comment)
-         *                                                                                            compute ------------> [write_cache]
-         *                                                +-------> [chunk_processing] ------+
-         *                                                |                                  |           ^                        |
-         *                                                |                                  |           |(cache miss)            v
-         *                                                |                                  |
+         *                                                                                            compute ---------+--> [write_cache]
+         *                                                +-------> [chunk_processing] ------+           ^             |
+         *                                                |                                  |           |             +----------+
+         *                                                |                                  |           | (cache miss)           |
+         *                                                |                                  |           |                        v
          * requests stream ----------> [cache_read] ------+-------> [chunk_processing] ------+----> [aggregation]---------> result_stream
          * (self, function                                |                                  |                   (cache hit)
          *     input)                                     |                                  |
