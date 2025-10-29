@@ -6,7 +6,7 @@
   width: 315px;
   position: relative;
 
-  &.waypoint-separator {
+  .waypoint-separator {
     position: relative;
     opacity: 0.6;
     flex-grow: 1;
@@ -23,13 +23,13 @@
       @apply bg-grey-40;
     }
   }
-  &.waypoint-name {
+  .waypoint-name {
     max-width: 190px;
     text-overflow: ellipsis;
     white-space: nowrap;
     overflow: hidden;
   }
-  &.waypoint-ch {
+  .waypoint-ch {
     font-size: 0.875rem;
     margin: 0 2px;
     width: 1rem;
@@ -40,7 +40,7 @@
     }
   }
 
-  &.waypoint-type {
+  .waypoint-type {
     width: 1rem;
     height: 16px;
     position: relative;
@@ -60,7 +60,7 @@
       @apply bg-grey-80;
     }
   }
-  &.waypoint-position {
+  .waypoint-position {
     @apply text-grey-50;
     font-size: 12px;
     font-weight: 400;
@@ -101,7 +101,7 @@
    * doesn't render subpixel wide lines):
    */
 
-  &.waypoint-separator::after,
+  .waypoint-separator::after,
   &::after {
     height: 0.5px;
     margin-bottom: -0.25px;

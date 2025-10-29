@@ -133,7 +133,7 @@
       margin-left: 16px;
     }
 
-    &.settings-panel-section-title {
+    .settings-panel-section-title {
       height: 1.5rem;
       line-height: 1.5rem;
       font-size: 1rem;
@@ -148,12 +148,12 @@
     padding-bottom: 0.3125rem;
     margin-bottom: 0.25rem;
 
-    &.selection-checkbox {
+    .selection-checkbox {
       height: 1.125rem;
       margin-left: 0.5rem;
     }
 
-    &.selection-label {
+    .selection-label {
       font-weight: 400;
       margin-left: 0.5rem;
     }
