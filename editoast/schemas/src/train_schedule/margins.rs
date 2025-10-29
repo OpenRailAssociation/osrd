@@ -44,12 +44,16 @@ impl Serialize for Margins {
     }
 }
 
-#[derive(Debug, Copy, Clone, PartialEq, Educe, ToSchema)]
-#[educe(Hash, Default)]
+#[derive(Debug, Copy, Clone, Educe, ToSchema)]
+#[educe(Hash, Default, PartialEq, Eq)]
 pub enum MarginValue {
     #[educe(Default)]
-    Percentage(#[educe(Hash(method(common::hash_float::<3,_>)))] f64),
-    MinPer100Km(#[educe(Hash(method(common::hash_float::<3,_>)))] f64),
+    Percentage(
+        #[educe(Hash(method(common::hash_float::<3,_>)), PartialEq(method(common::float_eq)))] f64,
+    ),
+    MinPer100Km(
+        #[educe(Hash(method(common::hash_float::<3,_>)), PartialEq(method(common::float_eq)))] f64,
+    ),
 }
 
 impl<'de> Deserialize<'de> for MarginValue {

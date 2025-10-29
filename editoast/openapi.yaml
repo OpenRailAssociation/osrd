@@ -15201,12 +15201,14 @@ components:
             comfort_acceleration:
               type: number
               format: double
+              description: Acceleration in m·s⁻²
             const_gamma:
               type: number
               format: double
-              description: |-
-                The constant gamma braking coefficient used when NOT circulating
-                under ETCS/ERTMS signaling system
+              description: |2-
+                 The constant gamma braking coefficient used when NOT circulating
+                 under ETCS/ERTMS signaling system
+                Acceleration in m·s⁻²
             effort_curves:
               $ref: '#/components/schemas/EffortCurves'
             electrical_power_startup_time:
@@ -15228,17 +15230,15 @@ components:
             length:
               type: integer
               format: int64
-              description: Length of the rolling stock
               minimum: 0
             mass:
               type: integer
               format: int64
-              description: Mass of the rolling stock
               minimum: 0
             max_speed:
               type: number
               format: double
-              description: Maximum speed of the rolling stock
+              description: Velocity in m·s⁻¹
             power_restrictions:
               type: object
               description: Mapping of power restriction code to power class
@@ -15260,6 +15260,7 @@ components:
             startup_acceleration:
               type: number
               format: double
+              description: Acceleration in m·s⁻²
             startup_time:
               type: integer
               format: int64

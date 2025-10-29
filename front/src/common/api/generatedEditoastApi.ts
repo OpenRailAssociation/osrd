@@ -4781,9 +4781,11 @@ export type CoreStdcmRequest = {
   path_items: CorePathItem[];
   physics_consist: {
     base_power_class?: string | null;
+    /** Acceleration in m·s⁻² */
     comfort_acceleration: number;
-    /** The constant gamma braking coefficient used when NOT circulating
-        under ETCS/ERTMS signaling system */
+    /**  The constant gamma braking coefficient used when NOT circulating
+         under ETCS/ERTMS signaling system
+        Acceleration in m·s⁻² */
     const_gamma: number;
     effort_curves: EffortCurves;
     /** The time the train takes before actually using electrical power.
@@ -4791,11 +4793,9 @@ export type CoreStdcmRequest = {
     electrical_power_startup_time?: number | null;
     etcs_brake_params?: null | EtcsBrakeParams;
     inertia_coefficient: number;
-    /** Length of the rolling stock */
     length: number;
-    /** Mass of the rolling stock */
     mass: number;
-    /** Maximum speed of the rolling stock */
+    /** Velocity in m·s⁻¹ */
     max_speed: number;
     /** Mapping of power restriction code to power class */
     power_restrictions?: {
@@ -4805,6 +4805,7 @@ export type CoreStdcmRequest = {
         Is null if the train is not electric or the value not specified. */
     raise_pantograph_time?: number | null;
     rolling_resistance: RollingResistance;
+    /** Acceleration in m·s⁻² */
     startup_acceleration: number;
     startup_time: number;
   };
