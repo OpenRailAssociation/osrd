@@ -23,7 +23,6 @@ use crate::rolling_stock::EffortCurves;
 use crate::rolling_stock::LoadingGaugeType;
 use crate::rolling_stock::RollingResistance;
 use crate::rolling_stock::RollingResistancePerWeight;
-use crate::rolling_stock::RollingStockSupportedSignalingSystems;
 use crate::rolling_stock::TowedRollingStock;
 use crate::rolling_stock::TrainMainCategories;
 use crate::rolling_stock::TrainMainCategory;
@@ -38,7 +37,7 @@ pub fn simple_rolling_stock() -> RollingStock {
     RollingStock {
         name: "SIMPLE_ROLLING_STOCK".to_string(),
         loading_gauge: LoadingGaugeType::G1,
-        supported_signaling_systems: RollingStockSupportedSignalingSystems(vec![]),
+        supported_signaling_systems: vec![],
         base_power_class: None,
         comfort_acceleration: units::meter_per_second_squared::new(0.1),
         inertia_coefficient: 1.10,
@@ -49,7 +48,6 @@ pub fn simple_rolling_stock() -> RollingStock {
         raise_pantograph_time: None,
         energy_sources: vec![],
         const_gamma: units::meter_per_second_squared::new(1.0),
-        etcs_brake_params: None,
         metadata: None,
         power_restrictions: HashMap::new(),
         railjson_version: "12".to_string(),

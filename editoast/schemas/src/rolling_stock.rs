@@ -18,11 +18,11 @@ pub use energy_source::SpeedDependantPower;
 mod etcs_brake_params;
 pub use etcs_brake_params::EtcsBrakeParams;
 
-mod supported_signaling_systems;
+mod supported_signaling_system;
 use serde::Deserializer;
 use serde::Serializer;
-pub use supported_signaling_systems::RollingStockSupportedSignalingSystems;
-pub use supported_signaling_systems::SignalingSystem;
+pub use supported_signaling_system::RollingStockSupportedSignalingSystem;
+pub use supported_signaling_system::SignalingSystem;
 
 mod rolling_stock_metadata;
 pub use rolling_stock_metadata::RollingStockMetadata;
@@ -60,7 +60,7 @@ use serde::Serialize;
 use std::collections::HashMap;
 use utoipa::ToSchema;
 
-pub const ROLLING_STOCK_RAILJSON_VERSION: &str = "3.3";
+pub const ROLLING_STOCK_RAILJSON_VERSION: &str = "3.4";
 
 pub fn default_rolling_stock_railjson_version() -> String {
     ROLLING_STOCK_RAILJSON_VERSION.to_string()
@@ -89,7 +89,6 @@ pub struct RollingStock {
     /// under ETCS/ERTMS signaling system
     #[serde(with = "units::meter_per_second_squared")]
     pub const_gamma: Deceleration,
-    pub etcs_brake_params: Option<EtcsBrakeParams>,
     pub inertia_coefficient: f64,
     #[serde(with = "units::kilogram")]
     pub mass: Mass,
@@ -111,7 +110,7 @@ pub struct RollingStock {
     #[schema(example = 15.0)]
     #[serde(default, with = "units::second::option")]
     pub raise_pantograph_time: Option<Time>,
-    pub supported_signaling_systems: RollingStockSupportedSignalingSystems,
+    pub supported_signaling_systems: Vec<RollingStockSupportedSignalingSystem>,
     #[schema(default = default_rolling_stock_railjson_version)]
     #[serde(default = "default_rolling_stock_railjson_version")]
     pub railjson_version: String,
@@ -119,6 +118,32 @@ pub struct RollingStock {
     pub metadata: Option<RollingStockMetadata>,
     pub primary_category: TrainMainCategory,
     pub other_categories: TrainMainCategories,
+}
+
+impl RollingStock {
+    pub fn supported_signaling_systems_list(&self) -> Vec<String> {
+        self.supported_signaling_systems
+            .iter()
+            .map(|s| s.to_string())
+            .collect()
+    }
+
+    pub fn has_etcs_level2(&self) -> bool {
+        self.supported_signaling_systems
+            .iter()
+            .any(|s| matches!(s, RollingStockSupportedSignalingSystem::EtcsLevel2 { .. }))
+    }
+
+    pub fn get_etcs_brake_params(&self) -> Option<EtcsBrakeParams> {
+        for signaling_system in &self.supported_signaling_systems {
+            if let RollingStockSupportedSignalingSystem::EtcsLevel2 { brake_params } =
+                signaling_system
+            {
+                return Some(brake_params.clone());
+            }
+        }
+        None
+    }
 }
 
 impl<'de> Deserialize<'de> for RollingStock {
@@ -151,6 +176,7 @@ impl<'de> Deserialize<'de> for RollingStock {
                 "invalid rolling-stock: primary_category: The primary_category cannot be listed in other_categories for rolling stocks.",
             ));
         }
+
         Ok(rolling_stock)
     }
 }
@@ -161,21 +187,5 @@ impl Serialize for RollingStock {
         S: Serializer,
     {
         RollingStock::serialize(self, serializer)
-    }
-}
-
-impl RollingStock {
-    /// Returns the supported signaling systems, including "ETCS_LEVEL2" if `etcs_brake_params` is set.
-    pub fn get_all_supported_signaling_systems(&self) -> Vec<String> {
-        let mut supported_signaling_systems: Vec<String> = self
-            .supported_signaling_systems
-            .0
-            .iter()
-            .map(|s| s.to_string())
-            .collect();
-        if self.etcs_brake_params.is_some() {
-            supported_signaling_systems.push("ETCS_LEVEL2".into());
-        }
-        supported_signaling_systems
     }
 }

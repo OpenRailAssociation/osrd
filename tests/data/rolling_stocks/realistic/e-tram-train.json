@@ -127,7 +127,6 @@
   "startup_acceleration": 0.05,
   "comfort_acceleration": 0.3,
   "const_gamma": 0.7,
-  "etcs_brake_params": null,
   "inertia_coefficient": 1.04,
   "base_power_class": "1",
   "mass": 92000.0,

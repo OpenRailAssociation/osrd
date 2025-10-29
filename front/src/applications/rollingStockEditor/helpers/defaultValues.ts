@@ -73,7 +73,6 @@ export const getRollingStockEditorDefaultValues = (
           value: msToKmh(rollingStockData.max_speed), // The speed received is in m/s and should appear in km/h.
         },
         startupTime: rollingStockData.startup_time,
-        etcsBrakeParams: rollingStockData.etcs_brake_params ?? undefined,
         startupAcceleration: rollingStockData.startup_acceleration,
         comfortAcceleration: rollingStockData.comfort_acceleration,
         constGamma: rollingStockData.const_gamma,

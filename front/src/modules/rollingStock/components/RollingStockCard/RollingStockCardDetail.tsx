@@ -1,10 +1,11 @@
 import { useEffect } from 'react';
 
 import cx from 'classnames';
-import { isEmpty, uniq } from 'lodash';
+import { isEmpty, isString, uniq } from 'lodash';
 import { useTranslation } from 'react-i18next';
 
 import { ETCS_LEVEL2_SIGNALING_SYSTEM } from 'applications/rollingStockEditor/consts';
+import { isEtcsLevel2SignalingSystem } from 'applications/rollingStockEditor/helpers/utils';
 import type { EffortCurveForms } from 'applications/rollingStockEditor/types';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { Comfort, RollingStockWithLiveries } from 'common/api/osrdEditoastApi';
@@ -158,8 +159,10 @@ export default function RollingStockCardDetail({
             </td>
             <td>
               {[
-                ...rs.supported_signaling_systems,
-                ...(rs.etcs_brake_params ? [ETCS_LEVEL2_SIGNALING_SYSTEM] : []),
+                ...(rs.supported_signaling_systems.filter((s) => isString(s)) as string[]),
+                ...(rs.supported_signaling_systems.find(isEtcsLevel2SignalingSystem)
+                  ? [ETCS_LEVEL2_SIGNALING_SYSTEM]
+                  : []),
               ].join(', ')}
             </td>
           </tr>

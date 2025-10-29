@@ -14,12 +14,10 @@ use editoast_models::rolling_stock::TrainMainCategories;
 use editoast_models::rolling_stock::TrainMainCategory;
 use schemas::rolling_stock::EffortCurves;
 use schemas::rolling_stock::EnergySource;
-use schemas::rolling_stock::EtcsBrakeParams;
 use schemas::rolling_stock::LoadingGaugeType;
 use schemas::rolling_stock::RollingResistance;
 use schemas::rolling_stock::RollingStockMetadata;
-use schemas::rolling_stock::RollingStockSupportedSignalingSystems;
-use schemas::rolling_stock::SignalingSystem;
+use schemas::rolling_stock::RollingStockSupportedSignalingSystem;
 use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
@@ -63,9 +61,6 @@ pub struct RollingStock {
     #[serde(with = "units::meter_per_second_squared")]
     #[model(uom_unit = "units::meter_per_second_squared")]
     pub const_gamma: Deceleration,
-    #[model(json)]
-    #[schema(required)]
-    pub etcs_brake_params: Option<EtcsBrakeParams>,
     pub inertia_coefficient: f64,
     #[schema(required)]
     pub base_power_class: Option<String>,
@@ -90,9 +85,8 @@ pub struct RollingStock {
     #[model(uom_unit = "units::second::option")]
     pub raise_pantograph_time: Option<Time>,
     pub version: i64,
-    #[schema(value_type = Vec<SignalingSystem>)]
-    #[model(remote = "Vec<Option<String>>")]
-    pub supported_signaling_systems: RollingStockSupportedSignalingSystems,
+    #[model(json)]
+    pub supported_signaling_systems: Vec<RollingStockSupportedSignalingSystem>,
     pub primary_category: TrainMainCategory,
     #[model(remote = "Vec<Option<TrainMainCategory>>")]
     pub other_categories: TrainMainCategories,
@@ -143,7 +137,6 @@ impl From<RollingStock> for schemas::RollingStock {
             startup_acceleration: rolling_stock.startup_acceleration,
             comfort_acceleration: rolling_stock.comfort_acceleration,
             const_gamma: rolling_stock.const_gamma,
-            etcs_brake_params: rolling_stock.etcs_brake_params,
             inertia_coefficient: rolling_stock.inertia_coefficient,
             mass: rolling_stock.mass,
             rolling_resistance: rolling_stock.rolling_resistance,
@@ -179,7 +172,6 @@ impl From<schemas::RollingStock> for RollingStockChangeset {
             .startup_acceleration(rolling_stock.startup_acceleration)
             .comfort_acceleration(rolling_stock.comfort_acceleration)
             .const_gamma(rolling_stock.const_gamma)
-            .etcs_brake_params(rolling_stock.etcs_brake_params)
             .inertia_coefficient(rolling_stock.inertia_coefficient)
             .mass(rolling_stock.mass)
             .rolling_resistance(rolling_stock.rolling_resistance)

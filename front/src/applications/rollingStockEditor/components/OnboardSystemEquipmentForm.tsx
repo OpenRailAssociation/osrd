@@ -1,6 +1,7 @@
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 
+import type { RollingStockSupportedSignalingSystem } from 'common/api/osrdEditoastApi';
 import CheckboxRadioSNCF from 'common/BootstrapSNCF/CheckboxRadioSNCF';
 
 import { DEFAULT_SIGNALING_SYSTEMS, ETCS_LEVEL2_SIGNALING_SYSTEM } from '../consts';
@@ -33,7 +34,7 @@ const RollingStockEditorOnboardSystemEquipmentForm = ({
 
   const updateSigSystemsList = (sigSystem: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
     const newList = e.target.checked
-      ? [...supportedSignalingSystems, sigSystem]
+      ? [...supportedSignalingSystems, sigSystem as RollingStockSupportedSignalingSystem]
       : supportedSignalingSystems.filter((v) => v !== sigSystem);
     setRollingStockValues((prevRollingStockValues) => ({
       ...prevRollingStockValues,

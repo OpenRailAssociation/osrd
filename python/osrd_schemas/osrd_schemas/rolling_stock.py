@@ -12,7 +12,7 @@ from pydantic import (
 
 from .infra import LoadingGaugeType
 
-RAILJSON_ROLLING_STOCK_VERSION_TYPE = Literal["3.3"]
+RAILJSON_ROLLING_STOCK_VERSION_TYPE = Literal["3.4"]
 RAILJSON_ROLLING_STOCK_VERSION = get_args(RAILJSON_ROLLING_STOCK_VERSION_TYPE)[0]
 
 
@@ -167,6 +167,20 @@ class EtcsBrakeParams(BaseModel, extra="forbid"):
         ge=0, description="T_bs2: time service break in s used for SBI2 computation"
     )
     t_be: float = Field(ge=0, description="T_be: safe brake build up time in s")
+
+
+class SimpleSignalingSystem(str, Enum):
+    BAL = "BAL"
+    BAPR = "BAPR"
+    TVM300 = "TVM300"
+    TVM430 = "TVM430"
+
+
+class EtcsSignalingSystem(BaseModel, extra="forbid"):
+    brake_params: EtcsBrakeParams
+
+
+SupportedSignalingSystem = Union[SimpleSignalingSystem, EtcsSignalingSystem]
 
 
 class RollingStockLivery(BaseModel):
@@ -344,7 +358,7 @@ class RollingStock(BaseModel, extra="forbid"):
         description="The time it takes to raise this train's pantograph in s. Is null if the train is not electric.",
         default=None,
     )
-    supported_signaling_systems: List[str] = Field(default_factory=list)
+    supported_signaling_systems: List[SupportedSignalingSystem] = Field(default_factory=list)
     primary_category: TrainMainCategory = Field(
         description="The primary category of the rolling stock."
     )

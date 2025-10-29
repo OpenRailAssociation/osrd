@@ -148,7 +148,6 @@ describe('formatTimetableItemPayload', () => {
         startup_acceleration: 0.06,
         comfort_acceleration: 0.54,
         const_gamma: 0.5,
-        etcs_brake_params: null,
         inertia_coefficient: 1.05,
         base_power_class: '5',
         mass: 900000.0,

@@ -3738,6 +3738,42 @@ export type EnergySource =
       max_input_power: SpeedDependantPower;
       max_output_power: SpeedDependantPower;
     };
+export type RollingStockMetadata = {
+  detail: string;
+  family: string;
+  grouping: string;
+  number: string;
+  reference: string;
+  series: string;
+  subseries: string;
+  type: string;
+  unit: string;
+};
+export type TrainMainCategory =
+  | 'HIGH_SPEED_TRAIN'
+  | 'INTERCITY_TRAIN'
+  | 'REGIONAL_TRAIN'
+  | 'NIGHT_TRAIN'
+  | 'COMMUTER_TRAIN'
+  | 'FREIGHT_TRAIN'
+  | 'FAST_FREIGHT_TRAIN'
+  | 'TRAM_TRAIN'
+  | 'TOURISTIC_TRAIN'
+  | 'WORK_TRAIN';
+export type TrainMainCategories = TrainMainCategory[];
+export type RollingResistance = {
+  /**  Solid friction
+    Solid Friction in N */
+  A: number;
+  /**  Viscosity friction in N·(m/s)⁻¹; N = kg⋅m⋅s⁻²
+    Viscosity friction in kg·s⁻¹ */
+  B: number;
+  /**  Aerodynamic drag in N·(m/s)⁻²; N = kg⋅m⋅s⁻²
+    Aerodynamic drag in kg·m⁻¹ */
+  C: number;
+  type: string;
+};
+export type SignalingSystem = 'BAL' | 'BAPR' | 'TVM300' | 'TVM430';
 export type SpeedIntervalValueCurve = {
   /** Speed in m/s (sorted ascending)
     External bounds are implicit to [0, rolling_stock.max_speed] */
@@ -3776,43 +3812,11 @@ export type EtcsBrakeParams = {
   /** T_traction_cut_off: time delay in s from the traction cut-off command to the moment the acceleration due to traction is zero */
   t_traction_cut_off: number;
 };
-export type RollingStockMetadata = {
-  detail: string;
-  family: string;
-  grouping: string;
-  number: string;
-  reference: string;
-  series: string;
-  subseries: string;
-  type: string;
-  unit: string;
-};
-export type TrainMainCategory =
-  | 'HIGH_SPEED_TRAIN'
-  | 'INTERCITY_TRAIN'
-  | 'REGIONAL_TRAIN'
-  | 'NIGHT_TRAIN'
-  | 'COMMUTER_TRAIN'
-  | 'FREIGHT_TRAIN'
-  | 'FAST_FREIGHT_TRAIN'
-  | 'TRAM_TRAIN'
-  | 'TOURISTIC_TRAIN'
-  | 'WORK_TRAIN';
-export type TrainMainCategories = TrainMainCategory[];
-export type RollingResistance = {
-  /**  Solid friction
-    Solid Friction in N */
-  A: number;
-  /**  Viscosity friction in N·(m/s)⁻¹; N = kg⋅m⋅s⁻²
-    Viscosity friction in kg·s⁻¹ */
-  B: number;
-  /**  Aerodynamic drag in N·(m/s)⁻²; N = kg⋅m⋅s⁻²
-    Aerodynamic drag in kg·m⁻¹ */
-  C: number;
-  type: string;
-};
-export type SignalingSystem = 'BAL' | 'BAPR' | 'TVM300' | 'TVM430';
-export type RollingStockSupportedSignalingSystems = SignalingSystem[];
+export type RollingStockSupportedSignalingSystem =
+  | SignalingSystem
+  | {
+      brake_params: EtcsBrakeParams;
+    };
 export type LightRollingStock = {
   base_power_class: string | null;
   /** Acceleration in m·s⁻² */
@@ -3821,7 +3825,6 @@ export type LightRollingStock = {
   const_gamma: number;
   effort_curves: LightEffortCurves;
   energy_sources: EnergySource[];
-  etcs_brake_params: null | EtcsBrakeParams;
   id: number;
   inertia_coefficient: number;
   /** Length in m */
@@ -3845,7 +3848,7 @@ export type LightRollingStock = {
   startup_acceleration: number;
   /** Duration in s */
   startup_time: number;
-  supported_signaling_systems: RollingStockSupportedSignalingSystems;
+  supported_signaling_systems: RollingStockSupportedSignalingSystem[];
 };
 export type RollingStockLivery = {
   compound_image_id?: number | null;
@@ -4503,7 +4506,6 @@ export type RollingStock = {
   /** Duration in s */
   electrical_power_startup_time: number | null;
   energy_sources: EnergySource[];
-  etcs_brake_params: null | EtcsBrakeParams;
   id: number;
   inertia_coefficient: number;
   /** Length in m */
@@ -4529,7 +4531,7 @@ export type RollingStock = {
   startup_acceleration: number;
   /** Duration in s */
   startup_time: number;
-  supported_signaling_systems: SignalingSystem[];
+  supported_signaling_systems: RollingStockSupportedSignalingSystem[];
   version: number;
 };
 export type RollingStockForm = {
@@ -4546,7 +4548,6 @@ export type RollingStockForm = {
     Duration in s */
   electrical_power_startup_time?: number | null;
   energy_sources?: EnergySource[];
-  etcs_brake_params?: null | EtcsBrakeParams;
   inertia_coefficient: number;
   /** Length in m */
   length: number;
@@ -4573,7 +4574,7 @@ export type RollingStockForm = {
   startup_acceleration: number;
   /** Duration in s */
   startup_time: number;
-  supported_signaling_systems: RollingStockSupportedSignalingSystems;
+  supported_signaling_systems: RollingStockSupportedSignalingSystem[];
 };
 export type RollingStockWithLiveries = RollingStock & {
   liveries: RollingStockLivery[];

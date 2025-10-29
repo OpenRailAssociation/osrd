@@ -10,7 +10,6 @@
     "mass": 900000.0,
     "loading_gauge": "G1",
     "const_gamma": 0.5,
-    "etcs_brake_params": null,
     "rolling_resistance": {
         "type": "davis",
         "A": 5400,

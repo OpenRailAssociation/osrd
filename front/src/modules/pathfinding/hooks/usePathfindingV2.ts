@@ -60,7 +60,9 @@ const usePathfindingV2 = () => {
           rolling_stock_is_thermal: isThermal,
           rolling_stock_loading_gauge: rollingStock.loading_gauge,
           rolling_stock_supported_electrifications: supportedElectrirications,
-          rolling_stock_supported_signaling_systems: rollingStock.supported_signaling_systems,
+          rolling_stock_supported_signaling_systems: rollingStock.supported_signaling_systems.map(
+            (s) => (isEtcsLevel2SignalingSystem(s) ? ETCS_LEVEL2_SIGNALING_SYSTEM : s)
+          ) as string[],
           rolling_stock_maximum_speed: rollingStock.max_speed,
           rolling_stock_length: rollingStock.length,
           speed_limit_tag: speedLimitTag,

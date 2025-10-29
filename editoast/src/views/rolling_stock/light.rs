@@ -18,12 +18,11 @@ use editoast_models::rolling_stock::TrainMainCategory;
 use itertools::Itertools as _;
 use schemas::rolling_stock::EffortCurves;
 use schemas::rolling_stock::EnergySource;
-use schemas::rolling_stock::EtcsBrakeParams;
 use schemas::rolling_stock::LoadingGaugeType;
 use schemas::rolling_stock::ModeEffortCurves;
 use schemas::rolling_stock::RollingResistance;
 use schemas::rolling_stock::RollingStockMetadata;
-use schemas::rolling_stock::RollingStockSupportedSignalingSystems;
+use schemas::rolling_stock::RollingStockSupportedSignalingSystem;
 use serde::Serialize;
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -218,8 +217,6 @@ struct LightRollingStock {
     comfort_acceleration: Acceleration,
     #[serde(with = "units::meter_per_second_squared")]
     const_gamma: Deceleration,
-    #[schema(required)]
-    etcs_brake_params: Option<EtcsBrakeParams>,
     inertia_coefficient: f64,
     #[serde(with = "units::kilogram")]
     mass: Mass,
@@ -229,7 +226,7 @@ struct LightRollingStock {
     metadata: Option<RollingStockMetadata>,
     power_restrictions: HashMap<String, String>,
     energy_sources: Vec<EnergySource>,
-    supported_signaling_systems: RollingStockSupportedSignalingSystems,
+    supported_signaling_systems: Vec<RollingStockSupportedSignalingSystem>,
     primary_category: TrainMainCategory,
     other_categories: TrainMainCategories,
 }
@@ -248,7 +245,6 @@ impl From<RollingStock> for LightRollingStock {
             startup_acceleration,
             comfort_acceleration,
             const_gamma,
-            etcs_brake_params,
             inertia_coefficient,
             base_power_class,
             mass,
@@ -276,7 +272,6 @@ impl From<RollingStock> for LightRollingStock {
             startup_acceleration,
             comfort_acceleration,
             const_gamma,
-            etcs_brake_params,
             inertia_coefficient,
             mass,
             rolling_resistance,

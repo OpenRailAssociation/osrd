@@ -39,7 +39,7 @@ use schemas::rolling_stock::EffortCurves;
 use schemas::rolling_stock::LoadingGaugeType;
 use schemas::rolling_stock::RollingResistance;
 use schemas::rolling_stock::RollingResistancePerWeight;
-use schemas::rolling_stock::RollingStockSupportedSignalingSystems;
+use schemas::rolling_stock::RollingStockSupportedSignalingSystem;
 use schemas::rolling_stock::SubCategoryColor;
 use schemas::rolling_stock::TowedRollingStock;
 use schemas::rolling_stock::TrainMainCategories;
