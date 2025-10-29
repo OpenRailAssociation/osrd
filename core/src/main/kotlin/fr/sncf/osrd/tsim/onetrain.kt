@@ -29,6 +29,7 @@ import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 import fr.sncf.osrd.utils.units.metersPerSecond
 import fr.sncf.osrd.utils.units.seconds
+import kotlin.math.min
 
 fun onetrain(
     infra: FullInfra,
@@ -58,6 +59,12 @@ fun onetrain(
     val effortCurveMap = curvesAndConditions.curves
     val ctx = Context(path = trainPath, stock = rollingStock, effortCurveMap = effortCurveMap)
 
+    val stops =
+        schedule.mapNotNull { item ->
+            val stopFor = item.stopFor ?: return@mapNotNull null
+            Pair(item.pathOffset.meters, stopFor.seconds)
+        }
+
     var mrsp: RangeMap<Meters, MetersPerSecond> = TreeRangeMap.create()
     mrsp.put(Range.all(), rollingStock.maxSpeed)
     if (useSpeedLimits) {
@@ -81,6 +88,10 @@ fun onetrain(
         }
     }
     mrsp = mrsp.withStockLength(rollingStock.length)
+    for ((position, _) in stops) {
+        mrsp.put(Range.closed(position, position), 0.0)
+    }
+
     val neutralZones = NeutralZonesWithPantographs() // TODO
     val instructions = Instructions(mrsp, neutralZones)
 
@@ -88,15 +99,17 @@ fun onetrain(
     var position = rollingStock.length
     var speed = initialSpeed
     val envelopePoints = mutableListOf(EnvelopePoint(time, speed, position))
-    while (position < trainPath.length) {
-        val s = step(ctx, instructions, timeStep, position, speed)
-        if (s.positionDelta < 1e-2) {
-            throw Exception("le train c stopper...")
+    for ((stopPosition, stopDuration) in stops) {
+        while (!(stopPosition approxLowerThan position)) {
+            val s = step(ctx, instructions, timeStep, position, speed)
+            assert(s.positionDelta > 1e-6) { "le train c stopper.... ${s.positionDelta}" }
+            time += s.timeDelta
+            position += s.positionDelta
+            speed = s.endSpeed
+            envelopePoints.add(EnvelopePoint(time, speed, position))
         }
-        time += s.timeDelta
-        position += s.positionDelta
-        speed = s.endSpeed
-        envelopePoints.add(EnvelopePoint(time, speed, position))
+        mrsp.remove(Range.closed(stopPosition, stopPosition))
+        time += stopDuration
     }
 
     val simplifiedPoints = simplifyEnvelopePoints(envelopePoints, 5.0, 0.2)
@@ -113,7 +126,7 @@ fun onetrain(
                     var res = simplifiedPoints.binarySearchBy(position) { point -> point.position }
                     if (res < 0) {
                         // TODO offset by one to have the point after arival instead of before?
-                        res = -res - 1
+                        res = min(-res - 1, simplifiedPoints.size - 1)
                     }
                     simplifiedPoints[res].time.seconds
                 },
