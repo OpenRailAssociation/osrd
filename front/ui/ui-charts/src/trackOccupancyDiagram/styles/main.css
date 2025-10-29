@@ -43,7 +43,7 @@
     justify-content: flex-end;
     align-items: center;
 
-    &.track-line {
+    .track-line {
       margin-right: 16px;
       font-family: 'IBM Plex Sans';
       font-weight: 400;
@@ -51,7 +51,7 @@
       @apply text-grey-50;
     }
 
-    &.track-name {
+    .track-name {
       height: 24px;
       @apply bg-grey-70;
       border-radius: 4px;
@@ -65,7 +65,7 @@
       @apply text-white-100;
     }
 
-    &.track-rail {
+    .track-rail {
       align-self: center;
       height: 9px;
       width: 17px;
