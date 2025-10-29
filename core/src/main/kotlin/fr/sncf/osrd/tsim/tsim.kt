@@ -9,6 +9,7 @@ import fr.sncf.osrd.envelope_sim.etcs.BrakingType
 import fr.sncf.osrd.path.interfaces.PhysicsPath
 import fr.sncf.osrd.train.RollingStock
 import java.util.function.BiFunction
+import kotlin.math.abs
 
 typealias Seconds = Double
 
@@ -165,6 +166,28 @@ internal class DecelerationTarget(
 )
 
 /**
+ * Given two lines, return the X coordinate where they intersect, or `null` if there is no or an
+ * infinite amount of interesection points.
+ *
+ * The first line is defined as passing through points `(x1,a1)` and `(x2,a2)`. The second line is
+ * defined as passing through points `(x1,b1)` and `(x2,b2)`.
+ */
+private fun intersectAt(
+    x1: Double,
+    x2: Double,
+    a1: Double,
+    a2: Double,
+    b1: Double,
+    b2: Double,
+): Double? {
+    if (a1 - a2 == b1 - b2) {
+        // The two lines are parallel
+        return null
+    }
+    return x1 + (x2 - x1) * (a1 - b1) / (b2 - b1 + a1 - a2)
+}
+
+/**
  * A 2D curve.
  *
  * This class represents a list of 2D points `(xs[i],ys[i])` connected by straight lines. [xs] and
@@ -300,12 +323,46 @@ fun step(
     require(position >= 0.0) { "position must be positive" }
     require(speed >= 0.0) { "speed must be positive" }
 
-    var action = Action.ACCELERATE
+    val mrsp = instructions.mrsp.subRangeMap(Range.atLeast(position))
+    val currentSpeedLimit = mrsp.get(position) ?: Double.POSITIVE_INFINITY
 
-    val mrsp = instructions.mrsp.subRangeMap(Range.greaterThan(position))
-    if ((mrsp.get(position) ?: Double.POSITIVE_INFINITY) < speed) {
-        action = Action.BRAKE
-    } else {
+    var action = Action.ACCELERATE
+    // We may choose to stop the integration early, to snap to a deceleration curve, or a point of
+    // interest where the behavior of the rolling stock may change.
+    var minDT = dt
+    var snappedStep: IntegrationStep? = null
+
+    if (speed approxLowerThan currentSpeedLimit) {
+        // The train is going slower than allowed, but may need to brake in order to
+        // respect an upcoming speed limit. Compute the deceleration curves for upcoming
+        // speed limits and check if the stock's speed is above, or accelerate.
+
+        var startSpeed = speed
+
+        if (speed approxEqualTo currentSpeedLimit && action == Action.ACCELERATE) {
+            // The stock has power to maintain its speed and it has reached its speed limit.
+            // Snap the speed to the speed limit because of floating point errors
+            action = Action.MAINTAIN
+            startSpeed = currentSpeedLimit
+            // TODO compute the time when the current speed limit expires and we can accelerate
+            // again
+        } else {
+            assert(speed < currentSpeedLimit)
+        }
+
+        // The speed and position of the train if we choose not to brake.
+        val evsimCtx = EnvelopeSimContext(ctx.stock, ctx.path, dt, ctx.effortCurveMap)
+        val s =
+            TrainPhysicsIntegrator.step(
+                evsimCtx,
+                position,
+                startSpeed,
+                action,
+                1.0,
+                BrakingType.CONSTANT,
+            )
+        assert(s.timeDelta == dt)
+        val endPosition = position + s.positionDelta
         for (speedRestriction in mrsp.asMapOfRanges()) {
             val range = speedRestriction.key
             val maxSpeed = speedRestriction.value
@@ -316,19 +373,82 @@ fun step(
                     speed = maxSpeed,
                 )
             val c = ctx.decelerationCurve(target, dt)
-            val speedLimitAtStockHead = c.lerp(position)
-            if (speed >= speedLimitAtStockHead) {
+            val speedLimit = c.lerp(position)
+            if (!(speed approxLowerThan speedLimit)) {
+                // The stock is already going too fast to reach the speed limit in time.
+                // Since all curves are done with the same [BrakingType], we can assume the stock
+                // will need to brake until at least dt anyway.
                 action = Action.BRAKE
                 break
             }
+
+            val speedAfterDT = s.endSpeed
+            val speedLimitAfterDT = c.lerp(endPosition)
+            if (speedAfterDT approxLowerThan speedLimitAfterDT) {
+                // The stock can accelerate throughout the time step and still respect the
+                // deceleration curve
+                continue
+            }
+
+            // Assume the deceleration curve is a straight line between [position] and [endPosition]
+            // [reachLimitAtPosition] is always non-null because of the earlier branches
+            val reachLimitAtPosition =
+                intersectAt(
+                    position,
+                    endPosition,
+                    speed,
+                    speedAfterDT,
+                    speedLimit,
+                    speedLimitAfterDT,
+                )!!
+
+            // Assume the position of the stock follows a straight line between now and now+[dt]
+            // It's actually a second order polynomial but we don't have a third point to
+            // interpolate 🤓
+            val reachLimitAtDT = dt * (reachLimitAtPosition - position) / s.positionDelta
+            assert(reachLimitAtDT != 0.0)
+
+            if (minDT < reachLimitAtDT) {
+                continue
+            }
+            minDT = reachLimitAtDT
+
+            // Snap the rolling stock to the deceleration curve or speed limit because of floating
+            // point errors
+            snappedStep =
+                IntegrationStep.fromNaiveStep(
+                    minDT,
+                    reachLimitAtPosition - position,
+                    startSpeed,
+                    speedLimitAfterDT,
+                    (speedLimitAfterDT - startSpeed) / minDT,
+                    1.0,
+                )
         }
+    } else {
+        // The stock is already rolling faster than allowed, brake.
+        // TODO compute when we can stop braking and trim the time step
+        action = Action.BRAKE
     }
 
-    val evsimCtx = EnvelopeSimContext(ctx.stock, ctx.path, dt, ctx.effortCurveMap)
-    val s =
-        TrainPhysicsIntegrator.step(evsimCtx, position, speed, action, 1.0, BrakingType.CONSTANT)
+    if (snappedStep == null) {
+        val evsimCtx = EnvelopeSimContext(ctx.stock, ctx.path, dt, ctx.effortCurveMap)
+        snappedStep =
+            TrainPhysicsIntegrator.step(
+                evsimCtx,
+                position,
+                speed,
+                action,
+                1.0,
+                BrakingType.CONSTANT,
+            )
+    }
 
-    // TODO correct step s according to mrsp
-
-    return s
+    return snappedStep
 }
+
+/** Whether [this] and [that] are sufficiently close to each other. */
+internal infix fun Double.approxEqualTo(that: Double): Boolean = abs(this - that) < 1e-4
+
+/** Whether [this] is lower, equal or slightly larger than [that]. */
+internal infix fun Double.approxLowerThan(that: Double): Boolean = this - that < 1e-4
