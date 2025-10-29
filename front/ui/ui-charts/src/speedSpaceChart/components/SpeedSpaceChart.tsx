@@ -2,6 +2,7 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { Slider } from '@osrd-project/ui-core';
 
+import type { Data, Store } from '../types';
 import InteractionButtons from './common/InteractionButtons';
 import SettingsPanel from './common/SettingsPanel';
 import { LINEAR_LAYERS_HEIGHTS, MARGINS, ZOOM_CONFIG } from './const';
@@ -21,7 +22,6 @@ import {
   TickLayerYRight,
 } from './layers/index';
 import { clamp, getGraphOffsets } from './utils';
-import type { Data, Store } from '../types';
 
 export type SpeedSpaceChartProps = {
   width: number;
