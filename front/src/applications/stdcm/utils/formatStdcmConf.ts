@@ -26,13 +26,14 @@ type ValidStdcmConfig = {
   totalMass?: number;
   totalLength?: number;
   maxSpeed?: number;
-  loadingGauge: LoadingGaugeType;
+  loadingGauge?: LoadingGaugeType;
   margin?: StandardAllowance;
   gridMarginBefore?: Duration;
   gridMarginAfter?: Duration;
   workScheduleGroupId?: number;
   temporarySpeedLimitGroupId?: number;
   electricalProfileSetId?: number;
+  allowedTrackSections?: string[];
 };
 
 export const checkStdcmConf = (
@@ -57,8 +58,14 @@ export const checkStdcmConf = (
     totalMass,
     maxSpeed,
     loadingGauge,
+    trackSectionIdsByLoadingGauge,
   } = osrdconf;
   let error = false;
+
+  const allowedTrackSections =
+    trackSectionIdsByLoadingGauge && loadingGauge
+      ? trackSectionIdsByLoadingGauge[loadingGauge]
+      : undefined;
 
   const origin = pathSteps.at(0)!;
   if (origin.isVia) {
@@ -204,6 +211,7 @@ export const checkStdcmConf = (
     workScheduleGroupId,
     temporarySpeedLimitGroupId,
     electricalProfileSetId,
+    allowedTrackSections,
   };
 };
 
@@ -229,5 +237,6 @@ export const formatStdcmPayload = (
     temporary_speed_limit_group_id: validConfig.temporarySpeedLimitGroupId,
     electrical_profile_set_id: validConfig.electricalProfileSetId,
     loading_gauge_type: validConfig.loadingGauge,
+    allowed_track_sections: validConfig.allowedTrackSections,
   },
 });

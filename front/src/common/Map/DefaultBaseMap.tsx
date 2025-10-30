@@ -26,6 +26,7 @@ type DefaultBaseMapProps = {
   updateViewport: (viewPort: Viewport) => void;
   highlightedArea?: Geometry;
   highlightedOperationalPoints?: number[];
+  highlightedTrackSections?: string[];
 };
 
 const ZOOM_DEFAULT = 5;
@@ -46,6 +47,7 @@ const DefaultBaseMap = ({
   updateViewport,
   highlightedArea,
   highlightedOperationalPoints,
+  highlightedTrackSections,
 }: PropsWithChildren<DefaultBaseMapProps>) => {
   const mapRef = useRef<MapRef | null>(null);
   const { viewport } = mapSettings;
@@ -113,6 +115,7 @@ const DefaultBaseMap = ({
         mapSettings={mapSettings}
         highlightedArea={highlightedArea}
         highlightedOperationalPoints={highlightedOperationalPoints}
+        highlightedTrackSections={highlightedTrackSections}
       >
         <ItineraryLayer
           layerOrder={LAYER_GROUPS_ORDER[LAYERS.PATH.GROUP]}

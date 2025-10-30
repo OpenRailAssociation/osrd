@@ -23,6 +23,7 @@ type InfraObjectLayersProps = {
   layersSettings: LayersSettings;
   highlightedArea?: Geometry;
   highlightedOperationalPoints?: number[];
+  highlightedTrackSections?: string[];
 };
 
 const InfraObjectLayers = ({
@@ -32,6 +33,7 @@ const InfraObjectLayers = ({
   layersSettings,
   highlightedArea,
   highlightedOperationalPoints,
+  highlightedTrackSections,
 }: InfraObjectLayersProps) => (
   <>
     <TracksGeographic
@@ -39,6 +41,7 @@ const InfraObjectLayers = ({
       layerOrder={LAYER_GROUPS_ORDER[LAYERS.TRACKS.GROUP]}
       infraID={infraId}
       highlightedArea={highlightedArea}
+      highlightedTrackSections={highlightedTrackSections}
     />
     {layersSettings.routes && (
       <Routes

@@ -162,8 +162,8 @@ export const stdcmConfSlice = createSlice({
           | 'projectID'
           | 'studyID'
           | 'scenarioID'
-          | 'activePerimeter'
           | 'operationalPoints'
+          | 'trackSectionIdsByLoadingGauge'
           | 'speedLimitTags'
           | 'defaultSpeedLimitTag',
           'infraID' | 'timetableID'
@@ -181,8 +181,8 @@ export const stdcmConfSlice = createSlice({
       state.projectID = action.payload.projectID;
       state.studyID = action.payload.studyID;
       state.scenarioID = action.payload.scenarioID;
-      state.activePerimeter = action.payload.activePerimeter;
       state.operationalPoints = action.payload.operationalPoints;
+      state.trackSectionIdsByLoadingGauge = action.payload.trackSectionIdsByLoadingGauge;
       state.speedLimitTags = action.payload.speedLimitTags;
       state.defaultSpeedLimitTag = action.payload.defaultSpeedLimitTag;
 
@@ -208,12 +208,6 @@ export const stdcmConfSlice = createSlice({
       }
 
       state.stdcmPathSteps = [newOrigin, ...state.stdcmPathSteps.slice(1, -1), newDestination];
-    },
-    updateStdcmEnvironmentActiveArea(
-      state: Draft<OsrdStdcmConfState>,
-      action: PayloadAction<OsrdStdcmConfState['activePerimeter']>
-    ) {
-      state.activePerimeter = action.payload;
     },
     updateStdcmPathSteps(
       state: Draft<OsrdStdcmConfState>,
@@ -324,7 +318,6 @@ export const {
   updateGridMarginBefore,
   updateStandardAllowance,
   updateStdcmEnvironment,
-  updateStdcmEnvironmentActiveArea,
   updateStdcmPathSteps,
   updateStdcmPathStep,
   addStdcmVia,

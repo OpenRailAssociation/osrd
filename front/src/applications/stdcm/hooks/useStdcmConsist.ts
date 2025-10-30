@@ -64,7 +64,7 @@ const useStdcmConsist = () => {
   };
 
   const loadingGauge = useSelector(getLoadingGauge);
-  const onLoadingGaugeChange = (option: LoadingGaugeType) => {
+  const onLoadingGaugeChange = (option: LoadingGaugeType | undefined) => {
     dispatch(updateLoadingGauge(option));
   };
 
