@@ -73,6 +73,7 @@ interface SignalingSimulator {
         followingZoneState: ZoneStatus,
         followingSignalState: SigState? = null,
         followingSignalSettings: SigSettings? = null,
+        firstZone: ZoneId? = null,
     ): Map<LogicalSignalId, SigState>
 
     fun evaluate(
