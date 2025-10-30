@@ -410,7 +410,7 @@ private fun convertRouteLocationToTrackLocation(
         if (mutOffset <= chunkLength.cast()) {
             val chunkOffset = infra.getTrackChunkOffset(chunk.value)
             val resultOffset =
-                if (chunk.direction == Direction.INCREASING)
+                if (chunk.direction == Direction.DECREASING)
                     chunkOffset.distance + chunkLength.distance - mutOffset.distance
                 else chunkOffset.distance + mutOffset.distance
             return TrackLocation(trackName, Offset(resultOffset))

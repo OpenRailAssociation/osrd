@@ -94,7 +94,7 @@ class AppendOnlyLinkedList<T>(private var lastNode: Node<T>? = null, var size: I
         return toList().toString()
     }
 
-    private fun iterateBackwards(): Sequence<T> {
+    fun iterateBackwards(): Sequence<T> {
         return iterateNodesBackwards().map { it.element }
     }
 

@@ -27,10 +27,7 @@ fun extendLookaheadUntil(input: InfraExplorer, minBlocks: Int): Collection<Infra
     val candidates = mutableListOf(input)
     while (candidates.isNotEmpty()) {
         val candidate = candidates.removeFirst()
-        if (
-            candidate.getIncrementalPath().pathComplete ||
-                candidate.getLookahead().size >= minBlocks
-        )
+        if (candidate.isPathComplete || candidate.getLookahead().size >= minBlocks)
             res.add(candidate)
         else candidates.addAll(candidate.cloneAndExtendLookahead())
     }
