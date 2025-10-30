@@ -89,7 +89,6 @@ data:
     provider_id = "{{ $provider.provider_id }}"
     {{- if eq $provider.type "Mocked" }}
     username = "{{ $provider.username }}"
-    require_login = {{ $provider.require_login }}
     {{- else if eq $provider.type "Bearer" }}
     [auth.providers.tokens]
     {{- range $key, $value := $provider.tokens }}
