@@ -188,7 +188,6 @@ pub(in crate::views) async fn post(
         db_pool,
         valkey_client,
         core_client,
-        config,
         ..
     }): State<AppState>,
     Extension(auth): AuthenticationExt,
@@ -203,8 +202,7 @@ pub(in crate::views) async fn post(
         return Err(AuthorizationError::Forbidden.into());
     }
 
-    let conn = db_pool.get().await?;
-    let mut valkey_conn = valkey_client.get_connection().await?;
+    let mut conn = db_pool.get().await?;
     let infra = Infra::retrieve_or_fail(conn.clone(), infra_id, || {
         PathfindingError::InfraNotFound { infra_id }
     })
@@ -218,32 +216,20 @@ pub(in crate::views) async fn post(
     })
     .await?;
 
-    Ok(Json(
-        pathfinding_blocks(
-            conn,
-            &mut valkey_conn,
-            core_client,
-            &infra,
-            path_input,
-            config.app_version.as_deref(),
-        )
-        .await?,
-    ))
-}
-
-/// Pathfinding computation given a path input
-async fn pathfinding_blocks(
-    conn: DbConnection,
-    valkey_conn: &mut cache::Connection,
-    core: Arc<CoreClient>,
-    infra: &Infra,
-    path_input: PathfindingInput,
-    app_version: Option<&str>,
-) -> Result<PathfindingResult> {
-    let mut path =
-        pathfinding_blocks_batch(conn, valkey_conn, core, infra, &[path_input], app_version)
-            .await?;
-    Ok(Arc::unwrap_or_clone(path.pop().unwrap()))
+    use core_task::Task as _;
+    let valkey_conn = valkey_client.get_connection().await?;
+    let path_items = path_input.path_items.iter().collect::<Vec<_>>();
+    let path_item_cache = PathItemCache::load(&mut conn, infra.id, &path_items).await?;
+    let request = match build_pathfinding_request(&path_input, &infra, &path_item_cache) {
+        Ok(request) => request,
+        Err(result) => return Ok(Json(result)),
+    };
+    Ok(Json(match request.run(valkey_conn, core_client).await {
+        Ok(path) => path.into(),
+        Err(core_error) => PathfindingResult::Failure(PathfindingFailure::InternalError {
+            core_error: core_error.into(),
+        }),
+    }))
 }
 
 /// Pathfinding batch computation given a list of path inputs
