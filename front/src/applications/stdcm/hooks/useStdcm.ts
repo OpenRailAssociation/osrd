@@ -267,7 +267,6 @@ const useStdcm = ({
     isRejected,
     isCanceled,
     isPendingAdditional,
-    isCalculationFailed: isRejected,
     isCalculationCompleted,
   };
 };

@@ -55,6 +55,7 @@ const StdcmViewContent = ({
   const [buttonsVisible, setButtonsVisible] = useState(true);
   const [skipPathfindingStatusMessage, setSkipPathfindingStatusMessage] = useState(false);
   const [displayInfoMessage, setDisplayInfoMessage] = useState(false);
+  const [isReloading, setIsReloading] = useState(false);
 
   const resultSectionRef = useRef<HTMLDivElement | null>(null);
   const previousResultSectionOffsetRef = useRef<number | null>(null);
@@ -67,7 +68,6 @@ const StdcmViewContent = ({
     isPendingAdditional,
     isRejected,
     isCanceled,
-    isCalculationFailed,
     isCalculationCompleted,
   } = useStdcm({ showFailureNotification: false });
 
@@ -142,10 +142,22 @@ const StdcmViewContent = ({
   }, [isCalculationCompleted]);
 
   useEffect(() => {
-    if (isRejected) {
+    if (isRejected && !isReloading) {
       setShowStatusBanner(true);
     }
-  }, [isRejected]);
+  }, [isRejected, isReloading]);
+
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      setIsReloading(true);
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+    };
+  }, []);
 
   useEffect(() => {
     if (completedSimulations.length > 0 && resultSectionRef.current) {
@@ -181,12 +193,12 @@ const StdcmViewContent = ({
         cancelStdcmRequest={cancelStdcmRequest}
       />
 
-      {showStatusBanner && <StdcmStatusBanner isFailed={isCalculationFailed} />}
+      {showStatusBanner && <StdcmStatusBanner isFailed={isRejected} />}
 
       {completedSimulations.length > 0 && (
         <div ref={resultSectionRef} className="stdcm-results">
           <StdcmResults
-            isCalculationFailed={isCalculationFailed}
+            isCalculationFailed={isRejected}
             isDebugMode={isDebugMode}
             onSelectSimulation={handleSelectSimulation}
             displayInfoMessage={displayInfoMessage}
