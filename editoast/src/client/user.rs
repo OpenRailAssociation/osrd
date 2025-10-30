@@ -23,6 +23,8 @@ pub enum UserCommand {
     Add(AddArgs),
     /// Get information about a user
     Info(InfoArgs),
+    /// Delete a user
+    Delete(DeleteArgs),
 }
 
 #[derive(Debug, Args)]
@@ -42,6 +44,12 @@ pub struct AddArgs {
 
 #[derive(Debug, Args)]
 pub struct InfoArgs {
+    /// Id or identity of the user
+    user: String,
+}
+
+#[derive(Debug, Args)]
+pub struct DeleteArgs {
     /// Id or identity of the user
     user: String,
 }
@@ -135,5 +143,30 @@ pub async fn user_info(
         };
         println!("- [{group_id}] {name}");
     }
+    Ok(())
+}
+
+/// Delete a user
+pub async fn delete_user(
+    DeleteArgs { user }: DeleteArgs,
+    pool: Arc<DbConnectionPoolV2>,
+) -> anyhow::Result<()> {
+    let driver = PgAuthDriver::new(pool);
+
+    let uid = if let Ok(id) = user.parse::<i64>() {
+        id
+    } else {
+        let uid = driver.get_user_id(&user).await?;
+        uid.ok_or_else(|| anyhow!("No user with identity '{user}' found"))?
+    };
+
+    let deleted = driver.delete_user(uid).await?;
+
+    if deleted {
+        tracing::info!("user '{user}' deleted");
+    } else {
+        anyhow::bail!("user '{user}' could not be deleted (not found)");
+    }
+
     Ok(())
 }

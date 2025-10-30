@@ -245,6 +245,15 @@ impl StorageDriver for PgAuthDriver {
     async fn infra_exists(&self, infra_id: i64) -> Result<bool, Self::Error> {
         Ok(Infra::exists(&mut self.pool.get().await?, infra_id).await?)
     }
+
+    #[tracing::instrument(skip_all, fields(%user_id), ret(level = Level::DEBUG), err)]
+    async fn delete_user(&self, user_id: i64) -> Result<bool, Self::Error> {
+        let conn = self.pool.get().await?;
+        let s = dsl::delete(authn_user::table.filter(authn_user::id.eq(user_id)))
+            .execute(&mut conn.write().await)
+            .await?;
+        Ok(s > 0)
+    }
 }
 
 #[cfg(test)]
@@ -363,5 +372,15 @@ mod tests {
             .await
             .expect("Groups should be collected successfully");
         assert_eq!(groups, vec![(friends_id, friends), (foes_id, foes)]);
+
+        match driver.delete_user(toto_id).await {
+            Ok(deleted) => assert!(deleted, "user 'toto' should be deleted"),
+            _ => unreachable!(),
+        }
+
+        match driver.delete_user(0xdeadbeef).await {
+            Ok(deleted) => assert!(!deleted, "deleting an unknown user should return false"),
+            _ => unreachable!(),
+        }
     }
 }
