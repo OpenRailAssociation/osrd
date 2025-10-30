@@ -344,6 +344,7 @@
     "inverseOD": "Inverser l'itinéraire",
     "itineraryModal": {
       "addLocationOnMap": "Ajouter un point remarquable sur la carte",
+      "alertInvalidOP": "Au moins un des points de passage n'a pas été reconnu",
       "focusLocationOnMap": "Centrer la carte sur ce point remarquable",
       "frameAll": "Centrer sur tous les points de passage sur la carte",
       "invalidOP": "Point non reconnu : ",
