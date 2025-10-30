@@ -168,7 +168,9 @@ const avoidNodesOverlaps = (
  */
 const applyLayout = (state: MacroEditorState, timetableItems: TimetableItem[]) => {
   const indexedNodes = uniqBy(
-    timetableItems.flatMap((timetableItem) => timetableItem.path),
+    timetableItems.flatMap((timetableItem) =>
+      timetableItem.path.map((pathItem) => pathItem.location)
+    ),
     MacroEditorState.getPathKey
   ).map((pathItem) => {
     const key = MacroEditorState.getPathKey(pathItem);
@@ -299,7 +301,7 @@ export const loadAndIndexNge = async (
   timetableItems
     .flatMap((timetableItem) => timetableItem.path)
     .forEach((pathItem, index) => {
-      const key = MacroEditorState.getPathKey(pathItem);
+      const key = MacroEditorState.getPathKey(pathItem.location);
       if (!state.getNodeByKey(key)) {
         const macroNode: NodeIndexed = {
           ngeId: index,
@@ -477,7 +479,7 @@ const getNgeTrainrunSectionsWithNodes = (
     ([timetableItem, returnTimetableItem], index) => {
       // Figure out the primary node key for each path item
       const pathNodeKeys = timetableItem.path.map((pathItem) => {
-        const node = state.getNodeByKey(MacroEditorState.getPathKey(pathItem));
+        const node = state.getNodeByKey(MacroEditorState.getPathKey(pathItem.location));
         return node!.path_item_key;
       });
 
