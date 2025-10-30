@@ -63,8 +63,8 @@ const useStaticPathfinding = (workerStatus: WorkerStatus, infra: Infra | undefin
       const origin = pathSteps.at(0)!;
       const destination = pathSteps.at(-1)!;
       if (
-        origin.location!.reference.uic === destination.location!.reference.uic &&
-        origin.location!.reference.secondary_code === destination.location!.reference.secondary_code
+        origin.location!.uic === destination.location!.uic &&
+        origin.location!.secondary_code === destination.location!.secondary_code
       ) {
         return;
       }
@@ -72,7 +72,7 @@ const useStaticPathfinding = (workerStatus: WorkerStatus, infra: Infra | undefin
       const payload = getPathfindingQuery({
         infraId: infra.id,
         rollingStock,
-        pathSteps: pathStepsLocations,
+        pathSteps: pathStepsLocations.map((location) => ({ location })),
         loadingGauge,
         speedLimitByTag,
       });

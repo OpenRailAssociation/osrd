@@ -1,0 +1,23 @@
+[project]
+name = "osrd-railway-manager-interface"
+version = "0.1.0"
+description = "Railway manager interface"
+authors = [{ name = "OSRD Contributors", email = "contact@osrd.fr" }]
+requires-python = ">=3.11"
+
+dependencies = [
+    "datamodel-code-generator==0.35.0",
+    "openapi-pydantic==0.5.1",
+    "pyyaml==6.0.3",
+]
+
+[project.optional-dependencies]
+check = ["pyright ~= 1.1.393", "ruff ~= 0.9.5"]
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.pyright]
+include = ["osrd_railway_manager_interface"]
+exclude = ["**/__pycache__"]

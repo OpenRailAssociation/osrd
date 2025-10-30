@@ -192,7 +192,26 @@ jobs:
         run: |
           set -euo pipefail
           find . -name 'Dockerfile*' -print0 | xargs -0 -I {} docker build --file {} --check .
-
+  check_models_sync:
+    runs-on: ubuntu-latest
+    name: Check models.py sync
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+      - name: Set up 'uv'
+        uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.12"
+          enable-cache: true
+      - name: Install dependencies
+        run: |
+          uv --directory railway_manager_interface/ sync
+      - name: Generate models.py
+        run: |
+          cd railway_manager_interface
+          ./generate-types.sh > /tmp/generated_models.py
+      - name: Ensure models.py is up to date
+        run: diff -u railway_manager_interface/osrd_railway_manager_interface/models.py /tmp/generated_models.py
   check_scripts:
     runs-on: ubuntu-latest
     name: Check scripts
