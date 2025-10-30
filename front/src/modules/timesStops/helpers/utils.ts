@@ -358,9 +358,7 @@ export const getTrackReferenceLabel = (
 ) => {
   if (!trackReference) return undefined;
   if ('track_name' in trackReference) return trackReference.track_name;
-  return (
-    trackSections[trackReference.track_id]?.extensions?.sncf?.track_name ?? trackReference.track_id
-  );
+  return trackSections[trackReference.track_id]?.extensions?.sncf?.track_name ?? '?';
 };
 
 export const getOperationalPointName = (
