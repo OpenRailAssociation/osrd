@@ -28,8 +28,6 @@ const frTranslations = {
 };
 
 test.describe('Verify timetable items import', () => {
-  test.use({ viewport: { width: 1920, height: 1080 } });
-
   let importPage: ImportPage;
   let timetableItemDetailSection: TimetableItemDetailSection;
   let pacedTrainSection: PacedTrainSection;
@@ -93,6 +91,15 @@ test.describe('Verify timetable items import', () => {
     });
     await test.step('Verify details for valid imported train schedules', async () => {
       await timetableItemDetailSection.verifyTrainSchedulesDetails(TRAIN_SCHEDULE_DETAILS);
+    });
+    await test.step('Verify invalid items reasons', async () => {
+      await timetableItemDetailSection.verifyInvalidReasons([
+        frTranslations.timetable.invalid.rolling_stock_not_found,
+        frTranslations.timetable.invalid.incompatible_constraints,
+        frTranslations.timetable.invalid.rolling_stock_not_found,
+        frTranslations.timetable.invalid.incompatible_constraints,
+        frTranslations.timetable.invalid.not_found_in_blocks,
+      ]);
     });
   });
 });
