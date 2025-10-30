@@ -1,8 +1,8 @@
 import { useState } from 'react';
 
-import { Alert, X } from '@osrd-project/ui-icons';
+import { Alert, Stop, X } from '@osrd-project/ui-icons';
 
-type AlertType = 'warning';
+type AlertType = 'warning' | 'error';
 
 type AlertBoxProps = {
   type?: AlertType;
@@ -11,7 +11,8 @@ type AlertBoxProps = {
 };
 
 const iconByType = {
-  warning: <Alert variant="fill" size="lg" className="alert-box__icon--warning" />,
+  warning: <Alert variant="fill" size="lg" className="alert-box-icon warning" />,
+  error: <Stop size="lg" className="alert-box-icon error" />,
 };
 
 const AlertBox = ({ type = 'warning', message, closeable }: AlertBoxProps) => {
@@ -21,11 +22,15 @@ const AlertBox = ({ type = 'warning', message, closeable }: AlertBoxProps) => {
   if (!visible) return null;
 
   return (
-    <div className={`alert-box alert-box--${type}`}>
+    <div className={`alert-box ${type}`}>
       {icon}
-      <span className={`alert-box__text--${type}`}>{message}</span>
+      <span className={`alert-box-text ${type}`}>{message}</span>
       {closeable && (
-        <button className="alert-box__close-button" onClick={() => setVisible(false)} type="button">
+        <button
+          className={`alert-box-close-button ${type}`}
+          onClick={() => setVisible(false)}
+          type="button"
+        >
           <X />
         </button>
       )}
