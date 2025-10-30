@@ -37,7 +37,9 @@ spec:
       {{- with .Values.services.gateway.ingress.domains }}
       {{- toYaml . | nindent 6 }}
       {{- end }}
+    {{- if .Values.services.gateway.ingress.secretName }}
     secretName: {{ .Values.services.gateway.ingress.secretName }}
+    {{- end }}
   {{- end }}
 
   rules:
