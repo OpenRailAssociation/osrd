@@ -374,5 +374,20 @@ mod mock_driver {
             // Mock implementation, always return true
             Ok(true)
         }
+
+        async fn delete_user(&self, user_id: i64) -> Result<bool, Self::Error> {
+            let map = self.users.lock().unwrap();
+            let user_identity = map
+                .iter()
+                .find_map(|(k, &v)| if v == user_id { Some(k) } else { None });
+
+            let mut map = self.users.lock().unwrap();
+            if let Some(identity) = user_identity {
+                map.remove(identity);
+                Ok(true)
+            } else {
+                Ok(false)
+            }
+        }
     }
 }

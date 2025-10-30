@@ -217,6 +217,9 @@ async fn run() -> anyhow::Result<()> {
             UserCommand::Info(info_args) => {
                 user::user_info(info_args, openfga_config, Arc::new(db_pool)).await
             }
+            UserCommand::Delete(delete_args) => {
+                user::delete_user(delete_args, Arc::new(db_pool)).await
+            }
         },
         Commands::Healthcheck(core_config) => {
             healthcheck_cmd(db_pool.into(), valkey_config, core_config, openfga_config).await
