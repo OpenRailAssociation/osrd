@@ -15,9 +15,16 @@ type TracksGeographicProps = {
   layerOrder?: number;
   infraID: number | undefined;
   highlightedArea?: Geometry;
+  highlightedTrackSections?: string[];
 };
 
-function TracksGeographic({ colors, layerOrder, infraID, highlightedArea }: TracksGeographicProps) {
+function TracksGeographic({
+  colors,
+  layerOrder,
+  infraID,
+  highlightedArea,
+  highlightedTrackSections,
+}: TracksGeographicProps) {
   const { showIGNBDORTHO, showIGNSCAN25 } = useMapSettings();
 
   if (isNil(infraID)) return null;
@@ -29,7 +36,12 @@ function TracksGeographic({ colors, layerOrder, infraID, highlightedArea }: Trac
       source-layer={MAP_TRACK_SOURCES.geographic}
     >
       <OrderedLayer
-        {...geoMainLayer(colors, showIGNBDORTHO || showIGNSCAN25, highlightedArea)}
+        {...geoMainLayer(
+          colors,
+          showIGNBDORTHO || showIGNSCAN25,
+          highlightedArea,
+          highlightedTrackSections
+        )}
         id="chartis/tracks-geo/main"
         source-layer={MAP_TRACK_SOURCES.geographic}
         layerOrder={layerOrder}

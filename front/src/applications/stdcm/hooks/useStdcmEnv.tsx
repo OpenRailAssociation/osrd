@@ -3,11 +3,7 @@ import { useCallback, useEffect, useState } from 'react';
 import { useDispatch } from 'react-redux';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import {
-  resetStdcmSimulations,
-  updateStdcmEnvironment,
-  updateStdcmEnvironmentActiveArea,
-} from 'reducers/osrdconf/stdcmConf';
+import { resetStdcmSimulations, updateStdcmEnvironment } from 'reducers/osrdconf/stdcmConf';
 
 export const NO_CONFIG_FOUND_MSG = 'No configuration found';
 
@@ -38,6 +34,7 @@ export default function useStdcmEnvironment() {
             end: new Date(data.search_window_end),
           },
           operationalPoints: data.operational_points ?? undefined,
+          trackSectionIdsByLoadingGauge: data.allowed_tracks ?? undefined,
           speedLimitTags: data.speed_limits ? data.speed_limits.speed_limit_tags : undefined,
           defaultSpeedLimitTag: data.speed_limits
             ? (data.speed_limits.default_speed_limit_tag ?? undefined)
@@ -51,13 +48,9 @@ export default function useStdcmEnvironment() {
     }
   }, [getStdcmSearchEnvironment]);
 
-  const resetStdcmEnvironment = useCallback(() => {
-    dispatch(updateStdcmEnvironmentActiveArea(undefined));
-  }, []);
-
   useEffect(() => {
     loadStdcmEnvironment();
   }, [loadStdcmEnvironment]);
 
-  return { loading, error, loadStdcmEnvironment, resetStdcmEnvironment };
+  return { loading, error, loadStdcmEnvironment };
 }

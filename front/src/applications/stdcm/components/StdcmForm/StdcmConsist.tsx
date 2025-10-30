@@ -17,8 +17,8 @@ import {
 } from 'applications/stdcm/utils/consistValidation';
 import type {
   LightRollingStockWithLiveries,
-  LoadingGaugeType,
   TowedRollingStock,
+  LoadingGaugeType,
 } from 'common/api/osrdEditoastApi';
 import { useOsrdConfActions } from 'common/osrdContext';
 import SpeedLimitByTagSelector from 'common/SpeedLimitByTagSelector';
@@ -28,6 +28,7 @@ import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/compon
 import useFilterRollingStock from 'modules/rollingStock/hooks/useFilterRollingStock';
 import { updateMaxSpeed, updateTowedRollingStockID } from 'reducers/osrdconf/stdcmConf';
 import {
+  getTrackSectionIdsByLoadingGauge,
   getStdcmRollingStockID,
   getStdcmSpeedLimitByTag,
 } from 'reducers/osrdconf/stdcmConf/selectors';
@@ -58,7 +59,20 @@ export type StdcmConsistProps = {
   setConsistErrors: React.Dispatch<React.SetStateAction<ConsistErrors>>;
 };
 
-const GAUGE_LIST: LoadingGaugeType[] = ['GA', 'GB'];
+const GAUGES_LIST: LoadingGaugeType[] = [
+  'G1',
+  'G2',
+  'GA',
+  'GB',
+  'GB1',
+  'GC',
+  'FR3.3',
+  'FR3.3/GB/G2',
+  'GLOTT',
+];
+const GAUGES_SET = new Set<string>(GAUGES_LIST);
+const isLoadingGaugeType = (gauge: string | undefined): gauge is LoadingGaugeType =>
+  typeof gauge === 'string' && GAUGES_SET.has(gauge);
 
 const StdcmConsist = ({
   isDebugMode,
@@ -69,6 +83,10 @@ const StdcmConsist = ({
   const { t } = useTranslation('stdcm');
 
   const speedLimitByTag = useSelector(getStdcmSpeedLimitByTag);
+  const trackSectionIdsByLoadingGauge = useSelector(getTrackSectionIdsByLoadingGauge);
+  const loadingGauges = trackSectionIdsByLoadingGauge
+    ? Object.keys(trackSectionIdsByLoadingGauge)
+    : [];
   const { speedLimitsByTags, dispatchUpdateSpeedLimitByTag } =
     useStoreDataForSpeedLimitByTagSelector({ isStdcm: true, speedLimitByTag });
 
@@ -266,19 +284,23 @@ const StdcmConsist = ({
         />
       </div>
       <div className="loading-gauge">
-        <Select
-          id="loading-gauge-selector"
-          value={loadingGauge}
-          label={t('consist.loadingGauge')}
-          onChange={(e) => {
-            if (e) {
-              onLoadingGaugeChange(e);
-            }
-          }}
-          {...createStandardSelectOptions(GAUGE_LIST)}
-          disabled={disabled}
-          narrow
-        />
+        {loadingGauges && loadingGauges.length > 0 && (
+          <Select
+            id="loading-gauge-selector"
+            value={loadingGauge}
+            label={t('consist.loadingGauge')}
+            onChange={(e) => {
+              if (isLoadingGaugeType(e)) {
+                onLoadingGaugeChange(e);
+              } else {
+                onLoadingGaugeChange(undefined);
+              }
+            }}
+            {...createStandardSelectOptions(loadingGauges)}
+            disabled={disabled}
+            narrow
+          />
+        )}
       </div>
       <div className="stdcm-consist__properties">
         <Input

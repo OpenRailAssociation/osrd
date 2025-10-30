@@ -1,4 +1,4 @@
-import type { Geometry, Position } from 'geojson';
+import type { Position } from 'geojson';
 
 import type { PowerRestriction } from 'applications/operationalStudies/types';
 import type {
@@ -73,7 +73,7 @@ export type OsrdStdcmConfState = OsrdConfState & {
   totalMass?: number;
   totalLength?: number;
   maxSpeed?: number;
-  loadingGauge: LoadingGaugeType;
+  loadingGauge?: LoadingGaugeType;
   towedRollingStockID?: number;
   linkedTrains: LinkedTrains;
   simulations: StdcmSimulation[];
@@ -82,10 +82,10 @@ export type OsrdStdcmConfState = OsrdConfState & {
   workScheduleGroupId?: number;
   temporarySpeedLimitGroupId?: number;
   searchDatetimeWindow?: StdcmSearchDatetimeWindow;
-  activePerimeter?: Geometry;
   operationalPoints?: number[];
   speedLimitTags?: Record<string, number>;
   defaultSpeedLimitTag?: string;
+  trackSectionIdsByLoadingGauge?: Record<string, string[]>;
 };
 
 export type PathStep = {

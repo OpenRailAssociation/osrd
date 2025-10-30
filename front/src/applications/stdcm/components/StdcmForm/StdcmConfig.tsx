@@ -15,8 +15,8 @@ import { useMapSettings } from 'reducers/commonMap';
 import type { Viewport } from 'reducers/commonMap/types';
 import { resetMargins, restoreStdcmConfig, updateStdcmPathStep } from 'reducers/osrdconf/stdcmConf';
 import {
-  getActivePerimeter,
   getOperationalPoints,
+  getTrackSectionIdsByLoadingGauge,
   getStdcmConf,
   getStdcmDestination,
   getStdcmInfraID,
@@ -27,6 +27,7 @@ import {
   getStdcmScenarioID,
   getStdcmStudyID,
   getStdcmTimetableID,
+  getLoadingGauge,
 } from 'reducers/osrdconf/stdcmConf/selectors';
 import type { OsrdStdcmConfState } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
@@ -44,7 +45,6 @@ import { ArrivalTimeTypes, StdcmConfigErrorTypes } from '../../types';
 import checkStdcmConfigErrors from '../../utils/checkStdcmConfigErrors';
 import StdcmLoader from '../StdcmLoader';
 import StdcmWarningBox from '../StdcmWarningBox';
-import StdcmMapActivePerimeter from './StdcmMapActivePerimeter';
 
 declare global {
   // eslint-disable-next-line @typescript-eslint/consistent-type-definitions
@@ -110,8 +110,9 @@ const StdcmConfig = ({
   const projectID = useSelector(getStdcmProjectID);
   const studyID = useSelector(getStdcmStudyID);
   const scenarioID = useSelector(getStdcmScenarioID);
-  const activePerimeter = useSelector(getActivePerimeter);
   const operationalPoints = useSelector(getOperationalPoints);
+  const trackSectionIdsByLoadingGauge = useSelector(getTrackSectionIdsByLoadingGauge);
+  const loadingGaugeType = useSelector(getLoadingGauge);
 
   const mapSettings = useMapSettings();
 
@@ -372,13 +373,15 @@ const StdcmConfig = ({
             mapId="stdcm-map-config"
             infraId={infra?.id}
             pathStepMarkers={markersInfo}
-            highlightedArea={activePerimeter}
             highlightedOperationalPoints={operationalPoints}
+            highlightedTrackSections={
+              trackSectionIdsByLoadingGauge && loadingGaugeType
+                ? trackSectionIdsByLoadingGauge[loadingGaugeType]
+                : undefined
+            }
             mapSettings={{ ...mapSettings, viewport: stdcmConfigViewport }}
             updateViewport={updateViewport}
-          >
-            <StdcmMapActivePerimeter />
-          </DefaultBaseMap>
+          />
         </div>
       </div>
     </div>
