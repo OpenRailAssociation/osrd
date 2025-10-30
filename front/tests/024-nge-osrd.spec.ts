@@ -98,10 +98,11 @@ test.describe('Verify nge osrd conversion', () => {
         totalPacedTrainCount: 2,
         totalTrainScheduleCount: 0,
       });
-      await expect(scenarioTimetableSection.getItemInvalidReason()).toBeVisible();
-      await expect(scenarioTimetableSection.getItemInvalidReason()).toHaveText(
-        frTranslations.timetable.invalid.rolling_stock_not_found
-      );
+      await scenarioTimetableSection.verifyInvalidReasons([
+        frTranslations.timetable.invalid.rolling_stock_not_found,
+        frTranslations.timetable.invalid.rolling_stock_not_found,
+      ]);
+
       await roundTripPage.openRoundTripModal();
       await roundTripPage.assertRoundTripColumnCounts({
         expectedToDoCount: 0,

@@ -72,6 +72,8 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
 
   private readonly timetableItemArrivalTimeLoader: Locator;
 
+  private readonly invalidTimetableItemsReasons: Locator;
+
   constructor(page: Page) {
     super(page);
     this.invalidTimetableItemsMessage = page.getByTestId('invalid-timetable-item-message');
@@ -112,6 +114,7 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
     this.editTimetableItemButton = page.getByTestId('submit-edit-timetable-item');
     this.timetableItemArrivalTime = page.getByTestId('timetable-item-arrival-time');
     this.timetableItemArrivalTimeLoader = page.getByTestId('arrival-time-loader');
+    this.invalidTimetableItemsReasons = this.timetableItems.getByTestId('invalid-reason');
   }
 
   private static getTrainScheduleButton(trainScheduleSelector: Locator): Locator {
@@ -124,10 +127,6 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
 
   static getOccurrences(pacedTrain: Locator): Locator {
     return pacedTrain.getByTestId('occurrence-item');
-  }
-
-  getItemInvalidReason(itemIndex = 0): Locator {
-    return this.timetableItems.nth(itemIndex).getByTestId('invalid-reason');
   }
 
   async verifyInvalidTrainsMessageVisibility(): Promise<void> {
@@ -438,6 +437,11 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
     const timetableItem = this.timetableItems.first();
     await expect(timetableItem).toBeVisible();
     await expect(timetableItem).toHaveClass(/selected/);
+  }
+
+  async verifyInvalidReasons(expectedReason: string[]): Promise<void> {
+    await expect(this.invalidTimetableItemsReasons.first()).toBeVisible();
+    await expect(this.invalidTimetableItemsReasons).toHaveText(expectedReason);
   }
 }
 
