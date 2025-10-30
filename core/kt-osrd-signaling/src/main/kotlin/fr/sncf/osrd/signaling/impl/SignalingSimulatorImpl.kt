@@ -183,6 +183,7 @@ class SignalingSimulatorImpl(override val sigModuleManager: SigSystemManager) : 
             followingZoneState,
             followingSignalState,
             followingSignalSettings,
+            trainPath.getZones().first().value,
         )
     }
 
@@ -197,17 +198,30 @@ class SignalingSimulatorImpl(override val sigModuleManager: SigSystemManager) : 
         followingZoneState: ZoneStatus,
         followingSignalState: SigState?,
         followingSignalSettings: SigSettings?,
+        firstZone: ZoneId?,
     ): Map<LogicalSignalId, SigState> {
         // TODO path migration: remove this overload
         assert(evaluatedPathEnd > 0)
         assert(evaluatedPathEnd <= fullPath.size)
         val routeSet by lazy { routes.toSet() }
 
+        fun getZoneState(i: Int): ZoneStatus {
+            // Zones outside the path are considered clear. We can query zone status when they are
+            // not included in the path, but still part of a block included in the path.
+            return if (i in zoneStates.indices) zoneStates[i] else ZoneStatus.CLEAR
+        }
+
         // compute the offset of each block's first zone inside the partial path
         val blockZoneMap = IntArray(evaluatedPathEnd + 1)
         var blockZoneOffset = 0
+        // When the first zone is given, we look for it in the first block and adjust zone indexes.
+        // When it's not set, we include all zones in the given blocks.
+        val firstZoneOffset =
+            if (firstZone == null) 0
+            else
+                blocks.getBlockZonePaths(fullPath[0]).map(infra::getZonePathZone).indexOf(firstZone)
         for (i in 0 until evaluatedPathEnd) {
-            blockZoneMap[i] = blockZoneOffset
+            blockZoneMap[i] = blockZoneOffset - firstZoneOffset
             blockZoneOffset += blocks.getBlockZonePaths(fullPath[i]).size
         }
         blockZoneMap[evaluatedPathEnd] = blockZoneOffset
@@ -250,9 +264,10 @@ class SignalingSimulatorImpl(override val sigModuleManager: SigSystemManager) : 
                 val entrySignal = blockSignals[0]
                 val protectedZonesStart = blockZoneMap[blockIndex]
                 val protectedZonesEnd = blockZoneMap[blockIndex + 1]
-                var zoneStatus = zoneStates[protectedZonesStart]
-                for (i in protectedZonesStart + 1 until protectedZonesEnd) zoneStatus =
-                    zoneStatus.reduce(zoneStates[i])
+                var zoneStatus = getZoneState(protectedZonesStart)
+                for (i in protectedZonesStart + 1 until protectedZonesEnd) {
+                    zoneStatus = zoneStatus.reduce(getZoneState(i))
+                }
                 signalEvalSequence.add(SignalEvalTask(entrySignal, zoneStatus.toProtectionStatus()))
             }
         }
