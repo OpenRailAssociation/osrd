@@ -24,39 +24,3 @@
     max-width: 640px;
   }
 }
-
-.alert-box {
-  width: 100%;
-  min-height: 56px;
-  display: flex;
-  align-items: center;
-  padding: 0 24px 0 40px;
-  border-top: 1px solid;
-  border-bottom: 1px solid;
-  margin-top: -1px;
-  margin-bottom: 16px;
-
-  &--warning {
-    border-color: var(--black10);
-    background-color: var(--warning5);
-
-    .alert-box__icon--warning {
-      color: var(--warning30);
-      margin-right: 12px;
-      width: 24px;
-      height: 24px;
-    }
-
-    .alert-box__text--warning {
-      font-family: 'IBM Plex Sans';
-      color: var(--warning60);
-      font-size: 16px;
-      font-weight: 400;
-    }
-
-    .alert-box__close-button {
-      color: var(--warning60);
-      margin-left: auto;
-    }
-  }
-}
