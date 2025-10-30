@@ -13,6 +13,7 @@ import { useScenarioContext } from 'applications/operationalStudies/hooks/useSce
 import AlertBox from 'common/AlertBox';
 import type { PathProperties } from 'common/api/osrdEditoastApi';
 import { computeBBoxViewport } from 'common/Map/WarpedMap/core/helpers';
+import IncompatibleConstraints from 'modules/pathfinding/components/IncompatibleConstraints';
 import usePathfindingV2 from 'modules/pathfinding/hooks/usePathfindingV2';
 import { useMapSettings, useMapSettingsActions } from 'reducers/commonMap';
 import {
@@ -63,9 +64,12 @@ const ItineraryModal = ({
   const [categoryWarning, setCategoryWarning] = useState<string | undefined>(undefined);
 
   const { pathStepsMetadataById } = usePathStepsMetadata(pathSteps);
-  const { launchPathfindingV2, pathProperties } = usePathfindingV2();
+  const { launchPathfindingV2, pathProperties, pathfindingError } = usePathfindingV2();
 
   const isMapDisabled = window.matchMedia('(max-width: 1028px)').matches;
+  const hasInvalidPathStep = Array.from(pathStepsMetadataById.values()).some(
+    (metadata) => metadata.isInvalid
+  );
 
   const frameAllPathSteps = () => {
     if (pathProperties && pathProperties.geometry) {
@@ -186,6 +190,10 @@ const ItineraryModal = ({
         </div>
         <div className="itinerary-modal-form-body">
           {categoryWarning && <AlertBox message={categoryWarning} closeable />}
+          {hasInvalidPathStep && <AlertBox type="error" message={t('alertInvalidOP')} />}
+          {!hasInvalidPathStep && pathfindingError && (
+            <AlertBox type="error" message={pathfindingError} />
+          )}
           <div className="path-step-list">
             <div className="itinerary-icons">
               <button className="frame-all" onClick={frameAllPathSteps}>
@@ -229,7 +237,13 @@ const ItineraryModal = ({
             pathSteps={pathSteps}
             pathStepsMetadata={pathStepsMetadataById}
             pathProperties={pathProperties}
-          />
+          >
+            <IncompatibleConstraints
+              geometry={pathProperties?.geometry}
+              pathLength={pathProperties?.length}
+              incompatibleConstraints={pathProperties?.incompatibleConstraints}
+            />
+          </ItineraryModalMap>
         </div>
       )}
     </dialog>

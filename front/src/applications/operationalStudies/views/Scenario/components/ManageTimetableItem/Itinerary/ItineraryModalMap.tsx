@@ -1,4 +1,4 @@
-import { useCallback, useMemo, useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState, type PropsWithChildren } from 'react';
 
 import type { Position } from 'geojson';
 import { useTranslation } from 'react-i18next';
@@ -42,7 +42,8 @@ const ItineraryModalMap = ({
   pathSteps,
   pathStepsMetadata,
   pathProperties,
-}: ItineraryModalMapProps) => {
+  children,
+}: PropsWithChildren<ItineraryModalMapProps>) => {
   const { t } = useTranslation('operational-studies', {
     keyPrefix: 'main',
   });
@@ -222,6 +223,7 @@ const ItineraryModalMap = ({
               />
             );
           })}
+        {children}
       </BaseMap>
     </>
   );

@@ -154,3 +154,8 @@ export type StudyCardDetails = SearchResultItemStudy | StudyWithScenarios;
 export type ScenarioCardDetails = SearchResultItemScenario | ScenarioWithDetails;
 
 export type CategoryColors = { normal: string; hovered: string; background: string };
+
+export type ItineraryPathProperties = PathProperties & {
+  length: number;
+  incompatibleConstraints?: IncompatibleConstraints;
+};

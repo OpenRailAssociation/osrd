@@ -1,9 +1,11 @@
 import { useCallback, useState } from 'react';
 
+import { useTranslation } from 'react-i18next';
+
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
+import type { ItineraryPathProperties } from 'applications/operationalStudies/types';
 import {
   osrdEditoastApi,
-  type PathProperties,
   type PostInfraByInfraIdPathfindingBlocksApiArg,
   type PostInfraByInfraIdPathPropertiesApiArg,
 } from 'common/api/osrdEditoastApi';
@@ -11,10 +13,13 @@ import { useRollingStockContext } from 'common/RollingStockContext';
 import type { PathStepMetadata, PathStepV2 } from 'reducers/osrdconf/types';
 
 const usePathfindingV2 = () => {
+  const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTimetableItem' });
+
   const { infraId } = useScenarioContext();
   const { rollingStocks } = useRollingStockContext();
 
-  const [pathProperties, setPathProperties] = useState<PathProperties>();
+  const [pathProperties, setPathProperties] = useState<ItineraryPathProperties>();
+  const [pathfindingError, setPathfindingError] = useState('');
 
   const [postPathfindingBlocks] =
     osrdEditoastApi.endpoints.postInfraByInfraIdPathfindingBlocks.useLazyQuery();
@@ -73,13 +78,59 @@ const usePathfindingV2 = () => {
         };
         const pathPropertiesResult = await postPathProperties(pathPropertiesParams).unwrap();
 
-        setPathProperties(pathPropertiesResult);
+        setPathProperties({ ...pathPropertiesResult, length: pathfindingResult.length });
+        return;
       }
+
+      const incompatibleConstraintsCheck =
+        pathfindingResult.failed_status === 'pathfinding_not_found' &&
+        pathfindingResult.error_type === 'incompatible_constraints';
+
+      if (incompatibleConstraintsCheck) {
+        const pathPropertiesParams: PostInfraByInfraIdPathPropertiesApiArg = {
+          infraId,
+          pathPropertiesInput: {
+            track_section_ranges:
+              pathfindingResult.relaxed_constraints_path.path.track_section_ranges,
+          },
+        };
+        const pathPropertiesResult = await postPathProperties(pathPropertiesParams).unwrap();
+
+        setPathProperties({
+          ...pathPropertiesResult,
+          length: pathfindingResult.relaxed_constraints_path.length,
+          incompatibleConstraints: pathfindingResult.incompatible_constraints,
+        });
+        setPathfindingError(t(`pathfindingErrors.${pathfindingResult.error_type}`));
+        return;
+      }
+
+      const hasInvalidPathItems =
+        pathfindingResult.failed_status === 'pathfinding_input_error' &&
+        pathfindingResult.error_type === 'invalid_path_items';
+
+      if (hasInvalidPathItems) {
+        setPathfindingError(t('missingPathSteps'));
+        return;
+      }
+
+      let error: string;
+      if (pathfindingResult.failed_status === 'internal_error') {
+        const translationKey = pathfindingResult.core_error.type.startsWith('core:')
+          ? pathfindingResult.core_error.type.replace('core:', '')
+          : pathfindingResult.core_error.type;
+        error = t(`coreErrors.${translationKey}`, {
+          defaultValue: pathfindingResult.core_error.message,
+        });
+      } else {
+        error = t(`pathfindingErrors.${pathfindingResult.error_type}`);
+      }
+      setPathfindingError(error);
     },
     [infraId]
   );
 
-  return { launchPathfindingV2, pathProperties };
+  return { launchPathfindingV2, pathProperties, pathfindingError };
 };
 
 export default usePathfindingV2;
