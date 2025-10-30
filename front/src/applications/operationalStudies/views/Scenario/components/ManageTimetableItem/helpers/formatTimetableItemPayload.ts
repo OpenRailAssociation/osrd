@@ -44,7 +44,6 @@ export function formatTimetableItemPayload(
     path: compact(osrdconf.pathSteps).map((step) => ({
       id: step.id,
       ...getStepLocation(step.location),
-      deleted: step.deleted || false,
     })),
     power_restrictions: osrdconf.powerRestriction,
     rolling_stock_name: rollingStockName,

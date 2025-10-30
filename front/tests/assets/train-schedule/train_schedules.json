@@ -5,16 +5,15 @@
     "rolling_stock_name": "SLOW_RS_E2E",
     "start_time": "2024-10-17T03:00:00Z",
     "path": [
-      { "id": "id227", "deleted": false, "uic": 8766, "secondary_code": "BV" },
-      { "id": "id228", "deleted": false, "uic": 8755, "secondary_code": "BV" }
+      { "id": "id227", "uic": 8766, "secondary_code": "BV" },
+      { "id": "id228", "uic": 8755, "secondary_code": "BV" }
     ],
     "schedule": [
       {
         "at": "id228",
         "arrival": null,
         "stop_for": "P0D",
-        "reception_signal": "OPEN",
-        "locked": false
+        "reception_signal": "OPEN"
       }
     ],
     "margins": { "boundaries": [], "values": ["0%"] },
@@ -31,25 +30,23 @@
     "rolling_stock_name": "ELECTRIC_RS_E2E",
     "start_time": "2024-10-17T03:15:00Z",
     "path": [
-      { "id": "id477", "deleted": false, "uic": 8722, "secondary_code": "BV" },
-      { "id": "id3522", "deleted": false, "track": "TA1", "offset": 1424000 },
-      { "id": "id498", "deleted": false, "uic": 8744, "secondary_code": "BV" },
-      { "id": "id478", "deleted": false, "uic": 8788, "secondary_code": "BV" }
+      { "id": "id477", "uic": 8722, "secondary_code": "BV" },
+      { "id": "id3522", "track": "TA1", "offset": 1424000 },
+      { "id": "id498", "uic": 8744, "secondary_code": "BV" },
+      { "id": "id478", "uic": 8788, "secondary_code": "BV" }
     ],
     "schedule": [
       {
         "at": "id498",
         "arrival": null,
         "stop_for": "PT120S",
-        "reception_signal": "STOP",
-        "locked": false
+        "reception_signal": "STOP"
       },
       {
         "at": "id478",
         "arrival": null,
         "stop_for": "P0D",
-        "reception_signal": "OPEN",
-        "locked": false
+        "reception_signal": "OPEN"
       }
     ],
     "margins": { "boundaries": [], "values": ["0%"] },
@@ -66,24 +63,22 @@
     "rolling_stock_name": "DUAL-MODE_RS_E2E",
     "start_time": "2024-10-17T05:00:00Z",
     "path": [
-      { "id": "id744", "deleted": false, "uic": 8733, "secondary_code": "BV" },
-      { "id": "id765", "deleted": false, "uic": 8744, "secondary_code": "BV" },
-      { "id": "id745", "deleted": false, "uic": 8777, "secondary_code": "BV" }
+      { "id": "id744", "uic": 8733, "secondary_code": "BV" },
+      { "id": "id765", "uic": 8744, "secondary_code": "BV" },
+      { "id": "id745", "uic": 8777, "secondary_code": "BV" }
     ],
     "schedule": [
       {
         "at": "id765",
         "arrival": "PT123S",
         "stop_for": "PT120S",
-        "reception_signal": "SHORT_SLIP_STOP",
-        "locked": false
+        "reception_signal": "SHORT_SLIP_STOP"
       },
       {
         "at": "id745",
         "arrival": null,
         "stop_for": "P0D",
-        "reception_signal": "OPEN",
-        "locked": false
+        "reception_signal": "OPEN"
       }
     ],
     "margins": { "boundaries": [], "values": ["0%"] },
@@ -100,33 +95,30 @@
     "rolling_stock_name": "ELECTRIC_RS_E2E",
     "start_time": "2024-10-17T05:15:00Z",
     "path": [
-      { "id": "id938", "deleted": false, "uic": 8722, "secondary_code": "BV" },
-      { "id": "id1939", "deleted": false, "track": "TA6", "offset": 10000 },
-      { "id": "id959", "deleted": false, "uic": 8733, "secondary_code": "BV" },
-      { "id": "id964", "deleted": false, "uic": 8744, "secondary_code": "BV" },
-      { "id": "id939", "deleted": false, "uic": 8788, "secondary_code": "BV" }
+      { "id": "id938", "uic": 8722, "secondary_code": "BV" },
+      { "id": "id1939", "track": "TA6", "offset": 10000 },
+      { "id": "id959", "uic": 8733, "secondary_code": "BV" },
+      { "id": "id964", "uic": 8744, "secondary_code": "BV" },
+      { "id": "id939", "uic": 8788, "secondary_code": "BV" }
     ],
     "schedule": [
       {
         "at": "id959",
         "arrival": "PT5400S",
         "stop_for": "PT120S",
-        "reception_signal": "STOP",
-        "locked": false
+        "reception_signal": "STOP"
       },
       {
         "at": "id964",
         "arrival": "PT6300S",
         "stop_for": "PT180S",
-        "reception_signal": "STOP",
-        "locked": false
+        "reception_signal": "STOP"
       },
       {
         "at": "id939",
         "arrival": null,
         "stop_for": "P0D",
-        "reception_signal": "OPEN",
-        "locked": false
+        "reception_signal": "OPEN"
       }
     ],
     "margins": { "boundaries": [], "values": ["0%"] },
@@ -143,24 +135,22 @@
     "rolling_stock_name": "SLOW_RS_E2E",
     "start_time": "2024-10-17T07:30:00Z",
     "path": [
-      { "id": "id1306", "deleted": false, "uic": 8711, "secondary_code": "BV" },
-      { "id": "id1327", "deleted": false, "uic": 8733, "secondary_code": "BV" },
-      { "id": "id1307", "deleted": false, "uic": 8744, "secondary_code": "BV" }
+      { "id": "id1306", "uic": 8711, "secondary_code": "BV" },
+      { "id": "id1327", "uic": 8733, "secondary_code": "BV" },
+      { "id": "id1307", "uic": 8744, "secondary_code": "BV" }
     ],
     "schedule": [
       {
         "at": "id1327",
         "arrival": "PT1320S",
         "stop_for": "PT10S",
-        "reception_signal": "OPEN",
-        "locked": false
+        "reception_signal": "OPEN"
       },
       {
         "at": "id1307",
         "arrival": null,
         "stop_for": "P0D",
-        "reception_signal": "OPEN",
-        "locked": false
+        "reception_signal": "OPEN"
       }
     ],
     "margins": { "boundaries": [], "values": ["0%"] },
@@ -177,24 +167,22 @@
     "rolling_stock_name": "DUAL-MODE_RS_E2E",
     "start_time": "2024-10-17T07:45:00Z",
     "path": [
-      { "id": "id1700", "deleted": false, "uic": 8722, "secondary_code": "BV" },
-      { "id": "id1762", "deleted": false, "uic": 8744, "secondary_code": "BV" },
-      { "id": "id1701", "deleted": false, "uic": 8755, "secondary_code": "BV" }
+      { "id": "id1700", "uic": 8722, "secondary_code": "BV" },
+      { "id": "id1762", "uic": 8744, "secondary_code": "BV" },
+      { "id": "id1701", "uic": 8755, "secondary_code": "BV" }
     ],
     "schedule": [
       {
         "at": "id1762",
         "arrival": "PT3214S",
         "stop_for": null,
-        "reception_signal": "OPEN",
-        "locked": false
+        "reception_signal": "OPEN"
       },
       {
         "at": "id1701",
         "arrival": null,
         "stop_for": "P0D",
-        "reception_signal": "OPEN",
-        "locked": false
+        "reception_signal": "OPEN"
       }
     ],
     "margins": { "boundaries": [], "values": ["0%"] },
@@ -211,17 +199,16 @@
     "rolling_stock_name": "FAST_RS_E2E",
     "start_time": "2024-10-17T08:37:00Z",
     "path": [
-      { "id": "id2121", "deleted": false, "uic": 8722, "secondary_code": "BV" },
-      { "id": "id2175", "deleted": false, "uic": 8733, "secondary_code": "BV" },
-      { "id": "id2122", "deleted": false, "uic": 8777, "secondary_code": "BV" }
+      { "id": "id2121", "uic": 8722, "secondary_code": "BV" },
+      { "id": "id2175", "uic": 8733, "secondary_code": "BV" },
+      { "id": "id2122", "uic": 8777, "secondary_code": "BV" }
     ],
     "schedule": [
       {
         "at": "id2122",
         "arrival": null,
         "stop_for": "P0D",
-        "reception_signal": "OPEN",
-        "locked": false
+        "reception_signal": "OPEN"
       }
     ],
     "margins": { "boundaries": [], "values": ["0%"] },
@@ -238,24 +225,22 @@
     "rolling_stock_name": "SLOW_RS_E2E",
     "start_time": "2024-10-17T08:56:01Z",
     "path": [
-      { "id": "id2532", "deleted": false, "uic": 8766, "secondary_code": "BV" },
-      { "id": "id2550", "deleted": false, "uic": 8755, "secondary_code": "BV" },
-      { "id": "id2533", "deleted": false, "uic": 8744, "secondary_code": "BV" }
+      { "id": "id2532", "uic": 8766, "secondary_code": "BV" },
+      { "id": "id2550", "uic": 8755, "secondary_code": "BV" },
+      { "id": "id2533", "uic": 8744, "secondary_code": "BV" }
     ],
     "schedule": [
       {
         "at": "id2550",
         "arrival": null,
         "stop_for": "PT120S",
-        "reception_signal": "STOP",
-        "locked": false
+        "reception_signal": "STOP"
       },
       {
         "at": "id2533",
         "arrival": null,
         "stop_for": "PT300S",
-        "reception_signal": "STOP",
-        "locked": false
+        "reception_signal": "STOP"
       }
     ],
     "margins": { "boundaries": [], "values": ["0%"] },
@@ -272,16 +257,15 @@
     "rolling_stock_name": "ELECTRIC_RS_E2E",
     "start_time": "2024-10-17T09:35:59Z",
     "path": [
-      { "id": "id2854", "deleted": false, "uic": 8733, "secondary_code": "BV" },
-      { "id": "id2855", "deleted": false, "uic": 8777, "secondary_code": "BV" }
+      { "id": "id2854", "uic": 8733, "secondary_code": "BV" },
+      { "id": "id2855", "uic": 8777, "secondary_code": "BV" }
     ],
     "schedule": [
       {
         "at": "id2855",
         "arrival": "PT297S",
         "stop_for": "P0D",
-        "reception_signal": "OPEN",
-        "locked": false
+        "reception_signal": "OPEN"
       }
     ],
     "margins": { "boundaries": [], "values": ["0%"] },
@@ -298,17 +282,16 @@
     "rolling_stock_name": "DUAL-MODE_RS_E2E",
     "start_time": "2024-10-17T09:45:31Z",
     "path": [
-      { "id": "id3088", "deleted": false, "uic": 8788, "secondary_code": "BV" },
-      { "id": "id3571", "deleted": false, "track": "TD3", "offset": 0 },
-      { "id": "id3089", "deleted": false, "uic": 8744, "secondary_code": "BV" }
+      { "id": "id3088", "uic": 8788, "secondary_code": "BV" },
+      { "id": "id3571", "track": "TD3", "offset": 0 },
+      { "id": "id3089", "uic": 8744, "secondary_code": "BV" }
     ],
     "schedule": [
       {
         "at": "id3089",
         "arrival": null,
         "stop_for": "PT100S",
-        "reception_signal": "OPEN",
-        "locked": false
+        "reception_signal": "OPEN"
       }
     ],
     "margins": { "boundaries": ["id3571"], "values": ["0%", "5min/100km"] },
@@ -325,17 +308,16 @@
     "rolling_stock_name": "",
     "start_time": "2024-10-17T09:45:43Z",
     "path": [
-      { "id": "id3807", "deleted": false, "track": "TA6", "offset": 8058000 },
-      { "id": "id3822", "deleted": false, "track": "TD0", "offset": 10809000 },
-      { "id": "id3855", "deleted": false, "track": "TG2", "offset": 1686000 }
+      { "id": "id3807", "track": "TA6", "offset": 8058000 },
+      { "id": "id3822", "track": "TD0", "offset": 10809000 },
+      { "id": "id3855", "track": "TG2", "offset": 1686000 }
     ],
     "schedule": [
       {
         "at": "id3855",
         "arrival": null,
         "stop_for": "P0D",
-        "reception_signal": "OPEN",
-        "locked": false
+        "reception_signal": "OPEN"
       }
     ],
     "margins": { "boundaries": [], "values": ["0%"] },
@@ -352,18 +334,17 @@
     "rolling_stock_name": "",
     "start_time": "2024-10-17T10:16:03Z",
     "path": [
-      { "id": "id130", "deleted": false, "track": "TX1", "offset": 421000 },
-      { "id": "id219", "deleted": false, "track": "TA6", "offset": 9199000 },
-      { "id": "id3822", "deleted": false, "track": "TD0", "offset": 10809000 },
-      { "id": "id188", "deleted": false, "track": "TF1", "offset": 2486000 }
+      { "id": "id130", "track": "TX1", "offset": 421000 },
+      { "id": "id219", "track": "TA6", "offset": 9199000 },
+      { "id": "id3822", "track": "TD0", "offset": 10809000 },
+      { "id": "id188", "track": "TF1", "offset": 2486000 }
     ],
     "schedule": [
       {
         "at": "id188",
         "arrival": null,
         "stop_for": "P0D",
-        "reception_signal": "OPEN",
-        "locked": false
+        "reception_signal": "OPEN"
       }
     ],
     "margins": { "boundaries": [], "values": ["0%"] },
@@ -380,24 +361,22 @@
     "rolling_stock_name": "SLOW_RS_E2E",
     "start_time": "2024-10-17T10:48:00Z",
     "path": [
-      { "id": "id354", "deleted": false, "uic": 8788, "secondary_code": "BV" },
-      { "id": "id385", "deleted": false, "uic": 8744, "secondary_code": "BV" },
-      { "id": "id355", "deleted": false, "uic": 8711, "secondary_code": "BV" }
+      { "id": "id354", "uic": 8788, "secondary_code": "BV" },
+      { "id": "id385", "uic": 8744, "secondary_code": "BV" },
+      { "id": "id355", "uic": 8711, "secondary_code": "BV" }
     ],
     "schedule": [
       {
         "at": "id385",
         "arrival": "PT776S",
         "stop_for": "PT180S",
-        "reception_signal": "STOP",
-        "locked": false
+        "reception_signal": "STOP"
       },
       {
         "at": "id355",
         "arrival": null,
         "stop_for": "P0D",
-        "reception_signal": "OPEN",
-        "locked": false
+        "reception_signal": "OPEN"
       }
     ],
     "margins": { "boundaries": [], "values": ["0%"] },
@@ -414,16 +393,15 @@
     "rolling_stock_name": "ELECTRIC_RS_E2E",
     "start_time": "2024-10-17T12:10:00Z",
     "path": [
-      { "id": "id803", "deleted": false, "uic": 8777, "secondary_code": "BV" },
-      { "id": "id804", "deleted": false, "uic": 8744, "secondary_code": "BV" }
+      { "id": "id803", "uic": 8777, "secondary_code": "BV" },
+      { "id": "id804", "uic": 8744, "secondary_code": "BV" }
     ],
     "schedule": [
       {
         "at": "id804",
         "arrival": null,
         "stop_for": "P0D",
-        "reception_signal": "OPEN",
-        "locked": false
+        "reception_signal": "OPEN"
       }
     ],
     "margins": { "boundaries": [], "values": ["0%"] },
@@ -440,17 +418,16 @@
     "rolling_stock_name": "IMPROBABLE_RS_E2E",
     "start_time": "2024-10-17T12:30:00Z",
     "path": [
-      { "id": "id1073", "deleted": false, "track": "TA6", "offset": 6609000 },
-      { "id": "id1136", "deleted": false, "track": "TE3", "offset": 1247000 },
-      { "id": "id1109", "deleted": false, "track": "TH1", "offset": 3761000 }
+      { "id": "id1073", "track": "TA6", "offset": 6609000 },
+      { "id": "id1136", "track": "TE3", "offset": 1247000 },
+      { "id": "id1109", "track": "TH1", "offset": 3761000 }
     ],
     "schedule": [
       {
         "at": "id1109",
         "arrival": null,
         "stop_for": "P0D",
-        "reception_signal": "OPEN",
-        "locked": false
+        "reception_signal": "OPEN"
       }
     ],
     "margins": { "boundaries": [], "values": ["0%"] },
@@ -467,24 +444,22 @@
     "rolling_stock_name": "DUAL-MODE_RS_E2E",
     "start_time": "2024-10-17T13:00:00Z",
     "path": [
-      { "id": "id1353", "deleted": false, "uic": 8788, "secondary_code": "BV" },
-      { "id": "id1371", "deleted": false, "uic": 8744, "secondary_code": "BV" },
-      { "id": "id1354", "deleted": false, "uic": 8722, "secondary_code": "BV" }
+      { "id": "id1353", "uic": 8788, "secondary_code": "BV" },
+      { "id": "id1371", "uic": 8744, "secondary_code": "BV" },
+      { "id": "id1354", "uic": 8722, "secondary_code": "BV" }
     ],
     "schedule": [
       {
         "at": "id1371",
         "arrival": null,
         "stop_for": "PT360S",
-        "reception_signal": "OPEN",
-        "locked": false
+        "reception_signal": "OPEN"
       },
       {
         "at": "id1354",
         "arrival": null,
         "stop_for": "P0D",
-        "reception_signal": "OPEN",
-        "locked": false
+        "reception_signal": "OPEN"
       }
     ],
     "margins": { "boundaries": [], "values": ["0%"] },
@@ -501,32 +476,29 @@
     "rolling_stock_name": "ELECTRIC_RS_E2E",
     "start_time": "2024-10-17T14:05:00Z",
     "path": [
-      { "id": "id1572", "deleted": false, "uic": 8722, "secondary_code": "BV" },
-      { "id": "id1593", "deleted": false, "uic": 8733, "secondary_code": "BV" },
-      { "id": "id1598", "deleted": false, "uic": 8744, "secondary_code": "BV" },
-      { "id": "id1573", "deleted": false, "uic": 8788, "secondary_code": "BV" }
+      { "id": "id1572", "uic": 8722, "secondary_code": "BV" },
+      { "id": "id1593", "uic": 8733, "secondary_code": "BV" },
+      { "id": "id1598", "uic": 8744, "secondary_code": "BV" },
+      { "id": "id1573", "uic": 8788, "secondary_code": "BV" }
     ],
     "schedule": [
       {
         "at": "id1593",
         "arrival": null,
         "stop_for": "PT300S",
-        "reception_signal": "OPEN",
-        "locked": false
+        "reception_signal": "OPEN"
       },
       {
         "at": "id1598",
         "arrival": null,
         "stop_for": "PT300S",
-        "reception_signal": "STOP",
-        "locked": false
+        "reception_signal": "STOP"
       },
       {
         "at": "id1573",
         "arrival": "PT6356S",
         "stop_for": "PT146S",
-        "reception_signal": "OPEN",
-        "locked": false
+        "reception_signal": "OPEN"
       }
     ],
     "margins": { "boundaries": [], "values": ["0%"] },
@@ -543,16 +515,15 @@
     "rolling_stock_name": "SLOW_RS_E2E",
     "start_time": "2024-10-17T14:15:08Z",
     "path": [
-      { "id": "id1948", "deleted": false, "uic": 8711, "secondary_code": "BV" },
-      { "id": "id1949", "deleted": false, "uic": 8733, "secondary_code": "BV" }
+      { "id": "id1948", "uic": 8711, "secondary_code": "BV" },
+      { "id": "id1949", "uic": 8733, "secondary_code": "BV" }
     ],
     "schedule": [
       {
         "at": "id1949",
         "arrival": null,
         "stop_for": "P0D",
-        "reception_signal": "OPEN",
-        "locked": false
+        "reception_signal": "OPEN"
       }
     ],
     "margins": { "boundaries": [], "values": ["0%"] },
@@ -569,16 +540,15 @@
     "rolling_stock_name": "",
     "start_time": "2024-10-17T15:55:00Z",
     "path": [
-      { "id": "id3049", "deleted": false, "track": "TG4", "offset": 1604000 },
-      { "id": "id3065", "deleted": false, "track": "TD1", "offset": 13883000 }
+      { "id": "id3049", "track": "TG4", "offset": 1604000 },
+      { "id": "id3065", "track": "TD1", "offset": 13883000 }
     ],
     "schedule": [
       {
         "at": "id3065",
         "arrival": null,
         "stop_for": "P0D",
-        "reception_signal": "OPEN",
-        "locked": false
+        "reception_signal": "OPEN"
       }
     ],
     "margins": { "boundaries": [], "values": ["0%"] },
@@ -595,22 +565,20 @@
     "rolling_stock_name": "ELECTRIC_RS_E2E",
     "start_time": "2024-10-17T15:59:29Z",
     "path": [
-      { "id": "id2078", "deleted": false, "uic": 8766, "secondary_code": "BV" },
-      { "id": "id2124", "deleted": false, "uic": 8744, "secondary_code": "BV" },
-      { "id": "id2129", "deleted": false, "uic": 8733, "secondary_code": "BV" },
-      { "id": "id2079", "deleted": false, "uic": 8722, "secondary_code": "BV" }
+      { "id": "id2078", "uic": 8766, "secondary_code": "BV" },
+      { "id": "id2124", "uic": 8744, "secondary_code": "BV" },
+      { "id": "id2129", "uic": 8733, "secondary_code": "BV" },
+      { "id": "id2079", "uic": 8722, "secondary_code": "BV" }
     ],
     "schedule": [
       {
         "at": "id2124",
         "arrival": "PT1H54S",
-        "locked": false,
         "reception_signal": "OPEN",
         "stop_for": "PT5M"
       },
       {
         "at": "id2129",
-        "locked": false,
         "reception_signal": "STOP",
         "stop_for": "PT10M"
       },
@@ -637,34 +605,29 @@
     "path": [
       {
         "id": "b4df37d0-ffe2-4166-b7b6-8c0c5a47e9b0",
-        "deleted": false,
         "uic": 8777,
         "secondary_code": "BV",
         "track_reference": null
       },
       {
         "id": "id2659",
-        "deleted": false,
         "uic": 8744,
         "secondary_code": "BV",
         "track_reference": null
       },
       {
         "id": "id2492",
-        "deleted": false,
         "track": "TD0",
         "offset": 11080000
       },
       {
         "id": "id2570",
-        "deleted": false,
         "uic": 8733,
         "secondary_code": "BV",
         "track_reference": null
       },
       {
         "id": "dbc7c80b-aee0-4835-8857-63863dae2ff1",
-        "deleted": false,
         "uic": 8799,
         "secondary_code": "BC",
         "track_reference": null
@@ -675,22 +638,19 @@
         "at": "id2659",
         "arrival": null,
         "stop_for": "PT124S",
-        "reception_signal": "SHORT_SLIP_STOP",
-        "locked": false
+        "reception_signal": "SHORT_SLIP_STOP"
       },
       {
         "at": "id2570",
         "arrival": "PT10554S",
         "stop_for": "PT600S",
-        "reception_signal": "OPEN",
-        "locked": false
+        "reception_signal": "OPEN"
       },
       {
         "at": "dbc7c80b-aee0-4835-8857-63863dae2ff1",
         "arrival": null,
         "stop_for": "P0D",
-        "reception_signal": "OPEN",
-        "locked": false
+        "reception_signal": "OPEN"
       }
     ],
     "margins": {

@@ -6,7 +6,7 @@ import type { PathStep } from '../types';
 /**
  * Check if a pathStep can be removed.
  *
- * It cannot be removed if it is used in at least one power restriction range, if it is locked or has an arrival time,
+ * It cannot be removed if it is used in at least one power restriction range or has an arrival time,
  * a stop duration or a margin.
  */
 export const canRemovePathStep = (
@@ -16,13 +16,7 @@ export const canRemovePathStep = (
   const pathStepIsUsed = powerRestrictionRanges.some(
     (restriction) => restriction.from === pathStep.id || restriction.to === pathStep.id
   );
-  return (
-    !pathStepIsUsed &&
-    !pathStep.locked &&
-    !pathStep.arrival &&
-    !pathStep.stopFor &&
-    !pathStep.theoreticalMargin
-  );
+  return !pathStepIsUsed && !pathStep.arrival && !pathStep.stopFor && !pathStep.theoreticalMargin;
 };
 
 /** Remove some restrictions and update the first and second restrictions with the new path step */

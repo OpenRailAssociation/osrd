@@ -92,7 +92,6 @@ describe('simulationConfReducer', () => {
             theoreticalMargin: '10%',
             arrival: null,
             stopFor: null,
-            locked: false,
             receptionSignal: 'OPEN',
           },
           {
@@ -104,7 +103,6 @@ describe('simulationConfReducer', () => {
             theoreticalMargin: undefined,
             arrival: null,
             stopFor: null,
-            locked: false,
             receptionSignal: 'OPEN',
           },
         ],
@@ -144,7 +142,6 @@ describe('simulationConfReducer', () => {
             theoreticalMargin: '10%',
             arrival: null,
             stopFor: null,
-            locked: false,
             receptionSignal: 'OPEN',
           },
           {
@@ -156,7 +153,6 @@ describe('simulationConfReducer', () => {
             theoreticalMargin: undefined,
             arrival: null,
             stopFor: null,
-            locked: false,
             receptionSignal: 'OPEN',
           },
         ],
@@ -239,7 +235,6 @@ describe('simulationConfReducer', () => {
         },
         stopFor: Duration.parse('PT5M'),
         coordinates: [47.99542250806296, 0.1918181738752042],
-        locked: newVia.locked,
         name: newVia.name,
       };
 

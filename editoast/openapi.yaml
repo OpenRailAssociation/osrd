@@ -11087,12 +11087,6 @@ components:
         required:
         - id
         properties:
-          deleted:
-            type: boolean
-            description: |-
-              Metadata given to mark a point as wishing to be deleted by the user.
-              It's useful for soft deleting the point (waiting to fix / remove all references)
-              If true, the train schedule is consider as invalid and must be edited
           id:
             oneOf:
             - type: string
@@ -12830,9 +12824,6 @@ components:
           - type: string
             minLength: 1
           description: Position on the path of the schedule item.
-        locked:
-          type: boolean
-          description: Whether the schedule item is locked (only for display purposes)
         reception_signal:
           $ref: '#/components/schemas/ReceptionSignal'
         stop_for:
@@ -15166,12 +15157,6 @@ components:
               required:
               - id
               properties:
-                deleted:
-                  type: boolean
-                  description: |-
-                    Metadata given to mark a point as wishing to be deleted by the user.
-                    It's useful for soft deleting the point (waiting to fix / remove all references)
-                    If true, the train schedule is consider as invalid and must be edited
                 id:
                   oneOf:
                   - type: string
@@ -15219,9 +15204,6 @@ components:
                 - type: string
                   minLength: 1
                 description: Position on the path of the schedule item.
-              locked:
-                type: boolean
-                description: Whether the schedule item is locked (only for display purposes)
               reception_signal:
                 $ref: '#/components/schemas/ReceptionSignal'
               stop_for:

@@ -3988,10 +3988,6 @@ export type TrainSchedule = {
     use_speed_limits_for_simulation?: boolean;
   };
   path: (PathItemLocation & {
-    /** Metadata given to mark a point as wishing to be deleted by the user.
-        It's useful for soft deleting the point (waiting to fix / remove all references)
-        If true, the train schedule is consider as invalid and must be edited */
-    deleted?: boolean;
     /** The unique identifier of the path item.
         This is used to reference path items in the train schedule. */
     id: string;
@@ -4006,8 +4002,6 @@ export type TrainSchedule = {
     arrival?: null | PositiveDuration;
     /** Position on the path of the schedule item. */
     at: string;
-    /** Whether the schedule item is locked (only for display purposes) */
-    locked?: boolean;
     reception_signal?: ReceptionSignal;
     stop_for?: null | PositiveDuration;
   }[];
@@ -4038,10 +4032,6 @@ export type Margins = {
   values: string[];
 };
 export type PathItem = PathItemLocation & {
-  /** Metadata given to mark a point as wishing to be deleted by the user.
-    It's useful for soft deleting the point (waiting to fix / remove all references)
-    If true, the train schedule is consider as invalid and must be edited */
-  deleted?: boolean;
   /** The unique identifier of the path item.
     This is used to reference path items in the train schedule. */
   id: string;
@@ -4055,8 +4045,6 @@ export type ScheduleItem = {
   arrival?: null | PositiveDuration;
   /** Position on the path of the schedule item. */
   at: string;
-  /** Whether the schedule item is locked (only for display purposes) */
-  locked?: boolean;
   reception_signal?: ReceptionSignal;
   stop_for?: null | PositiveDuration;
 };

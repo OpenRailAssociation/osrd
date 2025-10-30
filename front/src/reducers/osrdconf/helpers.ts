@@ -72,8 +72,6 @@ export function upsertPathStep(statePathSteps: (PathStep | null)[], op: Suggeste
       'name',
       'kp',
       'arrival',
-      'locked',
-      'deleted',
       'receptionSignal',
       'theoreticalMargin',
       'stopFor',

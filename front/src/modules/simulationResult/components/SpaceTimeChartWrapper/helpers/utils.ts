@@ -56,7 +56,7 @@ export const getWaypointsLocalStorageKey = (
   projectionPath: TimetableItem['path'] | undefined
 ) => {
   // We need to remove the id because it can change for waypoints added by map click
-  const simplifiedPath = projectionPath?.map((waypoint) => omit(waypoint, ['id', 'deleted']));
+  const simplifiedPath = projectionPath?.map((waypoint) => omit(waypoint, ['id']));
 
   return `PathOperationalPoints-${timetableId}-${JSON.stringify(simplifiedPath)}`;
 };

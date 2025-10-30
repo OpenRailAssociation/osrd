@@ -13,11 +13,6 @@ pub struct PathItem {
     /// This is used to reference path items in the train schedule.
     #[schema(inline)]
     pub id: NonBlankString,
-    /// Metadata given to mark a point as wishing to be deleted by the user.
-    /// It's useful for soft deleting the point (waiting to fix / remove all references)
-    /// If true, the train schedule is consider as invalid and must be edited
-    #[serde(default)]
-    pub deleted: bool,
     #[serde(flatten)]
     pub location: PathItemLocation,
 }
@@ -27,7 +22,6 @@ impl PathItem {
     pub fn new_operational_point(id: &str) -> Self {
         Self {
             id: id.into(),
-            deleted: false,
             location: PathItemLocation::OperationalPointReference(OperationalPointReference {
                 reference: OperationalPointIdentifier::OperationalPointId {
                     operational_point: id.into(),

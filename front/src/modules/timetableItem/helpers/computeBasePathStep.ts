@@ -23,13 +23,12 @@ const computeBasePathStep = (
   timetableItem: Pick<TrainSchedule, 'path' | 'schedule' | 'margins'>,
   pathItemIndex: number
 ): PathStep => {
-  const { id, deleted, ...location } = timetableItem.path[pathItemIndex];
+  const { id, ...location } = timetableItem.path[pathItemIndex];
   const correspondingSchedule = timetableItem.schedule?.find((schedule) => schedule.at === id);
 
   const {
     arrival,
     stop_for: stopFor,
-    locked,
     reception_signal: receptionSignal,
   } = correspondingSchedule || {};
 
@@ -49,16 +48,14 @@ const computeBasePathStep = (
 
   return {
     id,
-    deleted,
     name,
 
     location: { ...location, ...('track' in location ? { offset: mmToM(location.offset) } : null) },
     arrival: arrival ? Duration.parse(arrival) : null,
     stopFor: stopFor ? Duration.parse(stopFor) : null,
-    // If not provided, we set locked and receptionSignal to their default values
-    // in order to avoid unwanted exceptions (when not provided, editoast returns them
-    // with their default values)
-    locked: locked ?? false,
+    // If not provided, we set receptionSignal to its default value
+    // in order to avoid unwanted exceptions (when not provided, editoast returns it
+    // with its default value)
     receptionSignal: receptionSignal ?? 'OPEN',
     theoreticalMargin,
   };

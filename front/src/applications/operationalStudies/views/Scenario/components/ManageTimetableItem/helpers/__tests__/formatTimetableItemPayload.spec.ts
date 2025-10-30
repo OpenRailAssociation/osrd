@@ -34,7 +34,6 @@ describe('formatTimetableItemPayload', () => {
     pathSteps: [
       {
         id: '0-0',
-        deleted: false,
         location: {
           uic: 2,
           trigram: 'WS',
@@ -50,7 +49,6 @@ describe('formatTimetableItemPayload', () => {
       },
       {
         id: '1-1',
-        deleted: false,
         location: {
           uic: 6,
           trigram: 'SS',
@@ -60,7 +58,6 @@ describe('formatTimetableItemPayload', () => {
         name: 'South_station',
         arrival: null,
         stopFor: null,
-        locked: false,
         receptionSignal: 'OPEN',
         positionOnPath: 49103000,
         coordinates: [-0.16408630124250465, 49.46600036530178],
@@ -103,14 +100,12 @@ describe('formatTimetableItemPayload', () => {
       path: [
         {
           id: '0-0',
-          deleted: false,
           trigram: 'WS',
           secondary_code: 'BV',
           track_reference: null,
         },
         {
           id: '1-1',
-          deleted: false,
           trigram: 'SS',
           secondary_code: 'BV',
           track_reference: null,
@@ -222,14 +217,12 @@ describe('formatTimetableItemPayload', () => {
             trigram: 'WS',
             secondary_code: 'BV',
             track_reference: null,
-            deleted: false,
           },
           {
             id: '1-1',
             trigram: 'SS',
             secondary_code: 'BV',
             track_reference: null,
-            deleted: false,
           },
         ],
         power_restrictions: [],
@@ -307,14 +300,12 @@ describe('formatTimetableItemPayload', () => {
               trigram: 'WS',
               secondary_code: 'BV',
               track_reference: null,
-              deleted: false,
             },
             {
               id: '1-1',
               trigram: 'SS',
               secondary_code: 'BV',
               track_reference: null,
-              deleted: false,
             },
           ],
           power_restrictions: [],
@@ -500,7 +491,6 @@ describe('formatTimetableItemPayload', () => {
             rawOsrdconf.pathSteps[0],
             {
               id: '1-1',
-              deleted: false,
               location: {
                 trigram: 'SS',
                 secondary_code: 'BV',
@@ -509,7 +499,6 @@ describe('formatTimetableItemPayload', () => {
               arrival: null,
               stopFor: Duration.parse('P0D'),
               receptionSignal: 'OPEN',
-              locked: false,
             },
           ],
           // This is not user change but we need to updated this value so it matches the one from the added occurrence
@@ -546,14 +535,12 @@ describe('formatTimetableItemPayload', () => {
               path: [
                 {
                   id: '0-0',
-                  deleted: false,
                   trigram: 'WS',
                   secondary_code: 'BV',
                   track_reference: null,
                 },
                 {
                   id: '1-1',
-                  deleted: false,
                   trigram: 'SS',
                   secondary_code: 'BV',
                   track_reference: null,
@@ -565,7 +552,6 @@ describe('formatTimetableItemPayload', () => {
                   arrival: undefined,
                   stop_for: 'P0D',
                   reception_signal: 'OPEN',
-                  locked: false,
                 },
               ],
               power_restrictions: [],

@@ -324,19 +324,16 @@ export const trainScheduleTooFast: TrainScheduleWithTrainId = {
   path: [
     {
       id: 'id440',
-      deleted: false,
       track: 'TA0',
       offset: 1299000,
     },
     {
       id: 'id935',
-      deleted: false,
       uic: 4,
       secondary_code: 'BV',
     },
     {
       id: 'id916',
-      deleted: false,
       track: 'TH1',
       offset: 4095000,
     },
@@ -347,14 +344,12 @@ export const trainScheduleTooFast: TrainScheduleWithTrainId = {
       arrival: 'PT1740S',
       stop_for: 'P0D',
       reception_signal: 'OPEN',
-      locked: false,
     },
     {
       at: 'id916',
       arrival: null,
       stop_for: 'P0D',
       reception_signal: 'OPEN',
-      locked: false,
     },
   ],
   margins: {
@@ -391,21 +386,18 @@ export const trainScheduleTooFastOnInterval: TrainScheduleWithTrainId = {
   path: [
     {
       id: 'idA',
-      deleted: false,
       uic: 87700000,
       secondary_code: 'BV',
       track_reference: null,
     },
     {
       id: 'idB',
-      deleted: false,
       uic: 87700001,
       secondary_code: 'BV',
       track_reference: null,
     },
     {
       id: 'idC',
-      deleted: false,
       uic: 87700002,
       secondary_code: 'BV',
       track_reference: null,
@@ -417,14 +409,12 @@ export const trainScheduleTooFastOnInterval: TrainScheduleWithTrainId = {
       arrival: 'PT5280S',
       stop_for: null,
       reception_signal: 'OPEN',
-      locked: false,
     },
     {
       at: 'idC',
       arrival: 'PT15300S',
       stop_for: 'P0D',
       reception_signal: 'OPEN',
-      locked: false,
     },
   ],
   margins: {
@@ -466,19 +456,16 @@ export const trainScheduleNotHonored: TrainScheduleWithTrainId = {
   path: [
     {
       id: 'id440',
-      deleted: false,
       track: 'TA0',
       offset: 1299000,
     },
     {
       id: 'id584',
-      deleted: false,
       uic: 4,
       secondary_code: 'BV',
     },
     {
       id: 'id450',
-      deleted: false,
       track: 'TG1',
       offset: 644000,
     },
@@ -489,14 +476,12 @@ export const trainScheduleNotHonored: TrainScheduleWithTrainId = {
       arrival: 'PT300S',
       stop_for: null,
       reception_signal: 'OPEN',
-      locked: false,
     },
     {
       at: 'id450',
       arrival: null,
       stop_for: 'P0D',
       reception_signal: 'OPEN',
-      locked: false,
     },
   ],
   margins: {
@@ -533,13 +518,11 @@ export const trainScheduleHonored: TrainScheduleWithTrainId = {
   path: [
     {
       id: 'id440',
-      deleted: false,
       track: 'TA0',
       offset: 1299000,
     },
     {
       id: 'id450',
-      deleted: false,
       track: 'TG1',
       offset: 644000,
     },
@@ -550,7 +533,6 @@ export const trainScheduleHonored: TrainScheduleWithTrainId = {
       arrival: null,
       stop_for: 'P0D',
       reception_signal: 'OPEN',
-      locked: false,
     },
   ],
   margins: {
@@ -580,7 +562,6 @@ export const trainScheduleNoMatch: TrainScheduleWithTrainId = {
       arrival: 'PT300S',
       stop_for: 'P0D',
       reception_signal: 'OPEN',
-      locked: false,
     },
   ],
 };

@@ -1224,9 +1224,10 @@ mod tests {
             .await
             .assert_status(StatusCode::UNPROCESSABLE_ENTITY)
             .bytes();
-        assert_eq!(
-            &String::from_utf8(response).unwrap(),
-            "Failed to deserialize the JSON body into the target type: [0]: Duplicate exception key: 'duplicated_key_1' at line 1 column 2452"
+        assert!(
+            String::from_utf8(response)
+                .unwrap()
+                .contains("Duplicate exception key: 'duplicated_key_1'")
         )
     }
 

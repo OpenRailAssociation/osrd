@@ -165,7 +165,6 @@ pub fn create_created_exception_with_change_groups(key: &str) -> PacedTrainExcep
             path: vec![
                 PathItem {
                     id: "aa".into(),
-                    deleted: false,
                     location: PathItemLocation::TrackOffset(TrackOffset {
                         offset: 300,
                         track: Identifier("TC0".to_string()),
@@ -173,7 +172,6 @@ pub fn create_created_exception_with_change_groups(key: &str) -> PacedTrainExcep
                 },
                 PathItem {
                     id: "bb".into(),
-                    deleted: false,
                     location: PathItemLocation::OperationalPointReference(
                         OperationalPointReference {
                             reference: OperationalPointIdentifier::OperationalPointId {
@@ -185,7 +183,6 @@ pub fn create_created_exception_with_change_groups(key: &str) -> PacedTrainExcep
                 },
                 PathItem {
                     id: "cc".into(),
-                    deleted: false,
                     location: PathItemLocation::TrackOffset(TrackOffset {
                         offset: 300,
                         track: Identifier("TC1".to_string()),
@@ -193,7 +190,6 @@ pub fn create_created_exception_with_change_groups(key: &str) -> PacedTrainExcep
                 },
                 PathItem {
                     id: "dd".into(),
-                    deleted: false,
                     location: PathItemLocation::TrackOffset(TrackOffset {
                         offset: 300,
                         track: Identifier("TC2".to_string()),

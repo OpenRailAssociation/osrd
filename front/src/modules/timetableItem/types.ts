@@ -28,7 +28,6 @@ export type SuggestedOP = {
   positionOnPath: number;
   coordinates?: Position;
   arrival?: Duration | null; // value asked by user, number of seconds since departure
-  locked?: boolean;
   stopFor?: Duration | null; // value asked by user
   theoreticalMargin?: string; // value asked by user
   theoreticalMarginSeconds?: string;

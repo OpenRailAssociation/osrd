@@ -19,7 +19,6 @@
     },
     {
       "id": "c",
-      "deleted": true,
       "trigram": "MWS"
     },
     {
@@ -31,8 +30,7 @@
   "schedule": [
     {
       "at": "a",
-      "stop_for": "PT5M",
-      "locked": true
+      "stop_for": "PT5M"
     },
     {
       "at": "b",
@@ -45,8 +43,7 @@
     },
     {
       "at": "d",
-      "arrival": "PT50M",
-      "locked": true
+      "arrival": "PT50M"
     }
   ],
   "margins": {

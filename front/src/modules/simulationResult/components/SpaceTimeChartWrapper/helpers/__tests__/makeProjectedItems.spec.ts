@@ -127,13 +127,11 @@ describe('makeProjectedItems', () => {
             id: '3e6c78c6-89a9-462f-a0b3-1e4253cb6386',
             uic: 11,
             secondary_code: 'BV',
-            deleted: false,
           },
           {
             id: '00fd1b82-32ca-43fd-a46e-24b5bc6f0fd3',
             uic: 14,
             secondary_code: 'BV',
-            deleted: false,
           },
         ],
         power_restrictions: [],
