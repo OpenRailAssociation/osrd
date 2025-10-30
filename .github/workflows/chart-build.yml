@@ -25,6 +25,8 @@ jobs:
       - name: Set Name and Version
         run: |
           CHART_NAME="osrd-dev"
+          CHART_IMAGES_REPOSITORY="edge"
+          CHART_IMAGES_VERSION="dev"
 
           if [[ "${{ github.event_name }}" == "pull_request" ]]; then
             CHART_VERSION="0.0.1-${{ github.event.pull_request.number }}-${GITHUB_SHA}"
@@ -39,6 +41,9 @@ jobs:
 
           sed -i "s/NAME_REPLACE_ME/$CHART_NAME/" ./chart/Chart.yaml
           sed -i "s/VERSION_REPLACE_ME/$CHART_VERSION/" ./chart/Chart.yaml
+          sed -i "s/APP_VERSION_REPLACE_ME/$CHART_IMAGES_VERSION/" ./chart/Chart.yaml
+          sed -i "s/REPOSITORY_VERSION_REPLACE_ME/$CHART_IMAGES_REPOSITORY/" ./chart/values.yaml
+          sed -i "s/IMAGES_VERSION_REPLACE_ME/$CHART_IMAGES_VERSION/" ./chart/values.yaml
 
       - name: Lint Helm Chart
         run: helm lint ./chart

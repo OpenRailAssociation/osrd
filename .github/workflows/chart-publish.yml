@@ -22,15 +22,20 @@ jobs:
       - name: Set Name and Version
         run: |
           CHART_NAME="osrd"
+          CHART_IMAGES_REPOSITORY="stable"
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             CHART_VERSION="${{ github.event.inputs.tag_name }}"
           else
             CHART_VERSION="${{ github.event.release.tag_name }}"
           fi
+          CHART_IMAGES_VERSION="${CHART_VERSION}"
           echo "CHART_NAME=$CHART_NAME" >> $GITHUB_ENV
           echo "CHART_VERSION=$CHART_VERSION" >> $GITHUB_ENV
           sed -i "s/NAME_REPLACE_ME/$CHART_NAME/" ./chart/Chart.yaml
           sed -i "s/VERSION_REPLACE_ME/$CHART_VERSION/" ./chart/Chart.yaml
+          sed -i "s/APP_VERSION_REPLACE_ME/$CHART_IMAGES_VERSION/" ./chart/Chart.yaml
+          sed -i "s/REPOSITORY_VERSION_REPLACE_ME/$CHART_IMAGES_REPOSITORY/" ./chart/values.yaml
+          sed -i "s/IMAGES_VERSION_REPLACE_ME/$CHART_IMAGES_VERSION/" ./chart/values.yaml
 
       - name: Lint Helm Chart
         run: helm lint ./chart

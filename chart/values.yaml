@@ -27,10 +27,10 @@ endpoints:
 imagePullSecrets: []
 pullPolicy: IfNotPresent
 images:
-  editoast: ghcr.io/openrailassociation/osrd-edge/osrd-editoast:dev
-  gateway: ghcr.io/openrailassociation/osrd-edge/osrd-gateway:dev-front
-  core: ghcr.io/openrailassociation/osrd-edge/osrd-core:dev
-  osrdyne: ghcr.io/openrailassociation/osrd-edge/osrd-osrdyne:dev
+  editoast: ghcr.io/openrailassociation/osrd-REPOSITORY_VERSION_REPLACE_ME/osrd-editoast:IMAGES_VERSION_REPLACE_ME
+  gateway: ghcr.io/openrailassociation/osrd-REPOSITORY_VERSION_REPLACE_ME/osrd-gateway:IMAGES_VERSION_REPLACE_ME-front
+  core: ghcr.io/openrailassociation/osrd-REPOSITORY_VERSION_REPLACE_ME/osrd-core:IMAGES_VERSION_REPLACE_ME
+  osrdyne: ghcr.io/openrailassociation/osrd-REPOSITORY_VERSION_REPLACE_ME/osrd-osrdyne:IMAGES_VERSION_REPLACE_ME
   images: ghcr.io/openrailassociation/osrd-stable/osrd-images:v1.0.2
   openfga: openfga/openfga:v1.8.6
 
