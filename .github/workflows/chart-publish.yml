@@ -39,5 +39,5 @@ jobs:
         run: |
           echo "${{ secrets.GITHUB_TOKEN }}" | helm registry login ghcr.io -u ${{ github.actor }} --password-stdin
           helm package ./chart
-          echo "Pushing to oci://ghcr.io/openrailassociation/${CHART_NAME}:${CHART_VERSION}"
+          echo "Pushing to oci://ghcr.io/openrailassociation/osrd-charts/${CHART_NAME}:${CHART_VERSION}"
           helm push ${CHART_NAME}-${CHART_VERSION}.tgz oci://ghcr.io/openrailassociation/osrd-charts
