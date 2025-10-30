@@ -91,12 +91,7 @@ export type OsrdStdcmConfState = OsrdConfState & {
 export type PathStep = {
   id: string;
   location: PathItemLocation;
-  /** Metadata given to mark a point as wishing to be deleted by the user.
-        It's useful for soft deleting the point (waiting to fix / remove all references)
-        If true, the train schedule is consider as invalid and must be edited */
-  deleted?: boolean;
   arrival?: Duration | null;
-  locked?: boolean;
   stopFor?: Duration | null;
   theoreticalMargin?: string;
   receptionSignal?: ReceptionSignal;

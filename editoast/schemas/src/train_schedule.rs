@@ -250,7 +250,6 @@ mod tests {
         let path_item = PathItem {
             id: "a".into(),
             location,
-            deleted: false,
         };
         let train_schedule = TrainSchedule {
             path: vec![path_item.clone(), path_item.clone()],
@@ -308,7 +307,6 @@ mod tests {
         let path_item = PathItem {
             id: "a".into(),
             location,
-            deleted: false,
         };
         let train_schedule = TrainSchedule {
             path: vec![path_item.clone(), path_item.clone()],
@@ -317,14 +315,12 @@ mod tests {
                     at: "a".into(),
                     arrival: None,
                     stop_for: None,
-                    locked: false,
                     reception_signal: ReceptionSignal::Open,
                 },
                 ScheduleItem {
                     at: "a".into(),
                     arrival: None,
                     stop_for: None,
-                    locked: false,
                     reception_signal: ReceptionSignal::Open,
                 },
             ],
@@ -346,7 +342,6 @@ mod tests {
         let path_item = PathItem {
             id: "a".into(),
             location,
-            deleted: false,
         };
         let train_schedule = TrainSchedule {
             path: vec![path_item.clone(), path_item.clone()],
@@ -354,7 +349,6 @@ mod tests {
                 at: "a".into(),
                 arrival: Some(Duration::minutes(5).try_into().unwrap()),
                 stop_for: None,
-                locked: false,
                 reception_signal: ReceptionSignal::Open,
             }],
             ..Default::default()

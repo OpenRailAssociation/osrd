@@ -7,21 +7,18 @@
     "path": [
         {
             "id": "id8",
-            "deleted": false,
             "uic": 8711,
             "secondary_code": "BV",
             "track_reference": null
         },
         {
             "id": "id5",
-            "deleted": false,
             "uic": 8733,
             "secondary_code": "BV",
             "track_reference": null
         },
         {
             "id": "id7",
-            "deleted": false,
             "uic": 8788,
             "secondary_code": "BV",
             "track_reference": null
@@ -32,15 +29,13 @@
             "at": "id5",
             "arrival": null,
             "stop_for": "PT120S",
-            "reception_signal": "OPEN",
-            "locked": false
+            "reception_signal": "OPEN"
         },
         {
             "at": "id7",
             "arrival": null,
             "stop_for": "P0D",
-            "reception_signal": "OPEN",
-            "locked": false
+            "reception_signal": "OPEN"
         }
     ],
     "constraint_distribution": "STANDARD",

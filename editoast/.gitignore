@@ -5,3 +5,5 @@ assets/fonts/glyphs/*
 
 # allows using nightly rustfmt options locally without imposing nightly to everyone publicly
 rustfmt.toml
+
+migrations/.diesel_lock

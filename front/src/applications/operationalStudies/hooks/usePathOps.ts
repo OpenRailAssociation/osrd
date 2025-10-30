@@ -25,7 +25,7 @@ const usePathOps = (
     () =>
       (path ?? []).reduce<OperationalPointReference[]>((acc, pathItem) => {
         if (isOperationalPointReference(pathItem)) {
-          const { id: _id, deleted: _deleted, ...cleanOperationalPointReference } = pathItem;
+          const { id: _id, ...cleanOperationalPointReference } = pathItem;
           acc.push(cleanOperationalPointReference);
         }
         return acc;

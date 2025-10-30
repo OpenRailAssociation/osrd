@@ -182,7 +182,6 @@ const createPathItemFromNode = (
   return {
     ...pathItemLocation,
     id: `${node.id}-${index}`,
-    deleted: false,
     // TODO : handle this case in xml import refacto
     track_reference: null,
   };
@@ -292,7 +291,6 @@ const generateSchedule = (
           at: `${toNodeId}-${index + 1}`,
           stop_for: Duration.zero.toISOString(),
           // Default information
-          locked: false,
           reception_signal: 'OPEN',
         };
       }
@@ -313,7 +311,6 @@ const generateSchedule = (
       arrival: formatDateDifferenceFrom(startDate, arrival),
       stop_for,
       // Default information
-      locked: false,
       reception_signal: 'OPEN',
     };
   });

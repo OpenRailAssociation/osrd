@@ -33,9 +33,6 @@ pub struct ScheduleItem {
     pub stop_for: Option<PositiveDuration>,
     #[serde(default)]
     pub reception_signal: ReceptionSignal,
-    /// Whether the schedule item is locked (only for display purposes)
-    #[serde(default)]
-    pub locked: bool,
 }
 
 #[cfg(feature = "testing")]
@@ -46,7 +43,6 @@ impl ScheduleItem {
             arrival: None,
             stop_for: Some(PositiveDuration::new(duration)),
             reception_signal: ReceptionSignal::Open,
-            locked: false,
         }
     }
 }
@@ -93,7 +89,6 @@ mod tests {
             arrival: None,
             stop_for: None,
             reception_signal: ReceptionSignal::Stop,
-            locked: false,
         };
         let invalid_str = to_string(&schedule_item).unwrap();
         assert!(from_str::<ScheduleItem>(&invalid_str).is_err());

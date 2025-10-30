@@ -73,7 +73,6 @@ describe('reversePathSteps', () => {
     },
     {
       id: 'id206',
-      deleted: false,
       location: {
         uic: 87447144,
         secondary_code: '00',
@@ -82,7 +81,6 @@ describe('reversePathSteps', () => {
       name: 'Carantilly-Marigny',
       arrival: new Duration({ milliseconds: 3000000 }),
       stopFor: new Duration({ milliseconds: 0 }),
-      locked: false,
       receptionSignal: 'OPEN',
       kp: '31+774',
       positionOnPath: 31750000,
@@ -93,7 +91,6 @@ describe('reversePathSteps', () => {
   const expectedReversedPathSteps: PathStep[] = [
     {
       id: 'id206',
-      deleted: false,
       location: {
         uic: 87447144,
         secondary_code: '00',
@@ -102,7 +99,6 @@ describe('reversePathSteps', () => {
       name: 'Carantilly-Marigny',
       arrival: null,
       stopFor: null,
-      locked: false,
       receptionSignal: 'OPEN',
       theoreticalMargin: '2min/100km',
       kp: '31+774',

@@ -9,7 +9,6 @@ const formatSchedule = (pathSteps: PathStep[]): TrainSchedule['schedule'] => {
       return {
         at: step.id,
         arrival: step.arrival?.toISOString() ?? undefined,
-        locked: step.locked,
         reception_signal: step.receptionSignal,
         stop_for: step.stopFor?.toISOString() ?? undefined,
       };

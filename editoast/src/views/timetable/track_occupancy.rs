@@ -359,7 +359,6 @@ pub mod tests {
                             track_reference: None,
                         },
                     ),
-                    deleted: false,
                 },
                 PathItem {
                     id: "path_item_2".into(),
@@ -371,7 +370,6 @@ pub mod tests {
                             track_reference: None,
                         },
                     ),
-                    deleted: false,
                 },
                 PathItem {
                     id: "path_item_invalid".into(),
@@ -383,7 +381,6 @@ pub mod tests {
                             track_reference: None,
                         },
                     ),
-                    deleted: false,
                 },
             ],
             schedule: vec![
@@ -393,7 +390,6 @@ pub mod tests {
                     stop_for: Some(
                         PositiveDuration::try_from(Duration::milliseconds(500)).unwrap(),
                     ),
-                    locked: false,
                     reception_signal: ReceptionSignal::Open,
                 },
                 ScheduleItem {
@@ -402,7 +398,6 @@ pub mod tests {
                     stop_for: Some(
                         PositiveDuration::try_from(Duration::milliseconds(300000)).unwrap(),
                     ),
-                    locked: false,
                     reception_signal: ReceptionSignal::Open,
                 },
             ],

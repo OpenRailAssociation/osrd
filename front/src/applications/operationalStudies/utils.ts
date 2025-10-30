@@ -314,11 +314,11 @@ export const getStationFromOps = (ops: OperationalPoint[]): OperationalPoint | u
   ops.find((op) => ['BV', '00'].includes(op.extensions?.sncf?.ch || '')) || ops.at(0);
 
 /**
- * Get a path item location (without ID and deleted fields) from a train's path
+ * Get a path item location (without ID) from a train's path
  * item.
  */
 const getPathItemLocation = (pathItem: TrainSchedule['path'][number]) => {
-  const { id: _id, deleted: _deleted, ...pathItemLocation } = pathItem;
+  const { id: _id, ...pathItemLocation } = pathItem;
   return pathItemLocation;
 };
 
@@ -427,13 +427,11 @@ export const checkRoundTripCompatible = (
       const opRefA = {
         ...pathItemA,
         id: undefined,
-        deleted: undefined,
         track_reference: undefined,
       };
       const opRefB = {
         ...pathItemB,
         id: undefined,
-        deleted: undefined,
         track_reference: undefined,
       };
 

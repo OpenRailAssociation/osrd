@@ -11,7 +11,6 @@ describe('formatSchedule', () => {
       const pathSteps: PathStep[] = [
         {
           id: 'id331',
-          deleted: false,
           location: {
             uic: 8706,
             secondary_code: 'BV',
@@ -28,7 +27,6 @@ describe('formatSchedule', () => {
       const pathSteps: PathStep[] = [
         {
           id: 'id332',
-          deleted: false,
           location: {
             uic: 8737,
             secondary_code: 'BV',
@@ -38,7 +36,6 @@ describe('formatSchedule', () => {
           positionOnPath: 13116000,
           arrival: Duration.parse('PT60S'),
           stopFor: Duration.zero,
-          locked: false,
           receptionSignal: 'OPEN',
         },
       ];
@@ -47,7 +44,6 @@ describe('formatSchedule', () => {
         {
           arrival: 'PT1M',
           at: 'id332',
-          locked: false,
           reception_signal: 'OPEN',
           stop_for: 'P0D',
         },

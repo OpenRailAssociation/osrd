@@ -7,7 +7,6 @@ export default function commonConfBuilder() {
       {
         location: { uic: 474007 },
         id: 'brest',
-        locked: true,
         coordinates: [48.38819835024553, -4.478289762812405],
       },
       {
@@ -42,7 +41,6 @@ export default function commonConfBuilder() {
           operational_point: 'strasbourg',
         },
         id: 'strasbourg',
-        locked: true,
         coordinates: [48.58505541984412, 7.73387081978364],
       },
     ],
