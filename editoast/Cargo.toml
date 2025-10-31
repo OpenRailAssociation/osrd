@@ -122,7 +122,7 @@ serde_with = { version = "3.15.1", default-features = false, features = [
 ] }
 serde_yaml = "0.9.34"
 stdext = "0.3.3"
-strum = { version = "0.26.3", features = ["derive"] }
+strum = { version = "0.27.2", features = ["derive"] }
 syn = "2.0"
 tempfile = "3.20.0" # redis-test (crate cache) isn't up to date
 thiserror = "2.0.17"
