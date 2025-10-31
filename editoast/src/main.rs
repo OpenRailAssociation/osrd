@@ -33,6 +33,7 @@ use client::stdcm_search_env_commands::handle_stdcm_search_env_command;
 use client::timetables_commands::*;
 use client::user;
 use client::user::UserCommand;
+use common::tracing::SpanUploading;
 use common::tracing::TracingConfig;
 use common::tracing::create_tracing_subscriber;
 use database::DbConnectionPoolV2;
@@ -106,6 +107,7 @@ async fn run() -> anyhow::Result<()> {
         stream: EditoastMode::from_client(&client).into(),
         telemetry,
         directives: vec![],
+        span_uploading: SpanUploading::BackgroundBatched,
     };
     create_tracing_subscriber(
         tracing_config,

@@ -16,6 +16,7 @@ use axum::Router;
 use axum_test::TestRequest;
 use axum_test::TestServer;
 use axum_tracing_opentelemetry::middleware::OtelAxumLayer;
+use common::tracing::SpanUploading;
 use common::tracing::Stream;
 use common::tracing::Telemetry;
 use common::tracing::TracingConfig;
@@ -187,6 +188,7 @@ impl TestAppBuilder {
             stream: Stream::Stdout,
             telemetry,
             directives: vec![],
+            span_uploading: SpanUploading::BackgroundBatched,
         };
         let sub = create_tracing_subscriber(
             tracing_config,

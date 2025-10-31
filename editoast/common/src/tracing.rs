@@ -22,6 +22,12 @@ pub struct TracingConfig {
     pub stream: Stream,
     pub telemetry: Option<Telemetry>,
     pub directives: Vec<tracing_subscriber::filter::Directive>,
+    pub span_uploading: SpanUploading,
+}
+
+pub enum SpanUploading {
+    Blocking,
+    BackgroundBatched,
 }
 
 pub fn create_tracing_subscriber<T: SpanExporter + 'static>(
@@ -56,11 +62,16 @@ pub fn create_tracing_subscriber<T: SpanExporter + 'static>(
             let resource = Resource::builder()
                 .with_service_name(telemetry.service_name.clone())
                 .build();
-            let otlp_tracer = opentelemetry_sdk::trace::SdkTracerProvider::builder()
-                .with_batch_exporter(exporter)
-                .with_resource(resource)
-                .build()
-                .tracer("osrd-editoast");
+
+            let otlp_tracer =
+                opentelemetry_sdk::trace::SdkTracerProvider::builder().with_resource(resource);
+            let otlp_tracer = match tracing_config.span_uploading {
+                SpanUploading::Blocking => otlp_tracer.with_simple_exporter(exporter),
+                SpanUploading::BackgroundBatched => otlp_tracer.with_batch_exporter(exporter),
+            }
+            .build()
+            .tracer("osrd-editoast");
+
             let layer = tracing_opentelemetry::OpenTelemetryLayer::new(otlp_tracer);
             opentelemetry::global::set_text_map_propagator(TraceContextPropagator::new());
             Some(layer)
