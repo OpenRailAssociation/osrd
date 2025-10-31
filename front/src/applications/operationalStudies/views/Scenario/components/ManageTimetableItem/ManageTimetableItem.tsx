@@ -173,7 +173,11 @@ const ManageTimetableItem = () => {
           simulationPathSteps={markersInformation}
           pathStepsAndSuggestedOPs={pathStepsAndSuggestedOPs}
         >
-          <IncompatibleConstraints pathProperties={pathProperties} />
+          <IncompatibleConstraints
+            geometry={pathProperties?.geometry}
+            pathLength={pathProperties?.length}
+            incompatibleConstraints={pathProperties?.incompatibleConstraints}
+          />
         </ManageTimetableItemMap>
       </div>
     ),

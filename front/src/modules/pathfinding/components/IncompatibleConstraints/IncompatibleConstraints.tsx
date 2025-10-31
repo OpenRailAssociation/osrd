@@ -10,7 +10,10 @@ import { isArray } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { useMap, type MapLayerMouseEvent } from 'react-map-gl/maplibre';
 
-import type { ManageTimetableItemPathProperties } from 'applications/operationalStudies/types';
+import type {
+  GeoJsonLineString,
+  IncompatibleConstraints as IncompatibleConstraintsType,
+} from 'common/api/osrdEditoastApi';
 import Collapsable from 'common/Collapsable';
 import { getMapMouseEventNearestFeature } from 'utils/mapHelper';
 
@@ -26,10 +29,16 @@ import {
 import { getSegmentsConstraints, getSizeOfEnabledFilters } from './utils';
 
 type IncompatibleConstraintsProps = {
-  pathProperties?: ManageTimetableItemPathProperties;
+  geometry?: GeoJsonLineString;
+  pathLength?: number;
+  incompatibleConstraints?: IncompatibleConstraintsType;
 };
 
-const IncompatibleConstraints = ({ pathProperties }: IncompatibleConstraintsProps) => {
+const IncompatibleConstraints = ({
+  geometry,
+  pathLength,
+  incompatibleConstraints,
+}: IncompatibleConstraintsProps) => {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTimetableItem' });
   const map = useMap();
 
@@ -130,10 +139,7 @@ const IncompatibleConstraints = ({ pathProperties }: IncompatibleConstraintsProp
   // When pathProperties changes
   //  => reset state
   useEffect(() => {
-    const data =
-      pathProperties?.geometry && pathProperties?.incompatibleConstraints
-        ? pathProperties.incompatibleConstraints
-        : undefined;
+    const data = geometry && incompatibleConstraints ? incompatibleConstraints : undefined;
 
     const dataPairs = Object.entries(data || {});
 
@@ -147,10 +153,10 @@ const IncompatibleConstraints = ({ pathProperties }: IncompatibleConstraintsProp
     );
 
     // compute distance ratio between data & geometry
-    const turfLength = pathProperties?.geometry
-      ? length(feature(pathProperties?.geometry as LineString), { units: 'millimeters' })
+    const turfLength = geometry
+      ? length(feature(geometry as LineString), { units: 'millimeters' })
       : 0;
-    const ratio = turfLength / (pathProperties?.length || turfLength);
+    const ratio = turfLength / (pathLength || turfLength);
     const nextConstraints = dataPairs
       .map(([key, value]) =>
         value.map((e) => {
@@ -162,14 +168,9 @@ const IncompatibleConstraints = ({ pathProperties }: IncompatibleConstraintsProp
             end: e.range.end * ratio,
             value: 'value' in e ? `${e.value}` : undefined,
             bbox: bbox(
-              lineSliceAlong(
-                pathProperties?.geometry as LineString,
-                e.range.start * ratio,
-                e.range.end * ratio,
-                {
-                  units: 'millimeters',
-                }
-              )
+              lineSliceAlong(geometry as LineString, e.range.start * ratio, e.range.end * ratio, {
+                units: 'millimeters',
+              })
             ) as [number, number, number, number],
           };
         })
@@ -179,7 +180,7 @@ const IncompatibleConstraints = ({ pathProperties }: IncompatibleConstraintsProp
     setTotal(nextConstraints.length);
     setSelectedConstraint(new Set([]));
     setHoveredConstraint(new Set([]));
-  }, [pathProperties?.incompatibleConstraints]);
+  }, [incompatibleConstraints]);
 
   const filteredConstraints = useMemo(
     () => constraints.filter((c) => filtersConstraintState[c.type]?.enabled),
@@ -187,10 +188,10 @@ const IncompatibleConstraints = ({ pathProperties }: IncompatibleConstraintsProp
   );
 
   const filteredGeojson = useMemo(() => {
-    if (!pathProperties?.geometry || filteredConstraints.length === 0)
+    if (!geometry || filteredConstraints.length === 0)
       return featureCollection<LineString, { ids: string[] }>([]);
-    return getSegmentsConstraints(pathProperties?.geometry as LineString, filteredConstraints);
-  }, [pathProperties?.geometry, filteredConstraints]);
+    return getSegmentsConstraints(geometry as LineString, filteredConstraints);
+  }, [geometry, filteredConstraints]);
 
   if (total === 0) return null;
   return (
@@ -237,7 +238,7 @@ const IncompatibleConstraints = ({ pathProperties }: IncompatibleConstraintsProp
           />
         </div>
       </Collapsable>
-      {pathProperties?.geometry && (
+      {geometry && (
         <IncompatibleConstraintsLayer
           geojson={filteredGeojson}
           hovered={hoveredConstraint}
