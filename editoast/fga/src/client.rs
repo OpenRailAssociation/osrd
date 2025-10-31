@@ -15,6 +15,7 @@ pub use stores::Store;
 
 use tracing::Instrument;
 use tuples::RawTuple;
+use url::Url;
 use uuid::Uuid;
 
 use std::collections::HashMap;
@@ -51,8 +52,7 @@ pub struct Client {
 
 #[derive(Debug, Clone)]
 pub struct ConnectionSettings {
-    address: String,
-    port: u16,
+    url: Url,
     limits: Limits,
 
     /// Whether to reset the store on initialization
@@ -82,10 +82,9 @@ impl Default for Limits {
 }
 
 impl ConnectionSettings {
-    pub fn new(address: String, port: u16, limits: Limits) -> Self {
+    pub fn new(url: Url, limits: Limits) -> Self {
         Self {
-            address,
-            port,
+            url,
             limits,
             reset_store: false,
         }
@@ -906,11 +905,8 @@ impl PreparedDeletes<'_> {
 // of the OpenFGA API documentation: https://openfga.dev/api/service
 
 impl Client {
-    fn base_url(&self) -> url::Url {
-        url::Url::parse(
-            format!("http://{}:{}/", self.settings.address, self.settings.port).as_str(),
-        )
-        .unwrap()
+    fn base_url(&self) -> &url::Url {
+        &self.settings.url
     }
 }
 

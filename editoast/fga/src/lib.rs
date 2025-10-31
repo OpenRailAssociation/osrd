@@ -471,23 +471,24 @@ macro_rules! fga {
 
 #[cfg(any(test, feature = "test_utilities"))]
 pub mod test_utilities {
+    use url::Url;
+
     use super::*;
 
     /// The [client::ConnectionSettings] to use for unit and doc tests
     ///
-    /// Configurable through the `OPENFGA_HOST`, `OPENFGA_PORT`, `OPENFGA_MAX_CHECKS_PER_BATCH_CHECK` and
+    /// Configurable through the `FGA_API_URL`, `OPENFGA_MAX_CHECKS_PER_BATCH_CHECK` and
     /// `OPENFGA_MAX_TUPLES_PER_WRITE` environment variables.
-    /// Defaults to `localhost`, `8091` and OpenFGA default settings.
+    /// Defaults to `http://localhost:8091` and OpenFGA default settings.
     pub fn connection_settings() -> client::ConnectionSettings {
         use client::DEFAULT_OPENFGA_MAX_CHECKS_PER_BATCH_CHECK;
         use client::DEFAULT_OPENFGA_MAX_TUPLES_PER_WRITE;
         use client::Limits;
 
-        let address = std::env::var("OPENFGA_HOST").unwrap_or_else(|_| "localhost".to_string());
-        let port = std::env::var("OPENFGA_PORT")
-            .unwrap_or_else(|_| "8091".to_string())
-            .parse()
-            .expect("invalid port");
+        let openfga_url = Url::parse(
+            &std::env::var("FGA_API_URL").unwrap_or_else(|_| "http://localhost:8091".to_string()),
+        )
+        .expect("invalid FGA_API_URL");
         let max_checks_per_batch_check = std::env::var("OPENFGA_MAX_CHECKS_PER_BATCH_CHECK")
             .map(|tuple_reads| tuple_reads.parse::<u32>().expect("invalid max tuple reads"))
             .unwrap_or(DEFAULT_OPENFGA_MAX_CHECKS_PER_BATCH_CHECK);
@@ -500,8 +501,7 @@ pub mod test_utilities {
             .unwrap_or(DEFAULT_OPENFGA_MAX_TUPLES_PER_WRITE);
 
         client::ConnectionSettings::new(
-            address,
-            port,
+            openfga_url,
             Limits {
                 max_checks_per_batch_check,
                 max_tuples_per_write,

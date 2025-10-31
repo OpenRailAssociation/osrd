@@ -1,3 +1,4 @@
+use url::Url;
 use fga::model::Relation as _;
 use fga::client::Limits;
 
@@ -24,5 +25,5 @@ fga::relations! {
 }
 
 fn settings() -> fga::client::ConnectionSettings {
-    fga::client::ConnectionSettings::new("localhost".to_string(), 8091, Limits::default()).reset_store()
+    fga::client::ConnectionSettings::new(Url::parse("http://localhost:8091").unwrap(), Limits::default()).reset_store()
 }

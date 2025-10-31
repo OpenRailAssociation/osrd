@@ -46,10 +46,10 @@ impl OpenfgaConfig {
         let config: views::OpenfgaConfig = self.into();
         let mut openfga = {
             tracing::info!(url = %config.url, "connecting to OpenFGA");
-            match fga::Client::try_with_store(&config.store, config.try_as_settings()?).await {
+            match fga::Client::try_with_store(&config.store, config.as_settings()).await {
                 Err(fga::client::InitializationError::NotFound(store)) => {
                     tracing::info!(store, "store not found, creating it");
-                    fga::Client::try_new_store(&store, config.try_as_settings()?).await?
+                    fga::Client::try_new_store(&store, config.as_settings()).await?
                 }
                 result => result?,
             }
