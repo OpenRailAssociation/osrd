@@ -1,0 +1,75 @@
+openapi: 3.1.0
+info:
+  title: Railway manager interface
+  description: All HTTP endpoints of Railway manager interface
+  license:
+    name: LGPL
+    url: https://www.gnu.org/licenses/lgpl-3.0.html
+  version: 0.1.0
+paths:
+  /transform_timetable:
+    post:
+      tags:
+        - timetable
+      summary: Transform an arbitrary timetable file into standard OSRD format
+      description: |
+        Accepts a timetable file in various formats and transforms it into a standard OSRD timetable JSON.
+        Supports compressed payloads (gzip or zip) via the Content-Encoding header.
+      parameters:
+        - name: content-encoding
+          in: header
+          required: false
+          description: Compression method used for the request body
+          schema:
+            type: string
+            enum:
+              - gzip
+              - zip
+      requestBody:
+        description: Arbitrary file to transform into a standard OSRD timetable json file
+        required: true
+        content:
+          application/octet-stream:
+            schema:
+              type: string
+              format: binary
+      responses:
+        '200':
+          description: Timetable successfully transformed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransformTimetableResponse'
+        '400':
+          description: Bad request - Failed to decompress or parse the payload
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+components:
+  schemas:
+    TransformTimetableResponse:
+      type: object
+      description: Standard OSRD timetable format
+      required:
+      - train_schedules
+      - paced_trains
+      properties:
+        train_schedules:
+          type: array
+          description: List of train schedules
+          items:
+            $ref: '../editoast/openapi.yaml#/components/schemas/TrainSchedule'
+        paced_trains:
+          type: array
+          description: List of paced trains
+          items:
+            $ref: '../editoast/openapi.yaml#/components/schemas/PacedTrain'
+    ErrorResponse:
+      type: object
+      properties:
+        detail:
+          type: string
+          description: Error message describing what went wrong
+      required:
+        - detail
