@@ -871,14 +871,15 @@ impl AppState {
             let mut openfga = {
                 tracing::info!(url = %openfga_config.url, "connecting to OpenFGA");
                 match fga::Client::try_with_store(
-                    openfga_config.store.clone(),
+                    &openfga_config.store,
                     openfga_config.try_as_settings()?,
                 )
                 .await
                 {
                     Err(fga::client::InitializationError::NotFound(store)) => {
                         tracing::info!(store, "store not found, creating it");
-                        fga::Client::try_new_store(store, openfga_config.try_as_settings()?).await?
+                        fga::Client::try_new_store(&store, openfga_config.try_as_settings()?)
+                            .await?
                     }
                     result => result?,
                 }

@@ -238,7 +238,7 @@ impl TestAppBuilder {
             }
         };
         let mut openfga = block_on(fga::Client::try_new_store(
-            store_name,
+            &store_name,
             fga::client::ConnectionSettings::new("localhost".to_owned(), 8091, Limits::default())
                 .reset_store(),
         ))
