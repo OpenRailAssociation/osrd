@@ -171,7 +171,7 @@ impl From<reqwest::Error> for RequestFailure {
 impl Client {
     #[tracing::instrument(err)]
     pub async fn try_with_store(
-        store_name: String,
+        store_name: &str,
         settings: ConnectionSettings,
     ) -> Result<Self, InitializationError> {
         let mut client = Self {
@@ -182,9 +182,9 @@ impl Client {
         };
 
         client.store = client
-            .find_store(&store_name)
+            .find_store(store_name)
             .await?
-            .ok_or_else(|| InitializationError::NotFound(store_name))?;
+            .ok_or_else(|| InitializationError::NotFound(store_name.to_string()))?;
         client.actualize_authorization_model().await?;
 
         Ok(client)
@@ -192,7 +192,7 @@ impl Client {
 
     #[tracing::instrument(err)]
     pub async fn try_new_store(
-        store_name: String,
+        store_name: &str,
         settings: ConnectionSettings,
     ) -> Result<Client, InitializationError> {
         let mut client = Self {
@@ -202,12 +202,12 @@ impl Client {
             inner: reqwest::Client::new(),
         };
         if client.settings.reset_store
-            && let Some(store) = client.find_store(&store_name).await?
+            && let Some(store) = client.find_store(store_name).await?
         {
             tracing::debug!(old = ?store, "removing old store for reset");
             client.delete_stores(&store.id).await?;
         }
-        client.store = client.post_stores(&store_name).await?;
+        client.store = client.post_stores(store_name).await?;
         Ok(client)
     }
 
@@ -472,7 +472,7 @@ impl Client {
     /// # use fga::fga;
     /// # #[tokio::main]
     /// # async fn main() {
-    /// # let mut client = fga::Client::try_new_store("doctest_checks".to_owned(), settings()).await.unwrap();
+    /// # let mut client = fga::Client::try_new_store("doctest_checks", settings()).await.unwrap();
     /// # client.update_authorization_model(&fga::compile_model(include_str!("../tests/doctest.fga"))).await.unwrap();
     /// client
     ///     .write_tuples(&[fga!(Document:"budget"#writer@Person:"alice")])
@@ -612,7 +612,7 @@ impl Client {
     /// # use fga::fga;
     /// # #[tokio::main]
     /// # async fn main() {
-    /// # let mut client = fga::Client::try_new_store("doctest_list_usersets".to_owned(), settings()).await.unwrap();
+    /// # let mut client = fga::Client::try_new_store("doctest_list_usersets", settings()).await.unwrap();
     /// # client.update_authorization_model(&fga::compile_model(include_str!("../tests/doctest.fga"))).await.unwrap();
     /// // define can_read: reader or writer
     /// client.prepare_writes()
@@ -1113,8 +1113,7 @@ mod tests {
     #[tokio::test]
     async fn test_try_init_not_found() {
         setup_tracing();
-        let result =
-            Client::try_with_store("nonexistent_store".to_owned(), connection_settings()).await;
+        let result = Client::try_with_store("nonexistent_store", connection_settings()).await;
 
         match result {
             Err(InitializationError::NotFound(store_name)) => {

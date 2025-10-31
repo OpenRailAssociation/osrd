@@ -516,7 +516,7 @@ pub mod test_utilities {
     macro_rules! test_client {
         () => {
             $crate::client::Client::try_new_store(
-                stdext::function_name!()
+                &stdext::function_name!()
                     .split("::")
                     .filter(|x| *x != "{{closure}}")
                     .collect::<Vec<_>>()
