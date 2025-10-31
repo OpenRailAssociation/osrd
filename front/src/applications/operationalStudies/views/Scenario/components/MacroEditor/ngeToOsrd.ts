@@ -872,7 +872,7 @@ export const updateMacroNote = async (
   note: FreeFloatingTextDto
 ) => {
   const dbId = state.getDbIdForNote(note.id);
-  if (!dbId) return;
+  if (!dbId) throw new Error(`Note ${note.id} is not saved in the DB`);
 
   await dispatch(
     osrdEditoastApi.endpoints.putProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNotesNoteId.initiate(

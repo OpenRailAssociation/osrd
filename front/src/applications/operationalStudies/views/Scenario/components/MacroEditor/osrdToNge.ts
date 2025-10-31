@@ -291,6 +291,7 @@ export const loadAndIndexNge = async (
 ): Promise<void> => {
   notes.forEach((note) => {
     state.setDbIdForNote(note.id, note.id);
+    note.labels.forEach((label) => state.noteLabels.add(label));
   });
 
   // Load path items
