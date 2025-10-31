@@ -236,8 +236,11 @@ impl TestAppBuilder {
         };
         let mut openfga = block_on(fga::Client::try_new_store(
             &store_name,
-            fga::client::ConnectionSettings::new("localhost".to_owned(), 8091, Limits::default())
-                .reset_store(),
+            fga::client::ConnectionSettings::new(
+                Url::parse("http://localhost:8091").unwrap(),
+                Limits::default(),
+            )
+            .reset_store(),
         ))
         .expect("OpenFGA should be setup properly for testing");
         if let Some(model) = self.authorization_model {

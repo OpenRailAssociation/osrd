@@ -872,14 +872,13 @@ impl AppState {
                 tracing::info!(url = %openfga_config.url, "connecting to OpenFGA");
                 match fga::Client::try_with_store(
                     &openfga_config.store,
-                    openfga_config.try_as_settings()?,
+                    openfga_config.as_settings(),
                 )
                 .await
                 {
                     Err(fga::client::InitializationError::NotFound(store)) => {
                         tracing::info!(store, "store not found, creating it");
-                        fga::Client::try_new_store(&store, openfga_config.try_as_settings()?)
-                            .await?
+                        fga::Client::try_new_store(&store, openfga_config.as_settings()).await?
                     }
                     result => result?,
                 }
@@ -1000,23 +999,14 @@ impl Server {
 }
 
 impl OpenfgaConfig {
-    pub fn try_as_settings(&self) -> anyhow::Result<fga::client::ConnectionSettings> {
-        let address = self
-            .url
-            .host_str()
-            .ok_or_else(|| anyhow::anyhow!("Configured OpenFGA URL doesn't have a host part"))?;
-        let port = self
-            .url
-            .port_or_known_default()
-            .ok_or_else(|| anyhow::anyhow!("Configured OpenFGA URL doesn't have a port part"))?;
-        Ok(fga::client::ConnectionSettings::new(
-            address.to_owned(),
-            port,
+    pub fn as_settings(&self) -> fga::client::ConnectionSettings {
+        fga::client::ConnectionSettings::new(
+            self.url.clone(),
             Limits {
                 max_checks_per_batch_check: self.max_checks_per_batch_check,
                 max_tuples_per_write: self.max_tuples_per_write,
             },
-        ))
+        )
     }
 }
 
