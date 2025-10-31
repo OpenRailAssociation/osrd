@@ -513,7 +513,10 @@ def _convert_stop(stop: tuple[str, float], i: int) -> dict:
     :param i: index of the stop, included as an id
     """
     track_section, offset = stop
-    return {"offset": _to_mm(offset), "track": track_section, "id": str(i)}
+    return {
+        "location": {"track": track_section, "offset": _to_mm(offset)},
+        "id": str(i),
+    }
 
 
 def _reset_timetable(editoast_url: str, scenario: Scenario) -> Scenario:

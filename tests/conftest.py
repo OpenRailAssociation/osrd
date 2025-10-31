@@ -293,8 +293,8 @@ def west_to_south_east_simulation(
             {
                 "constraint_distribution": "STANDARD",
                 "path": [
-                    {"offset": 837034, "track": "TA2", "id": "a"},
-                    {"offset": 4386000, "track": "TH1", "id": "b"},
+                    {"location": {"track": "TA2", "offset": 837034}, "id": "a"},
+                    {"location": {"track": "TH1", "offset": 4386000}, "id": "b"},
                 ],
                 "schedule": [{"at": "b", "stop_for": "PT0S"}],
                 "rolling_stock_name": fast_rolling_stock_name,
@@ -321,8 +321,8 @@ def west_to_south_east_paced_train(
             {
                 "constraint_distribution": "STANDARD",
                 "path": [
-                    {"offset": 837034, "track": "TA2", "id": "a"},
-                    {"offset": 4386000, "track": "TH1", "id": "b"},
+                    {"location": {"track": "TA2", "offset": 837034}, "id": "a"},
+                    {"location": {"track": "TH1", "offset": 4386000}, "id": "b"},
                 ],
                 "schedule": [{"at": "b", "stop_for": "PT0S"}],
                 "rolling_stock_name": fast_rolling_stock_name,
@@ -351,8 +351,8 @@ def west_to_south_east_paced_trains(
     base = {
         "constraint_distribution": "STANDARD",
         "path": [
-            {"offset": 837034, "track": "TA2", "id": "a"},
-            {"offset": 4386000, "track": "TH1", "id": "b"},
+            {"location": {"track": "TA2", "offset": 837034}, "id": "a"},
+            {"location": {"track": "TH1", "offset": 4386000}, "id": "b"},
         ],
         "rolling_stock_name": fast_rolling_stock_name,
         "train_name": "foo",
@@ -407,8 +407,8 @@ def west_to_south_east_etcs_simulation(
             {
                 "constraint_distribution": "STANDARD",
                 "path": [
-                    {"offset": 837034, "track": "TA2", "id": "a"},
-                    {"offset": 4386000, "track": "TH1", "id": "b"},
+                    {"location": {"track": "TA2", "offset": 837034}, "id": "a"},
+                    {"location": {"track": "TH1", "offset": 4386000}, "id": "b"},
                 ],
                 "schedule": [{"at": "b", "stop_for": "PT0S"}],
                 "rolling_stock_name": etcs_rolling_stock_name,
@@ -432,8 +432,8 @@ def west_to_south_east_simulations(
     base = {
         "constraint_distribution": "STANDARD",
         "path": [
-            {"offset": 837034, "track": "TA2", "id": "a"},
-            {"offset": 4386000, "track": "TH1", "id": "b"},
+            {"location": {"track": "TA2", "offset": 837034}, "id": "a"},
+            {"location": {"track": "TH1", "offset": 4386000}, "id": "b"},
         ],
         "rolling_stock_name": fast_rolling_stock_name,
         "train_name": "foo",
