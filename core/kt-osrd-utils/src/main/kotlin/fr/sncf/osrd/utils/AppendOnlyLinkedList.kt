@@ -20,11 +20,7 @@ class AppendOnlyLinkedList<T>(private var lastNode: Node<T>? = null, var size: I
      */
     operator fun get(index: Int): T {
         if (index >= size || index < 0) throw IndexOutOfBoundsException()
-        var node = lastNode!!
-        while (node.currentIndex != index) {
-            node = node.prev!!
-        }
-        return node.element
+        return iterateNodesBackwards().first { it.currentIndex == index }.element
     }
 
     fun isEmpty(): Boolean {
@@ -57,24 +53,12 @@ class AppendOnlyLinkedList<T>(private var lastNode: Node<T>? = null, var size: I
      * calls on elements that aren't near the end.
      */
     fun toList(): List<T> {
-        val res = mutableListOf<T>()
-        var node = lastNode
-        while (node != null) {
-            res.add(node.element)
-            node = node.prev
-        }
-        return res.reversed()
+        return iterateBackwards().toList().reversed()
     }
 
     /** Converts the linked list into a set. */
     fun toSet(): Set<T> {
-        val res = mutableSetOf<T>()
-        var node = lastNode
-        while (node != null) {
-            res.add(node.element)
-            node = node.prev
-        }
-        return res
+        return iterateBackwards().toSet()
     }
 
     /** Returns the last element of the list */
@@ -102,17 +86,28 @@ class AppendOnlyLinkedList<T>(private var lastNode: Node<T>? = null, var size: I
      * Iterate over the list backwards, returning the first seen element that fits the predicate.
      */
     fun findLast(predicate: (T) -> Boolean): T? {
-        var node = lastNode
-        while (node != null) {
-            if (predicate.invoke(node.element)) return node.element
-            node = node.prev
-        }
-        return null
+        return iterateBackwards().firstOrNull(predicate)
     }
 
     /** Utility function for debugger views. */
     override fun toString(): String {
         return toList().toString()
+    }
+
+    private fun iterateBackwards(): Sequence<T> {
+        return iterateNodesBackwards().map { it.element }
+    }
+
+    fun iterateIndexedBackwards(): Sequence<IndexedValue<T>> {
+        return iterateNodesBackwards().map { IndexedValue(it.currentIndex, it.element) }
+    }
+
+    private fun iterateNodesBackwards(): Sequence<Node<T>> = sequence {
+        var node = lastNode
+        while (node != null) {
+            yield(node)
+            node = node.prev
+        }
     }
 }
 

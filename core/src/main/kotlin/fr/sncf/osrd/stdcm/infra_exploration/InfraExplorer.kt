@@ -263,9 +263,12 @@ private class InfraExplorerImpl(
     }
 
     override fun getLookahead(): List<BlockRange> {
-        val res = mutableListOf<BlockRange>()
-        for (i in currentIndex + 1..<blockRanges.size) res.add(blockRanges[i])
-        return res
+        return blockRanges
+            .iterateIndexedBackwards()
+            .takeWhile { it.index > currentIndex }
+            .map { it.value }
+            .toList()
+            .reversed()
     }
 
     override fun clone(): InfraExplorer {
