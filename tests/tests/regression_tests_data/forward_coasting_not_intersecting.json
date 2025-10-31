@@ -8,28 +8,23 @@
             "comfort": "STANDARD",
             "path": [
                 {
-                    "offset": 561106,
-                    "track": "TG0",
+                    "location": {"track": "TG0", "offset": 561106},
                     "id": "0"
                 },
                 {
-                    "offset": 78698,
-                    "track": "TG0",
+                    "location": {"track": "TG0", "offset": 78698},
                     "id": "1"
                 },
                 {
-                    "offset": 642653,
-                    "track": "TC0",
+                    "location": {"track": "TC0", "offset": 642653},
                     "id": "2"
                 },
                 {
-                    "offset": 2725,
-                    "track": "TA3",
+                    "location": {"track": "TA3", "offset": 2725},
                     "id": "3"
                 },
                 {
-                    "offset": 554934,
-                    "track": "TA1",
+                    "location": {"track": "TA1", "offset": 554934},
                     "id": "4"
                 }
             ],

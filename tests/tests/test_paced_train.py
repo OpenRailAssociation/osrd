@@ -88,8 +88,16 @@ def test_get_paced_train_with_exception_path(
             "power_restrictions": [],
             "schedule": [],
             "path": [
-                {"id": "id1", "deleted": False, "track": "TA0", "offset": 470000},
-                {"id": "id2", "deleted": False, "track": "TG4", "offset": 1993000},
+                {
+                    "id": "id1",
+                    "deleted": False,
+                    "location": {"track": "TA0", "offset": 470000},
+                },
+                {
+                    "id": "id2",
+                    "deleted": False,
+                    "location": {"track": "TG4", "offset": 1993000},
+                },
             ],
             "margins": {
                 "boundaries": [],
@@ -158,8 +166,16 @@ def test_get_paced_train_with_exception_simulation(
         "disabled": False,
         "path_and_schedule": {
             "path": [
-                {"id": "id1", "deleted": False, "track": "TA0", "offset": 470000},
-                {"id": "id2", "deleted": False, "track": "TG4", "offset": 1993000},
+                {
+                    "id": "id1",
+                    "deleted": False,
+                    "location": {"track": "TA0", "offset": 470000},
+                },
+                {
+                    "id": "id2",
+                    "deleted": False,
+                    "location": {"track": "TG4", "offset": 1993000},
+                },
             ],
             "schedule": [],
             "margins": {"boundaries": [], "values": ["0%"]},

@@ -44,9 +44,9 @@ def test_conflicts_with_paced_trains(
             "labels": [],
             "options": {"use_electrical_profiles": False},
             "path": [
-                {"id": "start", "track": "TC0", "offset": 185000},
-                {"id": "stop", "track": "TC0", "offset": 685000},
-                {"id": "end", "track": "TD0", "offset": 24820000},
+                {"id": "start", "location": {"track": "TC0", "offset": 185000}},
+                {"id": "stop", "location": {"track": "TC0", "offset": 685000}},
+                {"id": "end", "location": {"track": "TD0", "offset": 24820000}},
             ],
             "power_restrictions": [],
             "rolling_stock_name": "fast_rolling_stock",
@@ -74,8 +74,8 @@ def test_conflicts_with_paced_trains(
     stopping_paced_train_payload["start_time"] = paced_start_time
     stopping_paced_train_payload["paced"] = {"time_window": "PT2H", "interval": "PT15M"}
     stopping_paced_train_payload["path"] = [
-        {"id": "start", "track": "TC1", "offset": 185000},
-        {"id": "end", "track": "TD0", "offset": 24820000},
+        {"id": "start", "location": {"track": "TC1", "offset": 185000}},
+        {"id": "end", "location": {"track": "TD0", "offset": 24820000}},
     ]
 
     stopping_paced_train_response = session.post(
@@ -130,9 +130,9 @@ def test_conflicts_with_reception_on_closed_signal(
             "labels": [],
             "options": {"use_electrical_profiles": False},
             "path": [
-                {"id": "start", "track": "TC0", "offset": 185000},
-                {"id": "stop", "track": "TC0", "offset": 685000},
-                {"id": "end", "track": "TD0", "offset": 24820000},
+                {"id": "start", "location": {"track": "TC0", "offset": 185000}},
+                {"id": "stop", "location": {"track": "TC0", "offset": 685000}},
+                {"id": "end", "location": {"track": "TD0", "offset": 24820000}},
             ],
             "power_restrictions": [],
             "rolling_stock_name": "fast_rolling_stock",
@@ -169,8 +169,8 @@ def test_conflicts_with_reception_on_closed_signal(
             "labels": [],
             "options": {"use_electrical_profiles": False},
             "path": [
-                {"id": "start", "track": "TC1", "offset": 185000},
-                {"id": "end", "track": "TD0", "offset": 24820000},
+                {"id": "start", "location": {"track": "TC1", "offset": 185000}},
+                {"id": "end", "location": {"track": "TD0", "offset": 24820000}},
             ],
             "power_restrictions": [],
             "rolling_stock_name": "fast_rolling_stock",
@@ -258,8 +258,8 @@ def test_paced_train_conflicts(
         "labels": [],
         "options": {"use_electrical_profiles": False},
         "path": [
-            {"id": "start", "track": "TC1", "offset": 185000},
-            {"id": "end", "track": "TD0", "offset": 24820000},
+            {"id": "start", "location": {"track": "TC1", "offset": 185000}},
+            {"id": "end", "location": {"track": "TD0", "offset": 24820000}},
         ],
         "power_restrictions": [],
         "rolling_stock_name": "fast_rolling_stock",
@@ -324,8 +324,8 @@ def test_paced_train_with_exceptions_conflicts(
         "labels": [],
         "options": {"use_electrical_profiles": False},
         "path": [
-            {"id": "start", "track": "TC1", "offset": 185000},
-            {"id": "end", "track": "TD0", "offset": 24820000},
+            {"id": "start", "location": {"track": "TC1", "offset": 185000}},
+            {"id": "end", "location": {"track": "TD0", "offset": 24820000}},
         ],
         "power_restrictions": [],
         "rolling_stock_name": "fast_rolling_stock",
@@ -431,8 +431,8 @@ def test_scheduled_points_with_incompatible_margins(
             "labels": [],
             "options": {"use_electrical_profiles": False},
             "path": [
-                {"id": "start", "track": "TC0", "offset": 185000},
-                {"id": "end", "track": "TD0", "offset": 24820000},
+                {"id": "start", "location": {"track": "TC0", "offset": 185000}},
+                {"id": "end", "location": {"track": "TD0", "offset": 24820000}},
             ],
             "power_restrictions": [],
             "rolling_stock_name": "fast_rolling_stock",
@@ -483,8 +483,8 @@ def test_mrsp_sources(
             "labels": [],
             "options": {"use_electrical_profiles": False},
             "path": [
-                {"id": "start", "track": "TH0", "offset": 820000},
-                {"id": "end", "track": "TH1", "offset": 5000000},
+                {"id": "start", "location": {"track": "TH0", "offset": 820000}},
+                {"id": "end", "location": {"track": "TH1", "offset": 5000000}},
             ],
             "power_restrictions": [],
             "rolling_stock_name": "fast_rolling_stock",

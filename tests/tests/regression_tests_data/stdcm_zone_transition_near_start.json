@@ -51,38 +51,31 @@
                     "comfort": "STANDARD",
                     "path": [
                         {
-                            "offset": 66510,
-                            "track": "TA6",
+                            "location": {"track": "TA6", "offset": 66510},
                             "id": "0"
                         },
                         {
-                            "offset": 5785853,
-                            "track": "TA6",
+                            "location": {"track": "TA6", "offset": 5785853},
                             "id": "1"
                         },
                         {
-                            "offset": 506831,
-                            "track": "TC1",
+                            "location": {"track": "TC1", "offset": 506831},
                             "id": "2"
                         },
                         {
-                            "offset": 24149988,
-                            "track": "TD0",
+                            "location": {"track": "TD0", "offset": 24149988},
                             "id": "3"
                         },
                         {
-                            "offset": 1532018,
-                            "track": "TD2",
+                            "location": {"track": "TD2", "offset": 1532018},
                             "id": "4"
                         },
                         {
-                            "offset": 897313,
-                            "track": "TG0",
+                            "location": {"track": "TG0", "offset": 897313},
                             "id": "5"
                         },
                         {
-                            "offset": 3271337,
-                            "track": "TG1",
+                            "location": {"track": "TG1", "offset": 3271337},
                             "id": "6"
                         }
                     ],
@@ -117,28 +110,23 @@
                     "comfort": "STANDARD",
                     "path": [
                         {
-                            "offset": 1212759,
-                            "track": "TG4",
+                            "location": {"track": "TG4", "offset": 1212759},
                             "id": "0"
                         },
                         {
-                            "offset": 373843,
-                            "track": "TG4",
+                            "location": {"track": "TG4", "offset": 373843},
                             "id": "1"
                         },
                         {
-                            "offset": 419312,
-                            "track": "TD3",
+                            "location": {"track": "TD3", "offset": 419312},
                             "id": "2"
                         },
                         {
-                            "offset": 18544035,
-                            "track": "TD1",
+                            "location": {"track": "TD1", "offset": 18544035},
                             "id": "3"
                         },
                         {
-                            "offset": 6843,
-                            "track": "TA4",
+                            "location": {"track": "TA4", "offset": 6843},
                             "id": "4"
                         }
                     ],
@@ -171,23 +159,19 @@
                     "comfort": "STANDARD",
                     "path": [
                         {
-                            "offset": 809235,
-                            "track": "TC0",
+                            "location": {"track": "TC0", "offset": 809235},
                             "id": "0"
                         },
                         {
-                            "offset": 147883,
-                            "track": "TC0",
+                            "location": {"track": "TC0", "offset": 147883},
                             "id": "1"
                         },
                         {
-                            "offset": 3095884,
-                            "track": "TA6",
+                            "location": {"track": "TA6", "offset": 3095884},
                             "id": "2"
                         },
                         {
-                            "offset": 1677418,
-                            "track": "TA0",
+                            "location": {"track": "TA0", "offset": 1677418},
                             "id": "3"
                         }
                     ],
@@ -211,18 +195,15 @@
                     "comfort": "STANDARD",
                     "path": [
                         {
-                            "offset": 41491,
-                            "track": "TG3",
+                            "location": {"track": "TG3", "offset": 41491},
                             "id": "0"
                         },
                         {
-                            "offset": 44551,
-                            "track": "TG3",
+                            "location": {"track": "TG3", "offset": 44551},
                             "id": "1"
                         },
                         {
-                            "offset": 903746,
-                            "track": "TG5",
+                            "location": {"track": "TG5", "offset": 903746},
                             "id": "2"
                         }
                     ],
@@ -246,28 +227,23 @@
                     "comfort": "STANDARD",
                     "path": [
                         {
-                            "offset": 150949,
-                            "track": "TC3",
+                            "location": {"track": "TC3", "offset": 150949},
                             "id": "0"
                         },
                         {
-                            "offset": 388979,
-                            "track": "TC3",
+                            "location": {"track": "TC3", "offset": 388979},
                             "id": "1"
                         },
                         {
-                            "offset": 16024193,
-                            "track": "TD1",
+                            "location": {"track": "TD1", "offset": 16024193},
                             "id": "2"
                         },
                         {
-                            "offset": 809383,
-                            "track": "TH0",
+                            "location": {"track": "TH0", "offset": 809383},
                             "id": "3"
                         },
                         {
-                            "offset": 3842459,
-                            "track": "TH1",
+                            "location": {"track": "TH1", "offset": 3842459},
                             "id": "4"
                         }
                     ],
