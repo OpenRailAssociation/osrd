@@ -908,7 +908,6 @@ paths:
         required: false
         schema:
           type: string
-          description: Auto-generated discriminant enum variants
           enum:
           - duplicated_group
           - empty_object
