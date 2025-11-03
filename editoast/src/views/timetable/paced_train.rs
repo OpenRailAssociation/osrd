@@ -1323,7 +1323,6 @@ mod tests {
     use core_client::simulation::CompleteReportTrain;
     use core_client::simulation::ElectricalProfiles;
     use core_client::simulation::ReportTrain;
-    use core_client::simulation::SimulationSuccess;
     use core_client::simulation::SpeedLimitProperties;
     use database::DbConnectionPoolV2;
     use editoast_models::prelude::*;
@@ -1681,46 +1680,7 @@ mod tests {
             .assert_status(StatusCode::OK)
             .json_into();
 
-        assert_eq!(
-            response,
-            core_client::simulation::Response::Success(SimulationSuccess {
-                base: ReportTrain {
-                    positions: vec![],
-                    times: vec![],
-                    speeds: vec![],
-                    energy_consumption: 0.0,
-                    path_item_times: vec![0, 1000, 2000, 3000]
-                },
-                provisional: ReportTrain {
-                    positions: vec![],
-                    times: vec![],
-                    speeds: vec![],
-                    energy_consumption: 0.0,
-                    path_item_times: vec![0, 1000, 2000, 3000]
-                },
-                final_output: CompleteReportTrain {
-                    report_train: ReportTrain {
-                        positions: vec![0],
-                        times: vec![0],
-                        speeds: vec![],
-                        energy_consumption: 0.0,
-                        path_item_times: vec![0, 1000, 2000, 3000]
-                    },
-                    signal_critical_positions: vec![],
-                    zone_updates: vec![],
-                    spacing_requirements: vec![],
-                    routing_requirements: vec![]
-                },
-                mrsp: SpeedLimitProperties {
-                    boundaries: vec![],
-                    values: vec![]
-                },
-                electrical_profiles: ElectricalProfiles {
-                    boundaries: vec![],
-                    values: vec![]
-                }
-            })
-        );
+        assert_eq!(response, simulation_empty_response());
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -1763,17 +1723,17 @@ mod tests {
             simulation::Response::Success(SimulationResponseSuccess {
                 base: ReportTrain {
                     positions: vec![],
-                    times: vec![],
+                    times: vec![0],
                     speeds: vec![],
                     energy_consumption: 0.0,
-                    path_item_times: vec![0, 1000, 2000, 3000]
+                    path_item_times: vec![0, 1]
                 },
                 provisional: ReportTrain {
                     positions: vec![],
-                    times: vec![],
+                    times: vec![0],
                     speeds: vec![],
                     energy_consumption: 0.0,
-                    path_item_times: vec![0, 1000, 2000, 3000]
+                    path_item_times: vec![0, 1]
                 },
                 final_output: CompleteReportTrain {
                     report_train: ReportTrain {
@@ -1781,7 +1741,7 @@ mod tests {
                         times: vec![0],
                         speeds: vec![],
                         energy_consumption: 0.0,
-                        path_item_times: vec![0, 1000, 2000, 3000]
+                        path_item_times: vec![0, 1]
                     },
                     signal_critical_positions: vec![],
                     zone_updates: vec![],
@@ -1916,11 +1876,11 @@ mod tests {
             PacedTrainSummaryResponse {
                 paced_train: SummaryResponse::Success {
                     length: 0,
-                    time: 3000,
+                    time: 1,
                     energy_consumption: 0.0,
-                    path_item_times_final: vec![0, 1000, 2000, 3000],
-                    path_item_times_provisional: vec![0, 1000, 2000, 3000],
-                    path_item_times_base: vec![0, 1000, 2000, 3000],
+                    path_item_times_final: vec![0, 1],
+                    path_item_times_provisional: vec![0, 1],
+                    path_item_times_base: vec![0, 1],
                     path_item_positions: vec![0, 1, 2, 3]
                 },
                 exceptions: [(
@@ -1929,11 +1889,11 @@ mod tests {
                     // because all simulation results from core are identical stubs
                     SummaryResponse::Success {
                         length: 0,
-                        time: 3000,
+                        time: 1,
                         energy_consumption: 0.0,
-                        path_item_times_final: vec![0, 1000, 2000, 3000],
-                        path_item_times_provisional: vec![0, 1000, 2000, 3000],
-                        path_item_times_base: vec![0, 1000, 2000, 3000],
+                        path_item_times_final: vec![0, 1],
+                        path_item_times_provisional: vec![0, 1],
+                        path_item_times_base: vec![0, 1],
                         path_item_positions: vec![0, 1, 2, 3]
                     }
                 )]

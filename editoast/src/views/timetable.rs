@@ -30,13 +30,7 @@ use core_client::conflict_detection::ConflictType;
 use core_client::conflict_detection::TrainRequirements;
 use core_client::conflict_detection::TrainRequirementsById;
 use core_client::simulation::CompleteReportTrain;
-#[cfg(test)]
-use core_client::simulation::ElectricalProfiles;
 use core_client::simulation::PhysicsConsist;
-#[cfg(test)]
-use core_client::simulation::ReportTrain;
-#[cfg(test)]
-use core_client::simulation::SpeedLimitProperties;
 use database::DbConnection;
 use database::DbConnectionPoolV2;
 use editoast_derive::EditoastError;
@@ -985,26 +979,32 @@ impl From<PhysicsConsistParameters> for PhysicsConsist {
 }
 
 #[cfg(test)]
-fn simulation_empty_response() -> core_client::simulation::Response {
-    core_client::simulation::Response::Success(core_client::simulation::SimulationSuccess {
+pub(in crate::views) fn simulation_empty_response() -> core_client::simulation::Response {
+    use core_client::simulation::CompleteReportTrain;
+    use core_client::simulation::ElectricalProfiles;
+    use core_client::simulation::ReportTrain;
+    use core_client::simulation::SimulationSuccess;
+    use core_client::simulation::SpeedLimitProperties;
+
+    core_client::simulation::Response::Success(SimulationSuccess {
         base: ReportTrain {
             positions: vec![],
-            times: vec![],
+            times: vec![0],
             speeds: vec![],
             energy_consumption: 0.0,
             path_item_times: vec![0, 1],
         },
         provisional: ReportTrain {
             positions: vec![],
-            times: vec![],
+            times: vec![0],
             speeds: vec![],
             energy_consumption: 0.0,
             path_item_times: vec![0, 1],
         },
         final_output: CompleteReportTrain {
             report_train: ReportTrain {
-                positions: vec![],
-                times: vec![],
+                positions: vec![0],
+                times: vec![0],
                 speeds: vec![],
                 energy_consumption: 0.0,
                 path_item_times: vec![0, 1],

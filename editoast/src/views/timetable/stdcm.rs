@@ -473,7 +473,10 @@ mod tests {
     use axum::http::StatusCode;
     use chrono::DateTime;
     use common::units;
-    use core_client::simulation::SimulationSuccess;
+    use core_client;
+    use core_client::mocking::MockingClient;
+    use core_client::pathfinding::TrainPath;
+    use core_client::simulation::PhysicsConsist;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
     use schemas::fixtures::simple_rolling_stock;
@@ -497,17 +500,10 @@ mod tests {
     use crate::models::fixtures::create_timetable;
     use crate::views::path::pathfinding::PathfindingResult;
     use crate::views::test_app::TestAppBuilder;
+    use crate::views::timetable::simulation_empty_response;
     use crate::views::timetable::stdcm::Request;
     use crate::views::timetable::stdcm::request::PathfindingItem;
     use crate::views::timetable::stdcm::request::StepTimingData;
-    use core_client;
-    use core_client::mocking::MockingClient;
-    use core_client::pathfinding::TrainPath;
-    use core_client::simulation::CompleteReportTrain;
-    use core_client::simulation::ElectricalProfiles;
-    use core_client::simulation::PhysicsConsist;
-    use core_client::simulation::ReportTrain;
-    use core_client::simulation::SpeedLimitProperties;
 
     use super::*;
 
@@ -593,49 +589,9 @@ mod tests {
             .finish();
         core.stub("/standalone_simulation")
             .response(StatusCode::OK)
-            .json(simulation_response())
+            .json(simulation_empty_response())
             .finish();
         core
-    }
-
-    fn simulation_response() -> core_client::simulation::Response {
-        core_client::simulation::Response::Success(SimulationSuccess {
-            base: ReportTrain {
-                positions: vec![],
-                times: vec![],
-                speeds: vec![],
-                energy_consumption: 0.0,
-                path_item_times: vec![0, 10],
-            },
-            provisional: ReportTrain {
-                positions: vec![],
-                times: vec![0, 10],
-                speeds: vec![],
-                energy_consumption: 0.0,
-                path_item_times: vec![0, 10],
-            },
-            final_output: CompleteReportTrain {
-                report_train: ReportTrain {
-                    positions: vec![],
-                    times: vec![],
-                    speeds: vec![],
-                    energy_consumption: 0.0,
-                    path_item_times: vec![0, 10],
-                },
-                signal_critical_positions: vec![],
-                zone_updates: vec![],
-                spacing_requirements: vec![],
-                routing_requirements: vec![],
-            },
-            mrsp: SpeedLimitProperties {
-                boundaries: vec![],
-                values: vec![],
-            },
-            electrical_profiles: ElectricalProfiles {
-                boundaries: vec![],
-                values: vec![],
-            },
-        })
     }
 
     #[test]
@@ -813,7 +769,7 @@ mod tests {
         core.stub("/stdcm")
             .response(StatusCode::OK)
             .json(core_client::stdcm::Response::Success {
-                simulation: simulation_response().success().unwrap(),
+                simulation: simulation_empty_response().success().unwrap(),
                 path: pathfinding_result_success(),
                 departure_time: DateTime::from_str("2024-01-02T00:00:00Z")
                     .expect("Failed to parse datetime"),
@@ -843,7 +799,7 @@ mod tests {
             assert_eq!(
                 stdcm_response,
                 StdcmResponse::Success {
-                    simulation: simulation_response().success().unwrap().into(),
+                    simulation: simulation_empty_response().success().unwrap().into(),
                     pathfinding_result: path,
                     departure_time: DateTime::from_str("2024-01-02T00:00:00Z")
                         .expect("Failed to parse datetime"),
@@ -859,7 +815,7 @@ mod tests {
         core.stub("/stdcm")
             .response(StatusCode::OK)
             .json(core_client::stdcm::Response::Success {
-                simulation: simulation_response().success().unwrap(),
+                simulation: simulation_empty_response().success().unwrap(),
                 path: pathfinding_result_success(),
                 departure_time: DateTime::from_str("2024-01-02T00:00:00Z")
                     .expect("Failed to parse datetime"),
@@ -900,7 +856,7 @@ mod tests {
         core.stub("/stdcm")
             .response(StatusCode::OK)
             .json(core_client::stdcm::Response::Success {
-                simulation: simulation_response().success().unwrap(),
+                simulation: simulation_empty_response().success().unwrap(),
                 path: pathfinding_result_success(),
                 departure_time: DateTime::from_str("2024-01-02T00:00:00Z")
                     .expect("Failed to parse datetime"),
@@ -943,7 +899,7 @@ mod tests {
         core.stub("/stdcm")
             .response(StatusCode::OK)
             .json(core_client::stdcm::Response::Success {
-                simulation: simulation_response().success().unwrap(),
+                simulation: simulation_empty_response().success().unwrap(),
                 path: pathfinding_result_success(),
                 departure_time: DateTime::from_str("2024-01-02T00:00:00Z")
                     .expect("Failed to parse datetime"),
@@ -980,7 +936,7 @@ mod tests {
             assert_eq!(
                 stdcm_response,
                 StdcmResponse::Success {
-                    simulation: simulation_response().success().unwrap().into(),
+                    simulation: simulation_empty_response().success().unwrap().into(),
                     pathfinding_result: path,
                     departure_time: DateTime::from_str("2024-01-02T00:00:00Z")
                         .expect("Failed to parse datetime"),
