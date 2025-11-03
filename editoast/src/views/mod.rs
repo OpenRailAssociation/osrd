@@ -1008,56 +1008,11 @@ mod tests {
 
     use axum::http::StatusCode;
     use core_client::mocking::MockingClient;
-    use core_client::simulation::CompleteReportTrain;
-    use core_client::simulation::ElectricalProfiles;
-    use core_client::simulation::ReportTrain;
-    use core_client::simulation::SimulationSuccess;
-    use core_client::simulation::SpeedLimitProperties;
     use database::DbConnectionPoolV2;
-
     use serde_json::json;
 
     use super::test_app::TestAppBuilder;
-
-    fn simulation_response() -> core_client::simulation::Response {
-        core_client::simulation::Response::Success(SimulationSuccess {
-            base: ReportTrain {
-                positions: vec![],
-                times: vec![],
-                speeds: vec![],
-                energy_consumption: 0.0,
-                path_item_times: vec![0, 1000, 2000, 3000],
-            },
-            provisional: ReportTrain {
-                positions: vec![],
-                times: vec![],
-                speeds: vec![],
-                energy_consumption: 0.0,
-                path_item_times: vec![0, 1000, 2000, 3000],
-            },
-            final_output: CompleteReportTrain {
-                report_train: ReportTrain {
-                    positions: vec![0],
-                    times: vec![0],
-                    speeds: vec![],
-                    energy_consumption: 0.0,
-                    path_item_times: vec![0, 1000, 2000, 3000],
-                },
-                signal_critical_positions: vec![],
-                zone_updates: vec![],
-                spacing_requirements: vec![],
-                routing_requirements: vec![],
-            },
-            mrsp: SpeedLimitProperties {
-                boundaries: vec![],
-                values: vec![],
-            },
-            electrical_profiles: ElectricalProfiles {
-                boundaries: vec![],
-                values: vec![],
-            },
-        })
-    }
+    use crate::views::timetable::simulation_empty_response;
 
     #[cfg(test)]
     pub fn mocked_core_pathfinding_and_sim() -> MockingClient {
@@ -1101,8 +1056,8 @@ mod tests {
             .finish();
         core.stub("/standalone_simulation")
             .response(StatusCode::OK)
-            .json(simulation_response())
-            .json(simulation_response())
+            .json(simulation_empty_response())
+            .json(simulation_empty_response())
             .finish();
         core.stub("/signal_projection")
             .response(StatusCode::OK)
