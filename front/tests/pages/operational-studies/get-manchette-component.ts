@@ -206,14 +206,16 @@ class GetManchetteComponent extends OpSimulationResultPage {
 
   async assertDefaultSliderValue(): Promise<void> {
     await expect(this.speedSpaceChartRangerSlider).toBeVisible();
-    const value = Number(await this.speedSpaceChartRangerSlider.inputValue());
-    expect(value).toBeCloseTo(64); //("63.81344412635098 default value ")
+    await expect
+      .poll(async () => Number(await this.speedSpaceChartRangerSlider.inputValue()))
+      .toBeCloseTo(64); //("63.81344412635098 default value ")
   }
   async setRangeSliderValue(value: string): Promise<void> {
     await expect(this.speedSpaceChartRangerSlider).toBeVisible();
     await this.speedSpaceChartRangerSlider.fill(value);
-    const actualValue = Number(await this.speedSpaceChartRangerSlider.inputValue());
-    expect(actualValue).toEqual(Number(value));
+    await expect
+      .poll(async () => Number(await this.speedSpaceChartRangerSlider.inputValue()))
+      .toBe(Number(value));
   }
 
   async adjustAndResetGetZoom(): Promise<void> {
@@ -224,9 +226,8 @@ class GetManchetteComponent extends OpSimulationResultPage {
 
     await expect(this.speedSpaceChartResetButton).not.toHaveClass(/reset-button-disabled/);
     await this.speedSpaceChartResetButton.click();
-
-    await this.assertDefaultSliderValue();
     await expect(this.speedSpaceChartResetButton).toHaveClass(/reset-button-disabled/);
+    await this.assertDefaultSliderValue();
   }
 
   async toggleLinearKmMode(): Promise<void> {
