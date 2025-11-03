@@ -2,7 +2,7 @@
   "name": "@osrd-project/storybook",
   "private": true,
   "devDependencies": {
-    "@chromatic-com/storybook": "^4.0.0",
+    "@chromatic-com/storybook": "^4.1.2",
     "@storybook/addon-docs": "^9.1.15",
     "@storybook/addon-links": "^9.1.15",
     "@storybook/addon-onboarding": "^9.1.15",
