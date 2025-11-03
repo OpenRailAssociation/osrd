@@ -63,10 +63,13 @@ const useConflictsFilter = (timetableItems: TimetableItem[], conflicts: Conflict
 
   const totalConflictsCount = useMemo(() => conflicts?.length ?? 0, [conflicts]);
 
-  const enrichedConflicts = useMemo(
-    () => (conflicts ? addTrainNamesToConflicts(conflicts, timetableItems) : []),
-    [conflicts, timetableItems]
-  );
+  const enrichedConflicts = useMemo(() => {
+    if (!conflicts) return [];
+    const sortedByStartTime = [...conflicts].sort(
+      (a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime()
+    );
+    return addTrainNamesToConflicts(sortedByStartTime, timetableItems);
+  }, [conflicts, timetableItems]);
 
   const selectedEnrichedConflicts = useMemo(() => {
     if (!selectedTrainName || !selectedTrainId) return [];
