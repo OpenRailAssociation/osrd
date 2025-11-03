@@ -29,7 +29,6 @@ import { cleanWhitespace } from './utils/data-normalizer';
 import readJsonFile from './utils/file-utils';
 import { sendPacedTrains } from './utils/paced-train';
 import createScenario from './utils/scenario';
-import scrollContainer from './utils/scroll-helper';
 import { deleteScenario } from './utils/teardown-utils';
 import type {
   CellData,
@@ -152,7 +151,7 @@ test.describe('Verify simulation configuration in operational studies for train 
   });
 
   /** *************** Test 2 **************** */
-  test('Add a paced train and verify its timetable details', async ({ page, browserName }) => {
+  test('Add a paced train and verify its timetable details', async ({ browserName }) => {
     await test.step('Open timetable item form', async () => {
       await operationalStudiesPage.openTimetableItemForm();
     });
@@ -176,7 +175,6 @@ test.describe('Verify simulation configuration in operational studies for train 
 
     await test.step('Fill Times & Stops table with initial inputs', async () => {
       await operationalStudiesPage.openTimesAndStopsTab();
-      await scrollContainer(page, '.time-stops-datasheet .dsg-container');
       await timesAndStopsTab.verifyActiveRowsCount(2);
 
       for (const cell of initialInputsData) {
@@ -214,7 +212,6 @@ test.describe('Verify simulation configuration in operational studies for train 
           'SpeedSpaceChart-InitialInputs.png'
         );
       }
-      await scrollContainer(page, '.time-stop-outputs .time-stops-datasheet .dsg-container');
       await timeAndStopSimulationOutputs.getOutputTableData(expectedOutputData);
     });
   });

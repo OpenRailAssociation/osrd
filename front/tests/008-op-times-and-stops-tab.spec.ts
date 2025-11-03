@@ -14,7 +14,6 @@ import { getInfra } from './utils/api-utils';
 import { cleanWhitespace, cleanWhitespaceInArray } from './utils/data-normalizer';
 import readJsonFile from './utils/file-utils';
 import createScenario from './utils/scenario';
-import scrollContainer from './utils/scroll-helper';
 import { deleteScenario } from './utils/teardown-utils';
 import type { CellData, FlatTranslations, StationData } from './utils/types';
 
@@ -104,7 +103,6 @@ test.describe('Times and Stops Tab Verification', () => {
 
       // Navigate to the Times and Stops tab and scroll to the data sheet
       await operationalStudiesPage.openTimesAndStopsTab();
-      await scrollContainer(page, '.time-stops-datasheet .dsg-container');
     });
   });
 
@@ -112,7 +110,7 @@ test.describe('Times and Stops Tab Verification', () => {
     await deleteScenario(project.id, study.id, scenario.name);
   });
 
-  test('should correctly set and display times and stops tables', async ({ page }) => {
+  test('should correctly set and display times and stops tables', async () => {
     await test.step('Verify table headers', async () => {
       const expectedColumnNames = cleanWhitespaceInArray([
         frTranslations.name,
@@ -168,8 +166,6 @@ test.describe('Times and Stops Tab Verification', () => {
       await operationalStudiesPage.closeToastNotification();
       await operationalStudiesPage.returnSimulationResult();
       await timeAndStopSimulationOutputs.verifyTimesStopsDataSheetVisibility();
-
-      await scrollContainer(page, '.time-stop-outputs .time-stops-datasheet .dsg-container');
       await timeAndStopSimulationOutputs.getOutputTableData(outputExpectedCellData);
     });
   });

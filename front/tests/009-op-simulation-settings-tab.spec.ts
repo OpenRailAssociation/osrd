@@ -23,7 +23,6 @@ import { deleteApiRequest, getInfra, setElectricalProfile } from './utils/api-ut
 import { cleanWhitespace } from './utils/data-normalizer';
 import readJsonFile from './utils/file-utils';
 import createScenario from './utils/scenario';
-import scrollContainer from './utils/scroll-helper';
 import { deleteScenario } from './utils/teardown-utils';
 import type { FlatTranslations, StationData } from './utils/types';
 
@@ -141,7 +140,6 @@ test.describe('Simulation Settings Tab Verification', () => {
         viaTrigram: 'MWS',
       });
       await operationalStudiesPage.openTimesAndStopsTab();
-      await scrollContainer(page, '.time-stops-datasheet .dsg-container');
     });
   });
 
@@ -149,7 +147,7 @@ test.describe('Simulation Settings Tab Verification', () => {
     await deleteScenario(project.id, study.id, scenario.name);
   });
 
-  test('Activate electrical profiles', async ({ page, browserName }) => {
+  test('Activate electrical profiles', async ({ browserName }) => {
     const cell: CellData = { stationName: 'Mid_East_station', header: 'stopTime', value: '124' };
     const translatedHeader = cleanWhitespace(frTranslations[cell.header]);
 
@@ -181,7 +179,6 @@ test.describe('Simulation Settings Tab Verification', () => {
           'SpeedSpaceChart-ElectricalProfileActivated.png'
         );
       }
-      await scrollContainer(page, '.time-stop-outputs .time-stops-datasheet .dsg-container');
       await timeAndStopSimulationOutputs.getOutputTableData(expectedCellDataElectricalProfileON);
       await simulationResultPage.setTrainListVisible(false);
     });
@@ -206,7 +203,7 @@ test.describe('Simulation Settings Tab Verification', () => {
     });
   });
 
-  test('Add speed limit tag', async ({ page, browserName }) => {
+  test('Add speed limit tag', async ({ browserName }) => {
     const cell: CellData = { stationName: 'Mid_East_station', header: 'stopTime', value: '124' };
     const translatedHeader = cleanWhitespace(frTranslations[cell.header]);
 
@@ -239,7 +236,6 @@ test.describe('Simulation Settings Tab Verification', () => {
           'SpeedSpaceChart-SpeedLimitTagActivated.png'
         );
       }
-      await scrollContainer(page, '.time-stop-outputs .time-stops-datasheet .dsg-container');
       await timeAndStopSimulationOutputs.getOutputTableData(expectedCellDataCodeCompoON);
       await simulationResultPage.setTrainListVisible(false);
     });
@@ -264,7 +260,7 @@ test.describe('Simulation Settings Tab Verification', () => {
     });
   });
 
-  test('Activate linear and mareco margin', async ({ page, browserName }) => {
+  test('Activate linear and mareco margin', async ({ browserName }) => {
     const inputTableData: CellData[] = [
       { stationName: 'Mid_East_station', header: 'stopTime', value: '124' },
       {
@@ -307,7 +303,6 @@ test.describe('Simulation Settings Tab Verification', () => {
           'SpeedSpaceChart-LinearMargin.png'
         );
       }
-      await scrollContainer(page, '.time-stop-outputs .time-stops-datasheet .dsg-container');
       await timeAndStopSimulationOutputs.getOutputTableData(expectedCellDataLinearMargin);
       await simulationResultPage.setTrainListVisible(false);
     });
@@ -332,7 +327,7 @@ test.describe('Simulation Settings Tab Verification', () => {
     });
   });
 
-  test('Add all the simulation settings', async ({ page, browserName }) => {
+  test('Add all the simulation settings', async ({ browserName }) => {
     const inputTableData: CellData[] = [
       { stationName: 'Mid_East_station', header: 'stopTime', value: '124' },
       {
@@ -375,7 +370,6 @@ test.describe('Simulation Settings Tab Verification', () => {
           'SpeedSpaceChart-AllSettingsEnabled.png'
         );
       }
-      await scrollContainer(page, '.time-stop-outputs .time-stops-datasheet .dsg-container');
       await timeAndStopSimulationOutputs.getOutputTableData(expectedCellDataForAllSettings);
       await simulationResultPage.setTrainListVisible(false);
       await scenarioTimetableSection.getTimetableItemArrivalTime('11:50');
