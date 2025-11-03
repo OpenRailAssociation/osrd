@@ -51,7 +51,6 @@ const EDITED_PACED_TRAIN_NAME = 'Paced train edited';
 
 test.describe('Edit train schedules and paced trains', () => {
   test.slow();
-  test.use({ viewport: { width: 1920, height: 1080 } });
 
   let scenarioTimetableSection: ScenarioTimetableSection;
   let operationalStudiesPage: OperationalStudiesPage;

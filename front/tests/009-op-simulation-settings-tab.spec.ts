@@ -57,7 +57,6 @@ const expectedCellDataForAllSettings: StationData[] = readJsonFile(
 
 test.describe('Simulation Settings Tab Verification', () => {
   test.slow();
-  test.use({ viewport: { width: 1920, height: 1080 } });
 
   let operationalStudiesPage: OperationalStudiesPage;
   let rollingStockSelector: RollingStockSelector;

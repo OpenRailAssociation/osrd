@@ -25,7 +25,6 @@ const frTranslations = {
 };
 
 test.describe('Verify nge osrd conversion', () => {
-  test.use({ viewport: { width: 1920, height: 1080 } });
   test.use({ ignorePageErrors: true });
 
   let ngePage: NGEPage;

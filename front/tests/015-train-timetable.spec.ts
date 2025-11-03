@@ -51,7 +51,6 @@ const frTranslations = {
 
 test.describe('Verify train schedule elements and filters', () => {
   test.slow();
-  test.use({ viewport: { width: 1920, height: 1080 } });
 
   let scenarioTimetableSection: ScenarioTimetableSection;
   let pacedTrainSection: PacedTrainSection;

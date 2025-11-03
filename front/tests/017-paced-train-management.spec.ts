@@ -73,7 +73,6 @@ const pacedTrainsJson = readJsonFile<[PacedTrain]>('./tests/assets/paced-train/p
 
 test.describe('Verify simulation configuration in operational studies for train schedules and paced trains', () => {
   test.slow();
-  test.use({ viewport: { width: 1920, height: 1080 } });
 
   let rollingstockSelector: RollingStockSelector;
   let operationalStudiesPage: OperationalStudiesPage;
