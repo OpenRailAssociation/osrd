@@ -29,7 +29,6 @@ const tractionEnginePrefilledValues = {
 
 test.describe('Stdcm feedback card', () => {
   test.slow();
-  test.use({ viewport: { width: 1920, height: 1080 } });
 
   let stdcmPage: STDCMPage;
   let consistSection: ConsistSection;

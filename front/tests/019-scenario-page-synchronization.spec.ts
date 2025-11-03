@@ -55,8 +55,6 @@ test.skip(
 );
 
 test.describe('Synchronize the scenario page across multiple windows', () => {
-  test.use({ viewport: { width: 1920, height: 1080 } });
-
   let firstPage: Page;
   let secondPage: Page;
   let firstTimetableSection: ScenarioTimetableSection;

@@ -1,4 +1,4 @@
-import { defineConfig, devices } from '@playwright/test';
+import { defineConfig } from '@playwright/test';
 
 export default defineConfig({
   testDir: './tests',
@@ -21,6 +21,7 @@ export default defineConfig({
     video: 'retain-on-failure',
     locale: 'fr',
     timezoneId: 'Europe/Paris',
+    viewport: { width: 1920, height: 1080 },
   },
   reporter: [
     [
@@ -36,21 +37,18 @@ export default defineConfig({
 
   projects: [
     { name: 'setup', testMatch: 'global-setup.ts', teardown: 'teardown' },
-    {
-      name: 'teardown',
-      testMatch: 'global-teardown.ts',
-    },
+    { name: 'teardown', testMatch: 'global-teardown.ts' },
     {
       name: 'chromium',
       use: {
-        ...devices['Desktop Chrome'],
+        browserName: 'chromium',
       },
       dependencies: ['setup'],
     },
     {
       name: 'firefox',
       use: {
-        ...devices['Desktop Firefox'],
+        browserName: 'firefox',
       },
       dependencies: ['setup'],
     },

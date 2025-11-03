@@ -46,8 +46,6 @@ const expectedViaValues = [
 ];
 
 test.describe('Times and Stops Tab Verification', () => {
-  test.use({ viewport: { width: 1920, height: 1080 } });
-
   let operationalStudiesPage: OperationalStudiesPage;
   let rollingStockSelector: RollingStockSelector;
   let routeTab: RouteTab;

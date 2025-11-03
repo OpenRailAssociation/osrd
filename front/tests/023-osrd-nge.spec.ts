@@ -21,7 +21,6 @@ const frTranslations: TimetableFilterTranslations = readJsonFile<{
 }>('public/locales/fr/operational-studies.json').main;
 
 test.describe('Verify osrd nge conversion', () => {
-  test.use({ viewport: { width: 1920, height: 1080 } });
   test.use({ ignorePageErrors: true });
 
   let ngePage: NGEPage;

@@ -37,8 +37,6 @@ const trainSchedulesJson = readJsonFile<TrainSchedule[]>(
 const pacedTrainsJson = readJsonFile<PacedTrain[]>('./tests/assets/paced-train/paced_trains.json');
 
 test.describe('Verify round trips', () => {
-  test.use({ viewport: { width: 1920, height: 1080 } });
-
   let roundTripPage: RoundTripPage;
 
   let project: Project;

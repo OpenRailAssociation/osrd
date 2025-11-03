@@ -61,7 +61,6 @@ const pacedTrainsJson = readJsonFile<PacedTrain[]>('./tests/assets/paced-train/p
 
 test.describe('Paced trains and exception management', () => {
   test.slow();
-  test.use({ viewport: { width: 1920, height: 1080 } });
 
   let project: Project;
   let study: Study;

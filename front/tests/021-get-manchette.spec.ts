@@ -66,7 +66,6 @@ test.skip(
 );
 test.describe('Verify manchette and space time diagram', () => {
   test.slow();
-  test.use({ viewport: { width: 1920, height: 1080 } });
 
   let simulationResultPage: OpSimulationResultPage;
   let scenarioTimetableSection: ScenarioTimetableSection;
