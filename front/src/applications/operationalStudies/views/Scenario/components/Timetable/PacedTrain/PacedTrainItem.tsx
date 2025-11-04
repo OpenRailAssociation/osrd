@@ -301,9 +301,9 @@ const PacedTrainItem = ({
           </div>
 
           {isOccurrencesListOpen ? (
-            <ChevronDown className="toggle-icon center-icon" />
+            <ChevronDown dataTestId="toggle-icon-close" className="toggle-icon center-icon" />
           ) : (
-            <ChevronRight className="toggle-icon center-icon" />
+            <ChevronRight dataTestId="toggle-icon-open" className="toggle-icon center-icon" />
           )}
           <div className="train-info">
             <span

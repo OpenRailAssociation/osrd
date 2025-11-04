@@ -206,7 +206,6 @@ test.describe('Paced trains and exception management', () => {
 
     await test.step('Reset all exceptions', async () => {
       await pacedTrainSection.resetAllPacedTrainExceptions(5);
-      await pacedTrainSection.clickOnPacedTrain(5);
     });
 
     await test.step('Verify occurrences after reset', async () => {
@@ -307,7 +306,7 @@ test.describe('Paced trains and exception management', () => {
   /** *************** Test 3 **************** */
   test('Edit an indexed occurrence', async () => {
     await test.step('Open paced train and check initial menu (first occurrence)', async () => {
-      await pacedTrainSection.clickOnPacedTrain(0);
+      await pacedTrainSection.expandPacedTrainOccurrenceList(0);
       await pacedTrainSection.checkOccurrenceMenuIcon(0);
       await pacedTrainSection.checkOccurrenceActionMenu({
         occurrenceIndex: 0,
@@ -374,7 +373,7 @@ test.describe('Paced trains and exception management', () => {
     const editedPacedTrainData = pacedTrainsJson[PACED_TRAIN_NUMBER];
 
     await test.step('Open paced train and check initial menu state', async () => {
-      await pacedTrainSection.clickOnPacedTrain(PACED_TRAIN_NUMBER);
+      await pacedTrainSection.expandPacedTrainOccurrenceList(PACED_TRAIN_NUMBER);
       await pacedTrainSection.checkOccurrenceMenuIcon(addedOccurrenceIndex);
       await pacedTrainSection.checkOccurrenceActionMenu({
         occurrenceIndex: addedOccurrenceIndex,
