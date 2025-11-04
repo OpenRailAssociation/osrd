@@ -14,8 +14,6 @@ class PacedTrainSection extends CommonPage {
 
   private readonly testedPacedTrain: Locator;
 
-  private readonly testedPacedTrainToggleIcon: Locator;
-
   private readonly testedPacedTrainShowOccurrencesButton: Locator;
 
   private readonly testedPacedTrainName: Locator;
@@ -53,7 +51,6 @@ class PacedTrainSection extends CommonPage {
     super(page);
     this.pacedTrainItem = page.getByTestId('paced-train');
     this.testedPacedTrain = page.locator('.paced-train:not(.closed)');
-    this.testedPacedTrainToggleIcon = this.testedPacedTrain.locator('.toggle-icon');
     this.testedPacedTrainShowOccurrencesButton =
       this.testedPacedTrain.getByTestId('show-occurrences-button');
     this.testedPacedTrainName = this.testedPacedTrain.getByTestId('paced-train-name');
@@ -88,9 +85,24 @@ class PacedTrainSection extends CommonPage {
     };
   }
 
-  // Only the zone with the role button opens the occurrence list
-  private async getPacedTrainToClickableZone(index: number) {
-    return this.pacedTrainItem.nth(index).getByTestId('paced-train-name');
+  private async expandPacedTrainToggleIcon(index: number) {
+    return this.pacedTrainItem.nth(index).getByTestId('toggle-icon-open');
+  }
+
+  private async collapsePacedTrainToggleIcon(index: number) {
+    return this.pacedTrainItem.nth(index).getByTestId('toggle-icon-close');
+  }
+
+  async expandPacedTrainOccurrenceList(index: number) {
+    const expandPacedTrainToggleIcon = await this.expandPacedTrainToggleIcon(index);
+    await expect(expandPacedTrainToggleIcon).toBeVisible();
+    await expandPacedTrainToggleIcon.click();
+  }
+
+  async collapsePacedTrainOccurrenceList(index: number) {
+    const collapsePacedTrainToggleIcon = await this.collapsePacedTrainToggleIcon(index);
+    await expect(collapsePacedTrainToggleIcon).toBeVisible();
+    await collapsePacedTrainToggleIcon.click();
   }
 
   async verifyPacedTrainItemDetails(
@@ -108,16 +120,11 @@ class PacedTrainSection extends CommonPage {
   ) {
     const { name, labels, interval, expectedOccurrencesCount } = pacedTrainData;
 
-    const pacedTrainItemClickableZone = await this.getPacedTrainToClickableZone(index);
-
     // In paced_trains.json, invalid paced trains are marked with an `Invalid` label
     // An invalid paced train won't have any details
     if (labels?.includes('Invalid')) return;
 
-    // Open the occurrences list to be able to have a unique
-    // paced train locator for the tested one
-    await expect(pacedTrainItemClickableZone).toBeVisible();
-    if (!pacedTrainCardAlreadyOpen) await pacedTrainItemClickableZone.click();
+    if (!pacedTrainCardAlreadyOpen) await this.expandPacedTrainOccurrenceList(index);
 
     await expect(this.testedPacedTrainShowOccurrencesButton).not.toBeVisible();
     await expect(this.testedPacedTrainOccurrences.first()).toBeVisible();
@@ -152,9 +159,7 @@ class PacedTrainSection extends CommonPage {
         });
       }
     }
-
-    // Close back the occurrences list
-    await this.testedPacedTrainToggleIcon.click();
+    await this.collapsePacedTrainOccurrenceList(index);
   }
 
   async verifyOccurrencesCount(expectedOccurrencesCount: number, index: number) {
@@ -204,7 +209,7 @@ class PacedTrainSection extends CommonPage {
       ? this.pacedTrainItem.nth(itemIndex)
       : this.testedPacedTrainOccurrences.nth(itemIndex);
     await expect(item).toBeVisible();
-    await item.hover({ force: true });
+    await item.hover({ position: { x: 5, y: 5 } }); // Hover near the left edge to avoid action buttons
 
     const actionButtons: Record<string, Locator> = {
       projectItem: item.getByTestId('project-item'),
@@ -270,35 +275,24 @@ class PacedTrainSection extends CommonPage {
     pacedTrainIndex: number;
     occurrenceIndex: number;
   }) {
-    const pacedTrainItemClickableZone = await this.getPacedTrainToClickableZone(pacedTrainIndex);
-
-    // Open the occurrences list to be able to have a unique
-    // paced train locator for the tested one
-    await expect(pacedTrainItemClickableZone).toBeVisible();
-    await pacedTrainItemClickableZone.click();
-
+    await this.expandPacedTrainOccurrenceList(pacedTrainIndex);
     const occurrenceItem = this.testedPacedTrainOccurrences.nth(occurrenceIndex);
     await occurrenceItem.click();
-
-    await pacedTrainItemClickableZone.click();
+    await this.collapsePacedTrainOccurrenceList(pacedTrainIndex);
   }
 
-  async duplicatePacedTrain() {
-    const pacedTrainItem = await this.getPacedTrainToClickableZone(0);
-    await pacedTrainItem.click();
+  async duplicatePacedTrain(index = 0) {
+    await this.expandPacedTrainOccurrenceList(index);
     const actionButtons = await this.getActionButtonsLocators({
-      itemIndex: 0,
+      itemIndex: index,
       itemType: 'paced-train',
     });
     await actionButtons.duplicateItem.click();
-
-    await pacedTrainItem.click();
+    await this.collapsePacedTrainOccurrenceList(index);
   }
 
   async openPacedTrainEditor(index = 0) {
-    const pacedTrainItem = await this.getPacedTrainToClickableZone(index);
-    await expect(pacedTrainItem).toBeVisible();
-    await pacedTrainItem.click();
+    await this.expandPacedTrainOccurrenceList(index);
     const actionButtons = await this.getActionButtonsLocators({
       itemIndex: index,
       itemType: 'paced-train',
@@ -309,9 +303,7 @@ class PacedTrainSection extends CommonPage {
   }
 
   async projectPacedTrain(index = 0) {
-    const pacedTrainItem = await this.getPacedTrainToClickableZone(index);
-    await expect(pacedTrainItem).toBeVisible();
-    await pacedTrainItem.click();
+    await this.expandPacedTrainOccurrenceList(index);
     const actionButtons = await this.getActionButtonsLocators({
       itemIndex: index,
       itemType: 'paced-train',
@@ -325,10 +317,8 @@ class PacedTrainSection extends CommonPage {
     translations: TimetableFilterTranslations,
     pacedTrainData?: PacedTrainDetails
   ) {
-    const timetableItemToDelete = await this.getPacedTrainToClickableZone(index);
-    await expect(timetableItemToDelete).toBeVisible();
-    await timetableItemToDelete.click();
-
+    const timetableItemToDelete = this.pacedTrainItem.nth(index);
+    await timetableItemToDelete.hover({ position: { x: 5, y: 5 } });
     const pacedTrainActionButtons = await this.getActionButtonsLocators({
       itemIndex: index,
       itemType: 'paced-train',
@@ -404,12 +394,6 @@ class PacedTrainSection extends CommonPage {
     }
   }
 
-  async clickOnPacedTrain(index: number) {
-    const pacedTrainItemClickableZone = await this.getPacedTrainToClickableZone(index);
-    await expect(pacedTrainItemClickableZone).toBeVisible();
-    await pacedTrainItemClickableZone.click();
-  }
-
   async clickOccurrenceMenuButton(buttonToClick: OccurrenceMenuButton) {
     const portalOccurrenceMenu = this.portalOccurrenceMenu[buttonToClick];
     await expect(portalOccurrenceMenu).toBeVisible();
@@ -417,10 +401,6 @@ class PacedTrainSection extends CommonPage {
   }
 
   async resetAllPacedTrainExceptions(pacedTrainIndex: number) {
-    const timetableItemToReset = await this.getPacedTrainToClickableZone(pacedTrainIndex);
-    await expect(timetableItemToReset).toBeVisible();
-    await timetableItemToReset.click();
-
     const { resetExceptions } = await this.getActionButtonsLocators({
       itemIndex: pacedTrainIndex,
       itemType: 'paced-train',

@@ -320,7 +320,7 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
       const pacedTrain = this.timetableItems.nth(pacedTrainIndex);
       await expect(pacedTrain).toBeVisible();
 
-      await pacedTrainSection.clickOnPacedTrain(pacedTrainIndex); // opens
+      await pacedTrainSection.expandPacedTrainOccurrenceList(pacedTrainIndex);
 
       const occurrences = ScenarioTimetableSection.getOccurrences(pacedTrain); // retrieves all occurrence for this mission
 
@@ -331,7 +331,7 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
         await this.verifySimulationResultsVisibility();
       }
 
-      await pacedTrainSection.clickOnPacedTrain(pacedTrainIndex); // closes
+      await pacedTrainSection.collapsePacedTrainOccurrenceList(pacedTrainIndex);
     }
   }
 
