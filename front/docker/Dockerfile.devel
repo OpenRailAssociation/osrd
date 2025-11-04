@@ -21,4 +21,4 @@ ENV NODE_OPTIONS="--max_old_space_size=4096"
 # Start the app
 COPY docker/dev-entrypoint.sh /
 ENTRYPOINT ["/dev-entrypoint.sh"]
-CMD ["sh", "-c", "id && npm install && (npm run build-ui & npm run start-container)"]
+CMD ["sh", "-c", "id && npm install --save=false && (npm run build-ui & npm run start-container)"]
