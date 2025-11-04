@@ -12,6 +12,7 @@ const IconReplaceName: IconReplaceNameIcon = ({
   title,
   iconColor,
   className = '',
+  dataTestId,
 }) => {
   const currentSize = sizes[size];
   if (!iconData[variant]) {
@@ -25,7 +26,7 @@ const IconReplaceName: IconReplaceNameIcon = ({
     data = `<title>${title}</title>${data}`;
   }
   return (
-    <span className={className}>
+    <span className={className} data-testid={dataTestId}>
       <svg
         xmlns="http://www.w3.org/2000/svg"
         {...(title ? {} : { 'aria-hidden': true })}
