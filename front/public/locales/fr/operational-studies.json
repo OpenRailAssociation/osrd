@@ -66,6 +66,16 @@
       "otherTrains": "+{{count}}",
       "trainsInConflictTitle": "TRAIN(S) EN CONFLIT"
     },
+    "copyTimetable": {
+      "text_one": "Circulation copiée",
+      "text_other": "Circulations copiées",
+      "title": "Export de circulations"
+    },
+    "cutTimetable": {
+      "text_one": "Circulation coupée",
+      "text_other": "Circulations coupées",
+      "title": "Supression de circulations"
+    },
     "description": {
       "electricalProfileWithId": "Profils électriques : ID{{id}}",
       "electricalProfileWithName": "Profils électriques : {{name}} | ID{{id}}"
@@ -152,6 +162,11 @@
     "pacedTrain_one": "1 mission",
     "pacedTrain_other": "{{count}} missions",
     "pacedTrain_zero": "0 mission",
+    "pasteTimetable": {
+      "text_one": "Circulation collée",
+      "text_other": "Circulations collées",
+      "title": "Import de circulations"
+    },
     "requestedDestination": "destination demandée",
     "requestedOrigin": "origine demandée",
     "requestedPoint": "point demandé ({{ count }})",

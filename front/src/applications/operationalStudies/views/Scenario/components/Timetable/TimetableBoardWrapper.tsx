@@ -1,4 +1,4 @@
-import { useCallback, useContext, useMemo, useState } from 'react';
+import { useCallback, useContext, useEffect, useMemo, useState } from 'react';
 
 import {
   ArrowSwitch,
@@ -41,7 +41,8 @@ import { isTrainScheduleId } from 'utils/trainId';
 
 import Timetable from './Timetable';
 import useFilterTimetableItems from './useFilterTimetableItems';
-import { exportTimetableItems } from './utils';
+import { copyTimetableItemsToClipboard, exportTimetableItems } from './utils';
+import postTimetableItems from '../ImportTimetableItem/helpers/postTimetableItems';
 
 type TimetableBoardWrapperProps = {
   setDisplayTimetableItemManagement: (mode: string) => void;
@@ -186,7 +187,10 @@ const TimetableBoardWrapper = ({
     [removeTimetableItems, setSelectedTimetableItemIds]
   );
 
-  const handleTrainsDelete = async (currentSelectedTrainId?: TrainId) => {
+  const handleTrainsDelete = async (
+    currentSelectedTrainId?: TrainId,
+    hideToast: boolean = false
+  ) => {
     const itemsCount = selectedTimetableItemIds.length;
 
     const isSelectedTimetableItemInSelection =
@@ -215,12 +219,15 @@ const TimetableBoardWrapper = ({
       await Promise.all([deletingTrainSchedulesPromise, deletingPacedTrainsPromise]);
 
       removeAndUnselectTrains(selectedTimetableItemIds);
-      dispatch(
-        setSuccess({
-          title: t('main.timetable.itemsSelectionDeletedCount', { count: itemsCount }),
-          text: '',
-        })
-      );
+
+      if (!hideToast) {
+        dispatch(
+          setSuccess({
+            title: t('main.timetable.itemsSelectionDeletedCount', { count: itemsCount }),
+            text: '',
+          })
+        );
+      }
     } catch (e) {
       if (isSelectedTimetableItemInSelection) {
         dispatch(updateSelectedTrainId(currentSelectedTrainId));
@@ -305,6 +312,86 @@ const TimetableBoardWrapper = ({
     return [...itemsMenuItems, ...baseMenuItems, ...selectionMenuItems];
   };
   // --- END BOARD WRAPPER MENU ITEMS CONFIGURATION ---
+
+  const handleCopy = useCallback(async () => {
+    const selectedText = document.getSelection()?.toString();
+    if (selectedText !== undefined && selectedText.length > 0) return;
+
+    if (selectedTimetableItemIds.length === 0) {
+      return;
+    }
+
+    await copyTimetableItemsToClipboard(selectedTimetableItemIds, timetableItems);
+    dispatch(
+      setSuccess({
+        title: t('main.copyTimetable.title'),
+        text: t('main.copyTimetable.text', { count: selectedTimetableItemIds.length }),
+      })
+    );
+  }, [selectedTimetableItemIds, timetableItems]);
+
+  const handlePaste = useCallback(async () => {
+    let data = null;
+    const clipboardContent = await navigator.clipboard.readText();
+    try {
+      data = JSON.parse(clipboardContent);
+      const { trainSchedules, pacedTrains } = await postTimetableItems(
+        timetableId,
+        data.train_schedules,
+        data.paced_trains,
+        dispatch
+      );
+      const newTimetableItems = [...trainSchedules, ...pacedTrains];
+      upsertTimetableItems(newTimetableItems);
+      setSelectedTimetableItemIds(newTimetableItems.map((item) => item.id));
+      dispatch(
+        setSuccess({
+          title: t('main.pasteTimetable.title'),
+          text: t('main.pasteTimetable.text', { count: newTimetableItems.length }),
+        })
+      );
+    } catch (e) {
+      if (data && data.train_schedules && data.paced_trains)
+        dispatch(setFailure(castErrorToFailure(e)));
+    }
+  }, [timetableId]);
+
+  const handleCut = useCallback(
+    async (event: ClipboardEvent) => {
+      const selectedText = document.getSelection()?.toString();
+      if (selectedText !== undefined && selectedText.length > 0) return;
+
+      if (selectedTimetableItemIds.length === 0) {
+        return;
+      }
+
+      event.preventDefault();
+      await copyTimetableItemsToClipboard(selectedTimetableItemIds, timetableItems);
+      await handleTrainsDelete(selectedTrainId, true);
+      dispatch(
+        setSuccess({
+          title: t('main.cutTimetable.title'),
+          text: t('main.cutTimetable.text', { count: selectedTimetableItemIds.length }),
+        })
+      );
+    },
+    [selectedTimetableItemIds, timetableItems]
+  );
+
+  useEffect(() => {
+    document.addEventListener('copy', handleCopy);
+    return () => document.removeEventListener('copy', handleCopy);
+  }, [handleCopy]);
+
+  useEffect(() => {
+    document.addEventListener('paste', handlePaste);
+    return () => document.removeEventListener('paste', handlePaste);
+  }, [handlePaste]);
+
+  useEffect(() => {
+    document.addEventListener('cut', handleCut);
+    return () => document.removeEventListener('cut', handleCut);
+  }, [handleCut]);
 
   return (
     <>
