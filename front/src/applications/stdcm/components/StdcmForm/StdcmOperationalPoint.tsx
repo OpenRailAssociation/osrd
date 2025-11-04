@@ -55,7 +55,7 @@ const StdcmOperationalPoint = ({
     searchOperationalPointsByTrigram,
   } = useSearchOperationalPoint({
     initialSearchTerm: location?.name,
-    initialChCodeFilter: location?.secondary_code,
+    initialChCodeFilter: location?.reference.secondary_code,
     isStdcm: true,
   });
 
@@ -66,7 +66,7 @@ const StdcmOperationalPoint = ({
       location
         ? {
             ...location,
-            label: [location.trigram, location.name].join(' '),
+            label: [location.reference.trigram, location.name].join(' '),
           }
         : undefined,
     [location]
@@ -76,8 +76,8 @@ const StdcmOperationalPoint = ({
     () =>
       location
         ? {
-            label: formatChCode(location.secondary_code),
-            id: location.secondary_code,
+            label: formatChCode(location.reference.secondary_code),
+            id: location.reference.secondary_code,
             coordinates: location.coordinates,
           }
         : undefined,
@@ -98,8 +98,7 @@ const StdcmOperationalPoint = ({
         .reduce<CIOption[]>((acc, p) => {
           const newObject = {
             label: [p.trigram, p.name].join(' '),
-            trigram: p.trigram,
-            location: { uic: p.uic, secondary_code: p.ch },
+            reference: { trigram: p.trigram, secondary_code: p.ch },
             name: p.name,
             coordinates: p.geographic.coordinates as [number, number],
           };
@@ -115,7 +114,7 @@ const StdcmOperationalPoint = ({
     onItineraryChange();
     if (selectedSuggestion) {
       const operationalPointParts = await searchOperationalPointsByTrigram(
-        selectedSuggestion.trigram
+        selectedSuggestion.reference.trigram
       );
       const newChSuggestions = extractChCodes(operationalPointParts, selectedSuggestion);
       setChSuggestions(newChSuggestions);
@@ -131,8 +130,11 @@ const StdcmOperationalPoint = ({
           id: pathStepId,
           updates: {
             location: {
-              ...location,
-              secondary_code: selectedChCode.id,
+              reference: {
+                trigram: location.reference.trigram,
+                secondary_code: selectedChCode.id,
+              },
+              name: location.name,
               coordinates: selectedChCode.coordinates,
             },
           },
@@ -157,7 +159,9 @@ const StdcmOperationalPoint = ({
     if (location) {
       setSearchTerm(location.name);
       // Clear the list of CH suggestions if the location has changed to avoid showing outated suggestions
-      if (!chSuggestions.some((suggestion) => suggestion.label === location.secondary_code)) {
+      if (
+        !chSuggestions.some((suggestion) => suggestion.label === location.reference.secondary_code)
+      ) {
         setChSuggestions([]);
       }
     } else {

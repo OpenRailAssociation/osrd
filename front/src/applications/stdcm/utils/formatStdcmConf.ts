@@ -163,7 +163,7 @@ export const checkStdcmConf = (
   if (error) return null;
 
   const path = compact(osrdconf.stdcmPathSteps).map((step) => {
-    const location = getStepLocation({ location: { reference: step.location! } });
+    const location = getStepLocation({ reference: step.location!.reference });
 
     let timingData: PathfindingItem['timing_data'] | undefined;
     let duration: number | undefined;
