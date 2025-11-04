@@ -71,7 +71,9 @@ export const formatStdcmDataForSimulationTable = (
     const isStop = step.duration !== null && !isLast;
     const isVia = stdcmPathSteps
       .slice(1, -1)
-      .some((s) => s.location!.name === step.name && s.location!.secondary_code === step.ch);
+      .some(
+        (s) => s.location!.name === step.name && s.location!.reference.secondary_code === step.ch
+      );
     const isPathStep = isFirst || isVia || isLast;
 
     const startTime = isFirst || isStop ? step.stopEndTime : '';

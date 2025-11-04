@@ -259,8 +259,8 @@ export const stdcmConfSlice = createSlice({
       const newPathStep = {
         location: {
           name,
-          coordinates: geographic.coordinates as [number, number],
-          reference: { trigram, secondary_code: ch },
+          coordinates: geographic.coordinates,
+          operational_point: { trigram, secondary_code: ch },
         },
         id: pathStepId,
         arrival: arrivalDate,
@@ -282,7 +282,7 @@ export const stdcmConfSlice = createSlice({
         }
         return step;
       });
-      state.stdcmPathSteps = newPathSteps;
+      state.stdcmPathSteps = newPathSteps as StdcmPathStep[];
     },
     addStdcmSimulations(
       state: Draft<OsrdStdcmConfState>,

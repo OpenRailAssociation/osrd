@@ -331,7 +331,7 @@ export const getArrivalTimes = (
     : t('reportSheet.asap');
 };
 
-export const getSecondaryCode = ({ location }: StdcmPathStep) => location!.secondary_code;
+export const getSecondaryCode = ({ location }: StdcmPathStep) => location!.reference.secondary_code;
 
 export const getStopType = (stopType: StdcmStopTypes | undefined, t: TFunction<'stdcm'>) =>
   !stopType

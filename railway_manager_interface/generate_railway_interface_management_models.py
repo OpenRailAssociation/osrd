@@ -153,7 +153,6 @@ def extract_required_schemas() -> dict[str, Schema | Reference]:
     return extracted_schemas
 
 
-
 def create_temp_openapi() -> MutableMapping[str, Any]:
     """Create the enriched OpenAPI description."""
     print("Extracting the required schemas...", file=sys.stderr)

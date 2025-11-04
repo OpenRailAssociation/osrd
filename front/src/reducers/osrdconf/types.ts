@@ -19,7 +19,6 @@ import type {
   PathItemLocation,
   ReceptionSignal,
   TrainSchedule,
-  OperationalPointIdentifier,
 } from 'common/api/osrdEditoastApi';
 import type { PacedTrainWithDetails } from 'modules/timetableItem/types';
 import type { MapSettings } from 'reducers/commonMap/types';
@@ -166,9 +165,8 @@ export type PathStepMetadata =
 
 export type StdcmPathStep = {
   id: string;
-  location?: Extract<OperationalPointIdentifier, { uic: number }> & {
-    trigram: string;
-    secondary_code: string;
+  location?: {
+    reference: { trigram: string; secondary_code: string };
     name: string;
     coordinates: [number, number];
   };
