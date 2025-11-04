@@ -152,7 +152,7 @@ for (const [name, currentData] of Object.entries(representation)) {
 
     return [
       `IconReplaceName${variant}Props`,
-      `interface IconReplaceName${variant}Props { size?: ${sizeStr}; variant?: "${variant}"; title?: string; iconColor?: string; className?: string; };`,
+      `interface IconReplaceName${variant}Props { size?: ${sizeStr}; variant?: "${variant}"; title?: string; iconColor?: string; className?: string; dataTestId?: string; };`,
     ];
   });
   const iconPropsContent = definitions.map(([_, content]) => `${content}\n`).join('\n');
