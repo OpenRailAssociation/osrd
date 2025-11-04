@@ -280,6 +280,7 @@ impl RabbitMQClient {
             lapin::ConnectionState::Connected => true,
             lapin::ConnectionState::Closing => false,
             lapin::ConnectionState::Closed => false,
+            lapin::ConnectionState::Reconnecting => false,
             lapin::ConnectionState::Error => false,
         }
     }
