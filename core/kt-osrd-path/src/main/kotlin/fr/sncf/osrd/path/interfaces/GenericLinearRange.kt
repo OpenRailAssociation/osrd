@@ -14,6 +14,7 @@ import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.Offset.Companion.max
 import fr.sncf.osrd.utils.units.Offset.Companion.min
 import fr.sncf.osrd.utils.units.meters
+import fr.sncf.osrd.utils.units.sumDistances
 
 /**
  * Describes an object range on the train path. Located on both the object itself, and the global
@@ -111,6 +112,32 @@ data class GenericLinearRange<ValueType, OffsetType>(
         return res
     }
 
+    /**
+     * When the given object (`this.value`) is one element in a sequence of smaller objects, this
+     * method turns an inner object range into an outer object range. Returns null if `this` is not
+     * actually part of the outer object. Properly maps path offsets.
+     *
+     * For example, this can turn a block range into a route range.
+     */
+    fun <OuterObjectType, OuterObjectOffset> mapOuterObject(
+        outerObject: OuterObjectType,
+        subObjectList: List<ValueType>,
+        getSubObjectLength: (ValueType) -> Length<OffsetType>,
+    ): GenericLinearRange<OuterObjectType, OuterObjectOffset>? {
+        val thisIndex = subObjectList.indexOf(value)
+        if (thisIndex < 0) return null
+        val thisOffset =
+            Offset<OuterObjectOffset>(
+                subObjectList
+                    .subList(0, thisIndex)
+                    .map { getSubObjectLength(it).distance }
+                    .sumDistances()
+            )
+        val rangeBegin = thisOffset + objectBegin.distance
+        val rangeEnd = thisOffset + objectEnd.distance
+        return GenericLinearRange(outerObject, rangeBegin, rangeEnd, pathBegin, pathEnd)
+    }
+
     /** Maps the value, while keeping all offsets identical. */
     fun <T, NewOffsetType> mapValue(value: T): GenericLinearRange<T, NewOffsetType> {
         return GenericLinearRange(value, objectBegin.cast(), objectEnd.cast(), pathBegin, pathEnd)
@@ -171,6 +198,27 @@ fun <ValueType, OffsetType, SubObjectType, SubObjectOffset> mapSubObjects(
         res.addAll(subRanges)
     }
     return mergeLinearRanges(res)
+}
+
+fun <ValueType, OffsetType> MutableList<GenericLinearRange<ValueType, OffsetType>>.addLinearObjects(
+    elements: List<GenericLinearRange<ValueType, OffsetType>>
+) {
+    for (element in elements) {
+        val prevElement = lastOrNull()
+        if (element.value == prevElement?.value) {
+            assert(element.pathEnd >= prevElement.pathEnd)
+            this[lastIndex] =
+                GenericLinearRange(
+                    prevElement.value,
+                    prevElement.objectBegin,
+                    element.objectEnd,
+                    prevElement.pathBegin,
+                    element.pathEnd,
+                )
+        } else {
+            add(element)
+        }
+    }
 }
 
 // Some extension functions to make `getObjectAbsolutePathEnd` calls less verbose. We could instead

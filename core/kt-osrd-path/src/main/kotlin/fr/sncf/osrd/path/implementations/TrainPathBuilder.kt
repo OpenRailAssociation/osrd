@@ -5,10 +5,7 @@ import fr.sncf.osrd.path.legacy_objects.ElectricalProfileMapping
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.utils.indexing.DirStaticIdx
 import fr.sncf.osrd.utils.indexing.StaticIdx
-import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Offset
-import fr.sncf.osrd.utils.units.Offset.Companion.max
-import fr.sncf.osrd.utils.units.Offset.Companion.min
 import fr.sncf.osrd.utils.units.meters
 import fr.sncf.osrd.utils.units.sumOffsets
 
@@ -226,32 +223,28 @@ internal fun generateRouteRanges(
     chunks: List<DirChunkRange>,
     routes: List<RouteId>,
 ): List<RouteRange> {
-    val res = mutableListOf<PartialRouteRange>()
-    val mappedChunks = chunks.associateBy { it.value }
-    for (route in routes) {
-        // We look for the first and last point where the route is used by a chunk.
-        // We assume that the chunk list is continuous and follows the route.
-        var usedRouteStart = Offset<Route>(Distance.MAX)
-        var usedRouteEnd = Offset<Route>(0.meters)
-        val chunksOnRoute = rawInfra.getChunksOnRoute(route)
-
-        var chunkOffsetOnRoute = Offset<Route>(0.meters)
-        for (chunk in chunksOnRoute) {
-            mappedChunks[chunk]?.let { locatedChunk ->
-                usedRouteStart =
-                    min(usedRouteStart, chunkOffsetOnRoute + locatedChunk.objectBegin.distance)
-                usedRouteEnd =
-                    max(usedRouteEnd, chunkOffsetOnRoute + locatedChunk.objectEnd.distance)
-            }
-            chunkOffsetOnRoute += rawInfra.getTrackChunkLength(chunk.value).distance
-        }
-
-        val usedRouteLength = usedRouteEnd - usedRouteStart
-        if (usedRouteLength > 0.meters) {
-            res.add(PartialRouteRange(route, usedRouteStart, usedRouteEnd))
+    // This implementation isn't the most optimized as we go over the chunk list several times. But
+    // the "proper" version is quite more verbose and complex. The difficult part is handling a
+    // single route that is partially used both at the start and end of the path.
+    // The profiler hints that this isn't a function worth making more complex for speed.
+    if (routes.isEmpty()) return listOf()
+    val res = mutableListOf<RouteRange>()
+    var routeIndex = 0
+    fun getRouteRange(chunk: DirChunkRange): RouteRange {
+        while (true) {
+            assert(routeIndex < routes.size)
+            val route = routes[routeIndex]
+            val res =
+                chunk.mapOuterObject<RouteId, Route>(route, rawInfra.getChunksOnRoute(route)) {
+                    rawInfra.getTrackChunkLength(it.value)
+                }
+            if (res != null) return res
+            // If not found in the current route, move on to the next
+            routeIndex++
         }
     }
-    return buildRangeList(res)
+    for (chunk in chunks) res.addLinearObjects(listOf(getRouteRange(chunk)))
+    return res
 }
 
 /**
