@@ -242,10 +242,6 @@ impl StorageDriver for PgAuthDriver {
         Ok(groups)
     }
 
-    async fn infra_exists(&self, infra_id: i64) -> Result<bool, Self::Error> {
-        Ok(Infra::exists(&mut self.pool.get().await?, infra_id).await?)
-    }
-
     #[tracing::instrument(skip_all, fields(%user_id), ret(level = Level::DEBUG), err)]
     async fn delete_user(&self, user_id: i64) -> Result<bool, Self::Error> {
         let conn = self.pool.get().await?;
@@ -253,6 +249,31 @@ impl StorageDriver for PgAuthDriver {
             .execute(&mut conn.write().await)
             .await?;
         Ok(s > 0)
+    }
+
+    #[tracing::instrument(skip_all, fields(%group_id), ret(level = Level::DEBUG), err)]
+    async fn delete_group(&self, group_id: i64) -> Result<bool, Self::Error> {
+        let conn = self.pool.get().await?;
+
+        conn.transaction(|conn| {
+            async move {
+                let s = dsl::delete(authn_group::table.filter(authn_group::id.eq(group_id)))
+                    .execute(&mut conn.write().await)
+                    .await?;
+
+                dsl::delete(authn_subject::table.filter(authn_subject::id.eq(group_id)))
+                    .execute(&mut conn.write().await)
+                    .await?;
+
+                Ok(s > 0)
+            }
+            .scope_boxed()
+        })
+        .await
+    }
+
+    async fn infra_exists(&self, infra_id: i64) -> Result<bool, Self::Error> {
+        Ok(Infra::exists(&mut self.pool.get().await?, infra_id).await?)
     }
 }
 
@@ -382,5 +403,12 @@ mod tests {
             Ok(deleted) => assert!(!deleted, "deleting an unknown user should return false"),
             _ => unreachable!(),
         }
+
+        assert!(
+            driver
+                .delete_group(friends_id)
+                .await
+                .expect("Group 'friend' should be deleted")
+        );
     }
 }
