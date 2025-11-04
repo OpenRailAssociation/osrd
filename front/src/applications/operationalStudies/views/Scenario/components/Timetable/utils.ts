@@ -47,12 +47,10 @@ export const roundAndFormatToNearestMinute = (d: Date) =>
 export const formatTrainDuration = (duration: Duration) =>
   dayjs.duration(duration.ms).format('HH[h]mm');
 
-export const exportTimetableItems = (
+export const timetableItemsToJson = (
   selectedTimeTableIdsFromClick: TimetableItemId[],
   timetableItems: TimetableItem[]
-) => {
-  if (!timetableItems) return;
-
+): string => {
   const formattedTimetableItems = timetableItems
     .filter(({ id }) => selectedTimeTableIdsFromClick.includes(id))
     .reduce<{
@@ -70,7 +68,26 @@ export const exportTimetableItems = (
       { train_schedules: [], paced_trains: [] }
     );
 
-  const jsonString = JSON.stringify(formattedTimetableItems);
+  return JSON.stringify(formattedTimetableItems);
+};
+
+export const copyTimetableItemsToClipboard = async (
+  selectedTimeTableIdsFromClick: TimetableItemId[],
+  timetableItems: TimetableItem[]
+) => {
+  const jsonString = timetableItemsToJson(selectedTimeTableIdsFromClick, timetableItems);
+  const blob = new Blob([jsonString], { type: 'text/plain' });
+  const clipboardItem = new ClipboardItem({ [blob.type]: blob });
+  await navigator.clipboard.write([clipboardItem]);
+};
+
+export const exportTimetableItems = (
+  selectedTimeTableIdsFromClick: TimetableItemId[],
+  timetableItems: TimetableItem[]
+) => {
+  if (!timetableItems) return;
+
+  const jsonString = timetableItemsToJson(selectedTimeTableIdsFromClick, timetableItems);
   const blob = new Blob([jsonString], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');

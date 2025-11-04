@@ -66,6 +66,16 @@
       "otherTrains": "+{{count}}",
       "trainsInConflictTitle": "TRAIN(S) IN CONFLICT"
     },
+    "copyTimetable": {
+      "text_one": "Train copied",
+      "text_other": "Trains copied",
+      "title": "Timetables export"
+    },
+    "cutTimetable": {
+      "text_one": "Train cut",
+      "text_other": "Trains cut",
+      "title": "Timetables deletion"
+    },
     "description": {
       "electricalProfileWithId": "Electrical profiles : ID{{id}}",
       "electricalProfileWithName": "Electrical profiles : {{name}} | ID{{id}}"
@@ -152,6 +162,11 @@
     "pacedTrain_one": "1 service",
     "pacedTrain_other": "{{count}} services",
     "pacedTrain_zero": "0 service",
+    "pasteTimetable": {
+      "text_one": "Train pasted",
+      "text_other": "Trains pasted",
+      "title": "Timetables import"
+    },
     "requestedDestination": "requested destination",
     "requestedOrigin": "requested origin",
     "requestedPoint": "requested point ({{ count }})",
