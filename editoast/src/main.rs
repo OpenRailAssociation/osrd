@@ -208,6 +208,9 @@ async fn run() -> anyhow::Result<()> {
             GroupCommand::Exclude(exclude_args) => {
                 group::exclude_group(exclude_args, openfga_config, Arc::new(db_pool)).await
             }
+            GroupCommand::Delete(delete_args) => {
+                group::delete_group(delete_args, openfga_config, Arc::new(db_pool)).await
+            }
         },
         Commands::User(user_command) => match user_command {
             UserCommand::List(list_args) => {

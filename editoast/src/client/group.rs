@@ -1,5 +1,6 @@
 use anyhow::anyhow;
 use anyhow::bail;
+use authz::Group;
 use clap::Args;
 use clap::Subcommand;
 
@@ -29,6 +30,8 @@ pub enum GroupCommand {
     Include(IncludeArgs),
     /// Remove members to a group
     Exclude(ExcludeArgs),
+    /// Delete a group
+    Delete(DeleteArgs),
 }
 
 #[derive(Debug, Args)]
@@ -57,6 +60,12 @@ pub struct ExcludeArgs {
     group_name: String,
     /// Users to remove
     users: Vec<String>,
+}
+
+#[derive(Debug, Args)]
+pub struct DeleteArgs {
+    /// Group name
+    name: String,
 }
 
 pub async fn create_group(args: CreateArgs, pool: Arc<DbConnectionPoolV2>) -> anyhow::Result<()> {
@@ -176,5 +185,33 @@ pub async fn include_group(
     regulator
         .add_members(&authz::Group(group_id), authz_users)
         .await?;
+    Ok(())
+}
+
+pub async fn delete_group(
+    DeleteArgs { name }: DeleteArgs,
+    openfga_config: OpenfgaConfig,
+    pool: Arc<DbConnectionPoolV2>,
+) -> anyhow::Result<()> {
+    let regulator = openfga_config.into_regulator(pool.clone()).await?;
+    let driver = regulator.driver();
+    let group_id = if let Some(id) = driver.get_group_id(&name).await? {
+        id
+    } else {
+        anyhow::bail!("group '{name}' could not be deleted (not found)");
+    };
+    let group = Group(group_id);
+
+    // Delete the relationships between the group to be deleted and its members
+    let users_in_group = regulator.group_members(&group).await?;
+    regulator.remove_members(&group, &users_in_group).await?;
+
+    let deleted = driver.delete_group(group_id).await?;
+    if deleted {
+        tracing::info!("group '{name}' deleted");
+    } else {
+        anyhow::bail!("group '{name}' could not be deleted (not found)");
+    }
+
     Ok(())
 }
