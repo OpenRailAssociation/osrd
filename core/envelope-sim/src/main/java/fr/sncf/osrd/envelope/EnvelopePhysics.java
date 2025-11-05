@@ -42,7 +42,10 @@ public class EnvelopePhysics {
     public static double interpolateStepTime(
             double lastPos, double nextPos, double lastSpeed, double nextSpeed, double positionDelta) {
         var acceleration = stepAcceleration(lastPos, nextPos, lastSpeed, nextSpeed);
-        if (areAccelerationsEqual(acceleration, 0.0)) return Math.abs(positionDelta / lastSpeed);
+        if (areAccelerationsEqual(acceleration, 0.0)) {
+            var averageSpeed = (lastSpeed + nextSpeed) / 2;
+            return Math.abs(positionDelta / averageSpeed);
+        }
         var interpolatedSpeed = interpolateStepSpeed(acceleration, lastSpeed, positionDelta);
         return Math.abs((interpolatedSpeed - lastSpeed) / acceleration);
     }

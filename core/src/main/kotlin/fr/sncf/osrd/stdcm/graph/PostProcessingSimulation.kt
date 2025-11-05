@@ -7,6 +7,7 @@ import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue
 import fr.sncf.osrd.envelope_sim.allowances.LinearAllowance
 import fr.sncf.osrd.envelope_sim.allowances.MarecoAllowance
 import fr.sncf.osrd.path.interfaces.PhysicsPath
+import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.path.interfaces.TravelledPath
 import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
 import fr.sncf.osrd.reporting.exceptions.ErrorType
@@ -21,6 +22,7 @@ import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 import java.util.*
 import kotlin.math.max
+import kotlin.math.min
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -35,6 +37,12 @@ private data class FixedTimePoint(
         return offset.compareTo(other.offset)
     }
 }
+
+private data class EngineeringAllowanceRange(
+    val from: Offset<TrainPath>,
+    val to: Offset<TrainPath>,
+    val addedDuration: Double,
+)
 
 /**
  * Build the final envelope, this time without any approximation. Apply the allowances properly. The
@@ -70,6 +78,7 @@ fun buildFinalEnvelope(
             Distance(millimeters = edges.sumOf { it.length.distance.millimeters })
         )
     assert(incrementalPath.pathComplete)
+    val allowanceRanges = getEngineeringAllowanceRanges(edges)
     val fixedPoints =
         initFixedPoints(
             edges,
@@ -79,6 +88,7 @@ fun buildFinalEnvelope(
                 standardAllowance.getAllowanceTime(maxSpeedEnvelope.totalTime, pathLength.meters) >
                     0.0,
             updatedTimeData,
+            allowanceRanges,
         )
 
     val maxIterations = edges.size * 2 // just to avoid infinite loops on bugs or edge cases
@@ -112,7 +122,14 @@ fun buildFinalEnvelope(
                 )
             }
             val newPoint =
-                makeFixedPoint(fixedPoints, edges, conflictOffset, pathLength, updatedTimeData)
+                makeFixedPoint(
+                    fixedPoints,
+                    edges,
+                    conflictOffset,
+                    pathLength,
+                    updatedTimeData,
+                    allowanceRanges,
+                )
             postProcessingLogger.info(
                 "Conflict when running final stdcm simulation at offset $conflictOffset, adding a fixed time point: $newPoint"
             )
@@ -174,6 +191,7 @@ private fun initFixedPoints(
     length: Length<TravelledPath>,
     hasStandardAllowance: Boolean,
     updatedTimeData: TimeData,
+    allowanceRanges: List<EngineeringAllowanceRange>,
 ): TreeSet<FixedTimePoint> {
     val res = TreeSet<FixedTimePoint>()
 
@@ -187,6 +205,7 @@ private fun initFixedPoints(
                 Offset(Distance.fromMeters(stop.position)),
                 length,
                 updatedTimeData,
+                allowanceRanges,
                 stop.duration,
             )
         )
@@ -195,27 +214,18 @@ private fun initFixedPoints(
 
     // Add one point at the end to match the standard allowance (if any)
     if (hasStandardAllowance && res.none { it.offset == length })
-        res.add(makeFixedPoint(res, edges, length, length, updatedTimeData, 0.0))
+        res.add(makeFixedPoint(res, edges, length, length, updatedTimeData, allowanceRanges))
 
     // Add points at the end of each engineering allowance
-    var edgeStartOffset = 0.meters
-    val allowanceEndOffsets = mutableSetOf<Distance>()
-    for (edge in edges) {
-        val engineeringAllowanceLength = edge.engineeringAllowance?.length
-        if (engineeringAllowanceLength != null) {
-            val engineeringAllowanceBegin = edgeStartOffset - engineeringAllowanceLength
-            val engineeringAllowanceEnd = edgeStartOffset
-
-            // Edges can have overlapping engineering allowance, only the last one is relevant.
-            // So we remove any point in the current allowance range.
-            allowanceEndOffsets.removeIf { it > engineeringAllowanceBegin }
-            allowanceEndOffsets.add(engineeringAllowanceEnd)
-        }
-        edgeStartOffset += edge.length.distance
+    val allowanceEndOffsets = mutableListOf<Offset<TrainPath>>()
+    for ((from, to, _) in allowanceRanges) {
+        // When ranges overlap, we start with just the last point
+        allowanceEndOffsets.removeIf { it > from }
+        allowanceEndOffsets.add(to)
     }
     for (offset in allowanceEndOffsets) {
-        if (res.none { it.offset.distance == offset }) {
-            res.add(makeFixedPoint(res, edges, Offset(offset), length, updatedTimeData))
+        if (res.none { it.offset == offset }) {
+            res.add(makeFixedPoint(res, edges, offset, length, updatedTimeData, allowanceRanges))
         }
     }
     logger.info("initial fixed time points:")
@@ -223,9 +233,37 @@ private fun initFixedPoints(
     return res
 }
 
+private fun getEngineeringAllowanceRanges(edges: List<STDCMEdge>): List<EngineeringAllowanceRange> {
+    var edgeStartOffset = Offset.zero<TrainPath>()
+    val res = mutableListOf<EngineeringAllowanceRange>()
+    for (edge in edges) {
+        val allowance = edge.engineeringAllowance
+        if (allowance != null) {
+            val engineeringAllowanceLength = allowance.length
+            val engineeringAllowanceBegin = edgeStartOffset - engineeringAllowanceLength
+            val engineeringAllowanceEnd = edgeStartOffset
+
+            val duration = allowance.extraDuration
+            res.add(
+                EngineeringAllowanceRange(
+                    engineeringAllowanceBegin,
+                    engineeringAllowanceEnd,
+                    duration,
+                )
+            )
+        }
+        edgeStartOffset += edge.length.distance
+    }
+    return res
+}
+
 /**
- * Create a new fixed point at a given offset **rounded to an edge transition**. The reference time
- * is fetched on the given edges.
+ * Create a new time point to best avoid the conflict at the given location.
+ *
+ * If the point is in an engineering allowance range, we add a point at the end of that range. We
+ * then try to add the point at the nearest edge transition. When trying to add a point at a
+ * location that already has a point, we move down the priority list. (allowance range end -> edge
+ * transition -> input offset). Once we have the offset, the time is fetched on the reference edges.
  *
  * The reason we round it to the start of the edge is because we don't have a reliable way to fetch
  * the time of a location on an edge, we can only make approximations. If that approximation falls
@@ -234,9 +272,8 @@ private fun initFixedPoints(
  * causes issues. It can be done but adds some complexity, it's out of scope of the current
  * refactoring.
  *
- * We first try to round the offset on the edge end, if there is already a fixed point there we use
- * the edge start instead. When a conflict happens in the middle of an edge, we *sometimes* need to
- * set both. If both are already set, we keep the conflict offset as it is.
+ * TODO: this current method doesn't seem to *always* converge to a valid solution, especially as
+ *   the standalone sim may fail to compute short allowance ranges.
  */
 private fun makeFixedPoint(
     fixedPoints: TreeSet<FixedTimePoint>,
@@ -244,8 +281,23 @@ private fun makeFixedPoint(
     conflictOffset: Offset<TravelledPath>,
     pathLength: Length<TravelledPath>,
     updatedTimeData: TimeData,
+    allowanceRanges: List<EngineeringAllowanceRange>,
     stopDuration: Double = 0.0,
 ): FixedTimePoint {
+
+    val endOfLastAllowance =
+        allowanceRanges
+            .filter { conflictOffset in it.from..it.to }
+            .map { it.to }
+            .filter { conflictOffset -> fixedPoints.none { it.offset == conflictOffset } }
+            .maxOrNull()
+    if (endOfLastAllowance != null)
+        return FixedTimePoint(
+            getTimeOnEdges(edges, endOfLastAllowance, updatedTimeData),
+            endOfLastAllowance,
+            if (stopDuration > 0) stopDuration else null,
+        )
+
     var offset = roundOffset(edges, Offset.min(conflictOffset, pathLength), true)
     if (fixedPoints.any { it.offset == offset }) {
         offset = roundOffset(edges, conflictOffset, false)
@@ -254,11 +306,9 @@ private fun makeFixedPoint(
         offset = conflictOffset
     }
     offset = Offset.min(offset, pathLength)
-    return FixedTimePoint(
-        getTimeOnEdges(edges, offset, updatedTimeData),
-        offset,
-        if (stopDuration > 0) stopDuration else null,
-    )
+
+    val time = getTimeOnEdges(edges, offset, updatedTimeData)
+    return FixedTimePoint(time, offset, if (stopDuration > 0) stopDuration else null)
 }
 
 /**
