@@ -261,7 +261,7 @@ pub(in crate::views) async fn similar_trains(
     // Step 2: query candidate train schedules
     // ---------------------------------------
 
-    let candidate_schedules = search_candidate_train_schedules(
+    let (candidate_schedules, path_item_cache) = search_candidate_train_schedules(
         &mut conn,
         &new_train,
         timetable_id,
@@ -303,6 +303,7 @@ pub(in crate::views) async fn similar_trains(
         core_client,
         &infra,
         candidate_schedules,
+        path_item_cache,
         config.app_version.as_deref(),
     )
     .await?;
@@ -466,7 +467,7 @@ async fn search_candidate_train_schedules(
         name: rolling_stock_name,
         speed_limit_tag,
     }: RollingStockCharacteristics,
-) -> Result<Vec<models::TrainSchedule>> {
+) -> Result<(Vec<models::TrainSchedule>, PathItemCache)> {
     let filter = SelectionSettings::new()
         .filter(move || models::TrainSchedule::TIMETABLE_ID.eq(timetable_id))
         .order_by(|| models::TrainSchedule::ID.asc());
@@ -534,7 +535,7 @@ async fn search_candidate_train_schedules(
             candidates
         });
 
-    Ok(candidate_schedules)
+    Ok((candidate_schedules, path_item_cache))
 }
 
 #[tracing::instrument(skip_all, fields(infra_id = infra.id, candidate_schedules = candidate_schedules.len()), err)]
@@ -544,6 +545,7 @@ async fn simulate_past_trains(
     core_client: Arc<CoreClient>,
     infra: &Infra,
     candidate_schedules: Vec<models::TrainSchedule>,
+    path_item_cache: PathItemCache,
     app_version: Option<&str>,
 ) -> Result<Vec<past_train::PastTrain>> {
     let rolling_stock_names = candidate_schedules
@@ -619,15 +621,17 @@ async fn simulate_past_trains(
             )| {
                 let stop_ids = ts
                     .iter_stops()
-                    .flat_map(|path_item| match path_item.location.identifier() {
-                        Some(id) => Some(OperationalPoint(id.into())),
-                        None => {
-                            tracing::warn!(
-                                ts.id,
-                                ?path_item,
-                                "ignoring non ID-referenced path item"
-                            );
-                            None
+                    .flat_map(|path_item| {
+                        match path_item_cache.op_identifier(&path_item.location) {
+                            Some(id) => Some(OperationalPoint(id.into())),
+                            None => {
+                                tracing::warn!(
+                                    ts.id,
+                                    ?path_item,
+                                    "ignoring non ID-referenced path item"
+                                );
+                                None
+                            }
                         }
                     })
                     .collect::<HashSet<_>>();
