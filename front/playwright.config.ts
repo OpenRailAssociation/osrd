@@ -11,18 +11,20 @@ export default defineConfig({
   },
 
   fullyParallel: true,
-  workers: '50%',
-  forbidOnly: !!process.env.CI,
-  retries: 1,
+  workers: isCI ? undefined : '30%',
+  forbidOnly: isCI,
+  retries: isCI ? 1 : 0,
   use: {
     navigationTimeout: isCI ? 30_000 : 60_000,
     actionTimeout: 10_000,
     baseURL: process.env.BASE_URL || 'http://localhost:4000',
-    trace: 'retain-on-failure',
-    video: 'retain-on-failure',
     locale: 'fr',
     timezoneId: 'Europe/Paris',
     viewport: { width: 1920, height: 1080 },
+
+    screenshot: 'on-first-failure',
+    trace: 'retain-on-first-failure',
+    video: 'on-first-retry',
   },
   reporter: [
     [
@@ -33,7 +35,7 @@ export default defineConfig({
       },
     ],
     ['line'],
-    ['html'],
+    ['html', { open: isCI ? 'never' : 'on-failure' }],
   ],
 
   projects: [
