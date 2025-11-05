@@ -79,15 +79,15 @@ await (async () => {
   const { artifacts } = await fetchArtifacts(REPO, RUN_ID, TOKEN);
 
   const traceId = getArtifactIdByName(artifacts, 'playwright-traces');
-  const videoId = getArtifactIdByName(artifacts, 'playwright-videos');
+  const mediaId = getArtifactIdByName(artifacts, 'playwright-media');
 
   const traceUrl = traceId
     ? `https://github.com/${REPO}/actions/runs/${RUN_ID}/artifacts/${traceId}`
     : 'Trace artifact not found';
 
-  const videoUrl = videoId
-    ? `https://github.com/${REPO}/actions/runs/${RUN_ID}/artifacts/${videoId}`
-    : 'Video artifact not found';
+  const mediaUrl = mediaId
+    ? `https://github.com/${REPO}/actions/runs/${RUN_ID}/artifacts/${mediaId}`
+    : 'Video and screenshot artifact not found';
 
   let summaryMd = `
 ## 📊 Test Summary
@@ -109,7 +109,7 @@ await (async () => {
 > Each failed test includes a downloadable \`trace.zip\` file.
 > To view the trace, extract the archive and upload it to the 🎯 [Playwright Trace Viewer](https://trace.playwright.dev/)
 - 📦 [Download Traces](${traceUrl})
-- 🎥 [Download Videos](${videoUrl})
+- 🎥 [Download Videos and screenshots](${mediaUrl})
 
 | Failed Test | Status | Error |
 |-------------|--------|-------|
