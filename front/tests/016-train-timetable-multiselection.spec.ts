@@ -31,8 +31,6 @@ const trainSchedulesJson: JSON = readJsonFile('./tests/assets/train-schedule/tra
 const pacedTrainsJson: JSON = readJsonFile('./tests/assets/paced-train/paced_trains.json');
 
 test.describe('Verify train schedule elements and filters', () => {
-  test.slow();
-
   let scenarioTimetableSection: ScenarioTimetableSection;
 
   let project: Project;

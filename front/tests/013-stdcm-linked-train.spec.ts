@@ -25,8 +25,6 @@ const towedRollingStockPrefilledValues = {
 };
 
 test.describe('Verify stdcm simulation page', () => {
-  test.slow();
-
   let stdcmPage: STDCMPage;
   let consistSection: ConsistSection;
   let originSection: OriginSection;

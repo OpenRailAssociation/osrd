@@ -31,7 +31,6 @@ const tractionEnginePrefilledValues = {
 
 test.describe('Verify stdcm simulation page', () => {
   test.describe.configure({ mode: 'serial' });
-  test.slow();
 
   let stdcmPage: STDCMPage;
   let consistSection: ConsistSection;

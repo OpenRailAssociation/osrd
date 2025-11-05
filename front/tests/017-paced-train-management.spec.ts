@@ -71,8 +71,6 @@ const expectedOutputData: StationData[] = readJsonFile(
 const pacedTrainsJson = readJsonFile<[PacedTrain]>('./tests/assets/paced-train/paced_trains.json');
 
 test.describe('Verify simulation configuration in operational studies for train schedules and paced trains', () => {
-  test.slow();
-
   let rollingstockSelector: RollingStockSelector;
   let operationalStudiesPage: OperationalStudiesPage;
   let scenarioTimetableSection: ScenarioTimetableSection;

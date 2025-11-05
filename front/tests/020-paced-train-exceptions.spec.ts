@@ -60,8 +60,6 @@ const frTranslations: ManageTimetableItemTranslations &
 const pacedTrainsJson = readJsonFile<PacedTrain[]>('./tests/assets/paced-train/paced_trains.json');
 
 test.describe('Paced trains and exception management', () => {
-  test.slow();
-
   let project: Project;
   let study: Study;
   let infra: Infra;

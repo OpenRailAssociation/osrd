@@ -313,9 +313,6 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
   // Iterate over each paced train occurrences and verify the visibility of simulation results
   async verifyPacedTrainSimulations(pacedTrainCount: number): Promise<void> {
     const pacedTrainSection = new PacedTrainSection(this.page);
-    // Filter only paced trains to fix visibility issues when list grows.
-    // May need scrolling support if more trains are added later.
-    await this.filterTrainTypeAndVerifyTrainCount('Service', pacedTrainCount);
     for (let pacedTrainIndex = 0; pacedTrainIndex < pacedTrainCount; pacedTrainIndex += 1) {
       const pacedTrain = this.timetableItems.nth(pacedTrainIndex);
       await expect(pacedTrain).toBeVisible();
@@ -327,7 +324,7 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
       const count = await occurrences.count();
       for (let occurrenceIndex = 0; occurrenceIndex < count; occurrenceIndex += 1) {
         const occurrenceButton = occurrences.nth(occurrenceIndex);
-        await occurrenceButton.click({ force: true });
+        await occurrenceButton.click();
         await this.verifySimulationResultsVisibility();
       }
 

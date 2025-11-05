@@ -1,12 +1,13 @@
 import { defineConfig } from '@playwright/test';
+const isCI = !!process.env.CI;
 
 export default defineConfig({
   testDir: './tests',
 
-  timeout: 60_000,
+  timeout: isCI ? 60_000 : 120_000,
   expect: {
     toHaveScreenshot: { maxDiffPixelRatio: 0.001 },
-    timeout: 10_000,
+    timeout: isCI ? 10_000 : 20_000,
   },
 
   fullyParallel: true,
@@ -14,7 +15,7 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: 1,
   use: {
-    navigationTimeout: 30_000,
+    navigationTimeout: isCI ? 30_000 : 60_000,
     actionTimeout: 10_000,
     baseURL: process.env.BASE_URL || 'http://localhost:4000',
     trace: 'retain-on-failure',
