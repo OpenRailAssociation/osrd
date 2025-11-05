@@ -29,7 +29,6 @@ import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 import fr.sncf.osrd.utils.units.metersPerSecond
 import fr.sncf.osrd.utils.units.seconds
-import kotlin.math.min
 
 fun onetrain(
     infra: FullInfra,
@@ -125,8 +124,10 @@ fun onetrain(
                     val position = offset.meters
                     var res = simplifiedPoints.binarySearchBy(position) { point -> point.position }
                     if (res < 0) {
-                        // TODO offset by one to have the point after arival instead of before?
-                        res = min(-res - 1, simplifiedPoints.size - 1)
+                        val insertAt = -res - 1
+                        // Get the element before where we would insert [position]
+                        // to get the arrival time
+                        res = (insertAt - 1).coerceIn(0, simplifiedPoints.size - 1)
                     }
                     simplifiedPoints[res].time.seconds
                 },
