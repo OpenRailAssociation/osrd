@@ -119,10 +119,6 @@ const StdcmConfig = ({
   // Keep local state of the viewport to keep stdcm config and stdcm results maps independent
   const [stdcmConfigViewport, setStdcmConfigViewport] = useState<Viewport>(mapSettings.viewport);
 
-  const updateViewport = (viewport: Viewport) => {
-    setStdcmConfigViewport(viewport);
-  };
-
   const [showMessage, setShowMessage] = useState(false);
 
   const { pathfinding, isPathFindingLoading } = useStaticPathfinding(
@@ -380,7 +376,7 @@ const StdcmConfig = ({
                 : undefined
             }
             mapSettings={{ ...mapSettings, viewport: stdcmConfigViewport }}
-            updateViewport={updateViewport}
+            updateViewport={setStdcmConfigViewport}
           />
         </div>
       </div>

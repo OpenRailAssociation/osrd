@@ -1,9 +1,16 @@
-import { type MutableRefObject, type PropsWithChildren, useEffect, useState } from 'react';
+import {
+  type MutableRefObject,
+  type PropsWithChildren,
+  useCallback,
+  useEffect,
+  useState,
+} from 'react';
 
 import type { Geometry } from 'geojson';
+import { debounce } from 'lodash';
 import type { MapLayerMouseEvent, MapLibreEvent } from 'maplibre-gl';
 import ReactMapGL, { AttributionControl, ScaleControl } from 'react-map-gl/maplibre';
-import type { MapRef } from 'react-map-gl/maplibre';
+import type { MapRef, ViewStateChangeEvent } from 'react-map-gl/maplibre';
 import { useParams } from 'react-router-dom';
 
 import {
@@ -99,6 +106,13 @@ const BaseMap = ({
     }
   }, []);
 
+  const setDraggingOff = useCallback(
+    debounce((e: ViewStateChangeEvent) => {
+      updatePartialViewPort(e.viewState, { updateRouter: true });
+    }, 100),
+    [updatePartialViewPort]
+  );
+
   return (
     <ReactMapGL
       id={mapId}
@@ -120,8 +134,8 @@ const BaseMap = ({
       // default behavior
       onMove={(e) => {
         updatePartialViewPort(e.viewState);
+        setDraggingOff(e);
       }}
-      onMoveEnd={(e) => updatePartialViewPort(e.viewState, { updateRouter: true })}
       onResize={(e) => {
         updatePartialViewPort({
           width: e.target.getContainer().offsetWidth,

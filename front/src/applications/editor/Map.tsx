@@ -1,7 +1,7 @@
-import { useContext, useMemo, useState, type PropsWithChildren } from 'react';
+import { useCallback, useContext, useMemo, useState, type PropsWithChildren } from 'react';
 
 import type { TFunction } from 'i18next';
-import { isEmpty, isEqual, isNil } from 'lodash';
+import { debounce, isEmpty, isEqual, isNil } from 'lodash';
 import maplibregl from 'maplibre-gl';
 import { Protocol } from 'pmtiles';
 import { withTranslation } from 'react-i18next';
@@ -118,6 +118,13 @@ const MapUnplugged = ({
     [activeTool, extendedContext, mapState]
   );
 
+  const setDraggingOff = useCallback(
+    debounce(() => {
+      setMapState((prev) => ({ ...prev, isDragging: false }));
+    }, 100),
+    [setMapState]
+  );
+
   return (
     <>
       <div
@@ -134,10 +141,10 @@ const MapUnplugged = ({
           ref={mapRef}
           style={{ width: '100%', height: '100%' }}
           mapStyle={mapBlankStyle}
-          onMove={(e) => setViewport(e.viewState)}
-          onMoveStart={() => setMapState((prev) => ({ ...prev, isDragging: true }))}
-          onMoveEnd={() => {
-            setMapState((prev) => ({ ...prev, isDragging: false }));
+          onMove={(e) => {
+            setViewport(e.viewState);
+            setMapState((prev) => (prev.isDragging ? prev : { ...prev, isDragging: true }));
+            setDraggingOff();
           }}
           onMouseOut={() => {
             setToolState({ hovered: null });

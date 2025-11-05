@@ -69,10 +69,6 @@ const StdcmResults = ({
   // Keep local state of the viewport to keep stdcm config and stdcm results maps independent
   const [stdcmResultsViewport, setStdcmResultsViewport] = useState<Viewport>(mapSettings.viewport);
 
-  const updateViewport = (viewport: Viewport) => {
-    setStdcmResultsViewport(viewport);
-  };
-
   const { outputs, alternativePath } = selectedSimulation;
 
   const hasSimulationResults = hasResults(outputs);
@@ -311,7 +307,7 @@ const StdcmResults = ({
                 pathStepMarkers={markersInfo}
                 isFeasible={hasSimulationResults}
                 mapSettings={{ ...mapSettings, viewport: stdcmResultsViewport }}
-                updateViewport={updateViewport}
+                updateViewport={setStdcmResultsViewport}
               />
             </div>
           </div>
