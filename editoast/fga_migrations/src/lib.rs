@@ -12,7 +12,6 @@ use indexmap::indexmap;
 use itertools::Either;
 use sha1::Digest;
 use sha1::Sha1;
-use tracing::error;
 use tracing::info;
 use tracing::instrument;
 
