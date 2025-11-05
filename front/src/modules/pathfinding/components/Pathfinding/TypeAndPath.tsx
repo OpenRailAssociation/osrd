@@ -64,7 +64,7 @@ const TypeAndPath = ({ setDisplayTypeAndPath, rollingStockId }: TypeAndPathProps
   const [inputText, setInputText] = useState('');
   const [opList, setOpList] = useState<SearchResultItemOperationalPoint[]>([]);
   const infraId = useInfraID();
-  const [postSearch] = osrdEditoastApi.endpoints.postSearch.useMutation();
+  const [postSearch] = osrdEditoastApi.endpoints.postSearch.useLazyQuery();
 
   const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTimetableItem' });
 

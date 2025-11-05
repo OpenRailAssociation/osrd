@@ -73,7 +73,7 @@ const StudyView = () => {
       : skipToken
   );
 
-  const [postSearch] = osrdEditoastApi.endpoints.postSearch.useMutation();
+  const [postSearch] = osrdEditoastApi.endpoints.postSearch.useLazyQuery();
   const [deleteScenario] = osrdEditoastApi.endpoints.deleteScenariosByScenarioId.useMutation({});
 
   const { data: scenarios } = osrdEditoastApi.endpoints.getScenarios.useQuery(

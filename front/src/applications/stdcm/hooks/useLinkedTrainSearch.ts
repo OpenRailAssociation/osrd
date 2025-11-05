@@ -22,7 +22,7 @@ import type { StdcmLinkedTrainResult } from '../types';
 import computeOpSchedules from '../utils/computeOpSchedules';
 
 const useLinkedTrainSearch = () => {
-  const [postSearch] = osrdEditoastApi.endpoints.postSearch.useMutation();
+  const [postSearch] = osrdEditoastApi.endpoints.postSearch.useLazyQuery();
   const [postTrainScheduleSimulationSummary] =
     osrdEditoastApi.endpoints.postTrainScheduleSimulationSummary.useLazyQuery();
 

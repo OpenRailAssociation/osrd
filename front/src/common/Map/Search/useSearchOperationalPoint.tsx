@@ -40,7 +40,7 @@ export default function useSearchOperationalPoint({
   const isSuperUser = useSelector(getIsSuperUser);
 
   const debouncedSearchTerm = useDebounce(searchTerm, debounceDelay);
-  const [postSearch] = osrdEditoastApi.endpoints.postSearch.useMutation();
+  const [postSearch] = osrdEditoastApi.endpoints.postSearch.useLazyQuery();
 
   const stdcmPerimeterOperationalpointsFilter = useMemo(() => {
     if (isStdcm && !isSuperUser && stdcmOperationalPoints) {

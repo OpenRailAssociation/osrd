@@ -29,7 +29,7 @@ const MapSearchLine = ({
 
   const { t } = useTranslation();
   const { updateMapSettings } = useMapSettingsActions();
-  const [postSearch] = osrdEditoastApi.endpoints.postSearch.useMutation();
+  const [postSearch] = osrdEditoastApi.endpoints.postSearch.useLazyQuery();
   const [searchTerm, setSearchTerm] = useState<string>('');
   const [searchResults, setSearchResults] = useState<SearchResultItemTrack[]>([]);
   const [getTrackPath] =
