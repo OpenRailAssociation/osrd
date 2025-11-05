@@ -4,11 +4,13 @@ import com.google.common.collect.ImmutableMultimap
 import fr.sncf.osrd.pathfinding.Pathfinding.EdgeLocation
 import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
 import fr.sncf.osrd.sim_infra.api.Block
+import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.stdcm.preprocessing.OccupancySegment
 import fr.sncf.osrd.train.TestTrains
 import fr.sncf.osrd.utils.DummyInfra
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
+import kotlin.Double.Companion.POSITIVE_INFINITY
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.Test
 
@@ -66,7 +68,7 @@ class EngineeringAllowanceTests {
                 firstBlock,
                 OccupancySegment(
                     firstBlockEnvelope.totalTime + 10,
-                    Double.POSITIVE_INFINITY,
+                    POSITIVE_INFINITY,
                     0.meters,
                     1000.meters,
                 ),
@@ -149,7 +151,7 @@ class EngineeringAllowanceTests {
                 firstBlock,
                 OccupancySegment(
                     firstBlockEnvelope.totalTime + timeStep,
-                    Double.POSITIVE_INFINITY,
+                    POSITIVE_INFINITY,
                     0.meters,
                     1000.meters,
                 ),
@@ -236,19 +238,14 @@ class EngineeringAllowanceTests {
                 firstBlock,
                 OccupancySegment(
                     firstBlockEnvelope.totalTime + timeStep,
-                    Double.POSITIVE_INFINITY,
+                    POSITIVE_INFINITY,
                     0.meters,
                     1000.meters,
                 ),
                 lastBlock,
                 OccupancySegment(0.0, timeLastBlockFree, 0.meters, 1000.meters),
                 thirdBlock,
-                OccupancySegment(
-                    timeThirdBlockOccupied,
-                    Double.POSITIVE_INFINITY,
-                    0.meters,
-                    1000.meters,
-                ),
+                OccupancySegment(timeThirdBlockOccupied, POSITIVE_INFINITY, 0.meters, 1000.meters),
             )
         val res =
             STDCMPathfindingBuilder()
@@ -340,7 +337,7 @@ class EngineeringAllowanceTests {
                 firstBlock,
                 OccupancySegment(0.0, 600.0, 0.meters, 100.meters),
                 firstBlock,
-                OccupancySegment(2000.0, Double.POSITIVE_INFINITY, 0.meters, 100.meters),
+                OccupancySegment(2000.0, POSITIVE_INFINITY, 0.meters, 100.meters),
                 secondBlock,
                 OccupancySegment(0.0, 1200.0, 0.meters, 100.meters),
                 thirdBlock,
@@ -358,6 +355,73 @@ class EngineeringAllowanceTests {
                 .setTimeStep(timeStep)
                 .run()!!
         occupancyTest(res, occupancyGraph, 2 * timeStep)
+    }
+
+    /**
+     * Similar test as above, but values have been tweaked to reproduce #13910.
+     *
+     * There's only a short opening around the area of the first engineering allowance.
+     */
+    @Test
+    fun testSeveralDelaysWithLargeTimeDiff() {
+        /*
+        Occupancy graph is similar to this (with lots of blocks and long durations):
+
+        space
+          ^
+          |########################################
+          |######################################
+          |####################################
+          |##################################
+          |################################
+          |##########*
+          |          ^
+          |
+          |
+          start ###########################################-> time
+
+          Each block in the second half has its own engineering allowance.
+          They all extend back to the path start.
+
+          At first, there's only one fixed time point at the end.
+          Then one is added at the first conflict location, the point
+          marked with a star. It's then impossible to add an engineering
+          allowance that avoids the next conflict.
+         */
+        val infra = DummyInfra()
+        val length = 2_000.meters
+        val blocks = mutableListOf<BlockId>()
+        for (i in 0..20) {
+            blocks.add(infra.addBlock(i.toString(), (i + 1).toString(), length, 10.0))
+        }
+
+        val occupancyGraphBuilder = ImmutableMultimap.builder<BlockId, OccupancySegment>()
+        fun segment(blockIndex: Int, from: Double, to: Double) {
+            occupancyGraphBuilder.put(
+                blocks[blockIndex],
+                OccupancySegment(from, to, 0.meters, length),
+            )
+        }
+
+        // Very large values makes the error easier to reproduce
+        val t = 300_000.0
+        segment(9, 0.0, t - 20_000.0)
+        for (i in 0..10) {
+            val from = t + i * 300.0
+            segment(10 + i, 0.0, from)
+        }
+
+        val occupancyGraph = occupancyGraphBuilder.build()
+        val res =
+            STDCMPathfindingBuilder()
+                .setInfra(infra.fullInfra())
+                .setStartLocations(setOf(EdgeLocation(blocks.first(), Offset(0.meters))))
+                .setEndLocations(setOf(EdgeLocation(blocks.last(), Offset(1.meters))))
+                .setUnavailableTimes(occupancyGraph)
+                .setMaxRunTime(POSITIVE_INFINITY)
+                .setMaxDepartureDelay(0.0)
+                .run()!!
+        occupancyTest(res, occupancyGraph)
     }
 
     /**
@@ -390,7 +454,7 @@ class EngineeringAllowanceTests {
         val occupancyGraph =
             ImmutableMultimap.of(
                 firstBlock,
-                OccupancySegment(1_000.0, Double.POSITIVE_INFINITY, 0.meters, 100.meters),
+                OccupancySegment(1_000.0, POSITIVE_INFINITY, 0.meters, 100.meters),
                 secondBlock,
                 OccupancySegment(0.0, 800.0, 0.meters, 100.meters),
                 thirdBlock,
@@ -404,7 +468,7 @@ class EngineeringAllowanceTests {
                 .setStartLocations(setOf(EdgeLocation(firstBlock, Offset(0.meters))))
                 .setEndLocations(setOf(EdgeLocation(forthBlock, Offset(1.meters))))
                 .setUnavailableTimes(occupancyGraph)
-                .setMaxRunTime(Double.POSITIVE_INFINITY)
+                .setMaxRunTime(POSITIVE_INFINITY)
                 .run() ?: return // No solution found is valid here (and expected)
         // But if we find a solution there must be no conflict
         occupancyTest(res, occupancyGraph)
@@ -439,7 +503,7 @@ class EngineeringAllowanceTests {
         val occupancyGraph =
             ImmutableMultimap.of(
                 blocks[0],
-                OccupancySegment(300.0, Double.POSITIVE_INFINITY, 0.meters, 1000.meters),
+                OccupancySegment(300.0, POSITIVE_INFINITY, 0.meters, 1000.meters),
                 blocks[2],
                 OccupancySegment(0.0, 3600.0, 0.meters, 1000.meters),
             )
@@ -449,7 +513,7 @@ class EngineeringAllowanceTests {
                 .setStartLocations(setOf(EdgeLocation(blocks[0], Offset<Block>(0.meters))))
                 .setEndLocations(setOf(EdgeLocation(blocks[2], Offset<Block>(1000.meters))))
                 .setUnavailableTimes(occupancyGraph)
-                .setMaxDepartureDelay(Double.POSITIVE_INFINITY)
+                .setMaxDepartureDelay(POSITIVE_INFINITY)
                 .run()
         Assertions.assertNull(res)
     }
@@ -490,7 +554,7 @@ class EngineeringAllowanceTests {
         val occupancyGraph =
             ImmutableMultimap.of(
                 blocks[0],
-                OccupancySegment(600.0, Double.POSITIVE_INFINITY, 0.meters, 1000.meters),
+                OccupancySegment(600.0, POSITIVE_INFINITY, 0.meters, 1000.meters),
                 blocks[3],
                 OccupancySegment(0.0, 2900.0, 0.meters, 1000.meters),
                 blocks[4],
@@ -501,8 +565,8 @@ class EngineeringAllowanceTests {
             .setStartLocations(setOf(EdgeLocation(blocks[0], Offset(0.meters))))
             .setEndLocations(setOf(EdgeLocation(blocks[4], Offset(1000.meters))))
             .setUnavailableTimes(occupancyGraph)
-            .setMaxDepartureDelay(Double.POSITIVE_INFINITY)
-            .setMaxRunTime(Double.POSITIVE_INFINITY)
+            .setMaxDepartureDelay(POSITIVE_INFINITY)
+            .setMaxRunTime(POSITIVE_INFINITY)
             .run()!!
     }
 
@@ -601,7 +665,7 @@ class EngineeringAllowanceTests {
                 firstBlock,
                 OccupancySegment(
                     firstBlockEnvelope.totalTime + 10,
-                    Double.POSITIVE_INFINITY,
+                    POSITIVE_INFINITY,
                     0.meters,
                     1000.meters,
                 ),
