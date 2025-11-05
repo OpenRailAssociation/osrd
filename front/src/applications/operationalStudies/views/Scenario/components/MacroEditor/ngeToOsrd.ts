@@ -364,6 +364,25 @@ const generatePathAndSchedule = (
   return { start_time: startDate.toISOString(), path, schedule };
 };
 
+const fetchStationSecondaryCode = async (
+  trigram: string,
+  infraId: number,
+  dispatch: AppDispatch
+) => {
+  const searchPayload = {
+    object: 'operationalpoint',
+    query: ['and', ['=', ['infra_id'], infraId], ['=', ['trigram'], trigram]],
+  };
+  const searchResults = (await dispatch(
+    osrdEditoastApi.endpoints.postSearch.initiate({
+      searchPayload,
+    })
+  ).unwrap()) as SearchResultItemOperationalPoint[];
+
+  const stationOp = searchResults.find((op) => op.ch === 'BV' || op.ch === '00');
+  return stationOp?.ch;
+};
+
 // TODO: drop this function once this PR is merged:
 // https://github.com/OpenRailAssociation/osrd/pull/10325
 const populateSecondaryCodesInPath = async (
@@ -375,19 +394,7 @@ const populateSecondaryCodesInPath = async (
     if (!('trigram' in pathItem) || pathItem.secondary_code) {
       return;
     }
-
-    const searchPayload = {
-      object: 'operationalpoint',
-      query: ['and', ['=', ['infra_id'], infraId], ['=', ['trigram'], pathItem.trigram]],
-    };
-    const searchResults = (await dispatch(
-      osrdEditoastApi.endpoints.postSearch.initiate({
-        searchPayload,
-      })
-    ).unwrap()) as SearchResultItemOperationalPoint[];
-
-    const stationOp = searchResults.find((op) => op.ch === 'BV' || op.ch === '00');
-    pathItem.secondary_code = stationOp?.ch;
+    pathItem.secondary_code = await fetchStationSecondaryCode(pathItem.trigram, infraId, dispatch);
   });
 
   await Promise.all(promises);
@@ -980,12 +987,24 @@ const handleNodeOperation = async ({
         if (indexNode.dbId) {
           // Update the key if trigram has changed and key is based on it
           let nodeKey = indexNode.path_item_key;
-          if (nodeKey.startsWith('trigram:') && indexNode.trigram !== node.betriebspunktName) {
-            nodeKey = `trigram:${node.betriebspunktName}`;
+          let trigram = node.betriebspunktName;
+          if (nodeKey.startsWith('trigram:') && indexNode.trigram !== trigram) {
+            if (!trigram.includes('/')) {
+              const secondaryCode = await fetchStationSecondaryCode(
+                trigram,
+                state.infraId,
+                dispatch
+              );
+              if (secondaryCode) {
+                trigram = `${trigram}/${secondaryCode}`;
+              }
+            }
+            nodeKey = `trigram:${trigram}`;
           }
           await updateMacroNode(state, dispatch, {
             ...indexNode,
             ...castNgeNode(node, netzgrafikDto.labels),
+            trigram,
             dbId: indexNode.dbId,
             path_item_key: nodeKey,
           });
