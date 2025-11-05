@@ -17,19 +17,12 @@ pub enum SignalingSystem {
     TVM430,
 }
 
-#[derive(Clone, Debug, PartialEq, Deserialize, Serialize, ToSchema)]
+#[derive(Clone, Debug, PartialEq, Deserialize, Serialize, Display, ToSchema)]
 #[serde(untagged)]
 #[allow(clippy::large_enum_variant)]
 pub enum RollingStockSupportedSignalingSystem {
+    #[strum(to_string = "{0}")]
     Simple(SignalingSystem),
+    #[strum(to_string = "ETCS_LEVEL2")]
     EtcsLevel2 { brake_params: EtcsBrakeParams },
-}
-
-impl ToString for RollingStockSupportedSignalingSystem {
-    fn to_string(&self) -> String {
-        match self {
-            RollingStockSupportedSignalingSystem::Simple(system) => system.to_string(),
-            RollingStockSupportedSignalingSystem::EtcsLevel2 { .. } => "ETCS_LEVEL2".to_string(),
-        }
-    }
 }

@@ -358,7 +358,9 @@ class RollingStock(BaseModel, extra="forbid"):
         description="The time it takes to raise this train's pantograph in s. Is null if the train is not electric.",
         default=None,
     )
-    supported_signaling_systems: List[SupportedSignalingSystem] = Field(default_factory=list)
+    supported_signaling_systems: List[SupportedSignalingSystem] = Field(
+        default_factory=list
+    )
     primary_category: TrainMainCategory = Field(
         description="The primary category of the rolling stock."
     )
