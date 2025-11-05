@@ -145,7 +145,9 @@ where
         self,
         vkconn: cache::Connection,
         ctx: T::Context,
-    ) -> impl stream::TryStream<Ok = Correlated<CorrelationKey, T::Output>, Error = T::Error> + Send;
+    ) -> impl stream::Stream<
+        Item = Correlated<CorrelationKey, Result<<T as Task>::Output, <T as Task>::Error>>,
+    > + Send;
 }
 
 impl<T, InputStream, CorrelationKey> TaskStreamExt<T, CorrelationKey> for InputStream
@@ -160,9 +162,8 @@ where
         self,
         vkconn: cache::Connection,
         ctx: <T as Task>::Context,
-    ) -> impl stream::TryStream<
-        Ok = Correlated<CorrelationKey, <T as Task>::Output>,
-        Error = <T as Task>::Error,
+    ) -> impl stream::Stream<
+        Item = Correlated<CorrelationKey, Result<<T as Task>::Output, <T as Task>::Error>>,
     > + Send {
         use stream::StreamExt as _;
 
@@ -280,7 +281,7 @@ where
         }
 
         let (results_tx, results_rx) = futures::channel::mpsc::unbounded::<
-            Result<Correlated<CorrelationKey, T::Output>, T::Error>,
+            Correlated<CorrelationKey, Result<T::Output, T::Error>>,
         >();
         {
             // 'aggregation' task, receives requests and potential cached task outputs. If cached,
@@ -292,7 +293,7 @@ where
                 {
                     if let Some(cached_value) = cache_entry {
                         results_tx
-                            .unbounded_send(Ok(Correlated::new(correlation_key, cached_value)))
+                            .unbounded_send(Correlated::new(correlation_key, Ok(cached_value)))
                             .ok();
                     } else {
                         match input.compute(ctx.clone()).await {
@@ -307,11 +308,13 @@ where
                                 };
                                 cache_write_tx.send((cache_key, serialized)).ok();
                                 results_tx
-                                    .unbounded_send(Ok(Correlated::new(correlation_key, value)))
+                                    .unbounded_send(Correlated::new(correlation_key, Ok(value)))
                                     .ok();
                             }
                             Err(err) => {
-                                results_tx.unbounded_send(Err(err)).ok();
+                                results_tx
+                                    .unbounded_send(Correlated::new(correlation_key, Err(err)))
+                                    .ok();
                             }
                         };
                     }

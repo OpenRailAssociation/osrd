@@ -195,12 +195,13 @@ where
         trains: HashSet<Train>,
     ) -> impl stream::TryStream<Ok = HashSet<Train>, Error = core_client::Error> + use<'a, Train>
     {
-        use stream::TryStreamExt as _;
-        self.paths_stream(vkconn, trains).map_ok(
+        use stream::StreamExt as _;
+        self.paths_stream(vkconn, trains).map(
             move |Correlated {
                       correlation_key: input,
-                      data: path,
+                      data,
                   }| {
+                let path = data?;
                 let trains = self
                     .inputs
                     .trains
@@ -208,7 +209,7 @@ where
                     .expect("deduplicate_inputs invariant")
                     .clone();
                 self.paths.insert(input, Arc::new(path));
-                trains
+                Ok(trains)
             },
         )
     }
@@ -223,15 +224,14 @@ where
         &self,
         vkconn: cache::Connection,
         trains: HashSet<Train>,
-    ) -> impl stream::TryStream<
-        Ok = (
+    ) -> impl stream::Stream<
+        Item = Correlated<
             HashSet<Train>,
-            core_client::pathfinding::PathfindingCoreResult,
-        ),
-        Error = core_client::Error,
+            Result<core_client::pathfinding::PathfindingCoreResult, core_client::Error>,
+        >,
     > {
-        use stream::TryStreamExt as _;
-        self.paths_stream(vkconn, trains).map_ok(
+        use stream::StreamExt as _;
+        self.paths_stream(vkconn, trains).map(
             move |Correlated {
                       correlation_key: input,
                       data: path,
@@ -242,7 +242,7 @@ where
                     .get(&input)
                     .expect("deduplicate_inputs invariant")
                     .clone();
-                (trains, path)
+                Correlated::new(trains, path)
             },
         )
     }
@@ -269,9 +269,11 @@ where
         &self,
         vkconn: cache::Connection,
         trains: HashSet<Train>,
-    ) -> impl stream::TryStream<
-        Ok = Correlated<Input, core_client::pathfinding::PathfindingCoreResult>,
-        Error = core_client::Error,
+    ) -> impl stream::Stream<
+        Item = Correlated<
+            Input,
+            Result<core_client::pathfinding::PathfindingCoreResult, core_client::Error>,
+        >,
     > + use<Train> {
         use crate::TaskStreamExt as _;
 
