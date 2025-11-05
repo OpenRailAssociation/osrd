@@ -242,12 +242,11 @@ export const getTrainCategoryFromTrainrunCategoryId = (
     };
   }
 
-  const mainCat = TRAIN_MAIN_CATEGORY_TO_NGE.find((cat) => cat.colorRef === category.colorRef)!;
+  const mainCat = TRAIN_MAIN_CATEGORY_TO_NGE.find((cat) => cat.colorRef === category.colorRef);
 
-  if (mainCat.trainCategory === 'NO_CATEGORY') {
+  if (!mainCat || mainCat.trainCategory === 'NO_CATEGORY') {
     return null;
   }
-
   return { main_category: mainCat.trainCategory };
 };
 

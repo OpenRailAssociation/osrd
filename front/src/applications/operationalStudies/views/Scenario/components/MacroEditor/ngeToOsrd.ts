@@ -1171,7 +1171,13 @@ export const convertNgeDtoToOsrd = (dto: NetzgrafikDto) => {
   for (const trainrun of dto.trainruns) {
     const groupedTrainrunSections = getTrainrunSectionsByTrainrunId(dto, trainrun.id);
     const labels = getTrainrunLabels(dto, trainrun);
-    const category = dto.metadata.trainrunCategories.find((cat) => cat.id === trainrun.categoryId);
+    const dtoCategory = dto.metadata.trainrunCategories.find((c) => c.id === trainrun.categoryId);
+    const categoryObj = getTrainCategoryFromTrainrunCategoryId(
+      dto.metadata.trainrunCategories,
+      trainrun.categoryId
+    );
+    const category = categoryObj ?? dtoCategory?.name ?? null;
+
     const directions =
       trainrun.direction === 'one_way'
         ? [TRAINRUN_DIRECTIONS.FORWARD]
@@ -1188,7 +1194,7 @@ export const convertNgeDtoToOsrd = (dto: NetzgrafikDto) => {
         const commonProps = {
           train_name: isTrainSplit ? `${trainrun.name}-${index + 1}` : trainrun.name,
           labels,
-          category: category?.name,
+          category,
           ...pathAndSchedule,
         };
         const paced = createPacedAttributesFromTrainrun(trainrun, dto);
