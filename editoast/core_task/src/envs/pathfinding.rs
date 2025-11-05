@@ -32,16 +32,36 @@ where
 {
     // Inputs
     core_env: CoreEnv,
+    inputs: PathfindingEnvInputs<Train>,
+
+    // Outputs
+    // optionally deduplicate similar outputs of different inputs
+    paths: DashMap<Input, Arc<core_client::pathfinding::PathfindingCoreResult>>,
+}
+
+pub(crate) struct PathfindingEnvInputs<Train>
+where
+    Train: Clone + Hash + Eq + Send + Sync + 'static,
+{
     // TODO: deduplicate values
     consists: HashMap<Train, Arc<PathfindingConsist>>,
     constraints: HashMap<Train, Arc<PathfindingConstraints>>,
 
     // Generated
     trains: HashMap<Input, HashSet<Train>>, // inverse index: unique input set => trains
+}
 
-    // Outputs
-    // optionally deduplicate similar outputs of different inputs
-    paths: DashMap<Input, Arc<core_client::pathfinding::PathfindingCoreResult>>,
+impl<Train> Default for PathfindingEnvInputs<Train>
+where
+    Train: Clone + Hash + Eq + Send + Sync + 'static,
+{
+    fn default() -> Self {
+        Self {
+            consists: HashMap::default(),
+            constraints: HashMap::default(),
+            trains: HashMap::default(),
+        }
+    }
 }
 
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
@@ -100,9 +120,7 @@ where
     pub fn new(core_env: CoreEnv) -> Self {
         Self {
             core_env,
-            consists: HashMap::new(),
-            constraints: HashMap::new(),
-            trains: HashMap::new(),
+            inputs: PathfindingEnvInputs::default(),
             paths: DashMap::new(),
         }
     }
@@ -113,11 +131,11 @@ where
     Train: Clone + Hash + Eq + Send + Sync + 'static,
 {
     fn extend<T: IntoIterator<Item = (Train, PathfindingConsist)>>(&mut self, iter: T) {
-        self.consists.extend(
+        self.inputs.consists.extend(
             iter.into_iter()
                 .map(|(train, consist)| (train, Arc::new(consist))),
         );
-        self.build_input_map();
+        self.inputs.build_input_map();
     }
 }
 
@@ -126,11 +144,11 @@ where
     Train: Clone + Hash + Eq + Send + Sync + 'static,
 {
     fn extend<T: IntoIterator<Item = (Train, PathfindingConstraints)>>(&mut self, iter: T) {
-        self.constraints.extend(
+        self.inputs.constraints.extend(
             iter.into_iter()
                 .map(|(train, constraints)| (train, Arc::new(constraints))),
         );
-        self.build_input_map();
+        self.inputs.build_input_map();
     }
 }
 
@@ -184,6 +202,7 @@ where
                       data: path,
                   }| {
                 let trains = self
+                    .inputs
                     .trains
                     .get(&input)
                     .expect("deduplicate_inputs invariant")
@@ -218,6 +237,7 @@ where
                       data: path,
                   }| {
                 let trains = self
+                    .inputs
                     .trains
                     .get(&input)
                     .expect("deduplicate_inputs invariant")
@@ -225,17 +245,6 @@ where
                 (trains, path)
             },
         )
-    }
-
-    /// Returns all trains in the environment for which all needed information is configured
-    pub fn all_trains(&self) -> HashSet<Train> {
-        self.consists
-            .keys()
-            .collect::<HashSet<_>>()
-            .intersection(&self.constraints.keys().collect())
-            .cloned()
-            .cloned() // not an error, it's an &&Train originally
-            .collect()
     }
 
     /// Returns the path for a given train
@@ -251,22 +260,9 @@ where
         &self,
         train: &Train,
     ) -> Option<Arc<core_client::pathfinding::PathfindingCoreResult>> {
-        let input = self.train_input(train)?;
+        let input = self.inputs.train_input(train)?;
         let value_ref = self.paths.get(&input)?;
         Some(value_ref.value().clone())
-    }
-
-    /// Builds the [Self::trains] map using trains from both [Self::consists] and [Self::constraints]
-    ///
-    /// TODO: we should build it incrementally to avoid unnecessary complexity
-    fn build_input_map(&mut self) {
-        self.trains.clear();
-        for train in self.all_trains() {
-            let consist = self.consists.get(&train).expect("all_trains invariant");
-            let constraints = self.constraints.get(&train).expect("all_trains invariant");
-            let input = Input(consist.clone(), constraints.clone());
-            self.trains.entry(input).or_default().insert(train);
-        }
     }
 
     fn paths_stream(
@@ -280,7 +276,8 @@ where
         use crate::TaskStreamExt as _;
 
         let inputs = trains.iter().map(|train| {
-            self.train_input(train)
+            self.inputs
+                .train_input(train)
                 .expect("train map should have been built by now")
         });
         let requests = inputs
@@ -314,6 +311,39 @@ where
             rolling_stock_maximum_speed: consist.maximum_speed,
             rolling_stock_length: consist.length,
             speed_limit_tag: consist.speed_limit_tag.clone(),
+        }
+    }
+
+    pub fn all_trains(&self) -> HashSet<Train> {
+        self.inputs.all_trains()
+    }
+}
+
+impl<Train> PathfindingEnvInputs<Train>
+where
+    Train: Clone + Hash + Eq + Send + Sync + 'static,
+{
+    /// Returns all trains in the environment for which all needed information is configured
+    pub fn all_trains(&self) -> HashSet<Train> {
+        self.consists
+            .keys()
+            .collect::<HashSet<_>>()
+            .intersection(&self.constraints.keys().collect())
+            .cloned()
+            .cloned() // not an error, it's an &&Train originally
+            .collect()
+    }
+
+    /// Builds the [Self::trains] map using trains from both [Self::consists] and [Self::constraints]
+    ///
+    /// TODO: we should build it incrementally to avoid unnecessary complexity
+    fn build_input_map(&mut self) {
+        self.trains.clear();
+        for train in self.all_trains() {
+            let consist = self.consists.get(&train).expect("all_trains invariant");
+            let constraints = self.constraints.get(&train).expect("all_trains invariant");
+            let input = Input(consist.clone(), constraints.clone());
+            self.trains.entry(input).or_default().insert(train);
         }
     }
 
@@ -379,7 +409,7 @@ mod tests {
 
     impl PathfindingEnv<usize> {
         fn key(&self, id: usize) -> String {
-            let input = self.train_input(&id).unwrap();
+            let input = self.inputs.train_input(&id).unwrap();
             let request = self.build_request(&input);
             use crate::Task as _;
             request.key("")
