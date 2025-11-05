@@ -13,6 +13,7 @@ import kotlin.io.path.Path
 import kotlin.io.path.exists
 import kotlin.io.path.readBytes
 import kotlin.io.path.writeBytes
+import kotlin.time.measureTime
 import kotlinx.coroutines.*
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -91,7 +92,6 @@ class TimetableCacheManager(
                     return@withContext fetchTimetableRequirements(infraId, infra, timetableId)
                 }
             }
-            logger.info("Start computing timetable requirements")
             cache[timetableId]?.let {
                 logger.info("Timetable cache hit for ID $timetableId")
                 return@coroutineScope it
@@ -103,12 +103,16 @@ class TimetableCacheManager(
                     cache[timetableId]?.let {
                         return@coroutineScope it
                     }
-                    val requirements =
-                        withContext(fetchDispatcher) {
-                            fetchTimetableRequirements(infraId, infra, timetableId)
-                        }
+                    logger.info("Start computing timetable requirements")
+                    val requirements: STDCMRequirements
+                    val time = measureTime {
+                        requirements =
+                            withContext(fetchDispatcher) {
+                                fetchTimetableRequirements(infraId, infra, timetableId)
+                            }
+                    }
                     cache[timetableId] = requirements
-                    logger.info("End of computing of timetable requirements")
+                    logger.info("timetable requirements computed in ${time.inWholeSeconds} seconds")
                     return@coroutineScope requirements
                 } finally {
                     mutexes.remove(timetableId)
@@ -128,15 +132,11 @@ class TimetableCacheManager(
         infra: RawInfra,
         timetableId: TimetableId,
     ): STDCMRequirements {
-        logger.info("Fetching timetable requirements for $timetableId")
-
         val cacheFile = if (disableAllCaching) null else "$timetableId.cbor"
         val requirements =
             withLocalCache(localCacheLocation, cacheFile) {
                 timetableProvider.getTimetableRequirements(infraId, infra, timetableId)
             }
-
-        logger.info("Saved timetable requirements for $timetableId")
         return requirements
     }
 
