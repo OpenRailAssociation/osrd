@@ -1,4 +1,6 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useMemo } from 'react';
+
+import { skipToken } from '@reduxjs/toolkit/query';
 
 import { useDebounce } from 'utils/helpers';
 
@@ -15,46 +17,33 @@ export type User = {
 
 export default function useSearchUsers() {
   const [searchTerm, setSearchTerm] = useState('');
-  const [searchedUsers, setSearchedUsers] = useState<User[]>([]);
-
   const debouncedSearchTerm = useDebounce(searchTerm, 150);
-  const [postSearch] = osrdEditoastApi.endpoints.postSearch.useLazyQuery();
 
-  const searchUser = useCallback(async (searchQuery: string) => {
-    try {
-      const results = (await postSearch({
-        searchPayload: {
-          object: 'user',
-          query: ['search', ['name'], searchQuery],
-        },
-        pageSize: 101,
-      }).unwrap()) as SearchResultItemUser[];
+  const { data: searchedUsersData } = osrdEditoastApi.endpoints.postSearch.useQuery(
+    debouncedSearchTerm
+      ? {
+          searchPayload: {
+            object: 'user',
+            query: ['search', ['name'], debouncedSearchTerm],
+          },
+          pageSize: 101,
+        }
+      : skipToken
+  );
 
-      return results.map((result) => ({
+  const searchedUsers = useMemo(
+    () =>
+      ((searchedUsersData ?? []) as SearchResultItemUser[]).map((result) => ({
         id: result.id,
         name: result.name,
         type: SUBJECT_TYPES.USER,
-      }));
-    } catch (error) {
-      console.error(error);
-      return [];
-    }
-  }, []);
+      })),
+    [searchedUsersData]
+  );
 
   const resetSuggestions = () => {
-    setSearchedUsers([]);
     setSearchTerm('');
   };
-
-  useEffect(() => {
-    if (debouncedSearchTerm) {
-      searchUser(debouncedSearchTerm).then((results) => {
-        setSearchedUsers(results);
-      });
-    } else if (searchedUsers.length !== 0) {
-      setSearchedUsers([]);
-    }
-  }, [debouncedSearchTerm]);
 
   return {
     resetSuggestions,
