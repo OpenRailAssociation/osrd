@@ -54,7 +54,7 @@ const ProjectView = () => {
 
   const { projectId: urlProjectId } = useParams() as ProjectParams;
   const [deleteStudy] = osrdEditoastApi.endpoints.deleteStudiesByStudyId.useMutation();
-  const [postSearch] = osrdEditoastApi.endpoints.postSearch.useMutation();
+  const [postSearch] = osrdEditoastApi.endpoints.postSearch.useLazyQuery();
 
   const { projectId } = useMemo(
     () => ({

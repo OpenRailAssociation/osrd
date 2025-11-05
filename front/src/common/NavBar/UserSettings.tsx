@@ -22,7 +22,7 @@ import { useDebounce } from 'utils/helpers';
 import useAuth from 'utils/hooks/useAuth';
 
 const UserSettings = () => {
-  const [postSearch] = osrdEditoastApi.endpoints.postSearch.useMutation();
+  const [postSearch] = osrdEditoastApi.endpoints.postSearch.useLazyQuery();
   const [inputValue, setInputValue] = useState('');
   const [userList, setUserList] = useState<SearchResultItemUser[]>([]);
   const userPreferences = useSelector(getUserPreferences);

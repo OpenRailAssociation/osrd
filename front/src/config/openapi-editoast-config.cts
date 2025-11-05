@@ -27,6 +27,7 @@ const config: ConfigFile = {
         'postTrainScheduleProjectPathOp',
         'postTrainScheduleOccupancyBlocks',
         'postWorkSchedulesProjectPath',
+        'postSearch',
       ],
       type: 'query',
     },

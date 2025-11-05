@@ -64,7 +64,7 @@ const ProjectListView = () => {
       deleteItems();
     }
   };
-  const [postSearch] = osrdEditoastApi.endpoints.postSearch.useMutation();
+  const [postSearch] = osrdEditoastApi.endpoints.postSearch.useLazyQuery();
 
   const { data: allProjects } = osrdEditoastApi.endpoints.getProjects.useQuery({
     ordering: sortOption,

@@ -926,7 +926,7 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ['scenarios'],
       }),
-      postSearch: build.mutation<PostSearchApiResponse, PostSearchApiArg>({
+      postSearch: build.query<PostSearchApiResponse, PostSearchApiArg>({
         query: (queryArg) => ({
           url: `/search`,
           method: 'POST',
@@ -936,7 +936,7 @@ const injectedRtkApi = api
             page_size: queryArg.pageSize,
           },
         }),
-        invalidatesTags: ['search'],
+        providesTags: ['search'],
       }),
       postSimilarTrains: build.mutation<PostSimilarTrainsApiResponse, PostSimilarTrainsApiArg>({
         query: (queryArg) => ({ url: `/similar_trains`, method: 'POST', body: queryArg.body }),

@@ -18,7 +18,7 @@ export default function useSearchUsers() {
   const [searchedUsers, setSearchedUsers] = useState<User[]>([]);
 
   const debouncedSearchTerm = useDebounce(searchTerm, 150);
-  const [postSearch] = osrdEditoastApi.endpoints.postSearch.useMutation();
+  const [postSearch] = osrdEditoastApi.endpoints.postSearch.useLazyQuery();
 
   const searchUser = useCallback(async (searchQuery: string) => {
     try {

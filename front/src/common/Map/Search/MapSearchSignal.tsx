@@ -96,7 +96,7 @@ const MapSearchSignal = ({ closeMapSearchPopUp }: MapSearchSignalProps) => {
     asc: true,
   });
   const dispatch = useAppDispatch();
-  const [postSearch] = osrdEditoastApi.endpoints.postSearch.useMutation();
+  const [postSearch] = osrdEditoastApi.endpoints.postSearch.useLazyQuery();
 
   const getPayload = (
     lineSearch: string,
