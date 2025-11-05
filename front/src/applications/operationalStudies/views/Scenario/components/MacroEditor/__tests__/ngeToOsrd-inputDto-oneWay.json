@@ -250,7 +250,7 @@
         "order": 1,
         "shortName": "IC",
         "name": "InterCity",
-        "colorRef": "IC",
+        "colorRef": "UNKNOWN",
         "fachCategory": "HaltezeitA",
         "minimalTurnaroundTime": 4,
         "nodeHeadwayStop": 2,

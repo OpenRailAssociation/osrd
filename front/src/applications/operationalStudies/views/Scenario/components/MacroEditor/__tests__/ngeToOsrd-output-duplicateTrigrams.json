@@ -34,7 +34,9 @@
   "paced_trains": [],
   "train_schedules": [
     {
-      "category": "InterCity",
+      "category": {
+        "main_category": "INTERCITY_TRAIN"
+      },
       "constraint_distribution": "STANDARD",
       "rolling_stock_name": "",
       "train_name": "Carotte",

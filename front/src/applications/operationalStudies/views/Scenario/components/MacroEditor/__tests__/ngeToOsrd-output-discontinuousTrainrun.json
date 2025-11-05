@@ -53,7 +53,9 @@
   ],
   "paced_trains": [
     {
-      "category": "InterCity",
+      "category": {
+        "main_category": "INTERCITY_TRAIN"
+      },
       "constraint_distribution": "STANDARD",
       "rolling_stock_name": "",
       "exceptions": [],
@@ -82,7 +84,9 @@
       "paced": { "interval": "PT2H", "time_window": "PT2H" }
     },
     {
-      "category": "InterCity",
+      "category": {
+        "main_category": "INTERCITY_TRAIN"
+      },
       "constraint_distribution": "STANDARD",
       "rolling_stock_name": "",
       "exceptions": [],
@@ -111,7 +115,9 @@
       "paced": { "interval": "PT2H", "time_window": "PT2H" }
     },
     {
-      "category": "InterCity",
+      "category": {
+        "main_category": "INTERCITY_TRAIN"
+      },
       "constraint_distribution": "STANDARD",
       "exceptions": [],
       "labels": [],
@@ -144,7 +150,9 @@
       "train_name": "Carotte-2"
     },
     {
-      "category": "InterCity",
+      "category": {
+        "main_category": "INTERCITY_TRAIN"
+      },
       "constraint_distribution": "STANDARD",
       "exceptions": [],
       "labels": [],
