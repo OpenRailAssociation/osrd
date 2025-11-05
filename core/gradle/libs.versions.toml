@@ -75,6 +75,7 @@ amqp-client = { module = 'com.rabbitmq:amqp-client', version = '5.27.0' }
 # kotlin
 ksp = { id = 'com.google.devtools.ksp', version.ref = 'ksp' }
 kotlin-jvm = { id = 'org.jetbrains.kotlin.jvm', version.ref = 'kotlin' }
+kotlin-multiplatform = { id = 'org.jetbrains.kotlin.multiplatform', version.ref = 'kotlin' }
 kotlin-serialization = { id = 'org.jetbrains.kotlin.plugin.serialization', version.ref = 'kotlin' }
 
 # java

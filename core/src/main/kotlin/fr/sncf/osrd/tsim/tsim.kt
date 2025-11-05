@@ -7,6 +7,7 @@ import com.google.common.collect.TreeRangeMap
 import fr.sncf.osrd.envelope_sim.*
 import fr.sncf.osrd.envelope_sim.etcs.BrakingType
 import fr.sncf.osrd.path.interfaces.PhysicsPath
+import fr.sncf.osrd.sauce
 import fr.sncf.osrd.train.RollingStock
 import java.util.function.BiFunction
 import kotlin.math.abs
@@ -431,6 +432,8 @@ fun step(
     require(dt > 0.0) { "dt must be strictly positive" }
     require(position >= 0.0) { "position must be positive" }
     require(speed >= 0.0) { "speed must be positive" }
+
+    println(sauce())
 
     val currentSpeedLimit = instructions.maxSpeed.at(position)
 
