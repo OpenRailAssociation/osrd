@@ -23,6 +23,7 @@ include 'osrd-geom'
 include 'osrd-railjson'
 include 'envelope-sim'
 include 'osrd-reporting'
+include 'osrd-mp'
 
 
 dependencyResolutionManagement {

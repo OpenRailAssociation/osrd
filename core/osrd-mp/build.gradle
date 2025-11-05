@@ -1,0 +1,16 @@
+plugins {
+    alias(libs.plugins.kotlin.multiplatform)
+}
+
+group = 'fr.sncf.osrd'
+version = '1.0.0'
+
+kotlin {
+    jvm()
+
+    sourceSets {
+        commonMain.dependencies {
+            // PLEASE ADD AND UPDATE DEPENDENCIES USING libs.versions.toml
+        }
+    }
+}

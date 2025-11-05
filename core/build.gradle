@@ -26,6 +26,7 @@ dependencies {
     implementation project(':envelope-sim')
     implementation project(':osrd-geom')
     implementation project(':kt-osrd-path')
+    implementation project(':osrd-mp')
     testImplementation(testFixtures(project(":envelope-sim")))
 
     // kotlin
@@ -161,6 +162,7 @@ allprojects {
             palantirJavaFormat()
         }
         kotlin {
+            target('**/src/**/kotlin/**/*.kt', '**/src/**/java/**/*.kt')
             targetExclude('**/generated/**/*.*')
             // 4 space indentation style formatter
             ktfmt().kotlinlangStyle()
