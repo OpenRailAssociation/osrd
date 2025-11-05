@@ -109,6 +109,28 @@ impl Timetable {
         .await;
         train_schedules.map_err(|e| e.into())
     }
+
+    /// Deletes timetables that are not referenced by any Scenario or StdcmSearchEnvironment
+    /// Returns the number of deleted timetables
+    pub async fn delete_orphaned(
+        conn: &mut DbConnection,
+    ) -> Result<usize, database::DatabaseError> {
+        use database::tables::scenario::dsl as scenario_dsl;
+        use database::tables::stdcm_search_environment::dsl as stdcm_dsl;
+        use database::tables::timetable::dsl as timetable_dsl;
+
+        diesel::delete(timetable_dsl::timetable)
+            .filter(diesel::dsl::not(diesel::dsl::exists(
+                scenario_dsl::scenario.filter(scenario_dsl::timetable_id.eq(timetable_dsl::id)),
+            )))
+            .filter(diesel::dsl::not(diesel::dsl::exists(
+                stdcm_dsl::stdcm_search_environment
+                    .filter(stdcm_dsl::timetable_id.eq(timetable_dsl::id)),
+            )))
+            .execute(conn.write().await.deref_mut())
+            .await
+            .map_err(Into::into)
+    }
 }
 
 /// Should be used to retrieve a timetable with its trains

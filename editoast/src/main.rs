@@ -19,6 +19,7 @@ use client::Client;
 use client::Color;
 use client::Commands;
 use client::electrical_profiles_commands::*;
+use client::garbage_collector;
 use client::group;
 use client::group::GroupCommand;
 use client::healthcheck::healthcheck_cmd;
@@ -229,5 +230,6 @@ async fn run() -> anyhow::Result<()> {
         Commands::Healthcheck(core_config) => {
             healthcheck_cmd(db_pool.into(), valkey_config, core_config, openfga_config).await
         }
+        Commands::Gc => garbage_collector::run_garbage_collector(db_pool.into()).await,
     }
 }

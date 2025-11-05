@@ -1,4 +1,5 @@
 pub mod electrical_profiles_commands;
+pub mod garbage_collector;
 pub mod group;
 pub mod healthcheck;
 pub mod import_rolling_stock;
@@ -96,6 +97,8 @@ pub enum Commands {
     User(UserCommand),
     #[command(about, long_about = "Healthcheck")]
     Healthcheck(CoreArgs),
+    #[command(about, long_about = "Garbage collector")]
+    Gc,
 }
 
 /// Prints the OpenApi to stdout
