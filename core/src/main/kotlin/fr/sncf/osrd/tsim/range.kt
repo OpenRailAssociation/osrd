@@ -7,6 +7,7 @@ import fr.sncf.osrd.api.RangeValues
 import fr.sncf.osrd.path.interfaces.TravelledPath
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
+import kotlin.math.min
 
 internal fun Range<Double>.lowerEndpointOrInf(): Double =
     if (hasLowerBound()) lowerEndpoint() else Double.NEGATIVE_INFINITY
@@ -30,20 +31,7 @@ internal fun Range<Double>.upperEndpointOrInf(): Double =
  * ```
  */
 internal fun RangeMap<Double, Double>.putLower(range: Range<Double>, value: Double) {
-    val newSubMap = TreeRangeMap.create<Double, Double>()
-    newSubMap.put(range, value)
-
-    for (e in subRangeMap(range).asMapOfRanges()) {
-        val oldRange = e.key
-        val oldValue = e.value
-        if (oldValue < value) {
-            newSubMap.put(oldRange, oldValue)
-        }
-    }
-
-    for (e in newSubMap.asMapOfRanges()) {
-        putCoalescing(e.key, e.value)
-    }
+    merge(range, value) { old, new -> min(old, new!!) }
 }
 
 /**
