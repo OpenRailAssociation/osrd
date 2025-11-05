@@ -942,15 +942,17 @@ jobs:
             osrd-playwright:latest npx playwright test $TEST_PROJECT
           exit $(docker wait playwright-test)
 
-      - name: Upload video artifacts
+      - name: Upload media artifact
         if: always()
         uses: actions/upload-artifact@v5
         with:
-          name: playwright-videos
-          path: front/test-results/**/video.webm
+          name: playwright-media
+          path: |
+            front/test-results/**/video.webm
+            front/test-results/**/*.png
           retention-days: 30
 
-      - name: Upload trace artifacts
+      - name: Upload trace artifact
         if: always()
         uses: actions/upload-artifact@v5
         with:
