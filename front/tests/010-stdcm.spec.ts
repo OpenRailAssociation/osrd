@@ -25,8 +25,6 @@ const fastRollingStockPrefilledValues = { tonnage: '190', length: '46' };
 const towedRollingStockPrefilledValues = { tonnage: '46', length: '26' };
 
 test.describe('Verify stdcm simulation page', () => {
-  test.slow();
-
   let stdcmPage: STDCMPage;
   let consistSection: ConsistSection;
   let originSection: OriginSection;

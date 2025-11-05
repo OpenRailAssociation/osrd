@@ -28,8 +28,6 @@ const tractionEnginePrefilledValues = {
 };
 
 test.describe('Stdcm feedback card', () => {
-  test.slow();
-
   let stdcmPage: STDCMPage;
   let consistSection: ConsistSection;
   let originSection: OriginSection;

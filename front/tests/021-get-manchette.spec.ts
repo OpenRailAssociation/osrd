@@ -65,8 +65,6 @@ test.skip(
   'Limit to Chromium for GitHub snapshots storage optimization'
 );
 test.describe('Verify manchette and space time diagram', () => {
-  test.slow();
-
   let simulationResultPage: OpSimulationResultPage;
   let scenarioTimetableSection: ScenarioTimetableSection;
   let pacedTrainSection: PacedTrainSection;

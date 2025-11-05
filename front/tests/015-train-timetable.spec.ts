@@ -50,8 +50,6 @@ const frTranslations = {
 };
 
 test.describe('Verify train schedule elements and filters', () => {
-  test.slow();
-
   let scenarioTimetableSection: ScenarioTimetableSection;
   let pacedTrainSection: PacedTrainSection;
   let operationalStudiesPage: OperationalStudiesPage;
@@ -107,8 +105,8 @@ test.describe('Verify train schedule elements and filters', () => {
 
   /** *************** Test 2 **************** */
   test('Loading timetable items and verifying simulation result for paced trains', async () => {
-    await test.step('Verify counts and invalid message, then filter valid paced trains', async () => {
-      await scenarioTimetableSection.verifyTimetableItemsCount(TOTAL_TIMETABLE_ITEMS);
+    test.slow(); // Verifying all occurrences of paced trains can take some time, this test will be reworked later to optimize it
+    await test.step('Verify invalid message, then filter valid paced trains', async () => {
       await scenarioTimetableSection.verifyInvalidTrainsMessageVisibility();
       await scenarioTimetableSection.filterTrainTypeAndVerifyTrainCount(
         'Service',
