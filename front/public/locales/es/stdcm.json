@@ -1,6 +1,0 @@
-{
-  "arriveAt": "Llegar a las {{ time }}",
-  "consist": {
-    "consist": "Convoy"
-  }
-}
