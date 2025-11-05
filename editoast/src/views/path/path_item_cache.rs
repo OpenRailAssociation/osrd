@@ -154,6 +154,19 @@ impl PathItemCache {
             .map(|op| op.obj_id)
     }
 
+    /// Retrieve an operational point identifier from a path item location using the cache
+    pub fn op_identifier(&self, path_item: &PathItemLocation) -> Option<String> {
+        if let PathItemLocation::OperationalPointReference(OperationalPointReference {
+            reference,
+            ..
+        }) = path_item
+        {
+            self.get_op_ref_id(reference)
+        } else {
+            None
+        }
+    }
+
     /// Extract locations from path items
     pub fn extract_location_from_path_items(
         &self,
