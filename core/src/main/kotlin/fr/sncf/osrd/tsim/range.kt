@@ -2,7 +2,6 @@ package fr.sncf.osrd.tsim
 
 import com.google.common.collect.Range
 import com.google.common.collect.RangeMap
-import com.google.common.collect.TreeRangeMap
 import fr.sncf.osrd.api.RangeValues
 import fr.sncf.osrd.path.interfaces.TravelledPath
 import fr.sncf.osrd.utils.units.Offset

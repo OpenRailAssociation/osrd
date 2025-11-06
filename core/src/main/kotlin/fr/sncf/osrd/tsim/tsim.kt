@@ -39,21 +39,9 @@ fun RangeMap<Meters, MetersPerSecond>.withStockLength(
         val range = entry.key
         val speedLimit = entry.value
 
-        // The speed limit is enforced as long as part of the rolling stock is behind the reset sign
-        // TODO what's the name of the sign that reset a speed limit?
-        val enforcementRange =
+        val extendedRange =
             Range.closed(range.lowerEndpointOrInf(), range.upperEndpointOrInf() + stockLength)
-        val newSubMap = ImmutableRangeMap.builder<Meters, MetersPerSecond>()
-        newSubMap.put(enforcementRange, speedLimit)
-
-        // Other, more restrictive speed limits might be in place
-        for (e in map.subRangeMap(enforcementRange).asMapOfRanges()) {
-            if (e.value < speedLimit) {
-                newSubMap.put(e.key, e.value)
-            }
-        }
-
-        map.putAll(newSubMap.build())
+        map.putLower(extendedRange, speedLimit)
     }
     return map
 }
