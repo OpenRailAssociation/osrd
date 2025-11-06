@@ -126,11 +126,11 @@ fun RangeMap<Meters, Boolean>.withPantographPositions(
 
 data class Instructions(
     /**
-     * Most-Restrictive Speed Profile.
+     * Ranges on the path where a speed limit is enforced.
      *
      * Maps positions of the head of the train along the path to the highest allowed speed.
      */
-    val mrsp: RangeMap<Meters, MetersPerSecond> = TreeRangeMap.create(),
+    val speedLimits: RangeMap<Meters, MetersPerSecond> = TreeRangeMap.create(),
 
     /**
      * Ranges of the path that aren't electrified.
@@ -311,8 +311,8 @@ fun step(
     require(position >= 0.0) { "position must be positive" }
     require(speed >= 0.0) { "speed must be positive" }
 
-    val mrsp = instructions.mrsp.subRangeMap(Range.atLeast(position))
-    val currentSpeedLimit = mrsp.get(position) ?: Double.POSITIVE_INFINITY
+    val speedLimits = instructions.speedLimits.subRangeMap(Range.atLeast(position))
+    val currentSpeedLimit = speedLimits.get(position) ?: Double.POSITIVE_INFINITY
 
     var action = Action.ACCELERATE
     // We may choose to stop the integration early, to snap to a deceleration curve, or a point of
@@ -351,7 +351,7 @@ fun step(
             )
         assert(s.timeDelta == dt)
         val endPosition = position + s.positionDelta
-        for (speedRestriction in mrsp.asMapOfRanges()) {
+        for (speedRestriction in speedLimits.asMapOfRanges()) {
             val range = speedRestriction.key
             val maxSpeed = speedRestriction.value
             val target =
