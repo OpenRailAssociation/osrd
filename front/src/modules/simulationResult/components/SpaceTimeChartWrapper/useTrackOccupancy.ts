@@ -96,7 +96,7 @@ const useTrackOccupancy = ({
 } => {
   const { t, i18n } = useTranslation('operational-studies');
   const draggedTimetableItemIds = useRef(new Set<TimetableItemId>());
-  const previousTimetableItems = usePrevious(timetableItemProjections);
+  const previousTimetableItemProjections = usePrevious(timetableItemProjections);
   const { getTrackSectionsByIds } = useScenarioContext();
 
   const pathOperationalPointsDict = useMemo(
@@ -108,7 +108,7 @@ const useTrackOccupancy = ({
     osrdEditoastApi.endpoints.postPacedTrainTrackOccupancy.useMutation();
   const [postInfraByInfraIdMatchOperationalPoints] =
     osrdEditoastApi.endpoints.postInfraByInfraIdMatchOperationalPoints.useLazyQuery();
-  const timetableItemsById: Map<TimetableItemId, TrainSpaceTimeData> = useMemo(
+  const timetableItemProjectionsById: Map<TimetableItemId, TrainSpaceTimeData> = useMemo(
     () => new Map(timetableItemProjections.map((item) => [item.id, item])),
     [timetableItemProjections]
   );
@@ -300,11 +300,11 @@ const useTrackOccupancy = ({
       // Start fetching data:
       if (!currentState) {
         const abort = batchFetchTrackOccupancy(
-          Array.from(timetableItemsById.keys()),
+          Array.from(timetableItemProjectionsById.keys()),
           (ids) =>
             fetchTrackOccupancy(
               pathOperationalPointsDict[waypointId]?.opId,
-              Object.fromEntries(ids.map((id) => [id, timetableItemsById.get(id)!]))
+              Object.fromEntries(ids.map((id) => [id, timetableItemProjectionsById.get(id)!]))
             ),
           {
             batchSize: 50,
@@ -353,7 +353,7 @@ const useTrackOccupancy = ({
           const opId = pathOperationalPointsDict[waypointId]?.opId;
           if (!opId) return;
 
-          const trains = Object.fromEntries(Array.from(timetableItemsById.entries()));
+          const trains = Object.fromEntries(Array.from(timetableItemProjectionsById.entries()));
 
           fetchTrackOccupancy(opId, trains).then((newZones) => {
             if (!newZones.length) return;
@@ -377,7 +377,7 @@ const useTrackOccupancy = ({
       pathOperationalPointsDict,
       pathOperationalPointsState,
       updatePathOperationalPointState,
-      timetableItemsById,
+      timetableItemProjectionsById,
     ]
   );
 
@@ -528,14 +528,14 @@ const useTrackOccupancy = ({
   // Update train data for all deployed waypoints on trains update:
   useEffect(() => {
     if (
-      !previousTimetableItems ||
-      isEqual(timetableItemProjections, previousTimetableItems) ||
+      !previousTimetableItemProjections ||
+      isEqual(timetableItemProjections, previousTimetableItemProjections) ||
       isEmpty(pathOperationalPointsState)
     )
       return;
 
     const previousTimetableItemsDict = keyBy(
-      previousTimetableItems,
+      previousTimetableItemProjections,
       (timetableItem) => timetableItem.id
     );
 
@@ -564,9 +564,9 @@ const useTrackOccupancy = ({
       }
     });
 
-    previousTimetableItems.forEach((timetableItem) => {
+    previousTimetableItemProjections.forEach((timetableItem) => {
       const id = timetableItem.id;
-      if (!timetableItemsById.has(id)) {
+      if (!timetableItemProjectionsById.has(id)) {
         removedTrainIDs.add(id);
         // Remove cached station labels for this train:
         trainsStationLabelsRef.current[timetableItem.id] = undefined;
@@ -579,7 +579,10 @@ const useTrackOccupancy = ({
         const newZones = await fetchTrackOccupancy(
           pathOperationalPointsDict[waypointId]?.opId,
           Object.fromEntries(
-            [...addedTrainIDs, ...modifiedTrainIDs].map((id) => [id, timetableItemsById.get(id)!])
+            [...addedTrainIDs, ...modifiedTrainIDs].map((id) => [
+              id,
+              timetableItemProjectionsById.get(id)!,
+            ])
           )
         );
         if (newZones.length) {
