@@ -4,6 +4,7 @@ use std::hash::DefaultHasher;
 use std::hash::Hash;
 use std::hash::Hasher as _;
 use std::sync::Arc;
+use std::task::Poll;
 
 use core_client::AsCoreRequest as _;
 use core_client::CoreClient;
@@ -30,15 +31,11 @@ pub struct PathfindingEnv<Train>
 where
     Train: Clone + Hash + Eq + Send + Sync + 'static,
 {
-    // Inputs
     core_env: CoreEnv,
     inputs: PathfindingEnvInputs<Train>,
-
-    // Outputs
-    // optionally deduplicate similar outputs of different inputs
-    paths: DashMap<Input, Arc<core_client::pathfinding::PathfindingCoreResult>>,
 }
 
+#[derive(Debug)]
 pub(crate) struct PathfindingEnvInputs<Train>
 where
     Train: Clone + Hash + Eq + Send + Sync + 'static,
@@ -66,6 +63,27 @@ where
 
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
 struct Input(Arc<PathfindingConsist>, Arc<PathfindingConstraints>);
+
+/// The result of [PathfindingEnv::run]
+///
+/// Stores each pathfinding result as they arrive. So [fn PathfindingRun::get_path]
+/// might return that a result is still pending. The train sets done being calculated
+/// can be tracked by providing a channel sender to [PathfindingEnv::run].
+///
+/// Cheap to clone.
+#[derive(Debug, Clone)]
+pub struct PathfindingRun<Train>
+where
+    Train: Clone + Hash + Eq + Send + Sync + 'static,
+{
+    inputs: Arc<PathfindingEnvInputs<Train>>,
+    // optionally deduplicate similar outputs of different inputs
+    paths: Arc<DashMap<Input, PendingPathfindingResult>>,
+}
+
+/// Ready when the pathfinding result is available and stored in [PathfindingRun], pending if the task is not yet completed
+type PendingPathfindingResult =
+    Poll<Result<Arc<core_client::pathfinding::PathfindingCoreResult>, core_client::Error>>;
 
 #[derive(Debug, Hash, PartialEq, Eq)]
 #[cfg_attr(test, derive(Clone))]
@@ -121,8 +139,11 @@ where
         Self {
             core_env,
             inputs: PathfindingEnvInputs::default(),
-            paths: DashMap::new(),
         }
+    }
+
+    pub(crate) fn decompose(self) -> (CoreEnv, Arc<PathfindingEnvInputs<Train>>) {
+        (self.core_env, Arc::new(self.inputs))
     }
 }
 
@@ -178,50 +199,51 @@ where
 {
     /// Computes paths or fetches them from cache asynchronously
     ///
-    /// Returns a stream of trains that have been processed. Stream items are
-    /// a set of trains because similar requests are deduplicated to avoid
-    /// unnecessary computations. All the trains in the set have the same path.
+    /// Returns a [PathfindingRun] containing the calculated paths (or errors)
+    /// of each train set. They are pushed in the object progressively as the results
+    /// arrive. Hence why [fn PathfindingRun::get_path] returns a [Poll].
     ///
-    /// The path itself can be fetched using [PathfindingEnv::get_path].
-    ///
-    /// Note that while the paths are stored in the environment, the latter does **not**
-    /// act as a cache layer. If we `run([1, 2, 3])` and then `run([1, 2])`, the
-    /// environment will try to fetch the path for `1` and `2` from cache *even though*
-    /// they are already stored in the environment. Paths are stored in the environment
-    /// only for API ergonomics.
-    pub fn run<'a>(
-        &'a self,
+    /// To follow what's been calculated, this function accepts a channel sender
+    /// to notify each time a train set is done processing.
+    /// Note that the receivers implement [trait futures::stream::Stream].
+    pub fn run(
+        self,
         vkconn: cache::Connection,
         trains: HashSet<Train>,
-    ) -> impl stream::TryStream<Ok = HashSet<Train>, Error = core_client::Error> + use<'a, Train>
-    {
+        ready_trains_tx: Option<futures::channel::mpsc::UnboundedSender<HashSet<Train>>>,
+    ) -> PathfindingRun<Train> {
         use stream::StreamExt as _;
-        self.paths_stream(vkconn, trains).map(
-            move |Correlated {
-                      correlation_key: input,
-                      data,
-                  }| {
-                let path = data?;
-                let trains = self
-                    .inputs
-                    .trains
-                    .get(&input)
-                    .expect("deduplicate_inputs invariant")
-                    .clone();
-                self.paths.insert(input, Arc::new(path));
-                Ok(trains)
-            },
-        )
+        let (core_env, inputs) = self.decompose();
+        let run = PathfindingRun::new(inputs.clone());
+        let paths = run.paths.clone();
+        tokio::spawn(
+            Self::produce(vkconn, trains, core_env, inputs.clone()).fold(
+                (paths, inputs, ready_trains_tx),
+                async |(paths, inputs, ready_trains_tx),
+                       Correlated {
+                           correlation_key: input,
+                           data,
+                       }| {
+                    if let Some(tx) = ready_trains_tx.as_ref() {
+                        let trains = inputs.trains.get(&input).expect("lolz").clone();
+                        tx.unbounded_send(trains).ok();
+                    }
+                    paths.insert(input, Poll::Ready(data.map(Arc::new)));
+                    (paths, inputs, ready_trains_tx)
+                },
+            ),
+        );
+        run
     }
 
     /// Computes paths or fetches them from cache asynchronously
     ///
-    /// Doesn't store the paths in the environment unlike [PathfindingEnv::run].
+    /// Doesn't store the paths unlike [PathfindingEnv::run].
     /// The returned stream yields a set of trains and their corresponding path directly,
     /// avoiding the caller to deal with the `Arc` returned by [PathfindingEnv::get_path],
     /// thus transferring ownership and allow easy path mutations.
     pub fn into_stream(
-        &self,
+        self,
         vkconn: cache::Connection,
         trains: HashSet<Train>,
     ) -> impl stream::Stream<
@@ -231,13 +253,13 @@ where
         >,
     > {
         use stream::StreamExt as _;
-        self.paths_stream(vkconn, trains).map(
+        let (core_env, inputs) = self.decompose();
+        Self::produce(vkconn, trains, core_env, inputs.clone()).map(
             move |Correlated {
                       correlation_key: input,
                       data: path,
                   }| {
-                let trains = self
-                    .inputs
+                let trains = inputs
                     .trains
                     .get(&input)
                     .expect("deduplicate_inputs invariant")
@@ -247,28 +269,11 @@ where
         )
     }
 
-    /// Returns the path for a given train
-    ///
-    /// A `None` value can indicate several things:
-    ///
-    /// - The train is not in the environment
-    /// - The train is not ready (either missing consist or constraints)
-    /// - The train's path is being computed but its path is not yet available
-    ///
-    /// NOTE: we should probably expose a better result type for these three cases
-    pub fn get_path(
-        &self,
-        train: &Train,
-    ) -> Option<Arc<core_client::pathfinding::PathfindingCoreResult>> {
-        let input = self.inputs.train_input(train)?;
-        let value_ref = self.paths.get(&input)?;
-        Some(value_ref.value().clone())
-    }
-
-    fn paths_stream(
-        &self,
+    fn produce(
         vkconn: cache::Connection,
         trains: HashSet<Train>,
+        core_env: CoreEnv,
+        inputs: Arc<PathfindingEnvInputs<Train>>,
     ) -> impl stream::Stream<
         Item = Correlated<
             Input,
@@ -277,28 +282,27 @@ where
     > + use<Train> {
         use crate::TaskStreamExt as _;
 
-        let inputs = trains.iter().map(|train| {
-            self.inputs
-                .train_input(train)
-                .expect("train map should have been built by now")
-        });
-        let requests = inputs
-            .map(|input| {
-                let request = self.build_request(&input);
+        let requests = trains
+            .iter()
+            .map(|train| {
+                let input = inputs
+                    .train_input(train)
+                    .expect("train map should have been built by now");
+                let request = Self::build_request(&core_env, &input);
                 Correlated::new(input, request)
             })
             .collect_vec();
 
-        stream::iter(requests).run(vkconn, self.core_env.client.clone())
+        stream::iter(requests).run(vkconn, core_env.client.clone())
     }
 
     fn build_request(
-        &self,
+        core_env: &CoreEnv,
         Input(consist, constraints): &Input,
     ) -> core_client::pathfinding::PathfindingRequest {
         core_client::pathfinding::PathfindingRequest {
-            infra: self.core_env.infra_id as i64,
-            expected_version: self.core_env.infra_version,
+            infra: core_env.infra_id as i64,
+            expected_version: core_env.infra_version,
             path_items: constraints
                 .path_items
                 .iter()
@@ -356,11 +360,44 @@ where
     }
 }
 
+impl<Train> PathfindingRun<Train>
+where
+    Train: Clone + Hash + Eq + Send + Sync + 'static,
+{
+    fn new(inputs: Arc<PathfindingEnvInputs<Train>>) -> Self {
+        let paths = DashMap::from_iter(
+            inputs
+                .trains
+                .keys()
+                .cloned()
+                .zip(std::iter::repeat_with(|| Poll::Pending)),
+        );
+        Self {
+            inputs,
+            paths: Arc::new(paths),
+        }
+    }
+
+    /// Returns the path for a given train
+    ///
+    /// A `None` value can either mean that:
+    ///
+    /// - the train is not in the [PathfindingEnv]
+    /// - the train is not ready (either missing consist or constraints)
+    pub fn get_path(&self, train: &Train) -> Option<PendingPathfindingResult> {
+        let input = self.inputs.train_input(train)?;
+        let value_ref = self.paths.get(&input)?;
+        let value = value_ref.value().clone();
+        Some(value)
+    }
+}
+
 #[cfg(test)]
 mod tests {
+    use std::time::Duration;
+
     use core_client::mocking::MockingClient;
     use deadpool_redis::redis;
-    use futures::TryStreamExt as _;
     use http::StatusCode;
     use serde_json::json;
 
@@ -412,7 +449,7 @@ mod tests {
     impl PathfindingEnv<usize> {
         fn key(&self, id: usize) -> String {
             let input = self.inputs.train_input(&id).unwrap();
-            let request = self.build_request(&input);
+            let request = Self::build_request(&self.core_env, &input);
             use crate::Task as _;
             request.key("")
         }
@@ -441,18 +478,24 @@ mod tests {
         );
         let all_trains = pfenv.all_trains();
         assert_eq!(all_trains, HashSet::from([1, 2]));
-        let _trains = pfenv
-            .run(vk.get_connection().await.unwrap(), all_trains)
-            .try_collect::<Vec<_>>()
-            .await
-            .expect("should go well");
+        let (tx, rx) = futures::channel::mpsc::unbounded();
+        let pfrun = pfenv.run(vk.get_connection().await.unwrap(), all_trains, Some(tx));
+        // timeout to avoid blocking the CI if something goes wrong
+        let trains = tokio::time::timeout(Duration::from_secs(1), async move {
+            use stream::StreamExt as _;
+            rx.map(stream::iter).flatten().collect::<HashSet<_>>().await
+        })
+        .await
+        .unwrap();
+        assert_eq!(trains, HashSet::from([1, 2]));
         assert_eq!(
-            pfenv.get_path(&1),
-            Some(serde_json::from_value(path(1)).unwrap())
+            pfrun.get_path(&1),
+            Some(Poll::Ready(Ok(serde_json::from_value(path(1)).unwrap())))
         );
         assert_eq!(
-            pfenv.get_path(&2),
-            Some(serde_json::from_value(path(2)).unwrap())
+            pfrun.get_path(&2),
+            Some(Poll::Ready(Ok(serde_json::from_value(path(2)).unwrap())))
         );
+        assert_eq!(pfrun.get_path(&3), None);
     }
 }
