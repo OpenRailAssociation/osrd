@@ -829,7 +829,7 @@ pub mod tests {
         let rolling_stock: schemas::RollingStock = rolling_stock.into();
         assert_eq!(
             rolling_stock
-                .supported_signaling_systems_list()
+                .supported_signaling_systems()
                 .contains(&"ETCS_LEVEL2".to_string()),
             false
         );
@@ -1089,7 +1089,7 @@ pub mod tests {
         // THEN
         assert_eq!(
             rolling_stock
-                .supported_signaling_systems_list()
+                .supported_signaling_systems()
                 .contains(&"ETCS_LEVEL2".to_string()),
             true
         );

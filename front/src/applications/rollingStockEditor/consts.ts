@@ -1,4 +1,4 @@
-import type { RollingStockSupportedSignalingSystem } from 'common/api/osrdEditoastApi';
+import type { SupportedSignalingSystem } from 'common/api/osrdEditoastApi';
 import { isElectric } from 'modules/rollingStock/helpers/electric';
 
 import type {
@@ -8,10 +8,10 @@ import type {
   SchemaProperty,
 } from './types';
 
-export const DEFAULT_SIGNALING_SYSTEMS = [
-  'BAL',
-  'BAPR',
-] satisfies RollingStockSupportedSignalingSystem[];
+export const DEFAULT_SIGNALING_SYSTEMS: SupportedSignalingSystem[] = [
+  { type: 'BAL' },
+  { type: 'BAPR' },
+];
 export const ETCS_LEVEL2_SIGNALING_SYSTEM = 'ETCS_LEVEL2';
 
 export const newRollingStockValues: RollingStockParametersValues = {

@@ -1,11 +1,9 @@
 import { useEffect } from 'react';
 
 import cx from 'classnames';
-import { isEmpty, isString, uniq } from 'lodash';
+import { isEmpty, uniq } from 'lodash';
 import { useTranslation } from 'react-i18next';
 
-import { ETCS_LEVEL2_SIGNALING_SYSTEM } from 'applications/rollingStockEditor/consts';
-import { isEtcsLevel2SignalingSystem } from 'applications/rollingStockEditor/helpers/utils';
 import type { EffortCurveForms } from 'applications/rollingStockEditor/types';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { Comfort, RollingStockWithLiveries } from 'common/api/osrdEditoastApi';
@@ -157,14 +155,7 @@ export default function RollingStockCardDetail({
             <td className="text-primary text-nowrap pr-1">
               {t('rollingStock.supportedSignalingSystems')}
             </td>
-            <td>
-              {[
-                ...(rs.supported_signaling_systems.filter((s) => isString(s)) as string[]),
-                ...(rs.supported_signaling_systems.find(isEtcsLevel2SignalingSystem)
-                  ? [ETCS_LEVEL2_SIGNALING_SYSTEM]
-                  : []),
-              ].join(', ')}
-            </td>
+            <td>{rs.supported_signaling_systems.map((s) => s.type).join(', ')}</td>
           </tr>
         )}
         {rs.power_restrictions && Object.keys(rs.power_restrictions).length !== 0 && (

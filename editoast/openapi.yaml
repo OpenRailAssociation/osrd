@@ -10127,7 +10127,8 @@ components:
         supported_signaling_systems:
           type: array
           items:
-            $ref: '#/components/schemas/RollingStockSupportedSignalingSystem'
+            $ref: '#/components/schemas/SupportedSignalingSystem'
+          uniqueItems: true
     LightRollingStockWithLiveries:
       allOf:
       - $ref: '#/components/schemas/LightRollingStock'
@@ -12284,7 +12285,8 @@ components:
         supported_signaling_systems:
           type: array
           items:
-            $ref: '#/components/schemas/RollingStockSupportedSignalingSystem'
+            $ref: '#/components/schemas/SupportedSignalingSystem'
+          uniqueItems: true
         version:
           type: integer
           format: int64
@@ -12418,7 +12420,8 @@ components:
         supported_signaling_systems:
           type: array
           items:
-            $ref: '#/components/schemas/RollingStockSupportedSignalingSystem'
+            $ref: '#/components/schemas/SupportedSignalingSystem'
+          uniqueItems: true
     RollingStockLivery:
       type: object
       description: |
@@ -12507,15 +12510,6 @@ components:
         unit:
           type: string
       additionalProperties: false
-    RollingStockSupportedSignalingSystem:
-      oneOf:
-      - $ref: '#/components/schemas/SignalingSystem'
-      - type: object
-        required:
-        - brake_params
-        properties:
-          brake_params:
-            $ref: '#/components/schemas/EtcsBrakeParams'
     RollingStockWithLiveries:
       allOf:
       - $ref: '#/components/schemas/RollingStock'
@@ -13452,13 +13446,6 @@ components:
           format: int64
           description: The aspects start being displayed at this time (number of ms since `departure_time`)
           minimum: 0
-    SignalingSystem:
-      type: string
-      enum:
-      - BAL
-      - BAPR
-      - TVM300
-      - TVM430
     SimilarTrainWaypoint:
       type: object
       required:
@@ -14670,6 +14657,51 @@ components:
       enum:
       - User
       - Group
+    SupportedSignalingSystem:
+      oneOf:
+      - type: object
+        required:
+        - type
+        properties:
+          type:
+            type: string
+            enum:
+            - BAL
+      - type: object
+        required:
+        - type
+        properties:
+          type:
+            type: string
+            enum:
+            - BAPR
+      - type: object
+        required:
+        - type
+        properties:
+          type:
+            type: string
+            enum:
+            - TVM300
+      - type: object
+        required:
+        - type
+        properties:
+          type:
+            type: string
+            enum:
+            - TVM430
+      - type: object
+        required:
+        - brake_params
+        - type
+        properties:
+          brake_params:
+            $ref: '#/components/schemas/EtcsBrakeParams'
+          type:
+            type: string
+            enum:
+            - ETCS_LEVEL2
     Switch:
       type: object
       required:

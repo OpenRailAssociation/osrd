@@ -1,4 +1,5 @@
 use std::collections::HashMap;
+use std::collections::HashSet;
 use std::str::FromStr;
 
 use chrono::DateTime;
@@ -37,7 +38,7 @@ pub fn simple_rolling_stock() -> RollingStock {
     RollingStock {
         name: "SIMPLE_ROLLING_STOCK".to_string(),
         loading_gauge: LoadingGaugeType::G1,
-        supported_signaling_systems: vec![],
+        supported_signaling_systems: HashSet::new(),
         base_power_class: None,
         comfort_acceleration: units::meter_per_second_squared::new(0.1),
         inertia_coefficient: 1.10,

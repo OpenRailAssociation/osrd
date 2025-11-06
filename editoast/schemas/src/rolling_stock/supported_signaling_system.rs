@@ -1,28 +1,23 @@
+use educe::Educe;
 use serde::Deserialize;
 use serde::Serialize;
 use strum::Display;
-use strum::EnumString;
-use strum::FromRepr;
 use utoipa::ToSchema;
 
 use crate::rolling_stock::EtcsBrakeParams;
 
-#[derive(
-    Clone, Debug, PartialEq, Deserialize, Serialize, Display, EnumString, FromRepr, ToSchema,
-)]
-pub enum SignalingSystem {
+#[derive(Clone, Debug, Deserialize, Serialize, Display, Educe, ToSchema)]
+#[educe(Hash, Eq, PartialEq)]
+#[serde(tag = "type")]
+pub enum SupportedSignalingSystem {
     BAL,
     BAPR,
     TVM300,
     TVM430,
-}
-
-#[derive(Clone, Debug, PartialEq, Deserialize, Serialize, Display, ToSchema)]
-#[serde(untagged)]
-#[allow(clippy::large_enum_variant)]
-pub enum RollingStockSupportedSignalingSystem {
-    #[strum(to_string = "{0}")]
-    Simple(SignalingSystem),
     #[strum(to_string = "ETCS_LEVEL2")]
-    EtcsLevel2 { brake_params: EtcsBrakeParams },
+    #[serde(rename = "ETCS_LEVEL2")]
+    EtcsLevel2 {
+        #[educe(Hash(ignore), PartialEq(ignore))]
+        brake_params: EtcsBrakeParams,
+    },
 }

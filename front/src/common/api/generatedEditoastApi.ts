@@ -3773,7 +3773,6 @@ export type RollingResistance = {
   C: number;
   type: string;
 };
-export type SignalingSystem = 'BAL' | 'BAPR' | 'TVM300' | 'TVM430';
 export type SpeedIntervalValueCurve = {
   /** Speed in m/s (sorted ascending)
     External bounds are implicit to [0, rolling_stock.max_speed] */
@@ -3812,10 +3811,22 @@ export type EtcsBrakeParams = {
   /** T_traction_cut_off: time delay in s from the traction cut-off command to the moment the acceleration due to traction is zero */
   t_traction_cut_off: number;
 };
-export type RollingStockSupportedSignalingSystem =
-  | SignalingSystem
+export type SupportedSignalingSystem =
+  | {
+      type: 'BAL';
+    }
+  | {
+      type: 'BAPR';
+    }
+  | {
+      type: 'TVM300';
+    }
+  | {
+      type: 'TVM430';
+    }
   | {
       brake_params: EtcsBrakeParams;
+      type: 'ETCS_LEVEL2';
     };
 export type LightRollingStock = {
   base_power_class: string | null;
@@ -3848,7 +3859,7 @@ export type LightRollingStock = {
   startup_acceleration: number;
   /** Duration in s */
   startup_time: number;
-  supported_signaling_systems: RollingStockSupportedSignalingSystem[];
+  supported_signaling_systems: SupportedSignalingSystem[];
 };
 export type RollingStockLivery = {
   compound_image_id?: number | null;
@@ -4531,7 +4542,7 @@ export type RollingStock = {
   startup_acceleration: number;
   /** Duration in s */
   startup_time: number;
-  supported_signaling_systems: RollingStockSupportedSignalingSystem[];
+  supported_signaling_systems: SupportedSignalingSystem[];
   version: number;
 };
 export type RollingStockForm = {
@@ -4574,7 +4585,7 @@ export type RollingStockForm = {
   startup_acceleration: number;
   /** Duration in s */
   startup_time: number;
-  supported_signaling_systems: RollingStockSupportedSignalingSystem[];
+  supported_signaling_systems: SupportedSignalingSystem[];
 };
 export type RollingStockWithLiveries = RollingStock & {
   liveries: RollingStockLivery[];

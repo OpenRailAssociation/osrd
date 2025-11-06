@@ -8,7 +8,6 @@ import useEtcsBrakingCurves from 'applications/operationalStudies/hooks/useEtcsB
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import useSimulationResults from 'applications/operationalStudies/hooks/useSimulationResults';
 import type { Board } from 'applications/operationalStudies/types';
-import { isEtcsLevel2SignalingSystem } from 'applications/rollingStockEditor/helpers/utils';
 import { type Conflict } from 'common/api/osrdEditoastApi';
 import SimulationWarpedMap from 'common/Map/WarpedMap/SimulationWarpedMap';
 import ResizableSection from 'common/ResizableSection';
@@ -200,7 +199,7 @@ const SimulationResults = ({
   const isEtcs = useMemo(
     () =>
       !!simulationResults?.rollingStock?.supported_signaling_systems.find(
-        isEtcsLevel2SignalingSystem
+        (s) => s.type === 'ETCS_LEVEL2'
       ),
     [simulationResults?.rollingStock?.supported_signaling_systems]
   );

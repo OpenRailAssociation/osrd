@@ -19,10 +19,7 @@ mod etcs_brake_params;
 pub use etcs_brake_params::EtcsBrakeParams;
 
 mod supported_signaling_system;
-use serde::Deserializer;
-use serde::Serializer;
-pub use supported_signaling_system::RollingStockSupportedSignalingSystem;
-pub use supported_signaling_system::SignalingSystem;
+pub use supported_signaling_system::SupportedSignalingSystem;
 
 mod rolling_stock_metadata;
 pub use rolling_stock_metadata::RollingStockMetadata;
@@ -56,8 +53,11 @@ use common::units::quantities::Mass;
 use common::units::quantities::Time;
 use common::units::quantities::Velocity;
 use serde::Deserialize;
+use serde::Deserializer;
 use serde::Serialize;
+use serde::Serializer;
 use std::collections::HashMap;
+use std::collections::HashSet;
 use utoipa::ToSchema;
 
 pub const ROLLING_STOCK_RAILJSON_VERSION: &str = "3.4";
@@ -110,7 +110,7 @@ pub struct RollingStock {
     #[schema(example = 15.0)]
     #[serde(default, with = "units::second::option")]
     pub raise_pantograph_time: Option<Time>,
-    pub supported_signaling_systems: Vec<RollingStockSupportedSignalingSystem>,
+    pub supported_signaling_systems: HashSet<SupportedSignalingSystem>,
     #[schema(default = default_rolling_stock_railjson_version)]
     #[serde(default = "default_rolling_stock_railjson_version")]
     pub railjson_version: String,
@@ -121,25 +121,17 @@ pub struct RollingStock {
 }
 
 impl RollingStock {
-    pub fn supported_signaling_systems_list(&self) -> Vec<String> {
+    pub fn supported_signaling_systems(&self) -> Vec<String> {
         self.supported_signaling_systems
             .iter()
             .map(|s| s.to_string())
             .collect()
     }
 
-    pub fn has_etcs_level2(&self) -> bool {
-        self.supported_signaling_systems
-            .iter()
-            .any(|s| matches!(s, RollingStockSupportedSignalingSystem::EtcsLevel2 { .. }))
-    }
-
-    pub fn get_etcs_brake_params(&self) -> Option<EtcsBrakeParams> {
+    pub fn get_etcs_brake_params(&self) -> Option<&EtcsBrakeParams> {
         for signaling_system in &self.supported_signaling_systems {
-            if let RollingStockSupportedSignalingSystem::EtcsLevel2 { brake_params } =
-                signaling_system
-            {
-                return Some(brake_params.clone());
+            if let SupportedSignalingSystem::EtcsLevel2 { brake_params } = signaling_system {
+                return Some(brake_params);
             }
         }
         None

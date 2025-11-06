@@ -13,6 +13,7 @@ use common::units::quantities::Time;
 use common::units::quantities::Velocity;
 use database::DbConnection;
 use database::DbConnectionPoolV2;
+use editoast_models::prelude::*;
 use editoast_models::rolling_stock::TrainMainCategories;
 use editoast_models::rolling_stock::TrainMainCategory;
 use itertools::Itertools as _;
@@ -22,9 +23,10 @@ use schemas::rolling_stock::LoadingGaugeType;
 use schemas::rolling_stock::ModeEffortCurves;
 use schemas::rolling_stock::RollingResistance;
 use schemas::rolling_stock::RollingStockMetadata;
-use schemas::rolling_stock::RollingStockSupportedSignalingSystem;
+use schemas::rolling_stock::SupportedSignalingSystem;
 use serde::Serialize;
 use std::collections::HashMap;
+use std::collections::HashSet;
 use std::sync::Arc;
 use utoipa::ToSchema;
 
@@ -38,7 +40,6 @@ use crate::models::rolling_stock_livery::RollingStockLivery;
 use crate::views::pagination::PaginatedList;
 use crate::views::pagination::PaginationQueryParams;
 use crate::views::pagination::PaginationStats;
-use editoast_models::prelude::*;
 
 #[cfg(test)]
 use serde::Deserialize;
@@ -226,7 +227,7 @@ struct LightRollingStock {
     metadata: Option<RollingStockMetadata>,
     power_restrictions: HashMap<String, String>,
     energy_sources: Vec<EnergySource>,
-    supported_signaling_systems: Vec<RollingStockSupportedSignalingSystem>,
+    supported_signaling_systems: HashSet<SupportedSignalingSystem>,
     primary_category: TrainMainCategory,
     other_categories: TrainMainCategories,
 }

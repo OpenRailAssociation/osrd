@@ -164,7 +164,12 @@ describe('formatTimetableItemPayload', () => {
         },
         energy_sources: [],
         locked: false,
-        supported_signaling_systems: ['BAL', 'BAPR', 'TVM300', 'TVM430'],
+        supported_signaling_systems: [
+          { type: 'BAL' },
+          { type: 'BAPR' },
+          { type: 'TVM300' },
+          { type: 'TVM430' },
+        ],
         liveries: [],
         primary_category: 'FREIGHT_TRAIN',
         other_categories: [],

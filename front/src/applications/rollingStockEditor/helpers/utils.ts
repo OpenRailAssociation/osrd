@@ -1,10 +1,7 @@
 import type { TFunction } from 'i18next';
-import { groupBy, hasIn, isNull, isObject } from 'lodash';
+import { groupBy, isNull } from 'lodash';
 
-import type {
-  RollingStockForm,
-  RollingStockSupportedSignalingSystem,
-} from 'common/api/osrdEditoastApi';
+import type { RollingStockForm } from 'common/api/osrdEditoastApi';
 import { THERMAL_TRACTION_IDENTIFIER } from 'modules/rollingStock/consts';
 import { isElectric } from 'modules/rollingStock/helpers/electric';
 import { getTranslationKey } from 'utils/strings';
@@ -136,7 +133,3 @@ export const translateItemsList = <T>(
       ? t(getTranslationKey(translationKey, String(item)), { defaultValue: item })
       : t('unspecified'),
   }));
-
-export const isEtcsLevel2SignalingSystem = (
-  supported_signaling_system: RollingStockSupportedSignalingSystem
-) => isObject(supported_signaling_system) && hasIn(supported_signaling_system, 'brake_params');

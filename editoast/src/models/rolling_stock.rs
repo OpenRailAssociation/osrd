@@ -1,6 +1,7 @@
 mod power_restrictions;
 
 use std::collections::HashMap;
+use std::collections::HashSet;
 
 use common::units;
 use common::units::quantities::Acceleration;
@@ -17,7 +18,7 @@ use schemas::rolling_stock::EnergySource;
 use schemas::rolling_stock::LoadingGaugeType;
 use schemas::rolling_stock::RollingResistance;
 use schemas::rolling_stock::RollingStockMetadata;
-use schemas::rolling_stock::RollingStockSupportedSignalingSystem;
+use schemas::rolling_stock::SupportedSignalingSystem;
 use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
@@ -86,7 +87,7 @@ pub struct RollingStock {
     pub raise_pantograph_time: Option<Time>,
     pub version: i64,
     #[model(json)]
-    pub supported_signaling_systems: Vec<RollingStockSupportedSignalingSystem>,
+    pub supported_signaling_systems: HashSet<SupportedSignalingSystem>,
     pub primary_category: TrainMainCategory,
     #[model(remote = "Vec<Option<TrainMainCategory>>")]
     pub other_categories: TrainMainCategories,
