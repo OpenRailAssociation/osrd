@@ -254,22 +254,11 @@ impl StorageDriver for PgAuthDriver {
     #[tracing::instrument(skip_all, fields(%group_id), ret(level = Level::DEBUG), err)]
     async fn delete_group(&self, group_id: i64) -> Result<bool, Self::Error> {
         let conn = self.pool.get().await?;
+        let s = dsl::delete(authn_group::table.filter(authn_group::id.eq(group_id)))
+            .execute(&mut conn.write().await)
+            .await?;
 
-        conn.transaction(|conn| {
-            async move {
-                let s = dsl::delete(authn_group::table.filter(authn_group::id.eq(group_id)))
-                    .execute(&mut conn.write().await)
-                    .await?;
-
-                dsl::delete(authn_subject::table.filter(authn_subject::id.eq(group_id)))
-                    .execute(&mut conn.write().await)
-                    .await?;
-
-                Ok(s > 0)
-            }
-            .scope_boxed()
-        })
-        .await
+        Ok(s > 0)
     }
 
     async fn infra_exists(&self, infra_id: i64) -> Result<bool, Self::Error> {
