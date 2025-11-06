@@ -86,6 +86,7 @@ export type OsrdStdcmConfState = OsrdConfState & {
   speedLimitTags?: Record<string, number>;
   defaultSpeedLimitTag?: string;
   trackSectionIdsByLoadingGauge?: Record<string, string[]>;
+  operationalPointsIdFiltered?: string[];
 };
 
 export type PathStep = {

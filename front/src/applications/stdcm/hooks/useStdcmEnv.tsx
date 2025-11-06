@@ -39,6 +39,7 @@ export default function useStdcmEnvironment() {
           defaultSpeedLimitTag: data.speed_limits
             ? (data.speed_limits.default_speed_limit_tag ?? undefined)
             : undefined,
+          operationalPointsIdFiltered: data.operational_points_id_filtered ?? undefined,
         })
       );
     } catch (e) {
