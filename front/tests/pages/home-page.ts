@@ -36,7 +36,6 @@ class HomePage extends CommonPage {
 
   async goToHomePage(): Promise<void> {
     await this.page.goto('/');
-    await this.removeViteOverlay();
   }
 
   // Click on the logo to navigate back to the home page

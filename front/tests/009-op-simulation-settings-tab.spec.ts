@@ -122,7 +122,6 @@ test.describe('Simulation Settings Tab Verification', () => {
       await page.goto(
         `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenario.id}`
       );
-      await operationalStudiesPage.removeViteOverlay();
       await waitForInfraStateToBeCached(infra.id);
     });
     await test.step('Add a new train schedule, set its properties and perform pathfinding', async () => {

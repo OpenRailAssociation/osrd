@@ -120,7 +120,6 @@ test.describe('Verify simulation configuration in operational studies for train 
       await page.goto(
         `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenario.id}`
       );
-      await operationalStudiesPage.removeViteOverlay();
       await waitForInfraStateToBeCached(infra.id);
     }
   );

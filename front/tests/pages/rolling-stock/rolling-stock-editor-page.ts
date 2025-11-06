@@ -88,7 +88,6 @@ class RollingstockEditorPage extends CommonPage {
 
   async navigateToRollingStockPage() {
     await this.page.goto('/rolling-stock-editor/');
-    await this.removeViteOverlay();
   }
 
   async openNewRollingStockForm() {

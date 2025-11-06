@@ -102,7 +102,6 @@ test.describe('Verify manchette and space time diagram', () => {
     await page.goto(
       `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenarioItems.id}`
     );
-    await simulationResultPage.removeViteOverlay();
     await waitForInfraStateToBeCached(infra.id);
   });
 

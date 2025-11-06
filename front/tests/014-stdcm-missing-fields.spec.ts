@@ -42,8 +42,6 @@ test.describe('Verify stdcm missing fields', () => {
     ];
 
     await page.goto('/stdcm');
-    await stdcmPage.removeViteOverlay();
-
     await waitForInfraStateToBeCached(infra.id);
   });
 

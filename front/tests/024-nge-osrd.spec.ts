@@ -54,7 +54,6 @@ test.describe('Verify nge osrd conversion', () => {
       await page.goto(
         `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenarioItems.id}`
       );
-      await ngePage.removeViteOverlay();
       await waitForInfraStateToBeCached(infra.id);
     });
 

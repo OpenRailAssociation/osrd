@@ -31,7 +31,6 @@ import {
   VALID_PACED_TRAINS,
   VALID_TRAIN_SCHEDULE,
 } from './assets/constants/timetable-items-count';
-import OperationalStudiesPage from './pages/operational-studies/operational-studies-page';
 import PacedTrainSection from './pages/operational-studies/paced-train-section';
 import ScenarioTimetableSection from './pages/operational-studies/scenario-timetable-section';
 import { waitForInfraStateToBeCached } from './utils';
@@ -52,7 +51,6 @@ const frTranslations = {
 test.describe('Verify train schedule elements and filters', () => {
   let scenarioTimetableSection: ScenarioTimetableSection;
   let pacedTrainSection: PacedTrainSection;
-  let operationalStudiesPage: OperationalStudiesPage;
 
   let project: Project;
   let study: Study;
@@ -69,8 +67,7 @@ test.describe('Verify train schedule elements and filters', () => {
   test.beforeEach(
     'Navigate to scenario page and wait for infrastructure to be loaded',
     async ({ page }) => {
-      [operationalStudiesPage, scenarioTimetableSection, pacedTrainSection] = [
-        new OperationalStudiesPage(page),
+      [scenarioTimetableSection, pacedTrainSection] = [
         new ScenarioTimetableSection(page),
         new PacedTrainSection(page),
       ];
@@ -78,7 +75,6 @@ test.describe('Verify train schedule elements and filters', () => {
       await page.goto(
         `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenario.id}`
       );
-      await operationalStudiesPage.removeViteOverlay();
       await waitForInfraStateToBeCached(infra.id);
     }
   );

@@ -11,8 +11,6 @@ class CommonPage {
 
   private readonly tagField: Locator;
 
-  private readonly viteOverlay: Locator;
-
   private readonly closeToastButton: Locator;
 
   private readonly navigationToHomeButton: Locator;
@@ -26,7 +24,6 @@ class CommonPage {
     this.toastContainer = page.getByTestId('toast-SNCF');
     this.toastTitle = this.toastContainer.getByTestId('toast-SNCF-title');
     this.tagField = page.getByTestId('chips-input');
-    this.viteOverlay = page.locator('vite-plugin-checker-error-overlay');
     this.closeToastButton = page.getByTestId('close-toast-button');
     this.navigationToHomeButton = page.getByTestId('navigation-to-home-button');
     this.navigationBackButton = page.getByTestId('navigation-back-button');
@@ -52,13 +49,6 @@ class CommonPage {
         }
       })
     );
-  }
-
-  // Remove the Vite error overlay if it appears
-  async removeViteOverlay(): Promise<void> {
-    if (await this.viteOverlay.count()) {
-      await this.viteOverlay.evaluate((node) => node.setAttribute('style', 'display:none;'));
-    }
   }
 
   async checkToastHasBeenLaunched(translation: string) {
