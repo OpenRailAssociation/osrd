@@ -159,6 +159,7 @@ export const stdcmConfSlice = createSlice({
           | 'workScheduleGroupId'
           | 'temporarySpeedLimitGroupId'
           | 'searchDatetimeWindow'
+          | 'operationalPointsIdFiltered'
           | 'projectID'
           | 'studyID'
           | 'scenarioID'
@@ -185,6 +186,7 @@ export const stdcmConfSlice = createSlice({
       state.trackSectionIdsByLoadingGauge = action.payload.trackSectionIdsByLoadingGauge;
       state.speedLimitTags = action.payload.speedLimitTags;
       state.defaultSpeedLimitTag = action.payload.defaultSpeedLimitTag;
+      state.operationalPointsIdFiltered = action.payload.operationalPointsIdFiltered;
 
       // check that the arrival dates are in the search time window
       const origin = state.stdcmPathSteps.at(0) as Extract<StdcmPathStep, { isVia: false }>;

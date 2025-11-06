@@ -82,6 +82,9 @@ const buildStdcmConfSelectors = () => {
     getSearchDatetimeWindow: makeOsrdConfSelector('searchDatetimeWindow', { nonNullable: true }),
     getTimetableID: makeOsrdConfSelector('timetableID', { nonNullable: true }),
     getInfraID: makeOsrdConfSelector('infraID', { nonNullable: true }),
+    getOperationalPointsIdFiltered: makeOsrdConfSelector('operationalPointsIdFiltered', {
+      nonNullable: true,
+    }),
   };
 };
 
@@ -120,6 +123,7 @@ export const {
   getTrackSectionIdsByLoadingGauge,
   getSpeedLimitTags,
   getDefaultSpeedLimitTag,
+  getOperationalPointsIdFiltered,
 } = selectors;
 
 export type StdcmConfSelectors = typeof selectors;
