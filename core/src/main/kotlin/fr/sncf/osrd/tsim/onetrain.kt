@@ -87,19 +87,27 @@ fun onetrain(
             mrsp.putLower(Range.closed(start, end), speed)
         }
     }
-    for ((position, _) in stops) {
-        mrsp.put(Range.closed(position, position), 0.0)
-    }
+
+    val stopConstraint = TreeRangeMap.create<Meters, MetersPerSecond>()
+    val speedConstraints = OverlayingSpeedLimits(mutableListOf(mrsp, stopConstraint))
 
     val neutralZones = NeutralZonesWithPantographs() // TODO
-    val instructions = Instructions(mrsp, neutralZones)
+    val instructions = Instructions(speedConstraints, neutralZones)
 
     var time = 0.0
     var position = rollingStock.length
     var speed = initialSpeed
     val envelopePoints = mutableListOf(EnvelopePoint(time, speed, position))
     for ((stopPosition, stopDuration) in stops) {
-        while (!(stopPosition approxLowerThan position)) {
+        if (stopPosition < position) {
+            println("aoups on a dépasser un autre arrêt du coup?")
+            time += stopDuration
+            envelopePoints.add(EnvelopePoint(time, speed, position))
+            continue
+        }
+
+        stopConstraint.put(Range.atLeast(stopPosition), 0.0)
+        while (!(stopPosition approxLowerThan position) || speed != 0.0) {
             val s = step(ctx, instructions, timeStep, position, speed)
             assert(s.positionDelta > 1e-6) { "le train c stopper.... ${s.positionDelta}" }
             time += s.timeDelta
@@ -107,8 +115,14 @@ fun onetrain(
             speed = s.endSpeed
             envelopePoints.add(EnvelopePoint(time, speed, position))
         }
-        mrsp.remove(Range.closed(stopPosition, stopPosition))
+
+        if (!(stopPosition approxEqualTo position)) {
+            println("le train a depasser la position d'arrêt!!! D:")
+        }
+
+        stopConstraint.remove(Range.all())
         time += stopDuration
+        envelopePoints.add(EnvelopePoint(time, speed, position))
     }
 
     val simplifiedPoints = simplifyEnvelopePoints(envelopePoints, 5.0, 0.2)
