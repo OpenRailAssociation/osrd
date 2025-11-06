@@ -50,7 +50,6 @@ test.describe('Verify osrd nge conversion', () => {
       await page.goto(
         `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenarioItems.id}`
       );
-      await ngePage.removeViteOverlay();
       await waitForInfraStateToBeCached(infra.id);
     });
     await test.step('Enable macro view while keeping the default train list visible', async () => {

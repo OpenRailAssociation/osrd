@@ -48,7 +48,6 @@ test.describe('Stdcm feedback card', () => {
       new SimulationResultPage(page),
     ];
     await page.goto('/stdcm');
-    await stdcmPage.removeViteOverlay();
     await waitForInfraStateToBeCached(infra.id);
   });
 

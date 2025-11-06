@@ -63,7 +63,6 @@ test.describe('Verify stdcm simulation page', () => {
     ];
 
     await page.goto('/stdcm');
-    await stdcmPage.removeViteOverlay();
     await waitForInfraStateToBeCached(infra.id);
   });
 

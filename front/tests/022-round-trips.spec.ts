@@ -69,7 +69,6 @@ test.describe('Verify round trips', () => {
       await page.goto(
         `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenarioItems.id}`
       );
-      await roundTripPage.removeViteOverlay();
       await waitForInfraStateToBeCached(infra.id);
     });
     await test.step('Open round trip page modal', async () => {
