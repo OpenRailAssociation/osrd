@@ -69,7 +69,7 @@ describe('makeProjectedItems', () => {
       signalUpdates: [],
     };
 
-    const projectPathTrainResult: TrainSpaceTimeData[] = [
+    const timetableItemProjections: TrainSpaceTimeData[] = [
       {
         name: 'GE LYD',
         departureTime: new Date('2025-07-09T05:30:00.000Z'),
@@ -79,6 +79,14 @@ describe('makeProjectedItems', () => {
           interval: Duration.parse('PT1H'),
           exceptions: [exception],
           exceptionProjections: new Map([[exceptionKey, exceptionProjection]]),
+        },
+        originPathItem: {
+          id: 'origin',
+          location: { operational_point: { type: 'id', operational_point: 'a' } },
+        },
+        destinationPathItem: {
+          id: 'destination',
+          location: { operational_point: { type: 'id', operational_point: 'b' } },
         },
         spaceTimeCurves: [
           {
@@ -103,9 +111,9 @@ describe('makeProjectedItems', () => {
     ];
 
     test('first occurrence should use paced train projection, second occurrence should use its own projection', () => {
-      const pacedTrain = projectPathTrainResult[0];
+      const pacedTrain = timetableItemProjections[0];
 
-      const result = makeProjectedItems(projectPathTrainResult);
+      const result = makeProjectedItems(timetableItemProjections);
 
       expect(result[0]).toEqual({
         id: 'indexedoccurrence_2562_0',
@@ -185,10 +193,18 @@ describe('makeProjectedItems', () => {
       signalUpdates: [],
     };
 
-    const projectPathTrainResult: TrainSpaceTimeData[] = [
+    const timetableItemProjections: TrainSpaceTimeData[] = [
       {
         name: 'auie',
         departureTime: new Date('2025-07-09T05:30:00.000Z'),
+        originPathItem: {
+          id: 'origin',
+          location: { operational_point: { type: 'id', operational_point: 'a' } },
+        },
+        destinationPathItem: {
+          id: 'destination',
+          location: { operational_point: { type: 'id', operational_point: 'b' } },
+        },
         spaceTimeCurves: [
           {
             positions: [0, 2408, 8726, 17630, 40899],
@@ -207,9 +223,9 @@ describe('makeProjectedItems', () => {
     ];
 
     test('added path exception should use its own projection', () => {
-      const pacedTrain = projectPathTrainResult[0];
+      const pacedTrain = timetableItemProjections[0];
 
-      const result = makeProjectedItems(projectPathTrainResult);
+      const result = makeProjectedItems(timetableItemProjections);
 
       expect(result.length).toBe(4);
       expect(result[0]).toEqual({

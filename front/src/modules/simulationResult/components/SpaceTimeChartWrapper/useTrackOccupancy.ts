@@ -6,11 +6,7 @@ import { forEach, fromPairs, isEmpty, isEqual, isFunction, keyBy, noop, uniqBy }
 import { useTranslation } from 'react-i18next';
 
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
-import {
-  type OperationalPointPartReference,
-  osrdEditoastApi,
-  type PathItemLocation,
-} from 'common/api/osrdEditoastApi';
+import { type OperationalPointPartReference, osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import computeOccurrenceName from 'modules/timetableItem/helpers/computeOccurrenceName';
 import { computeIndexedOccurrenceStartTime } from 'modules/timetableItem/helpers/pacedTrain';
 import type { PacedTrainId, TimetableItemId, TrainId } from 'reducers/osrdconf/types';
@@ -43,11 +39,6 @@ type DeployedWaypoint = {
   loading?: boolean;
 };
 
-const SIDES = ['origin', 'destination'] as const;
-type Side = (typeof SIDES)[number];
-export type OccupancyTrainSpaceTimeData = TrainSpaceTimeData &
-  Record<`${Side}PathItemLocation`, PathItemLocation | undefined>;
-
 type StationLabel = { type?: 'label'; label: string } | { type: 'requestedPoint' };
 function extractStationLabel(
   stationLabel: StationLabel | undefined,
@@ -64,10 +55,7 @@ function extractStationLabel(
  *
  * It takes the following inputs:
  * - infraId
- * - trains:
- *   An array with all visible OccupancyTrainSpaceTimeData items in the SpaceTimeChart. These are
- *   TrainSpaceTimeData, but with optional origin and destination PathItemLocation, to allow
- *   displaying related labels.
+ * - trains: An array with all visible TrainSpaceTimeData items in the SpaceTimeChart.
  * - pathOperationalPoints:
  *   An array with all PathOperationalPoint items along the current path
  *
@@ -88,7 +76,7 @@ const useTrackOccupancy = ({
   pathfindingHasFailed = false,
 }: {
   infraId: number;
-  timetableItemProjections: OccupancyTrainSpaceTimeData[];
+  timetableItemProjections: TrainSpaceTimeData[];
   pathOperationalPoints: PathOperationalPoint[];
   pathfindingHasFailed?: boolean;
 }): {
@@ -120,8 +108,7 @@ const useTrackOccupancy = ({
     osrdEditoastApi.endpoints.postPacedTrainTrackOccupancy.useMutation();
   const [postInfraByInfraIdMatchOperationalPoints] =
     osrdEditoastApi.endpoints.postInfraByInfraIdMatchOperationalPoints.useLazyQuery();
-
-  const timetableItemsById: Map<TimetableItemId, OccupancyTrainSpaceTimeData> = useMemo(
+  const timetableItemsById: Map<TimetableItemId, TrainSpaceTimeData> = useMemo(
     () => new Map(timetableItemProjections.map((item) => [item.id, item])),
     [timetableItemProjections]
   );
@@ -565,13 +552,10 @@ const useTrackOccupancy = ({
       ) {
         modifiedTrainIDs.add(id);
         if (
+          !isEqual(timetableItem.originPathItem, previousTimetableItem.originPathItem) ||
           !isEqual(
-            timetableItem.originPathItemLocation,
-            previousTimetableItem.originPathItemLocation
-          ) ||
-          !isEqual(
-            timetableItem.destinationPathItemLocation,
-            previousTimetableItemsDict[id].destinationPathItemLocation
+            timetableItem.destinationPathItem,
+            previousTimetableItemsDict[id].destinationPathItem
           )
         ) {
           // Remove cached station labels for this train:
@@ -650,14 +634,14 @@ const useTrackOccupancy = ({
       try {
         const requests: {
           timetableItemId: TimetableItemId;
-          side: Side;
+          side: 'origin' | 'destination';
           opReference: OperationalPointPartReference;
         }[] = [];
 
         timetableItemsToFetch.forEach((timetableItem) => {
           trainsStationLabels[timetableItem.id] = {};
-          SIDES.forEach((side) => {
-            const itemLocation = timetableItem[`${side}PathItemLocation`];
+          (['origin', 'destination'] as const).forEach((side) => {
+            const itemLocation = timetableItem[`${side}PathItem`].location;
             if (!itemLocation) {
               trainsStationLabels[timetableItem.id] = {
                 ...trainsStationLabels[timetableItem.id],
