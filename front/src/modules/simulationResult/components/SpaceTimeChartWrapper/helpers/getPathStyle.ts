@@ -43,21 +43,22 @@ const getPathStyle = (
   }
   const category = exception?.rolling_stock_category?.value ?? item?.category;
 
-  const currentSubCategory =
-    category && !isMainCategory(category)
-      ? subCategories.find((option) => option.code === category.sub_category_code)
-      : undefined;
-
   let colors = DEFAULT_TRAIN_PATH_COLORS;
-
-  if (category && isMainCategory(category)) {
-    colors = TRAIN_MAIN_CATEGORY_PATH_COLORS[category.main_category];
-  } else if (category && !isMainCategory(category) && currentSubCategory) {
-    colors = {
-      normal: currentSubCategory.color || DEFAULT_TRAIN_PATH_COLORS.normal,
-      hovered: currentSubCategory.hovered_color || DEFAULT_TRAIN_PATH_COLORS.hovered,
-      background: currentSubCategory.background_color || DEFAULT_TRAIN_PATH_COLORS.background,
-    };
+  if (category) {
+    if (isMainCategory(category)) {
+      colors = TRAIN_MAIN_CATEGORY_PATH_COLORS[category.main_category];
+    } else {
+      const currentSubCategory = subCategories.find(
+        (option) => option.code === category.sub_category_code
+      );
+      if (currentSubCategory) {
+        colors = {
+          normal: currentSubCategory.color,
+          hovered: currentSubCategory.hovered_color,
+          background: currentSubCategory.background_color,
+        };
+      }
+    }
   }
 
   if (hovered && 'pathId' in hovered.element && !dragging) {
