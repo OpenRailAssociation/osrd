@@ -18,11 +18,15 @@ export type MovableOccupancyZone = Omit<OccupancyZone, 'trainId'> & {
 
 const EPSILON = 1e-5;
 
+/**
+ * Given a train projection, return a function to get the position (in mm since the departure
+ * of the start position) of the train at a given time (in ms since the departure of the train).
+ */
 function getTimeToPosition(
-  paths: { positions: number[]; times: number[] }[]
+  projectionParts: { positions: number[]; times: number[] }[]
 ): (time: number) => number | null {
   return (time: number) => {
-    for (const { times, positions } of paths) {
+    for (const { times, positions } of projectionParts) {
       // Check if time is within this path's bounds
       if (time < times[0] || time > times[times.length - 1]) continue;
 
@@ -56,17 +60,17 @@ export function getMovableOccupancyZone(
   departureTime: Date,
   exception?: PacedTrainException
 ): MovableOccupancyZone {
-  const trainTimeOrigin = departureTime.getTime();
-  const startTime = +new Date(occupation.time_begin);
-  const endTime = startTime + Duration.parse(occupation.duration).ms;
+  const trainStartTime = departureTime.getTime();
+  const occupationStartTime = +new Date(occupation.time_begin);
+  const occupationEndTime = occupationStartTime + Duration.parse(occupation.duration).ms;
   const timeToPosition = getTimeToPosition(spaceTimeCurves);
 
   // Search for arrival and departure directions:
   let startDirection: OccupancyZone['startDirection'];
   let endDirection: OccupancyZone['endDirection'];
 
-  const startPosition = timeToPosition(startTime - trainTimeOrigin);
-  const beforeStartPosition = timeToPosition(startTime - trainTimeOrigin - EPSILON);
+  const startPosition = timeToPosition(occupationStartTime - trainStartTime);
+  const beforeStartPosition = timeToPosition(occupationStartTime - trainStartTime - EPSILON);
   if (beforeStartPosition === null || startPosition === null) {
     startDirection = undefined;
   } else if (beforeStartPosition < startPosition) {
@@ -75,8 +79,8 @@ export function getMovableOccupancyZone(
     startDirection = 'down';
   }
 
-  const endPosition = timeToPosition(endTime - trainTimeOrigin);
-  const afterEndPosition = timeToPosition(endTime - trainTimeOrigin + EPSILON);
+  const endPosition = timeToPosition(occupationEndTime - trainStartTime);
+  const afterEndPosition = timeToPosition(occupationEndTime - trainStartTime + EPSILON);
   if (afterEndPosition === null || endPosition === null) {
     endDirection = undefined;
   } else if (afterEndPosition < endPosition) {
@@ -88,13 +92,13 @@ export function getMovableOccupancyZone(
   return {
     trackId,
     trainId,
-    startTime,
+    startTime: occupationStartTime,
     startDirection,
-    endTime,
+    endTime: occupationEndTime,
     endDirection,
     trainName,
-    dbStartTime: startTime,
-    dbEndTime: endTime,
+    dbStartTime: occupationStartTime,
+    dbEndTime: occupationEndTime,
     isStartTimeException: exception?.start_time !== undefined,
   };
 }
