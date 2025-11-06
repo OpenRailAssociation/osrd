@@ -225,7 +225,7 @@ where
                            data,
                        }| {
                     if let Some(tx) = ready_trains_tx.as_ref() {
-                        let trains = inputs.trains.get(&input).expect("lolz").clone();
+                        let trains = inputs.input_train_set(&input).clone();
                         tx.unbounded_send(trains).ok();
                     }
                     paths.insert(input, Poll::Ready(data.map(Arc::new)));
@@ -259,11 +259,7 @@ where
                       correlation_key: input,
                       data: path,
                   }| {
-                let trains = inputs
-                    .trains
-                    .get(&input)
-                    .expect("deduplicate_inputs invariant")
-                    .clone();
+                let trains = inputs.input_train_set(&input).clone();
                 Correlated::new(trains, path)
             },
         )
@@ -357,6 +353,10 @@ where
         let consist = self.consists.get(train)?;
         let constraints = self.constraints.get(train)?;
         Some(Input(consist.clone(), constraints.clone()))
+    }
+
+    fn input_train_set(&self, input: &Input) -> &TrainSet<Train> {
+        self.trains.get(input).expect("build_input_map invariant")
     }
 }
 
