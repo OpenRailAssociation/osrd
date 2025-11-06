@@ -19,6 +19,7 @@ import {
   isOccurrenceId,
   isPacedTrainId,
 } from 'utils/trainId';
+import { mapBy } from 'utils/types';
 
 import type { PathOperationalPoint, TrainSpaceTimeData } from '../../types';
 import { batchFetchTrackOccupancy } from './helpers/utils';
@@ -99,8 +100,8 @@ const useTrackOccupancy = ({
   const previousTimetableItemProjections = usePrevious(timetableItemProjections);
   const { getTrackSectionsByIds } = useScenarioContext();
 
-  const pathOperationalPointsDict = useMemo(
-    () => keyBy(pathOperationalPoints, 'waypointId'),
+  const pathOpsByWaypointId = useMemo(
+    () => mapBy(pathOperationalPoints, 'waypointId'),
     [pathOperationalPoints]
   );
 
@@ -262,8 +263,8 @@ const useTrackOccupancy = ({
 
     if (tracksState.type === 'ok')
       forEach(pathOperationalPointsState, (opState, waypointId) => {
-        const op = pathOperationalPointsDict[waypointId];
-        if (opState.selected && typeof op?.opId === 'string') {
+        const op = pathOpsByWaypointId.get(waypointId);
+        if (opState.selected && op?.opId) {
           const tracks = tracksState.data[op.opId];
           res.push({
             waypointId,
@@ -285,11 +286,12 @@ const useTrackOccupancy = ({
       });
 
     return res;
-  }, [pathOperationalPointsState, pathOperationalPointsDict, t]);
+  }, [pathOperationalPointsState, pathOpsByWaypointId, t]);
 
   const toggleWaypoint = useCallback(
     (waypointId: string, selectedState?: boolean) => {
-      if (!pathOperationalPointsDict[waypointId])
+      const waypoint = pathOpsByWaypointId.get(waypointId);
+      if (!waypoint)
         throw new Error(`Waypoint ${waypointId} has not been provided to useTrackOccupancy.`);
 
       const currentState = pathOperationalPointsState[waypointId];
@@ -303,7 +305,7 @@ const useTrackOccupancy = ({
           Array.from(timetableItemProjectionsById.keys()),
           (ids) =>
             fetchTrackOccupancy(
-              pathOperationalPointsDict[waypointId]?.opId,
+              waypoint.opId,
               Object.fromEntries(ids.map((id) => [id, timetableItemProjectionsById.get(id)!]))
             ),
           {
@@ -350,7 +352,7 @@ const useTrackOccupancy = ({
 
         // refresh zones when reopening waypoint, if TOD was closed.
         if (!currentSelected && newSelected) {
-          const opId = pathOperationalPointsDict[waypointId]?.opId;
+          const opId = pathOpsByWaypointId.get(waypointId)?.opId;
           if (!opId) return;
 
           const trains = Object.fromEntries(Array.from(timetableItemProjectionsById.entries()));
@@ -374,7 +376,7 @@ const useTrackOccupancy = ({
       }
     },
     [
-      pathOperationalPointsDict,
+      pathOpsByWaypointId,
       pathOperationalPointsState,
       updatePathOperationalPointState,
       timetableItemProjectionsById,
@@ -423,10 +425,9 @@ const useTrackOccupancy = ({
         const draggedTrainEditoastId = draggedTrainId;
         await Promise.all(
           [...impactedPathOperationalPointIDs].map(async (waypointId) => {
-            const newZones = await fetchTrackOccupancy(
-              pathOperationalPointsDict[waypointId]?.opId,
-              { [draggedTrainEditoastId]: newTrainData }
-            );
+            const newZones = await fetchTrackOccupancy(pathOpsByWaypointId.get(waypointId)?.opId, {
+              [draggedTrainEditoastId]: newTrainData,
+            });
 
             if (newZones.length)
               setPathOperationalPointsState((state) => {
@@ -440,7 +441,7 @@ const useTrackOccupancy = ({
         );
       }
     },
-    [pathOperationalPointsDict, pathOperationalPointsState]
+    [pathOpsByWaypointId, pathOperationalPointsState]
   );
 
   // Abort all batch calls on unmount:
@@ -577,7 +578,7 @@ const useTrackOccupancy = ({
     if (addedTrainIDs.size || modifiedTrainIDs.size) {
       forEach(pathOperationalPointsState, async (_, waypointId) => {
         const newZones = await fetchTrackOccupancy(
-          pathOperationalPointsDict[waypointId]?.opId,
+          pathOpsByWaypointId.get(waypointId)?.opId,
           Object.fromEntries(
             [...addedTrainIDs, ...modifiedTrainIDs].map((id) => [
               id,
