@@ -239,6 +239,33 @@ impl Error {
     }
 }
 
+// Manually implement Clone because serde_json::Error does not
+impl Clone for Error {
+    fn clone(&self) -> Self {
+        match self {
+            Self::CoreResponseFormatError { msg } => {
+                Self::CoreResponseFormatError { msg: msg.clone() }
+            }
+            Self::UnparsableErrorOutput => Self::UnparsableErrorOutput,
+            Self::BrokenPipe => Self::BrokenPipe,
+            Self::RawError(err) => Self::RawError(err.clone()),
+            Self::NoResponseContent => Self::NoResponseContent,
+            Self::MqClientError(err) => Self::MqClientError(match err {
+                MqClientError::Lapin(error) => MqClientError::Lapin(error.clone()),
+                MqClientError::Serialization(error) => MqClientError::Serialization(
+                    // This is actually a supported behavior of serde_json that is forced to parse
+                    // its own error message to comply with serde's API.
+                    <serde_json::Error as serde::ser::Error>::custom(error.to_string()),
+                ),
+                MqClientError::StatusParsing => MqClientError::StatusParsing,
+                MqClientError::ResponseTimeout => MqClientError::ResponseTimeout,
+                MqClientError::ConnectionDoesNotExist => MqClientError::ConnectionDoesNotExist,
+                MqClientError::PoolChannelFail => MqClientError::PoolChannelFail,
+            }),
+        }
+    }
+}
+
 #[derive(Debug, Clone, Deserialize, Serialize, PartialEq)]
 pub struct RawError {
     #[serde(rename = "type")]
