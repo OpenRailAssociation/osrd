@@ -458,11 +458,13 @@ mod tests {
     #[tokio::test]
     async fn pathfinding_env() {
         common::setup_tracing_for_test();
+
         let mut mock = MockingClient::new();
         mock.stub("/pathfinding/blocks")
             .response(StatusCode::OK)
             .json(path(2))
             .finish();
+
         let mut pfenv = PathfindingEnv::<usize>::new(CoreEnv::new_mock(mock));
         pfenv.extend([(1, constraints(1)), (2, constraints(2))]);
         pfenv.extend([(1, consist(1)), (2, consist(2))]);
@@ -476,10 +478,12 @@ mod tests {
             ],
             "",
         );
+
         let all_trains = pfenv.all_trains();
         assert_eq!(all_trains, TrainSet::from([1, 2]));
         let (tx, rx) = futures::channel::mpsc::unbounded();
         let pfrun = pfenv.run(vk.get_connection().await.unwrap(), all_trains, Some(tx));
+
         // timeout to avoid blocking the CI if something goes wrong
         let trains = tokio::time::timeout(Duration::from_secs(1), async move {
             use stream::StreamExt as _;
@@ -491,6 +495,7 @@ mod tests {
         .await
         .unwrap();
         assert_eq!(trains, TrainSet::from([1, 2]));
+
         assert_eq!(
             pfrun.get_path(&1),
             Some(Poll::Ready(Ok(serde_json::from_value(path(1)).unwrap())))
