@@ -5,6 +5,7 @@ use std::iter;
 use std::sync::Arc;
 
 // Crate-level exports
+pub use envs::TrainSet;
 pub use envs::core::CoreEnv;
 pub use envs::pathfinding::PathfindingConsist;
 pub use envs::pathfinding::PathfindingConstraints;

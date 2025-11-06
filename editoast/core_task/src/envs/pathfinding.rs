@@ -1,5 +1,4 @@
 use std::collections::HashMap;
-use std::collections::HashSet;
 use std::hash::DefaultHasher;
 use std::hash::Hash;
 use std::hash::Hasher as _;
@@ -18,6 +17,7 @@ use schemas::rolling_stock::LoadingGaugeType;
 use crate::CoreEnv;
 use crate::Correlated;
 use crate::Task;
+use crate::TrainSet;
 
 /// An environment to compute and cache paths asynchronously
 ///
@@ -45,7 +45,7 @@ where
     constraints: HashMap<Train, Arc<PathfindingConstraints>>,
 
     // Generated
-    trains: HashMap<Input, HashSet<Train>>, // inverse index: unique input set => trains
+    trains: HashMap<Input, TrainSet<Train>>, // inverse index: unique input set => trains
 }
 
 impl<Train> Default for PathfindingEnvInputs<Train>
@@ -67,7 +67,7 @@ struct Input(Arc<PathfindingConsist>, Arc<PathfindingConstraints>);
 /// The result of [PathfindingEnv::run]
 ///
 /// Stores each pathfinding result as they arrive. So [fn PathfindingRun::get_path]
-/// might return that a result is still pending. The train sets done being calculated
+/// might return that a result is still pending. The [TrainSet]s done being calculated
 /// can be tracked by providing a channel sender to [PathfindingEnv::run].
 ///
 /// Cheap to clone.
@@ -200,17 +200,17 @@ where
     /// Computes paths or fetches them from cache asynchronously
     ///
     /// Returns a [PathfindingRun] containing the calculated paths (or errors)
-    /// of each train set. They are pushed in the object progressively as the results
+    /// of each [TrainSet]. They are pushed in the object progressively as the results
     /// arrive. Hence why [fn PathfindingRun::get_path] returns a [Poll].
     ///
     /// To follow what's been calculated, this function accepts a channel sender
-    /// to notify each time a train set is done processing.
+    /// to notify each time a [TrainSet] is done processing.
     /// Note that the receivers implement [trait futures::stream::Stream].
     pub fn run(
         self,
         vkconn: cache::Connection,
-        trains: HashSet<Train>,
-        ready_trains_tx: Option<futures::channel::mpsc::UnboundedSender<HashSet<Train>>>,
+        trains: TrainSet<Train>,
+        ready_trains_tx: Option<futures::channel::mpsc::UnboundedSender<TrainSet<Train>>>,
     ) -> PathfindingRun<Train> {
         use stream::StreamExt as _;
         let (core_env, inputs) = self.decompose();
@@ -239,16 +239,16 @@ where
     /// Computes paths or fetches them from cache asynchronously
     ///
     /// Doesn't store the paths unlike [PathfindingEnv::run].
-    /// The returned stream yields a set of trains and their corresponding path directly,
+    /// The returned stream yields a [TrainSet] and their corresponding path directly,
     /// avoiding the caller to deal with the `Arc` returned by [PathfindingEnv::get_path],
     /// thus transferring ownership and allow easy path mutations.
     pub fn into_stream(
         self,
         vkconn: cache::Connection,
-        trains: HashSet<Train>,
+        trains: TrainSet<Train>,
     ) -> impl stream::Stream<
         Item = Correlated<
-            HashSet<Train>,
+            TrainSet<Train>,
             Result<core_client::pathfinding::PathfindingCoreResult, core_client::Error>,
         >,
     > {
@@ -271,7 +271,7 @@ where
 
     fn produce(
         vkconn: cache::Connection,
-        trains: HashSet<Train>,
+        trains: TrainSet<Train>,
         core_env: CoreEnv,
         inputs: Arc<PathfindingEnvInputs<Train>>,
     ) -> impl stream::Stream<
@@ -320,7 +320,7 @@ where
         }
     }
 
-    pub fn all_trains(&self) -> HashSet<Train> {
+    pub fn all_trains(&self) -> TrainSet<Train> {
         self.inputs.all_trains()
     }
 }
@@ -330,10 +330,10 @@ where
     Train: Clone + Hash + Eq + Send + Sync + 'static,
 {
     /// Returns all trains in the environment for which all needed information is configured
-    pub fn all_trains(&self) -> HashSet<Train> {
+    pub fn all_trains(&self) -> TrainSet<Train> {
         self.consists
             .keys()
-            .collect::<HashSet<_>>()
+            .collect::<TrainSet<_>>()
             .intersection(&self.constraints.keys().collect())
             .cloned()
             .cloned() // not an error, it's an &&Train originally
@@ -477,17 +477,20 @@ mod tests {
             "",
         );
         let all_trains = pfenv.all_trains();
-        assert_eq!(all_trains, HashSet::from([1, 2]));
+        assert_eq!(all_trains, TrainSet::from([1, 2]));
         let (tx, rx) = futures::channel::mpsc::unbounded();
         let pfrun = pfenv.run(vk.get_connection().await.unwrap(), all_trains, Some(tx));
         // timeout to avoid blocking the CI if something goes wrong
         let trains = tokio::time::timeout(Duration::from_secs(1), async move {
             use stream::StreamExt as _;
-            rx.map(stream::iter).flatten().collect::<HashSet<_>>().await
+            rx.map(stream::iter)
+                .flatten()
+                .collect::<TrainSet<_>>()
+                .await
         })
         .await
         .unwrap();
-        assert_eq!(trains, HashSet::from([1, 2]));
+        assert_eq!(trains, TrainSet::from([1, 2]));
         assert_eq!(
             pfrun.get_path(&1),
             Some(Poll::Ready(Ok(serde_json::from_value(path(1)).unwrap())))
