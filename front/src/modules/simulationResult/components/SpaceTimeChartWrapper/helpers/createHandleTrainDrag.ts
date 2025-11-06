@@ -2,16 +2,14 @@ import type { TrainSpaceTimeData } from 'modules/simulationResult/types';
 import type { TrainId, TimetableItemId } from 'reducers/osrdconf/types';
 import { extractPacedTrainIdFromOccurrenceId, isOccurrenceId } from 'utils/trainId';
 
-import type { OccupancyTrainSpaceTimeData } from '../useTrackOccupancy';
-
 export default function createHandleTrainDrag({
   projectPathTrainResult,
   setProjectPathTrainResult,
   handleTrainDragInTrackOccupancy,
   updateTrainDepartureTime,
 }: {
-  projectPathTrainResult: OccupancyTrainSpaceTimeData[];
-  setProjectPathTrainResult: (value: OccupancyTrainSpaceTimeData[]) => void;
+  projectPathTrainResult: TrainSpaceTimeData[];
+  setProjectPathTrainResult: (value: TrainSpaceTimeData[]) => void;
   handleTrainDragInTrackOccupancy: (args: {
     draggedTrainId: TrainId;
     newTrainData: TrainSpaceTimeData;

@@ -34,6 +34,8 @@ const upsertNewProjectedTrains = (
       departureTime: new Date(matchingTrain?.start_time),
       spaceTimeCurves: trainData.space_time_curves,
       signalUpdates: trainData.signal_updates || [],
+      originPathItem: matchingTrain.path.at(0)!,
+      destinationPathItem: matchingTrain.path.at(-1)!,
     };
 
     const projectedTrain: TrainSpaceTimeData = {

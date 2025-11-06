@@ -13,6 +13,7 @@ import type {
   RollingStockWithLiveries,
   SimulationResponseSuccess,
   TrainSchedule,
+  PathItem,
 } from 'common/api/osrdEditoastApi';
 import type { PacedTrainWithDetails } from 'modules/timetableItem/types';
 import type { OccurrenceId, PacedTrainId } from 'reducers/osrdconf/types';
@@ -47,6 +48,8 @@ export type TrainSpaceTimeData = {
   id: PacedTrainId;
   name: string;
   departureTime: Date;
+  originPathItem: PathItem;
+  destinationPathItem: PathItem;
   paced?: PacedTrainWithDetails['paced'] & {
     exceptionProjections: Map<string, BaseTrainProjection>;
   };
