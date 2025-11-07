@@ -238,8 +238,6 @@ const SpaceTimeChartWrapper = ({
         paths,
         hoveredItem,
         !!draggingState,
-        subCategories,
-        timetableItemsWithDetails,
         activeWaypointRef,
         selectedTrainId,
         onCloseOccupancyLayer,
@@ -436,14 +434,7 @@ const SpaceTimeChartWrapper = ({
               <PathLayer
                 key={`${path.id}-${path.points[0]?.position}`}
                 path={path}
-                {...getPathStyle(
-                  hoveredItem,
-                  path,
-                  !!draggingState,
-                  subCategories,
-                  timetableItemsWithDetails,
-                  selectedTrainId
-                )}
+                {...getPathStyle(hoveredItem, path, !!draggingState, selectedTrainId)}
               />
             ))}
             {rect && <ZoomRect {...rect} />}

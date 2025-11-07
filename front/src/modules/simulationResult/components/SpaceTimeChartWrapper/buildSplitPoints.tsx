@@ -12,9 +12,8 @@ import {
 } from '@osrd-project/ui-charts';
 import { keyBy, sortBy } from 'lodash';
 
-import type { SubCategory } from 'common/api/osrdEditoastApi';
+import type { CategoryColors } from 'applications/operationalStudies/types';
 import { Spinner } from 'common/Loaders';
-import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
 import type { TimetableItemId, TrainId } from 'reducers/osrdconf/types';
 import { extractPacedTrainIdFromOccurrenceId, isOccurrenceId } from 'utils/trainId';
 
@@ -34,7 +33,7 @@ type Path = {
   id: string;
   label: string;
   points: { time: number; position: number }[];
-  color: string;
+  colors: CategoryColors;
 };
 
 export function buildSplitPoints(
@@ -42,8 +41,6 @@ export function buildSplitPoints(
   paths: Path[],
   hoveredItem: HoveredItem | null,
   isDragging: boolean,
-  subCategories: SubCategory[] = [],
-  timetableItemsWithDetails?: TimetableItemWithDetails[],
   activeWaypointRef?: React.RefObject<HTMLDivElement | null>,
   selectedTrainId?: TrainId,
   onCloseOccupancyLayer?: (waypointId: string) => void,
@@ -102,14 +99,7 @@ export function buildSplitPoints(
             }
             const path = pathsById[zone.trainId];
             if (!path) return zone;
-            const style = getPathStyle(
-              hoveredItem,
-              path,
-              isDragging,
-              subCategories,
-              timetableItemsWithDetails,
-              selectedTrainId
-            );
+            const style = getPathStyle(hoveredItem, path, isDragging, selectedTrainId);
             return {
               ...zone,
               trailingText:
