@@ -31,6 +31,7 @@
 
 # --- E2E TESTS  ---
 /front/tests                                             @openrailassociation/OSRD-E2E-Tests
+/front/playwright.config.ts
 
 # --- INTEGRATION TESTS  ---
 /tests                                                   @openrailassociation/OSRD-Tests
