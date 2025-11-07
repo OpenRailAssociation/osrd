@@ -197,7 +197,7 @@ const SpaceTimeChartWrapper = ({
     [waypointsPanelData?.filteredWaypoints, projectedTrains, conflicts, operationalPoints]
   );
 
-  const paths = usePaths(cutProjectedTrains);
+  const paths = useMemo(() => usePaths(cutProjectedTrains), [cutProjectedTrains]);
 
   const manchetteWaypoints = useMemo(() => {
     const rawWaypoints = waypointsPanelData?.filteredWaypoints ?? operationalPoints;
