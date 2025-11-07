@@ -53,6 +53,7 @@ import {
   extractExceptionIdFromOccurrenceId,
   isAddedExceptionId,
 } from 'utils/trainId';
+import { mapBy } from 'utils/types';
 
 import { buildSplitPoints } from './buildSplitPoints';
 import cutSpaceTimeCurves from './helpers/cutSpaceTimeCurves';
@@ -197,7 +198,15 @@ const SpaceTimeChartWrapper = ({
     [waypointsPanelData?.filteredWaypoints, projectedTrains, conflicts, operationalPoints]
   );
 
-  const paths = useMemo(() => formatSpaceTimeCurves(cutProjectedTrains), [cutProjectedTrains]);
+  const timetableItemsWithDetailsById = useMemo(
+    () => mapBy(timetableItemsWithDetails, 'id'),
+    [timetableItemsWithDetails]
+  );
+
+  const paths = useMemo(
+    () => formatSpaceTimeCurves(subCategories, cutProjectedTrains, timetableItemsWithDetailsById),
+    [subCategories, cutProjectedTrains, timetableItemsWithDetailsById]
+  );
 
   const manchetteWaypoints = useMemo(() => {
     const rawWaypoints = waypointsPanelData?.filteredWaypoints ?? operationalPoints;
