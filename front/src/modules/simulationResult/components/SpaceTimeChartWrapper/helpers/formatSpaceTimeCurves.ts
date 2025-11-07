@@ -60,7 +60,7 @@ const formatSpaceTimeCurves = (
     return train.spaceTimeCurves.map((curve) => ({
       id: train.id,
       label: train.name,
-      color: colors.normal,
+      colors,
       points: curve.positions.map((position, i) => ({
         time: curve.times[i] + departureTime,
         position,

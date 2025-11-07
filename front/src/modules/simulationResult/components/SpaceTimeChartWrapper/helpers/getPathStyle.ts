@@ -1,25 +1,13 @@
 import type { PathLevel, HoveredItem } from '@osrd-project/ui-charts';
 
-import {
-  DEFAULT_TRAIN_PATH_COLORS,
-  TRAIN_MAIN_CATEGORY_PATH_COLORS,
-} from 'applications/operationalStudies/consts';
-import type { SubCategory } from 'common/api/osrdEditoastApi';
-import isMainCategory from 'modules/rollingStock/helpers/category';
-import {
-  findExceptionWithOccurrenceId,
-  isPacedTrainWithDetails,
-} from 'modules/timetableItem/helpers/pacedTrain';
-import type { SimulatedException, TimetableItemWithDetails } from 'modules/timetableItem/types';
+import type { CategoryColors } from 'applications/operationalStudies/types';
 import type { TrainId } from 'reducers/osrdconf/types';
 import { extractPacedTrainIdFromOccurrenceId, isOccurrenceId } from 'utils/trainId';
 
 const getPathStyle = (
   hovered: HoveredItem | null,
-  train: { color: string; id: string },
+  train: { colors: CategoryColors; id: string },
   dragging: boolean,
-  subCategories: SubCategory[],
-  timetableItemsWithDetails?: TimetableItemWithDetails[],
   selectedTrainId?: TrainId
 ): {
   color: string;
@@ -34,32 +22,7 @@ const getPathStyle = (
   const timetableItemId = isOccurrenceId(train.id)
     ? extractPacedTrainIdFromOccurrenceId(train.id)
     : train.id;
-
-  const item = timetableItemsWithDetails?.find((t) => t.id === timetableItemId);
-
-  let exception: SimulatedException | null = null;
-  if (item && isPacedTrainWithDetails(item) && isOccurrenceId(train.id)) {
-    exception = findExceptionWithOccurrenceId(item.paced.exceptions, train.id) ?? null;
-  }
-  const category = exception?.rolling_stock_category?.value ?? item?.category;
-
-  let colors = DEFAULT_TRAIN_PATH_COLORS;
-  if (category) {
-    if (isMainCategory(category)) {
-      colors = TRAIN_MAIN_CATEGORY_PATH_COLORS[category.main_category];
-    } else {
-      const currentSubCategory = subCategories.find(
-        (option) => option.code === category.sub_category_code
-      );
-      if (currentSubCategory) {
-        colors = {
-          normal: currentSubCategory.color,
-          hovered: currentSubCategory.hovered_color,
-          background: currentSubCategory.background_color,
-        };
-      }
-    }
-  }
+  const { colors } = train;
 
   if (hovered && 'pathId' in hovered.element && !dragging) {
     const hoveredTrainId = hovered.element.pathId as TrainId;
