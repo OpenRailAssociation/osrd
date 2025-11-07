@@ -1,24 +1,19 @@
 import { useMemo } from 'react';
 
-type ProjectPathTrainResult = {
-  id: string;
-  name: string;
-  spaceTimeCurves: {
-    positions: number[];
-    times: number[];
-  }[];
-  departureTime: Date;
-};
+import type { IndividualTrainProjection } from 'modules/simulationResult/types';
 
 const PATH_COLOR_DEFAULT = '#8A714B';
 
-const transformCurve = (curve: ProjectPathTrainResult['spaceTimeCurves'][0], departureTime: Date) =>
+const transformCurve = (
+  curve: IndividualTrainProjection['spaceTimeCurves'][0],
+  departureTime: Date
+) =>
   curve.positions.map((position, i) => ({
     time: curve.times[i] + departureTime.getTime(),
     position,
   }));
 
-const usePaths = (projectPathTrainResult: ProjectPathTrainResult[]) =>
+const usePaths = (projectPathTrainResult: IndividualTrainProjection[]) =>
   useMemo(
     () =>
       projectPathTrainResult.flatMap((path) =>

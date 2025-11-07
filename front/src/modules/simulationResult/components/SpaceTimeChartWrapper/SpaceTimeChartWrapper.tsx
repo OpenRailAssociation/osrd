@@ -23,7 +23,6 @@ import {
 import { Slider } from '@osrd-project/ui-core';
 import { createPortal } from 'react-dom';
 
-import usePaths from 'applications/operationalStudies/views/Scenario/components/SimulationResults/SimulationResultsExport/usePaths';
 import upward from 'assets/pictures/workSchedules/ScheduledMaintenanceUp.svg';
 import { type PostWorkSchedulesProjectPathApiResponse } from 'common/api/osrdEditoastApi';
 import { useSubCategoryContext } from 'common/SubCategoryContext';
@@ -59,6 +58,7 @@ import { buildSplitPoints } from './buildSplitPoints';
 import cutSpaceTimeCurves from './helpers/cutSpaceTimeCurves';
 import getPathStyle from './helpers/getPathStyle';
 import makeProjectedItems from './helpers/makeProjectedItems';
+import usePaths from './helpers/usePaths';
 import { getOccupancyBlocks } from './helpers/utils';
 import ProjectionLoadingMessage from './ProjectionLoadingMessage';
 import SettingsPanel from './SettingsPanel';
