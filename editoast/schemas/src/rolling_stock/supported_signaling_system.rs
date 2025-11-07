@@ -1,3 +1,5 @@
+use std::borrow::Borrow;
+
 use educe::Educe;
 use serde::Deserialize;
 use serde::Serialize;
@@ -6,7 +8,7 @@ use utoipa::ToSchema;
 
 use crate::rolling_stock::EtcsBrakeParams;
 
-#[derive(Clone, Debug, Deserialize, Serialize, Display, Educe, ToSchema)]
+#[derive(Clone, Debug, Deserialize, Serialize, Display, Educe, ToSchema, strum::IntoStaticStr)]
 #[educe(Hash, Eq, PartialEq)]
 #[serde(tag = "type")]
 #[allow(clippy::large_enum_variant)]
@@ -20,4 +22,10 @@ pub enum SupportedSignalingSystem {
     EtcsLevel2 {
         brake_params: EtcsBrakeParams,
     },
+}
+
+impl Borrow<str> for SupportedSignalingSystem {
+    fn borrow(&self) -> &str {
+        self.into()
+    }
 }

@@ -129,10 +129,10 @@ impl RollingStock {
     }
 
     pub fn get_etcs_brake_params(&self) -> Option<&EtcsBrakeParams> {
-        for signaling_system in &self.supported_signaling_systems {
-            if let SupportedSignalingSystem::EtcsLevel2 { brake_params } = signaling_system {
-                return Some(brake_params);
-            }
+        if let Some(SupportedSignalingSystem::EtcsLevel2 { brake_params }) =
+            self.supported_signaling_systems.get("ETCS_LEVEL2")
+        {
+            return Some(brake_params);
         }
         None
     }
