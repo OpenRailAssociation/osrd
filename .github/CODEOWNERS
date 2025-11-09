@@ -46,3 +46,7 @@
 
 # --- CHART ---
 /chart                                                   @openrailassociation/OSRD-DevOps
+
+
+# --- RAILWAY MANAGER INTERFACE ---
+/railway_manager_interface                               @openrailassociation/OSRD-Data
