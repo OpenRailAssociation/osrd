@@ -7,30 +7,30 @@ const getStepLocation = (step: PathItemLocation): PathItemLocation => {
     // pathfinding blocks endpoint requires offsets in mm
     return { track: step.track, offset: mToMm(step.offset) };
   }
-  if ('operational_point' in step.reference) {
+  if ('operational_point' in step.operational_point) {
     return {
-      reference: {
-        operational_point: step.reference.operational_point,
+      operational_point: {
+        operational_point: step.operational_point.operational_point,
       },
       track_reference: step.track_reference,
     };
   }
-  if ('trigram' in step.reference) {
+  if ('trigram' in step.operational_point) {
     return {
-      reference: {
-        trigram: step.reference.trigram,
-        secondary_code: step.reference.secondary_code,
+      operational_point: {
+        trigram: step.operational_point.trigram,
+        secondary_code: step.operational_point.secondary_code,
       },
       track_reference: step.track_reference,
     };
   }
-  if (step.reference.uic === -1) {
+  if (step.operational_point.uic === -1) {
     throw new Error('Invalid UIC');
   }
   return {
-    reference: {
-      uic: step.reference.uic,
-      secondary_code: step.reference.secondary_code,
+    operational_point: {
+      uic: step.operational_point.uic,
+      secondary_code: step.operational_point.secondary_code,
     },
     track_reference: step.track_reference,
   };

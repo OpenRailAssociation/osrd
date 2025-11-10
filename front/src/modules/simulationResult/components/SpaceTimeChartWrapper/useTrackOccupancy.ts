@@ -486,7 +486,7 @@ const useTrackOccupancy = ({
       (op) => !(tracksState.data || {})[op.waypointId]
     );
     const loadAllTracks = async (
-      operationalPointReferences: { reference: { operational_point: string } }[]
+      operationalPointReferences: { operational_point: { operational_point: string } }[]
     ) => {
       setTracksState((state) => ({ type: 'loading', data: state.data || {} }));
 
@@ -509,7 +509,7 @@ const useTrackOccupancy = ({
         }
 
         const loadedTracks = fromPairs(
-          operationalPointReferences.map(({ reference: { operational_point } }, i) => [
+          operationalPointReferences.map(({ operational_point: { operational_point } }, i) => [
             operational_point,
             uniqBy(
               data.related_operational_points[i][0].parts.map((part) => {
@@ -533,7 +533,7 @@ const useTrackOccupancy = ({
       }
     };
     const waypointsPayload = pathOperationalPointsWithoutTracks.flatMap((op) =>
-      op.opId ? [{ reference: { operational_point: op.opId } }] : []
+      op.opId ? [{ operational_point: { operational_point: op.opId } }] : []
     );
     if (!waypointsPayload.length) return noop;
 
@@ -673,33 +673,35 @@ const useTrackOccupancy = ({
                 ...trainsStationLabels[timetableItem.id],
                 [side]: { type: 'requestedPoint' },
               };
-            } else if ('operational_point' in itemLocation.reference) {
+            } else if ('operational_point' in itemLocation.operational_point) {
               requests.push({
                 side,
                 timetableItemId: timetableItem.id,
                 opReference: {
-                  reference: { operational_point: itemLocation.reference.operational_point },
-                },
-              });
-            } else if ('trigram' in itemLocation.reference) {
-              requests.push({
-                side,
-                timetableItemId: timetableItem.id,
-                opReference: {
-                  reference: {
-                    trigram: itemLocation.reference.trigram,
-                    secondary_code: itemLocation.reference.secondary_code,
+                  operational_point: {
+                    operational_point: itemLocation.operational_point.operational_point,
                   },
                 },
               });
-            } else if ('uic' in itemLocation.reference) {
+            } else if ('trigram' in itemLocation.operational_point) {
               requests.push({
                 side,
                 timetableItemId: timetableItem.id,
                 opReference: {
-                  reference: {
-                    uic: itemLocation.reference.uic,
-                    secondary_code: itemLocation.reference.secondary_code,
+                  operational_point: {
+                    trigram: itemLocation.operational_point.trigram,
+                    secondary_code: itemLocation.operational_point.secondary_code,
+                  },
+                },
+              });
+            } else if ('uic' in itemLocation.operational_point) {
+              requests.push({
+                side,
+                timetableItemId: timetableItem.id,
+                opReference: {
+                  operational_point: {
+                    uic: itemLocation.operational_point.uic,
+                    secondary_code: itemLocation.operational_point.secondary_code,
                   },
                 },
               });

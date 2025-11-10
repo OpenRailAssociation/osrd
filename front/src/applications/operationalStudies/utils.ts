@@ -489,10 +489,10 @@ export const groupRoundTrips = (
   return { oneWays, roundTrips, others };
 };
 
-export const getInvalidStepLabel = ({ reference }: OperationalPointReference) => {
-  if ('uic' in reference) return reference.uic.toString();
-  if ('trigram' in reference) return reference.trigram;
-  return reference.operational_point;
+export const getInvalidStepLabel = ({ operational_point }: OperationalPointReference) => {
+  if ('uic' in operational_point) return operational_point.uic.toString();
+  if ('trigram' in operational_point) return operational_point.trigram;
+  return operational_point.operational_point;
 };
 
 export const matchOpRefAndOp = (
@@ -501,17 +501,17 @@ export const matchOpRefAndOp = (
 ) => {
   if ('track' in location) return false;
 
-  if ('operational_point' in location.reference) {
-    return location.reference.operational_point === op.id;
+  if ('operational_point' in location.operational_point) {
+    return location.operational_point.operational_point === op.id;
   }
-  if ('uic' in location.reference) {
+  if ('uic' in location.operational_point) {
     return (
-      location.reference.uic === op.extensions?.identifier?.uic &&
-      location.reference.secondary_code === op.extensions?.sncf?.ch
+      location.operational_point.uic === op.extensions?.identifier?.uic &&
+      location.operational_point.secondary_code === op.extensions?.sncf?.ch
     );
   }
   return (
-    location.reference.trigram === op.extensions?.sncf?.trigram &&
-    location.reference.secondary_code === op.extensions?.sncf?.ch
+    location.operational_point.trigram === op.extensions?.sncf?.trigram &&
+    location.operational_point.secondary_code === op.extensions?.sncf?.ch
   );
 };

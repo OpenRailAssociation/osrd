@@ -49,13 +49,15 @@ export const matchPathStepAndOp = (
   if ('track' in step) {
     return step.track === op.track && step.offset === op.offsetOnTrack;
   }
-  if ('operational_point' in step.reference) {
-    return step.reference.operational_point === op.opId;
+  if ('operational_point' in step.operational_point) {
+    return step.operational_point.operational_point === op.opId;
   }
-  if ('uic' in step.reference) {
-    return step.reference.uic === op.uic && step.reference.secondary_code === op.ch;
+  if ('uic' in step.operational_point) {
+    return step.operational_point.uic === op.uic && step.operational_point.secondary_code === op.ch;
   }
-  return step.reference.trigram === op.trigram && step.reference.secondary_code === op.ch;
+  return (
+    step.operational_point.trigram === op.trigram && step.operational_point.secondary_code === op.ch
+  );
 };
 
 export const getPathfindingQuery = ({

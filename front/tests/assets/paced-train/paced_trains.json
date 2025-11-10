@@ -7,11 +7,11 @@
     "path": [
       {
         "id": "id227",
-        "location": { "reference": { "uic": 8766, "secondary_code": "BV" } }
+        "location": { "operational_point": { "uic": 8766, "secondary_code": "BV" } }
       },
       {
         "id": "id228",
-        "location": { "reference": { "uic": 8755, "secondary_code": "BV" } }
+        "location": { "operational_point": { "uic": 8755, "secondary_code": "BV" } }
       }
     ],
     "schedule": [
@@ -39,11 +39,11 @@
     "path": [
       {
         "id": "id227",
-        "location": { "reference": { "uic": 8766, "secondary_code": "BV" } }
+        "location": { "operational_point": { "uic": 8766, "secondary_code": "BV" } }
       },
       {
         "id": "id228",
-        "location": { "reference": { "uic": 8755, "secondary_code": "BV" } }
+        "location": { "operational_point": { "uic": 8755, "secondary_code": "BV" } }
       }
     ],
     "schedule": [
@@ -82,15 +82,15 @@
     "path": [
       {
         "id": "id744",
-        "location": { "reference": { "uic": 8733, "secondary_code": "BV" } }
+        "location": { "operational_point": { "uic": 8733, "secondary_code": "BV" } }
       },
       {
         "id": "id765",
-        "location": { "reference": { "uic": 8744, "secondary_code": "BV" } }
+        "location": { "operational_point": { "uic": 8744, "secondary_code": "BV" } }
       },
       {
         "id": "id745",
-        "location": { "reference": { "uic": 8777, "secondary_code": "BV" } }
+        "location": { "operational_point": { "uic": 8777, "secondary_code": "BV" } }
       }
     ],
     "schedule": [
@@ -168,14 +168,14 @@
       {
         "id": "id227",
         "location": {
-          "reference": { "uic": 8766, "secondary_code": "BV" },
+          "operational_point": { "uic": 8766, "secondary_code": "BV" },
           "track_reference": null
         }
       },
       {
         "id": "id228",
         "location": {
-          "reference": { "uic": 8755, "secondary_code": "BV" },
+          "operational_point": { "uic": 8755, "secondary_code": "BV" },
           "track_reference": null
         }
       }
@@ -225,14 +225,14 @@
             {
               "id": "id227",
               "location": {
-                "reference": { "uic": 8766, "secondary_code": "BV" },
+                "operational_point": { "uic": 8766, "secondary_code": "BV" },
                 "track_reference": null
               }
             },
             {
               "id": "id228",
               "location": {
-                "reference": { "uic": 8755, "secondary_code": "BV" },
+                "operational_point": { "uic": 8755, "secondary_code": "BV" },
                 "track_reference": null
               }
             }
@@ -262,11 +262,11 @@
     "path": [
       {
         "id": "id227",
-        "location": { "reference": { "uic": 8766, "secondary_code": "BV" } }
+        "location": { "operational_point": { "uic": 8766, "secondary_code": "BV" } }
       },
       {
         "id": "id228",
-        "location": { "reference": { "uic": 8755, "secondary_code": "BV" } }
+        "location": { "operational_point": { "uic": 8755, "secondary_code": "BV" } }
       }
     ],
     "schedule": [
@@ -311,7 +311,7 @@
       {
         "id": "8bf52569-50a5-46a5-8e62-b5626460cfba",
         "location": {
-          "reference": { "uic": 8777, "secondary_code": "BV" },
+          "operational_point": { "uic": 8777, "secondary_code": "BV" },
           "track_reference": null
         }
       },
@@ -378,14 +378,14 @@
             {
               "id": "id2570",
               "location": {
-                "reference": { "uic": 8733, "secondary_code": "BV" },
+                "operational_point": { "uic": 8733, "secondary_code": "BV" },
                 "track_reference": null
               }
             },
             {
               "id": "8369cfc6-e667-4b6b-965a-79795c94dd18",
               "location": {
-                "reference": { "uic": 8799, "secondary_code": "BV" },
+                "operational_point": { "uic": 8799, "secondary_code": "BV" },
                 "track_reference": null
               }
             }
@@ -428,7 +428,7 @@
             {
               "id": "id2659",
               "location": {
-                "reference": { "uic": 8744, "secondary_code": "BV" },
+                "operational_point": { "uic": 8744, "secondary_code": "BV" },
                 "track_reference": null
               }
             },
@@ -439,14 +439,14 @@
             {
               "id": "id2570",
               "location": {
-                "reference": { "uic": 8733, "secondary_code": "BV" },
+                "operational_point": { "uic": 8733, "secondary_code": "BV" },
                 "track_reference": null
               }
             },
             {
               "id": "b174dfa7-f6e7-45d9-9545-469a64e675b9",
               "location": {
-                "reference": { "uic": 8799, "secondary_code": "BC" },
+                "operational_point": { "uic": 8799, "secondary_code": "BC" },
                 "track_reference": null
               }
             }

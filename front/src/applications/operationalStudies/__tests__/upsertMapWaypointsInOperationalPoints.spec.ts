@@ -66,7 +66,7 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
       {
         id: '1',
         location: {
-          reference: {
+          operational_point: {
             uic: 2,
             secondary_code: 'BV',
           },
@@ -82,7 +82,7 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
       {
         id: '3',
         location: {
-          reference: {
+          operational_point: {
             uic: 4,
             secondary_code: 'BV',
           },
@@ -335,7 +335,7 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
       {
         id: '1',
         location: {
-          reference: {
+          operational_point: {
             uic: 2,
             secondary_code: 'BV',
           },
@@ -344,7 +344,7 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
       {
         id: '2',
         location: {
-          reference: {
+          operational_point: {
             uic: 3,
             secondary_code: 'BV',
           },
@@ -353,7 +353,7 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
       {
         id: '3',
         location: {
-          reference: {
+          operational_point: {
             uic: 4,
             secondary_code: 'BV',
           },

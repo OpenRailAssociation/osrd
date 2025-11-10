@@ -46,19 +46,19 @@ const useLinkedTrainSearch = () => {
   const getExtremityDetails = useCallback(
     async (pathItem: PathItem) => {
       if (
-        !('reference' in pathItem.location) ||
-        (!('operational_point' in pathItem.location.reference) &&
-          !('uic' in pathItem.location.reference))
+        !('operational_point' in pathItem.location) ||
+        (!('operational_point' in pathItem.location.operational_point) &&
+          !('uic' in pathItem.location.operational_point))
       )
         return undefined;
 
       const pathItemQuery =
-        'operational_point' in pathItem.location.reference
-          ? ['=', ['obj_id'], pathItem.location.reference.operational_point]
+        'operational_point' in pathItem.location.operational_point
+          ? ['=', ['obj_id'], pathItem.location.operational_point.operational_point]
           : ([
               'and',
-              ['=', ['uic'], pathItem.location.reference.uic],
-              ['=', ['ch'], pathItem.location.reference.secondary_code],
+              ['=', ['uic'], pathItem.location.operational_point.uic],
+              ['=', ['ch'], pathItem.location.operational_point.secondary_code],
             ] as SearchQuery);
 
       try {

@@ -43,9 +43,11 @@ const getVirtualOpName = (
   totalCount: number,
   t: TFunction<'operational-studies'>
 ): string => {
-  if ('trigram' in opRef.reference && opRef.reference.trigram) return opRef.reference.trigram;
-  if ('uic' in opRef.reference && opRef.reference.uic) return opRef.reference.uic.toString();
-  if ('operational_point' in opRef.reference && opRef.reference.operational_point)
+  if ('trigram' in opRef.operational_point && opRef.operational_point.trigram)
+    return opRef.operational_point.trigram;
+  if ('uic' in opRef.operational_point && opRef.operational_point.uic)
+    return opRef.operational_point.uic.toString();
+  if ('operational_point' in opRef.operational_point && opRef.operational_point.operational_point)
     return t('main.operationalPointIdentifier');
   if (index === 0) return t('main.requestedOrigin');
   if (index === totalCount - 1) return t('main.requestedDestination');
@@ -74,17 +76,19 @@ const createVirtualOp = (
     extensions: {
       identifier: {
         name: virtualName,
-        uic: ('uic' in opRef.reference && opRef.reference.uic) || 0,
+        uic: ('uic' in opRef.operational_point && opRef.operational_point.uic) || 0,
       },
       sncf: {
-        ch: ('secondary_code' in opRef.reference && opRef.reference.secondary_code) || '',
+        ch:
+          ('secondary_code' in opRef.operational_point && opRef.operational_point.secondary_code) ||
+          '',
         ch_long_label: '',
         ch_short_label: '',
         ci:
-          'uic' in opRef.reference && opRef.reference.uic
-            ? Number(formatUicToCi(opRef.reference.uic))
+          'uic' in opRef.operational_point && opRef.operational_point.uic
+            ? Number(formatUicToCi(opRef.operational_point.uic))
             : 0,
-        trigram: ('trigram' in opRef.reference && opRef.reference.trigram) || '',
+        trigram: ('trigram' in opRef.operational_point && opRef.operational_point.trigram) || '',
       },
     },
     part: { track: '', position: 0 },
@@ -174,11 +178,7 @@ const usePathProjection = (
     const refs: OperationalPointReference[] = [];
     pathUsedForProjection?.forEach((step) => {
       if (isOperationalPointReference(step.location)) {
-        const {
-          id: _id,
-          location: { track_reference: _track_reference, ...cleanOperationalPointReference },
-        } = step;
-        refs.push(cleanOperationalPointReference);
+        refs.push({ operational_point: step.location.operational_point });
       }
     });
     return refs;
@@ -218,7 +218,7 @@ const usePathProjection = (
 
       const pathfindingOpRefs: OperationalPointReference[] = [];
       operationalPoints.forEach((op, index) => {
-        pathfindingOpRefs.push({ reference: { operational_point: op.id } });
+        pathfindingOpRefs.push({ operational_point: { operational_point: op.id } });
         if (index > 0) {
           operationalPointDistances.push(op.position - operationalPoints[index - 1].position);
         }

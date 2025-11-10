@@ -81,11 +81,11 @@ function buildSchedule(id: string, timeOffsetSeconds: number = 0): TrainSchedule
     path: [
       {
         id: 'step1',
-        location: { reference: { uic: 1, trigram: 'TR1' } },
+        location: { operational_point: { uic: 1, trigram: 'TR1' } },
       },
       {
         id: 'step2',
-        location: { reference: { uic: 2, trigram: 'TR2' } },
+        location: { operational_point: { uic: 2, trigram: 'TR2' } },
       },
     ],
     schedule: [

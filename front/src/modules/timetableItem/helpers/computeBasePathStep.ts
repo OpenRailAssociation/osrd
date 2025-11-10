@@ -33,15 +33,17 @@ const computeBasePathStep = (
   } = correspondingSchedule || {};
 
   let name;
-  if ('reference' in location) {
-    if ('trigram' in location.reference) {
+  if ('operational_point' in location) {
+    if ('trigram' in location.operational_point) {
       name =
-        location.reference.trigram +
-        (location.reference.secondary_code ? `/${location.reference.secondary_code}` : '');
-    } else if ('uic' in location.reference) {
-      name = location.reference.uic.toString();
-    } else if ('operational_point' in location.reference) {
-      name = location.reference.operational_point;
+        location.operational_point.trigram +
+        (location.operational_point.secondary_code
+          ? `/${location.operational_point.secondary_code}`
+          : '');
+    } else if ('uic' in location.operational_point) {
+      name = location.operational_point.uic.toString();
+    } else if ('operational_point' in location.operational_point) {
+      name = location.operational_point.operational_point;
     }
   }
 
