@@ -8,7 +8,7 @@
     {
       "id": "a",
       "location": {
-        "reference": {
+        "operational_point": {
           "uic": 8711
         }
       }
@@ -23,7 +23,7 @@
     {
       "id": "c",
       "location": {
-        "reference": {
+        "operational_point": {
           "trigram": "MWS"
         }
       }
@@ -31,7 +31,7 @@
     {
       "id": "d",
       "location": {
-        "reference": {
+        "operational_point": {
           "operational_point": "Mid_East_station"
         }
       }

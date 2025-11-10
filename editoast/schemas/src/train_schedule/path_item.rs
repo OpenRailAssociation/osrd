@@ -22,7 +22,7 @@ impl PathItem {
         Self {
             id: id.into(),
             location: PathItemLocation::OperationalPointReference(OperationalPointReference {
-                reference: OperationalPointIdentifier::OperationalPointId {
+                operational_point: OperationalPointIdentifier::OperationalPointId {
                     operational_point: id.into(),
                 },
                 track_reference: None,
@@ -41,7 +41,7 @@ pub enum PathItemLocation {
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema, Hash)]
 pub struct OperationalPointReference {
-    pub reference: OperationalPointIdentifier,
+    pub operational_point: OperationalPointIdentifier,
     #[serde(default)]
     pub track_reference: Option<TrackReference>,
 }

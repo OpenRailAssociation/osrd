@@ -9,7 +9,7 @@
       {
         "id": "a",
         "location": {
-          "reference": {
+          "operational_point": {
             "uic": 87210
           }
         }
@@ -24,7 +24,7 @@
       {
         "id": "c",
         "location": {
-          "reference": {
+          "operational_point": {
             "trigram": "ABC"
           }
         }
@@ -32,7 +32,7 @@
       {
         "id": "d",
         "location": {
-          "reference": {
+          "operational_point": {
             "operational_point": "X"
           }
         }

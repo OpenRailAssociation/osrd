@@ -10807,9 +10807,9 @@ components:
     OperationalPointReference:
       type: object
       required:
-      - reference
+      - operational_point
       properties:
-        reference:
+        operational_point:
           $ref: '#/components/schemas/OperationalPointIdentifier'
         track_reference:
           oneOf:

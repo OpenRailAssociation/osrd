@@ -238,7 +238,7 @@ mod tests {
     #[test]
     fn deserialize_duplicate_path_id_train_schedule() {
         let location = PathItemLocation::OperationalPointReference(OperationalPointReference {
-            reference: OperationalPointId {
+            operational_point: OperationalPointId {
                 operational_point: "op".into(),
             },
             track_reference: None,
@@ -295,7 +295,7 @@ mod tests {
     #[test]
     fn deserialize_duplicate_schedule_points_train_schedule() {
         let location = PathItemLocation::OperationalPointReference(OperationalPointReference {
-            reference: OperationalPointId {
+            operational_point: OperationalPointId {
                 operational_point: "op".into(),
             },
             track_reference: None,
@@ -330,7 +330,7 @@ mod tests {
     #[test]
     fn deserialize_arrival_time_first_waypoint_schedule_train_schedule() {
         let location = PathItemLocation::OperationalPointReference(OperationalPointReference {
-            reference: OperationalPointId {
+            operational_point: OperationalPointId {
                 operational_point: "op".into(),
             },
             track_reference: None,

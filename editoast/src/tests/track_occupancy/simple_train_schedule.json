@@ -8,7 +8,7 @@
     {
       "id": "id8",
       "location": {
-        "reference": {
+        "operational_point": {
           "uic": 8711,
           "secondary_code": "BV"
         }
@@ -17,7 +17,7 @@
     {
       "id": "id5",
       "location": {
-        "reference": {
+        "operational_point": {
           "uic": 8733,
           "secondary_code": "BV"
         }
@@ -26,7 +26,7 @@
     {
       "id": "id7",
       "location": {
-        "reference": {
+        "operational_point": {
           "uic": 8788,
           "secondary_code": "BV"
         }

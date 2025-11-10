@@ -169,18 +169,19 @@ impl PathItemCache {
         match path_item {
             PathItemLocation::TrackOffset(_) => None,
             PathItemLocation::OperationalPointReference(OperationalPointReference {
-                reference:
+                operational_point:
                     OperationalPointIdentifier::OperationalPointId {
                         operational_point, ..
                     },
                 ..
             }) => self.get_from_id(&operational_point.0).map(|op| vec![op]),
             PathItemLocation::OperationalPointReference(OperationalPointReference {
-                reference: OperationalPointIdentifier::OperationalPointDescription { trigram, .. },
+                operational_point:
+                    OperationalPointIdentifier::OperationalPointDescription { trigram, .. },
                 ..
             }) => self.get_from_trigram(&trigram.0).map(|op| op.collect()),
             PathItemLocation::OperationalPointReference(OperationalPointReference {
-                reference: OperationalPointIdentifier::OperationalPointUic { uic, .. },
+                operational_point: OperationalPointIdentifier::OperationalPointUic { uic, .. },
                 ..
             }) => self.get_from_uic(*uic).map(|op| op.collect()),
         }
@@ -216,11 +217,11 @@ impl PathItemCache {
     /// Retrieve an operational point identifier from a path item location using the cache
     pub fn op_identifier(&self, path_item: &PathItemLocation) -> Option<String> {
         if let PathItemLocation::OperationalPointReference(OperationalPointReference {
-            reference,
+            operational_point,
             ..
         }) = path_item
         {
-            self.get_op_ref_id(reference)
+            self.get_op_ref_id(operational_point)
         } else {
             None
         }
@@ -239,7 +240,8 @@ impl PathItemCache {
                     vec![track_offset.clone()]
                 }
                 PathItemLocation::OperationalPointReference(OperationalPointReference {
-                    reference: OperationalPointIdentifier::OperationalPointId { operational_point },
+                    operational_point:
+                        OperationalPointIdentifier::OperationalPointId { operational_point },
                     track_reference,
                 }) => {
                     let mut track_offsets = vec![];
@@ -257,7 +259,7 @@ impl PathItemCache {
                     track_offsets
                 }
                 PathItemLocation::OperationalPointReference(OperationalPointReference {
-                    reference:
+                    operational_point:
                         OperationalPointIdentifier::OperationalPointDescription {
                             trigram,
                             secondary_code,
@@ -281,7 +283,7 @@ impl PathItemCache {
                     track_offsets
                 }
                 PathItemLocation::OperationalPointReference(OperationalPointReference {
-                    reference:
+                    operational_point:
                         OperationalPointIdentifier::OperationalPointUic {
                             uic,
                             secondary_code,
@@ -367,19 +369,20 @@ pub fn collect_path_item_ids(
     for item in path_items {
         match item {
             PathItemLocation::OperationalPointReference(OperationalPointReference {
-                reference: OperationalPointIdentifier::OperationalPointDescription { trigram, .. },
+                operational_point:
+                    OperationalPointIdentifier::OperationalPointDescription { trigram, .. },
                 ..
             }) => {
                 trigrams.push(trigram.clone().0);
             }
             PathItemLocation::OperationalPointReference(OperationalPointReference {
-                reference: OperationalPointIdentifier::OperationalPointUic { uic, .. },
+                operational_point: OperationalPointIdentifier::OperationalPointUic { uic, .. },
                 ..
             }) => {
                 ops_uic.push(*uic);
             }
             PathItemLocation::OperationalPointReference(OperationalPointReference {
-                reference:
+                operational_point:
                     OperationalPointIdentifier::OperationalPointId {
                         operational_point, ..
                     },
@@ -504,20 +507,20 @@ mod tests {
         // Create path items that reference these OPs by different methods
         let path_items = [
             PathItemLocation::OperationalPointReference(OperationalPointReference {
-                reference: OperationalPointIdentifier::OperationalPointId {
+                operational_point: OperationalPointIdentifier::OperationalPointId {
                     operational_point: Identifier::from("op_1"),
                 },
                 track_reference: None,
             }),
             PathItemLocation::OperationalPointReference(OperationalPointReference {
-                reference: OperationalPointIdentifier::OperationalPointDescription {
+                operational_point: OperationalPointIdentifier::OperationalPointDescription {
                     trigram: NonBlankString::from("DEF"),
                     secondary_code: None,
                 },
                 track_reference: None,
             }),
             PathItemLocation::OperationalPointReference(OperationalPointReference {
-                reference: OperationalPointIdentifier::OperationalPointUic {
+                operational_point: OperationalPointIdentifier::OperationalPointUic {
                     uic: 5678,
                     secondary_code: None,
                 },
