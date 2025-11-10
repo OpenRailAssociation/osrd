@@ -8,7 +8,6 @@ use schemas::train_schedule::OperationalPointReference;
 use schemas::train_schedule::PathItemLocation;
 use schemas::train_schedule::TrackReference;
 use std::collections::HashMap;
-use std::collections::HashSet;
 
 use crate::error::Result;
 use crate::models::OperationalPointModel;
@@ -23,15 +22,25 @@ type TrackOffsetResult = std::result::Result<Vec<Vec<TrackOffset>>, PathfindingR
 /// Gather information about several path items, factorizing db calls.
 #[derive(Default, Debug)]
 pub struct PathItemCache {
-    uic_to_ops: HashMap<u32, Vec<OperationalPointModel>>,
-    trigram_to_ops: HashMap<String, Vec<OperationalPointModel>>,
-    ids_to_ops: HashMap<String, OperationalPointModel>,
-    existing_track_ids: HashSet<String>,
+    /// All operational points are stored here exactly once
+    ops: Vec<OperationalPointModel>,
+    /// Maps UIC code to indices in the ops Vec
+    uic_to_indices: HashMap<u32, Vec<usize>>,
+    /// Maps trigram to indices in the ops Vec
+    trigram_to_indices: HashMap<String, Vec<usize>>,
+    /// Maps obj_id to index in the ops Vec
+    obj_id_to_index: HashMap<String, usize>,
     track_ids_to_name: HashMap<String, NonBlankString>,
 }
 
 impl PathItemCache {
     /// Load the path item cache from a list of pathfinding inputs
+    ///
+    /// This method ensures that all retrieved operational points are indexed
+    /// across all available lookup methods (ID, UIC, trigram), regardless of
+    /// how they were initially queried. This makes the cache API consistent:
+    /// an operational point can be retrieved using any of its identifiers,
+    /// not just the one used to build the cache.
     #[tracing::instrument(skip(conn), err)]
     pub async fn load(
         conn: &mut DbConnection,
@@ -42,31 +51,65 @@ impl PathItemCache {
             return Ok(PathItemCache::default());
         }
 
+        // Step 1: Retrieve operational points from database using the requested identifiers
         let (trigrams, ops_uic, ops_id) = collect_path_item_ids(path_items);
-        let uic_to_ops = retrieve_op_from_uic(conn, infra_id, &ops_uic).await?;
-        let trigram_to_ops = retrieve_op_from_trigrams(conn, infra_id, &trigrams).await?;
-        let ids_to_ops = retrieve_op_from_ids(conn, infra_id, &ops_id).await?;
+        let uic_results = retrieve_op_from_uic(conn, infra_id, &ops_uic).await?;
+        let trigram_results = retrieve_op_from_trigrams(conn, infra_id, &trigrams).await?;
+        let ids_results = retrieve_op_from_ids(conn, infra_id, &ops_id).await?;
 
-        let tracks = path_items.iter().filter_map(|item| match item {
+        // Step 2: Collect all unique OPs first, deduplicating by obj_id
+        let ops: Vec<OperationalPointModel> = ids_results
+            .into_iter()
+            .chain(trigram_results)
+            .chain(uic_results)
+            .map(|op| (op.obj_id.clone(), op))
+            .collect::<HashMap<String, OperationalPointModel>>()
+            .into_values()
+            .collect();
+
+        // Step 3: Build index maps from the ops vector
+        let mut obj_id_to_index: HashMap<String, usize> = HashMap::new();
+        let mut uic_to_indices: HashMap<u32, Vec<usize>> = HashMap::new();
+        let mut trigram_to_indices: HashMap<String, Vec<usize>> = HashMap::new();
+
+        for (index, op) in ops.iter().enumerate() {
+            // Build ID index
+            obj_id_to_index.insert(op.obj_id.clone(), index);
+
+            // Build UIC index if present
+            if let Some(identifier) = &op.extensions.identifier {
+                uic_to_indices
+                    .entry(identifier.uic)
+                    .or_default()
+                    .push(index);
+            }
+
+            // Build trigram index if present
+            if let Some(sncf) = &op.extensions.sncf {
+                trigram_to_indices
+                    .entry(sncf.trigram.clone())
+                    .or_default()
+                    .push(index);
+            }
+        }
+
+        // Step 4: Retrieve track information
+        let op_tracks = ops
+            .iter()
+            .flat_map(|op| &op.parts)
+            .map(|part| (infra_id, part.track.0.clone()));
+
+        let path_item_tracks = path_items.iter().filter_map(|item| match item {
             PathItemLocation::TrackOffset(TrackOffset { track, .. }) => {
                 Some((infra_id, track.0.clone()))
             }
             _ => None,
         });
-        let tracks = ids_to_ops
-            .values()
-            .chain(trigram_to_ops.values().flatten())
-            .chain(uic_to_ops.values().flatten())
-            .flat_map(|op| &op.parts)
-            .map(|part| (infra_id, part.track.0.clone()))
-            .chain(tracks);
+
+        let tracks = op_tracks.chain(path_item_tracks);
         let track_sections =
-            TrackSectionModel::retrieve_batch_unchecked::<_, Vec<_>>(conn, tracks.clone()).await?;
-        let existing_track_ids = track_sections
-            .clone()
-            .into_iter()
-            .map(|track| track.obj_id)
-            .collect();
+            TrackSectionModel::retrieve_batch_unchecked::<_, Vec<_>>(conn, tracks).await?;
+
         let track_ids_to_name = track_sections
             .into_iter()
             .filter_map(|track| {
@@ -79,38 +122,45 @@ impl PathItemCache {
             .collect();
 
         Ok(PathItemCache {
-            uic_to_ops,
-            trigram_to_ops,
-            ids_to_ops,
-            existing_track_ids,
+            ops,
+            uic_to_indices,
+            trigram_to_indices,
+            obj_id_to_index,
             track_ids_to_name,
         })
     }
 
     /// Get the operational points associated with an identifier
     pub fn get_from_id(&self, id: &str) -> Option<&OperationalPointModel> {
-        self.ids_to_ops.get(id)
+        self.obj_id_to_index.get(id).map(|&idx| &self.ops[idx])
     }
 
     /// Get the operational points associated with a trigram
-    pub fn get_from_trigram(&self, trigram: &str) -> Option<&Vec<OperationalPointModel>> {
-        self.trigram_to_ops.get(trigram)
+    pub fn get_from_trigram(
+        &self,
+        trigram: &str,
+    ) -> Option<impl Iterator<Item = &OperationalPointModel>> {
+        self.trigram_to_indices
+            .get(trigram)
+            .map(|indices| indices.iter().map(|&idx| &self.ops[idx]))
     }
 
     /// Get the operational points associated with a UIC code
-    pub fn get_from_uic(&self, uic: u32) -> Option<&Vec<OperationalPointModel>> {
-        self.uic_to_ops.get(&uic)
+    pub fn get_from_uic(&self, uic: u32) -> Option<impl Iterator<Item = &OperationalPointModel>> {
+        self.uic_to_indices
+            .get(&uic)
+            .map(|indices| indices.iter().map(|&idx| &self.ops[idx]))
     }
 
     /// Check if a track exists
     pub fn track_exists(&self, track: &str) -> bool {
-        self.existing_track_ids.contains(track)
+        self.track_ids_to_name.contains_key(track)
     }
 
     pub fn get_from_path_location(
         &self,
         path_item: &PathItemLocation,
-    ) -> Option<&[OperationalPointModel]> {
+    ) -> Option<Vec<&OperationalPointModel>> {
         match path_item {
             PathItemLocation::TrackOffset(_) => None,
             PathItemLocation::OperationalPointReference(OperationalPointReference {
@@ -119,17 +169,15 @@ impl PathItemCache {
                         operational_point, ..
                     },
                 ..
-            }) => self
-                .get_from_id(&operational_point.0)
-                .map(std::slice::from_ref),
+            }) => self.get_from_id(&operational_point.0).map(|op| vec![op]),
             PathItemLocation::OperationalPointReference(OperationalPointReference {
                 reference: OperationalPointIdentifier::OperationalPointDescription { trigram, .. },
                 ..
-            }) => self.get_from_trigram(&trigram.0).map(Vec::as_slice),
+            }) => self.get_from_trigram(&trigram.0).map(|op| op.collect()),
             PathItemLocation::OperationalPointReference(OperationalPointReference {
                 reference: OperationalPointIdentifier::OperationalPointUic { uic, .. },
                 ..
-            }) => self.get_from_uic(*uic).map(Vec::as_slice),
+            }) => self.get_from_uic(*uic).map(|op| op.collect()),
         }
     }
 
@@ -142,16 +190,22 @@ impl PathItemCache {
             OperationalPointIdentifier::OperationalPointDescription {
                 trigram,
                 secondary_code,
-            } => (self.trigram_to_ops.get(&trigram.0)?, secondary_code),
+            } => (
+                self.get_from_trigram(&trigram.0).map(|op| op.collect())?,
+                secondary_code,
+            ),
             OperationalPointIdentifier::OperationalPointUic {
                 uic,
                 secondary_code,
-            } => (self.uic_to_ops.get(uic)?, secondary_code),
+            } => (
+                self.get_from_uic(*uic).map(|op| op.collect())?,
+                secondary_code,
+            ),
         };
-        secondary_code_filter(secondary_code, ops.clone())
+        secondary_code_filter(secondary_code, ops)
             .into_iter()
             .next()
-            .map(|op| op.obj_id)
+            .map(|op| op.obj_id.clone())
     }
 
     /// Retrieve an operational point identifier from a path item location using the cache
@@ -207,10 +261,10 @@ impl PathItemCache {
                 }) => {
                     let ops = self
                         .get_from_trigram(&trigram.0)
-                        .cloned()
+                        .map(|op| op.collect())
                         .unwrap_or_default();
                     let ops = secondary_code_filter(secondary_code, ops);
-                    let track_offsets = track_offsets_from_ops(&ops);
+                    let track_offsets = track_offsets_from_ops(ops);
                     let track_offsets = self.track_reference_filter(track_offsets, track_reference);
                     if track_offsets.is_empty() {
                         invalid_path_items.push(InvalidPathItem {
@@ -229,9 +283,12 @@ impl PathItemCache {
                         },
                     track_reference,
                 }) => {
-                    let ops = self.get_from_uic(*uic).cloned().unwrap_or_default();
+                    let ops = self
+                        .get_from_uic(*uic)
+                        .map(|op| op.collect())
+                        .unwrap_or_default();
                     let ops = secondary_code_filter(secondary_code, ops);
-                    let track_offsets = track_offsets_from_ops(&ops);
+                    let track_offsets = track_offsets_from_ops(ops);
                     let track_offsets = self.track_reference_filter(track_offsets, track_reference);
                     if track_offsets.is_empty() {
                         invalid_path_items.push(InvalidPathItem {
@@ -286,10 +343,7 @@ impl PathItemCache {
             Some(TrackReference::Name { track_name }) => track_offsets
                 .into_iter()
                 .filter(|track_offset| {
-                    self.track_ids_to_name
-                        .get::<String>(&track_offset.track)
-                        .unwrap()
-                        == track_name
+                    self.track_ids_to_name.get(&track_offset.track.0) == Some(track_name)
                 })
                 .collect(),
             None => track_offsets,
@@ -339,18 +393,10 @@ pub async fn retrieve_op_from_uic(
     conn: &mut DbConnection,
     infra_id: i64,
     ops_uic: &[u32],
-) -> Result<HashMap<u32, Vec<OperationalPointModel>>> {
-    let mut uic_to_ops: HashMap<_, Vec<_>> = HashMap::new();
+) -> Result<Vec<OperationalPointModel>> {
     OperationalPointModel::retrieve_from_uic(conn, infra_id, ops_uic)
-        .await?
-        .into_iter()
-        .for_each(|op| {
-            uic_to_ops
-                .entry(op.extensions.identifier.clone().unwrap().uic)
-                .or_default()
-                .push(op)
-        });
-    Ok(uic_to_ops)
+        .await
+        .map_err(Into::into)
 }
 
 /// Retrieve operational points from operational point trigams
@@ -358,18 +404,10 @@ pub async fn retrieve_op_from_trigrams(
     conn: &mut DbConnection,
     infra_id: i64,
     trigrams: &[String],
-) -> Result<HashMap<String, Vec<OperationalPointModel>>> {
-    let mut trigrams_to_ops: HashMap<String, Vec<OperationalPointModel>> = HashMap::new();
+) -> Result<Vec<OperationalPointModel>> {
     OperationalPointModel::retrieve_from_trigrams(conn, infra_id, trigrams)
-        .await?
-        .into_iter()
-        .for_each(|op| {
-            trigrams_to_ops
-                .entry(op.extensions.sncf.clone().unwrap().trigram)
-                .or_default()
-                .push(op)
-        });
-    Ok(trigrams_to_ops)
+        .await
+        .map_err(Into::into)
 }
 
 /// Retrieve operational points from operational point ids
@@ -377,34 +415,195 @@ pub async fn retrieve_op_from_ids(
     conn: &mut DbConnection,
     infra_id: i64,
     ops_id: &[String],
-) -> Result<HashMap<String, OperationalPointModel>> {
+) -> Result<Vec<OperationalPointModel>> {
     let ops_id = ops_id.iter().map(|obj_id| (infra_id, obj_id.clone()));
     // a check for missing ids is performed later
-    let ids_to_ops: HashMap<_, _> =
-        OperationalPointModel::retrieve_batch_unchecked::<_, Vec<_>>(conn, ops_id)
-            .await?
-            .into_iter()
-            .map(|op| (op.obj_id.clone(), op))
-            .collect();
-
-    Ok(ids_to_ops)
+    OperationalPointModel::retrieve_batch_unchecked::<_, Vec<_>>(conn, ops_id)
+        .await
+        .map_err(Into::into)
 }
 
-fn track_offsets_from_ops(ops: &[OperationalPointModel]) -> Vec<TrackOffset> {
-    ops.iter().flat_map(|op| op.track_offset()).collect()
+fn track_offsets_from_ops<'a>(
+    ops: impl IntoIterator<Item = &'a OperationalPointModel>,
+) -> Vec<TrackOffset> {
+    ops.into_iter().flat_map(|op| op.track_offset()).collect()
 }
 
 /// Filter operational points by secondary code
 /// If the secondary code is not provided, the original list is returned
-fn secondary_code_filter(
+fn secondary_code_filter<'a>(
     secondary_code: &Option<String>,
-    ops: Vec<OperationalPointModel>,
-) -> Vec<OperationalPointModel> {
+    ops: Vec<&'a OperationalPointModel>,
+) -> Vec<&'a OperationalPointModel> {
     if let Some(secondary_code) = secondary_code {
         ops.into_iter()
             .filter(|op| &op.extensions.sncf.as_ref().unwrap().ch == secondary_code)
             .collect()
     } else {
         ops
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use database::DbConnectionPoolV2;
+    use schemas::infra::OperationalPoint;
+    use schemas::infra::OperationalPointExtensions;
+    use schemas::infra::OperationalPointIdentifierExtension;
+    use schemas::infra::OperationalPointSncfExtension;
+    use schemas::primitives::Identifier;
+
+    use super::*;
+    use crate::models::fixtures::create_empty_infra;
+    use crate::models::fixtures::create_infra_object;
+
+    fn create_op(obj_id: &str, trigram: Option<&str>, uic: Option<u32>) -> OperationalPoint {
+        let extensions = OperationalPointExtensions {
+            sncf: trigram.map(|t| OperationalPointSncfExtension {
+                ci: 0,
+                ch: "00".to_string(),
+                ch_short_label: "Test".into(),
+                ch_long_label: "Test OP".into(),
+                trigram: t.to_string(),
+            }),
+            identifier: uic.map(|u| OperationalPointIdentifierExtension {
+                name: "Test OP".into(),
+                uic: u,
+            }),
+        };
+
+        OperationalPoint {
+            id: Identifier::from(obj_id),
+            parts: vec![],
+            extensions,
+            weight: None,
+        }
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn test_cache_cross_indexing() {
+        let db_pool = DbConnectionPoolV2::for_tests();
+        let mut conn = db_pool.get_ok();
+        let infra = create_empty_infra(&mut conn).await;
+
+        // Create three operational points with different identifier combinations
+        let op1 = create_op("op_1", Some("ABC"), Some(1234));
+        let op2 = create_op("op_2", Some("DEF"), None); // No UIC
+        let op3 = create_op("op_3", None, Some(5678)); // No trigram
+
+        // Insert OPs into the database
+        create_infra_object(&mut conn, infra.id, op1).await;
+        create_infra_object(&mut conn, infra.id, op2).await;
+        create_infra_object(&mut conn, infra.id, op3).await;
+
+        // Create path items that reference these OPs by different methods
+        let path_items = [
+            PathItemLocation::OperationalPointReference(OperationalPointReference {
+                reference: OperationalPointIdentifier::OperationalPointId {
+                    operational_point: Identifier::from("op_1"),
+                },
+                track_reference: None,
+            }),
+            PathItemLocation::OperationalPointReference(OperationalPointReference {
+                reference: OperationalPointIdentifier::OperationalPointDescription {
+                    trigram: NonBlankString::from("DEF"),
+                    secondary_code: None,
+                },
+                track_reference: None,
+            }),
+            PathItemLocation::OperationalPointReference(OperationalPointReference {
+                reference: OperationalPointIdentifier::OperationalPointUic {
+                    uic: 5678,
+                    secondary_code: None,
+                },
+                track_reference: None,
+            }),
+        ];
+
+        let path_item_refs: Vec<&PathItemLocation> = path_items.iter().collect();
+
+        // Load the cache using the real load() method
+        let cache = PathItemCache::load(&mut conn, infra.id, &path_item_refs)
+            .await
+            .expect("Failed to load cache");
+
+        // Test OP1 (has both trigram and UIC) can be found by all methods
+        assert!(
+            cache.get_from_id("op_1").is_some(),
+            "OP1 should be findable by ID"
+        );
+        assert!(
+            cache.get_from_trigram("ABC").is_some(),
+            "OP1 should be findable by trigram even though queried by ID"
+        );
+        assert!(
+            cache.get_from_uic(1234).is_some(),
+            "OP1 should be findable by UIC even though queried by ID"
+        );
+
+        // Verify it's the same OP
+        assert_eq!(cache.get_from_id("op_1").unwrap().obj_id, "op_1");
+        assert_eq!(
+            cache
+                .get_from_trigram("ABC")
+                .map(|op| op.collect::<Vec<_>>())
+                .unwrap()
+                .first()
+                .unwrap()
+                .obj_id,
+            "op_1"
+        );
+        assert_eq!(
+            cache
+                .get_from_uic(1234)
+                .map(|op| op.collect::<Vec<_>>())
+                .unwrap()
+                .first()
+                .unwrap()
+                .obj_id,
+            "op_1"
+        );
+
+        // Test OP2 (trigram only) is indexed by ID and trigram but not UIC
+        assert!(
+            cache.get_from_id("op_2").is_some(),
+            "OP2 should be findable by ID even though queried by trigram"
+        );
+        assert!(
+            cache.get_from_trigram("DEF").is_some(),
+            "OP2 should be findable by trigram"
+        );
+        assert_eq!(cache.get_from_id("op_2").unwrap().obj_id, "op_2");
+        assert_eq!(
+            cache
+                .get_from_trigram("DEF")
+                .map(|op| op.collect::<Vec<_>>())
+                .unwrap()
+                .first()
+                .unwrap()
+                .obj_id,
+            "op_2"
+        );
+
+        // Test OP3 (UIC only) is indexed by ID and UIC but not trigram
+        assert!(
+            cache.get_from_id("op_3").is_some(),
+            "OP3 should be findable by ID even though queried by UIC"
+        );
+        assert!(
+            cache.get_from_uic(5678).is_some(),
+            "OP3 should be findable by UIC"
+        );
+        assert_eq!(cache.get_from_id("op_3").unwrap().obj_id, "op_3");
+        assert_eq!(
+            cache
+                .get_from_uic(5678)
+                .map(|op| op.collect::<Vec<_>>())
+                .unwrap()
+                .first()
+                .unwrap()
+                .obj_id,
+            "op_3"
+        );
     }
 }
