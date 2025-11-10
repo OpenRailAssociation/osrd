@@ -747,7 +747,7 @@ pub(in crate::views) async fn project_path_op(
         .iter()
         .map(|op_ref| {
             PathItemLocation::OperationalPointReference(OperationalPointReference {
-                reference: op_ref.clone(),
+                operational_point: op_ref.clone(),
                 track_reference: None,
             })
         })

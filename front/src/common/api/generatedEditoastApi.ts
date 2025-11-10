@@ -3414,7 +3414,7 @@ export type TrackReference =
       track_name: string;
     };
 export type OperationalPointReference = {
-  reference: OperationalPointIdentifier;
+  operational_point: OperationalPointIdentifier;
   track_reference?: null | TrackReference;
 };
 export type GeoJsonMultiPointValue = GeoJsonPointValue[];

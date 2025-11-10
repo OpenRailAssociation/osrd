@@ -536,8 +536,8 @@ pub mod tests {
             .post(format!("/infra/{}/pathfinding/blocks", small_infra.id).as_str())
             .json(&json!({
                 "path_items":[
-                {"reference": {"trigram":"WS","secondary_code":"BV"}},
-                {"reference": {"trigram":"WS","secondary_code":"BV"}}
+                {"operational_point": {"trigram":"WS","secondary_code":"BV"}},
+                {"operational_point": {"trigram":"WS","secondary_code":"BV"}}
             ],
                 "rolling_stock_is_thermal":true,
                 "rolling_stock_loading_gauge":"G1",
@@ -570,9 +570,9 @@ pub mod tests {
             .post(format!("/infra/{}/pathfinding/blocks", small_infra.id).as_str())
             .json(&json!({
                 "path_items":[
-                    {"reference": {"trigram":"WS","secondary_code":"BV"}},
-                    {"reference": {"trigram":"NO_TRIGRAM","secondary_code":null}},
-                    {"reference": {"trigram":"SWS","secondary_code":"BV"}}
+                    {"operational_point": {"trigram":"WS","secondary_code":"BV"}},
+                    {"operational_point": {"trigram":"NO_TRIGRAM","secondary_code":null}},
+                    {"operational_point": {"trigram":"SWS","secondary_code":"BV"}}
                 ],
                 "rolling_stock_is_thermal":true,
                 "rolling_stock_loading_gauge":"G1",
@@ -595,7 +595,7 @@ pub mod tests {
                         index: 1,
                         path_item: PathItemLocation::OperationalPointReference(
                             OperationalPointReference {
-                                reference:
+                                operational_point:
                                     OperationalPointIdentifier::OperationalPointDescription {
                                         trigram: "NO_TRIGRAM".into(),
                                         secondary_code: None
@@ -619,8 +619,8 @@ pub mod tests {
             .post(format!("/infra/{}/pathfinding/blocks", small_infra.id).as_str())
             .json(&json!({
                 "path_items":[
-                    {"reference": {"uic":8733,"secondary_code":"BV"}, "track_reference": {"track_name": "V2"}},
-                    {"reference": {"uic":8788 ,"secondary_code":"BV"}, "track_reference": {"track_name": "V_INVALID"}},
+                    {"operational_point": {"uic":8733,"secondary_code":"BV"}, "track_reference": {"track_name": "V2"}},
+                    {"operational_point": {"uic":8788 ,"secondary_code":"BV"}, "track_reference": {"track_name": "V_INVALID"}},
                 ],
                 "rolling_stock_is_thermal":true,
                 "rolling_stock_loading_gauge":"G1",
@@ -643,10 +643,11 @@ pub mod tests {
                         index: 1,
                         path_item: PathItemLocation::OperationalPointReference(
                             OperationalPointReference {
-                                reference: OperationalPointIdentifier::OperationalPointUic {
-                                    uic: 8788,
-                                    secondary_code: Some("BV".into())
-                                },
+                                operational_point:
+                                    OperationalPointIdentifier::OperationalPointUic {
+                                        uic: 8788,
+                                        secondary_code: Some("BV".into())
+                                    },
                                 track_reference: Some(TrackReference::Name {
                                     track_name: "V_INVALID".into()
                                 }),
@@ -682,8 +683,8 @@ pub mod tests {
             .post(format!("/infra/{}/pathfinding/blocks", small_infra.id).as_str())
             .json(&json!({
                 "path_items":[
-                    {"reference": {"trigram":"WS","secondary_code":"BV"}},
-                    {"reference": {"trigram":"SWS","secondary_code":"BV"}}
+                    {"operational_point": {"trigram":"WS","secondary_code":"BV"}},
+                    {"operational_point": {"trigram":"SWS","secondary_code":"BV"}}
                 ],
                 "rolling_stock_is_thermal":true,
                 "rolling_stock_loading_gauge":"G1",

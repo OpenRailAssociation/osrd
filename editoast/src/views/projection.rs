@@ -476,7 +476,7 @@ impl TrainToProjectOnOperationalPoint {
 
             let mut refs = ts.path().iter().map(|path_item| match &path_item.location {
                 PathItemLocation::OperationalPointReference(op_ref) => {
-                    Some((&op_ref.reference, &path_item.id))
+                    Some((&op_ref.operational_point, &path_item.id))
                 }
                 PathItemLocation::TrackOffset(_) => None,
             });
@@ -523,7 +523,7 @@ impl TrainToProjectOnOperationalPoint {
                     Some(OperationalPointRefAndTime {
                         arrival_time,
                         stop_for: stops_input.get(&path_item.id).copied().unwrap_or_default(),
-                        op_ref: op_ref.reference.clone(),
+                        op_ref: op_ref.operational_point.clone(),
                     })
                 }
                 PathItemLocation::TrackOffset(_) => None,
@@ -955,7 +955,7 @@ mod tests {
             .iter()
             .map(|&trigram| {
                 PathItemLocation::OperationalPointReference(OperationalPointReference {
-                    reference: create_path_item_from_trigram(trigram),
+                    operational_point: create_path_item_from_trigram(trigram),
                     track_reference: None,
                 })
             })
