@@ -864,7 +864,7 @@ pub(in crate::views) async fn match_operational_points(
                 std::slice::from_ref(&operational_point.0),
             )
             .await?
-            .into_values()
+            .into_iter()
             .map(|op_model| op_model.schema)
             .collect::<Vec<_>>(),
             OperationalPointIdentifier::OperationalPointDescription {
@@ -873,7 +873,6 @@ pub(in crate::views) async fn match_operational_points(
             } => retrieve_op_from_trigrams(&mut conn, infra_id, std::slice::from_ref(&trigram.0))
                 .await?
                 .into_iter()
-                .flat_map(|(_, op_models)| op_models)
                 .map(|op_model| op_model.schema)
                 .filter(|op| match secondary_code.as_ref() {
                     Some(secondary_code) => op
@@ -890,7 +889,6 @@ pub(in crate::views) async fn match_operational_points(
             } => retrieve_op_from_uic(&mut conn, infra_id, &[uic])
                 .await?
                 .into_iter()
-                .flat_map(|(_, op_models)| op_models)
                 .map(|op_model| op_model.schema)
                 .filter(|op| match secondary_code.as_ref() {
                     Some(secondary_code) => op

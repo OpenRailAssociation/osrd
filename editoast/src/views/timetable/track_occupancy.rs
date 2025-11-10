@@ -143,6 +143,7 @@ fn match_path_item_id_with_operational_point<'a>(
                 OperationalPointIdentifier::OperationalPointDescription { trigram, .. } => {
                     let operational_points = path_item_cache
                         .get_from_trigram(&trigram.0)
+                        .map(|op| op.collect::<Vec<_>>())
                         .expect("The operational points are supposed to exist");
                     if operational_points
                         .iter()
@@ -154,6 +155,7 @@ fn match_path_item_id_with_operational_point<'a>(
                 OperationalPointIdentifier::OperationalPointUic { uic, .. } => {
                     let ops = path_item_cache
                         .get_from_uic(*uic)
+                        .map(|op| op.collect::<Vec<_>>())
                         .expect("The operational points are supposed to exist");
                     if ops.iter().any(|op| op.obj_id == operational_point_id) {
                         return Some(&path_item.id.0);

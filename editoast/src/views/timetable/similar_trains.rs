@@ -510,9 +510,12 @@ async fn search_candidate_train_schedules(
             let mut candidates: Vec<models::TrainSchedule> = Default::default();
             for train_schedule in train_schedules {
                 let retain_schedule = {
-                    let mut stop_pairs_forming_a_segment = train_schedule
+                    let stops_ops: Vec<_> = train_schedule
                         .iter_stops()
                         .flat_map(|p| path_item_cache.get_from_path_location(&p.location))
+                        .collect();
+                    let mut stop_pairs_forming_a_segment = stops_ops
+                        .iter()
                         .tuple_windows()
                         .flat_map(|(ops1, ops2)| ops1.iter().cartesian_product(ops2.iter()))
                         .map(|(op1, op2)| {
