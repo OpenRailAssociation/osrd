@@ -307,8 +307,9 @@ export const loadAndIndexNge = async (
           ngeId: index,
           path_item_key: key,
           trigram:
-            'reference' in pathItem.location && 'trigram' in pathItem.location.reference
-              ? pathItem.location.reference.trigram
+            'operational_point' in pathItem.location &&
+            'trigram' in pathItem.location.operational_point
+              ? pathItem.location.operational_point.trigram
               : null,
           connection_time: 0,
           labels: [],

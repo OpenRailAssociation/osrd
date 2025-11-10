@@ -29,19 +29,24 @@ export const usePathStepsMetadata = (pathSteps: PathStepV2[]) => {
   const strippedTrainPath: TrainSchedule['path'] = useMemo(
     () =>
       pathSteps.reduce<TrainSchedule['path']>((acc, step) => {
-        if (!step.location || 'track' in step.location) return acc;
-        if ('uic' in step.location.reference || 'trigram' in step.location.reference) {
-          // strip location from its secondary_code so we can have all matchs for an uic or trigram
-          const { secondary_code: _secCode, ...reference } = step.location.reference;
-          acc.push({
-            id: step.id,
-            location: {
-              reference,
-            },
-          });
-          return acc;
+        if (!step.location) return acc;
+        if ('operational_point' in step.location) {
+          if (
+            'uic' in step.location.operational_point ||
+            'trigram' in step.location.operational_point
+          ) {
+            // strip location from its secondary_code so we can have all matchs for an uic or trigram
+            const { secondary_code: _secCode, ...operational_point } =
+              step.location.operational_point;
+            acc.push({
+              id: step.id,
+              location: {
+                operational_point,
+              },
+            });
+            return acc;
+          }
         }
-
         acc.push({
           id: step.id,
           location: step.location,
@@ -63,10 +68,10 @@ export const usePathStepsMetadata = (pathSteps: PathStepV2[]) => {
     const opIds = pathSteps.reduce<string[]>((acc, step) => {
       if (
         step.location &&
-        'reference' in step.location &&
-        'operational_point' in step.location.reference
+        'operational_point' in step.location &&
+        'operational_point' in step.location.operational_point
       ) {
-        acc.push(step.location.reference.operational_point);
+        acc.push(step.location.operational_point.operational_point);
       }
       return acc;
     }, []);
@@ -76,7 +81,7 @@ export const usePathStepsMetadata = (pathSteps: PathStepV2[]) => {
     return pathStepsOperationalPoints.reduce<OperationalPointReference[]>((acc, op) => {
       const uic = op.extensions?.identifier?.uic;
       if (uic && opIds.includes(op.id)) {
-        acc.push({ reference: { uic } });
+        acc.push({ operational_point: { uic } });
       }
       return acc;
     }, []);
@@ -172,18 +177,18 @@ export const usePathStepsMetadata = (pathSteps: PathStepV2[]) => {
         // Find the matching operational point for this pathStep to get
         // its valid status and its name
         const matchedOp = allOps.find((op) => {
-          if ('operational_point' in location.reference) {
-            return location.reference.operational_point === op.id;
+          if ('operational_point' in location.operational_point) {
+            return location.operational_point.operational_point === op.id;
           }
-          if ('uic' in location.reference) {
+          if ('uic' in location.operational_point) {
             return (
-              location.reference.uic === op.extensions?.identifier?.uic &&
-              location.reference.secondary_code === op.extensions?.sncf?.ch
+              location.operational_point.uic === op.extensions?.identifier?.uic &&
+              location.operational_point.secondary_code === op.extensions?.sncf?.ch
             );
           }
           return (
-            location.reference.trigram === op.extensions?.sncf?.trigram &&
-            location.reference.secondary_code === op.extensions?.sncf?.ch
+            location.operational_point.trigram === op.extensions?.sncf?.trigram &&
+            location.operational_point.secondary_code === op.extensions?.sncf?.ch
           );
         });
 

@@ -22,7 +22,7 @@ describe('makeProjectedItems', () => {
           {
             id: 'a496f3a6-4eea-45f8-a83c-5472d9adcd6d',
             location: {
-              reference: {
+              operational_point: {
                 uic: 11,
                 secondary_code: 'BV',
               },
@@ -31,7 +31,7 @@ describe('makeProjectedItems', () => {
           {
             id: 'e18f50f3-2b40-451e-9726-e4dd29459bf0',
             location: {
-              reference: {
+              operational_point: {
                 uic: 12,
                 secondary_code: 'BV',
               },
@@ -134,7 +134,7 @@ describe('makeProjectedItems', () => {
           {
             id: '3e6c78c6-89a9-462f-a0b3-1e4253cb6386',
             location: {
-              reference: {
+              operational_point: {
                 uic: 11,
                 secondary_code: 'BV',
               },
@@ -143,7 +143,7 @@ describe('makeProjectedItems', () => {
           {
             id: '00fd1b82-32ca-43fd-a46e-24b5bc6f0fd3',
             location: {
-              reference: {
+              operational_point: {
                 uic: 14,
                 secondary_code: 'BV',
               },

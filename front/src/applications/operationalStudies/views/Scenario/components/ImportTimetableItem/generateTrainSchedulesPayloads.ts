@@ -18,13 +18,15 @@ function generateTrainSchedulePayload(train: GraouTrainSchedule): TrainSchedule 
       if (validUICNumber) {
         acc.path.push({
           id: stepId,
-          location: { reference: { uic: Number(step.uic), secondary_code: step.chCode ?? '' } },
+          location: {
+            operational_point: { uic: Number(step.uic), secondary_code: step.chCode ?? '' },
+          },
         });
       } else {
         acc.path.push({
           id: stepId,
           location: {
-            reference: { trigram: step.trigram ?? '', secondary_code: step.chCode ?? '' },
+            operational_point: { trigram: step.name, secondary_code: step.chCode ?? '' },
           }, // we use ocpRef when uic is NaN
         });
       }

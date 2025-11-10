@@ -16,7 +16,7 @@ describe('reversePathSteps', () => {
       theoreticalMargin: '0%',
       id: 'id205',
       location: {
-        reference: {
+        operational_point: {
           uic: 87447219,
           secondary_code: '00',
         },
@@ -32,7 +32,7 @@ describe('reversePathSteps', () => {
       theoreticalMargin: '10%',
       id: 'id111',
       location: {
-        reference: {
+        operational_point: {
           uic: 87447219,
           secondary_code: 'JS',
         },
@@ -46,7 +46,7 @@ describe('reversePathSteps', () => {
       arrival: new Duration({ milliseconds: 1500000 }),
       id: 'id117',
       location: {
-        reference: {
+        operational_point: {
           uic: 87447185,
           secondary_code: '00',
         },
@@ -61,7 +61,7 @@ describe('reversePathSteps', () => {
       arrival: null,
       id: 'id132',
       location: {
-        reference: {
+        operational_point: {
           uic: 87447003,
           secondary_code: '00',
         },
@@ -82,7 +82,7 @@ describe('reversePathSteps', () => {
     {
       id: 'id206',
       location: {
-        reference: {
+        operational_point: {
           uic: 87447144,
           secondary_code: '00',
         },
@@ -102,7 +102,7 @@ describe('reversePathSteps', () => {
     {
       id: 'id206',
       location: {
-        reference: {
+        operational_point: {
           uic: 87447144,
           secondary_code: '00',
         },
@@ -138,7 +138,7 @@ describe('reversePathSteps', () => {
       arrival: null,
       id: 'id132',
       location: {
-        reference: {
+        operational_point: {
           uic: 87447003,
           secondary_code: '00',
         },
@@ -152,7 +152,7 @@ describe('reversePathSteps', () => {
       arrival: null,
       id: 'id117',
       location: {
-        reference: {
+        operational_point: {
           uic: 87447185,
           secondary_code: '00',
         },
@@ -168,7 +168,7 @@ describe('reversePathSteps', () => {
       theoreticalMargin: '0%',
       id: 'id111',
       location: {
-        reference: {
+        operational_point: {
           uic: 87447219,
           secondary_code: 'JS',
         },
@@ -182,7 +182,7 @@ describe('reversePathSteps', () => {
       arrival: null,
       id: 'id205',
       location: {
-        reference: {
+        operational_point: {
           uic: 87447219,
           secondary_code: '00',
         },

@@ -63,7 +63,7 @@ const StcdmResultsTable = ({
               ({ location }) =>
                 location &&
                 location.name === step.name &&
-                location.reference.secondary_code === step.ch
+                location.operational_point.secondary_code === step.ch
             );
             const shouldRenderRow =
               isFirstStep || isRequestedPathStep || isLastStep || step.duration !== null;

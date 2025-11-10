@@ -163,7 +163,7 @@ const TypeAndPath = ({ setDisplayTypeAndPath, rollingStockId }: TypeAndPathProps
         .map(({ uic, ch }) => ({
           id: uuidV4(),
           location: {
-            reference: {
+            operational_point: {
               uic,
               secondary_code: ch,
             },

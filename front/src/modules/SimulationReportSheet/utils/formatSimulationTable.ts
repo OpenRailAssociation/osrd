@@ -72,7 +72,8 @@ export const formatStdcmDataForSimulationTable = (
     const isVia = stdcmPathSteps
       .slice(1, -1)
       .some(
-        (s) => s.location!.name === step.name && s.location!.reference.secondary_code === step.ch
+        (s) =>
+          s.location!.name === step.name && s.location!.operational_point.secondary_code === step.ch
       );
     const isPathStep = isFirst || isVia || isLast;
 

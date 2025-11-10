@@ -178,7 +178,7 @@ const createPathItemFromNode = (
   } else {
     const [trigram, secondary_code] = node.betriebspunktName.split('/');
     // TODO : handle this case in xml import refacto
-    pathItemLocation = { reference: { trigram, secondary_code }, track_reference: null };
+    pathItemLocation = { operational_point: { trigram, secondary_code }, track_reference: null };
   }
   return {
     location: pathItemLocation,

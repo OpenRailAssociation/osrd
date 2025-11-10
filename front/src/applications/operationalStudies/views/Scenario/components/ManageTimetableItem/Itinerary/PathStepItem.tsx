@@ -55,20 +55,20 @@ const PathStepItem = ({
         : `, ${t('trackId')}`
       : '';
 
-    if ('operational_point' in location.reference) {
+    if ('operational_point' in location.operational_point) {
       return (message += t('opId') + trackInfo);
     }
 
-    const secondaryCodeInfo = location.reference.secondary_code
-      ? `/${location.reference.secondary_code}`
+    const secondaryCodeInfo = location.operational_point.secondary_code
+      ? `/${location.operational_point.secondary_code}`
       : '';
 
-    if ('trigram' in location.reference) {
-      message += t('trigram') + ' ' + location.reference.trigram;
+    if ('trigram' in location.operational_point) {
+      message += t('trigram') + ' ' + location.operational_point.trigram;
     }
 
-    if ('uic' in location.reference) {
-      message += t('uic') + ' ' + location.reference.uic;
+    if ('uic' in location.operational_point) {
+      message += t('uic') + ' ' + location.operational_point.uic;
     }
 
     return (message += secondaryCodeInfo + trackInfo);

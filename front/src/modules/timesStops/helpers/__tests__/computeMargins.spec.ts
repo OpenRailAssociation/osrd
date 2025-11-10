@@ -11,7 +11,7 @@ describe('computeMargins', () => {
     {
       id: 'a',
       location: {
-        reference: {
+        operational_point: {
           uic: 1,
         },
       },
@@ -19,7 +19,7 @@ describe('computeMargins', () => {
     {
       id: 'b',
       location: {
-        reference: {
+        operational_point: {
           uic: 2,
         },
       },
@@ -27,7 +27,7 @@ describe('computeMargins', () => {
     {
       id: 'c',
       location: {
-        reference: {
+        operational_point: {
           uic: 3,
         },
       },
@@ -35,7 +35,7 @@ describe('computeMargins', () => {
     {
       id: 'd',
       location: {
-        reference: {
+        operational_point: {
           uic: 4,
         },
       },
@@ -43,7 +43,7 @@ describe('computeMargins', () => {
     {
       id: 'e',
       location: {
-        reference: {
+        operational_point: {
           uic: 5,
         },
       },

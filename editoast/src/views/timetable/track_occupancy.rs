@@ -53,7 +53,7 @@ fn find_matching_path_item_index(
         };
 
         path_item_cache
-            .get_op_ref_id(&op_ref.reference)
+            .get_op_ref_id(&op_ref.operational_point)
             .is_some_and(|id| id == operational_point_id)
     })
 }
@@ -473,7 +473,7 @@ pub mod tests {
             PathItem {
                 id: "p1".into(),
                 location: PathItemLocation::OperationalPointReference(OperationalPointReference {
-                    reference: OperationalPointIdentifier::OperationalPointId {
+                    operational_point: OperationalPointIdentifier::OperationalPointId {
                         operational_point: "op_1".into(),
                     },
                     track_reference: None,
@@ -482,7 +482,7 @@ pub mod tests {
             PathItem {
                 id: "p2".into(),
                 location: PathItemLocation::OperationalPointReference(OperationalPointReference {
-                    reference: OperationalPointIdentifier::OperationalPointId {
+                    operational_point: OperationalPointIdentifier::OperationalPointId {
                         operational_point: "op_2".into(),
                     },
                     track_reference: None,
