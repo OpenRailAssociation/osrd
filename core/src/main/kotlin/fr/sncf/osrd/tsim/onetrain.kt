@@ -132,7 +132,8 @@ fun onetrain(
         envelopePoints.add(EnvelopePoint(time, speed, position))
     }
 
-    val simplifiedPoints = simplifyEnvelopePoints(envelopePoints, 5.0, 0.2)
+    val trimedPoints = trimPoints(envelopePoints, trainPath.length)
+    val simplifiedPoints = simplifyEnvelopePoints(trimedPoints, 5.0, 0.2)
 
     val baseReport =
         ReportTrain(
@@ -175,7 +176,7 @@ fun onetrain(
         provisional = baseReport, // TODO margins
         finalOutput = completeReport,
         mrsp =
-            mrsp.toRangeValues { speed ->
+            mrsp.subRangeMap(Range.closed(0.0, trainPath.length)).toRangeValues { speed ->
                 SpeedLimitProperty(
                     speed = (speed ?: MetersPerSecond.POSITIVE_INFINITY).metersPerSecond,
                     source = null,
@@ -183,4 +184,20 @@ fun onetrain(
             },
         electricalProfiles = makeElectricalProfiles(electrificationRanges),
     )
+}
+
+private fun trimPoints(
+    envelopePoints: List<EnvelopePoint>,
+    length: Meters,
+): List<EnvelopePoint> {
+    val result = envelopePoints.binarySearchBy(length) { point -> point.position }
+    return if (result >= 0) {
+        envelopePoints.slice(0..result)
+    } else {
+        val i = -result - 1
+        val t = envelopePoints.getOrNull(i)?.time
+            ?: (envelopePoints.getOrNull(i - 1)?.time?.let { time -> time + 2.0 })
+            ?: Seconds.POSITIVE_INFINITY
+        envelopePoints.slice(0..<i) + EnvelopePoint(t, 0.0, length)
+    }
 }
