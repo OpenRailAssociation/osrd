@@ -145,6 +145,8 @@ value class Offset<T>(val distance: Distance) : Comparable<Offset<T>> {
     }
 }
 
+fun <T> Double.toOffset(): Offset<T> = Offset(this.meters)
+
 fun <T> OffsetArray<T>.binarySearch(offset: Offset<T>): Int {
     return binarySearch(offset) { a, b -> (a - b).millimeters.toInt() }
 }

@@ -195,7 +195,7 @@ data class GenericLinearRange<ValueType, OffsetType>(
     /** Maps the value, while keeping all offsets identical. */
     fun <T, NewOffsetType> mapValue(
         value: T,
-        newObjectLength: Offset<NewOffsetType>,
+        newObjectLength: Offset<NewOffsetType> = objectLength.cast(),
     ): GenericLinearRange<T, NewOffsetType> {
         return GenericLinearRange(
             value,

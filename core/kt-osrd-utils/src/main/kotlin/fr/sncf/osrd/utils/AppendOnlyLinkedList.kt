@@ -94,7 +94,11 @@ class AppendOnlyLinkedList<T>(private var lastNode: Node<T>? = null, var size: I
         return toList().toString()
     }
 
-    private fun iterateBackwards(): Sequence<T> {
+    /**
+     * Iterates through the list in reversed order, evaluated lazily. Generally the most efficient
+     * way to go through the list elements.
+     */
+    fun iterateBackwards(): Sequence<T> {
         return iterateNodesBackwards().map { it.element }
     }
 

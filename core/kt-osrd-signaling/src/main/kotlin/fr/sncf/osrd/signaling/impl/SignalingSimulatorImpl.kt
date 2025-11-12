@@ -164,7 +164,7 @@ class SignalingSimulatorImpl(override val sigModuleManager: SigSystemManager) : 
         loadedSignalInfra: LoadedSignalInfra,
         blocks: BlockInfra,
         trainPath: TrainPath,
-        zoneStates: List<ZoneStatus>,
+        zoneStates: Map<Int, ZoneStatus>,
         followingZoneState: ZoneStatus,
         followingSignalState: SigState?,
         followingSignalSettings: SigSettings?,
@@ -194,7 +194,7 @@ class SignalingSimulatorImpl(override val sigModuleManager: SigSystemManager) : 
         fullPath: List<BlockId>,
         routes: List<RouteId>,
         evaluatedPathEnd: Int,
-        zoneStates: List<ZoneStatus>,
+        zoneStates: Map<Int, ZoneStatus>,
         followingZoneState: ZoneStatus,
         followingSignalState: SigState?,
         followingSignalSettings: SigSettings?,
@@ -208,7 +208,7 @@ class SignalingSimulatorImpl(override val sigModuleManager: SigSystemManager) : 
         fun getZoneState(i: Int): ZoneStatus {
             // Zones outside the path are considered clear. We can query zone status when they are
             // not included in the path, but still part of a block included in the path.
-            return if (i in zoneStates.indices) zoneStates[i] else ZoneStatus.CLEAR
+            return zoneStates[i] ?: ZoneStatus.CLEAR
         }
 
         // compute the offset of each block's first zone inside the partial path

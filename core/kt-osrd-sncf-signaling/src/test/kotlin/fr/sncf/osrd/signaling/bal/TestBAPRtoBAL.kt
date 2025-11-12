@@ -102,7 +102,7 @@ class TestBAPRtoBAL {
                 loadedSignalInfra,
                 blockInfra,
                 trainPath,
-                zoneStates,
+                zoneStates.toMap(),
                 ZoneStatus.INCOMPATIBLE,
             )
         val logicalSignals =

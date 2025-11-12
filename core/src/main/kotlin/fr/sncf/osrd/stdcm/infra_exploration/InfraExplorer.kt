@@ -1,18 +1,17 @@
 package fr.sncf.osrd.stdcm.infra_exploration
 
-import fr.sncf.osrd.conflicts.FragmentBlocks
-import fr.sncf.osrd.conflicts.FragmentStop
-import fr.sncf.osrd.conflicts.IncrementalPath
-import fr.sncf.osrd.conflicts.PathFragment
-import fr.sncf.osrd.conflicts.incrementalPathOf
+import fr.sncf.osrd.conflicts.PathStop
 import fr.sncf.osrd.graph.PathfindingConstraint
 import fr.sncf.osrd.path.implementations.buildTrainPathFromBlock
 import fr.sncf.osrd.path.implementations.buildTrainPathFromBlockRanges
 import fr.sncf.osrd.path.interfaces.BlockRange
+import fr.sncf.osrd.path.interfaces.GenericLinearRange
+import fr.sncf.osrd.path.interfaces.RouteRange
 import fr.sncf.osrd.path.interfaces.TrainPath
+import fr.sncf.osrd.path.interfaces.subRange
 import fr.sncf.osrd.path.legacy_objects.ElectricalProfileMapping
 import fr.sncf.osrd.pathfinding.Pathfinding.EdgeLocation
-import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal.SHORT_SLIP_STOP
+import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra.utils.getRouteBlocks
 import fr.sncf.osrd.sim_infra.utils.routesOnBlock
@@ -21,12 +20,12 @@ import fr.sncf.osrd.utils.AppendOnlyLinkedList
 import fr.sncf.osrd.utils.AppendOnlyMap
 import fr.sncf.osrd.utils.appendOnlyLinkedListOf
 import fr.sncf.osrd.utils.appendOnlyMapOf
-import fr.sncf.osrd.utils.indexing.mutableStaticIdxArrayListOf
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 import java.util.*
+import kotlin.to
 
 /**
  * Explore the infra, without running simulations. Builds one global path from the start of the
@@ -47,11 +46,7 @@ import java.util.*
  * ```
  */
 interface InfraExplorer {
-    /**
-     * Get the IncrementalPath, the path type used to generate resource use. Includes the whole
-     * paths: predecessors, current block, and lookahead.
-     */
-    fun getIncrementalPath(): IncrementalPath
+    val isPathComplete: Boolean
 
     /**
      * Get the path properties for the current edge only, starting at the given offset and for the
@@ -113,6 +108,36 @@ interface InfraExplorer {
         blockInfra: BlockInfra,
         electricalProfileMapping: ElectricalProfileMapping? = null,
     ): TrainPath
+
+    /**
+     * Returns the block ranges in the given interval, going up to the path start/end if
+     * unspecified.
+     */
+    fun getBlocksInRange(
+        from: Offset<TrainPath>? = null,
+        to: Offset<TrainPath>? = null,
+    ): List<BlockRange>
+
+    /**
+     * Returns the route ranges in the given interval, going up to the path start/end if
+     * unspecified.
+     */
+    fun getRoutesInRange(
+        from: Offset<TrainPath>? = null,
+        to: Offset<TrainPath>? = null,
+    ): List<RouteRange>
+
+    /** Returns the stops in the given interval, going up to the path start/end if unspecified. */
+    fun getStopsInRange(
+        from: Offset<TrainPath>? = null,
+        to: Offset<TrainPath>? = null,
+    ): List<PathStop>
+
+    /**
+     * Returns the end of the lookahead as a train path offset. Can also be seen as the total length
+     * of the currently known path.
+     */
+    fun getLookaheadEndOffset(): Offset<TrainPath>
 }
 
 /** Returns the current block and the lookahead blocks */
@@ -148,7 +173,6 @@ fun initInfraExplorer(
     val routes = blockInfra.routesOnBlock(rawInfra, block)
 
     routes.forEach { route ->
-        val incrementalPath = incrementalPathOf(rawInfra, blockInfra)
         val infraExplorer =
             InfraExplorerImpl(
                 rawInfra,
@@ -157,7 +181,6 @@ fun initInfraExplorer(
                 appendOnlyLinkedListOf(),
                 appendOnlyMapOf(),
                 null,
-                incrementalPath,
                 blockToPathProperties,
                 stepTracker = StepTracker(steps),
                 constraints = constraints,
@@ -172,20 +195,15 @@ private class InfraExplorerImpl(
     private val rawInfra: RawInfra,
     private val blockInfra: BlockInfra,
     private var blockRanges: AppendOnlyLinkedList<BlockRange>,
-    private var routes: AppendOnlyLinkedList<RouteId>,
+    private var routes: AppendOnlyLinkedList<RouteRange>,
     private var blockRoutes: AppendOnlyMap<BlockId, RouteId>,
     private var lastTrack: TrackSectionId?,
-    private var incrementalPath: IncrementalPath,
     private var trainPathCache: MutableMap<BlockId, TrainPath>,
     private var currentIndex: Int = 0,
     private var stepTracker: StepTracker,
     private var constraints: List<PathfindingConstraint<Block>>,
+    override var isPathComplete: Boolean = false,
 ) : InfraExplorer {
-
-    override fun getIncrementalPath(): IncrementalPath {
-        return incrementalPath
-    }
-
     override fun getCurrentEdgePathProperties(offset: Offset<Block>, length: Distance?): TrainPath {
         // We re-compute the routes of the current path since the cache may be incorrect
         // because of a previous iteration.
@@ -216,10 +234,9 @@ private class InfraExplorerImpl(
     }
 
     override fun cloneAndExtendLookahead(): Collection<InfraExplorer> {
-        if (getIncrementalPath().pathComplete)
-            return listOf() // Can't extend beyond the destination
+        if (isPathComplete) return listOf() // Can't extend beyond the destination
         val infraExplorers = mutableListOf<InfraExplorer>()
-        val lastRoute = routes[routes.size - 1]
+        val lastRoute = routes.last().value
         val lastRouteExit = rawInfra.getRouteExit(lastRoute)
         val nextRoutes = rawInfra.getRoutesStartingAtDet(lastRouteExit)
         nextRoutes.forEach {
@@ -268,7 +285,7 @@ private class InfraExplorerImpl(
             .takeWhile { it.index > currentIndex }
             .map { it.value }
             .toList()
-            .reversed()
+            .asReversed()
     }
 
     override fun clone(): InfraExplorer {
@@ -279,16 +296,16 @@ private class InfraExplorerImpl(
             this.routes.shallowCopy(),
             this.blockRoutes.shallowCopy(),
             this.lastTrack,
-            this.incrementalPath.clone(),
             this.trainPathCache,
             this.currentIndex,
             this.stepTracker.clone(),
             this.constraints,
+            this.isPathComplete,
         )
     }
 
     override fun getExploredRoutes(): List<RouteId> {
-        return routes.toList()
+        return routes.toList().map { it.value }
     }
 
     override fun getStepTracker(): StepTracker {
@@ -310,22 +327,74 @@ private class InfraExplorerImpl(
         )
     }
 
+    private fun <T, U> getSubRanges(
+        list: AppendOnlyLinkedList<GenericLinearRange<T, U>>,
+        from: Offset<TrainPath>?,
+        to: Offset<TrainPath>?,
+    ): List<GenericLinearRange<T, U>> {
+        val from = from ?: Offset.zero()
+        val to = to ?: getLookaheadEndOffset()
+        return list
+            .iterateBackwards()
+            .takeWhile { from <= it.pathEnd }
+            .toList()
+            .asReversed()
+            .subRange(from, to)
+    }
+
+    override fun getBlocksInRange(
+        from: Offset<TrainPath>?,
+        to: Offset<TrainPath>?,
+    ): List<BlockRange> = getSubRanges(blockRanges, from, to)
+
+    override fun getRoutesInRange(
+        from: Offset<TrainPath>?,
+        to: Offset<TrainPath>?,
+    ): List<RouteRange> = getSubRanges(routes, from, to)
+
+    override fun getStopsInRange(from: Offset<TrainPath>?, to: Offset<TrainPath>?): List<PathStop> {
+        val from = from ?: Offset.zero()
+        val to = to ?: getLookaheadEndOffset()
+        return getStepTracker()
+            .iterateSeenStepsBackwards()
+            .takeWhile { it.travelledPathOffset >= from }
+            .filter { it.originalStep.stop && it.travelledPathOffset <= to }
+            .map {
+                PathStop(it.travelledPathOffset, RJSTrainStop.RJSReceptionSignal.SHORT_SLIP_STOP)
+            }
+            .toList()
+            .asReversed()
+    }
+
+    override fun getLookaheadEndOffset(): Offset<TrainPath> =
+        blockRanges.lastOrNull()?.pathEnd ?: Offset.zero()
+
     /**
      * Updates `incrementalPath`, `routes`, `blocks` and returns true if route can be explored.
      * Otherwise, it returns false and the instance is supposed to be dropped. `blockRoutes` is
      * updated to keep track of the route used for each block.
      */
     fun extend(route: RouteId, firstLocation: EdgeLocation<BlockId, Block>? = null): Boolean {
-        routes.add(route)
+        val lastRouteEndOffset = getLookaheadEndOffset()
+        val routeLength = rawInfra.getRouteLength(route)
+        routes.add(
+            RouteRange(
+                route,
+                Offset.zero(),
+                routeLength,
+                lastRouteEndOffset,
+                lastRouteEndOffset + routeLength.distance,
+                routeLength,
+            )
+        )
         val routeBlocks = blockInfra.getRouteBlocks(rawInfra, route)
         var seenFirstBlock = firstLocation == null
-        var pathAlreadyStarted = incrementalPath.pathStarted
+        var pathAlreadyStarted = blockRanges.isNotEmpty()
 
         for (block in routeBlocks) {
             seenFirstBlock = seenFirstBlock || block == firstLocation?.edge
             if (seenFirstBlock) {
                 val startsPath = !pathAlreadyStarted
-                val addsRoute = block == routeBlocks.first() || startsPath
                 blockRoutes[block] = route
 
                 // Simulation range start on the current block, 0m on any block that isn't the first
@@ -351,10 +420,10 @@ private class InfraExplorerImpl(
                         }
                     }
                 if (isRouteBlocked) return false
-                val endPath = arrivalLocation != null
+                isPathComplete = arrivalLocation != null
                 val travelledPathEndBlockOffset = arrivalLocation?.offset ?: blockLength
 
-                val rangePathBegin = blockRanges.lastOrNull()?.pathEnd ?: Offset.zero()
+                val rangePathBegin = getLookaheadEndOffset()
                 val rangePathEnd =
                     rangePathBegin + (travelledPathEndBlockOffset - travelledPathBegin)
 
@@ -370,38 +439,12 @@ private class InfraExplorerImpl(
                         objectLength = blockLength,
                     )
                 blockRanges.add(blockRange)
-
-                incrementalPath.extend(
-                    PathFragment(
-                        if (addsRoute) mutableStaticIdxArrayListOf(route)
-                        else mutableStaticIdxArrayListOf(),
-                        mutableStaticIdxArrayListOf(block),
-                        containsStart = startsPath,
-                        containsEnd = endPath,
-                        stops = findStopsInTravelledPathAndOnBlock(stepsOnBlock),
-                        travelledPathBegin = travelledPathBegin.distance,
-                        travelledPathEnd =
-                            blockInfra.getBlockLength(block) - travelledPathEndBlockOffset,
-                    )
-                )
                 pathAlreadyStarted = true
-                if (endPath) break // Can't extend any further
+                if (isPathComplete) break // Can't extend any further
             }
         }
         assert(seenFirstBlock)
         return true
-    }
-
-    private fun findStopsInTravelledPathAndOnBlock(
-        stepsOnBlock: List<LocatedStep>
-    ): List<FragmentStop> {
-        return stepsOnBlock
-            .filter { it.originalStep.stop }
-            .map {
-                // There's a single block in the fragment: Offset<FragmentBlocks> == Offset<Block>
-                val fragmentOffset = it.location.offset.cast<FragmentBlocks>()
-                FragmentStop(fragmentOffset, SHORT_SLIP_STOP)
-            }
     }
 
     override fun toString(): String {

@@ -96,7 +96,7 @@ class TestBALtoBAL {
                 loadedSignalInfra,
                 blockInfra,
                 trainPath,
-                zoneStates,
+                zoneStates.toMap(),
                 ZoneStatus.INCOMPATIBLE,
             )
         assertEquals(
@@ -199,7 +199,7 @@ class TestBALtoBAL {
                 loadedSignalInfra,
                 blockInfra,
                 trainPath,
-                zoneStates,
+                zoneStates.toMap(),
                 ZoneStatus.INCOMPATIBLE,
             )
         assertEquals(
@@ -207,4 +207,8 @@ class TestBALtoBAL {
             res[loadedSignalInfra.getLogicalSignals(signalV).first()]!!.getEnum("aspect"),
         )
     }
+}
+
+fun List<ZoneStatus>.toMap(): Map<Int, ZoneStatus> {
+    return withIndex().associate { it.index to it.value }
 }

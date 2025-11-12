@@ -83,7 +83,7 @@ class TestTVM300toBAL {
                 loadedSignalInfra,
                 blockInfra,
                 trainPath,
-                zoneStates,
+                zoneStates.toMap(),
                 ZoneStatus.INCOMPATIBLE,
             )
         val logicalSignals =

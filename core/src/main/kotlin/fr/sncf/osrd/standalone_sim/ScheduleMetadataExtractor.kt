@@ -6,6 +6,7 @@ import fr.sncf.osrd.api.standalone_sim.ReportTrain
 import fr.sncf.osrd.api.standalone_sim.SimulationScheduleItem
 import fr.sncf.osrd.conflicts.*
 import fr.sncf.osrd.conflicts.RoutingRequirement.RoutingZoneRequirement
+import fr.sncf.osrd.conflicts.SpacingResourceGenerator
 import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope.EnvelopeInterpolate
 import fr.sncf.osrd.envelope.EnvelopePhysics
@@ -15,14 +16,10 @@ import fr.sncf.osrd.envelope_sim.etcs.BrakingType.IND
 import fr.sncf.osrd.envelope_sim.etcs.ETCSBrakingSimulator
 import fr.sncf.osrd.envelope_sim.etcs.ETCSBrakingSimulatorImpl
 import fr.sncf.osrd.envelope_sim.etcs.EoaType
-import fr.sncf.osrd.path.interfaces.BlockPath
 import fr.sncf.osrd.path.interfaces.BlockRange
 import fr.sncf.osrd.path.interfaces.RouteRange
 import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.path.interfaces.TravelledPath
-import fr.sncf.osrd.path.interfaces.getLegacyBlockPath
-import fr.sncf.osrd.path.interfaces.getLegacyChunkPath
-import fr.sncf.osrd.path.interfaces.getLegacyRoutePath
 import fr.sncf.osrd.signaling.SigSystemManager
 import fr.sncf.osrd.signaling.SignalingTrainState
 import fr.sncf.osrd.signaling.ZoneStatus
@@ -33,22 +30,10 @@ import fr.sncf.osrd.standalone_sim.result.ResultSpeed
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.train.TrainStop
 import fr.sncf.osrd.utils.simplifyEnvelopePoints
-import fr.sncf.osrd.utils.trainPathBlockOffset
 import fr.sncf.osrd.utils.units.*
 
 // Reserve clear track with a margin for the reaction time of the driver
 const val CLOSED_SIGNAL_RESERVATION_MARGIN = 20.0
-
-// the start offset is the distance from the start of the first block to the start location
-class PathOffsetBuilder(val startOffset: Distance) {
-    fun toTravelledPath(offset: Offset<BlockPath>): Offset<TravelledPath> {
-        return Offset(offset.distance - startOffset)
-    }
-
-    fun fromTravelledPath(offset: Offset<TravelledPath>): Offset<BlockPath> {
-        return Offset(offset.distance + startOffset)
-    }
-}
 
 /** Use an already computed envelope to extract various metadata about a trip. */
 fun runScheduleMetadataExtractor(
@@ -83,22 +68,6 @@ fun runScheduleMetadataExtractor(
     }
 
     // Compute signal updates
-    // TODO path migration: remove this convertor (and this whole block).
-    //  That requires migrating IncrementalPath.
-    val startOffset =
-        trainPathBlockOffset(
-                rawInfra,
-                blockInfra,
-                trainPath.getLegacyBlockPath(),
-                trainPath.getLegacyChunkPath(),
-            )
-            .distance
-    val pathOffsetBuilder = PathOffsetBuilder(startOffset)
-    var blockPathLength = 0.meters
-    for (block in trainPath.getLegacyBlockPath()) blockPathLength +=
-        blockInfra.getBlockLength(block).distance
-    val endOffset = blockPathLength - startOffset - (envelope.endPos - envelope.beginPos).meters
-
     val pathSignals = pathSignalsInEnvelope(trainPath, blockInfra, envelopeWithStops)
     val zoneOccupationChangeEvents =
         zoneOccupationChangeEvents(trainPath, envelopeWithStops, trainLength)
@@ -109,23 +78,14 @@ fun runScheduleMetadataExtractor(
         }
 
     val pathStops =
-        schedule.map {
-            PathStop(pathOffsetBuilder.fromTravelledPath(it.pathOffset), it.receptionSignal)
-        }
-    val fragmentStops =
-        pathStops.map {
-            // All blocks are in the fragment, Offset<Path> == Offset<FragmentBlocks> here
-            // TODO path migration: remove this weird conversion once IncrementalPath is migrated
-            val fragmentOffset = it.pathOffset.cast<FragmentBlocks>()
-            FragmentStop(fragmentOffset, it.receptionSignal)
-        }
+        schedule.filter { it.stopFor != null }.map { PathStop(it.pathOffset, it.receptionSignal) }
     val closedSignalStops = pathStops.filter { it.receptionSignal.isStopOnClosedSignal }
 
     val signalCriticalPositions = mutableListOf<SignalCriticalPosition>()
     var indexClosedSignalStop = 0
 
     var closedSignalStopOffset =
-        getStopTravelledPathOffset(closedSignalStops, indexClosedSignalStop, pathOffsetBuilder)
+        getStopTravelledPathOffset(closedSignalStops, indexClosedSignalStop)
     for ((indexPathSignal, pathSignal) in pathSignals.withIndex()) {
         val sigSystemId = loadedSignalInfra.getSignalingSystem(pathSignal.signal)
         if (simulator.sigModuleManager.isCurveBased(sigSystemId)) {
@@ -149,30 +109,18 @@ fun runScheduleMetadataExtractor(
         // advance to the first stop after sightOffset
         while (closedSignalStopOffset != null && closedSignalStopOffset <= signalCriticalOffset) {
             closedSignalStopOffset =
-                getStopTravelledPathOffset(
-                    closedSignalStops,
-                    indexClosedSignalStop++,
-                    pathOffsetBuilder,
-                )
+                getStopTravelledPathOffset(closedSignalStops, indexClosedSignalStop++)
         }
         // if stop is before signal
         if (closedSignalStopOffset != null && closedSignalStopOffset <= pathSignal.pathOffset) {
             // advance to the last stop before signal
             var nextStopOffset =
-                getStopTravelledPathOffset(
-                    closedSignalStops,
-                    indexClosedSignalStop + 1,
-                    pathOffsetBuilder,
-                )
+                getStopTravelledPathOffset(closedSignalStops, indexClosedSignalStop + 1)
             while (nextStopOffset != null && nextStopOffset <= pathSignal.pathOffset) {
                 closedSignalStopOffset = nextStopOffset
                 indexClosedSignalStop++
                 nextStopOffset =
-                    getStopTravelledPathOffset(
-                        closedSignalStops,
-                        indexClosedSignalStop + 1,
-                        pathOffsetBuilder,
-                    )
+                    getStopTravelledPathOffset(closedSignalStops, indexClosedSignalStop + 1)
             }
 
             val stopDepartureTime =
@@ -195,36 +143,15 @@ fun runScheduleMetadataExtractor(
         )
     }
 
-    val incrementalPath = incrementalPathOf(rawInfra, blockInfra)
     val envelopeAdapter =
         IncrementalRequirementEnvelopeAdapter(rollingStock, envelopeWithStops, true)
-    val spacingGenerator =
-        SpacingRequirementAutomaton(
-            rawInfra,
-            loadedSignalInfra,
-            blockInfra,
-            simulator,
-            envelopeAdapter,
-            incrementalPath,
-            context,
-        )
-    incrementalPath.extend(
-        PathFragment(
-            trainPath.getLegacyRoutePath(),
-            trainPath.getLegacyBlockPath(),
-            fragmentStops,
-            containsStart = true,
-            containsEnd = true,
-            startOffset,
-            endOffset,
-        )
-    )
+    val spacingGenerator = SpacingResourceGenerator(fullInfra, context, envelopeAdapter)
+    spacingGenerator.extendPath(trainPath.getBlocks(), trainPath.getRoutes(), pathStops, true)
     // as the provided path is complete, the resource generator should never return NotEnoughPath
-    val spacingRequirements = spacingGenerator.processPathUpdate() as SpacingRequirements
+    val spacingRequirements = spacingGenerator.processUpdate()!!
 
     val routingRequirements =
         routingRequirements(
-            pathOffsetBuilder,
             fullInfra,
             trainPath,
             closedSignalStops,
@@ -242,18 +169,13 @@ fun runScheduleMetadataExtractor(
         reportTrain.pathItemTimes,
         signalCriticalPositions,
         zoneUpdates,
-        spacingRequirements.requirements.map { it.toRJS(rawInfra) },
+        spacingRequirements.map { it.toRJS(rawInfra) },
         routingRequirements.map { it.toRJS(rawInfra) },
     )
 }
 
-fun getStopTravelledPathOffset(
-    pathStops: List<PathStop>,
-    indexStop: Int,
-    pathOffsetBuilder: PathOffsetBuilder,
-): Offset<TravelledPath>? {
-    val stop = pathStops.getOrNull(indexStop) ?: return null
-    return pathOffsetBuilder.toTravelledPath(stop.pathOffset)
+fun getStopTravelledPathOffset(pathStops: List<PathStop>, indexStop: Int): Offset<TravelledPath>? {
+    return pathStops.getOrNull(indexStop)?.pathOffset
 }
 
 fun makeSimpleReportTrain(
@@ -295,7 +217,6 @@ fun makeSimpleReportTrain(
 }
 
 fun routingRequirements(
-    pathOffsetBuilder: PathOffsetBuilder,
     fullInfra: FullInfra,
     trainPath: TrainPath,
     sortedClosedSignalStops: List<PathStop>,
@@ -387,7 +308,7 @@ fun routingRequirements(
                 blockInfra.getSignalsPositions(firstBlockRange.value).first()
             )
         for (stop in sortedClosedSignalStops.reversed()) {
-            val stopTravelledOffset = pathOffsetBuilder.toTravelledPath(stop.pathOffset)
+            val stopTravelledOffset = stop.pathOffset
             if (stopTravelledOffset <= entrySignalOffset) {
                 // stop duration is included in interpolateDepartureFromClamp()
                 val stopDepartureTime =
@@ -515,8 +436,6 @@ private fun getSightRouteCriticalPos(
 
     // simulate signaling on the train's path with all zones free,
     // until the start of the route, which is INCOMPATIBLE
-    val zoneCount = trainPath.getZoneRanges().size
-    val zoneStates = MutableList(zoneCount) { ZoneStatus.CLEAR }
 
     // We only want the path up to the route offset of the given route
     val subTrainPath = trainPath.subPath(Offset.zero(), firstBlockRange.objectAbsolutePathStart)
@@ -530,7 +449,7 @@ private fun getSightRouteCriticalPos(
             loadedSignalInfra,
             blockInfra,
             subTrainPath,
-            zoneStates,
+            mapOf(),
             ZoneStatus.INCOMPATIBLE,
         )
 

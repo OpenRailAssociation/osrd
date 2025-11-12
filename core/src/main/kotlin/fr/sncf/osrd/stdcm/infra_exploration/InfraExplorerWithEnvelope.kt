@@ -1,9 +1,8 @@
 package fr.sncf.osrd.stdcm.infra_exploration
 
 import fr.sncf.osrd.api.FullInfra
-import fr.sncf.osrd.conflicts.IncrementalRequirementEnvelopeAdapter
 import fr.sncf.osrd.conflicts.SpacingRequirement
-import fr.sncf.osrd.conflicts.SpacingRequirementAutomaton
+import fr.sncf.osrd.conflicts.SpacingResourceGenerator
 import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope.EnvelopeTimeInterpolate
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock
@@ -103,14 +102,7 @@ fun initInfraExplorerWithEnvelope(
             InfraExplorerWithEnvelopeImpl(
                 explorer,
                 appendOnlyLinkedListOf(),
-                SpacingRequirementAutomaton(
-                    fullInfra.rawInfra,
-                    fullInfra.loadedSignalInfra,
-                    fullInfra.blockInfra,
-                    fullInfra.signalingSimulator,
-                    IncrementalRequirementEnvelopeAdapter(rollingStock, null, false),
-                    explorer.getIncrementalPath(),
-                ),
+                SpacingResourceGenerator(fullInfra),
                 rollingStock,
             )
         }
