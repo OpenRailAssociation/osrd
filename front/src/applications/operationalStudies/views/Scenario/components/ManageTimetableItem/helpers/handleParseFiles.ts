@@ -20,9 +20,14 @@ const TRAIN_SCHEDULE_COMPULSORY_KEYS: (keyof TrainSchedule)[] = [
   'train_name',
 ];
 
-const validateTrainSchedules = (importedItems: unknown): TimetableJsonPayload => {
-  const { train_schedules: importedTrainSchedules, paced_trains: importedPacedTrains } =
-    importedItems as TimetableJsonPayload;
+const validateTimetableJson = (importedItems: unknown): TimetableJsonPayload => {
+  const {
+    train_schedules: importedTrainSchedules,
+    paced_trains: importedPacedTrains,
+    round_trips,
+  } = importedItems as TimetableJsonPayload;
+  // TODO : Pass macro nodes and notes as soon as we are able to toggle their import on and off
+  // TODO : Validate macro nodes, notes and round trips, and improve train schedule and paced train validation
 
   const isInvalidTrainSchedules = importedTrainSchedules.some((trainSchedule) => {
     if (
@@ -53,7 +58,11 @@ const validateTrainSchedules = (importedItems: unknown): TimetableJsonPayload =>
   if (isInvalidPacedTrains) {
     throw new Error('Invalid paced trains: some compulsory keys are missing');
   }
-  return { train_schedules: importedTrainSchedules, paced_trains: importedPacedTrains };
+  return {
+    train_schedules: importedTrainSchedules,
+    paced_trains: importedPacedTrains,
+    round_trips,
+  };
 };
 
 const validateNgeDto = (payload: unknown): payload is NetzgrafikDto =>
@@ -102,14 +111,10 @@ export const processJsonFile = (
     return true;
   }
 
-  // validate the trainSchedules
   try {
-    const importedTrainSchedules = validateTrainSchedules(rawContent);
-    if (
-      importedTrainSchedules.train_schedules.length > 0 ||
-      importedTrainSchedules.paced_trains.length > 0
-    ) {
-      setTrainsJsonData(importedTrainSchedules);
+    const importedTimetable = validateTimetableJson(rawContent);
+    if (importedTimetable.train_schedules.length > 0 || importedTimetable.paced_trains.length > 0) {
+      setTrainsJsonData(importedTimetable);
     } else {
       dispatch(
         setFailure({
