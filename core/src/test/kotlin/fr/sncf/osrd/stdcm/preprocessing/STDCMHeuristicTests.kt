@@ -1,7 +1,7 @@
 package fr.sncf.osrd.stdcm.preprocessing
 
 import fr.sncf.osrd.conflicts.IncrementalRequirementEnvelopeAdapter
-import fr.sncf.osrd.conflicts.SpacingRequirementAutomaton
+import fr.sncf.osrd.conflicts.SpacingResourceGenerator
 import fr.sncf.osrd.envelope.Envelope.Companion.make
 import fr.sncf.osrd.envelope.EnvelopeTestUtils
 import fr.sncf.osrd.envelope_sim.SimpleRollingStock.STANDARD_TRAIN
@@ -239,13 +239,13 @@ class STDCMHeuristicTests {
             InfraExplorerWithEnvelopeImpl(
                 infraExplorer,
                 appendOnlyLinkedListOf(),
-                SpacingRequirementAutomaton(
+                SpacingResourceGenerator(
+                    infra,
                     infra,
                     infra.fullInfra().loadedSignalInfra,
-                    infra,
                     infra.fullInfra().signalingSimulator,
+                    null,
                     IncrementalRequirementEnvelopeAdapter(STANDARD_TRAIN, null, false),
-                    infraExplorer.getIncrementalPath(),
                 ),
                 STANDARD_TRAIN,
             )

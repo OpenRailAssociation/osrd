@@ -2,8 +2,7 @@ package fr.sncf.osrd.stdcm.infra_exploration
 
 import fr.sncf.osrd.conflicts.IncrementalRequirementEnvelopeAdapter
 import fr.sncf.osrd.conflicts.SpacingRequirement
-import fr.sncf.osrd.conflicts.SpacingRequirementAutomaton
-import fr.sncf.osrd.conflicts.SpacingRequirements
+import fr.sncf.osrd.conflicts.SpacingResourceGenerator
 import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope.EnvelopeConcat
 import fr.sncf.osrd.envelope.EnvelopeConcat.LocatedEnvelopeInterpolate
@@ -28,7 +27,7 @@ import java.lang.ref.SoftReference
 data class InfraExplorerWithEnvelopeImpl(
     private val infraExplorer: InfraExplorer,
     private val envelopes: AppendOnlyLinkedList<LocatedEnvelopeInterpolate>,
-    private val spacingRequirementAutomaton: SpacingRequirementAutomaton,
+    private val spacingRequirementAutomaton: SpacingResourceGenerator,
     private val rollingStock: PhysicsRollingStock,
     private var stopTimeData: List<StopTimeData> = listOf(),
 
@@ -87,22 +86,20 @@ data class InfraExplorerWithEnvelopeImpl(
     }
 
     override fun withReplacedEnvelope(envelope: Envelope): InfraExplorerWithEnvelope {
-        return copy(
-            envelopes = appendOnlyLinkedListOf(LocatedEnvelopeInterpolate(envelope, 0.0, 0.0)),
-            spacingRequirementAutomaton =
-                SpacingRequirementAutomaton(
-                    spacingRequirementAutomaton.rawInfra,
-                    spacingRequirementAutomaton.loadedSignalInfra,
-                    spacingRequirementAutomaton.blockInfra,
-                    spacingRequirementAutomaton.simulator,
+        val spacingResourceGenerator =
+            spacingRequirementAutomaton
+                .clone()
+                .updateCallbacks(
                     IncrementalRequirementEnvelopeAdapter(
                         rollingStock,
                         EnvelopeConcat.from(listOf(envelope)),
                         true,
                         endAtStop(),
-                    ),
-                    getIncrementalPath(),
-                ),
+                    )
+                )
+        return copy(
+            envelopes = appendOnlyLinkedListOf(LocatedEnvelopeInterpolate(envelope, 0.0, 0.0)),
+            spacingRequirementAutomaton = spacingResourceGenerator,
             spacingRequirementsCache = null,
             envelopeCache = null,
         )
@@ -126,9 +123,17 @@ data class InfraExplorerWithEnvelopeImpl(
             // This case can happen when we start right at the end of a block
             return listOf()
         }
-        spacingRequirementAutomaton.incrementalPath = getIncrementalPath()
+
+        val lastPathEndOffset = spacingRequirementAutomaton.getCurrentPathEndOffset()
+        spacingRequirementAutomaton.extendPath(
+            infraExplorer.getBlocksInRange(lastPathEndOffset, null),
+            infraExplorer.getRoutesInRange(lastPathEndOffset, null),
+            infraExplorer.getStopsInRange(lastPathEndOffset, null),
+            isPathComplete,
+        )
+
         // Path is complete and has been completely simulated
-        val simulationComplete = getIncrementalPath().pathComplete && getLookahead().size == 0
+        val simulationComplete = isPathComplete && getLookahead().isEmpty()
         spacingRequirementAutomaton.callbacks =
             IncrementalRequirementEnvelopeAdapter(
                 rollingStock,
@@ -137,34 +142,40 @@ data class InfraExplorerWithEnvelopeImpl(
                 endAtStop(),
             )
         val updatedRequirements =
-            spacingRequirementAutomaton.processPathUpdate() as? SpacingRequirements
+            spacingRequirementAutomaton.processUpdate()
                 ?: throw BlockAvailabilityInterface.NotEnoughLookaheadError()
-        spacingRequirementsCache = SoftReference(updatedRequirements.requirements)
-        return updatedRequirements.requirements
+        spacingRequirementsCache = SoftReference(updatedRequirements)
+        return updatedRequirements
     }
 
     override fun getFullSpacingRequirements(): List<SpacingRequirement> {
-        val simulationComplete = getIncrementalPath().pathComplete && getLookahead().size == 0
+        val simulationComplete = isPathComplete && getLookahead().size == 0
         // We need a new automaton to get the resource uses over the whole path, and not just since
         // the last update
         val newAutomaton =
-            SpacingRequirementAutomaton(
+            SpacingResourceGenerator(
                 spacingRequirementAutomaton.rawInfra,
-                spacingRequirementAutomaton.loadedSignalInfra,
                 spacingRequirementAutomaton.blockInfra,
+                spacingRequirementAutomaton.loadedSignalInfra,
                 spacingRequirementAutomaton.simulator,
+                spacingRequirementAutomaton.context,
                 IncrementalRequirementEnvelopeAdapter(
                     rollingStock,
                     getFullEnvelope(),
                     simulationComplete,
                     endAtStop(),
                 ),
-                getIncrementalPath(),
             )
+        newAutomaton.extendPath(
+            infraExplorer.getBlocksInRange(Offset.zero(), null),
+            infraExplorer.getRoutesInRange(Offset.zero(), null),
+            infraExplorer.getStopsInRange(Offset.zero(), null),
+            isPathComplete,
+        )
         val res =
-            newAutomaton.processPathUpdate() as? SpacingRequirements
+            newAutomaton.processUpdate()
                 ?: throw BlockAvailabilityInterface.NotEnoughLookaheadError()
-        return res.requirements
+        return res
     }
 
     override fun moveForward(): InfraExplorerWithEnvelope {

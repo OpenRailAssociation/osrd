@@ -38,8 +38,7 @@ class InfraExplorerTests {
             )
         assertEquals(1, explorers.size)
         val explorer = explorers.first()
-        assertTrue { explorer.getIncrementalPath().pathStarted }
-        assertTrue { explorer.getIncrementalPath().pathComplete }
+        assertTrue { explorer.isPathComplete }
     }
 
     @Test
@@ -69,7 +68,7 @@ class InfraExplorerTests {
 
         assertEquals(blocks[0], explorer.getCurrentBlock())
         assertThrows<AssertionError> { explorer.moveForward() } // Not enough lookahead
-        assertFalse { explorer.getIncrementalPath().pathComplete }
+        assertFalse { explorer.isPathComplete }
 
         // Fully extend lookahead
         repeat(3) {
@@ -78,7 +77,7 @@ class InfraExplorerTests {
             explorer = extended.first()
         }
 
-        assertTrue { explorer.getIncrementalPath().pathComplete }
+        assertTrue { explorer.isPathComplete }
 
         // Current block hasn't moved
         assertEquals(blocks[0], explorer.getCurrentBlock())
@@ -382,12 +381,12 @@ class InfraExplorerTests {
                 .single()
         while (true) explorer = explorer.cloneAndExtendLookahead().firstOrNull() ?: break
 
-        val incrementalPath = explorer.getIncrementalPath()
-        assertEquals(4, incrementalPath.stopCount)
-        assertEquals(Offset(50.meters), incrementalPath.getStopOffset(0))
-        assertEquals(Offset(150.meters), incrementalPath.getStopOffset(1))
-        assertEquals(Offset(200.meters), incrementalPath.getStopOffset(2))
-        assertEquals(Offset(350.meters), incrementalPath.getStopOffset(3))
+        val stops = explorer.getStopsInRange(null, null)
+        assertEquals(4, stops.count())
+        assertEquals(Offset(0.meters), stops[0].pathOffset)
+        assertEquals(Offset(100.meters), stops[1].pathOffset)
+        assertEquals(Offset(150.meters), stops[2].pathOffset)
+        assertEquals(Offset(300.meters), stops[3].pathOffset)
     }
 
     /** Similar test to the one above, but not starting on the first block on the route */
@@ -413,12 +412,9 @@ class InfraExplorerTests {
                     stepsFromLocations(EdgeLocation(block, Offset(42.meters)), stops = true),
                 )
                 .first()
-        val incrementalPath = explorers.getIncrementalPath()
-        assertEquals(1, incrementalPath.stopCount)
-        assertEquals(
-            Offset(10.meters),
-            incrementalPath.toTravelledPath(incrementalPath.getStopOffset(0)),
-        )
+        val stops = explorers.getStopsInRange(null, null)
+        assertEquals(1, stops.count())
+        assertEquals(Offset(10.meters), stops[0].pathOffset)
     }
 
     private fun <T> allEqual(list: List<T>): Boolean {

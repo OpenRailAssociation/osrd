@@ -249,6 +249,10 @@ class DummyInfra : RawInfra, BlockInfra {
         TODO("Not yet implemented")
     }
 
+    override fun getLongestSightDistance(): Distance {
+        return 400.meters
+    }
+
     override fun getZonePathLength(zonePath: ZonePathId): Length<ZonePath> {
         return Length(blockPool[zonePath.index].length)
     }
