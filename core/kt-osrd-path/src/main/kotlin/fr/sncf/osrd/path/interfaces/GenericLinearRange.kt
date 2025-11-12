@@ -19,6 +19,7 @@ import fr.sncf.osrd.utils.units.meters
 import fr.sncf.osrd.utils.units.sumDistances
 import fr.sncf.osrd.utils.units.toDirected
 import fr.sncf.osrd.utils.units.toUndirected
+import fr.sncf.osrd.utils.withoutConsecutiveDuplicates
 
 /**
  * Describes an object range on the train path. Located on both the object itself, and the global
@@ -173,6 +174,24 @@ data class GenericLinearRange<ValueType, OffsetType>(
         )
     }
 
+    data class LocatedObject<T>(val value: T, val offset: Offset<TrainPath>)
+
+    /**
+     * Given two functions to map inner point objects to their IDs and offsets, returns the objects
+     * on the range, mapped to train path offsets.
+     */
+    fun <ObjectType> mapPointObjects(
+        mapObject: (ValueType) -> List<ObjectType>,
+        mapOffset: (ValueType) -> List<Offset<OffsetType>>,
+    ): List<LocatedObject<ObjectType>> {
+        val objects = mapObject(value)
+        val offsets = mapOffset(value)
+        assert(objects.size == offsets.size)
+        return (objects zip offsets)
+            .map { LocatedObject(it.first, offsetToTrainPath(it.second)) }
+            .filter { it.offset in pathBegin..pathEnd }
+    }
+
     /** Maps the value, while keeping all offsets identical. */
     fun <T, NewOffsetType> mapValue(
         value: T,
@@ -232,13 +251,15 @@ fun <ValueType, OffsetType> mergeLinearRanges(
  * When an outer object can be mapped to a list of inner objects (e.g. route to list of zone paths):
  * this takes a list of outer object ranges, and maps it to a list of inner object ranges.
  */
-fun <ValueType, OffsetType, SubObjectType, SubObjectOffset> mapSubObjects(
-    outerObjectRanges: List<GenericLinearRange<ValueType, OffsetType>>,
+fun <ValueType, OffsetType, SubObjectType, SubObjectOffset> List<
+    GenericLinearRange<ValueType, OffsetType>
+>
+    .mapSubObjects(
     listSubObject: (ValueType) -> List<SubObjectType>,
     subObjectLength: (SubObjectType) -> Offset<SubObjectOffset>,
 ): List<GenericLinearRange<SubObjectType, SubObjectOffset>> {
     val res = mutableListOf<GenericLinearRange<SubObjectType, SubObjectOffset>>()
-    for (range in outerObjectRanges) {
+    for (range in this) {
         val subRanges = range.mapSubObject(listSubObject(range.value), subObjectLength)
         res.addAll(subRanges)
     }
@@ -264,6 +285,40 @@ fun <ValueType, OffsetType> MutableList<GenericLinearRange<ValueType, OffsetType
         } else {
             add(element)
         }
+    }
+}
+
+fun <ValueType, OffsetType, ObjectType> List<GenericLinearRange<ValueType, OffsetType>>
+    .mapPointObjects(
+    mapObject: (ValueType) -> List<ObjectType>,
+    mapOffset: (ValueType) -> List<Offset<OffsetType>>,
+): List<GenericLinearRange.LocatedObject<ObjectType>> {
+    return flatMap { it.mapPointObjects(mapObject, mapOffset) }
+        .withoutConsecutiveDuplicates() // For objects exactly on range boundaries
+}
+
+/** Truncate the list of linear objects, updating the underlying object ranges */
+fun <ValueType, OffsetType> List<GenericLinearRange<ValueType, OffsetType>>.subRange(
+    from: Offset<TrainPath>,
+    to: Offset<TrainPath>,
+    resetOffsets: Boolean = false,
+): List<GenericLinearRange<ValueType, OffsetType>> {
+    return mapNotNull { range ->
+        val truncatedStart = max(from, range.pathBegin)
+        val truncatedEnd = min(to, range.pathEnd)
+
+        if (truncatedStart > truncatedEnd) return@mapNotNull null
+
+        val newPathBegin = if (resetOffsets) truncatedStart - from.distance else truncatedStart
+        val newPathEnd = if (resetOffsets) truncatedEnd - from.distance else truncatedEnd
+        GenericLinearRange(
+            value = range.value,
+            objectBegin = range.objectBegin + (truncatedStart - range.pathBegin),
+            objectEnd = range.objectEnd - (range.pathEnd - truncatedEnd),
+            pathBegin = newPathBegin,
+            pathEnd = newPathEnd,
+            objectLength = range.objectLength,
+        )
     }
 }
 

@@ -208,8 +208,7 @@ private fun generateTrackChunks(
     blocks: List<BlockRange>,
 ): List<DirChunkRange> {
     val res =
-        mapSubObjects(
-            blocks,
+        blocks.mapSubObjects(
             blockInfra::getTrackChunksFromBlock,
             { rawInfra.getTrackChunkLength(it.value).forceDirected() },
         )
