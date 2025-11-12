@@ -417,8 +417,28 @@
     ],
     "netzgrafikColors": []
   },
-  "freeFloatingTexts": [],
-  "labels": [],
+  "freeFloatingTexts": [
+    {
+      "id": 1,
+      "x": 16,
+      "y": 19,
+      "width": 250,
+      "height": 150,
+      "title": "Exemple de note couleurs inversées",
+      "text": "<p>Exemple</p>",
+      "backgroundColor": "#000000",
+      "textColor": "#ffffff",
+      "labelIds": [1]
+    }
+  ],
+  "labels": [
+    {
+      "id": 1,
+      "label": "Test label note",
+      "labelGroupId": 0,
+      "labelRef": "Test ref"
+    }
+  ],
   "labelGroups": [],
   "filterData": { "filterSettings": [] }
 }

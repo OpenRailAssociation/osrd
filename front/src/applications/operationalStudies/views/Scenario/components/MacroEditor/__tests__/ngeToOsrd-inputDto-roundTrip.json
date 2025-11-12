@@ -408,7 +408,32 @@
     ],
     "netzgrafikColors": []
   },
-  "freeFloatingTexts": [],
+  "freeFloatingTexts": [
+    {
+      "id": 25,
+      "x": 0,
+      "y": -64,
+      "width": 200,
+      "height": 100,
+      "title": "Exemple noir et blanc",
+      "text": "<p>Service aller-retour.</p>",
+      "backgroundColor": "#ffffff",
+      "textColor": "#000000",
+      "labelIds": []
+    },
+    {
+      "id": 26,
+      "x": 160,
+      "y": 192,
+      "width": 200,
+      "height": 100,
+      "title": "Exemple couleur",
+      "text": "<p><span style=\"color:green;\">Sursee</span></p>",
+      "backgroundColor": "#ffffff",
+      "textColor": "#000000",
+      "labelIds": [0]
+    }
+  ],
   "labels": [
     {
       "id": 0,

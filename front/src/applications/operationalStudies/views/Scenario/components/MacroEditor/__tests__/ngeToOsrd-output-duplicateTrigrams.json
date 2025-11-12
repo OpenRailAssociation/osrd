@@ -31,6 +31,15 @@
       "path_item_key": "trigram:SS-2"
     }
   ],
+  "macro_notes": [
+    {
+      "labels": ["Test label note"],
+      "text": "<p>Exemple</p>",
+      "title": "Exemple de note couleurs inversées",
+      "x": 16,
+      "y": 19
+    }
+  ],
   "paced_trains": [],
   "train_schedules": [
     {

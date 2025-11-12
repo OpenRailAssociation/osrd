@@ -74,6 +74,7 @@ const ImportTimetableItemTrainsList = ({
     train_schedules: trainSchedulesFromJsonData,
     paced_trains: pacedTrainsFromJsonData,
     macro_nodes: macroNodes,
+    macro_notes: macroNotes,
     round_trips: roundTripsFromJsonData,
   } = trainsJsonData;
 
@@ -169,6 +170,8 @@ const ImportTimetableItemTrainsList = ({
     osrdEditoastApi.endpoints.postRoundTripsPacedTrains.useMutation();
   const [postMacroNodes] =
     osrdEditoastApi.endpoints.postProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNodes.useMutation();
+  const [postMacroNotes] =
+    osrdEditoastApi.endpoints.postProjectsByProjectIdStudiesAndStudyIdScenariosScenarioIdMacroNotes.useMutation();
 
   const timetableId = scenario.timetable_id;
 
@@ -265,6 +268,15 @@ const ImportTimetableItemTrainsList = ({
 
       if (macroNodes && macroNodes.length > 0) {
         await postMacroNodesIfNew(macroNodes);
+      }
+
+      if (macroNotes && macroNotes.length > 0) {
+        await postMacroNotes({
+          projectId: scenario.project.id,
+          studyId: scenario.study_id,
+          scenarioId: scenario.id,
+          macroNoteBatchForm: { macro_notes: macroNotes },
+        }).unwrap();
       }
 
       upsertTimetableItems([...trainSchedules, ...pacedTrains]);

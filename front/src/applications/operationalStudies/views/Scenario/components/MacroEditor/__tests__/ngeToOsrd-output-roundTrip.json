@@ -31,6 +31,22 @@
       "path_item_key": "trigram:LTH"
     }
   ],
+  "macro_notes": [
+    {
+      "labels": [],
+      "text": "<p>Service aller-retour.</p>",
+      "title": "Exemple noir et blanc",
+      "x": 0,
+      "y": -64
+    },
+    {
+      "labels": ["Test label"],
+      "text": "<p><span style=\"color:green;\">Sursee</span></p>",
+      "title": "Exemple couleur",
+      "x": 160,
+      "y": 192
+    }
+  ],
   "paced_trains": [
     {
       "category": "International",
