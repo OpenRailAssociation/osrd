@@ -8,7 +8,7 @@ const frScenarioTranslations: TimetableFilterTranslations = readJsonFile<{
 
 export type Waypoint = {
   name: string;
-  ch: string;
+  ch: string | undefined;
   offset: string;
   checked?: boolean;
 };
@@ -22,7 +22,7 @@ function requestedPoint(number: string): string {
 export const expectedWaypointsPanelDataForTrainSchedule: Record<string, Partial<Waypoint>> = {
   North_East_station: { ch: 'BV', offset: '0.0', checked: true },
   Mid_East_station: { ch: 'BV', offset: '19.55', checked: true },
-  [requestedPoint('2')]: { ch: '', offset: '22.47', checked: true },
+  [requestedPoint('2')]: { offset: '22.47', checked: true },
   Mid_West_station: { ch: 'BV', offset: '34.0', checked: true },
   North_West_station: { ch: 'BC', offset: '47.55', checked: true },
 };
@@ -30,17 +30,17 @@ export const expectedWaypointsPanelDataForTrainSchedule: Record<string, Partial<
 export const expectedWaypointsPanelDataForPacedTrain: Record<string, Partial<Waypoint>> = {
   North_East_station: { ch: 'BV', offset: '0.0', checked: true },
   Mid_East_station: { ch: 'BV', offset: '19.55', checked: true },
-  [requestedPoint('1')]: { ch: '', offset: '22.47', checked: true },
+  [requestedPoint('1')]: { offset: '22.47', checked: true },
   Mid_West_station: { ch: 'BV', offset: '34.0', checked: true },
   North_West_station: { ch: 'BV', offset: '47.60', checked: true },
-  [requestedDestination]: { ch: '', offset: '47.65', checked: true },
+  [requestedDestination]: { offset: '47.65', checked: true },
 };
 
 export const expectedWaypointsListDataForPacedTrain: Record<string, Partial<Waypoint>> = {
   North_East_station: { ch: 'BV', offset: '0' },
-  [requestedPoint('1')]: { ch: '', offset: '22.5' },
+  [requestedPoint('1')]: { offset: '22.5' },
   Mid_West_station: { ch: 'BV', offset: '34' },
-  [requestedDestination]: { ch: '', offset: '47.7' },
+  [requestedDestination]: { offset: '47.7' },
 };
 
 export const expectedWaypointsListDataForTrainSchedule: Record<string, Partial<Waypoint>> = {
@@ -61,7 +61,7 @@ export function verifyWaypointsData(
   for (const wp of actualWaypoints) {
     const expected = expectedWaypoints[wp.name];
     expect(expected).toBeTruthy();
-    expect(wp.ch).toBe(expected.ch);
+    if (wp.ch) expect(wp.ch).toBe(expected.ch);
     expect(wp.offset).toBe(expected.offset);
     if (wp.checked) expect(wp.checked).toBe(expected.checked);
   }

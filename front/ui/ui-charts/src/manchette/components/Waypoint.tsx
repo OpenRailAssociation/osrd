@@ -50,13 +50,17 @@ const Waypoint = ({
       {name}
     </div>
     <div className="waypoint-separator"></div>
-    <div
-      data-testid={testIdPrefix ? `${testIdPrefix}-ch` : undefined}
-      className="waypoint-ch font-mono justify-self-end"
-    >
-      {secondaryCode}
-    </div>
-    <div className="waypoint-separator"></div>
+    {secondaryCode && (
+      <>
+        <div
+          data-testid={testIdPrefix ? `${testIdPrefix}-ch` : undefined}
+          className="waypoint-ch font-mono justify-self-end"
+        >
+          {secondaryCode}
+        </div>
+        <div className="waypoint-separator"></div>
+      </>
+    )}
 
     <div className="waypoint-type"></div>
     <div className="waypoint-separator"></div>

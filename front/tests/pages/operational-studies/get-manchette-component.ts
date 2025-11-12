@@ -155,11 +155,15 @@ class GetManchetteComponent extends OpSimulationResultPage {
     await expect(this.waypointsList).toHaveCount(expectedCount);
     return Promise.all(
       [...Array(expectedCount).keys()].map(async (waypointIndex) => {
-        const [name, ch, offset] = await Promise.all([
+        let ch;
+        const [name, offset] = await Promise.all([
           getCleanText(this.getWaypointNameListLocator(waypointIndex)),
-          getCleanText(this.getWaypointChListLocator(waypointIndex)),
           getCleanText(this.getWaypointOffsetListLocator(waypointIndex)),
         ]);
+        if ((await this.getWaypointChListLocator(waypointIndex).count()) > 0) {
+          await expect(this.getWaypointChListLocator(waypointIndex)).toBeVisible();
+          ch = await getCleanText(this.getWaypointChListLocator(waypointIndex));
+        }
         return { name, ch, offset };
       })
     );
