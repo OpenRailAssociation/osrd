@@ -86,11 +86,11 @@ class GenericLinearRangeTest {
         val blockLengths = listOf(100, 300, 200, 200, 200).map { Length<Block>(it.meters) }
 
         val blockRanges =
-            mapSubObjects(
-                listOf(range),
-                listSubObject = { blocks },
-                subObjectLength = { blockLengths[it.index.toInt()] },
-            )
+            listOf(range)
+                .mapSubObjects(
+                    listSubObject = { blocks },
+                    subObjectLength = { blockLengths[it.index.toInt()] },
+                )
 
         val expectedRanges =
             listOf(

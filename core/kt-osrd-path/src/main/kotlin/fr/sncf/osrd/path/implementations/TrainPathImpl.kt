@@ -9,8 +9,6 @@ import fr.sncf.osrd.sim_infra.impl.makeDirChunk
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
-import fr.sncf.osrd.utils.units.Offset.Companion.max
-import fr.sncf.osrd.utils.units.Offset.Companion.min
 import fr.sncf.osrd.utils.units.forceDirected
 import fr.sncf.osrd.utils.units.meters
 
@@ -37,7 +35,7 @@ data class TrainPathNoBacktrack(
 
     private val cachedZonePaths by lazy {
         assert(routes!!.isNotEmpty())
-        mapSubObjects(routes, rawInfra::getRoutePath, rawInfra::getZonePathLength)
+        routes.mapSubObjects(rawInfra::getRoutePath, rawInfra::getZonePathLength)
     }
 
     private val cachedZoneRanges by lazy {
@@ -77,9 +75,9 @@ data class TrainPathNoBacktrack(
             rawInfra = rawInfra,
             blockInfra = blockInfra,
             pathProperties = PathPropertiesView(pathProperties, fromDist.cast(), toDist.cast()),
-            routes = routes?.let { linearObjectListSubRange(it, fromDist, toDist) },
-            blocks = linearObjectListSubRange(blocks, fromDist, toDist),
-            chunks = linearObjectListSubRange(chunks, fromDist, toDist),
+            routes = routes?.subRange(fromDist, toDist, resetOffsets = true),
+            blocks = blocks.subRange(fromDist, toDist, resetOffsets = true),
+            chunks = chunks.subRange(fromDist, toDist, resetOffsets = true),
             electricalProfileMapping = electricalProfileMapping,
             haveApproximateBlocks = haveApproximateBlocks,
         )
@@ -129,31 +127,6 @@ data class TrainPathNoBacktrack(
 
     private fun computeEnvelopeSimPath(): PhysicsPath {
         return EnvelopeTrainPath.from(rawInfra, this, electricalProfileMapping)
-    }
-
-    /** Truncate the list of linear objects, updating the underlying object ranges */
-    private fun <ValueType, OffsetType> linearObjectListSubRange(
-        list: List<GenericLinearRange<ValueType, OffsetType>>,
-        from: Offset<TrainPath>,
-        to: Offset<TrainPath>,
-    ): List<GenericLinearRange<ValueType, OffsetType>> {
-        require(from >= Offset.zero())
-        require(to <= getTypedLength())
-        return list.mapNotNull { range ->
-            val truncatedStart = max(from, range.pathBegin)
-            val truncatedEnd = min(to, range.pathEnd)
-
-            if (truncatedStart > truncatedEnd) return@mapNotNull null
-
-            GenericLinearRange(
-                value = range.value,
-                objectBegin = range.objectBegin + (truncatedStart - range.pathBegin),
-                objectEnd = range.objectEnd - (range.pathEnd - truncatedEnd),
-                pathBegin = truncatedStart - from.distance,
-                pathEnd = truncatedEnd - from.distance,
-                objectLength = range.objectLength,
-            )
-        }
     }
 
     override fun withRoutes(routes: List<RouteId>): TrainPath {
