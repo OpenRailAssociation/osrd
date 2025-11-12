@@ -102,7 +102,7 @@ fun onetrain(
     val instructions = Instructions(speedConstraints, neutralZones)
 
     var time = 0.0
-    var position = rollingStock.length
+    var position = 0.0
     var speed = initialSpeed
     val envelopePoints = mutableListOf(EnvelopePoint(time, speed, position))
     for ((stopPosition, stopDuration) in stops) {
