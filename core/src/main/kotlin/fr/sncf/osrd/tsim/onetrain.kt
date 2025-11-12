@@ -58,11 +58,18 @@ fun onetrain(
     val effortCurveMap = curvesAndConditions.curves
     val ctx = Context(path = trainPath, stock = rollingStock, effortCurveMap = effortCurveMap)
 
-    val stops =
-        schedule.mapNotNull { item ->
-            val stopFor = item.stopFor ?: return@mapNotNull null
-            Pair(item.pathOffset.meters, stopFor.seconds)
+    var stopSeq =
+        schedule.asSequence().mapNotNull { item ->
+            val stopFor = item.stopFor?.seconds ?: return@mapNotNull null
+            if (stopFor == 0.0) {
+                return@mapNotNull null
+            }
+            Pair(item.pathOffset.meters, stopFor)
         }
+    schedule.lastOrNull()
+        ?.takeUnless { item -> item.stopFor?.seconds != 0.0 }
+        ?.let { item -> stopSeq += sequenceOf(Pair(item.pathOffset.meters, 0.0)) }
+    val stops = stopSeq.toList()
 
     var mrsp: RangeMap<Meters, MetersPerSecond> = TreeRangeMap.create()
     mrsp.put(Range.all(), rollingStock.maxSpeed)
