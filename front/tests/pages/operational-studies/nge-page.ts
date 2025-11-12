@@ -36,32 +36,28 @@ class NGEPage extends OpSimulationResultPage {
     super(page);
 
     this.ngeFrame = page.frameLocator('iframe[title="NGE"]');
-    this.nodeCards = this.ngeFrame.locator('.root_container_nodes');
-    this.nodeTexts = this.nodeCards.locator('.node_text');
-    this.trainLines = this.ngeFrame.locator('.edge.Lines');
-    this.trainLabelRows = this.ngeFrame.locator('.edge.Labels');
+    this.nodeCards = this.ngeFrame.getByTestId('root_container_nodes');
+    this.nodeTexts = this.nodeCards.getByTestId('node_text');
+    this.trainLines = this.ngeFrame.getByTestId('edge-lines');
+    this.trainLabelRows = this.ngeFrame.getByTestId('edge-labels');
     this.trainDetailTabs = this.ngeFrame.getByRole('tab');
     this.activeTabPanel = this.ngeFrame.getByRole('tabpanel');
-    this.trainDetailsGroup = this.ngeFrame.locator('.TrainrunTabGrupe');
-    this.oneWayCardMuted = this.ngeFrame.locator('.OneWayCard.muted');
-    this.oneWayCardSelected = this.ngeFrame.locator('.OneWayCard.selected');
-    this.nodeSummaryTitle = this.ngeFrame.locator('.SummaryTitle');
-    this.deleteNodeButton = this.ngeFrame.locator(
-      'button[sbb-secondary-button][svgicon="trash-small"]'
-    );
-    this.confirmDeleteButton = this.ngeFrame.locator(
-      'button.sbb-button[tabindex="0"][type="button"]'
-    );
+    this.trainDetailsGroup = this.ngeFrame.getByTestId('train-run-tab-group');
+    this.oneWayCardMuted = this.ngeFrame.getByTestId('one-way-top-card');
+    this.oneWayCardSelected = this.ngeFrame.getByTestId('one-way-bottom-card');
+    this.nodeSummaryTitle = this.ngeFrame.getByTestId('summary-title');
+    this.deleteNodeButton = this.ngeFrame.getByTestId('delete-button');
+    this.confirmDeleteButton = this.ngeFrame.getByTestId('confirm-button');
     this.closeDialogButton = this.ngeFrame.getByRole('img', { name: 'Close Dialog' });
-    this.topologyEditorToggle = this.ngeFrame.locator('.ButtonTopologieEditor.NetzgrafikEditing');
-    this.graphContainer = this.ngeFrame.locator('#graphContainer');
+    this.topologyEditorToggle = this.ngeFrame.getByTestId('topology-editor-button');
+    this.graphContainer = this.ngeFrame.getByTestId('graph-container');
     this.textInputs = this.ngeFrame.locator('.sbb-input-element');
-    this.closeAsideButton = this.ngeFrame.locator('#cd-layout-close-aside');
+    this.closeAsideButton = this.ngeFrame.getByTestId('close-aside-button');
 
-    this.trainTitleField = this.ngeFrame.locator('#trainrunTitleField');
-    this.frequency30Btn = this.ngeFrame.locator('.Frequency.Frequency_30');
-    this.stationLeftArrow = this.ngeFrame.locator('[data-sbb-icon-name="arrow-left-medium"]');
-    this.stationRightArrow = this.ngeFrame.locator('[data-sbb-icon-name="arrow-right-medium"]');
+    this.trainTitleField = this.ngeFrame.getByTestId('train-run-title-input');
+    this.frequency30Btn = this.ngeFrame.getByTestId('frequency-30');
+    this.stationLeftArrow = this.ngeFrame.getByRole('img', { name: 'arrow-left-medium' });
+    this.stationRightArrow = this.ngeFrame.getByRole('img', { name: 'arrow-right-medium' });
   }
 
   private getNodeNameByIndex(index: number): Locator {
@@ -69,7 +65,7 @@ class NGEPage extends OpSimulationResultPage {
   }
 
   private getTrainLabel(lineIndex: number, labelIndex: number): Locator {
-    return this.trainLabelRows.nth(lineIndex).locator('.edge_text').nth(labelIndex);
+    return this.trainLabelRows.nth(lineIndex).getByTestId('edge_text').nth(labelIndex);
   }
 
   async toggleTopologyEditor() {
