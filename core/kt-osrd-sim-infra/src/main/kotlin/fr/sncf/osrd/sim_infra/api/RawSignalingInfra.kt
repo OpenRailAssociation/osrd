@@ -65,6 +65,9 @@ interface RawSignalingInfra : RoutingInfra {
     fun getNextSignalingSystemIds(signal: LogicalSignalId): List<String>
 
     fun findDetector(detectorName: String): DetectorId?
+
+    /** Returns the longest sight distance for any signal in the infra. */
+    fun getLongestSightDistance(): Distance
 }
 
 fun RawSignalingInfra.getLogicalSignalName(signal: LogicalSignalId): String? {

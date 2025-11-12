@@ -574,6 +574,7 @@ class RawInfraBuilder {
             makeRouteNameMap(),
             makeDetEntryToRouteMap(),
             makeDetExitToRouteMap(),
+            physicalSignalPool.maxOfOrNull { physicalSignalPool[it].sightDistance } ?: 0.meters,
         )
     }
 

@@ -211,6 +211,7 @@ class RawInfraImpl(
     private val routeNameMap: Map<String, RouteId>,
     private val dirDetEntryToRouteMap: Map<DirDetectorId, List<RouteId>>,
     private val dirDetExitToRouteMap: Map<DirDetectorId, List<RouteId>>,
+    private val longestSightDistance: Distance,
 ) : RawInfra {
     private val zoneNameMap: HashMap<String, ZoneId> = HashMap()
     private val detectorNameMap: HashMap<String, DetectorId> = HashMap()
@@ -266,6 +267,10 @@ class RawInfraImpl(
 
     override fun findDetector(detectorName: String): DetectorId? {
         return detectorNameMap[detectorName]
+    }
+
+    override fun getLongestSightDistance(): Distance {
+        return longestSightDistance
     }
 
     private fun findChunkOffset(
