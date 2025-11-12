@@ -85,7 +85,7 @@ class DummyBlockAvailability(
                 val lookahead = infraExplorer.getLookahead().map { it.value }
                 if (lookahead.contains(segment.disabledIfBlockInLookahead)) continue
                 if (!lookahead.contains(segment.enabledIfBlockInLookahead)) {
-                    if (!infraExplorer.getIncrementalPath().pathComplete)
+                    if (!infraExplorer.isPathComplete)
                         return null // Can't determine the resource use
                     else continue
                 }

@@ -99,6 +99,14 @@ class StepTracker(
         return getSeenSteps().take(nStepsExcludingLookahead)
     }
 
+    /**
+     * Returns all the steps (including lookahead), in reverse order. More efficient when stopping
+     * early.
+     */
+    fun iterateSeenStepsBackwards(): Sequence<LocatedStep> {
+        return seenSteps.iterateBackwards()
+    }
+
     fun clone(): StepTracker {
         val res = StepTracker(inputSteps, seenSteps.shallowCopy())
         res.currentPathOffset = currentPathOffset

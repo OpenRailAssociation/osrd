@@ -72,13 +72,12 @@ fun buildFinalEnvelope(
     val context = build(rollingStock, envelopeSimPath, timeStep, comfort)
     val fullInfraExplorer = edges.last().infraExplorerWithNewEnvelope
 
-    val incrementalPath = fullInfraExplorer.getIncrementalPath()
     val pathLength =
         Length<TravelledPath>(
             Distance(millimeters = edges.sumOf { it.length.distance.millimeters })
         )
-    assert(incrementalPath.pathComplete)
     val allowanceRanges = getEngineeringAllowanceRanges(edges)
+    assert(fullInfraExplorer.isPathComplete)
     val fixedPoints =
         initFixedPoints(
             edges,

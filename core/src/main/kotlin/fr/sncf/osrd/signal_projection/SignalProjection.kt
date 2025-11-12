@@ -105,8 +105,7 @@ private fun computeSignalAspectChangeEvents(
     loadedSignalInfra: LoadedSignalInfra,
     leastConstrainingStates: Map<SignalingSystemId, SigState>,
 ): Map<PathSignal, MutableList<SignalAspectChangeEvent>> {
-    val zoneCount = trainPath.getZonePaths().size
-    val zoneStates = MutableList(zoneCount) { ZoneStatus.CLEAR }
+    val zoneStates = mutableMapOf<Int, ZoneStatus>()
 
     val signalAspects =
         pathSignals
@@ -140,7 +139,7 @@ private fun computeSignalAspectChangeEvents(
     for (event in zoneUpdates) {
         if (!zoneToPathIndexMap.containsKey(event.zone)) continue
         if (event.isEntry) zoneStates[zoneToPathIndexMap[event.zone]!!] = ZoneStatus.OCCUPIED
-        else zoneStates[zoneToPathIndexMap[event.zone]!!] = ZoneStatus.CLEAR
+        else zoneStates.remove(zoneToPathIndexMap[event.zone]!!)
 
         val simulatedSignalStates =
             simulator.evaluate(
