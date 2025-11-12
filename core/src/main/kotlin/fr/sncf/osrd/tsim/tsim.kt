@@ -447,7 +447,7 @@ fun step(
     }
 
     val naiveStep = ctx.step(dt, position, speed, action)
-    return instructions.maxSpeed.changes(position)
+    val reactions = instructions.maxSpeed.changes(position)
         .map { change ->
             val target = DecelerationTarget(
                 position = change.position,
@@ -465,8 +465,34 @@ fun step(
                 naiveStep,
             )
         }
-        .minByOrNull { step -> step.acceleration }
-        ?: naiveStep
+
+    val step = reactions
+        .minWithOrNull(
+            // Take the most restrictive reaction. First, we pick those with the
+            // the lowest acceleration: if a constraint requires the rolling
+            // stock to brake (e.g. a signal, or a speed limit), the rolling
+            // stock must decelerate. Then, amongst those -- e.g. multiple
+            // braking steps, or multiple full accelerations -- take the one
+            // with the lowest speed: if all constraints accelerate but one
+            // stops accelerating at a speed limit, we want the rolling stock to
+            // stop accelerating at the speed limit. Inversely, if a constraint
+            // makes the stock brake until a speed limit but another one makes
+            // it brake the full step, we can have the stock brake for the full
+            // step.
+            compareBy<IntegrationStep> { step -> step.acceleration }
+                .thenBy { step -> step.endSpeed }
+        )!!
+
+    // Assert the stock doesn't go above a speed limit if it wasn't above a speed limit before.
+    val nextSpeedLimit = instructions.maxSpeed.at(position + step.positionDelta)
+    if (step.endSpeed approxLowerThan nextSpeedLimit || !(step.startSpeed approxLowerThan currentSpeedLimit)) {
+        // TODO change this to an assert
+    } else {
+        println("oupsi on a dépasser à $position alant a $speed < $currentSpeedLimit vers ${step.endSpeed} > $nextSpeedLimit")
+        assert(reactions.all { step -> !(step.endSpeed approxLowerThan nextSpeedLimit) })
+    }
+
+    return step
 }
 
 /**
