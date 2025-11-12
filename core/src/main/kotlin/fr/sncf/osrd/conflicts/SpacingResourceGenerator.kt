@@ -82,11 +82,11 @@ data class SpacingResourceGenerator(
     // lookahead section). Which makes it OK to copy the lists when the path branches.
     // NOTE: any field added here needs to be added to `clone`, and needs to be trimmed when the
     // train moves past the given objects.
-    private val blockRanges = mutableListOf<BlockRange>()
-    private val routeRanges = mutableListOf<RouteRange>()
-    private val zoneRanges = mutableListOf<ZoneRange>()
-    private val stops = mutableListOf<PathStop>()
-    private val pendingSignals = mutableMapOf<LogicalSignalId, PendingSignalData>()
+    private val blockRanges = ArrayDeque<BlockRange>()
+    private val routeRanges = ArrayDeque<RouteRange>()
+    private val zoneRanges = ArrayDeque<ZoneRange>()
+    private val stops = ArrayDeque<PathStop>()
+    private val pendingSignals = ArrayDeque<PendingSignalData>()
     private val ongoingZoneRequirements = mutableMapOf<ZoneId, OngoingZoneRequirement>()
 
     private var isPathComplete: Boolean = false
@@ -137,13 +137,14 @@ data class SpacingResourceGenerator(
                 blockInfra::getSignalsPositions,
             )
         for ((signal, pathOffset) in signals) {
+            if (pendingSignals.lastOrNull()?.signal == signal)
+                continue // block transition signals are listed on either block
             val physicalSignal = loadedSignalInfra.getPhysicalSignal(signal)
             val sightDistance = rawInfra.getSignalSightDistance(physicalSignal)
             val sightOffset = max(Offset.zero(), pathOffset - sightDistance)
             val sigSystemId = loadedSignalInfra.getSignalingSystem(signal)
             val isCurveBased = simulator.sigModuleManager.isCurveBased(sigSystemId)
-            // The map avoids issues with duplicates on block transitions
-            pendingSignals[signal] = PendingSignalData(pathOffset, sightOffset, isCurveBased)
+            pendingSignals.add(PendingSignalData(signal, pathOffset, sightOffset, isCurveBased))
         }
         etcsSimulator = null // Resets ETCS cache (as it contains the path)
     }
@@ -162,20 +163,23 @@ data class SpacingResourceGenerator(
     fun processUpdate(): List<SpacingRequirement>? {
         if (isLookaheadTooSmall()) return null
         val simulatedLength = callbacks!!.currentPathOffset
-        val signalsToProcess = pendingSignals.filter { it.value.sightOffset <= simulatedLength }
-        val endOffsets =
-            signalsToProcess.mapValues { getRequirementEndOffset(it.key, it.value) ?: return null }
-
-        for ((signal, signalData) in signalsToProcess) {
-            pendingSignals.remove(signal)
-            signalToOngoingRequirements(signal, signalData, endOffsets)
+        val signalsToProcess = pendingSignals.filter { it.sightOffset <= simulatedLength }
+        val endOffsets = mutableMapOf<LogicalSignalId, Offset<TrainPath>>()
+        for (signal in signalsToProcess.reversed()) {
+            // Reversing the list starts with the most likely to fail
+            endOffsets[signal.signal] = getRequirementEndOffset(signal) ?: return null
         }
 
-        val minRelevantPathOffset =
-            pendingSignals.minOfOrNull { it.value.sightOffset } ?: simulatedLength
-        blockRanges.removeIf { it.pathEnd < minRelevantPathOffset }
-        routeRanges.removeIf { it.pathEnd < minRelevantPathOffset }
-        zoneRanges.removeIf { it.pathEnd < minRelevantPathOffset }
+        for (signal in signalsToProcess) {
+            assert(pendingSignals.first().signal == signal.signal)
+            pendingSignals.removeFirst()
+            signalToOngoingRequirements(signal, endOffsets[signal.signal]!!)
+        }
+
+        val minRelevantPathOffset = pendingSignals.minOfOrNull { it.sightOffset } ?: simulatedLength
+        blockRanges.removeWhile { it.pathEnd < minRelevantPathOffset }
+        routeRanges.removeWhile { it.pathEnd < minRelevantPathOffset }
+        zoneRanges.removeWhile { it.pathEnd < minRelevantPathOffset }
 
         return yieldCurrentRequirements()
     }
@@ -195,7 +199,7 @@ data class SpacingResourceGenerator(
         res.routeRanges.addAll(routeRanges)
         res.zoneRanges.addAll(zoneRanges)
         res.stops.addAll(stops)
-        res.pendingSignals.putAll(pendingSignals)
+        res.pendingSignals.addAll(pendingSignals)
         res.isPathComplete = isPathComplete
         res.etcsSimulator = etcsSimulator
         for ((zone, data) in ongoingZoneRequirements) res.ongoingZoneRequirements[zone] =
@@ -229,16 +233,13 @@ data class SpacingResourceGenerator(
      * End offsets are known at this point, so the path is long enough.
      */
     private fun signalToOngoingRequirements(
-        signal: LogicalSignalId,
         signalData: PendingSignalData,
-        endOffsets: Map<LogicalSignalId, Offset<TrainPath>>,
+        endOffset: Offset<TrainPath>,
     ) {
         val zoneRanges =
-            zoneRanges.subRange(signalData.offset, endOffsets[signal]!!).filter {
-                !it.isSinglePoint()
-            }
+            zoneRanges.subRange(signalData.offset, endOffset).filter { !it.isSinglePoint() }
         val requiredOffset =
-            if (signalData.isCurveBased) getETCSFirstRequiredOffset(signal, signalData)
+            if (signalData.isCurveBased) getETCSFirstRequiredOffset(signalData)
             else signalData.sightOffset
 
         for (zoneRange in zoneRanges) {
@@ -249,10 +250,8 @@ data class SpacingResourceGenerator(
     }
 
     /** Returns the offset at which the ETCS "signal" can slow the train down. */
-    private fun getETCSFirstRequiredOffset(
-        signal: LogicalSignalId,
-        signalData: PendingSignalData,
-    ): Offset<TrainPath> {
+    private fun getETCSFirstRequiredOffset(signalData: PendingSignalData): Offset<TrainPath> {
+        val signal = signalData.signal
         var isRouteDelimiter = true
         try {
             isRouteDelimiter = loadedSignalInfra.getSettings(signal).getFlag("Nf")
@@ -298,7 +297,7 @@ data class SpacingResourceGenerator(
         for (requirement in res) { // Avoid modifying while iterating
             if (requirement.isComplete) ongoingZoneRequirements.remove(requirement.zone)
         }
-        stops.removeIf { it.pathOffset < callbacks.currentPathOffset }
+        stops.removeWhile { it.pathOffset < callbacks.currentPathOffset }
         return res
     }
 
@@ -309,7 +308,7 @@ data class SpacingResourceGenerator(
     private fun buildTrainState(signalData: PendingSignalData): SignalingTrainState? {
         val callbacks = callbacks!!
         val nextSignalOffset =
-            pendingSignals.values.map { it.offset }.filter { it > signalData.offset }.minOrNull()
+            pendingSignals.map { it.offset }.filter { it > signalData.offset }.minOrNull()
                 ?: if (isPathComplete) callbacks.currentPathOffset else return null
         val maxSpeedInSignalArea =
             callbacks.maxSpeedInRange(signalData.sightOffset, nextSignalOffset)
@@ -321,10 +320,7 @@ data class SpacingResourceGenerator(
      * For a given signal, returns the end offset of the last required zone, or null if more path is
      * needed.
      */
-    private fun getRequirementEndOffset(
-        signal: LogicalSignalId,
-        signalData: PendingSignalData,
-    ): Offset<TrainPath>? {
+    private fun getRequirementEndOffset(signalData: PendingSignalData): Offset<TrainPath>? {
         if (signalData.isCurveBased)
             return blockRanges.first { it.pathBegin >= signalData.offset }.pathEnd
         val trainState = buildTrainState(signalData) ?: return null
@@ -332,7 +328,9 @@ data class SpacingResourceGenerator(
         // (i.e. the zone after the end of the path is still required)
         val lastZoneIndex = zoneRanges.lastIndex + 1
         if (!isPathComplete) {
-            if (isZoneIndexRequiredForSignal(lastZoneIndex, signal, trainState) != false) {
+            if (
+                isZoneIndexRequiredForSignal(lastZoneIndex, signalData.signal, trainState) != false
+            ) {
                 return null
             }
         }
@@ -355,7 +353,8 @@ data class SpacingResourceGenerator(
         while (true) {
             if (lowerBound == upperBound) break
             val probedZoneIndex = (upperBound + lowerBound) / 2
-            val required = isZoneIndexRequiredForSignal(probedZoneIndex, signal, trainState)!!
+            val required =
+                isZoneIndexRequiredForSignal(probedZoneIndex, signalData.signal, trainState)!!
             if (required) {
                 lowerBound = probedZoneIndex + 1
             } else {
@@ -366,7 +365,7 @@ data class SpacingResourceGenerator(
         // Handle the case where the result is higher than the initial upper bound
         while (
             lowerBound in initialUpperBound..<lastZoneIndex &&
-                isZoneIndexRequiredForSignal(lowerBound, signal, trainState)!!
+                isZoneIndexRequiredForSignal(lowerBound, signalData.signal, trainState)!!
         ) lowerBound++
         val firstNonRequiredZoneIndex = lowerBound
         return zoneRanges[firstNonRequiredZoneIndex - 1].pathEnd
@@ -425,6 +424,8 @@ data class SpacingResourceGenerator(
 
     /** Keeps track of relevant data for any signal on the path (but not yet cleared). */
     private data class PendingSignalData(
+        /** ID of the logical signal */
+        val signal: LogicalSignalId,
         /** Offset of the signal itself */
         val offset: Offset<TrainPath>,
         /** Offset at which the signal is seen by the train */
@@ -495,5 +496,14 @@ data class SpacingResourceGenerator(
             assert(beginTime <= endTime)
             return SpacingRequirement(zoneId, beginTime, endTime, isComplete)
         }
+    }
+}
+
+// Some basic utils
+
+/** Clear the first elements in order, stop when the predicate isn't met anymore (excluded). */
+fun <T> ArrayDeque<T>.removeWhile(f: (T) -> Boolean) {
+    while (isNotEmpty() && f(this[0])) {
+        removeFirst()
     }
 }
