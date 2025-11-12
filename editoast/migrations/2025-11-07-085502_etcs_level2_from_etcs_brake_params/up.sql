@@ -3,8 +3,9 @@ ADD COLUMN supported_signaling_systems_tmp jsonb;
 
 UPDATE rolling_stock
 SET supported_signaling_systems_tmp = (
-    SELECT jsonb_agg(jsonb_build_object('type', value::text))
+    SELECT jsonb_agg(jsonb_build_object('type', value))
     FROM unnest(supported_signaling_systems) AS value
+    WHERE value IS DISTINCT FROM 'ETCS_LEVEL2'
 );
 
 UPDATE rolling_stock

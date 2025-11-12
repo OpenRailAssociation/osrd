@@ -928,13 +928,12 @@ impl PhysicsConsistParameters {
             .unwrap_or_else(|| self.traction_engine.const_gamma)
     }
 
-    pub fn compute_etcs_brake_params(&self) -> Option<EtcsBrakeParams> {
+    pub fn compute_etcs_brake_params(&self) -> Option<&EtcsBrakeParams> {
         // TODO: handle towed rolling-stock when applying ERTMS to that case
-        assert!(
-            self.traction_engine.get_etcs_brake_params().is_some() || self.towed_rolling_stock.is_none(),
-            "ETCS is not handled (yet) for towed rolling-stock"
-        );
-        self.traction_engine.get_etcs_brake_params().cloned()
+        if self.towed_rolling_stock.is_some() {
+            return None;
+        }
+        self.traction_engine.get_etcs_brake_params()
     }
 }
 
@@ -948,7 +947,7 @@ impl From<PhysicsConsistParameters> for PhysicsConsist {
         let mass = params.compute_mass();
         let rolling_resistance = params.compute_rolling_resistance();
         let const_gamma = params.compute_const_gamma();
-        let etcs_brake_params = params.compute_etcs_brake_params();
+        let etcs_brake_params = params.compute_etcs_brake_params().cloned();
 
         let traction_engine = params.traction_engine;
 

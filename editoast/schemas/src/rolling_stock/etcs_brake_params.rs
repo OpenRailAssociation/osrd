@@ -5,8 +5,8 @@ use serde::Serialize;
 use serde::Serializer;
 use utoipa::ToSchema;
 
-#[derive(Clone, Debug, PartialEq, Deserialize, Serialize, ToSchema, Educe)]
-#[educe(Hash)]
+#[derive(Clone, Debug, Deserialize, Serialize, ToSchema, Educe)]
+#[educe(Hash, Eq, PartialEq)]
 #[serde(deny_unknown_fields)]
 /// Braking parameters for ERTMS ETCS Level 2
 /// Commented with their names in ETCS specification document `SUBSET-026-3 v400.pdf` from the

@@ -9,6 +9,7 @@ use crate::rolling_stock::EtcsBrakeParams;
 #[derive(Clone, Debug, Deserialize, Serialize, Display, Educe, ToSchema)]
 #[educe(Hash, Eq, PartialEq)]
 #[serde(tag = "type")]
+#[allow(clippy::large_enum_variant)]
 pub enum SupportedSignalingSystem {
     BAL,
     BAPR,
@@ -17,7 +18,6 @@ pub enum SupportedSignalingSystem {
     #[strum(to_string = "ETCS_LEVEL2")]
     #[serde(rename = "ETCS_LEVEL2")]
     EtcsLevel2 {
-        #[educe(Hash(ignore), PartialEq(ignore))]
         brake_params: EtcsBrakeParams,
     },
 }

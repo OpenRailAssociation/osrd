@@ -29,7 +29,6 @@ SET supported_signaling_systems_tmp = COALESCE((
     WHERE jsonb_typeof(value) = 'object'
         AND value ? 'type'
         AND (value->>'type') IS NOT NULL
-        AND (value->>'type') != 'ETCS_LEVEL2'
 ), ARRAY[]::text[]);
 
 ALTER TABLE rolling_stock
