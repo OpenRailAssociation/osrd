@@ -468,7 +468,7 @@ private fun truncateStep(step: IntegrationStep, vmax0: Double, vmax1: Double): I
     val v0 = step.startSpeed
     val v1 = step.endSpeed
 
-    if (v0 - v1 == vmax0 - vmax1) {
+    if ((v0 < vmax0) == (v1 < vmax1)) {
         return step
     }
 
