@@ -2,7 +2,6 @@ package fr.sncf.osrd.conflicts
 
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext
 import fr.sncf.osrd.envelope_sim.etcs.BrakingType.IND
-import fr.sncf.osrd.envelope_sim.etcs.ETCSBrakingSimulator
 import fr.sncf.osrd.envelope_sim.etcs.ETCSBrakingSimulatorImpl
 import fr.sncf.osrd.envelope_sim.etcs.EoaType
 import fr.sncf.osrd.path.interfaces.BlockRange
@@ -26,6 +25,7 @@ import fr.sncf.osrd.sim_infra.api.ZoneId
 import fr.sncf.osrd.sim_infra.api.getLogicalSignalName
 import fr.sncf.osrd.sim_infra.api.getZonePathZone
 import fr.sncf.osrd.standalone_sim.CLOSED_SIGNAL_RESERVATION_MARGIN
+import fr.sncf.osrd.utils.SoftLazy
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.Offset.Companion.max
@@ -90,7 +90,13 @@ data class SpacingResourceGenerator(
     private val ongoingZoneRequirements = mutableMapOf<ZoneId, OngoingZoneRequirement>()
 
     private var isPathComplete: Boolean = false
-    private var etcsSimulator: ETCSBrakingSimulator? = null
+
+    // Cache that needs to be cleared when the path moves forward
+    // Saves redundant computations within one update call
+    private var etcsSimulator = SoftLazy { ETCSBrakingSimulatorImpl(context!!) }
+    private var blockIdList = SoftLazy { blockRanges.map { it.value } }
+    private var routeIdList = SoftLazy { routeRanges.map { it.value } }
+    private var zoneStates = SoftLazy { MutableList(zoneRanges.size) { ZoneStatus.CLEAR } }
 
     /**
      * Add a new segment of the path. The ranges should cover the same range of `Offset<TrainPath`,
@@ -146,7 +152,7 @@ data class SpacingResourceGenerator(
             val isCurveBased = simulator.sigModuleManager.isCurveBased(sigSystemId)
             pendingSignals.add(PendingSignalData(signal, pathOffset, sightOffset, isCurveBased))
         }
-        etcsSimulator = null // Resets ETCS cache (as it contains the path)
+        clearPathCache()
     }
 
     /** Update the simulation with new time/speed callbacks. */
@@ -180,6 +186,7 @@ data class SpacingResourceGenerator(
         blockRanges.removeWhile { it.pathEnd < minRelevantPathOffset }
         routeRanges.removeWhile { it.pathEnd < minRelevantPathOffset }
         zoneRanges.removeWhile { it.pathEnd < minRelevantPathOffset }
+        clearPathCache()
 
         return yieldCurrentRequirements()
     }
@@ -270,7 +277,7 @@ data class SpacingResourceGenerator(
             "A single envelope covering whole path is currently expected (used only through standalone simulation)"
         }
 
-        val etcsSimulator = getETCSSimulator()
+        val etcsSimulator = etcsSimulator.get()
         val eoa =
             etcsSimulator
                 .computeEoaLocations(
@@ -385,9 +392,9 @@ data class SpacingResourceGenerator(
 
         // TODO path migration: when we'll have backtracks:
         //  truncate at backtrack locations, and avoid "more path required"
-        val blocks = blockRanges.map { it.value }
+        val blocks = blockIdList.get()
 
-        val zoneStates = MutableList(zoneRanges.size) { ZoneStatus.CLEAR }
+        val zoneStates = zoneStates.get()
         if (probedZoneIndex < zoneStates.size) {
             zoneStates[probedZoneIndex] = ZoneStatus.OCCUPIED
         } // Otherwise we rely on the `followingZoneState` of `simulator.evaluate`
@@ -397,12 +404,15 @@ data class SpacingResourceGenerator(
                 loadedSignalInfra,
                 blockInfra,
                 blocks,
-                routeRanges.map { it.value },
+                routeIdList.get(),
                 blocks.size,
                 zoneStates,
                 ZoneStatus.OCCUPIED,
                 firstZone = zoneRanges.first().value,
             )
+        if (probedZoneIndex < zoneStates.size) {
+            zoneStates[probedZoneIndex] = ZoneStatus.CLEAR
+        }
         val signalState = simulatedSignalStates[signal]!!
 
         return simulator.sigModuleManager.isConstraining(
@@ -412,14 +422,11 @@ data class SpacingResourceGenerator(
         )
     }
 
-    /**
-     * Return the ETCS simulator and cache it (until the next path extension). Only works if context
-     * is provided.
-     */
-    private fun getETCSSimulator(): ETCSBrakingSimulator {
-        val res = etcsSimulator ?: ETCSBrakingSimulatorImpl(context!!)
-        etcsSimulator = res
-        return res
+    private fun clearPathCache() {
+        etcsSimulator.reset() // Resets ETCS cache (as it contains the path)
+        blockIdList.reset()
+        zoneStates.reset()
+        routeIdList.reset()
     }
 
     /** Keeps track of relevant data for any signal on the path (but not yet cleared). */
