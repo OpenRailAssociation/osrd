@@ -253,6 +253,63 @@ class Curve(val xs: DoubleArray, val ys: DoubleArray) {
 
         return ys[lo] + (ys[hi] - ys[lo]) * (x - xs[lo]) / (xs[hi] - xs[lo])
     }
+
+    /**
+     * QUADratic interpolation of the Y value of the curve at the given [x] position
+     *
+     * If [x] is out of bounds, returns the first or the last value of [ys].
+     */
+    fun quad(x: Double): Double {
+        if (x <= xs.first()) {
+            return ys.first()
+        }
+        if (x >= xs.last()) {
+            return ys.last()
+        }
+        if (size < 3) {
+            return lerp(x)
+        }
+
+        val result = xs.binarySearch(x)
+        if (result >= 0) {
+            // Landed right on a point of the curve
+            return ys[result]
+        }
+
+        // Index where `x` should be inserted in `xs` to preserve order. It is
+        // ensured to be higher than 1 and lower than `size-1`, otherwise `x`
+        // is lower than `x.first()` or higher than `xs.last()` and these cases
+        // are handled above.
+        val i = -result - 1
+
+        val lo: Double
+        val mi: Double
+        val hi: Double
+        val ylo: Double
+        val ymi: Double
+        val yhi: Double
+        if (i == size-1) {
+            lo = xs[i - 2]
+            mi = xs[i - 1]
+            hi = xs[i]
+            ylo = ys[i - 2]
+            ymi = ys[i - 1]
+            yhi = ys[i]
+        } else {
+            lo = xs[i - 1]
+            mi = xs[i]
+            hi = xs[i + 1]
+            ylo = ys[i - 1]
+            ymi = ys[i]
+            yhi = ys[i + 1]
+        }
+
+        // ref: https://en.wikipedia.org/wiki/Polynomial_interpolation#Lagrange_interpolation
+        return ylo * (x - mi) * (x - hi) / (lo - mi) / (lo - hi) +
+            ymi * (x - lo) * (x - hi) / (mi - lo) / (mi - hi) +
+            yhi * (x - lo) * (x - mi) / (hi - lo) / (hi - mi)
+
+    }
 }
 
 @JvmInline
@@ -424,36 +481,29 @@ internal fun reactToSpeedConstraint(
     afterPos: Meters,
     accelerateStep: IntegrationStep,
 ): IntegrationStep {
-    val beforeSpeedLimit = constraint.lerp(beforePos)
-    if (beforeSpeed approxEqualTo beforeSpeedLimit) {
-        // The rolling stock is on the curve
-        val step = ctx.step(dt, beforePos, beforeSpeed, Action.BRAKE)
-        // TODO snap vraiment sur la courbe osef de la physique OU ALORS interpolation quad
-        //assert(constraint.lerp(beforePos + step.positionDelta) approxEqualTo step.endSpeed)
-        return step
-    }
+    val beforeSpeedLimit = constraint.quad(beforePos)
+    val afterSpeedLimit = constraint.quad(afterPos)
+    val truncatedStep = truncateStep(accelerateStep, beforeSpeedLimit, afterSpeedLimit)
 
-    if (beforeSpeed > beforeSpeedLimit) {
-        // The rolling stock is going too fast to reach the target speed in time
-
+    if (truncatedStep.timeDelta approxEqualTo 0.0 || beforeSpeed > beforeSpeedLimit) {
+        // The stock's speed is on (or above) the curve and the curve is going DOWN ↓
         var brakingStep = ctx.step(dt, beforePos, beforeSpeed, Action.BRAKE)
-        val endVMax = constraint.lerp(Meters.POSITIVE_INFINITY)
-        if (!(endVMax approxLowerThan brakingStep.endSpeed)) {
+
+        val endLimit = constraint.quad(Meters.POSITIVE_INFINITY)
+        if (!(endLimit approxLowerThan brakingStep.endSpeed)) {
             // The rolling stock doesn't have to brake during all the time step to reach the target speed
 
             brakingStep = truncateStep(brakingStep, brakingStep.endSpeed, brakingStep.endSpeed)
         }
 
+        // Assert we're sticking on the constraint if we weren't above the constraint before
+        val nextSpeedLimit = constraint.quad(beforePos + brakingStep.positionDelta)
+        //assert(brakingStep.endSpeed approxEqualTo nextSpeedLimit || !(brakingStep.startSpeed approxLowerThan beforeSpeedLimit))
+
         return brakingStep
     }
 
-    val afterSpeedLimit = constraint.lerp(afterPos)
-    if (accelerateStep.endSpeed approxLowerThan afterSpeedLimit) {
-        // The speed limit doesn't constraint the acceleration
-        return accelerateStep
-    }
-
-    return truncateStep(accelerateStep, beforeSpeedLimit, afterSpeedLimit)
+    return truncatedStep
 }
 
 /**
