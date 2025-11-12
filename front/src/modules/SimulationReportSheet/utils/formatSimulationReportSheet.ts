@@ -266,30 +266,50 @@ export function consolidateOvertakesToSingleSteps(
 
 /**
  * @param operationalPoints List of operational points to be formated and enriched
+ * @param opIdsToExclude List of operational point IDs to exclude from the simulation sheet (e.g., service track OPs that cannot be modeled). Exception: OPs explicitly requested by the user (origin, destination, via points, or stops) are never excluded.
  * @param simulation Simulation response containing final output positions and times
  * @param simulationPathSteps List of simulation path steps
  * @param departureTime Departure time in hh:mm format
  * @returns A list of formated operational points with times and stop durations
  */
-export function getOperationalPointsWithTimes(
-  operationalPoints: SuggestedOP[],
-  simulation: SimulationResponseSuccess,
-  simulationPathSteps: StdcmPathStep[],
-  departureTime: Date
-): StdcmResultsOperationalPoint[] {
+export function getOperationalPointsWithTimes({
+  operationalPoints,
+  opIdsToExclude,
+  simulation,
+  simulationPathSteps,
+  departureTime,
+}: {
+  operationalPoints: SuggestedOP[];
+  opIdsToExclude: string[];
+  simulation: SimulationResponseSuccess;
+  simulationPathSteps: StdcmPathStep[];
+  departureTime: Date;
+}): StdcmResultsOperationalPoint[] {
   const { positions, times, speeds } = simulation.final_output;
 
   const departureHour = departureTime.getHours();
   const departureMinute = departureTime.getMinutes();
 
-  // Map operational points with their positions, times, and stop durations
-  const formattedOps = operationalPoints.map((op) =>
-    formatOperationalPointWithTimes(
-      op,
-      { positions, times, speeds, departureHour, departureMinute },
-      simulationPathSteps
-    )
-  );
+  const formattedOps = operationalPoints
+    .filter((op) => {
+      // Keep if the OP is not in the exclusion list
+      if (!op.opId || !opIdsToExclude.includes(op.opId)) return true;
+
+      // Keep if explicitly requested by the user (origin, destination, via point or stop)
+      const isRequestedPoint = simulationPathSteps.some(
+        (step) => step.location && matchPathStepAndOp(step.location, op)
+      );
+
+      return isRequestedPoint;
+    })
+    // Map operational points with their positions, times, and stop durations
+    .map((op) =>
+      formatOperationalPointWithTimes(
+        op,
+        { positions, times, speeds, departureHour, departureMinute },
+        simulationPathSteps
+      )
+    );
 
   const stopPositions = findAllStops(positions, speeds);
   const formattedOpsWithAllStops = insertMissingStopsInOperationalPointsWithTimes(

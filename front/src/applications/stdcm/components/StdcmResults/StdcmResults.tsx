@@ -18,6 +18,7 @@ import {
 import { useMapSettings } from 'reducers/commonMap';
 import type { Viewport } from 'reducers/commonMap/types';
 import {
+  getOperationalPointsIdFiltered,
   getRetainedSimulationIndex,
   getSelectedSimulation,
   getStdcmInfraID,
@@ -61,6 +62,8 @@ const StdcmResults = ({
   const selectedSimulation = useSelector(getSelectedSimulation);
   const retainedSimulationIndex = useSelector(getRetainedSimulationIndex);
 
+  const opIdsToExclude = useSelector(getOperationalPointsIdFiltered);
+
   const mapSettings = useMapSettings();
 
   // Keep local state of the viewport to keep stdcm config and stdcm results maps independent
@@ -80,12 +83,13 @@ const StdcmResults = ({
 
   const operationalPointsList = useMemo(() => {
     if (!hasSimulationResults) return [];
-    return getOperationalPointsWithTimes(
-      outputs.pathProperties?.suggestedOperationalPoints || [],
-      outputs.results.simulation,
-      outputs.results.simulationPathSteps,
-      new Date(outputs.results.departure_time)
-    );
+    return getOperationalPointsWithTimes({
+      operationalPoints: outputs.pathProperties?.suggestedOperationalPoints || [],
+      opIdsToExclude,
+      simulation: outputs.results.simulation,
+      simulationPathSteps: outputs.results.simulationPathSteps,
+      departureTime: new Date(outputs.results.departure_time),
+    });
   }, [outputs]);
 
   const markersInfo = useMemo(() => {

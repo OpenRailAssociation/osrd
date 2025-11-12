@@ -82,9 +82,10 @@ const buildStdcmConfSelectors = () => {
     getSearchDatetimeWindow: makeOsrdConfSelector('searchDatetimeWindow', { nonNullable: true }),
     getTimetableID: makeOsrdConfSelector('timetableID', { nonNullable: true }),
     getInfraID: makeOsrdConfSelector('infraID', { nonNullable: true }),
-    getOperationalPointsIdFiltered: makeOsrdConfSelector('operationalPointsIdFiltered', {
-      nonNullable: true,
-    }),
+    getOperationalPointsIdFiltered: createSelector(
+      [makeOsrdConfSelector('operationalPointsIdFiltered')],
+      (opIds) => opIds ?? []
+    ),
   };
 };
 
