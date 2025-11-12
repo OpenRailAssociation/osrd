@@ -1174,6 +1174,8 @@ export const relabelDuplicateTrigrams = (nodes: NodeDto[]): NodeDto[] => {
 };
 
 export const convertNgeDtoToOsrd = (dto: NetzgrafikDto) => {
+  const macroNotes = dto.freeFloatingTexts.map((note) => castNgeNoteToOsrd(note, dto));
+
   const dedupNodes = relabelDuplicateTrigrams(dto.nodes);
   const macroNodes: MacroNodeForm[] = [];
   for (const node of dedupNodes) {
@@ -1247,6 +1249,7 @@ export const convertNgeDtoToOsrd = (dto: NetzgrafikDto) => {
 
   return {
     macro_nodes: macroNodes,
+    macro_notes: macroNotes,
     paced_trains: pacedTrains,
     train_schedules: trainSchedules,
     round_trips: { train_schedules: trainSchedulesRoundTrips, paced_trains: pacedTrainsRoundTrips },

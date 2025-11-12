@@ -17,6 +17,7 @@ import type {
   SearchResultItemScenario,
   PathItem,
   OperationalPointReference,
+  MacroNoteForm,
 } from 'common/api/osrdEditoastApi';
 import type { RangedValue } from 'common/types';
 import type { PathOperationalPoint } from 'modules/simulationResult/types';
@@ -44,6 +45,7 @@ export type TimetableJsonPayload = {
   train_schedules: TrainScheduleFromJson[];
   paced_trains: PacedTrainFromJson[];
   macro_nodes?: MacroNodeForm[];
+  macro_notes?: MacroNoteForm[];
   round_trips?: RoundTripsFromJson;
 };
 
