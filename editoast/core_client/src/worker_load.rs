@@ -13,15 +13,12 @@ pub struct WorkerLoadRequest {
 
 impl AsCoreRequest<()> for WorkerLoadRequest {
     const URL_PATH: &'static str = "/worker_load";
+    const OVERRIDE_TIMEOUT: Option<std::time::Duration> = Some(std::time::Duration::from_secs(1));
 
     fn worker_id(&self) -> Option<String> {
         match self.timetable {
             Some(timetable) => Some(format!("{}-{}", self.infra, timetable)),
             None => Some(self.infra.to_string()),
         }
-    }
-
-    fn override_timeout(&self) -> Option<std::time::Duration> {
-        Some(std::time::Duration::from_secs(10))
     }
 }
