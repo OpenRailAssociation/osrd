@@ -1,0 +1,232 @@
+package fr.sncf.osrd.cli
+
+import com.beust.jcommander.Parameter
+import com.beust.jcommander.Parameters
+import fr.sncf.osrd.api.*
+import fr.sncf.osrd.api.FullInfra
+import fr.sncf.osrd.api.InfraManager
+import fr.sncf.osrd.api.makeSignalingSimulator
+import fr.sncf.osrd.api.pathfinding.hasDuplicateTracks
+import fr.sncf.osrd.api.stdcm.buildTemporarySpeedLimitManager
+import fr.sncf.osrd.api.stdcm.getRequirements
+import fr.sncf.osrd.api.stdcm.parseMarginValue
+import fr.sncf.osrd.api.stdcm.parseSteps
+import fr.sncf.osrd.api.stdcm.parseTrackSectionIds
+import fr.sncf.osrd.api.stdcm.stdcmRequestAdapter
+import fr.sncf.osrd.cli.ValidateInfra.parseRailJSONFromFile
+import fr.sncf.osrd.pathfinding.Pathfinding
+import fr.sncf.osrd.signaling.etcs_level2.ETCS_LEVEL2
+import fr.sncf.osrd.stdcm.STDCMResult
+import fr.sncf.osrd.stdcm.graph.findPath
+import fr.sncf.osrd.stdcm.preprocessing.implementation.makeBlockAvailability
+import fr.sncf.osrd.utils.CSVLogger
+import java.io.File
+import java.io.IOException
+import java.nio.file.Files
+import java.nio.file.Paths
+import java.util.concurrent.TimeUnit
+import kotlin.concurrent.thread
+import kotlin.math.pow
+import kotlin.time.measureTime
+import okhttp3.OkHttpClient
+import okio.buffer
+import okio.source
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+
+/**
+ * Usage: log payloads, either using the `LOG_STDCM_REQUESTS` flag or looking through datadog. Then,
+ * place the payloads in a directory (defaults to "bench_payloads") and run the CLI. Infra and
+ * timetable can be input through a running editoast or with CLI parameters. Outputs are written as
+ * csv, defaults to "bench_outputs/git-commit-hash.csv".
+ */
+@Parameters(commandDescription = "Benchmarks STDCM performances on a directory of saved payloads")
+class BenchSTDCM : CliCommand {
+    @Parameter(
+        names = ["--payload-directory"],
+        description = "Path to the json payload file to load",
+    )
+    private var payloadDirectory: String = "bench_payloads"
+
+    @Parameter(
+        names = ["--output-csv"],
+        description = "Path to the generated output csv. Defaults to commit_hash.csv.",
+    )
+    private var outputCsvPath: String? = null
+
+    @Parameter(
+        names = ["--editoast-url"],
+        description =
+            "Editoast URL, used to query infrastructures and timetables (if not specified by file)",
+    )
+    private var editoastUrl = "http://localhost:8090/"
+
+    @Parameter(
+        names = ["--editoast-authorization"],
+        description = "The HTTP Authorization header sent to editoast",
+    )
+    private var editoastAuthorization = "x-osrd-skip-authz"
+    @Parameter(
+        names = ["--railjson"],
+        description = "Path to the railjson infra file, overriding the id given in the request",
+    )
+    private var railjson: String? = null
+    @Parameter(
+        names = ["--timetable-dir"],
+        description = "Path to the timetable directory, must contain timetable_id.json",
+    )
+    private var timetableDirectory: String? = null
+    private val logger: Logger = LoggerFactory.getLogger("STDCM bench")
+
+    override fun run(): Int {
+        try {
+            val httpClient = OkHttpClient.Builder().readTimeout(120, TimeUnit.SECONDS).build()
+            val infraManager =
+                if (railjson != null) {
+                    val rjs = parseRailJSONFromFile(railjson)
+                    val signalingSimulator = makeSignalingSimulator()
+                    val infra = FullInfra.fromRJSInfra(rjs, signalingSimulator)
+                    FileInfraProvider(infra)
+                } else InfraManager(editoastUrl, editoastAuthorization, httpClient)
+            val timetableProvider =
+                if (timetableDirectory != null) JsonTimetableProvider(timetableDirectory!!)
+                else TimetableDownloader(editoastUrl, editoastAuthorization, httpClient)
+            val cacheManager = TimetableCacheManager(timetableProvider, timetableDirectory)
+
+            if (outputCsvPath == null) {
+                Files.createDirectories(Paths.get("bench_outputs"))
+                outputCsvPath =
+                    "bench_outputs/" +
+                        ProcessBuilder("git", "rev-parse", "HEAD")
+                            .start()
+                            .inputStream
+                            .bufferedReader()
+                            .readText()
+                            .trim() +
+                        ".csv"
+            }
+            val csvLogger =
+                CSVLogger(
+                    outputCsvPath!!,
+                    "filename",
+                    "time",
+                    "mb",
+                    "result_time",
+                    "result_distance",
+                    "error",
+                )
+            val files = File(payloadDirectory).listFiles()!!
+            for (file in files) {
+                csvLogger.log(processFile(infraManager, cacheManager, file), flush = true)
+            }
+        } catch (e: IOException) {
+            throw RuntimeException(e)
+        }
+        return 0
+    }
+
+    fun processFile(
+        infraManager: InfraProvider,
+        cacheManager: TimetableCacheManager,
+        payloadPath: File,
+    ): Map<String, Any> {
+        System.gc()
+        logger.info("Running request at $payloadPath")
+        val results =
+            mutableMapOf<String, Any>(
+                "error" to "",
+                "result_time" to "no_path_found",
+                "result_distance" to "no_path_found",
+                "filename" to payloadPath,
+            )
+        val (time, memory) =
+            measureTimeAndMaxMemory {
+                var path: STDCMResult? = null
+                val request =
+                    checkNotNull(stdcmRequestAdapter.fromJson(payloadPath.source().buffer()))
+                val infra = infraManager.getInfra(request.infra, request.expectedVersion)
+                try {
+                    val temporarySpeedLimitManager =
+                        buildTemporarySpeedLimitManager(infra, request.temporarySpeedLimits)
+                    val rollingStock =
+                        parseRawRollingStock(
+                            request.physicsConsist,
+                            request.rollingStockLoadingGauge,
+                            request.rollingStockSupportedSignalingSystems.filter {
+                                it != ETCS_LEVEL2.id
+                            },
+                        )
+                    val steps = parseSteps(infra, request.pathItems, request.startTime)
+                    val requirements = getRequirements(request, infra, cacheManager)
+                    val allowedTrackSections =
+                        parseTrackSectionIds(infra, request.allowedTrackSections)
+                    path =
+                        findPath(
+                            infra,
+                            rollingStock,
+                            request.comfort,
+                            0.0,
+                            steps,
+                            makeBlockAvailability(
+                                requirements,
+                                gridMarginBeforeTrain = request.timeGapBefore.seconds,
+                                gridMarginAfterTrain = request.timeGapAfter.seconds,
+                                timeStep = request.timeStep!!.seconds,
+                            ),
+                            request.timeStep.seconds,
+                            request.maximumDepartureDelay!!.seconds,
+                            request.maximumRunTime.seconds,
+                            request.speedLimitTag,
+                            parseMarginValue(request.margin),
+                            Pathfinding.TIMEOUT,
+                            temporarySpeedLimitManager,
+                            allowedTrackSections,
+                        )
+                    if (path != null && hasDuplicateTracks(infra, path.trainPath)) path = null
+                } catch (e: Exception) {
+                    results["error"] = e.toString()
+                }
+                if (path != null) {
+                    results["result_time"] = path.envelope.totalTime
+                    results["result_distance"] = path.trainPath.getLength().meters
+                }
+            }
+        results["time"] = time
+        results["mb"] = memory
+        logger.info(results.map { "${it.key}: ${it.value}" }.joinToString(", "))
+        return results
+    }
+}
+
+/** Runs the given block, and return process time (seconds) and maximum memory use (MB). */
+fun measureTimeAndMaxMemory(block: () -> Unit): Pair<Double, Long> {
+    var maxMemory = 0L
+    var running = true
+
+    val rt = Runtime.getRuntime()
+    fun logUsedMB() {
+        val free = rt.freeMemory()
+        val total = rt.totalMemory()
+        val used = total - free
+        val mb = 2.0.pow(20.0)
+        val usedMB = (used / mb).toLong()
+        if (used > maxMemory) {
+            maxMemory = usedMB
+        }
+    }
+    val thread = thread {
+        try {
+            while (running) {
+                logUsedMB()
+                Thread.sleep(1)
+            }
+        } catch (e: InterruptedException) {}
+    }
+    val time = measureTime { block() }
+
+    running = false
+    thread.interrupt()
+    thread.join()
+    logUsedMB()
+    return (time.inWholeMilliseconds / 1000.0) to maxMemory
+}

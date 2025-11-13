@@ -116,7 +116,7 @@ class STDCMEndpoint(
                     },
                 )
             val steps = parseSteps(infra, request.pathItems, request.startTime)
-            val requirements = getRequirements(request, infra)
+            val requirements = getRequirements(request, infra, timetableCacheManager)
             val allowedTrackSections = parseTrackSectionIds(infra, request.allowedTrackSections)
 
             // Run the STDCM pathfinding
@@ -165,53 +165,6 @@ class STDCMEndpoint(
             RsJson(RsWithBody(stdcmResponseAdapter.toJson(response)))
         } catch (ex: Throwable) {
             ExceptionHandler.handle(ex)
-        }
-    }
-
-    /**
-     * Collect all spacing requirements in an easily fetchable format. Combines both train
-     * requirements and work schedules.
-     */
-    private fun getRequirements(request: STDCMRequest, infra: FullInfra): ParsedRequirements {
-        val res = mutableMapOf<ZoneId, TreeRangeSet<Double>>()
-        convertWorkScheduleCollection(infra.rawInfra, request.workSchedules)
-            .spacingRequirements
-            .forEach { spacingReq ->
-                val set = res.computeIfAbsent(spacingReq.zone) { TreeRangeSet.create() }
-                set.add(Range.closedOpen(spacingReq.beginTime, spacingReq.endTime))
-            }
-
-        val trainRequirements = runBlocking {
-            timetableCacheManager.get(request.infra, infra.rawInfra, request.timetableId)
-        }
-        // Cached requirements are relative to EPOCH. Add time diff with request start time
-        // to these requirements.
-        val searchWindowBeginEpoch = request.startTime.durationSinceEpoch()
-        val searchWindowEndEpoch =
-            searchWindowBeginEpoch +
-                request.maximumDepartureDelay!!.seconds +
-                request.maximumRunTime.seconds
-        for ((zoneId, rangeSet) in trainRequirements) {
-            val setBuilder = res.computeIfAbsent(zoneId) { TreeRangeSet.create() }
-            for (range in rangeSet.asRanges()) {
-                // Filter out unnecessary requirements
-                val included =
-                    range.upperEndpoint() > searchWindowBeginEpoch &&
-                        range.lowerEndpoint() < searchWindowEndEpoch
-                if (included) {
-                    val newRange =
-                        Range.range(
-                            range.lowerEndpoint() - searchWindowBeginEpoch,
-                            range.lowerBoundType(),
-                            range.upperEndpoint() - searchWindowBeginEpoch,
-                            range.upperBoundType(),
-                        )
-                    setBuilder.add(newRange)
-                }
-            }
-        }
-        return res.mapValues { rangeSet ->
-            TreeMap(rangeSet.value.asRanges().associateBy { it.upperEndpoint() })
         }
     }
 
@@ -350,7 +303,7 @@ fun buildTemporarySpeedLimitManager(
     return TemporarySpeedLimitManager(outputSpeedLimits)
 }
 
-private fun parseSteps(
+fun parseSteps(
     infra: FullInfra,
     pathItems: List<STDCMPathItem>,
     startTime: ZonedDateTime,
@@ -388,7 +341,58 @@ private fun parseSteps(
     }
 }
 
-private fun parseMarginValue(margin: MarginValue): AllowanceValue? {
+/**
+ * Collect all spacing requirements in an easily fetchable format. Combines both train requirements
+ * and work schedules.
+ */
+fun getRequirements(
+    request: STDCMRequest,
+    infra: FullInfra,
+    timetableCacheManager: TimetableCacheManager,
+): ParsedRequirements {
+    val res = mutableMapOf<ZoneId, TreeRangeSet<Double>>()
+    convertWorkScheduleCollection(infra.rawInfra, request.workSchedules)
+        .spacingRequirements
+        .forEach { spacingReq ->
+            val set = res.computeIfAbsent(spacingReq.zone) { TreeRangeSet.create() }
+            set.add(Range.closedOpen(spacingReq.beginTime, spacingReq.endTime))
+        }
+
+    val trainRequirements = runBlocking {
+        timetableCacheManager.get(request.infra, infra.rawInfra, request.timetableId)
+    }
+    // Cached requirements are relative to EPOCH. Add time diff with request start time
+    // to these requirements.
+    val searchWindowBeginEpoch = request.startTime.durationSinceEpoch()
+    val searchWindowEndEpoch =
+        searchWindowBeginEpoch +
+            request.maximumDepartureDelay!!.seconds +
+            request.maximumRunTime.seconds
+    for ((zoneId, rangeSet) in trainRequirements) {
+        val setBuilder = res.computeIfAbsent(zoneId) { TreeRangeSet.create() }
+        for (range in rangeSet.asRanges()) {
+            // Filter out unnecessary requirements
+            val included =
+                range.upperEndpoint() > searchWindowBeginEpoch &&
+                    range.lowerEndpoint() < searchWindowEndEpoch
+            if (included) {
+                val newRange =
+                    Range.range(
+                        range.lowerEndpoint() - searchWindowBeginEpoch,
+                        range.lowerBoundType(),
+                        range.upperEndpoint() - searchWindowBeginEpoch,
+                        range.upperBoundType(),
+                    )
+                setBuilder.add(newRange)
+            }
+        }
+    }
+    return res.mapValues { rangeSet ->
+        TreeMap(rangeSet.value.asRanges().associateBy { it.upperEndpoint() })
+    }
+}
+
+fun parseMarginValue(margin: MarginValue): AllowanceValue? {
     return when (margin) {
         is MarginValue.MinPer100Km -> {
             TimePerDistance(margin.value)
@@ -426,9 +430,6 @@ private fun findWaypointBlocks(
     return waypointBlocks
 }
 
-private fun parseTrackSectionIds(
-    infra: FullInfra,
-    trackSectionName: Set<String>?,
-): Set<TrackSectionId>? {
+fun parseTrackSectionIds(infra: FullInfra, trackSectionName: Set<String>?): Set<TrackSectionId>? {
     return trackSectionName?.mapNotNull { infra.rawInfra.getTrackSectionFromName(it) }?.toSet()
 }

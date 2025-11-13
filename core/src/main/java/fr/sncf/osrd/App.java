@@ -16,6 +16,7 @@ public class App {
         commands.put("load-infra", new ValidateInfra());
         commands.put("worker", new WorkerCommand());
         commands.put("reproduce-request", new ReproduceRequest());
+        commands.put("bench-stdcm", new BenchSTDCM());
 
         // prepare the command line parser
         var argsParserBuilder = JCommander.newBuilder();
