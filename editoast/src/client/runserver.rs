@@ -49,8 +49,6 @@ pub struct RunserverArgs {
     /// provided by the request headers of if the provided user doesn't have the required privileges.
     #[clap(long, env = "EDITOAST_ENABLE_AUTHORIZATION", default_value_t = true)]
     enable_authorization: bool,
-    #[clap(long, env = "OSRDYNE_API_URL", default_value_t = Url::parse("http://127.0.0.1:4242/").unwrap())]
-    osrdyne_api_url: Url,
     /// The timeout to use when performing the healthcheck, in milliseconds
     #[clap(long, env = "EDITOAST_HEALTH_CHECK_TIMEOUT_MS", default_value_t = 1000)]
     health_check_timeout_ms: u64,
@@ -71,7 +69,6 @@ pub async fn runserver(
                 worker_pool_id,
             },
         enable_authorization,
-        osrdyne_api_url,
         health_check_timeout_ms,
         root_url,
         dynamic_assets_path,
@@ -90,7 +87,6 @@ pub async fn runserver(
         postgres_config: postgres.into(),
         osrdyne_config: views::OsrdyneConfig {
             mq_url,
-            osrdyne_api_url,
             core: views::CoreConfig {
                 timeout: Duration::seconds(core_timeout as i64),
                 single_worker: core_single_worker,

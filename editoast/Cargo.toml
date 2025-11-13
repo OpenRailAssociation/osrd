@@ -19,7 +19,6 @@ members = [
   "fga_derive",
   "fga_migrations",
   "osm_to_railjson",
-  "osrdyne_client",
   "schemas",
   "search",
 ]
@@ -109,7 +108,6 @@ opentelemetry_sdk = { version = "0.31.0", default-features = false, features = [
   "trace",
 ] }
 ordered-float = { version = "5.0.0", features = ["serde"] }
-osrdyne_client = { path = "./osrdyne_client" }
 postgis_diesel = { version = "3.0.2", features = ["serde"] }
 postgres-openssl = "0.5.2"
 pretty_assertions = "1.4.1"
@@ -207,7 +205,6 @@ linkme.workspace = true
 opentelemetry-otlp.workspace = true
 opentelemetry_sdk.workspace = true
 ordered-float.workspace = true
-osrdyne_client.workspace = true
 pathfinding = "4.14.0"
 petgraph = "0.8.2"
 postgis_diesel.workspace = true
@@ -250,7 +247,6 @@ core_client = { workspace = true, features = ["mocking_client"] }
 database = { workspace = true, features = ["testing"] }
 editoast_models = { workspace = true, features = ["testing"] }
 fga = { path = "./fga", features = ["test_utilities"] }
-osrdyne_client = { workspace = true, features = ["mock_client"] }
 pretty_assertions.workspace = true
 rstest.workspace = true
 schemas = { workspace = true, features = ["testing"] }

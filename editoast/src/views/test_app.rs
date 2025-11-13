@@ -30,7 +30,6 @@ use futures::executor::block_on;
 use opentelemetry_sdk::error::OTelSdkResult;
 use opentelemetry_sdk::trace::SpanData;
 use opentelemetry_sdk::trace::SpanExporter;
-use osrdyne_client::OsrdyneClient;
 use serde::de::DeserializeOwned;
 use tower_http::trace::TraceLayer;
 use url::Url;
@@ -83,7 +82,6 @@ pub(crate) struct TestAppBuilder {
     test_name: String,
     db_pool: Option<DbConnectionPoolV2>,
     core_client: Option<CoreClient>,
-    osrdyne_client: Option<OsrdyneClient>,
     enable_authorization: bool,
     enable_telemetry: bool,
     root_url: Option<Url>,
@@ -95,7 +93,6 @@ impl TestAppBuilder {
             test_name: String::from("editoast-test"),
             db_pool: None,
             core_client: None,
-            osrdyne_client: None,
             enable_authorization: false,
             enable_telemetry: true,
             root_url: None,
@@ -117,11 +114,6 @@ impl TestAppBuilder {
 
     pub fn core_client(mut self, core_client: CoreClient) -> Self {
         self.core_client = Some(core_client);
-        self
-    }
-
-    pub fn osrdyne_client(mut self, osrdyne_client: OsrdyneClient) -> Self {
-        self.osrdyne_client = Some(osrdyne_client);
         self
     }
 
@@ -154,7 +146,6 @@ impl TestAppBuilder {
             },
             osrdyne_config: OsrdyneConfig {
                 mq_url: Url::parse("amqp://osrd:password@127.0.0.1:5672/%2f").unwrap(),
-                osrdyne_api_url: Url::parse("http://127.0.0.1:4242/").unwrap(),
                 core: CoreConfig {
                     timeout: chrono::Duration::seconds(180),
                     single_worker: false,
@@ -215,12 +206,6 @@ impl TestAppBuilder {
                 .unwrap_or_else(|| CoreClient::Mocked(MockingClient::default())),
         );
 
-        // Build Osrdyne client
-        let osrdyne_client = self
-            .osrdyne_client
-            .unwrap_or_else(OsrdyneClient::default_mock);
-        let osrdyne_client = Arc::new(osrdyne_client);
-
         let store_name =
             fga::test_utilities::sanitize_store_name_length(&format!("authz@{}", &self.test_name));
         let fga_connection_settings = fga::client::ConnectionSettings::new(
@@ -256,7 +241,6 @@ impl TestAppBuilder {
         let app_state = AppState {
             db_pool: db_pool_v2.clone(),
             core_client: core_client.clone(),
-            osrdyne_client,
             valkey_client: valkey,
             regulator,
             infra_caches,
