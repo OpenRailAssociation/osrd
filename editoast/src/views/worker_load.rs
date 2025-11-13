@@ -37,17 +37,6 @@ pub enum WorkerStatus {
     Error,
 }
 
-impl From<osrdyne_client::WorkerStatus> for WorkerStatus {
-    fn from(status: osrdyne_client::WorkerStatus) -> Self {
-        match status {
-            osrdyne_client::WorkerStatus::Unscheduled => WorkerStatus::NotReady,
-            osrdyne_client::WorkerStatus::Started => WorkerStatus::Loading,
-            osrdyne_client::WorkerStatus::Ready => WorkerStatus::Ready,
-            osrdyne_client::WorkerStatus::Error => WorkerStatus::Error,
-        }
-    }
-}
-
 #[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "worker_load")]
 pub enum WorkerLoadError {

@@ -58,7 +58,6 @@ use dashmap::DashMap;
 
 use futures::TryFutureExt;
 pub use openapi::OpenApiRoot;
-use osrdyne_client::OsrdyneClient;
 
 use axum::extract::Json;
 use axum::extract::State;
@@ -799,7 +798,6 @@ pub struct CoreConfig {
 
 pub struct OsrdyneConfig {
     pub mq_url: Url,
-    pub osrdyne_api_url: Url,
     pub core: CoreConfig,
 }
 
@@ -851,7 +849,6 @@ pub struct AppState {
     pub map_layers: Arc<MapLayers>,
     pub speed_limit_tag_ids: Arc<SpeedLimitTagIds>,
     pub core_client: Arc<CoreClient>,
-    pub osrdyne_client: Arc<OsrdyneClient>,
     pub health_check_timeout: Duration,
     pub regulator: Regulator,
 }
@@ -948,9 +945,6 @@ impl AppState {
             config.valkey_config.clone(),
             config.app_version.as_deref().unwrap_or("NO_APP_VERSION"),
         ));
-        let osrdyne_client = Arc::new(OsrdyneClient::new(
-            config.osrdyne_config.osrdyne_api_url.clone(),
-        ));
 
         let (db_pool, core_client, openfga) = tokio::try_join!(
             async { db_pool_fut.await? },
@@ -964,7 +958,6 @@ impl AppState {
             db_pool,
             infra_caches,
             core_client,
-            osrdyne_client,
             map_layers: Arc::new(MapLayers::default()),
             speed_limit_tag_ids,
             health_check_timeout: config.health_check_timeout,
