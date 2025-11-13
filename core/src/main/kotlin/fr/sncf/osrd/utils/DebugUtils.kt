@@ -19,15 +19,16 @@ class CSVLogger(filename: String, private val keys: List<String>) {
     }
 
     /** Log the given entries to the CSV. All keys must appear in the object keys. */
-    fun log(entries: Map<String, Any>) {
+    fun log(entries: Map<String, Any>, flush: Boolean = false) {
         assert(entries.keys.all { keys.contains(it) })
         val line = keys.joinToString(separator = ";") { entries.getOrDefault(it, "").toString() }
         writer.write(line + "\n")
+        if (flush) writer.flush()
     }
 
     /** Log the given entries to the CSV. All keys must appear in the object keys. */
-    fun log(vararg entries: Pair<String, Any>) {
-        log(mapOf(*entries))
+    fun log(vararg entries: Pair<String, Any>, flush: Boolean = false) {
+        log(mapOf(*entries), flush)
     }
 
     /** Log the given entries to the CSV, associated with the node lat/lon. */
@@ -36,6 +37,7 @@ class CSVLogger(filename: String, private val keys: List<String>) {
         blockInfra: BlockInfra,
         node: STDCMNode,
         vararg entries: Pair<String, Any>,
+        flush: Boolean = false,
     ) {
         val block = node.infraExplorer.getCurrentBlock()
         val geo = buildTrainPathFromBlock(rawInfra, blockInfra, block).getGeo()
@@ -47,6 +49,6 @@ class CSVLogger(filename: String, private val keys: List<String>) {
         val data = mutableMapOf(*entries)
         data["lat"] = p.lat
         data["lon"] = p.lon
-        log(data)
+        log(data, flush)
     }
 }
