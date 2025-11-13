@@ -140,21 +140,14 @@ where
     Self: Serialize + Sized + Sync,
     R: CoreResponse,
 {
-    /// A shorthand for [Self::url]
+    /// The URL path of this request
     const URL_PATH: &'static str;
 
-    /// Returns the URL for this request, by default returns [Self::URL_PATH]
-    fn url(&self) -> &str {
-        Self::URL_PATH
-    }
+    /// An optional timeout override for this request
+    const OVERRIDE_TIMEOUT: Option<Duration> = None;
 
     /// Returns the worker id used for the request. Must be provided.
     fn worker_id(&self) -> Option<String>;
-
-    /// Returns the timeout override for this request, if any.
-    fn override_timeout(&self) -> Option<Duration> {
-        None
-    }
 
     /// Sends this request using the given [CoreClient] and returns the response content on success
     ///
@@ -165,10 +158,10 @@ where
     /// to CoreError and a trait function handle_errors would suffice?
     async fn fetch(&self, core: &CoreClient) -> Result<R::Response, Error> {
         core.fetch::<Self, R>(
-            self.url(),
+            Self::URL_PATH,
             Some(self),
             self.worker_id(),
-            self.override_timeout(),
+            Self::OVERRIDE_TIMEOUT,
         )
         .await
     }
