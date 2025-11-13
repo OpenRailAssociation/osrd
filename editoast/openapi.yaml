@@ -11620,6 +11620,7 @@ components:
       additionalProperties: false
     PositiveDuration:
       type: string
+      format: duration
       description: Duration in ISO 8601 format (e.g. PT2H for 2 hours)
       examples:
       - PT2H

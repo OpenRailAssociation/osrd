@@ -93,6 +93,9 @@ impl utoipa::PartialSchema for PositiveDuration {
             .schema_type(utoipa::openapi::schema::SchemaType::Type(
                 utoipa::openapi::schema::Type::String,
             ))
+            .format(Some(utoipa::openapi::SchemaFormat::KnownFormat(
+                utoipa::openapi::KnownFormat::Duration,
+            )))
             .description(Some("Duration in ISO 8601 format (e.g. PT2H for 2 hours)"))
             .examples([serde_json::Value::String("PT2H".to_string())])
             .build()
