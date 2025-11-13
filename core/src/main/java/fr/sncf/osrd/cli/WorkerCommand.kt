@@ -146,7 +146,6 @@ class WorkerCommand : CliCommand {
                 "/conflict_detection" to ConflictDetectionEndpoint(infraManager),
                 "/etcs_braking_curves" to
                     ETCSBrakingCurvesEndpoint(infraManager, electricalProfileSetManager),
-                "/version" to VersionEndpoint(),
                 "/stdcm" to STDCMEndpoint(infraManager, timetableCache),
                 "/worker_load" to WorkerLoadEndpoint(infraManager, timetableCache),
             )
