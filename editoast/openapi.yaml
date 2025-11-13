@@ -4888,15 +4888,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/Version'
-  /version/core:
-    get:
-      responses:
-        '200':
-          description: Return the core service version
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/Version'
   /work_schedules:
     post:
       tags:

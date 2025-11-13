@@ -62,10 +62,8 @@ use osrdyne_client::OsrdyneClient;
 
 use axum::extract::Json;
 use axum::extract::State;
-use core_client::AsCoreRequest;
 use core_client::CoreClient;
 use core_client::mq_client;
-use core_client::version::CoreVersionRequest;
 use database::DbConnectionPoolV2;
 use database::db_connection_pool::ping_database;
 use editoast_derive::EditoastError;
@@ -117,7 +115,6 @@ fn service_router() -> router::DocumentedRouter {
             // random stuff
             .route("/health", get!(health))
             .route("/version", get!(version))
-            .route("/version/core", get!(core_version))
             .route("/worker_load", post!(worker_load::worker_load))
 
             // authorization
@@ -721,19 +718,6 @@ pub(in crate::views) async fn version(
     })
 }
 
-#[editoast_derive::route]
-#[utoipa::path(
-    get, path = "",
-    responses(
-        (status = 200, description = "Return the core service version", body = Version),
-    ),
-)]
-pub(in crate::views) async fn core_version(State(core): State<Arc<CoreClient>>) -> Json<Version> {
-    let response = CoreVersionRequest {}.fetch(&core).await;
-    let response = response.unwrap_or(Version { git_describe: None });
-    Json(response)
-}
-
 #[derive(Clone)]
 pub struct CoreConfig {
     pub timeout: Duration,
@@ -1008,7 +992,6 @@ mod tests {
 
     use axum::http::StatusCode;
     use core_client::mocking::MockingClient;
-    use database::DbConnectionPoolV2;
     use serde_json::json;
 
     use super::test_app::TestAppBuilder;
@@ -1089,22 +1072,6 @@ mod tests {
     async fn version() {
         let app = TestAppBuilder::default_app();
         let request = app.get("/version");
-        let response: HashMap<String, Option<String>> = app.fetch(request).await.json_into();
-        assert!(response.contains_key("git_describe"));
-    }
-
-    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
-    async fn core_version() {
-        let mut core = MockingClient::new();
-        core.stub("/version")
-            .response(StatusCode::OK)
-            .json(json!({"git_describe": ""}))
-            .finish();
-        let app = TestAppBuilder::new()
-            .core_client(core.into())
-            .db_pool(DbConnectionPoolV2::for_tests())
-            .build();
-        let request = app.get("/version/core");
         let response: HashMap<String, Option<String>> = app.fetch(request).await.json_into();
         assert!(response.contains_key("git_describe"));
     }

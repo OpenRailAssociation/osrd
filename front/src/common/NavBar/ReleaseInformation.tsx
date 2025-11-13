@@ -15,7 +15,6 @@ const ReleaseInformation = () => {
   const { t } = useTranslation();
   const deploymentSettings = useDeploymentSettings();
   const { data: editoastVersion } = osrdEditoastApi.endpoints.getVersion.useQuery();
-  const { data: coreVersion } = osrdEditoastApi.endpoints.getVersionCore.useQuery();
 
   const osrdWebSite = 'https://osrd.fr/';
 
@@ -69,7 +68,6 @@ const ReleaseInformation = () => {
                 </thead>
                 <tbody>
                   {serviceRow('Editoast', editoastVersion?.git_describe)}
-                  {serviceRow('Core', coreVersion?.git_describe)}
                   {serviceRow('Front', import.meta.env.VITE_OSRD_GIT_DESCRIBE)}
                 </tbody>
               </table>

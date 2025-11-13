@@ -1405,9 +1405,6 @@ const injectedRtkApi = api
       getVersion: build.query<GetVersionApiResponse, GetVersionApiArg>({
         query: () => ({ url: `/version` }),
       }),
-      getVersionCore: build.query<GetVersionCoreApiResponse, GetVersionCoreApiArg>({
-        query: () => ({ url: `/version/core` }),
-      }),
       postWorkSchedules: build.mutation<PostWorkSchedulesApiResponse, PostWorkSchedulesApiArg>({
         query: (queryArg) => ({ url: `/work_schedules`, method: 'POST', body: queryArg.body }),
         invalidatesTags: ['work_schedules'],
@@ -2734,8 +2731,6 @@ export type GetTrainScheduleByIdSimulationApiArg = {
 };
 export type GetVersionApiResponse = /** status 200 Return the service version */ Version;
 export type GetVersionApiArg = void;
-export type GetVersionCoreApiResponse = /** status 200 Return the core service version */ Version;
-export type GetVersionCoreApiArg = void;
 export type PostWorkSchedulesApiResponse =
   /** status 201 The id of the created work schedule group */ {
     work_schedule_group_id: number;

@@ -6,7 +6,6 @@ pub mod pathfinding;
 pub mod signal_projection;
 pub mod simulation;
 pub mod stdcm;
-pub mod version;
 pub mod worker_load;
 
 #[cfg(feature = "mocking_client")]
