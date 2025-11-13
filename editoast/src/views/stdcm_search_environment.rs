@@ -149,8 +149,8 @@ impl From<StdcmSearchEnvironmentCreateForm> for Changeset<StdcmSearchEnvironment
             .enabled_from(form.enabled_from)
             .enabled_until(form.enabled_until)
             .allowed_tracks(form.allowed_tracks)
-            .operational_points(form.operational_points.into())
-            .operational_points_id_filtered(form.operational_points_id_filtered.into())
+            .operational_points(form.operational_points.unwrap_or_default())
+            .operational_points_id_filtered(form.operational_points_id_filtered.unwrap_or_default())
             .speed_limit_tags(speed_limits.speed_limit_tags)
             .default_speed_limit_tag(speed_limits.default_speed_limit_tag)
     }

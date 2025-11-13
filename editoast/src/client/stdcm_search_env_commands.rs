@@ -1,6 +1,5 @@
 use crate::models::Infra;
 use crate::models::Scenario;
-use crate::models::stdcm_search_environment::OperationalPointIds;
 use crate::models::stdcm_search_environment::StdcmSearchEnvironment;
 use crate::models::timetable::Timetable;
 use chrono::DateTime;
@@ -158,10 +157,8 @@ async fn set_stdcm_search_env_from_scenario(
         .allowed_tracks(parse_allowed_tracks(args.allowed_tracks_json_path)?)
         .speed_limit_tags(parse_speed_limit_tags(args.speed_limit_tags)?)
         .default_speed_limit_tag(args.default_speed_limit_tag)
-        .operational_points(args.operational_points.into())
-        .operational_points_id_filtered(OperationalPointIds::new(
-            args.operational_points_id_filtered.unwrap_or_default(),
-        ))
+        .operational_points(args.operational_points.unwrap_or_default())
+        .operational_points_id_filtered(args.operational_points_id_filtered.unwrap_or_default())
         .create(conn)
         .await?;
 
@@ -244,10 +241,8 @@ async fn set_stdcm_search_env_from_scratch(
         .search_window_end(end)
         .enabled_from(Utc::now())
         .enabled_until(Utc::now() + Duration::days(1000))
-        .operational_points(args.operational_points.into())
-        .operational_points_id_filtered(OperationalPointIds::new(
-            args.operational_points_id_filtered.unwrap_or_default(),
-        ))
+        .operational_points(args.operational_points.unwrap_or_default())
+        .operational_points_id_filtered(args.operational_points_id_filtered.unwrap_or_default())
         .allowed_tracks(parse_allowed_tracks(args.allowed_tracks_json_path)?)
         .speed_limit_tags(parse_speed_limit_tags(args.speed_limit_tags)?)
         .default_speed_limit_tag(args.default_speed_limit_tag)

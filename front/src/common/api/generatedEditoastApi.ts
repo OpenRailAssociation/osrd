@@ -4741,8 +4741,6 @@ export type StdcmSearchEnvironmentResponse = {
   timetable_id: number;
   work_schedule_group_id?: number | null;
 };
-export type OperationalPoints = number[];
-export type OperationalPointIds = string[];
 export type StdcmSearchEnvironment = {
   /** Map of a key (ex. loading gauge) with their allowed track section ids. */
   allowed_tracks:
@@ -4761,8 +4759,8 @@ export type StdcmSearchEnvironment = {
   enabled_until: string;
   id: number;
   infra_id: number;
-  operational_points: OperationalPoints;
-  operational_points_id_filtered: OperationalPointIds;
+  operational_points: number[];
+  operational_points_id_filtered: string[];
   /** The start of the search time window.
     Usually, trains schedules from the `timetable_id` runs within this window. */
   search_window_begin: string;

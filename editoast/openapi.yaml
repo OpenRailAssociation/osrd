@@ -10734,10 +10734,6 @@ components:
                 type: string
             additionalProperties: false
       additionalProperties: false
-    OperationalPointIds:
-      type: array
-      items:
-        type: string
     OperationalPointPart:
       type: object
       required:
@@ -10813,11 +10809,6 @@ components:
             oneOf:
             - type: 'null'
             - $ref: '#/components/schemas/TrackReference'
-    OperationalPoints:
-      type: array
-      items:
-        type: integer
-        format: int64
     OptionsChangeGroup:
       type: object
       required:
@@ -14232,9 +14223,14 @@ components:
           type: integer
           format: int64
         operational_points:
-          $ref: '#/components/schemas/OperationalPoints'
+          type: array
+          items:
+            type: integer
+            format: int64
         operational_points_id_filtered:
-          $ref: '#/components/schemas/OperationalPointIds'
+          type: array
+          items:
+            type: string
         search_window_begin:
           type: string
           format: date-time

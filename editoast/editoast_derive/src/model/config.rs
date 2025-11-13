@@ -61,6 +61,7 @@ pub(crate) enum FieldTransformation {
     ToString,
     ToEnum(syn::Type),
     UomUnit(syn::Path),
+    NonNullArray(syn::Path),
 }
 
 #[derive(Debug, PartialEq, Clone)]
@@ -166,6 +167,9 @@ impl ModelField {
             Some(FieldTransformation::UomUnit(ref unit)) => {
                 parse_quote! { #unit::from(#expr) }
             }
+            Some(FieldTransformation::NonNullArray(_)) => {
+                parse_quote! { #expr.into_iter().map(Some).collect() }
+            }
             None => parse_quote! { #expr },
         }
     }
@@ -183,6 +187,9 @@ impl ModelField {
             Some(FieldTransformation::UomUnit(ref unit)) => {
                 parse_quote! { #unit::new(#expr) }
             }
+            Some(FieldTransformation::NonNullArray(_)) => {
+                parse_quote! { #expr.into_iter().flatten().collect() }
+            }
             None => parse_quote! { #expr },
         }
     }
@@ -196,6 +203,9 @@ impl ModelField {
             Some(FieldTransformation::ToString) => parse_quote! { String },
             Some(FieldTransformation::ToEnum(_)) => parse_quote! { i16 },
             Some(FieldTransformation::UomUnit(ref unit)) => parse_quote! { #unit::ReprType },
+            Some(FieldTransformation::NonNullArray(ref ty)) => {
+                parse_quote! { std::vec::Vec<std::option::Option<#ty>> }
+            }
             None => ty.clone(),
         }
     }
