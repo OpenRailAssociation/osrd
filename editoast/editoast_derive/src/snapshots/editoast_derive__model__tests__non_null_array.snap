@@ -1,0 +1,132 @@
+---
+source: editoast_derive/src/model.rs
+assertion_line: 181
+---
+// Source
+// -----------------------------------------------------------------------------
+
+#[derive(Clone, Model)]
+#[model(table = database::tables::timetable)]
+#[model(gen(ops = r))]
+struct Timetable {
+    id: i64,
+    #[model(non_null_array = "i64")]
+    data: Vec<i64>,
+}
+
+// Macro expansion
+// -----------------------------------------------------------------------------
+
+#[automatically_derived]
+impl crate::prelude::Model for Timetable {
+    type Row = TimetableRow;
+    type Changeset = TimetableChangeset;
+    type Table = database::tables::timetable::table;
+}
+#[doc(hidden)]
+struct _TimetableField<M, T, Column>(core::marker::PhantomData<(M, T, Column)>);
+impl Timetable {
+    pub const ID: _TimetableField<Timetable, i64, database::tables::timetable::id> = _TimetableField(
+        core::marker::PhantomData,
+    );
+    pub const DATA: _TimetableField<
+        Timetable,
+        Vec<i64>,
+        database::tables::timetable::data,
+    > = _TimetableField(core::marker::PhantomData);
+}
+#[derive(diesel::Queryable)]
+#[diesel(table_name = database::tables::timetable)]
+struct TimetableRow {
+    #[diesel(column_name = "id")]
+    id: i64,
+    #[diesel(column_name = "data")]
+    data: std::vec::Vec<std::option::Option<i64>>,
+}
+#[derive(Debug, Default, diesel::Queryable, diesel::AsChangeset, diesel::Insertable)]
+#[diesel(table_name = database::tables::timetable)]
+struct TimetableChangeset {
+    #[diesel(
+        deserialize_as = std::vec::Vec<std::option::Option<i64>>,
+        column_name = "data"
+    )]
+    data: Option<std::vec::Vec<std::option::Option<i64>>>,
+}
+#[automatically_derived]
+impl crate::prelude::Identifiable<(i64)> for Timetable {
+    fn get_id(&self) -> (i64) {
+        (self.id.clone())
+    }
+}
+#[automatically_derived]
+impl crate::prelude::PreferredId<(i64)> for Timetable {}
+#[automatically_derived]
+impl From<TimetableRow> for Timetable {
+    fn from(row: TimetableRow) -> Self {
+        Self {
+            id: row.id,
+            data: row.data.into_iter().flatten().collect(),
+        }
+    }
+}
+#[automatically_derived]
+impl From<Timetable> for TimetableChangeset {
+    fn from(model: Timetable) -> Self {
+        Self {
+            data: Some(model.data.into_iter().map(Some).collect()),
+        }
+    }
+}
+#[automatically_derived]
+impl crate::prelude::Exists<(i64)> for Timetable {
+    type Error = editoast_models::Error;
+    #[tracing::instrument(
+        name = "model:exists<Timetable>",
+        skip_all,
+        ret,
+        err,
+        fields(query_id)
+    )]
+    async fn exists(
+        conn: &mut database::DbConnection,
+        id: (i64),
+    ) -> std::result::Result<bool, Self::Error> {
+        use diesel::prelude::*;
+        use diesel_async::RunQueryDsl;
+        use std::ops::DerefMut;
+        use database::tables::timetable::dsl;
+        tracing::Span::current().record("query_id", tracing::field::debug(&id));
+        diesel::select(diesel::dsl::exists(dsl::timetable.filter(dsl::id.eq(id))))
+            .get_result(conn.write().await.deref_mut())
+            .await
+            .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))
+    }
+}
+#[automatically_derived]
+impl crate::prelude::Retrieve<(i64)> for Timetable {
+    type Error = editoast_models::Error;
+    #[tracing::instrument(
+        name = "model:retrieve<Timetable>",
+        skip_all,
+        err,
+        fields(query_id)
+    )]
+    async fn retrieve(
+        conn: database::DbConnection,
+        id: (i64),
+    ) -> std::result::Result<Option<Timetable>, Self::Error> {
+        use diesel::prelude::*;
+        use diesel_async::RunQueryDsl;
+        use database::tables::timetable::dsl;
+        use std::ops::DerefMut;
+        tracing::Span::current().record("query_id", tracing::field::debug(&id));
+        dsl::timetable
+            .filter(dsl::id.eq(id))
+            .select((dsl::id, dsl::data))
+            .first::<TimetableRow>(conn.write().await.deref_mut())
+            .await
+            .map(Timetable::from)
+            .optional()
+            .map_err(|e| Self::Error::from(editoast_models::Error::from(e)))
+    }
+}

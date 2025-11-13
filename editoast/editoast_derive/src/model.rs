@@ -175,4 +175,21 @@ mod tests {
             }
         );
     }
+
+    #[test]
+    fn non_null_array() {
+        crate::assert_macro_expansion!(
+            model,
+            syn::parse_quote! {
+                #[derive(Clone, Model)]
+                #[model(table = database::tables::timetable)]
+                #[model(gen(ops = r))]
+                struct Timetable {
+                    id: i64,
+                    #[model(non_null_array = "i64")]
+                    data: Vec<i64>,
+                }
+            }
+        );
+    }
 }

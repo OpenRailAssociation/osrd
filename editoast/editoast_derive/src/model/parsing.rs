@@ -260,6 +260,7 @@ impl ModelField {
             value.to_string,
             to_enum,
             value.uom_unit,
+            value.non_null_array,
         )
         .map_err(|e| e.with_span(&ident))?;
         Ok(Self {
@@ -284,17 +285,27 @@ impl FieldTransformation {
         to_string: bool,
         to_enum: Option<syn::Type>,
         uom_unit: Option<syn::Path>,
+        non_null_array: Option<syn::Path>,
     ) -> darling::Result<Option<Self>> {
-        match (remote, json, geo, to_string, to_enum, uom_unit) {
-            (Some(ty), false, false, false, None, None) => Ok(Some(Self::Remote(ty))),
-            (None, true, false, false, None, None) => Ok(Some(Self::Json)),
-            (None, false, true, false, None, None) => Ok(Some(Self::Geo)),
-            (None, false, false, true, None, None) => Ok(Some(Self::ToString)),
-            (None, false, false, false, Some(ty), None) => Ok(Some(Self::ToEnum(ty))),
-            (None, false, false, false, None, Some(ty)) => Ok(Some(Self::UomUnit(ty))),
-            (None, false, false, false, None, None) => Ok(None),
+        match (
+            remote,
+            json,
+            geo,
+            to_string,
+            to_enum,
+            uom_unit,
+            non_null_array,
+        ) {
+            (Some(ty), false, false, false, None, None, None) => Ok(Some(Self::Remote(ty))),
+            (None, true, false, false, None, None, None) => Ok(Some(Self::Json)),
+            (None, false, true, false, None, None, None) => Ok(Some(Self::Geo)),
+            (None, false, false, true, None, None, None) => Ok(Some(Self::ToString)),
+            (None, false, false, false, Some(ty), None, None) => Ok(Some(Self::ToEnum(ty))),
+            (None, false, false, false, None, Some(ty), None) => Ok(Some(Self::UomUnit(ty))),
+            (None, false, false, false, None, None, Some(ty)) => Ok(Some(Self::NonNullArray(ty))),
+            (None, false, false, false, None, None, None) => Ok(None),
             _ => Err(Error::custom(
-                "Model: remote, json, geo, to_string, to_enum and uom_unit attributes are mutually exclusive",
+                "Model: remote, json, geo, to_string, to_enum, uom_unit and non_null_array attributes are mutually exclusive",
             )),
         }
     }
