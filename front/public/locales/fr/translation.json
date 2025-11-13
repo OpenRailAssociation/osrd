@@ -739,7 +739,7 @@
     "maxSpeed": "Vitesse maximale",
     "messages": {
       "failure": "Opération échouée",
-      "invalidEffortCurves": "Courbes invalides : {{invalidEffortCurves}}. Chaque courbe doit posséder au moins 2 combinaisons de valeurs vitesse / effort (sans doublon sur les valeurs de vitesse). Les combinaisons ayant au moins un champs vide sont ignorées. Une vitesse ne peut pas excéder 600km/h et un effort ne peut pas excéder 1000kN.",
+      "invalidEffortCurves": "Courbes invalides : {{invalidEffortCurves}}. Chaque courbe doit posséder au moins 2 combinaisons de valeurs vitesse / effort (sans doublon sur les valeurs de vitesse). Les combinaisons ayant au moins un champ vide sont ignorées. Une vitesse ne peut pas excéder 600 km/h et un effort ne peut pas excéder 1000 kN.",
       "invalidForm": "Formulaire incomplet",
       "missingEffortCurves": "Veuillez renseigner une courbe effort-vitesse",
       "missingInformationAutomaticallyFilled_one": "Le champ suivant a été initialisé par défaut : {{invalidFields}}.",
