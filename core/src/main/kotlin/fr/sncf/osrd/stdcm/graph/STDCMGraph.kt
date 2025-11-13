@@ -5,7 +5,9 @@ import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue.FixedTime
 import fr.sncf.osrd.graph.Graph
+import fr.sncf.osrd.pathfinding.constraints.ConstraintCombiner
 import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
+import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.impl.TemporarySpeedLimitManager
 import fr.sncf.osrd.stdcm.STDCMAStarHeuristic
 import fr.sncf.osrd.stdcm.STDCMHeuristicBuilder
@@ -16,6 +18,7 @@ import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelope
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.utils.CachedBlockMRSPBuilder
+import fr.sncf.osrd.utils.indexing.StaticIdx
 import fr.sncf.osrd.utils.units.meters
 import java.lang.Double.isFinite
 import java.lang.Double.isNaN
@@ -41,6 +44,7 @@ class STDCMGraph(
     val tag: String?,
     val standardAllowance: AllowanceValue?,
     val temporarySpeedLimitManager: TemporarySpeedLimitManager = TemporarySpeedLimitManager(),
+    constraints: ConstraintCombiner<StaticIdx<Block>, Block>,
 ) : Graph<STDCMNode, STDCMEdge, STDCMEdge> {
     val rawInfra = fullInfra.rawInfra!!
     val blockInfra = fullInfra.blockInfra!!
@@ -80,10 +84,9 @@ class STDCMGraph(
                     fullInfra.rawInfra,
                     steps,
                     maxRunTime,
-                    rollingStock,
-                    temporarySpeedLimitManager,
                     mrspBuilder,
                     standardAllowance,
+                    constraints,
                 )
                 .build()
         bestPossibleTime = remainingTimeEstimator.bestTravelTime

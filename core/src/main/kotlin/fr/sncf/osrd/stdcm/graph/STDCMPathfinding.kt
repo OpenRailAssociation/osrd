@@ -100,6 +100,11 @@ class STDCMPathfinding(
 
     private var starts: Set<STDCMNode> = HashSet()
 
+    val constraints =
+        ConstraintCombiner(
+            initConstraints(fullInfra, rollingStock, allowedTrackSections).toMutableList()
+        )
+
     var graph: STDCMGraph =
         STDCMGraph(
             fullInfra,
@@ -113,16 +118,12 @@ class STDCMPathfinding(
             tag,
             standardAllowance,
             temporarySpeedLimitManager,
+            constraints,
         )
 
     @WithSpan(value = "STDCM pathfinding", kind = SpanKind.SERVER)
     fun findPath(): STDCMResult? {
         runInputSanityChecks()
-
-        val constraints =
-            ConstraintCombiner(
-                initConstraints(fullInfra, rollingStock, allowedTrackSections).toMutableList()
-            )
 
         assert(steps.last().stop) { "The last stop is supposed to be an actual stop" }
         starts = getStartNodes(graph, listOf(constraints))
