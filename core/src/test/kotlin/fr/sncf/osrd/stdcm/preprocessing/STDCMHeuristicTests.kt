@@ -59,7 +59,6 @@ class STDCMHeuristicTests {
                     infra,
                     steps,
                     Double.POSITIVE_INFINITY,
-                    STANDARD_TRAIN,
                     mrspBuilder = CachedBlockMRSPBuilder(infra, infra, null),
                     allowance = null,
                 )
@@ -115,7 +114,6 @@ class STDCMHeuristicTests {
                     infra,
                     steps,
                     Double.POSITIVE_INFINITY,
-                    STANDARD_TRAIN,
                     mrspBuilder = CachedBlockMRSPBuilder(infra, infra, null),
                     allowance = AllowanceValue.Percentage(100.0),
                 )
@@ -126,7 +124,6 @@ class STDCMHeuristicTests {
                     infra,
                     steps,
                     Double.POSITIVE_INFINITY,
-                    STANDARD_TRAIN,
                     mrspBuilder = CachedBlockMRSPBuilder(infra, infra, null),
                     allowance = null,
                 )
@@ -178,7 +175,6 @@ class STDCMHeuristicTests {
                     infra,
                     steps,
                     Double.POSITIVE_INFINITY,
-                    STANDARD_TRAIN,
                     mrspBuilder = CachedBlockMRSPBuilder(infra, infra, null),
                     allowance = null,
                 )

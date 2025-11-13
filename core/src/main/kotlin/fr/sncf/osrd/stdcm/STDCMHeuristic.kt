@@ -1,12 +1,11 @@
 package fr.sncf.osrd.stdcm
 
-import fr.sncf.osrd.envelope_sim.PhysicsRollingStock
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue
+import fr.sncf.osrd.pathfinding.constraints.ConstraintCombiner
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.sim_infra.api.BlockInfra
 import fr.sncf.osrd.sim_infra.api.RawInfra
-import fr.sncf.osrd.sim_infra.impl.TemporarySpeedLimitManager
 import fr.sncf.osrd.sim_infra.utils.getBlockEntry
 import fr.sncf.osrd.stdcm.graph.STDCMEdge
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelope
@@ -104,11 +103,9 @@ class STDCMHeuristicBuilder(
     private val rawInfra: RawInfra,
     private val steps: List<STDCMStep>,
     private val maxRunningTime: Double,
-    private val rollingStock: PhysicsRollingStock,
-    private val temporarySpeedLimitManager: TemporarySpeedLimitManager =
-        TemporarySpeedLimitManager(),
     private val mrspBuilder: CachedBlockMRSPBuilder,
     val allowance: AllowanceValue?,
+    private val constraints: ConstraintCombiner<StaticIdx<Block>, Block>? = null,
 ) {
     private val logger: Logger = LoggerFactory.getLogger("STDCMHeuristic")
 
@@ -196,7 +193,7 @@ class STDCMHeuristicBuilder(
                     pendingBlock.stepIndex,
                     pendingBlock.remainingTimeAtBlockStart,
                 )
-            res.add(newBlock)
+            newBlock?.let { res.add(it) }
         }
         return res
     }
@@ -206,7 +203,7 @@ class STDCMHeuristicBuilder(
         val res = PriorityQueue<PendingBlock>()
         val stepCount = steps.size
         for (wp in steps[stepCount - 1].locations) {
-            res.add(makePendingBlock(wp.edge, wp.offset, stepCount - 1, 0.0))
+            makePendingBlock(wp.edge, wp.offset, stepCount - 1, 0.0)?.let { res.add(it) }
         }
         return res
     }
@@ -217,7 +214,7 @@ class STDCMHeuristicBuilder(
         offset: Offset<Block>?,
         currentIndex: Int,
         remainingTime: Double,
-    ): PendingBlock {
+    ): PendingBlock? {
         var newIndex = currentIndex
         val actualOffset = offset ?: blockInfra.getBlockLength(block)
         while (newIndex > 0) {
@@ -226,6 +223,12 @@ class STDCMHeuristicBuilder(
                 break
             }
             newIndex--
+        }
+        if (constraints != null && newIndex > 0 && remainingTime > 0.0) {
+            // We stop if there's any blocking constraint on the block,
+            // but only if not on the first or last block
+            // (as the constrained range may not be part of the path)
+            if (constraints.apply(block).isNotEmpty()) return null
         }
         return PendingBlock(
             block,
