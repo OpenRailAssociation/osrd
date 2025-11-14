@@ -10108,7 +10108,9 @@ components:
         name:
           type: string
         other_categories:
-          $ref: '#/components/schemas/TrainMainCategories'
+          type: array
+          items:
+            $ref: '#/components/schemas/TrainMainCategory'
         power_restrictions:
           type: object
           additionalProperties:
@@ -10130,7 +10132,9 @@ components:
           format: double
           description: Duration in s
         supported_signaling_systems:
-          $ref: '#/components/schemas/RollingStockSupportedSignalingSystems'
+          type: array
+          items:
+            type: string
     LightRollingStockWithLiveries:
       allOf:
       - $ref: '#/components/schemas/LightRollingStock'
@@ -12254,7 +12258,9 @@ components:
         name:
           type: string
         other_categories:
-          $ref: '#/components/schemas/TrainMainCategories'
+          type: array
+          items:
+            $ref: '#/components/schemas/TrainMainCategory'
         power_restrictions:
           type: object
           additionalProperties:
@@ -12386,7 +12392,9 @@ components:
         name:
           type: string
         other_categories:
-          $ref: '#/components/schemas/TrainMainCategories'
+          type: array
+          items:
+            $ref: '#/components/schemas/TrainMainCategory'
         power_restrictions:
           type: object
           description: Mapping of power restriction code to power class
@@ -12420,7 +12428,9 @@ components:
           format: double
           description: Duration in s
         supported_signaling_systems:
-          $ref: '#/components/schemas/RollingStockSupportedSignalingSystems'
+          type: array
+          items:
+            type: string
     RollingStockLivery:
       type: object
       description: |
@@ -12509,10 +12519,6 @@ components:
         unit:
           type: string
       additionalProperties: false
-    RollingStockSupportedSignalingSystems:
-      type: array
-      items:
-        type: string
     RollingStockWithLiveries:
       allOf:
       - $ref: '#/components/schemas/RollingStock'
@@ -14119,7 +14125,9 @@ components:
           $ref: '#/components/schemas/LoadingGaugeType'
           description: The loading gauge of the rolling stock
         rolling_stock_supported_signaling_systems:
-          $ref: '#/components/schemas/RollingStockSupportedSignalingSystems'
+          type: array
+          items:
+            type: string
           description: List of supported signaling systems
         speed_limit_tag:
           type:
@@ -15065,10 +15073,6 @@ components:
         properties:
           sub_category_code:
             type: string
-    TrainMainCategories:
-      type: array
-      items:
-        $ref: '#/components/schemas/TrainMainCategory'
     TrainMainCategory:
       type: string
       enum:

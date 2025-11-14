@@ -18,10 +18,8 @@ pub use energy_source::SpeedDependantPower;
 mod etcs_brake_params;
 pub use etcs_brake_params::EtcsBrakeParams;
 
-mod supported_signaling_systems;
 use serde::Deserializer;
 use serde::Serializer;
-pub use supported_signaling_systems::RollingStockSupportedSignalingSystems;
 
 mod rolling_stock_metadata;
 pub use rolling_stock_metadata::RollingStockMetadata;
@@ -37,7 +35,6 @@ mod towed_rolling_stock;
 pub use towed_rolling_stock::TowedRollingStock;
 
 mod train_main_category;
-pub use train_main_category::TrainMainCategories;
 pub use train_main_category::TrainMainCategory;
 
 mod sub_category;
@@ -110,14 +107,14 @@ pub struct RollingStock {
     #[schema(example = 15.0)]
     #[serde(default, with = "units::second::option")]
     pub raise_pantograph_time: Option<Time>,
-    pub supported_signaling_systems: RollingStockSupportedSignalingSystems,
+    pub supported_signaling_systems: Vec<String>,
     #[schema(default = default_rolling_stock_railjson_version)]
     #[serde(default = "default_rolling_stock_railjson_version")]
     pub railjson_version: String,
     #[serde(default)]
     pub metadata: Option<RollingStockMetadata>,
     pub primary_category: TrainMainCategory,
-    pub other_categories: TrainMainCategories,
+    pub other_categories: Vec<TrainMainCategory>,
 }
 
 impl<'de> Deserialize<'de> for RollingStock {
@@ -142,7 +139,6 @@ impl<'de> Deserialize<'de> for RollingStock {
 
         if rolling_stock
             .other_categories
-            .0
             .iter()
             .any(|category| category == &rolling_stock.primary_category)
         {
@@ -153,7 +149,6 @@ impl<'de> Deserialize<'de> for RollingStock {
 
         if rolling_stock
             .supported_signaling_systems
-            .0
             .contains(&"ETCS_LEVEL2".to_string())
             && rolling_stock.etcs_brake_params.is_none()
         {

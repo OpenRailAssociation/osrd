@@ -1,4 +1,4 @@
-import type { TrainMainCategories, SubCategory } from 'common/api/osrdEditoastApi';
+import type { TrainMainCategory, SubCategory } from 'common/api/osrdEditoastApi';
 
 export type ValidityFilter = 'both' | 'valid' | 'invalid';
 
@@ -9,7 +9,7 @@ export type TrainTypeFilter = 'both' | 'pacedTrain' | 'trainSchedule';
 export type TrainCategoryFilter =
   | 'all'
   | 'noCategory'
-  | (TrainMainCategories | SubCategory['code']);
+  | (TrainMainCategory[] | SubCategory['code']);
 
 export type TimetableFilters = {
   uniqueTags: string[];

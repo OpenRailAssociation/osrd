@@ -747,7 +747,6 @@ async fn create_compound_image(
 #[cfg(test)]
 pub mod tests {
     use axum::http::StatusCode;
-    use editoast_models::rolling_stock::TrainMainCategories;
     use editoast_models::rolling_stock::TrainMainCategory;
     use itertools::Itertools;
     use pretty_assertions::assert_eq;
@@ -1166,18 +1165,13 @@ pub mod tests {
             fast_rolling_stock.primary_category,
             TrainMainCategory(schemas::rolling_stock::TrainMainCategory::CommuterTrain,)
         );
-        assert_eq!(
-            fast_rolling_stock.other_categories,
-            TrainMainCategories(vec![])
-        );
+        assert_eq!(fast_rolling_stock.other_categories, vec![]);
 
         let mut rolling_stock_form: RollingStockForm = fast_rolling_stock.clone().into();
         let primary_category =
             TrainMainCategory(schemas::rolling_stock::TrainMainCategory::HighSpeedTrain);
         rolling_stock_form.primary_category = *primary_category.clone();
-        let other_categories = schemas::rolling_stock::TrainMainCategories(vec![
-            schemas::rolling_stock::TrainMainCategory::RegionalTrain,
-        ]);
+        let other_categories = vec![schemas::rolling_stock::TrainMainCategory::RegionalTrain];
         rolling_stock_form.other_categories = other_categories;
 
         let request = app
@@ -1203,9 +1197,9 @@ pub mod tests {
         assert_eq!(updated_rolling_stock.primary_category, primary_category);
         assert_eq!(
             updated_rolling_stock.other_categories,
-            TrainMainCategories(vec![TrainMainCategory(
+            vec![TrainMainCategory(
                 schemas::rolling_stock::TrainMainCategory::RegionalTrain
-            ),])
+            )]
         );
     }
 
@@ -1223,8 +1217,7 @@ pub mod tests {
         let primary_category =
             TrainMainCategory(schemas::rolling_stock::TrainMainCategory::HighSpeedTrain);
         rolling_stock_form.primary_category = *primary_category.clone();
-        let other_categories =
-            schemas::rolling_stock::TrainMainCategories(vec![*primary_category.clone()]);
+        let other_categories = vec![*primary_category.clone()];
         rolling_stock_form.other_categories = other_categories.clone();
 
         let request = app

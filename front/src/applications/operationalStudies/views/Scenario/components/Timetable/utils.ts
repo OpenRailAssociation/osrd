@@ -4,7 +4,7 @@ import { omit } from 'lodash';
 import type {
   PacedTrain,
   SubCategory,
-  TrainMainCategories,
+  TrainMainCategory,
   TrainSchedule,
 } from 'common/api/osrdEditoastApi';
 import isMainCategory from 'modules/rollingStock/helpers/category';
@@ -79,7 +79,7 @@ export const exportTimetableItems = (
   a.click();
 };
 
-export function extractCategoryId(fullId: string): TrainMainCategories | SubCategory['code'] {
+export function extractCategoryId(fullId: string): TrainMainCategory[] | SubCategory['code'] {
   const [prefix, code] = fullId.split(':');
 
   if (prefix === 'main' || prefix === 'sub') {

@@ -13,7 +13,6 @@ use common::units::quantities::Time;
 use common::units::quantities::Velocity;
 use database::DbConnection;
 use database::DbConnectionPoolV2;
-use editoast_models::rolling_stock::TrainMainCategories;
 use editoast_models::rolling_stock::TrainMainCategory;
 use itertools::Itertools as _;
 use schemas::rolling_stock::EffortCurves;
@@ -23,7 +22,6 @@ use schemas::rolling_stock::LoadingGaugeType;
 use schemas::rolling_stock::ModeEffortCurves;
 use schemas::rolling_stock::RollingResistance;
 use schemas::rolling_stock::RollingStockMetadata;
-use schemas::rolling_stock::RollingStockSupportedSignalingSystems;
 use serde::Serialize;
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -229,9 +227,9 @@ struct LightRollingStock {
     metadata: Option<RollingStockMetadata>,
     power_restrictions: HashMap<String, String>,
     energy_sources: Vec<EnergySource>,
-    supported_signaling_systems: RollingStockSupportedSignalingSystems,
+    supported_signaling_systems: Vec<String>,
     primary_category: TrainMainCategory,
-    other_categories: TrainMainCategories,
+    other_categories: Vec<TrainMainCategory>,
 }
 
 impl From<RollingStock> for LightRollingStock {

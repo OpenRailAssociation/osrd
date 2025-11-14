@@ -4,7 +4,6 @@ use chrono::DateTime;
 use chrono::Utc;
 use schemas::infra::TrackOffset;
 use schemas::rolling_stock::LoadingGaugeType;
-use schemas::rolling_stock::RollingStockSupportedSignalingSystems;
 use schemas::train_schedule::Comfort;
 use schemas::train_schedule::MarginValue;
 use serde::Deserialize;
@@ -36,7 +35,7 @@ pub struct Request {
     /// Set of authorized track section ids for the current request
     pub allowed_track_sections: Option<HashSet<String>>,
     /// List of supported signaling systems
-    pub rolling_stock_supported_signaling_systems: RollingStockSupportedSignalingSystems,
+    pub rolling_stock_supported_signaling_systems: Vec<String>,
 
     // Simulation inputs
     /// The comfort of the train
