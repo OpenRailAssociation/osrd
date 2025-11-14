@@ -44,9 +44,6 @@ where
     // TODO: deduplicate values
     consists: HashMap<Train, Arc<PathfindingConsist>>,
     constraints: HashMap<Train, Arc<PathfindingConstraints>>,
-
-    // Generated
-    trains: HashMap<Input, TrainSet<Train>>, // inverse index: unique input set => trains
 }
 
 impl<Train> Default for PathfindingEnvInputs<Train>
@@ -57,13 +54,12 @@ where
         Self {
             consists: HashMap::default(),
             constraints: HashMap::default(),
-            trains: HashMap::default(),
         }
     }
 }
 
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-struct Input(Arc<PathfindingConsist>, Arc<PathfindingConstraints>);
+pub(in crate::envs) struct Input(Arc<PathfindingConsist>, Arc<PathfindingConstraints>);
 
 /// The result of [PathfindingEnv::run]
 ///
@@ -157,7 +153,6 @@ where
             iter.into_iter()
                 .map(|(train, consist)| (train, Arc::new(consist))),
         );
-        self.inputs.build_input_map();
     }
 }
 
@@ -170,7 +165,6 @@ where
             iter.into_iter()
                 .map(|(train, constraints)| (train, Arc::new(constraints))),
         );
-        self.inputs.build_input_map();
     }
 }
 
@@ -214,26 +208,24 @@ where
         ready_trains_tx: Option<futures::channel::mpsc::UnboundedSender<TrainSet<Train>>>,
     ) -> PathfindingRun<Train> {
         use stream::StreamExt as _;
-        let (core_env, inputs) = self.decompose();
-        let run = PathfindingRun::new(inputs.clone());
+        let runner = Arc::new(Runner::new(self));
+        let run = PathfindingRun::new(&runner);
         let paths = run.paths.clone();
-        tokio::spawn(
-            Self::produce(vkconn, trains, core_env, inputs.clone()).fold(
-                (paths, inputs, ready_trains_tx),
-                async |(paths, inputs, ready_trains_tx),
-                       Correlated {
-                           correlation_key: input,
-                           data,
-                       }| {
-                    if let Some(tx) = ready_trains_tx.as_ref() {
-                        let trains = inputs.input_train_set(&input).clone();
-                        tx.unbounded_send(trains).ok();
-                    }
-                    paths.insert(input, Poll::Ready(data.map(Arc::new)));
-                    (paths, inputs, ready_trains_tx)
-                },
-            ),
-        );
+        tokio::spawn(runner.clone().stream(vkconn, trains).fold(
+            (paths, runner, ready_trains_tx),
+            async |(paths, runner, ready_trains_tx),
+                   Correlated {
+                       correlation_key: input,
+                       data,
+                   }| {
+                if let Some(tx) = ready_trains_tx.as_ref() {
+                    let trains = runner.input_train_set(&input).clone();
+                    tx.unbounded_send(trains).ok();
+                }
+                paths.insert(input, Poll::Ready(data.map(Arc::new)));
+                (paths, runner, ready_trains_tx)
+            },
+        ));
         run
     }
 
@@ -254,67 +246,16 @@ where
         >,
     > {
         use stream::StreamExt as _;
-        let (core_env, inputs) = self.decompose();
-        Self::produce(vkconn, trains, core_env, inputs.clone()).map(
+        let runner = Arc::new(Runner::new(self));
+        runner.clone().stream(vkconn, trains).map(
             move |Correlated {
                       correlation_key: input,
                       data: path,
                   }| {
-                let trains = inputs.input_train_set(&input).clone();
+                let trains = runner.input_train_set(&input).clone();
                 Correlated::new(trains, path)
             },
         )
-    }
-
-    fn produce(
-        vkconn: Arc<Mutex<cache::Connection>>,
-        trains: TrainSet<Train>,
-        core_env: CoreEnv,
-        inputs: Arc<PathfindingEnvInputs<Train>>,
-    ) -> impl stream::Stream<
-        Item = Correlated<
-            Input,
-            Result<core_client::pathfinding::PathfindingCoreResult, core_client::Error>,
-        >,
-    > + use<Train> {
-        use crate::TaskStreamExt as _;
-
-        let requests = trains
-            .iter()
-            .map(|train| {
-                let input = inputs
-                    .train_input(train)
-                    .expect("train map should have been built by now");
-                let request = Self::build_request(&core_env, &input);
-                Correlated::new(input, request)
-            })
-            .collect_vec();
-
-        stream::iter(requests).run(vkconn, core_env.client.clone())
-    }
-
-    fn build_request(
-        core_env: &CoreEnv,
-        Input(consist, constraints): &Input,
-    ) -> core_client::pathfinding::PathfindingRequest {
-        core_client::pathfinding::PathfindingRequest {
-            infra: core_env.infra_id as i64,
-            expected_version: core_env.infra_version,
-            path_items: constraints
-                .path_items
-                .iter()
-                .map(|PathWaypointAlternatives(track_alternatives)| {
-                    track_alternatives.clone().into_iter().collect()
-                })
-                .collect(),
-            rolling_stock_loading_gauge: consist.loading_gauge,
-            rolling_stock_is_thermal: consist.thermal,
-            rolling_stock_supported_electrifications: consist.supported_electrifications.clone(),
-            rolling_stock_supported_signaling_systems: consist.supported_signaling_systems.clone(),
-            rolling_stock_maximum_speed: consist.maximum_speed,
-            rolling_stock_length: consist.length,
-            speed_limit_tag: consist.speed_limit_tag.clone(),
-        }
     }
 
     pub fn all_trains(&self) -> TrainSet<Train> {
@@ -337,27 +278,112 @@ where
             .collect()
     }
 
-    /// Builds the [Self::trains] map using trains from both [Self::consists] and [Self::constraints]
-    ///
-    /// TODO: we should build it incrementally to avoid unnecessary complexity
-    fn build_input_map(&mut self) {
-        self.trains.clear();
-        for train in self.all_trains() {
-            let consist = self.consists.get(&train).expect("all_trains invariant");
-            let constraints = self.constraints.get(&train).expect("all_trains invariant");
-            let input = Input(consist.clone(), constraints.clone());
-            self.trains.entry(input).or_default().insert(train);
-        }
-    }
-
-    fn train_input(&self, train: &Train) -> Option<Input> {
+    pub(in crate::envs) fn train_input(&self, train: &Train) -> Option<Input> {
         let consist = self.consists.get(train)?;
         let constraints = self.constraints.get(train)?;
         Some(Input(consist.clone(), constraints.clone()))
     }
+}
 
-    fn input_train_set(&self, input: &Input) -> &TrainSet<Train> {
-        self.trains.get(input).expect("build_input_map invariant")
+/// Internal context allowing running pathfinding tasks
+///
+/// Built from a [PathfindingEnv] using [Runner::new] which builds indexes in
+/// its internal state. Do not create this struct directly.
+pub(in crate::envs) struct Runner<Train>
+where
+    Train: Clone + Hash + Eq + Send + Sync + 'static,
+{
+    core_env: CoreEnv,
+    pathfinding_inputs: Arc<PathfindingEnvInputs<Train>>,
+    input_index: DashMap<Input, TrainSet<Train>>,
+}
+
+impl<Train> Runner<Train>
+where
+    Train: Clone + Hash + Eq + Send + Sync + 'static,
+{
+    pub(in crate::envs) fn new(env: PathfindingEnv<Train>) -> Self {
+        let (core_env, pathfinding_inputs) = env.decompose();
+        let input_index = DashMap::<Input, TrainSet<Train>>::new();
+        for train in pathfinding_inputs.all_trains() {
+            let consist = pathfinding_inputs
+                .consists
+                .get(&train)
+                .expect("all_trains invariant");
+            let constraints = pathfinding_inputs
+                .constraints
+                .get(&train)
+                .expect("all_trains invariant");
+            let input = Input(consist.clone(), constraints.clone());
+            input_index.entry(input).or_default().insert(train);
+        }
+        Self {
+            core_env: core_env.clone(),
+            pathfinding_inputs,
+            input_index,
+        }
+    }
+
+    pub(in crate::envs) fn input_train_set(&self, input: &Input) -> TrainSet<Train> {
+        self.input_index
+            .get(input)
+            .expect("Runner::new invariant")
+            .clone()
+    }
+
+    fn iter_inputs(&self) -> impl Iterator<Item = Input> {
+        self.input_index.iter().map(|set| set.key().clone())
+    }
+
+    pub(in crate::envs) fn stream(
+        self: Arc<Self>,
+        vkconn: Arc<Mutex<cache::Connection>>,
+        trains: TrainSet<Train>,
+    ) -> impl stream::Stream<
+        Item = Correlated<
+            Input,
+            Result<core_client::pathfinding::PathfindingCoreResult, core_client::Error>,
+        >,
+    > {
+        use crate::TaskStreamExt as _;
+
+        let requests = trains
+            .iter()
+            .map(|train| {
+                let input = self
+                    .pathfinding_inputs
+                    .train_input(train)
+                    .expect("train map should have been built by now");
+                let request = build_request(&self.core_env, &input);
+                Correlated::new(input, request)
+            })
+            .collect_vec();
+
+        stream::iter(requests).run(vkconn, self.core_env.client.clone())
+    }
+}
+
+fn build_request(
+    core_env: &CoreEnv,
+    Input(consist, constraints): &Input,
+) -> core_client::pathfinding::PathfindingRequest {
+    core_client::pathfinding::PathfindingRequest {
+        infra: core_env.infra_id as i64,
+        expected_version: core_env.infra_version,
+        path_items: constraints
+            .path_items
+            .iter()
+            .map(|PathWaypointAlternatives(track_alternatives)| {
+                track_alternatives.clone().into_iter().collect()
+            })
+            .collect(),
+        rolling_stock_loading_gauge: consist.loading_gauge,
+        rolling_stock_is_thermal: consist.thermal,
+        rolling_stock_supported_electrifications: consist.supported_electrifications.clone(),
+        rolling_stock_supported_signaling_systems: consist.supported_signaling_systems.clone(),
+        rolling_stock_maximum_speed: consist.maximum_speed,
+        rolling_stock_length: consist.length,
+        speed_limit_tag: consist.speed_limit_tag.clone(),
     }
 }
 
@@ -365,16 +391,14 @@ impl<Train> PathfindingRun<Train>
 where
     Train: Clone + Hash + Eq + Send + Sync + 'static,
 {
-    fn new(inputs: Arc<PathfindingEnvInputs<Train>>) -> Self {
+    fn new(runner: &Runner<Train>) -> Self {
         let paths = DashMap::from_iter(
-            inputs
-                .trains
-                .keys()
-                .cloned()
+            runner
+                .iter_inputs()
                 .zip(std::iter::repeat_with(|| Poll::Pending)),
         );
         Self {
-            inputs,
+            inputs: runner.pathfinding_inputs.clone(),
             paths: Arc::new(paths),
         }
     }
@@ -450,7 +474,7 @@ mod tests {
     impl PathfindingEnv<usize> {
         fn key(&self, id: usize) -> String {
             let input = self.inputs.train_input(&id).unwrap();
-            let request = Self::build_request(&self.core_env, &input);
+            let request = build_request(&self.core_env, &input);
             use crate::Task as _;
             request.key("")
         }
