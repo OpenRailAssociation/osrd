@@ -235,7 +235,7 @@ impl Request {
 
     pub(super) async fn get_stdcm_path_items(
         &self,
-        conn: &mut DbConnection,
+        conn: DbConnection,
         infra_id: i64,
     ) -> Result<Vec<core_client::stdcm::PathItem>> {
         let locations: Vec<_> = self.steps.iter().map(|item| &item.location).collect();
