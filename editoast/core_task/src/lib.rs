@@ -16,6 +16,7 @@ use itertools::Itertools as _;
 use itertools::izip;
 use serde::de::DeserializeOwned;
 use serde::ser::Serialize;
+use tokio::sync::Mutex;
 use tracing::Instrument;
 
 /// Indicates that a Core task can be performed and cached
@@ -64,17 +65,19 @@ pub trait Task: Sized + Send {
     #[expect(async_fn_in_trait)] // not for public (ie. outside editoast) use, no auto traits bounds to specify on the resulting future
     async fn run(
         self,
-        mut vkconn: cache::Connection,
+        vkconn: Arc<Mutex<cache::Connection>>,
         ctx: Self::Context,
     ) -> Result<Self::Output, Self::Error> {
-        let key = self.key(vkconn.app_version());
-        match vkconn
-            .json_get::<Self::Output, _>(&key)
-            .await
-            .unwrap_or_else(|e| {
-                tracing::error!(?e, key, "cache read error — computing task output");
-                None
-            }) {
+        let (key, cache_entry) = {
+            let mut vkconn = vkconn.lock().await;
+            let key = self.key(vkconn.app_version());
+            let entry = vkconn.json_get::<Self::Output, _>(&key).await;
+            (key, entry)
+        };
+        match cache_entry.unwrap_or_else(|e| {
+            tracing::error!(?e, key, "cache read error — computing task output");
+            None
+        }) {
             Some(value) => {
                 tracing::trace!(key, "cache hit");
                 Ok(value)
@@ -93,7 +96,12 @@ pub trait Task: Sized + Send {
                     Ok(serialized) => {
                         tokio::spawn(async move {
                             use deadpool_redis::redis::AsyncCommands as _;
-                            if let Err(e) = vkconn.set::<_, _, ()>(key.clone(), serialized).await {
+                            if let Err(e) = vkconn
+                                .lock()
+                                .await
+                                .set::<_, _, ()>(key.clone(), serialized)
+                                .await
+                            {
                                 tracing::error!(?e, key, "cache write error");
                             }
                         });
@@ -144,7 +152,7 @@ where
     /// The order of the results is not the same as the order of inputs.
     fn run(
         self,
-        vkconn: cache::Connection,
+        vkconn: Arc<Mutex<cache::Connection>>,
         ctx: T::Context,
     ) -> impl stream::Stream<
         Item = Correlated<CorrelationKey, Result<<T as Task>::Output, <T as Task>::Error>>,
@@ -161,7 +169,7 @@ where
     #[tracing::instrument(skip_all)]
     fn run(
         self,
-        vkconn: cache::Connection,
+        vkconn: Arc<Mutex<cache::Connection>>,
         ctx: <T as Task>::Context,
     ) -> impl stream::Stream<
         Item = Correlated<CorrelationKey, Result<<T as Task>::Output, <T as Task>::Error>>,
@@ -186,9 +194,6 @@ where
          *                                  (spawns several tasks
          *                                   via for_each_concurrent)
          */
-
-        // shared to several tasks
-        let vkconn = Arc::new(tokio::sync::Mutex::new(vkconn));
 
         let (cache_write_tx, mut cache_write_rx) =
             tokio::sync::mpsc::unbounded_channel::<(String, String)>();

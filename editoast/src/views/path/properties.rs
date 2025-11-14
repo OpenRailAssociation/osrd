@@ -118,7 +118,7 @@ pub(in crate::views) async fn post(
         infra: infra_id,
         expected_version: infra_version,
     }
-    .run(vkconn, core_client)
+    .run(Arc::new(tokio::sync::Mutex::new(vkconn)), core_client)
     .await?;
 
     Ok(Json(PathProperties::from(path_properties)))

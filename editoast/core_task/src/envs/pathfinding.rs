@@ -13,6 +13,7 @@ use itertools::Itertools;
 use ordered_float::OrderedFloat;
 use schemas::infra::TrackOffset;
 use schemas::rolling_stock::LoadingGaugeType;
+use tokio::sync::Mutex;
 
 use crate::CoreEnv;
 use crate::Correlated;
@@ -208,7 +209,7 @@ where
     /// Note that the receivers implement [trait futures::stream::Stream].
     pub fn run(
         self,
-        vkconn: cache::Connection,
+        vkconn: Arc<Mutex<cache::Connection>>,
         trains: TrainSet<Train>,
         ready_trains_tx: Option<futures::channel::mpsc::UnboundedSender<TrainSet<Train>>>,
     ) -> PathfindingRun<Train> {
@@ -244,7 +245,7 @@ where
     /// thus transferring ownership and allow easy path mutations.
     pub fn into_stream(
         self,
-        vkconn: cache::Connection,
+        vkconn: Arc<Mutex<cache::Connection>>,
         trains: TrainSet<Train>,
     ) -> impl stream::Stream<
         Item = Correlated<
@@ -266,7 +267,7 @@ where
     }
 
     fn produce(
-        vkconn: cache::Connection,
+        vkconn: Arc<Mutex<cache::Connection>>,
         trains: TrainSet<Train>,
         core_env: CoreEnv,
         inputs: Arc<PathfindingEnvInputs<Train>>,
@@ -482,7 +483,11 @@ mod tests {
         let all_trains = pfenv.all_trains();
         assert_eq!(all_trains, TrainSet::from([1, 2]));
         let (tx, rx) = futures::channel::mpsc::unbounded();
-        let pfrun = pfenv.run(vk.get_connection().await.unwrap(), all_trains, Some(tx));
+        let pfrun = pfenv.run(
+            Arc::new(Mutex::new(vk.get_connection().await.unwrap())),
+            all_trains,
+            Some(tx),
+        );
 
         // timeout to avoid blocking the CI if something goes wrong
         let trains = tokio::time::timeout(Duration::from_secs(1), async move {

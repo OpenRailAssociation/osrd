@@ -224,12 +224,17 @@ pub(in crate::views) async fn post(
         Ok(request) => request,
         Err(result) => return Ok(Json(result)),
     };
-    Ok(Json(match request.run(valkey_conn, core_client).await {
-        Ok(path) => path.into(),
-        Err(core_error) => PathfindingResult::Failure(PathfindingFailure::InternalError {
-            core_error: core_error.into(),
-        }),
-    }))
+    Ok(Json(
+        match request
+            .run(Arc::new(tokio::sync::Mutex::new(valkey_conn)), core_client)
+            .await
+        {
+            Ok(path) => path.into(),
+            Err(core_error) => PathfindingResult::Failure(PathfindingFailure::InternalError {
+                core_error: core_error.into(),
+            }),
+        },
+    ))
 }
 
 /// Pathfinding batch computation given a list of path inputs
