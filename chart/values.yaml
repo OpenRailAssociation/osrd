@@ -188,6 +188,11 @@ services:
     init:
       enabled: true
       extend: ""
+    cronjob:
+      enabled: true
+      schedule: "3 1 * * mon-fri"
+      extend: ""
+      env: []
     labels: {}
     nodeSelector: {}
     tolerations: []

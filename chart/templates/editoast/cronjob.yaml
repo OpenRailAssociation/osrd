@@ -1,0 +1,50 @@
+{{- if .Values.services.editoast.cronjob.enabled -}}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ include "osrd.fullname" . }}-editoast-cronjob
+data:
+  cronjob.sh: |
+    #!/bin/sh
+    set -euo pipefail
+    {{- with .Values.services.editoast.cronjob.extend }}
+    {{ . | nindent 4 }}
+    {{- end }}
+    editoast gc
+---
+{{ $mergedLabels := merge (dict "name" (printf "%s-editoast-cronjob" (include "osrd.fullname" .))) (default (dict) $.Values.services.editoast.cronjob.labels) -}}
+apiVersion: batch/v1
+kind: Cronjob
+metadata:
+  name: {{ include "osrd.fullname" . }}-editoast-cronjob
+  labels:
+    {{- toYaml ($mergedLabels | default dict) | nindent 4 }}
+spec:
+  schedule: {{ .Values.services.editoast.cronjob.schedule }}
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          {{- with .Values.imagePullSecrets }}
+          imagePullSecrets:
+            {{- toYaml . | nindent 8 }}
+          {{- end }}
+          containers:
+          - name: {{ include "osrd.name" . }}-editoast-cronjob
+            image: "{{ .Values.images.editoast }}"
+            imagePullPolicy: {{ .Values.pullPolicy }}
+            command: ["/bin/sh"]
+            args: ["/init-vol/script.sh"]
+            env:
+              {{- with .Values.services.editoast.cronjob.env | default dict }}
+              {{- toYaml . | nindent 12 }}
+              {{- end }}
+            volumeMounts:
+              - name: config
+                mountPath: /crons/cronjob.sh
+                subPath: cronjob.sh
+          volumes:
+            - name: config
+              configMap:
+                name: {{ include "osrd.fullname" . }}-editoast-cronjob
+{{- end }}
