@@ -21,41 +21,49 @@
 
 #interaction-button-container {
   display: flex;
-  background-color: rgb(255, 255, 255);
-  border-radius: 0 0.625rem 0 0;
+  position: absolute;
+  align-items: stretch;
+  background: var(--white100);
+  border: 1px solid var(--black10);
+  border-radius: 5px;
   margin-right: 0.75rem;
-  width: 9.3125rem;
-  height: 2.4688rem;
-  padding: 0.4375rem;
+  top: 7px;
+  right: 7px;
+  overflow: hidden;
 
-  .zoom-buttons {
-    border: solid 0.0625rem rgba(0, 0, 0, 0.1);
-    border-radius: 0.3125rem;
-    display: flex;
-    align-items: stretch;
+  button {
+    outline: none;
+    background: var(--white100);
+    color: var(--black100);
+    padding: 0 7px;
+
+    &:first-child {
+      border-radius: 5px 0 0 5px;
+    }
+
+    &:not(:last-child) {
+      border-right: 1px solid var(--black10);
+    }
+
+    &:hover {
+      background-color: var(--primary5);
+    }
   }
 
-  .interaction-button {
-    display: flex;
-    width: 2rem;
-    align-items: center;
-    justify-content: center;
+  .reset-button svg {
+    transform: rotate(180deg) translate(0, 2px);
+  }
 
-    &.inactive {
-      color: rgba(0, 0, 0, 0.25);
-    }
+  .menu-button svg {
+    transform: translate(0, -1px);
+  }
 
-    &.reset-button {
-      rotate: 180deg;
-    }
+  .reset-button-disabled {
+    color: var(--black25);
+    cursor: inherit;
 
-    &.plus-button {
-      border-left: solid 0.0625rem rgba(0, 0, 0, 0.1);
-      border-right: solid 0.0625rem rgba(0, 0, 0, 0.1);
-    }
-
-    &.elipsis-button {
-      padding-left: 0.5rem;
+    &:hover {
+      background-color: var(--white100);
     }
   }
 }
