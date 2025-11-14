@@ -468,7 +468,6 @@ pub async fn pathfinding_from_train_batch<T: TrainScheduleLike>(
                 .supported_electrification(),
             rolling_stock_supported_signaling_systems: rolling_stock
                 .supported_signaling_systems
-                .0
                 .clone(),
             rolling_stock_maximum_speed: OrderedFloat(units::meter_per_second::from(
                 rolling_stock.max_speed,

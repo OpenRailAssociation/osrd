@@ -3794,7 +3794,6 @@ export type TrainMainCategory =
   | 'TRAM_TRAIN'
   | 'TOURISTIC_TRAIN'
   | 'WORK_TRAIN';
-export type TrainMainCategories = TrainMainCategory[];
 export type RollingResistance = {
   /**  Solid friction
     Solid Friction in N */
@@ -3807,7 +3806,6 @@ export type RollingResistance = {
   C: number;
   type: string;
 };
-export type RollingStockSupportedSignalingSystems = string[];
 export type LightRollingStock = {
   base_power_class: string | null;
   /** Acceleration in m·s⁻² */
@@ -3829,7 +3827,7 @@ export type LightRollingStock = {
   max_speed: number;
   metadata: null | RollingStockMetadata;
   name: string;
-  other_categories: TrainMainCategories;
+  other_categories: TrainMainCategory[];
   power_restrictions: {
     [key: string]: string;
   };
@@ -3840,7 +3838,7 @@ export type LightRollingStock = {
   startup_acceleration: number;
   /** Duration in s */
   startup_time: number;
-  supported_signaling_systems: RollingStockSupportedSignalingSystems;
+  supported_signaling_systems: string[];
 };
 export type RollingStockLivery = {
   compound_image_id?: number | null;
@@ -4494,7 +4492,7 @@ export type RollingStock = {
   max_speed: number;
   metadata: null | RollingStockMetadata;
   name: string;
-  other_categories: TrainMainCategories;
+  other_categories: TrainMainCategory[];
   power_restrictions: {
     [key: string]: string;
   };
@@ -4535,7 +4533,7 @@ export type RollingStockForm = {
   max_speed: number;
   metadata?: null | RollingStockMetadata;
   name: string;
-  other_categories: TrainMainCategories;
+  other_categories: TrainMainCategory[];
   /** Mapping of power restriction code to power class */
   power_restrictions: {
     [key: string]: string;
@@ -4551,7 +4549,7 @@ export type RollingStockForm = {
   startup_acceleration: number;
   /** Duration in s */
   startup_time: number;
-  supported_signaling_systems: RollingStockSupportedSignalingSystems;
+  supported_signaling_systems: string[];
 };
 export type RollingStockWithLiveries = RollingStock & {
   liveries: RollingStockLivery[];
@@ -4904,7 +4902,7 @@ export type StdcmRequest = {
   /** The loading gauge of the rolling stock */
   rolling_stock_loading_gauge: LoadingGaugeType;
   /** List of supported signaling systems */
-  rolling_stock_supported_signaling_systems: RollingStockSupportedSignalingSystems;
+  rolling_stock_supported_signaling_systems: string[];
   speed_limit_tag?: string | null;
   start_time: string;
   /** List of applicable temporary speed limits between the train departure and arrival */

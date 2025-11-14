@@ -10,7 +10,6 @@ use common::units::quantities::Mass;
 use common::units::quantities::Time;
 use common::units::quantities::Velocity;
 use editoast_derive::Model;
-use editoast_models::rolling_stock::TrainMainCategories;
 use editoast_models::rolling_stock::TrainMainCategory;
 use schemas::rolling_stock::EffortCurves;
 use schemas::rolling_stock::EnergySource;
@@ -18,7 +17,6 @@ use schemas::rolling_stock::EtcsBrakeParams;
 use schemas::rolling_stock::LoadingGaugeType;
 use schemas::rolling_stock::RollingResistance;
 use schemas::rolling_stock::RollingStockMetadata;
-use schemas::rolling_stock::RollingStockSupportedSignalingSystems;
 use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
@@ -90,11 +88,11 @@ pub struct RollingStock {
     pub raise_pantograph_time: Option<Time>,
     pub version: i64,
     #[schema(value_type = Vec<String>)]
-    #[model(remote = "Vec<Option<String>>")]
-    pub supported_signaling_systems: RollingStockSupportedSignalingSystems,
+    #[model(non_null_array = "String")]
+    pub supported_signaling_systems: Vec<String>,
     pub primary_category: TrainMainCategory,
-    #[model(remote = "Vec<Option<TrainMainCategory>>")]
-    pub other_categories: TrainMainCategories,
+    #[model(non_null_array = "TrainMainCategory")]
+    pub other_categories: Vec<TrainMainCategory>,
 }
 
 #[derive(Debug, thiserror::Error)]
@@ -153,13 +151,11 @@ impl From<RollingStock> for schemas::RollingStock {
             raise_pantograph_time: rolling_stock.raise_pantograph_time,
             supported_signaling_systems: rolling_stock.supported_signaling_systems,
             primary_category: *rolling_stock.primary_category,
-            other_categories: schemas::rolling_stock::TrainMainCategories(
-                rolling_stock
-                    .other_categories
-                    .iter()
-                    .map(|c| c.0)
-                    .collect::<Vec<_>>(),
-            ),
+            other_categories: rolling_stock
+                .other_categories
+                .iter()
+                .map(|category| **category)
+                .collect(),
         }
     }
 }
@@ -189,20 +185,18 @@ impl From<schemas::RollingStock> for RollingStockChangeset {
             .raise_pantograph_time(rolling_stock.raise_pantograph_time)
             .supported_signaling_systems(rolling_stock.supported_signaling_systems)
             .primary_category(TrainMainCategory(rolling_stock.primary_category))
-            .other_categories(TrainMainCategories(
+            .other_categories(
                 rolling_stock
                     .other_categories
-                    .0
-                    .into_iter()
-                    .map(TrainMainCategory)
-                    .collect::<Vec<_>>(),
-            ))
+                    .iter()
+                    .map(|category| TrainMainCategory(*category))
+                    .collect(),
+            )
     }
 }
 
 #[cfg(test)]
 pub mod tests {
-    use editoast_models::rolling_stock::TrainMainCategories;
     use editoast_models::rolling_stock::TrainMainCategory;
 
     use super::RollingStock;
@@ -279,10 +273,7 @@ pub mod tests {
             created_fast_rolling_stock.primary_category,
             TrainMainCategory(schemas::rolling_stock::TrainMainCategory::CommuterTrain)
         );
-        assert_eq!(
-            created_fast_rolling_stock.other_categories,
-            TrainMainCategories(vec![])
-        );
+        assert_eq!(created_fast_rolling_stock.other_categories, vec![]);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -293,10 +284,10 @@ pub mod tests {
             .primary_category(TrainMainCategory(
                 schemas::rolling_stock::TrainMainCategory::HighSpeedTrain,
             ))
-            .other_categories(TrainMainCategories(vec![
+            .other_categories(vec![
                 TrainMainCategory(schemas::rolling_stock::TrainMainCategory::TramTrain),
                 TrainMainCategory(schemas::rolling_stock::TrainMainCategory::CommuterTrain),
-            ]))
+            ])
             .create(&mut db_pool.get_ok())
             .await
             .expect("Failed to create rolling stock");
@@ -306,10 +297,10 @@ pub mod tests {
         );
         assert_eq!(
             rolling_stock.other_categories,
-            TrainMainCategories(vec![
+            vec![
                 TrainMainCategory(schemas::rolling_stock::TrainMainCategory::TramTrain,),
                 TrainMainCategory(schemas::rolling_stock::TrainMainCategory::CommuterTrain,),
-            ])
+            ]
         );
     }
 }

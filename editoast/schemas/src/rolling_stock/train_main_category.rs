@@ -34,18 +34,3 @@ pub enum TrainMainCategory {
     TouristicTrain,
     WorkTrain,
 }
-
-#[derive(Clone, Debug, PartialEq, Deserialize, Serialize, ToSchema)]
-pub struct TrainMainCategories(pub Vec<TrainMainCategory>);
-
-impl From<Vec<Option<TrainMainCategory>>> for TrainMainCategories {
-    fn from(categories: Vec<Option<TrainMainCategory>>) -> Self {
-        Self(categories.into_iter().flatten().collect())
-    }
-}
-
-impl From<TrainMainCategories> for Vec<Option<TrainMainCategory>> {
-    fn from(categories: TrainMainCategories) -> Self {
-        categories.0.into_iter().map(Some).collect()
-    }
-}

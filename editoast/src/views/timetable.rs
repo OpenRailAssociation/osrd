@@ -934,7 +934,6 @@ impl PhysicsConsistParameters {
             !self
                 .traction_engine
                 .supported_signaling_systems
-                .0
                 .contains(&"ETCS_LEVEL2".to_string())
                 || self.towed_rolling_stock.is_none(),
             "ETCS is not handled (yet) for towed rolling-stock"
