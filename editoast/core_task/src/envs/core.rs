@@ -1,6 +1,7 @@
 use std::sync::Arc;
 
 /// Innermost environment to configure Core basic parameters
+#[derive(Debug, Clone)]
 pub struct CoreEnv {
     pub infra_id: u64,
     pub infra_version: i64,
