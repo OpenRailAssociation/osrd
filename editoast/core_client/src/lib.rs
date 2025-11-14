@@ -249,6 +249,7 @@ impl Clone for Error {
             Self::UnparsableErrorOutput => Self::UnparsableErrorOutput,
             Self::BrokenPipe => Self::BrokenPipe,
             Self::RawError(err) => Self::RawError(err.clone()),
+            #[cfg(feature = "mocking_client")]
             Self::NoResponseContent => Self::NoResponseContent,
             Self::MqClientError(err) => Self::MqClientError(match err {
                 MqClientError::Lapin(error) => MqClientError::Lapin(error.clone()),
