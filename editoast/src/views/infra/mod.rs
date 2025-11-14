@@ -848,7 +848,7 @@ pub(in crate::views) async fn match_operational_points(
         .map(|op_ref| PathItemLocation::OperationalPointReference(op_ref.clone()))
         .collect::<Vec<_>>();
     let path_item_cache = PathItemCache::load(
-        &mut conn,
+        db_pool.get().await?,
         infra_id,
         &path_item_locations.iter().collect::<Vec<_>>(),
     )

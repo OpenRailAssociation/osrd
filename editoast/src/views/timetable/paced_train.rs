@@ -944,7 +944,8 @@ pub(in crate::views) async fn project_path_op(
         .chain(&path_item_locations_projection)
         .collect();
 
-    let path_item_cache = PathItemCache::load(conn, infra.id, &path_item_locations).await?;
+    let path_item_cache =
+        PathItemCache::load(db_pool.get().await?, infra.id, &path_item_locations).await?;
 
     let operational_points_projection = OperationalPointProjection::new(
         operational_points_refs,
@@ -1258,7 +1259,7 @@ pub(in crate::views) async fn track_occupancy(
         .map(|p| &p.location)
         .collect_vec();
 
-    let path_item_cache = PathItemCache::load(conn, infra_id, &path_items).await?;
+    let path_item_cache = PathItemCache::load(db_pool.get().await?, infra_id, &path_items).await?;
 
     // For each occurrence + simulation result, compute track occupancies
     let all_occupancies: Vec<(String, TrackOccupancy)> = train_occurrences

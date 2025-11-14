@@ -262,7 +262,7 @@ pub(in crate::views) async fn similar_trains(
     // ---------------------------------------
 
     let (candidate_schedules, path_item_cache) = search_candidate_train_schedules(
-        &mut conn,
+        conn.clone(),
         &new_train,
         timetable_id,
         infra_id,
@@ -298,7 +298,7 @@ pub(in crate::views) async fn similar_trains(
     // -------------------------------------------
 
     let selected_past_trains = simulate_past_trains(
-        &mut conn,
+        conn,
         valkey_client,
         core_client,
         &infra,
@@ -459,7 +459,7 @@ fn squash_successive_waypoints(waypoints: Vec<Waypoint>) -> Vec<Waypoint> {
 
 #[tracing::instrument(skip(conn, new_train), err)]
 async fn search_candidate_train_schedules(
-    conn: &mut DbConnection,
+    mut conn: DbConnection,
     new_train: &new_train::NewTrain,
     timetable_id: i64,
     infra_id: i64,
@@ -486,7 +486,7 @@ async fn search_candidate_train_schedules(
         filter
     };
 
-    let train_schedules = models::TrainSchedule::list(conn, filter).await?;
+    let train_schedules = models::TrainSchedule::list(&mut conn, filter).await?;
 
     tracing::debug!(
         n_train_schedules = train_schedules.len(),
@@ -543,7 +543,7 @@ async fn search_candidate_train_schedules(
 
 #[tracing::instrument(skip_all, fields(infra_id = infra.id, candidate_schedules = candidate_schedules.len()), err)]
 async fn simulate_past_trains(
-    conn: &mut DbConnection,
+    mut conn: DbConnection,
     valkey: Arc<cache::Client>,
     core_client: Arc<CoreClient>,
     infra: &Infra,
@@ -557,7 +557,7 @@ async fn simulate_past_trains(
         .cloned()
         .collect_vec();
     let rolling_stocks = RollingStock::list(
-        conn,
+        &mut conn,
         SelectionSettings::new()
             .filter(move || models::RollingStock::NAME.eq_any(rolling_stock_names.clone())),
     )

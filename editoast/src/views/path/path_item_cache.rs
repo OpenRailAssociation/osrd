@@ -43,7 +43,7 @@ impl PathItemCache {
     /// not just the one used to build the cache.
     #[tracing::instrument(skip(conn), err)]
     pub async fn load(
-        conn: &mut DbConnection,
+        mut conn: DbConnection,
         infra_id: i64,
         path_items: &[&PathItemLocation],
     ) -> Result<PathItemCache> {
@@ -53,9 +53,14 @@ impl PathItemCache {
 
         // Step 1: Retrieve operational points from database using the requested identifiers
         let (trigrams, ops_uic, ops_id) = collect_path_item_ids(path_items);
-        let uic_results = retrieve_op_from_uic(conn, infra_id, &ops_uic).await?;
-        let trigram_results = retrieve_op_from_trigrams(conn, infra_id, &trigrams).await?;
-        let ids_results = retrieve_op_from_ids(conn, infra_id, &ops_id).await?;
+        let uic_conn = &mut conn.clone();
+        let trigram_conn = &mut conn.clone();
+        let ids_conn = &mut conn.clone();
+        let (uic_results, trigram_results, ids_results) = tokio::try_join!(
+            retrieve_op_from_uic(uic_conn, infra_id, &ops_uic),
+            retrieve_op_from_trigrams(trigram_conn, infra_id, &trigrams),
+            retrieve_op_from_ids(ids_conn, infra_id, &ops_id)
+        )?;
 
         // Step 2: Collect all unique OPs first, deduplicating by obj_id
         let ops: Vec<OperationalPointModel> = ids_results
@@ -108,7 +113,7 @@ impl PathItemCache {
 
         let tracks = op_tracks.chain(path_item_tracks);
         let track_sections =
-            TrackSectionModel::retrieve_batch_unchecked::<_, Vec<_>>(conn, tracks).await?;
+            TrackSectionModel::retrieve_batch_unchecked::<_, Vec<_>>(&mut conn, tracks).await?;
 
         let track_ids_to_name = track_sections
             .into_iter()
@@ -523,7 +528,7 @@ mod tests {
         let path_item_refs: Vec<&PathItemLocation> = path_items.iter().collect();
 
         // Load the cache using the real load() method
-        let cache = PathItemCache::load(&mut conn, infra.id, &path_item_refs)
+        let cache = PathItemCache::load(conn, infra.id, &path_item_refs)
             .await
             .expect("Failed to load cache");
 

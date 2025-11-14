@@ -993,7 +993,7 @@ mod tests {
         let path_items = create_path_items_from_trigrams(&trigrams);
         let path_item_refs: Vec<&PathItemLocation> = path_items.iter().collect();
         let path_item_cache =
-            PathItemCache::load(&mut db_pool.get_ok(), small_infra.id, &path_item_refs)
+            PathItemCache::load(db_pool.get_ok(), small_infra.id, &path_item_refs)
                 .await
                 .expect("Failed to load path item cache");
         // Train
@@ -1056,7 +1056,7 @@ mod tests {
         let path_items = create_path_items_from_trigrams(&trigrams);
         let path_item_refs: Vec<&PathItemLocation> = path_items.iter().collect();
         let path_item_cache =
-            PathItemCache::load(&mut db_pool.get_ok(), small_infra.id, &path_item_refs)
+            PathItemCache::load(db_pool.get_ok(), small_infra.id, &path_item_refs)
                 .await
                 .expect("Failed to load path item cache");
         // Train
@@ -1120,7 +1120,7 @@ mod tests {
         let path_items = create_path_items_from_trigrams(&trigrams);
         let path_item_refs: Vec<&PathItemLocation> = path_items.iter().collect();
         let path_item_cache =
-            PathItemCache::load(&mut db_pool.get_ok(), small_infra.id, &path_item_refs)
+            PathItemCache::load(db_pool.get_ok(), small_infra.id, &path_item_refs)
                 .await
                 .expect("Failed to load path item cache");
         // Train
@@ -1175,7 +1175,7 @@ mod tests {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
-        let path_item_cache = PathItemCache::load(&mut db_pool.get_ok(), small_infra.id, &[])
+        let path_item_cache = PathItemCache::load(db_pool.get_ok(), small_infra.id, &[])
             .await
             .expect("Failed to load path item cache");
         // Train

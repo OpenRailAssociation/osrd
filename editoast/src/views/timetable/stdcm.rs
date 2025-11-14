@@ -301,7 +301,7 @@ pub(in crate::views) async fn stdcm_handler(
             .get_temporary_speed_limits(&mut conn, simulation_run_time)
             .await?,
         comfort: request.comfort,
-        path_items: request.get_stdcm_path_items(&mut conn, infra_id).await?,
+        path_items: request.get_stdcm_path_items(conn, infra_id).await?,
         start_time: earliest_departure_time,
         maximum_departure_delay: request.get_maximum_departure_delay(simulation_run_time),
         maximum_run_time: request.get_maximum_run_time(simulation_run_time),
