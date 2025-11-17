@@ -1,7 +1,11 @@
+#[macro_use]
+extern crate uom;
+
 pub mod geometry;
 mod hash_rounded_float;
 pub mod rangemap_utils;
 pub mod tracing;
+pub mod unit_system;
 pub mod units;
 
 pub use hash_rounded_float::hash_float;
