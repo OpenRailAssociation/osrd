@@ -39,7 +39,7 @@
     "@turf/distance": "^7.1.0",
     "@turf/explode": "^7.2.0",
     "@turf/helpers": "^7.1.0",
-    "@turf/invariant": "^7.1.0",
+    "@turf/invariant": "^7.3.0",
     "@turf/length": "^7.2.0",
     "@turf/line-intersect": "^7.1.0",
     "@turf/line-slice": "^7.2.0",
