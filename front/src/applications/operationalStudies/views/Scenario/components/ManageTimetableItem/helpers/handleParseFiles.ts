@@ -1,7 +1,11 @@
 import type { TFunction } from 'i18next';
+import { isObject } from 'lodash';
 import type { Dispatch } from 'redux';
 
-import type { TimetableJsonPayload } from 'applications/operationalStudies/types';
+import type {
+  RoundTripsFromJson,
+  TimetableJsonPayload,
+} from 'applications/operationalStudies/types';
 import { convertNgeDtoToOsrd } from 'applications/operationalStudies/views/Scenario/components/MacroEditor/ngeToOsrd';
 import type { NetzgrafikDto } from 'applications/operationalStudies/views/Scenario/components/NGE/types';
 import { type TrainSchedule } from 'common/api/osrdEditoastApi';
@@ -20,9 +24,49 @@ const TRAIN_SCHEDULE_COMPULSORY_KEYS: (keyof TrainSchedule)[] = [
   'train_name',
 ];
 
+const validateRoundTrips = (roundTrips: unknown): RoundTripsFromJson | undefined => {
+  if (roundTrips === undefined || roundTrips === null) {
+    return;
+  }
+  if (typeof roundTrips !== 'object') {
+    throw new Error('Invalid round trips configuration');
+  }
+
+  const { train_schedules: trainSchedulePairs, paced_trains: pacedTrainPairs } =
+    roundTrips as Partial<RoundTripsFromJson>;
+
+  if (trainSchedulePairs && !Array.isArray(trainSchedulePairs)) {
+    throw new Error('Invalid round trips configuration');
+  }
+
+  if (pacedTrainPairs && !Array.isArray(pacedTrainPairs)) {
+    throw new Error('Invalid round trips configuration');
+  }
+
+  return {
+    train_schedules: trainSchedulePairs ?? [],
+    paced_trains: pacedTrainPairs ?? [],
+  };
+};
+
 const validateTrainSchedules = (importedItems: unknown): TimetableJsonPayload => {
-  const { train_schedules: importedTrainSchedules, paced_trains: importedPacedTrains } =
-    importedItems as TimetableJsonPayload;
+  if (!isObject(importedItems)) {
+    throw new Error('Invalid timetable payload');
+  }
+
+  const {
+    train_schedules: importedTrainSchedules,
+    paced_trains: importedPacedTrains,
+    round_trips: importedRoundTrips,
+  } = importedItems as Partial<TimetableJsonPayload>;
+
+  if (!Array.isArray(importedTrainSchedules)) {
+    throw new Error('Invalid timetable train schedule payload');
+  }
+
+  if (!Array.isArray(importedPacedTrains)) {
+    throw new Error('Invalid timetable paced train payload');
+  }
 
   const isInvalidTrainSchedules = importedTrainSchedules.some((trainSchedule) => {
     if (
@@ -53,7 +97,14 @@ const validateTrainSchedules = (importedItems: unknown): TimetableJsonPayload =>
   if (isInvalidPacedTrains) {
     throw new Error('Invalid paced trains: some compulsory keys are missing');
   }
-  return { train_schedules: importedTrainSchedules, paced_trains: importedPacedTrains };
+
+  const roundTrips = validateRoundTrips(importedRoundTrips);
+
+  return {
+    train_schedules: importedTrainSchedules,
+    paced_trains: importedPacedTrains,
+    ...(roundTrips ? { round_trips: roundTrips } : {}),
+  };
 };
 
 const validateNgeDto = (payload: unknown): payload is NetzgrafikDto =>
