@@ -44,19 +44,6 @@ export const NOTE_LABEL_GROUP: LabelGroupDto = {
   labelRef: 'Note',
 };
 
-export const DEFAULT_TRAINRUN_CATEGORY: TrainrunCategory = {
-  id: 1, // In NGE, Trainrun.DEFAULT_TRAINRUN_CATEGORY
-  order: 0,
-  name: 'Default',
-  shortName: '', // TODO: find a better way to hide this in the graph
-  fachCategory: 'HaltezeitUncategorized',
-  colorRef: 'EC',
-  minimalTurnaroundTime: 0,
-  nodeHeadwayStop: 0,
-  nodeHeadwayNonStop: 0,
-  sectionHeadway: 0,
-};
-
 /**
  * Return the default TrainrunFrequencies without their translated names.
  * The main types of TimetableItems are to be displayed:
