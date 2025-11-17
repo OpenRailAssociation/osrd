@@ -48,7 +48,7 @@
     "@testing-library/react": "^16.0.0",
     "@types/react": "^19.2.2",
     "@types/react-dom": "^19.2.2",
-    "jsdom": "^27.1.0",
+    "jsdom": "^27.2.0",
     "tailwindcss": "^4.1.13"
   }
 }
