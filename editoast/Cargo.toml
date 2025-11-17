@@ -191,7 +191,7 @@ futures-util.workspace = true
 geos.workspace = true
 headers = "0.4.1"
 hostname.workspace = true
-image = { version = "0.25.6", default-features = false, features = [
+image = { version = "0.25.9", default-features = false, features = [
   "bmp",
   "gif",
   "jpeg",
