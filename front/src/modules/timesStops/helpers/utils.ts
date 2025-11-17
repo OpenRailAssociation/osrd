@@ -235,6 +235,7 @@ export function updateDaySinceDeparture(
   let previousTime = Number.NEGATIVE_INFINITY;
 
   return pathWaypointRows.map((pathWaypoint, index) => {
+    const prevRow = index > 0 ? pathWaypointRows[index - 1] : null;
     const { arrival, stopFor } = pathWaypoint;
     const arrivalInSeconds = arrival?.time ? time2sec(arrival.time) : null;
     let formattedArrival: TimeExtraDays | undefined;
@@ -242,7 +243,11 @@ export function updateDaySinceDeparture(
     if (arrivalInSeconds !== null) {
       const isMidnight = arrival?.time === '00:00:00';
 
-      if ((arrivalInSeconds < previousTime || isMidnight) && !(isMidnight && index === 0)) {
+      if (
+        (arrivalInSeconds < previousTime || isMidnight) &&
+        !(isMidnight && index === 0) &&
+        pathWaypoint.positionOnPath !== prevRow?.positionOnPath
+      ) {
         currentDaySinceDeparture += 1;
         formattedArrival = {
           time: arrival!.time,
