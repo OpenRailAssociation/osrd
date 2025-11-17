@@ -18,13 +18,18 @@ export enum TRAINRUN_DIRECTIONS {
   BACKWARD = 'backward',
 }
 
+/**
+ * Used to compute the default stop time on a trainrun section creation and for using the propagation arrows.
+ * If the haltezeit is 2' and the arrival at a node is at 16', then the departure of this node will be 18'.
+ * TrainrunCategory.fachCategory should refer to one of these values. Currently, only HaltezeitUncategorized is used in osrdToNge.ts.
+ */
 export const TRAINRUN_CATEGORY_HALTEZEITEN = {
   HaltezeitIPV: { haltezeit: 0, no_halt: false },
   HaltezeitA: { haltezeit: 0, no_halt: false },
   HaltezeitB: { haltezeit: 0, no_halt: false },
   HaltezeitC: { haltezeit: 0, no_halt: false },
   HaltezeitD: { haltezeit: 0, no_halt: false },
-  HaltezeitUncategorized: { haltezeit: 0, no_halt: false },
+  HaltezeitUncategorized: { haltezeit: 2, no_halt: false },
 };
 
 export const TRAINRUN_LABEL_GROUP: LabelGroupDto = {
