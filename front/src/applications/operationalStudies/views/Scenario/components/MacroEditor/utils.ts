@@ -248,3 +248,22 @@ export const getTrainrunCategoryId = (
   const subKey = 'sub_' + trainCategory.sub_category_code;
   return trainrunCategories.find((cat) => cat.colorRef === subKey)!.id;
 };
+
+export const fetchStationSecondaryCode = async (
+  trigram: string,
+  infraId: number,
+  dispatch: AppDispatch
+) => {
+  const searchPayload = {
+    object: 'operationalpoint',
+    query: ['and', ['=', ['infra_id'], infraId], ['=', ['trigram'], trigram]],
+  };
+  const searchResults = (await dispatch(
+    osrdEditoastApi.endpoints.postSearch.initiate({
+      searchPayload,
+    })
+  ).unwrap()) as SearchResultItemOperationalPoint[];
+
+  const stationOp = searchResults.find((op) => op.ch === 'BV' || op.ch === '00');
+  return stationOp?.ch;
+};
