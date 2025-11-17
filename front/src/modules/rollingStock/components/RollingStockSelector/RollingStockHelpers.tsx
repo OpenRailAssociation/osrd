@@ -46,7 +46,7 @@ export const RollingStockInfo = ({
             </span>
             <RollingStockUnit unit={metadata?.unit || ''} detail={metadata?.detail || ''} />
             <span className="rollingstock-info-subseries">
-              {metadata?.series && metadata.series !== metadata.subseries
+              {metadata?.subseries && metadata.series !== metadata.subseries
                 ? metadata.subseries
                 : metadata?.detail || ''}
             </span>

@@ -65,6 +65,7 @@ function rollingStockPassesSearchedStringFilter(
     metadata?.detail,
     metadata?.reference,
     metadata?.series,
+    metadata?.subseries,
     metadata?.type,
     metadata?.grouping,
   ].some(includesSearchedString);
