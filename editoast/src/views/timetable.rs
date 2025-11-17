@@ -689,7 +689,7 @@ impl PhysicsConsistParameters {
             let traction_engine_inertia =
                 self.traction_engine.mass * self.traction_engine.inertia_coefficient;
             let towed_inertia = towed_mass * towed_rolling_stock.inertia_coefficient;
-            ((traction_engine_inertia + towed_inertia) / total_mass).into()
+            ((traction_engine_inertia + towed_inertia) / total_mass).value
         } else {
             self.traction_engine.inertia_coefficient
         }
