@@ -286,12 +286,29 @@ use quantities::*;
 define_unit!(meter, Length);
 define_unit!(millimeter, Length);
 define_unit!(meter_per_second, Velocity);
+define_unit!(kilometer_per_hour, Velocity);
 define_unit!(meter_per_second_squared, Acceleration);
+define_unit!(newton_per_kg, Acceleration);
+define_unit!(newton_per_ton, Acceleration);
 define_unit!(kilogram, Mass);
+define_unit!(ton, Mass);
 define_unit!(newton, SolidFriction);
+define_unit!(kilonewton, SolidFriction);
 define_unit!(kilogram_per_second, ViscosityFriction);
+define_unit!(newton_per_meter_per_second, ViscosityFriction);
+define_unit!(newton_per_kilometer_per_hour, ViscosityFriction);
 define_unit!(hertz, ViscosityFrictionPerWeight);
+define_unit!(
+    newton_per_meter_per_second_per_kilogram,
+    ViscosityFrictionPerWeight
+);
 define_unit!(kilogram_per_meter, AerodynamicDrag);
+define_unit!(newton_per_meter_per_second_squared, AerodynamicDrag);
+define_unit!(kilonewton_per_kilometer_per_hour_squared, AerodynamicDrag);
 define_unit!(per_meter, AerodynamicDragPerWeight);
+define_unit!(
+    newton_per_meter_per_second_squared_per_kilogram,
+    AerodynamicDragPerWeight
+);
 define_unit!(second, Time);
 define_unit!(millisecond, Time);
