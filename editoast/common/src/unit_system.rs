@@ -2,13 +2,20 @@
 //! that uses different default units per quantity (ex: length defaults to millimeter) in order
 //! to be able to represent any quantity that we might treat using integers instead of floats.
 
+pub mod acceleration;
 pub mod amount_of_substance;
 pub mod electric_current;
+pub mod force;
+pub mod frequency;
 pub mod length;
+pub mod linear_mass_density;
+mod linear_number_density;
 pub mod luminous_intensity;
 pub mod mass;
+pub mod mass_rate;
 pub mod thermodynamic_temperature;
 pub mod time;
+pub mod velocity;
 
 system! {
     /// [Editoast System of Quantities](https://jcgm.bipm.org/vim/en/1.6.html) (ISQ).
@@ -46,6 +53,7 @@ system! {
         luminous_intensity: candela, J;
     }
     units: U {
+        // Base units
         mod length::Length,
         mod mass::Mass,
         mod time::Time,
@@ -53,8 +61,25 @@ system! {
         mod thermodynamic_temperature::ThermodynamicTemperature,
         mod amount_of_substance::AmountOfSubstance,
         mod luminous_intensity::LuminousIntensity,
+        // Composed units
+        mod velocity::Velocity, // TODO switch to meter per second
+        mod acceleration::Acceleration, // TODO switch to meter per second squared
+        mod force::Force, // TODO switch to kg.m.s-2
+        mod mass_rate::MassRate,
+        mod frequency::Frequency,
+        mod linear_mass_density::LinearMassDensity,
+        mod linear_number_density::LinearNumberDensity,
     }
 }
+
+// Editoast aliases for existing units
+type SolidFriction = crate::unit_system::u64::Force;
+type SolidFrictionPerWeight = crate::unit_system::u64::Acceleration;
+type Deceleration = crate::unit_system::u64::Acceleration;
+type ViscosityFriction = crate::unit_system::u64::MassRate;
+type ViscosityFrictionPerWeight = crate::unit_system::u64::Frequency;
+type AerodynamicDrag = crate::unit_system::u64::LinearMassDensity;
+type AerodynamicDragPerWeight = crate::unit_system::u64::LinearNumberDensity;
 
 mod u64 {
     mod editoast_units_system {
