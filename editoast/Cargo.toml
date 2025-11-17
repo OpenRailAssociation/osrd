@@ -154,7 +154,7 @@ anyhow = "1.0"
 approx.workspace = true
 arcstr.workspace = true
 authz.workspace = true
-axum = { version = "0.8.4", default-features = false, features = [
+axum = { version = "0.8.7", default-features = false, features = [
   "multipart",
   "tracing",
 ] }
