@@ -24,7 +24,7 @@
     "@osrd-project/ui-core": "0.0.1-dev",
     "@osrd-project/ui-icons": "0.0.1-dev",
     "@osrd-project/ui-warped-map": "0.0.1-dev",
-    "@turf/helpers": "^7.2.0",
+    "@turf/helpers": "^7.3.0",
     "classnames": "^2.5.1",
     "file-saver": "^2.0.5",
     "lodash": "^4.17.21",
