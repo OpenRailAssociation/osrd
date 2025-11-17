@@ -6,9 +6,16 @@
 // There are other base quantities defined in the ISQ, such as electric current, luminous
 // intensity, thermodynamic temperature and amount of substance, but we don’t need them.
 // Future quantities might need them and we will need to expand ESQ with them as required.
+pub mod acceleration;
+pub mod force;
+pub mod frequency;
 pub mod length;
+pub mod linear_mass_density;
+pub mod linear_number_density;
 pub mod mass;
+pub mod mass_rate;
 pub mod time;
+pub mod velocity;
 
 system! {
     /// [Editoast System of Quantities](https://jcgm.bipm.org/vim/en/1.6.html) (ESQ).
@@ -32,14 +39,32 @@ system! {
         time: second, T;
     }
     units: U {
+        // Base units
         mod length::Length,
         mod mass::Mass,
         mod time::Time,
+        // Composed units
+        mod velocity::Velocity,
+        mod acceleration::Acceleration,
+        mod force::Force,
+        mod mass_rate::MassRate,
+        mod frequency::Frequency,
+        mod linear_mass_density::LinearMassDensity,
+        mod linear_number_density::LinearNumberDensity,
     }
 }
 
 pub mod quantities {
     ESQ!(self::super, f64);
+    // Editoast aliases for existing units
+    pub type Offset = Time;
+    pub type SolidFriction = Force;
+    pub type SolidFrictionPerWeight = Acceleration;
+    pub type Deceleration = Acceleration;
+    pub type ViscosityFriction = MassRate;
+    pub type ViscosityFrictionPerWeight = Frequency;
+    pub type AerodynamicDrag = LinearMassDensity;
+    pub type AerodynamicDragPerWeight = LinearNumberDensity;
 }
 
 pub fn quantity_eq<D, U, V>(a: &Quantity<D, U, V>, b: &Quantity<D, U, V>) -> bool
