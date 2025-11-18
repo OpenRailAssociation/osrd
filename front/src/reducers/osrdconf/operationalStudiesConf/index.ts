@@ -14,10 +14,10 @@ import { Duration } from 'utils/duration';
 import { msToKmh } from 'utils/physics';
 import { isPacedTrainWithDetails } from 'utils/trainId';
 
+import itineraryReducer from './itineraryReducer';
 import powerRestrictionReducer from './powerRestrictionReducer';
 import trainSettingsReducer from './trainSettingsReducer';
 import { upsertPathStep } from '../helpers';
-import itineraryReducer from './itineraryReducer';
 
 export const operationalStudiesInitialConf: OperationalStudiesConfState = {
   ...defaultCommonConf,
