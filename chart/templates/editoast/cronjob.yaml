@@ -1,4 +1,4 @@
-{{- if .Values.services.editoast.cronjob.enabled -}}
+{{- if .Values.services.editoast.cronjob.schedule -}}
 apiVersion: v1
 kind: ConfigMap
 metadata:
