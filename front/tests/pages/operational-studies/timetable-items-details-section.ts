@@ -43,7 +43,6 @@ class TimetableItemDetailSection extends ScenarioTimetableSection {
   }
 
   async showTimetableItemsDetails(): Promise<void> {
-    await this.timetableBoardWrapperMenuButton.click();
     await this.showItemsDetailsButton.click();
     await expect(this.pacedTrainDetailLabels.first()).toBeVisible();
     await expect(this.trainScheduleDetailLabels.first()).toBeVisible();

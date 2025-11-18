@@ -50,6 +50,7 @@ type TrainScheduleItemProps = {
   projectionPathIsUsed: boolean;
   selectTrainToEdit: (train: TrainScheduleWithDetails) => void;
   subCategories: SubCategory[];
+  isSelectMode: boolean;
 };
 
 const TrainScheduleItem = ({
@@ -63,6 +64,7 @@ const TrainScheduleItem = ({
   projectionPathIsUsed,
   selectTrainToEdit,
   subCategories,
+  isSelectMode,
 }: TrainScheduleItemProps) => {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'main' });
   const dateTimeLocale = useDateTimeLocale();
@@ -192,13 +194,15 @@ const TrainScheduleItem = ({
             <div className="checkbox-title">
               {/* eslint-disable-next-line jsx-a11y/no-static-element-interactions */}
               <div onClick={(e) => e.stopPropagation()}>
-                <Checkbox
-                  label=""
-                  className="mr-2"
-                  checked={isInSelection}
-                  onChange={() => handleSelectTrain(train.id)}
-                  small
-                />
+                {isSelectMode && (
+                  <Checkbox
+                    label=""
+                    className="mr-2"
+                    checked={isInSelection}
+                    onChange={() => handleSelectTrain(train.id)}
+                    small
+                  />
+                )}
               </div>
               <div title={train.name} className="checkbox-label">
                 <div
@@ -214,6 +218,7 @@ const TrainScheduleItem = ({
                 </div>
               </div>
             </div>
+
             <div className="rolling-stock">
               {summary?.isValid && train.rollingStock && (
                 <RollingStock2Img rollingStock={train.rollingStock} />

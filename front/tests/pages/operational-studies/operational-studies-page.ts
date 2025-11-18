@@ -83,7 +83,6 @@ class OperationalStudiesPage extends ScenarioTimetableSection {
 
   // Click on the button to add a scenario timetable item.
   async openTimetableItemForm() {
-    await this.timetableBoardWrapperMenuButton.click();
     await this.addTimetableItemButton.click();
     await expect(this.manageTimetableItemPage).toBeVisible();
   }

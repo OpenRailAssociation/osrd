@@ -76,6 +76,7 @@ type PacedTrainItemProps = {
   subCategories: SubCategory[];
   infraIsCached: boolean;
   projectingOnSimulatedPathException: boolean | undefined;
+  isSelectMode: boolean;
 };
 
 const PacedTrainItem = ({
@@ -92,6 +93,7 @@ const PacedTrainItem = ({
   subCategories,
   infraIsCached,
   projectingOnSimulatedPathException,
+  isSelectMode,
 }: PacedTrainItemProps) => {
   const { editedElementContainer } = useContext(EditedElementContainerContext);
   const { t } = useTranslation('operational-studies', { keyPrefix: 'main' });
@@ -264,15 +266,16 @@ const PacedTrainItem = ({
           [`warning-${worstCase}`]: !!worstCase,
         })}
       >
-        <div className="checkbox-title">
-          <Checkbox
-            label=""
-            checked={isInSelection}
-            onChange={() => handleSelectPacedTrain(pacedTrain.id)}
-            small
-          />
-        </div>
-
+        {isSelectMode && (
+          <div className="checkbox-title">
+            <Checkbox
+              label=""
+              checked={isInSelection}
+              onChange={() => handleSelectPacedTrain(pacedTrain.id)}
+              small
+            />
+          </div>
+        )}
         <div
           title={pacedTrain.name}
           className="paced-train-main-info"

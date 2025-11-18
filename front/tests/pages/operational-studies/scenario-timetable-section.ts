@@ -22,11 +22,11 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
 
   private readonly timetableItems: Locator;
 
-  readonly timetableBoardWrapper: Locator;
-
-  readonly timetableBoardWrapperMenuButton: Locator;
+  private readonly timetableBoardWrapper: Locator;
 
   private readonly timetableSelectAllButton: Locator;
+
+  private readonly timetableSelectOptionsButton: Locator;
 
   private readonly timetableTotalItemLabel: Locator;
 
@@ -80,9 +80,8 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
     this.timetableItems = page.getByTestId('scenario-timetable-item');
     this.timetableBoardWrapper = page.getByTestId('timetable-board-wrapper');
     this.timetableTotalItemLabel = this.timetableBoardWrapper.getByTestId('board-header-name');
-    this.timetableBoardWrapperMenuButton =
-      this.timetableBoardWrapper.getByTestId('board-header-button');
     this.timetableSelectAllButton = page.getByTestId('scenarios-select-all-button');
+    this.timetableSelectOptionsButton = page.getByTestId('scenarios-select-options-button');
     this.deleteAllTimetableItemsButton = page.getByTestId('delete-all-items-button');
     this.confirmationModalDeleteButton = page.getByTestId('confirmation-modal-delete-button');
     this.timetableFilterButton = page.getByTestId('timetable-filter-button');
@@ -387,7 +386,8 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
       totalTrainScheduleCount: number;
     }
   ) {
-    await this.timetableBoardWrapperMenuButton.click();
+    await this.timetableSelectOptionsButton.click();
+    await expect(this.timetableSelectAllButton).toBeVisible();
     await this.timetableSelectAllButton.click();
 
     const { totalPacedTrainCount, totalTrainScheduleCount } = itemCounts;
@@ -403,7 +403,6 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
   }
 
   async deleteAllTimetableItems() {
-    await this.timetableBoardWrapperMenuButton.click();
     await expect(this.deleteAllTimetableItemsButton).toBeVisible();
     await this.deleteAllTimetableItemsButton.click();
 

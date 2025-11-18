@@ -464,6 +464,7 @@
 
           .ui-checkbox.small {
             padding-left: 21px;
+            margin-left: 2px;
           }
         }
 
@@ -516,6 +517,9 @@
         }
 
         .invalid-trains {
+          position: sticky;
+          top: 0;
+          z-index: 3;
           display: flex;
           background: var(--warning5);
           box-shadow: inset 0 1px var(--white100);
@@ -536,26 +540,128 @@
           }
         }
 
-        .filter {
-          background-color: var(--ambientB10);
-          height: 31px;
-          border-bottom: solid 1px rgba(0, 0, 0, 0.25);
-          display: flex;
-          justify-content: center;
-
-          .filter-button {
-            width: 100%;
+        // Base mixin for all toolbar buttons
+        @mixin toolbar-button-base($is-grey-color: true, $has-hover: true, $has-active: true) {
+          @if $is-grey-color {
             color: var(--grey40);
+          } @else {
+            color: var(--primary60);
           }
 
-          &:hover {
-            background-color: var(--white100);
-            color: var(--black100);
-            cursor: pointer;
-
-            .scenario-details-modify-button-text {
-              opacity: 1;
+          @if $has-hover {
+            &:hover {
+              @if $is-grey-color {
+                color: var(--grey60);
+              } @else {
+                color: var(--primary80);
+              }
             }
+          }
+
+          @if $has-active {
+            &.active {
+              color: var(--grey90);
+            }
+          }
+
+          &:disabled {
+            color: var(--grey20);
+            pointer-events: none;
+          }
+        }
+
+        .timetable-toolbar {
+          background-color: var(--ambientB10);
+          min-height: 32px;
+          border-bottom: solid 1px rgba(0, 0, 0, 0.25);
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          position: sticky;
+          top: 0;
+          z-index: 3;
+          padding-bottom: 5px;
+          &.are-invalid-items {
+            top: 48px;
+          }
+
+          .select-options-button {
+            @include toolbar-button-base();
+            margin-left: 10px;
+          }
+
+          .train-detail-button {
+            @include toolbar-button-base();
+            margin-left: 24px;
+          }
+
+          .round-trip-button {
+            @include toolbar-button-base($has-active: false);
+            margin-left: 24px;
+          }
+
+          .filter-button {
+            @include toolbar-button-base();
+            margin-left: 24px;
+          }
+
+          .import-button {
+            @include toolbar-button-base($has-active: false);
+            margin-left: auto;
+            margin-right: 24px;
+          }
+
+          .add-button {
+            @include toolbar-button-base($has-active: false);
+            margin-right: 12px;
+          }
+        }
+
+        .sticky-filter {
+          position: sticky;
+          top: calc(var(--sticky-top-base));
+          z-index: 2;
+          /* base top */
+          --sticky-top-base: 32px;
+          &.selection-mode-open {
+            --sticky-top-base: 64px;
+          }
+          &.are-invalid-items {
+            --sticky-top-base: 80px;
+          }
+          &.selection-mode-open.are-invalid-items {
+            --sticky-top-base: 112px;
+          }
+        }
+
+        .timetable-selection-toolbar {
+          display: flex;
+          align-items: center;
+          height: 32px;
+          padding-bottom: 2px;
+          position: sticky;
+          top: 32px;
+          z-index: 3;
+          &.are-invalid-items {
+            top: 80px;
+          }
+
+          background-color: var(--white100);
+          border-bottom: solid 1px var(--black25);
+
+          .select-button {
+            margin-left: 6px;
+            margin-top: 2px;
+          }
+
+          .export-selection-button {
+            @include toolbar-button-base($is-grey-color: false, $has-active: false);
+            margin-left: 20px;
+          }
+
+          .delete-selection-button {
+            @include toolbar-button-base($is-grey-color: false, $has-active: false);
+            margin-left: 24px;
           }
         }
 
@@ -583,16 +689,6 @@
           height: 12px;
           border-radius: 4px;
           margin: 0 2px;
-        }
-
-        .sticky-filter {
-          position: sticky;
-          top: 0;
-          z-index: 2;
-
-          &.selection-mode-open {
-            top: 0;
-          }
         }
 
         .filter-panel {

@@ -124,7 +124,6 @@ class RoundTripPage extends OperationalStudiesPage {
   }
 
   async openRoundTripModal() {
-    await this.timetableBoardWrapperMenuButton.click();
     await this.manageRoundTripsButton.click();
     await expect(this.roundTripsModalPage).toBeVisible();
   }
