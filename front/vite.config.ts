@@ -55,6 +55,9 @@ export default defineConfig(({ mode }) => {
     build: {
       outDir: 'build',
       sourcemap: true,
+      license: {
+        fileName: 'licenses.json',
+      },
     },
     server: {
       open: false,

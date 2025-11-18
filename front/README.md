@@ -48,10 +48,6 @@ Builds the app for production to the `build` folder.
 
 Update endpoints and data-types in /src/common/api/generatedEditoastApi.ts from openapi.yaml
 
-### `npm run generate-licenses`
-
-Update licenses attributions in /src/common/ReleaseInformations/json/
-
 ### `npm run e2e-tests`
 
 Launches end to end tests.
