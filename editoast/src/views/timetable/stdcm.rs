@@ -138,7 +138,7 @@ pub(in crate::views) struct StdcmQueryParams {
     skip_all,
     err,
     fields(
-        request = serde_json::to_string(&request)?,
+        request,
         timetable_id = id,
         infra_id = query.infra,
         path_found,
@@ -164,6 +164,11 @@ pub(in crate::views) async fn stdcm(
     Query(query): Query<StdcmQueryParams>,
     Json(request): Json<Request>,
 ) -> Result<Json<StdcmResponse>> {
+    // Add serialized request to trace attributes, skipping allowed track sections
+    // (as it would make the payload too large to be saved). TODO: include search env ID
+    let mut request_copy = request.clone();
+    request_copy.allowed_track_sections = None;
+    Span::current().record("request", serde_json::to_string(&request_copy)?);
     let mut returned_request: Option<core_client::stdcm::Request> = None;
     stdcm_handler(
         state,
