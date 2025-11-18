@@ -189,8 +189,9 @@ services:
       enabled: true
       extend: ""
     cronjob:
-      enabled: true
+      # set to null to disable cronjob
       schedule: "3 1 * * mon-fri"
+      # command to be executed before editoast gc
       extend: ""
       env: []
     labels: {}
