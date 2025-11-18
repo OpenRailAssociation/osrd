@@ -114,6 +114,7 @@ pub trait Task: Sized + Send {
 }
 
 /// A named tuple for a value with a correlation key
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Correlated<CorrelationKey, T> {
     pub correlation_key: CorrelationKey,
     pub data: T,
