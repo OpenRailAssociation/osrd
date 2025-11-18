@@ -30,7 +30,7 @@ import { isPacedTrainWithDetails, isTrainScheduleId } from 'utils/trainId';
 import PacedTrainItem from './PacedTrain/PacedTrainItem';
 import TimetableToolbar from './TimetableToolbar';
 import TrainScheduleItem from './TrainScheduleItem';
-import type { TimetableFilters } from './types';
+import useFilterTimetableItems from './useFilterTimetableItems';
 
 type TimetableProps = {
   setDisplayTimetableItemManagement: (mode: string) => void;
@@ -38,11 +38,10 @@ type TimetableProps = {
   setTimetableItemToEditData: (timetableItemToEditData?: TimetableItemToEditData) => void;
   setSelectedTimetableItemIds: (selectedTimetableItemIds: TimetableItemId[]) => void;
   removeAndUnselectTrains: (trainIds: TimetableItemId[]) => void;
-  showTrainDetails: boolean;
-  filteredTimetableItems: TimetableItemWithDetails[];
-  timetableFilters: TimetableFilters;
+  handleDeleteTimetableItems: () => void;
   timetableItemToEditData?: TimetableItemToEditData;
   timetableItems?: TimetableItem[];
+  timetableItemsWithDetails: TimetableItemWithDetails[];
   selectedTimetableItemIds: TimetableItemId[];
   projectingOnSimulatedPathException: boolean | undefined;
 };
@@ -56,11 +55,10 @@ const Timetable = ({
   setTimetableItemToEditData,
   setSelectedTimetableItemIds,
   removeAndUnselectTrains,
-  showTrainDetails,
-  filteredTimetableItems,
-  timetableFilters,
+  handleDeleteTimetableItems,
   timetableItemToEditData,
   timetableItems = [],
+  timetableItemsWithDetails,
   selectedTimetableItemIds,
   projectingOnSimulatedPathException,
 }: TimetableProps) => {
@@ -72,9 +70,15 @@ const Timetable = ({
     new Set()
   );
 
+  const [showTrainDetails, setShowTrainDetails] = useState(false);
+  const [isSelectMode, setIsSelectMode] = useState(false);
+
   const selectedTrainId = useSelector(getSelectedTrainId);
   const trainIdUsedForProjection = useSelector(getTrainIdUsedForProjection);
   const dispatch = useAppDispatch();
+
+  const { filteredTimetableItems, ...timetableFilters } =
+    useFilterTimetableItems(timetableItemsWithDetails);
 
   const handleSelectTimetableItem = useCallback(
     (id: TimetableItemId) => {
@@ -155,7 +159,15 @@ const Timetable = ({
           filteredTimetableItems={filteredTimetableItems}
           timetableFilters={timetableFilters}
           timetableItems={timetableItems}
-          isInSelection={selectedTimetableItemIds.length > 0}
+          selectedTimetableItemIds={selectedTimetableItemIds}
+          showTrainDetails={showTrainDetails}
+          isSelectMode={isSelectMode}
+          setSelectedTimetableItemIds={setSelectedTimetableItemIds}
+          setShowTrainDetails={setShowTrainDetails}
+          setIsSelectMode={setIsSelectMode}
+          setDisplayTimetableItemManagement={setDisplayTimetableItemManagement}
+          refreshNge={() => Promise.resolve()}
+          handleDeleteTimetableItems={handleDeleteTimetableItems}
         />
         <Virtualizer overscan={15}>
           {filteredTimetableItems.map((timetableItem, index) => (
@@ -179,6 +191,7 @@ const Timetable = ({
                     workerStatus === 'READY' && trainIdUsedForProjection === timetableItem.id
                   }
                   subCategories={subCategories}
+                  isSelectMode={isSelectMode}
                 />
               ) : (
                 <PacedTrainItem
@@ -195,6 +208,7 @@ const Timetable = ({
                   infraIsCached={workerStatus === 'READY'}
                   subCategories={subCategories}
                   projectingOnSimulatedPathException={projectingOnSimulatedPathException}
+                  isSelectMode={isSelectMode}
                 />
               )}
             </div>

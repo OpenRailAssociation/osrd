@@ -25,7 +25,6 @@ class ImportPage extends OperationalStudiesPage {
   }
 
   async openImportTimetableItemForm() {
-    await this.timetableBoardWrapperMenuButton.click();
     await this.importTimetableItemButton.click();
     await expect(this.importTimetableItemForm).toBeVisible();
   }
