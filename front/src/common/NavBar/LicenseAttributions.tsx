@@ -1,23 +1,20 @@
-import { useTranslation } from 'react-i18next';
+import { useEffect, useState } from 'react';
 
-import attributionsLicenses from './json/licenses.json';
+import { useTranslation } from 'react-i18next';
 
 type AttributionLicense = {
   name: string;
   version: string;
-  copyright: string;
-  publisher: string;
+  identifier?: string;
+  text?: string;
   url?: string;
-  license: string;
 };
 
 const COLLABORATIONS: AttributionLicense[] = [
   {
-    license: 'Apache-2.0',
-    publisher: 'Apache',
-    copyright: '© 2024 Swiss Federal Railways SBB AG',
-    version: '',
     name: 'Netzgrafik-Editor',
+    version: '',
+    identifier: 'Apache-2.0, © 2024 Swiss Federal Railways SBB AG',
     url: 'https://github.com/SchweizerischeBundesbahnen/netzgrafik-editor-frontend',
   },
 ];
@@ -25,35 +22,27 @@ const COLLABORATIONS: AttributionLicense[] = [
 // Libs which are not in the package.json, so we add it statically
 const DATA_SOURCES: AttributionLicense[] = [
   {
-    license: 'https://geoservices.ign.fr/cgu-licences',
-    publisher: 'IGN',
-    copyright: '© IGN - 2021',
-    version: '',
     name: 'IGN Ortho',
+    version: '',
+    identifier: '© IGN - 2021, https://geoservices.ign.fr/cgu-licences',
     url: 'https://geoservices.ign.fr/services-web-experts-ortho',
   },
   {
-    license: 'https://data.sncf.com/pages/licence/#A1',
-    publisher: 'SNCF',
-    copyright: '',
-    version: '',
     name: 'Open data SNCF',
+    identifier: 'https://data.sncf.com/pages/licence/#A1',
+    version: '',
     url: 'https://ressources.data.sncf.com/pages/accueil/',
   },
   {
-    license: 'CC-BY-NC-SA 3.0',
-    publisher: 'Marc Le Gad',
-    copyright: '',
-    version: '',
     name: 'MLG Traffic',
+    identifier: 'CC-BY-NC-SA 3.0, Marc Le Gad',
+    version: '',
     url: 'http://www.mlgtraffic.net',
   },
   {
-    license: 'https://github.com/tilezen/joerd/blob/master/docs/attribution.md',
-    publisher: 'Mapzen',
-    copyright: '',
-    version: '',
     name: 'Terrain Tiles',
+    identifier: 'https://github.com/tilezen/joerd/blob/master/docs/attribution.md',
+    version: '',
     url: 'https://registry.opendata.aws/terrain-tiles/',
   },
 ];
@@ -61,31 +50,37 @@ const DATA_SOURCES: AttributionLicense[] = [
 type LicenseCardProps = { attribution: AttributionLicense };
 
 const LicenseCard = ({
-  attribution: { name, version, copyright, publisher, url, license },
+  attribution: { name, version, text, url, identifier },
 }: LicenseCardProps) => (
-  <a href={url} rel="noreferrer" target="blank">
-    <h3 className="d-flex mr-1 mb-0">
-      {name}
-      <small className="d-flex align-items-center ml-2">
-        {version}
-        {url && <i className="ml-2 icons-external-link" />}
-      </small>
-    </h3>
+  <div>
+    <a href={url} rel="noreferrer" target="blank">
+      <h3 className="d-flex mr-1 mb-0">
+        {name.replace('@', '')}
+        <small className="d-flex align-items-center ml-2">
+          {version}
+          {url && <i className="ml-2 icons-external-link" />}
+        </small>
+      </h3>
+    </a>
     <div className="small ml-4 mb-2">
-      {copyright.replace('(c)', '©') || publisher || `${name} authors`}
-      {license && ` / ${license}`}
+      {identifier ?? (
+        <span className="license-card-text">{text?.substring(0, 300).replace('(c)', '©')}</span>
+      )}
     </div>
-  </a>
+  </div>
 );
 
 const LicenseAttributions = () => {
   const { t } = useTranslation();
 
-  const attributionsArray = [...(Object.values(attributionsLicenses) as AttributionLicense[])];
+  const [licences, setLicences] = useState<AttributionLicense[]>([]);
 
-  const attributions = attributionsArray
-    .map((licence) => ({ ...licence, name: licence.name.replace('@', '') }))
-    .sort((a, b) => a.name.localeCompare(b.name));
+  useEffect(() => {
+    fetch('/licenses.json')
+      .then((res) => res.json())
+      .then((data) => setLicences(data))
+      .catch((err) => console.error('Error loading licenses', err));
+  }, []);
 
   return (
     <div className="col-md-6 h-100 d-flex flex-column">
@@ -103,8 +98,8 @@ const LicenseAttributions = () => {
       </div>
       <h2 className="text-center my-4">{t('nav-bar.informations.librairies')}</h2>
       <div className="license-attributions licenses">
-        {attributions.map((attribution) => (
-          <LicenseCard attribution={attribution} key={attribution.name} />
+        {licences.map((attribution) => (
+          <LicenseCard attribution={attribution} key={attribution.name + attribution.version} />
         ))}
       </div>
     </div>

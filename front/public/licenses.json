@@ -1,0 +1,8 @@
+[
+  {
+    "text": "The updated list is generated at build",
+    "identifier": "MIT",
+    "name": "@osrd/example-library",
+    "version": "0.4.2"
+  }
+]
