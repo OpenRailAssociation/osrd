@@ -44,18 +44,24 @@ export const formatSuggestedOperationalPoints = (
 
 export const matchPathStepAndOp = (
   step: PathItemLocation,
-  op: Pick<SuggestedOP, 'opId' | 'uic' | 'ch' | 'trigram' | 'track' | 'offsetOnTrack'>
+  op: Pick<SuggestedOP, 'opId' | 'uic' | 'ch' | 'trigram' | 'track' | 'offsetOnTrack'> &
+    Partial<Pick<SuggestedOP, 'positionOnPath'>>
 ) => {
+  const positionMatch =
+    'positionOnPath' in step && 'positionOnPath' in op
+      ? step.positionOnPath === op.positionOnPath
+      : true;
+
   if ('operational_point' in step) {
-    return step.operational_point === op.opId;
+    return step.operational_point === op.opId && positionMatch;
   }
   if ('uic' in step) {
-    return step.uic === op.uic && step.secondary_code === op.ch;
+    return step.uic === op.uic && step.secondary_code === op.ch && positionMatch;
   }
   if ('trigram' in step) {
-    return step.trigram === op.trigram && step.secondary_code === op.ch;
+    return step.trigram === op.trigram && step.secondary_code === op.ch && positionMatch;
   }
-  return step.track === op.track && step.offset === op.offsetOnTrack;
+  return step.track === op.track && step.offset === op.offsetOnTrack && positionMatch;
 };
 
 export const getPathfindingQuery = ({
