@@ -760,6 +760,13 @@ jobs:
 
           exit $(docker wait front-format)
 
+      - name: Check lints
+        run: |
+          docker run --name=front-lint --net=host \
+            ${{ fromJSON(needs.build.outputs.stable_tags).front-tests }} \
+            sh -c "npm run lint"
+          exit $(docker wait front-lint)
+
       - name: Check for i18n missing keys
         run: |
           docker run --name=front-i18n-checker --net=host \
@@ -993,7 +1000,7 @@ jobs:
             -e GITHUB_REPOSITORY="$GITHUB_REPOSITORY" \
             -e GITHUB_RUN_ID="$GITHUB_RUN_ID" \
             -v "$PWD/front/test-results:/app/front/test-results" \
-            osrd-playwright:latest npx tsx /app/front/tests/reporter/generate-github-summary.ts /app/front/test-results/personalized-report.json /app/front/test-results/summary.md 
+            osrd-playwright:latest npx tsx /app/front/tests/reporter/generate-github-summary.ts /app/front/test-results/personalized-report.json /app/front/test-results/summary.md
           cat front/test-results/summary.md >> $GITHUB_STEP_SUMMARY
 
       - name: Save container logs
