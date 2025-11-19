@@ -1,6 +1,6 @@
 .scenario-content-v2 {
   display: flex;
-  height: calc(100vh - var(--header-height));
+  height: calc(100vh - var(--scenario-header-height));
   .right-column,
   .left-column {
     width: 488px;
