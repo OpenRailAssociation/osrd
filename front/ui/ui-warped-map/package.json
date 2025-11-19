@@ -47,7 +47,7 @@
     "@turf/explode": "^7.3.0",
     "@turf/helpers": "^7.1.0",
     "@turf/intersect": "^7.3.0",
-    "@turf/length": "^7.1.0",
+    "@turf/length": "^7.3.0",
     "@turf/line-intersect": "^7.3.0",
     "@turf/line-slice": "^7.3.0",
     "@turf/line-slice-along": "^7.3.0",
