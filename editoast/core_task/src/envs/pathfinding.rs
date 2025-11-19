@@ -49,10 +49,6 @@ where
         }
     }
 
-    pub(crate) fn decompose(self) -> (CoreEnv, Arc<PathfindingEnvInputs<Train>>) {
-        (self.core_env, Arc::new(self.inputs))
-    }
-
     /// Computes paths or fetches them from cache asynchronously
     ///
     /// Returns a [PathfindingRun] containing the calculated paths (or errors)
@@ -262,15 +258,11 @@ impl<Train> Runner<Train>
 where
     Train: Clone + Hash + Eq + Send + Sync + 'static,
 {
-    pub(in crate::envs) fn new(env: PathfindingEnv<Train>) -> Self {
-        let (core_env, pathfinding_inputs) = env.decompose();
+    pub(in crate::envs) fn new(PathfindingEnv { core_env, inputs }: PathfindingEnv<Train>) -> Self {
         let input_index = DashMap::<Input, TrainSet<Train>>::new();
-        for train in pathfinding_inputs.all_trains() {
-            let consist = pathfinding_inputs
-                .consists
-                .get(&train)
-                .expect("all_trains invariant");
-            let constraints = pathfinding_inputs
+        for train in inputs.all_trains() {
+            let consist = inputs.consists.get(&train).expect("all_trains invariant");
+            let constraints = inputs
                 .constraints
                 .get(&train)
                 .expect("all_trains invariant");
@@ -279,7 +271,7 @@ where
         }
         Self {
             core_env: core_env.clone(),
-            pathfinding_inputs,
+            pathfinding_inputs: Arc::new(inputs),
             input_index,
         }
     }
