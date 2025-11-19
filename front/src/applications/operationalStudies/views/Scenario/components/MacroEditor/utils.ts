@@ -10,10 +10,16 @@ import {
   type TrainCategory,
 } from 'common/api/osrdEditoastApi';
 import isMainCategory from 'modules/rollingStock/helpers/category';
-import type { TimetableItem } from 'reducers/osrdconf/types';
+import type { TimetableItem, TrainScheduleId, PacedTrainId } from 'reducers/osrdconf/types';
 import type { AppDispatch } from 'store';
 import { Duration } from 'utils/duration';
-import { isPacedTrainResponseWithPacedTrainId } from 'utils/trainId';
+import {
+  extractEditoastIdFromTrainScheduleId,
+  extractEditoastIdFromPacedTrainId,
+  isPacedTrainId,
+  isPacedTrainResponseWithPacedTrainId,
+  isTrainScheduleId,
+} from 'utils/trainId';
 
 import {
   CUSTOM_TRAINRUN_TIME_CATEGORY,
@@ -116,6 +122,62 @@ export const deleteMacroNodeByNgeId = async (
   const indexedNode = state.getNodeByNgeId(ngeId);
   if (indexedNode?.dbId) await deleteMacroNodeByDbId(dispatch, indexedNode.dbId);
   state.deleteNodeByNgeId(ngeId);
+};
+
+export const storeRoundTrip = async (
+  dispatch: AppDispatch,
+  forwardId: TrainScheduleId | PacedTrainId,
+  returnId?: TrainScheduleId | PacedTrainId
+) => {
+  if (isPacedTrainId(forwardId)) {
+    let roundTrips;
+    if (returnId) {
+      if (!isPacedTrainId(returnId)) {
+        throw new Error('Type mismatch: forward is PacedTrain but return is not');
+      }
+      roundTrips = {
+        round_trips: [
+          [
+            extractEditoastIdFromPacedTrainId(forwardId),
+            extractEditoastIdFromPacedTrainId(returnId),
+          ],
+        ],
+      };
+    } else {
+      roundTrips = {
+        one_ways: [extractEditoastIdFromPacedTrainId(forwardId)],
+      };
+    }
+    await dispatch(
+      osrdEditoastApi.endpoints.postRoundTripsPacedTrains.initiate({
+        roundTrips,
+      })
+    ).unwrap();
+  } else {
+    let roundTrips;
+    if (returnId) {
+      if (!isTrainScheduleId(returnId)) {
+        throw new Error('Type mismatch: forward is TrainSchedule but return is not');
+      }
+      roundTrips = {
+        round_trips: [
+          [
+            extractEditoastIdFromTrainScheduleId(forwardId),
+            extractEditoastIdFromTrainScheduleId(returnId),
+          ],
+        ],
+      };
+    } else {
+      roundTrips = {
+        one_ways: [extractEditoastIdFromTrainScheduleId(forwardId)],
+      };
+    }
+    await dispatch(
+      osrdEditoastApi.endpoints.postRoundTripsTrainSchedules.initiate({
+        roundTrips,
+      })
+    ).unwrap();
+  }
 };
 
 /**
