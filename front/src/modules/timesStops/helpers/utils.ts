@@ -51,7 +51,7 @@ export const formatSuggestedViasToRowVias = (
   startTime?: Date,
   tableType?: TableType
 ): TimesStopsInputRow[] => {
-  const formattedOps = [...operationalPoints];
+  let formattedOps = [...operationalPoints];
 
   // If the origin is in the ops and isn't the first operational point, we need
   // to move it to the first position
@@ -78,6 +78,13 @@ export const formatSuggestedViasToRowVias = (
       formattedOps[lastOpIndex],
     ];
   }
+
+  formattedOps = formattedOps.filter((op, i, arr) => {
+    if (i === 0) return true;
+    const prevOp = arr[i - 1];
+    const formattedOpsWithoutDuplicates = !(op.uic === prevOp.uic && op.ch === prevOp.ch);
+    return formattedOpsWithoutDuplicates;
+  });
 
   return formattedOps.map((op, i) => {
     const pathStep = pathSteps.find((step) => matchPathStepAndOpWithKP(step, op));
@@ -235,7 +242,6 @@ export function updateDaySinceDeparture(
   let previousTime = Number.NEGATIVE_INFINITY;
 
   return pathWaypointRows.map((pathWaypoint, index) => {
-    const prevRow = index > 0 ? pathWaypointRows[index - 1] : null;
     const { arrival, stopFor } = pathWaypoint;
     const arrivalInSeconds = arrival?.time ? time2sec(arrival.time) : null;
     let formattedArrival: TimeExtraDays | undefined;
@@ -243,11 +249,7 @@ export function updateDaySinceDeparture(
     if (arrivalInSeconds !== null) {
       const isMidnight = arrival?.time === '00:00:00';
 
-      if (
-        (arrivalInSeconds < previousTime || isMidnight) &&
-        !(isMidnight && index === 0) &&
-        pathWaypoint.positionOnPath !== prevRow?.positionOnPath
-      ) {
+      if ((arrivalInSeconds < previousTime || isMidnight) && !(isMidnight && index === 0)) {
         currentDaySinceDeparture += 1;
         formattedArrival = {
           time: arrival!.time,
