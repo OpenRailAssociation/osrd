@@ -46,7 +46,7 @@
     "@turf/line-slice-along": "^7.3.0",
     "@turf/line-split": "^7.2.0",
     "@turf/nearest-point": "^7.3.0",
-    "@turf/simplify": "^7.2.0",
+    "@turf/simplify": "^7.3.0",
     "@turf/transform-translate": "^7.3.0",
     "ajv": "^8.12.0",
     "ajv-errors": "^3.0.0",
