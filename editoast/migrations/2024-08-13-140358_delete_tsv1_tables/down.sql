@@ -9,7 +9,6 @@ CREATE TABLE pathfinding (
 	slopes jsonb NOT NULL,
 	curves jsonb NOT NULL,
 	geographic geometry(linestring, 4326) NOT NULL,
-	schematic geometry(linestring, 4326) NOT NULL,
 	infra_id int8 NOT NULL,
 	length float8 NOT NULL,
 	CONSTRAINT pathfinding_fkey FOREIGN KEY (infra_id) REFERENCES infra(id) ON DELETE CASCADE
