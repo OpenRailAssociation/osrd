@@ -390,6 +390,30 @@ const useTrackOccupancy = ({
           ...currentState,
           selected: newSelected,
         });
+
+        // refresh zones when reopening waypoint, if TOD was closed.
+        if (!currentSelected && newSelected) {
+          const opId = pathOperationalPointsDict[waypointId]?.opId;
+          if (!opId) return;
+
+          const trains = Object.fromEntries(Array.from(timetableItemsById.entries()));
+
+          fetchTrackOccupancy(opId, trains).then((newZones) => {
+            if (!newZones.length) return;
+
+            updatePathOperationalPointState(waypointId, (state) =>
+              state
+                ? {
+                    ...state,
+                    zones: {
+                      type: 'ok',
+                      data: newZones,
+                    },
+                  }
+                : undefined
+            );
+          });
+        }
       }
     },
     [
