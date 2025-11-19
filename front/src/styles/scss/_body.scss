@@ -1,3 +1,7 @@
+:root {
+  --header-height: 40px;
+}
+
 html:has(> body > .menu-overlay) {
   overflow: hidden;
 }
@@ -16,7 +20,7 @@ body {
 }
 
 .mastcontainer-map {
-  height: 100vh;
+  height: calc(100vh - var(--header-height));
 }
 
 .no-mastnav {
