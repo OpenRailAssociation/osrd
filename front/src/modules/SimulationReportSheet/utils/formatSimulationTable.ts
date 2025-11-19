@@ -57,6 +57,11 @@ const getRowStyle = (
   };
 };
 
+const formatTimeWithRounding = (time: Date, locale: Intl.Locale): string => {
+  if (time.getSeconds() > 29) time.setMinutes(time.getMinutes() + 1);
+  return time.toLocaleTimeString(locale, { timeStyle: 'short' });
+};
+
 export const formatStdcmDataForSimulationTable = (
   operationalPointsList: StdcmResultsOperationalPoint[],
   stdcmPathSteps: StdcmSuccessResponse['simulationPathSteps'],
@@ -126,23 +131,23 @@ export const formatOperationalStudiesDataForSimulationTable = (
     const isVia = pathItemPositions.slice(1, -1).some((p) => p / 1000 === step.position);
     const isPathStep = isFirst || isVia || isLast;
 
-    const startTime =
-      isFirst || isStop
-        ? addDurationToDate(step.time, step.duration ?? Duration.zero).toLocaleString(
-            dateTimeLocale,
-            { timeStyle: 'short' }
-          )
-        : '';
-    const endTime =
-      isLast || isStop ? step.time.toLocaleString(dateTimeLocale, { timeStyle: 'short' }) : '';
+    const endTime = isLast || isStop ? formatTimeWithRounding(step.time, dateTimeLocale) : '';
 
     let passageStop = '';
     if (!isFirst && !isLast) {
       // display the stop duration if is a stop, the passage time if not
       passageStop = step.duration
         ? getStopDurationTime(step.duration)
-        : step.time.toLocaleString(dateTimeLocale, { timeStyle: 'short' });
+        : formatTimeWithRounding(step.time, dateTimeLocale);
     }
+
+    const startTime =
+      isFirst || isStop
+        ? formatTimeWithRounding(
+            addDurationToDate(step.time, step.duration ?? Duration.zero),
+            dateTimeLocale
+          )
+        : '';
 
     return {
       name:
