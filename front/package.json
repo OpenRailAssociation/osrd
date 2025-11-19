@@ -31,7 +31,7 @@
     "@turf/bbox-clip": "^7.2.0",
     "@turf/bearing": "^7.3.0",
     "@turf/bezier-spline": "^7.2.0",
-    "@turf/boolean-intersects": "^7.2.0",
+    "@turf/boolean-intersects": "^7.3.0",
     "@turf/boolean-point-in-polygon": "^7.3.0",
     "@turf/center": "^7.2.0",
     "@turf/combine": "^7.2.0",
