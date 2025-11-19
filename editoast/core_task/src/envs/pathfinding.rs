@@ -20,6 +20,8 @@ use crate::Correlated;
 use crate::Task;
 use crate::TrainSet;
 
+// ========== Environment public API ==========
+
 /// An environment to compute and cache paths asynchronously
 ///
 /// Provides [PathfindingEnv::run] and [PathfindingEnv::into_stream] to build, run,
@@ -36,98 +38,6 @@ where
     inputs: PathfindingEnvInputs<Train>,
 }
 
-#[derive(Debug)]
-pub(crate) struct PathfindingEnvInputs<Train>
-where
-    Train: Clone + Hash + Eq + Send + Sync + 'static,
-{
-    // TODO: deduplicate values
-    consists: HashMap<Train, Arc<PathfindingConsist>>,
-    constraints: HashMap<Train, Arc<PathfindingConstraints>>,
-}
-
-impl<Train> Default for PathfindingEnvInputs<Train>
-where
-    Train: Clone + Hash + Eq + Send + Sync + 'static,
-{
-    fn default() -> Self {
-        Self {
-            consists: HashMap::default(),
-            constraints: HashMap::default(),
-        }
-    }
-}
-
-#[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub(in crate::envs) struct Input(Arc<PathfindingConsist>, Arc<PathfindingConstraints>);
-
-/// The result of [PathfindingEnv::run]
-///
-/// Stores each pathfinding result as they arrive. So [fn PathfindingRun::get_path]
-/// might return that a result is still pending. The [TrainSet]s done being calculated
-/// can be tracked by providing a channel sender to [PathfindingEnv::run].
-///
-/// Cheap to clone.
-#[derive(Debug, Clone)]
-pub struct PathfindingRun<Train>
-where
-    Train: Clone + Hash + Eq + Send + Sync + 'static,
-{
-    inputs: Arc<PathfindingEnvInputs<Train>>,
-    // optionally deduplicate similar outputs of different inputs
-    paths: Arc<DashMap<Input, PendingPathfindingResult>>,
-}
-
-/// Ready when the pathfinding result is available and stored in [PathfindingRun], pending if the task is not yet completed
-type PendingPathfindingResult =
-    Poll<Result<Arc<core_client::pathfinding::PathfindingCoreResult>, core_client::Error>>;
-
-#[derive(Debug, Hash, PartialEq, Eq)]
-#[cfg_attr(test, derive(Clone))]
-pub struct PathfindingConsist {
-    pub loading_gauge: LoadingGaugeType,
-    /// Can the consist run on non-electrified tracks
-    pub thermal: bool,
-    /// Supported electrification modes (leave empty for unelectrified consists)
-    pub supported_electrifications: Vec<String>,
-    /// A list of supported signaling systems
-    pub supported_signaling_systems: Vec<String>,
-    pub maximum_speed: OrderedFloat<f64>,
-    /// Consist length in meters
-    pub length: OrderedFloat<f64>,
-    /// Speed limit tag to estimate maximum speed and travel time
-    pub speed_limit_tag: Option<String>,
-}
-
-#[derive(Debug, Hash, PartialEq, Eq)]
-#[cfg_attr(test, derive(Clone))]
-pub struct PathfindingConstraints {
-    /// An ordered list of waypoints the resulting path must pass through
-    pub path_items: Vec<PathWaypointAlternatives>,
-}
-
-/// A set of [TrackOffset]
-///
-/// The resulting path can cross any of these.
-#[derive(Debug, Hash, PartialEq, Eq)]
-#[cfg_attr(test, derive(Clone))]
-pub struct PathWaypointAlternatives(Vec<TrackOffset>);
-
-impl FromIterator<TrackOffset> for PathWaypointAlternatives {
-    fn from_iter<T: IntoIterator<Item = TrackOffset>>(iter: T) -> Self {
-        Self(iter.into_iter().collect())
-    }
-}
-
-impl IntoIterator for PathWaypointAlternatives {
-    type Item = TrackOffset;
-    type IntoIter = <Vec<TrackOffset> as IntoIterator>::IntoIter;
-
-    fn into_iter(self) -> Self::IntoIter {
-        self.0.into_iter()
-    }
-}
-
 impl<Train> PathfindingEnv<Train>
 where
     Train: Clone + Hash + Eq + Send + Sync + 'static,
@@ -142,56 +52,7 @@ where
     pub(crate) fn decompose(self) -> (CoreEnv, Arc<PathfindingEnvInputs<Train>>) {
         (self.core_env, Arc::new(self.inputs))
     }
-}
 
-impl<Train> Extend<(Train, PathfindingConsist)> for PathfindingEnv<Train>
-where
-    Train: Clone + Hash + Eq + Send + Sync + 'static,
-{
-    fn extend<T: IntoIterator<Item = (Train, PathfindingConsist)>>(&mut self, iter: T) {
-        self.inputs.consists.extend(
-            iter.into_iter()
-                .map(|(train, consist)| (train, Arc::new(consist))),
-        );
-    }
-}
-
-impl<Train> Extend<(Train, PathfindingConstraints)> for PathfindingEnv<Train>
-where
-    Train: Clone + Hash + Eq + Send + Sync + 'static,
-{
-    fn extend<T: IntoIterator<Item = (Train, PathfindingConstraints)>>(&mut self, iter: T) {
-        self.inputs.constraints.extend(
-            iter.into_iter()
-                .map(|(train, constraints)| (train, Arc::new(constraints))),
-        );
-    }
-}
-
-impl Task for core_client::pathfinding::PathfindingRequest {
-    type Output = core_client::pathfinding::PathfindingCoreResult;
-    type Error = core_client::Error;
-    type Context = Arc<CoreClient>;
-
-    // Please adjust if you have more educated information (and adjust the comment 😉).
-    const CACHE_READS_BATCH_SIZE: usize = 50; // This value has been chosen this way: 🫳🎩
-
-    fn key(&self, app_version: &str) -> String {
-        let mut hasher = DefaultHasher::new();
-        self.hash(&mut hasher);
-        let req_hash = hasher.finish().to_string();
-        format!("editoast.{app_version}.pathfinding.{req_hash}")
-    }
-
-    async fn compute(self, ctx: Self::Context) -> Result<Self::Output, Self::Error> {
-        self.fetch(ctx.as_ref()).await
-    }
-}
-
-impl<Train> PathfindingEnv<Train>
-where
-    Train: Clone + Hash + Eq + Send + Sync + 'static,
-{
     /// Computes paths or fetches them from cache asynchronously
     ///
     /// Returns a [PathfindingRun] containing the calculated paths (or errors)
@@ -263,6 +124,100 @@ where
     }
 }
 
+// ========== Input management ==========
+
+#[derive(Debug)]
+pub(crate) struct PathfindingEnvInputs<Train>
+where
+    Train: Clone + Hash + Eq + Send + Sync + 'static,
+{
+    // TODO: deduplicate values
+    consists: HashMap<Train, Arc<PathfindingConsist>>,
+    constraints: HashMap<Train, Arc<PathfindingConstraints>>,
+}
+
+impl<Train> Default for PathfindingEnvInputs<Train>
+where
+    Train: Clone + Hash + Eq + Send + Sync + 'static,
+{
+    fn default() -> Self {
+        Self {
+            consists: HashMap::default(),
+            constraints: HashMap::default(),
+        }
+    }
+}
+
+#[derive(Debug, Hash, PartialEq, Eq)]
+#[cfg_attr(test, derive(Clone))]
+pub struct PathfindingConsist {
+    pub loading_gauge: LoadingGaugeType,
+    /// Can the consist run on non-electrified tracks
+    pub thermal: bool,
+    /// Supported electrification modes (leave empty for unelectrified consists)
+    pub supported_electrifications: Vec<String>,
+    /// A list of supported signaling systems
+    pub supported_signaling_systems: Vec<String>,
+    pub maximum_speed: OrderedFloat<f64>,
+    /// Consist length in meters
+    pub length: OrderedFloat<f64>,
+    /// Speed limit tag to estimate maximum speed and travel time
+    pub speed_limit_tag: Option<String>,
+}
+
+#[derive(Debug, Hash, PartialEq, Eq)]
+#[cfg_attr(test, derive(Clone))]
+pub struct PathfindingConstraints {
+    /// An ordered list of waypoints the resulting path must pass through
+    pub path_items: Vec<PathWaypointAlternatives>,
+}
+
+/// A set of [TrackOffset]
+///
+/// The resulting path can cross any of these.
+#[derive(Debug, Hash, PartialEq, Eq)]
+#[cfg_attr(test, derive(Clone))]
+pub struct PathWaypointAlternatives(Vec<TrackOffset>);
+
+impl FromIterator<TrackOffset> for PathWaypointAlternatives {
+    fn from_iter<T: IntoIterator<Item = TrackOffset>>(iter: T) -> Self {
+        Self(iter.into_iter().collect())
+    }
+}
+
+impl IntoIterator for PathWaypointAlternatives {
+    type Item = TrackOffset;
+    type IntoIter = <Vec<TrackOffset> as IntoIterator>::IntoIter;
+
+    fn into_iter(self) -> Self::IntoIter {
+        self.0.into_iter()
+    }
+}
+
+impl<Train> Extend<(Train, PathfindingConsist)> for PathfindingEnv<Train>
+where
+    Train: Clone + Hash + Eq + Send + Sync + 'static,
+{
+    fn extend<T: IntoIterator<Item = (Train, PathfindingConsist)>>(&mut self, iter: T) {
+        self.inputs.consists.extend(
+            iter.into_iter()
+                .map(|(train, consist)| (train, Arc::new(consist))),
+        );
+    }
+}
+
+impl<Train> Extend<(Train, PathfindingConstraints)> for PathfindingEnv<Train>
+where
+    Train: Clone + Hash + Eq + Send + Sync + 'static,
+{
+    fn extend<T: IntoIterator<Item = (Train, PathfindingConstraints)>>(&mut self, iter: T) {
+        self.inputs.constraints.extend(
+            iter.into_iter()
+                .map(|(train, constraints)| (train, Arc::new(constraints))),
+        );
+    }
+}
+
 impl<Train> PathfindingEnvInputs<Train>
 where
     Train: Clone + Hash + Eq + Send + Sync + 'static,
@@ -285,6 +240,8 @@ where
     }
 }
 
+// ========== Low-level runner ==========
+
 /// Internal context allowing running pathfinding tasks
 ///
 /// Built from a [PathfindingEnv] using [Runner::new] which builds indexes in
@@ -297,6 +254,9 @@ where
     pathfinding_inputs: Arc<PathfindingEnvInputs<Train>>,
     input_index: DashMap<Input, TrainSet<Train>>,
 }
+
+#[derive(Debug, Clone, Hash, PartialEq, Eq)]
+pub(in crate::envs) struct Input(Arc<PathfindingConsist>, Arc<PathfindingConstraints>);
 
 impl<Train> Runner<Train>
 where
@@ -363,29 +323,28 @@ where
     }
 }
 
-fn build_request(
-    core_env: &CoreEnv,
-    Input(consist, constraints): &Input,
-) -> core_client::pathfinding::PathfindingRequest {
-    core_client::pathfinding::PathfindingRequest {
-        infra: core_env.infra_id as i64,
-        expected_version: core_env.infra_version,
-        path_items: constraints
-            .path_items
-            .iter()
-            .map(|PathWaypointAlternatives(track_alternatives)| {
-                track_alternatives.clone().into_iter().collect()
-            })
-            .collect(),
-        rolling_stock_loading_gauge: consist.loading_gauge,
-        rolling_stock_is_thermal: consist.thermal,
-        rolling_stock_supported_electrifications: consist.supported_electrifications.clone(),
-        rolling_stock_supported_signaling_systems: consist.supported_signaling_systems.clone(),
-        rolling_stock_maximum_speed: consist.maximum_speed,
-        rolling_stock_length: consist.length,
-        speed_limit_tag: consist.speed_limit_tag.clone(),
-    }
+// ========== Stateful run ==========
+
+/// The result of [PathfindingEnv::run]
+///
+/// Stores each pathfinding result as they arrive. So [fn PathfindingRun::get_path]
+/// might return that a result is still pending. The [TrainSet]s done being calculated
+/// can be tracked by providing a channel sender to [PathfindingEnv::run].
+///
+/// Cheap to clone.
+#[derive(Debug, Clone)]
+pub struct PathfindingRun<Train>
+where
+    Train: Clone + Hash + Eq + Send + Sync + 'static,
+{
+    inputs: Arc<PathfindingEnvInputs<Train>>,
+    // optionally deduplicate similar outputs of different inputs
+    paths: Arc<DashMap<Input, PendingPathfindingResult>>,
 }
+
+/// Ready when the pathfinding result is available and stored in [PathfindingRun], pending if the task is not yet completed
+type PendingPathfindingResult =
+    Poll<Result<Arc<core_client::pathfinding::PathfindingCoreResult>, core_client::Error>>;
 
 impl<Train> PathfindingRun<Train>
 where
@@ -414,6 +373,52 @@ where
         let value_ref = self.paths.get(&input)?;
         let value = value_ref.value().clone();
         Some(value)
+    }
+}
+
+// ========== Core requests ==========
+
+fn build_request(
+    core_env: &CoreEnv,
+    Input(consist, constraints): &Input,
+) -> core_client::pathfinding::PathfindingRequest {
+    core_client::pathfinding::PathfindingRequest {
+        infra: core_env.infra_id as i64,
+        expected_version: core_env.infra_version,
+        path_items: constraints
+            .path_items
+            .iter()
+            .map(|PathWaypointAlternatives(track_alternatives)| {
+                track_alternatives.clone().into_iter().collect()
+            })
+            .collect(),
+        rolling_stock_loading_gauge: consist.loading_gauge,
+        rolling_stock_is_thermal: consist.thermal,
+        rolling_stock_supported_electrifications: consist.supported_electrifications.clone(),
+        rolling_stock_supported_signaling_systems: consist.supported_signaling_systems.clone(),
+        rolling_stock_maximum_speed: consist.maximum_speed,
+        rolling_stock_length: consist.length,
+        speed_limit_tag: consist.speed_limit_tag.clone(),
+    }
+}
+
+impl Task for core_client::pathfinding::PathfindingRequest {
+    type Output = core_client::pathfinding::PathfindingCoreResult;
+    type Error = core_client::Error;
+    type Context = Arc<CoreClient>;
+
+    // Please adjust if you have more educated information (and adjust the comment 😉).
+    const CACHE_READS_BATCH_SIZE: usize = 50; // This value has been chosen this way: 🫳🎩
+
+    fn key(&self, app_version: &str) -> String {
+        let mut hasher = DefaultHasher::new();
+        self.hash(&mut hasher);
+        let req_hash = hasher.finish().to_string();
+        format!("editoast.{app_version}.pathfinding.{req_hash}")
+    }
+
+    async fn compute(self, ctx: Self::Context) -> Result<Self::Output, Self::Error> {
+        self.fetch(ctx.as_ref()).await
     }
 }
 
