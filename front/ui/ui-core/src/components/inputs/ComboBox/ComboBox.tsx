@@ -54,10 +54,6 @@ const ComboBox = <T,>({
   const inputRef = useRef<HTMLInputElement>(null);
   const wrapperRef = useRef<HTMLInputElement>(null);
 
-  const focusInput = useCallback(() => {
-    inputRef.current?.focus();
-  }, [inputRef]);
-
   const removeFocus = () => {
     setIsInputFocused(false);
     setActiveSuggestionIndex(-1);
@@ -66,6 +62,15 @@ const ComboBox = <T,>({
     }, 0);
     resetSuggestions();
   };
+
+  /* eslint-disable react-hooks/exhaustive-deps */
+  const focusInput = useCallback(() => {
+    if (isInputFocused) {
+      removeFocus();
+    } else {
+      inputRef.current?.focus();
+    }
+  }, [inputRef, isInputFocused]);
 
   /* eslint-disable react-hooks/exhaustive-deps */
   useEffect(() => {
