@@ -7,6 +7,7 @@ use diesel::query_builder::QueryFragment;
 use diesel::sql_types::Bool;
 use diesel::sql_types::Nullable;
 use diesel::sql_types::SqlType;
+use futures::TryStream;
 use std::sync::Arc;
 
 use database::DbConnection;
@@ -190,7 +191,16 @@ pub trait List: Model {
     async fn list(
         conn: &mut DbConnection,
         settings: SelectionSettings<Self>,
-    ) -> Result<Vec<Self>, Self::Error>;
+    ) -> Result<Vec<Self>, Self::Error> {
+        use futures::TryStreamExt;
+        let stream = Self::list_stream(conn, settings).await?;
+        stream.try_collect().await
+    }
+
+    async fn list_stream(
+        conn: &mut DbConnection,
+        settings: SelectionSettings<Self>,
+    ) -> Result<impl TryStream<Ok = Self, Error = Self::Error>, Self::Error>;
 }
 
 /// Describe how we can count the number of occurrences of the [Model]
