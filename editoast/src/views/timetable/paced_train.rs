@@ -32,7 +32,7 @@ use crate::error::Result;
 use crate::models;
 use crate::models::Infra;
 use crate::models::RollingStock;
-use crate::models::paced_train::OccurrenceId;
+use crate::models::paced_train::Occurrence;
 use crate::models::paced_train::PacedTrainChangeset;
 use crate::views::AuthorizationError;
 use crate::views::infra::InfraIdQueryParam;
@@ -45,6 +45,7 @@ use crate::views::projection::ProjectPathOperationalPointForm;
 use crate::views::projection::SpaceTimeCurve;
 use crate::views::projection::compute_projected_train_path_op;
 use crate::views::projection::compute_projected_train_paths;
+use crate::views::timetable::OccurrenceId;
 use crate::views::timetable::PhysicsConsistParameters;
 use crate::views::timetable::occupancy_blocks::OccupancyBlockForm;
 use crate::views::timetable::occupancy_blocks::OccupancyBlocks;
@@ -1225,11 +1226,12 @@ pub(in crate::views) async fn track_occupancy(
     let train_occurrences = paced_trains
         .iter()
         .flat_map(|paced_train| {
-            paced_train
-                .iter_occurrences()
-                .map(|(occurrence_id, train_schedule)| {
-                    (paced_train.id, occurrence_id, train_schedule)
-                })
+            paced_train.iter_occurrences().map(
+                |Occurrence {
+                     id: occurrence_id,
+                     train_schedule,
+                 }| { (paced_train.id, occurrence_id, train_schedule) },
+            )
         })
         .collect_vec();
 
@@ -1285,7 +1287,7 @@ pub(in crate::views) async fn track_occupancy(
                             track_section,
                             TrackOccupancy {
                                 paced_train_id,
-                                occurrence_id: occurrence_id.clone(),
+                                occurrence_id: occurrence_id.clone().into(),
                                 time_window,
                             },
                         )
@@ -1311,11 +1313,13 @@ pub(in crate::views) async fn track_occupancy(
 #[cfg(test)]
 mod tests {
     use std::collections::HashMap;
+    use std::str::FromStr;
 
     use axum::http::StatusCode;
     use chrono::DateTime;
     use chrono::Duration;
     use chrono::TimeDelta;
+    use chrono::Utc;
     use core_client::mocking::MockingClient;
     use core_client::pathfinding::PathfindingInputError;
     use core_client::pathfinding::PathfindingResultSuccess;
@@ -1326,6 +1330,7 @@ mod tests {
     use core_client::simulation::ReportTrain;
     use core_client::simulation::SpeedLimitProperties;
     use database::DbConnectionPoolV2;
+    use editoast_models::Tags;
     use editoast_models::prelude::*;
     use editoast_models::rolling_stock::TrainMainCategory;
     use pretty_assertions::assert_eq;
@@ -1339,18 +1344,23 @@ mod tests {
     use schemas::paced_train::PacedTrain;
     use schemas::paced_train::PacedTrainException;
     use schemas::paced_train::RollingStockChangeGroup;
+    use schemas::paced_train::StartTimeChangeGroup;
     use schemas::paced_train::TrainNameChangeGroup;
     use schemas::rolling_stock::TrainCategory;
     use schemas::train_schedule::Comfort;
+    use schemas::train_schedule::Distribution;
+    use schemas::train_schedule::Margins;
     use schemas::train_schedule::PathItem;
     use schemas::train_schedule::ScheduleItem;
     use schemas::train_schedule::TrainSchedule;
+    use schemas::train_schedule::TrainScheduleOptions;
     use serde_json::json;
 
     use crate::error::InternalError;
     use crate::models;
     use crate::models::fixtures::create_created_exception_with_change_groups;
     use crate::models::fixtures::create_fast_rolling_stock;
+    use crate::models::fixtures::create_modified_exception_with_change_groups;
     use crate::models::fixtures::create_paced_train_with_exceptions;
     use crate::models::fixtures::create_simple_paced_train;
     use crate::models::fixtures::create_small_infra;
@@ -1358,6 +1368,7 @@ mod tests {
     use crate::models::fixtures::simple_paced_train_base;
     use crate::models::fixtures::simple_paced_train_changeset;
     use crate::models::fixtures::simple_sub_category;
+    use crate::models::paced_train::Occurrence;
     use crate::models::paced_train::PacedTrainChangeset;
     use crate::views::path::pathfinding::PathfindingFailure;
     use crate::views::path::pathfinding::PathfindingResult;
@@ -1365,6 +1376,7 @@ mod tests {
     use crate::views::test_app::TestAppBuilder;
     use crate::views::test_app::TestResponse;
     use crate::views::tests::mocked_core_pathfinding_sim_and_proj;
+    use crate::views::timetable::OccurrenceId;
     use crate::views::timetable::paced_train::OccupancyBlocksPacedTrainResult;
     use crate::views::timetable::paced_train::PacedTrainResponse;
     use crate::views::timetable::paced_train::PacedTrainSummaryResponse;
@@ -2356,5 +2368,186 @@ mod tests {
             response.await.assert_status(StatusCode::OK).json_into();
 
         assert!(track_occupancies.is_empty());
+    }
+
+    fn create_paced_train(exceptions: Vec<PacedTrainException>) -> models::PacedTrain {
+        models::PacedTrain {
+            id: 1,
+            timetable_id: 1,
+            train_name: "train_name".to_string(),
+            rolling_stock_name: "R2D2".to_string(),
+            comfort: Comfort::Standard,
+            initial_speed: 25.0,
+            main_category: Some(TrainMainCategory(
+                schemas::rolling_stock::TrainMainCategory::HighSpeedTrain,
+            )),
+            constraint_distribution: Distribution::Standard,
+            labels: Tags::new(vec![]),
+            margins: Margins {
+                boundaries: vec![Default::default()],
+                ..Default::default()
+            },
+            path: vec![],
+            power_restrictions: vec![],
+            schedule: vec![],
+            speed_limit_tag: None,
+            options: TrainScheduleOptions::default(),
+            start_time: DateTime::<Utc>::from_str("2025-05-15T14:00:00+02:00").unwrap(),
+            time_window: chrono::Duration::try_hours(2).unwrap(),
+            interval: chrono::Duration::try_minutes(30).unwrap(),
+            sub_category: None,
+            exceptions,
+        }
+    }
+
+    #[tokio::test]
+    async fn iter_occurrences_with_exceptions() {
+        let exception_1 = create_modified_exception_with_change_groups("key_1", 1);
+        let exception_2 = create_created_exception_with_change_groups("key_2");
+        let mut exception_3 = create_modified_exception_with_change_groups("key_3", 0);
+        exception_3.disabled = true;
+
+        let paced_train =
+            create_paced_train(vec![exception_1.clone(), exception_2.clone(), exception_3]);
+        let occurrences: Vec<Occurrence> = paced_train.iter_occurrences().collect();
+
+        assert_eq!(occurrences.len(), 4);
+
+        let start_times: Vec<DateTime<Utc>> = occurrences
+            .iter()
+            .map(
+                |Occurrence {
+                     id: _,
+                     train_schedule,
+                 }| train_schedule.start_time,
+            )
+            .collect();
+        let train_names: Vec<String> = occurrences
+            .iter()
+            .map(
+                |Occurrence {
+                     id: _,
+                     train_schedule,
+                 }| train_schedule.train_name.clone(),
+            )
+            .collect();
+        let types: Vec<OccurrenceId> = occurrences
+            .iter()
+            .map(
+                |Occurrence {
+                     id,
+                     train_schedule: _,
+                 }| id.clone().into(),
+            )
+            .collect();
+
+        assert_eq!(
+            start_times,
+            vec![
+                DateTime::<Utc>::from_str("2025-05-15T14:30:00+02:00").unwrap(),
+                DateTime::<Utc>::from_str("2025-05-15T15:00:00+02:00").unwrap(),
+                DateTime::<Utc>::from_str("2025-05-15T15:10:00+02:00").unwrap(),
+                DateTime::<Utc>::from_str("2025-05-15T15:30:00+02:00").unwrap(),
+            ]
+        );
+
+        assert_eq!(
+            train_names,
+            vec![
+                "modified_exception_train_name".to_string(),
+                "train_name".to_string(),
+                "created_exception_train_name".to_string(),
+                "train_name".to_string(),
+            ]
+        );
+
+        assert_eq!(
+            types,
+            vec![
+                OccurrenceId::ModifiedException {
+                    index: 1,
+                    exception_key: "key_1".to_string()
+                },
+                OccurrenceId::BaseOccurrence { index: 2 },
+                OccurrenceId::CreatedException {
+                    exception_key: "key_2".to_string()
+                },
+                OccurrenceId::BaseOccurrence { index: 3 },
+            ]
+        );
+    }
+
+    #[tokio::test]
+    async fn iter_occurrences_with_modified_start_time_exception() {
+        let mut exception_1 = create_modified_exception_with_change_groups("key_1", 1);
+        exception_1.start_time = Some(StartTimeChangeGroup {
+            value: DateTime::<Utc>::from_str("2025-05-15T14:31:00+02:00").unwrap(),
+        });
+
+        let paced_train = create_paced_train(vec![exception_1.clone()]);
+        let occurrences: Vec<Occurrence> = paced_train.iter_occurrences().collect();
+
+        assert_eq!(occurrences.len(), 4);
+
+        let start_times: Vec<DateTime<Utc>> = occurrences
+            .iter()
+            .map(
+                |Occurrence {
+                     id: _,
+                     train_schedule,
+                 }| train_schedule.start_time,
+            )
+            .collect();
+        let train_names: Vec<String> = occurrences
+            .iter()
+            .map(
+                |Occurrence {
+                     id: _,
+                     train_schedule,
+                 }| train_schedule.train_name.clone(),
+            )
+            .collect();
+        let types: Vec<OccurrenceId> = occurrences
+            .iter()
+            .map(
+                |Occurrence {
+                     id,
+                     train_schedule: _,
+                 }| id.clone().into(),
+            )
+            .collect();
+
+        assert_eq!(
+            start_times,
+            vec![
+                DateTime::<Utc>::from_str("2025-05-15T14:00:00+02:00").unwrap(),
+                DateTime::<Utc>::from_str("2025-05-15T14:31:00+02:00").unwrap(),
+                DateTime::<Utc>::from_str("2025-05-15T15:00:00+02:00").unwrap(),
+                DateTime::<Utc>::from_str("2025-05-15T15:30:00+02:00").unwrap(),
+            ]
+        );
+
+        assert_eq!(
+            train_names,
+            vec![
+                "train_name".to_string(),
+                "modified_exception_train_name".to_string(),
+                "train_name".to_string(),
+                "train_name".to_string(),
+            ]
+        );
+
+        assert_eq!(
+            types,
+            vec![
+                OccurrenceId::BaseOccurrence { index: 0 },
+                OccurrenceId::ModifiedException {
+                    index: 1,
+                    exception_key: "key_1".to_string()
+                },
+                OccurrenceId::BaseOccurrence { index: 2 },
+                OccurrenceId::BaseOccurrence { index: 3 },
+            ]
+        );
     }
 }
