@@ -36,6 +36,7 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number) => {
 
   const [timetableItems, setTimetableItems] = useState<TimetableItem[]>();
   const timetableItemsById = useMemo(() => mapBy(timetableItems, 'id'), [timetableItems]);
+  const [selectedTimetableItemIds, setSelectedTimetableItemIds] = useState<TimetableItemId[]>([]);
 
   const [putTrainScheduleById] = osrdEditoastApi.endpoints.putTrainScheduleById.useMutation();
   const [putPacedTrainById] = osrdEditoastApi.endpoints.putPacedTrainById.useMutation();
@@ -182,6 +183,10 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number) => {
       });
       return Array.from(prevTimetableItemsById.values());
     });
+
+    setSelectedTimetableItemIds((prevSelected) =>
+      prevSelected.filter((id) => !_timetableItemsToRemove.includes(id))
+    );
 
     removeSimulatedTimetableItems(_timetableItemsToRemove);
     removeProjectedTimetableItems(_timetableItemsToRemove);
@@ -337,6 +342,8 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number) => {
       removeTimetableItems: removeTimetableItemsWithBroadcast,
       upsertTimetableItems: upsertTimetableItemsWithBroadcast,
       updateTrainDepartureTime: updateTrainDepartureTimeWithBroadcast,
+      selectedTimetableItemIds,
+      setSelectedTimetableItemIds,
     }),
     [
       timetableItemsWithDetails,
@@ -351,6 +358,7 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number) => {
       removeTimetableItemsWithBroadcast,
       upsertTimetableItemsWithBroadcast,
       updateTrainDepartureTimeWithBroadcast,
+      selectedTimetableItemIds,
     ]
   );
 

@@ -1,4 +1,4 @@
-import { useCallback, useContext, useEffect, useMemo, useState } from 'react';
+import { useCallback, useContext, useEffect, useMemo } from 'react';
 
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
@@ -41,6 +41,8 @@ type TimetableBoardWrapperProps = {
   timetableItemsWithDetails: TimetableItemWithDetails[];
   refreshNge: () => Promise<void>;
   projectingOnSimulatedPathException: boolean | undefined;
+  selectedTimetableItemIds: TimetableItemId[];
+  setSelectedTimetableItemIds: React.Dispatch<React.SetStateAction<TimetableItemId[]>>;
 };
 
 const TimetableBoardWrapper = ({
@@ -52,9 +54,9 @@ const TimetableBoardWrapper = ({
   timetableItems = [],
   timetableItemsWithDetails,
   projectingOnSimulatedPathException,
+  selectedTimetableItemIds,
+  setSelectedTimetableItemIds,
 }: TimetableBoardWrapperProps) => {
-  const [selectedTimetableItemIds, setSelectedTimetableItemIds] = useState<TimetableItemId[]>([]);
-
   const { openModal } = useContext(ModalContext);
 
   const { timetableId } = useScenarioContext();
@@ -150,7 +152,6 @@ const TimetableBoardWrapper = ({
   const removeAndUnselectTrains = useCallback(
     (timetableItemIds: TimetableItemId[]) => {
       removeTimetableItems(timetableItemIds);
-      setSelectedTimetableItemIds([]);
     },
     [removeTimetableItems, setSelectedTimetableItemIds]
   );
