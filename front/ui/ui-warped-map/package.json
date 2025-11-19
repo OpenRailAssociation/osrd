@@ -33,7 +33,7 @@
     "lint:fix": "eslint src --fix && prettier '**/*.{css,json}' --write --ignore-path ../.prettierignore"
   },
   "dependencies": {
-    "@turf/along": "^7.1.0",
+    "@turf/along": "^7.3.0",
     "@turf/bbox": "^7.3.0",
     "@turf/bbox-clip": "^7.1.0",
     "@turf/bearing": "^7.3.0",
