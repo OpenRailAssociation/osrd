@@ -385,25 +385,33 @@ data class SpacingResourceGenerator(
         // on start+20 that rarely exceeds start+40.
         // We run a binary search on that range, and iterate one by one when the solution is above.
         var lowerBound = zoneRanges.indexOfFirst { it.pathBegin >= signalData.offset }
+        if (lowerBound < 0) return zoneRanges.last().pathEnd
         val initialUpperBound = min(lowerBound + 40, lastZoneIndex)
         var upperBound = initialUpperBound
 
-        // Main loop, binary search
-        while (true) {
-            if (lowerBound == upperBound) break
-            val probedZoneIndex = (upperBound + lowerBound) / 2
+        // Attempt at the given index, updating the min/max values depending on the result.
+        fun tryAt(index: Int) {
+            if (index !in lowerBound..<upperBound) return
             val required =
-                isZoneIndexRequiredForSignal(
-                    simulationData,
-                    probedZoneIndex,
-                    signalData.signal,
-                    trainState,
-                )!!
+                isZoneIndexRequiredForSignal(simulationData, index, signalData.signal, trainState)!!
             if (required) {
-                lowerBound = probedZoneIndex + 1
+                lowerBound = index + 1
             } else {
-                upperBound = probedZoneIndex
+                upperBound = index
             }
+        }
+
+        // Initial first guess based on block sizes. We never *need* that guess to be correct, but
+        // it skips the binary search when it is. Otherwise, it still updates the min/max bounds.
+        guessZoneIndex(signalData)?.let {
+            tryAt(it + 1)
+            tryAt(it)
+        }
+
+        // Main loop, binary search
+        while (lowerBound < upperBound) {
+            val probedZoneIndex = (upperBound + lowerBound) / 2
+            tryAt(probedZoneIndex)
         }
 
         // Handle the case where the result is higher than the initial upper bound
@@ -418,6 +426,17 @@ data class SpacingResourceGenerator(
         ) lowerBound++
         val firstNonRequiredZoneIndex = lowerBound
         return zoneRanges[firstNonRequiredZoneIndex - 1].pathEnd
+    }
+
+    /**
+     * Try to guess the index of the last required zone, based on block length and common signaling
+     * patterns. A correct guess skips the binary search.
+     */
+    private fun guessZoneIndex(signalData: PendingSignalData): Int? {
+        val firstBlockIndex = blockRanges.indexOfFirst { it.pathBegin >= signalData.offset }
+        if (firstBlockIndex < 0) return null
+        val initialGuess = blockRanges.getOrNull(firstBlockIndex + 1)?.pathEnd ?: return null
+        return zoneRanges.indexOfLast { it.pathEnd <= initialGuess }
     }
 
     /**
