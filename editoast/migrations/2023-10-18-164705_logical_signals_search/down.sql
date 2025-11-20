@@ -5,3 +5,21 @@ DROP TRIGGER IF EXISTS search_signal__ins_trig ON "infra_object_signal";
 DROP TRIGGER IF EXISTS search_signal__upd_trig ON "infra_object_signal";
 DROP FUNCTION IF EXISTS search_signal__ins_trig;
 DROP FUNCTION IF EXISTS search_signal__upd_trig;
+
+-- Manual fix. The generated script deletes the objects manipulated by its related
+-- up.sql instead of reverting them to their prior state.
+-- TODO update `make-migration` so that the revert works properly and re-genereate
+-- this migration without the manual fix.
+CREATE TABLE search_signal (
+	id int8 NOT NULL PRIMARY KEY REFERENCES infra_object_signal(id) ON DELETE CASCADE ON UPDATE CASCADE,
+	"label" text NULL,
+	line_name text NULL,
+	infra_id int4 NULL,
+	obj_id varchar(255) NULL,
+	aspects text[] NULL,
+	systems text[] NULL,
+	line_code int4 NULL
+);
+CREATE INDEX idx_gin_search_signal_label ON search_signal USING gin (label gin_trgm_ops);
+CREATE INDEX idx_gin_search_signal_line_name ON search_signal USING gin (line_name gin_trgm_ops);
+CREATE INDEX search_signal_infra_id_line_code_idx ON search_signal USING btree (infra_id, line_code) INCLUDE (label, aspects);

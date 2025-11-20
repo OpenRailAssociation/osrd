@@ -61,3 +61,13 @@ CREATE TABLE simulation_output (
 	train_schedule_id int8 NULL UNIQUE REFERENCES train_schedule(id) ON DELETE CASCADE,
 	power_restriction_ranges jsonb NOT NULL
 );
+
+CREATE TABLE search_scenario (
+	id int8 NOT NULL PRIMARY KEY REFERENCES scenario(id) ON DELETE CASCADE ON UPDATE CASCADE,
+	name text NULL,
+	description text NULL,
+	study_id int4 NULL,
+	tags text NULL
+);
+CREATE INDEX idx_gin_search_scenario_description ON search_scenario USING gin (description gin_trgm_ops);
+CREATE INDEX idx_gin_search_scenario_name ON search_scenario USING gin (name gin_trgm_ops);
