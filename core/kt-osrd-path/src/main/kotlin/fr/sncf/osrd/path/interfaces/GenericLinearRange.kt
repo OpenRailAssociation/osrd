@@ -3,6 +3,7 @@ package fr.sncf.osrd.path.interfaces
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.Route
 import fr.sncf.osrd.sim_infra.api.TrackChunk
+import fr.sncf.osrd.sim_infra.api.TrackSection
 import fr.sncf.osrd.sim_infra.api.Zone
 import fr.sncf.osrd.sim_infra.api.ZonePath
 import fr.sncf.osrd.utils.indexing.DirStaticIdx
@@ -206,6 +207,14 @@ data class GenericLinearRange<ValueType, OffsetType>(
             newObjectLength,
         )
     }
+
+    fun containsPathOffset(offset: Offset<TrainPath>): Boolean {
+        return offset in pathBegin..pathEnd
+    }
+
+    fun containsObjectOffset(offset: Offset<OffsetType>): Boolean {
+        return offset in objectBegin..objectEnd
+    }
 }
 
 typealias LinearObjectRange<T> = GenericLinearRange<StaticIdx<T>, T>
@@ -221,6 +230,8 @@ typealias ZoneRange = LinearObjectRange<Zone>
 typealias ZonePathRange = LinearObjectRange<ZonePath>
 
 typealias DirChunkRange = LinearDirObjectRange<TrackChunk>
+
+typealias DirTrackRange = LinearDirObjectRange<TrackSection>
 
 /**
  * Takes a list of ranges, returns a new list of ranges where adjacent ranges of the same object
@@ -288,6 +299,10 @@ fun <ValueType, OffsetType> MutableList<GenericLinearRange<ValueType, OffsetType
     }
 }
 
+/**
+ * Map point objects on the ranges, using two functions: one maps the range object ID into a list of
+ * point object ID, the other returns the object offsets. They must return lists of identical sizes.
+ */
 fun <ValueType, OffsetType, ObjectType> List<GenericLinearRange<ValueType, OffsetType>>
     .mapPointObjects(
     mapObject: (ValueType) -> List<ObjectType>,

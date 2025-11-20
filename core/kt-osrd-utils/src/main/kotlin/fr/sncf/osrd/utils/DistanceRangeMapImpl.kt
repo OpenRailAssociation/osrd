@@ -159,8 +159,9 @@ data class DistanceRangeMapImpl<T>(
         }
     }
 
-    override fun shiftPositions(offset: Distance) {
+    override fun shiftPositions(offset: Distance): DistanceRangeMap<T> {
         for (i in 0 until bounds.size) bounds[i] = bounds[i] + offset
+        return this
     }
 
     override fun get(offset: Distance): T? {
