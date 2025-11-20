@@ -111,6 +111,7 @@ pub struct ZoneUpdate {
 }
 
 #[derive(Debug, Serialize, Hash)]
+#[cfg_attr(feature = "mocking_client", derive(PartialEq))]
 pub struct SimulationScheduleItem {
     /// Position on the path in mm
     pub path_offset: u64,
@@ -123,6 +124,7 @@ pub struct SimulationScheduleItem {
 }
 
 #[derive(Debug, Serialize, Hash)]
+#[cfg_attr(feature = "mocking_client", derive(PartialEq))]
 pub struct SimulationMargins {
     /// Path offset separating margin transitions in mm
     pub boundaries: Vec<u64>,
@@ -130,6 +132,7 @@ pub struct SimulationMargins {
 }
 
 #[derive(Debug, Serialize, Hash)]
+#[cfg_attr(feature = "mocking_client", derive(PartialEq))]
 pub struct SimulationPowerRestrictionItem {
     /// Position on the path in mm
     pub from: u64,
@@ -264,6 +267,7 @@ pub struct SpeedLimitProperties {
 }
 #[derive(Debug, Serialize, Educe)]
 #[educe(Hash)]
+#[cfg_attr(feature = "mocking_client", derive(PartialEq))]
 pub struct Request {
     pub infra: i64,
     pub expected_version: i64,
