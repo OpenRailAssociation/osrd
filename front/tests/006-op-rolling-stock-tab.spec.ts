@@ -92,7 +92,7 @@ test.describe('Rolling stock Tab Verification', () => {
         name: rollingStock.name,
         confirmSelection: true,
       });
-      expect(await rollingStockSelector.selectedRollingStockName.innerText()).toEqual(
+      await expect(rollingStockSelector.selectedRollingStockName).toHaveText(
         electricRollingStockName
       );
     });
@@ -108,7 +108,7 @@ test.describe('Rolling stock Tab Verification', () => {
         name: dualModeRollingStockName,
         confirmSelection: true,
       });
-      expect(await rollingStockSelector.selectedRollingStockName.innerText()).toEqual(
+      await expect(rollingStockSelector.selectedRollingStockName).toHaveText(
         dualModeRollingStockName
       );
     });

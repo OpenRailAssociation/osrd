@@ -226,7 +226,7 @@ class StudyPage extends CommonPage {
 
   async verifyScenarioTrainCount(scenarioName: string, expectedTrainCount: string) {
     await expect(this.getScenarioTrainCount(scenarioName)).toBeVisible();
-    expect(await this.getScenarioTrainCount(scenarioName).innerText()).toEqual(expectedTrainCount);
+    await expect(this.getScenarioTrainCount(scenarioName)).toHaveText(expectedTrainCount);
   }
 
   async deleteScenario(scenarioName: string) {

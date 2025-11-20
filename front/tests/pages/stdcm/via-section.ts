@@ -125,7 +125,7 @@ class ViaSection extends STDCMPage {
         await this.getViaStopTime(viaNumber).fill(driverSwitch.invalidInput);
         await expect(this.getViaStopTime(viaNumber)).toHaveValue(driverSwitch.invalidInput);
         await expect(warning).toBeVisible();
-        expect(await warning.textContent()).toEqual(
+        await expect(warning).toHaveText(
           frTranslations.stdcmErrors.routeErrors.viaStopDurationTooShort
         );
         await this.getViaStopTime(viaNumber).fill(driverSwitch.validInput);

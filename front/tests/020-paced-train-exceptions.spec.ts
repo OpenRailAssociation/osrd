@@ -150,9 +150,7 @@ test.describe('Paced trains and exception management', () => {
         selectComfort: false,
         confirmSelection: true,
       });
-      expect(await rollingStockSelector.selectedRollingStockName.innerText()).toEqual(
-        fastRollingStockName
-      );
+      await expect(rollingStockSelector.selectedRollingStockName).toHaveText(fastRollingStockName);
     });
 
     await test.step('Update departure time and submit edit', async () => {

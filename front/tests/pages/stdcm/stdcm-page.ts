@@ -156,7 +156,7 @@ class STDCMPage extends HomePage {
 
   async verifyValidSimulationLaunch(): Promise<void> {
     await this.launchSimulation();
-    expect(await this.simulationStatus.textContent()).toEqual(
+    await expect(this.simulationStatus).toHaveText(
       frTranslations.simulation.results.status.completed
     );
   }
