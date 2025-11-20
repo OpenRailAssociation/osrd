@@ -3,6 +3,7 @@ import { useState, useContext } from 'react';
 import { Download, Search } from '@osrd-project/ui-icons';
 import { isEmpty } from 'lodash';
 import { useTranslation } from 'react-i18next';
+import { useSelector } from 'react-redux';
 
 import type { TimetableJsonPayload } from 'applications/operationalStudies/types';
 import {
@@ -11,11 +12,13 @@ import {
   type GraouTrainScheduleConfig,
   getGraouTrainSchedules,
 } from 'common/api/graouApi';
+import { osrdRailwayManagerApi } from 'common/api/osrdRailwayManagerApi';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import StationCard from 'common/StationCard';
 import UploadFileModal from 'common/uploadFileModal';
 import { setFailure, setWarning } from 'reducers/main';
+import { getRailwayManagerInterfaceUrl } from 'reducers/main/mainSelector';
 import { useAppDispatch } from 'store';
 import { formatLocalDate } from 'utils/date';
 import { castErrorToFailure } from 'utils/error';
@@ -39,6 +42,7 @@ const ImportTimetableItemConfig = ({
   setTrainsJsonData,
 }: ImportTimetableItemConfigProps) => {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'importTrains' });
+  const railwayManagerUrl = useSelector(getRailwayManagerInterfaceUrl);
   const [from, setFrom] = useState<GraouStation | undefined>();
   const [fromSearchString, setFromSearchString] = useState('');
   const [to, setTo] = useState<GraouStation | undefined>();
@@ -48,6 +52,8 @@ const ImportTimetableItemConfig = ({
   const [endTime, setEndTime] = useState('23:59');
   const dispatch = useAppDispatch();
   const { openModal, closeModal } = useContext(ModalContext);
+  const [postTransformTimetable] =
+    osrdRailwayManagerApi.endpoints.postTransformTimetable.useMutation();
 
   function filterInvalidSteps(importedTrainSchedules: GraouTrainSchedule[]): GraouTrainSchedule[] {
     const trainNumbersOfModifiedTrains: string[] = [];
@@ -159,7 +165,7 @@ const ImportTimetableItemConfig = ({
     }
   }
 
-  const processXmlFile = async (fileContent: string) => {
+  const locallyProcessXmlFile = async (fileContent: string) => {
     const parser = new DOMParser();
     const xmlDoc = parser.parseFromString(fileContent, 'application/xml');
     const parserError = xmlDoc.getElementsByTagName('parsererror');
@@ -170,6 +176,26 @@ const ImportTimetableItemConfig = ({
 
     const trainData = await parseXML(xmlDoc);
     setTrainsJsonData(trainData);
+  };
+
+  const processXmlFile = async (file: File, fileContent: string) => {
+    setIsLoading(true);
+
+    if (!railwayManagerUrl) {
+      await locallyProcessXmlFile(fileContent);
+      setIsLoading(false);
+      return;
+    }
+    try {
+      const trainData = await postTransformTimetable({ body: file }).unwrap();
+      setTrainsJsonData(trainData as TimetableJsonPayload);
+    } catch (error: unknown) {
+      await locallyProcessXmlFile(fileContent);
+      const failure = castErrorToFailure(error);
+      dispatch(setFailure(failure));
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const importFile = async (file: File) => {
@@ -198,17 +224,7 @@ const ImportTimetableItemConfig = ({
     }
 
     // try to parse the file as an XML file
-    try {
-      await processXmlFile(fileContent);
-    } catch {
-      // the file is not supported or is an invalid XML file
-      dispatch(
-        setFailure({
-          name: t('errorMessages.error'),
-          message: t('errorMessages.errorInvalidFile'),
-        })
-      );
-    }
+    await processXmlFile(file, fileContent);
   };
   return (
     <>

@@ -15,6 +15,7 @@ export default [
     ignores: [
       'src/common/api/generatedEditoastApi.ts',
       'src/common/api/osrdGatewayApi.ts',
+      'src/common/api/osrdRailwayManagerApi.ts',
       'public',
       'build',
       'playwright-report',
