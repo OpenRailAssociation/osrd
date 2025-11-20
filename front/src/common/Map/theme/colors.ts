@@ -467,7 +467,7 @@ const minimal: Theme = {
     waterIntermittentFill: 'rgba(217, 236, 242, 1)',
     waterwayBridgeLine: '#bbbbbb',
     waterwayIntermittentLine: 'hsl(205, 56%, 73%)',
-    waterwayLine: '"rgba(223, 241, 251, 1)"',
+    waterwayLine: 'rgba(223, 241, 251, 1)',
     waterwayTunnelLine: '#D4EEFD',
   },
   platform: {
