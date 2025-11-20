@@ -224,7 +224,7 @@ where
             .keys()
             .collect::<TrainSet<_>>()
             .intersection(&self.constraints.keys().collect())
-            .cloned()
+            .copied()
             .cloned() // not an error, it's an &&Train originally
             .collect()
     }
