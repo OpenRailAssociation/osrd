@@ -1,7 +1,5 @@
 package fr.sncf.osrd.utils
 
-import fr.sncf.osrd.utils.indexing.*
-
 /** Removes consecutive duplicated values from a list. Keeps duplicates that aren't consecutive. */
 fun <T> List<T>.withoutConsecutiveDuplicates(): List<T> {
     val res = mutableListOf<T>()
@@ -13,4 +11,12 @@ fun <T> List<T>.withoutConsecutiveDuplicates(): List<T> {
         }
     }
     return res
+}
+
+/**
+ * Similar to `list.drop(n)`, but avoids copying the whole list. Returns a Sequence instead of a
+ * list.
+ */
+fun <T> List<T>.dropSeq(count: Int): Sequence<T> {
+    return asSequence().drop(count)
 }

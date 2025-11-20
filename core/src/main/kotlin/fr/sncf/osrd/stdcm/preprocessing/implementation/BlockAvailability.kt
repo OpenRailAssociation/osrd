@@ -12,6 +12,7 @@ import fr.sncf.osrd.standalone_sim.CLOSED_SIGNAL_RESERVATION_MARGIN
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelope
 import fr.sncf.osrd.stdcm.infra_exploration.LocatedStep
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
+import fr.sncf.osrd.utils.dropSeq
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
@@ -221,7 +222,7 @@ data class BlockAvailability(
             infraExplorer
                 .getStepTracker()
                 .getSeenSteps()
-                .drop(1) // Skip departure step
+                .dropSeq(1) // Skip departure step
                 .filter { it.originalStep.stop }
                 .map { it.travelledPathOffset }
                 .contains(startOffset)
