@@ -954,15 +954,19 @@ dependencies = [
  "core_client",
  "dashmap",
  "deadpool-redis",
+ "educe",
  "futures 0.3.31",
  "http",
  "itertools",
  "ordered-float",
+ "pretty_assertions",
+ "rangemap",
  "schemas",
  "serde",
  "serde_json",
  "tokio",
  "tracing",
+ "uom",
 ]
 
 [[package]]

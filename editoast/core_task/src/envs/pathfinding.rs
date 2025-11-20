@@ -34,8 +34,8 @@ pub struct PathfindingEnv<Train>
 where
     Train: Clone + Hash + Eq + Send + Sync + 'static,
 {
-    core_env: CoreEnv,
-    inputs: PathfindingEnvInputs<Train>,
+    pub(in crate::envs) core_env: CoreEnv,
+    pub(in crate::envs) inputs: PathfindingEnvInputs<Train>,
 }
 
 impl<Train> PathfindingEnv<Train>
@@ -128,6 +128,7 @@ pub struct PathfindingTrain {
 }
 
 #[derive(Debug)]
+#[cfg_attr(test, derive(Clone))]
 pub(crate) struct PathfindingEnvInputs<Train>
 where
     Train: Clone + Hash + Eq + Send + Sync + 'static,
@@ -251,12 +252,15 @@ where
     Train: Clone + Hash + Eq + Send + Sync + 'static,
 {
     core_env: CoreEnv,
-    pathfinding_inputs: Arc<PathfindingEnvInputs<Train>>,
+    pub(in crate::envs) pathfinding_inputs: Arc<PathfindingEnvInputs<Train>>,
     input_index: DashMap<Input, TrainSet<Train>>,
 }
 
 #[derive(Debug, Clone, Hash, PartialEq, Eq)]
-pub(in crate::envs) struct Input(Arc<PathfindingConsist>, Arc<PathfindingConstraints>);
+pub(in crate::envs) struct Input(
+    pub(in crate::envs) Arc<PathfindingConsist>,
+    pub(in crate::envs) Arc<PathfindingConstraints>,
+);
 
 impl<Train> Runner<Train>
 where
@@ -416,21 +420,12 @@ impl Task for core_client::pathfinding::PathfindingRequest {
 }
 
 #[cfg(test)]
-mod tests {
-    use std::time::Duration;
-
-    use core_client::mocking::MockingClient;
-    use deadpool_redis::redis;
-    use http::StatusCode;
-    use serde_json::json;
-
-    use crate::mock_mget;
-
+pub(crate) mod test_data {
     use super::*;
 
     /// We use the length field to identify it since the content doesn't matter
-    fn path(id: usize) -> serde_json::Value {
-        let mut path = json!({
+    pub(super) fn path(id: usize) -> serde_json::Value {
+        let mut path = serde_json::json!({
             "status": "success",
             "length": id,
             "path_item_positions": [],
@@ -444,7 +439,7 @@ mod tests {
         path
     }
 
-    fn constraints(id: usize) -> PathfindingConstraints {
+    pub(crate) fn constraints(id: usize) -> PathfindingConstraints {
         PathfindingConstraints {
             path_items: vec![
                 PathWaypointAlternatives::from_iter([TrackOffset::new("id", id as u64)]),
@@ -457,7 +452,7 @@ mod tests {
         }
     }
 
-    fn consist(id: usize) -> PathfindingConsist {
+    pub(crate) fn consist(id: usize) -> PathfindingConsist {
         PathfindingConsist {
             loading_gauge: LoadingGaugeType::GB,
             thermal: true,
@@ -469,7 +464,7 @@ mod tests {
         }
     }
 
-    fn train(id: usize) -> PathfindingTrain {
+    pub(crate) fn train(id: usize) -> PathfindingTrain {
         PathfindingTrain {
             consist: consist(id),
             constraints: constraints(id),
@@ -477,13 +472,27 @@ mod tests {
     }
 
     impl PathfindingEnv<usize> {
-        fn key(&self, id: usize) -> String {
+        pub(crate) fn key(&self, id: usize) -> String {
             let input = self.inputs.train_input(&id).unwrap();
             let request = build_request(&self.core_env, &input);
             use crate::Task as _;
             request.key("")
         }
     }
+}
+
+#[cfg(test)]
+mod tests {
+    use std::time::Duration;
+
+    use core_client::mocking::MockingClient;
+    use deadpool_redis::redis;
+    use http::StatusCode;
+
+    use crate::mock_mget;
+
+    use super::test_data::*;
+    use super::*;
 
     #[tokio::test]
     async fn pathfinding_env() {

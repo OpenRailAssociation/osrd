@@ -1,5 +1,6 @@
-pub mod core;
-pub mod pathfinding;
+pub(crate) mod core;
+pub(crate) mod pathfinding;
+pub(crate) mod simulation;
 
 /// A set of trains, a "Train" being the generic type parameter of environments
 ///
