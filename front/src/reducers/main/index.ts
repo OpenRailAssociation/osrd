@@ -6,6 +6,7 @@ export type MainState = {
   loading: number;
   notifications: Array<Notification>;
   lastInterfaceVersion: string;
+  railwayManagerInterfaceUrl?: string;
 };
 
 export const mainInitialState: MainState = {
@@ -14,6 +15,7 @@ export const mainInitialState: MainState = {
   // errors
   notifications: [],
   lastInterfaceVersion: '',
+  railwayManagerInterfaceUrl: undefined,
 };
 
 export const mainSlice = createSlice({
@@ -54,6 +56,9 @@ export const mainSlice = createSlice({
         date: new Date(),
       });
     },
+    setRailwayManagerInterfaceUrl(state, action: PayloadAction<string>) {
+      state.railwayManagerInterfaceUrl = action.payload;
+    },
     addSuccessNotification(state, action: PayloadAction<{ title: string; text: string }>) {
       state.notifications.push({
         type: 'success',
@@ -93,6 +98,7 @@ export const {
   setSuccessWithoutMessage,
   setWarning,
   setFailure,
+  setRailwayManagerInterfaceUrl,
   addSuccessNotification,
   addFailureNotification,
   deleteNotification,

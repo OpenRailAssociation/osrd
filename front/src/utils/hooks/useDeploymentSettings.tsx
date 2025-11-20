@@ -6,6 +6,8 @@ import proudLogo from 'assets/proud-logo-color.svg';
 import proudOsrdLogo from 'assets/proud-logo-osrd-color-white.svg';
 import xmasLogo from 'assets/xmas-logo-color.svg';
 import xmasOsrdLogo from 'assets/xmas-logo-osrd-color-white.svg';
+import { setRailwayManagerInterfaceUrl } from 'reducers/main';
+import { useAppDispatch } from 'store';
 
 const MONTH_VALUES = {
   JUNE: 5,
@@ -22,6 +24,7 @@ const defaultSettings = {
   hasCustomizedLogo: false,
   stdcmFeedbackMail: 'support_LMR@default.org',
   noInfraEdit: false,
+  railwayManagerInterfaceUrl: undefined,
 };
 
 export type DeploymentSettings = {
@@ -34,6 +37,7 @@ export type DeploymentSettings = {
   hasCustomizedLogo: boolean;
   stdcmFeedbackMail?: string;
   noInfraEdit?: boolean;
+  railwayManagerInterfaceUrl?: string;
 };
 
 export type DeploymentSettingsContext = {
@@ -46,6 +50,7 @@ const deploymentSettingsContext = createContext<DeploymentSettingsContext>(null)
 type DeploymentContextProviderProps = { children: ReactNode };
 
 export const DeploymentContextProvider = ({ children }: DeploymentContextProviderProps) => {
+  const dispatch = useAppDispatch();
   const [customizedDeploymentSetting, setCustomizedDeploymentSetting] =
     useState<DeploymentSettingsContext>({
       isLoading: true,
@@ -78,7 +83,13 @@ export const DeploymentContextProvider = ({ children }: DeploymentContextProvide
           });
         } else {
           const overridesData = await response.json();
-          const { icons, names, stdcm_feedback_mail, no_infra_edit } = overridesData;
+          const {
+            icons,
+            names,
+            stdcm_feedback_mail,
+            no_infra_edit,
+            railway_manager_interface_url,
+          } = overridesData;
 
           const deploySettings: DeploymentSettings = {
             ...defaultSettings,
@@ -113,6 +124,11 @@ export const DeploymentContextProvider = ({ children }: DeploymentContextProvide
 
           if (no_infra_edit) {
             deploySettings.noInfraEdit = no_infra_edit;
+          }
+
+          if (railway_manager_interface_url) {
+            dispatch(setRailwayManagerInterfaceUrl(railway_manager_interface_url));
+            deploySettings.railwayManagerInterfaceUrl = railway_manager_interface_url;
           }
 
           setCustomizedDeploymentSetting({

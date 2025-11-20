@@ -9,3 +9,4 @@ const getLoading = makeMainSelector('loading');
 export const getIsLoading = (state: RootState) => getLoading(state) > 0;
 export const getNotifications = makeMainSelector('notifications');
 export const getLastInterfaceVersion = makeMainSelector('lastInterfaceVersion');
+export const getRailwayManagerInterfaceUrl = makeMainSelector('railwayManagerInterfaceUrl');
