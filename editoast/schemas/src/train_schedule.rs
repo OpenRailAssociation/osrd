@@ -44,27 +44,34 @@ use chrono::Utc;
 use serde::Deserialize;
 use serde::Serialize;
 use serde::de::Error as SerdeError;
+use serde_with::{DefaultOnNull, serde_as};
 use utoipa::ToSchema;
 
 use crate::primitives::NonBlankString;
 use crate::rolling_stock::TrainCategory;
 
+#[serde_as]
 #[derive(Debug, Default, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
 #[serde(remote = "Self")]
 pub struct TrainSchedule {
     pub train_name: String,
     #[serde(default)]
+    #[serde_as(as = "DefaultOnNull")]
     pub labels: Vec<String>,
     pub rolling_stock_name: String,
     pub start_time: DateTime<Utc>,
     pub path: Vec<PathItem>,
     #[serde(default)]
+    #[serde_as(as = "DefaultOnNull")]
     pub schedule: Vec<ScheduleItem>,
     #[serde(default)]
+    #[serde_as(as = "DefaultOnNull")]
     pub margins: Margins,
     #[serde(default)]
+    #[serde_as(as = "DefaultOnNull")]
     pub initial_speed: f64,
     #[serde(default)]
+    #[serde_as(as = "DefaultOnNull")]
     pub comfort: Comfort,
     pub constraint_distribution: Distribution,
     #[schema(inline)]
@@ -72,8 +79,10 @@ pub struct TrainSchedule {
     pub speed_limit_tag: Option<NonBlankString>,
     #[schema(inline)]
     #[serde(default)]
+    #[serde_as(as = "DefaultOnNull")]
     pub power_restrictions: Vec<PowerRestrictionItem>,
     #[serde(default)]
+    #[serde_as(as = "DefaultOnNull")]
     pub options: TrainScheduleOptions,
     pub category: Option<TrainCategory>,
 }

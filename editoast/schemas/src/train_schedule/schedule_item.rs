@@ -1,6 +1,7 @@
 use crate::primitives::NonBlankString;
 use serde::Deserialize;
 use serde::Serialize;
+use serde_with::{DefaultOnNull, serde_as};
 use utoipa::ToSchema;
 
 use crate::primitives::PositiveDuration;
@@ -16,6 +17,7 @@ pub enum ReceptionSignal {
     ShortSlipStop,
 }
 
+#[serde_as]
 #[derive(Debug, Default, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
 #[serde(deny_unknown_fields)]
 #[serde(remote = "Self")]
@@ -32,6 +34,7 @@ pub struct ScheduleItem {
     /// `Some("PT0S")` means the train stops for 0 seconds.
     pub stop_for: Option<PositiveDuration>,
     #[serde(default)]
+    #[serde_as(as = "DefaultOnNull")]
     pub reception_signal: ReceptionSignal,
 }
 

@@ -5,7 +5,7 @@ use chrono::Utc;
 use serde::Deserialize;
 use serde::Deserializer;
 use serde::Serialize;
-use serde_with::skip_serializing_none;
+use serde_with::{DefaultOnNull, serde_as, skip_serializing_none};
 use utoipa::ToSchema;
 use utoipa::openapi::ObjectBuilder;
 use utoipa::openapi::RefOr;
@@ -98,6 +98,7 @@ impl<'de> Deserialize<'de> for PacedTrain {
 /// - Created: A new occurrence manually added by the user, not originally present in the automatically generated occurrences based on the paced train.
 /// - Modified: An existing occurrence that has been changed
 #[skip_serializing_none]
+#[serde_as]
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
 #[cfg_attr(feature = "testing", derive(Default))]
 pub struct PacedTrainException {
@@ -107,6 +108,7 @@ pub struct PacedTrainException {
     #[schema(inline)]
     pub exception_type: ExceptionType,
     #[serde[default]]
+    #[serde_as(as = "DefaultOnNull")]
     pub disabled: bool,
     #[schema(nullable = false)]
     pub train_name: Option<TrainNameChangeGroup>,
