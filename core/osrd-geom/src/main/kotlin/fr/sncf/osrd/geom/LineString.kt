@@ -221,7 +221,7 @@ data class LineString(
          * @param lineStringList is a list that contains LineStrings
          * @return a new LineString
          */
-        fun concatenate(lineStringList: MutableList<LineString>): LineString {
+        fun concatenate(lineStringList: List<LineString>): LineString {
             val newBufferLon = DoubleArrayList()
             val newBufferLat = DoubleArrayList()
             val newCumulativeLengths = DoubleArrayList()

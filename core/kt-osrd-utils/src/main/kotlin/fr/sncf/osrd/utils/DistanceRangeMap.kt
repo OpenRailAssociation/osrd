@@ -43,8 +43,11 @@ interface DistanceRangeMap<T> : Iterable<DistanceRangeMap.RangeMapEntry<T>> {
     /** Removes all values outside the given range */
     fun truncate(beginOffset: Distance, endOffset: Distance)
 
-    /** Shifts the positions by adding the given value */
-    fun shiftPositions(offset: Distance)
+    /**
+     * Shifts the positions by adding the given value. Map is changed inplace, but still returned
+     * for call chains.
+     */
+    fun shiftPositions(offset: Distance): DistanceRangeMap<T>
 
     /**
      * Get the value at the given offset, if there is any. On exact transition offsets, the value
@@ -87,37 +90,6 @@ fun <T> distanceRangeMapOf(vararg entries: DistanceRangeMap.RangeMapEntry<T>): D
 
 fun <T> distanceRangeMapOf(entries: List<DistanceRangeMap.RangeMapEntry<T>>): DistanceRangeMap<T> {
     return DistanceRangeMapImpl(entries)
-}
-
-/**
- * Merges all the given range maps, offsetting them by the given distances. The lists must be empty
- * or `maps` must be larger by one.
- */
-fun <T> mergeDistanceRangeMaps(
-    maps: List<DistanceRangeMap<T>>,
-    distances: List<Distance>,
-): DistanceRangeMap<T> {
-    assert((maps.size - 1 == distances.size) || (maps.isEmpty() && distances.isEmpty()))
-
-    val resEntries = ArrayList<DistanceRangeMap.RangeMapEntry<T>>()
-
-    var previousDistance = 0.meters
-    // Adding a last distance for convenience, it's not used.
-    for ((map, distance) in maps zip distances + 0.meters) {
-        for (entry in map) {
-            resEntries.add(
-                DistanceRangeMap.RangeMapEntry(
-                    entry.lower + previousDistance,
-                    entry.upper + previousDistance,
-                    entry.value,
-                )
-            )
-        }
-        previousDistance += distance
-    }
-
-    // Build the whole map at once to avoid redundant computations.
-    return distanceRangeMapOf(resEntries)
 }
 
 /**

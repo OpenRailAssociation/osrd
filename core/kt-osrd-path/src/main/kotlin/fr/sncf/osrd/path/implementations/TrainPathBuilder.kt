@@ -104,7 +104,6 @@ fun buildTrainPathFromBlockRanges(
     return TrainPathNoBacktrack(
         rawInfra,
         blockInfra,
-        makePathProperties(rawInfra, buildChunkPath(rawInfra, chunks), routeIds),
         routes,
         blockRanges,
         chunks,
@@ -258,17 +257,6 @@ internal fun generateRouteRanges(
 }
 
 /**
- * Build a ChunkPath from the given chunk ranges. Used to instantiate the internal `PathProperties`
- * instance.
- */
-private fun buildChunkPath(infra: RawInfra, chunks: List<DirChunkRange>): ChunkPath {
-    val chunkIds = chunks.map { it.value }
-    val beginOffset = chunks.first().objectBegin
-    val endOffset = beginOffset + (chunks.last().pathEnd - chunks.first().pathBegin)
-    return buildChunkPath(infra, chunkIds, beginOffset.cast(), endOffset.cast())
-}
-
-/**
  * Find a valid block sequence covering the path.
  *
  * We don't look for the best matching one, blocks may only be partially used even in the middle of
@@ -325,3 +313,5 @@ typealias PartialRouteRange = PartialLinearObjectRange<Route>
 typealias PartialBlockRange = PartialLinearObjectRange<Block>
 
 typealias PartialDirChunkRange = PartialLinearDirObjectRange<TrackChunk>
+
+typealias PartialDirTrackRange = PartialLinearDirObjectRange<TrackSection>

@@ -251,65 +251,6 @@ class TestDistanceRangeMap {
     }
 
     @Test
-    fun testMergeDistanceRangeMapsEmpty() {
-        val rangeMap = mergeDistanceRangeMaps<Int>(emptyList(), emptyList())
-
-        assertEquals(emptyList(), rangeMap.asList())
-    }
-
-    @Test
-    fun testMergeDistanceRangeMapsSimple() {
-        val inputMap =
-            distanceRangeMapOf(
-                DistanceRangeMap.RangeMapEntry(Distance(0), Distance(50), 1),
-                DistanceRangeMap.RangeMapEntry(Distance(50), Distance(100), 2),
-            )
-        val distances = listOf(Distance(100))
-
-        val rangeMap = mergeDistanceRangeMaps<Int>(listOf(inputMap, inputMap), distances)
-
-        assertEquals(
-            listOf(
-                DistanceRangeMap.RangeMapEntry(Distance(0), Distance(50), 1),
-                DistanceRangeMap.RangeMapEntry(Distance(50), Distance(100), 2),
-                DistanceRangeMap.RangeMapEntry(Distance(100), Distance(150), 1),
-                DistanceRangeMap.RangeMapEntry(Distance(150), Distance(200), 2),
-            ),
-            rangeMap.asList(),
-        )
-    }
-
-    @Test
-    fun testMergeDistanceRangeMapsLarge() {
-        val n = 200
-        val oneSecond: Duration = 1.seconds
-        val timeSource = TimeSource.Monotonic
-        val distances = List(n - 1) { Distance(n.toLong()) }
-        val maps: MutableList<DistanceRangeMap<Int>> = mutableListOf()
-        for (i in 0..<n) {
-            val entries =
-                List(n) {
-                    DistanceRangeMap.RangeMapEntry(
-                        Distance(it.toLong()),
-                        Distance(it.toLong() + 1),
-                        i * n + it,
-                    )
-                }
-            maps.add(DistanceRangeMapImpl<Int>(entries))
-        }
-        val mergedEntries =
-            List(n * n) {
-                DistanceRangeMap.RangeMapEntry(Distance(it.toLong()), Distance(it.toLong() + 1), it)
-            }
-
-        val mark1 = timeSource.markNow()
-        val mark2 = mark1 + oneSecond
-        val rangeMap = mergeDistanceRangeMaps<Int>(maps, distances)
-        assert(!mark2.hasPassedNow())
-        assertEquals(mergedEntries, rangeMap.asList())
-    }
-
-    @Test
     fun updateMapIntersection() {
         val map = DistanceRangeMapImpl<String>()
         map.put(0.0.meters, 10.0.meters, "A")
