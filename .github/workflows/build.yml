@@ -31,7 +31,7 @@ jobs:
           - [osrdyne, osrdyne-test]
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Make bake metadata
         id: bake-metadata
@@ -177,7 +177,7 @@ jobs:
     name: Check dockerfiles
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Build dummy test_data and static_assets images
         run: |
@@ -197,7 +197,7 @@ jobs:
     name: Check models.py sync
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: Set up 'uv'
         uses: astral-sh/setup-uv@v6
         with:
@@ -217,7 +217,7 @@ jobs:
     name: Check scripts
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Find and check all scripts using ShellCheck
         uses: ludeeus/action-shellcheck@master
@@ -228,7 +228,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Check generated railjson sync
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Set up 'uv'
         uses: astral-sh/setup-uv@v6
         with:
@@ -251,7 +251,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Check railjson generator
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Set up 'uv'
         uses: astral-sh/setup-uv@v6
         with:
@@ -280,7 +280,7 @@ jobs:
     name: Check commits
     steps:
       - name: Checkout code
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
         with:
           fetch-depth: 0 # Fetch all history for all branches and tags
 
@@ -313,7 +313,7 @@ jobs:
       - name: Install ripgrep
         run: sudo apt-get install -y ripgrep
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: Check final newline is present
         run: |
           # search missing final newline
@@ -333,7 +333,7 @@ jobs:
     name: Check integration tests
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: Set up 'uv'
         uses: astral-sh/setup-uv@v6
         with:
@@ -354,7 +354,7 @@ jobs:
     runs-on: ubuntu-latest
     name: Check osrd schema
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: Set up 'uv'
         uses: astral-sh/setup-uv@v6
         with:
@@ -376,7 +376,7 @@ jobs:
     name: Check toml
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: Install taplo
         uses: baptiste0928/cargo-install@v3
         with:
@@ -390,7 +390,7 @@ jobs:
     name: Check infra schema sync
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: Set up 'uv'
         uses: astral-sh/setup-uv@v6
         with:
@@ -413,7 +413,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Download built images
         if: needs.build.outputs.output_method == 'artifact'
@@ -449,7 +449,7 @@ jobs:
       - build
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Download built images
         if: needs.build.outputs.output_method == 'artifact'
@@ -490,7 +490,7 @@ jobs:
       - build
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Download built editoast-test image
         if: needs.build.outputs.output_method == 'artifact'
@@ -539,7 +539,7 @@ jobs:
       - build
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Download built images
         if: needs.build.outputs.output_method == 'artifact'
@@ -586,7 +586,7 @@ jobs:
       - build
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Download built editoast image
         if: needs.build.outputs.output_method == 'artifact'
@@ -632,7 +632,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Download built images
         if: needs.build.outputs.output_method == 'artifact'
@@ -685,7 +685,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Download built images
         if: needs.build.outputs.output_method == 'artifact'
@@ -738,7 +738,7 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Download built images
         if: needs.build.outputs.output_method == 'artifact'
@@ -795,7 +795,7 @@ jobs:
       # TODO: check if we can deduplicate the base steps from integration_tests_quality
       # https://www.jameskerr.blog/posts/sharing-steps-in-github-action-workflows/
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: Download built editoast image
         if: needs.build.outputs.output_method == 'artifact'
         uses: actions/download-artifact@v6
@@ -871,7 +871,7 @@ jobs:
       # TODO: check if we can deduplicate the base steps from integration_tests_quality
       # https://www.jameskerr.blog/posts/sharing-steps-in-github-action-workflows/
       - name: Checkout
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
       - name: Download built front-tests image
         if: needs.build.outputs.output_method == 'artifact'
         uses: actions/download-artifact@v6
@@ -1019,6 +1019,6 @@ jobs:
     runs-on: ubuntu-latest
     name: Check reuse compliance
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v6
       - name: REUSE Compliance Check
         uses: fsfe/reuse-action@v6
