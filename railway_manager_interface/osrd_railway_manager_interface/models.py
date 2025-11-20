@@ -44,6 +44,30 @@ class LabelsChangeGroup(BaseModel):
     value: list[str]
 
 
+class LinkedTrain(BaseModel):
+    type: LinkedTrainType
+    name: Annotated[str, Field(title="Name")]
+
+
+class LinkedTrainType(Enum):
+    anterior = "anterior"
+    posterior = "posterior"
+
+
+class LoadingGaugeType(Enum):
+    GA = "GA"
+    GB = "GB"
+
+
+class Location(BaseModel):
+    """
+    Information on the operational point.
+    """
+
+    uic: Annotated[int, Field(title="Uic")]
+    secondary_code: Annotated[str, Field(title="Secondary Code")]
+
+
 class Margins(BaseModel):
     model_config = ConfigDict(
         extra="forbid",
@@ -190,6 +214,16 @@ class ReceptionSignal(Enum):
     SHORT_SLIP_STOP = "SHORT_SLIP_STOP"
 
 
+class RequestedStep(BaseModel):
+    duration: Annotated[int, Field(title="Duration")]
+    """
+    Duration in ms
+    """
+    location: Location
+    timing_data: TimingData | None = None
+    type: StepType | None = None
+
+
 class RollingStockCategoryChangeGroup(BaseModel):
     value: TrainCategoryMain | TrainCategorySub | None = None
 
@@ -212,6 +246,61 @@ class ScheduleItem(BaseModel):
     stop_for: timedelta | None = None
 
 
+class SendLastMinuteRequestResponse(BaseModel):
+    """
+    Response model to validate and return when a last-minute request has been successfully sent.
+    """
+
+    status: Annotated[str, Field(title="Status")]
+    message: Annotated[str, Field(title="Message")]
+
+
+class SimilarTrain(BaseModel):
+    """
+    Similar train to duplicate.
+    """
+
+    path_date: Annotated[AwareDatetime, Field(title="Path Date")]
+    name: Annotated[str, Field(title="Name")]
+    """
+    Train name
+    """
+
+
+class SimulationReport(BaseModel):
+    """
+    Gather information from the LMR request and data input by the user.
+    """
+
+    rolling_stock: Annotated[str, Field(title="Rolling Stock")]
+    towed_rolling_stock: Annotated[str | None, Field(title="Towed Rolling Stock")] = (
+        None
+    )
+    loading_gauge_type: LoadingGaugeType
+    speed_limit_tags: Annotated[str, Field(title="Speed Limit Tags")]
+    total_mass: Annotated[int, Field(title="Total Mass")]
+    """
+    Total mass of the train in kg
+    """
+    max_speed: Annotated[int, Field(title="Max Speed")]
+    """
+    Maximum speed in m/s
+    """
+    total_length: Annotated[int, Field(title="Total Length")]
+    """
+    Total length of the train in m
+    """
+    requested_steps: Annotated[
+        list[RequestedStep], Field(min_length=2, title="Requested Steps")
+    ]
+    departure_time: Annotated[AwareDatetime, Field(title="Departure Time")]
+    user_message: Annotated[str | None, Field(title="User Message")] = None
+    similar_train: SimilarTrain | None = None
+    linked_train: LinkedTrain | None = None
+    course_type: Annotated[str, Field(title="CourseType")]
+    statistical_category: Annotated[str, Field(title="Statistical Category")]
+
+
 class SpeedLimitTag(RootModel[str]):
     root: Annotated[str, Field(min_length=1)]
 
@@ -222,6 +311,36 @@ class SpeedLimitTagChangeGroup(BaseModel):
 
 class StartTimeChangeGroup(BaseModel):
     value: AwareDatetime
+
+
+class StepType(Enum):
+    """
+    Describes the type of step.
+    """
+
+    VIA = "VIA"
+    DRIVER_SWITCH = "DRIVER_SWITCH"
+    STOP = "STOP"
+
+
+class TimingData(BaseModel):
+    """
+    Indicates the departure or arrival time as well as the tolerances.
+    """
+
+    arrival_time: Annotated[AwareDatetime, Field(title="Arrival Time")]
+    arrival_time_tolerance_before: Annotated[
+        int, Field(title="Arrival Time Tolerance Before")
+    ]
+    """
+    Tolerance in ms
+    """
+    arrival_time_tolerance_after: Annotated[
+        int, Field(title="Arrival Time Tolerance After")
+    ]
+    """
+    Tolerance in ms
+    """
 
 
 class TrackOffset(BaseModel):

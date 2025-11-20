@@ -1,5 +1,5 @@
 import { baseRailwayManagerApi as api } from './baseGeneratedApis';
-export const addTagTypes = ['timetable'] as const;
+export const addTagTypes = ['timetable', 'lmr'] as const;
 const injectedRtkApi = api
   .enhanceEndpoints({
     addTagTypes,
@@ -20,6 +20,17 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ['timetable'],
       }),
+      postSendLastMinuteRequest: build.mutation<
+        PostSendLastMinuteRequestApiResponse,
+        PostSendLastMinuteRequestApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/send_last_minute_request`,
+          method: 'POST',
+          body: queryArg.body,
+        }),
+        invalidatesTags: ['lmr'],
+      }),
     }),
     overrideExisting: false,
   });
@@ -31,6 +42,14 @@ export type PostTransformTimetableApiArg = {
   'content-encoding'?: 'gzip' | 'zip';
   /** Arbitrary file to transform into a standard OSRD timetable json file */
   body: Blob;
+};
+export type PostSendLastMinuteRequestApiResponse =
+  /** status 200 User successfully identified, the last-minute request has been formatted and transferred. */ SendLastMinuteRequestResponse;
+export type PostSendLastMinuteRequestApiArg = {
+  body: {
+    simulation_report: SimulationReport;
+    simulation_report_sheet: Blob;
+  };
 };
 export type Interval = string;
 export type Items = {
@@ -366,4 +385,58 @@ export type TransformTimetableResponse = {
 export type ErrorResponse = {
   /** Error message describing what went wrong */
   detail: string;
+};
+export type SendLastMinuteRequestResponse = {
+  status: string;
+  message: string;
+};
+export type LoadingGaugeType = 'GA' | 'GB';
+export type Location = {
+  uic: number;
+  secondary_code: string;
+};
+export type TimingData = {
+  arrival_time: string;
+  /** Tolerance in ms */
+  arrival_time_tolerance_before: number;
+  /** Tolerance in ms */
+  arrival_time_tolerance_after: number;
+};
+export type StepType = 'VIA' | 'DRIVER_SWITCH' | 'STOP';
+export type RequestedStep = {
+  /** Duration in ms */
+  duration: number;
+  location: Location;
+  timing_data?: TimingData;
+  type?: StepType;
+};
+export type SimilarTrain = {
+  path_date: string;
+  /** Train name */
+  name: string;
+};
+export type LinkedTrainType = 'anterior' | 'posterior';
+export type LinkedTrain = {
+  type: LinkedTrainType;
+  name: string;
+};
+export type CourseType = string;
+export type SimulationReport = {
+  rolling_stock: string;
+  towed_rolling_stock?: string | null;
+  loading_gauge_type: LoadingGaugeType;
+  speed_limit_tags: string;
+  /** Total mass of the train in kg */
+  total_mass: number;
+  /** Maximum speed in m/s */
+  max_speed: number;
+  /** Total length of the train in m */
+  total_length: number;
+  requested_steps: RequestedStep[];
+  departure_time: string;
+  user_message?: string | null;
+  similar_train?: SimilarTrain | null;
+  linked_train?: LinkedTrain | null;
+  course_type: CourseType;
+  statistical_category: string;
 };
