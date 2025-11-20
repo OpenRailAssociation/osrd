@@ -4,6 +4,7 @@ import type { TFunction } from 'i18next';
 import type { OperationalPointWithTimeAndSpeed } from 'applications/operationalStudies/types';
 import type { StdcmSuccessResponse, StdcmResultsOperationalPoint } from 'applications/stdcm/types';
 import type { PathfindingResultSuccess } from 'common/api/osrdEditoastApi';
+import { formatLocalTimeRounded } from 'utils/date';
 import { addDurationToDate, Duration } from 'utils/duration';
 import { kgToT } from 'utils/physics';
 import { capitalizeFirstLetter } from 'utils/strings';
@@ -55,11 +56,6 @@ const getRowStyle = (
       passageStop: passageStopStyle,
     },
   };
-};
-
-const formatTimeWithRounding = (time: Date, locale: Intl.Locale): string => {
-  if (time.getSeconds() > 29) time.setMinutes(time.getMinutes() + 1);
-  return time.toLocaleTimeString(locale, { timeStyle: 'short' });
 };
 
 export const formatStdcmDataForSimulationTable = (
@@ -134,19 +130,19 @@ export const formatOperationalStudiesDataForSimulationTable = (
     const isVia = pathItemPositions.slice(1, -1).some((p) => p / 1000 === step.position);
     const isPathStep = isFirst || isVia || isLast;
 
-    const endTime = isLast || isStop ? formatTimeWithRounding(step.time, dateTimeLocale) : '';
+    const endTime = isLast || isStop ? formatLocalTimeRounded(step.time, dateTimeLocale) : '';
 
     let passageStop = '';
     if (!isFirst && !isLast) {
       // display the stop duration if is a stop, the passage time if not
       passageStop = step.duration
         ? getStopDurationTime(step.duration)
-        : formatTimeWithRounding(step.time, dateTimeLocale);
+        : formatLocalTimeRounded(step.time, dateTimeLocale);
     }
 
     const startTime =
       isFirst || isStop
-        ? formatTimeWithRounding(
+        ? formatLocalTimeRounded(
             addDurationToDate(step.time, step.duration ?? Duration.zero),
             dateTimeLocale
           )

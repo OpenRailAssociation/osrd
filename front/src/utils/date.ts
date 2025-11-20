@@ -41,6 +41,14 @@ export const formatLocalDate = (date: Date) => dayjs(date).local().format('YYYY-
 export const formatLocalTime = (date: Date) => dayjs(date).local().format('HH:mm:ss');
 
 /**
+ * Format Date into local time, short style, with rounding to the nearest minute
+ */
+export const formatLocalTimeRounded = (time: Date, locale: Intl.Locale): string => {
+  if (time.getSeconds() > 29) time.setMinutes(time.getMinutes() + 1);
+  return time.toLocaleTimeString(locale, { timeStyle: 'short' });
+};
+
+/**
  * Checks if the given arrival date falls within the specified search time window.
  *
  * @param {Date} arrivalDate - The arrival time, which is a Date object.
