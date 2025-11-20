@@ -165,6 +165,7 @@ const ComboBox = <T,>({
         action: focusInput,
         className: cx('chevron-icon', {
           disabled: inputProps.disabled,
+          open: isInputFocused,
         }),
       },
     ];
