@@ -35,6 +35,8 @@ test.describe('Validate the Scenario creation workflow', () => {
   let infra: Infra;
   let electricalProfileSet: ElectricalProfileSet;
 
+  const createdScenarios: { projectId: number; studyId: number; name: string }[] = [];
+
   test.beforeAll('Fetch a project, study and add electrical profile ', async () => {
     project = await getProject();
     study = await getStudy(project.id);
@@ -42,8 +44,11 @@ test.describe('Validate the Scenario creation workflow', () => {
     electricalProfileSet = await setElectricalProfile();
   });
 
-  test.afterAll('Delete the electrical profile', async () => {
+  test.afterAll('Delete scenarios and electrical profile', async () => {
     await deleteApiRequest(`/api/electrical_profile_set/${electricalProfileSet.id}/`);
+    if (!createdScenarios.length) return;
+    const scenariosToDelete = [...createdScenarios];
+    await Promise.allSettled(scenariosToDelete.map((s) => deleteScenario(s.studyId, s.name)));
   });
 
   test.beforeEach(async ({ page }) => {
@@ -53,6 +58,11 @@ test.describe('Validate the Scenario creation workflow', () => {
   /** *************** Test 1 **************** */
   test('Create a new scenario', async ({ page }) => {
     const scenarioName = generateUniqueName(scenarioData.name);
+    createdScenarios.push({
+      projectId: project.id,
+      studyId: study.id,
+      name: scenarioName,
+    });
 
     await test.step('Navigate to study page', async () => {
       await page.goto(`/operational-studies/projects/${project.id}/studies/${study.id}`);
@@ -76,10 +86,6 @@ test.describe('Validate the Scenario creation workflow', () => {
         infraName: infrastructureName,
       });
     });
-
-    await test.step('Delete created scenario', async () => {
-      await deleteScenario(study.id, scenarioName);
-    });
   });
 
   /** *************** Test 2 **************** */
@@ -88,13 +94,19 @@ test.describe('Validate the Scenario creation workflow', () => {
       ({ project, study, scenario } = await createScenario());
     });
 
+    const updatedScenarioName = generateUniqueName(`${scenarioData.name}(updated)`);
+    createdScenarios.push({
+      projectId: project.id,
+      studyId: study.id,
+      name: updatedScenarioName,
+    });
+
     await test.step('Open scenario from study page and wait infra cache', async () => {
       await page.goto(`/operational-studies/projects/${project.id}/studies/${study.id}`);
       await scenarioPage.openScenarioByName(scenario.name);
       await waitForInfraStateToBeCached(scenario.infra_id);
     });
 
-    const updatedScenarioName = generateUniqueName(`${scenarioData.name}(updated)`);
     await test.step('Update scenario details', async () => {
       await scenarioPage.updateScenario({
         name: updatedScenarioName,
@@ -103,7 +115,7 @@ test.describe('Validate the Scenario creation workflow', () => {
       });
     });
 
-    await test.step('Validate updated scenario (in scenario page)', async () => {
+    await test.step('Validate updated scenario in scenario page', async () => {
       await scenarioPage.validateScenarioData({
         name: updatedScenarioName,
         description: `${scenario.description} (updated)`,
@@ -114,7 +126,7 @@ test.describe('Validate the Scenario creation workflow', () => {
 
     await test.step('Validate scenario tags in study page list', async () => {
       await page.goto(`/operational-studies/projects/${project.id}/studies/${study.id}`);
-      expect(await scenarioPage.getScenarioTags(updatedScenarioName).textContent()).toContain(
+      await expect(scenarioPage.getScenarioTags(updatedScenarioName)).toContainText(
         `${scenarioData.tags.join('')}update-tag`
       );
     });
@@ -127,16 +139,17 @@ test.describe('Validate the Scenario creation workflow', () => {
         infraName: infrastructureName,
       });
     });
-
-    await test.step('Delete updated scenario', async () => {
-      await deleteScenario(study.id, updatedScenarioName);
-    });
   });
 
   /** *************** Test 3 **************** */
   test('Delete a scenario', async ({ page }) => {
     await test.step('Create a scenario to delete', async () => {
       ({ project, study, scenario } = await createScenario());
+    });
+    createdScenarios.push({
+      projectId: project.id,
+      studyId: study.id,
+      name: scenario.name,
     });
 
     await test.step('Open scenario and delete via edit form', async () => {

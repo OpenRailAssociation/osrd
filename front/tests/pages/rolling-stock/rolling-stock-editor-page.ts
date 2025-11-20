@@ -1,9 +1,9 @@
 import { expect, type Locator, type Page } from '@playwright/test';
 
+import RollingStockSelector from './rolling-stock-selector';
 import { fillAndCheckInputById } from '../../utils';
 import readJsonFile from '../../utils/file-utils';
 import type { FlatTranslations } from '../../utils/types';
-import CommonPage from '../common-page';
 
 type RollingStockTranslations = FlatTranslations & { categoriesOptions: FlatTranslations };
 
@@ -11,7 +11,7 @@ const frTranslations = readJsonFile<{ rollingStock: RollingStockTranslations }>(
   'public/locales/fr/translation.json'
 ).rollingStock;
 
-class RollingstockEditorPage extends CommonPage {
+class RollingstockEditorPage extends RollingStockSelector {
   private readonly rollingstockEditorList: Locator;
 
   private readonly rollingstockCard: Locator;
@@ -88,6 +88,7 @@ class RollingstockEditorPage extends CommonPage {
 
   async navigateToRollingStockPage() {
     await this.page.goto('/rolling-stock-editor/');
+    await this.waitForLoaderToDisappear();
   }
 
   async openNewRollingStockForm() {

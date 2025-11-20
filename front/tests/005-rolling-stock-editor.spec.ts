@@ -6,7 +6,6 @@ import {
 } from './assets/constants/project-const';
 import test from './logging-fixture';
 import RollingstockEditorPage from './pages/rolling-stock/rolling-stock-editor-page';
-import RollingStockSelector from './pages/rolling-stock/rolling-stock-selector';
 import readJsonFile from './utils/file-utils';
 import { generateUniqueName, verifyAndCheckInputById, fillAndCheckInputById } from './utils/index';
 import { deleteRollingStocks } from './utils/teardown-utils';
@@ -18,17 +17,15 @@ const rollingstockDetails: RollingStockDetails = readJsonFile(
 
 test.describe('Rollingstock editor page tests', () => {
   let rollingStockEditorPage: RollingstockEditorPage;
-  let rollingStockSelector: RollingStockSelector;
+
+  const createdRollingStocks: string[] = [];
 
   let uniqueRollingStockName: string;
   let uniqueUpdatedRollingStockName: string;
   let uniqueDeletedRollingStockName: string;
 
   test.beforeEach(async ({ page }) => {
-    [rollingStockEditorPage, rollingStockSelector] = [
-      new RollingstockEditorPage(page),
-      new RollingStockSelector(page),
-    ];
+    rollingStockEditorPage = new RollingstockEditorPage(page);
 
     await test.step('Generate unique names and cleanup any leftovers', async () => {
       uniqueRollingStockName = generateUniqueName('RSN');
@@ -48,8 +45,16 @@ test.describe('Rollingstock editor page tests', () => {
     });
   });
 
+  test.afterAll(async () => {
+    if (createdRollingStocks.length > 0) {
+      await deleteRollingStocks(createdRollingStocks);
+    }
+  });
+
   /** *************** Test 1 **************** */
   test('Create a new rolling stock', async ({ page }) => {
+    createdRollingStocks.push(uniqueRollingStockName);
+
     await test.step('Open creation form', async () => {
       await rollingStockEditorPage.openNewRollingStockForm();
     });
@@ -62,7 +67,7 @@ test.describe('Rollingstock editor page tests', () => {
       await rollingStockEditorPage.selectLoadingGauge('GA');
     });
 
-    await test.step('Select categories (primary + other )', async () => {
+    await test.step('Select categories (primary + other)', async () => {
       await rollingStockEditorPage.selectPrimaryCategory('WORK_TRAIN');
       await rollingStockEditorPage.selectPrimaryCategory('NIGHT_TRAIN');
       await rollingStockEditorPage.uncheckCategoryCheckbox('WORK_TRAIN');
@@ -129,14 +134,12 @@ test.describe('Rollingstock editor page tests', () => {
         'C1'
       );
     });
-
-    await test.step('Delete created rolling stock', async () => {
-      await deleteRollingStocks([uniqueRollingStockName]);
-    });
   });
 
   /** *************** Test 2 **************** */
   test('Duplicate and modify a rolling stock', async ({ page }) => {
+    createdRollingStocks.push(uniqueUpdatedRollingStockName);
+
     await test.step('Duplicate existing Electric rolling stock', async () => {
       await rollingStockEditorPage.selectRollingStock(electricRollingStockName);
       await rollingStockEditorPage.duplicateRollingStock();
@@ -174,14 +177,12 @@ test.describe('Rollingstock editor page tests', () => {
       );
       await rollingStockEditorPage.editRollingStock(uniqueUpdatedRollingStockName);
     });
-
-    await test.step('Delete duplicated rolling stock', async () => {
-      await deleteRollingStocks([uniqueUpdatedRollingStockName]);
-    });
   });
 
   /** *************** Test 3 **************** */
   test('Duplicate and delete a rolling stock', async ({ page }) => {
+    createdRollingStocks.push(uniqueDeletedRollingStockName);
+
     await test.step('Duplicate Electric rolling stock and rename', async () => {
       await rollingStockEditorPage.selectRollingStock(electricRollingStockName);
       await rollingStockEditorPage.duplicateRollingStock();
@@ -198,55 +199,56 @@ test.describe('Rollingstock editor page tests', () => {
 
     await test.step('Search deleted rolling stock → expect no results', async () => {
       await rollingStockEditorPage.searchRollingStock(uniqueDeletedRollingStockName);
-      await expect(rollingStockSelector.noRollingStockResult).toBeVisible();
-      expect(await rollingStockSelector.getRollingStockSearchNumber()).toEqual(0);
+      await expect(rollingStockEditorPage.noRollingStockResult).toBeVisible();
+      expect(await rollingStockEditorPage.getRollingStockSearchNumber()).toEqual(0);
     });
   });
 
   /** *************** Test 4 **************** */
   test('Filtering rolling stocks', async () => {
-    const initialRollingStockFoundNumber = await rollingStockSelector.getRollingStockSearchNumber();
+    const initialRollingStockFoundNumber =
+      await rollingStockEditorPage.getRollingStockSearchNumber();
 
     await test.step('Toggle Electric filter and verify count', async () => {
-      await rollingStockSelector.toggleElectricRollingStockFilter();
-      expect(await rollingStockSelector.electricRollingStockIcons.count()).toEqual(
-        await rollingStockSelector.getRollingStockSearchNumber()
+      await rollingStockEditorPage.toggleElectricRollingStockFilter();
+      expect(await rollingStockEditorPage.electricRollingStockIcons.count()).toEqual(
+        await rollingStockEditorPage.getRollingStockSearchNumber()
       );
     });
 
     await test.step('Clear Electric filter and verify initial count', async () => {
-      await rollingStockSelector.toggleElectricRollingStockFilter();
-      expect(await rollingStockSelector.rollingStockList.count()).toBeGreaterThanOrEqual(
+      await rollingStockEditorPage.toggleElectricRollingStockFilter();
+      expect(await rollingStockEditorPage.rollingStockList.count()).toBeGreaterThanOrEqual(
         initialRollingStockFoundNumber
       );
     });
 
     await test.step('Toggle Thermal filter and verify count', async () => {
-      await rollingStockSelector.toggleThermalRollingStockFilter();
-      expect(await rollingStockSelector.thermalRollingStockIcons.count()).toEqual(
-        await rollingStockSelector.getRollingStockSearchNumber()
+      await rollingStockEditorPage.toggleThermalRollingStockFilter();
+      expect(await rollingStockEditorPage.thermalRollingStockIcons.count()).toEqual(
+        await rollingStockEditorPage.getRollingStockSearchNumber()
       );
     });
 
     await test.step('Toggle Electric with Thermal on (dual-mode) and verify count', async () => {
-      await rollingStockSelector.toggleElectricRollingStockFilter();
-      expect(await rollingStockSelector.dualModeRollingStockIcons.count()).toEqual(
-        await rollingStockSelector.getRollingStockSearchNumber()
+      await rollingStockEditorPage.toggleElectricRollingStockFilter();
+      expect(await rollingStockEditorPage.dualModeRollingStockIcons.count()).toEqual(
+        await rollingStockEditorPage.getRollingStockSearchNumber()
       );
     });
 
     await test.step('Clear both filters and verify count resets', async () => {
-      await rollingStockSelector.toggleElectricRollingStockFilter();
-      await rollingStockSelector.toggleThermalRollingStockFilter();
-      expect(await rollingStockSelector.rollingStockList.count()).toEqual(
-        initialRollingStockFoundNumber
-      );
+      await rollingStockEditorPage.toggleElectricRollingStockFilter();
+      await rollingStockEditorPage.toggleThermalRollingStockFilter();
+      const currentCount = await rollingStockEditorPage.rollingStockList.count();
+      expect(currentCount).toEqual(initialRollingStockFoundNumber);
     });
   });
 
-  /** *************** Test 5 **************** */
+  /** *************** Test 2 **************** */
   test('Search for a rolling stock', async () => {
-    const initialRollingStockFoundNumber = await rollingStockSelector.getRollingStockSearchNumber();
+    const initialRollingStockFoundNumber =
+      await rollingStockEditorPage.getRollingStockSearchNumber();
 
     await test.step('Search a specific rolling stock and verify icons', async () => {
       await rollingStockEditorPage.searchRollingStock(dualModeRollingStockName);
@@ -254,21 +256,21 @@ test.describe('Rollingstock editor page tests', () => {
         rollingStockEditorPage.page.getByTestId(`rollingstock-${dualModeRollingStockName}`)
       ).toBeDefined();
 
-      await expect(rollingStockSelector.thermalRollingStockFirstIcon).toBeVisible();
-      await expect(rollingStockSelector.electricRollingStockFirstIcon).toBeVisible();
+      await expect(rollingStockEditorPage.thermalRollingStockFirstIcon).toBeVisible();
+      await expect(rollingStockEditorPage.electricRollingStockFirstIcon).toBeVisible();
     });
 
     await test.step('Clear search and verify count resets', async () => {
       await rollingStockEditorPage.clearSearchRollingStock();
-      expect(await rollingStockSelector.rollingStockList.count()).toEqual(
+      expect(await rollingStockEditorPage.rollingStockList.count()).toEqual(
         initialRollingStockFoundNumber
       );
     });
 
     await test.step('Search a non-existent rolling stock → expect no results', async () => {
       await rollingStockEditorPage.searchRollingStock(`${dualModeRollingStockName}-no-results`);
-      await expect(rollingStockSelector.noRollingStockResult).toBeVisible();
-      expect(await rollingStockSelector.getRollingStockSearchNumber()).toEqual(0);
+      await expect(rollingStockEditorPage.noRollingStockResult).toBeVisible();
+      expect(await rollingStockEditorPage.getRollingStockSearchNumber()).toEqual(0);
     });
   });
 });
