@@ -48,6 +48,10 @@
       &.disabled {
         @apply text-grey-30;
       }
+
+      &.open {
+        transform: rotate(180deg) !important;
+      }
     }
   }
 
