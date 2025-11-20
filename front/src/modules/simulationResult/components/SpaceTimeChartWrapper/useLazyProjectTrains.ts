@@ -63,7 +63,7 @@ const useLazyProjectTrains = ({
       loader = new TrainOpProjectionLazyLoader(
         operationalPointReferences.map(({ operational_point }) => operational_point),
         operationalPointDistances,
-        baseOptions
+        { ...baseOptions, path }
       );
     }
 
