@@ -99,9 +99,9 @@ test.describe('Verify nge osrd conversion', () => {
         totalTrainScheduleCount: 0,
       });
       await expect(scenarioTimetableSection.getItemInvalidReason()).toBeVisible();
-      const invalidReason = await scenarioTimetableSection.getItemInvalidReason().innerText();
-      expect(invalidReason).toBe(frTranslations.timetable.invalid.rolling_stock_not_found);
-
+      await expect(scenarioTimetableSection.getItemInvalidReason()).toHaveText(
+        frTranslations.timetable.invalid.rolling_stock_not_found
+      );
       await roundTripPage.openRoundTripModal();
       await roundTripPage.assertRoundTripColumnCounts({
         expectedToDoCount: 0,

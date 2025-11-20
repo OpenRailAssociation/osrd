@@ -159,12 +159,10 @@ class RouteTab {
     const isNoDestinationChosenVisible = await this.noDestinationChosen.isVisible();
 
     if (isNoOriginChosenVisible) {
-      const noOriginChosenText = await this.noOriginChosen.innerText();
-      expect(noOriginChosenText).toEqual(frTranslations.noOriginChosen);
+      await expect(this.noOriginChosen).toHaveText(frTranslations.noOriginChosen);
     }
     if (isNoDestinationChosenVisible) {
-      const noDestinationChosenText = await this.noDestinationChosen.innerText();
-      expect(noDestinationChosenText).toEqual(frTranslations.noDestinationChosen);
+      await expect(this.noDestinationChosen).toHaveText(frTranslations.noDestinationChosen);
     }
   }
 
@@ -206,8 +204,8 @@ class RouteTab {
     await expect(this.searchByTrigramContainer).not.toBeVisible();
     await expect(this.resultPathfindingDone).toBeVisible();
 
-    expect(await this.originInfo.innerText()).toEqual(expectedOriginTrigram);
-    expect(await this.destinationInfo.innerText()).toEqual(expectedDestinationTrigram);
+    await expect(this.originInfo).toHaveText(expectedOriginTrigram);
+    await expect(this.destinationInfo).toHaveText(expectedDestinationTrigram);
   }
 
   async reverseItinerary() {

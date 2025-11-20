@@ -131,8 +131,9 @@ class ScenarioTimetableSection extends OpSimulationResultPage {
   }
 
   async verifyInvalidTrainsMessageVisibility(): Promise<void> {
-    const invalidTrainsMessageText = await this.invalidTimetableItemsMessage.innerText();
-    expect(invalidTrainsMessageText).toEqual(frTranslations.timetable.invalidTrains);
+    await expect(this.invalidTimetableItemsMessage).toHaveText(
+      frTranslations.timetable.invalidTrains
+    );
   }
 
   async checkTimetableFilterVisibilityLabelDefaultValue(
