@@ -7,6 +7,7 @@ import {
 
 import { MAIN_API } from 'config/config';
 import type { RootState } from 'reducers';
+import { getRailwayManagerInterfaceUrl } from 'reducers/main/mainSelector';
 import { getImpersonatedUser } from 'reducers/user/userSelectors';
 
 export type ApiError = {
@@ -43,5 +44,25 @@ export const baseGatewayApi = createApi({
   baseQuery: fetchBaseQuery({
     baseUrl: `${MAIN_API.proxy_gateway}/`,
   }) as BaseQueryFn<FetchArgs, unknown, ApiError>,
+  endpoints: () => ({}),
+});
+
+const dynamicBaseQuery: BaseQueryFn<FetchArgs, unknown, ApiError> = (async (
+  args,
+  api,
+  extraOptions
+) => {
+  const state = api.getState() as RootState;
+  const baseUrl = getRailwayManagerInterfaceUrl(state);
+
+  const rawBaseQuery = fetchBaseQuery({ baseUrl });
+
+  const result = await rawBaseQuery(args, api, extraOptions);
+  return result;
+}) as BaseQueryFn<FetchArgs, unknown, ApiError>;
+
+export const baseRailwayManagerApi = createApi({
+  reducerPath: 'railwayManagerApi',
+  baseQuery: dynamicBaseQuery,
   endpoints: () => ({}),
 });

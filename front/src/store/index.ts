@@ -5,6 +5,7 @@ import { persistStore, getStoredState } from 'redux-persist';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { osrdGatewayApi } from 'common/api/osrdGatewayApi';
+import { osrdRailwayManagerApi } from 'common/api/osrdRailwayManagerApi';
 import persistedReducer, {
   rootReducer,
   rootInitialState,
@@ -22,7 +23,11 @@ const reduxDevToolsOptions: Config = {
   },
 };
 
-const middlewares: Middleware[] = [osrdEditoastApi.middleware, osrdGatewayApi.middleware];
+const middlewares: Middleware[] = [
+  osrdEditoastApi.middleware,
+  osrdGatewayApi.middleware,
+  osrdRailwayManagerApi.middleware,
+];
 
 const store = configureStore({
   reducer: persistedReducer,

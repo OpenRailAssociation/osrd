@@ -433,6 +433,7 @@ jobs:
           docker run --rm --net=host -v $PWD/output:/app/tests/unit
           -v $PWD/editoast:/editoast
           -v $PWD/gateway:/gateway
+          -v $PWD/railway_manager_interface:/railway_manager_interface
           -v $PWD/front/src/common/api:/app/src/common/api
           ${{ fromJSON(needs.build.outputs.stable_tags).front-tests }}
           npm run generate-types

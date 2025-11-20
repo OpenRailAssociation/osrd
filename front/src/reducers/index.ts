@@ -6,6 +6,7 @@ import { createFilter, createBlacklistFilter } from 'redux-persist-transform-fil
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { osrdGatewayApi } from 'common/api/osrdGatewayApi';
+import { osrdRailwayManagerApi } from 'common/api/osrdRailwayManagerApi';
 import type { EditorSlice, EditorState } from 'reducers/editor';
 import editorReducer, { editorInitialState, editorSlice } from 'reducers/editor';
 import mainReducer, { mainInitialState, mainSlice } from 'reducers/main';
@@ -115,6 +116,7 @@ export type RootState = {
   [simulationResultsSlice.name]: SimulationResultsState;
   [osrdEditoastApi.reducerPath]: ReturnType<typeof osrdEditoastApi.reducer>;
   [osrdGatewayApi.reducerPath]: ReturnType<typeof osrdGatewayApi.reducer>;
+  [osrdRailwayManagerApi.reducerPath]: ReturnType<typeof osrdRailwayManagerApi.reducer>;
 };
 
 export const rootInitialState: RootState = {
@@ -127,6 +129,7 @@ export const rootInitialState: RootState = {
   [simulationResultsSlice.name]: simulationResultsInitialState,
   [osrdEditoastApi.reducerPath]: {} as ReturnType<typeof osrdEditoastApi.reducer>,
   [osrdGatewayApi.reducerPath]: {} as ReturnType<typeof osrdGatewayApi.reducer>,
+  [osrdRailwayManagerApi.reducerPath]: {} as ReturnType<typeof osrdRailwayManagerApi.reducer>,
 };
 
 export type AnyReducerState =
@@ -148,6 +151,7 @@ export const rootReducer: ReducersMapObject<RootState> = {
   [simulationResultsSlice.name]: simulationReducer,
   [osrdEditoastApi.reducerPath]: osrdEditoastApi.reducer,
   [osrdGatewayApi.reducerPath]: osrdGatewayApi.reducer,
+  [osrdRailwayManagerApi.reducerPath]: osrdRailwayManagerApi.reducer,
 };
 
 export default persistCombineReducers<RootState, AllActions>(persistConfig, rootReducer);
