@@ -183,7 +183,7 @@ class SignalingSimulatorImpl(override val sigModuleManager: SigSystemManager) : 
             followingZoneState,
             followingSignalState,
             followingSignalSettings,
-            trainPath.getZones().first().value,
+            trainPath.getZoneRanges().first().value,
         )
     }
 

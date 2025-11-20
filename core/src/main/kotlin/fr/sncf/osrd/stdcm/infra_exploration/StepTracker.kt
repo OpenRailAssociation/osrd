@@ -7,6 +7,7 @@ import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.stdcm.STDCMStep
 import fr.sncf.osrd.utils.AppendOnlyLinkedList
 import fr.sncf.osrd.utils.appendOnlyLinkedListOf
+import fr.sncf.osrd.utils.dropSeq
 import fr.sncf.osrd.utils.units.Offset
 
 /**
@@ -62,7 +63,7 @@ class StepTracker(
         val res = mutableListOf<LocatedStep>()
 
         val currentBlockStart: Offset<TravelledPath> = currentPathOffset - rangeStart.distance
-        for (step in inputSteps.drop(nSeenSteps)) {
+        for (step in inputSteps.dropSeq(nSeenSteps)) {
             val currentPathBlockOffset = Offset<Block>(currentPathOffset - currentBlockStart)
             val location =
                 step.locations
@@ -90,8 +91,8 @@ class StepTracker(
      * Returns the steps that are present in the lookahead (not "reached" yet by the simulation, but
      * we know their path offset)
      */
-    fun getStepsInLookahead(): List<LocatedStep> {
-        return seenSteps.toList().drop(nStepsExcludingLookahead)
+    fun getStepsInLookahead(): Sequence<LocatedStep> {
+        return seenSteps.toList().dropSeq(nStepsExcludingLookahead)
     }
 
     /** Returns all the steps excluding lookahead, in order. */
