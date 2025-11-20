@@ -5,3 +5,80 @@ DROP TRIGGER IF EXISTS search_operational_point__ins_trig ON "infra_object_opera
 DROP TRIGGER IF EXISTS search_operational_point__upd_trig ON "infra_object_operational_point";
 DROP FUNCTION IF EXISTS search_operational_point__ins_trig_fun;
 DROP FUNCTION IF EXISTS search_operational_point__upd_trig_fun;
+
+-- TODO fix `make-migration` and re-generate the related migrations before reverting
+-- the current fix (go back to renaming the function and trigger instead of recreating
+-- them).
+-- Manual fix: recreate the table / triggers / functions as they were before the migration.
+CREATE TABLE search_operational_point (
+	id int8 NOT NULL PRIMARY KEY REFERENCES infra_object_operational_point(id) ON DELETE CASCADE ON UPDATE CASCADE,
+	name text NULL,
+	infra_id int4 NULL,
+	obj_id varchar(255) NULL,
+	uic int4 NULL,
+	ch text NULL,
+	trigram varchar(3) NULL
+);
+CREATE INDEX idx_gin_search_operationalpoint_name ON search_operational_point USING gin (name gin_trgm_ops);
+
+CREATE OR REPLACE FUNCTION search_operational_point__ins_trig_fun()
+ RETURNS trigger
+ LANGUAGE plpgsql
+AS $function$ BEGIN
+INSERT INTO "search_operational_point" (
+        id,
+        "name",
+        "infra_id",
+        "obj_id",
+        "uic",
+        "ch",
+        "trigram"
+    )
+SELECT t.id AS id,
+    (
+        osrd_prepare_for_search((t.data#>>'{extensions,identifier,name}'))
+    ) AS "name",
+    (t.infra_id) AS "infra_id",
+    (t.obj_id) AS "obj_id",
+    ((t.data#>'{extensions,identifier,uic}')::integer) AS "uic",
+    (t.data->'extensions'->'sncf'->>'ch') AS "ch",
+    (t.data#>>'{extensions,sncf,trigram}') AS "trigram"
+FROM (
+        SELECT NEW.*
+    ) AS t;
+RETURN NEW;
+END;
+$function$
+;
+
+CREATE OR REPLACE FUNCTION search_operational_point__upd_trig_fun()
+ RETURNS trigger
+ LANGUAGE plpgsql
+AS $function$ BEGIN
+UPDATE "search_operational_point"
+SET "name" = (
+        osrd_prepare_for_search((t.data#>>'{extensions,identifier,name}'))
+    ),
+    "infra_id" = (t.infra_id),
+    "obj_id" = (t.obj_id),
+    "uic" = ((t.data#>'{extensions,identifier,uic}')::integer),
+    "ch" = (t.data->'extensions'->'sncf'->>'ch'),
+    "trigram" = (t.data#>>'{extensions,sncf,trigram}')
+FROM (
+        SELECT NEW.*
+    ) AS t
+WHERE t.id = "search_operational_point".id;
+RETURN NEW;
+END;
+$function$
+;
+
+create trigger search_operational_point__upd_trig after
+update
+    on
+    infra_object_operational_point for each row execute function search_operational_point__upd_trig_fun();
+
+create trigger search_operational_point__ins_trig after
+insert
+    on
+    infra_object_operational_point for each row execute function search_operational_point__ins_trig_fun();
