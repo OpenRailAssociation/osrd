@@ -197,14 +197,6 @@ mod mock_driver {
             });
         }
 
-        pub fn revoke_infra_grant(&self, user: model::User, infra: model::Infra) {
-            futures::executor::block_on(async {
-                self.revoke_infra_grants_unchecked(&user.into(), &infra)
-                    .await
-                    .expect("infra grant revoke should succeed")
-            });
-        }
-
         #[track_caller]
         pub fn assert_infra_grant_eq(
             &self,
