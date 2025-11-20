@@ -5,6 +5,7 @@ import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
 import type { TimetableItem, TimetableItemId } from 'reducers/osrdconf/types';
 
@@ -47,6 +48,14 @@ const TimetableToolbar = ({
   const { t } = useTranslation(['operational-studies', 'translation'], { keyPrefix: 'main' });
 
   const { infraId, timetableId } = useScenarioContext();
+  const { data: trainScheduleRoundTripsData } =
+    osrdEditoastApi.endpoints.getTimetableByIdRoundTripsTrainSchedules.useQuery({
+      id: timetableId,
+    });
+  const { data: pacedTrainRoundTripsData } =
+    osrdEditoastApi.endpoints.getTimetableByIdRoundTripsPacedTrains.useQuery({
+      id: timetableId,
+    });
 
   const [isFilterPanelOpen, setIsFilterPanelOpen] = useState(false);
   const [roundTripsModalIsOpen, setRoundTripsModalIsOpen] = useState(false);
@@ -64,7 +73,12 @@ const TimetableToolbar = ({
   };
 
   const handleExportTimetableItems = () => {
-    exportTimetableItems(selectedTimetableItemIds, timetableItems);
+    exportTimetableItems(
+      selectedTimetableItemIds,
+      timetableItems,
+      trainScheduleRoundTripsData?.results,
+      pacedTrainRoundTripsData?.results
+    );
   };
 
   const areAllItemsSelected = selectedTimetableItemIds.length === filteredTimetableItems.length;

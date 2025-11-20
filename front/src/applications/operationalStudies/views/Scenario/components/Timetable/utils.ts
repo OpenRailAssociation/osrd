@@ -1,17 +1,23 @@
 import dayjs from 'dayjs';
 import { omit } from 'lodash';
 
+import type { RoundTripsFromJson } from 'applications/operationalStudies/types';
 import type {
   PacedTrain,
   SubCategory,
   TrainMainCategory,
   TrainSchedule,
+  RoundTrips,
 } from 'common/api/osrdEditoastApi';
 import isMainCategory from 'modules/rollingStock/helpers/category';
 import type { SimulationSummary, TimetableItemWithDetails } from 'modules/timetableItem/types';
 import type { TimetableItem, TimetableItemId } from 'reducers/osrdconf/types';
 import type { Duration } from 'utils/duration';
-import { isPacedTrainResponseWithPacedTrainId } from 'utils/trainId';
+import {
+  extractEditoastIdFromPacedTrainId,
+  extractEditoastIdFromTrainScheduleId,
+  isPacedTrainResponseWithPacedTrainId,
+} from 'utils/trainId';
 
 import { specialCodeDictionary, TRAIN_MAIN_CATEGORY_CLASS } from './consts';
 
@@ -42,10 +48,13 @@ export const timetableHasInvalidItem = (timetableItems: TimetableItemWithDetails
 export const formatTrainDuration = (duration: Duration) =>
   dayjs.duration(duration.ms).format('HH[h]mm');
 
-export const timetableItemsToJson = (
-  selectedTimeTableIdsFromClick: TimetableItemId[],
-  timetableItems: TimetableItem[]
-): string => {
+export const formatTimetableItems = (
+  timetableItems: TimetableItem[],
+  selectedTimeTableIdsFromClick: TimetableItemId[]
+) => {
+  const trainScheduleIndexByEditoastId = new Map<number, number>();
+  const pacedTrainIndexByEditoastId = new Map<number, number>();
+
   const formattedTimetableItems = timetableItems
     .filter(({ id }) => selectedTimeTableIdsFromClick.includes(id))
     .reduce<{
@@ -54,8 +63,12 @@ export const timetableItemsToJson = (
     }>(
       (acc, timetableItem) => {
         if (isPacedTrainResponseWithPacedTrainId(timetableItem)) {
+          const pacedTrainEditoastId = extractEditoastIdFromPacedTrainId(timetableItem.id);
+          pacedTrainIndexByEditoastId.set(pacedTrainEditoastId, acc.paced_trains.length);
           acc.paced_trains.push(omit(timetableItem, ['id']));
         } else {
+          const trainScheduleEditoastId = extractEditoastIdFromTrainScheduleId(timetableItem.id);
+          trainScheduleIndexByEditoastId.set(trainScheduleEditoastId, acc.train_schedules.length);
           acc.train_schedules.push(omit(timetableItem, ['id']));
         }
         return acc;
@@ -63,26 +76,111 @@ export const timetableItemsToJson = (
       { train_schedules: [], paced_trains: [] }
     );
 
-  return JSON.stringify(formattedTimetableItems);
+  return { formattedTimetableItems, trainScheduleIndexByEditoastId, pacedTrainIndexByEditoastId };
 };
 
 export const copyTimetableItemsToClipboard = async (
   selectedTimeTableIdsFromClick: TimetableItemId[],
   timetableItems: TimetableItem[]
 ) => {
-  const jsonString = timetableItemsToJson(selectedTimeTableIdsFromClick, timetableItems);
+  const { formattedTimetableItems } = formatTimetableItems(
+    timetableItems,
+    selectedTimeTableIdsFromClick
+  );
+  const jsonString = JSON.stringify(formattedTimetableItems);
   const blob = new Blob([jsonString], { type: 'text/plain' });
   const clipboardItem = new ClipboardItem({ [blob.type]: blob });
   await navigator.clipboard.write([clipboardItem]);
 };
 
+/**
+ * turns editoast ids into corresponding indexes in exported arrays
+ */
+function mapRoundTripsToIndexes(
+  roundTrips: RoundTrips | undefined,
+  indexByEditoastId: Map<number, number>
+) {
+  if (!roundTrips) return [];
+
+  const seenIndexes = new Set<number>();
+  const roundTripIndexes: ([number, number] | [number, null])[] = [];
+
+  for (const oneWayId of roundTrips.one_ways ?? []) {
+    const index = indexByEditoastId.get(oneWayId);
+    if (index === undefined || seenIndexes.has(index)) {
+      continue;
+    }
+    seenIndexes.add(index);
+    roundTripIndexes.push([index, null]);
+  }
+
+  for (const [outboundId, inboundId] of roundTrips.round_trips ?? []) {
+    const outboundIndex = indexByEditoastId.get(outboundId);
+    const inboundIndex = indexByEditoastId.get(inboundId);
+
+    if (
+      outboundIndex === undefined ||
+      inboundIndex === undefined ||
+      seenIndexes.has(outboundIndex) ||
+      seenIndexes.has(inboundIndex)
+    ) {
+      continue;
+    }
+
+    seenIndexes.add(outboundIndex);
+    seenIndexes.add(inboundIndex);
+    roundTripIndexes.push([outboundIndex, inboundIndex]);
+  }
+
+  return roundTripIndexes;
+}
+
+type TimetableExportPayload = {
+  train_schedules: TrainSchedule[];
+  paced_trains: PacedTrain[];
+  round_trips?: RoundTripsFromJson;
+};
+
+export const buildTimetableExportPayload = (
+  timetableItems: TimetableItem[],
+  selectedTimeTableIdsFromClick: TimetableItemId[],
+  trainScheduleRoundTrips?: RoundTrips,
+  pacedTrainRoundTrips?: RoundTrips
+): TimetableExportPayload => {
+  const { formattedTimetableItems, trainScheduleIndexByEditoastId, pacedTrainIndexByEditoastId } =
+    formatTimetableItems(timetableItems, selectedTimeTableIdsFromClick);
+
+  const roundTrips: RoundTripsFromJson = {
+    train_schedules: mapRoundTripsToIndexes(
+      trainScheduleRoundTrips,
+      trainScheduleIndexByEditoastId
+    ),
+    paced_trains: mapRoundTripsToIndexes(pacedTrainRoundTrips, pacedTrainIndexByEditoastId),
+  };
+
+  if (roundTrips.train_schedules.length === 0 && roundTrips.paced_trains.length === 0) {
+    return formattedTimetableItems;
+  }
+
+  return { ...formattedTimetableItems, round_trips: roundTrips };
+};
+
 export const exportTimetableItems = (
   selectedTimeTableIdsFromClick: TimetableItemId[],
-  timetableItems: TimetableItem[]
+  timetableItems: TimetableItem[],
+  trainScheduleRoundTrips?: RoundTrips,
+  pacedTrainRoundTrips?: RoundTrips
 ) => {
   if (!timetableItems) return;
 
-  const jsonString = timetableItemsToJson(selectedTimeTableIdsFromClick, timetableItems);
+  const payload = buildTimetableExportPayload(
+    timetableItems,
+    selectedTimeTableIdsFromClick,
+    trainScheduleRoundTrips,
+    pacedTrainRoundTrips
+  );
+
+  const jsonString = JSON.stringify(payload);
   const blob = new Blob([jsonString], { type: 'application/json' });
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
