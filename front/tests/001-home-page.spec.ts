@@ -15,10 +15,6 @@ test.describe('Home page OSRD', () => {
     await homePage.goToHomePage();
   });
 
-  test.afterEach('Returns to the home page', async () => {
-    await homePage.backToHomePage();
-  });
-
   /** *************** Test 1 **************** */
   test('Verify the links for different pages in Home Page', async () => {
     // List of expected links on the home page

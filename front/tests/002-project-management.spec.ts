@@ -12,16 +12,24 @@ const projectData: ProjectData = readJsonFile('tests/assets/operation-studies/pr
 
 test.describe('Validate the Operational Study Project workflow', () => {
   let projectPage: ProjectPage;
-
   let project: Project;
+
+  const createdProjects: string[] = [];
 
   test.beforeEach(async ({ page }) => {
     projectPage = new ProjectPage(page);
   });
 
+  test.afterAll(async () => {
+    if (!createdProjects.length) return;
+    const projectsToDelete = [...createdProjects];
+    await Promise.allSettled(projectsToDelete.map((name) => deleteProject(name)));
+  });
+
   /** *************** Test 1 **************** */
   test('Create a new project', async ({ page }) => {
     const projectName = generateUniqueName(projectData.name);
+    createdProjects.push(projectName);
 
     await test.step('Go to projects page', async () => {
       await page.goto('/operational-studies/projects');
@@ -48,16 +56,16 @@ test.describe('Validate the Operational Study Project workflow', () => {
         tags: projectData.tags,
       });
     });
-
-    await test.step('Delete created project', async () => {
-      await deleteProject(projectName);
-    });
   });
 
   /** *************** Test 2 **************** */
   test('Update an existing project', async ({ page }) => {
+    const baseName = generateUniqueName(projectData.name);
+    const updatedName = `${baseName} (updated)`;
+    createdProjects.push(baseName, updatedName);
+
     await test.step('Create a base project', async () => {
-      project = await createProject(generateUniqueName(projectData.name));
+      project = await createProject(baseName);
     });
 
     await test.step('Open created project from projects list', async () => {
@@ -67,7 +75,7 @@ test.describe('Validate the Operational Study Project workflow', () => {
 
     await test.step('Update than save project details', async () => {
       await projectPage.updateProject({
-        name: `${project.name} (updated)`,
+        name: updatedName,
         description: `${project.description} (updated)`,
         objectives: `${projectData.objectives} (updated)`,
         funders: `${project.funders} (updated)`,
@@ -82,9 +90,9 @@ test.describe('Validate the Operational Study Project workflow', () => {
     });
 
     await test.step('Reopen updated project and validate data', async () => {
-      await projectPage.openProjectByTestId(`${project.name} (updated)`);
+      await projectPage.openProjectByTestId(updatedName);
       await projectPage.validateProjectData({
-        name: `${project.name} (updated)`,
+        name: updatedName,
         description: `${project.description} (updated)`,
         objectives: `${projectData.objectives} (updated)`,
         funders: `${project.funders} (updated)`,
@@ -92,16 +100,15 @@ test.describe('Validate the Operational Study Project workflow', () => {
         tags: ['update-tag'],
       });
     });
-
-    await test.step('Delete updated project', async () => {
-      await deleteProject(`${project.name} (updated)`);
-    });
   });
 
   /** *************** Test 3 **************** */
   test('Delete a project', async ({ page }) => {
+    const projectName = generateUniqueName(projectData.name);
+    createdProjects.push(projectName);
+
     await test.step('Create a project to delete', async () => {
-      project = await createProject(generateUniqueName(projectData.name));
+      project = await createProject(projectName);
     });
 
     await test.step('Open project and delete it', async () => {

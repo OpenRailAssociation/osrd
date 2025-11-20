@@ -1,5 +1,4 @@
 import { expect } from '@playwright/test';
-import { v4 as uuidv4 } from 'uuid';
 
 import type { Project, Study } from 'common/api/osrdEditoastApi';
 
@@ -21,12 +20,19 @@ const frTranslations: StudyFrTranslations = readJsonFile(
 
 test.describe('Validate the Study creation workflow', () => {
   let studyPage: StudyPage;
-
   let project: Project;
   let study: Study;
 
+  const createdStudies: { projectId: number; name: string }[] = [];
+
   test.beforeAll(' Retrieve a project and the translation', async () => {
     project = await getProject();
+  });
+
+  test.afterAll(async () => {
+    if (!createdStudies.length) return;
+    const studiesToDelete = [...createdStudies];
+    await Promise.allSettled(studiesToDelete.map((s) => deleteStudy(s.projectId, s.name)));
   });
 
   test.beforeEach(async ({ page }) => {
@@ -35,69 +41,82 @@ test.describe('Validate the Study creation workflow', () => {
 
   /** *************** Test 1 **************** */
   test('Create a new study', async ({ page }) => {
-    // Navigate to project page
-    await page.goto(`/operational-studies/projects/${project.id}`);
-    const studyName = `${studyData.name} ${uuidv4()}`; // Unique study name
-    const todayDateISO = new Date().toISOString().split('T')[0]; // Get today's date in ISO format
-    const expectedDate = formatDateToDayMonthYear(todayDateISO);
-    // Create a new study using the study page model
-    await studyPage.createStudy({
-      name: studyName,
-      description: studyData.description,
-      type: frTranslations.study.studyCategories.flowRate, // Translated study type
-      status: frTranslations.study.studyStates.started, // Translated study status
-      startDate: todayDateISO,
-      expectedEndDate: todayDateISO,
-      endDate: todayDateISO,
-      serviceCode: studyData.service_code,
-      businessCode: studyData.business_code,
-      budget: studyData.budget,
-      tags: studyData.tags,
+    await test.step('Navigate to project page', async () => {
+      await page.goto(`/operational-studies/projects/${project.id}`);
     });
 
-    // Validate that the study was created with the correct data
-    await studyPage.validateStudyData({
-      name: studyName,
-      description: studyData.description,
-      type: frTranslations.study.studyCategories.flowRate,
-      status: frTranslations.study.studyStates.started,
-      startDate: expectedDate,
-      expectedEndDate: expectedDate,
-      endDate: expectedDate,
-      serviceCode: studyData.service_code,
-      businessCode: studyData.business_code,
-      budget: studyData.budget,
-      tags: studyData.tags,
+    const studyName = generateUniqueName(studyData.name);
+    const todayDateISO = new Date().toISOString().split('T')[0];
+    const expectedDate = formatDateToDayMonthYear(todayDateISO);
+
+    createdStudies.push({ projectId: project.id, name: studyName });
+
+    await test.step('Create a new study', async () => {
+      await studyPage.createStudy({
+        name: studyName,
+        description: studyData.description,
+        type: frTranslations.study.studyCategories.flowRate,
+        status: frTranslations.study.studyStates.started,
+        startDate: todayDateISO,
+        expectedEndDate: todayDateISO,
+        endDate: todayDateISO,
+        serviceCode: studyData.service_code,
+        businessCode: studyData.business_code,
+        budget: studyData.budget,
+        tags: studyData.tags,
+      });
     });
-    await deleteStudy(project.id, studyName);
+
+    await test.step('Validate created study data', async () => {
+      await studyPage.validateStudyData({
+        name: studyName,
+        description: studyData.description,
+        type: frTranslations.study.studyCategories.flowRate,
+        status: frTranslations.study.studyStates.started,
+        startDate: expectedDate,
+        expectedEndDate: expectedDate,
+        endDate: expectedDate,
+        serviceCode: studyData.service_code,
+        businessCode: studyData.business_code,
+        budget: studyData.budget,
+        tags: studyData.tags,
+      });
+    });
   });
 
   /** *************** Test 2 **************** */
   test('Update an existing study', async ({ page }) => {
-    // Create a study
-    study = await createStudy(project.id, generateUniqueName(studyData.name));
-    // Navigate to study page
-    await page.goto(`/operational-studies/projects/${project.id}/studies/${study.id}`);
-    const tomorrowDateISO = new Date(Date.now() + 86400000).toISOString().split('T')[0]; // Get tomorrow's date in ISO format
+    const baseName = generateUniqueName(studyData.name);
+    const updatedName = `${baseName} (updated)`;
+    createdStudies.push({ projectId: project.id, name: updatedName });
+
+    await test.step('Navigate to created study', async () => {
+      study = await createStudy(project.id, baseName);
+      await page.goto(`/operational-studies/projects/${project.id}/studies/${study.id}`);
+    });
+
+    const tomorrowDateISO = new Date(Date.now() + 86400000).toISOString().split('T')[0];
     const expectedDate = formatDateToDayMonthYear(tomorrowDateISO);
-    // Update the study with new values
-    await studyPage.updateStudy({
-      name: `${study.name} (updated)`,
-      description: `${study.description} (updated)`,
-      type: frTranslations.study.studyCategories.operability,
-      status: frTranslations.study.studyStates.inProgress,
-      startDate: tomorrowDateISO,
-      expectedEndDate: tomorrowDateISO,
-      endDate: tomorrowDateISO,
-      serviceCode: 'A1230',
-      businessCode: 'B1230',
-      budget: '123456789',
-      tags: ['update-tag'],
+
+    await test.step('Update the study', async () => {
+      await studyPage.updateStudy({
+        name: updatedName,
+        description: `${study.description} (updated)`,
+        type: frTranslations.study.studyCategories.operability,
+        status: frTranslations.study.studyStates.inProgress,
+        startDate: tomorrowDateISO,
+        expectedEndDate: tomorrowDateISO,
+        endDate: tomorrowDateISO,
+        serviceCode: 'A1230',
+        businessCode: 'B1230',
+        budget: '123456789',
+        tags: ['update-tag'],
+      });
     });
 
     await test.step('Validate updated study data', async () => {
       await studyPage.validateStudyData({
-        name: `${study.name} (updated)`,
+        name: updatedName,
         description: `${study.description} (updated)`,
         type: frTranslations.study.studyCategories.operability,
         status: frTranslations.study.studyStates.inProgress,
@@ -114,11 +133,7 @@ test.describe('Validate the Study creation workflow', () => {
 
     await test.step('Verify updated study in project list (tags)', async () => {
       await page.goto(`/operational-studies/projects/${project.id}`);
-      await expect(page.getByTestId(`${study.name} (updated)`).first()).toBeVisible();
-    });
-
-    await test.step('Delete updated study', async () => {
-      await deleteStudy(project.id, `${study.name} (updated)`);
+      await expect(page.getByTestId(updatedName).first()).toBeVisible();
     });
   });
 
@@ -126,6 +141,7 @@ test.describe('Validate the Study creation workflow', () => {
   test('Delete a study', async ({ page }) => {
     await test.step('Create a study to delete', async () => {
       study = await createStudy(project.id, generateUniqueName(studyData.name));
+      createdStudies.push({ projectId: project.id, name: study.name });
     });
 
     await test.step('Navigate to project studies list', async () => {
