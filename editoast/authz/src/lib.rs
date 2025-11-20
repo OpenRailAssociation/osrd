@@ -152,88 +152,84 @@ mod mock_driver {
         groups: Arc<Mutex<HashMap<GroupName, i64>>>,
     }
 
-    // Synchronous one-liners to setup tests concisely
+    // Concise test utilities
     impl Regulator<MockAuthDriver> {
-        pub fn create_user(&self, identity: &str, name: &str) -> model::User {
-            futures::executor::block_on(async {
-                model::User(
-                    self.driver
-                        .ensure_user(&UserInfo {
-                            identity: identity.to_owned(),
-                            name: name.to_owned(),
-                        })
-                        .await
-                        .expect("user creation should succeed")
-                        .id,
-                )
-            })
-        }
-
-        pub fn set_role(&self, user: model::User, role: Role) {
-            futures::executor::block_on(async {
-                self.grant_user_roles(&user, HashSet::from([role]))
+        pub async fn create_user(&self, identity: &str, name: &str) -> model::User {
+            model::User(
+                self.driver
+                    .ensure_user(&UserInfo {
+                        identity: identity.to_owned(),
+                        name: name.to_owned(),
+                    })
                     .await
-                    .expect("role set should succeed")
-            });
+                    .expect("user creation should succeed")
+                    .id,
+            )
         }
 
-        pub fn get_infra_grant(
+        pub async fn set_role(&self, user: model::User, role: Role) {
+            self.grant_user_roles(&user, HashSet::from([role]))
+                .await
+                .expect("role set should succeed")
+        }
+
+        pub async fn get_infra_grant(
             &self,
             user: model::User,
             infra: model::Infra,
         ) -> Option<InfraGrant> {
-            futures::executor::block_on(async {
-                self.infra_direct_grant(&user.into(), &infra)
-                    .await
-                    .expect("infra grant get should succeed")
-            })
+            self.infra_direct_grant(&user.into(), &infra)
+                .await
+                .expect("infra grant get should succeed")
         }
 
-        pub fn set_infra_grant(&self, user: model::User, infra: model::Infra, grant: InfraGrant) {
-            futures::executor::block_on(async {
-                self.give_infra_grant_unchecked(&user.into(), &infra, grant)
-                    .await
-                    .expect("infra grant set should succeed")
-            });
+        pub async fn set_infra_grant(
+            &self,
+            user: model::User,
+            infra: model::Infra,
+            grant: InfraGrant,
+        ) {
+            self.give_infra_grant_unchecked(&user.into(), &infra, grant)
+                .await
+                .expect("infra grant set should succeed")
         }
 
-        #[track_caller]
-        pub fn assert_infra_grant_eq(
+        pub async fn assert_infra_grant_eq(
             &self,
             user: model::User,
             infra: model::Infra,
             grant: Option<InfraGrant>,
         ) {
-            let actual_grant = self.get_infra_grant(user, infra);
+            let actual_grant = self.get_infra_grant(user, infra).await;
             assert_eq!(actual_grant, grant);
         }
 
         // https://en.wikipedia.org/wiki/Alice_and_Bob#Cast_of_characters
 
         /// Regular user
-        pub fn alice(&self) -> model::User {
-            self.create_user("alice", "Alice")
+        pub async fn alice(&self) -> model::User {
+            self.create_user("alice", "Alice").await
         }
 
         /// Regular user
-        pub fn bob(&self) -> model::User {
-            self.create_user("bob", "Bob")
+        pub async fn bob(&self) -> model::User {
+            self.create_user("bob", "Bob").await
         }
 
         /// Malicious user
-        pub fn chad(&self) -> model::User {
-            self.create_user("chad", "Chad")
+        pub async fn chad(&self) -> model::User {
+            self.create_user("chad", "Chad").await
         }
 
         /// Regular user
-        pub fn dave(&self) -> model::User {
-            self.create_user("dave", "Dave")
+        pub async fn dave(&self) -> model::User {
+            self.create_user("dave", "Dave").await
         }
 
         /// Admin user
-        pub fn walter(&self) -> model::User {
-            let user = self.create_user("walter", "Walter");
-            self.set_role(user, Role::Admin);
+        pub async fn walter(&self) -> model::User {
+            let user = self.create_user("walter", "Walter").await;
+            self.set_role(user, Role::Admin).await;
             user
         }
     }
