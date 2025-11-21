@@ -12,6 +12,7 @@ import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.ZoneId
 import fr.sncf.osrd.sim_infra.impl.TemporarySpeedLimitManager
+import fr.sncf.osrd.stdcm.ProgressCallback
 import fr.sncf.osrd.stdcm.STDCMAStarHeuristic
 import fr.sncf.osrd.stdcm.STDCMHeuristicBuilder
 import fr.sncf.osrd.stdcm.graph.engineering_allowance.EngineeringAllowanceManager
@@ -50,6 +51,7 @@ class STDCMGraph(
     val temporarySpeedLimitManager: TemporarySpeedLimitManager = TemporarySpeedLimitManager(),
     constraints: ConstraintCombiner<StaticIdx<Block>>,
     val searchMetadata: SearchMetadata?,
+    progressCallback: ProgressCallback? = null,
 ) : Graph<STDCMNode, STDCMEdge> {
     val rawInfra = fullInfra.rawInfra
     val blockInfra = fullInfra.blockInfra

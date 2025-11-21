@@ -60,6 +60,8 @@ class STDCMRequest(
     val temporarySpeedLimits: Collection<STDCMTemporarySpeedLimit>,
     @Json(name = "work_schedules") val workSchedules: Collection<WorkSchedule> = listOf(),
     @Json(name = "allowed_track_sections") val allowedTrackSections: Set<String>?,
+    /// Used to report progress in valkey
+    @Json(name = "request_id") val requestId: String?,
 )
 
 data class STDCMTemporarySpeedLimit(
