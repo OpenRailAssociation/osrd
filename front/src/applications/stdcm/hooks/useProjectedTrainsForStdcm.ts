@@ -129,7 +129,7 @@ const useProjectedTrainsForStdcm = (stdcmResponse?: StdcmSuccessResponse) => {
       newSpaceTimeData.push(formatStdcmTrainIntoSpaceTimeData(stdcmResponse));
     }
     setSpaceTimeData(newSpaceTimeData);
-  }, [projectedTrainsById]);
+  }, [projectedTrainsById, stdcmResponse]);
 
   if (!stdcmResponse) return null;
 
