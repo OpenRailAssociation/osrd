@@ -44,8 +44,17 @@ export const formatLocalTime = (date: Date) => dayjs(date).local().format('HH:mm
  * Format Date into local time, short style, with rounding to the nearest minute
  */
 export const formatLocalTimeRounded = (time: Date, locale: Intl.Locale): string => {
-  if (time.getSeconds() > 29) time.setMinutes(time.getMinutes() + 1);
-  return time.toLocaleTimeString(locale, { timeStyle: 'short' });
+  const roundedTime = new Date(
+    ...[
+      time.getFullYear(),
+      time.getMonth(),
+      time.getDate(),
+      time.getHours(),
+      time.getMinutes() + (time.getSeconds() > 29 ? 1 : 0),
+      time.getSeconds(),
+    ]
+  );
+  return roundedTime.toLocaleTimeString(locale, { timeStyle: 'short' });
 };
 
 /**
