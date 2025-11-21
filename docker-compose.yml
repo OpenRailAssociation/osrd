@@ -109,6 +109,7 @@ services:
       OTEL_EXPORTER_OTLP_TRACES_ENDPOINT: "http://jaeger:4317"
       OTEL_METRICS_EXPORTER: "none"
       OTEL_LOGS_EXPORTER: "none"
+      VALKEY_URL: "redis://valkey"
     restart: "no"
     command: "true"
 

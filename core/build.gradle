@@ -99,6 +99,9 @@ dependencies {
 
     // rabbitmq
     implementation libs.amqp.client
+
+    // redis
+    implementation libs.lettuce
 }
 // endregion
 
