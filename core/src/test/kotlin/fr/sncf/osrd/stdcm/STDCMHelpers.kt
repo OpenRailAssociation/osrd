@@ -95,12 +95,12 @@ fun occupancyTest(
             val enterTime =
                 res.departureTime +
                     envelopeWrapper.interpolateArrivalAtClamp(
-                        (blockRange.getObjectAbsolutePathStart() + distanceStart).meters
+                        (blockRange.objectAbsolutePathStart + distanceStart).meters
                     )
             val exitTime =
                 res.departureTime +
                     envelopeWrapper.interpolateDepartureFromClamp(
-                        (blockRange.getObjectAbsolutePathStart() + distanceEnd).meters
+                        (blockRange.objectAbsolutePathStart + distanceEnd).meters
                     )
             Assertions.assertTrue(
                 enterTime + tolerance >= timeEnd || exitTime - tolerance <= timeStart

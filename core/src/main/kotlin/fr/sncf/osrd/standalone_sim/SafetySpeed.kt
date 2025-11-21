@@ -3,7 +3,6 @@ package fr.sncf.osrd.standalone_sim
 import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.api.standalone_sim.SimulationScheduleItem
 import fr.sncf.osrd.path.interfaces.TrainPath
-import fr.sncf.osrd.path.interfaces.getRouteAbsolutePathEnd
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop
 import fr.sncf.osrd.signaling.etcs_level2.ETCS_LEVEL2
 import fr.sncf.osrd.sim_infra.api.*
@@ -131,7 +130,7 @@ private fun getSignalOffsets(infra: FullInfra, trainPath: TrainPath): List<Offse
     // Add one "signal" at the end of the last route no matter what.
     // There must be either a signal or a buffer stop, on which we may end safety speed ranges.
     val lastRouteRange = trainPath.getRoutes().last()
-    res.add(lastRouteRange.getRouteAbsolutePathEnd(rawInfra))
+    res.add(lastRouteRange.objectAbsolutePathEnd)
 
     return res.filter { it.distance >= 0.meters }
 }

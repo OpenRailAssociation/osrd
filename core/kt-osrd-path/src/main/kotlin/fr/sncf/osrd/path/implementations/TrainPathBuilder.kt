@@ -5,6 +5,7 @@ import fr.sncf.osrd.path.legacy_objects.ElectricalProfileMapping
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.utils.indexing.DirStaticIdx
 import fr.sncf.osrd.utils.indexing.StaticIdx
+import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 import fr.sncf.osrd.utils.units.sumOffsets
@@ -36,6 +37,7 @@ fun buildTrainPathFromBlock(
                 endOffset,
                 Offset.zero(),
                 Offset(endOffset - beginOffset),
+                blockInfra.getBlockLength(blockId),
             )
         )
     return buildTrainPathFromBlockRanges(
@@ -68,6 +70,7 @@ fun buildTrainPathFromBlocks(
                 blockLength,
                 prevBlockFinalOffset,
                 prevBlockFinalOffset + blockLength.distance,
+                blockLength,
             )
         )
         prevBlockFinalOffset += blockLength.distance
@@ -153,7 +156,7 @@ fun buildTrainPathFromChunkPath(
         val from = if (isFirst) chunkPath.beginOffset.cast<TrackChunk>() else Offset.zero()
         var to = chunkLength
         if (isLast) to = Offset(chunkPath.endOffset.distance - prevChunkFinalOffset)
-        chunkRanges.add(PartialDirChunkRange(chunk, from, to))
+        chunkRanges.add(PartialDirChunkRange(chunk, from, to, chunkLength))
         prevChunkFinalOffset += chunkLength.distance
     }
     return buildTrainPathFromChunks(
@@ -187,6 +190,7 @@ fun <ValueType, OffsetType> buildRangeList(
                 range.objectEnd,
                 prevRangeLength,
                 prevRangeLength + range.length,
+                range.objectLength,
             )
         )
         prevRangeLength += range.length
@@ -235,7 +239,11 @@ internal fun generateRouteRanges(
             assert(routeIndex < routes.size)
             val route = routes[routeIndex]
             val res =
-                chunk.mapOuterObject<RouteId, Route>(route, rawInfra.getChunksOnRoute(route)) {
+                chunk.mapOuterObject<RouteId, Route>(
+                    route,
+                    rawInfra.getRouteLength(route),
+                    rawInfra.getChunksOnRoute(route),
+                ) {
                     rawInfra.getTrackChunkLength(it.value)
                 }
             if (res != null) return res
@@ -287,6 +295,7 @@ private fun findBlockPath(
                 block,
                 chunkOffsetOnBlock + dirChunkRange.objectBegin.distance,
                 chunkOffsetOnBlock + dirChunkRange.objectEnd.distance,
+                blockInfra.getBlockLength(block),
             )
         res.add(newRange)
     }
@@ -300,6 +309,7 @@ data class PartialGenericLinearRange<ValueType, OffsetType>(
     val value: ValueType,
     val objectBegin: Offset<OffsetType>,
     val objectEnd: Offset<OffsetType>,
+    val objectLength: Length<OffsetType>,
 ) {
     val length = objectEnd - objectBegin
 }

@@ -5,7 +5,6 @@ import fr.sncf.osrd.envelope_sim.EnvelopeSimContext
 import fr.sncf.osrd.path.interfaces.DirChunkRange
 import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.path.interfaces.TravelledPath
-import fr.sncf.osrd.path.interfaces.getBlockAbsolutePathEnd
 import fr.sncf.osrd.signaling.etcs_level2.ETCS_LEVEL2
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra.utils.getNextTrackSections
@@ -67,8 +66,8 @@ fun buildETCSBlockDetectors(infra: FullInfra, trainPath: TrainPath): List<Offset
         val block = blockRange.value
         if (isETCSBlock(block, infra)) {
             // Add entry and exit detectors
-            etcsBlockDetectors.add(blockRange.getObjectAbsolutePathStart())
-            etcsBlockDetectors.add(blockRange.getBlockAbsolutePathEnd(infra.blockInfra))
+            etcsBlockDetectors.add(blockRange.objectAbsolutePathStart)
+            etcsBlockDetectors.add(blockRange.objectAbsolutePathEnd)
         }
     }
     return etcsBlockDetectors.filter { it.distance >= Distance.ZERO }
@@ -120,7 +119,7 @@ private fun getEndOfLastTrackPathOffset(
     val lastChunk = dirLastChunk.value
     val lastTrackLength = infra.getTrackSectionLength(lastTrack)
     val lastChunkLength = infra.getTrackChunkLength(lastChunkRange.value.value)
-    val lastChunkEndOffset = lastChunkRange.getObjectAbsolutePathEnd(lastChunkLength)
+    val lastChunkEndOffset = lastChunkRange.objectAbsolutePathEnd
 
     // As an offset on the undirected last track, where the start of the (undirected) last chunk is
     // located
