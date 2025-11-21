@@ -23,7 +23,6 @@ import fr.sncf.osrd.path.interfaces.TravelledPath
 import fr.sncf.osrd.path.interfaces.getLegacyBlockPath
 import fr.sncf.osrd.path.interfaces.getLegacyChunkPath
 import fr.sncf.osrd.path.interfaces.getLegacyRoutePath
-import fr.sncf.osrd.path.interfaces.getZonePathAbsolutePathEnd
 import fr.sncf.osrd.signaling.SigSystemManager
 import fr.sncf.osrd.signaling.SignalingTrainState
 import fr.sncf.osrd.signaling.ZoneStatus
@@ -420,7 +419,7 @@ fun routingRequirements(
         for (zoneRange in zoneRanges) {
             val zonePath = zoneRange.value
             // the distance to the end of the zone from the start of the train path
-            val zoneEndOffset = zoneRange.getZonePathAbsolutePathEnd(rawInfra)
+            val zoneEndOffset = zoneRange.objectAbsolutePathEnd
             // the point in the train path at which the zone is released
             val exitCriticalPos = zoneEndOffset + rollingStock.length.meters
             // if the zones are never occupied by the train, no requirement is emitted
@@ -520,8 +519,7 @@ private fun getSightRouteCriticalPos(
     val zoneStates = MutableList(zoneCount) { ZoneStatus.CLEAR }
 
     // We only want the path up to the route offset of the given route
-    val subTrainPath =
-        trainPath.subPath(Offset.zero(), firstBlockRange.getObjectAbsolutePathStart())
+    val subTrainPath = trainPath.subPath(Offset.zero(), firstBlockRange.objectAbsolutePathStart)
 
     // TODO: the complexity of finding route set deadlines is currently n^2 of the
     //   number of blocks in the path. it can be improved upon by only simulating blocks

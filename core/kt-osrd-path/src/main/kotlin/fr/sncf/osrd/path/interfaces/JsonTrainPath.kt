@@ -46,7 +46,8 @@ data class JsonTrainPath(
         val blockRanges =
             buildRangeList(
                 blocks.map {
-                    PartialBlockRange(blockInfra.getBlockFromName(it.id)!!, it.begin, it.end)
+                    val block = blockInfra.getBlockFromName(it.id)!!
+                    PartialBlockRange(block, it.begin, it.end, blockInfra.getBlockLength(block))
                 }
             )
         return buildTrainPathFromBlockRanges(
@@ -61,7 +62,8 @@ data class JsonTrainPath(
 
 fun TrainPath.toJsonTrainPath(rawInfra: RawInfra, blockInfra: BlockInfra): JsonTrainPath {
     val tracks = mutableListOf<JsonTrainPath.TrackSectionRange>()
-    for ((dirChunk, from, to) in getChunks()) {
+    for (chunkRange in getChunks()) {
+        val dirChunk = chunkRange.value
         val track = rawInfra.getTrackFromChunk(dirChunk.value)
         val trackName = rawInfra.getTrackSectionName(track)
         val chunkStartOffset = rawInfra.getTrackChunkOffset(dirChunk.value)
@@ -71,15 +73,15 @@ fun TrainPath.toJsonTrainPath(rawInfra: RawInfra, blockInfra: BlockInfra): JsonT
             if (dirChunk.direction == Direction.INCREASING)
                 JsonTrainPath.TrackSectionRange(
                     trackName,
-                    chunkStartOffset + from.distance,
-                    chunkStartOffset + to.distance,
+                    chunkStartOffset + chunkRange.objectBegin.distance,
+                    chunkStartOffset + chunkRange.objectEnd.distance,
                     EdgeDirection.START_TO_STOP,
                 )
             else
                 JsonTrainPath.TrackSectionRange(
                     trackName,
-                    chunkEndOffset - to.distance,
-                    chunkEndOffset - from.distance,
+                    chunkEndOffset - chunkRange.objectEnd.distance,
+                    chunkEndOffset - chunkRange.objectBegin.distance,
                     EdgeDirection.STOP_TO_START,
                 )
         val lastAddedRange = tracks.lastOrNull()

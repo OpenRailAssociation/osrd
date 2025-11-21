@@ -40,7 +40,9 @@ data class TrainPathNoBacktrack(
     }
 
     private val cachedZoneRanges by lazy {
-        cachedZonePaths.map { it.mapValue<ZoneId, Zone>(rawInfra.getZonePathZone(it.value)) }
+        cachedZonePaths.map {
+            it.mapValue<ZoneId, Zone>(rawInfra.getZonePathZone(it.value), it.objectLength.cast())
+        }
     }
 
     init {
@@ -136,18 +138,19 @@ data class TrainPathNoBacktrack(
     ): List<GenericLinearRange<ValueType, OffsetType>> {
         require(from >= Offset.zero())
         require(to <= getTypedLength())
-        return list.mapNotNull { (value, objectBegin, objectEnd, pathBegin, pathEnd) ->
-            val truncatedStart = max(from, pathBegin)
-            val truncatedEnd = min(to, pathEnd)
+        return list.mapNotNull { range ->
+            val truncatedStart = max(from, range.pathBegin)
+            val truncatedEnd = min(to, range.pathEnd)
 
             if (truncatedStart > truncatedEnd) return@mapNotNull null
 
             GenericLinearRange(
-                value = value,
-                objectBegin = objectBegin + (truncatedStart - pathBegin),
-                objectEnd = objectEnd - (pathEnd - truncatedEnd),
+                value = range.value,
+                objectBegin = range.objectBegin + (truncatedStart - range.pathBegin),
+                objectEnd = range.objectEnd - (range.pathEnd - truncatedEnd),
                 pathBegin = truncatedStart - from.distance,
                 pathEnd = truncatedEnd - from.distance,
+                objectLength = range.objectLength,
             )
         }
     }

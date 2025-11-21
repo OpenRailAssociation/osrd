@@ -367,6 +367,7 @@ private class InfraExplorerImpl(
                         objectEnd = travelledPathEndBlockOffset,
                         pathBegin = rangePathBegin,
                         pathEnd = rangePathEnd,
+                        objectLength = blockLength,
                     )
                 blockRanges.add(blockRange)
 

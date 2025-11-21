@@ -29,12 +29,13 @@ class GenericLinearRangeTest {
                 objectEnd = Offset(100.meters),
                 pathBegin = Offset(1_000.meters),
                 pathEnd = Offset(1_100.meters),
+                objectLength = Length(100.meters),
             )
 
         assertEquals(Offset(50.meters), range.offsetFromTrainPath(Offset(1_050.meters)))
         assertEquals(Offset(1_050.meters), range.offsetToTrainPath(Offset(50.meters)))
-        assertEquals(Offset(1_000.meters), range.getObjectAbsolutePathStart())
-        assertEquals(Offset(1_100.meters), range.getObjectAbsolutePathEnd(Length(100.meters)))
+        assertEquals(Offset(1_000.meters), range.objectAbsolutePathStart)
+        assertEquals(Offset(1_100.meters), range.pathEnd)
     }
 
     @Test
@@ -53,12 +54,13 @@ class GenericLinearRangeTest {
                 objectEnd = Offset(75.meters),
                 pathBegin = Offset(0.meters),
                 pathEnd = Offset(50.meters),
+                objectLength = Length(100.meters),
             )
 
         assertEquals(Offset(42.meters), range.offsetFromTrainPath(Offset(17.meters)))
         assertEquals(Offset(17.meters), range.offsetToTrainPath(Offset(42.meters)))
-        assertEquals(Offset((-25).meters), range.getObjectAbsolutePathStart())
-        assertEquals(Offset(75.meters), range.getObjectAbsolutePathEnd(Length(100.meters)))
+        assertEquals(Offset((-25).meters), range.objectAbsolutePathStart)
+        assertEquals(Offset(75.meters), range.objectAbsolutePathEnd)
     }
 
     @Test
@@ -78,6 +80,7 @@ class GenericLinearRangeTest {
                 objectEnd = Offset(750.meters),
                 pathBegin = Offset(0.meters),
                 pathEnd = Offset(500.meters),
+                objectLength = Length(1_000.meters),
             )
         val blocks = (0U..4U).map { BlockId(it) }
         val blockLengths = listOf(100, 300, 200, 200, 200).map { Length<Block>(it.meters) }
@@ -97,6 +100,7 @@ class GenericLinearRangeTest {
                     objectEnd = Offset(300.meters),
                     pathBegin = Offset(0.meters),
                     pathEnd = Offset(150.meters),
+                    objectLength = Length(300.meters),
                 ),
                 GenericLinearRange(
                     value = blocks[2],
@@ -104,6 +108,7 @@ class GenericLinearRangeTest {
                     objectEnd = Offset(200.meters),
                     pathBegin = Offset(150.meters),
                     pathEnd = Offset(350.meters),
+                    objectLength = Length(200.meters),
                 ),
                 GenericLinearRange(
                     value = blocks[3],
@@ -111,6 +116,7 @@ class GenericLinearRangeTest {
                     objectEnd = Offset(150.meters),
                     pathBegin = Offset(350.meters),
                     pathEnd = Offset(500.meters),
+                    objectLength = Length(200.meters),
                 ),
             )
         assertEquals(expectedRanges, blockRanges)

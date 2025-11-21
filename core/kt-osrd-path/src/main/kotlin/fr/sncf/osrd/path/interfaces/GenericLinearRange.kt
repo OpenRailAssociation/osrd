@@ -1,14 +1,13 @@
 package fr.sncf.osrd.path.interfaces
 
 import fr.sncf.osrd.sim_infra.api.Block
-import fr.sncf.osrd.sim_infra.api.BlockInfra
-import fr.sncf.osrd.sim_infra.api.RawInfra
 import fr.sncf.osrd.sim_infra.api.Route
 import fr.sncf.osrd.sim_infra.api.TrackChunk
 import fr.sncf.osrd.sim_infra.api.Zone
 import fr.sncf.osrd.sim_infra.api.ZonePath
 import fr.sncf.osrd.utils.indexing.DirStaticIdx
 import fr.sncf.osrd.utils.indexing.StaticIdx
+import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.Offset.Companion.max
@@ -25,39 +24,60 @@ data class GenericLinearRange<ValueType, OffsetType>(
     val value: ValueType,
     /** Start of the range, compared to the start of the underlying object. */
     val objectBegin: Offset<OffsetType>,
-    /** End of the range, compared to the start of the underlying object. */
-    val objectEnd: Offset<OffsetType>,
     /** Start of the range, compared to the start of the train path. */
     val pathBegin: Offset<TrainPath>,
-    /** End of the range, compared to the start of the train path. */
-    val pathEnd: Offset<TrainPath>,
+    /** Range length. */
+    val length: Distance,
+    /** Total length of the underlying object. */
+    val objectLength: Length<OffsetType>,
 ) {
-    val length = objectEnd - objectBegin
+    constructor(
+        value: ValueType,
+        objectBegin: Offset<OffsetType>,
+        objectEnd: Offset<OffsetType>,
+        pathBegin: Offset<TrainPath>,
+        pathEnd: Offset<TrainPath>,
+        objectLength: Length<OffsetType>,
+    ) : this(value, objectBegin, pathBegin, pathEnd - pathBegin, objectLength) {
+        assert(objectEnd - objectBegin == pathEnd - pathBegin)
+    }
 
     init {
         require(length >= 0.meters)
-        require(pathEnd - pathBegin == length)
+
+        // There's currently no use case where the range can exceed the object itself, so this is an
+        // easy sanity check. These two assertions can be removed if needed.
+        require(objectEnd <= objectLength)
+        require(objectBegin >= Offset.zero())
     }
+
+    /** End of the range, compared to the start of the train path. */
+    val pathEnd: Offset<TrainPath>
+        get() = pathBegin + length
+
+    /** End of the range, compared to the start of the underlying object. */
+    val objectEnd: Offset<OffsetType>
+        get() = objectBegin + length
 
     fun isSinglePoint() = length == 0.meters
 
     /** Where the object begins on the path, not just the range. May be negative. */
-    fun getObjectAbsolutePathStart() = pathBegin - objectBegin.distance
+    val objectAbsolutePathStart
+        get() = pathBegin - objectBegin.distance
 
     /** Where the object ends on the path, not just the range. May be larger than path length. */
-    fun getObjectAbsolutePathEnd(objectLength: Length<OffsetType>): Offset<TrainPath> {
-        return getObjectAbsolutePathStart() + objectLength.distance
-    }
+    val objectAbsolutePathEnd
+        get() = objectAbsolutePathStart + objectLength.distance
 
     /** Converts a train path offset into an object offset. */
     fun offsetFromTrainPath(pathOffset: Offset<TrainPath>): Offset<OffsetType> {
-        val objectStart = getObjectAbsolutePathStart()
+        val objectStart = objectAbsolutePathStart
         return Offset(pathOffset.distance - objectStart.distance)
     }
 
     /** Converts an object offset into a train path offset. */
     fun offsetToTrainPath(objectOffset: Offset<OffsetType>): Offset<TrainPath> {
-        val objectStart = getObjectAbsolutePathStart()
+        val objectStart = objectAbsolutePathStart
         return objectStart + objectOffset.distance
     }
 
@@ -80,6 +100,7 @@ data class GenericLinearRange<ValueType, OffsetType>(
             objectEnd - removedAtEnd,
             newPathBegin,
             newPathEnd,
+            objectLength,
         )
     }
 
@@ -104,6 +125,7 @@ data class GenericLinearRange<ValueType, OffsetType>(
                     subObjectLength,
                     prevObjectEndPathOffset,
                     prevObjectEndPathOffset + subObjectLength.distance,
+                    subObjectLength,
                 )
             val truncated = subObjectRange.withTruncatedPathRange(pathBegin, pathEnd)
             if (truncated != null) res.add(truncated)
@@ -121,6 +143,7 @@ data class GenericLinearRange<ValueType, OffsetType>(
      */
     fun <OuterObjectType, OuterObjectOffset> mapOuterObject(
         outerObject: OuterObjectType,
+        outerObjectLength: Length<OuterObjectOffset>,
         subObjectList: List<ValueType>,
         getSubObjectLength: (ValueType) -> Length<OffsetType>,
     ): GenericLinearRange<OuterObjectType, OuterObjectOffset>? {
@@ -135,12 +158,29 @@ data class GenericLinearRange<ValueType, OffsetType>(
             )
         val rangeBegin = thisOffset + objectBegin.distance
         val rangeEnd = thisOffset + objectEnd.distance
-        return GenericLinearRange(outerObject, rangeBegin, rangeEnd, pathBegin, pathEnd)
+        return GenericLinearRange(
+            outerObject,
+            rangeBegin,
+            rangeEnd,
+            pathBegin,
+            pathEnd,
+            outerObjectLength,
+        )
     }
 
     /** Maps the value, while keeping all offsets identical. */
-    fun <T, NewOffsetType> mapValue(value: T): GenericLinearRange<T, NewOffsetType> {
-        return GenericLinearRange(value, objectBegin.cast(), objectEnd.cast(), pathBegin, pathEnd)
+    fun <T, NewOffsetType> mapValue(
+        value: T,
+        newObjectLength: Offset<NewOffsetType>,
+    ): GenericLinearRange<T, NewOffsetType> {
+        return GenericLinearRange(
+            value,
+            objectBegin.cast(),
+            objectEnd.cast(),
+            pathBegin,
+            pathEnd,
+            newObjectLength,
+        )
     }
 }
 
@@ -172,7 +212,7 @@ fun <ValueType, OffsetType> mergeLinearRanges(
             if (last?.value == entry.value) {
                 assert(last.pathBegin <= entry.pathBegin)
                 assert(last.objectBegin <= entry.objectBegin)
-                last = last.copy(pathEnd = entry.pathEnd, objectEnd = entry.objectEnd)
+                last = last.copy(length = entry.length + last.length)
             } else {
                 last?.let { res.add(it) }
                 last = entry
@@ -214,25 +254,10 @@ fun <ValueType, OffsetType> MutableList<GenericLinearRange<ValueType, OffsetType
                     element.objectEnd,
                     prevElement.pathBegin,
                     element.pathEnd,
+                    prevElement.objectLength,
                 )
         } else {
             add(element)
         }
     }
-}
-
-// Some extension functions to make `getObjectAbsolutePathEnd` calls less verbose. We could instead
-// put the object length in the range itself, but that would waste some memory for a value that's
-// rarely accessed in practice.
-
-fun ZonePathRange.getZonePathAbsolutePathEnd(infra: RawInfra): Offset<TrainPath> {
-    return getObjectAbsolutePathEnd(infra.getZonePathLength(value))
-}
-
-fun RouteRange.getRouteAbsolutePathEnd(infra: RawInfra): Offset<TrainPath> {
-    return getObjectAbsolutePathEnd(infra.getRouteLength(value))
-}
-
-fun BlockRange.getBlockAbsolutePathEnd(blockInfra: BlockInfra): Offset<TrainPath> {
-    return getObjectAbsolutePathEnd(blockInfra.getBlockLength(value))
 }
