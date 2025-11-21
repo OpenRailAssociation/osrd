@@ -1095,6 +1095,18 @@ const injectedRtkApi = api
         query: () => ({ url: `/timetable`, method: 'POST' }),
         invalidatesTags: ['timetable'],
       }),
+      getTimetableStdcmGetAsyncResult: build.query<
+        GetTimetableStdcmGetAsyncResultApiResponse,
+        GetTimetableStdcmGetAsyncResultApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/timetable/stdcm_get_async_result`,
+          params: {
+            id: queryArg.id,
+          },
+        }),
+        providesTags: ['stdcm'],
+      }),
       deleteTimetableById: build.mutation<
         DeleteTimetableByIdApiResponse,
         DeleteTimetableByIdApiArg
@@ -1162,6 +1174,21 @@ const injectedRtkApi = api
       >({
         query: (queryArg) => ({
           url: `/timetable/${queryArg.id}/stdcm`,
+          method: 'POST',
+          body: queryArg.body,
+          params: {
+            infra: queryArg.infra,
+            return_debug_payloads: queryArg.returnDebugPayloads,
+          },
+        }),
+        invalidatesTags: ['stdcm'],
+      }),
+      postTimetableByIdStdcmAsync: build.mutation<
+        PostTimetableByIdStdcmAsyncApiResponse,
+        PostTimetableByIdStdcmAsyncApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/timetable/${queryArg.id}/stdcm_async`,
           method: 'POST',
           body: queryArg.body,
           params: {
@@ -2353,6 +2380,27 @@ export type PostTemporarySpeedLimitGroupApiArg = {
 export type PostTimetableApiResponse =
   /** status 200 Timetable with train schedules ids */ TimetableResult;
 export type PostTimetableApiArg = void;
+export type GetTimetableStdcmGetAsyncResultApiResponse = /** status 200 The simulation result */
+  | {
+      core_payload?: null | CoreStdcmRequest;
+      departure_time: string;
+      pathfinding_result: CorePathfindingResultSuccess;
+      simulation: SimulationResponseSuccess;
+      status: 'success';
+    }
+  | {
+      core_payload?: null | CoreStdcmRequest;
+      status: 'path_not_found';
+    }
+  | {
+      core_payload?: null | CoreStdcmRequest;
+      error: SimulationResponse;
+      status: 'preprocessing_simulation_error';
+    };
+export type GetTimetableStdcmGetAsyncResultApiArg = {
+  /** request id */
+  id: number;
+};
 export type DeleteTimetableByIdApiResponse = unknown;
 export type DeleteTimetableByIdApiArg = {
   /** A timetable ID */
@@ -2415,6 +2463,59 @@ export type PostTimetableByIdStdcmApiResponse = /** status 200 The simulation re
       status: 'preprocessing_simulation_error';
     };
 export type PostTimetableByIdStdcmApiArg = {
+  /** timetable_id */
+  id: number;
+  /** The infra id */
+  infra: number;
+  /** If true, extra payloads are returned to help with debugging */
+  returnDebugPayloads?: boolean | null;
+  body: {
+    /** Set of authorized track section ids for the current loading gauge,
+        None value means no zone restriction. */
+    allowed_track_sections?: string[] | null;
+    comfort: Comfort;
+    electrical_profile_set_id?: number | null;
+    loading_gauge_type?: null | LoadingGaugeType;
+    /** Can be a percentage `X%`, a time in minutes per 100 kilometer `Xmin/100km` */
+    margin?: string | null;
+    /**  Maximum speed of the consist in km/h
+        Velocity in m·s⁻¹ */
+    max_speed?: number | null;
+    /** By how long we can shift the departure time in milliseconds
+        Deprecated, first step data should be used instead */
+    maximum_departure_delay?: number | null;
+    /** Specifies how long the total run time can be in milliseconds
+        Deprecated, first step data should be used instead */
+    maximum_run_time?: number | null;
+    rolling_stock_id: number;
+    /** Train categories for speed limits */
+    speed_limit_tags?: string | null;
+    /** Deprecated, first step arrival time should be used instead */
+    start_time?: string | null;
+    steps: PathfindingItem[];
+    temporary_speed_limit_group_id?: number | null;
+    /** Margin after the train passage in milliseconds
+        
+        Enforces that the path used by the train should be free and
+        available at least that many milliseconds after its passage. */
+    time_gap_after?: number;
+    /** Margin before the train passage in seconds
+        
+        Enforces that the path used by the train should be free and
+        available at least that many milliseconds before its passage. */
+    time_gap_before?: number;
+    /**  Total length of the consist in meters
+        Length in m */
+    total_length?: number | null;
+    /**  Total mass of the consist
+        Mass in kg */
+    total_mass?: number | null;
+    towed_rolling_stock_id?: number | null;
+    work_schedule_group_id?: number | null;
+  };
+};
+export type PostTimetableByIdStdcmAsyncApiResponse = unknown;
+export type PostTimetableByIdStdcmAsyncApiArg = {
   /** timetable_id */
   id: number;
   /** The infra id */
@@ -4678,50 +4779,6 @@ export type SubCategoryPage = PaginationStats & {
 export type TimetableResult = {
   timetable_id: number;
 };
-export type CoreConflictRequirement = {
-  end_time: string;
-  start_time: string;
-  zone: string;
-};
-export type Conflict = {
-  /** Type of the conflict */
-  conflict_type: 'Spacing' | 'Routing';
-  /** Datetime of the end of the conflict */
-  end_time: string;
-  /** List of requirements causing the conflict */
-  requirements: CoreConflictRequirement[];
-  /** Datetime of the start of the conflict */
-  start_time: string;
-  /** List of trains involved in the conflict. */
-  train_ids: (
-    | {
-        id: number;
-        index: number;
-        type: 'base';
-      }
-    | {
-        exception_key: string;
-        id: number;
-        index: number;
-        type: 'modified';
-      }
-    | {
-        exception_key: string;
-        id: number;
-        type: 'created';
-      }
-  )[];
-  /** List of work schedule ids involved in the conflict */
-  work_schedule_ids: number[];
-};
-export type CoreTrainRequirementsById = {
-  routing_requirements: CoreRoutingRequirement[];
-  spacing_requirements: CoreSpacingRequirement[];
-  start_time: string;
-  train_id: string;
-  /** ID that can be used to find the train in tools other than OSRD. Used in debug traces. */
-  train_name: string;
-};
 export type CoreStepTimingData = {
   /** Time the train should arrive at this point */
   arrival_time: string;
@@ -4808,6 +4865,7 @@ export type CoreStdcmRequest = {
     startup_acceleration: number;
     startup_time: number;
   };
+  request_id?: number | null;
   /** The loading gauge of the rolling stock */
   rolling_stock_loading_gauge: LoadingGaugeType;
   /** List of supported signaling systems */
@@ -4831,6 +4889,50 @@ export type CoreStdcmRequest = {
   timetable_id: number;
   /** List of planned work schedules */
   work_schedules: CoreWorkSchedule[];
+};
+export type CoreConflictRequirement = {
+  end_time: string;
+  start_time: string;
+  zone: string;
+};
+export type Conflict = {
+  /** Type of the conflict */
+  conflict_type: 'Spacing' | 'Routing';
+  /** Datetime of the end of the conflict */
+  end_time: string;
+  /** List of requirements causing the conflict */
+  requirements: CoreConflictRequirement[];
+  /** Datetime of the start of the conflict */
+  start_time: string;
+  /** List of trains involved in the conflict. */
+  train_ids: (
+    | {
+        id: number;
+        index: number;
+        type: 'base';
+      }
+    | {
+        exception_key: string;
+        id: number;
+        index: number;
+        type: 'modified';
+      }
+    | {
+        exception_key: string;
+        id: number;
+        type: 'created';
+      }
+  )[];
+  /** List of work schedule ids involved in the conflict */
+  work_schedule_ids: number[];
+};
+export type CoreTrainRequirementsById = {
+  routing_requirements: CoreRoutingRequirement[];
+  spacing_requirements: CoreSpacingRequirement[];
+  start_time: string;
+  train_id: string;
+  /** ID that can be used to find the train in tools other than OSRD. Used in debug traces. */
+  train_name: string;
 };
 export type PathfindingItem = {
   /** The stop duration in milliseconds, None if the train does not stop. */

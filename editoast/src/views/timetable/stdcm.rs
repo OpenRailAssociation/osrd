@@ -28,9 +28,11 @@ use schemas::train_schedule::TrainSchedule;
 use serde::Deserialize;
 use serde::Serialize;
 use std::cmp::max;
+use std::collections::HashMap;
 use std::slice;
-use std::sync::Arc;
+use std::sync::{Arc, Mutex, OnceLock};
 use thiserror::Error;
+use tokio::task::JoinHandle;
 use tracing::Span;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
@@ -45,6 +47,7 @@ use crate::views::timetable::PhysicsConsistParameters;
 use crate::views::timetable::simulation;
 use crate::views::timetable::simulation::SimulationResponseSuccess;
 use crate::views::timetable::simulation::consist_train_simulation_batch;
+use crate::views::timetable::stdcm::StdcmError::{RequestNotFound, UnknownError};
 use editoast_models::WorkSchedule;
 use editoast_models::prelude::*;
 use editoast_models::rolling_stock::RollingStock;
@@ -82,6 +85,11 @@ enum StdcmError {
     #[error("Timetable {timetable_id} does not exist")]
     #[editoast_error(status = 404)]
     TimetableNotFound { timetable_id: i64 },
+    #[error("Request {request_id} does not exist")]
+    #[editoast_error(status = 404)]
+    RequestNotFound { request_id: u64 },
+    #[error("Unknown error")]
+    UnknownError,
     #[error("Rolling stock {rolling_stock_id} does not exist")]
     RollingStockNotFound { rolling_stock_id: i64 },
     #[error("Towed rolling stock {towed_rolling_stock_id} does not exist")]
@@ -122,6 +130,82 @@ pub(in crate::views) struct StdcmQueryParams {
     #[param(nullable)]
     return_debug_payloads: bool,
 }
+
+#[tracing::instrument(target = "editoast::timetable", name = "stdcm_async", skip_all, err)]
+#[editoast_derive::route]
+#[utoipa::path(
+    post, path = "",
+    tag = "stdcm",
+    request_body = inline(Request),
+    params(
+        ("id" = i64, Path, description = "timetable_id"),
+        StdcmQueryParams,
+    ),
+    responses(
+        (status = 200, body = u64, description = "Request ID"),
+    )
+)]
+pub(in crate::views) async fn stdcm_async(
+    state: State<AppState>,
+    extension: AuthenticationExt,
+    path: Path<i64>,
+    query: Query<StdcmQueryParams>,
+    request: Json<Request>,
+) -> Result<Json<u64>> {
+    let id = Span::current().id().unwrap().into_u64();
+    let map = GLOBAL_FUTURE_MAP.get_or_init(|| Arc::new(Mutex::new(HashMap::new())));
+    let handle = tokio::spawn(async move {
+        let mut returned_request: Option<core_client::stdcm::Request> = None;
+        stdcm_handler(
+            state,
+            extension,
+            path,
+            query,
+            request,
+            &mut returned_request,
+            Some(id),
+        )
+        .await
+    });
+    let mut map_lock = map.lock().unwrap();
+    map_lock.insert(id, handle);
+    return Ok(Json(id));
+}
+
+#[derive(Deserialize)]
+pub struct StdcmResultQueryParams {
+    id: u64,
+}
+
+#[editoast_derive::route]
+#[utoipa::path(
+    get, path = "",
+    tag = "stdcm",
+    params(
+        ("id" = u64, Query, description = "request id"),
+    ),
+    responses(
+        (status = 200, body = inline(StdcmResponse), description = "The simulation result"),
+    )
+)]
+pub(in crate::views) async fn stdcm_get_async_result(
+    _: State<AppState>,
+    _: AuthenticationExt,
+    Query(params): Query<StdcmResultQueryParams>,
+) -> Result<Json<StdcmResponse>> {
+    let map = GLOBAL_FUTURE_MAP.get_or_init(|| Arc::new(Mutex::new(HashMap::new())));
+    let future = {
+        let mut map_lock = map.lock().unwrap();
+        map_lock.remove(&params.id).ok_or(RequestNotFound {
+            request_id: params.id,
+        })?
+    };
+    future.await.map_err(|_| UnknownError)?
+}
+
+static GLOBAL_FUTURE_MAP: OnceLock<
+    Arc<Mutex<HashMap<u64, JoinHandle<Result<Json<StdcmResponse>>>>>>,
+> = OnceLock::new();
 
 /// This function computes a STDCM and returns the result.
 /// It first checks user authorization, then retrieves timetable, infrastructure,
@@ -177,6 +261,7 @@ pub(in crate::views) async fn stdcm(
         Query(query),
         Json(request),
         &mut returned_request,
+        None,
     )
     .await
     .map_err(|mut err| {
@@ -203,6 +288,7 @@ pub(in crate::views) async fn stdcm_handler(
     Query(query): Query<StdcmQueryParams>,
     Json(request): Json<Request>,
     returned_request: &mut Option<core_client::stdcm::Request>,
+    request_id: Option<u64>,
 ) -> Result<Json<StdcmResponse>> {
     let authorized = auth
         .check_roles([authz::Role::Stdcm].into())
@@ -319,6 +405,7 @@ pub(in crate::views) async fn stdcm_handler(
                 as_core_work_schedule(ws, earliest_departure_time, latest_simulation_end)
             })
             .collect(),
+        request_id,
     };
     *returned_request = query.return_debug_payloads.then_some(stdcm_request.clone());
 
