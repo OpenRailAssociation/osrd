@@ -1,0 +1,12 @@
+{{- if .Values.services.editoast.permanent_storage_size -}}
+apiVersion: v1
+kind: persistentVolumeClaim
+metadata:
+  name: editoast_volume
+  namespace: default
+spec:
+  accessMode: ReadWriteMany
+  resources:
+    requests:
+	  storage: {{ .Values.services.editoast.permanent_storage_size }}
+{{- end -}}

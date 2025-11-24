@@ -194,6 +194,7 @@ services:
       # command to be executed before editoast gc
       extend: ""
       env: []
+    permanent_storage_size: null
     labels: {}
     nodeSelector: {}
     tolerations: []
