@@ -119,3 +119,23 @@ export const ErrorWithoutMessageTextArea: Story = {
     },
   },
 };
+
+export const TransformedTextArea: Story = {
+  render: (args) => {
+    const [comment, setComment] = useState('');
+
+    const handleCommentChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+      const transformedValue = e.target.value
+        .replace(/&/g, 'et') // replace "&" with "et"
+        .replace(/</g, '('); // replace "<" with "("
+
+      setComment(transformedValue);
+    };
+
+    return <TextArea {...args} value={comment} onChange={handleCommentChange} />;
+  },
+  args: {
+    label: 'Comment',
+    hint: 'Try typing "&" or "<"',
+  },
+};
