@@ -41,9 +41,9 @@ export const formatLocalDate = (date: Date) => dayjs(date).local().format('YYYY-
 export const formatLocalTime = (date: Date) => dayjs(date).local().format('HH:mm:ss');
 
 /**
- * Format Date into local time, short style, with rounding to the nearest minute
+ * Format time to locale string rounded to the nearest minute.
  */
-export const formatLocalTimeRounded = (time: Date, locale: Intl.Locale): string => {
+export const timeToLocaleStringRounded = (time: Date, locale: Intl.Locale): string => {
   const roundedTime = new Date(
     ...[
       time.getFullYear(),

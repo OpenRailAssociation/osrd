@@ -26,7 +26,7 @@ import {
   updateProjectionType,
 } from 'reducers/simulationResults';
 import { useAppDispatch } from 'store';
-import { formatLocalTimeRounded, useDateTimeLocale } from 'utils/date';
+import { timeToLocaleStringRounded, useDateTimeLocale } from 'utils/date';
 import { addDurationToDate, Duration } from 'utils/duration';
 import { castErrorToFailure } from 'utils/error';
 import {
@@ -227,7 +227,7 @@ const TrainScheduleItem = ({
                 className="scenario-timetable-train-times"
                 title={train.startTime.toLocaleString(dateTimeLocale)}
               >
-                {formatLocalTimeRounded(train.startTime, dateTimeLocale)}
+                {timeToLocaleStringRounded(train.startTime, dateTimeLocale)}
               </div>
               <div
                 className={cx('status-icon', {
@@ -244,7 +244,7 @@ const TrainScheduleItem = ({
                 title={arrivalTime ? arrivalTime.toLocaleString(dateTimeLocale) : undefined}
               >
                 {arrivalTime ? (
-                  formatLocalTimeRounded(arrivalTime, dateTimeLocale)
+                  timeToLocaleStringRounded(arrivalTime, dateTimeLocale)
                 ) : (
                   <ArrivalTimeLoader />
                 )}

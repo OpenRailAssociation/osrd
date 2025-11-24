@@ -4,7 +4,7 @@ import type { TFunction } from 'i18next';
 import type { OperationalPointWithTimeAndSpeed } from 'applications/operationalStudies/types';
 import type { StdcmSuccessResponse, StdcmResultsOperationalPoint } from 'applications/stdcm/types';
 import type { PathfindingResultSuccess } from 'common/api/osrdEditoastApi';
-import { formatLocalTimeRounded } from 'utils/date';
+import { timeToLocaleStringRounded } from 'utils/date';
 import { addDurationToDate, Duration } from 'utils/duration';
 import { kgToT } from 'utils/physics';
 import { capitalizeFirstLetter } from 'utils/strings';
@@ -130,19 +130,19 @@ export const formatOperationalStudiesDataForSimulationTable = (
     const isVia = pathItemPositions.slice(1, -1).some((p) => p / 1000 === step.position);
     const isPathStep = isFirst || isVia || isLast;
 
-    const endTime = isLast || isStop ? formatLocalTimeRounded(step.time, dateTimeLocale) : '';
+    const endTime = isLast || isStop ? timeToLocaleStringRounded(step.time, dateTimeLocale) : '';
 
     let passageStop = '';
     if (!isFirst && !isLast) {
       // display the stop duration if is a stop, the passage time if not
       passageStop = step.duration
         ? getStopDurationTime(step.duration)
-        : formatLocalTimeRounded(step.time, dateTimeLocale);
+        : timeToLocaleStringRounded(step.time, dateTimeLocale);
     }
 
     const startTime =
       isFirst || isStop
-        ? formatLocalTimeRounded(
+        ? timeToLocaleStringRounded(
             addDurationToDate(step.time, step.duration ?? Duration.zero),
             dateTimeLocale
           )
