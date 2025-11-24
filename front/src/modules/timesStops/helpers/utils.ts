@@ -386,5 +386,5 @@ export const getOperationalPointName = (
   }
 
   // Invalid step
-  return getInvalidStepLabel(step);
+  return getInvalidStepLabel(step.operational_point);
 };
