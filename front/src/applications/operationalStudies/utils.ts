@@ -314,12 +314,6 @@ export const getStationFromOps = (ops: OperationalPoint[]): OperationalPoint | u
   ops.find((op) => ['BV', '00'].includes(op.extensions?.sncf?.ch || '')) || ops.at(0);
 
 /**
- * Get a path item location (without ID) from a train's path
- * item.
- */
-const getPathItemLocation = (pathItem: TrainSchedule['path'][number]) => pathItem.location;
-
-/**
  * Get a list of unique OP references from timetable items paths.
  */
 export const getUniqueOpRefsFromTimetableItems = (
@@ -328,7 +322,7 @@ export const getUniqueOpRefsFromTimetableItems = (
   const pathItems = timetableItems.flatMap((timetableItem) => timetableItem.path);
   const uniqueSteps = new Map<string, OperationalPointReference>();
   for (const pathItem of pathItems) {
-    const pathItemLocation = getPathItemLocation(pathItem);
+    const pathItemLocation = pathItem.location;
     if (!isOperationalPointReference(pathItemLocation)) continue;
     uniqueSteps.set(JSON.stringify(pathItemLocation), pathItemLocation);
   }
@@ -363,7 +357,7 @@ export const addPathOpsToTimetableItems = (
     // 2. if key exists but no operational points were found, return an empty array
     // 3. if key does not exist in opsByKey (meaning it's a track offset), return an empty array
     const pathOps = timetableItem.path.map(
-      (pathItem) => opsByKey.get(JSON.stringify(getPathItemLocation(pathItem))) ?? []
+      (pathItem) => opsByKey.get(JSON.stringify(pathItem.location)) ?? []
     );
     return { ...timetableItem, pathOps };
   });
