@@ -5,8 +5,10 @@ import fr.sncf.osrd.path.legacy_objects.ElectricalProfileMapping
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.utils.indexing.DirStaticIdx
 import fr.sncf.osrd.utils.indexing.StaticIdx
+import fr.sncf.osrd.utils.units.Directed
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
+import fr.sncf.osrd.utils.units.forceDirected
 import fr.sncf.osrd.utils.units.meters
 import fr.sncf.osrd.utils.units.sumOffsets
 
@@ -153,10 +155,11 @@ fun buildTrainPathFromChunkPath(
         val isFirst = i == 0
         val isLast = i == chunkPath.chunks.size - 1
         val chunkLength = rawInfra.getTrackChunkLength(chunk.value)
-        val from = if (isFirst) chunkPath.beginOffset.cast<TrackChunk>() else Offset.zero()
-        var to = chunkLength
+        val from =
+            if (isFirst) chunkPath.beginOffset.cast<Directed<TrackChunk>>() else Offset.zero()
+        var to = chunkLength.forceDirected()
         if (isLast) to = Offset(chunkPath.endOffset.distance - prevChunkFinalOffset)
-        chunkRanges.add(PartialDirChunkRange(chunk, from, to, chunkLength))
+        chunkRanges.add(PartialDirChunkRange(chunk, from, to, chunkLength.forceDirected()))
         prevChunkFinalOffset += chunkLength.distance
     }
     return buildTrainPathFromChunks(
@@ -208,7 +211,7 @@ private fun generateTrackChunks(
         mapSubObjects(
             blocks,
             blockInfra::getTrackChunksFromBlock,
-            { rawInfra.getTrackChunkLength(it.value) },
+            { rawInfra.getTrackChunkLength(it.value).forceDirected() },
         )
     // We need to filter out zero-length ranges that aren't first or last
     val filtered = mutableListOf<DirChunkRange>()
@@ -244,7 +247,7 @@ internal fun generateRouteRanges(
                     rawInfra.getRouteLength(route),
                     rawInfra.getChunksOnRoute(route),
                 ) {
-                    rawInfra.getTrackChunkLength(it.value)
+                    rawInfra.getTrackChunkLength(it.value).forceDirected()
                 }
             if (res != null) return res
             // If not found in the current route, move on to the next
@@ -316,7 +319,7 @@ data class PartialGenericLinearRange<ValueType, OffsetType>(
 
 typealias PartialLinearObjectRange<T> = PartialGenericLinearRange<StaticIdx<T>, T>
 
-typealias PartialLinearDirObjectRange<T> = PartialGenericLinearRange<DirStaticIdx<T>, T>
+typealias PartialLinearDirObjectRange<T> = PartialGenericLinearRange<DirStaticIdx<T>, Directed<T>>
 
 typealias PartialRouteRange = PartialLinearObjectRange<Route>
 

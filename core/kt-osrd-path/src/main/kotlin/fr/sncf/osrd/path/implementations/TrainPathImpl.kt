@@ -11,6 +11,7 @@ import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.Offset.Companion.max
 import fr.sncf.osrd.utils.units.Offset.Companion.min
+import fr.sncf.osrd.utils.units.forceDirected
 import fr.sncf.osrd.utils.units.meters
 
 /**
@@ -66,7 +67,7 @@ data class TrainPathNoBacktrack(
             if (!routes.isEmpty()) checkRangeList(routes) { rawInfra.getRouteLength(it) }
         }
         checkRangeList(blocks) { blockInfra.getBlockLength(it) }
-        checkRangeList(chunks) { rawInfra.getTrackChunkLength(it.value) }
+        checkRangeList(chunks) { rawInfra.getTrackChunkLength(it.value).forceDirected() }
     }
 
     override fun subPath(from: Offset<TrainPath>?, to: Offset<TrainPath>?): TrainPath {

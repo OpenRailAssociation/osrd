@@ -7,13 +7,18 @@ import fr.sncf.osrd.sim_infra.api.Zone
 import fr.sncf.osrd.sim_infra.api.ZonePath
 import fr.sncf.osrd.utils.indexing.DirStaticIdx
 import fr.sncf.osrd.utils.indexing.StaticIdx
+import fr.sncf.osrd.utils.units.DirOffset
+import fr.sncf.osrd.utils.units.Directed
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.Offset.Companion.max
 import fr.sncf.osrd.utils.units.Offset.Companion.min
+import fr.sncf.osrd.utils.units.forceUndirected
 import fr.sncf.osrd.utils.units.meters
 import fr.sncf.osrd.utils.units.sumDistances
+import fr.sncf.osrd.utils.units.toDirected
+import fr.sncf.osrd.utils.units.toUndirected
 
 /**
  * Describes an object range on the train path. Located on both the object itself, and the global
@@ -186,7 +191,7 @@ data class GenericLinearRange<ValueType, OffsetType>(
 
 typealias LinearObjectRange<T> = GenericLinearRange<StaticIdx<T>, T>
 
-typealias LinearDirObjectRange<T> = GenericLinearRange<DirStaticIdx<T>, T>
+typealias LinearDirObjectRange<T> = GenericLinearRange<DirStaticIdx<T>, Directed<T>>
 
 typealias RouteRange = LinearObjectRange<Route>
 
@@ -260,4 +265,21 @@ fun <ValueType, OffsetType> MutableList<GenericLinearRange<ValueType, OffsetType
             add(element)
         }
     }
+}
+
+// Utility functions for directed ranges
+
+fun <ValueType, OffsetType> GenericLinearRange<DirStaticIdx<ValueType>, Directed<OffsetType>>
+    .offsetToUndirected(directedOffset: DirOffset<OffsetType>): Offset<OffsetType> {
+    // Object length can't really be directed, but the typing here means we have a
+    // `Length<Directed<OffsetType>>`. We'd need to add a third type parameter to
+    // `GenericLinearRange` to keep lengths undirected.
+    val undirectedObjectLength = objectLength.forceUndirected()
+    return directedOffset.toUndirected(undirectedObjectLength, value.direction)
+}
+
+fun <ValueType, OffsetType> GenericLinearRange<DirStaticIdx<ValueType>, Directed<OffsetType>>
+    .offsetToDirected(undirectedOffset: Offset<OffsetType>): DirOffset<OffsetType> {
+    val undirectedObjectLength = objectLength.forceUndirected()
+    return undirectedOffset.toDirected(undirectedObjectLength, value.direction)
 }
