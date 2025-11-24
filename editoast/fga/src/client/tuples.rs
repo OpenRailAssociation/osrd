@@ -4,6 +4,7 @@ use crate::model::AsUser;
 use crate::model::Object as _;
 use crate::model::Relation;
 use crate::model::Tuple;
+use crate::model::Type;
 
 use super::Client;
 use super::Consistency;
@@ -14,6 +15,89 @@ pub(super) struct RawTuple {
     pub(super) user: String,
     pub(super) relation: String,
     pub(super) object: String,
+}
+
+/// Untyped tuple that can be cast to a typed relation
+#[derive(Debug, Clone)]
+pub struct UntypedTuple {
+    user: String,
+    relation: String,
+    object: String,
+}
+
+#[derive(Debug, Clone)]
+pub enum UserOrUserSet<R: Relation> {
+    /// Direct user
+    User(R::User),
+    /// Userset `"type:id#relation"`
+    UserSet(UntypedUserSet),
+}
+
+/// A userset reference extracted from an untyped tuple
+#[derive(Debug, Clone)]
+pub struct UntypedUserSet {
+    type_name: String,
+    id: String,
+}
+
+impl UntypedUserSet {
+    /// Tries to parse the userset's object as a specific type `T`
+    pub fn as_type<T: Type>(&self) -> Option<T> {
+        if self.type_name != T::NAMESPACE {
+            return None;
+        }
+        self.id.parse().ok()
+    }
+}
+
+impl UntypedTuple {
+    /// Casts the untyped tuple to a typed relation.
+    pub fn as_relation<R: Relation>(&self, _relation: R) -> Option<(UserOrUserSet<R>, R::Object)> {
+        if self.relation != R::NAME {
+            return None;
+        }
+
+        let object = self
+            .object
+            .strip_prefix(&format!("{}:", R::Object::NAMESPACE))?
+            .parse()
+            .ok()?;
+
+        let user = if let Some((object_part, _relation)) = self.user.split_once('#') {
+            let (type_name, id) = object_part.split_once(':')?;
+            UserOrUserSet::UserSet(UntypedUserSet {
+                type_name: type_name.to_string(),
+                id: id.to_string(),
+            })
+        } else {
+            let id_str = self
+                .user
+                .strip_prefix(&format!("{}:", R::User::NAMESPACE))?;
+            UserOrUserSet::User(id_str.parse().ok()?)
+        };
+
+        Some((user, object))
+    }
+}
+
+impl From<RawTuple> for UntypedTuple {
+    fn from(raw: RawTuple) -> Self {
+        UntypedTuple {
+            user: raw.user,
+            relation: raw.relation,
+            object: raw.object,
+        }
+    }
+}
+
+impl From<UntypedTuple> for RawTuple {
+    fn from(untyped: UntypedTuple) -> Self {
+        RawTuple {
+            user: untyped.user,
+            relation: untyped.relation,
+            object: untyped.object,
+        }
+    }
 }
 
 impl<'a, R: Relation, U: AsUser<User = R::User>> From<&Tuple<'a, R, U>> for RawTuple {

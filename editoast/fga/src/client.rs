@@ -12,9 +12,12 @@ use queries::BatchCheckSingleResult;
 use queries::RawUser;
 use queries::UserFilter;
 pub use stores::Store;
+use tuples::RawTuple;
+pub use tuples::UntypedTuple;
+pub use tuples::UntypedUserSet;
+pub use tuples::UserOrUserSet;
 
 use tracing::Instrument;
-use tuples::RawTuple;
 use url::Url;
 use uuid::Uuid;
 
@@ -320,6 +323,28 @@ impl Client {
             )
             .await?;
         Ok(!tuples.is_empty())
+    }
+
+    pub fn list_tuples(
+        &self,
+    ) -> impl stream::TryStream<Ok = UntypedTuple, Error = RequestFailure> + '_ {
+        Continuation::stream(move |continuation| {
+            async move {
+                let (tuples, continuation_str) = self
+                    .get_stores_read(
+                        &self.store.id,
+                        None,
+                        Some(100),
+                        self.authorization_model_id.as_deref(),
+                        None,
+                        continuation.as_option().map(|s| s.to_string()),
+                    )
+                    .await?;
+                let typed_tuples = tuples.into_iter().map(UntypedTuple::from).collect();
+                Ok((typed_tuples, Continuation::from(continuation_str)))
+            }
+            .in_current_span()
+        })
     }
 
     /// Writes up to `n` tuples in OpenFGA, with `n` the maximum number of tuple writes
@@ -866,6 +891,10 @@ pub struct PreparedDeletes<'a> {
 
 impl PreparedDeletes<'_> {
     pub fn push<R: Relation, U: AsUser<User = R::User>>(&mut self, tuple: &Tuple<'_, R, U>) {
+        self.deletes.push(RawTuple::from(tuple));
+    }
+
+    pub fn push_untyped(&mut self, tuple: UntypedTuple) {
         self.deletes.push(RawTuple::from(tuple));
     }
 

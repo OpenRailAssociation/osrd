@@ -230,6 +230,8 @@ async fn run() -> anyhow::Result<()> {
         Commands::Healthcheck(core_config) => {
             healthcheck_cmd(db_pool.into(), valkey_config, core_config, openfga_config).await
         }
-        Commands::Gc => garbage_collector::run_garbage_collector(db_pool.into()).await,
+        Commands::Gc => {
+            garbage_collector::run_garbage_collector(db_pool.into(), openfga_config).await
+        }
     }
 }

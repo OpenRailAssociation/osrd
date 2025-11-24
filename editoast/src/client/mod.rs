@@ -94,7 +94,11 @@ pub enum Commands {
     User(UserCommand),
     #[command(about, long_about = "Healthcheck")]
     Healthcheck(CoreArgs),
-    #[command(about, long_about = "Garbage collector")]
+    #[command(
+        about,
+        long_about = "Garbage collector.\nWarning: tuple deletions in OpenFGA are not idempotent, 
+        so do not run this command multiple times concurrently or setup some external locking."
+    )]
     Gc,
 }
 
