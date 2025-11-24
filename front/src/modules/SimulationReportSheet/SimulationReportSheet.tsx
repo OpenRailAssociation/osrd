@@ -5,7 +5,7 @@ import type { TFunction } from 'i18next';
 
 import type { OperationalPointWithTimeAndSpeed } from 'applications/operationalStudies/types';
 import type { PathfindingResultSuccess } from 'common/api/osrdEditoastApi';
-import { formatLocalTimeRounded, useDateTimeLocale } from 'utils/date';
+import { timeToLocaleStringRounded, useDateTimeLocale } from 'utils/date';
 import { msToKmh, kgToT } from 'utils/physics';
 
 import ConsistAndRoute from './ConsistAndRoute';
@@ -55,8 +55,8 @@ const SimulationReportSheet = ({
       rows.push({
         name: step.name || t('reportSheet.unknown'),
         secondaryCode: step.ch ?? '',
-        arrivesAt: isLast ? formatLocalTimeRounded(step.time, dateTimeLocale) : '',
-        leavesAt: isFirst ? formatLocalTimeRounded(step.time, dateTimeLocale) : '',
+        arrivesAt: isLast ? timeToLocaleStringRounded(step.time, dateTimeLocale) : '',
+        leavesAt: isFirst ? timeToLocaleStringRounded(step.time, dateTimeLocale) : '',
       });
     });
 
