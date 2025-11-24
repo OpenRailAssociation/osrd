@@ -256,10 +256,12 @@ export const stdcmConfSlice = createSlice({
       const { linkedTrainExtremity, trainName, pathStep, pathStepId } = action.payload;
       const { name, ch, geographic, arrivalDate, date, time, trigram } = pathStep;
 
+      const coordinates: [number, number] = [geographic.coordinates[0], geographic.coordinates[1]];
+
       const newPathStep = {
         location: {
           name,
-          coordinates: geographic.coordinates,
+          coordinates,
           operational_point: { trigram, secondary_code: ch },
         },
         id: pathStepId,
@@ -282,7 +284,7 @@ export const stdcmConfSlice = createSlice({
         }
         return step;
       });
-      state.stdcmPathSteps = newPathSteps as StdcmPathStep[];
+      state.stdcmPathSteps = newPathSteps;
     },
     addStdcmSimulations(
       state: Draft<OsrdStdcmConfState>,
