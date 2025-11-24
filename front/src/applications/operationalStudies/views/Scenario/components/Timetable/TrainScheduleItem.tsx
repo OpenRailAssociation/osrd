@@ -26,7 +26,7 @@ import {
   updateProjectionType,
 } from 'reducers/simulationResults';
 import { useAppDispatch } from 'store';
-import { useDateTimeLocale } from 'utils/date';
+import { formatLocalTimeRounded, useDateTimeLocale } from 'utils/date';
 import { addDurationToDate, Duration } from 'utils/duration';
 import { castErrorToFailure } from 'utils/error';
 import {
@@ -37,11 +37,7 @@ import {
 import ArrivalTimeLoader from './ArrivalTimeLoader';
 import { TIMETABLE_ITEM_DELTA } from './consts';
 import TimetableItemActions from './TimetableItemActions';
-import {
-  formatTrainDuration,
-  getTrainCategoryClassName,
-  roundAndFormatToNearestMinute,
-} from './utils';
+import { formatTrainDuration, getTrainCategoryClassName } from './utils';
 
 type TrainScheduleItemProps = {
   isInSelection: boolean;
@@ -231,7 +227,7 @@ const TrainScheduleItem = ({
                 className="scenario-timetable-train-times"
                 title={train.startTime.toLocaleString(dateTimeLocale)}
               >
-                {roundAndFormatToNearestMinute(train.startTime)}
+                {formatLocalTimeRounded(train.startTime, dateTimeLocale)}
               </div>
               <div
                 className={cx('status-icon', {
@@ -247,7 +243,11 @@ const TrainScheduleItem = ({
                 className="scenario-timetable-train-times"
                 title={arrivalTime ? arrivalTime.toLocaleString(dateTimeLocale) : undefined}
               >
-                {arrivalTime ? roundAndFormatToNearestMinute(arrivalTime) : <ArrivalTimeLoader />}
+                {arrivalTime ? (
+                  formatLocalTimeRounded(arrivalTime, dateTimeLocale)
+                ) : (
+                  <ArrivalTimeLoader />
+                )}
               </div>
               <div
                 className={cx('status-dot', {

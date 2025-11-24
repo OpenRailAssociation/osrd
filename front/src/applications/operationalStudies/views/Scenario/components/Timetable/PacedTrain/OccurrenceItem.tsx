@@ -26,6 +26,7 @@ import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
 import type { InvalidReason, Occurrence } from 'modules/timetableItem/types';
 import { getTrainIdUsedForProjection } from 'reducers/simulationResults/selectors';
 import { addElementAtIndex } from 'utils/array';
+import { formatLocalTimeRounded, useDateTimeLocale } from 'utils/date';
 import { addDurationToDate } from 'utils/duration';
 import {
   getExceptionType,
@@ -35,7 +36,7 @@ import {
 
 import OccurrenceIndicator from './OccurrenceIndicator';
 import ArrivalTimeLoader from '../ArrivalTimeLoader';
-import { formatTrainDuration, roundAndFormatToNearestMinute } from '../utils';
+import { formatTrainDuration } from '../utils';
 import type useOccurrenceActions from './hooks/useOccurrenceActions';
 
 const ConsecutiveDayDateDisplay = ({
@@ -84,6 +85,8 @@ const OccurrenceItem = ({
   const menuRef = useRef<HTMLDivElement>(null);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+  const dateTimeLocale = useDateTimeLocale();
 
   const trainIdUsedForProjection = useSelector(getTrainIdUsedForProjection);
 
@@ -246,7 +249,7 @@ const OccurrenceItem = ({
             {isAfterMidnight && <Moon iconColor="rgba(33, 100, 130, 0.7)" />}
           </div>
           <div className="occurrence-item-time departure-time" data-testid="departure-time">
-            {roundAndFormatToNearestMinute(startTime)}
+            {formatLocalTimeRounded(startTime, dateTimeLocale)}
           </div>
           <div
             className={cx('status-icon', {
@@ -259,7 +262,7 @@ const OccurrenceItem = ({
               (summary.notHonoredReason === 'scheduleNotHonored' ? <Clock /> : <Flame />)}
           </div>
           <div className="occurrence-item-time arrival-time" data-testid="arrival-time">
-            {arrivalTime && roundAndFormatToNearestMinute(arrivalTime)}
+            {arrivalTime && formatLocalTimeRounded(arrivalTime, dateTimeLocale)}
             {!summary && <ArrivalTimeLoader />}
           </div>
         </div>
