@@ -46,6 +46,8 @@ updates:
     directory: "/front/"
     schedule:
       interval: "weekly"
+    cooldown:
+      default-days: 5
     groups:
       eslint:
         patterns:
