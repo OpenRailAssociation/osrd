@@ -11,6 +11,7 @@ import {
   type PathfindingResult,
   type OperationalPointReference,
   type PathProperties,
+  type OperationalPointIdentifier,
 } from 'common/api/osrdEditoastApi';
 import { getExceptionFromOccurrenceId } from 'modules/timetableItem/helpers/pacedTrain';
 import type { TimetableItemId, TimetableItem } from 'reducers/osrdconf/types';
@@ -38,16 +39,14 @@ import { getStationFromOps, isOperationalPointReference } from '../utils';
  * Uses trigram --> UIC --> operational_point --> position-based fallbacks in priority order.
  */
 const getVirtualOpName = (
-  opRef: OperationalPointReference,
+  opId: OperationalPointIdentifier,
   index: number,
   totalCount: number,
   t: TFunction<'operational-studies'>
 ): string => {
-  if ('trigram' in opRef.operational_point && opRef.operational_point.trigram)
-    return opRef.operational_point.trigram;
-  if ('uic' in opRef.operational_point && opRef.operational_point.uic)
-    return opRef.operational_point.uic.toString();
-  if ('operational_point' in opRef.operational_point && opRef.operational_point.operational_point)
+  if ('trigram' in opId && opId.trigram) return opId.trigram;
+  if ('uic' in opId && opId.uic) return opId.uic.toString();
+  if ('operational_point' in opId && opId.operational_point)
     return t('main.operationalPointIdentifier');
   if (index === 0) return t('main.requestedOrigin');
   if (index === totalCount - 1) return t('main.requestedDestination');
@@ -61,14 +60,14 @@ const FALLBACK_DISTANCE_MM = 100_000_000;
  * Creates a virtual operational point with complete extensions when no infrastructure match is found.
  */
 const createVirtualOp = (
-  opRef: OperationalPointReference,
+  opId: OperationalPointIdentifier,
   index: number,
   totalCount: number,
   position: number,
   weight: number,
   t: TFunction<'operational-studies'>
 ): PathProperties['operational_points'][0] => {
-  const virtualName = getVirtualOpName(opRef, index, totalCount, t);
+  const virtualName = getVirtualOpName(opId, index, totalCount, t);
   const virtualId = `virtual_op_${virtualName}`;
 
   return {
@@ -76,19 +75,14 @@ const createVirtualOp = (
     extensions: {
       identifier: {
         name: virtualName,
-        uic: ('uic' in opRef.operational_point && opRef.operational_point.uic) || 0,
+        uic: ('uic' in opId && opId.uic) || 0,
       },
       sncf: {
-        ch:
-          ('secondary_code' in opRef.operational_point && opRef.operational_point.secondary_code) ||
-          '',
+        ch: ('secondary_code' in opId && opId.secondary_code) || '',
         ch_long_label: '',
         ch_short_label: '',
-        ci:
-          'uic' in opRef.operational_point && opRef.operational_point.uic
-            ? Number(formatUicToCi(opRef.operational_point.uic))
-            : 0,
-        trigram: ('trigram' in opRef.operational_point && opRef.operational_point.trigram) || '',
+        ci: 'uic' in opId && opId.uic ? Number(formatUicToCi(opId.uic)) : 0,
+        trigram: ('trigram' in opId && opId.trigram) || '',
       },
     },
     part: { track: '', position: 0 },
@@ -268,7 +262,9 @@ const usePathProjection = (
       } else {
         // NOT MATCHED: Point doesn't exist in infrastructure (e.g., NGE point)
         // Create virtual point from the reference
-        normalizedOps.push(createVirtualOp(opRef, index, opRefs.length, position, weight, t));
+        normalizedOps.push(
+          createVirtualOp(opRef.operational_point, index, opRefs.length, position, weight, t)
+        );
       }
     });
 

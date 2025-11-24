@@ -38,7 +38,7 @@ const getStepLabels = (
       acc.push(
         !isOperationalPointReference(step.location)
           ? t('requestedPointUnknown')
-          : getInvalidStepLabel(step.location)
+          : getInvalidStepLabel(step.location.operational_point)
       );
       return acc;
     }
