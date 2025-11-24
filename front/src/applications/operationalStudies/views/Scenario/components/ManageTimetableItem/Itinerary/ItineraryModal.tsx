@@ -66,7 +66,6 @@ const ItineraryModal = ({
   const { pathStepsMetadataById } = usePathStepsMetadata(pathSteps);
   const { launchPathfindingV2, pathProperties, pathfindingError } = usePathfindingV2();
 
-  const isMapDisabled = window.matchMedia('(max-width: 1028px)').matches;
   const hasInvalidPathStep = Array.from(pathStepsMetadataById.values()).some(
     (metadata) => metadata.isInvalid
   );
@@ -231,21 +230,19 @@ const ItineraryModal = ({
           <Button label={t('next')} variant="Primary" size="medium" onClick={closeModal} />
         </div>
       </div>
-      {!isMapDisabled && (
-        <div className="itinerary-modal-map">
-          <ItineraryModalMap
-            pathSteps={pathSteps}
-            pathStepsMetadata={pathStepsMetadataById}
-            pathProperties={pathProperties}
-          >
-            <IncompatibleConstraints
-              geometry={pathProperties?.geometry}
-              pathLength={pathProperties?.length}
-              incompatibleConstraints={pathProperties?.incompatibleConstraints}
-            />
-          </ItineraryModalMap>
-        </div>
-      )}
+      <div className="itinerary-modal-map">
+        <ItineraryModalMap
+          pathSteps={pathSteps}
+          pathStepsMetadata={pathStepsMetadataById}
+          pathProperties={pathProperties}
+        >
+          <IncompatibleConstraints
+            geometry={pathProperties?.geometry}
+            pathLength={pathProperties?.length}
+            incompatibleConstraints={pathProperties?.incompatibleConstraints}
+          />
+        </ItineraryModalMap>
+      </div>
     </dialog>
   );
 };
