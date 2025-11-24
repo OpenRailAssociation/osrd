@@ -197,3 +197,52 @@ fun Collection<Distance>.sumDistances(): Distance {
 fun <T> Collection<Offset<T>>.sumOffsets(): Offset<T> {
     return Offset(Distance(millimeters = sumOf { it.distance.millimeters }))
 }
+
+/**
+ * Type marker used to indicate that the offset is on a *directed* version of the underlying object.
+ *
+ * e.g. [Offset<Directed<TrackRange>>], compared to [Offset<TrackRange>], indicates that the offset
+ * should be paired with a direction. It doesn't contain the direction data directly.
+ *
+ * Generally used through the type alias [DirOffset<T>], though the [Offset<Directed<T>>] version
+ * can be useful to type methods that use the underlying type.
+ */
+sealed interface Directed<T>
+
+typealias DirOffset<T> = Offset<Directed<T>>
+
+/**
+ * Converts a directed offset into an undirected offset, using the object length and a direction.
+ */
+fun <T> DirOffset<T>.toUndirected(objectLength: Length<T>, direction: Direction): Offset<T> {
+    return when (direction) {
+        Direction.INCREASING -> this.cast()
+        Direction.DECREASING -> Offset(objectLength.distance - this.distance)
+    }
+}
+
+/**
+ * Converts an undirected offset into a directed offset, using the object length and a direction.
+ */
+fun <T> Offset<T>.toDirected(objectLength: Length<T>, direction: Direction): DirOffset<T> {
+    return when (direction) {
+        Direction.INCREASING -> this.cast()
+        Direction.DECREASING -> Offset(objectLength.distance - this.distance)
+    }
+}
+
+/**
+ * Forces the conversion from <T> to <Directed<T>>. A little more type-safe than just .cast().
+ * Should generally only be used for Lengths, though as a type alias this isn't type-checked.
+ */
+fun <T> Length<T>.forceDirected(): DirOffset<T> {
+    return cast()
+}
+
+/**
+ * Forces the conversion from <Directed<T>> to <T>. A little more type-safe than just .cast().
+ * Should generally only be used for Lengths, though as a type alias this isn't type-checked.
+ */
+fun <T> Length<Directed<T>>.forceUndirected(): Offset<T> {
+    return cast()
+}
