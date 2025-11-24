@@ -349,6 +349,9 @@
 }
 
 @media (max-width: 1028px) {
+  .itinerary-modal-map {
+    display: none;
+  }
   .itinerary-modal-form {
     width: 100%;
   }
