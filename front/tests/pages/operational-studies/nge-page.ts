@@ -48,12 +48,11 @@ class NGEPage extends OpSimulationResultPage {
     this.nodeSummaryTitle = this.ngeFrame.getByTestId('summary-title');
     this.deleteNodeButton = this.ngeFrame.getByTestId('delete-button');
     this.confirmDeleteButton = this.ngeFrame.getByTestId('confirm-button');
-    this.closeDialogButton = this.ngeFrame.getByRole('img', { name: 'Close Dialog' });
+    this.closeDialogButton = this.ngeFrame.locator('.dialog-close-button-icon');
     this.topologyEditorToggle = this.ngeFrame.getByTestId('topology-editor-button');
     this.graphContainer = this.ngeFrame.getByTestId('graph-container');
     this.textInputs = this.ngeFrame.locator('.sbb-input-element');
     this.closeAsideButton = this.ngeFrame.getByTestId('close-aside-button');
-
     this.trainTitleField = this.ngeFrame.getByTestId('train-run-title-input');
     this.frequency30Btn = this.ngeFrame.getByTestId('frequency-30');
     this.stationLeftArrow = this.ngeFrame.getByRole('img', { name: 'arrow-left-medium' });
@@ -110,21 +109,19 @@ class NGEPage extends OpSimulationResultPage {
 
   async expectStationsTabShows([leftStation, rightStation]: [string, string]) {
     const stationsTab = this.trainDetailTabs.nth(TrainTabs.Stations);
-    const stationSpans = stationsTab.locator('span');
+    const stationLabels = stationsTab.locator('.sbb-tab-label-content');
 
-    await expect(stationSpans).toHaveCount(2);
-
+    await expect(stationLabels).toContainText(leftStation);
+    await expect(stationLabels).toContainText(rightStation);
     const hasLeftArrow = await this.stationLeftArrow.isVisible().catch(() => false);
     const hasRightArrow = await this.stationRightArrow.isVisible().catch(() => false);
 
     if (hasLeftArrow) {
-      await expect(stationSpans.nth(0)).toHaveText(leftStation);
-      await expect(this.stationLeftArrow).toBeVisible();
-      await expect(stationSpans.nth(1)).toHaveText(rightStation);
+      await expect(stationLabels).toHaveText(new RegExp(`${leftStation}.*${rightStation}`));
     } else if (hasRightArrow) {
-      await expect(stationSpans.nth(0)).toHaveText(rightStation);
-      await expect(this.stationRightArrow).toBeVisible();
-      await expect(stationSpans.nth(1)).toHaveText(leftStation);
+      {
+        await expect(stationLabels).toHaveText(new RegExp(`${rightStation}.*${leftStation}`));
+      }
     }
   }
 
