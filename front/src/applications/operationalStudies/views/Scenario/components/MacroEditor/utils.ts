@@ -4,7 +4,6 @@ import { omit } from 'lodash';
 import {
   osrdEditoastApi,
   type MacroNodeResponse,
-  type PathItemLocation,
   type SearchResultItemOperationalPoint,
   type SubCategory,
   type TrainCategory,
@@ -36,37 +35,6 @@ import {
 import type MacroEditorState from './MacroEditorState';
 import type { NodeIndexed } from './MacroEditorState';
 import type { TrainrunCategory, TrainrunFrequency, TrainrunTimeCategory } from '../NGE/types';
-
-export const findOpFromPathItem = (
-  pathItem: PathItemLocation,
-  searchResults: SearchResultItemOperationalPoint[]
-) => {
-  // When a path item doesn't specify a secondary code, mimick what editoast
-  // does: pick 'BV', '00' or an OP without a ch.
-  let chs: (string | null)[] = [];
-  if ('operational_point' in pathItem) {
-    if ('uic' in pathItem.operational_point || 'trigram' in pathItem.operational_point) {
-      if (pathItem.operational_point.secondary_code) {
-        chs = [pathItem.operational_point.secondary_code];
-      } else {
-        chs = ['BV', '00', null];
-      }
-    }
-  }
-
-  return searchResults.find((searchResult) => {
-    if ('track' in pathItem) return false;
-    if ('uic' in pathItem.operational_point) {
-      return searchResult.uic === pathItem.operational_point.uic && chs.includes(searchResult.ch);
-    }
-    if ('trigram' in pathItem.operational_point) {
-      return (
-        searchResult.trigram === pathItem.operational_point.trigram && chs.includes(searchResult.ch)
-      );
-    }
-    return searchResult.obj_id === pathItem.operational_point.operational_point;
-  });
-};
 
 export const createMacroNode = async (
   state: MacroEditorState,
