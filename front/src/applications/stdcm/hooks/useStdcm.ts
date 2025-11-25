@@ -48,12 +48,15 @@ const useStdcm = ({
   const dateTimeLocale = useDateTimeLocale();
   const osrdconf = useSelector(getStdcmConf);
   const infraId = useSelector(getStdcmInfraID);
-  const requestPromise = useRef<ReturnType<typeof postTimetableByIdStdcm>[]>(null);
+  const requestPromise = useRef<ReturnType<typeof getTimetableStdcmGetAsyncResult>[]>(null);
   const isCancelledRef = useRef(false);
 
   const currentSimulationInputs = useStdcmForm();
 
-  const [postTimetableByIdStdcm] = osrdEditoastApi.endpoints.postTimetableByIdStdcm.useMutation();
+  const [postTimetableByIdStdcmAsync] =
+    osrdEditoastApi.endpoints.postTimetableByIdStdcmAsync.useMutation();
+  const [getTimetableStdcmGetAsyncResult] =
+    osrdEditoastApi.endpoints.getTimetableStdcmGetAsyncResult.useLazyQuery();
 
   const { data: stdcmRollingStock } =
     osrdEditoastApi.endpoints.getLightRollingStockByRollingStockId.useQuery(
@@ -164,8 +167,10 @@ const useStdcm = ({
       const payloadUpstream = adjustPayloadByDirection(payload, 'upstream');
       const payloadDownstream = adjustPayloadByDirection(payload, 'downstream');
 
-      const promiseUpstream = postTimetableByIdStdcm(payloadUpstream);
-      const promiseDownstream = postTimetableByIdStdcm(payloadDownstream);
+      const idUpstream = (await postTimetableByIdStdcmAsync(payloadUpstream).unwrap()) as string;
+      const idDownstream = (await postTimetableByIdStdcmAsync(payloadUpstream).unwrap()) as string;
+      const promiseUpstream = getTimetableStdcmGetAsyncResult({ id: idUpstream });
+      const promiseDownstream = getTimetableStdcmGetAsyncResult({ id: idDownstream });
       requestPromise.current = [promiseUpstream, promiseDownstream];
 
       // Run two additional requests for alternative simulations
@@ -215,7 +220,9 @@ const useStdcm = ({
     const payload = formatStdcmPayload(validConfig);
 
     try {
-      const promise = postTimetableByIdStdcm(payload);
+      const id = (await postTimetableByIdStdcmAsync(payload).unwrap()) as string;
+      console.info(id);
+      const promise = getTimetableStdcmGetAsyncResult({ id });
       requestPromise.current = [promise];
 
       const response = await promise.unwrap();
