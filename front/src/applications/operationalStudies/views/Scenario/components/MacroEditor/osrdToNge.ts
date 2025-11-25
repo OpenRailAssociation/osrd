@@ -404,8 +404,7 @@ const getNgeTrainruns = (
 
 const createTimeLock = (time: Date, startTime: Date): TimeLockDto => ({
   time: time.getMinutes(),
-  // getTime() is in milliseconds, consecutiveTime is in minutes
-  consecutiveTime: (time.getTime() - startTime.getTime()) / (60 * 1000),
+  consecutiveTime: Duration.subtractDate(time, startTime).total('minute'),
   lock: false,
   warning: null,
   timeFormatter: null,
