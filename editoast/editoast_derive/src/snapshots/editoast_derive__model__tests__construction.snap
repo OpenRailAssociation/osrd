@@ -732,7 +732,7 @@ impl crate::prelude::RetrieveBatchUnchecked<(String)> for Document {
         name = "model:retrieve_batch_unchecked<Document>",
         skip_all,
         err,
-        fields(query_id)
+        fields(query_ids)
     )]
     async fn retrieve_batch_unchecked<
         I: std::iter::IntoIterator<Item = (String)> + Send,
@@ -777,7 +777,7 @@ impl crate::prelude::RetrieveBatchUnchecked<(String)> for Document {
         name = "model:retrieve_batch_with_key_unchecked<Document>",
         skip_all,
         err,
-        fields(query_id)
+        fields(query_ids)
     )]
     async fn retrieve_batch_with_key_unchecked<
         I: std::iter::IntoIterator<Item = (String)> + Send,
@@ -830,7 +830,7 @@ impl crate::prelude::RetrieveBatchUnchecked<(i64)> for Document {
         name = "model:retrieve_batch_unchecked<Document>",
         skip_all,
         err,
-        fields(query_id)
+        fields(query_ids)
     )]
     async fn retrieve_batch_unchecked<
         I: std::iter::IntoIterator<Item = (i64)> + Send,
@@ -875,7 +875,7 @@ impl crate::prelude::RetrieveBatchUnchecked<(i64)> for Document {
         name = "model:retrieve_batch_with_key_unchecked<Document>",
         skip_all,
         err,
-        fields(query_id)
+        fields(query_ids)
     )]
     async fn retrieve_batch_with_key_unchecked<
         I: std::iter::IntoIterator<Item = (i64)> + Send,
