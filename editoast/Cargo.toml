@@ -174,7 +174,6 @@ core_client = { workspace = true, features = ["mocking_client"] }
 core_task = { path = "./core_task" }
 dashmap.workspace = true
 database.workspace = true
-deadpool.workspace = true
 deadpool-redis.workspace = true
 derive_more.workspace = true
 diesel.workspace = true
@@ -190,7 +189,6 @@ futures.workspace = true
 futures-util.workspace = true
 geos.workspace = true
 headers = "0.4.1"
-hostname.workspace = true
 image = { version = "0.25.9", default-features = false, features = [
   "bmp",
   "gif",
@@ -204,13 +202,8 @@ itertools.workspace = true
 json-patch = { version = "4.1.0", default-features = false, features = [
   "utoipa",
 ] }
-lapin.workspace = true
 linkme.workspace = true
-mime = "0.3.17"
-mvt.workspace = true
-opentelemetry.workspace = true
 opentelemetry-otlp.workspace = true
-opentelemetry-semantic-conventions.workspace = true
 opentelemetry_sdk.workspace = true
 ordered-float.workspace = true
 osrdyne_client.workspace = true
@@ -219,7 +212,6 @@ petgraph = "0.8.2"
 postgis_diesel.workspace = true
 rand.workspace = true
 rangemap.workspace = true
-regex.workspace = true
 reqwest.workspace = true
 schemas.workspace = true
 search = { workspace = true }
@@ -231,7 +223,6 @@ sha1.workspace = true
 strum.workspace = true
 thiserror.workspace = true
 tokio.workspace = true
-tokio-util = { version = "0.7.16", features = ["io", "tracing"] }
 tower = "0.5.2"
 tower-http = { version = "0.6.6", features = [
   "cors",
@@ -241,7 +232,6 @@ tower-http = { version = "0.6.6", features = [
   "trace",
 ] }
 tracing.workspace = true
-tracing-opentelemetry.workspace = true
 tracing-subscriber.workspace = true
 uom.workspace = true
 url.workspace = true

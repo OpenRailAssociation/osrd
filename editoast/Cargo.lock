@@ -349,11 +349,9 @@ version = "0.1.0"
 dependencies = [
  "common",
  "derive_more",
- "editoast_derive",
  "fga",
  "fga_migrations",
  "futures 0.3.31",
- "itertools 0.14.0",
  "pretty_assertions",
  "serde",
  "stdext",
@@ -650,7 +648,6 @@ name = "cache"
 version = "0.1.0"
 dependencies = [
  "arcstr",
- "deadpool",
  "deadpool-redis",
  "futures 0.3.31",
  "lz4_flex",
@@ -834,12 +831,10 @@ name = "common"
 version = "0.1.0"
 dependencies = [
  "opentelemetry",
- "opentelemetry-semantic-conventions",
  "opentelemetry_sdk",
  "rangemap",
  "serde",
  "serde_json",
- "thiserror 2.0.17",
  "tracing",
  "tracing-opentelemetry",
  "tracing-subscriber",
@@ -921,12 +916,10 @@ checksum = "773648b94d0e5d620f64f280777445740e61fe701025087ec8b57f45c791888b"
 name = "core_client"
 version = "0.1.0"
 dependencies = [
- "approx",
  "chrono",
  "common",
  "core_client",
  "deadpool",
- "editoast_derive",
  "educe",
  "futures-util",
  "hostname",
@@ -1377,7 +1370,6 @@ dependencies = [
  "core_task",
  "dashmap",
  "database",
- "deadpool",
  "deadpool-redis",
  "derive_more",
  "diesel",
@@ -1393,18 +1385,12 @@ dependencies = [
  "futures-util",
  "geos",
  "headers",
- "hostname",
  "image",
  "inventory",
  "itertools 0.14.0",
  "json-patch",
- "lapin",
  "linkme",
- "mime",
- "mvt",
- "opentelemetry",
  "opentelemetry-otlp",
- "opentelemetry-semantic-conventions",
  "opentelemetry_sdk",
  "ordered-float",
  "osrdyne_client",
@@ -1414,7 +1400,6 @@ dependencies = [
  "pretty_assertions",
  "rand 0.9.2",
  "rangemap",
- "regex",
  "reqwest",
  "rstest",
  "schemas",
@@ -1429,11 +1414,9 @@ dependencies = [
  "tempfile",
  "thiserror 2.0.17",
  "tokio",
- "tokio-util",
  "tower",
  "tower-http",
  "tracing",
- "tracing-opentelemetry",
  "tracing-subscriber",
  "uom",
  "url",
@@ -4842,7 +4825,6 @@ dependencies = [
  "futures-sink",
  "pin-project-lite",
  "tokio",
- "tracing",
 ]
 
 [[package]]
