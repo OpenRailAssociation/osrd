@@ -6,7 +6,7 @@ import {
   type PostTrainScheduleOccupancyBlocksApiResponse,
   type PostPacedTrainProjectPathApiResponse,
   type PostPacedTrainOccupancyBlocksApiResponse,
-  type TrainPath,
+  type CoreTrainPath,
 } from 'common/api/osrdEditoastApi';
 import type { TimetableItemId } from 'reducers/osrdconf/types';
 import {
@@ -27,7 +27,7 @@ export type TrainTrackProjectionLazyLoaderOptions = Omit<
   TrainProjectionLazyLoaderOptions,
   'path'
 > & {
-  path: TrainPath;
+  path: CoreTrainPath;
 };
 
 export default class TrainTrackProjectionLazyLoader extends TrainProjectionLazyLoaderAbstract {

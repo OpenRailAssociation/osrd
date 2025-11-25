@@ -1,10 +1,12 @@
 import type {
-  IncompatibleConstraints as ApiIncompatibleConstraints,
-  IncompatibleOffsetRange,
-  IncompatibleOffsetRangeWithValue,
+  CoreIncompatibleConstraints as ApiIncompatibleConstraints,
+  CoreIncompatibleOffsetRange,
+  CoreIncompatibleOffsetRangeWithValue,
 } from 'common/api/osrdEditoastApi';
 
-export type IncompatibleConstraint = IncompatibleOffsetRange | IncompatibleOffsetRangeWithValue;
+export type IncompatibleConstraint =
+  | CoreIncompatibleOffsetRange
+  | CoreIncompatibleOffsetRangeWithValue;
 
 export type IncompatibleConstraintType = keyof ApiIncompatibleConstraints;
 

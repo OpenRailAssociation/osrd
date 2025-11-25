@@ -3,7 +3,7 @@ import { compact } from 'lodash';
 
 import type { PathPropertiesFormatted } from 'applications/operationalStudies/types';
 import type {
-  PathfindingResultSuccess,
+  CorePathfindingResultSuccess,
   RollingStock,
   TrainSchedule,
 } from 'common/api/osrdEditoastApi';
@@ -18,7 +18,7 @@ import { mmToKm, mToMm } from 'utils/physics';
 export const formatPowerRestrictionRanges = (
   powerRestrictions: NonNullable<TrainSchedule['power_restrictions']>,
   path: TrainSchedule['path'],
-  stepsPathPositions: PathfindingResultSuccess['path_item_positions']
+  stepsPathPositions: CorePathfindingResultSuccess['path_item_positions']
 ): LayerData<Omit<PowerRestrictionValues, 'handled'>>[] =>
   compact(
     powerRestrictions.map((powerRestriction) => {
@@ -81,7 +81,7 @@ const formatPowerRestrictionRangesWithHandled = ({
 }: {
   selectedTimetableItem: Pick<TimetableItem, 'path' | 'power_restrictions'>;
   selectedTrainRollingStock?: RollingStock;
-  pathfindingResult: PathfindingResultSuccess;
+  pathfindingResult: CorePathfindingResultSuccess;
   pathProperties: PathPropertiesFormatted;
 }) => {
   if (powerRestrictions && selectedTrainRollingStock) {

@@ -2,7 +2,7 @@ import cx from 'classnames';
 
 import type { PathPropertiesFormatted } from 'applications/operationalStudies/types';
 import type {
-  PathfindingResultSuccess,
+  CorePathfindingResultSuccess,
   SimulationResponseSuccess,
 } from 'common/api/osrdEditoastApi';
 import type { SimulationSummary } from 'modules/timetableItem/types';
@@ -18,7 +18,7 @@ type TimesStopsOutputProps = {
   isValid: boolean;
   selectedTrain?: Train;
   simulatedTrain?: SimulationResponseSuccess['final_output'];
-  simulatedPath?: PathfindingResultSuccess;
+  simulatedPath?: CorePathfindingResultSuccess;
   simulatedPathItemTimes?: Extract<SimulationSummary, { isValid: true }>['pathItemTimes'];
   operationalPointsOnPath?: PathPropertiesFormatted['operationalPoints'];
 };

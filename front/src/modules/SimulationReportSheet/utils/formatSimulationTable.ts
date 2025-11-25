@@ -3,7 +3,7 @@ import type { TFunction } from 'i18next';
 
 import type { OperationalPointWithTimeAndSpeed } from 'applications/operationalStudies/types';
 import type { StdcmSuccessResponse, StdcmResultsOperationalPoint } from 'applications/stdcm/types';
-import type { PathfindingResultSuccess } from 'common/api/osrdEditoastApi';
+import type { CorePathfindingResultSuccess } from 'common/api/osrdEditoastApi';
 import { timeToLocaleStringRounded } from 'utils/date';
 import { addDurationToDate, Duration } from 'utils/duration';
 import { kgToT } from 'utils/physics';
@@ -116,7 +116,7 @@ export const formatStdcmDataForSimulationTable = (
 
 export const formatOperationalStudiesDataForSimulationTable = (
   operationalPointsList: OperationalPointWithTimeAndSpeed[],
-  pathItemPositions: PathfindingResultSuccess['path_item_positions'],
+  pathItemPositions: CorePathfindingResultSuccess['path_item_positions'],
   rollingStock: { mass: number; name: string },
   t: TFunction<'stdcm'>,
   dateTimeLocale: Intl.Locale

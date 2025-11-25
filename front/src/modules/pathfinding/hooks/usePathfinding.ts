@@ -7,9 +7,9 @@ import { useSelector } from 'react-redux';
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import type { ManageTimetableItemPathProperties } from 'applications/operationalStudies/types';
 import type {
-  IncompatibleConstraints,
-  PathfindingInputError,
-  PathfindingResultSuccess,
+  CoreIncompatibleConstraints,
+  CorePathfindingInputError,
+  CorePathfindingResultSuccess,
   PostInfraByInfraIdPathPropertiesApiArg,
   RelatedOperationalPoint,
 } from 'common/api/osrdEditoastApi';
@@ -130,7 +130,10 @@ const usePathfinding = ({
 
   const handleInvalidPathItems = (
     steps: PathStep[],
-    invalidPathItems: Extract<PathfindingInputError, { error_type: 'invalid_path_items' }>['items']
+    invalidPathItems: Extract<
+      CorePathfindingInputError,
+      { error_type: 'invalid_path_items' }
+    >['items']
   ) => {
     const updatedPathSteps = steps.map((step, index) => ({
       ...step,
@@ -147,8 +150,8 @@ const usePathfinding = ({
 
   const populateStoreWithPathfinding = async (
     pathStepsInput: PathStep[],
-    pathResult: PathfindingResultSuccess,
-    incompatibleConstraints?: IncompatibleConstraints
+    pathResult: CorePathfindingResultSuccess,
+    incompatibleConstraints?: CoreIncompatibleConstraints
   ) => {
     const pathPropertiesParams: PostInfraByInfraIdPathPropertiesApiArg = {
       infraId,

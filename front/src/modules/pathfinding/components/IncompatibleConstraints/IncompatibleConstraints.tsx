@@ -12,7 +12,7 @@ import { useMap, type MapLayerMouseEvent } from 'react-map-gl/maplibre';
 
 import type {
   GeoJsonLineString,
-  IncompatibleConstraints as IncompatibleConstraintsType,
+  CoreIncompatibleConstraints as IncompatibleConstraintsType,
 } from 'common/api/osrdEditoastApi';
 import Collapsable from 'common/Collapsable';
 import { getMapMouseEventNearestFeature } from 'utils/mapHelper';

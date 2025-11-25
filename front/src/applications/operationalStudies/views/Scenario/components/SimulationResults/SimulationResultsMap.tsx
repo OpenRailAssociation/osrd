@@ -8,7 +8,7 @@ import captureMap from 'applications/operationalStudies/helpers/captureMap';
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import type { PathPropertiesFormatted } from 'applications/operationalStudies/types';
 import { MARKER_TYPE } from 'applications/operationalStudies/views/Scenario/components/ManageTimetableItem/ManageTimetableItemMap/ItineraryMarkers';
-import type { PathfindingResultSuccess } from 'common/api/osrdEditoastApi';
+import type { CorePathfindingResultSuccess } from 'common/api/osrdEditoastApi';
 import BaseMap from 'common/Map/BaseMap';
 import MapButtons from 'common/Map/Buttons/MapButtons';
 import MapMarkers, { type MapMarker } from 'common/Map/components/MapMarkers';
@@ -25,7 +25,7 @@ import { useAppDispatch } from 'store';
 const MAP_ID = 'simulation-result-map';
 
 type SimulationResultMapProps = {
-  pathfindingResult?: PathfindingResultSuccess;
+  pathfindingResult?: CorePathfindingResultSuccess;
   geometry?: PathPropertiesFormatted['geometry'];
   setMapCanvas?: (mapCanvas: string) => void;
 };
@@ -55,7 +55,7 @@ const SimulationResultMap = ({
     const getPathItemsCoordinates = async ({
       path,
       path_item_positions,
-    }: PathfindingResultSuccess) => {
+    }: CorePathfindingResultSuccess) => {
       const trackIds = path.track_section_ranges.map((range) => range.track_section);
       const tracks = await getTrackSectionsByIds(trackIds);
       const tracksLengthCumulativeSums = getTrackLengthCumulativeSums(path.track_section_ranges);

@@ -3955,7 +3955,7 @@ paths:
                       type: string
                       format: date-time
                     pathfinding_result:
-                      $ref: '#/components/schemas/PathfindingResultSuccess'
+                      $ref: '#/components/schemas/core.PathfindingResultSuccess'
                     simulation:
                       $ref: '#/components/schemas/SimulationResponseSuccess'
                     status:
@@ -4823,7 +4823,7 @@ paths:
                 path_track_ranges:
                   type: array
                   items:
-                    $ref: '#/components/schemas/CoreTrackRange'
+                    $ref: '#/components/schemas/core.TrackRange'
                 work_schedule_group_id:
                   type: integer
                   format: int64
@@ -5141,36 +5141,6 @@ components:
           description: |-
             JSON-Pointer value [RFC6901](https://tools.ietf.org/html/rfc6901) that references a location
             within the target document where the operation is performed.
-    CoreTrackRange:
-      type: object
-      description: |-
-        An oriented range on a track section.
-        `begin` is always less than `end`.
-      required:
-      - track_section
-      - begin
-      - end
-      - direction
-      properties:
-        begin:
-          type: integer
-          format: int64
-          description: The beginning of the range in mm.
-          minimum: 0
-        direction:
-          $ref: '#/components/schemas/Direction'
-          description: The direction of the range.
-        end:
-          type: integer
-          format: int64
-          description: The end of the range in mm.
-          minimum: 0
-        track_section:
-          oneOf:
-          - type: string
-            maxLength: 255
-            minLength: 1
-          description: The track section identifier.
     Curve:
       type: object
       required:
@@ -9177,42 +9147,6 @@ components:
         subject_id:
           type: integer
           format: int64
-    IncompatibleConstraints:
-      type: object
-      required:
-      - incompatible_electrification_ranges
-      - incompatible_gauge_ranges
-      - incompatible_signaling_system_ranges
-      properties:
-        incompatible_electrification_ranges:
-          type: array
-          items:
-            $ref: '#/components/schemas/IncompatibleOffsetRangeWithValue'
-        incompatible_gauge_ranges:
-          type: array
-          items:
-            $ref: '#/components/schemas/IncompatibleOffsetRange'
-        incompatible_signaling_system_ranges:
-          type: array
-          items:
-            $ref: '#/components/schemas/IncompatibleOffsetRangeWithValue'
-    IncompatibleOffsetRange:
-      type: object
-      required:
-      - range
-      properties:
-        range:
-          $ref: '#/components/schemas/OffsetRange'
-    IncompatibleOffsetRangeWithValue:
-      type: object
-      required:
-      - range
-      - value
-      properties:
-        range:
-          $ref: '#/components/schemas/OffsetRange'
-        value:
-          type: string
     Infra:
       type: object
       required:
@@ -10143,30 +10077,6 @@ components:
         document_key:
           type: integer
           format: int64
-    ObjectRange:
-      type: object
-      description: A range on a linear object (usually block or route)
-      required:
-      - id
-      - begin
-      - end
-      properties:
-        begin:
-          type: integer
-          format: int64
-          description: The beginning of the range in mm.
-          minimum: 0
-        end:
-          type: integer
-          format: int64
-          description: The end of the range in mm.
-          minimum: 0
-        id:
-          oneOf:
-          - type: string
-            maxLength: 255
-            minLength: 1
-          description: The object identifier.
     ObjectRef:
       type: object
       required:
@@ -10214,7 +10124,7 @@ components:
           type: integer
           format: int64
         path:
-          $ref: '#/components/schemas/TrainPath'
+          $ref: '#/components/schemas/core.TrainPath'
     OccupancyBlocksPacedTrainResult:
       type: object
       description: Occupancy blocks output is described by blocks (signal updates)
@@ -10236,20 +10146,6 @@ components:
           items:
             $ref: '#/components/schemas/SignalUpdate'
           description: Paced train
-    OffsetRange:
-      type: object
-      required:
-      - start
-      - end
-      properties:
-        end:
-          type: integer
-          format: int64
-          minimum: 0
-        start:
-          type: integer
-          format: int64
-          minimum: 0
     Operation:
       oneOf:
       - allOf:
@@ -10978,12 +10874,12 @@ components:
         track_section_ranges:
           type: array
           items:
-            $ref: '#/components/schemas/CoreTrackRange'
+            $ref: '#/components/schemas/core.TrackRange'
           description: List of track sections
     PathfindingFailure:
       oneOf:
       - allOf:
-        - $ref: '#/components/schemas/PathfindingInputError'
+        - $ref: '#/components/schemas/core.PathfindingInputError'
         - type: object
           required:
           - failed_status
@@ -10993,7 +10889,7 @@ components:
               enum:
               - pathfinding_input_error
       - allOf:
-        - $ref: '#/components/schemas/PathfindingNotFound'
+        - $ref: '#/components/schemas/core.PathfindingNotFound'
         - type: object
           required:
           - failed_status
@@ -11063,57 +10959,6 @@ components:
           - string
           - 'null'
           description: Speed limit tag, used to estimate the travel time
-    PathfindingInputError:
-      oneOf:
-      - type: object
-        required:
-        - items
-        - error_type
-        properties:
-          error_type:
-            type: string
-            enum:
-            - invalid_path_items
-          items:
-            type: array
-            items:
-              type: object
-              required:
-              - index
-              - path_item
-              properties:
-                index:
-                  type: integer
-                  minimum: 0
-                path_item:
-                  $ref: '#/components/schemas/PathItemLocation'
-      - type: object
-        required:
-        - error_type
-        properties:
-          error_type:
-            type: string
-            enum:
-            - not_enough_path_items
-      - type: object
-        required:
-        - rolling_stock_name
-        - error_type
-        properties:
-          error_type:
-            type: string
-            enum:
-            - rolling_stock_not_found
-          rolling_stock_name:
-            type: string
-      - type: object
-        required:
-        - error_type
-        properties:
-          error_type:
-            type: string
-            enum:
-            - zero_length_path
     PathfindingItem:
       type: object
       required:
@@ -11153,66 +10998,6 @@ components:
                 description: The train may arrive up to this duration before the expected arrival time
                 minimum: 0
           description: Time at which the train should arrive at the location, if specified
-    PathfindingNotFound:
-      oneOf:
-      - type: object
-        required:
-        - track_section_ranges
-        - length
-        - error_type
-        properties:
-          error_type:
-            type: string
-            enum:
-            - not_found_in_blocks
-          length:
-            type: integer
-            format: int64
-            minimum: 0
-          track_section_ranges:
-            type: array
-            items:
-              $ref: '#/components/schemas/CoreTrackRange'
-      - type: object
-        required:
-        - track_section_ranges
-        - length
-        - error_type
-        properties:
-          error_type:
-            type: string
-            enum:
-            - not_found_in_routes
-          length:
-            type: integer
-            format: int64
-            minimum: 0
-          track_section_ranges:
-            type: array
-            items:
-              $ref: '#/components/schemas/CoreTrackRange'
-      - type: object
-        required:
-        - error_type
-        properties:
-          error_type:
-            type: string
-            enum:
-            - not_found_in_tracks
-      - type: object
-        required:
-        - relaxed_constraints_path
-        - incompatible_constraints
-        - error_type
-        properties:
-          error_type:
-            type: string
-            enum:
-            - incompatible_constraints
-          incompatible_constraints:
-            $ref: '#/components/schemas/IncompatibleConstraints'
-          relaxed_constraints_path:
-            $ref: '#/components/schemas/PathfindingResultSuccess'
     PathfindingOutput:
       type: object
       required:
@@ -11243,7 +11028,7 @@ components:
     PathfindingResult:
       oneOf:
       - allOf:
-        - $ref: '#/components/schemas/PathfindingResultSuccess'
+        - $ref: '#/components/schemas/core.PathfindingResultSuccess'
         - type: object
           required:
           - status
@@ -11262,31 +11047,6 @@ components:
               type: string
               enum:
               - failure
-    PathfindingResultSuccess:
-      type: object
-      description: A successful pathfinding result. This is also used for STDCM response.
-      required:
-      - path
-      - length
-      - path_item_positions
-      properties:
-        length:
-          type: integer
-          format: int64
-          description: Length of the path in mm
-          minimum: 0
-        path:
-          $ref: '#/components/schemas/TrainPath'
-          description: Full description of the path data
-        path_item_positions:
-          type: array
-          items:
-            type: integer
-            format: int64
-            minimum: 0
-          description: |-
-            The path offset in mm of each path item given as input of the pathfinding
-            The first value is always `0` (beginning of the path) and the last one is always equal to the `length` of the path in mm
     PathfindingTrackLocationInput:
       type: object
       required:
@@ -13409,7 +13169,7 @@ components:
             description: Travel time in ms
             minimum: 0
       - allOf:
-        - $ref: '#/components/schemas/PathfindingNotFound'
+        - $ref: '#/components/schemas/core.PathfindingNotFound'
           description: Pathfinding not found
         - type: object
           required:
@@ -13445,7 +13205,7 @@ components:
             enum:
             - simulation_failed
       - allOf:
-        - $ref: '#/components/schemas/PathfindingInputError'
+        - $ref: '#/components/schemas/core.PathfindingInputError'
           description: InputError
         - type: object
           required:
@@ -13844,7 +13604,7 @@ components:
               track_ranges:
                 type: array
                 items:
-                  $ref: '#/components/schemas/CoreTrackRange'
+                  $ref: '#/components/schemas/core.TrackRange'
                 description: Track ranges on which the speed limitation applies
           description: List of applicable temporary speed limits between the train departure and arrival
         time_gap_after:
@@ -14793,31 +14553,6 @@ components:
       properties:
         value:
           type: string
-    TrainPath:
-      type: object
-      description: |-
-        A valid train path, as returned from the pathfinding.
-        Can be used as-is as input for other endpoints.
-      required:
-      - blocks
-      - routes
-      - track_section_ranges
-      properties:
-        blocks:
-          type: array
-          items:
-            $ref: '#/components/schemas/ObjectRange'
-          description: Block ranges, in order.
-        routes:
-          type: array
-          items:
-            $ref: '#/components/schemas/ObjectRange'
-          description: Route ranges, in order.
-        track_section_ranges:
-          type: array
-          items:
-            $ref: '#/components/schemas/CoreTrackRange'
-          description: Track section ranges, in order.
     TrainRequirementsById:
       type: object
       required:
@@ -15079,3 +14814,268 @@ components:
           minimum: 0
         zone:
           type: string
+    core.IncompatibleConstraints:
+      type: object
+      required:
+      - incompatible_electrification_ranges
+      - incompatible_gauge_ranges
+      - incompatible_signaling_system_ranges
+      properties:
+        incompatible_electrification_ranges:
+          type: array
+          items:
+            $ref: '#/components/schemas/core.IncompatibleOffsetRangeWithValue'
+        incompatible_gauge_ranges:
+          type: array
+          items:
+            $ref: '#/components/schemas/core.IncompatibleOffsetRange'
+        incompatible_signaling_system_ranges:
+          type: array
+          items:
+            $ref: '#/components/schemas/core.IncompatibleOffsetRangeWithValue'
+    core.IncompatibleOffsetRange:
+      type: object
+      required:
+      - range
+      properties:
+        range:
+          $ref: '#/components/schemas/core.OffsetRange'
+    core.IncompatibleOffsetRangeWithValue:
+      type: object
+      required:
+      - range
+      - value
+      properties:
+        range:
+          $ref: '#/components/schemas/core.OffsetRange'
+        value:
+          type: string
+    core.ObjectRange:
+      type: object
+      description: A range on a linear object (usually block or route)
+      required:
+      - id
+      - begin
+      - end
+      properties:
+        begin:
+          type: integer
+          format: int64
+          description: The beginning of the range in mm.
+          minimum: 0
+        end:
+          type: integer
+          format: int64
+          description: The end of the range in mm.
+          minimum: 0
+        id:
+          oneOf:
+          - type: string
+            maxLength: 255
+            minLength: 1
+          description: The object identifier.
+    core.OffsetRange:
+      type: object
+      required:
+      - start
+      - end
+      properties:
+        end:
+          type: integer
+          format: int64
+          minimum: 0
+        start:
+          type: integer
+          format: int64
+          minimum: 0
+    core.PathfindingInputError:
+      oneOf:
+      - type: object
+        required:
+        - items
+        - error_type
+        properties:
+          error_type:
+            type: string
+            enum:
+            - invalid_path_items
+          items:
+            type: array
+            items:
+              type: object
+              required:
+              - index
+              - path_item
+              properties:
+                index:
+                  type: integer
+                  minimum: 0
+                path_item:
+                  $ref: '#/components/schemas/PathItemLocation'
+      - type: object
+        required:
+        - error_type
+        properties:
+          error_type:
+            type: string
+            enum:
+            - not_enough_path_items
+      - type: object
+        required:
+        - rolling_stock_name
+        - error_type
+        properties:
+          error_type:
+            type: string
+            enum:
+            - rolling_stock_not_found
+          rolling_stock_name:
+            type: string
+      - type: object
+        required:
+        - error_type
+        properties:
+          error_type:
+            type: string
+            enum:
+            - zero_length_path
+    core.PathfindingNotFound:
+      oneOf:
+      - type: object
+        required:
+        - track_section_ranges
+        - length
+        - error_type
+        properties:
+          error_type:
+            type: string
+            enum:
+            - not_found_in_blocks
+          length:
+            type: integer
+            format: int64
+            minimum: 0
+          track_section_ranges:
+            type: array
+            items:
+              $ref: '#/components/schemas/core.TrackRange'
+      - type: object
+        required:
+        - track_section_ranges
+        - length
+        - error_type
+        properties:
+          error_type:
+            type: string
+            enum:
+            - not_found_in_routes
+          length:
+            type: integer
+            format: int64
+            minimum: 0
+          track_section_ranges:
+            type: array
+            items:
+              $ref: '#/components/schemas/core.TrackRange'
+      - type: object
+        required:
+        - error_type
+        properties:
+          error_type:
+            type: string
+            enum:
+            - not_found_in_tracks
+      - type: object
+        required:
+        - relaxed_constraints_path
+        - incompatible_constraints
+        - error_type
+        properties:
+          error_type:
+            type: string
+            enum:
+            - incompatible_constraints
+          incompatible_constraints:
+            $ref: '#/components/schemas/core.IncompatibleConstraints'
+          relaxed_constraints_path:
+            $ref: '#/components/schemas/core.PathfindingResultSuccess'
+    core.PathfindingResultSuccess:
+      type: object
+      description: A successful pathfinding result. This is also used for STDCM response.
+      required:
+      - path
+      - length
+      - path_item_positions
+      properties:
+        length:
+          type: integer
+          format: int64
+          description: Length of the path in mm
+          minimum: 0
+        path:
+          $ref: '#/components/schemas/core.TrainPath'
+          description: Full description of the path data
+        path_item_positions:
+          type: array
+          items:
+            type: integer
+            format: int64
+            minimum: 0
+          description: |-
+            The path offset in mm of each path item given as input of the pathfinding
+            The first value is always `0` (beginning of the path) and the last one is always equal to the `length` of the path in mm
+    core.TrackRange:
+      type: object
+      description: |-
+        An oriented range on a track section.
+        `begin` is always less than `end`.
+      required:
+      - track_section
+      - begin
+      - end
+      - direction
+      properties:
+        begin:
+          type: integer
+          format: int64
+          description: The beginning of the range in mm.
+          minimum: 0
+        direction:
+          $ref: '#/components/schemas/Direction'
+          description: The direction of the range.
+        end:
+          type: integer
+          format: int64
+          description: The end of the range in mm.
+          minimum: 0
+        track_section:
+          oneOf:
+          - type: string
+            maxLength: 255
+            minLength: 1
+          description: The track section identifier.
+    core.TrainPath:
+      type: object
+      description: |-
+        A valid train path, as returned from the pathfinding.
+        Can be used as-is as input for other endpoints.
+      required:
+      - blocks
+      - routes
+      - track_section_ranges
+      properties:
+        blocks:
+          type: array
+          items:
+            $ref: '#/components/schemas/core.ObjectRange'
+          description: Block ranges, in order.
+        routes:
+          type: array
+          items:
+            $ref: '#/components/schemas/core.ObjectRange'
+          description: Route ranges, in order.
+        track_section_ranges:
+          type: array
+          items:
+            $ref: '#/components/schemas/core.TrackRange'
+          description: Track section ranges, in order.

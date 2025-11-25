@@ -4,14 +4,14 @@ import type {
   Conflict,
   ConflictRequirement,
   PathProperties,
-  PathfindingResultSuccess,
+  CorePathfindingResultSuccess,
 } from 'common/api/osrdEditoastApi';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 
 const useProjectedConflicts = (
   infraId: number,
   conflicts: Conflict[],
-  path: PathfindingResultSuccess | undefined
+  path: CorePathfindingResultSuccess | undefined
 ) => {
   const [postPathProperties] =
     osrdEditoastApi.endpoints.postInfraByInfraIdPathProperties.useLazyQuery();
@@ -20,7 +20,7 @@ const useProjectedConflicts = (
   useEffect(() => {
     const fetchProjectedZones = async ({
       path: { track_section_ranges },
-    }: PathfindingResultSuccess) => {
+    }: CorePathfindingResultSuccess) => {
       const { zones } = await postPathProperties({
         infraId,
         pathPropertiesInput: {

@@ -4,8 +4,8 @@ import type {
   TrainCategory,
   LightRollingStockWithLiveries,
   PacedTrainException,
-  PathfindingInputError,
-  PathfindingNotFound,
+  CorePathfindingInputError,
+  CorePathfindingNotFound,
   ReceptionSignal,
   SimulationSummaryResult,
   TrainScheduleResponse,
@@ -76,8 +76,8 @@ export type TimetableItemWithSummaries = Omit<
 
 export type InvalidReason =
   | Extract<SimulationSummaryResult['status'], 'pathfinding_failure' | 'simulation_failed'>
-  | PathfindingNotFound['error_type']
-  | PathfindingInputError['error_type'];
+  | CorePathfindingNotFound['error_type']
+  | CorePathfindingInputError['error_type'];
 
 export type TrainScheduleWithDetails = TimetableItemWithSummaries & {
   id: TrainScheduleId;
