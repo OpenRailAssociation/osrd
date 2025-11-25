@@ -1,13 +1,27 @@
 import type { TFunction } from 'i18next';
 
-import { type StdcmResultsOperationalPoint, StdcmStopTypes } from 'applications/stdcm/types';
+import {
+  type SimilarTrainWithSecondaryCode,
+  type StdcmResultsOperationalPoint,
+  type StdcmSimulationInputs,
+  StdcmStopTypes,
+} from 'applications/stdcm/types';
 import type { SimulationResponseSuccess } from 'common/api/osrdEditoastApi';
+import type { RequestedStep, StepType } from 'common/api/osrdRailwayManagerApi';
 import { matchPathStepAndOp } from 'modules/pathfinding/utils';
 import { interpolateValue } from 'modules/simulationResult/helpers/utils';
 import type { SuggestedOP } from 'modules/timetableItem/types';
 import type { StdcmPathStep } from 'reducers/osrdconf/types';
 import { Duration } from 'utils/duration';
 import { capitalizeFirstLetter } from 'utils/strings';
+
+export const MAX_TOLERANCE = new Duration({ minutes: 240 });
+const STOP_TYPE_MAPPING: Record<StdcmStopTypes, StepType> = {
+  [StdcmStopTypes.PASSAGE_TIME]: 'VIA',
+  [StdcmStopTypes.DRIVER_SWITCH]: 'DRIVER_SWITCH',
+  [StdcmStopTypes.SERVICE_STOP]: 'STOP',
+  [StdcmStopTypes.OVERTAKE]: 'VIA',
+};
 
 function generateRandomString(length: number): string {
   return Array.from({ length }, () => Math.floor(Math.random() * 10)).join('');
@@ -338,3 +352,76 @@ export const getStopType = (stopType: StdcmStopTypes | undefined, t: TFunction<'
   !stopType
     ? t('reportSheet.serviceStop')
     : capitalizeFirstLetter(t(`trainPath.stopType.${stopType}`));
+
+// Maps Stdcm path steps to the Step payload expected by the Railway Manager API.
+export const transformStepsToApiFormat = (
+  steps: StdcmPathStep[],
+  beforeTolerance: Duration,
+  afterTolerance: Duration
+): RequestedStep[] =>
+  steps.map((step) => {
+    const baseStep: RequestedStep = {
+      duration: 0,
+      location: {
+        uic: step.location!.operational_point.uic,
+        secondary_code: step.location?.operational_point.secondary_code || '',
+      },
+    };
+
+    if (step.isVia) {
+      return {
+        ...baseStep,
+        duration: step.stopFor?.ms || 0,
+        type: STOP_TYPE_MAPPING[step.stopType],
+      };
+    }
+    const timingData =
+      step.arrivalType === 'preciseTime' && step.arrival
+        ? {
+            arrival_time: new Date(step.arrival).toISOString(),
+            arrival_time_tolerance_before: beforeTolerance.ms,
+            arrival_time_tolerance_after: afterTolerance.ms,
+          }
+        : undefined;
+
+    return {
+      ...baseStep,
+      duration: 0,
+      timing_data: timingData,
+    };
+  });
+
+export const createSimilarTrainPayload = (
+  similarTrains: SimilarTrainWithSecondaryCode[],
+  locale: Intl.Locale
+) => {
+  if (!similarTrains?.[0]?.train_name) return null;
+
+  return {
+    path_date: similarTrains[0].start_time
+      ? new Date(similarTrains[0].start_time).toLocaleDateString(locale)
+      : new Date().toLocaleDateString(locale),
+    name: similarTrains[0].train_name,
+  };
+};
+
+export const createLinkedTrainPayload = (linkedTrains: StdcmSimulationInputs['linkedTrains']) => {
+  if (linkedTrains?.anteriorTrain) {
+    return {
+      type: 'anterior' as const,
+      name: linkedTrains.anteriorTrain.trainName,
+    };
+  }
+
+  if (linkedTrains?.posteriorTrain) {
+    return {
+      type: 'posterior' as const,
+      name: linkedTrains.posteriorTrain.trainName,
+    };
+  }
+
+  return null;
+};
+
+export const validateTolerance = (num: Duration): boolean =>
+  !isNaN(num.ms) && num >= Duration.zero && num <= MAX_TOLERANCE;

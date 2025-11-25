@@ -98,7 +98,7 @@ const StdcmOperationalPoint = ({
         .reduce<CIOption[]>((acc, p) => {
           const newObject = {
             label: [p.trigram, p.name].join(' '),
-            operational_point: { trigram: p.trigram, secondary_code: p.ch },
+            operational_point: { uic: p.uic, trigram: p.trigram, secondary_code: p.ch },
             name: p.name,
             coordinates: p.geographic.coordinates as [number, number],
           };
@@ -132,6 +132,7 @@ const StdcmOperationalPoint = ({
             location: {
               operational_point: {
                 trigram: location.operational_point.trigram,
+                uic: location.operational_point.uic,
                 secondary_code: selectedChCode.id,
               },
               name: location.name,
