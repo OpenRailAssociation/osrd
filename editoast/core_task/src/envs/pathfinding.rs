@@ -75,7 +75,9 @@ where
                        data,
                    }| {
                 if let Some(tx) = ready_trains_tx.as_ref() {
-                    let trains = runner.input_train_set(&input).clone();
+                    let trains = runner
+                        .input_train_set(&input)
+                        .expect("input provided by the Runner should be valid");
                     tx.unbounded_send(trains).ok();
                 }
                 paths.insert(input, Poll::Ready(data.map(Arc::new)));
@@ -107,7 +109,9 @@ where
                       correlation_key: input,
                       data: path,
                   }| {
-                let trains = runner.input_train_set(&input).clone();
+                let trains = runner
+                    .input_train_set(&input)
+                    .expect("input provided by the Runner should be valid");
                 Correlated::new(trains, path)
             },
         )
@@ -274,11 +278,8 @@ where
         }
     }
 
-    pub(in crate::envs) fn input_train_set(&self, input: &Input) -> TrainSet<Train> {
-        self.input_index
-            .get(input)
-            .expect("Runner::new invariant")
-            .clone()
+    pub(in crate::envs) fn input_train_set(&self, input: &Input) -> Option<TrainSet<Train>> {
+        self.input_index.get(input).as_deref().cloned()
     }
 
     fn iter_inputs(&self) -> impl Iterator<Item = Input> {
