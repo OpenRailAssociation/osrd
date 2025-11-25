@@ -61,14 +61,13 @@ where
     pub fn run(
         self,
         vkconn: Arc<Mutex<cache::Connection>>,
-        trains: TrainSet<Train>,
         ready_trains_tx: Option<futures::channel::mpsc::UnboundedSender<TrainSet<Train>>>,
     ) -> PathfindingRun<Train> {
         use stream::StreamExt as _;
         let runner = Arc::new(Runner::new(self));
         let run = PathfindingRun::new(&runner);
         let paths = run.paths.clone();
-        tokio::spawn(runner.clone().stream(vkconn, trains).fold(
+        tokio::spawn(runner.clone().stream(vkconn).fold(
             (paths, runner, ready_trains_tx),
             async |(paths, runner, ready_trains_tx),
                    Correlated {
@@ -95,7 +94,6 @@ where
     pub fn into_stream(
         self,
         vkconn: Arc<Mutex<cache::Connection>>,
-        trains: TrainSet<Train>,
     ) -> impl stream::Stream<
         Item = Correlated<
             TrainSet<Train>,
@@ -104,7 +102,7 @@ where
     > {
         use stream::StreamExt as _;
         let runner = Arc::new(Runner::new(self));
-        runner.clone().stream(vkconn, trains).map(
+        runner.clone().stream(vkconn).map(
             move |Correlated {
                       correlation_key: input,
                       data: path,
@@ -113,10 +111,6 @@ where
                 Correlated::new(trains, path)
             },
         )
-    }
-
-    pub fn all_trains(&self) -> TrainSet<Train> {
-        self.inputs.all_trains()
     }
 }
 
@@ -226,15 +220,13 @@ impl<Train> PathfindingEnvInputs<Train>
 where
     Train: Clone + Hash + Eq + Send + Sync + 'static,
 {
-    /// Returns all trains in the environment for which all needed information is configured
-    pub fn all_trains(&self) -> TrainSet<Train> {
-        self.consists
-            .keys()
-            .collect::<TrainSet<_>>()
-            .intersection(&self.constraints.keys().collect())
-            .copied()
-            .cloned() // not an error, it's an &&Train originally
-            .collect()
+    fn iter(&self) -> impl Iterator<Item = Correlated<Train, Input>> {
+        self.consists.keys().map(|train| {
+            let pf_key = self
+                .train_input(train)
+                .expect("PathfindingEnv::extend invariant");
+            Correlated::new(train.clone(), pf_key)
+        })
     }
 
     pub(in crate::envs) fn train_input(&self, train: &Train) -> Option<Input> {
@@ -268,13 +260,11 @@ where
 {
     pub(in crate::envs) fn new(PathfindingEnv { core_env, inputs }: PathfindingEnv<Train>) -> Self {
         let input_index = DashMap::<Input, TrainSet<Train>>::new();
-        for train in inputs.all_trains() {
-            let consist = inputs.consists.get(&train).expect("all_trains invariant");
-            let constraints = inputs
-                .constraints
-                .get(&train)
-                .expect("all_trains invariant");
-            let input = Input(consist.clone(), constraints.clone());
+        for Correlated {
+            correlation_key: train,
+            data: input,
+        } in inputs.iter()
+        {
             input_index.entry(input).or_default().insert(train);
         }
         Self {
@@ -298,7 +288,6 @@ where
     pub(in crate::envs) fn stream(
         self: Arc<Self>,
         vkconn: Arc<Mutex<cache::Connection>>,
-        trains: TrainSet<Train>,
     ) -> impl stream::Stream<
         Item = Correlated<
             Input,
@@ -307,16 +296,18 @@ where
     > {
         use crate::TaskStreamExt as _;
 
-        let requests = trains
+        let requests = self
+            .pathfinding_inputs
             .iter()
-            .map(|train| {
-                let input = self
-                    .pathfinding_inputs
-                    .train_input(train)
-                    .expect("train map should have been built by now");
-                let request = build_request(&self.core_env, &input);
-                Correlated::new(input, request)
-            })
+            .map(
+                |Correlated {
+                     correlation_key: _,
+                     data: input,
+                 }| {
+                    let request = build_request(&self.core_env, &input);
+                    Correlated::new(input, request)
+                },
+            )
             .collect_vec();
 
         stream::iter(requests).run(vkconn, self.core_env.client.clone())
@@ -516,12 +507,9 @@ mod tests {
             "",
         );
 
-        let all_trains = pfenv.all_trains();
-        assert_eq!(all_trains, TrainSet::from([1, 2]));
         let (tx, rx) = futures::channel::mpsc::unbounded();
         let pfrun = pfenv.run(
             Arc::new(Mutex::new(vk.get_connection().await.unwrap())),
-            all_trains,
             Some(tx),
         );
 
