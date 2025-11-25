@@ -1,0 +1,274 @@
+.send-to-railway-manager {
+  font-family: 'IBM Plex Sans', sans-serif;
+
+  h2 {
+    font-size: 1.5rem;
+    font-weight: 600;
+    padding: 24px 32px 20px;
+    box-shadow: 0 1px 0 0 rgba(0, 0, 0, 0.25);
+    background-color: var(--white);
+    margin-bottom: 1px;
+  }
+
+  /* override style from ui-core input */
+  .custom-field {
+    label {
+      margin-bottom: 0;
+    }
+  }
+
+  .modal-contents {
+    background-color: var(--ambientA10);
+    padding: 22px 32px 80px;
+
+    > p {
+      max-width: 629px;
+      color: var(--grey80);
+      margin-bottom: 16px;
+    }
+
+    section {
+      margin-bottom: 32px;
+
+      h3 {
+        font-family: 'IBM Plex Sans';
+        font-size: 1.125rem;
+        font-weight: 700;
+        margin-bottom: 16px;
+        text-wrap-mode: nowrap;
+      }
+    }
+  }
+
+  .convoy-details {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
+    background-color: var(--ambientA15);
+    padding: 8px;
+
+    .detail-item {
+      display: flex;
+      flex-direction: column;
+      padding: 8px;
+
+      span:first-child {
+        font-size: 0.875rem;
+        font-weight: 400;
+        color: var(--grey60);
+        white-space: nowrap;
+      }
+
+      span:last-child {
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--black100);
+      }
+    }
+  }
+
+  .route-and-simulation {
+    display: grid;
+    grid-template-columns: 4fr 1fr;
+    gap: 32px;
+
+    ul {
+      background-color: var(--ambientA15);
+      padding: 14px 16px 14px 40px;
+      min-height: 144px;
+      margin: 0;
+      color: var(--grey80);
+
+      li {
+        list-style-type: disc;
+      }
+    }
+
+    .simulation > div {
+      background-color: var(--ambientA15);
+      height: 144px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+  }
+
+  .pdf-download {
+    width: 82px;
+    height: 106px;
+    background: var(--white);
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+
+    .pdf-icon {
+      font-size: 1.25rem;
+      color: var(--gray);
+      margin-bottom: 8px;
+    }
+
+    .pdf-badge {
+      width: 48px;
+      height: 24px;
+      border-radius: 12px;
+      background-color: var(--primary5);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: var(--primary60);
+    }
+  }
+
+  .time-constraints-section {
+    .time-constraints {
+      display: flex;
+      align-items: center;
+      justify-content: space-evenly;
+      gap: 32px;
+      background-color: var(--ambientA15);
+      padding: 24px 16px;
+
+      > div {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+
+        > span {
+          font-size: 1.125rem;
+          font-weight: 400;
+          color: var(--grey50);
+          margin-top: -11px;
+        }
+      }
+
+      input {
+        width: 100px;
+      }
+    }
+
+    .constraint-time {
+      .constraint-time-label {
+        color: var(--grey80);
+        font-family: 'IBM Plex Sans';
+        font-size: 1rem;
+        font-weight: 600;
+        text-align: center;
+        line-height: 24px;
+        margin-bottom: 8px;
+      }
+
+      .constraint-time-value {
+        background-color: var(--white);
+        border-radius: 4px;
+        padding: 8px 16px;
+        min-width: 80px;
+        text-align: center;
+        font-family: 'IBM Plex Sans';
+        font-size: 1rem;
+        font-weight: 600;
+        color: var(--grey80);
+      }
+    }
+  }
+
+  .additional-info {
+    .info-fields {
+      display: flex;
+      justify-content: space-around;
+      background-color: var(--ambientA15);
+      padding: 16px 48px;
+
+      > div:not(.cs-code) {
+        flex: 1;
+      }
+
+      .comment {
+        .text-area-wrapper {
+          display: flex;
+          flex: 1;
+        }
+
+        textarea {
+          width: unset;
+          min-height: 100px;
+          flex: 1;
+          resize: vertical;
+        }
+      }
+
+      .cs-code {
+        input {
+          width: 85px;
+        }
+      }
+    }
+  }
+
+  .modal-actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 30px;
+    box-shadow: 0 -1px 0 0 rgba(0, 0, 0, 0.25);
+
+    p {
+      color: var(--warning60);
+      font-size: 1rem;
+      font-weight: 400;
+      margin: 0;
+    }
+
+    .actions {
+      display: flex;
+      gap: 16px;
+      white-space: nowrap;
+
+      div {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        font-size: 1rem;
+        .success-message {
+          color: var(--success60);
+        }
+        .success-icon {
+          color: var(--success30);
+        }
+      }
+    }
+  }
+
+  @keyframes wiggle {
+    0%,
+    100% {
+      transform: translateX(0);
+    }
+    20% {
+      transform: translateX(-5px);
+    }
+    40% {
+      transform: translateX(5px);
+    }
+    60% {
+      transform: translateX(-5px);
+    }
+    80% {
+      transform: translateX(5px);
+    }
+  }
+
+  .wiggle {
+    animation: wiggle 0.5s;
+  }
+}
+
+@media (min-width: 1280px) {
+  body .modal-dialog.modal-xl:has(.send-to-railway-manager) {
+    max-width: 1280px !important;
+  }
+}

@@ -324,22 +324,14 @@
 
         .get-simulation {
           display: flex;
-          justify-content: center;
+          flex-direction: row;
+          justify-content: space-between;
+          padding: 0 32px;
+          height: 104px;
           align-items: center;
-          flex-direction: column;
           background-color: rgb(255, 255, 255);
           border-bottom-left-radius: 6px;
           border-bottom-right-radius: 6px;
-          .download-simulation {
-            margin-top: 45px;
-            margin-bottom: 21px;
-          }
-          .gesico-text {
-            font-weight: 400;
-            font-size: 1rem;
-            color: rgb(49, 46, 43);
-            margin-bottom: 42px;
-          }
         }
 
         .start-new-query {

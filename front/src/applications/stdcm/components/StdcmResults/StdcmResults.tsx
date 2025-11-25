@@ -10,6 +10,7 @@ import { extractMarkersInfo, mergeSimilarTrainSegments } from 'applications/stdc
 import { addSecondaryCodesToSimilarTrains } from 'applications/stdcm/utils/addSecondaryCodesToSimilarTrains';
 import { hasResults } from 'applications/stdcm/utils/simulationOutputUtils';
 import { osrdEditoastApi, type PostSimilarTrainsApiResponse } from 'common/api/osrdEditoastApi';
+import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import DefaultBaseMap from 'common/Map/DefaultBaseMap';
 import {
   generateCodeNumber,
@@ -17,6 +18,7 @@ import {
 } from 'modules/SimulationReportSheet/utils/formatSimulationReportSheet';
 import { useMapSettings } from 'reducers/commonMap';
 import type { Viewport } from 'reducers/commonMap/types';
+import { getRailwayManagerInterfaceUrl } from 'reducers/main/mainSelector';
 import {
   getOperationalPointsIdFiltered,
   getRetainedSimulationIndex,
@@ -26,6 +28,7 @@ import {
 } from 'reducers/osrdconf/stdcmConf/selectors';
 import useDeploymentSettings from 'utils/hooks/useDeploymentSettings';
 
+import SendToRailwayManagerModal from './SendToRailwayManagerModal';
 import StdcmDebugResults from './StdcmDebugResults';
 import StdcmFeedback from './StdcmFeedback';
 import StcdmResultsTable from './StdcmResultsTable';
@@ -55,6 +58,8 @@ const StdcmResults = ({
 }: StcdmResultsProps) => {
   const infraId = useSelector(getStdcmInfraID);
   const timetableId = useSelector(getStdcmTimetableID);
+  const { openModal, closeModal } = useModal();
+  const railwayManagerUrl = useSelector(getRailwayManagerInterfaceUrl);
 
   const { t } = useTranslation('stdcm', { keyPrefix: 'simulation.results' });
   const deploymentSettings = useDeploymentSettings();
@@ -264,10 +269,32 @@ const StdcmResults = ({
                             label={t('downloadSimulationSheet')}
                             onClick={() => {}}
                             isDisabled={areSegmentsLoading}
+                            variant="Normal"
                           />
                         </PDFDownloadLink>
                       </div>
-                      <div className="gesico-text">{t('gesicoRequest')}</div>
+                      {railwayManagerUrl && (
+                        <Button
+                          label={t('transferSheetToRailManager')}
+                          onClick={() =>
+                            openModal(
+                              <SendToRailwayManagerModal
+                                consist={selectedSimulation.inputs.consist}
+                                stdcmData={outputs.results}
+                                linkedTrains={selectedSimulation.inputs.linkedTrains}
+                                simulationReportSheetNumber={simulationReportSheetNumber}
+                                operationalPointsList={operationalPointsList}
+                                simulationSheetLogo={deploymentSettings?.stdcmSimulationSheetLogo}
+                                similarTrains={similarTrains}
+                                deploymentSettings={deploymentSettings}
+                                onClose={closeModal}
+                              />,
+                              'xl',
+                              'no-close-modal'
+                            )
+                          }
+                        />
+                      )}
                     </div>
                   )}
                   {retainedSimulationIndex !== undefined && buttonsVisible && (

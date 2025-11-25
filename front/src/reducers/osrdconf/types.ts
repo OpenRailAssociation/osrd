@@ -166,7 +166,7 @@ export type PathStepMetadata =
 export type StdcmPathStep = {
   id: string;
   location?: {
-    operational_point: { trigram: string; secondary_code: string };
+    operational_point: { trigram: string; uic: number; secondary_code: string };
     name: string;
     coordinates: [number, number];
   };

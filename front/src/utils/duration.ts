@@ -52,6 +52,10 @@ export class Duration {
     return new Duration({ milliseconds: this.ms + other.ms });
   }
 
+  sub(other: Duration) {
+    return new Duration({ milliseconds: this.ms - other.ms });
+  }
+
   abs() {
     return new Duration({ milliseconds: Math.abs(this.ms) });
   }
