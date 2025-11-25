@@ -307,7 +307,7 @@ impl crate::prelude::RetrieveBatchUnchecked<(i64)> for Timetable {
         name = "model:retrieve_batch_unchecked<Timetable>",
         skip_all,
         err,
-        fields(query_id)
+        fields(query_ids)
     )]
     async fn retrieve_batch_unchecked<
         I: std::iter::IntoIterator<Item = (i64)> + Send,
@@ -352,7 +352,7 @@ impl crate::prelude::RetrieveBatchUnchecked<(i64)> for Timetable {
         name = "model:retrieve_batch_with_key_unchecked<Timetable>",
         skip_all,
         err,
-        fields(query_id)
+        fields(query_ids)
     )]
     async fn retrieve_batch_with_key_unchecked<
         I: std::iter::IntoIterator<Item = (i64)> + Send,

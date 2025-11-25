@@ -87,7 +87,7 @@ impl ToTokens for RetrieveBatchImpl {
             impl crate::prelude::RetrieveBatchUnchecked<#ty> for #model {
                 type Error = #error;
 
-                #[tracing::instrument(name = #span_name, skip_all, err, fields(query_id))]
+                #[tracing::instrument(name = #span_name, skip_all, err, fields(query_ids))]
                 async fn retrieve_batch_unchecked<
                     I: std::iter::IntoIterator<Item = #ty> + Send,
                     C: Default + std::iter::Extend<#model> + Send + std::fmt::Debug,
@@ -106,7 +106,7 @@ impl ToTokens for RetrieveBatchImpl {
                     Ok({ #retrieve_loop })
                 }
 
-                #[tracing::instrument(name = #span_name_with_key, skip_all, err, fields(query_id))]
+                #[tracing::instrument(name = #span_name_with_key, skip_all, err, fields(query_ids))]
                 async fn retrieve_batch_with_key_unchecked<
                     I: std::iter::IntoIterator<Item = #ty> + Send,
                     C: Default + std::iter::Extend<(#ty, #model)> + Send + std::fmt::Debug,
