@@ -65,7 +65,7 @@ pub struct Request {
     /// List of applicable temporary speed limits between the train departure and arrival
     #[schema(inline)]
     pub temporary_speed_limits: Vec<TemporarySpeedLimit>,
-    pub request_id: Option<u64>,
+    pub request_id: Option<String>,
 }
 
 #[derive(Debug, Clone, Serialize, PartialEq, Deserialize, ToSchema)]

@@ -16,6 +16,7 @@ use core_client::pathfinding::PathfindingResultSuccess;
 use core_client::stdcm::Request as StdcmRequest;
 use core_client::stdcm::UndirectedTrackRange;
 use database::DbConnectionPoolV2;
+use deadpool_redis::redis::AsyncTypedCommands;
 use editoast_derive::EditoastError;
 use request::Request;
 use request::convert_steps;
@@ -87,7 +88,7 @@ enum StdcmError {
     TimetableNotFound { timetable_id: i64 },
     #[error("Request {request_id} does not exist")]
     #[editoast_error(status = 404)]
-    RequestNotFound { request_id: u64 },
+    RequestNotFound { request_id: String },
     #[error("Unknown error")]
     UnknownError,
     #[error("Rolling stock {rolling_stock_id} does not exist")]
@@ -131,6 +132,20 @@ pub(in crate::views) struct StdcmQueryParams {
     return_debug_payloads: bool,
 }
 
+#[derive(Serialize, Deserialize, Clone, Debug, PartialEq, ToSchema)]
+pub(in crate::views) struct StdcmProgressSample {
+    sample_count: u64,
+    out_of: u64,
+    simulation_time: f64,
+    time_since_departure: f64,
+    best_remaining_time: f64,
+    coordinates: Vec<f64>,
+    number_visited_nodes: u64,
+    mb_used: u64,
+    max_mb: u64,
+    time_since_search_started: f64,
+}
+
 #[tracing::instrument(target = "editoast::timetable", name = "stdcm_async", skip_all, err)]
 #[editoast_derive::route]
 #[utoipa::path(
@@ -142,7 +157,7 @@ pub(in crate::views) struct StdcmQueryParams {
         StdcmQueryParams,
     ),
     responses(
-        (status = 200, body = u64, description = "Request ID"),
+        (status = 200, body = inline(String), description = "Request ID"),
     )
 )]
 pub(in crate::views) async fn stdcm_async(
@@ -151,8 +166,9 @@ pub(in crate::views) async fn stdcm_async(
     path: Path<i64>,
     query: Query<StdcmQueryParams>,
     request: Json<Request>,
-) -> Result<Json<u64>> {
-    let id = Span::current().id().unwrap().into_u64();
+) -> Result<Json<String>> {
+    let id = Span::current().id().unwrap().into_u64().to_string();
+    let id_clone = id.clone();
     let map = GLOBAL_FUTURE_MAP.get_or_init(|| Arc::new(Mutex::new(HashMap::new())));
     let handle = tokio::spawn(async move {
         let mut returned_request: Option<core_client::stdcm::Request> = None;
@@ -163,18 +179,18 @@ pub(in crate::views) async fn stdcm_async(
             query,
             request,
             &mut returned_request,
-            Some(id),
+            Some(id_clone),
         )
         .await
     });
     let mut map_lock = map.lock().unwrap();
-    map_lock.insert(id, handle);
+    map_lock.insert(id.clone(), handle);
     return Ok(Json(id));
 }
 
 #[derive(Deserialize)]
 pub struct StdcmResultQueryParams {
-    id: u64,
+    id: String,
 }
 
 #[editoast_derive::route]
@@ -182,7 +198,35 @@ pub struct StdcmResultQueryParams {
     get, path = "",
     tag = "stdcm",
     params(
-        ("id" = u64, Query, description = "request id"),
+        ("id" = String, Query, description = "request id"),
+    ),
+    responses(
+        (status = 200, body = inline(Vec<StdcmProgressSample>), description = "Progress samples"),
+    )
+)]
+pub(in crate::views) async fn stdcm_get_async_progress(
+    State(AppState { valkey_client, .. }): State<AppState>,
+    _: AuthenticationExt,
+    Query(params): Query<StdcmResultQueryParams>,
+) -> Result<Json<Vec<StdcmProgressSample>>> {
+    let id = params.id;
+    let key = format!("CORE_STDCM_PROGRESS_{}", id);
+    let mut conn = valkey_client.get_connection().await?;
+    let strings = conn.lrange(key.clone(), 0, -1).await?;
+    let values = strings
+        .iter()
+        .filter_map(|s| serde_json::from_str(s).ok())
+        .collect::<Vec<StdcmProgressSample>>();
+
+    Ok(Json(values))
+}
+
+#[editoast_derive::route]
+#[utoipa::path(
+    get, path = "",
+    tag = "stdcm",
+    params(
+        ("id" = String, Query, description = "request id"),
     ),
     responses(
         (status = 200, body = inline(StdcmResponse), description = "The simulation result"),
@@ -204,7 +248,7 @@ pub(in crate::views) async fn stdcm_get_async_result(
 }
 
 static GLOBAL_FUTURE_MAP: OnceLock<
-    Arc<Mutex<HashMap<u64, JoinHandle<Result<Json<StdcmResponse>>>>>>,
+    Arc<Mutex<HashMap<String, JoinHandle<Result<Json<StdcmResponse>>>>>>,
 > = OnceLock::new();
 
 /// This function computes a STDCM and returns the result.
@@ -288,7 +332,7 @@ pub(in crate::views) async fn stdcm_handler(
     Query(query): Query<StdcmQueryParams>,
     Json(request): Json<Request>,
     returned_request: &mut Option<core_client::stdcm::Request>,
-    request_id: Option<u64>,
+    request_id: Option<String>,
 ) -> Result<Json<StdcmResponse>> {
     let authorized = auth
         .check_roles([authz::Role::Stdcm].into())

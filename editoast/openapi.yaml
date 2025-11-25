@@ -3772,6 +3772,75 @@ paths:
                 $ref: '#/components/schemas/TimetableResult'
         '404':
           description: Timetable not found
+  /timetable/stdcm_get_async_progress:
+    get:
+      tags:
+      - stdcm
+      parameters:
+      - name: id
+        in: query
+        description: request id
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Progress samples
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  required:
+                  - sample_count
+                  - out_of
+                  - simulation_time
+                  - time_since_departure
+                  - best_remaining_time
+                  - coordinates
+                  - number_visited_nodes
+                  - mb_used
+                  - max_mb
+                  - time_since_search_started
+                  properties:
+                    best_remaining_time:
+                      type: number
+                      format: double
+                    coordinates:
+                      type: array
+                      items:
+                        type: number
+                        format: double
+                    max_mb:
+                      type: integer
+                      format: int64
+                      minimum: 0
+                    mb_used:
+                      type: integer
+                      format: int64
+                      minimum: 0
+                    number_visited_nodes:
+                      type: integer
+                      format: int64
+                      minimum: 0
+                    out_of:
+                      type: integer
+                      format: int64
+                      minimum: 0
+                    sample_count:
+                      type: integer
+                      format: int64
+                      minimum: 0
+                    simulation_time:
+                      type: number
+                      format: double
+                    time_since_departure:
+                      type: number
+                      format: double
+                    time_since_search_started:
+                      type: number
+                      format: double
   /timetable/stdcm_get_async_result:
     get:
       tags:
@@ -3782,9 +3851,7 @@ paths:
         description: request id
         required: true
         schema:
-          type: integer
-          format: int64
-          minimum: 0
+          type: string
       responses:
         '200':
           description: The simulation result
@@ -4443,9 +4510,7 @@ paths:
           content:
             text/plain:
               schema:
-                type: integer
-                format: int64
-                minimum: 0
+                type: string
   /timetable/{id}/train_schedule_sets:
     get:
       tags:
@@ -8230,7 +8295,7 @@ components:
           - request_id
           properties:
             request_id:
-              type: integer
+              type: string
         message:
           type: string
         status:
@@ -15550,10 +15615,8 @@ components:
               minimum: 0
         request_id:
           type:
-          - integer
+          - string
           - 'null'
-          format: int64
-          minimum: 0
         rolling_stock_loading_gauge:
           $ref: '#/components/schemas/LoadingGaugeType'
           description: The loading gauge of the rolling stock

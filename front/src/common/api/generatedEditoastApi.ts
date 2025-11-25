@@ -1095,6 +1095,18 @@ const injectedRtkApi = api
         query: () => ({ url: `/timetable`, method: 'POST' }),
         invalidatesTags: ['timetable'],
       }),
+      getTimetableStdcmGetAsyncProgress: build.query<
+        GetTimetableStdcmGetAsyncProgressApiResponse,
+        GetTimetableStdcmGetAsyncProgressApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/timetable/stdcm_get_async_progress`,
+          params: {
+            id: queryArg.id,
+          },
+        }),
+        providesTags: ['stdcm'],
+      }),
       getTimetableStdcmGetAsyncResult: build.query<
         GetTimetableStdcmGetAsyncResultApiResponse,
         GetTimetableStdcmGetAsyncResultApiArg
@@ -2380,6 +2392,22 @@ export type PostTemporarySpeedLimitGroupApiArg = {
 export type PostTimetableApiResponse =
   /** status 200 Timetable with train schedules ids */ TimetableResult;
 export type PostTimetableApiArg = void;
+export type GetTimetableStdcmGetAsyncProgressApiResponse = /** status 200 Progress samples */ {
+  best_remaining_time: number;
+  coordinates: number[];
+  max_mb: number;
+  mb_used: number;
+  number_visited_nodes: number;
+  out_of: number;
+  sample_count: number;
+  simulation_time: number;
+  time_since_departure: number;
+  time_since_search_started: number;
+}[];
+export type GetTimetableStdcmGetAsyncProgressApiArg = {
+  /** request id */
+  id: string;
+};
 export type GetTimetableStdcmGetAsyncResultApiResponse = /** status 200 The simulation result */
   | {
       core_payload?: null | CoreStdcmRequest;
@@ -2399,7 +2427,7 @@ export type GetTimetableStdcmGetAsyncResultApiResponse = /** status 200 The simu
     };
 export type GetTimetableStdcmGetAsyncResultApiArg = {
   /** request id */
-  id: number;
+  id: string;
 };
 export type DeleteTimetableByIdApiResponse = unknown;
 export type DeleteTimetableByIdApiArg = {
@@ -4865,7 +4893,7 @@ export type CoreStdcmRequest = {
     startup_acceleration: number;
     startup_time: number;
   };
-  request_id?: number | null;
+  request_id?: string | null;
   /** The loading gauge of the rolling stock */
   rolling_stock_loading_gauge: LoadingGaugeType;
   /** List of supported signaling systems */

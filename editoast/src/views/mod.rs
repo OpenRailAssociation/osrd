@@ -226,6 +226,10 @@ fn service_router() -> router::DocumentedRouter {
                         "/stdcm_get_async_result",
                         get!(timetable::stdcm::stdcm_get_async_result),
                     )
+                    .route(
+                        "/stdcm_get_async_progress",
+                        get!(timetable::stdcm::stdcm_get_async_progress),
+                    )
                     .nests("/{id}", |path| {
                         path.route("/", delete!(timetable::delete))
                             .route(
