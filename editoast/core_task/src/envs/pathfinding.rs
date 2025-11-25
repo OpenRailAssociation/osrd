@@ -26,7 +26,7 @@ use crate::TrainSet;
 ///
 /// Provides [PathfindingEnv::run] and [PathfindingEnv::into_stream] to build, run,
 /// cache and return paths computed by Core. Use [PathfindingEnv::extend] to add train
-/// consist information and pathfinding constraints in the environment.
+/// consist information and pathfinding constraints in the environment. See [PathfindingTrain].
 ///
 /// `Train` generic parameter is a correlation key to associate each path to a train.
 /// It will be cloned several times over internally, so this operation should be cheap.
@@ -122,6 +122,13 @@ where
 
 // ========== Input management ==========
 
+/// Necessary inputs of a train to provide [PathfindingEnv]
+#[derive(Debug)]
+pub struct PathfindingTrain {
+    pub consist: PathfindingConsist,
+    pub constraints: PathfindingConstraints,
+}
+
 #[derive(Debug)]
 pub(crate) struct PathfindingEnvInputs<Train>
 where
@@ -190,27 +197,28 @@ impl IntoIterator for PathWaypointAlternatives {
     }
 }
 
-impl<Train> Extend<(Train, PathfindingConsist)> for PathfindingEnv<Train>
+impl<Train> Extend<(Train, PathfindingTrain)> for PathfindingEnv<Train>
 where
     Train: Clone + Hash + Eq + Send + Sync + 'static,
 {
-    fn extend<T: IntoIterator<Item = (Train, PathfindingConsist)>>(&mut self, iter: T) {
-        self.inputs.consists.extend(
-            iter.into_iter()
-                .map(|(train, consist)| (train, Arc::new(consist))),
+    fn extend<T: IntoIterator<Item = (Train, PathfindingTrain)>>(&mut self, iter: T) {
+        let iter = iter.into_iter().map(
+            |(
+                train,
+                PathfindingTrain {
+                    consist,
+                    constraints,
+                },
+            )| {
+                (
+                    (train.clone(), Arc::new(consist)),
+                    (train, Arc::new(constraints)),
+                )
+            },
         );
-    }
-}
-
-impl<Train> Extend<(Train, PathfindingConstraints)> for PathfindingEnv<Train>
-where
-    Train: Clone + Hash + Eq + Send + Sync + 'static,
-{
-    fn extend<T: IntoIterator<Item = (Train, PathfindingConstraints)>>(&mut self, iter: T) {
-        self.inputs.constraints.extend(
-            iter.into_iter()
-                .map(|(train, constraints)| (train, Arc::new(constraints))),
-        );
+        let (consists, constraints): (Vec<_>, Vec<_>) = iter.into_iter().unzip();
+        self.inputs.consists.extend(consists);
+        self.inputs.constraints.extend(constraints);
     }
 }
 
@@ -468,6 +476,13 @@ mod tests {
         }
     }
 
+    fn train(id: usize) -> PathfindingTrain {
+        PathfindingTrain {
+            consist: consist(id),
+            constraints: constraints(id),
+        }
+    }
+
     impl PathfindingEnv<usize> {
         fn key(&self, id: usize) -> String {
             let input = self.inputs.train_input(&id).unwrap();
@@ -488,8 +503,8 @@ mod tests {
             .finish();
 
         let mut pfenv = PathfindingEnv::<usize>::new(CoreEnv::new_mock(mock));
-        pfenv.extend([(1, constraints(1)), (2, constraints(2))]);
-        pfenv.extend([(1, consist(1)), (2, consist(2))]);
+        pfenv.extend([(1, train(1)), (2, train(2))]);
+
         let vk = cache::Client::new_mock(
             vec![
                 mock_mget(vec![(pfenv.key(1), Some(path(1))), (pfenv.key(2), None)]),

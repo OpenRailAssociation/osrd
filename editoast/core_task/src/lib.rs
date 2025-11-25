@@ -10,6 +10,7 @@ pub use envs::core::CoreEnv;
 pub use envs::pathfinding::PathfindingConsist;
 pub use envs::pathfinding::PathfindingConstraints;
 pub use envs::pathfinding::PathfindingEnv;
+pub use envs::pathfinding::PathfindingTrain;
 
 use futures::stream;
 use itertools::Itertools as _;
