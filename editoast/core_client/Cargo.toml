@@ -8,11 +8,9 @@ license.workspace = true
 mocking_client = ["dep:http"]
 
 [dependencies]
-approx.workspace = true
 chrono.workspace = true
 common = { workspace = true }
 deadpool.workspace = true
-editoast_derive.workspace = true
 educe.workspace = true
 futures-util.workspace = true
 hostname.workspace = true

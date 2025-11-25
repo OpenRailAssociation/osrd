@@ -9,7 +9,6 @@ mock = ["redis-test"]
 
 [dependencies]
 arcstr.workspace = true
-deadpool.workspace = true
 deadpool-redis.workspace = true
 futures.workspace = true
 lz4_flex = { version = "0.12.0", default-features = false, features = [
