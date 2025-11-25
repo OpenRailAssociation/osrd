@@ -14,6 +14,7 @@ type StdcmLoaderProps = {
   cancelStdcmRequest: () => void;
   launchButtonRef: RefObject<HTMLDivElement | null>;
   formRef: RefObject<HTMLDivElement | null>;
+  currentRequestId: string | null;
 };
 
 const StdcmLoader = ({
@@ -21,6 +22,7 @@ const StdcmLoader = ({
   launchButtonRef,
   formRef,
   isPendingAdditional,
+  currentRequestId,
 }: StdcmLoaderProps) => {
   const { t } = useTranslation('stdcm');
   const loaderRef = useRef<HTMLDivElement>(null);
@@ -110,6 +112,7 @@ const StdcmLoader = ({
         </div>
       </div>
       <p className="stdcm-loader__info-message">{t('simulation.infoMessage')}</p>
+      <p className="stdcm-loader__info-message">{'request id: ' + currentRequestId}</p>
     </div>
   );
 };

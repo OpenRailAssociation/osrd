@@ -42,6 +42,7 @@ const useStdcm = ({
   const [currentStdcmRequestStatus, setCurrentStdcmRequestStatus] = useState<StdcmRequestStatus>(
     STDCM_REQUEST_STATUS.idle
   );
+  const [currentRequestId, setCurrentRequestId] = useState<string | null>(null);
 
   const dispatch = useAppDispatch();
   const { t } = useTranslation(['translation', 'stdcm']);
@@ -220,9 +221,9 @@ const useStdcm = ({
     const payload = formatStdcmPayload(validConfig);
 
     try {
-      const id = (await postTimetableByIdStdcmAsync(payload).unwrap()) as string;
-      console.info(id);
-      const promise = getTimetableStdcmGetAsyncResult({ id });
+      const requestId = (await postTimetableByIdStdcmAsync(payload).unwrap()) as string;
+      const promise = getTimetableStdcmGetAsyncResult({ id: requestId });
+      setCurrentRequestId(requestId);
       requestPromise.current = [promise];
 
       const response = await promise.unwrap();
@@ -267,6 +268,7 @@ const useStdcm = ({
     isCanceled,
     isPendingAdditional,
     isCalculationCompleted,
+    currentRequestId,
   };
 };
 

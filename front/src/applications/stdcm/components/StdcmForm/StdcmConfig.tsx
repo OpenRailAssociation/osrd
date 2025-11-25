@@ -67,6 +67,7 @@ type StdcmConfigProps = {
   launchStdcmRequest: () => Promise<void>;
   cancelStdcmRequest: () => void;
   setSkipPathfindingStatusMessage: (value: boolean) => void;
+  currentRequestId: string | null;
 };
 
 const StdcmConfig = ({
@@ -79,6 +80,7 @@ const StdcmConfig = ({
   setSkipPathfindingStatusMessage,
   cancelStdcmRequest,
   launchStdcmRequest,
+  currentRequestId,
 }: StdcmConfigProps) => {
   const { t } = useTranslation('stdcm');
   const dateTimeLocale = useDateTimeLocale();
@@ -370,6 +372,7 @@ const StdcmConfig = ({
                   cancelStdcmRequest={cancelStdcmRequest}
                   launchButtonRef={launchButtonRef}
                   formRef={formRef}
+                  currentRequestId={currentRequestId}
                 />
               )}
             </div>
