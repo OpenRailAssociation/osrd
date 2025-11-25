@@ -7,7 +7,7 @@ import type { ProjectionResult } from 'applications/operationalStudies/helpers/T
 import type TrainProjectionLazyLoaderAbstract from 'applications/operationalStudies/helpers/TrainProjectionLazyLoaderAbstract';
 import TrainTrackProjectionLazyLoader from 'applications/operationalStudies/helpers/TrainTrackProjectionLazyLoader';
 import upsertNewProjectedTrains from 'applications/operationalStudies/helpers/upsertNewProjectedTrains';
-import { type OperationalPointReference, type TrainPath } from 'common/api/osrdEditoastApi';
+import { type OperationalPointReference, type CoreTrainPath } from 'common/api/osrdEditoastApi';
 import type { TrainSpaceTimeData } from 'modules/simulationResult/types';
 import type { TimetableItemId, TimetableItem } from 'reducers/osrdconf/types';
 import { getProjectionType } from 'reducers/simulationResults/selectors';
@@ -16,7 +16,7 @@ import { useAppDispatch } from 'store';
 type UseLazyProjectTrainsOptions = {
   infraId: number;
   electricalProfileSetId?: number;
-  path?: TrainPath;
+  path?: CoreTrainPath;
   operationalPointDistances?: number[];
   operationalPointReferences?: OperationalPointReference[];
 };

@@ -38,23 +38,27 @@ pub struct PathfindingRequest {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
+#[schema(as = core::OffsetRange)]
 pub struct OffsetRange {
     start: u64,
     end: u64,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
+#[schema(as = core::IncompatibleOffsetRangeWithValue)]
 pub struct IncompatibleOffsetRangeWithValue {
     range: OffsetRange,
     value: String,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
+#[schema(as = core::IncompatibleOffsetRange)]
 pub struct IncompatibleOffsetRange {
     range: OffsetRange,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
+#[schema(as = core::IncompatibleConstraints)]
 pub struct IncompatibleConstraints {
     incompatible_electrification_ranges: Vec<IncompatibleOffsetRangeWithValue>,
     incompatible_gauge_ranges: Vec<IncompatibleOffsetRange>,
@@ -62,6 +66,7 @@ pub struct IncompatibleConstraints {
 }
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, ToSchema)]
+#[schema(as = core::InvalidPathItem)]
 pub struct InvalidPathItem {
     pub index: usize,
     pub path_item: PathItemLocation,
@@ -98,6 +103,7 @@ pub enum PathfindingCoreResult {
 
 /// A successful pathfinding result. This is also used for STDCM response.
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, ToSchema)]
+#[schema(as = core::PathfindingResultSuccess)]
 #[cfg_attr(feature = "mocking_client", derive(Default))]
 pub struct PathfindingResultSuccess {
     /// Full description of the path data
@@ -111,6 +117,7 @@ pub struct PathfindingResultSuccess {
 
 // Enum for input-related errors
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, ToSchema)]
+#[schema(as = core::PathfindingInputError)]
 #[serde(tag = "error_type", rename_all = "snake_case")]
 pub enum PathfindingInputError {
     InvalidPathItems {
@@ -126,6 +133,7 @@ pub enum PathfindingInputError {
 
 // Enum for not-found results and incompatible constraints
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, ToSchema, Default)]
+#[schema(as = core::PathfindingNotFound)]
 #[serde(tag = "error_type", rename_all = "snake_case")]
 pub enum PathfindingNotFound {
     NotFoundInBlocks {
@@ -147,7 +155,7 @@ pub enum PathfindingNotFound {
 /// An oriented range on a track section.
 /// `begin` is always less than `end`.
 #[derive(Serialize, Deserialize, Clone, Debug, ToSchema, Hash, PartialEq, Eq)]
-#[schema(as = CoreTrackRange)]
+#[schema(as = core::TrackRange)]
 pub struct TrackRange {
     /// The track section identifier.
     #[schema(inline)]
@@ -174,6 +182,7 @@ impl TrackRange {
 
 /// A range on a linear object (usually block or route)
 #[derive(Serialize, Deserialize, Clone, Debug, ToSchema, Hash, PartialEq, Eq)]
+#[schema(as = core::ObjectRange)]
 pub struct ObjectRange {
     /// The object identifier.
     #[schema(inline)]
@@ -187,6 +196,7 @@ pub struct ObjectRange {
 /// A valid train path, as returned from the pathfinding.
 /// Can be used as-is as input for other endpoints.
 #[derive(Serialize, Deserialize, Clone, Debug, ToSchema, Hash, PartialEq, Eq, Default)]
+#[schema(as = core::TrainPath)]
 pub struct TrainPath {
     /// Block ranges, in order.
     pub blocks: Vec<ObjectRange>,

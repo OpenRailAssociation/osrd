@@ -1,4 +1,8 @@
-import { type SignalUpdate, type SpaceTimeCurve, type TrainPath } from 'common/api/osrdEditoastApi';
+import {
+  type SignalUpdate,
+  type SpaceTimeCurve,
+  type CoreTrainPath,
+} from 'common/api/osrdEditoastApi';
 import type { TimetableItemId } from 'reducers/osrdconf/types';
 import type { AppDispatch } from 'store';
 
@@ -13,7 +17,7 @@ export type ProjectionResult = {
 export type TrainProjectionLazyLoaderOptions = {
   dispatch: AppDispatch;
   infraId: number;
-  path?: TrainPath;
+  path?: CoreTrainPath;
   electricalProfileSetId?: number;
   onProgress: (results: Map<TimetableItemId, ProjectionResult>) => void;
 };

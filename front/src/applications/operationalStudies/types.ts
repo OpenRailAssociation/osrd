@@ -1,10 +1,10 @@
 import type { LayerData, PowerRestrictionValues } from '@osrd-project/ui-charts';
 
 import type {
-  IncompatibleConstraints,
+  CoreIncompatibleConstraints,
   PacedTrain,
   PathProperties,
-  PathfindingResultSuccess,
+  CorePathfindingResultSuccess,
   SimulationResponse,
   SimulationResponseSuccess,
   TrainSchedule,
@@ -61,8 +61,8 @@ export type ManageTimetableItemPathProperties = {
   geometry: NonNullable<PathProperties['geometry']>;
   suggestedOperationalPoints: SuggestedOP[];
   length: number;
-  trackSectionRanges: NonNullable<PathfindingResultSuccess['path']['track_section_ranges']>;
-  incompatibleConstraints?: IncompatibleConstraints;
+  trackSectionRanges: NonNullable<CorePathfindingResultSuccess['path']['track_section_ranges']>;
+  incompatibleConstraints?: CoreIncompatibleConstraints;
 };
 
 export type MapPathProperties = Pick<ManageTimetableItemPathProperties, 'length' | 'geometry'>;
@@ -128,7 +128,7 @@ export type SimulationResults =
       train: Train;
       rollingStock: RollingStockWithLiveries;
       simulation: SimulationResponseSuccess;
-      path: PathfindingResultSuccess;
+      path: CorePathfindingResultSuccess;
       pathProperties: PathPropertiesFormatted;
       powerRestrictions: LayerData<PowerRestrictionValues>[];
     };
@@ -161,7 +161,7 @@ export type CategoryColors = { normal: string; hovered: string; background: stri
 
 export type ItineraryPathProperties = PathProperties & {
   length: number;
-  incompatibleConstraints?: IncompatibleConstraints;
+  incompatibleConstraints?: CoreIncompatibleConstraints;
 };
 export type PathProjectionResult = {
   path: PathItem[];
@@ -171,7 +171,7 @@ export type PathProjectionResult = {
 } & (
   | {
       pathfindingStatus: 'succeeded';
-      pathfinding: PathfindingResultSuccess;
+      pathfinding: CorePathfindingResultSuccess;
       geometry: PathProperties['geometry'];
       projectingOnSimulatedPathException: boolean | undefined;
     }

@@ -2390,7 +2390,7 @@ export type PostTimetableByIdStdcmApiResponse = /** status 200 The simulation re
   | {
       core_payload?: null | StdcmRequest;
       departure_time: string;
-      pathfinding_result: PathfindingResultSuccess;
+      pathfinding_result: CorePathfindingResultSuccess;
       simulation: SimulationResponseSuccess;
       status: 'success';
     }
@@ -3436,7 +3436,7 @@ export type InfraPathfindingInput = {
   ending: PathfindingTrackLocationInput;
   starting: PathfindingTrackLocationInput;
 };
-export type ObjectRange = {
+export type CoreObjectRange = {
   /** The beginning of the range in mm. */
   begin: number;
   /** The end of the range in mm. */
@@ -3444,19 +3444,19 @@ export type ObjectRange = {
   /** The object identifier. */
   id: string;
 };
-export type TrainPath = {
+export type CoreTrainPath = {
   /** Block ranges, in order. */
-  blocks: ObjectRange[];
+  blocks: CoreObjectRange[];
   /** Route ranges, in order. */
-  routes: ObjectRange[];
+  routes: CoreObjectRange[];
   /** Track section ranges, in order. */
   track_section_ranges: CoreTrackRange[];
 };
-export type PathfindingResultSuccess = {
+export type CorePathfindingResultSuccess = {
   /** Length of the path in mm */
   length: number;
   /** Full description of the path data */
-  path: TrainPath;
+  path: CoreTrainPath;
   /** The path offset in mm of each path item given as input of the pathfinding
     The first value is always `0` (beginning of the path) and the last one is always equal to the `length` of the path in mm */
   path_item_positions: number[];
@@ -3468,7 +3468,7 @@ export type TrackOffset = {
   track: string;
 };
 export type PathItemLocation = TrackOffset | OperationalPointReference;
-export type PathfindingInputError =
+export type CorePathfindingInputError =
   | {
       error_type: 'invalid_path_items';
       items: {
@@ -3486,23 +3486,23 @@ export type PathfindingInputError =
   | {
       error_type: 'zero_length_path';
     };
-export type OffsetRange = {
+export type CoreOffsetRange = {
   end: number;
   start: number;
 };
-export type IncompatibleOffsetRangeWithValue = {
-  range: OffsetRange;
+export type CoreIncompatibleOffsetRangeWithValue = {
+  range: CoreOffsetRange;
   value: string;
 };
-export type IncompatibleOffsetRange = {
-  range: OffsetRange;
+export type CoreIncompatibleOffsetRange = {
+  range: CoreOffsetRange;
 };
-export type IncompatibleConstraints = {
-  incompatible_electrification_ranges: IncompatibleOffsetRangeWithValue[];
-  incompatible_gauge_ranges: IncompatibleOffsetRange[];
-  incompatible_signaling_system_ranges: IncompatibleOffsetRangeWithValue[];
+export type CoreIncompatibleConstraints = {
+  incompatible_electrification_ranges: CoreIncompatibleOffsetRangeWithValue[];
+  incompatible_gauge_ranges: CoreIncompatibleOffsetRange[];
+  incompatible_signaling_system_ranges: CoreIncompatibleOffsetRangeWithValue[];
 };
-export type PathfindingNotFound =
+export type CorePathfindingNotFound =
   | {
       error_type: 'not_found_in_blocks';
       length: number;
@@ -3518,8 +3518,8 @@ export type PathfindingNotFound =
     }
   | {
       error_type: 'incompatible_constraints';
-      incompatible_constraints: IncompatibleConstraints;
-      relaxed_constraints_path: PathfindingResultSuccess;
+      incompatible_constraints: CoreIncompatibleConstraints;
+      relaxed_constraints_path: CorePathfindingResultSuccess;
     };
 export type InternalError = {
   context: {
@@ -3530,10 +3530,10 @@ export type InternalError = {
   type: string;
 };
 export type PathfindingFailure =
-  | (PathfindingInputError & {
+  | (CorePathfindingInputError & {
       failed_status: 'pathfinding_input_error';
     })
-  | (PathfindingNotFound & {
+  | (CorePathfindingNotFound & {
       failed_status: 'pathfinding_not_found';
     })
   | {
@@ -3541,7 +3541,7 @@ export type PathfindingFailure =
       failed_status: 'internal_error';
     };
 export type PathfindingResult =
-  | (PathfindingResultSuccess & {
+  | (CorePathfindingResultSuccess & {
       status: 'success';
     })
   | (PathfindingFailure & {
@@ -3821,7 +3821,7 @@ export type OccupancyBlockForm = {
   electrical_profile_set_id?: number | null;
   ids: number[];
   infra_id: number;
-  path: TrainPath;
+  path: CoreTrainPath;
 };
 export type SpaceTimeCurve = {
   /** List of positions of a train in mm
@@ -3875,7 +3875,7 @@ export type SimulationSummaryResult =
       /** Travel time in ms */
       time: number;
     }
-  | (PathfindingNotFound & {
+  | (CorePathfindingNotFound & {
       status: 'pathfinding_not_found';
     })
   | {
@@ -3886,7 +3886,7 @@ export type SimulationSummaryResult =
       error_type: string;
       status: 'simulation_failed';
     }
-  | (PathfindingInputError & {
+  | (CorePathfindingInputError & {
       status: 'pathfinding_input_error';
     });
 export type PacedTrainSimulationSummaryResult = {

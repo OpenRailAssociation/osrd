@@ -5,7 +5,7 @@ import type {
   OperationalPoint,
   OperationalPointIdentifier,
   OperationalPointReference,
-  PathfindingResultSuccess,
+  CorePathfindingResultSuccess,
   PathItemLocation,
   PathProperties,
   RelatedOperationalPoint,
@@ -159,7 +159,7 @@ export const transformElectricalBoundariesToRanges = (
 export const preparePathPropertiesData = (
   electricalProfiles: SimulationResponseSuccess['electrical_profiles'],
   { slopes, curves, electrifications, operational_points, geometry }: PathProperties,
-  { path_item_positions, length }: PathfindingResultSuccess,
+  { path_item_positions, length }: CorePathfindingResultSuccess,
   trainSchedulePath: TrainSchedule['path'],
   t: TFunction<'operational-studies'>
 ): PathPropertiesFormatted => {

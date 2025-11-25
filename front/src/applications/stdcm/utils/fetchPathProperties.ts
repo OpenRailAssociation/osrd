@@ -5,7 +5,7 @@ import type { TrackSectionEntity } from 'applications/editor/tools/trackEdition/
 import type { StdcmPathProperties } from 'applications/stdcm/types';
 import type {
   PostInfraByInfraIdPathPropertiesApiArg,
-  PathfindingResultSuccess,
+  CorePathfindingResultSuccess,
 } from 'common/api/osrdEditoastApi';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { formatSuggestedOperationalPoints } from 'modules/pathfinding/utils';
@@ -17,7 +17,7 @@ import type { AppDispatch } from 'store';
  *  Function to fetch and format path properties
  */
 const fetchPathProperties = async (
-  pathfinding_result: PathfindingResultSuccess,
+  pathfinding_result: CorePathfindingResultSuccess,
   infraId: number,
   dispatch: AppDispatch
 ): Promise<StdcmPathProperties> => {
