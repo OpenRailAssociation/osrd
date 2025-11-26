@@ -2388,18 +2388,18 @@ export type GetTimetableByIdRoundTripsTrainSchedulesApiArg = {
 };
 export type PostTimetableByIdStdcmApiResponse = /** status 200 The simulation result */
   | {
-      core_payload?: null | StdcmRequest;
+      core_payload?: null | CoreStdcmRequest;
       departure_time: string;
       pathfinding_result: CorePathfindingResultSuccess;
       simulation: SimulationResponseSuccess;
       status: 'success';
     }
   | {
-      core_payload?: null | StdcmRequest;
+      core_payload?: null | CoreStdcmRequest;
       status: 'path_not_found';
     }
   | {
-      core_payload?: null | StdcmRequest;
+      core_payload?: null | CoreStdcmRequest;
       error: SimulationResponse;
       status: 'preprocessing_simulation_error';
     };
@@ -4716,7 +4716,22 @@ export type CoreTrainRequirementsById = {
   start_time: string;
   train_id: string;
 };
-export type UndirectedTrackRange = {
+export type CoreStepTimingData = {
+  /** Time the train should arrive at this point */
+  arrival_time: string;
+  /** Tolerance for the arrival time, when it arrives after the expected time, in ms */
+  arrival_time_tolerance_after: number;
+  /** Tolerance for the arrival time, when it arrives before the expected time, in ms */
+  arrival_time_tolerance_before: number;
+};
+export type CorePathItem = {
+  /** The track offsets of the path item */
+  locations: TrackOffset[];
+  step_timing_data?: null | CoreStepTimingData;
+  /** Stop duration in milliseconds. None if the train does not stop at this path item. */
+  stop_duration?: number | null;
+};
+export type CoreUndirectedTrackRange = {
   /** The beginning of the range in mm. */
   begin: number;
   /** The end of the range in mm. */
@@ -4724,15 +4739,15 @@ export type UndirectedTrackRange = {
   /** The track section identifier. */
   track_section: string;
 };
-export type WorkSchedule = {
+export type CoreWorkSchedule = {
   /** End time as a time delta from the stdcm start time in ms */
   end_time: number;
   /** Start time as a time delta from the stdcm start time in ms */
   start_time: number;
   /** List of unavailable track ranges */
-  track_ranges: UndirectedTrackRange[];
+  track_ranges: CoreUndirectedTrackRange[];
 };
-export type StdcmRequest = {
+export type CoreStdcmRequest = {
   /** Set of authorized track section ids for the current request */
   allowed_track_sections?: string[] | null;
   /** The comfort of the train */
@@ -4757,7 +4772,7 @@ export type StdcmRequest = {
   /** Maximum run time of the simulation in milliseconds */
   maximum_run_time: number;
   /** List of waypoints. Each waypoint is a list of track offset. */
-  path_items: PathItem[];
+  path_items: CorePathItem[];
   physics_consist: {
     base_power_class?: string | null;
     comfort_acceleration: number;
@@ -4809,7 +4824,7 @@ export type StdcmRequest = {
   /** Timetable id */
   timetable_id: number;
   /** List of planned work schedules */
-  work_schedules: WorkSchedule[];
+  work_schedules: CoreWorkSchedule[];
 };
 export type PathfindingItem = {
   /** The stop duration in milliseconds, None if the train does not stop. */
@@ -4902,6 +4917,16 @@ export type WorkScheduleItemForm = {
   start_date_time: string;
   track_ranges: TrackRange[];
   work_schedule_type: 'CATENARY' | 'TRACK';
+};
+export type WorkScheduleType = 'CATENARY' | 'TRACK';
+export type WorkSchedule = {
+  end_date_time: string;
+  id: number;
+  obj_id: string;
+  start_date_time: string;
+  track_ranges: TrackRange[];
+  work_schedule_group_id: number;
+  work_schedule_type: WorkScheduleType;
 };
 export type Intersection = {
   /** Distance of the end of the intersection relative to the beginning of the path */
