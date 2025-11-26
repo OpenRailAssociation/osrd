@@ -10,6 +10,6 @@ quantity! {
         N2>;    // time
 
     units {
-        @meter_per_second_squared: prefix!(none); "m/s²", "meter per second squared", "meters per second squared";
+        @meter_per_second_squared: 1.0; "m/s²", "meter per second squared", "meters per second squared";
     }
 }
