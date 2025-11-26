@@ -2356,7 +2356,7 @@ export type PostTimetableByIdPacedTrainsApiArg = {
 };
 export type GetTimetableByIdRequirementsApiResponse =
   /** status 200 The paginated list of timetable requirements */ PaginationStats & {
-    results: TrainRequirementsById[];
+    results: CoreTrainRequirementsById[];
   };
 export type GetTimetableByIdRequirementsApiArg = {
   /** A timetable ID */
@@ -4675,7 +4675,7 @@ export type SubCategoryPage = PaginationStats & {
 export type TimetableResult = {
   timetable_id: number;
 };
-export type ConflictRequirement = {
+export type CoreConflictRequirement = {
   end_time: string;
   start_time: string;
   zone: string;
@@ -4702,7 +4702,7 @@ export type Conflict = {
     paced_train_id: number;
   })[];
   /** List of requirements causing the conflict */
-  requirements: ConflictRequirement[];
+  requirements: CoreConflictRequirement[];
   /** Datetime of the start of the conflict */
   start_time: string;
   /** List of train schedule ids involved in the conflict */
@@ -4710,7 +4710,7 @@ export type Conflict = {
   /** List of work schedule ids involved in the conflict */
   work_schedule_ids: number[];
 };
-export type TrainRequirementsById = {
+export type CoreTrainRequirementsById = {
   routing_requirements: RoutingRequirement[];
   spacing_requirements: SpacingRequirement[];
   start_time: string;

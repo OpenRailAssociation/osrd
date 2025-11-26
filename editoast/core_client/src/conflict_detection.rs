@@ -24,7 +24,7 @@ pub struct ConflictDetectionRequest {
     pub work_schedules: Option<WorkSchedulesRequest>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct TrainRequirements {
     pub start_time: DateTime<Utc>,
     pub spacing_requirements: Vec<SpacingRequirement>,
@@ -33,6 +33,7 @@ pub struct TrainRequirements {
 
 // TODO: use struct in conflict detection instead of a Map<String, TrainRequirements>.
 #[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+#[schema(as = core::TrainRequirementsById)]
 pub struct TrainRequirementsById {
     pub train_id: String,
     pub start_time: DateTime<Utc>,
@@ -46,14 +47,13 @@ pub struct WorkSchedulesRequest {
     pub work_schedule_requirements: HashMap<String, WorkSchedule>,
 }
 
-#[derive(Debug, Serialize, Deserialize, ToSchema)]
+#[derive(Debug, Serialize, Deserialize)]
 pub struct ConflictDetectionResponse {
     /// List of conflicts detected
-    #[schema(inline)]
     pub conflicts: Vec<Conflict>,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Conflict {
     /// List of train schedule ids and paced train generated occurrences involved in the conflict
     pub train_ids: Vec<String>,
@@ -64,7 +64,6 @@ pub struct Conflict {
     /// Datetime of the end of the conflict
     pub end_time: DateTime<Utc>,
     /// Type of the conflict
-    #[schema(inline)]
     pub conflict_type: ConflictType,
     /// List of requirements causing the conflict
     pub requirements: Vec<ConflictRequirement>,
@@ -75,6 +74,7 @@ pub struct Conflict {
 /// The start and end time describe the conflicting time span (not the full
 /// requirement's time span).
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize, ToSchema)]
+#[schema(as = core::ConflictRequirement)]
 pub struct ConflictRequirement {
     pub zone: String,
     pub start_time: DateTime<Utc>,
@@ -82,6 +82,7 @@ pub struct ConflictRequirement {
 }
 
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, ToSchema, PartialEq)]
+#[schema(as = core::ConflictType)]
 pub enum ConflictType {
     /// Conflict caused by two trains being too close to each other, or between a train and a work schedule
     Spacing,
