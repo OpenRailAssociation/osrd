@@ -11,6 +11,7 @@ use utoipa::ToSchema;
 use crate::AsCoreRequest;
 use crate::Json;
 use crate::RawError;
+use crate::WorkerKey;
 
 #[derive(Debug, Hash, Serialize)]
 pub struct PathfindingRequest {
@@ -263,7 +264,7 @@ impl TrackRangeOffset<'_> {
 impl AsCoreRequest<Json<PathfindingCoreResult>> for PathfindingRequest {
     const URL_PATH: &'static str = "/pathfinding/blocks";
 
-    fn worker_id(&self) -> Option<String> {
-        Some(self.infra.to_string())
+    fn worker_key(&self) -> WorkerKey {
+        WorkerKey::Infra(self.infra)
     }
 }

@@ -4,6 +4,7 @@ use utoipa::ToSchema;
 
 use crate::AsCoreRequest;
 use crate::Json;
+use crate::WorkerKey;
 use crate::simulation::SignalCriticalPosition;
 use crate::simulation::ZoneUpdate;
 
@@ -59,7 +60,7 @@ pub struct SignalUpdatesResponse {
 impl AsCoreRequest<Json<SignalUpdatesResponse>> for SignalUpdatesRequest<'_> {
     const URL_PATH: &'static str = "/signal_projection";
 
-    fn worker_id(&self) -> Option<String> {
-        Some(self.infra.to_string())
+    fn worker_key(&self) -> WorkerKey {
+        WorkerKey::Infra(self.infra)
     }
 }

@@ -7,6 +7,7 @@ use utoipa::ToSchema;
 
 use crate::AsCoreRequest;
 use crate::Json;
+use crate::WorkerKey;
 
 use super::simulation::RoutingRequirement;
 use super::simulation::SpacingRequirement;
@@ -91,7 +92,7 @@ pub enum ConflictType {
 impl AsCoreRequest<Json<ConflictDetectionResponse>> for ConflictDetectionRequest {
     const URL_PATH: &'static str = "/conflict_detection";
 
-    fn worker_id(&self) -> Option<String> {
-        Some(self.infra.to_string())
+    fn worker_key(&self) -> WorkerKey {
+        WorkerKey::Infra(self.infra)
     }
 }

@@ -8,6 +8,7 @@ use utoipa::ToSchema;
 
 use crate::AsCoreRequest;
 use crate::Json;
+use crate::WorkerKey;
 use crate::pathfinding::TrackRange;
 
 #[cfg(feature = "mocking_client")]
@@ -150,7 +151,7 @@ impl PropertyZoneValues {
 impl AsCoreRequest<Json<PathPropertiesResponse>> for PathPropertiesRequest<'_> {
     const URL_PATH: &'static str = "/path_properties";
 
-    fn worker_id(&self) -> Option<String> {
-        Some(self.infra.to_string())
+    fn worker_key(&self) -> WorkerKey {
+        WorkerKey::Infra(self.infra)
     }
 }
