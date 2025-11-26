@@ -8,7 +8,7 @@ import type {
 } from 'applications/operationalStudies/types';
 import type {
   PacedTrainException,
-  SignalUpdate,
+  CoreSignalUpdate,
   PathProperties,
   RollingStockWithLiveries,
   SimulationResponseSuccess,
@@ -40,7 +40,7 @@ export type BaseTrainProjection = {
     positions: number[];
     times: number[];
   }[];
-  signalUpdates: SignalUpdate[];
+  signalUpdates: CoreSignalUpdate[];
 };
 
 export type TrainSpaceTimeData = {
