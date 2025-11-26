@@ -11252,49 +11252,6 @@ components:
             within the target document where the operation is performed.
         value:
           description: Value to replace with.
-    ReportTrain:
-      type: object
-      required:
-      - positions
-      - times
-      - speeds
-      - energy_consumption
-      - path_item_times
-      properties:
-        energy_consumption:
-          type: number
-          format: double
-          description: Total energy consumption
-        path_item_times:
-          type: array
-          items:
-            type: integer
-            format: int64
-            minimum: 0
-          description: |-
-            Time in ms of each path item given as input of the pathfinding
-            The first value is always `0` (beginning of the path) and the last one, the total time of the simulation (end of the path)
-        positions:
-          type: array
-          items:
-            type: integer
-            format: int64
-            minimum: 0
-          description: |-
-            List of positions of a train
-            Both positions (in mm) and times (in ms) must have the same length
-        speeds:
-          type: array
-          items:
-            type: number
-            format: double
-          description: List of speeds associated to a position
-        times:
-          type: array
-          items:
-            type: integer
-            format: int64
-            minimum: 0
     ResourceType:
       type: string
       enum:
@@ -11821,50 +11778,6 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/DirectionalTrackRange'
-    RoutingRequirement:
-      type: object
-      required:
-      - route
-      - begin_time
-      - zones
-      properties:
-        begin_time:
-          type: integer
-          format: int64
-          description: Time in ms
-          minimum: 0
-        route:
-          type: string
-        zones:
-          type: array
-          items:
-            $ref: '#/components/schemas/RoutingZoneRequirement'
-    RoutingZoneRequirement:
-      type: object
-      required:
-      - zone
-      - entry_detector
-      - exit_detector
-      - switches
-      - end_time
-      properties:
-        end_time:
-          type: integer
-          format: int64
-          description: Time in ms
-          minimum: 0
-        entry_detector:
-          type: string
-        exit_detector:
-          type: string
-        switches:
-          type: object
-          additionalProperties:
-            type: string
-          propertyNames:
-            type: string
-        zone:
-          type: string
     Scenario:
       type: object
       required:
@@ -12590,31 +12503,6 @@ components:
           maxLength: 255
           minLength: 1
       additionalProperties: false
-    SignalCriticalPosition:
-      type: object
-      description: |-
-        First position (space and time) along the path where given signal must
-        be free (sighting time or closed-signal stop ending)
-      required:
-      - signal
-      - time
-      - position
-      - state
-      properties:
-        position:
-          type: integer
-          format: int64
-          description: Position in mm
-          minimum: 0
-        signal:
-          type: string
-        state:
-          type: string
-        time:
-          type: integer
-          format: int64
-          description: Time in ms
-          minimum: 0
     SimilarTrainWaypoint:
       type: object
       required:
@@ -12669,7 +12557,7 @@ components:
       - electrical_profiles
       properties:
         base:
-          $ref: '#/components/schemas/ReportTrain'
+          $ref: '#/components/schemas/core.ReportTrain'
           description: Simulation without any regularity margins
         electrical_profiles:
           type: object
@@ -12717,7 +12605,7 @@ components:
         final_output:
           oneOf:
           - allOf:
-            - $ref: '#/components/schemas/ReportTrain'
+            - $ref: '#/components/schemas/core.ReportTrain'
             - type: object
               required:
               - signal_critical_positions
@@ -12728,19 +12616,19 @@ components:
                 routing_requirements:
                   type: array
                   items:
-                    $ref: '#/components/schemas/RoutingRequirement'
+                    $ref: '#/components/schemas/core.RoutingRequirement'
                 signal_critical_positions:
                   type: array
                   items:
-                    $ref: '#/components/schemas/SignalCriticalPosition'
+                    $ref: '#/components/schemas/core.SignalCriticalPosition'
                 spacing_requirements:
                   type: array
                   items:
-                    $ref: '#/components/schemas/SpacingRequirement'
+                    $ref: '#/components/schemas/core.SpacingRequirement'
                 zone_updates:
                   type: array
                   items:
-                    $ref: '#/components/schemas/ZoneUpdate'
+                    $ref: '#/components/schemas/core.ZoneUpdate'
           description: 'User-selected simulation: can be base or provisional'
         mrsp:
           type: object
@@ -12806,7 +12694,7 @@ components:
                     description: in meters per second
               description: List of `n+1` values associated to the ranges
         provisional:
-          $ref: '#/components/schemas/ReportTrain'
+          $ref: '#/components/schemas/core.ReportTrain'
           description: Simulation that takes into account the regularity margins
     SimulationSummaryResult:
       oneOf:
@@ -12965,23 +12853,6 @@ components:
             minimum: 0
           description: List of times in ms since `departure_time` associated to a position
           minItems: 1
-    SpacingRequirement:
-      type: object
-      required:
-      - zone
-      - begin_time
-      - end_time
-      properties:
-        begin_time:
-          type: integer
-          format: int64
-          minimum: 0
-        end_time:
-          type: integer
-          format: int64
-          minimum: 0
-        zone:
-          type: string
     SpeedDependantPower:
       type: object
       description: power-speed curve (in an energy source)
@@ -14481,26 +14352,6 @@ components:
       - LOADING
       - READY
       - ERROR
-    ZoneUpdate:
-      type: object
-      required:
-      - zone
-      - time
-      - position
-      - is_entry
-      properties:
-        is_entry:
-          type: boolean
-        position:
-          type: integer
-          format: int64
-          minimum: 0
-        time:
-          type: integer
-          format: int64
-          minimum: 0
-        zone:
-          type: string
     core.ConflictRequirement:
       type: object
       description: |-
@@ -14952,6 +14803,118 @@ components:
           description: |-
             The path offset in mm of each path item given as input of the pathfinding
             The first value is always `0` (beginning of the path) and the last one is always equal to the `length` of the path in mm
+    core.ReportTrain:
+      type: object
+      required:
+      - positions
+      - times
+      - speeds
+      - energy_consumption
+      - path_item_times
+      properties:
+        energy_consumption:
+          type: number
+          format: double
+          description: Total energy consumption
+        path_item_times:
+          type: array
+          items:
+            type: integer
+            format: int64
+            minimum: 0
+          description: |-
+            Time in ms of each path item given as input of the pathfinding
+            The first value is always `0` (beginning of the path) and the last one, the total time of the simulation (end of the path)
+        positions:
+          type: array
+          items:
+            type: integer
+            format: int64
+            minimum: 0
+          description: |-
+            List of positions of a train
+            Both positions (in mm) and times (in ms) must have the same length
+        speeds:
+          type: array
+          items:
+            type: number
+            format: double
+          description: List of speeds associated to a position
+        times:
+          type: array
+          items:
+            type: integer
+            format: int64
+            minimum: 0
+    core.RoutingRequirement:
+      type: object
+      required:
+      - route
+      - begin_time
+      - zones
+      properties:
+        begin_time:
+          type: integer
+          format: int64
+          description: Time in ms
+          minimum: 0
+        route:
+          type: string
+        zones:
+          type: array
+          items:
+            $ref: '#/components/schemas/core.RoutingZoneRequirement'
+    core.RoutingZoneRequirement:
+      type: object
+      required:
+      - zone
+      - entry_detector
+      - exit_detector
+      - switches
+      - end_time
+      properties:
+        end_time:
+          type: integer
+          format: int64
+          description: Time in ms
+          minimum: 0
+        entry_detector:
+          type: string
+        exit_detector:
+          type: string
+        switches:
+          type: object
+          additionalProperties:
+            type: string
+          propertyNames:
+            type: string
+        zone:
+          type: string
+    core.SignalCriticalPosition:
+      type: object
+      description: |-
+        First position (space and time) along the path where given signal must
+        be free (sighting time or closed-signal stop ending)
+      required:
+      - signal
+      - time
+      - position
+      - state
+      properties:
+        position:
+          type: integer
+          format: int64
+          description: Position in mm
+          minimum: 0
+        signal:
+          type: string
+        state:
+          type: string
+        time:
+          type: integer
+          format: int64
+          description: Time in ms
+          minimum: 0
     core.SignalUpdate:
       type: object
       required:
@@ -15003,6 +14966,23 @@ components:
           format: int64
           description: The aspects start being displayed at this time (number of ms since `departure_time`)
           minimum: 0
+    core.SpacingRequirement:
+      type: object
+      required:
+      - zone
+      - begin_time
+      - end_time
+      properties:
+        begin_time:
+          type: integer
+          format: int64
+          minimum: 0
+        end_time:
+          type: integer
+          format: int64
+          minimum: 0
+        zone:
+          type: string
     core.TrackRange:
       type: object
       description: |-
@@ -15069,13 +15049,33 @@ components:
         routing_requirements:
           type: array
           items:
-            $ref: '#/components/schemas/RoutingRequirement'
+            $ref: '#/components/schemas/core.RoutingRequirement'
         spacing_requirements:
           type: array
           items:
-            $ref: '#/components/schemas/SpacingRequirement'
+            $ref: '#/components/schemas/core.SpacingRequirement'
         start_time:
           type: string
           format: date-time
         train_id:
+          type: string
+    core.ZoneUpdate:
+      type: object
+      required:
+      - zone
+      - time
+      - position
+      - is_entry
+      properties:
+        is_entry:
+          type: boolean
+        position:
+          type: integer
+          format: int64
+          minimum: 0
+        time:
+          type: integer
+          format: int64
+          minimum: 0
+        zone:
           type: string

@@ -8,7 +8,7 @@ import type {
 } from '@osrd-project/ui-charts';
 
 import type { PathPropertiesFormatted, PositionData } from 'applications/operationalStudies/types';
-import type { ReportTrain, SimulationResponseSuccess } from 'common/api/osrdEditoastApi';
+import type { CoreReportTrain, SimulationResponseSuccess } from 'common/api/osrdEditoastApi';
 import { TAG_COLORS } from 'modules/simulationResult/consts';
 import type { SpeedLimitTagValue } from 'modules/simulationResult/types';
 import { mmToKm, msToKmh, mToKm } from 'utils/physics';
@@ -88,7 +88,7 @@ export const formatSpeedCurve = (positions: number[], speeds: number[]) =>
     value: msToKmh(value),
   }));
 
-export const formatSpeeds = (simulation: ReportTrain) => {
+export const formatSpeeds = (simulation: CoreReportTrain) => {
   const { positions, speeds } = simulation;
   return formatSpeedCurve(positions, speeds);
 };

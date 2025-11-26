@@ -3,7 +3,7 @@ import type {
   PathPropertiesFormatted,
 } from 'applications/operationalStudies/types';
 import {
-  type ReportTrain,
+  type CoreReportTrain,
   type TrackSection,
   type SimulationResponseSuccess,
 } from 'common/api/osrdEditoastApi';
@@ -51,7 +51,7 @@ export function getActualVmaxs(givenPosition: number, vmax: SpeedRanges) {
 }
 
 const getTimeAndSpeed = (
-  simulationReport: ReportTrain,
+  simulationReport: CoreReportTrain,
   op: PathPropertiesFormatted['operationalPoints'][number]
 ) => {
   const matchingReportTrainIndex = simulationReport.positions.findIndex(
