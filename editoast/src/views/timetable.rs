@@ -635,12 +635,13 @@ pub(in crate::views) async fn conflicts(
     // Flatten paced trains occurrences
     let (paced_train_ids, occurrence_trains): (Vec<_>, Vec<_>) = paced_trains
         .iter()
-        .flat_map(|pt| {
-            pt.iter_occurrences()
+        .flat_map(|paced_train| {
+            paced_train
+                .iter_occurrences()
                 .map(|Occurrence { id, train_schedule }| {
                     (
                         TrainId::PacedTrain {
-                            paced_train_id: pt.id,
+                            paced_train_id: paced_train.id,
                             occurrence_id: id.into(),
                         },
                         train_schedule,
@@ -837,13 +838,16 @@ pub(in crate::views) async fn requirements(
     .await?;
     let (train_ids, trains): (Vec<_>, Vec<_>) = trains
         .flat_map(|train| match train {
-            Either::Left(ts) => vec![(TrainId::TrainSchedule(ts.id), ts.into())],
-            Either::Right(pt) => pt
+            Either::Left(train_schedule) => vec![(
+                TrainId::TrainSchedule(train_schedule.id),
+                train_schedule.into(),
+            )],
+            Either::Right(paced_train) => paced_train
                 .iter_occurrences()
                 .map(|Occurrence { id, train_schedule }| {
                     (
                         TrainId::PacedTrain {
-                            paced_train_id: pt.id,
+                            paced_train_id: paced_train.id,
                             occurrence_id: id.into(),
                         },
                         train_schedule,
