@@ -1,6 +1,7 @@
 package fr.sncf.osrd.stdcm.graph
 
 import fr.sncf.osrd.envelope.Envelope
+import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelope
 import fr.sncf.osrd.utils.units.Distance
@@ -171,5 +172,11 @@ data class STDCMEdge(
     /** Return all delay added to this edge, engineering + departure delay */
     fun getTotalAddedDelayOnEdge(): Double {
         return timeData.delayAddedToLastDeparture + (engineeringAllowance?.extraDuration ?: 0.0)
+    }
+
+    /** Converts a path offset into an edge offset */
+    fun edgeOffsetFromPathOffset(offset: Offset<TrainPath>): Offset<STDCMEdge> {
+        val blockOffset = infraExplorer.getCurrentBlockRange().offsetFromTrainPath(offset)
+        return Offset(blockOffset - envelopeStartOffset)
     }
 }
