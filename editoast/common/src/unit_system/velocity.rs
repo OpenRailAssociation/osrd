@@ -13,8 +13,8 @@ quantity! {
         Z0,     // amount of substance
         Z0>;    // luminous intensity
     units {
-        @kilometer_per_second: prefix!(kilo); "km/s", "kilometer per second",
+        @kilometer_per_second: 1000.0; "km/s", "kilometer per second",
             "kilometers per second";
-        @meter_per_second: prefix!(none); "m/s", "meter per second", "meters per second";
+        @meter_per_second: 1.0; "m/s", "meter per second", "meters per second";
     }
 }

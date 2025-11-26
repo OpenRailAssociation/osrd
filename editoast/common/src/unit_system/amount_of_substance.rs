@@ -20,6 +20,6 @@ quantity! {
         /// 2. The amount of substance, symbol *n*, of a system is a measure of the number of
         ///    specified elementary entities. An elementary entity may be an atom, a molecule, an
         ///    ion, an electron, any other particle or specified group of particles.
-        @mole: prefix!(none); "mol", "mole", "moles";
+        @mole: 1.0; "mol", "mole", "moles";
     }
 }

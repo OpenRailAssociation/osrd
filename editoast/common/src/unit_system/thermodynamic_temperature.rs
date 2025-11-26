@@ -27,6 +27,6 @@ quantity! {
         /// fixed numerical value of the Boltzmann constant *k* to be 1.380 649 × 10⁻²³ when
         /// expressed in the unit J K⁻¹, which is equal to kg m² s⁻² K⁻¹, where the kilogram, meter,
         /// and second are defined in terms of *h*, *c*, and ∆*ν*<sub>Cs</sub>.
-        @kelvin: prefix!(none); "K", "kelvin", "kelvins";
+        @kelvin: 1.0; "K", "kelvin", "kelvins";
     }
 }

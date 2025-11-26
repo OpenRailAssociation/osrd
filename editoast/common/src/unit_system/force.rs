@@ -14,6 +14,6 @@ quantity! {
         Z0>;    // luminous intensity
     units {
         /// Derived unit of force.
-        @newton: prefix!(none); "N", "newton", "newtons";
+        @newton: 1.0; "N", "newton", "newtons";
     }
 }

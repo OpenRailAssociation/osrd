@@ -11,7 +11,7 @@ quantity! {
         Z0,     // amount of substance
         Z0>;    // luminous intensity
     units {
-        @second: 1.0; "s", "second", "seconds";
-        @millisecond: 1.0E-3; "ms", "millisecond", "milliseconds";
+        @second: 1.0E3; "s", "second", "seconds";
+        @millisecond: 1.0; "ms", "millisecond", "milliseconds";
     }
 }
