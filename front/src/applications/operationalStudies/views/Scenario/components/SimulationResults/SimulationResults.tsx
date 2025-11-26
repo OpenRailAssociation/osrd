@@ -351,6 +351,22 @@ const SimulationResults = ({
                 },
               },
             ]}
+            customFooter={
+              simulationResults?.isValid && (
+                <div className="time-stop-outputs">
+                  {/* SIMULATION EXPORT BUTTONS */}
+                  <SimulationResultsExport
+                    path={simulationResults.path}
+                    scenarioData={scenarioData}
+                    train={simulationResults.train}
+                    simulation={simulationResults.simulation}
+                    pathProperties={simulationResults.pathProperties}
+                    rollingStock={simulationResults.rollingStock}
+                    mapCanvas={mapCanvas}
+                  />
+                </div>
+              )
+            }
           >
             <div data-testid="time-stop-outputs" className="time-stop-outputs">
               <TimesStopsOutput
@@ -366,21 +382,6 @@ const SimulationResults = ({
                   : { isValid: false })}
               />
             </div>
-
-            {simulationResults?.isValid && (
-              <div className="time-stop-outputs">
-                {/* SIMULATION EXPORT BUTTONS */}
-                <SimulationResultsExport
-                  path={simulationResults.path}
-                  scenarioData={scenarioData}
-                  train={simulationResults.train}
-                  simulation={simulationResults.simulation}
-                  pathProperties={simulationResults.pathProperties}
-                  rollingStock={simulationResults.rollingStock}
-                  mapCanvas={mapCanvas}
-                />
-              </div>
-            )}
           </BoardWrapper>
         </>
       )}

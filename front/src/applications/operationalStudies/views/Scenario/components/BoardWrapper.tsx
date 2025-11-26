@@ -7,6 +7,7 @@ import type { OSRDMenuItem } from 'common/OSRDMenu';
 
 type BoardWrapperProps = {
   children: React.ReactNode;
+  customFooter?: React.ReactNode;
   hidden?: boolean;
   name: string;
   items?: OSRDMenuItem[];
@@ -21,6 +22,7 @@ const BoardWrapper = ({
   items = [],
   withFooter = false,
   dataTestId,
+  customFooter,
 }: BoardWrapperProps) => {
   if (hidden) {
     return null;
@@ -48,6 +50,7 @@ const BoardWrapper = ({
       >
         {children}
       </div>
+      {customFooter}
       {withFooter && <div className="board-footer" />}
     </div>
   );
