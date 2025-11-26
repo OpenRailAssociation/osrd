@@ -2,7 +2,7 @@ import type {
   ElectrificationRange,
   OperationalPointWithTimeAndSpeed,
 } from 'applications/operationalStudies/types';
-import type { ReportTrain, SimulationResponseSuccess } from 'common/api/osrdEditoastApi';
+import type { CoreReportTrain, SimulationResponseSuccess } from 'common/api/osrdEditoastApi';
 import { interpolateValue } from 'modules/simulationResult/helpers/utils';
 import type { Train } from 'reducers/osrdconf/types';
 import type { PositionSpeedTime, SpeedRanges } from 'reducers/simulationResults/types';
@@ -56,7 +56,7 @@ const compareOldActualValues = (old?: string, actual?: string) =>
 // Add OPs inside speedsteps array, gather speedlimit with stop position, add electrification ranges,
 // and sort the array along position before return
 const overloadSteps = (
-  trainRegime: ReportTrain,
+  trainRegime: CoreReportTrain,
   operationalPoints: OperationalPointWithTimeAndSpeed[],
   speedLimits: SpeedRanges,
   electrificationRanges: ElectrificationRange[]
@@ -194,7 +194,7 @@ export default function exportTrainCSV(
   electrificationRanges: ElectrificationRange[],
   train: Train
 ) {
-  const trainRegimeWithAccurateTime: ReportTrain = {
+  const trainRegimeWithAccurateTime: CoreReportTrain = {
     ...simulatedTrain.final_output,
     times: simulatedTrain.final_output.times.map(
       (time) => new Date(train.start_time).getTime() + time

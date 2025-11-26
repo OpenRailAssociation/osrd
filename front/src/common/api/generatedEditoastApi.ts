@@ -4089,7 +4089,7 @@ export type CoreEtcsBrakingCurvesResponse = {
   /** List of ETCS braking curves associated to the train schedule's ETCS stops */
   stops: CoreEtcsCurves[];
 };
-export type ReportTrain = {
+export type CoreReportTrain = {
   /** Total energy consumption */
   energy_consumption: number;
   /** Time in ms of each path item given as input of the pathfinding
@@ -4102,7 +4102,7 @@ export type ReportTrain = {
   speeds: number[];
   times: number[];
 };
-export type RoutingZoneRequirement = {
+export type CoreRoutingZoneRequirement = {
   /** Time in ms */
   end_time: number;
   entry_detector: string;
@@ -4112,13 +4112,13 @@ export type RoutingZoneRequirement = {
   };
   zone: string;
 };
-export type RoutingRequirement = {
+export type CoreRoutingRequirement = {
   /** Time in ms */
   begin_time: number;
   route: string;
-  zones: RoutingZoneRequirement[];
+  zones: CoreRoutingZoneRequirement[];
 };
-export type SignalCriticalPosition = {
+export type CoreSignalCriticalPosition = {
   /** Position in mm */
   position: number;
   signal: string;
@@ -4126,12 +4126,12 @@ export type SignalCriticalPosition = {
   /** Time in ms */
   time: number;
 };
-export type SpacingRequirement = {
+export type CoreSpacingRequirement = {
   begin_time: number;
   end_time: number;
   zone: string;
 };
-export type ZoneUpdate = {
+export type CoreZoneUpdate = {
   is_entry: boolean;
   position: number;
   time: number;
@@ -4139,7 +4139,7 @@ export type ZoneUpdate = {
 };
 export type SimulationResponseSuccess = {
   /** Simulation without any regularity margins */
-  base: ReportTrain;
+  base: CoreReportTrain;
   electrical_profiles: {
     /** List of `n` boundaries of the ranges (block path).
         A boundary is a distance from the beginning of the path in mm. */
@@ -4157,11 +4157,11 @@ export type SimulationResponseSuccess = {
     )[];
   };
   /** User-selected simulation: can be base or provisional */
-  final_output: ReportTrain & {
-    routing_requirements: RoutingRequirement[];
-    signal_critical_positions: SignalCriticalPosition[];
-    spacing_requirements: SpacingRequirement[];
-    zone_updates: ZoneUpdate[];
+  final_output: CoreReportTrain & {
+    routing_requirements: CoreRoutingRequirement[];
+    signal_critical_positions: CoreSignalCriticalPosition[];
+    spacing_requirements: CoreSpacingRequirement[];
+    zone_updates: CoreZoneUpdate[];
   };
   /** A MRSP computation result (Most Restrictive Speed Profile) */
   mrsp: {
@@ -4191,7 +4191,7 @@ export type SimulationResponseSuccess = {
     }[];
   };
   /** Simulation that takes into account the regularity margins */
-  provisional: ReportTrain;
+  provisional: CoreReportTrain;
 };
 export type SimulationResponse =
   | (SimulationResponseSuccess & {
@@ -4711,8 +4711,8 @@ export type Conflict = {
   work_schedule_ids: number[];
 };
 export type CoreTrainRequirementsById = {
-  routing_requirements: RoutingRequirement[];
-  spacing_requirements: SpacingRequirement[];
+  routing_requirements: CoreRoutingRequirement[];
+  spacing_requirements: CoreSpacingRequirement[];
   start_time: string;
   train_id: string;
 };
