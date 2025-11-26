@@ -18,7 +18,7 @@ use crate::AsCoreRequest;
 use crate::Json;
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
-#[schema(as = StdcmRequest)]
+#[schema(as = core::StdcmRequest)]
 pub struct Request {
     /// Infrastructure id
     pub infra: i64,
@@ -29,7 +29,7 @@ pub struct Request {
 
     // Pathfinding inputs
     /// List of waypoints. Each waypoint is a list of track offset.
-    pub path_items: Vec<PathItem>, // FIXME: the schema is referenced in the openapi, not the struct below
+    pub path_items: Vec<PathItem>,
     /// The loading gauge of the rolling stock
     pub rolling_stock_loading_gauge: LoadingGaugeType,
     /// Set of authorized track section ids for the current request
@@ -60,13 +60,14 @@ pub struct Request {
     #[schema(inline)]
     pub margin: Option<MarginValue>,
     /// List of planned work schedules
-    pub work_schedules: Vec<WorkSchedule>, // FIXME: the schema is referenced in the openapi, not the struct below
+    pub work_schedules: Vec<WorkSchedule>,
     /// List of applicable temporary speed limits between the train departure and arrival
     #[schema(inline)]
-    pub temporary_speed_limits: Vec<TemporarySpeedLimit>, // FIXME: the schema is referenced in the openapi, not the struct below
+    pub temporary_speed_limits: Vec<TemporarySpeedLimit>,
 }
 
 #[derive(Debug, Clone, Serialize, PartialEq, Deserialize, ToSchema)]
+#[schema(as = core::PathItem)]
 pub struct PathItem {
     /// The track offsets of the path item
     pub locations: Vec<TrackOffset>,
@@ -78,6 +79,7 @@ pub struct PathItem {
 
 /// Contains the data of a step timing, when it is specified
 #[derive(Debug, Clone, Serialize, PartialEq, Deserialize, ToSchema)]
+#[schema(as = core::StepTimingData)]
 pub struct StepTimingData {
     /// Time the train should arrive at this point
     pub arrival_time: DateTime<Utc>,
@@ -89,6 +91,7 @@ pub struct StepTimingData {
 
 /// Lighter description of a work schedule, with only the relevant information for core
 #[derive(Debug, Clone, Serialize, PartialEq, Deserialize, ToSchema)]
+#[schema(as = core::WorkSchedule)]
 pub struct WorkSchedule {
     /// Start time as a time delta from the stdcm start time in ms
     pub start_time: u64,
@@ -100,6 +103,7 @@ pub struct WorkSchedule {
 
 /// Lighter description of a work schedule with only the relevant information for core
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
+#[schema(as = core::TemporarySpeedLimit)]
 pub struct TemporarySpeedLimit {
     /// Speed limitation in m/s
     pub speed_limit: f64,
@@ -110,6 +114,7 @@ pub struct TemporarySpeedLimit {
 /// A range on a track section.
 /// `begin` is always less than `end`.
 #[derive(Serialize, Deserialize, Clone, Debug, ToSchema, Hash, PartialEq, Eq)]
+#[schema(as = core::UndirectedTrackRange)]
 pub struct UndirectedTrackRange {
     /// The track section identifier.
     pub track_section: String,
