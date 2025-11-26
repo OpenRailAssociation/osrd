@@ -116,7 +116,7 @@ pub(super) fn build_request(
         power_restrictions,
         initial_speed: params
             .initial_speed()
-            .get::<uom::si::velocity::meter_per_second>(),
+            .get::<common::unit_system::velocity::meter_per_second>(),
         comfort: params.comfort(),
         constraint_distribution: params.constraint_distribution(),
         speed_limit_tag: params.speed_limit_tag().map(|s| s.to_owned()),

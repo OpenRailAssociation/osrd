@@ -1,5 +1,5 @@
+use common::unit_system::quantities::Offset;
 use common::units::millisecond;
-use common::units::quantities::Offset;
 use database::DatabaseError;
 use database::tables::sql_types;
 use diesel::prelude::*;

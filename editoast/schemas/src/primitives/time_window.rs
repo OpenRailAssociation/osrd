@@ -1,5 +1,5 @@
 use super::PositiveDuration;
-use common::units::quantities::Offset;
+use common::unit_system::quantities::Offset;
 use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;

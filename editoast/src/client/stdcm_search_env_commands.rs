@@ -322,7 +322,7 @@ mod tests {
     use super::*;
     use chrono::DateTime;
     use chrono::Utc;
-    use common::units::quantities::Offset;
+    use common::unit_system::quantities::Offset;
     use database::DbConnection;
     use database::DbConnectionPoolV2;
     use rstest::rstest;

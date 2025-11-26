@@ -1,10 +1,10 @@
+use common::unit_system::quantities::AerodynamicDrag;
+use common::unit_system::quantities::AerodynamicDragPerWeight;
+use common::unit_system::quantities::SolidFriction;
+use common::unit_system::quantities::SolidFrictionPerWeight;
+use common::unit_system::quantities::ViscosityFriction;
+use common::unit_system::quantities::ViscosityFrictionPerWeight;
 use common::units;
-use common::units::quantities::AerodynamicDrag;
-use common::units::quantities::AerodynamicDragPerWeight;
-use common::units::quantities::SolidFriction;
-use common::units::quantities::SolidFrictionPerWeight;
-use common::units::quantities::ViscosityFriction;
-use common::units::quantities::ViscosityFrictionPerWeight;
 use educe::Educe;
 use serde::Deserialize;
 use serde::Serialize;

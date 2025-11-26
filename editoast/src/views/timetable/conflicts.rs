@@ -12,8 +12,8 @@ use axum::extract::Path;
 use axum::extract::Query;
 use axum::extract::State;
 use chrono::Duration;
+use common::unit_system::quantities::Offset;
 use common::units::millisecond;
-use common::units::quantities::Offset;
 use itertools::Itertools as _;
 use itertools::izip;
 use models::prelude::*;
@@ -706,7 +706,7 @@ fn get_linking_requirements(
         .last()
         .expect("times should not be empty");
     let target_start_time = (target_occurrence.start_time() - source_occurrence.start_time())
-        .get::<uom::si::time::millisecond>() as u64;
+        .get::<common::unit_system::time::millisecond>() as u64;
 
     let final_spacing_requirements = spacing_requirements
         .into_iter()
