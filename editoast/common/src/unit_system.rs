@@ -9,7 +9,7 @@ pub mod force;
 pub mod frequency;
 pub mod length;
 pub mod linear_mass_density;
-mod linear_number_density;
+pub mod linear_number_density;
 pub mod luminous_intensity;
 pub mod mass;
 pub mod mass_rate;
@@ -72,20 +72,20 @@ system! {
     }
 }
 
-// Editoast aliases for existing units
-type SolidFriction = crate::unit_system::u64::Force;
-type SolidFrictionPerWeight = crate::unit_system::u64::Acceleration;
-type Deceleration = crate::unit_system::u64::Acceleration;
-type ViscosityFriction = crate::unit_system::u64::MassRate;
-type ViscosityFrictionPerWeight = crate::unit_system::u64::Frequency;
-type AerodynamicDrag = crate::unit_system::u64::LinearMassDensity;
-type AerodynamicDragPerWeight = crate::unit_system::u64::LinearNumberDensity;
-
-mod u64 {
+pub mod u64 {
     mod editoast_units_system {
         pub use super::super::*;
     }
     ESQ!(self::editoast_units_system, u64);
+
+    // Editoast aliases for existing units
+    pub type SolidFriction = crate::unit_system::u64::Force;
+    pub type SolidFrictionPerWeight = crate::unit_system::u64::Acceleration;
+    pub type Deceleration = crate::unit_system::u64::Acceleration;
+    pub type ViscosityFriction = crate::unit_system::u64::MassRate;
+    pub type ViscosityFrictionPerWeight = crate::unit_system::u64::Frequency;
+    pub type AerodynamicDrag = crate::unit_system::u64::LinearMassDensity;
+    pub type AerodynamicDragPerWeight = crate::unit_system::u64::LinearNumberDensity;
 }
 
 #[cfg(test)]
