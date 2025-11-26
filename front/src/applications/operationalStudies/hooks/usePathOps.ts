@@ -9,7 +9,7 @@ import {
 } from 'common/api/osrdEditoastApi';
 import type { Train } from 'reducers/osrdconf/types';
 
-import { getStationFromOps, isOperationalPointReference } from '../utils';
+import { getStationFromOps } from '../utils';
 
 /**
  * Given a train's path, return the operational points corresponding to the pathSteps of this train
@@ -24,7 +24,7 @@ const usePathOps = (
   const operationalPointReferences: OperationalPointReference[] = useMemo(
     () =>
       (path ?? []).reduce<OperationalPointReference[]>((acc, pathItem) => {
-        if (isOperationalPointReference(pathItem.location)) {
+        if ('operational_point' in pathItem.location) {
           acc.push(pathItem.location);
         }
         return acc;

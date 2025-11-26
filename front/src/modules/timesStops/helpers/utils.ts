@@ -4,10 +4,7 @@ import dayjs from 'dayjs';
 import type { TFunction } from 'i18next';
 import { round, isEqual, isNil } from 'lodash';
 
-import {
-  getInvalidStepLabel,
-  isOperationalPointReference,
-} from 'applications/operationalStudies/utils';
+import { getInvalidStepLabel } from 'applications/operationalStudies/utils';
 import type {
   OperationalPoint,
   PathItemLocation,
@@ -375,7 +372,7 @@ export const getOperationalPointName = (
   if (op) return op.extensions?.identifier?.name;
 
   // TrackOffset
-  if (!isOperationalPointReference(step)) {
+  if (!('operational_point' in step)) {
     if (stepIndex === 0) {
       return t('main.requestedOrigin');
     } else if (stepIndex === totalStepCount - 1) {
