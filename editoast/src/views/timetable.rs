@@ -6,6 +6,7 @@ pub mod stdcm;
 mod track_occupancy;
 pub mod train_schedule;
 
+use std::collections::HashMap;
 use std::sync::Arc;
 
 use authz;
@@ -34,6 +35,10 @@ use core_client::simulation::PhysicsConsist;
 use database::DbConnection;
 use database::DbConnectionPoolV2;
 use editoast_derive::EditoastError;
+use editoast_models::prelude::*;
+use editoast_models::timetable::Timetable;
+use editoast_models::timetable::TimetableWithTrains;
+use editoast_models::train_schedule::TrainScheduleChangeset;
 use itertools::Either;
 use itertools::Itertools;
 use itertools::izip;
@@ -53,6 +58,7 @@ use train_schedule::TrainScheduleForm;
 use train_schedule::TrainScheduleResponse;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
+use uuid::Uuid;
 
 use super::infra::InfraIdQueryParam;
 use super::pagination::ConcatenatedPaginatedList;
@@ -70,10 +76,6 @@ use crate::models::paced_train::TrainId;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
 use crate::views::timetable::simulation::SimulationResponseSuccess;
-use editoast_models::prelude::*;
-use editoast_models::timetable::Timetable;
-use editoast_models::timetable::TimetableWithTrains;
-use editoast_models::train_schedule::TrainScheduleChangeset;
 
 #[derive(Debug, Error, EditoastError, derive_more::From)]
 #[editoast_error(base_id = "timetable")]
@@ -398,27 +400,30 @@ pub struct Conflict {
 impl Conflict {
     /// This function processes train ids from Core Response
     ///  and maps them to either a `train_schedule_id` or a `paced_train_occurrence_id` based on the provided key mapping.
-    fn from_core_response(conflict: CoreConflict) -> Result<Self> {
+    fn from_core_response(
+        conflict: CoreConflict,
+        trains_map: &HashMap<Uuid, TrainId>,
+    ) -> Result<Self> {
         let (train_schedule_ids, paced_train_occurrence_ids): (Vec<_>, Vec<_>) = conflict
             .train_ids
             .iter()
-            .partition_map(|train_id| match train_id.parse() {
-                Ok(TrainId::TrainSchedule(id)) => Either::Left(id),
-                Ok(TrainId::PacedTrain {
+            .partition_map(|train_uuid| match trains_map.get(train_uuid).cloned() {
+                Some(TrainId::TrainSchedule(id)) => Either::Left(id),
+                Some(TrainId::PacedTrain {
                     paced_train_id,
                     occurrence_id: OccurrenceId::BaseOccurrence { index },
                 }) => Either::Right(PacedTrainOccurrenceId {
                     paced_train_id,
                     occurrence_ref: PacedTrainOccurrenceRef::BaseOccurrence { index },
                 }),
-                Ok(TrainId::PacedTrain {
+                Some(TrainId::PacedTrain {
                     paced_train_id,
                     occurrence_id: OccurrenceId::CreatedException { exception_key },
                 }) => Either::Right(PacedTrainOccurrenceId {
                     paced_train_id,
                     occurrence_ref: PacedTrainOccurrenceRef::CreatedException { exception_key },
                 }),
-                Ok(TrainId::PacedTrain {
+                Some(TrainId::PacedTrain {
                     paced_train_id,
                     occurrence_id:
                         OccurrenceId::ModifiedException {
@@ -432,7 +437,9 @@ impl Conflict {
                         exception_key,
                     },
                 }),
-                Err(_) => unreachable!("Unreachable case encountered while partitioning train IDs"),
+                None => {
+                    unreachable!("Unreachable case encountered while partitioning train IDs")
+                }
             });
 
         let work_schedule_ids = conflict
@@ -580,7 +587,7 @@ pub(in crate::views) async fn conflicts(
         .chain(simulations)
         .collect();
 
-    let conflict_detection_request =
+    let (trains_ids_map, conflict_detection_request) =
         build_conflict_core_request(infra, start_times, train_ids, simulations);
 
     // 3. Call core
@@ -588,7 +595,7 @@ pub(in crate::views) async fn conflicts(
     let conflicts = conflict_detection_response.conflicts;
     let conflicts_response: Result<Vec<Conflict>> = conflicts
         .into_iter()
-        .map(Conflict::from_core_response)
+        .map(|response| Conflict::from_core_response(response, &trains_ids_map))
         .collect();
     Ok(Json(conflicts_response?))
 }
@@ -625,39 +632,50 @@ fn build_conflict_core_request(
     start_times: Vec<DateTime<Utc>>,
     train_ids: Vec<TrainId>,
     simulations: Vec<Arc<simulation::Response>>,
-) -> ConflictDetectionRequest {
+) -> (HashMap<Uuid, TrainId>, ConflictDetectionRequest) {
     assert_eq!(start_times.len(), simulations.len());
     assert_eq!(train_ids.len(), simulations.len());
 
-    let trains_requirements = izip!(start_times, train_ids, simulations)
-        .flat_map(|(start_time, train_id, sim)| {
-            let CompleteReportTrain {
-                spacing_requirements,
-                routing_requirements,
-                ..
-            } = match Arc::unwrap_or_clone(sim) {
-                simulation::Response::Success(SimulationResponseSuccess {
-                    final_output, ..
-                }) => Some(final_output),
-                _ => None,
-            }?;
-            Some((
-                train_id.to_string(),
-                TrainRequirements {
-                    start_time,
+    let mut trains_map: HashMap<Uuid, TrainId> = HashMap::with_capacity(train_ids.len());
+
+    let trains_requirements: HashMap<Uuid, TrainRequirements> =
+        izip!(start_times, train_ids, simulations)
+            .flat_map(|(start_time, train_id, sim)| {
+                let CompleteReportTrain {
                     spacing_requirements,
                     routing_requirements,
-                },
-            ))
-        })
-        .collect();
+                    ..
+                } = match Arc::unwrap_or_clone(sim) {
+                    simulation::Response::Success(SimulationResponseSuccess {
+                        final_output,
+                        ..
+                    }) => Some(final_output),
+                    _ => None,
+                }?;
 
-    ConflictDetectionRequest {
-        infra: infra.id,
-        expected_version: infra.version,
-        trains_requirements,
-        work_schedules: None,
-    }
+                let train_id_for_core = Uuid::new_v4();
+                trains_map.insert(train_id_for_core, train_id.clone());
+
+                Some((
+                    train_id_for_core,
+                    TrainRequirements {
+                        start_time,
+                        spacing_requirements,
+                        routing_requirements,
+                    },
+                ))
+            })
+            .collect();
+
+    (
+        trains_map,
+        ConflictDetectionRequest {
+            infra: infra.id,
+            expected_version: infra.version,
+            trains_requirements,
+            work_schedules: None,
+        },
+    )
 }
 
 /// Retrieve the list of requirements of the timetable (invalid trains are ignored)
@@ -1046,7 +1064,6 @@ mod tests {
     use core_client::simulation::SpacingRequirement;
     use core_client::simulation::SpeedLimitProperties;
     use pretty_assertions::assert_eq;
-    use rstest::rstest;
     use schemas::fixtures::simple_created_exception_with_change_groups;
     use schemas::fixtures::simple_modified_exception_with_change_groups;
     use schemas::fixtures::simple_rolling_stock;
@@ -1411,14 +1428,23 @@ mod tests {
         )));
 
         // When
-        let conflict_core_request =
+        let (trains_ids_map, conflict_core_request) =
             build_conflict_core_request(infra, start_times, train_ids, simulations);
 
         // Then (assert the train schedule)
         assert_eq!(conflict_core_request.trains_requirements.len(), 3);
+
+        let simple_ts_train_core_id = trains_ids_map
+            .iter()
+            .find_map(|(core_id, train_id)| match train_id {
+                TrainId::TrainSchedule(ts_id_inner) if *ts_id_inner == ts_id => Some(core_id),
+                _ => None,
+            })
+            .unwrap();
+
         let simple_requirements = conflict_core_request
             .trains_requirements
-            .get(&format!("{ts_id}"))
+            .get(simple_ts_train_core_id)
             .unwrap();
         assert_eq!(simple_requirements.start_time, ts_start_time);
         assert_eq!(
@@ -1431,9 +1457,19 @@ mod tests {
         );
 
         // Then (assert the paced train, first occurrence)
+        let paced_0_train_core_id = trains_ids_map
+            .iter()
+            .find_map(|(core_id, train_id)| match train_id {
+                TrainId::PacedTrain {
+                    paced_train_id: pt_id,
+                    occurrence_id: OccurrenceId::BaseOccurrence { index },
+                } if *pt_id == paced_train_id && *index == 0 => Some(core_id),
+                _ => None,
+            })
+            .unwrap();
         let paced_0_requirements = conflict_core_request
             .trains_requirements
-            .get(&format!("{paced_train_id}#0"))
+            .get(paced_0_train_core_id)
             .unwrap();
         assert_eq!(paced_0_requirements.start_time, paced_start_time);
         assert_eq!(
@@ -1446,9 +1482,19 @@ mod tests {
         );
 
         // Then (assert the paced train, second occurrence)
+        let paced_1_train_core_id = trains_ids_map
+            .iter()
+            .find_map(|(core_id, train_id)| match train_id {
+                TrainId::PacedTrain {
+                    paced_train_id: pt_id,
+                    occurrence_id: OccurrenceId::BaseOccurrence { index },
+                } if *pt_id == paced_train_id && *index == 1 => Some(core_id),
+                _ => None,
+            })
+            .unwrap();
         let paced_1_requirements = conflict_core_request
             .trains_requirements
-            .get(&format!("{paced_train_id}#1"))
+            .get(paced_1_train_core_id)
             .unwrap();
         assert_eq!(
             paced_1_requirements.start_time,
@@ -1462,33 +1508,6 @@ mod tests {
             paced_1_requirements.routing_requirements,
             vec![routing_requirement]
         );
-    }
-
-    #[rstest]
-    #[case("42")]
-    #[case("42#10")]
-    #[case("84@exception_21")]
-    #[case("84@exception_21#7")]
-    fn train_id_parse_and_to_string_roundtrip(#[case] id: &str) {
-        assert_eq!(id.parse::<TrainId>().unwrap().to_string(), id);
-    }
-
-    #[rstest]
-    #[case("", "Invalid train id")]
-    #[case("#", "Invalid train id")]
-    #[case("@", "Invalid train id")]
-    #[case("@#", "Invalid train id")]
-    #[case("22#", "Invalid occurrence index")]
-    #[case("22@#", "Invalid exception index")]
-    #[case("22@#zero", "Invalid exception index")]
-    #[case("zero#", "Invalid train id")]
-    #[case("zero@", "Invalid train id")]
-    #[case("zero@#", "Invalid train id")]
-    #[case("22#zero", "Invalid occurrence index")]
-    #[case("22@key#", "Invalid exception index")]
-    #[case("22@key#zero", "Invalid exception index")]
-    fn train_id_parse_fails(#[case] id: &str, #[case] err: &str) {
-        assert_eq!(&id.parse::<TrainId>().unwrap_err().to_string(), err);
     }
 
     fn create_physics_consist() -> PhysicsConsistParameters {

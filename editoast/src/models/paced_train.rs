@@ -1,5 +1,4 @@
 use std::fmt::Display;
-use std::str::FromStr;
 
 use chrono::DateTime;
 use chrono::Duration as ChronoDuration;
@@ -294,7 +293,7 @@ impl From<PacedTrain> for paced_train::PacedTrain {
     }
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
+#[derive(Debug, Clone, Hash, Serialize, Deserialize, PartialEq, ToSchema)]
 #[serde(tag = "type")]
 pub enum OccurrenceId {
     BaseOccurrence { index: u64 },
@@ -302,7 +301,7 @@ pub enum OccurrenceId {
     CreatedException { exception_key: String },
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, Hash, PartialEq)]
 /// This ID is used to identify paced train occurrences and exceptions when sending them to the core API for conflict detection.
 pub enum TrainId {
     TrainSchedule(i64),
@@ -332,55 +331,6 @@ impl Display for TrainId {
                         index,
                     },
             } => write!(f, "{paced_train_id}@{exception_key}#{index}"),
-        }
-    }
-}
-
-impl FromStr for TrainId {
-    type Err = &'static str;
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        // Is it a paced train exception?
-        if let Some((train_id_str, exception_str)) = s.split_once('@') {
-            let paced_train_id = train_id_str
-                .parse::<i64>()
-                .map_err(|_| "Invalid train id")?;
-            // Is it a modified paced train exception?
-            if let Some((exception_key, index_str)) = exception_str.split_once('#') {
-                let index = index_str
-                    .parse::<u64>()
-                    .map_err(|_| "Invalid exception index")?;
-                Ok(TrainId::PacedTrain {
-                    paced_train_id,
-                    occurrence_id: OccurrenceId::ModifiedException {
-                        exception_key: exception_key.to_string(),
-                        index,
-                    },
-                })
-            } else {
-                let exception_key = exception_str.to_string();
-                Ok(TrainId::PacedTrain {
-                    paced_train_id,
-                    occurrence_id: OccurrenceId::CreatedException { exception_key },
-                })
-            }
-        } else {
-            // Is it a base paced train exception?
-            if let Some((train_id_str, index_str)) = s.split_once('#') {
-                let paced_train_id = train_id_str
-                    .parse::<i64>()
-                    .map_err(|_| "Invalid train id")?;
-                let index = index_str
-                    .parse::<u64>()
-                    .map_err(|_| "Invalid occurrence index")?;
-                Ok(TrainId::PacedTrain {
-                    paced_train_id,
-                    occurrence_id: OccurrenceId::BaseOccurrence { index },
-                })
-            } else {
-                let train_id = s.parse::<i64>().map_err(|_| "Invalid train id")?;
-                Ok(TrainId::TrainSchedule(train_id))
-            }
         }
     }
 }
