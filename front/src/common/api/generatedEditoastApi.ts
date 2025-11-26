@@ -2043,7 +2043,7 @@ export type PutPacedTrainByIdApiArg = {
   };
 };
 export type GetPacedTrainByIdEtcsBrakingCurvesApiResponse =
-  /** status 200 ETCS Braking Curves Output */ EtcsBrakingCurvesResponse;
+  /** status 200 ETCS Braking Curves Output */ CoreEtcsBrakingCurvesResponse;
 export type GetPacedTrainByIdEtcsBrakingCurvesApiArg = {
   id: number;
   infraId: number;
@@ -2592,7 +2592,7 @@ export type PutTrainScheduleByIdApiArg = {
   trainScheduleForm: TrainScheduleForm;
 };
 export type GetTrainScheduleByIdEtcsBrakingCurvesApiResponse =
-  /** status 200 ETCS Braking Curves Output */ EtcsBrakingCurvesResponse;
+  /** status 200 ETCS Braking Curves Output */ CoreEtcsBrakingCurvesResponse;
 export type GetTrainScheduleByIdEtcsBrakingCurvesApiArg = {
   /** A train schedule ID */
   id: number;
@@ -4019,7 +4019,7 @@ export type PacedTrainResponse = PacedTrain & {
   id: number;
   timetable_id: number;
 };
-export type EtcsConflictCurves = {
+export type CoreEtcsConflictCurves = {
   conflict_type: 'Spacing' | 'Routing';
   guidance: {
     /** List of positions of a train
@@ -4049,7 +4049,7 @@ export type EtcsConflictCurves = {
     times: number[];
   };
 };
-export type EtcsCurves = {
+export type CoreEtcsCurves = {
   guidance: {
     /** List of positions of a train
         Both positions (in mm) and times (in ms) must have the same length */
@@ -4078,16 +4078,16 @@ export type EtcsCurves = {
     times: number[];
   };
 };
-export type EtcsBrakingCurvesResponse = {
+export type CoreEtcsBrakingCurvesResponse = {
   /** List of ETCS conflict braking curves associated to the train schedule's ETCS signals.
     For each non-route delimiter (F) signal, the associated spacing conflict curve is returned.
     For each route delimiter (Nf) signal, 2 sets of curves are returned, associated to the
     corresponding potential spacing or routing conflict. */
-  conflicts: EtcsConflictCurves[];
+  conflicts: CoreEtcsConflictCurves[];
   /** List of ETCS braking curves associated to the train schedule's ETCS slowdowns */
-  slowdowns: EtcsCurves[];
+  slowdowns: CoreEtcsCurves[];
   /** List of ETCS braking curves associated to the train schedule's ETCS stops */
-  stops: EtcsCurves[];
+  stops: CoreEtcsCurves[];
 };
 export type ReportTrain = {
   /** Total energy consumption */

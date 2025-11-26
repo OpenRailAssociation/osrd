@@ -27,7 +27,7 @@ pub struct Request {
 }
 
 #[derive(Serialize, Deserialize, PartialEq, Clone, Debug, ToSchema)]
-#[schema(as = ETCSBrakingCurvesResponse)]
+#[schema(as = core::ETCSBrakingCurvesResponse)]
 pub struct Response {
     /// List of ETCS braking curves associated to the train schedule's ETCS slowdowns
     pub slowdowns: Vec<ETCSCurves>,
@@ -41,6 +41,7 @@ pub struct Response {
 }
 
 #[derive(Serialize, Deserialize, PartialEq, Clone, Debug, ToSchema)]
+#[schema(as = core::ETCSCurves)]
 pub struct ETCSCurves {
     #[schema(inline)]
     pub indication: Option<SimpleEnvelope>,
@@ -51,6 +52,7 @@ pub struct ETCSCurves {
 }
 
 #[derive(Serialize, Deserialize, PartialEq, Clone, Debug, ToSchema)]
+#[schema(as = core::ETCSConflictCurves)]
 pub struct ETCSConflictCurves {
     #[schema(inline)]
     pub indication: SimpleEnvelope,
@@ -63,6 +65,7 @@ pub struct ETCSConflictCurves {
 }
 
 #[derive(Serialize, Deserialize, PartialEq, Clone, Debug, ToSchema)]
+#[schema(as = core::SimpleEnvelope)]
 pub struct SimpleEnvelope {
     /// List of positions of a train
     /// Both positions (in mm) and times (in ms) must have the same length
