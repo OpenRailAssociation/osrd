@@ -1,4 +1,4 @@
-use common::units::quantities::Offset;
+use common::unit_system::quantities::Time;
 use serde::Deserialize;
 use serde::Serialize;
 use std::collections::HashMap;
@@ -66,7 +66,7 @@ pub struct Conflict {
     /// Example: `1970-01-01T00:00:00Z` for calendar timetables; the timetable start for hourly
     /// timetables.
     #[serde(with = "common::units::millisecond::i64")]
-    pub start_time: Offset,
+    pub start_time: Time,
     /// Duration of the conflict in ms.
     pub duration: u64,
     /// Type of the conflict
@@ -92,7 +92,7 @@ pub struct ConflictRequirement {
     /// timetables.
     #[serde(with = "common::units::millisecond::i64")]
     #[schema(value_type = i64)]
-    pub start_time: Offset,
+    pub start_time: Time,
     /// Duration of the time range in ms (difference between the latest end time and the earliest start_time for any zone use in this conflict).
     pub duration: u64,
 }

@@ -34,95 +34,78 @@
 //! }
 //! ```
 
-/// Re-export the Quantities that are used in OSRD
-pub mod quantities {
-    pub use uom::si::f64::Acceleration;
-    pub use uom::si::f64::Length;
-    pub use uom::si::f64::Mass;
-    pub use uom::si::f64::Time;
-    pub use uom::si::f64::Velocity;
-    pub type SolidFriction = uom::si::f64::Force;
-    pub type SolidFrictionPerWeight = uom::si::f64::Acceleration;
-    pub type ViscosityFriction = uom::si::f64::MassRate;
-    pub type ViscosityFrictionPerWeight = uom::si::f64::Frequency;
-    pub type AerodynamicDrag = uom::si::f64::LinearMassDensity;
-    pub type AerodynamicDragPerWeight = uom::si::f64::LinearNumberDensity;
-    pub type Deceleration = uom::si::f64::Acceleration;
-    pub type Offset = uom::si::f64::Time;
-}
-
 macro_rules! quantity_to_path {
     (Length, $unit:ident) => {
-        uom::si::length::$unit
+        crate::unit_system::length::$unit
     };
     (Velocity, $unit:ident) => {
-        uom::si::velocity::$unit
+        crate::unit_system::velocity::$unit
     };
     (Acceleration, $unit:ident) => {
-        uom::si::acceleration::$unit
+        crate::unit_system::acceleration::$unit
     };
     (Mass, $unit:ident) => {
-        uom::si::mass::$unit
+        crate::unit_system::mass::$unit
     };
     (SolidFriction, $unit:ident) => {
-        uom::si::force::$unit
+        crate::unit_system::force::$unit
     };
     (ViscosityFriction, $unit:ident) => {
-        uom::si::mass_rate::$unit
+        crate::unit_system::mass_rate::$unit
     };
     (ViscosityFrictionPerWeight, $unit:ident) => {
-        uom::si::frequency::$unit
+        crate::unit_system::frequency::$unit
     };
     (AerodynamicDrag, $unit:ident) => {
-        uom::si::linear_mass_density::$unit
+        crate::unit_system::linear_mass_density::$unit
     };
     (AerodynamicDragPerWeight, $unit:ident) => {
-        uom::si::linear_number_density::$unit
+        crate::unit_system::linear_number_density::$unit
     };
     (Time, $unit:ident) => {
-        uom::si::time::$unit
+        crate::unit_system::time::$unit
     };
 }
 
 macro_rules! define_unit {
     ($unit:ident, $quantity:ident) => {
         pub mod $unit {
-            use super::*;
             use serde::Deserialize;
             use serde::Deserializer;
             use serde::Serialize;
             use serde::Serializer;
+            pub type Quantity = $crate::unit_system::quantities::$quantity;
             type Unit = quantity_to_path!($quantity, $unit);
             pub type ReprType = f64;
 
-            pub fn serialize<S>(value: &$quantity, serializer: S) -> Result<S::Ok, S::Error>
+            pub fn serialize<S>(value: &Quantity, serializer: S) -> Result<S::Ok, S::Error>
             where
                 S: Serializer,
             {
                 value.get::<Unit>().serialize(serializer)
             }
 
-            pub fn deserialize<'de, D>(deserializer: D) -> Result<$quantity, D::Error>
+            pub fn deserialize<'de, D>(deserializer: D) -> Result<Quantity, D::Error>
             where
                 D: Deserializer<'de>,
             {
                 let value = ReprType::deserialize(deserializer)?;
-                Ok($quantity::new::<Unit>(value))
+                Ok(Quantity::new::<Unit>(value))
             }
 
-            pub fn new(value: ReprType) -> $quantity {
-                $quantity::new::<Unit>(value)
+            pub fn new(value: ReprType) -> Quantity {
+                Quantity::new::<Unit>(value)
             }
 
-            pub fn from(qty: $quantity) -> ReprType {
+            pub fn from(qty: Quantity) -> ReprType {
                 qty.get::<Unit>()
             }
 
-            pub fn hash<H: std::hash::Hasher>(value: &$quantity, state: &mut H) {
+            pub fn hash<H: std::hash::Hasher>(value: &Quantity, state: &mut H) {
                 crate::hash_float::<5, H>(&from(*value), state);
             }
 
-            pub fn eq(a: &$quantity, b: &$quantity) -> bool {
+            pub fn eq(a: &Quantity, b: &Quantity) -> bool {
                 $crate::float_eq(&a.get::<Unit>(), &b.get::<Unit>())
             }
 
@@ -131,7 +114,7 @@ macro_rules! define_unit {
                 pub type ReprType = Option<super::ReprType>;
 
                 pub fn serialize<S>(
-                    value: &Option<$quantity>,
+                    value: &Option<Quantity>,
                     serializer: S,
                 ) -> Result<S::Ok, S::Error>
                 where
@@ -140,27 +123,27 @@ macro_rules! define_unit {
                     value.map(|value| value.get::<Unit>()).serialize(serializer)
                 }
 
-                pub fn deserialize<'de, D>(deserializer: D) -> Result<Option<$quantity>, D::Error>
+                pub fn deserialize<'de, D>(deserializer: D) -> Result<Option<Quantity>, D::Error>
                 where
                     D: Deserializer<'de>,
                 {
                     let value = Option::deserialize(deserializer)?;
-                    Ok(value.map(|value| $quantity::new::<Unit>(value)))
+                    Ok(value.map(|value| Quantity::new::<Unit>(value)))
                 }
 
-                pub fn new(value: ReprType) -> Option<$quantity> {
-                    value.map(|v| $quantity::new::<Unit>(v))
+                pub fn new(value: ReprType) -> Option<Quantity> {
+                    value.map(|v| Quantity::new::<Unit>(v))
                 }
 
-                pub fn from(qty: Option<$quantity>) -> ReprType {
+                pub fn from(qty: Option<Quantity>) -> ReprType {
                     qty.map(|q| q.get::<Unit>())
                 }
 
-                pub fn hash<H: std::hash::Hasher>(value: &Option<$quantity>, state: &mut H) {
+                pub fn hash<H: std::hash::Hasher>(value: &Option<Quantity>, state: &mut H) {
                     super::hash(&value.unwrap_or_default(), state);
                 }
 
-                pub fn eq(a: &Option<$quantity>, b: &Option<$quantity>) -> bool {
+                pub fn eq(a: &Option<Quantity>, b: &Option<Quantity>) -> bool {
                     a.as_ref()
                         .zip(b.as_ref())
                         .map(|(a, b)| $crate::float_eq(&a.get::<Unit>(), &b.get::<Unit>()))
@@ -168,73 +151,29 @@ macro_rules! define_unit {
                 }
             }
 
-            pub mod u64 {
-                use super::*;
-
-                pub fn serialize<S>(value: &$quantity, serializer: S) -> Result<S::Ok, S::Error>
-                where
-                    S: Serializer,
-                {
-                    (value.get::<Unit>() as u64).serialize(serializer)
-                }
-
-                pub fn deserialize<'de, D>(deserializer: D) -> Result<$quantity, D::Error>
-                where
-                    D: Deserializer<'de>,
-                {
-                    super::deserialize(deserializer)
-                }
-
-                pub mod option {
-                    use super::*;
-                    pub type ReprType = Option<super::ReprType>;
-
-                    pub fn serialize<S>(
-                        value: &Option<$quantity>,
-                        serializer: S,
-                    ) -> Result<S::Ok, S::Error>
-                    where
-                        S: Serializer,
-                    {
-                        value
-                            .map(|value| value.get::<Unit>() as u64)
-                            .serialize(serializer)
-                    }
-
-                    pub fn deserialize<'de, D>(
-                        deserializer: D,
-                    ) -> Result<Option<$quantity>, D::Error>
-                    where
-                        D: Deserializer<'de>,
-                    {
-                        super::super::option::deserialize(deserializer)
-                    }
-                }
-            }
-
             pub mod i64 {
                 use super::*;
                 pub type ReprType = i64;
 
-                pub fn serialize<S>(value: &$quantity, serializer: S) -> Result<S::Ok, S::Error>
+                pub fn serialize<S>(value: &Quantity, serializer: S) -> Result<S::Ok, S::Error>
                 where
                     S: Serializer,
                 {
                     (value.get::<Unit>() as i64).serialize(serializer)
                 }
 
-                pub fn deserialize<'de, D>(deserializer: D) -> Result<$quantity, D::Error>
+                pub fn deserialize<'de, D>(deserializer: D) -> Result<Quantity, D::Error>
                 where
                     D: Deserializer<'de>,
                 {
                     super::deserialize(deserializer)
                 }
 
-                pub fn new(value: ReprType) -> $quantity {
-                    $quantity::new::<Unit>(value as f64)
+                pub fn new(value: ReprType) -> Quantity {
+                    Quantity::new::<Unit>(value as f64)
                 }
 
-                pub fn from(qty: $quantity) -> ReprType {
+                pub fn from(qty: Quantity) -> ReprType {
                     qty.get::<Unit>() as i64
                 }
 
@@ -243,7 +182,7 @@ macro_rules! define_unit {
                     pub type ReprType = Option<super::ReprType>;
 
                     pub fn serialize<S>(
-                        value: &Option<$quantity>,
+                        value: &Option<Quantity>,
                         serializer: S,
                     ) -> Result<S::Ok, S::Error>
                     where
@@ -256,7 +195,60 @@ macro_rules! define_unit {
 
                     pub fn deserialize<'de, D>(
                         deserializer: D,
-                    ) -> Result<Option<$quantity>, D::Error>
+                    ) -> Result<Option<Quantity>, D::Error>
+                    where
+                        D: Deserializer<'de>,
+                    {
+                        super::super::option::deserialize(deserializer)
+                    }
+                }
+            }
+
+            pub mod f64 {
+                use super::*;
+                pub type ReprType = f64;
+
+                pub fn serialize<S>(value: &Quantity, serializer: S) -> Result<S::Ok, S::Error>
+                where
+                    S: Serializer,
+                {
+                    (value.get::<Unit>() as f64).serialize(serializer)
+                }
+
+                pub fn deserialize<'de, D>(deserializer: D) -> Result<Quantity, D::Error>
+                where
+                    D: Deserializer<'de>,
+                {
+                    super::deserialize(deserializer)
+                }
+
+                pub fn new(value: ReprType) -> Quantity {
+                    Quantity::new::<Unit>(value as f64)
+                }
+
+                pub fn from(qty: Quantity) -> ReprType {
+                    qty.get::<Unit>() as f64
+                }
+
+                pub mod option {
+                    use super::*;
+                    pub type ReprType = Option<super::ReprType>;
+
+                    pub fn serialize<S>(
+                        value: &Option<Quantity>,
+                        serializer: S,
+                    ) -> Result<S::Ok, S::Error>
+                    where
+                        S: Serializer,
+                    {
+                        value
+                            .map(|value| value.get::<Unit>() as f64)
+                            .serialize(serializer)
+                    }
+
+                    pub fn deserialize<'de, D>(
+                        deserializer: D,
+                    ) -> Result<Option<Quantity>, D::Error>
                     where
                         D: Deserializer<'de>,
                     {
@@ -269,10 +261,10 @@ macro_rules! define_unit {
 }
 
 // Any new value here must also be added in editoast_derive/src/annotate_units.rs
-use quantities::*;
 define_unit!(meter, Length);
 define_unit!(millimeter, Length);
 define_unit!(meter_per_second, Velocity);
+define_unit!(kilometer_per_hour, Velocity);
 define_unit!(meter_per_second_squared, Acceleration);
 define_unit!(kilogram, Mass);
 define_unit!(newton, SolidFriction);

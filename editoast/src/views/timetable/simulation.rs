@@ -1,4 +1,5 @@
 use chrono::Duration;
+use common::unit_system::quantities::Velocity;
 use core_client::AsCoreRequest;
 use core_client::pathfinding::PathfindingInputError;
 use core_client::pathfinding::PathfindingNotFound;
@@ -40,7 +41,6 @@ use std::iter;
 use std::sync::Arc;
 use tracing::Instrument;
 use tracing::info;
-use uom::si::f64::Velocity;
 use utoipa::ToSchema;
 
 use crate::error::InternalError;
@@ -649,11 +649,11 @@ pub fn build_pathfinding_consist(
         maximum_speed: OrderedFloat(
             physics_consist_parameters
                 .compute_max_speed()
-                .get::<uom::si::velocity::meter_per_second>(),
+                .get::<common::unit_system::velocity::meter_per_second>(),
         ),
         length: physics_consist_parameters
             .compute_length()
-            .get::<uom::si::length::millimeter>()
+            .get::<common::unit_system::length::millimeter>()
             .round() as u64,
         speed_limit_tag,
     }
@@ -689,7 +689,7 @@ pub fn build_simulation_train(
     let simulation_consist =
         SimulationConsist(PhysicsConsist::from(physics_consist_parameters.clone()));
     let simulation_train_parameters = SimulationTrainParameters::new(
-        Velocity::new::<uom::si::velocity::meter_per_second>(*initial_speed),
+        Velocity::new::<common::unit_system::velocity::meter_per_second>(*initial_speed),
         *constraint_distribution,
         *comfort,
         speed_limit_tag
