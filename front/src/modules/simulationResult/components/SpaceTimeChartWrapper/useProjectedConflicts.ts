@@ -2,7 +2,7 @@ import { useEffect, useState, useMemo } from 'react';
 
 import type {
   Conflict,
-  ConflictRequirement,
+  CoreConflictRequirement,
   PathProperties,
   CorePathfindingResultSuccess,
 } from 'common/api/osrdEditoastApi';
@@ -38,7 +38,7 @@ const useProjectedConflicts = (
 
   const conflictReqsByZone = useMemo(() => {
     const reqs = conflicts.flatMap((conflict) => conflict.requirements);
-    const reqsMap = new Map<string, ConflictRequirement[]>();
+    const reqsMap = new Map<string, CoreConflictRequirement[]>();
     // With paced trains, one zone can appear multiple times so we need to handle that.
     reqs.forEach((req) => {
       if (!reqsMap.has(req.zone)) {

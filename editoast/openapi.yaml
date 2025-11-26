@@ -3669,7 +3669,7 @@ paths:
                     results:
                       type: array
                       items:
-                        $ref: '#/components/schemas/TrainRequirementsById'
+                        $ref: '#/components/schemas/core.TrainRequirementsById'
   /timetable/{id}/round_trips/paced_trains:
     get:
       tags:
@@ -5079,7 +5079,7 @@ components:
         requirements:
           type: array
           items:
-            $ref: '#/components/schemas/ConflictRequirement'
+            $ref: '#/components/schemas/core.ConflictRequirement'
           description: List of requirements causing the conflict
         start_time:
           type: string
@@ -5097,26 +5097,6 @@ components:
             type: integer
             format: int64
           description: List of work schedule ids involved in the conflict
-    ConflictRequirement:
-      type: object
-      description: |-
-        Unmet requirement causing a conflict.
-
-        The start and end time describe the conflicting time span (not the full
-        requirement's time span).
-      required:
-      - zone
-      - start_time
-      - end_time
-      properties:
-        end_time:
-          type: string
-          format: date-time
-        start_time:
-          type: string
-          format: date-time
-        zone:
-          type: string
     ConstraintDistributionChangeGroup:
       type: object
       required:
@@ -14553,27 +14533,6 @@ components:
       properties:
         value:
           type: string
-    TrainRequirementsById:
-      type: object
-      required:
-      - train_id
-      - start_time
-      - spacing_requirements
-      - routing_requirements
-      properties:
-        routing_requirements:
-          type: array
-          items:
-            $ref: '#/components/schemas/RoutingRequirement'
-        spacing_requirements:
-          type: array
-          items:
-            $ref: '#/components/schemas/SpacingRequirement'
-        start_time:
-          type: string
-          format: date-time
-        train_id:
-          type: string
     TrainSchedule:
       type: object
       required:
@@ -14812,6 +14771,26 @@ components:
           type: integer
           format: int64
           minimum: 0
+        zone:
+          type: string
+    core.ConflictRequirement:
+      type: object
+      description: |-
+        Unmet requirement causing a conflict.
+
+        The start and end time describe the conflicting time span (not the full
+        requirement's time span).
+      required:
+      - zone
+      - start_time
+      - end_time
+      properties:
+        end_time:
+          type: string
+          format: date-time
+        start_time:
+          type: string
+          format: date-time
         zone:
           type: string
     core.IncompatibleConstraints:
@@ -15079,3 +15058,24 @@ components:
           items:
             $ref: '#/components/schemas/core.TrackRange'
           description: Track section ranges, in order.
+    core.TrainRequirementsById:
+      type: object
+      required:
+      - train_id
+      - start_time
+      - spacing_requirements
+      - routing_requirements
+      properties:
+        routing_requirements:
+          type: array
+          items:
+            $ref: '#/components/schemas/RoutingRequirement'
+        spacing_requirements:
+          type: array
+          items:
+            $ref: '#/components/schemas/SpacingRequirement'
+        start_time:
+          type: string
+          format: date-time
+        train_id:
+          type: string
