@@ -284,20 +284,6 @@ private fun makeFixedPoint(
     allowanceRanges: List<EngineeringAllowanceRange>,
     stopDuration: Double = 0.0,
 ): FixedTimePoint {
-
-    val endOfLastAllowance =
-        allowanceRanges
-            .filter { conflictOffset in it.from..it.to }
-            .map { it.to }
-            .filter { conflictOffset -> fixedPoints.none { it.offset == conflictOffset } }
-            .maxOrNull()
-    if (endOfLastAllowance != null)
-        return FixedTimePoint(
-            getTimeOnEdges(edges, endOfLastAllowance, updatedTimeData),
-            endOfLastAllowance,
-            if (stopDuration > 0) stopDuration else null,
-        )
-
     var offset = roundOffset(edges, Offset.min(conflictOffset, pathLength), true)
     if (fixedPoints.any { it.offset == offset }) {
         offset = roundOffset(edges, conflictOffset, false)
@@ -306,8 +292,31 @@ private fun makeFixedPoint(
         offset = conflictOffset
     }
     offset = Offset.min(offset, pathLength)
+    var time = getTimeOnEdges(edges, offset, updatedTimeData)
 
-    val time = getTimeOnEdges(edges, offset, updatedTimeData)
+    // Points located on engineering allowances are tricky to get right: we know we need to add some
+    // time compared to the reference time, but we don't know how much. The standalone sim can't
+    // take "valid intervals", just scheduled points.
+    // This is a "best effort" guess, were we assume that the allowance is mostly distributed
+    // linearly. TODO: find a more robust algorithm.
+    val currentAllowances = allowanceRanges.filter { conflictOffset in it.from..<it.to }
+    for (currentAllowance in currentAllowances) {
+        val relativeAllowancePosition =
+            (offset - currentAllowance.from) / (currentAllowance.to - currentAllowance.from)
+        val extraAllowanceTime = currentAllowance.addedDuration * relativeAllowancePosition
+        time += extraAllowanceTime
+    }
+
+    val nextConflictTime =
+        edges
+            .firstOrNull {
+                // On transition, we want the second block (so it.length excluded from test)
+                it.edgeOffsetFromPathOffset(offset) in Offset.zero<STDCMEdge>()..<it.length
+            }
+            ?.timeData
+            ?.timeOfNextConflictAtLocation ?: Double.POSITIVE_INFINITY
+    time = min(nextConflictTime, time)
+
     return FixedTimePoint(time, offset, if (stopDuration > 0) stopDuration else null)
 }
 
