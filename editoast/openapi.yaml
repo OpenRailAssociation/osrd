@@ -4233,7 +4233,7 @@ paths:
                 additionalProperties:
                   type: array
                   items:
-                    $ref: '#/components/schemas/SignalUpdate'
+                    $ref: '#/components/schemas/core.SignalUpdate'
                 propertyNames:
                   type: integer
                   format: int64
@@ -9897,13 +9897,13 @@ components:
           additionalProperties:
             type: array
             items:
-              $ref: '#/components/schemas/SignalUpdate'
+              $ref: '#/components/schemas/core.SignalUpdate'
           propertyNames:
             type: string
         paced_train:
           type: array
           items:
-            $ref: '#/components/schemas/SignalUpdate'
+            $ref: '#/components/schemas/core.SignalUpdate'
           description: Paced train
     Operation:
       oneOf:
@@ -12615,57 +12615,6 @@ components:
           format: int64
           description: Time in ms
           minimum: 0
-    SignalUpdate:
-      type: object
-      required:
-      - signal_id
-      - signaling_system
-      - time_start
-      - time_end
-      - position_start
-      - position_end
-      - color
-      - blinking
-      - aspect_label
-      properties:
-        aspect_label:
-          type: string
-          description: The labels of the new aspect
-        blinking:
-          type: boolean
-          description: Whether the signal is blinking
-        color:
-          type: integer
-          format: int32
-          description: |-
-            The color of the aspect
-            (Bits 24-31 are alpha, 16-23 are red, 8-15 are green, 0-7 are blue)
-        position_end:
-          type: integer
-          format: int64
-          description: The route ends at this position in mm on the train path
-          minimum: 0
-        position_start:
-          type: integer
-          format: int64
-          description: The route starts at this position in mm on the train path
-          minimum: 0
-        signal_id:
-          type: string
-          description: The id of the updated signal
-        signaling_system:
-          type: string
-          description: The name of the signaling system of the signal
-        time_end:
-          type: integer
-          format: int64
-          description: The aspects stop being displayed at this time (number of ms since `departure_time`)
-          minimum: 0
-        time_start:
-          type: integer
-          format: int64
-          description: The aspects start being displayed at this time (number of ms since `departure_time`)
-          minimum: 0
     SimilarTrainWaypoint:
       type: object
       required:
@@ -15003,6 +14952,57 @@ components:
           description: |-
             The path offset in mm of each path item given as input of the pathfinding
             The first value is always `0` (beginning of the path) and the last one is always equal to the `length` of the path in mm
+    core.SignalUpdate:
+      type: object
+      required:
+      - signal_id
+      - signaling_system
+      - time_start
+      - time_end
+      - position_start
+      - position_end
+      - color
+      - blinking
+      - aspect_label
+      properties:
+        aspect_label:
+          type: string
+          description: The labels of the new aspect
+        blinking:
+          type: boolean
+          description: Whether the signal is blinking
+        color:
+          type: integer
+          format: int32
+          description: |-
+            The color of the aspect
+            (Bits 24-31 are alpha, 16-23 are red, 8-15 are green, 0-7 are blue)
+        position_end:
+          type: integer
+          format: int64
+          description: The route ends at this position in mm on the train path
+          minimum: 0
+        position_start:
+          type: integer
+          format: int64
+          description: The route starts at this position in mm on the train path
+          minimum: 0
+        signal_id:
+          type: string
+          description: The id of the updated signal
+        signaling_system:
+          type: string
+          description: The name of the signaling system of the signal
+        time_end:
+          type: integer
+          format: int64
+          description: The aspects stop being displayed at this time (number of ms since `departure_time`)
+          minimum: 0
+        time_start:
+          type: integer
+          format: int64
+          description: The aspects start being displayed at this time (number of ms since `departure_time`)
+          minimum: 0
     core.TrackRange:
       type: object
       description: |-

@@ -22,6 +22,7 @@ pub struct SignalUpdatesRequest<'a> {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
+#[schema(as = core::SignalUpdate)]
 pub struct SignalUpdate {
     /// The id of the updated signal
     pub signal_id: String,
@@ -51,7 +52,7 @@ pub struct TrainSimulation<'a> {
     pub simulation_end_time: u64,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct SignalUpdatesResponse {
     pub signal_updates: Vec<Vec<SignalUpdate>>,
 }

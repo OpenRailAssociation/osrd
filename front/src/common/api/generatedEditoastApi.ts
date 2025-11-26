@@ -2508,7 +2508,7 @@ export type DeleteTrainScheduleApiArg = {
   };
 };
 export type PostTrainScheduleOccupancyBlocksApiResponse = /** status 200  */ {
-  [key: string]: SignalUpdate[];
+  [key: string]: CoreSignalUpdate[];
 };
 export type PostTrainScheduleOccupancyBlocksApiArg = {
   occupancyBlockForm: OccupancyBlockForm;
@@ -3788,7 +3788,7 @@ export type MacroNoteBatchForm = {
   macro_notes: MacroNoteForm[];
   scenario_id: number;
 };
-export type SignalUpdate = {
+export type CoreSignalUpdate = {
   /** The labels of the new aspect */
   aspect_label: string;
   /** Whether the signal is blinking */
@@ -3812,10 +3812,10 @@ export type SignalUpdate = {
 export type OccupancyBlocksPacedTrainResult = {
   /** Exceptions whose blocks are different from the paced train */
   exceptions: {
-    [key: string]: SignalUpdate[];
+    [key: string]: CoreSignalUpdate[];
   };
   /** Paced train */
-  paced_train: SignalUpdate[];
+  paced_train: CoreSignalUpdate[];
 };
 export type OccupancyBlockForm = {
   electrical_profile_set_id?: number | null;
