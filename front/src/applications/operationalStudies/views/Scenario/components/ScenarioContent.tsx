@@ -113,6 +113,11 @@ const ScenarioContent = ({ activeBoards }: ScenarioContentProps) => {
     [updateTrainDepartureTime, refreshNge]
   );
 
+  const simulationResultBoards = ['map', 'tables', 'std', 'sdd'] as Board[];
+  const isBoardSimulationResultsActive = simulationResultBoards.some((board) =>
+    activeBoards.has(board)
+  );
+
   // To update dynamic translations in NGE when language changes
   useEffect(() => {
     refreshNge();
@@ -201,7 +206,7 @@ const ScenarioContent = ({ activeBoards }: ScenarioContentProps) => {
               <ScenarioLoaderMessage />
             )}
           <div className="scenario-results">
-            {isInfraLoaded && (
+            {isInfraLoaded && isBoardSimulationResultsActive && (
               <SimulationResults
                 scenarioData={{ name: scenario.name, infraName: scenario.infra_name }}
                 projectionData={projectionData}

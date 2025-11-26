@@ -59,7 +59,6 @@ const TimesStops = <T extends TimesStopsRow>({
       }}
       stickyRightColumn={stickyRightColumn}
       lockRows
-      height={600}
       headerRowHeight={headerRowHeight}
       rowClassName={({ rowData, rowIndex }) =>
         cx({
