@@ -28,7 +28,7 @@ import { getPointOnTrackCoordinates } from 'utils/geometry';
 import type { FeatureInfoClick } from '../types';
 import OperationalPointPopupDetails from './OperationalPointPopupDetails';
 import { setPointIti } from './setPointIti';
-import { isSameWaypointDifferentTrack } from '../helpers/isSameWaypointDifferentTrack';
+import { isSameUicAndCh } from '../helpers/isSameUicAndCh';
 
 type AddPathStepPopupProps = {
   infraId: number | undefined;
@@ -69,9 +69,7 @@ const AddPathStepPopup = ({
   const handleViaClick = () => {
     if (!newPathStep) return;
 
-    const sameViaDifferentTrack = vias.find((via) =>
-      isSameWaypointDifferentTrack(via, newPathStep)
-    );
+    const sameViaDifferentTrack = vias.find((via) => via && isSameUicAndCh(via, newPathStep));
     if (!sameViaDifferentTrack) {
       setPointIti('via', newPathStep, launchPathfinding, resetFeatureInfoClick, pathProperties);
       return;
