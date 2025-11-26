@@ -34,13 +34,28 @@ fn get_abbreviation(value: &str) -> Option<&'static str> {
         "meter" => Some("Length in m"),
         "millimeter" => Some("Length in mm"),
         "meter_per_second" => Some("Velocity in m·s⁻¹"),
+        "kilometer_per_hour" => Some("Velocity in km·h⁻¹"),
         "meter_per_second_squared" => Some("Acceleration in m·s⁻²"),
+        "newton_per_kg" => Some("Acceleration in N·kg⁻¹"),
+        "newton_per_ton" => Some("Acceleration in N·t⁻¹"),
         "kilogram" => Some("Mass in kg"),
+        "ton" => Some("Mass in t"),
         "newton" => Some("Solid Friction in N"),
-        "hertz" => Some("Viscosity friction per weight in s⁻¹"),
-        "kilogram_per_meter" => Some("Aerodynamic drag in kg·m⁻¹"),
+        "kilonewton" => Some("Solid Friction in kN"),
         "kilogram_per_second" => Some("Viscosity friction in kg·s⁻¹"),
+        "newton_per_meter_per_second" => Some("Viscosity friction in N·(m/s)⁻¹"),
+        "newton_per_kilometer_per_hour" => Some("Viscosity friction in N·(km/h)⁻¹"),
+        "hertz" => Some("Viscosity friction per weight in s⁻¹"),
+        "newton_per_meter_per_second_per_kilogram" => {
+            Some("Viscosity friction per weight in N·(m/s)⁻¹·kg⁻¹")
+        }
+        "kilogram_per_meter" => Some("Aerodynamic drag in kg·m⁻¹"),
+        "newton_per_meter_per_second_squared" => Some("Aerodynamic drag in N·(m/s)⁻²"),
+        "kilonewton_per_kilometer_per_hour_squared" => Some("Aerodynamic drag in kN·(km/h)⁻²"),
         "per_meter" => Some("Aerodynamic drag per kg in m⁻¹"),
+        "newton_per_meter_per_second_squared_per_kilogram" => {
+            Some("Aerodynamic drag per kg in N·(m/s)⁻²·kg⁻¹")
+        }
         _ => None,
     }
 }
