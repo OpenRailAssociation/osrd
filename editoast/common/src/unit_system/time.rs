@@ -9,6 +9,6 @@ quantity! {
 
     units {
         @second: 1.0; "s", "second", "seconds";
-        @millisecond: 1.0E-3; "ms", "millisecond", "milliseconds";
+        @millisecond: 1E-3; "ms", "millisecond", "milliseconds";
     }
 }

@@ -10,7 +10,7 @@ quantity! {
         N1>;    // time
     units {
         /// Derived unit of mass rate.
-        @kilogram_per_second: prefix!(kilo) / prefix!(kilo); "kg/s", "kilogram per second",
+        @kilogram_per_second: 1.0/ 1.0; "kg/s", "kilogram per second",
             "kilograms per second";
     }
 }
