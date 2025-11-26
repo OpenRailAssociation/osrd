@@ -7,6 +7,10 @@ use common::units;
 use core_client::pathfinding::PathfindingInputError;
 use database::DbConnection;
 
+use common::unit_system::length::meter;
+use common::unit_system::mass::kilogram;
+use common::unit_system::quantities;
+use common::unit_system::velocity::meter_per_second;
 use schemas::RollingStock;
 use schemas::rolling_stock::LoadingGaugeType;
 use schemas::rolling_stock::RollingResistance;
@@ -17,10 +21,6 @@ use serde::Deserialize;
 use serde::Deserializer;
 use serde::Serialize;
 use serde::Serializer;
-use units::quantities;
-use uom::si::length::meter;
-use uom::si::mass::kilogram;
-use uom::si::velocity::meter_per_second;
 use utoipa::ToSchema;
 
 use crate::error::Result;
@@ -379,8 +379,8 @@ impl ConsistConfiguration {
             && request_total_length < consist_length
         {
             return Err(StdcmError::InvalidConsistLength {
-                expected_min: consist_length.value,
-                provided_consist_length: request_total_length.value,
+                expected_min: units::meter::from(consist_length),
+                provided_consist_length: units::meter::from(request_total_length),
             }
             .into());
         }

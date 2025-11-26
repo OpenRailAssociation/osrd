@@ -45,13 +45,13 @@ pub use sub_category::SubCategoryColor;
 mod train_category;
 pub use train_category::TrainCategory;
 
+use common::unit_system::quantities::Acceleration;
+use common::unit_system::quantities::Deceleration;
+use common::unit_system::quantities::Length;
+use common::unit_system::quantities::Mass;
+use common::unit_system::quantities::Time;
+use common::unit_system::quantities::Velocity;
 use common::units;
-use common::units::quantities::Acceleration;
-use common::units::quantities::Deceleration;
-use common::units::quantities::Length;
-use common::units::quantities::Mass;
-use common::units::quantities::Time;
-use common::units::quantities::Velocity;
 use serde::Deserialize;
 use serde::Deserializer;
 use serde::Serialize;
@@ -194,7 +194,7 @@ impl From<RollingStock<RollingResistanceRaw>> for RollingStock<RollingResistance
                 rolling_resistance_type: rr.rolling_resistance_type,
                 A: rr.A / value.mass,
                 B: rr.B / value.mass,
-                C: (rr.C / value.mass).into(),
+                C: rr.C / value.mass,
             },
             loading_gauge: value.loading_gauge,
             power_restrictions: value.power_restrictions,
