@@ -38,7 +38,7 @@ pub use rjs_power_restriction_range::RjsPowerRestrictionRange;
 use std::collections::HashMap;
 use std::collections::HashSet;
 
-use common::units::quantities::Offset;
+use common::unit_system::quantities::Offset;
 use serde::Deserialize;
 use serde::Serialize;
 use serde::de::Error as SerdeError;

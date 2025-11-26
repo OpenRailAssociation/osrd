@@ -19,15 +19,12 @@ pub mod velocity;
 system! {
     /// [Editoast System of Quantities](https://jcgm.bipm.org/vim/en/1.6.html) (ISQ).
     ///
+    /// It is a subset of the International System of Quantities provided by uom.
+    ///
     /// ## Generic Parameters
     /// * `L`: Length dimension.
     /// * `M`: Mass dimension.
     /// * `T`: Time dimension.
-    /// * `I`: Electric current dimension.
-    /// * `Th`: Thermodynamic temperature dimension.
-    /// * `N`: Amount of substance dimension.
-    /// * `J`: Luminous intensity dimension.
-    /// * `K`: Kind.
     quantities: ESQ {
         /// Length, one of the base quantities in the ESQ, denoted by the symbol L. The base unit
         /// for length is meter.
@@ -45,9 +42,9 @@ system! {
         mod mass::Mass,
         mod time::Time,
         // Composed units
-        mod velocity::Velocity, // TODO switch to meter per second
-        mod acceleration::Acceleration, // TODO switch to meter per second squared
-        mod force::Force, // TODO switch to kg.m.s-2
+        mod velocity::Velocity,
+        mod acceleration::Acceleration,
+        mod force::Force,
         mod mass_rate::MassRate,
         mod frequency::Frequency,
         mod linear_mass_density::LinearMassDensity,

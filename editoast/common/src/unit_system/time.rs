@@ -1,5 +1,6 @@
+//! Time (base unit second, s).
 quantity! {
-    /// Time (base unit millisecond, ms).
+    /// Time (base unit second, s).
     quantity: Time; "time";
     /// Dimension of time, T (base unit second, s).
     dimension: ESQ<

@@ -1,7 +1,8 @@
+//! Length (base unit meter, m).
 quantity! {
-    /// Length (base unit millimeter, mm).
+    /// Length (base unit meter, m).
     quantity: Length; "length";
-    /// Length dimension, mm.
+    /// Dimension of length, L (base unit meter, m).
     dimension: ESQ<
         P1,     // length
         Z0,     // mass

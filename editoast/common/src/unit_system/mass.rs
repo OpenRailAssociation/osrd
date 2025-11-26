@@ -1,3 +1,4 @@
+//! Mass (base unit kilogram, kg).
 quantity! {
     /// Mass (base unit kilogram, kg).
     quantity: Mass; "mass";
@@ -8,6 +9,7 @@ quantity! {
         Z0>;    // time
 
     units {
+        @ton: 1.0E3; "t", "ton", "tons";
         @kilogram: 1.0; "kg", "kilogram", "kilograms";
     }
 }

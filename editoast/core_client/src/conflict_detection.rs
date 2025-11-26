@@ -1,4 +1,4 @@
-use common::units::quantities::Offset;
+use common::unit_system::quantities::Offset;
 use serde::Deserialize;
 use serde::Serialize;
 use std::collections::HashMap;
