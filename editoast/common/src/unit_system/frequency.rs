@@ -14,6 +14,7 @@ quantity! {
         Z0>;    // luminous intensity
     units {
         /// The hertz is one cycle per second.
-        @hertz: 1.0; "Hz", "hertz", "hertz";
+        @hertz: 1000.0; "Hz", "hertz", "hertz";
+        @millihertz: 1.0; "mHz", "millihertz", "millihertz";
     }
 }

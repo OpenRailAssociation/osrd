@@ -36,7 +36,15 @@
 
 /// Re-export the Quantities that are used in OSRD
 pub mod quantities {
-    pub use crate::unit_system::u64::*;
+    pub use crate::unit_system::i64::*;
+    // Editoast aliases for existing units
+    pub type SolidFriction = Force;
+    pub type SolidFrictionPerWeight = Acceleration;
+    pub type Deceleration = Acceleration;
+    pub type ViscosityFriction = MassRate;
+    pub type ViscosityFrictionPerWeight = Frequency;
+    pub type AerodynamicDrag = LinearMassDensity;
+    pub type AerodynamicDragPerWeight = LinearNumberDensity;
 }
 
 macro_rules! quantity_to_path {
@@ -81,7 +89,7 @@ macro_rules! define_unit {
             use serde::Serialize;
             use serde::Serializer;
             type Unit = quantity_to_path!($quantity, $unit);
-            pub type ReprType = f64;
+            pub type ReprType = i64;
 
             pub fn serialize<S>(value: &$quantity, serializer: S) -> Result<S::Ok, S::Error>
             where
@@ -137,14 +145,14 @@ macro_rules! define_unit {
                 }
             }
 
-            pub mod u64 {
+            pub mod f64 {
                 use super::*;
 
                 pub fn serialize<S>(value: &$quantity, serializer: S) -> Result<S::Ok, S::Error>
                 where
                     S: Serializer,
                 {
-                    (value.get::<Unit>() as u64).serialize(serializer)
+                    (value.get::<Unit>() as f64).serialize(serializer)
                 }
 
                 pub fn deserialize<'de, D>(deserializer: D) -> Result<$quantity, D::Error>
@@ -184,16 +192,23 @@ macro_rules! define_unit {
 
 // Any new value here must also be added in editoast_derive/src/annotate_units.rs
 use quantities::*;
-define_unit!(meter, Length);
 define_unit!(millimeter, Length);
+define_unit!(meter, Length);
 define_unit!(meter_per_second, Velocity);
 define_unit!(meter_per_second_squared, Acceleration);
 define_unit!(millimeter_per_second_squared, Acceleration);
 define_unit!(kilogram, Mass);
 define_unit!(newton, SolidFriction);
+define_unit!(milligram_per_second, ViscosityFriction);
+define_unit!(gram_per_second, ViscosityFriction);
 define_unit!(kilogram_per_second, ViscosityFriction);
+define_unit!(millihertz, ViscosityFrictionPerWeight);
 define_unit!(hertz, ViscosityFrictionPerWeight);
+define_unit!(milligram_per_meter, AerodynamicDrag);
+define_unit!(gram_per_meter, AerodynamicDrag);
 define_unit!(kilogram_per_meter, AerodynamicDrag);
+define_unit!(per_nanometer, AerodynamicDragPerWeight);
+define_unit!(per_millimeter, AerodynamicDragPerWeight);
 define_unit!(per_meter, AerodynamicDragPerWeight);
 define_unit!(second, Time);
 define_unit!(millisecond, Time);

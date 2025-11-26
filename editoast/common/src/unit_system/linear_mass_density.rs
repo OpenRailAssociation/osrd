@@ -13,6 +13,8 @@ quantity! {
         Z0,     // amount of substance
         Z0>;    // luminous intensity
     units {
-        @kilogram_per_meter: 1.0; "kg/m", "kilogram per meter", "kilograms per meter";
+        @milligram_per_meter: 1.0; "mg/m", "milligram per meter", "milligrams per meter";
+        @gram_per_meter: 1.0E3; "g/m", "gram per meter", "rams per meter";
+        @kilogram_per_meter: 1.0E6; "kg/m", "kilogram per meter", "kilograms per meter";
     }
 }

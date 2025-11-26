@@ -14,7 +14,10 @@ quantity! {
         Z0>;    // luminous intensity
     units {
         /// Derived unit of mass rate.
-        @kilogram_per_second: 1.0/ 1.0; "kg/s", "kilogram per second",
+        @milligram_per_second: 1000.0/ 1.0; "mg/s", "milligram per second", "milligrams per second";
+        @gram_per_second: 1.0E3/ 1.0; "g/s", "gram per second",
+            "kilograms per second";
+        @kilogram_per_second: 1.0E6/ 1.0; "kg/s", "kilogram per second",
             "kilograms per second";
     }
 }

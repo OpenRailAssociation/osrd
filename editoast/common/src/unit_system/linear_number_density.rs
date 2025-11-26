@@ -19,6 +19,8 @@ quantity! {
         Z0>;    // luminous intensity
     kind: dyn ConstituentConcentrationKind;
     units {
-        @per_meter: 1.0; "m⁻¹", "per meter", "per meter";
+        @per_nanometer: 1.0; "nm⁻¹", "per nanometer", "per nanometer";
+        @per_millimeter: 1.0E3; "mm⁻¹", "per millimeter", "per millimeter";
+        @per_meter: 1.0E6; "m⁻¹", "per meter", "per meter";
     }
 }

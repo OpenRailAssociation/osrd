@@ -144,9 +144,7 @@ tracing-opentelemetry = { version = "0.32.0", default-features = false, features
 ] }
 tracing-subscriber = { version = "0.3.20", features = ["env-filter"] }
 uom = { version = "0.37.0", default-features = false, features = [
-  "f64",
-  "si",
-  "u64",
+  "i64",
 ] } # TODO PR remove f64 ?
 url = { version = "2.5.7", features = ["serde"] }
 urlencoding = "2.1.3"

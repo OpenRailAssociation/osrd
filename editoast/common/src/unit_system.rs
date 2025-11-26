@@ -72,28 +72,28 @@ system! {
     }
 }
 
-pub mod u64 {
+pub mod i64 {
     mod editoast_units_system {
         pub use super::super::*;
     }
-    ESQ!(self::editoast_units_system, u64);
+    ESQ!(self::editoast_units_system, i64);
 
     // Editoast aliases for existing units
-    pub type SolidFriction = crate::unit_system::u64::Force;
-    pub type SolidFrictionPerWeight = crate::unit_system::u64::Acceleration;
-    pub type Deceleration = crate::unit_system::u64::Acceleration;
-    pub type ViscosityFriction = crate::unit_system::u64::MassRate;
-    pub type ViscosityFrictionPerWeight = crate::unit_system::u64::Frequency;
-    pub type AerodynamicDrag = crate::unit_system::u64::LinearMassDensity;
-    pub type AerodynamicDragPerWeight = crate::unit_system::u64::LinearNumberDensity;
+    pub type SolidFriction = crate::unit_system::i64::Force;
+    pub type SolidFrictionPerWeight = crate::unit_system::i64::Acceleration;
+    pub type Deceleration = crate::unit_system::i64::Acceleration;
+    pub type ViscosityFriction = crate::unit_system::i64::MassRate;
+    pub type ViscosityFrictionPerWeight = crate::unit_system::i64::Frequency;
+    pub type AerodynamicDrag = crate::unit_system::i64::LinearMassDensity;
+    pub type AerodynamicDragPerWeight = crate::unit_system::i64::LinearNumberDensity;
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::unit_system::{length::millimeter, u64};
+    use crate::unit_system::{i64, length::millimeter};
 
     #[test]
-    fn u64_storage_for_millimeter_is_lossless() {
-        assert_eq!(u64::Length::new::<millimeter>(1).get::<millimeter>(), 1);
+    fn i64_storage_for_millimeter_is_lossless() {
+        assert_eq!(i64::Length::new::<millimeter>(1).get::<millimeter>(), 1);
     }
 }
