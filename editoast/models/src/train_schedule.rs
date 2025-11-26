@@ -2,8 +2,8 @@ use crate::prelude::*;
 use crate::rolling_stock::TrainMainCategory;
 use crate::tags::Tags;
 use chrono::Duration as ChronoDuration;
+use common::unit_system::quantities::Time;
 use common::units::millisecond;
-use common::units::quantities::Offset;
 use derive_more::Display;
 use editoast_derive::Model;
 use itertools::Itertools;
@@ -40,7 +40,7 @@ pub struct TrainSchedule {
     #[model(uom_unit = "common::units::millisecond::i64")]
     /// For calendar timetables: elapsed ms since 1970-01-01T00:00:00Z.
     /// For hourly timetables: elapsed ms since the timetable start.
-    pub start_time: Offset,
+    pub start_time: Time,
     #[model(json)]
     pub schedule: Vec<ScheduleItem>,
     #[model(json)]
@@ -181,7 +181,7 @@ impl TrainSchedule {
     }
 
     /// Returns the start time of the occurrence at the given index.
-    fn get_occurrence_start_time(&self, occurrence_index: usize) -> Offset {
+    fn get_occurrence_start_time(&self, occurrence_index: usize) -> Time {
         if let Some(interval) = self.interval {
             self.start_time
                 + millisecond::i64::new((interval * occurrence_index as i32).num_milliseconds())
@@ -501,10 +501,10 @@ mod tests {
     use crate::TrainScheduleException;
     use crate::rolling_stock::TrainMainCategory;
     use crate::train_schedule::train_schedule_schema_from_model;
+    use common::unit_system::quantities::Time;
 
     use super::OccurrenceId;
     use super::TrainSchedule;
-    use common::units::quantities::Offset;
     use database::DbConnectionPoolV2;
     use pretty_assertions::assert_eq;
     use rstest::rstest;
@@ -854,7 +854,7 @@ mod tests {
 
         assert_eq!(occurrences.len(), 4);
 
-        let start_times: Vec<Offset> = occurrences.iter().map(|(_, o)| o.start_time).collect();
+        let start_times: Vec<Time> = occurrences.iter().map(|(_, o)| o.start_time).collect();
         let train_names: Vec<String> = occurrences
             .iter()
             .map(|(_, o)| o.train_name.clone())
@@ -916,7 +916,7 @@ mod tests {
 
         assert_eq!(occurrences.len(), 4);
 
-        let start_times: Vec<Offset> = occurrences.iter().map(|(_, o)| o.start_time).collect();
+        let start_times: Vec<Time> = occurrences.iter().map(|(_, o)| o.start_time).collect();
         let train_names: Vec<String> = occurrences
             .iter()
             .map(|(_, o)| o.train_name.clone())

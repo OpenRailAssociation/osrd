@@ -2,13 +2,13 @@ use std::collections::BTreeMap;
 use std::collections::HashMap;
 use std::hash::Hash;
 
+use common::unit_system::quantities::Acceleration;
+use common::unit_system::quantities::Deceleration;
+use common::unit_system::quantities::Length;
+use common::unit_system::quantities::Mass;
+use common::unit_system::quantities::Time;
+use common::unit_system::quantities::Velocity;
 use common::units;
-use common::units::quantities::Acceleration;
-use common::units::quantities::Deceleration;
-use common::units::quantities::Length;
-use common::units::quantities::Mass;
-use common::units::quantities::Time;
-use common::units::quantities::Velocity;
 use educe::Educe;
 use schemas::rolling_stock::EffortCurves;
 use schemas::rolling_stock::EtcsBrakeParams;
@@ -37,7 +37,7 @@ pub struct PhysicsConsist {
     pub base_power_class: Option<String>,
 
     #[educe(Hash(method(units::millimeter::hash)))]
-    #[serde(with = "units::millimeter::u64")]
+    #[serde(with = "units::millimeter::i64")]
     #[schema(value_type = u64)]
     pub length: Length,
 
@@ -47,7 +47,7 @@ pub struct PhysicsConsist {
     pub max_speed: Velocity,
 
     #[educe(Hash(method(units::millisecond::hash)))]
-    #[serde(with = "units::millisecond::u64")]
+    #[serde(with = "units::millisecond::i64")]
     #[schema(value_type = u64)]
     pub startup_time: Time,
 
@@ -75,7 +75,7 @@ pub struct PhysicsConsist {
     pub inertia_coefficient: f64,
 
     #[educe(Hash(method(units::kilogram::hash)))]
-    #[serde(with = "units::kilogram::u64")]
+    #[serde(with = "units::kilogram::i64")]
     #[schema(value_type = u64)]
     pub mass: Mass,
 
@@ -88,14 +88,14 @@ pub struct PhysicsConsist {
     /// The time the train takes before actually using electrical power.
     /// Is null if the train is not electric or the value not specified.
     #[educe(Hash(method(units::millisecond::option::hash)))]
-    #[serde(default, with = "units::millisecond::u64::option")]
+    #[serde(default, with = "units::millisecond::i64::option")]
     #[schema(value_type = Option<u64>)]
     pub electrical_power_startup_time: Option<Time>,
 
     /// The time it takes to raise this train's pantograph.
     /// Is null if the train is not electric or the value not specified.
     #[educe(Hash(method(units::millisecond::option::hash)))]
-    #[serde(default, with = "units::millisecond::u64::option")]
+    #[serde(default, with = "units::millisecond::i64::option")]
     #[schema(value_type = Option<u64>)]
     pub raise_pantograph_time: Option<Time>,
 }
