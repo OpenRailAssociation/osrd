@@ -10,7 +10,7 @@ import {
 
 import {
   generatedEditoastApi,
-  type EtcsBrakingCurvesResponse,
+  type CoreEtcsBrakingCurvesResponse,
   type GetLightRollingStockApiResponse,
   type GetSpritesSignalingSystemsApiResponse,
   type MacroNodeResponse,
@@ -186,14 +186,14 @@ const osrdEditoastApi = generatedEditoastApi
         ],
       }),
       getEtcsBrakingCurves: builder.query<
-        EtcsBrakingCurvesResponse,
+        CoreEtcsBrakingCurvesResponse,
         { id: TrainId; infraId: number; electricalProfileSetId?: number; exceptionKey?: string }
       >({
         queryFn: async (
           { id: trainId, infraId, electricalProfileSetId, exceptionKey },
           { dispatch }
         ) => {
-          let etcsBrakingCurves: EtcsBrakingCurvesResponse;
+          let etcsBrakingCurves: CoreEtcsBrakingCurvesResponse;
           if (isTrainScheduleId(trainId)) {
             etcsBrakingCurves = await dispatch(
               generatedEditoastApi.endpoints.getTrainScheduleByIdEtcsBrakingCurves.initiate(

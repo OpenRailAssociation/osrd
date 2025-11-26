@@ -9,8 +9,8 @@ import {
 import { useSelector } from 'react-redux';
 
 import {
-  type EtcsBrakingCurvesResponse,
-  type EtcsCurves,
+  type CoreEtcsBrakingCurvesResponse,
+  type CoreEtcsCurves,
   osrdEditoastApi,
   type SimulationResponseSuccess,
 } from 'common/api/osrdEditoastApi';
@@ -22,9 +22,9 @@ import { getSelectedTrainId } from 'reducers/simulationResults/selectors';
 import { useScenarioContext } from './useScenarioContext';
 import { isPacedTrainResponseWithPacedTrainId, isTrainScheduleId } from '../../../utils/trainId';
 
-const formatEtcsCurves = (etcsBrakingCurves: EtcsBrakingCurvesResponse): EtcsBrakingCurves => {
+const formatEtcsCurves = (etcsBrakingCurves: CoreEtcsBrakingCurvesResponse): EtcsBrakingCurves => {
   const { conflicts, slowdowns, stops } = etcsBrakingCurves;
-  const toBrakingCurve = (curve: EtcsCurves): EtcsBrakingCurve => ({
+  const toBrakingCurve = (curve: CoreEtcsCurves): EtcsBrakingCurve => ({
     [EtcsBrakingCurveType.IND]: curve.indication
       ? formatSpeedCurve(curve.indication.positions, curve.indication.speeds)
       : [],
