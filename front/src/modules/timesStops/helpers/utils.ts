@@ -82,7 +82,7 @@ export const formatSuggestedViasToRowVias = (
   formattedOps = formattedOps.filter((op, i, arr) => {
     if (i === 0) return true;
     const prevOp = arr[i - 1];
-    const formattedOpsWithoutDuplicates = !(op.uic === prevOp.uic && op.ch === prevOp.ch);
+    const formattedOpsWithoutDuplicates = !(op.opId === prevOp.opId);
     return formattedOpsWithoutDuplicates;
   });
 
