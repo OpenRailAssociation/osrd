@@ -10,6 +10,6 @@ quantity! {
         Z0>;     // time
 
     units {
-        @kilogram_per_meter: prefix!(none); "kg/m", "kilogram per meter", "kilograms per meter";
+        @kilogram_per_meter: 1.0; "kg/m", "kilogram per meter", "kilograms per meter";
     }
 }

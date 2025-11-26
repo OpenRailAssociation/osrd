@@ -10,6 +10,6 @@ quantity! {
         N2>;    // time
     units {
         /// Derived unit of force.
-        @newton: prefix!(none); "N", "newton", "newtons";
+        @newton: 1.0; "N", "newton", "newtons";
     }
 }

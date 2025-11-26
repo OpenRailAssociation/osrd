@@ -9,6 +9,6 @@ quantity! {
         Z0,     // mass
         Z0>;    // time
     units {
-        @per_meter: prefix!(none); "m⁻¹", "per meter", "per meter";
+        @per_meter: 1.0; "m⁻¹", "per meter", "per meter";
     }
 }

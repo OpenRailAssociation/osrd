@@ -10,6 +10,6 @@ quantity! {
         N1>;    // time
     units {
         @kilometer_per_hour: 1000.0/3600.0; "km/h", "kilometer per hour", "kilometers per hour";
-        @meter_per_second: prefix!(none); "m/s", "meter per second", "meters per second";
+        @meter_per_second: 1.0; "m/s", "meter per second", "meters per second";
     }
 }
