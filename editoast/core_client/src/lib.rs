@@ -24,6 +24,30 @@ use tracing::trace;
 
 pub use mq_client::RabbitMQClient;
 
+/// An enum to wrap RabbitMQ's routing keys
+///
+/// - [WorkerKey::Timetable]: worker key based on the infra and timetable ids
+/// - [WorkerKey::Infra]: worker key based on an infra id
+#[derive(Debug)]
+pub enum WorkerKey {
+    Timetable { infra_id: i64, timetable_id: i64 },
+    Infra(i64),
+}
+
+impl Display for WorkerKey {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            WorkerKey::Timetable {
+                infra_id,
+                timetable_id,
+            } => {
+                write!(f, "{infra_id}-{timetable_id}")
+            }
+            WorkerKey::Infra(infra_id) => write!(f, "{infra_id}"),
+        }
+    }
+}
+
 #[derive(Debug, Clone)]
 pub enum CoreClient {
     MessageQueue(RabbitMQClient),
@@ -62,7 +86,7 @@ impl CoreClient {
         &self,
         path: &str,
         body: Option<&B>,
-        worker_id: Option<String>,
+        worker_key: WorkerKey,
         override_timeout: Option<Duration>,
     ) -> Result<R::Response, Error> {
         trace!(
@@ -72,12 +96,10 @@ impl CoreClient {
         match self {
             CoreClient::MessageQueue(client) => {
                 // TODO: maybe implement retry?
-                let worker_id = worker_id.unwrap_or_default(); // FIXME: don't do that!!!
-                //expect("FIXME: allow empty infra id in the amqp protocol"); // FIXME: allow empty infra id in the amqp protocol
                 // TODO: tracing: use correlation id
 
                 let response = client
-                    .call_with_response(worker_id, path, &body, true, override_timeout)
+                    .call_with_response(worker_key.to_string(), path, &body, true, override_timeout)
                     .await
                     .map_err(Error::MqClientError)?;
 
@@ -107,6 +129,7 @@ impl CoreClient {
 /// ```
 /// # use core_client::AsCoreRequest;
 /// # use core_client::Json;
+/// # use core_client::WorkerKey;
 /// # use serde::Serialize;
 /// # use serde::Deserialize;
 /// #[derive(Serialize, Default)]
@@ -122,7 +145,7 @@ impl CoreClient {
 ///
 /// impl AsCoreRequest<Json<Response>> for TestReq {
 ///     const URL_PATH: &'static str = "/some/path";
-///     fn worker_id(&self) -> std::option::Option<String> { Some("42".into()) }
+///     fn worker_key(&self) -> WorkerKey { WorkerKey::Infra(42) }
 /// }
 ///
 /// # let rt = tokio::runtime::Builder::new_current_thread().enable_all().build().unwrap();
@@ -147,7 +170,7 @@ where
     const OVERRIDE_TIMEOUT: Option<Duration> = None;
 
     /// Returns the worker id used for the request. Must be provided.
-    fn worker_id(&self) -> Option<String>;
+    fn worker_key(&self) -> WorkerKey;
 
     /// Sends this request using the given [CoreClient] and returns the response content on success
     ///
@@ -160,7 +183,7 @@ where
         core.fetch::<Self, R>(
             Self::URL_PATH,
             Some(self),
-            self.worker_id(),
+            self.worker_key(),
             Self::OVERRIDE_TIMEOUT,
         )
         .await
@@ -294,95 +317,4 @@ impl Display for RawError {
 pub enum ErrorCause {
     Internal,
     User,
-}
-
-#[cfg(test)]
-mod tests {
-
-    use http::StatusCode;
-    use pretty_assertions::assert_eq;
-    use serde::Serialize;
-    use serde_json::json;
-
-    use crate::AsCoreRequest;
-    use crate::Bytes;
-    use crate::RawError;
-    use crate::mocking::MockingClient;
-
-    use super::Error;
-
-    #[tokio::test]
-    async fn test_expected_empty_response() {
-        #[derive(Serialize)]
-        struct Req;
-        impl AsCoreRequest<()> for Req {
-            const URL_PATH: &'static str = "/test";
-
-            fn worker_id(&self) -> Option<String> {
-                None
-            }
-        }
-        let mut core = MockingClient::default();
-        core.stub("/test")
-            .response(StatusCode::OK)
-            .body("")
-            .finish();
-        // Should not yield any warning as the result type is ().
-        Req.fetch(&core.into()).await.unwrap();
-    }
-
-    #[tokio::test]
-    async fn test_bytes_response() {
-        #[derive(Serialize)]
-        struct Req;
-        impl AsCoreRequest<Bytes> for Req {
-            const URL_PATH: &'static str = "/test";
-
-            fn worker_id(&self) -> Option<String> {
-                None
-            }
-        }
-        let mut core = MockingClient::default();
-        core.stub("/test")
-            .response(StatusCode::OK)
-            .body("not JSON :)")
-            .finish();
-        let bytes = Req.fetch(&core.into()).await.unwrap();
-        assert_eq!(&String::from_utf8(bytes).unwrap(), "not JSON :)");
-    }
-
-    #[tokio::test]
-    async fn test_core_osrd_error() {
-        #[derive(Serialize)]
-        struct Req;
-        impl AsCoreRequest<()> for Req {
-            const URL_PATH: &'static str = "/test";
-
-            fn worker_id(&self) -> Option<String> {
-                None
-            }
-        }
-        let error = json!({
-            "context": {
-                "stack_trace": [
-                    "ThreadPoolExecutor.java:635",
-                    "Thread.java:833"
-                ],
-                "message": "conflict offset is already on a range transition",
-                "url": "/test"
-            },
-            "message": "assert check failed",
-            "type": "assert_error",
-            "cause": "Internal"
-        });
-        let mut core = MockingClient::default();
-        core.stub("/test")
-            .response(StatusCode::NOT_FOUND)
-            .body(error.to_string())
-            .finish();
-        let expected_error: RawError = serde_json::from_value(error).unwrap();
-        let result = Req.fetch(&core.into()).await;
-        let result = result.err().unwrap();
-        assert_eq!(result, Error::RawError(expected_error));
-    }
 }

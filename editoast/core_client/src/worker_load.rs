@@ -1,5 +1,7 @@
 use serde::Serialize;
 
+use crate::WorkerKey;
+
 use super::AsCoreRequest;
 
 /// A Core infra load request
@@ -15,10 +17,13 @@ impl AsCoreRequest<()> for WorkerLoadRequest {
     const URL_PATH: &'static str = "/worker_load";
     const OVERRIDE_TIMEOUT: Option<std::time::Duration> = Some(std::time::Duration::from_secs(1));
 
-    fn worker_id(&self) -> Option<String> {
+    fn worker_key(&self) -> WorkerKey {
         match self.timetable {
-            Some(timetable) => Some(format!("{}-{}", self.infra, timetable)),
-            None => Some(self.infra.to_string()),
+            Some(timetable_id) => WorkerKey::Timetable {
+                infra_id: self.infra,
+                timetable_id,
+            },
+            None => WorkerKey::Infra(self.infra),
         }
     }
 }

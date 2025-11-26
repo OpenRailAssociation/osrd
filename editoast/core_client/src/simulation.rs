@@ -26,6 +26,7 @@ use super::RawError;
 use super::pathfinding::TrainPath;
 use crate::AsCoreRequest;
 use crate::Json;
+use crate::WorkerKey;
 
 #[derive(Debug, Clone, Serialize, Deserialize, Educe, PartialEq, ToSchema)]
 #[educe(Hash)]
@@ -304,7 +305,7 @@ impl Response {
 impl AsCoreRequest<Json<Response>> for Request {
     const URL_PATH: &'static str = "/standalone_simulation";
 
-    fn worker_id(&self) -> Option<String> {
-        Some(self.infra.to_string())
+    fn worker_key(&self) -> WorkerKey {
+        WorkerKey::Infra(self.infra)
     }
 }

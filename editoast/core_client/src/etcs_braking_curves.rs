@@ -5,6 +5,7 @@ use utoipa::ToSchema;
 
 use crate::AsCoreRequest;
 use crate::Json;
+use crate::WorkerKey;
 use crate::conflict_detection::ConflictType;
 use crate::pathfinding::TrainPath;
 use crate::simulation::PhysicsConsist;
@@ -76,7 +77,7 @@ pub struct SimpleEnvelope {
 impl AsCoreRequest<Json<Response>> for Request {
     const URL_PATH: &'static str = "/etcs_braking_curves";
 
-    fn worker_id(&self) -> Option<String> {
-        Some(self.infra.to_string())
+    fn worker_key(&self) -> WorkerKey {
+        WorkerKey::Infra(self.infra)
     }
 }

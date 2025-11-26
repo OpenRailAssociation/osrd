@@ -16,6 +16,7 @@ use super::simulation::PhysicsConsist;
 use super::simulation::SimulationSuccess;
 use crate::AsCoreRequest;
 use crate::Json;
+use crate::WorkerKey;
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
 #[schema(as = StdcmRequest)]
@@ -136,7 +137,10 @@ pub enum Response {
 impl AsCoreRequest<Json<Response>> for Request {
     const URL_PATH: &'static str = "/stdcm";
 
-    fn worker_id(&self) -> Option<String> {
-        Some(format!("{}-{}", self.infra, self.timetable_id))
+    fn worker_key(&self) -> WorkerKey {
+        WorkerKey::Timetable {
+            infra_id: self.infra,
+            timetable_id: self.timetable_id,
+        }
     }
 }
