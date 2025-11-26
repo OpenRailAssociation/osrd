@@ -41,6 +41,7 @@ pub struct PathPropertiesResponse {
 
 /// Property f64 values along a path. Each value is associated to a range of the path.
 #[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+#[schema(as = core::PropertyValuesF64)]
 #[cfg_attr(feature = "mocking_client", derive(PartialEq))]
 pub struct PropertyValuesF64 {
     /// List of `n` boundaries of the ranges.
@@ -60,6 +61,7 @@ impl PropertyValuesF64 {
 
 /// Electrification property along a path. Each value is associated to a range of the path.
 #[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+#[schema(as = core::PropertyElectrificationValues)]
 #[cfg_attr(feature = "mocking_client", derive(PartialEq))]
 pub struct PropertyElectrificationValues {
     /// List of `n` boundaries of the ranges.
@@ -79,6 +81,7 @@ impl PropertyElectrificationValues {
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+#[schema(as = core::PropertyElectrificationValue)]
 #[cfg_attr(feature = "mocking_client", derive(PartialEq))]
 #[serde(tag = "type", rename_all = "snake_case")]
 pub enum PropertyElectrificationValue {
@@ -92,6 +95,7 @@ pub enum PropertyElectrificationValue {
 
 /// Operational point along a path.
 #[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+#[schema(as = core::OperationalPointOnPath)]
 #[cfg_attr(feature = "mocking_client", derive(PartialEq))]
 pub struct OperationalPointOnPath {
     /// Id of the operational point
@@ -131,6 +135,7 @@ impl OperationalPointOnPath {
 
 /// Zones along a path. Each value is associated to a range of the path.
 #[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
+#[schema(as = core::PropertyZoneValues)]
 pub struct PropertyZoneValues {
     /// List of `n` boundaries of the ranges.
     /// A boundary is a distance from the beginning of the path in mm.
