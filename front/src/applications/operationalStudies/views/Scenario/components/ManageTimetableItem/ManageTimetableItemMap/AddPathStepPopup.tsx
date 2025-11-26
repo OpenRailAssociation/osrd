@@ -15,13 +15,20 @@ import { useManageTimetableItemContext } from 'applications/operationalStudies/h
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import type { MapPathProperties } from 'applications/operationalStudies/types';
 import { osrdEditoastApi, type OperationalPoint } from 'common/api/osrdEditoastApi';
-import { getOrigin, getDestination } from 'reducers/osrdconf/operationalStudiesConf/selectors';
+import {
+  getOrigin,
+  getDestination,
+  getVias,
+  getPathSteps,
+} from 'reducers/osrdconf/operationalStudiesConf/selectors';
 import type { PathStep } from 'reducers/osrdconf/types';
+import { replaceElementAtIndex } from 'utils/array';
 import { getPointOnTrackCoordinates } from 'utils/geometry';
 
 import type { FeatureInfoClick } from '../types';
 import OperationalPointPopupDetails from './OperationalPointPopupDetails';
 import { setPointIti } from './setPointIti';
+import { isSameWaypointDifferentTrack } from '../helpers/isSameWaypointDifferentTrack';
 
 type AddPathStepPopupProps = {
   infraId: number | undefined;
@@ -40,6 +47,8 @@ const AddPathStepPopup = ({
   const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTimetableItem' });
   const origin = useSelector(getOrigin);
   const destination = useSelector(getDestination);
+  const vias = useSelector(getVias());
+  const pathSteps = useSelector(getPathSteps);
 
   const { getTrackSectionsByIds } = useScenarioContext();
 
@@ -56,6 +65,39 @@ const AddPathStepPopup = ({
     coordinates?: number[];
   }>();
   const [newPathStep, setNewPathStep] = useState<PathStep>();
+
+  const handleViaClick = () => {
+    if (!newPathStep) return;
+
+    const sameViaDifferentTrack = vias.find((via) =>
+      isSameWaypointDifferentTrack(via, newPathStep)
+    );
+    if (!sameViaDifferentTrack) {
+      setPointIti('via', newPathStep, launchPathfinding, resetFeatureInfoClick, pathProperties);
+      return;
+    }
+
+    const indexInPathSteps = pathSteps.findIndex(
+      (step) => step && step.id === sameViaDifferentTrack.id
+    );
+    const oldStep = pathSteps[indexInPathSteps];
+    if (!oldStep) {
+      setPointIti('via', newPathStep, launchPathfinding, resetFeatureInfoClick, pathProperties);
+      return;
+    }
+    const updatedStep: PathStep = {
+      ...oldStep,
+      location: {
+        ...oldStep.location,
+        ...('track_reference' in newPathStep.location
+          ? { track_reference: newPathStep.location.track_reference }
+          : { track_reference: undefined }),
+      },
+    };
+    const newPathStepsArray = replaceElementAtIndex(pathSteps, indexInPathSteps, updatedStep);
+    resetFeatureInfoClick();
+    launchPathfinding(newPathStepsArray);
+  };
 
   const [getInfraObjectEntity] =
     osrdEditoastApi.endpoints.postInfraByInfraIdObjectsAndObjectType.useLazyQuery();
@@ -228,13 +270,7 @@ const AddPathStepPopup = ({
             className="btn btn-sm btn-info"
             type="button"
             onClick={() => {
-              setPointIti(
-                'via',
-                newPathStep,
-                launchPathfinding,
-                resetFeatureInfoClick,
-                pathProperties
-              );
+              handleViaClick();
             }}
           >
             <RiMapPin3Fill />
