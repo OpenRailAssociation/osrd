@@ -19,7 +19,7 @@ impl SpeedLimitTagIds {
     pub fn load() -> SpeedLimitTagIds {
         let raw_config = include_str!("../../../assets/static_resources/speed_limit_tags.yml");
         SpeedLimitTagIds(
-            serde_yaml::from_str::<SpeedLimitTagsConfig>(raw_config)
+            serde_norway::from_str::<SpeedLimitTagsConfig>(raw_config)
                 .unwrap()
                 .keys()
                 .cloned()

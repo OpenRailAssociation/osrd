@@ -124,10 +124,10 @@ schemas = { path = "./schemas" }
 search = { path = "./search" }
 serde = { version = "1.0.228", features = ["derive", "rc"] }
 serde_json = "1.0.145"
+serde_norway = "0.9.42"
 serde_with = { version = "3.16.0", default-features = false, features = [
   "macros",
 ] }
-serde_yaml = "0.9.34"
 sha1 = "0.10"
 stdext = "0.3.3"
 strum = { version = "0.27.2", features = ["derive"] }
@@ -218,8 +218,8 @@ schemas.workspace = true
 search = { workspace = true }
 serde = { workspace = true, features = ["derive"] }
 serde_json.workspace = true
+serde_norway.workspace = true
 serde_with.workspace = true
-serde_yaml.workspace = true
 sha1.workspace = true
 strum.workspace = true
 thiserror.workspace = true

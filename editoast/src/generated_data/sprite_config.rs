@@ -23,6 +23,6 @@ impl SpriteConfig {
     /// Note: This is done statically for now but should be handled by the signaling system plugins
     pub fn load() -> SpriteConfigs {
         let raw_config = include_str!("../../signal_sprites.yml");
-        serde_yaml::from_str(raw_config).unwrap()
+        serde_norway::from_str(raw_config).unwrap()
     }
 }

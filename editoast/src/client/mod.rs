@@ -104,7 +104,7 @@ pub enum Commands {
 /// Prints the OpenApi to stdout
 pub fn print_openapi() {
     let openapi = OpenApiRoot::build_openapi();
-    print!("{}", serde_yaml::to_string(&openapi).unwrap());
+    print!("{}", serde_norway::to_string(&openapi).unwrap());
 }
 
 #[cfg(test)]

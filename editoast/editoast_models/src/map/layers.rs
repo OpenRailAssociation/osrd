@@ -45,7 +45,7 @@ impl MapLayers {
 
 impl Default for MapLayers {
     fn default() -> Self {
-        serde_yaml::from_str(include_str!("../../../map_layers.yml"))
+        serde_norway::from_str(include_str!("../../../map_layers.yml"))
             .expect("static data should be valid")
     }
 }
