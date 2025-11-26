@@ -63,6 +63,9 @@ const NGE = ({ dto, onOperation, onLoad }: NGEProps) => {
       setNgeRootElement(ngeRoot);
 
       if (onLoad) onLoad();
+
+      // Trigger a resize event to ensure NGE's layout logic is correctly initialized
+      frame.contentWindow?.dispatchEvent(new Event('resize'));
     };
 
     frame.addEventListener('load', handleFrameLoad);
@@ -100,6 +103,18 @@ const NGE = ({ dto, onOperation, onLoad }: NGEProps) => {
     }
     return () => {};
   }, [onOperation, ngeRootElement]);
+
+  useEffect(() => {
+    const handleResize = () => {
+      frameRef.current?.contentWindow?.dispatchEvent(new Event('resize'));
+    };
+
+    const observer = new ResizeObserver(handleResize);
+    if (frameRef.current) {
+      observer.observe(frameRef.current);
+    }
+    return () => observer.disconnect();
+  }, []);
 
   return <iframe ref={frameRef} srcDoc={frameSrc} title="NGE" className="nge-iframe-container" />;
 };

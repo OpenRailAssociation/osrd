@@ -1,4 +1,4 @@
-import { useState, type PropsWithChildren } from 'react';
+import { useState, useEffect, type PropsWithChildren } from 'react';
 
 import { Rnd } from 'react-rnd';
 
@@ -13,6 +13,10 @@ const ResizableSection = ({
   setHeight: React.Dispatch<React.SetStateAction<number>>;
 }>) => {
   const [baseHeight, setBaseHeight] = useState(height);
+
+  useEffect(() => {
+    window.dispatchEvent(new Event('resize'));
+  }, [height]);
 
   return (
     <div className="resizable-section" style={{ height }}>
