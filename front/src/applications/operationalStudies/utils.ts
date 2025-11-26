@@ -298,19 +298,6 @@ export const isTooFast = (
   return false;
 };
 
-export const isOperationalPointReference = (
-  pathItemLocation: PathItemLocation
-): pathItemLocation is OperationalPointReference => {
-  if ('track' in pathItemLocation) return false;
-  // Returning just `!('track' in pathItemLocation)` won't guarantee that the param is an OperationPointReference
-  // if in the future PathItemLocation is extended like `PathItemLocation = TrackOffset | OperationalPointReference | IntlOp;`.
-  // The following line ensures that if later PathItemLocation is extended, Typescript will show an error
-  // making the CI fail so we can update this util accordingly.
-  pathItemLocation satisfies OperationalPointReference;
-
-  return true;
-};
-
 export const getStationFromOps = (ops: OperationalPoint[]): OperationalPoint | undefined =>
   ops.find((op) => ['BV', '00'].includes(op.extensions?.sncf?.ch || '')) || ops.at(0);
 
@@ -324,7 +311,7 @@ export const getUniqueOpRefsFromTimetableItems = (
   const uniqueSteps = new Map<string, OperationalPointReference>();
   for (const pathItem of pathItems) {
     const pathItemLocation = pathItem.location;
-    if (!isOperationalPointReference(pathItemLocation)) continue;
+    if (!('operational_point' in pathItemLocation)) continue;
     uniqueSteps.set(JSON.stringify(pathItemLocation), pathItemLocation);
   }
   return [...uniqueSteps.values()];

@@ -5,7 +5,6 @@ import {
   getInvalidStepLabel,
   checkRoundTripCompatible,
   getStationFromOps,
-  isOperationalPointReference,
 } from 'applications/operationalStudies/utils';
 import type { OperationalPoint, TrainSchedule, RoundTrips } from 'common/api/osrdEditoastApi';
 import type { TimetableItemWithPathOps } from 'reducers/osrdconf/types';
@@ -36,7 +35,7 @@ const getStepLabels = (
     // If no matching op has been found for this step, it's either a track offset or an invalid step
     if (pathOp.length === 0) {
       acc.push(
-        !isOperationalPointReference(step.location)
+        !('operational_point' in step.location)
           ? t('requestedPointUnknown')
           : getInvalidStepLabel(step.location.operational_point)
       );

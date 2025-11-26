@@ -32,7 +32,7 @@ import {
 } from 'utils/trainId';
 
 import type { PathProjectionResult } from '../types';
-import { getStationFromOps, isOperationalPointReference } from '../utils';
+import { getStationFromOps } from '../utils';
 
 /**
  * Generates a display name for a virtual operational point based on available reference data.
@@ -171,7 +171,7 @@ const usePathProjection = (
   const opRefs = useMemo(() => {
     const refs: OperationalPointReference[] = [];
     pathUsedForProjection?.forEach((step) => {
-      if (isOperationalPointReference(step.location)) {
+      if ('operational_point' in step.location) {
         refs.push({ operational_point: step.location.operational_point });
       }
     });
