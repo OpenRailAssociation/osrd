@@ -51,7 +51,7 @@ const BoardWrapper = ({
         {children}
       </div>
       {customFooter}
-      {withFooter && <div className="board-footer" />}
+      {withFooter && !customFooter && <div className="board-footer" />}
     </div>
   );
 };

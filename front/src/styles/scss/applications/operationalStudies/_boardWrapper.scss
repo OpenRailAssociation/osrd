@@ -59,7 +59,7 @@
     height: 100%;
     width: 100%;
     border-top: 1px solid white;
-    overflow: hidden;
+    overflow-y: auto;
     background-color: var(--ambientB10);
 
     &.with-rounded-corners {
