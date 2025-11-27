@@ -239,7 +239,7 @@ impl Request {
     ) -> Result<Vec<core_client::stdcm::PathItem>> {
         let locations: Vec<_> = self.steps.iter().map(|item| &item.location).collect();
 
-        let op_cache = OperationalPointCache::load(conn, infra_id, &locations).await?;
+        let op_cache = OperationalPointCache::load_path_items(conn, infra_id, &locations).await?;
         let track_offsets = op_cache
             .extract_location_from_path_items(&locations)
             .map_err(|path_res| match path_res {

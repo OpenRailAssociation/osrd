@@ -1103,10 +1103,13 @@ mod tests {
         let trigrams = ["SWS", "MWS", "MES", "NS", "SS"];
         let path_items = create_path_items_from_trigrams(&trigrams);
         let path_item_refs: Vec<&PathItemLocation> = path_items.iter().collect();
-        let op_cache =
-            OperationalPointCache::load(db_pool.get_ok(), small_infra.id, &path_item_refs)
-                .await
-                .expect("Failed to load operational point cache");
+        let op_cache = OperationalPointCache::load_path_items(
+            db_pool.get_ok(),
+            small_infra.id,
+            &path_item_refs,
+        )
+        .await
+        .expect("Failed to load operational point cache");
         // Train
         let train_to_project_on_op = TrainToProjectOnOperationalPoint {
             space_time_curve: Some(SpaceTimeCurve {
@@ -1166,10 +1169,13 @@ mod tests {
         let trigrams = ["SWS", "MWS", "MES", "NS", "SS"];
         let path_items = create_path_items_from_trigrams(&trigrams);
         let path_item_refs: Vec<&PathItemLocation> = path_items.iter().collect();
-        let op_cache =
-            OperationalPointCache::load(db_pool.get_ok(), small_infra.id, &path_item_refs)
-                .await
-                .expect("Failed to load operational point cache");
+        let op_cache = OperationalPointCache::load_path_items(
+            db_pool.get_ok(),
+            small_infra.id,
+            &path_item_refs,
+        )
+        .await
+        .expect("Failed to load operational point cache");
         // Train
         let train_to_project_on_op = TrainToProjectOnOperationalPoint {
             space_time_curve: Some(SpaceTimeCurve {
@@ -1230,10 +1236,13 @@ mod tests {
         let trigrams = ["SWS", "MWS", "MES", "NS", "SS"];
         let path_items = create_path_items_from_trigrams(&trigrams);
         let path_item_refs: Vec<&PathItemLocation> = path_items.iter().collect();
-        let op_cache =
-            OperationalPointCache::load(db_pool.get_ok(), small_infra.id, &path_item_refs)
-                .await
-                .expect("Failed to load operational point cache");
+        let op_cache = OperationalPointCache::load_path_items(
+            db_pool.get_ok(),
+            small_infra.id,
+            &path_item_refs,
+        )
+        .await
+        .expect("Failed to load operational point cache");
         // Train
         let train_to_project_on_op = TrainToProjectOnOperationalPoint {
             space_time_curve: None,
@@ -1286,9 +1295,10 @@ mod tests {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
-        let op_cache = OperationalPointCache::load(db_pool.get_ok(), small_infra.id, &[])
-            .await
-            .expect("Failed to load operational point cache");
+        let op_cache =
+            OperationalPointCache::load_path_items(db_pool.get_ok(), small_infra.id, &[])
+                .await
+                .expect("Failed to load operational point cache");
         // Train
         let train_to_project_on_op = TrainToProjectOnOperationalPoint {
             space_time_curve: None,

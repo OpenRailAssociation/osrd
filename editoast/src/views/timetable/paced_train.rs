@@ -962,8 +962,12 @@ pub(in crate::views) async fn project_path_op(
         .chain(&path_item_locations_projection)
         .collect();
 
-    let op_cache =
-        OperationalPointCache::load(db_pool.get().await?, infra.id, &path_item_locations).await?;
+    let op_cache = OperationalPointCache::load_path_items(
+        db_pool.get().await?,
+        infra.id,
+        &path_item_locations,
+    )
+    .await?;
 
     let operational_points_projection = OperationalPointProjection::new(
         operational_points_refs,
@@ -1268,7 +1272,8 @@ pub(in crate::views) async fn track_occupancy(
         .map(|p| &p.location)
         .collect_vec();
 
-    let op_cache = OperationalPointCache::load(db_pool.get().await?, infra_id, &path_items).await?;
+    let op_cache =
+        OperationalPointCache::load_path_items(db_pool.get().await?, infra_id, &path_items).await?;
 
     // For each occurrence + simulation result, compute track occupancies
     let all_occupancies = if use_simulation {
