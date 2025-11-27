@@ -4,6 +4,10 @@ import { Button } from '@osrd-project/ui-core';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 
+import {
+  type GetTimetableStdcmGetAsyncProgressApiResponse,
+  osrdEditoastApi,
+} from '../../../common/api/osrdEditoastApi';
 import type { LoaderStatus } from '../types';
 
 const LOADER_HEIGHT = 176;
@@ -34,6 +38,12 @@ const StdcmLoader = ({
     status: windowHeight - top - 32 > LOADER_HEIGHT ? 'loader-absolute' : 'loader-fixed-bottom',
     firstLaunch: true,
   });
+
+  const [progressData, setProgressData] =
+    useState<GetTimetableStdcmGetAsyncProgressApiResponse | null>(null);
+
+  const [getTimetableStdcmGetAsyncProgress] =
+    osrdEditoastApi.endpoints.getTimetableStdcmGetAsyncProgress.useLazyQuery();
 
   useEffect(() => {
     // Depending on the scroll, change the position of the loader between fixed, sticky or absolute
@@ -83,6 +93,31 @@ const StdcmLoader = ({
     };
   }, []);
 
+  useEffect(() => {
+    if (!currentRequestId) return;
+
+    const intervalId = setInterval(async () => {
+      try {
+        const updatedProgress = await getTimetableStdcmGetAsyncProgress({
+          id: currentRequestId,
+        }).unwrap();
+        setProgressData(updatedProgress);
+      } catch (error) {
+        console.error('Error fetching data:', error);
+      }
+    }, 1000);
+
+    return () => clearInterval(intervalId);
+  }, [currentRequestId]);
+
+  let progressString = '0 / 10';
+  let progressPercentage = 0;
+  if (progressData != null && progressData.length > 0) {
+    const last = progressData[progressData.length - 1];
+    progressString = last.sample_count + ' / ' + last.out_of;
+    progressPercentage = (last.sample_count / last.out_of) * 100;
+  }
+
   return (
     <div
       ref={loaderRef}
@@ -112,7 +147,11 @@ const StdcmLoader = ({
         </div>
       </div>
       <p className="stdcm-loader__info-message">{t('simulation.infoMessage')}</p>
-      <p className="stdcm-loader__info-message">{'request id: ' + currentRequestId}</p>
+      <p className="stdcm-loader__info-message">{'progress for: ' + currentRequestId}</p>
+      <p className="stdcm-loader__info-message">{progressString}</p>
+      <div className="progress-bar-container">
+        <div className="progress-bar" style={{ width: `${progressPercentage}%` }}></div>
+      </div>
     </div>
   );
 };
