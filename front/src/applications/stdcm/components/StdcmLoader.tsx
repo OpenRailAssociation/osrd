@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type RefObject } from 'react';
 
 import { Button } from '@osrd-project/ui-core';
 import cx from 'classnames';
+import type { FeatureCollection } from 'geojson';
 import { useTranslation } from 'react-i18next';
 
 import {
@@ -19,6 +20,7 @@ type StdcmLoaderProps = {
   launchButtonRef: RefObject<HTMLDivElement | null>;
   formRef: RefObject<HTMLDivElement | null>;
   currentRequestId: string | null;
+  setProgressGeom: (value: FeatureCollection) => void;
 };
 
 const StdcmLoader = ({
@@ -27,6 +29,7 @@ const StdcmLoader = ({
   formRef,
   isPendingAdditional,
   currentRequestId,
+  setProgressGeom,
 }: StdcmLoaderProps) => {
   const { t } = useTranslation('stdcm');
   const loaderRef = useRef<HTMLDivElement>(null);
@@ -102,6 +105,19 @@ const StdcmLoader = ({
           id: currentRequestId,
         }).unwrap();
         setProgressData(updatedProgress);
+
+        const featureCollection: FeatureCollection = {
+          type: 'FeatureCollection',
+          features: updatedProgress.map((element) => ({
+            type: 'Feature',
+            geometry: {
+              type: 'Point',
+              coordinates: element.coordinates.toReversed(),
+            },
+            properties: {},
+          })),
+        };
+        setProgressGeom(featureCollection);
       } catch (error) {
         console.error('Error fetching data:', error);
       }

@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 
 import { skipToken } from '@reduxjs/toolkit/query';
+import type { FeatureCollection } from 'geojson';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import { v4 as uuidV4 } from 'uuid';
@@ -43,6 +44,7 @@ const useStdcm = ({
     STDCM_REQUEST_STATUS.idle
   );
   const [currentRequestId, setCurrentRequestId] = useState<string | null>(null);
+  const [progressGeom, setProgressGeom] = useState<FeatureCollection | null>(null);
 
   const dispatch = useAppDispatch();
   const { t } = useTranslation(['translation', 'stdcm']);
@@ -269,6 +271,8 @@ const useStdcm = ({
     isPendingAdditional,
     isCalculationCompleted,
     currentRequestId,
+    progressGeom,
+    setProgressGeom,
   };
 };
 

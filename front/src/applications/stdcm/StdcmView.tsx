@@ -70,6 +70,8 @@ const StdcmViewContent = ({
     isCanceled,
     isCalculationCompleted,
     currentRequestId,
+    progressGeom,
+    setProgressGeom,
   } = useStdcm({ showFailureNotification: false });
 
   const dispatch = useAppDispatch();
@@ -193,6 +195,8 @@ const StdcmViewContent = ({
         launchStdcmRequest={launchStdcmRequest}
         cancelStdcmRequest={cancelStdcmRequest}
         currentRequestId={currentRequestId}
+        progressGeom={progressGeom}
+        setProgressGeom={setProgressGeom}
       />
 
       {showStatusBanner && <StdcmStatusBanner isFailed={isRejected} />}
