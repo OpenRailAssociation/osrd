@@ -5,7 +5,7 @@
   border-radius: 8px;
   display: flex;
   flex-direction: column;
-  max-height: calc(100vh - var(--header-height) - 2 * var(--board-vertical-gap));
+  max-height: calc(100vh - var(--scenario-header-height) - 2 * var(--board-vertical-gap));
   .board-header {
     height: 22px;
     box-shadow: 0 1px 0 0 inset white;
