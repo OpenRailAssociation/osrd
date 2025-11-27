@@ -44,64 +44,33 @@ impl OperationalPointCache {
     /// an operational point can be retrieved using any of its identifiers,
     /// not just the one used to build the cache.
     #[tracing::instrument(skip(conn), err)]
-    pub async fn load(
+    pub async fn load_path_items(
         mut conn: DbConnection,
         infra_id: i64,
         path_items: &[&PathItemLocation],
-    ) -> Result<PathItemCache> {
+    ) -> Result<OperationalPointCache> {
         if path_items.is_empty() {
-            return Ok(PathItemCache::default());
+            return Ok(OperationalPointCache::default());
         }
 
-        // Step 1: Retrieve operational points from database using the requested identifiers
-        let (trigrams, ops_uic, ops_id) = collect_path_item_ids(path_items);
-        let uic_conn = &mut conn.clone();
-        let trigram_conn = &mut conn.clone();
-        let ids_conn = &mut conn.clone();
-        let (uic_results, trigram_results, ids_results) = tokio::try_join!(
-            retrieve_op_from_uic(uic_conn, infra_id, &ops_uic),
-            retrieve_op_from_trigrams(trigram_conn, infra_id, &trigrams),
-            retrieve_op_from_ids(ids_conn, infra_id, &ops_id)
-        )?;
+        let mut op_cache = Self::load_from_operational_points(
+            conn.clone(),
+            infra_id,
+            &path_items
+                .iter()
+                .filter_map(|e| match e {
+                    PathItemLocation::OperationalPointPartReference(op_ref) => {
+                        Some(&op_ref.operational_point)
+                    }
+                    _ => None,
+                })
+                .collect::<Vec<&OperationalPointReference>>(),
+        )
+        .await?;
 
-        // Step 2: Collect all unique OPs first, deduplicating by obj_id
-        let ops: Vec<OperationalPointModel> = ids_results
-            .into_iter()
-            .chain(trigram_results)
-            .chain(uic_results)
-            .map(|op| (op.obj_id.clone(), op))
-            .collect::<HashMap<String, OperationalPointModel>>()
-            .into_values()
-            .collect();
-
-        // Step 3: Build index maps from the ops vector
-        let mut obj_id_to_index: HashMap<String, usize> = HashMap::new();
-        let mut uic_to_indices: HashMap<u32, Vec<usize>> = HashMap::new();
-        let mut trigram_to_indices: HashMap<String, Vec<usize>> = HashMap::new();
-
-        for (index, op) in ops.iter().enumerate() {
-            // Build ID index
-            obj_id_to_index.insert(op.obj_id.clone(), index);
-
-            // Build UIC index if present
-            if let Some(identifier) = &op.extensions.identifier {
-                uic_to_indices
-                    .entry(identifier.uic)
-                    .or_default()
-                    .push(index);
-            }
-
-            // Build trigram index if present
-            if let Some(sncf) = &op.extensions.sncf {
-                trigram_to_indices
-                    .entry(sncf.trigram.clone())
-                    .or_default()
-                    .push(index);
-            }
-        }
-
-        // Step 4: Retrieve track information
-        let op_tracks = ops
+        // Retrieve track information
+        let op_tracks = op_cache
+            .ops
             .iter()
             .flat_map(|op| &op.parts)
             .map(|part| (infra_id, part.track.0.clone()));
@@ -132,6 +101,70 @@ impl OperationalPointCache {
                     .map(|extension| (track.obj_id.clone(), extension.track_name.clone()))
             })
             .collect();
+
+        op_cache.track_ids_to_name = track_ids_to_name;
+        op_cache.track_ids = track_ids;
+        Ok(op_cache)
+    }
+
+    #[tracing::instrument(skip(conn), err)]
+    pub async fn load_from_operational_points(
+        conn: DbConnection,
+        infra_id: i64,
+        operational_points: &[&OperationalPointReference],
+    ) -> Result<OperationalPointCache> {
+        if operational_points.is_empty() {
+            return Ok(OperationalPointCache::default());
+        }
+
+        // Step 1: Retrieve operational points from database using the requested identifiers
+        let (trigrams, ops_uic, ops_id) = collect_path_item_ids(operational_points);
+        let uic_conn = &mut conn.clone();
+        let trigram_conn = &mut conn.clone();
+        let ids_conn = &mut conn.clone();
+        let (uic_results, trigram_results, ids_results) = tokio::try_join!(
+            retrieve_op_from_uic(uic_conn, infra_id, &ops_uic),
+            retrieve_op_from_trigrams(trigram_conn, infra_id, &trigrams),
+            retrieve_op_from_ids(ids_conn, infra_id, &ops_id)
+        )?;
+
+        // Step 2: Collect all unique OPs first, deduplicating by obj_id
+        let ops: Vec<OperationalPointModel> = ids_results
+            .into_iter()
+            .chain(trigram_results)
+            .chain(uic_results)
+            .map(|op| (op.obj_id.clone(), op))
+            .collect::<HashMap<String, OperationalPointModel>>()
+            .into_values()
+            .collect();
+
+        // Step 3: Build index maps from the ops vector
+        let mut obj_id_to_index: HashMap<String, usize> = HashMap::new();
+        let mut uic_to_indices: HashMap<u32, Vec<usize>> = HashMap::new();
+        let mut trigram_to_indices: HashMap<String, Vec<usize>> = HashMap::new();
+        let track_ids_to_name: HashMap<String, NonBlankString> = HashMap::new();
+        let track_ids: HashSet<String> = HashSet::new();
+
+        for (index, op) in ops.iter().enumerate() {
+            // Build ID index
+            obj_id_to_index.insert(op.obj_id.clone(), index);
+
+            // Build UIC index if present
+            if let Some(identifier) = &op.extensions.identifier {
+                uic_to_indices
+                    .entry(identifier.uic)
+                    .or_default()
+                    .push(index);
+            }
+
+            // Build trigram index if present
+            if let Some(sncf) = &op.extensions.sncf {
+                trigram_to_indices
+                    .entry(sncf.trigram.clone())
+                    .or_default()
+                    .push(index);
+            }
+        }
 
         Ok(OperationalPointCache {
             ops,
@@ -378,7 +411,7 @@ impl OperationalPointCache {
 }
 
 /// Collect the ids of the operational points from the path items
-pub fn collect_path_item_ids(
+fn collect_path_item_ids(
     operational_points: &[&OperationalPointReference],
 ) -> (Vec<String>, Vec<u32>, Vec<String>) {
     let mut trigrams: Vec<String> = Vec::new();
@@ -549,7 +582,7 @@ mod tests {
         let path_item_refs: Vec<&PathItemLocation> = path_items.iter().collect();
 
         // Load the cache using the real load() method
-        let cache = OperationalPointCache::load(conn, infra.id, &path_item_refs)
+        let cache = OperationalPointCache::load_path_items(conn, infra.id, &path_item_refs)
             .await
             .expect("Failed to load cache");
 
