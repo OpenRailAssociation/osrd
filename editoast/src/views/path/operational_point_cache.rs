@@ -2,6 +2,7 @@ use core_client::pathfinding::InvalidPathItem;
 use core_client::pathfinding::PathfindingInputError;
 use database::DbConnection;
 use itertools::Itertools;
+use schemas::infra::OperationalPoint;
 use schemas::infra::TrackOffset;
 use schemas::primitives::NonBlankString;
 use schemas::train_schedule::OperationalPointPartReference;
@@ -338,47 +339,72 @@ impl OperationalPointCache {
             track_ids_to_name,
         }
     }
+
+    pub fn get_reference(
+        &self,
+        op_ref: OperationalPointReference,
+    ) -> Result<Vec<&OperationalPoint>> {
+        let related_operational_points = match op_ref {
+            OperationalPointReference::Id {
+                ref operational_point,
+            } => self
+                .get_from_id(&operational_point.0)
+                .into_iter()
+                .map(|op_model| &op_model.schema)
+                .collect::<Vec<_>>(),
+            OperationalPointReference::Trigram {
+                ref trigram,
+                secondary_code,
+            } => {
+                if let Some(op_models) = self.get_from_trigram(&trigram.0) {
+                    filter_by_secondary_code_and_retrieve_op(secondary_code, op_models)
+                } else {
+                    vec![]
+                }
+            }
+            OperationalPointReference::Uic {
+                uic,
+                secondary_code,
+            } => {
+                if let Some(op_models) = self.get_from_uic(uic) {
+                    filter_by_secondary_code_and_retrieve_op(secondary_code, op_models)
+                } else {
+                    vec![]
+                }
+            }
+        };
+        Ok(related_operational_points)
+    }
 }
 
 /// Collect the ids of the operational points from the path items
 pub fn collect_path_item_ids(
-    path_items: &[&PathItemLocation],
+    operational_points: &[&OperationalPointReference],
 ) -> (Vec<String>, Vec<u32>, Vec<String>) {
     let mut trigrams: Vec<String> = Vec::new();
     let mut ops_uic: Vec<u32> = Vec::new();
     let mut ops_id: Vec<String> = Vec::new();
 
-    for item in path_items {
+    for item in operational_points {
         match item {
-            PathItemLocation::OperationalPointPartReference(OperationalPointPartReference {
-                operational_point: OperationalPointReference::Trigram { trigram, .. },
-                ..
-            }) => {
+            OperationalPointReference::Trigram { trigram, .. } => {
                 trigrams.push(trigram.clone().0);
             }
-            PathItemLocation::OperationalPointPartReference(OperationalPointPartReference {
-                operational_point: OperationalPointReference::Uic { uic, .. },
-                ..
-            }) => {
+            OperationalPointReference::Uic { uic, .. } => {
                 ops_uic.push(*uic);
             }
-            PathItemLocation::OperationalPointPartReference(OperationalPointPartReference {
-                operational_point:
-                    OperationalPointReference::Id {
-                        operational_point, ..
-                    },
-                ..
-            }) => {
+            OperationalPointReference::Id {
+                operational_point, ..
+            } => {
                 ops_id.push(operational_point.clone().0);
             }
-            _ => {}
         }
     }
     (trigrams, ops_uic, ops_id)
 }
 
 /// Retrieve operational points from operational point uic codes
-pub async fn retrieve_op_from_uic(
+async fn retrieve_op_from_uic(
     conn: &mut DbConnection,
     infra_id: i64,
     ops_uic: &[u32],
@@ -389,7 +415,7 @@ pub async fn retrieve_op_from_uic(
 }
 
 /// Retrieve operational points from operational point trigams
-pub async fn retrieve_op_from_trigrams(
+async fn retrieve_op_from_trigrams(
     conn: &mut DbConnection,
     infra_id: i64,
     trigrams: &[String],
@@ -400,7 +426,7 @@ pub async fn retrieve_op_from_trigrams(
 }
 
 /// Retrieve operational points from operational point ids
-pub async fn retrieve_op_from_ids(
+async fn retrieve_op_from_ids(
     conn: &mut DbConnection,
     infra_id: i64,
     ops_id: &[String],
@@ -425,6 +451,23 @@ fn secondary_code_filter<'a>(
     } else {
         ops
     }
+}
+
+fn filter_by_secondary_code_and_retrieve_op<'a>(
+    secondary_code: Option<String>,
+    op_models: impl Iterator<Item = &'a OperationalPointModel>,
+) -> Vec<&'a OperationalPoint> {
+    op_models
+        .map(|op_model| &op_model.schema)
+        .filter(|op| match secondary_code.as_ref() {
+            Some(secondary_code) => op
+                .extensions
+                .sncf
+                .as_ref()
+                .is_some_and(|ext| &ext.ch == secondary_code),
+            None => true,
+        })
+        .collect::<Vec<_>>()
 }
 
 #[cfg(test)]
