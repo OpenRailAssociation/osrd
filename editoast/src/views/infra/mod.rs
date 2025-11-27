@@ -54,9 +54,6 @@ use crate::views::pagination::PaginatedList as _;
 use crate::views::pagination::PaginationQueryParams;
 use crate::views::params;
 use crate::views::path::operational_point_cache::OperationalPointCache;
-use crate::views::path::path_item_cache::retrieve_op_from_ids;
-use crate::views::path::path_item_cache::retrieve_op_from_trigrams;
-use crate::views::path::path_item_cache::retrieve_op_from_uic;
 use authz::Role;
 use schemas::infra::OperationalPoint;
 use schemas::infra::OperationalPointExtensions;
@@ -837,55 +834,18 @@ pub(in crate::views) async fn match_operational_points(
             .await
     })
     .await?;
-    let mut operational_points: Vec<Vec<OperationalPoint>> = vec![];
+    let mut operational_points: Vec<Vec<&OperationalPoint>> = vec![];
     let mut conn = db_pool.get().await?;
+    let op_refs: Vec<&OperationalPointReference> = operational_point_references.iter().collect();
+    let op_cache =
+        OperationalPointCache::load_from_operational_points(conn.clone(), infra_id, &op_refs)
+            .await?;
     for operational_point_reference in operational_point_references {
         // Retrieve related OPs based on the input operational point identifier:
-        let related_operational_points = match operational_point_reference {
-            OperationalPointReference::Id {
-                ref operational_point,
-            } => retrieve_op_from_ids(
-                &mut conn,
-                infra_id,
-                std::slice::from_ref(&operational_point.0),
-            )
-            .await?
-            .into_iter()
-            .map(|op_model| op_model.schema)
-            .collect::<Vec<_>>(),
-            OperationalPointReference::Trigram {
-                ref trigram,
-                secondary_code,
-            } => retrieve_op_from_trigrams(&mut conn, infra_id, std::slice::from_ref(&trigram.0))
-                .await?
-                .into_iter()
-                .map(|op_model| op_model.schema)
-                .filter(|op| match secondary_code.as_ref() {
-                    Some(secondary_code) => op
-                        .extensions
-                        .sncf
-                        .as_ref()
-                        .is_some_and(|ext| &ext.ch == secondary_code),
-                    None => true,
-                })
-                .collect::<Vec<_>>(),
-            OperationalPointReference::Uic {
-                uic,
-                secondary_code,
-            } => retrieve_op_from_uic(&mut conn, infra_id, &[uic])
-                .await?
-                .into_iter()
-                .map(|op_model| op_model.schema)
-                .filter(|op| match secondary_code.as_ref() {
-                    Some(secondary_code) => op
-                        .extensions
-                        .sncf
-                        .as_ref()
-                        .is_some_and(|ext| &ext.ch == secondary_code),
-                    None => true,
-                })
-                .collect::<Vec<_>>(),
-        };
+        let related_operational_points = op_cache
+            .get_reference(operational_point_reference)
+            .expect("should get the provided reference");
+
         // Add the operational point reference related operational points to the response:
         operational_points.push(related_operational_points);
     }
@@ -951,7 +911,7 @@ fn build_related_operational_point(
 async fn populate_op_geo(
     conn: &mut DbConnection,
     infra_id: i64,
-    operational_points: &[Vec<OperationalPoint>],
+    operational_points: &[Vec<&OperationalPoint>],
 ) -> Result<Vec<Vec<RelatedOperationalPoint>>> {
     let op_ids = operational_points
         .iter()
