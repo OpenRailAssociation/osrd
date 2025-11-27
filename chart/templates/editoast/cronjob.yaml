@@ -14,13 +14,13 @@ data:
 ---
 {{ $mergedLabels := merge (dict "name" (printf "%s-editoast-cronjob" (include "osrd.fullname" .))) (default (dict) $.Values.services.editoast.cronjob.labels) -}}
 apiVersion: batch/v1
-kind: Cronjob
+kind: CronJob
 metadata:
   name: {{ include "osrd.fullname" . }}-editoast-cronjob
   labels:
     {{- toYaml ($mergedLabels | default dict) | nindent 4 }}
 spec:
-  schedule: {{ .Values.services.editoast.cronjob.schedule }}
+  schedule: "{{ .Values.services.editoast.cronjob.schedule }}"
   jobTemplate:
     spec:
       template:
@@ -34,7 +34,7 @@ spec:
             image: "{{ .Values.images.editoast }}"
             imagePullPolicy: {{ .Values.pullPolicy }}
             command: ["/bin/sh"]
-            args: ["/init-vol/script.sh"]
+            args: ["/crons/cronjob.sh"]
             env:
               - name: EDITOAST_PORT
                 value: "{{ .Values.services.editoast.service.targetPort }}"
@@ -79,4 +79,5 @@ spec:
             - name: config
               configMap:
                 name: {{ include "osrd.fullname" . }}-editoast-cronjob
+          restartPolicy: Never
 {{- end }}
