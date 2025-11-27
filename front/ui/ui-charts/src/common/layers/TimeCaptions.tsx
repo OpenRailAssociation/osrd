@@ -8,25 +8,41 @@ import { useDraw } from '../../common/hooks/useCanvas';
 import type { DrawingFunction, TimeChartContextType } from '../../common/types';
 
 const MARGIN = 100;
-const MINUTES_FORMATTER = (t: number) => `:${new Date(t).getMinutes().toString().padStart(2, '0')}`;
-const HOURS_FORMATTER = (t: number, pixelsPerMinute: number) => {
-  const date = new Date(t);
-  if (pixelsPerMinute > 1) {
-    const hours = date.getHours().toString().padStart(2, '0');
-    const minutes = date.getMinutes().toString().padStart(2, '0');
-    return `${hours}:${minutes}`;
-  } else {
-    return date.getHours().toString().padStart(2, '0');
-  }
+
+const MINUTE_OPTIONS: Intl.DateTimeFormatOptions = {
+  minute: '2-digit',
+  hour12: false,
 };
-const DATES_FORMATER = (t: number) => {
-  const date = new Date(t);
-  return [
-    date.getDate().toString().padStart(2, '0'),
-    (date.getMonth() + 1).toString().padStart(2, '0'),
-    date.getFullYear().toString(),
-  ].join('/');
+
+const HOUR_OPTIONS_SHORT: Intl.DateTimeFormatOptions = {
+  hour: '2-digit',
+  hour12: false,
 };
+
+const HOUR_OPTIONS_LONG: Intl.DateTimeFormatOptions = {
+  hour: '2-digit',
+  minute: '2-digit',
+  hour12: false,
+};
+
+const DATE_OPTIONS: Intl.DateTimeFormatOptions = {
+  day: '2-digit',
+  month: '2-digit',
+  year: 'numeric',
+};
+
+const MINUTES_FORMATTER = (t: number) => {
+  const minutes = new Date(t).toLocaleTimeString(undefined, MINUTE_OPTIONS);
+  return `:${minutes}`;
+};
+
+const HOURS_FORMATTER = (t: number, pixelsPerMinute: number) =>
+  new Date(t).toLocaleTimeString(
+    undefined,
+    pixelsPerMinute > 1 ? HOUR_OPTIONS_LONG : HOUR_OPTIONS_SHORT
+  );
+
+const DATES_FORMATER = (t: number) => new Date(t).toLocaleDateString(undefined, DATE_OPTIONS);
 
 const RANGES_FORMATER: ((t: number, pixelsPerMinute: number) => string)[] = [
   () => '',
