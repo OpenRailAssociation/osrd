@@ -40,7 +40,7 @@ use crate::models::paced_train::PacedTrainChangeset;
 use crate::models::train_schedule_set::TrainScheduleSet;
 use crate::views::AuthorizationError;
 use crate::views::infra::InfraIdQueryParam;
-use crate::views::path::path_item_cache::PathItemCache;
+use crate::views::path::operational_point_cache::OperationalPointCache;
 use crate::views::path::pathfinding::PathfindingResult;
 use crate::views::path::pathfinding::pathfinding_from_train;
 use crate::views::projection::OperationalPointProjection;
@@ -962,13 +962,13 @@ pub(in crate::views) async fn project_path_op(
         .chain(&path_item_locations_projection)
         .collect();
 
-    let path_item_cache =
-        PathItemCache::load(db_pool.get().await?, infra.id, &path_item_locations).await?;
+    let op_cache =
+        OperationalPointCache::load(db_pool.get().await?, infra.id, &path_item_locations).await?;
 
     let operational_points_projection = OperationalPointProjection::new(
         operational_points_refs,
         operational_points_distances,
-        &path_item_cache,
+        &op_cache,
     )?;
 
     let projected_trains = if use_simulation {
@@ -977,7 +977,7 @@ pub(in crate::views) async fn project_path_op(
             valkey_client,
             core_client,
             &train_schedules,
-            &path_item_cache,
+            &op_cache,
             operational_points_projection,
             infra,
             electrical_profile_set_id,
@@ -987,7 +987,7 @@ pub(in crate::views) async fn project_path_op(
     } else {
         compute_projected_train_path_op_without_simulation(
             &train_schedules,
-            &path_item_cache,
+            &op_cache,
             operational_points_projection,
         )
     };
@@ -1268,7 +1268,7 @@ pub(in crate::views) async fn track_occupancy(
         .map(|p| &p.location)
         .collect_vec();
 
-    let path_item_cache = PathItemCache::load(db_pool.get().await?, infra_id, &path_items).await?;
+    let op_cache = OperationalPointCache::load(db_pool.get().await?, infra_id, &path_items).await?;
 
     // For each occurrence + simulation result, compute track occupancies
     let all_occupancies = if use_simulation {
@@ -1288,7 +1288,7 @@ pub(in crate::views) async fn track_occupancy(
                 track_occupancy::find_track_occupancy_for_operational_point(
                     &operational_point_id,
                     &operational_point_track_offsets,
-                    &path_item_cache,
+                    &op_cache,
                     &simulation,
                     &pathfinding,
                     &train,
@@ -1317,7 +1317,7 @@ pub(in crate::views) async fn track_occupancy(
                 track_occupancy::find_track_occupancy_for_operational_point_without_simulation(
                     &operational_point_id,
                     &operational_point_track_offsets,
-                    &path_item_cache,
+                    &op_cache,
                     &train_schedule,
                 )
                 .into_iter()

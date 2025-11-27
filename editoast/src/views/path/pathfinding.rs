@@ -38,7 +38,7 @@ use crate::models::Infra;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
 use crate::views::path::PathfindingError;
-use crate::views::path::path_item_cache::PathItemCache;
+use crate::views::path::operational_point_cache::OperationalPointCache;
 use editoast_models::prelude::*;
 use editoast_models::rolling_stock::RollingStock;
 
@@ -248,8 +248,8 @@ pub(in crate::views) async fn post(
     use core_task::Task as _;
     let valkey_conn = valkey_client.get_connection().await?;
     let path_items = path_input.path_items.iter().collect::<Vec<_>>();
-    let path_item_cache = PathItemCache::load(conn, infra.id, &path_items).await?;
-    let request = match build_pathfinding_request(&path_input, &infra, &path_item_cache) {
+    let op_cache = OperationalPointCache::load(conn, infra.id, &path_items).await?;
+    let request = match build_pathfinding_request(&path_input, &infra, &op_cache) {
         Ok(request) => request,
         Err(result) => return Ok(Json(result)),
     };
@@ -320,7 +320,7 @@ async fn pathfinding_blocks_batch(
         .filter(|(_, res)| res.is_none())
         .flat_map(|(hash, _)| &path_request_map[*hash].path_items)
         .collect();
-    let path_item_cache = PathItemCache::load(conn, infra.id, &path_items).await?;
+    let op_cache = OperationalPointCache::load(conn, infra.id, &path_items).await?;
 
     debug!(
         nb_path_items = path_items.len(),
@@ -337,7 +337,7 @@ async fn pathfinding_blocks_batch(
             continue;
         }
         let pathfinding_input = &path_request_map[hash];
-        match build_pathfinding_request(pathfinding_input, infra, &path_item_cache) {
+        match build_pathfinding_request(pathfinding_input, infra, &op_cache) {
             Ok(pathfinding_request) => {
                 pathfinding_requests.push(pathfinding_request);
                 to_compute_hashes.push(hash);
@@ -392,7 +392,7 @@ async fn pathfinding_blocks_batch(
 fn build_pathfinding_request(
     pathfinding_input: &PathfindingInput,
     infra: &Infra,
-    path_item_cache: &PathItemCache,
+    op_cache: &OperationalPointCache,
 ) -> std::result::Result<PathfindingRequest, PathfindingResult> {
     let path_items: Vec<_> = pathfinding_input.path_items.iter().collect();
     if path_items.len() <= 1 {
@@ -400,7 +400,7 @@ fn build_pathfinding_request(
             PathfindingFailure::PathfindingInputError(PathfindingInputError::NotEnoughPathItems),
         ));
     }
-    let track_offsets = path_item_cache
+    let track_offsets = op_cache
         .extract_location_from_path_items(&path_items)
         .map_err(PathfindingResult::Failure)?;
 

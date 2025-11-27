@@ -22,7 +22,7 @@ use std::sync::Arc;
 use thiserror::Error;
 use utoipa::ToSchema;
 
-use super::path::path_item_cache::PathItemCache;
+use super::path::operational_point_cache::OperationalPointCache;
 
 use crate::models::infra::Infra;
 use crate::views::path::pathfinding::PathfindingResult;
@@ -577,7 +577,7 @@ impl OperationalPointProjection {
     pub fn new(
         op_refs: Vec<OperationalPointReference>,
         distances: Vec<u64>,
-        path_item_cache: &PathItemCache,
+        op_cache: &OperationalPointCache,
     ) -> Result<Self, OperationalPointProjectionError> {
         if op_refs.len() < 2 {
             return Err(OperationalPointProjectionError::InvalidNumberOfRefs);
@@ -593,11 +593,11 @@ impl OperationalPointProjection {
         let op_refs = op_refs
             .into_iter()
             .map(|op_ref| {
-                path_item_cache
-                    .get_op_ref_id(&op_ref)
-                    .map_or(op_ref, |op_id| OperationalPointReference::Id {
+                op_cache.get_op_ref_id(&op_ref).map_or(op_ref, |op_id| {
+                    OperationalPointReference::Id {
                         operational_point: op_id.into(),
-                    })
+                    }
+                })
             })
             .collect::<Vec<_>>();
 
@@ -618,14 +618,13 @@ impl OperationalPointProjection {
     fn match_op_ref_with_ops(
         &self,
         op_ref: &OperationalPointReference,
-        path_item_cache: &PathItemCache,
+        op_cache: &OperationalPointCache,
     ) -> Option<u64> {
-        let op_id =
-            path_item_cache
-                .get_op_ref_id(op_ref)
-                .map(|op_id| OperationalPointReference::Id {
-                    operational_point: op_id.into(),
-                });
+        let op_id = op_cache
+            .get_op_ref_id(op_ref)
+            .map(|op_id| OperationalPointReference::Id {
+                operational_point: op_id.into(),
+            });
 
         if let Some(op_id) = op_id {
             self.0.get(&op_id).copied()
@@ -641,7 +640,7 @@ pub async fn compute_projected_train_path_op<T: TrainScheduleLike>(
     valkey_client: Arc<cache::Client>,
     core_client: Arc<CoreClient>,
     train_schedules: &[T],
-    path_item_cache: &PathItemCache,
+    op_cache: &OperationalPointCache,
     operational_points_projection: OperationalPointProjection,
     infra: &Infra,
     electrical_profile_set_id: Option<i64>,
@@ -676,7 +675,7 @@ pub async fn compute_projected_train_path_op<T: TrainScheduleLike>(
         let train_to_project = TrainToProjectOnOperationalPoint::new_from_simulation(ts, sim);
         let curves = Arc::new(project_train_path_op(
             &train_to_project,
-            path_item_cache,
+            op_cache,
             &operational_points_projection,
         ));
 
@@ -693,13 +692,13 @@ fn project_train_path_op(
         space_time_curve,
         refs,
     }: &TrainToProjectOnOperationalPoint,
-    path_item_cache: &PathItemCache,
+    op_cache: &OperationalPointCache,
     projection_op_id_to_positions: &OperationalPointProjection,
 ) -> Vec<SpaceTimeCurve> {
     // Match operational point references with operational point ids
     let matching_ops = refs.iter().map(|op| {
         projection_op_id_to_positions
-            .match_op_ref_with_ops(&op.op_ref, path_item_cache)
+            .match_op_ref_with_ops(&op.op_ref, op_cache)
             .map(|pos| (pos, op.arrival_time, op.stop_for))
     });
 
@@ -752,7 +751,7 @@ fn project_train_path_op(
 
 pub fn compute_projected_train_path_op_without_simulation<T: TrainScheduleLike>(
     train_schedules: &[T],
-    path_item_cache: &PathItemCache,
+    op_cache: &OperationalPointCache,
     operational_points_projection: OperationalPointProjection,
 ) -> Vec<Arc<Vec<SpaceTimeCurve>>> {
     train_schedules
@@ -761,7 +760,7 @@ pub fn compute_projected_train_path_op_without_simulation<T: TrainScheduleLike>(
             let train_to_project = TrainToProjectOnOperationalPoint::new(train_schedule);
             Arc::new(project_train_path_op(
                 &train_to_project,
-                path_item_cache,
+                op_cache,
                 &operational_points_projection,
             ))
         })
@@ -1104,10 +1103,10 @@ mod tests {
         let trigrams = ["SWS", "MWS", "MES", "NS", "SS"];
         let path_items = create_path_items_from_trigrams(&trigrams);
         let path_item_refs: Vec<&PathItemLocation> = path_items.iter().collect();
-        let path_item_cache =
-            PathItemCache::load(db_pool.get_ok(), small_infra.id, &path_item_refs)
+        let op_cache =
+            OperationalPointCache::load(db_pool.get_ok(), small_infra.id, &path_item_refs)
                 .await
-                .expect("Failed to load path item cache");
+                .expect("Failed to load operational point cache");
         // Train
         let train_to_project_on_op = TrainToProjectOnOperationalPoint {
             space_time_curve: Some(SpaceTimeCurve {
@@ -1133,14 +1132,14 @@ mod tests {
                 create_path_item_from_trigram("SS"),
             ],
             vec![100_000; 4],
-            &path_item_cache,
+            &op_cache,
         )
         .expect("Failed to create operational point projection");
 
         // Run tested function
         let curves = project_train_path_op(
             &train_to_project_on_op,
-            &path_item_cache,
+            &op_cache,
             &projection_op_id_to_positions,
         );
 
@@ -1167,10 +1166,10 @@ mod tests {
         let trigrams = ["SWS", "MWS", "MES", "NS", "SS"];
         let path_items = create_path_items_from_trigrams(&trigrams);
         let path_item_refs: Vec<&PathItemLocation> = path_items.iter().collect();
-        let path_item_cache =
-            PathItemCache::load(db_pool.get_ok(), small_infra.id, &path_item_refs)
+        let op_cache =
+            OperationalPointCache::load(db_pool.get_ok(), small_infra.id, &path_item_refs)
                 .await
-                .expect("Failed to load path item cache");
+                .expect("Failed to load operational point cache");
         // Train
         let train_to_project_on_op = TrainToProjectOnOperationalPoint {
             space_time_curve: Some(SpaceTimeCurve {
@@ -1196,14 +1195,14 @@ mod tests {
                 create_path_item_from_trigram("SS"),
             ],
             vec![100_000; 4],
-            &path_item_cache,
+            &op_cache,
         )
         .expect("Failed to create operational point projection");
 
         // Run tested function
         let curves = project_train_path_op(
             &train_to_project_on_op,
-            &path_item_cache,
+            &op_cache,
             &projection_op_id_to_positions,
         );
 
@@ -1231,10 +1230,10 @@ mod tests {
         let trigrams = ["SWS", "MWS", "MES", "NS", "SS"];
         let path_items = create_path_items_from_trigrams(&trigrams);
         let path_item_refs: Vec<&PathItemLocation> = path_items.iter().collect();
-        let path_item_cache =
-            PathItemCache::load(db_pool.get_ok(), small_infra.id, &path_item_refs)
+        let op_cache =
+            OperationalPointCache::load(db_pool.get_ok(), small_infra.id, &path_item_refs)
                 .await
-                .expect("Failed to load path item cache");
+                .expect("Failed to load operational point cache");
         // Train
         let train_to_project_on_op = TrainToProjectOnOperationalPoint {
             space_time_curve: None,
@@ -1259,14 +1258,14 @@ mod tests {
                 create_path_item_from_trigram("SS"),
             ],
             vec![100_000; 4],
-            &path_item_cache,
+            &op_cache,
         )
         .expect("Failed to create operational point projection");
 
         // Run tested function
         let curves = project_train_path_op(
             &train_to_project_on_op,
-            &path_item_cache,
+            &op_cache,
             &projection_op_id_to_positions,
         );
 
@@ -1287,9 +1286,9 @@ mod tests {
         let app = TestAppBuilder::default_app();
         let db_pool = app.db_pool();
         let small_infra = create_small_infra(&mut db_pool.get_ok()).await;
-        let path_item_cache = PathItemCache::load(db_pool.get_ok(), small_infra.id, &[])
+        let op_cache = OperationalPointCache::load(db_pool.get_ok(), small_infra.id, &[])
             .await
-            .expect("Failed to load path item cache");
+            .expect("Failed to load operational point cache");
         // Train
         let train_to_project_on_op = TrainToProjectOnOperationalPoint {
             space_time_curve: None,
@@ -1305,14 +1304,14 @@ mod tests {
                 create_path_item_from_trigram("SS"),
             ],
             vec![100_000; 4],
-            &path_item_cache,
+            &op_cache,
         )
         .expect("Failed to create operational point projection");
 
         // Run tested function
         let curves = project_train_path_op(
             &train_to_project_on_op,
-            &path_item_cache,
+            &op_cache,
             &projection_op_id_to_positions,
         );
 
