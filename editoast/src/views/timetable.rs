@@ -402,42 +402,47 @@ impl Conflict {
     ///  and maps them to either a `train_schedule_id` or a `paced_train_occurrence_id` based on the provided key mapping.
     fn from_core_response(
         conflict: CoreConflict,
-        trains_map: &HashMap<String, TrainId>,
+        trains_map: &HashMap<Uuid, TrainId>,
     ) -> Result<Self> {
-        let (train_schedule_ids, paced_train_occurrence_ids): (Vec<_>, Vec<_>) = conflict
-            .train_ids
-            .iter()
-            .partition_map(|train_id| match trains_map.get(train_id).cloned() {
-                Some(TrainId::TrainSchedule(id)) => Either::Left(id),
-                Some(TrainId::PacedTrain {
-                    paced_train_id,
-                    occurrence_id: OccurrenceId::BaseOccurrence { index },
-                }) => Either::Right(PacedTrainOccurrenceId {
-                    paced_train_id,
-                    occurrence_ref: PacedTrainOccurrenceRef::BaseOccurrence { index },
-                }),
-                Some(TrainId::PacedTrain {
-                    paced_train_id,
-                    occurrence_id: OccurrenceId::CreatedException { exception_key },
-                }) => Either::Right(PacedTrainOccurrenceId {
-                    paced_train_id,
-                    occurrence_ref: PacedTrainOccurrenceRef::CreatedException { exception_key },
-                }),
-                Some(TrainId::PacedTrain {
-                    paced_train_id,
-                    occurrence_id:
-                        OccurrenceId::ModifiedException {
-                            exception_key,
+        let (train_schedule_ids, paced_train_occurrence_ids): (Vec<_>, Vec<_>) =
+            conflict.train_ids.iter().partition_map(|train_uuid| {
+                match Uuid::parse_str(train_uuid)
+                    .ok()
+                    .and_then(|train_uuid| trains_map.get(&train_uuid).cloned())
+                {
+                    Some(TrainId::TrainSchedule(id)) => Either::Left(id),
+                    Some(TrainId::PacedTrain {
+                        paced_train_id,
+                        occurrence_id: OccurrenceId::BaseOccurrence { index },
+                    }) => Either::Right(PacedTrainOccurrenceId {
+                        paced_train_id,
+                        occurrence_ref: PacedTrainOccurrenceRef::BaseOccurrence { index },
+                    }),
+                    Some(TrainId::PacedTrain {
+                        paced_train_id,
+                        occurrence_id: OccurrenceId::CreatedException { exception_key },
+                    }) => Either::Right(PacedTrainOccurrenceId {
+                        paced_train_id,
+                        occurrence_ref: PacedTrainOccurrenceRef::CreatedException { exception_key },
+                    }),
+                    Some(TrainId::PacedTrain {
+                        paced_train_id,
+                        occurrence_id:
+                            OccurrenceId::ModifiedException {
+                                exception_key,
+                                index,
+                            },
+                    }) => Either::Right(PacedTrainOccurrenceId {
+                        paced_train_id,
+                        occurrence_ref: PacedTrainOccurrenceRef::ModifiedException {
                             index,
+                            exception_key,
                         },
-                }) => Either::Right(PacedTrainOccurrenceId {
-                    paced_train_id,
-                    occurrence_ref: PacedTrainOccurrenceRef::ModifiedException {
-                        index,
-                        exception_key,
-                    },
-                }),
-                None => unreachable!("Unreachable case encountered while partitioning train IDs"),
+                    }),
+                    None => {
+                        unreachable!("Unreachable case encountered while partitioning train IDs")
+                    }
+                }
             });
 
         let work_schedule_ids = conflict
@@ -630,11 +635,11 @@ fn build_conflict_core_request(
     start_times: Vec<DateTime<Utc>>,
     train_ids: Vec<TrainId>,
     simulations: Vec<Arc<simulation::Response>>,
-) -> (HashMap<String, TrainId>, ConflictDetectionRequest) {
+) -> (HashMap<Uuid, TrainId>, ConflictDetectionRequest) {
     assert_eq!(start_times.len(), simulations.len());
     assert_eq!(train_ids.len(), simulations.len());
 
-    let mut trains_map: HashMap<String, TrainId> = HashMap::with_capacity(train_ids.len());
+    let mut trains_map: HashMap<Uuid, TrainId> = HashMap::with_capacity(train_ids.len());
 
     let trains_requirements: HashMap<String, TrainRequirements> =
         izip!(start_times, train_ids, simulations)
@@ -651,11 +656,11 @@ fn build_conflict_core_request(
                     _ => None,
                 }?;
 
-                let train_id_for_core = Uuid::new_v4().to_string();
-                trains_map.insert(train_id_for_core.clone(), train_id.clone());
+                let train_id_for_core = Uuid::new_v4();
+                trains_map.insert(train_id_for_core, train_id.clone());
 
                 Some((
-                    train_id_for_core,
+                    train_id_for_core.to_string(),
                     TrainRequirements {
                         start_time,
                         spacing_requirements,
@@ -1444,7 +1449,7 @@ mod tests {
 
         let simple_requirements = conflict_core_request
             .trains_requirements
-            .get(&simple_ts_train_core_id)
+            .get(&simple_ts_train_core_id.to_string())
             .unwrap();
         assert_eq!(simple_requirements.start_time, ts_start_time);
         assert_eq!(
@@ -1469,7 +1474,7 @@ mod tests {
             .unwrap();
         let paced_0_requirements = conflict_core_request
             .trains_requirements
-            .get(&paced_0_train_core_id)
+            .get(&paced_0_train_core_id.to_string())
             .unwrap();
         assert_eq!(paced_0_requirements.start_time, paced_start_time);
         assert_eq!(
@@ -1494,7 +1499,7 @@ mod tests {
             .unwrap();
         let paced_1_requirements = conflict_core_request
             .trains_requirements
-            .get(&paced_1_train_core_id)
+            .get(&paced_1_train_core_id.to_string())
             .unwrap();
         assert_eq!(
             paced_1_requirements.start_time,
