@@ -21,7 +21,7 @@ type TrackOffsetResult = std::result::Result<Vec<Vec<TrackOffset>>, PathfindingF
 
 /// Gather information about several path items, factorizing db calls.
 #[derive(Default, Debug)]
-pub struct PathItemCache {
+pub struct OperationalPointCache {
     /// All operational points are stored here exactly once
     ops: Vec<OperationalPointModel>,
     /// Maps UIC code to indices in the ops Vec
@@ -34,8 +34,8 @@ pub struct PathItemCache {
     track_ids_to_name: HashMap<String, NonBlankString>,
 }
 
-impl PathItemCache {
-    /// Load the path item cache from a list of pathfinding inputs
+impl OperationalPointCache {
+    /// Load the operational point cache from a list of pathfinding inputs
     ///
     /// This method ensures that all retrieved operational points are indexed
     /// across all available lookup methods (ID, UIC, trigram), regardless of
@@ -132,7 +132,7 @@ impl PathItemCache {
             })
             .collect();
 
-        Ok(PathItemCache {
+        Ok(OperationalPointCache {
             ops,
             uic_to_indices,
             trigram_to_indices,
@@ -506,7 +506,7 @@ mod tests {
         let path_item_refs: Vec<&PathItemLocation> = path_items.iter().collect();
 
         // Load the cache using the real load() method
-        let cache = PathItemCache::load(conn, infra.id, &path_item_refs)
+        let cache = OperationalPointCache::load(conn, infra.id, &path_item_refs)
             .await
             .expect("Failed to load cache");
 

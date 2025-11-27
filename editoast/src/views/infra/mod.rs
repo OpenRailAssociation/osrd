@@ -53,6 +53,7 @@ use crate::views::AuthorizationError;
 use crate::views::pagination::PaginatedList as _;
 use crate::views::pagination::PaginationQueryParams;
 use crate::views::params;
+use crate::views::path::operational_point_cache::OperationalPointCache;
 use crate::views::path::path_item_cache::retrieve_op_from_ids;
 use crate::views::path::path_item_cache::retrieve_op_from_trigrams;
 use crate::views::path::path_item_cache::retrieve_op_from_uic;

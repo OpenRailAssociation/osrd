@@ -23,7 +23,7 @@ use uom::si::mass::kilogram;
 use utoipa::ToSchema;
 
 use crate::error::Result;
-use crate::views::path::path_item_cache::PathItemCache;
+use crate::views::path::operational_point_cache::OperationalPointCache;
 use crate::views::path::pathfinding::PathfindingFailure;
 use editoast_models::TemporarySpeedLimit;
 use editoast_models::TowedRollingStock;
@@ -239,8 +239,8 @@ impl Request {
     ) -> Result<Vec<core_client::stdcm::PathItem>> {
         let locations: Vec<_> = self.steps.iter().map(|item| &item.location).collect();
 
-        let path_item_cache = PathItemCache::load(conn, infra_id, &locations).await?;
-        let track_offsets = path_item_cache
+        let op_cache = OperationalPointCache::load(conn, infra_id, &locations).await?;
+        let track_offsets = op_cache
             .extract_location_from_path_items(&locations)
             .map_err(|path_res| match path_res {
                 PathfindingFailure::PathfindingInputError(
