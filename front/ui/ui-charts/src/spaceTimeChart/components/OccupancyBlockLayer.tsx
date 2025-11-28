@@ -2,6 +2,8 @@ import { useCallback } from 'react';
 
 import type { DrawingFunction } from '../../common/types';
 import { useDraw } from '../../common/useCanvas';
+import { SpaceTimeChartCanvasContext } from '../lib/context';
+import type { SpaceTimeChartContextType } from '../lib/types';
 
 export type OccupancyBlock = {
   timeStart: number;
@@ -35,7 +37,7 @@ const getFillStyle = (ctx: CanvasRenderingContext2D, color: string, isBlinking?:
 };
 
 export const OccupancyBlockLayer = ({ occupancyBlocks }: OccupancyBlockLayerProps) => {
-  const drawOccupancyBlockLayer = useCallback<DrawingFunction>(
+  const drawOccupancyBlockLayer = useCallback<DrawingFunction<SpaceTimeChartContextType>>(
     (ctx, { getTimePixel, getSpacePixel }) => {
       for (const occupancyBlock of occupancyBlocks) {
         const x = getTimePixel(occupancyBlock.timeStart);
@@ -50,7 +52,7 @@ export const OccupancyBlockLayer = ({ occupancyBlocks }: OccupancyBlockLayerProp
     [occupancyBlocks]
   );
 
-  useDraw('background', drawOccupancyBlockLayer);
+  useDraw(SpaceTimeChartCanvasContext, 'background', drawOccupancyBlockLayer);
 
   return null;
 };

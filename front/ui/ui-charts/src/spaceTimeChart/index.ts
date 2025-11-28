@@ -13,7 +13,7 @@ export * from './components/ZoomRect';
 export * from './components/TimeCaptions';
 
 export { DEFAULT_THEME } from './lib/consts';
-export { MouseContext, SpaceTimeChartContext } from './lib/context';
+export { MouseContext, SpaceTimeChartContext, SpaceTimeChartCanvasContext } from './lib/context';
 export type {
   SpaceTimeChartProps,
   SpaceScale,

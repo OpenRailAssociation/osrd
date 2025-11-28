@@ -1,6 +1,11 @@
 import React, { useContext, useState } from 'react';
 
-import { CanvasContext, SpaceTimeChart, PathLayer, type Point } from '@osrd-project/ui-charts';
+import {
+  SpaceTimeChart,
+  SpaceTimeChartCanvasContext,
+  PathLayer,
+  type Point,
+} from '@osrd-project/ui-charts';
 import type { Meta } from '@storybook/react-vite';
 import cx from 'classnames';
 import FileSaver from 'file-saver';
@@ -21,7 +26,7 @@ import '@osrd-project/ui-core/dist/theme.css';
 import '@osrd-project/ui-charts/dist/theme.css';
 
 const ScreenshotButton = () => {
-  const { captureCanvases } = useContext(CanvasContext);
+  const { captureCanvases } = useContext(SpaceTimeChartCanvasContext);
 
   return (
     <div
