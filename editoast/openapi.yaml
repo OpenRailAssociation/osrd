@@ -3803,6 +3803,7 @@ paths:
                   - mb_used
                   - max_mb
                   - time_since_search_started
+                  - total_simulated_time
                   properties:
                     best_remaining_time:
                       type: number
@@ -3839,6 +3840,9 @@ paths:
                       type: number
                       format: double
                     time_since_search_started:
+                      type: number
+                      format: double
+                    total_simulated_time:
                       type: number
                       format: double
   /timetable/stdcm_get_async_result:

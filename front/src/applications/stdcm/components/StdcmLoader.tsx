@@ -23,20 +23,27 @@ type StdcmLoaderProps = {
   setProgressGeom: (value: FeatureCollection) => void;
 };
 
-function formatSeconds(seconds: number): string {
-  const hours = Math.floor(seconds / 3600);
-  const minutes = Math.floor((seconds % 3600) / 60);
-  const remainingSeconds = Math.floor(seconds % 60);
+const formatSeconds = (totalSeconds: number): string => {
+  const days = Math.floor(totalSeconds / 86400);
+  const remainingSecondsAfterDays = totalSeconds % 86400;
+
+  const hours = Math.floor(remainingSecondsAfterDays / 3600);
+  const minutes = Math.floor((remainingSecondsAfterDays % 3600) / 60);
+  const remainingSeconds = Math.floor(remainingSecondsAfterDays % 60);
 
   const paddedMinutes = minutes.toString().padStart(2, '0');
   const paddedSeconds = remainingSeconds.toString().padStart(2, '0');
 
-  if (hours > 0) {
-    return `${hours}:${paddedMinutes}:${paddedSeconds}`;
+  if (days > 0) {
+    return `${days} days and ${hours}:${paddedMinutes}:${paddedSeconds}`;
   } else {
-    return `${paddedMinutes}:${paddedSeconds}`;
+    if (hours > 0) {
+      return `${hours}:${paddedMinutes}:${paddedSeconds}`;
+    } else {
+      return `${paddedMinutes}:${paddedSeconds}`;
+    }
   }
-}
+};
 
 const StdcmLoader = ({
   cancelStdcmRequest,
@@ -159,7 +166,14 @@ const StdcmLoader = ({
       'Time since search started : ' + formatSeconds(lastElement.time_since_search_started)
     );
     detailStrings.push('Total number of visited nodes: ' + maxElement.number_visited_nodes);
-    detailStrings.push(maxElement.sample_count + ' / ' + maxElement.out_of);
+    detailStrings.push(
+      'Total simulated travel time: ' + formatSeconds(maxElement.total_simulated_time)
+    );
+    if (maxElement.out_of == 100) {
+      detailStrings.push(maxElement.sample_count + '%');
+    } else {
+      detailStrings.push(maxElement.sample_count + ' / ' + maxElement.out_of);
+    }
   } else {
     detailStrings.push('Starting up...');
   }

@@ -144,6 +144,7 @@ pub(in crate::views) struct StdcmProgressSample {
     mb_used: u64,
     max_mb: u64,
     time_since_search_started: f64,
+    total_simulated_time: f64,
 }
 
 #[tracing::instrument(target = "editoast::timetable", name = "stdcm_async", skip_all, err)]

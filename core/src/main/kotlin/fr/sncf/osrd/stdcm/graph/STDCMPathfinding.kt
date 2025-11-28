@@ -215,6 +215,7 @@ class STDCMPathfinding(
         }
         val start = Instant.now()
         var lastFValue = Double.NEGATIVE_INFINITY
+        var totalSimulatedTime = 0.0
         while (true) {
             if (Duration.between(start, Instant.now()).toSeconds() >= pathfindingTimeout)
                 throw OSRDError(ErrorType.PathfindingTimeoutError)
@@ -225,6 +226,7 @@ class STDCMPathfinding(
             }
             if (endNode.getMinTotalSimulationTime(graph.remainingTimeEstimator) > maxRunTime)
                 continue
+            totalSimulatedTime += endNode.previousEdge?.totalTime ?: 0.0
 
             // Checks that the f-value (best anticipated final value on path) only goes up,
             // otherwise the A* heuristic isn't admissible
@@ -235,7 +237,7 @@ class STDCMPathfinding(
             }
             lastFValue = fValue
 
-            progressLogger.processNode(endNode)
+            progressLogger.processNode(endNode, totalSimulatedTime)
             if (endNode.infraExplorer.getStepTracker().hasReachedDestination()) {
                 return buildResult(endNode)
             }

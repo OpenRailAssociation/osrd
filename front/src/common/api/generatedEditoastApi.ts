@@ -2404,6 +2404,7 @@ export type GetTimetableStdcmGetAsyncProgressApiResponse = /** status 200 Progre
   simulation_time: number;
   time_since_departure: number;
   time_since_search_started: number;
+  total_simulated_time: number;
 }[];
 export type GetTimetableStdcmGetAsyncProgressApiArg = {
   /** request id */

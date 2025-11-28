@@ -36,7 +36,7 @@ data class ProgressLogger(
     private val startTime = System.currentTimeMillis()
 
     /** Process one node, logging it if it reaches a new threshold */
-    fun processNode(node: STDCMNode) {
+    fun processNode(node: STDCMNode, totalSimulatedTime: Double) {
         seenSteps++
         val progress =
             (graph.bestPossibleTime - node.remainingTimeEstimation) / graph.bestPossibleTime
@@ -46,7 +46,7 @@ data class ProgressLogger(
             return
         }
         if (progress >= thresholdDistance * nSamplesReached) {
-            val data = logNode(node, progress)
+            val data = logNode(node, progress, totalSimulatedTime)
             logger.info(data.toString())
             val eventAttributes =
                 Attributes.builder()
@@ -63,7 +63,7 @@ data class ProgressLogger(
 
             while (progress >= thresholdDistance * nSamplesReached) nSamplesReached++
         } else if (seenSteps % nNodesRandomSample == 0) {
-            logNode(node, progress)
+            logNode(node, progress, totalSimulatedTime)
         }
 
         if (Instant.now() >= nextMemoryReport) {
@@ -81,7 +81,7 @@ data class ProgressLogger(
         }
     }
 
-    fun logNode(node: STDCMNode, progress: Double): STDCMProgressSample {
+    fun logNode(node: STDCMNode, progress: Double, totalSimulatedTime: Double): STDCMProgressSample {
         val block = node.infraExplorer.getCurrentBlock()
         val geo =
             buildTrainPathFromBlock(graph.rawInfra, graph.blockInfra, block)
@@ -107,6 +107,7 @@ data class ProgressLogger(
                 mbUsed = (used / mb).toInt(),
                 maxMb = (max / mb).toInt(),
                 timeSinceSearchStarted = (System.currentTimeMillis() - startTime) / 1000.0,
+                totalSimulatedTime = totalSimulatedTime,
             )
         callback?.let { it(data) }
         return data
@@ -124,6 +125,7 @@ data class STDCMProgressSample(
     @Json(name = "mb_used") val mbUsed: Int,
     @Json(name = "max_mb") val maxMb: Int,
     @Json(name = "time_since_search_started") val timeSinceSearchStarted: Double,
+    @Json(name = "total_simulated_time") val totalSimulatedTime: Double,
 ) {
     companion object {
         val adapter: JsonAdapter<STDCMProgressSample> =
