@@ -14,7 +14,9 @@ import io.opentelemetry.api.common.Attributes
 import io.opentelemetry.api.trace.Span
 import java.time.Duration.*
 import java.time.Instant
+import kotlin.math.floor
 import kotlin.math.pow
+import kotlin.math.roundToInt
 
 /**
  * This class is used to log some elements during the graph traversal. It logs a small number of
@@ -22,7 +24,8 @@ import kotlin.math.pow
  */
 data class ProgressLogger(
     val graph: STDCMGraph,
-    val nStepsProgress: Int = 10,
+    val nStepsProgress: Int = 100,
+    val nNodesRandomSample: Int = 2_000,
     val memoryReportTimeInterval: Duration = 10.seconds,
     val callback: ProgressCallback? = null,
 ) {
@@ -43,35 +46,8 @@ data class ProgressLogger(
             return
         }
         if (progress >= thresholdDistance * nSamplesReached) {
-            val block = node.infraExplorer.getCurrentBlock()
-            val geo =
-                buildTrainPathFromBlock(graph.rawInfra, graph.blockInfra, block)
-                    .getGeo()
-                    .getPoints()[0]
-
-            val rt = Runtime.getRuntime()
-            val max = rt.maxMemory()
-            val free = rt.freeMemory()
-            val total = rt.totalMemory()
-            val used = total - free
-            val mb = 2.0.pow(20.0)
-
-            val data =
-                STDCMProgressSample(
-                    sampleCount = nSamplesReached,
-                    outOf = nStepsProgress,
-                    simulationTime = node.timeData.earliestReachableTime,
-                    timeSinceDeparture = node.timeData.timeSinceDeparture,
-                    bestRemainingTime = node.remainingTimeEstimation,
-                    coordinates = listOf(geo.lat, geo.lon),
-                    numberVisitedNodes = seenSteps,
-                    mbUsed = (used / mb).toInt(),
-                    maxMb = (max / mb).toInt(),
-                    timeSinceSearchStarted = (System.currentTimeMillis() - startTime) / 1000.0,
-                )
+            val data = logNode(node, progress)
             logger.info(data.toString())
-            callback?.let { it(data) }
-
             val eventAttributes =
                 Attributes.builder()
                     .put("progress", data.sampleCount.toDouble() / data.outOf.toDouble())
@@ -86,6 +62,8 @@ data class ProgressLogger(
             Span.current().addEvent("progress $nSamplesReached/$nStepsProgress", eventAttributes)
 
             while (progress >= thresholdDistance * nSamplesReached) nSamplesReached++
+        } else if (seenSteps % nNodesRandomSample == 0) {
+            logNode(node, progress)
         }
 
         if (Instant.now() >= nextMemoryReport) {
@@ -101,6 +79,37 @@ data class ProgressLogger(
                     "used ${(used / mb).toInt()} / ${(max / mb).toInt()} MB"
             logger.info(str)
         }
+    }
+
+    fun logNode(node: STDCMNode, progress: Double): STDCMProgressSample {
+        val block = node.infraExplorer.getCurrentBlock()
+        val geo =
+            buildTrainPathFromBlock(graph.rawInfra, graph.blockInfra, block)
+                .getGeo()
+                .getPoints()[0]
+
+        val rt = Runtime.getRuntime()
+        val max = rt.maxMemory()
+        val free = rt.freeMemory()
+        val total = rt.totalMemory()
+        val used = total - free
+        val mb = 2.0.pow(20.0)
+
+        val data =
+            STDCMProgressSample(
+                sampleCount = floor(progress * nStepsProgress).roundToInt(),
+                outOf = nStepsProgress,
+                simulationTime = node.timeData.earliestReachableTime,
+                timeSinceDeparture = node.timeData.timeSinceDeparture,
+                bestRemainingTime = node.remainingTimeEstimation,
+                coordinates = listOf(geo.lat, geo.lon),
+                numberVisitedNodes = seenSteps,
+                mbUsed = (used / mb).toInt(),
+                maxMb = (max / mb).toInt(),
+                timeSinceSearchStarted = (System.currentTimeMillis() - startTime) / 1000.0,
+            )
+        callback?.let { it(data) }
+        return data
     }
 }
 

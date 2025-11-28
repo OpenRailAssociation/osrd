@@ -121,17 +121,22 @@ const StdcmLoader = ({
       } catch (error) {
         console.error('Error fetching data:', error);
       }
-    }, 1000);
+    }, 100);
 
     return () => clearInterval(intervalId);
   }, [currentRequestId]);
 
-  let progressString = '0 / 10';
+  let progressString = 'Starting up...';
   let progressPercentage = 0;
   if (progressData != null && progressData.length > 0) {
-    const last = progressData[progressData.length - 1];
-    progressString = last.sample_count + ' / ' + last.out_of;
-    progressPercentage = (last.sample_count / last.out_of) * 100;
+    const maxElement = progressData.reduce((max, current) =>
+      current.sample_count > max.sample_count ? current : max
+    );
+    progressString = maxElement.sample_count + ' / ' + maxElement.out_of;
+    progressPercentage = (maxElement.sample_count / maxElement.out_of) * 100;
+  }
+  if (progressPercentage >= 100) {
+    progressString += ': running post-processing';
   }
 
   return (
