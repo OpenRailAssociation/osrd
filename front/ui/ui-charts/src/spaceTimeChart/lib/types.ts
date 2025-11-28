@@ -1,6 +1,10 @@
 import { type HTMLProps, type ReactNode } from 'react';
 
-import { type HoveredItem, type PickingElement } from '../../common/types';
+import {
+  type BaseChartContextType,
+  type HoveredItem,
+  type PickingElement,
+} from '../../common/types';
 
 // GLOBAL UTILITY TYPES:
 export type Point = {
@@ -212,7 +216,7 @@ export type SpaceTimeChartProps = {
   onHoveredChildUpdate?: Handler<{ item: HoveredItem | null; context: SpaceTimeChartContextType }>;
 } & Omit<HTMLProps<HTMLDivElement>, 'onClick' | 'onMouseMove'>;
 
-export type SpaceTimeChartContextType = {
+export type SpaceTimeChartContextType = BaseChartContextType & {
   width: number;
   height: number;
 
@@ -221,12 +225,7 @@ export type SpaceTimeChartContextType = {
   spaceAxis: Axis;
   swapAxis: boolean;
 
-  // This string is designed to be unique to each rendering:
-  fingerprint: string;
-
   // Picking:
-  pickingElements: PickingElement[];
-  resetPickingElements: () => void;
   registerPickingElement: (element: PickingElement) => number;
 
   // Scales:

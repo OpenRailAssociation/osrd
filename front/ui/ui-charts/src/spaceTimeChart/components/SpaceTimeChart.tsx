@@ -5,14 +5,13 @@ import cx from 'classnames';
 import SpaceGraduations from './SpaceGraduations';
 import { TimeCaptions } from './TimeCaptions';
 import TimeGraduations from './TimeGraduations';
-import { CanvasContext } from '../../common/context';
 import type { PickingElement } from '../../common/types';
 import { useCanvas } from '../../common/useCanvas';
 import { useMouseInteractions } from '../hooks/useMouseInteractions';
 import { useMouseTracking } from '../hooks/useMouseTracking';
 import { useSize } from '../hooks/useSize';
 import { DEFAULT_THEME } from '../lib/consts';
-import { MouseContext, SpaceTimeChartContext } from '../lib/context';
+import { MouseContext, SpaceTimeChartCanvasContext, SpaceTimeChartContext } from '../lib/context';
 import { validateTheme } from '../lib/theme';
 import {
   type MouseContextType,
@@ -221,7 +220,7 @@ export const SpaceTimeChart = (props: SpaceTimeChartProps) => {
     >
       <div ref={setCanvasesRoot} className="absolute inset-0" />
       <SpaceTimeChartContext.Provider value={contextState}>
-        <CanvasContext.Provider value={canvasContext}>
+        <SpaceTimeChartCanvasContext.Provider value={canvasContext}>
           <MouseContext.Provider value={mouseContext}>
             {!hideGrid && (
               <>
@@ -233,7 +232,7 @@ export const SpaceTimeChart = (props: SpaceTimeChartProps) => {
             {children}
             {additionalChildren}
           </MouseContext.Provider>
-        </CanvasContext.Provider>
+        </SpaceTimeChartCanvasContext.Provider>
       </SpaceTimeChartContext.Provider>
     </div>
   );

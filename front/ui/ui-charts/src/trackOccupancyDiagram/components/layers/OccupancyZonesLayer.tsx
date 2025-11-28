@@ -8,6 +8,10 @@ import type {
   PickingElement,
 } from '../../../common/types';
 import { useDraw, usePicking } from '../../../common/useCanvas';
+import {
+  SpaceTimeChartCanvasContext,
+  type SpaceTimeChartContextType,
+} from '../../../spaceTimeChart';
 import { drawAliasedRect } from '../../../spaceTimeChart/utils/canvas';
 import { hexToRgb, indexToColor } from '../../../spaceTimeChart/utils/colors';
 import {
@@ -163,7 +167,7 @@ const OccupancyZonesLayer = ({
     );
   }, [occupancyZones, selectedTrainId, topPadding, tracks]);
 
-  const drawingFunction = useCallback<DrawingFunction>(
+  const drawingFunction = useCallback<DrawingFunction<SpaceTimeChartContextType>>(
     (ctx, stcContext) => {
       instructionsToDraw.forEach((instruction) => {
         switch (instruction.type) {
@@ -198,7 +202,7 @@ const OccupancyZonesLayer = ({
     [position, instructionsToDraw]
   );
 
-  const pickingFunction = useCallback<PickingDrawingFunction>(
+  const pickingFunction = useCallback<PickingDrawingFunction<SpaceTimeChartContextType>>(
     (imageData, { registerPickingElement, getTimePixel, getSpacePixel }, scalingRatio) => {
       const flatStepOffsetY = getSpacePixel(position);
       const flatStepEndY = getSpacePixel(position, true);
@@ -257,8 +261,8 @@ const OccupancyZonesLayer = ({
     [position, instructionsToDraw]
   );
 
-  usePicking('overlay', pickingFunction);
-  useDraw('overlay', drawingFunction);
+  usePicking(SpaceTimeChartCanvasContext, 'overlay', pickingFunction);
+  useDraw(SpaceTimeChartCanvasContext, 'overlay', drawingFunction);
 
   return null;
 };

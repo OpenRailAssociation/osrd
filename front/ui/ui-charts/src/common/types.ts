@@ -1,4 +1,9 @@
-import type { SpaceTimeChartContextType } from '../spaceTimeChart/lib/types';
+export type BaseChartContextType = {
+  fingerprint: string;
+  pickingElements: PickingElement[];
+  resetPickingElements: () => void;
+  theme: { background: string };
+};
 
 // CANVAS SPECIFIC TYPES:
 export const PICKING_LAYERS = ['paths', 'overlay'] as const;
@@ -10,25 +15,22 @@ export type LayerType = (typeof LAYERS)[number];
 export type PickingElement = { type: string };
 export type HoveredItem = { layer: PickingLayerType; element: PickingElement };
 
-export type DrawingFunction = (
-  canvasContext: CanvasRenderingContext2D,
-  stcContext: SpaceTimeChartContextType
-) => void;
+export type DrawingFunction<T> = (canvasContext: CanvasRenderingContext2D, stcContext: T) => void;
 
-export type PickingDrawingFunction = (
+export type PickingDrawingFunction<T> = (
   imageData: ImageData,
-  stcContext: SpaceTimeChartContextType,
+  stcContext: T,
   scalingRatio: number
 ) => void;
 
-export type DrawingFunctionHandler = (
+export type DrawingFunctionHandler<T> = (
   arg:
-    | { type: 'picking'; layer: PickingLayerType; fn: PickingDrawingFunction }
-    | { type: 'rendering'; layer: LayerType; fn: DrawingFunction }
+    | { type: 'picking'; layer: PickingLayerType; fn: PickingDrawingFunction<T> }
+    | { type: 'rendering'; layer: LayerType; fn: DrawingFunction<T> }
 ) => void;
 
-export type CanvasContextType = {
-  register: DrawingFunctionHandler;
-  unregister: DrawingFunctionHandler;
+export type CanvasContextType<T> = {
+  register: DrawingFunctionHandler<T>;
+  unregister: DrawingFunctionHandler<T>;
   captureCanvases: () => Promise<Blob>;
 };

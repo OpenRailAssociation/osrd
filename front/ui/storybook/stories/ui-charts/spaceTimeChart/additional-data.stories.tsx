@@ -6,6 +6,8 @@ import {
   useDraw,
   type DrawingFunction,
   type Point,
+  type SpaceTimeChartContextType,
+  SpaceTimeChartCanvasContext,
 } from '@osrd-project/ui-charts';
 import type { Meta } from '@storybook/react-vite';
 import cx from 'classnames';
@@ -52,7 +54,7 @@ type MonoTrackSpaceProps = {
  * This component renders a colored area where the line only has one track:
  */
 const MonoTrackSpace = ({ from, to }: MonoTrackSpaceProps) => {
-  const drawMonoTrackSpace = useCallback<DrawingFunction>(
+  const drawMonoTrackSpace = useCallback<DrawingFunction<SpaceTimeChartContextType>>(
     (ctx, { getSpacePixel, width, height, spaceAxis }) => {
       const spaceSize = spaceAxis === 'x' ? width : height;
       const timeSize = spaceAxis === 'x' ? height : width;
@@ -71,7 +73,7 @@ const MonoTrackSpace = ({ from, to }: MonoTrackSpaceProps) => {
     [from, to]
   );
 
-  useDraw('background', drawMonoTrackSpace);
+  useDraw(SpaceTimeChartCanvasContext, 'background', drawMonoTrackSpace);
 
   return null;
 };
@@ -86,7 +88,7 @@ const ClosedDoor = ({
   timeStart,
   timeEnd,
 }: (typeof CLOSED_DOORS)[number]) => {
-  const drawClosedDoorBackground = useCallback<DrawingFunction>(
+  const drawClosedDoorBackground = useCallback<DrawingFunction<SpaceTimeChartContextType>>(
     (ctx, { getSpacePixel, getTimePixel, width, height, spaceAxis }) => {
       const spaceSize = spaceAxis === 'x' ? width : height;
       const timeSize = spaceAxis === 'x' ? height : width;
@@ -109,9 +111,9 @@ const ClosedDoor = ({
     },
     [areaFrom, areaTo, timeEnd, timeStart]
   );
-  useDraw('background', drawClosedDoorBackground);
+  useDraw(SpaceTimeChartCanvasContext, 'background', drawClosedDoorBackground);
 
-  const drawClosedDoor = useCallback<DrawingFunction>(
+  const drawClosedDoor = useCallback<DrawingFunction<SpaceTimeChartContextType>>(
     (ctx, { getSpacePixel, getTimePixel, width, height, spaceAxis }) => {
       const spaceSize = spaceAxis === 'x' ? width : height;
       const timeSize = spaceAxis === 'x' ? height : width;
@@ -166,7 +168,7 @@ const ClosedDoor = ({
     },
     [doorPosition, timeEnd, timeStart]
   );
-  useDraw('paths', drawClosedDoor);
+  useDraw(SpaceTimeChartCanvasContext, 'paths', drawClosedDoor);
 
   return null;
 };

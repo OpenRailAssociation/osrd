@@ -2,10 +2,10 @@ import { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'r
 
 import { isEqual } from 'lodash';
 
-import { CanvasContext } from './context';
 import {
   LAYERS,
   PICKING_LAYERS,
+  type BaseChartContextType,
   type CanvasContextType,
   type DrawingFunction,
   type DrawingFunctionHandler,
@@ -16,7 +16,7 @@ import {
 } from './types';
 import { useDevicePixelRatio } from '../spaceTimeChart/hooks/useDevicePixelRatio';
 import { useSize } from '../spaceTimeChart/hooks/useSize';
-import { type Point, type SpaceTimeChartContextType } from '../spaceTimeChart/lib/types';
+import { type Point } from '../spaceTimeChart/lib/types';
 import { getPickingScalingRatio } from '../spaceTimeChart/utils/canvas';
 import { colorToIndex, rgbToHex } from '../spaceTimeChart/utils/colors';
 import getPNGBlob from '../spaceTimeChart/utils/png';
@@ -25,25 +25,24 @@ const PICKING = 'picking';
 const RENDERING = 'rendering';
 
 /**
- * This hook handles the internal canvas drawing logic of the SpaceTimeChart component.
- * It is an internal hook, and should only be used inside SpaceTimeChart.
+ * This hook handles the internal canvas drawing logic of a chart component.
  */
-export function useCanvas(
+export function useCanvas<T extends BaseChartContextType>(
   dom: HTMLElement | null,
-  inputStcContext: SpaceTimeChartContextType,
+  chartContext: T,
   position?: Point
 ) {
   // Most things are handled through refs here so that we have a very precise control on when to
   // render anything:
   const canvasesRef = useRef<Record<string, HTMLCanvasElement>>({});
   const contextsRef = useRef<Record<string, CanvasRenderingContext2D>>({});
-  const pickingFunctions = useRef<Record<string, Set<PickingDrawingFunction>>>(
+  const pickingFunctions = useRef<Record<string, Set<PickingDrawingFunction<T>>>>(
     PICKING_LAYERS.reduce((iter, layer) => ({ ...iter, [layer]: new Set() }), {})
   );
-  const drawingFunctions = useRef<Record<string, Set<DrawingFunction>>>(
+  const drawingFunctions = useRef<Record<string, Set<DrawingFunction<T>>>>(
     LAYERS.reduce((iter, layer) => ({ ...iter, [layer]: new Set() }), {})
   );
-  const stcContextRef = useRef(inputStcContext);
+  const chartContextRef = useRef(chartContext);
   const scheduledRef = useRef<null | { frameId: number }>(null);
 
   const [hoveredItem, setHoveredItem] = useState<HoveredItem | null>(null);
@@ -64,56 +63,50 @@ export function useCanvas(
   /**
    * This function renders all picking layers:
    */
-  const drawPicking = useCallback(
-    (stcContext: SpaceTimeChartContextType, layers?: Set<LayerType>) => {
-      stcContext.resetPickingElements();
-      PICKING_LAYERS.forEach((layer) => {
-        if (layers && !layers.has(layer)) return;
+  const drawPicking = useCallback((context: T, layers?: Set<LayerType>) => {
+    context.resetPickingElements();
+    PICKING_LAYERS.forEach((layer) => {
+      if (layers && !layers.has(layer)) return;
 
-        const ctx = contextsRef.current[`${PICKING}-${layer}`];
-        const set = pickingFunctions.current[layer];
+      const ctx = contextsRef.current[`${PICKING}-${layer}`];
+      const set = pickingFunctions.current[layer];
 
-        if (ctx && ctx.canvas.width && ctx.canvas.height) {
-          const { width, height } = sizeRef.current;
-          ctx.clearRect(0, 0, width, height);
+      if (ctx && ctx.canvas.width && ctx.canvas.height) {
+        const { width, height } = sizeRef.current;
+        ctx.clearRect(0, 0, width, height);
 
-          const imageData = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height);
-          const pickingScalingRatio = getPickingScalingRatio();
-          set.forEach((fn) => fn(imageData, stcContext, pickingScalingRatio));
-          ctx.putImageData(imageData, 0, 0);
-        }
-      });
-    },
-    []
-  );
+        const imageData = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height);
+        const pickingScalingRatio = getPickingScalingRatio();
+        set.forEach((fn) => fn(imageData, context, pickingScalingRatio));
+        ctx.putImageData(imageData, 0, 0);
+      }
+    });
+  }, []);
 
   /**
    * This function renders all visible / rendering layers:
    */
-  const drawRendering = useCallback(
-    (stcContext: SpaceTimeChartContextType, layers?: Set<LayerType>) => {
-      LAYERS.forEach((layer) => {
-        if (layers && !layers.has(layer)) return;
+  const drawRendering = useCallback((context: T, layers?: Set<LayerType>) => {
+    LAYERS.forEach((layer) => {
+      if (layers && !layers.has(layer)) return;
 
-        const ctx = contextsRef.current[`${RENDERING}-${layer}`];
-        const set = drawingFunctions.current[layer];
+      const ctx = contextsRef.current[`${RENDERING}-${layer}`];
+      const set = drawingFunctions.current[layer];
 
-        if (ctx) {
-          const { width, height } = sizeRef.current;
-          ctx.clearRect(0, 0, width, height);
-          set.forEach((fn) => fn(ctx, stcContext));
-        }
-      });
-    },
-    []
-  );
+      if (ctx) {
+        const { width, height } = sizeRef.current;
+        ctx.clearRect(0, 0, width, height);
+        set.forEach((fn) => fn(ctx, context));
+      }
+    });
+  }, []);
 
   /**
    * This function draws everything that needs to be drawn, and clears the scheduleRef state:
    */
   const draw = useCallback(() => {
-    drawRendering(stcContextRef.current);
-    drawPicking(stcContextRef.current);
+    drawRendering(chartContextRef.current);
+    drawPicking(chartContextRef.current);
 
     if (scheduledRef.current) {
       window.cancelAnimationFrame(scheduledRef.current.frameId);
@@ -137,7 +130,7 @@ export function useCanvas(
   /**
    * This function helpers registering a drawing function on a given layer:
    */
-  const register = useCallback<DrawingFunctionHandler>(({ type, layer, fn }) => {
+  const register = useCallback<DrawingFunctionHandler<T>>(({ type, layer, fn }) => {
     if (type === 'picking') {
       const set = pickingFunctions.current[layer];
       if (set.has(fn)) throw new Error('This picking function has already been registered.');
@@ -157,7 +150,7 @@ export function useCanvas(
   /**
    * This function helpers unregistering a drawing function from a given layer:
    */
-  const unregister = useCallback<DrawingFunctionHandler>(({ type, layer, fn }) => {
+  const unregister = useCallback<DrawingFunctionHandler<T>>(({ type, layer, fn }) => {
     if (type === 'picking') {
       const set = pickingFunctions.current[layer];
       if (!set.has(fn)) throw new Error('This picking function has not been registered.');
@@ -179,7 +172,7 @@ export function useCanvas(
       getPNGBlob(
         canvasesRef.current,
         LAYERS.map((layer) => `${RENDERING}-${layer}`),
-        stcContextRef.current.theme.background
+        chartContextRef.current.theme.background
       ),
     []
   );
@@ -220,11 +213,11 @@ export function useCanvas(
   // Redraw all layers when fingerprint changes:
   useEffect(() => {
     // Cache latest context in ref:
-    stcContextRef.current = inputStcContext;
+    chartContextRef.current = chartContext;
 
     scheduleRendering();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [inputStcContext.fingerprint]);
+  }, [chartContext.fingerprint]);
 
   // Handle resizing:
   useEffect(() => {
@@ -273,7 +266,7 @@ export function useCanvas(
         if (a === 255) {
           const color = rgbToHex(r, g, b);
           const index = colorToIndex(color);
-          const element = stcContextRef.current.pickingElements[index];
+          const element = chartContextRef.current.pickingElements[index];
           newHoveredItem = {
             layer,
             element,
@@ -291,7 +284,7 @@ export function useCanvas(
   }, [position, hoveredItem]);
 
   // Keep the canvas context up to date:
-  const canvasContext = useMemo<CanvasContextType>(
+  const canvasContext = useMemo<CanvasContextType<T>>(
     () => ({ register, unregister, captureCanvases }),
     [register, unregister, captureCanvases]
   );
@@ -306,8 +299,12 @@ export function useCanvas(
  * This hook helps to bind a picking function to a layer in the SpaceTimeChart.
  * It is public and can be used outside SpaceTimeChart.
  */
-export function usePicking(layer: PickingLayerType, fn: PickingDrawingFunction) {
-  const { register, unregister } = useContext(CanvasContext);
+export function usePicking<T>(
+  contextKey: React.Context<CanvasContextType<T>>,
+  layer: PickingLayerType,
+  fn: PickingDrawingFunction<T>
+) {
+  const { register, unregister } = useContext(contextKey);
 
   useEffect(() => {
     register({ type: 'picking', layer, fn });
@@ -322,8 +319,12 @@ export function usePicking(layer: PickingLayerType, fn: PickingDrawingFunction) 
  * This hook helps to bind a drawing function to a layer in the SpaceTimeChart.
  * It is public and can be used outside SpaceTimeChart.
  */
-export function useDraw(layer: LayerType, fn: DrawingFunction) {
-  const { register, unregister } = useContext(CanvasContext);
+export function useDraw<T>(
+  contextKey: React.Context<CanvasContextType<T>>,
+  layer: LayerType,
+  fn: DrawingFunction<T>
+) {
+  const { register, unregister } = useContext(contextKey);
 
   useEffect(() => {
     register({ type: 'rendering', layer, fn });
