@@ -10,7 +10,6 @@ import useSimulationResults from 'applications/operationalStudies/hooks/useSimul
 import type { Board } from 'applications/operationalStudies/types';
 import { type Conflict } from 'common/api/osrdEditoastApi';
 import SimulationWarpedMap from 'common/Map/WarpedMap/SimulationWarpedMap';
-import ResizableSection from 'common/ResizableSection';
 import SpaceTimeChartWrapper, {
   MANCHETTE_WITH_SPACE_TIME_CHART_DEFAULT_HEIGHT,
 } from 'modules/simulationResult/components/SpaceTimeChartWrapper/SpaceTimeChartWrapper';
@@ -42,7 +41,7 @@ import BoardWrapper from '../BoardWrapper';
 import SimulationResultsExport from './SimulationResultsExport';
 import SimulationResultsMap from './SimulationResultsMap';
 
-export const HIDDEN_CHART_TOP_HEIGHT = 35;
+export const HIDDEN_CHART_TOP_HEIGHT = 23;
 const SDD_INITIAL_HEIGHT = 460;
 const SDD_MIN_HEIGHT = 400;
 
@@ -209,90 +208,87 @@ const SimulationResults = ({
     <div className="simulation-results" data-testid="simulation-results">
       {/* SIMULATION : SPACE TIME CHART */}
       {activeBoards.has('std') && (
-        <ResizableSection
-          height={manchetteWithSpaceTimeChartHeight}
-          setHeight={setManchetteWithSpaceTimeChartHeight}
-          minHeight={MANCHETTE_WITH_SPACE_TIME_CHART_DEFAULT_HEIGHT}
-        >
-          <BoardWrapper
-            name={t('simulationResults.timeSpaceChart')}
-            items={[
-              {
-                title: t('simulationResults.manchetteSettings.waypointsVisibility'),
-                dataTestID: 'manchette-waypoints-visibility-button',
-                icon: <Eye />,
-                onClick: () => {
-                  setWaypointsPanelIsOpen(true);
-                },
+        <BoardWrapper
+          name={t('simulationResults.timeSpaceChart')}
+          items={[
+            {
+              title: t('simulationResults.manchetteSettings.waypointsVisibility'),
+              dataTestID: 'manchette-waypoints-visibility-button',
+              icon: <Eye />,
+              onClick: () => {
+                setWaypointsPanelIsOpen(true);
               },
-            ]}
-          >
-            <div className="std-container">
-              <div
-                className="simulation-warped-map d-flex flex-row align-items-stretch"
-                style={{ height: manchetteWithSpaceTimeChartHeight - HIDDEN_CHART_TOP_HEIGHT }}
+            },
+          ]}
+          resizable={{
+            height: manchetteWithSpaceTimeChartHeight,
+            setHeight: setManchetteWithSpaceTimeChartHeight,
+            minHeight: MANCHETTE_WITH_SPACE_TIME_CHART_DEFAULT_HEIGHT,
+          }}
+        >
+          <div className="std-container">
+            <div
+              className="simulation-warped-map d-flex flex-row align-items-stretch"
+              style={{ height: manchetteWithSpaceTimeChartHeight - HIDDEN_CHART_TOP_HEIGHT }}
+            >
+              <button
+                data-testid="warped-map-button"
+                type="button"
+                className="show-warped-map-button"
+                aria-label={t('simulationResults.toggleWarpedMap')}
+                title={t('simulationResults.toggleWarpedMap')}
+                onClick={() => setShowWarpedMap(!showWarpedMap)}
               >
-                <button
-                  data-testid="warped-map-button"
-                  type="button"
-                  className="show-warped-map-button"
-                  aria-label={t('simulationResults.toggleWarpedMap')}
-                  title={t('simulationResults.toggleWarpedMap')}
-                  onClick={() => setShowWarpedMap(!showWarpedMap)}
-                >
-                  {showWarpedMap ? <ChevronLeft /> : <ChevronRight />}
-                </button>
-                {projectionData?.geometry ? (
-                  <SimulationWarpedMap
-                    collapsed={!showWarpedMap}
-                    pathGeometry={projectionData?.geometry}
-                  />
-                ) : (
-                  showWarpedMap && (
-                    <div className="warped-map-unavailable-message">
-                      <p>{t('simulationResults.warpedMapUnavailable')}</p>
-                    </div>
-                  )
-                )}
-              </div>
-              <div className="osrd-simulation-container d-flex flex-grow-1 flex-shrink-1">
-                {trainIdUsedForProjection && projectionData && (
-                  <SpaceTimeChartWrapper
-                    operationalPoints={projectedOperationalPoints}
-                    projectPathTrainResult={projectPathTrainResult}
-                    selectedTrainId={selectedTrainId}
-                    timetableItemsWithDetails={timetableItemsWithDetails}
-                    waypointsPanelData={{
-                      filteredWaypoints: filteredOperationalPoints,
-                      setFilteredWaypoints: setFilteredOperationalPoints,
-                      projectionPath: projectionData.path,
-                      deployedWaypoints: new Set(
-                        deployedWaypoints.map(({ waypointId }) => waypointId)
-                      ),
-                      toggleDeployedWaypoint: toggleWaypoint,
-                      timetableId,
-                    }}
-                    trackOccupancyDiagramsData={deployedWaypoints}
-                    onCloseOccupancyLayer={(waypointId: string) =>
-                      toggleWaypoint(waypointId, false)
-                    }
-                    conflicts={conflictZones}
-                    projectionLoaderData={projectionData.projectionLoaderData}
-                    height={manchetteWithSpaceTimeChartHeight - HIDDEN_CHART_TOP_HEIGHT}
-                    handleTrainDrag={handleTrainDrag}
-                    onTrainClick={(trainId) => {
-                      dispatch(updateSelectedTrainId(trainId));
-                    }}
-                    selectedProjectionId={trainIdUsedForProjection}
-                    waypointsPanelIsOpen={waypointsPanelIsOpen}
-                    setWaypointsPanelIsOpen={setWaypointsPanelIsOpen}
-                    pathfindingHasFailed={projectionData?.pathfindingStatus === 'failed'}
-                  />
-                )}
-              </div>
+                {showWarpedMap ? <ChevronLeft /> : <ChevronRight />}
+              </button>
+              {projectionData?.geometry ? (
+                <SimulationWarpedMap
+                  collapsed={!showWarpedMap}
+                  pathGeometry={projectionData?.geometry}
+                />
+              ) : (
+                showWarpedMap && (
+                  <div className="warped-map-unavailable-message">
+                    <p>{t('simulationResults.warpedMapUnavailable')}</p>
+                  </div>
+                )
+              )}
             </div>
-          </BoardWrapper>
-        </ResizableSection>
+            <div className="osrd-simulation-container d-flex flex-grow-1 flex-shrink-1">
+              {trainIdUsedForProjection && projectionData && (
+                <SpaceTimeChartWrapper
+                  operationalPoints={projectedOperationalPoints}
+                  projectPathTrainResult={projectPathTrainResult}
+                  selectedTrainId={selectedTrainId}
+                  timetableItemsWithDetails={timetableItemsWithDetails}
+                  waypointsPanelData={{
+                    filteredWaypoints: filteredOperationalPoints,
+                    setFilteredWaypoints: setFilteredOperationalPoints,
+                    projectionPath: projectionData.path,
+                    deployedWaypoints: new Set(
+                      deployedWaypoints.map(({ waypointId }) => waypointId)
+                    ),
+                    toggleDeployedWaypoint: toggleWaypoint,
+                    timetableId,
+                  }}
+                  trackOccupancyDiagramsData={deployedWaypoints}
+                  onCloseOccupancyLayer={(waypointId: string) => toggleWaypoint(waypointId, false)}
+                  conflicts={conflictZones}
+                  projectionLoaderData={projectionData.projectionLoaderData}
+                  height={manchetteWithSpaceTimeChartHeight - HIDDEN_CHART_TOP_HEIGHT}
+                  handleTrainDrag={handleTrainDrag}
+                  onTrainClick={(trainId) => {
+                    dispatch(updateSelectedTrainId(trainId));
+                  }}
+                  selectedProjectionId={trainIdUsedForProjection}
+                  waypointsPanelIsOpen={waypointsPanelIsOpen}
+                  setWaypointsPanelIsOpen={setWaypointsPanelIsOpen}
+                  pathfindingHasFailed={projectionData?.pathfindingStatus === 'failed'}
+                />
+              )}
+            </div>
+          </div>
+        </BoardWrapper>
       )}
 
       {simulationResults && (
@@ -301,26 +297,27 @@ const SimulationResults = ({
             <>
               {/* SIMULATION : SPEED SPACE CHART */}
               {activeBoards.has('sdd') && (
-                <ResizableSection
-                  height={SDDHeight}
-                  setHeight={setSDDHeight}
-                  minHeight={SDD_MIN_HEIGHT}
+                <BoardWrapper
+                  name={t('simulationResults.speedDistanceDiagram')}
+                  resizable={{
+                    height: SDDHeight,
+                    setHeight: setSDDHeight,
+                    minHeight: SDD_MIN_HEIGHT,
+                  }}
                 >
-                  <BoardWrapper name={t('simulationResults.speedDistanceDiagram')}>
-                    <div className="osrd-simulation-container">
-                      <SpeedDistanceDiagramWrapper
-                        timetableItemSimulation={simulationResults.simulation}
-                        selectedTimetableItemPowerRestrictions={simulationResults.powerRestrictions}
-                        rollingStock={simulationResults.rollingStock}
-                        pathProperties={simulationResults.pathProperties}
-                        height={SDDHeight - HIDDEN_CHART_TOP_HEIGHT}
-                        setHeight={setSDDHeight}
-                        fetchEtcsBrakingCurves={fetchEtcsBrakingCurves}
-                        etcsBrakingCurves={etcsBrakingCurves}
-                      />
-                    </div>
-                  </BoardWrapper>
-                </ResizableSection>
+                  <div className="osrd-simulation-container">
+                    <SpeedDistanceDiagramWrapper
+                      timetableItemSimulation={simulationResults.simulation}
+                      selectedTimetableItemPowerRestrictions={simulationResults.powerRestrictions}
+                      rollingStock={simulationResults.rollingStock}
+                      pathProperties={simulationResults.pathProperties}
+                      height={SDDHeight - HIDDEN_CHART_TOP_HEIGHT}
+                      setHeight={setSDDHeight}
+                      fetchEtcsBrakingCurves={fetchEtcsBrakingCurves}
+                      etcsBrakingCurves={etcsBrakingCurves}
+                    />
+                  </div>
+                </BoardWrapper>
               )}
 
               {/* SIMULATION : MAP */}

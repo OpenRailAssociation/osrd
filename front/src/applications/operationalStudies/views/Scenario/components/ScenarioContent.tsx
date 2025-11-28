@@ -9,7 +9,6 @@ import type { Board } from 'applications/operationalStudies/types';
 import ManageTimetableItemModal from 'applications/operationalStudies/views/Scenario/components/ManageTimetableItem';
 import SimulationResults from 'applications/operationalStudies/views/Scenario/components/SimulationResults';
 import { Loader } from 'common/Loaders';
-import ResizableSection from 'common/ResizableSection';
 import Conflicts from 'modules/conflict/components/Conflicts';
 import useConflictsFilter from 'modules/conflict/hooks/useConflictsFilter';
 import ScenarioLoaderMessage from 'modules/scenario/components/ScenarioLoaderMessage';
@@ -221,32 +220,33 @@ const ScenarioContent = ({ activeBoards }: ScenarioContentProps) => {
               />
             )}
             {activeBoards.has('macro') && (
-              <ResizableSection
-                height={macroBoardHeight}
-                setHeight={setMacroBoardHeight}
-                minHeight={MACRO_MIN_HEIGHT}
+              <BoardWrapper
+                name="MACRO"
+                resizable={{
+                  height: macroBoardHeight,
+                  setHeight: setMacroBoardHeight,
+                  minHeight: MACRO_MIN_HEIGHT,
+                }}
               >
-                <BoardWrapper name="MACRO">
-                  <div className="osrd-simulation-container">
-                    <div
-                      data-testid="macro-editor"
-                      className="chart-container"
-                      style={{
-                        height: `${macroBoardHeight - HIDDEN_CHART_TOP_HEIGHT}px`,
-                      }}
-                    >
-                      {(!ngeDto || ngeIsLoading) && (
-                        <Loader
-                          msg={t('main.loadingMacroEditor')}
-                          className="scenario-loader"
-                          childClass="scenario-loader-msg"
-                        />
-                      )}
-                      <NGE dto={ngeDto} onOperation={handleNGEOperation} onLoad={handleNGELoad} />
-                    </div>
+                <div className="osrd-simulation-container">
+                  <div
+                    data-testid="macro-editor"
+                    className="chart-container"
+                    style={{
+                      height: `${macroBoardHeight - HIDDEN_CHART_TOP_HEIGHT}px`,
+                    }}
+                  >
+                    {(!ngeDto || ngeIsLoading) && (
+                      <Loader
+                        msg={t('main.loadingMacroEditor')}
+                        className="scenario-loader"
+                        childClass="scenario-loader-msg"
+                      />
+                    )}
+                    <NGE dto={ngeDto} onOperation={handleNGEOperation} onLoad={handleNGELoad} />
                   </div>
-                </BoardWrapper>
-              </ResizableSection>
+                </div>
+              </BoardWrapper>
             )}
           </div>
         </div>
