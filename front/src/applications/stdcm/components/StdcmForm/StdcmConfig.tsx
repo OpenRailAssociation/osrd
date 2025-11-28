@@ -196,7 +196,7 @@ const StdcmConfig = ({
       setFormErrors(undefined);
     }
 
-    if (!origin.location || !destination.location) return;
+    if (!origin.operationalPoint || !destination.operationalPoint) return;
 
     const formErrorsStatus = checkStdcmConfigErrors({
       t,

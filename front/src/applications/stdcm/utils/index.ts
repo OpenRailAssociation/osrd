@@ -2,7 +2,10 @@ import {
   type MarkerInformation,
   MARKER_TYPE,
 } from 'applications/operationalStudies/views/Scenario/components/ManageTimetableItem/ManageTimetableItemMap/ItineraryMarkers';
-import type { PostSimilarTrainsApiResponse } from 'common/api/osrdEditoastApi';
+import type {
+  OperationalPointReference,
+  PostSimilarTrainsApiResponse,
+} from 'common/api/osrdEditoastApi';
 import type { StdcmPathStep } from 'reducers/osrdconf/types';
 
 export const getTimesInfoFromDate = (date?: Date) =>
@@ -22,7 +25,7 @@ export const getTimesInfoFromDate = (date?: Date) =>
 
 export const extractMarkersInfo = (pathSteps: StdcmPathStep[]): MarkerInformation[] =>
   pathSteps.reduce((acc: MarkerInformation[], step, index) => {
-    if (!step.location) return acc;
+    if (!step.operationalPoint) return acc;
 
     let pointType = MARKER_TYPE.VIA;
 
@@ -36,12 +39,12 @@ export const extractMarkersInfo = (pathSteps: StdcmPathStep[]): MarkerInformatio
       pointType,
       location: {
         operational_point: {
-          trigram: step.location.operational_point.trigram,
-          secondary_code: step.location.operational_point.secondary_code,
+          trigram: step.operationalPoint.trigram,
+          secondary_code: step.operationalPoint.secondaryCode,
         },
       },
-      coordinates: step.location.coordinates,
-      name: step.location.name,
+      coordinates: step.operationalPoint.coordinates,
+      name: step.operationalPoint.name,
     });
 
     return acc;
@@ -99,4 +102,18 @@ export const mergeSimilarTrainSegments = (
   }
 
   return result;
+};
+
+export const stdcmPathStepToPathItemLocation = (
+  operationalPoint: StdcmPathStep['operationalPoint']
+): OperationalPointReference => {
+  if (!operationalPoint) {
+    throw new Error('Step has no operational point');
+  }
+  return {
+    operational_point: {
+      uic: operationalPoint.uic,
+      secondary_code: operationalPoint.secondaryCode,
+    },
+  };
 };

@@ -120,8 +120,8 @@ const StdcmResults = ({
 
         const isStopByOpKey = pathSteps.reduce((acc, ps) => {
           const k = key(
-            ps.location?.operational_point.trigram ?? '',
-            ps.location?.operational_point.secondary_code ?? ''
+            ps.operationalPoint?.trigram ?? '',
+            ps.operationalPoint?.secondaryCode ?? ''
           );
           acc.set(k, !ps.isVia || ps.stopFor !== undefined);
           return acc;

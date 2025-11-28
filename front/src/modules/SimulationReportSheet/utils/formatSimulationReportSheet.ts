@@ -8,7 +8,6 @@ import {
 } from 'applications/stdcm/types';
 import type { SimulationResponseSuccess } from 'common/api/osrdEditoastApi';
 import type { RequestedStep, StepType } from 'common/api/osrdRailwayManagerApi';
-import { matchPathStepAndOp } from 'modules/pathfinding/utils';
 import { interpolateValue } from 'modules/simulationResult/helpers/utils';
 import type { SuggestedOP } from 'modules/timetableItem/types';
 import type { StdcmPathStep } from 'reducers/osrdconf/types';
@@ -157,7 +156,7 @@ function formatOperationalPointWithTimes(
   const partiallyFormattedOp = formatMinimalOperationalPointWithTimes(op, train);
   // Find the corresponding stopType from pathSteps
   const correspondingStep = simulationPathSteps.find(
-    (step) => step.location && matchPathStepAndOp(step.location, op)
+    (step) => step.operationalPoint && step.operationalPoint.id === op.opId
   );
   let stopType;
   if (correspondingStep) {
@@ -310,8 +309,9 @@ export function getOperationalPointsWithTimes({
       if (!op.opId || !opIdsToExclude.includes(op.opId)) return true;
 
       // Keep if explicitly requested by the user (origin, destination, via point or stop)
+
       const isRequestedPoint = simulationPathSteps.some(
-        (step) => step.location && matchPathStepAndOp(step.location, op)
+        (step) => step.operationalPoint && step.operationalPoint.id === op.opId
       );
 
       return isRequestedPoint;
@@ -345,8 +345,8 @@ export const getArrivalTimes = (
     : t('reportSheet.asap');
 };
 
-export const getSecondaryCode = ({ location }: StdcmPathStep) =>
-  location!.operational_point.secondary_code;
+export const getSecondaryCode = ({ operationalPoint }: StdcmPathStep) =>
+  operationalPoint!.secondaryCode;
 
 export const getStopType = (stopType: StdcmStopTypes | undefined, t: TFunction<'stdcm'>) =>
   !stopType
@@ -363,8 +363,8 @@ export const transformStepsToApiFormat = (
     const baseStep: RequestedStep = {
       duration: 0,
       location: {
-        uic: step.location!.operational_point.uic,
-        secondary_code: step.location?.operational_point.secondary_code || '',
+        uic: step.operationalPoint!.uic,
+        secondary_code: step.operationalPoint!.secondaryCode,
       },
     };
 

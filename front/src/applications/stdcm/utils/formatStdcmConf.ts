@@ -7,12 +7,12 @@ import type {
   PathfindingItem,
   PostTimetableByIdStdcmApiArg,
 } from 'common/api/osrdEditoastApi';
-import getStepLocation from 'modules/pathfinding/helpers/getStepLocation';
 import { setFailure } from 'reducers/main';
 import type { OsrdStdcmConfState, StandardAllowance } from 'reducers/osrdconf/types';
 import type { Duration } from 'utils/duration';
 import { kmhToMs, tToKg } from 'utils/physics';
 
+import { stdcmPathStepToPathItemLocation } from '.';
 import createMargin from './createMargin';
 import { StdcmStopTypes } from '../types';
 
@@ -76,7 +76,7 @@ export const checkStdcmConf = (
     throw new Error('First step should not be a via');
   }
 
-  if (!origin.location) {
+  if (!origin.operationalPoint) {
     error = true;
     dispatch(
       setFailure({
@@ -85,7 +85,7 @@ export const checkStdcmConf = (
       })
     );
   }
-  if (!destination.location) {
+  if (!destination.operationalPoint) {
     error = true;
     dispatch(
       setFailure({
@@ -150,7 +150,7 @@ export const checkStdcmConf = (
     );
   }
 
-  if (pathSteps.some((step) => !step.location)) {
+  if (pathSteps.some((step) => !step.operationalPoint)) {
     error = true;
     dispatch(
       setFailure({
@@ -163,7 +163,7 @@ export const checkStdcmConf = (
   if (error) return null;
 
   const path = compact(osrdconf.stdcmPathSteps).map((step) => {
-    const location = getStepLocation(step.location!);
+    const formattedLocation = stdcmPathStepToPathItemLocation(step.operationalPoint);
 
     let timingData: PathfindingItem['timing_data'] | undefined;
     let duration: number | undefined;
@@ -189,7 +189,7 @@ export const checkStdcmConf = (
 
     return {
       duration,
-      location,
+      location: formattedLocation,
       timing_data: timingData,
     };
   });

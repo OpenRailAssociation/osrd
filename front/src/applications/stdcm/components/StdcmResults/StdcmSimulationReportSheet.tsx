@@ -64,7 +64,7 @@ const StdcmSimulationReportSheet = ({
     const rows: RouteTableRow[] = [];
     stdcmData.simulationPathSteps.forEach((step, index) => {
       const row: RouteTableRow = {
-        name: step.location?.name || '',
+        name: step.operationalPoint?.name || '',
         secondaryCode: getSecondaryCode(step),
         italic: true,
       };

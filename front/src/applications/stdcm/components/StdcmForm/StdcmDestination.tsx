@@ -24,7 +24,7 @@ const StdcmDestination = ({ disabled = false, onItineraryChange }: StdcmItinerar
       testId="stdcm-card-destination"
     >
       <StdcmOperationalPoint
-        location={destination.location}
+        operationalPoint={destination.operationalPoint}
         pathStepId={destination.id}
         disabled={disabled}
         onItineraryChange={onItineraryChange}

@@ -254,15 +254,18 @@ export const stdcmConfSlice = createSlice({
       }>
     ) {
       const { linkedTrainExtremity, trainName, pathStep, pathStepId } = action.payload;
-      const { name, ch, geographic, arrivalDate, date, time, trigram, uic } = pathStep;
+      const { name, ch, geographic, arrivalDate, date, time, trigram, uic, obj_id } = pathStep;
 
       const coordinates: [number, number] = [geographic.coordinates[0], geographic.coordinates[1]];
 
       const newPathStep = {
-        location: {
+        operationalPoint: {
+          id: obj_id,
           name,
           coordinates,
-          operational_point: { trigram, secondary_code: ch, uic },
+          trigram,
+          secondaryCode: ch,
+          uic,
         },
         id: pathStepId,
         arrival: arrivalDate,

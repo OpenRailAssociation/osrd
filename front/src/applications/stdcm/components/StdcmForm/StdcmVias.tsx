@@ -148,7 +148,7 @@ const StdcmVias = ({ disabled = false, skipAnimation, onItineraryChange }: Stdcm
               className="via"
             >
               <StdcmOperationalPoint
-                location={pathStep.location}
+                operationalPoint={pathStep.operationalPoint}
                 pathStepId={pathStep.id}
                 disabled={disabled}
                 onItineraryChange={onItineraryChange}

@@ -288,7 +288,7 @@ const SendToRailwayManagerModal = ({
               {firstStep && (
                 <li>
                   {t('modal.departurePoint', {
-                    departureAt: `${firstStep.location?.name} ${firstStep.location?.operational_point.secondary_code}`,
+                    departureAt: `${firstStep.operationalPoint?.name} ${firstStep.operationalPoint?.secondaryCode}`,
                   })}
                 </li>
               )}
@@ -299,7 +299,7 @@ const SendToRailwayManagerModal = ({
                     <li key={step.id}>
                       {t('modal.stop', {
                         minutes: getStopDurationTime(step.stopFor),
-                        stopAt: `${step.location?.name} ${step.location?.operational_point.secondary_code}`,
+                        stopAt: `${step.operationalPoint?.name} ${step.operationalPoint?.secondaryCode}`,
                       })}
                     </li>
                   )
@@ -308,7 +308,7 @@ const SendToRailwayManagerModal = ({
               {lastStep && (
                 <li>
                   {t('modal.arrivalPoint', {
-                    arrivalAt: `${lastStep.location?.name} ${lastStep.location?.operational_point.secondary_code}`,
+                    arrivalAt: `${lastStep.operationalPoint?.name} ${lastStep.operationalPoint?.secondaryCode}`,
                   })}
                 </li>
               )}

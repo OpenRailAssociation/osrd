@@ -39,8 +39,8 @@ const StdcmFeedback = () => {
   const consistMass = `${totalMass} t`;
   const consistSpeed = `${Math.round(maxSpeed)} km/h`;
 
-  const origin = pathSteps[0]?.location?.name ?? '-';
-  const destination = pathSteps.at(-1)?.location?.name ?? '-';
+  const origin = pathSteps[0]?.operationalPoint?.name ?? '-';
+  const destination = pathSteps.at(-1)?.operationalPoint?.name ?? '-';
 
   const subject = encodeURIComponent(t('mailFeedback.subject', { stdcmName }));
   const separator = '********';
