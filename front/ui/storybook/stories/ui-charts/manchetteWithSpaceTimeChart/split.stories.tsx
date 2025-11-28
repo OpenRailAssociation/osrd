@@ -7,6 +7,8 @@ import {
   PathLayer,
   positionMmToKm,
   SpaceTimeChart,
+  SpaceTimeChartCanvasContext,
+  type SpaceTimeChartContextType,
   useDraw,
   useManchetteWithSpaceTimeChart,
   usePaths,
@@ -62,7 +64,7 @@ const SplitElement = ({
  * This component is a placeholder to render a split point, space/time chart side:
  */
 const FlatStep = ({ position }: { position: number }) => {
-  const drawMonoTrackSpace = useCallback<DrawingFunction>(
+  const drawMonoTrackSpace = useCallback<DrawingFunction<SpaceTimeChartContextType>>(
     (ctx, { getSpacePixel, width, height, spaceAxis }) => {
       const spaceSize = spaceAxis === 'x' ? width : height;
       const timeSize = spaceAxis === 'x' ? height : width;
@@ -81,7 +83,7 @@ const FlatStep = ({ position }: { position: number }) => {
     [position]
   );
 
-  useDraw('overlay', drawMonoTrackSpace);
+  useDraw(SpaceTimeChartCanvasContext, 'overlay', drawMonoTrackSpace);
 
   return null;
 };
