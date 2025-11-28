@@ -10,36 +10,40 @@ import type { StdcmPathStep } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { normalized } from 'utils/strings';
 
+type StdcmOp = NonNullable<StdcmPathStep['operationalPoint']>;
+
 type StdcmOperationalPointProps = {
-  location?: StdcmPathStep['location'];
+  operationalPoint?: StdcmOp;
   pathStepId: string;
   disabled?: boolean;
   onItineraryChange: () => void;
 };
 
-type CIOption = StdcmPathStep['location'] & { label: string };
-type CHOption = { label: string; id: string; coordinates: [number, number] };
-
 function formatChCode(chCode: string) {
   return chCode === '' ? 'BV' : chCode;
 }
 
-const extractChCodes = (searchResults: SearchResultItemOperationalPoint[], selectedCI: CIOption) =>
+const stdcmOpFromSearchResult = (searchResult: SearchResultItemOperationalPoint): StdcmOp => ({
+  id: searchResult.obj_id,
+  uic: searchResult.uic,
+  trigram: searchResult.trigram,
+  secondaryCode: searchResult.ch,
+  name: searchResult.name,
+  coordinates: searchResult.geographic.coordinates as [number, number],
+});
+
+const extractChCodes = (searchResults: SearchResultItemOperationalPoint[], selectedCI: StdcmOp) =>
   searchResults
     .filter((op) => op.name === selectedCI.name)
-    .reduce((acc, op) => {
-      const newObject = {
-        label: formatChCode(op.ch),
-        id: op.ch,
-        coordinates: op.geographic.coordinates as [number, number],
-      };
-      const isDuplicate = acc.some((option) => option.label === newObject.label);
+    .reduce<StdcmOp[]>((acc, op) => {
+      const newObject = stdcmOpFromSearchResult(op);
+      const isDuplicate = acc.some((option) => option.secondaryCode === newObject.secondaryCode);
       if (!isDuplicate) acc.push(newObject);
       return acc;
-    }, [] as CHOption[]);
+    }, []);
 
 const StdcmOperationalPoint = ({
-  location,
+  operationalPoint,
   pathStepId,
   disabled,
   onItineraryChange,
@@ -54,37 +58,14 @@ const StdcmOperationalPoint = ({
     setSearchResults,
     searchOperationalPointsByTrigram,
   } = useSearchOperationalPoint({
-    initialSearchTerm: location?.name,
-    initialChCodeFilter: location?.operational_point.secondary_code,
+    initialSearchTerm: operationalPoint?.name,
+    initialChCodeFilter: operationalPoint?.secondaryCode,
     isStdcm: true,
   });
 
-  const [chSuggestions, setChSuggestions] = useState<CHOption[]>([]);
+  const [chSuggestions, setChSuggestions] = useState<StdcmOp[]>([]);
 
-  const selectedCi = useMemo(
-    () =>
-      location
-        ? {
-            ...location,
-            label: [location.operational_point.trigram, location.name].join(' '),
-          }
-        : undefined,
-    [location]
-  );
-
-  const selectedCh = useMemo(
-    () =>
-      location
-        ? {
-            label: formatChCode(location.operational_point.secondary_code),
-            id: location.operational_point.secondary_code,
-            coordinates: location.coordinates,
-          }
-        : undefined,
-    [location]
-  );
-
-  const ciSuggestions: CIOption[] = useMemo(
+  const ciSuggestions: StdcmOp[] = useMemo(
     () =>
       // Temporary filter added to show a more restrictive list of suggestions inside the stdcm app.
       searchResults
@@ -95,26 +76,25 @@ const StdcmOperationalPoint = ({
             // TODO: Replace this temporary implementation with a permanent solution
             !normalized(op.name).startsWith(normalized('OVERTAKE'))
         )
-        .reduce<CIOption[]>((acc, p) => {
-          const newObject = {
-            label: [p.trigram, p.name].join(' '),
-            operational_point: { uic: p.uic, trigram: p.trigram, secondary_code: p.ch },
-            name: p.name,
-            coordinates: p.geographic.coordinates as [number, number],
-          };
-          const isDuplicate = acc.some((pr) => pr.label === newObject.label);
+        .reduce<StdcmOp[]>((acc, p) => {
+          const newObject = stdcmOpFromSearchResult(p);
+          const isDuplicate = acc.some(
+            (pr) => pr.name === newObject.name && pr.trigram === newObject.trigram
+          );
           if (!isDuplicate) acc.push(newObject);
           return acc;
         }, []),
     [searchResults]
   );
 
-  const handleCiSelect = async (selectedSuggestion?: CIOption) => {
-    dispatch(updateStdcmPathStep({ id: pathStepId, updates: { location: selectedSuggestion } }));
+  const handleCiSelect = async (selectedSuggestion?: StdcmOp) => {
+    dispatch(
+      updateStdcmPathStep({ id: pathStepId, updates: { operationalPoint: selectedSuggestion } })
+    );
     onItineraryChange();
     if (selectedSuggestion) {
       const operationalPointParts = await searchOperationalPointsByTrigram(
-        selectedSuggestion.operational_point.trigram
+        selectedSuggestion.trigram
       );
       const newChSuggestions = extractChCodes(operationalPointParts, selectedSuggestion);
       setChSuggestions(newChSuggestions);
@@ -123,21 +103,13 @@ const StdcmOperationalPoint = ({
     }
   };
 
-  const handleChSelect = (selectedChCode?: CHOption) => {
-    if (location && selectedChCode) {
+  const handleChSelect = (selectedChCode?: StdcmOp) => {
+    if (selectedChCode) {
       dispatch(
         updateStdcmPathStep({
           id: pathStepId,
           updates: {
-            location: {
-              operational_point: {
-                trigram: location.operational_point.trigram,
-                uic: location.operational_point.uic,
-                secondary_code: selectedChCode.id,
-              },
-              name: location.name,
-              coordinates: selectedChCode.coordinates,
-            },
+            operationalPoint: selectedChCode,
           },
         })
       );
@@ -150,19 +122,19 @@ const StdcmOperationalPoint = ({
   };
 
   const resetSuggestions = () => {
-    if (searchTerm !== '' && !location) {
+    if (searchTerm !== '' && !operationalPoint) {
       setSearchResults([]);
       setSearchTerm('');
     }
   };
 
   useEffect(() => {
-    if (location) {
-      setSearchTerm(location.name);
+    if (operationalPoint) {
+      setSearchTerm(operationalPoint.name);
       // Clear the list of CH suggestions if the location has changed to avoid showing outated suggestions
       if (
         !chSuggestions.some(
-          (suggestion) => suggestion.label === location.operational_point.secondary_code
+          (suggestion) => suggestion.secondaryCode === operationalPoint.secondaryCode
         )
       ) {
         setChSuggestions([]);
@@ -171,16 +143,16 @@ const StdcmOperationalPoint = ({
       setSearchTerm('');
       setChSuggestions([]);
     }
-  }, [location]);
+  }, [operationalPoint]);
 
   useEffect(() => {
     // If we start a new query with inputs (ch suggestions will be empty at load),
     // fetch the ch list again for the corresponding CI
-    if (chSuggestions.length === 0 && selectedCi && searchResults.length > 0) {
-      const updatedChSuggestions = extractChCodes(searchResults, selectedCi);
+    if (chSuggestions.length === 0 && operationalPoint && searchResults.length > 0) {
+      const updatedChSuggestions = extractChCodes(searchResults, operationalPoint);
       setChSuggestions(updatedChSuggestions);
     }
-  }, [searchResults, selectedCi, chSuggestions]);
+  }, [searchResults, operationalPoint, chSuggestions]);
 
   return (
     <div className="location-line">
@@ -190,10 +162,10 @@ const StdcmOperationalPoint = ({
           data-testid="operational-point-ci"
           testIdPrefix="suggestions"
           label={t('trainPath.ci')}
-          value={selectedCi}
+          value={operationalPoint}
           suggestions={ciSuggestions}
           onChange={handleCiInputChange}
-          getSuggestionLabel={(option: CIOption) => option.label}
+          getSuggestionLabel={(option) => [option.trigram, option.name].join(' ')}
           onSelectSuggestion={handleCiSelect}
           resetSuggestions={resetSuggestions}
           disabled={disabled}
@@ -206,11 +178,11 @@ const StdcmOperationalPoint = ({
           label={t('trainPath.ch')}
           id={`${pathStepId}-ch`}
           data-testid="operational-point-ch"
-          value={selectedCh}
+          value={operationalPoint}
           onChange={handleChSelect}
           options={chSuggestions}
-          getOptionLabel={(option: { id: string; label: string }) => option.label}
-          getOptionValue={(option: { id: string; label: string }) => option.id}
+          getOptionLabel={(option) => formatChCode(option.secondaryCode)}
+          getOptionValue={(option) => option.secondaryCode}
           disabled={disabled}
           narrow
         />

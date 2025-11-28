@@ -70,12 +70,7 @@ export const formatStdcmDataForSimulationTable = (
     const previousStep = operationalPointsList[index - 1];
 
     const isStop = step.duration !== null && !isLast;
-    const isVia = stdcmPathSteps
-      .slice(1, -1)
-      .some(
-        (s) =>
-          s.location!.name === step.name && s.location!.operational_point.secondary_code === step.ch
-      );
+    const isVia = stdcmPathSteps.slice(1, -1).some((s) => s.operationalPoint!.id === step.opId);
     const isPathStep = isFirst || isVia || isLast;
 
     const startTime = isFirst || isStop ? step.stopEndTime : '';

@@ -50,11 +50,11 @@ const filterMissingFields = ({
       case 'maxSpeed':
         return isNil(maxSpeed);
       case 'origin':
-        return !origin?.location;
+        return !origin?.operationalPoint;
       case 'vias':
-        return vias?.some((via) => !via.location) ?? false;
+        return vias?.some((via) => !via.operationalPoint) ?? false;
       case 'destination':
-        return !destination?.location;
+        return !destination?.operationalPoint;
       default:
         return false;
     }

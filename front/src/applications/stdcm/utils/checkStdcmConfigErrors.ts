@@ -63,13 +63,8 @@ const checkStdcmConfigErrors = ({
   let routeErrors: StdcmConfigErrorTypes[] = [];
   const routeErrorDetails: { originTime?: string; destinationTime?: string } = {};
 
-  if (origin.location && destination.location) {
-    if (
-      origin.location.operational_point.trigram ===
-        destination.location.operational_point.trigram &&
-      origin.location.operational_point.secondary_code ===
-        destination.location.operational_point.secondary_code
-    ) {
+  if (origin.operationalPoint && destination.operationalPoint) {
+    if (origin.operationalPoint.id === destination.operationalPoint.id) {
       routeErrors.push(StdcmConfigErrorTypes.ZERO_LENGTH_PATH);
     }
 

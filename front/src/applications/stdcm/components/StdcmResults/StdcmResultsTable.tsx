@@ -60,10 +60,7 @@ const StcdmResultsTable = ({
             const isLastStep = index === operationalPointsList.length - 1;
             const prevStep = operationalPointsList[index - 1];
             const isRequestedPathStep = stdcmData.simulationPathSteps.some(
-              ({ location }) =>
-                location &&
-                location.name === step.name &&
-                location.operational_point.secondary_code === step.ch
+              ({ operationalPoint }) => operationalPoint && operationalPoint.id === step.opId
             );
             const shouldRenderRow =
               isFirstStep || isRequestedPathStep || isLastStep || step.duration !== null;

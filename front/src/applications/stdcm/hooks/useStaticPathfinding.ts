@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import { compact, isEqual } from 'lodash';
 import { useSelector } from 'react-redux';
 
+import { stdcmPathStepToPathItemLocation } from 'applications/stdcm/utils';
 import {
   osrdEditoastApi,
   type PathfindingResult,
@@ -24,8 +25,8 @@ import type { StdcmPathStep } from 'reducers/osrdconf/types';
  */
 function pathStepsToLocations(
   pathSteps: StdcmPathStep[]
-): Array<NonNullable<StdcmPathStep['location']>> {
-  return compact(pathSteps.map((s) => s.location));
+): Array<NonNullable<StdcmPathStep['operationalPoint']>> {
+  return compact(pathSteps.map((s) => s.operationalPoint));
 }
 
 const useStaticPathfinding = (workerStatus: WorkerStatus, infra: Infra | undefined) => {
@@ -62,19 +63,18 @@ const useStaticPathfinding = (workerStatus: WorkerStatus, infra: Infra | undefin
       // Don't run the pathfinding if the origin and destination are the same:
       const origin = pathSteps.at(0)!;
       const destination = pathSteps.at(-1)!;
-      if (
-        origin.location!.operational_point.trigram ===
-          destination.location!.operational_point.trigram &&
-        origin.location!.operational_point.secondary_code ===
-          destination.location!.operational_point.secondary_code
-      ) {
+      if (origin.operationalPoint!.id === destination.operationalPoint!.id) {
         return;
       }
+
+      const stdcmPathSteps = pathStepsLocations.map((step) =>
+        stdcmPathStepToPathItemLocation(step)
+      );
 
       const payload = getPathfindingQuery({
         infraId: infra.id,
         rollingStock,
-        pathSteps: pathStepsLocations,
+        pathSteps: stdcmPathSteps,
         loadingGauge,
         speedLimitByTag,
       });
