@@ -6,9 +6,11 @@ import '@osrd-project/ui-charts/dist/theme.css';
 import {
   PathLayer,
   SpaceTimeChart,
+  SpaceTimeChartCanvasContext,
   useDraw,
   type DrawingFunction,
   type Point,
+  type SpaceTimeChartContextType,
 } from '@osrd-project/ui-charts';
 import type { Meta } from '@storybook/react-vite';
 import { clamp, keyBy } from 'lodash';
@@ -23,7 +25,7 @@ const COEFFICIENT = 300000;
  * This component renders a colored area where the line only has one track:
  */
 const FlatStep = ({ position }: { position: number }) => {
-  const drawMonoTrackSpace = useCallback<DrawingFunction>(
+  const drawMonoTrackSpace = useCallback<DrawingFunction<SpaceTimeChartContextType>>(
     (ctx, { getSpacePixel, width, height, spaceAxis }) => {
       const spaceSize = spaceAxis === 'x' ? width : height;
       const timeSize = spaceAxis === 'x' ? height : width;
@@ -42,7 +44,7 @@ const FlatStep = ({ position }: { position: number }) => {
     [position]
   );
 
-  useDraw('overlay', drawMonoTrackSpace);
+  useDraw(SpaceTimeChartCanvasContext, 'overlay', drawMonoTrackSpace);
 
   return null;
 };

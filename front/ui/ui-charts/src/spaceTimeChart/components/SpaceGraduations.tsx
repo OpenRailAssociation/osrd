@@ -2,11 +2,13 @@ import { useCallback } from 'react';
 
 import type { DrawingFunction } from '../../common/types';
 import { useDraw } from '../../common/useCanvas';
+import { SpaceTimeChartCanvasContext } from '../lib/context';
+import type { SpaceTimeChartContextType } from '../lib/types';
 import { getCrispLineCoordinate } from '../utils/canvas';
 import { getSpacePixels } from '../utils/paths';
 
 const SpaceGraduations = () => {
-  const drawingFunction = useCallback<DrawingFunction>(
+  const drawingFunction = useCallback<DrawingFunction<SpaceTimeChartContextType>>(
     (
       ctx,
       {
@@ -60,7 +62,7 @@ const SpaceGraduations = () => {
     []
   );
 
-  useDraw('graduations', drawingFunction);
+  useDraw(SpaceTimeChartCanvasContext, 'graduations', drawingFunction);
 
   return null;
 };

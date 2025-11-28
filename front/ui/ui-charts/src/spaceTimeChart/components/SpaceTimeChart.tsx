@@ -5,14 +5,14 @@ import cx from 'classnames';
 import SpaceGraduations from './SpaceGraduations';
 import { TimeCaptions } from './TimeCaptions';
 import TimeGraduations from './TimeGraduations';
-import { CanvasContext } from '../../common/context';
 import type { PickingElement } from '../../common/types';
 import { useCanvas } from '../../common/useCanvas';
+import { TrackOccupancyCanvasContext } from '../../trackOccupancyDiagram/lib/context';
 import { useMouseInteractions } from '../hooks/useMouseInteractions';
 import { useMouseTracking } from '../hooks/useMouseTracking';
 import { useSize } from '../hooks/useSize';
 import { DEFAULT_THEME } from '../lib/consts';
-import { MouseContext, SpaceTimeChartContext } from '../lib/context';
+import { MouseContext, SpaceTimeChartCanvasContext, SpaceTimeChartContext } from '../lib/context';
 import { validateTheme } from '../lib/theme';
 import {
   type MouseContextType,
@@ -180,7 +180,12 @@ export const SpaceTimeChart = (props: SpaceTimeChartProps) => {
 
   const mouseState = useMouseTracking(root);
   const { position, down, isHover } = mouseState;
-  const { canvasContext, hoveredItem } = useCanvas(canvasesRoot, contextState, position);
+  const { canvasContext, hoveredItem } = useCanvas(
+    canvasesRoot,
+    contextState,
+    contextState.fingerprint,
+    position
+  );
 
   const mouseContext = useMemo<MouseContextType>(() => {
     const snappedPosition = enableSnapping
@@ -221,19 +226,21 @@ export const SpaceTimeChart = (props: SpaceTimeChartProps) => {
     >
       <div ref={setCanvasesRoot} className="absolute inset-0" />
       <SpaceTimeChartContext.Provider value={contextState}>
-        <CanvasContext.Provider value={canvasContext}>
-          <MouseContext.Provider value={mouseContext}>
-            {!hideGrid && (
-              <>
-                <SpaceGraduations />
-                <TimeGraduations />
-                <TimeCaptions />
-              </>
-            )}
-            {children}
-            {additionalChildren}
-          </MouseContext.Provider>
-        </CanvasContext.Provider>
+        <SpaceTimeChartCanvasContext.Provider value={canvasContext}>
+          <TrackOccupancyCanvasContext.Provider value={canvasContext}>
+            <MouseContext.Provider value={mouseContext}>
+              {!hideGrid && (
+                <>
+                  <SpaceGraduations />
+                  <TimeGraduations />
+                  <TimeCaptions />
+                </>
+              )}
+              {children}
+              {additionalChildren}
+            </MouseContext.Provider>
+          </TrackOccupancyCanvasContext.Provider>
+        </SpaceTimeChartCanvasContext.Provider>
       </SpaceTimeChartContext.Provider>
     </div>
   );

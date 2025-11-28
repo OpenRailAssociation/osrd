@@ -1,8 +1,12 @@
 import { createContext } from 'react';
 
-import { type MouseContextType, type SpaceTimeChartContextType } from './types';
+import type { MouseContextType, SpaceTimeChartContextType } from './types';
+import type { CanvasContextType } from '../../common/types';
 
-// There are three different contexts because they have very different lifecycles.
+// There are three different contexts because they have very different lifecycles:
+// - MouseContext
+// - SpaceTimeChartContext
+// - SpaceTimeChartCanvasContext
 
 /**
  * This context exports everything necessary to draw the chart.
@@ -11,6 +15,13 @@ import { type MouseContextType, type SpaceTimeChartContextType } from './types';
 export const SpaceTimeChartContext = createContext<SpaceTimeChartContextType>(
   // That value should never be used, since the context should always be accessed within a provider
   undefined as unknown as SpaceTimeChartContextType
+);
+
+export const SpaceTimeChartCanvasContext = createContext<
+  CanvasContextType<SpaceTimeChartContextType>
+>(
+  // That value should never be used, since the context should always be accessed within a provider
+  undefined as unknown as CanvasContextType<SpaceTimeChartContextType>
 );
 
 /**
