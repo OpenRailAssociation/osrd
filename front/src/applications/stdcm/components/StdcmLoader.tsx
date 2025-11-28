@@ -20,7 +20,8 @@ type StdcmLoaderProps = {
   launchButtonRef: RefObject<HTMLDivElement | null>;
   formRef: RefObject<HTMLDivElement | null>;
   currentRequestId: string | null;
-  setProgressGeom: (value: FeatureCollection) => void;
+  setGeoPoints: (value: FeatureCollection) => void;
+  setGeoLines: (value: FeatureCollection) => void;
 };
 
 const formatSeconds = (totalSeconds: number): string => {
@@ -51,7 +52,8 @@ const StdcmLoader = ({
   formRef,
   isPendingAdditional,
   currentRequestId,
-  setProgressGeom,
+  setGeoPoints,
+  setGeoLines,
 }: StdcmLoaderProps) => {
   const { t } = useTranslation('stdcm');
   const loaderRef = useRef<HTMLDivElement>(null);
@@ -128,7 +130,7 @@ const StdcmLoader = ({
         }).unwrap();
         setProgressData(updatedProgress);
 
-        const featureCollection: FeatureCollection = {
+        const points: FeatureCollection = {
           type: 'FeatureCollection',
           features: updatedProgress.map((element) => ({
             type: 'Feature',
@@ -139,7 +141,16 @@ const StdcmLoader = ({
             properties: {},
           })),
         };
-        setProgressGeom(featureCollection);
+        const lines: FeatureCollection = {
+          type: 'FeatureCollection',
+          features: updatedProgress.map((element) => ({
+            type: 'Feature',
+            geometry: element.full_path_geometry,
+            properties: {},
+          })),
+        };
+        setGeoPoints(points);
+        setGeoLines(lines);
       } catch (error) {
         console.error('Error fetching data:', error);
       }

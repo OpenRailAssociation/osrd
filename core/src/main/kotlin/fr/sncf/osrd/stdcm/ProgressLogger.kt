@@ -4,7 +4,9 @@ import com.squareup.moshi.Json
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import fr.sncf.osrd.api.path_properties.makeGeographic
 import fr.sncf.osrd.path.implementations.buildTrainPathFromBlock
+import fr.sncf.osrd.railjson.schema.geom.RJSLineString
 import fr.sncf.osrd.stdcm.graph.STDCMGraph
 import fr.sncf.osrd.stdcm.graph.STDCMNode
 import fr.sncf.osrd.stdcm.graph.logger
@@ -94,6 +96,7 @@ data class ProgressLogger(
         val total = rt.totalMemory()
         val used = total - free
         val mb = 2.0.pow(20.0)
+        val fullGeometry = makeGeographic(node.infraExplorer.buildFullPath(graph.rawInfra, graph.blockInfra))
 
         val data =
             STDCMProgressSample(
@@ -108,6 +111,7 @@ data class ProgressLogger(
                 maxMb = (max / mb).toInt(),
                 timeSinceSearchStarted = (System.currentTimeMillis() - startTime) / 1000.0,
                 totalSimulatedTime = totalSimulatedTime,
+                fullPathGeometry = fullGeometry
             )
         callback?.let { it(data) }
         return data
@@ -126,6 +130,7 @@ data class STDCMProgressSample(
     @Json(name = "max_mb") val maxMb: Int,
     @Json(name = "time_since_search_started") val timeSinceSearchStarted: Double,
     @Json(name = "total_simulated_time") val totalSimulatedTime: Double,
+    @Json(name = "full_path_geometry") val fullPathGeometry: RJSLineString,
 ) {
     companion object {
         val adapter: JsonAdapter<STDCMProgressSample> =

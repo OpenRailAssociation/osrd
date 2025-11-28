@@ -37,7 +37,7 @@ use tokio::task::JoinHandle;
 use tracing::Span;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
-
+use common::geometry::GeoJsonLineString;
 use crate::AppState;
 use crate::error::InternalError;
 use crate::error::Result;
@@ -145,6 +145,7 @@ pub(in crate::views) struct StdcmProgressSample {
     max_mb: u64,
     time_since_search_started: f64,
     total_simulated_time: f64,
+    full_path_geometry: GeoJsonLineString,
 }
 
 #[tracing::instrument(target = "editoast::timetable", name = "stdcm_async", skip_all, err)]

@@ -38,6 +38,7 @@ import StdcmConsist from './StdcmConsist';
 import StdcmDestination from './StdcmDestination';
 import StdcmLinkedTrainSearch from './StdcmLinkedTrainSearch';
 import StdcmOrigin from './StdcmOrigin';
+import GeoJSONLinesLayer from '../../../../common/Map/Layers/GeoJSONLinesLayer';
 import GeoJSONPointsLayer from '../../../../common/Map/Layers/GeoJSONPointsLayer';
 import useStaticPathfinding from '../../hooks/useStaticPathfinding';
 import type { StdcmConfigErrors, ConsistErrors } from '../../types';
@@ -70,8 +71,10 @@ type StdcmConfigProps = {
   cancelStdcmRequest: () => void;
   setSkipPathfindingStatusMessage: (value: boolean) => void;
   currentRequestId: string | null;
-  progressGeom: FeatureCollection | null;
-  setProgressGeom: (value: FeatureCollection) => void;
+  geoPoints: FeatureCollection | null;
+  geoLines: FeatureCollection | null;
+  setGeoPoints: (value: FeatureCollection) => void;
+  setGeoLines: (value: FeatureCollection) => void;
 };
 
 const StdcmConfig = ({
@@ -85,8 +88,10 @@ const StdcmConfig = ({
   cancelStdcmRequest,
   launchStdcmRequest,
   currentRequestId,
-  progressGeom,
-  setProgressGeom,
+  geoPoints,
+  geoLines,
+  setGeoPoints,
+  setGeoLines,
 }: StdcmConfigProps) => {
   const { t } = useTranslation('stdcm');
   const dateTimeLocale = useDateTimeLocale();
@@ -379,7 +384,8 @@ const StdcmConfig = ({
                   launchButtonRef={launchButtonRef}
                   formRef={formRef}
                   currentRequestId={currentRequestId}
-                  setProgressGeom={setProgressGeom}
+                  setGeoPoints={setGeoPoints}
+                  setGeoLines={setGeoLines}
                 />
               )}
             </div>
@@ -401,7 +407,8 @@ const StdcmConfig = ({
             updateMapSettings={updateMapSettings}
             updateViewport={updateViewport}
           >
-            {progressGeom ? <GeoJSONPointsLayer geometries={progressGeom} /> : null}
+            {geoLines ? <GeoJSONLinesLayer geometries={geoLines} /> : null}
+            {geoPoints ? <GeoJSONPointsLayer geometries={geoPoints} /> : null}
           </DefaultBaseMap>
         </div>
       </div>
