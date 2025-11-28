@@ -42,6 +42,12 @@ const ResizableSection = ({
         resizeHandleClasses={{
           bottom: 'resizable-section-handle',
         }}
+        resizeHandleStyles={{
+          bottom: {
+            bottom: -8,
+            height: 16,
+          },
+        }}
         onResizeStart={() => {
           setBaseHeight(height);
         }}

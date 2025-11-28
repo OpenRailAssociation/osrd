@@ -1,17 +1,25 @@
 .resizable-section {
   position: relative;
 
+  // Override board-wrapper max-height when inside resizable section
+  // The height is controlled by the resizable container, not the viewport
+  .board-wrapper {
+    max-height: 100%;
+    height: 100%;
+  }
+
   .resizable-section-handle {
     display: flex;
     justify-content: center;
     align-items: center;
+    z-index: 1;
+    transform: translateY(8px); // Move handle down to center it in the 16px gap
 
     &::after {
       content: '';
       width: 72px;
       height: 4px;
       border-radius: 2px;
-      margin-bottom: 6px;
       background-color: var(--coolgray3);
     }
     &:hover::after {
