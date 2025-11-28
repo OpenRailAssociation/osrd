@@ -78,6 +78,7 @@ const ScenarioContent = ({ activeBoards }: ScenarioContentProps) => {
   } = useConflictsFilter(timetableItems || [], conflicts);
 
   const macroEditorState = useRef<MacroEditorState>(null);
+  const lastNgeOperationPromise = useRef(Promise.resolve());
   const [ngeDto, setNgeDto] = useState<NetzgrafikDto>();
   const [ngeIsLoading, setNGEIsLoading] = useState(true);
 
@@ -134,22 +135,25 @@ const ScenarioContent = ({ activeBoards }: ScenarioContentProps) => {
     }
   }, [activeBoards.has('macro')]);
 
-  const handleNGEOperation = async (event: NGEEvent, netzgrafikDto: NetzgrafikDto) => {
-    try {
-      await handleOperation({
-        event,
-        netzgrafikDto,
-        timetableId: scenario.timetable_id,
-        infraId,
-        state: macroEditorState.current!,
-        dispatch,
-        addUpsertedTimetableItems: upsertTimetableItems,
-        addDeletedTimetableItemIds: removeTimetableItems,
-      });
-    } catch (err) {
-      console.error(err);
-      dispatch(setFailure(castErrorToFailure(err)));
-    }
+  const handleNGEOperation = (event: NGEEvent, netzgrafikDto: NetzgrafikDto) => {
+    // Wait for the previous handler to complete before starting the next one
+    lastNgeOperationPromise.current = lastNgeOperationPromise.current.then(async () => {
+      try {
+        await handleOperation({
+          event,
+          netzgrafikDto,
+          timetableId: scenario.timetable_id,
+          infraId,
+          state: macroEditorState.current!,
+          dispatch,
+          addUpsertedTimetableItems: upsertTimetableItems,
+          addDeletedTimetableItemIds: removeTimetableItems,
+        });
+      } catch (err) {
+        console.error(err);
+        dispatch(setFailure(castErrorToFailure(err)));
+      }
+    });
   };
 
   const handleNGELoad = () => setNGEIsLoading(false);
