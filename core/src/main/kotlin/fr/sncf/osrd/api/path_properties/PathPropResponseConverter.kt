@@ -48,7 +48,7 @@ private fun makeElectrifications(pathProperties: TrainPath): RangeValues<Electri
     return makeRangeValues(DistanceRangeMapImpl.from(mergedMap))
 }
 
-fun makeGeographic(path: TrainPath): RJSLineString {
+private fun makeGeographic(path: TrainPath): RJSLineString {
     val lineString = path.getGeo()
     val coordinates = ArrayList<List<Double>>()
     for (p in lineString.getPoints()) coordinates.add(listOf(p.lon, p.lat))

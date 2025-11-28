@@ -2395,7 +2395,7 @@ export type PostTimetableApiArg = void;
 export type GetTimetableStdcmGetAsyncProgressApiResponse = /** status 200 Progress samples */ {
   best_remaining_time: number;
   coordinates: number[];
-  full_path_geometry: GeoJsonLineString;
+  geometry: GeoJsonLineString;
   max_mb: number;
   mb_used: number;
   number_visited_nodes: number;

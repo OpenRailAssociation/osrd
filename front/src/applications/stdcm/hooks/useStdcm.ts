@@ -44,8 +44,7 @@ const useStdcm = ({
     STDCM_REQUEST_STATUS.idle
   );
   const [currentRequestId, setCurrentRequestId] = useState<string | null>(null);
-  const [geoPoints, setGeoPoints] = useState<FeatureCollection | null>(null);
-  const [geoLines, setGeoLines] = useState<FeatureCollection | null>(null);
+  const [progressGeom, setProgressGeom] = useState<FeatureCollection | null>(null);
 
   const dispatch = useAppDispatch();
   const { t } = useTranslation(['translation', 'stdcm']);
@@ -272,10 +271,8 @@ const useStdcm = ({
     isPendingAdditional,
     isCalculationCompleted,
     currentRequestId,
-    geoPoints,
-    geoLines,
-    setGeoPoints,
-    setGeoLines,
+    progressGeom,
+    setProgressGeom,
   };
 };
 

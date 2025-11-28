@@ -70,10 +70,8 @@ const StdcmViewContent = ({
     isCanceled,
     isCalculationCompleted,
     currentRequestId,
-    geoPoints,
-    geoLines,
-    setGeoPoints,
-    setGeoLines,
+    progressGeom,
+    setProgressGeom,
   } = useStdcm({ showFailureNotification: false });
 
   const dispatch = useAppDispatch();
@@ -197,10 +195,8 @@ const StdcmViewContent = ({
         launchStdcmRequest={launchStdcmRequest}
         cancelStdcmRequest={cancelStdcmRequest}
         currentRequestId={currentRequestId}
-        geoPoints={geoPoints}
-        geoLines={geoLines}
-        setGeoPoints={setGeoPoints}
-        setGeoLines={setGeoLines}
+        progressGeom={progressGeom}
+        setProgressGeom={setProgressGeom}
       />
 
       {showStatusBanner && <StdcmStatusBanner isFailed={isRejected} />}

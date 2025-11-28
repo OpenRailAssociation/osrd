@@ -38,7 +38,6 @@ import StdcmConsist from './StdcmConsist';
 import StdcmDestination from './StdcmDestination';
 import StdcmLinkedTrainSearch from './StdcmLinkedTrainSearch';
 import StdcmOrigin from './StdcmOrigin';
-import GeoJSONLinesLayer from '../../../../common/Map/Layers/GeoJSONLinesLayer';
 import GeoJSONPointsLayer from '../../../../common/Map/Layers/GeoJSONPointsLayer';
 import useStaticPathfinding from '../../hooks/useStaticPathfinding';
 import type { StdcmConfigErrors, ConsistErrors } from '../../types';
@@ -71,10 +70,8 @@ type StdcmConfigProps = {
   cancelStdcmRequest: () => void;
   setSkipPathfindingStatusMessage: (value: boolean) => void;
   currentRequestId: string | null;
-  geoPoints: FeatureCollection | null;
-  geoLines: FeatureCollection | null;
-  setGeoPoints: (value: FeatureCollection) => void;
-  setGeoLines: (value: FeatureCollection) => void;
+  progressGeom: FeatureCollection | null;
+  setProgressGeom: (value: FeatureCollection) => void;
 };
 
 const StdcmConfig = ({
@@ -88,10 +85,8 @@ const StdcmConfig = ({
   cancelStdcmRequest,
   launchStdcmRequest,
   currentRequestId,
-  geoPoints,
-  geoLines,
-  setGeoPoints,
-  setGeoLines,
+  progressGeom,
+  setProgressGeom,
 }: StdcmConfigProps) => {
   const { t } = useTranslation('stdcm');
   const dateTimeLocale = useDateTimeLocale();
@@ -384,8 +379,7 @@ const StdcmConfig = ({
                   launchButtonRef={launchButtonRef}
                   formRef={formRef}
                   currentRequestId={currentRequestId}
-                  setGeoPoints={setGeoPoints}
-                  setGeoLines={setGeoLines}
+                  setProgressGeom={setProgressGeom}
                 />
               )}
             </div>
@@ -407,8 +401,7 @@ const StdcmConfig = ({
             updateMapSettings={updateMapSettings}
             updateViewport={updateViewport}
           >
-            {geoLines ? <GeoJSONLinesLayer geometries={geoLines} /> : null}
-            {geoPoints ? <GeoJSONPointsLayer geometries={geoPoints} /> : null}
+            {progressGeom ? <GeoJSONPointsLayer geometries={progressGeom} /> : null}
           </DefaultBaseMap>
         </div>
       </div>

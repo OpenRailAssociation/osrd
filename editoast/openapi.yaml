@@ -3804,7 +3804,6 @@ paths:
                   - max_mb
                   - time_since_search_started
                   - total_simulated_time
-                  - full_path_geometry
                   properties:
                     best_remaining_time:
                       type: number
@@ -3814,8 +3813,6 @@ paths:
                       items:
                         type: number
                         format: double
-                    full_path_geometry:
-                      $ref: '#/components/schemas/GeoJsonLineString'
                     max_mb:
                       type: integer
                       format: int64
