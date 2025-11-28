@@ -2,7 +2,8 @@ import { useCallback } from 'react';
 
 import type { DrawingFunction } from '../../../common/types';
 import { useDraw } from '../../../common/useCanvas';
-import type { Track } from '../../lib/types';
+import { TrackOccupancyCanvasContext } from '../../lib/context';
+import type { Track, TrackOccupancyDiagramContextType } from '../../lib/types';
 import { drawTracks } from '../helpers/drawElements/drawTracks';
 
 const TracksLayer = ({
@@ -16,14 +17,14 @@ const TracksLayer = ({
   topPadding: number;
   drawBorders: boolean;
 }) => {
-  const drawingFunction = useCallback<DrawingFunction>(
+  const drawingFunction = useCallback<DrawingFunction<TrackOccupancyDiagramContextType>>(
     (ctx, stcContext) => {
       drawTracks(ctx, stcContext, { position, topPadding, tracks, drawBorders });
     },
     [drawBorders, position, topPadding, tracks]
   );
 
-  useDraw('overlay', drawingFunction);
+  useDraw(TrackOccupancyCanvasContext, 'overlay', drawingFunction);
 
   return null;
 };

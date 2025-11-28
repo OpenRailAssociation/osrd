@@ -7,6 +7,8 @@ import {
   PathLayer,
   positionMmToKm,
   SpaceTimeChart,
+  TrackOccupancyCanvasContext,
+  type TrackOccupancyDiagramContextType,
   useDraw,
   useManchetteWithSpaceTimeChart,
   usePaths,
@@ -62,26 +64,20 @@ const SplitElement = ({
  * This component is a placeholder to render a split point, space/time chart side:
  */
 const FlatStep = ({ position }: { position: number }) => {
-  const drawMonoTrackSpace = useCallback<DrawingFunction>(
-    (ctx, { getSpacePixel, width, height, spaceAxis }) => {
-      const spaceSize = spaceAxis === 'x' ? width : height;
-      const timeSize = spaceAxis === 'x' ? height : width;
-      const fromPixel = clamp(getSpacePixel(position), 0, spaceSize);
-      const toPixel = clamp(getSpacePixel(position, true), 0, spaceSize);
+  const drawMonoTrackSpace = useCallback<DrawingFunction<TrackOccupancyDiagramContextType>>(
+    (ctx, { getSpacePixel, width, height }) => {
+      const fromPixel = clamp(getSpacePixel(position), 0, height);
+      const toPixel = clamp(getSpacePixel(position, true), 0, height);
       const monoLineSize = toPixel - fromPixel;
       if (!monoLineSize) return;
 
       ctx.fillStyle = AMBIANT_A10;
-      if (spaceAxis === 'x') {
-        ctx.fillRect(fromPixel, 0, monoLineSize, timeSize);
-      } else {
-        ctx.fillRect(0, fromPixel, timeSize, monoLineSize);
-      }
+      ctx.fillRect(0, fromPixel, width, monoLineSize);
     },
     [position]
   );
 
-  useDraw('overlay', drawMonoTrackSpace);
+  useDraw(TrackOccupancyCanvasContext, 'overlay', drawMonoTrackSpace);
 
   return null;
 };

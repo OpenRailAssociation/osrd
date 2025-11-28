@@ -16,7 +16,13 @@ import {
   OCCUPANCY_ZONE_Y_START,
   TRACK_HEIGHT_CONTAINER,
 } from '../../lib/consts';
-import type { OccupancyZone, OccupancyZonePickingElement, Track } from '../../lib/types';
+import { TrackOccupancyCanvasContext } from '../../lib/context';
+import type {
+  OccupancyZone,
+  OccupancyZonePickingElement,
+  Track,
+  TrackOccupancyDiagramContextType,
+} from '../../lib/types';
 import {
   drawOccupationZone,
   drawRemainingTrainsBox,
@@ -163,7 +169,7 @@ const OccupancyZonesLayer = ({
     );
   }, [occupancyZones, selectedTrainId, topPadding, tracks]);
 
-  const drawingFunction = useCallback<DrawingFunction>(
+  const drawingFunction = useCallback<DrawingFunction<TrackOccupancyDiagramContextType>>(
     (ctx, stcContext) => {
       instructionsToDraw.forEach((instruction) => {
         switch (instruction.type) {
@@ -198,7 +204,7 @@ const OccupancyZonesLayer = ({
     [position, instructionsToDraw]
   );
 
-  const pickingFunction = useCallback<PickingDrawingFunction>(
+  const pickingFunction = useCallback<PickingDrawingFunction<TrackOccupancyDiagramContextType>>(
     (imageData, { registerPickingElement, getTimePixel, getSpacePixel }, scalingRatio) => {
       const flatStepOffsetY = getSpacePixel(position);
       const flatStepEndY = getSpacePixel(position, true);
@@ -257,8 +263,8 @@ const OccupancyZonesLayer = ({
     [position, instructionsToDraw]
   );
 
-  usePicking('overlay', pickingFunction);
-  useDraw('overlay', drawingFunction);
+  usePicking(TrackOccupancyCanvasContext, 'overlay', pickingFunction);
+  useDraw(TrackOccupancyCanvasContext, 'overlay', drawingFunction);
 
   return null;
 };

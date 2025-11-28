@@ -1,15 +1,19 @@
 import { drawTrack } from './drawTrack';
-import type { SpaceTimeChartContextType } from '../../../../spaceTimeChart';
 import { GREY_50, HOUR, MINUTE } from '../../../../spaceTimeChart/lib/consts';
-import { TRACK_HEIGHT_CONTAINER, CANVAS_PADDING, COLORS, TICKS_PRIORITIES } from '../../../lib/consts';
-import { type Track } from '../../../lib/types';
+import {
+  TRACK_HEIGHT_CONTAINER,
+  CANVAS_PADDING,
+  COLORS,
+  TICKS_PRIORITIES,
+} from '../../../lib/consts';
+import { type Track, type TrackOccupancyDiagramContextType } from '../../../lib/types';
 import { getLabelLevels, getLabelMarks } from '../../utils';
 
 const { HOUR_BACKGROUND_1, HOUR_BACKGROUND_2 } = COLORS;
 
 export const drawTracks = (
   ctx: CanvasRenderingContext2D,
-  stcContext: SpaceTimeChartContextType,
+  stcContext: TrackOccupancyDiagramContextType,
   {
     position,
     tracks,

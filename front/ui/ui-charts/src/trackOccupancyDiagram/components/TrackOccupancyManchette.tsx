@@ -3,7 +3,12 @@ import React, { type PropsWithChildren } from 'react';
 import { TRACK_HEIGHT_CONTAINER } from '../lib/consts';
 import type { Track } from '../lib/types';
 
-const TrackOccupancyManchette = ({ tracks, children }: PropsWithChildren<{ tracks: Track[] }>) => (
+type TrackOccupancyManchetteProps = PropsWithChildren<{ tracks: Track[]; width?: number }>;
+
+const TrackOccupancyManchette = ({
+  tracks,
+  children,
+}: TrackOccupancyManchetteProps) => (
   <div className="track-occupancy-manchette">
     {children}
     {tracks.map((track) => (
