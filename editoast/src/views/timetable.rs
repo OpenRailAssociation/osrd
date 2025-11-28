@@ -641,7 +641,7 @@ fn build_conflict_core_request(
 
     let mut trains_map: HashMap<Uuid, TrainId> = HashMap::with_capacity(train_ids.len());
 
-    let trains_requirements: HashMap<String, TrainRequirements> =
+    let trains_requirements: HashMap<Uuid, TrainRequirements> =
         izip!(start_times, train_ids, simulations)
             .flat_map(|(start_time, train_id, sim)| {
                 let CompleteReportTrain {
@@ -660,7 +660,7 @@ fn build_conflict_core_request(
                 trains_map.insert(train_id_for_core, train_id.clone());
 
                 Some((
-                    train_id_for_core.to_string(),
+                    train_id_for_core,
                     TrainRequirements {
                         start_time,
                         spacing_requirements,
@@ -1449,7 +1449,7 @@ mod tests {
 
         let simple_requirements = conflict_core_request
             .trains_requirements
-            .get(&simple_ts_train_core_id.to_string())
+            .get(&simple_ts_train_core_id)
             .unwrap();
         assert_eq!(simple_requirements.start_time, ts_start_time);
         assert_eq!(
@@ -1474,7 +1474,7 @@ mod tests {
             .unwrap();
         let paced_0_requirements = conflict_core_request
             .trains_requirements
-            .get(&paced_0_train_core_id.to_string())
+            .get(&paced_0_train_core_id)
             .unwrap();
         assert_eq!(paced_0_requirements.start_time, paced_start_time);
         assert_eq!(
@@ -1499,7 +1499,7 @@ mod tests {
             .unwrap();
         let paced_1_requirements = conflict_core_request
             .trains_requirements
-            .get(&paced_1_train_core_id.to_string())
+            .get(&paced_1_train_core_id)
             .unwrap();
         assert_eq!(
             paced_1_requirements.start_time,

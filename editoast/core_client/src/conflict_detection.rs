@@ -4,6 +4,7 @@ use serde::Deserialize;
 use serde::Serialize;
 use std::collections::HashMap;
 use utoipa::ToSchema;
+use uuid::Uuid;
 
 use crate::AsCoreRequest;
 use crate::Json;
@@ -19,7 +20,7 @@ pub struct ConflictDetectionRequest {
     /// Infrastructure expected version
     pub expected_version: i64,
     /// List of requirements for each train schedule
-    pub trains_requirements: HashMap<String, TrainRequirements>,
+    pub trains_requirements: HashMap<Uuid, TrainRequirements>,
     /// List of work schedules
     pub work_schedules: Option<WorkSchedulesRequest>,
 }
