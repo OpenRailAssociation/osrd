@@ -23,6 +23,21 @@ type StdcmLoaderProps = {
   setProgressGeom: (value: FeatureCollection) => void;
 };
 
+function formatSeconds(seconds: number): string {
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const remainingSeconds = Math.floor(seconds % 60);
+
+  const paddedMinutes = minutes.toString().padStart(2, '0');
+  const paddedSeconds = remainingSeconds.toString().padStart(2, '0');
+
+  if (hours > 0) {
+    return `${hours}:${paddedMinutes}:${paddedSeconds}`;
+  } else {
+    return `${paddedMinutes}:${paddedSeconds}`;
+  }
+}
+
 const StdcmLoader = ({
   cancelStdcmRequest,
   launchButtonRef,
@@ -126,17 +141,30 @@ const StdcmLoader = ({
     return () => clearInterval(intervalId);
   }, [currentRequestId]);
 
-  let progressString = 'Starting up...';
   let progressPercentage = 0;
+  const detailStrings = [];
   if (progressData != null && progressData.length > 0) {
     const maxElement = progressData.reduce((max, current) =>
       current.sample_count > max.sample_count ? current : max
     );
-    progressString = maxElement.sample_count + ' / ' + maxElement.out_of;
+    const lastElement = progressData[progressData.length - 1];
+
     progressPercentage = (maxElement.sample_count / maxElement.out_of) * 100;
+    detailStrings.push('Memory used: ' + lastElement.mb_used + ' / ' + lastElement.max_mb + ' MB');
+    detailStrings.push(
+      'Current best possible travel time: ' +
+        formatSeconds(lastElement.time_since_departure + lastElement.best_remaining_time)
+    );
+    detailStrings.push(
+      'Time since search started : ' + formatSeconds(lastElement.time_since_search_started)
+    );
+    detailStrings.push('Total number of visited nodes: ' + maxElement.number_visited_nodes);
+    detailStrings.push(maxElement.sample_count + ' / ' + maxElement.out_of);
+  } else {
+    detailStrings.push('Starting up...');
   }
   if (progressPercentage >= 100) {
-    progressString += ': running post-processing';
+    detailStrings.push('Running post-processing...');
   }
 
   return (
@@ -167,9 +195,14 @@ const StdcmLoader = ({
           />
         </div>
       </div>
-      <p className="stdcm-loader__info-message">{t('simulation.infoMessage')}</p>
-      <p className="stdcm-loader__info-message">{'progress for: ' + currentRequestId}</p>
-      <p className="stdcm-loader__info-message">{progressString}</p>
+      <p className="stdcm-loader__info-message">
+        {'Last progress sample for request ' + currentRequestId + ':'}
+      </p>
+      {detailStrings.map((str, index) => (
+        <p key={index} className="stdcm-loader__info-message">
+          {str}
+        </p>
+      ))}
       <div className="progress-bar-container">
         <div className="progress-bar" style={{ width: `${progressPercentage}%` }}></div>
       </div>
