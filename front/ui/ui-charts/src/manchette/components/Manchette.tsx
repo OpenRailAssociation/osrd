@@ -16,6 +16,7 @@ export type ManchetteProps = {
   zoomYOut: () => void;
   resetZoom: () => void;
   height?: number;
+  width?: number; // in px
   yZoom?: number;
   children?: React.ReactNode;
   isProportional?: boolean;
@@ -36,14 +37,15 @@ const Manchette = ({
   toggleMode,
   children,
   height = INITIAL_OP_LIST_HEIGHT,
+  width = 350,
   hidePositions = false,
 }: ManchetteProps) => (
-  <div className="ui-manchette-container">
+  <div className="ui-manchette-container" style={{ width: `${width}px` }}>
     <div
       className="bg-white-100 border-r border-grey-30 relative"
-      style={{ minHeight: `${height}px` }}
+      style={{ height: `${height}px` }}
     >
-      <div className="waypoints-list">
+      <div className="waypoints-list" style={{ width: `${width - 1}px` }}>
         {contents.map((content, index) =>
           isInteractiveWaypoint(content) ? (
             <div key={index} className="waypoint-wrapper flex justify-start" style={content.styles}>
