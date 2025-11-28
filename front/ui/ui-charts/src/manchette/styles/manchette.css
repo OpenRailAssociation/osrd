@@ -58,7 +58,6 @@
   }
 
   .waypoints-list {
-    width: 349px;
     border-bottom-left-radius: 0.25rem;
 
     @apply bg-white-100;
