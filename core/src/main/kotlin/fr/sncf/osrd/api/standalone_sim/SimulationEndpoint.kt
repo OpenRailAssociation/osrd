@@ -1,6 +1,13 @@
 package fr.sncf.osrd.api.standalone_sim
 
 import fr.sncf.osrd.api.*
+import fr.sncf.osrd.cli.Request
+import fr.sncf.osrd.cli.Response
+import fr.sncf.osrd.cli.RsJson
+import fr.sncf.osrd.cli.RsText
+import fr.sncf.osrd.cli.RsWithBody
+import fr.sncf.osrd.cli.RsWithStatus
+import fr.sncf.osrd.cli.Take
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.standalone_sim.runStandaloneSimulation
 import fr.sncf.osrd.utils.*
@@ -8,14 +15,6 @@ import io.opentelemetry.api.trace.Span
 import java.io.File
 import java.time.LocalDateTime
 import java.time.format.DateTimeFormatter
-import org.takes.Request
-import org.takes.Response
-import org.takes.Take
-import org.takes.rq.RqPrint
-import org.takes.rs.RsJson
-import org.takes.rs.RsText
-import org.takes.rs.RsWithBody
-import org.takes.rs.RsWithStatus
 
 class SimulationEndpoint(
     private val infraManager: InfraProvider,
@@ -23,7 +22,7 @@ class SimulationEndpoint(
 ) : Take {
     override fun act(req: Request): Response {
         // Parse request input
-        val body = RqPrint(req).printBody()
+        val body = req.body()
         val request =
             SimulationRequest.adapter.fromJson(body)
                 ?: return RsWithStatus(RsText("missing request body"), 400)

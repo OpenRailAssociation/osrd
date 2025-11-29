@@ -1,6 +1,13 @@
 package fr.sncf.osrd.api.etcs
 
 import fr.sncf.osrd.api.*
+import fr.sncf.osrd.cli.Request
+import fr.sncf.osrd.cli.Response
+import fr.sncf.osrd.cli.RsJson
+import fr.sncf.osrd.cli.RsText
+import fr.sncf.osrd.cli.RsWithBody
+import fr.sncf.osrd.cli.RsWithStatus
+import fr.sncf.osrd.cli.Take
 import fr.sncf.osrd.conflicts.ConflictType
 import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope.part.EnvelopePart
@@ -21,14 +28,6 @@ import fr.sncf.osrd.utils.units.meters
 import fr.sncf.osrd.utils.units.seconds
 import io.opentelemetry.api.trace.SpanKind
 import io.opentelemetry.instrumentation.annotations.WithSpan
-import org.takes.Request
-import org.takes.Response
-import org.takes.Take
-import org.takes.rq.RqPrint
-import org.takes.rs.RsJson
-import org.takes.rs.RsText
-import org.takes.rs.RsWithBody
-import org.takes.rs.RsWithStatus
 
 class ETCSBrakingCurvesEndpoint(
     private val infraManager: InfraProvider,
@@ -41,7 +40,7 @@ class ETCSBrakingCurvesEndpoint(
 
     @WithSpan(value = "Reading request content", kind = SpanKind.SERVER)
     private fun readRequest(req: Request): ETCSBrakingCurvesRequest? {
-        val body = RqPrint(req).printBody()
+        val body = req.body()
         return etcsBrakingCurvesRequestAdapter.fromJson(body)
     }
 

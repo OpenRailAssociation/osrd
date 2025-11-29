@@ -3,6 +3,7 @@ package fr.sncf.osrd.pathfinding
 import fr.sncf.osrd.api.ApiTest
 import fr.sncf.osrd.api.TrackLocation
 import fr.sncf.osrd.api.pathfinding.*
+import fr.sncf.osrd.cli.RqFake
 import fr.sncf.osrd.path.interfaces.JsonTrainPath.TrackSectionRange
 import fr.sncf.osrd.path.interfaces.TravelledPath
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection
@@ -12,7 +13,6 @@ import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.train.TestTrains
 import fr.sncf.osrd.utils.Helpers
 import fr.sncf.osrd.utils.md5
-import fr.sncf.osrd.utils.takes.TakesUtils
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
@@ -22,7 +22,6 @@ import org.assertj.core.api.Assertions.assertThatThrownBy
 import org.assertj.core.api.AssertionsForClassTypes
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.TestInstance
-import org.takes.rq.RqFake
 
 fun getPathfindingBlockRequest(
     rs: RollingStock,
@@ -153,12 +152,10 @@ class PathfindingTest : ApiTest() {
                     pathItems = waypoints,
                 )
             )
-        val unconstrainedRawResponse =
-            PathfindingBlocksEndpoint(infraManager)
-                .act(RqFake("POST", "/pathfinding/blocks", unconstrainedRequestBody))
-        val unconstrainedResponse = TakesUtils.readBodyResponse(unconstrainedRawResponse)
+        val unconstrainedResponse =
+            PathfindingBlocksEndpoint(infraManager).act(RqFake(unconstrainedRequestBody))
         val unconstrainedParsed =
-            (pathfindingResponseAdapter.fromJson(unconstrainedResponse)
+            (pathfindingResponseAdapter.fromJson(unconstrainedResponse.body())
                 as? PathfindingBlockSuccess)!!
 
         val requestBody =
@@ -176,12 +173,9 @@ class PathfindingTest : ApiTest() {
                     pathItems = waypoints,
                 )
             )
-        val rawResponse =
-            PathfindingBlocksEndpoint(infraManager)
-                .act(RqFake("POST", "/pathfinding/blocks", requestBody))
-        val response = TakesUtils.readBodyResponse(rawResponse)
+        val response = PathfindingBlocksEndpoint(infraManager).act(RqFake(requestBody))
         val parsed =
-            (pathfindingResponseAdapter.fromJson(response)
+            (pathfindingResponseAdapter.fromJson(response.body())
                 as? IncompatibleConstraintsPathResponse)!!
         assert(parsed.relaxedConstraintsPath == unconstrainedParsed)
         assert(
@@ -224,12 +218,10 @@ class PathfindingTest : ApiTest() {
                     pathItems = waypoints,
                 )
             )
-        val unconstrainedRawResponse =
-            PathfindingBlocksEndpoint(infraManager)
-                .act(RqFake("POST", "/pathfinding/blocks", unconstrainedRequestBody))
-        val unconstrainedResponse = TakesUtils.readBodyResponse(unconstrainedRawResponse)
+        val unconstrainedResponse =
+            PathfindingBlocksEndpoint(infraManager).act(RqFake(unconstrainedRequestBody))
         val unconstrainedParsed =
-            (pathfindingResponseAdapter.fromJson(unconstrainedResponse)
+            (pathfindingResponseAdapter.fromJson(unconstrainedResponse.body())
                 as? PathfindingBlockSuccess)!!
 
         val requestBody =
@@ -247,12 +239,10 @@ class PathfindingTest : ApiTest() {
                     pathItems = waypoints,
                 )
             )
-        val rawResponse =
-            PathfindingBlocksEndpoint(infraManager)
-                .act(RqFake("POST", "/pathfinding/blocks", requestBody))
-        val response = TakesUtils.readBodyResponse(rawResponse)
+        val response = PathfindingBlocksEndpoint(infraManager).act(RqFake(requestBody))
+
         val parsed =
-            (pathfindingResponseAdapter.fromJson(response)
+            (pathfindingResponseAdapter.fromJson(response.body())
                 as? IncompatibleConstraintsPathResponse)!!
         assert(parsed.relaxedConstraintsPath == unconstrainedParsed)
         assert(
@@ -357,13 +347,9 @@ class PathfindingTest : ApiTest() {
                     "tiny_infra/infra.json",
                 )
             )
-        val rawResponse =
-            PathfindingBlocksEndpoint(infraManager)
-                .act(RqFake("POST", "/pathfinding/blocks", requestBody))
-        val headers = TakesUtils.readHeadResponse(rawResponse)
-        assert(headers.contains("HTTP/1.1 200 OK"))
-        val response = TakesUtils.readBodyResponse(rawResponse)
-        val parsed = (pathfindingResponseAdapter.fromJson(response) as? NotFoundInBlocks)!!
+        val response = PathfindingBlocksEndpoint(infraManager).act(RqFake(requestBody))
+        assert(response.statusCode() == 200)
+        val parsed = (pathfindingResponseAdapter.fromJson(response.body()) as? NotFoundInBlocks)!!
         AssertionsForClassTypes.assertThat(parsed).isNotNull
     }
 
@@ -378,13 +364,9 @@ class PathfindingTest : ApiTest() {
                     "tiny_infra/infra.json",
                 )
             )
-        val rawResponse =
-            PathfindingBlocksEndpoint(infraManager)
-                .act(RqFake("POST", "/pathfinding/blocks", requestBody))
-        val headers = TakesUtils.readHeadResponse(rawResponse)
-        assert(headers.contains("HTTP/1.1 200 OK"))
-        val response = TakesUtils.readBodyResponse(rawResponse)
-        val parsed = (pathfindingResponseAdapter.fromJson(response) as? PathfindingFailed)!!
+        val response = PathfindingBlocksEndpoint(infraManager).act(RqFake(requestBody))
+        assert(response.statusCode() == 200)
+        val parsed = (pathfindingResponseAdapter.fromJson(response.body()) as? PathfindingFailed)!!
         AssertionsForClassTypes.assertThat(parsed.coreError.type)
             .isEqualTo("core:unknown_track_section")
     }
@@ -615,11 +597,8 @@ class PathfindingTest : ApiTest() {
     ): PathfindingBlockResponse {
         val requestBody =
             pathfindingRequestAdapter.toJson(getPathfindingBlockRequest(rs, pathItems, infra))
-        val rawResponse =
-            PathfindingBlocksEndpoint(infraManager)
-                .act(RqFake("POST", "/pathfinding/blocks", requestBody))
-        val response = TakesUtils.readBodyResponse(rawResponse)
-        val parsed = pathfindingResponseAdapter.fromJson(response)!!
+        val response = PathfindingBlocksEndpoint(infraManager).act(RqFake(requestBody))
+        val parsed = pathfindingResponseAdapter.fromJson(response.body())!!
         return parsed
     }
 }

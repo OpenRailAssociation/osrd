@@ -3,6 +3,7 @@ package fr.sncf.osrd.cli
 import com.beust.jcommander.Parameter
 import com.beust.jcommander.Parameters
 import com.rabbitmq.client.*
+import com.squareup.moshi.Moshi
 import fr.sncf.osrd.api.*
 import fr.sncf.osrd.api.conflicts.ConflictDetectionEndpoint
 import fr.sncf.osrd.api.etcs.ETCSBrakingCurvesEndpoint
@@ -16,7 +17,6 @@ import fr.sncf.osrd.reporting.exceptions.OSRDError
 import io.opentelemetry.api.GlobalOpenTelemetry
 import io.opentelemetry.context.Context
 import io.opentelemetry.context.propagation.TextMapGetter
-import java.io.InputStream
 import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
@@ -24,7 +24,6 @@ import kotlin.system.exitProcess
 import okhttp3.OkHttpClient
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.takes.Request
 
 @Parameters(commandDescription = "RabbitMQ worker mode")
 class WorkerCommand : CliCommand {
@@ -280,15 +279,11 @@ class WorkerCommand : CliCommand {
                     var status: ByteArray
                     try {
                         span.makeCurrent().use { scope ->
-                            val response = endpoint.act(MQRequest(path, body))
-                            payload =
-                                response
-                                    .body()
-                                    .readAllBytes() // TODO: check the response code too to catch
-                            val httpHeader = response.head().first()
-                            val statusCode = httpHeader.split(" ")[1]
+                            val response = endpoint.act(MQRequest(body))
+                            payload = response.body().toByteArray()
+                            val statusCode = response.statusCode()
                             status =
-                                (if (statusCode[0] == '2') "ok" else "core_error")
+                                (if (statusCode / 100 == 2) "ok" else "core_error")
                                     .encodeToByteArray()
                         }
                     } catch (t: Throwable) {
@@ -378,17 +373,72 @@ class WorkerCommand : CliCommand {
         activityChannel.basicPublish(WORKER_ACTIVITY_EXCHANGE, WORKER_KEY, properties, null)
     }
 
-    class MQRequest(private val path: String, private val body: ByteArray) : Request {
-        override fun head(): MutableIterable<String> {
-            return mutableListOf("POST $path HTTP/1.1")
-        }
-
-        override fun body(): InputStream {
-            return body.inputStream()
+    class MQRequest(private val body: ByteArray) : Request {
+        override fun body(): String {
+            return body.toString(Charsets.UTF_8)
         }
     }
 
     companion object {
         val logger: Logger = LoggerFactory.getLogger(WorkerCommand::class.java)
+    }
+}
+
+interface Request {
+    fun body(): String
+}
+
+interface Take {
+    fun act(req: Request): Response
+}
+
+interface Response {
+    fun statusCode(): Int {
+        return 200
+    }
+
+    fun body(): String
+}
+
+class RsText(private val text: String) : Response {
+    override fun body(): String {
+        return adapter.toJson(text)
+    }
+
+    companion object {
+        val moshi = Moshi.Builder().build()
+        val adapter = moshi.adapter(String::class.java)
+    }
+}
+
+class RsJson(private val response: Response) : Response {
+    override fun body(): String {
+        return response.body()
+    }
+
+    override fun statusCode(): Int {
+        return response.statusCode()
+    }
+}
+
+class RsWithBody(private val body: String) : Response {
+    override fun body(): String {
+        return body
+    }
+}
+
+class RsWithStatus(private val response: Response, private val statusCode: Int) : Response {
+    override fun statusCode(): Int {
+        return statusCode
+    }
+
+    override fun body(): String {
+        return response.body()
+    }
+}
+
+class RqFake(private val body: String) : Request {
+    override fun body(): String {
+        return body
     }
 }
