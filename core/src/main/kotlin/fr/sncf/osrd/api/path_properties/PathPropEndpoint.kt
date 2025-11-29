@@ -3,6 +3,13 @@ package fr.sncf.osrd.api.path_properties
 import fr.sncf.osrd.api.DirectionalTrackRange
 import fr.sncf.osrd.api.ExceptionHandler
 import fr.sncf.osrd.api.InfraProvider
+import fr.sncf.osrd.cli.Request
+import fr.sncf.osrd.cli.Response
+import fr.sncf.osrd.cli.RsJson
+import fr.sncf.osrd.cli.RsText
+import fr.sncf.osrd.cli.RsWithBody
+import fr.sncf.osrd.cli.RsWithStatus
+import fr.sncf.osrd.cli.Take
 import fr.sncf.osrd.path.implementations.ChunkPath
 import fr.sncf.osrd.path.implementations.buildChunkPath
 import fr.sncf.osrd.path.implementations.buildTrainPathFromChunkPath
@@ -13,19 +20,11 @@ import fr.sncf.osrd.utils.Direction
 import fr.sncf.osrd.utils.indexing.DirStaticIdx
 import fr.sncf.osrd.utils.indexing.MutableDirStaticIdxArrayList
 import fr.sncf.osrd.utils.units.Offset
-import org.takes.Request
-import org.takes.Response
-import org.takes.Take
-import org.takes.rq.RqPrint
-import org.takes.rs.RsJson
-import org.takes.rs.RsText
-import org.takes.rs.RsWithBody
-import org.takes.rs.RsWithStatus
 
 class PathPropEndpoint(private val infraManager: InfraProvider) : Take {
-    override fun act(req: Request?): Response {
+    override fun act(req: Request): Response {
         return try {
-            val body = RqPrint(req).printBody()
+            val body = req.body()
             val request =
                 pathPropRequestAdapter.fromJson(body)
                     ?: return RsWithStatus(RsText("missing request body"), 400)

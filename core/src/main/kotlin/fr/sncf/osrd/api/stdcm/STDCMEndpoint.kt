@@ -8,6 +8,13 @@ import fr.sncf.osrd.api.pathfinding.findWaypointBlocks
 import fr.sncf.osrd.api.pathfinding.hasDuplicateTracks
 import fr.sncf.osrd.api.pathfinding.runPathfindingBlockPostProcessing
 import fr.sncf.osrd.api.standalone_sim.*
+import fr.sncf.osrd.cli.Request
+import fr.sncf.osrd.cli.Response
+import fr.sncf.osrd.cli.RsJson
+import fr.sncf.osrd.cli.RsText
+import fr.sncf.osrd.cli.RsWithBody
+import fr.sncf.osrd.cli.RsWithStatus
+import fr.sncf.osrd.cli.Take
 import fr.sncf.osrd.conflicts.ParsedRequirements
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue.Percentage
@@ -57,14 +64,6 @@ import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.util.TreeMap
 import kotlinx.coroutines.runBlocking
-import org.takes.Request
-import org.takes.Response
-import org.takes.Take
-import org.takes.rq.RqPrint
-import org.takes.rs.RsJson
-import org.takes.rs.RsText
-import org.takes.rs.RsWithBody
-import org.takes.rs.RsWithStatus
 
 class STDCMEndpoint(
     private val infraManager: InfraProvider,
@@ -91,7 +90,7 @@ class STDCMEndpoint(
 
     @WithSpan(value = "Reading request content", kind = SpanKind.SERVER)
     private fun readRequest(req: Request): STDCMRequest? {
-        val body = RqPrint(req).printBody()
+        val body = req.body()
         return stdcmRequestAdapter.fromJson(body)
     }
 

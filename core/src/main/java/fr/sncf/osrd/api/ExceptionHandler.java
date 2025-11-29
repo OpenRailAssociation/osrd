@@ -1,11 +1,11 @@
 package fr.sncf.osrd.api;
 
+import fr.sncf.osrd.cli.Response;
+import fr.sncf.osrd.cli.RsJson;
+import fr.sncf.osrd.cli.RsWithBody;
+import fr.sncf.osrd.cli.RsWithStatus;
 import fr.sncf.osrd.reporting.exceptions.ErrorCause;
 import fr.sncf.osrd.reporting.exceptions.OSRDError;
-import org.takes.Response;
-import org.takes.rs.RsJson;
-import org.takes.rs.RsWithBody;
-import org.takes.rs.RsWithStatus;
 
 public class ExceptionHandler {
 

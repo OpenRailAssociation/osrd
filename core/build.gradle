@@ -62,10 +62,6 @@ dependencies {
     implementation libs.moshi.adapters
     implementation libs.moshi.kotlin
 
-    // HTTP server framework
-    implementation libs.takes
-    implementation libs.javax.json.api
-
     // HTTP client
     implementation libs.okhttp
 

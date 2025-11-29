@@ -4,6 +4,13 @@ import fr.sncf.osrd.api.ExceptionHandler
 import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.api.InfraProvider
 import fr.sncf.osrd.api.TrackLocation
+import fr.sncf.osrd.cli.Request
+import fr.sncf.osrd.cli.Response
+import fr.sncf.osrd.cli.RsJson
+import fr.sncf.osrd.cli.RsText
+import fr.sncf.osrd.cli.RsWithBody
+import fr.sncf.osrd.cli.RsWithStatus
+import fr.sncf.osrd.cli.Take
 import fr.sncf.osrd.graph.*
 import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.pathfinding.Pathfinding
@@ -35,14 +42,6 @@ import java.time.format.DateTimeFormatter
 import java.util.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
-import org.takes.Request
-import org.takes.Response
-import org.takes.Take
-import org.takes.rq.RqPrint
-import org.takes.rs.RsJson
-import org.takes.rs.RsText
-import org.takes.rs.RsWithBody
-import org.takes.rs.RsWithStatus
 
 /**
  * Exception used to wrap the response when we can't find a path. We do want to interrupt the
@@ -55,7 +54,7 @@ val pathfindingLogger: Logger = LoggerFactory.getLogger("Pathfinding")
 
 class PathfindingBlocksEndpoint(private val infraManager: InfraProvider) : Take {
     override fun act(req: Request): Response {
-        val body = RqPrint(req).printBody()
+        val body = req.body()
         val request =
             pathfindingRequestAdapter.fromJson(body)
                 ?: return RsWithStatus(RsText("Missing request body"), 400)

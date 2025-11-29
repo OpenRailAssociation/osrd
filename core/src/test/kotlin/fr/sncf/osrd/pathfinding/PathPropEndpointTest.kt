@@ -4,14 +4,13 @@ import fr.sncf.osrd.api.ApiTest
 import fr.sncf.osrd.api.DirectionalTrackRange
 import fr.sncf.osrd.api.RangeValues
 import fr.sncf.osrd.api.path_properties.*
+import fr.sncf.osrd.cli.RqFake
 import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection
-import fr.sncf.osrd.utils.takes.TakesUtils
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.meters
 import kotlin.test.assertEquals
 import kotlin.test.assertNotNull
 import org.junit.jupiter.api.Test
-import org.takes.rq.RqFake
 
 class PathPropEndpointTest : ApiTest() {
 
@@ -40,10 +39,8 @@ class PathPropEndpointTest : ApiTest() {
                     expectedVersion = 1,
                 )
             )
-        val rawResponse =
-            PathPropEndpoint(infraManager).act(RqFake("POST", "/path_properties", requestBody))
-        val response = TakesUtils.readBodyResponse(rawResponse)
-        val parsed = pathPropResponseAdapter.fromJson(response)!!
+        val response = PathPropEndpoint(infraManager).act(RqFake(requestBody))
+        val parsed = pathPropResponseAdapter.fromJson(response.body())!!
 
         assertNotNull(parsed)
         assertEquals(parsed.slopes, RangeValues(listOf(), listOf(0.0)))
@@ -102,10 +99,8 @@ class PathPropEndpointTest : ApiTest() {
                     expectedVersion = 1,
                 )
             )
-        val rawResponse =
-            PathPropEndpoint(infraManager).act(RqFake("POST", "/path_properties", requestBody))
-        val response = TakesUtils.readBodyResponse(rawResponse)
-        val parsed = pathPropResponseAdapter.fromJson(response)!!
+        val response = PathPropEndpoint(infraManager).act(RqFake(requestBody))
+        val parsed = pathPropResponseAdapter.fromJson(response.body())!!
 
         assertNotNull(parsed)
         assertEquals(
@@ -136,10 +131,8 @@ class PathPropEndpointTest : ApiTest() {
                     expectedVersion = 1,
                 )
             )
-        val rawResponse =
-            PathPropEndpoint(infraManager).act(RqFake("POST", "/path_properties", requestBody))
-        val response = TakesUtils.readBodyResponse(rawResponse)
-        val parsed = pathPropResponseAdapter.fromJson(response)!!
+        val response = PathPropEndpoint(infraManager).act(RqFake(requestBody))
+        val parsed = pathPropResponseAdapter.fromJson(response.body())!!
 
         assertNotNull(parsed)
         assertEquals(
@@ -170,10 +163,8 @@ class PathPropEndpointTest : ApiTest() {
                     expectedVersion = 1,
                 )
             )
-        val rawResponse =
-            PathPropEndpoint(infraManager).act(RqFake("POST", "/path_properties", requestBody))
-        val response = TakesUtils.readBodyResponse(rawResponse)
-        val parsed = pathPropResponseAdapter.fromJson(response)!!
+        val response = PathPropEndpoint(infraManager).act(RqFake(requestBody))
+        val parsed = pathPropResponseAdapter.fromJson(response.body())!!
 
         assertNotNull(parsed)
         assertEquals(
@@ -213,10 +204,8 @@ class PathPropEndpointTest : ApiTest() {
                     expectedVersion = 1,
                 )
             )
-        val rawResponse =
-            PathPropEndpoint(infraManager).act(RqFake("POST", "/path_properties", requestBody))
-        val response = TakesUtils.readBodyResponse(rawResponse)
-        val parsed = pathPropResponseAdapter.fromJson(response)!!
+        val response = PathPropEndpoint(infraManager).act(RqFake(requestBody))
+        val parsed = pathPropResponseAdapter.fromJson(response.body())!!
 
         assertNotNull(parsed)
         assertEquals(
