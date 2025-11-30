@@ -6,15 +6,15 @@ import com.google.common.collect.RangeMap
 // Some extension functions to help iterating over range maps
 
 /** Iterates over the values in the map, in ascending order. */
-val <K : Comparable<K>, V> RangeMap<K, V>.values: Iterable<V>
+val <K : Comparable<K>, V : Any> RangeMap<K, V>.values: Iterable<V>
     get() = asMapOfRanges().values
 
 /** Returns the ranges set in the map. */
-val <K : Comparable<K>, V> RangeMap<K, V>.keys: Set<Range<K>>
+val <K : Comparable<K>, V : Any> RangeMap<K, V>.keys: Set<Range<K>>
     get() = asMapOfRanges().keys
 
 /** Iterates over the entries in the map, in ascending order. */
-val <K : Comparable<K>, V> RangeMap<K, V>.entries: Iterable<Map.Entry<Range<K>, V>>
+val <K : Comparable<K>, V : Any> RangeMap<K, V>.entries: Iterable<Map.Entry<Range<K>, V>>
     get() {
         return asMapOfRanges().entries
     }

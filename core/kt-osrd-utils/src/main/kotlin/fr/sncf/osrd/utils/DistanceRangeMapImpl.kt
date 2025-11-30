@@ -375,7 +375,7 @@ data class DistanceRangeMapImpl<T>(
     }
 
     companion object {
-        fun <T> from(map: RangeMap<Distance, T>): DistanceRangeMap<T> {
+        fun <T : Any> from(map: RangeMap<Distance, T>): DistanceRangeMap<T> {
             val res = distanceRangeMapOf<T>()
             for (entry in map.entries) res.put(
                 entry.key.lowerEndpoint(),
@@ -385,7 +385,7 @@ data class DistanceRangeMapImpl<T>(
             return res
         }
 
-        fun <T> toRangeMap(distanceRangeMap: DistanceRangeMap<T>): RangeMap<Distance, T> {
+        fun <T : Any> toRangeMap(distanceRangeMap: DistanceRangeMap<T>): RangeMap<Distance, T> {
             val rangeMap = TreeRangeMap.create<Distance, T>()
             for (entry in distanceRangeMap.asList()) {
                 rangeMap.put(Range.closed(entry.lower, entry.upper), entry.value!!)
