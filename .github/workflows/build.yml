@@ -302,7 +302,7 @@ jobs:
       - name: Check DCO
         uses: christophebedard/dco-check@0.5.0
         with:
-          args: --exclude-emails '49699333+dependabot[bot]@users.noreply.github.com'
+          args: --exclude-emails '49699333+dependabot[bot]@users.noreply.github.com,github-actions[bot]@users.noreply.github.com'
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
