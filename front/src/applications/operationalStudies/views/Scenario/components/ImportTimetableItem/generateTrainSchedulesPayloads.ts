@@ -13,23 +13,16 @@ function generateTrainSchedulePayload(train: GraouTrainSchedule): TrainSchedule 
     (acc, step) => {
       const stepId = uuidV4();
 
-      const validUICNumber = !Number.isNaN(step.uic);
-
-      if (validUICNumber) {
-        acc.path.push({
-          id: stepId,
-          location: {
-            operational_point: { uic: Number(step.uic), secondary_code: step.chCode },
-          },
-        });
-      } else {
-        acc.path.push({
-          id: stepId,
-          location: {
-            operational_point: { trigram: step.name, secondary_code: step.chCode },
-          }, // we use ocpRef when uic is NaN
-        });
+      if (!Number.isNaN(step.uic)) {
+        throw new Error('Invalid UIC');
       }
+
+      acc.path.push({
+        id: stepId,
+        location: {
+          operational_point: { uic: Number(step.uic), secondary_code: step.chCode },
+        },
+      });
 
       if (acc.path.length > 1) {
         const arrivalTime = new Date(step.arrivalTime);
