@@ -17,6 +17,7 @@ type BoardWrapperProps = {
   customFooter?: React.ReactNode;
   hidden?: boolean;
   name: string;
+  fullName?: string;
   items?: OSRDMenuItem[];
   withFooter?: boolean;
   dataTestId?: string;
@@ -27,6 +28,7 @@ const BoardWrapper = ({
   children,
   hidden = false,
   name,
+  fullName,
   items = [],
   withFooter = false,
   dataTestId,
@@ -40,7 +42,7 @@ const BoardWrapper = ({
   const boardContent = (
     <div className="board-wrapper" data-testid={dataTestId}>
       <div className="board-header">
-        <span className="board-header-name" data-testid="board-header-name">
+        <span className="board-header-name" data-testid="board-header-name" title={fullName}>
           {name}
         </span>
         <MenuTriggerButton

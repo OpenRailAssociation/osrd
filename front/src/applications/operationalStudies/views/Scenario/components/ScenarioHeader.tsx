@@ -134,6 +134,9 @@ const ScenarioHeader = ({ activeBoards, toggleBoard }: ScenarioHeaderProps) => {
                   onClick={() => {
                     toggleBoard(board);
                   }}
+                  title={
+                    board === 'sdd' || board === 'std' ? t(`boardFullNames.${board}`) : undefined
+                  }
                 >
                   {t(`boards.${board}`)}
                 </button>

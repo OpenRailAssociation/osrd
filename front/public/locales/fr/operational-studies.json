@@ -1,4 +1,8 @@
 {
+  "boardFullNames": {
+    "sdd": "Graphique Espace Vitesse",
+    "std": "Graphique Espace Temps"
+  },
   "boards": {
     "conflicts": "Conflits",
     "macro": "Macro",
