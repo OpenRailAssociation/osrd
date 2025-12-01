@@ -77,7 +77,7 @@ kotlin-jvm = { id = 'org.jetbrains.kotlin.jvm', version.ref = 'kotlin' }
 kotlin-serialization = { id = 'org.jetbrains.kotlin.plugin.serialization', version.ref = 'kotlin' }
 
 # java
-spotbugs = { id = 'com.github.spotbugs', version = '6.0.9' }
+spotbugs = { id = 'com.github.spotbugs', version = '6.4.7' }
 spotless = { id = 'com.diffplug.spotless', version = '8.1.0' }
 shadow = { id = 'com.gradleup.shadow', version = '8.3.9' }
 versions = { id = 'com.github.ben-manes.versions', version = '0.53.0' }
