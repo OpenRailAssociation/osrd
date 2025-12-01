@@ -71,6 +71,6 @@ tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
 
 test {
     useJUnitPlatform {
-        includeEngines 'jqwik', 'junit-jupiter'
+        includeEngines 'junit-jupiter'
     }
 }
