@@ -137,6 +137,8 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
+    cooldown:
+      default-days: 5
     commit-message:
       prefix: "actions:"
     open-pull-requests-limit: 100
