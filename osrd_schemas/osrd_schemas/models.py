@@ -839,6 +839,15 @@ class EditoastDelimitedAreaErrorInvalidLocations(BaseModel):
     type: Literal["editoast:delimited_area:InvalidLocations"]
 
 
+class EditoastDocumentErrorsAuthorization(BaseModel):
+    context: Annotated[
+        dict[str, Any] | None, Field(title="EditoastDocumentErrorsAuthorizationContext")
+    ] = None
+    message: str
+    status: Literal[403]
+    type: Literal["editoast:document:Authorization"]
+
+
 class EditoastDocumentErrorsDatabase(BaseModel):
     context: Annotated[
         dict[str, Any] | None, Field(title="EditoastDocumentErrorsDatabaseContext")
@@ -846,6 +855,16 @@ class EditoastDocumentErrorsDatabase(BaseModel):
     message: str
     status: Literal[500]
     type: Literal["editoast:document:Database"]
+
+
+class EditoastDocumentErrorsDatabaseUnavailable(BaseModel):
+    context: Annotated[
+        dict[str, Any] | None,
+        Field(title="EditoastDocumentErrorsDatabaseUnavailableContext"),
+    ] = None
+    message: str
+    status: Literal[503]
+    type: Literal["editoast:document:DatabaseUnavailable"]
 
 
 class EditoastDocumentErrorsNotFoundContext(BaseModel):
@@ -4698,7 +4717,9 @@ class EditoastError(
         | EditoastCoreErrorUnparsableErrorOutput
         | EditoastDatabaseAccessErrorDatabaseAccessError
         | EditoastDelimitedAreaErrorInvalidLocations
+        | EditoastDocumentErrorsAuthorization
         | EditoastDocumentErrorsDatabase
+        | EditoastDocumentErrorsDatabaseUnavailable
         | EditoastDocumentErrorsNotFound
         | EditoastEditionErrorInfraIsLocked
         | EditoastEditionErrorSplitTrackSectionBadOffset
@@ -4877,7 +4898,9 @@ class EditoastError(
         | EditoastCoreErrorUnparsableErrorOutput
         | EditoastDatabaseAccessErrorDatabaseAccessError
         | EditoastDelimitedAreaErrorInvalidLocations
+        | EditoastDocumentErrorsAuthorization
         | EditoastDocumentErrorsDatabase
+        | EditoastDocumentErrorsDatabaseUnavailable
         | EditoastDocumentErrorsNotFound
         | EditoastEditionErrorInfraIsLocked
         | EditoastEditionErrorSplitTrackSectionBadOffset

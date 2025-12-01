@@ -466,6 +466,111 @@ paths:
       responses:
         '204':
           description: The document was deleted
+        '403':
+          description: ''
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - type: object
+                  required:
+                  - error_type
+                  - status
+                  - message
+                  - context
+                  properties:
+                    context:
+                      type: object
+                    error_type:
+                      type: string
+                      enum:
+                      - editoast::DocumentsErrors::Authorization
+                    message:
+                      type: string
+                    status:
+                      type: integer
+                      format: int32
+                      enum:
+                      - '403'
+        '404':
+          description: ''
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - type: object
+                  description: Document '{document_key}' not found
+                  required:
+                  - error_type
+                  - status
+                  - message
+                  - context
+                  properties:
+                    context:
+                      type: object
+                      required:
+                      - document_key
+                      properties:
+                        document_key:
+                          type: integer
+                          format: int64
+                    error_type:
+                      type: string
+                      enum:
+                      - editoast::DocumentsErrors::NotFound
+                    message:
+                      type: string
+                    status:
+                      type: integer
+                      format: int32
+                      enum:
+                      - '404'
+        '500':
+          description: ''
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - type: object
+                  required:
+                  - error_type
+                  - status
+                  - message
+                  - context
+                  properties:
+                    context:
+                      type: object
+                    error_type:
+                      type: string
+                      enum:
+                      - editoast::DocumentsErrors::Database
+                    message:
+                      type: string
+                    status:
+                      type: integer
+                      format: int32
+                      enum:
+                      - '500'
+                - type: object
+                  required:
+                  - error_type
+                  - status
+                  - message
+                  - context
+                  properties:
+                    context:
+                      type: object
+                    error_type:
+                      type: string
+                      enum:
+                      - editoast::DocumentsErrors::DatabaseUnavailable
+                    message:
+                      type: string
+                    status:
+                      type: integer
+                      format: int32
+                      enum:
+                      - '500'
   /electrical_profile_set:
     get:
       tags:
@@ -7098,6 +7203,26 @@ components:
           type: string
           enum:
           - editoast:delimited_area:InvalidLocations
+    EditoastDocumentErrorsAuthorization:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          title: EditoastDocumentErrorsAuthorizationContext
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 403
+        type:
+          type: string
+          enum:
+          - editoast:document:Authorization
     EditoastDocumentErrorsDatabase:
       type: object
       required:
@@ -7118,6 +7243,26 @@ components:
           type: string
           enum:
           - editoast:document:Database
+    EditoastDocumentErrorsDatabaseUnavailable:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          title: EditoastDocumentErrorsDatabaseUnavailableContext
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 503
+        type:
+          type: string
+          enum:
+          - editoast:document:DatabaseUnavailable
     EditoastDocumentErrorsNotFound:
       type: object
       required:
@@ -7283,7 +7428,9 @@ components:
       - $ref: '#/components/schemas/EditoastCoreErrorUnparsableErrorOutput'
       - $ref: '#/components/schemas/EditoastDatabaseAccessErrorDatabaseAccessError'
       - $ref: '#/components/schemas/EditoastDelimitedAreaErrorInvalidLocations'
+      - $ref: '#/components/schemas/EditoastDocumentErrorsAuthorization'
       - $ref: '#/components/schemas/EditoastDocumentErrorsDatabase'
+      - $ref: '#/components/schemas/EditoastDocumentErrorsDatabaseUnavailable'
       - $ref: '#/components/schemas/EditoastDocumentErrorsNotFound'
       - $ref: '#/components/schemas/EditoastEditionErrorInfraIsLocked'
       - $ref: '#/components/schemas/EditoastEditionErrorSplitTrackSectionBadOffset'
