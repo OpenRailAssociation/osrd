@@ -4,6 +4,8 @@ updates:
     directory: "/editoast/"
     schedule:
       interval: "weekly"
+    cooldown:
+      default-days: 5
     groups:
       opentelemetry:
         patterns:
@@ -18,6 +20,8 @@ updates:
     directory: "/gateway/"
     schedule:
       interval: "daily"
+    cooldown:
+      default-days: 5
     groups:
       opentelemetry:
         patterns:
@@ -32,6 +36,8 @@ updates:
     directory: "/osrdyne/"
     schedule:
       interval: "daily"
+    cooldown:
+      default-days: 5
     groups:
       opentelemetry:
         patterns:
