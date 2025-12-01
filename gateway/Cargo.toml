@@ -43,7 +43,7 @@ serde_json = "1"
 # reverse proxy dependencies
 actix = "0.13"
 actix-web-actors = "4.3"
-awc = { version = "3", features = ["rustls"] } # the http / ws client
+awc = { version = "3", features = ["rustls-0_23"] } # the http / ws client
 bytestring = "1"
 ipnet = "2.11"
 percent-encoding = "2.3"
