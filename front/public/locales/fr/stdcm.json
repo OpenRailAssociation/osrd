@@ -169,7 +169,7 @@
         "selectPathType": "-- Choisir --",
         "stop": "Arrêt de {{minutes}} à {{stopAt}}",
         "successMessage": "Demande reçue par GESICO",
-        "toleranceAfter": "Tolérance avale",
+        "toleranceAfter": "Tolérance aval",
         "toleranceBefore": "Tolérance amont",
         "totalLength": "longueur totale",
         "totalTonnage": "tonnage total",
