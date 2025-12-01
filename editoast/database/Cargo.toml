@@ -10,7 +10,7 @@ testing = []
 [dependencies]
 diesel.workspace = true
 diesel-async.workspace = true
-diesel_migrations = { version = "2.0.0" }
+diesel_migrations = { version = "2.3.1" }
 futures.workspace = true
 futures-util.workspace = true
 openssl.workspace = true
