@@ -166,6 +166,7 @@ const SimulationResults = ({
       {activeBoards.has('std') && (
         <BoardWrapper
           name={t('simulationResults.timeSpaceChart')}
+          fullName={t('boardFullNames.std')}
           items={[
             {
               title: t('simulationResults.manchetteSettings.waypointsVisibility'),
@@ -255,6 +256,7 @@ const SimulationResults = ({
               {activeBoards.has('sdd') && (
                 <BoardWrapper
                   name={t('simulationResults.speedDistanceDiagram')}
+                  fullName={t('boardFullNames.sdd')}
                   resizable={{
                     height: SDDHeight,
                     setHeight: setSDDHeight,

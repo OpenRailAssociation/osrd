@@ -1,4 +1,8 @@
 {
+  "boardFullNames": {
+    "sdd": "Speed Distance Diagram",
+    "std": "Space Time Diagram"
+  },
   "boards": {
     "conflicts": "Conflicts",
     "macro": "Macro",
