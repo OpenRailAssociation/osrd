@@ -120,6 +120,8 @@ updates:
     directory: "/core/"
     schedule:
       interval: "daily"
+    cooldown:
+      default-days: 5
     commit-message:
       prefix: "core:"
     open-pull-requests-limit: 100
