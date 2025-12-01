@@ -1,5 +1,5 @@
 export type GraouStep = {
-  uic: number;
+  uic: string;
   chCode?: string;
   yard?: string;
   name: string;
