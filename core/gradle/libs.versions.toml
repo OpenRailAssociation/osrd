@@ -19,7 +19,7 @@ ksp = '2.3.3'
 kotlinx-coroutines = '1.10.+'
 logback = '1.5.+'
 moshi = '1.15.2'
-junit = '5.12.+'
+junit = '6.0.+'
 mockito = '5.2.+'
 otel = '1.56.0'
 
@@ -55,11 +55,10 @@ slf4j = { module = 'org.slf4j:slf4j-api', version = '2.0.+' } # MIT
 junit-jupiter-api = { module = 'org.junit.jupiter:junit-jupiter-api', version.ref = 'junit' } # EPL 2.0
 junit-jupiter-params = { module = 'org.junit.jupiter:junit-jupiter-params', version.ref = 'junit' } # EPL 2.0
 junit-jupiter-engine = { module = 'org.junit.jupiter:junit-jupiter-engine', version.ref = 'junit' } # EPL 2.0
+junit-platform-launcher = { module = 'org.junit.platform:junit-platform-launcher', version = 'junit' } # EPL 2.0
 assertj = { module = 'org.assertj:assertj-core', version = '3.27.6' } # Apache 2.0
-jqwik = { module = 'net.jqwik:jqwik', version = '1.9.+' } # EPL 2.0
 mockito-inline = { module = 'org.mockito:mockito-inline', version.ref = 'mockito' } # MIT
 mockito-junit-jupiter = { module = 'org.mockito:mockito-junit-jupiter', version.ref = 'mockito' } # MIT
-junit-platform-launcher = { module = 'org.junit.platform:junit-platform-launcher', version = '6.0.+' } # EPL 2.0
 jcip-annotations = { module = 'net.jcip:jcip-annotations', version = '1.0' } # CC Attribution
 spotbugs-annotations = { module = 'com.github.spotbugs:spotbugs-annotations', version = '4.9.+' } # LGPLv2.1
 jansi = { module = 'org.fusesource.jansi:jansi', version = '2.4.+' } # Apache 2.0

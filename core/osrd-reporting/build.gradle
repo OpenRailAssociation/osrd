@@ -41,6 +41,6 @@ dependencies {
 
 test {
     useJUnitPlatform {
-        includeEngines 'jqwik', 'junit-jupiter'
+        includeEngines 'junit-jupiter'
     }
 }

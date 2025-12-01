@@ -88,8 +88,6 @@ dependencies {
     testRuntimeOnly libs.junit.jupiter.engine
     // Use AssertJ for testing
     testImplementation libs.assertj
-    // jqwik for property based testing
-    testImplementation libs.jqwik
     // mockito for mocking
     testImplementation libs.mockito.inline
     testImplementation libs.mockito.junit.jupiter
@@ -132,7 +130,7 @@ run {
 
 test {
     useJUnitPlatform {
-        includeEngines 'jqwik', 'junit-jupiter'
+        includeEngines 'junit-jupiter'
     }
 }
 
