@@ -94,7 +94,17 @@ export const handleOperation = async ({
   const { type } = event;
   switch (event.objectType) {
     case 'node':
-      await handleNodeOperation({ state, dispatch, netzgrafikDto, type, node: event.node });
+      await handleNodeOperation({
+        state,
+        dispatch,
+        netzgrafikDto,
+        infraId,
+        timetableId,
+        addUpsertedTimetableItems,
+        addDeletedTimetableItemIds,
+        type,
+        node: event.node,
+      });
       break;
     case 'trainrun': {
       await handleTrainrunOperation({

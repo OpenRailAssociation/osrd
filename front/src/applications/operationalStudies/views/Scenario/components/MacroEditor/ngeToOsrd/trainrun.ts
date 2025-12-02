@@ -746,3 +746,49 @@ export const handleTrainrunOperation = async ({
       break;
   }
 };
+
+export const updateTrainrunsByNode = async ({
+  state,
+  netzgrafikDto,
+  dispatch,
+  infraId,
+  timetableId,
+  addUpsertedTimetableItems,
+  addDeletedTimetableItemIds,
+  node,
+}: {
+  state: MacroEditorState;
+  netzgrafikDto: NetzgrafikDto;
+  dispatch: AppDispatch;
+  infraId: number;
+  timetableId: number;
+  addUpsertedTimetableItems: (timetableItems: TimetableItem[]) => void;
+  addDeletedTimetableItemIds: (timetableItemIds: TimetableItemId[]) => void;
+  node: NodeDto;
+}) => {
+  const trainrunsById = new Map<number, TrainrunDto>();
+  for (const trainrun of netzgrafikDto.trainruns) {
+    trainrunsById.set(trainrun.id, trainrun);
+  }
+
+  const trainruns = new Set<TrainrunDto>();
+  for (const trainrunSection of netzgrafikDto.trainrunSections) {
+    if (trainrunSection.sourceNodeId === node.id || trainrunSection.targetNodeId === node.id) {
+      const trainrun = trainrunsById.get(trainrunSection.trainrunId)!;
+      trainruns.add(trainrun);
+    }
+  }
+
+  for (const trainrun of trainruns) {
+    await handleUpdateTimetableItem({
+      netzgrafikDto,
+      trainrun,
+      timetableId,
+      infraId,
+      dispatch,
+      state,
+      addUpsertedTimetableItems,
+      addDeletedTimetableItemIds,
+    });
+  }
+};
