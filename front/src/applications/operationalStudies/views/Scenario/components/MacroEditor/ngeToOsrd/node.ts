@@ -1,3 +1,4 @@
+import type { TimetableItem, TimetableItemId } from 'reducers/osrdconf/types';
 import type { AppDispatch } from 'store';
 
 import type { NetzgrafikDto, NGEEvent, NodeDto } from '../../NGE/types';
@@ -9,6 +10,7 @@ import {
   fetchStationSecondaryCode,
   updateMacroNode,
 } from '../utils';
+import { updateTrainrunsByNode } from './trainrun';
 
 /**
  * Cast a NGE node to a node.
@@ -38,12 +40,20 @@ export const handleNodeOperation = async ({
   node,
   netzgrafikDto,
   dispatch,
+  infraId,
+  timetableId,
+  addUpsertedTimetableItems,
+  addDeletedTimetableItemIds,
 }: {
   state: MacroEditorState;
   type: NGEEvent['type'];
   node: NodeDto;
   netzgrafikDto: NetzgrafikDto;
   dispatch: AppDispatch;
+  infraId: number;
+  timetableId: number;
+  addUpsertedTimetableItems: (timetableItems: TimetableItem[]) => void;
+  addDeletedTimetableItemIds: (timetableItemIds: TimetableItemId[]) => void;
 }): Promise<void> => {
   const indexNode = state.getNodeByNgeId(node.id);
   switch (type) {
@@ -74,6 +84,19 @@ export const handleNodeOperation = async ({
             dbId: indexNode.dbId,
             path_item_key: nodeKey,
           });
+
+          if (indexNode.path_item_key !== nodeKey) {
+            await updateTrainrunsByNode({
+              state,
+              netzgrafikDto,
+              dispatch,
+              infraId,
+              timetableId,
+              addUpsertedTimetableItems,
+              addDeletedTimetableItemIds,
+              node,
+            });
+          }
         } else {
           const newNode = {
             ...indexNode,
