@@ -25,7 +25,7 @@
     "listEmittedFiles": false,
     "listFiles": false,
     "module": "esnext",
-    "moduleResolution": "node",
+    "moduleResolution": "bundler",
     "noEmit": false,
     "noEmitHelpers": false,
     "noEmitOnError": false,
