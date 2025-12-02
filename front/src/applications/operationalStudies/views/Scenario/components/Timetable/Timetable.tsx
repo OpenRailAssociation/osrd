@@ -157,7 +157,7 @@ const Timetable = ({
           timetableItems={timetableItems}
           isInSelection={selectedTimetableItemIds.length > 0}
         />
-        <Virtualizer overscan={15}>
+        <Virtualizer>
           {filteredTimetableItems.map((timetableItem, index) => (
             <div key={`timetable-train-card-${timetableItem.id}`} data-train-id={timetableItem.id}>
               {showDepartureDates[index] && (
