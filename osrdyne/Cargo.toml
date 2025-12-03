@@ -44,6 +44,6 @@ thunderdome = "0.6.1"
 tokio = { version = "1.48.0", features = ["full"] }
 tracing = "0.1.43"
 tracing-opentelemetry = "0.32.0"
-tracing-subscriber = { version = "0.3.20", features = ["env-filter"] }
+tracing-subscriber = { version = "0.3.22", features = ["env-filter"] }
 url = { version = "2.5.7", features = ["serde"] }
 uuid = { version = "1.18.1", features = ["serde", "v4"] }
