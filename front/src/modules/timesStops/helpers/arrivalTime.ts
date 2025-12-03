@@ -1,8 +1,9 @@
+import type { ScheduleItem } from 'common/api/osrdEditoastApi';
 import { formatLocalTime } from 'utils/date';
 import { Duration, addDurationToDate } from 'utils/duration';
 import { calculateTimeDifferenceInDays } from 'utils/timeManipulation';
 
-import type { ScheduleEntry, TimeExtraDays } from '../types';
+import type { TimeExtraDays } from '../types';
 
 const computeDayTimeFromStartTime = (
   startDatetime: Date,
@@ -25,7 +26,7 @@ const computeDayTimeFromStartTime = (
 export const computeInputDatetimes = (
   startDatetime: Date,
   lastReferenceDate: Date,
-  schedule: ScheduleEntry | undefined,
+  schedule: ScheduleItem | undefined,
   { isDeparture }: { isDeparture: boolean }
 ) => {
   let theoreticalArrival: Date | undefined;

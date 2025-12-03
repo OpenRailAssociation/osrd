@@ -1,9 +1,10 @@
+import type { ScheduleItem } from 'common/api/osrdEditoastApi';
 import type { SimulationSummary } from 'modules/timetableItem/types';
 import type { Train } from 'reducers/osrdconf/types';
 import { ms2sec } from 'utils/timeManipulation';
 
 import { formatDigitsAndUnit } from './utils';
-import type { ScheduleEntry, TheoreticalMarginsRecord } from '../types';
+import type { TheoreticalMarginsRecord } from '../types';
 
 /** Extracts the theoretical margin for each path step in the train schedule,
  * and marks whether margins are repeated or correspond to a boundary between margin values */
@@ -32,7 +33,7 @@ export function getTheoreticalMargins(train: Pick<Train, 'margins' | 'path'>) {
 function computeMargins(
   theoreticalMargins: TheoreticalMarginsRecord | undefined,
   train: Pick<Train, 'path' | 'margins'>,
-  scheduleByAt: Record<string, ScheduleEntry>,
+  scheduleByAt: Record<string, ScheduleItem>,
   pathStepIndex: number,
   pathItemTimes: Extract<SimulationSummary, { isValid: true }>['pathItemTimes'] | undefined // in ms
 ) {

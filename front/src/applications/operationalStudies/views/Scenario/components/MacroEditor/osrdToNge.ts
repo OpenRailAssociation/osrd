@@ -10,8 +10,8 @@ import {
 } from 'applications/operationalStudies/utils';
 import {
   osrdEditoastApi,
+  type ScheduleItem,
   type SubCategory,
-  type TrainSchedule,
   type MacroNoteResponse,
 } from 'common/api/osrdEditoastApi';
 import type { TimetableItem, TimetableItemWithPathOps } from 'reducers/osrdconf/types';
@@ -53,8 +53,6 @@ import {
   type TrainrunCategory,
   type FreeFloatingTextDto,
 } from '../NGE/types';
-
-type ScheduleItem = NonNullable<TrainSchedule['schedule']>[number];
 
 /**
  * Get the TrainrunFrequencies from the TimetableItems.

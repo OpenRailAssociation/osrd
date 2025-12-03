@@ -1,12 +1,12 @@
+import type { ScheduleItem } from 'common/api/osrdEditoastApi';
 import { Duration, addDurationToDate } from 'utils/duration';
 
-import type { ScheduleEntry } from '../types';
 import { receptionSignalToSignalBooleans } from './utils';
 
 /** Format the stopFor, calculatedDeparture, shortSlipDistance and onStopSignal properties */
 export const formatSchedule = (
   arrivalTime: Date | undefined,
-  schedule: ScheduleEntry | undefined
+  schedule: ScheduleItem | undefined
 ) => {
   if (!schedule) {
     return {

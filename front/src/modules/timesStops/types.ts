@@ -1,8 +1,6 @@
-import type { TrainSchedule } from 'common/api/osrdEditoastApi';
 import type { TimeString } from 'common/types';
 import type { SuggestedOP } from 'modules/timetableItem/types';
 import type { Duration } from 'utils/duration';
-import type { ArrayElement } from 'utils/types';
 
 export type TimeExtraDays = {
   time: TimeString;
@@ -44,8 +42,6 @@ export enum TableType {
   Input = 'Input',
   Output = 'Output',
 }
-
-export type ScheduleEntry = ArrayElement<TrainSchedule['schedule']>;
 
 export type TheoreticalMarginsRecord = Record<
   string,

@@ -8,7 +8,11 @@ import usePathOps from 'applications/operationalStudies/hooks/usePathOps';
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import type { PathPropertiesFormatted } from 'applications/operationalStudies/types';
 import { matchOpRefAndOp } from 'applications/operationalStudies/utils';
-import type { SimulationResponseSuccess, TrackSection } from 'common/api/osrdEditoastApi';
+import type {
+  ScheduleItem,
+  SimulationResponseSuccess,
+  TrackSection,
+} from 'common/api/osrdEditoastApi';
 import { matchPathStepAndOp } from 'modules/pathfinding/utils';
 import { interpolateValue } from 'modules/simulationResult/helpers/utils';
 import type { SimulationSummary } from 'modules/timetableItem/types';
@@ -21,7 +25,7 @@ import { computeInputDatetimes } from '../helpers/arrivalTime';
 import computeMargins, { getTheoreticalMargins } from '../helpers/computeMargins';
 import { formatSchedule } from '../helpers/scheduleData';
 import { getTrackReferenceLabel, getOperationalPointName } from '../helpers/utils';
-import { type ScheduleEntry, type TimesStopsRow } from '../types';
+import type { TimesStopsRow } from '../types';
 
 const useOutputTableData = (
   infraId: number,
@@ -67,7 +71,7 @@ const useOutputTableData = (
     }
 
     // Extract common properties between valid and invalid trains
-    const scheduleByAt: Record<string, ScheduleEntry> = keyBy(selectedTrain.schedule, 'at');
+    const scheduleByAt: Record<string, ScheduleItem> = keyBy(selectedTrain.schedule, 'at');
     const theoreticalMargins = selectedTrain && getTheoreticalMargins(selectedTrain);
 
     const startDatetime = new Date(selectedTrain.start_time);
