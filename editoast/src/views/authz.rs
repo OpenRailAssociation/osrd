@@ -20,6 +20,7 @@ use database::DbConnectionPoolV2;
 use diesel_async::scoped_futures::ScopedFutureExt;
 use editoast_derive::EditoastError;
 use editoast_models::Group;
+use editoast_models::User;
 use editoast_models::prelude::*;
 use itertools::Itertools;
 use serde::Deserialize;
@@ -60,11 +61,21 @@ enum AuthzError {
     #[error("Unknown resource {resource_id}")]
     #[editoast_error(status = 404)]
     UnknownResource { resource_id: i64 },
-    #[error("Unknown resource {subject_id}")]
+    #[error("Unknown subject {subject_id}")]
     #[editoast_error(status = 404)]
     UnknownSubject { subject_id: i64 },
+    #[error("Unknown user id '{id}'")]
+    #[editoast_error(status = 404)]
+    UnknownUser { id: i64 },
+    #[error("Unknown user identity '{identity}'")]
+    #[editoast_error(status = 404)]
+    UnknownIdentity { identity: String },
     #[error("Authorization error")]
     Authz(#[from] AuthorizationError),
+
+    #[error(transparent)]
+    #[editoast_error(status = 500)]
+    Database(#[from] editoast_models::Error),
 }
 
 impl From<AuthorizerError> for AuthzError {
@@ -143,6 +154,123 @@ pub(in crate::views) async fn user_groups(
     }
 
     Ok(Json(result))
+}
+
+#[derive(Deserialize, Clone, ToSchema)]
+pub(in crate::views) struct UsersInfoRequest {
+    #[serde(default)]
+    ids: Vec<i64>,
+    #[serde(default)]
+    identities: Vec<String>,
+}
+
+#[derive(Serialize, ToSchema)]
+pub(in crate::views) struct UserInfo {
+    id: i64,
+    name: String,
+    identities: Vec<String>,
+    roles: HashSet<Role>,
+    #[schema(inline)]
+    groups: HashSet<Group>,
+}
+
+#[editoast_derive::route]
+#[utoipa::path(
+    post,
+    path = "",
+    tag = "authz",
+    request_body(
+        content = inline(UsersInfoRequest),
+        description = "A list of user IDs and identities to get information on",
+    ),
+    responses((
+        status = 200,
+        description = "Get information on a list of users",
+        body = inline(Vec<UserInfo>),
+    ))
+)]
+pub(in crate::views) async fn users_info(
+    Extension(auth): AuthenticationExt,
+    State(AppState {
+        regulator, db_pool, ..
+    }): State<AppState>,
+    Json(body): Json<UsersInfoRequest>,
+) -> Result<Json<Vec<UserInfo>>> {
+    let authorized = auth
+        .check_roles([Role::Admin].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Forbidden.into());
+    }
+    let UsersInfoRequest {
+        ids: user_ids,
+        identities: user_identities,
+    } = body.clone();
+
+    // Retrieve users by IDs
+    let users_1: Vec<_> =
+        User::retrieve_batch_or_fail(&mut db_pool.get().await?, user_ids, |missings| {
+            AuthzError::UnknownUser {
+                id: *missings.iter().next().unwrap(),
+            }
+        })
+        .await?;
+
+    // Retrieve users by identities
+    let settings =
+        SelectionSettings::new().filter(move || User::IDENTITY_ID.eq_any(user_identities.clone()));
+    let users_2 = User::list(&mut db_pool.get().await?, settings).await?;
+    if users_2.len() < body.identities.len() {
+        let found: HashSet<_> = users_2.iter().map(|u| &u.identity_id).collect();
+        let missing_identity = body.identities.into_iter().find(|i| !found.contains(i));
+        return Err(AuthzError::UnknownIdentity {
+            identity: missing_identity.unwrap(),
+        }
+        .into());
+    }
+
+    // Merge both user lists
+    let users: HashMap<_, _> = users_1
+        .into_iter()
+        .chain(users_2)
+        .map(|u| (u.id, u))
+        .collect();
+
+    // Fetch groups for each user
+    let mut groups_by_user = HashMap::new();
+    for &user_id in users.keys() {
+        // TODO: optimize by batching calls to OpenFGA
+        groups_by_user.insert(user_id, regulator.user_groups(&authz::User(user_id)).await?);
+    }
+    let group_ids: HashSet<i64> = groups_by_user.values().flatten().map(|g| g.0).collect();
+
+    let settings = SelectionSettings::new()
+        .filter(move || Group::ID.eq_any(group_ids.clone().into_iter().collect_vec()));
+    let groups = Group::list(&mut db_pool.get().await?, settings).await?;
+    let group_by_id = groups
+        .into_iter()
+        .map(|g| (g.id, g))
+        .collect::<HashMap<_, _>>();
+
+    let mut results = Vec::new();
+    for (user_id, user) in users {
+        // TODO: optimize by batching calls to OpenFGA
+        let roles = regulator.user_roles(&authz::User(user_id)).await?;
+        let groups = groups_by_user[&user_id]
+            .iter()
+            .map(|group_id| group_by_id[&group_id.0].clone())
+            .collect();
+        results.push(UserInfo {
+            id: user_id,
+            name: user.name,
+            identities: vec![user.identity_id],
+            roles,
+            groups,
+        });
+    }
+
+    Ok(Json(results))
 }
 
 #[derive(Debug, Serialize, ToSchema)]
@@ -537,7 +665,6 @@ pub(in crate::views) async fn update_grants(
             .collect::<HashMap<_, _>>()
     };
 
-    //
     match body {
         BodyUpdateGrants::Grant(grants) => {
             for GrantBody {

@@ -4,7 +4,7 @@ use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
 
-#[derive(Debug, Clone, Model, ToSchema, Serialize, Deserialize, PartialEq, Eq)]
+#[derive(Debug, Hash, Clone, Model, ToSchema, Serialize, Deserialize, PartialEq, Eq)]
 #[model(table = database::tables::authn_group)]
 #[model(gen(ops = r, list, batch_ops = r))]
 pub struct Group {

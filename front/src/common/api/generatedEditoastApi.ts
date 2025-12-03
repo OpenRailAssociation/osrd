@@ -59,6 +59,10 @@ const injectedRtkApi = api
         query: (queryArg) => ({ url: `/authz/me/privileges`, method: 'POST', body: queryArg.body }),
         invalidatesTags: ['authz'],
       }),
+      postAuthzUserInfo: build.mutation<PostAuthzUserInfoApiResponse, PostAuthzUserInfoApiArg>({
+        query: (queryArg) => ({ url: `/authz/user/info`, method: 'POST', body: queryArg.body }),
+        invalidatesTags: ['authz'],
+      }),
       getAuthzByResourceTypeAndResourceId: build.query<
         GetAuthzByResourceTypeAndResourceIdApiResponse,
         GetAuthzByResourceTypeAndResourceIdApiArg
@@ -1477,6 +1481,23 @@ export type PostAuthzMePrivilegesApiArg = {
   /** The resources of which to get the request sender's privileges. If a resource doesn't exist, it will be omitted. */
   body: {
     [key: string]: number[];
+  };
+};
+export type PostAuthzUserInfoApiResponse = /** status 200 Get information on a list of users */ {
+  groups: {
+    id: number;
+    name: string;
+  }[];
+  id: number;
+  identities: string[];
+  name: string;
+  roles: Role[];
+}[];
+export type PostAuthzUserInfoApiArg = {
+  /** A list of user IDs and identities to get information on */
+  body: {
+    identities?: string[];
+    ids?: number[];
   };
 };
 export type GetAuthzByResourceTypeAndResourceIdApiResponse =

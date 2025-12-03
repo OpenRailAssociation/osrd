@@ -133,6 +133,9 @@ fn service_router() -> router::DocumentedRouter {
                             .route("/grants", post!(authz::user_grants))
                             .route("/privileges", post!(authz::user_privileges))
                     })
+                    .nests("/user", |path| {
+                        path.route("/info", post!(authz::users_info))
+                    })
             })
             //
             // infra & map
