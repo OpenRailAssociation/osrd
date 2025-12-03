@@ -44,16 +44,6 @@ class LabelsChangeGroup(BaseModel):
     value: list[str]
 
 
-class LinkedTrain(BaseModel):
-    type: LinkedTrainType
-    name: Annotated[str, Field(title="Name")]
-
-
-class LinkedTrainType(Enum):
-    anterior = "anterior"
-    posterior = "posterior"
-
-
 class LoadingGaugeType(Enum):
     GA = "GA"
     GB = "GB"
@@ -254,6 +244,7 @@ class SendLastMinuteRequestResponse(BaseModel):
 
     status: Annotated[str, Field(title="Status")]
     message: Annotated[str, Field(title="Message")]
+    request_identifier: Annotated[str, Field(title="Request Identifier")]
 
 
 class SimilarTrain(BaseModel):
@@ -297,9 +288,19 @@ class SimulationReport(BaseModel):
     departure_time: Annotated[AwareDatetime, Field(title="Departure Time")]
     user_message: Annotated[str | None, Field(title="User Message")] = None
     similar_train: SimilarTrain | None = None
-    linked_train: LinkedTrain | None = None
+    anterior_train_name: Annotated[str | None, Field(title="Anterior Train Name")] = (
+        None
+    )
+    posterior_train_name: Annotated[str | None, Field(title="Posterior Train Name")] = (
+        None
+    )
+    substitute_train: SubstituteTrain | None = None
     course_type: Annotated[str, Field(title="CourseType")]
     statistical_category: Annotated[str, Field(title="Statistical Category")]
+    hazardous_materials: Annotated[bool | None, Field(title="Hazardous Materials")] = (
+        None
+    )
+    demand_category: Annotated[str | None, Field(title="Demand Category")] = None
 
 
 class SpeedLimitTag(RootModel[str]):
@@ -322,6 +323,14 @@ class StepType(Enum):
     VIA = "VIA"
     DRIVER_SWITCH = "DRIVER_SWITCH"
     STOP = "STOP"
+
+
+class SubstituteTrain(BaseModel):
+    path_date: Annotated[AwareDatetime, Field(title="Path Date")]
+    name: Annotated[str, Field(title="Name")]
+    """
+    Train name
+    """
 
 
 class TimingData(BaseModel):
