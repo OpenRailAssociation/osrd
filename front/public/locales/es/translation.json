@@ -12,6 +12,23 @@
       "corrector-modal": {
         "create-actions": "{{creation_count}} creaciones de objetos",
         "delete-actions": "{{deletion_count}} supresión de objetos"
+      },
+      "error-level": {
+        "all": "Todo",
+        "errors": "Errores",
+        "warnings": "Advertencias"
+      },
+      "error-type": {
+        "invalid_route": {
+          "name": "Routa Inválida"
+        }
+      },
+      "label": {
+        "title-with-filter_one": "{{count}} incidencias en {{total}}",
+        "title-with-filter_other": "{{count}} incidencias en {{total}}",
+        "title-with-filter_zero": "cero incidencias en {{total}}",
+        "title_one": "{{count}} incidencia",
+        "title_other": "{{count}} incidencias"
       }
     }
   }
