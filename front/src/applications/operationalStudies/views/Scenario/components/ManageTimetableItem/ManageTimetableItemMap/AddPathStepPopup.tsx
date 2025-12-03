@@ -264,13 +264,7 @@ const AddPathStepPopup = ({
           <span className="d-none">{t('origin')}</span>
         </button>
         {origin && destination && (
-          <button
-            className="btn btn-sm btn-info"
-            type="button"
-            onClick={() => {
-              handleViaClick();
-            }}
-          >
+          <button className="btn btn-sm btn-info" type="button" onClick={handleViaClick}>
             <RiMapPin3Fill />
             <span className="d-none">{t('via')}</span>
           </button>
