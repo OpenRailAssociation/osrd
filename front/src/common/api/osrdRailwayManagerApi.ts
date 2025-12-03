@@ -401,6 +401,7 @@ export type ErrorResponse = {
 export type SendLastMinuteRequestResponse = {
   status: string;
   message: string;
+  request_identifier: string;
 };
 export type LoadingGaugeType = 'GA' | 'GB';
 export type Location = {
@@ -427,9 +428,9 @@ export type SimilarTrain = {
   /** Train name */
   name: string;
 };
-export type LinkedTrainType = 'anterior' | 'posterior';
-export type LinkedTrain = {
-  type: LinkedTrainType;
+export type SubstituteTrain = {
+  path_date: string;
+  /** Train name */
   name: string;
 };
 export type CourseType = string;
@@ -448,7 +449,11 @@ export type SimulationReport = {
   departure_time: string;
   user_message?: string | null;
   similar_train?: SimilarTrain | null;
-  linked_train?: LinkedTrain | null;
+  anterior_train_name?: string | null;
+  posterior_train_name?: string | null;
+  substitute_train?: SubstituteTrain | null;
   course_type: CourseType;
   statistical_category: string;
+  hazardous_materials?: boolean;
+  demand_category?: string | null;
 };

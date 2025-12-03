@@ -102,24 +102,6 @@ components:
           description: Error message describing what went wrong
       required:
         - detail
-    LinkedTrain:
-      properties:
-        type:
-          $ref: '#/components/schemas/LinkedTrainType'
-        name:
-          type: string
-          title: Name
-      type: object
-      required:
-      - type
-      - name
-      title: LinkedTrain
-    LinkedTrainType:
-      type: string
-      enum:
-      - anterior
-      - posterior
-      title: LinkedTrainType
     LoadingGaugeType:
       type: string
       enum:
@@ -202,6 +184,21 @@ components:
       - name
       title: SimilarTrain
       description: Similar train to duplicate.
+    SubstituteTrain:
+      properties:
+        path_date:
+          type: string
+          format: date-time
+          title: Path Date
+        name:
+          type: string
+          title: Name
+          description: Train name
+      type: object
+      required:
+      - path_date
+      - name
+      title: SubstituteTrain
     CourseType:
       type: string
       title: CourseType
@@ -251,15 +248,33 @@ components:
           anyOf:
           - $ref: '#/components/schemas/SimilarTrain'
           - type: 'null'
-        linked_train:
+        anterior_train_name:
           anyOf:
-          - $ref: '#/components/schemas/LinkedTrain'
+          - type: string
+          - type: 'null'
+          title: Anterior Train Name
+        posterior_train_name:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Posterior Train Name
+        substitute_train:
+          anyOf:
+          - $ref: '#/components/schemas/SubstituteTrain'
           - type: 'null'
         course_type:
           $ref: '#/components/schemas/CourseType'
         statistical_category:
           type: string
           title: Statistical Category
+        hazardous_materials:
+          type: boolean
+          title: Hazardous Materials
+        demand_category:
+          anyOf:
+          - type: string
+          - type: 'null'
+          title: Demand Category
       type: object
       required:
       - rolling_stock
@@ -283,10 +298,14 @@ components:
         message:
           type: string
           title: Message
+        request_identifier:
+          type: string
+          title: Request Identifier
       type: object
       required:
       - status
       - message
+      - request_identifier
       title: SendLastMinuteRequestResponse
       description: Response model to validate and return when a last-minute request
         has been successfully sent.
