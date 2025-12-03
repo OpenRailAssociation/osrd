@@ -27,6 +27,7 @@
       "AuthError": "Authentication/authorization internal error, try again or contact support",
       "Authorizer": "Internal error",
       "Authz": "Authentication/authorization internal error, try again or contact support",
+      "Database": "Internal error (database)",
       "DbError": "Database access fatal error",
       "Driver": "Authentication/authorization internal error, try again or contact support",
       "Forbidden": "Access denied",
@@ -35,9 +36,11 @@
       "ImpersonatedUserNotFound": "Unknown impersonated user",
       "NoSuchUser": "Unknown user",
       "Unauthorized": "Unauthenticated user",
-      "UnknownResource": "Unkown resource",
-      "UnknownResourceType": "Unkown resource type",
-      "UnknownSubject": "Unkown subject"
+      "UnknownIdentity": "Unknown identity '{{identity}}'",
+      "UnknownResource": "Unknown resource",
+      "UnknownResourceType": "Unknown resource type",
+      "UnknownSubject": "Unknown subject",
+      "UnknownUser": "Unknown user '{{id}}'"
     },
     "auto_fixes": {
       "ConflictingFixesOnSameObject": "Conflicting fixes for the same object on the same fix-iteration",
