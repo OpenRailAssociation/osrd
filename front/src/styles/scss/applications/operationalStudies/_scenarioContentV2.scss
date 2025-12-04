@@ -1,6 +1,13 @@
+#root {
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+}
+
 .scenario-content-v2 {
   display: flex;
-  height: calc(100vh - var(--scenario-header-height));
+  min-height: 0;
+
   .right-column,
   .left-column {
     width: 488px;
