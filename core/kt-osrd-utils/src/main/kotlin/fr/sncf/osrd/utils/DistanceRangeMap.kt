@@ -114,11 +114,10 @@ fun <T, R> filterIntersection(
  * Converts a DistanceRangeMap<T> into a legacy RangeMap<Double, T>. Distances are converted to
  * floats (m).
  */
-fun <T> DistanceRangeMap<T>.toRangeMap(): RangeMap<Double, T> {
+fun <T : Any> DistanceRangeMap<T>.toRangeMap(): RangeMap<Double, T> {
     val res = ImmutableRangeMap.builder<Double, T>()
     for (entry in this) {
-        if (entry.value != null)
-            res.put(Range.closedOpen(entry.lower.meters, entry.upper.meters), entry.value!!)
+        res.put(Range.closedOpen(entry.lower.meters, entry.upper.meters), entry.value)
     }
     return res.build()
 }
