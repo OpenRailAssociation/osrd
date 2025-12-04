@@ -5987,8 +5987,10 @@ components:
       - $ref: '#/components/schemas/EditoastListErrorsErrorsWrongErrorTypeProvided'
       - $ref: '#/components/schemas/EditoastMacroNodeErrorDatabase'
       - $ref: '#/components/schemas/EditoastMacroNodeErrorNotFound'
+      - $ref: '#/components/schemas/EditoastMacroNodeErrorScenarioNotFound'
       - $ref: '#/components/schemas/EditoastMacroNoteErrorDatabase'
       - $ref: '#/components/schemas/EditoastMacroNoteErrorNotFound'
+      - $ref: '#/components/schemas/EditoastMacroNoteErrorScenarioNotFound'
       - $ref: '#/components/schemas/EditoastModelError'
       - $ref: '#/components/schemas/EditoastOperationErrorEmptyId'
       - $ref: '#/components/schemas/EditoastOperationErrorInvalidPatch'
@@ -6030,6 +6032,7 @@ components:
       - $ref: '#/components/schemas/EditoastScenarioErrorDatabase'
       - $ref: '#/components/schemas/EditoastScenarioErrorInfraNotFound'
       - $ref: '#/components/schemas/EditoastScenarioErrorNotFound'
+      - $ref: '#/components/schemas/EditoastScenarioErrorStudyNotFound'
       - $ref: '#/components/schemas/EditoastScenarioErrorTimetableNotFound'
       - $ref: '#/components/schemas/EditoastSearchApiErrorObjectType'
       - $ref: '#/components/schemas/EditoastSearchApiErrorSearchEngineError'
@@ -6053,6 +6056,7 @@ components:
       - $ref: '#/components/schemas/EditoastStdcmSearchEnvErrorNotFound'
       - $ref: '#/components/schemas/EditoastStudyErrorDatabase'
       - $ref: '#/components/schemas/EditoastStudyErrorNotFound'
+      - $ref: '#/components/schemas/EditoastStudyErrorProjectNotFound'
       - $ref: '#/components/schemas/EditoastSubCategoryErrorCodeAlreadyUsed'
       - $ref: '#/components/schemas/EditoastSubCategoryErrorDatabase'
       - $ref: '#/components/schemas/EditoastSubCategoryErrorNotFound'
@@ -6387,6 +6391,30 @@ components:
           type: string
           enum:
           - editoast:macro_node:NotFound
+    EditoastMacroNodeErrorScenarioNotFound:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          required:
+          - scenario_id
+          properties:
+            scenario_id:
+              type: integer
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 404
+        type:
+          type: string
+          enum:
+          - editoast:macro_node:ScenarioNotFound
     EditoastMacroNoteErrorDatabase:
       type: object
       required:
@@ -6430,6 +6458,30 @@ components:
           type: string
           enum:
           - editoast:macro_note:NotFound
+    EditoastMacroNoteErrorScenarioNotFound:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          required:
+          - scenario_id
+          properties:
+            scenario_id:
+              type: integer
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 404
+        type:
+          type: string
+          enum:
+          - editoast:macro_note:ScenarioNotFound
     EditoastModelError:
       type: object
       required:
@@ -7344,6 +7396,30 @@ components:
           type: string
           enum:
           - editoast:scenario:NotFound
+    EditoastScenarioErrorStudyNotFound:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          required:
+          - study_id
+          properties:
+            study_id:
+              type: integer
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 404
+        type:
+          type: string
+          enum:
+          - editoast:scenario:StudyNotFound
     EditoastScenarioErrorTimetableNotFound:
       type: object
       required:
@@ -7862,6 +7938,30 @@ components:
           type: string
           enum:
           - editoast:study:NotFound
+    EditoastStudyErrorProjectNotFound:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          required:
+          - project_id
+          properties:
+            project_id:
+              type: integer
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 404
+        type:
+          type: string
+          enum:
+          - editoast:study:ProjectNotFound
     EditoastSubCategoryErrorCodeAlreadyUsed:
       type: object
       required:

@@ -113,11 +113,13 @@
     },
     "macro_node": {
       "Database": "Erreur interne",
-      "NotFound": "Noeud {{node_id}} non trouvé."
+      "NotFound": "Noeud {{node_id}} non trouvé",
+      "ScenarioNotFound": "Scénario '{{scenario_id}}' non trouvé"
     },
     "macro_note": {
       "Database": "Erreur interne (base de données)",
       "NotFound": "Note '{{note_id}}' non trouvée.",
+      "ScenarioNotFound": "Scénario '{{scenario_id}}' non trouvé",
       "WrongScenario": "La note '{note_id}' n'appartient pas au scénario '{scenario_id}'"
     },
     "model": {
@@ -189,6 +191,7 @@
       "Database": "Erreur interne (base de données)",
       "InfraNotFound": "Infrastructure '{{infra_id}}' non trouvée",
       "NotFound": "Scénario non trouvé",
+      "StudyNotFound": "Étude '{{study_id}}' non trouvée",
       "TimetableNotFound": "Grille horaire '{{timetable_id}}' non trouvée"
     },
     "search": {
@@ -238,6 +241,7 @@
     "study": {
       "Database": "Erreur interne (base de données)",
       "NotFound": "Etude '{{study_id}}' non trouvée",
+      "ProjectNotFound": "Projet '{{project_id}}' non trouvé",
       "StartDateAfterEndDate": "La date de début de l'étude doit commencer avant sa date de fin"
     },
     "sub_categories": {

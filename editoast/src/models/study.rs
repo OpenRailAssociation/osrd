@@ -10,13 +10,11 @@ use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
 
-use crate::error::InternalError;
-use crate::models::Scenario;
-use crate::views::study::StudyError;
 use editoast_models::prelude::*;
 use editoast_models::tags::Tags;
 
 use super::Project;
+use super::Scenario;
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Model, ToSchema)]
 #[model(table = database::tables::study)]
@@ -38,6 +36,15 @@ pub struct Study {
     pub state: String,
     pub study_type: Option<String>,
     pub project_id: i64,
+}
+
+#[derive(thiserror::Error, derive_more::From, Debug)]
+pub enum Error {
+    #[error("Study with id {study_id} not found")]
+    NotFound { study_id: i64 },
+    #[error(transparent)]
+    #[from(forward)]
+    Database(editoast_models::Error),
 }
 
 impl Study {
@@ -71,20 +78,19 @@ impl Study {
         conn: DbConnection,
         study_id: i64,
         f: F,
-    ) -> Result<T, InternalError>
+    ) -> Result<Result<T, E>, Error>
     where
         T: Send,
-        E: Into<InternalError> + Send, // EditoastError bound will be removed when retrieve will return the model's error
+        E: Send,
         F: FnOnce(DbConnection, Self, Project) -> ScopedBoxFuture<'static, 'static, Result<T, E>>
             + Send
             + 'static,
     {
         conn.transaction(|mut conn| {
             async move {
-                let study = Self::retrieve_or_fail(conn.clone(), study_id, || {
-                    StudyError::NotFound { study_id }
-                })
-                .await?;
+                let study =
+                    Self::retrieve_or_fail(conn.clone(), study_id, || Error::NotFound { study_id })
+                        .await?;
 
                 let id = study.id;
                 let t = Project::transactional_content_update(
@@ -92,14 +98,23 @@ impl Study {
                     study.project_id,
                     |conn, project| async move { f(conn, study, project).await }.scope_boxed(),
                 )
-                .await?;
+                .await;
+
+                let t = match t {
+                    Ok(Ok(t)) => t,
+                    Ok(Err(e)) => return Ok(Err(e)),
+                    Err(super::project::Error::NotFound { .. }) => {
+                        unreachable!("Database integrity error: Study's project not found")
+                    }
+                    Err(super::project::Error::Database(e)) => return Err(e.into()),
+                };
 
                 Study::changeset()
                     .last_modification(Utc::now())
                     .update(&mut conn, id)
                     .await?;
 
-                Ok(t)
+                Ok(Ok(t))
             }
             .scope_boxed()
         })

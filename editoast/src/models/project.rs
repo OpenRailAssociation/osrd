@@ -9,11 +9,10 @@ use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
 
-use crate::error::InternalError;
-use crate::models::Study;
-use crate::views::project::ProjectError;
 use editoast_models::Document;
 use editoast_models::tags::Tags;
+
+use super::Study;
 
 #[derive(Clone, Debug, Serialize, Deserialize, Model, ToSchema, PartialEq)]
 #[model(table = database::tables::project)]
@@ -70,6 +69,15 @@ async fn try_delete_document(
     }
 }
 
+#[derive(Debug, thiserror::Error, derive_more::From)]
+pub enum Error {
+    #[error("Project with id {project_id} not found")]
+    NotFound { project_id: i64 },
+    #[error(transparent)]
+    #[from(forward)]
+    Database(editoast_models::Error),
+}
+
 impl Project {
     /// This function takes a filled project and update to now the last_modification field
     pub async fn update_last_modified(
@@ -81,7 +89,10 @@ impl Project {
         Ok(())
     }
 
-    pub async fn studies_count(&self, conn: &mut DbConnection) -> Result<u64, InternalError> {
+    pub async fn studies_count(
+        &self,
+        conn: &mut DbConnection,
+    ) -> Result<u64, editoast_models::Error> {
         let project_id = self.id;
         let studies_count = Study::count(
             conn,
@@ -148,28 +159,31 @@ impl Project {
         conn: DbConnection,
         project_id: i64,
         f: F,
-    ) -> Result<T, InternalError>
+    ) -> Result<Result<T, E>, Error>
     where
         T: Send,
-        E: Into<InternalError> + Send, // EditoastError bound will be removed when retrieve will return the model's error
+        E: Send,
         F: FnOnce(DbConnection, Self) -> ScopedBoxFuture<'static, 'static, Result<T, E>> + Send,
     {
         conn.transaction(|mut conn| {
             async move {
                 let project = Self::retrieve_or_fail(conn.clone(), project_id, || {
-                    ProjectError::NotFound { project_id }
+                    Error::NotFound { project_id }
                 })
                 .await?;
 
                 let id = project.id;
                 let res = f(conn.clone(), project).await;
+                let Ok(res) = res else {
+                    return Ok(res);
+                };
 
                 Project::changeset()
                     .last_modification(Utc::now())
                     .update(&mut conn, id)
                     .await?;
 
-                res.map_err(Into::into)
+                Ok(Ok(res))
             }
             .scope_boxed()
         })

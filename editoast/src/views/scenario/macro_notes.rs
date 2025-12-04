@@ -18,8 +18,8 @@ use thiserror::Error;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
 
-use crate::error::InternalError;
 use crate::error::Result;
+use crate::models;
 use crate::models::Scenario;
 use crate::models::macro_note::MacroNote;
 use crate::views::AuthenticationExt;
@@ -30,16 +30,32 @@ use crate::views::pagination::PaginationStats;
 use editoast_models::prelude::*;
 use editoast_models::tags::Tags;
 
-#[derive(Debug, Error, EditoastError)]
+#[derive(Debug, Error, EditoastError, derive_more::From)]
 #[editoast_error(base_id = "macro_note")]
 enum MacroNoteError {
+    #[error("Scenario '{scenario_id}' could not be found")]
+    #[editoast_error(status = 404)]
+    ScenarioNotFound { scenario_id: i64 },
+
     #[error("Note '{note_id}' could not be found")]
     #[editoast_error(status = 404)]
     NotFound { note_id: i64 },
 
     #[error(transparent)]
     #[editoast_error(status = 500)]
-    Database(#[from] editoast_models::Error),
+    #[from(forward)]
+    Database(editoast_models::Error),
+}
+
+impl From<models::scenario::Error> for MacroNoteError {
+    fn from(e: models::scenario::Error) -> Self {
+        match e {
+            models::scenario::Error::NotFound { scenario_id } => {
+                MacroNoteError::ScenarioNotFound { scenario_id }
+            }
+            models::scenario::Error::Database(e) => MacroNoteError::Database(e),
+        }
+    }
 }
 
 #[derive(IntoParams, Deserialize)]
@@ -201,12 +217,13 @@ pub(in crate::views) async fn create(
                 let created_macro_notes: Vec<_> =
                     MacroNote::create_batch(&mut conn, changesets).await?;
 
-                Ok::<_, InternalError>(created_macro_notes)
+                Ok::<_, MacroNoteError>(created_macro_notes)
             }
             .scope_boxed()
         },
     )
-    .await?;
+    .await
+    .map_err(MacroNoteError::from)??;
 
     Ok((
         StatusCode::CREATED,
@@ -296,14 +313,15 @@ pub(in crate::views) async fn update(
                                 })
                                 .await?;
 
-                            Ok::<_, InternalError>(updated_note)
+                            Ok::<_, MacroNoteError>(updated_note)
                         }
                         .scope_boxed()
                     },
                 )
-                .await?;
+                .await
+                .map_err(MacroNoteError::from)??;
 
-                Ok::<_, InternalError>(updated_macro_note)
+                Ok::<_, MacroNoteError>(updated_macro_note)
             }
             .scope_boxed()
         })
@@ -350,14 +368,15 @@ pub(in crate::views) async fn delete(
                 move |mut conn, _scenario, _study, _project| {
                     async move {
                         note.delete(&mut conn).await?;
-                        Ok::<_, InternalError>(())
+                        Ok::<_, MacroNoteError>(())
                     }
                     .scope_boxed()
                 },
             )
-            .await?;
+            .await
+            .map_err(MacroNoteError::from)??;
 
-            Ok::<_, InternalError>(())
+            Ok::<_, MacroNoteError>(())
         }
         .scope_boxed()
     })
