@@ -104,7 +104,7 @@ impl ToTokens for UpdateBatchImpl {
                     self,
                     conn: &mut database::DbConnection,
                     ids: I,
-                ) -> crate::error::Result<C, Self::Error> {
+                ) -> std::result::Result<C, Self::Error> {
                     use crate::prelude::Model;
                     use #table_mod::dsl;
                     use diesel::prelude::*;
@@ -125,7 +125,7 @@ impl ToTokens for UpdateBatchImpl {
                     self,
                     conn: &mut database::DbConnection,
                     ids: I,
-                ) -> crate::error::Result<C, Self::Error> {
+                ) -> std::result::Result<C, Self::Error> {
                     use crate::prelude::Identifiable;
                     use crate::prelude::Model;
                     use #table_mod::dsl;
