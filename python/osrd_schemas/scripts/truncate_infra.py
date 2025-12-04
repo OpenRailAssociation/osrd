@@ -28,13 +28,13 @@ SWITCH_TYPES: Mapping[str, SwitchType] = {
 }
 
 
-def truncate_infra(infra: RailJsonInfra, bbox: Polygon) -> RailJsonInfra:
+def truncate_infra(infra: RailJsonInfra, boundary: Polygon) -> RailJsonInfra:
     new_infra = RailJsonInfra.empty()
 
     new_infra.track_sections = [
         track_section
         for track_section in infra.track_sections
-        if bbox.intersects(LineString(track_section.geo.coordinates))
+        if boundary.intersects(LineString(track_section.geo.coordinates))
     ]
 
     print(
@@ -185,7 +185,7 @@ def filter_switches(
             filtered_switches.append(switch)
         elif n_ports_included > 1:
             print(
-                f"Switch {switch.id} should be included in the bbox, but isn't handled yet"
+                f"Switch {switch.id} should be included in the boundary, but isn't handled yet"
             )
         elif n_ports_included == 1:
             # Only one port is included, we need to replace the switch by a buffer stop
@@ -217,7 +217,7 @@ def filter_routes(
     old_infra: RailJsonInfra,
     former_switch_id_to_buffer_stop_id: dict[str, tuple[str, Direction]],
 ) -> list[Route]:
-    """Keep routes fully included in the bbox and adapt the ones that are partially included."""
+    """Keep routes fully included in the boundary and adapt the ones that are partially included."""
     waypoints_ids_kept = {b.id for b in new_infra.buffer_stops} | {
         d.id for d in new_infra.detectors
     }
@@ -252,7 +252,7 @@ def filter_routes(
                 route, detectors_by_id, buffer_stops_by_id, switches_by_id
             )
             if not exit_included:
-                # It means the exit point is not in the bbox so we look from the end
+                # It means the exit point is not in the boundary so we look from the end
                 switch_directions = list(reversed(switch_directions))
 
             idx = 0
@@ -352,9 +352,9 @@ if __name__ == "__main__":
     parser.add_argument("input", help="Input RailJson file", type=Path)
     parser.add_argument("output", help="Output RailJson file", type=Path)
     parser.add_argument(
-        "bbox",
-        help="Bounding box as GeoJSON polygon coordinates\n"
-        'For example "[[0, 0], [0, 1], [1, 1], [1, 0]]"\n'
+        "boundary",
+        help="Boundary as a GeoJSON polygon coordinates\n"
+        'For example: "[[0, 0], [1, 1], [2, 0], [1, -1]]"\n'
         "A way to get it is to use https://geojson.io/",
     )
 
@@ -362,10 +362,10 @@ if __name__ == "__main__":
 
     print("Reading infra")
     infra = RailJsonInfra.model_validate_json(args.input.read_text())
-    bbox = Polygon(json.loads(args.bbox))
+    boundary = Polygon(json.loads(args.boundary))
 
     print("Truncating infra")
-    new_infra = truncate_infra(infra, bbox)
+    new_infra = truncate_infra(infra, boundary)
 
     print("Writing new infra")
     args.output.write_text(new_infra.model_dump_json(exclude_none=True))
