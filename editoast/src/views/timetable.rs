@@ -1437,16 +1437,14 @@ mod tests {
         let simple_ts_train_core_id = trains_ids_map
             .iter()
             .find_map(|(core_id, train_id)| match train_id {
-                TrainId::TrainSchedule(ts_id_inner) if *ts_id_inner == ts_id => {
-                    Some(core_id.clone())
-                }
+                TrainId::TrainSchedule(ts_id_inner) if *ts_id_inner == ts_id => Some(core_id),
                 _ => None,
             })
             .unwrap();
 
         let simple_requirements = conflict_core_request
             .trains_requirements
-            .get(&simple_ts_train_core_id)
+            .get(simple_ts_train_core_id)
             .unwrap();
         assert_eq!(simple_requirements.start_time, ts_start_time);
         assert_eq!(
@@ -1465,13 +1463,13 @@ mod tests {
                 TrainId::PacedTrain {
                     paced_train_id: pt_id,
                     occurrence_id: OccurrenceId::BaseOccurrence { index },
-                } if *pt_id == paced_train_id && *index == 0 => Some(core_id.clone()),
+                } if *pt_id == paced_train_id && *index == 0 => Some(core_id),
                 _ => None,
             })
             .unwrap();
         let paced_0_requirements = conflict_core_request
             .trains_requirements
-            .get(&paced_0_train_core_id)
+            .get(paced_0_train_core_id)
             .unwrap();
         assert_eq!(paced_0_requirements.start_time, paced_start_time);
         assert_eq!(
@@ -1490,13 +1488,13 @@ mod tests {
                 TrainId::PacedTrain {
                     paced_train_id: pt_id,
                     occurrence_id: OccurrenceId::BaseOccurrence { index },
-                } if *pt_id == paced_train_id && *index == 1 => Some(core_id.clone()),
+                } if *pt_id == paced_train_id && *index == 1 => Some(core_id),
                 _ => None,
             })
             .unwrap();
         let paced_1_requirements = conflict_core_request
             .trains_requirements
-            .get(&paced_1_train_core_id)
+            .get(paced_1_train_core_id)
             .unwrap();
         assert_eq!(
             paced_1_requirements.start_time,
