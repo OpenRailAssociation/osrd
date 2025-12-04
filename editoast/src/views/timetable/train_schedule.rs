@@ -16,6 +16,7 @@ use core_client::simulation::PhysicsConsist;
 use database::DbConnectionPoolV2;
 use editoast_derive::EditoastError;
 use editoast_models::prelude::*;
+use editoast_models::train_schedule::TrainScheduleChangeset;
 use schemas::train_schedule::OperationalPointReference;
 use schemas::train_schedule::PathItemLocation;
 use schemas::train_schedule::TrainSchedule;
@@ -30,11 +31,9 @@ use super::simulation::SummaryResponse;
 use super::simulation::train_simulation_batch;
 use crate::AppState;
 use crate::error::Result;
-use crate::models;
 use crate::models::OperationalPointModel;
 use crate::models::RollingStock;
 use crate::models::infra::Infra;
-use crate::models::train_schedule::TrainScheduleChangeset;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
 use crate::views::infra::InfraIdQueryParam;
@@ -103,8 +102,8 @@ pub struct TrainScheduleResponse {
     pub train_schedule: TrainSchedule,
 }
 
-impl From<models::TrainSchedule> for TrainScheduleResponse {
-    fn from(value: models::TrainSchedule) -> Self {
+impl From<editoast_models::TrainSchedule> for TrainScheduleResponse {
+    fn from(value: editoast_models::TrainSchedule) -> Self {
         Self {
             id: value.id,
             timetable_id: value.timetable_id,
@@ -159,7 +158,7 @@ pub(in crate::views) async fn get(
 
     let conn = &mut db_pool.get().await?;
     let train_schedule =
-        models::TrainSchedule::retrieve_or_fail(conn.clone(), train_schedule_id, || {
+        editoast_models::TrainSchedule::retrieve_or_fail(conn.clone(), train_schedule_id, || {
             TrainScheduleError::NotFound { train_schedule_id }
         })
         .await?;
@@ -195,7 +194,7 @@ pub(in crate::views) async fn delete(
     }
 
     let conn = &mut db_pool.get().await?;
-    models::TrainSchedule::delete_batch_or_fail(conn, train_ids, |number| {
+    editoast_models::TrainSchedule::delete_batch_or_fail(conn, train_ids, |number| {
         TrainScheduleError::BatchTrainScheduleNotFound { number }
     })
     .await?;
@@ -298,11 +297,12 @@ pub(in crate::views) async fn simulation(
     .await?;
 
     // Retrieve train_schedule or fail
-    let train_schedule =
-        models::TrainSchedule::retrieve_or_fail(db_pool.get().await?, train_schedule_id, || {
-            TrainScheduleError::NotFound { train_schedule_id }
-        })
-        .await?;
+    let train_schedule = editoast_models::TrainSchedule::retrieve_or_fail(
+        db_pool.get().await?,
+        train_schedule_id,
+        || TrainScheduleError::NotFound { train_schedule_id },
+    )
+    .await?;
 
     // Compute simulation of a train schedule
     let (simulation, _) = train_simulation_batch(
@@ -371,11 +371,12 @@ pub(in crate::views) async fn etcs_braking_curves(
     .await?;
 
     // Retrieve train_schedule or fail
-    let train_schedule =
-        models::TrainSchedule::retrieve_or_fail(db_pool.get().await?, train_schedule_id, || {
-            TrainScheduleError::NotFound { train_schedule_id }
-        })
-        .await?;
+    let train_schedule = editoast_models::TrainSchedule::retrieve_or_fail(
+        db_pool.get().await?,
+        train_schedule_id,
+        || TrainScheduleError::NotFound { train_schedule_id },
+    )
+    .await?;
 
     // Compute simulation of a train schedule
     let (simulation_result, pathfinding_result) = train_simulation_batch(
@@ -506,12 +507,14 @@ pub(in crate::views) async fn simulation_summary(
     })
     .await?;
 
-    let train_schedules: Vec<models::TrainSchedule> =
-        models::TrainSchedule::retrieve_batch_or_fail(conn, train_schedule_ids, |missing| {
-            TrainScheduleError::BatchTrainScheduleNotFound {
+    let train_schedules: Vec<editoast_models::TrainSchedule> =
+        editoast_models::TrainSchedule::retrieve_batch_or_fail(
+            conn,
+            train_schedule_ids,
+            |missing| TrainScheduleError::BatchTrainScheduleNotFound {
                 number: missing.len(),
-            }
-        })
+            },
+        )
         .await?;
 
     let simulations = train_simulation_batch(
@@ -588,7 +591,7 @@ pub(in crate::views) async fn get_path(
     .await?;
 
     let train_schedule =
-        models::TrainSchedule::retrieve_or_fail(conn.clone(), train_schedule_id, || {
+        editoast_models::TrainSchedule::retrieve_or_fail(conn.clone(), train_schedule_id, || {
             TrainScheduleError::NotFound { train_schedule_id }
         })
         .await?;
@@ -658,8 +661,8 @@ pub(in crate::views) async fn project_path(
 
     let conn = &mut db_pool.get().await?;
 
-    let trains_schedules: Vec<models::TrainSchedule> =
-        models::TrainSchedule::retrieve_batch_or_fail(conn, train_ids, |missing| {
+    let trains_schedules: Vec<editoast_models::TrainSchedule> =
+        editoast_models::TrainSchedule::retrieve_batch_or_fail(conn, train_ids, |missing| {
             TrainScheduleError::BatchTrainScheduleNotFound {
                 number: missing.len(),
             }
@@ -734,8 +737,8 @@ pub(in crate::views) async fn project_path_op(
 
     let conn = &mut db_pool.get().await?;
 
-    let train_schedules: Vec<models::TrainSchedule> =
-        models::TrainSchedule::retrieve_batch_or_fail(conn, train_ids, |missing| {
+    let train_schedules: Vec<editoast_models::TrainSchedule> =
+        editoast_models::TrainSchedule::retrieve_batch_or_fail(conn, train_ids, |missing| {
             TrainScheduleError::BatchTrainScheduleNotFound {
                 number: missing.len(),
             }
@@ -837,8 +840,8 @@ pub(in crate::views) async fn occupancy_blocks(
 
     let conn = &mut db_pool.get().await?;
 
-    let train_schedules: Vec<models::TrainSchedule> =
-        models::TrainSchedule::retrieve_batch_or_fail(conn, train_ids, |missing| {
+    let train_schedules: Vec<editoast_models::TrainSchedule> =
+        editoast_models::TrainSchedule::retrieve_batch_or_fail(conn, train_ids, |missing| {
             TrainScheduleError::BatchTrainScheduleNotFound {
                 number: missing.len(),
             }
@@ -940,8 +943,8 @@ pub(in crate::views) async fn track_occupancy(
     })
     .await?;
 
-    let train_schedules: Vec<models::TrainSchedule> =
-        models::TrainSchedule::retrieve_batch_or_fail(
+    let train_schedules: Vec<editoast_models::TrainSchedule> =
+        editoast_models::TrainSchedule::retrieve_batch_or_fail(
             &mut db_pool.get().await?,
             train_schedule_ids,
             |missing| TrainScheduleError::BatchTrainScheduleNotFound {
@@ -1131,7 +1134,7 @@ pub mod tests {
         assert_eq!(response.len(), 1);
 
         let created_train_schedule =
-            models::TrainSchedule::retrieve(pool.get_ok(), response.first().unwrap().id)
+            editoast_models::TrainSchedule::retrieve(pool.get_ok(), response.first().unwrap().id)
                 .await
                 .expect("Failed to retrieve updated train schedule")
                 .expect("Updated train schedule not found");
@@ -1167,7 +1170,7 @@ pub mod tests {
             .await
             .assert_status(StatusCode::NO_CONTENT);
 
-        let exists = models::TrainSchedule::exists(&mut pool.get_ok(), train_schedule.id)
+        let exists = editoast_models::TrainSchedule::exists(&mut pool.get_ok(), train_schedule.id)
             .await
             .expect("Failed to retrieve train_schedule");
 
@@ -1296,10 +1299,11 @@ pub mod tests {
             .assert_status(StatusCode::OK)
             .json_into();
 
-        let updated_train_schedule = models::TrainSchedule::retrieve(pool.get_ok(), response.id)
-            .await
-            .expect("Failed to retrieve updated train schedule")
-            .expect("Updated train schedule not found");
+        let updated_train_schedule =
+            editoast_models::TrainSchedule::retrieve(pool.get_ok(), response.id)
+                .await
+                .expect("Failed to retrieve updated train schedule")
+                .expect("Updated train schedule not found");
 
         assert_eq!(updated_train_schedule.main_category, None);
         assert_eq!(updated_train_schedule.sub_category, None);
@@ -1315,11 +1319,12 @@ pub mod tests {
             rolling_stock_name: rolling_stock.name.clone(),
             ..TrainSchedule::fake()
         };
-        let train_schedule: Changeset<models::TrainSchedule> = TrainScheduleForm {
-            timetable_id: Some(timetable.id),
-            train_schedule: train_schedule_base,
-        }
-        .into();
+        let train_schedule: Changeset<editoast_models::train_schedule::TrainSchedule> =
+            TrainScheduleForm {
+                timetable_id: Some(timetable.id),
+                train_schedule: train_schedule_base,
+            }
+            .into();
         let train_schedule = train_schedule
             .create(&mut db_pool.get_ok())
             .await
@@ -1366,7 +1371,7 @@ pub mod tests {
             rolling_stock_name: rolling_stock.name.clone(),
             ..TrainSchedule::fake()
         };
-        let train_schedule: Changeset<models::TrainSchedule> = TrainScheduleForm {
+        let train_schedule: Changeset<editoast_models::TrainSchedule> = TrainScheduleForm {
             timetable_id: Some(timetable.id),
             train_schedule: train_schedule_base.clone(),
         }
@@ -1376,7 +1381,7 @@ pub mod tests {
             .await
             .expect("Failed to create train schedule");
 
-        let train_schedule_fail: Changeset<models::TrainSchedule> = TrainScheduleForm {
+        let train_schedule_fail: Changeset<editoast_models::TrainSchedule> = TrainScheduleForm {
             timetable_id: Some(timetable.id),
             train_schedule: TrainSchedule {
                 rolling_stock_name: "fail".to_string(),
@@ -1438,7 +1443,7 @@ pub mod tests {
             .expect("Unable to parse")
         };
 
-        let train_schedule: Changeset<models::TrainSchedule> = TrainScheduleForm {
+        let train_schedule: Changeset<editoast_models::TrainSchedule> = TrainScheduleForm {
             timetable_id: Some(timetable.id),
             train_schedule: train_schedule_base.clone(),
         }
@@ -1481,7 +1486,7 @@ pub mod tests {
             .expect("Unable to parse")
         };
 
-        let train_schedule: Changeset<models::TrainSchedule> = TrainScheduleForm {
+        let train_schedule: Changeset<editoast_models::TrainSchedule> = TrainScheduleForm {
             timetable_id: Some(timetable.id),
             train_schedule: train_schedule_base.clone(),
         }

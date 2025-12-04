@@ -10,6 +10,7 @@ pub mod sub_category;
 pub mod tags;
 pub mod temporary_speed_limits;
 pub mod towed_rolling_stock;
+pub mod train_schedule;
 pub mod work_schedules;
 
 // Export all Model at crate root
@@ -25,6 +26,7 @@ pub use tags::Tags;
 pub use temporary_speed_limits::TemporarySpeedLimit;
 pub use temporary_speed_limits::TemporarySpeedLimitGroup;
 pub use towed_rolling_stock::TowedRollingStock;
+pub use train_schedule::TrainSchedule;
 pub use work_schedules::WorkSchedule;
 pub use work_schedules::WorkScheduleGroup;
 

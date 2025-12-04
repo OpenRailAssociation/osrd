@@ -69,11 +69,11 @@ use crate::models::paced_train::PacedTrainChangeset;
 use crate::models::paced_train::TrainId;
 use crate::models::timetable::Timetable;
 use crate::models::timetable::TimetableWithTrains;
-use crate::models::train_schedule::TrainScheduleChangeset;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
 use crate::views::timetable::simulation::SimulationResponseSuccess;
 use editoast_models::prelude::*;
+use editoast_models::train_schedule::TrainScheduleChangeset;
 
 #[derive(Debug, Error, EditoastError, derive_more::From)]
 #[editoast_error(base_id = "timetable")]
@@ -156,9 +156,10 @@ pub(in crate::views) async fn get_train_schedules(
 
     let settings = pagination_params
         .into_selection_settings()
-        .filter(move || models::TrainSchedule::TIMETABLE_ID.eq(timetable_id));
+        .filter(move || editoast_models::TrainSchedule::TIMETABLE_ID.eq(timetable_id));
 
-    let (train_schedules, stats) = models::TrainSchedule::list_paginated(conn, settings).await?;
+    let (train_schedules, stats) =
+        editoast_models::TrainSchedule::list_paginated(conn, settings).await?;
     let results = train_schedules.into_iter().map_into().collect();
 
     Ok(Json(ListTrainSchedulesResponse { stats, results }))
@@ -267,7 +268,8 @@ pub(in crate::views) async fn post_train_schedule(
         .collect();
 
     // Create a batch of train_schedule
-    let train_schedule: Vec<_> = models::TrainSchedule::create_batch(conn, changesets).await?;
+    let train_schedule: Vec<_> =
+        editoast_models::TrainSchedule::create_batch(conn, changesets).await?;
     Ok(Json(train_schedule.into_iter().map_into().collect()))
 }
 
@@ -594,7 +596,7 @@ pub(in crate::views) async fn conflicts(
 async fn retrieve_trains_and_paced_trains(
     mut conn: DbConnection,
     timetable_id: i64,
-) -> Result<(Vec<models::TrainSchedule>, Vec<models::PacedTrain>)> {
+) -> Result<(Vec<editoast_models::TrainSchedule>, Vec<models::PacedTrain>)> {
     let timetable_trains =
         TimetableWithTrains::retrieve_or_fail(conn.clone(), timetable_id, || {
             TimetableError::NotFound { timetable_id }
@@ -602,7 +604,10 @@ async fn retrieve_trains_and_paced_trains(
         .await?;
     let mut conn_clone = conn.clone();
     let (trains, paced_trains): (Vec<_>, Vec<_>) = tokio::try_join!(
-        models::TrainSchedule::retrieve_batch_unchecked(&mut conn, timetable_trains.train_ids),
+        editoast_models::TrainSchedule::retrieve_batch_unchecked(
+            &mut conn,
+            timetable_trains.train_ids
+        ),
         models::PacedTrain::retrieve_batch_unchecked(
             &mut conn_clone,
             timetable_trains.paced_train_ids
@@ -709,20 +714,21 @@ pub(in crate::views) async fn requirements(
     .await?;
 
     // List trains and paced trains
-    let (trains, stats) = <(models::TrainSchedule, models::PacedTrain)>::list_concatenated(
-        conn,
-        (
-            page_settings
-                .into_selection_settings()
-                .filter(move || models::TrainSchedule::TIMETABLE_ID.eq(timetable_id))
-                .order_by(move || models::TrainSchedule::ID.asc()),
-            page_settings
-                .into_selection_settings()
-                .filter(move || models::PacedTrain::TIMETABLE_ID.eq(timetable_id))
-                .order_by(move || models::PacedTrain::ID.asc()),
-        ),
-    )
-    .await?;
+    let (trains, stats) =
+        <(editoast_models::TrainSchedule, models::PacedTrain)>::list_concatenated(
+            conn,
+            (
+                page_settings
+                    .into_selection_settings()
+                    .filter(move || editoast_models::TrainSchedule::TIMETABLE_ID.eq(timetable_id))
+                    .order_by(move || editoast_models::TrainSchedule::ID.asc()),
+                page_settings
+                    .into_selection_settings()
+                    .filter(move || models::PacedTrain::TIMETABLE_ID.eq(timetable_id))
+                    .order_by(move || models::PacedTrain::ID.asc()),
+            ),
+        )
+        .await?;
     let (train_ids, trains): (Vec<_>, Vec<_>) = trains
         .flat_map(|train| match train {
             Either::Left(ts) => vec![(TrainId::TrainSchedule(ts.id), ts.into())],

@@ -40,6 +40,7 @@ utoipa.workspace = true
 # The feature 'testing' is needed for all of the doc-tests
 database = { path = "../database", features = ["testing"] }
 editoast_models = { path = "./", features = ["testing"] }
+pretty_assertions.workspace = true
 
 [lints]
 workspace = true

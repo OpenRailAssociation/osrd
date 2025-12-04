@@ -8,7 +8,6 @@ use clap::Subcommand;
 use database::DbConnectionPoolV2;
 use schemas::train_schedule::TrainSchedule;
 
-use crate::models;
 use crate::models::timetable::Timetable;
 use crate::models::timetable::TimetableWithTrains;
 use crate::views::timetable::train_schedule::TrainScheduleForm;
@@ -50,7 +49,8 @@ pub async fn trains_export(
         .train_ids;
 
     let (train_schedules, missing): (Vec<_>, _) =
-        models::TrainSchedule::retrieve_batch(&mut db_pool.get().await?, train_ids).await?;
+        editoast_models::TrainSchedule::retrieve_batch(&mut db_pool.get().await?, train_ids)
+            .await?;
 
     assert!(missing.is_empty());
 
@@ -96,7 +96,7 @@ pub async fn trains_import(
     };
 
     let train_schedules: Vec<TrainSchedule> = serde_json::from_reader(BufReader::new(train_file))?;
-    let changesets: Vec<Changeset<models::TrainSchedule>> = train_schedules
+    let changesets: Vec<Changeset<editoast_models::TrainSchedule>> = train_schedules
         .into_iter()
         .map(|train_schedule| {
             TrainScheduleForm {
@@ -107,7 +107,7 @@ pub async fn trains_import(
         })
         .collect();
     let inserted: Vec<_> =
-        models::TrainSchedule::create_batch(&mut db_pool.get().await?, changesets).await?;
+        editoast_models::TrainSchedule::create_batch(&mut db_pool.get().await?, changesets).await?;
 
     println!(
         "✅ {} train schedules created for timetable with id {}",

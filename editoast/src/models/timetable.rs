@@ -11,9 +11,9 @@ use editoast_derive::Model;
 use futures_util::stream::TryStreamExt;
 use std::ops::DerefMut;
 
-use crate::models::train_schedule::TrainSchedule;
 use database::DbConnection;
 use editoast_models::prelude::*;
+use editoast_models::train_schedule::TrainSchedule;
 
 #[derive(Debug, Default, Clone, Model)]
 #[cfg_attr(test, derive(serde::Deserialize))]
@@ -201,8 +201,8 @@ pub mod tests {
 
     use super::*;
     use crate::models::fixtures::create_timetable;
-    use crate::models::train_schedule::TrainScheduleChangeset;
     use database::DbConnectionPoolV2;
+    use editoast_models::train_schedule::TrainScheduleChangeset;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn test_schedules_in_time_window() {

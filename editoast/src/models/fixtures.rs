@@ -235,8 +235,10 @@ pub fn simple_paced_train_base() -> PacedTrain {
     }
 }
 
-pub fn simple_train_schedule_changeset(timetable_id: i64) -> Changeset<models::TrainSchedule> {
-    Changeset::<models::TrainSchedule>::from(schemas::TrainSchedule::fake())
+pub fn simple_train_schedule_changeset(
+    timetable_id: i64,
+) -> Changeset<editoast_models::TrainSchedule> {
+    Changeset::<editoast_models::TrainSchedule>::from(schemas::TrainSchedule::fake())
         .timetable_id(timetable_id)
 }
 
@@ -247,7 +249,7 @@ pub fn simple_paced_train_changeset(timetable_id: i64) -> Changeset<models::Pace
 pub async fn create_simple_train_schedule(
     conn: &mut DbConnection,
     timetable_id: i64,
-) -> models::TrainSchedule {
+) -> editoast_models::TrainSchedule {
     simple_train_schedule_changeset(timetable_id)
         .create(conn)
         .await
