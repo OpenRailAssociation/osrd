@@ -937,7 +937,7 @@ impl crate::prelude::UpdateBatchUnchecked<Document, (String)> for DocumentChange
         self,
         conn: &mut database::DbConnection,
         ids: I,
-    ) -> crate::error::Result<C, Self::Error> {
+    ) -> std::result::Result<C, Self::Error> {
         use crate::prelude::Model;
         use database::tables::osrd_infra_document::dsl;
         use diesel::prelude::*;
@@ -991,7 +991,7 @@ impl crate::prelude::UpdateBatchUnchecked<Document, (String)> for DocumentChange
         self,
         conn: &mut database::DbConnection,
         ids: I,
-    ) -> crate::error::Result<C, Self::Error> {
+    ) -> std::result::Result<C, Self::Error> {
         use crate::prelude::Identifiable;
         use crate::prelude::Model;
         use database::tables::osrd_infra_document::dsl;
@@ -1053,7 +1053,7 @@ impl crate::prelude::UpdateBatchUnchecked<Document, (i64)> for DocumentChangeset
         self,
         conn: &mut database::DbConnection,
         ids: I,
-    ) -> crate::error::Result<C, Self::Error> {
+    ) -> std::result::Result<C, Self::Error> {
         use crate::prelude::Model;
         use database::tables::osrd_infra_document::dsl;
         use diesel::prelude::*;
@@ -1107,7 +1107,7 @@ impl crate::prelude::UpdateBatchUnchecked<Document, (i64)> for DocumentChangeset
         self,
         conn: &mut database::DbConnection,
         ids: I,
-    ) -> crate::error::Result<C, Self::Error> {
+    ) -> std::result::Result<C, Self::Error> {
         use crate::prelude::Identifiable;
         use crate::prelude::Model;
         use database::tables::osrd_infra_document::dsl;
