@@ -404,44 +404,41 @@ impl Conflict {
         conflict: CoreConflict,
         trains_map: &HashMap<Uuid, TrainId>,
     ) -> Result<Self> {
-        let (train_schedule_ids, paced_train_occurrence_ids): (Vec<_>, Vec<_>) =
-            conflict.train_ids.iter().partition_map(|train_uuid| {
-                match Uuid::parse_str(train_uuid)
-                    .ok()
-                    .and_then(|train_uuid| trains_map.get(&train_uuid).cloned())
-                {
-                    Some(TrainId::TrainSchedule(id)) => Either::Left(id),
-                    Some(TrainId::PacedTrain {
-                        paced_train_id,
-                        occurrence_id: OccurrenceId::BaseOccurrence { index },
-                    }) => Either::Right(PacedTrainOccurrenceId {
-                        paced_train_id,
-                        occurrence_ref: PacedTrainOccurrenceRef::BaseOccurrence { index },
-                    }),
-                    Some(TrainId::PacedTrain {
-                        paced_train_id,
-                        occurrence_id: OccurrenceId::CreatedException { exception_key },
-                    }) => Either::Right(PacedTrainOccurrenceId {
-                        paced_train_id,
-                        occurrence_ref: PacedTrainOccurrenceRef::CreatedException { exception_key },
-                    }),
-                    Some(TrainId::PacedTrain {
-                        paced_train_id,
-                        occurrence_id:
-                            OccurrenceId::ModifiedException {
-                                exception_key,
-                                index,
-                            },
-                    }) => Either::Right(PacedTrainOccurrenceId {
-                        paced_train_id,
-                        occurrence_ref: PacedTrainOccurrenceRef::ModifiedException {
-                            index,
+        let (train_schedule_ids, paced_train_occurrence_ids): (Vec<_>, Vec<_>) = conflict
+            .train_ids
+            .iter()
+            .partition_map(|train_uuid| match trains_map.get(train_uuid).cloned() {
+                Some(TrainId::TrainSchedule(id)) => Either::Left(id),
+                Some(TrainId::PacedTrain {
+                    paced_train_id,
+                    occurrence_id: OccurrenceId::BaseOccurrence { index },
+                }) => Either::Right(PacedTrainOccurrenceId {
+                    paced_train_id,
+                    occurrence_ref: PacedTrainOccurrenceRef::BaseOccurrence { index },
+                }),
+                Some(TrainId::PacedTrain {
+                    paced_train_id,
+                    occurrence_id: OccurrenceId::CreatedException { exception_key },
+                }) => Either::Right(PacedTrainOccurrenceId {
+                    paced_train_id,
+                    occurrence_ref: PacedTrainOccurrenceRef::CreatedException { exception_key },
+                }),
+                Some(TrainId::PacedTrain {
+                    paced_train_id,
+                    occurrence_id:
+                        OccurrenceId::ModifiedException {
                             exception_key,
+                            index,
                         },
-                    }),
-                    None => {
-                        unreachable!("Unreachable case encountered while partitioning train IDs")
-                    }
+                }) => Either::Right(PacedTrainOccurrenceId {
+                    paced_train_id,
+                    occurrence_ref: PacedTrainOccurrenceRef::ModifiedException {
+                        index,
+                        exception_key,
+                    },
+                }),
+                None => {
+                    unreachable!("Unreachable case encountered while partitioning train IDs")
                 }
             });
 
