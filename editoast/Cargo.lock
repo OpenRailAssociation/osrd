@@ -1458,6 +1458,7 @@ dependencies = [
  "opentelemetry-semantic-conventions",
  "postgis_diesel",
  "postgres-openssl",
+ "pretty_assertions",
  "regex",
  "schemas",
  "serde",

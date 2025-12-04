@@ -3,7 +3,6 @@ use std::collections::HashMap;
 use chrono::DateTime;
 use chrono::Utc;
 use editoast_derive::Model;
-use editoast_models::rolling_stock::TrainMainCategory;
 use schemas;
 use schemas::rolling_stock::TrainCategory;
 use schemas::train_schedule;
@@ -16,7 +15,9 @@ use schemas::train_schedule::ScheduleItem;
 use schemas::train_schedule::TrainScheduleLike;
 use schemas::train_schedule::TrainScheduleOptions;
 
-use editoast_models::prelude::*;
+use crate as editoast_models;
+use crate::prelude::*;
+use crate::rolling_stock::TrainMainCategory;
 
 #[derive(Debug, Clone, Model)]
 #[cfg_attr(test, derive(Default))]
@@ -202,11 +203,10 @@ impl TrainSchedule {
 mod tests {
     use super::*;
 
+    use crate::SubCategory;
+    use crate::rolling_stock::TrainMainCategory;
     use database::DbConnectionPoolV2;
     use diesel_async::RunQueryDsl;
-    use editoast_models::SubCategory;
-    use editoast_models::prelude::*;
-    use editoast_models::rolling_stock::TrainMainCategory;
     use pretty_assertions::assert_eq;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -241,7 +241,7 @@ mod tests {
 
         assert_eq!(
             error,
-            editoast_models::Error::CheckViolation {
+            crate::Error::CheckViolation {
                 constraint: "only_one_category".to_string(),
             }
         );

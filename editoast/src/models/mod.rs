@@ -20,7 +20,6 @@ pub mod stdcm_search_environment;
 pub mod study;
 
 pub mod timetable;
-pub mod train_schedule;
 
 pub use infra::Infra;
 pub use infra_objects::*;
@@ -30,8 +29,6 @@ pub use rolling_stock::RollingStock;
 pub use round_trips::TrainScheduleRoundTrips;
 pub use scenario::Scenario;
 pub use study::Study;
-
-pub use train_schedule::TrainSchedule;
 
 #[cfg(test)]
 mod tests {

@@ -198,17 +198,17 @@ async fn delete_sub_category_and_fallback_to_main(
         .update_batch(conn, paced_trains_ids)
         .await?;
 
-    let train_schedule_ids: Vec<i64> = models::TrainSchedule::list(
+    let train_schedule_ids: Vec<i64> = editoast_models::TrainSchedule::list(
         conn,
         SelectionSettings::new()
-            .filter(move || models::TrainSchedule::SUB_CATEGORY.eq(Some(code.clone()))),
+            .filter(move || editoast_models::TrainSchedule::SUB_CATEGORY.eq(Some(code.clone()))),
     )
     .await?
     .into_iter()
     .map(|train_schedule| train_schedule.id)
     .collect();
 
-    let _: (Vec<_>, _) = models::TrainSchedule::changeset()
+    let _: (Vec<_>, _) = editoast_models::TrainSchedule::changeset()
         .main_category(Some(sub_category.main_category.clone()))
         .sub_category(None)
         .update_batch(conn, train_schedule_ids)
@@ -434,13 +434,13 @@ pub mod tests {
         );
 
         let train_schedule_1 =
-            models::TrainSchedule::retrieve(db_pool.get_ok(), train_schedule_1.id)
+            editoast_models::TrainSchedule::retrieve(db_pool.get_ok(), train_schedule_1.id)
                 .await
                 .expect("Failed to retrieve train schedule")
                 .expect("Train schedule 1 not found");
 
         let train_schedule_2 =
-            models::TrainSchedule::retrieve(db_pool.get_ok(), train_schedule_2.id)
+            editoast_models::TrainSchedule::retrieve(db_pool.get_ok(), train_schedule_2.id)
                 .await
                 .expect("Failed to retrieve train schedule")
                 .expect("Train schedule 2 not found");
