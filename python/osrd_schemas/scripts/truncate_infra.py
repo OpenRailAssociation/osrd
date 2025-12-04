@@ -251,7 +251,7 @@ def filter_routes(
                 # This is an edge case not yet handled
                 print(f"Warning: dropping {route.id} that is partially included")
 
-        elif entry_included or exit_included:
+        elif entry_included ^ exit_included:
             # The route is partially included, we need to adapt it
             route = route.model_copy()
             switch_directions = order_switch_directions(
