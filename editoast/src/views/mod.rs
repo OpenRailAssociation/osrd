@@ -54,6 +54,7 @@ use axum::extract::Request;
 use axum::middleware::Next;
 use axum::response::Response;
 use axum_tracing_opentelemetry::middleware::OtelAxumLayer;
+use axum_tracing_opentelemetry::middleware::OtelInResponseLayer;
 use chrono::Duration;
 use dashmap::DashMap;
 
@@ -1008,6 +1009,7 @@ impl Server {
                 app_state.clone(),
                 authentication_middleware,
             ))
+            .layer(OtelInResponseLayer)
             .layer(OtelAxumLayer::default())
             .layer(DefaultBodyLimit::disable())
             .layer(request_payload_limit)
