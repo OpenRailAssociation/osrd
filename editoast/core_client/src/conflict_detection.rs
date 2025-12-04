@@ -57,7 +57,7 @@ pub struct ConflictDetectionResponse {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct Conflict {
     /// List of train schedule ids and paced train generated occurrences involved in the conflict
-    pub train_ids: Vec<String>,
+    pub train_ids: Vec<Uuid>,
     /// List of work schedule ids involved in the conflict
     pub work_schedule_ids: Vec<String>,
     /// Datetime of the start of the conflict
