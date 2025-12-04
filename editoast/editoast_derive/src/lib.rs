@@ -222,6 +222,7 @@ pub fn search_config_store(input: proc_macro::TokenStream) -> proc_macro::TokenS
 /// * `#[model(remote = "T")]`: calls `Into::<T>::into` before writing the field to the database and calls `T::from` after reading (diesel column type: T)
 /// * `#[model(uom_unit = "path::to::unit")]`: the value is the path to an unit defined in common, e.g. `"common::units::meter"`
 /// * `#[model(geo)]` **TODO**: TBD
+/// * `#[model(non_null_array = "T")]`: wraps type `T` into an `Option<T>` when interfacing with diesel to satisfy the nullable property of postgres arrays
 ///
 /// #### A note on identifiers
 ///
