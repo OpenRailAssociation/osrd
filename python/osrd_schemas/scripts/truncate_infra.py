@@ -17,7 +17,6 @@ from osrd_schemas.infra import (
     Switch,
     SwitchType,
     TrackRange,
-    TrackSection,
 )
 from osrd_schemas.switch_type import CROSSING, DOUBLE_SLIP_SWITCH, LINK, POINT_SWITCH
 
@@ -85,16 +84,6 @@ def truncate_infra(infra: RailJsonInfra, bbox: Polygon) -> RailJsonInfra:
     )
 
     return new_infra
-
-
-def filter_track_sections(
-    track_sections: list[TrackSection], bbox: Polygon
-) -> list[TrackSection]:
-    return [
-        track
-        for track in track_sections
-        if bbox.intersects(LineString(track.geo.coordinates))
-    ]
 
 
 def filter_operational_points(
