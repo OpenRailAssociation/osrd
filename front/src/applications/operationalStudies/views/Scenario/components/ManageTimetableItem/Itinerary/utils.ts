@@ -9,17 +9,14 @@ export const computePathStepCoordinates = (pathStepMetadata: PathStepMetadata) =
     return [pathStepMetadata.coordinates];
   }
   if (pathStepMetadata.secondaryCode && pathStepMetadata.trackName) {
-    const locationMetadata = pathStepMetadata.locationsBySecondaryCode
-      .get(pathStepMetadata.secondaryCode)
-      ?.find((loc) => loc.trackName === pathStepMetadata.trackName);
-    return locationMetadata ? [locationMetadata.coordinates] : [];
+    const foundPart = pathStepMetadata.parts.find(
+      (part) => part.trackName === pathStepMetadata.trackName
+    );
+    return foundPart ? [foundPart.coordinates] : [];
   }
   if (pathStepMetadata.secondaryCode) {
-    const locationMetadata = pathStepMetadata.locationsBySecondaryCode.get(
-      pathStepMetadata.secondaryCode
-    );
-    return (locationMetadata ?? []).map((loc) => loc.coordinates);
+    return pathStepMetadata.parts.map((part) => part.coordinates);
   }
-  const allMetadata = Array.from(pathStepMetadata.locationsBySecondaryCode.values()).flat();
-  return allMetadata.map((metadata) => metadata.coordinates);
+  // If the path step has no secondary code, don't display its marker on the map
+  return [];
 };

@@ -8,7 +8,6 @@ import { useScenarioContext } from 'applications/operationalStudies/hooks/useSce
 import {
   osrdEditoastApi,
   type OperationalPointReference,
-  type RelatedOperationalPoint,
   type TrainSchedule,
 } from 'common/api/osrdEditoastApi';
 import type { PathStepMetadata, PathStepV2 } from 'reducers/osrdconf/types';
@@ -111,21 +110,11 @@ export const usePathStepsMetadata = (pathSteps: PathStepV2[]) => {
   useEffect(() => {
     const fetchAndSetMetadata = async () => {
       // 4. Get all track ids of all matched operational points to get all tracks metadata
-      // and regroup ops by uic to easily get all secondary codes and track names for each path step
       const matchedTrackIds = new Set<string>();
-      const opsByUic = new Map<number, RelatedOperationalPoint[]>();
       allOps.forEach((op) => {
         op.parts.forEach((part) => {
           matchedTrackIds.add(part.track);
         });
-        const uic = op.extensions?.identifier?.uic;
-        if (uic) {
-          if (!opsByUic.has(uic)) {
-            opsByUic.set(uic, [op]);
-          } else {
-            opsByUic.get(uic)!.push(op);
-          }
-        }
       });
       const allTrackIds = Array.from(matchedTrackIds);
 
@@ -210,33 +199,15 @@ export const usePathStepsMetadata = (pathSteps: PathStepV2[]) => {
           return;
         }
 
-        // Get the ops with the same uic to get all its secondary codes and track names
-        // to display in the form
-        const opsWithSameUic = opsByUic.get(matchedOp.extensions?.identifier?.uic ?? -1) ?? [];
-
-        const locationsBySecondaryCode: Extract<
-          PathStepMetadata,
-          { isInvalid: false; type: 'opRef' }
-        >['locationsBySecondaryCode'] = new Map();
-
-        opsWithSameUic.forEach((op) => {
-          const metadata: {
-            trackId: string;
-            trackName: string;
-            lineName: string;
-            coordinates: Position;
-          }[] = [];
-          op.parts.forEach((part) => {
+        const parts: Extract<PathStepMetadata, { isInvalid: false; type: 'opRef' }>['parts'] =
+          matchedOp.parts.map((part) => {
             const correspondingTrack = trackSectionsById[part.track];
-            metadata.push({
+            return {
               trackId: correspondingTrack?.id ?? '',
               trackName: correspondingTrack?.extensions?.sncf?.track_name ?? '',
-              lineName: correspondingTrack?.extensions?.sncf?.line_name ?? '',
               coordinates: part.geo?.coordinates as Position,
-            });
+            };
           });
-          locationsBySecondaryCode.set(op.extensions?.sncf?.ch ?? '', metadata);
-        });
 
         // Get the track name in case the path step has a track_reference with track_id
         let correspondingTrackName: string | undefined;
@@ -254,7 +225,7 @@ export const usePathStepsMetadata = (pathSteps: PathStepV2[]) => {
           uic: matchedOp.extensions?.identifier?.uic,
           secondaryCode: matchedOp.extensions?.sncf?.ch,
           trackName: correspondingTrackName,
-          locationsBySecondaryCode,
+          parts,
         });
       });
 

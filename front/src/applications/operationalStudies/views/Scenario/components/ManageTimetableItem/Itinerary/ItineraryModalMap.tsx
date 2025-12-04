@@ -180,11 +180,8 @@ const ItineraryModalMap = ({
                 const matchedOp = pathProperties.operational_points.find((op) =>
                   matchOpRefAndOp(pathStepLocation, op)
                 );
-                const secondaryCodeMetadata = pathStepMetadata.locationsBySecondaryCode.get(
-                  matchedOp?.extensions?.sncf?.ch || ''
-                );
-                const trackMetadata = secondaryCodeMetadata?.find(
-                  (metadata) => metadata.trackId === matchedOp?.part.track
+                const trackMetadata = pathStepMetadata.parts.find(
+                  (part) => part.trackId === matchedOp?.part.track
                 );
                 coordinates = trackMetadata?.coordinates;
               }

@@ -78,10 +78,10 @@ const PathStepItem = ({
     if (!isOpRefMetadata(pathStepMetadata)) return [];
     return [
       { label: '', id: '' },
-      ...Array.from(pathStepMetadata.locationsBySecondaryCode.keys()).map((key) => ({
-        label: key,
-        id: key,
-      })),
+      {
+        label: pathStepMetadata.secondaryCode || '',
+        id: pathStepMetadata.secondaryCode || '',
+      },
     ];
   }, [pathStepMetadata]);
 
@@ -96,17 +96,12 @@ const PathStepItem = ({
 
   const trackNameSuggestions = useMemo(() => {
     const selectedSecondaryCode = selectedSecondaryCodeOption.id;
-    if (!selectedSecondaryCode) return [];
+    if (!selectedSecondaryCode || !isOpRefMetadata(pathStepMetadata)) return [];
 
-    const selectedSecondaryCodeLocations =
-      (isOpRefMetadata(pathStepMetadata) &&
-        pathStepMetadata.locationsBySecondaryCode.get(selectedSecondaryCode)) ||
-      [];
-
-    const sortedSuggestions = selectedSecondaryCodeLocations
-      .map((location, i) => ({
-        label: location.trackName,
-        id: `${location.trackId}-${i}`,
+    const sortedSuggestions = (pathStepMetadata?.parts || [])
+      .map((part, i) => ({
+        label: part.trackName,
+        id: `${part.trackId}-${i}`,
       }))
       // Sort with numbers first in ascending order, then alphabetically
       .sort((a, b) => {

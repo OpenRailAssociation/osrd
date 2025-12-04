@@ -151,16 +151,9 @@ export type PathStepMetadata =
        */
       trackName?: string;
       /**
-       * An OperationalPoint is not unique by its UIC but by its UIC + secondary code.
-       *
-       * However, it can contains multiple parts since it can be referenced on multiple tracks.
-       *
-       * This Map stores all possible locations for a given op's secondary code.
+       * Data of all parts (tracks) of the path step (name + ch)
        */
-      locationsBySecondaryCode: Map<
-        string,
-        { trackId: string; trackName: string; lineName: string; coordinates: Position }[]
-      >;
+      parts: { trackId: string; trackName: string; coordinates: Position }[];
     };
 
 export type StdcmPathStep = {
