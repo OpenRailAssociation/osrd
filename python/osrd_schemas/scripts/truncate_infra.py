@@ -32,10 +32,11 @@ SWITCH_TYPES: Mapping[str, SwitchType] = {
 def truncate_infra(infra: RailJsonInfra, bbox: Polygon) -> RailJsonInfra:
     new_infra = RailJsonInfra.empty()
 
-    def keep_track_section(track_section: TrackSection) -> bool:
-        return bbox.intersects(LineString(track_section.geo.coordinates))
-
-    new_infra.track_sections = list(filter(keep_track_section, infra.track_sections))
+    new_infra.track_sections = [
+        track_section
+        for track_section in infra.track_sections
+        if bbox.intersects(LineString(track_section.geo.coordinates))
+    ]
 
     print(
         f"Keeping {len(new_infra.track_sections)}/{len(infra.track_sections)} track sections"
@@ -43,15 +44,19 @@ def truncate_infra(infra: RailJsonInfra, bbox: Polygon) -> RailJsonInfra:
 
     track_section_ids_to_keep = {ts.id for ts in new_infra.track_sections}
 
-    new_infra.detectors = list(
-        filter(lambda d: d.track in track_section_ids_to_keep, infra.detectors)
-    )
-    new_infra.buffer_stops = list(
-        filter(lambda b: b.track in track_section_ids_to_keep, infra.buffer_stops)
-    )
-    new_infra.signals = list(
-        filter(lambda s: s.track in track_section_ids_to_keep, infra.signals)
-    )
+    new_infra.detectors = [
+        detector
+        for detector in infra.detectors
+        if detector.track in track_section_ids_to_keep
+    ]
+    new_infra.buffer_stops = [
+        buffer_stop
+        for buffer_stop in infra.buffer_stops
+        if buffer_stop.track in track_section_ids_to_keep
+    ]
+    new_infra.signals = [
+        signal for signal in infra.signals if signal.track in track_section_ids_to_keep
+    ]
 
     new_infra.operational_points = filter_operational_points(
         infra.operational_points, track_section_ids_to_keep
