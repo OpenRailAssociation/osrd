@@ -113,11 +113,13 @@
     },
     "macro_node": {
       "Database": "Internal error",
-      "NotFound": "Node {{node_id}} not found."
+      "NotFound": "Node {{node_id}} not found.",
+      "ScenarioNotFound": "Scenario '{{scenario_id}}' not found"
     },
     "macro_note": {
       "Database": "Internal error (database)",
       "NotFound": "Note '{{note_id}}' not found.",
+      "ScenarioNotFound": "Scenario '{{scenario_id}}' not found",
       "WrongScenario": "Note '{note_id}' does not belong to scenario '{scenario_id}'"
     },
     "model": {
@@ -189,6 +191,7 @@
       "Database": "Internal error (database)",
       "InfraNotFound": "Infrastructure '{{infra_id}}' not found",
       "NotFound": "Scenario not found",
+      "StudyNotFound": "Study '{{study_id}}' not found",
       "TimetableNotFound": "Timetable '{{timetable_id}}' not found"
     },
     "search": {
@@ -238,6 +241,7 @@
     "study": {
       "Database": "Internal error (database)",
       "NotFound": "Study '{{study_id}}' could not be found",
+      "ProjectNotFound": "Project '{{project_id}}' not found",
       "StartDateAfterEndDate": "The study start date must be before the end date"
     },
     "sub_categories": {

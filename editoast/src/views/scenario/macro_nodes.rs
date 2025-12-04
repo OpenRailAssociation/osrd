@@ -18,8 +18,8 @@ use thiserror::Error;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
 
-use crate::error::InternalError;
 use crate::error::Result;
+use crate::models;
 use crate::models::Scenario;
 use crate::models::macro_node::MacroNode;
 use crate::views::AuthenticationExt;
@@ -30,16 +30,32 @@ use crate::views::pagination::PaginationStats;
 use editoast_models::prelude::*;
 use editoast_models::tags::Tags;
 
-#[derive(Debug, Error, EditoastError)]
+#[derive(Debug, Error, EditoastError, derive_more::From)]
 #[editoast_error(base_id = "macro_node")]
 enum MacroNodeError {
+    #[error("Scenario '{scenario_id}', could not be found")]
+    #[editoast_error(status = 404)]
+    ScenarioNotFound { scenario_id: i64 },
+
     #[error("Node '{node_id}', could not be found")]
     #[editoast_error(status = 404)]
     NotFound { node_id: i64 },
 
     #[error(transparent)]
     #[editoast_error(status = 500)]
-    Database(#[from] editoast_models::Error),
+    #[from(forward)]
+    Database(editoast_models::Error),
+}
+
+impl From<models::scenario::Error> for MacroNodeError {
+    fn from(e: models::scenario::Error) -> Self {
+        match e {
+            models::scenario::Error::NotFound { scenario_id } => {
+                MacroNodeError::ScenarioNotFound { scenario_id }
+            }
+            models::scenario::Error::Database(e) => MacroNodeError::Database(e),
+        }
+    }
 }
 
 #[derive(IntoParams, Deserialize)]
@@ -213,12 +229,13 @@ pub(in crate::views) async fn create(
 
                 let macro_nodes: Vec<_> = MacroNode::create_batch(&mut conn, changesets).await?;
 
-                Ok::<_, InternalError>(macro_nodes)
+                Ok::<_, MacroNodeError>(macro_nodes)
             }
             .scope_boxed()
         },
     )
-    .await?;
+    .await
+    .map_err(MacroNodeError::from)??;
 
     Ok((
         StatusCode::CREATED,
@@ -308,14 +325,15 @@ pub(in crate::views) async fn update(
                                 })
                                 .await?;
 
-                            Ok::<_, InternalError>(node)
+                            Ok::<_, MacroNodeError>(node)
                         }
                         .scope_boxed()
                     },
                 )
-                .await?;
+                .await
+                .map_err(MacroNodeError::from)??;
 
-                Ok::<_, InternalError>(updated_macro_node)
+                Ok::<_, MacroNodeError>(updated_macro_node)
             }
             .scope_boxed()
         })
@@ -362,14 +380,15 @@ pub(in crate::views) async fn delete(
                 move |mut conn, _scenario, _study, _project| {
                     async move {
                         node.delete(&mut conn).await?;
-                        Ok::<_, InternalError>(())
+                        Ok::<_, MacroNodeError>(())
                     }
                     .scope_boxed()
                 },
             )
-            .await?;
+            .await
+            .map_err(MacroNodeError::from)??;
 
-            Ok::<_, InternalError>(())
+            Ok::<_, MacroNodeError>(())
         }
         .scope_boxed()
     })

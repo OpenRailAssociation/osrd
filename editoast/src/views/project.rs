@@ -24,7 +24,9 @@ use super::AuthenticationExt;
 use super::operational_studies::OperationalStudiesOrderingParam;
 use super::pagination::PaginatedList;
 use super::pagination::PaginationStats;
+use crate::error::InternalError;
 use crate::error::Result;
+use crate::models;
 use crate::models::Project;
 use crate::views::AuthorizationError;
 use crate::views::pagination::PaginationQueryParams;
@@ -48,6 +50,17 @@ pub enum ProjectError {
     #[from(forward)]
     #[editoast_error(status = 500)]
     Database(editoast_models::Error),
+}
+
+impl From<models::project::Error> for ProjectError {
+    fn from(e: models::project::Error) -> Self {
+        match e {
+            models::project::Error::NotFound { project_id } => {
+                ProjectError::NotFound { project_id }
+            }
+            models::project::Error::Database(e) => ProjectError::Database(e),
+        }
+    }
 }
 
 /// Creation form for a project
@@ -109,7 +122,10 @@ pub struct ProjectWithStudyCount {
 }
 
 impl ProjectWithStudyCount {
-    async fn try_fetch(conn: &mut DbConnection, project: Project) -> Result<Self> {
+    async fn try_fetch(
+        conn: &mut DbConnection,
+        project: Project,
+    ) -> Result<Self, editoast_models::Error> {
         let studies_count = project.studies_count(conn).await?;
         Ok(Self {
             project,
@@ -196,7 +212,9 @@ pub(in crate::views) async fn list(
         .into_iter()
         .zip(db_pool.iter_conn())
         .map(|(project, conn)| async move {
-            ProjectWithStudyCount::try_fetch(&mut conn.await?, project).await
+            ProjectWithStudyCount::try_fetch(&mut conn.await?, project)
+                .await
+                .map_err(InternalError::from)
         });
     let results = futures::future::try_join_all(results).await?;
     Ok(Json(ProjectWithStudyCountList { results, stats }))
@@ -384,7 +402,8 @@ pub(in crate::views) async fn patch(
             }
             .scope_boxed()
         })
-        .await?;
+        .await
+        .map_err(ProjectError::from)??;
 
     Ok(Json(
         ProjectWithStudyCount::try_fetch(&mut conn, project).await?,

@@ -11,9 +11,6 @@ use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
 
-use crate::error::InternalError;
-use crate::models::timetable::Timetable;
-use crate::views::scenario::ScenarioError;
 use database::DbConnection;
 use editoast_derive::Model;
 use editoast_models::prelude::*;
@@ -21,6 +18,7 @@ use editoast_models::tags::Tags;
 
 use super::Project;
 use super::Study;
+use super::timetable::Timetable;
 
 #[derive(Debug, Clone, Model, Deserialize, Serialize, ToSchema)]
 #[model(table = database::tables::scenario)]
@@ -40,6 +38,15 @@ pub struct Scenario {
     #[schema(nullable = false)]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub electrical_profile_set_id: Option<i64>,
+}
+
+#[derive(thiserror::Error, derive_more::From, Debug)]
+pub enum Error {
+    #[error("Scenario with id {scenario_id} not found")]
+    NotFound { scenario_id: i64 },
+    #[error(transparent)]
+    #[from(forward)]
+    Database(editoast_models::Error),
 }
 
 impl Scenario {
@@ -88,10 +95,10 @@ impl Scenario {
         conn: DbConnection,
         scenario_id: i64,
         f: F,
-    ) -> Result<T, InternalError>
+    ) -> Result<Result<T, E>, Error>
     where
         T: Send,
-        E: Into<InternalError> + Send, // EditoastError bound will be removed when retrieve will return the model's error
+        E: Send,
         F: FnOnce(
                 DbConnection,
                 Self,
@@ -104,7 +111,7 @@ impl Scenario {
         conn.transaction(|mut conn| {
             async move {
                 let scenario = Self::retrieve_or_fail(conn.clone(), scenario_id, || {
-                    ScenarioError::NotFound { scenario_id }
+                    Error::NotFound { scenario_id }
                 })
                 .await?;
 
@@ -116,14 +123,23 @@ impl Scenario {
                         async move { f(conn, scenario, study, project).await }.scope_boxed()
                     },
                 )
-                .await?;
+                .await;
+
+                let t = match t {
+                    Ok(Ok(t)) => t,
+                    Ok(Err(e)) => return Ok(Err(e)),
+                    Err(super::study::Error::NotFound { .. }) => {
+                        unreachable!("Database integrity error: Scenario's study not found")
+                    }
+                    Err(super::study::Error::Database(e)) => return Err(e.into()),
+                };
 
                 Scenario::changeset()
                     .last_modification(Utc::now())
                     .update(&mut conn, id)
                     .await?;
 
-                Ok(t)
+                Ok(Ok(t))
             }
             .scope_boxed()
         })

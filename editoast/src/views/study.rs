@@ -28,6 +28,8 @@ use crate::error::InternalError;
 use crate::error::Result;
 use crate::models::Project;
 use crate::models::Study;
+use crate::models::project::Error as ProjectModelError;
+use crate::models::study::Error as StudyModelError;
 use crate::views::pagination::PaginatedList as _;
 use crate::views::pagination::PaginationQueryParams;
 use crate::views::project::ProjectError;
@@ -52,16 +54,39 @@ fn validate_study_dates(
     Ok(())
 }
 
-#[derive(Debug, Error, EditoastError)]
+#[derive(Debug, Error, EditoastError, derive_more::From)]
 #[editoast_error(base_id = "study")]
 pub enum StudyError {
-    /// Couldn't found the study with the given study ID
     #[error("Study '{study_id}', could not be found")]
     #[editoast_error(status = 404)]
     NotFound { study_id: i64 },
+    #[error("Project '{project_id}' could not be found")]
+    #[editoast_error(status = 404)]
+    ProjectNotFound { project_id: i64 },
     #[error(transparent)]
     #[editoast_error(status = 500)]
-    Database(#[from] editoast_models::Error),
+    #[from(forward)]
+    Database(editoast_models::Error),
+}
+
+impl From<StudyModelError> for StudyError {
+    fn from(e: StudyModelError) -> Self {
+        match e {
+            StudyModelError::NotFound { study_id } => StudyError::NotFound { study_id },
+            StudyModelError::Database(db_err) => StudyError::Database(db_err),
+        }
+    }
+}
+
+impl From<ProjectModelError> for StudyError {
+    fn from(e: ProjectModelError) -> Self {
+        match e {
+            ProjectModelError::NotFound { project_id } => {
+                StudyError::ProjectNotFound { project_id }
+            }
+            ProjectModelError::Database(db_err) => StudyError::Database(db_err),
+        }
+    }
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, ToSchema)]
@@ -171,7 +196,8 @@ pub(in crate::views) async fn create(
             .scope_boxed()
         },
     )
-    .await?;
+    .await
+    .map_err(StudyError::from)??;
 
     // Return study with list of scenarios
     let study_response = StudyWithScenarioCount {
@@ -229,9 +255,10 @@ pub(in crate::views) async fn delete(
                 }
                 .scope_boxed()
             })
-            .await?;
+            .await
+            .map_err(StudyError::from)??;
 
-            Ok::<_, InternalError>(())
+            Ok::<_, StudyError>(())
         }
         .scope_boxed()
     })
@@ -392,7 +419,8 @@ pub(in crate::views) async fn patch(
             .scope_boxed()
         },
     )
-    .await?;
+    .await
+    .map_err(StudyError::from)??;
 
     Ok(Json(response))
 }

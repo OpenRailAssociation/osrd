@@ -25,6 +25,7 @@ use utoipa::ToSchema;
 
 use crate::error::InternalError;
 use crate::error::Result;
+use crate::models;
 use crate::models::Infra;
 use crate::models::Project;
 use crate::models::Study;
@@ -74,10 +75,14 @@ impl From<ScenarioCreateForm> for Changeset<Scenario> {
     }
 }
 
-#[derive(Debug, Error, EditoastError)]
+#[derive(Debug, Error, EditoastError, derive_more::From)]
 #[editoast_error(base_id = "scenario")]
 #[allow(clippy::enum_variant_names)]
 pub enum ScenarioError {
+    #[error("Study '{study_id}', could not be found")]
+    #[editoast_error(status = 404)]
+    StudyNotFound { study_id: i64 },
+
     #[error("Scenario '{scenario_id}', could not be found")]
     #[editoast_error(status = 404)]
     NotFound { scenario_id: i64 },
@@ -92,7 +97,30 @@ pub enum ScenarioError {
 
     #[error(transparent)]
     #[editoast_error(status = 500)]
-    Database(#[from] editoast_models::Error),
+    #[from(forward)]
+    Database(editoast_models::Error),
+}
+
+impl From<models::scenario::Error> for ScenarioError {
+    fn from(e: models::scenario::Error) -> Self {
+        match e {
+            models::scenario::Error::NotFound { scenario_id } => {
+                ScenarioError::NotFound { scenario_id }
+            }
+            models::scenario::Error::Database(e) => ScenarioError::Database(e),
+        }
+    }
+}
+
+impl From<models::study::Error> for ScenarioError {
+    fn from(e: models::study::Error) -> Self {
+        match e {
+            models::study::Error::NotFound { study_id } => {
+                ScenarioError::StudyNotFound { study_id }
+            }
+            models::study::Error::Database(e) => ScenarioError::Database(e),
+        }
+    }
 }
 
 #[derive(Debug, Clone, Deserialize, Serialize, ToSchema)]
@@ -105,7 +133,10 @@ pub struct ScenarioWithDetails {
 }
 
 impl ScenarioWithDetails {
-    pub async fn from_scenario(scenario: Scenario, conn: &mut DbConnection) -> Result<Self> {
+    pub async fn from_scenario(
+        scenario: Scenario,
+        conn: &mut DbConnection,
+    ) -> Result<Self, database::DatabaseError> {
         Ok(Self {
             infra_name: scenario.infra_name(conn).await?,
             trains_count: scenario.trains_count(conn).await?,
@@ -194,7 +225,8 @@ pub(in crate::views) async fn create(
             .scope_boxed()
         },
     )
-    .await?;
+    .await
+    .map_err(ScenarioError::from)??;
 
     Ok((StatusCode::CREATED, Json(details)))
 }
@@ -242,9 +274,10 @@ pub(in crate::views) async fn delete(
                     .scope_boxed()
                 },
             )
-            .await?;
+            .await
+            .map_err(ScenarioError::from)??;
 
-            Ok::<_, InternalError>(())
+            Ok::<_, ScenarioError>(())
         }
         .scope_boxed()
     })
@@ -321,12 +354,13 @@ pub(in crate::views) async fn patch(
                     .await?;
 
                 let details = ScenarioWithDetails::from_scenario(scenario, &mut conn).await?;
-                Ok::<_, InternalError>(details)
+                Ok::<_, ScenarioError>(details)
             }
             .scope_boxed()
         },
     )
-    .await?;
+    .await
+    .map_err(ScenarioError::from)??;
 
     Ok(Json(details))
 }
@@ -442,7 +476,9 @@ pub(in crate::views) async fn list(
         .into_iter()
         .zip(std::iter::repeat(&db_pool).map(|p| p.get()))
         .map(|(scenario, conn)| async {
-            ScenarioWithDetails::from_scenario(scenario, &mut conn.await?).await
+            ScenarioWithDetails::from_scenario(scenario, &mut conn.await?)
+                .await
+                .map_err(InternalError::from)
         });
     let results = futures::future::try_join_all(futs).await?;
 
