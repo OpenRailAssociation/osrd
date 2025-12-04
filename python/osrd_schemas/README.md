@@ -16,3 +16,18 @@ To add a primitive to the existing switch_types, you need to modify these 3 file
 If you want to contribute to this service you need:
 
 - [`uv`](https://docs.astral.sh/uv/).
+
+## Utils
+
+A script exists to help extracting a subset of an infrastructure, based of a GeoJSON boundary.
+You can use it the following way.
+
+```
+❯ uv run scripts/truncate_infra.py ../../tests/data/infras/small_infra/infra.json infra.json "[
+    [ -0.14969977501792187, 49.543586012039040 ],
+    [ -0.39177237871587070, 49.483236027590976 ],
+    [ -0.39779075836571565, 49.454119867540670 ],
+    [ -0.18982230601724837, 49.461509188307474 ],
+    [ -0.14969977501792187, 49.543586012039040 ]
+]"
+```
