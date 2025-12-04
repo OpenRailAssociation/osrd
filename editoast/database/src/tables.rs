@@ -146,6 +146,20 @@ diesel::table! {
     use postgis_diesel::sql_types::*;
     use super::sql_types::Geometry;
 
+    infra_layer_level_crossing (id) {
+        id -> Int8,
+        #[max_length = 255]
+        obj_id -> Varchar,
+        geographic -> Geometry,
+        infra_id -> Int8,
+    }
+}
+
+diesel::table! {
+    use diesel::sql_types::*;
+    use postgis_diesel::sql_types::*;
+    use super::sql_types::Geometry;
+
     infra_layer_neutral_section (id) {
         id -> Int8,
         #[max_length = 255]
@@ -309,6 +323,19 @@ diesel::table! {
     use postgis_diesel::sql_types::*;
 
     infra_object_extended_switch_type (id) {
+        id -> Int8,
+        #[max_length = 255]
+        obj_id -> Varchar,
+        data -> Jsonb,
+        infra_id -> Int8,
+    }
+}
+
+diesel::table! {
+    use diesel::sql_types::*;
+    use postgis_diesel::sql_types::*;
+
+    infra_object_level_crossing (id) {
         id -> Int8,
         #[max_length = 255]
         obj_id -> Varchar,
@@ -900,6 +927,7 @@ diesel::joinable!(infra_layer_buffer_stop -> infra (infra_id));
 diesel::joinable!(infra_layer_detector -> infra (infra_id));
 diesel::joinable!(infra_layer_electrification -> infra (infra_id));
 diesel::joinable!(infra_layer_error -> infra (infra_id));
+diesel::joinable!(infra_layer_level_crossing -> infra (infra_id));
 diesel::joinable!(infra_layer_neutral_section -> infra (infra_id));
 diesel::joinable!(infra_layer_neutral_sign -> infra (infra_id));
 diesel::joinable!(infra_layer_operational_point -> infra (infra_id));
@@ -912,6 +940,7 @@ diesel::joinable!(infra_object_buffer_stop -> infra (infra_id));
 diesel::joinable!(infra_object_detector -> infra (infra_id));
 diesel::joinable!(infra_object_electrification -> infra (infra_id));
 diesel::joinable!(infra_object_extended_switch_type -> infra (infra_id));
+diesel::joinable!(infra_object_level_crossing -> infra (infra_id));
 diesel::joinable!(infra_object_neutral_section -> infra (infra_id));
 diesel::joinable!(infra_object_operational_point -> infra (infra_id));
 diesel::joinable!(infra_object_route -> infra (infra_id));
@@ -958,6 +987,7 @@ diesel::allow_tables_to_appear_in_same_query!(
     infra_layer_detector,
     infra_layer_electrification,
     infra_layer_error,
+    infra_layer_level_crossing,
     infra_layer_neutral_section,
     infra_layer_neutral_sign,
     infra_layer_operational_point,
@@ -970,6 +1000,7 @@ diesel::allow_tables_to_appear_in_same_query!(
     infra_object_detector,
     infra_object_electrification,
     infra_object_extended_switch_type,
+    infra_object_level_crossing,
     infra_object_neutral_section,
     infra_object_operational_point,
     infra_object_route,
