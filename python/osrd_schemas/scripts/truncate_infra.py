@@ -200,21 +200,20 @@ def filter_switches(
                 for port in switch.ports.values()
                 if port.track in track_section_ids
             )
-            new_buffer_stops.append(
-                BufferStop(
-                    id=f"buffer_stop_{switch.id}",
-                    track=the_port.track,
-                    position=0
-                    if the_port.endpoint == Endpoint.BEGIN
-                    else track_length_by_track[the_port.track],
-                )
+            new_buffer_stop = BufferStop(
+                id=f"buffer_stop_{switch.id}",
+                track=the_port.track,
+                position=0
+                if the_port.endpoint == Endpoint.BEGIN
+                else track_length_by_track[the_port.track],
             )
             former_switch_id_to_buffer_stop_id[switch.id] = (
-                new_buffer_stops[-1].id,
+                new_buffer_stop.id,
                 Direction.START_TO_STOP
                 if the_port.endpoint == Endpoint.BEGIN
                 else Direction.STOP_TO_START,
             )
+            new_buffer_stops.append(new_buffer_stop)
 
     return filtered_switches, new_buffer_stops, former_switch_id_to_buffer_stop_id
 
