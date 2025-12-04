@@ -315,10 +315,11 @@ def order_switch_directions(
         ]
 
         assert len(switch_dir_on_track) == 1
-        res.append(switch_dir_on_track[0])
-        switch_id, dir = res[-1]
+        switch_dir_on_track = switch_dir_on_track[0]
 
-        switch_directions.remove(res[-1])
+        res.append(switch_dir_on_track)
+        switch_directions.remove(switch_dir_on_track)
+        switch_id, dir = switch_dir_on_track
 
         switch = switches_by_id[switch_id]
         track_id = get_connected_track_id(switch, track_id, dir)
