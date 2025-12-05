@@ -75,6 +75,8 @@ const SpeedDistanceDiagramWrapper = ({
     etcsLayersDisplay: {
       title: t('speedDistanceSettings.etcs.title'),
       etcsBrakingTypes: {
+        stop: t('speedDistanceSettings.etcs.stop'),
+        transition: t('speedDistanceSettings.etcs.transition'),
         stopsAndTransitions: t('speedDistanceSettings.etcs.stopsAndTransitions'),
         signals: t('speedDistanceSettings.etcs.signals'),
         spacing: t('speedDistanceSettings.etcs.spacing'),

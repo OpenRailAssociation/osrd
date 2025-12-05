@@ -2,6 +2,7 @@ import chroma from 'chroma-js';
 
 import {
   type ColorDictionary,
+  type EtcsAlphaDictionary,
   EtcsBrakingCurveType,
   EtcsBrakingType,
   type EtcsColorDictionary,
@@ -85,7 +86,7 @@ export const ETCS_BRAKING_SELECTION: Record<
   keyof EtcsLayersDisplay['etcsBrakingTypes'],
   EtcsBrakingType[]
 > = {
-  stopsAndTransitions: [EtcsBrakingType.STOP, EtcsBrakingType.SLOWDOWN],
+  stopsAndTransitions: [EtcsBrakingType.SLOWDOWN, EtcsBrakingType.STOP],
   spacing: [EtcsBrakingType.SPACING],
   routing: [EtcsBrakingType.ROUTING],
 };
@@ -121,9 +122,16 @@ export const BASE_SPEED_FILL_ALPHA = 0.15;
 
 // Etcs color dictionary
 export const ETCS_COLOR_DICTIONARY: EtcsColorDictionary = {
-  [EtcsBrakingCurveType.IND]: IND_COLOR.alpha(IND_ALPHA),
-  [EtcsBrakingCurveType.PS]: PS_COLOR.alpha(PS_ALPHA),
-  [EtcsBrakingCurveType.GUI]: GUI_COLOR.alpha(GUI_ALPHA),
+  [EtcsBrakingCurveType.IND]: IND_COLOR,
+  [EtcsBrakingCurveType.PS]: PS_COLOR,
+  [EtcsBrakingCurveType.GUI]: GUI_COLOR,
+};
+
+// Etcs color transparency dictionary
+export const ETCS_ALPHA_DICTIONARY: EtcsAlphaDictionary = {
+  [EtcsBrakingCurveType.IND]: IND_ALPHA,
+  [EtcsBrakingCurveType.PS]: PS_ALPHA,
+  [EtcsBrakingCurveType.GUI]: GUI_ALPHA,
 };
 
 /**

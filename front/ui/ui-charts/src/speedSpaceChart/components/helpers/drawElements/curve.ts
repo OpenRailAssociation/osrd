@@ -8,6 +8,7 @@ import {
   WHITE,
   ETCS_COLOR_DICTIONARY,
   ETCS_LINEWIDTH,
+  ETCS_ALPHA_DICTIONARY,
 } from '../../const';
 import {
   clearCanvas,
@@ -118,7 +119,9 @@ export const drawCurve = ({ ctx, width, height, store }: DrawFunctionParams) => 
       );
       ctx.beginPath();
       ctx.lineWidth = ETCS_LINEWIDTH;
-      ctx.strokeStyle = ETCS_COLOR_DICTIONARY[etcsBrakingCurveType].hex();
+      ctx.strokeStyle = ETCS_COLOR_DICTIONARY[etcsBrakingCurveType]
+        .alpha(ETCS_ALPHA_DICTIONARY[etcsBrakingCurveType])
+        .hex();
       etcsCurvePoints.slice(0, etcsCurvePoints.length - 2).forEach(({ x, y }) => {
         ctx.lineTo(x, y);
       });

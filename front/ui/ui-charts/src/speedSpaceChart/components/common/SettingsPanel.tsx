@@ -207,10 +207,6 @@ const SettingsPanel = ({
               key={selection}
               label={translations?.detailsBoxDisplay[selection] || selection}
               checked={store.detailsBoxDisplay[selection]}
-              disabled={
-                // TODO: enable when etcs details are fixed
-                selection === 'etcs'
-              }
               onChange={() => {
                 setStore((prev) => ({
                   ...prev,
