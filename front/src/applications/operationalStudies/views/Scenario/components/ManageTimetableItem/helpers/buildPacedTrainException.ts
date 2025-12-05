@@ -178,7 +178,8 @@ export function updatePacedTrainExceptionsList<T extends PacedTrainException>(
  * If the exceptions as no change group after those checks, the exception is removed.
  */
 export function checkChangeGroups(
-  updatedTrain: Omit<PacedTrain, 'exceptions'>,
+  updatedTrain: TrainSchedule,
+  paced: PacedTrain['paced'],
   originalExceptions: PacedTrainException[]
 ): PacedTrainException[] {
   return originalExceptions.reduce<PacedTrainException[]>((acc, exception) => {
@@ -254,7 +255,7 @@ export function checkChangeGroups(
     // We do the check only for indexed occurrences because added exceptions should not have
     // their start time reset
     if (exception.start_time && exception.occurrence_index !== undefined) {
-      const originalPacedTrainInterval = Duration.parse(updatedTrain.paced.interval);
+      const originalPacedTrainInterval = Duration.parse(paced.interval);
       const originalStartTimeToTest = computeIndexedOccurrenceStartTime(
         new Date(updatedTrain.start_time),
         originalPacedTrainInterval,
