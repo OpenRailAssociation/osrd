@@ -49,18 +49,17 @@ export default function useSearchOperationalPoint({
     return true;
   }, [stdcmOperationalPoints, isSuperUser, isStdcm]);
 
-  /* Search for operational whose trigrams start with the search query */
-  const searchOperationalPointsByTrigram = useCallback(
-    async (searchQuery: string) => {
-      const shouldSearchByTrigram = !Number.isInteger(+searchQuery) && searchQuery.length < 4;
 
-      if (!shouldSearchByTrigram || !infraID) return [];
+  /* Lazily search for operational whose trigrams exactly match the search query */
+  const lazySearchByExactTrigram = useCallback(
+    async (searchQuery: string) => {
+      if (!infraID) return [];
 
       const payload = {
         object: 'operationalpoint',
         query: [
           'and',
-          ['ilike', ['trigram'], `${searchQuery}%`],
+          ['=', ['trigram'], `${searchQuery}`],
           ['=', ['infra_id'], infraID],
           stdcmPerimeterOperationalpointsFilter,
         ],
@@ -151,7 +150,7 @@ export default function useSearchOperationalPoint({
     mainOperationalPointsOnly,
     searchResults,
     searchOperationalPoints,
-    searchOperationalPointsByTrigram,
+    searchOperationalPointsByTrigram: lazySearchByExactTrigram,
     setSearchTerm,
     setChCodeFilter,
     setSearchResults,
