@@ -1,4 +1,3 @@
-use crate::views::pagination::PaginationStats;
 use database::DbConnection;
 use diesel::ExpressionMethods;
 use diesel::QueryDsl;
@@ -31,7 +30,7 @@ impl TrainScheduleRoundTrips {
         timetable_id: i64,
         page: u64,
         page_size: u64,
-    ) -> Result<(Vec<Self>, PaginationStats), database::DatabaseError> {
+    ) -> Result<(Vec<Self>, u64), database::DatabaseError> {
         use database::tables::train_schedule;
         use database::tables::train_schedule_round_trips;
 
@@ -44,9 +43,8 @@ impl TrainScheduleRoundTrips {
         let (results, count): (Vec<TrainScheduleRoundTripsRow>, _) =
             load_for_pagination(conn, query, page, page_size).await?;
         let results: Vec<_> = results.into_iter().map_into().collect();
-        let stats = PaginationStats::new(results.len() as u64, count, page, page_size);
 
-        Ok((results, stats))
+        Ok((results, count))
     }
 
     /// Deletes a batch of train schedule round trips given a list of train schedule IDs
@@ -103,7 +101,7 @@ impl PacedTrainRoundTrips {
         timetable_id: i64,
         page: u64,
         page_size: u64,
-    ) -> Result<(Vec<Self>, PaginationStats), database::DatabaseError> {
+    ) -> Result<(Vec<Self>, u64), database::DatabaseError> {
         use database::tables::paced_train;
         use database::tables::paced_train_round_trips;
 
@@ -115,10 +113,7 @@ impl PacedTrainRoundTrips {
 
         let (results, count): (Vec<PacedTrainRoundTripsRow>, _) =
             load_for_pagination(conn, query, page, page_size).await?;
-        let results: Vec<_> = results.into_iter().map_into().collect();
-        let stats = PaginationStats::new(results.len() as u64, count, page, page_size);
-
-        Ok((results, stats))
+        Ok((results.into_iter().map_into().collect(), count))
     }
 
     /// Deletes a batch of paced train round trips given a list of paced train IDs

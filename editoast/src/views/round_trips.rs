@@ -316,8 +316,9 @@ pub(in crate::views) async fn list_train_schedules(
     })
     .await?;
 
-    let (round_trips, stats) =
+    let (round_trips, count) =
         TrainScheduleRoundTrips::list_paginated(conn, timetable_id, page, page_size).await?;
+    let stats = PaginationStats::new(round_trips.len() as u64, count, page, page_size);
 
     let results = round_trips
         .into_iter()
@@ -362,8 +363,9 @@ pub(in crate::views) async fn list_paced_trains(
     })
     .await?;
 
-    let (round_trips, stats) =
+    let (round_trips, count) =
         PacedTrainRoundTrips::list_paginated(conn, timetable_id, page, page_size).await?;
+    let stats = PaginationStats::new(round_trips.len() as u64, count, page, page_size);
 
     let results = round_trips
         .into_iter()
