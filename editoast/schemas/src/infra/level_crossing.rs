@@ -1,0 +1,38 @@
+use educe::Educe;
+use serde::Deserialize;
+use serde::Serialize;
+use utoipa::ToSchema;
+
+use crate::primitives::Identifier;
+use crate::primitives::OSRDIdentified;
+
+#[derive(Debug, Default, Clone, Deserialize, Serialize, PartialEq, ToSchema)]
+#[serde(deny_unknown_fields)]
+pub struct LevelCrossing {
+    #[schema(inline)]
+    pub id: Identifier,
+    pub name: String,
+    /// Short zone length in mm
+    pub short_zone_length: u64,
+    pub parts: Vec<LevelCrossingPart>,
+}
+
+#[derive(Debug, Educe, Clone, PartialEq, Deserialize, Serialize, ToSchema)]
+#[serde(deny_unknown_fields)]
+#[educe(Default)]
+pub struct LevelCrossingPart {
+    #[educe(Default = "InvalidRef".into())]
+    #[schema(inline)]
+    pub track: Identifier,
+    pub position: f64,
+    /// Offset in mm of the upstream pedal from the main position (upstream refers to the START_TO_STOP direction of the track)
+    pub pedal_upstream: u64,
+    /// Offset in mm of the downstream pedal from the main position (downstream refers to the START_TO_STOP direction of the track)
+    pub pedal_downstream: u64,
+}
+
+impl OSRDIdentified for LevelCrossing {
+    fn get_id(&self) -> &String {
+        &self.id
+    }
+}

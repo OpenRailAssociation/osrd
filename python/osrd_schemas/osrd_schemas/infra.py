@@ -221,6 +221,33 @@ class OperationalPoint(BaseObjectTrait):
     )
 
 
+class LevelCrossingPart(TrackLocationTrait):
+    """
+    Level crossing part is a single point on the infrastructure.
+    It holds information about pedal offsets relative to this point.
+    It's linked to a level crossing.
+    """
+
+    pedal_upstream: int = Field(
+        description="Offset in mm of the upstream pedal from the main position",
+        ge=0,
+    )
+    pedal_downstream: int = Field(
+        description="Offset in mm of the downstream pedal from the main position",
+        ge=0,
+    )
+
+
+class LevelCrossing(BaseObjectTrait):
+    """
+    This class describes the level crossings of the corresponding infra.
+    """
+
+    name: NonBlankStr = Field(description="Name of the level crossing")
+    short_zone_length: int = Field(description="Length of the short zone in mm", ge=0)
+    parts: List[LevelCrossingPart]
+
+
 class TrackEndpoint(BaseModel):
     """
     This class is used to define the endpoint (begin or end) of the considered track on the infrastructure.
