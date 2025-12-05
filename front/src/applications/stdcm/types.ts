@@ -3,7 +3,7 @@ import type {
   GeoJsonPoint,
   Conflict,
   LightRollingStock,
-  PostTimetableByIdStdcmApiResponse,
+  PostTimetableByIdStdcmApiResponseWithTraceId,
   RollingStockWithLiveries,
   TowedRollingStock,
   PathProperties,
@@ -22,7 +22,7 @@ import type { ValueOf } from 'utils/types';
 export type StdcmRequestStatus = ValueOf<typeof STDCM_REQUEST_STATUS>;
 
 export type StdcmSuccessResponse = Extract<
-  PostTimetableByIdStdcmApiResponse,
+  PostTimetableByIdStdcmApiResponseWithTraceId,
   { status: 'success' }
 > & {
   rollingStock: LightRollingStock;
@@ -33,7 +33,7 @@ export type StdcmSuccessResponse = Extract<
 };
 
 export type StdcmPathNotFound = Extract<
-  PostTimetableByIdStdcmApiResponse,
+  PostTimetableByIdStdcmApiResponseWithTraceId,
   { status: 'path_not_found' }
 >;
 

@@ -126,6 +126,7 @@ const StdcmSimulationReportSheet = ({
           isStdcm
           rows={simulationTableRows}
           pathLength={stdcmData.pathfinding_result.length}
+          traceId={stdcmData.traceId}
         />
         <View style={styles.footer.warrantyBox}>
           <Text style={styles.footer.warrantyMessage}>{t('reportSheet.withoutWarranty')}</Text>

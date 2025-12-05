@@ -17,10 +17,16 @@ import {
   type OperationalPointReference,
   type PacedTrainResponse,
   type PathfindingResult,
+  type PostTimetableByIdStdcmApiResponse,
   type RelatedOperationalPoint,
   type SimulationResponse,
   type TrainScheduleResponse,
 } from './generatedEditoastApi';
+
+// Type extension for PostTimetableByIdStdcm to include traceId
+export type PostTimetableByIdStdcmApiResponseWithTraceId = PostTimetableByIdStdcmApiResponse & {
+  traceId?: string;
+};
 
 const osrdEditoastApi = generatedEditoastApi
   .injectEndpoints({
@@ -286,6 +292,18 @@ const osrdEditoastApi = generatedEditoastApi
   })
   .enhanceEndpoints({
     endpoints: {
+      postTimetableByIdStdcm: {
+        transformResponse: (
+          response: PostTimetableByIdStdcmApiResponse,
+          metadata: { response: Response }
+        ): PostTimetableByIdStdcmApiResponseWithTraceId => {
+          const headers = metadata.response.headers;
+          const traceparent = headers.get('traceparent');
+          const traceId = traceparent?.split('-')[1];
+
+          return { ...response, traceId };
+        },
+      },
       getLightRollingStock: {
         transformResponse: (response: GetLightRollingStockApiResponse) => ({
           ...response,

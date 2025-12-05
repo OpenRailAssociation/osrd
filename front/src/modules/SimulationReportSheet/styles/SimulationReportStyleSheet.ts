@@ -495,7 +495,7 @@ const styles = {
       marginLeft: '16',
       marginRight: '16',
       backgroundColor: '#EFF3F5',
-      paddingBottom: '16',
+      paddingBottom: '8',
     },
     table: {
       border: '0',
@@ -505,6 +505,10 @@ const styles = {
       fontWeight: 'normal',
       color: '#797671',
       padding: '16 0',
+    },
+    footer: {
+      padding: '7 8 0 0',
+      justifyContent: 'space-between',
     },
     indexWidth: {
       width: '56',
@@ -648,8 +652,13 @@ const styles = {
       height: '4',
       borderRadius: '7',
       backgroundColor: '#B6B2AF',
-      marginTop: '16',
-      marginLeft: '16',
+      margin: '9 0 7 16',
+    },
+    traceId: {
+      color: '#B6B2AF',
+      fontFamily: 'IBM Plex Mono',
+      fontSize: '14',
+      fontWeight: 'normal',
     },
   }),
   map: StyleSheet.create({

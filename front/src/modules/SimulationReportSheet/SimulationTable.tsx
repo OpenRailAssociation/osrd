@@ -11,9 +11,15 @@ type SimulationTableProps = {
   rows: SimulationTableRow[];
   pathLength: number; // mm
   isStdcm?: boolean;
+  traceId?: string;
 };
 
-const SimulationTable = ({ rows, pathLength, isStdcm = false }: SimulationTableProps) => {
+const SimulationTable = ({
+  rows,
+  pathLength,
+  isStdcm = false,
+  traceId = '',
+}: SimulationTableProps) => {
   const { t } = useTranslation('stdcm');
 
   return (
@@ -131,6 +137,16 @@ const SimulationTable = ({ rows, pathLength, isStdcm = false }: SimulationTableP
               )}
             </TR>
           ))}
+          {traceId && (
+            <TH style={styles.simulation.footer}>
+              <View>
+                <TD style={styles.simulation.horizontalBar} />
+              </View>
+              <View>
+                <TD style={styles.simulation.traceId}>{traceId}</TD>
+              </View>
+            </TH>
+          )}
         </Table>
       </View>
     </View>
