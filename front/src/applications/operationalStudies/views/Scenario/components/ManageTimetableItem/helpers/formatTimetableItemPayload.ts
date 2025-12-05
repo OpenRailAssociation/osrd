@@ -162,7 +162,7 @@ export function formatPacedTrainPayload(
       // Reset all exceptions if the paced train settings have changed
       const newExceptionList = !hasPacedTrainSettingsChanged
         ? [
-            ...checkChangeGroups(newPacedTrain, originalPacedTrain.exceptions),
+            ...checkChangeGroups(newPacedTrain, newPacedTrain.paced, originalPacedTrain.exceptions),
             ...newPacedTrain.exceptions,
           ]
         : [];

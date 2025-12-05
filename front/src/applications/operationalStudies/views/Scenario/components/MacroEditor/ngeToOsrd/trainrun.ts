@@ -574,14 +574,11 @@ export const handleUpdateTimetableItem = async ({
     if (isPacedTrainResponseWithPacedTrainId(oldForwardTimetableItem)) {
       paced.time_window = oldForwardTimetableItem.paced.time_window;
     }
-    const newForwardPacedTrainBase = {
+    newForwardPacedTrain = {
       ...newForwardTimetableItem,
       paced,
-    };
-    newForwardPacedTrain = {
-      ...newForwardPacedTrainBase,
       exceptions: isPacedTrainResponseWithPacedTrainId(oldForwardTimetableItem)
-        ? checkChangeGroups(newForwardPacedTrainBase, oldForwardTimetableItem.exceptions)
+        ? checkChangeGroups(newForwardTimetableItem, paced, oldForwardTimetableItem.exceptions)
         : [],
     };
     const updatedPacedTrain = await storePacedTrain(
