@@ -2382,18 +2382,18 @@ paths:
               - type: object
                 required:
                 - paced
-                - exceptions
                 properties:
-                  exceptions:
-                    type: array
-                    items:
-                      $ref: '#/components/schemas/PacedTrainException'
                   paced:
                     type: object
                     required:
                     - time_window
                     - interval
+                    - exceptions
                     properties:
+                      exceptions:
+                        type: array
+                        items:
+                          $ref: '#/components/schemas/PacedTrainException'
                       interval:
                         $ref: '#/components/schemas/PositiveDuration'
                         description: Time between two occurrences, an ISO 8601 format is expected
@@ -10456,18 +10456,18 @@ components:
       - type: object
         required:
         - paced
-        - exceptions
         properties:
-          exceptions:
-            type: array
-            items:
-              $ref: '#/components/schemas/PacedTrainException'
           paced:
             type: object
             required:
             - time_window
             - interval
+            - exceptions
             properties:
+              exceptions:
+                type: array
+                items:
+                  $ref: '#/components/schemas/PacedTrainException'
               interval:
                 $ref: '#/components/schemas/PositiveDuration'
                 description: Time between two occurrences, an ISO 8601 format is expected

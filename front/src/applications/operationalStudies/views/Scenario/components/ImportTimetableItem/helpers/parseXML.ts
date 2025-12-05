@@ -19,12 +19,13 @@ const trainScheduleToPacedTrain = (
   pacedTrainId: string,
   intervalDuration: Duration,
   timeWindowDuration: Duration
-): Omit<PacedTrain, 'exceptions'> => ({
+): PacedTrain => ({
   ...trainSchedule,
   train_name: pacedTrainId,
   paced: {
     interval: intervalDuration.toISOString(),
     time_window: timeWindowDuration.toISOString(),
+    exceptions: [],
   },
 });
 
@@ -127,15 +128,12 @@ const reconcilePacedTrainOccurrences = (
 
   const numberOfExpectedOccurrences = numberOfIntervals + 1;
 
-  const originalPacedTrain: PacedTrain = {
-    ...trainScheduleToPacedTrain(
-      modelTrainSchedule,
-      pacedTrainId,
-      intervalDuration,
-      totalTimeWindow
-    ),
-    exceptions: [],
-  };
+  const originalPacedTrain = trainScheduleToPacedTrain(
+    modelTrainSchedule,
+    pacedTrainId,
+    intervalDuration,
+    totalTimeWindow
+  );
 
   const osrdDefaultOccurrences: {
     startTime: Date;
@@ -221,12 +219,10 @@ const reconcilePacedTrainOccurrences = (
     exceptions.push(cleanException);
   });
 
-  const pacedTrainBase: PacedTrain = {
+  return {
     ...originalPacedTrain,
-    exceptions,
+    paced: { ...originalPacedTrain.paced, exceptions },
   };
-
-  return pacedTrainBase;
 };
 
 const parseXML = async (xmlDoc: Document): Promise<TimetableJsonPayload> => {

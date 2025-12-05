@@ -224,13 +224,13 @@ pub fn create_modified_exception_with_change_groups(
 pub fn simple_paced_train_base() -> PacedTrain {
     PacedTrain {
         train_schedule_base: schemas::TrainSchedule::fake(),
-        exceptions: vec![
-            simple_created_exception_with_change_groups("exception_key_1"),
-            simple_modified_exception_with_change_groups("exception_key_2", 0),
-        ],
         paced: Paced {
             time_window: ChronoDuration::hours(2).try_into().unwrap(),
             interval: ChronoDuration::minutes(15).try_into().unwrap(),
+            exceptions: vec![
+                simple_created_exception_with_change_groups("exception_key_1"),
+                simple_modified_exception_with_change_groups("exception_key_2", 0),
+            ],
         },
     }
 }

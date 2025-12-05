@@ -206,10 +206,10 @@ const useOccurrenceActions = ({
     async (occurrenceId: OccurrenceId) => {
       const key = extractExceptionIdFromOccurrenceId(occurrenceId);
       const newExceptions = pacedTrain.exceptions.filter((ex) => ex.key !== key);
-      const updatedPacedTrainPayload = {
-        ...formatPacedTrainWithDetailsToPacedTrainPayload(pacedTrain),
+      const updatedPacedTrainPayload = formatPacedTrainWithDetailsToPacedTrainPayload({
+        ...pacedTrain,
         exceptions: newExceptions,
-      };
+      });
 
       storePacedTrain(
         pacedTrain.id,

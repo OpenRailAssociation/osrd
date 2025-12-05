@@ -274,8 +274,11 @@ def test_paced_train_conflicts(
         "speed_limit_tag": "MA100",
         "start_time": "2024-05-22T08:00:00.000Z",
         "train_name": "paced train",
-        "paced": {"time_window": "PT1H", "interval": paced_train_interval},
-        "exceptions": [],
+        "paced": {
+            "time_window": "PT1H",
+            "interval": paced_train_interval,
+            "exceptions": [],
+        },
     }
 
     paced_train_response = session.post(
@@ -340,31 +343,34 @@ def test_paced_train_with_exceptions_conflicts(
         "speed_limit_tag": "MA100",
         "start_time": "2024-05-22T08:00:00.000Z",
         "train_name": "paced train",
-        "paced": {"time_window": "PT1H", "interval": "PT15M"},
-        "exceptions": [
-            {
-                "key": "created_ex_key",
-                "disabled": False,
-                "start_time": {
-                    "value": "2024-05-22T08:01:00.000Z",
+        "paced": {
+            "time_window": "PT1H",
+            "interval": "PT15M",
+            "exceptions": [
+                {
+                    "key": "created_ex_key",
+                    "disabled": False,
+                    "start_time": {
+                        "value": "2024-05-22T08:01:00.000Z",
+                    },
+                    "train_name": {"value": "created_exception_train_name"},
                 },
-                "train_name": {"value": "created_exception_train_name"},
-            },
-            {
-                "key": "modified_ex_key",
-                "occurrence_index": 2,
-                "disabled": False,
-                "train_name": {"value": "modified_exception_train_name"},
-            },
-            {
-                "key": "created_ex_conflict_modified_key",
-                "disabled": False,
-                "start_time": {
-                    "value": "2024-05-22T08:30:00.000Z",
+                {
+                    "key": "modified_ex_key",
+                    "occurrence_index": 2,
+                    "disabled": False,
+                    "train_name": {"value": "modified_exception_train_name"},
                 },
-                "train_name": {"value": "exception_train_name"},
-            },
-        ],
+                {
+                    "key": "created_ex_conflict_modified_key",
+                    "disabled": False,
+                    "start_time": {
+                        "value": "2024-05-22T08:30:00.000Z",
+                    },
+                    "train_name": {"value": "exception_train_name"},
+                },
+            ],
+        },
     }
 
     paced_train_response = session.post(

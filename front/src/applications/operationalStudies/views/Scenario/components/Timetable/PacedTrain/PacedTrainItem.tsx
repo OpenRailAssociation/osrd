@@ -170,10 +170,10 @@ const PacedTrainItem = ({
   };
 
   async function deleteExceptions() {
-    const updatedPacedTrainPayload = {
-      ...formatPacedTrainWithDetailsToPacedTrainPayload(pacedTrain),
+    const updatedPacedTrainPayload = formatPacedTrainWithDetailsToPacedTrainPayload({
+      ...pacedTrain,
       exceptions: [],
-    };
+    });
 
     await storePacedTrain(
       pacedTrain.id,

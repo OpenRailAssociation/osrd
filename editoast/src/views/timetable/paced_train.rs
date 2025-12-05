@@ -1527,7 +1527,7 @@ mod tests {
         let mut paced_train_base = simple_paced_train_base();
         paced_train_base.paced.time_window = Duration::minutes(90).try_into().unwrap();
         paced_train_base.paced.interval = Duration::minutes(15).try_into().unwrap();
-        paced_train_base.exceptions = vec![
+        paced_train_base.paced.exceptions = vec![
             simple_created_exception_with_change_groups("duplicated_key_1"),
             simple_modified_exception_with_change_groups("duplicated_key_1", 0),
         ];
@@ -1558,7 +1558,7 @@ mod tests {
         let mut paced_train_base = simple_paced_train_base();
         paced_train_base.paced.time_window = Duration::minutes(60).try_into().unwrap();
         paced_train_base.paced.interval = Duration::minutes(15).try_into().unwrap();
-        paced_train_base.exceptions =
+        paced_train_base.paced.exceptions =
             vec![simple_modified_exception_with_change_groups("key_1", 5)];
 
         let request = app
@@ -1645,12 +1645,12 @@ mod tests {
                 rolling_stock_name: rolling_stock.name.clone(),
                 ..TrainSchedule::fake()
             },
-            exceptions: vec![create_created_exception_with_change_groups(
-                "created_exception_key",
-            )],
             paced: Paced {
                 time_window: Duration::hours(1).try_into().unwrap(),
                 interval: Duration::minutes(15).try_into().unwrap(),
+                exceptions: vec![create_created_exception_with_change_groups(
+                    "created_exception_key",
+                )],
             },
         };
         let paced_train: PacedTrainChangeset = paced_train_base.into();
@@ -1771,7 +1771,7 @@ mod tests {
             .await
             .assert_status(StatusCode::OK)
             .json_into();
-        paced_train_response.paced_train.exceptions[0].rolling_stock =
+        paced_train_response.paced_train.paced.exceptions[0].rolling_stock =
             Some(RollingStockChangeGroup {
                 rolling_stock_name: "R2D2".into(),
                 comfort: Comfort::AirConditioning,
@@ -1832,10 +1832,11 @@ mod tests {
             .assert_status(StatusCode::OK)
             .json_into();
         // First remove all already generated exceptions
-        paced_train_response.paced_train.exceptions.clear();
+        paced_train_response.paced_train.paced.exceptions.clear();
         // Add one exception which will not change the simulation from base
         paced_train_response
             .paced_train
+            .paced
             .exceptions
             .push(PacedTrainException {
                 key: "change_train_name".to_string(),
@@ -1848,6 +1849,7 @@ mod tests {
         // and therefore add another entry in the response (field `exceptions`)
         paced_train_response
             .paced_train
+            .paced
             .exceptions
             .push(PacedTrainException {
                 key: "change_initial_speed".to_string(),
@@ -2205,11 +2207,12 @@ mod tests {
             .assert_status(StatusCode::OK)
             .json_into();
         // First remove all already generated exceptions
-        paced_train_response.paced_train.exceptions.clear();
+        paced_train_response.paced_train.paced.exceptions.clear();
 
         // Add one exception which will not change the simulation from base
         paced_train_response
             .paced_train
+            .paced
             .exceptions
             .push(PacedTrainException {
                 key: "change_train_name".to_string(),
@@ -2222,6 +2225,7 @@ mod tests {
         // and therefore add another entry in the response (field `exceptions`)
         paced_train_response
             .paced_train
+            .paced
             .exceptions
             .push(PacedTrainException {
                 key: "change_initial_speed".to_string(),

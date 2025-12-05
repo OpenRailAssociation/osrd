@@ -65,7 +65,7 @@ const useEtcsBrakingCurves = (
       return undefined;
     if (isTrainScheduleId(selectedTrainId))
       throw new Error(`trainId ${selectedTrainId} should be a occurrence id`);
-    return findExceptionWithOccurrenceId(timetableItem.exceptions, selectedTrainId);
+    return findExceptionWithOccurrenceId(timetableItem.paced.exceptions, selectedTrainId);
   }, [selectedTrainId, timetableItem]);
 
   const fetchEtcsBrakingCurves = useCallback(async () => {

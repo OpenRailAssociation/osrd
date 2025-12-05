@@ -30,7 +30,7 @@ function getConflictTrainNames(
       // Updated exception
       // Check if the exception has a name change group
       // Otherwise, compute the occurrence name
-      const namedException = pacedTrain.exceptions.find(
+      const namedException = pacedTrain.paced.exceptions.find(
         (exception) => exception.occurrence_index === occurrence.index && exception.train_name
       );
       if (namedException) {
@@ -43,7 +43,7 @@ function getConflictTrainNames(
     // Check if the exception has a name change group
     // Otherwise, the name is `${pacedTrainName}/+`
 
-    const namedException = pacedTrain.exceptions.find(
+    const namedException = pacedTrain.paced.exceptions.find(
       (exception) => exception.key === occurrence.exception_key && exception.train_name
     );
     if (namedException) {

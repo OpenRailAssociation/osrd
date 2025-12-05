@@ -237,15 +237,18 @@ describe('formatTimetableItemPayload', () => {
         speed_limit_tag: undefined,
         start_time: '2025-06-02T12:45:00.000Z',
         train_name: 'test',
-        paced: { time_window: 'PT3H', interval: 'PT1H' },
-        exceptions: [
-          {
-            key: 'az',
-            start_time: {
-              value: '2025-07-01T00:00:00.000Z',
+        paced: {
+          time_window: 'PT3H',
+          interval: 'PT1H',
+          exceptions: [
+            {
+              key: 'az',
+              start_time: {
+                value: '2025-07-01T00:00:00.000Z',
+              },
             },
-          },
-        ],
+          ],
+        },
       });
     });
   });
@@ -328,27 +331,30 @@ describe('formatTimetableItemPayload', () => {
           speed_limit_tag: undefined,
           start_time: '2025-06-02T12:45:00.000Z',
           train_name: 'test',
-          paced: { time_window: 'PT3H', interval: 'PT1H' },
-          exceptions: [
-            {
-              key: 'az',
-              start_time: {
-                value: '2025-07-01T00:00:00.000Z',
+          paced: {
+            time_window: 'PT3H',
+            interval: 'PT1H',
+            exceptions: [
+              {
+                key: 'az',
+                start_time: {
+                  value: '2025-07-01T00:00:00.000Z',
+                },
               },
-            },
-            {
-              key: 'by',
-              start_time: {
-                value: '2025-07-02T00:00:00.000Z',
+              {
+                key: 'by',
+                start_time: {
+                  value: '2025-07-02T00:00:00.000Z',
+                },
               },
-            },
-            {
-              key: 'cx',
-              start_time: {
-                value: '2025-07-03T00:00:00.000Z',
+              {
+                key: 'cx',
+                start_time: {
+                  value: '2025-07-03T00:00:00.000Z',
+                },
               },
-            },
-          ],
+            ],
+          },
         });
       });
     });
@@ -386,7 +392,7 @@ describe('formatTimetableItemPayload', () => {
             rollingStockName,
             timetableItemToEditDataWithOneChangeGroup
           );
-          expect(result.exceptions).toEqual([]);
+          expect(result.paced.exceptions).toEqual([]);
         });
       });
       describe('exception is both a label and category exception', () => {
@@ -424,7 +430,7 @@ describe('formatTimetableItemPayload', () => {
             rollingStockName,
             timetableItemToEditDataWithTwoChangeGroups
           );
-          expect(result.exceptions).toEqual([
+          expect(result.paced.exceptions).toEqual([
             {
               key: 'a6f39ce5-ae64-4135-af9b-22ee19877873',
               occurrence_index: 1,
@@ -493,7 +499,7 @@ describe('formatTimetableItemPayload', () => {
           timetableItemToEditDataWithExceptions
         );
 
-        expect(result.exceptions).toEqual(expectedPacedTrainExceptions);
+        expect(result.paced.exceptions).toEqual(expectedPacedTrainExceptions);
       });
     });
 
@@ -583,7 +589,7 @@ describe('formatTimetableItemPayload', () => {
           timetableItemToEditDataWithExceptions
         );
 
-        expect(result.exceptions).toEqual(expectedPacedTrainExceptions);
+        expect(result.paced.exceptions).toEqual(expectedPacedTrainExceptions);
       });
     });
 
@@ -622,7 +628,7 @@ describe('formatTimetableItemPayload', () => {
           timetableItemToEditDataWithExceptions
         );
 
-        expect(result.exceptions).toEqual([]);
+        expect(result.paced.exceptions).toEqual([]);
       });
     });
   });

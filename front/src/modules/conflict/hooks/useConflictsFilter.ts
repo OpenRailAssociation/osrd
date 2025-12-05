@@ -48,7 +48,10 @@ const useConflictsFilter = (timetableItems: TimetableItem[], conflicts: Conflict
     if (!selectedTrain || !isPacedTrainResponseWithPacedTrainId(selectedTrain)) return null;
 
     // Occurrence with a name change group
-    const exception = findExceptionWithOccurrenceId(selectedTrain.exceptions, selectedTrainId);
+    const exception = findExceptionWithOccurrenceId(
+      selectedTrain.paced.exceptions,
+      selectedTrainId
+    );
     if (exception?.train_name?.value) {
       return exception.train_name.value;
     }

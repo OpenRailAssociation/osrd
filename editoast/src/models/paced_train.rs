@@ -231,7 +231,6 @@ impl From<paced_train::PacedTrain> for PacedTrainChangeset {
         paced_train::PacedTrain {
             train_schedule_base,
             paced,
-            exceptions,
         }: paced_train::PacedTrain,
     ) -> Self {
         let changeset = PacedTrain::changeset()
@@ -250,7 +249,7 @@ impl From<paced_train::PacedTrain> for PacedTrainChangeset {
             .options(train_schedule_base.options)
             .time_window(ChronoDuration::from(paced.time_window))
             .interval(ChronoDuration::from(paced.interval))
-            .exceptions(exceptions);
+            .exceptions(paced.exceptions);
 
         match train_schedule_base.category {
             Some(TrainCategory::Main { main_category }) => changeset
@@ -286,10 +285,10 @@ impl From<PacedTrain> for paced_train::PacedTrain {
                     .map(|main_category| TrainCategory::main(main_category.0))
                     .xor(paced_train.sub_category.map(TrainCategory::sub)),
             },
-            exceptions: paced_train.exceptions,
             paced: Paced {
                 time_window: paced_train.time_window.try_into().unwrap(),
                 interval: paced_train.interval.try_into().unwrap(),
+                exceptions: paced_train.exceptions,
             },
         }
     }
