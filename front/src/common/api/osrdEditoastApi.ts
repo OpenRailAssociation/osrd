@@ -414,6 +414,23 @@ const osrdEditoastApi = generatedEditoastApi
           { type: 'scenarios', id: 'LIST' },
         ],
       },
+
+      // Search
+      postSearch: {
+        providesTags: (_result, _error, args) =>
+          (
+            ({
+              user: [],
+              study: ['studies'],
+              project: ['projects'],
+              scenario: ['scenarios'],
+              track: ['infra'],
+              signal: ['infra'],
+              operationalpoint: ['infra'],
+              trainschedule: ['train_schedule'],
+            }) as const
+          )[args.searchPayload.object] ?? [],
+      },
     },
   });
 
