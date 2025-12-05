@@ -36,7 +36,7 @@ type TimetableProps = {
   setDisplayTimetableItemManagement: (mode: string) => void;
   upsertTimetableItems: (timetableItems: TimetableItem[]) => void;
   setTimetableItemToEditData: (timetableItemToEditData?: TimetableItemToEditData) => void;
-  setSelectedTimetableItemIds: (selectedTimetableItemIds: TimetableItemId[]) => void;
+  setSelectedTimetableItemIds: React.Dispatch<React.SetStateAction<TimetableItemId[]>>;
   removeAndUnselectTrains: (trainIds: TimetableItemId[]) => void;
   handleDeleteTimetableItems: () => void;
   timetableItemToEditData?: TimetableItemToEditData;
@@ -187,6 +187,7 @@ const Timetable = ({
                   upsertTrainSchedules={upsertTimetableItems}
                   removeTrains={removeAndUnselectTrains}
                   selectTrainToEdit={selectTimetableItemToEdit}
+                  setSelectedTimetableItemIds={setSelectedTimetableItemIds}
                   projectionPathIsUsed={
                     workerStatus === 'READY' && trainIdUsedForProjection === timetableItem.id
                   }
@@ -205,6 +206,7 @@ const Timetable = ({
                   selectedTrainId={selectedTrainId}
                   upsertTimetableItems={upsertTimetableItems}
                   removePacedTrains={removeAndUnselectTrains}
+                  setSelectedTimetableItemIds={setSelectedTimetableItemIds}
                   infraIsCached={workerStatus === 'READY'}
                   subCategories={subCategories}
                   projectingOnSimulatedPathException={projectingOnSimulatedPathException}
