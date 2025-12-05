@@ -80,7 +80,7 @@ fun computeMRSP(
     useSpeedLimits: Boolean = true,
 ): Envelope {
     val builder = MRSPEnvelopeBuilder()
-    val pathLength = toMeters(path.getLength())
+    val pathLength = path.getLength().meters
 
     val offset = if (addRollingStockLength) rsLength else 0.0
     val speedLimitProperties =

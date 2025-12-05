@@ -68,7 +68,7 @@ data class TrainPathNoBacktrack(
                 previousRange = range
             }
             require(list.first().pathBegin == Offset.zero<TrainPath>())
-            require(list.last().pathEnd == getTypedLength())
+            require(list.last().pathEnd == getLength())
         }
         routes?.let {
             if (!routes.isEmpty()) checkRangeList(routes) { rawInfra.getRouteLength(it) }
@@ -79,7 +79,7 @@ data class TrainPathNoBacktrack(
 
     override fun subPath(from: Offset<TrainPath>?, to: Offset<TrainPath>?): TrainPath {
         val fromDist = from ?: Offset(0.meters)
-        val toDist = to ?: Offset(getLength())
+        val toDist = to ?: getLength()
         return TrainPathNoBacktrack(
             rawInfra = rawInfra,
             blockInfra = blockInfra,
@@ -89,10 +89,6 @@ data class TrainPathNoBacktrack(
             electricalProfileMapping = electricalProfileMapping,
             haveApproximateBlocks = haveApproximateBlocks,
         )
-    }
-
-    override fun getTypedLength(): Length<TrainPath> {
-        return blocks.last().pathEnd
     }
 
     override fun getBlocks(): List<BlockRange> {
@@ -109,7 +105,7 @@ data class TrainPathNoBacktrack(
     override fun getZoneRanges(): List<ZoneRange> = cachedZoneRanges
 
     override val length: Double
-        get() = getTypedLength().meters
+        get() = getLength().meters
 
     override fun getAverageGrade(begin: Double, end: Double): Double {
         return cachedEnvelopeSimPath.getAverageGrade(begin, end)
@@ -261,9 +257,8 @@ data class TrainPathNoBacktrack(
         }
     }
 
-    override fun getLength(): Distance {
-        // TODO: this is redundant
-        return getTypedLength().distance
+    override fun getLength(): Length<TrainPath> {
+        return blocks.last().pathEnd
     }
 
     override fun getTrackLocationAtOffset(pathOffset: Offset<TrainPath>): TrackLocation {

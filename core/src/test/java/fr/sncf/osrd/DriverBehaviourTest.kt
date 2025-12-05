@@ -28,7 +28,7 @@ class DriverBehaviourTest {
             driverBehaviour.applyToMRSP(
                 mrsp,
                 distanceRangeMapOf(
-                    DistanceRangeMap.RangeMapEntry(0.meters, path.getLength(), "BAL")
+                    DistanceRangeMap.RangeMapEntry(0.meters, path.getLength().distance, "BAL")
                 ),
             )
         Assertions.assertEquals(20.0, mrsp.interpolateSpeedRightDir(0.0, 1.0))

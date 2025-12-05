@@ -109,9 +109,9 @@ class StandaloneSimulationTest {
      */
     private fun generateTestCases(): Stream<Arguments> {
         // Enumerate possible individual scheduled points
-        val thirdDistance = Offset<TravelledPath>(pathLength / 3.0)
-        val halfDistance = Offset<TravelledPath>(pathLength / 2.0)
-        val twoThirdDistance = Offset<TravelledPath>(pathLength * (2.0 / 3.0))
+        val thirdDistance = pathLength / 3.0
+        val halfDistance = pathLength / 2.0
+        val twoThirdDistance = pathLength * (2.0 / 3.0)
         val possibleScheduledItem =
             listOf(
                 SimulationScheduleItem(
@@ -130,7 +130,7 @@ class StandaloneSimulationTest {
                 ),
                 SimulationScheduleItem(twoThirdDistance, null, 30.seconds, OPEN),
                 SimulationScheduleItem(
-                    Offset<TravelledPath>(pathLength),
+                    pathLength,
                     maxEffortEnvelope.totalTime.seconds + 300.seconds,
                     0.seconds,
                     OPEN,
@@ -155,7 +155,7 @@ class StandaloneSimulationTest {
                 RangeValues(),
                 RangeValues(listOf(), listOf(MarginValue.Percentage(10.0))),
                 RangeValues(
-                    listOf(Offset(pathLength / 2.0)),
+                    listOf(pathLength / 2.0),
                     listOf(MarginValue.Percentage(10.0), MarginValue.MinPer100Km(5.0)),
                 ),
             )
@@ -165,13 +165,21 @@ class StandaloneSimulationTest {
             listOf(
                 distanceRangeMapOf(),
                 distanceRangeMapOf(
-                    DistanceRangeMap.RangeMapEntry(0.meters, pathLength / 3.0, "Restrict1"),
                     DistanceRangeMap.RangeMapEntry(
-                        pathLength / 3.0,
-                        pathLength * 2.0 / 3.0,
+                        0.meters,
+                        pathLength.distance / 3.0,
+                        "Restrict1",
+                    ),
+                    DistanceRangeMap.RangeMapEntry(
+                        pathLength.distance / 3.0,
+                        pathLength.distance * 2.0 / 3.0,
                         "Restrict2",
                     ),
-                    DistanceRangeMap.RangeMapEntry(pathLength * 2.0 / 3.0, pathLength, "Restrict1"),
+                    DistanceRangeMap.RangeMapEntry(
+                        pathLength.distance * 2.0 / 3.0,
+                        pathLength.distance,
+                        "Restrict1",
+                    ),
                 ),
             )
 
@@ -188,7 +196,7 @@ class StandaloneSimulationTest {
                                     margins = margin,
                                     startSpeed = startSpeed,
                                     allowanceDistribution = distribution,
-                                    pathLength = pathLength,
+                                    pathLength = pathLength.distance,
                                     powerRestrictions = powerRestrictions,
                                 )
                             )

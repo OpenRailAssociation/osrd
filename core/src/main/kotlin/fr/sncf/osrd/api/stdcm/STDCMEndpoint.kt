@@ -180,7 +180,7 @@ class STDCMEndpoint(
         // Add a short stop at the end to avoid signal propagation
         scheduleItems.add(
             SimulationScheduleItem(
-                Offset(path.trainPath.getLength()),
+                path.trainPath.getLength(),
                 null,
                 0.1.seconds,
                 RJSTrainStop.RJSReceptionSignal.STOP,

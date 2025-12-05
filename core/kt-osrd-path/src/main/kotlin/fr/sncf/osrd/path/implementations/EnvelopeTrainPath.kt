@@ -42,7 +42,7 @@ object EnvelopeTrainPath {
         val electrificationMapByPowerClass =
             convertElectrificationMapByPowerClass(distanceElectrificationMapByPowerClass)
         return EnvelopeSimPath(
-            toMeters(path.getLength()),
+            path.getLength().meters,
             gradePositions.toArray(),
             gradeValues.toArray(),
             electrificationMap,

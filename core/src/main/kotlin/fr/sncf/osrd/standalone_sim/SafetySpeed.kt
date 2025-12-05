@@ -81,7 +81,7 @@ fun makeSafetySpeedRanges(
         }
     }
     // Safety speed areas may extend outside the path
-    return res.subMap(0.meters, trainPath.getLength())
+    return res.subMap(0.meters, trainPath.getLength().distance)
 }
 
 /** Check if a given stop is in a range of a given signaling system. */

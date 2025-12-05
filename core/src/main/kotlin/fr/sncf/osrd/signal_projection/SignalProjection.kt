@@ -15,8 +15,8 @@ import fr.sncf.osrd.standalone_sim.PathSignal
 import fr.sncf.osrd.standalone_sim.pathSignalsInRange
 import fr.sncf.osrd.utils.units.Duration
 import fr.sncf.osrd.utils.units.Length
+import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.TimeDelta
-import fr.sncf.osrd.utils.units.meters
 import java.awt.Color
 
 data class SignalAspectChangeEvent(val newAspect: String, val time: TimeDelta)
@@ -65,7 +65,8 @@ fun projectSignals(
 
     // Compute signal updates
     // Compute path signals on path
-    val pathSignals = pathSignalsInRange(trainPath, blockInfra, 0.meters, trainPath.getLength())
+    val pathSignals =
+        pathSignalsInRange(trainPath, blockInfra, Offset.zero(), trainPath.getLength())
     if (pathSignals.isEmpty()) return emptyList()
 
     val signalAspectChangeEvents =
@@ -88,7 +89,7 @@ fun projectSignals(
             sigSystemManager,
             rawInfra,
             signalCriticalPositions,
-            trainPath.getTypedLength(),
+            trainPath.getLength(),
             simulationEndTime,
         )
     return signalUpdates

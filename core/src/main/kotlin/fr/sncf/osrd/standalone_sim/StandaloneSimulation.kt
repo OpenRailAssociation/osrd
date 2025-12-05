@@ -66,7 +66,7 @@ fun runStandaloneSimulation(
     pathItemPositions: List<Offset<TravelledPath>>,
     driverBehaviour: DriverBehaviour = DriverBehaviour(),
 ): SimulationSuccess {
-    if (trainPath.getLength() == 0.meters) throw OSRDError(ZeroLengthPath)
+    if (trainPath.getLength() == Offset.zero<TrainPath>()) throw OSRDError(ZeroLengthPath)
     val signalingRanges = buildSignalingRanges(infra, trainPath)
     // MRSP & SpeedLimits
     val safetySpeedRanges = makeSafetySpeedRanges(infra, trainPath, schedule, signalingRanges)

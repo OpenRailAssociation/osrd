@@ -142,7 +142,7 @@ private fun computeAcceleration(
     )
     val speedupPart = speedupPartBuilder.build()
     val envelope = Envelope.make(speedupPart)
-    val newTime = scaleAllowanceTime(graph, envelope.totalTime, pathProperties.getLength())
+    val newTime = scaleAllowanceTime(graph, envelope.totalTime, pathProperties.getLength().distance)
 
     return SummarizedSimulationResult(envelope.beginSpeed, newTime)
 }

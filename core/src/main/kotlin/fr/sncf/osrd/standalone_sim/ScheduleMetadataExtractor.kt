@@ -605,16 +605,16 @@ fun pathSignalsInEnvelope(
     blockInfra: BlockInfra,
     envelope: EnvelopeTimeInterpolate,
 ): List<PathSignal> {
-    return pathSignalsInRange(trainPath, blockInfra, 0.meters, envelope.endPos.meters)
+    return pathSignalsInRange(trainPath, blockInfra, Offset.zero(), Offset(envelope.endPos.meters))
 }
 
 fun pathSignalsInRange(
     trainPath: TrainPath,
     blockInfra: BlockInfra,
-    rangeStart: Distance,
-    rangeEnd: Distance,
+    rangeStart: Offset<TrainPath>,
+    rangeEnd: Offset<TrainPath>,
 ): List<PathSignal> {
     return pathSignals(trainPath, blockInfra).filter { signal ->
-        signal.pathOffset.distance in rangeStart..rangeEnd
+        signal.pathOffset in rangeStart..rangeEnd
     }
 }
