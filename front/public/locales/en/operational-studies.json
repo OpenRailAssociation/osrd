@@ -566,8 +566,10 @@
         "routing": "Routing",
         "signals": "Signals",
         "spacing": "Spacing",
+        "stop": "Stop",
         "stopsAndTransitions": "Stops and transitions",
-        "title": "ETCS"
+        "title": "ETCS",
+        "transition": "Trans."
       },
       "powerRestrictions": "Power restrictions",
       "reticleInfos": "Reticle infos",

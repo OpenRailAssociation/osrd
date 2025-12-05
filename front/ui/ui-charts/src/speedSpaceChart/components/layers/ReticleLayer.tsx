@@ -4,15 +4,22 @@ import type { TrainDetails, Store } from '../../types';
 import DetailsBox from '../common/DetailsBox';
 import { MARGINS } from '../const';
 import { drawCursor } from '../helpers/drawElements/reticle';
+import type { SpeedSpaceChartProps } from '../SpeedSpaceChart';
 import { clearCanvas } from '../utils';
 
 type ReticleLayerProps = {
   width: number;
   internalHeight: number;
   store: Store;
+  translations?: SpeedSpaceChartProps['translations'];
 };
 
-const ReticleLayer = ({ width, internalHeight: height, store }: ReticleLayerProps) => {
+const ReticleLayer = ({
+  width,
+  internalHeight: height,
+  store,
+  translations,
+}: ReticleLayerProps) => {
   const canvas = useRef<HTMLCanvasElement>(null);
   const [trainDetails, setTrainDetails] = useState<TrainDetails | null>(null);
 
@@ -32,7 +39,15 @@ const ReticleLayer = ({ width, internalHeight: height, store }: ReticleLayerProp
   return (
     <>
       <canvas id="cursor-layer" className="absolute" ref={canvas} width={width} height={height} />
-      {trainDetails && <DetailsBox width={width} height={height} store={store} {...trainDetails} />}
+      {trainDetails && (
+        <DetailsBox
+          width={width}
+          height={height}
+          store={store}
+          translations={translations}
+          {...trainDetails}
+        />
+      )}
     </>
   );
 };

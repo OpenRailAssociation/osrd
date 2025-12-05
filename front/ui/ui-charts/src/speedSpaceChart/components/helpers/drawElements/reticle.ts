@@ -1,4 +1,11 @@
-import type { DrawFunctionParams, LayerData } from '../../../types';
+import {
+  type DrawFunctionParams,
+  type EtcsBrakingCurves,
+  EtcsBrakingCurveType,
+  EtcsBrakingType,
+  type EtcsSpeedValue,
+  type LayerData,
+} from '../../../types';
 import { WHITE, BLACK, MARGINS } from '../../const';
 import {
   clearCanvas,
@@ -25,6 +32,79 @@ const SNAPPED_STOP_TEXT_OFFSET = 36;
 const CURSOR_HEIGHT = 6;
 const SNAPPED_CURSOR_HEIGHT = 24;
 
+const getEtcsSpeedsAtPosition = (curves: EtcsBrakingCurves, position: number) => {
+  const result: Record<EtcsBrakingType, Record<EtcsBrakingCurveType, EtcsSpeedValue[]>> = {
+    [EtcsBrakingType.STOP]: {
+      [EtcsBrakingCurveType.IND]: [],
+      [EtcsBrakingCurveType.PS]: [],
+      [EtcsBrakingCurveType.GUI]: [],
+    },
+    [EtcsBrakingType.SLOWDOWN]: {
+      [EtcsBrakingCurveType.IND]: [],
+      [EtcsBrakingCurveType.PS]: [],
+      [EtcsBrakingCurveType.GUI]: [],
+    },
+    [EtcsBrakingType.SPACING]: {
+      [EtcsBrakingCurveType.IND]: [],
+      [EtcsBrakingCurveType.PS]: [],
+      [EtcsBrakingCurveType.GUI]: [],
+    },
+    [EtcsBrakingType.ROUTING]: {
+      [EtcsBrakingCurveType.IND]: [],
+      [EtcsBrakingCurveType.PS]: [],
+      [EtcsBrakingCurveType.GUI]: [],
+    },
+  };
+
+  const getEtcsSpeedAndEndOfCurveAtPosition = (
+    speeds: LayerData<number>[],
+    pos: number
+  ): EtcsSpeedValue | undefined => {
+    if (speeds.length === 0) return undefined;
+
+    const first = speeds[0];
+    const last = speeds[speeds.length - 1];
+    const firstPosition = first.position.start;
+    const lastPosition = last.position.end ? last.position.end : last.position.start;
+
+    // Reject if position is outside the curve range
+    if (pos < firstPosition || pos > lastPosition) {
+      return undefined;
+    }
+
+    const index = binarySearch(speeds, pos, (p) => p.position.start);
+    // If there is an exact match, return speed
+    if (
+      speeds[index].position.start === pos ||
+      (speeds[index].position.end && speeds[index].position.end === pos)
+    ) {
+      return { etcsSpeed: speeds[index].value, etcsEndOfCurvePos: lastPosition };
+    }
+    // Else, interpolate speed.
+    const p1 = speeds[index];
+    const p2 = speeds[index + 1];
+    return {
+      etcsSpeed: interpolate(p1.position.start, p1.value, p2.position.start, p2.value, pos),
+      etcsEndOfCurvePos: lastPosition,
+    };
+  };
+
+  for (const brakingType of Object.values(EtcsBrakingType) as EtcsBrakingType[]) {
+    const curveList = curves[brakingType] ?? [];
+    curveList.forEach((curve) => {
+      for (const curveType of Object.values(EtcsBrakingCurveType) as EtcsBrakingCurveType[]) {
+        const etcsSpeeds = curve[curveType] ?? [];
+        const value = getEtcsSpeedAndEndOfCurveAtPosition(etcsSpeeds, position);
+        if (value !== undefined) {
+          result[brakingType][curveType].push(value);
+        }
+      }
+    });
+  }
+
+  return result;
+};
+
 export const drawCursor = ({ ctx, width, height, store }: DrawFunctionParams) => {
   clearCanvas(ctx, width, height);
 
@@ -35,6 +115,7 @@ export const drawCursor = ({ ctx, width, height, store }: DrawFunctionParams) =>
     leftOffset,
     speeds,
     ecoSpeeds,
+    etcsBrakingCurves,
     electrifications,
     slopes,
     electricalProfiles,
@@ -164,6 +245,10 @@ export const drawCursor = ({ ctx, width, height, store }: DrawFunctionParams) =>
     effortText = 'decelerating';
   }
 
+  const etcsSpeedValues = etcsBrakingCurves
+    ? getEtcsSpeedsAtPosition(etcsBrakingCurves, cursorPosition)
+    : undefined;
+
   reticleY =
     cursorBoxHeight -
     (ecoSpeedValue / maxSpeed) * (cursorBoxHeight - CURVE_MARGIN_TOP) +
@@ -262,6 +347,7 @@ export const drawCursor = ({ ctx, width, height, store }: DrawFunctionParams) =>
     curveY: reticleY,
     speedText,
     ecoSpeedText,
+    etcsSpeedValues,
     effortText,
     electricalModeText,
     electricalProfileText,

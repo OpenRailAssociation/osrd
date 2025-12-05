@@ -21,6 +21,8 @@ export const defaultTranslations = {
   etcsLayersDisplay: {
     title: 'ETCS',
     etcsBrakingTypes: {
+      stop: 'Stop',
+      transition: 'Transition',
       stopsAndTransitions: 'Stops and transitions',
       signals: 'Signals',
       spacing: 'Spacing',

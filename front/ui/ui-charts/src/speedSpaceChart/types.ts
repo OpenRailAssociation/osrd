@@ -123,6 +123,7 @@ export type TrainDetails = {
   curveY: number;
   speedText: string;
   ecoSpeedText: string;
+  etcsSpeedValues?: Record<EtcsBrakingType, Record<EtcsBrakingCurveType, EtcsSpeedValue[]>>;
   effortText: string;
   electricalModeText: string;
   electricalProfileText: string;
@@ -150,16 +151,16 @@ export type EtcsBrakingCurves = {
 };
 
 export enum EtcsBrakingType {
-  STOP,
-  SLOWDOWN,
-  SPACING,
-  ROUTING,
+  SLOWDOWN = 'transition',
+  STOP = 'stop',
+  SPACING = 'spacing',
+  ROUTING = 'routing',
 }
 
 export enum EtcsBrakingCurveType {
-  IND,
-  PS,
-  GUI,
+  IND = 'IND',
+  PS = 'PS',
+  GUI = 'GUI',
 }
 
 export type EtcsLayersDisplay = {
@@ -175,4 +176,10 @@ export type EtcsLayersDisplay = {
   };
 };
 
+export type EtcsSpeedValue = {
+  etcsSpeed: number;
+  etcsEndOfCurvePos: number;
+};
+
 export type EtcsColorDictionary = Record<EtcsBrakingCurveType, chroma.Color>;
+export type EtcsAlphaDictionary = Record<EtcsBrakingCurveType, number>;

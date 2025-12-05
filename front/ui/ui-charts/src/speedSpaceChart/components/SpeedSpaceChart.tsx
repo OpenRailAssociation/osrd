@@ -54,6 +54,8 @@ export type SpeedSpaceChartProps = {
     etcsLayersDisplay: {
       title: string;
       etcsBrakingTypes: {
+        stop: string;
+        transition: string;
         stopsAndTransitions: string;
         signals: string;
         spacing: string;
@@ -327,6 +329,7 @@ const SpeedSpaceChart = ({
           width={adjustedWidthRightAxis}
           internalHeight={mainChartHeight}
           store={store}
+          translations={translations}
         />
       )}
       <FrontInteractivityLayer
