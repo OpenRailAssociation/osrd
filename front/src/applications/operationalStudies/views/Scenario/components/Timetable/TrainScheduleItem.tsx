@@ -49,6 +49,7 @@ type TrainScheduleItemProps = {
   removeTrains: (trainIds: TimetableItemId[]) => void;
   projectionPathIsUsed: boolean;
   selectTrainToEdit: (train: TrainScheduleWithDetails) => void;
+  setSelectedTimetableItemIds: React.Dispatch<React.SetStateAction<TimetableItemId[]>>;
   subCategories: SubCategory[];
   isSelectMode: boolean;
 };
@@ -63,6 +64,7 @@ const TrainScheduleItem = ({
   removeTrains,
   projectionPathIsUsed,
   selectTrainToEdit,
+  setSelectedTimetableItemIds,
   subCategories,
   isSelectMode,
 }: TrainScheduleItemProps) => {
@@ -84,6 +86,7 @@ const TrainScheduleItem = ({
     deleteTrainSchedules(dispatch, [train.id])
       .then(() => {
         removeTrains([train.id]);
+        setSelectedTimetableItemIds((prev) => prev.filter((id) => id !== train.id));
         dispatch(
           setSuccess({
             title: t('timetable.trainDeleted', { name: train.name }),

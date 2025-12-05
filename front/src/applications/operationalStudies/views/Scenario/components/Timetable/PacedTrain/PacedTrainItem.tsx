@@ -73,6 +73,7 @@ type PacedTrainItemProps = {
   ) => void;
   upsertTimetableItems: (timetableItems: TimetableItem[]) => void;
   removePacedTrains: (pacedTrainIdsToRemove: TimetableItemId[]) => void;
+  setSelectedTimetableItemIds: React.Dispatch<React.SetStateAction<TimetableItemId[]>>;
   subCategories: SubCategory[];
   infraIsCached: boolean;
   projectingOnSimulatedPathException: boolean | undefined;
@@ -90,6 +91,7 @@ const PacedTrainItem = ({
   selectedTrainId,
   upsertTimetableItems,
   removePacedTrains,
+  setSelectedTimetableItemIds,
   subCategories,
   infraIsCached,
   projectingOnSimulatedPathException,
@@ -155,6 +157,7 @@ const PacedTrainItem = ({
     try {
       await deletePacedTrains(dispatch, [pacedTrain.id]);
       removePacedTrains([pacedTrain.id]);
+      setSelectedTimetableItemIds((prev) => prev.filter((id) => id !== pacedTrain.id));
       dispatch(
         setSuccess({
           title: t('timetable.pacedTrainDeleted', { name: pacedTrain.name }),
