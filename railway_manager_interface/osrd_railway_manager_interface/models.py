@@ -123,6 +123,7 @@ class OptionsChangeGroup(BaseModel):
 
 
 class Paced(BaseModel):
+    exceptions: list[PacedTrainException]
     interval: Annotated[timedelta, Field(examples=["PT2H"])]
     """
     Time between two occurrences, an ISO 8601 format is expected
@@ -432,5 +433,4 @@ class Value(RootModel[str]):
 
 
 class PacedTrain(TrainSchedule):
-    exceptions: list[PacedTrainException]
     paced: Paced
