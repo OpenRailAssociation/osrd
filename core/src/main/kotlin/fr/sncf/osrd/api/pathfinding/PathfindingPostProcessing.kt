@@ -24,7 +24,7 @@ fun runPathfindingBlockPostProcessing(
 ): PathfindingBlockSuccess {
     return PathfindingBlockSuccess(
         trainPath.toJsonTrainPath(infra.rawInfra, infra.blockInfra),
-        trainPath.getTypedLength(),
+        trainPath.getLength(),
         waypointOffsets,
     )
 }

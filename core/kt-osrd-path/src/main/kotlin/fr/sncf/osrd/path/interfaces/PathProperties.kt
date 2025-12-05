@@ -4,7 +4,7 @@ import fr.sncf.osrd.geom.LineString
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra.impl.TemporarySpeedLimitManager
 import fr.sncf.osrd.utils.DistanceRangeMap
-import fr.sncf.osrd.utils.units.Distance
+import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
 
 data class TrackLocation(val trackId: TrackSectionId, val offset: Offset<TrackSection>)
@@ -47,7 +47,7 @@ interface PathProperties {
 
     fun getZones(): DistanceRangeMap<ZoneId>
 
-    fun getLength(): Distance
+    fun getLength(): Length<TrainPath>
 
     fun getTrackLocationAtOffset(pathOffset: Offset<TravelledPath>): TrackLocation
 

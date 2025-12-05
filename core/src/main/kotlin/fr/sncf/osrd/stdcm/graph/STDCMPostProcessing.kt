@@ -121,7 +121,7 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
         val mrsp = computeMRSP(trainPath, rollingStock, false, trainTag, temporarySpeedLimitManager)
         val stopInfos =
             stops.map { SimStop(Offset(it.position.meters), it.receptionSignal) }.toMutableList()
-        if (stopAtEnd) stopInfos.add(SimStop(Offset(trainPath.getLength()), SHORT_SLIP_STOP))
+        if (stopAtEnd) stopInfos.add(SimStop(trainPath.getLength(), SHORT_SLIP_STOP))
         val maxSpeedEnvelope = maxSpeedEnvelopeFrom(context, stopInfos, mrsp)
         return maxEffortEnvelopeFrom(context, 0.0, maxSpeedEnvelope)
     }

@@ -2,7 +2,6 @@ package fr.sncf.osrd.path.interfaces
 
 import fr.sncf.osrd.path.implementations.ChunkPath
 import fr.sncf.osrd.sim_infra.api.*
-import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.sumDistances
 
@@ -37,8 +36,6 @@ import fr.sncf.osrd.utils.units.sumDistances
  */
 interface TrainPath : PhysicsPath, PathProperties {
     fun subPath(from: Offset<TrainPath>?, to: Offset<TrainPath>?): TrainPath
-
-    fun getTypedLength(): Length<TrainPath>
 
     /** Returns a copy with the specified routes instead */
     override fun withRoutes(routes: List<RouteId>): TrainPath

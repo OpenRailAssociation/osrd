@@ -20,7 +20,6 @@ import fr.sncf.osrd.train.TestTrains
 import fr.sncf.osrd.utils.Helpers
 import fr.sncf.osrd.utils.Helpers.fullInfraFromRJS
 import fr.sncf.osrd.utils.Helpers.getExampleInfra
-import fr.sncf.osrd.utils.units.Distance.Companion.toMeters
 import java.io.IOException
 import java.net.URISyntaxException
 import java.util.stream.Stream
@@ -243,7 +242,7 @@ class MRSPTest {
     }
 
     private fun testComputeMRSPArgs(): Stream<Arguments> {
-        val pathLength = toMeters(path!!.getLength())
+        val pathLength = path!!.getLength().meters
         return Stream.of(
             // Multiple speed sections with correct/incorrect train tag and no rolling stock
             // length

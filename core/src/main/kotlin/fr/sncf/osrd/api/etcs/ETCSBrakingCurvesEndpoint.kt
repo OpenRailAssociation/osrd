@@ -84,7 +84,7 @@ class ETCSBrakingCurvesEndpoint(
                 )
 
             // Parse mrsp.
-            val mrsp = parseRawMrsp(request.mrsp, Offset(trainPath.getLength()))
+            val mrsp = parseRawMrsp(request.mrsp, trainPath.getLength())
 
             // Compute ETCS braking curves.
             val etcsSimulator = ETCSBrakingSimulatorImpl(context)
@@ -103,8 +103,7 @@ class ETCSBrakingCurvesEndpoint(
             val etcsSignals = getTravelledPathSignals(infra, trainPath, ETCS_LEVEL2.id)
             val etcsSignalsOnPath =
                 etcsSignals.filter {
-                    it.offset.distance > Distance.ZERO &&
-                        it.offset.distance <= trainPath.getLength()
+                    it.offset > Offset.zero() && it.offset <= trainPath.getLength()
                 }
             val etcsSignalOffsets = etcsSignalsOnPath.map { it.offset }
             val areEtcsSignalRouteDelimiters = etcsSignalsOnPath.map { it.isRouteDelimiter }

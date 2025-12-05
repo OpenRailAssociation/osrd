@@ -4,7 +4,6 @@ import com.google.common.collect.Iterables
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings
 import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.path.implementations.buildTrainPathFromBlock
-import fr.sncf.osrd.path.interfaces.BlockPath
 import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.pathfinding.Pathfinding.EdgeLocation
 import fr.sncf.osrd.sim_infra.api.Block
@@ -73,7 +72,7 @@ class RemainingDistanceEstimatorTest {
                 0,
             ), // Test with target at the end of the edge
             Arguments.of(
-                listOf(EdgeLocation(block, Offset<BlockPath>(path!!.getLength()))),
+                listOf(EdgeLocation(block, path!!.getLength())),
                 0,
                 fromMeters(points[0].distanceAsMeters(Iterables.getLast(points))).millimeters,
                 0,
@@ -81,17 +80,17 @@ class RemainingDistanceEstimatorTest {
             Arguments.of(
                 listOf(
                     EdgeLocation(block, Offset(0.meters)),
-                    EdgeLocation(block, Offset<BlockPath>(path!!.getLength())),
+                    EdgeLocation(block, path!!.getLength()),
                 ),
                 0,
                 0,
                 0,
             ), // Test with an offset on the block
             Arguments.of(
-                listOf(EdgeLocation(block, Offset<BlockPath>(path!!.getLength()))),
+                listOf(EdgeLocation(block, path!!.getLength())),
                 0,
                 0,
-                path!!.getLength().millimeters,
+                path!!.getLength().distance.millimeters,
             ),
         )
     }
