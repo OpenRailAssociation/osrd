@@ -19,7 +19,7 @@ import type {
 import {
   osrdEditoastApi,
   type PostTimetableByIdStdcmApiArg,
-  type PostTimetableByIdStdcmApiResponse,
+  type PostTimetableByIdStdcmApiResponseWithTraceId,
   type RollingStockWithLiveries,
 } from 'common/api/osrdEditoastApi';
 import { useStoreDataForSpeedLimitByTagSelector } from 'common/SpeedLimitByTagSelector/useStoreDataForSpeedLimitByTagSelector';
@@ -84,7 +84,10 @@ const useStdcm = ({
   const createSimulation = async (
     inputs: StdcmSimulationInputs,
     payload: PostTimetableByIdStdcmApiArg,
-    response: Extract<PostTimetableByIdStdcmApiResponse, { status: 'success' | 'path_not_found' }>,
+    response: Extract<
+      PostTimetableByIdStdcmApiResponseWithTraceId,
+      { status: 'success' | 'path_not_found' }
+    >,
     alternativePath?: 'upstream' | 'downstream'
   ): Promise<Omit<StdcmSimulation, 'index'>> => {
     const creationDate = new Date();
@@ -147,7 +150,7 @@ const useStdcm = ({
   };
 
   const handleSuccess = async (
-    response: Extract<PostTimetableByIdStdcmApiResponse, { status: 'success' }>,
+    response: Extract<PostTimetableByIdStdcmApiResponseWithTraceId, { status: 'success' }>,
     payload: PostTimetableByIdStdcmApiArg
   ) => {
     setCurrentStdcmRequestStatus(STDCM_REQUEST_STATUS.success);
@@ -159,7 +162,7 @@ const useStdcm = ({
   };
 
   const handlePathNotFound = async (
-    response: Extract<PostTimetableByIdStdcmApiResponse, { status: 'path_not_found' }>,
+    response: Extract<PostTimetableByIdStdcmApiResponseWithTraceId, { status: 'path_not_found' }>,
     payload: PostTimetableByIdStdcmApiArg
   ) => {
     const simulationsToAdd: Omit<StdcmSimulation, 'index'>[] = [];
