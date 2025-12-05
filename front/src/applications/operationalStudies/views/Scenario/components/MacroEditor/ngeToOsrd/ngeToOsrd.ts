@@ -7,11 +7,7 @@ import type { TimetableItemId, TimetableItem } from 'reducers/osrdconf/types';
 import type { AppDispatch } from 'store';
 
 import type { NetzgrafikDto, NGEEvent, NodeDto, LabelDto } from '../../NGE/types';
-import {
-  DEFAULT_PACED_TRAIN_PAYLOAD,
-  DEFAULT_TRAIN_SCHEDULE_PAYLOAD,
-  TRAINRUN_DIRECTIONS,
-} from '../consts';
+import { DEFAULT_TRAIN_SCHEDULE_PAYLOAD, TRAINRUN_DIRECTIONS } from '../consts';
 import type MacroEditorState from '../MacroEditorState';
 import { getTrainCategoryFromTrainrunCategoryId } from '../utils';
 import { castNgeNode, handleNodeOperation } from './node';
@@ -214,7 +210,7 @@ export const convertNgeDtoToOsrd = (dto: NetzgrafikDto) => {
         const paced = createPacedAttributesFromTrainrun(trainrun, dto);
         if (paced) {
           pacedTrains.push({
-            ...DEFAULT_PACED_TRAIN_PAYLOAD,
+            ...DEFAULT_TRAIN_SCHEDULE_PAYLOAD,
             ...commonProps,
             paced,
           });

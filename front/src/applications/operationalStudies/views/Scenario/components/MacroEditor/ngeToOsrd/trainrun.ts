@@ -39,7 +39,11 @@ import type {
   TimeLockDto,
   TrainrunDto,
 } from '../../NGE/types';
-import { DEFAULT_PACED_TRAIN_PAYLOAD, DEFAULT_TIME_WINDOW, TRAINRUN_DIRECTIONS } from '../consts';
+import {
+  DEFAULT_TRAIN_SCHEDULE_PAYLOAD,
+  DEFAULT_TIME_WINDOW,
+  TRAINRUN_DIRECTIONS,
+} from '../consts';
 import MacroEditorState from '../MacroEditorState';
 import {
   fetchStationSecondaryCode,
@@ -433,7 +437,7 @@ const handleCreateTimetableItem = async (
   );
 
   const pacedTrain: PacedTrain = {
-    ...DEFAULT_PACED_TRAIN_PAYLOAD,
+    ...DEFAULT_TRAIN_SCHEDULE_PAYLOAD,
     paced: createPacedAttributesFromTrainrun(trainrun, netzgrafikDto)!,
     train_name: trainrun.name,
     labels,
