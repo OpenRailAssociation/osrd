@@ -51,17 +51,12 @@ const StdcmOperationalPoint = ({
   const { t } = useTranslation('stdcm');
   const dispatch = useAppDispatch();
 
-  const {
-    searchTerm,
-    setSearchTerm,
-    searchResults,
-    setSearchResults,
-    searchOperationalPointsByTrigram,
-  } = useSearchOperationalPoint({
-    initialSearchTerm: operationalPoint?.name,
-    initialChCodeFilter: operationalPoint?.secondaryCode,
-    isStdcm: true,
-  });
+  const { searchTerm, setSearchTerm, searchResults, searchOperationalPointsByTrigram } =
+    useSearchOperationalPoint({
+      initialSearchTerm: operationalPoint?.name,
+      initialChCodeFilter: operationalPoint?.secondaryCode,
+      isStdcm: true,
+    });
 
   const [chSuggestions, setChSuggestions] = useState<StdcmOp[]>([]);
 
@@ -123,7 +118,6 @@ const StdcmOperationalPoint = ({
 
   const resetSuggestions = () => {
     if (searchTerm !== '' && !operationalPoint) {
-      setSearchResults([]);
       setSearchTerm('');
     }
   };

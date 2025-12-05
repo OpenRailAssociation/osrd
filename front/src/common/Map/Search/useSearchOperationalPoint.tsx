@@ -1,5 +1,6 @@
-import { useState, useEffect, useMemo, useCallback } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 
+import { skipToken } from '@reduxjs/toolkit/query';
 import { useSelector } from 'react-redux';
 
 import { type SearchResultItemOperationalPoint, osrdEditoastApi } from 'common/api/osrdEditoastApi';
@@ -34,7 +35,6 @@ export default function useSearchOperationalPoint({
   const infraID = useInfraID();
   const [searchTerm, setSearchTerm] = useState(initialSearchTerm);
   const [chCodeFilter, setChCodeFilter] = useState(initialChCodeFilter);
-  const [searchResults, setSearchResults] = useState<SearchResultItemOperationalPoint[]>([]);
   const [mainOperationalPointsOnly, setMainOperationalPointsOnly] = useState(false);
   const stdcmOperationalPoints = useSelector(getOperationalPoints);
   const isSuperUser = useSelector(getIsSuperUser);
@@ -48,7 +48,6 @@ export default function useSearchOperationalPoint({
     }
     return true;
   }, [stdcmOperationalPoints, isSuperUser, isStdcm]);
-
 
   /* Lazily search for operational whose trigrams exactly match the search query */
   const lazySearchByExactTrigram = useCallback(
@@ -77,47 +76,73 @@ export default function useSearchOperationalPoint({
         return [];
       }
     },
-    [infraID, isStdcm, isSuperUser, stdcmPerimeterOperationalpointsFilter]
+    [infraID, stdcmPerimeterOperationalpointsFilter]
   );
 
-  /** Search for operational points whose trigrams start with the search query or whose name or UIC code (primary code) contain the search query */
-  const searchOperationalPoints = useCallback(
-    async (searchQuery: string) => {
-      if (infraID === undefined) return [];
+  const shouldSearchByTrigram =
+    infraID &&
+    debouncedSearchTerm &&
+    !Number.isInteger(+debouncedSearchTerm) &&
+    debouncedSearchTerm.length < 4;
 
-      const sortedTrigramResults = await searchOperationalPointsByTrigram(searchQuery);
-      const trigramResultsIds = new Set(sortedTrigramResults.map((op) => op.obj_id));
+  /* Operational points whose trigrams start with the search query */
+  const { data: rawTrigramResults } = osrdEditoastApi.endpoints.postSearch.useQuery(
+    shouldSearchByTrigram
+      ? {
+          searchPayload: {
+            object: 'operationalpoint',
+            query: [
+              'and',
+              ['ilike', ['trigram'], `${debouncedSearchTerm}%`],
+              ['=', ['infra_id'], infraID],
+              stdcmPerimeterOperationalpointsFilter,
+            ],
+          },
+          pageSize,
+        }
+      : skipToken
+  );
 
-      try {
-        const results = (await postSearch({
+  /* Operational points whose name or UIC code (primary code) contain the search query */
+  const { data: rawNameAndUicResults } = osrdEditoastApi.endpoints.postSearch.useQuery(
+    infraID && debouncedSearchTerm
+      ? {
           searchPayload: {
             object: 'operationalpoint',
             query: [
               'and',
               [
                 'or',
-                ['search', ['name'], searchQuery],
-                ['like', ['to_string', ['uic']], `%${searchQuery}%`],
+                ['search', ['name'], debouncedSearchTerm],
+                ['like', ['to_string', ['uic']], `%${debouncedSearchTerm}%`],
               ],
               ['=', ['infra_id'], infraID],
               stdcmPerimeterOperationalpointsFilter,
             ],
           },
           pageSize,
-        }).unwrap()) as SearchResultItemOperationalPoint[];
-        const deduplicatedResults = results.filter((item) => !trigramResultsIds.has(item.obj_id));
-        const sortedResults = [...deduplicatedResults];
-        sortedResults.sort(sortOperationalPointsFromNameAndUicSearch(searchQuery));
-
-        const allResults = [...sortedTrigramResults, ...sortedResults];
-        return allResults;
-      } catch (error) {
-        setFailure(castErrorToFailure(error));
-        return [];
-      }
-    },
-    [infraID, isStdcm, isSuperUser, stdcmPerimeterOperationalpointsFilter]
+        }
+      : skipToken
   );
+
+  const searchResults = useMemo(() => {
+    if (!debouncedSearchTerm) return [];
+
+    const trigramResults = [...((rawTrigramResults ?? []) as SearchResultItemOperationalPoint[])];
+    trigramResults.sort(sortOperationalPointsFromTrigramSearch);
+    const trigramResultsIds = new Set(trigramResults.map((op) => op.obj_id));
+
+    const nameAndUicResults = [
+      ...((rawNameAndUicResults ?? []) as SearchResultItemOperationalPoint[]),
+    ];
+    const dedupNameAndUicResults = nameAndUicResults.filter(
+      (item) => !trigramResultsIds.has(item.obj_id)
+    );
+    dedupNameAndUicResults.sort(sortOperationalPointsFromNameAndUicSearch(debouncedSearchTerm));
+
+    const allResults = [...trigramResults, ...dedupNameAndUicResults];
+    return allResults;
+  }, [debouncedSearchTerm, rawTrigramResults, rawNameAndUicResults]);
 
   /** Filter operational points on secondary code (ch), if provided */
   const searchResultsFilteredByCh = useMemo(() => {
@@ -133,27 +158,15 @@ export default function useSearchOperationalPoint({
     return searchResults.filter((result) => result.ch.toLocaleLowerCase().includes(chFilter));
   }, [searchResults, chCodeFilter, mainOperationalPointsOnly]);
 
-  useEffect(() => {
-    if (debouncedSearchTerm) {
-      searchOperationalPoints(debouncedSearchTerm).then((results) => {
-        setSearchResults(results);
-      });
-    } else if (searchResults.length !== 0) {
-      setSearchResults([]);
-    }
-  }, [debouncedSearchTerm]);
-
   return {
     searchTerm,
     chCodeFilter,
     searchResultsFilteredByCh,
     mainOperationalPointsOnly,
     searchResults,
-    searchOperationalPoints,
     searchOperationalPointsByTrigram: lazySearchByExactTrigram,
     setSearchTerm,
     setChCodeFilter,
-    setSearchResults,
     setMainOperationalPointsOnly,
   };
 }

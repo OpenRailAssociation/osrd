@@ -28,7 +28,6 @@ const MapSearchOperationalPoint = ({ closeMapSearchPopUp }: MapSearchOperational
     mainOperationalPointsOnly,
     setSearchTerm,
     setChCodeFilter,
-    setSearchResults,
     setMainOperationalPointsOnly,
   } = useSearchOperationalPoint({ pageSize: MAX_DISPLAYABLE_RESULTS + 1 });
 
@@ -94,7 +93,6 @@ const MapSearchOperationalPoint = ({ closeMapSearchPopUp }: MapSearchOperational
             }}
             onClear={() => {
               setSearchTerm('');
-              setSearchResults([]);
             }}
             clearButton
             noMargin
