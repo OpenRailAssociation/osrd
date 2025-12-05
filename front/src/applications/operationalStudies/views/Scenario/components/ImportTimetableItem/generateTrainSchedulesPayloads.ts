@@ -13,14 +13,15 @@ function generateTrainSchedulePayload(train: GraouTrainSchedule): TrainSchedule 
     (acc, step) => {
       const stepId = uuidV4();
 
-      if (!Number.isNaN(step.uic)) {
+      const uic = Number(step.uic);
+      if (Number.isNaN(uic)) {
         throw new Error('Invalid UIC');
       }
 
       acc.path.push({
         id: stepId,
         location: {
-          operational_point: { uic: Number(step.uic), secondary_code: step.chCode },
+          operational_point: { uic, secondary_code: step.chCode },
         },
       });
 
