@@ -178,30 +178,30 @@ export function updatePacedTrainExceptionsList<T extends PacedTrainException>(
  * If the exceptions as no change group after those checks, the exception is removed.
  */
 export function checkChangeGroups(
-  updatedPacedTrain: Omit<PacedTrain, 'exceptions'>,
+  updatedTrain: Omit<PacedTrain, 'exceptions'>,
   originalExceptions: PacedTrainException[]
 ): PacedTrainException[] {
   return originalExceptions.reduce<PacedTrainException[]>((acc, exception) => {
     const updatedException = { ...exception };
     if (
       exception.constraint_distribution &&
-      isEqual(exception.constraint_distribution.value, updatedPacedTrain.constraint_distribution)
+      isEqual(exception.constraint_distribution.value, updatedTrain.constraint_distribution)
     ) {
       delete updatedException.constraint_distribution;
     }
 
     if (
       exception.initial_speed &&
-      isEqual(exception.initial_speed.value, updatedPacedTrain.initial_speed)
+      isEqual(exception.initial_speed.value, updatedTrain.initial_speed)
     ) {
       delete updatedException.initial_speed;
     }
 
-    if (exception.labels && isEqual(exception.labels.value, updatedPacedTrain.labels)) {
+    if (exception.labels && isEqual(exception.labels.value, updatedTrain.labels)) {
       delete updatedException.labels;
     }
 
-    if (exception.options && isEqual(exception.options, updatedPacedTrain.options)) {
+    if (exception.options && isEqual(exception.options, updatedTrain.options)) {
       delete updatedException.options;
     }
 
@@ -209,8 +209,8 @@ export function checkChangeGroups(
     // As the front generates each path step id, between two same pathfinding, ids could be different
     // so we don't want to compare them.
     if (updatedException.path_and_schedule) {
-      const originalPacedTrainPathSteps = updatedPacedTrain.path.map((_, i) =>
-        computeBasePathStep(updatedPacedTrain, i)
+      const originalPacedTrainPathSteps = updatedTrain.path.map((_, i) =>
+        computeBasePathStep(updatedTrain, i)
       );
       const exceptionPathSteps = updatedException.path_and_schedule.path.map((_, i) =>
         computeBasePathStep(updatedException.path_and_schedule!, i)
@@ -227,15 +227,15 @@ export function checkChangeGroups(
 
     if (
       exception.rolling_stock &&
-      isEqual(exception.rolling_stock.comfort, updatedPacedTrain.comfort) &&
-      isEqual(exception.rolling_stock.rolling_stock_name, updatedPacedTrain.rolling_stock_name)
+      isEqual(exception.rolling_stock.comfort, updatedTrain.comfort) &&
+      isEqual(exception.rolling_stock.rolling_stock_name, updatedTrain.rolling_stock_name)
     ) {
       delete updatedException.rolling_stock;
     }
 
     if (
       exception.rolling_stock_category &&
-      isEqual(exception.rolling_stock_category.value, updatedPacedTrain.category)
+      isEqual(exception.rolling_stock_category.value, updatedTrain.category)
     ) {
       delete updatedException.rolling_stock_category;
     }
@@ -245,7 +245,7 @@ export function checkChangeGroups(
       isEqual(
         exception.speed_limit_tag.value ?? null,
         // speed limit tag is instanciated with null if not present when formating the item
-        updatedPacedTrain.speed_limit_tag ?? null
+        updatedTrain.speed_limit_tag ?? null
       )
     ) {
       delete updatedException.speed_limit_tag;
@@ -254,9 +254,9 @@ export function checkChangeGroups(
     // We do the check only for indexed occurrences because added exceptions should not have
     // their start time reset
     if (exception.start_time && exception.occurrence_index !== undefined) {
-      const originalPacedTrainInterval = Duration.parse(updatedPacedTrain.paced.interval);
+      const originalPacedTrainInterval = Duration.parse(updatedTrain.paced.interval);
       const originalStartTimeToTest = computeIndexedOccurrenceStartTime(
-        new Date(updatedPacedTrain.start_time),
+        new Date(updatedTrain.start_time),
         originalPacedTrainInterval,
         exception.occurrence_index
       );
@@ -275,7 +275,7 @@ export function checkChangeGroups(
     if (exception.train_name && exception.occurrence_index !== undefined) {
       // Compute the name that the occurrence at this index should have with the new name
       const occurrenceFormattedName = computeOccurrenceName(
-        updatedPacedTrain.train_name,
+        updatedTrain.train_name,
         exception.occurrence_index
       );
       if (isEqual(exception.train_name.value, occurrenceFormattedName)) {
