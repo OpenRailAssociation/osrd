@@ -1,4 +1,4 @@
-#!/bin/env bash
+#!/usr/bin/env bash
 # Generate Python types from openapi.yaml using datamodel-codegen
 
 set -e
