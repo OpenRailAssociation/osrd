@@ -146,16 +146,16 @@ export const getExceptionFromOccurrenceId = (
   let exception: PacedTrainException | undefined;
   if (isIndexedOccurrenceId(occurrenceId)) {
     const index = extractOccurrenceIndexFromOccurrenceId(occurrenceId);
-    exception = pacedTrain.exceptions.find((e) => e.occurrence_index === index);
+    exception = pacedTrain.paced.exceptions.find((e) => e.occurrence_index === index);
   } else {
     const key = extractExceptionIdFromOccurrenceId(occurrenceId);
-    exception = pacedTrain.exceptions.find((e) => e.key === key);
+    exception = pacedTrain.paced.exceptions.find((e) => e.key === key);
   }
   return exception;
 };
 
 export const getOcurrencesIds = (pacedTrain: PacedTrain, pacedTrainId: PacedTrainId) => {
-  const occurrencesIds: OccurrenceId[] = pacedTrain.exceptions
+  const occurrencesIds: OccurrenceId[] = pacedTrain.paced.exceptions
     .filter((exception) => exception.occurrence_index === undefined) // Indexed exceptions follow the regular indexed occurrence id pattern
     .map((exception) => formatPacedTrainIdToExceptionId(pacedTrainId, exception.key));
   const indexedOccurencesCount = getOccurrencesNb({

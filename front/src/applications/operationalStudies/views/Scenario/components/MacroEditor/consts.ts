@@ -167,10 +167,9 @@ export const DEFAULT_TRAIN_SCHEDULE_PAYLOAD: Pick<
 
 export const DEFAULT_PACED_TRAIN_PAYLOAD: Pick<
   PacedTrain,
-  'constraint_distribution' | 'rolling_stock_name' | 'exceptions'
+  'constraint_distribution' | 'rolling_stock_name'
 > = {
   ...DEFAULT_TRAIN_SCHEDULE_PAYLOAD,
-  exceptions: [],
 };
 
 export const DEFAULT_TIME_WINDOW = new Duration({ hours: 2 });

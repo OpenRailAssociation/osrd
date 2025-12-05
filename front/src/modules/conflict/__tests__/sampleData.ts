@@ -42,7 +42,7 @@ export const pacedTrain = ({
     id,
     train_name,
     category: category ?? null,
-    exceptions: exceptions ?? [],
+    paced: { exceptions },
   }) as TimetableItem;
 
 export const conflictBase = (partial: Partial<Conflict> = {}): Conflict => ({

@@ -2033,8 +2033,8 @@ export type PutPacedTrainByIdApiResponse = unknown;
 export type PutPacedTrainByIdApiArg = {
   id: number;
   body: TrainSchedule & {
-    exceptions: PacedTrainException[];
     paced: {
+      exceptions: PacedTrainException[];
       /** Time between two occurrences, an ISO 8601 format is expected */
       interval: PositiveDuration;
       /** Duration of the paced train, an ISO 8601 format is expected */
@@ -4007,8 +4007,8 @@ export type PacedTrainException = {
   train_name?: TrainNameChangeGroup;
 };
 export type PacedTrain = TrainSchedule & {
-  exceptions: PacedTrainException[];
   paced: {
+    exceptions: PacedTrainException[];
     /** Time between two occurrences, an ISO 8601 format is expected */
     interval: PositiveDuration;
     /** Duration of the paced train, an ISO 8601 format is expected */

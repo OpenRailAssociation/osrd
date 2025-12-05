@@ -52,7 +52,6 @@
       "category": "International",
       "constraint_distribution": "STANDARD",
       "rolling_stock_name": "",
-      "exceptions": [],
       "train_name": "Carotte",
       "labels": ["Test label"],
       "path": [
@@ -84,13 +83,12 @@
           "reception_signal": "OPEN"
         }
       ],
-      "paced": { "interval": "PT1H", "time_window": "PT2H" }
+      "paced": { "interval": "PT1H", "time_window": "PT2H", "exceptions": [] }
     },
     {
       "category": "International",
       "constraint_distribution": "STANDARD",
       "rolling_stock_name": "",
-      "exceptions": [],
       "train_name": "Carotte",
       "labels": ["Test label"],
       "path": [
@@ -122,7 +120,7 @@
           "reception_signal": "OPEN"
         }
       ],
-      "paced": { "interval": "PT1H", "time_window": "PT2H" }
+      "paced": { "interval": "PT1H", "time_window": "PT2H", "exceptions": [] }
     }
   ],
   "train_schedules": [],

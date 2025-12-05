@@ -105,13 +105,12 @@ export const formatPacedTrainWithDetails = (
     speed_limit_tag: ___,
     rolling_stock_name: ____,
     paced,
-    exceptions,
     ...pacedTrainProps
   } = pacedTrain;
 
   let simulatedExceptions: SimulatedException[] = [];
   if (pacedTrainSummary) {
-    exceptions.forEach((exception) => {
+    paced.exceptions.forEach((exception) => {
       const simulationSummary = pacedTrainSummary.exceptions[exception.key];
 
       let summary: SimulationSummary | undefined;
@@ -129,7 +128,7 @@ export const formatPacedTrainWithDetails = (
       });
     });
   } else {
-    simulatedExceptions = exceptions;
+    simulatedExceptions = paced.exceptions;
   }
 
   return {

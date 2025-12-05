@@ -63,7 +63,6 @@ export function formatPacedTrainWithDetailsToPacedTrainPayload(
     category: pacedTrainWithDetails.category,
     comfort: pacedTrainWithDetails.comfort,
     constraint_distribution: pacedTrainWithDetails.constraint_distribution,
-    exceptions: pacedTrainWithDetails.exceptions,
     initial_speed: pacedTrainWithDetails.initial_speed,
     labels: pacedTrainWithDetails.labels,
     margins: pacedTrainWithDetails.margins,
@@ -71,6 +70,7 @@ export function formatPacedTrainWithDetailsToPacedTrainPayload(
     paced: {
       time_window: pacedTrainWithDetails.paced.timeWindow.toISOString(),
       interval: pacedTrainWithDetails.paced.interval.toISOString(),
+      exceptions: pacedTrainWithDetails.exceptions,
     },
     path: pacedTrainWithDetails.path,
     power_restrictions: pacedTrainWithDetails.power_restrictions,
@@ -111,8 +111,8 @@ export function formatPacedTrainPayload(
     paced: {
       time_window: osrdconf.timeWindow.toISOString(),
       interval: osrdconf.interval.toISOString(),
+      exceptions,
     },
-    exceptions,
   };
 
   if (timetableItemToEditData && isPacedTrainToEditData(timetableItemToEditData)) {
@@ -132,12 +132,12 @@ export function formatPacedTrainPayload(
       );
 
       const existingException = findExceptionWithOccurrenceId(
-        originalPacedTrain.exceptions,
+        originalPacedTrain.paced.exceptions,
         timetableItemToEditData.occurrenceId
       );
 
       const updatedExceptions = updatePacedTrainExceptionsList(
-        originalPacedTrain.exceptions,
+        originalPacedTrain.paced.exceptions,
         {
           ...baseException,
           key: existingException?.key ?? uuidV4(),
@@ -149,7 +149,7 @@ export function formatPacedTrainPayload(
       // with only its exceptions updated
       newPacedTrain = {
         ...originalPacedTrain,
-        exceptions: updatedExceptions,
+        paced: { ...originalPacedTrain.paced, exceptions: updatedExceptions },
       };
       // ========== user modified the whole paced train ==========
     } else {
@@ -162,14 +162,18 @@ export function formatPacedTrainPayload(
       // Reset all exceptions if the paced train settings have changed
       const newExceptionList = !hasPacedTrainSettingsChanged
         ? [
-            ...checkChangeGroups(newPacedTrain, newPacedTrain.paced, originalPacedTrain.exceptions),
-            ...newPacedTrain.exceptions,
+            ...checkChangeGroups(
+              newPacedTrain,
+              newPacedTrain.paced,
+              originalPacedTrain.paced.exceptions
+            ),
+            ...newPacedTrain.paced.exceptions,
           ]
         : [];
 
       newPacedTrain = {
         ...newPacedTrain,
-        exceptions: newExceptionList,
+        paced: { ...newPacedTrain.paced, exceptions: newExceptionList },
       };
     }
   }

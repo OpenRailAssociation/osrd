@@ -59,7 +59,6 @@
       },
       "constraint_distribution": "STANDARD",
       "rolling_stock_name": "",
-      "exceptions": [],
       "train_name": "Carotte-1",
       "labels": [],
       "path": [
@@ -91,7 +90,7 @@
           "reception_signal": "OPEN"
         }
       ],
-      "paced": { "interval": "PT2H", "time_window": "PT2H" }
+      "paced": { "interval": "PT2H", "time_window": "PT2H", "exceptions": [] }
     },
     {
       "category": {
@@ -99,7 +98,6 @@
       },
       "constraint_distribution": "STANDARD",
       "rolling_stock_name": "",
-      "exceptions": [],
       "train_name": "Carotte-1",
       "labels": [],
       "path": [
@@ -131,18 +129,18 @@
           "reception_signal": "OPEN"
         }
       ],
-      "paced": { "interval": "PT2H", "time_window": "PT2H" }
+      "paced": { "interval": "PT2H", "time_window": "PT2H", "exceptions": [] }
     },
     {
       "category": {
         "main_category": "INTERCITY_TRAIN"
       },
       "constraint_distribution": "STANDARD",
-      "exceptions": [],
       "labels": [],
       "paced": {
         "interval": "PT2H",
-        "time_window": "PT2H"
+        "time_window": "PT2H",
+        "exceptions": []
       },
       "path": [
         {
@@ -171,11 +169,11 @@
         "main_category": "INTERCITY_TRAIN"
       },
       "constraint_distribution": "STANDARD",
-      "exceptions": [],
       "labels": [],
       "paced": {
         "interval": "PT2H",
-        "time_window": "PT2H"
+        "time_window": "PT2H",
+        "exceptions": []
       },
       "path": [
         {

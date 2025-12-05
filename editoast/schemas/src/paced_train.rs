@@ -23,12 +23,15 @@ use crate::train_schedule::ScheduleItem;
 use crate::train_schedule::TrainSchedule;
 use crate::train_schedule::TrainScheduleOptions;
 
-#[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, ToSchema)]
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
 pub struct Paced {
     /// Duration of the paced train, an ISO 8601 format is expected
     pub time_window: PositiveDuration,
     /// Time between two occurrences, an ISO 8601 format is expected
     pub interval: PositiveDuration,
+    #[serde(default)]
+    #[schema(required)]
+    pub exceptions: Vec<PacedTrainException>,
 }
 
 #[derive(Debug, Clone, Serialize, PartialEq, ToSchema)]
@@ -37,9 +40,6 @@ pub struct PacedTrain {
     pub train_schedule_base: TrainSchedule,
     #[schema(inline)]
     pub paced: Paced,
-    #[serde(default)]
-    #[schema(required)]
-    pub exceptions: Vec<PacedTrainException>,
 }
 
 impl<'de> Deserialize<'de> for PacedTrain {
@@ -52,13 +52,11 @@ impl<'de> Deserialize<'de> for PacedTrain {
             #[serde(flatten)]
             pub train_schedule_base: TrainSchedule,
             pub paced: Paced,
-            #[serde(default)]
-            pub exceptions: Vec<PacedTrainException>,
         }
         let raw = PacedTrainJson::deserialize(deserializer)?;
 
-        let mut seen_keys = HashSet::with_capacity(raw.exceptions.len());
-        for e in &raw.exceptions {
+        let mut seen_keys = HashSet::with_capacity(raw.paced.exceptions.len());
+        for e in &raw.paced.exceptions {
             if !seen_keys.insert(&e.key) {
                 return Err(serde::de::Error::custom(format!(
                     "Duplicate exception key: '{}'",
@@ -71,7 +69,7 @@ impl<'de> Deserialize<'de> for PacedTrain {
         let interval_secs = raw.paced.interval.num_seconds();
         let num_occurrences = (time_window_secs / interval_secs) as usize;
 
-        for ex in &raw.exceptions {
+        for ex in &raw.paced.exceptions {
             if let ExceptionType::Modified { occurrence_index } = ex.exception_type
                 && occurrence_index as usize > num_occurrences
             {
@@ -85,7 +83,6 @@ impl<'de> Deserialize<'de> for PacedTrain {
         Ok(PacedTrain {
             train_schedule_base: raw.train_schedule_base,
             paced: raw.paced,
-            exceptions: raw.exceptions,
         })
     }
 }

@@ -54,7 +54,7 @@ def test_put_paced_train(
     }
 
     paced_train["train_name"] = "update_train_name"
-    paced_train["exceptions"] = [exception]
+    paced_train["paced"]["exceptions"] = [exception]
 
     update_response = session.put(
         f"{EDITOAST_URL}paced_train/{paced_train_id}", json=paced_train
@@ -66,7 +66,7 @@ def test_put_paced_train(
     ).json()
 
     assert updated_paced_train["train_name"] == "update_train_name"
-    assert updated_paced_train["exceptions"] == [exception]
+    assert updated_paced_train["paced"]["exceptions"] == [exception]
 
 
 def test_get_paced_train_with_exception_path(
@@ -106,7 +106,7 @@ def test_get_paced_train_with_exception_path(
         },
         "initial_speed": {"value": 20.0},
     }
-    paced_train["exceptions"] = [exception]
+    paced_train["paced"]["exceptions"] = [exception]
     update_response = session.put(
         f"{EDITOAST_URL}paced_train/{paced_train_id}", json=paced_train
     )
@@ -183,7 +183,7 @@ def test_get_paced_train_with_exception_simulation(
         },
         "initial_speed": {"value": 20.0},
     }
-    paced_train["exceptions"] = [exception]
+    paced_train["paced"]["exceptions"] = [exception]
     update_response = session.put(
         f"{EDITOAST_URL}paced_train/{paced_train_id}", json=paced_train
     )

@@ -1182,7 +1182,7 @@ mod tests {
             train_name: None,
         };
 
-        paced_train_1.exceptions = vec![exception_1.clone(), exception_2.clone()];
+        paced_train_1.paced.exceptions = vec![exception_1.clone(), exception_2.clone()];
 
         let request = app
             .post(format!("/timetable/{}/paced_trains", timetable.id).as_str())
@@ -1215,7 +1215,7 @@ mod tests {
         let timetable = create_timetable(&mut pool.get_ok()).await;
         let mut paced_train_1 = simple_paced_train_base();
 
-        paced_train_1.exceptions = vec![
+        paced_train_1.paced.exceptions = vec![
             simple_created_exception_with_change_groups("duplicated_key_1"),
             simple_modified_exception_with_change_groups("duplicated_key_1", 0),
         ];
@@ -1271,7 +1271,7 @@ mod tests {
             .expect("Failed to fetch paced trains");
 
         assert!(list_result.len() == 2);
-        assert_eq!(list_result[0].exceptions, paced_train_2.exceptions);
+        assert_eq!(list_result[0].exceptions, paced_train_2.paced.exceptions);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]

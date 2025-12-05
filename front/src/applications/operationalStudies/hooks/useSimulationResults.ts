@@ -45,7 +45,10 @@ const useSimulationResults = (): SimulationResults | undefined => {
       throw new Error(`trainId ${selectedTrainId} should be a occurrence id`);
     }
 
-    const exception = findExceptionWithOccurrenceId(timetableItem.exceptions, selectedTrainId);
+    const exception = findExceptionWithOccurrenceId(
+      timetableItem.paced.exceptions,
+      selectedTrainId
+    );
 
     let startTime: string;
     if (exception?.start_time) {
@@ -73,7 +76,7 @@ const useSimulationResults = (): SimulationResults | undefined => {
       return undefined;
     if (isTrainScheduleId(selectedTrainId))
       throw new Error(`trainId ${selectedTrainId} should be a occurrence id`);
-    return findExceptionWithOccurrenceId(timetableItem.exceptions, selectedTrainId);
+    return findExceptionWithOccurrenceId(timetableItem.paced.exceptions, selectedTrainId);
   }, [selectedTrainId, timetableItem]);
 
   const { currentData: pathfinding } = osrdEditoastApi.endpoints.getTrainPath.useQuery(

@@ -42,7 +42,7 @@ const upsertNewProjectedTrains = (
               timeWindow: Duration.parse(matchingTrain.paced.time_window),
               interval: Duration.parse(matchingTrain.paced.interval),
             },
-            exceptions: matchingTrain.exceptions,
+            exceptions: matchingTrain.paced.exceptions,
             exceptionProjections,
           }
         : { id: matchingTrain.id }),

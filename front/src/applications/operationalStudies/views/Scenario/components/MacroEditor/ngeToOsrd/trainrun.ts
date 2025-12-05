@@ -380,6 +380,7 @@ export const createPacedAttributesFromTrainrun = (trainrun: TrainrunDto, dto: Ne
   return {
     interval: interval.toISOString(),
     time_window: DEFAULT_TIME_WINDOW.toISOString(),
+    exceptions: [],
   };
 };
 
@@ -576,10 +577,16 @@ export const handleUpdateTimetableItem = async ({
     }
     newForwardPacedTrain = {
       ...newForwardTimetableItem,
-      paced,
-      exceptions: isPacedTrainResponseWithPacedTrainId(oldForwardTimetableItem)
-        ? checkChangeGroups(newForwardTimetableItem, paced, oldForwardTimetableItem.exceptions)
-        : [],
+      paced: {
+        ...paced,
+        exceptions: isPacedTrainResponseWithPacedTrainId(oldForwardTimetableItem)
+          ? checkChangeGroups(
+              newForwardTimetableItem,
+              paced,
+              oldForwardTimetableItem.paced.exceptions
+            )
+          : [],
+      },
     };
     const updatedPacedTrain = await storePacedTrain(
       oldForwardTimetableItem.id,
