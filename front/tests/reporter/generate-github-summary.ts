@@ -136,7 +136,8 @@ ${flakyTests
 
   summaryMd += `
 
-### 🧪 Detailed Test Results
+<details>
+  <summary> 🧪 Detailed Test Results </summary>
 
 ${!useBrowserColumn ? `💡 Tests were executed using: \`${allBrowsers[0]}\`\n\n` : ''}
 
@@ -163,6 +164,7 @@ ${tests
     return `| ${row.join(' | ')} |`;
   })
   .join('\n')}
+</details>
 `;
 
   fs.writeFileSync(outputPath, summaryMd);
