@@ -9,6 +9,7 @@ pub mod rolling_stock_image;
 pub mod sub_category;
 pub mod tags;
 pub mod temporary_speed_limits;
+pub mod timetable;
 pub mod towed_rolling_stock;
 pub mod train_schedule;
 pub mod work_schedules;

@@ -15,10 +15,10 @@ use database::DbConnection;
 use editoast_derive::Model;
 use editoast_models::prelude::*;
 use editoast_models::tags::Tags;
+use editoast_models::timetable::Timetable;
 
 use super::Project;
 use super::Study;
-use super::timetable::Timetable;
 
 #[derive(Debug, Clone, Model, Deserialize, Serialize, ToSchema)]
 #[model(table = database::tables::scenario)]

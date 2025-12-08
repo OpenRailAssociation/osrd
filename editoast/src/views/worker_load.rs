@@ -16,8 +16,8 @@ use super::AuthenticationExt;
 use crate::AppState;
 use crate::error::Result;
 use crate::models::Infra;
-use crate::models::timetable::Timetable;
 use crate::views::AuthorizationError;
+use editoast_models::timetable::Timetable;
 
 #[derive(Serialize, Deserialize, ToSchema)]
 pub(in crate::views) struct WorkerLoadForm {
