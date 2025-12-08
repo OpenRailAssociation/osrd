@@ -3,12 +3,9 @@ use std::ops::DerefMut;
 use diesel::prelude::*;
 use diesel_async::RunQueryDsl;
 use itertools::Itertools;
-#[cfg(test)]
-use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
 
-use crate::models::rolling_stock::RollingStock;
 use database::DbConnection;
 use database::tables::project;
 use database::tables::rolling_stock;
@@ -16,8 +13,13 @@ use database::tables::scenario;
 use database::tables::study;
 use database::tables::train_schedule;
 
+use super::RollingStock;
+
 #[derive(Debug, Serialize, ToSchema)]
-#[cfg_attr(test, derive(PartialEq, Eq, PartialOrd, Ord, Deserialize))]
+#[cfg_attr(
+    any(test, feature = "testing"),
+    derive(PartialEq, Eq, PartialOrd, Ord, serde::Deserialize)
+)]
 pub struct ScenarioReference {
     pub project_id: i64,
     pub project_name: String,

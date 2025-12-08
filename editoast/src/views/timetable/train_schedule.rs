@@ -32,7 +32,6 @@ use super::simulation::train_simulation_batch;
 use crate::AppState;
 use crate::error::Result;
 use crate::models::OperationalPointModel;
-use crate::models::RollingStock;
 use crate::models::infra::Infra;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
@@ -57,6 +56,7 @@ use crate::views::timetable::simulation::build_path_items_to_position;
 use crate::views::timetable::simulation::build_sim_power_restriction_items;
 use crate::views::timetable::simulation::build_sim_schedule_items;
 use crate::views::timetable::track_occupancy;
+use editoast_models::rolling_stock::RollingStock;
 
 #[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "train_schedule")]

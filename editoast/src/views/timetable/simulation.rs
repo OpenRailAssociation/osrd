@@ -32,7 +32,6 @@ use utoipa::ToSchema;
 
 use crate::error::InternalError;
 use crate::error::Result;
-use crate::models::RollingStock;
 use crate::views::CoreClient;
 use crate::views::path::pathfinding::PathfindingFailure;
 use crate::views::path::pathfinding_from_train_batch;
@@ -42,6 +41,7 @@ use crate::views::timetable::PathfindingResult;
 use crate::views::timetable::PhysicsConsistParameters;
 use crate::views::timetable::simulation;
 use editoast_models::prelude::*;
+use editoast_models::rolling_stock::RollingStock;
 
 pub const TRAIN_SIZE_BATCH: usize = 100;
 

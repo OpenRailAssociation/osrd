@@ -31,7 +31,6 @@ use super::AuthenticationExt;
 use crate::error::Result;
 use crate::models;
 use crate::models::Infra;
-use crate::models::RollingStock;
 use crate::models::paced_train::OccurrenceId;
 use crate::models::paced_train::PacedTrainChangeset;
 use crate::views::AuthorizationError;
@@ -57,6 +56,7 @@ use crate::views::timetable::simulation::build_sim_power_restriction_items;
 use crate::views::timetable::simulation::build_sim_schedule_items;
 use crate::views::timetable::simulation::train_simulation_batch;
 use crate::views::timetable::track_occupancy;
+use editoast_models::rolling_stock::RollingStock;
 
 #[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "paced_train")]

@@ -40,11 +40,11 @@ use utoipa::ToSchema;
 
 use crate::error::Result;
 use crate::generated_data::speed_limit_tags_config::SpeedLimitTagIds;
-use crate::models::RollingStock;
 use crate::views::timetable::similar_trains::graph::AdvancementError;
 use crate::views::timetable::similar_trains::graph::AdvancementErrorKind;
 use crate::views::timetable::similar_trains::past_train::PastTrain;
 use editoast_models::prelude::*;
+use editoast_models::rolling_stock::RollingStock;
 
 use super::AppState;
 use super::AuthenticationExt;

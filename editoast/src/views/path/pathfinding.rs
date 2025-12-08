@@ -35,12 +35,12 @@ use crate::AppState;
 use crate::error::InternalError;
 use crate::error::Result;
 use crate::models::Infra;
-use crate::models::RollingStock;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
 use crate::views::path::PathfindingError;
 use crate::views::path::path_item_cache::PathItemCache;
 use editoast_models::prelude::*;
+use editoast_models::rolling_stock::RollingStock;
 
 /// Path input is described by some rolling stock information
 /// and a list of path waypoints

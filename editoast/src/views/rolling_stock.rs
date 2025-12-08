@@ -33,15 +33,15 @@ use utoipa::ToSchema;
 
 use crate::error::InternalError;
 use crate::error::Result;
-use crate::models::RollingStock;
-use crate::models::rolling_stock;
-use crate::models::rolling_stock::ScenarioReference;
 use crate::models::rolling_stock_livery::RollingStockLivery;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
 use editoast_models::Document;
 use editoast_models::RollingStockImage;
 use editoast_models::prelude::*;
+use editoast_models::rolling_stock;
+use editoast_models::rolling_stock::RollingStock;
+use editoast_models::rolling_stock::ScenarioReference;
 
 #[derive(Debug, Serialize, ToSchema)]
 pub struct RollingStockWithLiveries {
@@ -118,7 +118,7 @@ pub enum RollingStockError {
 
     #[error(transparent)]
     #[editoast_error(status = 500)]
-    #[from(forward)]
+    #[from(editoast_models::Error, database::DatabaseError)]
     Database(editoast_models::Error),
 }
 
@@ -764,9 +764,9 @@ pub mod tests {
     use crate::models::fixtures::create_study;
     use crate::models::fixtures::create_timetable;
     use crate::models::fixtures::simple_train_schedule_changeset;
-    use crate::models::rolling_stock::RollingStock;
     use crate::views::test_app::TestApp;
     use crate::views::test_app::TestAppBuilder;
+    use editoast_models::rolling_stock::RollingStock;
 
     impl TestApp {
         fn rolling_stock_create_request(

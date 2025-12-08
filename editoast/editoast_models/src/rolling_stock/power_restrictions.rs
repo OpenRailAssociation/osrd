@@ -1,6 +1,7 @@
 use std::ops::DerefMut;
 
 use database::DbConnection;
+use diesel::QueryableByName;
 use diesel::sql_query;
 use diesel::sql_types::Text;
 use diesel_async::RunQueryDsl;
