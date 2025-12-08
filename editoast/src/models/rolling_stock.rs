@@ -200,10 +200,7 @@ pub mod tests {
     use editoast_models::rolling_stock::TrainMainCategory;
 
     use super::RollingStock;
-    use crate::models::fixtures::create_fast_rolling_stock;
-    use crate::models::fixtures::create_rolling_stock_with_energy_sources;
-    use crate::models::fixtures::fast_rolling_stock_changeset;
-    use crate::models::fixtures::rolling_stock_with_energy_sources_changeset;
+
     use database::DbConnectionPoolV2;
     use editoast_models::prelude::*;
 
@@ -213,14 +210,23 @@ pub mod tests {
         let rs_name = "fast_rolling_stock_name";
 
         let created_fast_rolling_stock =
-            create_fast_rolling_stock(&mut db_pool.get_ok(), rs_name).await;
+            Changeset::<RollingStock>::from(schemas::fixtures::fast_rolling_stock())
+                .name(rs_name.to_string())
+                .locked(false)
+                .version(0)
+                .create(&mut db_pool.get_ok())
+                .await
+                .expect("Failed to create rolling stock");
 
         // GIVEN
         let rs_name_with_energy_sources_name = "other_rolling_stock_update_rolling_stock";
         let rolling_stock_id = created_fast_rolling_stock.id;
 
-        let rolling_stock_with_energy_sources: Changeset<RollingStock> =
-            rolling_stock_with_energy_sources_changeset(rs_name_with_energy_sources_name);
+        let rolling_stock_with_energy_sources =
+            Changeset::<RollingStock>::from(schemas::fixtures::rolling_stock_with_energy_sources())
+                .name(rs_name_with_energy_sources_name.to_string())
+                .locked(false)
+                .version(0);
 
         // WHEN
         let updated_rolling_stock = rolling_stock_with_energy_sources
@@ -240,12 +246,24 @@ pub mod tests {
         // GIVEN
         // Creating the first rolling stock
         let original_name = "micheline";
-        let _ = create_fast_rolling_stock(&mut db_pool.get_ok(), original_name).await;
+        let _ = Changeset::<RollingStock>::from(schemas::fixtures::fast_rolling_stock())
+            .name(original_name.to_string())
+            .locked(false)
+            .version(0)
+            .create(&mut db_pool.get_ok())
+            .await
+            .expect("Failed to create rolling stock");
 
         // Creating the second rolling stock
         let new_name = "wrong name";
         let mut other_rs =
-            create_rolling_stock_with_energy_sources(&mut db_pool.get_ok(), new_name).await;
+            Changeset::<RollingStock>::from(schemas::fixtures::rolling_stock_with_energy_sources())
+                .name(new_name.to_string())
+                .locked(false)
+                .version(0)
+                .create(&mut db_pool.get_ok())
+                .await
+                .expect("Failed to create rolling stock");
 
         // WHEN
         other_rs.name = original_name.to_owned();
@@ -267,7 +285,13 @@ pub mod tests {
         let db_pool = DbConnectionPoolV2::for_tests();
 
         let created_fast_rolling_stock =
-            create_fast_rolling_stock(&mut db_pool.get_ok(), "fast_rolling_stock_name").await;
+            Changeset::<RollingStock>::from(schemas::fixtures::fast_rolling_stock())
+                .name("fast_rolling_stock_name".to_owned())
+                .locked(false)
+                .version(0)
+                .create(&mut db_pool.get_ok())
+                .await
+                .expect("Failed to create rolling stock");
 
         assert_eq!(
             created_fast_rolling_stock.primary_category,
@@ -280,17 +304,21 @@ pub mod tests {
     async fn create_rolling_stock_with_categories() {
         let db_pool = DbConnectionPoolV2::for_tests();
 
-        let rolling_stock = fast_rolling_stock_changeset("fast_rolling_stock_with_categories")
-            .primary_category(TrainMainCategory(
-                schemas::rolling_stock::TrainMainCategory::HighSpeedTrain,
-            ))
-            .other_categories(vec![
-                TrainMainCategory(schemas::rolling_stock::TrainMainCategory::TramTrain),
-                TrainMainCategory(schemas::rolling_stock::TrainMainCategory::CommuterTrain),
-            ])
-            .create(&mut db_pool.get_ok())
-            .await
-            .expect("Failed to create rolling stock");
+        let rolling_stock =
+            Changeset::<RollingStock>::from(schemas::fixtures::fast_rolling_stock())
+                .name("fast_rolling_stock_with_categories".to_string())
+                .locked(false)
+                .version(0)
+                .primary_category(TrainMainCategory(
+                    schemas::rolling_stock::TrainMainCategory::HighSpeedTrain,
+                ))
+                .other_categories(vec![
+                    TrainMainCategory(schemas::rolling_stock::TrainMainCategory::TramTrain),
+                    TrainMainCategory(schemas::rolling_stock::TrainMainCategory::CommuterTrain),
+                ])
+                .create(&mut db_pool.get_ok())
+                .await
+                .expect("Failed to create rolling stock");
         assert_eq!(
             rolling_stock.primary_category,
             TrainMainCategory(schemas::rolling_stock::TrainMainCategory::HighSpeedTrain,),

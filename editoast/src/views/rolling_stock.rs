@@ -763,8 +763,6 @@ pub mod tests {
     use crate::models::fixtures::create_small_infra;
     use crate::models::fixtures::create_study;
     use crate::models::fixtures::create_timetable;
-    use crate::models::fixtures::fast_rolling_stock_changeset;
-    use crate::models::fixtures::get_rolling_stock_with_invalid_effort_curves;
     use crate::models::fixtures::simple_train_schedule_changeset;
     use crate::models::rolling_stock::RollingStock;
     use crate::views::test_app::TestApp;
@@ -784,10 +782,7 @@ pub mod tests {
     }
 
     pub fn fast_rolling_stock_form(name: &str) -> RollingStockForm {
-        let mut form = serde_json::from_str::<RollingStockForm>(include_str!(
-            "../tests/example_rolling_stock_1.json"
-        ))
-        .expect("Unable to parse example rolling stock");
+        let mut form = schemas::fixtures::fast_rolling_stock();
         form.name = name.to_owned();
         form
     }
@@ -1036,7 +1031,7 @@ pub mod tests {
     async fn create_rolling_stock_with_invalid_effort_curve() {
         let app = TestAppBuilder::default_app();
 
-        let invalid_payload = get_rolling_stock_with_invalid_effort_curves();
+        let invalid_payload = schemas::fixtures::rolling_stock_with_invalid_effort_curves_json();
 
         let request = app
             .post("/rolling_stock")
@@ -1287,16 +1282,17 @@ pub mod tests {
 
         let locked_rs_name = "locked_fast_rolling_stock_name";
         let locked_fast_rolling_stock_changeset =
-            fast_rolling_stock_changeset(locked_rs_name).locked(true);
+            Changeset::<RollingStock>::from(schemas::fixtures::fast_rolling_stock())
+                .name(locked_rs_name.to_owned())
+                .locked(true)
+                .version(0);
         let locked_fast_rolling_stock = locked_fast_rolling_stock_changeset
             .create(&mut db_pool.get_ok())
             .await
             .expect("Failed to create rolling stock");
 
-        let mut second_fast_rolling_stock_form: RollingStockForm = serde_json::from_str(
-            include_str!("../tests/example_rolling_stock_2_energy_sources.json"),
-        )
-        .expect("Unable to parse rolling stock with energy sources");
+        let mut second_fast_rolling_stock_form: RollingStockForm =
+            schemas::fixtures::fast_rolling_stock();
         second_fast_rolling_stock_form.name = "second_fast_rolling_stock_name".to_owned();
 
         let request = app
@@ -1359,7 +1355,10 @@ pub mod tests {
 
         let locked_rs_name = "locked_fast_rolling_stock_name";
         let locked_fast_rolling_stock_changeset =
-            fast_rolling_stock_changeset(locked_rs_name).locked(true);
+            Changeset::<RollingStock>::from(schemas::fixtures::fast_rolling_stock())
+                .name(locked_rs_name.to_owned())
+                .locked(true)
+                .version(0);
         let locked_fast_rolling_stock = locked_fast_rolling_stock_changeset
             .create(&mut db_pool.get_ok())
             .await
@@ -1416,7 +1415,10 @@ pub mod tests {
 
         let locked_rs_name = "locked_fast_rolling_stock_name";
         let locked_fast_rolling_stock_changeset =
-            fast_rolling_stock_changeset(locked_rs_name).locked(true);
+            Changeset::<RollingStock>::from(schemas::fixtures::fast_rolling_stock())
+                .name(locked_rs_name.to_owned())
+                .locked(true)
+                .version(0);
         let locked_fast_rolling_stock = locked_fast_rolling_stock_changeset
             .create(&mut db_pool.get_ok())
             .await

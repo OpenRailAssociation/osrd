@@ -331,49 +331,27 @@ pub async fn create_scenario_fixtures_set(
     }
 }
 
-pub fn fast_rolling_stock_changeset(name: &str) -> Changeset<RollingStock> {
-    Changeset::<RollingStock>::from(
-        serde_json::from_str::<schemas::RollingStock>(include_str!(
-            "../tests/example_rolling_stock_1.json"
-        ))
-        .expect("Unable to parse example rolling stock"),
-    )
-    .name(name.to_owned())
-    .locked(false)
-    .version(0)
-}
-
 pub async fn create_fast_rolling_stock(conn: &mut DbConnection, name: &str) -> RollingStock {
-    fast_rolling_stock_changeset(name)
+    Changeset::<RollingStock>::from(schemas::fixtures::fast_rolling_stock())
+        .name(name.to_string())
+        .locked(false)
+        .version(0)
         .create(conn)
         .await
         .expect("Failed to create rolling stock")
-}
-
-pub fn rolling_stock_with_energy_sources_changeset(name: &str) -> Changeset<RollingStock> {
-    Changeset::<RollingStock>::from(
-        serde_json::from_str::<schemas::RollingStock>(include_str!(
-            "../tests/example_rolling_stock_2_energy_sources.json"
-        ))
-        .expect("Unable to parse rolling stock with energy sources"),
-    )
-    .name(name.to_owned())
-    .locked(false)
-    .version(1)
 }
 
 pub async fn create_rolling_stock_with_energy_sources(
     conn: &mut DbConnection,
     name: &str,
 ) -> RollingStock {
-    rolling_stock_with_energy_sources_changeset(name)
+    Changeset::<RollingStock>::from(schemas::fixtures::rolling_stock_with_energy_sources())
+        .name(name.to_string())
+        .locked(false)
+        .version(0)
         .create(conn)
         .await
         .expect("Failed to create rolling stock with energy sources")
-}
-
-pub fn get_rolling_stock_with_invalid_effort_curves() -> &'static str {
-    include_str!("../tests/example_rolling_stock_3.json")
 }
 
 pub fn rolling_stock_livery_changeset(

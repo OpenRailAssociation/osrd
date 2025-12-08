@@ -168,9 +168,9 @@ def get_rolling_stock(
 FAST_ROLLING_STOCK_JSON_PATH = (
     Path(__file__).parents[1]
     / "editoast"
-    / "src"
-    / "tests"
-    / "example_rolling_stock_1.json"
+    / "schemas"
+    / "examples"
+    / "fast_rolling_stock.json"
 )
 
 # Rolling-stock derived from fast rolling stock, but able to travel under ETCS signaling
