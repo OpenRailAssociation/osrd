@@ -13,17 +13,19 @@ use utoipa::ToSchema;
 
 use database::DbConnection;
 use editoast_derive::Model;
-use editoast_models::prelude::*;
-use editoast_models::tags::Tags;
-use editoast_models::timetable::Timetable;
 
-use super::Project;
-use super::Study;
+use crate::prelude::*;
+use crate::project::Project;
+use crate::study::Study;
+use crate::tags::Tags;
+use crate::timetable::Timetable;
+
+use crate as editoast_models;
 
 #[derive(Debug, Clone, Model, Deserialize, Serialize, ToSchema)]
 #[model(table = database::tables::scenario)]
 #[model(gen(ops = crud, list))]
-#[cfg_attr(test, derive(PartialEq))]
+#[cfg_attr(any(test, feature = "testing"), derive(PartialEq))]
 pub struct Scenario {
     pub id: i64,
     pub infra_id: i64,

@@ -60,10 +60,7 @@ use uuid::Uuid;
 use crate::infra_cache::operation::create::apply_create_operation;
 use crate::models;
 use crate::models::Infra;
-use crate::models::Project;
 use crate::models::RollingStock;
-use crate::models::Scenario;
-use crate::models::Study;
 use crate::models::rolling_stock_livery::RollingStockLivery;
 use editoast_models::Document;
 use editoast_models::ElectricalProfileSet;
@@ -71,40 +68,23 @@ use editoast_models::SubCategory;
 use editoast_models::WorkSchedule;
 use editoast_models::WorkScheduleGroup;
 use editoast_models::prelude::*;
+use editoast_models::project::Project;
+use editoast_models::scenario::Scenario;
+use editoast_models::study::Study;
 use editoast_models::tags::Tags;
 use editoast_models::timetable::Timetable;
 
 use editoast_models::TemporarySpeedLimitGroup;
 
-pub fn project_changeset(name: &str) -> Changeset<Project> {
-    Project::changeset()
-        .name(name.to_owned())
-        .budget(Some(0))
-        .creation_date(Utc::now())
-        .last_modification(Utc::now())
-        .tags(Tags::default())
-}
-
 pub async fn create_project(conn: &mut DbConnection, name: &str) -> Project {
-    project_changeset(name)
+    Project::fake(name)
         .create(conn)
         .await
         .expect("Failed to create project")
 }
 
-pub fn study_changeset(name: &str, project_id: i64) -> Changeset<Study> {
-    Study::changeset()
-        .name(name.to_owned())
-        .creation_date(Utc::now())
-        .last_modification(Utc::now())
-        .budget(Some(0))
-        .tags(Tags::default())
-        .state("some_state".into())
-        .project_id(project_id)
-}
-
 pub async fn create_study(conn: &mut DbConnection, name: &str, project_id: i64) -> Study {
-    study_changeset(name, project_id)
+    Study::fake(name, project_id)
         .create(conn)
         .await
         .expect("Failed to create study")

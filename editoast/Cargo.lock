@@ -1445,6 +1445,7 @@ dependencies = [
  "chrono",
  "common",
  "database",
+ "derive_more",
  "diesel",
  "diesel-async",
  "diesel_json",

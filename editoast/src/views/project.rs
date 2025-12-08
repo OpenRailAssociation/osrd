@@ -26,11 +26,10 @@ use super::pagination::PaginatedList;
 use super::pagination::PaginationStats;
 use crate::error::InternalError;
 use crate::error::Result;
-use crate::models;
-use crate::models::Project;
 use crate::views::AuthorizationError;
 use crate::views::pagination::PaginationQueryParams;
 use editoast_models::Document;
+use editoast_models::project::Project;
 use editoast_models::tags::Tags;
 
 #[derive(Debug, Error, EditoastError, derive_more::From)]
@@ -47,18 +46,18 @@ pub enum ProjectError {
     #[error("The provided image is not valid: {error}")]
     ImageError { error: String },
     #[error(transparent)]
-    #[from(forward)]
+    #[from(editoast_models::Error, database::DatabaseError)]
     #[editoast_error(status = 500)]
     Database(editoast_models::Error),
 }
 
-impl From<models::project::Error> for ProjectError {
-    fn from(e: models::project::Error) -> Self {
+impl From<editoast_models::project::Error> for ProjectError {
+    fn from(e: editoast_models::project::Error) -> Self {
         match e {
-            models::project::Error::NotFound { project_id } => {
+            editoast_models::project::Error::NotFound { project_id } => {
                 ProjectError::NotFound { project_id }
             }
-            models::project::Error::Database(e) => ProjectError::Database(e),
+            editoast_models::project::Error::Database(e) => ProjectError::Database(e),
         }
     }
 }
@@ -82,16 +81,16 @@ pub(in crate::views) struct ProjectCreateForm {
     pub tags: Tags,
 }
 
-impl From<ProjectCreateForm> for Changeset<Project> {
-    fn from(project: ProjectCreateForm) -> Self {
+impl ProjectCreateForm {
+    fn into_changeset(self) -> Changeset<Project> {
         Project::changeset()
-            .name(project.name)
-            .description(project.description)
-            .objectives(project.objectives)
-            .funders(project.funders)
-            .budget(project.budget)
-            .image(project.image)
-            .tags(project.tags)
+            .name(self.name)
+            .description(self.description)
+            .objectives(self.objectives)
+            .funders(self.funders)
+            .budget(self.budget)
+            .image(self.image)
+            .tags(self.tags)
             .creation_date(Utc::now())
             .last_modification(Utc::now())
     }
@@ -160,7 +159,7 @@ pub(in crate::views) async fn create(
     if let Some(image) = project_create_form.image {
         check_image_content(conn, image).await?;
     }
-    let project: Changeset<Project> = project_create_form.into();
+    let project: Changeset<Project> = project_create_form.into_changeset();
     let project = project.create(conn).await.map_err(ProjectError::from)?;
     let project_with_studies = ProjectWithStudyCount::try_fetch(conn, project).await?;
 
@@ -325,16 +324,16 @@ pub(in crate::views) struct ProjectPatchForm {
     pub tags: Option<Tags>,
 }
 
-impl From<ProjectPatchForm> for Changeset<Project> {
-    fn from(project: ProjectPatchForm) -> Self {
+impl ProjectPatchForm {
+    fn into_changeset(self) -> Changeset<Project> {
         Project::changeset()
-            .flat_name(project.name)
-            .flat_description(project.description)
-            .flat_objectives(project.objectives)
-            .flat_funders(project.funders)
-            .flat_budget(project.budget)
-            .flat_image(project.image)
-            .flat_tags(project.tags)
+            .flat_name(self.name)
+            .flat_description(self.description)
+            .flat_objectives(self.objectives)
+            .flat_funders(self.funders)
+            .flat_budget(self.budget)
+            .flat_image(self.image)
+            .flat_tags(self.tags)
             .last_modification(Utc::now())
     }
 }
@@ -383,7 +382,7 @@ pub(in crate::views) async fn patch(
         // no image change requested, there may or may not be an image
         None => None,
     };
-    let project_changeset: Changeset<Project> = form.into();
+    let project_changeset = form.into_changeset();
 
     let project =
         Project::transactional_content_update(conn.clone(), project_id, |mut conn, project| {
