@@ -352,13 +352,24 @@ const useManchetteWithSpaceTimeChart = ({
 
   const handleXZoom = useCallback(
     (newXZoom: number, xPosition = (spaceTimeChartRef?.current?.offsetWidth || 0) / 2) => {
-      if (enableTimeZoom)
+      if (enableTimeZoom) {
         setState((prev) => ({
           ...prev,
           ...zoomX(prev.xZoom, prev.xOffset, newXZoom, xPosition),
         }));
+      }
     },
     [enableTimeZoom, spaceTimeChartRef]
+  );
+
+  const handleXZoomOnWheelEvent = useCallback(
+    (wheelEvent: WheelEvent, newXZoom: number, xPosition: number) => {
+      if (isShiftPressed && !rect) {
+        wheelEvent.preventDefault();
+        handleXZoom(newXZoom, xPosition);
+      }
+    },
+    [handleXZoom, isShiftPressed, rect]
   );
 
   const spaceScales = useMemo(() => {
@@ -602,10 +613,7 @@ const useManchetteWithSpaceTimeChart = ({
           position,
           event,
         }: Parameters<NonNullable<SpaceTimeChartProps['onZoom']>>[0]) => {
-          if (isShiftPressed && !rect) {
-            event.preventDefault();
-            handleXZoom(xZoom + delta, position.x);
-          }
+          handleXZoomOnWheelEvent(event, xZoom + delta, position.x);
         },
         onPan: (payload: Parameters<NonNullable<SpaceTimeChartProps['onPan']>>[0]) => {
           const {
@@ -716,13 +724,13 @@ const useManchetteWithSpaceTimeChart = ({
       spaceScales,
       handleScroll,
       handleXZoom,
+      handleXZoomOnWheelEvent,
       toggleZoomMode,
       zoomMode,
       rect,
       minZoomMillimeterPerPx,
       maxZoomMillimeterPerPx,
       setTimeOrigin,
-      isShiftPressed,
       panning,
       manchetteWithSpaceTimeChartRef,
       enableTimePan,
