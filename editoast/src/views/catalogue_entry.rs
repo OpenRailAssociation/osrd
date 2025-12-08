@@ -1,4 +1,5 @@
 use database::DbConnectionPoolV2;
+use utoipa::IntoParams;
 use utoipa::ToSchema;
 
 use crate::error::Result;
@@ -9,6 +10,7 @@ use crate::views::pagination::PaginationQueryParams;
 use crate::views::pagination::PaginationStats;
 use axum::Extension;
 use axum::extract::Json;
+use axum::extract::Path;
 use axum::extract::Query;
 use axum::extract::State;
 use serde::Deserialize;
@@ -18,6 +20,12 @@ use std::sync::Arc;
 #[derive(Serialize, Deserialize, ToSchema)]
 pub(in crate::views) struct CatalogueEntryCreateForm {
     name: Option<String>,
+}
+
+#[derive(IntoParams, Deserialize)]
+pub(in crate::views) struct CatalogueEntryIdParam {
+    /// A catalogue entry ID
+    id: i64,
 }
 
 #[editoast_derive::route]
@@ -76,7 +84,7 @@ pub(in crate::views) async fn get(
         .map_err(AuthorizationError::AuthError)?;
     if !authorized {
         return Err(AuthorizationError::Forbidden.into());
-    }
+    };
 
     let catalogue_entries = vec![
         CatalogueEntry {
@@ -102,4 +110,37 @@ pub(in crate::views) async fn get(
         results: catalogue_entries,
         stats,
     }))
+}
+
+#[editoast_derive::route]
+#[utoipa::path(
+        get, path = "",
+        tag = "catalogue_entry",
+        params(CatalogueEntryIdParam),
+    responses(
+        (status = 200, description = "Catalogue entry", body = CatalogueEntry),
+        (status = 404, description = "Catalogue entry not found"),
+    ),
+)]
+pub(in crate::views) async fn get_by_id(
+    State(_db_pool): State<Arc<DbConnectionPoolV2>>,
+    Extension(auth): AuthenticationExt,
+    Path(CatalogueEntryIdParam {
+        id: catalogue_entry_id,
+    }): Path<CatalogueEntryIdParam>,
+) -> Result<Json<CatalogueEntry>> {
+    let authorized = auth
+        .check_roles([authz::Role::OperationalStudies].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Forbidden.into());
+    }
+
+    // TODO: Add database operation to get a catalogue entry
+    let catalogue_entry_result = CatalogueEntry {
+        id: catalogue_entry_id,
+        name: Some("Catalogue Entry".to_string()),
+    };
+    Ok(Json(catalogue_entry_result))
 }
