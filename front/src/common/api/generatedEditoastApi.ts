@@ -96,6 +96,13 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ['catalogue_entry'],
       }),
+      getCatalogueEntryById: build.query<
+        GetCatalogueEntryByIdApiResponse,
+        GetCatalogueEntryByIdApiArg
+      >({
+        query: (queryArg) => ({ url: `/catalogue_entry/${queryArg.id}` }),
+        providesTags: ['catalogue_entry'],
+      }),
       postDocuments: build.mutation<PostDocumentsApiResponse, PostDocumentsApiArg>({
         query: (queryArg) => ({
           url: `/documents`,
@@ -1400,6 +1407,13 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ['train_schedule_set'],
       }),
+      getTrainScheduleSetById: build.query<
+        GetTrainScheduleSetByIdApiResponse,
+        GetTrainScheduleSetByIdApiArg
+      >({
+        query: (queryArg) => ({ url: `/train_schedule_set/${queryArg.id}` }),
+        providesTags: ['train_schedule_set'],
+      }),
       getVersion: build.query<GetVersionApiResponse, GetVersionApiArg>({
         query: () => ({ url: `/version` }),
       }),
@@ -1568,6 +1582,11 @@ export type GetCatalogueEntryApiArg = {
 export type PostCatalogueEntryApiResponse = /** status 201 Catalogue entry */ CatalogueEntry;
 export type PostCatalogueEntryApiArg = {
   catalogueEntryCreateForm: CatalogueEntryCreateForm;
+};
+export type GetCatalogueEntryByIdApiResponse = /** status 200 Catalogue entry */ CatalogueEntry;
+export type GetCatalogueEntryByIdApiArg = {
+  /** A catalogue entry ID */
+  id: number;
 };
 export type PostDocumentsApiResponse =
   /** status 201 The document was created */ NewDocumentResponse;
@@ -2699,6 +2718,12 @@ export type PostTrainScheduleSetApiResponse =
   /** status 201 Train schedule set */ TrainScheduleSetResponse;
 export type PostTrainScheduleSetApiArg = {
   trainScheduleSetCreateForm: TrainScheduleSetCreateForm;
+};
+export type GetTrainScheduleSetByIdApiResponse =
+  /** status 200 Train schedule set */ TrainScheduleSetResponse;
+export type GetTrainScheduleSetByIdApiArg = {
+  /** A train schedule set ID */
+  id: number;
 };
 export type GetVersionApiResponse = /** status 200 Return the service version */ Version;
 export type GetVersionApiArg = void;
