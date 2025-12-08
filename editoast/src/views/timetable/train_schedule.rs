@@ -1474,6 +1474,6 @@ pub mod tests {
         let response: HashMap<i64, OccupancyBlocks> =
             response.assert_status(StatusCode::OK).json_into();
         assert_eq!(response.len(), 1);
-        assert_eq!(response.get(&train_schedule_id).unwrap().len(), 1);
+        assert_eq!(response.get(&train_schedule_id).unwrap().len(), 0);
     }
 }

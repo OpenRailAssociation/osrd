@@ -84,7 +84,7 @@ pub(super) async fn compute_occupancy_blocks<T: TrainScheduleLike>(
     .await?;
 
     // 2. Extracts train simulation details and computes unique hashes for projected train paths.
-    let trains_details = extract_train_details(simulations).await;
+    let trains_details = extract_train_details(simulations, trains_schedules).await;
 
     let train_hashes_to_idx: HashMap<String, Vec<usize>> = trains_details
         .iter()
