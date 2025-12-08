@@ -72,6 +72,7 @@ const Timetable = ({
 
   const [showTrainDetails, setShowTrainDetails] = useState(false);
   const [isSelectMode, setIsSelectMode] = useState(false);
+  const [timetableMode, setTimetableMode] = useState<'calendar' | 'package'>('calendar');
 
   const selectedTrainId = useSelector(getSelectedTrainId);
   const trainIdUsedForProjection = useSelector(getTrainIdUsedForProjection);
@@ -168,6 +169,8 @@ const Timetable = ({
           setDisplayTimetableItemManagement={setDisplayTimetableItemManagement}
           refreshNge={() => Promise.resolve()}
           handleDeleteTimetableItems={handleDeleteTimetableItems}
+          timetableMode={timetableMode}
+          setTimetableMode={setTimetableMode}
         />
         <Virtualizer overscan={15}>
           {filteredTimetableItems.map((timetableItem, index) => (
