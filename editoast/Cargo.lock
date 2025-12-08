@@ -478,9 +478,9 @@ dependencies = [
 
 [[package]]
 name = "axum-test"
-version = "18.3.0"
+version = "18.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c0388808c0617a886601385c0024b9d0162480a763ba371f803d87b775115400"
+checksum = "3290e73c56c5cc4701cdd7d46b9ced1b4bd61c7e9f9c769a9e9e87ff617d75d2"
 dependencies = [
  "anyhow",
  "axum",
@@ -1623,14 +1623,15 @@ dependencies = [
 
 [[package]]
 name = "expect-json"
-version = "1.5.0"
+version = "1.7.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7519e78573c950576b89eb4f4fe82aedf3a80639245afa07e3ee3d199dcdb29e"
+checksum = "422e7906e79941e5ac58c64dfd2da03e6ae3de62227f87606fbbe125d91080f9"
 dependencies = [
  "chrono",
  "email_address",
  "expect-json-macros",
  "num",
+ "regex",
  "serde",
  "serde_json",
  "thiserror 2.0.17",
