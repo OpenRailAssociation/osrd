@@ -28,6 +28,7 @@ import java.util.concurrent.TimeUnit
 import kotlin.concurrent.thread
 import kotlin.math.pow
 import kotlin.time.measureTime
+import kotlinx.serialization.ExperimentalSerializationApi
 import okhttp3.OkHttpClient
 import okio.buffer
 import okio.source
@@ -40,6 +41,7 @@ import org.slf4j.LoggerFactory
  * timetable can be input through a running editoast or with CLI parameters. Outputs are written as
  * csv, defaults to "bench_outputs/git-commit-hash.csv".
  */
+@ExperimentalSerializationApi
 @Parameters(commandDescription = "Benchmarks STDCM performances on a directory of saved payloads")
 class BenchSTDCM : CliCommand {
     @Parameter(
@@ -92,7 +94,12 @@ class BenchSTDCM : CliCommand {
             val timetableProvider =
                 if (timetableDirectory != null) JsonTimetableProvider(timetableDirectory!!)
                 else TimetableDownloader(editoastUrl, editoastAuthorization, httpClient)
-            val cacheManager = TimetableCacheManager(timetableProvider, timetableDirectory)
+            val cacheManager =
+                TimetableCacheManager(
+                    timetableProvider,
+                    timetableDirectory,
+                    osrdGitDescribe = "development",
+                )
 
             if (outputCsvPath == null) {
                 Files.createDirectories(Paths.get("bench_outputs"))

@@ -16,6 +16,7 @@ import java.io.IOException
 import java.nio.file.Path
 import java.util.concurrent.TimeUnit
 import kotlin.time.measureTime
+import kotlinx.serialization.ExperimentalSerializationApi
 import okhttp3.OkHttpClient
 import okio.buffer
 import okio.source
@@ -65,6 +66,7 @@ class ReproduceRequest : CliCommand {
     private var timetableDirectory: String? = null
     private val logger: Logger = LoggerFactory.getLogger("ReproduceRequest")
 
+    @OptIn(ExperimentalSerializationApi::class)
     @ExcludeFromGeneratedCodeCoverage
     override fun run(): Int {
         try {
@@ -80,7 +82,12 @@ class ReproduceRequest : CliCommand {
             val timetableProvider =
                 if (timetableDirectory != null) JsonTimetableProvider(timetableDirectory!!)
                 else TimetableDownloader(editoastUrl, editoastAuthorization, httpClient)
-            val cacheManager = TimetableCacheManager(timetableProvider, timetableDirectory)
+            val cacheManager =
+                TimetableCacheManager(
+                    timetableProvider,
+                    timetableDirectory,
+                    osrdGitDescribe = "development",
+                )
 
             fun <T> loadRequest(path: String, adapter: JsonAdapter<T>): T {
                 val fileSource = Path.of(path).source()

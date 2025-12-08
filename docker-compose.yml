@@ -91,6 +91,7 @@ services:
     container_name: osrd-core-dummy
     depends_on:
       rabbitmq: { condition: service_healthy }
+      valkey: { condition: service_healthy }
     build:
       context: core
       dockerfile: Dockerfile
