@@ -126,9 +126,7 @@ mod tests {
         use database::DbConnectionPoolV2;
 
         fn get_fast_rolling_stock_schema(name: &str) -> schemas::RollingStock {
-            let mut rolling_stock_form: schemas::RollingStock =
-                serde_json::from_str(include_str!("../tests/example_rolling_stock_1.json"))
-                    .expect("Unable to parse");
+            let mut rolling_stock_form = schemas::fixtures::fast_rolling_stock();
             rolling_stock_form.name = name.to_string();
             rolling_stock_form
         }

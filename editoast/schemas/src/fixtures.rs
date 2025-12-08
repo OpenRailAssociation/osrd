@@ -90,6 +90,22 @@ pub fn towed_rolling_stock() -> TowedRollingStock {
     }
 }
 
+pub fn fast_rolling_stock() -> RollingStock {
+    serde_json::from_str::<crate::RollingStock>(include_str!("../examples/fast_rolling_stock.json"))
+        .expect("Unable to parse example rolling stock")
+}
+
+pub fn rolling_stock_with_energy_sources() -> RollingStock {
+    serde_json::from_str::<crate::RollingStock>(include_str!(
+        "../examples/fast_rolling_stock_with_energy_sources.json"
+    ))
+    .expect("Unable to parse rolling stock with energy sources")
+}
+
+pub fn rolling_stock_with_invalid_effort_curves_json() -> &'static str {
+    include_str!("../examples/rolling_stock_invalid_effort_curves.json")
+}
+
 pub fn simple_created_exception_with_change_groups(key: &str) -> PacedTrainException {
     PacedTrainException {
         key: key.into(),
