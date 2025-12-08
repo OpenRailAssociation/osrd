@@ -6,7 +6,7 @@ edition.workspace = true
 
 [dependencies]
 clap.workspace = true
-geo-types = "0.7.17"
+geo-types = "0.7.18"
 geos.workspace = true
 osm4routing = "0.8"
 schemas.workspace = true
