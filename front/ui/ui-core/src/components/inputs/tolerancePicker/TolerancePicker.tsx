@@ -3,8 +3,8 @@ import React, { useState, useRef, useEffect } from 'react';
 
 import { TOLERANCE_RANGES } from './consts';
 import ToleranceRangeGrid from './ToleranceRangeGrid';
-import Modal from '../../Modal';
 import Input, { type InputProps } from '../Input';
+import Modal from '../InputModal';
 import { type StatusWithMessage } from '../StatusMessage';
 
 export type ToleranceValues = {

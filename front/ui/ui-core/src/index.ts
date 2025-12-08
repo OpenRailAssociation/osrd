@@ -38,3 +38,4 @@ export {
 } from './components/inputs/tolerancePicker/TolerancePicker';
 export { default as TokenInput, TokenInputProps } from './components/inputs/TokenInput';
 export { default as Table } from './components/Table';
+export { default as Dialog } from './components/Dialog';
