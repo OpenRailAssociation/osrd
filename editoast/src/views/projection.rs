@@ -1,10 +1,8 @@
 use crate::error::Result;
 use core_client::CoreClient;
-use core_client::pathfinding::PathfindingResultSuccess;
 use core_client::pathfinding::TrackRange;
 use core_client::pathfinding::TrainPath;
 use core_client::simulation::CompleteReportTrain;
-use core_client::simulation::ReportTrain;
 use core_client::simulation::SignalCriticalPosition;
 use core_client::simulation::ZoneUpdate;
 use database::DbConnection;
@@ -371,7 +369,7 @@ pub async fn compute_projected_train_paths<T: TrainScheduleLike>(
     .await?;
 
     // 2. Extracts train simulation details and computes unique hashes for projected train paths.
-    let trains_details = extract_train_details(simulations).await?;
+    let trains_details = extract_train_details(simulations).await;
 
     let train_hashes_to_idx: HashMap<String, Vec<usize>> = trains_details
         .iter()
@@ -747,54 +745,25 @@ fn project_train_path_op(
 
 pub async fn extract_train_details(
     simulations: Vec<(Arc<simulation::Response>, Arc<PathfindingResult>)>,
-) -> Result<Vec<Option<TrainSimulationDetails>>> {
-    let mut trains_details = vec![];
-
-    for (sim, pathfinding_result) in simulations {
-        let track_ranges = match pathfinding_result.as_ref() {
-            PathfindingResult::Success(PathfindingResultSuccess {
-                path:
-                    TrainPath {
-                        track_section_ranges,
-                        ..
-                    },
-                ..
-            }) => track_section_ranges,
-            _ => {
-                trains_details.push(None);
-                continue;
-            }
-        };
-
-        let CompleteReportTrain {
-            report_train,
-            signal_critical_positions,
-            zone_updates,
-            ..
-        } = match Arc::unwrap_or_clone(sim) {
-            simulation::Response::Success(SimulationResponseSuccess { final_output, .. }) => {
-                final_output
-            }
-            _ => {
-                trains_details.push(None);
-                continue;
-            }
-        };
-        let ReportTrain {
-            times, positions, ..
-        } = report_train;
-
-        let train_details = TrainSimulationDetails {
-            positions,
-            times,
-            signal_critical_positions,
-            zone_updates,
-            train_path: track_ranges.clone(),
-        };
-
-        trains_details.push(Some(train_details));
-    }
-    Ok(trains_details)
+) -> Vec<Option<TrainSimulationDetails>> {
+    simulations
+        .into_iter()
+        .map(|(sim, pathfinding_result)| {
+            let simulation::Response::Success(sim) = sim.as_ref() else {
+                return None;
+            };
+            let PathfindingResult::Success(pathfinding_result) = pathfinding_result.as_ref() else {
+                return None;
+            };
+            Some(TrainSimulationDetails {
+                positions: sim.final_output.report_train.positions.clone(),
+                times: sim.final_output.report_train.times.clone(),
+                train_path: pathfinding_result.path.track_section_ranges.clone(),
+                signal_critical_positions: sim.final_output.signal_critical_positions.clone(),
+                zone_updates: sim.final_output.zone_updates.clone(),
+            })
+        })
+        .collect()
 }
 
 #[cfg(test)]
@@ -802,6 +771,7 @@ mod tests {
     use super::*;
     use crate::models::fixtures::create_small_infra;
     use crate::views::test_app::TestAppBuilder;
+    use core_client::simulation::ReportTrain;
     use rstest::rstest;
     use schemas::infra::Direction;
     use schemas::infra::DirectionalTrackRange;
