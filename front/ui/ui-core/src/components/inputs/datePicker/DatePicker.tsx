@@ -6,8 +6,8 @@ import cx from 'classnames';
 import { type CalendarSlot } from '.';
 import CalendarPicker, { type CalendarPickerPublicProps } from './CalendarPicker';
 import useDatePicker from './useDatePicker';
-import InputModal from '../../Modal';
 import Input, { type InputProps } from '../Input';
+import InputModal from '../InputModal';
 
 type BaseDatePickerProps = {
   selectableSlot?: CalendarSlot;

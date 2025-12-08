@@ -3,7 +3,7 @@ import React, { useState, useRef, useCallback } from 'react';
 import cx from 'classnames';
 
 import Input, { type InputProps } from './Input';
-import InputModal from '../Modal';
+import InputModal from './InputModal';
 
 export type TimePickerProps = Omit<
   InputProps,

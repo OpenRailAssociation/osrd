@@ -5,8 +5,9 @@
 @import './inputs/index.css';
 @import './select.css';
 @import './table.css';
-/* REGULAR */
+@import './dialog.css';
 
+/* REGULAR */
 @font-face {
   font-family: 'IBM Plex Sans';
   src: inline('./fonts/IBMPlexSans-Regular.ttf') format('truetype');
@@ -26,7 +27,6 @@
 }
 
 /* SERIF */
-
 @font-face {
   font-family: 'IBM Plex Serif', serif;
   src: inline('./fonts/IBMPlexSerif-Regular.ttf') format('truetype');
@@ -39,7 +39,6 @@
 }
 
 /* MONOSPACE */
-
 @font-face {
   font-family: 'IBM Plex Mono', monospace;
   src: inline('./fonts/IBMPlexMono-Regular.ttf') format('truetype');
