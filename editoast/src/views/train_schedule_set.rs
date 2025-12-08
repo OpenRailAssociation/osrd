@@ -9,6 +9,7 @@ use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
 use axum::Extension;
 use axum::extract::Json;
+use axum::extract::Path;
 use axum::extract::State;
 use serde::Deserialize;
 use serde::Serialize;
@@ -27,6 +28,12 @@ pub(in crate::views) struct TrainScheduleSetCreateForm {
     name: Option<String>,
     description: String,
     published: bool,
+}
+
+#[derive(IntoParams, Deserialize)]
+pub(in crate::views) struct TrainScheduleSetIdParam {
+    /// A train schedule set ID
+    id: i64,
 }
 
 #[editoast_derive::route]
@@ -70,6 +77,45 @@ pub(in crate::views) async fn post(
 pub(in crate::views) struct TrainScheduleSetQueryParams {
     catalogue_entry_id: Option<i64>,
     published: Option<bool>,
+}
+
+#[editoast_derive::route]
+#[utoipa::path(
+    get, path = "",
+    tag = "train_schedule_set",
+    params(TrainScheduleSetIdParam),
+    responses(
+        (status = 200, description = "Train schedule set", body = TrainScheduleSetResponse),
+        (status = 404, description = "Train schedule set not found"),
+    ),
+)]
+pub(in crate::views) async fn get_by_id(
+    State(_db_pool): State<Arc<DbConnectionPoolV2>>,
+    Extension(auth): AuthenticationExt,
+    Path(TrainScheduleSetIdParam {
+        id: train_schedule_set_id,
+    }): Path<TrainScheduleSetIdParam>,
+) -> Result<Json<TrainScheduleSetResponse>> {
+    let authorized = auth
+        .check_roles([authz::Role::OperationalStudies].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Forbidden.into());
+    }
+
+    // TODO: Add database operation to get a train schedule set
+    let train_schedule_set_response = TrainScheduleSetResponse {
+        train_schedule_set: TrainScheduleSet {
+            id: train_schedule_set_id,
+            catalogue_entry_id: None,
+            name: None,
+            description: String::new(),
+            published: false,
+        },
+        train_schedule_count: 0,
+    };
+    Ok(Json(train_schedule_set_response))
 }
 
 #[editoast_derive::route]
