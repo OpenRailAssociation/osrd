@@ -1,3 +1,5 @@
+@file:OptIn(ExperimentalSerializationApi::class)
+
 package fr.sncf.osrd.api.stdcm
 
 import com.google.common.collect.ImmutableRangeMap
@@ -62,6 +64,7 @@ import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.util.TreeMap
 import kotlinx.coroutines.runBlocking
+import kotlinx.serialization.ExperimentalSerializationApi
 
 class STDCMEndpoint(
     private val infraManager: InfraProvider,
@@ -370,9 +373,7 @@ fun getRequirements(
             set.add(Range.closedOpen(spacingReq.beginTime, spacingReq.endTime))
         }
 
-    val trainRequirements = runBlocking {
-        timetableCacheManager.get(request.infra, infra.rawInfra, request.timetableId)
-    }
+    val trainRequirements = runBlocking { timetableCacheManager.get(infra, request.timetableId) }
     // Cached requirements are relative to EPOCH. Add time diff with request start time
     // to these requirements.
     val searchWindowBeginEpoch = request.startTime.durationSinceEpoch()

@@ -22,10 +22,12 @@ import java.util.concurrent.LinkedBlockingQueue
 import java.util.concurrent.ThreadPoolExecutor
 import java.util.concurrent.TimeUnit
 import kotlin.system.exitProcess
+import kotlinx.serialization.ExperimentalSerializationApi
 import okhttp3.OkHttpClient
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
+@ExperimentalSerializationApi
 @Parameters(commandDescription = "RabbitMQ worker mode")
 class WorkerCommand : CliCommand {
 
@@ -55,6 +57,7 @@ class WorkerCommand : CliCommand {
     val MAX_CONCURRENT_TIMETABLE_REQUESTS: Int
     val DISABLE_ALL_TIMETABLE_CACHE: Boolean
     val VALKEY_URL: String?
+    val OSRD_GIT_DESCRIBE: String
 
     init {
         LOCAL_TIMETABLE_CACHE = System.getenv("LOCAL_TIMETABLE_CACHE")
@@ -85,6 +88,7 @@ class WorkerCommand : CliCommand {
             } else {
                 System.getenv("WORKER_ID")
             }
+        OSRD_GIT_DESCRIBE = System.getenv("OSRD_GIT_DESCRIBE") ?: "development"
     }
 
     private fun getBooleanEnvvar(name: String): Boolean {
@@ -125,7 +129,9 @@ class WorkerCommand : CliCommand {
                     MAX_CONCURRENT_TIMETABLE_REQUESTS,
                 ),
                 LOCAL_TIMETABLE_CACHE,
+                valkeyConnection,
                 DISABLE_ALL_TIMETABLE_CACHE,
+                OSRD_GIT_DESCRIBE,
             )
         val electricalProfileSetManager =
             ElectricalProfileSetManager(editoastUrl, editoastAuthorization, httpClient)
@@ -172,8 +178,7 @@ class WorkerCommand : CliCommand {
             if (!ALL_INFRA) {
                 try {
                     val infra = infraManager.load(infraId, null)
-                    if (timetableId != null)
-                        timetableCache.load(infraId, infra.rawInfra, timetableId)
+                    if (timetableId != null) timetableCache.load(infra, timetableId)
                 } catch (e: OSRDError) {
                     val isInfraLoadError =
                         setOf(ErrorType.InfraHardLoadingError, ErrorType.InfraSoftLoadingError)

@@ -27,8 +27,7 @@ class WorkerLoadEndpoint(
 
             // load infra and timetable
             val infra = infraManager.load(request.infra, request.expectedVersion)
-            if (request.timetable != null)
-                timetableManager.load(request.infra, infra.rawInfra, request.timetable!!)
+            if (request.timetable != null) timetableManager.load(infra, request.timetable!!)
 
             return RsWithStatus(RsWithBody(""), 204)
         } catch (ex: Throwable) {
