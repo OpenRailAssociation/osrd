@@ -300,11 +300,11 @@ export const loadAndIndexNge = async (
   let nbNodesIndexed = 0;
   timetableItems
     .flatMap((timetableItem) => timetableItem.path)
-    .forEach((pathItem, index) => {
+    .forEach((pathItem) => {
       const key = MacroEditorState.getPathKey(pathItem.location);
       if (!state.getNodeByKey(key)) {
         const macroNode: NodeIndexed = {
-          ngeId: index,
+          ngeId: nbNodesIndexed,
           path_item_key: key,
           trigram:
             'operational_point' in pathItem.location &&
