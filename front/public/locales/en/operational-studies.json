@@ -234,6 +234,8 @@
       "invalidTrains": "Some trains are invalid",
       "itemsSelectionDeletedCount_one": "The item has been deleted.",
       "itemsSelectionDeletedCount_other": "The {{count}} items have been deleted.",
+      "modeCalendar": "Sort chronologically",
+      "modePackage": "Sort by package",
       "noItem": "No item",
       "noSpeedLimitTagsShort": "None",
       "noTrain": "No train",

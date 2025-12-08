@@ -234,6 +234,8 @@
       "invalidTrains": "Certains trains sont invalides",
       "itemsSelectionDeletedCount_one": "L'item a bien été supprimé.",
       "itemsSelectionDeletedCount_other": "Les {{count}} items ont bien été supprimés.",
+      "modeCalendar": "Trier chronologiquement",
+      "modePackage": "Trier par paquet",
       "noItem": "Aucun item",
       "noSpeedLimitTagsShort": "Aucun",
       "noTrain": "Aucun train",

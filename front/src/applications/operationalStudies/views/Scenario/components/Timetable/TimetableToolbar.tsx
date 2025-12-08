@@ -1,6 +1,16 @@
 import { useState } from 'react';
 
-import { Alert, ArrowSwitch, CheckBox, Download, Filter, Note, Plus } from '@osrd-project/ui-icons';
+import {
+  Alert,
+  ArrowSwitch,
+  Calendar,
+  CheckBox,
+  Download,
+  FileDirectory,
+  Filter,
+  Note,
+  Plus,
+} from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 
@@ -29,6 +39,8 @@ type TimetableToolbarProps = {
   setDisplayTimetableItemManagement: (mode: string) => void;
   refreshNge: () => Promise<void>;
   handleDeleteTimetableItems: () => void;
+  timetableMode: 'calendar' | 'package';
+  setTimetableMode: React.Dispatch<React.SetStateAction<'calendar' | 'package'>>;
 };
 
 const TimetableToolbar = ({
@@ -44,6 +56,8 @@ const TimetableToolbar = ({
   setDisplayTimetableItemManagement,
   refreshNge,
   handleDeleteTimetableItems,
+  timetableMode,
+  setTimetableMode,
 }: TimetableToolbarProps) => {
   const { t } = useTranslation(['operational-studies', 'translation'], { keyPrefix: 'main' });
 
@@ -109,64 +123,99 @@ const TimetableToolbar = ({
           'are-invalid-items': areInvalidItems,
         })}
       >
-        <button
-          className={`select-options-button ${isSelectMode ? 'active' : ''}`}
-          data-testid="scenarios-select-options-button"
-          title={t('timetable.selectOptions')}
-          onClick={toggleisSelectMode}
-          disabled={timetableItems.length === 0}
-          type="button"
-        >
-          <CheckBox />
-        </button>
-        <button
-          className={`train-detail-button ${showTrainDetails ? 'active' : ''}`}
-          data-testid="scenarios-show-train-details-button"
-          title={showTrainDetails ? t('lessDetails') : t('moreDetails')}
-          onClick={toggleShowTrainDetails}
-          disabled={timetableItems.length === 0}
-          type="button"
-        >
-          <Note />
-        </button>
-        <button
-          className="round-trip-button"
-          data-testid="scenarios-manage-round-trips-button"
-          title={t('roundTripsModal.manageRoundTrips')}
-          onClick={() => setRoundTripsModalIsOpen(true)}
-          disabled={timetableItems.length === 0}
-          type="button"
-        >
-          <ArrowSwitch />
-        </button>
-        <button
-          className={`filter-button ${isFilterPanelOpen ? 'active' : ''}`}
-          data-testid="timetable-filter-button"
-          title={t('timetable.toggleFilters')}
-          onClick={toggleFilterPanel}
-          disabled={timetableItems.length === 0}
-          type="button"
-        >
-          <Filter />
-        </button>
-        <button
-          className="import-button"
-          data-testid="scenarios-import-timetable-item-button"
-          title={t('timetable.importTimetableItem')}
-          onClick={() => setDisplayTimetableItemManagement(MANAGE_TIMETABLE_ITEM_TYPES.import)}
-          type="button"
-        >
-          <Download />
-        </button>
-        <button
-          className="add-button"
-          data-testid="scenarios-add-timetable-item-button"
-          title={t('timetable.addTimetableItem')}
-          onClick={() => setDisplayTimetableItemManagement(MANAGE_TIMETABLE_ITEM_TYPES.add)}
-          type="button"
-        >
-          <Plus />
-        </button>
+        <div className="left-group">
+          <button
+            className={cx('select-options-button', {
+              active: isSelectMode,
+            })}
+            data-testid="scenarios-select-options-button"
+            title={t('timetable.selectOptions')}
+            onClick={toggleisSelectMode}
+            disabled={timetableItems.length === 0}
+            type="button"
+          >
+            <CheckBox />
+          </button>
+          <button
+            className={cx('train-detail-button', {
+              active: showTrainDetails,
+            })}
+            data-testid="scenarios-show-train-details-button"
+            title={showTrainDetails ? t('lessDetails') : t('moreDetails')}
+            onClick={toggleShowTrainDetails}
+            disabled={timetableItems.length === 0}
+            type="button"
+          >
+            <Note />
+          </button>
+          <button
+            className="round-trip-button"
+            data-testid="scenarios-manage-round-trips-button"
+            title={t('roundTripsModal.manageRoundTrips')}
+            onClick={() => setRoundTripsModalIsOpen(true)}
+            disabled={timetableItems.length === 0}
+            type="button"
+          >
+            <ArrowSwitch />
+          </button>
+          <button
+            className="import-button"
+            data-testid="scenarios-import-timetable-item-button"
+            title={t('timetable.importTimetableItem')}
+            onClick={() => setDisplayTimetableItemManagement(MANAGE_TIMETABLE_ITEM_TYPES.import)}
+            type="button"
+          >
+            <Download />
+          </button>
+          <button
+            className="add-button"
+            data-testid="scenarios-add-timetable-item-button"
+            title={t('timetable.addTimetableItem')}
+            onClick={() => setDisplayTimetableItemManagement(MANAGE_TIMETABLE_ITEM_TYPES.add)}
+            type="button"
+          >
+            <Plus />
+          </button>
+        </div>
+        <div className="right-group">
+          <button
+            className={cx('filter-button', {
+              active: isFilterPanelOpen,
+            })}
+            data-testid="timetable-filter-button"
+            title={t('timetable.toggleFilters')}
+            onClick={toggleFilterPanel}
+            disabled={timetableItems.length === 0}
+            type="button"
+          >
+            <Filter />
+          </button>
+          <div className="timetable-sort-switch">
+            <button
+              className={cx('timetable-mode-button', {
+                active: timetableMode === 'calendar',
+              })}
+              data-testid="timetable-calendar-mode-button"
+              title={t('timetable.modeCalendar')}
+              onClick={() => setTimetableMode('calendar')}
+              type="button"
+            >
+              <Calendar />
+            </button>
+
+            <button
+              className={cx('timetable-mode-button', {
+                active: timetableMode === 'package',
+              })}
+              data-testid="timetable-package-mode-button"
+              title={t('timetable.modePackage')}
+              onClick={() => setTimetableMode('package')}
+              type="button"
+            >
+              <FileDirectory />
+            </button>
+          </div>
+        </div>
       </div>
       {isSelectMode && filteredTimetableItems.length > 0 && (
         <SelectionToolBar
