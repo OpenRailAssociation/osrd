@@ -2,15 +2,14 @@ import { useCallback } from 'react';
 
 import { flatten, inRange, last } from 'lodash';
 
-import { useDraw, usePicking } from '../hooks/useCanvas';
+import type { DrawingFunction, PickingDrawingFunction, PickingElement } from '../../common/types';
+import { useDraw, usePicking } from '../../common/useCanvas';
+import { SpaceTimeChartCanvasContext } from '../lib/context';
 import {
   type DataPoint,
   DEFAULT_PATH_END,
-  type DrawingFunction,
   type OperationalPoint,
   type PathData,
-  type PickingDrawingFunction,
-  type PickingElement,
   type Point,
   type SpaceTimeChartContextType,
 } from '../lib/types';
@@ -239,7 +238,7 @@ export const PathLayer = ({
   /**
    * This function draws the stops of the path on the operational points.
    */
-  const drawPauses = useCallback<DrawingFunction>(
+  const drawPauses = useCallback<DrawingFunction<SpaceTimeChartContextType>>(
     (ctx, { getTimePixel, getSpacePixel, operationalPoints, swapAxis }) => {
       const stopPositions = new Set(operationalPoints.map((p) => p.position));
       path.points.forEach(({ position, time }, i, a) => {
@@ -413,7 +412,7 @@ export const PathLayer = ({
   /**
    * This function draws the extremities of the path.
    */
-  const drawExtremities = useCallback<DrawingFunction>(
+  const drawExtremities = useCallback<DrawingFunction<SpaceTimeChartContextType>>(
     (ctx, { getTimePixel, getSpacePixel, swapAxis }) => {
       if (!path.points.length) return;
 
@@ -474,7 +473,7 @@ export const PathLayer = ({
     [path]
   );
 
-  const drawBorder = useCallback<DrawingFunction>(
+  const drawBorder = useCallback<DrawingFunction<SpaceTimeChartContextType>>(
     (ctx, stcContext) => {
       if (!border) return;
       const borderWidth = border.width || 1;
@@ -556,7 +555,7 @@ export const PathLayer = ({
     [level, color, drawLabelWithBackground, path.label]
   );
 
-  const drawAll = useCallback<DrawingFunction>(
+  const drawAll = useCallback<DrawingFunction<SpaceTimeChartContextType>>(
     (ctx, stcContext) => {
       if (path.points.length === 1) {
         drawSinglePoint(ctx, stcContext, path.points[0]);
@@ -621,9 +620,9 @@ export const PathLayer = ({
       drawLabel,
     ]
   );
-  useDraw('paths', drawAll);
+  useDraw(SpaceTimeChartCanvasContext, 'paths', drawAll);
 
-  const drawPicking = useCallback<PickingDrawingFunction>(
+  const drawPicking = useCallback<PickingDrawingFunction<SpaceTimeChartContextType>>(
     (imageData, stcContext, scalingRatio) => {
       const { registerPickingElement } = stcContext;
 
@@ -699,7 +698,8 @@ export const PathLayer = ({
     },
     [getPathLines, getSnapPoints, level, path.id, path.points, pickingTolerance]
   );
-  usePicking('paths', drawPicking);
+
+  usePicking(SpaceTimeChartCanvasContext, 'paths', drawPicking);
 
   return null;
 };

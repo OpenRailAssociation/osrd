@@ -1,8 +1,8 @@
 import { drawOccupancyZonesTexts } from './drawOccupancyZonesTexts';
 import { PATH_COLOR_DEFAULT } from '../../../../manchette/consts';
-import { getCrispLineCoordinate, type SpaceTimeChartContextType } from '../../../../spaceTimeChart';
-import { OCCUPANCY_ZONE_Y_START, OCCUPANCY_ZONE_HEIGHT, FONTS, COLORS } from '../../consts';
-import type { OccupancyZone } from '../../types';
+import { getCrispLineCoordinate } from '../../../../spaceTimeChart';
+import { OCCUPANCY_ZONE_Y_START, OCCUPANCY_ZONE_HEIGHT, FONTS, COLORS } from '../../../lib/consts';
+import type { OccupancyZone, TrackOccupancyDiagramContextType } from '../../../lib/types';
 
 const { SANS } = FONTS;
 const { REMAINING_TRAINS_BACKGROUND, WHITE_100, SELECTION_20 } = COLORS;
@@ -58,7 +58,7 @@ const drawThroughTrain = (ctx: CanvasRenderingContext2D, x: number, y: number) =
 
 export const drawRemainingTrainsBox = (
   ctx: CanvasRenderingContext2D,
-  { getTimePixel, getSpacePixel }: SpaceTimeChartContextType,
+  { getTimePixel, getSpacePixel }: TrackOccupancyDiagramContextType,
   {
     time,
     position,
@@ -89,7 +89,7 @@ export const drawRemainingTrainsBox = (
 
 export const drawOccupationZone = (
   ctx: CanvasRenderingContext2D,
-  stcContext: SpaceTimeChartContextType,
+  stcContext: TrackOccupancyDiagramContextType,
   {
     zone,
     yOffset,
@@ -182,7 +182,7 @@ export const drawOccupationZone = (
 
 export const drawZoneTrailingText = (
   ctx: CanvasRenderingContext2D,
-  { getTimePixel, getSpacePixel }: SpaceTimeChartContextType,
+  { getTimePixel, getSpacePixel }: TrackOccupancyDiagramContextType,
   {
     zone,
     position,

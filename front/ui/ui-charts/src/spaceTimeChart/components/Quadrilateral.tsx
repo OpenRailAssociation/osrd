@@ -1,13 +1,9 @@
 import { useCallback } from 'react';
 
-import { useDraw, usePicking } from '../hooks/useCanvas';
-import type {
-  DataPoint,
-  DrawingFunction,
-  PickingDrawingFunction,
-  PickingElement,
-  Point,
-} from '../lib/types';
+import type { PickingElement, DrawingFunction, PickingDrawingFunction } from '../../common/types';
+import { useDraw, usePicking } from '../../common/useCanvas';
+import { SpaceTimeChartCanvasContext } from '../lib/context';
+import type { DataPoint, Point, SpaceTimeChartContextType } from '../lib/types';
 import { drawAliasedQuadrilateral } from '../utils/canvas';
 import { hexToRgb, indexToColor } from '../utils/colors';
 
@@ -42,7 +38,7 @@ export type QuadrilateralProps = {
  *
  */
 export const Quadrilateral = ({ id, vertices, style }: QuadrilateralProps) => {
-  const drawRegion = useCallback<DrawingFunction>(
+  const drawRegion = useCallback<DrawingFunction<SpaceTimeChartContextType>>(
     (ctx, { getSpacePixel, getTimePixel }) => {
       ctx.save();
 
@@ -62,9 +58,9 @@ export const Quadrilateral = ({ id, vertices, style }: QuadrilateralProps) => {
     },
     [vertices, style]
   );
-  useDraw('background', drawRegion);
+  useDraw(SpaceTimeChartCanvasContext, 'background', drawRegion);
 
-  const drawPicking = useCallback<PickingDrawingFunction>(
+  const drawPicking = useCallback<PickingDrawingFunction<SpaceTimeChartContextType>>(
     (imageData, { registerPickingElement, getTimePixel, getSpacePixel }, scalingRatio) => {
       const points = vertices.map(
         (vertice): Point => ({
@@ -81,7 +77,7 @@ export const Quadrilateral = ({ id, vertices, style }: QuadrilateralProps) => {
     },
     [id, vertices]
   );
-  usePicking('paths', drawPicking);
+  usePicking(SpaceTimeChartCanvasContext, 'paths', drawPicking);
 
   return null;
 };

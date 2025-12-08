@@ -1,28 +1,58 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
+import type { HoveredItem } from '../../common/types';
 import {
   type DataPoint,
+  type Handler,
   type MouseContextType,
   type Point,
-  type SpaceTimeChartContextType,
-  type SpaceTimeChartProps,
+  type PointToData,
 } from '../lib/types';
 import { getEventPosition, getEventWheelDelta } from '../utils/events';
 
-type Handlers = Pick<SpaceTimeChartProps, 'onPan' | 'onMouseMove' | 'onClick' | 'onZoom'>;
+type Handlers<T> = {
+  onPan?: Handler<{
+    isPanning: boolean;
+    initialPosition: Point;
+    position: Point;
+    initialData: DataPoint;
+    data: DataPoint;
+    context: T;
+  }>;
+  onZoom?: Handler<{
+    delta: number;
+    position: Point;
+    event: WheelEvent;
+    context: T;
+  }>;
+  onClick?: Handler<{
+    position: Point;
+    data: DataPoint;
+    event: MouseEvent;
+    hoveredItem: HoveredItem | null;
+    context: T;
+  }>;
+  onMouseMove?: Handler<{
+    position: Point;
+    data: DataPoint;
+    isHover: boolean;
+    hoveredItem: HoveredItem | null;
+    context: T;
+  }>;
+};
 
 /**
  * This hook handles SpaceTimeChart mouse interactions.
  * It is an internal hook, and should only be used inside SpaceTimeChart.
  */
-export function useMouseInteractions(
+export function useMouseInteractions<T extends { fingerprint: string; getData: PointToData }>(
   dom: HTMLElement | null,
   { position, hoveredItem, down, isHover }: MouseContextType,
-  handlers: Handlers,
-  context: SpaceTimeChartContextType
+  handlers: Handlers<T>,
+  context: T
 ) {
   const contextRef = useRef(context);
-  const handlersRef = useRef<Handlers>(handlers);
+  const handlersRef = useRef<Handlers<T>>(handlers);
   const [panningState, setPanningState] = useState<
     { type: 'idle' } | { type: 'panning'; initialPosition: Point; initialData: DataPoint }
   >({ type: 'idle' });

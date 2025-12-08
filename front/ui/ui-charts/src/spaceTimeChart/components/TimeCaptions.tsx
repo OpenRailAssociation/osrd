@@ -1,8 +1,10 @@
 import { useCallback } from 'react';
 
-import { useDraw } from '../hooks/useCanvas';
+import type { DrawingFunction } from '../../common/types';
+import { useDraw } from '../../common/useCanvas';
 import { HOUR, MINUTE } from '../lib/consts';
-import { type DrawingFunction } from '../lib/types';
+import { SpaceTimeChartCanvasContext } from '../lib/context';
+import type { SpaceTimeChartContextType } from '../lib/types';
 import { computeVisibleTimeMarkers, getCrispLineCoordinate } from '../utils/canvas';
 import { WHITE_ALPHA_75 } from '../utils/colors';
 
@@ -42,7 +44,7 @@ const RANGES_FORMATER: ((t: number, pixelsPerMinute: number) => string)[] = [
 ];
 
 export const TimeCaptions = () => {
-  const drawingFunction = useCallback<DrawingFunction>(
+  const drawingFunction = useCallback<DrawingFunction<SpaceTimeChartContextType>>(
     (
       ctx,
       {
@@ -184,7 +186,7 @@ export const TimeCaptions = () => {
     []
   );
 
-  useDraw('captions', drawingFunction);
+  useDraw(SpaceTimeChartCanvasContext, 'captions', drawingFunction);
 
   return null;
 };

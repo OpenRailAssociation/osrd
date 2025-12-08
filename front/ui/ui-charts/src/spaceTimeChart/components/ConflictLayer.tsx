@@ -1,7 +1,9 @@
 import { useCallback } from 'react';
 
-import { useDraw, usePicking } from '../hooks/useCanvas';
-import type { DrawingFunction, PickingDrawingFunction, PickingElement } from '../lib/types';
+import type { DrawingFunction, PickingDrawingFunction, PickingElement } from '../../common/types';
+import { useDraw, usePicking } from '../../common/useCanvas';
+import { SpaceTimeChartCanvasContext } from '../lib/context';
+import type { SpaceTimeChartContextType } from '../lib/types';
 import { drawAliasedRect } from '../utils/canvas';
 import { indexToColor, hexToRgb } from '../utils/colors';
 
@@ -35,7 +37,7 @@ const BORDERS = [
 ];
 
 export const ConflictLayer = ({ conflicts }: ConflictLayerProps) => {
-  const drawConflictLayer = useCallback<DrawingFunction>(
+  const drawConflictLayer = useCallback<DrawingFunction<SpaceTimeChartContextType>>(
     (ctx, { getTimePixel, getSpacePixel }) => {
       const paths = BORDERS.map(() => new Path2D());
       for (const conflict of conflicts) {
@@ -58,9 +60,9 @@ export const ConflictLayer = ({ conflicts }: ConflictLayerProps) => {
     [conflicts]
   );
 
-  useDraw('paths', drawConflictLayer);
+  useDraw(SpaceTimeChartCanvasContext, 'paths', drawConflictLayer);
 
-  const drawPicking = useCallback<PickingDrawingFunction>(
+  const drawPicking = useCallback<PickingDrawingFunction<SpaceTimeChartContextType>>(
     (imageData, { registerPickingElement, getTimePixel, getSpacePixel }, scalingRatio) => {
       for (const [conflictIndex, conflict] of conflicts.entries()) {
         const x = getTimePixel(conflict.timeStart);
@@ -86,7 +88,7 @@ export const ConflictLayer = ({ conflicts }: ConflictLayerProps) => {
     [conflicts]
   );
 
-  usePicking('paths', drawPicking);
+  usePicking(SpaceTimeChartCanvasContext, 'paths', drawPicking);
 
   return null;
 };

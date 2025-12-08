@@ -1,6 +1,6 @@
 import { sum } from 'lodash';
 
-import { TRACK_HEIGHT_CONTAINER, COLORS, TICKS_PATTERN } from '../../consts';
+import { TRACK_HEIGHT_CONTAINER, COLORS, TICKS_PATTERN } from '../../../lib/consts';
 import { getTickPattern } from '../../utils';
 
 const { WHITE_100, WHITE_50, GREY_20, RAIL_TICK } = COLORS;

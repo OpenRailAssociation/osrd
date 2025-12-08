@@ -1,5 +1,5 @@
 @import 'tailwindcss';
-@import '../../../../index.css';
+/* @import '../../../../index.css'; */
 
 .track-occupancy-manchette {
   height: 100%;
@@ -91,9 +91,11 @@
   position: absolute;
 }
 
-.track-occupancy-standalone {
+.ui-track-occupancy-standalone-wrapper {
   width: auto;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
   box-shadow:
     0 2px 4px 0 rgba(0, 0, 0, 0.22),
     0 4px 7px -3px rgba(255, 171, 88, 0.17),
@@ -105,8 +107,9 @@
     display: none;
   }
 
-  .ui-manchette-space-time-chart-wrapper {
+  .track-occupancy-wrapper {
     overflow: auto;
+    display: flex;
     flex: 1;
   }
 
@@ -119,11 +122,7 @@
       inset 0 -1px 0 0 rgba(0, 0, 0, 0.25);
   }
 
-  .manchette {
-    height: 100%;
-  }
-  .ui-manchette-container {
-    width: 200px;
+  .track-occupancy-manchette {
     overflow: hidden;
     flex-shrink: 0;
     height: fit-content;

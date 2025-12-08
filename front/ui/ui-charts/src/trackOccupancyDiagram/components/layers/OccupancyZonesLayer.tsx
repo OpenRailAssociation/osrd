@@ -2,13 +2,12 @@ import { useCallback, useMemo } from 'react';
 
 import { sortBy } from 'lodash';
 
-import {
-  useDraw,
-  type DrawingFunction,
-  type PickingDrawingFunction,
-  usePicking,
-  type PickingElement,
-} from '../../../spaceTimeChart';
+import type {
+  DrawingFunction,
+  PickingDrawingFunction,
+  PickingElement,
+} from '../../../common/types';
+import { useDraw, usePicking } from '../../../common/useCanvas';
 import { drawAliasedRect } from '../../../spaceTimeChart/utils/canvas';
 import { hexToRgb, indexToColor } from '../../../spaceTimeChart/utils/colors';
 import {
@@ -16,13 +15,19 @@ import {
   OCCUPANCY_ZONE_HEIGHT,
   OCCUPANCY_ZONE_Y_START,
   TRACK_HEIGHT_CONTAINER,
-} from '../consts';
+} from '../../lib/consts';
+import { TrackOccupancyCanvasContext } from '../../lib/context';
+import type {
+  OccupancyZone,
+  OccupancyZonePickingElement,
+  Track,
+  TrackOccupancyDiagramContextType,
+} from '../../lib/types';
 import {
   drawOccupationZone,
   drawRemainingTrainsBox,
   drawZoneTrailingText,
 } from '../helpers/drawElements/drawOccupancyZones';
-import type { OccupancyZone, OccupancyZonePickingElement, Track } from '../types';
 
 type RenderingInstruction =
   | {
@@ -164,7 +169,7 @@ const OccupancyZonesLayer = ({
     );
   }, [occupancyZones, selectedTrainId, topPadding, tracks]);
 
-  const drawingFunction = useCallback<DrawingFunction>(
+  const drawingFunction = useCallback<DrawingFunction<TrackOccupancyDiagramContextType>>(
     (ctx, stcContext) => {
       instructionsToDraw.forEach((instruction) => {
         switch (instruction.type) {
@@ -199,7 +204,7 @@ const OccupancyZonesLayer = ({
     [position, instructionsToDraw]
   );
 
-  const pickingFunction = useCallback<PickingDrawingFunction>(
+  const pickingFunction = useCallback<PickingDrawingFunction<TrackOccupancyDiagramContextType>>(
     (imageData, { registerPickingElement, getTimePixel, getSpacePixel }, scalingRatio) => {
       const flatStepOffsetY = getSpacePixel(position);
       const flatStepEndY = getSpacePixel(position, true);
@@ -258,8 +263,8 @@ const OccupancyZonesLayer = ({
     [position, instructionsToDraw]
   );
 
-  usePicking('overlay', pickingFunction);
-  useDraw('overlay', drawingFunction);
+  usePicking(TrackOccupancyCanvasContext, 'overlay', pickingFunction);
+  useDraw(TrackOccupancyCanvasContext, 'overlay', drawingFunction);
 
   return null;
 };
