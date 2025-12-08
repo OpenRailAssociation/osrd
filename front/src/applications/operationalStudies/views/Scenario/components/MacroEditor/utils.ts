@@ -70,7 +70,7 @@ export const updateMacroNode = async (
       nodeId: indexedNode.dbId,
       macroNodeForm: node,
     })
-  );
+  ).unwrap();
   state.indexNodeByKey(indexedNode.path_item_key, node);
 };
 
@@ -79,7 +79,7 @@ export const deleteMacroNodeByDbId = async (dispatch: AppDispatch, dbId: number)
     osrdEditoastApi.endpoints.deleteMacroNodesByNodeId.initiate({
       nodeId: dbId,
     })
-  );
+  ).unwrap();
 };
 
 export const deleteMacroNodeByNgeId = async (
