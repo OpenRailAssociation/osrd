@@ -1,0 +1,64 @@
+{
+    "id": "trainschedule-98",
+    "train_name": "tooFast",
+    "labels": [],
+    "rolling_stock_name": "TC64700",
+    "start_time": "2024-08-02T12:00:00Z",
+    "path": [
+        {
+            "id": "id440",
+            "location": {
+                "track": "TA0",
+                "offset": 1299000
+            }
+        },
+        {
+            "id": "id935",
+            "location": {
+                "operational_point": {
+                    "uic": 4,
+                    "secondary_code": "BV",
+                    "type": "uic"
+                }
+            }
+        },
+        {
+            "id": "id916",
+            "location": {
+                "track": "TH1",
+                "offset": 4095000
+            }
+        }
+    ],
+    "schedule": [
+        {
+            "at": "id935",
+            "arrival": "PT1740S",
+            "stop_for": "P0D",
+            "reception_signal": "OPEN"
+        },
+        {
+            "at": "id916",
+            "arrival": null,
+            "stop_for": "P0D",
+            "reception_signal": "OPEN"
+        }
+    ],
+    "margins": {
+        "boundaries": [
+            "id916"
+        ],
+        "values": [
+            "27%",
+            "0%"
+        ]
+    },
+    "initial_speed": 0,
+    "comfort": "STANDARD",
+    "constraint_distribution": "MARECO",
+    "speed_limit_tag": null,
+    "power_restrictions": [],
+    "options": {
+        "use_electrical_profiles": true
+    }
+}

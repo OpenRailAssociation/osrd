@@ -4088,6 +4088,14 @@ export type SimulationSummaryResult =
     The length of this array is the number of path items in the train schedule used as input for the simulation.
     The first value is always `0` (beginning of the path) and the last one is always equal to the `length` of the path in mm */
       path_item_positions: number[];
+      /** Whether the final path times respect the input margins for each train schedule path item.
+    The length of this array is the number of path items in the train schedule used as input for the simulation.
+    Important: `true` means the provisional time is acceptable margin-wise, not *precisely* respecting the margin. */
+      path_item_respect_margins: boolean[];
+      /** Whether each path item in the train schedule is reached on time.
+    The length of this array is the number of path items in the train schedule used as input for the simulation.
+    Important: `true` doesn't mean the path item has been reached *precisely* at the requested time. Instead, it means it reached the path item at an acceptable time. */
+      path_item_respect_times: boolean[];
       /** Base simulation time for each train schedule path item.
     The length of this array is the number of path items in the train schedule used as input for the simulation.
     The first value is always `0` (beginning of the path) and the last one, the total time of the simulation (end of the path) */

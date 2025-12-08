@@ -1,3 +1,4 @@
+use chrono::Duration;
 use core_client::AsCoreRequest;
 use core_client::pathfinding::PathfindingInputError;
 use core_client::pathfinding::PathfindingNotFound;
@@ -42,8 +43,17 @@ use crate::views::timetable::PhysicsConsistParameters;
 use crate::views::timetable::simulation;
 use editoast_models::prelude::*;
 use editoast_models::rolling_stock::RollingStock;
+use schemas::primitives::NonBlankString;
+use schemas::primitives::PositiveDuration;
 
 pub const TRAIN_SIZE_BATCH: usize = 100;
+
+/// Approximate time values from simulations to two seconds.
+///
+/// Used when computing whether path items respect times and margins of a simulation.
+///
+/// This value is chosen because core hard-codes a timestep of two seconds for standalone simulations.
+const TIME_APPROX_ERROR: Duration = Duration::seconds(2);
 
 #[derive(Serialize, Deserialize, PartialEq, Clone, Debug, ToSchema)]
 pub struct SimulationResponseSuccess {
@@ -58,6 +68,129 @@ pub struct SimulationResponseSuccess {
     pub mrsp: SpeedLimitProperties,
     #[schema(inline)]
     pub electrical_profiles: ElectricalProfiles,
+}
+
+impl SimulationResponseSuccess {
+    /// Compute whether the simulation response respects the times on each path item.
+    ///
+    /// # Panics
+    ///
+    /// This function can panic in the following cases:
+    /// - the simulation response isn't derived from the given train schedule,
+    /// - some of the final path item times exceed `i64::MAX`
+    pub fn path_item_respect_times<T: TrainScheduleLike>(&self, train_schedule: &T) -> Vec<bool> {
+        let path_item_id_to_index: HashMap<&NonBlankString, usize> = train_schedule
+            .path()
+            .iter()
+            .enumerate()
+            .map(|(i, path_item)| (&path_item.id, i))
+            .collect();
+
+        let path_item_times_final = &*self.final_output.report_train.path_item_times;
+        let mut res = vec![true; path_item_times_final.len()];
+
+        for schedule_item in train_schedule.schedule() {
+            let Some(arrival): Option<PositiveDuration> = schedule_item.arrival else {
+                continue;
+            };
+            let arrival = Duration::from(arrival);
+
+            let path_item_index = path_item_id_to_index[&schedule_item.at];
+            let path_item_time = i64::try_from(path_item_times_final[path_item_index]).unwrap();
+            let path_item_time = Duration::milliseconds(path_item_time);
+
+            res[path_item_index] = (path_item_time - arrival).abs() < TIME_APPROX_ERROR;
+        }
+
+        res
+    }
+
+    /// Compute whether the simulation response respects the margins on each path item.
+    ///
+    /// This function assumes items in `train_schedule.schedule()` have increasing
+    /// indices in `train_schedule.path()` (a property which should uphold for all
+    /// train schedule editoast produces)...
+    ///
+    /// # Panics
+    ///
+    /// This function can panic in the following cases:
+    /// - the simulation response isn't derived from the given train schedule,
+    /// - some of the final or provisional path item times exceed `i64::MAX`
+    pub fn path_item_respect_margins<T: TrainScheduleLike>(&self, train_schedule: &T) -> Vec<bool> {
+        let path_item_times_final = &*self.final_output.report_train.path_item_times;
+        let path_item_times_provisional = &*self.provisional.path_item_times;
+        let margin_boundary_set = &*train_schedule.margins().boundaries;
+
+        let path_item_id_to_index: HashMap<&NonBlankString, usize> = train_schedule
+            .path()
+            .iter()
+            .enumerate()
+            .map(|(i, path_item)| (&path_item.id, i))
+            .collect();
+
+        let mut res = vec![true; path_item_times_final.len()];
+
+        let path_item_ids_to_check = train_schedule
+            .path()
+            .first() // unconditionally include, will filter later down
+            .map(|first_path_item| &first_path_item.id)
+            .into_iter()
+            .chain(
+                train_schedule
+                    .schedule()
+                    .iter()
+                    .enumerate()
+                    .filter(|(i, schedule_item)| {
+                        *i == 0
+                            || schedule_item.arrival.is_some()
+                            || margin_boundary_set.contains(&schedule_item.at)
+                    })
+                    .map(|(_, schedule_item)| &schedule_item.at),
+            )
+            .chain(
+                train_schedule
+                    .path()
+                    .last() // unconditionally include, will filter later down
+                    .map(|last_path_item| &last_path_item.id),
+            )
+            // TODO use https://doc.rust-lang.org/stable/std/iter/trait.Iterator.html#method.map_windows
+            .collect::<Vec<&NonBlankString>>();
+        path_item_ids_to_check
+            .windows(2)
+            .for_each(|path_item_id_couple| {
+                let [prev_path_item_id, path_item_id] = *path_item_id_couple else {
+                    // TODO use https://doc.rust-lang.org/stable/std/primitive.slice.html#method.array_windows
+                    unreachable!()
+                };
+                if prev_path_item_id == path_item_id {
+                    // Because we unconditionally iterate over the first and last item of the path,
+                    // in case they are not present in the train schedule, we might end up with
+                    // prev_path_item and path_item being the same, so we filter this case here.
+                    return;
+                }
+
+                let path_item_index = path_item_id_to_index[path_item_id];
+                let path_item_time_final =
+                    i64::try_from(path_item_times_final[path_item_index]).unwrap();
+                let path_item_time_provisional =
+                    i64::try_from(path_item_times_provisional[path_item_index]).unwrap();
+
+                let prev_path_item_index = path_item_id_to_index[prev_path_item_id];
+                let prev_path_item_time_final =
+                    i64::try_from(path_item_times_final[prev_path_item_index]).unwrap();
+                let prev_path_item_time_provisional =
+                    i64::try_from(path_item_times_provisional[prev_path_item_index]).unwrap();
+
+                let interval_duration_final = path_item_time_final - prev_path_item_time_final;
+                let interval_duration_provisional =
+                    path_item_time_provisional - prev_path_item_time_provisional;
+                let margin_diff = interval_duration_final - interval_duration_provisional;
+
+                res[path_item_index] = margin_diff >= -TIME_APPROX_ERROR.num_milliseconds();
+            });
+
+        res
+    }
 }
 
 #[derive(Serialize, Deserialize, PartialEq, Clone, Debug, ToSchema)]
@@ -143,6 +276,14 @@ pub enum SummaryResponse {
         /// The length of this array is the number of path items in the train schedule used as input for the simulation.
         /// The first value is always `0` (beginning of the path) and the last one, the total time of the simulation (end of the path)
         path_item_times_base: Vec<u64>,
+        /// Whether each path item in the train schedule is reached on time.
+        /// The length of this array is the number of path items in the train schedule used as input for the simulation.
+        /// Important: `true` doesn't mean the path item has been reached *precisely* at the requested time. Instead, it means it reached the path item at an acceptable time.
+        path_item_respect_times: Vec<bool>,
+        /// Whether the final path times respect the input margins for each train schedule path item.
+        /// The length of this array is the number of path items in the train schedule used as input for the simulation.
+        /// Important: `true` means the provisional time is acceptable margin-wise, not *precisely* respecting the margin.
+        path_item_respect_margins: Vec<bool>,
         /// The path offset in mm of each path item given as input of the pathfinding
         /// The length of this array is the number of path items in the train schedule used as input for the simulation.
         /// The first value is always `0` (beginning of the path) and the last one is always equal to the `length` of the path in mm
@@ -159,14 +300,13 @@ pub enum SummaryResponse {
 }
 
 impl SummaryResponse {
-    pub fn summarize_simulation(response: simulation::Response, path: PathfindingResult) -> Self {
+    pub fn summarize_simulation<T: TrainScheduleLike>(
+        response: simulation::Response,
+        path: PathfindingResult,
+        train_schedule: &T,
+    ) -> Self {
         match response {
-            simulation::Response::Success(SimulationResponseSuccess {
-                final_output,
-                provisional,
-                base,
-                ..
-            }) => {
+            simulation::Response::Success(sim) => {
                 let PathfindingResult::Success(PathfindingResultSuccess {
                     path_item_positions,
                     ..
@@ -174,14 +314,26 @@ impl SummaryResponse {
                 else {
                     panic!("Pathfinding cannnot fail if the simulation has succeeded")
                 };
-                let report = final_output.report_train;
+
+                let path_item_respect_times = sim.path_item_respect_times(train_schedule);
+                let path_item_respect_margins = sim.path_item_respect_margins(train_schedule);
+
+                let SimulationResponseSuccess {
+                    final_output: CompleteReportTrain { report_train, .. },
+                    provisional,
+                    base,
+                    ..
+                } = sim;
+
                 Self::Success {
-                    length: *report.positions.last().unwrap(),
-                    time: *report.path_item_times.last().unwrap(),
-                    energy_consumption: report.energy_consumption,
-                    path_item_times_final: report.path_item_times.clone(),
-                    path_item_times_provisional: provisional.path_item_times.clone(),
+                    length: *report_train.positions.last().unwrap(),
+                    time: *report_train.path_item_times.last().unwrap(),
+                    energy_consumption: report_train.energy_consumption,
+                    path_item_times_final: report_train.path_item_times,
+                    path_item_times_provisional: provisional.path_item_times,
                     path_item_times_base: base.path_item_times.clone(),
+                    path_item_respect_times,
+                    path_item_respect_margins,
                     path_item_positions: path_item_positions.clone(),
                 }
             }
@@ -530,4 +682,175 @@ fn compute_train_simulation_hash_with_versioning(
     simulation_input.hash(&mut hasher);
     let hash_simulation_input = hasher.finish();
     format!("simulation_{osrd_version}.{infra_id}.{infra_version}.{hash_simulation_input}")
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use schemas::TrainSchedule;
+
+    // Test data
+    // The simulation responses contain just enough data to compute
+    // `path_items_respect_{times,margins}`.
+
+    fn train_schedule_too_fast() -> TrainSchedule {
+        const JSON: &str = include_str!("tests/train_schedule_too_fast.json");
+        serde_json::from_str(JSON).unwrap()
+    }
+
+    fn train_schedule_too_fast_on_interval() -> TrainSchedule {
+        const JSON: &str = include_str!("tests/train_schedule_too_fast_on_interval.json");
+        serde_json::from_str(JSON).unwrap()
+    }
+
+    fn train_schedule_not_honored() -> TrainSchedule {
+        const JSON: &str = include_str!("tests/train_schedule_not_honored.json");
+        serde_json::from_str(JSON).unwrap()
+    }
+
+    fn train_schedule_honored() -> TrainSchedule {
+        const JSON: &str = include_str!("tests/train_schedule_honored.json");
+        serde_json::from_str(JSON).unwrap()
+    }
+
+    fn train_schedule_no_schedule() -> TrainSchedule {
+        const JSON: &str = include_str!("tests/train_schedule_no_schedule.json");
+        serde_json::from_str(JSON).unwrap()
+    }
+
+    fn shallow_sim_too_fast() -> SimulationResponseSuccess {
+        SimulationResponseSuccess {
+            base: ReportTrain {
+                path_item_times: vec![0, 1_444_453, 2_491_479],
+                ..Default::default()
+            },
+            provisional: ReportTrain {
+                path_item_times: vec![0, 1_834_414, 3_164_206],
+                ..Default::default()
+            },
+            final_output: CompleteReportTrain {
+                report_train: ReportTrain {
+                    path_item_times: vec![0, 1_739_394, 3_069_187],
+                    ..Default::default()
+                },
+                ..Default::default()
+            },
+            mrsp: Default::default(),
+            electrical_profiles: Default::default(),
+        }
+    }
+
+    fn shallow_sim_too_fast_on_interval() -> SimulationResponseSuccess {
+        SimulationResponseSuccess {
+            base: ReportTrain {
+                path_item_times: vec![0, 4_730_243, 13_828_795],
+                ..Default::default()
+            },
+            provisional: ReportTrain {
+                path_item_times: vec![0, 5_222_392, 15_267_584],
+                ..Default::default()
+            },
+            final_output: CompleteReportTrain {
+                report_train: ReportTrain {
+                    path_item_times: vec![0, 5_280_030, 15_300_915],
+                    ..Default::default()
+                },
+                ..Default::default()
+            },
+            mrsp: Default::default(),
+            electrical_profiles: Default::default(),
+        }
+    }
+
+    fn shallow_sim_honored() -> SimulationResponseSuccess {
+        SimulationResponseSuccess {
+            base: ReportTrain {
+                path_item_times: vec![0, 2_186_885],
+                ..Default::default()
+            },
+            provisional: ReportTrain {
+                path_item_times: vec![0, 2_186_885],
+                ..Default::default()
+            },
+            final_output: CompleteReportTrain {
+                report_train: ReportTrain {
+                    path_item_times: vec![0, 2_186_885],
+                    ..Default::default()
+                },
+                ..Default::default()
+            },
+            mrsp: Default::default(),
+            electrical_profiles: Default::default(),
+        }
+    }
+
+    fn shallow_sim_not_honored() -> SimulationResponseSuccess {
+        SimulationResponseSuccess {
+            base: ReportTrain {
+                path_item_times: vec![0, 1_425_534, 2_186_885],
+                ..Default::default()
+            },
+            provisional: ReportTrain {
+                path_item_times: vec![0, 1_425_534, 2_186_885],
+                ..Default::default()
+            },
+            final_output: CompleteReportTrain {
+                report_train: ReportTrain {
+                    path_item_times: vec![0, 1_425_534, 2_186_885],
+                    ..Default::default()
+                },
+                ..Default::default()
+            },
+            mrsp: Default::default(),
+            electrical_profiles: Default::default(),
+        }
+    }
+
+    #[test]
+    fn test_too_fast() {
+        let schedule = train_schedule_too_fast();
+        let sim = shallow_sim_too_fast();
+        let respect = sim.path_item_respect_margins(&schedule);
+        assert_eq!(*respect, [true, false, true]);
+    }
+
+    #[test]
+    fn test_too_fast_on_interval() {
+        let schedule = train_schedule_too_fast_on_interval();
+        let sim = shallow_sim_too_fast_on_interval();
+        let respect = sim.path_item_respect_margins(&schedule);
+        assert_eq!(*respect, [true, true, false]);
+    }
+
+    #[test]
+    fn test_not_too_fast_if_honored() {
+        let schedule = train_schedule_honored();
+        let sim = shallow_sim_honored();
+        let respect = sim.path_item_respect_margins(&schedule);
+        assert_eq!(*respect, [true, true]);
+    }
+
+    #[test]
+    fn test_times_honored() {
+        let schedule = train_schedule_honored();
+        let sim = shallow_sim_honored();
+        let respect: Vec<bool> = sim.path_item_respect_times(&schedule);
+        assert_eq!(*respect, [true, true]);
+    }
+
+    #[test]
+    fn test_times_no_schedule() {
+        let schedule = train_schedule_no_schedule();
+        let sim = shallow_sim_honored();
+        let respect: Vec<bool> = sim.path_item_respect_times(&schedule);
+        assert_eq!(*respect, [true, true]);
+    }
+
+    #[test]
+    fn test_times_not_honored() {
+        let schedule = train_schedule_not_honored();
+        let sim = shallow_sim_not_honored();
+        let respect: Vec<bool> = sim.path_item_respect_times(&schedule);
+        assert_eq!(*respect, [true, false, true]);
+    }
 }
