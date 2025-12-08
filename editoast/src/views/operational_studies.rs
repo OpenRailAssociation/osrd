@@ -1,8 +1,8 @@
-use crate::models::Project;
-use crate::models::Scenario;
-use crate::models::Study;
 use editoast_models::WorkSchedule;
 use editoast_models::prelude::*;
+use editoast_models::project::Project;
+use editoast_models::scenario::Scenario;
+use editoast_models::study::Study;
 
 #[derive(Debug, Clone, serde::Deserialize, Default, utoipa::ToSchema)]
 pub enum Ordering {

@@ -19,8 +19,6 @@ use utoipa::IntoParams;
 use utoipa::ToSchema;
 
 use crate::error::Result;
-use crate::models;
-use crate::models::Scenario;
 use crate::models::macro_note::MacroNote;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
@@ -28,6 +26,7 @@ use crate::views::pagination::PaginatedList;
 use crate::views::pagination::PaginationQueryParams;
 use crate::views::pagination::PaginationStats;
 use editoast_models::prelude::*;
+use editoast_models::scenario::Scenario;
 use editoast_models::tags::Tags;
 
 #[derive(Debug, Error, EditoastError, derive_more::From)]
@@ -43,17 +42,17 @@ enum MacroNoteError {
 
     #[error(transparent)]
     #[editoast_error(status = 500)]
-    #[from(forward)]
+    #[from(editoast_models::Error, database::DatabaseError)]
     Database(editoast_models::Error),
 }
 
-impl From<models::scenario::Error> for MacroNoteError {
-    fn from(e: models::scenario::Error) -> Self {
+impl From<editoast_models::scenario::Error> for MacroNoteError {
+    fn from(e: editoast_models::scenario::Error) -> Self {
         match e {
-            models::scenario::Error::NotFound { scenario_id } => {
+            editoast_models::scenario::Error::NotFound { scenario_id } => {
                 MacroNoteError::ScenarioNotFound { scenario_id }
             }
-            models::scenario::Error::Database(e) => MacroNoteError::Database(e),
+            editoast_models::scenario::Error::Database(e) => MacroNoteError::Database(e),
         }
     }
 }

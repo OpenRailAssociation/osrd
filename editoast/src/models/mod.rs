@@ -11,22 +11,16 @@ pub use auth_driver::PgAuthDriver;
 
 pub mod catalogue_entry;
 pub mod paced_train;
-pub mod project;
 pub mod railjson;
 pub mod rolling_stock;
 pub mod rolling_stock_livery;
-pub mod scenario;
 pub mod stdcm_search_environment;
-pub mod study;
 pub mod train_schedule_set;
 
 pub use infra::Infra;
 pub use infra_objects::*;
 pub use paced_train::PacedTrain;
-pub use project::Project;
 pub use rolling_stock::RollingStock;
-pub use scenario::Scenario;
-pub use study::Study;
 
 #[cfg(test)]
 mod tests {

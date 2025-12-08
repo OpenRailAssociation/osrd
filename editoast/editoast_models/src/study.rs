@@ -10,11 +10,12 @@ use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
 
-use editoast_models::prelude::*;
-use editoast_models::tags::Tags;
+use crate::prelude::*;
+use crate::project::Project;
+use crate::scenario::Scenario;
+use crate::tags::Tags;
 
-use super::Project;
-use super::Scenario;
+use crate as editoast_models;
 
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize, Model, ToSchema)]
 #[model(table = database::tables::study)]
@@ -122,23 +123,40 @@ impl Study {
     }
 }
 
+#[cfg(any(test, feature = "testing"))]
+impl Study {
+    pub fn fake(name: impl Into<String>, project_id: i64) -> Changeset<Self> {
+        Self::changeset()
+            .name(name.into())
+            .creation_date(Utc::now())
+            .last_modification(Utc::now())
+            .budget(Some(0))
+            .tags(Tags::default())
+            .state("some_state".into())
+            .project_id(project_id)
+    }
+}
+
 #[cfg(test)]
 pub mod tests {
     use pretty_assertions::assert_eq;
 
     use super::*;
-    use crate::models::fixtures::create_project;
-    use crate::models::fixtures::create_study;
     use database::DbConnectionPoolV2;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn study_retrieve() {
         let db_pool = DbConnectionPoolV2::for_tests();
-        let created_project = create_project(&mut db_pool.get_ok(), "test_project_name").await;
+        let created_project = Project::fake("test_project_name")
+            .create(&mut db_pool.get_ok())
+            .await
+            .expect("Failed to create project");
 
         let study_name = "test_study_name";
-        let created_study =
-            create_study(&mut db_pool.get_ok(), study_name, created_project.id).await;
+        let created_study = Study::fake(study_name, created_project.id)
+            .create(&mut db_pool.get_ok())
+            .await
+            .expect("Failed to create study");
 
         // Retrieve a study
         let study = Study::retrieve(db_pool.get_ok(), created_study.id)
@@ -153,21 +171,20 @@ pub mod tests {
     async fn sort_study() {
         let db_pool = DbConnectionPoolV2::for_tests();
 
-        let created_project = create_project(&mut db_pool.get_ok(), "test_project_name").await;
+        let created_project = Project::fake("test_project_name")
+            .create(&mut db_pool.get_ok())
+            .await
+            .expect("Failed to create project");
 
-        let _created_study_1 = create_study(
-            &mut db_pool.get_ok(),
-            "test_study_name_1",
-            created_project.id,
-        )
-        .await;
+        let _created_study_1 = Study::fake("test_study_name_1", created_project.id)
+            .create(&mut db_pool.get_ok())
+            .await
+            .expect("Failed to create study");
 
-        let _created_study_2 = create_study(
-            &mut db_pool.get_ok(),
-            "test_study_name_2",
-            created_project.id,
-        )
-        .await;
+        let _created_study_2 = Study::fake("test_study_name_2", created_project.id)
+            .create(&mut db_pool.get_ok())
+            .await
+            .expect("Failed to create study");
 
         let studies = Study::list(
             &mut db_pool.get_ok(),

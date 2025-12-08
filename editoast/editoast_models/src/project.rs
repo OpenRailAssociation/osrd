@@ -4,15 +4,16 @@ use database::DbConnection;
 use diesel_async::scoped_futures::ScopedBoxFuture;
 use diesel_async::scoped_futures::ScopedFutureExt;
 use editoast_derive::Model;
-use editoast_models::prelude::*;
 use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
 
-use editoast_models::Document;
-use editoast_models::tags::Tags;
+use crate::document::Document;
+use crate::prelude::*;
+use crate::study::Study;
+use crate::tags::Tags;
 
-use super::Study;
+use crate as editoast_models;
 
 #[derive(Clone, Debug, Serialize, Deserialize, Model, ToSchema, PartialEq)]
 #[model(table = database::tables::project)]
@@ -174,8 +175,9 @@ impl Project {
 
                 let id = project.id;
                 let res = f(conn.clone(), project).await;
-                let Ok(res) = res else {
-                    return Ok(res);
+                let res = match res {
+                    Ok(t) => t,
+                    Err(e) => return Ok(Err(e)),
                 };
 
                 Project::changeset()
@@ -191,6 +193,18 @@ impl Project {
     }
 }
 
+#[cfg(any(test, feature = "testing"))]
+impl Project {
+    pub fn fake(name: impl Into<String>) -> Changeset<Self> {
+        Self::changeset()
+            .name(name.into())
+            .budget(Some(0))
+            .creation_date(Utc::now())
+            .last_modification(Utc::now())
+            .tags(Tags::default())
+    }
+}
+
 #[cfg(test)]
 pub mod tests {
     use super::*;
@@ -198,20 +212,24 @@ pub mod tests {
     use database::DbConnectionPoolV2;
     use pretty_assertions::assert_eq;
 
-    use crate::models::fixtures::create_project;
-
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn project_creation() {
         let db_pool = DbConnectionPoolV2::for_tests();
         let project_name = "test_project_name";
-        let created_project = create_project(&mut db_pool.get_ok(), project_name).await;
+        let created_project = Project::fake(project_name)
+            .create(&mut db_pool.get_ok())
+            .await
+            .expect("Failed to create project");
         assert_eq!(created_project.name, project_name);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn project_retrieve() {
         let db_pool = DbConnectionPoolV2::for_tests();
-        let created_project = create_project(&mut db_pool.get_ok(), "test_project_name").await;
+        let created_project = Project::fake("test_project_name")
+            .create(&mut db_pool.get_ok())
+            .await
+            .expect("Failed to create project");
 
         // Get a project
         let project = Project::retrieve(db_pool.get_ok(), created_project.id)
@@ -225,7 +243,10 @@ pub mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn project_update() {
         let db_pool = DbConnectionPoolV2::for_tests();
-        let mut created_project = create_project(&mut db_pool.get_ok(), "test_project_name").await;
+        let mut created_project = Project::fake("test_project_name")
+            .create(&mut db_pool.get_ok())
+            .await
+            .expect("Failed to create project");
 
         let project_name = "update_name";
         let project_budget = Some(1000);
@@ -250,8 +271,14 @@ pub mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn sort_project() {
         let db_pool = DbConnectionPoolV2::for_tests();
-        let _created_project_1 = create_project(&mut db_pool.get_ok(), "test_project_name_1").await;
-        let _created_project_2 = create_project(&mut db_pool.get_ok(), "test_project_name_2").await;
+        Project::fake("test_project_name_1")
+            .create(&mut db_pool.get_ok())
+            .await
+            .expect("Failed to create project");
+        Project::fake("test_project_name_2")
+            .create(&mut db_pool.get_ok())
+            .await
+            .expect("Failed to create project");
 
         let projects = Project::list(
             &mut db_pool.get_ok(),
@@ -270,8 +297,14 @@ pub mod tests {
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn update_project_prune_document() {
         let db_pool = DbConnectionPoolV2::for_tests();
-        let mut project1 = create_project(&mut db_pool.get_ok(), "Project 1").await;
-        let mut project2 = create_project(&mut db_pool.get_ok(), "Project 2").await;
+        let mut project1 = Project::fake("Project 1")
+            .create(&mut db_pool.get_ok())
+            .await
+            .expect("Failed to create project");
+        let mut project2 = Project::fake("Project 2")
+            .create(&mut db_pool.get_ok())
+            .await
+            .expect("Failed to create project");
         let image = Document::changeset()
             .content_type("data/text".to_owned())
             .data("wassup?".bytes().collect())
@@ -320,10 +353,22 @@ pub mod tests {
     async fn delete_project_prune_document() {
         let db_pool = DbConnectionPoolV2::for_tests();
 
-        let mut project1 = create_project(&mut db_pool.get_ok(), "Project 1").await;
-        let mut project2 = create_project(&mut db_pool.get_ok(), "Project 2").await;
-        let mut project3 = create_project(&mut db_pool.get_ok(), "Project 3").await;
-        let project4 = create_project(&mut db_pool.get_ok(), "Project 4").await;
+        let mut project1 = Project::fake("Project 1")
+            .create(&mut db_pool.get_ok())
+            .await
+            .expect("Failed to create project");
+        let mut project2 = Project::fake("Project 2")
+            .create(&mut db_pool.get_ok())
+            .await
+            .expect("Failed to create project");
+        let mut project3 = Project::fake("Project 3")
+            .create(&mut db_pool.get_ok())
+            .await
+            .expect("Failed to create project");
+        let project4 = Project::fake("Project 4")
+            .create(&mut db_pool.get_ok())
+            .await
+            .expect("Failed to create project");
         let image1 = Document::changeset()
             .content_type("data/text".to_owned())
             .data("image 1".bytes().collect())

@@ -26,14 +26,14 @@ use super::operational_studies::OperationalStudiesOrderingParam;
 use super::pagination::PaginationStats;
 use crate::error::InternalError;
 use crate::error::Result;
-use crate::models::Project;
-use crate::models::Study;
-use crate::models::project::Error as ProjectModelError;
-use crate::models::study::Error as StudyModelError;
 use crate::views::pagination::PaginatedList as _;
 use crate::views::pagination::PaginationQueryParams;
 use crate::views::project::ProjectError;
 use editoast_models::prelude::*;
+use editoast_models::project::Error as ProjectModelError;
+use editoast_models::project::Project;
+use editoast_models::study::Error as StudyModelError;
+use editoast_models::study::Study;
 use editoast_models::tags::Tags;
 
 fn validate_study_dates(
@@ -65,7 +65,7 @@ pub enum StudyError {
     ProjectNotFound { project_id: i64 },
     #[error(transparent)]
     #[editoast_error(status = 500)]
-    #[from(forward)]
+    #[from(editoast_models::Error, database::DatabaseError)]
     Database(editoast_models::Error),
 }
 
@@ -517,10 +517,10 @@ pub mod tests {
     use serde_json::json;
 
     use super::*;
-    use crate::models::Study;
     use crate::models::fixtures::create_project;
     use crate::models::fixtures::create_study;
     use crate::views::test_app::TestAppBuilder;
+    use editoast_models::study::Study;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn study_post() {

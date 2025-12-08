@@ -25,11 +25,7 @@ use utoipa::ToSchema;
 
 use crate::error::InternalError;
 use crate::error::Result;
-use crate::models;
 use crate::models::Infra;
-use crate::models::Project;
-use crate::models::Study;
-use crate::models::scenario::Scenario;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
 use crate::views::operational_studies::OperationalStudiesOrderingParam;
@@ -38,6 +34,9 @@ use crate::views::pagination::PaginationQueryParams;
 use crate::views::pagination::PaginationStats;
 use crate::views::project::ProjectError;
 use crate::views::study::StudyError;
+use editoast_models::project::Project;
+use editoast_models::scenario::Scenario;
+use editoast_models::study::Study;
 use editoast_models::tags::Tags;
 use editoast_models::timetable::Timetable;
 
@@ -60,18 +59,18 @@ pub(in crate::views) struct ScenarioCreateForm {
     pub electrical_profile_set_id: Option<i64>,
 }
 
-impl From<ScenarioCreateForm> for Changeset<Scenario> {
-    fn from(scenario: ScenarioCreateForm) -> Self {
+impl ScenarioCreateForm {
+    pub fn into_changeset(self) -> Changeset<Scenario> {
         Scenario::changeset()
-            .name(scenario.name)
-            .description(scenario.description)
+            .name(self.name)
+            .description(self.description)
             .creation_date(Utc::now())
             .last_modification(Utc::now())
-            .infra_id(scenario.infra_id)
-            .timetable_id(scenario.timetable_id)
-            .tags(scenario.tags)
-            .electrical_profile_set_id(scenario.electrical_profile_set_id)
-            .study_id(scenario.study_id)
+            .infra_id(self.infra_id)
+            .timetable_id(self.timetable_id)
+            .tags(self.tags)
+            .electrical_profile_set_id(self.electrical_profile_set_id)
+            .study_id(self.study_id)
     }
 }
 
@@ -97,28 +96,28 @@ pub enum ScenarioError {
 
     #[error(transparent)]
     #[editoast_error(status = 500)]
-    #[from(forward)]
+    #[from(editoast_models::Error, database::DatabaseError)]
     Database(editoast_models::Error),
 }
 
-impl From<models::scenario::Error> for ScenarioError {
-    fn from(e: models::scenario::Error) -> Self {
+impl From<editoast_models::scenario::Error> for ScenarioError {
+    fn from(e: editoast_models::scenario::Error) -> Self {
         match e {
-            models::scenario::Error::NotFound { scenario_id } => {
+            editoast_models::scenario::Error::NotFound { scenario_id } => {
                 ScenarioError::NotFound { scenario_id }
             }
-            models::scenario::Error::Database(e) => ScenarioError::Database(e),
+            editoast_models::scenario::Error::Database(e) => ScenarioError::Database(e),
         }
     }
 }
 
-impl From<models::study::Error> for ScenarioError {
-    fn from(e: models::study::Error) -> Self {
+impl From<editoast_models::study::Error> for ScenarioError {
+    fn from(e: editoast_models::study::Error) -> Self {
         match e {
-            models::study::Error::NotFound { study_id } => {
+            editoast_models::study::Error::NotFound { study_id } => {
                 ScenarioError::StudyNotFound { study_id }
             }
-            models::study::Error::Database(e) => ScenarioError::Database(e),
+            editoast_models::study::Error::Database(e) => ScenarioError::Database(e),
         }
     }
 }
@@ -200,7 +199,7 @@ pub(in crate::views) async fn create(
     let timetable_id = data.timetable_id;
     let infra_id = data.infra_id;
     let study_id = data.study_id;
-    let scenario_cs: Changeset<Scenario> = data.into();
+    let scenario_cs = data.into_changeset();
 
     let details = Study::transactional_content_update(
         db_pool.get().await?,
@@ -297,14 +296,14 @@ pub(in crate::views) struct ScenarioPatchForm {
     pub electrical_profile_set_id: Option<Option<i64>>,
 }
 
-impl From<ScenarioPatchForm> for <Scenario as editoast_models::prelude::Model>::Changeset {
-    fn from(scenario: ScenarioPatchForm) -> Self {
+impl ScenarioPatchForm {
+    pub fn into_changeset(self) -> Changeset<Scenario> {
         Scenario::changeset()
-            .flat_name(scenario.name)
-            .flat_description(scenario.description)
-            .flat_tags(scenario.tags)
-            .flat_infra_id(scenario.infra_id)
-            .flat_electrical_profile_set_id(scenario.electrical_profile_set_id)
+            .flat_name(self.name)
+            .flat_description(self.description)
+            .flat_tags(self.tags)
+            .flat_infra_id(self.infra_id)
+            .flat_electrical_profile_set_id(self.electrical_profile_set_id)
             .last_modification(Utc::now())
     }
 }
@@ -346,7 +345,7 @@ pub(in crate::views) async fn patch(
                     .await?;
                 }
 
-                let scenario_cs: Changeset<Scenario> = form.into();
+                let scenario_cs = form.into_changeset();
                 let scenario = scenario_cs
                     .update_or_fail(&mut conn, scenario_id, || ScenarioError::NotFound {
                         scenario_id,

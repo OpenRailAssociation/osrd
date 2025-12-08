@@ -11,6 +11,7 @@ testing = []
 chrono.workspace = true
 common.workspace = true
 database.workspace = true
+derive_more.workspace = true
 diesel.workspace = true
 diesel-async.workspace = true
 diesel_json.workspace = true
