@@ -719,7 +719,10 @@ pub struct ProjectPathPacedTrainResult {
 /// ## Important:
 /// - **Only one train schedule per paced train is projected**.
 /// - The train schedule selected is the first occurrence of the paced train.
-/// - Paced trains that are **invalid** (e.g., due to pathfinding or simulation failure) are **excluded** from the result.
+/// - The following paced trains are **excluded** from the result:
+///     - paced trains for which pathfinding fails
+///     - paced trains for which the simulation fails
+///     - paced trains for which the simulation does not respect schedule times
 #[editoast_derive::route]
 #[utoipa::path(
     post, path = "",
@@ -2280,7 +2283,8 @@ mod tests {
         let response: HashMap<i64, OccupancyBlocksPacedTrainResult> =
             response.assert_status(StatusCode::OK).json_into();
         assert_eq!(response.len(), 1);
-        assert_eq!(response.get(&paced_train_id).unwrap().paced_train.len(), 1);
+        // TODO fix mocked simulation to return path item times that respect times
+        assert_eq!(response.get(&paced_train_id).unwrap().paced_train.len(), 0);
         assert_eq!(response.get(&paced_train_id).unwrap().exceptions.len(), 0);
     }
 

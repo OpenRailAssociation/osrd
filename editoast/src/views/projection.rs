@@ -369,7 +369,7 @@ pub async fn compute_projected_train_paths<T: TrainScheduleLike>(
     .await?;
 
     // 2. Extracts train simulation details and computes unique hashes for projected train paths.
-    let trains_details = extract_train_details(simulations).await;
+    let trains_details = extract_train_details(simulations, train_schedules).await;
 
     let train_hashes_to_idx: HashMap<String, Vec<usize>> = trains_details
         .iter()
@@ -743,18 +743,30 @@ fn project_train_path_op(
     projection_curves
 }
 
-pub async fn extract_train_details(
+pub async fn extract_train_details<T: TrainScheduleLike>(
     simulations: Vec<(Arc<simulation::Response>, Arc<PathfindingResult>)>,
+    train_schedules: &[T],
 ) -> Vec<Option<TrainSimulationDetails>> {
+    assert_eq!(train_schedules.len(), simulations.len());
+
     simulations
         .into_iter()
-        .map(|(sim, pathfinding_result)| {
+        .zip(train_schedules)
+        .map(|((sim, pathfinding_result), train_schedule)| {
             let simulation::Response::Success(sim) = sim.as_ref() else {
                 return None;
             };
             let PathfindingResult::Success(pathfinding_result) = pathfinding_result.as_ref() else {
                 return None;
             };
+            let respect_times = sim
+                .path_item_respect_times(train_schedule)
+                .into_iter()
+                .all(|path_item| path_item);
+            if !respect_times {
+                return None;
+            }
+
             Some(TrainSimulationDetails {
                 positions: sim.final_output.report_train.positions.clone(),
                 times: sim.final_output.report_train.times.clone(),
