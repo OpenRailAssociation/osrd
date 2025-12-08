@@ -15,6 +15,7 @@ import useAuthz from 'common/authorization/hooks/useAuthz';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { ModalBodySNCF, ModalHeaderSNCF } from 'common/BootstrapSNCF/ModalSNCF';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
+import SwitchSNCF, { SWITCH_TYPES } from 'common/BootstrapSNCF/SwitchSNCF';
 import { updateUserPreferences } from 'reducers/user';
 import { getUserPreferences } from 'reducers/user/userSelectors';
 import { useAppDispatch } from 'store';
@@ -104,6 +105,23 @@ const UserSettings = () => {
         <small id="safeWordHelpBlock" className="form-text text-muted">
           {t('nav-bar.safeWordHelp')}
         </small>
+        <div className="d-flex align-items-center mt-4">
+          <span className="mr-3">{t('nav-bar.useNewTimesStopsTable')}</span>
+          <SwitchSNCF
+            id="useNewTimesStopsTable"
+            type={SWITCH_TYPES.switch}
+            name="useNewTimesStopsTable"
+            onChange={() =>
+              dispatch(
+                updateUserPreferences({
+                  ...userPreferences,
+                  useNewTimesStopsTable: !userPreferences.useNewTimesStopsTable,
+                })
+              )
+            }
+            checked={userPreferences.useNewTimesStopsTable}
+          />
+        </div>
         {isSuperUser && !impersonatedUser && (
           <>
             <div className="font-weight-medium mb-2 mt-2">{t('nav-bar.impersonation')}</div>

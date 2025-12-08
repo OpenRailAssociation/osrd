@@ -3,13 +3,18 @@ import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 import type { ApiError } from 'common/api/baseGeneratedApis';
 import type { Role } from 'common/api/osrdEditoastApi';
 
+export type UserPreferences = {
+  safeWord: string;
+  useNewTimesStopsTable: boolean;
+};
+
 export type UserState = {
   isLogged: boolean;
   impersonatedUser?: UserInfo;
   loginError?: ApiError;
   userId: number;
   username: string;
-  userPreferences: { safeWord: string };
+  userPreferences: UserPreferences;
   userRoles: Role[];
   account: Record<string, string>;
 };
@@ -30,7 +35,7 @@ export const userInitialState: UserState = {
   impersonatedUser: undefined,
   loginError: undefined,
   username: '',
-  userPreferences: { safeWord: '' },
+  userPreferences: { safeWord: '', useNewTimesStopsTable: false },
   userId: -1,
   userRoles: [],
   account: {},
@@ -73,7 +78,7 @@ export const userSlice = createSlice({
         state.userId = -1;
       }
     },
-    updateUserPreferences(state, action: PayloadAction<{ safeWord: string }>) {
+    updateUserPreferences(state, action: PayloadAction<UserPreferences>) {
       state.userPreferences = action.payload;
     },
   },
