@@ -352,6 +352,7 @@ pub(in crate::views) async fn simulation_summary(
                                 SummaryResponse::summarize_simulation(
                                     Arc::unwrap_or_clone(simulation),
                                     Arc::unwrap_or_clone(path),
+                                    &simulation_context.train_schedule,
                                 ),
                             );
                         });
@@ -364,6 +365,7 @@ pub(in crate::views) async fn simulation_summary(
                         paced_train: SummaryResponse::summarize_simulation(
                             Arc::unwrap_or_clone(simulation),
                             Arc::unwrap_or_clone(path),
+                            &simulation_context.train_schedule,
                         ),
                         exceptions: HashMap::new(),
                     },
@@ -1883,6 +1885,8 @@ mod tests {
                     path_item_times_final: vec![0, 1, 2, 3],
                     path_item_times_provisional: vec![0, 1, 2, 3],
                     path_item_times_base: vec![0, 1, 2, 3],
+                    path_item_respect_times: vec![true, false, true, false],
+                    path_item_respect_margins: vec![true, true, true, true],
                     path_item_positions: vec![0, 1, 2, 3]
                 },
                 exceptions: [(
@@ -1896,6 +1900,8 @@ mod tests {
                         path_item_times_final: vec![0, 1, 2, 3],
                         path_item_times_provisional: vec![0, 1, 2, 3],
                         path_item_times_base: vec![0, 1, 2, 3],
+                        path_item_respect_times: vec![true, false, true, false],
+                        path_item_respect_margins: vec![true, true, true, true],
                         path_item_positions: vec![0, 1, 2, 3]
                     }
                 )]

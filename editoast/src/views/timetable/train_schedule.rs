@@ -534,6 +534,7 @@ pub(in crate::views) async fn simulation_summary(
         let simulation_summary_result = SummaryResponse::summarize_simulation(
             Arc::unwrap_or_clone(sim),
             Arc::unwrap_or_clone(path),
+            train_schedule,
         );
         simulation_summaries.insert(train_schedule.id, simulation_summary_result);
     }
