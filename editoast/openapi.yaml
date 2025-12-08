@@ -308,6 +308,23 @@ paths:
                           type: string
                         type:
                           $ref: '#/components/schemas/SubjectType'
+  /catalogue_entry:
+    post:
+      tags:
+      - catalogue_entry
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CatalogueEntryCreateForm'
+        required: true
+      responses:
+        '201':
+          description: Catalogue entry
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CatalogueEntry'
   /documents:
     post:
       tags:
@@ -4683,6 +4700,23 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/SimulationResponse'
+  /train_schedule_set:
+    post:
+      tags:
+      - train_schedule_set
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TrainScheduleSetCreateForm'
+        required: true
+      responses:
+        '201':
+          description: Train schedule set
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TrainScheduleSetResponse'
   /version:
     get:
       responses:
@@ -5062,6 +5096,25 @@ components:
           maxLength: 255
           minLength: 1
       additionalProperties: false
+    CatalogueEntry:
+      type: object
+      required:
+      - id
+      properties:
+        id:
+          type: integer
+          format: int64
+        name:
+          type:
+          - string
+          - 'null'
+    CatalogueEntryCreateForm:
+      type: object
+      properties:
+        name:
+          type:
+          - string
+          - 'null'
     Comfort:
       type: string
       enum:
@@ -14228,6 +14281,62 @@ components:
           timetable_id:
             type: integer
             format: int64
+    TrainScheduleSet:
+      type: object
+      required:
+      - id
+      - description
+      - published
+      - is_sandbox
+      properties:
+        catalogue_entry_id:
+          type:
+          - integer
+          - 'null'
+          format: int64
+        description:
+          type: string
+        id:
+          type: integer
+          format: int64
+        is_sandbox:
+          type: boolean
+        name:
+          type:
+          - string
+          - 'null'
+        published:
+          type: boolean
+    TrainScheduleSetCreateForm:
+      type: object
+      required:
+      - description
+      - published
+      properties:
+        catalogue_entry_id:
+          type:
+          - integer
+          - 'null'
+          format: int64
+        description:
+          type: string
+        name:
+          type:
+          - string
+          - 'null'
+        published:
+          type: boolean
+    TrainScheduleSetResponse:
+      allOf:
+      - $ref: '#/components/schemas/TrainScheduleSet'
+      - type: object
+        required:
+        - train_schedule_count
+        properties:
+          train_schedule_count:
+            type: integer
+            format: int64
+            minimum: 0
     Version:
       type: object
       required:

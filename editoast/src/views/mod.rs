@@ -1,4 +1,5 @@
 mod authz;
+mod catalogue_entry;
 mod documents;
 pub mod electrical_profiles;
 pub mod fonts;
@@ -22,6 +23,7 @@ pub mod study;
 pub mod sub_categories;
 pub mod temporary_speed_limits;
 pub mod timetable;
+mod train_schedule_set;
 pub mod work_schedules;
 mod worker_load;
 
@@ -453,6 +455,15 @@ fn service_router() -> router::DocumentedRouter {
                             .route("/", put!(rolling_stock::towed::put_by_id))
                             .route("/locked", patch!(rolling_stock::towed::patch_by_id_locked))
                     })
+            })
+            //
+            // train schedule sets & catalogue entries
+            //
+            .nests("/train_schedule_set", |path| {
+                path.route("/", post!(train_schedule_set::post))
+            })
+            .nests("/catalogue_entry", |path| {
+                path.route("/", post!(catalogue_entry::post))
             })
     })
 }

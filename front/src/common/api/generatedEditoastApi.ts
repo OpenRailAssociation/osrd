@@ -1,6 +1,7 @@
 import { baseEditoastApi as api } from './baseGeneratedApis';
 export const addTagTypes = [
   'authz',
+  'catalogue_entry',
   'documents',
   'electrical_profiles',
   'fonts',
@@ -27,6 +28,7 @@ export const addTagTypes = [
   'studies',
   'sub_categories',
   'temporary_speed_limits',
+  'train_schedule_set',
   'work_schedules',
   'worker',
 ] as const;
@@ -75,6 +77,14 @@ const injectedRtkApi = api
           },
         }),
         providesTags: ['authz'],
+      }),
+      postCatalogueEntry: build.mutation<PostCatalogueEntryApiResponse, PostCatalogueEntryApiArg>({
+        query: (queryArg) => ({
+          url: `/catalogue_entry`,
+          method: 'POST',
+          body: queryArg.catalogueEntryCreateForm,
+        }),
+        invalidatesTags: ['catalogue_entry'],
       }),
       postDocuments: build.mutation<PostDocumentsApiResponse, PostDocumentsApiArg>({
         query: (queryArg) => ({
@@ -1359,6 +1369,17 @@ const injectedRtkApi = api
         }),
         providesTags: ['train_schedule'],
       }),
+      postTrainScheduleSet: build.mutation<
+        PostTrainScheduleSetApiResponse,
+        PostTrainScheduleSetApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/train_schedule_set`,
+          method: 'POST',
+          body: queryArg.trainScheduleSetCreateForm,
+        }),
+        invalidatesTags: ['train_schedule_set'],
+      }),
       getVersion: build.query<GetVersionApiResponse, GetVersionApiArg>({
         query: () => ({ url: `/version` }),
       }),
@@ -1515,6 +1536,10 @@ export type GetAuthzByResourceTypeAndResourceIdApiArg = {
   resourceId: number;
   page?: number;
   pageSize?: number;
+};
+export type PostCatalogueEntryApiResponse = /** status 201 Catalogue entry */ CatalogueEntry;
+export type PostCatalogueEntryApiArg = {
+  catalogueEntryCreateForm: CatalogueEntryCreateForm;
 };
 export type PostDocumentsApiResponse =
   /** status 201 The document was created */ NewDocumentResponse;
@@ -2634,6 +2659,11 @@ export type GetTrainScheduleByIdSimulationApiArg = {
   infraId: number;
   electricalProfileSetId?: number;
 };
+export type PostTrainScheduleSetApiResponse =
+  /** status 201 Train schedule set */ TrainScheduleSetResponse;
+export type PostTrainScheduleSetApiArg = {
+  trainScheduleSetCreateForm: TrainScheduleSetCreateForm;
+};
 export type GetVersionApiResponse = /** status 200 Return the service version */ Version;
 export type GetVersionApiArg = void;
 export type PostWorkSchedulesApiResponse =
@@ -2751,6 +2781,13 @@ export type PaginationStats = {
   previous: number | null;
 };
 export type SubjectType = 'User' | 'Group';
+export type CatalogueEntry = {
+  id: number;
+  name?: string | null;
+};
+export type CatalogueEntryCreateForm = {
+  name?: string | null;
+};
 export type NewDocumentResponse = {
   document_key: number;
 };
@@ -4928,6 +4965,23 @@ export type TowedRollingStockLockedForm = {
 export type TrainScheduleForm = TrainSchedule & {
   /** Timetable attached to the train schedule */
   timetable_id?: number | null;
+};
+export type TrainScheduleSet = {
+  catalogue_entry_id?: number | null;
+  description: string;
+  id: number;
+  is_sandbox: boolean;
+  name?: string | null;
+  published: boolean;
+};
+export type TrainScheduleSetResponse = TrainScheduleSet & {
+  train_schedule_count: number;
+};
+export type TrainScheduleSetCreateForm = {
+  catalogue_entry_id?: number | null;
+  description: string;
+  name?: string | null;
+  published: boolean;
 };
 export type Version = {
   git_describe: string | null;
