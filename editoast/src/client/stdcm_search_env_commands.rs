@@ -1,7 +1,6 @@
 use crate::models::Infra;
 use crate::models::Scenario;
 use crate::models::stdcm_search_environment::StdcmSearchEnvironment;
-use crate::models::timetable::Timetable;
 use chrono::DateTime;
 use chrono::Duration;
 use chrono::Utc;
@@ -12,6 +11,7 @@ use database::DbConnectionPoolV2;
 use editoast_models::ElectricalProfileSet;
 use editoast_models::WorkScheduleGroup;
 use editoast_models::prelude::*;
+use editoast_models::timetable::Timetable;
 use std::collections::HashMap;
 use std::collections::HashSet;
 use std::fs::File;

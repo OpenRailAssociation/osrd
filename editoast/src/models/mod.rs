@@ -19,8 +19,6 @@ pub mod scenario;
 pub mod stdcm_search_environment;
 pub mod study;
 
-pub mod timetable;
-
 pub use infra::Infra;
 pub use infra_objects::*;
 pub use paced_train::PacedTrain;

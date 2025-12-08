@@ -30,7 +30,6 @@ use crate::models::Infra;
 use crate::models::Project;
 use crate::models::Study;
 use crate::models::scenario::Scenario;
-use crate::models::timetable::Timetable;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
 use crate::views::operational_studies::OperationalStudiesOrderingParam;
@@ -40,6 +39,7 @@ use crate::views::pagination::PaginationStats;
 use crate::views::project::ProjectError;
 use crate::views::study::StudyError;
 use editoast_models::tags::Tags;
+use editoast_models::timetable::Timetable;
 
 #[derive(IntoParams, Deserialize)]
 pub(in crate::views) struct ScenarioIdParam {

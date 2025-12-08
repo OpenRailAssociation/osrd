@@ -1,5 +1,5 @@
-use crate::models::timetable::Timetable;
 use database::DbConnectionPoolV2;
+use editoast_models::timetable::Timetable;
 use std::sync::Arc;
 
 pub async fn run_garbage_collector(db_pool: Arc<DbConnectionPoolV2>) -> anyhow::Result<()> {

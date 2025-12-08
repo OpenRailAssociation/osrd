@@ -67,12 +67,12 @@ use crate::models::Infra;
 use crate::models::paced_train::OccurrenceId;
 use crate::models::paced_train::PacedTrainChangeset;
 use crate::models::paced_train::TrainId;
-use crate::models::timetable::Timetable;
-use crate::models::timetable::TimetableWithTrains;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
 use crate::views::timetable::simulation::SimulationResponseSuccess;
 use editoast_models::prelude::*;
+use editoast_models::timetable::Timetable;
+use editoast_models::timetable::TimetableWithTrains;
 use editoast_models::train_schedule::TrainScheduleChangeset;
 
 #[derive(Debug, Error, EditoastError, derive_more::From)]

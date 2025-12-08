@@ -11,9 +11,11 @@ use editoast_derive::Model;
 use futures_util::stream::TryStreamExt;
 use std::ops::DerefMut;
 
+use crate::prelude::*;
+use crate::train_schedule::TrainSchedule;
 use database::DbConnection;
-use editoast_models::prelude::*;
-use editoast_models::train_schedule::TrainSchedule;
+
+use crate as editoast_models;
 
 #[derive(Debug, Default, Clone, Model)]
 #[cfg_attr(test, derive(serde::Deserialize))]
@@ -80,7 +82,7 @@ impl Timetable {
     /// `?`: unscheduled arrival times.
     /// `|`: scheduled arrival times.
     ///
-    /// ```
+    /// ```text
     ///                       min_time               max_time
     ///     Time Window           |----------------------|
     /// Train 1 ✅         |-------------|
@@ -200,14 +202,16 @@ pub mod tests {
     use std::collections::HashSet;
 
     use super::*;
-    use crate::models::fixtures::create_timetable;
+    use crate::train_schedule::TrainScheduleChangeset;
     use database::DbConnectionPoolV2;
-    use editoast_models::train_schedule::TrainScheduleChangeset;
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn test_schedules_in_time_window() {
         let db_pool = DbConnectionPoolV2::for_tests();
-        let timetable = create_timetable(&mut db_pool.get_ok()).await;
+        let timetable = Timetable::changeset()
+            .create(&mut db_pool.get_ok())
+            .await
+            .expect("Failed to create timetable");
         // Note that this train has a last arrival at PT50M
         let min_time = Utc.with_ymd_and_hms(2025, 1, 1, 12, 0, 0).unwrap();
         let max_time = Utc.with_ymd_and_hms(2025, 1, 1, 14, 0, 0).unwrap();

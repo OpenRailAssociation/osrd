@@ -113,11 +113,11 @@ pub mod tests {
     use crate::models::fixtures::create_temporary_speed_limit_group;
     use crate::models::fixtures::create_timetable;
     use crate::models::fixtures::create_work_schedule_group;
-    use crate::models::timetable::Timetable;
     use database::DbConnectionPoolV2;
     use editoast_models::ElectricalProfileSet;
     use editoast_models::TemporarySpeedLimitGroup;
     use editoast_models::WorkScheduleGroup;
+    use editoast_models::timetable::Timetable;
 
     pub async fn stdcm_search_env_fixtures(
         conn: &mut DbConnection,

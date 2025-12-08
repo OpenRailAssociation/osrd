@@ -39,7 +39,6 @@ use crate::error::InternalError;
 use crate::error::Result;
 use crate::models::Infra;
 use crate::models::RollingStock;
-use crate::models::timetable::Timetable;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
 use crate::views::timetable::PhysicsConsistParameters;
@@ -48,6 +47,7 @@ use crate::views::timetable::simulation::SimulationResponseSuccess;
 use crate::views::timetable::simulation::consist_train_simulation_batch;
 use editoast_models::WorkSchedule;
 use editoast_models::prelude::*;
+use editoast_models::timetable::Timetable;
 use editoast_models::train_schedule::TrainSchedule;
 
 #[derive(Serialize, Deserialize, Clone, Debug, PartialEq, ToSchema)]
