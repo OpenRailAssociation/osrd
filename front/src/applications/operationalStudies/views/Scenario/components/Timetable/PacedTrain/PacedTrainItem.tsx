@@ -247,7 +247,7 @@ const PacedTrainItem = ({
       : undefined;
 
   const worstCase = useMemo(
-    () => getOccurrencesWorstStatus(pacedTrain),
+    () => getOccurrencesWorstStatus(pacedTrain.summary, pacedTrain.exceptions),
     [pacedTrain.summary, pacedTrain.exceptions]
   );
 
