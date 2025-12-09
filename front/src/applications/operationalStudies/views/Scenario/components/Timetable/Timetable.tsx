@@ -1,7 +1,8 @@
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 
 import cx from 'classnames';
 
+import type { TrainScheduleSet } from 'common/api/osrdEditoastApi';
 import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
 import type {
   TimetableItemId,
@@ -11,6 +12,7 @@ import type {
 
 import CalendarTrainList from './CalendarTrainList';
 import TimetableToolbar from './TimetableToolbar';
+import TrainScheduleSetTab from './TrainScheduleSetTab';
 import useFilterTimetableItems from './useFilterTimetableItems';
 
 type TimetableProps = {
@@ -43,9 +45,54 @@ const Timetable = ({
   const [showTrainDetails, setShowTrainDetails] = useState(false);
   const [isSelectMode, setIsSelectMode] = useState(false);
   const [timetableMode, setTimetableMode] = useState<'calendar' | 'package'>('calendar');
+  const [expandedTrainScheduleSetIds, setExpandedTrainScheduleSetIds] = useState<Set<number>>(
+    new Set()
+  );
+
+  // TODO Package : replace this by the endpoint when back ready
+  const trainScheduleSets: TrainScheduleSet[] = [
+    {
+      id: 0,
+      description: '',
+      is_sandbox: true,
+      published: false,
+    },
+  ];
 
   const { filteredTimetableItems, ...timetableFilters } =
     useFilterTimetableItems(timetableItemsWithDetails);
+
+  const handleClickPackage = useCallback(
+    (id: number) => {
+      const newExpandedSet = new Set(expandedTrainScheduleSetIds);
+      if (newExpandedSet.has(id)) {
+        newExpandedSet.delete(id);
+      } else {
+        newExpandedSet.add(id);
+      }
+      setExpandedTrainScheduleSetIds(newExpandedSet);
+    },
+    [expandedTrainScheduleSetIds]
+  );
+
+  const handleSelectPackage = useCallback(
+    (trainIds: TimetableItemId[]) => {
+      const allSelected = trainIds.every((id) => selectedTimetableItemIds.includes(id));
+      if (allSelected) {
+        // Deselect all
+        setSelectedTimetableItemIds((prevSelectedIds) =>
+          prevSelectedIds.filter((id) => !trainIds.includes(id))
+        );
+      } else {
+        // Select all
+        setSelectedTimetableItemIds((prevSelectedIds) => [
+          ...prevSelectedIds,
+          ...trainIds.filter((id) => !prevSelectedIds.includes(id)),
+        ]);
+      }
+    },
+    [selectedTimetableItemIds]
+  );
 
   return (
     <div className="scenario-timetable">
@@ -70,18 +117,59 @@ const Timetable = ({
           timetableMode={timetableMode}
           setTimetableMode={setTimetableMode}
         />
-        <CalendarTrainList
-          setDisplayTimetableItemManagement={setDisplayTimetableItemManagement}
-          upsertTimetableItems={upsertTimetableItems}
-          setTimetableItemToEditData={setTimetableItemToEditData}
-          setSelectedTimetableItemIds={setSelectedTimetableItemIds}
-          removeAndUnselectTrains={removeAndUnselectTrains}
-          timetableItemToEditData={timetableItemToEditData}
-          timetableItemsWithDetails={filteredTimetableItems}
-          selectedTimetableItemIds={selectedTimetableItemIds}
-          projectingOnSimulatedPathException={projectingOnSimulatedPathException}
-          isSelectMode={isSelectMode}
-        />
+        {timetableMode === 'calendar' ? (
+          <CalendarTrainList
+            setDisplayTimetableItemManagement={setDisplayTimetableItemManagement}
+            upsertTimetableItems={upsertTimetableItems}
+            setTimetableItemToEditData={setTimetableItemToEditData}
+            setSelectedTimetableItemIds={setSelectedTimetableItemIds}
+            removeAndUnselectTrains={removeAndUnselectTrains}
+            timetableItemToEditData={timetableItemToEditData}
+            timetableItemsWithDetails={filteredTimetableItems}
+            selectedTimetableItemIds={selectedTimetableItemIds}
+            projectingOnSimulatedPathException={projectingOnSimulatedPathException}
+            isSelectMode={isSelectMode}
+          />
+        ) : (
+          trainScheduleSets.length > 0 &&
+          trainScheduleSets.map((trainScheduleSet) => {
+            // TODO Package : filter trains depending on their train_schedule_set_id when back ready
+            const trainScheduleSetTrains = [...filteredTimetableItems];
+            const trainScheduleSetTrainsIds = trainScheduleSetTrains.map((train) => train.id);
+            const isSelected = trainScheduleSetTrains.every((train) =>
+              selectedTimetableItemIds.includes(train.id)
+            );
+            const isIndeterminate =
+              !isSelected &&
+              trainScheduleSetTrains.some((train) => selectedTimetableItemIds.includes(train.id));
+
+            return (
+              <TrainScheduleSetTab
+                key={trainScheduleSet.id}
+                trainScheduleSet={trainScheduleSet}
+                handleClickPackage={handleClickPackage}
+                handleSelectPackage={() => handleSelectPackage(trainScheduleSetTrainsIds)}
+                isSelectMode={isSelectMode}
+                isSelected={isSelected}
+                isIndeterminate={isIndeterminate}
+                isTrainListOpen={expandedTrainScheduleSetIds.has(0)}
+              >
+                <CalendarTrainList
+                  setDisplayTimetableItemManagement={setDisplayTimetableItemManagement}
+                  upsertTimetableItems={upsertTimetableItems}
+                  setTimetableItemToEditData={setTimetableItemToEditData}
+                  setSelectedTimetableItemIds={setSelectedTimetableItemIds}
+                  removeAndUnselectTrains={removeAndUnselectTrains}
+                  timetableItemToEditData={timetableItemToEditData}
+                  timetableItemsWithDetails={trainScheduleSetTrains}
+                  selectedTimetableItemIds={selectedTimetableItemIds}
+                  projectingOnSimulatedPathException={projectingOnSimulatedPathException}
+                  isSelectMode={isSelectMode}
+                />
+              </TrainScheduleSetTab>
+            );
+          })
+        )}
       </div>
     </div>
   );

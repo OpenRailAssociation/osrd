@@ -258,6 +258,9 @@
       "pacedTrain": "Service",
       "pacedTrainAdded": "Service added",
       "pacedTrainDeleted": "The service {{name}} has been deleted",
+      "packages": {
+        "sandbox": "Sandbox"
+      },
       "punctuality": "Punctuality",
       "resetAllExceptions": "Do you confirm the reset of the exceptions of this service?",
       "resetExceptions": "Reset exceptions",
