@@ -20,6 +20,7 @@ import { getInfra, getProject, getStudy } from './utils/api-utils';
 import readJsonFile from './utils/file-utils';
 import { sendPacedTrains } from './utils/paced-train';
 import createScenario from './utils/scenario';
+import { deleteScenario } from './utils/teardown-utils';
 import sendTrainSchedules from './utils/train-schedule';
 import type {
   CommonTranslations,
@@ -65,7 +66,7 @@ test.describe('Synchronize the scenario page across multiple windows', () => {
 
   let project: Project;
   let study: Study;
-  let scenarioItems: Scenario;
+  let scenario: Scenario;
   let infra: Infra;
 
   test.beforeAll(
@@ -74,7 +75,7 @@ test.describe('Synchronize the scenario page across multiple windows', () => {
       project = await getProject(timetableItemProjectName);
       study = await getStudy(project.id, timetableItemStudyName);
       infra = await getInfra();
-      scenarioItems = (
+      scenario = (
         await createScenario(
           generateUniqueName('scenario-page-synchronization'),
           project.id,
@@ -83,11 +84,11 @@ test.describe('Synchronize the scenario page across multiple windows', () => {
         )
       ).scenario;
       await sendTrainSchedules(
-        scenarioItems.timetable_id,
+        scenario.timetable_id,
         JSON.parse(JSON.stringify(trainSchedulesJson.slice(0, 2)))
       );
       await sendPacedTrains(
-        scenarioItems.timetable_id,
+        scenario.timetable_id,
         JSON.parse(JSON.stringify(pacedTrainsJson.slice(0, 2)))
       );
     }
@@ -96,11 +97,12 @@ test.describe('Synchronize the scenario page across multiple windows', () => {
   test.afterAll('Close pages', async () => {
     await firstPage.close();
     await secondPage.close();
+    await deleteScenario(study.id, scenario.name);
   });
 
   /** *************** Test 1 **************** */
   test('Reflects updates across tabs', async ({ context }) => {
-    const scenarioUrl = `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenarioItems.id}`;
+    const scenarioUrl = `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenario.id}`;
 
     await test.step('Open first tab on scenario page and wait infra cache', async () => {
       firstPage = await context.newPage();
@@ -149,8 +151,8 @@ test.describe('Synchronize the scenario page across multiple windows', () => {
 
     await test.step('Go to study page in first tab, verify train count, delete scenario', async () => {
       await firstPage.goto(`/operational-studies/projects/${project.id}/studies/${study.id}`);
-      await studyPage.verifyScenarioTrainCount(scenarioItems.name, '3');
-      await studyPage.deleteScenario(scenarioItems.name);
+      await studyPage.verifyScenarioTrainCount(scenario.name, '3');
+      await studyPage.deleteScenario(scenario.name);
     });
 
     await test.step('Reload second tab and verify scenario is gone', async () => {
