@@ -1726,14 +1726,14 @@ mod tests {
                     times: vec![0],
                     speeds: vec![],
                     energy_consumption: 0.0,
-                    path_item_times: vec![0, 1]
+                    path_item_times: vec![0, 1, 2, 3]
                 },
                 provisional: ReportTrain {
                     positions: vec![0],
                     times: vec![0],
                     speeds: vec![],
                     energy_consumption: 0.0,
-                    path_item_times: vec![0, 1]
+                    path_item_times: vec![0, 1, 2, 3]
                 },
                 final_output: CompleteReportTrain {
                     report_train: ReportTrain {
@@ -1741,7 +1741,7 @@ mod tests {
                         times: vec![0],
                         speeds: vec![],
                         energy_consumption: 0.0,
-                        path_item_times: vec![0, 1]
+                        path_item_times: vec![0, 1, 2, 3]
                     },
                     signal_critical_positions: vec![],
                     zone_updates: vec![],
@@ -1878,11 +1878,11 @@ mod tests {
             PacedTrainSummaryResponse {
                 paced_train: SummaryResponse::Success {
                     length: 0,
-                    time: 1,
+                    time: 3,
                     energy_consumption: 0.0,
-                    path_item_times_final: vec![0, 1],
-                    path_item_times_provisional: vec![0, 1],
-                    path_item_times_base: vec![0, 1],
+                    path_item_times_final: vec![0, 1, 2, 3],
+                    path_item_times_provisional: vec![0, 1, 2, 3],
+                    path_item_times_base: vec![0, 1, 2, 3],
                     path_item_positions: vec![0, 1, 2, 3]
                 },
                 exceptions: [(
@@ -1891,11 +1891,11 @@ mod tests {
                     // because all simulation results from core are identical stubs
                     SummaryResponse::Success {
                         length: 0,
-                        time: 1,
+                        time: 3,
                         energy_consumption: 0.0,
-                        path_item_times_final: vec![0, 1],
-                        path_item_times_provisional: vec![0, 1],
-                        path_item_times_base: vec![0, 1],
+                        path_item_times_final: vec![0, 1, 2, 3],
+                        path_item_times_provisional: vec![0, 1, 2, 3],
+                        path_item_times_base: vec![0, 1, 2, 3],
                         path_item_positions: vec![0, 1, 2, 3]
                     }
                 )]
