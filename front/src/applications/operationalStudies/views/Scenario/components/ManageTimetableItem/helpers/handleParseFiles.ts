@@ -110,10 +110,10 @@ const validateTrainSchedules = (importedItems: unknown): TimetableJsonPayload =>
 const validateNgeDto = (payload: unknown): payload is NetzgrafikDto =>
   Boolean(
     payload &&
-      typeof payload === 'object' &&
-      'nodes' in payload &&
-      'trainruns' in payload &&
-      'trainrunSections' in payload
+    typeof payload === 'object' &&
+    'nodes' in payload &&
+    'trainruns' in payload &&
+    'trainrunSections' in payload
   );
 
 export const processJsonFile = (
