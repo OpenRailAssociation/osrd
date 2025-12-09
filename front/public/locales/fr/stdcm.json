@@ -172,7 +172,7 @@
         "rollingStock": "matériel remorqué",
         "selectPathType": "Choisir",
         "stop": "Arrêt de {{minutes}} à {{stopAt}}",
-        "successMessage": "Demande reçue par GESICO",
+        "successMessage": "Demande {{demandNumber}} reçue par GESICO",
         "toleranceAfter": "Tolérance aval",
         "toleranceBefore": "Tolérance amont",
         "totalLength": "longueur totale",
