@@ -61,7 +61,7 @@ pub enum PositiveDurationError {
 /// let err_s = r#"{"duration":"P1M"}"#; // 1 month
 /// assert!(serde_json::from_str::<MyStruct>(err_s).is_err());
 /// ```
-#[derive(Debug, Clone, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub struct PositiveDuration(ChronoDuration);
 
 #[cfg(feature = "testing")]

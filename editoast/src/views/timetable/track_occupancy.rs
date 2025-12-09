@@ -204,7 +204,7 @@ pub fn find_track_occupancy_for_operational_point(
 
     let stop_duration = context
         .schedule_item
-        .and_then(|item| item.stop_for.clone())
+        .and_then(|item| item.stop_for)
         .unwrap_or_default();
 
     if let Some(track_section) = get_track_section(
