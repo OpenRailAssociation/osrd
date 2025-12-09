@@ -74,23 +74,20 @@ test.describe('Paced trains and exception management', () => {
 
   let scenarioItems: Scenario;
 
-  test.beforeAll(
-    'Setup project, study, infra and create scenario with timetableItems',
-    async () => {
-      project = await getProject(timetableItemProjectName);
-      study = await getStudy(project.id, timetableItemStudyName);
-      infra = await getInfra();
-      scenarioItems = (
-        await createScenario(
-          generateUniqueName('edit-train-scenario'),
-          project.id,
-          study.id,
-          infra.id
-        )
-      ).scenario;
-      await sendPacedTrains(scenarioItems.timetable_id, pacedTrainsJson.slice(0, 6));
-    }
-  );
+  test.beforeAll('Setup project, study, infra and create scenario with paced trains', async () => {
+    project = await getProject(timetableItemProjectName);
+    study = await getStudy(project.id, timetableItemStudyName);
+    infra = await getInfra();
+    scenarioItems = (
+      await createScenario(
+        generateUniqueName('paced-trains-scenario'),
+        project.id,
+        study.id,
+        infra.id
+      )
+    ).scenario;
+    await sendPacedTrains(scenarioItems.timetable_id, pacedTrainsJson.slice(0, 6));
+  });
 
   test.beforeEach(
     'Navigate to scenario page and wait for infrastructure to be loaded',
@@ -161,7 +158,7 @@ test.describe('Paced trains and exception management', () => {
       );
     });
 
-    await test.step('Verify all occurrences (4 occurrences including 1 added exception )', async () => {
+    await test.step('Verify all occurrences (4 occurrences including 1 added exception)', async () => {
       await pacedTrainSection.verifyOccurrenceDetails(
         {
           name: `${editedPacedTrainData.train_name}/+`,

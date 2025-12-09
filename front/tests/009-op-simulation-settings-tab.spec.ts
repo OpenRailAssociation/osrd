@@ -26,7 +26,7 @@ import createScenario from './utils/scenario';
 import { deleteScenario } from './utils/teardown-utils';
 import type { FlatTranslations, StationData } from './utils/types';
 
-const frTranslations = readJsonFile<Record<string, FlatTranslations>>(
+const frTranslations: FlatTranslations = readJsonFile<Record<string, FlatTranslations>>(
   'public/locales/fr/translation.json'
 ).timeStopTable;
 
@@ -72,7 +72,6 @@ test.describe('Simulation Settings Tab Verification', () => {
 
   type TranslationKeys = keyof typeof frTranslations;
 
-  // Define CellData type for table cell data
   type CellData = {
     stationName: string;
     header: TranslationKeys;
@@ -144,6 +143,7 @@ test.describe('Simulation Settings Tab Verification', () => {
     await deleteScenario(study.id, scenario.name);
   });
 
+  /** *************** Test 1 **************** */
   test('Activate electrical profiles', async ({ browserName }) => {
     const cell: CellData = { stationName: 'Mid_East_station', header: 'stopTime', value: '124' };
     const translatedHeader = cleanWhitespace(frTranslations[cell.header]);
@@ -200,6 +200,7 @@ test.describe('Simulation Settings Tab Verification', () => {
     });
   });
 
+  /** *************** Test 2 **************** */
   test('Add speed limit tag', async ({ browserName }) => {
     const cell: CellData = { stationName: 'Mid_East_station', header: 'stopTime', value: '124' };
     const translatedHeader = cleanWhitespace(frTranslations[cell.header]);
@@ -257,6 +258,7 @@ test.describe('Simulation Settings Tab Verification', () => {
     });
   });
 
+  /** *************** Test 3 **************** */
   test('Activate linear and mareco margin', async ({ browserName }) => {
     const inputTableData: CellData[] = [
       { stationName: 'Mid_East_station', header: 'stopTime', value: '124' },
@@ -324,6 +326,7 @@ test.describe('Simulation Settings Tab Verification', () => {
     });
   });
 
+  /** *************** Test 4 **************** */
   test('Add all the simulation settings', async ({ browserName }) => {
     const inputTableData: CellData[] = [
       { stationName: 'Mid_East_station', header: 'stopTime', value: '124' },

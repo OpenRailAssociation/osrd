@@ -40,7 +40,7 @@ test.describe('Rolling stock Tab Verification', () => {
     await deleteScenario(study.id, scenario.name);
   });
 
-  test.beforeEach('Navigate to the scenario page', async ({ page }) => {
+  test.beforeEach('Navigate to the scenario page and open form', async ({ page }) => {
     [operationalStudiesPage, rollingStockSelector] = [
       new OperationalStudiesPage(page),
       new RollingStockSelector(page),

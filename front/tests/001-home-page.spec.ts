@@ -17,7 +17,6 @@ test.describe('Home page OSRD', () => {
 
   /** *************** Test 1 **************** */
   test('Verify the links for different pages in Home Page', async () => {
-    // List of expected links on the home page
     const expectedLinks = [
       frTranslations.operationalStudies,
       frTranslations.stdcm,
@@ -26,14 +25,13 @@ test.describe('Home page OSRD', () => {
       frTranslations.map,
     ];
 
-    // Verify that the displayed links match the expected ones
     await expect(homePage.linksTitle).toHaveText(expectedLinks);
   });
 
   /** *************** Test 2 **************** */
   test('Verify redirection to the Operational Studies page', async () => {
     await homePage.goToOperationalStudiesPage();
-    await expect(homePage.page).toHaveURL(/.*\/operational-studies/); // Check the URL
+    await expect(homePage.page).toHaveURL(/.*\/operational-studies/);
   });
 
   /** *************** Test 3 **************** */

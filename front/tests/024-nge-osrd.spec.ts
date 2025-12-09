@@ -42,7 +42,7 @@ test.describe('Verify nge osrd conversion', () => {
     infra = await getInfra();
   });
 
-  test.beforeEach('Open scenario and enable only macro view ', async ({ page }) => {
+  test.beforeEach('Open scenario and enable only macro view', async ({ page }) => {
     ngePage = new NGEPage(page);
     scenarioTimetableSection = new ScenarioTimetableSection(page);
     roundTripPage = new RoundTripPage(page);
@@ -66,7 +66,8 @@ test.describe('Verify nge osrd conversion', () => {
     await deleteScenario(study.id, scenarioItems.name);
   });
 
-  test('Add a train from nge', async () => {
+  /** *************** Test 1 **************** */
+  test('Add a train from NGE', async () => {
     await test.step('Create three nodes', async () => {
       await ngePage.createNode({ x: 50, y: 400 }, 'NWS', 'Origin');
       await expect(ngePage.nodeCards).toHaveCount(1);

@@ -37,9 +37,10 @@ test.describe('Verify osrd nge conversion', () => {
     infra = await getInfra();
   });
 
-  test.beforeEach('Open scenario and enable only macro view ', async ({ page }) => {
+  test.beforeEach('Open scenario and enable only macro view', async ({ page }) => {
     ngePage = new NGEPage(page);
     scenarioTimetableSection = new ScenarioTimetableSection(page);
+
     // scenario header is persisted in local storage, clear it before loading the scenario
     await page.addInitScript(() => {
       window.localStorage.clear();
@@ -65,6 +66,7 @@ test.describe('Verify osrd nge conversion', () => {
     await deleteScenario(study.id, scenarioItems.name);
   });
 
+  /** *************** Test 1 **************** */
   test('Verify NGE train data', async () => {
     await test.step('Verify nodes displayed on NGE graph', async () => {
       await ngePage.expectNodes(['SWS/BV', 'MWS/BV', 'MES/BV']);
@@ -107,6 +109,7 @@ test.describe('Verify osrd nge conversion', () => {
     });
   });
 
+  /** *************** Test 2 **************** */
   test('Delete a train from train list', async ({ page }) => {
     await test.step('Delete train from timetable list', async () => {
       await scenarioTimetableSection.deleteTimetableItem();
@@ -129,6 +132,7 @@ test.describe('Verify osrd nge conversion', () => {
     });
   });
 
+  /** *************** Test 3 **************** */
   test('Delete a train from NGE', async ({ page }) => {
     await test.step('Delete first node via dialog (expect 2 nodes, 1 line)', async () => {
       await ngePage.deleteNodeByIndexViaDialog(0, { nodes: 2, lines: 1 });
