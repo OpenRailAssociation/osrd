@@ -10,12 +10,6 @@ import fr.sncf.osrd.utils.units.Offset
 data class TrackLocation(val trackId: TrackSectionId, val offset: Offset<TrackSection>)
 
 /**
- * A marker type for Length and Offset. In BlockPath, start refers to the beginning of the first
- * block (NOT the real start of the train).
- */
-sealed interface BlockPath
-
-/**
  * A marker type for Length and Offset. In TravelledPath, start refers to the real start of the head
  * of the train.
  */

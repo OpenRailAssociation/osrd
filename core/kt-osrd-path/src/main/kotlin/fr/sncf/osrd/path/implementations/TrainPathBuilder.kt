@@ -3,6 +3,7 @@ package fr.sncf.osrd.path.implementations
 import fr.sncf.osrd.path.interfaces.*
 import fr.sncf.osrd.path.legacy_objects.ElectricalProfileMapping
 import fr.sncf.osrd.sim_infra.api.*
+import fr.sncf.osrd.utils.Direction
 import fr.sncf.osrd.utils.indexing.DirStaticIdx
 import fr.sncf.osrd.utils.indexing.StaticIdx
 import fr.sncf.osrd.utils.units.Directed
@@ -137,34 +138,36 @@ fun buildTrainPathFromChunks(
 }
 
 /**
- * Build a TrainPath from chunk path. Blocks are filled in by picking any block on each range.
- * Shouldn't be used where blocks actually matter (such as conflict detection).
+ * Build a TrainPath from directed track ranges. Blocks are filled in by picking any block on each
+ * range. Shouldn't be used where blocks actually matter (such as conflict detection).
  */
-fun buildTrainPathFromChunkPath(
+fun buildTrainPathFromTracks(
     rawInfra: RawInfra,
     blockInfra: BlockInfra,
-    chunkPath: ChunkPath,
+    trackRanges: List<DirTrackRange>,
     routes: List<RouteId>? = null,
     routeNames: List<String>? = null,
     electricalProfileMapping: ElectricalProfileMapping? = null,
 ): TrainPath {
-    val chunkRanges = mutableListOf<PartialDirChunkRange>()
-    var prevChunkFinalOffset = 0.meters
-    for ((i, chunk) in chunkPath.chunks.withIndex()) {
-        val isFirst = i == 0
-        val isLast = i == chunkPath.chunks.size - 1
-        val chunkLength = rawInfra.getTrackChunkLength(chunk.value)
-        val from =
-            if (isFirst) chunkPath.beginOffset.cast<Directed<TrackChunk>>() else Offset.zero()
-        var to = chunkLength.forceDirected()
-        if (isLast) to = Offset(chunkPath.endOffset.distance - prevChunkFinalOffset)
-        chunkRanges.add(PartialDirChunkRange(chunk, from, to, chunkLength.forceDirected()))
-        prevChunkFinalOffset += chunkLength.distance
+    // Return the dir chunks on the track, in correct order (reversed if decreasing).
+    fun iterateDirChunks(dirTrack: DirTrackSectionId): List<DirTrackChunkId> {
+        val chunks = mutableListOf<DirTrackChunkId>()
+        for (chunk in rawInfra.getTrackSectionChunks(dirTrack.value)) chunks.add(
+            DirTrackChunkId(chunk, dirTrack.direction)
+        )
+        if (dirTrack.direction == Direction.DECREASING) chunks.reverse()
+        return chunks
     }
+
+    val chunkRanges =
+        trackRanges.mapSubObjects(::iterateDirChunks) {
+            rawInfra.getTrackChunkLength(it.value).forceDirected()
+        }
+
     return buildTrainPathFromChunks(
         rawInfra,
         blockInfra,
-        buildRangeList(chunkRanges),
+        chunkRanges,
         routes,
         routeNames,
         electricalProfileMapping,
