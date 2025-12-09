@@ -27,7 +27,7 @@ const frTranslations = {
   ...frCommonTranslations,
 };
 
-test.describe('Verify timetable items import', () => {
+test.describe('@op @timetable-items @import', () => {
   let importPage: ImportPage;
   let timetableItemDetailSection: TimetableItemDetailSection;
   let pacedTrainSection: PacedTrainSection;

@@ -20,7 +20,7 @@ const frTranslations: TimetableFilterTranslations = readJsonFile<{
   main: TimetableFilterTranslations;
 }>('public/locales/fr/operational-studies.json').main;
 
-test.describe('Verify osrd nge conversion', () => {
+test.describe('@op @nge', () => {
   test.use({ ignorePageErrors: true });
 
   let ngePage: NGEPage;

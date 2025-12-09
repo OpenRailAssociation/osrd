@@ -24,7 +24,7 @@ const frTranslations = {
   ...frCommonTranslations,
 };
 
-test.describe('Verify nge osrd conversion', () => {
+test.describe('@op @nge @round-trips', () => {
   test.use({ ignorePageErrors: true });
 
   let ngePage: NGEPage;
@@ -67,7 +67,7 @@ test.describe('Verify nge osrd conversion', () => {
   });
 
   /** *************** Test 1 **************** */
-  test('Add a train from NGE', async () => {
+  test('@smoke Add a train from NGE', async () => {
     await test.step('Create three nodes', async () => {
       await ngePage.createNode({ x: 50, y: 400 }, 'NWS', 'Origin');
       await expect(ngePage.nodeCards).toHaveCount(1);

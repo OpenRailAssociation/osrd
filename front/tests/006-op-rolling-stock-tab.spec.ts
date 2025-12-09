@@ -20,7 +20,7 @@ import { getInfra, getRollingStock } from './utils/api-utils';
 import createScenario from './utils/scenario';
 import { deleteScenario } from './utils/teardown-utils';
 
-test.describe('Rolling stock Tab Verification', () => {
+test.describe('@op @rs-tab', () => {
   let operationalStudiesPage: OperationalStudiesPage;
   let rollingStockSelector: RollingStockSelector;
 
@@ -54,7 +54,7 @@ test.describe('Rolling stock Tab Verification', () => {
   });
 
   /** *************** Test 1 **************** */
-  test('Select a rolling stock for operational study', async () => {
+  test('@smoke Select a rolling stock for operational study', async () => {
     await test.step('Verify tab warnings are present', async () => {
       await operationalStudiesPage.verifyTabWarningPresence();
     });

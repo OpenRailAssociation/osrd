@@ -4,7 +4,7 @@ import { dualModeRollingStockName } from './assets/constants/project-const';
 import test from './logging-fixture';
 import RollingstockEditorPage from './pages/rolling-stock/rolling-stock-editor-page';
 
-test.describe('Filtering rolling stocks', () => {
+test.describe('@rs-editor @filter', () => {
   let rollingStockEditorPage: RollingstockEditorPage;
 
   test.beforeEach('Navigate to editor page', async ({ page }) => {

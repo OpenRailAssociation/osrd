@@ -10,7 +10,7 @@ import { getInfra } from './utils/api-utils';
 import createScenario from './utils/scenario';
 import { deleteScenario } from './utils/teardown-utils';
 
-test.describe('Route Tab Verification', () => {
+test.describe('@op @route-tab', () => {
   let operationalStudiesPage: OperationalStudiesPage;
   let rollingstockSelector: RollingStockSelector;
   let routeTab: RouteTab;
@@ -52,7 +52,7 @@ test.describe('Route Tab Verification', () => {
   });
 
   /** *************** Test 1 **************** */
-  test('Select a route for operational study', async ({ browserName }) => {
+  test('@smoke Select a route for operational study', async ({ browserName }) => {
     await test.step('Verify no route selected initially', async () => {
       await routeTab.verifyNoSelectedRoute();
     });

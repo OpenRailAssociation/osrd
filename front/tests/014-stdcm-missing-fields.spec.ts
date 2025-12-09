@@ -20,7 +20,7 @@ import type { StdcmTranslations } from './utils/types';
 
 const frTranslations: StdcmTranslations = readJsonFile('public/locales/fr/stdcm.json');
 
-test.describe('Verify stdcm missing fields', () => {
+test.describe('@stdcm @stdcm-missing-fields', () => {
   let stdcmPage: STDCMPage;
   let consistSection: ConsistSection;
   let originSection: OriginSection;

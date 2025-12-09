@@ -26,7 +26,7 @@ import type { ScenarioData } from './utils/types';
 
 const scenarioData: ScenarioData = readJsonFile('tests/assets/operation-studies/scenario.json');
 
-test.describe('Validate the Scenario creation workflow', () => {
+test.describe('@op @scenario @management', () => {
   let scenarioPage: ScenarioPage;
 
   let project: Project;
@@ -56,7 +56,7 @@ test.describe('Validate the Scenario creation workflow', () => {
   });
 
   /** *************** Test 1 **************** */
-  test('Create a new scenario', async ({ page }) => {
+  test('@smoke Create a new scenario', async ({ page }) => {
     const scenarioName = generateUniqueName(scenarioData.name);
     createdScenarios.push({
       projectId: project.id,
@@ -89,7 +89,7 @@ test.describe('Validate the Scenario creation workflow', () => {
   });
 
   /** *************** Test 2 **************** */
-  test('Update an existing scenario', async ({ page }) => {
+  test('@smoke Update an existing scenario', async ({ page }) => {
     await test.step('Create a base scenario', async () => {
       ({ project, study, scenario } = await createScenario());
     });

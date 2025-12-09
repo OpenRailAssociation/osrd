@@ -45,7 +45,7 @@ const frTranslations = {
 
 const pacedTrainsJson: PacedTrain[] = readJsonFile('./tests/assets/paced-train/paced_trains.json');
 
-test.describe('Paced trains and exception management', () => {
+test.describe('@op @paced-trains @exceptions', () => {
   let project: Project;
   let study: Study;
   let infra: Infra;
@@ -95,7 +95,7 @@ test.describe('Paced trains and exception management', () => {
   });
 
   /** *************** Test 1 **************** */
-  test('Edit a paced train and handle exceptions', async () => {
+  test('@smoke Edit a paced train and handle exceptions', async () => {
     const editedPacedTrainData = pacedTrainsJson[5];
 
     await test.step('Open action buttons for paced train at index 5', async () => {

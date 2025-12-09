@@ -70,7 +70,7 @@ const expectedOutputData: StationData[] = readJsonFile(
 
 const pacedTrainsJson = readJsonFile<[PacedTrain]>('./tests/assets/paced-train/paced_trains.json');
 
-test.describe('Verify simulation configuration in operational studies for train schedules and paced trains', () => {
+test.describe('@op @paced-trains', () => {
   let rollingstockSelector: RollingStockSelector;
   let operationalStudiesPage: OperationalStudiesPage;
   let scenarioTimetableSection: ScenarioTimetableSection;
@@ -148,7 +148,7 @@ test.describe('Verify simulation configuration in operational studies for train 
   });
 
   /** *************** Test 2 **************** */
-  test('Add a paced train and verify its timetable details', async ({ browserName }) => {
+  test('@smoke Add a paced train and verify its timetable details', async ({ browserName }) => {
     await test.step('Open timetable item form', async () => {
       await operationalStudiesPage.openTimetableItemForm();
     });

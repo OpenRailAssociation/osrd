@@ -18,7 +18,7 @@ const frTranslations: StudyFrTranslations = readJsonFile(
   'public/locales/fr/operational-studies.json'
 );
 
-test.describe('Validate the Study creation workflow', () => {
+test.describe('@op @study @management', () => {
   let studyPage: StudyPage;
   let project: Project;
   let study: Study;
@@ -40,7 +40,7 @@ test.describe('Validate the Study creation workflow', () => {
   });
 
   /** *************** Test 1 **************** */
-  test('Create a new study', async ({ page }) => {
+  test('@smoke Create a new study', async ({ page }) => {
     await test.step('Navigate to project page', async () => {
       await page.goto(`/operational-studies/projects/${project.id}`);
     });

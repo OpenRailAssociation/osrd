@@ -55,7 +55,7 @@ test.skip(
   'This test is only stable on Chromium due to tab sync flakiness in Firefox'
 );
 
-test.describe('Synchronize the scenario page across multiple windows', () => {
+test.describe('@op @multi-tab-sync', () => {
   let firstPage: Page;
   let secondPage: Page;
   let firstTimetableSection: ScenarioTimetableSection;

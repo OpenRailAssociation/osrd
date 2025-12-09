@@ -10,7 +10,7 @@ import type { ProjectData } from './utils/types';
 
 const projectData: ProjectData = readJsonFile('tests/assets/operation-studies/project.json');
 
-test.describe('Validate the Operational Study Project workflow', () => {
+test.describe('@op @project @management', () => {
   let projectPage: ProjectPage;
   let project: Project;
 
@@ -27,7 +27,7 @@ test.describe('Validate the Operational Study Project workflow', () => {
   });
 
   /** *************** Test 1 **************** */
-  test('Create a new project', async ({ page }) => {
+  test('@smoke Create a new project', async ({ page }) => {
     const projectName = generateUniqueName(projectData.name);
     createdProjects.push(projectName);
 

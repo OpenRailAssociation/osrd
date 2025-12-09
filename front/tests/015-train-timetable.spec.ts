@@ -34,7 +34,7 @@ const frTranslations = {
   ...frCommonTranslations,
 };
 
-test.describe('Verify train schedule elements and filters', () => {
+test.describe('@op @timetable-items', () => {
   let scenarioTimetableSection: ScenarioTimetableSection;
   let pacedTrainSection: PacedTrainSection;
 
@@ -66,7 +66,7 @@ test.describe('Verify train schedule elements and filters', () => {
   );
 
   /** *************** Test 1 **************** */
-  test('Loading timetable items and verifying simulation result for train schedules', async () => {
+  test('@smoke Loading timetable items and verifying simulation result for train schedules', async () => {
     await test.step('Verify counts then filter valid train schedules', async () => {
       await scenarioTimetableSection.verifyTimetableItemsCount(TOTAL_TIMETABLE_ITEMS);
       await scenarioTimetableSection.filterTrainTypeAndVerifyTrainCount(

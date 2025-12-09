@@ -49,7 +49,7 @@ const TIME_WINDOW = '240';
 const INTERVAL = '20';
 const EDITED_PACED_TRAIN_NAME = 'Paced train edited';
 
-test.describe('Edit train schedules and paced trains', () => {
+test.describe('@op @paced-train @train-schedule', () => {
   let scenarioTimetableSection: ScenarioTimetableSection;
   let operationalStudiesPage: OperationalStudiesPage;
   let pacedTrainSection: PacedTrainSection;
