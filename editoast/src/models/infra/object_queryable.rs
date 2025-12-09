@@ -16,8 +16,8 @@ use serde::Serialize;
 
 use super::Infra;
 use crate::error::Result;
-use crate::models::get_geometry_layer_table;
-use crate::models::get_table;
+use editoast_models::infra_objects::get_geometry_layer_table;
+use editoast_models::infra_objects::get_table;
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, QueryableByName, utoipa::ToSchema)]
 #[schema(as = InfraObjectWithGeometry)]

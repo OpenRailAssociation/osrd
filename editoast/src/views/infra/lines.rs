@@ -12,11 +12,11 @@ use thiserror::Error;
 
 use crate::error::Result;
 use crate::models::Infra;
-use crate::models::TrackSectionModel;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
 use crate::views::infra::InfraApiError;
 use crate::views::infra::InfraIdParam;
+use editoast_models::infra_objects::TrackSectionModel;
 use editoast_models::prelude::*;
 
 #[derive(Debug, Error, EditoastError)]

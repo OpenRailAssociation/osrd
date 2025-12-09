@@ -1212,14 +1212,15 @@ pub(in crate::views) async fn track_occupancy(
         .await?;
 
     // Get the operational point
-    let operational_point = models::OperationalPointModel::retrieve_or_fail(
-        db_pool.get().await?,
-        (infra_id, operational_point_id.clone()),
-        || PacedTrainError::OperationalPointNotFound {
-            operational_point_id: operational_point_id.clone(),
-        },
-    )
-    .await?;
+    let operational_point =
+        editoast_models::infra_objects::OperationalPointModel::retrieve_or_fail(
+            db_pool.get().await?,
+            (infra_id, operational_point_id.clone()),
+            || PacedTrainError::OperationalPointNotFound {
+                operational_point_id: operational_point_id.clone(),
+            },
+        )
+        .await?;
 
     // Collect all occurrences from all paced trains using iter_occurrences()
     let train_occurrences = paced_trains

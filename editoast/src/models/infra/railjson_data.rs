@@ -9,7 +9,7 @@ use schemas::primitives::ObjectType;
 
 use super::Infra;
 use crate::error::Result;
-use crate::models::get_table;
+use editoast_models::infra_objects::get_table;
 
 #[derive(QueryableByName, Default)]
 pub struct RailJsonData {

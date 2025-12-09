@@ -1,6 +1,7 @@
 pub mod authn;
 pub mod document;
 pub mod electrical_profiles;
+pub mod infra_objects;
 pub mod map;
 pub mod pagination;
 pub mod prelude;

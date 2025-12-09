@@ -49,8 +49,6 @@ use crate::generated_data::speed_limit_tags_config::SpeedLimitTagIds;
 use crate::infra_cache::InfraCache;
 use crate::map;
 use crate::models::Infra;
-use crate::models::SwitchTypeModel;
-use crate::models::TrackSectionModel;
 use crate::views::AuthorizationError;
 use crate::views::pagination::PaginatedList as _;
 use crate::views::pagination::PaginationQueryParams;
@@ -60,6 +58,8 @@ use crate::views::path::path_item_cache::retrieve_op_from_ids;
 use crate::views::path::path_item_cache::retrieve_op_from_trigrams;
 use crate::views::path::path_item_cache::retrieve_op_from_uic;
 use authz::Role;
+use editoast_models::infra_objects::SwitchTypeModel;
+use editoast_models::infra_objects::TrackSectionModel;
 use schemas::infra::OperationalPoint;
 use schemas::infra::OperationalPointExtensions;
 use schemas::infra::OperationalPointPart;
@@ -1057,11 +1057,11 @@ pub mod tests {
     use crate::models::fixtures::create_empty_infra;
     use crate::models::fixtures::create_rolling_stock_with_energy_sources;
     use crate::models::fixtures::create_small_infra;
-    use crate::models::get_geometry_layer_table;
-    use crate::models::get_table;
     use crate::models::infra::DEFAULT_INFRA_VERSION;
     use crate::views::test_app::TestApp;
     use crate::views::test_app::TestAppBuilder;
+    use editoast_models::infra_objects::get_geometry_layer_table;
+    use editoast_models::infra_objects::get_table;
     use schemas::train_schedule::OperationalPointIdentifier;
 
     impl TestApp {

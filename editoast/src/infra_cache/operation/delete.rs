@@ -11,7 +11,7 @@ use std::ops::DerefMut;
 
 use super::OperationError;
 use crate::error::Result;
-use crate::models::get_table;
+use editoast_models::infra_objects::get_table;
 
 #[derive(Clone, Debug, PartialEq, Eq, Hash, Deserialize, Serialize, utoipa::ToSchema)]
 #[serde(deny_unknown_fields)]

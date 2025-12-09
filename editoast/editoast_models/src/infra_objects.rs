@@ -7,8 +7,11 @@ use serde::Serialize;
 
 use database::DbConnection;
 use database::tables::*;
-use editoast_models::prelude::*;
 use schemas::primitives::ObjectType;
+
+use crate::prelude::*;
+
+use crate as editoast_models;
 
 pub trait ModelBackedSchema: Sized {
     type Model: SchemaModel + Into<Self>;

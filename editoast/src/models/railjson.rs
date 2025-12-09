@@ -5,8 +5,8 @@ use schemas::infra::RailJson;
 use schemas::infra::major_version;
 
 use crate::error::Result;
-use crate::models::infra_objects::*;
 use database::DbConnection;
+use editoast_models::infra_objects::*;
 use editoast_models::prelude::*;
 
 use super::Infra;

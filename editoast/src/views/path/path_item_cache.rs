@@ -10,8 +10,8 @@ use schemas::train_schedule::TrackReference;
 use std::collections::HashMap;
 
 use crate::error::Result;
-use crate::models::OperationalPointModel;
-use crate::models::TrackSectionModel;
+use editoast_models::infra_objects::OperationalPointModel;
+use editoast_models::infra_objects::TrackSectionModel;
 use editoast_models::prelude::*;
 
 use super::pathfinding::PathfindingFailure;
