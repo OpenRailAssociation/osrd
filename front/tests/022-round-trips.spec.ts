@@ -36,7 +36,7 @@ const trainSchedulesJson = readJsonFile<TrainSchedule[]>(
 );
 const pacedTrainsJson = readJsonFile<PacedTrain[]>('./tests/assets/paced-train/paced_trains.json');
 
-test.describe('Verify round trips', () => {
+test.describe('@op @timetable-items @round-trips', () => {
   let roundTripPage: RoundTripPage;
 
   let project: Project;
@@ -101,7 +101,7 @@ test.describe('Verify round trips', () => {
   });
 
   /** *************** Test 2 **************** */
-  test('Verify round trip cards: paced trains and schedules', async () => {
+  test('@smoke Verify round trip cards: paced trains and schedules', async () => {
     await test.step('First paced train - data & no tooltip', async () => {
       await roundTripPage.verifyRoundTripCardData({
         roundTripCardIndex: 0,
@@ -177,7 +177,7 @@ test.describe('Verify round trips', () => {
   });
 
   /** *************** Test 4 **************** */
-  test('Save round trip items', async () => {
+  test('@smoke Save round trip items', async () => {
     await test.step('Move 1 item from To-do → One-way', async () => {
       await roundTripPage.setTodoCardToOneWay({
         index: 0,

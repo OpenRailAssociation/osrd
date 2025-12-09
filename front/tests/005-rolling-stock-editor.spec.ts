@@ -12,7 +12,7 @@ const rollingstockDetails: RollingStockDetails = readJsonFile(
   './tests/assets/rolling-stock/rolling-stock-details.json'
 );
 
-test.describe('Rollingstock editor page tests', () => {
+test.describe('@rs-editor', () => {
   let rollingStockEditorPage: RollingstockEditorPage;
 
   const createdRollingStocks: string[] = [];
@@ -49,7 +49,7 @@ test.describe('Rollingstock editor page tests', () => {
   });
 
   /** *************** Test 1 **************** */
-  test('Create a new rolling stock', async ({ page }) => {
+  test('@smoke Create a new rolling stock', async ({ page }) => {
     createdRollingStocks.push(uniqueRollingStockName);
 
     await test.step('Open creation form', async () => {

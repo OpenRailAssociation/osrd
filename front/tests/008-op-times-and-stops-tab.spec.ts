@@ -42,7 +42,7 @@ const expectedViaValues = [
   { name: 'Mid_East_station', ch: 'BV', uic: '44', km: 'KM 26.500' },
 ];
 
-test.describe('Times and Stops Tab Verification', () => {
+test.describe('@op @times-stops-tab', () => {
   let operationalStudiesPage: OperationalStudiesPage;
   let rollingStockSelector: RollingStockSelector;
   let routeTab: RouteTab;
@@ -102,7 +102,7 @@ test.describe('Times and Stops Tab Verification', () => {
   });
 
   /** *************** Test 1 **************** */
-  test('Set and display times and stops tables', async () => {
+  test('@smoke Set and display times and stops tables', async () => {
     await test.step('Verify table headers', async () => {
       const expectedColumnNames = cleanWhitespaceInArray([
         frTranslations.name,
@@ -163,7 +163,7 @@ test.describe('Times and Stops Tab Verification', () => {
   });
 
   /** *************** Test 2 **************** */
-  test('Update and clear input table row', async () => {
+  test('@smoke Update and clear input table row', async () => {
     await test.step('Fill initial inputs and verify table', async () => {
       for (const cell of initialInputsData) {
         const translatedHeader = cleanWhitespace(frTranslations[cell.header]);

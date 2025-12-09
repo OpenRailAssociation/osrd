@@ -27,7 +27,7 @@ const tractionEnginePrefilledValues = {
   maxSpeed: '288',
 };
 
-test.describe('Stdcm feedback card', () => {
+test.describe('@stdcm @stdcm-feedback', () => {
   let stdcmPage: STDCMPage;
   let consistSection: ConsistSection;
   let originSection: OriginSection;

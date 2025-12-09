@@ -24,7 +24,7 @@ const tractionEnginePrefilledValues = { tonnage: '900', length: '400' };
 const fastRollingStockPrefilledValues = { tonnage: '190', length: '46' };
 const towedRollingStockPrefilledValues = { tonnage: '46', length: '26' };
 
-test.describe('Verify stdcm simulation page', () => {
+test.describe('@stdcm', () => {
   let stdcmPage: STDCMPage;
   let consistSection: ConsistSection;
   let originSection: OriginSection;
@@ -65,7 +65,7 @@ test.describe('Verify stdcm simulation page', () => {
   });
 
   /** *************** Test 1 **************** */
-  test('Verify default STDCM page', async () => {
+  test('@smoke Verify default STDCM page', async () => {
     await test.step('Verify base UI sections are visible', async () => {
       await stdcmPage.verifyStdcmElementsVisibility();
     });
@@ -83,7 +83,7 @@ test.describe('Verify stdcm simulation page', () => {
   });
 
   /** *************** Test 2 **************** */
-  test('Launch STDCM simulation with all stops', async () => {
+  test('@smoke Launch STDCM simulation with all stops', async () => {
     await test.step('Fill consist, origin and destination', async () => {
       await consistSection.fillAndVerifyConsistDetails(
         consistDetails,

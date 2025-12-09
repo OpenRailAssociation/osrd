@@ -7,7 +7,7 @@ import type { FlatTranslations } from './utils/types';
 
 const frTranslations: FlatTranslations = readJsonFile('public/locales/fr/translation.json');
 
-test.describe('Home page OSRD', () => {
+test.describe('@home @navigation', () => {
   let homePage: HomePage;
 
   test.beforeEach('Navigate to the home page', async ({ page }) => {
@@ -16,7 +16,7 @@ test.describe('Home page OSRD', () => {
   });
 
   /** *************** Test 1 **************** */
-  test('Verify the links for different pages in Home Page', async () => {
+  test('@smoke Verify the links for different pages in Home Page', async () => {
     const expectedLinks = [
       frTranslations.operationalStudies,
       frTranslations.stdcm,
@@ -29,7 +29,7 @@ test.describe('Home page OSRD', () => {
   });
 
   /** *************** Test 2 **************** */
-  test('Verify redirection to the Operational Studies page', async () => {
+  test('@smoke Verify redirection to the Operational Studies page', async () => {
     await homePage.goToOperationalStudiesPage();
     await expect(homePage.page).toHaveURL(/.*\/operational-studies/);
   });
@@ -47,7 +47,7 @@ test.describe('Home page OSRD', () => {
   });
 
   /** *************** Test 5 **************** */
-  test('Verify redirection to the STDCM page', async ({ context }) => {
+  test('@smoke Verify redirection to the STDCM page', async ({ context }) => {
     const stdcmPage = await homePage.goToSTDCMPage(context);
     await expect(stdcmPage).toHaveURL(/.*\/stdcm/);
   });

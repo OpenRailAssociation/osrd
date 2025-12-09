@@ -29,7 +29,7 @@ const tractionEnginePrefilledValues = {
   maxSpeed: '288',
 };
 
-test.describe('Verify stdcm simulation page', () => {
+test.describe('@stdcm @stdcm-sheet', () => {
   test.describe.configure({ mode: 'serial' });
 
   let stdcmPage: STDCMPage;
@@ -68,7 +68,10 @@ test.describe('Verify stdcm simulation page', () => {
   });
 
   /** *************** Test 1 **************** */
-  test('Verify STDCM stops and simulation sheet', async ({ browserName, context }, testInfo) => {
+  test('@smoke Verify STDCM stops and simulation sheet', async ({
+    browserName,
+    context,
+  }, testInfo) => {
     await test.step('Fill consist, origin, destination and via', async () => {
       await consistSection.fillAndVerifyConsistDetails(
         consistDetails,
@@ -126,7 +129,7 @@ test.describe('Verify stdcm simulation page', () => {
   });
 
   /** *************** Test 2 *************** */
-  test('Verify simulation sheet content', async () => {
+  test('@smoke Verify simulation sheet content', async () => {
     const pdfFilePath = await test.step('Find the downloaded PDF', async () => {
       const filePath = findFirstPdf(downloadDir!);
       if (!filePath) {

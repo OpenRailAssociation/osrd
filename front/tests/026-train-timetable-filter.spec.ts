@@ -41,7 +41,7 @@ const frTranslations = {
   ...frCommonTranslations,
 };
 
-test.describe('Filtering imported timetable items', () => {
+test.describe('@op @timetable-items @filter', () => {
   let scenarioTimetableSection: ScenarioTimetableSection;
 
   let project: Project;

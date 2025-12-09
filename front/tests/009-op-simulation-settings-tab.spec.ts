@@ -54,7 +54,7 @@ const expectedCellDataForAllSettings: StationData[] = readJsonFile(
   './tests/assets/operation-studies/simulation-settings/all-settings.json'
 );
 
-test.describe('Simulation Settings Tab Verification', () => {
+test.describe('@op @simulation-settings-tab', () => {
   let operationalStudiesPage: OperationalStudiesPage;
   let rollingStockSelector: RollingStockSelector;
   let routeTab: RouteTab;
@@ -327,7 +327,7 @@ test.describe('Simulation Settings Tab Verification', () => {
   });
 
   /** *************** Test 4 **************** */
-  test('Add all the simulation settings', async ({ browserName }) => {
+  test('@smoke Add all the simulation settings', async ({ browserName }) => {
     const inputTableData: CellData[] = [
       { stationName: 'Mid_East_station', header: 'stopTime', value: '124' },
       {

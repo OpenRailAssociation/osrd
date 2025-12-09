@@ -65,7 +65,7 @@ test.skip(
   'Limit to Chromium for GitHub snapshots storage optimization'
 );
 
-test.describe('Verify manchette and space time diagram', () => {
+test.describe('@op @manchette @std', () => {
   let simulationResultPage: OpSimulationResultPage;
   let scenarioTimetableSection: ScenarioTimetableSection;
   let pacedTrainSection: PacedTrainSection;
@@ -111,7 +111,7 @@ test.describe('Verify manchette and space time diagram', () => {
   });
 
   /** *************** Test 1 **************** */
-  test('Basic checks for STD/Manchette', async () => {
+  test('@smoke Basic checks for STD/Manchette', async () => {
     await test.step('Verify first train schedule is selected', async () => {
       await scenarioTimetableSection.verifyFirstTimetableItemIsSelected();
       await simulationResultPage.setTrainListVisible();

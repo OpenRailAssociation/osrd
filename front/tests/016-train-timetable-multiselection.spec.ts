@@ -30,7 +30,7 @@ const frTranslations = {
 const trainSchedulesJson: JSON = readJsonFile('./tests/assets/train-schedule/train_schedules.json');
 const pacedTrainsJson: JSON = readJsonFile('./tests/assets/paced-train/paced_trains.json');
 
-test.describe('Verify train schedule elements and filters', () => {
+test.describe('@op @timetable-items @timetable-multiselection', () => {
   let scenarioTimetableSection: ScenarioTimetableSection;
 
   let project: Project;

@@ -24,7 +24,7 @@ const towedRollingStockPrefilledValues = {
   maxSpeed: '180',
 };
 
-test.describe('Verify stdcm simulation page', () => {
+test.describe('@stdcm @stdcm-linked-train', () => {
   let stdcmPage: STDCMPage;
   let consistSection: ConsistSection;
   let originSection: OriginSection;
