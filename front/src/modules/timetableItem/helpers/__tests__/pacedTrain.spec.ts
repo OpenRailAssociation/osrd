@@ -165,66 +165,51 @@ describe('getOccurrencesWorstStatus', () => {
   describe('should return invalid', () => {
     it('should return invalid if the train model is invalid', () => {
       expect(
-        getOccurrencesWorstStatus({
-          summary: invalidSummary,
-          exceptions: [
-            { summary: validSummary } as SimulatedException,
-            { summary: validLateSummary } as SimulatedException,
-            { summary: validTooFastSummary } as SimulatedException,
-          ],
-        })
+        getOccurrencesWorstStatus(invalidSummary, [
+          { summary: validSummary } as SimulatedException,
+          { summary: validLateSummary } as SimulatedException,
+          { summary: validTooFastSummary } as SimulatedException,
+        ])
       ).toEqual('invalid');
     });
 
     it('should return invalid if the train model is invalid and some occurrences are late', () => {
       expect(
-        getOccurrencesWorstStatus({
-          summary: invalidSummary,
-          exceptions: [
-            { summary: validSummary } as SimulatedException,
-            { summary: validLateSummary } as SimulatedException,
-            { summary: validTooFastSummary } as SimulatedException,
-          ],
-        })
+        getOccurrencesWorstStatus(invalidSummary, [
+          { summary: validSummary } as SimulatedException,
+          { summary: validLateSummary } as SimulatedException,
+          { summary: validTooFastSummary } as SimulatedException,
+        ])
       ).toEqual('invalid');
     });
 
     it('should return invalid if the train model is late but an occurrence is invalid', () => {
       expect(
-        getOccurrencesWorstStatus({
-          summary: validLateSummary,
-          exceptions: [
-            { summary: validSummary } as SimulatedException,
-            { summary: invalidSummary } as SimulatedException,
-            { summary: validTooFastSummary } as SimulatedException,
-          ],
-        })
+        getOccurrencesWorstStatus(validLateSummary, [
+          { summary: validSummary } as SimulatedException,
+          { summary: invalidSummary } as SimulatedException,
+          { summary: validTooFastSummary } as SimulatedException,
+        ])
       ).toEqual('invalid');
     });
 
     it('should return invalid if the train model is too fast but an occurrence is invalid', () => {
       expect(
-        getOccurrencesWorstStatus({
-          summary: validTooFastSummary,
-          exceptions: [
-            { summary: validSummary } as SimulatedException,
-            { summary: invalidSummary } as SimulatedException,
-            { summary: validTooFastSummary } as SimulatedException,
-          ],
-        })
+        getOccurrencesWorstStatus(validTooFastSummary, [
+          { summary: validSummary } as SimulatedException,
+          { summary: invalidSummary } as SimulatedException,
+          { summary: validTooFastSummary } as SimulatedException,
+        ])
       ).toEqual('invalid');
     });
 
     it('should return invalid if the train model is valid and on time but an occurrence is invalid', () => {
       expect(
-        getOccurrencesWorstStatus({
-          summary: validSummary,
-          exceptions: [
-            { summary: validSummary } as SimulatedException,
-            { summary: invalidSummary } as SimulatedException,
-            { summary: validTooFastSummary } as SimulatedException,
-          ],
-        })
+        getOccurrencesWorstStatus(validSummary, [
+          { summary: validSummary } as SimulatedException,
+          { summary: invalidSummary } as SimulatedException,
+          { summary: validTooFastSummary } as SimulatedException,
+        ])
       ).toEqual('invalid');
     });
   });
@@ -232,52 +217,40 @@ describe('getOccurrencesWorstStatus', () => {
   describe('should return late', () => {
     it('should return late if the train model and some occurrences are late', () => {
       expect(
-        getOccurrencesWorstStatus({
-          summary: validLateSummary,
-          exceptions: [
-            { summary: validSummary } as SimulatedException,
-            { summary: validLateSummary } as SimulatedException,
-            { summary: validTooFastSummary } as SimulatedException,
-          ],
-        })
+        getOccurrencesWorstStatus(validLateSummary, [
+          { summary: validSummary } as SimulatedException,
+          { summary: validLateSummary } as SimulatedException,
+          { summary: validTooFastSummary } as SimulatedException,
+        ])
       ).toEqual('scheduleNotHonored');
     });
 
     it('should return late if the train model is too fast but an occurrence is late', () => {
       expect(
-        getOccurrencesWorstStatus({
-          summary: validTooFastSummary,
-          exceptions: [
-            { summary: validSummary } as SimulatedException,
-            { summary: validLateSummary } as SimulatedException,
-            { summary: validTooFastSummary } as SimulatedException,
-          ],
-        })
+        getOccurrencesWorstStatus(validTooFastSummary, [
+          { summary: validSummary } as SimulatedException,
+          { summary: validLateSummary } as SimulatedException,
+          { summary: validTooFastSummary } as SimulatedException,
+        ])
       ).toEqual('scheduleNotHonored');
     });
 
     it('should return late if the train model is late and an occurrence is invalid but disabled', () => {
       expect(
-        getOccurrencesWorstStatus({
-          summary: validLateSummary,
-          exceptions: [
-            { summary: validSummary } as SimulatedException,
-            { summary: invalidSummary, disabled: true } as SimulatedException,
-          ],
-        })
+        getOccurrencesWorstStatus(validLateSummary, [
+          { summary: validSummary } as SimulatedException,
+          { summary: invalidSummary, disabled: true } as SimulatedException,
+        ])
       ).toEqual('scheduleNotHonored');
     });
 
     it('should return late if the train model is valid and on time but an occurrence is late', () => {
       expect(
-        getOccurrencesWorstStatus({
-          summary: validSummary,
-          exceptions: [
-            { summary: validSummary } as SimulatedException,
-            { summary: validLateSummary } as SimulatedException,
-            { summary: validTooFastSummary } as SimulatedException,
-          ],
-        })
+        getOccurrencesWorstStatus(validSummary, [
+          { summary: validSummary } as SimulatedException,
+          { summary: validLateSummary } as SimulatedException,
+          { summary: validTooFastSummary } as SimulatedException,
+        ])
       ).toEqual('scheduleNotHonored');
     });
   });
@@ -285,38 +258,29 @@ describe('getOccurrencesWorstStatus', () => {
   describe('should return too fast', () => {
     it('should return too fast if the train model is too fast and the occurrences are valid and on time', () => {
       expect(
-        getOccurrencesWorstStatus({
-          summary: validTooFastSummary,
-          exceptions: [
-            { summary: validSummary } as SimulatedException,
-            { summary: validSummary } as SimulatedException,
-          ],
-        })
+        getOccurrencesWorstStatus(validTooFastSummary, [
+          { summary: validSummary } as SimulatedException,
+          { summary: validSummary } as SimulatedException,
+        ])
       ).toEqual('trainTooFast');
     });
 
     it('should return too fast if the train model is valid and on time and one of the occurrences is too fast', () => {
       expect(
-        getOccurrencesWorstStatus({
-          summary: validSummary,
-          exceptions: [
-            { summary: validSummary } as SimulatedException,
-            { summary: validTooFastSummary } as SimulatedException,
-          ],
-        })
+        getOccurrencesWorstStatus(validSummary, [
+          { summary: validSummary } as SimulatedException,
+          { summary: validTooFastSummary } as SimulatedException,
+        ])
       ).toEqual('trainTooFast');
     });
 
     it('should return too fast if the train model is too fast and an occurrence is invalid or late but disabled', () => {
       expect(
-        getOccurrencesWorstStatus({
-          summary: validTooFastSummary,
-          exceptions: [
-            { summary: validSummary } as SimulatedException,
-            { summary: validTooFastSummary, disabled: true } as SimulatedException,
-            { summary: invalidSummary, disabled: true } as SimulatedException,
-          ],
-        })
+        getOccurrencesWorstStatus(validTooFastSummary, [
+          { summary: validSummary } as SimulatedException,
+          { summary: validTooFastSummary, disabled: true } as SimulatedException,
+          { summary: invalidSummary, disabled: true } as SimulatedException,
+        ])
       ).toEqual('trainTooFast');
     });
   });
@@ -324,27 +288,21 @@ describe('getOccurrencesWorstStatus', () => {
   describe('should return nothing', () => {
     it('should return nothing if the train model and all the occurrences are valid and on time', () => {
       expect(
-        getOccurrencesWorstStatus({
-          summary: validSummary,
-          exceptions: [
-            { summary: validSummary } as SimulatedException,
-            { summary: validSummary } as SimulatedException,
-          ],
-        })
+        getOccurrencesWorstStatus(validSummary, [
+          { summary: validSummary } as SimulatedException,
+          { summary: validSummary } as SimulatedException,
+        ])
       ).toEqual('');
     });
 
     it('should return nothing if some occurrences are invalid, late or too fast but disabled', () => {
       expect(
-        getOccurrencesWorstStatus({
-          summary: validSummary,
-          exceptions: [
-            { summary: validSummary } as SimulatedException,
-            { summary: invalidSummary, disabled: true } as SimulatedException,
-            { summary: validLateSummary, disabled: true } as SimulatedException,
-            { summary: validTooFastSummary, disabled: true } as SimulatedException,
-          ],
-        })
+        getOccurrencesWorstStatus(validSummary, [
+          { summary: validSummary } as SimulatedException,
+          { summary: invalidSummary, disabled: true } as SimulatedException,
+          { summary: validLateSummary, disabled: true } as SimulatedException,
+          { summary: validTooFastSummary, disabled: true } as SimulatedException,
+        ])
       ).toEqual('');
     });
   });
