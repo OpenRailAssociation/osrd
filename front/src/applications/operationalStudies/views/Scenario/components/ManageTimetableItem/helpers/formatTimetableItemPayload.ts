@@ -71,7 +71,7 @@ export function formatPacedTrainWithDetailsToPacedTrainPayload(
     paced: {
       time_window: pacedTrainWithDetails.paced.timeWindow.toISOString(),
       interval: pacedTrainWithDetails.paced.interval.toISOString(),
-      exceptions: pacedTrainWithDetails.exceptions,
+      exceptions: pacedTrainWithDetails.paced.exceptions,
     },
     path: pacedTrainWithDetails.path,
     power_restrictions: pacedTrainWithDetails.power_restrictions,

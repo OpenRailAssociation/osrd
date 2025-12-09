@@ -87,10 +87,10 @@ export type SimulatedException = PacedTrainException & { summary?: SimulationSum
 
 export type PacedTrainWithDetails = TimetableItemWithSummaries & {
   id: PacedTrainId;
-  exceptions: SimulatedException[];
   paced: {
     timeWindow: Duration;
     interval: Duration;
+    exceptions: SimulatedException[];
   };
 };
 

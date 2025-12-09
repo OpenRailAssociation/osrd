@@ -116,7 +116,7 @@ const PacedTrainItem = ({
         showPacedTrainProjectionIcon: pacedTrain.id === trainIdUsedForProjection,
         pathUsedForProjectionIsException: false,
       };
-    const exception = pacedTrain.exceptions.find(
+    const exception = pacedTrain.paced.exceptions.find(
       (ex) => formatPacedTrainIdToOccurrenceId(pacedTrain.id, ex) === trainIdUsedForProjection
     );
     const pacedTrainTrackOffsets = pacedTrain.path.filter((step) => 'track' in step);
@@ -172,7 +172,7 @@ const PacedTrainItem = ({
   async function deleteExceptions() {
     const updatedPacedTrainPayload = formatPacedTrainWithDetailsToPacedTrainPayload({
       ...pacedTrain,
-      exceptions: [],
+      paced: { ...pacedTrain.paced, exceptions: [] },
     });
 
     await storePacedTrain(
@@ -247,8 +247,8 @@ const PacedTrainItem = ({
       : undefined;
 
   const worstCase = useMemo(
-    () => getOccurrencesWorstStatus(pacedTrain.summary, pacedTrain.exceptions),
-    [pacedTrain.summary, pacedTrain.exceptions]
+    () => getOccurrencesWorstStatus(pacedTrain.summary, pacedTrain.paced.exceptions),
+    [pacedTrain.summary, pacedTrain.paced.exceptions]
   );
 
   const content = (
@@ -363,7 +363,7 @@ const PacedTrainItem = ({
               'sm'
             );
           }}
-          showResetExceptionsButton={pacedTrain.exceptions.length > 0}
+          showResetExceptionsButton={pacedTrain.paced.exceptions.length > 0}
           resetAllExceptions={() => {
             openModal(
               <ConfirmModal

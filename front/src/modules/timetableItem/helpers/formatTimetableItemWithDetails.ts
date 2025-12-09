@@ -138,8 +138,8 @@ export const formatPacedTrainWithDetails = (
     paced: {
       timeWindow: Duration.parse(paced.time_window),
       interval: Duration.parse(paced.interval),
+      exceptions: simulatedExceptions,
     },
     summary: formatSummary(pacedTrain, pacedTrainSummary?.paced_train),
-    exceptions: simulatedExceptions,
   };
 };

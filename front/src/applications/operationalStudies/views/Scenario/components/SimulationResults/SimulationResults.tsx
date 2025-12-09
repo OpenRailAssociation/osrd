@@ -142,7 +142,7 @@ const SimulationResults = ({
       (timetableItem) => timetableItem.id === extractPacedTrainIdFromOccurrenceId(selectedTrainId)
     );
     if (!pacedTrain || !isPacedTrainWithDetails(pacedTrain)) return undefined;
-    const exception = findExceptionWithOccurrenceId(pacedTrain.exceptions, selectedTrainId);
+    const exception = findExceptionWithOccurrenceId(pacedTrain.paced.exceptions, selectedTrainId);
     return exception?.summary ?? pacedTrain.summary;
   }, [timetableItemsWithDetails, selectedTrainId]);
 

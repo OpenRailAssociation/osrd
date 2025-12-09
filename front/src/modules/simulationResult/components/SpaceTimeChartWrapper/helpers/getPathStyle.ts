@@ -40,7 +40,7 @@ const getPathStyle = (
 
   const exception =
     item && isPacedTrainWithDetails(item) && isOccurrenceId(train.id)
-      ? findExceptionWithOccurrenceId(item?.exceptions, train.id)
+      ? findExceptionWithOccurrenceId(item?.paced.exceptions, train.id)
       : null;
 
   const category = exception?.rolling_stock_category?.value ?? item?.category;

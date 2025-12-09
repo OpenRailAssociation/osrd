@@ -62,7 +62,7 @@ const useOccurrenceActions = ({
       let occurrenceWithDetails: PacedTrainWithDetails = pacedTrain;
 
       const occurrenceToUpdateException = findExceptionWithOccurrenceId(
-        pacedTrain.exceptions,
+        pacedTrain.paced.exceptions,
         editedOccurrence.id
       );
 
@@ -99,7 +99,7 @@ const useOccurrenceActions = ({
   const updateOccurrenceStatus = useCallback(
     (occurrence: Occurrence, status: 'disabled' | 'enable') => {
       const occurrenceToUpdateException = findExceptionWithOccurrenceId(
-        pacedTrain.exceptions,
+        pacedTrain.paced.exceptions,
         occurrence.id
       );
 
@@ -120,14 +120,14 @@ const useOccurrenceActions = ({
           };
 
       const updatedExceptions = updatePacedTrainExceptionsList(
-        pacedTrain.exceptions,
+        pacedTrain.paced.exceptions,
         updatedException,
         occurrence.id
       );
 
       const formattedPacedTrain = formatPacedTrainWithDetailsToPacedTrainPayload({
         ...pacedTrain,
-        exceptions: updatedExceptions,
+        paced: { ...pacedTrain.paced, exceptions: updatedExceptions },
       });
 
       storePacedTrain(
@@ -160,7 +160,10 @@ const useOccurrenceActions = ({
    */
   const resetOccurrenceExceptions = useCallback(
     (occurrenceId: OccurrenceId) => {
-      const exceptionToUpdate = findExceptionWithOccurrenceId(pacedTrain.exceptions, occurrenceId);
+      const exceptionToUpdate = findExceptionWithOccurrenceId(
+        pacedTrain.paced.exceptions,
+        occurrenceId
+      );
 
       if (!exceptionToUpdate) {
         throw new Error('Cannot reset an occurrence which was not an exception');
@@ -169,13 +172,13 @@ const useOccurrenceActions = ({
       let updatedExceptions: SimulatedException[];
 
       if (isIndexedOccurrenceId(occurrenceId)) {
-        updatedExceptions = pacedTrain.exceptions.filter(
+        updatedExceptions = pacedTrain.paced.exceptions.filter(
           // If it is an indexed occurrence, the corresponding exception will always have an occurrence_index
           (exception) => exception.occurrence_index !== exceptionToUpdate.occurrence_index
         );
       } else {
         // update exceptionToUpdate by removing all its properties except key and start time
-        updatedExceptions = pacedTrain.exceptions.map((exception) =>
+        updatedExceptions = pacedTrain.paced.exceptions.map((exception) =>
           exception.key === exceptionToUpdate.key
             ? {
                 key: exceptionToUpdate.key,
@@ -187,7 +190,7 @@ const useOccurrenceActions = ({
 
       const formattedPacedTrain = formatPacedTrainWithDetailsToPacedTrainPayload({
         ...pacedTrain,
-        exceptions: updatedExceptions,
+        paced: { ...pacedTrain.paced, exceptions: updatedExceptions },
       });
 
       storePacedTrain(
@@ -205,10 +208,10 @@ const useOccurrenceActions = ({
   const deleteAddedException = useCallback(
     async (occurrenceId: OccurrenceId) => {
       const key = extractExceptionIdFromOccurrenceId(occurrenceId);
-      const newExceptions = pacedTrain.exceptions.filter((ex) => ex.key !== key);
+      const newExceptions = pacedTrain.paced.exceptions.filter((ex) => ex.key !== key);
       const updatedPacedTrainPayload = formatPacedTrainWithDetailsToPacedTrainPayload({
         ...pacedTrain,
-        exceptions: newExceptions,
+        paced: { ...pacedTrain.paced, exceptions: newExceptions },
       });
 
       storePacedTrain(
@@ -220,7 +223,7 @@ const useOccurrenceActions = ({
         removePacedTrains
       );
     },
-    [pacedTrain.exceptions]
+    [pacedTrain.paced.exceptions]
   );
 
   return {
