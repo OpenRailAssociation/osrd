@@ -52,6 +52,7 @@ import {
   extractOccurrenceIndexFromOccurrenceId,
   extractExceptionIdFromOccurrenceId,
   isAddedExceptionId,
+  isPacedTrainWithDetails,
 } from 'utils/trainId';
 
 import { buildSplitPoints } from './buildSplitPoints';
@@ -156,17 +157,17 @@ const SpaceTimeChartWrapper = ({
 
     if (
       timetableItemUsedForProjectionWithDetails &&
-      'exceptions' in timetableItemUsedForProjectionWithDetails &&
+      isPacedTrainWithDetails(timetableItemUsedForProjectionWithDetails) &&
       isOccurrenceId(selectedProjectionId)
     ) {
-      const exeptionUsedForProjection = timetableItemUsedForProjectionWithDetails.exceptions.find(
-        (exception) =>
+      const exceptionUsedForProjection =
+        timetableItemUsedForProjectionWithDetails.paced.exceptions.find((exception) =>
           isAddedExceptionId(selectedProjectionId)
             ? exception.key === extractExceptionIdFromOccurrenceId(selectedProjectionId)
             : exception.occurrence_index ===
               extractOccurrenceIndexFromOccurrenceId(selectedProjectionId)
-      );
-      if (exeptionUsedForProjection?.summary) return exeptionUsedForProjection.summary.isValid;
+        );
+      if (exceptionUsedForProjection?.summary) return exceptionUsedForProjection.summary.isValid;
     }
 
     return timetableItemUsedForProjectionWithDetails?.summary?.isValid ?? false;

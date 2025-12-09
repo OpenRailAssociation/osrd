@@ -26,9 +26,9 @@ const useOccurrences = (
     rollingStock,
     stopsCount,
     summary,
-    exceptions,
     category: pacedTrainCategory,
   } = pacedTrain;
+  const { exceptions } = paced;
 
   const occurrencesCount = getOccurrencesNb(paced);
 

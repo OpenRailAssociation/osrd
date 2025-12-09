@@ -100,7 +100,7 @@ const ManageTimetableItemLeftPanel = ({
                 onClick={() => {
                   if (
                     isPacedTrainToEditData(timetableItemToEditData) &&
-                    timetableItemToEditData.originalPacedTrain.exceptions.length > 0 &&
+                    timetableItemToEditData.originalPacedTrain.paced.exceptions.length > 0 &&
                     (osrdConf.timeWindow.toISOString() !==
                       timetableItemToEditData.originalPacedTrain.paced.timeWindow.toISOString() ||
                       osrdConf.interval.toISOString() !==

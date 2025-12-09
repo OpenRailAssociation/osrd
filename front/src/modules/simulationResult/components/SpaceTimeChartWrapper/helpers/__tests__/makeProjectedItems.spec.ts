@@ -77,6 +77,7 @@ describe('makeProjectedItems', () => {
         paced: {
           timeWindow: Duration.parse('PT2H'),
           interval: Duration.parse('PT1H'),
+          exceptions: [exception],
         },
         spaceTimeCurves: [
           {
@@ -200,6 +201,7 @@ describe('makeProjectedItems', () => {
         paced: {
           timeWindow: Duration.parse('PT3H'),
           interval: Duration.parse('PT1H'),
+          exceptions: [exception],
         },
         exceptions: [exception],
         exceptionProjections: new Map([[exceptionKey, exceptionProjection]]),
