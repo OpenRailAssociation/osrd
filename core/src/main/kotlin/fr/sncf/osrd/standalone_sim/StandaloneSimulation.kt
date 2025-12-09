@@ -24,7 +24,6 @@ import fr.sncf.osrd.envelope_sim.pipelines.maxSpeedEnvelopeFrom
 import fr.sncf.osrd.envelope_sim_infra.HasMissingSpeedTag
 import fr.sncf.osrd.envelope_sim_infra.computeMRSP
 import fr.sncf.osrd.path.interfaces.TrainPath
-import fr.sncf.osrd.path.interfaces.TravelledPath
 import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowanceDistribution
 import fr.sncf.osrd.reporting.exceptions.ErrorType.ZeroLengthPath
@@ -63,7 +62,7 @@ fun runStandaloneSimulation(
     schedule: List<SimulationScheduleItem>,
     initialSpeed: Double,
     margins: RangeValues<MarginValue>,
-    pathItemPositions: List<Offset<TravelledPath>>,
+    pathItemPositions: List<Offset<TrainPath>>,
     driverBehaviour: DriverBehaviour = DriverBehaviour(),
 ): SimulationSuccess {
     if (trainPath.getLength() == Offset.zero<TrainPath>()) throw OSRDError(ZeroLengthPath)
@@ -213,14 +212,14 @@ fun makeElectricalProfiles(
     }
 
     val boundaries =
-        profileMap.entries.map { Offset<TravelledPath>(it.key.upperEndpoint().meters) }.dropLast(1)
+        profileMap.entries.map { Offset<TrainPath>(it.key.upperEndpoint().meters) }.dropLast(1)
     val values = profileMap.values
 
     return RangeValues(internalBoundaries = boundaries, values = values.toList())
 }
 
 fun makeMRSPResponse(speedLimits: Envelope): RangeValues<SpeedLimitProperty> {
-    val internalBoundaries = mutableListOf<Offset<TravelledPath>>()
+    val internalBoundaries = mutableListOf<Offset<TrainPath>>()
     val sources = mutableListOf<SpeedLimitProperty>()
     for (part in speedLimits.stream()) {
         internalBoundaries.add(Offset(part.endPos.meters))
@@ -260,13 +259,13 @@ fun buildFinalEnvelope(
     allowanceType: RJSAllowanceDistribution,
     scheduledPoints: List<SimulationScheduleItem>,
 ): Envelope {
-    fun getEnvelopeTimeAt(offset: Offset<TravelledPath>): Double {
+    fun getEnvelopeTimeAt(offset: Offset<TrainPath>): Double {
         return provisionalEnvelope.interpolateDepartureFromClamp(offset.meters)
     }
-    fun getMaxEffortEnvelopeTimeAt(offset: Offset<TravelledPath>): Double {
+    fun getMaxEffortEnvelopeTimeAt(offset: Offset<TrainPath>): Double {
         return maxEffortEnvelope.interpolateDepartureFromClamp(offset.meters)
     }
-    var prevFixedPointOffset = Offset<TravelledPath>(0.meters)
+    var prevFixedPointOffset = Offset<TrainPath>(0.meters)
     var prevFixedPointDepartureTime = 0.0
     val marginRanges = mutableListOf<AllowanceRange>()
     for (point in scheduledPoints) {
@@ -325,7 +324,7 @@ fun buildFinalEnvelope(
         }
         prevFixedPointOffset = point.pathOffset
     }
-    val pathEnd = Offset<TravelledPath>(maxEffortEnvelope.endPos.meters)
+    val pathEnd = Offset<TrainPath>(maxEffortEnvelope.endPos.meters)
     if (prevFixedPointOffset < pathEnd) {
         // Because the last margin call is based on the max effort envelope,
         // we still need to cover all ranges to keep the standard margin,
@@ -362,8 +361,8 @@ fun distributeAllowance(
     provisionalEnvelope: Envelope,
     extraTime: Double,
     margins: RangeValues<MarginValue>,
-    startOffset: Offset<TravelledPath>,
-    endOffset: Offset<TravelledPath>,
+    startOffset: Offset<TrainPath>,
+    endOffset: Offset<TrainPath>,
 ): List<AllowanceRange> {
     assert(startOffset <= endOffset)
     if (startOffset == endOffset) {
@@ -372,8 +371,8 @@ fun distributeAllowance(
         return listOf()
     }
     fun rangeTime(
-        from: Offset<TravelledPath>,
-        to: Offset<TravelledPath>,
+        from: Offset<TrainPath>,
+        to: Offset<TrainPath>,
         envelope: Envelope = provisionalEnvelope,
     ): Double {
         assert(from < to)
@@ -416,7 +415,7 @@ fun buildProvisionalEnvelope(
 ): Envelope {
     val marginRanges = mutableListOf<AllowanceRange>()
     // Add path extremities to boundaries
-    val boundaries = mutableListOf<Offset<TravelledPath>>()
+    val boundaries = mutableListOf<Offset<TrainPath>>()
     boundaries.add(Offset(Distance.ZERO))
     boundaries.addAll(rawMargins.internalBoundaries)
     boundaries.add(Offset(Distance.fromMeters(context.path.length)))

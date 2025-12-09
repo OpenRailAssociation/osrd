@@ -8,7 +8,6 @@ import fr.sncf.osrd.envelope_sim.allowances.LinearAllowance
 import fr.sncf.osrd.envelope_sim.allowances.MarecoAllowance
 import fr.sncf.osrd.path.interfaces.PhysicsPath
 import fr.sncf.osrd.path.interfaces.TrainPath
-import fr.sncf.osrd.path.interfaces.TravelledPath
 import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
 import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
@@ -30,7 +29,7 @@ val postProcessingLogger: Logger = LoggerFactory.getLogger("postprocessing-STDCM
 
 private data class FixedTimePoint(
     val time: Double,
-    val offset: Offset<TravelledPath>,
+    val offset: Offset<TrainPath>,
     val stopTime: Double?,
 ) : Comparable<FixedTimePoint> {
     override fun compareTo(other: FixedTimePoint): Int {
@@ -73,9 +72,7 @@ fun buildFinalEnvelope(
     val fullInfraExplorer = edges.last().infraExplorerWithNewEnvelope
 
     val pathLength =
-        Length<TravelledPath>(
-            Distance(millimeters = edges.sumOf { it.length.distance.millimeters })
-        )
+        Length<TrainPath>(Distance(millimeters = edges.sumOf { it.length.distance.millimeters }))
     val allowanceRanges = getEngineeringAllowanceRanges(edges)
     assert(fullInfraExplorer.isPathComplete)
     val fixedPoints =
@@ -187,7 +184,7 @@ fun buildFinalEnvelope(
 private fun initFixedPoints(
     edges: List<STDCMEdge>,
     stops: List<TrainStop>,
-    length: Length<TravelledPath>,
+    length: Length<TrainPath>,
     hasStandardAllowance: Boolean,
     updatedTimeData: TimeData,
     allowanceRanges: List<EngineeringAllowanceRange>,
@@ -277,8 +274,8 @@ private fun getEngineeringAllowanceRanges(edges: List<STDCMEdge>): List<Engineer
 private fun makeFixedPoint(
     fixedPoints: TreeSet<FixedTimePoint>,
     edges: List<STDCMEdge>,
-    conflictOffset: Offset<TravelledPath>,
-    pathLength: Length<TravelledPath>,
+    conflictOffset: Offset<TrainPath>,
+    pathLength: Length<TrainPath>,
     updatedTimeData: TimeData,
     allowanceRanges: List<EngineeringAllowanceRange>,
     stopDuration: Double = 0.0,
@@ -325,10 +322,10 @@ private fun makeFixedPoint(
  */
 private fun roundOffset(
     edges: List<STDCMEdge>,
-    offset: Offset<TravelledPath>,
+    offset: Offset<TrainPath>,
     roundToEnd: Boolean,
-): Offset<TravelledPath> {
-    var prevEdgesLength = Offset<TravelledPath>(0.meters)
+): Offset<TrainPath> {
+    var prevEdgesLength = Offset<TrainPath>(0.meters)
     for (edge in edges) {
         if (offset <= prevEdgesLength + edge.length.distance) {
             return if (roundToEnd) prevEdgesLength + edge.length.distance else prevEdgesLength
@@ -346,7 +343,7 @@ private fun roundOffset(
  */
 private fun getTimeOnEdges(
     edges: List<STDCMEdge>,
-    offset: Offset<TravelledPath>,
+    offset: Offset<TrainPath>,
     updatedTimeData: TimeData,
 ): Double {
     var remainingDistance = offset.distance
@@ -374,7 +371,7 @@ private fun findConflictOffsets(
     blockAvailability: BlockAvailabilityInterface,
     edges: List<STDCMEdge>,
     updatedTimeData: TimeData,
-): Offset<TravelledPath>? {
+): Offset<TrainPath>? {
     val explorer = getUpdatedExplorer(edges, envelope, updatedTimeData)
     val availability =
         blockAvailability.getAvailability(
@@ -470,7 +467,7 @@ private fun handlePostProcessingConflict(
     stops: List<TrainStop>,
     updatedTimeData: TimeData,
     fixedPoints: TreeSet<FixedTimePoint>,
-    conflictOffset: Offset<TravelledPath>,
+    conflictOffset: Offset<TrainPath>,
     isMareco: Boolean,
 ): Envelope {
     postProcessingLogger.error(

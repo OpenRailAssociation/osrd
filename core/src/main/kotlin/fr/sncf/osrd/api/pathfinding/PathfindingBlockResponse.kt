@@ -8,7 +8,7 @@ import com.squareup.moshi.adapters.PolymorphicJsonAdapterFactory
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import fr.sncf.osrd.api.DirectionalTrackRange
 import fr.sncf.osrd.path.interfaces.JsonTrainPath
-import fr.sncf.osrd.path.interfaces.TravelledPath
+import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.pathfinding.Pathfinding
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.utils.json.UnitAdapterFactory
@@ -20,10 +20,10 @@ interface PathfindingBlockResponse
 
 class PathfindingBlockSuccess(
     val path: JsonTrainPath,
-    val length: Length<TravelledPath>,
+    val length: Length<TrainPath>,
 
     /** Offsets of the waypoints given as input */
-    @Json(name = "path_item_positions") val pathItemPositions: List<Offset<TravelledPath>>,
+    @Json(name = "path_item_positions") val pathItemPositions: List<Offset<TrainPath>>,
 ) : PathfindingBlockResponse {
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
@@ -43,12 +43,12 @@ class PathfindingBlockSuccess(
 
 class NotFoundInBlocks(
     @Json(name = "track_section_ranges") val trackSectionRanges: List<DirectionalTrackRange>,
-    val length: Length<TravelledPath>,
+    val length: Length<TrainPath>,
 ) : PathfindingBlockResponse
 
 class NotFoundInRoutes(
     @Json(name = "track_section_ranges") val trackSectionRanges: List<DirectionalTrackRange>,
-    val length: Length<TravelledPath>,
+    val length: Length<TrainPath>,
 ) : PathfindingBlockResponse
 
 class NotFoundInTracks : PathfindingBlockResponse
@@ -66,9 +66,9 @@ data class IncompatibleConstraints(
     val incompatibleSignalingSystemRanges: List<RangeValue<String>>,
 )
 
-data class RangeValue<T>(val range: Pathfinding.Range<TravelledPath>, val value: T?) {
+data class RangeValue<T>(val range: Pathfinding.Range<TrainPath>, val value: T?) {
     @FromJson
-    fun fromJson(range: Pathfinding.Range<TravelledPath>): RangeValue<T> {
+    fun fromJson(range: Pathfinding.Range<TrainPath>): RangeValue<T> {
         return RangeValue(range, null)
     }
 }
