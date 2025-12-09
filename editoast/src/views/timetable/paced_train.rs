@@ -1722,14 +1722,14 @@ mod tests {
             response,
             simulation::Response::Success(SimulationResponseSuccess {
                 base: ReportTrain {
-                    positions: vec![],
+                    positions: vec![0],
                     times: vec![0],
                     speeds: vec![],
                     energy_consumption: 0.0,
                     path_item_times: vec![0, 1]
                 },
                 provisional: ReportTrain {
-                    positions: vec![],
+                    positions: vec![0],
                     times: vec![0],
                     speeds: vec![],
                     energy_consumption: 0.0,
