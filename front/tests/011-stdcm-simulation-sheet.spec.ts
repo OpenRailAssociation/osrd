@@ -40,6 +40,7 @@ test.describe('Verify stdcm simulation page', () => {
   let simulationResultPage: SimulationResultPage;
 
   let infra: Infra;
+  let downloadDir: string | undefined;
 
   test.beforeAll('Fetch infrastructure', async () => {
     infra = await getInfra();
@@ -65,8 +66,6 @@ test.describe('Verify stdcm simulation page', () => {
     await page.goto('/stdcm');
     await waitForInfraStateToBeCached(infra.id);
   });
-
-  let downloadDir: string | undefined;
 
   /** *************** Test 1 **************** */
   test('Verify STDCM stops and simulation sheet', async ({ browserName, context }, testInfo) => {

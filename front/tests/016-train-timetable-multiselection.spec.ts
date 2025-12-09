@@ -62,6 +62,8 @@ test.describe('Verify train schedule elements and filters', () => {
   });
 
   test.beforeEach('Go to scenario page', async ({ page }) => {
+    scenarioTimetableSection = new ScenarioTimetableSection(page);
+
     await page.goto(
       `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenarioItems.id}`
     );
@@ -69,9 +71,7 @@ test.describe('Verify train schedule elements and filters', () => {
   });
 
   /** *************** Test 1 **************** */
-  test('Select and delete all timetable items', async ({ page }) => {
-    scenarioTimetableSection = new ScenarioTimetableSection(page);
-
+  test('Select and delete all timetable items', async () => {
     await test.step('Verify initial totals', async () => {
       await scenarioTimetableSection.verifyTotalItemsLabel(frTranslations, {
         totalPacedTrainCount: TOTAL_PACED_TRAINS,

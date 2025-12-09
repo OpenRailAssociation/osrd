@@ -52,6 +52,7 @@ test.describe('Verify round trips', () => {
 
   test.beforeEach('Open scenario & round-trip modal', async ({ page }) => {
     roundTripPage = new RoundTripPage(page);
+
     await test.step('Create, open scenario and wait for infra to be loaded', async () => {
       scenarioItems = (
         await createScenario(
@@ -80,6 +81,7 @@ test.describe('Verify round trips', () => {
     await deleteScenario(study.id, scenarioItems.name);
   });
 
+  /** *************** Test 1 **************** */
   test('Basic checks round trips', async () => {
     await test.step('Verify round trips elements are visible', async () => {
       await roundTripPage.verifyRoundTripsModalElements(
@@ -98,6 +100,7 @@ test.describe('Verify round trips', () => {
     });
   });
 
+  /** *************** Test 2 **************** */
   test('Verify round trip cards: paced trains and schedules', async () => {
     await test.step('First paced train - data & no tooltip', async () => {
       await roundTripPage.verifyRoundTripCardData({
@@ -147,6 +150,8 @@ test.describe('Verify round trips', () => {
       await roundTripPage.checkIntermediateStopsTooltip({ roundTripCardIndex: 5 });
     });
   });
+
+  /** *************** Test 3 **************** */
   test('Cancel round trip items', async () => {
     await test.step('Move 1 item from To-do → One-way (not yet saved)', async () => {
       await roundTripPage.setTodoCardToOneWay({
@@ -171,6 +176,7 @@ test.describe('Verify round trips', () => {
     });
   });
 
+  /** *************** Test 4 **************** */
   test('Save round trip items', async () => {
     await test.step('Move 1 item from To-do → One-way', async () => {
       await roundTripPage.setTodoCardToOneWay({
@@ -195,6 +201,7 @@ test.describe('Verify round trips', () => {
     });
   });
 
+  /** *************** Test 5 **************** */
   test('Set One-way trip', async () => {
     await test.step('Filter item by name → verify filtered counts', async () => {
       await roundTripPage.searchForRoundTripsCard({
@@ -229,6 +236,7 @@ test.describe('Verify round trips', () => {
     });
   });
 
+  /** *************** Test 6 **************** */
   test('Create and undo Round trips', async () => {
     await test.step('Pair first One-way with its return', async () => {
       await roundTripPage.pickReturnForOneWayCard({
@@ -252,7 +260,7 @@ test.describe('Verify round trips', () => {
       });
     });
 
-    await test.step('restore the most recent Round trip back to To-do', async () => {
+    await test.step('Restore the most recent Round trip back to To-do', async () => {
       await roundTripPage.restoreRoundTripCardsToTodo({
         index: 1,
         toDoCount: 4,
@@ -261,7 +269,7 @@ test.describe('Verify round trips', () => {
       });
     });
 
-    await test.step('restore the remaining Round trip all back to To-do', async () => {
+    await test.step('Restore the remaining Round trip all back to To-do', async () => {
       await roundTripPage.restoreRoundTripCardsToTodo({
         index: 0,
         toDoCount: 6,

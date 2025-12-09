@@ -21,7 +21,6 @@ const frTranslations: FlatTranslations = readJsonFile<Record<string, FlatTransla
   'public/locales/fr/translation.json'
 ).timeStopTable;
 
-// Load test data for table inputs and expected results
 const initialInputsData: CellData[] = readJsonFile(
   './tests/assets/operation-studies/times-and-stops/initial-inputs.json'
 );
@@ -38,7 +37,6 @@ const updatedCellData: JSON = readJsonFile(
   './tests/assets/operation-studies/times-and-stops/updated-inputs-cells-data.json'
 );
 
-// Waypoints data for route verification
 const expectedViaValues = [
   { name: 'Mid_West_station', ch: 'BV', uic: '33', km: 'KM 12.050' },
   { name: 'Mid_East_station', ch: 'BV', uic: '44', km: 'KM 26.500' },
@@ -76,32 +74,25 @@ test.describe('Times and Stops Tab Verification', () => {
     ];
 
     await test.step('Create then navigate to scenario page', async () => {
-      // Set up scenario for operational study
       ({ project, study, scenario } = await createScenario());
 
-      // Navigate to the operational study scenario page
       await page.goto(
         `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenario.id}`
       );
-
-      // Wait for infra to be in 'CACHED' state before proceeding
       await waitForInfraStateToBeCached(infra.id);
     });
-    await test.step('Add a new train schedule, set its properties and perform pathfinding', async () => {
-      // Setup train schedule configuration and schedule
+    await test.step('Add a new train schedule and set its properties', async () => {
       await operationalStudiesPage.openTimetableItemForm();
       await operationalStudiesPage.setTimetableItemStartTime('11:22:40');
       await rollingStockSelector.selectRollingStock(dualModeRollingStockName);
       await operationalStudiesPage.setTimetableItemName('Train-name-e2e-test');
-
-      // Perform route pathfinding
+    });
+    await test.step('Perform pathfinding then navigate to Times and Stops tab', async () => {
       await operationalStudiesPage.openRouteTab();
       await routeTab.performPathfindingByTrigram({
         originTrigram: 'WS',
         destinationTrigram: 'NES',
       });
-
-      // Navigate to the Times and Stops tab and scroll to the data sheet
       await operationalStudiesPage.openTimesAndStopsTab();
     });
   });
@@ -110,7 +101,8 @@ test.describe('Times and Stops Tab Verification', () => {
     await deleteScenario(study.id, scenario.name);
   });
 
-  test('should correctly set and display times and stops tables', async () => {
+  /** *************** Test 1 **************** */
+  test('Set and display times and stops tables', async () => {
     await test.step('Verify table headers', async () => {
       const expectedColumnNames = cleanWhitespaceInArray([
         frTranslations.name,
@@ -170,7 +162,8 @@ test.describe('Times and Stops Tab Verification', () => {
     });
   });
 
-  test('should correctly update and clear input table row', async () => {
+  /** *************** Test 2 **************** */
+  test('Update and clear input table row', async () => {
     await test.step('Fill initial inputs and verify table', async () => {
       for (const cell of initialInputsData) {
         const translatedHeader = cleanWhitespace(frTranslations[cell.header]);

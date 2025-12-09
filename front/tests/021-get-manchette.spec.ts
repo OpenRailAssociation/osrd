@@ -64,6 +64,7 @@ test.skip(
   ({ browserName }) => browserName !== 'chromium',
   'Limit to Chromium for GitHub snapshots storage optimization'
 );
+
 test.describe('Verify manchette and space time diagram', () => {
   let simulationResultPage: OpSimulationResultPage;
   let scenarioTimetableSection: ScenarioTimetableSection;
@@ -81,7 +82,7 @@ test.describe('Verify manchette and space time diagram', () => {
     infra = await getInfra();
     scenarioItems = (
       await createScenario(
-        generateUniqueName('edit-train-scenario'),
+        generateUniqueName('std-manchette-scenario'),
         project.id,
         study.id,
         infra.id
@@ -109,6 +110,7 @@ test.describe('Verify manchette and space time diagram', () => {
     await deleteScenario(study.id, scenarioItems.name);
   });
 
+  /** *************** Test 1 **************** */
   test('Basic checks for STD/Manchette', async () => {
     await test.step('Verify first train schedule is selected', async () => {
       await scenarioTimetableSection.verifyFirstTimetableItemIsSelected();
@@ -136,6 +138,7 @@ test.describe('Verify manchette and space time diagram', () => {
     });
   });
 
+  /** *************** Test 2 **************** */
   test.skip('Space time diagram (temporarily skipped until STD snapshots are stable)', async () => {
     await test.step('Project train schedule and capture GET screenshot', async () => {
       await scenarioTimetableSection.projectTrain();
@@ -209,7 +212,8 @@ test.describe('Verify manchette and space time diagram', () => {
     });
   });
 
-  test('Manchette', async () => {
+  /** *************** Test 3 **************** */
+  test('Manchette waypoints data', async () => {
     await test.step('Project train schedule and verify waypoints list', async () => {
       await scenarioTimetableSection.projectTrain();
       await simulationResultPage.setTrainListVisible();

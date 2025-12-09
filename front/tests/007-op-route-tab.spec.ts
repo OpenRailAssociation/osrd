@@ -116,9 +116,7 @@ test.describe('Route Tab Verification', () => {
   });
 
   /** *************** Test 3 **************** */
-  test('Reversing and deleting waypoints in a route for operational study', async ({
-    browserName,
-  }) => {
+  test('Reversing and deleting waypoints', async ({ browserName }) => {
     const expectedMapMarkersValues = ['West_station', 'South_East_station', 'Mid_West_station'];
 
     await test.step('Perform pathfinding WS → SES via MWS and verify markers', async () => {

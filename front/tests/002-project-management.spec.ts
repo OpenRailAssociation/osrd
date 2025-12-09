@@ -73,7 +73,7 @@ test.describe('Validate the Operational Study Project workflow', () => {
       await projectPage.openProjectByTestId(project.name);
     });
 
-    await test.step('Update than save project details', async () => {
+    await test.step('Update and save project details', async () => {
       await projectPage.updateProject({
         name: updatedName,
         description: `${project.description} (updated)`,
