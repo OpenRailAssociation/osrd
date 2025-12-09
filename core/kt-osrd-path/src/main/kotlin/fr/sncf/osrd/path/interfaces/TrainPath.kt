@@ -1,9 +1,7 @@
 package fr.sncf.osrd.path.interfaces
 
-import fr.sncf.osrd.path.implementations.ChunkPath
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.utils.units.Offset
-import fr.sncf.osrd.utils.units.sumDistances
 
 /**
  * A `TrainPath` describes the path taken by a train and its properties. It is built in a way that
@@ -61,19 +59,6 @@ fun concat(vararg paths: TrainPath): TrainPath {
 // to allow partial migration while still having a working core.
 // Every call site will become a bug once we have backtracks.
 // TODO path migration: remove these.
-
-fun TrainPath.getLegacyChunkPath(): ChunkPath {
-    val chunkRanges = getChunks()
-    val beginOffset = chunkRanges.first().objectBegin.cast<BlockPath>()
-    // Poorly optimized, we could avoid the loop if we had infra access.
-    // Should be good enough for short-lived backward compatibility method.
-    val endOffset = beginOffset + chunkRanges.map { it.length }.sumDistances()
-    return ChunkPath(
-        chunks = chunkRanges.map { it.value },
-        beginOffset = beginOffset,
-        endOffset = endOffset,
-    )
-}
 
 fun TrainPath.getLegacyBlockPath(): List<BlockId> {
     // Legacy block list excluded blocks that were only used in 0-length segments

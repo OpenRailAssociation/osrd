@@ -2,6 +2,7 @@ package fr.sncf.osrd.api.path_properties
 
 import fr.sncf.osrd.api.DirectionalTrackRange
 import fr.sncf.osrd.api.ExceptionHandler
+import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.api.InfraProvider
 import fr.sncf.osrd.cli.Request
 import fr.sncf.osrd.cli.Response
@@ -10,16 +11,17 @@ import fr.sncf.osrd.cli.RsText
 import fr.sncf.osrd.cli.RsWithBody
 import fr.sncf.osrd.cli.RsWithStatus
 import fr.sncf.osrd.cli.Take
-import fr.sncf.osrd.path.implementations.ChunkPath
-import fr.sncf.osrd.path.implementations.buildChunkPath
-import fr.sncf.osrd.path.implementations.buildTrainPathFromChunkPath
-import fr.sncf.osrd.railjson.schema.common.graph.EdgeDirection
-import fr.sncf.osrd.sim_infra.api.RawSignalingInfra
-import fr.sncf.osrd.sim_infra.api.TrackChunk
-import fr.sncf.osrd.utils.Direction
-import fr.sncf.osrd.utils.indexing.DirStaticIdx
-import fr.sncf.osrd.utils.indexing.MutableDirStaticIdxArrayList
-import fr.sncf.osrd.utils.units.Offset
+import fr.sncf.osrd.path.implementations.PartialDirTrackRange
+import fr.sncf.osrd.path.implementations.buildRangeList
+import fr.sncf.osrd.path.implementations.buildTrainPathFromTracks
+import fr.sncf.osrd.path.interfaces.TrainPath
+import fr.sncf.osrd.reporting.exceptions.OSRDError.newUnknownTrackSectionError
+import fr.sncf.osrd.sim_infra.api.DirTrackSectionId
+import fr.sncf.osrd.toDirection
+import fr.sncf.osrd.utils.units.Offset.Companion.max
+import fr.sncf.osrd.utils.units.Offset.Companion.min
+import fr.sncf.osrd.utils.units.forceDirected
+import fr.sncf.osrd.utils.units.toDirected
 
 class PathPropEndpoint(private val infraManager: InfraProvider) : Take {
     override fun act(req: Request): Response {
@@ -32,8 +34,7 @@ class PathPropEndpoint(private val infraManager: InfraProvider) : Take {
             // Load infra
             val infra = infraManager.getInfra(request.infra, request.expectedVersion)
 
-            val chunkPath = makeChunkPath(infra.rawInfra, request.trackSectionRanges)
-            val trainPath = buildTrainPathFromChunkPath(infra.rawInfra, infra.blockInfra, chunkPath)
+            val trainPath = buildTrainPath(infra, request.trackSectionRanges)
             val res = makePathPropResponse(trainPath, infra.rawInfra)
 
             RsJson(RsWithBody(pathPropResponseAdapter.toJson(res)))
@@ -42,29 +43,28 @@ class PathPropEndpoint(private val infraManager: InfraProvider) : Take {
         }
     }
 
-    fun makeChunkPath(
-        rawInfra: RawSignalingInfra,
+    /** Build a train path from the request's track ranges. */
+    private fun buildTrainPath(
+        infra: FullInfra,
         trackRanges: List<DirectionalTrackRange>,
-    ): ChunkPath {
-        val chunks = MutableDirStaticIdxArrayList<TrackChunk>()
-        val firstRange = trackRanges[0]
-        var startOffset = firstRange.begin.distance
-        if (firstRange.direction == EdgeDirection.STOP_TO_START) {
-            val firstTrackId = rawInfra.getTrackSectionFromName(firstRange.trackSection)!!
-            startOffset = rawInfra.getTrackSectionLength(firstTrackId) - firstRange.end
-        }
-        var endOffset = startOffset
-        for (trackRange in trackRanges) {
-            endOffset += trackRange.end - trackRange.begin
-            val trackId = rawInfra.getTrackSectionFromName(trackRange.trackSection)!!
-            val dir =
-                if (trackRange.direction == EdgeDirection.START_TO_STOP) Direction.INCREASING
-                else Direction.DECREASING
-            val chunksOnTrack =
-                if (dir == Direction.INCREASING) rawInfra.getTrackSectionChunks(trackId)
-                else rawInfra.getTrackSectionChunks(trackId).reversed()
-            for (chunk in chunksOnTrack) chunks.add(DirStaticIdx(chunk, dir))
-        }
-        return buildChunkPath(rawInfra, chunks, Offset(startOffset), Offset(endOffset))
+    ): TrainPath {
+        val partialTrackRanges =
+            trackRanges.map {
+                val track =
+                    infra.rawInfra.getTrackSectionFromName(it.trackSection)
+                        ?: throw newUnknownTrackSectionError(it.trackSection)
+                val dir = it.direction.toDirection()
+                val trackLength = infra.rawInfra.getTrackSectionLength(track)
+                val begin = it.begin.toDirected(trackLength, dir)
+                val end = it.end.toDirected(trackLength, dir)
+                PartialDirTrackRange(
+                    DirTrackSectionId(track, dir),
+                    min(begin, end),
+                    max(begin, end),
+                    trackLength.forceDirected(),
+                )
+            }
+        val trackRanges = buildRangeList(partialTrackRanges)
+        return buildTrainPathFromTracks(infra.rawInfra, infra.blockInfra, trackRanges)
     }
 }
