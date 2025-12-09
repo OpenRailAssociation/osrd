@@ -4,7 +4,7 @@ import com.squareup.moshi.Json
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
-import fr.sncf.osrd.path.interfaces.TravelledPath
+import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.utils.json.UnitAdapterFactory
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.TimeDelta
@@ -18,8 +18,8 @@ class SignalUpdate(
     @Json(name = "signaling_system") val signalingSystem: String,
     @Json(name = "time_start") val timeStart: TimeDelta,
     @Json(name = "time_end") val timeEnd: TimeDelta,
-    @Json(name = "position_start") val positionStart: Offset<TravelledPath>,
-    @Json(name = "position_end") val positionEnd: Offset<TravelledPath>,
+    @Json(name = "position_start") val positionStart: Offset<TrainPath>,
+    @Json(name = "position_end") val positionEnd: Offset<TrainPath>,
     val color: Int,
     val blinking: Boolean,
     @Json(name = "aspect_label") val aspectLabel: String,

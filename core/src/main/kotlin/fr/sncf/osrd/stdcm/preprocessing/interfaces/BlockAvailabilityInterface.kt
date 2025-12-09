@@ -1,7 +1,6 @@
 package fr.sncf.osrd.stdcm.preprocessing.interfaces
 
 import fr.sncf.osrd.path.interfaces.TrainPath
-import fr.sncf.osrd.path.interfaces.TravelledPath
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelope
 import fr.sncf.osrd.utils.units.Offset
 
@@ -72,7 +71,7 @@ interface BlockAvailabilityInterface {
          * It's either the offset where we start using a resource before it's available, or the
          * offset where the train would have released a resource it has kept for too long.
          */
-        val firstConflictOffset: Offset<TravelledPath>,
+        val firstConflictOffset: Offset<TrainPath>,
     ) : Availability()
 
     /**

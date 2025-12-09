@@ -13,7 +13,7 @@ import fr.sncf.osrd.envelope_sim.pipelines.maxEffortEnvelopeFrom
 import fr.sncf.osrd.envelope_sim.pipelines.maxSpeedEnvelopeFrom
 import fr.sncf.osrd.envelope_sim_infra.computeMRSP
 import fr.sncf.osrd.path.implementations.buildTrainPathFromBlocks
-import fr.sncf.osrd.path.interfaces.TravelledPath
+import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
 import fr.sncf.osrd.railjson.schema.schedule.RJSAllowanceDistribution
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal.OPEN
@@ -254,7 +254,7 @@ class StandaloneSimulationTest {
         }
 
         // Test margin values
-        val boundaries = mutableListOf<Offset<TravelledPath>>()
+        val boundaries = mutableListOf<Offset<TrainPath>>()
         boundaries.add(Offset(Distance.ZERO))
         boundaries.addAll(testCase.margins.internalBoundaries)
         boundaries.add(Offset(testCase.pathLength))
@@ -471,7 +471,7 @@ class StandaloneSimulationTest {
      * Returns the time at which the given offset is reached, interpolating linearly between points.
      */
     private fun getTimeAt(
-        offset: Offset<TravelledPath>,
+        offset: Offset<TrainPath>,
         train: ReportTrain,
         interpolateRight: Boolean,
     ): Double {
@@ -482,8 +482,8 @@ class StandaloneSimulationTest {
      * Returns the time at which the given offset is reached, interpolating linearly between points.
      */
     private fun getTimeAt(
-        offset: Offset<TravelledPath>,
-        positions: List<Offset<TravelledPath>>,
+        offset: Offset<TrainPath>,
+        positions: List<Offset<TrainPath>>,
         times: List<TimeDelta>,
         interpolateRight: Boolean,
     ): Double {

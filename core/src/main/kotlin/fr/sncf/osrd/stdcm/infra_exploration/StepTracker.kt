@@ -1,6 +1,6 @@
 package fr.sncf.osrd.stdcm.infra_exploration
 
-import fr.sncf.osrd.path.interfaces.TravelledPath
+import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.pathfinding.Pathfinding.EdgeLocation
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockId
@@ -32,7 +32,7 @@ class StepTracker(
         private set
 
     // Used to compute path offsets
-    private var currentPathOffset: Offset<TravelledPath> = Offset.zero()
+    private var currentPathOffset: Offset<TrainPath> = Offset.zero()
 
     /** Returns all the steps that have been passed on the path, in order. */
     fun getSeenSteps(): List<LocatedStep> {
@@ -62,7 +62,7 @@ class StepTracker(
     ): List<LocatedStep> {
         val res = mutableListOf<LocatedStep>()
 
-        val currentBlockStart: Offset<TravelledPath> = currentPathOffset - rangeStart.distance
+        val currentBlockStart: Offset<TrainPath> = currentPathOffset - rangeStart.distance
         for (step in inputSteps.dropSeq(nSeenSteps)) {
             val currentPathBlockOffset = Offset<Block>(currentPathOffset - currentBlockStart)
             val location =
@@ -117,7 +117,7 @@ class StepTracker(
 }
 
 data class LocatedStep(
-    val travelledPathOffset: Offset<TravelledPath>,
+    val travelledPathOffset: Offset<TrainPath>,
     val location: EdgeLocation<BlockId, Block>,
     val originalStep: STDCMStep,
     val isPlanned: Boolean = true, // Set to false for overtakes (when implemented)

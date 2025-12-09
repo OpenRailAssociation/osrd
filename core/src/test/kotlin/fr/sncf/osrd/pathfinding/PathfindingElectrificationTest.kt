@@ -5,7 +5,7 @@ import fr.sncf.osrd.api.TrackLocation
 import fr.sncf.osrd.api.pathfinding.IncompatibleConstraintsPathResponse
 import fr.sncf.osrd.api.pathfinding.NoPathFoundException
 import fr.sncf.osrd.api.pathfinding.runPathfinding
-import fr.sncf.osrd.path.interfaces.TravelledPath
+import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.railjson.schema.common.graph.ApplicableDirection
 import fr.sncf.osrd.railjson.schema.infra.RJSTrackSection
 import fr.sncf.osrd.railjson.schema.infra.trackranges.RJSApplicableDirectionsTrackRange
@@ -278,8 +278,8 @@ class PathfindingElectrificationTest : ApiTest() {
                 assert(resp.relaxedConstraintsPath.length.distance == 39_553.meters)
                 val incompElec =
                     resp.incompatibleConstraints.incompatibleElectrificationRanges.single()
-                assert(incompElec.range.start == Offset<TravelledPath>(0.meters))
-                assert(incompElec.range.end == Offset<TravelledPath>(39_553.meters))
+                assert(incompElec.range.start == Offset<TrainPath>(0.meters))
+                assert(incompElec.range.end == Offset<TrainPath>(39_553.meters))
                 assert(incompElec.value == "")
             })
     }

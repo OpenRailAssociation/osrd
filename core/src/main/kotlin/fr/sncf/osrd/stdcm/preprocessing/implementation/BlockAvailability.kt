@@ -6,7 +6,6 @@ import com.google.common.collect.TreeRangeSet
 import fr.sncf.osrd.conflicts.*
 import fr.sncf.osrd.envelope_utils.DoubleBinarySearch
 import fr.sncf.osrd.path.interfaces.TrainPath
-import fr.sncf.osrd.path.interfaces.TravelledPath
 import fr.sncf.osrd.sim_infra.api.ZoneId
 import fr.sncf.osrd.standalone_sim.CLOSED_SIGNAL_RESERVATION_MARGIN
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelope
@@ -34,7 +33,7 @@ data class BlockAvailability(
         startTime: Double,
     ): BlockAvailabilityInterface.Availability {
         var timeShift = 0.0
-        var firstConflictOffset: Offset<TravelledPath>? = null
+        var firstConflictOffset: Offset<TrainPath>? = null
         while (timeShift.isFinite()) {
             val shiftedStartTime = startTime + timeShift
             val pathStartTime =
@@ -99,7 +98,7 @@ data class BlockAvailability(
         pathStartTime: Double,
     ): BlockAvailabilityInterface.Availability {
         var minimumDelayToBecomeAvailable = 0.0
-        var firstUnavailabilityOffset = Offset<TravelledPath>(Double.POSITIVE_INFINITY.meters)
+        var firstUnavailabilityOffset = Offset<TrainPath>(Double.POSITIVE_INFINITY.meters)
         var maximumDelayToStayAvailable = Double.POSITIVE_INFINITY
         var timeOfNextUnavailability = Double.POSITIVE_INFINITY
 
@@ -306,7 +305,7 @@ data class BlockAvailability(
     private fun getEnvelopeOffsetFromTime(
         explorer: InfraExplorerWithEnvelope,
         time: Double,
-    ): Offset<TravelledPath> {
+    ): Offset<TrainPath> {
         if (time < 0.0) return Offset(0.meters)
         val envelope = explorer.getFullEnvelope()
         if (time > envelope.totalTime) return explorer.getSimulatedLength()
@@ -328,7 +327,7 @@ private data class AvailabilityProperties(
     // available
     val minimumDelayToBecomeAvailable: Double,
     // If a resource is unavailable, offset of that resource
-    val firstUnavailabilityOffset: Offset<TravelledPath>,
+    val firstUnavailabilityOffset: Offset<TrainPath>,
     // If everything is available, maximum delay that can be added to the train without a resource
     // becoming unavailable
     val maximumDelayToStayAvailable: Double,

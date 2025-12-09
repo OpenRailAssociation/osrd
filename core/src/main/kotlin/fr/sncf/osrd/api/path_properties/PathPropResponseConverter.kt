@@ -3,7 +3,6 @@ package fr.sncf.osrd.api.path_properties
 import com.google.common.collect.Range
 import fr.sncf.osrd.api.RangeValues
 import fr.sncf.osrd.path.interfaces.TrainPath
-import fr.sncf.osrd.path.interfaces.TravelledPath
 import fr.sncf.osrd.railjson.schema.geom.RJSLineString
 import fr.sncf.osrd.sim_infra.api.NeutralSection
 import fr.sncf.osrd.sim_infra.api.RawSignalingInfra
@@ -118,7 +117,7 @@ private fun <T> makeRangeValues(distanceRangeMap: DistanceRangeMap<T>): RangeVal
 }
 
 private fun <T> makeRangeValues(entries: List<DistanceRangeMap.RangeMapEntry<T>>): RangeValues<T> {
-    val boundaries = mutableListOf<Offset<TravelledPath>>()
+    val boundaries = mutableListOf<Offset<TrainPath>>()
     val values = mutableListOf<T>()
     for (entry in entries) {
         boundaries.add(Offset(entry.upper))

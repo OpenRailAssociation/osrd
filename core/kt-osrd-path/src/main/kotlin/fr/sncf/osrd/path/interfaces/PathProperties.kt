@@ -9,13 +9,6 @@ import fr.sncf.osrd.utils.units.Offset
 
 data class TrackLocation(val trackId: TrackSectionId, val offset: Offset<TrackSection>)
 
-/**
- * A marker type for Length and Offset. In TravelledPath, start refers to the real start of the head
- * of the train.
- */
-// TODO path migration: remove TravelledPath entirely
-typealias TravelledPath = TrainPath
-
 @Suppress("INAPPLICABLE_JVM_NAME")
 interface PathProperties {
     fun getSlopes(): DistanceRangeMap<Double>
@@ -43,7 +36,7 @@ interface PathProperties {
 
     fun getLength(): Length<TrainPath>
 
-    fun getTrackLocationAtOffset(pathOffset: Offset<TravelledPath>): TrackLocation
+    fun getTrackLocationAtOffset(pathOffset: Offset<TrainPath>): TrackLocation
 
     fun <T> getRangeMapFromUndirected(
         getData: (chunkId: TrackChunkId) -> DistanceRangeMap<T>
