@@ -36,50 +36,47 @@
 
 /// Re-export the Quantities that are used in OSRD
 pub mod quantities {
-    pub use uom::si::f64::Acceleration;
-    pub use uom::si::f64::Length;
-    pub use uom::si::f64::Mass;
-    pub use uom::si::f64::Time;
-    pub use uom::si::f64::Velocity;
-    pub type SolidFriction = uom::si::f64::Force;
-    pub type SolidFrictionPerWeight = uom::si::f64::Acceleration;
-    pub type ViscosityFriction = uom::si::f64::MassRate;
-    pub type ViscosityFrictionPerWeight = uom::si::f64::Frequency;
-    pub type AerodynamicDrag = uom::si::f64::LinearMassDensity;
-    pub type AerodynamicDragPerWeight = uom::si::f64::LinearNumberDensity;
-    pub type Deceleration = uom::si::f64::Acceleration;
+    pub use crate::unit_system::i64::*;
+    // Editoast aliases for existing units
+    pub type SolidFriction = Force;
+    pub type SolidFrictionPerWeight = Acceleration;
+    pub type Deceleration = Acceleration;
+    pub type ViscosityFriction = MassRate;
+    pub type ViscosityFrictionPerWeight = Frequency;
+    pub type AerodynamicDrag = LinearMassDensity;
+    pub type AerodynamicDragPerWeight = LinearNumberDensity;
 }
 
 macro_rules! quantity_to_path {
     (Length, $unit:ident) => {
-        uom::si::length::$unit
+        crate::unit_system::length::$unit
     };
     (Velocity, $unit:ident) => {
-        uom::si::velocity::$unit
+        crate::unit_system::velocity::$unit
     };
     (Acceleration, $unit:ident) => {
-        uom::si::acceleration::$unit
+        crate::unit_system::acceleration::$unit
     };
     (Mass, $unit:ident) => {
-        uom::si::mass::$unit
+        crate::unit_system::mass::$unit
     };
     (SolidFriction, $unit:ident) => {
-        uom::si::force::$unit
+        crate::unit_system::force::$unit
     };
     (ViscosityFriction, $unit:ident) => {
-        uom::si::mass_rate::$unit
+        crate::unit_system::mass_rate::$unit
     };
     (ViscosityFrictionPerWeight, $unit:ident) => {
-        uom::si::frequency::$unit
+        crate::unit_system::frequency::$unit
     };
     (AerodynamicDrag, $unit:ident) => {
-        uom::si::linear_mass_density::$unit
+        crate::unit_system::linear_mass_density::$unit
     };
     (AerodynamicDragPerWeight, $unit:ident) => {
-        uom::si::linear_number_density::$unit
+        crate::unit_system::linear_number_density::$unit
     };
     (Time, $unit:ident) => {
-        uom::si::time::$unit
+        crate::unit_system::time::$unit
     };
 }
 
@@ -92,7 +89,7 @@ macro_rules! define_unit {
             use serde::Serialize;
             use serde::Serializer;
             type Unit = quantity_to_path!($quantity, $unit);
-            pub type ReprType = f64;
+            pub type ReprType = i64;
 
             pub fn serialize<S>(value: &$quantity, serializer: S) -> Result<S::Ok, S::Error>
             where
@@ -115,10 +112,6 @@ macro_rules! define_unit {
 
             pub fn from(qty: $quantity) -> ReprType {
                 qty.get::<Unit>()
-            }
-
-            pub fn hash<H: std::hash::Hasher>(value: &$quantity, state: &mut H) {
-                crate::hash_float::<5, H>(&from(*value), state);
             }
 
             pub mod option {
@@ -150,20 +143,16 @@ macro_rules! define_unit {
                 pub fn from(qty: Option<$quantity>) -> ReprType {
                     qty.map(|q| q.get::<Unit>())
                 }
-
-                pub fn hash<H: std::hash::Hasher>(value: &Option<$quantity>, state: &mut H) {
-                    super::hash(&value.unwrap_or_default(), state);
-                }
             }
 
-            pub mod u64 {
+            pub mod f64 {
                 use super::*;
 
                 pub fn serialize<S>(value: &$quantity, serializer: S) -> Result<S::Ok, S::Error>
                 where
                     S: Serializer,
                 {
-                    (value.get::<Unit>() as u64).serialize(serializer)
+                    (value.get::<Unit>() as f64).serialize(serializer)
                 }
 
                 pub fn deserialize<'de, D>(deserializer: D) -> Result<$quantity, D::Error>
@@ -184,9 +173,7 @@ macro_rules! define_unit {
                     where
                         S: Serializer,
                     {
-                        value
-                            .map(|value| value.get::<Unit>() as u64)
-                            .serialize(serializer)
+                        value.map(|value| value.get::<Unit>()).serialize(serializer)
                     }
 
                     pub fn deserialize<'de, D>(
@@ -205,15 +192,23 @@ macro_rules! define_unit {
 
 // Any new value here must also be added in editoast_derive/src/annotate_units.rs
 use quantities::*;
-define_unit!(meter, Length);
 define_unit!(millimeter, Length);
+define_unit!(meter, Length);
 define_unit!(meter_per_second, Velocity);
 define_unit!(meter_per_second_squared, Acceleration);
+define_unit!(millimeter_per_second_squared, Acceleration);
 define_unit!(kilogram, Mass);
 define_unit!(newton, SolidFriction);
+define_unit!(milligram_per_second, ViscosityFriction);
+define_unit!(gram_per_second, ViscosityFriction);
 define_unit!(kilogram_per_second, ViscosityFriction);
+define_unit!(millihertz, ViscosityFrictionPerWeight);
 define_unit!(hertz, ViscosityFrictionPerWeight);
+define_unit!(milligram_per_meter, AerodynamicDrag);
+define_unit!(gram_per_meter, AerodynamicDrag);
 define_unit!(kilogram_per_meter, AerodynamicDrag);
+define_unit!(per_nanometer, AerodynamicDragPerWeight);
+define_unit!(per_millimeter, AerodynamicDragPerWeight);
 define_unit!(per_meter, AerodynamicDragPerWeight);
 define_unit!(second, Time);
 define_unit!(millisecond, Time);

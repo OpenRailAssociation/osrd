@@ -60,9 +60,9 @@ pub fn annotate_units(input: &mut DeriveInput) -> Result<TokenStream> {
                             if let Some(abbreviation) = get_abbreviation(&unit.unit) {
                                 if unit.optional {
                                     f.attrs
-                                        .push(parse_quote! {#[schema(value_type = Option<f64>)]});
+                                        .push(parse_quote! {#[schema(value_type = Option<i64>)]});
                                 } else {
-                                    f.attrs.push(parse_quote! {#[schema(value_type = f64)]});
+                                    f.attrs.push(parse_quote! {#[schema(value_type = i64)]});
                                 }
                                 f.attrs.push(parse_quote! {#[doc = #abbreviation]});
                             }
