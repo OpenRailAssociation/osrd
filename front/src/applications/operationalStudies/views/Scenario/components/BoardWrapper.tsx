@@ -36,11 +36,10 @@ const BoardWrapper = ({
         </span>
         <MenuTriggerButton
           buttonProps={{
-            className: 'board-header-button',
             dataTestID: 'board-header-button',
             disabled: items.length === 0,
           }}
-          menuProps={{ items, className: 'board-header-menu' }}
+          menuProps={{ items }}
         />
       </div>
       <div

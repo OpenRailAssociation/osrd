@@ -70,7 +70,7 @@ const MenuTriggerButton = ({ buttonProps, menuProps }: MenuTriggerButtonProps) =
             closeMenu();
           },
         }))}
-        className={menuClassName}
+        className={menuClassName ? menuClassName : 'menu-trigger'}
       />
     ),
     anchorRef: menuButtonRef,
@@ -83,7 +83,9 @@ const MenuTriggerButton = ({ buttonProps, menuProps }: MenuTriggerButtonProps) =
         ref={menuButtonRef}
         type="button"
         onClick={handleClick}
-        className={cx(buttonClassName, { 'menu-is-opened': isMenuOpen })}
+        className={cx(buttonClassName ? buttonClassName : 'menu-trigger-button', {
+          'menu-is-opened': isMenuOpen,
+        })}
         data-testid={dataTestID}
         {...restButtonProps}
       >

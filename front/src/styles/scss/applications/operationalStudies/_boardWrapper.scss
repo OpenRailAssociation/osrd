@@ -28,29 +28,6 @@
       vertical-align: middle;
       text-transform: uppercase;
     }
-
-    .board-header-button {
-      color: var(--grey30);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 24px;
-      height: 16px;
-
-      &:focus {
-        outline: none;
-      }
-
-      &.menu-is-opened {
-        color: var(--grey50);
-        outline: none;
-        box-shadow:
-          0 1px 2px 0 rgba(0, 0, 0, 0.16),
-          0 2px 2px -1px rgba(255, 171, 88, 0.27);
-        border-radius: 4px;
-        background-color: var(--white100);
-      }
-    }
   }
 
   .board-body {
@@ -76,9 +53,4 @@
     box-shadow: inset 0 1px 0 0 var(--white50);
     flex-shrink: 0;
   }
-}
-
-.board-header-menu {
-  margin-top: 4px;
-  margin-left: -7px;
 }
