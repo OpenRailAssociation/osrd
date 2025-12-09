@@ -126,7 +126,7 @@ const SendToRailwayManagerModal = ({
   const afterDate = addDurationToDate(realConstraintTime, afterTolerance);
   const beforeDate = subtractDurationFromDate(realConstraintTime, beforeTolerance);
 
-  const [sendLastMinuteRequest, { isLoading, isSuccess }] =
+  const [sendLastMinuteRequest, { isLoading, isSuccess, data }] =
     osrdRailwayManagerApi.endpoints.postSendLastMinuteRequest.useMutation();
 
   const convoyDetails = useMemo(
@@ -549,7 +549,9 @@ const SendToRailwayManagerModal = ({
         <div className="actions">
           {isSuccess && (
             <div>
-              <span className="success-message">{t('modal.successMessage')}</span>
+              <span className="success-message">
+                {t('modal.successMessage', { demandNumber: data.request_identifier })}
+              </span>
               <span className="success-icon">
                 <CheckCircle variant="fill" />
               </span>
