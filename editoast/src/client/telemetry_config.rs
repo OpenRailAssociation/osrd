@@ -6,7 +6,7 @@ use url::Url;
 #[derive(Args, Debug, Educe, Clone)]
 #[educe(Default)]
 pub struct TelemetryConfig {
-    #[educe(Default = TelemetryKind::None)]
+    #[educe(Default = TelemetryKind::Opentelemetry)]
     #[clap(long, env, default_value_t)]
     pub telemetry_kind: TelemetryKind,
     #[educe(Default = "osrd-editoast".into())]
@@ -29,7 +29,7 @@ impl From<TelemetryConfig> for common::tracing::Telemetry {
 #[derive(Default, ValueEnum, Debug, Clone, strum::Display)]
 #[strum(serialize_all = "lowercase")]
 pub enum TelemetryKind {
-    #[default]
     None,
+    #[default]
     Opentelemetry,
 }
