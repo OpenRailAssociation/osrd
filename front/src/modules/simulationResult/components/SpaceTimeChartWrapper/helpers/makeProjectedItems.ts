@@ -33,7 +33,7 @@ const makeProjectedItems = (projectPathTrainResult: TrainSpaceTimeData[]) =>
     for (let i = 0; i < occurrencesCount; i += 1) {
       const occurrenceId = formatPacedTrainIdToIndexedOccurrenceId(projectedItem.id, i);
       const correspondingException = findExceptionWithOccurrenceId(
-        projectedItem.exceptions,
+        projectedItem.paced.exceptions,
         occurrenceId
       );
 
@@ -54,7 +54,7 @@ const makeProjectedItems = (projectPathTrainResult: TrainSpaceTimeData[]) =>
         continue;
       }
 
-      const exceptionProjection = projectedItem.exceptionProjections.get(
+      const exceptionProjection = projectedItem.paced.exceptionProjections.get(
         correspondingException.key
       );
 
@@ -80,7 +80,7 @@ const makeProjectedItems = (projectPathTrainResult: TrainSpaceTimeData[]) =>
     }
 
     // =========== added exceptions ===========
-    for (const exception of projectedItem.exceptions) {
+    for (const exception of projectedItem.paced.exceptions) {
       if (Number.isInteger(exception.occurrence_index)) {
         // already done in the indexed occurrences loop above
         continue;
@@ -98,7 +98,7 @@ const makeProjectedItems = (projectPathTrainResult: TrainSpaceTimeData[]) =>
       const name = exception.train_name ? exception.train_name.value : `${projectedItem.name}/+`;
 
       occurrences.push({
-        ...(projectedItem.exceptionProjections.get(exception.key) ?? pacedTrainCurves),
+        ...(projectedItem.paced.exceptionProjections.get(exception.key) ?? pacedTrainCurves),
         id,
         name,
         departureTime: new Date(exception.start_time.value),

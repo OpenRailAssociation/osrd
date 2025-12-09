@@ -78,6 +78,7 @@ describe('makeProjectedItems', () => {
           timeWindow: Duration.parse('PT2H'),
           interval: Duration.parse('PT1H'),
           exceptions: [exception],
+          exceptionProjections: new Map([[exceptionKey, exceptionProjection]]),
         },
         spaceTimeCurves: [
           {
@@ -98,8 +99,6 @@ describe('makeProjectedItems', () => {
             aspect_label: 'VL',
           },
         ],
-        exceptions: [exception],
-        exceptionProjections: new Map([[exceptionKey, exceptionProjection]]),
       },
     ];
 
@@ -202,9 +201,8 @@ describe('makeProjectedItems', () => {
           timeWindow: Duration.parse('PT3H'),
           interval: Duration.parse('PT1H'),
           exceptions: [exception],
+          exceptionProjections: new Map([[exceptionKey, exceptionProjection]]),
         },
-        exceptions: [exception],
-        exceptionProjections: new Map([[exceptionKey, exceptionProjection]]),
       },
     ];
 

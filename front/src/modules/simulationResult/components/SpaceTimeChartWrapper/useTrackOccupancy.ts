@@ -247,11 +247,11 @@ const useTrackOccupancy = ({
             const exception =
               occupation.type === 'BaseOccurrence'
                 ? undefined
-                : train.exceptions.find((e) => e.key === occupation.exception_key);
+                : train.paced.exceptions.find((e) => e.key === occupation.exception_key);
 
             const exceptionProjection =
               occupation.type !== 'BaseOccurrence'
-                ? train.exceptionProjections.get(occupation.exception_key)
+                ? train.paced.exceptionProjections.get(occupation.exception_key)
                 : undefined;
 
             const { spaceTimeCurves } = exceptionProjection ?? train;
