@@ -1,9 +1,9 @@
 import { type Locator, type Page, expect } from '@playwright/test';
 
 import { extractNumberFromString } from '../../utils/index';
-import CommonPage from '../common-page';
+import OperationalStudiesPage from '../operational-studies/operational-studies-page';
 
-class RollingStockSelector extends CommonPage {
+class RollingStockSelector extends OperationalStudiesPage {
   private readonly rollingStockSelectorButton: Locator;
 
   private readonly emptyRollingStockSelector: Locator;
@@ -80,7 +80,7 @@ class RollingStockSelector extends CommonPage {
     return this.rollingStockSelectorModal.getByTestId(`rollingstock-${rollingstockName}`);
   }
 
-  static getRollingStockSearchButton(locator: Locator) {
+  private getRollingStockSearchButton(locator: Locator) {
     return locator.getByTestId('select-rolling-stock-button');
   }
 
@@ -107,7 +107,7 @@ class RollingStockSelector extends CommonPage {
     await expect(rollingstockCard).not.toHaveClass(/inactive/);
     if (selectComfort) await this.comfortACButton.click();
     if (confirmSelection) {
-      await RollingStockSelector.getRollingStockSearchButton(rollingstockCard).click();
+      await this.getRollingStockSearchButton(rollingstockCard).click();
       await expect(this.rollingStockSelectorModal).toBeHidden();
     }
   }
@@ -133,7 +133,8 @@ class RollingStockSelector extends CommonPage {
   }
 
   async getRollingStockSearchNumber(): Promise<number> {
-    return extractNumberFromString(await this.rollingStockSearchResult.innerText());
+    const rollingStockText = await this.rollingStockSearchResult.innerText();
+    return extractNumberFromString(rollingStockText);
   }
 
   async openEmptyRollingStockSelector() {
