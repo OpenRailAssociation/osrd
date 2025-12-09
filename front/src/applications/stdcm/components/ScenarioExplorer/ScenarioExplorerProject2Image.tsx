@@ -1,22 +1,12 @@
-import { useMemo, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
-import { getDocument } from 'common/api/documentApi';
-import type { ProjectWithStudies } from 'common/api/osrdEditoastApi';
+import { useProjectImage } from 'utils/hooks/useProjectImage';
 
-const Project2Image = ({ project }: { project: ProjectWithStudies }) => {
-  const [imageUrl, setImageUrl] = useState<string>();
+const Project2Image = ({ imageId }: { imageId: number | null | undefined }) => {
+  const { t } = useTranslation('operational-studies');
+  const imageUrl = useProjectImage(imageId);
 
-  useMemo(async () => {
-    if (!project || !project.image) return;
-    try {
-      const blobImage = await getDocument(project.image);
-      if (blobImage) setImageUrl(URL.createObjectURL(blobImage));
-    } catch (error: unknown) {
-      console.error(error);
-    }
-  }, [project]);
-
-  return imageUrl && <img src={imageUrl} alt="X" />;
+  return <img src={imageUrl} alt={t('project.projectImage')} />;
 };
 
 export default Project2Image;

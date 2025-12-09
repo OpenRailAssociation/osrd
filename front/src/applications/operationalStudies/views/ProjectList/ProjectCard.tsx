@@ -1,15 +1,13 @@
-import { useEffect, useState } from 'react';
-
 import { Calendar, CheckCircle, FileDirectory, FileDirectoryOpen } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 
-import { getDocument } from 'common/api/documentApi';
 import type { ProjectWithStudies, SearchResultItemProject } from 'common/api/osrdEditoastApi';
 import { getUserSafeWord } from 'reducers/user/userSelectors';
 import { useDateTimeLocale } from 'utils/date';
+import { useProjectImage } from 'utils/hooks/useProjectImage';
 
 type Props = {
   setFilterChips: (filterChips: string) => void;
@@ -21,26 +19,9 @@ type Props = {
 export default function ProjectCard({ setFilterChips, project, isSelected, toggleSelect }: Props) {
   const { t } = useTranslation('operational-studies');
   const dateTimeLocale = useDateTimeLocale();
-  const [imageUrl, setImageUrl] = useState<string>();
   const safeWord = useSelector(getUserSafeWord);
 
-  // as the image is stored in the database and can be fetched only through api (authentication needed),
-  // the direct url can not be given to the <img /> directly. Thus the image is fetched, and a new
-  // url is generated and stored in imageUrl (then used in <img />).
-  const getProjectImage = async (imageKey: number) => {
-    try {
-      const image = await getDocument(imageKey);
-      setImageUrl(URL.createObjectURL(image));
-    } catch (error: unknown) {
-      console.error(error);
-    }
-  };
-
-  useEffect(() => {
-    if (project.image) {
-      getProjectImage(project.image);
-    }
-  }, []);
+  const imageUrl = useProjectImage(project.image);
 
   return (
     <div

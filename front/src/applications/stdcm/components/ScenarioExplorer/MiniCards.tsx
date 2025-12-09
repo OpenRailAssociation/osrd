@@ -48,7 +48,7 @@ export const ProjectMiniCard = ({ project, setSelectedID, isSelected }: MiniCard
     }}
   >
     <div className="minicard-img">
-      <Project2Image project={project} />
+      <Project2Image imageId={project.image} />
     </div>
     <div className="text-truncate" title={project.name}>
       {project.name}

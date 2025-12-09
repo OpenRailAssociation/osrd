@@ -500,6 +500,7 @@
     "projectDescriptionPlaceholder": "Courte description du projet",
     "projectFunders": "Détails du financement",
     "projectFundersInvalid": "Le détail du financement du projet ne doit pas dépasser 1024 caractères",
+    "projectImage": "Image du projet",
     "projectModificationTitle": "Modifier le projet",
     "projectModifyButton": "Enregistrer",
     "projectName": "Nom du projet",

@@ -14,7 +14,6 @@ import FilterTextField from 'applications/operationalStudies/components/FilterTe
 import AddOrEditStudyModal from 'applications/operationalStudies/components/Study/AddOrEditStudyModal';
 import useMultiSelection from 'applications/operationalStudies/hooks/useMultiSelection';
 import type { StudyCardDetails } from 'applications/operationalStudies/types';
-import { getDocument } from 'common/api/documentApi';
 import {
   type PostSearchApiArg,
   type SearchResultItemStudy,
@@ -27,6 +26,7 @@ import NavBar from 'common/NavBar';
 import SelectionToolbar from 'common/SelectionToolbar';
 import AddOrEditProjectModal from 'modules/project/components/AddOrEditProjectModal';
 import { cleanScenarioLocalStorage } from 'modules/scenario/helpers/utils';
+import { useProjectImage } from 'utils/hooks/useProjectImage';
 import { budgetFormat } from 'utils/numbers';
 
 import StudyCard from './StudyCard';
@@ -49,7 +49,6 @@ const ProjectView = () => {
   const [filter, setFilter] = useState('');
   const [filterChips, setFilterChips] = useState('');
   const [sortOption, setSortOption] = useState<SortOptions>('LastModifiedDesc');
-  const [imageUrl, setImageUrl] = useState<string>();
   const [isLoading, setIsLoading] = useState(true);
 
   const { projectId: urlProjectId } = useParams() as ProjectParams;
@@ -70,6 +69,8 @@ const ProjectView = () => {
   } = osrdEditoastApi.endpoints.getProjectsByProjectId.useQuery(
     projectId ? { projectId: +projectId } : skipToken
   );
+
+  const imageUrl = useProjectImage(project?.image);
 
   const { data: projectStudies } = osrdEditoastApi.endpoints.getStudies.useQuery(
     projectId
@@ -118,13 +119,6 @@ const ProjectView = () => {
       value: 'LastModifiedDesc',
     },
   ];
-
-  const updateImage = async () => {
-    if (project?.image) {
-      const image = await getDocument(project.image);
-      setImageUrl(URL.createObjectURL(image));
-    }
-  };
 
   const getStudiesList = async () => {
     setIsLoading(true);
@@ -207,10 +201,6 @@ const ProjectView = () => {
   }, []);
 
   useEffect(() => {
-    updateImage();
-  }, [project?.image]);
-
-  useEffect(() => {
     if (isProjectError && projectError) throw projectError;
   }, [isProjectError, projectError]);
 
@@ -228,12 +218,12 @@ const ProjectView = () => {
             <div className="project-details">
               <div className="project-details-title">
                 <div className="row w-100 no-gutters">
-                  <div className={project.image ? 'col-lg-4 col-md-4' : 'd-none'}>
+                  <div className={'col-lg-4 col-md-4'}>
                     <div className="project-details-title-img">
-                      {imageUrl && <img src={imageUrl} alt="project logo" />}
+                      <img src={imageUrl} alt={t('project.projectImage')} />
                     </div>
                   </div>
-                  <div className={project.image ? 'pl-md-2 col-lg-8 col-md-8' : 'col-12'}>
+                  <div className={'pl-md-2 col-lg-8 col-md-8'}>
                     <div className="project-details-title-content">
                       <div className="project-details-title-name" data-testid="project-name">
                         {project.name}
