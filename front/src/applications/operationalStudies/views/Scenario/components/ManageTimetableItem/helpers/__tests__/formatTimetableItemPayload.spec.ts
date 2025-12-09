@@ -78,7 +78,6 @@ describe('formatTimetableItemPayload', () => {
       },
       comfort: 'STANDARD',
       constraint_distribution: 'MARECO',
-      exceptions: [],
       initial_speed: 0,
       labels: [],
       margins: {
@@ -92,6 +91,7 @@ describe('formatTimetableItemPayload', () => {
       paced: {
         timeWindow: Duration.parse('PT3H'),
         interval: Duration.parse('PT1H'),
+        exceptions: [],
       },
       path: [
         {
@@ -275,14 +275,17 @@ describe('formatTimetableItemPayload', () => {
           ...rawTimetableItemToEditData,
           originalPacedTrain: {
             ...rawTimetableItemToEditData.originalPacedTrain,
-            exceptions: [
-              {
-                key: 'az',
-                start_time: {
-                  value: '2025-07-01T00:00:00.000Z',
+            paced: {
+              ...rawTimetableItemToEditData.originalPacedTrain.paced,
+              exceptions: [
+                {
+                  key: 'az',
+                  start_time: {
+                    value: '2025-07-01T00:00:00.000Z',
+                  },
                 },
-              },
-            ],
+              ],
+            },
           },
         };
         const result = formatPacedTrainPayload(
@@ -373,17 +376,20 @@ describe('formatTimetableItemPayload', () => {
           ...rawTimetableItemToEditData,
           originalPacedTrain: {
             ...rawTimetableItemToEditData.originalPacedTrain,
-            exceptions: [
-              {
-                key: 'a6f39ce5-ae64-4135-af9b-22ee19877873',
-                occurrence_index: 1,
-                rolling_stock_category: {
-                  value: {
-                    main_category: 'NIGHT_TRAIN',
+            paced: {
+              ...rawTimetableItemToEditData.originalPacedTrain.paced,
+              exceptions: [
+                {
+                  key: 'a6f39ce5-ae64-4135-af9b-22ee19877873',
+                  occurrence_index: 1,
+                  rolling_stock_category: {
+                    value: {
+                      main_category: 'NIGHT_TRAIN',
+                    },
                   },
                 },
-              },
-            ],
+              ],
+            },
           },
         };
         test('the exception should be removed (it now matches completely the paced train)', () => {
@@ -408,20 +414,23 @@ describe('formatTimetableItemPayload', () => {
           ...rawTimetableItemToEditData,
           originalPacedTrain: {
             ...rawTimetableItemToEditData.originalPacedTrain,
-            exceptions: [
-              {
-                key: 'a6f39ce5-ae64-4135-af9b-22ee19877873',
-                occurrence_index: 1,
-                rolling_stock_category: {
-                  value: {
-                    main_category: 'NIGHT_TRAIN',
+            paced: {
+              ...rawTimetableItemToEditData.originalPacedTrain.paced,
+              exceptions: [
+                {
+                  key: 'a6f39ce5-ae64-4135-af9b-22ee19877873',
+                  occurrence_index: 1,
+                  rolling_stock_category: {
+                    value: {
+                      main_category: 'NIGHT_TRAIN',
+                    },
+                  },
+                  labels: {
+                    value: ['label1', 'label2'],
                   },
                 },
-                labels: {
-                  value: ['label1', 'label2'],
-                },
-              },
-            ],
+              ],
+            },
           },
         };
         test('exception remains a label exception but the category change groups is removed', () => {
@@ -460,15 +469,18 @@ describe('formatTimetableItemPayload', () => {
           ...rawTimetableItemToEditData,
           originalPacedTrain: {
             ...rawTimetableItemToEditData.originalPacedTrain,
-            exceptions: [
-              {
-                key: '444-555',
-                occurrence_index: 0,
-                speed_limit_tag: {
-                  value: 'V100',
+            paced: {
+              ...rawTimetableItemToEditData.originalPacedTrain.paced,
+              exceptions: [
+                {
+                  key: '444-555',
+                  occurrence_index: 0,
+                  speed_limit_tag: {
+                    value: 'V100',
+                  },
                 },
-              },
-            ],
+              ],
+            },
           },
           occurrenceId: 'indexedoccurrence_238_2' as IndexedOccurrenceId,
         };
@@ -478,7 +490,7 @@ describe('formatTimetableItemPayload', () => {
         };
 
         const expectedPacedTrainExceptions = [
-          ...timetableItemToEditDataWithExceptions.originalPacedTrain.exceptions,
+          ...timetableItemToEditDataWithExceptions.originalPacedTrain.paced.exceptions,
           {
             key: expect.any(String),
             occurrence_index: 2,
@@ -527,13 +539,16 @@ describe('formatTimetableItemPayload', () => {
           ...rawTimetableItemToEditData,
           originalPacedTrain: {
             ...rawTimetableItemToEditData.originalPacedTrain,
-            exceptions: [
-              ...rawTimetableItemToEditData.originalPacedTrain.exceptions,
-              {
-                key: '987-654',
-                start_time: { value: '2025-06-02T14:30:00.000Z' },
-              },
-            ],
+            paced: {
+              ...rawTimetableItemToEditData.originalPacedTrain.paced,
+              exceptions: [
+                ...rawTimetableItemToEditData.originalPacedTrain.paced.exceptions,
+                {
+                  key: '987-654',
+                  start_time: { value: '2025-06-02T14:30:00.000Z' },
+                },
+              ],
+            },
           },
           occurrenceId: 'exception_238_987-654' as AddedExceptionId,
         };
@@ -605,16 +620,19 @@ describe('formatTimetableItemPayload', () => {
           ...rawTimetableItemToEditData,
           originalPacedTrain: {
             ...rawTimetableItemToEditData.originalPacedTrain,
-            exceptions: [
-              ...rawTimetableItemToEditData.originalPacedTrain.exceptions,
-              {
-                key: '444-555',
-                occurrence_index: 0,
-                speed_limit_tag: {
-                  value: 'V100',
+            paced: {
+              ...rawTimetableItemToEditData.originalPacedTrain.paced,
+              exceptions: [
+                ...rawTimetableItemToEditData.originalPacedTrain.paced.exceptions,
+                {
+                  key: '444-555',
+                  occurrence_index: 0,
+                  speed_limit_tag: {
+                    value: 'V100',
+                  },
                 },
-              },
-            ],
+              ],
+            },
           },
           occurrenceId: 'indexedoccurrence_238_0' as IndexedOccurrenceId,
         };

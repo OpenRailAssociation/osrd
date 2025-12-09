@@ -44,7 +44,7 @@ const useFilterTimetableItems = (
       uniq(
         timetableItems.reduce<string[]>((acc, timetableItem) => {
           if (isPacedTrainWithDetails(timetableItem)) {
-            timetableItem.exceptions.forEach((exception) => {
+            timetableItem.paced.exceptions.forEach((exception) => {
               if (exception.speed_limit_tag) {
                 acc.push(extractTagCode(exception.speed_limit_tag.value));
               }
@@ -156,8 +156,8 @@ const useFilterTimetableItems = (
 
         if (trainTypeFilter === 'trainSchedule') return false;
 
-        const { exceptions, paced: _, ...modelTrain } = timetableItem;
-        const exceptionItems = exceptions.map((exception) => {
+        const { paced, ...modelTrain } = timetableItem;
+        const exceptionItems = paced.exceptions.map((exception) => {
           const rollingStock = exception.rolling_stock
             ? rollingStocks?.find((rs) => rs.name === exception.rolling_stock?.rolling_stock_name)
             : undefined;

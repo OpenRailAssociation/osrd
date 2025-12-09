@@ -117,8 +117,8 @@ describe('simulationConfReducer', () => {
         paced: {
           timeWindow: new Duration({ minutes: 60 }),
           interval: new Duration({ minutes: 30 }),
+          exceptions: [],
         },
-        exceptions: [],
       };
 
       const store = createStore();
