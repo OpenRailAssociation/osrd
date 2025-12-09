@@ -1,5 +1,3 @@
-import { useEffect, useState } from 'react';
-
 import { skipToken } from '@reduxjs/toolkit/query';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
@@ -9,10 +7,10 @@ import infraIcon from 'assets/pictures/components/tracks.svg';
 import scenarioIcon from 'assets/pictures/home/operationalStudies.svg';
 import projectIcon from 'assets/pictures/views/projects.svg';
 import studyIcon from 'assets/pictures/views/study.svg';
-import { getDocument } from 'common/api/documentApi';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { LoaderFill } from 'common/Loaders';
+import { useProjectImage } from 'utils/hooks/useProjectImage';
 
 import ScenarioExplorerModal, { type ScenarioExplorerProps } from './ScenarioExplorerModal';
 
@@ -26,7 +24,6 @@ const ScenarioExplorer = ({
 }) => {
   const { t } = useTranslation('stdcm', { keyPrefix: 'scenarioExplorer' });
   const { openModal } = useModal();
-  const [imageUrl, setImageUrl] = useState<string>();
 
   const { data: projectDetails } = osrdEditoastApi.endpoints.getProjectsByProjectId.useQuery(
     globalProjectId ? { projectId: globalProjectId } : skipToken
@@ -47,22 +44,7 @@ const ScenarioExplorer = ({
     }
   );
 
-  const getProjectImage = async (imageId: number) => {
-    try {
-      const blobImage = await getDocument(imageId);
-      setImageUrl(URL.createObjectURL(blobImage));
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
-  useEffect(() => {
-    if (projectDetails?.image) {
-      getProjectImage(projectDetails?.image);
-    } else {
-      setImageUrl(undefined);
-    }
-  }, [projectDetails]);
+  const imageUrl = useProjectImage(projectDetails?.image);
 
   const showNoScenarioContent = () =>
     globalScenarioId && !scenario ? (
