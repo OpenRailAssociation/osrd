@@ -3,7 +3,6 @@ import type { TFunction } from 'i18next';
 import {
   type SimilarTrainWithSecondaryCode,
   type StdcmResultsOperationalPoint,
-  type StdcmSimulationInputs,
   StdcmStopTypes,
 } from 'applications/stdcm/types';
 import type { SimulationResponseSuccess } from 'common/api/osrdEditoastApi';
@@ -402,24 +401,6 @@ export const createSimilarTrainPayload = (
       : new Date().toLocaleDateString(locale),
     name: similarTrains[0].train_name,
   };
-};
-
-export const createLinkedTrainPayload = (linkedTrains: StdcmSimulationInputs['linkedTrains']) => {
-  if (linkedTrains?.anteriorTrain) {
-    return {
-      type: 'anterior' as const,
-      name: linkedTrains.anteriorTrain.trainName,
-    };
-  }
-
-  if (linkedTrains?.posteriorTrain) {
-    return {
-      type: 'posterior' as const,
-      name: linkedTrains.posteriorTrain.trainName,
-    };
-  }
-
-  return null;
 };
 
 export const validateTolerance = (num: Duration): boolean =>

@@ -1,6 +1,6 @@
 import { useMemo, useState, useRef, useCallback } from 'react';
 
-import { Button, Input, Select, TextArea } from '@osrd-project/ui-core';
+import { Button, Checkbox, DatePicker, Input, Select, TextArea } from '@osrd-project/ui-core';
 import { Download, CheckCircle } from '@osrd-project/ui-icons';
 import { PDFDownloadLink, pdf } from '@react-pdf/renderer';
 import { useTranslation } from 'react-i18next';
@@ -19,7 +19,6 @@ import {
   type SimulationReport,
 } from 'common/api/osrdRailwayManagerApi';
 import {
-  createLinkedTrainPayload,
   createSimilarTrainPayload,
   getStopDurationTime,
   transformStepsToApiFormat,
@@ -50,6 +49,10 @@ type SendToRailwayManagerModalProps = {
 };
 
 type Option = { value: string; label: string };
+type SubstituteTrain = {
+  trainName: string;
+  date: string;
+};
 
 const SendToRailwayManagerModal = ({
   consist,
@@ -68,9 +71,17 @@ const SendToRailwayManagerModal = ({
   const railwayManagerUrl = useSelector(getRailwayManagerInterfaceUrl);
   const dispatch = useAppDispatch();
 
+  const DEFAULT_TRAIN_CATEGORY = { value: '', label: t('modal.noCategory') };
+
   const [pathType, setPathType] = useState<Option>();
+  const [trainCategory, setTrainCategory] = useState<Option>(DEFAULT_TRAIN_CATEGORY);
   const [comment, setComment] = useState('');
   const [csCode, setCsCode] = useState('');
+  const [substituteTrain, setSubstituteTrain] = useState<SubstituteTrain>({
+    trainName: '',
+    date: stdcmData.departure_time,
+  });
+  const [isHazardousMaterials, setIsHazardousMaterials] = useState(false);
   const [pathTypeError, setPathTypeError] = useState(false);
   const [csCodeError, setCsCodeError] = useState(false);
   const pdfBlobRef = useRef<Blob | null>(null);
@@ -84,6 +95,16 @@ const SendToRailwayManagerModal = ({
   const constraintOnDeparture = firstStep.arrivalType === 'preciseTime';
   const realDepartureTime = new Date(stdcmData.departure_time);
   const tripDuration = stdcmData.simulation.final_output.times.at(-1)!;
+  const selectableSlot = useMemo(() => {
+    const dateBeforeDepartureTime = new Date(realDepartureTime);
+    dateBeforeDepartureTime.setDate(dateBeforeDepartureTime.getDate() - 1);
+    const dateAfterDepartureTime = new Date(realDepartureTime);
+    dateAfterDepartureTime.setDate(dateAfterDepartureTime.getDate() + 1);
+    return {
+      start: dateBeforeDepartureTime,
+      end: dateAfterDepartureTime,
+    };
+  }, [realDepartureTime]);
 
   const realConstraintTime = constraintOnDeparture
     ? realDepartureTime
@@ -133,6 +154,13 @@ const SendToRailwayManagerModal = ({
   const pathTypeOptions = [
     { value: 'LongFRET', label: t('modal.LongFRET') },
     { value: 'Autre', label: t('modal.other') },
+  ];
+
+  const trainCategoryOptions = [
+    DEFAULT_TRAIN_CATEGORY,
+    { value: 'A', label: 'A' },
+    { value: 'B', label: 'B' },
+    { value: 'C', label: 'C' },
   ];
 
   const pdfDocument = useMemo(
@@ -216,7 +244,9 @@ const SendToRailwayManagerModal = ({
     normalizedDate.setMilliseconds(0);
 
     const similarTrain = createSimilarTrainPayload(similarTrains, dateTimeLocale);
-    const linkedTrain = createLinkedTrainPayload(linkedTrains);
+    const substitute_train = substituteTrain.trainName
+      ? { path_date: substituteTrain.date, name: substituteTrain.trainName }
+      : null;
 
     if (
       !consist?.tractionEngine?.name ||
@@ -248,9 +278,13 @@ const SendToRailwayManagerModal = ({
       departure_time: normalizedDate.toISOString(),
       user_message: comment,
       similar_train: similarTrain,
-      linked_train: linkedTrain,
       course_type: pathType.value,
       statistical_category: csCode,
+      demand_category: trainCategory.value || null,
+      hazardous_materials: isHazardousMaterials,
+      anterior_train_name: linkedTrains.anteriorTrain?.trainName || null,
+      posterior_train_name: linkedTrains.posteriorTrain?.trainName || null,
+      substitute_train,
     };
 
     formData.append('simulation_report', JSON.stringify(simulationReport));
@@ -296,6 +330,13 @@ const SendToRailwayManagerModal = ({
           <section className="requested-route">
             <h3>{t('modal.requestedRoute')}</h3>
             <ul>
+              {linkedTrains.anteriorTrain && (
+                <span className="linked-train-infos">
+                  <li>{`${t('modal.from')} : ${linkedTrains.anteriorTrain.trainName}`}</li>
+                  <li>{linkedTrains.anteriorTrain.date}</li>
+                </span>
+              )}
+
               {firstStep && (
                 <li>
                   {t('modal.departurePoint', {
@@ -322,6 +363,13 @@ const SendToRailwayManagerModal = ({
                     arrivalAt: `${lastStep.operationalPoint?.name} ${lastStep.operationalPoint?.secondaryCode}`,
                   })}
                 </li>
+              )}
+
+              {linkedTrains.posteriorTrain && (
+                <span className="linked-train-infos">
+                  <li>{`${t('modal.for')} : ${linkedTrains.posteriorTrain.trainName}`}</li>
+                  <li>{linkedTrains.posteriorTrain.date}</li>
+                </span>
               )}
             </ul>
           </section>
@@ -410,7 +458,7 @@ const SendToRailwayManagerModal = ({
         <section className="additional-info">
           <h3>{t('modal.additionalInformation')}</h3>
           <div className="info-fields">
-            <div className={`path-type ${pathTypeError ? 'wiggle' : ''}`}>
+            <div className={`left-side ${pathTypeError ? 'wiggle' : ''}`}>
               <Select
                 id="path-type"
                 options={pathTypeOptions}
@@ -423,6 +471,23 @@ const SendToRailwayManagerModal = ({
                 required
                 aria-invalid={pathTypeError}
               />
+              <Select
+                id="train-category"
+                options={trainCategoryOptions}
+                onChange={(selectedOption) => setTrainCategory(selectedOption!)}
+                value={trainCategory}
+                getOptionLabel={(option) => option.label}
+                getOptionValue={(option) => option.value}
+                label={t('modal.trainCategory')}
+                required
+              />
+              <div id="hazardous-materials">
+                <Checkbox
+                  label={t('modal.hazardousMaterials')}
+                  checked={isHazardousMaterials}
+                  onChange={() => setIsHazardousMaterials(!isHazardousMaterials)}
+                />
+              </div>
             </div>
             <div className={`cs-code ${csCodeError ? 'wiggle' : ''}`}>
               <Input
@@ -432,6 +497,28 @@ const SendToRailwayManagerModal = ({
                 label={t('modal.csCode')}
                 required
                 maxLength={3}
+              />
+              <Input
+                id="train-to-be-substituted"
+                value={substituteTrain?.trainName}
+                onChange={(e) =>
+                  setSubstituteTrain({ ...substituteTrain, trainName: e.target.value })
+                }
+                label={t('modal.trainToBeSubstituted')}
+              />
+              <DatePicker
+                inputProps={{
+                  id: 'train-to-be-substituted-date',
+                  name: 'op-date',
+                  narrow: true,
+                }}
+                selectableSlot={selectableSlot}
+                value={realDepartureTime}
+                onDateChange={(date) => {
+                  if (date) {
+                    setSubstituteTrain({ ...substituteTrain, date: date.toISOString() });
+                  }
+                }}
               />
             </div>
             <div className="comment">
@@ -446,6 +533,14 @@ const SendToRailwayManagerModal = ({
               />
             </div>
           </div>
+          {isHazardousMaterials && (
+            <div className="warning-section">
+              <div className="warning-message">
+                <p>{t('modal.warnings.hazardousMaterialsBold')}</p>
+                <p>{t('modal.warnings.hazardousMaterialsNormal')}</p>
+              </div>
+            </div>
+          )}
         </section>
       </div>
 
