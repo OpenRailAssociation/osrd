@@ -8,11 +8,11 @@ import { findExceptionWithOccurrenceId } from 'modules/timetableItem/helpers/pac
 import type { TimetableItem, TimetableItemId } from 'reducers/osrdconf/types';
 import { getSelectedTrainId } from 'reducers/simulationResults/selectors';
 import {
-  isTrainScheduleId,
   extractPacedTrainIdFromOccurrenceId,
   isPacedTrainResponseWithPacedTrainId,
   isIndexedOccurrenceId,
   extractOccurrenceIndexFromOccurrenceId,
+  isOccurrenceId,
 } from 'utils/trainId';
 
 import addTrainNamesToConflicts, {
@@ -36,16 +36,17 @@ const useConflictsFilter = (timetableItems: TimetableItem[], conflicts: Conflict
   const selectedTrainName = useMemo(() => {
     if (!selectedTrainId) return null;
 
-    let selectedTrain: TimetableItem | undefined;
-    if (isTrainScheduleId(selectedTrainId)) {
-      selectedTrain = timetableItemById.get(selectedTrainId);
+    const timetableItemId = isOccurrenceId(selectedTrainId)
+      ? extractPacedTrainIdFromOccurrenceId(selectedTrainId)
+      : selectedTrainId;
+    const selectedTrain = timetableItemById.get(timetableItemId);
+
+    if (
+      !selectedTrain ||
+      !isOccurrenceId(selectedTrainId) ||
+      !isPacedTrainResponseWithPacedTrainId(selectedTrain)
+    )
       return selectedTrain?.train_name || null;
-    }
-
-    const pacedTrainId = extractPacedTrainIdFromOccurrenceId(selectedTrainId);
-    selectedTrain = timetableItemById.get(pacedTrainId);
-
-    if (!selectedTrain || !isPacedTrainResponseWithPacedTrainId(selectedTrain)) return null;
 
     // Occurrence with a name change group
     const exception = findExceptionWithOccurrenceId(

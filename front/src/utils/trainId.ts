@@ -31,7 +31,8 @@ export const isOccurrenceId = (id: string): id is OccurrenceId =>
 export const isTrainScheduleId = (id: string): id is TrainScheduleId =>
   id.startsWith('trainschedule_');
 
-export const isTrainId = (id: string): id is TrainId => isOccurrenceId(id) || isTrainScheduleId(id);
+export const isTrainId = (id: string): id is TrainId =>
+  isOccurrenceId(id) || isTrainScheduleId(id) || isPacedTrainId(id);
 
 /**
  * Given an occurrence id, return the type of the exception.
