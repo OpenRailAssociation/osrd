@@ -1,11 +1,16 @@
 import { useCallback } from 'react';
 
-import type { PickingElement, DrawingFunction, PickingDrawingFunction } from '../../common/types';
+import { hexToRgb, indexToColor } from '../../common/helpers/colors';
+import type {
+  PickingElement,
+  DrawingFunction,
+  PickingDrawingFunction,
+  Point,
+} from '../../common/types';
 import { useDraw, usePicking } from '../../common/useCanvas';
 import { SpaceTimeChartCanvasContext } from '../lib/context';
-import type { DataPoint, Point, SpaceTimeChartContextType } from '../lib/types';
+import type { DataPoint, SpaceTimeChartContextType } from '../lib/types';
 import { drawAliasedQuadrilateral } from '../utils/canvas';
-import { hexToRgb, indexToColor } from '../utils/colors';
 
 export type QuadrilaterPickingElement = PickingElement & {
   type: 'quadrilateral';

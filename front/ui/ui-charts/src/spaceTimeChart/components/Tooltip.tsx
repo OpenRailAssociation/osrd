@@ -1,6 +1,6 @@
 import React from 'react';
 
-import type { Point } from '../lib/types';
+import type { Point } from '../../common/types';
 
 export type TooltipProps = {
   position: Point;

@@ -1,7 +1,7 @@
 import { inRange } from 'lodash';
 
 import { getDiff } from './vectors';
-import { type Point } from '../lib/types';
+import type { Point } from '../../common/types';
 
 /**
  * This function helps to find if two segments do intersect.

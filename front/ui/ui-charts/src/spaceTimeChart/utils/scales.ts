@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
 import { clamp, inRange } from 'lodash';
 
+import type { Point } from '../../common/types';
 import {
   type NormalizedScaleTree,
   type NormalizedScale,
@@ -10,7 +11,6 @@ import {
   type PixelToTime,
   type PixelToSpace,
   type PointToData,
-  type Point,
   type DataToPoint,
   type DataPoint,
   type Axis,
