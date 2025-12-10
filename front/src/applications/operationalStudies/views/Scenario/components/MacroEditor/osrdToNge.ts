@@ -316,6 +316,7 @@ export const loadAndIndexNge = async (
           // we put the nodes on a grid
           position_x: (nbNodesIndexed % 8) * 200,
           position_y: Math.trunc(nbNodesIndexed / 8),
+          is_collapsed: false,
         };
         state.indexNodeByKey(key, macroNode);
         nbNodesIndexed += 1;

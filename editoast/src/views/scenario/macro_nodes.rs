@@ -73,6 +73,8 @@ pub(in crate::views) struct MacroNodeForm {
     labels: Tags,
     trigram: Option<String>,
     path_item_key: String,
+    #[serde(default)]
+    is_collapsed: bool,
 }
 
 #[derive(Debug, Deserialize, ToSchema)]
@@ -93,6 +95,7 @@ impl MacroNodeForm {
             .labels(self.labels)
             .trigram(self.trigram)
             .path_item_key(self.path_item_key)
+            .is_collapsed(self.is_collapsed)
     }
 }
 
@@ -107,6 +110,7 @@ pub(in crate::views) struct MacroNodeResponse {
     labels: Tags,
     trigram: Option<String>,
     path_item_key: String,
+    is_collapsed: bool,
 }
 
 #[derive(Debug, Serialize, ToSchema)]
@@ -126,6 +130,7 @@ impl From<MacroNode> for MacroNodeResponse {
             labels: node.labels,
             trigram: node.trigram,
             path_item_key: node.path_item_key,
+            is_collapsed: node.is_collapsed,
         }
     }
 }
@@ -418,6 +423,7 @@ pub mod test {
                 && self.labels == other.labels
                 && self.trigram == other.trigram
                 && self.path_item_key == other.path_item_key
+                && self.is_collapsed == other.is_collapsed
         }
     }
 
@@ -430,6 +436,7 @@ pub mod test {
                 && self.labels == other.labels
                 && self.trigram == other.trigram
                 && self.path_item_key == other.path_item_key
+                && self.is_collapsed == other.is_collapsed
         }
     }
 
@@ -449,6 +456,7 @@ pub mod test {
             labels: Tags::new(vec!["".to_string(), "".to_string()]),
             trigram: None,
             path_item_key: "->".to_string(),
+            is_collapsed: false,
         }];
 
         let request = app.post("/macro_nodes").json(&MacroNodeBatchForm {
@@ -484,6 +492,7 @@ pub mod test {
             labels: Tags::new(vec!["A".to_string(), "B".to_string()]),
             trigram: None,
             path_item_key: "A->B".to_string(),
+            is_collapsed: false,
         };
         let request = app
             .put(&format!("/macro_nodes/{}", fixtures.nodes[0].id))

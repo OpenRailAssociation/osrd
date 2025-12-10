@@ -452,6 +452,7 @@ diesel::table! {
         trigram -> Nullable<Varchar>,
         #[max_length = 255]
         path_item_key -> Varchar,
+        is_collapsed -> Bool,
     }
 }
 
