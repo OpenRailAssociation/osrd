@@ -374,17 +374,6 @@ pub async fn create_document_example(conn: &mut DbConnection) -> Document {
         .expect("Failed to create document")
 }
 
-pub async fn create_rolling_stock_livery_fixture(
-    conn: &mut DbConnection,
-    name: &str,
-) -> (RollingStockLivery, RollingStock, Document) {
-    let rolling_stock = create_fast_rolling_stock(conn, name).await;
-    let document_example = create_document_example(conn).await;
-    let rs_livery =
-        create_rolling_stock_livery(conn, name, rolling_stock.id, document_example.id).await;
-    (rs_livery, rolling_stock, document_example)
-}
-
 pub async fn create_electrical_profile_set(conn: &mut DbConnection) -> ElectricalProfileSet {
     let json = include_str!("../tests/electrical_profile_set.json");
     serde_json::from_str::<Changeset<ElectricalProfileSet>>(json)

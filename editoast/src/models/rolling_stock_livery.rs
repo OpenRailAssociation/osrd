@@ -60,15 +60,34 @@ pub mod tests {
 
     use database::DbConnectionPoolV2;
 
-    use crate::models::fixtures::create_rolling_stock_livery_fixture;
-    use editoast_models::Document;
-
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
     async fn create_delete_rolling_stock_livery() {
         let db_pool = DbConnectionPoolV2::for_tests();
 
-        let (rs_livery, _, image) =
-            create_rolling_stock_livery_fixture(&mut db_pool.get_ok(), "rs_livery_name").await;
+        let image = editoast_models::Document::changeset()
+            .content_type("text/fake_data".into())
+            .data(vec![])
+            .create(&mut db_pool.get_ok())
+            .await
+            .expect("Failed to create document");
+
+        let rs = Changeset::<editoast_models::rolling_stock::RollingStock>::from(
+            schemas::fixtures::simple_rolling_stock(),
+        )
+        .name("test_create_delete_rolling_stock_livery".into())
+        .locked(false)
+        .version(0)
+        .create(&mut db_pool.get_ok())
+        .await
+        .expect("Failed to create rolling stock");
+
+        let rs_livery = RollingStockLivery::changeset()
+            .name("test_create_delete_rolling_stock_livery".into())
+            .rolling_stock_id(rs.id)
+            .compound_image_id(Some(image.id))
+            .create(&mut db_pool.get_ok())
+            .await
+            .expect("Failed to create rolling stock livery");
 
         assert!(
             RollingStockLivery::retrieve(db_pool.get_ok(), rs_livery.id)
