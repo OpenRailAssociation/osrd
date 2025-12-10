@@ -1,11 +1,10 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 
-import type { HoveredItem } from '../../common/types';
+import type { HoveredItem, Point } from '../../common/types';
 import {
   type DataPoint,
   type Handler,
   type MouseContextType,
-  type Point,
   type PointToData,
 } from '../lib/types';
 import { getEventPosition, getEventWheelDelta } from '../utils/events';

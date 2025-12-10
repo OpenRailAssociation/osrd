@@ -1,4 +1,4 @@
-import { type Point } from '../lib/types';
+import type { Point } from '../../common/types';
 
 /**
  * This function takes a MouseEvent and an HTMLElement, and returns the position of the mouse,

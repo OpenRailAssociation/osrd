@@ -2,6 +2,9 @@ import { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'r
 
 import { isEqual } from 'lodash';
 
+import { rgbToHex, colorToIndex } from './helpers/colors';
+import getPNGBlob from './helpers/png';
+import { getPickingScalingRatio } from './helpers/utils';
 import {
   LAYERS,
   PICKING_LAYERS,
@@ -13,13 +16,10 @@ import {
   type PickingDrawingFunction,
   type PickingElement,
   type PickingLayerType,
+  type Point,
 } from './types';
-import { useDevicePixelRatio } from '../spaceTimeChart/hooks/useDevicePixelRatio';
-import { useSize } from '../spaceTimeChart/hooks/useSize';
-import { type Point } from '../spaceTimeChart/lib/types';
-import { getPickingScalingRatio } from '../spaceTimeChart/utils/canvas';
-import { colorToIndex, rgbToHex } from '../spaceTimeChart/utils/colors';
-import getPNGBlob from '../spaceTimeChart/utils/png';
+import { useDevicePixelRatio } from './useDevicePixelRatio';
+import { useSize } from './useSize';
 
 const PICKING = 'picking';
 const RENDERING = 'rendering';
@@ -29,7 +29,7 @@ const RENDERING = 'rendering';
  */
 export function useCanvas<
   T extends {
-    fingerprint: string
+    fingerprint: string;
     pickingElements: PickingElement[];
     resetPickingElements: () => void;
     theme: { background: string };
@@ -66,8 +66,8 @@ export function useCanvas<
   /**
    * This function renders all picking layers:
    */
-  const drawPicking = useCallback((chartContext: T, layers?: Set<LayerType>) => {
-    chartContext.resetPickingElements();
+  const drawPicking = useCallback((context: T, layers?: Set<LayerType>) => {
+    context.resetPickingElements();
     PICKING_LAYERS.forEach((layer) => {
       if (layers && !layers.has(layer)) return;
 
@@ -80,7 +80,7 @@ export function useCanvas<
 
         const imageData = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height);
         const pickingScalingRatio = getPickingScalingRatio();
-        set.forEach((fn) => fn(imageData, chartContext, pickingScalingRatio));
+        set.forEach((fn) => fn(imageData, context, pickingScalingRatio));
         ctx.putImageData(imageData, 0, 0);
       }
     });
@@ -89,7 +89,7 @@ export function useCanvas<
   /**
    * This function renders all visible / rendering layers:
    */
-  const drawRendering = useCallback((chartContext: T, layers?: Set<LayerType>) => {
+  const drawRendering = useCallback((context: T, layers?: Set<LayerType>) => {
     LAYERS.forEach((layer) => {
       if (layers && !layers.has(layer)) return;
 
@@ -99,7 +99,7 @@ export function useCanvas<
       if (ctx) {
         const { width, height } = sizeRef.current;
         ctx.clearRect(0, 0, width, height);
-        set.forEach((fn) => fn(ctx, chartContext));
+        set.forEach((fn) => fn(ctx, context));
       }
     });
   }, []);
@@ -299,8 +299,7 @@ export function useCanvas<
 }
 
 /**
- * This hook helps to bind a picking function to a layer in the SpaceTimeChart.
- * It is public and can be used outside SpaceTimeChart.
+ * This hook helps to bind a picking function to a layer in a Chart.
  */
 export function usePicking<T>(
   contextKey: React.Context<CanvasContextType<T>>,
@@ -319,8 +318,7 @@ export function usePicking<T>(
 }
 
 /**
- * This hook helps to bind a drawing function to a layer in the SpaceTimeChart.
- * It is public and can be used outside SpaceTimeChart.
+ * This hook helps to bind a drawing function to a layer in a chart.
  */
 export function useDraw<T>(
   contextKey: React.Context<CanvasContextType<T>>,

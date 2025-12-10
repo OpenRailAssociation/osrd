@@ -1,16 +1,10 @@
-import { type HTMLProps, type ReactNode } from 'react';
+import type { HTMLProps, ReactNode } from 'react';
 
-import { type HoveredItem, type PickingElement } from '../../common/types';
+import type { HoveredItem, PickingElement, Point } from '../../common/types';
 
 // GLOBAL UTILITY TYPES:
-export type Point = {
-  x: number;
-  y: number;
-};
-
 export type Handler<P extends object> = (payload: P) => void;
 
-export type RGBAColor = [number, number, number, number];
 export type RGBColor = [number, number, number];
 
 // TIME AND SPACE SCALE UTILITY TYPES:

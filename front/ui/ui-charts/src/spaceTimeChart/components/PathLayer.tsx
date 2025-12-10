@@ -2,7 +2,13 @@ import { useCallback } from 'react';
 
 import { flatten, inRange, last } from 'lodash';
 
-import type { DrawingFunction, PickingDrawingFunction, PickingElement } from '../../common/types';
+import { hexToRgb, indexToColor } from '../../common/helpers/colors';
+import type {
+  DrawingFunction,
+  PickingDrawingFunction,
+  PickingElement,
+  Point,
+} from '../../common/types';
 import { useDraw, usePicking } from '../../common/useCanvas';
 import { SpaceTimeChartCanvasContext } from '../lib/context';
 import {
@@ -10,7 +16,6 @@ import {
   DEFAULT_PATH_END,
   type OperationalPoint,
   type PathData,
-  type Point,
   type SpaceTimeChartContextType,
 } from '../lib/types';
 import {
@@ -19,7 +24,6 @@ import {
   drawPathExtremity,
   getCrispLineCoordinate,
 } from '../utils/canvas';
-import { indexToColor, hexToRgb } from '../utils/colors';
 import { getPathDirection, getSpacePixels } from '../utils/paths';
 import { getSpaceBreakpoints } from '../utils/scales';
 
