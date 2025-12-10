@@ -30,3 +30,5 @@ export type TimetableFilters = {
   trainCategoryFilter: TrainCategoryFilter;
   setTrainCategoryFilter: (categoryOption: TrainCategoryFilter) => void;
 };
+
+export type TimetableMode = 'calendar' | 'package';

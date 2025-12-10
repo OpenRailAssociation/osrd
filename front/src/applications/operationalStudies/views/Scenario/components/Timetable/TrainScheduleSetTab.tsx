@@ -14,10 +14,11 @@ import { useTranslation } from 'react-i18next';
 import type { TrainScheduleSet } from 'common/api/osrdEditoastApi';
 import MenuTriggerButton from 'common/MenuTriggerButton';
 
-import { isSandbox } from './utils';
+import { computeTimetablePackageName, isSandbox } from './utils';
 
 type TrainScheduleSetTabProps = PropsWithChildren<{
   trainScheduleSet: TrainScheduleSet;
+  catalogueName?: string;
   handleClickPackage: (id: number) => void;
   handleSelectPackage: () => void;
   isSelectMode: boolean;
@@ -28,6 +29,7 @@ type TrainScheduleSetTabProps = PropsWithChildren<{
 
 const TrainScheduleSetTab = ({
   trainScheduleSet,
+  catalogueName,
   handleClickPackage,
   handleSelectPackage,
   isSelectMode,
@@ -68,7 +70,11 @@ const TrainScheduleSetTab = ({
             ) : (
               <DeviceDesktop className="package-status" />
             ))}
-          <span>{isSandbox(trainScheduleSet) ? t('sandbox') : trainScheduleSet.name}</span>
+          <span>
+            {isSandbox(trainScheduleSet)
+              ? t('sandbox')
+              : computeTimetablePackageName(trainScheduleSet.name!, catalogueName)}
+          </span>
         </div>
         <MenuTriggerButton
           buttonProps={{

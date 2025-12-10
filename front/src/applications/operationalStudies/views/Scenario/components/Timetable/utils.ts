@@ -225,4 +225,47 @@ export const isValidPathfinding = (summaryTrain: SimulationSummary | undefined) 
   return true;
 };
 
-export const isSandbox = (trainScheduleSet: TrainScheduleSet) => trainScheduleSet.name === null;
+export const isSandbox = (trainScheduleSet: TrainScheduleSet) => !trainScheduleSet.name;
+
+export const computeTimetablePackageName = (
+  trainScheduleSetName: string,
+  catalogueName?: string
+): string => (catalogueName ? `${catalogueName} | ${trainScheduleSetName}` : trainScheduleSetName);
+
+export const sortTrainScheduleSets = (
+  set1: TrainScheduleSet,
+  set2: TrainScheduleSet,
+  catalogueEntryNameById: Map<number, string>
+): number => {
+  const set1CatalogueId = set1.catalogue_entry_id;
+  const set2CatalogueId = set2.catalogue_entry_id;
+
+  const catalogueName1 = set1CatalogueId
+    ? (catalogueEntryNameById.get(set1CatalogueId) ?? null)
+    : null;
+  const catalogueName2 = set2CatalogueId
+    ? (catalogueEntryNameById.get(set2CatalogueId) ?? null)
+    : null;
+
+  // If no catalogue name, put at the end
+  if (!catalogueName1 && catalogueName2) return 1;
+  if (catalogueName1 && !catalogueName2) return -1;
+
+  // If sandbox, put at the very end
+  if (isSandbox(set1) && !isSandbox(set2)) return 1;
+  if (!isSandbox(set1) && isSandbox(set2)) return -1;
+
+  // If both have catalogue names, build full names and compare
+  if (catalogueName1 && catalogueName2) {
+    const fullName1 = computeTimetablePackageName(set1.name ?? '', catalogueName1);
+    const fullName2 = computeTimetablePackageName(set2.name ?? '', catalogueName2);
+    return fullName1.localeCompare(fullName2);
+  }
+
+  // Compare by set name if no catalogue entry
+  const name1 = set1.name ?? '';
+  const name2 = set2.name ?? '';
+  if (name1 < name2) return -1;
+  if (name1 > name2) return 1;
+  return 0;
+};
