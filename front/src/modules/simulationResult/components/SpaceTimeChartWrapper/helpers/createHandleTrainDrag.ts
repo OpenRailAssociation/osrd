@@ -1,6 +1,6 @@
 import type { TrainSpaceTimeData } from 'modules/simulationResult/types';
 import type { TrainId, TimetableItemId } from 'reducers/osrdconf/types';
-import { isTrainScheduleId, extractPacedTrainIdFromOccurrenceId } from 'utils/trainId';
+import { extractPacedTrainIdFromOccurrenceId, isOccurrenceId } from 'utils/trainId';
 
 import type { OccupancyTrainSpaceTimeData } from '../useTrackOccupancy';
 
@@ -46,7 +46,7 @@ export default function createHandleTrainDrag({
 
     if (stopPanning) {
       // update in the database
-      const draggedItemId = isTrainScheduleId(draggedTrainId)
+      const draggedItemId = !isOccurrenceId(draggedTrainId)
         ? draggedTrainId
         : extractPacedTrainIdFromOccurrenceId(draggedTrainId);
       await updateTrainDepartureTime(draggedItemId, newDepartureTime);

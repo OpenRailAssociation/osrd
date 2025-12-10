@@ -131,7 +131,7 @@ const useAutoSelectTrainIds = (
 
     let timetableItemId: TimetableItemId | undefined;
     if (selectedTrainId) {
-      timetableItemId = isTrainScheduleId(selectedTrainId)
+      timetableItemId = !isOccurrenceId(selectedTrainId)
         ? selectedTrainId
         : extractPacedTrainIdFromOccurrenceId(selectedTrainId);
     }
