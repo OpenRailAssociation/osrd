@@ -21,7 +21,7 @@ import { isTrainScheduleProjection } from './utils';
  */
 const makeProjectedItems = (projectPathTrainResult: TrainSpaceTimeData[]) =>
   projectPathTrainResult.flatMap<IndividualTrainProjection>((projectedItem) => {
-    if (isTrainScheduleProjection(projectedItem)) {
+    if (isTrainScheduleProjection(projectedItem) || !projectedItem.paced) {
       return projectedItem;
     }
 
