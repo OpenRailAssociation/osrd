@@ -33,10 +33,9 @@ import {
   expectedWaypointsPanelDataForPacedTrain,
   verifyWaypointsData,
 } from '../../utils/manchette';
-import { sendPacedTrains } from '../../utils/paced-train';
 import createScenario from '../../utils/scenario';
+import sendTrains from '../../utils/send-trains';
 import { deleteScenario } from '../../utils/teardown-utils';
-import sendTrainSchedules from '../../utils/train-schedule';
 import type {
   CommonTranslations,
   ManageTimetableItemTranslations,
@@ -91,8 +90,8 @@ test.describe('@op @manchette @std', () => {
         infra.id
       )
     ).scenario;
-    await sendTrainSchedules(scenarioItems.timetable_id, trainSchedulesJson.slice(20, 21));
-    await sendPacedTrains(scenarioItems.timetable_id, pacedTrainsJson.slice(6, 7));
+    await sendTrains(scenarioItems.timetable_id, trainSchedulesJson.slice(20, 21));
+    await sendTrains(scenarioItems.timetable_id, pacedTrainsJson.slice(6, 7));
   });
 
   test.beforeEach('Open scenario and wait for infra to be loaded', async ({ page }) => {

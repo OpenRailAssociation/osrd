@@ -1,44 +1,28 @@
-import { osrdEditoastApi, type PacedTrain, type TrainSchedule } from 'common/api/osrdEditoastApi';
-import type { PacedTrainWithPacedTrainId, TrainScheduleWithTrainId } from 'reducers/osrdconf/types';
+import { osrdEditoastApi, type PacedTrain } from 'common/api/osrdEditoastApi';
+import type { PacedTrainWithPacedTrainId } from 'reducers/osrdconf/types';
 import type { AppDispatch } from 'store';
-import { formatEditoastIdToPacedTrainId, formatEditoastIdToTrainScheduleId } from 'utils/trainId';
+import { formatEditoastIdToPacedTrainId } from 'utils/trainId';
 
 const postTimetableItems = async (
   timetableId: number,
-  trainSchedulePayloads: TrainSchedule[],
-  pacedTrainPayloads: PacedTrain[],
+  payloads: PacedTrain[],
   dispatch: AppDispatch
 ) => {
-  let trainSchedules: TrainScheduleWithTrainId[] = [];
-  if (trainSchedulePayloads.length) {
-    const rawTrainSchedules = await dispatch(
-      osrdEditoastApi.endpoints.postTimetableByIdTrainSchedules.initiate({
-        id: timetableId,
-        body: trainSchedulePayloads,
-      })
-    ).unwrap();
-
-    trainSchedules = rawTrainSchedules.map((trainSchedule) => ({
-      ...trainSchedule,
-      id: formatEditoastIdToTrainScheduleId(trainSchedule.id),
-    }));
-  }
-
-  let pacedTrains: PacedTrainWithPacedTrainId[] = [];
-  if (pacedTrainPayloads.length) {
-    const rawPacedTrains = await dispatch(
+  let timetableItems: PacedTrainWithPacedTrainId[] = [];
+  if (payloads.length) {
+    const rawTimetableItems = await dispatch(
       osrdEditoastApi.endpoints.postTimetableByIdPacedTrains.initiate({
         id: timetableId,
-        body: pacedTrainPayloads,
+        body: payloads,
       })
     ).unwrap();
 
-    pacedTrains = rawPacedTrains.map((pacedTrain) => ({
-      ...pacedTrain,
-      id: formatEditoastIdToPacedTrainId(pacedTrain.id),
+    timetableItems = rawTimetableItems.map((timetableItem) => ({
+      ...timetableItem,
+      id: formatEditoastIdToPacedTrainId(timetableItem.id),
     }));
   }
-  return { trainSchedules, pacedTrains };
+  return timetableItems;
 };
 
 export default postTimetableItems;

@@ -17,8 +17,8 @@ import RollingStockSelector from '../../pages/rolling-stock/rolling-stock-select
 import { generateUniqueName, waitForInfraStateToBeCached } from '../../utils';
 import { getInfra, getProject, getStudy } from '../../utils/api-utils';
 import readJsonFile from '../../utils/file-utils';
-import { sendPacedTrains } from '../../utils/paced-train';
 import createScenario from '../../utils/scenario';
+import sendTrains from '../../utils/send-trains';
 import { deleteScenario } from '../../utils/teardown-utils';
 import type {
   ChangeGroup,
@@ -69,7 +69,7 @@ test.describe('@op @paced-trains @exceptions', () => {
         infra.id
       )
     ).scenario;
-    await sendPacedTrains(scenarioItems.timetable_id, pacedTrainsJson.slice(0, 6));
+    await sendTrains(scenarioItems.timetable_id, pacedTrainsJson.slice(0, 6));
   });
 
   test.beforeEach(

@@ -21,10 +21,9 @@ import StudyPage from '../../pages/operational-studies/study-page';
 import { generateUniqueName, waitForInfraStateToBeCached } from '../../utils';
 import { getInfra, getProject, getStudy } from '../../utils/api-utils';
 import readJsonFile from '../../utils/file-utils';
-import { sendPacedTrains } from '../../utils/paced-train';
 import createScenario from '../../utils/scenario';
+import sendTrains from '../../utils/send-trains';
 import { deleteScenario } from '../../utils/teardown-utils';
-import sendTrainSchedules from '../../utils/train-schedule';
 import type {
   CommonTranslations,
   ManageTimetableItemTranslations,
@@ -86,11 +85,11 @@ test.describe('@op @multi-tab-sync', () => {
           infra.id
         )
       ).scenario;
-      await sendTrainSchedules(
+      await sendTrains(
         scenario.timetable_id,
         JSON.parse(JSON.stringify(trainSchedulesJson.slice(0, 2)))
       );
-      await sendPacedTrains(
+      await sendTrains(
         scenario.timetable_id,
         JSON.parse(JSON.stringify(pacedTrainsJson.slice(0, 2)))
       );

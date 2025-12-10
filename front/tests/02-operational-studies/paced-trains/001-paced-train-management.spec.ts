@@ -27,8 +27,8 @@ import { waitForInfraStateToBeCached } from '../../utils';
 import { getInfra } from '../../utils/api-utils';
 import { cleanWhitespace } from '../../utils/data-normalizer';
 import readJsonFile from '../../utils/file-utils';
-import { sendPacedTrains } from '../../utils/paced-train';
 import createScenario from '../../utils/scenario';
+import sendTrains from '../../utils/send-trains';
 import { deleteScenario } from '../../utils/teardown-utils';
 import type {
   CellData,
@@ -216,7 +216,7 @@ test.describe('@op @paced-trains', () => {
   /** *************** Test 3 **************** */
   test('Duplicate and delete a paced train', async ({ page }) => {
     await test.step('Set paced trains via API and reload to initialize list', async () => {
-      await sendPacedTrains(scenario.timetable_id, pacedTrainsJson);
+      await sendTrains(scenario.timetable_id, pacedTrainsJson);
       await page.reload();
     });
 
