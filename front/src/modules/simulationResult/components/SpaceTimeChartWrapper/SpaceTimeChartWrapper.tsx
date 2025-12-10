@@ -168,6 +168,7 @@ const SpaceTimeChartWrapper = ({
     if (
       timetableItemUsedForProjectionWithDetails &&
       isPacedTrainWithDetails(timetableItemUsedForProjectionWithDetails) &&
+      timetableItemUsedForProjectionWithDetails.paced &&
       isOccurrenceId(selectedProjectionId)
     ) {
       const exeptionUsedForProjection =

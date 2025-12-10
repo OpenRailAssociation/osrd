@@ -9,14 +9,14 @@ import {
   getOccurrencesNb,
   computeIndexedOccurrenceStartTime,
 } from 'modules/timetableItem/helpers/pacedTrain';
-import type { Occurrence, PacedTrainWithDetails } from 'modules/timetableItem/types';
+import type { Occurrence, PacedTrainWithPacedWithDetails } from 'modules/timetableItem/types';
 import {
   formatPacedTrainIdToExceptionId,
   formatPacedTrainIdToIndexedOccurrenceId,
 } from 'utils/trainId';
 
 const useOccurrences = (
-  pacedTrain: PacedTrainWithDetails,
+  pacedTrain: PacedTrainWithPacedWithDetails,
   rollingStockList: LightRollingStockWithLiveries[] | null
 ) => {
   const {

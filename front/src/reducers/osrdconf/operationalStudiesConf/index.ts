@@ -85,7 +85,8 @@ export const operationalStudiesConfSlice = createSlice({
       state.powerRestriction = power_restrictions || [];
       state.constraintDistribution = constraint_distribution || 'STANDARD';
 
-      if (isPacedTrainWithDetails(action.payload.item)) {
+      // TODO: handle correctly pacedTrain without paced
+      if (isPacedTrainWithDetails(action.payload.item) && action.payload.item.paced) {
         state.editingItemType = action.payload.isOccurrence ? 'occurrence' : 'pacedTrain';
         state.timeWindow = action.payload.item.paced.timeWindow;
         state.interval = action.payload.item.paced.interval;

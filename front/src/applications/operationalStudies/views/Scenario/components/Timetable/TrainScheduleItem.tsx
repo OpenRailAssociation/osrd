@@ -82,6 +82,7 @@ const TrainScheduleItem = ({
     dispatch(updateSelectedTrainId(trainId));
   };
 
+  // TODO: update all these functions to handle also paced train without paced
   const deleteTrain = async () => {
     deleteTrainSchedules(dispatch, [train.id])
       .then(() => {

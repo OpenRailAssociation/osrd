@@ -68,7 +68,7 @@ const getNgeTrainrunFrequencies = (
 
   // Add the unknown frequencies from the PacedTrains
   timetableItems.forEach((timetableItem) => {
-    if (isPacedTrainResponseWithPacedTrainId(timetableItem)) {
+    if (isPacedTrainResponseWithPacedTrainId(timetableItem) && timetableItem.paced) {
       const intervalInMinutes = Duration.parse(timetableItem.paced.interval).total('minute');
       if (!trainrunFrequencies.find((f) => f.frequency === intervalInMinutes)) {
         const newFrequency: TrainrunFrequency = {

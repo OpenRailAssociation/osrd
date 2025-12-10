@@ -21,6 +21,8 @@ function getConflictTrainNames(
     const pacedTrain = trainMap.get(formatEditoastIdToPacedTrainId(occurrence.paced_train_id));
     if (!pacedTrain || !isPacedTrainResponseWithPacedTrainId(pacedTrain)) return undefined;
 
+    if (!pacedTrain.paced) return pacedTrain.train_name;
+
     if (!('exception_key' in occurrence)) {
       // Standard occurrence
       return computeOccurrenceName(pacedTrain.train_name, occurrence.index);

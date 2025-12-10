@@ -75,9 +75,10 @@ const formatBasePairingItem = (
     id: item.id,
     name: item.train_name,
     category: item.category,
-    interval: isPacedTrainResponseWithPacedTrainId(item)
-      ? Duration.parse(item.paced.interval)
-      : null,
+    interval:
+      isPacedTrainResponseWithPacedTrainId(item) && item.paced
+        ? Duration.parse(item.paced.interval)
+        : null,
     origin: stepLabels.at(0)!,
     stops: stepLabels.slice(1, -1),
     destination: stepLabels.at(-1)!,

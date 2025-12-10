@@ -43,7 +43,7 @@ const useFilterTimetableItems = (
     () =>
       uniq(
         timetableItems.reduce<string[]>((acc, timetableItem) => {
-          if (isPacedTrainWithDetails(timetableItem)) {
+          if (isPacedTrainWithDetails(timetableItem) && timetableItem.paced) {
             timetableItem.paced.exceptions.forEach((exception) => {
               if (exception.speed_limit_tag) {
                 acc.push(extractTagCode(exception.speed_limit_tag.value));
@@ -149,7 +149,7 @@ const useFilterTimetableItems = (
   const filteredTimetableItems: TimetableItemWithDetails[] = useMemo(
     () =>
       timetableItems.filter((timetableItem) => {
-        if (!isPacedTrainWithDetails(timetableItem)) {
+        if (!isPacedTrainWithDetails(timetableItem) || !timetableItem.paced) {
           if (trainTypeFilter === 'pacedTrain') return false;
           return filterTimetableItem(timetableItem);
         }

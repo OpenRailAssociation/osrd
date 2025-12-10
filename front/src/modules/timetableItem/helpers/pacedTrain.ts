@@ -25,7 +25,7 @@ export const isPacedTrainWithPaced = (pacedTrain: PacedTrain): pacedTrain is Pac
 export const getOccurrencesNb = ({
   timeWindow,
   interval,
-}: Pick<PacedTrainWithDetails['paced'], 'timeWindow' | 'interval'>) => {
+}: Pick<NonNullable<PacedTrainWithDetails['paced']>, 'timeWindow' | 'interval'>) => {
   if (interval.ms === 0) {
     throw new Error('Interval cannot be 0');
   }
@@ -113,7 +113,7 @@ export const extractOccurrenceDetailsFromPacedTrain = <
 /** Return the worst status of the model train and its occurrences */
 export const getOccurrencesWorstStatus = (
   summary: PacedTrainWithDetails['summary'],
-  exceptions: PacedTrainWithDetails['paced']['exceptions']
+  exceptions: NonNullable<PacedTrainWithDetails['paced']>['exceptions']
 ): 'invalid' | 'scheduleNotHonored' | 'trainTooFast' | '' => {
   let className: '' | 'scheduleNotHonored' | 'trainTooFast' = '';
 

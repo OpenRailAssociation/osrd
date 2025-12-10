@@ -1,9 +1,13 @@
 import { compact } from 'lodash';
 import { v4 as uuidV4 } from 'uuid';
 
+import type { PacedTrainWithPaced } from 'applications/operationalStudies/types';
 import type { PacedTrain, TrainSchedule } from 'common/api/osrdEditoastApi';
 import getStepLocation from 'modules/pathfinding/helpers/getStepLocation';
-import { findExceptionWithOccurrenceId } from 'modules/timetableItem/helpers/pacedTrain';
+import {
+  findExceptionWithOccurrenceId,
+  isPacedTrainWithPaced,
+} from 'modules/timetableItem/helpers/pacedTrain';
 import type { PacedTrainWithDetails } from 'modules/timetableItem/types';
 import type {
   TimetableItemToEditData,
@@ -67,11 +71,13 @@ export function formatPacedTrainWithDetailsToPacedTrainPayload(
     labels: pacedTrainWithDetails.labels,
     margins: pacedTrainWithDetails.margins,
     options: pacedTrainWithDetails.options,
-    paced: {
-      time_window: pacedTrainWithDetails.paced.timeWindow.toISOString(),
-      interval: pacedTrainWithDetails.paced.interval.toISOString(),
-      exceptions: pacedTrainWithDetails.paced.exceptions,
-    },
+    paced: pacedTrainWithDetails.paced
+      ? {
+          time_window: pacedTrainWithDetails.paced.timeWindow.toISOString(),
+          interval: pacedTrainWithDetails.paced.interval.toISOString(),
+          exceptions: pacedTrainWithDetails.paced.exceptions,
+        }
+      : undefined,
     path: pacedTrainWithDetails.path,
     power_restrictions: pacedTrainWithDetails.power_restrictions,
     // Rollingstock is missing when just created a train from nge or with import
@@ -106,7 +112,7 @@ export function formatPacedTrainPayload(
     key,
     start_time: { value: startTime.toISOString() },
   }));
-  let newPacedTrain: PacedTrain = {
+  let newPacedTrain: PacedTrainWithPaced = {
     ...baseTrain,
     paced: {
       time_window: osrdconf.timeWindow.toISOString(),
@@ -115,10 +121,16 @@ export function formatPacedTrainPayload(
     },
   };
 
-  if (timetableItemToEditData && isPacedTrainToEditData(timetableItemToEditData)) {
+  if (
+    timetableItemToEditData &&
+    isPacedTrainToEditData(timetableItemToEditData) &&
+    timetableItemToEditData.originalPacedTrain.paced
+  ) {
     const originalPacedTrain = formatPacedTrainWithDetailsToPacedTrainPayload(
       timetableItemToEditData.originalPacedTrain
     );
+    if (!isPacedTrainWithPaced(originalPacedTrain)) return newPacedTrain;
+
     // ========== user modified an occurrence ==========
     if (timetableItemToEditData.occurrenceId) {
       const occurrenceIndex = isIndexedOccurrenceId(timetableItemToEditData.occurrenceId)

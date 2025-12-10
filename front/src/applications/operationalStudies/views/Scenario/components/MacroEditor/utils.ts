@@ -198,7 +198,7 @@ export const getTrainrunFrequencyFromTimetableItem = (
   timetableItem: TimetableItem,
   state: MacroEditorState
 ): TrainrunFrequency => {
-  if (!isPacedTrainResponseWithPacedTrainId(timetableItem)) {
+  if (!isPacedTrainResponseWithPacedTrainId(timetableItem) || !timetableItem.paced) {
     return getFrequencyFromFrequencyId(state.trainrunFrequencies, TRAIN_SCHEDULE_FREQUENCY_ID);
   }
   const intervalInMinutes = Duration.parse(timetableItem.paced.interval).total('minute');

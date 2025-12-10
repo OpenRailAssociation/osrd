@@ -9,8 +9,8 @@ import { MANAGE_TIMETABLE_ITEM_TYPES } from 'applications/operationalStudies/vie
 import { useSubCategoryContext } from 'common/SubCategoryContext';
 import type {
   TimetableItemWithDetails,
-  PacedTrainWithDetails,
   TrainScheduleWithDetails,
+  PacedTrainWithPacedWithDetails,
 } from 'modules/timetableItem/types';
 import { selectTrainToEdit } from 'reducers/osrdconf/operationalStudiesConf';
 import type {
@@ -25,7 +25,7 @@ import {
 } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
 import { useDateTimeLocale } from 'utils/date';
-import { isPacedTrainWithDetails, isTrainScheduleId } from 'utils/trainId';
+import { isPacedTrainWithDetails } from 'utils/trainId';
 
 import PacedTrainItem from './PacedTrain/PacedTrainItem';
 import TimetableToolbar from './TimetableToolbar';
@@ -126,7 +126,7 @@ const Timetable = ({
   const selectTimetableItemToEdit = useCallback(
     (
       itemToEdit: TimetableItemWithDetails,
-      originalPacedTrain?: PacedTrainWithDetails,
+      originalPacedTrain?: PacedTrainWithPacedWithDetails,
       occurrenceId?: OccurrenceId
     ) => {
       dispatch(selectTrainToEdit({ item: itemToEdit, isOccurrence: !!occurrenceId }));
@@ -177,7 +177,7 @@ const Timetable = ({
                   {currentDepartureDates[index]}
                 </div>
               )}
-              {isTrainScheduleId(timetableItem.id) ? (
+              {!isPacedTrainWithDetails(timetableItem) || !timetableItem.paced ? (
                 <TrainScheduleItem
                   isInSelection={selectedTimetableItemIds.includes(timetableItem.id)}
                   handleSelectTrain={handleSelectTimetableItem}
@@ -196,7 +196,7 @@ const Timetable = ({
                 />
               ) : (
                 <PacedTrainItem
-                  pacedTrain={timetableItem as PacedTrainWithDetails}
+                  pacedTrain={timetableItem as PacedTrainWithPacedWithDetails}
                   isInSelection={selectedTimetableItemIds.includes(timetableItem.id)}
                   selectPacedTrainToEdit={selectTimetableItemToEdit}
                   handleSelectPacedTrain={handleSelectTimetableItem}

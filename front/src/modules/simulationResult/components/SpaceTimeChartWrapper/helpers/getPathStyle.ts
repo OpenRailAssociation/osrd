@@ -7,7 +7,7 @@ import {
 import type { SubCategory } from 'common/api/osrdEditoastApi';
 import isMainCategory from 'modules/rollingStock/helpers/category';
 import { findExceptionWithOccurrenceId } from 'modules/timetableItem/helpers/pacedTrain';
-import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
+import type { SimulatedException, TimetableItemWithDetails } from 'modules/timetableItem/types';
 import type { TrainId } from 'reducers/osrdconf/types';
 import {
   extractPacedTrainIdFromOccurrenceId,
@@ -38,11 +38,10 @@ const getPathStyle = (
 
   const item = timetableItemsWithDetails?.find((t) => t.id === timetableItemId);
 
-  const exception =
-    item && isPacedTrainWithDetails(item) && isOccurrenceId(train.id)
-      ? findExceptionWithOccurrenceId(item?.paced.exceptions, train.id)
-      : null;
-
+  let exception: SimulatedException | null = null;
+  if (item && isPacedTrainWithDetails(item) && item.paced && isOccurrenceId(train.id)) {
+    exception = findExceptionWithOccurrenceId(item.paced.exceptions, train.id) ?? null;
+  }
   const category = exception?.rolling_stock_category?.value ?? item?.category;
 
   const currentSubCategory =

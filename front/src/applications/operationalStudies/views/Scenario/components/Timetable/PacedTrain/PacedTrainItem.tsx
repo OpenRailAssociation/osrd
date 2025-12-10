@@ -27,7 +27,7 @@ import {
   deletePacedTrains,
   storePacedTrain,
 } from 'modules/timetableItem/helpers/updateTimetableItemHelpers';
-import type { PacedTrainWithDetails } from 'modules/timetableItem/types';
+import type { PacedTrainWithPacedWithDetails } from 'modules/timetableItem/types';
 import { setFailure, setSuccess } from 'reducers/main';
 import type {
   PacedTrainId,
@@ -63,12 +63,12 @@ type PacedTrainItemProps = {
   handleSelectPacedTrain: (pacedTrainId: PacedTrainId) => void;
   isOccurrencesListOpen: boolean;
   handleOpenOccurrencesList: (pacedTrainId: PacedTrainId) => void;
-  pacedTrain: PacedTrainWithDetails;
+  pacedTrain: PacedTrainWithPacedWithDetails;
   isOnEdit: boolean;
   selectedTrainId?: TrainId;
   selectPacedTrainToEdit: (
-    pacedTrainToEdit: PacedTrainWithDetails,
-    originalPacedTrain?: PacedTrainWithDetails,
+    pacedTrainToEdit: PacedTrainWithPacedWithDetails,
+    originalPacedTrain?: PacedTrainWithPacedWithDetails,
     occurrenceId?: OccurrenceId
   ) => void;
   upsertTimetableItems: (timetableItems: TimetableItem[]) => void;
