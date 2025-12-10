@@ -1,6 +1,7 @@
 import { ChevronLeft, ChevronRight } from '@osrd-project/ui-icons';
 
 import { ManageTimetableItemContextProvider } from 'applications/operationalStudies/hooks/useManageTimetableItemContext';
+import type { TrainScheduleSet } from 'common/api/osrdEditoastApi';
 
 import ImportTimetableItem from '../ImportTimetableItem';
 import ManageTimetableItem from './ManageTimetableItem';
@@ -8,10 +9,12 @@ import ManageTimetableItemLeftPanel, {
   type ManageTimetableItemLeftPanelProps,
 } from './ManageTimetableItemLeftPanel';
 import { MANAGE_TIMETABLE_ITEM_TYPES } from '../../consts';
+import { TrainScheduleSetCatalogDialog } from '../ImportTrainScheduleSets';
 
 type ManageTimetableItemModalProps = ManageTimetableItemLeftPanelProps & {
   setCollapsedTimetableEdit: () => void;
   collapsedTimetableEdit: boolean;
+  trainScheduleSetsAlreadyImported: Set<TrainScheduleSet['id']>;
 };
 
 const ManageTimetableItemModal = ({
@@ -22,6 +25,7 @@ const ManageTimetableItemModal = ({
   setTimetableItemToEditData,
   setCollapsedTimetableEdit,
   collapsedTimetableEdit,
+  trainScheduleSetsAlreadyImported,
 }: ManageTimetableItemModalProps) => (
   <div className="scenario-manage-timetable-item-modal">
     <ManageTimetableItemLeftPanel
@@ -57,6 +61,18 @@ const ManageTimetableItemModal = ({
       <div className="scenario-manage-timetable-item">
         <ImportTimetableItem upsertTimetableItems={upsertTimetableItems} />
       </div>
+    )}
+
+    {displayTimetableItemManagement === MANAGE_TIMETABLE_ITEM_TYPES.catalog && (
+      <TrainScheduleSetCatalogDialog
+        trainScheduleSetsAlreadyImported={trainScheduleSetsAlreadyImported}
+        onSubmit={(data) => {
+          //TODO: do the glue when mock will be removed
+          console.debug('Import from catalog', data);
+          setDisplayTimetableItemManagement(MANAGE_TIMETABLE_ITEM_TYPES.none);
+        }}
+        onCancel={() => setDisplayTimetableItemManagement(MANAGE_TIMETABLE_ITEM_TYPES.none)}
+      />
     )}
   </div>
 );

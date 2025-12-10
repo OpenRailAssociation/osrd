@@ -3,6 +3,7 @@ import { expect, type Locator, type Page } from '@playwright/test';
 import OperationalStudiesPage from './operational-studies-page';
 
 class ImportPage extends OperationalStudiesPage {
+  private readonly importTimetableMenuButton: Locator;
   private readonly importTimetableItemButton: Locator;
   private readonly importTimetableItemForm: Locator;
   private readonly importTimetableItemUploadButton: Locator;
@@ -14,7 +15,8 @@ class ImportPage extends OperationalStudiesPage {
 
   constructor(page: Page) {
     super(page);
-    this.importTimetableItemButton = page.getByTestId('scenarios-import-timetable-item-button');
+    this.importTimetableMenuButton = page.getByTestId('scenarios-import-timetable-item-button');
+    this.importTimetableItemButton = page.getByTestId('scenarios-import-timetable-by-file');
     this.importTimetableItemForm = page.getByTestId('import-timetable-item');
     this.importTimetableItemUploadButton = page.getByTestId('import-timetable-item-upload-button');
     this.uploadFileDropzone = page.getByTestId('upload-file-modal-dropzone');
@@ -25,6 +27,8 @@ class ImportPage extends OperationalStudiesPage {
   }
 
   async openImportTimetableItemForm() {
+    await this.importTimetableMenuButton.click();
+    await expect(this.importTimetableMenuButton).toBeVisible();
     await this.importTimetableItemButton.click();
     await expect(this.importTimetableItemForm).toBeVisible();
   }

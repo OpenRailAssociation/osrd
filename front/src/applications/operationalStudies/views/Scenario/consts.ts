@@ -3,4 +3,5 @@ export const MANAGE_TIMETABLE_ITEM_TYPES = Object.freeze({
   add: 'ADD',
   edit: 'EDIT',
   import: 'IMPORT',
+  catalog: 'CATALOG',
 });

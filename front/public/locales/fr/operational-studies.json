@@ -8,6 +8,22 @@
     "tables": "Tableaux",
     "trains": "Trains"
   },
+  "importTrainScheduleSet": {
+    "cancel": "Annuler",
+    "cartEmpty": "Aucune sélection",
+    "import": "Import",
+    "importType": {
+      "copy": "Import par copie",
+      "reference": "Import par référence"
+    },
+    "title": "Import de paquets de trains",
+    "trainScheduleSet": "Paquet",
+    "trainScheduleSetAlreadyImported": "Ce paquet est déjà présent dans votre scénario en tant que référence",
+    "trainScheduleSetsSelected_one": "{{count}} paquet sélectionné",
+    "trainScheduleSetsSelected_other": "{{count}} paquets sélectionnés",
+    "trainSchedulesCount_one": "{{count}} train",
+    "trainSchedulesCount_other": "{{count}} trains"
+  },
   "importTrains": {
     "cancel": "Annuler",
     "chooseFile": "Parcourir… Aucun fichier sélectionné.",
@@ -217,6 +233,8 @@
       "duplicate": "Dupliquer",
       "exportSelection": "Exporter les trains sélectionnés",
       "filterLabel": "Nom, étiquette",
+      "importTimetableFromCatalog": "Importer depuis le catalogue",
+      "importTimetableFromFile": "Importer depuis un fichier",
       "importTimetableItem": "Importer des trains",
       "invalid": {
         "incompatible_constraints": "Contraintes incompatibles",

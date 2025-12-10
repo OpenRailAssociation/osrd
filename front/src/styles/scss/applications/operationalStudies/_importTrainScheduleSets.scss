@@ -1,0 +1,206 @@
+.scenario {
+  dialog.import-trainscheduleset {
+    section {
+      display: flex;
+      align-items: stretch;
+      padding: 1px 0;
+
+      aside.catalog {
+        background-color: var(--color-ambientB-5);
+        border-right: 1px solid var(--color-black-25);
+        width: 480px;
+        flex-grow: 0;
+        flex-shrink: 0;
+        overflow: auto;
+
+        .catalog-entry {
+          &:not(:first-child) {
+            .collapse-header {
+              border-top: 1px solid var(--color-black-25);
+            }
+          }
+          .collapse-header {
+            button {
+              font-weight: 600;
+              padding: 8px 16px 8px 8px;
+              color: var(--color-grey-80);
+
+              border-top: 1px solid var(--color-white-100);
+
+              .collapse-icon {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                margin-right: 4px;
+              }
+            }
+
+            &.collapsed {
+              background-color: var(--color-white-100);
+              button {
+                border-bottom: none;
+              }
+            }
+            .collapse-title {
+              display: flex;
+              justify-content: space-between;
+
+              .count {
+                color: var(--color-grey-30);
+                font-weight: 400;
+              }
+            }
+          }
+          .collapse-body {
+            background-color: var(--color-white-100);
+            padding-left: 26px;
+            display: flex;
+            flex-direction: column;
+
+            .trainscheduleset-card {
+              &:not(:last-child) {
+                border-bottom: 1px solid var(--color-black-25);
+              }
+              display: flex;
+              flex-direction: column;
+              flex-grow: 1;
+
+              .header {
+                color: var(--color-primary-60);
+                display: flex;
+                flex-grow: 1;
+                padding-block: 8px;
+                padding-right: 16px;
+
+                .status {
+                  align-items: center;
+                  flex-grow: 0;
+                  display: flex;
+                  margin-right: 8px;
+                }
+
+                .title {
+                  display: flex;
+                  flex-grow: 1;
+                  justify-content: space-between;
+                  align-items: center;
+                  .name {
+                    font-weight: 600;
+                    line-height: 32px;
+                    display: flex;
+                    align-items: center;
+                    gap: 5px;
+
+                    .icon {
+                      display: flex;
+                    }
+                  }
+                  .metadata {
+                    font-size: 0.75rem;
+                    line-height: 16px;
+                    color: var(--color-grey-50);
+                  }
+                }
+              }
+              .body {
+                color: var(--color-grey-80);
+                padding: 0 24px 16px 32px;
+                margin: 0;
+                text-align: start;
+              }
+
+              &.disabled {
+                .header {
+                  color: var(--color-info-60);
+                  .status {
+                    color: var(--color-info-30);
+                  }
+                }
+                .body {
+                  color: var(--color-info-60);
+                }
+              }
+            }
+          }
+        }
+      }
+
+      .cart {
+        background-color: var(--color-ambientB-15);
+        display: flex;
+        flex-grow: 1;
+        justify-content: center;
+        overflow: auto;
+        min-width: 448px;
+
+        .cart-wrapper {
+          display: grid;
+          margin: auto 0;
+          padding: 16px 24px;
+          gap: 16px;
+          width: 448px;
+          flex-shrink: 0;
+
+          .cart-empty {
+            color: var(--color-grey-50);
+            margin-top: 64px;
+          }
+
+          .trainscheduleset-cartItem {
+            align-items: center;
+            box-shadow: var(--color-white-25) 0 1px 0 0 inset;
+            border-radius: 6px;
+            background-color: var(--color-ambientB-5);
+            display: flex;
+            gap: 16px;
+            min-width: 50%;
+            padding: 8px;
+
+            .info {
+              display: flex;
+              flex-direction: column;
+              flex-grow: 1;
+              .name {
+                line-height: 24px;
+              }
+              .catalog {
+                color: var(--color-grey-50);
+                font-size: 0.875rem;
+                font-weight: 600;
+              }
+            }
+            .remove {
+              padding-right: 12px;
+              display: flex;
+              flex-grow: 0;
+              align-items: center;
+
+              button {
+                color: var(--color-grey-30);
+                &:hover {
+                  color: var(--color-error-60);
+                }
+                .icon {
+                  display: flex;
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+@media (max-width: 976px) {
+  .scenario {
+    dialog.import-trainscheduleset {
+      section {
+        aside.catalog {
+          flex-shrink: 1;
+          min-width: 350px;
+        }
+      }
+    }
+  }
+}

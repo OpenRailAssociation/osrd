@@ -17,14 +17,6 @@ export const MOCK_CATALOG: CatalogEntry[] = Array.from(Array(MOCK_NB_CATALOG_ENT
   })
 );
 
-export async function mockGetCatalogEntry(id: number): Promise<CatalogEntry | null> {
-  return new Promise((resolve) => {
-    setTimeout(() => {
-      resolve(MOCK_CATALOG.find((e) => e.id === id) || null);
-    }, 1000);
-  });
-}
-
 //
 // TRAIN SCHEDULE SET
 //
@@ -98,10 +90,37 @@ export const MOCK_TRAIN_SCHEDULE_SETS: TrainScheduleSet[] = [
   },
 ];
 
+//
+// API MOCK
+//
+
+// GET /catalogue_entry/
+export async function mockListCatalogEntries(): Promise<CatalogEntry[]> {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      resolve(MOCK_CATALOG);
+    }, 1000);
+  });
+}
+
 export async function mockListTrainScheduleSet(): Promise<TrainScheduleSet[]> {
   return new Promise((resolve) => {
     setTimeout(() => {
       resolve(MOCK_TRAIN_SCHEDULE_SETS);
     }, 1000);
+  });
+}
+
+// /train_schedule_sets:
+export async function mockGetTrainScheduleSets(
+  catalogId: number
+): Promise<Array<TrainScheduleSet & { train_schedule_count: number }>> {
+  return new Promise((resolve) => {
+    setTimeout(() => {
+      const result = MOCK_TRAIN_SCHEDULE_SETS.filter((e) => e.catalog_entry_id === catalogId);
+      resolve(
+        result.map((tss) => ({ ...tss, train_schedule_count: Math.round(Math.random() * 10) }))
+      );
+    }, 100);
   });
 }

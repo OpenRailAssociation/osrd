@@ -1,4 +1,4 @@
-import { useCallback, type HTMLAttributes } from 'react';
+import { useCallback, type HTMLAttributes, type SyntheticEvent } from 'react';
 
 import { Location } from '@osrd-project/ui-icons';
 import bbox from '@turf/bbox';
@@ -18,13 +18,17 @@ const IncompatibleConstraintsMapFocus = (props: IncompatibleConstraintsMapFocusP
   const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTimetableItem' });
   const { geojson, ...attrs } = props;
 
-  const mapFocusOnPath = useCallback(() => {
-    if (geojson) {
-      map.current?.fitBounds(bbox(geojson) as [number, number, number, number], {
-        animate: smoothTravel,
-      });
-    }
-  }, [map, geojson, smoothTravel]);
+  const mapFocusOnPath = useCallback(
+    (e: SyntheticEvent) => {
+      e.stopPropagation();
+      if (geojson) {
+        map.current?.fitBounds(bbox(geojson) as [number, number, number, number], {
+          animate: smoothTravel,
+        });
+      }
+    },
+    [map, geojson, smoothTravel]
+  );
 
   return (
     <button

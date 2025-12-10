@@ -197,7 +197,8 @@ const IncompatibleConstraints = ({
   return (
     <>
       <Collapsable
-        className="rounded"
+        className="rounded p-1"
+        collapsed={true}
         style={{
           zIndex: 2,
           position: 'absolute',

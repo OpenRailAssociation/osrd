@@ -46,7 +46,10 @@ const IncompatibleConstraintsFilters = (props: IncompatibleConstraintsFiltersPro
             type="button"
             title={getTitle(label, type.enabled)}
             className={cx('ml-2', type.enabled ? 'text-danger' : 'text-muted')}
-            onClick={() => toggleFilter(name)}
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleFilter(name);
+            }}
           >
             <Icon />({type.count})
           </button>
