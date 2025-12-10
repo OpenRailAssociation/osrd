@@ -25,6 +25,13 @@ export type ComboBoxProps<T> = Omit<InputProps, 'value'> & {
   onSelectSuggestion: (option: T | undefined) => void;
   resetSuggestions: () => void;
   testIdPrefix?: string;
+  renderListElementComponent?: (params: {
+    suggestion: T;
+    index: number;
+    isActive: boolean;
+    isSelected: boolean;
+  }) => ReactNode;
+  renderFooterItem?: () => ReactNode;
 };
 
 /**
@@ -44,6 +51,8 @@ const ComboBox = <T,>({
   onSelectSuggestion,
   resetSuggestions,
   testIdPrefix,
+  renderListElementComponent,
+  renderFooterItem,
   ...inputProps
 }: ComboBoxProps<T>) => {
   const [activeSuggestionIndex, setActiveSuggestionIndex] = useState(-1);
@@ -105,30 +114,44 @@ const ComboBox = <T,>({
   };
 
   const handleKeyDown: KeyboardEventHandler<HTMLInputElement> = (e) => {
-    if (e.key === 'ArrowDown') {
-      setActiveSuggestionIndex((prev) => {
-        const newIndex = prev < suggestions.length - 1 ? prev + 1 : prev;
-        if (suggestionRefs.current[newIndex]) {
-          suggestionRefs.current[newIndex].scrollIntoView({
-            block: 'nearest',
-          });
+    switch (e.key) {
+      case 'ArrowDown': {
+        setActiveSuggestionIndex((prev) => {
+          const newIndex = prev < suggestions.length - 1 ? prev + 1 : prev;
+          suggestionRefs.current[newIndex]?.scrollIntoView({ block: 'nearest' });
+          return newIndex;
+        });
+        break;
+      }
+      case 'ArrowUp': {
+        setActiveSuggestionIndex((prev) => {
+          const newIndex = prev > 0 ? prev - 1 : prev;
+          suggestionRefs.current[newIndex]?.scrollIntoView({ block: 'nearest' });
+          return newIndex;
+        });
+        break;
+      }
+      case 'Enter': {
+        e.preventDefault();
+        if (activeSuggestionIndex >= 0) {
+          selectSuggestion(activeSuggestionIndex);
+        } else if (suggestions.length === 1) {
+          selectSuggestion(0);
         }
-        return newIndex;
-      });
-    } else if (e.key === 'ArrowUp') {
-      setActiveSuggestionIndex((prev) => {
-        const newIndex = prev > 0 ? prev - 1 : prev;
-        if (suggestionRefs.current[newIndex]) {
-          suggestionRefs.current[newIndex].scrollIntoView({
-            block: 'nearest',
-          });
+        break;
+      }
+      case 'Tab': {
+        if (activeSuggestionIndex >= 0) {
+          selectSuggestion(activeSuggestionIndex);
         }
-        return newIndex;
-      });
-    } else if ((e.key === 'Enter' || e.key === 'Tab') && activeSuggestionIndex >= 0) {
-      selectSuggestion(activeSuggestionIndex);
-    } else if (e.key === 'Escape') {
-      closeSuggestions();
+        break;
+      }
+      case 'Escape': {
+        closeSuggestions();
+        break;
+      }
+      default:
+        break;
     }
   };
 
@@ -194,6 +217,7 @@ const ComboBox = <T,>({
         <ul
           className="suggestions-list"
           data-testid={testIdPrefix ? `${testIdPrefix}-list` : undefined}
+          onMouseLeave={() => setActiveSuggestionIndex(-1)}
         >
           {suggestions.map((suggestion, index) => (
             <li
@@ -208,16 +232,24 @@ const ComboBox = <T,>({
                 active: index === activeSuggestionIndex,
                 selected: value && getSuggestionLabel(value) === getSuggestionLabel(suggestion),
                 small,
+                'suggestion-item--custom': renderListElementComponent,
               })}
               onClick={() => selectSuggestion(index)}
-              onMouseDown={(e) => e.preventDefault()} // Prevents the div parent (.ui-combo-box) from losing focus
-              onMouseEnter={() => {
-                setActiveSuggestionIndex(index);
-              }}
+              onMouseEnter={() => setActiveSuggestionIndex(index)}
             >
-              {getSuggestionLabel(suggestion)}
+              {renderListElementComponent
+                ? renderListElementComponent({
+                    suggestion,
+                    index,
+                    isActive: index === activeSuggestionIndex,
+                    isSelected:
+                      !!value && getSuggestionLabel(value) === getSuggestionLabel(suggestion),
+                  })
+                : getSuggestionLabel(suggestion)}
             </li>
           ))}
+
+          {renderFooterItem && renderFooterItem()}
         </ul>
       )}
     </div>
