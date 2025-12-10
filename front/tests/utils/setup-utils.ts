@@ -20,9 +20,8 @@ import {
 } from './api-utils';
 import { createDateInSpecialTimeZone } from './date-utils';
 import readJsonFile from './file-utils';
-import { sendPacedTrains } from './paced-train';
+import { sendTrains } from './paced-train';
 import createScenario from './scenario';
-import sendTrainSchedules from './train-schedule';
 import type { ProjectData, StudyData } from './types';
 import {
   dualModeRollingStockName,
@@ -194,8 +193,8 @@ export async function createDataForTests(): Promise<void> {
         mediumInfra.id
       )
     ).scenario;
-    await sendTrainSchedules(scenarioWithTimetableItems.timetable_id, trainSchedulesJson);
-    await sendPacedTrains(scenarioWithTimetableItems.timetable_id, pacedTrainsJson);
+    await sendTrains(scenarioWithTimetableItems.timetable_id, trainSchedulesJson);
+    await sendTrains(scenarioWithTimetableItems.timetable_id, pacedTrainsJson);
 
     // Step 7: Configure STDCM search environment for the tests
     const stdcmEnvironment = {

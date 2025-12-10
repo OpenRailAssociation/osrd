@@ -8,14 +8,10 @@ import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/compon
 import { setFailure, setSuccess } from 'reducers/main';
 import { clearAddedExceptionsList } from 'reducers/osrdconf/operationalStudiesConf';
 import { getOperationalStudiesConf } from 'reducers/osrdconf/operationalStudiesConf/selectors';
-import type {
-  PacedTrainWithPacedTrainId,
-  TimetableItem,
-  TrainScheduleWithTrainId,
-} from 'reducers/osrdconf/types';
+import type { PacedTrainWithPacedTrainId, TimetableItem } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
-import { formatEditoastIdToPacedTrainId, formatEditoastIdToTrainScheduleId } from 'utils/trainId';
+import { formatEditoastIdToPacedTrainId } from 'utils/trainId';
 
 import checkCurrentConfig from './helpers/checkCurrentConfig';
 import {
@@ -49,62 +45,38 @@ const CreateTimetableItemButton = ({
     rollingStockId: simulationConf.rollingStockID,
   });
 
-  const [postTrainSchedule] =
-    osrdEditoastApi.endpoints.postTimetableByIdTrainSchedules.useMutation();
   const [postPacedTrain] = osrdEditoastApi.endpoints.postTimetableByIdPacedTrains.useMutation();
 
   const createTrainSchedules = async () => {
     if (!checkCurrentConfig(simulationConf, t, dispatch, rollingStock?.name)) return;
 
-    const baseTrainName = simulationConf.name;
-
     setIsWorking(true);
 
     try {
-      if (isPacedTrainMode) {
-        const pacedTrainPayload = formatPacedTrainPayload(simulationConf, rollingStock!.name);
-        const newPacedTrain = await postPacedTrain({
-          id: timetableId,
-          body: [pacedTrainPayload],
-        }).unwrap();
+      const payload = isPacedTrainMode
+        ? formatPacedTrainPayload(simulationConf, rollingStock!.name)
+        : formatTimetableItemPayload(simulationConf, rollingStock!.name);
+      const newTimetableItem = await postPacedTrain({
+        id: timetableId,
+        body: [payload],
+      }).unwrap();
 
-        // We can only add one paced train at a time
-        const formattedNewPacedTrain: PacedTrainWithPacedTrainId = {
-          ...newPacedTrain.at(0)!,
-          id: formatEditoastIdToPacedTrainId(newPacedTrain.at(0)!.id),
-        };
+      // We can only add one paced train at a time
+      const formattedNewPacedTrain: PacedTrainWithPacedTrainId = {
+        ...newTimetableItem.at(0)!,
+        id: formatEditoastIdToPacedTrainId(newTimetableItem.at(0)!.id),
+      };
 
-        dispatch(
-          setSuccess({
-            title: t('pacedTrains.added'),
-            text: `${baseTrainName}: ${simulationConf.startTime.toLocaleTimeString()}`,
-          })
-        );
-        if (simulationConf.editingItemType !== 'trainSchedule') {
-          dispatch(clearAddedExceptionsList());
-        }
-        upsertTimetableItems([formattedNewPacedTrain]);
-      } else {
-        const trainSchedulePayload = formatTimetableItemPayload(simulationConf, rollingStock!.name);
-        const newTrainSchedule = await postTrainSchedule({
-          id: timetableId,
-          body: [trainSchedulePayload],
-        }).unwrap();
-
-        // We can only add one train schedule at a time
-        const formattedNewTrainSchedule: TrainScheduleWithTrainId = {
-          ...newTrainSchedule.at(0)!,
-          id: formatEditoastIdToTrainScheduleId(newTrainSchedule.at(0)!.id),
-        };
-
-        dispatch(
-          setSuccess({
-            title: t('trainAdded'),
-            text: `${baseTrainName}: ${simulationConf.startTime.toLocaleTimeString()}`,
-          })
-        );
-        upsertTimetableItems([formattedNewTrainSchedule]);
+      dispatch(
+        setSuccess({
+          title: isPacedTrainMode ? t('pacedTrains.added') : t('trainAdded'),
+          text: `${simulationConf.name}: ${simulationConf.startTime.toLocaleTimeString()}`,
+        })
+      );
+      if (simulationConf.editingItemType === 'pacedTrain') {
+        dispatch(clearAddedExceptionsList());
       }
+      upsertTimetableItems([formattedNewPacedTrain]);
     } catch (e) {
       dispatch(setFailure(castErrorToFailure(e)));
     } finally {

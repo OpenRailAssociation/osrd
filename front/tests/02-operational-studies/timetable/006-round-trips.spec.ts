@@ -24,10 +24,9 @@ import RoundTripPage from '../../pages/operational-studies/round-trips-page';
 import { generateUniqueName, waitForInfraStateToBeCached } from '../../utils';
 import { getInfra, getProject, getStudy } from '../../utils/api-utils';
 import readJsonFile from '../../utils/file-utils';
-import { sendPacedTrains } from '../../utils/paced-train';
 import createScenario from '../../utils/scenario';
+import sendTrains from '../../utils/send-trains';
 import { deleteScenario } from '../../utils/teardown-utils';
-import sendTrainSchedules from '../../utils/train-schedule';
 import type { RoundTripsModalTranslations } from '../../utils/types';
 
 const frTranslations: RoundTripsModalTranslations = readJsonFile<{
@@ -66,8 +65,8 @@ test.describe('@op @timetable-items @round-trips', () => {
         )
       ).scenario;
       await Promise.all([
-        sendTrainSchedules(scenarioItems.timetable_id, trainSchedulesJson.slice(18, 21)),
-        sendPacedTrains(scenarioItems.timetable_id, pacedTrainsJson.slice(4, 7)),
+        sendTrains(scenarioItems.timetable_id, trainSchedulesJson.slice(18, 21)),
+        sendTrains(scenarioItems.timetable_id, pacedTrainsJson.slice(4, 7)),
       ]);
 
       await page.goto(

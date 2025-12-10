@@ -11,8 +11,8 @@ import { generateUniqueName, waitForInfraStateToBeCached } from '../../utils';
 import { getInfra, getProject, getStudy } from '../../utils/api-utils';
 import readJsonFile from '../../utils/file-utils';
 import createScenario from '../../utils/scenario';
+import sendTrains from '../../utils/send-trains';
 import { deleteScenario } from '../../utils/teardown-utils';
-import sendTrainSchedules from '../../utils/train-schedule';
 import type { TimetableFilterTranslations } from '../../utils/types';
 
 const trainSchedulesJson = readJsonFile<TrainSchedule[]>(
@@ -53,7 +53,7 @@ test.describe('@op @nge', () => {
         await createScenario(generateUniqueName('nge-scenario'), project.id, study.id, infra.id)
       ).scenario;
 
-      await sendTrainSchedules(scenarioItems.timetable_id, trainSchedulesJson.slice(4, 5));
+      await sendTrains(scenarioItems.timetable_id, trainSchedulesJson.slice(4, 5));
 
       await page.goto(
         `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenarioItems.id}`

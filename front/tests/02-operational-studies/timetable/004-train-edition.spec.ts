@@ -18,10 +18,9 @@ import ScenarioTimetableSection from '../../pages/operational-studies/scenario-t
 import { generateUniqueName, waitForInfraStateToBeCached } from '../../utils';
 import { getInfra, getProject, getStudy } from '../../utils/api-utils';
 import readJsonFile from '../../utils/file-utils';
-import { sendPacedTrains } from '../../utils/paced-train';
 import createScenario from '../../utils/scenario';
+import sendTrains from '../../utils/send-trains';
 import { deleteScenario } from '../../utils/teardown-utils';
-import sendTrainSchedules from '../../utils/train-schedule';
 import type {
   CommonTranslations,
   ManageTimetableItemTranslations,
@@ -84,11 +83,11 @@ test.describe('@op @paced-train @train-schedule', () => {
           infra.id
         )
       ).scenario;
-      await sendTrainSchedules(
+      await sendTrains(
         scenarioItems.timetable_id,
         JSON.parse(JSON.stringify(trainSchedulesJson.slice(0, 1)))
       );
-      await sendPacedTrains(
+      await sendTrains(
         scenarioItems.timetable_id,
         JSON.parse(JSON.stringify(pacedTrainsJson.slice(0, 1)))
       );
