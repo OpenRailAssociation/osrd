@@ -278,9 +278,9 @@ const parseXML = async (xmlDoc: Document): Promise<TimetableJsonPayload> => {
     }
 
     const firstOcpTT = ocpSteps[0];
-    const firstDepartureTime = firstOcpTT
-      .getElementsByTagName('times')[0]
-      ?.getAttribute('departure');
+    const firstOcpTTTimes =
+      firstOcpTT.querySelector('times[scope="scheduled"]') ?? firstOcpTT.querySelector('times');
+    const firstDepartureTime = firstOcpTTTimes?.getAttribute('departure');
 
     const firstDepartureTimeformatted = firstDepartureTime && cleanTimeFormat(firstDepartureTime);
 
