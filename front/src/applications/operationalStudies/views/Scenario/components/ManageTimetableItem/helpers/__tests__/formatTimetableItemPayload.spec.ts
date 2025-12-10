@@ -5,6 +5,7 @@ import type {
   TrainCategory,
   TrainMainCategory,
 } from 'common/api/osrdEditoastApi';
+import type { PacedTrainWithPacedWithDetails } from 'modules/timetableItem/types';
 import { defaultMapSettings } from 'reducers/commonMap';
 import type {
   AddedExceptionId,
@@ -71,7 +72,7 @@ describe('formatTimetableItemPayload', () => {
     addedExceptions: [],
   };
   const rollingStockName = 'DUAL-MODE_RS_E2Ee';
-  const rawTimetableItemToEditData: TimetableItemToEditData = {
+  const rawTimetableItemToEditData = {
     timetableItemId: 'paced_238' as PacedTrainId,
     originalPacedTrain: {
       category: {
@@ -185,7 +186,7 @@ describe('formatTimetableItemPayload', () => {
           final: [0, 5532133],
         },
       },
-    },
+    } as PacedTrainWithPacedWithDetails,
   };
   describe('User creates a paced train', () => {
     it('should add the exceptions defined by user', () => {
@@ -477,7 +478,7 @@ describe('formatTimetableItemPayload', () => {
           startTime: new Date('2025-06-02T14:45:00.000Z'), // occurrence with index 2 start time
           name: 'test 5', // occurrence with index 2 generated name
         };
-        const timetableItemToEditDataWithExceptions: TimetableItemToEditData = {
+        const timetableItemToEditDataWithExceptions = {
           ...rawTimetableItemToEditData,
           originalPacedTrain: {
             ...rawTimetableItemToEditData.originalPacedTrain,
@@ -493,7 +494,7 @@ describe('formatTimetableItemPayload', () => {
                 },
               ],
             },
-          },
+          } as PacedTrainWithPacedWithDetails,
           occurrenceId: 'indexedoccurrence_238_2' as IndexedOccurrenceId,
         };
         const osrdconfWithUserChanges: OperationalStudiesConfState = {

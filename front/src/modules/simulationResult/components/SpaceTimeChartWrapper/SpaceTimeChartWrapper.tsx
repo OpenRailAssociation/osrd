@@ -34,6 +34,7 @@ import type {
   WaypointsPanelData,
   DraggingState,
 } from 'modules/simulationResult/types';
+import { isPacedTrainWithPacedWithDetails } from 'modules/timetableItem/helpers/pacedTrain';
 import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
 import type {
   OccurrenceId,
@@ -52,7 +53,6 @@ import {
   extractOccurrenceIndexFromOccurrenceId,
   extractExceptionIdFromOccurrenceId,
   isAddedExceptionId,
-  isPacedTrainWithDetails,
 } from 'utils/trainId';
 
 import { buildSplitPoints } from './buildSplitPoints';
@@ -157,7 +157,7 @@ const SpaceTimeChartWrapper = ({
 
     if (
       timetableItemUsedForProjectionWithDetails &&
-      isPacedTrainWithDetails(timetableItemUsedForProjectionWithDetails) &&
+      isPacedTrainWithPacedWithDetails(timetableItemUsedForProjectionWithDetails) &&
       isOccurrenceId(selectedProjectionId)
     ) {
       const exceptionUsedForProjection =

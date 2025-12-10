@@ -18,9 +18,15 @@ import {
   formatPacedTrainIdToIndexedOccurrenceId,
   isIndexedOccurrenceId,
   isPacedTrainResponseWithPacedTrainId,
+  isPacedTrainWithDetails,
 } from 'utils/trainId';
 
-import type { ExceptionChangeGroups, PacedTrainWithDetails } from '../types';
+import type {
+  ExceptionChangeGroups,
+  PacedTrainWithDetails,
+  PacedTrainWithPacedWithDetails,
+  TimetableItemWithDetails,
+} from '../types';
 
 export const isPacedTrainWithPaced = (pacedTrain: PacedTrain): pacedTrain is PacedTrainWithPaced =>
   !!pacedTrain.paced;
@@ -30,10 +36,15 @@ export const isPacedTrainResponseWithPaced = (
 ): timetableItem is PacedTrainResponseWithPaced =>
   isPacedTrainResponseWithPacedTrainId(timetableItem) && !!timetableItem.paced;
 
+export const isPacedTrainWithPacedWithDetails = (
+  timetableItem: TimetableItemWithDetails
+): timetableItem is PacedTrainWithPacedWithDetails =>
+  isPacedTrainWithDetails(timetableItem) && !!timetableItem.paced;
+
 export const getOccurrencesNb = ({
   timeWindow,
   interval,
-}: Pick<PacedTrainWithDetails['paced'], 'timeWindow' | 'interval'>) => {
+}: Pick<NonNullable<PacedTrainWithDetails['paced']>, 'timeWindow' | 'interval'>) => {
   if (interval.ms === 0) {
     throw new Error('Interval cannot be 0');
   }
@@ -123,7 +134,7 @@ export const extractOccurrenceDetailsFromPacedTrain = <
 /** Return the worst status of the model train and its occurrences */
 export const getOccurrencesWorstStatus = (
   summary: PacedTrainWithDetails['summary'],
-  exceptions: PacedTrainWithDetails['paced']['exceptions']
+  exceptions: NonNullable<PacedTrainWithDetails['paced']>['exceptions']
 ): 'invalid' | 'scheduleNotHonored' | 'trainTooFast' | '' => {
   let className: '' | 'scheduleNotHonored' | 'trainTooFast' = '';
 

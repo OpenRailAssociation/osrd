@@ -72,11 +72,13 @@ export function formatPacedTrainWithDetailsToPacedTrainPayload(
     labels: pacedTrainWithDetails.labels,
     margins: pacedTrainWithDetails.margins,
     options: pacedTrainWithDetails.options,
-    paced: {
-      time_window: pacedTrainWithDetails.paced.timeWindow.toISOString(),
-      interval: pacedTrainWithDetails.paced.interval.toISOString(),
-      exceptions: pacedTrainWithDetails.paced.exceptions,
-    },
+    paced: pacedTrainWithDetails.paced
+      ? {
+          time_window: pacedTrainWithDetails.paced.timeWindow.toISOString(),
+          interval: pacedTrainWithDetails.paced.interval.toISOString(),
+          exceptions: pacedTrainWithDetails.paced.exceptions,
+        }
+      : undefined,
     path: pacedTrainWithDetails.path,
     power_restrictions: pacedTrainWithDetails.power_restrictions,
     // Rollingstock is missing when just created a train from nge or with import
