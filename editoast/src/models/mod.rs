@@ -11,7 +11,6 @@ pub use auth_driver::PgAuthDriver;
 pub mod catalogue_entry;
 pub mod paced_train;
 pub mod railjson;
-pub mod rolling_stock_livery;
 pub mod stdcm_search_environment;
 pub mod train_schedule_set;
 

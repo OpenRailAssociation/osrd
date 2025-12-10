@@ -32,12 +32,12 @@ use super::RollingStockIdParam;
 use super::RollingStockKey;
 use super::RollingStockNameParam;
 use crate::error::Result;
-use crate::models::rolling_stock_livery::RollingStockLivery;
 use crate::views::pagination::PaginatedList;
 use crate::views::pagination::PaginationQueryParams;
 use crate::views::pagination::PaginationStats;
 use editoast_models::prelude::*;
 use editoast_models::rolling_stock::RollingStock;
+use editoast_models::rolling_stock_livery::RollingStockLivery;
 
 #[cfg(test)]
 use serde::Deserialize;
