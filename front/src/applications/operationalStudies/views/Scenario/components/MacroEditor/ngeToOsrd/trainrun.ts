@@ -539,8 +539,7 @@ export const handleUpdateTimetableItem = async ({
   );
   await populateSecondaryCodesInPath(forwardPathAndSchedule.path, infraId, dispatch);
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const { id, ...timetableItemBase } = oldForwardTimetableItem;
+  const { id: _id, ...timetableItemBase } = oldForwardTimetableItem;
 
   const category = getTrainCategoryFromTrainrunCategoryId(
     state.trainrunCategories,
