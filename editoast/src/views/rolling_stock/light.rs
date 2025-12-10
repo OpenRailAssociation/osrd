@@ -337,11 +337,12 @@ mod tests {
     use axum::http::StatusCode;
     use pretty_assertions::assert_eq;
 
+    use editoast_models::prelude::*;
+
     use super::LightRollingStockWithLiveries;
     use super::LightRollingStockWithLiveriesCountList;
     use crate::error::InternalError;
     use crate::models::fixtures::create_fast_rolling_stock;
-    use crate::models::fixtures::create_rolling_stock_livery_fixture;
     use crate::views::test_app::TestAppBuilder;
 
     fn is_sorted(data: &[i64]) -> bool {
@@ -424,13 +425,37 @@ mod tests {
         let generated_rolling_stock = (0..10)
             .zip(std::iter::repeat(&db_pool).map(|p| p.get()))
             .map(|(rs_id, conn)| async move {
-                let fixtures = create_rolling_stock_livery_fixture(
-                    &mut conn.await.unwrap(),
-                    &format!("rs_name_{rs_id}"),
+                let mut conn = conn.await?;
+                let image = editoast_models::Document::changeset()
+                    .content_type("text/fake_data".into())
+                    .data(vec![])
+                    .create(&mut conn)
+                    .await
+                    .expect("Failed to create document");
+
+                let rs = Changeset::<editoast_models::rolling_stock::RollingStock>::from(
+                    schemas::fixtures::simple_rolling_stock(),
                 )
-                .await;
-                let fixtures: Result<_, InternalError> = Ok(fixtures);
-                fixtures
+                .name(format!(
+                    "test_list_light_rolling_stock_increasing_ids_{rs_id}"
+                ))
+                .locked(false)
+                .version(0)
+                .create(&mut conn)
+                .await
+                .expect("Failed to create rolling stock");
+
+                let rs_livery =
+                    crate::models::rolling_stock_livery::RollingStockLivery::changeset()
+                        .name(format!(
+                            "test_list_light_rolling_stock_increasing_ids_{rs_id}"
+                        ))
+                        .rolling_stock_id(rs.id)
+                        .compound_image_id(Some(image.id))
+                        .create(&mut conn)
+                        .await
+                        .expect("Failed to create rolling stock livery");
+                Ok::<_, InternalError>((image, rs, rs_livery))
             });
 
         let generated_fixtures = futures::future::try_join_all(generated_rolling_stock)
