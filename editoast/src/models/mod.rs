@@ -5,7 +5,6 @@ pub mod infra;
 pub mod infra_objects;
 pub mod macro_node;
 pub mod macro_note;
-pub mod round_trips;
 
 mod auth_driver;
 pub use auth_driver::PgAuthDriver;
@@ -24,7 +23,6 @@ pub use infra_objects::*;
 pub use paced_train::PacedTrain;
 pub use project::Project;
 pub use rolling_stock::RollingStock;
-pub use round_trips::TrainScheduleRoundTrips;
 pub use scenario::Scenario;
 pub use study::Study;
 

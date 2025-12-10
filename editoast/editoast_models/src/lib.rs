@@ -6,6 +6,7 @@ pub mod pagination;
 pub mod prelude;
 pub mod rolling_stock;
 pub mod rolling_stock_image;
+pub mod round_trips;
 pub mod sub_category;
 pub mod tags;
 pub mod temporary_speed_limits;
