@@ -34,6 +34,10 @@
   - any:
       - changed-files:
           - any-glob-to-any-file: "chart/**"
+"area:railway-manager-interface":
+  - any:
+      - changed-files:
+          - any-glob-to-any-file: "railway_manager_interface/**"
 "kind:api-change":
   - any:
       - changed-files:
