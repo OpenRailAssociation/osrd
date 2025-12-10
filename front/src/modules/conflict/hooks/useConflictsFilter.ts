@@ -4,12 +4,14 @@ import { useSelector } from 'react-redux';
 
 import type { Conflict } from 'common/api/osrdEditoastApi';
 import computeOccurrenceName from 'modules/timetableItem/helpers/computeOccurrenceName';
-import { findExceptionWithOccurrenceId } from 'modules/timetableItem/helpers/pacedTrain';
+import {
+  findExceptionWithOccurrenceId,
+  isPacedTrainResponseWithPaced,
+} from 'modules/timetableItem/helpers/pacedTrain';
 import type { TimetableItem, TimetableItemId } from 'reducers/osrdconf/types';
 import { getSelectedTrainId } from 'reducers/simulationResults/selectors';
 import {
   extractPacedTrainIdFromOccurrenceId,
-  isPacedTrainResponseWithPacedTrainId,
   isIndexedOccurrenceId,
   extractOccurrenceIndexFromOccurrenceId,
   isOccurrenceId,
@@ -44,7 +46,7 @@ const useConflictsFilter = (timetableItems: TimetableItem[], conflicts: Conflict
     if (
       !selectedTrain ||
       !isOccurrenceId(selectedTrainId) ||
-      !isPacedTrainResponseWithPacedTrainId(selectedTrain)
+      !isPacedTrainResponseWithPaced(selectedTrain)
     )
       return selectedTrain?.train_name || null;
 

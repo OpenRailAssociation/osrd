@@ -10,17 +10,13 @@ import {
   extractOccurrenceDetailsFromPacedTrain,
   findExceptionWithOccurrenceId,
   computeIndexedOccurrenceStartTime,
+  isPacedTrainResponseWithPaced,
 } from 'modules/timetableItem/helpers/pacedTrain';
 import useSelectedTimetableItem from 'modules/timetableItem/hooks/useSelectedTimetableItem';
 import type { Train } from 'reducers/osrdconf/types';
 import { getSelectedTrainId } from 'reducers/simulationResults/selectors';
 import { Duration } from 'utils/duration';
-import {
-  extractOccurrenceIndexFromOccurrenceId,
-  isOccurrenceId,
-  isPacedTrainResponseWithPacedTrainId,
-  isTrainScheduleId,
-} from 'utils/trainId';
+import { extractOccurrenceIndexFromOccurrenceId, isOccurrenceId } from 'utils/trainId';
 
 import type { SimulationResults } from '../types';
 import { preparePathPropertiesData } from '../utils';
@@ -39,12 +35,8 @@ const useSimulationResults = (): SimulationResults | undefined => {
 
   const train: Train | undefined = useMemo(() => {
     if (!selectedTrainId || !timetableItem) return undefined;
-    if (!isOccurrenceId(selectedTrainId) || !isPacedTrainResponseWithPacedTrainId(timetableItem)) {
+    if (!isOccurrenceId(selectedTrainId) || !isPacedTrainResponseWithPaced(timetableItem)) {
       return timetableItem;
-    }
-
-    if (isTrainScheduleId(selectedTrainId)) {
-      throw new Error(`trainId ${selectedTrainId} should be a occurrence id`);
     }
 
     const exception = findExceptionWithOccurrenceId(
@@ -78,11 +70,9 @@ const useSimulationResults = (): SimulationResults | undefined => {
       !selectedTrainId ||
       !isOccurrenceId(selectedTrainId) ||
       !timetableItem ||
-      !isPacedTrainResponseWithPacedTrainId(timetableItem)
+      !isPacedTrainResponseWithPaced(timetableItem)
     )
       return undefined;
-    if (isTrainScheduleId(selectedTrainId))
-      throw new Error(`trainId ${selectedTrainId} should be a occurrence id`);
     return findExceptionWithOccurrenceId(timetableItem.paced.exceptions, selectedTrainId);
   }, [selectedTrainId, timetableItem]);
 

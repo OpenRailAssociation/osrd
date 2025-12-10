@@ -238,21 +238,36 @@ const useTrackOccupancy = ({
       if (pacedResp?.data) {
         for (const [trackId, occupations] of Object.entries(pacedResp.data)) {
           for (const occupation of occupations) {
-            const pacedId = formatEditoastIdToPacedTrainId(occupation.paced_train_id);
+            const pacedId = formatEditoastIdToPacedTrainId(occupation.id);
             const train = trainsCollection[pacedId];
-            if (!train || isTrainScheduleProjection(train)) {
+
+            if (!train) throw new Error(`No train found for id ${pacedId}`);
+            if (isTrainScheduleProjection(train))
+              throw new Error(`TrainSchedule projection found for id ${pacedId}`);
+
+            if (occupation.type === 'single') {
+              zones.push(
+                getMovableOccupancyZone(
+                  trackId,
+                  pacedId,
+                  occupation,
+                  train.spaceTimeCurves,
+                  train.name,
+                  train.departureTime
+                )
+              );
               continue;
             }
 
-            const exception =
-              occupation.type === 'BaseOccurrence'
-                ? undefined
-                : train.paced.exceptions.find((e) => e.key === occupation.exception_key);
+            if (!train.paced) throw new Error(`Train with id ${train.id} is not a paced train`);
 
-            const exceptionProjection =
-              occupation.type !== 'BaseOccurrence'
-                ? train.paced.exceptionProjections.get(occupation.exception_key)
-                : undefined;
+            const exception = occupation.exception_key
+              ? train.paced.exceptions.find((e) => e.key === occupation.exception_key)
+              : undefined;
+
+            const exceptionProjection = occupation.exception_key
+              ? train.paced.exceptionProjections.get(occupation.exception_key)
+              : undefined;
 
             const { spaceTimeCurves } = exceptionProjection ?? train;
 
@@ -260,7 +275,7 @@ const useTrackOccupancy = ({
             let trainName: string;
             let startTime: Date;
 
-            if (occupation.type === 'CreatedException') {
+            if (occupation.type === 'created_occurrence') {
               if (!exception?.start_time?.value) continue;
 
               trainId = formatPacedTrainIdToExceptionId(pacedId, occupation.exception_key);

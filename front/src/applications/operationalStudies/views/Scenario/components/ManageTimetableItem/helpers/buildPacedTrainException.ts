@@ -1,5 +1,6 @@
 import { isEmpty, isEqual, omit } from 'lodash';
 
+import type { PacedTrainWithPaced } from 'applications/operationalStudies/types';
 import type { PacedTrain, PacedTrainException, TrainSchedule } from 'common/api/osrdEditoastApi';
 import computeBasePathStep from 'modules/timetableItem/helpers/computeBasePathStep';
 import computeOccurrenceName from 'modules/timetableItem/helpers/computeOccurrenceName';
@@ -23,7 +24,7 @@ import {
  */
 export function generatePacedTrainException(
   updatedOccurrence: TrainSchedule,
-  originalPacedTrain: PacedTrain,
+  originalPacedTrain: PacedTrainWithPaced,
   occurrenceIndex: number | null = null
 ): Omit<PacedTrainException, 'key' | 'occurrence_index'> {
   const exception: Omit<PacedTrainException, 'key' | 'occurrence_index'> = {};
@@ -179,7 +180,7 @@ export function updatePacedTrainExceptionsList<T extends PacedTrainException>(
  */
 export function checkChangeGroups(
   updatedTrain: TrainSchedule,
-  paced: PacedTrain['paced'],
+  paced: NonNullable<PacedTrain['paced']>,
   originalExceptions: PacedTrainException[]
 ): PacedTrainException[] {
   return originalExceptions.reduce<PacedTrainException[]>((acc, exception) => {

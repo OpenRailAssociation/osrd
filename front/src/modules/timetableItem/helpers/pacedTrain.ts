@@ -1,3 +1,7 @@
+import type {
+  PacedTrainResponseWithPaced,
+  PacedTrainWithPaced,
+} from 'applications/operationalStudies/types';
 import type { PacedTrain, PacedTrainException } from 'common/api/osrdEditoastApi';
 import type {
   OccurrenceId,
@@ -17,6 +21,14 @@ import {
 } from 'utils/trainId';
 
 import type { ExceptionChangeGroups, PacedTrainWithDetails } from '../types';
+
+export const isPacedTrainWithPaced = (pacedTrain: PacedTrain): pacedTrain is PacedTrainWithPaced =>
+  !!pacedTrain.paced;
+
+export const isPacedTrainResponseWithPaced = (
+  timetableItem: TimetableItem
+): timetableItem is PacedTrainResponseWithPaced =>
+  isPacedTrainResponseWithPacedTrainId(timetableItem) && !!timetableItem.paced;
 
 export const getOccurrencesNb = ({
   timeWindow,
@@ -141,7 +153,7 @@ export const getExceptionFromOccurrenceId = (
 ) => {
   const pacedTrainId = extractPacedTrainIdFromOccurrenceId(occurrenceId);
   const pacedTrain = timetableItemsById.get(pacedTrainId);
-  if (!pacedTrain || !isPacedTrainResponseWithPacedTrainId(pacedTrain))
+  if (!pacedTrain || !isPacedTrainResponseWithPaced(pacedTrain))
     throw new Error(`No paced train found for id ${pacedTrainId}`);
 
   let exception: PacedTrainException | undefined;
@@ -155,7 +167,7 @@ export const getExceptionFromOccurrenceId = (
   return exception;
 };
 
-export const getOcurrencesIds = (pacedTrain: PacedTrain, pacedTrainId: PacedTrainId) => {
+export const getOcurrencesIds = (pacedTrain: PacedTrainWithPaced, pacedTrainId: PacedTrainId) => {
   const occurrencesIds: OccurrenceId[] = pacedTrain.paced.exceptions
     .filter((exception) => exception.occurrence_index === undefined) // Indexed exceptions follow the regular indexed occurrence id pattern
     .map((exception) => formatPacedTrainIdToExceptionId(pacedTrainId, exception.key));

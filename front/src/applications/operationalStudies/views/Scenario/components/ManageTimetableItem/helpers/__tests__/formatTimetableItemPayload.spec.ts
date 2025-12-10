@@ -410,7 +410,7 @@ describe('formatTimetableItemPayload', () => {
             rollingStockName,
             timetableItemToEditDataWithOneChangeGroup
           );
-          expect(result.paced.exceptions).toEqual([]);
+          expect(result.paced?.exceptions).toEqual([]);
         });
       });
       describe('exception is both a label and category exception', () => {
@@ -451,7 +451,7 @@ describe('formatTimetableItemPayload', () => {
             rollingStockName,
             timetableItemToEditDataWithTwoChangeGroups
           );
-          expect(result.paced.exceptions).toEqual([
+          expect(result.paced?.exceptions).toEqual([
             {
               key: 'a6f39ce5-ae64-4135-af9b-22ee19877873',
               occurrence_index: 1,
@@ -523,7 +523,7 @@ describe('formatTimetableItemPayload', () => {
           timetableItemToEditDataWithExceptions
         );
 
-        expect(result.paced.exceptions).toEqual(expectedPacedTrainExceptions);
+        expect(result.paced?.exceptions).toEqual(expectedPacedTrainExceptions);
       });
     });
 
@@ -616,7 +616,7 @@ describe('formatTimetableItemPayload', () => {
           timetableItemToEditDataWithExceptions
         );
 
-        expect(result.paced.exceptions).toEqual(expectedPacedTrainExceptions);
+        expect(result.paced?.exceptions).toEqual(expectedPacedTrainExceptions);
       });
     });
 
@@ -658,7 +658,7 @@ describe('formatTimetableItemPayload', () => {
           timetableItemToEditDataWithExceptions
         );
 
-        expect(result.paced.exceptions).toEqual([]);
+        expect(result.paced?.exceptions).toEqual([]);
       });
     });
   });
