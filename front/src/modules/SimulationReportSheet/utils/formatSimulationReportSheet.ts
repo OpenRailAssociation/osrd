@@ -389,16 +389,13 @@ export const transformStepsToApiFormat = (
     };
   });
 
-export const createSimilarTrainPayload = (
-  similarTrains: SimilarTrainWithSecondaryCode[],
-  locale: Intl.Locale
-) => {
+export const createSimilarTrainPayload = (similarTrains: SimilarTrainWithSecondaryCode[]) => {
   if (!similarTrains?.[0]?.train_name) return null;
 
   return {
     path_date: similarTrains[0].start_time
-      ? new Date(similarTrains[0].start_time).toLocaleDateString(locale)
-      : new Date().toLocaleDateString(locale),
+      ? new Date(similarTrains[0].start_time).toISOString()
+      : new Date().toISOString(),
     name: similarTrains[0].train_name,
   };
 };
