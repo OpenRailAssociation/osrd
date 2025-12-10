@@ -51,7 +51,7 @@ export type TrainSpaceTimeData = {
     | { id: TrainScheduleId }
     | {
         id: PacedTrainId;
-        paced: PacedTrainWithDetails['paced'] & {
+        paced?: PacedTrainWithDetails['paced'] & {
           exceptionProjections: Map<string, BaseTrainProjection>;
         };
       }
@@ -63,7 +63,7 @@ export type IndividualTrainProjection = {
   departureTime: Date;
 } & BaseTrainProjection &
   (
-    | { id: TrainScheduleId }
+    | { id: TrainScheduleId | PacedTrainId }
     | {
         id: OccurrenceId;
         exception?: PacedTrainException;
