@@ -19,7 +19,7 @@ export const buildSteps = (
   const steps = ocpTTs
     .map((ocpTT) => {
       const ocpRef = ocpTT.getAttribute('ocpRef');
-      const times = ocpTT.getElementsByTagName('times')[0];
+      const times = ocpTT.querySelector('times[scope="scheduled"]') ?? ocpTT.querySelector('times');
       const isLastOcp = ocpTT === ocpTTs.at(-1);
       const ocpType = ocpTT.getAttribute('ocpType');
       let departureTime = times?.getAttribute('departure') || '';

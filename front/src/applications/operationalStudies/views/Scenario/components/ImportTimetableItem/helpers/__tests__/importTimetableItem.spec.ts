@@ -19,13 +19,15 @@ describe('buildSteps', () => {
     const xmlSteps = `
         <root>
           <ocpTT ocpRef="STATION0" ocpType="stop">
-            <times departure="00:00" />
+            <times scope="published" departure="00:00" />
+            <times scope="scheduled" departure="00:00" />
           </ocpTT>
           <ocpTT ocpRef="STATION1" ocpType="stop">
-            <times arrival="23:00" departure="23:05" />
+            <times scope="published" arrival="23:02" departure="23:09" />
+            <times scope="scheduled" arrival="23:00" departure="23:05" />
           </ocpTT>
           <ocpTT ocpRef="STATION2" ocpType="stop">
-            <times arrival="00:15" departure="00:20" />
+            <times scope="scheduled" arrival="00:15" departure="00:20" />
           </ocpTT>
         </root>
       `;
@@ -45,10 +47,11 @@ describe('buildSteps', () => {
   it('does not increment the day offset when the arrival time is after the previous departure', () => {
     const xmlSteps = `  <root>
     <ocpTT ocpRef="STATION0" ocpType="stop">
-      <times departure="00:00" />
+      <times scope="published" departure="00:00" />
     </ocpTT>
     <ocpTT ocpRef="STATION1" ocpType="stop">
-      <times arrival="00:05" departure="00:10" />
+      <times scope="published" arrival="00:03" departure="00:13" />
+      <times scope="scheduled" arrival="00:05" departure="00:10" />
     </ocpTT>
     <ocpTT ocpRef="STATION2" ocpType="stop">
       <times arrival="00:15" departure="00:20" />
