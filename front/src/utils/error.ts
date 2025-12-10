@@ -29,9 +29,13 @@ export function getErrorMessage(error: unknown, defaultValue?: string): string {
   // Check if it's an APIError
   if ('data' in error && 'status' in error) {
     if (isObject(error.data)) {
-      const { type, message: i18nMsg, context } = (error as ApiError).data;
-      const i18nId = type.split(':').join('.');
-      return i18n.t(i18nId, i18nMsg, { ...context, ns: 'errors' });
+      if ('type' in error.data) {
+        const { type, message: i18nMsg, context } = (error as ApiError).data;
+        const i18nId = type.split(':').join('.');
+        return i18n.t(i18nId, i18nMsg, { ...context, ns: 'errors' });
+      }
+      if ('message' in error.data) return `${error.data.message}`;
+      if ('detail' in error.data) return `${error.data.detail}`; // Format used by some implems of railway-manager-interface
     }
     if (typeof error.data === 'string') {
       // API returned a plaintext error instead of a JSON payload
