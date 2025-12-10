@@ -33,6 +33,7 @@ import {
 import { useAppDispatch } from 'store';
 import {
   extractPacedTrainIdFromOccurrenceId,
+  isOccurrenceId,
   isPacedTrainWithDetails,
   isTrainScheduleId,
 } from 'utils/trainId';
@@ -133,7 +134,7 @@ const SimulationResults = ({
   const simulationSummary = useMemo(() => {
     if (!selectedTrainId) return undefined;
 
-    if (isTrainScheduleId(selectedTrainId)) {
+    if (!isOccurrenceId(selectedTrainId)) {
       return timetableItemsWithDetails.find((timetableItem) => timetableItem.id === selectedTrainId)
         ?.summary;
     }
