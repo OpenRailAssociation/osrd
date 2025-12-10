@@ -44,7 +44,14 @@ export type FormContext = {
 const IntervalEditorComponent = (
   props: FieldProps<LinearMetadataItem[], RJSFSchema, FormContext>
 ) => {
-  const { name, formContext, formData, schema, onChange, registry } = props;
+  const {
+    fieldPathId: { path },
+    name,
+    formData,
+    schema,
+    onChange,
+    registry,
+  } = props;
   const { openModal, closeModal } = useModal();
   const { t } = useTranslation();
 
@@ -68,14 +75,14 @@ const IntervalEditorComponent = (
 
   // Get the distance of the geometry
   const distance = useMemo(() => {
-    if (!isNil(formContext?.length)) {
-      return formContext.length;
+    if (!isNil(registry.formContext?.length)) {
+      return registry.formContext.length;
     }
-    if (formContext?.geometry?.type === 'LineString') {
-      return getLineStringDistance(formContext.geometry);
+    if (registry.formContext?.geometry?.type === 'LineString') {
+      return getLineStringDistance(registry.formContext.geometry);
     }
     return 0;
-  }, [formContext]);
+  }, [registry.formContext]);
 
   // Remove the 'valueField' required field because it is required by the backend. However,
   // the segment with missing values is filtered in 'customOnChange' before being sent to the backend,
@@ -104,9 +111,12 @@ const IntervalEditorComponent = (
   const customOnChange = useCallback(
     (newData: Array<LinearMetadataItem>) => {
       // Remove item without value, it will be recreated by the fixLinearMetadataItems function
-      onChange(newData.filter((e) => (valueField ? !isNil(e[valueField]) : true)));
+      onChange(
+        newData.filter((e) => (valueField ? !isNil(e[valueField]) : true)),
+        path
+      );
     },
-    [onChange, valueField]
+    [onChange, valueField, path]
   );
 
   const fixedData = useMemo(
@@ -426,19 +436,19 @@ const IntervalEditorComponent = (
 };
 
 export const FormComponent = (props: FieldProps<unknown, RJSFSchema, FormContext>) => {
-  const { name, formContext, schema, registry } = props;
+  const { name, schema, registry } = props;
   const Fields = getDefaultRegistry().fields;
 
   // Get the distance of the geometry
   const distance = useMemo(() => {
-    if (!isNil(formContext?.length)) {
-      return formContext.length;
+    if (!isNil(registry.formContext?.length)) {
+      return registry.formContext.length;
     }
-    if (formContext?.geometry?.type === 'LineString') {
-      return getLineStringDistance(formContext.geometry);
+    if (registry.formContext?.geometry?.type === 'LineString') {
+      return getLineStringDistance(registry.formContext.geometry);
     }
     return 0;
-  }, [formContext]);
+  }, [registry.formContext]);
 
   // Remove the 'valueField' required field because it is required by the backend. However,
   // the segment with missing values is filtered in 'customOnChange' before being sent to the backend,

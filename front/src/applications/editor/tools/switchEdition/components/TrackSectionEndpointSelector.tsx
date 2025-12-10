@@ -25,7 +25,13 @@ const ENDPOINTS_SET = new Set(ENDPOINTS);
 const ENDPOINT_OPTIONS = ENDPOINTS.map((s) => ({ value: s, label: s }));
 const ENDPOINT_OPTIONS_DICT = keyBy(ENDPOINT_OPTIONS, 'value');
 
-const TrackSectionEndpointSelector = ({ schema, formData, onChange, name }: FieldProps) => {
+const TrackSectionEndpointSelector = ({
+  fieldPathId: { path },
+  schema,
+  formData,
+  onChange,
+  name,
+}: FieldProps) => {
   const dispatch = useAppDispatch();
   const { state, setState } = useContext(
     EditorContext
@@ -77,15 +83,18 @@ const TrackSectionEndpointSelector = ({ schema, formData, onChange, name }: Fiel
           portId,
           hoveredPoint: null,
           onSelect: (hoveredPoint: PortEndPointCandidate) => {
-            onChange({
-              endpoint: hoveredPoint.endPoint,
-              track: hoveredPoint.trackSectionId,
-            });
+            onChange(
+              {
+                endpoint: hoveredPoint.endPoint,
+                track: hoveredPoint.trackSectionId,
+              },
+              path
+            );
           },
         },
       });
     }
-  }, [isDisabled, isPicking, onChange, portId, setState, state]);
+  }, [isDisabled, isPicking, onChange, portId, setState, state, path]);
 
   useEffect(() => {
     if (typeof formData?.track === 'string') {
@@ -131,10 +140,13 @@ const TrackSectionEndpointSelector = ({ schema, formData, onChange, name }: Fiel
                 options={ENDPOINT_OPTIONS}
                 onChange={(o) => {
                   if (o)
-                    onChange({
-                      endpoint: o.value,
-                      track: trackSection.properties.id,
-                    });
+                    onChange(
+                      {
+                        endpoint: o.value,
+                        track: trackSection.properties.id,
+                      },
+                      path
+                    );
                 }}
               />
             </div>
