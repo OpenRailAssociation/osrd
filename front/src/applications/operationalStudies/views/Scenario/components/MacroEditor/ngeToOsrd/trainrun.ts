@@ -629,27 +629,45 @@ export const handleUpdateTimetableItem = async ({
 
   if (timetableItemIds[1]) {
     // update return if already present
-    if (newForwardPacedTrain) {
-      const updatedReturnPacedTrain = {
-        ...newForwardPacedTrain,
-        ...returnPathAndSchedule,
+    const oldReturnTimetableItem = await fetchTimetableItem(timetableItemIds[1], dispatch);
+    const { id: _return_id, ...returnTimetableItemBase } = oldReturnTimetableItem;
+    const newReturnTimetableItemBase = {
+      ...returnTimetableItemBase,
+      train_name: trainrun.name,
+      labels,
+      // Reset margins because they contain references to path items
+      margins: undefined,
+      paced: undefined,
+      exceptions: undefined,
+      category,
+      ...returnPathAndSchedule,
+    };
+    if (paced) {
+      const newReturnPacedTrainBase = {
+        ...newReturnTimetableItemBase,
+        paced: {
+          ...paced,
+          exceptions: isPacedTrainResponseWithPacedTrainId(oldReturnTimetableItem)
+            ? checkChangeGroups(
+                newReturnTimetableItemBase,
+                paced,
+                oldReturnTimetableItem.paced.exceptions
+              )
+            : [],
+        },
       };
       newReturnTimetableItem = await storePacedTrain(
-        timetableItemIds[1],
-        updatedReturnPacedTrain,
+        oldReturnTimetableItem.id,
+        newReturnPacedTrainBase,
         timetableId,
         dispatch,
         addUpsertedTimetableItems,
         addDeletedTimetableItemIds
       );
     } else {
-      const updatedReturnTrainSchedule = {
-        ...newForwardTimetableItem,
-        ...returnPathAndSchedule,
-      };
       newReturnTimetableItem = await storeTrainSchedule(
-        timetableItemIds[1],
-        updatedReturnTrainSchedule,
+        oldReturnTimetableItem.id,
+        newReturnTimetableItemBase,
         timetableId,
         dispatch,
         addUpsertedTimetableItems,
