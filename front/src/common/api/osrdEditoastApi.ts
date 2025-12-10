@@ -5,6 +5,7 @@ import {
   extractEditoastIdFromPacedTrainId,
   extractEditoastIdFromTrainScheduleId,
   extractPacedTrainIdFromOccurrenceId,
+  isOccurrenceId,
   isTrainScheduleId,
 } from 'utils/trainId';
 
@@ -132,7 +133,9 @@ const osrdEditoastApi = generatedEditoastApi
               )
             ).unwrap();
           } else {
-            const pacedTrainId = extractPacedTrainIdFromOccurrenceId(trainId);
+            const pacedTrainId = isOccurrenceId(trainId)
+              ? extractPacedTrainIdFromOccurrenceId(trainId)
+              : trainId;
             path = await dispatch(
               generatedEditoastApi.endpoints.getPacedTrainByIdPath.initiate(
                 {
@@ -172,7 +175,9 @@ const osrdEditoastApi = generatedEditoastApi
               )
             ).unwrap();
           } else {
-            const pacedTrainId = extractPacedTrainIdFromOccurrenceId(trainId);
+            const pacedTrainId = isOccurrenceId(trainId)
+              ? extractPacedTrainIdFromOccurrenceId(trainId)
+              : trainId;
             simulation = await dispatch(
               generatedEditoastApi.endpoints.getPacedTrainByIdSimulation.initiate(
                 {
@@ -212,7 +217,9 @@ const osrdEditoastApi = generatedEditoastApi
               )
             ).unwrap();
           } else {
-            const pacedTrainId = extractPacedTrainIdFromOccurrenceId(trainId);
+            const pacedTrainId = isOccurrenceId(trainId)
+              ? extractPacedTrainIdFromOccurrenceId(trainId)
+              : trainId;
             etcsBrakingCurves = await dispatch(
               generatedEditoastApi.endpoints.getPacedTrainByIdEtcsBrakingCurves.initiate(
                 {
