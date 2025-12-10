@@ -25,6 +25,8 @@ export const castNgeNode = (
   connection_time: node.connectionTime,
   position_x: Math.round(node.positionX),
   position_y: Math.round(node.positionY),
+  // TODO : replace this value when nge version gets bumped
+  is_collapsed: false,
   labels: node.labelIds
     .map((id) => {
       const ngeLabel = labels.find((e) => e.id === id);

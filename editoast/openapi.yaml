@@ -9865,6 +9865,8 @@ components:
           type:
           - string
           - 'null'
+        is_collapsed:
+          type: boolean
         labels:
           $ref: '#/components/schemas/Tags'
         path_item_key:
@@ -9899,6 +9901,7 @@ components:
       - connection_time
       - labels
       - path_item_key
+      - is_collapsed
       properties:
         connection_time:
           type: integer
@@ -9910,6 +9913,8 @@ components:
         id:
           type: integer
           format: int64
+        is_collapsed:
+          type: boolean
         labels:
           $ref: '#/components/schemas/Tags'
         path_item_key:

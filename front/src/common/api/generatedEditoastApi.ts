@@ -3796,6 +3796,7 @@ export type MacroNodeResponse = {
   connection_time: number;
   full_name?: string | null;
   id: number;
+  is_collapsed: boolean;
   labels: Tags;
   path_item_key: string;
   position_x: number;
@@ -3811,6 +3812,7 @@ export type MacroNodeBatchResponse = {
 export type MacroNodeForm = {
   connection_time: number;
   full_name?: string | null;
+  is_collapsed?: boolean;
   labels: Tags;
   path_item_key: string;
   position_x: number;

@@ -19,6 +19,7 @@ pub struct MacroNode {
     pub labels: Tags,
     pub trigram: Option<String>,
     pub path_item_key: String,
+    pub is_collapsed: bool,
 }
 
 #[cfg(test)]
