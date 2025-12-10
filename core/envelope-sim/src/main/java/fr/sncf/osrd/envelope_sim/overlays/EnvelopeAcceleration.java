@@ -4,6 +4,8 @@ import fr.sncf.osrd.envelope.part.InteractiveEnvelopePartConsumer;
 import fr.sncf.osrd.envelope_sim.Action;
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext;
 import fr.sncf.osrd.envelope_sim.TrainPhysicsIntegrator;
+import fr.sncf.osrd.reporting.exceptions.ErrorType;
+import fr.sncf.osrd.reporting.exceptions.OSRDError;
 
 public class EnvelopeAcceleration {
     /** Accelerate, storing the resulting steps into consumer */
@@ -22,7 +24,7 @@ public class EnvelopeAcceleration {
             position += step.positionDelta;
             speed = step.endSpeed;
             if (!consumer.addStep(position, speed, step.timeDelta)) break;
-            assert (step.positionDelta != 0.0);
+            if (step.positionDelta == 0.0) throw new OSRDError(ErrorType.ImpossibleSimulationError);
         }
     }
 }
