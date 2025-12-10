@@ -18,10 +18,10 @@ import {
 import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
 import { setFailure, setSuccess } from 'reducers/main';
 import type {
+  PacedTrainWithPacedTrainId,
   TimetableItem,
   TimetableItemId,
   TrainId,
-  TrainScheduleWithTrainId,
 } from 'reducers/osrdconf/types';
 import {
   updateTrainIdUsedForProjection,
@@ -33,10 +33,10 @@ import { timeToLocaleStringRounded, useDateTimeLocale } from 'utils/date';
 import { addDurationToDate, Duration } from 'utils/duration';
 import { castErrorToFailure } from 'utils/error';
 import {
-  formatEditoastIdToTrainScheduleId,
   extractEditoastIdFromTrainScheduleId,
   isTrainScheduleId,
   extractEditoastIdFromPacedTrainId,
+  formatEditoastIdToPacedTrainId,
 } from 'utils/trainId';
 
 import ArrivalTimeLoader from './ArrivalTimeLoader';
@@ -77,8 +77,7 @@ const TrainScheduleItem = ({
   const dateTimeLocale = useDateTimeLocale();
   const dispatch = useAppDispatch();
 
-  const [postTrainSchedule] =
-    osrdEditoastApi.endpoints.postTimetableByIdTrainSchedules.useMutation();
+  const [postPacedTrain] = osrdEditoastApi.endpoints.postTimetableByIdPacedTrains.useMutation();
   const [getTrainSchedule] = osrdEditoastApi.endpoints.getTrainScheduleById.useLazyQuery();
   const [getPacedTrain] = osrdEditoastApi.endpoints.getPacedTrainById.useLazyQuery();
 
@@ -141,13 +140,13 @@ const TrainScheduleItem = ({
       };
 
       try {
-        const [trainScheduleResponse] = await postTrainSchedule({
+        const [newTimetableItem] = await postPacedTrain({
           id: trainDetail.timetable_id,
           body: [newTrain],
         }).unwrap();
-        const formattedTrainScheduleResponse: TrainScheduleWithTrainId = {
-          ...trainScheduleResponse,
-          id: formatEditoastIdToTrainScheduleId(trainScheduleResponse.id),
+        const formattedTrainScheduleResponse: PacedTrainWithPacedTrainId = {
+          ...newTimetableItem,
+          id: formatEditoastIdToPacedTrainId(newTimetableItem.id),
         };
         upsertTrainSchedules([formattedTrainScheduleResponse]);
         dispatch(

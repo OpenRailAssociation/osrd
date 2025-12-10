@@ -230,13 +230,11 @@ const TimetableBoardWrapper = ({
     const clipboardContent = await navigator.clipboard.readText();
     try {
       data = JSON.parse(clipboardContent);
-      const { trainSchedules, pacedTrains } = await postTimetableItems(
+      const { timetableItems: newTimetableItems } = await postTimetableItems(
         timetableId,
-        data.train_schedules,
-        data.paced_trains,
+        [...data.train_schedules, ...data.paced_trains],
         dispatch
       );
-      const newTimetableItems = [...trainSchedules, ...pacedTrains];
       upsertTimetableItems(newTimetableItems);
       setSelectedTimetableItemIds(newTimetableItems.map((item) => item.id));
       dispatch(
