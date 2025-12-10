@@ -33,7 +33,6 @@ use utoipa::ToSchema;
 
 use crate::error::InternalError;
 use crate::error::Result;
-use crate::models::rolling_stock_livery::RollingStockLivery;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
 use editoast_models::Document;
@@ -42,6 +41,7 @@ use editoast_models::prelude::*;
 use editoast_models::rolling_stock;
 use editoast_models::rolling_stock::RollingStock;
 use editoast_models::rolling_stock::ScenarioReference;
+use editoast_models::rolling_stock_livery::RollingStockLivery;
 
 #[derive(Debug, Serialize, ToSchema)]
 pub struct RollingStockWithLiveries {

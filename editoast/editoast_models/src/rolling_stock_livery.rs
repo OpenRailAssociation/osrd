@@ -1,8 +1,12 @@
+use utoipa::ToSchema;
+
 use database::DbConnection;
 use editoast_derive::Model;
-use editoast_models::Document;
-use editoast_models::prelude::*;
-use utoipa::ToSchema;
+
+use crate::Document;
+use crate::prelude::*;
+
+use crate as editoast_models;
 
 #[cfg(test)]
 use serde::Deserialize;

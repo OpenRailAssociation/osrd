@@ -7,6 +7,7 @@ pub mod prelude;
 pub mod project;
 pub mod rolling_stock;
 pub mod rolling_stock_image;
+pub mod rolling_stock_livery;
 pub mod round_trips;
 pub mod scenario;
 pub mod study;
