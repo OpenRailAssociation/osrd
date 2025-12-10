@@ -243,7 +243,7 @@ const SendToRailwayManagerModal = ({
     normalizedDate.setSeconds(0);
     normalizedDate.setMilliseconds(0);
 
-    const similarTrain = createSimilarTrainPayload(similarTrains, dateTimeLocale);
+    const similarTrain = createSimilarTrainPayload(similarTrains);
     const substitute_train = substituteTrain.trainName
       ? { path_date: substituteTrain.date, name: substituteTrain.trainName }
       : null;
