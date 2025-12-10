@@ -1,4 +1,3 @@
-#[allow(unused)]
 #[cfg(test)]
 pub mod fixtures;
 pub mod infra;
