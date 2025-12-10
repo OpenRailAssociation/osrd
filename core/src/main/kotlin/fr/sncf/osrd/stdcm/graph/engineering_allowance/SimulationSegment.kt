@@ -9,6 +9,8 @@ import fr.sncf.osrd.envelope.part.constraints.SpeedConstraint
 import fr.sncf.osrd.envelope_sim.EnvelopeProfile
 import fr.sncf.osrd.envelope_sim.overlays.EnvelopeAcceleration
 import fr.sncf.osrd.path.interfaces.TrainPath
+import fr.sncf.osrd.reporting.exceptions.ErrorType
+import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.stdcm.graph.STDCMEdge
 import fr.sncf.osrd.stdcm.graph.STDCMGraph
 import fr.sncf.osrd.utils.units.Distance
@@ -26,7 +28,7 @@ data class SimulationSegment(
     val maxAddedDelay: Double,
     // Function to compute an acceleration over this segment. Can be dummy values for tests,
     // wrap a full simulation pipeline in normal processing.
-    val computeAccelSequenceFromEndSpeed: (Double) -> SummarizedSimulationResult,
+    val computeAccelSequenceFromEndSpeed: (Double) -> SummarizedSimulationResult?,
 ) {
     init {
         positive(beginTime)
@@ -109,7 +111,7 @@ private fun computeAcceleration(
     pathProperties: TrainPath,
     endSpeed: Double,
     graph: STDCMGraph,
-): SummarizedSimulationResult {
+): SummarizedSimulationResult? {
     // TODO: we could look into using const accelerations here as well instead of using
     // envelopes. We'd need to estimate the max slope for each segment.
     // It's a performance / accuracy tradeoff.
@@ -133,13 +135,18 @@ private fun computeAcceleration(
             SpeedConstraint(0.0, EnvelopePartConstraintType.FLOOR),
             PositionConstraint(0.0, pathProperties.getLength().meters),
         )
-    EnvelopeAcceleration.accelerate(
-        context,
-        pathProperties.getLength().meters,
-        endSpeed,
-        overlayBuilder,
-        -1.0,
-    )
+    try {
+        EnvelopeAcceleration.accelerate(
+            context,
+            pathProperties.getLength().meters,
+            endSpeed,
+            overlayBuilder,
+            -1.0,
+        )
+    } catch (e: OSRDError) {
+        if (e.osrdErrorType == ErrorType.ImpossibleSimulationError) return null
+        throw e
+    }
     val speedupPart = speedupPartBuilder.build()
     val envelope = Envelope.make(speedupPart)
     val newTime = scaleAllowanceTime(graph, envelope.totalTime, pathProperties.getLength().distance)

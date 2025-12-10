@@ -96,7 +96,7 @@ class EngineeringAllowanceManager(
         val cachedSegments = backwardsSegments.cacheable()
         for ((i, segment) in cachedSegments.withIndex()) {
             val (newBeginSpeed, newTravelTime) =
-                segment.computeAccelSequenceFromEndSpeed(currentSpeed)
+                segment.computeAccelSequenceFromEndSpeed(currentSpeed) ?: break
 
             val travelTimeDiff = max(0.0, newTravelTime - segment.travelTime)
             currentAddedDelay += travelTimeDiff
