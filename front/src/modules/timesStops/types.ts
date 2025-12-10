@@ -8,6 +8,19 @@ export type TimeExtraDays = {
   dayDisplayed?: boolean;
 };
 
+export type TimesStopsRowNew = {
+  id: string;
+  index: number;
+  name: string;
+  secondaryCode: string;
+  track: string;
+  requestedArrival: Date | null;
+  computedArrival: Date | null;
+  stopDuration: Duration | null;
+  requestedDeparture: Date | null;
+  computedDeparture: Date | null;
+};
+
 export type TimesStopsRow = {
   pathStepId: string | undefined;
   opId: string | undefined;

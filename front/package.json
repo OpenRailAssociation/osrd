@@ -26,6 +26,7 @@
     "@rjsf/validator-ajv8": "^6.1.2",
     "@sdziadkowiec/react-datasheet-grid": "^4.12.3",
     "@sncf/bootstrap-sncf.metier.reseau": "^4.3.1-r6-beta4",
+    "@tanstack/react-table": "^8.21.3",
     "@turf/along": "^7.3.1",
     "@turf/bbox": "^7.3.1",
     "@turf/bbox-clip": "^7.3.1",
