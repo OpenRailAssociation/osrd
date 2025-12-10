@@ -1,0 +1,106 @@
+export const SAMPLE_COLUMNS = [
+  { key: 'index', label: '', className: 'col-index' },
+  { key: 'op', label: 'operational point', className: 'col-op' },
+  { key: 'track', label: 'track', className: 'col-track' },
+  { key: 'requestedArrival', label: 'requested arrival', className: 'col-requested-arrival' },
+  { key: 'computedArrival', label: 'computed arrival', className: 'col-computed-arrival' },
+  { key: 'stoppingTime', label: 'stopping time', className: 'col-stopping-time' },
+  { key: 'requestedDeparture', label: 'requested departure', className: 'col-requested-departure' },
+  { key: 'computedDeparture', label: 'computed departure', className: 'col-computed-departure' },
+];
+
+export const SAMPLE_DATA = [
+  {
+    index: 1,
+    op: 'Paris-Gare-de-Lyon BV',
+    track: '2MS',
+    requestedArrival: '09:00:00',
+    computedArrival: '09:00:00',
+    stoppingTime: '',
+    requestedDeparture: '',
+    computedDeparture: '09:16',
+  },
+  {
+    index: 2,
+    op: 'Laroche-Migennes 00',
+    track: 'V1BIS',
+    requestedArrival: '',
+    computedArrival: '10:10:15',
+    stoppingTime: '00:02:00',
+    requestedDeparture: '',
+    computedDeparture: '10:12:15',
+  },
+  {
+    index: 3,
+    op: 'Dijon-Ville 00',
+    track: 'V1',
+    requestedArrival: '',
+    computedArrival: '11:35:50',
+    stoppingTime: '',
+    requestedDeparture: '',
+    computedDeparture: '',
+  },
+  {
+    index: 4,
+    op: 'Tournus BV',
+    track: 'V1',
+    requestedArrival: '12:30:30',
+    computedArrival: '12:30:30',
+    stoppingTime: '',
+    requestedDeparture: '12:40:00',
+    computedDeparture: '12:40:00',
+  },
+  {
+    index: 5,
+    op: 'Lyon-Part-Dieu BV',
+    track: 'G',
+    requestedArrival: '13:00:00',
+    computedArrival: '13:05:20',
+    stoppingTime: '',
+    requestedDeparture: '',
+    computedDeparture: '',
+  },
+];
+
+const colors = {
+  ambientA5: 'rgb(246, 248, 249)',
+  ambientA10: 'rgb(239, 243, 245)',
+  ambientA15: 'rgb(233, 239, 242)',
+  ambientB5: 'rgb(250, 249, 245)',
+  ambientB10: 'rgb(247, 246, 238)',
+  ambientB15: 'rgb(242, 240, 228)',
+  ambientC5: 'rgb(246, 249, 246)',
+  ambientC10: 'rgb(240, 244, 241)',
+  ambientC15: 'rgb(234, 240, 235)',
+  ambientD5: 'rgb(248, 247, 253)',
+  ambientD10: 'rgb(244, 243, 252)',
+  ambientD15: 'rgb(239, 237, 247)',
+  blackAlpha10: 'rgba(0, 0, 0, 0.1)',
+};
+
+export const TABLE_ROW_BACKGROUNDS = {
+  ambientA: {
+    mix1: colors.blackAlpha10,
+    mix2: colors.ambientA5,
+    odd: colors.ambientA5,
+    even: colors.ambientA10,
+  },
+  ambientB: {
+    mix1: colors.blackAlpha10,
+    mix2: colors.ambientB5,
+    odd: colors.ambientB5,
+    even: colors.ambientB10,
+  },
+  ambientC: {
+    mix1: colors.blackAlpha10,
+    mix2: colors.ambientC5,
+    odd: colors.ambientC5,
+    even: colors.ambientC10,
+  },
+  ambientD: {
+    mix1: colors.blackAlpha10,
+    mix2: colors.ambientD5,
+    odd: colors.ambientD5,
+    even: colors.ambientD10,
+  },
+};

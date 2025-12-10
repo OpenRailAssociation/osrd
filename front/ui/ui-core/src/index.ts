@@ -37,3 +37,4 @@ export {
   type ToleranceValues,
 } from './components/inputs/tolerancePicker/TolerancePicker';
 export { default as TokenInput, TokenInputProps } from './components/inputs/TokenInput';
+export { default as Table } from './components/Table';

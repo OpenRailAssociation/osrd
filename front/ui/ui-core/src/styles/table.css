@@ -1,0 +1,54 @@
+.table-container {
+  width: 100%;
+}
+
+.table-container th,
+.table-container td {
+  height: 40px;
+  font-weight: 400;
+  border: 1px solid rgba(182, 178, 175, 1);
+}
+
+.ambient-wrapper .table-container thead th {
+  background: color-mix(in srgb, var(--mix-color-1) 50%, var(--mix-color-2) 50%);
+}
+
+.ambient-wrapper .table-container tbody tr:nth-child(odd) {
+  background: var(--row-bg-odd);
+}
+
+.ambient-wrapper .table-container tbody tr:nth-child(even) {
+  background: var(--row-bg-even);
+}
+
+.table-container thead th {
+  padding-inline: 8px;
+  padding-top: 4px;
+  font-size: 12px;
+  line-height: 14px;
+  color: #797671;
+  vertical-align: top;
+  text-align: left;
+}
+
+[class^='col-'] {
+  color: rgba(49, 46, 43, 1);
+  text-align: left;
+  padding-left: 16px;
+  font-size: 16px;
+  line-height: 24px;
+  box-shadow: inset 0 1px 0 rgb(250, 245, 245);
+}
+
+.col-index {
+  width: 40px;
+  font-size: 10px;
+  line-height: 16px;
+  text-align: center;
+  padding-left: 0;
+  color: rgba(121, 118, 113, 1);
+}
+
+.table-container.col-op-narrow [class^='col-']:not(.col-index) {
+  padding-left: 8px;
+}
