@@ -18,6 +18,7 @@ import getPathVoltages from 'modules/pathfinding/helpers/getPathVoltages';
 import { ARRIVAL_TIME_ACCEPTABLE_ERROR } from 'modules/timesStops/consts';
 import { isPacedTrainResponseWithPaced } from 'modules/timetableItem/helpers/pacedTrain';
 import type {
+  PathStep,
   TimetableItem,
   TimetableItemId,
   TimetableItemWithPathOps,
@@ -492,4 +493,24 @@ export const matchOpRefAndOp = (
     location.operational_point.trigram === op.extensions?.sncf?.trigram &&
     location.operational_point.secondary_code === op.extensions?.sncf?.ch
   );
+};
+
+export const isSameOperationalPoint = (a: PathStep, b: PathStep) => {
+  const prevOp =
+    'operational_point' in a.location && a.location.operational_point
+      ? a.location.operational_point
+      : undefined;
+  const currOp =
+    'operational_point' in b.location && b.location.operational_point
+      ? b.location.operational_point
+      : undefined;
+  if (!prevOp || !currOp) return false;
+
+  const sameUic = 'uic' in prevOp && 'uic' in currOp && prevOp.uic === currOp.uic;
+  const sameSecondaryCode =
+    'secondary_code' in prevOp &&
+    'secondary_code' in currOp &&
+    prevOp.secondary_code === currOp.secondary_code;
+
+  return sameUic && sameSecondaryCode;
 };

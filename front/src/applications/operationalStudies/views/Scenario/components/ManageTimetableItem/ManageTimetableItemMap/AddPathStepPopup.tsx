@@ -14,6 +14,7 @@ import { calculateDistanceAlongTrack } from 'applications/editor/tools/utils';
 import { useManageTimetableItemContext } from 'applications/operationalStudies/hooks/useManageTimetableItemContext';
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import type { MapPathProperties } from 'applications/operationalStudies/types';
+import { isSameOperationalPoint } from 'applications/operationalStudies/utils';
 import { osrdEditoastApi, type OperationalPoint } from 'common/api/osrdEditoastApi';
 import {
   getOrigin,
@@ -28,7 +29,6 @@ import { getPointOnTrackCoordinates } from 'utils/geometry';
 import type { FeatureInfoClick } from '../types';
 import OperationalPointPopupDetails from './OperationalPointPopupDetails';
 import { setPointIti } from './setPointIti';
-import { isSameUicAndCh } from '../helpers/isSameUicAndCh';
 
 type AddPathStepPopupProps = {
   infraId: number | undefined;
@@ -69,7 +69,9 @@ const AddPathStepPopup = ({
   const handleViaClick = () => {
     if (!newPathStep) return;
 
-    const sameViaDifferentTrack = vias.find((via) => via && isSameUicAndCh(via, newPathStep));
+    const sameViaDifferentTrack = vias.find(
+      (via) => via && isSameOperationalPoint(via, newPathStep)
+    );
     if (!sameViaDifferentTrack) {
       setPointIti('via', newPathStep, launchPathfinding, resetFeatureInfoClick, pathProperties);
       return;
