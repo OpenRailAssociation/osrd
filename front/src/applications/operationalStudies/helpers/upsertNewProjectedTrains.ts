@@ -41,19 +41,17 @@ const upsertNewProjectedTrains = (
     if (!isPacedTrainResponseWithPacedTrainId(matchingTrain)) {
       projectedTrain = { ...base, id: matchingTrain.id };
     } else {
-      // TODO: handle correctly pacedTrain without paced
-      if (!matchingTrain.paced)
-        throw new Error(`The paced train ${matchingTrain.id} is not a paced train.`);
-
       projectedTrain = {
         ...base,
         id: matchingTrain.id,
-        paced: {
-          timeWindow: Duration.parse(matchingTrain.paced.time_window),
-          interval: Duration.parse(matchingTrain.paced.interval),
-          exceptions: matchingTrain.paced.exceptions,
-          exceptionProjections,
-        },
+        paced: matchingTrain.paced
+          ? {
+              timeWindow: Duration.parse(matchingTrain.paced.time_window),
+              interval: Duration.parse(matchingTrain.paced.interval),
+              exceptions: matchingTrain.paced.exceptions,
+              exceptionProjections,
+            }
+          : undefined,
       };
     }
 

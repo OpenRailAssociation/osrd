@@ -20,7 +20,6 @@ import {
   extractOccurrenceIndexFromOccurrenceId,
   isOccurrenceId,
   isPacedTrainResponseWithPacedTrainId,
-  isTrainScheduleId,
 } from 'utils/trainId';
 
 import type { SimulationResults } from '../types';
@@ -48,7 +47,7 @@ const useSimulationResults = (): SimulationResults | undefined => {
       return timetableItem;
     }
 
-    if (isTrainScheduleId(selectedTrainId)) {
+    if (!isOccurrenceId(selectedTrainId)) {
       throw new Error(`trainId ${selectedTrainId} should be a occurrence id`);
     }
 
@@ -86,7 +85,7 @@ const useSimulationResults = (): SimulationResults | undefined => {
       !isPacedTrainResponseWithPacedTrainId(timetableItem)
     )
       return undefined;
-    if (isTrainScheduleId(selectedTrainId))
+    if (!isOccurrenceId(selectedTrainId))
       throw new Error(`trainId ${selectedTrainId} should be a occurrence id`);
     if (!isPacedTrainWithPaced(timetableItem))
       throw new Error(`Timetable item with id ${timetableItem.id} is not a paced train`);

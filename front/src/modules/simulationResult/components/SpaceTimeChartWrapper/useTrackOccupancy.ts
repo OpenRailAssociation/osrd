@@ -169,7 +169,7 @@ const useTrackOccupancy = ({
   );
 
   const toOwnerTimetableItemId = (id: TrainId): TimetableItemId =>
-    isTrainScheduleId(id) ? id : extractPacedTrainIdFromOccurrenceId(id);
+    isOccurrenceId(id) ? extractPacedTrainIdFromOccurrenceId(id) : id;
 
   const fetchTrackOccupancy = useCallback(
     async (

@@ -161,9 +161,9 @@ const SimulationResults = ({
     initialDepartureTime: Date;
     stopPanning: boolean;
   }) => {
-    const draggedTimetatbleItemId = isTrainScheduleId(draggedTrainId)
-      ? draggedTrainId
-      : extractPacedTrainIdFromOccurrenceId(draggedTrainId);
+    const draggedTimetatbleItemId = isOccurrenceId(draggedTrainId)
+      ? extractPacedTrainIdFromOccurrenceId(draggedTrainId)
+      : draggedTrainId;
     const draggedTrain = projectPathTrainResult.find(
       (train) => train.id === draggedTimetatbleItemId
     );

@@ -13,6 +13,7 @@ import {
   isPacedTrainResponseWithPacedTrainId,
   isIndexedOccurrenceId,
   extractOccurrenceIndexFromOccurrenceId,
+  isOccurrenceId,
 } from 'utils/trainId';
 
 import addTrainNamesToConflicts, {
@@ -42,12 +43,14 @@ const useConflictsFilter = (timetableItems: TimetableItem[], conflicts: Conflict
       return selectedTrain?.train_name || null;
     }
 
-    const pacedTrainId = extractPacedTrainIdFromOccurrenceId(selectedTrainId);
+    const pacedTrainId = isOccurrenceId(selectedTrainId)
+      ? extractPacedTrainIdFromOccurrenceId(selectedTrainId)
+      : selectedTrainId;
     selectedTrain = timetableItemById.get(pacedTrainId);
 
     if (!selectedTrain || !isPacedTrainResponseWithPacedTrainId(selectedTrain)) return null;
 
-    if (!selectedTrain.paced) return selectedTrain.train_name;
+    if (!selectedTrain.paced || !isOccurrenceId(selectedTrainId)) return selectedTrain.train_name;
 
     // Occurrence with a name change group
     const exception = findExceptionWithOccurrenceId(
