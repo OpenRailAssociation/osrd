@@ -16,7 +16,7 @@ import {
   isTrainId,
 } from 'utils/trainId';
 
-import { isIndividualOccurrenceProjection } from './utils';
+import { isIndividualOccurrenceProjection, isTrainScheduleProjection } from './utils';
 import type { IndividualTrainProjection, TrainSpaceTimeData } from '../../../types';
 
 type DraggingState =
@@ -91,7 +91,7 @@ export function configureHandlePan({
         const pacedTrain = projectPathTrainResult.find(
           ({ id }) => isPacedTrainId(id) && id === pacedTrainId
         );
-        if (pacedTrain && 'paced' in pacedTrain) {
+        if (pacedTrain && !isTrainScheduleProjection(pacedTrain) && pacedTrain.paced) {
           newDepartureTime = subtractDurationFromDate(
             newDepartureTime,
             new Duration({ milliseconds: occurrencesIndex * pacedTrain.paced.interval.ms })
