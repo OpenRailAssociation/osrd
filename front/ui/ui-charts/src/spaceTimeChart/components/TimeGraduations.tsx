@@ -1,12 +1,12 @@
 import { useCallback, useContext } from 'react';
 
+import { BLACK_ALPHA_25, GREY_50 } from '../../common/helpers/colors';
 import type { DrawingFunction } from '../../common/types';
 import { useDraw } from '../../common/useCanvas';
 import { MINUTE } from '../lib/consts';
 import { MouseContext, SpaceTimeChartCanvasContext } from '../lib/context';
 import type { SpaceTimeChartContextType } from '../lib/types';
 import { computeVisibleTimeMarkers, getCrispLineCoordinate } from '../utils/canvas';
-import { BLACK_ALPHA_25, GREY_50 } from '../utils/colors';
 
 const TimeGraduations = () => {
   const { position, isHover } = useContext(MouseContext);

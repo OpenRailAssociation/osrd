@@ -2,6 +2,9 @@ import { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'r
 
 import { isEqual } from 'lodash';
 
+import { rgbToHex, colorToIndex } from './helpers/colors';
+import getPNGBlob from './helpers/png';
+import { getPickingScalingRatio } from './helpers/utils';
 import {
   LAYERS,
   PICKING_LAYERS,
@@ -13,13 +16,10 @@ import {
   type LayerType,
   type PickingDrawingFunction,
   type PickingLayerType,
+  type Point,
 } from './types';
-import { useDevicePixelRatio } from '../spaceTimeChart/hooks/useDevicePixelRatio';
-import { useSize } from '../spaceTimeChart/hooks/useSize';
-import { type Point } from '../spaceTimeChart/lib/types';
-import { getPickingScalingRatio } from '../spaceTimeChart/utils/canvas';
-import { colorToIndex, rgbToHex } from '../spaceTimeChart/utils/colors';
-import getPNGBlob from '../spaceTimeChart/utils/png';
+import { useDevicePixelRatio } from './useDevicePixelRatio';
+import { useSize } from './useSize';
 
 const PICKING = 'picking';
 const RENDERING = 'rendering';
@@ -296,8 +296,7 @@ export function useCanvas<T extends BaseChartContextType>(
 }
 
 /**
- * This hook helps to bind a picking function to a layer in the SpaceTimeChart.
- * It is public and can be used outside SpaceTimeChart.
+ * This hook helps to bind a picking function to a layer in a Chart.
  */
 export function usePicking<T>(
   contextKey: React.Context<CanvasContextType<T>>,
@@ -316,8 +315,7 @@ export function usePicking<T>(
 }
 
 /**
- * This hook helps to bind a drawing function to a layer in the SpaceTimeChart.
- * It is public and can be used outside SpaceTimeChart.
+ * This hook helps to bind a drawing function to a layer in a chart.
  */
 export function useDraw<T>(
   contextKey: React.Context<CanvasContextType<T>>,

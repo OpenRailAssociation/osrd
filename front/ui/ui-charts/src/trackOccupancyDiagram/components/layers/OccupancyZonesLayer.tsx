@@ -2,6 +2,7 @@ import { useCallback, useMemo } from 'react';
 
 import { sortBy } from 'lodash';
 
+import { hexToRgb, indexToColor } from '../../../common/helpers/colors';
 import type {
   DrawingFunction,
   PickingDrawingFunction,
@@ -13,7 +14,6 @@ import {
   type SpaceTimeChartContextType,
 } from '../../../spaceTimeChart';
 import { drawAliasedRect } from '../../../spaceTimeChart/utils/canvas';
-import { hexToRgb, indexToColor } from '../../../spaceTimeChart/utils/colors';
 import {
   CANVAS_PADDING,
   OCCUPANCY_ZONE_HEIGHT,

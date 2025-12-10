@@ -5,6 +5,14 @@ export type BaseChartContextType = {
   theme: { background: string };
 };
 
+// GLOBAL UTILITY TYPES:
+export type Point = {
+  x: number;
+  y: number;
+};
+
+export type RGBAColor = [number, number, number, number];
+
 // CANVAS SPECIFIC TYPES:
 export const PICKING_LAYERS = ['paths', 'overlay'] as const;
 export type PickingLayerType = (typeof PICKING_LAYERS)[number];

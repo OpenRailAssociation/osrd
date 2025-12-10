@@ -1,6 +1,6 @@
 import chroma from 'chroma-js';
 
-import { type RGBAColor } from '../lib/types';
+import type { RGBAColor } from '../types';
 
 const COLORS_TO_INDICES: Record<string, number> = {};
 const INDICES_TO_COLORS: Record<number, string> = {};
