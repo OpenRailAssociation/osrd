@@ -18,6 +18,7 @@ editoast_derive.workspace = true
 futures.workspace = true
 futures-util.workspace = true
 geos.workspace = true
+itertools.workspace = true
 mvt.workspace = true
 openssl.workspace = true
 opentelemetry-semantic-conventions.workspace = true

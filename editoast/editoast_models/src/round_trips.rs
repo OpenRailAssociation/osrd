@@ -1,9 +1,13 @@
 use database::DbConnection;
 use diesel::ExpressionMethods;
 use diesel::QueryDsl;
+use diesel::QueryableByName;
 use editoast_derive::Model;
-use editoast_models::pagination::load_for_pagination;
 use itertools::Itertools;
+
+use crate::pagination::load_for_pagination;
+
+use crate as editoast_models;
 
 #[derive(Clone, Debug, Model)]
 #[model(row(derive(QueryableByName)))]

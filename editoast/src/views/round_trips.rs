@@ -1,6 +1,4 @@
 use crate::error::Result;
-use crate::models::TrainScheduleRoundTrips;
-use crate::models::round_trips::PacedTrainRoundTrips;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
 use crate::views::pagination::PaginationQueryParams;
@@ -17,6 +15,8 @@ use database::DbConnectionPoolV2;
 use diesel_async::scoped_futures::ScopedFutureExt;
 use editoast_derive::EditoastError;
 use editoast_models::prelude::*;
+use editoast_models::round_trips::PacedTrainRoundTrips;
+use editoast_models::round_trips::TrainScheduleRoundTrips;
 use editoast_models::timetable::Timetable;
 use itertools::Itertools;
 use serde::Deserialize;
