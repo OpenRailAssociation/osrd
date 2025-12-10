@@ -25,15 +25,16 @@ const PICKING = 'picking';
 const RENDERING = 'rendering';
 
 /**
- * This hook handles the internal canvas drawing logic of the SpaceTimeChart component.
- * It is an internal hook, and should only be used inside SpaceTimeChart.
+ * This hook handles the internal canvas drawing logic of a chart component.
  */
-export function useCanvas<T extends { pickingElements: PickingElement[] }>(
-  dom: HTMLElement | null,
-  chartContext: T,
-  fingerprint: string,
-  position?: Point
-) {
+export function useCanvas<
+  T extends {
+    fingerprint: string
+    pickingElements: PickingElement[];
+    resetPickingElements: () => void;
+    theme: { background: string };
+  },
+>(dom: HTMLElement | null, chartContext: T, position?: Point) {
   // Most things are handled through refs here so that we have a very precise control on when to
   // render anything:
   const canvasesRef = useRef<Record<string, HTMLCanvasElement>>({});
@@ -44,7 +45,7 @@ export function useCanvas<T extends { pickingElements: PickingElement[] }>(
   const drawingFunctions = useRef<Record<string, Set<DrawingFunction<T>>>>(
     LAYERS.reduce((iter, layer) => ({ ...iter, [layer]: new Set() }), {})
   );
-  const stcContextRef = useRef(chartContext);
+  const chartContextRef = useRef(chartContext);
   const scheduledRef = useRef<null | { frameId: number }>(null);
 
   const [hoveredItem, setHoveredItem] = useState<HoveredItem | null>(null);
@@ -65,8 +66,8 @@ export function useCanvas<T extends { pickingElements: PickingElement[] }>(
   /**
    * This function renders all picking layers:
    */
-  const drawPicking = useCallback((stcContext: T, layers?: Set<LayerType>) => {
-    // stcContext.resetPickingElements();
+  const drawPicking = useCallback((chartContext: T, layers?: Set<LayerType>) => {
+    chartContext.resetPickingElements();
     PICKING_LAYERS.forEach((layer) => {
       if (layers && !layers.has(layer)) return;
 
@@ -79,7 +80,7 @@ export function useCanvas<T extends { pickingElements: PickingElement[] }>(
 
         const imageData = ctx.getImageData(0, 0, ctx.canvas.width, ctx.canvas.height);
         const pickingScalingRatio = getPickingScalingRatio();
-        set.forEach((fn) => fn(imageData, stcContext, pickingScalingRatio));
+        set.forEach((fn) => fn(imageData, chartContext, pickingScalingRatio));
         ctx.putImageData(imageData, 0, 0);
       }
     });
@@ -88,7 +89,7 @@ export function useCanvas<T extends { pickingElements: PickingElement[] }>(
   /**
    * This function renders all visible / rendering layers:
    */
-  const drawRendering = useCallback((stcContext: T, layers?: Set<LayerType>) => {
+  const drawRendering = useCallback((chartContext: T, layers?: Set<LayerType>) => {
     LAYERS.forEach((layer) => {
       if (layers && !layers.has(layer)) return;
 
@@ -98,7 +99,7 @@ export function useCanvas<T extends { pickingElements: PickingElement[] }>(
       if (ctx) {
         const { width, height } = sizeRef.current;
         ctx.clearRect(0, 0, width, height);
-        set.forEach((fn) => fn(ctx, stcContext));
+        set.forEach((fn) => fn(ctx, chartContext));
       }
     });
   }, []);
@@ -107,8 +108,8 @@ export function useCanvas<T extends { pickingElements: PickingElement[] }>(
    * This function draws everything that needs to be drawn, and clears the scheduleRef state:
    */
   const draw = useCallback(() => {
-    drawRendering(stcContextRef.current);
-    drawPicking(stcContextRef.current);
+    drawRendering(chartContextRef.current);
+    drawPicking(chartContextRef.current);
 
     if (scheduledRef.current) {
       window.cancelAnimationFrame(scheduledRef.current.frameId);
@@ -173,7 +174,8 @@ export function useCanvas<T extends { pickingElements: PickingElement[] }>(
     () =>
       getPNGBlob(
         canvasesRef.current,
-        LAYERS.map((layer) => `${RENDERING}-${layer}`)
+        LAYERS.map((layer) => `${RENDERING}-${layer}`),
+        chartContextRef.current.theme.background
       ),
     []
   );
@@ -214,11 +216,11 @@ export function useCanvas<T extends { pickingElements: PickingElement[] }>(
   // Redraw all layers when fingerprint changes:
   useEffect(() => {
     // Cache latest context in ref:
-    stcContextRef.current = chartContext;
+    chartContextRef.current = chartContext;
 
     scheduleRendering();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [fingerprint]);
+  }, [chartContext.fingerprint]);
 
   // Handle resizing:
   useEffect(() => {
@@ -267,7 +269,7 @@ export function useCanvas<T extends { pickingElements: PickingElement[] }>(
         if (a === 255) {
           const color = rgbToHex(r, g, b);
           const index = colorToIndex(color);
-          const element = stcContextRef.current.pickingElements[index];
+          const element = chartContextRef.current.pickingElements[index];
           newHoveredItem = {
             layer,
             element,

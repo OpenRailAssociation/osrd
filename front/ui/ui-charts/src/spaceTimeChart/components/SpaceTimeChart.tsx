@@ -182,7 +182,6 @@ export const SpaceTimeChart = (props: SpaceTimeChartProps) => {
   const { canvasContext, hoveredItem } = useCanvas(
     canvasesRoot,
     contextState,
-    contextState.fingerprint,
     position
   );
 
