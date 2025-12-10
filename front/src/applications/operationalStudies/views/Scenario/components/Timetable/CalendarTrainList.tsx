@@ -1,7 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
 
 import { useSelector } from 'react-redux';
-import { Virtualizer } from 'virtua';
 
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import { useSubCategoryContext } from 'common/SubCategoryContext';
@@ -27,6 +26,7 @@ import { isPacedTrainWithDetails, isTrainScheduleId } from 'utils/trainId';
 
 import PacedTrainItem from './PacedTrain/PacedTrainItem';
 import TrainScheduleItem from './TrainScheduleItem';
+import type { TimetableMode } from './types';
 import { MANAGE_TIMETABLE_ITEM_TYPES } from '../../consts';
 
 type CalendarTrainListProps = {
@@ -40,6 +40,7 @@ type CalendarTrainListProps = {
   selectedTimetableItemIds: TimetableItemId[];
   projectingOnSimulatedPathException: boolean | undefined;
   isSelectMode: boolean;
+  timetableMode: TimetableMode;
 };
 
 const formatDepartureDate = (d: Date, locale: Intl.Locale) =>
@@ -56,6 +57,7 @@ const CalendarTrainList = ({
   selectedTimetableItemIds,
   projectingOnSimulatedPathException,
   isSelectMode,
+  timetableMode,
 }: CalendarTrainListProps) => {
   const dateTimeLocale = useDateTimeLocale();
 
@@ -139,10 +141,11 @@ const CalendarTrainList = ({
   );
 
   return (
-    <Virtualizer overscan={15}>
+    // <Virtualizer overscan={15}>
+    <>
       {timetableItemsWithDetails.map((timetableItem, index) => (
         <div key={`timetable-train-card-${timetableItem.id}`} data-train-id={timetableItem.id}>
-          {showDepartureDates[index] && (
+          {timetableMode === 'calendar' && showDepartureDates[index] && (
             <div className="scenario-timetable-departure-date">{currentDepartureDates[index]}</div>
           )}
           {isTrainScheduleId(timetableItem.id) ? (
@@ -183,7 +186,8 @@ const CalendarTrainList = ({
           )}
         </div>
       ))}
-    </Virtualizer>
+    </>
+    // </Virtualizer>
   );
 };
 

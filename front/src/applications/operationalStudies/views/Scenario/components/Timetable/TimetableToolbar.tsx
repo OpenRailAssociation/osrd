@@ -21,7 +21,7 @@ import type { TimetableItem, TimetableItemId } from 'reducers/osrdconf/types';
 
 import FilterPanel from './FilterPanel';
 import SelectionToolBar from './TimetableSelectionToolbar';
-import type { TimetableFilters } from './types';
+import type { TimetableFilters, TimetableMode } from './types';
 import { exportTimetableItems, timetableHasInvalidItem } from './utils';
 import { MANAGE_TIMETABLE_ITEM_TYPES } from '../../consts';
 import RoundTripsModal from '../RoundTrips/RoundTripsModal';
@@ -39,8 +39,8 @@ type TimetableToolbarProps = {
   setDisplayTimetableItemManagement: (mode: string) => void;
   refreshNge: () => Promise<void>;
   handleDeleteTimetableItems: () => void;
-  timetableMode: 'calendar' | 'package';
-  setTimetableMode: React.Dispatch<React.SetStateAction<'calendar' | 'package'>>;
+  timetableMode: TimetableMode;
+  setTimetableMode: React.Dispatch<React.SetStateAction<TimetableMode>>;
 };
 
 const TimetableToolbar = ({
