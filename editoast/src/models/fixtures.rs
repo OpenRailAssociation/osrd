@@ -1,6 +1,3 @@
-use std::collections::HashMap;
-use std::io::Cursor;
-use std::ops::DerefMut;
 use std::str::FromStr;
 
 use chrono::DateTime;
@@ -8,13 +5,8 @@ use chrono::Duration as ChronoDuration;
 use chrono::Utc;
 use database::DbConnection;
 
-use common::units;
-use database::DbConnectionPoolV2;
-use postgis_diesel::types::LineString;
 use schemas::fixtures::simple_created_exception_with_change_groups;
 use schemas::fixtures::simple_modified_exception_with_change_groups;
-use schemas::infra::Direction;
-use schemas::infra::DirectionalTrackRange;
 use schemas::infra::InfraObject;
 use schemas::infra::RailJson;
 use schemas::infra::TrackOffset;
@@ -35,13 +27,7 @@ use schemas::paced_train::TrainNameChangeGroup;
 use schemas::primitives::Identifier;
 use schemas::primitives::NonBlankString;
 use schemas::primitives::OSRDObject;
-use schemas::rolling_stock::EffortCurves;
-use schemas::rolling_stock::LoadingGaugeType;
-use schemas::rolling_stock::RollingResistance;
-use schemas::rolling_stock::RollingResistancePerWeight;
 use schemas::rolling_stock::SubCategoryColor;
-use schemas::rolling_stock::TowedRollingStock;
-use schemas::rolling_stock::TrainMainCategory;
 use schemas::train_schedule::Comfort;
 use schemas::train_schedule::Distribution;
 use schemas::train_schedule::MarginValue;
@@ -51,17 +37,11 @@ use schemas::train_schedule::OperationalPointReference;
 use schemas::train_schedule::PathItem;
 use schemas::train_schedule::PathItemLocation;
 use schemas::train_schedule::ScheduleItem;
-use schemas::train_schedule::TrainSchedule;
 use schemas::train_schedule::TrainScheduleOptions;
-use serde::Deserialize;
-use serde_json::Value;
-use uuid::Uuid;
 
 use crate::infra_cache::operation::create::apply_create_operation;
 use crate::models;
 use crate::models::Infra;
-use crate::models::rolling_stock_livery::RollingStockLivery;
-use editoast_models::Document;
 use editoast_models::ElectricalProfileSet;
 use editoast_models::SubCategory;
 use editoast_models::WorkSchedule;
@@ -334,46 +314,6 @@ pub async fn create_rolling_stock_with_energy_sources(
         .expect("Failed to create rolling stock with energy sources")
 }
 
-pub fn rolling_stock_livery_changeset(
-    name: &str,
-    rolling_stock_id: i64,
-    compound_image_id: i64,
-) -> Changeset<RollingStockLivery> {
-    RollingStockLivery::changeset()
-        .name(name.to_string())
-        .rolling_stock_id(rolling_stock_id)
-        .compound_image_id(Some(compound_image_id))
-}
-
-pub async fn create_rolling_stock_livery(
-    conn: &mut DbConnection,
-    name: &str,
-    rolling_stock_id: i64,
-    compound_image_id: i64,
-) -> RollingStockLivery {
-    rolling_stock_livery_changeset(name, rolling_stock_id, compound_image_id)
-        .create(conn)
-        .await
-        .expect("Failed to create rolling stock livery")
-}
-
-pub async fn create_document_example(conn: &mut DbConnection) -> Document {
-    let img = image::open("src/tests/example_rolling_stock_image_1.gif").unwrap();
-    let mut img_bytes: Vec<u8> = Vec::new();
-    assert!(
-        img.write_to(&mut Cursor::new(&mut img_bytes), image::ImageFormat::Png)
-            .is_ok()
-    );
-    let changeset = Document::changeset()
-        .content_type(String::from("img/png"))
-        .data(img_bytes);
-
-    changeset
-        .create(conn)
-        .await
-        .expect("Failed to create document")
-}
-
 pub async fn create_electrical_profile_set(conn: &mut DbConnection) -> ElectricalProfileSet {
     let json = include_str!("../tests/electrical_profile_set.json");
     serde_json::from_str::<Changeset<ElectricalProfileSet>>(json)
@@ -454,12 +394,6 @@ pub async fn create_work_schedules_fixture_set(
         .expect("Failed to create work test schedules");
 
     (work_schedule_group, work_schedules)
-}
-
-#[derive(Debug, Deserialize)]
-pub struct PartialProjectPathTrainResult {
-    pub departure_time: DateTime<Utc>,
-    // Ignore the rest of the payload
 }
 
 pub fn simple_sub_category(
