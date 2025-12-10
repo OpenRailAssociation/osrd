@@ -426,13 +426,6 @@ mod tests {
             .zip(std::iter::repeat(&db_pool).map(|p| p.get()))
             .map(|(rs_id, conn)| async move {
                 let mut conn = conn.await?;
-                let image = editoast_models::Document::changeset()
-                    .content_type("text/fake_data".into())
-                    .data(vec![])
-                    .create(&mut conn)
-                    .await
-                    .expect("Failed to create document");
-
                 let rs = Changeset::<editoast_models::rolling_stock::RollingStock>::from(
                     schemas::fixtures::simple_rolling_stock(),
                 )
@@ -445,17 +438,7 @@ mod tests {
                 .await
                 .expect("Failed to create rolling stock");
 
-                let rs_livery =
-                    crate::models::rolling_stock_livery::RollingStockLivery::changeset()
-                        .name(format!(
-                            "test_list_light_rolling_stock_increasing_ids_{rs_id}"
-                        ))
-                        .rolling_stock_id(rs.id)
-                        .compound_image_id(Some(image.id))
-                        .create(&mut conn)
-                        .await
-                        .expect("Failed to create rolling stock livery");
-                Ok::<_, InternalError>((image, rs, rs_livery))
+                Ok::<_, InternalError>(rs)
             });
 
         let generated_fixtures = futures::future::try_join_all(generated_rolling_stock)
@@ -464,7 +447,7 @@ mod tests {
 
         let expected_rs_ids = generated_fixtures
             .iter()
-            .map(|(_, rs, _)| rs.id)
+            .map(|rs| rs.id)
             .collect::<HashSet<_>>();
 
         let request = app.get("/light_rolling_stock/");
