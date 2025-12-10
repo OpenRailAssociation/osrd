@@ -155,3 +155,15 @@ updates:
     labels:
       - "dependencies"
       - "area:ci"
+  - package-ecosystem: "uv"
+    directory: "/railway_manager_interface/"
+    schedule:
+      interval: "daily"
+    cooldown:
+      default-days: 5
+    commit-message:
+      prefix: "railway_manager_interface:"
+    open-pull-requests-limit: 0
+    labels:
+      - "dependencies"
+      - "area:railway-manager-interface"
