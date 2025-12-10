@@ -3,9 +3,11 @@ import { useState } from 'react';
 import {
   Alert,
   ArrowSwitch,
+  Book,
   Calendar,
   CheckBox,
   Download,
+  File,
   FileDirectory,
   Filter,
   Note,
@@ -16,6 +18,7 @@ import { useTranslation } from 'react-i18next';
 
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
+import MenuTriggerButton from 'common/MenuTriggerButton';
 import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
 import type { TimetableItem, TimetableItemId } from 'reducers/osrdconf/types';
 
@@ -153,15 +156,32 @@ const TimetableToolbar = ({
           >
             <ArrowSwitch />
           </button>
-          <button
-            className="import-button"
-            data-testid="scenarios-import-timetable-item-button"
-            title={t('timetable.importTimetableItem')}
-            onClick={() => setDisplayTimetableItemManagement(MANAGE_TIMETABLE_ITEM_TYPES.import)}
-            type="button"
-          >
-            <Download />
-          </button>
+          <MenuTriggerButton
+            buttonProps={{
+              icon: <Download />,
+              dataTestID: 'scenarios-import-timetable-item-button',
+              title: t('timetable.importTimetableItem'),
+              className: 'import-button',
+            }}
+            menuProps={{
+              items: [
+                {
+                  icon: <File />,
+                  title: t('timetable.importTimetableFromFile'),
+                  dataTestID: 'scenarios-import-timetable-by-file',
+                  onClick: () =>
+                    setDisplayTimetableItemManagement(MANAGE_TIMETABLE_ITEM_TYPES.import),
+                },
+                {
+                  icon: <Book />,
+                  title: t('timetable.importTimetableFromCatalog'),
+                  dataTestID: 'scenarios-import-timetable-by-catalog',
+                  onClick: () =>
+                    setDisplayTimetableItemManagement(MANAGE_TIMETABLE_ITEM_TYPES.catalog),
+                },
+              ],
+            }}
+          />
           <button
             className="add-button"
             data-testid="scenarios-add-timetable-item-button"
