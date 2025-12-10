@@ -2,21 +2,20 @@ import { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'r
 
 import { isEqual } from 'lodash';
 
+import { PICKING_LAYERS, LAYERS } from './consts';
 import { rgbToHex, colorToIndex } from './helpers/colors';
 import getPNGBlob from './helpers/png';
 import { getPickingScalingRatio } from './helpers/utils';
-import {
-  LAYERS,
-  PICKING_LAYERS,
-  type CanvasContextType,
-  type DrawingFunction,
-  type DrawingFunctionHandler,
-  type HoveredItem,
-  type LayerType,
-  type PickingDrawingFunction,
-  type PickingElement,
-  type PickingLayerType,
-  type Point,
+import type {
+  CanvasContextType,
+  DrawingFunction,
+  DrawingFunctionHandler,
+  HoveredItem,
+  LayerType,
+  PickingDrawingFunction,
+  PickingElement,
+  PickingLayerType,
+  Point,
 } from './types';
 import { useDevicePixelRatio } from './useDevicePixelRatio';
 import { useSize } from './useSize';

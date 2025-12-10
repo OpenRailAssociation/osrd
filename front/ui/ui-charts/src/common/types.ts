@@ -1,3 +1,5 @@
+import type { LAYERS, PICKING_LAYERS } from './consts';
+
 // GLOBAL UTILITY TYPES:
 export type Point = {
   x: number;
@@ -7,9 +9,7 @@ export type Point = {
 export type RGBAColor = [number, number, number, number];
 
 // CANVAS SPECIFIC TYPES:
-export const PICKING_LAYERS = ['paths', 'overlay'] as const;
 export type PickingLayerType = (typeof PICKING_LAYERS)[number];
-export const LAYERS = ['background', 'graduations', 'paths', 'overlay', 'captions'] as const;
 export type LayerType = (typeof LAYERS)[number];
 
 // PICKING SPECIFIC TYPES:
