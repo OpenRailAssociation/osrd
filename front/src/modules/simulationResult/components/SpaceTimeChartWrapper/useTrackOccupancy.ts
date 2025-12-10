@@ -240,7 +240,8 @@ const useTrackOccupancy = ({
           for (const occupation of occupations) {
             const pacedId = formatEditoastIdToPacedTrainId(occupation.paced_train_id);
             const train = trainsCollection[pacedId];
-            if (!train || isTrainScheduleProjection(train)) {
+            // TODO: handle correctly pacedTrain without paced
+            if (!train || isTrainScheduleProjection(train) || !train.paced) {
               continue;
             }
 

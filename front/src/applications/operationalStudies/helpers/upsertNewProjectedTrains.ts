@@ -30,23 +30,32 @@ const upsertNewProjectedTrains = (
       }
     }
 
-    const projectedTrain: TrainSpaceTimeData = {
+    const base = {
       name: matchingTrain?.train_name || 'Train name not found',
       departureTime: new Date(matchingTrain?.start_time),
       spaceTimeCurves: trainData.space_time_curves,
       signalUpdates: trainData.signal_updates || [],
-      ...(isPacedTrainResponseWithPacedTrainId(matchingTrain)
-        ? {
-            id: matchingTrain.id,
-            paced: {
-              timeWindow: Duration.parse(matchingTrain.paced.time_window),
-              interval: Duration.parse(matchingTrain.paced.interval),
-              exceptions: matchingTrain.paced.exceptions,
-              exceptionProjections,
-            },
-          }
-        : { id: matchingTrain.id }),
     };
+
+    let projectedTrain: TrainSpaceTimeData;
+    if (!isPacedTrainResponseWithPacedTrainId(matchingTrain)) {
+      projectedTrain = { ...base, id: matchingTrain.id };
+    } else {
+      // TODO: handle correctly pacedTrain without paced
+      if (!matchingTrain.paced)
+        throw new Error(`The paced train ${matchingTrain.id} is not a paced train.`);
+
+      projectedTrain = {
+        ...base,
+        id: matchingTrain.id,
+        paced: {
+          timeWindow: Duration.parse(matchingTrain.paced.time_window),
+          interval: Duration.parse(matchingTrain.paced.interval),
+          exceptions: matchingTrain.paced.exceptions,
+          exceptionProjections,
+        },
+      };
+    }
 
     newProjectedTrains.set(trainIdKey, projectedTrain);
   }

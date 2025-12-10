@@ -61,7 +61,12 @@ const useEtcsBrakingCurves = (
   const selectedTrainId = useSelector(getSelectedTrainId);
   const timetableItem = useSelectedTimetableItem();
   const exception = useMemo(() => {
-    if (!selectedTrainId || !timetableItem || !isPacedTrainResponseWithPacedTrainId(timetableItem))
+    if (
+      !selectedTrainId ||
+      !timetableItem ||
+      !isPacedTrainResponseWithPacedTrainId(timetableItem) ||
+      !timetableItem.paced
+    )
       return undefined;
     if (isTrainScheduleId(selectedTrainId))
       throw new Error(`trainId ${selectedTrainId} should be a occurrence id`);

@@ -1623,7 +1623,7 @@ export type PostInfraRefreshApiResponse = /** status 200  */ {
 export type PostInfraRefreshApiArg = {
   force?: boolean;
   /** A comma-separated list of infra IDs to refresh
-    
+
     If not provided, all available infras will be refreshed. */
   infras?: number[];
 };
@@ -2482,12 +2482,12 @@ export type PostTimetableByIdStdcmApiArg = {
     steps: PathfindingItem[];
     temporary_speed_limit_group_id?: number | null;
     /** Margin after the train passage in milliseconds
-        
+
         Enforces that the path used by the train should be free and
         available at least that many milliseconds after its passage. */
     time_gap_after?: number;
     /** Margin before the train passage in seconds
-        
+
         Enforces that the path used by the train should be free and
         available at least that many milliseconds before its passage. */
     time_gap_before?: number;
@@ -4065,7 +4065,7 @@ export type PacedTrainException = {
   train_name?: TrainNameChangeGroup;
 };
 export type PacedTrain = TrainSchedule & {
-  paced: {
+  paced?: {
     exceptions: PacedTrainException[];
     /** Time between two occurrences, an ISO 8601 format is expected */
     interval: PositiveDuration;
@@ -4588,7 +4588,7 @@ export type SearchResultItem =
 export type SearchQuery = boolean | number | number | string | object;
 export type SearchPayload = {
   /** Whether to return the SQL query instead of executing it
-    
+
     Only available in debug builds. */
   dry?: boolean;
   /** The object kind to query - run `editoast search list` to get all possible values */

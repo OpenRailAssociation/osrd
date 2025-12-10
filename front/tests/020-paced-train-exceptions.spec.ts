@@ -255,8 +255,8 @@ test.describe('Paced trains and exception management', () => {
     await test.step('Check inputs before editing paced train', async () => {
       await operationalStudiesPage.checkInputsBeforeEditingAPacedTrain(
         frTranslations,
-        editedPacedTrainData.paced.time_window,
-        editedPacedTrainData.paced.interval
+        editedPacedTrainData.paced!.time_window,
+        editedPacedTrainData.paced!.interval
       );
     });
 

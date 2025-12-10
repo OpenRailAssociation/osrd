@@ -28,6 +28,8 @@ import type { ArrayElement } from 'utils/types';
 
 export type Board = 'trains' | 'map' | 'macro' | 'std' | 'sdd' | 'tables' | 'conflicts';
 
+export type PacedTrainWithPaced = TrainSchedule & { paced: NonNullable<PacedTrain['paced']> };
+
 export type TrainScheduleFromJson = Omit<TrainSchedule, 'category'> & {
   category?: TrainCategory | string | null;
 };
