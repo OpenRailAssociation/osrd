@@ -1,4 +1,5 @@
 .ui-text-area-field-wrapper {
+  width: 100%;
   .field-and-status-icon {
     align-items: flex-start !important;
     .ui-status-icon {
@@ -6,10 +7,10 @@
     }
   }
   .custom-field {
-    max-width: 29.563rem;
     .text-area-wrapper {
-      padding: 0.1875rem;
       position: relative;
+      display: flex;
+      width: 100%;
 
       &.focused-by-tab {
         box-shadow: 0 0 0 0.0625rem rgba(37, 106, 250, 1) inset;
@@ -17,7 +18,7 @@
 
       .text-area {
         height: 5.875rem;
-        width: 25.375rem;
+        width: 100%;
         line-height: 1.5rem;
         text-align: left;
         vertical-align: top;
