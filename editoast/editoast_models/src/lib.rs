@@ -1,3 +1,4 @@
+pub mod auth_driver;
 pub mod authn;
 pub mod document;
 pub mod electrical_profiles;
@@ -20,6 +21,7 @@ pub mod train_schedule;
 pub mod work_schedules;
 
 // Export all Model at crate root
+pub use auth_driver::PgAuthDriver;
 pub use authn::group::Group;
 pub use authn::subject::Subject;
 pub use authn::user::User;

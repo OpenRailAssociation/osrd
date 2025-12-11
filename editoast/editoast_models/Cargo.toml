@@ -8,6 +8,7 @@ edition.workspace = true
 testing = []
 
 [dependencies]
+authz.workspace = true
 chrono.workspace = true
 common.workspace = true
 database.workspace = true
@@ -16,6 +17,7 @@ diesel.workspace = true
 diesel-async.workspace = true
 diesel_json.workspace = true
 editoast_derive.workspace = true
+fga.workspace = true
 futures.workspace = true
 futures-util.workspace = true
 geos.workspace = true
