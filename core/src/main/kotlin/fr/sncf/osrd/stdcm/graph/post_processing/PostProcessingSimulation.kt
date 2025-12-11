@@ -32,11 +32,8 @@ import org.slf4j.LoggerFactory
 
 val postProcessingLogger: Logger = LoggerFactory.getLogger("postprocessing-STDCM")
 
-private data class FixedTimePoint(
-    val time: Double,
-    val offset: Offset<TrainPath>,
-    val stopTime: Double?,
-) : Comparable<FixedTimePoint> {
+data class FixedTimePoint(val time: Double, val offset: Offset<TrainPath>, val stopTime: Double?) :
+    Comparable<FixedTimePoint> {
     override fun compareTo(other: FixedTimePoint): Int {
         return offset.compareTo(other.offset)
     }
@@ -72,7 +69,7 @@ fun buildFinalEnvelope(
     stops: List<TrainStop>,
     updatedTimeData: TimeData,
     isMareco: Boolean = true,
-): Envelope {
+): Pair<Envelope, List<FixedTimePoint>> {
     val context = build(rollingStock, envelopeSimPath, timeStep, comfort)
     val fullInfraExplorer = edges.last().infraExplorerWithNewEnvelope
 
@@ -99,7 +96,7 @@ fun buildFinalEnvelope(
                 runSimulationWithFixedPoints(maxSpeedEnvelope, fixedPoints, context, isMareco)
             val conflictOffset =
                 findConflictOffsets(newEnvelope, blockAvailability, edges, updatedTimeData)
-                    ?: return newEnvelope
+                    ?: return Pair(newEnvelope, fixedPoints.toList())
             if (fixedPoints.any { it.offset == conflictOffset }) {
                 // Error case: a conflict prevents us from finding a solution,
                 // despite the exploration data identifying a valid opening.
@@ -474,7 +471,7 @@ private fun handlePostProcessingConflict(
     fixedPoints: TreeSet<FixedTimePoint>,
     conflictOffset: Offset<TrainPath>,
     isMareco: Boolean,
-): Envelope {
+): Pair<Envelope, List<FixedTimePoint>> {
     postProcessingLogger.error(
         "Conflicts detected in post-processing, mismatch with the exploration data"
     )

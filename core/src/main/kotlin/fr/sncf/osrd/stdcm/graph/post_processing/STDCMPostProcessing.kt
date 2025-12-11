@@ -81,7 +81,7 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
                 temporarySpeedLimitManager,
                 areSpeedsEqual(0.0, edges.last().endSpeed),
             )
-        val withAllowance =
+        val (withAllowance, timePoints) =
             buildFinalEnvelope(
                 graph,
                 maxSpeedEnvelope,
@@ -107,6 +107,10 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
                 makePathStops(stops, trainPath),
                 lastExplorer.getStepTracker().getSeenSteps().map { it.travelledPathOffset },
             )
+
+        // TODO: do something about this result
+        generateTrainSchedule(graph, trainPath, timePoints, updatedTimeData.departureTime)
+
         return if (res.envelope.totalTime > maxRunTime) {
             // This can happen if the destination is one edge away from being reachable in time,
             // as we only check the time at the start of an edge when exploring the graph

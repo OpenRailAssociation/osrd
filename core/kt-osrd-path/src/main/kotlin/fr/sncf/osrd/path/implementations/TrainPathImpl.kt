@@ -104,6 +104,8 @@ data class TrainPathNoBacktrack(
 
     override fun getZoneRanges(): List<ZoneRange> = cachedZoneRanges
 
+    override fun getTrackSections(): List<DirTrackRange> = cachedDirTracks
+
     override val length: Double
         get() = getLength().meters
 

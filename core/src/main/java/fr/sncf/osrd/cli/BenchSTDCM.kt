@@ -24,6 +24,7 @@ import java.io.File
 import java.io.IOException
 import java.nio.file.Files
 import java.nio.file.Paths
+import java.time.ZonedDateTime
 import java.util.concurrent.TimeUnit
 import kotlin.concurrent.thread
 import kotlin.math.pow
@@ -180,6 +181,7 @@ class BenchSTDCM : CliCommand {
                             parseMarginValue(request.margin),
                             Pathfinding.TIMEOUT,
                             temporarySpeedLimitManager,
+                            ZonedDateTime.now(),
                             allowedTrackSections,
                         )
                     if (path != null && hasDuplicateTracks(infra, path.trainPath)) path = null

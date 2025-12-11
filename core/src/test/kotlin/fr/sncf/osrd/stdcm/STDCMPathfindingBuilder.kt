@@ -16,6 +16,8 @@ import fr.sncf.osrd.stdcm.preprocessing.OccupancySegment
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.train.TestTrains
+import java.time.LocalDate
+import java.time.ZoneId
 
 /**
  * This class makes it easier to handle the STDCM pathfinding parameters, it makes some parameters
@@ -163,6 +165,7 @@ data class STDCMPathfindingBuilder(
         }
         val blockAvailabilityAdapter =
             blockAvailability ?: DummyBlockAvailability(infra!!.blockInfra, unavailableTimes)
+        val arbitraryReferenceTime = LocalDate.of(2025, 1, 1).atStartOfDay(ZoneId.of("UTC"))
         return findPath(
             infra!!,
             rollingStock,
@@ -177,6 +180,7 @@ data class STDCMPathfindingBuilder(
             standardAllowance,
             pathfindingTimeout,
             temporarySpeedLimitManager,
+            arbitraryReferenceTime,
         )
     }
 }

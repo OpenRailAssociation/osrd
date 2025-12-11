@@ -22,6 +22,7 @@ import fr.sncf.osrd.utils.indexing.StaticIdx
 import fr.sncf.osrd.utils.units.meters
 import java.lang.Double.isFinite
 import java.lang.Double.isNaN
+import java.time.ZonedDateTime
 import kotlin.math.max
 import kotlin.math.min
 
@@ -45,6 +46,7 @@ class STDCMGraph(
     val standardAllowance: AllowanceValue?,
     val temporarySpeedLimitManager: TemporarySpeedLimitManager = TemporarySpeedLimitManager(),
     constraints: ConstraintCombiner<StaticIdx<Block>, Block>,
+    val referenceTime: ZonedDateTime,
 ) : Graph<STDCMNode, STDCMEdge, STDCMEdge> {
     val rawInfra = fullInfra.rawInfra!!
     val blockInfra = fullInfra.blockInfra!!

@@ -139,6 +139,7 @@ class STDCMEndpoint(
                     parseMarginValue(request.margin),
                     Pathfinding.TIMEOUT,
                     temporarySpeedLimitManager,
+                    request.startTime,
                     allowedTrackSections,
                 )
             if (path == null || hasDuplicateTracks(infra, path.trainPath)) {

@@ -27,6 +27,7 @@ import io.opentelemetry.api.trace.SpanKind
 import io.opentelemetry.instrumentation.annotations.WithSpan
 import java.time.Duration
 import java.time.Instant
+import java.time.ZonedDateTime
 import java.util.*
 import kotlin.Double.Companion.POSITIVE_INFINITY
 import org.slf4j.Logger
@@ -61,6 +62,7 @@ fun findPath(
     standardAllowance: AllowanceValue?,
     pathfindingTimeout: Double,
     temporarySpeedLimitManager: TemporarySpeedLimitManager,
+    referenceTime: ZonedDateTime,
     allowedTrackSections: Set<TrackSectionId>? = null,
 ): STDCMResult? {
     return STDCMPathfinding(
@@ -78,6 +80,7 @@ fun findPath(
             pathfindingTimeout,
             temporarySpeedLimitManager,
             allowedTrackSections,
+            referenceTime,
         )
         .findPath()
 }
@@ -97,6 +100,7 @@ class STDCMPathfinding(
     private val pathfindingTimeout: Double = Pathfinding.TIMEOUT,
     private val temporarySpeedLimitManager: TemporarySpeedLimitManager,
     private val allowedTrackSections: Set<TrackSectionId>?,
+    referenceTime: ZonedDateTime,
 ) {
 
     private var starts: Set<STDCMNode> = HashSet()
@@ -120,6 +124,7 @@ class STDCMPathfinding(
             standardAllowance,
             temporarySpeedLimitManager,
             constraints,
+            referenceTime,
         )
 
     @WithSpan(value = "STDCM pathfinding", kind = SpanKind.SERVER)
