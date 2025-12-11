@@ -78,6 +78,16 @@ const injectedRtkApi = api
         }),
         providesTags: ['authz'],
       }),
+      getCatalogueEntry: build.query<GetCatalogueEntryApiResponse, GetCatalogueEntryApiArg>({
+        query: (queryArg) => ({
+          url: `/catalogue_entry`,
+          params: {
+            page: queryArg.page,
+            page_size: queryArg.pageSize,
+          },
+        }),
+        providesTags: ['catalogue_entry'],
+      }),
       postCatalogueEntry: build.mutation<PostCatalogueEntryApiResponse, PostCatalogueEntryApiArg>({
         query: (queryArg) => ({
           url: `/catalogue_entry`,
@@ -1369,6 +1379,16 @@ const injectedRtkApi = api
         }),
         providesTags: ['train_schedule'],
       }),
+      getTrainScheduleSet: build.query<GetTrainScheduleSetApiResponse, GetTrainScheduleSetApiArg>({
+        query: (queryArg) => ({
+          url: `/train_schedule_set`,
+          params: {
+            catalogue_entry_id: queryArg.catalogueEntryId,
+            published: queryArg.published,
+          },
+        }),
+        providesTags: ['train_schedule_set'],
+      }),
       postTrainScheduleSet: build.mutation<
         PostTrainScheduleSetApiResponse,
         PostTrainScheduleSetApiArg
@@ -1534,6 +1554,14 @@ export type GetAuthzByResourceTypeAndResourceIdApiResponse =
 export type GetAuthzByResourceTypeAndResourceIdApiArg = {
   resourceType: ResourceType;
   resourceId: number;
+  page?: number;
+  pageSize?: number;
+};
+export type GetCatalogueEntryApiResponse =
+  /** status 200 List of catalogue entries */ PaginationStats & {
+    results: CatalogueEntry[];
+  };
+export type GetCatalogueEntryApiArg = {
   page?: number;
   pageSize?: number;
 };
@@ -2658,6 +2686,14 @@ export type GetTrainScheduleByIdSimulationApiArg = {
   id: number;
   infraId: number;
   electricalProfileSetId?: number;
+};
+export type GetTrainScheduleSetApiResponse =
+  /** status 200 list of train schedule sets */ (TrainScheduleSet & {
+    train_schedule_count: number;
+  })[];
+export type GetTrainScheduleSetApiArg = {
+  catalogueEntryId?: number;
+  published?: boolean;
 };
 export type PostTrainScheduleSetApiResponse =
   /** status 201 Train schedule set */ TrainScheduleSetResponse;
