@@ -42,6 +42,7 @@
     "tailwindcss": ">=4.1"
   },
   "dependencies": {
+    "@osrd-project/ui-charts": "^0.0.1-dev",
     "@osrd-project/ui-core": "0.0.1-dev",
     "@osrd-project/ui-icons": "0.0.1-dev",
     "chroma-js": "^3.2.0",

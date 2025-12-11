@@ -5,8 +5,6 @@ import {
   type HoveredItem,
   type SpaceTimeChartProps,
   useManchetteWithSpaceTimeChart,
-  timeScaleToZoomValue,
-  DEFAULT_ZOOM_MS_PER_PX,
   ZoomRect,
   ConflictLayer,
   PathLayer,
@@ -17,33 +15,24 @@ import {
   type SplitPoint,
   isSegmentPickingElement,
   isPointPickingElement,
-  usePaths,
   isInteractiveWaypoint,
-  TrackOccupancyCanvas,
-  TrackOccupancyManchette,
-  WaypointComponent,
   type Track,
   type OccupancyZone,
-  TRACK_HEIGHT_CONTAINER,
-  DEFAULT_THEME,
-  BASE_WAYPOINT_HEIGHT,
   isOccupancyPickingElement,
 } from '@osrd-project/ui-charts';
 import { Slider } from '@osrd-project/ui-core';
-import { Sliders, Iterations, ZoomIn } from '@osrd-project/ui-icons';
-import cx from 'classnames';
-import { keyBy, sortBy } from 'lodash';
 import { createPortal } from 'react-dom';
 
+import usePaths from 'applications/operationalStudies/views/Scenario/components/SimulationResults/SimulationResultsExport/usePaths';
 import upward from 'assets/pictures/workSchedules/ScheduledMaintenanceUp.svg';
 import { type PostWorkSchedulesProjectPathApiResponse } from 'common/api/osrdEditoastApi';
 import { useSubCategoryContext } from 'common/SubCategoryContext';
 import { configureHandlePan } from 'modules/simulationResult/components/SpaceTimeChartWrapper/helpers/configureHandlePan';
 import type {
-  PathOperationalPoint,
   TrainSpaceTimeData,
   WaypointsPanelData,
   DraggingState,
+  ProjectionData,
 } from 'modules/simulationResult/types';
 import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
 import type {
@@ -65,18 +54,26 @@ import {
   isAddedExceptionId,
 } from 'utils/trainId';
 
+import { buildSplitPoints } from './buildSplitPoints';
+import createHandleTrainDrag from './helpers/createHandleTrainDrag';
 import getPathStyle from './helpers/getPathStyle';
 import makeProjectedItems from './helpers/makeProjectedItems';
 import { cutSpaceTimeChart, getOccupancyBlocks } from './helpers/utils';
 import ProjectionLoadingMessage from './ProjectionLoadingMessage';
 import SettingsPanel from './SettingsPanel';
+import SpaceTimeChartToolbar from './SpaceTimeChartToolbar';
+import useGetProjectedTrainOperationalPoints from './useGetProjectedTrainOperationalPoints';
+import useTrackOccupancy, { type OccupancyTrainSpaceTimeData } from './useTrackOccupancy';
 import useWaypointMenu from './useWaypointMenu';
 import WaypointsPanel from './WaypointsPanel';
-import { Spinner } from '../../../../common/Loaders';
 
 type SpaceTimeChartWrapperBaseProps = {
-  operationalPoints: PathOperationalPoint[];
+  infraId: number;
+  timetableId: number | undefined;
+  projectionData?: ProjectionData;
   projectPathTrainResult: TrainSpaceTimeData[];
+  setProjectPathTrainResult?: (trains: OccupancyTrainSpaceTimeData[]) => void;
+  updateTrainDepartureTime?: (trainId: TimetableItemId, newDepartureTime: Date) => Promise<void>;
   selectedTrainId?: TrainId;
   conflicts?: Conflict[];
   workSchedules?: PostWorkSchedulesProjectPathApiResponse;
@@ -89,22 +86,10 @@ type SpaceTimeChartWrapperBaseProps = {
     tracks?: Track[];
     loading?: boolean;
   }[];
-  onCloseOccupancyLayer?: (waypointId: string) => void;
   projectionLoaderData: {
     totalTrains: number;
     allTrainsProjected: boolean;
   };
-  handleTrainDrag?: ({
-    draggedTrainId,
-    newDepartureTime,
-    initialDepartureTime,
-    stopPanning,
-  }: {
-    draggedTrainId: TrainId;
-    initialDepartureTime: Date;
-    newDepartureTime: Date;
-    stopPanning: boolean;
-  }) => Promise<void>;
   height?: number;
   onTrainClick?: (trainId: TrainId) => void;
   selectedProjectionId: TrainScheduleId | PacedTrainId | OccurrenceId;
@@ -115,7 +100,7 @@ type SpaceTimeChartWrapperBaseProps = {
 type SpaceTimeChartWrapperProps = SpaceTimeChartWrapperBaseProps &
   (
     | {
-        waypointsPanelData: WaypointsPanelData;
+        waypointsPanelData?: WaypointsPanelData;
         waypointsPanelIsOpen: boolean;
         setWaypointsPanelIsOpen: (waypointsModalOpen: boolean) => void;
       }
@@ -129,16 +114,17 @@ type SpaceTimeChartWrapperProps = SpaceTimeChartWrapperBaseProps &
 export const MANCHETTE_WITH_SPACE_TIME_CHART_DEFAULT_HEIGHT = 561;
 
 const SpaceTimeChartWrapper = ({
-  operationalPoints,
+  infraId,
+  timetableId,
+  projectionData,
   projectPathTrainResult,
-  waypointsPanelData,
+  setProjectPathTrainResult,
+  updateTrainDepartureTime,
   conflicts = [],
   workSchedules,
   trackOccupancyDiagramsData,
-  onCloseOccupancyLayer,
   projectionLoaderData: { totalTrains, allTrainsProjected },
   height = MANCHETTE_WITH_SPACE_TIME_CHART_DEFAULT_HEIGHT,
-  handleTrainDrag,
   onTrainClick,
   selectedProjectionId,
   selectedTrainId,
@@ -186,12 +172,71 @@ const SpaceTimeChartWrapper = ({
 
   const subCategories = useSubCategoryContext();
 
+  const [previousPanning, setPreviousPanning] = useState(false);
+
+  const [showSettingsPanel, setShowSettingsPanel] = useState(false);
+  const [settings, setSettings] = useState({
+    showConflicts: false,
+    showSignalsStates: false,
+  });
+
   const projectedTrains = useMemo(
     () => makeProjectedItems(projectPathTrainResult),
     [projectPathTrainResult]
   );
 
-  const [previousPanning, setPreviousPanning] = useState(false);
+  const { operationalPoints, filteredOperationalPoints, setFilteredOperationalPoints } =
+    useGetProjectedTrainOperationalPoints({
+      infraId,
+      timetableId,
+      path: projectionData?.path,
+      pathfinding: projectionData?.pathfinding,
+      projectedOperationalPoints: projectionData?.operationalPoints,
+    });
+
+  const {
+    toggleWaypoint,
+    deployedWaypoints,
+    updateTrackOccupanciesOnDrag: handleTrainDragInTrackOccupancy,
+  } = useTrackOccupancy({
+    infraId,
+    pathOperationalPoints: filteredOperationalPoints,
+    timetableItemProjections: projectPathTrainResult as OccupancyTrainSpaceTimeData[],
+  });
+
+  const onCloseOccupancyLayer = useCallback(
+    (waypointId: string) => toggleWaypoint(waypointId, false),
+    [toggleWaypoint]
+  );
+
+  const waypointsPanelData = useMemo(() => {
+    if (!projectionData?.path) return undefined;
+    return {
+      filteredWaypoints: filteredOperationalPoints,
+      setFilteredWaypoints: setFilteredOperationalPoints,
+      projectionPath: projectionData.path,
+      deployedWaypoints: new Set(deployedWaypoints.map(({ waypointId }) => waypointId)),
+      toggleDeployedWaypoint: toggleWaypoint,
+      timetableId,
+    };
+  }, [
+    projectionData?.path,
+    filteredOperationalPoints,
+    setFilteredOperationalPoints,
+    deployedWaypoints,
+    toggleWaypoint,
+    timetableId,
+  ]);
+
+  const handleTrainDrag =
+    setProjectPathTrainResult && updateTrainDepartureTime
+      ? createHandleTrainDrag({
+          projectPathTrainResult: projectPathTrainResult as OccupancyTrainSpaceTimeData[],
+          setProjectPathTrainResult,
+          handleTrainDragInTrackOccupancy,
+          updateTrainDepartureTime,
+        })
+      : undefined;
 
   // Cut the spacetime chart curves if the first or last waypoints are hidden
   const { filteredProjectPathTrainResult: cutProjectedTrains, filteredConflicts: cutConflicts } =
@@ -220,125 +265,38 @@ const SpaceTimeChartWrapper = ({
     pathfindingHasFailed
   );
 
-  const pathsById = useMemo(() => keyBy(paths, ({ id }) => id), [paths]);
-
-  const countZonesByPacedTrainId = (zones: OccupancyZone[] = []) => {
-    const counts = new Map<TimetableItemId, Map<string, number>>();
-    for (const zone of zones) {
-      if (isOccurrenceId(zone.trainId)) {
-        const pacedTrainId = extractPacedTrainIdFromOccurrenceId(zone.trainId);
-        const pacedTrainIdCounts = counts.get(pacedTrainId) ?? new Map();
-        pacedTrainIdCounts.set(zone.trackId, (pacedTrainIdCounts.get(zone.trackId) ?? 0) + 1);
-        counts.set(pacedTrainId, pacedTrainIdCounts);
-      }
-    }
-    return counts;
-  };
-
   const hoveredPathId = useMemo(() => {
     const element = hoveredItem?.element;
-    return element && 'pathId' in element ? element.pathId : undefined;
+    return element && 'pathId' in element ? (element.pathId as TimetableItemId) : undefined;
   }, [hoveredItem]);
 
   const splitPoints = useMemo<SplitPoint[]>(
     () =>
-      sortBy(
-        trackOccupancyDiagramsData || [],
-        ({ operationalPointPosition }) => operationalPointPosition
-      ).map(
-        ({
-          waypointId,
-          operationalPointId,
-          operationalPointName,
-          operationalPointPosition,
-          zones,
-          tracks,
-          loading,
-        }) => {
-          const baseZones = zones ?? [];
-          const zonesCountByPacedTrainId = countZonesByPacedTrainId(baseZones);
-
-          const styledZones = baseZones.map((zone) => {
-            const path = pathsById[zone.trainId];
-
-            const isHovered = hoveredPathId === zone.trainId;
-            const isSelected = selectedTrainId === zone.trainId;
-
-            let totalOccurrencesOnTrack = 0;
-            if (isOccurrenceId(zone.trainId)) {
-              const pacedTrainId = extractPacedTrainIdFromOccurrenceId(zone.trainId);
-              totalOccurrencesOnTrack =
-                zonesCountByPacedTrainId.get(pacedTrainId)?.get(zone.trackId) ?? 0;
-            }
-            if (!path) return zone;
-
-            const pathStyle = getPathStyle(
-              hoveredItem,
-              path,
-              !!draggingState,
-              subCategories,
-              timetableItemsWithDetails,
-              selectedTrainId
-            );
-            return {
-              ...zone,
-              trailingText:
-                isHovered && totalOccurrencesOnTrack > 1
-                  ? `+${Math.max(0, totalOccurrencesOnTrack - 1)}`
-                  : undefined,
-              color: pathStyle.color,
-              size: isSelected || isHovered ? 2 : undefined,
-            };
-          });
-
-          return {
-            id: operationalPointId,
-            position: operationalPointPosition,
-            size: (tracks?.length || 0) * TRACK_HEIGHT_CONTAINER + DEFAULT_THEME.timeCaptionsSize,
-            spaceTimeChartNode: (
-              <TrackOccupancyCanvas
-                position={operationalPointPosition}
-                tracks={tracks || []}
-                occupancyZones={styledZones}
-                selectedTrainId={selectedTrainId}
-                onClose={() => onCloseOccupancyLayer?.(waypointId)}
-                topPadding={BASE_WAYPOINT_HEIGHT}
-              />
-            ),
-            manchetteNode: (
-              <TrackOccupancyManchette tracks={tracks || []}>
-                <div className="waypoint-wrapper flex justify-start">
-                  <WaypointComponent
-                    waypoint={{
-                      id: waypointId,
-                      name: (
-                        <div className="d-flex flex-row align-items-center">
-                          {operationalPointName || operationalPointId}
-                          {loading && (
-                            <Spinner className="ml-2 small" spinnerClassName="spinner-border-sm" />
-                          )}
-                        </div>
-                      ),
-                      position: operationalPointPosition,
-                      onClick: handleWaypointClick,
-                    }}
-                    waypointRef={activeWaypointRef}
-                    isActive={false}
-                    isMenuActive={false}
-                  />
-                </div>
-              </TrackOccupancyManchette>
-            ),
-          };
-        }
+      buildSplitPoints(
+        trackOccupancyDiagramsData,
+        paths,
+        hoveredItem,
+        !!draggingState,
+        subCategories,
+        timetableItemsWithDetails,
+        activeWaypointRef,
+        selectedTrainId,
+        onCloseOccupancyLayer,
+        handleWaypointClick,
+        hoveredPathId
       ),
     [
       trackOccupancyDiagramsData,
-      activeWaypointId,
+      paths,
+      hoveredItem,
+      draggingState,
+      subCategories,
       timetableItemsWithDetails,
-      pathsById,
-      hoveredPathId,
       selectedTrainId,
+      onCloseOccupancyLayer,
+      handleWaypointClick,
+      activeWaypointRef,
+      hoveredPathId,
     ]
   );
 
@@ -378,12 +336,6 @@ const SpaceTimeChartWrapper = ({
       setTimeOrigin(minTime);
     }
   }, [selectedProjectionId, projectPathTrainResult.length]);
-
-  const [showSettingsPanel, setShowSettingsPanel] = useState(false);
-  const [settings, setSettings] = useState({
-    showConflicts: false,
-    showSignalsStates: false,
-  });
 
   const occupancyBlocks = getOccupancyBlocks(cutProjectedTrains);
 
@@ -488,42 +440,14 @@ const SpaceTimeChartWrapper = ({
           data-testid="space-time-chart-container"
           className="space-time-chart-container"
         >
-          <div className="toolbar">
-            <button
-              data-testid="zoom-reset-button"
-              type="button"
-              className={cx('reset-button', {
-                'reset-button-disabled': xZoom === timeScaleToZoomValue(DEFAULT_ZOOM_MS_PER_PX),
-              })}
-              onClick={() => {
-                if (xZoom !== timeScaleToZoomValue(DEFAULT_ZOOM_MS_PER_PX)) {
-                  handleXZoom(timeScaleToZoomValue(DEFAULT_ZOOM_MS_PER_PX));
-                }
-              }}
-            >
-              <Iterations />
-            </button>
-            <button
-              data-testid="zoom-button"
-              type="button"
-              className={cx('zoom-button', {
-                'zoom-button-clicked': zoomMode,
-                'zoom-button-disabled': !!waypointsPanelData?.deployedWaypoints?.size,
-              })}
-              onClick={toggleZoomMode}
-              disabled={!!waypointsPanelData?.deployedWaypoints?.size}
-            >
-              <ZoomIn className="icon" />
-            </button>
-            <button
-              type="button"
-              data-testid="menu-button"
-              className="menu-button"
-              onClick={() => setShowSettingsPanel(true)}
-            >
-              <Sliders />
-            </button>
-          </div>
+          <SpaceTimeChartToolbar
+            xZoom={xZoom}
+            handleXZoom={handleXZoom}
+            zoomMode={zoomMode}
+            disableZoom={!!waypointsPanelData?.deployedWaypoints?.size}
+            toggleZoomMode={toggleZoomMode}
+            setShowSettingsPanel={setShowSettingsPanel}
+          />
           {showSettingsPanel && (
             <SettingsPanel
               settings={settings}

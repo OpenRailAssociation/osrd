@@ -1,7 +1,16 @@
 import { useMemo } from 'react';
 
-import { PATH_COLOR_DEFAULT } from '../consts';
-import { type ProjectPathTrainResult } from '../types';
+type ProjectPathTrainResult = {
+  id: string;
+  name: string;
+  spaceTimeCurves: {
+    positions: number[];
+    times: number[];
+  }[];
+  departureTime: Date;
+};
+
+const PATH_COLOR_DEFAULT = '#8A714B';
 
 const transformCurve = (curve: ProjectPathTrainResult['spaceTimeCurves'][0], departureTime: Date) =>
   curve.positions.map((position, i) => ({

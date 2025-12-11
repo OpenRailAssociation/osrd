@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 
 import { skipToken } from '@reduxjs/toolkit/query';
 import { useTranslation } from 'react-i18next';
@@ -13,8 +13,13 @@ import ResizableSection from 'common/ResizableSection';
 import SpaceTimeChartWrapper, {
   MANCHETTE_WITH_SPACE_TIME_CHART_DEFAULT_HEIGHT,
 } from 'modules/simulationResult/components/SpaceTimeChartWrapper/SpaceTimeChartWrapper';
+import type { OccupancyTrainSpaceTimeData } from 'modules/simulationResult/components/SpaceTimeChartWrapper/useTrackOccupancy';
 import SpeedDistanceDiagramWrapper from 'modules/simulationResult/components/SpeedDistanceDiagram/SpeedDistanceDiagramWrapper';
-import { getWorkScheduleGroupId } from 'reducers/osrdconf/stdcmConf/selectors';
+import {
+  getStdcmInfraID,
+  getStdcmTimetableID,
+  getWorkScheduleGroupId,
+} from 'reducers/osrdconf/stdcmConf/selectors';
 
 const SDD_INITIAL_HEIGHT = 521.5;
 const HANDLE_TAB_RESIZE_HEIGHT = 20;
@@ -29,6 +34,8 @@ const StdcmDebugResults = ({ simulationOutputs }: StdcmDebugResultsProps) => {
   const successfulSimulation = hasResults(simulationOutputs) ? simulationOutputs : undefined;
 
   const [SDDWrapperHeight, setSDDWrapperHeight] = useState(SDD_INITIAL_HEIGHT);
+  const infraId = useSelector(getStdcmInfraID);
+  const timetableId = useSelector(getStdcmTimetableID);
   const { t } = useTranslation('stdcm');
 
   const [manchetteWithSpaceTimeChartHeight, setManchetteWithSpaceTimeChartHeight] = useState(
@@ -36,6 +43,16 @@ const StdcmDebugResults = ({ simulationOutputs }: StdcmDebugResultsProps) => {
   );
 
   const projectedData = useProjectedTrainsForStdcm(successfulSimulation?.results);
+
+  const occupancySpaceTimeData: OccupancyTrainSpaceTimeData[] = useMemo(
+    () =>
+      (projectedData?.spaceTimeData ?? []).map((data) => ({
+        ...data,
+        originPathItemLocation: undefined,
+        destinationPathItemLocation: undefined,
+      })),
+    [projectedData?.spaceTimeData]
+  );
 
   const { data: workSchedules } = osrdEditoastApi.endpoints.postWorkSchedulesProjectPath.useQuery(
     workScheduleGroupId && successfulSimulation
@@ -69,9 +86,10 @@ const StdcmDebugResults = ({ simulationOutputs }: StdcmDebugResultsProps) => {
             <p className="mt-2 mb-3 ml-4 font-weight-bold">{t('spaceTimeGraphic')}</p>
             <div className="chart-container mt-2">
               <SpaceTimeChartWrapper
-                operationalPoints={pathProperties.manchetteOperationalPoints}
+                infraId={infraId}
+                timetableId={timetableId}
                 selectedTrainId={STDCM_TRAIN_TIMETABLE_ID}
-                projectPathTrainResult={projectedData.spaceTimeData}
+                projectPathTrainResult={occupancySpaceTimeData}
                 workSchedules={workSchedules}
                 projectionLoaderData={projectedData.projectionLoaderData}
                 height={manchetteWithSpaceTimeChartHeight - MANCHETTE_HEIGHT_DIFF}
