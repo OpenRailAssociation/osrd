@@ -52,6 +52,14 @@ data:
           - name: JAVA_TOOL_OPTIONS
             value: {{ if eq .Values.services.core.config.telemetry "opentelemetry" -}}
               "-javaagent:/app/opentelemetry-javaagent.jar"
+            {{- end }}
+          - name: VALKEY_URL
+            {{- $redis := .Values.endpoints.redis }}
+            {{- if eq (kindOf $redis) "map" }}
+            valueFrom:
+              {{- toYaml $redis.valueFrom | nindent 14 }}
+            {{- else }}
+            value: "{{ $redis }}"
             {{- end -}}
 
         {{- with .Values.services.core.resources }}
