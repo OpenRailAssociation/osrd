@@ -9,7 +9,6 @@ use axum::extract::State;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use database::DbConnectionPoolV2;
-use diesel_async::scoped_futures::ScopedFutureExt;
 use editoast_derive::EditoastError;
 use itertools::Itertools;
 use serde::Deserialize;
@@ -219,18 +218,15 @@ pub(in crate::views) async fn create(
     let created = Scenario::transactional_content_update(
         db_pool.get().await?,
         scenario_id,
-        move |mut conn, _scenario, _study, _project| {
-            async move {
-                let changesets: Vec<_> = macro_nodes
-                    .into_iter()
-                    .map(|node| node.into_macro_node_changeset(scenario_id))
-                    .collect();
+        async move |mut conn, _scenario, _study, _project| {
+            let changesets: Vec<_> = macro_nodes
+                .into_iter()
+                .map(|node| node.into_macro_node_changeset(scenario_id))
+                .collect();
 
-                let macro_nodes: Vec<_> = MacroNode::create_batch(&mut conn, changesets).await?;
+            let macro_nodes: Vec<_> = MacroNode::create_batch(&mut conn, changesets).await?;
 
-                Ok::<_, MacroNodeError>(macro_nodes)
-            }
-            .scope_boxed()
+            Ok::<_, MacroNodeError>(macro_nodes)
         },
     )
     .await
@@ -305,36 +301,28 @@ pub(in crate::views) async fn update(
     let conn = db_pool.get().await?;
 
     let updated_macro_node = conn
-        .transaction(|conn| {
-            async move {
-                let node = MacroNode::retrieve_or_fail(conn.clone(), node_id, || {
-                    MacroNodeError::NotFound { node_id }
-                })
-                .await?;
+        .transaction(async move |conn| {
+            let node = MacroNode::retrieve_or_fail(conn.clone(), node_id, || {
+                MacroNodeError::NotFound { node_id }
+            })
+            .await?;
 
-                let updated_macro_node = Scenario::transactional_content_update(
-                    conn,
-                    node.scenario_id,
-                    move |mut conn, scenario, _study, _project| {
-                        async move {
-                            let node = data
-                                .into_macro_node_changeset(scenario.id)
-                                .update_or_fail(&mut conn, node_id, || MacroNodeError::NotFound {
-                                    node_id,
-                                })
-                                .await?;
+            let updated_macro_node = Scenario::transactional_content_update(
+                conn,
+                node.scenario_id,
+                async move |mut conn, scenario, _study, _project| {
+                    let node = data
+                        .into_macro_node_changeset(scenario.id)
+                        .update_or_fail(&mut conn, node_id, || MacroNodeError::NotFound { node_id })
+                        .await?;
 
-                            Ok::<_, MacroNodeError>(node)
-                        }
-                        .scope_boxed()
-                    },
-                )
-                .await
-                .map_err(MacroNodeError::from)??;
+                    Ok::<_, MacroNodeError>(node)
+                },
+            )
+            .await
+            .map_err(MacroNodeError::from)??;
 
-                Ok::<_, MacroNodeError>(updated_macro_node)
-            }
-            .scope_boxed()
+            Ok::<_, MacroNodeError>(updated_macro_node)
         })
         .await?;
 
@@ -366,30 +354,24 @@ pub(in crate::views) async fn delete(
 
     let conn = db_pool.get().await?;
 
-    conn.transaction(|conn| {
-        async move {
-            let node = MacroNode::retrieve_or_fail(conn.clone(), node_id, || {
-                MacroNodeError::NotFound { node_id }
-            })
-            .await?;
+    conn.transaction(async move |conn| {
+        let node = MacroNode::retrieve_or_fail(conn.clone(), node_id, || {
+            MacroNodeError::NotFound { node_id }
+        })
+        .await?;
 
-            Scenario::transactional_content_update(
-                conn,
-                node.scenario_id,
-                move |mut conn, _scenario, _study, _project| {
-                    async move {
-                        node.delete(&mut conn).await?;
-                        Ok::<_, MacroNodeError>(())
-                    }
-                    .scope_boxed()
-                },
-            )
-            .await
-            .map_err(MacroNodeError::from)??;
+        Scenario::transactional_content_update(
+            conn,
+            node.scenario_id,
+            async move |mut conn, _scenario, _study, _project| {
+                node.delete(&mut conn).await?;
+                Ok::<_, MacroNodeError>(())
+            },
+        )
+        .await
+        .map_err(MacroNodeError::from)??;
 
-            Ok::<_, MacroNodeError>(())
-        }
-        .scope_boxed()
+        Ok::<_, MacroNodeError>(())
     })
     .await?;
 

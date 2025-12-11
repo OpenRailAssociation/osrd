@@ -15,7 +15,6 @@ use axum::extract::Query;
 use axum::extract::State;
 use axum::http::StatusCode;
 use database::DbConnectionPoolV2;
-use diesel_async::scoped_futures::ScopedFutureExt as _;
 use editoast_derive::EditoastError;
 use editoast_models::TowedRollingStock;
 use editoast_models::prelude::*;
@@ -194,41 +193,36 @@ pub(in crate::views) async fn put_by_id(
     let new_towed_rolling_stock = db_pool
         .get()
         .await?
-        .transaction::<_, InternalError, _>(|conn| {
-            async move {
-                let existing_rolling_stock = TowedRollingStock::retrieve_or_fail(
-                    conn.clone(),
-                    towed_rolling_stock_id,
-                    || TowedRollingStockError::IdNotFound {
-                        towed_rolling_stock_id,
-                    },
-                )
-                .await?;
-
-                if existing_rolling_stock.locked {
-                    return Err(TowedRollingStockError::IsLocked {
+        .transaction::<_, InternalError, _, _>(async move |conn| {
+            let existing_rolling_stock =
+                TowedRollingStock::retrieve_or_fail(conn.clone(), towed_rolling_stock_id, || {
+                    TowedRollingStockError::IdNotFound {
                         towed_rolling_stock_id,
                     }
-                    .into());
-                }
+                })
+                .await?;
 
-                if towed_rolling_stock_form != existing_rolling_stock.clone().into() {
-                    let mut towed_rolling_stock_changeset: Changeset<TowedRollingStock> =
-                        towed_rolling_stock_form.clone().into();
-                    towed_rolling_stock_changeset.version =
-                        Some(&existing_rolling_stock.version + 1);
-                    let new_towed_rolling_stock = towed_rolling_stock_changeset
-                        .update(&mut conn.clone(), towed_rolling_stock_id)
-                        .await?
-                        .ok_or(TowedRollingStockError::IdNotFound {
-                            towed_rolling_stock_id,
-                        })?;
-                    Ok(new_towed_rolling_stock)
-                } else {
-                    Ok(existing_rolling_stock)
+            if existing_rolling_stock.locked {
+                return Err(TowedRollingStockError::IsLocked {
+                    towed_rolling_stock_id,
                 }
+                .into());
             }
-            .scope_boxed()
+
+            if towed_rolling_stock_form != existing_rolling_stock.clone().into() {
+                let mut towed_rolling_stock_changeset: Changeset<TowedRollingStock> =
+                    towed_rolling_stock_form.clone().into();
+                towed_rolling_stock_changeset.version = Some(&existing_rolling_stock.version + 1);
+                let new_towed_rolling_stock = towed_rolling_stock_changeset
+                    .update(&mut conn.clone(), towed_rolling_stock_id)
+                    .await?
+                    .ok_or(TowedRollingStockError::IdNotFound {
+                        towed_rolling_stock_id,
+                    })?;
+                Ok(new_towed_rolling_stock)
+            } else {
+                Ok(existing_rolling_stock)
+            }
         })
         .await?;
 

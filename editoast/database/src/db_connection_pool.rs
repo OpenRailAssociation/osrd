@@ -14,7 +14,6 @@ use diesel_async::pooled_connection::AsyncDieselConnectionManager;
 use diesel_async::pooled_connection::ManagerConfig;
 use diesel_async::pooled_connection::deadpool::Object;
 use diesel_async::pooled_connection::deadpool::Pool;
-use diesel_async::scoped_futures::ScopedBoxFuture;
 use futures::Future;
 use futures::future::BoxFuture;
 use futures_util::FutureExt as _;
@@ -152,11 +151,11 @@ impl DbConnection {
     //
     // :WARNING: If you ever need to modify this function, please take a look at the
     // original `diesel` function, they probably do it right more than us.
-    pub async fn transaction<'a, R, E, F>(&self, callback: F) -> std::result::Result<R, E>
+    pub async fn transaction<R, E, F, Fut>(&self, callback: F) -> std::result::Result<R, E>
     where
-        F: FnOnce(Self) -> ScopedBoxFuture<'a, 'a, std::result::Result<R, E>> + Send + 'a,
-        E: From<DatabaseError> + Send + 'a,
-        R: Send + 'a,
+        F: FnOnce(Self) -> Fut,
+        Fut: Future<Output = std::result::Result<R, E>>,
+        E: From<DatabaseError>,
     {
         use diesel_async::TransactionManager as _;
 

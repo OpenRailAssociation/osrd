@@ -12,7 +12,6 @@ use axum::extract::Query;
 use axum::extract::State;
 use axum::response::IntoResponse;
 use database::DbConnectionPoolV2;
-use diesel_async::scoped_futures::ScopedFutureExt;
 use editoast_derive::EditoastError;
 use editoast_models::prelude::*;
 use editoast_models::round_trips::PacedTrainRoundTrips;
@@ -140,17 +139,11 @@ pub(in crate::views) async fn post_train_schedules(
     db_pool
         .get()
         .await?
-        .transaction::<_, crate::error::InternalError, _>(|mut conn| {
-            async move {
-                TrainScheduleRoundTrips::delete_batch_train_ids(&mut conn, to_remove).await?;
-                TrainScheduleRoundTrips::create_batch::<_, Vec<_>>(
-                    &mut conn,
-                    round_trips_changesets,
-                )
+        .transaction::<_, crate::error::InternalError, _, _>(async move |mut conn| {
+            TrainScheduleRoundTrips::delete_batch_train_ids(&mut conn, to_remove).await?;
+            TrainScheduleRoundTrips::create_batch::<_, Vec<_>>(&mut conn, round_trips_changesets)
                 .await?;
-                Ok(())
-            }
-            .scope_boxed()
+            Ok(())
         })
         .await?;
 
@@ -205,14 +198,11 @@ pub(in crate::views) async fn post_paced_trains(
     db_pool
         .get()
         .await?
-        .transaction::<_, crate::error::InternalError, _>(|mut conn| {
-            async move {
-                PacedTrainRoundTrips::delete_batch_train_ids(&mut conn, to_remove).await?;
-                PacedTrainRoundTrips::create_batch::<_, Vec<_>>(&mut conn, round_trips_changesets)
-                    .await?;
-                Ok(())
-            }
-            .scope_boxed()
+        .transaction::<_, crate::error::InternalError, _, _>(async move |mut conn| {
+            PacedTrainRoundTrips::delete_batch_train_ids(&mut conn, to_remove).await?;
+            PacedTrainRoundTrips::create_batch::<_, Vec<_>>(&mut conn, round_trips_changesets)
+                .await?;
+            Ok(())
         })
         .await?;
 

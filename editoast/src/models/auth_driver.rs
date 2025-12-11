@@ -12,7 +12,6 @@ use database::DbConnectionPoolV2;
 use diesel::dsl;
 use diesel::prelude::*;
 use diesel_async::RunQueryDsl;
-use diesel_async::scoped_futures::ScopedFutureExt as _;
 use editoast_models::prelude::*;
 
 use database::tables::*;
@@ -127,41 +126,38 @@ impl StorageDriver for PgAuthDriver {
     #[tracing::instrument(skip_all, fields(%user), ret(level = Level::DEBUG), err)]
     async fn ensure_user(&self, user: &UserInfo) -> Result<User, Self::Error> {
         let conn = self.pool.get().await?;
-        conn.transaction(|conn| {
-            async move {
-                let user_info = self.get_user_info_by_identity(&user.identity).await?;
-                match user_info {
-                    Some(user_info) => {
-                        tracing::debug!(?user_info, "user already exists in db");
-                        Ok(user_info)
-                    }
+        conn.transaction(async move |conn| {
+            let user_info = self.get_user_info_by_identity(&user.identity).await?;
+            match user_info {
+                Some(user_info) => {
+                    tracing::debug!(?user_info, "user already exists in db");
+                    Ok(user_info)
+                }
 
-                    None => {
-                        tracing::info!("registering new user in db");
+                None => {
+                    tracing::info!("registering new user in db");
 
-                        let id: i64 = dsl::insert_into(authn_subject::table)
-                            .default_values()
-                            .returning(authn_subject::id)
-                            .get_result(&mut conn.clone().write().await)
-                            .await?;
+                    let id: i64 = dsl::insert_into(authn_subject::table)
+                        .default_values()
+                        .returning(authn_subject::id)
+                        .get_result(&mut conn.clone().write().await)
+                        .await?;
 
-                        dsl::insert_into(authn_user::table)
-                            .values((
-                                authn_user::id.eq(id),
-                                authn_user::identity_id.eq(&user.identity),
-                                authn_user::name.eq(&user.name),
-                            ))
-                            .execute(conn.write().await.deref_mut())
-                            .await?;
+                    dsl::insert_into(authn_user::table)
+                        .values((
+                            authn_user::id.eq(id),
+                            authn_user::identity_id.eq(&user.identity),
+                            authn_user::name.eq(&user.name),
+                        ))
+                        .execute(conn.write().await.deref_mut())
+                        .await?;
 
-                        Ok(User {
-                            id,
-                            info: user.clone(),
-                        })
-                    }
+                    Ok(User {
+                        id,
+                        info: user.clone(),
+                    })
                 }
             }
-            .scope_boxed()
         })
         .await
     }
@@ -169,39 +165,36 @@ impl StorageDriver for PgAuthDriver {
     #[tracing::instrument(skip_all, fields(%group), ret(level = Level::DEBUG), err)]
     async fn ensure_group(&self, group: &GroupInfo) -> Result<i64, Self::Error> {
         let conn = self.pool.get().await?;
-        conn.transaction(|conn| {
-            async move {
-                let group_id = authn_group::table
-                    .select(authn_group::id)
-                    .filter(authn_group::name.eq(&group.name))
-                    .first::<i64>(conn.write().await.deref_mut())
-                    .await
-                    .optional()?;
-                match group_id {
-                    Some(group_id) => {
-                        tracing::debug!(group_id, "group already exists in db");
-                        Ok(group_id)
-                    }
+        conn.transaction(async move |conn| {
+            let group_id = authn_group::table
+                .select(authn_group::id)
+                .filter(authn_group::name.eq(&group.name))
+                .first::<i64>(conn.write().await.deref_mut())
+                .await
+                .optional()?;
+            match group_id {
+                Some(group_id) => {
+                    tracing::debug!(group_id, "group already exists in db");
+                    Ok(group_id)
+                }
 
-                    None => {
-                        tracing::info!("registering new group in db");
+                None => {
+                    tracing::info!("registering new group in db");
 
-                        let id: i64 = dsl::insert_into(authn_subject::table)
-                            .default_values()
-                            .returning(authn_subject::id)
-                            .get_result(&mut conn.clone().write().await)
-                            .await?;
+                    let id: i64 = dsl::insert_into(authn_subject::table)
+                        .default_values()
+                        .returning(authn_subject::id)
+                        .get_result(&mut conn.clone().write().await)
+                        .await?;
 
-                        dsl::insert_into(authn_group::table)
-                            .values((authn_group::id.eq(id), authn_group::name.eq(&group.name)))
-                            .execute(conn.write().await.deref_mut())
-                            .await?;
+                    dsl::insert_into(authn_group::table)
+                        .values((authn_group::id.eq(id), authn_group::name.eq(&group.name)))
+                        .execute(conn.write().await.deref_mut())
+                        .await?;
 
-                        Ok(id)
-                    }
+                    Ok(id)
                 }
             }
-            .scope_boxed()
         })
         .await
     }

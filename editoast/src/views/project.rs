@@ -9,7 +9,6 @@ use axum::response::IntoResponse;
 use chrono::Utc;
 use database::DbConnection;
 use database::DbConnectionPoolV2;
-use diesel_async::scoped_futures::ScopedFutureExt as _;
 use editoast_derive::EditoastError;
 use editoast_models::prelude::*;
 use serde::Deserialize;
@@ -285,16 +284,13 @@ pub(in crate::views) async fn delete(
     db_pool
         .get()
         .await?
-        .transaction(|mut conn| {
-            async move {
-                let project = Project::retrieve_or_fail(conn.clone(), project_id, || {
-                    ProjectError::NotFound { project_id }
-                })
-                .await?;
-                project.delete_and_prune_document(&mut conn).await?;
-                Ok::<_, ProjectError>(())
-            }
-            .scope_boxed()
+        .transaction(async move |mut conn| {
+            let project = Project::retrieve_or_fail(conn.clone(), project_id, || {
+                ProjectError::NotFound { project_id }
+            })
+            .await?;
+            project.delete_and_prune_document(&mut conn).await?;
+            Ok::<_, ProjectError>(())
         })
         .await?;
 
@@ -384,25 +380,25 @@ pub(in crate::views) async fn patch(
     };
     let project_changeset = form.into_changeset();
 
-    let project =
-        Project::transactional_content_update(conn.clone(), project_id, |mut conn, project| {
-            async move {
-                let mut project = project_changeset
-                    .update_or_fail(&mut conn, project.id, || ProjectError::NotFound {
-                        project_id: project.id,
-                    })
+    let project = Project::transactional_content_update(
+        conn.clone(),
+        project_id,
+        async move |mut conn, project| {
+            let mut project = project_changeset
+                .update_or_fail(&mut conn, project.id, || ProjectError::NotFound {
+                    project_id: project.id,
+                })
+                .await?;
+            if let Some(new_doc_id) = update_image {
+                project
+                    .update_and_prune_document(&mut conn, new_doc_id)
                     .await?;
-                if let Some(new_doc_id) = update_image {
-                    project
-                        .update_and_prune_document(&mut conn, new_doc_id)
-                        .await?;
-                }
-                Ok::<_, ProjectError>(project)
             }
-            .scope_boxed()
-        })
-        .await
-        .map_err(ProjectError::from)??;
+            Ok::<_, ProjectError>(project)
+        },
+    )
+    .await
+    .map_err(ProjectError::from)??;
 
     Ok(Json(
         ProjectWithStudyCount::try_fetch(&mut conn, project).await?,

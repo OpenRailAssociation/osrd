@@ -17,7 +17,6 @@ use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use database::DbConnection;
 use database::DbConnectionPoolV2;
-use diesel_async::scoped_futures::ScopedFutureExt as _;
 use editoast_derive::EditoastError;
 use image::DynamicImage;
 use image::GenericImage;
@@ -341,34 +340,31 @@ pub(in crate::views) async fn update(
     let new_rolling_stock = db_pool
         .get()
         .await?
-        .transaction::<_, InternalError, _>(|conn| {
-            async move {
-                let previous_rolling_stock =
-                    RollingStock::retrieve_or_fail(conn.clone(), rolling_stock_id, || {
-                        RollingStockError::KeyNotFound {
-                            rolling_stock_key: RollingStockKey::Id(rolling_stock_id),
-                        }
-                    })
-                    .await?;
-                assert_rolling_stock_unlocked(&previous_rolling_stock)?;
+        .transaction::<_, InternalError, _, _>(async move |conn| {
+            let previous_rolling_stock =
+                RollingStock::retrieve_or_fail(conn.clone(), rolling_stock_id, || {
+                    RollingStockError::KeyNotFound {
+                        rolling_stock_key: RollingStockKey::Id(rolling_stock_id),
+                    }
+                })
+                .await?;
+            assert_rolling_stock_unlocked(&previous_rolling_stock)?;
 
-                if rolling_stock_form != previous_rolling_stock.clone().into() {
-                    let mut rolling_stock_changeset: Changeset<RollingStock> =
-                        rolling_stock_form.clone().into();
-                    rolling_stock_changeset.version = Some(&previous_rolling_stock.version + 1);
-                    let new_rolling_stock = rolling_stock_changeset
-                        .update(&mut conn.clone(), rolling_stock_id)
-                        .await
-                        .map_err(RollingStockError::from)?
-                        .ok_or(RollingStockError::KeyNotFound {
-                            rolling_stock_key: RollingStockKey::Id(rolling_stock_id),
-                        })?;
-                    Ok(new_rolling_stock)
-                } else {
-                    Ok(previous_rolling_stock)
-                }
+            if rolling_stock_form != previous_rolling_stock.clone().into() {
+                let mut rolling_stock_changeset: Changeset<RollingStock> =
+                    rolling_stock_form.clone().into();
+                rolling_stock_changeset.version = Some(&previous_rolling_stock.version + 1);
+                let new_rolling_stock = rolling_stock_changeset
+                    .update(&mut conn.clone(), rolling_stock_id)
+                    .await
+                    .map_err(RollingStockError::from)?
+                    .ok_or(RollingStockError::KeyNotFound {
+                        rolling_stock_key: RollingStockKey::Id(rolling_stock_id),
+                    })?;
+                Ok(new_rolling_stock)
+            } else {
+                Ok(previous_rolling_stock)
             }
-            .scope_boxed()
         })
         .await?;
 
