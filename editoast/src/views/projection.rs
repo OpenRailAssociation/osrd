@@ -570,10 +570,8 @@ impl OperationalPointProjection {
             .map(|op_ref| {
                 path_item_cache
                     .get_op_ref_id(&op_ref)
-                    .map_or(op_ref, |op_id| {
-                        OperationalPointIdentifier::OperationalPointId {
-                            operational_point: op_id.into(),
-                        }
+                    .map_or(op_ref, |op_id| OperationalPointIdentifier::Id {
+                        operational_point: op_id.into(),
                     })
             })
             .collect::<Vec<_>>();
@@ -597,11 +595,12 @@ impl OperationalPointProjection {
         op_ref: &OperationalPointIdentifier,
         path_item_cache: &PathItemCache,
     ) -> Option<u64> {
-        let op_id = path_item_cache.get_op_ref_id(op_ref).map(|op_id| {
-            OperationalPointIdentifier::OperationalPointId {
-                operational_point: op_id.into(),
-            }
-        });
+        let op_id =
+            path_item_cache
+                .get_op_ref_id(op_ref)
+                .map(|op_id| OperationalPointIdentifier::Id {
+                    operational_point: op_id.into(),
+                });
 
         if let Some(op_id) = op_id {
             self.0.get(&op_id).copied()
@@ -944,7 +943,7 @@ mod tests {
     }
 
     fn create_path_item_from_trigram(trigram: &str) -> OperationalPointIdentifier {
-        OperationalPointIdentifier::OperationalPointDescription {
+        OperationalPointIdentifier::Trigram {
             trigram: trigram.into(),
             secondary_code: None,
         }
@@ -977,7 +976,7 @@ mod tests {
             OperationalPointRefAndTime {
                 arrival_time: 0,
                 stop_for: 0,
-                op_ref: OperationalPointIdentifier::OperationalPointId {
+                op_ref: OperationalPointIdentifier::Id {
                     operational_point: Identifier::default(),
                 },
             }
