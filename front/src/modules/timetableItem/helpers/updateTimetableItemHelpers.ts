@@ -4,7 +4,6 @@ import type {
   PacedTrainWithPacedTrainId,
   TimetableItemId,
   TimetableItem,
-  TrainScheduleId,
 } from 'reducers/osrdconf/types';
 import {
   unsetTrainIdsMatching,
@@ -13,7 +12,6 @@ import {
 import type { AppDispatch } from 'store';
 import {
   extractEditoastIdFromPacedTrainId,
-  extractEditoastIdFromTrainScheduleId,
   formatEditoastIdToPacedTrainId,
   isPacedTrainId,
   isTrainScheduleId,
@@ -36,15 +34,7 @@ export async function fetchTimetableItem(
     ).unwrap();
     return { ...pacedTrain, id: timetableItemId };
   }
-  const trainSchedule = await dispatch(
-    osrdEditoastApi.endpoints.getTrainScheduleById.initiate(
-      {
-        id: extractEditoastIdFromTrainScheduleId(timetableItemId),
-      },
-      { subscribe: false }
-    )
-  ).unwrap();
-  return { ...trainSchedule, id: timetableItemId };
+  throw new Error('TrainSchedules are not handled anymore.');
 }
 
 export async function createPacedTrain(
@@ -66,15 +56,6 @@ async function updatePacedTrain(dispatch: AppDispatch, id: PacedTrainId, pacedTr
     osrdEditoastApi.endpoints.putPacedTrainById.initiate({
       id: extractEditoastIdFromPacedTrainId(id),
       body: pacedTrain,
-    })
-  ).unwrap();
-}
-
-export async function deleteTrainSchedules(dispatch: AppDispatch, ids: TrainScheduleId[]) {
-  ids.forEach((id) => dispatch(unsetTrainIdsMatching(id)));
-  await dispatch(
-    osrdEditoastApi.endpoints.deleteTrainSchedule.initiate({
-      body: { ids: ids.map((id) => extractEditoastIdFromTrainScheduleId(id)) },
     })
   ).unwrap();
 }

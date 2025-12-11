@@ -3,7 +3,6 @@ import { isNil, sortBy } from 'lodash';
 import type { TimetableItem, TimetableItemId, TrainId } from 'reducers/osrdconf/types';
 import {
   extractEditoastIdFromPacedTrainId,
-  extractEditoastIdFromTrainScheduleId,
   extractPacedTrainIdFromOccurrenceId,
   isOccurrenceId,
   isTrainScheduleId,
@@ -60,15 +59,7 @@ const osrdEditoastApi = generatedEditoastApi
         queryFn: async ({ id: timetableItemId }, { dispatch }) => {
           let data: TimetableItem;
           if (isTrainScheduleId(timetableItemId)) {
-            const trainSchedule = await dispatch(
-              generatedEditoastApi.endpoints.getTrainScheduleById.initiate(
-                {
-                  id: extractEditoastIdFromTrainScheduleId(timetableItemId),
-                },
-                { subscribe: false }
-              )
-            ).unwrap();
-            data = { ...trainSchedule, id: timetableItemId };
+            throw new Error('TrainSchedules are not handled anymore.');
           } else {
             const pacedTrain = await dispatch(
               generatedEditoastApi.endpoints.getPacedTrainById.initiate(
@@ -94,15 +85,7 @@ const osrdEditoastApi = generatedEditoastApi
         queryFn: async ({ id: trainId, infraId, exceptionKey }, { dispatch }) => {
           let path: PathfindingResult;
           if (isTrainScheduleId(trainId)) {
-            path = await dispatch(
-              generatedEditoastApi.endpoints.getTrainScheduleByIdPath.initiate(
-                {
-                  id: extractEditoastIdFromTrainScheduleId(trainId),
-                  infraId,
-                },
-                { subscribe: false }
-              )
-            ).unwrap();
+            throw new Error('TrainSchedules are not handled anymore.');
           } else {
             const pacedTrainId = isOccurrenceId(trainId)
               ? extractPacedTrainIdFromOccurrenceId(trainId)
@@ -135,16 +118,7 @@ const osrdEditoastApi = generatedEditoastApi
         ) => {
           let simulation: SimulationResponse;
           if (isTrainScheduleId(trainId)) {
-            simulation = await dispatch(
-              generatedEditoastApi.endpoints.getTrainScheduleByIdSimulation.initiate(
-                {
-                  id: extractEditoastIdFromTrainScheduleId(trainId),
-                  infraId,
-                  electricalProfileSetId,
-                },
-                { subscribe: false }
-              )
-            ).unwrap();
+            throw new Error('TrainSchedules are not handled anymore.');
           } else {
             const pacedTrainId = isOccurrenceId(trainId)
               ? extractPacedTrainIdFromOccurrenceId(trainId)
@@ -177,16 +151,7 @@ const osrdEditoastApi = generatedEditoastApi
         ) => {
           let etcsBrakingCurves: CoreEtcsBrakingCurvesResponse;
           if (isTrainScheduleId(trainId)) {
-            etcsBrakingCurves = await dispatch(
-              generatedEditoastApi.endpoints.getTrainScheduleByIdEtcsBrakingCurves.initiate(
-                {
-                  id: extractEditoastIdFromTrainScheduleId(trainId),
-                  infraId,
-                  electricalProfileSetId,
-                },
-                { subscribe: false }
-              )
-            ).unwrap();
+            throw new Error('TrainSchedules are not handled anymore.');
           } else {
             const pacedTrainId = isOccurrenceId(trainId)
               ? extractPacedTrainIdFromOccurrenceId(trainId)
@@ -291,11 +256,9 @@ const osrdEditoastApi = generatedEditoastApi
       getSpritesSignalingSystems: {
         transformResponse: (response: GetSpritesSignalingSystemsApiResponse) => response.sort(),
       },
-      // As we always use all get trainSchedule/pacedTrain endpoints after updating the timetable,
-      // we don't want to invalidate the train_schedule/paced_train tags here to prevent multiple calls
-      deleteTrainSchedule: {
-        invalidatesTags: ['timetable', 'scenarios'],
-      },
+      // As we always use all get pacedTrain endpoints after updating the timetable,
+      // we don't want to invalidate the paced_train tags here to prevent multiple calls
+
       deletePacedTrain: {
         invalidatesTags: ['timetable', 'scenarios'],
       },

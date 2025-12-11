@@ -48,33 +48,18 @@ const formatTimetableItemWithDetails = (
 
 /** Format the timetable items with their simulation summaries */
 const formatTimetableItemSummaries = (
-  rawTrainScheduleSummaries: Map<TrainScheduleId, SimulationSummaryResult>,
   rawPacedTrainSummaries: Map<PacedTrainId, PacedTrainSimulationSummaryResult>,
   rawTimetableItems: Map<TimetableItemId, TimetableItem>,
   rollingStocks: LightRollingStockWithLiveries[]
 ): Map<TimetableItemId, TimetableItemWithDetails> => {
-  const items: TimetableItemWithDetails[] = [];
-
-  // train schedules
-  [...rawTrainScheduleSummaries].forEach(([id, summary]) => {
-    const trainScheduleWithDetails = formatTimetableItemWithDetails(
-      { timetableItemId: id, summary },
-      rawTimetableItems,
-      rollingStocks
-    );
-    items.push(trainScheduleWithDetails);
-  });
-
-  // paced trains
-  [...rawPacedTrainSummaries].forEach(([id, pacedTrainSummary]) => {
-    const pacedTrainWithDetails = formatTimetableItemWithDetails(
-      { timetableItemId: id, summary: pacedTrainSummary },
-      rawTimetableItems,
-      rollingStocks
-    );
-    items.push(pacedTrainWithDetails);
-  });
-
+  const items: TimetableItemWithDetails[] = [...rawPacedTrainSummaries].map(
+    ([id, pacedTrainSummary]) =>
+      formatTimetableItemWithDetails(
+        { timetableItemId: id, summary: pacedTrainSummary },
+        rawTimetableItems,
+        rollingStocks
+      )
+  );
   return mapBy(items, 'id');
 };
 

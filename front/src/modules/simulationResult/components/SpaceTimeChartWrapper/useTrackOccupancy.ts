@@ -13,18 +13,11 @@ import {
 } from 'common/api/osrdEditoastApi';
 import computeOccurrenceName from 'modules/timetableItem/helpers/computeOccurrenceName';
 import { computeIndexedOccurrenceStartTime } from 'modules/timetableItem/helpers/pacedTrain';
-import type {
-  PacedTrainId,
-  TimetableItemId,
-  TrainId,
-  TrainScheduleId,
-} from 'reducers/osrdconf/types';
+import type { PacedTrainId, TimetableItemId, TrainId } from 'reducers/osrdconf/types';
 import {
   extractEditoastIdFromPacedTrainId,
-  extractEditoastIdFromTrainScheduleId,
   extractPacedTrainIdFromOccurrenceId,
   formatEditoastIdToPacedTrainId,
-  formatEditoastIdToTrainScheduleId,
   formatPacedTrainIdToExceptionId,
   formatPacedTrainIdToIndexedOccurrenceId,
   isOccurrenceId,
@@ -123,12 +116,12 @@ const useTrackOccupancy = ({
     () => keyBy(pathOperationalPoints, 'waypointId'),
     [pathOperationalPoints]
   );
-  const [postTrainScheduleTrackOccupancy] =
-    osrdEditoastApi.endpoints.postTrainScheduleTrackOccupancy.useMutation();
+
   const [postPacedTrainTrackOccupancy] =
     osrdEditoastApi.endpoints.postPacedTrainTrackOccupancy.useMutation();
   const [postInfraByInfraIdMatchOperationalPoints] =
     osrdEditoastApi.endpoints.postInfraByInfraIdMatchOperationalPoints.useLazyQuery();
+
   const timetableItemsById: Map<TimetableItemId, OccupancyTrainSpaceTimeData> = useMemo(
     () => new Map(timetableItemProjections.map((item) => [item.id, item])),
     [timetableItemProjections]
@@ -178,21 +171,10 @@ const useTrackOccupancy = ({
     ): Promise<MovableOccupancyZone[]> => {
       if (!opId) return [];
 
-      const trainScheduleIds: TrainScheduleId[] = [];
       const pacedTrainIds: PacedTrainId[] = [];
       for (const id of Object.keys(trainsCollection)) {
-        if (isTrainScheduleId(id)) trainScheduleIds.push(id);
-        else if (isPacedTrainId(id)) pacedTrainIds.push(id);
+        if (isPacedTrainId(id)) pacedTrainIds.push(id);
       }
-
-      const bodyForTrainSchedules =
-        trainScheduleIds.length > 0
-          ? {
-              operational_point_id: opId,
-              infra_id: infraId,
-              train_schedule_ids: trainScheduleIds.map(extractEditoastIdFromTrainScheduleId),
-            }
-          : null;
 
       const bodyForPaced =
         pacedTrainIds.length > 0
@@ -203,37 +185,11 @@ const useTrackOccupancy = ({
             }
           : null;
 
-      const [trainScheduleResp, pacedResp] = await Promise.all([
-        bodyForTrainSchedules
-          ? postTrainScheduleTrackOccupancy({ body: bodyForTrainSchedules })
-          : Promise.resolve(undefined),
-        bodyForPaced
-          ? postPacedTrainTrackOccupancy({ body: bodyForPaced })
-          : Promise.resolve(undefined),
-      ]);
+      const pacedResp = await (bodyForPaced
+        ? postPacedTrainTrackOccupancy({ body: bodyForPaced })
+        : Promise.resolve(undefined));
 
       const zones: MovableOccupancyZone[] = [];
-
-      if (trainScheduleResp?.data) {
-        for (const [trackId, occupations] of Object.entries(trainScheduleResp.data)) {
-          for (const occupation of occupations) {
-            const trainId = formatEditoastIdToTrainScheduleId(occupation.train_schedule_id);
-            const train = trainsCollection[trainId];
-            if (!train) continue;
-
-            zones.push(
-              getMovableOccupancyZone(
-                trackId,
-                trainId,
-                occupation,
-                train.spaceTimeCurves,
-                train.name,
-                train.departureTime
-              )
-            );
-          }
-        }
-      }
 
       if (pacedResp?.data) {
         for (const [trackId, occupations] of Object.entries(pacedResp.data)) {
@@ -314,7 +270,7 @@ const useTrackOccupancy = ({
 
       return zones;
     },
-    [infraId, postTrainScheduleTrackOccupancy, postPacedTrainTrackOccupancy]
+    [infraId, postPacedTrainTrackOccupancy]
   );
 
   const deployedWaypoints = useMemo(() => {

@@ -24,7 +24,6 @@ import { useAppDispatch } from 'store';
 import { formatUicToCi } from 'utils/strings';
 import {
   extractEditoastIdFromPacedTrainId,
-  extractEditoastIdFromTrainScheduleId,
   extractPacedTrainIdFromOccurrenceId,
   isOccurrenceId,
   isPacedTrainId,
@@ -113,12 +112,11 @@ const usePathProjection = (
   const projectionType = useSelector(getProjectionType);
   const dispatch = useAppDispatch();
 
-  let rawTrainScheduleId: number | undefined;
   let rawPacedTrainId: number | undefined;
   let exceptionKey: string | undefined;
   if (trainIdUsedForProjection) {
     if (isTrainScheduleId(trainIdUsedForProjection)) {
-      rawTrainScheduleId = extractEditoastIdFromTrainScheduleId(trainIdUsedForProjection);
+      throw new Error('TrainSchedules are not handled anymore.');
     } else if (isPacedTrainId(trainIdUsedForProjection)) {
       rawPacedTrainId = extractEditoastIdFromPacedTrainId(trainIdUsedForProjection);
     } else {
@@ -131,17 +129,12 @@ const usePathProjection = (
     }
   }
 
-  const scheduleArg = rawTrainScheduleId ? { id: rawTrainScheduleId, infraId } : skipToken;
   const pacedArg = rawPacedTrainId ? { id: rawPacedTrainId, infraId, exceptionKey } : skipToken;
   const basePacedArg = exceptionKey ? { id: rawPacedTrainId!, infraId } : skipToken;
 
-  const { data: schedulePath } =
-    osrdEditoastApi.endpoints.getTrainScheduleByIdPath.useQuery(scheduleArg);
-  const { data: pacedPath } = osrdEditoastApi.endpoints.getPacedTrainByIdPath.useQuery(pacedArg);
+  const { data: pathfinding } = osrdEditoastApi.endpoints.getPacedTrainByIdPath.useQuery(pacedArg);
   const { currentData: basePacedPath } =
     osrdEditoastApi.endpoints.getPacedTrainByIdPath.useQuery(basePacedArg);
-
-  const pathfinding = rawTrainScheduleId ? schedulePath : pacedPath;
 
   const { data: pathProperties } =
     osrdEditoastApi.endpoints.postInfraByInfraIdPathProperties.useQuery(
@@ -153,7 +146,7 @@ const usePathProjection = (
         : skipToken
     );
 
-  const projectingOnSimulatedPathException = pathfindingResultsDiffer(basePacedPath, pacedPath);
+  const projectingOnSimulatedPathException = pathfindingResultsDiffer(basePacedPath, pathfinding);
 
   const pathUsedForProjection = useMemo(() => {
     if (!trainIdUsedForProjection) return undefined;

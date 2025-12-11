@@ -3,16 +3,10 @@ import { useRef, useEffect, useCallback, useState } from 'react';
 import type {
   LightRollingStockWithLiveries,
   PacedTrainSimulationSummaryResult,
-  SimulationSummaryResult,
 } from 'common/api/osrdEditoastApi';
 import formatTimetableItemSummaries from 'modules/simulationResult/helpers/formatTimetableItemSummaries';
 import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
-import type {
-  TimetableItemId,
-  TimetableItem,
-  TrainScheduleId,
-  PacedTrainId,
-} from 'reducers/osrdconf/types';
+import type { TimetableItemId, TimetableItem, PacedTrainId } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 
 import TrainSimulationLazyLoader from '../helpers/TrainSimulationLazyLoader';
@@ -62,12 +56,8 @@ export default function useLazySimulateTrains({
       dispatch,
       infraId,
       electricalProfileSetId,
-      onProgress: (
-        trainScheduleSummaries: Map<TrainScheduleId, SimulationSummaryResult>,
-        pacedTrainSummaries: Map<PacedTrainId, PacedTrainSimulationSummaryResult>
-      ) => {
+      onProgress: (pacedTrainSummaries: Map<PacedTrainId, PacedTrainSimulationSummaryResult>) => {
         const summaries = formatTimetableItemSummaries(
-          trainScheduleSummaries,
           pacedTrainSummaries,
           timetableItemsByIdRef.current,
           rollingStocks

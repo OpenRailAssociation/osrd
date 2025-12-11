@@ -30,9 +30,9 @@ import { timeToLocaleStringRounded, useDateTimeLocale } from 'utils/date';
 import { addDurationToDate, Duration } from 'utils/duration';
 import { castErrorToFailure } from 'utils/error';
 import {
-  isTrainScheduleId,
   extractEditoastIdFromPacedTrainId,
   formatEditoastIdToPacedTrainId,
+  isTrainScheduleId,
 } from 'utils/trainId';
 
 import ArrivalTimeLoader from './ArrivalTimeLoader';
