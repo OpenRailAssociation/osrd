@@ -183,12 +183,12 @@
                 },
                 "type": {
                     "const": "BufferStop",
+                    "default": "BufferStop",
                     "title": "Type",
                     "type": "string"
                 }
             },
             "required": [
-                "type",
                 "id"
             ],
             "title": "BufferStopReference",
@@ -323,12 +323,12 @@
                 },
                 "type": {
                     "const": "Detector",
+                    "default": "Detector",
                     "title": "Type",
                     "type": "string"
                 }
             },
             "required": [
-                "type",
                 "id"
             ],
             "title": "DetectorReference",
