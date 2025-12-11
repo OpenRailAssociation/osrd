@@ -1,9 +1,9 @@
 use std::sync::Arc;
 
-use crate::models::PgAuthDriver;
 use crate::views;
 use clap::Args;
 use database::DbConnectionPoolV2;
+use editoast_models::PgAuthDriver;
 use fga::client::DEFAULT_OPENFGA_MAX_CHECKS_PER_BATCH_CHECK;
 use fga::client::DEFAULT_OPENFGA_MAX_TUPLES_PER_WRITE;
 use url::Url;

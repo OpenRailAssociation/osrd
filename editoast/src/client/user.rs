@@ -11,7 +11,7 @@ use futures::future::try_join_all;
 use std::collections::HashSet;
 use std::sync::Arc;
 
-use crate::models::PgAuthDriver;
+use editoast_models::PgAuthDriver;
 
 use super::openfga_config::OpenfgaConfig;
 

@@ -1514,6 +1514,7 @@ dependencies = [
 name = "editoast_models"
 version = "0.1.0"
 dependencies = [
+ "authz",
  "chrono",
  "common",
  "database",
@@ -1523,6 +1524,7 @@ dependencies = [
  "diesel_json",
  "editoast_derive",
  "editoast_models",
+ "fga",
  "futures 0.3.31",
  "futures-util",
  "geos",

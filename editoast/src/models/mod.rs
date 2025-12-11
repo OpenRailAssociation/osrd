@@ -6,9 +6,6 @@ pub mod infra_objects;
 pub mod macro_node;
 pub mod macro_note;
 
-mod auth_driver;
-pub use auth_driver::PgAuthDriver;
-
 pub mod catalogue_entry;
 pub mod paced_train;
 pub mod railjson;

@@ -11,7 +11,6 @@ use database::DbConnectionPoolV2;
 use diesel::dsl;
 use diesel::prelude::*;
 use diesel_async::RunQueryDsl;
-use editoast_models::prelude::*;
 
 use database::tables::*;
 use futures::StreamExt;
@@ -21,7 +20,7 @@ use tracing::Level;
 pub enum AuthDriverError {
     #[error(transparent)]
     #[from(database::DatabaseError)]
-    Database(#[from] editoast_models::Error),
+    Database(#[from] crate::Error),
     #[error(transparent)]
     DatabaseUnavailable(#[from] database::db_connection_pool::DatabasePoolError),
     #[error("Subject with id {subject_id} not found")]
