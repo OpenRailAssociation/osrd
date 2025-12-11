@@ -1,6 +1,7 @@
 use super::BufferStop;
 use super::Detector;
 use super::Electrification;
+use super::LevelCrossing;
 use super::NeutralSection;
 use super::OperationalPoint;
 use super::Route;
@@ -27,6 +28,7 @@ pub enum InfraObject {
     Route { railjson: Route },
     OperationalPoint { railjson: OperationalPoint },
     Electrification { railjson: Electrification },
+    LevelCrossing { railjson: LevelCrossing },
 }
 
 impl InfraObject {
@@ -43,6 +45,7 @@ impl InfraObject {
             InfraObject::Route { railjson: obj } => obj,
             InfraObject::OperationalPoint { railjson: obj } => obj,
             InfraObject::Electrification { railjson: obj } => obj,
+            InfraObject::LevelCrossing { railjson: obj } => obj,
         }
     }
 
@@ -59,6 +62,7 @@ impl InfraObject {
             InfraObject::Route { railjson: obj } => serde_json::to_value(obj),
             InfraObject::OperationalPoint { railjson: obj } => serde_json::to_value(obj),
             InfraObject::Electrification { railjson: obj } => serde_json::to_value(obj),
+            InfraObject::LevelCrossing { railjson: obj } => serde_json::to_value(obj),
         }
         .unwrap()
     }

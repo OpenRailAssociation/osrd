@@ -847,6 +847,7 @@ paths:
                   - Route
                   - OperationalPoint
                   - Electrification
+                  - LevelCrossing
   /infra/{infra_id}/auto_fixes:
     get:
       tags:
@@ -9559,6 +9560,17 @@ components:
             - Electrification
           railjson:
             $ref: '#/components/schemas/Electrification'
+      - type: object
+        required:
+        - railjson
+        - obj_type
+        properties:
+          obj_type:
+            type: string
+            enum:
+            - LevelCrossing
+          railjson:
+            $ref: '#/components/schemas/LevelCrossing'
     InfraObjectWithGeometry:
       type: object
       required:
@@ -9646,6 +9658,56 @@ components:
           type: array
           items:
             type: string
+    LevelCrossing:
+      type: object
+      required:
+      - id
+      - name
+      - short_zone_length
+      - parts
+      properties:
+        id:
+          type: string
+          maxLength: 255
+          minLength: 1
+        name:
+          type: string
+        parts:
+          type: array
+          items:
+            $ref: '#/components/schemas/LevelCrossingPart'
+        short_zone_length:
+          type: integer
+          format: int64
+          description: Short zone length in mm
+          minimum: 0
+      additionalProperties: false
+    LevelCrossingPart:
+      type: object
+      required:
+      - track
+      - position
+      - pedal_upstream
+      - pedal_downstream
+      properties:
+        pedal_downstream:
+          type: integer
+          format: int64
+          description: Offset in mm of the downstream pedal from the main position (downstream refers to the START_TO_STOP direction of the track)
+          minimum: 0
+        pedal_upstream:
+          type: integer
+          format: int64
+          description: Offset in mm of the upstream pedal from the main position (upstream refers to the START_TO_STOP direction of the track)
+          minimum: 0
+        position:
+          type: number
+          format: double
+        track:
+          type: string
+          maxLength: 255
+          minLength: 1
+      additionalProperties: false
     LevelValues:
       type: array
       items:
@@ -10154,6 +10216,7 @@ components:
       - Route
       - OperationalPoint
       - Electrification
+      - LevelCrossing
     OccupancyBlockForm:
       type: object
       required:

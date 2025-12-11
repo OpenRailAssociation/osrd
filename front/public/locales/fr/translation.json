@@ -170,6 +170,7 @@
       "BufferStop": "Heurtoir",
       "Detector": "Détecteur",
       "Electrification": "Électrification",
+      "LevelCrossing": "Passage à niveau",
       "Route": "Itinéraire",
       "Signal": "Signal",
       "SpeedSection": "Vitesse limite",

@@ -32,4 +32,5 @@ pub enum ObjectType {
     Route,
     OperationalPoint,
     Electrification,
+    LevelCrossing,
 }
