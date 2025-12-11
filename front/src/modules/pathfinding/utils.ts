@@ -49,10 +49,10 @@ export const matchPathStepAndOp = (
   if ('track' in step) {
     return step.track === op.track && step.offset === op.offsetOnTrack;
   }
-  if ('operational_point' in step.operational_point) {
+  if (step.operational_point.type === 'id') {
     return step.operational_point.operational_point === op.opId;
   }
-  if ('uic' in step.operational_point) {
+  if (step.operational_point.type === 'uic') {
     return step.operational_point.uic === op.uic && step.operational_point.secondary_code === op.ch;
   }
   return (

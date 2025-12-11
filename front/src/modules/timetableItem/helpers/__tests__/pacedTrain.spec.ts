@@ -49,8 +49,14 @@ describe('extractOccurrenceDetailsFromPacedTrain', () => {
     rolling_stock_name: '',
     start_time: '2024-10-15T03:00:00Z',
     path: [
-      { id: 'id227', location: { operational_point: { uic: 6, secondary_code: 'BV' } } },
-      { id: 'id228', location: { operational_point: { uic: 5, secondary_code: 'BV' } } },
+      {
+        id: 'id227',
+        location: { operational_point: { uic: 6, secondary_code: 'BV', type: 'uic' } },
+      },
+      {
+        id: 'id228',
+        location: { operational_point: { uic: 5, secondary_code: 'BV', type: 'uic' } },
+      },
     ],
     schedule: [
       {
@@ -114,11 +120,11 @@ describe('extractOccurrenceDetailsFromPacedTrain', () => {
         path: [
           {
             id: 'id225',
-            location: { operational_point: { uic: 6, secondary_code: 'BV' } },
+            location: { operational_point: { uic: 6, secondary_code: 'BV', type: 'uic' } },
           },
           {
             id: 'id228',
-            location: { operational_point: { uic: 5, secondary_code: 'BV' } },
+            location: { operational_point: { uic: 5, secondary_code: 'BV', type: 'uic' } },
           },
         ],
         schedule: [

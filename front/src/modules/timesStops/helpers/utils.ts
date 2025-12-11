@@ -36,7 +36,10 @@ const matchPathStepAndOpWithKP = (step: PathStep, op: SuggestedOP) => {
   // We match the kp in case two OPs have the same uic+ch (can happen when the
   // infra is imported)
   if ('operational_point' in step.location) {
-    if ('uic' in step.location.operational_point || 'trigram' in step.location.operational_point) {
+    if (
+      step.location.operational_point.type === 'uic' ||
+      step.location.operational_point.type === 'trigram'
+    ) {
       return step.kp === op.kp;
     }
     return true;

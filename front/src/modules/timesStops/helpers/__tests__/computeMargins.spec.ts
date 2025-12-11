@@ -13,6 +13,7 @@ describe('computeMargins', () => {
       location: {
         operational_point: {
           uic: 1,
+          type: 'uic',
         },
       },
     },
@@ -21,6 +22,7 @@ describe('computeMargins', () => {
       location: {
         operational_point: {
           uic: 2,
+          type: 'uic',
         },
       },
     },
@@ -29,6 +31,7 @@ describe('computeMargins', () => {
       location: {
         operational_point: {
           uic: 3,
+          type: 'uic',
         },
       },
     },
@@ -37,6 +40,7 @@ describe('computeMargins', () => {
       location: {
         operational_point: {
           uic: 4,
+          type: 'uic',
         },
       },
     },
@@ -45,6 +49,7 @@ describe('computeMargins', () => {
       location: {
         operational_point: {
           uic: 5,
+          type: 'uic',
         },
       },
     },

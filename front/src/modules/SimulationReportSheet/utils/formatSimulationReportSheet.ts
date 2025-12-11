@@ -307,7 +307,6 @@ export function getOperationalPointsWithTimes({
     .filter((op) => {
       // Keep if the OP is not in the exclusion list
       if (!op.opId || !opIdsToExclude.includes(op.opId)) return true;
-
       // Keep if explicitly requested by the user (origin, destination, via point or stop)
 
       const isRequestedPoint = simulationPathSteps.some(

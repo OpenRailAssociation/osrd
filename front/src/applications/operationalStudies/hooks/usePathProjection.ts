@@ -44,10 +44,9 @@ const getVirtualOpName = (
   totalCount: number,
   t: TFunction<'operational-studies'>
 ): string => {
-  if ('trigram' in opId && opId.trigram) return opId.trigram;
-  if ('uic' in opId && opId.uic) return opId.uic.toString();
-  if ('operational_point' in opId && opId.operational_point)
-    return t('main.operationalPointIdentifier');
+  if (opId.type === 'trigram') return opId.trigram;
+  if (opId.type === 'uic') return opId.uic.toString();
+  if (opId.type === 'id') return t('main.operationalPointIdentifier');
   if (index === 0) return t('main.requestedOrigin');
   if (index === totalCount - 1) return t('main.requestedDestination');
   return t('main.requestedPoint', { count: index + 1 });
@@ -75,14 +74,14 @@ const createVirtualOp = (
     extensions: {
       identifier: {
         name: virtualName,
-        uic: ('uic' in opId && opId.uic) || 0,
+        uic: opId.type === 'uic' ? opId.uic : 0,
       },
       sncf: {
-        ch: ('secondary_code' in opId && opId.secondary_code) || '',
+        ch: (opId.type !== 'id' && opId.secondary_code) || '',
         ch_long_label: '',
         ch_short_label: '',
-        ci: 'uic' in opId && opId.uic ? Number(formatUicToCi(opId.uic)) : 0,
-        trigram: ('trigram' in opId && opId.trigram) || '',
+        ci: opId.type === 'uic' ? Number(formatUicToCi(opId.uic)) : 0,
+        trigram: opId.type === 'trigram' ? opId.trigram : '',
       },
     },
     part: { track: '', position: 0 },
@@ -212,7 +211,9 @@ const usePathProjection = (
 
       const pathfindingOpRefs: OperationalPointReference[] = [];
       operationalPoints.forEach((op, index) => {
-        pathfindingOpRefs.push({ operational_point: { operational_point: op.id } });
+        pathfindingOpRefs.push({
+          operational_point: { operational_point: op.id, type: 'id' },
+        });
         if (index > 0) {
           operationalPointDistances.push(op.position - operationalPoints[index - 1].position);
         }

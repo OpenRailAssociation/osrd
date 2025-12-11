@@ -307,7 +307,7 @@ export const loadAndIndexNge = async (
           path_item_key: key,
           trigram:
             'operational_point' in pathItem.location &&
-            'trigram' in pathItem.location.operational_point
+            pathItem.location.operational_point.type === 'trigram'
               ? pathItem.location.operational_point.trigram
               : null,
           connection_time: 0,

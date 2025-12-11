@@ -41,6 +41,7 @@ export const extractMarkersInfo = (pathSteps: StdcmPathStep[]): MarkerInformatio
         operational_point: {
           trigram: step.operationalPoint.trigram,
           secondary_code: step.operationalPoint.secondaryCode,
+          type: 'trigram',
         },
       },
       coordinates: step.operationalPoint.coordinates,
@@ -114,6 +115,7 @@ export const stdcmPathStepToPathItemLocation = (
     operational_point: {
       uic: operationalPoint.uic,
       secondary_code: operationalPoint.secondaryCode,
+      type: 'uic',
     },
   };
 };

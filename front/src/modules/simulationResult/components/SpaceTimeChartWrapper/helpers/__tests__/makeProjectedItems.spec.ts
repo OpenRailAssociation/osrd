@@ -1,6 +1,7 @@
 import dayjs from 'dayjs';
 import { describe, expect, test } from 'vitest';
 
+import type { PacedTrainException } from 'common/api/osrdEditoastApi';
 import { type TrainSpaceTimeData } from 'modules/simulationResult/types';
 import type { PacedTrainId } from 'reducers/osrdconf/types';
 import { Duration } from 'utils/duration';
@@ -10,7 +11,7 @@ import makeProjectedItems from '../makeProjectedItems';
 describe('makeProjectedItems', () => {
   describe('paced train with indexed 2 occurrences, 2nd’s is a path exception', () => {
     const exceptionKey = '9f11f34a-8ece-42bc-ac3f-45a8ab19f5ec';
-    const exception = {
+    const exception: PacedTrainException = {
       key: exceptionKey,
       occurrence_index: 1,
       disabled: false,
@@ -25,6 +26,7 @@ describe('makeProjectedItems', () => {
               operational_point: {
                 uic: 11,
                 secondary_code: 'BV',
+                type: 'uic',
               },
             },
           },
@@ -34,6 +36,7 @@ describe('makeProjectedItems', () => {
               operational_point: {
                 uic: 12,
                 secondary_code: 'BV',
+                type: 'uic',
               },
             },
           },
@@ -113,7 +116,7 @@ describe('makeProjectedItems', () => {
       });
       expect(result[1]).toEqual({
         id: 'indexedoccurrence_2562_1',
-        name: exception.train_name.value,
+        name: exception.train_name!.value,
         departureTime: new Date('2025-07-09T06:30:00.000Z'),
         exception,
         ...exceptionProjection,
@@ -123,7 +126,7 @@ describe('makeProjectedItems', () => {
 
   describe('paced train with 1 ADDED path exception', () => {
     const exceptionKey = 'a057a742-ec2f-401e-adb1-558017f20d74';
-    const exception = {
+    const exception: PacedTrainException = {
       key: exceptionKey,
       path_and_schedule: {
         margins: {
@@ -137,6 +140,7 @@ describe('makeProjectedItems', () => {
               operational_point: {
                 uic: 11,
                 secondary_code: 'BV',
+                type: 'uic',
               },
             },
           },
@@ -146,6 +150,7 @@ describe('makeProjectedItems', () => {
               operational_point: {
                 uic: 14,
                 secondary_code: 'BV',
+                type: 'uic',
               },
             },
           },
@@ -230,8 +235,8 @@ describe('makeProjectedItems', () => {
       });
       expect(result[3]).toEqual({
         id: 'exception_2564_a057a742-ec2f-401e-adb1-558017f20d74',
-        name: exception.train_name.value,
-        departureTime: new Date(exception.start_time.value),
+        name: exception.train_name!.value,
+        departureTime: new Date(exception.start_time!.value),
         exception,
         ...exceptionProjection,
       });

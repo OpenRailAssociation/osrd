@@ -2225,6 +2225,7 @@ paths:
                       title: OperationalPointIdentifierId
                       required:
                       - operational_point
+                      - type
                       properties:
                         operational_point:
                           oneOf:
@@ -2232,10 +2233,15 @@ paths:
                             maxLength: 255
                             minLength: 1
                           description: The object id of an operational point
+                        type:
+                          type: string
+                          enum:
+                          - id
                     - type: object
                       title: OperationalPointIdentifierTrigram
                       required:
                       - trigram
+                      - type
                       properties:
                         secondary_code:
                           type:
@@ -2247,16 +2253,25 @@ paths:
                           - type: string
                             minLength: 1
                           description: The operational point trigram
+                        type:
+                          type: string
+                          enum:
+                          - trigram
                     - type: object
                       title: OperationalPointIdentifierUic
                       required:
                       - uic
+                      - type
                       properties:
                         secondary_code:
                           type:
                           - string
                           - 'null'
                           description: An optional secondary code to identify a more specific location
+                        type:
+                          type: string
+                          enum:
+                          - uic
                         uic:
                           type: integer
                           format: int32
@@ -4472,6 +4487,7 @@ paths:
                       title: OperationalPointIdentifierId
                       required:
                       - operational_point
+                      - type
                       properties:
                         operational_point:
                           oneOf:
@@ -4479,10 +4495,15 @@ paths:
                             maxLength: 255
                             minLength: 1
                           description: The object id of an operational point
+                        type:
+                          type: string
+                          enum:
+                          - id
                     - type: object
                       title: OperationalPointIdentifierTrigram
                       required:
                       - trigram
+                      - type
                       properties:
                         secondary_code:
                           type:
@@ -4494,16 +4515,25 @@ paths:
                           - type: string
                             minLength: 1
                           description: The operational point trigram
+                        type:
+                          type: string
+                          enum:
+                          - trigram
                     - type: object
                       title: OperationalPointIdentifierUic
                       required:
                       - uic
+                      - type
                       properties:
                         secondary_code:
                           type:
                           - string
                           - 'null'
                           description: An optional secondary code to identify a more specific location
+                        type:
+                          type: string
+                          enum:
+                          - uic
                         uic:
                           type: integer
                           format: int32
@@ -10599,6 +10629,7 @@ components:
         title: OperationalPointIdentifierId
         required:
         - operational_point
+        - type
         properties:
           operational_point:
             oneOf:
@@ -10606,10 +10637,15 @@ components:
               maxLength: 255
               minLength: 1
             description: The object id of an operational point
+          type:
+            type: string
+            enum:
+            - id
       - type: object
         title: OperationalPointIdentifierTrigram
         required:
         - trigram
+        - type
         properties:
           secondary_code:
             type:
@@ -10621,16 +10657,25 @@ components:
             - type: string
               minLength: 1
             description: The operational point trigram
+          type:
+            type: string
+            enum:
+            - trigram
       - type: object
         title: OperationalPointIdentifierUic
         required:
         - uic
+        - type
         properties:
           secondary_code:
             type:
             - string
             - 'null'
             description: An optional secondary code to identify a more specific location
+          type:
+            type: string
+            enum:
+            - uic
           uic:
             type: integer
             format: int32

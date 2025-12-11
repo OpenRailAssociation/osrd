@@ -332,7 +332,7 @@ export const trainScheduleTooFast: TrainScheduleWithTrainId = {
     {
       id: 'id935',
       location: {
-        operational_point: { uic: 4, secondary_code: 'BV' },
+        operational_point: { uic: 4, secondary_code: 'BV', type: 'uic' },
       },
     },
     {
@@ -392,19 +392,19 @@ export const trainScheduleTooFastOnInterval: TrainScheduleWithTrainId = {
     {
       id: 'idA',
       location: {
-        operational_point: { uic: 87700000, secondary_code: 'BV' },
+        operational_point: { uic: 87700000, secondary_code: 'BV', type: 'uic' },
       },
     },
     {
       id: 'idB',
       location: {
-        operational_point: { uic: 87700001, secondary_code: 'BV' },
+        operational_point: { uic: 87700001, secondary_code: 'BV', type: 'uic' },
       },
     },
     {
       id: 'idC',
       location: {
-        operational_point: { uic: 87700002, secondary_code: 'BV' },
+        operational_point: { uic: 87700002, secondary_code: 'BV', type: 'uic' },
       },
     },
   ],
@@ -469,7 +469,7 @@ export const trainScheduleNotHonored: TrainScheduleWithTrainId = {
     {
       id: 'id584',
       location: {
-        operational_point: { uic: 4, secondary_code: 'BV' },
+        operational_point: { uic: 4, secondary_code: 'BV', type: 'uic' },
       },
     },
     {

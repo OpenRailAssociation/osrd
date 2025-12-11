@@ -80,11 +80,10 @@ export function upsertMapWaypointsInOperationalPoints(
         return operationalPointsWithAllWaypoints;
       }
 
-      if ('uic' in location.operational_point) {
+      if (location.operational_point.type === 'uic') {
         const matchedIndex = operationalPointsWithAllWaypoints.findIndex(
           (op) =>
-            'uic' in location.operational_point &&
-            'secondary_code' in location.operational_point &&
+            location.operational_point.type === 'uic' &&
             location.operational_point.uic === op.extensions?.identifier?.uic &&
             location.operational_point.secondary_code === op.extensions?.sncf?.ch
         );

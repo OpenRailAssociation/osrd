@@ -140,6 +140,7 @@ const AddPathStepPopup = ({
           operational_point: {
             secondary_code: operationalPoint.extensions!.sncf!.ch,
             uic: operationalPoint.extensions!.identifier!.uic,
+            type: 'uic',
           },
         },
         tracks: trackPartCoordinates,

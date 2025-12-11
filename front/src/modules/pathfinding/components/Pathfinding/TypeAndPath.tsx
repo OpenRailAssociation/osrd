@@ -8,6 +8,7 @@ import { v4 as uuidV4 } from 'uuid';
 
 import { useManageTimetableItemContext } from 'applications/operationalStudies/hooks/useManageTimetableItemContext';
 import type {
+  PathItem,
   PostSearchApiArg,
   SearchResultItemOperationalPoint,
 } from 'common/api/osrdEditoastApi';
@@ -158,7 +159,7 @@ const TypeAndPath = ({ setDisplayTypeAndPath, rollingStockId }: TypeAndPathProps
 
   const handleSubmit = async () => {
     if (infraId && rollingStockId && opList.length > 0) {
-      const pathSteps = opList
+      const pathSteps: PathItem[] = opList
         .filter((op) => op.trigram !== '')
         .map(({ uic, ch }) => ({
           id: uuidV4(),
@@ -166,6 +167,7 @@ const TypeAndPath = ({ setDisplayTypeAndPath, rollingStockId }: TypeAndPathProps
             operational_point: {
               uic,
               secondary_code: ch,
+              type: 'uic',
             },
           },
         }));

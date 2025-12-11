@@ -18,6 +18,7 @@ uv run python generate_railway_interface_management_models.py \
         --output-model-type pydantic_v2.BaseModel \
         --use-default \
         --set-default-enum-member \
+        --enum-field-as-literal one \
         --use-annotated \
         --use-double-quotes \
         --keep-model-order

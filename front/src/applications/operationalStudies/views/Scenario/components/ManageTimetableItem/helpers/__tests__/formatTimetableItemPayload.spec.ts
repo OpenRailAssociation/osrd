@@ -35,7 +35,7 @@ describe('formatTimetableItemPayload', () => {
       {
         id: '0-0',
         location: {
-          operational_point: { uic: 2, secondary_code: 'BV', trigram: 'WS' },
+          operational_point: { trigram: 'WS', secondary_code: 'BV', type: 'trigram' },
           track_reference: null,
         },
         name: 'West_station',
@@ -48,7 +48,7 @@ describe('formatTimetableItemPayload', () => {
       {
         id: '1-1',
         location: {
-          operational_point: { uic: 6, secondary_code: 'BV', trigram: 'SS' },
+          operational_point: { trigram: 'SS', secondary_code: 'BV', type: 'trigram' },
           track_reference: null,
         },
         name: 'South_station',
@@ -99,14 +99,14 @@ describe('formatTimetableItemPayload', () => {
         {
           id: '0-0',
           location: {
-            operational_point: { trigram: 'WS', secondary_code: 'BV' },
+            operational_point: { trigram: 'WS', secondary_code: 'BV', type: 'trigram' },
             track_reference: null,
           },
         },
         {
           id: '1-1',
           location: {
-            operational_point: { trigram: 'SS', secondary_code: 'BV' },
+            operational_point: { trigram: 'SS', secondary_code: 'BV', type: 'trigram' },
             track_reference: null,
           },
         },
@@ -219,6 +219,7 @@ describe('formatTimetableItemPayload', () => {
               operational_point: {
                 trigram: 'WS',
                 secondary_code: 'BV',
+                type: 'trigram',
               },
               track_reference: null,
             },
@@ -229,6 +230,7 @@ describe('formatTimetableItemPayload', () => {
               operational_point: {
                 trigram: 'SS',
                 secondary_code: 'BV',
+                type: 'trigram',
               },
               track_reference: null,
             },
@@ -314,6 +316,7 @@ describe('formatTimetableItemPayload', () => {
                 operational_point: {
                   trigram: 'WS',
                   secondary_code: 'BV',
+                  type: 'trigram',
                 },
                 track_reference: null,
               },
@@ -324,6 +327,7 @@ describe('formatTimetableItemPayload', () => {
                 operational_point: {
                   trigram: 'SS',
                   secondary_code: 'BV',
+                  type: 'trigram',
                 },
                 track_reference: null,
               },
@@ -516,7 +520,7 @@ describe('formatTimetableItemPayload', () => {
             {
               id: '1-1',
               location: {
-                operational_point: { trigram: 'SS', secondary_code: 'BV' },
+                operational_point: { trigram: 'SS', secondary_code: 'BV', type: 'trigram' },
                 track_reference: null,
               },
               arrival: null,
@@ -559,14 +563,14 @@ describe('formatTimetableItemPayload', () => {
                 {
                   id: '0-0',
                   location: {
-                    operational_point: { trigram: 'WS', secondary_code: 'BV' },
+                    operational_point: { trigram: 'WS', secondary_code: 'BV', type: 'trigram' },
                     track_reference: null,
                   },
                 },
                 {
                   id: '1-1',
                   location: {
-                    operational_point: { trigram: 'SS', secondary_code: 'BV' },
+                    operational_point: { trigram: 'SS', secondary_code: 'BV', type: 'trigram' },
                     track_reference: null,
                   },
                 },

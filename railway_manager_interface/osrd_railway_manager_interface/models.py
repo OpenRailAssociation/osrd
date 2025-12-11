@@ -5,7 +5,7 @@ from __future__ import annotations
 
 from datetime import timedelta
 from enum import Enum
-from typing import Annotated
+from typing import Annotated, Literal
 
 from pydantic import AwareDatetime, BaseModel, ConfigDict, Field, RootModel
 
@@ -85,6 +85,7 @@ class OperationalPointIdentifierId(BaseModel):
     """
     The object id of an operational point
     """
+    type: Literal["id"]
 
 
 class OperationalPointIdentifierTrigram(BaseModel):
@@ -96,6 +97,7 @@ class OperationalPointIdentifierTrigram(BaseModel):
     """
     The operational point trigram
     """
+    type: Literal["trigram"]
 
 
 class OperationalPointIdentifierUic(BaseModel):
@@ -103,6 +105,7 @@ class OperationalPointIdentifierUic(BaseModel):
     """
     An optional secondary code to identify a more specific location
     """
+    type: Literal["uic"]
     uic: Annotated[int, Field(ge=0)]
     """
     The [UIC](https://en.wikipedia.org/wiki/List_of_UIC_country_codes) code of an operational point

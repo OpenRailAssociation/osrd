@@ -545,8 +545,8 @@ pub mod tests {
             .post(format!("/infra/{}/pathfinding/blocks", small_infra.id).as_str())
             .json(&json!({
                 "path_items":[
-                {"operational_point": {"trigram":"WS","secondary_code":"BV"}},
-                {"operational_point": {"trigram":"WS","secondary_code":"BV"}}
+                {"operational_point": {"trigram":"WS","secondary_code":"BV", "type": "trigram"}},
+                {"operational_point": {"trigram":"WS","secondary_code":"BV", "type": "trigram"}}
             ],
                 "rolling_stock_is_thermal":true,
                 "rolling_stock_loading_gauge":"G1",
@@ -579,9 +579,9 @@ pub mod tests {
             .post(format!("/infra/{}/pathfinding/blocks", small_infra.id).as_str())
             .json(&json!({
                 "path_items":[
-                    {"operational_point": {"trigram":"WS","secondary_code":"BV"}},
-                    {"operational_point": {"trigram":"NO_TRIGRAM","secondary_code":null}},
-                    {"operational_point": {"trigram":"SWS","secondary_code":"BV"}}
+                    {"operational_point": {"trigram":"WS","secondary_code":"BV", "type": "trigram"}},
+                    {"operational_point": {"trigram":"NO_TRIGRAM","secondary_code":null, "type": "trigram"}},
+                    {"operational_point": {"trigram":"SWS","secondary_code":"BV", "type": "trigram"}}
                 ],
                 "rolling_stock_is_thermal":true,
                 "rolling_stock_loading_gauge":"G1",
@@ -627,8 +627,8 @@ pub mod tests {
             .post(format!("/infra/{}/pathfinding/blocks", small_infra.id).as_str())
             .json(&json!({
                 "path_items":[
-                    {"operational_point": {"uic":8733,"secondary_code":"BV"}, "track_reference": {"track_name": "V2"}},
-                    {"operational_point": {"uic":8788 ,"secondary_code":"BV"}, "track_reference": {"track_name": "V_INVALID"}},
+                    {"operational_point": {"uic":8733,"secondary_code":"BV", "type": "uic"}, "track_reference": {"track_name": "V2"}},
+                    {"operational_point": {"uic":8788 ,"secondary_code":"BV", "type": "uic"}, "track_reference": {"track_name": "V_INVALID"}},
                 ],
                 "rolling_stock_is_thermal":true,
                 "rolling_stock_loading_gauge":"G1",
@@ -690,8 +690,8 @@ pub mod tests {
             .post(format!("/infra/{}/pathfinding/blocks", small_infra.id).as_str())
             .json(&json!({
                 "path_items":[
-                    {"operational_point": {"trigram":"WS","secondary_code":"BV"}},
-                    {"operational_point": {"trigram":"SWS","secondary_code":"BV"}}
+                    {"operational_point": {"trigram":"WS","secondary_code":"BV", "type": "trigram"}},
+                    {"operational_point": {"trigram":"SWS","secondary_code":"BV", "type": "trigram"}}
                 ],
                 "rolling_stock_is_thermal":true,
                 "rolling_stock_loading_gauge":"G1",

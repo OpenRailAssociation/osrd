@@ -34,15 +34,15 @@ const computeBasePathStep = (
 
   let name;
   if ('operational_point' in location) {
-    if ('trigram' in location.operational_point) {
+    if (location.operational_point.type === 'trigram') {
       name =
         location.operational_point.trigram +
         (location.operational_point.secondary_code
           ? `/${location.operational_point.secondary_code}`
           : '');
-    } else if ('uic' in location.operational_point) {
+    } else if (location.operational_point.type === 'uic') {
       name = location.operational_point.uic.toString();
-    } else if ('operational_point' in location.operational_point) {
+    } else if (location.operational_point.type === 'id') {
       name = location.operational_point.operational_point;
     }
   }

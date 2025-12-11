@@ -55,15 +55,24 @@
       "labels": [],
       "path": [
         {
-          "location": { "operational_point": { "trigram": "RTR" }, "track_reference": null },
+          "location": {
+            "operational_point": { "trigram": "RTR", "type": "trigram" },
+            "track_reference": null
+          },
           "id": "7-0"
         },
         {
-          "location": { "operational_point": { "trigram": "SS-2" }, "track_reference": null },
+          "location": {
+            "operational_point": { "trigram": "SS-2", "type": "trigram" },
+            "track_reference": null
+          },
           "id": "8-1"
         },
         {
-          "location": { "operational_point": { "trigram": "SS-1" }, "track_reference": null },
+          "location": {
+            "operational_point": { "trigram": "SS-1", "type": "trigram" },
+            "track_reference": null
+          },
           "id": "6-2"
         }
       ],
