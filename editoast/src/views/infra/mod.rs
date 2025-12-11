@@ -862,7 +862,7 @@ pub(in crate::views) async fn match_operational_points(
     for operational_point_reference in operational_point_references {
         // Retrieve related OPs based on the input operational point identifier:
         let mut related_operational_points = match operational_point_reference.operational_point {
-            OperationalPointIdentifier::OperationalPointId {
+            OperationalPointIdentifier::Id {
                 ref operational_point,
             } => retrieve_op_from_ids(
                 &mut conn,
@@ -873,7 +873,7 @@ pub(in crate::views) async fn match_operational_points(
             .into_iter()
             .map(|op_model| op_model.schema)
             .collect::<Vec<_>>(),
-            OperationalPointIdentifier::OperationalPointDescription {
+            OperationalPointIdentifier::Trigram {
                 ref trigram,
                 secondary_code,
             } => retrieve_op_from_trigrams(&mut conn, infra_id, std::slice::from_ref(&trigram.0))
@@ -889,7 +889,7 @@ pub(in crate::views) async fn match_operational_points(
                     None => true,
                 })
                 .collect::<Vec<_>>(),
-            OperationalPointIdentifier::OperationalPointUic {
+            OperationalPointIdentifier::Uic {
                 uic,
                 secondary_code,
             } => retrieve_op_from_uic(&mut conn, infra_id, &[uic])
@@ -1499,13 +1499,13 @@ pub mod tests {
             .unwrap();
         let operational_point_references = vec![
             OperationalPointReference {
-                operational_point: OperationalPointIdentifier::OperationalPointId {
+                operational_point: OperationalPointIdentifier::Id {
                     operational_point: ("West_station").into(),
                 },
                 track_reference: None,
             },
             OperationalPointReference {
-                operational_point: OperationalPointIdentifier::OperationalPointDescription {
+                operational_point: OperationalPointIdentifier::Trigram {
                     trigram: "MES".into(),
                     secondary_code: Some("BV".into()),
                 },
@@ -1514,7 +1514,7 @@ pub mod tests {
                 }),
             },
             OperationalPointReference {
-                operational_point: OperationalPointIdentifier::OperationalPointUic {
+                operational_point: OperationalPointIdentifier::Uic {
                     uic: 8,
                     secondary_code: None,
                 },
@@ -1570,7 +1570,7 @@ pub mod tests {
         let infra = create_small_infra(&mut db_pool.get_ok()).await;
         let operational_point_references = vec![
             OperationalPointReference {
-                operational_point: OperationalPointIdentifier::OperationalPointDescription {
+                operational_point: OperationalPointIdentifier::Trigram {
                     trigram: "MES".into(),
                     secondary_code: None,
                 },
@@ -1579,7 +1579,7 @@ pub mod tests {
                 }),
             },
             OperationalPointReference {
-                operational_point: OperationalPointIdentifier::OperationalPointUic {
+                operational_point: OperationalPointIdentifier::Uic {
                     uic: 8,
                     secondary_code: None,
                 },
@@ -1588,7 +1588,7 @@ pub mod tests {
                 }),
             },
             OperationalPointReference {
-                operational_point: OperationalPointIdentifier::OperationalPointDescription {
+                operational_point: OperationalPointIdentifier::Trigram {
                     trigram: "MES".into(),
                     secondary_code: Some("PAUL".into()),
                 },

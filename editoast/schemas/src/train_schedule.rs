@@ -238,7 +238,7 @@ impl TrainSchedule {
                     id: NonBlankString::from("a"),
                     location: PathItemLocation::OperationalPointReference(
                         OperationalPointReference {
-                            operational_point: OperationalPointIdentifier::OperationalPointUic {
+                            operational_point: OperationalPointIdentifier::Uic {
                                 uic: 8711,
                                 secondary_code: None,
                             },
@@ -257,11 +257,10 @@ impl TrainSchedule {
                     id: NonBlankString::from("c"),
                     location: PathItemLocation::OperationalPointReference(
                         OperationalPointReference {
-                            operational_point:
-                                OperationalPointIdentifier::OperationalPointDescription {
-                                    trigram: NonBlankString::from("MWS"),
-                                    secondary_code: None,
-                                },
+                            operational_point: OperationalPointIdentifier::Trigram {
+                                trigram: NonBlankString::from("MWS"),
+                                secondary_code: None,
+                            },
                             track_reference: None,
                         },
                     ),
@@ -270,7 +269,7 @@ impl TrainSchedule {
                     id: NonBlankString::from("d"),
                     location: PathItemLocation::OperationalPointReference(
                         OperationalPointReference {
-                            operational_point: OperationalPointIdentifier::OperationalPointId {
+                            operational_point: OperationalPointIdentifier::Id {
                                 operational_point: Identifier::from("Mid_East_station"),
                             },
                             track_reference: None,
@@ -341,7 +340,7 @@ mod tests {
     use crate::train_schedule::PathItemLocation;
     use crate::train_schedule::ScheduleItem;
     use crate::train_schedule::TrainSchedule;
-    use crate::train_schedule::path_item::OperationalPointIdentifier::OperationalPointId;
+    use crate::train_schedule::path_item::OperationalPointIdentifier::Id;
     use crate::train_schedule::path_item::OperationalPointReference;
     use crate::train_schedule::schedule_item::ReceptionSignal;
 
@@ -351,7 +350,7 @@ mod tests {
     #[test]
     fn deserialize_duplicate_path_id_train_schedule() {
         let location = PathItemLocation::OperationalPointReference(OperationalPointReference {
-            operational_point: OperationalPointId {
+            operational_point: Id {
                 operational_point: "op".into(),
             },
             track_reference: None,
@@ -408,7 +407,7 @@ mod tests {
     #[test]
     fn deserialize_duplicate_schedule_points_train_schedule() {
         let location = PathItemLocation::OperationalPointReference(OperationalPointReference {
-            operational_point: OperationalPointId {
+            operational_point: Id {
                 operational_point: "op".into(),
             },
             track_reference: None,
@@ -443,7 +442,7 @@ mod tests {
     #[test]
     fn deserialize_arrival_time_first_waypoint_schedule_train_schedule() {
         let location = PathItemLocation::OperationalPointReference(OperationalPointReference {
-            operational_point: OperationalPointId {
+            operational_point: Id {
                 operational_point: "op".into(),
             },
             track_reference: None,

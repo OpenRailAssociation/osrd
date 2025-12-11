@@ -22,7 +22,7 @@ impl PathItem {
         Self {
             id: id.into(),
             location: PathItemLocation::OperationalPointReference(OperationalPointReference {
-                operational_point: OperationalPointIdentifier::OperationalPointId {
+                operational_point: OperationalPointIdentifier::Id {
                     operational_point: id.into(),
                 },
                 track_reference: None,
@@ -65,13 +65,13 @@ pub enum TrackReference {
 #[serde(untagged, deny_unknown_fields)]
 pub enum OperationalPointIdentifier {
     #[schema(title = "OperationalPointIdentifierOperationalPointId")]
-    OperationalPointId {
+    Id {
         /// The object id of an operational point
         #[schema(inline)]
         operational_point: Identifier,
     },
     #[schema(title = "OperationalPointIdentifierOperationalPointDescription")]
-    OperationalPointDescription {
+    Trigram {
         /// The operational point trigram
         #[schema(inline)]
         trigram: NonBlankString,
@@ -79,7 +79,7 @@ pub enum OperationalPointIdentifier {
         secondary_code: Option<String>,
     },
     #[schema(title = "OperationalPointIdentifierOperationalPointUic")]
-    OperationalPointUic {
+    Uic {
         /// The [UIC](https://en.wikipedia.org/wiki/List_of_UIC_country_codes) code of an operational point
         uic: u32,
         /// An optional secondary code to identify a more specific location

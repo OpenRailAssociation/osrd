@@ -604,11 +604,10 @@ pub mod tests {
                         index: 1,
                         path_item: PathItemLocation::OperationalPointReference(
                             OperationalPointReference {
-                                operational_point:
-                                    OperationalPointIdentifier::OperationalPointDescription {
-                                        trigram: "NO_TRIGRAM".into(),
-                                        secondary_code: None
-                                    },
+                                operational_point: OperationalPointIdentifier::Trigram {
+                                    trigram: "NO_TRIGRAM".into(),
+                                    secondary_code: None
+                                },
                                 track_reference: None,
                             }
                         )
@@ -652,11 +651,10 @@ pub mod tests {
                         index: 1,
                         path_item: PathItemLocation::OperationalPointReference(
                             OperationalPointReference {
-                                operational_point:
-                                    OperationalPointIdentifier::OperationalPointUic {
-                                        uic: 8788,
-                                        secondary_code: Some("BV".into())
-                                    },
+                                operational_point: OperationalPointIdentifier::Uic {
+                                    uic: 8788,
+                                    secondary_code: Some("BV".into())
+                                },
                                 track_reference: Some(TrackReference::Name {
                                     track_name: "V_INVALID".into()
                                 }),

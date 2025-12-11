@@ -298,7 +298,7 @@ pub mod tests {
                     id: "path_item_1".into(),
                     location: PathItemLocation::OperationalPointReference(
                         OperationalPointReference {
-                            operational_point: OperationalPointIdentifier::OperationalPointId {
+                            operational_point: OperationalPointIdentifier::Id {
                                 operational_point: "op_1".into(),
                             },
                             track_reference: None,
@@ -309,7 +309,7 @@ pub mod tests {
                     id: "path_item_2".into(),
                     location: PathItemLocation::OperationalPointReference(
                         OperationalPointReference {
-                            operational_point: OperationalPointIdentifier::OperationalPointId {
+                            operational_point: OperationalPointIdentifier::Id {
                                 operational_point: "op_2".into(),
                             },
                             track_reference: None,
@@ -320,7 +320,7 @@ pub mod tests {
                     id: "path_item_3".into(),
                     location: PathItemLocation::OperationalPointReference(
                         OperationalPointReference {
-                            operational_point: OperationalPointIdentifier::OperationalPointId {
+                            operational_point: OperationalPointIdentifier::Id {
                                 operational_point: "op_3".into(),
                             },
                             track_reference: Some(schemas::train_schedule::TrackReference::Id {
@@ -473,7 +473,7 @@ pub mod tests {
             PathItem {
                 id: "p1".into(),
                 location: PathItemLocation::OperationalPointReference(OperationalPointReference {
-                    operational_point: OperationalPointIdentifier::OperationalPointId {
+                    operational_point: OperationalPointIdentifier::Id {
                         operational_point: "op_1".into(),
                     },
                     track_reference: None,
@@ -482,7 +482,7 @@ pub mod tests {
             PathItem {
                 id: "p2".into(),
                 location: PathItemLocation::OperationalPointReference(OperationalPointReference {
-                    operational_point: OperationalPointIdentifier::OperationalPointId {
+                    operational_point: OperationalPointIdentifier::Id {
                         operational_point: "op_2".into(),
                     },
                     track_reference: None,

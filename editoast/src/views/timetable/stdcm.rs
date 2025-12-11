@@ -527,11 +527,10 @@ mod tests {
                     duration: Some(0),
                     location: PathItemLocation::OperationalPointReference(
                         OperationalPointReference {
-                            operational_point:
-                                OperationalPointIdentifier::OperationalPointDescription {
-                                    trigram: "WS".into(),
-                                    secondary_code: Some("BV".to_string()),
-                                },
+                            operational_point: OperationalPointIdentifier::Trigram {
+                                trigram: "WS".into(),
+                                secondary_code: Some("BV".to_string()),
+                            },
                             track_reference: None,
                         },
                     ),
@@ -546,11 +545,10 @@ mod tests {
                     duration: Some(0),
                     location: PathItemLocation::OperationalPointReference(
                         OperationalPointReference {
-                            operational_point:
-                                OperationalPointIdentifier::OperationalPointDescription {
-                                    trigram: "MWS".into(),
-                                    secondary_code: Some("BV".to_string()),
-                                },
+                            operational_point: OperationalPointIdentifier::Trigram {
+                                trigram: "MWS".into(),
+                                secondary_code: Some("BV".to_string()),
+                            },
                             track_reference: None,
                         },
                     ),
