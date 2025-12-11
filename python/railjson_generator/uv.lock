@@ -106,7 +106,7 @@ wheels = [
 
 [[package]]
 name = "osrd-schemas"
-version = "0.9.0"
+version = "0.9.1"
 source = { editable = "../osrd_schemas" }
 dependencies = [
     { name = "geojson-pydantic" },
@@ -250,7 +250,7 @@ wheels = [
 
 [[package]]
 name = "railjson-generator"
-version = "0.4.11"
+version = "0.4.12"
 source = { editable = "." }
 dependencies = [
     { name = "osrd-schemas" },
