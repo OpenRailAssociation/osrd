@@ -2,16 +2,12 @@ import {
   osrdEditoastApi,
   type PacedTrainSimulationSummaryResult,
   type PostPacedTrainSimulationSummaryApiResponse,
-  type PostTrainScheduleSimulationSummaryApiResponse,
-  type SimulationSummaryResult,
 } from 'common/api/osrdEditoastApi';
-import type { PacedTrainId, TimetableItemId, TrainScheduleId } from 'reducers/osrdconf/types';
+import type { PacedTrainId, TimetableItemId } from 'reducers/osrdconf/types';
 import type { AppDispatch } from 'store';
 import {
   formatEditoastIdToPacedTrainId,
-  formatEditoastIdToTrainScheduleId,
   extractEditoastIdFromPacedTrainId,
-  extractEditoastIdFromTrainScheduleId,
   isTrainScheduleId,
 } from 'utils/trainId';
 
@@ -21,10 +17,7 @@ type TrainSimulationLazyLoaderOptions = {
   dispatch: AppDispatch;
   infraId: number;
   electricalProfileSetId?: number;
-  onProgress: (
-    trainScheduleSummaries: Map<TrainScheduleId, SimulationSummaryResult>,
-    pacedTrainSummaries: Map<PacedTrainId, PacedTrainSimulationSummaryResult>
-  ) => void;
+  onProgress: (pacedTrainSummaries: Map<PacedTrainId, PacedTrainSimulationSummaryResult>) => void;
 };
 
 /**
@@ -79,33 +72,13 @@ export default class TrainSimulationLazyLoader {
   }
 
   async processBatch(batch: TimetableItemId[]) {
-    const rawTrainScheduleIds = [];
     const rawPacedTrainIds = [];
     for (const id of batch) {
       if (isTrainScheduleId(id)) {
-        rawTrainScheduleIds.push(extractEditoastIdFromTrainScheduleId(id));
+        throw new Error('TrainSchedules are not handled anymore.');
       } else {
         rawPacedTrainIds.push(extractEditoastIdFromPacedTrainId(id));
       }
-    }
-
-    let trainSchedulePromise: Promise<PostTrainScheduleSimulationSummaryApiResponse> =
-      Promise.resolve({});
-    if (rawTrainScheduleIds.length > 0) {
-      trainSchedulePromise = this.options
-        .dispatch(
-          osrdEditoastApi.endpoints.postTrainScheduleSimulationSummary.initiate(
-            {
-              body: {
-                infra_id: this.options.infraId,
-                ids: rawTrainScheduleIds,
-                electrical_profile_set_id: this.options.electricalProfileSetId,
-              },
-            },
-            { subscribe: false }
-          )
-        )
-        .unwrap();
     }
 
     let pacedTrainPromise: Promise<PostPacedTrainSimulationSummaryApiResponse> = Promise.resolve(
@@ -128,24 +101,18 @@ export default class TrainSimulationLazyLoader {
         .unwrap();
     }
 
-    const rawTrainScheduleSummaries = await trainSchedulePromise;
     const rawPacedTrainSummaries = await pacedTrainPromise;
 
     if (this.cancelled) {
       return;
     }
 
-    const trainScheduleSummaries = new Map();
     const pacedTrainSummaries = new Map();
-    for (const [rawId, rawSummary] of Object.entries(rawTrainScheduleSummaries)) {
-      const id = formatEditoastIdToTrainScheduleId(Number(rawId));
-      trainScheduleSummaries.set(id, rawSummary);
-    }
     for (const [rawId, rawSummary] of Object.entries(rawPacedTrainSummaries)) {
       const id = formatEditoastIdToPacedTrainId(Number(rawId));
       pacedTrainSummaries.set(id, rawSummary);
     }
 
-    this.options.onProgress(trainScheduleSummaries, pacedTrainSummaries);
+    this.options.onProgress(pacedTrainSummaries);
   }
 }

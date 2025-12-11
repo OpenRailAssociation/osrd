@@ -5,15 +5,11 @@ import {
   type OperationalPointReference,
   type PostPacedTrainOccupancyBlocksApiResponse,
   type PostPacedTrainProjectPathOpApiResponse,
-  type PostTrainScheduleOccupancyBlocksApiResponse,
-  type PostTrainScheduleProjectPathOpApiResponse,
 } from 'common/api/osrdEditoastApi';
 import type { TimetableItemId } from 'reducers/osrdconf/types';
 import {
   extractEditoastIdFromPacedTrainId,
-  extractEditoastIdFromTrainScheduleId,
   formatEditoastIdToPacedTrainId,
-  formatEditoastIdToTrainScheduleId,
   isTrainScheduleId,
 } from 'utils/trainId';
 
@@ -21,6 +17,7 @@ import TrainProjectionLazyLoaderAbstract, {
   type ProjectionResult,
   type TrainProjectionLazyLoaderOptions,
 } from './TrainProjectionLazyLoaderAbstract';
+
 export default class TrainOpProjectionLazyLoader extends TrainProjectionLazyLoaderAbstract {
   readonly opRefs: OperationalPointReference[];
 
@@ -44,55 +41,13 @@ export default class TrainOpProjectionLazyLoader extends TrainProjectionLazyLoad
       return;
     }
 
-    const rawTrainScheduleIds = [];
     const rawPacedTrainIds = [];
 
     for (const id of batch) {
       if (isTrainScheduleId(id)) {
-        rawTrainScheduleIds.push(extractEditoastIdFromTrainScheduleId(id));
+        throw new Error('TrainSchedules are not handled anymore.');
       } else {
         rawPacedTrainIds.push(extractEditoastIdFromPacedTrainId(id));
-      }
-    }
-
-    let trainSchedulePromise: Promise<PostTrainScheduleProjectPathOpApiResponse> = Promise.resolve(
-      {}
-    );
-    let trainScheduleOccupancyBlocksPromise: Promise<PostTrainScheduleOccupancyBlocksApiResponse> =
-      Promise.resolve({});
-    if (rawTrainScheduleIds.length > 0) {
-      trainSchedulePromise = this.options
-        .dispatch(
-          osrdEditoastApi.endpoints.postTrainScheduleProjectPathOp.initiate(
-            {
-              body: {
-                infra_id: infraId,
-                train_ids: rawTrainScheduleIds,
-                operational_points_refs: this.opRefs,
-                operational_points_distances: this.opDistances,
-              },
-            },
-            { subscribe: false }
-          )
-        )
-        .unwrap();
-
-      if (path) {
-        trainScheduleOccupancyBlocksPromise = this.options
-          .dispatch(
-            osrdEditoastApi.endpoints.postTrainScheduleOccupancyBlocks.initiate(
-              {
-                occupancyBlockForm: {
-                  infra_id: infraId,
-                  path,
-                  ids: rawTrainScheduleIds,
-                  electrical_profile_set_id: electricalProfileSetId,
-                },
-              },
-              { subscribe: false }
-            )
-          )
-          .unwrap();
       }
     }
 
@@ -136,9 +91,7 @@ export default class TrainOpProjectionLazyLoader extends TrainProjectionLazyLoad
       }
     }
 
-    const rawTrainScheduleResults = await trainSchedulePromise;
     const rawPacedTrainResults = await pacedTrainPromise;
-    const rawTrainScheduleOccupancyBlocks = await trainScheduleOccupancyBlocksPromise;
     const rawPacedTrainOccupancyBlocks = await pacedTrainOccupancyBlocksPromise;
 
     if (this.cancelled) {
@@ -146,14 +99,6 @@ export default class TrainOpProjectionLazyLoader extends TrainProjectionLazyLoad
     }
 
     const rawResults = new Map<TimetableItemId, ProjectionResult>();
-
-    for (const [id, result] of Object.entries(rawTrainScheduleResults)) {
-      const trainScheduleId = formatEditoastIdToTrainScheduleId(Number(id));
-      rawResults.set(trainScheduleId, {
-        space_time_curves: result,
-        signal_updates: rawTrainScheduleOccupancyBlocks[id],
-      });
-    }
 
     for (const [id, result] of Object.entries(rawPacedTrainResults)) {
       const pacedTrainId = formatEditoastIdToPacedTrainId(Number(id));

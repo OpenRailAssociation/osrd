@@ -7,10 +7,7 @@ import { useScenarioContext } from 'applications/operationalStudies/hooks/useSce
 import BoardWrapper from 'applications/operationalStudies/views/Scenario/components/BoardWrapper';
 import DeleteModal from 'common/BootstrapSNCF/ModalSNCF/DeleteModal';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
-import {
-  deletePacedTrains,
-  deleteTrainSchedules,
-} from 'modules/timetableItem/helpers/updateTimetableItemHelpers';
+import { deletePacedTrains } from 'modules/timetableItem/helpers/updateTimetableItemHelpers';
 import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
 import { setFailure, setSuccess } from 'reducers/main';
 import type {
@@ -193,15 +190,12 @@ const TimetableBoardWrapper = ({
     }
 
     try {
-      let deletingTrainSchedulesPromise;
-      let deletingPacedTrainsPromise;
       if (trainScheduleIds.length > 0) {
-        deletingTrainSchedulesPromise = deleteTrainSchedules(dispatch, trainScheduleIds);
+        throw new Error('TrainSchedules are not handled anymore.');
       }
       if (pacedTrainIds.length > 0) {
-        deletingPacedTrainsPromise = deletePacedTrains(dispatch, pacedTrainIds);
+        await deletePacedTrains(dispatch, pacedTrainIds);
       }
-      await Promise.all([deletingTrainSchedulesPromise, deletingPacedTrainsPromise]);
 
       removeAndUnselectTrains(selectedTimetableItemIds);
 

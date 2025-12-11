@@ -14,7 +14,6 @@ import type { TimetableItemId, TimetableItem } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import {
   formatEditoastIdToPacedTrainId,
-  extractEditoastIdFromTrainScheduleId,
   extractEditoastIdFromPacedTrainId,
   isPacedTrainResponseWithPacedTrainId,
 } from 'utils/trainId';
@@ -37,7 +36,6 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number) => {
   const timetableItemsById = useMemo(() => mapBy(timetableItems, 'id'), [timetableItems]);
   const [selectedTimetableItemIds, setSelectedTimetableItemIds] = useState<TimetableItemId[]>([]);
 
-  const [putTrainScheduleById] = osrdEditoastApi.endpoints.putTrainScheduleById.useMutation();
   const [putPacedTrainById] = osrdEditoastApi.endpoints.putPacedTrainById.useMutation();
 
   const { workerStatus } = useScenarioContext();
@@ -220,15 +218,7 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number) => {
           },
         }).unwrap();
       } else {
-        const editoastTrainId = extractEditoastIdFromTrainScheduleId(timetableItem.id);
-
-        await putTrainScheduleById({
-          id: editoastTrainId,
-          trainScheduleForm: {
-            ...timetableItem,
-            start_time: newDeparture.toISOString(),
-          },
-        }).unwrap();
+        throw new Error('TrainSchedules are not handled anymore.');
       }
 
       setTimetableItemDepartureTime(timetableItemId, newDeparture);

@@ -11,7 +11,6 @@ import { isPacedTrainResponseWithPaced } from 'modules/timetableItem/helpers/pac
 import {
   createPacedTrain,
   deletePacedTrains,
-  deleteTrainSchedules,
   fetchTimetableItem,
   storePacedTrain,
 } from 'modules/timetableItem/helpers/updateTimetableItemHelpers';
@@ -478,7 +477,7 @@ const deleteTimetableItemById = async (
   addDeletedTimetableItemIds: (timetableItemIds: TimetableItemId[]) => void
 ) => {
   if (isPacedTrainId(timetableItemId)) await deletePacedTrains(dispatch, [timetableItemId]);
-  else await deleteTrainSchedules(dispatch, [timetableItemId]);
+  else throw new Error('TrainSchedules are not handled anymore.');
 
   addDeletedTimetableItemIds([timetableItemId]);
 };
