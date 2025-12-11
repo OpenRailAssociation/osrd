@@ -5,6 +5,8 @@ use utoipa::ToSchema;
 
 use crate::primitives::Identifier;
 use crate::primitives::OSRDIdentified;
+use crate::primitives::OSRDTyped;
+use crate::primitives::ObjectType;
 
 #[derive(Debug, Default, Clone, Deserialize, Serialize, PartialEq, ToSchema)]
 #[serde(deny_unknown_fields)]
@@ -29,6 +31,12 @@ pub struct LevelCrossingPart {
     pub pedal_upstream: u64,
     /// Offset in mm of the downstream pedal from the main position (downstream refers to the START_TO_STOP direction of the track)
     pub pedal_downstream: u64,
+}
+
+impl OSRDTyped for LevelCrossing {
+    fn get_type() -> ObjectType {
+        ObjectType::LevelCrossing
+    }
 }
 
 impl OSRDIdentified for LevelCrossing {

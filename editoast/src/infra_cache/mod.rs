@@ -29,6 +29,7 @@ use schemas::infra::DirectionalTrackRange;
 use schemas::infra::DoubleSlipSwitch;
 use schemas::infra::Electrification;
 use schemas::infra::Endpoint;
+use schemas::infra::LevelCrossing;
 use schemas::infra::Link;
 use schemas::infra::NeutralSection;
 use schemas::infra::OperationalPointPart;
@@ -100,6 +101,7 @@ pub enum ObjectCache {
     SwitchType(SwitchType),
     Electrification(Electrification),
     NeutralSection(NeutralSection),
+    LevelCrossing(LevelCrossing),
 }
 
 impl From<InfraObject> for ObjectCache {
@@ -118,6 +120,7 @@ impl From<InfraObject> for ObjectCache {
                 ObjectCache::OperationalPoint(railjson.into())
             }
             InfraObject::Electrification { railjson } => ObjectCache::Electrification(railjson),
+            InfraObject::LevelCrossing { railjson } => ObjectCache::LevelCrossing(railjson),
         }
     }
 }
@@ -142,6 +145,7 @@ impl OSRDIdentified for ObjectCache {
             ObjectCache::SwitchType(obj) => obj.get_id(),
             ObjectCache::Electrification(obj) => obj.get_id(),
             ObjectCache::NeutralSection(obj) => obj.get_id(),
+            ObjectCache::LevelCrossing(obj) => obj.get_id(),
         }
     }
 }
@@ -160,6 +164,7 @@ impl OSRDObject for ObjectCache {
             ObjectCache::SwitchType(_) => ObjectType::SwitchType,
             ObjectCache::Electrification(_) => ObjectType::Electrification,
             ObjectCache::NeutralSection(_) => ObjectType::NeutralSection,
+            ObjectCache::LevelCrossing(_) => ObjectType::LevelCrossing,
         }
     }
 }
@@ -182,6 +187,8 @@ impl ObjectCache {
             ObjectCache::NeutralSection(neutral_section) => {
                 neutral_section.get_track_referenced_id()
             }
+            // TODO: implement real logic
+            ObjectCache::LevelCrossing(_) => vec![],
         }
     }
 
@@ -640,6 +647,8 @@ impl InfraCache {
             ObjectCache::NeutralSection(neutral_section) => {
                 self.add::<NeutralSection>(neutral_section)?
             }
+            // TODO: implement real logic
+            ObjectCache::LevelCrossing(_) => (),
         }
         Ok(())
     }

@@ -278,6 +278,8 @@ fn get_insert_errors_query(obj_type: ObjectType) -> &'static str {
         ObjectType::Route => include_str!("sql/routes_insert_errors.sql"),
         ObjectType::OperationalPoint => include_str!("sql/operational_points_insert_errors.sql"),
         ObjectType::Electrification => include_str!("sql/electrifications_insert_errors.sql"),
+        // TODO: level_crossings_insert_errors.sql
+        ObjectType::LevelCrossing => include_str!("sql/level_crossings_insert_errors.sql"),
     }
 }
 

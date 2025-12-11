@@ -174,6 +174,7 @@ pub fn patch_infra_object(infra_object: &InfraObject, json_patch: &Patch) -> Res
         InfraObject::Route { railjson } => serde_json::to_value(railjson)?,
         InfraObject::OperationalPoint { railjson } => serde_json::to_value(railjson)?,
         InfraObject::Electrification { railjson } => serde_json::to_value(railjson)?,
+        InfraObject::LevelCrossing { railjson } => serde_json::to_value(railjson)?,
     };
     json_patch::patch(&mut value, json_patch)?;
     let railjson_object = match object_type {
@@ -208,6 +209,9 @@ pub fn patch_infra_object(infra_object: &InfraObject, json_patch: &Patch) -> Res
             railjson: serde_json::from_value(value)?,
         },
         ObjectType::Electrification => InfraObject::Electrification {
+            railjson: serde_json::from_value(value)?,
+        },
+        ObjectType::LevelCrossing => InfraObject::LevelCrossing {
             railjson: serde_json::from_value(value)?,
         },
     };

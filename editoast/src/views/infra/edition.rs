@@ -663,6 +663,8 @@ fn get_split_operations_for_impacted(
                     railjson_patch: Patch(patch_operations),
                 }));
             }
+            //TODO: implement logic
+            ObjectType::LevelCrossing => (),
             // TODO: route
             ObjectType::Route => (),
             // TrackSection doesn't depend on track

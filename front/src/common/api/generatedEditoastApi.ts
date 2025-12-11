@@ -3088,6 +3088,21 @@ export type RailJson = {
   /** The version of the RailJSON format. Defaults to the current version. */
   version: string;
 };
+export type LevelCrossingPart = {
+  /** Offset in mm of the downstream pedal from the main position (downstream refers to the START_TO_STOP direction of the track) */
+  pedal_downstream: number;
+  /** Offset in mm of the upstream pedal from the main position (upstream refers to the START_TO_STOP direction of the track) */
+  pedal_upstream: number;
+  position: number;
+  track: string;
+};
+export type LevelCrossing = {
+  id: string;
+  name: string;
+  parts: LevelCrossingPart[];
+  /** Short zone length in mm */
+  short_zone_length: number;
+};
 export type InfraObject =
   | {
       obj_type: 'TrackSection';
@@ -3132,6 +3147,10 @@ export type InfraObject =
   | {
       obj_type: 'Electrification';
       railjson: Electrification;
+    }
+  | {
+      obj_type: 'LevelCrossing';
+      railjson: LevelCrossing;
     };
 export type ObjectType =
   | 'TrackSection'
@@ -3144,7 +3163,8 @@ export type ObjectType =
   | 'BufferStop'
   | 'Route'
   | 'OperationalPoint'
-  | 'Electrification';
+  | 'Electrification'
+  | 'LevelCrossing';
 export type AddOperation = {
   /** JSON-Pointer value [RFC6901](https://tools.ietf.org/html/rfc6901) that references a location
     within the target document where the operation is performed. */
