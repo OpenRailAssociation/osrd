@@ -14,7 +14,6 @@ import type { TimetableItemId, TimetableItem } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import {
   formatEditoastIdToPacedTrainId,
-  formatEditoastIdToTrainScheduleId,
   extractEditoastIdFromTrainScheduleId,
   extractEditoastIdFromPacedTrainId,
   isPacedTrainResponseWithPacedTrainId,
@@ -47,11 +46,6 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number) => {
   const projectionPath = usePathProjection(infraId, timetableItemsById);
 
   useEffect(() => {
-    const trainSchedulesResult = dispatch(
-      osrdEditoastApi.endpoints.getAllTimetableByIdTrainSchedules.initiate({
-        timetableId: scenario.timetable_id,
-      })
-    );
     const pacedTrainsResult = dispatch(
       osrdEditoastApi.endpoints.getAllTimetableByIdPacedTrains.initiate({
         timetableId: scenario.timetable_id,
@@ -59,29 +53,20 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number) => {
     );
 
     const fetchTimetableItems = async () => {
-      const rawTrainSchedules = await trainSchedulesResult.unwrap();
-      const rawPacedTrains = (await pacedTrainsResult?.unwrap()) ?? [];
+      const rawPacedTrains = (await pacedTrainsResult.unwrap()) ?? [];
 
-      const trainSchedules = rawTrainSchedules.map((trainSchedule) => ({
-        ...trainSchedule,
-        id: formatEditoastIdToTrainScheduleId(trainSchedule.id),
-      }));
       const pacedTrains = rawPacedTrains.map((pacedTrain) => ({
         ...pacedTrain,
         id: formatEditoastIdToPacedTrainId(pacedTrain.id),
       }));
 
-      setTimetableItems([
-        ...sortBy(trainSchedules, 'start_time'),
-        ...sortBy(pacedTrains, 'start_time'),
-      ]);
+      setTimetableItems(sortBy(pacedTrains, 'start_time'));
     };
 
     fetchTimetableItems();
 
     return () => {
-      trainSchedulesResult.unsubscribe();
-      pacedTrainsResult?.unsubscribe();
+      pacedTrainsResult.unsubscribe();
     };
   }, [scenario.timetable_id]);
 

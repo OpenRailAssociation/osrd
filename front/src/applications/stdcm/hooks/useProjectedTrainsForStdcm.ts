@@ -13,9 +13,9 @@ import {
   getStdcmInfraID,
   getStdcmTimetableID,
 } from 'reducers/osrdconf/stdcmConf/selectors';
-import type { TimetableItemId, TrainScheduleWithTrainId } from 'reducers/osrdconf/types';
+import type { TimetableItem, TimetableItemId } from 'reducers/osrdconf/types';
 import { Duration, addDurationToDate } from 'utils/duration';
-import { formatEditoastIdToTrainScheduleId } from 'utils/trainId';
+import { formatEditoastIdToPacedTrainId } from 'utils/trainId';
 import { mapBy } from 'utils/types';
 
 import formatStdcmTrainIntoSpaceTimeData from '../utils/formatStdcmIntoSpaceTimeData';
@@ -66,23 +66,23 @@ const useProjectedTrainsForStdcm = (stdcmResponse?: StdcmSuccessResponse) => {
 
   const [spaceTimeData, setSpaceTimeData] = useState<TrainSpaceTimeData[]>([]);
 
-  const { data: timetable } = osrdEditoastApi.endpoints.getAllTimetableByIdTrainSchedules.useQuery({
+  const { data: timetable } = osrdEditoastApi.endpoints.getAllTimetableByIdPacedTrains.useQuery({
     timetableId,
   });
 
   const { data: { results: rollingStocks } = { results: null } } =
     osrdEditoastApi.endpoints.getLightRollingStock.useQuery({ pageSize: 1000 });
 
-  const formattedTrainSchedules: TrainScheduleWithTrainId[] = useMemo(
+  const formattedTrainSchedules: TimetableItem[] = useMemo(
     () =>
       timetable?.map((trainSchedule) => ({
         ...trainSchedule,
-        id: formatEditoastIdToTrainScheduleId(trainSchedule.id),
+        id: formatEditoastIdToPacedTrainId(trainSchedule.id),
       })) || [],
     [timetable]
   );
 
-  const trainSchedulesById: Map<TimetableItemId, TrainScheduleWithTrainId> = useMemo(
+  const trainSchedulesById: Map<TimetableItemId, TimetableItem> = useMemo(
     () => mapBy(formattedTrainSchedules, 'id'),
     [formattedTrainSchedules]
   );
