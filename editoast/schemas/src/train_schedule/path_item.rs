@@ -64,13 +64,13 @@ pub enum TrackReference {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, ToSchema, Hash)]
 #[serde(untagged, deny_unknown_fields)]
 pub enum OperationalPointIdentifier {
-    #[schema(title = "OperationalPointIdentifierOperationalPointId")]
+    #[schema(title = "OperationalPointIdentifierId")]
     Id {
         /// The object id of an operational point
         #[schema(inline)]
         operational_point: Identifier,
     },
-    #[schema(title = "OperationalPointIdentifierOperationalPointDescription")]
+    #[schema(title = "OperationalPointIdentifierTrigram")]
     Trigram {
         /// The operational point trigram
         #[schema(inline)]
@@ -78,7 +78,7 @@ pub enum OperationalPointIdentifier {
         /// An optional secondary code to identify a more specific location
         secondary_code: Option<String>,
     },
-    #[schema(title = "OperationalPointIdentifierOperationalPointUic")]
+    #[schema(title = "OperationalPointIdentifierUic")]
     Uic {
         /// The [UIC](https://en.wikipedia.org/wiki/List_of_UIC_country_codes) code of an operational point
         uic: u32,

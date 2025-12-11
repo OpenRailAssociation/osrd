@@ -80,7 +80,14 @@ class Margins(BaseModel):
     """
 
 
-class OperationalPointIdentifierOperationalPointDescription(BaseModel):
+class OperationalPointIdentifierId(BaseModel):
+    operational_point: str
+    """
+    The object id of an operational point
+    """
+
+
+class OperationalPointIdentifierTrigram(BaseModel):
     secondary_code: str | None = None
     """
     An optional secondary code to identify a more specific location
@@ -91,14 +98,7 @@ class OperationalPointIdentifierOperationalPointDescription(BaseModel):
     """
 
 
-class OperationalPointIdentifierOperationalPointId(BaseModel):
-    operational_point: str
-    """
-    The object id of an operational point
-    """
-
-
-class OperationalPointIdentifierOperationalPointUic(BaseModel):
+class OperationalPointIdentifierUic(BaseModel):
     secondary_code: str | None = None
     """
     An optional secondary code to identify a more specific location
@@ -111,9 +111,9 @@ class OperationalPointIdentifierOperationalPointUic(BaseModel):
 
 class OperationalPointReference(BaseModel):
     operational_point: (
-        OperationalPointIdentifierOperationalPointId
-        | OperationalPointIdentifierOperationalPointDescription
-        | OperationalPointIdentifierOperationalPointUic
+        OperationalPointIdentifierId
+        | OperationalPointIdentifierTrigram
+        | OperationalPointIdentifierUic
     )
     track_reference: TrackReferenceId | TrackReferenceName | None = None
 

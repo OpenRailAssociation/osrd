@@ -2222,7 +2222,7 @@ paths:
                   items:
                     oneOf:
                     - type: object
-                      title: OperationalPointIdentifierOperationalPointId
+                      title: OperationalPointIdentifierId
                       required:
                       - operational_point
                       properties:
@@ -2233,7 +2233,7 @@ paths:
                             minLength: 1
                           description: The object id of an operational point
                     - type: object
-                      title: OperationalPointIdentifierOperationalPointDescription
+                      title: OperationalPointIdentifierTrigram
                       required:
                       - trigram
                       properties:
@@ -2248,7 +2248,7 @@ paths:
                             minLength: 1
                           description: The operational point trigram
                     - type: object
-                      title: OperationalPointIdentifierOperationalPointUic
+                      title: OperationalPointIdentifierUic
                       required:
                       - uic
                       properties:
@@ -4469,7 +4469,7 @@ paths:
                   items:
                     oneOf:
                     - type: object
-                      title: OperationalPointIdentifierOperationalPointId
+                      title: OperationalPointIdentifierId
                       required:
                       - operational_point
                       properties:
@@ -4480,7 +4480,7 @@ paths:
                             minLength: 1
                           description: The object id of an operational point
                     - type: object
-                      title: OperationalPointIdentifierOperationalPointDescription
+                      title: OperationalPointIdentifierTrigram
                       required:
                       - trigram
                       properties:
@@ -4495,7 +4495,7 @@ paths:
                             minLength: 1
                           description: The operational point trigram
                     - type: object
-                      title: OperationalPointIdentifierOperationalPointUic
+                      title: OperationalPointIdentifierUic
                       required:
                       - uic
                       properties:
@@ -10596,7 +10596,7 @@ components:
     OperationalPointIdentifier:
       oneOf:
       - type: object
-        title: OperationalPointIdentifierOperationalPointId
+        title: OperationalPointIdentifierId
         required:
         - operational_point
         properties:
@@ -10607,7 +10607,7 @@ components:
               minLength: 1
             description: The object id of an operational point
       - type: object
-        title: OperationalPointIdentifierOperationalPointDescription
+        title: OperationalPointIdentifierTrigram
         required:
         - trigram
         properties:
@@ -10622,7 +10622,7 @@ components:
               minLength: 1
             description: The operational point trigram
       - type: object
-        title: OperationalPointIdentifierOperationalPointUic
+        title: OperationalPointIdentifierUic
         required:
         - uic
         properties:
