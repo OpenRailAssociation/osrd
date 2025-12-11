@@ -1,7 +1,6 @@
 use std::ops::DerefMut;
 use std::sync::Arc;
 
-use crate::models::Infra;
 use authz::StorageDriver;
 use authz::identity::GroupInfo;
 use authz::identity::GroupName;
@@ -255,7 +254,12 @@ impl StorageDriver for PgAuthDriver {
     }
 
     async fn infra_exists(&self, infra_id: i64) -> Result<bool, Self::Error> {
-        Ok(Infra::exists(&mut self.pool.get().await?, infra_id).await?)
+        // TODO model_migration: use Infra once available in editoast_models
+        Ok(
+            dsl::select(dsl::exists(infra::table.filter(infra::id.eq(infra_id))))
+                .get_result::<bool>(self.pool.get().await?.write().await.deref_mut())
+                .await?,
+        )
     }
 }
 
