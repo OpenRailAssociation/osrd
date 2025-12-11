@@ -178,7 +178,10 @@ export const pathStepMatchesOp = (
   if (!matchPathStepAndOp(pathStep.location, op)) {
     return pathStep.id === op.pathStepId;
   }
-  if ('uic' in pathStep) {
+  if (
+    'operational_point' in pathStep.location &&
+    pathStep.location.operational_point.type === 'uic'
+  ) {
     return withKP ? pathStep.kp === op.kp : pathStep.name === op.name;
   }
   return true;
