@@ -1,4 +1,4 @@
-package fr.sncf.osrd.stdcm.graph
+package fr.sncf.osrd.stdcm.graph.post_processing
 
 import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext
@@ -11,6 +11,11 @@ import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
 import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
+import fr.sncf.osrd.stdcm.graph.STDCMEdge
+import fr.sncf.osrd.stdcm.graph.STDCMGraph
+import fr.sncf.osrd.stdcm.graph.TimeData
+import fr.sncf.osrd.stdcm.graph.build
+import fr.sncf.osrd.stdcm.graph.logger
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelope
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
 import fr.sncf.osrd.train.RollingStock

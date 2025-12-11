@@ -15,6 +15,7 @@ import fr.sncf.osrd.sim_infra.impl.TemporarySpeedLimitManager
 import fr.sncf.osrd.stdcm.ProgressLogger
 import fr.sncf.osrd.stdcm.STDCMResult
 import fr.sncf.osrd.stdcm.STDCMStep
+import fr.sncf.osrd.stdcm.graph.post_processing.STDCMPostProcessing
 import fr.sncf.osrd.stdcm.infra_exploration.InfraExplorerWithEnvelope
 import fr.sncf.osrd.stdcm.infra_exploration.initInfraExplorerWithEnvelope
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface

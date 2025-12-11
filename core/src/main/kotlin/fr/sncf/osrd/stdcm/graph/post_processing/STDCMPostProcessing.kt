@@ -1,4 +1,4 @@
-package fr.sncf.osrd.stdcm.graph
+package fr.sncf.osrd.stdcm.graph.post_processing
 
 import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.envelope.Envelope
@@ -14,6 +14,13 @@ import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal.OPE
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop.RJSReceptionSignal.SHORT_SLIP_STOP
 import fr.sncf.osrd.sim_infra.impl.TemporarySpeedLimitManager
 import fr.sncf.osrd.stdcm.STDCMResult
+import fr.sncf.osrd.stdcm.graph.Result
+import fr.sncf.osrd.stdcm.graph.STDCMEdge
+import fr.sncf.osrd.stdcm.graph.STDCMGraph
+import fr.sncf.osrd.stdcm.graph.STDCMNode
+import fr.sncf.osrd.stdcm.graph.TimeData
+import fr.sncf.osrd.stdcm.graph.build
+import fr.sncf.osrd.stdcm.graph.checkPlannedStepsAndMaybeIndex
 import fr.sncf.osrd.stdcm.preprocessing.interfaces.BlockAvailabilityInterface
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.train.TrainStop
