@@ -17,7 +17,6 @@ use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum::response::Json;
 use database::DbConnectionPoolV2;
-use diesel_async::scoped_futures::ScopedFutureExt;
 use editoast_derive::EditoastError;
 use editoast_models::Group;
 use editoast_models::User;
@@ -505,58 +504,55 @@ pub(in crate::views) async fn subjects_with_grant_on_resource(
     let (stats, subjects_id, mut users, mut groups) = db_pool
         .get()
         .await?
-        .transaction::<_, crate::error::InternalError, _>(move |mut conn| {
-            async move {
-                // Query the subjects from the database.
-                // OpenFGA might have returned subjects that don't exist, so these will be filtered out.
-                // The pagination will be correct even in this case.
-                let (subjects, stats) = editoast_models::Subject::list_paginated(
-                    &mut conn,
-                    pagination
-                        .into_selection_settings()
-                        .filter(move || editoast_models::Subject::ID.eq_any(subjects_id.clone()))
-                        .order_by(move || editoast_models::Subject::ID.asc()),
-                )
-                .await?;
+        .transaction::<_, crate::error::InternalError, _, _>(async move |mut conn| {
+            // Query the subjects from the database.
+            // OpenFGA might have returned subjects that don't exist, so these will be filtered out.
+            // The pagination will be correct even in this case.
+            let (subjects, stats) = editoast_models::Subject::list_paginated(
+                &mut conn,
+                pagination
+                    .into_selection_settings()
+                    .filter(move || editoast_models::Subject::ID.eq_any(subjects_id.clone()))
+                    .order_by(move || editoast_models::Subject::ID.asc()),
+            )
+            .await?;
 
-                // Take the IDs of the subjects that were returned by the database — which do exist for sure now.
-                let subjects_id = subjects
-                    .into_iter()
-                    .map(|editoast_models::Subject { id }| id)
-                    .collect_vec();
-
-                // Query the database for users and groups details.
-                let users = editoast_models::User::list(
-                    &mut conn,
-                    SelectionSettings::new()
-                        .filter({
-                            let ids = subjects_id.clone();
-                            move || editoast_models::User::ID.eq_any(ids.clone())
-                        })
-                        .order_by(move || editoast_models::User::ID.asc()),
-                )
-                .await?
+            // Take the IDs of the subjects that were returned by the database — which do exist for sure now.
+            let subjects_id = subjects
                 .into_iter()
-                .map(|editoast_models::User { id, name, .. }| (id, name))
-                .collect::<HashMap<_, _>>();
+                .map(|editoast_models::Subject { id }| id)
+                .collect_vec();
 
-                let groups = editoast_models::Group::list(
-                    &mut conn,
-                    SelectionSettings::new()
-                        .filter({
-                            let ids = subjects_id.clone();
-                            move || editoast_models::Group::ID.eq_any(ids.clone())
-                        })
-                        .order_by(move || editoast_models::Group::ID.asc()),
-                )
-                .await?
-                .into_iter()
-                .map(|editoast_models::Group { id, name }| (id, name))
-                .collect::<HashMap<_, _>>();
+            // Query the database for users and groups details.
+            let users = editoast_models::User::list(
+                &mut conn,
+                SelectionSettings::new()
+                    .filter({
+                        let ids = subjects_id.clone();
+                        move || editoast_models::User::ID.eq_any(ids.clone())
+                    })
+                    .order_by(move || editoast_models::User::ID.asc()),
+            )
+            .await?
+            .into_iter()
+            .map(|editoast_models::User { id, name, .. }| (id, name))
+            .collect::<HashMap<_, _>>();
 
-                Ok((stats, subjects_id, users, groups))
-            }
-            .scope_boxed()
+            let groups = editoast_models::Group::list(
+                &mut conn,
+                SelectionSettings::new()
+                    .filter({
+                        let ids = subjects_id.clone();
+                        move || editoast_models::Group::ID.eq_any(ids.clone())
+                    })
+                    .order_by(move || editoast_models::Group::ID.asc()),
+            )
+            .await?
+            .into_iter()
+            .map(|editoast_models::Group { id, name }| (id, name))
+            .collect::<HashMap<_, _>>();
+
+            Ok((stats, subjects_id, users, groups))
         })
         .await?;
 

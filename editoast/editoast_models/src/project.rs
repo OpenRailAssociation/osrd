@@ -1,8 +1,6 @@
 use chrono::DateTime;
 use chrono::Utc;
 use database::DbConnection;
-use diesel_async::scoped_futures::ScopedBoxFuture;
-use diesel_async::scoped_futures::ScopedFutureExt;
 use editoast_derive::Model;
 use serde::Deserialize;
 use serde::Serialize;
@@ -39,24 +37,21 @@ async fn try_delete_document(
     doc_id: i64,
 ) -> Result<(), editoast_models::Error> {
     let res = conn
-        .transaction(|mut conn| {
-            async move {
-                match Document::delete_static(&mut conn, doc_id).await {
-                    Ok(false) => unreachable!(
-                        "cannot happen as the Document has to be there because of the FK on `image`"
-                    ),
-                    Ok(true) => Ok(()),
-                    // We want the delete to occur in a transaction in order to rollback it if the deletion fails.
-                    // The deletion can fail if the document is still used by another project (FK violation). This
-                    // is acceptable, it's what this function does.
-                    // However, if a FK violation occurs, the transaction must rolloback otherwise each subsequent
-                    // query will fail. If the violation occurs, `e` is an `Err`, therefore we return it in order
-                    // to let `transaction` rollback. We then match on the error below in order to accept the
-                    // FK violation, which is not an error in our workflow.
-                    Err(e) => Err(e),
-                }
+        .transaction(async move |mut conn| {
+            match Document::delete_static(&mut conn, doc_id).await {
+                Ok(false) => unreachable!(
+                    "cannot happen as the Document has to be there because of the FK on `image`"
+                ),
+                Ok(true) => Ok(()),
+                // We want the delete to occur in a transaction in order to rollback it if the deletion fails.
+                // The deletion can fail if the document is still used by another project (FK violation). This
+                // is acceptable, it's what this function does.
+                // However, if a FK violation occurs, the transaction must rolloback otherwise each subsequent
+                // query will fail. If the violation occurs, `e` is an `Err`, therefore we return it in order
+                // to let `transaction` rollback. We then match on the error below in order to accept the
+                // FK violation, which is not an error in our workflow.
+                Err(e) => Err(e),
             }
-            .scope_boxed()
         })
         .await;
     match res {
@@ -110,19 +105,16 @@ impl Project {
         conn: &mut DbConnection,
         new_doc_id: Option<i64>,
     ) -> Result<(), editoast_models::Error> {
-        conn.transaction(|mut conn| {
-            async move {
-                let old_doc_id = self.image;
-                self.image = new_doc_id;
-                self.save(&mut conn).await?;
-                if new_doc_id != old_doc_id
-                    && let Some(old_doc_id) = old_doc_id
-                {
-                    try_delete_document(&conn, old_doc_id).await?;
-                }
-                Ok::<_, editoast_models::Error>(())
+        conn.transaction(async move |mut conn| {
+            let old_doc_id = self.image;
+            self.image = new_doc_id;
+            self.save(&mut conn).await?;
+            if new_doc_id != old_doc_id
+                && let Some(old_doc_id) = old_doc_id
+            {
+                try_delete_document(&conn, old_doc_id).await?;
             }
-            .scope_boxed()
+            Ok::<_, editoast_models::Error>(())
         })
         .await?;
         Ok(())
@@ -134,20 +126,17 @@ impl Project {
         self,
         conn: &mut DbConnection,
     ) -> Result<(), editoast_models::Error> {
-        conn.transaction(|mut conn| {
-            async move {
-                if !self.delete(&mut conn).await? {
-                    tracing::warn!(
-                        project_id = self.id,
-                        "project to delete not found, probable race condition"
-                    );
-                }
-                if let Some(doc_id) = self.image {
-                    try_delete_document(&conn, doc_id).await?;
-                }
-                Ok(())
+        conn.transaction(async move |mut conn| {
+            if !self.delete(&mut conn).await? {
+                tracing::warn!(
+                    project_id = self.id,
+                    "project to delete not found, probable race condition"
+                );
             }
-            .scope_boxed()
+            if let Some(doc_id) = self.image {
+                try_delete_document(&conn, doc_id).await?;
+            }
+            Ok(())
         })
         .await
     }
@@ -156,38 +145,33 @@ impl Project {
     ///
     /// The [Project::last_modification] field is updated to the current time after the function is called.
     #[tracing::instrument(skip(conn, f), err)]
-    pub async fn transactional_content_update<T, E, F>(
+    pub async fn transactional_content_update<T, E, F, Fut>(
         conn: DbConnection,
         project_id: i64,
         f: F,
     ) -> Result<Result<T, E>, Error>
     where
-        T: Send,
-        E: Send,
-        F: FnOnce(DbConnection, Self) -> ScopedBoxFuture<'static, 'static, Result<T, E>> + Send,
+        F: FnOnce(DbConnection, Self) -> Fut,
+        Fut: Future<Output = Result<T, E>>,
     {
-        conn.transaction(|mut conn| {
-            async move {
-                let project = Self::retrieve_or_fail(conn.clone(), project_id, || {
-                    Error::NotFound { project_id }
-                })
-                .await?;
-
-                let id = project.id;
-                let res = f(conn.clone(), project).await;
-                let res = match res {
-                    Ok(t) => t,
-                    Err(e) => return Ok(Err(e)),
-                };
-
-                Project::changeset()
-                    .last_modification(Utc::now())
-                    .update(&mut conn, id)
+        conn.transaction(async move |mut conn| {
+            let project =
+                Self::retrieve_or_fail(conn.clone(), project_id, || Error::NotFound { project_id })
                     .await?;
 
-                Ok(Ok(res))
-            }
-            .scope_boxed()
+            let id = project.id;
+            let res = f(conn.clone(), project).await;
+            let res = match res {
+                Ok(t) => t,
+                Err(e) => return Ok(Err(e)),
+            };
+
+            Project::changeset()
+                .last_modification(Utc::now())
+                .update(&mut conn, id)
+                .await?;
+
+            Ok(Ok(res))
         })
         .await
     }

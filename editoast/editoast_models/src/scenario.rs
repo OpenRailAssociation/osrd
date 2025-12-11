@@ -5,8 +5,6 @@ use chrono::Utc;
 use diesel::ExpressionMethods;
 use diesel::QueryDsl;
 use diesel_async::RunQueryDsl;
-use diesel_async::scoped_futures::ScopedBoxFuture;
-use diesel_async::scoped_futures::ScopedFutureExt as _;
 use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
@@ -93,57 +91,44 @@ impl Scenario {
     ///
     /// The last modification field of these three objects are updated before the transaction is committed.
     #[tracing::instrument(skip(conn, f), err)]
-    pub async fn transactional_content_update<T, E, F>(
+    pub async fn transactional_content_update<T, E, F, Fut>(
         conn: DbConnection,
         scenario_id: i64,
         f: F,
     ) -> Result<Result<T, E>, Error>
     where
-        T: Send,
-        E: Send,
-        F: FnOnce(
-                DbConnection,
-                Self,
-                Study,
-                Project,
-            ) -> ScopedBoxFuture<'static, 'static, Result<T, E>>
-            + Send
-            + 'static,
+        F: FnOnce(DbConnection, Self, Study, Project) -> Fut,
+        Fut: Future<Output = Result<T, E>>,
     {
-        conn.transaction(|mut conn| {
-            async move {
-                let scenario = Self::retrieve_or_fail(conn.clone(), scenario_id, || {
-                    Error::NotFound { scenario_id }
-                })
+        conn.transaction(async move |mut conn| {
+            let scenario = Self::retrieve_or_fail(conn.clone(), scenario_id, || Error::NotFound {
+                scenario_id,
+            })
+            .await?;
+
+            let id = scenario.id;
+            let t = Study::transactional_content_update(
+                conn.clone(),
+                scenario.study_id,
+                async move |conn, study, project| f(conn, scenario, study, project).await,
+            )
+            .await;
+
+            let t = match t {
+                Ok(Ok(t)) => t,
+                Ok(Err(e)) => return Ok(Err(e)),
+                Err(super::study::Error::NotFound { .. }) => {
+                    unreachable!("Database integrity error: Scenario's study not found")
+                }
+                Err(super::study::Error::Database(e)) => return Err(e.into()),
+            };
+
+            Scenario::changeset()
+                .last_modification(Utc::now())
+                .update(&mut conn, id)
                 .await?;
 
-                let id = scenario.id;
-                let t = Study::transactional_content_update(
-                    conn.clone(),
-                    scenario.study_id,
-                    |conn, study, project| {
-                        async move { f(conn, scenario, study, project).await }.scope_boxed()
-                    },
-                )
-                .await;
-
-                let t = match t {
-                    Ok(Ok(t)) => t,
-                    Ok(Err(e)) => return Ok(Err(e)),
-                    Err(super::study::Error::NotFound { .. }) => {
-                        unreachable!("Database integrity error: Scenario's study not found")
-                    }
-                    Err(super::study::Error::Database(e)) => return Err(e.into()),
-                };
-
-                Scenario::changeset()
-                    .last_modification(Utc::now())
-                    .update(&mut conn, id)
-                    .await?;
-
-                Ok(Ok(t))
-            }
-            .scope_boxed()
+            Ok(Ok(t))
         })
         .await
     }

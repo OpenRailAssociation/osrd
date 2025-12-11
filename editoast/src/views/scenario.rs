@@ -12,7 +12,6 @@ use axum::response::IntoResponse;
 use chrono::Utc;
 use database::DbConnection;
 use database::DbConnectionPoolV2;
-use diesel_async::scoped_futures::ScopedFutureExt;
 use editoast_derive::EditoastError;
 use editoast_models::prelude::*;
 use serde::Deserialize;
@@ -204,24 +203,21 @@ pub(in crate::views) async fn create(
     let details = Study::transactional_content_update(
         db_pool.get().await?,
         study_id,
-        move |mut conn, study, _project| {
-            async move {
-                Timetable::exists_or_fail(&mut conn, timetable_id, || {
-                    ScenarioError::TimetableNotFound { timetable_id }
-                })
-                .await?;
+        async move |mut conn, study, _project| {
+            Timetable::exists_or_fail(&mut conn, timetable_id, || {
+                ScenarioError::TimetableNotFound { timetable_id }
+            })
+            .await?;
 
-                Infra::exists_or_fail(&mut conn, infra_id, || ScenarioError::InfraNotFound {
-                    infra_id,
-                })
-                .await?;
+            Infra::exists_or_fail(&mut conn, infra_id, || ScenarioError::InfraNotFound {
+                infra_id,
+            })
+            .await?;
 
-                let scenario = scenario_cs.study_id(study.id).create(&mut conn).await?;
+            let scenario = scenario_cs.study_id(study.id).create(&mut conn).await?;
 
-                let details = ScenarioWithDetails::from_scenario(scenario, &mut conn).await?;
-                Ok::<_, InternalError>(details)
-            }
-            .scope_boxed()
+            let details = ScenarioWithDetails::from_scenario(scenario, &mut conn).await?;
+            Ok::<_, InternalError>(details)
         },
     )
     .await
@@ -255,30 +251,24 @@ pub(in crate::views) async fn delete(
 
     let conn = db_pool.get().await?;
 
-    conn.transaction(|conn| {
-        async move {
-            let scenario = Scenario::retrieve_or_fail(conn.clone(), scenario_id, || {
-                ScenarioError::NotFound { scenario_id }
-            })
-            .await?;
+    conn.transaction(async move |conn| {
+        let scenario = Scenario::retrieve_or_fail(conn.clone(), scenario_id, || {
+            ScenarioError::NotFound { scenario_id }
+        })
+        .await?;
 
-            Study::transactional_content_update(
-                conn,
-                scenario.study_id,
-                move |mut conn, _study, _project| {
-                    async move {
-                        scenario.delete(&mut conn).await?;
-                        Ok::<_, ScenarioError>(())
-                    }
-                    .scope_boxed()
-                },
-            )
-            .await
-            .map_err(ScenarioError::from)??;
+        Study::transactional_content_update(
+            conn,
+            scenario.study_id,
+            async move |mut conn, _study, _project| {
+                scenario.delete(&mut conn).await?;
+                Ok::<_, ScenarioError>(())
+            },
+        )
+        .await
+        .map_err(ScenarioError::from)??;
 
-            Ok::<_, ScenarioError>(())
-        }
-        .scope_boxed()
+        Ok::<_, ScenarioError>(())
     })
     .await?;
 
@@ -336,26 +326,23 @@ pub(in crate::views) async fn patch(
     let details = Scenario::transactional_content_update(
         db_pool.get().await?,
         scenario_id,
-        move |mut conn, _scenario, _study, _project| {
-            async move {
-                if let Some(infra_id) = form.infra_id {
-                    Infra::exists_or_fail(&mut conn, infra_id, || ScenarioError::InfraNotFound {
-                        infra_id,
-                    })
-                    .await?;
-                }
-
-                let scenario_cs = form.into_changeset();
-                let scenario = scenario_cs
-                    .update_or_fail(&mut conn, scenario_id, || ScenarioError::NotFound {
-                        scenario_id,
-                    })
-                    .await?;
-
-                let details = ScenarioWithDetails::from_scenario(scenario, &mut conn).await?;
-                Ok::<_, ScenarioError>(details)
+        async move |mut conn, _scenario, _study, _project| {
+            if let Some(infra_id) = form.infra_id {
+                Infra::exists_or_fail(&mut conn, infra_id, || ScenarioError::InfraNotFound {
+                    infra_id,
+                })
+                .await?;
             }
-            .scope_boxed()
+
+            let scenario_cs = form.into_changeset();
+            let scenario = scenario_cs
+                .update_or_fail(&mut conn, scenario_id, || ScenarioError::NotFound {
+                    scenario_id,
+                })
+                .await?;
+
+            let details = ScenarioWithDetails::from_scenario(scenario, &mut conn).await?;
+            Ok::<_, ScenarioError>(details)
         },
     )
     .await
@@ -390,32 +377,28 @@ pub(in crate::views) async fn get(
     let (details, project, study) = db_pool
         .get()
         .await?
-        .transaction(|mut conn| {
-            async move {
-                let scenario = Scenario::retrieve_or_fail(conn.clone(), scenario_id, || {
-                    ScenarioError::NotFound { scenario_id }
+        .transaction(async move |mut conn| {
+            let scenario = Scenario::retrieve_or_fail(conn.clone(), scenario_id, || {
+                ScenarioError::NotFound { scenario_id }
+            })
+            .await?;
+            let study =
+                Study::retrieve_or_fail(conn.clone(), scenario.study_id, || StudyError::NotFound {
+                    study_id: scenario.study_id,
                 })
                 .await?;
-                let study = Study::retrieve_or_fail(conn.clone(), scenario.study_id, || {
-                    StudyError::NotFound {
-                        study_id: scenario.study_id,
-                    }
-                })
-                .await?;
-                let project = Project::retrieve_or_fail(conn.clone(), study.project_id, || {
-                    ProjectError::NotFound {
-                        project_id: study.project_id,
-                    }
-                })
-                .await?;
+            let project = Project::retrieve_or_fail(conn.clone(), study.project_id, || {
+                ProjectError::NotFound {
+                    project_id: study.project_id,
+                }
+            })
+            .await?;
 
-                Ok::<_, InternalError>((
-                    ScenarioWithDetails::from_scenario(scenario, &mut conn).await?,
-                    project,
-                    study,
-                ))
-            }
-            .scope_boxed()
+            Ok::<_, InternalError>((
+                ScenarioWithDetails::from_scenario(scenario, &mut conn).await?,
+                project,
+                study,
+            ))
         })
         .await?;
 

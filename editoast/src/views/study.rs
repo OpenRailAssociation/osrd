@@ -10,7 +10,6 @@ use chrono::NaiveDate;
 use chrono::Utc;
 use database::DbConnection;
 use database::DbConnectionPoolV2;
-use diesel_async::scoped_futures::ScopedFutureExt;
 use editoast_derive::EditoastError;
 use serde::Deserialize;
 use serde::Serialize;
@@ -188,12 +187,9 @@ pub(in crate::views) async fn create(
     let study = Project::transactional_content_update(
         db_pool.get().await?,
         data.project_id,
-        |mut conn, _project| {
-            async move {
-                let study = data.into_study_changeset().create(&mut conn).await?;
-                Ok::<_, InternalError>(study)
-            }
-            .scope_boxed()
+        async move |mut conn, _project| {
+            let study = data.into_study_changeset().create(&mut conn).await?;
+            Ok::<_, InternalError>(study)
         },
     )
     .await
@@ -238,29 +234,20 @@ pub(in crate::views) async fn delete(
 
     let conn = db_pool.get().await?;
 
-    conn.transaction(|conn| {
-        async move {
-            let study = Study::retrieve_or_fail(conn.clone(), study_id, || StudyError::NotFound {
-                study_id,
-            })
-            .await?;
+    conn.transaction(async move |conn| {
+        let study =
+            Study::retrieve_or_fail(conn.clone(), study_id, || StudyError::NotFound { study_id })
+                .await?;
 
-            Project::transactional_content_update(conn, study.project_id, |mut conn, _| {
-                async move {
-                    Study::delete_static_or_fail(&mut conn, study_id, || StudyError::NotFound {
-                        study_id,
-                    })
-                    .await?;
-                    Ok::<_, StudyError>(())
-                }
-                .scope_boxed()
-            })
-            .await
-            .map_err(StudyError::from)??;
-
+        Project::transactional_content_update(conn, study.project_id, async move |mut conn, _| {
+            Study::delete_static_or_fail(&mut conn, study_id, || StudyError::NotFound { study_id })
+                .await?;
             Ok::<_, StudyError>(())
-        }
-        .scope_boxed()
+        })
+        .await
+        .map_err(StudyError::from)??;
+
+        Ok::<_, StudyError>(())
     })
     .await?;
 
@@ -293,23 +280,20 @@ pub(in crate::views) async fn get(
     let (study_scenarios, project) = db_pool
         .get()
         .await?
-        .transaction(|mut conn| {
-            async move {
-                let study = Study::retrieve_or_fail(conn.clone(), study_id, || {
-                    StudyError::NotFound { study_id }
-                })
-                .await?;
-                let project = Project::retrieve_or_fail(conn.clone(), study.project_id, || {
-                    ProjectError::NotFound {
-                        project_id: study.project_id,
-                    }
-                })
-                .await?;
+        .transaction(async move |mut conn| {
+            let study = Study::retrieve_or_fail(conn.clone(), study_id, || StudyError::NotFound {
+                study_id,
+            })
+            .await?;
+            let project = Project::retrieve_or_fail(conn.clone(), study.project_id, || {
+                ProjectError::NotFound {
+                    project_id: study.project_id,
+                }
+            })
+            .await?;
 
-                let study_scenarios = StudyWithScenarioCount::try_fetch(&mut conn, study).await?;
-                Ok::<_, InternalError>((study_scenarios, project))
-            }
-            .scope_boxed()
+            let study_scenarios = StudyWithScenarioCount::try_fetch(&mut conn, study).await?;
+            Ok::<_, InternalError>((study_scenarios, project))
         })
         .await?;
 
@@ -407,16 +391,13 @@ pub(in crate::views) async fn patch(
     let response = Study::transactional_content_update(
         db_pool.get().await?,
         study_id,
-        move |mut conn, _study, _project| {
-            async move {
-                let study = data
-                    .into_study_changeset()?
-                    .update_or_fail(&mut conn, study_id, || StudyError::NotFound { study_id })
-                    .await?;
-                let study_scenarios = StudyWithScenarioCount::try_fetch(&mut conn, study).await?;
-                Ok::<_, InternalError>(study_scenarios)
-            }
-            .scope_boxed()
+        async move |mut conn, _study, _project| {
+            let study = data
+                .into_study_changeset()?
+                .update_or_fail(&mut conn, study_id, || StudyError::NotFound { study_id })
+                .await?;
+            let study_scenarios = StudyWithScenarioCount::try_fetch(&mut conn, study).await?;
+            Ok::<_, InternalError>(study_scenarios)
         },
     )
     .await

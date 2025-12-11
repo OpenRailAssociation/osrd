@@ -9,7 +9,6 @@ use axum::extract::State;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use database::DbConnectionPoolV2;
-use diesel_async::scoped_futures::ScopedFutureExt;
 use editoast_derive::EditoastError;
 use itertools::Itertools;
 use serde::Deserialize;
@@ -206,19 +205,16 @@ pub(in crate::views) async fn create(
     let created = Scenario::transactional_content_update(
         db_pool.get().await?,
         scenario_id,
-        move |mut conn, _scenario, _study, _project| {
-            async move {
-                let changesets: Vec<_> = macro_notes
-                    .into_iter()
-                    .map(|note| note.into_macro_note_changeset(scenario_id))
-                    .collect();
+        async move |mut conn, _scenario, _study, _project| {
+            let changesets: Vec<_> = macro_notes
+                .into_iter()
+                .map(|note| note.into_macro_note_changeset(scenario_id))
+                .collect();
 
-                let created_macro_notes: Vec<_> =
-                    MacroNote::create_batch(&mut conn, changesets).await?;
+            let created_macro_notes: Vec<_> =
+                MacroNote::create_batch(&mut conn, changesets).await?;
 
-                Ok::<_, MacroNoteError>(created_macro_notes)
-            }
-            .scope_boxed()
+            Ok::<_, MacroNoteError>(created_macro_notes)
         },
     )
     .await
@@ -293,36 +289,28 @@ pub(in crate::views) async fn update(
     let conn = db_pool.get().await?;
 
     let updated_macro_note = conn
-        .transaction(|conn| {
-            async move {
-                let note = MacroNote::retrieve_or_fail(conn.clone(), note_id, || {
-                    MacroNoteError::NotFound { note_id }
-                })
-                .await?;
+        .transaction(async move |conn| {
+            let note = MacroNote::retrieve_or_fail(conn.clone(), note_id, || {
+                MacroNoteError::NotFound { note_id }
+            })
+            .await?;
 
-                let updated_macro_note = Scenario::transactional_content_update(
-                    conn,
-                    note.scenario_id,
-                    move |mut conn, scenario, _study, _project| {
-                        async move {
-                            let updated_note = note_form
-                                .into_macro_note_changeset(scenario.id)
-                                .update_or_fail(&mut conn, note_id, || MacroNoteError::NotFound {
-                                    note_id,
-                                })
-                                .await?;
+            let updated_macro_note = Scenario::transactional_content_update(
+                conn,
+                note.scenario_id,
+                async move |mut conn, scenario, _study, _project| {
+                    let updated_note = note_form
+                        .into_macro_note_changeset(scenario.id)
+                        .update_or_fail(&mut conn, note_id, || MacroNoteError::NotFound { note_id })
+                        .await?;
 
-                            Ok::<_, MacroNoteError>(updated_note)
-                        }
-                        .scope_boxed()
-                    },
-                )
-                .await
-                .map_err(MacroNoteError::from)??;
+                    Ok::<_, MacroNoteError>(updated_note)
+                },
+            )
+            .await
+            .map_err(MacroNoteError::from)??;
 
-                Ok::<_, MacroNoteError>(updated_macro_note)
-            }
-            .scope_boxed()
+            Ok::<_, MacroNoteError>(updated_macro_note)
         })
         .await?;
 
@@ -354,30 +342,24 @@ pub(in crate::views) async fn delete(
 
     let conn = db_pool.get().await?;
 
-    conn.transaction(|conn| {
-        async move {
-            let note = MacroNote::retrieve_or_fail(conn.clone(), note_id, || {
-                MacroNoteError::NotFound { note_id }
-            })
-            .await?;
+    conn.transaction(async move |conn| {
+        let note = MacroNote::retrieve_or_fail(conn.clone(), note_id, || {
+            MacroNoteError::NotFound { note_id }
+        })
+        .await?;
 
-            Scenario::transactional_content_update(
-                conn,
-                note.scenario_id,
-                move |mut conn, _scenario, _study, _project| {
-                    async move {
-                        note.delete(&mut conn).await?;
-                        Ok::<_, MacroNoteError>(())
-                    }
-                    .scope_boxed()
-                },
-            )
-            .await
-            .map_err(MacroNoteError::from)??;
+        Scenario::transactional_content_update(
+            conn,
+            note.scenario_id,
+            async move |mut conn, _scenario, _study, _project| {
+                note.delete(&mut conn).await?;
+                Ok::<_, MacroNoteError>(())
+            },
+        )
+        .await
+        .map_err(MacroNoteError::from)??;
 
-            Ok::<_, MacroNoteError>(())
-        }
-        .scope_boxed()
+        Ok::<_, MacroNoteError>(())
     })
     .await?;
 

@@ -3,8 +3,6 @@ use chrono::NaiveDate;
 use chrono::Utc;
 
 use database::DbConnection;
-use diesel_async::scoped_futures::ScopedBoxFuture;
-use diesel_async::scoped_futures::ScopedFutureExt;
 use editoast_derive::Model;
 use serde::Deserialize;
 use serde::Serialize;
@@ -75,49 +73,43 @@ impl Study {
     ///
     /// The last modification field of these objects are updated before the transaction is committed.
     #[tracing::instrument(skip(conn, f), err)]
-    pub async fn transactional_content_update<T, E, F>(
+    pub async fn transactional_content_update<T, E, F, Fut>(
         conn: DbConnection,
         study_id: i64,
         f: F,
     ) -> Result<Result<T, E>, Error>
     where
-        T: Send,
-        E: Send,
-        F: FnOnce(DbConnection, Self, Project) -> ScopedBoxFuture<'static, 'static, Result<T, E>>
-            + Send
-            + 'static,
+        F: FnOnce(DbConnection, Self, Project) -> Fut,
+        Fut: Future<Output = Result<T, E>>,
     {
-        conn.transaction(|mut conn| {
-            async move {
-                let study =
-                    Self::retrieve_or_fail(conn.clone(), study_id, || Error::NotFound { study_id })
-                        .await?;
-
-                let id = study.id;
-                let t = Project::transactional_content_update(
-                    conn.clone(),
-                    study.project_id,
-                    |conn, project| async move { f(conn, study, project).await }.scope_boxed(),
-                )
-                .await;
-
-                let t = match t {
-                    Ok(Ok(t)) => t,
-                    Ok(Err(e)) => return Ok(Err(e)),
-                    Err(super::project::Error::NotFound { .. }) => {
-                        unreachable!("Database integrity error: Study's project not found")
-                    }
-                    Err(super::project::Error::Database(e)) => return Err(e.into()),
-                };
-
-                Study::changeset()
-                    .last_modification(Utc::now())
-                    .update(&mut conn, id)
+        conn.transaction(async move |mut conn| {
+            let study =
+                Self::retrieve_or_fail(conn.clone(), study_id, || Error::NotFound { study_id })
                     .await?;
 
-                Ok(Ok(t))
-            }
-            .scope_boxed()
+            let id = study.id;
+            let t = Project::transactional_content_update(
+                conn.clone(),
+                study.project_id,
+                async move |conn, project| f(conn, study, project).await,
+            )
+            .await;
+
+            let t = match t {
+                Ok(Ok(t)) => t,
+                Ok(Err(e)) => return Ok(Err(e)),
+                Err(super::project::Error::NotFound { .. }) => {
+                    unreachable!("Database integrity error: Study's project not found")
+                }
+                Err(super::project::Error::Database(e)) => return Err(e.into()),
+            };
+
+            Study::changeset()
+                .last_modification(Utc::now())
+                .update(&mut conn, id)
+                .await?;
+
+            Ok(Ok(t))
         })
         .await
     }
