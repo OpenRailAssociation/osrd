@@ -461,9 +461,11 @@ fn service_router() -> router::DocumentedRouter {
             //
             .nests("/train_schedule_set", |path| {
                 path.route("/", post!(train_schedule_set::post))
+                    .route("/", get!(train_schedule_set::get))
             })
             .nests("/catalogue_entry", |path| {
                 path.route("/", post!(catalogue_entry::post))
+                    .route("/", get!(catalogue_entry::get))
             })
     })
 }
