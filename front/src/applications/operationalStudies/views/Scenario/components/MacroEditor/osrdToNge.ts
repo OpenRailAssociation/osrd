@@ -18,7 +18,7 @@ import { isPacedTrainResponseWithPaced } from 'modules/timetableItem/helpers/pac
 import type { TimetableItem, TimetableItemWithPathOps } from 'reducers/osrdconf/types';
 import type { AppDispatch } from 'store';
 import { Duration, addDurationToDate } from 'utils/duration';
-import { formatEditoastIdToPacedTrainId, formatEditoastIdToTrainScheduleId } from 'utils/trainId';
+import { formatEditoastIdToPacedTrainId } from 'utils/trainId';
 
 import {
   TRAINRUN_CATEGORY_HALTEZEITEN,
@@ -711,19 +711,6 @@ export const loadNgeDto = async (
 
   const notes = notesResult.results;
 
-  const trainSchedulesPromise = dispatch(
-    osrdEditoastApi.endpoints.getAllTimetableByIdTrainSchedules.initiate(
-      { timetableId },
-      { subscribe: false }
-    )
-  );
-  const trainSchedules = (await trainSchedulesPromise.unwrap())
-    .filter((trainSchedule) => trainSchedule.path.length >= 2)
-    .map((trainSchedule) => ({
-      ...trainSchedule,
-      id: formatEditoastIdToTrainScheduleId(trainSchedule.id),
-    }));
-
   const pacedTrainsPromise = dispatch(
     osrdEditoastApi.endpoints.getAllTimetableByIdPacedTrains.initiate(
       { timetableId },
@@ -737,32 +724,21 @@ export const loadNgeDto = async (
       id: formatEditoastIdToPacedTrainId(pacedTrain.id),
     }));
 
-  const timetableItems = await fetchTimetableItemPathOps(
-    state.infraId,
-    [...trainSchedules, ...pacedTrains],
-    dispatch
-  );
+  const timetableItems = await fetchTimetableItemPathOps(state.infraId, pacedTrains, dispatch);
 
   const timetableItemsById = new Map(
     timetableItems.map((timetableItem) => [timetableItem.id, timetableItem])
   );
 
-  const trainScheduleRoundTripsPromise = dispatch(
-    osrdEditoastApi.endpoints.getTimetableByIdRoundTripsTrainSchedules.initiate(
-      { id: timetableId },
-      { subscribe: false }
-    )
-  );
   const pacedTrainRoundTripsPromise = dispatch(
     osrdEditoastApi.endpoints.getTimetableByIdRoundTripsPacedTrains.initiate(
       { id: timetableId },
       { subscribe: false }
     )
   );
-  const { results: trainScheduleRoundTrips } = await trainScheduleRoundTripsPromise.unwrap();
   const { results: pacedTrainRoundTrips } = await pacedTrainRoundTripsPromise.unwrap();
   const roundTripGroups = groupRoundTrips(timetableItemsById, {
-    trainSchedules: trainScheduleRoundTrips,
+    trainSchedules: {},
     pacedTrains: pacedTrainRoundTrips,
   });
   const groupedTimetableItems = groupCompatibleRoundTrips(roundTripGroups);

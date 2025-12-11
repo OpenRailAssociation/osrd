@@ -21,7 +21,6 @@ import {
   type PostTimetableByIdStdcmApiResponse,
   type RelatedOperationalPoint,
   type SimulationResponse,
-  type TrainScheduleResponse,
 } from './generatedEditoastApi';
 
 // Type extension for PostTimetableByIdStdcm to include traceId
@@ -32,34 +31,6 @@ export type PostTimetableByIdStdcmApiResponseWithTraceId = PostTimetableByIdStdc
 const osrdEditoastApi = generatedEditoastApi
   .injectEndpoints({
     endpoints: (builder) => ({
-      getAllTimetableByIdTrainSchedules: builder.query<
-        TrainScheduleResponse[],
-        { timetableId: number }
-      >({
-        queryFn: async ({ timetableId }, { dispatch }) => {
-          const pageSize = 200;
-          let page = 1;
-          let reachEnd = false;
-          const result: TrainScheduleResponse[] = [];
-          while (!reachEnd) {
-            const data = await dispatch(
-              osrdEditoastApi.endpoints.getTimetableByIdTrainSchedules.initiate(
-                {
-                  id: timetableId,
-                  pageSize,
-                  page,
-                },
-                { subscribe: false }
-              )
-            ).unwrap();
-            result.push(...data.results);
-            reachEnd = isNil(data.next);
-            page += 1;
-          }
-          return { data: result };
-        },
-        providesTags: ['timetable'],
-      }),
       getAllTimetableByIdPacedTrains: builder.query<PacedTrainResponse[], { timetableId: number }>({
         queryFn: async ({ timetableId }, { dispatch }) => {
           const pageSize = 200;
