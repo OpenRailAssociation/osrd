@@ -5,7 +5,6 @@ import type {
   TimetableItemId,
   TimetableItem,
   TrainScheduleId,
-  TrainScheduleWithTrainId,
 } from 'reducers/osrdconf/types';
 import {
   unsetTrainIdsMatching,
@@ -14,7 +13,6 @@ import {
 import type { AppDispatch } from 'store';
 import {
   extractEditoastIdFromPacedTrainId,
-  formatEditoastIdToTrainScheduleId,
   extractEditoastIdFromTrainScheduleId,
   formatEditoastIdToPacedTrainId,
   isPacedTrainId,
@@ -47,23 +45,6 @@ export async function fetchTimetableItem(
     )
   ).unwrap();
   return { ...trainSchedule, id: timetableItemId };
-}
-
-export async function createTrainSchedule(
-  dispatch: AppDispatch,
-  timetableId: number,
-  trainSchedule: TrainSchedule
-): Promise<TrainScheduleWithTrainId> {
-  const newTrainSchedules = await dispatch(
-    osrdEditoastApi.endpoints.postTimetableByIdTrainSchedules.initiate({
-      id: timetableId,
-      body: [trainSchedule],
-    })
-  ).unwrap();
-  return {
-    ...newTrainSchedules[0],
-    id: formatEditoastIdToTrainScheduleId(newTrainSchedules[0].id),
-  };
 }
 
 export async function createPacedTrain(
@@ -127,7 +108,7 @@ export async function storeTrainSchedule(
   dispatch: AppDispatch,
   upsertTimetableItems: (timetableItems: TimetableItem[]) => void,
   removeTimetableItems: (timetableItems: TimetableItemId[]) => void
-): Promise<TrainScheduleWithTrainId> {
+): Promise<TimetableItem> {
   if (isTrainScheduleId(timetableItemIdToUpdate)) {
     await updateTrainSchedule(dispatch, timetableItemIdToUpdate, trainSchedule);
     const updatedTrainSchedule = {
@@ -141,7 +122,7 @@ export async function storeTrainSchedule(
 
   // Turn a PacedTrain into a TrainSchedule
   await deletePacedTrains(dispatch, [timetableItemIdToUpdate]);
-  const newTrainSchedule = await createTrainSchedule(dispatch, timetableId, trainSchedule);
+  const newTrainSchedule = await createPacedTrain(dispatch, timetableId, trainSchedule);
 
   removeTimetableItems([timetableItemIdToUpdate]);
   upsertTimetableItems([newTrainSchedule]);

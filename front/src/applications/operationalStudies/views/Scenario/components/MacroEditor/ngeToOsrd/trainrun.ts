@@ -10,7 +10,6 @@ import {
 import { isPacedTrainWithPaced } from 'modules/timetableItem/helpers/pacedTrain';
 import {
   createPacedTrain,
-  createTrainSchedule,
   deletePacedTrains,
   deleteTrainSchedules,
   fetchTimetableItem,
@@ -687,11 +686,7 @@ export const handleUpdateTimetableItem = async ({
         ...returnPathAndSchedule,
       };
 
-      newReturnTimetableItem = await createTrainSchedule(
-        dispatch,
-        timetableId,
-        returnTrainSchedule
-      );
+      newReturnTimetableItem = await createPacedTrain(dispatch, timetableId, returnTrainSchedule);
     }
 
     addUpsertedTimetableItems([newReturnTimetableItem]);
