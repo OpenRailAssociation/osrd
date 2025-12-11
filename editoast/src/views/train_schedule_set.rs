@@ -1,4 +1,6 @@
+use axum::extract::Query;
 use database::DbConnectionPoolV2;
+use utoipa::IntoParams;
 use utoipa::ToSchema;
 
 use crate::error::Result;
@@ -61,4 +63,48 @@ pub(in crate::views) async fn post(
     };
 
     Ok(Json(train_schedule_set_response))
+}
+
+#[derive(IntoParams, Serialize, Deserialize, ToSchema)]
+#[into_params(parameter_in = Query)]
+pub(in crate::views) struct TrainScheduleSetQueryParams {
+    catalogue_entry_id: Option<i64>,
+    published: Option<bool>,
+}
+
+#[editoast_derive::route]
+#[utoipa::path(
+    get, path = "",
+    tag = "train_schedule_set",
+    params(TrainScheduleSetQueryParams),
+    responses(
+        (status = 200, description = "list of train schedule sets", body = inline(Vec<TrainScheduleSetResponse>)),
+    ),
+)]
+pub(in crate::views) async fn get(
+    State(_db_pool): State<Arc<DbConnectionPoolV2>>,
+    Extension(auth): AuthenticationExt,
+    Query(TrainScheduleSetQueryParams {
+        catalogue_entry_id: _,
+        published: _,
+    }): Query<TrainScheduleSetQueryParams>,
+) -> Result<Json<Vec<TrainScheduleSetResponse>>> {
+    let authorized = auth
+        .check_roles([authz::Role::OperationalStudies].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Forbidden.into());
+    }
+
+    Ok(Json(vec![TrainScheduleSetResponse {
+        train_schedule_set: TrainScheduleSet {
+            id: 0,
+            catalogue_entry_id: None,
+            name: Some("to_be_implemented".to_string()),
+            description: "to_be_implemented".to_string(),
+            published: false,
+        },
+        train_schedule_count: 0,
+    }]))
 }
