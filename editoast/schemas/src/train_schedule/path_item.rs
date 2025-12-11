@@ -62,7 +62,8 @@ pub enum TrackReference {
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, ToSchema, Hash)]
-#[serde(untagged, deny_unknown_fields)]
+#[serde(deny_unknown_fields)]
+#[serde(tag = "type", rename_all = "lowercase")]
 pub enum OperationalPointIdentifier {
     #[schema(title = "OperationalPointIdentifierId")]
     Id {

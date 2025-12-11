@@ -47,13 +47,13 @@ const useLinkedTrainSearch = () => {
     async (pathItem: PathItem) => {
       if (
         !('operational_point' in pathItem.location) ||
-        (!('operational_point' in pathItem.location.operational_point) &&
-          !('uic' in pathItem.location.operational_point))
+        (pathItem.location.operational_point.type !== 'id' &&
+          pathItem.location.operational_point.type !== 'uic')
       )
         return undefined;
 
       const pathItemQuery =
-        'operational_point' in pathItem.location.operational_point
+        pathItem.location.operational_point.type === 'id'
           ? ['=', ['obj_id'], pathItem.location.operational_point.operational_point]
           : ([
               'and',

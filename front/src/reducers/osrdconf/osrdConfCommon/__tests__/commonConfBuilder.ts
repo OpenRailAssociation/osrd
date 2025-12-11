@@ -5,7 +5,7 @@ export default function commonConfBuilder() {
   return {
     buildPathSteps: (): PathStep[] => [
       {
-        location: { operational_point: { uic: 474007 } },
+        location: { operational_point: { uic: 474007, type: 'uic' } },
         id: 'brest',
         coordinates: [48.38819835024553, -4.478289762812405],
       },
@@ -40,6 +40,7 @@ export default function commonConfBuilder() {
         location: {
           operational_point: {
             operational_point: 'strasbourg',
+            type: 'id',
           },
         },
         id: 'strasbourg',

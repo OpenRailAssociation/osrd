@@ -31,8 +31,8 @@ export const usePathStepsMetadata = (pathSteps: PathStepV2[]) => {
         if (!step.location) return acc;
         if ('operational_point' in step.location) {
           if (
-            'uic' in step.location.operational_point ||
-            'trigram' in step.location.operational_point
+            step.location.operational_point.type === 'uic' ||
+            step.location.operational_point.type === 'trigram'
           ) {
             // strip location from its secondary_code so we can have all matchs for an uic or trigram
             const { secondary_code: _secCode, ...operational_point } =
@@ -68,7 +68,7 @@ export const usePathStepsMetadata = (pathSteps: PathStepV2[]) => {
       if (
         step.location &&
         'operational_point' in step.location &&
-        'operational_point' in step.location.operational_point
+        step.location.operational_point.type === 'id'
       ) {
         acc.push(step.location.operational_point.operational_point);
       }
@@ -80,7 +80,7 @@ export const usePathStepsMetadata = (pathSteps: PathStepV2[]) => {
     return pathStepsOperationalPoints.reduce<OperationalPointReference[]>((acc, op) => {
       const uic = op.extensions?.identifier?.uic;
       if (uic && opIds.includes(op.id)) {
-        acc.push({ operational_point: { uic } });
+        acc.push({ operational_point: { uic, type: 'uic' } });
       }
       return acc;
     }, []);
@@ -166,10 +166,10 @@ export const usePathStepsMetadata = (pathSteps: PathStepV2[]) => {
         // Find the matching operational point for this pathStep to get
         // its valid status and its name
         const matchedOp = allOps.find((op) => {
-          if ('operational_point' in location.operational_point) {
+          if (location.operational_point.type === 'id') {
             return location.operational_point.operational_point === op.id;
           }
-          if ('uic' in location.operational_point) {
+          if (location.operational_point.type === 'uic') {
             return (
               location.operational_point.uic === op.extensions?.identifier?.uic &&
               location.operational_point.secondary_code === op.extensions?.sncf?.ch

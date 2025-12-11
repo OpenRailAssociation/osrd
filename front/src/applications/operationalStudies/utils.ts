@@ -472,8 +472,8 @@ export const groupRoundTrips = (
 };
 
 export const getInvalidStepLabel = (opId: OperationalPointIdentifier) => {
-  if ('uic' in opId) return opId.uic.toString();
-  if ('trigram' in opId) return opId.trigram;
+  if (opId.type === 'uic') return opId.uic.toString();
+  if (opId.type === 'trigram') return opId.trigram;
   return opId.operational_point;
 };
 
@@ -483,10 +483,10 @@ export const matchOpRefAndOp = (
 ) => {
   if ('track' in location) return false;
 
-  if ('operational_point' in location.operational_point) {
+  if (location.operational_point.type === 'id') {
     return location.operational_point.operational_point === op.id;
   }
-  if ('uic' in location.operational_point) {
+  if (location.operational_point.type === 'uic') {
     return (
       location.operational_point.uic === op.extensions?.identifier?.uic &&
       location.operational_point.secondary_code === op.extensions?.sncf?.ch

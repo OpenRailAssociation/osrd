@@ -78,7 +78,7 @@ export function upsertPathStep(statePathSteps: (PathStep | null)[], op: Suggeste
     ]),
     id: uuidV4(),
     location: op.uic
-      ? { operational_point: { uic: op.uic, secondary_code: op.ch } }
+      ? { operational_point: { uic: op.uic, secondary_code: op.ch, type: 'uic' } }
       : {
           track: op.track,
           offset: op.offsetOnTrack,

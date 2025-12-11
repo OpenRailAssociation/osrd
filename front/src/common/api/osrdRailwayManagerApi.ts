@@ -105,16 +105,19 @@ export type Items = {
             | {
                 /** The object id of an operational point */
                 operational_point: string;
+                type: 'id';
               }
             | {
                 /** An optional secondary code to identify a more specific location */
                 secondary_code?: string | null;
                 /** The operational point trigram */
                 trigram: string;
+                type: 'trigram';
               }
             | {
                 /** An optional secondary code to identify a more specific location */
                 secondary_code?: string | null;
+                type: 'uic';
                 /** The [UIC](https://en.wikipedia.org/wiki/List_of_UIC_country_codes) code of an operational point */
                 uic: number;
               };
@@ -178,16 +181,19 @@ export type Items2 = {
           | {
               /** The object id of an operational point */
               operational_point: string;
+              type: 'id';
             }
           | {
               /** An optional secondary code to identify a more specific location */
               secondary_code?: string | null;
               /** The operational point trigram */
               trigram: string;
+              type: 'trigram';
             }
           | {
               /** An optional secondary code to identify a more specific location */
               secondary_code?: string | null;
+              type: 'uic';
               /** The [UIC](https://en.wikipedia.org/wiki/List_of_UIC_country_codes) code of an operational point */
               uic: number;
             };
@@ -286,16 +292,19 @@ export type TransformTimetableResponse = {
               | {
                   /** The object id of an operational point */
                   operational_point: string;
+                  type: 'id';
                 }
               | {
                   /** An optional secondary code to identify a more specific location */
                   secondary_code?: string | null;
                   /** The operational point trigram */
                   trigram: string;
+                  type: 'trigram';
                 }
               | {
                   /** An optional secondary code to identify a more specific location */
                   secondary_code?: string | null;
+                  type: 'uic';
                   /** The [UIC](https://en.wikipedia.org/wiki/List_of_UIC_country_codes) code of an operational point */
                   uic: number;
                 };

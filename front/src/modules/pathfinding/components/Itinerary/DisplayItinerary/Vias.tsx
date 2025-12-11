@@ -44,17 +44,18 @@ const Vias = ({ zoomToFeaturePoint }: ViasProps) => {
                 {`${via.name || (via.positionOnPath && `KM ${(Math.round(via.positionOnPath) / 1000000).toFixed(3)}`) || t('unavailableDistance')}`}
               </small>
               {'operational_point' in via.location &&
-                'secondary_code' in via.location.operational_point &&
+                via.location.operational_point.type !== 'id' &&
                 via.location.operational_point.secondary_code && (
                   <small data-testid="via-dropped-ch">
                     {via.location.operational_point.secondary_code}
                   </small>
                 )}
-              {'operational_point' in via.location && 'uic' in via.location.operational_point && (
-                <small data-testid="via-dropped-uic" className="text-muted ml-3">
-                  {formatUicToCi(via.location.operational_point.uic)}
-                </small>
-              )}
+              {'operational_point' in via.location &&
+                via.location.operational_point.type === 'uic' && (
+                  <small data-testid="via-dropped-uic" className="text-muted ml-3">
+                    {formatUicToCi(via.location.operational_point.uic)}
+                  </small>
+                )}
             </div>
             <button
               data-testid="delete-via-button"

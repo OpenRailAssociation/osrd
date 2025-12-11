@@ -91,12 +91,16 @@ export const buildSteps = (
     if (!Number.isNaN(step.uic)) {
       path.push({
         id,
-        location: { operational_point: { uic: step.uic, secondary_code: step.chCode } },
+        location: {
+          operational_point: { uic: step.uic, secondary_code: step.chCode, type: 'uic' },
+        },
       });
     } else {
       path.push({
         id,
-        location: { operational_point: { trigram: step.name, secondary_code: step.chCode } },
+        location: {
+          operational_point: { trigram: step.name, secondary_code: step.chCode, type: 'trigram' },
+        },
       });
     }
     if (path.length > 1) {

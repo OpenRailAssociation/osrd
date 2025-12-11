@@ -19,6 +19,7 @@ describe('reversePathSteps', () => {
         operational_point: {
           uic: 87447219,
           secondary_code: '00',
+          type: 'uic',
         },
       },
     },
@@ -35,6 +36,7 @@ describe('reversePathSteps', () => {
         operational_point: {
           uic: 87447219,
           secondary_code: 'JS',
+          type: 'uic',
         },
       },
     },
@@ -49,6 +51,7 @@ describe('reversePathSteps', () => {
         operational_point: {
           uic: 87447185,
           secondary_code: '00',
+          type: 'uic',
         },
       },
     },
@@ -64,6 +67,7 @@ describe('reversePathSteps', () => {
         operational_point: {
           uic: 87447003,
           secondary_code: '00',
+          type: 'uic',
         },
       },
     },
@@ -85,6 +89,7 @@ describe('reversePathSteps', () => {
         operational_point: {
           uic: 87447144,
           secondary_code: '00',
+          type: 'uic',
         },
         track_reference: null,
       },
@@ -105,6 +110,7 @@ describe('reversePathSteps', () => {
         operational_point: {
           uic: 87447144,
           secondary_code: '00',
+          type: 'uic',
         },
         track_reference: null,
       },
@@ -141,6 +147,7 @@ describe('reversePathSteps', () => {
         operational_point: {
           uic: 87447003,
           secondary_code: '00',
+          type: 'uic',
         },
       },
     },
@@ -155,6 +162,7 @@ describe('reversePathSteps', () => {
         operational_point: {
           uic: 87447185,
           secondary_code: '00',
+          type: 'uic',
         },
       },
     },
@@ -171,6 +179,7 @@ describe('reversePathSteps', () => {
         operational_point: {
           uic: 87447219,
           secondary_code: 'JS',
+          type: 'uic',
         },
       },
     },
@@ -185,6 +194,7 @@ describe('reversePathSteps', () => {
         operational_point: {
           uic: 87447219,
           secondary_code: '00',
+          type: 'uic',
         },
       },
     },

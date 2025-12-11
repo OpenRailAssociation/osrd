@@ -10,6 +10,7 @@
       "location": {
         "operational_point": {
           "uic": 8711,
+          "type": "uic",
           "secondary_code": "BV"
         }
       }
@@ -19,6 +20,7 @@
       "location": {
         "operational_point": {
           "uic": 8733,
+          "type": "uic",
           "secondary_code": "BV"
         }
       }
@@ -28,6 +30,7 @@
       "location": {
         "operational_point": {
           "uic": 8788,
+          "type": "uic",
           "secondary_code": "BV"
         }
       }

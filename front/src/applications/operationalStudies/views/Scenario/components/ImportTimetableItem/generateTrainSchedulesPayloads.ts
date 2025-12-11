@@ -21,7 +21,7 @@ function generateTrainSchedulePayload(train: GraouTrainSchedule): TrainSchedule 
       acc.path.push({
         id: stepId,
         location: {
-          operational_point: { uic, secondary_code: step.chCode },
+          operational_point: { uic, secondary_code: step.chCode, type: 'uic' },
         },
       });
 

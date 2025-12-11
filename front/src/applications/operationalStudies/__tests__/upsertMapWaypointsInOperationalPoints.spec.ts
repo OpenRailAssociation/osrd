@@ -1,7 +1,7 @@
 import type { TFunction } from 'i18next';
 import { describe, it, expect } from 'vitest';
 
-import type { PathProperties } from 'common/api/osrdEditoastApi';
+import type { PathItem, PathProperties } from 'common/api/osrdEditoastApi';
 
 import { upsertMapWaypointsInOperationalPoints } from '../helpers/upsertMapWaypointsInOperationalPoints';
 
@@ -62,13 +62,14 @@ const OPERATIONAL_POINTS = getOperationalPoints([
 
 describe('upsertMapWaypointsInOperationalPoints', () => {
   it('should add waypoints at the good position in a path with operational points', () => {
-    const pathSteps = [
+    const pathSteps: PathItem[] = [
       {
         id: '1',
         location: {
           operational_point: {
             uic: 2,
             secondary_code: 'BV',
+            type: 'uic',
           },
         },
       },
@@ -85,6 +86,7 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
           operational_point: {
             uic: 4,
             secondary_code: 'BV',
+            type: 'uic',
           },
         },
       },
@@ -331,13 +333,14 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
   });
 
   it('should return the same array if there is no waypoints added by map click', () => {
-    const pathSteps = [
+    const pathSteps: PathItem[] = [
       {
         id: '1',
         location: {
           operational_point: {
             uic: 2,
             secondary_code: 'BV',
+            type: 'uic',
           },
         },
       },
@@ -347,6 +350,7 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
           operational_point: {
             uic: 3,
             secondary_code: 'BV',
+            type: 'uic',
           },
         },
       },
@@ -356,6 +360,7 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
           operational_point: {
             uic: 4,
             secondary_code: 'BV',
+            type: 'uic',
           },
         },
       },
