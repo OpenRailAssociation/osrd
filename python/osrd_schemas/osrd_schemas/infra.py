@@ -19,12 +19,12 @@ NonBlankStr = Annotated[str, StringConstraints(min_length=1)]
 
 
 class DetectorReference(BaseModel):
-    type: Literal["Detector"]
+    type: Literal["Detector"] = "Detector"
     id: Identifier = Field(description="Identifier of the detector")
 
 
 class BufferStopReference(BaseModel):
-    type: Literal["BufferStop"]
+    type: Literal["BufferStop"] = "BufferStop"
     id: Identifier = Field(description="Identifier of the buffer stop")
 
 
