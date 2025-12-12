@@ -12834,15 +12834,12 @@ components:
       description: A search result item for a query with `object = "user"`
       required:
       - id
-      - identity_id
       - name
       properties:
         id:
           type: integer
           format: int64
           minimum: 0
-        identity_id:
-          type: string
         name:
           type: string
     Side:

@@ -615,11 +615,6 @@ pub(super) struct SearchResultItemProject {
     migration(src_table = "authn_user"),
     joins = "INNER JOIN authn_user ON authn_user.id = search_user.id",
     column(
-        name = "identity_id",
-        data_type = "TEXT",
-        sql = "authn_user.identity_id"
-    ),
-    column(
         name = "name",
         data_type = "TEXT",
         sql = "authn_user.name",
@@ -630,8 +625,6 @@ pub(super) struct SearchResultItemProject {
 pub(super) struct SearchResultItemUser {
     #[search(sql = "authn_user.id")]
     id: u64,
-    #[search(sql = "authn_user.identity_id")]
-    identity_id: String,
     #[search(sql = "authn_user.name")]
     name: String,
 }

@@ -29,6 +29,8 @@ function useAuth() {
 
   const user = osrdEditoastApi.endpoints.getAuthzMe.useQuery(isUserLogged ? undefined : skipToken);
 
+  const [fetchFullUser] = osrdEditoastApi.endpoints.postAuthzUserInfo.useLazyQuery();
+
   useEffect(() => {
     if (!isUserLogged && !isAuthenticateLoading) {
       login();
@@ -44,8 +46,11 @@ function useAuth() {
   /**
    * Function to impersonate the given user, or if undefined, stop the impersonation.
    */
-  const impersonate = useCallback((userToImpersonate: SearchResultItemUser | undefined) => {
-    dispatch(setImpersonatedUser(userToImpersonate));
+  const impersonate = useCallback(async (userToImpersonate: SearchResultItemUser | undefined) => {
+    const impersonated = userToImpersonate
+      ? (await fetchFullUser({ body: { ids: [userToImpersonate.id], identities: [] } })).data?.[0]
+      : undefined;
+    dispatch(setImpersonatedUser(impersonated));
     dispatch(osrdEditoastApi.util.invalidateTags(addTagTypes.map((t) => ({ type: t }))));
   }, []);
 
