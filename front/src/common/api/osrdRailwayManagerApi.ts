@@ -341,7 +341,7 @@ export type TransformTimetableResponse = {
   }[];
   /** List of paced trains */
   paced_trains: (Items & {
-    paced: {
+    paced?: null | {
       exceptions: ({
         occurrence_index?: number;
       } & {

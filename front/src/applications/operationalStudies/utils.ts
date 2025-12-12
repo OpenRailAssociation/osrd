@@ -16,6 +16,7 @@ import type {
 } from 'common/api/osrdEditoastApi';
 import getPathVoltages from 'modules/pathfinding/helpers/getPathVoltages';
 import { ARRIVAL_TIME_ACCEPTABLE_ERROR } from 'modules/timesStops/consts';
+import { isPacedTrainResponseWithPaced } from 'modules/timetableItem/helpers/pacedTrain';
 import type {
   TimetableItem,
   TimetableItemId,
@@ -24,11 +25,7 @@ import type {
 import { Duration } from 'utils/duration';
 import { mmToM } from 'utils/physics';
 import { SMALL_INPUT_MAX_LENGTH } from 'utils/strings';
-import {
-  formatEditoastIdToPacedTrainId,
-  formatEditoastIdToTrainScheduleId,
-  isPacedTrainResponseWithPacedTrainId,
-} from 'utils/trainId';
+import { formatEditoastIdToPacedTrainId, formatEditoastIdToTrainScheduleId } from 'utils/trainId';
 
 import { upsertMapWaypointsInOperationalPoints } from './helpers/upsertMapWaypointsInOperationalPoints';
 import type {
@@ -361,14 +358,13 @@ export const checkRoundTripCompatible = (
   timetableItemB: TimetableItemWithPathOps
 ): boolean => {
   if (
-    isPacedTrainResponseWithPacedTrainId(timetableItemA) !==
-    isPacedTrainResponseWithPacedTrainId(timetableItemB)
+    isPacedTrainResponseWithPaced(timetableItemA) !== isPacedTrainResponseWithPaced(timetableItemB)
   ) {
     return false;
   }
   if (
-    isPacedTrainResponseWithPacedTrainId(timetableItemA) &&
-    isPacedTrainResponseWithPacedTrainId(timetableItemB) &&
+    isPacedTrainResponseWithPaced(timetableItemA) &&
+    isPacedTrainResponseWithPaced(timetableItemB) &&
     Duration.parse(timetableItemA.paced.interval).ms !==
       Duration.parse(timetableItemB.paced.interval).ms
   ) {

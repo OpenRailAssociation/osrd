@@ -5,6 +5,7 @@ import type {
   TrainCategory,
   TrainMainCategory,
 } from 'common/api/osrdEditoastApi';
+import type { PacedTrainWithPacedWithDetails } from 'modules/timetableItem/types';
 import { defaultMapSettings } from 'reducers/commonMap';
 import type {
   AddedExceptionId,
@@ -71,7 +72,10 @@ describe('formatTimetableItemPayload', () => {
     addedExceptions: [],
   };
   const rollingStockName = 'DUAL-MODE_RS_E2Ee';
-  const rawTimetableItemToEditData: TimetableItemToEditData = {
+  const rawTimetableItemToEditData: {
+    timetableItemId: PacedTrainId;
+    originalPacedTrain: PacedTrainWithPacedWithDetails;
+  } = {
     timetableItemId: 'paced_238' as PacedTrainId,
     originalPacedTrain: {
       category: {
@@ -280,7 +284,10 @@ describe('formatTimetableItemPayload', () => {
           ...rawOsrdconf,
           ...userChanges,
         };
-        const itemDataWithPREVIOUSLYAddedException = {
+        const itemDataWithPREVIOUSLYAddedException: Extract<
+          TimetableItemToEditData,
+          { timetableItemId: PacedTrainId }
+        > = {
           ...rawTimetableItemToEditData,
           originalPacedTrain: {
             ...rawTimetableItemToEditData.originalPacedTrain,
@@ -410,7 +417,7 @@ describe('formatTimetableItemPayload', () => {
             rollingStockName,
             timetableItemToEditDataWithOneChangeGroup
           );
-          expect(result.paced.exceptions).toEqual([]);
+          expect(result.paced?.exceptions).toEqual([]);
         });
       });
       describe('exception is both a label and category exception', () => {
@@ -451,7 +458,7 @@ describe('formatTimetableItemPayload', () => {
             rollingStockName,
             timetableItemToEditDataWithTwoChangeGroups
           );
-          expect(result.paced.exceptions).toEqual([
+          expect(result.paced?.exceptions).toEqual([
             {
               key: 'a6f39ce5-ae64-4135-af9b-22ee19877873',
               occurrence_index: 1,
@@ -477,7 +484,7 @@ describe('formatTimetableItemPayload', () => {
           startTime: new Date('2025-06-02T14:45:00.000Z'), // occurrence with index 2 start time
           name: 'test 5', // occurrence with index 2 generated name
         };
-        const timetableItemToEditDataWithExceptions: TimetableItemToEditData = {
+        const timetableItemToEditDataWithExceptions = {
           ...rawTimetableItemToEditData,
           originalPacedTrain: {
             ...rawTimetableItemToEditData.originalPacedTrain,
@@ -523,7 +530,7 @@ describe('formatTimetableItemPayload', () => {
           timetableItemToEditDataWithExceptions
         );
 
-        expect(result.paced.exceptions).toEqual(expectedPacedTrainExceptions);
+        expect(result.paced?.exceptions).toEqual(expectedPacedTrainExceptions);
       });
     });
 
@@ -616,7 +623,7 @@ describe('formatTimetableItemPayload', () => {
           timetableItemToEditDataWithExceptions
         );
 
-        expect(result.paced.exceptions).toEqual(expectedPacedTrainExceptions);
+        expect(result.paced?.exceptions).toEqual(expectedPacedTrainExceptions);
       });
     });
 
@@ -658,7 +665,7 @@ describe('formatTimetableItemPayload', () => {
           timetableItemToEditDataWithExceptions
         );
 
-        expect(result.paced.exceptions).toEqual([]);
+        expect(result.paced?.exceptions).toEqual([]);
       });
     });
   });

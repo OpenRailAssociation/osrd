@@ -39,7 +39,7 @@ pub struct PacedTrain {
     #[serde(flatten)]
     pub train_schedule_base: TrainSchedule,
     #[schema(inline)]
-    pub paced: Paced,
+    pub paced: Option<Paced>,
 }
 
 impl<'de> Deserialize<'de> for PacedTrain {
@@ -51,35 +51,36 @@ impl<'de> Deserialize<'de> for PacedTrain {
         struct PacedTrainJson {
             #[serde(flatten)]
             pub train_schedule_base: TrainSchedule,
-            pub paced: Paced,
+            pub paced: Option<Paced>,
         }
         let raw = PacedTrainJson::deserialize(deserializer)?;
 
-        let mut seen_keys = HashSet::with_capacity(raw.paced.exceptions.len());
-        for e in &raw.paced.exceptions {
-            if !seen_keys.insert(&e.key) {
-                return Err(serde::de::Error::custom(format!(
-                    "Duplicate exception key: '{}'",
-                    e.key
-                )));
+        if let Some(ref paced) = raw.paced {
+            let mut seen_keys = HashSet::with_capacity(paced.exceptions.len());
+            for e in &paced.exceptions {
+                if !seen_keys.insert(&e.key) {
+                    return Err(serde::de::Error::custom(format!(
+                        "Duplicate exception key: '{}'",
+                        e.key
+                    )));
+                }
+            }
+
+            let time_window_secs = paced.time_window.num_seconds();
+            let interval_secs = paced.interval.num_seconds();
+            let num_occurrences = (time_window_secs / interval_secs) as usize;
+
+            for ex in &paced.exceptions {
+                if let ExceptionType::Modified { occurrence_index } = ex.exception_type
+                    && occurrence_index > num_occurrences
+                {
+                    return Err(serde::de::Error::custom(format!(
+                        "Modified exception '{}' references invalid occurrence index {}",
+                        ex.key, occurrence_index,
+                    )));
+                }
             }
         }
-
-        let time_window_secs = raw.paced.time_window.num_seconds();
-        let interval_secs = raw.paced.interval.num_seconds();
-        let num_occurrences = (time_window_secs / interval_secs) as usize;
-
-        for ex in &raw.paced.exceptions {
-            if let ExceptionType::Modified { occurrence_index } = ex.exception_type
-                && occurrence_index as usize > num_occurrences
-            {
-                return Err(serde::de::Error::custom(format!(
-                    "Modified exception '{}' references invalid occurrence index {}",
-                    ex.key, occurrence_index,
-                )));
-            }
-        }
-
         Ok(PacedTrain {
             train_schedule_base: raw.train_schedule_base,
             paced: raw.paced,
@@ -132,7 +133,7 @@ pub struct PacedTrainException {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(untagged)]
 pub enum ExceptionType {
-    Modified { occurrence_index: i32 },
+    Modified { occurrence_index: usize },
     // Created is a struct variant (not unit) to allow proper deserialization with #[serde(untagged)].
     // This avoids ambiguity with an empty object `{}`.
     // Must be declared after more specific variants, as order matters for untagged enums.

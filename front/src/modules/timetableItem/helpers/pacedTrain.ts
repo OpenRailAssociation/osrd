@@ -1,3 +1,7 @@
+import type {
+  PacedTrainResponseWithPaced,
+  PacedTrainWithPaced,
+} from 'applications/operationalStudies/types';
 import type { PacedTrain, PacedTrainException } from 'common/api/osrdEditoastApi';
 import type {
   OccurrenceId,
@@ -14,14 +18,33 @@ import {
   formatPacedTrainIdToIndexedOccurrenceId,
   isIndexedOccurrenceId,
   isPacedTrainResponseWithPacedTrainId,
+  isPacedTrainWithDetails,
 } from 'utils/trainId';
 
-import type { ExceptionChangeGroups, PacedTrainWithDetails } from '../types';
+import type {
+  ExceptionChangeGroups,
+  PacedTrainWithDetails,
+  PacedTrainWithPacedWithDetails,
+  TimetableItemWithDetails,
+} from '../types';
+
+export const isPacedTrainWithPaced = (pacedTrain: PacedTrain): pacedTrain is PacedTrainWithPaced =>
+  !!pacedTrain.paced;
+
+export const isPacedTrainResponseWithPaced = (
+  timetableItem: TimetableItem
+): timetableItem is PacedTrainResponseWithPaced =>
+  isPacedTrainResponseWithPacedTrainId(timetableItem) && !!timetableItem.paced;
+
+export const isPacedTrainWithPacedWithDetails = (
+  timetableItem: TimetableItemWithDetails
+): timetableItem is PacedTrainWithPacedWithDetails =>
+  isPacedTrainWithDetails(timetableItem) && !!timetableItem.paced;
 
 export const getOccurrencesNb = ({
   timeWindow,
   interval,
-}: Pick<PacedTrainWithDetails['paced'], 'timeWindow' | 'interval'>) => {
+}: Pick<NonNullable<PacedTrainWithDetails['paced']>, 'timeWindow' | 'interval'>) => {
   if (interval.ms === 0) {
     throw new Error('Interval cannot be 0');
   }
@@ -111,7 +134,7 @@ export const extractOccurrenceDetailsFromPacedTrain = <
 /** Return the worst status of the model train and its occurrences */
 export const getOccurrencesWorstStatus = (
   summary: PacedTrainWithDetails['summary'],
-  exceptions: PacedTrainWithDetails['paced']['exceptions']
+  exceptions: NonNullable<PacedTrainWithDetails['paced']>['exceptions']
 ): 'invalid' | 'scheduleNotHonored' | 'trainTooFast' | '' => {
   let className: '' | 'scheduleNotHonored' | 'trainTooFast' = '';
 
@@ -141,7 +164,7 @@ export const getExceptionFromOccurrenceId = (
 ) => {
   const pacedTrainId = extractPacedTrainIdFromOccurrenceId(occurrenceId);
   const pacedTrain = timetableItemsById.get(pacedTrainId);
-  if (!pacedTrain || !isPacedTrainResponseWithPacedTrainId(pacedTrain))
+  if (!pacedTrain || !isPacedTrainResponseWithPaced(pacedTrain))
     throw new Error(`No paced train found for id ${pacedTrainId}`);
 
   let exception: PacedTrainException | undefined;
@@ -155,7 +178,7 @@ export const getExceptionFromOccurrenceId = (
   return exception;
 };
 
-export const getOcurrencesIds = (pacedTrain: PacedTrain, pacedTrainId: PacedTrainId) => {
+export const getOcurrencesIds = (pacedTrain: PacedTrainWithPaced, pacedTrainId: PacedTrainId) => {
   const occurrencesIds: OccurrenceId[] = pacedTrain.paced.exceptions
     .filter((exception) => exception.occurrence_index === undefined) // Indexed exceptions follow the regular indexed occurrence id pattern
     .map((exception) => formatPacedTrainIdToExceptionId(pacedTrainId, exception.key));

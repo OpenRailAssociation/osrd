@@ -91,9 +91,10 @@ const useUpdateTimetableItem = (
       // if the selected TimetableItem is an Occurrence of the edited PacedTrain, keep it selected
       // else select the first Occurrence by default
       trainIdToSelect =
-        selectedTrainId &&
-        isOccurrenceId(selectedTrainId) &&
-        extractPacedTrainIdFromOccurrenceId(selectedTrainId) === timetableItemId
+        (selectedTrainId &&
+          isOccurrenceId(selectedTrainId) &&
+          extractPacedTrainIdFromOccurrenceId(selectedTrainId) === timetableItemId) ||
+        !updatedItem.paced
           ? selectedTrainId
           : formatPacedTrainIdToIndexedOccurrenceId(updatedItem.id, 0);
     } else {

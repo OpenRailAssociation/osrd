@@ -5,8 +5,8 @@ import { useTranslation } from 'react-i18next';
 
 import { checkRoundTripCompatible } from 'applications/operationalStudies/utils';
 import type { SubCategory } from 'common/api/osrdEditoastApi';
+import { isPacedTrainWithPaced } from 'modules/timetableItem/helpers/pacedTrain';
 import type { TimetableItemId, TimetableItemWithPathOps } from 'reducers/osrdconf/types';
-import { isPacedTrainId } from 'utils/trainId';
 
 import RoundTripsModalCard from './RoundTripsModalCard';
 import RoundTripsModalPairingColumn from './RoundTripsModalPairingColumn';
@@ -49,7 +49,7 @@ const TodoColumn = ({
     for (const candidate of timetableItemsWithOpsById.values()) {
       if (
         candidate.id === itemIdToPair ||
-        isPacedTrainId(candidate.id) !== isPacedTrainId(itemIdToPair)
+        isPacedTrainWithPaced(timetableItemToPair) !== isPacedTrainWithPaced(candidate)
       )
         continue;
 

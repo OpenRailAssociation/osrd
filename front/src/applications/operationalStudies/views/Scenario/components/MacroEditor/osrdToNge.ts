@@ -14,14 +14,11 @@ import {
   type SubCategory,
   type MacroNoteResponse,
 } from 'common/api/osrdEditoastApi';
+import { isPacedTrainResponseWithPaced } from 'modules/timetableItem/helpers/pacedTrain';
 import type { TimetableItem, TimetableItemWithPathOps } from 'reducers/osrdconf/types';
 import type { AppDispatch } from 'store';
 import { Duration, addDurationToDate } from 'utils/duration';
-import {
-  isPacedTrainResponseWithPacedTrainId,
-  formatEditoastIdToPacedTrainId,
-  formatEditoastIdToTrainScheduleId,
-} from 'utils/trainId';
+import { formatEditoastIdToPacedTrainId, formatEditoastIdToTrainScheduleId } from 'utils/trainId';
 
 import {
   TRAINRUN_CATEGORY_HALTEZEITEN,
@@ -67,7 +64,7 @@ const getNgeTrainrunFrequencies = (
 
   // Add the unknown frequencies from the PacedTrains
   timetableItems.forEach((timetableItem) => {
-    if (isPacedTrainResponseWithPacedTrainId(timetableItem)) {
+    if (isPacedTrainResponseWithPaced(timetableItem)) {
       const intervalInMinutes = Duration.parse(timetableItem.paced.interval).total('minute');
       if (!trainrunFrequencies.find((f) => f.frequency === intervalInMinutes)) {
         const newFrequency: TrainrunFrequency = {

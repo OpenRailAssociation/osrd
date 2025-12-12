@@ -149,7 +149,7 @@ pub fn simple_created_exception_with_change_groups(key: &str) -> PacedTrainExcep
 
 pub fn simple_modified_exception_with_change_groups(
     key: &str,
-    occurrence_index: i32,
+    occurrence_index: usize,
 ) -> PacedTrainException {
     let mut exception = simple_created_exception_with_change_groups(key);
     exception.exception_type = ExceptionType::Modified { occurrence_index };

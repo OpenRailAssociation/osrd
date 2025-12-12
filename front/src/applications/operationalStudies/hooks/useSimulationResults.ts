@@ -10,17 +10,13 @@ import {
   extractOccurrenceDetailsFromPacedTrain,
   findExceptionWithOccurrenceId,
   computeIndexedOccurrenceStartTime,
+  isPacedTrainResponseWithPaced,
 } from 'modules/timetableItem/helpers/pacedTrain';
 import useSelectedTimetableItem from 'modules/timetableItem/hooks/useSelectedTimetableItem';
 import type { Train } from 'reducers/osrdconf/types';
 import { getSelectedTrainId } from 'reducers/simulationResults/selectors';
 import { Duration } from 'utils/duration';
-import {
-  extractOccurrenceIndexFromOccurrenceId,
-  isOccurrenceId,
-  isPacedTrainResponseWithPacedTrainId,
-  isTrainScheduleId,
-} from 'utils/trainId';
+import { extractOccurrenceIndexFromOccurrenceId, isOccurrenceId } from 'utils/trainId';
 
 import type { SimulationResults } from '../types';
 import { preparePathPropertiesData } from '../utils';
@@ -39,7 +35,7 @@ const useSimulationResults = (): SimulationResults | undefined => {
 
   const train: Train | undefined = useMemo(() => {
     if (!selectedTrainId || !timetableItem) return undefined;
-    if (!isPacedTrainResponseWithPacedTrainId(timetableItem)) {
+    if (!isPacedTrainResponseWithPaced(timetableItem)) {
       return timetableItem;
     }
 
@@ -74,7 +70,7 @@ const useSimulationResults = (): SimulationResults | undefined => {
   }, [selectedTrainId, timetableItem]);
 
   const exception = useMemo(() => {
-    if (!selectedTrainId || !timetableItem || !isPacedTrainResponseWithPacedTrainId(timetableItem))
+    if (!selectedTrainId || !timetableItem || !isPacedTrainResponseWithPaced(timetableItem))
       return undefined;
     if (!isOccurrenceId(selectedTrainId))
       throw new Error(`trainId ${selectedTrainId} should be a occurrence id`);

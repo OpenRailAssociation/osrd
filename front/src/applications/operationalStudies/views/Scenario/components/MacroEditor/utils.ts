@@ -9,6 +9,7 @@ import {
   type TrainCategory,
 } from 'common/api/osrdEditoastApi';
 import isMainCategory from 'modules/rollingStock/helpers/category';
+import { isPacedTrainResponseWithPaced } from 'modules/timetableItem/helpers/pacedTrain';
 import type { TimetableItem, TrainScheduleId, PacedTrainId } from 'reducers/osrdconf/types';
 import type { AppDispatch } from 'store';
 import { Duration } from 'utils/duration';
@@ -16,7 +17,6 @@ import {
   extractEditoastIdFromTrainScheduleId,
   extractEditoastIdFromPacedTrainId,
   isPacedTrainId,
-  isPacedTrainResponseWithPacedTrainId,
   isTrainScheduleId,
 } from 'utils/trainId';
 
@@ -216,7 +216,7 @@ export const getTrainrunFrequencyFromTimetableItem = (
   timetableItem: TimetableItem,
   state: MacroEditorState
 ): TrainrunFrequency => {
-  if (!isPacedTrainResponseWithPacedTrainId(timetableItem)) {
+  if (!isPacedTrainResponseWithPaced(timetableItem)) {
     return getFrequencyFromFrequencyId(state.trainrunFrequencies, TRAIN_SCHEDULE_FREQUENCY_ID);
   }
   const intervalInMinutes = Duration.parse(timetableItem.paced.interval).total('minute');
