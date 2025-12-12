@@ -14,6 +14,8 @@ import { useTranslation } from 'react-i18next';
 import type { TrainScheduleSet } from 'common/api/osrdEditoastApi';
 import MenuTriggerButton from 'common/MenuTriggerButton';
 
+import { isSandbox } from './utils';
+
 type TrainScheduleSetTabProps = PropsWithChildren<{
   trainScheduleSet: TrainScheduleSet;
   handleClickPackage: (id: number) => void;
@@ -38,7 +40,7 @@ const TrainScheduleSetTab = ({
 
   return (
     <>
-      <div className={cx('package-tab-container', { sandbox: trainScheduleSet.is_sandbox })}>
+      <div className={cx('package-tab-container', { sandbox: isSandbox(trainScheduleSet) })}>
         <div
           className="package-tab"
           role="button"
@@ -59,19 +61,19 @@ const TrainScheduleSetTab = ({
           ) : (
             <TriangleRight size="lg" className="package-expand-icon" />
           )}
-          {trainScheduleSet.is_sandbox && <Beaker className="package-status" />}
-          {!trainScheduleSet.is_sandbox &&
+          {isSandbox(trainScheduleSet) && <Beaker className="package-status" />}
+          {!isSandbox(trainScheduleSet) &&
             (trainScheduleSet.published ? (
               <Broadcast className="package-status" />
             ) : (
               <DeviceDesktop className="package-status" />
             ))}
-          <span>{trainScheduleSet.is_sandbox ? t('sandbox') : trainScheduleSet.name}</span>
+          <span>{isSandbox(trainScheduleSet) ? t('sandbox') : trainScheduleSet.name}</span>
         </div>
         <MenuTriggerButton
           buttonProps={{
             // TODO Package : adapt when back ready
-            disabled: trainScheduleSet.is_sandbox || true,
+            disabled: isSandbox(trainScheduleSet) || true,
           }}
           menuProps={{
             items: [],

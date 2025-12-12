@@ -56,7 +56,6 @@ pub(in crate::views) async fn post(
             name: train_schedule_set_create_form.name,
             description: train_schedule_set_create_form.description,
             published: train_schedule_set_create_form.published,
-            is_sandbox: false,
         },
         train_schedule_count: 0,
     };

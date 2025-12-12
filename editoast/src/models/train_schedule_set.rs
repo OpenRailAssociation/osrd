@@ -9,5 +9,4 @@ pub struct TrainScheduleSet {
     pub name: Option<String>,
     pub description: String,
     pub published: bool,
-    pub is_sandbox: bool,
 }
