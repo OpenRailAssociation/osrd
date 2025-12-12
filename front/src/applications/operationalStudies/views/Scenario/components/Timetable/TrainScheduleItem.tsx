@@ -11,14 +11,14 @@ import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { SubCategory, TrainSchedule } from 'common/api/osrdEditoastApi';
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
 import isMainCategory from 'modules/rollingStock/helpers/category';
-import { deleteTrainSchedules } from 'modules/timetableItem/helpers/updateTimetableItemHelpers';
+import { deletePacedTrains } from 'modules/timetableItem/helpers/updateTimetableItemHelpers';
 import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
 import { setFailure, setSuccess } from 'reducers/main';
 import type {
+  PacedTrainWithPacedTrainId,
   TimetableItem,
   TimetableItemId,
   TrainId,
-  TrainScheduleWithTrainId,
 } from 'reducers/osrdconf/types';
 import {
   updateTrainIdUsedForProjection,
@@ -30,9 +30,9 @@ import { timeToLocaleStringRounded, useDateTimeLocale } from 'utils/date';
 import { addDurationToDate, Duration } from 'utils/duration';
 import { castErrorToFailure } from 'utils/error';
 import {
-  formatEditoastIdToTrainScheduleId,
-  extractEditoastIdFromTrainScheduleId,
-  isPacedTrainWithDetails,
+  isTrainScheduleId,
+  extractEditoastIdFromPacedTrainId,
+  formatEditoastIdToPacedTrainId,
 } from 'utils/trainId';
 
 import ArrivalTimeLoader from './ArrivalTimeLoader';
@@ -73,9 +73,8 @@ const TrainScheduleItem = ({
   const dateTimeLocale = useDateTimeLocale();
   const dispatch = useAppDispatch();
 
-  const [postTrainSchedule] =
-    osrdEditoastApi.endpoints.postTimetableByIdTrainSchedules.useMutation();
-  const [getTrainSchedule] = osrdEditoastApi.endpoints.getTrainScheduleById.useLazyQuery();
+  const [postPacedTrain] = osrdEditoastApi.endpoints.postTimetableByIdPacedTrains.useMutation();
+  const [getPacedTrain] = osrdEditoastApi.endpoints.getPacedTrainById.useLazyQuery();
 
   const { summary } = train;
 
@@ -84,8 +83,11 @@ const TrainScheduleItem = ({
   };
 
   const deleteTrain = async () => {
-    if (isPacedTrainWithDetails(train)) return;
-    deleteTrainSchedules(dispatch, [train.id])
+    if (isTrainScheduleId(train.id)) {
+      throw new Error('TrainSchedules are not handled anymore');
+    }
+
+    deletePacedTrains(dispatch, [train.id])
       .then(() => {
         removeTrains([train.id]);
         setSelectedTimetableItemIds((prev) => prev.filter((id) => id !== train.id));
@@ -105,21 +107,18 @@ const TrainScheduleItem = ({
   };
 
   const duplicateTrain = async () => {
-    if (isPacedTrainWithDetails(train)) return;
-
-    // Static for now, will be dynamic when UI will be ready
     const trainName = `${train.name} (${t('timetable.copy')})`;
 
-    const editoastTrainId = extractEditoastIdFromTrainScheduleId(train.id);
-    const trainDetail = await getTrainSchedule({
-      id: editoastTrainId,
-    })
-      .unwrap()
-      .catch((e) => {
-        dispatch(setFailure(castErrorToFailure(e)));
-      });
+    if (isTrainScheduleId(train.id)) {
+      throw new Error('TrainSchedules are not handled anymore');
+    }
 
-    if (trainDetail) {
+    try {
+      const editoastTrainId = extractEditoastIdFromPacedTrainId(train.id);
+      const trainDetail = await getPacedTrain({
+        id: editoastTrainId,
+      }).unwrap();
+
       const startTime = addDurationToDate(
         new Date(trainDetail.start_time),
         new Duration({ minutes: TIMETABLE_ITEM_DELTA })
@@ -131,25 +130,23 @@ const TrainScheduleItem = ({
         train_name: trainName,
       };
 
-      try {
-        const [trainScheduleResponse] = await postTrainSchedule({
-          id: trainDetail.timetable_id,
-          body: [newTrain],
-        }).unwrap();
-        const formattedTrainScheduleResponse: TrainScheduleWithTrainId = {
-          ...trainScheduleResponse,
-          id: formatEditoastIdToTrainScheduleId(trainScheduleResponse.id),
-        };
-        upsertTrainSchedules([formattedTrainScheduleResponse]);
-        dispatch(
-          setSuccess({
-            title: t('timetable.trainAdded'),
-            text: `${trainName}`,
-          })
-        );
-      } catch (e) {
-        dispatch(setFailure(castErrorToFailure(e)));
-      }
+      const [newTimetableItem] = await postPacedTrain({
+        id: trainDetail.timetable_id,
+        body: [newTrain],
+      }).unwrap();
+      const formattedTrainScheduleResponse: PacedTrainWithPacedTrainId = {
+        ...newTimetableItem,
+        id: formatEditoastIdToPacedTrainId(newTimetableItem.id),
+      };
+      upsertTrainSchedules([formattedTrainScheduleResponse]);
+      dispatch(
+        setSuccess({
+          title: t('timetable.trainAdded'),
+          text: `${trainName}`,
+        })
+      );
+    } catch (e) {
+      dispatch(setFailure(castErrorToFailure(e)));
     }
   };
 

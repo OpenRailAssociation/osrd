@@ -108,6 +108,15 @@ export const formatPacedTrainWithDetails = (
     ...pacedTrainProps
   } = pacedTrain;
 
+  if (!paced) {
+    return {
+      ...pacedTrainProps,
+      ...extractBaseTimetableItemProps(pacedTrain),
+      rollingStock,
+      summary: formatSummary(pacedTrain, pacedTrainSummary?.paced_train),
+    };
+  }
+
   let simulatedExceptions: SimulatedException[] = [];
   if (pacedTrainSummary) {
     paced.exceptions.forEach((exception) => {

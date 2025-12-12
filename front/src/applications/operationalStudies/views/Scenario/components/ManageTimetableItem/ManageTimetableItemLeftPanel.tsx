@@ -76,13 +76,20 @@ const ManageTimetableItemLeftPanel = ({
   );
 
   const getEditLabel = (_itemToEdit: TimetableItemToEditData) => {
-    if (!isPacedTrainToEditData(_itemToEdit) && editingItemType === 'trainSchedule') {
+    if (
+      (!isPacedTrainToEditData(_itemToEdit) || !_itemToEdit.originalPacedTrain.paced) &&
+      editingItemType === 'trainSchedule'
+    ) {
       return t('updateTrainSchedule');
     }
-    if (isPacedTrainToEditData(_itemToEdit) && editingItemType !== 'trainSchedule') {
+    if (
+      isPacedTrainToEditData(_itemToEdit) &&
+      _itemToEdit.originalPacedTrain.paced &&
+      editingItemType !== 'trainSchedule'
+    ) {
       return editingItemType === 'pacedTrain' ? t('updatePacedTrain') : t('updateOccurrence');
     }
-    return !isPacedTrainToEditData(_itemToEdit)
+    return !isPacedTrainToEditData(_itemToEdit) || !_itemToEdit.originalPacedTrain.paced
       ? t('turnTrainScheduleIntoPacedTrain')
       : t('turnPacedTrainIntoTrainSchedule');
   };
@@ -99,6 +106,7 @@ const ManageTimetableItemLeftPanel = ({
                 onClick={() => {
                   if (
                     isPacedTrainToEditData(timetableItemToEditData) &&
+                    timetableItemToEditData.originalPacedTrain.paced &&
                     timetableItemToEditData.originalPacedTrain.paced.exceptions.length > 0 &&
                     (osrdConf.timeWindow.toISOString() !==
                       timetableItemToEditData.originalPacedTrain.paced.timeWindow.toISOString() ||

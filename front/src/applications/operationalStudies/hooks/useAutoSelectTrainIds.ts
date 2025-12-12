@@ -5,7 +5,7 @@ import { useLocation, useNavigate, useParams } from 'react-router-dom';
 
 import { isValidPathfinding } from 'applications/operationalStudies/views/Scenario/components/Timetable/utils';
 import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
-import type { TimetableItemId } from 'reducers/osrdconf/types';
+import type { TimetableItemId, TrainId } from 'reducers/osrdconf/types';
 import { updateSelectedTrainId, updateTrainIdUsedForProjection } from 'reducers/simulationResults';
 import {
   getSelectedTrainId,
@@ -17,6 +17,7 @@ import {
   formatPacedTrainIdToIndexedOccurrenceId,
   isOccurrenceId,
   isPacedTrainId,
+  isPacedTrainWithDetails,
   isTrainScheduleId,
 } from 'utils/trainId';
 
@@ -157,9 +158,18 @@ const useAutoSelectTrainIds = (
 
     if (firstTrainCanBeUsedForProjection) {
       dispatch(updateTrainIdUsedForProjection(firstTrainCanBeUsedForProjection.id));
-      const newTrainIdToSelect = isTrainScheduleId(firstTrainCanBeUsedForProjection.id)
-        ? firstTrainCanBeUsedForProjection.id
-        : formatPacedTrainIdToIndexedOccurrenceId(firstTrainCanBeUsedForProjection.id, 0);
+      let newTrainIdToSelect: TrainId;
+      if (
+        !isPacedTrainWithDetails(firstTrainCanBeUsedForProjection) ||
+        !firstTrainCanBeUsedForProjection.paced
+      ) {
+        newTrainIdToSelect = firstTrainCanBeUsedForProjection.id;
+      } else {
+        newTrainIdToSelect = formatPacedTrainIdToIndexedOccurrenceId(
+          firstTrainCanBeUsedForProjection.id,
+          0
+        );
+      }
       dispatch(updateSelectedTrainId(newTrainIdToSelect));
     }
   }, [timetableItemIds, timetableItemsWithDetails, setIdsFromUrlOrStorage, parametersLoaded]);

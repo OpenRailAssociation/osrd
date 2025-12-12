@@ -39,7 +39,6 @@ use editoast_models::prelude::*;
 use editoast_models::timetable::Timetable;
 use editoast_models::timetable::TimetableWithTrains;
 use editoast_models::train_schedule::TrainScheduleChangeset;
-use itertools::Either;
 use itertools::Itertools;
 use itertools::izip;
 use paced_train::PacedTrainResponse;
@@ -61,7 +60,6 @@ use utoipa::ToSchema;
 use uuid::Uuid;
 
 use super::infra::InfraIdQueryParam;
-use super::pagination::ConcatenatedPaginatedList;
 use super::pagination::PaginatedList;
 use super::pagination::PaginationQueryParams;
 use super::pagination::PaginationStats;
@@ -72,7 +70,6 @@ use crate::models;
 use crate::models::Infra;
 use crate::models::paced_train::OccurrenceId;
 use crate::models::paced_train::PacedTrainChangeset;
-use crate::models::paced_train::TrainId;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
 use crate::views::timetable::simulation::SimulationResponseSuccess;
@@ -378,12 +375,9 @@ pub struct ElectricalProfileSetIdQueryParam {
 
 #[derive(Debug, Clone, PartialEq, Deserialize, Serialize, ToSchema)]
 pub struct Conflict {
-    /// List of train schedule ids involved in the conflict
-    pub train_schedule_ids: Vec<i64>,
-    /// List of paced train occurrences involved in the conflict.
-    /// Each occurrence is identified by a `paced_train_id` and its `index`
+    /// List of trains involved in the conflict.
     #[schema(inline)]
-    paced_train_occurrence_ids: Vec<PacedTrainOccurrenceId>,
+    train_ids: Vec<OccurrenceId>,
     /// List of work schedule ids involved in the conflict
     pub work_schedule_ids: Vec<i64>,
     /// Datetime of the start of the conflict
@@ -402,45 +396,18 @@ impl Conflict {
     ///  and maps them to either a `train_schedule_id` or a `paced_train_occurrence_id` based on the provided key mapping.
     fn from_core_response(
         conflict: CoreConflict,
-        trains_map: &HashMap<Uuid, TrainId>,
+        trains_map: &HashMap<Uuid, OccurrenceId>,
     ) -> Result<Self> {
-        let (train_schedule_ids, paced_train_occurrence_ids): (Vec<_>, Vec<_>) = conflict
+        let train_ids: Vec<_> = conflict
             .train_ids
-            .iter()
-            .partition_map(|train_uuid| match trains_map.get(train_uuid).cloned() {
-                Some(TrainId::TrainSchedule(id)) => Either::Left(id),
-                Some(TrainId::PacedTrain {
-                    paced_train_id,
-                    occurrence_id: OccurrenceId::BaseOccurrence { index },
-                }) => Either::Right(PacedTrainOccurrenceId {
-                    paced_train_id,
-                    occurrence_ref: PacedTrainOccurrenceRef::BaseOccurrence { index },
-                }),
-                Some(TrainId::PacedTrain {
-                    paced_train_id,
-                    occurrence_id: OccurrenceId::CreatedException { exception_key },
-                }) => Either::Right(PacedTrainOccurrenceId {
-                    paced_train_id,
-                    occurrence_ref: PacedTrainOccurrenceRef::CreatedException { exception_key },
-                }),
-                Some(TrainId::PacedTrain {
-                    paced_train_id,
-                    occurrence_id:
-                        OccurrenceId::ModifiedException {
-                            exception_key,
-                            index,
-                        },
-                }) => Either::Right(PacedTrainOccurrenceId {
-                    paced_train_id,
-                    occurrence_ref: PacedTrainOccurrenceRef::ModifiedException {
-                        index,
-                        exception_key,
-                    },
-                }),
-                None => {
-                    unreachable!("Unreachable case encountered while partitioning train IDs")
-                }
-            });
+            .into_iter()
+            .map(|train_uuid| {
+                trains_map
+                    .get(&train_uuid)
+                    .expect("Unreachable case encountered while parsing train IDs")
+            })
+            .cloned()
+            .collect();
 
         let work_schedule_ids = conflict
             .work_schedule_ids
@@ -451,9 +418,9 @@ impl Conflict {
                 })
             })
             .collect::<Result<Vec<_>, _>>()?;
+
         Ok(Self {
-            train_schedule_ids,
-            paced_train_occurrence_ids,
+            train_ids,
             work_schedule_ids,
             start_time: conflict.start_time,
             end_time: conflict.end_time,
@@ -461,22 +428,6 @@ impl Conflict {
             requirements: conflict.requirements,
         })
     }
-}
-
-#[derive(Debug, Clone, PartialEq, Deserialize, Serialize, ToSchema)]
-struct PacedTrainOccurrenceId {
-    paced_train_id: i64,
-    #[schema(inline)]
-    #[serde(flatten)]
-    occurrence_ref: PacedTrainOccurrenceRef,
-}
-
-#[derive(Debug, Clone, PartialEq, Deserialize, Serialize, ToSchema)]
-#[serde(untagged)]
-enum PacedTrainOccurrenceRef {
-    BaseOccurrence { index: u64 },
-    ModifiedException { index: u64, exception_key: String },
-    CreatedException { exception_key: String },
 }
 
 /// Retrieve the list of conflicts of the timetable (invalid trains are ignored)
@@ -527,23 +478,13 @@ pub(in crate::views) async fn conflicts(
     })
     .await?;
 
+    // TODO: CLEAN UP: don't need to retrieve train schedules
     let (trains, paced_trains) = retrieve_trains_and_paced_trains(conn, timetable_id).await?;
 
     // Flatten paced trains occurrences
     let (paced_train_ids, occurrence_trains): (Vec<_>, Vec<_>) = paced_trains
         .iter()
-        .flat_map(|pt| {
-            pt.iter_occurrences()
-                .map(|(occurrence_id, train_schedule)| {
-                    (
-                        TrainId::PacedTrain {
-                            paced_train_id: pt.id,
-                            occurrence_id,
-                        },
-                        train_schedule,
-                    )
-                })
-        })
+        .flat_map(|pt| pt.iter_occurrences())
         .unzip();
     let occurrence_simulations: Vec<_> = train_simulation_batch(
         &mut db_pool.get().await?,
@@ -575,7 +516,7 @@ pub(in crate::views) async fn conflicts(
     // Concatenate paced trains occurrences with train schedules
     let train_ids: Vec<_> = paced_train_ids
         .into_iter()
-        .chain(trains.iter().map(|ts| TrainId::TrainSchedule(ts.id)))
+        .chain(trains.iter().map(|ts| OccurrenceId::new_base(ts.id, 0)))
         .collect();
     let start_times = occurrence_trains
         .iter()
@@ -630,13 +571,13 @@ async fn retrieve_trains_and_paced_trains(
 fn build_conflict_core_request(
     infra: Infra,
     start_times: Vec<DateTime<Utc>>,
-    train_ids: Vec<TrainId>,
+    train_ids: Vec<OccurrenceId>,
     simulations: Vec<Arc<simulation::Response>>,
-) -> (HashMap<Uuid, TrainId>, ConflictDetectionRequest) {
+) -> (HashMap<Uuid, OccurrenceId>, ConflictDetectionRequest) {
     assert_eq!(start_times.len(), simulations.len());
     assert_eq!(train_ids.len(), simulations.len());
 
-    let mut trains_map: HashMap<Uuid, TrainId> = HashMap::with_capacity(train_ids.len());
+    let mut trains_map: HashMap<Uuid, OccurrenceId> = HashMap::with_capacity(train_ids.len());
 
     let trains_requirements: HashMap<Uuid, TrainRequirements> =
         izip!(start_times, train_ids, simulations)
@@ -732,37 +673,18 @@ pub(in crate::views) async fn requirements(
     .await?;
 
     // List trains and paced trains
-    let (trains, stats) =
-        <(editoast_models::TrainSchedule, models::PacedTrain)>::list_concatenated(
-            conn,
-            (
-                page_settings
-                    .into_selection_settings()
-                    .filter(move || editoast_models::TrainSchedule::TIMETABLE_ID.eq(timetable_id))
-                    .order_by(move || editoast_models::TrainSchedule::ID.asc()),
-                page_settings
-                    .into_selection_settings()
-                    .filter(move || models::PacedTrain::TIMETABLE_ID.eq(timetable_id))
-                    .order_by(move || models::PacedTrain::ID.asc()),
-            ),
-        )
-        .await?;
-    let (train_ids, trains): (Vec<_>, Vec<_>) = trains
-        .flat_map(|train| match train {
-            Either::Left(ts) => vec![(TrainId::TrainSchedule(ts.id), ts.into())],
-            Either::Right(pt) => pt
-                .iter_occurrences()
-                .map(|(occurrence_id, train_schedule)| {
-                    (
-                        TrainId::PacedTrain {
-                            paced_train_id: pt.id,
-                            occurrence_id,
-                        },
-                        train_schedule,
-                    )
-                })
-                .collect(),
-        })
+    let (paced_trains, stats) = models::PacedTrain::list_paginated(
+        conn,
+        page_settings
+            .into_selection_settings()
+            .filter(move || models::PacedTrain::TIMETABLE_ID.eq(timetable_id))
+            .order_by(move || models::PacedTrain::ID.asc()),
+    )
+    .await?;
+
+    let (train_ids, trains): (Vec<_>, Vec<_>) = paced_trains
+        .iter()
+        .flat_map(|pt| pt.iter_occurrences())
         .unzip();
 
     let simulations = train_simulation_batch(
@@ -777,6 +699,7 @@ pub(in crate::views) async fn requirements(
     .await?
     .into_iter()
     .map(|(sim, _)| Arc::unwrap_or_clone(sim));
+
     let start_times = trains.iter().map(|ts| ts.start_time());
     let results =
         build_trains_requirements(train_ids.into_iter(), start_times, simulations).collect();
@@ -785,7 +708,7 @@ pub(in crate::views) async fn requirements(
 }
 
 fn build_trains_requirements(
-    train_ids: impl Iterator<Item = TrainId>,
+    train_ids: impl Iterator<Item = OccurrenceId>,
     start_times: impl Iterator<Item = DateTime<Utc>>,
     simulations: impl Iterator<Item = simulation::Response>,
 ) -> impl Iterator<Item = TrainRequirementsById> {
@@ -1195,7 +1118,8 @@ mod tests {
             train_name: None,
         };
 
-        paced_train_1.paced.exceptions = vec![exception_1.clone(), exception_2.clone()];
+        paced_train_1.paced.as_mut().unwrap().exceptions =
+            vec![exception_1.clone(), exception_2.clone()];
 
         let request = app
             .post(format!("/timetable/{}/paced_trains", timetable.id).as_str())
@@ -1228,7 +1152,7 @@ mod tests {
         let timetable = create_timetable(&mut pool.get_ok()).await;
         let mut paced_train_1 = simple_paced_train_base();
 
-        paced_train_1.paced.exceptions = vec![
+        paced_train_1.paced.as_mut().unwrap().exceptions = vec![
             simple_created_exception_with_change_groups("duplicated_key_1"),
             simple_modified_exception_with_change_groups("duplicated_key_1", 0),
         ];
@@ -1257,8 +1181,9 @@ mod tests {
         let timetable = create_timetable(&mut pool.get_ok()).await;
         let paced_train_1 = simple_paced_train_base();
         let mut paced_train_2 = simple_paced_train_base();
-        paced_train_2.paced.time_window = Duration::minutes(120).try_into().unwrap();
-        paced_train_2.paced.interval = Duration::seconds(30).try_into().unwrap();
+        paced_train_2.paced.as_mut().unwrap().time_window =
+            Duration::minutes(120).try_into().unwrap();
+        paced_train_2.paced.as_mut().unwrap().interval = Duration::seconds(30).try_into().unwrap();
 
         let paced_trains = vec![paced_train_1, paced_train_2.clone()];
 
@@ -1284,7 +1209,10 @@ mod tests {
             .expect("Failed to fetch paced trains");
 
         assert!(list_result.len() == 2);
-        assert_eq!(list_result[0].exceptions, paced_train_2.paced.exceptions);
+        assert_eq!(
+            list_result[0].exceptions,
+            paced_train_2.paced.unwrap().exceptions
+        );
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -1297,8 +1225,9 @@ mod tests {
         let paced_train_1 = simple_paced_train_base();
         let mut paced_train_2 = simple_paced_train_base();
         paced_train_2.train_schedule_base.start_time += Duration::minutes(200);
-        paced_train_2.paced.time_window = Duration::minutes(120).try_into().unwrap();
-        paced_train_2.paced.interval = Duration::seconds(30).try_into().unwrap();
+        paced_train_2.paced.as_mut().unwrap().time_window =
+            Duration::minutes(120).try_into().unwrap();
+        paced_train_2.paced.as_mut().unwrap().interval = Duration::seconds(30).try_into().unwrap();
 
         let paced_trains = vec![paced_train_1, paced_train_2];
 
@@ -1385,15 +1314,9 @@ mod tests {
         ];
         // Train IDs
         let train_ids = vec![
-            TrainId::PacedTrain {
-                paced_train_id,
-                occurrence_id: OccurrenceId::BaseOccurrence { index: 0 },
-            },
-            TrainId::PacedTrain {
-                paced_train_id,
-                occurrence_id: OccurrenceId::BaseOccurrence { index: 1 },
-            },
-            TrainId::TrainSchedule(ts_id),
+            OccurrenceId::new_base(paced_train_id, 0),
+            OccurrenceId::new_base(paced_train_id, 1),
+            OccurrenceId::new_base(ts_id, 0),
         ];
 
         // Simulations
@@ -1433,7 +1356,7 @@ mod tests {
         let simple_ts_train_core_id = trains_ids_map
             .iter()
             .find_map(|(core_id, train_id)| match train_id {
-                TrainId::TrainSchedule(ts_id_inner) if *ts_id_inner == ts_id => Some(core_id),
+                OccurrenceId::Base { id, .. } if *id == ts_id => Some(core_id),
                 _ => None,
             })
             .unwrap();
@@ -1456,10 +1379,9 @@ mod tests {
         let paced_0_train_core_id = trains_ids_map
             .iter()
             .find_map(|(core_id, train_id)| match train_id {
-                TrainId::PacedTrain {
-                    paced_train_id: pt_id,
-                    occurrence_id: OccurrenceId::BaseOccurrence { index },
-                } if *pt_id == paced_train_id && *index == 0 => Some(core_id),
+                OccurrenceId::Base { id, index, .. } if *id == paced_train_id && *index == 0 => {
+                    Some(core_id)
+                }
                 _ => None,
             })
             .unwrap();
@@ -1481,10 +1403,9 @@ mod tests {
         let paced_1_train_core_id = trains_ids_map
             .iter()
             .find_map(|(core_id, train_id)| match train_id {
-                TrainId::PacedTrain {
-                    paced_train_id: pt_id,
-                    occurrence_id: OccurrenceId::BaseOccurrence { index },
-                } if *pt_id == paced_train_id && *index == 1 => Some(core_id),
+                OccurrenceId::Base { id, index, .. } if *id == paced_train_id && *index == 1 => {
+                    Some(core_id)
+                }
                 _ => None,
             })
             .unwrap();

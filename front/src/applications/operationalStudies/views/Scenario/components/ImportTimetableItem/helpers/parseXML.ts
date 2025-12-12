@@ -1,7 +1,11 @@
 import { omit } from 'lodash';
 import { v4 as uuidV4 } from 'uuid';
 
-import type { CichDictValue, TimetableJsonPayload } from 'applications/operationalStudies/types';
+import type {
+  CichDictValue,
+  PacedTrainWithPaced,
+  TimetableJsonPayload,
+} from 'applications/operationalStudies/types';
 import type { PacedTrain, TrainSchedule, PacedTrainException } from 'common/api/osrdEditoastApi';
 import { addDurationToDate, Duration } from 'utils/duration';
 
@@ -19,7 +23,7 @@ const trainScheduleToPacedTrain = (
   pacedTrainId: string,
   intervalDuration: Duration,
   timeWindowDuration: Duration
-): PacedTrain => ({
+): PacedTrainWithPaced => ({
   ...trainSchedule,
   train_name: pacedTrainId,
   paced: {

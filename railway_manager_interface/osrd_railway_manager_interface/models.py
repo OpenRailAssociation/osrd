@@ -437,4 +437,4 @@ class Value(RootModel[str]):
 
 
 class PacedTrain(TrainSchedule):
-    paced: Paced
+    paced: Paced | None = None

@@ -14,7 +14,7 @@ import {
 import { storePacedTrain } from 'modules/timetableItem/helpers/updateTimetableItemHelpers';
 import type {
   Occurrence,
-  PacedTrainWithDetails,
+  PacedTrainWithPacedWithDetails,
   SimulatedException,
 } from 'modules/timetableItem/types';
 import type { OccurrenceId, TimetableItem, TimetableItemId } from 'reducers/osrdconf/types';
@@ -24,11 +24,11 @@ import { useAppDispatch } from 'store';
 import { isIndexedOccurrenceId, extractExceptionIdFromOccurrenceId } from 'utils/trainId';
 
 type OccurrenceActionsParams = {
-  pacedTrain: PacedTrainWithDetails;
+  pacedTrain: PacedTrainWithPacedWithDetails;
   occurrences: Occurrence[];
   selectPacedTrainToEdit: (
-    pacedTrainToEdit: PacedTrainWithDetails,
-    originalPacedTrain?: PacedTrainWithDetails,
+    pacedTrainToEdit: PacedTrainWithPacedWithDetails,
+    originalPacedTrain?: PacedTrainWithPacedWithDetails,
     occurrenceId?: OccurrenceId
   ) => void;
   upsertTimetableItems: (timetableItems: TimetableItem[]) => void;
@@ -59,7 +59,7 @@ const useOccurrenceActions = ({
   // the occurrence start time and all its eventual exceptions
   const editOccurrence = useCallback(
     async (editedOccurrence: Occurrence) => {
-      let occurrenceWithDetails: PacedTrainWithDetails = pacedTrain;
+      let occurrenceWithDetails: PacedTrainWithPacedWithDetails = pacedTrain;
 
       const occurrenceToUpdateException = findExceptionWithOccurrenceId(
         pacedTrain.paced.exceptions,

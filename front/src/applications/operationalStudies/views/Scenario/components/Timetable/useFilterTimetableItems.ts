@@ -4,9 +4,9 @@ import { uniq } from 'lodash';
 
 import { useRollingStockContext } from 'common/RollingStockContext';
 import isMainCategory from 'modules/rollingStock/helpers/category';
+import { isPacedTrainWithPacedWithDetails } from 'modules/timetableItem/helpers/pacedTrain';
 import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
 import { useDebounce } from 'utils/helpers';
-import { isPacedTrainWithDetails } from 'utils/trainId';
 
 import type {
   TimetableFilters,
@@ -43,7 +43,7 @@ const useFilterTimetableItems = (
     () =>
       uniq(
         timetableItems.reduce<string[]>((acc, timetableItem) => {
-          if (isPacedTrainWithDetails(timetableItem)) {
+          if (isPacedTrainWithPacedWithDetails(timetableItem)) {
             timetableItem.paced.exceptions.forEach((exception) => {
               if (exception.speed_limit_tag) {
                 acc.push(extractTagCode(exception.speed_limit_tag.value));
@@ -149,7 +149,7 @@ const useFilterTimetableItems = (
   const filteredTimetableItems: TimetableItemWithDetails[] = useMemo(
     () =>
       timetableItems.filter((timetableItem) => {
-        if (!isPacedTrainWithDetails(timetableItem)) {
+        if (!isPacedTrainWithPacedWithDetails(timetableItem)) {
           if (trainTypeFilter === 'pacedTrain') return false;
           return filterTimetableItem(timetableItem);
         }

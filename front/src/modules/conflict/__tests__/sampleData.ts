@@ -2,12 +2,10 @@ import type { Conflict, TrainCategory } from 'common/api/osrdEditoastApi';
 import type {
   TimetableItem,
   TimetableItemId,
-  TrainScheduleId,
   PacedTrainId,
   OccurrenceId,
 } from 'reducers/osrdconf/types';
 
-export const trainScheduleId = (n: number) => `trainschedule_${n}` as TrainScheduleId;
 export const pacedId = (n: number) => `paced_${n}` as PacedTrainId;
 export const occurrenceId = (paced: number, index = 0) =>
   `indexedoccurrence_${paced}_${index}` as OccurrenceId;
@@ -50,8 +48,7 @@ export const conflictBase = (partial: Partial<Conflict> = {}): Conflict => ({
   end_time: '',
   start_time: '',
   requirements: [],
-  train_schedule_ids: [],
-  paced_train_occurrence_ids: [],
+  train_ids: [],
   work_schedule_ids: [],
   ...partial,
 });

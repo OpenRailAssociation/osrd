@@ -1,8 +1,8 @@
 import type { Conflict, TrainCategory } from 'common/api/osrdEditoastApi';
 import computeOccurrenceName from 'modules/timetableItem/helpers/computeOccurrenceName';
+import { isPacedTrainWithPaced } from 'modules/timetableItem/helpers/pacedTrain';
 import type { TimetableItem, TimetableItemId, TrainId } from 'reducers/osrdconf/types';
 import {
-  formatEditoastIdToTrainScheduleId,
   formatEditoastIdToPacedTrainId,
   isPacedTrainResponseWithPacedTrainId,
 } from 'utils/trainId';
@@ -13,73 +13,63 @@ function getConflictTrainNames(
   conflict: Conflict,
   trainMap: Map<TimetableItemId, TimetableItem>
 ): string[] {
-  const timetableItemNames = conflict.train_schedule_ids.map(
-    (id) => trainMap.get(formatEditoastIdToTrainScheduleId(id))?.train_name
-  );
+  const trainNames: string[] = [];
+  conflict.train_ids.forEach((train) => {
+    const pacedTrain = trainMap.get(formatEditoastIdToPacedTrainId(train.id));
+    if (!pacedTrain) return;
 
-  const occurrenceNames = conflict.paced_train_occurrence_ids.map((occurrence) => {
-    const pacedTrain = trainMap.get(formatEditoastIdToPacedTrainId(occurrence.paced_train_id));
-    if (!pacedTrain || !isPacedTrainResponseWithPacedTrainId(pacedTrain)) return undefined;
+    if (!isPacedTrainResponseWithPacedTrainId(pacedTrain))
+      throw new Error(`Train with id ${train.id} is an old trainSchedule`);
 
-    if (!('exception_key' in occurrence)) {
-      // Standard occurrence
-      return computeOccurrenceName(pacedTrain.train_name, occurrence.index);
+    if (train.type === 'base') {
+      trainNames.push(
+        pacedTrain.paced
+          ? computeOccurrenceName(pacedTrain.train_name, train.index)
+          : pacedTrain.train_name
+      );
+      return;
     }
 
-    if ('index' in occurrence) {
+    if (!isPacedTrainWithPaced(pacedTrain))
+      throw new Error(`Train with id ${train.id} should be a paced train`);
+
+    if (train.type === 'modified') {
       // Updated exception
       // Check if the exception has a name change group
       // Otherwise, compute the occurrence name
       const namedException = pacedTrain.paced.exceptions.find(
-        (exception) => exception.occurrence_index === occurrence.index && exception.train_name
+        (exception) => exception.occurrence_index === train.index && exception.train_name
       );
-      if (namedException) {
-        return namedException.train_name!.value;
-      }
-      return computeOccurrenceName(pacedTrain.train_name, occurrence.index);
+      trainNames.push(
+        namedException
+          ? namedException.train_name!.value
+          : computeOccurrenceName(pacedTrain.train_name, train.index)
+      );
+    } else {
+      // Added exception
+      // Check if the exception has a name change group
+      // Otherwise, the name is `${pacedTrainName}/+`
+      const namedException = pacedTrain.paced.exceptions.find(
+        (exception) => exception.key === train.exception_key && exception.train_name
+      );
+      trainNames.push(
+        namedException ? namedException.train_name!.value : `${pacedTrain.train_name}/+`
+      );
     }
-
-    // Added exception
-    // Check if the exception has a name change group
-    // Otherwise, the name is `${pacedTrainName}/+`
-
-    const namedException = pacedTrain.paced.exceptions.find(
-      (exception) => exception.key === occurrence.exception_key && exception.train_name
-    );
-    if (namedException) {
-      return namedException.train_name!.value;
-    }
-    return `${pacedTrain.train_name}/+`;
   });
 
-  const trainNames = [...timetableItemNames, ...occurrenceNames];
-  return trainNames.filter((name): name is string => name !== undefined);
+  return trainNames;
 }
 
 function getConflictTrainCategories(
   conflict: Conflict,
   trainMap: Map<TimetableItemId, TimetableItem>
 ): (TrainCategory | null)[] {
-  const timetableItemCategories: (TrainCategory | null)[] = conflict.train_schedule_ids.map(
-    (id) => {
-      const train = trainMap.get(formatEditoastIdToTrainScheduleId(id));
-      return train?.category ?? null;
-    }
-  );
-
-  const occurrenceCategories: (TrainCategory | null)[] = conflict.paced_train_occurrence_ids.map(
-    (occurrence) => {
-      const pacedTrain = trainMap.get(formatEditoastIdToPacedTrainId(occurrence.paced_train_id));
-      if (!pacedTrain || !isPacedTrainResponseWithPacedTrainId(pacedTrain)) return null;
-      return pacedTrain?.category ?? null;
-    }
-  );
-
-  const allTrainCategories: (TrainCategory | null)[] = [
-    ...timetableItemCategories,
-    ...occurrenceCategories,
-  ];
-  return allTrainCategories;
+  // /!\ TODO: we don't use the exceptions here to get the correct categories
+  return conflict.train_ids.map((train) => {
+    const pacedTrain = trainMap.get(formatEditoastIdToPacedTrainId(train.id));
+    return pacedTrain?.category ?? null;
+  });
 }
 
 export default function addTrainNamesToConflicts(

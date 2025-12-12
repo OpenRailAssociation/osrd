@@ -25,7 +25,12 @@ import { updateSelectedTrainId } from 'reducers/simulationResults';
 import { getSelectedTrainId } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
-import { isTrainScheduleId } from 'utils/trainId';
+import {
+  isPacedTrainResponseWithPacedTrainId,
+  isPacedTrainWithDetails,
+  isTrainScheduleId,
+} from 'utils/trainId';
+import { mapBy } from 'utils/types';
 
 import Timetable from './Timetable';
 import { copyTimetableItemsToClipboard } from './utils';
@@ -69,9 +74,9 @@ const TimetableBoardWrapper = ({
 
   const { totalPacedTrainCount, totalTrainScheduleCount } = useMemo(
     () =>
-      timetableItemsWithDetails.reduce(
-        (acc, { id }) => {
-          if (isTrainScheduleId(id)) {
+      timetableItems.reduce(
+        (acc, timetableItem) => {
+          if (!isPacedTrainResponseWithPacedTrainId(timetableItem) || !timetableItem.paced) {
             acc.totalTrainScheduleCount += 1;
           } else {
             acc.totalPacedTrainCount += 1;
@@ -80,27 +85,31 @@ const TimetableBoardWrapper = ({
         },
         { totalPacedTrainCount: 0, totalTrainScheduleCount: 0 }
       ),
-    [timetableItemsWithDetails]
+    [timetableItems]
   );
 
-  const { selectedTrainScheduleIds, selectedPacedTrainIds } = useMemo(
-    () =>
-      selectedTimetableItemIds.reduce(
-        (acc, timetableItemId) => {
-          if (isTrainScheduleId(timetableItemId)) {
-            acc.selectedTrainScheduleIds.push(timetableItemId);
-          } else {
-            acc.selectedPacedTrainIds.push(timetableItemId);
+  const { selectedTrainScheduleIds, selectedPacedTrainIds } = useMemo(() => {
+    const timetableItemsById = mapBy(timetableItemsWithDetails, 'id');
+    return selectedTimetableItemIds.reduce(
+      (acc, timetableItemId) => {
+        if (isTrainScheduleId(timetableItemId)) {
+          acc.selectedTrainScheduleIds.push(timetableItemId);
+        } else {
+          const pacedTrain = timetableItemsById.get(timetableItemId);
+          if (!pacedTrain || !isPacedTrainWithDetails(pacedTrain)) {
+            throw new Error(`TimetableItem ${timetableItemId} should be a pacedTrain`);
           }
-          return acc;
-        },
-        { selectedTrainScheduleIds: [], selectedPacedTrainIds: [] } as {
-          selectedTrainScheduleIds: TrainScheduleId[];
-          selectedPacedTrainIds: PacedTrainId[];
+          if (!pacedTrain.paced) acc.selectedTrainScheduleIds.push(timetableItemId);
+          else acc.selectedPacedTrainIds.push(timetableItemId);
         }
-      ),
-    [selectedTimetableItemIds]
-  );
+        return acc;
+      },
+      { selectedTrainScheduleIds: [], selectedPacedTrainIds: [] } as {
+        selectedTrainScheduleIds: TimetableItemId[];
+        selectedPacedTrainIds: PacedTrainId[];
+      }
+    );
+  }, [selectedTimetableItemIds]);
 
   // --- BOARD WRAPPER TITLE MANAGEMENT -------------------------
   const computedItemLabel = useCallback(() => {
@@ -176,14 +185,21 @@ const TimetableBoardWrapper = ({
       dispatch(updateSelectedTrainId(undefined));
     }
 
+    const trainScheduleIds: TrainScheduleId[] = [];
+    const pacedTrainIds: PacedTrainId[] = [];
+    for (const id of selectedTimetableItemIds) {
+      if (isTrainScheduleId(id)) trainScheduleIds.push(id);
+      else pacedTrainIds.push(id);
+    }
+
     try {
       let deletingTrainSchedulesPromise;
       let deletingPacedTrainsPromise;
-      if (selectedTrainScheduleIds.length > 0) {
-        deletingTrainSchedulesPromise = deleteTrainSchedules(dispatch, selectedTrainScheduleIds);
+      if (trainScheduleIds.length > 0) {
+        deletingTrainSchedulesPromise = deleteTrainSchedules(dispatch, trainScheduleIds);
       }
-      if (selectedPacedTrainIds.length > 0) {
-        deletingPacedTrainsPromise = deletePacedTrains(dispatch, selectedPacedTrainIds);
+      if (pacedTrainIds.length > 0) {
+        deletingPacedTrainsPromise = deletePacedTrains(dispatch, pacedTrainIds);
       }
       await Promise.all([deletingTrainSchedulesPromise, deletingPacedTrainsPromise]);
 

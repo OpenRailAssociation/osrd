@@ -1,6 +1,4 @@
 use database::DbConnection;
-use itertools::Either;
-use itertools::Itertools;
 use serde::Deserialize;
 use serde::Serialize;
 
@@ -118,59 +116,6 @@ where
     T: ListAndCount + 'static,
     <Self as List>::Error: From<<Self as Count>::Error>,
 {
-}
-
-pub trait ConcatenatedPaginatedList: Sized {
-    type Item;
-    type Settings;
-    type Error;
-
-    async fn list_concatenated(
-        conn: &mut DbConnection,
-        settings: Self::Settings,
-    ) -> Result<(impl Iterator<Item = Self::Item>, PaginationStats), Self::Error>;
-}
-
-impl<T, U> ConcatenatedPaginatedList for (T, U)
-where
-    T: ListAndCount + 'static,
-    <T as List>::Error: From<<T as Count>::Error> + From<<U as List>::Error>,
-    U: ListAndCount + 'static,
-    <U as List>::Error: From<<U as Count>::Error>,
-{
-    type Item = Either<T, U>;
-    type Settings = (SelectionSettings<T>, SelectionSettings<U>);
-    type Error = <T as List>::Error;
-
-    async fn list_concatenated(
-        conn: &mut DbConnection,
-        (ts, us): Self::Settings,
-    ) -> Result<(impl Iterator<Item = Self::Item>, PaginationStats), Self::Error> {
-        let ((t_page, t_page_size), (u_page, u_page_size)) = ts
-            .get_pagination_settings()
-            .zip(us.get_pagination_settings())
-            .unwrap();
-        assert_eq!((t_page, t_page_size), (u_page, u_page_size));
-        let (t_results, t_count) = T::list_and_count(conn, ts).await?;
-        let (u_results, u_count) = U::list_and_count(
-            conn,
-            // in case some Ts are missing to reach t_page_size, we need to fetch more Us to reach the target page size
-            us.limit(t_page_size - t_results.len() as u64),
-        )
-        .await?;
-
-        let current_page_count = t_results.len() as u64 + u_results.len() as u64;
-        let total_count = t_count + u_count;
-
-        let stats = PaginationStats::new(current_page_count, total_count, t_page, t_page_size);
-        Ok((
-            t_results
-                .into_iter()
-                .map(Either::Left)
-                .interleave(u_results.into_iter().map(Either::Right)),
-            stats,
-        ))
-    }
 }
 
 #[derive(Debug, Clone, Copy)]

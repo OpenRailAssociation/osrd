@@ -5,7 +5,9 @@ import {
   type PacedTrain,
   type TrainSchedule,
   type PathItemLocation,
+  type PacedTrainException,
 } from 'common/api/osrdEditoastApi';
+import { isPacedTrainResponseWithPaced } from 'modules/timetableItem/helpers/pacedTrain';
 import {
   createPacedTrain,
   createTrainSchedule,
@@ -24,11 +26,7 @@ import type {
 } from 'reducers/osrdconf/types';
 import type { AppDispatch } from 'store';
 import { Duration } from 'utils/duration';
-import {
-  formatEditoastIdToPacedTrainId,
-  isPacedTrainId,
-  isPacedTrainResponseWithPacedTrainId,
-} from 'utils/trainId';
+import { formatEditoastIdToPacedTrainId, isPacedTrainId } from 'utils/trainId';
 
 import { checkChangeGroups } from '../../ManageTimetableItem/helpers/buildPacedTrainException';
 import type {
@@ -578,20 +576,20 @@ export const handleUpdateTimetableItem = async ({
     );
     updatedForwardTrainId = updatedTrainSchedule.id;
   } else {
-    if (isPacedTrainResponseWithPacedTrainId(oldForwardTimetableItem)) {
+    let exceptions: PacedTrainException[] = [];
+    if (isPacedTrainResponseWithPaced(oldForwardTimetableItem)) {
       paced.time_window = oldForwardTimetableItem.paced.time_window;
+      exceptions = checkChangeGroups(
+        newForwardTimetableItem,
+        paced,
+        oldForwardTimetableItem.paced.exceptions
+      );
     }
     newForwardPacedTrain = {
       ...newForwardTimetableItem,
       paced: {
         ...paced,
-        exceptions: isPacedTrainResponseWithPacedTrainId(oldForwardTimetableItem)
-          ? checkChangeGroups(
-              newForwardTimetableItem,
-              paced,
-              oldForwardTimetableItem.paced.exceptions
-            )
-          : [],
+        exceptions,
       },
     };
     const updatedPacedTrain = await storePacedTrain(
@@ -650,7 +648,7 @@ export const handleUpdateTimetableItem = async ({
         ...newReturnTimetableItemBase,
         paced: {
           ...paced,
-          exceptions: isPacedTrainResponseWithPacedTrainId(oldReturnTimetableItem)
+          exceptions: isPacedTrainResponseWithPaced(oldReturnTimetableItem)
             ? checkChangeGroups(
                 newReturnTimetableItemBase,
                 paced,

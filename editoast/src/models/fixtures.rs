@@ -169,7 +169,7 @@ pub fn create_created_exception_with_change_groups(key: &str) -> PacedTrainExcep
 
 pub fn create_modified_exception_with_change_groups(
     key: &str,
-    occurrence_index: i32,
+    occurrence_index: usize,
 ) -> PacedTrainException {
     let mut exception = create_created_exception_with_change_groups(key);
     exception.exception_type = ExceptionType::Modified { occurrence_index };
@@ -183,14 +183,14 @@ pub fn create_modified_exception_with_change_groups(
 pub fn simple_paced_train_base() -> PacedTrain {
     PacedTrain {
         train_schedule_base: schemas::TrainSchedule::fake(),
-        paced: Paced {
+        paced: Some(Paced {
             time_window: ChronoDuration::hours(2).try_into().unwrap(),
             interval: ChronoDuration::minutes(15).try_into().unwrap(),
             exceptions: vec![
                 simple_created_exception_with_change_groups("exception_key_1"),
                 simple_modified_exception_with_change_groups("exception_key_2", 0),
             ],
-        },
+        }),
     }
 }
 
