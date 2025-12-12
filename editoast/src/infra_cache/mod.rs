@@ -30,7 +30,7 @@ use schemas::infra::DirectionalTrackRange;
 use schemas::infra::DoubleSlipSwitch;
 use schemas::infra::Electrification;
 use schemas::infra::Endpoint;
-use schemas::infra::LevelCrossing;
+use schemas::infra::LevelCrossingPart;
 use schemas::infra::Link;
 use schemas::infra::NeutralSection;
 use schemas::infra::OperationalPointPart;
@@ -56,6 +56,7 @@ use thiserror::Error;
 use crate::error::Result;
 use crate::infra_cache::object_cache::BufferStopCache;
 use crate::infra_cache::object_cache::DetectorCache;
+use crate::infra_cache::object_cache::LevelCrossingCache;
 use crate::infra_cache::object_cache::OperationalPointCache;
 use crate::infra_cache::object_cache::SignalCache;
 use crate::infra_cache::object_cache::SwitchCache;
@@ -103,7 +104,7 @@ pub enum ObjectCache {
     SwitchType(SwitchType),
     Electrification(Electrification),
     NeutralSection(NeutralSection),
-    LevelCrossing(LevelCrossing),
+    LevelCrossing(LevelCrossingCache),
 }
 
 impl From<InfraObject> for ObjectCache {
@@ -122,7 +123,7 @@ impl From<InfraObject> for ObjectCache {
                 ObjectCache::OperationalPoint(railjson.into())
             }
             InfraObject::Electrification { railjson } => ObjectCache::Electrification(railjson),
-            InfraObject::LevelCrossing { railjson } => ObjectCache::LevelCrossing(railjson),
+            InfraObject::LevelCrossing { railjson } => ObjectCache::LevelCrossing(railjson.into()),
         }
     }
 }
@@ -189,8 +190,7 @@ impl ObjectCache {
             ObjectCache::NeutralSection(neutral_section) => {
                 neutral_section.get_track_referenced_id()
             }
-            // TODO: implement real logic
-            ObjectCache::LevelCrossing(_) => vec![],
+            ObjectCache::LevelCrossing(level_crossing) => level_crossing.get_track_referenced_id(),
         }
     }
 
@@ -281,6 +281,14 @@ impl ObjectCache {
             _ => panic!("ObjectCache is not a NeutralSection"),
         }
     }
+
+    /// Unwrap a level crossing from the object cache
+    pub fn unwrap_level_crossing(&self) -> &LevelCrossingCache {
+        match self {
+            ObjectCache::LevelCrossing(lc) => lc,
+            _ => panic!("ObjectCache is not a LevelCrossing"),
+        }
+    }
 }
 
 #[derive(QueryableByName, Debug, Clone)]
@@ -348,6 +356,24 @@ impl From<OperationalPointQueryable> for OperationalPointCache {
         let parts: Vec<OperationalPointPart> = serde_json::from_str(&op.parts).unwrap();
         Self {
             obj_id: op.obj_id,
+            parts: parts.into_iter().map_into().collect(),
+        }
+    }
+}
+
+#[derive(QueryableByName, Debug, Clone)]
+struct LevelCrossingQueryable {
+    #[diesel(sql_type = Text)]
+    pub obj_id: String,
+    #[diesel(sql_type = Text)]
+    pub parts: String,
+}
+
+impl From<LevelCrossingQueryable> for LevelCrossingCache {
+    fn from(lcq: LevelCrossingQueryable) -> Self {
+        let parts: Vec<LevelCrossingPart> = serde_json::from_str(&lcq.parts).unwrap();
+        Self {
+            obj_id: lcq.obj_id,
             parts: parts.into_iter().map_into().collect(),
         }
     }
@@ -433,6 +459,11 @@ impl InfraCache {
         &self.objects[ObjectType::Electrification]
     }
 
+    /// Retrieve the cache of level_crossings
+    pub fn level_crossings(&self) -> &HashMap<String, ObjectCache> {
+        &self.objects[ObjectType::LevelCrossing]
+    }
+
     pub fn get_objects_by_type(&self, object_type: ObjectType) -> &HashMap<String, ObjectCache> {
         &self.objects[object_type]
     }
@@ -450,6 +481,7 @@ impl InfraCache {
         mut d: impl Iterator<Item = impl Borrow<DetectorCache>>,
         mut bs: impl Iterator<Item = impl Borrow<BufferStopCache>>,
         mut e: impl Iterator<Item = impl Borrow<Electrification>>,
+        mut lc: impl Iterator<Item = impl Borrow<LevelCrossingCache>>,
     ) -> Result<InfraCache> {
         let mut infra_cache = Self::default();
         // Track sections
@@ -474,6 +506,8 @@ impl InfraCache {
         bs.try_for_each(|obj| infra_cache.add(obj.borrow()))?;
         // Electrifications
         e.try_for_each(|obj| infra_cache.add(obj.borrow()))?;
+        // Level crossings
+        lc.try_for_each(|obj| infra_cache.add(obj.borrow()))?;
 
         // Add builtin switch nodes
         infra_cache.add::<SwitchType>(&Link.into())?;
@@ -551,7 +585,12 @@ impl InfraCache {
             .await?
             .into_iter();
 
-        Self::from_objects(ts, s, ss, ns, r, op, sw, st, d, bs, e)
+        let lc = sql_query(
+            "SELECT obj_id, data->>'parts' AS parts FROM infra_object_level_crossing WHERE infra_id = $1")
+            .bind::<BigInt, _>(infra_id)
+            .load::<LevelCrossingQueryable>(&mut conn.write().await).await?.into_iter().map_into::<LevelCrossingCache>();
+
+        Self::from_objects(ts, s, ss, ns, r, op, sw, st, d, bs, e, lc)
     }
 
     /// This function tries to get the infra from the cache, if it fails, it loads it from the database
@@ -683,8 +722,9 @@ impl InfraCache {
             ObjectCache::NeutralSection(neutral_section) => {
                 self.add::<NeutralSection>(neutral_section)?
             }
-            // TODO: implement real logic
-            ObjectCache::LevelCrossing(_) => (),
+            ObjectCache::LevelCrossing(level_crossing) => {
+                self.add::<LevelCrossingCache>(level_crossing)?
+            }
         }
         Ok(())
     }
@@ -838,6 +878,17 @@ impl InfraCache {
         }
     }
 
+    pub fn get_level_crossing(&self, level_crossing_id: &str) -> Result<&LevelCrossingCache> {
+        Ok(self
+            .level_crossings()
+            .get(level_crossing_id)
+            .ok_or_else(|| InfraCacheEditoastError::ObjectNotFound {
+                obj_type: ObjectType::LevelCrossing.to_string(),
+                obj_id: level_crossing_id.to_string(),
+            })?
+            .unwrap_level_crossing())
+    }
+
     /// Compute the track ranges through which the route passes.
     /// If the path cannot be computed (e.g. invalid topology), returns None.
     /// Route = start_waypoint + end_waypoint
@@ -978,6 +1029,8 @@ impl From<&RailJson> for InfraCache {
                 .cloned()
                 .map_into::<BufferStopCache>(),
             railjson.electrifications.iter(),
+            // TODO: implement real logic
+            std::iter::empty::<LevelCrossingCache>(),
         )
         .expect("Failed to create InfraCache from RailJson")
     }
@@ -993,11 +1046,13 @@ pub mod tests {
     use schemas::infra::Waypoint;
     use std::collections::HashMap;
 
+    use super::LevelCrossingCache;
     use super::OperationalPointCache;
     use crate::infra_cache::InfraCache;
     use crate::infra_cache::SwitchCache;
     use crate::infra_cache::object_cache::BufferStopCache;
     use crate::infra_cache::object_cache::DetectorCache;
+    use crate::infra_cache::object_cache::LevelCrossingPartCache;
     use crate::infra_cache::object_cache::OperationalPointPartCache;
     use crate::infra_cache::object_cache::SignalCache;
     use crate::infra_cache::object_cache::TrackSectionCache;
@@ -1009,6 +1064,7 @@ pub mod tests {
     use schemas::infra::Direction;
     use schemas::infra::Electrification;
     use schemas::infra::Endpoint;
+    use schemas::infra::LevelCrossing;
     use schemas::infra::OperationalPoint;
     use schemas::infra::Route;
     use schemas::infra::Signal;
@@ -1197,6 +1253,29 @@ pub mod tests {
         assert_eq!(refs.get("InvalidRef").unwrap().len(), 1);
     }
 
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    async fn load_level_crossing() {
+        let db_pool = DbConnectionPoolV2::for_tests();
+        let infra = create_empty_infra(&mut db_pool.get_ok()).await;
+        let lc = create_infra_object(
+            &mut db_pool.get_ok(),
+            infra.id,
+            LevelCrossing {
+                parts: vec![Default::default()],
+                ..Default::default()
+            },
+        )
+        .await;
+
+        let infra_cache = InfraCache::load(&mut db_pool.get_ok(), &infra)
+            .await
+            .unwrap();
+
+        assert!(infra_cache.level_crossings().contains_key(lc.get_id()));
+        let refs = infra_cache.track_sections_refs;
+        assert_eq!(refs.get("InvalidRef").unwrap().len(), 1);
+    }
+
     pub fn create_track_section_cache<T: AsRef<str>>(obj_id: T, length: f64) -> TrackSectionCache {
         TrackSectionCache {
             obj_id: obj_id.as_ref().into(),
@@ -1373,6 +1452,20 @@ pub mod tests {
         }
     }
 
+    pub fn create_level_crossing_cache<T: AsRef<str>>(
+        obj_id: T,
+        track: T,
+        position: f64,
+    ) -> LevelCrossingCache {
+        LevelCrossingCache {
+            obj_id: obj_id.as_ref().into(),
+            parts: vec![LevelCrossingPartCache {
+                track: track.as_ref().into(),
+                position,
+            }],
+        }
+    }
+
     ///                    -------| C
     ///              D1   /
     /// |--------+---*---
@@ -1486,6 +1579,7 @@ pub mod tests {
         use crate::infra_cache::tests::create_buffer_stop_cache;
         use crate::infra_cache::tests::create_detector_cache;
         use crate::infra_cache::tests::create_electrification_cache;
+        use crate::infra_cache::tests::create_level_crossing_cache;
         use crate::infra_cache::tests::create_operational_point_cache;
         use crate::infra_cache::tests::create_route_cache;
         use crate::infra_cache::tests::create_signal_cache;
@@ -1715,6 +1809,26 @@ pub mod tests {
                 infra_cache.get_electrification(ID).unwrap(),
                 &electrification
             );
+        }
+
+        #[test]
+        fn level_crossing() {
+            const ID: &str = "level_crossing_id";
+
+            let mut infra_cache = InfraCache::default();
+
+            assert_eq!(
+                infra_cache.get_level_crossing(ID).unwrap_err(),
+                InfraCacheEditoastError::ObjectNotFound {
+                    obj_type: ObjectType::LevelCrossing.to_string(),
+                    obj_id: ID.to_string()
+                }
+                .into()
+            );
+            let level_crossing = create_level_crossing_cache(ID, "track_section_id", 0.0);
+
+            infra_cache.add(&level_crossing).unwrap();
+            assert_eq!(infra_cache.get_level_crossing(ID).unwrap(), &level_crossing);
         }
     }
 }
