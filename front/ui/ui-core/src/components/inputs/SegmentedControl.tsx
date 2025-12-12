@@ -1,0 +1,61 @@
+import React, { useMemo } from 'react';
+
+import cx from 'classnames';
+
+export type SegmentedControlProps<T> = Omit<
+  React.InputHTMLAttributes<HTMLInputElement>,
+  'value' | 'onChange' | 'checked'
+> & {
+  options: Array<T>;
+  onChange: (option: T) => void;
+  value: T;
+  getOptionLabel: (option: T) => string;
+  getOptionValue: (option: T) => string;
+  getOptionIcon?: (option: T) => React.ReactNode;
+};
+
+const SegmentedControl = <T,>({
+  options,
+  onChange,
+  value,
+  getOptionLabel,
+  getOptionValue,
+  getOptionIcon,
+  ...inputProps
+}: SegmentedControlProps<T>) => {
+  const opts = useMemo(
+    () =>
+      options.map((e) => ({
+        value: getOptionValue(e),
+        label: getOptionLabel(e),
+        icon: getOptionIcon ? getOptionIcon(e) : null,
+        source: e,
+      })),
+    [options, getOptionValue, getOptionLabel, getOptionIcon]
+  );
+  return (
+    <div className="segmented-control">
+      {opts.map((option) => (
+        <label
+          className={cx(
+            'segmented-control-option',
+            option.value === getOptionValue(value) && 'checked'
+          )}
+          title={option.label}
+        >
+          <div className="segmented-control-option-content">
+            {option.icon ? option.icon : option.label}
+          </div>
+          <input
+            {...inputProps}
+            type="radio"
+            checked={option.value === getOptionValue(value)}
+            onChange={() => onChange(option.source)}
+          />
+        </label>
+      ))}
+    </div>
+  );
+};
+
+export default SegmentedControl;

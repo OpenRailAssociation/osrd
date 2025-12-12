@@ -5,8 +5,10 @@
 @import './hint.css';
 @import './input.css';
 @import './label.css';
+@import './modal.css';
 @import './passwordInput.css';
 @import './radioButton.css';
+@import './segmented-control.css';
 @import './slider.css';
 @import './statusIcon.css';
 @import './statusMessage.css';
@@ -14,4 +16,3 @@
 @import './timePicker.css';
 @import './tokenInput.css';
 @import './tolerancePicker.css';
-@import './modal.css';
