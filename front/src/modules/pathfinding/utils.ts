@@ -108,7 +108,7 @@ export const upsertPathStepsInOPs = (
   t: TFunction<'operational-studies'>
 ): SuggestedOP[] => {
   let updatedOPs = [...ops];
-  pathSteps.map((step, stepIndex) => {
+  pathSteps.forEach((step, stepIndex) => {
     const { arrival, stopFor, receptionSignal, theoreticalMargin } = step;
     // We check only for pathSteps added by map click
     if ('track' in step.location) {
