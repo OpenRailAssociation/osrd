@@ -17,8 +17,14 @@ import fr.sncf.osrd.utils.units.TimeDelta
 interface SimulationResponse
 
 class SimulationSuccess(
+    /** Report where the train goes as fast as possible. */
     val base: ReportTrain,
+    /** Report where the train tries to respect the margins. */
     val provisional: ReportTrain,
+    /**
+     * Report where the train tries to respect the margins as well as the arrival times at scheduled
+     * points.
+     */
     @Json(name = "final_output") val finalOutput: CompleteReportTrain,
     val mrsp: RangeValues<SpeedLimitProperty>,
     @Json(name = "electrical_profiles") val electricalProfiles: RangeValues<ElectricalProfileValue>,
@@ -52,9 +58,17 @@ class CompleteReportTrain(
     @Json(name = "routing_requirements") val routingRequirements: List<RJSRoutingRequirement>,
 ) : ReportTrain(positions, times, speeds, energyConsumption, pathItemTimes)
 
+/**
+ * A simulation report, containing the [times] and the [speeds] for each position in [positions].
+ *
+ * [positions], [times] and [speeds] have the same length.
+ *
+ * [positions] is sorted.
+ */
 open class ReportTrain(
     val positions: List<Offset<TrainPath>>,
-    val times: List<TimeDelta>, // Times are compared to the departure time
+    /** Times are compared to departure time */
+    val times: List<TimeDelta>,
     val speeds: List<Double>,
     @Json(name = "energy_consumption") val energyConsumption: Double,
     @Json(name = "path_item_times") val pathItemTimes: List<TimeDelta>,
