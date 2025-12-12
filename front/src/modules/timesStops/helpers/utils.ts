@@ -13,7 +13,6 @@ import type {
   TrackSection,
 } from 'common/api/osrdEditoastApi';
 import type { TimeString } from 'common/types';
-import { matchPathStepAndOp } from 'modules/pathfinding/utils';
 import type { SuggestedOP } from 'modules/timetableItem/types';
 import type { PathStep } from 'reducers/osrdconf/types';
 import { Duration } from 'utils/duration';
@@ -29,24 +28,6 @@ import {
 import { marginRegExValidation, MarginUnit } from '../consts';
 import { TableType, type TimeExtraDays, type TimesStopsInputRow } from '../types';
 
-const matchPathStepAndOpWithKP = (step: PathStep, op: SuggestedOP) => {
-  if (!matchPathStepAndOp(step.location, op)) {
-    return step.id === op.pathStepId;
-  }
-  // We match the kp in case two OPs have the same uic+ch (can happen when the
-  // infra is imported)
-  if ('operational_point' in step.location) {
-    if (
-      step.location.operational_point.type === 'uic' ||
-      step.location.operational_point.type === 'trigram'
-    ) {
-      return step.kp === op.kp;
-    }
-    return true;
-  }
-  return true;
-};
-
 export const formatSuggestedViasToRowVias = (
   operationalPoints: SuggestedOP[],
   pathSteps: PathStep[],
@@ -60,7 +41,7 @@ export const formatSuggestedViasToRowVias = (
   // to move it to the first position
   const origin = pathSteps[0];
   const originIndexInOps = origin
-    ? operationalPoints.findIndex((op) => matchPathStepAndOpWithKP(origin, op))
+    ? operationalPoints.findIndex((op) => origin.id === op.pathStepId)
     : -1;
   if (originIndexInOps !== -1) {
     [formattedOps[0], formattedOps[originIndexInOps]] = [
@@ -71,9 +52,7 @@ export const formatSuggestedViasToRowVias = (
 
   // Ditto: destination should be last
   const dest = pathSteps[pathSteps.length - 1];
-  const destIndexInOps = dest
-    ? operationalPoints.findIndex((op) => matchPathStepAndOpWithKP(dest, op))
-    : -1;
+  const destIndexInOps = dest ? operationalPoints.findIndex((op) => dest.id === op.pathStepId) : -1;
   if (destIndexInOps !== -1) {
     const lastOpIndex = formattedOps.length - 1;
     [formattedOps[lastOpIndex], formattedOps[destIndexInOps]] = [
@@ -83,7 +62,7 @@ export const formatSuggestedViasToRowVias = (
   }
 
   return formattedOps.map((op, i) => {
-    const pathStep = pathSteps.find((step) => matchPathStepAndOpWithKP(step, op));
+    const pathStep = pathSteps.find((step) => step.id === op.pathStepId);
     const name = pathStep?.name || op.name;
     const objectToUse = tableType === TableType.Input ? pathStep : op;
 
