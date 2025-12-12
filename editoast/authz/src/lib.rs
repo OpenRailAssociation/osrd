@@ -158,7 +158,7 @@ mod mock_driver {
             model::User(
                 self.driver
                     .ensure_user(&UserInfo {
-                        identity: identity.to_owned(),
+                        identities: vec![identity.to_owned()],
                         name: name.to_owned(),
                     })
                     .await
@@ -241,7 +241,10 @@ mod mock_driver {
             let mut users = self.users.lock().unwrap();
             let user_id = {
                 let id = self.counter.read().unwrap();
-                *users.entry(user.identity.clone()).or_insert(*id)
+                for identity in &user.identities {
+                    users.entry(identity.clone()).or_insert(*id);
+                }
+                *id
             };
             *self.counter.write().unwrap() += 1;
             Ok(User {
@@ -273,14 +276,18 @@ mod mock_driver {
 
         async fn get_user_info(&self, user_id: i64) -> Result<Option<UserInfo>, Self::Error> {
             let users = self.users.lock().unwrap();
-            let user_info = users
+            let identities = users
                 .iter()
-                .find(|(_, id)| **id == user_id)
-                .map(|(identity, _)| UserInfo {
-                    identity: identity.clone(),
-                    name: "Mocked User".to_owned(),
-                });
-            Ok(user_info)
+                .filter(|(_, id)| **id == user_id)
+                .map(|(identity, _)| identity.clone())
+                .collect::<Vec<_>>();
+            if identities.is_empty() {
+                return Ok(None);
+            }
+            Ok(Some(UserInfo {
+                identities,
+                name: "Mocked User".to_owned(),
+            }))
         }
 
         async fn get_group_info(&self, group_id: i64) -> Result<Option<GroupInfo>, Self::Error> {
@@ -296,22 +303,24 @@ mod mock_driver {
             &self,
         ) -> Result<impl stream::TryStream<Ok = (i64, UserInfo), Error = Self::Error>, Self::Error>
         {
-            Ok(stream::iter(
-                self.users
-                    .lock()
-                    .unwrap()
-                    .clone()
-                    .into_iter()
-                    .map(|(identity, id)| {
-                        Ok((
-                            id,
-                            UserInfo {
-                                name: format!("Mocked user {identity}"),
-                                identity,
-                            },
-                        ))
-                    }),
-            ))
+            let mut user_identities: HashMap<i64, Vec<String>> = HashMap::new();
+            for (identity, &id) in self.users.lock().unwrap().iter() {
+                user_identities
+                    .entry(id)
+                    .or_default()
+                    .push(identity.clone());
+            }
+            Ok(stream::iter(user_identities.into_iter().map(
+                |(id, identities)| {
+                    Ok((
+                        id,
+                        UserInfo {
+                            name: format!("Mocked user ({})", identities.join(", ")),
+                            identities,
+                        },
+                    ))
+                },
+            )))
         }
 
         async fn list_groups(

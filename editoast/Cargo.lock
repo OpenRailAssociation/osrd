@@ -373,6 +373,7 @@ dependencies = [
  "fga",
  "fga_migrations",
  "futures 0.3.31",
+ "itertools 0.14.0",
  "pretty_assertions",
  "serde",
  "stdext",
