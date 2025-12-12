@@ -51,8 +51,8 @@ pub struct SimulationResponseSuccess {
     pub base: ReportTrain,
     /// Simulation that takes into account the regularity margins
     pub provisional: ReportTrain,
+    /// Simulation that takes into account the regularity margins and the schedule item times
     #[schema(inline)]
-    /// User-selected simulation: can be base or provisional
     pub final_output: CompleteReportTrain,
     #[schema(inline)]
     pub mrsp: SpeedLimitProperties,
