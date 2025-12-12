@@ -289,7 +289,7 @@ pub struct SimulationSuccess {
     pub base: ReportTrain,
     /// Simulation that takes into account the regularity margins
     pub provisional: ReportTrain,
-    /// User-selected simulation: can be base or provisional
+    /// Simulation that takes into account the regularity margins and the schedule item times
     pub final_output: CompleteReportTrain,
     pub mrsp: SpeedLimitProperties,
     pub electrical_profiles: ElectricalProfiles,

@@ -4240,7 +4240,7 @@ export type SimulationResponseSuccess = {
         }
     )[];
   };
-  /** User-selected simulation: can be base or provisional */
+  /** Simulation that takes into account the regularity margins and the schedule item times */
   final_output: CoreReportTrain & {
     routing_requirements: CoreRoutingRequirement[];
     signal_critical_positions: CoreSignalCriticalPosition[];
