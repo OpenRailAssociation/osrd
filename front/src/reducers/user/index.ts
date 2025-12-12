@@ -1,17 +1,28 @@
 import { createSlice, type PayloadAction } from '@reduxjs/toolkit';
 
 import type { ApiError } from 'common/api/baseGeneratedApis';
-import type { Role, SearchResultItemUser } from 'common/api/osrdEditoastApi';
+import type { Role } from 'common/api/osrdEditoastApi';
 
 export type UserState = {
   isLogged: boolean;
-  impersonatedUser?: SearchResultItemUser;
+  impersonatedUser?: UserInfo;
   loginError?: ApiError;
   userId: number;
   username: string;
   userPreferences: { safeWord: string };
   userRoles: Role[];
   account: Record<string, string>;
+};
+
+export type UserInfo = {
+  groups: {
+    id: number;
+    name: string;
+  }[];
+  id: number;
+  identities: string[];
+  name: string;
+  roles: Role[];
 };
 
 export const userInitialState: UserState = {
@@ -46,7 +57,7 @@ export const userSlice = createSlice({
     logoutSuccess() {
       return userInitialState;
     },
-    setImpersonatedUser(state, action: PayloadAction<SearchResultItemUser | undefined>) {
+    setImpersonatedUser(state, action: PayloadAction<UserInfo | undefined>) {
       state.impersonatedUser = action.payload;
     },
     updateAuthzUser(

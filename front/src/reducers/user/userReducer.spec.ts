@@ -78,7 +78,13 @@ describe('userReducer', () => {
 
   it('should handle setImpersonatedUser', () => {
     const store = createStore(userInitialState);
-    const impersonatedUser = { id: 1, identity_id: 'user1', name: 'ImpersonatedUser' };
+    const impersonatedUser = {
+      groups: [],
+      roles: [],
+      id: 1,
+      identities: ['user1'],
+      name: 'ImpersonatedUser',
+    };
     store.dispatch(setImpersonatedUser(impersonatedUser));
     const userState = store.getState().user;
     expect(userState).toEqual({
