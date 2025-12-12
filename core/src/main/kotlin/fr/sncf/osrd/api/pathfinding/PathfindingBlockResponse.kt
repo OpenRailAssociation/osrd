@@ -9,11 +9,11 @@ import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import fr.sncf.osrd.api.DirectionalTrackRange
 import fr.sncf.osrd.path.interfaces.JsonTrainPath
 import fr.sncf.osrd.path.interfaces.TrainPath
-import fr.sncf.osrd.pathfinding.Pathfinding
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.utils.json.UnitAdapterFactory
 import fr.sncf.osrd.utils.units.Length
 import fr.sncf.osrd.utils.units.Offset
+import fr.sncf.osrd.utils.units.OffsetRange
 import java.util.*
 
 interface PathfindingBlockResponse
@@ -66,9 +66,9 @@ data class IncompatibleConstraints(
     val incompatibleSignalingSystemRanges: List<RangeValue<String>>,
 )
 
-data class RangeValue<T>(val range: Pathfinding.Range<TrainPath>, val value: T?) {
+data class RangeValue<T>(val range: OffsetRange<TrainPath>, val value: T?) {
     @FromJson
-    fun fromJson(range: Pathfinding.Range<TrainPath>): RangeValue<T> {
+    fun fromJson(range: OffsetRange<TrainPath>): RangeValue<T> {
         return RangeValue(range, null)
     }
 }

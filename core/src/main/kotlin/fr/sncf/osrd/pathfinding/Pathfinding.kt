@@ -7,6 +7,7 @@ import fr.sncf.osrd.pathfinding.constraints.ConstraintCombiner
 import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.utils.units.Offset
+import fr.sncf.osrd.utils.units.OffsetRange
 import fr.sncf.osrd.utils.units.meters
 import io.opentelemetry.api.trace.SpanKind
 import io.opentelemetry.instrumentation.annotations.WithSpan
@@ -76,7 +77,19 @@ class Pathfinding<NodeT : Any, EdgeT : Any, OffsetType>(
     )
 
     /** A simple range with no edge attached */
-    data class Range<OffsetType>(val start: Offset<OffsetType>, val end: Offset<OffsetType>)
+    @JvmInline
+    value class Range<OffsetType>(private val r: OffsetRange<OffsetType>) {
+        constructor(
+            start: Offset<OffsetType>,
+            end: Offset<OffsetType>,
+        ) : this(OffsetRange(start, end))
+
+        val start: Offset<OffsetType>
+            get() = r.start
+
+        val end: Offset<OffsetType>
+            get() = r.end
+    }
 
     /** Step priority queue */
     private val queue = PriorityQueue<Step<EdgeT, OffsetType>>()

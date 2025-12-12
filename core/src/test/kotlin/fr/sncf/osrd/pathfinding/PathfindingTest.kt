@@ -16,6 +16,7 @@ import fr.sncf.osrd.utils.Helpers
 import fr.sncf.osrd.utils.md5
 import fr.sncf.osrd.utils.units.Distance
 import fr.sncf.osrd.utils.units.Offset
+import fr.sncf.osrd.utils.units.OffsetRange
 import fr.sncf.osrd.utils.units.meters
 import kotlin.test.assertEquals
 import org.assertj.core.api.Assertions.assertThat
@@ -189,7 +190,7 @@ class PathfindingTest : ApiTest() {
                     incompatibleElectrificationRanges =
                         listOf(
                             RangeValue(
-                                Pathfinding.Range(Offset.zero(), Offset(10250.meters)),
+                                OffsetRange(Offset.zero(), Offset(10250.meters)),
                                 "", // range not electrified
                             )
                         ),
@@ -255,37 +256,23 @@ class PathfindingTest : ApiTest() {
                 IncompatibleConstraints(
                     incompatibleElectrificationRanges =
                         listOf(
-                            RangeValue(
-                                Pathfinding.Range(Offset.zero(), Offset(1960.meters)),
-                                "1500V",
-                            ),
+                            RangeValue(OffsetRange(Offset.zero(), Offset(1960.meters)), "1500V"),
                             // neutral section in-between
                             RangeValue(
-                                Pathfinding.Range(Offset(2010.meters), Offset(4000.meters)),
+                                OffsetRange(Offset(2010.meters), Offset(4000.meters)),
                                 "25000V",
                             ),
                         ),
                     // multiple different loading gauges on the track
                     incompatibleGaugeRanges =
                         listOf(
-                            RangeValue(Pathfinding.Range(Offset.zero(), Offset(100.meters)), null),
-                            RangeValue(
-                                Pathfinding.Range(Offset(100.meters), Offset(200.meters)),
-                                null,
-                            ),
-                            RangeValue(
-                                Pathfinding.Range(Offset(200.meters), Offset(1500.meters)),
-                                null,
-                            ),
-                            RangeValue(
-                                Pathfinding.Range(Offset(1500.meters), Offset(1900.meters)),
-                                null,
-                            ),
+                            RangeValue(OffsetRange(Offset.zero(), Offset(100.meters)), null),
+                            RangeValue(OffsetRange(Offset(100.meters), Offset(200.meters)), null),
+                            RangeValue(OffsetRange(Offset(200.meters), Offset(1500.meters)), null),
+                            RangeValue(OffsetRange(Offset(1500.meters), Offset(1900.meters)), null),
                         ),
                     incompatibleSignalingSystemRanges =
-                        listOf(
-                            RangeValue(Pathfinding.Range(Offset.zero(), Offset(4000.meters)), "BAL")
-                        ),
+                        listOf(RangeValue(OffsetRange(Offset.zero(), Offset(4000.meters)), "BAL")),
                 )
         )
     }
@@ -417,7 +404,7 @@ class PathfindingTest : ApiTest() {
                 assert(
                     resp.incompatibleConstraints.incompatibleGaugeRanges.single() ==
                         RangeValue<String>(
-                            Pathfinding.Range(Offset(1100.meters), Offset(2100.meters)),
+                            OffsetRange(Offset(1100.meters), Offset(2100.meters)),
                             null,
                         )
                 )
