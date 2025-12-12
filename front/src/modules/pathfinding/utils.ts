@@ -147,23 +147,23 @@ export const upsertPathStepsInOPs = (
         updatedOPs.push(formattedStep);
       }
     } else {
-      updatedOPs = updatedOPs.map((op) => {
-        if (
+      const index = updatedOPs.findIndex(
+        (op) =>
           matchPathStepAndOp(step.location, op) &&
           op.kp === step.kp &&
           step.positionOnPath === op.positionOnPath
-        ) {
-          return {
-            ...op,
-            pathStepId: step.id,
-            stopFor,
-            arrival,
-            receptionSignal,
-            theoreticalMargin,
-          };
-        }
-        return op;
-      });
+      );
+      if (index < 0) {
+        throw new Error(`Could not find path step "${step.id}" in OP list`);
+      }
+      updatedOPs[index] = {
+        ...updatedOPs[index],
+        pathStepId: step.id,
+        stopFor,
+        arrival,
+        receptionSignal,
+        theoreticalMargin,
+      };
     }
   });
   return updatedOPs;
