@@ -27,14 +27,14 @@ class TemporarySpeedLimitTests {
             buildTemporarySpeedLimitManager(infra, temporarySpeedLimits)
         val startDetectorId = infra.rawInfra.findDetector(beginDetector)!!
         val blocksOnStart =
-            infra
-                .blockInfra()
-                .getBlocksStartingAtDetector(DirDetectorId(startDetectorId, Direction.INCREASING))
+            infra.blockInfra.getBlocksStartingAtDetector(
+                DirDetectorId(startDetectorId, Direction.INCREASING)
+            )
         val endDetectorId = infra.rawInfra.findDetector(endDetector)!!
         val blocksOnEnd =
-            infra
-                .blockInfra()
-                .getBlocksStartingAtDetector(DirDetectorId(endDetectorId, Direction.INCREASING))
+            infra.blockInfra.getBlocksStartingAtDetector(
+                DirDetectorId(endDetectorId, Direction.INCREASING)
+            )
         val startBlock = blocksOnStart[0]
         val endBlock = blocksOnEnd[0]
         return STDCMPathfindingBuilder()

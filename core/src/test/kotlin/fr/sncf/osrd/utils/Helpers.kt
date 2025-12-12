@@ -77,7 +77,7 @@ object Helpers {
     }
 
     /** Generates a full infra from rjs data */
-    fun fullInfraFromRJS(rjs: RJSInfra?): FullInfra {
+    fun fullInfraFromRJS(rjs: RJSInfra): FullInfra {
         val signalingSimulator = makeSignalingSimulator()
         return FullInfra.fromRJSInfra(rjs, signalingSimulator)
     }

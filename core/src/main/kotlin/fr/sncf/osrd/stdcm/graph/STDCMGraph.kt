@@ -46,8 +46,8 @@ class STDCMGraph(
     val temporarySpeedLimitManager: TemporarySpeedLimitManager = TemporarySpeedLimitManager(),
     constraints: ConstraintCombiner<StaticIdx<Block>, Block>,
 ) : Graph<STDCMNode, STDCMEdge, STDCMEdge> {
-    val rawInfra = fullInfra.rawInfra!!
-    val blockInfra = fullInfra.blockInfra!!
+    val rawInfra = fullInfra.rawInfra
+    val blockInfra = fullInfra.blockInfra
     var stdcmSimulations: STDCMSimulations = STDCMSimulations()
     val delayManager: DelayManager =
         DelayManager(minScheduleTimeStart, maxRunTime, blockAvailability, this, timeStep)

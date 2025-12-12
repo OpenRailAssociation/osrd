@@ -475,6 +475,6 @@ fun makeRequirementsFromPath(
         )
 
     return sim.finalOutput.spacingRequirements.map {
-        SpacingRequirement.fromRJS(it, infra.rawInfra())
+        SpacingRequirement.fromRJS(it, infra.rawInfra)
     }
 }
