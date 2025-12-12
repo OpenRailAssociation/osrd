@@ -153,7 +153,7 @@ export const storeRoundTrip = async (
  * If not we persist them.
  */
 export const storeTrainPathNodes = async (state: MacroEditorState, dispatch: AppDispatch) => {
-  const allNodes = state.nodes.filter((n) => !n?.dbId);
+  const allNodes = state.nodes.filter((n) => n && !n.dbId);
 
   if (!allNodes.length) return;
 
