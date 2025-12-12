@@ -2399,9 +2399,29 @@ paths:
                     - oneOf:
                       - type: object
                         required:
+                        - id
+                        - type
+                        properties:
+                          id:
+                            type: integer
+                            format: int64
+                          type:
+                            type: string
+                            enum:
+                            - single
+                      - type: object
+                        required:
+                        - id
                         - index
                         - type
                         properties:
+                          exception_key:
+                            type:
+                            - string
+                            - 'null'
+                          id:
+                            type: integer
+                            format: int64
                           index:
                             type: integer
                             format: int64
@@ -2409,34 +2429,23 @@ paths:
                           type:
                             type: string
                             enum:
-                            - BaseOccurrence
+                            - occurrence
                       - type: object
                         required:
-                        - index
+                        - id
                         - exception_key
                         - type
                         properties:
                           exception_key:
                             type: string
-                          index:
+                          id:
                             type: integer
                             format: int64
-                            minimum: 0
                           type:
                             type: string
                             enum:
-                            - ModifiedException
-                      - type: object
-                        required:
-                        - exception_key
-                        - type
-                        properties:
-                          exception_key:
-                            type: string
-                          type:
-                            type: string
-                            enum:
-                            - CreatedException
+                            - created_occurrence
+                      description: This ID is used to identify paced train occurrences and exceptions when sending them to the core API for conflict detection.
                     - type: object
                       required:
                       - time_begin
@@ -2448,13 +2457,6 @@ paths:
                         time_begin:
                           type: string
                           format: date-time
-                    - type: object
-                      required:
-                      - paced_train_id
-                      properties:
-                        paced_train_id:
-                          type: integer
-                          format: int64
                 propertyNames:
                   type: string
   /paced_train/{id}:
@@ -2496,26 +2498,26 @@ paths:
               allOf:
               - $ref: '#/components/schemas/TrainSchedule'
               - type: object
-                required:
-                - paced
                 properties:
                   paced:
-                    type: object
-                    required:
-                    - time_window
-                    - interval
-                    - exceptions
-                    properties:
-                      exceptions:
-                        type: array
-                        items:
-                          $ref: '#/components/schemas/PacedTrainException'
-                      interval:
-                        $ref: '#/components/schemas/PositiveDuration'
-                        description: Time between two occurrences, an ISO 8601 format is expected
-                      time_window:
-                        $ref: '#/components/schemas/PositiveDuration'
-                        description: Duration of the paced train, an ISO 8601 format is expected
+                    oneOf:
+                    - type: 'null'
+                    - type: object
+                      required:
+                      - time_window
+                      - interval
+                      - exceptions
+                      properties:
+                        exceptions:
+                          type: array
+                          items:
+                            $ref: '#/components/schemas/PacedTrainException'
+                        interval:
+                          $ref: '#/components/schemas/PositiveDuration'
+                          description: Time between two occurrences, an ISO 8601 format is expected
+                        time_window:
+                          $ref: '#/components/schemas/PositiveDuration'
+                          description: Duration of the paced train, an ISO 8601 format is expected
         required: true
       responses:
         '204':
@@ -5362,8 +5364,7 @@ components:
     Conflict:
       type: object
       required:
-      - train_schedule_ids
-      - paced_train_occurrence_ids
+      - train_ids
       - work_schedule_ids
       - start_time
       - end_time
@@ -5381,46 +5382,6 @@ components:
           type: string
           format: date-time
           description: Datetime of the end of the conflict
-        paced_train_occurrence_ids:
-          type: array
-          items:
-            allOf:
-            - oneOf:
-              - type: object
-                required:
-                - index
-                properties:
-                  index:
-                    type: integer
-                    format: int64
-                    minimum: 0
-              - type: object
-                required:
-                - index
-                - exception_key
-                properties:
-                  exception_key:
-                    type: string
-                  index:
-                    type: integer
-                    format: int64
-                    minimum: 0
-              - type: object
-                required:
-                - exception_key
-                properties:
-                  exception_key:
-                    type: string
-            - type: object
-              required:
-              - paced_train_id
-              properties:
-                paced_train_id:
-                  type: integer
-                  format: int64
-          description: |-
-            List of paced train occurrences involved in the conflict.
-            Each occurrence is identified by a `paced_train_id` and its `index`
         requirements:
           type: array
           items:
@@ -5430,12 +5391,60 @@ components:
           type: string
           format: date-time
           description: Datetime of the start of the conflict
-        train_schedule_ids:
+        train_ids:
           type: array
           items:
-            type: integer
-            format: int64
-          description: List of train schedule ids involved in the conflict
+            oneOf:
+            - type: object
+              required:
+              - id
+              - type
+              properties:
+                id:
+                  type: integer
+                  format: int64
+                type:
+                  type: string
+                  enum:
+                  - single
+            - type: object
+              required:
+              - id
+              - index
+              - type
+              properties:
+                exception_key:
+                  type:
+                  - string
+                  - 'null'
+                id:
+                  type: integer
+                  format: int64
+                index:
+                  type: integer
+                  format: int64
+                  minimum: 0
+                type:
+                  type: string
+                  enum:
+                  - occurrence
+            - type: object
+              required:
+              - id
+              - exception_key
+              - type
+              properties:
+                exception_key:
+                  type: string
+                id:
+                  type: integer
+                  format: int64
+                type:
+                  type: string
+                  enum:
+                  - created_occurrence
+            description: This ID is used to identify paced train occurrences and exceptions when sending them to the core API for conflict detection.
+          description: List of trains involved in the conflict.
         work_schedule_ids:
           type: array
           items:
@@ -10759,26 +10768,26 @@ components:
       allOf:
       - $ref: '#/components/schemas/TrainSchedule'
       - type: object
-        required:
-        - paced
         properties:
           paced:
-            type: object
-            required:
-            - time_window
-            - interval
-            - exceptions
-            properties:
-              exceptions:
-                type: array
-                items:
-                  $ref: '#/components/schemas/PacedTrainException'
-              interval:
-                $ref: '#/components/schemas/PositiveDuration'
-                description: Time between two occurrences, an ISO 8601 format is expected
-              time_window:
-                $ref: '#/components/schemas/PositiveDuration'
-                description: Duration of the paced train, an ISO 8601 format is expected
+            oneOf:
+            - type: 'null'
+            - type: object
+              required:
+              - time_window
+              - interval
+              - exceptions
+              properties:
+                exceptions:
+                  type: array
+                  items:
+                    $ref: '#/components/schemas/PacedTrainException'
+                interval:
+                  $ref: '#/components/schemas/PositiveDuration'
+                  description: Time between two occurrences, an ISO 8601 format is expected
+                time_window:
+                  $ref: '#/components/schemas/PositiveDuration'
+                  description: Duration of the paced train, an ISO 8601 format is expected
     PacedTrainException:
       allOf:
       - type: object

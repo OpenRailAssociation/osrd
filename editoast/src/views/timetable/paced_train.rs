@@ -17,6 +17,7 @@ use database::DbConnectionPoolV2;
 use editoast_derive::EditoastError;
 use editoast_models::prelude::*;
 use itertools::Itertools;
+use itertools::izip;
 use schemas::paced_train::PacedTrain;
 use schemas::train_schedule::OperationalPointReference;
 use schemas::train_schedule::PathItemLocation;
@@ -31,8 +32,8 @@ use super::AuthenticationExt;
 use crate::error::Result;
 use crate::models;
 use crate::models::Infra;
-use crate::models::paced_train::OccurrenceId;
 use crate::models::paced_train::PacedTrainChangeset;
+use crate::models::paced_train::TrainId;
 use crate::views::AuthorizationError;
 use crate::views::infra::InfraIdQueryParam;
 use crate::views::path::path_item_cache::PathItemCache;
@@ -1145,10 +1146,9 @@ pub(in crate::views) struct TrackOccupancyForm {
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
 #[schema(as = PacedTrainTrackOccupancy)]
 pub(in crate::views) struct TrackOccupancy {
-    paced_train_id: i64,
     #[serde(flatten)]
     #[schema(inline)]
-    occurrence_id: OccurrenceId,
+    train_id: TrainId,
     #[serde(flatten)]
     #[schema(inline)]
     time_window: track_occupancy::TimeWindow,
@@ -1222,28 +1222,16 @@ pub(in crate::views) async fn track_occupancy(
     .await?;
 
     // Collect all occurrences from all paced trains using iter_occurrences()
-    let train_occurrences = paced_trains
+    let (train_ids, trains): (Vec<_>, Vec<_>) = paced_trains
         .iter()
-        .flat_map(|paced_train| {
-            paced_train
-                .iter_occurrences()
-                .map(|(occurrence_id, train_schedule)| {
-                    (paced_train.id, occurrence_id, train_schedule)
-                })
-        })
-        .collect_vec();
-
-    // Extract train schedules for simulation
-    let train_schedules = train_occurrences
-        .iter()
-        .map(|(_, _, train_schedule)| train_schedule.clone())
-        .collect_vec();
+        .flat_map(|paced_train| paced_train.iter_occurrences())
+        .unzip();
 
     let simulations_result = train_simulation_batch(
         conn,
         valkey_client,
         core_client,
-        &train_schedules,
+        &trains,
         &infra,
         electrical_profile_set_id,
         config.app_version.as_deref(),
@@ -1253,7 +1241,7 @@ pub(in crate::views) async fn track_occupancy(
     // Get track positions at the operational point
     let operational_point_track_offsets = operational_point.schema.track_offset();
 
-    let path_items = train_schedules
+    let path_items = trains
         .iter()
         .flat_map(|ts| &ts.path)
         .map(|p| &p.location)
@@ -1262,39 +1250,35 @@ pub(in crate::views) async fn track_occupancy(
     let path_item_cache = PathItemCache::load(db_pool.get().await?, infra_id, &path_items).await?;
 
     // For each occurrence + simulation result, compute track occupancies
-    let all_occupancies: Vec<(String, TrackOccupancy)> = train_occurrences
-        .into_iter()
-        .zip(simulations_result)
-        .flat_map(
-            |((paced_train_id, occurrence_id, train_schedule), (simulation, pathfinding))| {
+    let all_occupancies: Vec<(String, TrackOccupancy)> =
+        izip!(train_ids, trains, simulations_result)
+            .flat_map(|(train_id, train, (simulation, pathfinding))| {
                 track_occupancy::find_track_occupancy_for_operational_point(
                     &operational_point_id,
                     &operational_point_track_offsets,
                     &path_item_cache,
                     &simulation,
                     &pathfinding,
-                    &train_schedule,
+                    &train,
                 )
                 .into_iter()
                 .map(
-                    move |track_occupancy::TrackOccupancy {
-                              track_section,
-                              time_window,
-                          }| {
+                    |track_occupancy::TrackOccupancy {
+                         track_section,
+                         time_window,
+                     }| {
                         (
                             track_section,
                             TrackOccupancy {
-                                paced_train_id,
-                                occurrence_id: occurrence_id.clone(),
+                                train_id: train_id.clone(),
                                 time_window,
                             },
                         )
                     },
                 )
                 .collect_vec()
-            },
-        )
-        .collect();
+            })
+            .collect();
 
     // Group occupancies by track section
     let results: HashMap<String, Vec<TrackOccupancy>> =
@@ -1497,8 +1481,10 @@ mod tests {
         let paced_train = create_simple_paced_train(&mut pool.get_ok(), timetable.id).await;
 
         let mut paced_train_base = simple_paced_train_base();
-        paced_train_base.paced.time_window = Duration::minutes(90).try_into().unwrap();
-        paced_train_base.paced.interval = Duration::minutes(15).try_into().unwrap();
+        paced_train_base.paced.as_mut().unwrap().time_window =
+            Duration::minutes(90).try_into().unwrap();
+        paced_train_base.paced.as_mut().unwrap().interval =
+            Duration::minutes(15).try_into().unwrap();
 
         let request = app
             .put(format!("/paced_train/{}", paced_train.id).as_str())
@@ -1525,9 +1511,11 @@ mod tests {
         let paced_train = create_simple_paced_train(&mut pool.get_ok(), timetable.id).await;
 
         let mut paced_train_base = simple_paced_train_base();
-        paced_train_base.paced.time_window = Duration::minutes(90).try_into().unwrap();
-        paced_train_base.paced.interval = Duration::minutes(15).try_into().unwrap();
-        paced_train_base.paced.exceptions = vec![
+        paced_train_base.paced.as_mut().unwrap().time_window =
+            Duration::minutes(90).try_into().unwrap();
+        paced_train_base.paced.as_mut().unwrap().interval =
+            Duration::minutes(15).try_into().unwrap();
+        paced_train_base.paced.as_mut().unwrap().exceptions = vec![
             simple_created_exception_with_change_groups("duplicated_key_1"),
             simple_modified_exception_with_change_groups("duplicated_key_1", 0),
         ];
@@ -1556,9 +1544,11 @@ mod tests {
         let paced_train = create_simple_paced_train(&mut pool.get_ok(), timetable.id).await;
 
         let mut paced_train_base = simple_paced_train_base();
-        paced_train_base.paced.time_window = Duration::minutes(60).try_into().unwrap();
-        paced_train_base.paced.interval = Duration::minutes(15).try_into().unwrap();
-        paced_train_base.paced.exceptions =
+        paced_train_base.paced.as_mut().unwrap().time_window =
+            Duration::minutes(60).try_into().unwrap();
+        paced_train_base.paced.as_mut().unwrap().interval =
+            Duration::minutes(15).try_into().unwrap();
+        paced_train_base.paced.as_mut().unwrap().exceptions =
             vec![simple_modified_exception_with_change_groups("key_1", 5)];
 
         let request = app
@@ -1645,13 +1635,13 @@ mod tests {
                 rolling_stock_name: rolling_stock.name.clone(),
                 ..TrainSchedule::fake()
             },
-            paced: Paced {
+            paced: Some(Paced {
                 time_window: Duration::hours(1).try_into().unwrap(),
                 interval: Duration::minutes(15).try_into().unwrap(),
                 exceptions: vec![create_created_exception_with_change_groups(
                     "created_exception_key",
                 )],
-            },
+            }),
         };
         let paced_train: PacedTrainChangeset = paced_train_base.into();
         let paced_train = paced_train
@@ -1771,11 +1761,16 @@ mod tests {
             .await
             .assert_status(StatusCode::OK)
             .json_into();
-        paced_train_response.paced_train.paced.exceptions[0].rolling_stock =
-            Some(RollingStockChangeGroup {
-                rolling_stock_name: "R2D2".into(),
-                comfort: Comfort::AirConditioning,
-            });
+        paced_train_response
+            .paced_train
+            .paced
+            .as_mut()
+            .unwrap()
+            .exceptions[0]
+            .rolling_stock = Some(RollingStockChangeGroup {
+            rolling_stock_name: "R2D2".into(),
+            comfort: Comfort::AirConditioning,
+        });
         let request = app
             .put(format!("/paced_train/{train_schedule_id}").as_str())
             .json(&json!(paced_train_response.paced_train));
@@ -1832,11 +1827,19 @@ mod tests {
             .assert_status(StatusCode::OK)
             .json_into();
         // First remove all already generated exceptions
-        paced_train_response.paced_train.paced.exceptions.clear();
+        paced_train_response
+            .paced_train
+            .paced
+            .as_mut()
+            .unwrap()
+            .exceptions
+            .clear();
         // Add one exception which will not change the simulation from base
         paced_train_response
             .paced_train
             .paced
+            .as_mut()
+            .unwrap()
             .exceptions
             .push(PacedTrainException {
                 key: "change_train_name".to_string(),
@@ -1850,6 +1853,8 @@ mod tests {
         paced_train_response
             .paced_train
             .paced
+            .as_mut()
+            .unwrap()
             .exceptions
             .push(PacedTrainException {
                 key: "change_initial_speed".to_string(),
@@ -2207,12 +2212,20 @@ mod tests {
             .assert_status(StatusCode::OK)
             .json_into();
         // First remove all already generated exceptions
-        paced_train_response.paced_train.paced.exceptions.clear();
+        paced_train_response
+            .paced_train
+            .paced
+            .as_mut()
+            .unwrap()
+            .exceptions
+            .clear();
 
         // Add one exception which will not change the simulation from base
         paced_train_response
             .paced_train
             .paced
+            .as_mut()
+            .unwrap()
             .exceptions
             .push(PacedTrainException {
                 key: "change_train_name".to_string(),
@@ -2226,6 +2239,8 @@ mod tests {
         paced_train_response
             .paced_train
             .paced
+            .as_mut()
+            .unwrap()
             .exceptions
             .push(PacedTrainException {
                 key: "change_initial_speed".to_string(),
@@ -2308,8 +2323,8 @@ mod tests {
                 "Mid_East_station",
                 Duration::new(0, 0).expect("Failed to parse duration"),
             )])
-            .interval(TimeDelta::minutes(15))
-            .time_window(TimeDelta::hours(1))
+            .interval(TimeDelta::try_minutes(15))
+            .time_window(TimeDelta::try_hours(1))
             .exceptions(exceptions)
             .create(&mut db_pool.get_ok())
             .await

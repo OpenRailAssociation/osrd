@@ -2140,23 +2140,23 @@ export type PostPacedTrainTrackOccupancyApiResponse =
   /** status 200 Track section occupancy periods for paced trains */ {
     [key: string]: ((
       | {
+          id: number;
+          type: 'single';
+        }
+      | {
+          exception_key?: string | null;
+          id: number;
           index: number;
-          type: 'BaseOccurrence';
+          type: 'occurrence';
         }
       | {
           exception_key: string;
-          index: number;
-          type: 'ModifiedException';
-        }
-      | {
-          exception_key: string;
-          type: 'CreatedException';
+          id: number;
+          type: 'created_occurrence';
         }
     ) & {
       duration: string;
       time_begin: string;
-    } & {
-      paced_train_id: number;
     })[];
   };
 export type PostPacedTrainTrackOccupancyApiArg = {
@@ -2176,7 +2176,7 @@ export type PutPacedTrainByIdApiResponse = unknown;
 export type PutPacedTrainByIdApiArg = {
   id: number;
   body: TrainSchedule & {
-    paced: {
+    paced?: null | {
       exceptions: PacedTrainException[];
       /** Time between two occurrences, an ISO 8601 format is expected */
       interval: PositiveDuration;
@@ -4236,7 +4236,7 @@ export type PacedTrainException = {
   train_name?: TrainNameChangeGroup;
 };
 export type PacedTrain = TrainSchedule & {
-  paced: {
+  paced?: null | {
     exceptions: PacedTrainException[];
     /** Time between two occurrences, an ISO 8601 format is expected */
     interval: PositiveDuration;
@@ -4912,28 +4912,28 @@ export type Conflict = {
   conflict_type: 'Spacing' | 'Routing';
   /** Datetime of the end of the conflict */
   end_time: string;
-  /** List of paced train occurrences involved in the conflict.
-    Each occurrence is identified by a `paced_train_id` and its `index` */
-  paced_train_occurrence_ids: ((
-    | {
-        index: number;
-      }
-    | {
-        exception_key: string;
-        index: number;
-      }
-    | {
-        exception_key: string;
-      }
-  ) & {
-    paced_train_id: number;
-  })[];
   /** List of requirements causing the conflict */
   requirements: CoreConflictRequirement[];
   /** Datetime of the start of the conflict */
   start_time: string;
-  /** List of train schedule ids involved in the conflict */
-  train_schedule_ids: number[];
+  /** List of trains involved in the conflict. */
+  train_ids: (
+    | {
+        id: number;
+        type: 'single';
+      }
+    | {
+        exception_key?: string | null;
+        id: number;
+        index: number;
+        type: 'occurrence';
+      }
+    | {
+        exception_key: string;
+        id: number;
+        type: 'created_occurrence';
+      }
+  )[];
   /** List of work schedule ids involved in the conflict */
   work_schedule_ids: number[];
 };
