@@ -14287,7 +14287,6 @@ components:
       - id
       - description
       - published
-      - is_sandbox
       properties:
         catalogue_entry_id:
           type:
@@ -14299,8 +14298,6 @@ components:
         id:
           type: integer
           format: int64
-        is_sandbox:
-          type: boolean
         name:
           type:
           - string

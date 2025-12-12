@@ -8,6 +8,7 @@ import type {
   TrainMainCategory,
   TrainSchedule,
   RoundTrips,
+  TrainScheduleSet,
 } from 'common/api/osrdEditoastApi';
 import isMainCategory from 'modules/rollingStock/helpers/category';
 import type { SimulationSummary, TimetableItemWithDetails } from 'modules/timetableItem/types';
@@ -223,3 +224,5 @@ export const isValidPathfinding = (summaryTrain: SimulationSummary | undefined) 
   }
   return true;
 };
+
+export const isSandbox = (trainScheduleSet: TrainScheduleSet) => trainScheduleSet.name === null;

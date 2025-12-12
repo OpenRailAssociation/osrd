@@ -54,7 +54,7 @@ const Timetable = ({
     {
       id: 0,
       description: '',
-      is_sandbox: true,
+      name: null,
       published: false,
     },
   ];
