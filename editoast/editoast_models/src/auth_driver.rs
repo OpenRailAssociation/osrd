@@ -7,6 +7,8 @@ use authz::identity::GroupName;
 use authz::identity::User;
 use authz::identity::UserIdentity;
 use authz::identity::UserInfo;
+use authz::identity::UserName;
+use database::DbConnection;
 use database::DbConnectionPoolV2;
 use diesel::dsl;
 use diesel::prelude::*;
@@ -14,6 +16,8 @@ use diesel_async::RunQueryDsl;
 
 use database::tables::*;
 use futures::StreamExt;
+use itertools::Either;
+use itertools::Itertools;
 use tracing::Level;
 
 #[derive(Debug, thiserror::Error, derive_more::From)]
@@ -27,6 +31,8 @@ pub enum AuthDriverError {
     SubjectNotFound { subject_id: i64 },
     #[error(transparent)]
     OpenFgaRequestFailure(#[from] fga::client::RequestFailure),
+    #[error("The provided identity is already associated to another user: `{owner:?}`")]
+    IdentityAlreadyOwned { owner: User },
 }
 
 impl From<diesel::result::Error> for AuthDriverError {
@@ -55,28 +61,48 @@ impl StorageDriver for PgAuthDriver {
         user_identity: &UserIdentity,
     ) -> Result<Option<User>, Self::Error> {
         let conn = self.pool.get().await?;
-        let info = authn_user::table
-            .select(authn_user::all_columns)
-            .filter(authn_user::identity_id.eq(&user_identity))
-            .first::<(i64, String, String)>(conn.write().await.deref_mut())
-            .await
-            .optional()?;
-        let Some((id, identity, name)) = info else {
-            return Ok(None);
+        let identities_alias = diesel::alias!(authn_user_identity as identities_alias);
+        let subquery = identities_alias
+            .select(identities_alias.field(authn_user_identity::user_id))
+            .filter(
+                identities_alias
+                    .field(authn_user_identity::identity)
+                    .eq(user_identity),
+            );
+        let mut user_identities = authn_user::table
+            .inner_join(authn_user_identity::table)
+            .filter(authn_user_identity::user_id.eq_any(subquery))
+            .select((
+                authn_user::id,
+                authn_user::name,
+                authn_user_identity::identity,
+            ))
+            .get_results::<(i64, String, String)>(&mut conn.write().await.deref_mut())
+            .await?
+            .into_iter();
+        let user = match user_identities.next() {
+            Some((id, name, identity)) => {
+                let mut identities = user_identities
+                    .map(|(_, _, identity)| identity)
+                    .collect_vec();
+                identities.push(identity);
+                Some(User {
+                    id,
+                    info: UserInfo { identities, name },
+                })
+            }
+            None => None,
         };
-
-        Ok(Some(User {
-            id,
-            info: UserInfo { identity, name },
-        }))
+        Ok(user)
     }
 
     #[tracing::instrument(skip_all, fields(%user_identity), ret(level = Level::DEBUG), err)]
     async fn get_user_id(&self, user_identity: &UserIdentity) -> Result<Option<i64>, Self::Error> {
         let conn = self.pool.get().await?;
         let id = authn_user::table
+            .inner_join(authn_user_identity::table)
             .select(authn_user::id)
-            .filter(authn_user::identity_id.eq(&user_identity))
+            .filter(authn_user_identity::identity.eq(&user_identity))
             .first::<i64>(conn.write().await.deref_mut())
             .await
             .optional()?;
@@ -97,14 +123,13 @@ impl StorageDriver for PgAuthDriver {
 
     #[tracing::instrument(skip_all, fields(%user_id), ret(level = Level::DEBUG), err)]
     async fn get_user_info(&self, user_id: i64) -> Result<Option<UserInfo>, Self::Error> {
-        let conn = self.pool.get().await?;
-        let info = authn_user::table
-            .select((authn_user::identity_id, authn_user::name))
-            .filter(authn_user::id.eq(user_id))
-            .first::<(String, String)>(conn.write().await.deref_mut())
-            .await
-            .optional()?
-            .map(|(identity, name)| UserInfo { identity, name });
+        let info = crate::authn::user::User::get_batch_user_identities(
+            &[user_id],
+            &mut self.pool.get().await?,
+        )
+        .await?
+        .get(&user_id)
+        .cloned();
         Ok(info)
     }
 
@@ -121,39 +146,34 @@ impl StorageDriver for PgAuthDriver {
         Ok(info)
     }
 
-    #[tracing::instrument(skip_all, fields(%user), ret(level = Level::DEBUG), err)]
-    async fn ensure_user(&self, user: &UserInfo) -> Result<User, Self::Error> {
+    #[tracing::instrument(skip_all, fields(user_name, user_identity), ret(level = Level::DEBUG), err)]
+    async fn ensure_user(
+        &self,
+        user_name: &UserName,
+        user_identity: &UserIdentity,
+    ) -> Result<User, Self::Error> {
         let conn = self.pool.get().await?;
         conn.transaction(async move |conn| {
-            let user_info = self.get_user_info_by_identity(&user.identity).await?;
-            match user_info {
-                Some(user_info) => {
-                    tracing::debug!(?user_info, "user already exists in db");
-                    Ok(user_info)
+            match self.get_user_info_by_identity(user_identity).await? {
+                Some(user) => {
+                    if &user.info.name == user_name {
+                        tracing::debug!(?user, "user already exists in db");
+                        Ok(user)
+                    } else {
+                        tracing::debug!(?user, "identity already associated to another user");
+                        Err(AuthDriverError::IdentityAlreadyOwned { owner: user })
+                    }
                 }
-
                 None => {
                     tracing::info!("registering new user in db");
-
-                    let id: i64 = dsl::insert_into(authn_subject::table)
-                        .default_values()
-                        .returning(authn_subject::id)
-                        .get_result(&mut conn.clone().write().await)
-                        .await?;
-
-                    dsl::insert_into(authn_user::table)
-                        .values((
-                            authn_user::id.eq(id),
-                            authn_user::identity_id.eq(&user.identity),
-                            authn_user::name.eq(&user.name),
-                        ))
-                        .execute(conn.write().await.deref_mut())
-                        .await?;
-
-                    Ok(User {
-                        id,
-                        info: user.clone(),
-                    })
+                    self.save_new_user(
+                        &UserInfo {
+                            name: user_name.to_string(),
+                            identities: vec![user_identity.to_string()],
+                        },
+                        &conn,
+                    )
+                    .await
                 }
             }
         })
@@ -205,11 +225,29 @@ impl StorageDriver for PgAuthDriver {
     > {
         let conn = self.pool.get().await?;
         let users = authn_user::table
-            .select((authn_user::id, authn_user::identity_id, authn_user::name))
-            .load_stream::<(i64, String, String)>(&mut conn.write().await)
+            .left_join(authn_user_identity::table)
+            .group_by(authn_user::id)
+            .select((
+                authn_user::id,
+                authn_user::name,
+                diesel::dsl::sql::<
+                    diesel::sql_types::Array<
+                        diesel::sql_types::Nullable<diesel::sql_types::Varchar>,
+                    >,
+                >("array_agg(")
+                .bind(authn_user_identity::identity)
+                .sql(")"),
+            ))
+            .load_stream::<(i64, String, Vec<Option<String>>)>(&mut conn.write().await)
             .await?
             .map(|res| match res {
-                Ok((id, identity, name)) => Ok((id, UserInfo { identity, name })),
+                Ok((id, name, identities)) => Ok((
+                    id,
+                    UserInfo {
+                        identities: identities.into_iter().flatten().collect_vec(),
+                        name,
+                    },
+                )),
                 Err(e) => Err(e.into()),
             });
         Ok(users)
@@ -242,6 +280,76 @@ impl StorageDriver for PgAuthDriver {
         Ok(s > 0)
     }
 
+    #[tracing::instrument(skip_all, fields(identities, user = %user_identity), ret(level = Level::DEBUG), err)]
+    async fn add_user_identities(
+        &self,
+        user_identity: Either<i64, String>,
+        new_identities: &[String],
+    ) -> Result<bool, Self::Error> {
+        let conn = self.pool.get().await?;
+        conn.transaction(async move |conn| {
+            let existing_user = match user_identity {
+                Either::Left(user_id) => authn_user::table
+                    .left_join(authn_user_identity::table)
+                    .select(authn_user::id)
+                    .filter(authn_user::id.eq(user_id))
+                    .first::<i64>(conn.write().await.deref_mut())
+                    .await
+                    .optional()?,
+                Either::Right(identity) => authn_user::table
+                    .left_join(authn_user_identity::table)
+                    .select(authn_user::id)
+                    .filter(authn_user_identity::identity.eq(identity))
+                    .first::<i64>(conn.write().await.deref_mut())
+                    .await
+                    .optional()?,
+            };
+            match existing_user {
+                None => Ok(false),
+                Some(user_id) => {
+                    for new_identity in new_identities {
+                        let identity_owner = authn_user_identity::table
+                            .select(authn_user_identity::user_id)
+                            .filter(authn_user_identity::identity.eq(&new_identity))
+                            .first::<i64>(conn.write().await.deref_mut())
+                            .await
+                            .optional()?;
+                        match identity_owner {
+                            Some(same_owner_id) if same_owner_id == user_id => {
+                                tracing::warn!(
+                                    "The identity `{}` is already associated with the target user (user_id: {})",
+                                    new_identity,
+                                    user_id
+                                );
+                                continue;
+                            }
+                            Some(different_owner_id) => {
+                                tracing::warn!(
+                                    "Could not add to user `{}` the identity `{}` as it is already associated with another user (user_id: {})",
+                                    user_id,
+                                    new_identity,
+                                    different_owner_id
+                                );
+                                continue;
+                            }
+                            None => {
+                                dsl::insert_into(authn_user_identity::table)
+                                    .values(&vec![(
+                                        authn_user_identity::identity.eq(&new_identity),
+                                        authn_user_identity::user_id.eq(user_id),)])
+
+                                    .execute(&mut conn.write().await)
+                                .await
+                                .map_err(AuthDriverError::from)?;
+                        }
+                    }
+                }
+                Ok(true)
+            }
+        }
+        }).await
+    }
+
     #[tracing::instrument(skip_all, fields(%group_id), ret(level = Level::DEBUG), err)]
     async fn delete_group(&self, group_id: i64) -> Result<bool, Self::Error> {
         let conn = self.pool.get().await?;
@@ -262,6 +370,46 @@ impl StorageDriver for PgAuthDriver {
     }
 }
 
+impl PgAuthDriver {
+    async fn save_new_user(
+        &self,
+        user: &UserInfo,
+        conn: &DbConnection,
+    ) -> Result<User, <PgAuthDriver as StorageDriver>::Error> {
+        let user_id = dsl::insert_into(authn_subject::table)
+            .default_values()
+            .returning(authn_subject::id)
+            .get_result::<i64>(&mut conn.clone().write().await)
+            .await?;
+        diesel::dsl::insert_into(authn_user::table)
+            .values((authn_user::name.eq(&user.name), authn_user::id.eq(user_id)))
+            .execute(&mut conn.write().await.deref_mut())
+            .await?;
+        diesel::dsl::insert_into(authn_user_identity::table)
+            .values(
+                &user
+                    .identities
+                    .iter()
+                    .map(|identity| {
+                        (
+                            authn_user_identity::identity.eq(identity),
+                            authn_user_identity::user_id.eq(user_id),
+                        )
+                    })
+                    .collect_vec(),
+            )
+            .execute(&mut conn.write().await.deref_mut())
+            .await?;
+        Ok(User {
+            id: user_id,
+            info: UserInfo {
+                name: user.name.to_owned(),
+                identities: user.identities.clone(),
+            },
+        })
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use futures::TryStreamExt as _;
@@ -278,21 +426,21 @@ mod tests {
         // Create some users
 
         let toto = UserInfo {
-            identity: "toto".to_owned(),
+            identities: vec!["toto".to_owned()],
             name: "Sir Toto, the One and Only".to_owned(),
         };
         let toto_id = driver
-            .ensure_user(&toto)
+            .ensure_user(&toto.name, &toto.identities[0])
             .await
             .expect("toto should be created successfully")
             .id;
 
         let tata = UserInfo {
-            identity: "tata".to_owned(),
+            identities: vec!["tata".to_owned()],
             name: "TATA".to_owned(),
         };
         let tata_id = driver
-            .ensure_user(&tata)
+            .ensure_user(&tata.name, &tata.identities[0])
             .await
             .expect("tata should be created successfully")
             .id;
@@ -301,18 +449,10 @@ mod tests {
 
         assert_eq!(
             driver
-                .get_user_id(&toto.identity)
+                .get_user_id(&toto.identities[0])
                 .await
                 .expect("toto's ID should be queried successfully"),
             Some(toto_id)
-        );
-
-        assert_eq!(
-            driver
-                .get_user_id(&tata.identity)
-                .await
-                .expect("tata's ID should be queried successfully"),
-            Some(tata_id)
         );
 
         // Retrieve some information about them
@@ -331,7 +471,51 @@ mod tests {
             .expect("tata should be queried successfully")
             .expect("tata should be found");
 
+        assert_eq!(
+            driver
+                .get_user_id(&tata.identities[0])
+                .await
+                .expect("tata's ID should be queried successfully"),
+            Some(tata_id)
+        );
+
         assert_eq!(tata_db, tata);
+
+        // Add new identities to users
+
+        driver
+            .add_user_identities(Either::Left(toto_id), &["Riina".to_string()])
+            .await
+            .expect("toto new identity should be added successfully");
+
+        driver
+            .add_user_identities(
+                Either::Right(tata.identities[0].clone()),
+                &["Pinochet".to_string()],
+            )
+            .await
+            .expect("tata new identity should be added successfully");
+
+        let toto_db = driver
+            .get_user_info(toto_id)
+            .await
+            .expect("toto should be queried successfully")
+            .expect("toto should be found");
+
+        let tata_db = driver
+            .get_user_info(tata_id)
+            .await
+            .expect("tata should be queried successfully")
+            .expect("tata should be found");
+
+        assert_eq!(
+            toto_db.identities,
+            vec!["toto".to_owned(), "Riina".to_owned()]
+        );
+        assert_eq!(
+            tata_db.identities,
+            vec!["tata".to_owned(), "Pinochet".to_owned()]
+        );
 
         // Create some groups
 

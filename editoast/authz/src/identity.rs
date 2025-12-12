@@ -4,7 +4,7 @@ pub type GroupName = String;
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
 pub struct UserInfo {
-    pub identity: UserIdentity,
+    pub identities: Vec<UserIdentity>,
     pub name: UserName,
 }
 
@@ -27,7 +27,7 @@ pub struct Group {
 
 impl std::fmt::Display for UserInfo {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{} ({})", self.identity, self.name)
+        write!(f, "{} ({})", self.name, self.identities.join(", "))
     }
 }
 

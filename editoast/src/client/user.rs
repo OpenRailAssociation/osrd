@@ -8,6 +8,7 @@ use clap::Subcommand;
 use database::DbConnectionPoolV2;
 use futures::TryStreamExt;
 use futures::future::try_join_all;
+use itertools::Either;
 use std::collections::HashSet;
 use std::sync::Arc;
 
@@ -25,6 +26,21 @@ pub enum UserCommand {
     Info(InfoArgs),
     /// Delete a user
     Delete(DeleteArgs),
+    /// Add identities to a new or an already existing user
+    AddIdentities(AddIdentitiesArg),
+}
+
+#[derive(Debug, Args)]
+pub struct AddIdentitiesArg {
+    #[arg(
+        long,
+        conflicts_with = "user_identity",
+        required_unless_present = "user_identity"
+    )]
+    user_id: Option<i64>,
+    #[arg(long)]
+    user_identity: Option<String>,
+    new_identities: Vec<String>,
 }
 
 #[derive(Debug, Args)]
@@ -36,10 +52,10 @@ pub struct ListArgs {
 
 #[derive(Debug, Args)]
 pub struct AddArgs {
-    /// Identity of the user
-    identity: String,
     /// Name of the user
     name: Option<String>,
+    /// Identities of the user
+    identities: Vec<String>,
 }
 
 #[derive(Debug, Args)]
@@ -86,8 +102,8 @@ pub async fn list_user(
         users?
     };
 
-    for (id, UserInfo { identity, name }) in &users {
-        println!("[{id}]: {identity} ({name})");
+    for (id, UserInfo { identities, name }) in &users {
+        println!("[{id}]: {name} ({})", identities.join(", "));
     }
     if users.is_empty() {
         tracing::info!("No user found");
@@ -98,13 +114,17 @@ pub async fn list_user(
 /// Add a user
 pub async fn add_user(args: AddArgs, pool: Arc<DbConnectionPoolV2>) -> anyhow::Result<()> {
     let driver = PgAuthDriver::new(pool);
-
-    let user_info = UserInfo {
-        identity: args.identity,
-        name: args.name.unwrap_or_default(),
-    };
-    let subject_id = driver.ensure_user(&user_info).await?;
-    println!("User added with id: {subject_id}");
+    if args.identities.is_empty() {
+        println!("No identities provided.");
+        return Ok(());
+    }
+    let created_user = driver
+        .ensure_user(&args.name.unwrap_or_default(), &args.identities[0])
+        .await?;
+    driver
+        .add_user_identities(Either::Left(created_user.id), &args.identities[1..])
+        .await?;
+    println!("User added with id: {}", created_user.id);
     Ok(())
 }
 
@@ -122,14 +142,14 @@ pub async fn user_info(
         let uid = driver.get_user_id(&user).await?;
         uid.ok_or_else(|| anyhow!("No user with identity '{user}' found"))?
     };
-    let Some(UserInfo { identity, name }) = driver.get_user_info(uid).await? else {
+    let Some(UserInfo { identities, name }) = driver.get_user_info(uid).await? else {
         tracing::error!(user.id = uid, "User not found");
         return Ok(());
     };
     let groups = regulator.user_groups(&authz::User(uid)).await?;
 
     println!("id      : {uid}");
-    println!("identity: {identity}");
+    println!("identities: {}", identities.join(", "));
     println!("name    : {name}");
     println!("groups  :");
     for authz::Group(group_id) in groups {
@@ -168,5 +188,26 @@ pub async fn delete_user(
         anyhow::bail!("user '{user}' could not be deleted (not found)");
     }
 
+    Ok(())
+}
+
+/// Add identities to an existing user
+pub async fn add_identities(
+    AddIdentitiesArg {
+        user_id,
+        user_identity,
+        new_identities,
+    }: AddIdentitiesArg,
+    pool: Arc<DbConnectionPoolV2>,
+) -> anyhow::Result<()> {
+    let driver = PgAuthDriver::new(pool);
+    let user_identity = match (user_id, user_identity) {
+        (Some(user_id), _) => Either::Left(user_id),
+        (_, Some(identity)) => Either::Right(identity.clone()),
+        _ => unreachable!("ensured by clap"),
+    };
+    driver
+        .add_user_identities(user_identity.clone(), &new_identities)
+        .await?;
     Ok(())
 }

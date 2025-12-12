@@ -133,6 +133,7 @@ mod mock_driver {
     use std::sync::RwLock;
 
     use futures::stream;
+    use itertools::Either;
 
     use crate::InfraGrant;
     use crate::Regulator;
@@ -143,6 +144,7 @@ mod mock_driver {
     use crate::identity::User;
     use crate::identity::UserIdentity;
     use crate::identity::UserInfo;
+    use crate::identity::UserName;
     use crate::model;
 
     #[derive(Debug, Clone, Default)]
@@ -157,10 +159,7 @@ mod mock_driver {
         pub async fn create_user(&self, identity: &str, name: &str) -> model::User {
             model::User(
                 self.driver
-                    .ensure_user(&UserInfo {
-                        identity: identity.to_owned(),
-                        name: name.to_owned(),
-                    })
+                    .ensure_user(&name.to_string(), &identity.to_string())
                     .await
                     .expect("user creation should succeed")
                     .id,
@@ -237,16 +236,24 @@ mod mock_driver {
     impl StorageDriver for MockAuthDriver {
         type Error = Infallible;
 
-        async fn ensure_user(&self, user: &UserInfo) -> Result<User, Self::Error> {
+        async fn ensure_user(
+            &self,
+            user_name: &UserName,
+            user_identity: &UserIdentity,
+        ) -> Result<User, Self::Error> {
             let mut users = self.users.lock().unwrap();
             let user_id = {
                 let id = self.counter.read().unwrap();
-                *users.entry(user.identity.clone()).or_insert(*id)
+                users.entry(user_identity.clone()).or_insert(*id);
+                *id
             };
             *self.counter.write().unwrap() += 1;
             Ok(User {
                 id: user_id,
-                info: user.clone(),
+                info: UserInfo {
+                    identities: vec![user_identity.to_owned()],
+                    name: user_name.to_owned(),
+                },
             })
         }
 
@@ -273,14 +280,18 @@ mod mock_driver {
 
         async fn get_user_info(&self, user_id: i64) -> Result<Option<UserInfo>, Self::Error> {
             let users = self.users.lock().unwrap();
-            let user_info = users
+            let identities = users
                 .iter()
-                .find(|(_, id)| **id == user_id)
-                .map(|(identity, _)| UserInfo {
-                    identity: identity.clone(),
-                    name: "Mocked User".to_owned(),
-                });
-            Ok(user_info)
+                .filter(|(_, id)| **id == user_id)
+                .map(|(identity, _)| identity.clone())
+                .collect::<Vec<_>>();
+            if identities.is_empty() {
+                return Ok(None);
+            }
+            Ok(Some(UserInfo {
+                identities,
+                name: "Mocked User".to_owned(),
+            }))
         }
 
         async fn get_group_info(&self, group_id: i64) -> Result<Option<GroupInfo>, Self::Error> {
@@ -296,22 +307,24 @@ mod mock_driver {
             &self,
         ) -> Result<impl stream::TryStream<Ok = (i64, UserInfo), Error = Self::Error>, Self::Error>
         {
-            Ok(stream::iter(
-                self.users
-                    .lock()
-                    .unwrap()
-                    .clone()
-                    .into_iter()
-                    .map(|(identity, id)| {
-                        Ok((
-                            id,
-                            UserInfo {
-                                name: format!("Mocked user {identity}"),
-                                identity,
-                            },
-                        ))
-                    }),
-            ))
+            let mut user_identities: HashMap<i64, Vec<String>> = HashMap::new();
+            for (identity, &id) in self.users.lock().unwrap().iter() {
+                user_identities
+                    .entry(id)
+                    .or_default()
+                    .push(identity.clone());
+            }
+            Ok(stream::iter(user_identities.into_iter().map(
+                |(id, identities)| {
+                    Ok((
+                        id,
+                        UserInfo {
+                            name: format!("Mocked user ({})", identities.join(", ")),
+                            identities,
+                        },
+                    ))
+                },
+            )))
         }
 
         async fn list_groups(
@@ -330,6 +343,31 @@ mod mock_driver {
 
         async fn infra_exists(&self, _infra_id: i64) -> Result<bool, Self::Error> {
             // Mock implementation, always return true
+            Ok(true)
+        }
+
+        async fn add_user_identities(
+            &self,
+            user_identity: Either<i64, String>,
+            new_identities: &[String],
+        ) -> Result<bool, Self::Error> {
+            let mut map = self.users.lock().unwrap();
+            let user_id = match user_identity {
+                Either::Left(user_id) => map
+                    .iter()
+                    .find(|(_, id)| **id == user_id)
+                    .map(|(_, id)| *id),
+                Either::Right(identity) => map.get(&identity).copied(),
+            };
+            match user_id {
+                Some(user_id) => map.extend(
+                    new_identities
+                        .iter()
+                        .map(ToString::to_string)
+                        .zip(std::iter::repeat(user_id)),
+                ),
+                None => return Ok(false),
+            };
             Ok(true)
         }
 
