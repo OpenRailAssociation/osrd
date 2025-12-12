@@ -61,9 +61,9 @@ const injectedRtkApi = api
         query: (queryArg) => ({ url: `/authz/me/privileges`, method: 'POST', body: queryArg.body }),
         invalidatesTags: ['authz'],
       }),
-      postAuthzUserInfo: build.mutation<PostAuthzUserInfoApiResponse, PostAuthzUserInfoApiArg>({
+      postAuthzUserInfo: build.query<PostAuthzUserInfoApiResponse, PostAuthzUserInfoApiArg>({
         query: (queryArg) => ({ url: `/authz/user/info`, method: 'POST', body: queryArg.body }),
-        invalidatesTags: ['authz'],
+        providesTags: ['authz'],
       }),
       getAuthzByResourceTypeAndResourceId: build.query<
         GetAuthzByResourceTypeAndResourceIdApiResponse,
@@ -4751,7 +4751,6 @@ export type SearchResultItemTrainSchedule = {
 };
 export type SearchResultItemUser = {
   id: number;
-  identity_id: string;
   name: string;
 };
 export type SearchResultItem =

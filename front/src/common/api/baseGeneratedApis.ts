@@ -28,7 +28,7 @@ export const baseEditoastApi = createApi({
       const impersonatedUser = getImpersonatedUser(getState() as RootState);
 
       if (impersonatedUser) {
-        headers.set('x-impersonate', impersonatedUser.identity_id);
+        headers.set('x-impersonate', impersonatedUser.identities[0]);
       } else {
         headers.delete('x-impersonate');
       }
