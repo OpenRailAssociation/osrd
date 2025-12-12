@@ -12992,7 +12992,7 @@ components:
                   type: array
                   items:
                     $ref: '#/components/schemas/core.ZoneUpdate'
-          description: 'User-selected simulation: can be base or provisional'
+          description: Simulation that takes into account the regularity margins and the schedule item times
         mrsp:
           type: object
           description: A MRSP computation result (Most Restrictive Speed Profile)
