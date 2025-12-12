@@ -795,6 +795,11 @@ pub(in crate::views) async fn project_path_op(
     Ok(Json(results))
 }
 
+/// ## Important:
+/// The following paced trains are **excluded** from the result:
+/// - paced trains for which pathfinding fails
+/// - paced trains for which the simulation fails
+/// - paced trains for which the simulation does not respect schedule times
 #[editoast_derive::route]
 #[utoipa::path(
     post, path = "",
