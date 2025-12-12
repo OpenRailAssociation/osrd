@@ -163,7 +163,7 @@ pub(in crate::views) struct UsersInfoRequest {
     identities: Vec<String>,
 }
 
-#[derive(Serialize, ToSchema)]
+#[derive(Serialize, Deserialize, ToSchema)]
 pub(in crate::views) struct UserInfo {
     id: i64,
     name: String,
@@ -202,10 +202,7 @@ pub(in crate::views) async fn users_info(
     if !authorized {
         return Err(AuthorizationError::Forbidden.into());
     }
-    let UsersInfoRequest {
-        ids: user_ids,
-        identities: user_identities,
-    } = body.clone();
+    let UsersInfoRequest { ids: user_ids, .. } = body.clone();
 
     // Retrieve users by IDs
     let users_1: Vec<_> =
@@ -217,17 +214,11 @@ pub(in crate::views) async fn users_info(
         .await?;
 
     // Retrieve users by identities
-    let settings =
-        SelectionSettings::new().filter(move || User::IDENTITY_ID.eq_any(user_identities.clone()));
-    let users_2 = User::list(&mut db_pool.get().await?, settings).await?;
-    if users_2.len() < body.identities.len() {
-        let found: HashSet<_> = users_2.iter().map(|u| &u.identity_id).collect();
-        let missing_identity = body.identities.into_iter().find(|i| !found.contains(i));
-        return Err(AuthzError::UnknownIdentity {
-            identity: missing_identity.unwrap(),
-        }
-        .into());
-    }
+    let users_2 = User::get_batch_users_by_identity(
+        body.identities.iter().collect_vec().as_slice(),
+        &mut db_pool.get().await?,
+    )
+    .await?;
 
     // Merge both user lists
     let users: HashMap<_, _> = users_1
@@ -235,6 +226,26 @@ pub(in crate::views) async fn users_info(
         .chain(users_2)
         .map(|u| (u.id, u))
         .collect();
+
+    let user_to_identities = User::get_batch_user_identities(
+        users.keys().copied().collect::<Vec<i64>>().as_slice(),
+        &mut db_pool.get().await?,
+    )
+    .await?
+    .into_iter()
+    .map(|(id, authz::identity::UserInfo { identities, .. })| (id, identities))
+    .collect::<HashMap<_, _>>();
+
+    if let Some(missing_identity) = body
+        .identities
+        .into_iter()
+        .find(|i| !user_to_identities.values().flatten().contains(i))
+    {
+        return Err(AuthzError::UnknownIdentity {
+            identity: missing_identity,
+        }
+        .into());
+    }
 
     // Fetch groups for each user
     let mut groups_by_user = HashMap::new();
@@ -263,7 +274,7 @@ pub(in crate::views) async fn users_info(
         results.push(UserInfo {
             id: user_id,
             name: user.name,
-            identities: vec![user.identity_id],
+            identities: user_to_identities[&user_id].clone(),
             roles,
             groups,
         });

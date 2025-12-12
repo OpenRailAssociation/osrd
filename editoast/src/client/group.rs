@@ -111,11 +111,11 @@ pub async fn group_info(
     println!("name   : {name}");
     println!("members:");
     for authz::User(user_id) in user_ids {
-        let Some(UserInfo { identity, name }) = driver.get_user_info(user_id).await? else {
+        let Some(UserInfo { identities, name }) = driver.get_user_info(user_id).await? else {
             tracing::error!(user.id = user_id, "user not found, skipping it!");
             continue;
         };
-        println!("- [{user_id}] {identity} ({name})");
+        println!("- [{user_id}] {name} ({})", identities.join(", "));
     }
     Ok(())
 }
