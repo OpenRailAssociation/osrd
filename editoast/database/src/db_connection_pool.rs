@@ -165,7 +165,7 @@ impl DbConnection {
             let mut handle = self.write().await;
             TxManager::begin_transaction(handle.deref_mut())
                 .await
-                .map_err(DatabaseError)?;
+                .map_err(DatabaseError::from)?;
         }
 
         match callback(self.clone()).await {
@@ -173,7 +173,7 @@ impl DbConnection {
                 let mut handle = self.write().await;
                 TxManager::commit_transaction(handle.deref_mut())
                     .await
-                    .map_err(DatabaseError)?;
+                    .map_err(DatabaseError::from)?;
                 Ok(result)
             }
             Err(callback_error) => {
@@ -182,7 +182,7 @@ impl DbConnection {
                     Ok(()) | Err(diesel::result::Error::BrokenTransactionManager) => {
                         Err(callback_error)
                     }
-                    Err(rollback_error) => Err(E::from(DatabaseError(rollback_error))),
+                    Err(rollback_error) => Err(E::from(DatabaseError::from(rollback_error))),
                 }
             }
         }
@@ -196,7 +196,7 @@ impl DbConnection {
             handle.deref_mut(),
         )
         .await
-        .map_err(DatabaseError)
+        .map_err(DatabaseError::from)
     }
 }
 

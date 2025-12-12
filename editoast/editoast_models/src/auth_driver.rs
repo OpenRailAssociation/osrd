@@ -8,6 +8,7 @@ use authz::identity::GroupName;
 use authz::identity::User;
 use authz::identity::UserIdentity;
 use authz::identity::UserInfo;
+use database::DatabaseError;
 use database::DbConnection;
 use database::DbConnectionPoolV2;
 use diesel::dsl;
@@ -16,6 +17,7 @@ use diesel_async::RunQueryDsl;
 
 use database::tables::*;
 use futures::StreamExt;
+use itertools::Either;
 use itertools::Itertools;
 use tracing::Level;
 
@@ -286,6 +288,76 @@ impl StorageDriver for PgAuthDriver {
         Ok(s > 0)
     }
 
+    #[tracing::instrument(skip_all, fields(identities, user = %user_identity), ret(level = Level::DEBUG), err)]
+    async fn add_user_identities(
+        &self,
+        user_identity: Either<i64, String>,
+        new_identities: Vec<String>,
+    ) -> Result<bool, Self::Error> {
+        let conn = self.pool.get().await?;
+        let existing_user = match user_identity {
+            Either::Left(user_id) => authn_user::table
+                .left_join(authn_user_identity::table)
+                .select(authn_user::id)
+                .filter(authn_user::id.eq(user_id))
+                .first::<i64>(conn.write().await.deref_mut())
+                .await
+                .optional()?,
+            Either::Right(identity) => authn_user::table
+                .left_join(authn_user_identity::table)
+                .select(authn_user::id)
+                .filter(authn_user_identity::identity.eq(identity))
+                .first::<i64>(conn.write().await.deref_mut())
+                .await
+                .optional()?,
+        };
+        match existing_user {
+            None => Ok(false),
+            Some(user_id) => {
+                conn.transaction(async move |conn| {
+                    for new_identity in new_identities {
+                        let values = &vec![(
+                            authn_user_identity::identity.eq(&new_identity),
+                            authn_user_identity::user_id.eq(user_id),)];
+                        let res = conn
+                            .transaction(async move |conn| {
+                                dsl::insert_into(authn_user_identity::table)
+                                    .values(values)
+                                    .execute(&mut conn.write().await)
+                                    .await
+                                    .map_err(database::DatabaseError::from)
+                            })
+                        .await;
+                        match res {
+                            Err(database_error @ DatabaseError::UniqueViolation(_)) => {
+                                let identity_owner = authn_user_identity::table
+                                    .select(authn_user_identity::user_id)
+                                    .filter(authn_user_identity::identity.eq(&new_identity))
+                                    .first::<i64>(conn.write().await.deref_mut())
+                                .await?;
+                                if identity_owner != user_id {
+                                    tracing::warn!(
+                                        "Could not add to user `{}` the identity `{}` as it is already associated with another user (`{}`)",
+                                        user_id,
+                                        new_identity,
+                                        identity_owner
+                                    );
+                                    return Err(AuthDriverError::from(database_error));
+                                }
+                                tracing::warn!("identity `{}` was already associated to the target user", new_identity);
+                            },
+                            Err(database_error) => return Err(AuthDriverError::from(database_error)),
+                            Ok(_) => (),
+
+                        }
+                    }
+                    Ok(true)
+                })
+                .await
+            }
+        }
+    }
+
     #[tracing::instrument(skip_all, fields(%group_id), ret(level = Level::DEBUG), err)]
     async fn delete_group(&self, group_id: i64) -> Result<bool, Self::Error> {
         let conn = self.pool.get().await?;
@@ -429,14 +501,6 @@ mod tests {
             Some(toto_id)
         );
 
-        assert_eq!(
-            driver
-                .get_user_id(&tata.identities[0])
-                .await
-                .expect("tata's ID should be queried successfully"),
-            Some(tata_id)
-        );
-
         // Retrieve some information about them
 
         let toto_db = driver
@@ -453,7 +517,51 @@ mod tests {
             .expect("tata should be queried successfully")
             .expect("tata should be found");
 
+        assert_eq!(
+            driver
+                .get_user_id(&tata.identities[0])
+                .await
+                .expect("tata's ID should be queried successfully"),
+            Some(tata_id)
+        );
+
         assert_eq!(tata_db, tata);
+
+        // Add new identities to users
+
+        driver
+            .add_user_identities(Either::Left(toto_id), vec!["Riina".to_string()])
+            .await
+            .expect("toto new identity should be added successfully");
+
+        driver
+            .add_user_identities(
+                Either::Right(tata.identities[0].clone()),
+                vec!["Pinochet".to_string()],
+            )
+            .await
+            .expect("tata new identity should be added successfully");
+
+        let toto_db = driver
+            .get_user_info(toto_id)
+            .await
+            .expect("toto should be queried successfully")
+            .expect("toto should be found");
+
+        let tata_db = driver
+            .get_user_info(tata_id)
+            .await
+            .expect("tata should be queried successfully")
+            .expect("tata should be found");
+
+        assert_eq!(
+            toto_db.identities,
+            vec!["toto".to_owned(), "Riina".to_owned()]
+        );
+        assert_eq!(
+            tata_db.identities,
+            vec!["tata".to_owned(), "Pinochet".to_owned()]
+        );
 
         // Create some groups
 

@@ -5,6 +5,7 @@ use fga::client::QueryError;
 use fga::client::UserList;
 use fga::model::Relation;
 use futures::stream;
+use itertools::Either;
 use tracing::Level;
 
 use crate::Authorization;
@@ -95,6 +96,12 @@ pub trait StorageDriver: Clone {
     > + Send;
 
     fn delete_user(&self, user_id: i64) -> impl Future<Output = Result<bool, Self::Error>> + Send;
+
+    fn add_user_identities(
+        &self,
+        user_identity: Either<i64, String>,
+        new_identities: Vec<String>,
+    ) -> impl Future<Output = Result<bool, Self::Error>> + Send;
 
     fn delete_group(&self, group_id: i64)
     -> impl Future<Output = Result<bool, Self::Error>> + Send;
