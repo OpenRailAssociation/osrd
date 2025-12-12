@@ -4996,7 +4996,6 @@ export type TrainScheduleSet = {
   catalogue_entry_id?: number | null;
   description: string;
   id: number;
-  is_sandbox: boolean;
   name?: string | null;
   published: boolean;
 };
