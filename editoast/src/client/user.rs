@@ -8,6 +8,7 @@ use clap::Subcommand;
 use database::DbConnectionPoolV2;
 use futures::TryStreamExt;
 use futures::future::try_join_all;
+use itertools::Either;
 use std::collections::HashSet;
 use std::sync::Arc;
 
@@ -25,6 +26,22 @@ pub enum UserCommand {
     Info(InfoArgs),
     /// Delete a user
     Delete(DeleteArgs),
+    /// Add an identity to a new or an already existing user
+    AddIdentities(AddIdentitiesArg),
+}
+
+#[derive(Debug, Args)]
+pub struct AddIdentitiesArg {
+    #[arg(
+        short,
+        long,
+        conflicts_with = "identity",
+        required_unless_present = "identity"
+    )]
+    pub user_id: Option<i64>,
+    #[arg(short, long)]
+    pub identity: Option<String>,
+    pub identities: Vec<String>,
 }
 
 #[derive(Debug, Args)]
@@ -168,5 +185,26 @@ pub async fn delete_user(
         anyhow::bail!("user '{user}' could not be deleted (not found)");
     }
 
+    Ok(())
+}
+
+/// Add identities to an existing user
+pub async fn add_identities(
+    AddIdentitiesArg {
+        user_id,
+        identity,
+        identities,
+    }: AddIdentitiesArg,
+    pool: Arc<DbConnectionPoolV2>,
+) -> anyhow::Result<()> {
+    let driver = PgAuthDriver::new(pool);
+    let user_identity = match (user_id, identity) {
+        (Some(user_id), _) => Either::Left(user_id),
+        (_, Some(identity)) => Either::Right(identity.clone()),
+        _ => panic!("No user_id or identity provided"),
+    };
+    driver
+        .add_user_identities(user_identity.clone(), identities)
+        .await?;
     Ok(())
 }
