@@ -1,0 +1,131 @@
+import type { Scenario, Project, Study, Infra, PacedTrain } from 'common/api/osrdEditoastApi';
+
+import {
+  IMPORT_PACED_TRAIN_OCCURRENCES_DETAILS,
+  IMPORTED_PACED_TRAIN_DETAILS,
+} from '../../assets/constants/operational-studies-const';
+import {
+  timetableItemProjectName,
+  timetableItemScenarioName,
+  timetableItemStudyName,
+} from '../../assets/constants/project-const';
+import {
+  TOTAL_TIMETABLE_ITEMS,
+  TOTAL_PACED_TRAINS,
+  TOTAL_TRAIN_SCHEDULES,
+  VALID_PACED_TRAINS,
+  VALID_TRAIN_SCHEDULE,
+} from '../../assets/constants/timetable-items-count';
+import test from '../../logging-fixture';
+import PacedTrainSection from '../../pages/operational-studies/paced-train-section';
+import ScenarioTimetableSection from '../../pages/operational-studies/scenario-timetable-section';
+import { waitForInfraStateToBeCached } from '../../utils';
+import { getInfra, getProject, getScenario, getStudy } from '../../utils/api-utils';
+import readJsonFile from '../../utils/file-utils';
+import type { CommonTranslations, TimetableFilterTranslations } from '../../utils/types';
+
+const frScenarioTranslations: TimetableFilterTranslations = readJsonFile<{
+  main: TimetableFilterTranslations;
+}>('public/locales/fr/operational-studies.json').main;
+
+const frCommonTranslations: CommonTranslations = readJsonFile('public/locales/fr/translation.json');
+const frTranslations = {
+  ...frScenarioTranslations,
+  ...frCommonTranslations,
+};
+
+test.describe('@op @timetable-items', () => {
+  let scenarioTimetableSection: ScenarioTimetableSection;
+  let pacedTrainSection: PacedTrainSection;
+
+  let project: Project;
+  let study: Study;
+  let scenario: Scenario;
+  let infra: Infra;
+
+  test.beforeAll('Fetch project, study and scenario with train schedule', async () => {
+    project = await getProject(timetableItemProjectName);
+    study = await getStudy(project.id, timetableItemStudyName);
+    scenario = await getScenario(study.id, timetableItemScenarioName);
+    infra = await getInfra();
+  });
+
+  test.beforeEach(
+    'Navigate to scenario page and wait for infrastructure to be loaded',
+    async ({ page }) => {
+      [scenarioTimetableSection, pacedTrainSection] = [
+        new ScenarioTimetableSection(page),
+        new PacedTrainSection(page),
+      ];
+
+      await page.goto(
+        `/operational-studies/projects/${project.id}/studies/${study.id}/scenarios/${scenario.id}`
+      );
+      await waitForInfraStateToBeCached(infra.id);
+    }
+  );
+
+  /** *************** Test 1 **************** */
+  test('@smoke Loading timetable items and verifying simulation result for train schedules', async () => {
+    await test.step('Verify counts then filter valid train schedules', async () => {
+      await scenarioTimetableSection.verifyTimetableItemsCount(TOTAL_TIMETABLE_ITEMS);
+      await scenarioTimetableSection.filterTrainTypeAndVerifyTrainCount(
+        'Unique train',
+        TOTAL_TRAIN_SCHEDULES
+      );
+      await scenarioTimetableSection.filterValidityAndVerifyTrainCount(
+        'Valid',
+        VALID_TRAIN_SCHEDULE,
+        frTranslations
+      );
+    });
+
+    await test.step('Verify simulation results for valid train schedules', async () => {
+      await scenarioTimetableSection.verifyEachTrainScheduleSimulation(VALID_TRAIN_SCHEDULE);
+    });
+  });
+
+  /** *************** Test 2 **************** */
+  test('Loading timetable items and verifying simulation result for paced trains', async () => {
+    test.slow(); // Verifying all occurrences of paced trains can take some time, this test will be reworked later to optimize it
+    await test.step('Verify invalid message, then filter valid paced trains', async () => {
+      await scenarioTimetableSection.verifyInvalidTrainsMessageVisibility();
+      await scenarioTimetableSection.filterTrainTypeAndVerifyTrainCount(
+        'Service',
+        TOTAL_PACED_TRAINS
+      );
+      await scenarioTimetableSection.filterValidityAndVerifyTrainCount(
+        'Valid',
+        VALID_PACED_TRAINS,
+        frTranslations
+      );
+    });
+
+    await test.step('Verify paced train simulation results', async () => {
+      await scenarioTimetableSection.verifyPacedTrainSimulations(VALID_PACED_TRAINS);
+    });
+  });
+
+  /** *************** Test 3 **************** */
+  test('Loading timetable items and verifying paced trains display', async () => {
+    await test.step('Verify each imported paced train card and its occurrences', async () => {
+      const pacedTrainsData: PacedTrain[] = readJsonFile(
+        './tests/assets/paced-train/paced_trains.json'
+      );
+
+      for (
+        let pacedTrainIndex = 0;
+        pacedTrainIndex < pacedTrainsData.length;
+        pacedTrainIndex += 1
+      ) {
+        await pacedTrainSection.verifyPacedTrainItemDetails(
+          IMPORTED_PACED_TRAIN_DETAILS[pacedTrainIndex],
+          pacedTrainIndex,
+          {
+            occurrenceData: IMPORT_PACED_TRAIN_OCCURRENCES_DETAILS[pacedTrainIndex],
+          }
+        );
+      }
+    });
+  });
+});
