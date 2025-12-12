@@ -12,6 +12,7 @@ const config: ConfigFile = {
   endpointOverrides: [
     {
       pattern: [
+        'postAuthzUserInfo',
         'postWorkerLoad',
         'postInfraByInfraIdMatchOperationalPoints',
         'postInfraByInfraIdObjectsAndObjectType',

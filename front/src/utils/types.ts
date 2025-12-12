@@ -1,3 +1,5 @@
+import type { Role } from 'common/api/osrdEditoastApi';
+
 /**
  * for example
  * type HeadTailPositionSpeed = {
@@ -19,6 +21,17 @@ export const mapBy = <K extends keyof T, T>(items: T[] | undefined, key: K): Map
 
 export const concatMap = <K, V>(map1: Map<K, V>, map2: Map<K, V>) =>
   new Map([...map1.entries(), ...map2.entries()]);
+
+export type UserInfo = {
+  groups: {
+    id: number;
+    name: string;
+  }[];
+  id: number;
+  identities: string[];
+  name: string;
+  roles: Role[];
+};
 
 /**
  * Transform the provided keys of an object to be non-nullable.
