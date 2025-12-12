@@ -53,8 +53,7 @@ class BlockAvailabilityTests {
 
     private lateinit var blockLengths: List<Offset<Block>>
     private lateinit var blocks: MutableList<BlockId>
-    private val infra =
-        Helpers.fullInfraFromRJS(Helpers.getExampleInfra("overlapping_routes/infra.json"))
+    private val infra = Helpers.fullInfraFromFile("overlapping_routes/infra.json")
     private val zoneNames =
         listOf(
             "zone.[det.a1.nf:INCREASING, det.a2.nf:INCREASING, det.center.1:DECREASING]",

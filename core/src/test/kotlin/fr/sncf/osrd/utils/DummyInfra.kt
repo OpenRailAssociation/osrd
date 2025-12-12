@@ -3,6 +3,7 @@ package fr.sncf.osrd.utils
 import com.google.common.collect.HashBiMap
 import com.google.common.collect.HashMultimap
 import fr.sncf.osrd.api.FullInfra
+import fr.sncf.osrd.api.InfraMetadata
 import fr.sncf.osrd.api.makeSignalingSimulator
 import fr.sncf.osrd.geom.LineString
 import fr.sncf.osrd.geom.Point
@@ -31,7 +32,13 @@ class DummyInfra : RawInfra, BlockInfra {
 
     /** get the FullInfra */
     fun fullInfra(): FullInfra {
-        return FullInfra(this, signalingSimulator.loadSignals(this), this, signalingSimulator)
+        return FullInfra(
+            this,
+            signalingSimulator.loadSignals(this),
+            this,
+            signalingSimulator,
+            InfraMetadata("Dummy"),
+        )
     }
 
     /**

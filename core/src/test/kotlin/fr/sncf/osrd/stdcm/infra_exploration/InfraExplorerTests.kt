@@ -245,8 +245,7 @@ class InfraExplorerTests {
      */
     @Test
     fun testStartingOnOverlappingRoutes() {
-        val infra =
-            Helpers.fullInfraFromRJS(Helpers.getExampleInfra("overlapping_routes/infra.json"))
+        val infra = Helpers.fullInfraFromFile("overlapping_routes/infra.json")
 
         // First, look for a block that has more than one route
         var firstBlock: BlockId? = null
@@ -284,8 +283,7 @@ class InfraExplorerTests {
         // There are 4 routes on the middle section: a1->b1, a2->b1, a1->b2, a2->b2
         // Each branch also has a route between the signal and buffer stop.
 
-        val infra =
-            Helpers.fullInfraFromRJS(Helpers.getExampleInfra("overlapping_routes/infra.json"))
+        val infra = Helpers.fullInfraFromFile("overlapping_routes/infra.json")
         val detector =
             infra.rawInfra.detectors.first { det ->
                 infra.rawInfra.getDetectorName(det) == "det.center.1"
@@ -324,8 +322,7 @@ class InfraExplorerTests {
      */
     @Test
     fun testRouteDivergence() {
-        val infra =
-            Helpers.fullInfraFromRJS(Helpers.getExampleInfra("overlapping_routes/infra.json"))
+        val infra = Helpers.fullInfraFromFile("overlapping_routes/infra.json")
 
         val detector =
             infra.rawInfra.detectors.first { det -> infra.rawInfra.getDetectorName(det) == "bf.a1" }
@@ -392,8 +389,7 @@ class InfraExplorerTests {
     /** Similar test to the one above, but not starting on the first block on the route */
     @Test
     fun testStopsLongerRoute() {
-        val infra =
-            Helpers.fullInfraFromRJS(Helpers.getExampleInfra("overlapping_routes/infra.json"))
+        val infra = Helpers.fullInfraFromFile("overlapping_routes/infra.json")
         val detector =
             infra.rawInfra.detectors.first { det ->
                 infra.rawInfra.getDetectorName(det) == "det.center.2"

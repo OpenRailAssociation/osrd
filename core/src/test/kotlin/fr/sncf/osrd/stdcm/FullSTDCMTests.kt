@@ -41,7 +41,7 @@ class FullSTDCMTests {
     @Test
     @Throws(IOException::class, URISyntaxException::class)
     fun testTinyInfra() {
-        val infra = Helpers.fullInfraFromRJS(Helpers.getExampleInfra("tiny_infra/infra.json"))
+        val infra = Helpers.fullInfraFromFile("tiny_infra/infra.json")
         STDCMPathfindingBuilder()
             .setInfra(infra)
             .setRollingStock(
@@ -79,7 +79,7 @@ class FullSTDCMTests {
     @Test
     @Throws(IOException::class, URISyntaxException::class)
     fun testTinyInfraSmallOpening() {
-        val infra = Helpers.fullInfraFromRJS(Helpers.getExampleInfra("tiny_infra/infra.json"))
+        val infra = Helpers.fullInfraFromFile("tiny_infra/infra.json")
         val start =
             convertRouteLocation(
                 infra,
@@ -233,8 +233,7 @@ class FullSTDCMTests {
      */
     @Test
     fun testConflictAtStop() {
-        val infra =
-            Helpers.fullInfraFromRJS(Helpers.getExampleInfra("overlapping_routes/infra.json"))
+        val infra = Helpers.fullInfraFromFile("overlapping_routes/infra.json")
         val start = convertRouteLocation(infra, "rt.det.a1.nf->det.b1.nf", Offset(0.meters))
         val stop =
             convertRouteLocation(
@@ -269,8 +268,7 @@ class FullSTDCMTests {
      */
     @Test
     fun testConflictAfterStop() {
-        val infra =
-            Helpers.fullInfraFromRJS(Helpers.getExampleInfra("overlapping_routes/infra.json"))
+        val infra = Helpers.fullInfraFromFile("overlapping_routes/infra.json")
         val start = convertRouteLocation(infra, "rt.det.a1.nf->det.b1.nf", Offset(0.meters))
         val stop =
             convertRouteLocation(
