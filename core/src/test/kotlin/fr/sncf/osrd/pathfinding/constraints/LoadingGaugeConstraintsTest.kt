@@ -31,9 +31,7 @@ class LoadingGaugeConstraintsTest {
     @BeforeAll
     @Throws(IOException::class, URISyntaxException::class)
     fun setUp() {
-        val rjsInfra =
-            Helpers.getExampleInfra("small_infra/infra.json") // TA0 has gauge constraints
-        val infra = Helpers.fullInfraFromRJS(rjsInfra)
+        val infra = Helpers.fullInfraFromFile("small_infra/infra.json") // TA0 has gauge constraints
         loadingGaugeConstraints =
             LoadingGaugeConstraints(
                 infra.blockInfra,

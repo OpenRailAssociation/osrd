@@ -131,7 +131,13 @@ class InfraManager(baseUrl: String, authorizationToken: String?, httpClient: OkH
             // Cache the infra
             logger.info("successfully cached {}", request.url)
             cacheEntry.infra =
-                FullInfra(rawInfra, loadedSignalInfra, blockInfra, signalingSimulator)
+                FullInfra(
+                    rawInfra,
+                    loadedSignalInfra,
+                    blockInfra,
+                    signalingSimulator,
+                    InfraMetadata(infraId, version),
+                )
             cacheEntry.transitionTo(InfraStatus.CACHED)
             return cacheEntry.infra!!
         } catch (e: IOException) {

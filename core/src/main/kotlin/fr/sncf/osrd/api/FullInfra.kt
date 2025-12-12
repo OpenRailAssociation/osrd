@@ -14,12 +14,17 @@ data class FullInfra(
     val loadedSignalInfra: LoadedSignalInfra,
     val blockInfra: BlockInfra,
     val signalingSimulator: SignalingSimulator,
+    val metadata: InfraMetadata,
 ) {
     companion object {
         val logger: Logger = LoggerFactory.getLogger(FullInfra::class.java)
 
         /** Builds a full infra from a railjson infra */
-        fun fromRJSInfra(rjsInfra: RJSInfra, signalingSimulator: SignalingSimulator): FullInfra {
+        fun fromRJSInfra(
+            rjsInfra: RJSInfra,
+            signalingSimulator: SignalingSimulator,
+            metadata: InfraMetadata,
+        ): FullInfra {
             // Parse railjson into a proper infra
             logger.info("parsing infra")
 
@@ -32,7 +37,9 @@ data class FullInfra(
             logger.info("building blocks")
             val blockInfra = signalingSimulator.buildBlocks(rawInfra, loadedSignalInfra)
 
-            return FullInfra(rawInfra, loadedSignalInfra, blockInfra, signalingSimulator)
+            return FullInfra(rawInfra, loadedSignalInfra, blockInfra, signalingSimulator, metadata)
         }
     }
 }
+
+data class InfraMetadata(val name: String, val version: Int = 0)

@@ -1,6 +1,7 @@
 package fr.sncf.osrd.pathfinding
 
 import fr.sncf.osrd.api.ApiTest
+import fr.sncf.osrd.api.InfraMetadata
 import fr.sncf.osrd.api.TrackLocation
 import fr.sncf.osrd.api.pathfinding.IncompatibleConstraintsPathResponse
 import fr.sncf.osrd.api.pathfinding.NoPathFoundException
@@ -212,7 +213,8 @@ class PathfindingElectrificationTest : ApiTest() {
                 .toList()
         val voltageAllElectrification = RJSElectrification("25000V", voltageAllTrackRanges)
         rjsInfra.electrifications = ArrayList(listOf(voltageAllElectrification))
-        val infraWithAllElectrifiedTrack = Helpers.fullInfraFromRJS(rjsInfra)
+        val infraWithAllElectrifiedTrack =
+            Helpers.fullInfraFromRJS(rjsInfra, InfraMetadata("modified_small_infra"))
 
         val normalPathResp =
             runPathfinding(
@@ -233,7 +235,8 @@ class PathfindingElectrificationTest : ApiTest() {
             voltageAllTrackRanges.filter { it.trackSectionID != trackSectionToBlock }
         val voltagePartialElectrification = RJSElectrification("25000V", voltagePartialTrackRanges)
         rjsInfra.electrifications = ArrayList(listOf(voltagePartialElectrification))
-        val infraPartialElectrifiedTrack = Helpers.fullInfraFromRJS(rjsInfra)
+        val infraPartialElectrifiedTrack =
+            Helpers.fullInfraFromRJS(rjsInfra, InfraMetadata("modified_small_infra"))
 
         // Run another pathfinding with an electric train
         val partialElectricPathResp =
@@ -263,7 +266,7 @@ class PathfindingElectrificationTest : ApiTest() {
 
         assertThatThrownBy {
                 runPathfinding(
-                    Helpers.fullInfraFromRJS(rjsInfra),
+                    Helpers.fullInfraFromRJS(rjsInfra, InfraMetadata("modified_small_infra")),
                     getPathfindingBlockRequest(
                         TestTrains.FAST_ELECTRIC_TRAIN,
                         listOf(waypointsStart, waypointsEnd),

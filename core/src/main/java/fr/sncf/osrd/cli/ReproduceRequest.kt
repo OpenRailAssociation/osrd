@@ -73,7 +73,8 @@ class ReproduceRequest : CliCommand {
                 if (railjson != null) {
                     val rjs = parseRailJSONFromFile(railjson)
                     val signalingSimulator = makeSignalingSimulator()
-                    val infra = FullInfra.fromRJSInfra(rjs, signalingSimulator)
+                    val infra =
+                        FullInfra.fromRJSInfra(rjs, signalingSimulator, InfraMetadata(railjson!!))
                     FileInfraProvider(infra)
                 } else InfraManager(editoastUrl, editoastAuthorization, httpClient)
             val timetableProvider =

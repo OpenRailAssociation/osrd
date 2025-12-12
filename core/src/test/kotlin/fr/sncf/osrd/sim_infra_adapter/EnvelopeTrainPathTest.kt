@@ -2,6 +2,7 @@ package fr.sncf.osrd.sim_infra_adapter
 
 import com.google.common.collect.ImmutableRangeMap
 import com.google.common.collect.Range
+import fr.sncf.osrd.api.InfraMetadata
 import fr.sncf.osrd.path.interfaces.Electrification
 import fr.sncf.osrd.path.legacy_objects.ElectricalProfileMapping
 import fr.sncf.osrd.path.legacy_objects.electrification.Electrified
@@ -36,7 +37,7 @@ class EnvelopeTrainPathTest {
             }
         }
 
-        val infra = Helpers.fullInfraFromRJS(rjsInfra)
+        val infra = Helpers.fullInfraFromRJS(rjsInfra, InfraMetadata("modified_small_infra"))
         val path =
             pathFromTracks(
                 infra,
@@ -105,7 +106,7 @@ class EnvelopeTrainPathTest {
                 // and there is already a deadSection on TA0 from 1900 to 1950 in the
                 // Direction.INCREASING
             )
-        val infra = Helpers.fullInfraFromRJS(rjsInfra)
+        val infra = Helpers.fullInfraFromRJS(rjsInfra, InfraMetadata("modified_small_infra"))
         val path = pathFromTracks(infra, tracks, direction, 500.meters, 3_600.meters)
 
         assertThat(path.getElectrificationMap(null, null, null)).isEqualTo(expectedMap)
@@ -159,7 +160,7 @@ class EnvelopeTrainPathTest {
                 // Direction.INCREASING
             )
 
-        val infra = Helpers.fullInfraFromRJS(rjsInfra)
+        val infra = Helpers.fullInfraFromRJS(rjsInfra, InfraMetadata("modified_small_infra"))
         val rjsElectricalProfiles = getRjsElectricalProfileMapping_1()
         val profileMap = ElectricalProfileMapping()
         profileMap.parseRJS(rjsElectricalProfiles)
@@ -257,7 +258,7 @@ class EnvelopeTrainPathTest {
                 )
             )
 
-        val infra = Helpers.fullInfraFromRJS(rjsInfra)
+        val infra = Helpers.fullInfraFromRJS(rjsInfra, InfraMetadata("modified_small_infra"))
         val rjsElectricalProfiles = getRjsElectricalProfileMapping_2()
         val profileMap = ElectricalProfileMapping()
         profileMap.parseRJS(rjsElectricalProfiles)

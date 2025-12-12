@@ -51,8 +51,7 @@ class SpacingResourceGeneratorTest {
     private lateinit var blockRanges: List<BlockRange>
     private lateinit var routeRanges: List<RouteRange>
     private lateinit var zoneRanges: List<ZoneRange>
-    private val infra =
-        Helpers.fullInfraFromRJS(Helpers.getExampleInfra("overlapping_routes/infra.json"))
+    private val infra = Helpers.fullInfraFromFile("overlapping_routes/infra.json")
 
     @BeforeEach
     fun setupTests() {

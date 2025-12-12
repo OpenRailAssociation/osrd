@@ -1,5 +1,6 @@
 package fr.sncf.osrd.envelope_sim_infra
 
+import fr.sncf.osrd.api.InfraMetadata
 import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope.EnvelopeTestUtils
 import fr.sncf.osrd.envelope.MRSPEnvelopeBuilder.LimitKind
@@ -18,6 +19,7 @@ import fr.sncf.osrd.sim_infra.api.SpeedLimitSource.UnknownTag
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.train.TestTrains
 import fr.sncf.osrd.utils.Helpers
+import fr.sncf.osrd.utils.Helpers.fullInfraFromFile
 import fr.sncf.osrd.utils.Helpers.fullInfraFromRJS
 import fr.sncf.osrd.utils.Helpers.getExampleInfra
 import java.io.IOException
@@ -148,7 +150,7 @@ class MRSPTest {
         rjsInfra.routes.addAll(listOf(route1, route2))
 
         // Compute paths
-        val infra = fullInfraFromRJS(rjsInfra)
+        val infra = fullInfraFromRJS(rjsInfra, InfraMetadata("modified_small_infra"))
         val blockInfra = infra.blockInfra
         path = buildTrainPathFromBlock(infra.rawInfra, blockInfra, BlockId(0U), routes = listOf())
         val block30 = Helpers.getBlocksOnRoutes(infra, listOf(route1.id))[0]
@@ -170,8 +172,7 @@ class MRSPTest {
     }
 
     private fun setUpOnNestedSwitches() {
-        val rjsInfra = getExampleInfra("nested_switches/infra.json")
-        val infra = fullInfraFromRJS(rjsInfra)
+        val infra = fullInfraFromFile("nested_switches/infra.json")
 
         fun routeLen(route: String): Double {
             return Helpers.getBlocksOnRoutes(infra, listOf(route)).sumOf { block ->

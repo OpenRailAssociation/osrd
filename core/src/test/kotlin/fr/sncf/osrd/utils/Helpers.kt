@@ -4,6 +4,7 @@ import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
 import fr.sncf.osrd.api.FullInfra
+import fr.sncf.osrd.api.InfraMetadata
 import fr.sncf.osrd.api.TrackLocation
 import fr.sncf.osrd.api.makeSignalingSimulator
 import fr.sncf.osrd.api.standalone_sim.PhysicsConsistModel
@@ -77,16 +78,26 @@ object Helpers {
     }
 
     /** Generates a full infra from rjs data */
-    fun fullInfraFromRJS(rjs: RJSInfra): FullInfra {
+    fun fullInfraFromRJS(rjs: RJSInfra, metadata: InfraMetadata): FullInfra {
         val signalingSimulator = makeSignalingSimulator()
-        return FullInfra.fromRJSInfra(rjs, signalingSimulator)
+        return FullInfra.fromRJSInfra(rjs, signalingSimulator, metadata)
+    }
+
+    /** Generates a full infra from rjs file path */
+    fun fullInfraFromFile(path: String): FullInfra {
+        val signalingSimulator = makeSignalingSimulator()
+        return FullInfra.fromRJSInfra(
+            getExampleInfra(path),
+            signalingSimulator,
+            InfraMetadata(path),
+        )
     }
 
     val smallInfra: FullInfra
         /** Loads small infra as a RawSignalingInfra */
         get() =
             try {
-                fullInfraFromRJS(getExampleInfra("small_infra/infra.json"))
+                fullInfraFromFile("small_infra/infra.json")
             } catch (e: IOException) {
                 throw RuntimeException(e)
             } catch (e: URISyntaxException) {
@@ -97,7 +108,7 @@ object Helpers {
         /** Loads tiny infra as a FullInfra */
         get() =
             try {
-                fullInfraFromRJS(getExampleInfra("tiny_infra/infra.json"))
+                fullInfraFromFile("tiny_infra/infra.json")
             } catch (e: IOException) {
                 throw RuntimeException(e)
             } catch (e: URISyntaxException) {

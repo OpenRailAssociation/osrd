@@ -1,6 +1,7 @@
 package fr.sncf.osrd.pathfinding
 
 import fr.sncf.osrd.api.ApiTest
+import fr.sncf.osrd.api.InfraMetadata
 import fr.sncf.osrd.api.TrackLocation
 import fr.sncf.osrd.api.pathfinding.*
 import fr.sncf.osrd.cli.RqFake
@@ -380,7 +381,7 @@ class PathfindingTest : ApiTest() {
         for (track in rjsInfra.trackSections) if (track.getID() == "ne.micro.foo_to_bar")
             track.loadingGaugeLimits =
                 listOf(RJSLoadingGaugeLimit(1000.0, 2000.0, RJSLoadingGaugeType.G1))
-        val infra = Helpers.fullInfraFromRJS(rjsInfra)
+        val infra = Helpers.fullInfraFromRJS(rjsInfra, InfraMetadata("modified_tiny_infra"))
 
         // Check that we can go through the infra with a small train
         val normalPathResp =
@@ -546,8 +547,7 @@ class PathfindingTest : ApiTest() {
         val waypointsStart = listOf(TrackLocation("ne.micro.foo_a", Offset(200.meters)))
         val waypointsEnd = listOf(TrackLocation("ne.micro.bar_a", Offset(0.meters)))
 
-        val rjsInfra = Helpers.getExampleInfra("tiny_infra/infra.json")
-        val infra = Helpers.fullInfraFromRJS(rjsInfra)
+        val infra = Helpers.fullInfraFromFile("tiny_infra/infra.json")
 
         // Check that we can go through the infra with a small train
         val normalPathResp =
