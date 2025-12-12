@@ -157,3 +157,11 @@ impl From<OperationalPoint> for InfraObject {
         }
     }
 }
+
+impl From<LevelCrossing> for InfraObject {
+    fn from(levelcrossing: LevelCrossing) -> Self {
+        InfraObject::LevelCrossing {
+            railjson: levelcrossing,
+        }
+    }
+}

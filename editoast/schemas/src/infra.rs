@@ -47,6 +47,7 @@ pub use electrification::Electrification;
 pub use endpoint::Endpoint;
 pub use infra_object::InfraObject;
 pub use level_crossing::LevelCrossing;
+pub use level_crossing::LevelCrossingPart;
 pub use loading_gauge_limit::LoadingGaugeLimit;
 pub use neutral_section::NeutralSection;
 pub use operational_point::OperationalPoint;
