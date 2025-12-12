@@ -3,7 +3,6 @@ package fr.sncf.osrd.api.pathfinding
 import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.graph.*
 import fr.sncf.osrd.path.interfaces.TrainPath
-import fr.sncf.osrd.pathfinding.Pathfinding
 import fr.sncf.osrd.pathfinding.constraints.ElectrificationConstraints
 import fr.sncf.osrd.pathfinding.constraints.LoadingGaugeConstraints
 import fr.sncf.osrd.pathfinding.constraints.SignalingSystemConstraints
@@ -12,6 +11,7 @@ import fr.sncf.osrd.utils.DistanceRangeMap
 import fr.sncf.osrd.utils.distanceRangeMapOf
 import fr.sncf.osrd.utils.filterIntersection
 import fr.sncf.osrd.utils.units.Offset
+import fr.sncf.osrd.utils.units.OffsetRange
 
 fun buildIncompatibleConstraintsResponse(
     infra: FullInfra,
@@ -28,7 +28,7 @@ fun buildIncompatibleConstraintsResponse(
         getConstraintsDistanceRange(path, path.getElectrification(), elecConstraints.firstOrNull())
             .map {
                 RangeValue(
-                    Pathfinding.Range(Offset(it.lower), Offset(it.upper)),
+                    OffsetRange(Offset(it.lower), Offset(it.upper)),
                     it.value.joinToString(","),
                 )
             }
@@ -37,7 +37,7 @@ fun buildIncompatibleConstraintsResponse(
     assert(gaugeConstraints.size < 2)
     val gaugeBlockedRanges =
         getConstraintsDistanceRange(path, path.getLoadingGauge(), gaugeConstraints.firstOrNull())
-            .map { RangeValue<String>(Pathfinding.Range(Offset(it.lower), Offset(it.upper)), null) }
+            .map { RangeValue<String>(OffsetRange(Offset(it.lower), Offset(it.upper)), null) }
 
     val signalingSystemConstraints = constraints.filterIsInstance<SignalingSystemConstraints>()
     assert(signalingSystemConstraints.size < 2)
@@ -48,7 +48,7 @@ fun buildIncompatibleConstraintsResponse(
                 pathSignalingSystem,
                 signalingSystemConstraints.firstOrNull(),
             )
-            .map { RangeValue(Pathfinding.Range(Offset(it.lower), Offset(it.upper)), it.value) }
+            .map { RangeValue(OffsetRange(Offset(it.lower), Offset(it.upper)), it.value) }
 
     if (
         listOf(elecBlockedRangeValues, gaugeBlockedRanges, signalingSystemBlockedRangeValues).all {

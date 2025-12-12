@@ -248,3 +248,5 @@ fun <T> Length<T>.forceDirected(): DirOffset<T> {
 fun <T> Length<Directed<T>>.forceUndirected(): Offset<T> {
     return cast()
 }
+
+data class OffsetRange<T>(val start: Offset<T>, val end: Offset<T>)
