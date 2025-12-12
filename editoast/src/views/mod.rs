@@ -603,7 +603,7 @@ async fn authenticate(
     });
     let skip_authz = headers.contains_key(SKIP_AUTHZ);
 
-    let user = match (identity, name) {
+    let user = match (identity.clone(), name) {
         (identity, name) if !enable_authorization => {
             tracing::debug!(
                 identity,
@@ -618,26 +618,31 @@ async fn authenticate(
         }
         (None, _) => return Ok(Authentication::Unauthenticated),
         (Some(identity), name) => UserInfo {
-            identity,
+            identities: vec![identity],
             name: name.unwrap_or_default(),
         },
     };
 
-    let authorizer =
-        match Authorizer::try_initialize(user.identity.clone(), regulator.clone()).await {
-            Ok(authorizer) => authorizer,
-            Err(AuthorizerError::UnknownUser { .. }) => {
-                // The user is not in the database, let's add it
-                regulator
-                    .clone()
-                    .driver()
-                    .ensure_user(&user)
-                    .await
-                    .map_err(AuthorizerError::Storage)?;
-                Authorizer::try_initialize(user.identity, regulator.clone()).await?
-            }
-            Err(err) => return Err(err.into()),
-        };
+    let authorizer = match Authorizer::try_initialize(
+        identity.clone().expect("Already checked above"),
+        regulator.clone(),
+    )
+    .await
+    {
+        Ok(authorizer) => authorizer,
+        Err(AuthorizerError::UnknownUser { .. }) => {
+            // The user is not in the database, let's add it
+            regulator
+                .clone()
+                .driver()
+                .ensure_user(&user)
+                .await
+                .map_err(AuthorizerError::Storage)?;
+            Authorizer::try_initialize(identity.expect("Already checked above"), regulator.clone())
+                .await?
+        }
+        Err(err) => return Err(err.into()),
+    };
 
     let Some(impersonated_identity) = impersonate else {
         return Ok(Authentication::Authenticated(authorizer));

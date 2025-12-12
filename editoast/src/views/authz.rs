@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use std::collections::HashSet;
+use std::ops::DerefMut;
 use std::sync::Arc;
 
 use crate::error::Result;
@@ -17,6 +18,11 @@ use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum::response::Json;
 use database::DbConnectionPoolV2;
+use database::tables::*;
+use diesel::ExpressionMethods;
+use diesel::QueryDsl;
+use diesel::prelude::*;
+use diesel_async::RunQueryDsl;
 use editoast_derive::EditoastError;
 use editoast_models::Group;
 use editoast_models::User;
@@ -163,7 +169,7 @@ pub(in crate::views) struct UsersInfoRequest {
     identities: Vec<String>,
 }
 
-#[derive(Serialize, ToSchema)]
+#[derive(Serialize, Deserialize, ToSchema)]
 pub(in crate::views) struct UserInfo {
     id: i64,
     name: String,
@@ -202,10 +208,7 @@ pub(in crate::views) async fn users_info(
     if !authorized {
         return Err(AuthorizationError::Forbidden.into());
     }
-    let UsersInfoRequest {
-        ids: user_ids,
-        identities: user_identities,
-    } = body.clone();
+    let UsersInfoRequest { ids: user_ids, .. } = body.clone();
 
     // Retrieve users by IDs
     let users_1: Vec<_> =
@@ -217,17 +220,15 @@ pub(in crate::views) async fn users_info(
         .await?;
 
     // Retrieve users by identities
-    let settings =
-        SelectionSettings::new().filter(move || User::IDENTITY_ID.eq_any(user_identities.clone()));
-    let users_2 = User::list(&mut db_pool.get().await?, settings).await?;
-    if users_2.len() < body.identities.len() {
-        let found: HashSet<_> = users_2.iter().map(|u| &u.identity_id).collect();
-        let missing_identity = body.identities.into_iter().find(|i| !found.contains(i));
-        return Err(AuthzError::UnknownIdentity {
-            identity: missing_identity.unwrap(),
-        }
-        .into());
-    }
+    let users_2 = authn_user::table
+        .inner_join(authn_user_identity::table)
+        .select(authn_user::all_columns)
+        .filter(authn_user_identity::identity.eq_any(body.identities.clone()))
+        .load::<(i64, String)>(&mut db_pool.get().await?.write().await.deref_mut())
+        .await?
+        .into_iter()
+        .map(|(id, name)| User { id, name })
+        .collect::<Vec<_>>();
 
     // Merge both user lists
     let users: HashMap<_, _> = users_1
@@ -235,6 +236,53 @@ pub(in crate::views) async fn users_info(
         .chain(users_2)
         .map(|u| (u.id, u))
         .collect();
+
+    // Retrieve the full list of identities associated with the users
+    #[derive(QueryableByName)]
+    struct UserIdentities {
+        #[diesel(sql_type = diesel::sql_types::BigInt)]
+        id: i64,
+        #[diesel(sql_type = diesel::sql_types::Nullable<diesel::sql_types::Array<diesel::sql_types::Varchar>>)]
+        identities: Option<Vec<String>>,
+    }
+    let conn = &mut db_pool.get().await?;
+    let raw_query = r"
+                SELECT u.id, ARRAY_AGG(i.identity) AS identities
+                FROM authn_user AS u
+                LEFT JOIN authn_user_identity AS i
+                ON u.id = i.user_id
+                WHERE u.id = ANY($1)
+                GROUP BY u.id;
+            ";
+    let user_to_identities: HashMap<_, _> = diesel::sql_query(raw_query)
+        .bind::<diesel::sql_types::Array<diesel::sql_types::BigInt>, _>(
+            users.keys().collect::<Vec<_>>(),
+        )
+        .load::<UserIdentities>(conn.write().await.deref_mut())
+        .await?
+        .into_iter()
+        .map(|user_identities| {
+            (
+                user_identities.id,
+                user_identities
+                    .identities
+                    .into_iter()
+                    .flatten()
+                    .collect::<Vec<_>>(),
+            )
+        })
+        .collect();
+
+    if let Some(missing_identity) = body
+        .identities
+        .into_iter()
+        .find(|i| !user_to_identities.values().flatten().contains(i))
+    {
+        return Err(AuthzError::UnknownIdentity {
+            identity: missing_identity,
+        }
+        .into());
+    }
 
     // Fetch groups for each user
     let mut groups_by_user = HashMap::new();
@@ -263,7 +311,7 @@ pub(in crate::views) async fn users_info(
         results.push(UserInfo {
             id: user_id,
             name: user.name,
-            identities: vec![user.identity_id],
+            identities: user_to_identities[&user_id].clone(),
             roles,
             groups,
         });
@@ -1323,5 +1371,78 @@ mod tests {
         app.fetch(request)
             .await
             .assert_status(StatusCode::UNAUTHORIZED);
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    #[ignore]
+    async fn users_info_valid_input() {
+        let app = test_app!().enable_authorization(false).build();
+        let users = vec![
+            app.user(
+                uuid::Uuid::new_v4().to_string(),
+                uuid::Uuid::new_v4().to_string(),
+            )
+            .create()
+            .await,
+            app.user(
+                uuid::Uuid::new_v4().to_string(),
+                uuid::Uuid::new_v4().to_string(),
+            )
+            .create()
+            .await,
+            app.user(
+                uuid::Uuid::new_v4().to_string(),
+                uuid::Uuid::new_v4().to_string(),
+            )
+            .create()
+            .await,
+            app.user(
+                uuid::Uuid::new_v4().to_string(),
+                uuid::Uuid::new_v4().to_string(),
+            )
+            .create()
+            .await,
+        ];
+        let users_input = users.iter().map(|user| user.id).collect::<Vec<_>>();
+        let request = app.post("/authz/user/info").json(&json!({
+            "ids": users_input,
+            "identities": []
+        }));
+        let response = app
+            .fetch(request)
+            .await
+            .assert_status(StatusCode::OK)
+            .json_into::<Vec<UserInfo>>();
+        assert_eq!(
+            users,
+            response
+                .iter()
+                .map(|user_info| authz::identity::User {
+                    id: user_info.id,
+                    info: authz::identity::UserInfo {
+                        identities: user_info.identities.clone(),
+                        name: user_info.name.clone()
+                    }
+                })
+                .collect::<Vec<_>>()
+        );
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    #[ignore]
+    async fn users_info_missing_identifier() {
+        todo!()
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    #[ignore]
+    async fn users_info_missing_identity() {
+        todo!()
+    }
+
+    #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
+    #[ignore]
+    async fn users_info_authz_enabled() {
+        todo!()
     }
 }

@@ -91,8 +91,8 @@ impl Display for Subject {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let Self { id, info } = self;
         match info {
-            SubjectInfo::User(UserInfo { name, identity }) => {
-                write!(f, "User {identity}#{id} ({name})")
+            SubjectInfo::User(UserInfo { name, identities }) => {
+                write!(f, "User {name}#{id} ({})", identities.join(", "))
             }
             SubjectInfo::Group(info) => write!(f, "Group #{} ({})", id, info.name),
         }

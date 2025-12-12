@@ -144,7 +144,7 @@ mod tests {
     async fn check_user_roles() {
         let user_identity = || "toto".to_owned();
         let user = || UserInfo {
-            identity: user_identity(),
+            identities: vec![user_identity()],
             name: "Sir Toto, the One and Only".to_owned(),
         };
         let regulator = Regulator::new(authz_client!(), MockAuthDriver::default());
@@ -264,12 +264,12 @@ mod tests {
         common::setup_tracing_for_test();
         let alice_identity = || "alice".to_owned();
         let alice = || UserInfo {
-            identity: alice_identity(),
+            identities: vec![alice_identity()],
             name: "Alice".to_owned(),
         };
         let bob_identity = || "bob".to_owned();
         let bob = || UserInfo {
-            identity: bob_identity(),
+            identities: vec![bob_identity()],
             name: "Bob".to_owned(),
         };
         let friends = || GroupInfo {

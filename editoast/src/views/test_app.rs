@@ -345,11 +345,12 @@ impl TestApp {
         &self.app_state.config
     }
 
+    // TODO PR allow the creation of users with multiple identities for the tests ?
     pub fn user(&self, identity: impl ToString, name: impl ToString) -> UserBuilder<'_> {
         UserBuilder::new(
             self,
             UserInfo {
-                identity: identity.to_string(),
+                identities: vec![identity.to_string()],
                 name: name.to_string(),
             },
         )
@@ -620,9 +621,12 @@ pub trait TestRequestExt {
 
 impl TestRequestExt for TestRequest {
     fn by_user(self, user: &impl AsRef<UserInfo>) -> Self {
-        let UserInfo { identity, name } = user.as_ref();
-        self.add_header("x-remote-user-identity", identity)
-            .add_header("x-remote-user-name", name)
+        let UserInfo { identities, name } = user.as_ref();
+        self.add_header(
+            "x-remote-user-identity",
+            identities.first().expect("no identity provided"),
+        )
+        .add_header("x-remote-user-name", name)
     }
 }
 

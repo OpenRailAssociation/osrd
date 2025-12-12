@@ -36,10 +36,10 @@ pub struct ListArgs {
 
 #[derive(Debug, Args)]
 pub struct AddArgs {
-    /// Identity of the user
-    identity: String,
     /// Name of the user
     name: Option<String>,
+    /// Identity of the user
+    identities: Vec<String>,
 }
 
 #[derive(Debug, Args)]
@@ -86,8 +86,8 @@ pub async fn list_user(
         users?
     };
 
-    for (id, UserInfo { identity, name }) in &users {
-        println!("[{id}]: {identity} ({name})");
+    for (id, UserInfo { identities, name }) in &users {
+        println!("[{id}]: {name} ({})", identities.join(", "));
     }
     if users.is_empty() {
         tracing::info!("No user found");
@@ -100,7 +100,7 @@ pub async fn add_user(args: AddArgs, pool: Arc<DbConnectionPoolV2>) -> anyhow::R
     let driver = PgAuthDriver::new(pool);
 
     let user_info = UserInfo {
-        identity: args.identity,
+        identities: args.identities,
         name: args.name.unwrap_or_default(),
     };
     let subject_id = driver.ensure_user(&user_info).await?;
@@ -122,14 +122,14 @@ pub async fn user_info(
         let uid = driver.get_user_id(&user).await?;
         uid.ok_or_else(|| anyhow!("No user with identity '{user}' found"))?
     };
-    let Some(UserInfo { identity, name }) = driver.get_user_info(uid).await? else {
+    let Some(UserInfo { identities, name }) = driver.get_user_info(uid).await? else {
         tracing::error!(user.id = uid, "User not found");
         return Ok(());
     };
     let groups = regulator.user_groups(&authz::User(uid)).await?;
 
     println!("id      : {uid}");
-    println!("identity: {identity}");
+    println!("identities: {}", identities.join(", "));
     println!("name    : {name}");
     println!("groups  :");
     for authz::Group(group_id) in groups {
