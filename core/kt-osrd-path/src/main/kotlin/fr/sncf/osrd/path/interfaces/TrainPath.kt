@@ -35,6 +35,8 @@ import fr.sncf.osrd.utils.units.Offset
 interface TrainPath : PhysicsPath, PathProperties {
     fun subPath(from: Offset<TrainPath>?, to: Offset<TrainPath>?): TrainPath
 
+    fun getBacktrackLocations(): List<Offset<TrainPath>> = listOf() // TODO: path migration
+
     /** Returns a copy with the specified routes instead */
     override fun withRoutes(routes: List<RouteId>): TrainPath
 
@@ -54,18 +56,16 @@ fun concat(vararg paths: TrainPath): TrainPath {
     TODO("Required for actual backtracks, not necessary earlier than that")
 }
 
-// Extension functions that help with backward compatibility.
-// These should only exist during the migration to enable more local changes,
-// to allow partial migration while still having a working core.
-// Every call site will become a bug once we have backtracks.
-// TODO path migration: remove these.
-
-fun TrainPath.getLegacyBlockPath(): List<BlockId> {
-    // Legacy block list excluded blocks that were only used in 0-length segments
-    return getBlocks().filter { !it.isSinglePoint() }.map { it.value }
-}
-
-fun TrainPath.getLegacyRoutePath(): List<RouteId> {
-    // Legacy route list excluded routes that were only used in 0-length segments
-    return getRoutes().filter { !it.isSinglePoint() }.map { it.value }
+/** Cut the path on any backtrack location, returning a list of backtrack-free sub-paths. */
+fun TrainPath.getBacktrackFreeSubPaths(): List<TrainPath> {
+    val backtrackLocations = getBacktrackLocations()
+    if (backtrackLocations.isEmpty()) return listOf(this)
+    val res = mutableListOf<TrainPath>()
+    var endOfLastSubPath = Offset.zero<TrainPath>()
+    for (currentSubPathEnd in backtrackLocations + getLength()) {
+        if (currentSubPathEnd == endOfLastSubPath) continue
+        res.add(subPath(endOfLastSubPath, currentSubPathEnd))
+        endOfLastSubPath = currentSubPathEnd
+    }
+    return res
 }

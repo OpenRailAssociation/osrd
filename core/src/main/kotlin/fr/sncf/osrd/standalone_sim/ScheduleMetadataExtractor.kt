@@ -19,6 +19,7 @@ import fr.sncf.osrd.envelope_sim.etcs.EoaType
 import fr.sncf.osrd.path.interfaces.BlockRange
 import fr.sncf.osrd.path.interfaces.RouteRange
 import fr.sncf.osrd.path.interfaces.TrainPath
+import fr.sncf.osrd.path.interfaces.getBacktrackFreeSubPaths
 import fr.sncf.osrd.signaling.SigSystemManager
 import fr.sncf.osrd.signaling.SignalingTrainState
 import fr.sncf.osrd.signaling.ZoneStatus
@@ -149,15 +150,18 @@ fun runScheduleMetadataExtractor(
     // as the provided path is complete, the resource generator should never return NotEnoughPath
     val spacingRequirements = spacingGenerator.processUpdate()!!
 
+    // Route requirements are easier to compute on backtrack-free sections of the path
     val routingRequirements =
-        routingRequirements(
-            fullInfra,
-            trainPath,
-            closedSignalStops,
-            envelopeWithStops,
-            context,
-            rollingStock,
-        )
+        trainPath.getBacktrackFreeSubPaths().flatMap {
+            routingRequirements(
+                fullInfra,
+                it,
+                closedSignalStops,
+                envelopeWithStops,
+                context,
+                rollingStock,
+            )
+        }
     val reportTrain =
         makeSimpleReportTrain(envelope, trainPath, rollingStock, schedule, pathItemPositions)
     return CompleteReportTrain(

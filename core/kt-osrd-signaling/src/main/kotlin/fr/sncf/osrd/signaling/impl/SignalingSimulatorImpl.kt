@@ -1,8 +1,6 @@
 package fr.sncf.osrd.signaling.impl
 
 import fr.sncf.osrd.path.interfaces.TrainPath
-import fr.sncf.osrd.path.interfaces.getLegacyBlockPath
-import fr.sncf.osrd.path.interfaces.getLegacyRoutePath
 import fr.sncf.osrd.signaling.*
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra.impl.SignalParameters
@@ -169,8 +167,13 @@ class SignalingSimulatorImpl(override val sigModuleManager: SigSystemManager) : 
         followingSignalState: SigState?,
         followingSignalSettings: SigSettings?,
     ): Map<LogicalSignalId, SigState> {
-        val fullPath = trainPath.getLegacyBlockPath()
-        val routes = trainPath.getLegacyRoutePath()
+        require(trainPath.getBacktrackLocations().isEmpty()) {
+            "Signaling simulation can only be done on backtrack-free segments of the path"
+            // This *could* be supported, but it would add complexity.
+            // And the expected behavior can get ambiguous on backtracks.
+        }
+        val fullPath = trainPath.getBlocks().filter { !it.isSinglePoint() }.map { it.value }
+        val routes = trainPath.getRoutes().filter { !it.isSinglePoint() }.map { it.value }
         val evaluatedPathEnd = fullPath.size
         return evaluate(
             infra,
@@ -200,7 +203,6 @@ class SignalingSimulatorImpl(override val sigModuleManager: SigSystemManager) : 
         followingSignalSettings: SigSettings?,
         firstZone: ZoneId?,
     ): Map<LogicalSignalId, SigState> {
-        // TODO path migration: remove this overload
         assert(evaluatedPathEnd > 0)
         assert(evaluatedPathEnd <= fullPath.size)
         val routeSet by lazy { routes.toSet() }
