@@ -465,6 +465,7 @@ fn service_router() -> router::DocumentedRouter {
                     .nests("/{id}", |path| {
                         path.route("/", get!(train_schedule_set::get_by_id))
                             .route("/", put!(train_schedule_set::put))
+                            .route("/", delete!(train_schedule_set::delete))
                     })
             })
             .nests("/catalogue_entry", |path| {
@@ -473,6 +474,7 @@ fn service_router() -> router::DocumentedRouter {
                     .nests("/{id}", |path| {
                         path.route("/", get!(catalogue_entry::get_by_id))
                             .route("/", put!(catalogue_entry::put))
+                            .route("/", delete!(catalogue_entry::delete))
                     })
             })
     })

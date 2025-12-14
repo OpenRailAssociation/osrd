@@ -12,6 +12,8 @@ use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::Query;
 use axum::extract::State;
+use axum::http::StatusCode;
+use axum::response::IntoResponse;
 use editoast_models::CatalogueEntry;
 use serde::Deserialize;
 use serde::Serialize;
@@ -178,4 +180,33 @@ pub(in crate::views) async fn put(
         name: catalogue_entry_form.name,
     };
     Ok(Json(catalogue_entry))
+}
+
+#[editoast_derive::route]
+#[utoipa::path(
+    delete, path = "",
+    tag = "catalogue_entry",
+    params(CatalogueEntryIdParam),
+    responses(
+            (status = 204, description = "The catalogue entry was deleted"),
+        (status = 404, description = "Catalogue entry not found"),
+),
+)]
+pub(in crate::views) async fn delete(
+    State(_db_pool): State<Arc<DbConnectionPoolV2>>,
+    Extension(auth): AuthenticationExt,
+    Path(CatalogueEntryIdParam {
+        id: _catalogue_entry_id,
+    }): Path<CatalogueEntryIdParam>,
+) -> Result<impl IntoResponse> {
+    let authorized = auth
+        .check_roles([authz::Role::OperationalStudies].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Forbidden.into());
+    }
+
+    // TODO: Add database operation to delete a catalogue entry
+    Ok(StatusCode::NO_CONTENT)
 }

@@ -409,6 +409,22 @@ paths:
                 $ref: '#/components/schemas/CatalogueEntry'
         '404':
           description: Catalogue entry not found
+    delete:
+      tags:
+      - catalogue_entry
+      parameters:
+      - name: id
+        in: path
+        description: A catalogue entry ID
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '204':
+          description: The catalogue entry was deleted
+        '404':
+          description: Catalogue entry not found
   /documents:
     post:
       tags:
@@ -4910,6 +4926,22 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/TrainScheduleSetResponse'
+        '404':
+          description: Train schedule set not found
+    delete:
+      tags:
+      - train_schedule_set
+      parameters:
+      - name: id
+        in: path
+        description: A train schedule set ID
+        required: true
+        schema:
+          type: integer
+          format: int64
+      responses:
+        '204':
+          description: the train schedule set is deleted
         '404':
           description: Train schedule set not found
   /version:
