@@ -92,7 +92,7 @@ const injectedRtkApi = api
         query: (queryArg) => ({
           url: `/catalogue_entry`,
           method: 'POST',
-          body: queryArg.catalogueEntryCreateForm,
+          body: queryArg.catalogueEntryForm,
         }),
         invalidatesTags: ['catalogue_entry'],
       }),
@@ -102,6 +102,17 @@ const injectedRtkApi = api
       >({
         query: (queryArg) => ({ url: `/catalogue_entry/${queryArg.id}` }),
         providesTags: ['catalogue_entry'],
+      }),
+      putCatalogueEntryById: build.mutation<
+        PutCatalogueEntryByIdApiResponse,
+        PutCatalogueEntryByIdApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/catalogue_entry/${queryArg.id}`,
+          method: 'PUT',
+          body: queryArg.catalogueEntryForm,
+        }),
+        invalidatesTags: ['catalogue_entry'],
       }),
       postDocuments: build.mutation<PostDocumentsApiResponse, PostDocumentsApiArg>({
         query: (queryArg) => ({
@@ -1403,7 +1414,7 @@ const injectedRtkApi = api
         query: (queryArg) => ({
           url: `/train_schedule_set`,
           method: 'POST',
-          body: queryArg.trainScheduleSetCreateForm,
+          body: queryArg.trainScheduleSetForm,
         }),
         invalidatesTags: ['train_schedule_set'],
       }),
@@ -1413,6 +1424,17 @@ const injectedRtkApi = api
       >({
         query: (queryArg) => ({ url: `/train_schedule_set/${queryArg.id}` }),
         providesTags: ['train_schedule_set'],
+      }),
+      putTrainScheduleSetById: build.mutation<
+        PutTrainScheduleSetByIdApiResponse,
+        PutTrainScheduleSetByIdApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/train_schedule_set/${queryArg.id}`,
+          method: 'PUT',
+          body: queryArg.trainScheduleSetForm,
+        }),
+        invalidatesTags: ['train_schedule_set'],
       }),
       getVersion: build.query<GetVersionApiResponse, GetVersionApiArg>({
         query: () => ({ url: `/version` }),
@@ -1581,12 +1603,18 @@ export type GetCatalogueEntryApiArg = {
 };
 export type PostCatalogueEntryApiResponse = /** status 201 Catalogue entry */ CatalogueEntry;
 export type PostCatalogueEntryApiArg = {
-  catalogueEntryCreateForm: CatalogueEntryCreateForm;
+  catalogueEntryForm: CatalogueEntryForm;
 };
 export type GetCatalogueEntryByIdApiResponse = /** status 200 Catalogue entry */ CatalogueEntry;
 export type GetCatalogueEntryByIdApiArg = {
   /** A catalogue entry ID */
   id: number;
+};
+export type PutCatalogueEntryByIdApiResponse = /** status 200 Catalogue entry */ CatalogueEntry;
+export type PutCatalogueEntryByIdApiArg = {
+  /** A catalogue entry ID */
+  id: number;
+  catalogueEntryForm: CatalogueEntryForm;
 };
 export type PostDocumentsApiResponse =
   /** status 201 The document was created */ NewDocumentResponse;
@@ -2717,13 +2745,20 @@ export type GetTrainScheduleSetApiArg = {
 export type PostTrainScheduleSetApiResponse =
   /** status 201 Train schedule set */ TrainScheduleSetResponse;
 export type PostTrainScheduleSetApiArg = {
-  trainScheduleSetCreateForm: TrainScheduleSetCreateForm;
+  trainScheduleSetForm: TrainScheduleSetForm;
 };
 export type GetTrainScheduleSetByIdApiResponse =
   /** status 200 Train schedule set */ TrainScheduleSetResponse;
 export type GetTrainScheduleSetByIdApiArg = {
   /** A train schedule set ID */
   id: number;
+};
+export type PutTrainScheduleSetByIdApiResponse =
+  /** status 200 Train schedule set */ TrainScheduleSetResponse;
+export type PutTrainScheduleSetByIdApiArg = {
+  /** A train schedule set ID */
+  id: number;
+  trainScheduleSetForm: TrainScheduleSetForm;
 };
 export type GetVersionApiResponse = /** status 200 Return the service version */ Version;
 export type GetVersionApiArg = void;
@@ -2846,7 +2881,7 @@ export type CatalogueEntry = {
   id: number;
   name?: string | null;
 };
-export type CatalogueEntryCreateForm = {
+export type CatalogueEntryForm = {
   name?: string | null;
 };
 export type NewDocumentResponse = {
@@ -5063,7 +5098,7 @@ export type TrainScheduleSet = {
 export type TrainScheduleSetResponse = TrainScheduleSet & {
   train_schedule_count: number;
 };
-export type TrainScheduleSetCreateForm = {
+export type TrainScheduleSetForm = {
   catalogue_entry_id?: number | null;
   description: string;
   name?: string | null;
