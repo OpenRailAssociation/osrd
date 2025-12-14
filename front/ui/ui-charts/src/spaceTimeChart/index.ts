@@ -25,8 +25,6 @@ export type {
   SpaceTimeChartContextType,
 } from './lib/types';
 
-export type { Point } from '../common/types';
-
 export { isPathOnScreen } from './utils/geometry';
 export { getSpaceAtTime } from './utils/scales';
 export { getCrispLineCoordinate } from './utils/canvas';
