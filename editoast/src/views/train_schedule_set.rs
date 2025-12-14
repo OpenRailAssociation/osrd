@@ -23,7 +23,7 @@ pub(in crate::views) struct TrainScheduleSetResponse {
 }
 
 #[derive(Serialize, Deserialize, ToSchema)]
-pub(in crate::views) struct TrainScheduleSetCreateForm {
+pub(in crate::views) struct TrainScheduleSetForm {
     catalogue_entry_id: Option<i64>,
     name: Option<String>,
     description: String,
@@ -40,7 +40,7 @@ pub(in crate::views) struct TrainScheduleSetIdParam {
 #[utoipa::path(
     post, path = "",
     tag = "train_schedule_set",
-    request_body = TrainScheduleSetCreateForm,
+    request_body = TrainScheduleSetForm,
     responses(
         (status = 201, description = "Train schedule set", body = TrainScheduleSetResponse),
     ),
@@ -48,7 +48,7 @@ pub(in crate::views) struct TrainScheduleSetIdParam {
 pub(in crate::views) async fn post(
     State(_db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
-    Json(train_schedule_set_create_form): Json<TrainScheduleSetCreateForm>,
+    Json(train_schedule_set_create_form): Json<TrainScheduleSetForm>,
 ) -> Result<Json<TrainScheduleSetResponse>> {
     let authorized = auth
         .check_roles([authz::Role::OperationalStudies].into())
@@ -153,4 +153,45 @@ pub(in crate::views) async fn get(
         },
         train_schedule_count: 0,
     }]))
+}
+
+#[editoast_derive::route]
+#[utoipa::path(
+    put, path = "",
+    tag = "train_schedule_set",
+    params(TrainScheduleSetIdParam),
+    request_body = TrainScheduleSetForm,
+    responses(
+        (status = 200, description = "Train schedule set", body = TrainScheduleSetResponse),
+        (status = 404, description = "Train schedule set not found"),
+    ),
+)]
+pub(in crate::views) async fn put(
+    State(_db_pool): State<Arc<DbConnectionPoolV2>>,
+    Extension(auth): AuthenticationExt,
+    Path(TrainScheduleSetIdParam {
+        id: train_schedule_set_id,
+    }): Path<TrainScheduleSetIdParam>,
+    Json(train_schedule_set_form): Json<TrainScheduleSetForm>,
+) -> Result<Json<TrainScheduleSetResponse>> {
+    let authorized = auth
+        .check_roles([authz::Role::OperationalStudies].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Forbidden.into());
+    }
+
+    // TODO: Add database operation to update a train schedule set
+    let train_schedule_set_response = TrainScheduleSetResponse {
+        train_schedule_set: TrainScheduleSet {
+            id: train_schedule_set_id,
+            catalogue_entry_id: train_schedule_set_form.catalogue_entry_id,
+            name: train_schedule_set_form.name,
+            description: train_schedule_set_form.description,
+            published: train_schedule_set_form.published,
+        },
+        train_schedule_count: 0,
+    };
+    Ok(Json(train_schedule_set_response))
 }

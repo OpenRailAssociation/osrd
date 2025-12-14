@@ -18,7 +18,7 @@ use serde::Serialize;
 use std::sync::Arc;
 
 #[derive(Serialize, Deserialize, ToSchema)]
-pub(in crate::views) struct CatalogueEntryCreateForm {
+pub(in crate::views) struct CatalogueEntryForm {
     name: Option<String>,
 }
 
@@ -32,7 +32,7 @@ pub(in crate::views) struct CatalogueEntryIdParam {
 #[utoipa::path(
     post, path = "",
     tag = "catalogue_entry",
-    request_body = CatalogueEntryCreateForm,
+    request_body = CatalogueEntryForm,
     responses(
         (status = 201, description = "Catalogue entry", body = CatalogueEntry),
     ),
@@ -40,7 +40,7 @@ pub(in crate::views) struct CatalogueEntryIdParam {
 pub(in crate::views) async fn post(
     State(_db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
-    Json(catalogue_entry_create_form): Json<CatalogueEntryCreateForm>,
+    Json(catalogue_entry_create_form): Json<CatalogueEntryForm>,
 ) -> Result<Json<CatalogueEntry>> {
     let authorized = auth
         .check_roles([authz::Role::OperationalStudies].into())
@@ -143,4 +143,39 @@ pub(in crate::views) async fn get_by_id(
         name: Some("Catalogue Entry".to_string()),
     };
     Ok(Json(catalogue_entry_result))
+}
+
+#[editoast_derive::route]
+#[utoipa::path(
+    put, path = "",
+    tag = "catalogue_entry",
+    params(CatalogueEntryIdParam),
+    request_body = CatalogueEntryForm,
+    responses(
+        (status = 200, description = "Catalogue entry", body = CatalogueEntry),
+        (status = 404, description = "Catalogue entry not found"),
+    ),
+)]
+pub(in crate::views) async fn put(
+    State(_db_pool): State<Arc<DbConnectionPoolV2>>,
+    Extension(auth): AuthenticationExt,
+    Path(CatalogueEntryIdParam {
+        id: catalogue_entry_id,
+    }): Path<CatalogueEntryIdParam>,
+    Json(catalogue_entry_form): Json<CatalogueEntryForm>,
+) -> Result<Json<CatalogueEntry>> {
+    let authorized = auth
+        .check_roles([authz::Role::OperationalStudies].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Forbidden.into());
+    }
+
+    // TODO: Add database operation to update a catalogue entry
+    let catalogue_entry = CatalogueEntry {
+        id: catalogue_entry_id,
+        name: catalogue_entry_form.name,
+    };
+    Ok(Json(catalogue_entry))
 }

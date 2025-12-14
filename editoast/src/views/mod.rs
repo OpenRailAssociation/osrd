@@ -462,12 +462,18 @@ fn service_router() -> router::DocumentedRouter {
             .nests("/train_schedule_set", |path| {
                 path.route("/", post!(train_schedule_set::post))
                     .route("/", get!(train_schedule_set::get))
-                    .route("/{id}", get!(train_schedule_set::get_by_id))
+                    .nests("/{id}", |path| {
+                        path.route("/", get!(train_schedule_set::get_by_id))
+                            .route("/", put!(train_schedule_set::put))
+                    })
             })
             .nests("/catalogue_entry", |path| {
                 path.route("/", post!(catalogue_entry::post))
                     .route("/", get!(catalogue_entry::get))
-                    .route("/{id}", get!(catalogue_entry::get_by_id))
+                    .nests("/{id}", |path| {
+                        path.route("/", get!(catalogue_entry::get_by_id))
+                            .route("/", put!(catalogue_entry::put))
+                    })
             })
     })
 }
