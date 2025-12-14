@@ -11,6 +11,7 @@ export * from './components/PatternRect';
 export * from './components/Quadrilateral';
 export * from './components/ZoomRect';
 export * from './components/TimeCaptions';
+export * from './components/ChronogramLayer';
 
 export { DEFAULT_THEME } from './lib/consts';
 export { MouseContext, SpaceTimeChartContext, SpaceTimeChartCanvasContext } from './lib/context';
@@ -23,6 +24,8 @@ export type {
   DataPoint,
   SpaceTimeChartContextType,
 } from './lib/types';
+
+export type { Point } from '../common/types';
 
 export { isPathOnScreen } from './utils/geometry';
 export { getSpaceAtTime } from './utils/scales';
