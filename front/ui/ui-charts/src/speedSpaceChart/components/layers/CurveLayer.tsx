@@ -2,27 +2,30 @@ import React from 'react';
 
 import cx from 'classnames';
 
-import type { Store } from '../../types';
+import { type CanvasOptions, type LayerData, type Store } from '../../types';
 import { drawCurve } from '../helpers/drawElements/curve';
 import { useCanvas } from '../hooks';
 
 type CurveLayerProps = {
-  width: number;
-  height: number;
   store: Store;
+  curve: LayerData<number>[];
+  canvasOptions: CanvasOptions;
 };
 
-const CurveLayer = ({ width, height, store }: CurveLayerProps) => {
+const CurveLayer = ({ store, curve, canvasOptions }: CurveLayerProps) => {
+  const { id, width, height } = canvasOptions;
   const canvas = useCanvas(drawCurve, {
     width,
     height,
     store,
+    layerData: curve,
+    canvasOptions,
   });
 
   return (
     <canvas
-      id="curve-layer"
-      className={cx('absolute rounded-t-xl', { 'bg-white-25': !store.layersDisplay.declivities })}
+      id={id}
+      className={cx('absolute rounded-t-xl')}
       ref={canvas}
       width={width}
       height={height}

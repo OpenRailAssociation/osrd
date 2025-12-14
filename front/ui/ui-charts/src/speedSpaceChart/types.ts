@@ -100,7 +100,28 @@ export type DrawFunctionParams = {
   width: number;
   height: number;
   store: Store;
+  layerData?: LayerData<unknown>[];
+  canvasOptions?: CanvasOptions;
   setStore?: React.Dispatch<React.SetStateAction<Store>>;
+};
+
+export type CanvasOptions = {
+  id: string;
+  width: number;
+  height: number;
+  strokeOptions: StrokeOptions;
+  fillOptions?: FillOptions;
+};
+
+type StrokeOptions = {
+  linewidth: number;
+  strokeStyle: string;
+  globalCompositeOperation: GlobalCompositeOperation;
+};
+
+type FillOptions = {
+  fillStyle: string;
+  globalCompositeOperation: GlobalCompositeOperation;
 };
 
 export type SpeedLimitTagsLayerDrawingStore = Pick<
