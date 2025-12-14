@@ -11,6 +11,8 @@ use axum::Extension;
 use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::State;
+use axum::http::StatusCode;
+use axum::response::IntoResponse;
 use serde::Deserialize;
 use serde::Serialize;
 use std::sync::Arc;
@@ -194,4 +196,32 @@ pub(in crate::views) async fn put(
         train_schedule_count: 0,
     };
     Ok(Json(train_schedule_set_response))
+}
+
+#[editoast_derive::route]
+#[utoipa::path(
+    delete, path = "",
+        tag = "train_schedule_set",
+    params(TrainScheduleSetIdParam),
+    responses(
+        (status = 204, description = "the train schedule set is deleted"),
+        (status = 404, description = "Train schedule set not found"),
+    ),
+)]
+pub(in crate::views) async fn delete(
+    State(_db_pool): State<Arc<DbConnectionPoolV2>>,
+    Extension(auth): AuthenticationExt,
+    Path(TrainScheduleSetIdParam {
+        id: _train_schedule_set_id,
+    }): Path<TrainScheduleSetIdParam>,
+) -> Result<impl IntoResponse> {
+    let authorized = auth
+        .check_roles([authz::Role::OperationalStudies].into())
+        .await
+        .map_err(AuthorizationError::AuthError)?;
+    if !authorized {
+        return Err(AuthorizationError::Forbidden.into());
+    }
+
+    Ok(StatusCode::NO_CONTENT)
 }

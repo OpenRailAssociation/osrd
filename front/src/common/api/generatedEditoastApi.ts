@@ -114,6 +114,13 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ['catalogue_entry'],
       }),
+      deleteCatalogueEntryById: build.mutation<
+        DeleteCatalogueEntryByIdApiResponse,
+        DeleteCatalogueEntryByIdApiArg
+      >({
+        query: (queryArg) => ({ url: `/catalogue_entry/${queryArg.id}`, method: 'DELETE' }),
+        invalidatesTags: ['catalogue_entry'],
+      }),
       postDocuments: build.mutation<PostDocumentsApiResponse, PostDocumentsApiArg>({
         query: (queryArg) => ({
           url: `/documents`,
@@ -1436,6 +1443,13 @@ const injectedRtkApi = api
         }),
         invalidatesTags: ['train_schedule_set'],
       }),
+      deleteTrainScheduleSetById: build.mutation<
+        DeleteTrainScheduleSetByIdApiResponse,
+        DeleteTrainScheduleSetByIdApiArg
+      >({
+        query: (queryArg) => ({ url: `/train_schedule_set/${queryArg.id}`, method: 'DELETE' }),
+        invalidatesTags: ['train_schedule_set'],
+      }),
       getVersion: build.query<GetVersionApiResponse, GetVersionApiArg>({
         query: () => ({ url: `/version` }),
       }),
@@ -1615,6 +1629,11 @@ export type PutCatalogueEntryByIdApiArg = {
   /** A catalogue entry ID */
   id: number;
   catalogueEntryForm: CatalogueEntryForm;
+};
+export type DeleteCatalogueEntryByIdApiResponse = unknown;
+export type DeleteCatalogueEntryByIdApiArg = {
+  /** A catalogue entry ID */
+  id: number;
 };
 export type PostDocumentsApiResponse =
   /** status 201 The document was created */ NewDocumentResponse;
@@ -2765,6 +2784,11 @@ export type PutTrainScheduleSetByIdApiArg = {
   /** A train schedule set ID */
   id: number;
   trainScheduleSetForm: TrainScheduleSetForm;
+};
+export type DeleteTrainScheduleSetByIdApiResponse = unknown;
+export type DeleteTrainScheduleSetByIdApiArg = {
+  /** A train schedule set ID */
+  id: number;
 };
 export type GetVersionApiResponse = /** status 200 Return the service version */ Version;
 export type GetVersionApiArg = void;
