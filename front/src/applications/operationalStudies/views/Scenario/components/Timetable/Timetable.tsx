@@ -16,7 +16,7 @@ import TrainScheduleSetTab from './TrainScheduleSetTab';
 import type { TimetableMode } from './types';
 import useFilterTimetableItems from './useFilterTimetableItems';
 import { sortTrainScheduleSets } from './utils';
-import { MOCK_CATALOGUE, MOCK_TRAIN_SCHEDULE_SETS } from '../../mockTrainScheduleSets';
+import { MOCK_CATALOG, MOCK_TRAIN_SCHEDULE_SETS } from '../../mockTrainScheduleSets';
 
 type TimetableProps = {
   setDisplayTimetableItemManagement: (mode: string) => void;
@@ -56,10 +56,10 @@ const Timetable = ({
     useFilterTimetableItems(timetableItemsWithDetails);
 
   // TODO Package : replace this by a useMemo when back endpoint ready
-  const catalogueEntryNameById = new Map<number, string>();
-  MOCK_CATALOGUE.forEach((entry) => {
+  const catalogEntryNameById = new Map<number, string>();
+  MOCK_CATALOG.forEach((entry) => {
     if (!entry.name) return;
-    catalogueEntryNameById.set(entry.id, entry.name);
+    catalogEntryNameById.set(entry.id, entry.name);
   });
 
   const handleClickPackage = useCallback(
@@ -138,7 +138,7 @@ const Timetable = ({
             {MOCK_TRAIN_SCHEDULE_SETS.length > 0 &&
               MOCK_TRAIN_SCHEDULE_SETS
                 // TODO Package : extract the sort part in a useMemo when back endpoint ready
-                .sort((a, b) => sortTrainScheduleSets(a, b, catalogueEntryNameById))
+                .sort((a, b) => sortTrainScheduleSets(a, b, catalogEntryNameById))
                 .map((trainScheduleSet) => {
                   // TODO Package : filter trains depending on their true train_schedule_set_id when back ready
                   const trainScheduleSetTrains = filteredTimetableItems
@@ -156,15 +156,15 @@ const Timetable = ({
                     trainScheduleSetTrains.some((train) =>
                       selectedTimetableItemIds.includes(train.id)
                     );
-                  const catalogueName =
-                    MOCK_CATALOGUE.find((entry) => entry.id === trainScheduleSet.catalogue_entry_id)
+                  const catalogName =
+                    MOCK_CATALOG.find((entry) => entry.id === trainScheduleSet.catalog_entry_id)
                       ?.name ?? '';
 
                   return (
                     <TrainScheduleSetTab
                       key={trainScheduleSet.id}
                       trainScheduleSet={trainScheduleSet}
-                      catalogueName={catalogueName}
+                      catalogName={catalogName}
                       handleClickPackage={handleClickPackage}
                       handleSelectPackage={() => handleSelectPackage(trainScheduleSetTrainsIds)}
                       isSelectMode={isSelectMode}

@@ -26,7 +26,7 @@ pub(in crate::views) struct TrainScheduleSetResponse {
 
 #[derive(Serialize, Deserialize, ToSchema)]
 pub(in crate::views) struct TrainScheduleSetForm {
-    catalogue_entry_id: Option<i64>,
+    catalog_entry_id: Option<i64>,
     name: Option<String>,
     description: String,
     published: bool,
@@ -63,7 +63,7 @@ pub(in crate::views) async fn post(
     let train_schedule_set_response = TrainScheduleSetResponse {
         train_schedule_set: TrainScheduleSet {
             id: 0,
-            catalogue_entry_id: train_schedule_set_create_form.catalogue_entry_id,
+            catalog_entry_id: train_schedule_set_create_form.catalog_entry_id,
             name: train_schedule_set_create_form.name,
             description: train_schedule_set_create_form.description,
             published: train_schedule_set_create_form.published,
@@ -77,7 +77,7 @@ pub(in crate::views) async fn post(
 #[derive(IntoParams, Serialize, Deserialize, ToSchema)]
 #[into_params(parameter_in = Query)]
 pub(in crate::views) struct TrainScheduleSetQueryParams {
-    catalogue_entry_id: Option<i64>,
+    catalog_entry_id: Option<i64>,
     published: Option<bool>,
 }
 
@@ -110,7 +110,7 @@ pub(in crate::views) async fn get_by_id(
     let train_schedule_set_response = TrainScheduleSetResponse {
         train_schedule_set: TrainScheduleSet {
             id: train_schedule_set_id,
-            catalogue_entry_id: None,
+            catalog_entry_id: None,
             name: None,
             description: String::new(),
             published: false,
@@ -133,7 +133,7 @@ pub(in crate::views) async fn get(
     State(_db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
     Query(TrainScheduleSetQueryParams {
-        catalogue_entry_id: _,
+        catalog_entry_id: _,
         published: _,
     }): Query<TrainScheduleSetQueryParams>,
 ) -> Result<Json<Vec<TrainScheduleSetResponse>>> {
@@ -148,7 +148,7 @@ pub(in crate::views) async fn get(
     Ok(Json(vec![TrainScheduleSetResponse {
         train_schedule_set: TrainScheduleSet {
             id: 0,
-            catalogue_entry_id: None,
+            catalog_entry_id: None,
             name: Some("to_be_implemented".to_string()),
             description: "to_be_implemented".to_string(),
             published: false,
@@ -188,7 +188,7 @@ pub(in crate::views) async fn put(
     let train_schedule_set_response = TrainScheduleSetResponse {
         train_schedule_set: TrainScheduleSet {
             id: train_schedule_set_id,
-            catalogue_entry_id: train_schedule_set_form.catalogue_entry_id,
+            catalog_entry_id: train_schedule_set_form.catalog_entry_id,
             name: train_schedule_set_form.name,
             description: train_schedule_set_form.description,
             published: train_schedule_set_form.published,

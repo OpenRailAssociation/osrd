@@ -1,26 +1,26 @@
-import type { CatalogueEntry, TrainScheduleSet } from 'common/api/osrdEditoastApi';
+import type { CatalogEntry, TrainScheduleSet } from 'common/api/osrdEditoastApi';
 
 export function randomArrayElement<T>(array: T[]): T {
   return array[Math.floor(Math.random() * array.length)];
 }
 
 //
-// CATALOGUE
+// CATALOG
 //
-const MOCK_NB_CATALOGUE_ENTRY = 10;
+const MOCK_NB_CATALOG_ENTRY = 10;
 
-const CATALOGUE_NAMES = ['Fret Sud', 'Fret Ouest', 'Banlieue Ouest', 'TGV Radial', 'Travaux Nord'];
-export const MOCK_CATALOGUE: CatalogueEntry[] = Array.from(Array(MOCK_NB_CATALOGUE_ENTRY)).map(
+const CATALOG_NAMES = ['Fret Sud', 'Fret Ouest', 'Banlieue Ouest', 'TGV Radial', 'Travaux Nord'];
+export const MOCK_CATALOG: CatalogEntry[] = Array.from(Array(MOCK_NB_CATALOG_ENTRY)).map(
   (_, index) => ({
     id: index + 1,
-    name: `${randomArrayElement(CATALOGUE_NAMES)} ${index}`,
+    name: `${randomArrayElement(CATALOG_NAMES)} ${index}`,
   })
 );
 
-export async function mockGetCatalogueEntry(id: number): Promise<CatalogueEntry | null> {
+export async function mockGetCatalogEntry(id: number): Promise<CatalogEntry | null> {
   return new Promise((resolve) => {
     setTimeout(() => {
-      resolve(MOCK_CATALOGUE.find((e) => e.id === id) || null);
+      resolve(MOCK_CATALOG.find((e) => e.id === id) || null);
     }, 1000);
   });
 }
@@ -86,7 +86,7 @@ export const MOCK_TRAIN_SCHEDULE_SETS: TrainScheduleSet[] = [
       id: index,
       name: randomTsName.name ? `${randomTsName.name} ${index}` : undefined,
       description: randomTsName.description,
-      catalogue_entry_id: randomArrayElement(MOCK_CATALOGUE).id,
+      catalog_entry_id: randomArrayElement(MOCK_CATALOG).id,
       published: Math.random() > 0.8,
     };
   }),

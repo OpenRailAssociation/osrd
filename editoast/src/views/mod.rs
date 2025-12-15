@@ -1,5 +1,5 @@
 mod authz;
-mod catalogue_entry;
+mod catalog_entry;
 mod documents;
 pub mod electrical_profiles;
 pub mod fonts;
@@ -457,7 +457,7 @@ fn service_router() -> router::DocumentedRouter {
                     })
             })
             //
-            // train schedule sets & catalogue entries
+            // train schedule sets & catalog entries
             //
             .nests("/train_schedule_set", |path| {
                 path.route("/", post!(train_schedule_set::post))
@@ -468,13 +468,13 @@ fn service_router() -> router::DocumentedRouter {
                             .route("/", delete!(train_schedule_set::delete))
                     })
             })
-            .nests("/catalogue_entry", |path| {
-                path.route("/", post!(catalogue_entry::post))
-                    .route("/", get!(catalogue_entry::get))
+            .nests("/catalog_entry", |path| {
+                path.route("/", post!(catalog_entry::post))
+                    .route("/", get!(catalog_entry::get))
                     .nests("/{id}", |path| {
-                        path.route("/", get!(catalogue_entry::get_by_id))
-                            .route("/", put!(catalogue_entry::put))
-                            .route("/", delete!(catalogue_entry::delete))
+                        path.route("/", get!(catalog_entry::get_by_id))
+                            .route("/", put!(catalog_entry::put))
+                            .route("/", delete!(catalog_entry::delete))
                     })
             })
     })

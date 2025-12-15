@@ -308,10 +308,10 @@ paths:
                           type: string
                         type:
                           $ref: '#/components/schemas/SubjectType'
-  /catalogue_entry:
+  /catalog_entry:
     get:
       tags:
-      - catalogue_entry
+      - catalog_entry
       parameters:
       - name: page
         in: query
@@ -332,7 +332,7 @@ paths:
           minimum: 1
       responses:
         '200':
-          description: List of catalogue entries
+          description: List of catalog entries
           content:
             application/json:
               schema:
@@ -345,51 +345,51 @@ paths:
                     results:
                       type: array
                       items:
-                        $ref: '#/components/schemas/CatalogueEntry'
+                        $ref: '#/components/schemas/CatalogEntry'
     post:
       tags:
-      - catalogue_entry
+      - catalog_entry
       requestBody:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CatalogueEntryForm'
+              $ref: '#/components/schemas/CatalogEntryForm'
         required: true
       responses:
         '201':
-          description: Catalogue entry
+          description: Catalog entry
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CatalogueEntry'
-  /catalogue_entry/{id}:
+                $ref: '#/components/schemas/CatalogEntry'
+  /catalog_entry/{id}:
     get:
       tags:
-      - catalogue_entry
+      - catalog_entry
       parameters:
       - name: id
         in: path
-        description: A catalogue entry ID
+        description: A catalog entry ID
         required: true
         schema:
           type: integer
           format: int64
       responses:
         '200':
-          description: Catalogue entry
+          description: Catalog entry
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CatalogueEntry'
+                $ref: '#/components/schemas/CatalogEntry'
         '404':
-          description: Catalogue entry not found
+          description: Catalog entry not found
     put:
       tags:
-      - catalogue_entry
+      - catalog_entry
       parameters:
       - name: id
         in: path
-        description: A catalogue entry ID
+        description: A catalog entry ID
         required: true
         schema:
           type: integer
@@ -398,33 +398,33 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/CatalogueEntryForm'
+              $ref: '#/components/schemas/CatalogEntryForm'
         required: true
       responses:
         '200':
-          description: Catalogue entry
+          description: Catalog entry
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/CatalogueEntry'
+                $ref: '#/components/schemas/CatalogEntry'
         '404':
-          description: Catalogue entry not found
+          description: Catalog entry not found
     delete:
       tags:
-      - catalogue_entry
+      - catalog_entry
       parameters:
       - name: id
         in: path
-        description: A catalogue entry ID
+        description: A catalog entry ID
         required: true
         schema:
           type: integer
           format: int64
       responses:
         '204':
-          description: The catalogue entry was deleted
+          description: The catalog entry was deleted
         '404':
-          description: Catalogue entry not found
+          description: Catalog entry not found
   /documents:
     post:
       tags:
@@ -4836,7 +4836,7 @@ paths:
       tags:
       - train_schedule_set
       parameters:
-      - name: catalogue_entry_id
+      - name: catalog_entry_id
         in: query
         required: false
         schema:
@@ -5323,7 +5323,7 @@ components:
           maxLength: 255
           minLength: 1
       additionalProperties: false
-    CatalogueEntry:
+    CatalogEntry:
       type: object
       required:
       - id
@@ -5335,7 +5335,7 @@ components:
           type:
           - string
           - 'null'
-    CatalogueEntryForm:
+    CatalogEntryForm:
       type: object
       properties:
         name:
@@ -14640,7 +14640,7 @@ components:
       - description
       - published
       properties:
-        catalogue_entry_id:
+        catalog_entry_id:
           type:
           - integer
           - 'null'
@@ -14662,7 +14662,7 @@ components:
       - description
       - published
       properties:
-        catalogue_entry_id:
+        catalog_entry_id:
           type:
           - integer
           - 'null'

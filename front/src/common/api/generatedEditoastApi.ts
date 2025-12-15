@@ -1,7 +1,7 @@
 import { baseEditoastApi as api } from './baseGeneratedApis';
 export const addTagTypes = [
   'authz',
-  'catalogue_entry',
+  'catalog_entry',
   'documents',
   'electrical_profiles',
   'fonts',
@@ -78,48 +78,45 @@ const injectedRtkApi = api
         }),
         providesTags: ['authz'],
       }),
-      getCatalogueEntry: build.query<GetCatalogueEntryApiResponse, GetCatalogueEntryApiArg>({
+      getCatalogEntry: build.query<GetCatalogEntryApiResponse, GetCatalogEntryApiArg>({
         query: (queryArg) => ({
-          url: `/catalogue_entry`,
+          url: `/catalog_entry`,
           params: {
             page: queryArg.page,
             page_size: queryArg.pageSize,
           },
         }),
-        providesTags: ['catalogue_entry'],
+        providesTags: ['catalog_entry'],
       }),
-      postCatalogueEntry: build.mutation<PostCatalogueEntryApiResponse, PostCatalogueEntryApiArg>({
+      postCatalogEntry: build.mutation<PostCatalogEntryApiResponse, PostCatalogEntryApiArg>({
         query: (queryArg) => ({
-          url: `/catalogue_entry`,
+          url: `/catalog_entry`,
           method: 'POST',
-          body: queryArg.catalogueEntryForm,
+          body: queryArg.catalogEntryForm,
         }),
-        invalidatesTags: ['catalogue_entry'],
+        invalidatesTags: ['catalog_entry'],
       }),
-      getCatalogueEntryById: build.query<
-        GetCatalogueEntryByIdApiResponse,
-        GetCatalogueEntryByIdApiArg
-      >({
-        query: (queryArg) => ({ url: `/catalogue_entry/${queryArg.id}` }),
-        providesTags: ['catalogue_entry'],
+      getCatalogEntryById: build.query<GetCatalogEntryByIdApiResponse, GetCatalogEntryByIdApiArg>({
+        query: (queryArg) => ({ url: `/catalog_entry/${queryArg.id}` }),
+        providesTags: ['catalog_entry'],
       }),
-      putCatalogueEntryById: build.mutation<
-        PutCatalogueEntryByIdApiResponse,
-        PutCatalogueEntryByIdApiArg
+      putCatalogEntryById: build.mutation<
+        PutCatalogEntryByIdApiResponse,
+        PutCatalogEntryByIdApiArg
       >({
         query: (queryArg) => ({
-          url: `/catalogue_entry/${queryArg.id}`,
+          url: `/catalog_entry/${queryArg.id}`,
           method: 'PUT',
-          body: queryArg.catalogueEntryForm,
+          body: queryArg.catalogEntryForm,
         }),
-        invalidatesTags: ['catalogue_entry'],
+        invalidatesTags: ['catalog_entry'],
       }),
-      deleteCatalogueEntryById: build.mutation<
-        DeleteCatalogueEntryByIdApiResponse,
-        DeleteCatalogueEntryByIdApiArg
+      deleteCatalogEntryById: build.mutation<
+        DeleteCatalogEntryByIdApiResponse,
+        DeleteCatalogEntryByIdApiArg
       >({
-        query: (queryArg) => ({ url: `/catalogue_entry/${queryArg.id}`, method: 'DELETE' }),
-        invalidatesTags: ['catalogue_entry'],
+        query: (queryArg) => ({ url: `/catalog_entry/${queryArg.id}`, method: 'DELETE' }),
+        invalidatesTags: ['catalog_entry'],
       }),
       postDocuments: build.mutation<PostDocumentsApiResponse, PostDocumentsApiArg>({
         query: (queryArg) => ({
@@ -1408,7 +1405,7 @@ const injectedRtkApi = api
         query: (queryArg) => ({
           url: `/train_schedule_set`,
           params: {
-            catalogue_entry_id: queryArg.catalogueEntryId,
+            catalog_entry_id: queryArg.catalogEntryId,
             published: queryArg.published,
           },
         }),
@@ -1607,32 +1604,32 @@ export type GetAuthzByResourceTypeAndResourceIdApiArg = {
   page?: number;
   pageSize?: number;
 };
-export type GetCatalogueEntryApiResponse =
-  /** status 200 List of catalogue entries */ PaginationStats & {
-    results: CatalogueEntry[];
+export type GetCatalogEntryApiResponse =
+  /** status 200 List of catalog entries */ PaginationStats & {
+    results: CatalogEntry[];
   };
-export type GetCatalogueEntryApiArg = {
+export type GetCatalogEntryApiArg = {
   page?: number;
   pageSize?: number;
 };
-export type PostCatalogueEntryApiResponse = /** status 201 Catalogue entry */ CatalogueEntry;
-export type PostCatalogueEntryApiArg = {
-  catalogueEntryForm: CatalogueEntryForm;
+export type PostCatalogEntryApiResponse = /** status 201 Catalog entry */ CatalogEntry;
+export type PostCatalogEntryApiArg = {
+  catalogEntryForm: CatalogEntryForm;
 };
-export type GetCatalogueEntryByIdApiResponse = /** status 200 Catalogue entry */ CatalogueEntry;
-export type GetCatalogueEntryByIdApiArg = {
-  /** A catalogue entry ID */
+export type GetCatalogEntryByIdApiResponse = /** status 200 Catalog entry */ CatalogEntry;
+export type GetCatalogEntryByIdApiArg = {
+  /** A catalog entry ID */
   id: number;
 };
-export type PutCatalogueEntryByIdApiResponse = /** status 200 Catalogue entry */ CatalogueEntry;
-export type PutCatalogueEntryByIdApiArg = {
-  /** A catalogue entry ID */
+export type PutCatalogEntryByIdApiResponse = /** status 200 Catalog entry */ CatalogEntry;
+export type PutCatalogEntryByIdApiArg = {
+  /** A catalog entry ID */
   id: number;
-  catalogueEntryForm: CatalogueEntryForm;
+  catalogEntryForm: CatalogEntryForm;
 };
-export type DeleteCatalogueEntryByIdApiResponse = unknown;
-export type DeleteCatalogueEntryByIdApiArg = {
-  /** A catalogue entry ID */
+export type DeleteCatalogEntryByIdApiResponse = unknown;
+export type DeleteCatalogEntryByIdApiArg = {
+  /** A catalog entry ID */
   id: number;
 };
 export type PostDocumentsApiResponse =
@@ -2764,7 +2761,7 @@ export type GetTrainScheduleSetApiResponse =
     train_schedule_count: number;
   })[];
 export type GetTrainScheduleSetApiArg = {
-  catalogueEntryId?: number;
+  catalogEntryId?: number;
   published?: boolean;
 };
 export type PostTrainScheduleSetApiResponse =
@@ -2907,11 +2904,11 @@ export type PaginationStats = {
   previous: number | null;
 };
 export type SubjectType = 'User' | 'Group';
-export type CatalogueEntry = {
+export type CatalogEntry = {
   id: number;
   name?: string | null;
 };
-export type CatalogueEntryForm = {
+export type CatalogEntryForm = {
   name?: string | null;
 };
 export type NewDocumentResponse = {
@@ -5136,7 +5133,7 @@ export type TrainScheduleForm = TrainSchedule & {
   timetable_id?: number | null;
 };
 export type TrainScheduleSet = {
-  catalogue_entry_id?: number | null;
+  catalog_entry_id?: number | null;
   description: string;
   id: number;
   name?: string | null;
@@ -5146,7 +5143,7 @@ export type TrainScheduleSetResponse = TrainScheduleSet & {
   train_schedule_count: number;
 };
 export type TrainScheduleSetForm = {
-  catalogue_entry_id?: number | null;
+  catalog_entry_id?: number | null;
   description: string;
   name?: string | null;
   published: boolean;
