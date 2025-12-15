@@ -96,10 +96,12 @@ export type Attachment = {
 export type GithubTestSummary = {
   name: string;
   status: string;
+  trace?: string;
   message?: string;
   duration?: number;
   flaky?: boolean;
   browser?: string;
+  suite?: string;
 };
 
 /**
