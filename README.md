@@ -28,6 +28,13 @@ It's free and open-source forever!
 
 Learn more about the project on [osrd.fr](https://osrd.fr/en/).
 
+## Demo
+
+Access the demo at [demo.osrd.fr](https://demo.osrd.fr).
+
+> [!IMPORTANT]
+> This environment is not intended for use in production. It is refreshed daily, and the data entered is accessible to everyone.
+
 ## ⚠️ Development status
 
 OSRD is still in active development.
