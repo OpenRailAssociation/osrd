@@ -9,7 +9,6 @@ import fr.sncf.osrd.pathfinding.PathfindingGraph
 import fr.sncf.osrd.pathfinding.RemainingDistanceEstimator
 import fr.sncf.osrd.pathfinding.getStartLocations
 import fr.sncf.osrd.pathfinding.getTargetsOnEdges
-import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.utils.CachedBlockMRSPBuilder
 import fr.sncf.osrd.utils.CachedBlockMRSPBuilder.Companion.DEFAULT_MAX_ROLLING_STOCK_SPEED
@@ -96,9 +95,9 @@ class AStarTests {
 
         // ---------- ----------- ----------
 
-        val origin = mutableSetOf(EdgeLocation(startBlock, Offset<Block>(0.meters)))
-        val destination = mutableSetOf(EdgeLocation(endBlock, Offset<Block>(100.meters)))
-        val waypoints = arrayListOf<Collection<EdgeLocation<BlockId, Block>>>(origin, destination)
+        val origin = mutableSetOf(EdgeLocation(startBlock, Offset(0.meters)))
+        val destination = mutableSetOf(EdgeLocation(endBlock, Offset(100.meters)))
+        val waypoints = arrayListOf<Collection<EdgeLocation<BlockId>>>(origin, destination)
 
         val remainingDistanceEstimator =
             RemainingDistanceEstimator(

@@ -120,7 +120,7 @@ fun infraExplorerFromBlock(
 }
 
 fun stepsFromLocations(
-    vararg locations: EdgeLocation<BlockId, Block>,
+    vararg locations: EdgeLocation<BlockId>,
     stops: Boolean = false,
 ): List<STDCMStep> {
     val duration = if (stops) 0.0 else null

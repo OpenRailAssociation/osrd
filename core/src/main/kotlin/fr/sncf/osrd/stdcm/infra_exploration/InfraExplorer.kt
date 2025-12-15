@@ -162,7 +162,7 @@ interface EdgeIdentifier {
 fun initInfraExplorer(
     rawInfra: RawInfra,
     blockInfra: BlockInfra,
-    location: EdgeLocation<BlockId, Block>,
+    location: EdgeLocation<BlockId>,
     steps: List<STDCMStep> = listOf(),
     constraints: List<PathfindingConstraint<Block>> = listOf(),
 ): Collection<InfraExplorer> {
@@ -374,7 +374,7 @@ private class InfraExplorerImpl(
      * Otherwise, it returns false and the instance is supposed to be dropped. `blockRoutes` is
      * updated to keep track of the route used for each block.
      */
-    fun extend(route: RouteId, firstLocation: EdgeLocation<BlockId, Block>? = null): Boolean {
+    fun extend(route: RouteId, firstLocation: EdgeLocation<BlockId>? = null): Boolean {
         val lastRouteEndOffset = getLookaheadEndOffset()
         val routeLength = rawInfra.getRouteLength(route)
         routes.add(

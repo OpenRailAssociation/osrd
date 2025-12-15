@@ -52,7 +52,7 @@ class LoadingGaugeConstraintsTest {
             infra.blockInfra.getBlocksFromTrackChunk(ta0Chunk1, Direction.INCREASING).getAtIndex(0)
         val ta1 = infra.rawInfra.getTrackSectionFromName("TA1")!!
         val ta1Chunks = infra.rawInfra.getTrackSectionChunks(ta1)
-        assert(ta1Chunks.size > 0)
+        assert(ta1Chunks.isNotEmpty())
         val ta1Chunk0 = ta1Chunks[0]
         ta1Chunk0block =
             infra.blockInfra.getBlocksFromTrackChunk(ta1Chunk0, Direction.INCREASING).getAtIndex(0)
@@ -62,7 +62,7 @@ class LoadingGaugeConstraintsTest {
     @MethodSource("testLoadingGaugeArgs")
     fun testLoadingGaugeBlockedRanges(
         blockId: BlockId,
-        expectedBlockedRanges: Collection<Pathfinding.Range<Block>>,
+        expectedBlockedRanges: Collection<Pathfinding.Range>,
     ) {
         val blockedRanges = loadingGaugeConstraints!!.apply(blockId)
         Assertions.assertThat(blockedRanges).isEqualTo(expectedBlockedRanges)
@@ -88,7 +88,7 @@ class LoadingGaugeConstraintsTest {
             ), // Different loading gauge constraints applied to all block
             Arguments.of(
                 ta0Chunk1block!!.index.toInt(),
-                setOf(Pathfinding.Range(Offset<Block>(0.meters), Offset(80.meters))),
+                setOf(Pathfinding.Range(Offset(0.meters), Offset(80.meters))),
             ), // Loading gauge constraints partially applied to block
             Arguments.of(
                 ta1Chunk0block!!.index.toInt(),

@@ -7,7 +7,7 @@ import fr.sncf.osrd.sim_infra.utils.getBlockExit
 class GraphAdapter(
     private val blockInfra: BlockInfra,
     private val rawSignalingInfra: RawSignalingInfra,
-) : Graph<DirDetectorId, BlockId, Block> {
+) : Graph<DirDetectorId, BlockId> {
     override fun getEdgeEnd(edge: BlockId): DirDetectorId {
         return blockInfra.getBlockExit(rawSignalingInfra, edge)
     }

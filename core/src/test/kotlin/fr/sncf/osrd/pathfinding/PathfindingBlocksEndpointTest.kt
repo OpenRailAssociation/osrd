@@ -6,7 +6,6 @@ import fr.sncf.osrd.api.pathfinding.findDirectedWaypointBlocks
 import fr.sncf.osrd.pathfinding.Pathfinding.EdgeLocation
 import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
-import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.utils.Direction
 import fr.sncf.osrd.utils.Helpers
@@ -29,7 +28,7 @@ class PathfindingBlocksEndpointTest {
     fun testFindWaypointBlocks(
         pathfindingWaypoint: TrackLocation,
         direction: Direction,
-        expectedEdgeLocations: Set<EdgeLocation<BlockId, Block>>,
+        expectedEdgeLocations: Set<EdgeLocation<BlockId>>,
     ) {
         val blocks = findDirectedWaypointBlocks(smallInfra, pathfindingWaypoint, direction)
         Assertions.assertThat(blocks).containsExactlyInAnyOrderElementsOf(expectedEdgeLocations)
@@ -52,13 +51,13 @@ class PathfindingBlocksEndpointTest {
                 Arguments.of(
                     TrackLocation("TA3", Offset(10.meters)),
                     Direction.INCREASING,
-                    mutableSetOf(EdgeLocation(BlockId(8U), Offset<Block>(190.meters))),
+                    mutableSetOf(EdgeLocation(BlockId(8U), Offset(190.meters))),
                 ),
                 Arguments.of(
                     TrackLocation("TA5", Offset(20.meters)),
                     Direction.DECREASING,
                     mutableSetOf(
-                        EdgeLocation(BlockId(19U), Offset<Block>(210.meters)),
+                        EdgeLocation(BlockId(19U), Offset(210.meters)),
                         EdgeLocation(BlockId(18U), Offset(210.meters)),
                     ),
                 ),

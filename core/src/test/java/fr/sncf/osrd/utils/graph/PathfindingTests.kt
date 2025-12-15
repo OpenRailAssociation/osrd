@@ -33,7 +33,7 @@ class PathfindingTests {
         data class Edge(
             val length: Length<Block>,
             val label: String,
-            val blockedRanges: Set<Pathfinding.Range<Block>>,
+            val blockedRanges: Set<Pathfinding.Range>,
         )
 
         class Node
@@ -57,7 +57,7 @@ class PathfindingTests {
             n1: Int,
             n2: Int,
             length: Distance,
-            blockedRanges: Set<Pathfinding.Range<Block>> = setOf(),
+            blockedRanges: Set<Pathfinding.Range> = setOf(),
         ) {
             val label = String.format("%d-%s", n1, n2)
             val res = Edge(Length(length), label, blockedRanges)
@@ -65,15 +65,15 @@ class PathfindingTests {
             edges[label] = res
         }
 
-        fun build(): Graph<Node, Edge, Block> {
+        fun build(): Graph<Node, Edge> {
             return NetworkGraphAdapter(builder.build())
         }
 
-        fun getEdgeLocation(id: String, offset: Distance): EdgeLocation<Edge, Block> {
+        fun getEdgeLocation(id: String, offset: Distance): EdgeLocation<Edge> {
             return EdgeLocation(edges[id]!!, Offset(offset))
         }
 
-        fun getEdgeLocation(id: String): EdgeLocation<Edge, Block> {
+        fun getEdgeLocation(id: String): EdgeLocation<Edge> {
             return EdgeLocation(edges[id]!!, Offset(0.meters))
         }
     }
@@ -756,7 +756,7 @@ class PathfindingTests {
         val mrspBuilder =
             CachedBlockMRSPBuilder(infra.fullInfra().rawInfra, infra.fullInfra().blockInfra, null)
         val waypoints =
-            arrayListOf<Collection<EdgeLocation<BlockId, Block>>>(
+            arrayListOf<Collection<EdgeLocation<BlockId>>>(
                 listOf(EdgeLocation(slow, Offset.zero()), EdgeLocation(fast, Offset.zero())),
                 listOf(EdgeLocation(secondBlock, Offset.zero())),
             )
@@ -780,7 +780,7 @@ class PathfindingTests {
                 )
         Assertions.assertEquals(
             arrayListOf(
-                EdgeRange(fast, Offset.zero(), Offset<Block>(4999.meters)),
+                EdgeRange(fast, Offset.zero(), Offset(4999.meters)),
                 EdgeRange(secondBlock, Offset.zero(), Offset.zero()),
             ),
             res!!.ranges.map { EdgeRange(it.edge.block, it.start, it.end) },
@@ -788,7 +788,7 @@ class PathfindingTests {
     }
 
     companion object {
-        private fun convertRes(res: Result<Edge, Block>): List<SimpleRange> {
+        private fun convertRes(res: Result<Edge>): List<SimpleRange> {
             return res.ranges
                 .stream()
                 .map { x -> SimpleRange(x.edge.label, x.start, x.end) }

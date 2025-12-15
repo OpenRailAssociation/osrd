@@ -118,7 +118,7 @@ class StepTracker(
 
 data class LocatedStep(
     val travelledPathOffset: Offset<TrainPath>,
-    val location: EdgeLocation<BlockId, Block>,
+    val location: EdgeLocation<BlockId>,
     val originalStep: STDCMStep,
     val isPlanned: Boolean = true, // Set to false for overtakes (when implemented)
 ) {

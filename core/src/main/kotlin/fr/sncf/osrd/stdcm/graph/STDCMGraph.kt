@@ -44,8 +44,8 @@ class STDCMGraph(
     val tag: String?,
     val standardAllowance: AllowanceValue?,
     val temporarySpeedLimitManager: TemporarySpeedLimitManager = TemporarySpeedLimitManager(),
-    constraints: ConstraintCombiner<StaticIdx<Block>, Block>,
-) : Graph<STDCMNode, STDCMEdge, STDCMEdge> {
+    constraints: ConstraintCombiner<StaticIdx<Block>>,
+) : Graph<STDCMNode, STDCMEdge> {
     val rawInfra = fullInfra.rawInfra
     val blockInfra = fullInfra.blockInfra
     var stdcmSimulations: STDCMSimulations = STDCMSimulations()

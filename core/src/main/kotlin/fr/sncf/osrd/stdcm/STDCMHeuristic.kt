@@ -105,7 +105,7 @@ class STDCMHeuristicBuilder(
     private val maxRunningTime: Double,
     private val mrspBuilder: CachedBlockMRSPBuilder,
     val allowance: AllowanceValue?,
-    private val constraints: ConstraintCombiner<StaticIdx<Block>, Block>? = null,
+    private val constraints: ConstraintCombiner<StaticIdx<Block>>? = null,
 ) {
     private val logger: Logger = LoggerFactory.getLogger("STDCMHeuristic")
 
