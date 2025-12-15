@@ -111,10 +111,32 @@ await (async () => {
 - 📦 [Download Traces](${traceUrl})
 - 🎥 [Download Videos and screenshots](${mediaUrl})
 
-| Failed Test | Status | Error |
-|-------------|--------|-------|
+| Test Suite | Failed Test | Status | Error |
+|------------|-------------|:------:|-------|
 ${failedTests
-  .map((t) => `| ${t.name} | ❌ failed | ${(t.message ?? 'No message').replace(/\n/g, ' ')} |`)
+  .map((t) => {
+    const message = String(t.message ?? '');
+    const trace = String(t.trace ?? '');
+    const raw = message && trace ? `${message}\n${trace}` : message || trace || 'No message';
+    const clean = raw.replace(/\n/g, '<br>');
+
+    if (clean.length > 1000) {
+      // Find last space before index 1000
+      const cutIndex = clean.lastIndexOf(' ', 1000);
+
+      // If no space was found, fallback to 1000
+      const splitAt = cutIndex > 0 ? cutIndex : 1000;
+
+      const preview = clean.slice(0, splitAt);
+      const rest = clean.slice(splitAt);
+
+      const details = `${preview} <details><summary>Show more</summary>${rest}</details>`;
+
+      return `| ${t.suite} | ${t.name} | ❌ failed | ${details} |`;
+    }
+
+    return `| ${t.suite} | ${t.name} | ❌ failed | ${clean} |`;
+  })
   .join('\n')}
 `;
   }

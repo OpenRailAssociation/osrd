@@ -229,8 +229,13 @@ class GenerateReport implements Reporter {
     const segments: string[] = [];
     let suite: Suite | undefined = test.parent;
 
+    const browsers = new Set(['chromium', 'firefox', 'webkit']);
+
     while (suite) {
-      if (suite.title) segments.unshift(suite.title);
+      // Skip browser suite titles
+      if (suite.title && !browsers.has(suite.title)) {
+        segments.unshift(suite.title);
+      }
       suite = suite.parent;
     }
 
