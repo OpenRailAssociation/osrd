@@ -18,7 +18,7 @@ import { computeTimetablePackageName, isSandbox } from './utils';
 
 type TrainScheduleSetTabProps = PropsWithChildren<{
   trainScheduleSet: TrainScheduleSet;
-  catalogueName?: string;
+  catalogName?: string;
   handleClickPackage: (id: number) => void;
   handleSelectPackage: () => void;
   isSelectMode: boolean;
@@ -29,7 +29,7 @@ type TrainScheduleSetTabProps = PropsWithChildren<{
 
 const TrainScheduleSetTab = ({
   trainScheduleSet,
-  catalogueName,
+  catalogName,
   handleClickPackage,
   handleSelectPackage,
   isSelectMode,
@@ -73,7 +73,7 @@ const TrainScheduleSetTab = ({
           <span>
             {isSandbox(trainScheduleSet)
               ? t('sandbox')
-              : computeTimetablePackageName(trainScheduleSet.name!, catalogueName)}
+              : computeTimetablePackageName(trainScheduleSet.name!, catalogName)}
           </span>
         </div>
         <MenuTriggerButton

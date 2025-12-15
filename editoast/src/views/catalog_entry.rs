@@ -14,36 +14,36 @@ use axum::extract::Query;
 use axum::extract::State;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
-use editoast_models::CatalogueEntry;
+use editoast_models::CatalogEntry;
 use serde::Deserialize;
 use serde::Serialize;
 use std::sync::Arc;
 
 #[derive(Serialize, Deserialize, ToSchema)]
-pub(in crate::views) struct CatalogueEntryForm {
+pub(in crate::views) struct CatalogEntryForm {
     name: Option<String>,
 }
 
 #[derive(IntoParams, Deserialize)]
-pub(in crate::views) struct CatalogueEntryIdParam {
-    /// A catalogue entry ID
+pub(in crate::views) struct CatalogEntryIdParam {
+    /// A catalog entry ID
     id: i64,
 }
 
 #[editoast_derive::route]
 #[utoipa::path(
     post, path = "",
-    tag = "catalogue_entry",
-    request_body = CatalogueEntryForm,
+    tag = "catalog_entry",
+    request_body = CatalogEntryForm,
     responses(
-        (status = 201, description = "Catalogue entry", body = CatalogueEntry),
+        (status = 201, description = "Catalog entry", body = CatalogEntry),
     ),
 )]
 pub(in crate::views) async fn post(
     State(_db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
-    Json(catalogue_entry_create_form): Json<CatalogueEntryForm>,
-) -> Result<Json<CatalogueEntry>> {
+    Json(catalog_entry_create_form): Json<CatalogEntryForm>,
+) -> Result<Json<CatalogEntry>> {
     let authorized = auth
         .check_roles([authz::Role::OperationalStudies].into())
         .await
@@ -51,35 +51,35 @@ pub(in crate::views) async fn post(
     if !authorized {
         return Err(AuthorizationError::Forbidden.into());
     }
-    // TODO: Add database operation to create a catalogue entry
-    let catalogue_entry = CatalogueEntry {
+    // TODO: Add database operation to create a catalog entry
+    let catalog_entry = CatalogEntry {
         id: 0,
-        name: catalogue_entry_create_form.name,
+        name: catalog_entry_create_form.name,
     };
-    Ok(Json(catalogue_entry))
+    Ok(Json(catalog_entry))
 }
 
 #[derive(Serialize, ToSchema)]
-pub(in crate::views) struct CatalogueEntryPage {
+pub(in crate::views) struct CatalogEntryPage {
     #[serde(flatten)]
     stats: PaginationStats,
-    results: Vec<CatalogueEntry>,
+    results: Vec<CatalogEntry>,
 }
 
 #[editoast_derive::route]
 #[utoipa::path(
     get, path = "",
-    tag = "catalogue_entry",
+    tag = "catalog_entry",
     params(PaginationQueryParams<100>),
     responses(
-        (status = 200, description = "List of catalogue entries", body = inline(CatalogueEntryPage)),
+        (status = 200, description = "List of catalog entries", body = inline(CatalogEntryPage)),
     ),
 )]
 pub(in crate::views) async fn get(
     State(_db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
     Query(PaginationQueryParams { page, page_size }): Query<PaginationQueryParams<100>>,
-) -> Result<Json<CatalogueEntryPage>> {
+) -> Result<Json<CatalogEntryPage>> {
     let authorized = auth
         .check_roles([authz::Role::OperationalStudies].into())
         .await
@@ -88,19 +88,19 @@ pub(in crate::views) async fn get(
         return Err(AuthorizationError::Forbidden.into());
     };
 
-    let catalogue_entries = vec![
-        CatalogueEntry {
+    let catalog_entries = vec![
+        CatalogEntry {
             id: 1,
-            name: Some("Catalogue Entry 1".to_string()),
+            name: Some("Catalog Entry 1".to_string()),
         },
-        CatalogueEntry {
+        CatalogEntry {
             id: 2,
-            name: Some("Catalogue Entry 2".to_string()),
+            name: Some("Catalog Entry 2".to_string()),
         },
     ];
 
     let stats = PaginationStats {
-        count: catalogue_entries.len() as u64,
+        count: catalog_entries.len() as u64,
         page_size,
         page_count: 1,
         current: page,
@@ -108,8 +108,8 @@ pub(in crate::views) async fn get(
         next: None,
     };
 
-    Ok(Json(CatalogueEntryPage {
-        results: catalogue_entries,
+    Ok(Json(CatalogEntryPage {
+        results: catalog_entries,
         stats,
     }))
 }
@@ -117,20 +117,20 @@ pub(in crate::views) async fn get(
 #[editoast_derive::route]
 #[utoipa::path(
         get, path = "",
-        tag = "catalogue_entry",
-        params(CatalogueEntryIdParam),
+        tag = "catalog_entry",
+        params(CatalogEntryIdParam),
     responses(
-        (status = 200, description = "Catalogue entry", body = CatalogueEntry),
-        (status = 404, description = "Catalogue entry not found"),
+        (status = 200, description = "Catalog entry", body = CatalogEntry),
+        (status = 404, description = "Catalog entry not found"),
     ),
 )]
 pub(in crate::views) async fn get_by_id(
     State(_db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
-    Path(CatalogueEntryIdParam {
-        id: catalogue_entry_id,
-    }): Path<CatalogueEntryIdParam>,
-) -> Result<Json<CatalogueEntry>> {
+    Path(CatalogEntryIdParam {
+        id: catalog_entry_id,
+    }): Path<CatalogEntryIdParam>,
+) -> Result<Json<CatalogEntry>> {
     let authorized = auth
         .check_roles([authz::Role::OperationalStudies].into())
         .await
@@ -139,33 +139,33 @@ pub(in crate::views) async fn get_by_id(
         return Err(AuthorizationError::Forbidden.into());
     }
 
-    // TODO: Add database operation to get a catalogue entry
-    let catalogue_entry_result = CatalogueEntry {
-        id: catalogue_entry_id,
-        name: Some("Catalogue Entry".to_string()),
+    // TODO: Add database operation to get a catalog entry
+    let catalog_entry_result = CatalogEntry {
+        id: catalog_entry_id,
+        name: Some("Catalog Entry".to_string()),
     };
-    Ok(Json(catalogue_entry_result))
+    Ok(Json(catalog_entry_result))
 }
 
 #[editoast_derive::route]
 #[utoipa::path(
     put, path = "",
-    tag = "catalogue_entry",
-    params(CatalogueEntryIdParam),
-    request_body = CatalogueEntryForm,
+    tag = "catalog_entry",
+    params(CatalogEntryIdParam),
+    request_body = CatalogEntryForm,
     responses(
-        (status = 200, description = "Catalogue entry", body = CatalogueEntry),
-        (status = 404, description = "Catalogue entry not found"),
+        (status = 200, description = "Catalog entry", body = CatalogEntry),
+        (status = 404, description = "Catalog entry not found"),
     ),
 )]
 pub(in crate::views) async fn put(
     State(_db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
-    Path(CatalogueEntryIdParam {
-        id: catalogue_entry_id,
-    }): Path<CatalogueEntryIdParam>,
-    Json(catalogue_entry_form): Json<CatalogueEntryForm>,
-) -> Result<Json<CatalogueEntry>> {
+    Path(CatalogEntryIdParam {
+        id: catalog_entry_id,
+    }): Path<CatalogEntryIdParam>,
+    Json(catalog_entry_form): Json<CatalogEntryForm>,
+) -> Result<Json<CatalogEntry>> {
     let authorized = auth
         .check_roles([authz::Role::OperationalStudies].into())
         .await
@@ -174,30 +174,30 @@ pub(in crate::views) async fn put(
         return Err(AuthorizationError::Forbidden.into());
     }
 
-    // TODO: Add database operation to update a catalogue entry
-    let catalogue_entry = CatalogueEntry {
-        id: catalogue_entry_id,
-        name: catalogue_entry_form.name,
+    // TODO: Add database operation to update a catalog entry
+    let catalog_entry = CatalogEntry {
+        id: catalog_entry_id,
+        name: catalog_entry_form.name,
     };
-    Ok(Json(catalogue_entry))
+    Ok(Json(catalog_entry))
 }
 
 #[editoast_derive::route]
 #[utoipa::path(
     delete, path = "",
-    tag = "catalogue_entry",
-    params(CatalogueEntryIdParam),
+    tag = "catalog_entry",
+    params(CatalogEntryIdParam),
     responses(
-            (status = 204, description = "The catalogue entry was deleted"),
-        (status = 404, description = "Catalogue entry not found"),
+            (status = 204, description = "The catalog entry was deleted"),
+        (status = 404, description = "Catalog entry not found"),
 ),
 )]
 pub(in crate::views) async fn delete(
     State(_db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
-    Path(CatalogueEntryIdParam {
-        id: _catalogue_entry_id,
-    }): Path<CatalogueEntryIdParam>,
+    Path(CatalogEntryIdParam {
+        id: _catalog_entry_id,
+    }): Path<CatalogEntryIdParam>,
 ) -> Result<impl IntoResponse> {
     let authorized = auth
         .check_roles([authz::Role::OperationalStudies].into())
@@ -207,6 +207,6 @@ pub(in crate::views) async fn delete(
         return Err(AuthorizationError::Forbidden.into());
     }
 
-    // TODO: Add database operation to delete a catalogue entry
+    // TODO: Add database operation to delete a catalog entry
     Ok(StatusCode::NO_CONTENT)
 }

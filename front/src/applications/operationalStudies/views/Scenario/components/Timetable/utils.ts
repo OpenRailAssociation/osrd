@@ -229,40 +229,36 @@ export const isSandbox = (trainScheduleSet: TrainScheduleSet) => !trainScheduleS
 
 export const computeTimetablePackageName = (
   trainScheduleSetName: string,
-  catalogueName?: string
-): string => (catalogueName ? `${catalogueName} | ${trainScheduleSetName}` : trainScheduleSetName);
+  catalogName?: string
+): string => (catalogName ? `${catalogName} | ${trainScheduleSetName}` : trainScheduleSetName);
 
 export const sortTrainScheduleSets = (
   set1: TrainScheduleSet,
   set2: TrainScheduleSet,
-  catalogueEntryNameById: Map<number, string>
+  catalogEntryNameById: Map<number, string>
 ): number => {
-  const set1CatalogueId = set1.catalogue_entry_id;
-  const set2CatalogueId = set2.catalogue_entry_id;
+  const set1CatalogId = set1.catalog_entry_id;
+  const set2CatalogId = set2.catalog_entry_id;
 
-  const catalogueName1 = set1CatalogueId
-    ? (catalogueEntryNameById.get(set1CatalogueId) ?? null)
-    : null;
-  const catalogueName2 = set2CatalogueId
-    ? (catalogueEntryNameById.get(set2CatalogueId) ?? null)
-    : null;
+  const catalogName1 = set1CatalogId ? (catalogEntryNameById.get(set1CatalogId) ?? null) : null;
+  const catalogName2 = set2CatalogId ? (catalogEntryNameById.get(set2CatalogId) ?? null) : null;
 
-  // If no catalogue name, put at the end
-  if (!catalogueName1 && catalogueName2) return 1;
-  if (catalogueName1 && !catalogueName2) return -1;
+  // If no catalog name, put at the end
+  if (!catalogName1 && catalogName2) return 1;
+  if (catalogName1 && !catalogName2) return -1;
 
   // If sandbox, put at the very end
   if (isSandbox(set1) && !isSandbox(set2)) return 1;
   if (!isSandbox(set1) && isSandbox(set2)) return -1;
 
-  // If both have catalogue names, build full names and compare
-  if (catalogueName1 && catalogueName2) {
-    const fullName1 = computeTimetablePackageName(set1.name ?? '', catalogueName1);
-    const fullName2 = computeTimetablePackageName(set2.name ?? '', catalogueName2);
+  // If both have catalog names, build full names and compare
+  if (catalogName1 && catalogName2) {
+    const fullName1 = computeTimetablePackageName(set1.name ?? '', catalogName1);
+    const fullName2 = computeTimetablePackageName(set2.name ?? '', catalogName2);
     return fullName1.localeCompare(fullName2);
   }
 
-  // Compare by set name if no catalogue entry
+  // Compare by set name if no catalog entry
   const name1 = set1.name ?? '';
   const name2 = set2.name ?? '';
   if (name1 < name2) return -1;
