@@ -4,8 +4,6 @@ pub mod infra;
 pub mod infra_objects;
 pub mod macro_node;
 pub mod macro_note;
-
-pub mod catalogue_entry;
 pub mod paced_train;
 pub mod railjson;
 pub mod stdcm_search_environment;

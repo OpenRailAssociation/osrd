@@ -1,5 +1,6 @@
 pub mod auth_driver;
 pub mod authn;
+pub mod catalogue_entry;
 pub mod document;
 pub mod electrical_profiles;
 pub mod map;
@@ -25,6 +26,7 @@ pub use auth_driver::PgAuthDriver;
 pub use authn::group::Group;
 pub use authn::subject::Subject;
 pub use authn::user::User;
+pub use catalogue_entry::CatalogueEntry;
 pub use document::Document;
 pub use electrical_profiles::ElectricalProfileSet;
 pub use electrical_profiles::LightElectricalProfileSet;

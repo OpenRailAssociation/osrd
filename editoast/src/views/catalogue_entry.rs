@@ -3,7 +3,6 @@ use utoipa::IntoParams;
 use utoipa::ToSchema;
 
 use crate::error::Result;
-use crate::models::catalogue_entry::CatalogueEntry;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
 use crate::views::pagination::PaginationQueryParams;
@@ -13,6 +12,7 @@ use axum::extract::Json;
 use axum::extract::Path;
 use axum::extract::Query;
 use axum::extract::State;
+use editoast_models::CatalogueEntry;
 use serde::Deserialize;
 use serde::Serialize;
 use std::sync::Arc;
