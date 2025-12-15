@@ -1,0 +1,39 @@
+/* actionbar
+   ========================================================================== */
+
+$footerbar-height: rem(68px);
+
+.footerbar {
+  position: fixed;
+  bottom: 0;
+  z-index: $zindex-fixed;
+  width: 100%;
+  height: $footerbar-height;
+  padding-right: rem(20px);
+  padding-left: rem(20px);
+  background-color: color('white');
+  border-top: rem(1px) solid $border-color;
+}
+
+@include media-breakpoint-down(md) {
+  .footerbar {
+    bottom: $mastnav-height-sm;
+  }
+}
+
+@include media-breakpoint-up(lg) {
+  .footerbar {
+    right: 0;
+    bottom: 0;
+    width: calc(100% - #{$mastnav-width-lg});
+    height: $actionbar-min-height-lg;
+    padding-right: rem(12px);
+    padding-left: rem(30px);
+  }
+}
+
+@include media-breakpoint-up(xl) {
+  .actionbar {
+    padding-right: rem(30px);
+  }
+}

@@ -1,0 +1,6 @@
+/* colors
+   ========================================================================== */
+
+@each $color, $value in $grays {
+  @include text-emphasis-variant('.text-grays#{$color}', $value);
+}

@@ -1,0 +1,80 @@
+/* toolbar
+   ========================================================================== */
+
+.toolbar {
+  display: flex;
+  padding-left: 0;
+  list-style: none;
+}
+
+.toolbar-item {
+  &.separator,
+  + .toolbar-item {
+    position: relative;
+
+    &::before {
+      position: absolute;
+      top: calc(50% - #{rem(11px)});
+      left: 0;
+      width: rem(1px);
+      height: rem(22px);
+      content: '';
+      background-color: #e6e6e6;
+    }
+  }
+
+  @each $color, $value in $grays {
+    &.separator-gray-#{$color}::before {
+      background-color: $value;
+    }
+  }
+}
+
+.toolbar-item-spacing {
+  padding-right: rem(20px);
+  padding-left: rem(20px);
+}
+
+@each $breakpoint in map-keys($grid-breakpoints) {
+  @include media-breakpoint-up($breakpoint) {
+    $infix: breakpoint-infix($breakpoint, $grid-breakpoints);
+
+    .toolbar-item {
+      &.separator#{$infix} {
+        position: relative;
+
+        &::before {
+          position: absolute;
+          top: calc(50% - #{rem(11px)});
+          left: 0;
+          width: rem(1px);
+          height: rem(22px);
+          content: '';
+          background-color: #e6e6e6;
+          opacity: 1;
+        }
+      }
+
+      &.no-separator#{$infix} {
+        &::before {
+          width: 0;
+          height: 0;
+          opacity: 0;
+        }
+      }
+    }
+
+    .toolbar-item-spacing-right#{$infix} {
+      padding-right: rem(20px);
+    }
+    .toolbar-item-spacing-left#{$infix} {
+      padding-left: rem(20px);
+    }
+    .toolbar-item-no-spacing-right#{$infix} {
+      padding-right: 0;
+    }
+    .toolbar-item-no-spacing-left#{$infix} {
+      padding-left: 0;
+    }
+  }
+}

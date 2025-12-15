@@ -1,0 +1,181 @@
+// stylelint-disable
+$grays: ();
+$grays: map-merge(
+  (
+    '100': $gray-100,
+    '200': $gray-200,
+    '300': $gray-300,
+    '400': $gray-400,
+    '500': $gray-500,
+    '600': $gray-600,
+    '700': $gray-700,
+    '800': $gray-800,
+    '900': $gray-900,
+  ),
+  $grays
+);
+
+$colors: ();
+$colors: map-merge(
+  (
+    'blue': $blue,
+    'purple': $purple,
+    'pink': $pink,
+    'red': $red,
+    'orange': $orange,
+    'yellow': $yellow,
+    'green': $green,
+    'teal': $teal,
+    'cyan': $cyan,
+    'white': $white,
+    'black': $black,
+    'gray': $gray-600,
+    'gray-dark': $gray-800,
+  ),
+  $colors
+);
+
+$theme-colors: ();
+$theme-colors: map-merge(
+  (
+    'primary': $primary,
+    'primary-dark': $primary-dark,
+    'secondary': $secondary,
+    'success': $success,
+    'info': $info,
+    'warning': $warning,
+    'danger': $danger,
+    'light': $light,
+    'dark': $dark,
+    'white': $white,
+  ),
+  $theme-colors
+);
+
+$btn-colors: ();
+$btn-colors: map-merge(
+  (
+    'primary': (
+      $primary,
+      $primary,
+      $btn-primary-color,
+      $primary-dark,
+      $primary-dark,
+      $btn-primary-color,
+      $primary-dark,
+      $primary-dark,
+      $btn-primary-color,
+    ),
+    'secondary': (
+      $secondary,
+      $secondary,
+      $btn-secondary-color,
+      $btn-secondary-bg,
+      $btn-secondary-bg,
+      $btn-secondary-color,
+      $btn-secondary-bg,
+      $btn-secondary-bg,
+      $btn-secondary-color,
+    ),
+    'success': $success,
+    'info': $info,
+    'warning': $warning,
+    'danger': $danger,
+    'light': $light,
+    'dark': $dark,
+    'white': (
+      $btn-white-bg,
+      $btn-white-bg,
+      $btn-white-color,
+      $btn-white-hover-bg,
+      $btn-white-hover-bg,
+      $btn-white-hover-color,
+      $btn-white-hover-bg,
+      $btn-white-hover-bg,
+      $btn-white-hover-color,
+    ),
+    'transparent': (
+      transparent,
+      transparent,
+      $white,
+      transparent,
+      transparent,
+      $primary,
+      transparent,
+      transparent,
+      $primary,
+    ),
+  ),
+  $btn-colors
+);
+
+$btn-rounded-colors: ();
+$btn-rounded-colors: map-merge(
+  (
+    'primary': (
+      $primary,
+      $primary,
+      $white,
+      $primary-dark,
+      $primary-dark,
+      $white,
+    ),
+    'white': (
+      $btn-rounded-white-bg,
+      $btn-rounded-white-bg,
+      $btn-rounded-white-color,
+      $btn-rounded-white-hover-bg,
+      $btn-rounded-white-hover-bg,
+      $btn-rounded-white-hover-color,
+    ),
+    'gray': (
+      $gray-300,
+      $gray-300,
+      $white,
+      $gray-300,
+      $gray-300,
+      $white,
+    ),
+    'facebook': (
+      $gray-400,
+      $gray-400,
+      $white,
+      #3b5998,
+      #3b5998,
+      $white,
+    ),
+    'twitter': (
+      $gray-400,
+      $gray-400,
+      $white,
+      #4099ff,
+      #4099ff,
+      $white,
+    ),
+    'linkedin': (
+      $gray-400,
+      $gray-400,
+      $white,
+      #007bb6,
+      #007bb6,
+      $white,
+    ),
+    'instagram': (
+      $gray-400,
+      $gray-400,
+      $white,
+      #c32aa3,
+      #c32aa3,
+      $white,
+    ),
+    'youtube': (
+      $gray-400,
+      $gray-400,
+      $white,
+      #bb0000,
+      #bb0000,
+      $white,
+    ),
+  ),
+  $btn-rounded-colors
+);

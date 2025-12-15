@@ -1,0 +1,606 @@
+/* schedule
+   ========================================================================== */
+
+.schedule {
+  display: flex;
+  flex: 1 0 100%;
+  flex-direction: column;
+  background-color: color('white');
+}
+
+/* header
+   -------------------------------------------------------------------------- */
+
+/* .schedule-row */
+.schedule-head {
+  flex: 0 0 auto;
+}
+
+.schedule-col-head {
+  flex: 1;
+  min-width: 0;
+  padding-top: rem(10px);
+  padding-bottom: rem(10px);
+  background-color: gray('100');
+}
+
+.schedule-daylabel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  font-size: rem(14px);
+  text-align: center;
+  text-transform: uppercase;
+
+  &.current {
+    &::before {
+      display: inline-block;
+      width: rem(7px);
+      height: rem(7px);
+      margin-right: rem(10px);
+      content: '';
+      background-color: theme-color('primary');
+      border-radius: 50%;
+    }
+  }
+}
+
+.schedule-daynumber {
+  i {
+    font-style: normal;
+  }
+
+  &.disabled {
+    color: gray('300');
+  }
+}
+
+@include media-breakpoint-down(sm) {
+  .schedule-daylabel {
+    font-weight: $font-weight-medium;
+  }
+
+  .schedule-daynumber {
+    position: relative;
+    margin-top: rem(10px);
+    font-size: rem(14px);
+    background-color: transparent;
+    border-radius: 50%;
+    @include maintain-ratio(1 1);
+
+    &.current {
+      color: color('white');
+      background-color: #2097d4;
+    }
+
+    > span {
+      position: absolute;
+      top: 0;
+      left: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 100%;
+    }
+  }
+}
+
+@include media-breakpoint-up(md) {
+  .schedule-daylabel {
+    font-size: rem(16px);
+    border-right: 1px solid gray('200');
+  }
+
+  .schedule-daynumber {
+    margin-bottom: rem(8px);
+    margin-left: rem(14px);
+    font-size: rem(12px);
+
+    &.current {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: rem(20px);
+      height: rem(20px);
+      margin-top: rem(5px);
+      margin-bottom: rem(5px);
+      margin-left: rem(6px);
+      color: color('white');
+      background-color: #2097d4;
+      border-radius: 50%;
+    }
+  }
+}
+
+/* content
+   -------------------------------------------------------------------------- */
+
+.schedule-content {
+  display: flex;
+  flex: 1 1 0%;
+  flex-direction: column;
+
+  .schedule-row {
+    flex: 1;
+  }
+}
+
+.schedule-row {
+  display: flex;
+  width: 100%;
+}
+
+.schedule-wholeday > div {
+  padding-top: rem(12px);
+  padding-bottom: rem(12px);
+  border-bottom: rem(5px) solid gray('100');
+}
+
+.schedule-col-content {
+  flex: 1;
+  min-width: 0;
+}
+
+/* text format */
+.schedule-hournumber {
+  font-size: rem(12px);
+}
+
+.schedule-hourlabel {
+  padding-top: rem(2px);
+  padding-right: rem(20px);
+  font-size: rem(12px);
+  line-height: 1.1;
+  text-align: right;
+}
+
+/* daily schedule
+   -------------------------------------------------------------------------- */
+
+.schedule-daily {
+  .schedule-row {
+    padding-right: rem(24px);
+  }
+}
+
+/* weekly schedule
+   -------------------------------------------------------------------------- */
+
+.schedule-daily,
+.schedule-weekly {
+  .schedule-cell {
+    height: rem(60px);
+
+    .schedule-hournumber {
+      position: relative;
+      top: rem(-8px);
+      text-align: center;
+    }
+  }
+
+  .schedule-col-hour {
+    flex: 0 0 rem(82px);
+  }
+
+  .schedule-col-event {
+    position: relative;
+
+    .schedule-cell {
+      border-top: 1px solid gray('200');
+    }
+
+    .event {
+      position: absolute;
+      z-index: 99;
+      width: 100%;
+    }
+  }
+
+  .schedule-content {
+    padding-top: rem(24px);
+    overflow-y: auto;
+  }
+}
+
+@include media-breakpoint-up(md) {
+  .schedule-weekly {
+    .schedule-day {
+      text-align: center;
+    }
+  }
+}
+
+/* monthly schedule
+   -------------------------------------------------------------------------- */
+
+@include media-breakpoint-down(sm) {
+  .schedule-monthly {
+    display: block;
+    flex: 0;
+
+    .schedule-col-head {
+      background-color: color('white');
+    }
+
+    .schedule-content {
+      display: block;
+    }
+
+    .schedule-col-content {
+      padding-right: 2%;
+      padding-left: 2%;
+    }
+  }
+}
+
+@include media-breakpoint-up(md) {
+  .schedule-monthly {
+    .schedule-day {
+      padding-right: rem(34px);
+      text-align: right;
+    }
+
+    .schedule-content {
+      .schedule-row {
+        &:not(:last-child) {
+          border-bottom: 1px solid gray('200');
+        }
+      }
+
+      .schedule-col-content {
+        &:not(:last-child) {
+          border-right: 1px solid gray('200');
+        }
+      }
+    }
+  }
+}
+
+/* daily planning
+   -------------------------------------------------------------------------- */
+
+.schedule-planning {
+  .schedule-wholeday .schedule-col-content,
+  .schedule-col-event {
+    flex: 1 0 rem(170px);
+  }
+  .schedule-col-head:not(.schedule-col-hour) {
+    flex: 1 0 rem(170px);
+
+    .schedule-daylabel {
+      padding-right: rem(20px);
+      padding-left: rem(20px);
+    }
+  }
+
+  .schedule-head {
+    min-height: rem(60px);
+    padding: 0;
+  }
+
+  .schedule-col-head {
+    padding-top: rem(10px);
+    padding-bottom: rem(10px);
+    background-color: gray('100');
+  }
+
+  .schedule-col-hour {
+    flex: 0 0 rem(82px);
+  }
+
+  .schedule-col-event {
+    position: relative;
+
+    .schedule-cell {
+      border-top: 1px solid gray('200');
+    }
+
+    .event {
+      position: absolute;
+      z-index: 99;
+      width: 100%;
+    }
+  }
+
+  .schedule-cell {
+    height: rem(60px);
+
+    .schedule-hournumber {
+      position: relative;
+      top: rem(-8px);
+      text-align: center;
+    }
+  }
+
+  .schedule-content {
+    padding-top: rem(24px);
+  }
+
+  .schedule-progress {
+    padding-top: rem(6px);
+    padding-right: rem(20px);
+    padding-left: rem(20px);
+  }
+}
+
+@include media-breakpoint-up(md) {
+  .schedule-planning {
+    .schedule-col-head:not(.schedule-col-hour) {
+      .schedule-daylabel {
+        &:first-child {
+          border-left: 1px solid gray('200');
+        }
+      }
+    }
+  }
+}
+
+/* day number in monthly cell
+   -------------------------------------------------------------------------- */
+
+@include media-breakpoint-down(sm) {
+  .schedule-daynumber {
+    position: relative;
+    margin-top: rem(10px);
+    font-size: rem(14px);
+    background-color: transparent;
+    border-radius: 50%;
+    @include maintain-ratio(1 1);
+
+    &.current {
+      color: color('white');
+      background-color: #2097d4;
+    }
+
+    > span {
+      position: absolute;
+      top: 0;
+      left: 0;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 100%;
+      height: 100%;
+    }
+  }
+}
+
+@include media-breakpoint-up(md) {
+  .schedule-daynumber {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: rem(20px);
+    height: rem(20px);
+    margin-top: rem(5px);
+    margin-bottom: rem(5px);
+    margin-left: rem(6px);
+    font-size: rem(12px);
+    background-color: transparent;
+    border-radius: 50%;
+
+    &.current {
+      color: color('white');
+      background-color: #2097d4;
+    }
+  }
+}
+
+/* events
+   -------------------------------------------------------------------------- */
+
+.event {
+  z-index: 1;
+  cursor: pointer;
+  background-color: rgba(97, 215, 31, 0.3);
+  &::after {
+    background-color: rgb(97, 215, 31);
+  }
+  &-color1 {
+    background-color: rgba(255, 185, 1, 0.3);
+    &::after {
+      background-color: rgb(255, 185, 1);
+    }
+  }
+  &-color2 {
+    background-color: rgba(161, 0, 107, 0.3);
+    &::after {
+      background-color: rgb(161, 0, 107);
+    }
+  }
+  &-color3 {
+    background-color: rgba(77, 79, 83, 0.3);
+    &::after {
+      background-color: rgb(77, 79, 83);
+    }
+  }
+
+  /* stylelint-disable declaration-no-important */
+  &.active {
+    z-index: $zindex-popover !important;
+  }
+  /* stylelint-enable declaration-no-important */
+}
+
+.event-close {
+  position: absolute;
+  top: rem(2px);
+  right: 0;
+}
+
+.event-month {
+  position: relative;
+  display: flex;
+  align-items: center;
+  min-height: rem(16px);
+  padding-right: rem(4px);
+  padding-left: rem(18px);
+  font-size: rem(12px);
+  word-wrap: break-word;
+  border-radius: rem(7px);
+
+  &::after {
+    position: absolute;
+    top: calc(50% - #{rem(4px)});
+    left: rem(5px);
+    width: rem(8px);
+    height: rem(8px);
+    content: '';
+    border-radius: 50%;
+  }
+
+  & + & {
+    margin-top: rem(3px);
+  }
+}
+
+.event-day {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  padding-top: rem(7px);
+  padding-right: rem(4px);
+  padding-bottom: rem(7px);
+  padding-left: rem(20px);
+  font-size: rem(12px);
+  border-radius: rem(7px);
+
+  &::after {
+    position: absolute;
+    top: rem(11px);
+    left: rem(6px);
+    width: rem(8px);
+    height: rem(8px);
+    content: '';
+    border-radius: 50%;
+  }
+}
+
+.event-more {
+  padding-left: rem(16px);
+  margin-top: rem(4px);
+  font-size: rem(12px);
+}
+
+.event-planning {
+  background-color: gray('100');
+  &::after {
+    position: absolute;
+    top: rem(10px);
+    left: rem(10px);
+    width: rem(2px);
+    height: rem(10px);
+    content: '';
+    background-color: transparent;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 2 10'%3e%3cdefs%3e%3cstyle%3e.a%7bfill:%23737578;%7d%3c/style%3e%3c/defs%3e%3ctitle%3eSans titre - 2%3c/title%3e%3crect class='a' width='2' height='2'/%3e%3crect class='a' y='4' width='2' height='2'/%3e%3crect class='a' y='8' width='2' height='2'/%3e%3c/svg%3e");
+    background-size: 2px 10px;
+  }
+}
+
+/* event modal
+   -------------------------------------------------------------------------- */
+
+.event-modal {
+  font-size: $font-size-base;
+  background-color: color('white');
+
+  .event:not(.active) & {
+    display: none;
+  }
+}
+
+@include media-breakpoint-down(md) {
+  .event-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: $zindex-popover;
+    width: 100%;
+    height: 100%;
+  }
+
+  .event-modal-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: rem(65px);
+    padding-right: rem(10px);
+    padding-left: rem(30px);
+    border-bottom: 1px solid $border-color;
+  }
+
+  .event-modal-title {
+    font-weight: $font-weight-medium;
+    color: gray('600');
+  }
+
+  .event-modal-content {
+    padding: rem(24px) rem(33px) rem(24px) rem(30px);
+    overflow-y: auto;
+  }
+}
+
+@include media-breakpoint-up(lg) {
+  .event-modal {
+    position: absolute;
+    top: rem(-96px);
+    width: rem(306px);
+    padding: rem(30px);
+    border-radius: rem(7px);
+    box-shadow: 0 8px 35px 0 rgba(0, 0, 0, 0.18);
+
+    &.right {
+      left: calc(100% + #{rem(16px)});
+      &::after {
+        right: 100%;
+        border-color: transparent color('white') transparent transparent;
+        border-width: 6px 6px 6px 0;
+      }
+    }
+    &.left {
+      right: calc(100% + #{rem(16px)});
+      &::after {
+        left: 100%;
+        border-color: transparent transparent transparent color('white');
+        border-width: 6px 0 6px 6px;
+      }
+    }
+
+    &::after {
+      position: absolute;
+      top: rem(97px);
+      width: 0;
+      height: 0;
+      pointer-events: none;
+      content: '';
+      border-style: solid;
+    }
+  }
+}
+
+/* chip
+   -------------------------------------------------------------------------- */
+
+.schedule-chip {
+  &::after {
+    display: inline-block;
+    width: rem(7px);
+    height: rem(7px);
+    margin-left: rem(6px);
+    content: '';
+    background-color: rgb(97, 215, 31);
+    border-radius: 50%;
+  }
+
+  &-color1::after {
+    background-color: rgb(255, 185, 1);
+  }
+  &-color2::after {
+    background-color: rgb(161, 0, 107);
+  }
+  &-color3::after {
+    background-color: rgb(77, 79, 83);
+  }
+}

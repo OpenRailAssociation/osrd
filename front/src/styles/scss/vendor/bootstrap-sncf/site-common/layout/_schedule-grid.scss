@@ -1,0 +1,35 @@
+/* schedule layout
+   ========================================================================== */
+
+.schedule-grid {
+  display: flex;
+  height: 100%;
+}
+
+.schedule-maincontent {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  min-width: 0;
+  background-color: color('white');
+
+  &.scrollable {
+    flex-direction: row;
+    overflow-x: auto;
+  }
+}
+
+.schedule-sidebar-planning {
+  display: none;
+}
+
+@include media-breakpoint-up(lg) {
+  .schedule-sidebar {
+    flex: 0 0 rem(200px);
+    overflow-y: auto;
+  }
+
+  .schedule-sidebar-planning {
+    display: block;
+  }
+}

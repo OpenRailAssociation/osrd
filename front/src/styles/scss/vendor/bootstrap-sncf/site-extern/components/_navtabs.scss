@@ -1,0 +1,57 @@
+/* navtabs
+   ========================================================================== */
+
+// stylelint-disable selector-no-qualifying-type, declaration-block-trailing-semicolon
+.navtabs {
+  border-bottom: 1px solid #ebebeb;
+}
+
+.actionbar {
+  &.light,
+  &.dark {
+    .scroll-left-max::before {
+      opacity: 0;
+    }
+    .scroll-left-min::after {
+      opacity: 0;
+    }
+  }
+
+  &.light {
+    .navtabs {
+      border-bottom: 1px solid theme-color('white');
+    }
+
+    .navtabs-item a {
+      &.active,
+      &:hover {
+        color: color('white');
+      }
+      &::after {
+        background-color: color('white');
+      }
+    }
+  }
+
+  &.dark {
+    .h2 {
+      color: gray('600');
+    }
+
+    .navtabs {
+      border-bottom: 1px solid gray('600');
+    }
+
+    .navtabs-item a {
+      color: gray('600');
+      &.active,
+      &:hover {
+        color: gray('600');
+      }
+      &::after {
+        background-color: gray('600');
+      }
+    }
+  }
+}
+// stylelint-enable selector-no-qualifying-type, declaration-block-trailing-semicolon

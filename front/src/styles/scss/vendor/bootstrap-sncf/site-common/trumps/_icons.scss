@@ -1,0 +1,91 @@
+/* icons utilities
+   ========================================================================== */
+
+[class^='icons-'] {
+  display: inline-block;
+}
+
+// rotate
+.icons-rotate-90 {
+  transform: rotate(90deg);
+}
+
+.icons-rotate-180 {
+  transform: rotate(180deg);
+}
+
+.icons-rotate-270 {
+  transform: rotate(270deg);
+}
+
+// flip
+.icons-flip-horizontal {
+  transform: scaleX(-1);
+}
+
+.icons-flip-vertical {
+  transform: scaleY(-1);
+}
+
+@each $breakpoint in map-keys($grid-breakpoints) {
+  @include media-breakpoint-up($breakpoint) {
+    $infix: breakpoint-infix($breakpoint, $grid-breakpoints);
+
+    // size
+    .icons#{$infix}-size-x5 {
+      font-size: $font-size-base * 0.5; // 8px
+    }
+
+    .icons#{$infix}-size-x75 {
+      font-size: $font-size-base * 0.75; // 12px
+    }
+
+    .icons#{$infix}-size-1x {
+      font-size: $font-size-base; // 16px
+    }
+
+    .icons#{$infix}-size-1x25 {
+      font-size: $font-size-base * 1.25; // 20px
+    }
+
+    .icons#{$infix}-size-1x5 {
+      font-size: $font-size-base * 1.5; // 24px
+    }
+
+    .icons#{$infix}-size-1x75 {
+      font-size: $font-size-base * 1.75; // 28px
+    }
+
+    .icons#{$infix}-size-2x {
+      font-size: $font-size-base * 2; // 28px
+    }
+
+    .icons#{$infix}-size-3x {
+      font-size: $font-size-base * 3; // 48px
+    }
+
+    .icons#{$infix}-size-30px {
+      font-size: rem(30px);
+    }
+
+    .icons#{$infix}-size-50px {
+      font-size: rem(50px);
+    }
+
+    .icons#{$infix}-size-66px {
+      font-size: rem(66px);
+    }
+
+    .icons#{$infix}-size-90px {
+      font-size: rem(90px);
+    }
+
+    .icons#{$infix}-size-96px {
+      font-size: rem(96px);
+    }
+
+    .icons#{$infix}-size-140px {
+      font-size: rem(140px);
+    }
+  }
+}

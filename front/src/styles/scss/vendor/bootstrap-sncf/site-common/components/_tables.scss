@@ -1,0 +1,409 @@
+/* table
+   ========================================================================== */
+
+table {
+  width: 100%;
+  vertical-align: middle;
+  table-layout: auto;
+  border-collapse: collapse;
+}
+
+td,
+th {
+  padding: 0;
+  text-align: left;
+  vertical-align: top;
+  cursor: default;
+}
+
+/* stylelint-disable selector-no-qualifying-type */
+td[data-role='toggle-group-btn'] > * {
+  pointer-events: none;
+}
+/* stylelint-enable selector-no-qualifying-type */
+
+.table-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.table-scroller {
+  width: 100%;
+  overflow-x: auto;
+  overflow-y: visible;
+
+  // left scroll shadow
+  &::before {
+    position: absolute;
+    top: 0;
+    z-index: 2;
+    width: 4rem;
+    height: 100%;
+    pointer-events: none;
+    content: '';
+  }
+
+  &.scroll-left-max {
+    &::before {
+      left: 0;
+      background: $table-scroll-max-to-right;
+    }
+  }
+
+  // right scroll shadow
+  &:not(.last-cell-fixed) {
+    &::after {
+      position: absolute;
+      top: 0;
+      z-index: 2;
+      width: 4rem;
+      height: 100%;
+      pointer-events: none;
+      content: '';
+    }
+
+    &.scroll-left-min {
+      &::after {
+        right: 0;
+        background: $table-scroll-max-to-left;
+      }
+    }
+  }
+
+  &.last-cell-fixed {
+    .tbody .cell-fixed::after {
+      position: absolute;
+      top: 0;
+      z-index: 2;
+      width: 4rem;
+      height: 100%;
+      pointer-events: none;
+      content: '';
+    }
+
+    /* stylelint-disable selector-max-class */
+    &.scroll-left-min .tbody .cell-fixed {
+      &::after {
+        right: 100%;
+        background: $table-scroll-max-to-left;
+      }
+    }
+    /* stylelint-enable selector-max-class */
+  }
+}
+
+.table {
+  th,
+  td {
+    border-color: #d8d8d8;
+
+    &:first-child {
+      padding-right: rem(20px);
+      padding-left: rem(20px);
+    }
+  }
+
+  .btn-only-icon {
+    min-width: auto;
+    min-height: rem(30px);
+    padding-right: rem(10px);
+    padding-left: rem(10px);
+  }
+}
+
+.thead.thead {
+  th,
+  td {
+    position: relative;
+    font-weight: $font-weight-normal;
+    color: $table-head-color;
+    vertical-align: middle;
+    border: none;
+
+    &:not(:first-child)::before {
+      position: absolute;
+      top: calc(50% - #{rem(11px)});
+      left: 0;
+      width: rem(1px);
+      height: rem(22px);
+      content: '';
+      background-color: gray('200');
+    }
+  }
+
+  .cell-inner {
+    min-height: rem(40px);
+  }
+
+  .dropdown-toggle {
+    @include hover-focus {
+      color: theme-color('primary');
+    }
+
+    &[aria-expanded='true'] {
+      color: theme-color('primary');
+    }
+  }
+}
+
+.thead.thead.thead-fixed th {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.thead-light {
+  color: gray('600');
+  background-color: gray('100');
+  border-color: $table-border-color;
+}
+
+.cell-sort {
+  .icons-sort {
+    transition: transform 0.15s ease;
+  }
+
+  &.active {
+    .icons-sort {
+      color: theme-color('primary');
+    }
+  }
+
+  &.up {
+    .icons-sort {
+      transform: rotate(180deg);
+    }
+  }
+}
+
+.tbody {
+  tr:first-child {
+    th,
+    td {
+      border: none;
+    }
+  }
+
+  tr {
+    vertical-align: middle;
+  }
+}
+
+.trgroup {
+  &:not(.active) {
+    display: none;
+  }
+
+  .cell-350 {
+    > .cell-inner {
+      padding-left: rem(40px);
+    }
+  }
+}
+
+.cell-inner {
+  display: flex;
+  align-items: center;
+  min-height: rem(52px);
+  padding-top: ($spacer / 2);
+  padding-bottom: ($spacer / 2);
+
+  .dragscroll & {
+    white-space: nowrap;
+  }
+}
+
+.cell-350 {
+  > .cell-inner {
+    max-width: rem(350px);
+  }
+}
+
+.cell-caret {
+  > .cell-inner {
+    &::before {
+      display: inline-block;
+      width: 0;
+      height: 0;
+      margin-right: rem(20px);
+      content: '';
+      border-color: transparent transparent transparent gray('300');
+      border-style: solid;
+      border-width: $caret-width 0 $caret-width $caret-width;
+      transition: transform 0.15s ease-out;
+    }
+
+    .trhead.active &::before {
+      transform: rotate(90deg);
+    }
+  }
+
+  &.active > .cell-inner::before {
+    transform: rotate(90deg);
+  }
+}
+
+.cell-fixed {
+  text-align: center;
+
+  .table &,
+  .thead.thead & {
+    position: absolute;
+    right: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: rem(74px);
+    min-height: rem(52px);
+    padding-right: 0;
+    padding-left: 0;
+    background-color: $table-bg;
+    border-top: none;
+
+    /* stylelint-disable declaration-no-important */
+    &::before {
+      position: absolute;
+      top: 0 !important;
+      left: 0;
+      width: rem(1px);
+      height: 100% !important;
+      content: '';
+      background-color: $table-border-color !important;
+    }
+    /* stylelint-enable declaration-no-important */
+  }
+
+  .thead.thead & {
+    background-color: $table-head-bg;
+  }
+}
+
+.cell-placeholder {
+  width: rem(74px);
+
+  .table &,
+  .thead.thead & {
+    padding-right: 0;
+    padding-left: 0;
+
+    > span {
+      display: block;
+      width: rem(74px);
+    }
+  }
+}
+
+@include media-breakpoint-up(md) {
+  .table-wrapper.has-footerbar {
+    padding-bottom: rem(68px);
+  }
+}
+
+@include media-breakpoint-up(lg) {
+  .table {
+    th,
+    td {
+      &:first-child {
+        padding-right: rem(12px);
+        padding-left: rem(30px);
+      }
+    }
+  }
+}
+
+@include media-breakpoint-up(xl) {
+  .table {
+    th,
+    td {
+      &:first-child {
+        padding-left: rem(30px);
+      }
+    }
+  }
+}
+
+/* stylelint-disable selector-max-class, selector-max-compound-selectors */
+@include media-breakpoint-down(sm) {
+  .mastcontainer .table-vh {
+    .mastheader + & {
+      height: calc(100vh - #{$mastheader-height});
+    }
+
+    .mastheader + .actionbar + & {
+      height: calc(100vh - #{$mastheader-height + $actionbar-min-height});
+    }
+
+    .mastheader + .actionbar.has-tabs + & {
+      height: calc(100vh - #{$mastheader-height + $actionbar-max-height});
+    }
+
+    .mastheader + .actionbar + .controlbar + & {
+      height: calc(100vh - #{$mastheader-height + $actionbar-min-height + $controlbar-height});
+    }
+
+    .mastheader + .actionbar.has-tabs + .controlbar + & {
+      height: calc(100vh - #{$mastheader-height + $actionbar-max-height + $controlbar-height});
+    }
+  }
+}
+
+// @include media-breakpoint-down(md) {
+//   .mastcontainer .table-vh {
+//     bottom: $mastnav-height-sm;
+//   }
+// }
+
+@include media-breakpoint-up(md) {
+  .mastcontainer .table-vh {
+    .mastheader + & {
+      height: calc(100vh - #{$mastheader-height-md});
+    }
+
+    .mastheader + .actionbar + &,
+    .mastheader + .actionbar + .controlbar + & {
+      height: calc(100vh - #{$mastheader-height-md + $actionbar-min-height-md});
+    }
+
+    .mastheader + .actionbar.has-tabs + &,
+    .mastheader + .actionbar.has-tabs + .controlbar + & {
+      height: calc(100vh - #{$mastheader-height-md + $actionbar-max-height-md});
+    }
+  }
+}
+
+@include media-breakpoint-up(lg) {
+  .mastcontainer .table-vh {
+    .mastheader + & {
+      height: calc(100vh - #{$mastheader-height-lg});
+    }
+
+    .mastheader + .actionbar + &,
+    .mastheader + .actionbar + .controlbar + & {
+      height: calc(100vh - #{$mastheader-height-lg + $actionbar-min-height-lg});
+    }
+
+    .mastheader + .actionbar.has-tabs + &,
+    .mastheader + .actionbar.has-tabs + .controlbar + & {
+      height: calc(100vh - #{$mastheader-height-lg + $actionbar-max-height-lg});
+    }
+  }
+}
+
+@include media-breakpoint-up(xl) {
+  .mastcontainer .table-vh {
+    .mastheader + & {
+      height: calc(100vh - #{$mastheader-height-xl});
+    }
+
+    .mastheader + .actionbar + &,
+    .mastheader + .actionbar + .controlbar + & {
+      height: calc(100vh - #{$mastheader-height-xl + $actionbar-min-height-xl});
+    }
+
+    .mastheader + .actionbar.has-tabs + &,
+    .mastheader + .actionbar.has-tabs + .controlbar + & {
+      height: calc(100vh - #{$mastheader-height-xl + $actionbar-max-height-xl});
+    }
+  }
+}
+/* stylelint-enable selector-max-class, selector-max-compound-selectors */

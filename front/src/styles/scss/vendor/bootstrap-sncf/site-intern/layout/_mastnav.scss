@@ -1,0 +1,117 @@
+/* mastnav
+   ========================================================================== */
+
+$mastnav-height-sm: rem(52px);
+$mastnav-width-lg: rem(100px);
+
+.mastnav {
+  position: fixed;
+  left: 0;
+  z-index: $zindex-navigation;
+  display: flex;
+}
+
+.mastnav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  text-align: center;
+  background-color: transparent;
+  border: none;
+  @include transition($btn-transition);
+}
+
+.mastnav-top {
+  padding-left: 0;
+  list-style: none;
+}
+
+@include media-breakpoint-down(md) {
+  .mastnav {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    height: $mastnav-height-sm;
+    background-color: $body-bg;
+    border-top: 1px solid #d8d8d8;
+  }
+
+  .mastnav-top {
+    display: flex;
+    width: 100%;
+
+    > li {
+      flex: 1;
+    }
+  }
+
+  .mastnav-item {
+    display: flex;
+    flex: 1;
+    height: $mastnav-height-sm;
+    font-size: rem(10px);
+    color: $body-color;
+
+    @include hover-focus-active {
+      color: theme-color('primary');
+    }
+
+    [class^='icons-'] {
+      margin-bottom: rem(4px);
+    }
+  }
+}
+
+@include media-breakpoint-up(lg) {
+  .mastnav {
+    top: 0;
+    flex-direction: column;
+    justify-content: space-between;
+    width: $mastnav-width-lg;
+    height: 100vh;
+    padding-top: $mastheader-height-lg;
+    background-color: theme-color('primary');
+  }
+
+  .mastnav-top {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .mastnav-item {
+    min-height: rem(80px);
+    font-size: rem(12px);
+    color: $mastnav-color-lg;
+
+    &:not(.active) {
+      border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    @include hover-focus-active {
+      color: $mastnav-color-lg;
+      background-color: $primary-dark;
+    }
+
+    [class^='icons-'] {
+      margin-bottom: rem(8px);
+    }
+  }
+
+  .mastnav-item-horizontal {
+    flex-direction: row;
+    height: rem(60px); // can't use min-height for IE11
+
+    [class^='icons-'] {
+      margin-right: rem(8px);
+      margin-bottom: 0;
+    }
+  }
+}
+
+@include media-breakpoint-up(xl) {
+  .mastnav {
+    padding-top: $mastheader-height-xl;
+  }
+}

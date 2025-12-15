@@ -1,0 +1,90 @@
+/* mastcontainer
+   ========================================================================== */
+
+/* stylelint-disable selector-max-class */
+@include media-breakpoint-down(sm) {
+  .mastcontainer {
+    .mastheader + & {
+      padding-top: $mastheader-height;
+    }
+
+    .mastheader + .actionbar + & {
+      padding-top: ($mastheader-height + $actionbar-min-height);
+    }
+
+    .mastheader + .actionbar.has-tabs + & {
+      padding-top: ($mastheader-height + $actionbar-max-height);
+    }
+
+    .mastheader + .actionbar + .controlbar + & {
+      padding-top: ($mastheader-height + $actionbar-min-height + $controlbar-height);
+    }
+
+    .mastheader + .actionbar.has-tabs + .controlbar + & {
+      padding-top: ($mastheader-height + $actionbar-max-height + $controlbar-height);
+    }
+  }
+}
+
+@include media-breakpoint-down(md) {
+  .mastcontainer {
+    padding-bottom: $mastnav-height-sm;
+  }
+}
+
+@include media-breakpoint-up(md) {
+  .mastcontainer {
+    .mastheader + & {
+      padding-top: $mastheader-height-md;
+    }
+
+    .mastheader + .actionbar + &,
+    .mastheader + .actionbar + .controlbar + & {
+      padding-top: ($mastheader-height-md + $actionbar-min-height-md);
+    }
+
+    .mastheader + .actionbar.has-tabs + &,
+    .mastheader + .actionbar.has-tabs + .controlbar + & {
+      padding-top: ($mastheader-height-md + $actionbar-max-height-md);
+    }
+  }
+}
+
+@include media-breakpoint-up(lg) {
+  .mastcontainer {
+    padding-left: $mastnav-width-lg;
+
+    .mastheader + & {
+      padding-top: $mastheader-height-lg;
+    }
+
+    .mastheader + .actionbar + &,
+    .mastheader + .actionbar + .controlbar + & {
+      padding-top: ($mastheader-height-lg + $actionbar-min-height-lg);
+    }
+
+    .mastheader + .actionbar.has-tabs + &,
+    .mastheader + .actionbar.has-tabs + .controlbar + & {
+      padding-top: ($mastheader-height-lg + $actionbar-max-height-lg);
+    }
+  }
+}
+
+@include media-breakpoint-up(xl) {
+  .mastcontainer {
+    .mastheader + & {
+      padding-top: $mastheader-height-xl;
+    }
+
+    .mastheader + .actionbar + &,
+    .mastheader + .actionbar + .controlbar + & {
+      padding-top: ($mastheader-height-xl + $actionbar-min-height-xl);
+    }
+
+    .mastheader + .actionbar.has-tabs + &,
+    .mastheader + .actionbar.has-tabs + .controlbar + & {
+      padding-top: ($mastheader-height-xl + $actionbar-max-height-xl);
+    }
+  }
+}
+/* stylelint-enable selector-max-class */

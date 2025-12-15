@@ -1,0 +1,107 @@
+/* progress
+   ========================================================================== */
+
+.progress {
+  display: flex;
+  height: $progress-height;
+  font-size: $progress-font-size;
+  color: $progress-bar-color;
+  background-color: $progress-bg;
+  background-image: $progress-bg-gradient;
+  background-size: rem(4px) $progress-height;
+  @include border-radius($progress-border-radius);
+  @include box-shadow($progress-box-shadow);
+
+  &.has-label {
+    margin-top: rem(38px);
+  }
+}
+
+.progress-bar {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  color: $progress-bar-color;
+  text-align: center;
+  background-color: $progress-bar-bg;
+  @include border-radius($progress-border-radius);
+  @include transition($progress-bar-transition);
+}
+
+.progress-label {
+  position: absolute;
+  right: 0;
+  bottom: calc(100% + #{rem(8px)});
+  font-size: rem(24px);
+  font-weight: $font-weight-medium;
+  // transform: translateX(50%);
+
+  sup {
+    font-size: rem(14px);
+  }
+
+  .progress-bar[aria-valuenow='100'] & {
+    right: 0;
+    left: auto;
+    color: theme-color('primary');
+  }
+}
+
+.progress-circle {
+  position: relative;
+  display: inline-block;
+  width: rem(120px);
+  height: rem(120px);
+  background-image: $progress-circle-bg-image;
+}
+
+.progress-circle-figure {
+  transform: rotate(-90deg);
+}
+
+.progress-circle-meter,
+.progress-circle-value {
+  fill: none;
+}
+
+.progress-circle-meter {
+  stroke: $progress-bg;
+}
+
+.progress-circle-value {
+  stroke: $progress-bar-bg;
+  stroke-linecap: round;
+}
+
+.progress-circle-label {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  font-size: rem(24px);
+  font-weight: $font-weight-medium;
+
+  sup {
+    font-size: rem(14px);
+  }
+
+  &.done {
+    color: theme-color('primary');
+  }
+}
+
+/* variation
+   -------------------------------------------------------------------------- */
+.progress-sm {
+  height: rem(5px);
+  overflow: hidden;
+  background-color: $progress-bg;
+  background-image: none;
+  background-size: auto;
+  border-radius: rem(2.5px);
+}

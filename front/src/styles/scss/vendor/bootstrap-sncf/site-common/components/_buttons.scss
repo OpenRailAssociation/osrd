@@ -1,0 +1,393 @@
+/* buttons
+   ========================================================================== */
+// stylelint-disable selector-no-qualifying-type
+
+//
+// Base styles
+//
+
+.btn {
+  display: inline-block;
+  font-weight: $btn-font-weight;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: middle;
+  user-select: none;
+  border: $btn-border-width solid transparent;
+  @include button-size(
+    $btn-padding-y,
+    $btn-padding-x,
+    $font-size-base,
+    $btn-line-height,
+    $btn-border-radius
+  );
+  @include transition($btn-transition);
+
+  // Share hover and focus styles
+  @include hover-focus {
+    text-decoration: none;
+  }
+
+  &:focus,
+  &.focus {
+    // outline: 0;
+    box-shadow: $btn-focus-box-shadow;
+  }
+
+  // Disabled comes first so active can properly restyle
+  &.disabled,
+  &:disabled {
+    opacity: $btn-disabled-opacity;
+    @include box-shadow(none);
+  }
+
+  // Opinionated: add "hand" cursor to non-disabled .btn elements
+  &:not(:disabled):not(.disabled) {
+    cursor: pointer;
+  }
+
+  &:not(:disabled):not(.disabled):active,
+  &:not(:disabled):not(.disabled).active {
+    background-image: none;
+    @include box-shadow($btn-active-box-shadow);
+
+    &:focus {
+      @include box-shadow($btn-focus-box-shadow, $btn-active-box-shadow);
+    }
+  }
+}
+
+// Future-proof disabling of clicks on `<a>` elements
+a.btn.disabled,
+fieldset:disabled a.btn {
+  pointer-events: none;
+}
+
+//
+// Alternate buttons
+//
+
+@each $color, $value in $btn-colors {
+  .btn-#{$color} {
+    @if type-of($value) == 'list' {
+      @include button-variant(
+        nth($value, 1),
+        nth($value, 2),
+        nth($value, 3),
+        nth($value, 4),
+        nth($value, 5),
+        nth($value, 6),
+        nth($value, 7),
+        nth($value, 8),
+        nth($value, 9)
+      );
+    } @else {
+      @include button-variant($value, $value);
+    }
+  }
+}
+
+@each $color, $value in $theme-colors {
+  .btn-outline-#{$color} {
+    @include button-outline-variant($value);
+  }
+}
+
+//
+// Link buttons
+//
+
+// Make a button look and behave like a link
+.btn-link {
+  display: inline-flex;
+  align-items: center;
+  padding: 0;
+  font-weight: $font-weight-medium;
+  color: $link-color;
+  background-color: transparent;
+  border: 0;
+
+  @include hover {
+    color: $link-hover-color;
+    text-decoration: $link-hover-decoration;
+    background-color: transparent;
+    border-color: transparent;
+  }
+
+  &:focus,
+  &.focus {
+    text-decoration: $link-hover-decoration;
+    border-color: transparent;
+    box-shadow: none;
+  }
+
+  &:disabled,
+  &.disabled {
+    color: $btn-link-disabled-color;
+  }
+
+  [class^='icons-'] {
+    padding-bottom: 0.25rem;
+    font-size: rem(13px);
+  }
+
+  // No need for an active state here
+}
+
+.btn-link-white {
+  color: color('white');
+}
+
+//
+// Button sizes
+//
+
+.btn-sm {
+  font-weight: $font-weight-medium;
+  @include button-size(
+    $btn-padding-y-sm,
+    $btn-padding-x-sm,
+    $font-size-base,
+    $btn-line-height-sm,
+    $btn-border-radius-sm
+  );
+}
+
+//
+// Block button
+//
+
+.btn-block {
+  display: block;
+  width: 100%;
+
+  // Vertically space out multiple block buttons
+  + .btn-block {
+    margin-top: $btn-block-spacing-y;
+  }
+}
+
+// Specificity overrides
+input[type='submit'],
+input[type='reset'],
+input[type='button'] {
+  &.btn-block {
+    width: 100%;
+  }
+}
+
+//
+// Button icon
+//
+
+.btn-only-icon {
+  align-items: center;
+  justify-content: center;
+  min-width: rem(50px);
+  min-height: $input-btn-height;
+  padding: $btn-only-icon-padding;
+
+  &.active {
+    [class^='icons-arrow-'] {
+      transform: rotate(180deg);
+    }
+  }
+
+  // [class^="icons-arrow-"] {
+  //   transition: transform .15s ease-out;
+  // }
+
+  &.btn-white.disabled,
+  &.btn-white:disabled {
+    color: $btn-disabled-color;
+    cursor: not-allowed;
+    background-color: $btn-disabled-bg;
+    border-color: $btn-disabled-border-color;
+  }
+
+  &.btn-sm {
+    min-width: $btn-height-sm;
+    min-height: $btn-height-sm;
+  }
+}
+
+//
+// Button navigation
+//
+
+.btn-rounded {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: rem(40px);
+  height: rem(40px);
+  font-size: rem(14px);
+  font-weight: $font-weight-medium;
+  color: color('white');
+  cursor: pointer;
+  background-color: gray('400');
+  border: none;
+  border-radius: 50%;
+  @include transition($btn-transition);
+
+  @include hover {
+    background-color: $primary-dark;
+  }
+
+  &.disabled,
+  &:disabled {
+    color: $btn-disabled-color;
+    cursor: not-allowed;
+    background-color: $btn-disabled-bg;
+    border-color: $btn-disabled-border-color;
+  }
+
+  &:not(:disabled):not(.disabled).box-shadow {
+    box-shadow: 0 4px 10px 0 rgba(0, 0, 0, 0.2);
+
+    @include hover {
+      box-shadow: none;
+    }
+  }
+}
+
+@each $color, $value in $btn-rounded-colors {
+  .btn-rounded-#{$color} {
+    @if type-of($value) == 'list' {
+      color: nth($value, 3);
+      background-color: nth($value, 1);
+
+      &:not(:disabled):not(.disabled) {
+        &:hover,
+        &:focus,
+        &:active {
+          color: nth($value, 6);
+          background-color: nth($value, 4);
+        }
+      }
+    }
+  }
+}
+
+//
+// Button option
+//
+
+.btn-options {
+  min-width: rem(55px);
+  padding: 0;
+  color: $body-color;
+  background-color: transparent;
+
+  &[aria-expanded='true'],
+  &:focus,
+  &:active,
+  &:hover {
+    color: theme-color('primary');
+    background-color: transparent;
+  }
+}
+
+//
+// Button favorite
+//
+
+.btn.btn-favorite {
+  color: gray('300');
+
+  &:hover,
+  &.active {
+    color: #ffb612;
+  }
+}
+
+//
+// Button alert
+//
+
+.btn-notif {
+  position: relative;
+
+  .notif {
+    position: absolute;
+    top: calc(50% - #{rem(16px)});
+    right: calc(50% - #{rem(18px)});
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: rem(16px);
+    min-height: rem(16px);
+    padding-top: 3px;
+    font-size: rem(9px);
+    line-height: 1;
+    color: color('white');
+    background-color: theme-color('primary');
+    border-radius: 50%;
+  }
+}
+
+//
+// Button card
+//
+
+.btn-card {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-width: rem(145px);
+  min-height: rem(145px);
+  font-weight: $font-weight-normal;
+  border-color: $btn-card-bg;
+
+  span {
+    display: block;
+    margin-top: rem(18px);
+  }
+
+  @include button-variant(
+    $btn-card-bg,
+    $btn-card-border,
+    $btn-card-color,
+    theme-color('primary-dark'),
+    theme-color('primary-dark'),
+    $btn-card-active-color,
+    $btn-card-active-bg,
+    $btn-card-active-border,
+    $btn-card-active-color
+  );
+}
+
+//
+// Button color
+//
+
+.btn-color-gray {
+  color: $btn-color-gray;
+  &:not(:disabled):not(.disabled) {
+    @include hover-focus-active {
+      color: theme-color('primary');
+    }
+  }
+}
+
+.btn-color-footer {
+  color: $carbon;
+  background-color: color('white');
+  &:not(:disabled):not(.disabled) {
+    @include hover-focus-active {
+      background-color: #b9b9b9;
+    }
+  }
+}
+
+//
+// Button unstyled
+//
+
+.btn-unstyled {
+  font-size: inherit;
+  color: inherit;
+  background-color: transparent;
+  border: none;
+}

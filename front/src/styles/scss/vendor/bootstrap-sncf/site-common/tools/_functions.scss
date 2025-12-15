@@ -1,0 +1,27 @@
+/* functions
+   ========================================================================== */
+
+// parse int
+@function parse-int($number) {
+  @if type-of($number) == 'number' {
+    @return $number / ($number * 0 + 1);
+  }
+
+  @return $number;
+}
+
+// units to rem
+@function rem($value) {
+  @if type-of($value) == 'number' {
+    $number: parse-int($value);
+    $unit: unit($value);
+
+    @if $number == 0 or $unit == 'rem' {
+      @return $value;
+    }
+
+    @return $number / 16 * 1rem;
+  }
+
+  @return $value;
+}

@@ -1,0 +1,29 @@
+/* tongues
+   ========================================================================== */
+
+.tongue {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  min-height: rem(40px);
+  padding-right: rem(42px);
+  padding-left: rem(20px);
+  font-size: rem(18px);
+  font-weight: $font-weight-black;
+  color: color('white');
+  text-transform: uppercase;
+  background-color: theme-color('primary');
+  border-top-right-radius: rem(20px);
+  border-bottom-right-radius: rem(20px);
+
+  &::after {
+    position: absolute;
+    top: calc(50% - #{rem(7px)});
+    right: rem(14px);
+    width: rem(14px);
+    height: rem(14px);
+    content: '';
+    background-color: $tongues-point;
+    border-radius: 50%;
+  }
+}

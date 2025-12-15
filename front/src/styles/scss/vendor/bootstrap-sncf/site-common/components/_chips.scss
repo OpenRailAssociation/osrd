@@ -1,0 +1,96 @@
+/* chips
+   ========================================================================== */
+
+.form-chips-container {
+  display: flex;
+  flex-wrap: wrap;
+  width: 100%;
+  padding-top: rem(5px);
+  padding-left: rem(5px);
+  cursor: text;
+  background-color: $input-bg;
+  background-clip: padding-box;
+
+  @if $enable-rounded {
+    border-radius: $input-border-radius;
+  } @else {
+    border-radius: 0;
+  }
+}
+
+.chips-group {
+  display: inline-flex;
+  padding-right: rem(5px);
+  padding-bottom: rem(5px);
+  vertical-align: middle;
+
+  .chips:not(:first-child) {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+  }
+
+  .chips:not(:last-child) {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+}
+
+.chips {
+  display: inline-block;
+  font-weight: $btn-font-weight;
+  color: $chips-color;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: middle;
+  user-select: none;
+  background-color: theme-color('primary');
+  border: $btn-border-width solid theme-color('primary');
+  @include button-size(0.5em, 1.125em, $font-size-base, $btn-line-height, $btn-border-radius);
+  @include transition($btn-transition);
+
+  .icons-close {
+    font-size: rem(10px);
+  }
+}
+
+.chips-label {
+  padding-right: 0;
+}
+
+.chips-btn {
+  @include hover-focus {
+    text-decoration: none;
+    cursor: pointer;
+    background-color: theme-color('primary-dark');
+  }
+
+  &:focus,
+  &.focus {
+    // outline: 0;
+    box-shadow: $btn-focus-box-shadow;
+  }
+}
+
+.chips-only-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: rem(44px);
+  min-height: rem(40px);
+  padding: 0;
+}
+
+.chips-input {
+  min-height: rem(45px);
+  padding-right: 5px;
+  padding-bottom: rem(5px);
+  padding-left: rem(18px);
+  font-weight: $input-font-weight;
+  color: $chips-input-color;
+  background-color: transparent;
+  border: none;
+
+  // &:focus {
+  //   outline: 0;
+  // }
+}

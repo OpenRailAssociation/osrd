@@ -1,0 +1,95 @@
+/* advanced search
+   ========================================================================== */
+
+.advanced-search {
+  &:not(.active) {
+    .select-menu {
+      display: none;
+    }
+  }
+}
+
+.advanced-search-control {
+  position: relative;
+
+  .advanced-search.active > & {
+    &::after {
+      position: absolute;
+      top: 0;
+      left: 0;
+      display: block;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      content: ' ';
+      border-top: gray('200') solid 1px;
+      border-left: gray('200') solid 1px;
+      border-top-left-radius: $border-radius;
+      border-top-right-radius: $border-radius;
+    }
+
+    // stylelint-disable selector-max-class
+    > .input-group .form-control {
+      border-bottom-right-radius: 0;
+      border-bottom-left-radius: 0;
+    }
+
+    .input-group-last > .btn {
+      border-bottom-right-radius: 0;
+    }
+    // stylelint-enable selector-max-class
+  }
+}
+
+.advanced-search-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 2;
+  width: 100%;
+  max-height: $select-scrollable-max-height;
+  padding: rem(20px);
+  overflow-y: auto;
+  background-color: $advanced-search-bg;
+  border-right: $advanced-search-border-color solid 1px;
+  border-bottom: $advanced-search-border-color solid 1px;
+  border-left: $advanced-search-border-color solid 1px;
+  border-bottom-right-radius: $border-radius;
+  border-bottom-left-radius: $border-radius;
+}
+
+.advanced-search-menu-item {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0;
+  font-weight: $font-weight-medium;
+  text-align: left;
+  cursor: pointer;
+  background: none;
+  border: 0;
+
+  .btn-link:not(:hover):first-child {
+    color: $advanced-search-color;
+  }
+
+  + .advanced-search-menu-item {
+    margin-top: rem(14px);
+  }
+}
+
+.advanced-search-menu-title {
+  align-items: center;
+  margin-bottom: rem(14px);
+  font-size: $font-size-xs;
+  color: $advanced-search-menu-title-color;
+  text-transform: uppercase;
+
+  .btn-link {
+    font-size: rem(14px);
+  }
+
+  .advanced-search-menu-item + & {
+    margin-top: rem(24px);
+  }
+}

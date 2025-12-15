@@ -1,0 +1,49 @@
+// Local docs variables
+$doc-body-bg: $white;
+$doc-highlight-color: $carbon;
+$doc-highlight-bg: $gray-100;
+$doc-bd-border-color: $gray-100;
+
+$doc-masthead-bg: $gray-100;
+
+$doc-callout-border-color: $gray-100;
+$doc-callout-bg: transparent;
+
+$doc-sidebar-color: $white;
+$doc-sidebar-stroke: 'white';
+$bd-toc-border-color: transparent;
+$bd-toc-color: $carbon;
+
+$btn-clipboard-color-hover: $white;
+$bd-clipboard-bg-light: $gray-100;
+
+// Extern only
+$bd-sidebar-bg: inherit;
+$bd-links-color: rgba(0, 0, 0, 0.85);
+$bd-links-color-light: rgba(0, 0, 0, 0.65);
+$bd-search-bg: $white;
+$doc-sidebar-stroke-ext: 'black';
+
+$bd-example-modal-bg: $gray-300;
+
+$bd-purple: $purple !default;
+$bd-purple-bright: lighten(saturate($bd-purple, 5%), 15%) !default;
+$bd-purple-light: lighten(saturate($bd-purple, 5%), 45%) !default;
+$bd-dark: $carbon !default;
+$bd-download: #ffe484 !default;
+$bd-info: $cyan !default;
+$bd-warning: $orange !default;
+$bd-danger: $red !default;
+
+$doc-footer-bg: $white;
+$doc-footer-color: $body-color;
+
+// Algolia
+$algolia-bg: $white;
+$algolia-hover-bg: $gray-100;
+$algolia-title-color: $carbon;
+$algolia-header-color: $gray-400;
+$algolia-column-color: $gray-400;
+$algolia-text-color: $gray-400;
+$algolia-highlight-color: $primary;
+$algolia-border-color: $gray-200;

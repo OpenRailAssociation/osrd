@@ -1,0 +1,270 @@
+/* forms
+   ========================================================================== */
+// stylelint-disable selector-no-qualifying-type
+
+$icon-width: rem(48px);
+
+label {
+  margin-bottom: map-get($spacers, 2);
+  font-weight: $font-weight-medium;
+}
+
+input {
+  &:invalid {
+    box-shadow: none; // firefox override
+  }
+}
+
+//
+// Textual form controls
+//
+
+.form-control-container {
+  position: relative;
+
+  input {
+    width: 100%;
+  }
+
+  &.is-invalid {
+    + .invalid-feedback {
+      display: block;
+    }
+  }
+
+  &.has-right-icon {
+    .form-control {
+      padding-right: $icon-width;
+    }
+    .form-control-icon {
+      right: 0;
+      padding-right: rem(8px);
+    }
+  }
+
+  &.has-left-icon {
+    .form-control {
+      padding-left: $icon-width;
+    }
+    .form-control-icon {
+      left: 0;
+      padding-left: rem(8px);
+    }
+  }
+}
+
+// fancy border on focus
+.form-control-state {
+  position: absolute;
+  top: 0;
+  left: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  pointer-events: none;
+
+  @if $enable-rounded {
+    border-radius: $input-border-radius;
+  } @else {
+    border-radius: 0;
+  }
+
+  &::after {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    display: block;
+    width: 100%;
+    height: 2px;
+    content: '';
+    background-color: transparent;
+  }
+
+  .is-invalid &::after {
+    background-color: theme-color('danger');
+  }
+
+  .is-valid &::after {
+    background-color: theme-color('success');
+  }
+}
+
+.form-control {
+  height: 100%;
+  min-height: $input-min-height; // for IE11
+  padding: 0.65625rem 1.25rem;
+  font-weight: $font-weight-medium;
+  color: $input-color;
+
+  &::placeholder {
+    font-weight: $font-weight-normal;
+  }
+
+  .form-control-container:not(.is-invalid) &:focus ~ .form-control-state {
+    &::after {
+      background-color: theme-color('primary');
+    }
+  }
+
+  .was-validated &:valid,
+  &.is-valid  {
+    ~ .form-control-state::after {
+      background-color: theme-color('success');
+    }
+  }
+
+  .was-validated &:invalid,
+  &.is-invalid {
+    ~ .form-control-state::after {
+      background-color: theme-color('danger');
+    }
+  }
+
+  &:disabled,
+  &[readonly] {
+    color: $input-disabled-color;
+  }
+
+  &[readonly] {
+    padding-right: $icon-width;
+    pointer-events: none;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' width='27' height='25' viewBox='0 0 27 25'%3e%3cdefs%3e%3cstyle%3e.disabled-icon%7bfill:%23747678;%7d%3c/style%3e%3c/defs%3e%3cpath class='disabled-icon' d='M26.79,25.05H1.21a.73.73,0,0,0,0,1.45H26.79a.73.73,0,0,0,0-1.45Z' transform='translate(-0.5 -1.5)'/%3e%3cpath class='disabled-icon' d='M19.8,8.87h-.61V6.73a5.23,5.23,0,0,0-10.46,0V8.87H8.2a1.63,1.63,0,0,0-1.63,1.62V21.32A1.62,1.62,0,0,0,8.2,22.94H19.8a1.62,1.62,0,0,0,1.63-1.62V10.49A1.63,1.63,0,0,0,19.8,8.87ZM10.93,6.73a3,3,0,1,1,6.06,0V8.87H10.93Zm3,14.15a5,5,0,1,1,5-5A5,5,0,0,1,14,20.88Z' transform='translate(-0.5 -1.5)'/%3e%3cpath class='disabled-icon' d='M14,12.62a3.29,3.29,0,1,0,3.29,3.29A3.29,3.29,0,0,0,14,12.62Zm0,4.75a1.47,1.47,0,1,1,1.47-1.46A1.46,1.46,0,0,1,14,17.37Z' transform='translate(-0.5 -1.5)'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: center right 18px;
+    background-size: 27px 25px;
+  }
+
+  .form-control-container:not(.is-invalid) &[required]:valid {
+    padding-right: $icon-width;
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 27 22'%3e%3cdefs%3e%3cstyle%3e.check-icon%7bfill:%23303383;%7d%3c/style%3e%3c/defs%3e%3ctitle%3echeck%3c/title%3e%3cpath class='check-icon' d='M33.18,13.21,15.53,30.87a1.11,1.11,0,0,1-1.58,0L6.82,23.75a1.13,1.13,0,0,1,0-1.58l2.1-2.11a1.13,1.13,0,0,1,1.58,0L14,23.5a1.13,1.13,0,0,0,1.58,0l14-14a1.13,1.13,0,0,1,1.58,0l2.11,2.11a1.13,1.13,0,0,1,0,1.58' transform='translate(-6.5 -9.2)'/%3e%3c/svg%3e");
+    background-repeat: no-repeat;
+    background-position: center right 18px;
+    background-size: 18px 14px;
+  }
+
+  &.clear-option {
+    padding-right: $icon-width;
+
+    ~ .btn-clear {
+      position: absolute;
+      top: 50%;
+      right: rem(20px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: rem(26px);
+      height: rem(26px);
+      padding: 0;
+      font-size: rem(10px);
+      border-style: solid;
+      border-radius: 50%;
+      transform: translateY(-50%);
+    }
+  }
+}
+
+.form-control-sm {
+  min-height: $input-min-height-sm; // for IE11
+  padding: rem(2px) rem(20px);
+}
+
+.form-control-white {
+  background-color: $form-control-white;
+  &:focus,
+  &:active {
+    background-color: $form-control-white;
+  }
+}
+
+textarea.form-control {
+  min-height: rem(160px);
+  padding-top: rem(20px);
+  padding-bottom: rem(20px);
+  color: $textarea-form-control-color;
+
+  &:focus {
+    color: $textarea-form-control-color;
+  }
+
+  &.stretchy {
+    resize: none;
+  }
+
+  .form-control-container.is-invalid & {
+    color: $textarea-form-control-color;
+  }
+
+  &[readonly] {
+    background-position: bottom 18px right 18px;
+  }
+
+  // .was-validated &:invalid,
+  // &.is-invalid,
+  // .form-control-container.is-invalid & {
+  //   background-image: url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 26 26'%3E%3Cdefs%3E%3Cstyle%3E.a{fill:%23cd0037;}%3C/style%3E%3C/defs%3E%3Ctitle%3Ecircle-disruption%3C/title%3E%3Cpath class='a' d='M13,0A13,13,0,1,0,26,13,13,13,0,0,0,13,0Zm0,20.29a1.26,1.26,0,1,1,0-2.52A1.17,1.17,0,0,1,14.18,19,1.19,1.19,0,0,1,13,20.29Zm1-4H11.93L11.74,5.2h2.45Z'/%3E%3C/svg%3E");
+  //   background-repeat: no-repeat;
+  //   background-position: bottom 18px right 18px;
+  //   background-size: 26px 26px;
+  // }
+}
+
+.form-control-icon {
+  position: absolute;
+  top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: $icon-width;
+  height: 100%;
+  color: theme-color('primary');
+}
+
+//
+// Labels
+//
+
+// For use with horizontal and inline forms, when you need the label (or legend)
+// text to align with the form controls.
+.col-form-label {
+  padding-top: 0;
+  padding-bottom: 0;
+  margin-bottom: ($spacer * 0.5);
+  font-weight: $font-weight-medium;
+}
+
+label.required {
+  &::after {
+    color: $required-asterix;
+    content: '*';
+  }
+}
+
+//
+// Error message
+//
+
+.form-error {
+  padding: rem(26px) rem(30px);
+  color: $form-error-color;
+  background-color: theme-color('danger');
+  border-radius: rem(5px);
+
+  .h2,
+  h2 {
+    color: $form-error-color;
+  }
+
+  ul {
+    padding-left: rem(16px);
+  }
+}
+
+//
+// Input search mastheader
+//
+
+.mastheader-search input,
+.mastheader-search input:focus {
+  background-color: $input-bg-mastheader;
+}

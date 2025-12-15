@@ -1,0 +1,54 @@
+// Fonts
+//
+// Font, line-height, and color for body text, headings, and more.
+
+$h1-font-size: $font-size-base * 1.5;
+$h1-font-size-md: $font-size-base * 2.625;
+$h2-font-size: $font-size-base * 1.25;
+$h2-font-size-md: $font-size-base * 1.5;
+$h3-font-size: $font-size-base * 1.25;
+$h3-font-size-md: $font-size-base * 1.5;
+
+$h1-line-height-md: 1.1428571429;
+$h2-line-height-md: 1.3;
+$h3-line-height-md: 1.3;
+$headings-line-height: 1.3;
+$headings-line-height-md: 1.25;
+$h1-font-weight: $font-weight-light;
+$h2-font-weight: $font-weight-light;
+$h3-font-weight: $font-weight-base;
+
+$display1-size: $h1-font-size;
+$display1-size-md: $font-size-base * 3;
+$display1-line-height-md: 1.125;
+$display2-size: $h2-font-size;
+$display2-size-md: $h2-font-size-md;
+$display3-size: $h3-font-size;
+$display3-size-md: $h3-font-size-md;
+
+$display1-weight: $font-weight-light;
+$display2-weight: $font-weight-base;
+$display3-weight: $font-weight-medium;
+
+$display-line-height: $headings-line-height;
+$display-line-height-md: $headings-line-height-md;
+
+$font-size-lg: $font-size-base * 1.125;
+$font-size-sm: $font-size-base * 0.875;
+
+$lead-font-size: $h2-font-size;
+$lead-font-weight: 400;
+
+$blockquote-font-size: $font-size-base;
+
+$container-max-width: 1004px;
+
+$grid-gutter-width: 40px;
+
+$btn-padding-y: 0.75rem; // 12px
+
+$input-padding-y: 0.813rem; // 13px
+
+$btn-only-icon-padding: 1rem;
+
+$custom-control-indicator-size: 0.875rem; // 14px

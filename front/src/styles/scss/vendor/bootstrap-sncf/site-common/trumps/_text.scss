@@ -1,0 +1,21 @@
+/* text
+   ========================================================================== */
+// stylelint-disable declaration-no-important
+
+//
+// Text
+//
+
+// Weight and italics
+
+.font-weight-medium {
+  font-weight: $font-weight-medium !important;
+}
+
+// Contextual colors
+
+@each $color, $value in $grays {
+  .text-gray#{$color} {
+    color: $value;
+  }
+}

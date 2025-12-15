@@ -1,0 +1,365 @@
+/* custom forms
+   ========================================================================== */
+
+// Checkboxes and radios
+//
+// Base class takes care of all the key behavioral aspects.
+
+.custom-control-input {
+  &:not(:disabled):checked,
+  &:not(:indeterminate):checked {
+    ~ .custom-control-label {
+      color: $custom-control-checked-color;
+
+      &::before {
+        border-color: $custom-control-indicator-checked-border-color;
+      }
+
+      @include hover-focus-active {
+        color: $custom-control-checked-hover-color;
+
+        &::before {
+          background-color: $custom-control-indicator-checked-hover-bg;
+          border-color: $custom-control-checked-hover-color;
+        }
+      }
+    }
+  }
+
+  /* stylelint-disable declaration-no-important */
+  &:disabled {
+    ~ .custom-control-label,
+    &:indeterminate ~ .custom-control-label,
+    &:indeterminate:checked ~ .custom-control-label,
+    &:checked ~ .custom-control-label {
+      color: $custom-control-label-disabled-color !important;
+
+      &::before {
+        border-color: $custom-control-indicator-checked-disabled-bg !important;
+      }
+      cursor: default;
+    }
+
+    &:checked ~ .custom-control-label {
+      &::before {
+        background-color: $custom-control-indicator-checked-disabled-bg !important;
+      }
+      cursor: default;
+    }
+    cursor: default;
+  }
+  /* stylelint-enable declaration-no-important */
+}
+
+// Custom control indicators
+//
+// Build the custom controls out of psuedo-elements.
+
+.custom-control-label {
+  padding: 0;
+  padding-top: rem(2px);
+  margin-bottom: 0;
+  color: $custom-control-label-color;
+  cursor: pointer;
+  background-color: transparent;
+  border: none;
+
+  // Background-color and (when enabled) gradient
+  &::before {
+    border: $custom-control-indicator-border-size solid $custom-control-indicator-border-color;
+  }
+
+  // Multi select
+  &:hover,
+  &:focus,
+  .custom-control-input:focus + &,
+  &:active,
+  &.active {
+    color: $custom-control-hover-color;
+
+    &::before {
+      border-color: $custom-control-indicator-hover-border-color;
+    }
+  }
+
+  &.active {
+    &::before {
+      @include gradient-bg($custom-control-indicator-checked-bg);
+    }
+
+    &::after {
+      background-image: $custom-checkbox-indicator-icon-checked;
+    }
+  }
+
+  &.indeterminate {
+    &::before {
+      @include gradient-bg($custom-checkbox-indicator-indeterminate-bg);
+      @include box-shadow($custom-checkbox-indicator-indeterminate-box-shadow);
+      border-color: $custom-control-indicator-checked-border-color;
+    }
+
+    &::after {
+      background-image: $custom-checkbox-indicator-icon-indeterminate;
+    }
+
+    &:hover {
+      color: $custom-control-checked-hover-color;
+
+      &::before {
+        background-color: $custom-control-indicator-checked-hover-bg;
+        border-color: $custom-control-checked-hover-color;
+      }
+    }
+  }
+
+  &:checked:hover {
+    color: $custom-control-checked-color;
+  }
+}
+
+// Checkboxes
+//
+// Tweak just a few things for checkboxes.
+
+.custom-checkbox {
+  display: flex;
+  align-items: center;
+
+  .custom-control-input {
+    &:not(:disabled):not(.disabled):indeterminate {
+      ~ .custom-control-label {
+        color: $custom-control-checked-color;
+
+        &::before {
+          border-color: $custom-control-indicator-checked-border-color;
+        }
+
+        &:hover {
+          color: $custom-control-checked-hover-color;
+
+          &::before {
+            background-color: $custom-control-indicator-checked-hover-bg;
+            border-color: $custom-control-checked-hover-color;
+          }
+        }
+      }
+    }
+  }
+}
+
+@each $color, $value in ('green': #4cd201, 'yellow': #ffb901, 'gray': #333333, 'pink': #a1006b) {
+  /* stylelint-disable declaration-block-single-line-max-declarations */
+  .custom-checkbox.is-#{$color} .custom-control-input {
+    &:not(:disabled):checked,
+    &:not(:indeterminate):checked {
+      ~ .custom-control-label {
+        color: $value;
+        &::before {
+          background-color: $value;
+          border-color: $value;
+        }
+        @include hover-focus-active {
+          color: $value;
+          &::before {
+            background-color: $value;
+            border-color: $value;
+          }
+        }
+      }
+    }
+    &:focus ~ .custom-control-label {
+      color: $value;
+    }
+    &:focus ~ .custom-control-label::before {
+      border-color: $value;
+    }
+  }
+  .custom-checkbox.is-#{$color} .custom-control-label {
+    &:hover,
+    &:focus,
+    &:active,
+    &.active {
+      color: $value;
+      &::before {
+        border-color: $value;
+      }
+    }
+  }
+  /* stylelint-enable declaration-block-single-line-max-declarations */
+}
+
+.custom-checkbox-alone {
+  width: $custom-control-indicator-size;
+  height: $custom-control-indicator-size;
+  min-height: auto;
+  padding: 0;
+
+  .custom-control-label {
+    &::before,
+    &::after {
+      top: -0.5rem;
+      left: 0;
+    }
+  }
+}
+
+// Switch
+//
+// Binary checkboxe.
+
+.switch-control {
+  position: relative;
+  display: inline-block;
+  width: rem($switch-control-width);
+  height: rem($switch-control-height);
+  margin-bottom: 0;
+
+  @include hover-focus {
+    input:not([disabled]) + .switch-control-slider {
+      background-color: theme-color('primary');
+
+      &::before {
+        background-color: $component-active-color;
+      }
+    }
+  }
+}
+
+.switch-control-slider {
+  position: absolute;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  cursor: pointer;
+  background-color: $switch-control-slider-bg;
+  border-radius: rem(12px);
+  transition: all 0.15s ease-out;
+
+  &::before {
+    position: absolute;
+    bottom: rem(5px);
+    left: rem(5px);
+    width: rem($switch-control-slider-size);
+    height: rem($switch-control-slider-size);
+    content: '';
+    background-color: theme-color('primary');
+    border-radius: 50%;
+    transition: all 0.15s ease-out;
+  }
+
+  input:checked + & {
+    &::before {
+      transform: translateX($switch-control-slider-translate);
+    }
+  }
+
+  input:not([disabled]):checked + & {
+    background-color: theme-color('primary');
+
+    &::before {
+      background-color: $component-active-color;
+    }
+  }
+
+  // stylelint-disable selector-no-qualifying-type
+  input[disabled] + & {
+    cursor: initial;
+
+    &::before {
+      background-color: gray('300');
+    }
+  }
+
+  input[disabled]:checked + & {
+    background-color: gray('300');
+
+    &::before {
+      background-color: color('white');
+    }
+  }
+  // stylelint-enable selector-no-qualifying-type
+}
+
+// Options
+//
+// Radios options
+
+.options-control {
+  display: inline-flex;
+  padding: rem(5px);
+  background-color: gray('500');
+  border-radius: rem(11px);
+
+  &.disabled {
+    background-color: gray('100');
+  }
+
+  .options-item + .options-item {
+    padding-left: rem(3px);
+  }
+}
+
+.options-btn {
+  padding: rem(6px) rem(20px) rem(5px);
+  margin-bottom: 0;
+  color: color('white');
+  white-space: nowrap;
+  cursor: pointer;
+  border-radius: $btn-border-radius;
+
+  // stylelint-disable selector-no-qualifying-type
+  input[disabled] + & {
+    color: gray('300');
+    cursor: default;
+  }
+
+  input:checked + &,
+  input[disabled]:checked + & {
+    color: gray('500');
+    background-color: color('white');
+  }
+  // stylelint-enable selector-no-qualifying-type
+}
+
+.options-control-lg {
+  .options-btn {
+    padding: rem(10px) rem(20px);
+  }
+}
+
+.options-links {
+  border-bottom: 1px solid #ebebeb;
+
+  .options-item {
+    position: relative;
+    display: inline-block;
+    padding-top: rem(6px);
+    padding-bottom: rem(6px);
+    color: $body-color;
+    cursor: pointer;
+
+    &:not(:first-child) {
+      margin-left: rem(8px);
+    }
+    &:not(:last-child) {
+      margin-right: rem(8px);
+    }
+
+    @include hover-focus-active {
+      color: theme-color('primary');
+      &::after {
+        position: absolute;
+        bottom: rem(-1px);
+        left: 0;
+        display: block;
+        width: 100%;
+        height: rem(5px);
+        content: '';
+        background-color: theme-color('primary');
+        border-radius: rem(10px);
+      }
+    }
+  }
+}
