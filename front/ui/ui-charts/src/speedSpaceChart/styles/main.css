@@ -5,7 +5,8 @@
   margin-top: 1.6875rem;
 }
 
-#curve-layer,
+#speeds-layer,
+#eco-speeds-layer,
 #declivity-layer,
 #front-interactivity-layer {
   margin-left: 3rem;

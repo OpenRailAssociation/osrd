@@ -2,10 +2,20 @@ import React, { useCallback, useEffect, useMemo, useState } from 'react';
 
 import { Slider } from '@osrd-project/ui-core';
 
-import type { Data, EtcsBrakingCurves, Store } from '../types';
+import type { CanvasOptions, Data, EtcsBrakingCurves, Store } from '../types';
 import InteractionButtons from './common/InteractionButtons';
 import SettingsPanel from './common/SettingsPanel';
-import { DEFAULT_ETCS_LAYERS_DISPLAY, LINEAR_LAYERS_HEIGHTS, MARGINS, ZOOM_CONFIG } from './const';
+import {
+  BASE_SPEED_COLOR,
+  BASE_SPEED_FILL_ALPHA,
+  DEFAULT_ETCS_LAYERS_DISPLAY,
+  ECO_SPEED_COLOR,
+  LINEAR_LAYERS_HEIGHTS,
+  MARGINS,
+  SPEEDS_LINEWIDTH,
+  WHITE,
+  ZOOM_CONFIG,
+} from './const';
 import { computeLeftOffsetOnZoom, resetZoom } from './helpers/layersManager';
 import {
   AxisLayerY,
@@ -208,6 +218,7 @@ const SpeedSpaceChart = ({
     [setHeight]
   );
 
+  //TODO: display ETCS curves
   useEffect(() => {
     const shouldFetchEtcsCurves = getActiveEtcsBrakingTypes(store.etcsLayersDisplay).length > 0;
     if (fetchEtcsBrakingCurves && shouldFetchEtcsCurves) {
@@ -228,6 +239,35 @@ const SpeedSpaceChart = ({
       ...data,
     }));
   }, [data]);
+
+  const speedsCanvasOptions: CanvasOptions = {
+    id: 'speeds-layer',
+    width: WIDTH_OFFSET,
+    height: HEIGHT_OFFSET,
+    strokeOptions: {
+      linewidth: SPEEDS_LINEWIDTH,
+      strokeStyle: BASE_SPEED_COLOR.hex(),
+      globalCompositeOperation: 'source-over',
+    },
+    fillOptions: {
+      fillStyle: BASE_SPEED_COLOR.alpha(BASE_SPEED_FILL_ALPHA).hex(),
+      globalCompositeOperation: 'source-over',
+    },
+  };
+  const ecoSpeedsCanvasOptions: CanvasOptions = {
+    id: 'eco-speeds-layer',
+    width: WIDTH_OFFSET,
+    height: HEIGHT_OFFSET,
+    strokeOptions: {
+      linewidth: SPEEDS_LINEWIDTH,
+      strokeStyle: ECO_SPEED_COLOR.hex(),
+      globalCompositeOperation: 'source-over',
+    },
+    fillOptions: {
+      fillStyle: WHITE.hex(),
+      globalCompositeOperation: 'source-over',
+    },
+  };
 
   return (
     <div
@@ -288,10 +328,11 @@ const SpeedSpaceChart = ({
           />
         </div>
       )}
+      <CurveLayer store={store} curve={store.speeds} canvasOptions={speedsCanvasOptions} />
+      <CurveLayer store={store} curve={store.ecoSpeeds} canvasOptions={ecoSpeedsCanvasOptions} />
       {store.layersDisplay.declivities && (
         <DeclivityLayer width={WIDTH_OFFSET} height={HEIGHT_OFFSET} store={store} />
       )}
-      <CurveLayer width={WIDTH_OFFSET} height={HEIGHT_OFFSET} store={store} />
       {store.layersDisplay.speedLimits && (
         <SpeedLimitsLayer width={adjustedWidthRightAxis} height={mainChartHeight} store={store} />
       )}
