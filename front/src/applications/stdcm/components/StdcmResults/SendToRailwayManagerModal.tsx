@@ -394,9 +394,7 @@ const SendToRailwayManagerModal = ({
                       role="button"
                       tabIndex={0}
                     >
-                      <span className="pdf-icon">
-                        <Download />
-                      </span>
+                      <Download className="pdf-icon" size="lg" iconColor="var(--grey40)" />
                       <span className="pdf-badge">{t('modal.pdf')}</span>
                     </div>
                   );

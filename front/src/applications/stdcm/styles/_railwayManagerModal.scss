@@ -108,7 +108,7 @@
     width: 82px;
     height: 106px;
     background: var(--white);
-    border-radius: 8px;
+    border-radius: 4px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -117,8 +117,6 @@
     box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 
     .pdf-icon {
-      font-size: 1.25rem;
-      color: var(--gray);
       margin-bottom: 8px;
     }
 
@@ -130,8 +128,8 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 0.75rem;
-      font-weight: 600;
+      font-size: 0.875rem;
+      font-weight: 400;
       color: var(--primary60);
     }
   }
