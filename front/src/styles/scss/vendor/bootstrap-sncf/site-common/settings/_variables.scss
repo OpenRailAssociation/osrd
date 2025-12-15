@@ -1,0 +1,1601 @@
+// Variables
+//
+// Variables should follow the `$component-state-property-size` formula for
+// consistent naming. Ex: $nav-link-disabled-color and $modal-content-box-shadow-xs.
+
+//
+// Color system
+//
+
+// stylelint-disable
+$white: #fff !default;
+$gray-100: #f2f2f2 !default;
+$gray-200: #d7d7d7 !default;
+$gray-300: #b9b9b9 !default;
+$gray-400: #747678 !default;
+$gray-500: #4d4f53 !default;
+$gray-600: #333 !default;
+$gray-700: #495057 !default;
+$gray-800: #343a40 !default;
+$gray-900: #212529 !default;
+$black: #000 !default;
+
+$grays: ();
+$grays: map-merge(
+  (
+    '100': $gray-100,
+    '200': $gray-200,
+    '300': $gray-300,
+    '400': $gray-400,
+    '500': $gray-500,
+    '600': $gray-600,
+    '700': $gray-700,
+    '800': $gray-800,
+    '900': $gray-900,
+  ),
+  $grays
+);
+
+$oldblue: #0088ce !default;
+$blue: #303383 !default;
+$darkblue: #16183d !default;
+$verydarkblue: #0e0f26 !default;
+$purple: #6e1e78 !default;
+$pink: #a1006b !default;
+$red: #cd0037 !default;
+$orange: #e05206 !default;
+$yellow: #ffb612 !default;
+$green: #82be00 !default;
+$teal: #d2e100 !default;
+$cyan: #009aa6 !default;
+$carbon: #333 !default;
+
+$colors: ();
+$colors: map-merge(
+  (
+    'oldblue': $oldblue,
+    'blue': $blue,
+    'darkblue': $darkblue,
+    'verydarkblue': $verydarkblue,
+    'purple': $purple,
+    'pink': $pink,
+    'red': $red,
+    'orange': $orange,
+    'yellow': $yellow,
+    'green': $green,
+    'teal': $teal,
+    'cyan': $cyan,
+    'white': $white,
+    'black': $black,
+    'gray': $gray-600,
+    'gray-dark': $gray-800,
+  ),
+  $colors
+);
+
+$primary: $blue !default;
+$primary-dark: #202258 !default;
+$secondary: $gray-500 !default;
+$success: $green !default;
+$info: $cyan !default;
+$warning: $yellow !default;
+$danger: $red !default;
+$light: $gray-100 !default;
+$dark: $gray-800 !default;
+
+$theme-colors: ();
+$theme-colors: map-merge(
+  (
+    'primary': $primary,
+    'primary-dark': $primary-dark,
+    'secondary': $secondary,
+    'success': $success,
+    'info': $info,
+    'warning': $warning,
+    'danger': $danger,
+    'light': $light,
+    'dark': $dark,
+    'white': $white,
+  ),
+  $theme-colors
+);
+
+$required-asterix: $danger !default;
+
+$btn-primary-color: $white !default;
+$btn-secondary-color: $white !default;
+$btn-secondary-bg: #333333 !default;
+$btn-white-color: $primary !default;
+$btn-white-hover-color: $primary-dark !default;
+$btn-white-bg: $white !default;
+$btn-white-hover-bg: $white !default;
+
+$btn-colors: ();
+$btn-colors: map-merge(
+  (
+    'primary': (
+      $primary,
+      $primary,
+      $btn-primary-color,
+      $primary-dark,
+      $primary-dark,
+      $btn-primary-color,
+      $primary-dark,
+      $primary-dark,
+      $btn-primary-color,
+    ),
+    'secondary': (
+      $secondary,
+      $secondary,
+      $btn-secondary-color,
+      $btn-secondary-bg,
+      $btn-secondary-bg,
+      $btn-secondary-color,
+      $btn-secondary-bg,
+      $btn-secondary-bg,
+      $btn-secondary-color,
+    ),
+    'success': $success,
+    'info': $info,
+    'warning': $warning,
+    'danger': $danger,
+    'light': $light,
+    'dark': $dark,
+    'white': (
+      $btn-white-bg,
+      $btn-white-bg,
+      $btn-white-color,
+      $btn-white-hover-bg,
+      $btn-white-hover-bg,
+      $btn-white-hover-color,
+      $btn-white-hover-bg,
+      $btn-white-hover-bg,
+      $btn-white-hover-color,
+    ),
+    'transparent': (
+      transparent,
+      transparent,
+      $white,
+      transparent,
+      transparent,
+      $primary,
+      transparent,
+      transparent,
+      $primary,
+    ),
+  ),
+  $btn-colors
+);
+
+$btn-color-gray: $gray-600 !default;
+
+$btn-disabled-color: $gray-300 !default;
+$btn-disabled-bg: $gray-100 !default;
+$btn-disabled-border-color: $gray-100 !default;
+
+$btn-rounded-white-color: $primary !default;
+$btn-rounded-white-bg: $white !default;
+$btn-rounded-white-hover-color: $white !default;
+$btn-rounded-white-hover-bg: $primary !default;
+
+$btn-rounded-colors: ();
+$btn-rounded-colors: map-merge(
+  (
+    'primary': (
+      $primary,
+      $primary,
+      $white,
+      $primary-dark,
+      $primary-dark,
+      $white,
+    ),
+    'white': (
+      $btn-rounded-white-bg,
+      $btn-rounded-white-bg,
+      $btn-rounded-white-color,
+      $btn-rounded-white-hover-bg,
+      $btn-rounded-white-hover-bg,
+      $btn-rounded-white-hover-color,
+    ),
+    'gray': (
+      $gray-300,
+      $gray-300,
+      $white,
+      $gray-300,
+      $gray-300,
+      $white,
+    ),
+    'facebook': (
+      $gray-400,
+      $gray-400,
+      $white,
+      #3b5998,
+      #3b5998,
+      $white,
+    ),
+    'twitter': (
+      $gray-400,
+      $gray-400,
+      $white,
+      #4099ff,
+      #4099ff,
+      $white,
+    ),
+    'linkedin': (
+      $gray-400,
+      $gray-400,
+      $white,
+      #007bb6,
+      #007bb6,
+      $white,
+    ),
+    'instagram': (
+      $gray-400,
+      $gray-400,
+      $white,
+      #c32aa3,
+      #c32aa3,
+      $white,
+    ),
+    'youtube': (
+      $gray-400,
+      $gray-400,
+      $white,
+      #bb0000,
+      #bb0000,
+      $white,
+    ),
+  ),
+  $btn-rounded-colors
+);
+
+$sami-grey: $gray-600 !default;
+
+$sami-colors: ();
+$sami-colors: map-merge(
+  (
+    'green': $green,
+    'blue': $blue,
+    'yellow': $yellow,
+    'red': $red,
+    'gray': $sami-grey,
+  ),
+  $sami-colors
+);
+$sami-bg: $gray-300 !default;
+$sami-color: $white !default;
+
+// stylelint-enable
+
+// Set a specific jump point for requesting color jumps
+$theme-color-interval: 8%;
+
+// The yiq lightness value that determines when the lightness of color changes from "dark" to "light". Acceptable values are between 0 and 255.
+$yiq-contrasted-threshold: 150;
+
+// Customize the light and dark text colors for use in our YIQ color contrast function.
+$yiq-text-dark: $gray-900 !default;
+$yiq-text-light: $white !default;
+
+// Options
+//
+// Quickly modify global styling by enabling or disabling optional features.
+
+$enable-caret: false;
+$enable-rounded: true;
+$enable-shadows: false;
+$enable-gradients: false;
+$enable-transitions: true;
+$enable-hover-media-query: false; // Deprecated, no longer affects any compiled CSS
+$enable-grid-classes: true;
+$enable-print-styles: true;
+
+$enable-prefers-reduced-motion-media-query: true !default;
+$enable-pointer-cursor-for-buttons: true !default;
+$enable-responsive-font-sizes: false !default;
+$enable-validation-icons: true !default;
+$enable-deprecation-messages: true !default;
+
+// Spacing
+//
+// Control the default styling of most Bootstrap elements by modifying these
+// variables. Mostly focused on spacing.
+// You can add more entries to the $spacers map, should you need more variation.
+
+// stylelint-disable
+$spacer: 1rem;
+$spacers: ();
+$spacers: map-merge(
+  (
+    0: 0,
+    1: (
+      $spacer * 0.25,
+    ),
+    2: (
+      $spacer * 0.5,
+    ),
+    3: $spacer,
+    4: (
+      $spacer * 1.5,
+    ),
+    5: (
+      $spacer * 3,
+    ),
+  ),
+  $spacers
+);
+
+// gutters spacing
+$gutter: 1.25rem; // 20px
+$gutters: ();
+$gutters: map-merge(
+  (
+    0: 0,
+    1: (
+      $gutter * 0.25,
+    ),
+    2: (
+      $gutter * 0.5,
+    ),
+    3: $gutter,
+    4: (
+      $gutter * 1.5,
+    ),
+    5: (
+      $gutter * 2,
+    ),
+    6: (
+      $gutter * 2.5,
+    ),
+    7: (
+      $gutter * 3,
+    ),
+    8: (
+      $gutter * 4,
+    ),
+  ),
+  $gutters
+);
+
+// This variable affects the `.h-*` and `.w-*` classes.
+$sizes: ();
+$sizes: map-merge(
+  (
+    25: 25%,
+    50: 50%,
+    75: 75%,
+    100: 100%,
+  ),
+  $sizes
+);
+// stylelint-enable
+
+// Body
+//
+// Settings for the `<body>` element.
+
+$body-bg: $gray-100 !default;
+$body-bg-lg: $gray-100 !default;
+$body-color: $gray-500 !default;
+$background: $body-bg !default;
+
+// Links
+//
+// Style anchor elements.
+
+$link-color: $primary !default;
+$link-decoration: none;
+$link-hover-color: $primary-dark !default;
+$link-hover-decoration: none;
+// Darken percentage for links with `.text-*` class (e.g. `.text-success`)
+$emphasized-link-hover-darken-percentage: 15% !default;
+
+// Paragraphs
+//
+// Style p element.
+
+$paragraph-margin-bottom: 1rem;
+
+// Grid @points
+//
+// Define the minimum dimensions at which your layout will change,
+// adapting to different screen sizes, for use in media queries.
+
+$grid-breakpoints: (
+  xs: 0,
+  sm: 576px,
+  md: 768px,
+  lg: 1024px,
+  xl: 1280px,
+  hd: 1366px,
+  hdp: 1600px,
+  fhd: 1920px,
+) !default;
+
+@include _assert-ascending($grid-breakpoints, '$grid-breakpoints');
+@include _assert-starts-at-zero($grid-breakpoints);
+
+// Grid containers
+//
+// Define the maximum width of `.container` for different screen sizes.
+
+$container-max-widths: (
+  sm: 540px,
+  md: 720px,
+  lg: 960px,
+  xl: 1140px,
+  hd: 1220px,
+  hdp: 1400px,
+  fhd: 1664px,
+);
+
+@include _assert-ascending($container-max-widths, '$container-max-widths');
+
+// Grid columns
+//
+// Set the number of columns and specify the width of the gutters.
+
+$grid-columns: 12;
+$grid-gutter-width: 20px;
+
+// Components
+//
+// Define common padding and border radius sizes and more.
+
+$line-height-lg: 1.5;
+$line-height-sm: 1.5;
+$line-height-xs: 1.5;
+
+$border-width: 1px;
+$border-color: $gray-200 !default;
+
+$border-radius: 0.4375rem;
+$border-radius-lg: $border-radius;
+$border-radius-sm: $border-radius;
+
+$rounded-pill: 50rem !default;
+
+$box-shadow-sm: 0 0.125rem 0.25rem rgba($black, 0.075) !default;
+$box-shadow: 0 0.5rem 1rem rgba($black, 0.15) !default;
+$box-shadow-lg: 0 1rem 3rem rgba($black, 0.175) !default;
+
+$component-active-color: $white !default;
+$component-active-bg: $primary !default;
+
+$caret-width: 0.375em;
+
+$transition-base: all 0.2s ease-in-out;
+$transition-fade: opacity 0.15s linear;
+$transition-collapse: height 0.35s ease;
+
+$embed-responsive-aspect-ratios: () !default;
+// stylelint-disable-next-line scss/dollar-variable-default
+$embed-responsive-aspect-ratios: join(
+  ((21 9), (16 9), (4 3), (1 1)),
+  $embed-responsive-aspect-ratios
+);
+
+// Typography
+//
+// Font, line-height, and color for body text, headings, and more.
+
+// stylelint-disable value-keyword-case
+$font-family-sans-serif:
+  Avenir,
+  -apple-system,
+  BlinkMacSystemFont,
+  'Segoe UI',
+  Roboto,
+  'Helvetica Neue',
+  Arial,
+  sans-serif,
+  'Apple Color Emoji',
+  'Segoe UI Emoji',
+  'Segoe UI Symbol';
+$font-family-monospace:
+  SFMono-Regular, Menlo, Monaco, Consolas, 'Liberation Mono', 'Courier New', monospace;
+$font-family-base: $font-family-sans-serif;
+// stylelint-enable value-keyword-case
+
+$font-size-base: 1rem; // Assumes the browser default, typically `16px`
+$font-size-lg: ($font-size-base * 1.25);
+$font-size-sm: ($font-size-base * 0.875);
+$font-size-xs: ($font-size-base * 0.75);
+
+$font-weight-lighter: lighter !default;
+$font-weight-light: 300;
+$font-weight-normal: 400;
+$font-weight-medium: 500;
+$font-weight-bold: 700;
+$font-weight-black: 900;
+$font-weight-bolder: bolder !default;
+
+$font-weight-base: $font-weight-normal;
+$line-height-base: 1.375; // 16/22
+
+$h1-font-size: $font-size-base * 1.5;
+$h1-font-size-md: $font-size-base * 1.25;
+$h2-font-size: $font-size-base * 1;
+$h3-font-size: $font-size-base * 1;
+$h4-font-size: $font-size-base * 1;
+$h5-font-size: $font-size-base * 1;
+$h6-font-size: $font-size-base;
+
+$h1-line-height: 1.25;
+$h1-line-height-md: 1.3;
+$h1-font-weight: $font-weight-normal;
+
+$headings-margin-bottom: ($spacer / 2);
+$headings-font-family: inherit;
+$headings-font-weight: 500;
+$headings-line-height: 1.2;
+$headings-color: $gray-600 !default;
+
+$display1-size: $h1-font-size;
+$display2-size: $h2-font-size;
+$display3-size: $h3-font-size;
+$display4-size: $h4-font-size;
+
+$display1-weight: 500;
+$display2-weight: 400;
+$display3-weight: 400;
+$display4-weight: 400;
+$display-line-height: $headings-line-height;
+
+$display1-color: $primary !default;
+
+$lead-color: $body-color;
+$lead-font-size: ($font-size-base * 1.25);
+$lead-font-weight: 300;
+
+$small-font-size: 0.75rem;
+
+$text-muted: $gray-400 !default;
+
+$blockquote-small-color: $gray-400 !default;
+$blockquote-small-font-size: $small-font-size !default;
+$blockquote-font-size: ($font-size-base * 1.25);
+
+$hr-border-color: rgba($black, 0.1);
+$hr-border-width: $border-width;
+
+$mark-padding: 0.2em;
+
+$dt-font-weight: $font-weight-bold;
+
+$kbd-box-shadow: inset 0 -0.1rem 0 rgba($black, 0.25);
+$nested-kbd-font-weight: $font-weight-bold;
+
+$list-inline-padding: 0.5rem;
+
+$mark-bg: #fcf8e3;
+
+$hr-margin-y: $spacer;
+
+// ControlBar
+//
+$controlbar-bg: $gray-100 !default;
+
+// Tables
+//
+// Customizes the `.table` component with basic values, each used across all table variations.
+
+$table-cell-padding: 0 1.25rem;
+$table-cell-padding-sm: 0 0.3rem;
+
+$table-color: $body-color !default;
+$table-bg: #fff !default;
+$table-accent-bg: rgba($black, 0.05) !default;
+$table-hover-color: $table-color !default;
+$table-hover-bg: rgba($black, 0.075) !default;
+$table-active-bg: $table-hover-bg !default;
+
+$table-border-width: $border-width !default;
+$table-border-color: #d8d8d8 !default;
+
+$table-head-bg: $gray-100 !default;
+$table-head-color: $gray-600 !default;
+
+$table-dark-color: $white !default;
+$table-dark-bg: $gray-900 !default;
+$table-dark-accent-bg: rgba($white, 0.05);
+$table-dark-hover-color: $table-dark-color !default;
+$table-dark-hover-bg: rgba($white, 0.075);
+$table-dark-border-color: lighten($gray-900, 7.5%);
+$table-dark-color: $body-bg;
+
+$table-striped-order: odd;
+
+$table-caption-color: $text-muted;
+
+$table-bg-level: -9 !default;
+$table-border-level: -6 !default;
+
+$table-scroll-max-to-right: linear-gradient(to right, #fff 2%, rgba(255, 255, 255, 0) 98%);
+$table-scroll-max-to-left: linear-gradient(to left, #fff 2%, rgba(255, 255, 255, 0) 98%);
+
+// Table Filters
+
+$table-filters-color: $body-color;
+$table-filters-title-color: $gray-600 !default;
+$table-filters-item-color: $gray-500 !default;
+$table-filters-group-title-color: $gray-500 !default;
+$table-filters-bg: $white !default;
+
+// Buttons + Forms
+//
+// Shared variables that are reassigned to `$input-` and `$btn-` specific variables.
+
+$input-btn-padding-y: 0.375rem;
+$input-btn-padding-x: 1.875rem; // 30px
+$input-btn-font-family: null !default;
+$input-btn-font-size: $font-size-base !default;
+$input-btn-line-height: 1.5;
+$input-btn-height: 2.8125rem; // 45px
+
+$input-btn-focus-width: 0; // .2rem;
+$input-btn-focus-color: rgba($component-active-bg, 0.25);
+$input-btn-focus-box-shadow: none; // 0 0 0 $input-btn-focus-width $input-btn-focus-color;
+
+$input-btn-padding-y-sm: 0.125rem; // 2px
+$input-btn-padding-x-sm: 1.25rem;
+$input-btn-font-size-sm: $font-size-sm !default;
+$input-btn-line-height-sm: $input-btn-line-height;
+$input-btn-height-sm: 1.875rem; // 30px
+
+$input-btn-padding-y-lg: 0.5rem;
+$input-btn-padding-x-lg: 1rem;
+$input-btn-font-size-lg: $font-size-lg !default;
+$input-btn-line-height-lg: $line-height-lg;
+
+$input-btn-border-width: $border-width;
+
+// Buttons
+//
+// For each of Bootstrap's buttons, define text, background, and border color.
+
+$btn-padding-y: 0.59375rem; // 9.5
+$btn-padding-x: 1.875rem; // 30px
+$btn-line-height: $input-btn-line-height;
+$btn-height: $input-btn-height;
+
+$btn-padding-y-sm: $input-btn-padding-y-sm;
+$btn-padding-x-sm: $input-btn-padding-x-sm;
+$btn-line-height-sm: $input-btn-line-height-sm;
+$btn-height-sm: $input-btn-height-sm;
+
+$btn-padding-y-lg: $input-btn-padding-y-lg;
+$btn-padding-x-lg: $input-btn-padding-x-lg;
+$btn-line-height-lg: $input-btn-line-height-lg;
+
+$btn-border-width: $input-btn-border-width;
+
+$btn-font-weight: $font-weight-medium;
+$btn-box-shadow: 0; // inset 0 1px 0 rgba($white, .15), 0 1px 1px rgba($black, .075);
+$btn-focus-width: $input-btn-focus-width;
+$btn-focus-box-shadow: $input-btn-focus-box-shadow;
+$btn-disabled-opacity: 1; // .65;
+$btn-active-box-shadow: 0; // inset 0 3px 5px rgba($black, .125);
+
+$btn-link-disabled-color: $gray-300 !default;
+
+$btn-block-spacing-y: 0.5rem;
+
+// Allows for customizing button radius independently from global border radius
+$btn-border-radius: $border-radius;
+$btn-border-radius-lg: $border-radius-lg;
+$btn-border-radius-sm: $border-radius;
+
+$btn-transition:
+  color 0.15s ease-in-out,
+  background-color 0.15s ease-in-out,
+  border-color 0.15s ease-in-out,
+  box-shadow 0.15s ease-in-out;
+
+// Button cards
+$btn-card-bg: $white !default;
+$btn-card-border: $white !default;
+$btn-card-color: $gray-400 !default;
+$btn-card-active-bg: $primary !default;
+$btn-card-active-border: $primary !default;
+$btn-card-active-color: $white !default;
+
+// Forms
+
+$label-margin-bottom: 0.5rem !default;
+
+$textarea-form-control-color: $primary;
+
+$input-padding-y: 0.65625rem; // 10.5px
+$input-padding-x: 1.25rem;
+$input-font-family: $input-btn-font-family !default;
+$input-font-size: $input-btn-font-size !default;
+$input-font-weight: $font-weight-base !default;
+$input-line-height: $input-btn-line-height;
+$input-min-height: $input-btn-height;
+
+$input-padding-y-sm: $input-btn-padding-y-sm;
+$input-padding-x-sm: $input-btn-padding-x-sm;
+$input-font-size-sm: $input-btn-font-size-sm !default;
+$input-line-height-sm: $input-btn-line-height-sm;
+$input-min-height-sm: $input-btn-height-sm;
+
+$input-padding-y-lg: $input-btn-padding-y-lg;
+$input-padding-x-lg: $input-btn-padding-x-lg;
+$input-font-size-lg: $input-btn-font-size-lg !default;
+$input-line-height-lg: $input-btn-line-height-lg;
+
+$input-bg: $gray-100 !default;
+$input-bg-mastheader: $input-bg !default;
+$input-disabled-bg: $gray-100 !default;
+$input-disabled-color: $gray-500 !default;
+
+$input-color: $primary;
+$input-border-color: $gray-400 !default;
+$input-border-width: 0;
+$input-box-shadow: 0; // inset 0 1px 1px rgba($black, .075);
+
+$input-border-radius: $border-radius;
+$input-border-radius-lg: $border-radius-lg;
+$input-border-radius-sm: $border-radius-sm;
+
+$input-focus-bg: $gray-100 !default;
+$input-focus-border-color: lighten($component-active-bg, 25%) !default;
+$input-focus-color: $input-color;
+$input-focus-width: $input-btn-focus-width;
+$input-focus-box-shadow: $input-btn-focus-box-shadow;
+
+$input-placeholder-color: $gray-400 !default;
+$input-plaintext-color: $body-color !default;
+
+$input-height-border: $input-border-width * 2;
+
+$input-height-inner: ($font-size-base * $input-btn-line-height) + ($input-btn-padding-y * 2);
+$input-height-inner-half: calc(#{$input-line-height * 0.5em} + #{$input-padding-y}) !default;
+$input-height-inner-quarter: calc(
+  #{$input-line-height * 0.25em} + #{$input-padding-y / 2}
+) !default;
+
+$input-height: calc(#{$input-height-inner} + #{$input-height-border});
+
+$input-height-inner-sm: ($font-size-sm * $input-btn-line-height-sm) + ($input-btn-padding-y-sm * 2);
+$input-height-sm: calc(#{$input-height-inner-sm} + #{$input-height-border});
+
+$input-height-inner-lg: ($font-size-lg * $input-btn-line-height-lg) + ($input-btn-padding-y-lg * 2);
+$input-height-lg: calc(#{$input-height-inner-lg} + #{$input-height-border});
+
+$input-transition:
+  border-color 0.15s ease-in-out,
+  box-shadow 0.15s ease-in-out;
+
+$form-text-margin-top: 0.25rem;
+
+$form-check-input-gutter: 1.25rem;
+$form-check-input-margin-y: 0.3rem;
+$form-check-input-margin-x: 0.25rem;
+
+$form-check-inline-margin-x: 0.75rem;
+$form-check-inline-input-margin-x: 0.3125rem;
+
+$form-grid-gutter-width: 10px !default;
+$form-group-margin-bottom: $spacer * 1.5;
+
+$form-toolbar-border-color: $gray-100 !default;
+$form-toolbar-color: $body-color;
+
+$form-control-white: $white !default; // Only useful for darkmode
+
+$form-error-color: $white !default;
+
+$input-group-addon-color: $input-color;
+$input-group-addon-bg: $gray-200 !default;
+$input-group-addon-border-color: $input-border-color;
+
+$custom-forms-transition:
+  background-color 0.15s ease-in-out,
+  border-color 0.15s ease-in-out,
+  box-shadow 0.15s ease-in-out !default;
+
+//
+// Chips
+//
+
+$chips-color: $white !default;
+$chips-input-color: $primary !default;
+
+$custom-control-gutter: 1.5rem;
+$custom-control-spacer-x: 1rem;
+
+$custom-control-indicator-size: 1.125rem; // 18px
+$custom-control-indicator-bg: $white !default;
+
+$custom-control-indicator-bg-size: 50% 50%;
+$custom-control-indicator-box-shadow: inset 0 0.25rem 0.25rem rgba($black, 0.1);
+$custom-control-indicator-border-width: $input-border-width !default;
+
+$custom-control-indicator-disabled-bg: $gray-200 !default;
+$custom-control-label-disabled-color: $gray-600 !default;
+$custom-control-label-color: $gray-400 !default;
+
+$custom-control-indicator-checked-color: $component-active-color;
+$custom-control-indicator-checked-bg: $component-active-bg;
+$custom-control-indicator-checked-disabled-bg: rgba($primary, 0.5);
+$custom-control-indicator-checked-box-shadow: none;
+
+$custom-control-indicator-focus-box-shadow:
+  0 0 0 1px $body-bg,
+  $input-btn-focus-box-shadow;
+$custom-control-indicator-focus-border-color: $input-focus-border-color !default;
+
+$custom-control-indicator-active-color: $component-active-color;
+$custom-control-indicator-active-bg: lighten($component-active-bg, 35%);
+$custom-control-indicator-active-box-shadow: none;
+$custom-control-indicator-active-border-color: $custom-control-indicator-active-bg !default;
+
+// REFACTORING
+$custom-control-indicator-border-color: $gray-300 !default;
+$custom-control-indicator-hover-border-color: $primary !default;
+$custom-control-indicator-checked-hover-bg: $primary-dark !default;
+$custom-control-indicator-checked-hover-bg: $primary-dark !default;
+$custom-control-indicator-border-size: 2px;
+$custom-control-indicator-disabled-bg: transparent;
+$custom-control-indicator-checked-disabled-bg: $gray-100 !default;
+$custom-control-label-disabled-color: $gray-300 !default;
+$custom-checkbox-indicator-icon-disabled-checked: str-replace(
+  url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3E%3Cpath fill='#{$custom-control-label-disabled-color}' d='M6.564.75l-3.59 3.612-1.538-1.55L0 4.26 2.974 7.25 8 2.193z'/%3E%3C/svg%3E"),
+  '#',
+  '%23'
+) !default;
+$custom-control-hover-color: $primary !default;
+$custom-control-checked-color: $primary !default;
+$custom-control-disabled-color: $gray-200 !default;
+$custom-control-checked-hover-color: $primary-dark !default;
+$custom-control-indicator-checked-border-color: $primary !default;
+$switch-control-width: 48px;
+$switch-control-height: 24px;
+$switch-control-slider-size: 14px;
+$switch-control-slider-translate: 24px;
+$switch-control-slider-bg: $gray-100 !default;
+// REFACTORING
+
+$custom-checkbox-indicator-border-radius: 3px;
+$custom-checkbox-indicator-icon-checked: str-replace(
+  url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3E%3Cpath fill='#{$custom-control-indicator-checked-color}' d='M6.564.75l-3.59 3.612-1.538-1.55L0 4.26 2.974 7.25 8 2.193z'/%3E%3C/svg%3E"),
+  '#',
+  '%23'
+);
+
+$custom-checkbox-indicator-indeterminate-bg: $component-active-bg;
+$custom-checkbox-indicator-indeterminate-color: $custom-control-indicator-checked-color;
+$custom-checkbox-indicator-icon-indeterminate: str-replace(
+  url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 4'%3E%3Cpath stroke='#{$custom-checkbox-indicator-indeterminate-color}' d='M0 2h4'/%3E%3C/svg%3E"),
+  '#',
+  '%23'
+);
+$custom-checkbox-indicator-indeterminate-box-shadow: none;
+$custom-checkbox-indicator-indeterminate-border-color: $custom-checkbox-indicator-indeterminate-bg !default;
+
+$custom-radio-indicator-border-radius: 50%;
+$custom-radio-indicator-icon-checked: none;
+
+$custom-switch-width: $custom-control-indicator-size * 1.75 !default;
+$custom-switch-indicator-border-radius: $custom-control-indicator-size / 2 !default;
+$custom-switch-indicator-size: calc(
+  #{$custom-control-indicator-size} - #{$custom-control-indicator-border-width * 4}
+) !default;
+
+$custom-select-padding-y: 0.375rem;
+$custom-select-padding-x: 0.75rem;
+$custom-select-font-family: $input-font-family !default;
+$custom-select-font-size: $input-font-size !default;
+$custom-select-height: $input-height;
+$custom-select-indicator-padding: 1rem; // Extra padding to account for the presence of the background-image based indicator
+$custom-select-font-weight: $input-font-weight !default;
+$custom-select-line-height: $input-btn-line-height;
+$custom-select-color: $input-color;
+$custom-select-disabled-color: $gray-600 !default;
+$custom-select-bg: $white !default;
+$custom-select-disabled-bg: $gray-200 !default;
+$custom-select-bg-size: 8px 10px; // In pixels because image dimensions
+$custom-select-indicator-color: $gray-800;
+$custom-select-indicator: str-replace(
+  url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 4 5'%3E%3Cpath fill='#{$custom-select-indicator-color}' d='M2 0L0 2h4zm0 5L0 3h4z'/%3E%3C/svg%3E"),
+  '#',
+  '%23'
+);
+$custom-select-background: $custom-select-indicator no-repeat right $custom-select-padding-x
+  center / $custom-select-bg-size !default; // Used so we can have multiple background elements (e.g., arrow and feedback icon)
+
+$custom-select-feedback-icon-padding-right: calc(
+  (1em + #{2 * $custom-select-padding-y}) * 3 / 4 + #{$custom-select-padding-x +
+    $custom-select-indicator-padding}
+) !default;
+$custom-select-feedback-icon-position: center right
+  ($custom-select-padding-x + $custom-select-indicator-padding) !default;
+$custom-select-feedback-icon-size: $input-height-inner-half $input-height-inner-half !default;
+
+$custom-select-border-width: $input-btn-border-width;
+$custom-select-border-color: $input-border-color;
+$custom-select-border-radius: $border-radius;
+$custom-select-box-shadow: inset 0 1px 2px rgba($black, 0.075) !default;
+
+$custom-select-focus-border-color: $input-focus-border-color;
+$custom-select-focus-width: $input-focus-width !default;
+$custom-select-focus-box-shadow:
+  inset 0 1px 2px rgba($black, 0.075),
+  0 0 5px rgba($custom-select-focus-border-color, 0.5);
+
+$custom-select-padding-y-sm: $input-padding-y-sm !default;
+$custom-select-padding-x-sm: $input-padding-x-sm !default;
+$custom-select-font-size-sm: 75%;
+$custom-select-height-sm: $input-height-sm;
+
+$custom-select-padding-y-lg: $input-padding-y-lg !default;
+$custom-select-padding-x-lg: $input-padding-x-lg !default;
+$custom-select-font-size-lg: 125%;
+$custom-select-height-lg: $input-height-lg;
+
+$select-improved-border-color: $gray-100 !default;
+$select-improved-menu-item-color: $gray-500 !default;
+$select-improved-menu-bg: $white !default;
+$select-improved-menu-border-color: $gray-200 !default;
+$select-improved-group-title: $gray-500 !default;
+
+$custom-range-track-width: 100% !default;
+$custom-range-track-height: 0.5rem !default;
+$custom-range-track-cursor: pointer !default;
+$custom-range-track-bg: $gray-300 !default;
+$custom-range-track-border-radius: 1rem !default;
+$custom-range-track-box-shadow: inset 0 0.25rem 0.25rem rgba($black, 0.1) !default;
+
+$custom-range-thumb-width: 1rem !default;
+$custom-range-thumb-height: $custom-range-thumb-width !default;
+$custom-range-thumb-bg: $component-active-bg !default;
+$custom-range-thumb-border: 0 !default;
+$custom-range-thumb-border-radius: 1rem !default;
+$custom-range-thumb-box-shadow: 0 0.1rem 0.25rem rgba($black, 0.1) !default;
+$custom-range-thumb-focus-box-shadow:
+  0 0 0 1px $body-bg,
+  $input-focus-box-shadow !default;
+$custom-range-thumb-focus-box-shadow-width: $input-focus-width !default; // For focus box shadow issue in IE/Edge
+$custom-range-thumb-active-bg: lighten($component-active-bg, 35%) !default;
+$custom-range-thumb-disabled-bg: $gray-500 !default;
+
+//
+// Advanced search
+//
+
+$advanced-search-bg: $white !default;
+$advanced-search-border-color: $gray-200 !default;
+$advanced-search-color: $gray-500 !default;
+$advanced-search-menu-title-color: $gray-400 !default;
+
+$custom-file-height: $input-height;
+$custom-file-height-inner: $input-height-inner !default;
+$custom-file-focus-border-color: $input-focus-border-color;
+$custom-file-focus-box-shadow: $input-btn-focus-box-shadow;
+$custom-file-disabled-bg: $input-disabled-bg !default;
+
+$custom-file-padding-y: $input-btn-padding-y;
+$custom-file-padding-x: $input-btn-padding-x;
+$custom-file-line-height: $input-btn-line-height;
+$custom-file-font-family: $input-font-family !default;
+$custom-file-font-weight: $input-font-weight !default;
+$custom-file-color: $input-color;
+$custom-file-bg: $input-bg;
+$custom-file-border-width: $input-btn-border-width;
+$custom-file-border-color: $input-border-color;
+$custom-file-border-radius: $input-border-radius;
+$custom-file-box-shadow: $input-box-shadow;
+$custom-file-button-color: $custom-file-color;
+$custom-file-button-bg: $input-group-addon-bg;
+$custom-file-text: (
+  en: 'Browse',
+);
+
+// Form validation
+$form-feedback-margin-top: $form-text-margin-top;
+$form-feedback-font-size: 1rem;
+$form-feedback-valid-color: theme-color('success');
+$form-feedback-invalid-color: theme-color('danger');
+
+$form-feedback-icon-valid-color: $form-feedback-valid-color !default;
+$form-feedback-icon-valid: str-replace(
+  url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8'%3e%3cpath fill='#{$form-feedback-icon-valid-color}' d='M2.3 6.73L.6 4.53c-.4-1.04.46-1.4 1.1-.8l1.1 1.4 3.4-3.8c.6-.63 1.6-.27 1.2.7l-4 4.6c-.43.5-.8.4-1.1.1z'/%3e%3c/svg%3e"),
+  '#',
+  '%23'
+) !default;
+$form-feedback-icon-invalid-color: $form-feedback-invalid-color !default;
+$form-feedback-icon-invalid: str-replace(
+  url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='#{$form-feedback-icon-invalid-color}' viewBox='-2 -2 7 7'%3e%3cpath stroke='#{$form-feedback-icon-invalid-color}' d='M0 0l3 3m0-3L0 3'/%3e%3ccircle r='.5'/%3e%3ccircle cx='3' r='.5'/%3e%3ccircle cy='3' r='.5'/%3e%3ccircle cx='3' cy='3' r='.5'/%3e%3c/svg%3E"),
+  '#',
+  '%23'
+) !default;
+
+$form-validation-states: () !default;
+// stylelint-disable-next-line scss/dollar-variable-default
+$form-validation-states: map-merge(
+  (
+    'valid': (
+      'color': $form-feedback-valid-color,
+      'icon': $form-feedback-icon-valid,
+    ),
+    'invalid': (
+      'color': $form-feedback-invalid-color,
+      'icon': $form-feedback-icon-invalid,
+    ),
+  ),
+  $form-validation-states
+);
+
+// Z-index master list
+//
+// Warning: Avoid customizing these values. They're used for a bird's eye view
+// of components dependent on the z-axis and are designed to all work together.
+
+$zindex-dropdown: 1000;
+$zindex-sticky: 1020;
+$zindex-fixed: 1030;
+$zindex-modal-backdrop: 1040;
+$zindex-modal: 1050;
+$zindex-navigation: 1055;
+$zindex-popover: 1060;
+$zindex-tooltip: 1070;
+
+// Navs
+
+$nav-link-padding-y: 0.5rem;
+$nav-link-padding-x: 1rem;
+$nav-link-disabled-color: $gray-600 !default;
+
+$nav-tabs-border-color: $gray-300 !default;
+$nav-tabs-border-width: $border-width;
+$nav-tabs-border-radius: $border-radius;
+$nav-tabs-link-hover-border-color: $gray-200 $gray-200 $nav-tabs-border-color;
+$nav-tabs-link-active-color: $gray-700;
+$nav-tabs-link-active-bg: $body-bg;
+$nav-tabs-link-active-border-color: $gray-300 $gray-300 $nav-tabs-link-active-bg;
+
+$nav-pills-border-radius: $border-radius;
+$nav-pills-link-active-color: $component-active-color;
+$nav-pills-link-active-bg: $component-active-bg;
+
+$nav-divider-color: $gray-200 !default;
+$nav-divider-margin-y: $spacer / 2 !default;
+
+$nav-tabs-bg: $white !default;
+$nav-tabs-color: $gray-400 !default;
+$nav-tabs-color-active: $primary;
+
+// Navbar
+
+$navbar-padding-y: ($spacer / 2);
+$navbar-padding-x: $spacer;
+
+$navbar-nav-link-padding-x: 0.5rem;
+
+$navbar-brand-font-size: $font-size-lg;
+// Compute the navbar-brand padding-y so the navbar-brand will have the same height as navbar-text and nav-link
+$nav-link-height: ($font-size-base * $line-height-base + $nav-link-padding-y * 2);
+$navbar-brand-height: $navbar-brand-font-size * $line-height-base;
+$navbar-brand-padding-y: ($nav-link-height - $navbar-brand-height) / 2;
+
+$navbar-toggler-padding-y: 0.25rem;
+$navbar-toggler-padding-x: 0.75rem;
+$navbar-toggler-font-size: $font-size-lg;
+$navbar-toggler-border-radius: $btn-border-radius;
+
+$navbar-dark-color: rgba($white, 0.5);
+$navbar-dark-hover-color: rgba($white, 0.75);
+$navbar-dark-active-color: $white !default;
+$navbar-dark-disabled-color: rgba($white, 0.25);
+$navbar-dark-toggler-icon-bg: str-replace(
+  url("data:image/svg+xml;charset=utf8,%3Csvg viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='#{$navbar-dark-color}' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E"),
+  '#',
+  '%23'
+);
+$navbar-dark-toggler-border-color: rgba($white, 0.1);
+
+$navbar-light-color: rgba($black, 0.5);
+$navbar-light-hover-color: rgba($black, 0.7);
+$navbar-light-active-color: rgba($black, 0.9);
+$navbar-light-disabled-color: rgba($black, 0.3);
+$navbar-light-toggler-icon-bg: str-replace(
+  url("data:image/svg+xml;charset=utf8,%3Csvg viewBox='0 0 30 30' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='#{$navbar-light-color}' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 7h22M4 15h22M4 23h22'/%3E%3C/svg%3E"),
+  '#',
+  '%23'
+);
+$navbar-light-toggler-border-color: rgba($black, 0.1);
+
+$navbar-light-brand-color: $navbar-light-active-color !default;
+$navbar-light-brand-hover-color: $navbar-light-active-color !default;
+$navbar-dark-brand-color: $navbar-dark-active-color !default;
+$navbar-dark-brand-hover-color: $navbar-dark-active-color !default;
+
+// Dropdowns
+//
+// Dropdown menu container and contents.
+
+$dropdown-min-width: 10rem;
+$dropdown-width-lg: 21.25rem;
+$dropdown-padding-y: 0.5rem;
+$dropdown-spacer: 0.125rem;
+$dropdown-font-size: $font-size-base !default;
+$dropdown-color: $gray-600 !default;
+$dropdown-bg: $white !default;
+$dropdown-border-color: $border-color;
+$dropdown-border-radius: $border-radius;
+$dropdown-border-width: $border-width;
+$dropdown-divider-bg: $gray-200 !default;
+$dropdown-divider-margin-y: $nav-divider-margin-y !default;
+$dropdown-box-shadow: 0 0.5rem 1rem rgba($black, 0.175);
+
+$dropdown-link-color: $gray-900 !default;
+$dropdown-link-hover-color: $primary;
+$dropdown-link-hover-bg: transparent;
+
+$dropdown-link-active-color: $component-active-color;
+$dropdown-link-active-bg: $component-active-bg;
+
+$dropdown-link-disabled-color: $gray-600 !default;
+
+$dropdown-item-padding-y: 0.563rem; // 9px
+$dropdown-item-padding-x: 1.375rem; // 22px
+
+$dropdown-header-color: $gray-400 !default;
+
+// Mastnav
+$mastnav-color-lg: $white !default;
+$mastcontent-bg: $white !default;
+
+// Actionbar
+$actionbar-bg: $white !default;
+
+// Menus, panels
+$menubar-color: $gray-600 !default;
+$menubar-bg: $white !default;
+$menu-color: $white !default;
+$menu-secondary-color: $white !default;
+
+// Anchor
+$anchor-gradient-color: $gray-200 !default;
+$anchor-item-color: $gray-400 !default;
+$anchor-item-bg: $white !default;
+
+// Accordion
+$accordion-bg: $gray-100 !default;
+
+// Proof
+$proof-gray-bg: $gray-100 !default;
+$proof-strip-color: $gray-200 !default;
+
+// Editorial
+$editorial-color: $carbon !default;
+$editorial-bg: $gray-100 !default;
+$edito-push-highlight-bg: $gray-100 !default;
+
+// Packshot
+$packshot-color: $carbon !default;
+$packshot-bg: $gray-100 !default;
+
+// Contact
+$edito-contact-bg: $gray-100 !default;
+
+// Tongues
+$tongues-point: $white !default;
+
+// Vignettes
+$vignette-bg: $white !default;
+
+// Pagination
+$pagination-padding-y: 0.125rem;
+$pagination-padding-x: 0.313rem;
+$pagination-padding-y-sm: 0.25rem;
+$pagination-padding-x-sm: 0.5rem;
+$pagination-padding-y-lg: 0.75rem;
+$pagination-padding-x-lg: 1.5rem;
+$pagination-line-height: 1.25;
+
+$pagination-color: $gray-400 !default;
+$pagination-bg: transparent;
+$pagination-border-width: 0;
+$pagination-border-color: transparent;
+
+$pagination-focus-box-shadow: none;
+$pagination-focus-outline: 0 !default;
+
+$pagination-hover-color: $link-hover-color;
+$pagination-hover-bg: transparent;
+$pagination-hover-border-color: transparent;
+
+$pagination-active-color: $link-color;
+$pagination-active-bg: transparent;
+$pagination-active-border-color: transparent;
+
+$pagination-disabled-color: $gray-600 !default;
+$pagination-disabled-bg: transparent;
+$pagination-disabled-border-color: transparent;
+
+// Picker
+
+$btn-only-icon-padding: 0;
+
+// Jumbotron
+
+$jumbotron-padding: 2rem;
+$jumbotron-color: null !default;
+$jumbotron-bg: $gray-200 !default;
+
+// Cards
+
+$card-spacer-y: 0.75rem;
+$card-spacer-x: 1.25rem;
+$card-border-width: 0;
+$card-border-radius: $border-radius;
+$card-border-color: rgba($black, 0.125);
+$card-inner-border-radius: calc(#{$card-border-radius} - #{$card-border-width});
+$card-cap-bg: rgba($black, 0.03);
+$card-cap-color: null !default;
+$card-color: null !default;
+$card-bg: $white !default;
+
+$card-img-overlay-padding: 1.25rem;
+
+$card-group-margin: ($grid-gutter-width / 2);
+$card-deck-margin: $card-group-margin;
+
+$card-columns-count: 3;
+$card-columns-gap: 1.25rem;
+$card-columns-margin: $card-spacer-y;
+
+// Tooltips
+
+$tooltip-font-size: $font-size-sm;
+$tooltip-max-width: 200px;
+$tooltip-color: $white !default;
+$tooltip-bg: $black !default;
+$tooltip-border-radius: $border-radius;
+$tooltip-opacity: 0.9;
+$tooltip-padding-y: 0.25rem;
+$tooltip-padding-x: 0.5rem;
+$tooltip-margin: 0;
+
+$tooltip-arrow-width: 0.8rem;
+$tooltip-arrow-height: 0.4rem;
+$tooltip-arrow-color: $tooltip-bg;
+
+// Form tooltips must come after regular tooltips
+$form-feedback-tooltip-padding-y: $tooltip-padding-y !default;
+$form-feedback-tooltip-padding-x: $tooltip-padding-x !default;
+$form-feedback-tooltip-font-size: $tooltip-font-size !default;
+$form-feedback-tooltip-line-height: $line-height-base !default;
+$form-feedback-tooltip-opacity: $tooltip-opacity !default;
+$form-feedback-tooltip-border-radius: $tooltip-border-radius !default;
+
+// Popovers
+
+$popover-font-size: $font-size-base;
+$popover-bg: $white !default;
+$popover-max-width: 420px;
+$popover-border-width: $border-width;
+$popover-border-color: $border-color;
+$popover-border-radius: $border-radius;
+$popover-box-shadow: 0 0.25rem 0.5rem rgba($black, 0.2);
+
+$popover-header-bg: $white !default;
+$popover-header-color: $primary !default;
+$popover-header-padding-y: 1.5rem;
+$popover-header-padding-x: 1.5rem;
+
+$popover-body-color: $body-color;
+$popover-body-padding-y: $popover-header-padding-y;
+$popover-body-padding-x: $popover-header-padding-x;
+
+$popover-arrow-width: 1rem;
+$popover-arrow-height: 0.5rem;
+$popover-arrow-color: $popover-bg;
+
+$popover-arrow-outer-color: fade-in($popover-border-color, 0.05);
+$popover-close-svg: str-replace(
+  url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3e%3ctitle%3eclose%3c/title%3e%3cpath fill='#{$popover-body-color}' d='M7.91,6l3.71-3.71a1.37,1.37,0,0,0,0-1.9,1.38,1.38,0,0,0-1.91,0L6,4.09,2.29.38A1.38,1.38,0,0,0,.38.38a1.4,1.4,0,0,0,0,1.91L4.09,6,.38,9.71a1.38,1.38,0,0,0,0,1.91,1.38,1.38,0,0,0,1.91,0L6,7.91l3.71,3.71a1.38,1.38,0,0,0,1.91,0,1.4,1.4,0,0,0,0-1.91Z' transform='translate(0 0)'/%3e%3c/svg%3e"),
+  '#',
+  '%23'
+);
+
+// Toasts
+
+$toast-max-width: 350px !default;
+$toast-padding-x: 0.75rem !default;
+$toast-padding-y: 0.25rem !default;
+$toast-font-size: 0.875rem !default;
+$toast-color: null !default;
+$toast-background-color: rgba($white, 0.85) !default;
+$toast-border-width: 1px !default;
+$toast-border-color: rgba(0, 0, 0, 0.1) !default;
+$toast-border-radius: 0.25rem !default;
+$toast-box-shadow: 0 0.25rem 0.75rem rgba($black, 0.1) !default;
+
+$toast-header-color: $gray-600 !default;
+$toast-header-background-color: rgba($white, 0.85) !default;
+$toast-header-border-color: rgba(0, 0, 0, 0.05) !default;
+
+// Badges
+
+$badge-font-size: $font-size-sm;
+$badge-font-weight: $font-weight-medium;
+$badge-padding-y: 0.313rem;
+$badge-padding-x: 1.5rem;
+$badge-border-radius: 0.75rem;
+
+$badge-transition: $btn-transition !default;
+$badge-focus-width: $input-btn-focus-width !default;
+
+$badge-pill-padding-x: 0.6em;
+// Use a higher than normal value to ensure completely rounded edges when
+// customizing padding or font-size on labels.
+$badge-pill-border-radius: 10rem;
+
+// Modals
+
+// Padding applied to the modal body
+$modal-header-padding-x: 1.875rem;
+$modal-header-padding-y: 1.375rem;
+$modal-inner-padding: 1rem;
+$modal-inner-padding-x: 1.875rem;
+$modal-inner-padding-y: 1.375rem;
+$modal-footer-padding: 1.875rem;
+
+$modal-dialog-margin: 0.5rem;
+$modal-dialog-margin-y-sm-up: 1.75rem;
+
+$modal-title-line-height: $line-height-base;
+
+$modal-content-color: null !default;
+$modal-content-bg: $white !default;
+$modal-content-border-color: rgba($black, 0.2);
+$modal-content-border-width: 0;
+$modal-content-border-radius: $border-radius-lg !default;
+$modal-content-box-shadow-xs: 0 0.25rem 0.5rem rgba($black, 0.5);
+$modal-content-box-shadow-sm-up: 0 0.5rem 1rem rgba($black, 0.5);
+
+$modal-backdrop-bg: $black !default;
+$modal-backdrop-opacity: 0.5;
+$modal-header-border-color: $gray-200 !default;
+$modal-footer-border-color: $modal-header-border-color;
+$modal-header-border-width: $modal-content-border-width;
+$modal-footer-border-width: $modal-header-border-width;
+$modal-header-padding: 1rem;
+
+$modal-fhd: 1664px;
+$modal-hdp: 1400px;
+$modal-hd: 1220px;
+$modal-xl: 1140px !default;
+$modal-lg: 800px;
+$modal-md: 480px;
+$modal-sm: 320px;
+
+$modal-fade-transform: translate(0, -50px) !default;
+$modal-show-transform: none !default;
+$modal-transition: transform 0.3s ease-out;
+
+// Alerts
+//
+// Define alert colors, border radius, and padding.
+
+$alert-padding-y: 0.75rem;
+$alert-padding-x: 1.25rem;
+$alert-margin-bottom: 1rem;
+$alert-border-radius: $border-radius;
+$alert-link-font-weight: $font-weight-bold;
+$alert-border-width: $border-width;
+
+$alert-bg-level: -10;
+$alert-border-level: -9;
+$alert-color-level: 6;
+
+// Progress bars
+
+$progress-height: 0.625rem; // 10px
+$progress-font-size: ($font-size-base * 0.75);
+$progress-bg: $white !default;
+$progress-bg-gradient: linear-gradient(90deg, #e1ded9 50%, transparent 50%);
+$progress-border-radius: 0.3125rem; // 5px
+$progress-box-shadow: inset 0 0.1rem 0.1rem rgba($black, 0.1);
+$progress-bar-color: $body-color;
+$progress-bar-bg: $primary !default;
+$progress-bar-animation-timing: 1s linear infinite;
+$progress-bar-transition: width 0.6s ease;
+$progress-circle-bg-image: str-replace(
+  url("data:image/svg+xml;charset=UTF-8,%3c?xml version='1.0' encoding='utf-8'?%3e%3csvg version='1.1' id='Calque_1' xmlns='http://www.w3.org/2000/svg' xmlns:xlink='http://www.w3.org/1999/xlink' x='0px' y='0px' viewBox='0 0 120 120' style='enable-background:new 0 0 120 120;' xml:space='preserve'%3e%3cstyle type='text/css'%3e .st0%7bfill:%23D7D7D7;%7d %3c/style%3e%3cg%3e%3crect x='59' class='st0' width='2' height='12'/%3e%3c/g%3e%3cg%3e%3crect x='55.2' y='0.1' transform='matrix(0.9976 -6.975647e-02 6.975647e-02 0.9976 -0.2907 3.9376)' class='st0' width='2' height='12'/%3e%3c/g%3e%3cg%3e%3crect x='51.5' y='0.5' transform='matrix(0.9903 -0.1392 0.1392 0.9903 -0.3974 7.368)' class='st0' width='2' height='12'/%3e%3c/g%3e%3cg%3e%3crect x='47.8' y='1.2' transform='matrix(0.9781 -0.2079 0.2079 0.9781 -0.427 10.2973)' class='st0' width='2' height='12'/%3e%3c/g%3e%3cg%3e%3crect x='44.1' y='2.1' transform='matrix(0.9613 -0.2756 0.2756 0.9613 -0.4827 12.749)' class='st0' width='2' height='12'/%3e%3c/g%3e%3cg%3e%3crect x='40.5' y='3.3' transform='matrix(0.9397 -0.342 0.342 0.9397 -0.6613 14.7626)' class='st0' width='2' height='12'/%3e%3c/g%3e%3cg%3e%3crect x='37' y='4.7' transform='matrix(0.9135 -0.4067 0.4067 0.9135 -1.0509 16.3931)' class='st0' width='2' height='12'/%3e%3c/g%3e%3cg%3e%3crect x='33.6' y='6.3' transform='matrix(0.8829 -0.4695 0.4695 0.8829 -1.7286 17.7087)' class='st0' width='2' height='12'/%3e%3c/g%3e%3cg%3e%3crect x='30.4' y='8.2' transform='matrix(0.848 -0.5299 0.5299 0.848 -2.7588 18.7897)' class='st0' width='2' height='12'/%3e%3c/g%3e%3cg%3e%3crect x='27.3' y='10.3' transform='matrix(0.809 -0.5878 0.5878 0.809 -4.1915 19.7261)' class='st0' width='2' height='12'/%3e%3c/g%3e%3cg%3e%3crect x='24.3' y='12.6' transform='matrix(0.766 -0.6428 0.6428 0.766 -6.0608 20.6152)' class='st0' width='2' height='12'/%3e%3c/g%3e%3cg%3e%3crect x='21.5' y='15.2' transform='matrix(0.7193 -0.6947 0.6947 0.7193 -8.3843 21.5593)' class='st0' width='2' height='12'/%3e%3c/g%3e%3cg%3e%3crect x='18.9' y='17.9' transform='matrix(0.6691 -0.7431 0.7431 0.6691 -11.1622 22.6633)' class='st0' width='2' height='12'/%3e%3c/g%3e%3cg%3e%3crect x='16.4' y='20.8' transform='matrix(0.6157 -0.788 0.788 0.6157 -14.3769 24.0315)' class='st0' width='2' height='12'/%3e%3c/g%3e%3cg%3e%3crect x='14.2' y='23.8' transform='matrix(0.5592 -0.829 0.829 0.5592 -17.9939 25.7655)' class='st0' width='2' height='12'/%3e%3c/g%3e%3cg%3e%3crect x='12.2' y='27' transform='matrix(0.5 -0.866 0.866 0.5 -21.9615 27.9615)' class='st0' width='2' height='12'/%3e%3c/g%3e%3cg%3e%3crect x='10.5' y='30.3' transform='matrix(0.4384 -0.8988 0.8988 0.4384 -26.2122 30.7076)' class='st0' width='2' height='12'/%3e%3c/g%3e%3cg%3e%3crect x='8.9' y='33.8' transform='matrix(0.3746 -0.9272 0.9272 0.3746 -30.6638 34.0815)' class='st0' width='2' height='12'/%3e%3c/g%3e%3cg%3e%3crect x='7.6' y='37.3' transform='matrix(0.309 -0.9511 0.9511 0.309 -35.2211 38.1485)' class='st0' width='2' height='12'/%3e%3c/g%3e%3cg%3e%3crect x='6.6' y='40.9' transform='matrix(0.2419 -0.9703 0.9703 0.2419 -39.7776 42.9595)' class='st0' width='2' height='12'/%3e%3c/g%3e%3cg%3e%3crect x='5.8' y='44.6' transform='matrix(0.1736 -0.9848 0.9848 0.1736 -44.2179 48.5492)' class='st0' width='2' height='12'/%3e%3c/g%3e%3cg%3e%3crect x='5.3' y='48.4' transform='matrix(0.1045 -0.9945 0.9945 0.1045 -48.42 54.9351)' class='st0' width='2' height='12'/%3e%3c/g%3e%3cg%3e%3crect x='5' y='52.1' transform='matrix(3.489950e-02 -0.9994 0.9994 3.489950e-02 -52.2577 62.1164)' class='st0' width='2' height='12'/%3e%3c/g%3e%3cg%3e%3crect x='0' y='60.9' transform='matrix(0.9994 -3.489950e-02 3.489950e-02 0.9994 -2.1561 0.2482)' class='st0' width='12' height='2'/%3e%3c/g%3e%3cg%3e%3crect x='0.3' y='64.6' transform='matrix(0.9945 -0.1045 0.1045 0.9945 -6.8272 1.0177)' class='st0' width='12' height='2'/%3e%3c/g%3e%3cg%3e%3crect x='0.8' y='68.4' transform='matrix(0.9848 -0.1736 0.1736 0.9848 -11.9436 2.2383)' class='st0' width='12' height='2'/%3e%3c/g%3e%3cg%3e%3crect x='1.6' y='72.1' transform='matrix(0.9703 -0.2419 0.2419 0.9703 -17.4499 4.0099)' class='st0' width='12' height='2'/%3e%3c/g%3e%3cg%3e%3crect x='2.6' y='75.7' transform='matrix(0.9511 -0.309 0.309 0.9511 -23.2745 6.4241)' class='st0' width='12' height='2'/%3e%3c/g%3e%3cg%3e%3crect x='3.9' y='79.2' transform='matrix(0.9272 -0.3746 0.3746 0.9272 -29.331 9.5626)' class='st0' width='12' height='2'/%3e%3c/g%3e%3cg%3e%3crect x='5.5' y='82.7' transform='matrix(0.8988 -0.4384 0.4384 0.8988 -35.5191 13.4941)' class='st0' width='12' height='2'/%3e%3c/g%3e%3cg%3e%3crect x='7.2' y='86' transform='matrix(0.866 -0.5 0.5 0.866 -41.7269 18.2731)' class='st0' width='12' height='2'/%3e%3c/g%3e%3cg%3e%3crect x='9.2' y='89.2' transform='matrix(0.829 -0.5592 0.5592 0.829 -47.8331 23.9378)' class='st0' width='12' height='2'/%3e%3c/g%3e%3cg%3e%3crect x='11.4' y='92.2' transform='matrix(0.788 -0.6157 0.6157 0.788 -53.7091 30.5088)' class='st0' width='12' height='2'/%3e%3c/g%3e%3cg%3e%3crect x='13.9' y='95.1' transform='matrix(0.7431 -0.6691 0.6691 0.7431 -59.2218 37.988)' class='st0' width='12' height='2'/%3e%3c/g%3e%3cg%3e%3crect x='16.5' y='97.8' transform='matrix(0.6947 -0.7193 0.7193 0.6947 -64.236 46.3581)' class='st0' width='12' height='2'/%3e%3c/g%3e%3cg%3e%3crect x='19.3' y='100.4' transform='matrix(0.6428 -0.766 0.766 0.6428 -68.6175 55.5822)' class='st0' width='12' height='2'/%3e%3c/g%3e%3cg%3e%3crect x='22.3' y='102.7' transform='matrix(0.5878 -0.809 0.809 0.5878 -72.2355 65.6038)' class='st0' width='12' height='2'/%3e%3c/g%3e%3cg%3e%3crect x='25.4' y='104.8' transform='matrix(0.5299 -0.848 0.848 0.5299 -74.9657 76.3475)' class='st0' width='12' height='2'/%3e%3c/g%3e%3cg%3e%3crect x='28.6' y='106.7' transform='matrix(0.4695 -0.8829 0.8829 0.4695 -76.693 87.7197)' class='st0' width='12' height='2'/%3e%3c/g%3e%3cg%3e%3crect x='32' y='108.3' transform='matrix(0.4067 -0.9135 0.9135 0.4067 -77.3138 99.6102)' class='st0' width='12' height='2'/%3e%3c/g%3e%3cg%3e%3crect x='35.5' y='109.7' transform='matrix(0.342 -0.9397 0.9397 0.342 -76.7383 111.8932)' class='st0' width='12' height='2'/%3e%3c/g%3e%3cg%3e%3crect x='39.1' y='110.9' transform='matrix(0.2756 -0.9613 0.9613 0.2756 -74.893 124.43)' class='st0' width='12' height='2'/%3e%3c/g%3e%3cg%3e%3crect x='42.8' y='111.8' transform='matrix(0.2079 -0.9781 0.9781 0.2079 -71.7222 137.0703)' class='st0' width='12' height='2'/%3e%3c/g%3e%3cg%3e%3crect x='46.5' y='112.5' transform='matrix(0.1392 -0.9903 0.9903 0.1392 -67.1899 149.6558)' class='st0' width='12' height='2'/%3e%3c/g%3e%3cg%3e%3crect x='50.2' y='112.9' transform='matrix(6.975647e-02 -0.9976 0.9976 6.975647e-02 -61.2806 162.0216)' class='st0' width='12' height='2'/%3e%3c/g%3e%3cg%3e%3crect x='59' y='108' class='st0' width='2' height='12'/%3e%3c/g%3e%3cg%3e%3crect x='62.8' y='107.9' transform='matrix(0.9976 -6.975647e-02 6.975647e-02 0.9976 -7.7877 4.7255)' class='st0' width='2' height='12'/%3e%3c/g%3e%3cg%3e%3crect x='66.5' y='107.5' transform='matrix(0.9903 -0.1392 0.1392 0.9903 -15.1355 10.5006)' class='st0' width='2' height='12'/%3e%3c/g%3e%3cg%3e%3crect x='70.2' y='106.8' transform='matrix(0.9781 -0.2079 0.2079 0.9781 -21.9001 17.2744)' class='st0' width='2' height='12'/%3e%3c/g%3e%3cg%3e%3crect x='73.9' y='105.9' transform='matrix(0.9613 -0.2756 0.2756 0.9613 -27.9452 24.9761)' class='st0' width='2' height='12'/%3e%3c/g%3e%3cg%3e%3crect x='77.5' y='104.7' transform='matrix(0.9397 -0.342 0.342 0.9397 -33.1442 33.5167)' class='st0' width='2' height='12'/%3e%3c/g%3e%3cg%3e%3crect x='81' y='103.3' transform='matrix(0.9135 -0.4067 0.4067 0.9135 -37.383 42.7899)' class='st0' width='2' height='12'/%3e%3c/g%3e%3cg%3e%3crect x='84.4' y='101.7' transform='matrix(0.8829 -0.4695 0.4695 0.8829 -40.5617 52.6742)' class='st0' width='2' height='12'/%3e%3c/g%3e%3cg%3e%3crect x='87.6' y='99.8' transform='matrix(0.848 -0.5299 0.5299 0.848 -42.5973 63.0348)' class='st0' width='2' height='12'/%3e%3c/g%3e%3cg%3e%3crect x='90.7' y='97.7' transform='matrix(0.809 -0.5878 0.5878 0.809 -43.4248 73.7261)' class='st0' width='2' height='12'/%3e%3c/g%3e%3cg%3e%3crect x='93.7' y='95.4' transform='matrix(0.766 -0.6428 0.6428 0.766 -42.999 84.594)' class='st0' width='2' height='12'/%3e%3c/g%3e%3cg%3e%3crect x='96.5' y='92.8' transform='matrix(0.7193 -0.6947 0.6947 0.7193 -41.2954 95.4789)' class='st0' width='2' height='12'/%3e%3c/g%3e%3cg%3e%3crect x='99.1' y='90.1' transform='matrix(0.6691 -0.7431 0.7431 0.6691 -38.3109 106.2184)' class='st0' width='2' height='12'/%3e%3c/g%3e%3cg%3e%3crect x='101.6' y='87.2' transform='matrix(0.6157 -0.788 0.788 0.6157 -34.0637 116.6505)' class='st0' width='2' height='12'/%3e%3c/g%3e%3cg%3e%3crect x='103.8' y='84.2' transform='matrix(0.5592 -0.829 0.829 0.5592 -28.5937 126.6159)' class='st0' width='2' height='12'/%3e%3c/g%3e%3cg%3e%3crect x='105.8' y='81' transform='matrix(0.5 -0.866 0.866 0.5 -21.9615 135.9615)' class='st0' width='2' height='12'/%3e%3c/g%3e%3cg%3e%3crect x='107.5' y='77.7' transform='matrix(0.4384 -0.8988 0.8988 0.4384 -14.2476 144.5431)' class='st0' width='2' height='12'/%3e%3c/g%3e%3cg%3e%3crect x='109.1' y='74.2' transform='matrix(0.3746 -0.9272 0.9272 0.3746 -5.5511 152.2277)' class='st0' width='2' height='12'/%3e%3c/g%3e%3cg%3e%3crect x='110.4' y='70.7' transform='matrix(0.309 -0.9511 0.9511 0.309 4.0122 158.8962)' class='st0' width='2' height='12'/%3e%3c/g%3e%3cg%3e%3crect x='111.4' y='67.1' transform='matrix(0.2419 -0.9703 0.9703 0.2419 14.3114 164.4454)' class='st0' width='2' height='12'/%3e%3c/g%3e%3cg%3e%3crect x='112.2' y='63.4' transform='matrix(0.1736 -0.9848 0.9848 0.1736 25.2032 168.79)' class='st0' width='2' height='12'/%3e%3c/g%3e%3cg%3e%3crect x='112.7' y='59.6' transform='matrix(0.1045 -0.9945 0.9945 0.1045 36.5339 171.8641)' class='st0' width='2' height='12'/%3e%3c/g%3e%3cg%3e%3crect x='113' y='55.9' transform='matrix(3.489950e-02 -0.9994 0.9994 3.489950e-02 48.1428 173.6225)' class='st0' width='2' height='12'/%3e%3c/g%3e%3cg%3e%3crect x='108' y='57.1' transform='matrix(0.9994 -3.489950e-02 3.489950e-02 0.9994 -1.9588 4.0128)' class='st0' width='12' height='2'/%3e%3c/g%3e%3cg%3e%3crect x='107.7' y='53.4' transform='matrix(0.9945 -0.1045 0.1045 0.9945 -5.0588 12.1831)' class='st0' width='12' height='2'/%3e%3c/g%3e%3cg%3e%3crect x='107.2' y='49.6' transform='matrix(0.9848 -0.1736 0.1736 0.9848 -7.0711 20.4225)' class='st0' width='12' height='2'/%3e%3c/g%3e%3cg%3e%3crect x='106.4' y='45.9' transform='matrix(0.9703 -0.2419 0.2419 0.9703 -8.0163 28.5853)' class='st0' width='12' height='2'/%3e%3c/g%3e%3cg%3e%3crect x='105.4' y='42.3' transform='matrix(0.9511 -0.309 0.309 0.9511 -7.9343 36.5311)' class='st0' width='12' height='2'/%3e%3c/g%3e%3cg%3e%3crect x='104.1' y='38.8' transform='matrix(0.9272 -0.3746 0.3746 0.9272 -6.8838 44.1282)' class='st0' width='12' height='2'/%3e%3c/g%3e%3cg%3e%3crect x='102.5' y='35.3' transform='matrix(0.8988 -0.4384 0.4384 0.8988 -4.9408 51.2552)' class='st0' width='12' height='2'/%3e%3c/g%3e%3cg%3e%3crect x='100.8' y='32' transform='matrix(0.866 -0.5 0.5 0.866 -2.1962 57.8038)' class='st0' width='12' height='2'/%3e%3c/g%3e%3cg%3e%3crect x='98.8' y='28.8' transform='matrix(0.829 -0.5592 0.5592 0.829 1.2454 63.6808)' class='st0' width='12' height='2'/%3e%3c/g%3e%3cg%3e%3crect x='96.6' y='25.8' transform='matrix(0.788 -0.6157 0.6157 0.788 5.2685 68.8093)' class='st0' width='12' height='2'/%3e%3c/g%3e%3cg%3e%3crect x='94.1' y='22.9' transform='matrix(0.7431 -0.6691 0.6691 0.7431 9.7488 73.1303)' class='st0' width='12' height='2'/%3e%3c/g%3e%3cg%3e%3crect x='91.5' y='20.2' transform='matrix(0.6947 -0.7193 0.7193 0.6947 14.5562 76.6036)' class='st0' width='12' height='2'/%3e%3c/g%3e%3cg%3e%3crect x='88.7' y='17.6' transform='matrix(0.6428 -0.766 0.766 0.6428 19.5576 79.2086)' class='st0' width='12' height='2'/%3e%3c/g%3e%3cg%3e%3crect x='85.7' y='15.3' transform='matrix(0.5878 -0.809 0.809 0.5878 24.6192 80.944)' class='st0' width='12' height='2'/%3e%3c/g%3e%3cg%3e%3crect x='82.6' y='13.2' transform='matrix(0.5299 -0.848 0.848 0.5299 29.6096 81.828)' class='st0' width='12' height='2'/%3e%3c/g%3e%3cg%3e%3crect x='79.4' y='11.3' transform='matrix(0.4695 -0.8829 0.8829 0.4695 34.4027 81.8974)' class='st0' width='12' height='2'/%3e%3c/g%3e%3cg%3e%3crect x='76' y='9.7' transform='matrix(0.4067 -0.9135 0.9135 0.4067 38.8799 81.2069)' class='st0' width='12' height='2'/%3e%3c/g%3e%3cg%3e%3crect x='72.5' y='8.3' transform='matrix(0.342 -0.9397 0.9397 0.342 42.9327 79.8275)' class='st0' width='12' height='2'/%3e%3c/g%3e%3cg%3e%3crect x='68.9' y='7.1' transform='matrix(0.2756 -0.9613 0.9613 0.2756 46.4651 77.845)' class='st0' width='12' height='2'/%3e%3c/g%3e%3cg%3e%3crect x='65.2' y='6.2' transform='matrix(0.2079 -0.9781 0.9781 0.2079 49.3951 75.358)' class='st0' width='12' height='2'/%3e%3c/g%3e%3cg%3e%3crect x='61.5' y='5.5' transform='matrix(0.1392 -0.9903 0.9903 0.1392 51.657 72.4756)' class='st0' width='12' height='2'/%3e%3c/g%3e%3cg%3e%3crect x='57.8' y='5.1' transform='matrix(6.975647e-02 -0.9976 0.9976 6.975647e-02 53.2021 69.3153)' class='st0' width='12' height='2'/%3e%3c/g%3e%3c/svg%3e "),
+  '#',
+  '%23'
+);
+
+// List group
+
+$list-group-color: null !default;
+$list-group-bg: $white !default;
+$list-group-border-color: $border-color;
+$list-group-border-width: $border-width;
+$list-group-border-radius: 0;
+
+$list-group-item-padding-y: 0.75rem;
+$list-group-item-padding-x: 1.25rem;
+
+$list-group-hover-bg: $gray-100 !default;
+$list-group-active-color: $body-color;
+$list-group-active-bg: $white !default;
+$list-group-active-border-color: $border-color;
+
+$list-group-disabled-color: $gray-600 !default;
+$list-group-disabled-bg: $list-group-bg;
+
+$list-group-action-color: $gray-700;
+$list-group-action-hover-color: $list-group-action-color;
+
+$list-group-action-active-color: $body-color;
+$list-group-action-active-bg: $gray-200 !default;
+
+$list-group-double-panel-title-bg: $gray-100 !default;
+
+// Image thumbnails
+
+$thumbnail-padding: 0.25rem;
+$thumbnail-bg: $body-bg;
+$thumbnail-border-width: $border-width;
+$thumbnail-border-color: $gray-300 !default;
+$thumbnail-border-radius: $border-radius;
+$thumbnail-box-shadow: 0 1px 2px rgba($black, 0.075);
+
+// Figures
+
+$figure-caption-font-size: 90%;
+$figure-caption-color: $gray-600 !default;
+
+// Breadcrumbs
+
+$breadcrumb-padding-y: 0.75rem;
+$breadcrumb-padding-x: 0;
+$breadcrumb-item-padding: 1rem;
+
+$breadcrumb-margin-bottom: 1rem;
+
+$breadcrumb-color: $carbon !default;
+$breadcrumb-bg: $white !default;
+$breadcrumb-divider-color: $gray-600 !default;
+$breadcrumb-active-color: $primary !default;
+$breadcrumb-active-divider: str-replace(
+  url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 50 50'%3E%3Cpath fill='%23303383' d='M40.42 25 17 48.85a4.69 4.69 0 0 1-6.15 0,5.15 5.15 0 0 1-1.16-3.08 4.38 4.38 0 0 1 1.16-3.08L28.12 25 10.81 7.31A4.6 4.6 0 0 1 11.58.38a5.39 5.39 0 0 1 5.77 1.16Z'/%3E%3C/svg%3E"),
+  '#',
+  '%23'
+);
+$breadcrumb-current-divider: str-replace(
+  url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 50 50'%3E%3Cpath fill='%333333' d='M40.42 25 17 48.85a4.69 4.69 0 0 1-6.15 0,5.15 5.15 0 0 1-1.16-3.08 4.38 4.38 0 0 1 1.16-3.08L28.12 25 10.81 7.31A4.6 4.6 0 0 1 11.58.38a5.39 5.39 0 0 1 5.77 1.16Z'/%3E%3C/svg%3E"),
+  '#',
+  '%23'
+);
+$breadcrumb-divider: str-replace(
+  url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 50 50'%3E%3Cpath fill='%23b9b9b9' d='M40.42 25 17 48.85a4.69 4.69 0 0 1-6.15 0,5.15 5.15 0 0 1-1.16-3.08 4.38 4.38 0 0 1 1.16-3.08L28.12 25 10.81 7.31A4.6 4.6 0 0 1 11.58.38a5.39 5.39 0 0 1 5.77 1.16Z'/%3E%3C/svg%3E"),
+  '#',
+  '%23'
+);
+
+$breadcrumb-border-radius: $border-radius !default;
+
+//
+// Mobile menu
+//
+$mobile-menu-bg: $white !default;
+$mobile-menu-close-color: color('dark') !default;
+
+// Carousel
+
+$carousel-control-color: $white !default;
+$carousel-control-width: 15%;
+$carousel-control-opacity: 0.5;
+$carousel-control-hover-opacity: 0.9 !default;
+$carousel-control-transition: opacity 0.15s ease !default;
+
+$carousel-indicator-width: 30px;
+$carousel-indicator-height: 3px;
+$carousel-indicator-hit-area-height: 10px !default;
+$carousel-indicator-spacer: 3px;
+$carousel-indicator-active-bg: $white !default;
+$carousel-indicator-transition: opacity 0.6s ease !default;
+
+$carousel-caption-width: 70%;
+$carousel-caption-color: $white !default;
+
+$carousel-control-icon-width: 20px;
+
+$carousel-control-prev-icon-bg: str-replace(
+  url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='#{$carousel-control-color}' viewBox='0 0 8 8'%3E%3Cpath d='M5.25 0l-4 4 4 4 1.5-1.5-2.5-2.5 2.5-2.5-1.5-1.5z'/%3E%3C/svg%3E"),
+  '#',
+  '%23'
+);
+$carousel-control-next-icon-bg: str-replace(
+  url("data:image/svg+xml;charset=utf8,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='#{$carousel-control-color}' viewBox='0 0 8 8'%3E%3Cpath d='M2.75 0l-1.5 1.5 2.5 2.5-2.5 2.5 1.5 1.5 4-4-4-4z'/%3E%3C/svg%3E"),
+  '#',
+  '%23'
+);
+
+$carousel-transition-duration: 0.6s !default;
+$carousel-transition: transform 0.6s ease;
+
+$carousel-bg: $gray-100 !default;
+
+// Swiper for carousel
+$swiper-btn-color: $primary !default;
+$swiper-btn-bg: $white !default;
+$swiper-btn-disabled-color: $white !default;
+$swiper-btn-disabled-bg: $primary-dark !default;
+
+// Spinners
+
+$spinner-width: 2rem !default;
+$spinner-height: $spinner-width !default;
+$spinner-border-width: 0.25em !default;
+
+$spinner-width-sm: 1rem !default;
+$spinner-height-sm: $spinner-width-sm !default;
+$spinner-border-width-sm: 0.2em !default;
+
+// Close
+
+$close-font-size: $font-size-base * 1.2;
+$close-font-weight: $font-weight-bold;
+$close-color: #4c4f54;
+$close-text-shadow: 0 1px 0 $white !default;
+
+// Code
+
+$code-font-size: 87.5%;
+$code-color: $pink !default;
+
+$kbd-padding-y: 0.2rem;
+$kbd-padding-x: 0.4rem;
+$kbd-font-size: $code-font-size;
+$kbd-color: $white !default;
+$kbd-bg: $gray-900 !default;
+
+$pre-color: $gray-900 !default;
+$pre-scrollable-max-height: 340px;
+
+// Utilities
+
+$displays:
+  none, inline, inline-block, block, table, table-row, table-cell, flex, inline-flex !default;
+$overflows: auto, hidden !default;
+$positions: static, relative, absolute, fixed, sticky !default;
+
+// Printing
+
+$print-page-size: a3;
+$print-body-min-width: map-get($grid-breakpoints, 'lg');
+
+//
+// Flatpickr
+//
+$flatpickr-bg: $white !default;
+$flatpickr-day-color: $body-color !default;
+$flatpickr-day-othermonth-color: $carbon !default;
+$flatpickr-weekday-color: $gray-600 !default;
+$flatpickr-today-color: $white !default;
+$flatpickr-today-bg: $gray-500 !default;
+$flatpickr-day-focus-color: $white !default;
+$flatpickr-day-focus-bg: $primary !default;
+$flatpickr-day-hover-color: $white !default;
+$flatpickr-day-hover-bg: $primary-dark !default;
+
+$flatpickr-time-color: $gray-400 !default;
+$flatpickr-time-input-bg: $gray-100 !default;
+$flatpickr-time-focus-bg: $gray-200 !default;
+
+$flatpickr-range-bg: #e5f3fa !default;
+
+//
+// Charts
+//
+$charts-tooltip-bg: $gray-100 !default;
+$charts-tooltip-title-color: $carbon !default;
+$charts-head-bg: $gray-100 !default;

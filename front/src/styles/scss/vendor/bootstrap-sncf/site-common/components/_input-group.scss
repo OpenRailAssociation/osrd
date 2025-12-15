@@ -1,0 +1,71 @@
+/* input group
+   ========================================================================== */
+
+.input-group {
+  z-index: 1;
+
+  > .input-group-last:not(:last-child) > .btn {
+    @include border-right-radius($border-radius);
+  }
+
+  .form-control-container {
+    flex: 1 1 auto;
+    width: 1%;
+
+    &:not(:last-child),
+    &:not(:last-child) .form-control,
+    &:not(:last-child) .form-control-state {
+      @include border-right-radius(0);
+    }
+
+    &:not(:first-child),
+    &:not(:first-child) .form-control,
+    &:not(:first-child) .form-control-state {
+      @include border-left-radius(0);
+    }
+  }
+}
+
+.input-group-horizontal {
+  display: flex;
+  align-items: center;
+}
+
+.input-group-prepend {
+  > .btn,
+  > .btn-group .btn {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+}
+
+.input-group-append {
+  > .btn,
+  > .btn-group .btn {
+    border-top-left-radius: 0;
+    border-bottom-left-radius: 0;
+  }
+}
+
+.input-group--flatpickr {
+  position: relative;
+
+  .input-group-append {
+    position: absolute;
+    right: 0;
+    pointer-events: none;
+    > .btn,
+    > .btn-group .btn {
+      border-top-left-radius: 0;
+      border-bottom-left-radius: 0;
+    }
+  }
+
+  .form-control-container {
+    &:not(:last-child),
+    &:not(:last-child) .form-control,
+    &:not(:last-child) .form-control-state {
+      @include border-right-radius($border-radius);
+    }
+  }
+}

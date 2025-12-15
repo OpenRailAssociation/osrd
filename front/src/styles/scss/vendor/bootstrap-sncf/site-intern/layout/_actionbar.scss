@@ -1,0 +1,111 @@
+/* actionbar
+   ========================================================================== */
+
+$actionbar-min-height: rem(62px);
+$actionbar-max-height: rem(90px);
+
+// md/768 +
+$actionbar-min-height-md: rem(80px);
+$actionbar-max-height-md: rem(105px);
+
+// lg/1024 +
+$actionbar-min-height-lg: rem(70px);
+$actionbar-max-height-lg: rem(98px);
+
+// xl/1280 +
+$actionbar-min-height-xl: rem(80px);
+$actionbar-max-height-xl: rem(105px);
+
+.actionbar {
+  position: fixed;
+  top: $mastheader-height;
+  z-index: $zindex-navigation;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  width: 100%;
+  height: $actionbar-min-height;
+  padding-right: rem(20px);
+  padding-left: rem(20px);
+  background-color: $nav-tabs-bg;
+
+  > nav .breadcrumb {
+    padding-top: rem(3px);
+  }
+
+  .breadcrumb {
+    border-bottom: none;
+  }
+}
+
+.actionbar.has-tabs {
+  height: $actionbar-max-height;
+}
+
+.actionbar-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+
+  h1,
+  .h1 {
+    a {
+      display: flex;
+      align-items: center;
+
+      &:not(:hover) {
+        color: $headings-color;
+      }
+    }
+  }
+
+  .breadcrumb {
+    height: rem(30px);
+  }
+}
+
+@include media-breakpoint-down(sm) {
+  .actionbar {
+    border-bottom: 1px solid #d8d8d8;
+  }
+}
+
+@include media-breakpoint-up(md) {
+  .actionbar {
+    top: $mastheader-height-md;
+    height: $actionbar-min-height-md;
+  }
+
+  .actionbar.has-tabs {
+    justify-content: flex-end;
+    height: $actionbar-max-height-md;
+  }
+}
+
+@include media-breakpoint-up(lg) {
+  .actionbar {
+    top: $mastheader-height-lg;
+    right: 0;
+    width: calc(100% - #{$mastnav-width-lg});
+    height: $actionbar-min-height-lg;
+    padding-right: rem(12px);
+    padding-left: rem(30px);
+  }
+
+  .actionbar.has-tabs {
+    height: $actionbar-max-height-lg;
+  }
+}
+
+@include media-breakpoint-up(xl) {
+  .actionbar {
+    top: $mastheader-height-xl;
+    height: $actionbar-min-height-xl;
+    padding-right: rem(30px);
+  }
+
+  .actionbar.has-tabs {
+    height: $actionbar-max-height-xl;
+  }
+}

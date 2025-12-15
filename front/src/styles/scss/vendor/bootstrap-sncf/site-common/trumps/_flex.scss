@@ -1,0 +1,18 @@
+// stylelint-disable declaration-no-important
+
+// Flex variation
+//
+// Custom styles for additional flex alignment options.
+
+@each $breakpoint in map-keys($grid-breakpoints) {
+  @include media-breakpoint-up($breakpoint) {
+    $infix: breakpoint-infix($breakpoint, $grid-breakpoints);
+
+    .flex#{$infix}-fluid {
+      flex: 1 1 auto !important;
+    }
+    .flex#{$infix}-fixed {
+      flex: 0 0 auto !important;
+    }
+  }
+}

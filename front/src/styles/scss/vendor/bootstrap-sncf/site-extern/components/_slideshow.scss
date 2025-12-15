@@ -1,0 +1,70 @@
+/* slideshow
+   ========================================================================== */
+
+.slideshow {
+  .swiper-button-prev,
+  .swiper-button-next {
+    width: rem(30px);
+    height: rem(30px);
+    margin-top: 0;
+  }
+
+  .swiper-button-prev {
+    left: rem(10px);
+  }
+
+  .swiper-button-next {
+    right: rem(10px);
+  }
+
+  .swiper-buttons {
+    position: absolute;
+    top: 0;
+    left: 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    pointer-events: none;
+    @include maintain-ratio(656 394);
+
+    .swiper-button-prev,
+    .swiper-button-next {
+      pointer-events: initial;
+    }
+  }
+
+  .swiper-pagination {
+    justify-content: flex-start;
+    font-weight: $font-weight-medium;
+  }
+}
+
+.multi-slideshow {
+  .swiper-button-prev {
+    right: calc(100% + #{rem(50px)});
+    left: auto;
+  }
+
+  .swiper-button-next {
+    right: auto;
+    left: calc(100% + #{rem(50px)});
+  }
+}
+
+@include media-breakpoint-up(md) {
+  .slideshow {
+    .swiper-button-prev,
+    .swiper-button-next {
+      width: rem(40px);
+      height: rem(40px);
+    }
+
+    .swiper-button-prev {
+      left: rem(20px);
+    }
+
+    .swiper-button-next {
+      right: rem(20px);
+    }
+  }
+}

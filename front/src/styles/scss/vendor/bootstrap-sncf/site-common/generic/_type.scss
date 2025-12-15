@@ -1,0 +1,25 @@
+/* type
+   ========================================================================== */
+
+//
+// Headings
+//
+
+h1,
+.h1 {
+  font-weight: $h1-font-weight;
+  line-height: $h1-line-height;
+}
+
+@include media-breakpoint-down(sm) {
+  h1,
+  .h1 {
+    font-size: $h1-font-size-md;
+    line-height: $h1-line-height-md;
+  }
+}
+
+// Type display classes
+.display-1 {
+  color: $display1-color;
+}

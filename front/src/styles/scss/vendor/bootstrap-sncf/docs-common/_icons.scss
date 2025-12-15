@@ -1,0 +1,43 @@
+.ig-container {
+  font-size: 2rem;
+  color: theme-color('primary');
+
+  > .col {
+    flex-grow: 0;
+  }
+}
+
+.ig-color {
+  cursor: pointer;
+}
+
+.ig-button {
+  width: 5rem;
+  height: 5rem;
+  background-color: theme-color('white');
+  border: 2px solid theme-color('white');
+
+  &:focus {
+    color: inherit;
+    background-color: theme-color('white');
+    border-color: theme-color('white');
+    outline: 0;
+  }
+
+  &:hover {
+    color: inherit;
+    background-color: theme-color('white');
+    border-color: currentColor;
+  }
+
+  &.selected {
+    border-color: currentColor;
+    border-width: 4px;
+  }
+}
+
+.ig-button,
+.ig-icon {
+  font-size: inherit;
+  color: inherit;
+}

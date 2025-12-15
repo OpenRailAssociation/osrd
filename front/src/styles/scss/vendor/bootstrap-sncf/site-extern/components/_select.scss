@@ -1,0 +1,14 @@
+/* select
+   ========================================================================== */
+
+.form-control {
+  // stylelint-disable selector-max-class, no-duplicate-selectors
+  .select-improved.active > .select-control > .input-group & {
+    border-bottom-color: theme-color('primary');
+  }
+
+  .select-improved-up.active > .select-control > .input-group & {
+    border-top-color: theme-color('primary');
+  }
+  // stylelint-enable selector-max-class, no-duplicate-selectors
+}

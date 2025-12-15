@@ -32,8 +32,6 @@ import { castErrorToFailure } from 'utils/error';
 import useAuth from 'utils/hooks/useAuth';
 import { DeploymentContextProvider } from 'utils/hooks/useDeploymentSettings';
 
-import('@sncf/bootstrap-sncf.metier.reseau/dist/css/bootstrap-sncf.min.css');
-
 const router = createBrowserRouter([
   {
     path: '/',

@@ -1,0 +1,261 @@
+/* select
+   ========================================================================== */
+
+$select-scrollable-max-height: rem(360px);
+
+select {
+  width: 100%;
+  min-height: $input-min-height;
+  padding: $input-padding-y $input-padding-x;
+  line-height: $input-line-height;
+  cursor: pointer;
+  background-color: gray('100');
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 50 50'%3E%3Cdefs%3E%3Cstyle%3E.a%7Bfill:%23fff;%7D%3C/style%3E%3C/defs%3E%3Ctitle%3Earrow-down%3C/title%3E%3Cpath class='a' d='M25,40.42,1.15,17a4.69,4.69,0,0,1,0-6.15A5.15,5.15,0,0,1,4.23,9.65a4.38,4.38,0,0,1,3.08,1.16L25,28.12,42.69,10.81a4.6,4.6,0,0,1,6.93.77,5.39,5.39,0,0,1-1.16,5.77Z'/%3E%3C/svg%3E"),
+    linear-gradient(to left, theme-color('primary') rem(50px), gray('100') rem(50px));
+  background-repeat: no-repeat;
+  background-position:
+    center right rem(19px),
+    top left;
+  background-size: rem(13px), 100%;
+  border: 1px solid gray('100');
+  border-radius: $border-radius;
+  appearance: none;
+
+  &:focus {
+    background-image:
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 50 50'%3E%3Cdefs%3E%3Cstyle%3E.a%7Bfill:%23fff;%7D%3C/style%3E%3C/defs%3E%3Ctitle%3Earrow-up%3C/title%3E%3Cpath class='a' d='M25,9.58,48.85,33a4.69,4.69,0,0,1,0,6.15,5.15,5.15,0,0,1-3.08,1.16,4.38,4.38,0,0,1-3.08-1.16L25,21.88,7.31,39.19a4.6,4.6,0,0,1-6.93-.77,5.39,5.39,0,0,1,1.16-5.77Z'/%3E%3C/svg%3E"),
+      linear-gradient(to left, theme-color('primary-dark') rem(50px), gray('100') rem(50px));
+    border: 1px solid gray('200');
+    border-bottom-color: theme-color('primary');
+    outline: 0;
+  }
+}
+
+select::-ms-expand {
+  display: none; /* remove default arrow on ie10 and ie11 */
+}
+
+select:-moz-focusring {
+  color: transparent;
+  text-shadow: 0 0 0 #000;
+}
+
+.select-improved {
+  &:not(.active) {
+    .select-menu {
+      display: none;
+    }
+  }
+
+  .form-control.is-placeholder {
+    color: $input-placeholder-color;
+  }
+}
+
+.select-control {
+  position: relative;
+
+  .select-improved.active > & {
+    // stylelint-disable selector-max-class
+    > .input-group .form-control {
+      border-bottom-right-radius: 0;
+      border-bottom-left-radius: 0;
+    }
+
+    .input-group-last > .btn {
+      border-bottom-right-radius: 0;
+    }
+    // stylelint-enable selector-max-class
+  }
+
+  .select-improved-up.active > & {
+    // stylelint-disable selector-max-class
+    > .input-group .form-control {
+      border-top-left-radius: 0;
+      border-top-right-radius: 0;
+      border-bottom-right-radius: $border-radius;
+      border-bottom-left-radius: $border-radius;
+    }
+
+    .input-group-last > .btn {
+      border-top-right-radius: 0;
+      border-bottom-right-radius: $border-radius;
+    }
+    // stylelint-enable selector-max-class
+  }
+}
+
+.form-control {
+  // stylelint-disable selector-max-class, no-duplicate-selectors
+  .select-control > .input-group & {
+    position: relative;
+    cursor: pointer;
+    border: 1px solid $select-improved-border-color;
+    transition: none;
+  }
+
+  .select-improved.active > .select-control > .input-group & {
+    border-top-color: $select-improved-menu-border-color;
+    border-left-color: $select-improved-menu-border-color;
+  }
+
+  .select-improved-up.active > .select-control > .input-group & {
+    border-top-color: gray('100');
+    border-bottom-color: $select-improved-menu-border-color;
+    border-left-color: $select-improved-menu-border-color;
+  }
+  // stylelint-enable selector-max-class, no-duplicate-selectors
+}
+
+.select-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-height: $select-scrollable-max-height;
+  padding: rem(20px);
+  overflow-y: auto;
+  background-color: $select-improved-menu-bg;
+  border-right: $select-improved-menu-border-color solid 1px;
+  border-bottom: $select-improved-menu-border-color solid 1px;
+  border-left: $select-improved-menu-border-color solid 1px;
+  border-bottom-right-radius: $border-radius;
+  border-bottom-left-radius: $border-radius;
+
+  > .d-flex {
+    min-height: 0;
+  }
+
+  .select-improved-up & {
+    top: auto;
+    bottom: 100%;
+    border-top: gray('200') solid 1px;
+    border-bottom: none;
+    border-radius: $border-radius $border-radius 0 0;
+  }
+}
+
+.select-menu-inner {
+  flex: 1 1 auto;
+}
+
+.select-menu-item {
+  display: block;
+  width: 100%;
+  padding: 0; // legacy
+  font-weight: $font-weight-medium;
+  color: $select-improved-menu-item-color;
+  text-align: left;
+  cursor: pointer;
+  background: none; // legacy
+  border: 0; // legacy
+
+  + .select-menu-item {
+    margin-top: rem(14px);
+  }
+
+  // legacy
+  &:hover,
+  &:focus,
+  &:active,
+  &.active {
+    color: theme-color('primary');
+  }
+
+  // stylelint-disable selector-no-qualifying-type
+  > button,
+  > a {
+    display: block;
+    width: 100%;
+    padding: 0;
+    font-weight: $font-weight-medium;
+    color: currentColor;
+    text-align: left;
+    cursor: pointer;
+    background: none;
+    border: 0;
+
+    &:hover,
+    &:focus,
+    &:active,
+    &.active {
+      color: theme-color('primary');
+    }
+  }
+  // stylelint-enable selector-no-qualifying-type
+}
+
+.select-group {
+  + .select-group {
+    margin-top: rem(18px);
+  }
+}
+
+.select-group-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 0;
+  background-color: transparent;
+  border: none;
+
+  .select-group-close {
+    display: none;
+  }
+
+  .select-group-show {
+    display: inline-block;
+  }
+
+  [class^='icons-arrow-'] {
+    display: inline-block;
+    transition: transform 0.15s ease-out;
+  }
+
+  &[data-role='collapse'] > * {
+    pointer-events: none;
+  }
+
+  &.active {
+    .select-group-close {
+      display: inline-block;
+    }
+
+    .select-group-show {
+      display: none;
+    }
+
+    [class^='icons-arrow-'] {
+      transform: rotate(180deg);
+    }
+  }
+}
+
+.select-group-head[data-role='collapse'] {
+  cursor: pointer;
+}
+
+.select-group-title {
+  padding: 0;
+  font-weight: $font-weight-medium;
+  color: $select-improved-group-title;
+  text-align: left;
+  background: none;
+  border: 0;
+}
+
+/* stylelint-disable selector-no-qualifying-type */
+button.select-group-title {
+  cursor: pointer;
+}
+/* stylelint-enable selector-no-qualifying-type */
+
+.select-group-content {
+  padding-top: rem(14px);
+  padding-left: rem(28px);
+}

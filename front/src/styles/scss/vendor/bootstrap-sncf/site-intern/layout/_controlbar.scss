@@ -1,0 +1,26 @@
+/* controlbar
+   ========================================================================== */
+
+$controlbar-height: rem(40px);
+
+.controlbar {
+  position: fixed;
+  left: 0;
+  z-index: $zindex-fixed;
+  display: flex;
+  align-items: center;
+  width: 100%;
+  height: $controlbar-height;
+  background-color: $controlbar-bg;
+}
+
+@include media-breakpoint-down(sm) {
+  .controlbar {
+    top: $mastheader-height + $actionbar-min-height;
+    border-bottom: 1px solid #d8d8d8;
+  }
+
+  .actionbar.has-tabs + .controlbar {
+    top: $mastheader-height + $actionbar-max-height;
+  }
+}

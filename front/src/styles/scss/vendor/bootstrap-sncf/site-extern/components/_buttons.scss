@@ -1,0 +1,25 @@
+/* buttons
+   ========================================================================== */
+
+.btn-burger {
+  .btn-burger-open {
+    display: block;
+  }
+  .btn-burger-close {
+    display: none;
+  }
+
+  &.active {
+    .btn-burger-open {
+      display: none;
+    }
+    .btn-burger-close {
+      display: block;
+    }
+  }
+
+  &:focus,
+  &.active {
+    color: $body-color;
+  }
+}

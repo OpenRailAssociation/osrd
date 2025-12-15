@@ -1,0 +1,20 @@
+/* mastcontainer
+   ========================================================================== */
+
+.mastcontainer {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  padding-top: $menubar-height;
+}
+
+.mastcontent {
+  flex: 1 1 auto;
+  background-color: $mastcontent-bg;
+}
+
+@include media-breakpoint-up(md) {
+  .mastcontainer {
+    padding-top: $mastheader-height + $menubar-height-md;
+  }
+}

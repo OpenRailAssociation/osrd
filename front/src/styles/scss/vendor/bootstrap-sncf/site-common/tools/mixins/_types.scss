@@ -1,0 +1,25 @@
+@each $breakpoint in map-keys($grid-breakpoints) {
+  @include media-breakpoint-up($breakpoint) {
+    $infix: breakpoint-infix($breakpoint, $grid-breakpoints);
+
+    .text#{$infix}-xs {
+      font-size: $font-size-xs;
+      line-height: $line-height-xs;
+    }
+
+    .text#{$infix}-sm {
+      font-size: $font-size-sm;
+      line-height: $line-height-sm;
+    }
+
+    .text#{$infix}-base {
+      font-size: $font-size-base;
+      line-height: $line-height-base;
+    }
+
+    .text#{$infix}-lg {
+      font-size: $font-size-lg;
+      line-height: $line-height-lg;
+    }
+  }
+}

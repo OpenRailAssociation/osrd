@@ -1,0 +1,51 @@
+// clipboard.js
+//
+// JS-based `Copy` & `Hide source` buttons for code snippets
+
+.bd-clipboard {
+  position: relative;
+  display: none;
+  padding: 0.5rem;
+  text-align: right;
+
+  + .highlight {
+    margin-top: 0;
+  }
+}
+
+.bd-clipboard-bg-light {
+  background-color: $bd-clipboard-bg-light;
+}
+
+.btn-hide-source,
+.btn-show-source {
+  position: relative;
+  z-index: 1;
+  display: inline-block;
+  padding: 0.25rem 1rem;
+  font-size: 75%;
+  color: $body-color;
+  cursor: pointer;
+  background-color: transparent;
+  border: 0;
+
+  &:hover {
+    opacity: 0.7;
+  }
+}
+.btn-clipboard {
+  position: relative;
+  z-index: 1;
+  display: inline-block;
+  padding: 0.25rem 1rem;
+  font-size: 75%;
+  cursor: pointer;
+  border: 0;
+  border-radius: 0.25rem;
+}
+
+@media (min-width: 768px) {
+  .bd-clipboard {
+    display: block;
+  }
+}
