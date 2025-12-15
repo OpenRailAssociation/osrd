@@ -2,6 +2,10 @@ use std::collections::HashMap;
 use std::error::Error;
 use std::path::PathBuf;
 
+use schemas::infra::TrackSectionExtensions;
+use schemas::infra::TrackSectionSncfExtension;
+use schemas::infra::TrackSectionSourceExtension;
+use schemas::primitives::NonBlankString;
 use tracing::debug;
 use tracing::error;
 use tracing::info;
@@ -43,6 +47,8 @@ pub fn parse_osm(osm_pbf_in: PathBuf) -> Result<RailJson, Box<dyn Error + Send +
         .read_tag("maxspeed:backward")
         .read_tag("voltage")
         .read_tag("local_ref")
+        .read_tag("name")
+        .read_tag("railway:track_ref")
         .read(&osm_pbf_in)?;
     info!("🗺️ We have {} nodes and {} edges", nodes.len(), edges.len());
 
@@ -78,6 +84,26 @@ pub fn parse_osm(osm_pbf_in: PathBuf) -> Result<RailJson, Box<dyn Error + Send +
                 id: e.id.as_str().into(),
                 length: e.length(),
                 geo: geo.clone(),
+                extensions: TrackSectionExtensions {
+                    sncf: Some(TrackSectionSncfExtension {
+                        line_code: 0,
+                        line_name: e
+                            .tags
+                            .get("name")
+                            .map(NonBlankString::from)
+                            .unwrap_or(NonBlankString::from("??")),
+                        track_name: e
+                            .tags
+                            .get("railway:track_ref")
+                            .map(NonBlankString::from)
+                            .unwrap_or(NonBlankString::from("??")),
+                        track_number: 0,
+                    }),
+                    source: Some(TrackSectionSourceExtension {
+                        name: "OpenStreetMap".into(),
+                        id: "osm".into(),
+                    }),
+                },
                 ..Default::default()
             }
         })
