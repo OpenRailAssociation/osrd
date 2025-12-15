@@ -61,7 +61,7 @@ data class OperationalPointPartExtension(val sncf: OperationalPointPartSncfExten
 
 data class OperationalPointPartSncfExtension(val kp: String)
 
-val polymorphicAdapter: PolymorphicJsonAdapterFactory<Electrification> =
+val polymorphicElectrificationAdapter: PolymorphicJsonAdapterFactory<Electrification> =
     PolymorphicJsonAdapterFactory.of(Electrification::class.java, "type")
         .withSubtype(Electrified::class.java, "electrification")
         .withSubtype(Neutral::class.java, "neutral_section")
@@ -69,7 +69,7 @@ val polymorphicAdapter: PolymorphicJsonAdapterFactory<Electrification> =
 
 val pathPropResponseAdapter: JsonAdapter<PathPropResponse> =
     Moshi.Builder()
-        .add(polymorphicAdapter)
+        .add(polymorphicElectrificationAdapter)
         .addLast(UnitAdapterFactory())
         .addLast(KotlinJsonAdapterFactory())
         .build()

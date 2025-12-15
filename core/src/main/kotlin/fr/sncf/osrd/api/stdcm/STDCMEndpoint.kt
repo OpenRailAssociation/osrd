@@ -31,6 +31,7 @@ import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.signaling.etcs_level2.ETCS_LEVEL2
 import fr.sncf.osrd.sim_infra.api.DirTrackChunkId
+import fr.sncf.osrd.sim_infra.api.RawInfra
 import fr.sncf.osrd.sim_infra.api.SpeedLimitProperty
 import fr.sncf.osrd.sim_infra.api.TrackSectionId
 import fr.sncf.osrd.sim_infra.api.ZoneId
@@ -161,11 +162,32 @@ class STDCMEndpoint(
 
             val departureTime =
                 request.startTime.plus(ofMillis((path.departureTime * 1000).toLong()))
+
+            logDebugData(infra.rawInfra, path, simulationResponse, departureTime, requirements)
+
             val response = STDCMSuccess(simulationResponse, pathfindingResponse, departureTime)
             RsJson(RsWithBody(stdcmResponseAdapter.toJson(response)))
         } catch (ex: Throwable) {
             ExceptionHandler.handle(ex)
         }
+    }
+
+    /**
+     * If the env variable is set, dump a json file there with all data that may be relevant for
+     * debug. The feature and env variable isn't properly documented yet, it should soon be linked
+     * to an object storage.
+     */
+    private fun logDebugData(
+        infra: RawInfra,
+        path: STDCMResult,
+        simulationResponse: SimulationSuccess,
+        departureTime: ZonedDateTime,
+        requirements: ParsedRequirements,
+    ) {
+        val filename = System.getenv("STDCM_DEBUG_DATA_FILENAME") ?: return
+        val debugData =
+            generateDebugData(infra, path, simulationResponse, departureTime, requirements)
+        File(filename).writeText(OutputSimDebugData.adapter.indent("  ").toJson(debugData))
     }
 
     /** Build the simulation part of the response */

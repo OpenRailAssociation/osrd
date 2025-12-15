@@ -90,7 +90,7 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
             )
         val res =
             STDCMResult(
-                withAllowance,
+                withAllowance.envelope,
                 trainPath,
                 routes,
                 updatedTimeData.departureTime,
@@ -99,6 +99,7 @@ class STDCMPostProcessing(private val graph: STDCMGraph) {
                 // after the redesign of simulation data models
                 makePathStops(stops, trainPath),
                 lastExplorer.getStepTracker().getSeenSteps().map { it.travelledPathOffset },
+                withAllowance.engineeringAllowanceRanges,
             )
         return if (res.envelope.totalTime > maxRunTime) {
             // This can happen if the destination is one edge away from being reachable in time,
