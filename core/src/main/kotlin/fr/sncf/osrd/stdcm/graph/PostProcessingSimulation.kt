@@ -1,5 +1,6 @@
 package fr.sncf.osrd.stdcm.graph
 
+import com.squareup.moshi.Json
 import fr.sncf.osrd.envelope.Envelope
 import fr.sncf.osrd.envelope_sim.EnvelopeSimContext
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceRange
@@ -37,10 +38,15 @@ private data class FixedTimePoint(
     }
 }
 
-private data class EngineeringAllowanceRange(
+data class EngineeringAllowanceRange(
     val from: Offset<TrainPath>,
     val to: Offset<TrainPath>,
-    val addedDuration: Double,
+    @Json(name = "added_duration") val addedDuration: Double,
+)
+
+data class FinalEnvelopeResult(
+    val envelope: Envelope,
+    val engineeringAllowanceRanges: List<EngineeringAllowanceRange>,
 )
 
 /**
@@ -67,7 +73,7 @@ fun buildFinalEnvelope(
     stops: List<TrainStop>,
     updatedTimeData: TimeData,
     isMareco: Boolean = true,
-): Envelope {
+): FinalEnvelopeResult {
     val context = build(rollingStock, envelopeSimPath, timeStep, comfort)
     val fullInfraExplorer = edges.last().infraExplorerWithNewEnvelope
 
@@ -94,7 +100,7 @@ fun buildFinalEnvelope(
                 runSimulationWithFixedPoints(maxSpeedEnvelope, fixedPoints, context, isMareco)
             val conflictOffset =
                 findConflictOffsets(newEnvelope, blockAvailability, edges, updatedTimeData)
-                    ?: return newEnvelope
+                    ?: return FinalEnvelopeResult(newEnvelope, allowanceRanges)
             if (fixedPoints.any { it.offset == conflictOffset }) {
                 // Error case: a conflict prevents us from finding a solution,
                 // despite the exploration data identifying a valid opening.
@@ -469,7 +475,7 @@ private fun handlePostProcessingConflict(
     fixedPoints: TreeSet<FixedTimePoint>,
     conflictOffset: Offset<TrainPath>,
     isMareco: Boolean,
-): Envelope {
+): FinalEnvelopeResult {
     postProcessingLogger.error(
         "Conflicts detected in post-processing, mismatch with the exploration data"
     )
