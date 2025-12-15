@@ -82,7 +82,7 @@ class TrackSectionConstraintsTest {
     @MethodSource("testZonesArgs")
     fun testRestrictedTrackSectionBlockedRanges(
         blockId: BlockId,
-        expectedBlockedRanges: Collection<Pathfinding.Range<Block>>,
+        expectedBlockedRanges: Collection<Pathfinding.Range>,
     ) {
         val blockedRanges = trackSectionConstraints!!.apply(blockId)
         Assertions.assertThat(blockedRanges).isEqualTo(expectedBlockedRanges)
@@ -96,7 +96,7 @@ class TrackSectionConstraintsTest {
             ),
             Arguments.of(
                 ta0Chunk1block!!.index.toInt(),
-                setOf(Pathfinding.Range(Offset<Block>(0.meters), Offset(180.meters))),
+                setOf(Pathfinding.Range(Offset(0.meters), Offset(180.meters))),
             ),
             Arguments.of(ta1Chunk0block!!.index.toInt(), HashSet<Any>()),
         )

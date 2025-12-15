@@ -13,8 +13,8 @@ data class LoadingGaugeConstraints(
     val infra: RawSignalingInfra,
     val loadingGaugeType: RJSLoadingGaugeType,
 ) : PathfindingConstraint<Block> {
-    override fun apply(edge: BlockId): Collection<Pathfinding.Range<Block>> {
-        val res = HashSet<Pathfinding.Range<Block>>()
+    override fun apply(edge: BlockId): Collection<Pathfinding.Range> {
+        val res = HashSet<Pathfinding.Range>()
         val path = buildTrainPathFromBlock(infra, blockInfra, edge)
         res.addAll(getBlockedRanges(loadingGaugeType, path))
         return res
@@ -24,7 +24,7 @@ data class LoadingGaugeConstraints(
     private fun getBlockedRanges(
         type: RJSLoadingGaugeType,
         path: TrainPath,
-    ): Collection<Pathfinding.Range<Block>> {
+    ): Collection<Pathfinding.Range> {
         return path
             .getLoadingGauge()
             .toSet()

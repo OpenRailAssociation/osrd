@@ -37,7 +37,7 @@ class RemainingDistanceEstimatorTest {
     @ParameterizedTest
     @MethodSource("testRemainingDistanceEstimatorArgs")
     fun testRemainingDistanceEstimator(
-        edgeLocations: Collection<EdgeLocation<BlockId, Block>>,
+        edgeLocations: Collection<EdgeLocation<BlockId>>,
         remainingDistance: Distance,
         expectedDistance: Distance,
         blockOffset: Offset<Block>,
@@ -61,13 +61,13 @@ class RemainingDistanceEstimatorTest {
         val pathLengthBlockOffset: Offset<Block> = path!!.getLength().cast()
         return Stream.of( // Test same point
             Arguments.of(
-                listOf(EdgeLocation(block, Offset<Block>(0.meters))),
+                listOf(EdgeLocation(block, Offset(0.meters))),
                 0,
                 0,
                 0,
             ), // Test same point with non-null remaining distance
             Arguments.of(
-                listOf(EdgeLocation(block, Offset<Block>(0.meters))),
+                listOf(EdgeLocation(block, Offset(0.meters))),
                 10,
                 10,
                 0,

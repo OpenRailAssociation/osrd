@@ -6,6 +6,7 @@ import fr.sncf.osrd.graph.*
 import fr.sncf.osrd.pathfinding.constraints.ConstraintCombiner
 import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
+import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.utils.units.Offset
 import fr.sncf.osrd.utils.units.OffsetRange
 import fr.sncf.osrd.utils.units.meters
@@ -30,21 +31,19 @@ import kotlin.math.max
     value = ["FE_FLOATING_POINT_EQUALITY"],
     justification = "No arithmetic is done on values where we test for equality, only copies",
 )
-class Pathfinding<NodeT : Any, EdgeT : Any, OffsetType>(
-    private val graph: Graph<NodeT, EdgeT, OffsetType>
-) {
+class Pathfinding<NodeT : Any, EdgeT : Any>(private val graph: Graph<NodeT, EdgeT>) {
     /** Pathfinding step */
-    private data class Step<EdgeT : Any, OffsetType>(
-        val range: EdgeRange<EdgeT, OffsetType>, // Range covered by this step
-        val prev: Step<EdgeT, OffsetType>?, // Previous step (to construct the result)
+    private data class Step<EdgeT : Any>(
+        val range: EdgeRange<EdgeT>, // Range covered by this step
+        val prev: Step<EdgeT>?, // Previous step (to construct the result)
         val totalDistance: Double, // Total distance from the start
         val weight:
             Double, // Priority queue weight (could be different from totalDistance to allow for A*)
         val nReachedTargets: Int, // How many targets we found by this path
-        val targets: List<EdgeLocation<EdgeT, OffsetType>>,
+        val targets: List<EdgeLocation<EdgeT>>,
         val comparisonFallback: ((EdgeT, EdgeT) -> Int)?,
-    ) : Comparable<Step<EdgeT, OffsetType>> {
-        override fun compareTo(other: Step<EdgeT, OffsetType>): Int {
+    ) : Comparable<Step<EdgeT>> {
+        override fun compareTo(other: Step<EdgeT>): Int {
             if (weight != other.weight) return weight.compareTo(other.weight)
             else if (nReachedTargets != other.nReachedTargets) {
                 // If the weights are equal, we prioritize the highest number of reached targets
@@ -58,44 +57,37 @@ class Pathfinding<NodeT : Any, EdgeT : Any, OffsetType>(
     }
 
     /** Contains all the results of a pathfinding */
-    data class Result<EdgeT, OffsetType>(
-        val ranges: List<EdgeRange<EdgeT, OffsetType>>, // Full path as edge ranges
-        val waypoints: List<EdgeLocation<EdgeT, OffsetType>>,
+    data class Result<EdgeT>(
+        val ranges: List<EdgeRange<EdgeT>>, // Full path as edge ranges
+        val waypoints: List<EdgeLocation<EdgeT>>,
     )
 
     /** A location on a range, made of edge + offset. Used for the input of the pathfinding */
-    data class EdgeLocation<EdgeT, OffsetType>(val edge: EdgeT, val offset: Offset<OffsetType>)
+    data class EdgeLocation<EdgeT>(val edge: EdgeT, val offset: Offset<Block>)
 
     /**
      * A range, made of edge + start and end offsets on the edge. Used for the output of the
      * pathfinding
      */
-    data class EdgeRange<EdgeT, OffsetType>(
-        val edge: EdgeT,
-        val start: Offset<OffsetType>,
-        val end: Offset<OffsetType>,
-    )
+    data class EdgeRange<EdgeT>(val edge: EdgeT, val start: Offset<Block>, val end: Offset<Block>)
 
     /** A simple range with no edge attached */
     @JvmInline
-    value class Range<OffsetType>(private val r: OffsetRange<OffsetType>) {
-        constructor(
-            start: Offset<OffsetType>,
-            end: Offset<OffsetType>,
-        ) : this(OffsetRange(start, end))
+    value class Range(private val r: OffsetRange<Block>) {
+        constructor(start: Offset<Block>, end: Offset<Block>) : this(OffsetRange(start, end))
 
-        val start: Offset<OffsetType>
+        val start: Offset<Block>
             get() = r.start
 
-        val end: Offset<OffsetType>
+        val end: Offset<Block>
             get() = r.end
     }
 
     /** Step priority queue */
-    private val queue = PriorityQueue<Step<EdgeT, OffsetType>>()
+    private val queue = PriorityQueue<Step<EdgeT>>()
 
     /** Function to call to get edge length */
-    private var edgeToLength: EdgeToLength<EdgeT, OffsetType>? = null
+    private var edgeToLength: EdgeToLength<EdgeT>? = null
 
     /**
      * Comparison function to use to pick between edges of identical costs. Optional, but helps to
@@ -104,71 +96,62 @@ class Pathfinding<NodeT : Any, EdgeT : Any, OffsetType>(
     private var comparisonFallback: ((EdgeT, EdgeT) -> Int)? = null
 
     /** Function to call to get the blocked ranges on an edge */
-    private val blockedRangesOnEdge = ConstraintCombiner<EdgeT, OffsetType>()
+    private val blockedRangesOnEdge = ConstraintCombiner<EdgeT>()
 
     /**
      * Keeps track of visited location. For each visited range, keeps the max number of passed
      * targets at that point
      */
-    private val seen = HashMap<EdgeRange<EdgeT, OffsetType>, Int>()
+    private val seen = HashMap<EdgeRange<EdgeT>, Int>()
 
     /**
      * Functions to call to get estimate of the remaining distance. We have a list of function for
      * each step. These functions take the edge and the offset and returns a distance.
      */
-    private var estimateRemainingDistance: List<AStarHeuristic<EdgeT, OffsetType>>? = ArrayList()
+    private var estimateRemainingDistance: List<AStarHeuristic<EdgeT>>? = ArrayList()
 
     /**
      * Function to call to get the cost of a range. Defaults to distances. The heuristic unit *must*
      * match.
      */
-    private var rangeCost: (EdgeRange<EdgeT, OffsetType>) -> Double =
-        { range: EdgeRange<EdgeT, OffsetType> ->
-            (range.end - range.start).millimeters.toDouble()
-        }
+    private var rangeCost: (EdgeRange<EdgeT>) -> Double = { range: EdgeRange<EdgeT> ->
+        (range.end - range.start).millimeters.toDouble()
+    }
 
     /** Timeout, in seconds, to avoid infinite loop when no path can be found. */
     private var timeout = TIMEOUT
 
     /** Sets the functor used to estimate the remaining distance for A* */
-    fun setEdgeToLength(
-        f: EdgeToLength<EdgeT, OffsetType>?
-    ): Pathfinding<NodeT, EdgeT, OffsetType> {
+    fun setEdgeToLength(f: EdgeToLength<EdgeT>?): Pathfinding<NodeT, EdgeT> {
         edgeToLength = f
         return this
     }
 
-    fun setComparisonFallback(f: (EdgeT, EdgeT) -> Int): Pathfinding<NodeT, EdgeT, OffsetType> {
+    fun setComparisonFallback(f: (EdgeT, EdgeT) -> Int): Pathfinding<NodeT, EdgeT> {
         comparisonFallback = f
         return this
     }
 
     /** Sets the functor used to define the cost of an edge range */
-    fun setRangeCost(
-        f: (EdgeRange<EdgeT, OffsetType>) -> Double
-    ): Pathfinding<NodeT, EdgeT, OffsetType> {
+    fun setRangeCost(f: (EdgeRange<EdgeT>) -> Double): Pathfinding<NodeT, EdgeT> {
         rangeCost = f
         return this
     }
 
     /** Sets functors used to estimate the remaining distance for A* */
-    fun setRemainingDistanceEstimator(
-        f: List<AStarHeuristic<EdgeT, OffsetType>>?
-    ): Pathfinding<NodeT, EdgeT, OffsetType> {
+    fun setRemainingDistanceEstimator(f: List<AStarHeuristic<EdgeT>>?): Pathfinding<NodeT, EdgeT> {
         estimateRemainingDistance = f
         return this
     }
 
     /** Sets the functor used to determine which ranges are blocked on an edge */
-    fun addBlockedRangeOnEdges(
-        f: EdgeToRanges<EdgeT, OffsetType>
-    ): Pathfinding<NodeT, EdgeT, OffsetType> {
+    fun addBlockedRangeOnEdges(f: EdgeToRanges<EdgeT>): Pathfinding<NodeT, EdgeT> {
         blockedRangesOnEdge.functions.add(f)
         return this
     }
 
     /** Sets the pathfinding's timeout */
-    fun setTimeout(timeout: Double?): Pathfinding<NodeT, EdgeT, OffsetType> {
+    fun setTimeout(timeout: Double?): Pathfinding<NodeT, EdgeT> {
         if (timeout != null) this.timeout = timeout
         return this
     }
@@ -180,16 +163,14 @@ class Pathfinding<NodeT : Any, EdgeT : Any, OffsetType>(
      * Dijkstra algorithm by default, but can be changed to an A* by specifying a function to
      * estimate the remaining distance, using `setRemainingDistanceEstimator`
      */
-    fun runPathfinding(
-        targets: List<Collection<EdgeLocation<EdgeT, OffsetType>>>
-    ): Result<EdgeT, OffsetType>? {
+    fun runPathfinding(targets: List<Collection<EdgeLocation<EdgeT>>>): Result<EdgeT>? {
         // We convert the targets of each step into functions, to call the more generic overload of
         // this method below
         val starts = targets[0]
-        val targetsOnEdges = ArrayList<TargetsOnEdge<EdgeT, OffsetType>>()
+        val targetsOnEdges = ArrayList<TargetsOnEdge<EdgeT>>()
         for (i in 1 until targets.size) {
             targetsOnEdges.add { edge: EdgeT ->
-                val res = HashSet<EdgeLocation<EdgeT, OffsetType>>()
+                val res = HashSet<EdgeLocation<EdgeT>>()
                 for (target in targets[i]) {
                     if (target.edge == edge) res.add(EdgeLocation(edge, target.offset))
                 }
@@ -209,9 +190,9 @@ class Pathfinding<NodeT : Any, EdgeT : Any, OffsetType>(
      */
     @WithSpan(value = "Running core pathfinding algorithm", kind = SpanKind.SERVER)
     fun runPathfinding(
-        starts: Collection<EdgeLocation<EdgeT, OffsetType>>,
-        targetsOnEdges: List<TargetsOnEdge<EdgeT, OffsetType>>,
-    ): Result<EdgeT, OffsetType>? {
+        starts: Collection<EdgeLocation<EdgeT>>,
+        targetsOnEdges: List<TargetsOnEdge<EdgeT>>,
+    ): Result<EdgeT>? {
         checkParameters()
         for (location in starts) {
             val startRange = EdgeRange(location.edge, location.offset, location.offset)
@@ -307,13 +288,11 @@ class Pathfinding<NodeT : Any, EdgeT : Any, OffsetType>(
     }
 
     /** Runs the pathfinding, returning a path as a list of edge. */
-    fun runPathfindingEdgesOnly(
-        targets: List<Collection<EdgeLocation<EdgeT, OffsetType>>>
-    ): List<EdgeT>? {
+    fun runPathfindingEdgesOnly(targets: List<Collection<EdgeLocation<EdgeT>>>): List<EdgeT>? {
         val res = runPathfinding(targets) ?: return null
         return res.ranges
             .stream()
-            .map { step: EdgeRange<EdgeT, OffsetType> -> step.edge }
+            .map { step: EdgeRange<EdgeT> -> step.edge }
             .collect(Collectors.toList())
     }
 
@@ -324,20 +303,20 @@ class Pathfinding<NodeT : Any, EdgeT : Any, OffsetType>(
     }
 
     /** Returns true if the step has reached the end of the path (last target) */
-    private fun hasReachedEnd(nTargets: Int, step: Step<EdgeT, OffsetType>): Boolean {
+    private fun hasReachedEnd(nTargets: Int, step: Step<EdgeT>): Boolean {
         return step.nReachedTargets >= nTargets
     }
 
     /** Builds the result, iterating over the previous steps and merging ranges */
-    private fun buildResult(lastStep: Step<EdgeT, OffsetType>): Result<EdgeT, OffsetType> {
-        var mutLastStep: Step<EdgeT, OffsetType>? = lastStep
-        val orderedSteps = ArrayDeque<Step<EdgeT, OffsetType>>()
+    private fun buildResult(lastStep: Step<EdgeT>): Result<EdgeT> {
+        var mutLastStep: Step<EdgeT>? = lastStep
+        val orderedSteps = ArrayDeque<Step<EdgeT>>()
         while (mutLastStep != null) {
             orderedSteps.addFirst(mutLastStep)
             mutLastStep = mutLastStep.prev
         }
-        val ranges = ArrayList<EdgeRange<EdgeT, OffsetType>>()
-        val waypoints = ArrayList<EdgeLocation<EdgeT, OffsetType>>()
+        val ranges = ArrayList<EdgeRange<EdgeT>>()
+        val waypoints = ArrayList<EdgeLocation<EdgeT>>()
         for (step in orderedSteps) {
             val range = step.range
             val lastIndex = ranges.size - 1
@@ -355,7 +334,7 @@ class Pathfinding<NodeT : Any, EdgeT : Any, OffsetType>(
     }
 
     /** Filter the range to keep only the parts that can be reached */
-    private fun filterRange(range: EdgeRange<EdgeT, OffsetType>): EdgeRange<EdgeT, OffsetType>? {
+    private fun filterRange(range: EdgeRange<EdgeT>): EdgeRange<EdgeT>? {
         var end = range.end
         for (blockedRange in blockedRangesOnEdge.apply(range.edge)) {
             if (blockedRange.end < range.start) {
@@ -373,11 +352,11 @@ class Pathfinding<NodeT : Any, EdgeT : Any, OffsetType>(
 
     /** Registers one step, adding the edge to the queue if not already seen */
     private fun registerStep(
-        range: EdgeRange<EdgeT, OffsetType>,
-        prev: Step<EdgeT, OffsetType>?,
+        range: EdgeRange<EdgeT>,
+        prev: Step<EdgeT>?,
         prevDistance: Double,
         nPassedTargets: Int,
-        targets: List<EdgeLocation<EdgeT, OffsetType>> = listOf(),
+        targets: List<EdgeLocation<EdgeT>> = listOf(),
     ) {
         val filteredRange = filterRange(range) ?: return
         val totalDistance = prevDistance + rangeCost.invoke(filteredRange)

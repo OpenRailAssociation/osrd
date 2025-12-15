@@ -85,7 +85,7 @@ interface InfraExplorerWithEnvelope : InfraExplorer {
 /** Init all InfraExplorersWithEnvelope starting at the given location. */
 fun initInfraExplorerWithEnvelope(
     fullInfra: FullInfra,
-    location: EdgeLocation<BlockId, Block>,
+    location: EdgeLocation<BlockId>,
     rollingStock: PhysicsRollingStock,
     steps: List<STDCMStep> = listOf(),
     constraints: List<PathfindingConstraint<Block>> = listOf(),

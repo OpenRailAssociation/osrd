@@ -15,8 +15,8 @@ data class TrackSectionConstraints(
     val infra: RawSignalingInfra,
     val allowedTrackSections: Set<TrackSectionId>,
 ) : PathfindingConstraint<Block> {
-    override fun apply(edge: BlockId): Collection<Pathfinding.Range<Block>> {
-        val res = HashSet<Pathfinding.Range<Block>>()
+    override fun apply(edge: BlockId): Collection<Pathfinding.Range> {
+        val res = HashSet<Pathfinding.Range>()
         val path = buildTrainPathFromBlock(infra, blockInfra, edge)
         res.addAll(getBlockedRanges(allowedTrackSections, path))
 
@@ -26,8 +26,8 @@ data class TrackSectionConstraints(
     private fun getBlockedRanges(
         allowedTrackSections: Set<TrackSectionId>,
         path: TrainPath,
-    ): Collection<Pathfinding.Range<Block>> {
-        val res = HashSet<Pathfinding.Range<Block>>()
+    ): Collection<Pathfinding.Range> {
+        val res = HashSet<Pathfinding.Range>()
 
         val invalidTrackChunks =
             path.getChunks().filter {

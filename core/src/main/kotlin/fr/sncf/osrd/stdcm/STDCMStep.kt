@@ -1,14 +1,13 @@
 package fr.sncf.osrd.stdcm
 
 import fr.sncf.osrd.pathfinding.Pathfinding.EdgeLocation
-import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.utils.units.Duration
 import fr.sncf.osrd.utils.units.TimeDelta
 import kotlin.math.abs
 
 data class STDCMStep(
-    val locations: Collection<EdgeLocation<BlockId, Block>>,
+    val locations: Collection<EdgeLocation<BlockId>>,
     val duration: Double? = null,
     val stop: Boolean = false,
     val plannedTimingData: PlannedTimingData? = null,

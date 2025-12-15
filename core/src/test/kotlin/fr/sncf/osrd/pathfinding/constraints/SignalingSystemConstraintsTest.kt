@@ -1,7 +1,6 @@
 package fr.sncf.osrd.pathfinding.constraints
 
 import fr.sncf.osrd.pathfinding.Pathfinding
-import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.train.RollingStock
 import fr.sncf.osrd.train.TestTrains
@@ -25,7 +24,7 @@ class SignalingSystemConstraintsTest {
     fun testSignalingSystemBlockedRanges(
         blockId: BlockId,
         rollingStock: RollingStock,
-        expectedBlockedRanges: Collection<Pathfinding.Range<Block>>,
+        expectedBlockedRanges: Collection<Pathfinding.Range>,
     ) {
         /*
 
@@ -53,7 +52,7 @@ class SignalingSystemConstraintsTest {
             Arguments.of(
                 1,
                 TestTrains.TRAIN_WITHOUT_TVM,
-                setOf(Pathfinding.Range(Offset<Block>(0.meters), Offset(100.meters))),
+                setOf(Pathfinding.Range(Offset(0.meters), Offset(100.meters))),
             ),
             Arguments.of(0, TestTrains.FAST_ELECTRIC_TRAIN, HashSet<Any>()),
             Arguments.of(1, TestTrains.FAST_ELECTRIC_TRAIN, HashSet<Any>()),

@@ -18,7 +18,7 @@ data class ElectrificationConstraints(
     val rawInfra: RawSignalingInfra,
     val compatibleElectrification: Collection<String>,
 ) : PathfindingConstraint<Block> {
-    override fun apply(edge: BlockId): Collection<Pathfinding.Range<Block>> {
+    override fun apply(edge: BlockId): Collection<Pathfinding.Range> {
         val path = buildTrainPathFromBlock(rawInfra, blockInfra, edge)
         return getBlockedRanges(path, compatibleElectrification)
     }
@@ -32,8 +32,8 @@ data class ElectrificationConstraints(
         private fun getBlockedRanges(
             path: TrainPath,
             compatibleElectrification: Collection<String>,
-        ): Set<Pathfinding.Range<Block>> {
-            val res = HashSet<Pathfinding.Range<Block>>()
+        ): Set<Pathfinding.Range> {
+            val res = HashSet<Pathfinding.Range>()
             val voltages = path.getElectrification()
             val neutralSections = rangeSetFromMap(path.getNeutralSections())
             for ((lower, upper, value) in voltages) {

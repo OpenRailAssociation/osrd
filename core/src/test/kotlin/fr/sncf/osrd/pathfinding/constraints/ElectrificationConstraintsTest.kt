@@ -37,7 +37,7 @@ class ElectrificationConstraintsTest {
     @MethodSource("testDeadSectionArgs")
     fun testDeadSectionAndElectrificationBlockedRanges(
         blockId: BlockId,
-        expectedBlockedRanges: Collection<Pathfinding.Range<Block>>,
+        expectedBlockedRanges: Collection<Pathfinding.Range>,
     ) {
         val blockedRanges = electrificationConstraints!!.apply(blockId)
         AssertionsForClassTypes.assertThat(blockedRanges).isEqualTo(expectedBlockedRanges)
@@ -52,7 +52,7 @@ class ElectrificationConstraintsTest {
             // section
             Arguments.of(
                 1,
-                mutableSetOf(Pathfinding.Range(Offset<Block>(0.meters), Offset(140.meters))),
+                mutableSetOf(Pathfinding.Range(Offset(0.meters), Offset(140.meters))),
             ), // Fully corresponding electrification ranges without dead
             // sections
             Arguments.of(2, HashSet<Any>()),
