@@ -132,15 +132,19 @@ pub enum SummaryResponse {
         /// Total energy consumption of a train in kWh
         energy_consumption: f64,
         /// Final simulation time for each train schedule path item.
+        /// The length of this array is the number of path items in the train schedule used as input for the simulation.
         /// The first value is always `0` (beginning of the path) and the last one, the total time of the simulation (end of the path)
         path_item_times_final: Vec<u64>,
         /// Provisional simulation time for each train schedule path item.
+        /// The length of this array is the number of path items in the train schedule used as input for the simulation.
         /// The first value is always `0` (beginning of the path) and the last one, the total time of the simulation (end of the path)
         path_item_times_provisional: Vec<u64>,
         /// Base simulation time for each train schedule path item.
+        /// The length of this array is the number of path items in the train schedule used as input for the simulation.
         /// The first value is always `0` (beginning of the path) and the last one, the total time of the simulation (end of the path)
         path_item_times_base: Vec<u64>,
         /// The path offset in mm of each path item given as input of the pathfinding
+        /// The length of this array is the number of path items in the train schedule used as input for the simulation.
         /// The first value is always `0` (beginning of the path) and the last one is always equal to the `length` of the path in mm
         path_item_positions: Vec<u64>,
     },
