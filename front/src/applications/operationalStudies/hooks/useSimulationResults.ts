@@ -104,7 +104,7 @@ const useSimulationResults = (): SimulationResults | undefined => {
   // stocks list
   const { currentData: rollingStock } =
     osrdEditoastApi.endpoints.getRollingStockNameByRollingStockName.useQuery(
-      train
+      train?.rolling_stock_name
         ? {
             rollingStockName: train.rolling_stock_name,
           }
