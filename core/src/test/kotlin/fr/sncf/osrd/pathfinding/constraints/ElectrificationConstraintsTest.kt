@@ -3,7 +3,6 @@ package fr.sncf.osrd.pathfinding.constraints
 import fr.sncf.osrd.pathfinding.Pathfinding
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockId
-import fr.sncf.osrd.sim_infra.api.TrackChunk
 import fr.sncf.osrd.sim_infra.api.TrackChunkId
 import fr.sncf.osrd.train.TestTrains
 import fr.sncf.osrd.utils.Helpers
@@ -20,7 +19,7 @@ import org.junit.jupiter.params.provider.MethodSource
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class ElectrificationConstraintsTest {
     private var electrificationConstraints: ElectrificationConstraints? = null
-    private var chunk0Length: Offset<TrackChunk> = Offset(0.meters)
+    private var chunk0Length: Offset<Block> = Offset(0.meters)
 
     @BeforeAll
     fun setUp() {
@@ -31,7 +30,7 @@ class ElectrificationConstraintsTest {
                 infra.rawInfra,
                 TestTrains.FAST_ELECTRIC_TRAIN.modeNames,
             )
-        chunk0Length = infra.rawInfra.getTrackChunkLength(TrackChunkId(0U))
+        chunk0Length = infra.rawInfra.getTrackChunkLength(TrackChunkId(0U)).cast()
     }
 
     @ParameterizedTest

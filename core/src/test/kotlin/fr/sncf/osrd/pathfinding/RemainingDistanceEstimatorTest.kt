@@ -58,6 +58,7 @@ class RemainingDistanceEstimatorTest {
     )
     private fun testRemainingDistanceEstimatorArgs(): Stream<Arguments> {
         val points = path!!.getGeo().getPoints()
+        val pathLengthBlockOffset: Offset<Block> = path!!.getLength().cast()
         return Stream.of( // Test same point
             Arguments.of(
                 listOf(EdgeLocation(block, Offset<Block>(0.meters))),
@@ -72,7 +73,7 @@ class RemainingDistanceEstimatorTest {
                 0,
             ), // Test with target at the end of the edge
             Arguments.of(
-                listOf(EdgeLocation(block, path!!.getLength())),
+                listOf(EdgeLocation(block, pathLengthBlockOffset)),
                 0,
                 fromMeters(points[0].distanceAsMeters(Iterables.getLast(points))).millimeters,
                 0,
@@ -80,17 +81,17 @@ class RemainingDistanceEstimatorTest {
             Arguments.of(
                 listOf(
                     EdgeLocation(block, Offset(0.meters)),
-                    EdgeLocation(block, path!!.getLength()),
+                    EdgeLocation(block, pathLengthBlockOffset),
                 ),
                 0,
                 0,
                 0,
             ), // Test with an offset on the block
             Arguments.of(
-                listOf(EdgeLocation(block, path!!.getLength())),
+                listOf(EdgeLocation(block, pathLengthBlockOffset)),
                 0,
                 0,
-                path!!.getLength().distance.millimeters,
+                pathLengthBlockOffset.distance.millimeters,
             ),
         )
     }

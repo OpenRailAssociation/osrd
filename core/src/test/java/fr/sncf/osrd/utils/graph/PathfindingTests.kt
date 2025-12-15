@@ -31,9 +31,9 @@ import org.junit.jupiter.params.provider.CsvSource
 class PathfindingTests {
     class SimpleGraphBuilder {
         data class Edge(
-            val length: Length<Edge>,
+            val length: Length<Block>,
             val label: String,
-            val blockedRanges: Set<Pathfinding.Range<Edge>>,
+            val blockedRanges: Set<Pathfinding.Range<Block>>,
         )
 
         class Node
@@ -57,7 +57,7 @@ class PathfindingTests {
             n1: Int,
             n2: Int,
             length: Distance,
-            blockedRanges: Set<Pathfinding.Range<Edge>> = setOf(),
+            blockedRanges: Set<Pathfinding.Range<Block>> = setOf(),
         ) {
             val label = String.format("%d-%s", n1, n2)
             val res = Edge(Length(length), label, blockedRanges)
@@ -65,21 +65,21 @@ class PathfindingTests {
             edges[label] = res
         }
 
-        fun build(): Graph<Node, Edge, Edge> {
+        fun build(): Graph<Node, Edge, Block> {
             return NetworkGraphAdapter(builder.build())
         }
 
-        fun getEdgeLocation(id: String, offset: Distance): EdgeLocation<Edge, Edge> {
+        fun getEdgeLocation(id: String, offset: Distance): EdgeLocation<Edge, Block> {
             return EdgeLocation(edges[id]!!, Offset(offset))
         }
 
-        fun getEdgeLocation(id: String): EdgeLocation<Edge, Edge> {
+        fun getEdgeLocation(id: String): EdgeLocation<Edge, Block> {
             return EdgeLocation(edges[id]!!, Offset(0.meters))
         }
     }
 
     /** A range where the edge is only referenced by its ID (for easier equality check) */
-    data class SimpleRange(val id: String, val begin: Offset<Edge>, val end: Offset<Edge>)
+    data class SimpleRange(val id: String, val begin: Offset<Block>, val end: Offset<Block>)
 
     @Test
     fun pathfindingShortestTwoStepsTest() {
@@ -788,7 +788,7 @@ class PathfindingTests {
     }
 
     companion object {
-        private fun convertRes(res: Result<Edge, Edge>): List<SimpleRange> {
+        private fun convertRes(res: Result<Edge, Block>): List<SimpleRange> {
             return res.ranges
                 .stream()
                 .map { x -> SimpleRange(x.edge.label, x.start, x.end) }
