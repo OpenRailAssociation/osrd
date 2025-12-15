@@ -72,6 +72,7 @@ const SendToRailwayManagerModal = ({
   const [comment, setComment] = useState('');
   const [csCode, setCsCode] = useState('');
   const [pathTypeError, setPathTypeError] = useState(false);
+  const [csCodeError, setCsCodeError] = useState(false);
   const pdfBlobRef = useRef<Blob | null>(null);
 
   const { simulationPathSteps: steps } = stdcmData;
@@ -187,9 +188,19 @@ const SendToRailwayManagerModal = ({
     setTimeout(() => setPathTypeError(false), 500);
   }, []);
 
+  const showCsCodeError = useCallback(() => {
+    setCsCodeError(true);
+    setTimeout(() => setCsCodeError(false), 500);
+  }, []);
+
   const handleCreate = async () => {
     if (!pathType) {
       showPathTypeError();
+      return;
+    }
+
+    if (!csCode) {
+      showCsCodeError();
       return;
     }
 
@@ -413,12 +424,13 @@ const SendToRailwayManagerModal = ({
                 aria-invalid={pathTypeError}
               />
             </div>
-            <div className="cs-code">
+            <div className={`cs-code ${csCodeError ? 'wiggle' : ''}`}>
               <Input
                 id="cs-code"
                 value={csCode}
                 onChange={handleCsChange}
                 label={t('modal.csCode')}
+                required
                 maxLength={3}
               />
             </div>
