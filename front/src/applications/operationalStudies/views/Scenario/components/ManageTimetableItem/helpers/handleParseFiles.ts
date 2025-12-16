@@ -81,7 +81,7 @@ const validateTrainSchedules = (importedItems: unknown): TimetableJsonPayload =>
 
   const isInvalidPacedTrains = importedPacedTrains.some((pacedTrain) => {
     if (
-      [...TRAIN_SCHEDULE_COMPULSORY_KEYS, 'paced'].some((key) => !(key in pacedTrain)) ||
+      TRAIN_SCHEDULE_COMPULSORY_KEYS.some((key) => !(key in pacedTrain)) ||
       !Array.isArray(pacedTrain.path)
     ) {
       return true;
