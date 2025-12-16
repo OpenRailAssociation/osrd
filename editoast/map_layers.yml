@@ -128,6 +128,16 @@ layers:
         joins:
           - inner join infra_object_neutral_section neutral_section on neutral_section.obj_id = layer.obj_id and neutral_section.infra_id = layer.infra_id
 
+  level_crossings:
+    table_name: infra_layer_level_crossing
+    id_field: id
+    views:
+      geo:
+        on_field: geographic
+        data_expr: level_crossing.data - 'parts'
+        joins:
+          - inner join infra_object_level_crossing level_crossing on level_crossing.obj_id = layer.obj_id and level_crossing.infra_id = layer.infra_id
+
   errors:
     table_name: infra_layer_error
     id_field: id
