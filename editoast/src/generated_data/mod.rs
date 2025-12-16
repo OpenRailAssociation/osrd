@@ -4,6 +4,7 @@ mod buffer_stop;
 mod detector;
 mod electrification;
 mod error;
+mod level_crossing;
 mod neutral_section;
 mod neutral_sign;
 pub mod operational_point;
@@ -24,6 +25,7 @@ use electrification::ElectrificationLayer;
 use error::ErrorLayer;
 pub use error::generate_infra_errors;
 pub use error::infra_error;
+use level_crossing::LevelCrossingLayer;
 use neutral_section::NeutralSectionLayer;
 use neutral_sign::NeutralSignLayer;
 use operational_point::OperationalPointLayer;
@@ -109,6 +111,7 @@ pub async fn refresh_all(
         PSLSignLayer::refresh_pool(db_pool.clone(), infra_id, infra_cache),
         NeutralSectionLayer::refresh_pool(db_pool.clone(), infra_id, infra_cache),
         NeutralSignLayer::refresh_pool(db_pool.clone(), infra_id, infra_cache),
+        LevelCrossingLayer::refresh_pool(db_pool.clone(), infra_id, infra_cache),
     )?;
     debug!("⚙️ Infra {infra_id}: object layers is generated");
     // The error layer depends on the other layers and must be executed at the end.
@@ -131,6 +134,7 @@ pub async fn clear_all(conn: &mut DbConnection, infra: i64) -> Result<()> {
     ErrorLayer::clear(conn, infra).await?;
     NeutralSectionLayer::clear(conn, infra).await?;
     NeutralSignLayer::clear(conn, infra).await?;
+    LevelCrossingLayer::clear(conn, infra).await?;
     Ok(())
 }
 
@@ -153,6 +157,7 @@ pub async fn update_all(
     ErrorLayer::update(conn, infra, operations, infra_cache).await?;
     NeutralSectionLayer::update(conn, infra, operations, infra_cache).await?;
     NeutralSignLayer::update(conn, infra, operations, infra_cache).await?;
+    LevelCrossingLayer::update(conn, infra, operations, infra_cache).await?;
     Ok(())
 }
 
