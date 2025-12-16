@@ -69,6 +69,7 @@ mod tests {
     use schemas::infra::BufferStop;
     use schemas::infra::Detector;
     use schemas::infra::Electrification;
+    use schemas::infra::LevelCrossing;
     use schemas::infra::NeutralSection;
     use schemas::infra::OperationalPoint;
     use schemas::infra::Route;
@@ -140,4 +141,5 @@ mod tests {
         test_delete_neutral_section,
         "neutral_section"
     );
+    test_delete_object!(LevelCrossing, test_delete_level_crossing, "level_crossing");
 }
