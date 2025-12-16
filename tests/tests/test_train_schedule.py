@@ -1415,6 +1415,69 @@ def test_etcs_stop_at_requirements_eoa(
     assert spacing_req_zone_stop["end_time"] == 842_038
 
 
+def test_etcs_train_schedule_with_margins(
+    etcs_scenario: Scenario, etcs_rolling_stock: int, session: Session
+):
+    """
+    Testing a valid ETCS train-schedule with margin that was failing because of
+    a tricky case of speed interpolation.
+    """
+    rolling_stock_response = session.get(
+        EDITOAST_URL + f"light_rolling_stock/{etcs_rolling_stock}"
+    )
+    etcs_rolling_stock_name = rolling_stock_response.json()["name"]
+    ts_response = session.post(
+        f"{EDITOAST_URL}timetable/{etcs_scenario.timetable}/train_schedules/",
+        json=[
+            {
+                "train_name": "etcs train with margins",
+                "labels": [],
+                "rolling_stock_name": etcs_rolling_stock_name,
+                "start_time": "2024-01-01T07:00:00Z",
+                "path": [
+                    {
+                        "id": "10a15119-eb4c-4b77-bbaa-f7960fe4e985",
+                        "location": {"track": "TB0", "offset": 280000},
+                    },
+                    {
+                        "id": "350e21af-a9a9-4944-b27b-9b9137616ce2",
+                        "location": {"track": "TD1", "offset": 18496000},
+                    },
+                    {
+                        "id": "49078a68-7a9f-4f58-a6d8-5a094295c936",
+                        "location": {"track": "TH1", "offset": 4894000},
+                    },
+                ],
+                "schedule": [
+                    {
+                        "at": "49078a68-7a9f-4f58-a6d8-5a094295c936",
+                        "reception_signal": "OPEN",
+                        "stop_for": "P0D",
+                    },
+                ],
+                "margins": {
+                    "boundaries": ["49078a68-7a9f-4f58-a6d8-5a094295c936"],
+                    "values": ["5%", "0%"],
+                },
+                "initial_speed": 0,
+                "comfort": "STANDARD",
+                "constraint_distribution": "MARECO",
+                "speed_limit_tag": "foo",
+                "power_restrictions": [],
+            }
+        ],
+    )
+
+    schedule = ts_response.json()[0]
+    schedule_id = schedule["id"]
+    ts_id_response = session.get(f"{EDITOAST_URL}train_schedule/{schedule_id}/")
+    ts_id_response.raise_for_status()
+    simu_response = session.get(
+        f"{EDITOAST_URL}train_schedule/{schedule_id}/simulation?infra_id={etcs_scenario.infra}"
+    )
+    assert simu_response.json()["status"] == "success"
+
+
 def test_etcs_schedule_braking_curves_endpoint(
     etcs_scenario: Scenario, etcs_rolling_stock: int, session: Session
 ):
