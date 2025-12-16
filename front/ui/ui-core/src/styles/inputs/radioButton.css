@@ -79,7 +79,7 @@
       font-size: 0.875rem;
       padding-left: 1.5rem;
     }
-    input:checked ~ .checkmark {
+    /* input:checked ~ .checkmark {
       &:after {
         position: absolute;
         border: none;
@@ -87,7 +87,7 @@
         top: -0.09375rem;
         left: 0px;
       }
-    }
+    } */
   }
 
   input[type='radio']:checked ~ .checkmark {
@@ -152,15 +152,16 @@
     display: flex;
     align-items: center;
   }
+
   &:focus {
     outline: none;
     .checkmark {
       &:after {
-        top: -4px;
-        width: 26px;
-        height: 26px;
-        left: -4px;
-        border: 1px rgba(37, 106, 250, 1) solid;
+        top: -4px !important;
+        width: 26px !important;
+        height: 26px !important;
+        left: -4px !important;
+        border: 1px rgba(37, 106, 250, 1) solid !important;
       }
     }
   }
