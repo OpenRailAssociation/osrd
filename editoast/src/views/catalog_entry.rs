@@ -1,10 +1,12 @@
 use database::DbConnectionPoolV2;
+use editoast_derive::EditoastError;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
 
 use crate::error::Result;
 use crate::views::AuthenticationExt;
 use crate::views::AuthorizationError;
+use crate::views::pagination::PaginatedList;
 use crate::views::pagination::PaginationQueryParams;
 use crate::views::pagination::PaginationStats;
 use axum::Extension;
@@ -15,13 +17,33 @@ use axum::extract::State;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use editoast_models::CatalogEntry;
+use editoast_models::prelude::*;
 use serde::Deserialize;
 use serde::Serialize;
 use std::sync::Arc;
+use thiserror::Error;
+
+#[derive(Debug, Error, EditoastError)]
+#[editoast_error(base_id = "catalog_entry")]
+pub enum CatalogEntryError {
+    #[error("Catalog entry '{catalog_entry_id}' could not be found")]
+    #[editoast_error(status = 404)]
+    NotFound { catalog_entry_id: i64 },
+
+    #[error(transparent)]
+    #[editoast_error(status = 500)]
+    Database(#[from] editoast_models::Error),
+}
 
 #[derive(Serialize, Deserialize, ToSchema)]
 pub(in crate::views) struct CatalogEntryForm {
     name: Option<String>,
+}
+
+impl CatalogEntryForm {
+    pub fn into_changeset(self) -> Changeset<CatalogEntry> {
+        CatalogEntry::changeset().name(self.name)
+    }
 }
 
 #[derive(IntoParams, Deserialize)]
@@ -40,7 +62,7 @@ pub(in crate::views) struct CatalogEntryIdParam {
     ),
 )]
 pub(in crate::views) async fn post(
-    State(_db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
     Json(catalog_entry_create_form): Json<CatalogEntryForm>,
 ) -> Result<Json<CatalogEntry>> {
@@ -51,11 +73,10 @@ pub(in crate::views) async fn post(
     if !authorized {
         return Err(AuthorizationError::Forbidden.into());
     }
-    // TODO: Add database operation to create a catalog entry
-    let catalog_entry = CatalogEntry {
-        id: 0,
-        name: catalog_entry_create_form.name,
-    };
+    let catalog_entry_changeset = catalog_entry_create_form.into_changeset();
+    let catalog_entry = catalog_entry_changeset
+        .create(&mut db_pool.get().await?)
+        .await?;
     Ok(Json(catalog_entry))
 }
 
@@ -76,9 +97,9 @@ pub(in crate::views) struct CatalogEntryPage {
     ),
 )]
 pub(in crate::views) async fn get(
-    State(_db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
-    Query(PaginationQueryParams { page, page_size }): Query<PaginationQueryParams<100>>,
+    Query(pagination_params): Query<PaginationQueryParams<100>>,
 ) -> Result<Json<CatalogEntryPage>> {
     let authorized = auth
         .check_roles([authz::Role::OperationalStudies].into())
@@ -88,25 +109,9 @@ pub(in crate::views) async fn get(
         return Err(AuthorizationError::Forbidden.into());
     };
 
-    let catalog_entries = vec![
-        CatalogEntry {
-            id: 1,
-            name: Some("Catalog Entry 1".to_string()),
-        },
-        CatalogEntry {
-            id: 2,
-            name: Some("Catalog Entry 2".to_string()),
-        },
-    ];
-
-    let stats = PaginationStats {
-        count: catalog_entries.len() as u64,
-        page_size,
-        page_count: 1,
-        current: page,
-        previous: None,
-        next: None,
-    };
+    let settings = pagination_params.into_selection_settings();
+    let conn = &mut db_pool.get().await?;
+    let (catalog_entries, stats) = CatalogEntry::list_paginated(conn, settings).await?;
 
     Ok(Json(CatalogEntryPage {
         results: catalog_entries,
@@ -125,7 +130,7 @@ pub(in crate::views) async fn get(
     ),
 )]
 pub(in crate::views) async fn get_by_id(
-    State(_db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
     Path(CatalogEntryIdParam {
         id: catalog_entry_id,
@@ -139,11 +144,11 @@ pub(in crate::views) async fn get_by_id(
         return Err(AuthorizationError::Forbidden.into());
     }
 
-    // TODO: Add database operation to get a catalog entry
-    let catalog_entry_result = CatalogEntry {
-        id: catalog_entry_id,
-        name: Some("Catalog Entry".to_string()),
-    };
+    let catalog_entry_result =
+        CatalogEntry::retrieve_or_fail(db_pool.get().await?, catalog_entry_id, || {
+            CatalogEntryError::NotFound { catalog_entry_id }
+        })
+        .await?;
     Ok(Json(catalog_entry_result))
 }
 
@@ -159,7 +164,7 @@ pub(in crate::views) async fn get_by_id(
     ),
 )]
 pub(in crate::views) async fn put(
-    State(_db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
     Path(CatalogEntryIdParam {
         id: catalog_entry_id,
@@ -174,11 +179,13 @@ pub(in crate::views) async fn put(
         return Err(AuthorizationError::Forbidden.into());
     }
 
-    // TODO: Add database operation to update a catalog entry
-    let catalog_entry = CatalogEntry {
-        id: catalog_entry_id,
-        name: catalog_entry_form.name,
-    };
+    let conn = &mut db_pool.get().await?;
+    let catalog_entry_changeset = catalog_entry_form.into_changeset();
+    let catalog_entry = catalog_entry_changeset
+        .update_or_fail(conn, catalog_entry_id, || CatalogEntryError::NotFound {
+            catalog_entry_id,
+        })
+        .await?;
     Ok(Json(catalog_entry))
 }
 
