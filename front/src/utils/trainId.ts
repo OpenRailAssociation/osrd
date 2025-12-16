@@ -207,15 +207,6 @@ export const extractPacedTrainIdFromOccurrenceId = (occurrenceId: OccurrenceId):
 };
 
 /**
- * Given a train id with a TrainId format (either TrainScheduleId or OccurrenceId),
- * returns the Editoast id (used for api).
- */
-export const extractEditoastIdFromTrainId = (id: TrainId): number =>
-  isTrainScheduleId(id)
-    ? extractEditoastIdFromTrainScheduleId(id)
-    : extractEditoastIdFromPacedTrainId(extractPacedTrainIdFromOccurrenceId(id));
-
-/**
  * Given a occurrence id with an OccurrenceId format (used across the front),
  * returns the occurrence index.
  */
