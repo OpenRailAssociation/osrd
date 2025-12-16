@@ -488,7 +488,7 @@ mod tests {
     use schemas::rolling_stock::RollingResistance;
     use schemas::train_schedule::Comfort;
     use schemas::train_schedule::OperationalPointIdentifier;
-    use schemas::train_schedule::OperationalPointReference;
+    use schemas::train_schedule::OperationalPointPartReference;
     use schemas::train_schedule::PathItemLocation;
     use serde_json::json;
     use std::str::FromStr;
@@ -524,8 +524,8 @@ mod tests {
             steps: vec![
                 PathfindingItem {
                     duration: Some(0),
-                    location: PathItemLocation::OperationalPointReference(
-                        OperationalPointReference {
+                    location: PathItemLocation::OperationalPointPartReference(
+                        OperationalPointPartReference {
                             operational_point: OperationalPointIdentifier::Trigram {
                                 trigram: "WS".into(),
                                 secondary_code: Some("BV".to_string()),
@@ -542,8 +542,8 @@ mod tests {
                 },
                 PathfindingItem {
                     duration: Some(0),
-                    location: PathItemLocation::OperationalPointReference(
-                        OperationalPointReference {
+                    location: PathItemLocation::OperationalPointPartReference(
+                        OperationalPointPartReference {
                             operational_point: OperationalPointIdentifier::Trigram {
                                 trigram: "MWS".into(),
                                 secondary_code: Some("BV".to_string()),

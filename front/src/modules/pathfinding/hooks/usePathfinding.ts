@@ -83,7 +83,7 @@ const usePathfinding = ({
     async (steps: PathStep[]) => {
       if (!infraId || !steps.length) return;
 
-      const opRefs = steps.flatMap((step) => {
+      const opPartRefs = steps.flatMap((step) => {
         const pathItemLocation = getStepLocation(step.location);
         if ('track' in pathItemLocation) return [];
         return [pathItemLocation];
@@ -93,7 +93,7 @@ const usePathfinding = ({
       try {
         ops = await matchAllOperationalPoints({
           infraId,
-          opRefs,
+          opPartRefs,
         }).unwrap();
       } catch (error) {
         console.error('Error fetching operational points:', error);

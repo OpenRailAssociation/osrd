@@ -18,7 +18,7 @@ use editoast_derive::EditoastError;
 use editoast_models::prelude::*;
 use editoast_models::train_schedule::TrainScheduleChangeset;
 use schemas::primitives::TimeWindow;
-use schemas::train_schedule::OperationalPointReference;
+use schemas::train_schedule::OperationalPointPartReference;
 use schemas::train_schedule::PathItemLocation;
 use schemas::train_schedule::TrainSchedule;
 use schemas::train_schedule::TrainScheduleLike;
@@ -751,7 +751,7 @@ pub(in crate::views) async fn project_path_op(
     let path_item_locations_projection = operational_points_refs
         .iter()
         .map(|op_ref| {
-            PathItemLocation::OperationalPointReference(OperationalPointReference {
+            PathItemLocation::OperationalPointPartReference(OperationalPointPartReference {
                 operational_point: op_ref.clone(),
                 track_reference: None,
             })

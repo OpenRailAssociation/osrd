@@ -7,7 +7,7 @@ import { useTranslation } from 'react-i18next';
 
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import {
-  type OperationalPointReference,
+  type OperationalPointPartReference,
   osrdEditoastApi,
   type PathItemLocation,
 } from 'common/api/osrdEditoastApi';
@@ -527,7 +527,7 @@ const useTrackOccupancy = ({
       (op) => !(tracksState.data || {})[op.waypointId]
     );
     const loadAllTracks = async (
-      operationalPointReferences: {
+      operationalPointPartReferences: {
         operational_point: { operational_point: string; type: 'id' };
       }[]
     ) => {
@@ -536,7 +536,7 @@ const useTrackOccupancy = ({
       try {
         const data = await postInfraByInfraIdMatchOperationalPoints({
           infraId,
-          body: { operational_point_references: operationalPointReferences },
+          body: { operational_point_part_references: operationalPointPartReferences },
         }).unwrap();
 
         if (aborted) return;
@@ -552,7 +552,7 @@ const useTrackOccupancy = ({
         }
 
         const loadedTracks = fromPairs(
-          operationalPointReferences.map(({ operational_point: { operational_point } }, i) => [
+          operationalPointPartReferences.map(({ operational_point: { operational_point } }, i) => [
             operational_point,
             uniqBy(
               data.related_operational_points[i][0].parts.map((part) => {
@@ -699,7 +699,7 @@ const useTrackOccupancy = ({
         const requests: {
           timetableItemId: TimetableItemId;
           side: Side;
-          opReference: OperationalPointReference;
+          opReference: OperationalPointPartReference;
         }[] = [];
 
         timetableItemsToFetch.forEach((timetableItem) => {
@@ -760,7 +760,7 @@ const useTrackOccupancy = ({
         const data = await postInfraByInfraIdMatchOperationalPoints({
           infraId,
           body: {
-            operational_point_references: requests.map(({ opReference }) => opReference),
+            operational_point_part_references: requests.map(({ opReference }) => opReference),
           },
         }).unwrap();
 

@@ -8,7 +8,7 @@ pub use schedule_item::ScheduleItem;
 
 mod path_item;
 pub use path_item::OperationalPointIdentifier;
-pub use path_item::OperationalPointReference;
+pub use path_item::OperationalPointPartReference;
 pub use path_item::PathItem;
 pub use path_item::PathItemLocation;
 pub use path_item::TrackReference;
@@ -236,8 +236,8 @@ impl TrainSchedule {
             path: vec![
                 PathItem {
                     id: NonBlankString::from("a"),
-                    location: PathItemLocation::OperationalPointReference(
-                        OperationalPointReference {
+                    location: PathItemLocation::OperationalPointPartReference(
+                        OperationalPointPartReference {
                             operational_point: OperationalPointIdentifier::Uic {
                                 uic: 8711,
                                 secondary_code: None,
@@ -255,8 +255,8 @@ impl TrainSchedule {
                 },
                 PathItem {
                     id: NonBlankString::from("c"),
-                    location: PathItemLocation::OperationalPointReference(
-                        OperationalPointReference {
+                    location: PathItemLocation::OperationalPointPartReference(
+                        OperationalPointPartReference {
                             operational_point: OperationalPointIdentifier::Trigram {
                                 trigram: NonBlankString::from("MWS"),
                                 secondary_code: None,
@@ -267,8 +267,8 @@ impl TrainSchedule {
                 },
                 PathItem {
                     id: NonBlankString::from("d"),
-                    location: PathItemLocation::OperationalPointReference(
-                        OperationalPointReference {
+                    location: PathItemLocation::OperationalPointPartReference(
+                        OperationalPointPartReference {
                             operational_point: OperationalPointIdentifier::Id {
                                 operational_point: Identifier::from("Mid_East_station"),
                             },
@@ -341,7 +341,7 @@ mod tests {
     use crate::train_schedule::ScheduleItem;
     use crate::train_schedule::TrainSchedule;
     use crate::train_schedule::path_item::OperationalPointIdentifier::Id;
-    use crate::train_schedule::path_item::OperationalPointReference;
+    use crate::train_schedule::path_item::OperationalPointPartReference;
     use crate::train_schedule::schedule_item::ReceptionSignal;
 
     use super::PathItem;
@@ -349,12 +349,13 @@ mod tests {
     /// Test deserialize an invalid train schedule
     #[test]
     fn deserialize_duplicate_path_id_train_schedule() {
-        let location = PathItemLocation::OperationalPointReference(OperationalPointReference {
-            operational_point: Id {
-                operational_point: "op".into(),
-            },
-            track_reference: None,
-        });
+        let location =
+            PathItemLocation::OperationalPointPartReference(OperationalPointPartReference {
+                operational_point: Id {
+                    operational_point: "op".into(),
+                },
+                track_reference: None,
+            });
         let path_item = PathItem {
             id: "a".into(),
             location,
@@ -406,12 +407,13 @@ mod tests {
     /// Test deserialize an invalid train schedule
     #[test]
     fn deserialize_duplicate_schedule_points_train_schedule() {
-        let location = PathItemLocation::OperationalPointReference(OperationalPointReference {
-            operational_point: Id {
-                operational_point: "op".into(),
-            },
-            track_reference: None,
-        });
+        let location =
+            PathItemLocation::OperationalPointPartReference(OperationalPointPartReference {
+                operational_point: Id {
+                    operational_point: "op".into(),
+                },
+                track_reference: None,
+            });
         let path_item = PathItem {
             id: "a".into(),
             location,
@@ -441,12 +443,13 @@ mod tests {
     /// Test deserialize an invalid train schedule
     #[test]
     fn deserialize_arrival_time_first_waypoint_schedule_train_schedule() {
-        let location = PathItemLocation::OperationalPointReference(OperationalPointReference {
-            operational_point: Id {
-                operational_point: "op".into(),
-            },
-            track_reference: None,
-        });
+        let location =
+            PathItemLocation::OperationalPointPartReference(OperationalPointPartReference {
+                operational_point: Id {
+                    operational_point: "op".into(),
+                },
+                track_reference: None,
+            });
         let path_item = PathItem {
             id: "a".into(),
             location,

@@ -16,7 +16,7 @@ import type {
   ScenarioWithDetails,
   SearchResultItemScenario,
   PathItem,
-  OperationalPointReference,
+  OperationalPointPartReference,
   MacroNoteForm,
 } from 'common/api/osrdEditoastApi';
 import type { RangedValue } from 'common/types';
@@ -172,7 +172,7 @@ export type PathProjectionResult = {
   path: PathItem[];
   operationalPoints: PathProperties['operational_points'];
   operationalPointDistances: number[];
-  operationalPointReferences: OperationalPointReference[];
+  operationalPointPartReferences: OperationalPointPartReference[];
 } & (
   | {
       pathfindingStatus: 'succeeded';

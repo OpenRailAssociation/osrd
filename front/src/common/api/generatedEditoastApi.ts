@@ -1824,7 +1824,7 @@ export type PostInfraByInfraIdMatchOperationalPointsApiResponse = /** status 200
 Take a list of operational point references and return for each of them the list of operational
 points that they match on a given infrastructure and a mapping between the track indentifiers of
 the returned operational points parts their related track name.
-If an input OperationalPointReference contains a track reference, that track reference is also
+If an input OperationalPointPartReference contains a track reference, that track reference is also
 used to filter out operational points that match the input operational point identifier but do
 not match the input track reference (i.e. operational points which do not have any part that
 matches the input track reference).
@@ -1838,7 +1838,7 @@ export type PostInfraByInfraIdMatchOperationalPointsApiArg = {
   /** An existing infra ID */
   infraId: number;
   body: {
-    operational_point_references: OperationalPointReference[];
+    operational_point_part_references: OperationalPointPartReference[];
   };
 };
 export type PostInfraByInfraIdObjectsAndObjectTypeApiResponse =
@@ -3505,7 +3505,7 @@ export type TrackReference =
   | {
       track_name: string;
     };
-export type OperationalPointReference = {
+export type OperationalPointPartReference = {
   operational_point: OperationalPointIdentifier;
   track_reference?: null | TrackReference;
 };
@@ -3675,7 +3675,7 @@ export type TrackOffset = {
   /** Track section identifier */
   track: string;
 };
-export type PathItemLocation = TrackOffset | OperationalPointReference;
+export type PathItemLocation = TrackOffset | OperationalPointPartReference;
 export type CorePathfindingInputError =
   | {
       error_type: 'invalid_path_items';

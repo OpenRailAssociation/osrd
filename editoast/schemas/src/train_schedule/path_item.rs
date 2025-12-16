@@ -21,12 +21,14 @@ impl PathItem {
     pub fn new_operational_point(id: &str) -> Self {
         Self {
             id: id.into(),
-            location: PathItemLocation::OperationalPointReference(OperationalPointReference {
-                operational_point: OperationalPointIdentifier::Id {
-                    operational_point: id.into(),
+            location: PathItemLocation::OperationalPointPartReference(
+                OperationalPointPartReference {
+                    operational_point: OperationalPointIdentifier::Id {
+                        operational_point: id.into(),
+                    },
+                    track_reference: None,
                 },
-                track_reference: None,
-            }),
+            ),
         }
     }
 }
@@ -36,11 +38,11 @@ impl PathItem {
 #[serde(untagged, deny_unknown_fields)]
 pub enum PathItemLocation {
     TrackOffset(TrackOffset),
-    OperationalPointReference(OperationalPointReference),
+    OperationalPointPartReference(OperationalPointPartReference),
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema, Hash)]
-pub struct OperationalPointReference {
+pub struct OperationalPointPartReference {
     pub operational_point: OperationalPointIdentifier,
     #[serde(default)]
     pub track_reference: Option<TrackReference>,

@@ -4,7 +4,7 @@ import { type Dictionary, isEqual } from 'lodash';
 import type {
   OperationalPoint,
   OperationalPointIdentifier,
-  OperationalPointReference,
+  OperationalPointPartReference,
   CorePathfindingResultSuccess,
   PathItemLocation,
   PathProperties,
@@ -303,9 +303,9 @@ export const getStationFromOps = (ops: OperationalPoint[]): OperationalPoint | u
  */
 export const getUniqueOpRefsFromTimetableItems = (
   timetableItems: TimetableItem[]
-): OperationalPointReference[] => {
+): OperationalPointPartReference[] => {
   const pathItems = timetableItems.flatMap((timetableItem) => timetableItem.path);
-  const uniqueSteps = new Map<string, OperationalPointReference>();
+  const uniqueSteps = new Map<string, OperationalPointPartReference>();
   for (const pathItem of pathItems) {
     const pathItemLocation = pathItem.location;
     if (!('operational_point' in pathItemLocation)) continue;
@@ -320,7 +320,7 @@ export const getUniqueOpRefsFromTimetableItems = (
  */
 export const addPathOpsToTimetableItems = (
   timetableItems: TimetableItem[],
-  timetableOpRefs: OperationalPointReference[],
+  timetableOpRefs: OperationalPointPartReference[],
   timetableOperationalPoints: RelatedOperationalPoint[][]
 ): TimetableItemWithPathOps[] => {
   if (timetableOpRefs.length !== timetableOperationalPoints.length) {

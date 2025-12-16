@@ -19,7 +19,7 @@ const useTimetableItemsWithPathOps = (
 
   const { currentData: timetableOperationalPoints, isSuccess } =
     osrdEditoastApi.endpoints.matchAllOperationalPoints.useQuery(
-      timetableOpRefs.length > 0 ? { infraId, opRefs: timetableOpRefs } : skipToken
+      timetableOpRefs.length > 0 ? { infraId, opPartRefs: timetableOpRefs } : skipToken
     );
 
   return useMemo(() => {
