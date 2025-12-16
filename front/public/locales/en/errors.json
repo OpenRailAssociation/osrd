@@ -295,6 +295,10 @@
       "TimetableNotFound": "Timetable '{{timetable_id}}' could not be found",
       "UnsimulatedTrainSchedule": "Train Schedule '{{train_schedule_id}}' is not simulated"
     },
+    "train_schedule_set": {
+      "Database": "Internal error (database)",
+      "NotFound": "Train schedule set '{{train_schedule_set_id}}' could not be found"
+    },
     "url": {
       "InvalidUrl": "Invalid url '{{url}}'"
     },

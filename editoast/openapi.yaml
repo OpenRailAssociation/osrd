@@ -6537,6 +6537,8 @@ components:
       - $ref: '#/components/schemas/EditoastTrainScheduleErrorPathfindingFailed'
       - $ref: '#/components/schemas/EditoastTrainScheduleErrorRollingStockNotFound'
       - $ref: '#/components/schemas/EditoastTrainScheduleErrorSimulationFailed'
+      - $ref: '#/components/schemas/EditoastTrainScheduleSetErrorDatabase'
+      - $ref: '#/components/schemas/EditoastTrainScheduleSetErrorNotFound'
       - $ref: '#/components/schemas/EditoastWorkScheduleErrorDatabase'
       - $ref: '#/components/schemas/EditoastWorkScheduleErrorNameAlreadyUsed'
       - $ref: '#/components/schemas/EditoastWorkScheduleErrorWorkScheduleGroupNotFound'
@@ -8877,6 +8879,49 @@ components:
           type: string
           enum:
           - editoast:train_schedule:SimulationFailed
+    EditoastTrainScheduleSetErrorDatabase:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 500
+        type:
+          type: string
+          enum:
+          - editoast:train_schedule_set:Database
+    EditoastTrainScheduleSetErrorNotFound:
+      type: object
+      required:
+      - type
+      - status
+      - message
+      properties:
+        context:
+          type: object
+          required:
+          - train_schedule_set_id
+          properties:
+            train_schedule_set_id:
+              type: integer
+        message:
+          type: string
+        status:
+          type: integer
+          enum:
+          - 404
+        type:
+          type: string
+          enum:
+          - editoast:train_schedule_set:NotFound
     EditoastWorkScheduleErrorDatabase:
       type: object
       required:
