@@ -95,7 +95,7 @@ class SignalingSimulatorImpl(override val sigModuleManager: SigSystemManager) : 
                 Distance(
                     path
                         .map { rawSignalingInfra.getZonePathLength(it) }
-                        .sumOf { it.distance.millimeters }
+                        .sumOf { it.distance.micrometers }
                 )
             val startAtBufferStop = blockInfra.blockStartAtBufferStop(block)
             val stopAtBufferStop = blockInfra.blockStopAtBufferStop(block)

@@ -78,7 +78,7 @@ fun buildFinalEnvelope(
     val fullInfraExplorer = edges.last().infraExplorerWithNewEnvelope
 
     val pathLength =
-        Length<TrainPath>(Distance(millimeters = edges.sumOf { it.length.distance.millimeters }))
+        Length<TrainPath>(Distance(micrometers = edges.sumOf { it.length.distance.micrometers }))
     val allowanceRanges = getEngineeringAllowanceRanges(edges)
     assert(fullInfraExplorer.isPathComplete)
     val fixedPoints =

@@ -18,7 +18,7 @@ class DistanceAdapter : JsonAdapter<Distance?>() {
             reader.skipValue()
             return null
         }
-        return Distance(millimeters = reader.nextLong())
+        return Distance(micrometers = reader.nextLong() * 1000)
     }
 
     @ToJson
@@ -38,7 +38,7 @@ class OffsetAdapter<T> : JsonAdapter<Offset<T>?>() {
             reader.skipValue()
             return null
         }
-        return Offset(Distance(millimeters = reader.nextLong()))
+        return Offset(Distance(micrometers = reader.nextLong() * 1000))
     }
 
     @ToJson

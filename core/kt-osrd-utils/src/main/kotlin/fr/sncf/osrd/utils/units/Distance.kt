@@ -2,14 +2,14 @@
     wrapper = Distance::class,
     primitive = Long::class,
     fromPrimitive = "Distance(%s)",
-    toPrimitive = "%s.millimeters",
+    toPrimitive = "%s.micrometers",
     collections = ["Array", "ArrayList", "RingBuffer"],
 )
 @file:PrimitiveWrapperCollections(
     wrapper = Offset::class,
     primitive = Long::class,
     fromPrimitive = "Offset(Distance(%s))",
-    toPrimitive = "%s.distance.millimeters",
+    toPrimitive = "%s.distance.micrometers",
     collections = ["Array", "ArrayList", "RingBuffer"],
 )
 
@@ -28,65 +28,68 @@ import kotlin.math.absoluteValue
  * When this appears in a JSON payload, the unit is millimeters typed as a Long.
  */
 @JvmInline
-value class Distance(val millimeters: Long) : Comparable<Distance> {
-    val absoluteValue
-        get() = Distance(millimeters.absoluteValue)
+value class Distance(val micrometers: Long) : Comparable<Distance> {
+    val absoluteValue: Distance
+        get() = Distance(micrometers.absoluteValue)
 
-    val meters
-        get() = millimeters / 1000.0
+    val millimeters: Long
+        get() = micrometers / 1000
+
+    val meters: Double
+        get() = micrometers / 1_000_000.0
 
     operator fun plus(value: Distance): Distance {
-        return Distance(millimeters + value.millimeters)
+        return Distance(micrometers + value.micrometers)
     }
 
     operator fun minus(value: Distance): Distance {
-        return Distance(millimeters - value.millimeters)
+        return Distance(micrometers - value.micrometers)
     }
 
     companion object {
-        val ZERO = Distance(millimeters = 0L)
-        val MAX = Distance(millimeters = Long.MAX_VALUE)
+        val ZERO = Distance(micrometers = 0L)
+        val MAX = Distance(micrometers = Long.MAX_VALUE)
 
-        fun fromMeters(meters: Double) = Distance(millimeters = (Math.round(meters * 1_000.0)))
+        fun fromMeters(meters: Double) = Distance(micrometers = (Math.round(meters * 1_000_000.0)))
 
         fun toMeters(distance: Distance) =
             distance.meters // Only meant to be used in java, for compatibility
 
         fun min(a: Distance, b: Distance) =
-            Distance(millimeters = a.millimeters.coerceAtMost(b.millimeters))
+            Distance(micrometers = a.micrometers.coerceAtMost(b.micrometers))
 
         fun max(a: Distance, b: Distance) =
-            Distance(millimeters = a.millimeters.coerceAtLeast(b.millimeters))
+            Distance(micrometers = a.micrometers.coerceAtLeast(b.micrometers))
     }
 
     override fun compareTo(other: Distance): Int {
-        return millimeters.compareTo(other.millimeters)
+        return micrometers.compareTo(other.micrometers)
     }
 
     operator fun unaryMinus(): Distance {
-        return Distance(-millimeters)
+        return Distance(-micrometers)
     }
 
     /** This is just used for clearer display in debugging windows */
     override fun toString(): String {
-        val meters = millimeters / 1000
-        val decimal = (millimeters % 1000).absoluteValue
+        val meters = micrometers / 1_000_000
+        val decimal = (micrometers % 1_000_000).absoluteValue
         if (decimal == 0L) return String.format("%dm", meters)
-        else return String.format("%d.%03dm", meters, decimal)
+        else return String.format("%d.%06dm", meters, decimal)
     }
 
-    operator fun div(d: Double): Distance = Distance(Math.round(millimeters / d))
+    operator fun div(d: Double): Distance = Distance(Math.round(micrometers / d))
 
     operator fun div(distance: Distance): Double =
         millimeters.toDouble() / distance.millimeters.toDouble()
 
-    operator fun times(d: Double): Distance = Distance(Math.round(millimeters * d))
+    operator fun times(d: Double): Distance = Distance(Math.round(micrometers * d))
 }
 
 val Double.meters: Distance
     get() = Distance.fromMeters(this)
 val Int.meters: Distance
-    get() = Distance(this.toLong() * 1000)
+    get() = Distance(this.toLong() * 1_000_000)
 
 /**
  * Describes an offset on a given object. Typing is strictly enforced and mismatches will fail to
@@ -148,7 +151,7 @@ value class Offset<T>(val distance: Distance) : Comparable<Offset<T>> {
 fun <T> Double.toOffset(): Offset<T> = Offset(this.meters)
 
 fun <T> OffsetArray<T>.binarySearch(offset: Offset<T>): Int {
-    return binarySearch(offset) { a, b -> (a - b).millimeters.toInt() }
+    return binarySearch(offset) { a, b -> a.compareTo(b) }
 }
 
 /**
@@ -192,12 +195,12 @@ typealias Length<T> = Offset<T>
 
 /** Utility method to sum distances streams */
 fun Collection<Distance>.sumDistances(): Distance {
-    return Distance(millimeters = sumOf { it.millimeters })
+    return Distance(micrometers = sumOf { it.micrometers })
 }
 
 /** Utility method to sum offset streams */
 fun <T> Collection<Offset<T>>.sumOffsets(): Offset<T> {
-    return Offset(Distance(millimeters = sumOf { it.distance.millimeters }))
+    return Offset(Distance(micrometers = sumOf { it.distance.micrometers }))
 }
 
 /**
