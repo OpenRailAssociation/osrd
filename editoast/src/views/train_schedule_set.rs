@@ -1,5 +1,9 @@
 use axum::extract::Query;
+use database::DbConnection;
 use database::DbConnectionPoolV2;
+use editoast_derive::EditoastError;
+use editoast_models::prelude::*;
+use thiserror::Error;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
 
@@ -17,6 +21,18 @@ use serde::Deserialize;
 use serde::Serialize;
 use std::sync::Arc;
 
+#[derive(Debug, Error, EditoastError)]
+#[editoast_error(base_id = "train_schedule_set")]
+pub enum TrainScheduleSetError {
+    #[error("Train schedule set '{train_schedule_set_id}' could not be found")]
+    #[editoast_error(status = 404)]
+    NotFound { train_schedule_set_id: i64 },
+
+    #[error(transparent)]
+    #[editoast_error(status = 500)]
+    Database(#[from] editoast_models::Error),
+}
+
 #[derive(Serialize, Deserialize, ToSchema)]
 pub(in crate::views) struct TrainScheduleSetResponse {
     #[serde(flatten)]
@@ -24,12 +40,51 @@ pub(in crate::views) struct TrainScheduleSetResponse {
     train_schedule_count: u64,
 }
 
+impl TrainScheduleSetResponse {
+    pub async fn try_fetch(
+        conn: &mut DbConnection,
+        published: Option<bool>,
+        catalog_entry_id: Option<i64>,
+    ) -> Result<Vec<Self>> {
+        let mut settings = SelectionSettings::new();
+
+        if let Some(catalog_entry_id) = catalog_entry_id {
+            settings = settings
+                .filter(move || TrainScheduleSet::CATALOG_ENTRY_ID.eq(Some(catalog_entry_id)));
+        }
+
+        if let Some(published) = published {
+            settings = settings.filter(move || TrainScheduleSet::PUBLISHED.eq(published));
+        }
+
+        let train_schedule_sets = TrainScheduleSet::list(conn, settings).await?;
+        Ok(train_schedule_sets
+            .into_iter()
+            .map(|train_schedule_set| Self {
+                train_schedule_set,
+                // TODO: Add database operation to get train schedule set count
+                // once paced trains and train schedules are merged
+                train_schedule_count: 0,
+            })
+            .collect())
+    }
+}
 #[derive(Serialize, Deserialize, ToSchema)]
 pub(in crate::views) struct TrainScheduleSetForm {
     catalog_entry_id: Option<i64>,
     name: Option<String>,
     description: String,
     published: bool,
+}
+
+impl TrainScheduleSetForm {
+    pub fn into_changeset(self) -> Changeset<TrainScheduleSet> {
+        TrainScheduleSet::changeset()
+            .catalog_entry_id(self.catalog_entry_id)
+            .name(self.name)
+            .description(self.description)
+            .published(self.published)
+    }
 }
 
 #[derive(IntoParams, Deserialize)]
@@ -48,7 +103,7 @@ pub(in crate::views) struct TrainScheduleSetIdParam {
     ),
 )]
 pub(in crate::views) async fn post(
-    State(_db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
     Json(train_schedule_set_create_form): Json<TrainScheduleSetForm>,
 ) -> Result<Json<TrainScheduleSetResponse>> {
@@ -59,19 +114,17 @@ pub(in crate::views) async fn post(
     if !authorized {
         return Err(AuthorizationError::Forbidden.into());
     }
-    // TODO: Add database operation to create a train schedule set
-    let train_schedule_set_response = TrainScheduleSetResponse {
-        train_schedule_set: TrainScheduleSet {
-            id: 0,
-            catalog_entry_id: train_schedule_set_create_form.catalog_entry_id,
-            name: train_schedule_set_create_form.name,
-            description: train_schedule_set_create_form.description,
-            published: train_schedule_set_create_form.published,
-        },
-        train_schedule_count: 0,
-    };
 
-    Ok(Json(train_schedule_set_response))
+    let conn = &mut db_pool.get().await?;
+    let changeset = train_schedule_set_create_form.into_changeset();
+    let train_schedule_set = changeset.create(conn).await?;
+
+    Ok(Json(TrainScheduleSetResponse {
+        train_schedule_set,
+        // TODO: Add database operation to get train schedule set count
+        // once paced trains and train schedules are merged
+        train_schedule_count: 0,
+    }))
 }
 
 #[derive(IntoParams, Serialize, Deserialize, ToSchema)]
@@ -92,7 +145,7 @@ pub(in crate::views) struct TrainScheduleSetQueryParams {
     ),
 )]
 pub(in crate::views) async fn get_by_id(
-    State(_db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
     Path(TrainScheduleSetIdParam {
         id: train_schedule_set_id,
@@ -106,18 +159,19 @@ pub(in crate::views) async fn get_by_id(
         return Err(AuthorizationError::Forbidden.into());
     }
 
-    // TODO: Add database operation to get a train schedule set
-    let train_schedule_set_response = TrainScheduleSetResponse {
-        train_schedule_set: TrainScheduleSet {
-            id: train_schedule_set_id,
-            catalog_entry_id: None,
-            name: None,
-            description: String::new(),
-            published: false,
-        },
+    let train_schedule_set =
+        TrainScheduleSet::retrieve_or_fail(db_pool.get().await?, train_schedule_set_id, || {
+            TrainScheduleSetError::NotFound {
+                train_schedule_set_id,
+            }
+        })
+        .await?;
+    Ok(Json(TrainScheduleSetResponse {
+        train_schedule_set,
+        // TODO: Add database operation to get train schedule set count
+        // once paced trains and train schedules are merged
         train_schedule_count: 0,
-    };
-    Ok(Json(train_schedule_set_response))
+    }))
 }
 
 #[editoast_derive::route]
@@ -130,11 +184,11 @@ pub(in crate::views) async fn get_by_id(
     ),
 )]
 pub(in crate::views) async fn get(
-    State(_db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
     Query(TrainScheduleSetQueryParams {
-        catalog_entry_id: _,
-        published: _,
+        catalog_entry_id,
+        published,
     }): Query<TrainScheduleSetQueryParams>,
 ) -> Result<Json<Vec<TrainScheduleSetResponse>>> {
     let authorized = auth
@@ -145,16 +199,10 @@ pub(in crate::views) async fn get(
         return Err(AuthorizationError::Forbidden.into());
     }
 
-    Ok(Json(vec![TrainScheduleSetResponse {
-        train_schedule_set: TrainScheduleSet {
-            id: 0,
-            catalog_entry_id: None,
-            name: Some("to_be_implemented".to_string()),
-            description: "to_be_implemented".to_string(),
-            published: false,
-        },
-        train_schedule_count: 0,
-    }]))
+    let conn = &mut db_pool.get().await?;
+    let train_schedule_sets =
+        TrainScheduleSetResponse::try_fetch(conn, published, catalog_entry_id).await?;
+    Ok(Json(train_schedule_sets))
 }
 
 #[editoast_derive::route]
@@ -169,7 +217,7 @@ pub(in crate::views) async fn get(
     ),
 )]
 pub(in crate::views) async fn put(
-    State(_db_pool): State<Arc<DbConnectionPoolV2>>,
+    State(db_pool): State<Arc<DbConnectionPoolV2>>,
     Extension(auth): AuthenticationExt,
     Path(TrainScheduleSetIdParam {
         id: train_schedule_set_id,
@@ -184,15 +232,19 @@ pub(in crate::views) async fn put(
         return Err(AuthorizationError::Forbidden.into());
     }
 
-    // TODO: Add database operation to update a train schedule set
+    let conn = &mut db_pool.get().await?;
+    let changeset = train_schedule_set_form.into_changeset();
+    let train_schedule_set = changeset
+        .update_or_fail(conn, train_schedule_set_id, || {
+            TrainScheduleSetError::NotFound {
+                train_schedule_set_id,
+            }
+        })
+        .await?;
     let train_schedule_set_response = TrainScheduleSetResponse {
-        train_schedule_set: TrainScheduleSet {
-            id: train_schedule_set_id,
-            catalog_entry_id: train_schedule_set_form.catalog_entry_id,
-            name: train_schedule_set_form.name,
-            description: train_schedule_set_form.description,
-            published: train_schedule_set_form.published,
-        },
+        train_schedule_set,
+        // TODO: Add database operation to get train schedule set count
+        // once paced trains and train schedules are merged
         train_schedule_count: 0,
     };
     Ok(Json(train_schedule_set_response))

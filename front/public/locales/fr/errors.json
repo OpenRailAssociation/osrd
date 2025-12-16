@@ -295,6 +295,10 @@
       "TimetableNotFound": "Grille horaire '{{timetable_id}}' non trouvée",
       "UnsimulatedTrainSchedule": "La circulation '{{train_schedule_id}}' n'est pas simulée"
     },
+    "train_schedule_set": {
+      "Database": "Erreur interne (base de données)",
+      "NotFound": "Paquet de train '{{train_schedule_set_id}}' non trouvé"
+    },
     "url": {
       "InvalidUrl": "Url invalide '{{url}}'"
     },
