@@ -54,6 +54,17 @@ diesel::table! {
     use diesel::sql_types::*;
     use postgis_diesel::sql_types::*;
 
+    catalog_entry (id) {
+        id -> Int8,
+        #[max_length = 255]
+        name -> Nullable<Varchar>,
+    }
+}
+
+diesel::table! {
+    use diesel::sql_types::*;
+    use postgis_diesel::sql_types::*;
+
     document (id) {
         id -> Int8,
         #[max_length = 255]
@@ -905,6 +916,20 @@ diesel::table! {
     use diesel::sql_types::*;
     use postgis_diesel::sql_types::*;
 
+    train_schedule_set (id) {
+        id -> Int8,
+        catalog_entry_id -> Nullable<Int8>,
+        #[max_length = 255]
+        name -> Nullable<Varchar>,
+        description -> Text,
+        published -> Bool,
+    }
+}
+
+diesel::table! {
+    use diesel::sql_types::*;
+    use postgis_diesel::sql_types::*;
+
     work_schedule (id) {
         id -> Int8,
         start_date_time -> Timestamptz,
@@ -983,6 +1008,7 @@ diesel::joinable!(stdcm_search_environment -> work_schedule_group (work_schedule
 diesel::joinable!(study -> project (project_id));
 diesel::joinable!(temporary_speed_limit -> temporary_speed_limit_group (temporary_speed_limit_group_id));
 diesel::joinable!(train_schedule -> timetable (timetable_id));
+diesel::joinable!(train_schedule_set -> catalog_entry (catalog_entry_id));
 diesel::joinable!(work_schedule -> work_schedule_group (work_schedule_group_id));
 
 diesel::allow_tables_to_appear_in_same_query!(
@@ -990,6 +1016,7 @@ diesel::allow_tables_to_appear_in_same_query!(
     authn_subject,
     authn_user,
     authn_user_identity,
+    catalog_entry,
     document,
     electrical_profile_set,
     infra,
@@ -1043,6 +1070,7 @@ diesel::allow_tables_to_appear_in_same_query!(
     towed_rolling_stock,
     train_schedule,
     train_schedule_round_trips,
+    train_schedule_set,
     work_schedule,
     work_schedule_group,
 );
