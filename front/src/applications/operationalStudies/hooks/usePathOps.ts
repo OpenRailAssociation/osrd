@@ -4,7 +4,7 @@ import { skipToken } from '@reduxjs/toolkit/query';
 
 import {
   osrdEditoastApi,
-  type OperationalPointReference,
+  type OperationalPointPartReference,
   type RelatedOperationalPoint,
 } from 'common/api/osrdEditoastApi';
 import type { Train } from 'reducers/osrdconf/types';
@@ -21,9 +21,9 @@ const usePathOps = (
     returnAllOps: boolean;
   }
 ): RelatedOperationalPoint[] => {
-  const operationalPointReferences: OperationalPointReference[] = useMemo(
+  const operationalPointPartReferences: OperationalPointPartReference[] = useMemo(
     () =>
-      (path ?? []).reduce<OperationalPointReference[]>((acc, pathItem) => {
+      (path ?? []).reduce<OperationalPointPartReference[]>((acc, pathItem) => {
         if ('operational_point' in pathItem.location) {
           acc.push(pathItem.location);
         }
@@ -34,11 +34,11 @@ const usePathOps = (
 
   const { data: operationalPoints } =
     osrdEditoastApi.endpoints.postInfraByInfraIdMatchOperationalPoints.useQuery(
-      operationalPointReferences.length > 0
+      operationalPointPartReferences.length > 0
         ? {
             infraId,
             body: {
-              operational_point_references: operationalPointReferences,
+              operational_point_part_references: operationalPointPartReferences,
             },
           }
         : skipToken

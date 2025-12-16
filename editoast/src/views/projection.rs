@@ -475,7 +475,7 @@ impl TrainToProjectOnOperationalPoint {
                 .collect::<HashMap<_, _>>();
 
             let mut refs = ts.path().iter().map(|path_item| match &path_item.location {
-                PathItemLocation::OperationalPointReference(op_ref) => {
+                PathItemLocation::OperationalPointPartReference(op_ref) => {
                     Some((&op_ref.operational_point, &path_item.id))
                 }
                 PathItemLocation::TrackOffset(_) => None,
@@ -519,7 +519,7 @@ impl TrainToProjectOnOperationalPoint {
             .iter()
             .zip(report_train.path_item_times)
             .flat_map(|(path_item, arrival_time)| match &path_item.location {
-                PathItemLocation::OperationalPointReference(op_ref) => {
+                PathItemLocation::OperationalPointPartReference(op_ref) => {
                     Some(OperationalPointRefAndTime {
                         arrival_time,
                         stop_for: stops_input.get(&path_item.id).copied().unwrap_or_default(),
@@ -786,7 +786,7 @@ mod tests {
     use schemas::infra::Direction;
     use schemas::infra::DirectionalTrackRange;
     use schemas::primitives::Identifier;
-    use schemas::train_schedule::OperationalPointReference;
+    use schemas::train_schedule::OperationalPointPartReference;
     use schemas::train_schedule::PathItemLocation;
 
     #[rstest]
@@ -953,7 +953,7 @@ mod tests {
         trigrams
             .iter()
             .map(|&trigram| {
-                PathItemLocation::OperationalPointReference(OperationalPointReference {
+                PathItemLocation::OperationalPointPartReference(OperationalPointPartReference {
                     operational_point: create_path_item_from_trigram(trigram),
                     track_reference: None,
                 })

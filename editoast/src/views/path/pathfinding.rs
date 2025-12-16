@@ -518,7 +518,7 @@ pub mod tests {
     use pretty_assertions::assert_eq;
 
     use schemas::train_schedule::OperationalPointIdentifier;
-    use schemas::train_schedule::OperationalPointReference;
+    use schemas::train_schedule::OperationalPointPartReference;
     use schemas::train_schedule::PathItemLocation;
     use schemas::train_schedule::TrackReference;
     use serde_json::json;
@@ -609,8 +609,8 @@ pub mod tests {
                 PathfindingInputError::InvalidPathItems {
                     items: vec![InvalidPathItem {
                         index: 1,
-                        path_item: PathItemLocation::OperationalPointReference(
-                            OperationalPointReference {
+                        path_item: PathItemLocation::OperationalPointPartReference(
+                            OperationalPointPartReference {
                                 operational_point: OperationalPointIdentifier::Trigram {
                                     trigram: "NO_TRIGRAM".into(),
                                     secondary_code: None
@@ -656,8 +656,8 @@ pub mod tests {
                 PathfindingInputError::InvalidPathItems {
                     items: vec![InvalidPathItem {
                         index: 1,
-                        path_item: PathItemLocation::OperationalPointReference(
-                            OperationalPointReference {
+                        path_item: PathItemLocation::OperationalPointPartReference(
+                            OperationalPointPartReference {
                                 operational_point: OperationalPointIdentifier::Uic {
                                     uic: 8788,
                                     secondary_code: Some("BV".into())
