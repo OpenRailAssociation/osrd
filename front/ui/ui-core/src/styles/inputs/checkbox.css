@@ -1,7 +1,7 @@
 .ui-checkbox {
   display: block;
   position: relative;
-  padding-left: 1.938rem;
+  padding-left: 1.6875rem;
   margin-bottom: 0.3rem;
   cursor: pointer;
   -webkit-user-select: none;
@@ -30,7 +30,7 @@
   .checkmark {
     position: absolute;
     top: 0.313rem;
-    left: 0.313rem;
+    left: 0;
     border-radius: 0.188rem;
     box-sizing: content-box;
     width: 1.125rem;
