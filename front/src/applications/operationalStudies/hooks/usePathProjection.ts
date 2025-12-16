@@ -9,7 +9,7 @@ import { useSelector } from 'react-redux';
 import {
   osrdEditoastApi,
   type PathfindingResult,
-  type OperationalPointReference,
+  type OperationalPointPartReference,
   type PathProperties,
   type OperationalPointIdentifier,
 } from 'common/api/osrdEditoastApi';
@@ -168,7 +168,7 @@ const usePathProjection = (
   }, [trainIdUsedForProjection, timetableItemsById]);
 
   const opRefs = useMemo(() => {
-    const refs: OperationalPointReference[] = [];
+    const refs: OperationalPointPartReference[] = [];
     pathUsedForProjection?.forEach((step) => {
       if ('operational_point' in step.location) {
         refs.push({ operational_point: step.location.operational_point });
@@ -209,7 +209,7 @@ const usePathProjection = (
     if (pathfinding?.status === 'success' && pathProperties) {
       const { operational_points: operationalPoints } = pathProperties;
 
-      const pathfindingOpRefs: OperationalPointReference[] = [];
+      const pathfindingOpRefs: OperationalPointPartReference[] = [];
       operationalPoints.forEach((op, index) => {
         pathfindingOpRefs.push({
           operational_point: { operational_point: op.id, type: 'id' },
@@ -225,7 +225,7 @@ const usePathProjection = (
         path: pathUsedForProjection,
         geometry: pathProperties.geometry,
         operationalPoints,
-        operationalPointReferences: pathfindingOpRefs,
+        OperationalPointPartReferences: pathfindingOpRefs,
         projectingOnSimulatedPathException,
         operationalPointDistances,
       };
@@ -273,7 +273,7 @@ const usePathProjection = (
       pathfindingStatus: 'failed',
       path: pathUsedForProjection,
       operationalPoints: normalizedOps,
-      operationalPointReferences: opRefs,
+      OperationalPointPartReferences: opRefs,
       operationalPointDistances,
     };
   }, [

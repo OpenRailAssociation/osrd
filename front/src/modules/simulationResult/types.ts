@@ -82,7 +82,7 @@ export type SpeedDistanceDiagramData = {
 
 export type ProjectionData = Omit<
   PathProjectionResult,
-  'operationalPointDistances' | 'operationalPointReferences'
+  'operationalPointDistances' | 'OperationalPointPartReferences'
 > & {
   projectedTrains: TrainSpaceTimeData[];
   projectionLoaderData: {

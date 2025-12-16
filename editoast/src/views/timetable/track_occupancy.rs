@@ -36,7 +36,7 @@ fn find_matching_path_item_index(
     path_item_cache: &PathItemCache,
 ) -> Option<usize> {
     path_items.iter().position(|path_item| {
-        let PathItemLocation::OperationalPointReference(op_ref) = &path_item.location else {
+        let PathItemLocation::OperationalPointPartReference(op_ref) = &path_item.location else {
             return false;
         };
 
@@ -152,9 +152,9 @@ fn get_track_section(
     }
     if let Some(idx) = context.matching_index {
         let track_reference = match &train_schedule.path[idx].location {
-            PathItemLocation::OperationalPointReference(op_ref) => &op_ref.track_reference,
+            PathItemLocation::OperationalPointPartReference(op_ref) => &op_ref.track_reference,
             PathItemLocation::TrackOffset(_) => {
-                panic!("matching_index must reference an OperationalPointReference")
+                panic!("matching_index must reference an OperationalPointPartReference")
             }
         };
         if track_reference.is_some() {
@@ -228,7 +228,7 @@ pub mod tests {
     use schemas::primitives::Identifier;
     use schemas::primitives::PositiveDuration;
     use schemas::train_schedule::OperationalPointIdentifier;
-    use schemas::train_schedule::OperationalPointReference;
+    use schemas::train_schedule::OperationalPointPartReference;
     use schemas::train_schedule::ReceptionSignal;
     use std::collections::HashMap;
 
@@ -286,8 +286,8 @@ pub mod tests {
             path: vec![
                 PathItem {
                     id: "path_item_1".into(),
-                    location: PathItemLocation::OperationalPointReference(
-                        OperationalPointReference {
+                    location: PathItemLocation::OperationalPointPartReference(
+                        OperationalPointPartReference {
                             operational_point: OperationalPointIdentifier::Id {
                                 operational_point: "op_1".into(),
                             },
@@ -297,8 +297,8 @@ pub mod tests {
                 },
                 PathItem {
                     id: "path_item_2".into(),
-                    location: PathItemLocation::OperationalPointReference(
-                        OperationalPointReference {
+                    location: PathItemLocation::OperationalPointPartReference(
+                        OperationalPointPartReference {
                             operational_point: OperationalPointIdentifier::Id {
                                 operational_point: "op_2".into(),
                             },
@@ -308,8 +308,8 @@ pub mod tests {
                 },
                 PathItem {
                     id: "path_item_3".into(),
-                    location: PathItemLocation::OperationalPointReference(
-                        OperationalPointReference {
+                    location: PathItemLocation::OperationalPointPartReference(
+                        OperationalPointPartReference {
                             operational_point: OperationalPointIdentifier::Id {
                                 operational_point: "op_3".into(),
                             },
@@ -462,21 +462,25 @@ pub mod tests {
         let path = vec![
             PathItem {
                 id: "p1".into(),
-                location: PathItemLocation::OperationalPointReference(OperationalPointReference {
-                    operational_point: OperationalPointIdentifier::Id {
-                        operational_point: "op_1".into(),
+                location: PathItemLocation::OperationalPointPartReference(
+                    OperationalPointPartReference {
+                        operational_point: OperationalPointIdentifier::Id {
+                            operational_point: "op_1".into(),
+                        },
+                        track_reference: None,
                     },
-                    track_reference: None,
-                }),
+                ),
             },
             PathItem {
                 id: "p2".into(),
-                location: PathItemLocation::OperationalPointReference(OperationalPointReference {
-                    operational_point: OperationalPointIdentifier::Id {
-                        operational_point: "op_2".into(),
+                location: PathItemLocation::OperationalPointPartReference(
+                    OperationalPointPartReference {
+                        operational_point: OperationalPointIdentifier::Id {
+                            operational_point: "op_2".into(),
+                        },
+                        track_reference: None,
                     },
-                    track_reference: None,
-                }),
+                ),
             },
         ];
         let cache = PathItemCache::default();

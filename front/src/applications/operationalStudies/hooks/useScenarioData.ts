@@ -99,7 +99,7 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number) => {
         ? projectionPath.pathfinding.path
         : undefined,
     operationalPointDistances: projectionPath?.operationalPointDistances,
-    operationalPointReferences: projectionPath?.operationalPointReferences,
+    OperationalPointPartReferences: projectionPath?.OperationalPointPartReferences,
   });
 
   const {

@@ -14,7 +14,7 @@ import {
   type GetLightRollingStockApiResponse,
   type GetSpritesSignalingSystemsApiResponse,
   type MacroNodeResponse,
-  type OperationalPointReference,
+  type OperationalPointPartReference,
   type PacedTrainResponse,
   type PathfindingResult,
   type PostTimetableByIdStdcmApiResponse,
@@ -233,7 +233,7 @@ const osrdEditoastApi = generatedEditoastApi
       }),
       matchAllOperationalPoints: builder.query<
         RelatedOperationalPoint[][],
-        { infraId: number; opRefs: OperationalPointReference[] }
+        { infraId: number; opRefs: OperationalPointPartReference[] }
       >({
         queryFn: async ({ infraId, opRefs }, { dispatch }) => {
           const batchSize = 200;

@@ -45,7 +45,7 @@ use schemas::train_schedule::Distribution;
 use schemas::train_schedule::MarginValue;
 use schemas::train_schedule::Margins;
 use schemas::train_schedule::OperationalPointIdentifier;
-use schemas::train_schedule::OperationalPointReference;
+use schemas::train_schedule::OperationalPointPartReference;
 use schemas::train_schedule::PathItem;
 use schemas::train_schedule::PathItemLocation;
 use schemas::train_schedule::ScheduleItem;
@@ -124,8 +124,8 @@ pub fn create_created_exception_with_change_groups(key: &str) -> PacedTrainExcep
                 },
                 PathItem {
                     id: "bb".into(),
-                    location: PathItemLocation::OperationalPointReference(
-                        OperationalPointReference {
+                    location: PathItemLocation::OperationalPointPartReference(
+                        OperationalPointPartReference {
                             operational_point: OperationalPointIdentifier::Id {
                                 operational_point: Identifier("Mid_East_station".to_string()),
                             },

@@ -19,7 +19,7 @@ use editoast_models::prelude::*;
 use itertools::Itertools;
 use schemas::paced_train::PacedTrain;
 use schemas::primitives::TimeWindow;
-use schemas::train_schedule::OperationalPointReference;
+as::train_schedule::OperationalPointPartReference;
 use schemas::train_schedule::PathItemLocation;
 use serde::Deserialize;
 use serde::Serialize;
@@ -934,7 +934,7 @@ pub(in crate::views) async fn project_path_op(
     let path_item_locations_projection = operational_points_refs
         .iter()
         .map(|op_ref| {
-            PathItemLocation::OperationalPointReference(OperationalPointReference {
+            PathItemLocation::OperationalPointPartReference(OperationalPointPartReference {
                 operational_point: op_ref.clone(),
                 track_reference: None,
             })

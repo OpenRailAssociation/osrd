@@ -3,7 +3,7 @@ import {
   MARKER_TYPE,
 } from 'applications/operationalStudies/views/Scenario/components/ManageTimetableItem/ManageTimetableItemMap/ItineraryMarkers';
 import type {
-  OperationalPointReference,
+  OperationalPointPartReference,
   PostSimilarTrainsApiResponse,
 } from 'common/api/osrdEditoastApi';
 import type { StdcmPathStep } from 'reducers/osrdconf/types';
@@ -107,7 +107,7 @@ export const mergeSimilarTrainSegments = (
 
 export const stdcmPathStepToPathItemLocation = (
   operationalPoint: StdcmPathStep['operationalPoint']
-): OperationalPointReference => {
+): OperationalPointPartReference => {
   if (!operationalPoint) {
     throw new Error('Step has no operational point');
   }
