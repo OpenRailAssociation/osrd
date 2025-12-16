@@ -3506,7 +3506,7 @@ export type RelatedOperationalPoint = {
   parts: RelatedOperationalPointPart[];
   weight?: number | null;
 };
-export type OperationalPointIdentifier =
+export type OperationalPointReference =
   | {
       /** The object id of an operational point */
       operational_point: string;
@@ -3534,7 +3534,7 @@ export type TrackReference =
       track_name: string;
     };
 export type OperationalPointPartReference = {
-  operational_point: OperationalPointIdentifier;
+  operational_point: OperationalPointReference;
   track_reference?: null | TrackReference;
 };
 export type GeoJsonMultiPointValue = GeoJsonPointValue[];

@@ -19,7 +19,7 @@ use editoast_models::prelude::*;
 use itertools::Itertools;
 use schemas::paced_train::PacedTrain;
 use schemas::primitives::TimeWindow;
-as::train_schedule::OperationalPointPartReference;
+use schemas::train_schedule::OperationalPointPartReference;
 use schemas::train_schedule::PathItemLocation;
 use serde::Deserialize;
 use serde::Serialize;

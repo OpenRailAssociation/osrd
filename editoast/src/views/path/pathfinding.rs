@@ -517,8 +517,8 @@ pub mod tests {
     use core_client::pathfinding::TrainPath;
     use pretty_assertions::assert_eq;
 
-    use schemas::train_schedule::OperationalPointIdentifier;
     use schemas::train_schedule::OperationalPointPartReference;
+    use schemas::train_schedule::OperationalPointReference;
     use schemas::train_schedule::PathItemLocation;
     use schemas::train_schedule::TrackReference;
     use serde_json::json;
@@ -611,7 +611,7 @@ pub mod tests {
                         index: 1,
                         path_item: PathItemLocation::OperationalPointPartReference(
                             OperationalPointPartReference {
-                                operational_point: OperationalPointIdentifier::Trigram {
+                                operational_point: OperationalPointReference::Trigram {
                                     trigram: "NO_TRIGRAM".into(),
                                     secondary_code: None
                                 },
@@ -658,7 +658,7 @@ pub mod tests {
                         index: 1,
                         path_item: PathItemLocation::OperationalPointPartReference(
                             OperationalPointPartReference {
-                                operational_point: OperationalPointIdentifier::Uic {
+                                operational_point: OperationalPointReference::Uic {
                                     uic: 8788,
                                     secondary_code: Some("BV".into())
                                 },

@@ -152,7 +152,7 @@
       "project": "Projeter",
       "restore": "Rétablir sur le modèle"
     },
-    "operationalPointIdentifier": "Identifiant de point",
+    "operationalPointReference": "Référence de point",
     "pacedTrainAndTrainCount": "$t(main.pacedTrainCount, { 'count': {{pacedTrainCount}}, 'totalCount': {{totalPacedTrainCount}} }), $t(main.trainCount, { 'count': {{trainCount}}, 'totalCount': {{totalTrainScheduleCount}} }) sélectionnés",
     "pacedTrainCountSelected_one": "1/{{totalCount}} mission sélectionnée",
     "pacedTrainCountSelected_other": "{{count}}/{{totalCount}} missions sélectionnées",

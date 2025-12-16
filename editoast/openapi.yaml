@@ -2307,7 +2307,7 @@ paths:
                   items:
                     oneOf:
                     - type: object
-                      title: OperationalPointIdentifierId
+                      title: OperationalPointReferenceId
                       required:
                       - operational_point
                       - type
@@ -2323,7 +2323,7 @@ paths:
                           enum:
                           - id
                     - type: object
-                      title: OperationalPointIdentifierTrigram
+                      title: OperationalPointReferenceTrigram
                       required:
                       - trigram
                       - type
@@ -2343,7 +2343,7 @@ paths:
                           enum:
                           - trigram
                     - type: object
-                      title: OperationalPointIdentifierUic
+                      title: OperationalPointReferenceUic
                       required:
                       - uic
                       - type
@@ -4569,7 +4569,7 @@ paths:
                   items:
                     oneOf:
                     - type: object
-                      title: OperationalPointIdentifierId
+                      title: OperationalPointReferenceId
                       required:
                       - operational_point
                       - type
@@ -4585,7 +4585,7 @@ paths:
                           enum:
                           - id
                     - type: object
-                      title: OperationalPointIdentifierTrigram
+                      title: OperationalPointReferenceTrigram
                       required:
                       - trigram
                       - type
@@ -4605,7 +4605,7 @@ paths:
                           enum:
                           - trigram
                     - type: object
-                      title: OperationalPointIdentifierUic
+                      title: OperationalPointReferenceUic
                       required:
                       - uic
                       - type
@@ -10810,64 +10810,6 @@ components:
                 type: string
             additionalProperties: false
       additionalProperties: false
-    OperationalPointIdentifier:
-      oneOf:
-      - type: object
-        title: OperationalPointIdentifierId
-        required:
-        - operational_point
-        - type
-        properties:
-          operational_point:
-            oneOf:
-            - type: string
-              maxLength: 255
-              minLength: 1
-            description: The object id of an operational point
-          type:
-            type: string
-            enum:
-            - id
-      - type: object
-        title: OperationalPointIdentifierTrigram
-        required:
-        - trigram
-        - type
-        properties:
-          secondary_code:
-            type:
-            - string
-            - 'null'
-            description: An optional secondary code to identify a more specific location
-          trigram:
-            oneOf:
-            - type: string
-              minLength: 1
-            description: The operational point trigram
-          type:
-            type: string
-            enum:
-            - trigram
-      - type: object
-        title: OperationalPointIdentifierUic
-        required:
-        - uic
-        - type
-        properties:
-          secondary_code:
-            type:
-            - string
-            - 'null'
-            description: An optional secondary code to identify a more specific location
-          type:
-            type: string
-            enum:
-            - uic
-          uic:
-            type: integer
-            format: int32
-            description: The [UIC](https://en.wikipedia.org/wiki/List_of_UIC_country_codes) code of an operational point
-            minimum: 0
     OperationalPointPart:
       type: object
       required:
@@ -10902,11 +10844,69 @@ components:
       - operational_point
       properties:
         operational_point:
-          $ref: '#/components/schemas/OperationalPointIdentifier'
+          $ref: '#/components/schemas/OperationalPointReference'
         track_reference:
           oneOf:
           - type: 'null'
           - $ref: '#/components/schemas/TrackReference'
+    OperationalPointReference:
+      oneOf:
+      - type: object
+        title: OperationalPointReferenceId
+        required:
+        - operational_point
+        - type
+        properties:
+          operational_point:
+            oneOf:
+            - type: string
+              maxLength: 255
+              minLength: 1
+            description: The object id of an operational point
+          type:
+            type: string
+            enum:
+            - id
+      - type: object
+        title: OperationalPointReferenceTrigram
+        required:
+        - trigram
+        - type
+        properties:
+          secondary_code:
+            type:
+            - string
+            - 'null'
+            description: An optional secondary code to identify a more specific location
+          trigram:
+            oneOf:
+            - type: string
+              minLength: 1
+            description: The operational point trigram
+          type:
+            type: string
+            enum:
+            - trigram
+      - type: object
+        title: OperationalPointReferenceUic
+        required:
+        - uic
+        - type
+        properties:
+          secondary_code:
+            type:
+            - string
+            - 'null'
+            description: An optional secondary code to identify a more specific location
+          type:
+            type: string
+            enum:
+            - uic
+          uic:
+            type: integer
+            format: int32
+            description: The [UIC](https://en.wikipedia.org/wiki/List_of_UIC_country_codes) code of an operational point
+            minimum: 0
     OptionsChangeGroup:
       type: object
       required:

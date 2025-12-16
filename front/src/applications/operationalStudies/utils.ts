@@ -3,7 +3,7 @@ import { type Dictionary, isEqual } from 'lodash';
 
 import type {
   OperationalPoint,
-  OperationalPointIdentifier,
+  OperationalPointReference,
   OperationalPointPartReference,
   CorePathfindingResultSuccess,
   PathItemLocation,
@@ -471,10 +471,10 @@ export const groupRoundTrips = (
   return { oneWays, roundTrips, others };
 };
 
-export const getInvalidStepLabel = (opId: OperationalPointIdentifier) => {
-  if (opId.type === 'uic') return opId.uic.toString();
-  if (opId.type === 'trigram') return opId.trigram;
-  return opId.operational_point;
+export const getInvalidStepLabel = (opRef: OperationalPointReference) => {
+  if (opRef.type === 'uic') return opRef.uic.toString();
+  if (opRef.type === 'trigram') return opRef.trigram;
+  return opRef.operational_point;
 };
 
 export const matchOpRefAndOp = (
