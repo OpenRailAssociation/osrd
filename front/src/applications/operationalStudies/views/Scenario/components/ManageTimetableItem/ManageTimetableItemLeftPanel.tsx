@@ -21,7 +21,6 @@ import type {
 } from 'reducers/osrdconf/types';
 import { getSelectedTrainId } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
-import { isPacedTrainId, isTrainScheduleId } from 'utils/trainId';
 
 import CreateTimetableItemButton from './CreateTimetableItemButton';
 import { isPacedTrainToEditData } from './helpers/formatTimetableItemPayload';
@@ -76,14 +75,14 @@ const ManageTimetableItemLeftPanel = ({
     selectedTrainId
   );
 
-  const getEditLabel = (_itemIdToEdit: TimetableItemId) => {
-    if (isTrainScheduleId(_itemIdToEdit) && editingItemType === 'trainSchedule') {
+  const getEditLabel = (_itemToEdit: TimetableItemToEditData) => {
+    if (!isPacedTrainToEditData(_itemToEdit) && editingItemType === 'trainSchedule') {
       return t('updateTrainSchedule');
     }
-    if (isPacedTrainId(_itemIdToEdit) && editingItemType !== 'trainSchedule') {
+    if (isPacedTrainToEditData(_itemToEdit) && editingItemType !== 'trainSchedule') {
       return editingItemType === 'pacedTrain' ? t('updatePacedTrain') : t('updateOccurrence');
     }
-    return isTrainScheduleId(_itemIdToEdit)
+    return !isPacedTrainToEditData(_itemToEdit)
       ? t('turnTrainScheduleIntoPacedTrain')
       : t('turnPacedTrainIntoTrainSchedule');
   };
@@ -128,7 +127,7 @@ const ManageTimetableItemLeftPanel = ({
                 <span className="mr-2">
                   <Pencil size="lg" />
                 </span>
-                {getEditLabel(timetableItemToEditData.timetableItemId)}
+                {getEditLabel(timetableItemToEditData)}
               </button>
               {editingItemType !== 'occurrence' && (
                 <div className="osrd-config-item-container paced-trains-container">
