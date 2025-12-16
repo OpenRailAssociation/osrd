@@ -227,8 +227,8 @@ pub mod tests {
     use schemas::infra::TrackOffset;
     use schemas::primitives::Identifier;
     use schemas::primitives::PositiveDuration;
-    use schemas::train_schedule::OperationalPointIdentifier;
     use schemas::train_schedule::OperationalPointPartReference;
+    use schemas::train_schedule::OperationalPointReference;
     use schemas::train_schedule::ReceptionSignal;
     use std::collections::HashMap;
 
@@ -288,7 +288,7 @@ pub mod tests {
                     id: "path_item_1".into(),
                     location: PathItemLocation::OperationalPointPartReference(
                         OperationalPointPartReference {
-                            operational_point: OperationalPointIdentifier::Id {
+                            operational_point: OperationalPointReference::Id {
                                 operational_point: "op_1".into(),
                             },
                             track_reference: None,
@@ -299,7 +299,7 @@ pub mod tests {
                     id: "path_item_2".into(),
                     location: PathItemLocation::OperationalPointPartReference(
                         OperationalPointPartReference {
-                            operational_point: OperationalPointIdentifier::Id {
+                            operational_point: OperationalPointReference::Id {
                                 operational_point: "op_2".into(),
                             },
                             track_reference: None,
@@ -310,7 +310,7 @@ pub mod tests {
                     id: "path_item_3".into(),
                     location: PathItemLocation::OperationalPointPartReference(
                         OperationalPointPartReference {
-                            operational_point: OperationalPointIdentifier::Id {
+                            operational_point: OperationalPointReference::Id {
                                 operational_point: "op_3".into(),
                             },
                             track_reference: Some(schemas::train_schedule::TrackReference::Id {
@@ -464,7 +464,7 @@ pub mod tests {
                 id: "p1".into(),
                 location: PathItemLocation::OperationalPointPartReference(
                     OperationalPointPartReference {
-                        operational_point: OperationalPointIdentifier::Id {
+                        operational_point: OperationalPointReference::Id {
                             operational_point: "op_1".into(),
                         },
                         track_reference: None,
@@ -475,7 +475,7 @@ pub mod tests {
                 id: "p2".into(),
                 location: PathItemLocation::OperationalPointPartReference(
                     OperationalPointPartReference {
-                        operational_point: OperationalPointIdentifier::Id {
+                        operational_point: OperationalPointReference::Id {
                             operational_point: "op_2".into(),
                         },
                         track_reference: None,

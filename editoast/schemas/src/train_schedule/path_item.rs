@@ -23,7 +23,7 @@ impl PathItem {
             id: id.into(),
             location: PathItemLocation::OperationalPointPartReference(
                 OperationalPointPartReference {
-                    operational_point: OperationalPointIdentifier::Id {
+                    operational_point: OperationalPointReference::Id {
                         operational_point: id.into(),
                     },
                     track_reference: None,
@@ -43,7 +43,7 @@ pub enum PathItemLocation {
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema, Hash)]
 pub struct OperationalPointPartReference {
-    pub operational_point: OperationalPointIdentifier,
+    pub operational_point: OperationalPointReference,
     #[serde(default)]
     pub track_reference: Option<TrackReference>,
 }
@@ -66,14 +66,14 @@ pub enum TrackReference {
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, ToSchema, Hash)]
 #[serde(deny_unknown_fields)]
 #[serde(tag = "type", rename_all = "lowercase")]
-pub enum OperationalPointIdentifier {
-    #[schema(title = "OperationalPointIdentifierId")]
+pub enum OperationalPointReference {
+    #[schema(title = "OperationalPointReferenceId")]
     Id {
         /// The object id of an operational point
         #[schema(inline)]
         operational_point: Identifier,
     },
-    #[schema(title = "OperationalPointIdentifierTrigram")]
+    #[schema(title = "OperationalPointReferenceTrigram")]
     Trigram {
         /// The operational point trigram
         #[schema(inline)]
@@ -81,7 +81,7 @@ pub enum OperationalPointIdentifier {
         /// An optional secondary code to identify a more specific location
         secondary_code: Option<String>,
     },
-    #[schema(title = "OperationalPointIdentifierUic")]
+    #[schema(title = "OperationalPointReferenceUic")]
     Uic {
         /// The [UIC](https://en.wikipedia.org/wiki/List_of_UIC_country_codes) code of an operational point
         uic: u32,

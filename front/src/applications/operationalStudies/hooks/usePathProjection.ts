@@ -11,7 +11,7 @@ import {
   type PathfindingResult,
   type OperationalPointPartReference,
   type PathProperties,
-  type OperationalPointIdentifier,
+  type OperationalPointReference,
 } from 'common/api/osrdEditoastApi';
 import { getExceptionFromOccurrenceId } from 'modules/timetableItem/helpers/pacedTrain';
 import type { TimetableItemId, TimetableItem } from 'reducers/osrdconf/types';
@@ -39,14 +39,14 @@ import { getStationFromOps } from '../utils';
  * Uses trigram --> UIC --> operational_point --> position-based fallbacks in priority order.
  */
 const getVirtualOpName = (
-  opId: OperationalPointIdentifier,
+  opRef: OperationalPointReference,
   index: number,
   totalCount: number,
   t: TFunction<'operational-studies'>
 ): string => {
-  if (opId.type === 'trigram') return opId.trigram;
-  if (opId.type === 'uic') return opId.uic.toString();
-  if (opId.type === 'id') return t('main.operationalPointIdentifier');
+  if (opRef.type === 'trigram') return opRef.trigram;
+  if (opRef.type === 'uic') return opRef.uic.toString();
+  if (opRef.type === 'id') return t('main.OperationalPointReference');
   if (index === 0) return t('main.requestedOrigin');
   if (index === totalCount - 1) return t('main.requestedDestination');
   return t('main.requestedPoint', { count: index + 1 });
@@ -59,14 +59,14 @@ const FALLBACK_DISTANCE_MM = 100_000_000;
  * Creates a virtual operational point with complete extensions when no infrastructure match is found.
  */
 const createVirtualOp = (
-  opId: OperationalPointIdentifier,
+  opRef: OperationalPointReference,
   index: number,
   totalCount: number,
   position: number,
   weight: number,
   t: TFunction<'operational-studies'>
 ): PathProperties['operational_points'][0] => {
-  const virtualName = getVirtualOpName(opId, index, totalCount, t);
+  const virtualName = getVirtualOpName(opRef, index, totalCount, t);
   const virtualId = `virtual_op_${virtualName}`;
 
   return {
@@ -74,14 +74,14 @@ const createVirtualOp = (
     extensions: {
       identifier: {
         name: virtualName,
-        uic: opId.type === 'uic' ? opId.uic : 0,
+        uic: opRef.type === 'uic' ? opRef.uic : 0,
       },
       sncf: {
-        ch: (opId.type !== 'id' && opId.secondary_code) || '',
+        ch: (opRef.type !== 'id' && opRef.secondary_code) || '',
         ch_long_label: '',
         ch_short_label: '',
-        ci: opId.type === 'uic' ? Number(formatUicToCi(opId.uic)) : 0,
-        trigram: opId.type === 'trigram' ? opId.trigram : '',
+        ci: opRef.type === 'uic' ? Number(formatUicToCi(opRef.uic)) : 0,
+        trigram: opRef.type === 'trigram' ? opRef.trigram : '',
       },
     },
     part: { track: '', position: 0 },

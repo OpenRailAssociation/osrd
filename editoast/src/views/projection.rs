@@ -10,7 +10,7 @@ use core_client::simulation::ZoneUpdate;
 use database::DbConnection;
 use editoast_derive::EditoastError;
 use itertools::Itertools;
-use schemas::train_schedule::OperationalPointIdentifier;
+use schemas::train_schedule::OperationalPointReference;
 use schemas::train_schedule::PathItemLocation;
 use schemas::train_schedule::TrainScheduleLike;
 use serde::Deserialize;
@@ -49,7 +49,7 @@ pub struct ProjectPathOperationalPointForm {
     pub electrical_profile_set_id: Option<i64>,
     pub train_ids: HashSet<i64>,
     #[schema(inline)]
-    pub operational_points_refs: Vec<OperationalPointIdentifier>,
+    pub operational_points_refs: Vec<OperationalPointReference>,
     /// Distances between operational points in mm
     pub operational_points_distances: Vec<u64>,
 }
@@ -438,7 +438,7 @@ pub struct OperationalPointRefAndTime {
     arrival_time: u64,
     /// The stop duration at this operational point (0 if it does not stop)
     stop_for: u64,
-    op_ref: OperationalPointIdentifier,
+    op_ref: OperationalPointReference,
 }
 
 #[derive(Debug, Default)]
@@ -537,7 +537,7 @@ impl TrainToProjectOnOperationalPoint {
 }
 
 #[derive(Debug, Default)]
-pub struct OperationalPointProjection(HashMap<OperationalPointIdentifier, u64>);
+pub struct OperationalPointProjection(HashMap<OperationalPointReference, u64>);
 
 #[derive(Debug, Error, EditoastError)]
 #[editoast_error(base_id = "operationalPointProjection", default_status = 422)]
@@ -550,7 +550,7 @@ pub enum OperationalPointProjectionError {
 
 impl OperationalPointProjection {
     pub fn new(
-        op_refs: Vec<OperationalPointIdentifier>,
+        op_refs: Vec<OperationalPointReference>,
         distances: Vec<u64>,
         path_item_cache: &PathItemCache,
     ) -> Result<Self, OperationalPointProjectionError> {
@@ -570,7 +570,7 @@ impl OperationalPointProjection {
             .map(|op_ref| {
                 path_item_cache
                     .get_op_ref_id(&op_ref)
-                    .map_or(op_ref, |op_id| OperationalPointIdentifier::Id {
+                    .map_or(op_ref, |op_id| OperationalPointReference::Id {
                         operational_point: op_id.into(),
                     })
             })
@@ -592,13 +592,13 @@ impl OperationalPointProjection {
     /// Otherwise, it returns `None`.
     fn match_op_ref_with_ops(
         &self,
-        op_ref: &OperationalPointIdentifier,
+        op_ref: &OperationalPointReference,
         path_item_cache: &PathItemCache,
     ) -> Option<u64> {
         let op_id =
             path_item_cache
                 .get_op_ref_id(op_ref)
-                .map(|op_id| OperationalPointIdentifier::Id {
+                .map(|op_id| OperationalPointReference::Id {
                     operational_point: op_id.into(),
                 });
 
@@ -942,8 +942,8 @@ mod tests {
         assert_eq!(curve.times, vec![74, 80]);
     }
 
-    fn create_path_item_from_trigram(trigram: &str) -> OperationalPointIdentifier {
-        OperationalPointIdentifier::Trigram {
+    fn create_path_item_from_trigram(trigram: &str) -> OperationalPointReference {
+        OperationalPointReference::Trigram {
             trigram: trigram.into(),
             secondary_code: None,
         }
@@ -976,7 +976,7 @@ mod tests {
             OperationalPointRefAndTime {
                 arrival_time: 0,
                 stop_for: 0,
-                op_ref: OperationalPointIdentifier::Id {
+                op_ref: OperationalPointReference::Id {
                     operational_point: Identifier::default(),
                 },
             }
