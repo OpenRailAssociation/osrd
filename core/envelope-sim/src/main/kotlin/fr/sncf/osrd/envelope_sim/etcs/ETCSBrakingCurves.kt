@@ -510,7 +510,7 @@ private fun computeMinETCSBrakingCurves(
 
 /**
  * Keep the part of the full braking curve which is located underneath the overlay and intersects
- * with it or with begin position. If the braking curve has no intersection, return null.
+ * with it or with begin position. If the braking curve is fully above the overlay, return null.
  */
 private fun keepBrakingCurveUnderOverlay(
     etcsBrakingCurve: BrakingCurve?,
@@ -531,9 +531,6 @@ private fun keepBrakingCurveUnderOverlay(
     }
 
     val points = brakingCurve.iteratePoints().distinct()
-    val positions = points.map { it.position }
-    val speeds = points.map { it.speed }
-    val timeDeltas = brakingCurve.flatMap { it.getTimeDeltas() }
     val isAboveOverlay =
         // If the last point is strictly above the overlay, the lowest part of the braking curve is
         // above
@@ -542,8 +539,8 @@ private fun keepBrakingCurveUnderOverlay(
             // If the last point is on the overlay, if the second to last is above the overlay, then
             // the lowest part of the braking curve is above as well.
             (brakingCurve.endSpeed == overlay.interpolateSpeedLeftDir(brakingCurve.endPos, 1.0) &&
-                speeds[speeds.size - 2] >=
-                    overlay.interpolateSpeedLeftDir(positions[positions.size - 2], 1.0))
+                points[points.size - 2].speed >=
+                    overlay.interpolateSpeedLeftDir(points[points.size - 2].position, 1.0))
     if (isAboveOverlay) {
         // The lowest part of the braking curve is above the overlay envelope: dismiss it entirely
         // (currently considering that higher parts of the curve which would end up under the
@@ -551,20 +548,54 @@ private fun keepBrakingCurveUnderOverlay(
         return null
     }
 
+    val newBrakingParts = mutableListOf<EnvelopePart>()
+    val constrainedBeginPos = max(beginPos, brakingCurve.beginPos)
+    for (brakingCurvePart in brakingCurve.reversed().stream()) {
+        val intersectingPartUnderOverlay =
+            getIntersectingPartUnderOverlay(brakingCurvePart, overlay, constrainedBeginPos)
+        // If no intersection was found, add full braking curve part.
+        newBrakingParts.addFirst(intersectingPartUnderOverlay ?: brakingCurvePart)
+        // Break at first intersection found.
+        if (intersectingPartUnderOverlay != null) break
+    }
+    return BrakingCurve(
+        etcsBrakingCurve.brakingType,
+        Envelope.make(*newBrakingParts.toTypedArray()),
+    )
+}
+
+/**
+ * Return the section of the part under the overlay if they intersect at some point, else return
+ * null.
+ */
+private fun getIntersectingPartUnderOverlay(
+    brakingCurvePart: EnvelopePart,
+    overlay: Envelope,
+    beginPos: Double,
+): EnvelopePart? {
     val partBuilder = EnvelopePartBuilder()
-    partBuilder.setAttr(EnvelopeProfile.BRAKING)
+    partBuilder.setAttr(brakingCurvePart.getAttr(EnvelopeProfile::class.java))
     val overlayBuilder =
         ConstrainedEnvelopePartBuilder(
             partBuilder,
-            PositionConstraint(max(beginPos, brakingCurve.beginPos), overlay.endPos),
+            PositionConstraint(beginPos, overlay.endPos),
             EnvelopeConstraint(overlay, EnvelopePartConstraintType.CEILING),
         )
-    val lastIndex = positions.lastIndex
-    overlayBuilder.initEnvelopePart(positions[lastIndex], speeds[lastIndex], -1.0)
-    for (i in lastIndex - 1 downTo 0) {
-        if (!overlayBuilder.addStep(positions[i], speeds[i], timeDeltas[i])) break
+    overlayBuilder.initEnvelopePart(brakingCurvePart.endPos, brakingCurvePart.endSpeed, -1.0)
+    for (i in brakingCurvePart.pointCount() - 2 downTo 0) {
+        if (
+            !overlayBuilder.addStep(
+                brakingCurvePart.getPointPos(i),
+                brakingCurvePart.getPointSpeed(i),
+                brakingCurvePart.getStepTime(i),
+            )
+        ) {
+            // An intersection was found: new braking curve stops here.
+            return partBuilder.build()
+        }
     }
-    return BrakingCurve(etcsBrakingCurve.brakingType, Envelope.make(partBuilder.build()))
+    // No intersection: return null
+    return null
 }
 
 private data class BecParams(val dBec: Double, val vBec: Double, val speed: Double) {
