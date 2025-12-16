@@ -52,6 +52,10 @@
       "DuplicateIdsProvided": "{{obj_type}} {{obj_id}} : a duplicate already exists",
       "ObjectNotFound": "{{obj_type}} {{obj_id}} could not be found everywhere in the infrastructure cache"
     },
+    "catalog_entry": {
+      "Database": "Internal error (database)",
+      "NotFound": "Catalog entry '{{catalog_entry_id}}' could not be found"
+    },
     "core": {
       "pathfinding": {
         "ZeroLengthPath": "Path length cannot be null."
