@@ -28,6 +28,7 @@ const ATTACHED_OBJECTS_TYPES: &[ObjectType] = &[
     ObjectType::BufferStop,
     ObjectType::OperationalPoint,
     ObjectType::Electrification,
+    ObjectType::LevelCrossing,
 ];
 
 #[derive(Debug, Error, EditoastError)]

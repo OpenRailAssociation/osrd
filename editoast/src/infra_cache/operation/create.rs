@@ -39,6 +39,7 @@ pub mod tests {
     use schemas::infra::BufferStop;
     use schemas::infra::Detector;
     use schemas::infra::Electrification;
+    use schemas::infra::LevelCrossing;
     use schemas::infra::NeutralSection;
     use schemas::infra::OperationalPoint;
     use schemas::infra::Route;
@@ -80,4 +81,5 @@ pub mod tests {
     test_create_object!(SwitchType, test_create_switch_type);
     test_create_object!(Electrification, test_create_electrification);
     test_create_object!(NeutralSection, test_create_neutral_section);
+    test_create_object!(LevelCrossing, test_create_level_crossing);
 }
