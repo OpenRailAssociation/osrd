@@ -1,0 +1,322 @@
+#! /usr/bin/env -S uv run --script
+# This script generates a basic space-time chart using stdcm debug data.
+# Meant to be used as `uv run generate-debug-space-chart.py`, or directly as an executable file.
+#
+# /// script
+# dependencies = ["bokeh", "click"]
+# ///
+
+import json
+import os.path
+import sys
+from typing import List, Dict
+
+from bokeh.models import ColumnDataSource, HoverTool
+from bokeh.io import save, output_file
+from datetime import datetime, timedelta
+import dateutil.parser
+from bokeh.plotting import figure
+from dateutil import tz
+from bokeh.models import DatetimeTickFormatter
+import click
+
+
+@click.command()
+@click.option(
+    "--input-location",
+    "-i",
+    default=sys.stdin,
+    type=click.File("r"),
+    help="Debug file generated from core, describing the stdcm solution",
+)
+@click.option(
+    "--output-location",
+    "-o",
+    default="debug-space-time-chart.html",
+    help="Where to write the generated HTML file containing the space-time chart",
+)
+def main(input_location, output_location):
+    data = json.load(input_location)
+
+    zone_locations = dict()
+    for zone_location in data["zone_locations"]:
+        zone_locations[zone_location["name"]] = (
+            zone_location["from"] / 1000,
+            zone_location["to"] / 1000,
+        )
+
+    departure_time_utc = dateutil.parser.isoparse(data["departure_time"])
+    departure_time = departure_time_utc.astimezone(tz.gettz("Europe/Paris"))
+
+    fig = figure(x_axis_label="Time", y_axis_label="Position (m)")
+    fig.xaxis.formatter = DatetimeTickFormatter()
+    fig.width = 900
+    fig.height = 600
+
+    plot_positions(fig, data["sim_output"]["final_output"], departure_time)
+    plot_zone_updates(
+        fig, data["sim_output"]["final_output"], zone_locations, departure_time
+    )
+    plot_new_train_requirements(
+        fig, data["sim_output"]["final_output"], zone_locations, departure_time
+    )
+    plot_other_trains(fig, zone_locations, data["other_requirements"], departure_time)
+    plot_engineering_allowances(fig, data, departure_time)
+
+    fig.legend.click_policy = "hide"
+    show_operational_points(fig, data["path_properties"]["operational_points"])
+
+    output_file(output_location)
+    save(fig)
+    print(f"file://{os.path.abspath(output_location)}")
+
+
+def convert_times(departure_time: datetime, times: List[int]) -> List[datetime]:
+    return [departure_time + timedelta(milliseconds=x) for x in times]
+
+
+def plot_positions(fig, sim: Dict, departure_time: datetime):
+    positions = [x / 1000 for x in sim["positions"]]
+    times = convert_times(departure_time, [x for x in sim["times"]])
+    fig.line(times, positions, line_width=2, legend_label="train_positions")
+
+
+def plot_zone_updates(fig, sim, zone_locations, departure_time: datetime):
+    data = {
+        "left": [],
+        "right": [],
+        "bottom": [],
+        "top": [],
+        "zone": [],
+    }
+    zone_entries = {}
+    zone_exits = {}
+    for z in sim["zone_updates"]:
+        if z["is_entry"]:
+            zone_entries[z["zone"]] = z["time"]
+        else:
+            zone_exits[z["zone"]] = z["time"]
+    zones = set(zone_entries) & set(zone_exits)
+    for zone in zones:
+        start, end = zone_locations[zone]
+        left = zone_entries[zone]
+        right = zone_exits[zone]
+
+        data["left"].append(left)
+        data["right"].append(right)
+        data["bottom"].append(start)
+        data["top"].append(end)
+        data["zone"].append(fmt_zone_name(zone))
+    data["left"] = convert_times(departure_time, data["left"])
+    data["right"] = convert_times(departure_time, data["right"])
+
+    source = ColumnDataSource(data)
+    renderer = fig.quad(
+        left="left",
+        right="right",
+        bottom="bottom",
+        top="top",
+        source=source,
+        line_color="RoyalBlue",
+        fill_color="LightSkyBlue",
+        fill_alpha=0.5,
+        legend_label="zones",
+    )
+    hover = HoverTool(
+        renderers=[renderer],
+        tooltips=[
+            ("Zone", "@zone"),
+            ("Start time", "@left{%H:%M:%S}"),
+            ("End time", "@right{%H:%M:%S}"),
+        ],
+        formatters={
+            "@left": "datetime",
+            "@right": "datetime",
+        },
+    )
+    fig.add_tools(hover)
+
+
+def plot_new_train_requirements(fig, sim, zone_locations, departure_time: datetime):
+    data = {
+        "left": [],
+        "right": [],
+        "bottom": [],
+        "top": [],
+        "zone": [],
+    }
+    for req in sim["spacing_requirements"]:
+        start, end = zone_locations[req["zone"]]
+        left = req["begin_time"]
+        right = req["end_time"]
+        data["left"].append(left)
+        data["right"].append(right)
+        data["bottom"].append(start)
+        data["top"].append(end)
+        data["zone"].append(fmt_zone_name(req["zone"]))
+    data["left"] = convert_times(departure_time, data["left"])
+    data["right"] = convert_times(departure_time, data["right"])
+
+    source = ColumnDataSource(data)
+    renderer = fig.quad(
+        left="left",
+        right="right",
+        bottom="bottom",
+        top="top",
+        source=source,
+        line_color="SandyBrown",
+        fill_color="SandyBrown",
+        fill_alpha=0.5,
+        legend_label="spacing requirements",
+    )
+    hover = HoverTool(
+        renderers=[renderer],
+        tooltips=[
+            ("Zone", "@zone"),
+            ("Start time", "@left{%H:%M:%S}"),
+            ("End time", "@right{%H:%M:%S}"),
+        ],
+        formatters={
+            "@left": "datetime",
+            "@right": "datetime",
+        },
+    )
+    fig.add_tools(hover)
+
+
+def plot_other_trains(
+    fig, zone_locations: Dict, other_requirements: List, departure_time: datetime
+):
+    data = {
+        "left": [],
+        "right": [],
+        "bottom": [],
+        "top": [],
+        "train_number": [],
+        "zones": [],
+    }
+    for req in other_requirements:
+        start, end = zone_locations[req["zone_name"]]
+        left = req["begin_time"]
+        right = req["end_time"]
+
+        data["left"].append(left)
+        data["right"].append(right)
+        data["bottom"].append(start)
+        data["top"].append(end)
+        data["train_number"].append(req.get("train_name", ""))
+        data["zones"].append(fmt_zone_name(req["zone_name"]))
+
+    data["left"] = convert_times(departure_time, data["left"])
+    data["right"] = convert_times(departure_time, data["right"])
+    source = ColumnDataSource(data)
+    renderer = fig.quad(
+        left="left",
+        right="right",
+        bottom="bottom",
+        top="top",
+        source=source,
+        line_color="LightCoral",
+        fill_color="LightCoral",
+        fill_alpha=0.5,
+        legend_label="other_trains",
+    )
+    hover = HoverTool(
+        renderers=[renderer],
+        tooltips=[
+            ("train_number", "@train_number"),
+            ("Start time", "@left{%H:%M:%S}"),
+            ("End time", "@right{%H:%M:%S}"),
+            ("Zone", "@zones"),
+        ],
+        formatters={
+            "@left": "datetime",
+            "@right": "datetime",
+        },
+    )
+    fig.add_tools(hover)
+
+
+def plot_engineering_allowances(fig, data, departure_time):
+    engineering_allowance_ranges = data["engineering_allowances_ranges"]
+    sim = data["sim_output"]["final_output"]
+    positions = [x / 1000 for x in sim["positions"]]
+    times = [x for x in sim["times"]]
+
+    data = {
+        "from": [],
+        "to": [],
+        "time": [],
+        "added_durations": [],
+    }
+
+    for engineering_range in engineering_allowance_ranges:
+        position = engineering_range["to"] / 1000
+        time = times[-1]
+        for i, p in enumerate(positions):
+            if p >= position:
+                if i == 0:
+                    time = times[i]
+                else:
+                    mult = (position - positions[i - 1]) / (
+                        positions[i] - positions[i - 1]
+                    )
+                    time = times[i - 1] + (times[i] - times[i - 1]) * mult
+                break
+        data["from"].append(engineering_range["from"] / 1000)
+        data["to"].append(engineering_range["to"] / 1000)
+        data["time"].append(time)
+        data["added_durations"].append(engineering_range["added_duration"])
+    data["time"] = convert_times(departure_time, data["time"])
+    source = ColumnDataSource(data)
+    renderer = fig.scatter(
+        "time",
+        "to",
+        size=10,
+        source=source,
+        fill_color="red",
+        fill_alpha=0.8,
+        legend_label="engineering_allowances",
+    )
+    hover = HoverTool(
+        renderers=[renderer],
+        tooltips=[
+            ("time", "@time{%H:%M:%S}"),
+            ("from", "@from"),
+            ("to", "@to"),
+            ("added_durations", "@added_durations"),
+        ],
+        formatters={
+            "@time": "datetime",
+        },
+    )
+    fig.add_tools(hover)
+
+
+def show_operational_points(fig, operational_points):
+    offsets = []
+    labels = []
+    for op in operational_points:
+        offset = op["position"] / 1000
+        op_name = op["extensions"]["identifier"]["name"]
+        ch = op["extensions"]["sncf"]["ch"]
+        distance = str(round(offset) / 1000) + "km"
+        label = f"{distance} \t {op_name}-{ch}"
+        offsets.append(offset)
+        labels.append(label)
+
+    # Note: there's no "merging" labels that are too close when not zoomed in far enough.
+    # It doesn't look very nice, but what's important is that we have the data.
+    fig.yaxis.ticker = offsets
+    fig.yaxis.major_label_overrides = dict(zip(offsets, labels))
+
+
+def fmt_zone_name(zone_name):
+    # Zone names can be very long and that messes with the hover formatting.
+    # Truncating at 100 leaves enough to uniquely identify the zone if needed.
+    max_length = 100
+    return zone_name[:max_length]
+
+
+if __name__ == "__main__":
+    main()
