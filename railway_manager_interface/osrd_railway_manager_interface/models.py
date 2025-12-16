@@ -80,7 +80,16 @@ class Margins(BaseModel):
     """
 
 
-class OperationalPointIdentifierId(BaseModel):
+class OperationalPointPartReference(BaseModel):
+    operational_point: (
+        OperationalPointReferenceId
+        | OperationalPointReferenceTrigram
+        | OperationalPointReferenceUic
+    )
+    track_reference: TrackReferenceId | TrackReferenceName | None = None
+
+
+class OperationalPointReferenceId(BaseModel):
     operational_point: str
     """
     The object id of an operational point
@@ -88,7 +97,7 @@ class OperationalPointIdentifierId(BaseModel):
     type: Literal["id"]
 
 
-class OperationalPointIdentifierTrigram(BaseModel):
+class OperationalPointReferenceTrigram(BaseModel):
     secondary_code: str | None = None
     """
     An optional secondary code to identify a more specific location
@@ -100,7 +109,7 @@ class OperationalPointIdentifierTrigram(BaseModel):
     type: Literal["trigram"]
 
 
-class OperationalPointIdentifierUic(BaseModel):
+class OperationalPointReferenceUic(BaseModel):
     secondary_code: str | None = None
     """
     An optional secondary code to identify a more specific location
@@ -110,15 +119,6 @@ class OperationalPointIdentifierUic(BaseModel):
     """
     The [UIC](https://en.wikipedia.org/wiki/List_of_UIC_country_codes) code of an operational point
     """
-
-
-class OperationalPointReference(BaseModel):
-    operational_point: (
-        OperationalPointIdentifierId
-        | OperationalPointIdentifierTrigram
-        | OperationalPointIdentifierUic
-    )
-    track_reference: TrackReferenceId | TrackReferenceName | None = None
 
 
 class OptionsChangeGroup(BaseModel):
@@ -183,7 +183,7 @@ class PathItem(BaseModel):
     The unique identifier of the path item.
     This is used to reference path items in the train schedule.
     """
-    location: TrackOffset | OperationalPointReference
+    location: TrackOffset | OperationalPointPartReference
     """
     The location of a path waypoint
     """

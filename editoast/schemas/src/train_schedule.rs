@@ -7,8 +7,8 @@ pub use schedule_item::ReceptionSignal;
 pub use schedule_item::ScheduleItem;
 
 mod path_item;
-pub use path_item::OperationalPointIdentifier;
 pub use path_item::OperationalPointPartReference;
+pub use path_item::OperationalPointReference;
 pub use path_item::PathItem;
 pub use path_item::PathItemLocation;
 pub use path_item::TrackReference;
@@ -238,7 +238,7 @@ impl TrainSchedule {
                     id: NonBlankString::from("a"),
                     location: PathItemLocation::OperationalPointPartReference(
                         OperationalPointPartReference {
-                            operational_point: OperationalPointIdentifier::Uic {
+                            operational_point: OperationalPointReference::Uic {
                                 uic: 8711,
                                 secondary_code: None,
                             },
@@ -257,7 +257,7 @@ impl TrainSchedule {
                     id: NonBlankString::from("c"),
                     location: PathItemLocation::OperationalPointPartReference(
                         OperationalPointPartReference {
-                            operational_point: OperationalPointIdentifier::Trigram {
+                            operational_point: OperationalPointReference::Trigram {
                                 trigram: NonBlankString::from("MWS"),
                                 secondary_code: None,
                             },
@@ -269,7 +269,7 @@ impl TrainSchedule {
                     id: NonBlankString::from("d"),
                     location: PathItemLocation::OperationalPointPartReference(
                         OperationalPointPartReference {
-                            operational_point: OperationalPointIdentifier::Id {
+                            operational_point: OperationalPointReference::Id {
                                 operational_point: Identifier::from("Mid_East_station"),
                             },
                             track_reference: None,
@@ -340,8 +340,8 @@ mod tests {
     use crate::train_schedule::PathItemLocation;
     use crate::train_schedule::ScheduleItem;
     use crate::train_schedule::TrainSchedule;
-    use crate::train_schedule::path_item::OperationalPointIdentifier::Id;
     use crate::train_schedule::path_item::OperationalPointPartReference;
+    use crate::train_schedule::path_item::OperationalPointReference::Id;
     use crate::train_schedule::schedule_item::ReceptionSignal;
 
     use super::PathItem;

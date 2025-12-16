@@ -152,7 +152,7 @@
       "project": "Project",
       "restore": "Restore to template"
     },
-    "operationalPointIdentifier": "Operational point identifier",
+    "operationalPointReference": "Operational point reference",
     "pacedTrainAndTrainCount": "$t(main.pacedTrainCount, { 'count': {{pacedTrainCount}}, 'totalCount': {{totalPacedTrainCount}} }), $t(main.trainCount, { 'count': {{trainCount}}, 'totalCount': {{totalTrainScheduleCount}} }) selected",
     "pacedTrainCountSelected_one": "1/{{totalCount}} service selected",
     "pacedTrainCountSelected_other": "{{count}}/{{totalCount}} services selected",

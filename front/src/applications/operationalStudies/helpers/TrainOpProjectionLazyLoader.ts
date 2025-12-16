@@ -2,7 +2,7 @@ import { isEmpty } from 'lodash';
 
 import {
   osrdEditoastApi,
-  type OperationalPointIdentifier,
+  type OperationalPointReference,
   type PostPacedTrainOccupancyBlocksApiResponse,
   type PostPacedTrainProjectPathOpApiResponse,
   type PostTrainScheduleOccupancyBlocksApiResponse,
@@ -22,12 +22,12 @@ import TrainProjectionLazyLoaderAbstract, {
   type TrainProjectionLazyLoaderOptions,
 } from './TrainProjectionLazyLoaderAbstract';
 export default class TrainOpProjectionLazyLoader extends TrainProjectionLazyLoaderAbstract {
-  readonly opRefs: OperationalPointIdentifier[];
+  readonly opRefs: OperationalPointReference[];
 
   readonly opDistances: number[];
 
   constructor(
-    opRefs: OperationalPointIdentifier[],
+    opRefs: OperationalPointReference[],
     opDistances: number[],
     options: TrainProjectionLazyLoaderOptions
   ) {
