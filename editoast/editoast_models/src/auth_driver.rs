@@ -1,4 +1,3 @@
-use std::collections::HashSet;
 use std::ops::DerefMut;
 use std::sync::Arc;
 
@@ -8,6 +7,7 @@ use authz::identity::GroupName;
 use authz::identity::User;
 use authz::identity::UserIdentity;
 use authz::identity::UserInfo;
+use authz::identity::UserName;
 use database::DatabaseError;
 use database::DbConnection;
 use database::DbConnectionPoolV2;
@@ -32,8 +32,8 @@ pub enum AuthDriverError {
     SubjectNotFound { subject_id: i64 },
     #[error(transparent)]
     OpenFgaRequestFailure(#[from] fga::client::RequestFailure),
-    #[error("The provided identities match several different users")]
-    MultipleUserMatches,
+    #[error("The provided identity is already associated to another user: `{owner:?}`")]
+    IdentityAlreadyOwned { owner: User },
 }
 
 impl From<diesel::result::Error> for AuthDriverError {
@@ -165,26 +165,35 @@ impl StorageDriver for PgAuthDriver {
         Ok(info)
     }
 
-    #[tracing::instrument(skip_all, fields(%user), ret(level = Level::DEBUG), err)]
-    async fn ensure_user(&self, user: &UserInfo) -> Result<User, Self::Error> {
+    #[tracing::instrument(skip_all, fields(user_name, user_identity), ret(level = Level::DEBUG), err)]
+    async fn ensure_user(
+        &self,
+        user_name: &UserName,
+        user_identity: &UserIdentity,
+    ) -> Result<User, Self::Error> {
         let conn = self.pool.get().await?;
         conn.transaction(async move |conn| {
-            let mut existing_users = HashSet::new();
-            for identity in &user.identities {
-                if let Some(user_db) = self.get_user_info_by_identity(identity).await? {
-                    existing_users.insert(user_db);
+            match self.get_user_info_by_identity(user_identity).await? {
+                Some(user) => {
+                    if &user.info.name == user_name {
+                        tracing::debug!(?user, "user already exists in db");
+                        Ok(user)
+                    } else {
+                        tracing::debug!(?user, "identity already associated to another user");
+                        Err(AuthDriverError::IdentityAlreadyOwned { owner: user })
+                    }
                 }
-            }
-            match existing_users.iter().collect_vec().as_slice() {
-                [] => {
+                None => {
                     tracing::info!("registering new user in db");
-                    self.save_new_user(user, &conn).await
+                    self.save_new_user(
+                        &UserInfo {
+                            name: user_name.to_string(),
+                            identities: vec![user_identity.to_string()],
+                        },
+                        &conn,
+                    )
+                    .await
                 }
-                [existing_user] => {
-                    tracing::debug!(?existing_user, "user already exists in db");
-                    self.add_identities(existing_user, user, &conn).await
-                }
-                [_, _, ..] => Err(AuthDriverError::MultipleUserMatches),
             }
         })
         .await
@@ -292,7 +301,7 @@ impl StorageDriver for PgAuthDriver {
     async fn add_user_identities(
         &self,
         user_identity: Either<i64, String>,
-        new_identities: Vec<String>,
+        new_identities: &[String],
     ) -> Result<bool, Self::Error> {
         let conn = self.pool.get().await?;
         let existing_user = match user_identity {
@@ -416,44 +425,6 @@ impl PgAuthDriver {
             },
         })
     }
-
-    async fn add_identities(
-        &self,
-        existing_user: &User,
-        user: &UserInfo,
-        conn: &DbConnection,
-    ) -> Result<User, <PgAuthDriver as StorageDriver>::Error> {
-        let new_identities = user
-            .identities
-            .iter()
-            .filter(|identity| !existing_user.info.identities.contains(identity))
-            .map(|identity| {
-                (
-                    authn_user_identity::identity.eq(identity),
-                    authn_user_identity::user_id.eq(existing_user.id),
-                )
-            })
-            .collect_vec();
-        if !new_identities.is_empty() {
-            tracing::debug!(?new_identities, "inserting new user identities in DB");
-            diesel::dsl::insert_into(authn_user_identity::table)
-                .values(&new_identities)
-                .execute(&mut conn.write().await.deref_mut())
-                .await?;
-        }
-        let identities = authn_user_identity::table
-            .select(authn_user_identity::identity)
-            .filter(authn_user_identity::user_id.eq(existing_user.id))
-            .get_results(&mut conn.write().await.deref_mut())
-            .await?;
-        Ok(User {
-            id: existing_user.id,
-            info: UserInfo {
-                name: user.name.to_owned(),
-                identities,
-            },
-        })
-    }
 }
 
 #[cfg(test)]
@@ -476,7 +447,7 @@ mod tests {
             name: "Sir Toto, the One and Only".to_owned(),
         };
         let toto_id = driver
-            .ensure_user(&toto)
+            .ensure_user(&toto.name, &toto.identities[0])
             .await
             .expect("toto should be created successfully")
             .id;
@@ -486,7 +457,7 @@ mod tests {
             name: "TATA".to_owned(),
         };
         let tata_id = driver
-            .ensure_user(&tata)
+            .ensure_user(&tata.name, &tata.identities[0])
             .await
             .expect("tata should be created successfully")
             .id;
@@ -530,14 +501,14 @@ mod tests {
         // Add new identities to users
 
         driver
-            .add_user_identities(Either::Left(toto_id), vec!["Riina".to_string()])
+            .add_user_identities(Either::Left(toto_id), &["Riina".to_string()])
             .await
             .expect("toto new identity should be added successfully");
 
         driver
             .add_user_identities(
                 Either::Right(tata.identities[0].clone()),
-                vec!["Pinochet".to_string()],
+                &["Pinochet".to_string()],
             )
             .await
             .expect("tata new identity should be added successfully");

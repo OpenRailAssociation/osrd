@@ -508,7 +508,7 @@ impl<'a> UserBuilder<'a> {
 
         let user = regulator
             .driver()
-            .ensure_user(&info.clone())
+            .ensure_user(&info.name, &info.identities[0])
             .await
             .expect("User should be created successfully");
         if app.app_state.config.enable_authorization {

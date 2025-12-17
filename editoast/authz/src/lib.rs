@@ -144,6 +144,7 @@ mod mock_driver {
     use crate::identity::User;
     use crate::identity::UserIdentity;
     use crate::identity::UserInfo;
+    use crate::identity::UserName;
     use crate::model;
 
     #[derive(Debug, Clone, Default)]
@@ -158,10 +159,7 @@ mod mock_driver {
         pub async fn create_user(&self, identity: &str, name: &str) -> model::User {
             model::User(
                 self.driver
-                    .ensure_user(&UserInfo {
-                        identities: vec![identity.to_owned()],
-                        name: name.to_owned(),
-                    })
+                    .ensure_user(&name.to_string(), &identity.to_string())
                     .await
                     .expect("user creation should succeed")
                     .id,
@@ -238,19 +236,24 @@ mod mock_driver {
     impl StorageDriver for MockAuthDriver {
         type Error = Infallible;
 
-        async fn ensure_user(&self, user: &UserInfo) -> Result<User, Self::Error> {
+        async fn ensure_user(
+            &self,
+            user_name: &UserName,
+            user_identity: &UserIdentity,
+        ) -> Result<User, Self::Error> {
             let mut users = self.users.lock().unwrap();
             let user_id = {
                 let id = self.counter.read().unwrap();
-                for identity in &user.identities {
-                    users.entry(identity.clone()).or_insert(*id);
-                }
+                users.entry(user_identity.clone()).or_insert(*id);
                 *id
             };
             *self.counter.write().unwrap() += 1;
             Ok(User {
                 id: user_id,
-                info: user.clone(),
+                info: UserInfo {
+                    identities: vec![user_identity.to_owned()],
+                    name: user_name.to_owned(),
+                },
             })
         }
 
@@ -346,7 +349,7 @@ mod mock_driver {
         async fn add_user_identities(
             &self,
             user_identity: Either<i64, String>,
-            new_identities: Vec<String>,
+            new_identities: &[String],
         ) -> Result<bool, Self::Error> {
             let mut map = self.users.lock().unwrap();
             let user_id = match user_identity {

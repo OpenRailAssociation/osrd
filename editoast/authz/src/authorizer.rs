@@ -143,7 +143,7 @@ mod tests {
     #[tokio::test]
     async fn check_user_roles() {
         let user_identity = || "toto".to_owned();
-        let user = || UserInfo {
+        let user = UserInfo {
             identities: vec![user_identity()],
             name: "Sir Toto, the One and Only".to_owned(),
         };
@@ -153,7 +153,11 @@ mod tests {
         // setup user
         let user_id = {
             let regulator = regulator();
-            let User { id, .. } = regulator.driver.ensure_user(&user()).await.unwrap();
+            let User { id, .. } = regulator
+                .driver
+                .ensure_user(&user.name, &user.identities[0])
+                .await
+                .unwrap();
             let users = regulator.driver.users.lock().unwrap();
             assert_eq!(
                 users.iter().next(),
@@ -263,12 +267,12 @@ mod tests {
     async fn check_group_roles() {
         common::setup_tracing_for_test();
         let alice_identity = || "alice".to_owned();
-        let alice = || UserInfo {
+        let alice = UserInfo {
             identities: vec![alice_identity()],
             name: "Alice".to_owned(),
         };
         let bob_identity = || "bob".to_owned();
-        let bob = || UserInfo {
+        let bob = UserInfo {
             identities: vec![bob_identity()],
             name: "Bob".to_owned(),
         };
@@ -282,13 +286,13 @@ mod tests {
         // setup subjects
         let alice_id = regulator()
             .driver
-            .ensure_user(&alice())
+            .ensure_user(&alice.name, &alice.identities[0])
             .await
             .expect("alice should be created")
             .id;
         let bob_id = regulator()
             .driver
-            .ensure_user(&bob())
+            .ensure_user(&bob.name, &bob.identities[0])
             .await
             .expect("bob should be created")
             .id;

@@ -114,13 +114,17 @@ pub async fn list_user(
 /// Add a user
 pub async fn add_user(args: AddArgs, pool: Arc<DbConnectionPoolV2>) -> anyhow::Result<()> {
     let driver = PgAuthDriver::new(pool);
-
-    let user_info = UserInfo {
-        identities: args.identities,
-        name: args.name.unwrap_or_default(),
-    };
-    let subject_id = driver.ensure_user(&user_info).await?;
-    println!("User added with id: {subject_id}");
+    if args.identities.is_empty() {
+        println!("No identities provided.");
+        return Ok(());
+    }
+    let created_user = driver
+        .ensure_user(&args.name.unwrap_or_default(), &args.identities[0])
+        .await?;
+    driver
+        .add_user_identities(Either::Left(created_user.id), &args.identities[1..])
+        .await?;
+    println!("User added with id: {}", created_user.id);
     Ok(())
 }
 
@@ -203,7 +207,7 @@ pub async fn add_identities(
         _ => unreachable!("No user_id or identity provided"),
     };
     driver
-        .add_user_identities(user_identity.clone(), new_identities)
+        .add_user_identities(user_identity.clone(), &new_identities)
         .await?;
     Ok(())
 }

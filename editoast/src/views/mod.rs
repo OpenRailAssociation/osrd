@@ -637,7 +637,7 @@ async fn authenticate(
             regulator
                 .clone()
                 .driver()
-                .ensure_user(&user)
+                .ensure_user(&user.name, &user.identities[0])
                 .await
                 .map_err(AuthorizerError::Storage)?;
             Authorizer::try_initialize(identity, regulator.clone()).await?
