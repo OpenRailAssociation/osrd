@@ -41,11 +41,11 @@ private const val N_RETRIES = 5
 private val logger = LoggerFactory.getLogger(TimetableProvider::class.java)
 
 interface TimetableProvider {
-    fun getTimetableRequirements(
+    fun getTimetableData(
         infraId: String,
         infra: RawInfra,
         timetableId: TimetableId,
-    ): STDCMRequirements
+    ): STDCMTimetableData
 }
 
 class TimetableDownloader(
@@ -129,13 +129,15 @@ class TimetableDownloader(
             .build()
             .adapter(PaginatedRequirements::class.java)
 
-    override fun getTimetableRequirements(
+    override fun getTimetableData(
         infraId: String,
         infra: RawInfra,
         timetableId: TimetableId,
-    ): STDCMRequirements {
+    ): STDCMTimetableData {
         return runBlocking {
-            val res = mutableMapOf<ZoneId, RangeSet<Double>>()
+            val zoneUses = mutableMapOf<ZoneId, RangeSet<Double>>()
+            val detailedRequirements =
+                mutableMapOf<ZoneId, MutableList<STDCMTimetableData.DetailedRequirement>>()
             val trainRequirementsById = fetchTrainRequirements(infraId, timetableId)
             trainRequirementsById.collect { trainRequirementById ->
                 for (rjsRequirement in trainRequirementById.spacingRequirements) {
@@ -145,21 +147,30 @@ class TimetableDownloader(
                             infra,
                             trainRequirementById.startTime.durationSinceEpoch(),
                         )
-                    val set = res.computeIfAbsent(requirement.zone) { TreeRangeSet.create() }
+                    val set = zoneUses.computeIfAbsent(requirement.zone) { TreeRangeSet.create() }
                     set.add(Range.closedOpen(requirement.beginTime, requirement.endTime))
+                    detailedRequirements
+                        .computeIfAbsent(requirement.zone) { mutableListOf() }
+                        .add(
+                            STDCMTimetableData.DetailedRequirement(
+                                requirement.beginTime,
+                                requirement.endTime,
+                                trainRequirementById.trainName,
+                            )
+                        )
                 }
             }
-            STDCMRequirements(res)
+            STDCMTimetableData(zoneUses, detailedRequirements)
         }
     }
 }
 
 class JsonTimetableProvider(val timetableDirectory: String) : TimetableProvider {
-    override fun getTimetableRequirements(
+    override fun getTimetableData(
         infraId: String,
         infra: RawInfra,
         timetableId: TimetableId,
-    ): STDCMRequirements {
+    ): STDCMTimetableData {
         val adapter: JsonAdapter<TrainRequirementsById> =
             Moshi.Builder()
                 .addLast(UnitAdapterFactory())
@@ -172,7 +183,9 @@ class JsonTimetableProvider(val timetableDirectory: String) : TimetableProvider 
         val source = filePath.source().buffer()
         val jsonReader = JsonReader.of(source)
         jsonReader.beginArray()
-        val res = mutableMapOf<ZoneId, RangeSet<Double>>()
+        val zoneUses = mutableMapOf<ZoneId, RangeSet<Double>>()
+        val detailedRequirements =
+            mutableMapOf<ZoneId, MutableList<STDCMTimetableData.DetailedRequirement>>()
         while (jsonReader.hasNext()) {
             val train = adapter.fromJson(jsonReader)!!
             for (rjsSpacingReq in train.spacingRequirements) {
@@ -182,12 +195,21 @@ class JsonTimetableProvider(val timetableDirectory: String) : TimetableProvider 
                         infra,
                         train.startTime.durationSinceEpoch(),
                     )
-                val set = res.computeIfAbsent(spacingReq.zone) { TreeRangeSet.create() }
+                val set = zoneUses.computeIfAbsent(spacingReq.zone) { TreeRangeSet.create() }
                 set.add(Range.closedOpen(spacingReq.beginTime, spacingReq.endTime))
+                detailedRequirements
+                    .computeIfAbsent(spacingReq.zone) { mutableListOf() }
+                    .add(
+                        STDCMTimetableData.DetailedRequirement(
+                            spacingReq.beginTime,
+                            spacingReq.endTime,
+                            train.trainName,
+                        )
+                    )
             }
         }
 
-        return STDCMRequirements(res)
+        return STDCMTimetableData(zoneUses, detailedRequirements)
     }
 }
 

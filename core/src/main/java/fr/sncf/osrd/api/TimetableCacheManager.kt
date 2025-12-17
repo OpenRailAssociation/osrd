@@ -3,6 +3,7 @@ package fr.sncf.osrd.api
 import com.google.common.collect.ImmutableRangeSet
 import com.google.common.collect.Range
 import com.google.common.collect.RangeSet
+import com.google.common.collect.TreeRangeSet
 import fr.sncf.osrd.sim_infra.api.ZoneId
 import io.lettuce.core.api.StatefulRedisConnection
 import io.opentelemetry.api.trace.SpanKind
@@ -27,41 +28,39 @@ import org.slf4j.LoggerFactory
 
 typealias TimetableId = Int
 
-@JvmInline
-value class STDCMRequirements(val map: Map<ZoneId, RangeSet<Double>>) :
-    Map<ZoneId, RangeSet<Double>> by map {
+data class STDCMTimetableData(
+    /**
+     * This map to range set is what we really need as stdcm input: for each zone, when it can (not)
+     * be used.
+     */
+    val zoneUses: Map<ZoneId, RangeSet<Double>>,
+    /**
+     * This is metadata, only used to identify what happened and why. For each zone, we list when
+     * it's occupied and by which train. Inefficient for simulation: uses can overlap, and the
+     * lookup is in O(n).
+     */
+    val detailedRequirements: Map<ZoneId, List<DetailedRequirement>>,
+) {
+    @Serializable
+    data class DetailedRequirement(val from: Double, val to: Double, val trainName: String)
 
     fun toSerializable(): SerializableMap {
-        return SerializableMap(
-            map.entries.associate { (key, value) ->
-                key.index to value.asRanges().map { SerializableRange.fromRange(it) }
-            }
-        )
+        return SerializableMap(detailedRequirements.mapKeys { it.key.index })
     }
 
     @Serializable
-    data class SerializableMap(val map: Map<UInt, List<SerializableRange>>) {
-        fun toSTDCMRequirements(): STDCMRequirements {
-            val converted =
-                map.entries.associate { (key, value) ->
-                    ZoneId(key) to SerializableRange.rangesToRangeSet(value)
+    data class SerializableMap(val detailedRequirements: Map<UInt, List<DetailedRequirement>>) {
+        fun toSTDCMRequirements(): STDCMTimetableData {
+            val detailedRequirements = detailedRequirements.mapKeys { ZoneId(it.key) }
+            val zoneUses =
+                detailedRequirements.mapValues { (_, requirements) ->
+                    val map = TreeRangeSet.create<Double>()
+                    for (req in requirements) map.add(Range.closed(req.from, req.to))
+                    // ImmutableRangeSet has a faster lookup than TreeRangeSet, but
+                    // can't handle overlapping ranges on build
+                    ImmutableRangeSet.copyOf(map)
                 }
-            return STDCMRequirements(converted)
-        }
-    }
-
-    @Serializable
-    data class SerializableRange(val from: Double, val to: Double) {
-        companion object {
-            fun fromRange(range: Range<Double>): SerializableRange {
-                return SerializableRange(range.lowerEndpoint(), range.upperEndpoint())
-            }
-
-            fun rangesToRangeSet(ranges: List<SerializableRange>): RangeSet<Double> {
-                val builder = ImmutableRangeSet.Builder<Double>()
-                for (range in ranges) builder.add(Range.closed(range.from, range.to))
-                return builder.build()
-            }
+            return STDCMTimetableData(zoneUses, detailedRequirements)
         }
     }
 }
@@ -81,7 +80,7 @@ class TimetableCacheManager(
     val disableAllCaching: Boolean = false,
     val osrdGitDescribe: String,
 ) {
-    private val cache = ConcurrentHashMap<String, STDCMRequirements>()
+    private val cache = ConcurrentHashMap<String, STDCMTimetableData>()
     private val mutexes = ConcurrentHashMap<String, Mutex>()
 
     private val fetchDispatcher = Dispatchers.IO
@@ -93,7 +92,7 @@ class TimetableCacheManager(
      * cached.
      */
     @WithSpan(value = "Accessing timetable content", kind = SpanKind.SERVER)
-    suspend fun get(infra: FullInfra, timetableId: TimetableId): STDCMRequirements =
+    suspend fun get(infra: FullInfra, timetableId: TimetableId): STDCMTimetableData =
         coroutineScope {
             val cacheKey = getCacheKey(infra, timetableId)
             if (disableAllCaching) {
@@ -114,7 +113,7 @@ class TimetableCacheManager(
                         return@coroutineScope it
                     }
                     logger.info("Start computing timetable requirements")
-                    val requirements: STDCMRequirements
+                    val requirements: STDCMTimetableData
                     val time = measureTime {
                         requirements =
                             withContext(fetchDispatcher) {
@@ -122,7 +121,7 @@ class TimetableCacheManager(
                             }
                     }
                     cache[cacheKey] = requirements
-                    val nEntries = requirements.entries.sumOf { it.value.asRanges().size }
+                    val nEntries = requirements.zoneUses.entries.sumOf { it.value.asRanges().size }
                     logger.info(
                         "timetable requirements computed in ${time.inWholeSeconds} seconds, $nEntries map entries"
                     )
@@ -151,11 +150,11 @@ class TimetableCacheManager(
         infra: FullInfra,
         timetableId: TimetableId,
         cacheKey: String,
-    ): STDCMRequirements {
+    ): STDCMTimetableData {
         val requirements =
             withLocalCache(localCacheLocation, cacheKey) {
                 withValkeyCache(valkeyConnection, cacheKey) {
-                    timetableProvider.getTimetableRequirements(
+                    timetableProvider.getTimetableData(
                         infra.metadata.name,
                         infra.rawInfra,
                         timetableId,
@@ -172,15 +171,15 @@ class TimetableCacheManager(
     private suspend fun withLocalCache(
         cacheFolder: String?,
         cacheKey: String?,
-        generateData: suspend () -> STDCMRequirements,
-    ): STDCMRequirements {
+        generateData: suspend () -> STDCMTimetableData,
+    ): STDCMTimetableData {
         if (cacheFolder == null || cacheKey == null) return generateData()
         val filename = "$cacheKey.cbor"
         val folder = Path(cacheFolder)
         Files.createDirectories(folder)
         val file = folder.resolve(filename)
         val cbor = Cbor {}
-        val serializer = STDCMRequirements.SerializableMap.serializer()
+        val serializer = STDCMTimetableData.SerializableMap.serializer()
 
         if (file.exists()) {
             val bytes = file.readBytes()
@@ -188,12 +187,12 @@ class TimetableCacheManager(
             logger.debug("local timetable file cache hit at {}", file)
             return serializableMap.toSTDCMRequirements()
         } else {
-            val map = generateData.invoke()
+            val res = generateData.invoke()
             logger.info("writing timetable to local file cache at $file")
-            val serializableMap = map.toSerializable()
+            val serializableMap = res.toSerializable()
             val bytes = cbor.encodeToByteArray(serializer, serializableMap)
             file.writeBytes(bytes)
-            return map
+            return res
         }
     }
 
@@ -204,14 +203,14 @@ class TimetableCacheManager(
     private suspend fun tryGetFromValkey(
         valkeyConnection: StatefulRedisConnection<String, String>,
         key: String,
-    ): STDCMRequirements? {
+    ): STDCMTimetableData? {
         try {
             val async = valkeyConnection.async()
             val data = async.get(key).await() ?: return null
             logger.debug("valkey cache hit")
 
             val cbor = Cbor {}
-            val serializer = STDCMRequirements.SerializableMap.serializer()
+            val serializer = STDCMTimetableData.SerializableMap.serializer()
             val serializableMap = cbor.decodeFromHexString(serializer, data)
             return serializableMap.toSTDCMRequirements()
         } catch (e: Exception) {
@@ -224,11 +223,11 @@ class TimetableCacheManager(
     private fun writeCacheToValkey(
         valkeyConnection: StatefulRedisConnection<String, String>,
         key: String,
-        data: STDCMRequirements,
+        data: STDCMTimetableData,
     ) {
         val async = valkeyConnection.async()
         val cbor = Cbor {}
-        val serializer = STDCMRequirements.SerializableMap.serializer()
+        val serializer = STDCMTimetableData.SerializableMap.serializer()
         val serialized = cbor.encodeToHexString(serializer, data.toSerializable())
 
         // One day and a half. Timetables should be relevant for one day before being replaced, we
@@ -248,8 +247,8 @@ class TimetableCacheManager(
     private suspend fun withValkeyCache(
         valkeyConnection: StatefulRedisConnection<String, String>?,
         cacheKey: String?,
-        generateData: () -> STDCMRequirements,
-    ): STDCMRequirements {
+        generateData: () -> STDCMTimetableData,
+    ): STDCMTimetableData {
         if (valkeyConnection == null || cacheKey == null) {
             return generateData()
         }
