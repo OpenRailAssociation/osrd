@@ -7,18 +7,18 @@ drop function check_authn_user_identity_update_does_not_leave_user_without_ident
 
 alter table authn_user add column identity_id varchar(255);
 
--- Small hack that prevents having to either delete the users or
--- invent them new identities on revert. It is done for development
--- purposes: reverting that migration will delete identities on any
--- user which has several identities.
+-- Keep the oldest identity for each user on migration revert.
+-- Done in order to improve the developers quality of life: applying
+-- and then rolling back the migration will leave their user identities
+-- in the same state as before.
 update authn_user
-set identity_id = identities.identity
-from (
-    select user_id, any_value(identity) as identity
+set identity_id =  (
+    select identity
     from authn_user_identity
-    group by user_id
-) identities
-where identities.user_id = authn_user.id;
+    where authn_user.id = authn_user_identity.user_id
+    order by authn_user_identity.id asc
+    limit 1
+);
 
 alter table authn_user add unique (identity_id);
 alter table authn_user alter column identity_id set not null;
