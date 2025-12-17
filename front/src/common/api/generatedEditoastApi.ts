@@ -4971,6 +4971,8 @@ export type CoreTrainRequirementsById = {
   spacing_requirements: CoreSpacingRequirement[];
   start_time: string;
   train_id: string;
+  /** ID that can be used to find the train in tools other than OSRD. Used in debug traces. */
+  train_name: string;
 };
 export type CoreStepTimingData = {
   /** Time the train should arrive at this point */
