@@ -15878,6 +15878,7 @@ components:
       type: object
       required:
       - train_id
+      - train_name
       - start_time
       - spacing_requirements
       - routing_requirements
@@ -15895,6 +15896,9 @@ components:
           format: date-time
         train_id:
           type: string
+        train_name:
+          type: string
+          description: ID that can be used to find the train in tools other than OSRD. Used in debug traces.
     core.UndirectedTrackRange:
       type: object
       description: |-

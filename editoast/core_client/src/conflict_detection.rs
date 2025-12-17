@@ -37,6 +37,8 @@ pub struct TrainRequirements {
 #[schema(as = core::TrainRequirementsById)]
 pub struct TrainRequirementsById {
     pub train_id: String,
+    /// ID that can be used to find the train in tools other than OSRD. Used in debug traces.
+    pub train_name: String,
     pub start_time: DateTime<Utc>,
     pub spacing_requirements: Vec<SpacingRequirement>,
     pub routing_requirements: Vec<RoutingRequirement>,

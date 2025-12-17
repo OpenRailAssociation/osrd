@@ -618,8 +618,10 @@ pub(in crate::views) async fn requirements(
     .map(|(sim, _)| Arc::unwrap_or_clone(sim));
 
     let start_times = trains.iter().map(|ts| ts.start_time());
+    let train_names = trains.iter().map(|ts| ts.train_name.clone());
     let results =
-        build_trains_requirements(train_ids.into_iter(), start_times, simulations).collect();
+        build_trains_requirements(train_ids.into_iter(), start_times, simulations, train_names)
+            .collect();
 
     Ok(Json(TrainRequirementsPage { results, stats }))
 }
@@ -628,25 +630,29 @@ fn build_trains_requirements(
     train_ids: impl Iterator<Item = OccurrenceId>,
     start_times: impl Iterator<Item = DateTime<Utc>>,
     simulations: impl Iterator<Item = simulation::Response>,
+    train_names: impl Iterator<Item = String>,
 ) -> impl Iterator<Item = TrainRequirementsById> {
-    izip!(train_ids, start_times, simulations).filter_map(|(train_id, start_time, sim)| {
-        let CompleteReportTrain {
-            spacing_requirements,
-            routing_requirements,
-            ..
-        } = match sim {
-            simulation::Response::Success(SimulationResponseSuccess { final_output, .. }) => {
-                Some(final_output)
-            }
-            _ => None,
-        }?;
-        Some(TrainRequirementsById {
-            train_id: train_id.to_string(),
-            start_time,
-            spacing_requirements,
-            routing_requirements,
-        })
-    })
+    izip!(train_ids, start_times, simulations, train_names).filter_map(
+        |(train_id, start_time, sim, train_name)| {
+            let CompleteReportTrain {
+                spacing_requirements,
+                routing_requirements,
+                ..
+            } = match sim {
+                simulation::Response::Success(SimulationResponseSuccess {
+                    final_output, ..
+                }) => Some(final_output),
+                _ => None,
+            }?;
+            Some(TrainRequirementsById {
+                train_id: train_id.to_string(),
+                start_time,
+                spacing_requirements,
+                routing_requirements,
+                train_name,
+            })
+        },
+    )
 }
 
 #[derive(Serialize, ToSchema)]
