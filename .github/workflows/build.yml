@@ -417,7 +417,7 @@ jobs:
 
       - name: Download built images
         if: needs.build.outputs.output_method == 'artifact'
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v7
         with:
           name: front-tests
           path: .
@@ -453,7 +453,7 @@ jobs:
 
       - name: Download built images
         if: needs.build.outputs.output_method == 'artifact'
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v7
         with:
           name: core-build
           path: .
@@ -494,7 +494,7 @@ jobs:
 
       - name: Download built editoast-test image
         if: needs.build.outputs.output_method == 'artifact'
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v7
         with:
           name: editoast-test
           path: .
@@ -543,7 +543,7 @@ jobs:
 
       - name: Download built images
         if: needs.build.outputs.output_method == 'artifact'
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v7
         with:
           name: editoast-test
           path: .
@@ -590,13 +590,13 @@ jobs:
 
       - name: Download built editoast image
         if: needs.build.outputs.output_method == 'artifact'
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v7
         with:
           name: editoast
           path: .
       - name: Download built front-tests image
         if: needs.build.outputs.output_method == 'artifact'
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v7
         with:
           name: front-tests
           path: .
@@ -636,7 +636,7 @@ jobs:
 
       - name: Download built images
         if: needs.build.outputs.output_method == 'artifact'
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v7
         with:
           name: gateway-test
           path: .
@@ -689,7 +689,7 @@ jobs:
 
       - name: Download built images
         if: needs.build.outputs.output_method == 'artifact'
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v7
         with:
           name: osrdyne-test
           path: .
@@ -742,7 +742,7 @@ jobs:
 
       - name: Download built images
         if: needs.build.outputs.output_method == 'artifact'
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v7
         with:
           name: front-tests
           path: .
@@ -798,19 +798,19 @@ jobs:
         uses: actions/checkout@v6
       - name: Download built editoast image
         if: needs.build.outputs.output_method == 'artifact'
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v7
         with:
           name: editoast
           path: .
       - name: Download built core image
         if: needs.build.outputs.output_method == 'artifact'
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v7
         with:
           name: core
           path: .
       - name: Download built osrdyne image
         if: needs.build.outputs.output_method == 'artifact'
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v7
         with:
           name: osrdyne
           path: .
@@ -874,31 +874,31 @@ jobs:
         uses: actions/checkout@v6
       - name: Download built front-tests image
         if: needs.build.outputs.output_method == 'artifact'
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v7
         with:
           name: front-tests
           path: .
       - name: Download built editoast image
         if: needs.build.outputs.output_method == 'artifact'
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v7
         with:
           name: editoast
           path: .
       - name: Download built core image
         if: needs.build.outputs.output_method == 'artifact'
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v7
         with:
           name: core
           path: .
       - name: Download built gateway-front image
         if: needs.build.outputs.output_method == 'artifact'
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v7
         with:
           name: gateway-front
           path: .
       - name: Download built osrdyne image
         if: needs.build.outputs.output_method == 'artifact'
-        uses: actions/download-artifact@v6
+        uses: actions/download-artifact@v7
         with:
           name: osrdyne
           path: .
