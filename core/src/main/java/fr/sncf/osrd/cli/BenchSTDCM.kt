@@ -177,7 +177,7 @@ class BenchSTDCM : CliCommand {
                             0.0,
                             steps,
                             makeBlockAvailability(
-                                requirements,
+                                requirements.requirements,
                                 gridMarginBeforeTrain = request.timeGapBefore.seconds,
                                 gridMarginAfterTrain = request.timeGapAfter.seconds,
                                 timeStep = request.timeStep!!.seconds,

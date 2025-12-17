@@ -5,6 +5,7 @@ import com.squareup.moshi.Json
 import com.squareup.moshi.JsonAdapter
 import com.squareup.moshi.Moshi
 import com.squareup.moshi.kotlin.reflect.KotlinJsonAdapterFactory
+import fr.sncf.osrd.api.STDCMTimetableData
 import fr.sncf.osrd.api.path_properties.PathPropResponse
 import fr.sncf.osrd.api.path_properties.makePathPropResponse
 import fr.sncf.osrd.api.path_properties.polymorphicElectrificationAdapter
@@ -12,9 +13,9 @@ import fr.sncf.osrd.api.standalone_sim.SimulationSuccess
 import fr.sncf.osrd.api.standalone_sim.polymorphicElectricalProfileAdapter
 import fr.sncf.osrd.api.standalone_sim.polymorphicSimulationResponseAdapter
 import fr.sncf.osrd.api.standalone_sim.polymorphicSpeedLimitSourceAdapter
-import fr.sncf.osrd.conflicts.ParsedRequirements
 import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.sim_infra.api.RawInfra
+import fr.sncf.osrd.sim_infra.api.ZoneId
 import fr.sncf.osrd.stdcm.STDCMResult
 import fr.sncf.osrd.stdcm.graph.EngineeringAllowanceRange
 import fr.sncf.osrd.utils.json.UnitAdapterFactory
@@ -68,7 +69,7 @@ fun generateDebugData(
     path: STDCMResult,
     simulationResponse: SimulationSuccess,
     departureTime: ZonedDateTime,
-    requirements: ParsedRequirements,
+    requirements: Map<ZoneId, List<STDCMTimetableData.DetailedRequirement>>,
 ): OutputSimDebugData {
     return OutputSimDebugData(
         simOutput = simulationResponse,
@@ -85,24 +86,24 @@ fun generateDebugData(
 
 fun makeOtherRequirements(
     rawInfra: RawInfra,
-    requirements: ParsedRequirements,
+    requirements: Map<ZoneId, List<STDCMTimetableData.DetailedRequirement>>,
     path: STDCMResult,
 ): List<TrainZoneRequirement> {
     val res = mutableListOf<TrainZoneRequirement>()
     val minRelevantTime = -3_600.0
     val maxRelevantTime = path.envelope.totalTime + 3_600.0
     for (zoneRange in path.trainPath.getZoneRanges()) {
-        val timeRanges = requirements[zoneRange.value] ?: continue
-        for (timeRange in timeRanges.values) {
-            val beginTime = max(minRelevantTime, timeRange.lowerEndpoint() - path.departureTime)
-            val endTime = min(maxRelevantTime, timeRange.upperEndpoint() - path.departureTime)
+        val metadataList = requirements[zoneRange.value] ?: continue
+        for (metadata in metadataList) {
+            val beginTime = max(minRelevantTime, metadata.from - path.departureTime)
+            val endTime = min(maxRelevantTime, metadata.to - path.departureTime)
             if (endTime < beginTime) continue
             res.add(
                 TrainZoneRequirement(
                     zoneName = rawInfra.getZoneName(zoneRange.value),
                     beginTime = beginTime.seconds,
                     endTime = endTime.seconds,
-                    trainName = null, // TODO: would be very useful, but hard to get
+                    trainName = metadata.trainName,
                 )
             )
         }

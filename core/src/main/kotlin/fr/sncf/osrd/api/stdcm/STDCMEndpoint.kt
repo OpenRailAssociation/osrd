@@ -129,7 +129,7 @@ class STDCMEndpoint(
                     0.0,
                     steps,
                     makeBlockAvailability(
-                        requirements,
+                        requirements.requirements,
                         gridMarginBeforeTrain = request.timeGapBefore.seconds,
                         gridMarginAfterTrain = request.timeGapAfter.seconds,
                         timeStep = request.timeStep!!.seconds,
@@ -163,7 +163,13 @@ class STDCMEndpoint(
             val departureTime =
                 request.startTime.plus(ofMillis((path.departureTime * 1000).toLong()))
 
-            logDebugData(infra.rawInfra, path, simulationResponse, departureTime, requirements)
+            logDebugData(
+                infra.rawInfra,
+                path,
+                simulationResponse,
+                departureTime,
+                requirements.metadata,
+            )
 
             val response = STDCMSuccess(simulationResponse, pathfindingResponse, departureTime)
             RsJson(RsWithBody(stdcmResponseAdapter.toJson(response)))
@@ -182,7 +188,7 @@ class STDCMEndpoint(
         path: STDCMResult,
         simulationResponse: SimulationSuccess,
         departureTime: ZonedDateTime,
-        requirements: ParsedRequirements,
+        requirements: Map<ZoneId, List<STDCMTimetableData.DetailedRequirement>>,
     ) {
         val filename = System.getenv("STDCM_DEBUG_DATA_FILENAME") ?: return
         val debugData =
@@ -378,6 +384,15 @@ fun parseSteps(
         .toList()
 }
 
+/** This is what's kept in cache: the data used to identify conflicts, and some metadata. */
+data class RequirementsWithMetadata(
+    // Map of (un)available times, in a format that enables fast queries during the search
+    val requirements: ParsedRequirements,
+    // Metadata for the occupied ranges, to identify which train it comes from.
+    // Used in the generated trace data to see where the new train fits in an external timetable.
+    val metadata: Map<ZoneId, List<STDCMTimetableData.DetailedRequirement>>,
+)
+
 /**
  * Collect all spacing requirements in an easily fetchable format. Combines both train requirements
  * and work schedules.
@@ -386,13 +401,23 @@ fun getRequirements(
     request: STDCMRequest,
     infra: FullInfra,
     timetableCacheManager: TimetableCacheManager,
-): ParsedRequirements {
-    val res = mutableMapOf<ZoneId, TreeRangeSet<Double>>()
+): RequirementsWithMetadata {
+    val requirements = mutableMapOf<ZoneId, TreeRangeSet<Double>>()
+    val metadata = mutableMapOf<ZoneId, MutableList<STDCMTimetableData.DetailedRequirement>>()
     convertWorkScheduleCollection(infra.rawInfra, request.workSchedules)
         .spacingRequirements
         .forEach { spacingReq ->
-            val set = res.computeIfAbsent(spacingReq.zone) { TreeRangeSet.create() }
+            val set = requirements.computeIfAbsent(spacingReq.zone) { TreeRangeSet.create() }
             set.add(Range.closedOpen(spacingReq.beginTime, spacingReq.endTime))
+            metadata
+                .computeIfAbsent(spacingReq.zone) { mutableListOf() }
+                .add(
+                    STDCMTimetableData.DetailedRequirement(
+                        spacingReq.beginTime,
+                        spacingReq.endTime,
+                        "work schedule",
+                    )
+                )
         }
 
     val trainRequirements = runBlocking { timetableCacheManager.get(infra, request.timetableId) }
@@ -403,8 +428,8 @@ fun getRequirements(
         searchWindowBeginEpoch +
             request.maximumDepartureDelay!!.seconds +
             request.maximumRunTime.seconds
-    for ((zoneId, rangeSet) in trainRequirements) {
-        val setBuilder = res.computeIfAbsent(zoneId) { TreeRangeSet.create() }
+    for ((zoneId, rangeSet) in trainRequirements.zoneUses) {
+        val setBuilder = requirements.computeIfAbsent(zoneId) { TreeRangeSet.create() }
         for (range in rangeSet.asRanges()) {
             // Filter out unnecessary requirements
             val included =
@@ -422,9 +447,29 @@ fun getRequirements(
             }
         }
     }
-    return res.mapValues { rangeSet ->
-        TreeMap(rangeSet.value.asRanges().associateBy { it.upperEndpoint() })
+
+    for (entry in trainRequirements.detailedRequirements) {
+        val metadataList = metadata.computeIfAbsent(entry.key) { mutableListOf() }
+        for (metadata in entry.value) {
+            val included =
+                metadata.from > searchWindowBeginEpoch && metadata.to < searchWindowEndEpoch
+            if (included) {
+                metadataList.add(
+                    STDCMTimetableData.DetailedRequirement(
+                        metadata.from - searchWindowBeginEpoch,
+                        metadata.to - searchWindowBeginEpoch,
+                        metadata.trainName,
+                    )
+                )
+            }
+        }
     }
+    return RequirementsWithMetadata(
+        requirements.mapValues { rangeSet ->
+            TreeMap(rangeSet.value.asRanges().associateBy { it.upperEndpoint() })
+        },
+        metadata,
+    )
 }
 
 fun parseMarginValue(margin: MarginValue): AllowanceValue? {
