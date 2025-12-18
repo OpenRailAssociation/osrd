@@ -47,9 +47,12 @@ function useAuth() {
    * Function to impersonate the given user, or if undefined, stop the impersonation.
    */
   const impersonate = useCallback(async (userToImpersonate: SearchResultItemUser | undefined) => {
-    const impersonated = userToImpersonate
+    let impersonated = userToImpersonate
       ? (await fetchFullUser({ body: { ids: [userToImpersonate.id], identities: [] } })).data?.[0]
       : undefined;
+    if (impersonated && impersonated.identities.length == 0) {
+      impersonated = undefined;
+    }
     dispatch(setImpersonatedUser(impersonated));
     dispatch(osrdEditoastApi.util.invalidateTags(addTagTypes.map((t) => ({ type: t }))));
   }, []);
