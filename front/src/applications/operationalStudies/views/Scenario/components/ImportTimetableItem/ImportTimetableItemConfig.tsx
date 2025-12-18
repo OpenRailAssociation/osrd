@@ -166,16 +166,21 @@ const ImportTimetableItemConfig = ({
   }
 
   const locallyProcessXmlFile = async (fileContent: string) => {
-    const parser = new DOMParser();
-    const xmlDoc = parser.parseFromString(fileContent, 'application/xml');
-    const parserError = xmlDoc.getElementsByTagName('parsererror');
+    try {
+      const parser = new DOMParser();
+      const xmlDoc = parser.parseFromString(fileContent, 'application/xml');
+      const parserError = xmlDoc.getElementsByTagName('parsererror');
 
-    if (parserError.length > 0) {
-      throw new Error('Invalid XML');
+      if (parserError.length > 0) {
+        throw new Error('Invalid XML');
+      }
+
+      const trainData = await parseXML(xmlDoc);
+      setTrainsJsonData(trainData);
+    } catch (error: unknown) {
+      const failure = castErrorToFailure(error);
+      dispatch(setFailure(failure));
     }
-
-    const trainData = await parseXML(xmlDoc);
-    setTrainsJsonData(trainData);
   };
 
   const processXmlFile = async (file: File, fileContent: string) => {
