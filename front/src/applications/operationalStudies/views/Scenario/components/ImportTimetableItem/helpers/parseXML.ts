@@ -256,8 +256,7 @@ const parseXML = async (xmlDoc: Document): Promise<TimetableJsonPayload> => {
   const startDate = period ? period.getAttribute('startDate') : null;
 
   if (!startDate) {
-    console.error('Start Date not found in the timetablePeriod.');
-    return { train_schedules: [], paced_trains: [] };
+    throw new Error('Start Date not found in the timetablePeriod.');
   }
 
   trainParts.forEach((train) => {
