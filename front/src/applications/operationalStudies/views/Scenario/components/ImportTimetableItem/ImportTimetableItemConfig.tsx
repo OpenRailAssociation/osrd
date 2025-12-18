@@ -23,6 +23,7 @@ import { useAppDispatch } from 'store';
 import { formatLocalDate } from 'utils/date';
 import { castErrorToFailure } from 'utils/error';
 
+import { updateTrainSchedules } from './helpers/parseGraouTrains';
 import parseXML from './helpers/parseXML';
 import StationSelector from './ImportTimetableItemStationSelector';
 import {
@@ -84,30 +85,6 @@ const ImportTimetableItemConfig = ({
     return filteredSchedules;
   }
 
-  function updateTrainSchedules(importedTrainSchedules: GraouTrainSchedule[]) {
-    // For each train schedule, we add the duration and tracks of each step
-    const trainsSchedules = importedTrainSchedules.map((trainSchedule) => {
-      const stepsWithDuration = trainSchedule.steps.map((step) => {
-        // calcul duration in seconds between step arrival and departure
-        // in case of arrival and departure are the same, we set duration to 0
-        // for the step arrivalTime is before departureTime because the train first goes to the station and then leaves it
-        const duration = Math.round(
-          (new Date(step.departureTime).getTime() - new Date(step.arrivalTime).getTime()) / 1000
-        );
-        return {
-          ...step,
-          duration,
-        };
-      });
-      return {
-        ...trainSchedule,
-        steps: stepsWithDuration,
-      };
-    });
-
-    setTrainsList(trainsSchedules);
-  }
-
   async function getTrainsFromOpenData(config: GraouTrainScheduleConfig) {
     setTrainsList([]);
     setIsLoading(true);
@@ -124,7 +101,7 @@ const ImportTimetableItemConfig = ({
 
     const importedTrainSchedules = filterInvalidSteps(result);
     if (importedTrainSchedules && !isEmpty(importedTrainSchedules)) {
-      updateTrainSchedules(importedTrainSchedules);
+      setTrainsList(updateTrainSchedules(importedTrainSchedules));
     }
 
     setIsLoading(false);
