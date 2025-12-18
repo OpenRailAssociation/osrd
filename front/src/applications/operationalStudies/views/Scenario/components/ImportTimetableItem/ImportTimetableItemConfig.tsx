@@ -23,7 +23,7 @@ import { useAppDispatch } from 'store';
 import { formatLocalDate } from 'utils/date';
 import { castErrorToFailure } from 'utils/error';
 
-import { updateTrainSchedules } from './helpers/parseGraouTrains';
+import { filterInvalidSteps, updateTrainSchedules } from './helpers/parseGraouTrains';
 import parseXML from './helpers/parseXML';
 import StationSelector from './ImportTimetableItemStationSelector';
 import {
@@ -56,35 +56,6 @@ const ImportTimetableItemConfig = ({
   const [postTransformTimetable] =
     osrdRailwayManagerApi.endpoints.postTransformTimetable.useMutation();
 
-  function filterInvalidSteps(importedTrainSchedules: GraouTrainSchedule[]): GraouTrainSchedule[] {
-    const trainNumbersOfModifiedTrains: string[] = [];
-
-    const filteredSchedules = importedTrainSchedules.map((trainSchedule) => {
-      const filteredSteps = trainSchedule.steps.filter(
-        (step, i) =>
-          i === 0 ||
-          new Date(step.arrivalTime).getTime() >=
-            new Date(trainSchedule.steps[i - 1].departureTime).getTime()
-      );
-      if (filteredSteps.length < trainSchedule.steps.length) {
-        trainNumbersOfModifiedTrains.push(trainSchedule.trainNumber);
-      }
-      return { ...trainSchedule, steps: filteredSteps };
-    });
-
-    if (trainNumbersOfModifiedTrains.length)
-      dispatch(
-        setWarning({
-          title: t('warningMessages.warning'),
-          text: t('warningMessages.warningFilteredStepImport', {
-            trainNumbers: trainNumbersOfModifiedTrains,
-          }),
-        })
-      );
-
-    return filteredSchedules;
-  }
-
   async function getTrainsFromOpenData(config: GraouTrainScheduleConfig) {
     setTrainsList([]);
     setIsLoading(true);
@@ -99,9 +70,18 @@ const ImportTimetableItemConfig = ({
       return;
     }
 
-    const importedTrainSchedules = filterInvalidSteps(result);
-    if (importedTrainSchedules && !isEmpty(importedTrainSchedules)) {
-      setTrainsList(updateTrainSchedules(importedTrainSchedules));
+    const { filteredTrains, modifiedTrainsNumbers } = filterInvalidSteps(result);
+    if (modifiedTrainsNumbers.length)
+      dispatch(
+        setWarning({
+          title: t('warningMessages.warning'),
+          text: t('warningMessages.warningFilteredStepImport', {
+            trainNumbers: modifiedTrainsNumbers,
+          }),
+        })
+      );
+    if (filteredTrains && !isEmpty(filteredTrains)) {
+      setTrainsList(updateTrainSchedules(filteredTrains));
     }
 
     setIsLoading(false);

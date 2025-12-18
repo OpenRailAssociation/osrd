@@ -1,5 +1,27 @@
 import type { GraouTrainSchedule } from 'common/api/graouApi';
 
+export function filterInvalidSteps(importedTrainSchedules: GraouTrainSchedule[]): {
+  filteredTrains: GraouTrainSchedule[];
+  modifiedTrainsNumbers: string[];
+} {
+  const modifiedTrainsNumbers: string[] = [];
+
+  const filteredTrains = importedTrainSchedules.map((trainSchedule) => {
+    const filteredSteps = trainSchedule.steps.filter(
+      (step, i) =>
+        i === 0 ||
+        new Date(step.arrivalTime).getTime() >=
+          new Date(trainSchedule.steps[i - 1].departureTime).getTime()
+    );
+    if (filteredSteps.length < trainSchedule.steps.length) {
+      modifiedTrainsNumbers.push(trainSchedule.trainNumber);
+    }
+    return { ...trainSchedule, steps: filteredSteps };
+  });
+
+  return { filteredTrains, modifiedTrainsNumbers };
+}
+
 export function updateTrainSchedules(importedTrainSchedules: GraouTrainSchedule[]) {
   // For each train schedule, we add the duration and tracks of each step
   const trainsSchedules = importedTrainSchedules.map((trainSchedule) => {
