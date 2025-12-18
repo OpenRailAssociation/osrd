@@ -192,7 +192,7 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "geojson-pydantic", specifier = "~=1.0.0" },
-    { name = "pydantic", specifier = "~=2.7" },
+    { name = "pydantic", specifier = "~=2.11" },
     { name = "pyright", marker = "extra == 'check'", specifier = "~=1.1.393" },
     { name = "ruff", marker = "extra == 'check'", specifier = "~=0.9.5" },
 ]
@@ -340,7 +340,7 @@ wheels = [
 
 [[package]]
 name = "railjson-generator"
-version = "0.4.11"
+version = "0.4.12"
 source = { editable = "../python/railjson_generator" }
 dependencies = [
     { name = "osrd-schemas" },
