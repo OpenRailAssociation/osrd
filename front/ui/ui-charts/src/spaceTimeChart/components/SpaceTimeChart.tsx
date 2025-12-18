@@ -3,8 +3,8 @@ import React, { useEffect, useMemo, useState } from 'react';
 import cx from 'classnames';
 
 import SpaceGraduations from './SpaceGraduations';
-import { TimeCaptions } from './TimeCaptions';
-import TimeGraduations from './TimeGraduations';
+import { TimeCaptions } from '../../common/layers/TimeCaptions';
+import TimeGraduations from '../../common/layers/TimeGraduations';
 import type { PickingElement } from '../../common/types';
 import { useCanvas } from '../../common/useCanvas';
 import { useSize } from '../../common/useSize';
