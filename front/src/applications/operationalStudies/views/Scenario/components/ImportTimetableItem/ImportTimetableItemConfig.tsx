@@ -22,11 +22,7 @@ import { useAppDispatch } from 'store';
 import { formatLocalDate } from 'utils/date';
 import { castErrorToFailure } from 'utils/error';
 
-import {
-  filterInvalidSteps,
-  generateTrainSchedulesPayloads,
-  updateTrainSchedules,
-} from './helpers/parseGraouTrains';
+import { filterInvalidSteps, generateTrainSchedulesPayloads } from './helpers/parseGraouTrains';
 import parseXML from './helpers/parseXML';
 import StationSelector from './ImportTimetableItemStationSelector';
 import {
@@ -82,8 +78,7 @@ const ImportTimetableItemConfig = ({
       );
 
     if (filteredTrains && !isEmpty(filteredTrains)) {
-      const updatedSchedules = updateTrainSchedules(filteredTrains);
-      const trainSchedulesPayloads = generateTrainSchedulesPayloads(updatedSchedules);
+      const trainSchedulesPayloads = generateTrainSchedulesPayloads(filteredTrains);
 
       setTrainsJsonData({ train_schedules: trainSchedulesPayloads, paced_trains: [] });
     }

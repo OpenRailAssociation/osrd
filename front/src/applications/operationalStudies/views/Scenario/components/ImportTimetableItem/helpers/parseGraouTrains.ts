@@ -56,30 +56,6 @@ export function filterInvalidSteps(importedTrainSchedules: GraouTrainSchedule[])
   return { filteredTrains, modifiedTrainsNumbers };
 }
 
-export function updateTrainSchedules(importedTrainSchedules: GraouTrainSchedule[]) {
-  // For each train schedule, we add the duration and tracks of each step
-  const trainsSchedules = importedTrainSchedules.map((trainSchedule) => {
-    const stepsWithDuration = trainSchedule.steps.map((step) => {
-      // calcul duration in seconds between step arrival and departure
-      // in case of arrival and departure are the same, we set duration to 0
-      // for the step arrivalTime is before departureTime because the train first goes to the station and then leaves it
-      const duration = Math.round(
-        (new Date(step.departureTime).getTime() - new Date(step.arrivalTime).getTime()) / 1000
-      );
-      return {
-        ...step,
-        duration,
-      };
-    });
-    return {
-      ...trainSchedule,
-      steps: stepsWithDuration,
-    };
-  });
-
-  return trainsSchedules;
-}
-
 /**
  * Find the osrd rolling stock matching the graou open data rolling stock name.
  * If not found, return the initial name.
@@ -92,7 +68,7 @@ const matchOpenDataRollingStock = (rollingStock: string | null) => {
 };
 
 function generateTrainSchedulePayload(train: GraouTrainSchedule): TrainSchedule | null {
-  const departureTime = new Date(train.departureTime);
+  const trainStartTime = new Date(train.departureTime);
   const { path, schedule } = train.steps.reduce<{
     path: TrainSchedule['path'];
     schedule: NonNullable<TrainSchedule['schedule']>;
@@ -114,11 +90,13 @@ function generateTrainSchedulePayload(train: GraouTrainSchedule): TrainSchedule 
 
       if (acc.path.length > 1) {
         const arrivalTime = new Date(step.arrivalTime);
+        const departureTime = new Date(step.departureTime);
+        const stopForDuration = Duration.subtractDate(departureTime, arrivalTime);
 
         acc.schedule.push({
           at: stepId,
-          arrival: Duration.subtractDate(arrivalTime, departureTime).toISOString(),
-          stop_for: step.duration ? `PT${step.duration}S` : undefined,
+          arrival: Duration.subtractDate(arrivalTime, trainStartTime).toISOString(),
+          stop_for: stopForDuration.ms !== 0 ? stopForDuration.toISOString() : undefined, // Our parsing does not support 0s stops and treat them as steps without stops
         });
       }
 
@@ -132,7 +110,7 @@ function generateTrainSchedulePayload(train: GraouTrainSchedule): TrainSchedule 
     train_name: train.trainNumber,
     rolling_stock_name: matchOpenDataRollingStock(train.rollingStock),
     constraint_distribution: 'MARECO',
-    start_time: departureTime.toISOString(),
+    start_time: trainStartTime.toISOString(),
   };
 }
 
