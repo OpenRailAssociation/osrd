@@ -3,12 +3,12 @@ import { useCallback, useMemo } from 'react';
 import { sortBy } from 'lodash';
 
 import { hexToRgb, indexToColor } from '../../../common/helpers/colors';
+import { useDraw, usePicking } from '../../../common/hooks/useCanvas';
 import type {
   DrawingFunction,
   PickingDrawingFunction,
   PickingElement,
 } from '../../../common/types';
-import { useDraw, usePicking } from '../../../common/useCanvas';
 import {
   SpaceTimeChartCanvasContext,
   type SpaceTimeChartContextType,

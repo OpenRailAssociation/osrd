@@ -1,8 +1,8 @@
 import { useCallback } from 'react';
 
 import { hexToRgb, indexToColor } from '../../common/helpers/colors';
+import { useDraw, usePicking } from '../../common/hooks/useCanvas';
 import type { DrawingFunction, PickingDrawingFunction, PickingElement } from '../../common/types';
-import { useDraw, usePicking } from '../../common/useCanvas';
 import { SpaceTimeChartCanvasContext } from '../lib/context';
 import type { SpaceTimeChartContextType } from '../lib/types';
 import { drawAliasedRect } from '../utils/canvas';

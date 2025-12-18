@@ -2,10 +2,10 @@ import { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'r
 
 import { isEqual } from 'lodash';
 
-import { PICKING_LAYERS, LAYERS } from './consts';
-import { rgbToHex, colorToIndex } from './helpers/colors';
-import getPNGBlob from './helpers/png';
-import { getPickingScalingRatio } from './helpers/utils';
+import { PICKING_LAYERS, LAYERS } from '../consts';
+import { rgbToHex, colorToIndex } from '../helpers/colors';
+import getPNGBlob from '../helpers/png';
+import { getPickingScalingRatio } from '../helpers/utils';
 import type {
   BaseChartContextType,
   CanvasContextType,
@@ -16,7 +16,7 @@ import type {
   PickingDrawingFunction,
   PickingLayerType,
   Point,
-} from './types';
+} from '../types';
 import { useDevicePixelRatio } from './useDevicePixelRatio';
 import { useSize } from './useSize';
 

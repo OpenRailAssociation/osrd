@@ -1,7 +1,7 @@
 import { useCallback } from 'react';
 
+import { useDraw } from '../../common/hooks/useCanvas';
 import type { DrawingFunction } from '../../common/types';
-import { useDraw } from '../../common/useCanvas';
 import { SpaceTimeChartCanvasContext } from '../lib/context';
 import type { SpaceTimeChartContextType } from '../lib/types';
 import { fillRect, type CanvasRect } from '../utils/canvas';
