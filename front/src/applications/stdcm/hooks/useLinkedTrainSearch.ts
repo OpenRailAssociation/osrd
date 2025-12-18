@@ -23,8 +23,8 @@ import computeOpSchedules from '../utils/computeOpSchedules';
 
 const useLinkedTrainSearch = () => {
   const [postSearch] = osrdEditoastApi.endpoints.postSearch.useLazyQuery();
-  const [postTrainScheduleSimulationSummary] =
-    osrdEditoastApi.endpoints.postTrainScheduleSimulationSummary.useLazyQuery();
+  const [postPacedTrainSimulationSummary] =
+    osrdEditoastApi.endpoints.postPacedTrainSimulationSummary.useLazyQuery();
 
   const infraId = useSelector(getStdcmInfraID);
   const timetableId = useSelector(getStdcmTimetableID);
@@ -81,7 +81,7 @@ const useLinkedTrainSearch = () => {
 
   const getTrainsSummaries = useCallback(
     async (trainsIds: number[]) => {
-      const trainsSummaries = await postTrainScheduleSimulationSummary({
+      const trainsSummaries = await postPacedTrainSimulationSummary({
         body: {
           infra_id: infraId,
           ids: trainsIds,
@@ -89,7 +89,7 @@ const useLinkedTrainSearch = () => {
       }).unwrap();
       return trainsSummaries;
     },
-    [postTrainScheduleSimulationSummary, infraId]
+    [postPacedTrainSimulationSummary, infraId]
   );
 
   const launchTrainScheduleSearch = useCallback(async () => {
@@ -123,8 +123,9 @@ const useLinkedTrainSearch = () => {
 
       const newLinkedPathResults = await Promise.all(
         filteredResults.map(async (result) => {
-          const resultSummary = filteredResultsSummaries && filteredResultsSummaries[result.id];
-          if (!resultSummary || resultSummary.status !== 'success') return undefined;
+          if (!filteredResultsSummaries) return undefined;
+          const resultSummary = filteredResultsSummaries[result.id].paced_train;
+          if (resultSummary.status !== 'success') return undefined;
           const durationFromStartTime = new Duration({
             milliseconds: resultSummary.path_item_times_final.at(-1)!,
           });

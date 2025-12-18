@@ -736,41 +736,41 @@ pub(super) struct SearchResultItemScenario {
 #[derive(Search, Serialize, ToSchema)]
 #[cfg_attr(test, derive(serde::Deserialize))]
 #[search(
-    table = "train_schedule",
+    table = "paced_train",
     column(name = "timetable_id", data_type = "integer"),
     column(name = "train_name", data_type = "string")
 )]
 /// A search result item for a query with `object = "trainschedule"`
 pub(super) struct SearchResultItemTrainSchedule {
-    #[search(sql = "train_schedule.id")]
+    #[search(sql = "paced_train.id")]
     id: u64,
-    #[search(sql = "train_schedule.train_name")]
+    #[search(sql = "paced_train.train_name")]
     train_name: String,
-    #[search(sql = "train_schedule.labels")]
+    #[search(sql = "paced_train.labels")]
     labels: Vec<Option<String>>,
-    #[search(sql = "train_schedule.rolling_stock_name")]
+    #[search(sql = "paced_train.rolling_stock_name")]
     rolling_stock_name: String,
-    #[search(sql = "train_schedule.timetable_id")]
+    #[search(sql = "paced_train.timetable_id")]
     timetable_id: i64,
-    #[search(sql = "train_schedule.start_time")]
+    #[search(sql = "paced_train.start_time")]
     start_time: DateTime<Utc>,
-    #[search(sql = "train_schedule.schedule")]
+    #[search(sql = "paced_train.schedule")]
     schedule: Vec<ScheduleItem>,
-    #[search(sql = "train_schedule.margins")]
+    #[search(sql = "paced_train.margins")]
     margins: Margins,
-    #[search(sql = "train_schedule.initial_speed")]
+    #[search(sql = "paced_train.initial_speed")]
     initial_speed: f64,
-    #[search(sql = "train_schedule.comfort")]
+    #[search(sql = "paced_train.comfort")]
     comfort: i64,
-    #[search(sql = "train_schedule.path")]
+    #[search(sql = "paced_train.path")]
     path: Vec<PathItem>,
-    #[search(sql = "train_schedule.constraint_distribution")]
+    #[search(sql = "paced_train.constraint_distribution")]
     constraint_distribution: i64,
-    #[search(sql = "train_schedule.speed_limit_tag")]
+    #[search(sql = "paced_train.speed_limit_tag")]
     speed_limit_tag: Option<String>,
-    #[search(sql = "train_schedule.power_restrictions")]
+    #[search(sql = "paced_train.power_restrictions")]
     power_restrictions: Vec<PowerRestrictionItem>,
-    #[search(sql = "train_schedule.options")]
+    #[search(sql = "paced_train.options")]
     options: TrainScheduleOptions,
 }
 
@@ -797,7 +797,7 @@ pub mod tests {
     use serde_json::json;
 
     use super::*;
-    use crate::models::fixtures::create_simple_train_schedule;
+    use crate::models::fixtures::create_simple_paced_train;
     use crate::models::fixtures::create_timetable;
     use crate::views::test_app::TestAppBuilder;
 
@@ -811,7 +811,7 @@ pub mod tests {
         let timetable_id = timetable.id;
 
         // Add a train_schedule in the database
-        let train = create_simple_train_schedule(&mut pool.get_ok(), timetable_id).await;
+        let train = create_simple_paced_train(&mut pool.get_ok(), timetable_id).await;
 
         // The body
         let request = app.post("/search").json(&json!({
@@ -840,7 +840,7 @@ pub mod tests {
         let timetable_id = timetable.id;
 
         // Add a train_schedule in the database
-        create_simple_train_schedule(&mut pool.get_ok(), timetable_id).await;
+        create_simple_paced_train(&mut pool.get_ok(), timetable_id).await;
 
         let train_name = "NonExistingTrain";
 
