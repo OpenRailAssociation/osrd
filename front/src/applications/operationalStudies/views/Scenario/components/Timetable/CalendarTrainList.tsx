@@ -4,11 +4,7 @@ import { useSelector } from 'react-redux';
 
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import { useSubCategoryContext } from 'common/SubCategoryContext';
-import type {
-  PacedTrainWithDetails,
-  TimetableItemWithDetails,
-  TrainScheduleWithDetails,
-} from 'modules/timetableItem/types';
+import type { PacedTrainWithDetails, TimetableItemWithDetails } from 'modules/timetableItem/types';
 import { selectTrainToEdit } from 'reducers/osrdconf/operationalStudiesConf';
 import type {
   OccurrenceId,
@@ -22,7 +18,7 @@ import {
 } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
 import { useDateTimeLocale } from 'utils/date';
-import { isPacedTrainWithDetails, isTrainScheduleId } from 'utils/trainId';
+import { isPacedTrainWithDetails } from 'utils/trainId';
 
 import PacedTrainItem from './PacedTrain/PacedTrainItem';
 import TrainScheduleItem from './TrainScheduleItem';
@@ -150,11 +146,11 @@ const CalendarTrainList = ({
           {timetableMode === 'calendar' && showDepartureDates[index] && (
             <div className="scenario-timetable-departure-date">{currentDepartureDates[index]}</div>
           )}
-          {isTrainScheduleId(timetableItem.id) ? (
+          {!isPacedTrainWithDetails(timetableItem) ? (
             <TrainScheduleItem
               isInSelection={selectedTimetableItemIds.includes(timetableItem.id)}
               handleSelectTrain={handleSelectTimetableItem}
-              train={timetableItem as TrainScheduleWithDetails}
+              train={timetableItem}
               isSelected={workerStatus === 'READY' && selectedTrainId === timetableItem.id}
               isModified={timetableItem.id === timetableItemToEditData?.timetableItemId}
               upsertTrainSchedules={upsertTimetableItems}
@@ -169,7 +165,7 @@ const CalendarTrainList = ({
             />
           ) : (
             <PacedTrainItem
-              pacedTrain={timetableItem as PacedTrainWithDetails}
+              pacedTrain={timetableItem}
               isInSelection={selectedTimetableItemIds.includes(timetableItem.id)}
               selectPacedTrainToEdit={selectTimetableItemToEdit}
               handleSelectPacedTrain={handleSelectTimetableItem}

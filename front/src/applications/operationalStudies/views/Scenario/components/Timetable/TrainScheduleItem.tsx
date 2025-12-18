@@ -12,12 +12,12 @@ import type { SubCategory, TrainSchedule } from 'common/api/osrdEditoastApi';
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
 import isMainCategory from 'modules/rollingStock/helpers/category';
 import { deleteTrainSchedules } from 'modules/timetableItem/helpers/updateTimetableItemHelpers';
-import type { TrainScheduleWithDetails } from 'modules/timetableItem/types';
+import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
 import { setFailure, setSuccess } from 'reducers/main';
 import type {
+  TimetableItem,
   TimetableItemId,
   TrainId,
-  TrainScheduleId,
   TrainScheduleWithTrainId,
 } from 'reducers/osrdconf/types';
 import {
@@ -32,6 +32,7 @@ import { castErrorToFailure } from 'utils/error';
 import {
   formatEditoastIdToTrainScheduleId,
   extractEditoastIdFromTrainScheduleId,
+  isPacedTrainWithDetails,
 } from 'utils/trainId';
 
 import ArrivalTimeLoader from './ArrivalTimeLoader';
@@ -41,14 +42,14 @@ import { formatTrainDuration, getTrainCategoryClassName } from './utils';
 
 type TrainScheduleItemProps = {
   isInSelection: boolean;
-  train: TrainScheduleWithDetails;
+  train: TimetableItemWithDetails;
   isSelected: boolean;
   isModified?: boolean;
-  handleSelectTrain: (trainId: TrainScheduleId) => void;
-  upsertTrainSchedules: (trainSchedules: TrainScheduleWithTrainId[]) => void;
+  handleSelectTrain: (trainId: TimetableItemId) => void;
+  upsertTrainSchedules: (trainSchedules: TimetableItem[]) => void;
   removeTrains: (trainIds: TimetableItemId[]) => void;
   projectionPathIsUsed: boolean;
-  selectTrainToEdit: (train: TrainScheduleWithDetails) => void;
+  selectTrainToEdit: (train: TimetableItemWithDetails) => void;
   setSelectedTimetableItemIds: React.Dispatch<React.SetStateAction<TimetableItemId[]>>;
   subCategories: SubCategory[];
   isSelectMode: boolean;
@@ -83,6 +84,7 @@ const TrainScheduleItem = ({
   };
 
   const deleteTrain = async () => {
+    if (isPacedTrainWithDetails(train)) return;
     deleteTrainSchedules(dispatch, [train.id])
       .then(() => {
         removeTrains([train.id]);
@@ -103,6 +105,8 @@ const TrainScheduleItem = ({
   };
 
   const duplicateTrain = async () => {
+    if (isPacedTrainWithDetails(train)) return;
+
     // Static for now, will be dynamic when UI will be ready
     const trainName = `${train.name} (${t('timetable.copy')})`;
 
