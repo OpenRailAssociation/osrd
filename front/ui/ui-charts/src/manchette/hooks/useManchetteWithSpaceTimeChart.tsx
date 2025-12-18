@@ -2,11 +2,8 @@ import React, { Fragment, type ReactNode, useCallback, useMemo, useState } from 
 
 import { sortBy, clamp } from 'lodash';
 
-import {
-  getCrispLineCoordinate,
-  type SpaceScale,
-  type SpaceTimeChartProps,
-} from '../../spaceTimeChart';
+import { getCrispLineCoordinate } from '../../common/helpers/time';
+import { type SpaceScale, type SpaceTimeChartProps } from '../../spaceTimeChart';
 import {
   getSpaceToPixel,
   sideOffset,

@@ -1,4 +1,5 @@
 import { type SpaceTimeChartTheme } from './types';
+import { SECOND, MINUTE, HOUR } from '../../common/consts';
 
 export const BLACK = '#000000';
 export const BLUE = '#2170B9';
@@ -19,11 +20,6 @@ export const OCCUPANCY_WARNING = '#FFEABF';
 // Fonts:
 export const FONT_SIZE = 10;
 export const FONT = 'IBM Plex Sans, sans-serif';
-
-// Here are some helpers to write code about time in ms that is humanly readable:
-export const SECOND = 1000;
-export const MINUTE = 60 * SECOND;
-export const HOUR = 60 * MINUTE;
 
 export const DEFAULT_THEME: SpaceTimeChartTheme = {
   background: 'white',

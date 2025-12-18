@@ -1,14 +1,12 @@
 /* eslint-disable @typescript-eslint/no-use-before-define */
 import { clamp, inRange } from 'lodash';
 
-import type { Point } from '../../common/types';
+import type { PixelToTime, Point, TimeToPixel } from '../../common/types';
 import {
   type NormalizedScaleTree,
   type NormalizedScale,
   type SpaceScale,
   type SpaceToPixel,
-  type TimeToPixel,
-  type PixelToTime,
   type PixelToSpace,
   type PointToData,
   type DataToPoint,
@@ -164,24 +162,6 @@ export function getNormalizedScaleAtPixel(y: number, tree: NormalizedScaleTree):
     else node = node.right;
   }
   return node;
-}
-
-// The following functions handle various kinds of data translation from the pixel space to the
-// time/space referential:
-export function getTimeToPixel(
-  timeOrigin: number,
-  pixelOffset: number,
-  timeScale: number
-): TimeToPixel {
-  return (time: number) => pixelOffset + (time - timeOrigin) / timeScale;
-}
-
-export function getPixelToTime(
-  timeOrigin: number,
-  pixelOffset: number,
-  timeScale: number
-): PixelToTime {
-  return (timePixel: number) => (timePixel - pixelOffset) * timeScale + timeOrigin;
 }
 
 export function getSpaceToPixel(

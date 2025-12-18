@@ -3,11 +3,12 @@ import React, { useEffect, useMemo, useState } from 'react';
 import cx from 'classnames';
 
 import SpaceGraduations from './SpaceGraduations';
+import { getTimeToPixel, getPixelToTime } from '../../common/helpers/time';
+import { useCanvas } from '../../common/hooks/useCanvas';
+import { useSize } from '../../common/hooks/useSize';
 import { TimeCaptions } from '../../common/layers/TimeCaptions';
 import TimeGraduations from '../../common/layers/TimeGraduations';
 import type { PickingElement } from '../../common/types';
-import { useCanvas } from '../../common/hooks/useCanvas';
-import { useSize } from '../../common/hooks/useSize';
 import { useMouseInteractions } from '../hooks/useMouseInteractions';
 import { useMouseTracking } from '../hooks/useMouseTracking';
 import { DEFAULT_THEME } from '../lib/consts';
@@ -22,10 +23,8 @@ import {
   getDataToPoint,
   getFlatSteps,
   getPixelToSpace,
-  getPixelToTime,
   getPointToData,
   getSpaceToPixel,
-  getTimeToPixel,
   spaceScalesToBinaryTree,
 } from '../utils/scales';
 import { snapPosition } from '../utils/snapping';

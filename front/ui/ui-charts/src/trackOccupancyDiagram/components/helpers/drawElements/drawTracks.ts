@@ -1,6 +1,7 @@
 import { drawTrack } from './drawTrack';
+import { HOUR, MINUTE } from '../../../../common/consts';
 import type { SpaceTimeChartContextType } from '../../../../spaceTimeChart';
-import { GREY_50, HOUR, MINUTE } from '../../../../spaceTimeChart/lib/consts';
+import { GREY_50 } from '../../../../spaceTimeChart/lib/consts';
 import {
   TRACK_HEIGHT_CONTAINER,
   CANVAS_PADDING,

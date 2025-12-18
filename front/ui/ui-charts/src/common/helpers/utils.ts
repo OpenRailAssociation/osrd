@@ -1,3 +1,5 @@
+// ============= Canvas ==============
+
 /**
  * This function returns the picking layers scaling ratio. We basically take the min of the screen
  * pixels and the "HTML pixels", and divide it by two.
