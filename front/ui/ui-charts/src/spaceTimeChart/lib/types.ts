@@ -1,6 +1,13 @@
 import type { HTMLProps, ReactNode } from 'react';
 
-import type { BaseChartContextType, HoveredItem, PickingElement, Point } from '../../common/types';
+import type {
+  BaseChartContextType,
+  HoveredItem,
+  PickingElement,
+  PixelToTime,
+  Point,
+  TimeToPixel,
+} from '../../common/types';
 
 // GLOBAL UTILITY TYPES:
 export type Handler<P extends object> = (payload: P) => void;
@@ -81,9 +88,7 @@ export type Axis = 'x' | 'y';
 export type Direction = 'forward' | 'backward' | 'still';
 
 // DATA TRANSLATION TYPES:
-export type TimeToPixel = (time: number) => number;
 export type SpaceToPixel = (position: number, fromEnd?: boolean) => number;
-export type PixelToTime = (x: number) => number;
 export type PixelToSpace = (y: number) => number;
 export type PointToData = (point: Point) => DataPoint;
 export type DataToPoint = (data: DataPoint) => Point;

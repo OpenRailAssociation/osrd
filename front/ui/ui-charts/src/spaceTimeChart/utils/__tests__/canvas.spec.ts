@@ -1,6 +1,6 @@
 import { vi, describe, it, expect, afterEach } from 'vitest';
 
-import { computeVisibleTimeMarkers } from '../canvas';
+import { computeVisibleTimeMarkers } from '../../../common/helpers/time';
 
 describe('displayElementsBasedOnZoom', () => {
   afterEach(() => {

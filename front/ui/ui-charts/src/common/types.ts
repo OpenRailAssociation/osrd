@@ -42,3 +42,7 @@ export type CanvasContextType<T> = {
   unregister: DrawingFunctionHandler<T>;
   captureCanvases: () => Promise<Blob>;
 };
+
+// TIME TRANSLATION TYPES:
+export type TimeToPixel = (time: number) => number;
+export type PixelToTime = (x: number) => number;

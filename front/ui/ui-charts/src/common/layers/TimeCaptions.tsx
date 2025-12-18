@@ -1,15 +1,12 @@
 import { useCallback } from 'react';
 
+import { HOUR, MINUTE } from '../../common/consts';
 import { WHITE_ALPHA_75 } from '../../common/helpers/colors';
-import type { DrawingFunction } from '../../common/types';
+import { computeVisibleTimeMarkers, getCrispLineCoordinate } from '../../common/helpers/time';
 import { useDraw } from '../../common/hooks/useCanvas';
-import { HOUR, MINUTE } from '../../spaceTimeChart/lib/consts';
+import type { DrawingFunction } from '../../common/types';
 import { SpaceTimeChartCanvasContext } from '../../spaceTimeChart/lib/context';
 import type { SpaceTimeChartContextType } from '../../spaceTimeChart/lib/types';
-import {
-  computeVisibleTimeMarkers,
-  getCrispLineCoordinate,
-} from '../../spaceTimeChart/utils/canvas';
 
 const MARGIN = 100;
 const MINUTES_FORMATTER = (t: number) => `:${new Date(t).getMinutes().toString().padStart(2, '0')}`;
