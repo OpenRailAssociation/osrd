@@ -26,7 +26,6 @@ import {
   filterInvalidSteps,
   formatTrainsList,
   generateTrainSchedulesPayloads,
-  populateUicChecksumInTrainSchedules,
   updateTrainSchedules,
 } from './helpers/parseGraouTrains';
 import parseXML from './helpers/parseXML';
@@ -72,7 +71,6 @@ const ImportTimetableItemConfig = ({
       return;
     }
 
-    populateUicChecksumInTrainSchedules(result);
     const { filteredTrains, modifiedTrainsNumbers } = filterInvalidSteps(result);
     if (modifiedTrainsNumbers.length)
       dispatch(

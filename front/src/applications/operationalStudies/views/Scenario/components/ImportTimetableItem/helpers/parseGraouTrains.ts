@@ -7,9 +7,12 @@ import { Duration } from 'utils/duration';
 import findValidTrainNameKey from './findValidTrainNameKey';
 import rollingstockOpenData2OSRD from '../rollingstock_opendata2osrd.json';
 
-// The Graou API returns only part of the UIC for French stations: the last
-// digit is missing. It's a checksum which uses the Luhn algorithm.
-export const populateUicChecksumInStep = (uic: string): string => {
+/**
+ *  Populate the last digit of the UIC for French stations,
+ *  which is missing in schedules returned by the Graou api.
+ *  It's a checksum which uses the Luhn algorithm.
+ */
+const populateUicChecksum = (uic: string): string => {
   if (!uic.startsWith('87') || uic.length >= 8) {
     return uic;
   }
@@ -29,14 +32,6 @@ export const populateUicChecksumInStep = (uic: string): string => {
   checksum = (10 - (checksum % 10)) % 10;
 
   return uic + String(checksum);
-};
-
-export const populateUicChecksumInTrainSchedules = (trainSchedules: GraouTrainSchedule[]): void => {
-  for (const trainSchedule of trainSchedules) {
-    for (const step of trainSchedule.steps) {
-      step.uic = populateUicChecksumInStep(step.uic);
-    }
-  }
 };
 
 export function filterInvalidSteps(importedTrainSchedules: GraouTrainSchedule[]): {
@@ -106,7 +101,7 @@ function generateTrainSchedulePayload(train: GraouTrainSchedule): TrainSchedule 
     (acc, step) => {
       const stepId = uuidV4();
 
-      const uic = Number(step.uic);
+      const uic = Number(populateUicChecksum(step.uic));
       if (Number.isNaN(uic)) {
         throw new Error('Invalid UIC');
       }
