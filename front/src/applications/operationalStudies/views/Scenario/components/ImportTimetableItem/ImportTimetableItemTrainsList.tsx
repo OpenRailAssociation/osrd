@@ -28,10 +28,9 @@ import { useAppDispatch } from 'store';
 import { extractEditoastIdFromPacedTrainId } from 'utils/trainId';
 
 import generateTrainSchedulesPayloads from './generateTrainSchedulesPayloads';
-import findValidTrainNameKey from './helpers/findValidTrainNameKey';
 import { generateRoundTripsPayload } from './helpers/generatePayloads';
+import { formatTrainsList } from './helpers/parseGraouTrains';
 import postTimetableItems from './helpers/postTimetableItems';
-import rollingstockOpenData2OSRD from './rollingstock_opendata2osrd.json';
 
 function LoadingIfSearching({
   isLoading,
@@ -142,20 +141,7 @@ const ImportTimetableItemTrainsList = ({
     [pacedTrainsFromJsonData, trainSchedulesFromJsonData, subCategories]
   );
 
-  const formattedTrainsList = useMemo(
-    () =>
-      trainsList.map(({ rollingStock, ...train }) => {
-        if (!rollingStock) return { ...train, rollingStock: '' };
-
-        const validTrainNameKey = findValidTrainNameKey(rollingStock);
-        const validTrainName = validTrainNameKey
-          ? rollingstockOpenData2OSRD[validTrainNameKey]
-          : rollingStock;
-
-        return { ...train, rollingStock: validTrainName };
-      }),
-    [trainsList]
-  );
+  const formattedTrainsList = useMemo(() => formatTrainsList(trainsList), [trainsList]);
 
   const [postPacedTrainRoundTrips] =
     osrdEditoastApi.endpoints.postRoundTripsPacedTrains.useMutation();

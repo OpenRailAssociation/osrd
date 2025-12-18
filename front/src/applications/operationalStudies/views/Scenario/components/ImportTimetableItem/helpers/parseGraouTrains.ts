@@ -1,5 +1,8 @@
 import type { GraouTrainSchedule } from 'common/api/graouApi';
 
+import findValidTrainNameKey from './findValidTrainNameKey';
+import rollingstockOpenData2OSRD from '../rollingstock_opendata2osrd.json';
+
 export function filterInvalidSteps(importedTrainSchedules: GraouTrainSchedule[]): {
   filteredTrains: GraouTrainSchedule[];
   modifiedTrainsNumbers: string[];
@@ -45,3 +48,15 @@ export function updateTrainSchedules(importedTrainSchedules: GraouTrainSchedule[
 
   return trainsSchedules;
 }
+
+export const formatTrainsList = (trainsList: GraouTrainSchedule[]) =>
+  trainsList.map(({ rollingStock, ...train }) => {
+    if (!rollingStock) return { ...train, rollingStock: '' };
+
+    const validTrainNameKey = findValidTrainNameKey(rollingStock);
+    const validTrainName = validTrainNameKey
+      ? rollingstockOpenData2OSRD[validTrainNameKey]
+      : rollingStock;
+
+    return { ...train, rollingStock: validTrainName };
+  });
