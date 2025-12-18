@@ -10,7 +10,7 @@ import fr.sncf.osrd.path.interfaces.RouteRange
 import fr.sncf.osrd.path.interfaces.TrainPath
 import fr.sncf.osrd.path.interfaces.subRange
 import fr.sncf.osrd.path.legacy_objects.ElectricalProfileMapping
-import fr.sncf.osrd.pathfinding.Pathfinding.EdgeLocation
+import fr.sncf.osrd.pathfinding.BlockLocation
 import fr.sncf.osrd.railjson.schema.schedule.RJSTrainStop
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra.utils.getRouteBlocks
@@ -162,7 +162,7 @@ interface EdgeIdentifier {
 fun initInfraExplorer(
     rawInfra: RawInfra,
     blockInfra: BlockInfra,
-    location: EdgeLocation<BlockId>,
+    location: BlockLocation,
     steps: List<STDCMStep> = listOf(),
     constraints: List<PathfindingConstraint<Block>> = listOf(),
 ): Collection<InfraExplorer> {
@@ -374,7 +374,7 @@ private class InfraExplorerImpl(
      * Otherwise, it returns false and the instance is supposed to be dropped. `blockRoutes` is
      * updated to keep track of the route used for each block.
      */
-    fun extend(route: RouteId, firstLocation: EdgeLocation<BlockId>? = null): Boolean {
+    fun extend(route: RouteId, firstLocation: BlockLocation? = null): Boolean {
         val lastRouteEndOffset = getLookaheadEndOffset()
         val routeLength = rawInfra.getRouteLength(route)
         routes.add(

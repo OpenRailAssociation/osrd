@@ -5,7 +5,6 @@ import fr.sncf.osrd.graph.PathfindingConstraint
 import fr.sncf.osrd.graph.TargetsOnEdge
 import fr.sncf.osrd.pathfinding.Pathfinding.EdgeLocation
 import fr.sncf.osrd.sim_infra.api.Block
-import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.sim_infra.api.BlockInfra
 import fr.sncf.osrd.sim_infra.api.RawSignalingInfra
 import fr.sncf.osrd.stdcm.STDCMStep
@@ -58,7 +57,7 @@ class PathfindingGraph : Graph<PathfindingEdge, PathfindingEdge> {
 fun getStartLocations(
     rawInfra: RawSignalingInfra,
     blockInfra: BlockInfra,
-    waypoints: ArrayList<Collection<EdgeLocation<BlockId>>>,
+    waypoints: ArrayList<Collection<BlockLocation>>,
     constraints: List<PathfindingConstraint<Block>>,
 ): Collection<EdgeLocation<PathfindingEdge>> {
     val res = mutableListOf<EdgeLocation<PathfindingEdge>>()
@@ -83,7 +82,7 @@ fun getStartLocations(
 }
 
 fun getTargetsOnEdges(
-    waypoints: ArrayList<Collection<EdgeLocation<BlockId>>>
+    waypoints: ArrayList<Collection<BlockLocation>>
 ): List<TargetsOnEdge<PathfindingEdge>> {
     val targetsOnEdges = ArrayList<TargetsOnEdge<PathfindingEdge>>()
     for (i in 1 until waypoints.size) {

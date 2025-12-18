@@ -1,6 +1,6 @@
 package fr.sncf.osrd.stdcm.infra_exploration
 
-import fr.sncf.osrd.pathfinding.Pathfinding.EdgeLocation
+import fr.sncf.osrd.pathfinding.BlockLocation
 import fr.sncf.osrd.stdcm.STDCMStep
 import fr.sncf.osrd.utils.DummyInfra
 import fr.sncf.osrd.utils.units.Offset
@@ -24,16 +24,16 @@ class StepTrackerTests {
             )
         val steps =
             listOf(
-                STDCMStep(listOf(EdgeLocation(blocks[0], Offset(50.meters)))),
+                STDCMStep(listOf(BlockLocation(blocks[0], Offset(50.meters)))),
                 STDCMStep(
                     listOf(
-                        EdgeLocation(blocks[0], Offset(40.meters)),
-                        EdgeLocation(blocks[0], Offset(51.meters)),
+                        BlockLocation(blocks[0], Offset(40.meters)),
+                        BlockLocation(blocks[0], Offset(51.meters)),
                     )
                 ),
-                STDCMStep(listOf(EdgeLocation(blocks[1], Offset(0.meters)))),
-                STDCMStep(listOf(EdgeLocation(blocks[1], Offset(100.meters)))),
-                STDCMStep(listOf(EdgeLocation(blocks[2], Offset(100.meters)))),
+                STDCMStep(listOf(BlockLocation(blocks[1], Offset(0.meters)))),
+                STDCMStep(listOf(BlockLocation(blocks[1], Offset(100.meters)))),
+                STDCMStep(listOf(BlockLocation(blocks[2], Offset(100.meters)))),
             )
         val tracker = StepTracker(steps)
 
@@ -41,7 +41,11 @@ class StepTrackerTests {
         val expectedFirstSteps =
             listOf(
                 LocatedStep(Offset(25.meters), steps[0].locations.single(), steps[0]),
-                LocatedStep(Offset(26.meters), EdgeLocation(blocks[0], Offset(51.meters)), steps[1]),
+                LocatedStep(
+                    Offset(26.meters),
+                    BlockLocation(blocks[0], Offset(51.meters)),
+                    steps[1],
+                ),
             )
         assertEquals(expectedFirstSteps, firstSteps)
         val second = tracker.exploreBlockRange(blocks[1], Offset(0.meters), Offset(100.meters))

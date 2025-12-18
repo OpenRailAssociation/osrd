@@ -3,6 +3,7 @@ package fr.sncf.osrd.utils.graph
 import com.google.common.graph.NetworkBuilder
 import fr.sncf.osrd.graph.Graph
 import fr.sncf.osrd.graph.NetworkGraphAdapter
+import fr.sncf.osrd.pathfinding.BlockLocation
 import fr.sncf.osrd.pathfinding.Pathfinding
 import fr.sncf.osrd.pathfinding.Pathfinding.EdgeLocation
 import fr.sncf.osrd.pathfinding.Pathfinding.EdgeRange
@@ -13,7 +14,6 @@ import fr.sncf.osrd.pathfinding.getTargetsOnEdges
 import fr.sncf.osrd.reporting.exceptions.ErrorType
 import fr.sncf.osrd.reporting.exceptions.OSRDError
 import fr.sncf.osrd.sim_infra.api.Block
-import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.utils.CachedBlockMRSPBuilder
 import fr.sncf.osrd.utils.DummyInfra
 import fr.sncf.osrd.utils.graph.PathfindingTests.SimpleGraphBuilder.Edge
@@ -756,9 +756,9 @@ class PathfindingTests {
         val mrspBuilder =
             CachedBlockMRSPBuilder(infra.fullInfra().rawInfra, infra.fullInfra().blockInfra, null)
         val waypoints =
-            arrayListOf<Collection<EdgeLocation<BlockId>>>(
-                listOf(EdgeLocation(slow, Offset.zero()), EdgeLocation(fast, Offset.zero())),
-                listOf(EdgeLocation(secondBlock, Offset.zero())),
+            arrayListOf<Collection<BlockLocation>>(
+                listOf(BlockLocation(slow, Offset.zero()), BlockLocation(fast, Offset.zero())),
+                listOf(BlockLocation(secondBlock, Offset.zero())),
             )
         val res =
             Pathfinding(PathfindingGraph())

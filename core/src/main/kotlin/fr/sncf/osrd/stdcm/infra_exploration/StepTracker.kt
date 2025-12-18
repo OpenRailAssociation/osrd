@@ -1,7 +1,7 @@
 package fr.sncf.osrd.stdcm.infra_exploration
 
 import fr.sncf.osrd.path.interfaces.TrainPath
-import fr.sncf.osrd.pathfinding.Pathfinding.EdgeLocation
+import fr.sncf.osrd.pathfinding.BlockLocation
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.stdcm.STDCMStep
@@ -118,7 +118,7 @@ class StepTracker(
 
 data class LocatedStep(
     val travelledPathOffset: Offset<TrainPath>,
-    val location: EdgeLocation<BlockId>,
+    val location: BlockLocation,
     val originalStep: STDCMStep,
     val isPlanned: Boolean = true, // Set to false for overtakes (when implemented)
 ) {
