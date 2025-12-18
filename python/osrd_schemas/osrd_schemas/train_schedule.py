@@ -73,13 +73,13 @@ class AllowanceValue(RootModel):
 
 class AllowanceDistribution(str, Enum):
     """This class defines the two distributions of allowances that can be applied to the standalone simulation.
-    The first one is LINEAR, which means that an allowance is applied that will be the same for the whole simulation.
+    The first one is STANDARD (linear), which means that an allowance is applied that will be the same for the whole simulation.
     The second one is based on the MARECO algorithm, which consists in distributing the allowance as economically
     as possible in terms of energy consumption.
     """
 
     mareco = "MARECO"
-    linear = "LINEAR"
+    standard = "STANDARD"  # linear
 
 
 class RangeAllowance(BaseModel):

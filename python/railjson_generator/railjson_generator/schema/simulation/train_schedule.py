@@ -48,7 +48,7 @@ class TrainSchedule:
         self.allowances.append(allowance)
 
     def add_standard_single_value_allowance(
-        self, value_type: str, value: float, distribution: str = "LINEAR"
+        self, value_type: str, value: float, distribution: str = "STANDARD"
     ):
         """Add a standard allowance with a single value. For more information on allowances, see
         the documentation of the Allowance class in osrd_schemas."""
