@@ -360,9 +360,12 @@ mod mock_driver {
                 Either::Right(identity) => map.get(&identity).copied(),
             };
             match user_id {
-                Some(user_id) => new_identities.iter().for_each(|new_identity| {
-                    map.insert(new_identity.to_string(), user_id);
-                }),
+                Some(user_id) => map.extend(
+                    new_identities
+                        .iter()
+                        .map(ToString::to_string)
+                        .zip(std::iter::repeat(user_id)),
+                ),
                 None => return Ok(false),
             };
             Ok(true)
