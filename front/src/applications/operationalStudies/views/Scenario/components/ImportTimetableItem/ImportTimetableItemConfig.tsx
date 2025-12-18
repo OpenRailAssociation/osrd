@@ -23,7 +23,11 @@ import { useAppDispatch } from 'store';
 import { formatLocalDate } from 'utils/date';
 import { castErrorToFailure } from 'utils/error';
 
-import { filterInvalidSteps, updateTrainSchedules } from './helpers/parseGraouTrains';
+import {
+  filterInvalidSteps,
+  populateUicChecksumInTrainSchedules,
+  updateTrainSchedules,
+} from './helpers/parseGraouTrains';
 import parseXML from './helpers/parseXML';
 import StationSelector from './ImportTimetableItemStationSelector';
 import {
@@ -70,6 +74,7 @@ const ImportTimetableItemConfig = ({
       return;
     }
 
+    populateUicChecksumInTrainSchedules(result);
     const { filteredTrains, modifiedTrainsNumbers } = filterInvalidSteps(result);
     if (modifiedTrainsNumbers.length)
       dispatch(

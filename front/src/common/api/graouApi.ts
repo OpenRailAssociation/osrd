@@ -44,30 +44,6 @@ export type GraouTrainScheduleConfig = {
 
 const GRAOU_URL = 'https://graou.info';
 
-// The Graou API returns only part of the UIC for French stations: the last
-// digit is missing. It's a checksum which uses the Luhn algorithm.
-export const populateUicChecksum = (uic: string): string => {
-  if (!uic.startsWith('87') || uic.length >= 8) {
-    return uic;
-  }
-
-  const rawCi = uic.substring(2);
-  let checksum = 0;
-  for (let i = 0; i < rawCi.length; i++) {
-    const digit = Number(rawCi[i]);
-    if ((i + 1) % 2 === (rawCi.length + 1) % 2) {
-      checksum += digit;
-    } else if (digit > 4) {
-      checksum += 2 * digit - 9;
-    } else {
-      checksum += 2 * digit;
-    }
-  }
-  checksum = (10 - (checksum % 10)) % 10;
-
-  return uic + String(checksum);
-};
-
 export const getGraouTrainSchedules = async (config: GraouTrainScheduleConfig) => {
   const params = new URLSearchParams({
     q: 'trains',
@@ -97,11 +73,6 @@ export const getGraouTrainSchedules = async (config: GraouTrainScheduleConfig) =
   }
 
   const trainSchedules = rawTrainSchedules as GraouTrainSchedule[];
-  for (const trainSchedule of trainSchedules) {
-    for (const step of trainSchedule.steps) {
-      step.uic = populateUicChecksum(step.uic);
-    }
-  }
 
   return trainSchedules;
 };
