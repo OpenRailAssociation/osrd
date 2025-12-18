@@ -80,17 +80,16 @@ export function updateTrainSchedules(importedTrainSchedules: GraouTrainSchedule[
   return trainsSchedules;
 }
 
-export const formatTrainsList = (trainsList: GraouTrainSchedule[]) =>
-  trainsList.map(({ rollingStock, ...train }) => {
-    if (!rollingStock) return { ...train, rollingStock: '' };
+/**
+ * Find the osrd rolling stock matching the graou open data rolling stock name.
+ * If not found, return the initial name.
+ */
+const matchOpenDataRollingStock = (rollingStock: string | null) => {
+  if (!rollingStock) return '';
 
-    const validTrainNameKey = findValidTrainNameKey(rollingStock);
-    const validTrainName = validTrainNameKey
-      ? rollingstockOpenData2OSRD[validTrainNameKey]
-      : rollingStock;
-
-    return { ...train, rollingStock: validTrainName };
-  });
+  const validRollingStockKey = findValidTrainNameKey(rollingStock);
+  return validRollingStockKey ? rollingstockOpenData2OSRD[validRollingStockKey] : rollingStock;
+};
 
 function generateTrainSchedulePayload(train: GraouTrainSchedule): TrainSchedule | null {
   const departureTime = new Date(train.departureTime);
@@ -131,7 +130,7 @@ function generateTrainSchedulePayload(train: GraouTrainSchedule): TrainSchedule 
     path,
     schedule,
     train_name: train.trainNumber,
-    rolling_stock_name: train.rollingStock || '',
+    rolling_stock_name: matchOpenDataRollingStock(train.rollingStock),
     constraint_distribution: 'MARECO',
     start_time: departureTime.toISOString(),
   };

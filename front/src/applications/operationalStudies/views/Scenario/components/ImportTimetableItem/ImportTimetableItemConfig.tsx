@@ -24,7 +24,6 @@ import { castErrorToFailure } from 'utils/error';
 
 import {
   filterInvalidSteps,
-  formatTrainsList,
   generateTrainSchedulesPayloads,
   updateTrainSchedules,
 } from './helpers/parseGraouTrains';
@@ -84,8 +83,7 @@ const ImportTimetableItemConfig = ({
 
     if (filteredTrains && !isEmpty(filteredTrains)) {
       const updatedSchedules = updateTrainSchedules(filteredTrains);
-      const formatedTrainsList = formatTrainsList(updatedSchedules);
-      const trainSchedulesPayloads = generateTrainSchedulesPayloads(formatedTrainsList);
+      const trainSchedulesPayloads = generateTrainSchedulesPayloads(updatedSchedules);
 
       setTrainsJsonData({ train_schedules: trainSchedulesPayloads, paced_trains: [] });
     }
