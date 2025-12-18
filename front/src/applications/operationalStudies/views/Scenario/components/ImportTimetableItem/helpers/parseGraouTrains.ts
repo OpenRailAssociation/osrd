@@ -1,4 +1,8 @@
+import { v4 as uuidV4 } from 'uuid';
+
 import type { GraouTrainSchedule } from 'common/api/graouApi';
+import type { TrainSchedule } from 'common/api/osrdEditoastApi';
+import { Duration } from 'utils/duration';
 
 import findValidTrainNameKey from './findValidTrainNameKey';
 import rollingstockOpenData2OSRD from '../rollingstock_opendata2osrd.json';
@@ -60,3 +64,54 @@ export const formatTrainsList = (trainsList: GraouTrainSchedule[]) =>
 
     return { ...train, rollingStock: validTrainName };
   });
+
+function generateTrainSchedulePayload(train: GraouTrainSchedule): TrainSchedule | null {
+  const departureTime = new Date(train.departureTime);
+  const { path, schedule } = train.steps.reduce<{
+    path: TrainSchedule['path'];
+    schedule: NonNullable<TrainSchedule['schedule']>;
+  }>(
+    (acc, step) => {
+      const stepId = uuidV4();
+
+      const uic = Number(step.uic);
+      if (Number.isNaN(uic)) {
+        throw new Error('Invalid UIC');
+      }
+
+      acc.path.push({
+        id: stepId,
+        location: {
+          operational_point: { uic, secondary_code: step.chCode, type: 'uic' },
+        },
+      });
+
+      if (acc.path.length > 1) {
+        const arrivalTime = new Date(step.arrivalTime);
+
+        acc.schedule.push({
+          at: stepId,
+          arrival: Duration.subtractDate(arrivalTime, departureTime).toISOString(),
+          stop_for: step.duration ? `PT${step.duration}S` : undefined,
+        });
+      }
+
+      return acc;
+    },
+    { path: [], schedule: [] }
+  );
+  return {
+    path,
+    schedule,
+    train_name: train.trainNumber,
+    rolling_stock_name: train.rollingStock || '',
+    constraint_distribution: 'MARECO',
+    start_time: departureTime.toISOString(),
+  };
+}
+
+export function generateTrainSchedulesPayloads(trains: GraouTrainSchedule[]): TrainSchedule[] {
+  return trains
+    .map((train) => generateTrainSchedulePayload(train))
+    .filter((payload) => payload !== null);
+}

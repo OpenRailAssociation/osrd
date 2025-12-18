@@ -27,9 +27,8 @@ import type { PacedTrainWithPacedTrainId, TimetableItem } from 'reducers/osrdcon
 import { useAppDispatch } from 'store';
 import { extractEditoastIdFromPacedTrainId } from 'utils/trainId';
 
-import generateTrainSchedulesPayloads from './generateTrainSchedulesPayloads';
 import { generateRoundTripsPayload } from './helpers/generatePayloads';
-import { formatTrainsList } from './helpers/parseGraouTrains';
+import { formatTrainsList, generateTrainSchedulesPayloads } from './helpers/parseGraouTrains';
 import postTimetableItems from './helpers/postTimetableItems';
 
 function LoadingIfSearching({
