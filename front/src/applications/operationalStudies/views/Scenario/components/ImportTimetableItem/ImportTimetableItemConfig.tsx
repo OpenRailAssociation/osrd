@@ -8,7 +8,6 @@ import { useSelector } from 'react-redux';
 import type { TimetableJsonPayload } from 'applications/operationalStudies/types';
 import {
   type GraouStation,
-  type GraouTrainSchedule,
   type GraouTrainScheduleConfig,
   getGraouTrainSchedules,
 } from 'common/api/graouApi';
@@ -25,6 +24,8 @@ import { castErrorToFailure } from 'utils/error';
 
 import {
   filterInvalidSteps,
+  formatTrainsList,
+  generateTrainSchedulesPayloads,
   populateUicChecksumInTrainSchedules,
   updateTrainSchedules,
 } from './helpers/parseGraouTrains';
@@ -36,13 +37,11 @@ import {
 } from '../ManageTimetableItem/helpers/handleParseFiles';
 
 type ImportTimetableItemConfigProps = {
-  setTrainsList: (trainsList: GraouTrainSchedule[]) => void;
   setIsLoading: (isLoading: boolean) => void;
   setTrainsJsonData: (trainsJsonData: TimetableJsonPayload) => void;
 };
 
 const ImportTimetableItemConfig = ({
-  setTrainsList,
   setIsLoading,
   setTrainsJsonData,
 }: ImportTimetableItemConfigProps) => {
@@ -61,7 +60,6 @@ const ImportTimetableItemConfig = ({
     osrdRailwayManagerApi.endpoints.postTransformTimetable.useMutation();
 
   async function getTrainsFromOpenData(config: GraouTrainScheduleConfig) {
-    setTrainsList([]);
     setIsLoading(true);
     setTrainsJsonData({ train_schedules: [], paced_trains: [] });
 
@@ -85,8 +83,13 @@ const ImportTimetableItemConfig = ({
           }),
         })
       );
+
     if (filteredTrains && !isEmpty(filteredTrains)) {
-      setTrainsList(updateTrainSchedules(filteredTrains));
+      const updatedSchedules = updateTrainSchedules(filteredTrains);
+      const formatedTrainsList = formatTrainsList(updatedSchedules);
+      const trainSchedulesPayloads = generateTrainSchedulesPayloads(formatedTrainsList);
+
+      setTrainsJsonData({ train_schedules: trainSchedulesPayloads, paced_trains: [] });
     }
 
     setIsLoading(false);
@@ -162,7 +165,6 @@ const ImportTimetableItemConfig = ({
 
   const importFile = async (file: File) => {
     closeModal();
-    setTrainsList([]);
 
     let fileContent: string;
     try {

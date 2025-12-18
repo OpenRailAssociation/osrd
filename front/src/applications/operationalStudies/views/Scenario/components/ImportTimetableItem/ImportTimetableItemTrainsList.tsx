@@ -9,7 +9,6 @@ import type {
   RoundTripsFromJson,
   TimetableJsonPayload,
 } from 'applications/operationalStudies/types';
-import type { GraouTrainSchedule } from 'common/api/graouApi';
 import {
   osrdEditoastApi,
   type MacroNodeForm,
@@ -28,7 +27,6 @@ import { useAppDispatch } from 'store';
 import { extractEditoastIdFromPacedTrainId } from 'utils/trainId';
 
 import { generateRoundTripsPayload } from './helpers/generatePayloads';
-import { formatTrainsList, generateTrainSchedulesPayloads } from './helpers/parseGraouTrains';
 import postTimetableItems from './helpers/postTimetableItems';
 
 function LoadingIfSearching({
@@ -46,14 +44,12 @@ function LoadingIfSearching({
 }
 
 type ImportTimetableItemTrainsListProps = {
-  trainsList: GraouTrainSchedule[];
   isLoading: boolean;
   trainsJsonData: TimetableJsonPayload;
   upsertTimetableItems: (timetableItems: TimetableItem[]) => void;
 };
 
 const ImportTimetableItemTrainsList = ({
-  trainsList,
   isLoading,
   trainsJsonData,
   upsertTimetableItems,
@@ -62,8 +58,8 @@ const ImportTimetableItemTrainsList = ({
   const dispatch = useAppDispatch();
   const { scenario } = useScenarioContext();
   const {
-    train_schedules: trainSchedulesFromJsonData,
-    paced_trains: pacedTrainsFromJsonData,
+    train_schedules: parsedTrainSchedules,
+    paced_trains: parsedPacedTrains,
     macro_nodes: macroNodes,
     macro_notes: macroNotes,
     round_trips: roundTripsFromJsonData,
@@ -121,26 +117,24 @@ const ImportTimetableItemTrainsList = ({
     return [...labels, unrecognizedCategoryLabel];
   };
 
-  const { pacedTrainsJsonData, trainSchedulesJsonData } = useMemo<{
-    pacedTrainsJsonData: PacedTrain[];
-    trainSchedulesJsonData: TrainSchedule[];
+  const { pacedTrainsPayload, trainSchedulesPayload } = useMemo<{
+    pacedTrainsPayload: PacedTrain[];
+    trainSchedulesPayload: TrainSchedule[];
   }>(
     () => ({
-      pacedTrainsJsonData: pacedTrainsFromJsonData.map((pacedTrain) => ({
+      pacedTrainsPayload: parsedPacedTrains.map((pacedTrain) => ({
         ...pacedTrain,
         category: checkCategory(pacedTrain.category),
         labels: buildLabels(pacedTrain.labels, pacedTrain.category),
       })),
-      trainSchedulesJsonData: trainSchedulesFromJsonData.map((trainSchedule) => ({
+      trainSchedulesPayload: parsedTrainSchedules.map((trainSchedule) => ({
         ...trainSchedule,
         category: checkCategory(trainSchedule.category),
         labels: buildLabels(trainSchedule.labels, trainSchedule.category),
       })),
     }),
-    [pacedTrainsFromJsonData, trainSchedulesFromJsonData, subCategories]
+    [parsedPacedTrains, parsedTrainSchedules, subCategories]
   );
-
-  const formattedTrainsList = useMemo(() => formatTrainsList(trainsList), [trainsList]);
 
   const [postPacedTrainRoundTrips] =
     osrdEditoastApi.endpoints.postRoundTripsPacedTrains.useMutation();
@@ -197,22 +191,9 @@ const ImportTimetableItemTrainsList = ({
 
   async function generateTimetableItem() {
     try {
-      let trainSchedulePayloads: TrainSchedule[] = [];
-      let pacedTrainPayloads: PacedTrain[] = [];
-
-      // JSON import
-      if (trainSchedulesJsonData.length > 0 || pacedTrainsJsonData.length > 0) {
-        trainSchedulePayloads = trainSchedulesJsonData;
-        pacedTrainPayloads = pacedTrainsJsonData;
-
-        // Open data import (only handle trainSchedules)
-      } else {
-        trainSchedulePayloads = generateTrainSchedulesPayloads(formattedTrainsList);
-      }
-
       const timetableItems = await postTimetableItems(
         timetableId,
-        [...trainSchedulePayloads, ...pacedTrainPayloads],
+        [...trainSchedulesPayload, ...pacedTrainsPayload],
         dispatch
       );
 
@@ -236,8 +217,7 @@ const ImportTimetableItemTrainsList = ({
         setSuccess({
           title: t('success'),
           text: t('status.successfulImport', {
-            trainsList,
-            count: trainsList.length || [...trainSchedulesJsonData, ...pacedTrainsJsonData].length,
+            count: [...trainSchedulesPayload, ...pacedTrainsPayload].length,
           }),
         })
       );
@@ -246,8 +226,7 @@ const ImportTimetableItemTrainsList = ({
         setFailure({
           name: t('failure'),
           message: t('status.invalidTimetableItems', {
-            trainsList,
-            count: trainsList.length || [...trainSchedulesJsonData, ...pacedTrainsJsonData].length,
+            count: [...trainSchedulesPayload, ...pacedTrainsPayload].length,
           }),
         })
       );
@@ -256,8 +235,8 @@ const ImportTimetableItemTrainsList = ({
   }
 
   const computedItemImportLabel = () => {
-    const trainScheduleCount = trainsList.length || trainSchedulesJsonData.length;
-    const pacedTrainCount = pacedTrainsJsonData.length;
+    const trainScheduleCount = trainSchedulesPayload.length;
+    const pacedTrainCount = pacedTrainsPayload.length;
 
     if (trainScheduleCount > 0 && pacedTrainCount > 0) {
       return t('trainSchedulesAndPacedTrainsFound', { trainScheduleCount, pacedTrainCount });
@@ -268,9 +247,7 @@ const ImportTimetableItemTrainsList = ({
     return t('pacedTrainsFound', { count: pacedTrainCount });
   };
 
-  return trainsList.length > 0 ||
-    trainSchedulesJsonData.length > 0 ||
-    pacedTrainsJsonData.length > 0 ? (
+  return trainSchedulesPayload.length > 0 || pacedTrainsPayload.length > 0 ? (
     <div className="container-fluid mb-2">
       <div className="osrd-config-item-container import-timetable-item-trainlist">
         <div className="import-timetable-item-trainlist-launchbar">
