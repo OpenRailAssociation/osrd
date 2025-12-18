@@ -28,7 +28,7 @@ SPEED_0 = kph2ms(0)
 def _update_simulation_with_mareco_allowances(
     editoast_url, train_schedule_id, session: Session
 ):
-    response = session.get(editoast_url + f"/train_schedule/{train_schedule_id}/")
+    response = session.get(editoast_url + f"/paced_train/{train_schedule_id}/")
     assert response.status_code == 200
     train_schedule = response.json()
     train_schedule["margins"] = {
@@ -37,13 +37,13 @@ def _update_simulation_with_mareco_allowances(
     }
     train_schedule["constraint_distribution"] = "MARECO"
     r = session.put(
-        editoast_url + f"/train_schedule/{train_schedule_id}", json=train_schedule
+        editoast_url + f"/paced_train/{train_schedule_id}", json=train_schedule
     )
     if r.status_code // 100 != 2:
         raise RuntimeError(
             f"Schedule error {r.status_code}: {r.content}, payload={json.dumps(train_schedule)}"
         )
-    r = session.get(editoast_url + f"/train_schedule/{train_schedule_id}/")
+    r = session.get(editoast_url + f"/paced_train/{train_schedule_id}/")
     body = r.json()
     assert body["constraint_distribution"] == "MARECO"
     return body
@@ -56,13 +56,13 @@ def test_get_and_update_schedule_result(
 ):
     schedule = west_to_south_east_simulation[0]
     schedule_id = schedule["id"]
-    response = session.get(f"{EDITOAST_URL}train_schedule/{schedule_id}/")
+    response = session.get(f"{EDITOAST_URL}paced_train/{schedule_id}/")
     if response.status_code // 100 != 2:
         raise RuntimeError(
             f"Schedule error {response.status_code}: {response.content}, id={schedule_id}"
         )
     response = session.get(
-        f"{EDITOAST_URL}train_schedule/{schedule_id}/simulation?infra_id={small_infra.id}"
+        f"{EDITOAST_URL}paced_train/{schedule_id}/simulation?infra_id={small_infra.id}"
     )
     simulation_report = response.json()
     assert (
@@ -73,14 +73,14 @@ def test_get_and_update_schedule_result(
     response = _update_simulation_with_mareco_allowances(
         EDITOAST_URL, schedule_id, session
     )
-    response = session.get(f"{EDITOAST_URL}train_schedule/{schedule_id}/")
+    response = session.get(f"{EDITOAST_URL}paced_train/{schedule_id}/")
     if response.status_code // 100 != 2:
         raise RuntimeError(
             f"Schedule error {response.status_code}: {response.content}, id={schedule_id}"
         )
 
     response = session.get(
-        f"{EDITOAST_URL}train_schedule/{schedule_id}/simulation?infra_id={small_infra.id}"
+        f"{EDITOAST_URL}paced_train/{schedule_id}/simulation?infra_id={small_infra.id}"
     )
     simulation_report = response.json()
     assert (
@@ -98,17 +98,17 @@ def test_editoast_delete(
 ):
     trains = west_to_south_east_simulations[0:2]
     trains_ids = [train["id"] for train in trains]
-    r = session.delete(f"{EDITOAST_URL}train_schedule/", json={"ids": trains_ids})
+    r = session.delete(f"{EDITOAST_URL}paced_train/", json={"ids": trains_ids})
     if r.status_code // 100 != 2:
         raise RuntimeError(
             f"Schedule error {r.status_code}: {r.content}, payload={json.dumps(trains_ids)}"
         )
     r = session.get(
-        f"{EDITOAST_URL}train_schedule/{trains_ids[0]}/",
+        f"{EDITOAST_URL}paced_train/{trains_ids[0]}/",
     )
     assert r.status_code == 404
     r = session.get(
-        f"{EDITOAST_URL}train_schedule/{trains_ids[1]}",
+        f"{EDITOAST_URL}paced_train/{trains_ids[1]}",
     )
     assert r.status_code == 404
 
@@ -121,7 +121,7 @@ def test_etcs_schedule_stop_brakes_result_never_reach_mrsp(
     )
     etcs_rolling_stock_name = rolling_stock_response.json()["name"]
     ts_response = session.post(
-        f"{EDITOAST_URL}timetable/{etcs_scenario.timetable}/train_schedules/",
+        f"{EDITOAST_URL}timetable/{etcs_scenario.timetable}/paced_trains/",
         json=[
             {
                 "train_name": "nearby EoAs + brake uphill/downhill grade + no LoA",
@@ -156,10 +156,10 @@ def test_etcs_schedule_stop_brakes_result_never_reach_mrsp(
 
     schedule = ts_response.json()[0]
     schedule_id = schedule["id"]
-    ts_id_response = session.get(f"{EDITOAST_URL}train_schedule/{schedule_id}/")
+    ts_id_response = session.get(f"{EDITOAST_URL}paced_train/{schedule_id}/")
     ts_id_response.raise_for_status()
     simu_response = session.get(
-        f"{EDITOAST_URL}train_schedule/{schedule_id}/simulation?infra_id={etcs_scenario.infra}"
+        f"{EDITOAST_URL}paced_train/{schedule_id}/simulation?infra_id={etcs_scenario.infra}"
     )
     simulation_final_output = simu_response.json()["final_output"]
 
@@ -287,7 +287,7 @@ def test_etcs_schedule_result_stop_brake_from_mrsp(
     )
     etcs_rolling_stock_name = rolling_stock_response.json()["name"]
     ts_response = session.post(
-        f"{EDITOAST_URL}timetable/{etcs_scenario.timetable}/train_schedules/",
+        f"{EDITOAST_URL}timetable/{etcs_scenario.timetable}/paced_trains/",
         json=[
             {
                 "train_name": "brake from MRSP: max_speed + after slowdown of the MRSP",
@@ -318,10 +318,10 @@ def test_etcs_schedule_result_stop_brake_from_mrsp(
 
     schedule = ts_response.json()[0]
     schedule_id = schedule["id"]
-    ts_id_response = session.get(f"{EDITOAST_URL}train_schedule/{schedule_id}/")
+    ts_id_response = session.get(f"{EDITOAST_URL}paced_train/{schedule_id}/")
     ts_id_response.raise_for_status()
     simu_response = session.get(
-        f"{EDITOAST_URL}train_schedule/{schedule_id}/simulation?infra_id={etcs_scenario.infra}"
+        f"{EDITOAST_URL}paced_train/{schedule_id}/simulation?infra_id={etcs_scenario.infra}"
     )
     simulation_final_output = simu_response.json()["final_output"]
 
@@ -402,7 +402,7 @@ def test_etcs_schedule_result_stop_with_eoa_and_svl_at_same_location(
     )
     etcs_rolling_stock_name = rolling_stock_response.json()["name"]
     ts_response = session.post(
-        f"{EDITOAST_URL}timetable/{etcs_scenario.timetable}/train_schedules/",
+        f"{EDITOAST_URL}timetable/{etcs_scenario.timetable}/paced_trains/",
         json=[
             {
                 "train_name": "brake from MRSP: max_speed + EoA and SvL at same location",
@@ -431,10 +431,10 @@ def test_etcs_schedule_result_stop_with_eoa_and_svl_at_same_location(
 
     schedule = ts_response.json()[0]
     schedule_id = schedule["id"]
-    ts_id_response = session.get(f"{EDITOAST_URL}train_schedule/{schedule_id}/")
+    ts_id_response = session.get(f"{EDITOAST_URL}paced_train/{schedule_id}/")
     ts_id_response.raise_for_status()
     simu_response = session.get(
-        f"{EDITOAST_URL}train_schedule/{schedule_id}/simulation?infra_id={etcs_scenario.infra}"
+        f"{EDITOAST_URL}paced_train/{schedule_id}/simulation?infra_id={etcs_scenario.infra}"
     )
     simulation_final_output = simu_response.json()["final_output"]
 
@@ -519,7 +519,7 @@ def test_etcs_schedule_result_stop_with_eoa_and_svl_at_different_locations(
     )
     etcs_rolling_stock_name = rolling_stock_response.json()["name"]
     ts_response = session.post(
-        f"{EDITOAST_URL}timetable/{etcs_scenario.timetable}/train_schedules/",
+        f"{EDITOAST_URL}timetable/{etcs_scenario.timetable}/paced_trains/",
         json=[
             {
                 "train_name": "brake from MRSP: max_speed + EoA and SvL 100m after EoA",
@@ -552,10 +552,10 @@ def test_etcs_schedule_result_stop_with_eoa_and_svl_at_different_locations(
 
     schedule = ts_response.json()[0]
     schedule_id = schedule["id"]
-    ts_id_response = session.get(f"{EDITOAST_URL}train_schedule/{schedule_id}/")
+    ts_id_response = session.get(f"{EDITOAST_URL}paced_train/{schedule_id}/")
     ts_id_response.raise_for_status()
     simu_response = session.get(
-        f"{EDITOAST_URL}train_schedule/{schedule_id}/simulation?infra_id={etcs_scenario.infra}"
+        f"{EDITOAST_URL}paced_train/{schedule_id}/simulation?infra_id={etcs_scenario.infra}"
     )
     simulation_final_output = simu_response.json()["final_output"]
 
@@ -658,7 +658,7 @@ def test_etcs_schedule_result_stop_on_open_signal(
     etcs_rolling_stock_name = rolling_stock_response.json()["name"]
 
     ts_response = session.post(
-        f"{EDITOAST_URL}timetable/{etcs_scenario.timetable}/train_schedules/",
+        f"{EDITOAST_URL}timetable/{etcs_scenario.timetable}/paced_trains/",
         json=[
             {
                 "train_name": (
@@ -695,10 +695,10 @@ def test_etcs_schedule_result_stop_on_open_signal(
 
     schedule = ts_response.json()[0]
     schedule_id = schedule["id"]
-    ts_id_response = session.get(f"{EDITOAST_URL}train_schedule/{schedule_id}/")
+    ts_id_response = session.get(f"{EDITOAST_URL}paced_train/{schedule_id}/")
     ts_id_response.raise_for_status()
     simu_response = session.get(
-        f"{EDITOAST_URL}train_schedule/{schedule_id}/simulation?infra_id={etcs_scenario.infra}"
+        f"{EDITOAST_URL}paced_train/{schedule_id}/simulation?infra_id={etcs_scenario.infra}"
     )
     simulation_final_output = simu_response.json()["final_output"]
 
@@ -789,7 +789,7 @@ def test_etcs_schedule_result_slowdowns(
     )
     etcs_rolling_stock_name = rolling_stock_response.json()["name"]
     ts_response = session.post(
-        f"{EDITOAST_URL}timetable/{etcs_scenario.timetable}/train_schedules/",
+        f"{EDITOAST_URL}timetable/{etcs_scenario.timetable}/paced_trains/",
         json=[
             {
                 "train_name": "slowdowns to respect MRSP and ETCS",
@@ -820,10 +820,10 @@ def test_etcs_schedule_result_slowdowns(
 
     schedule = ts_response.json()[0]
     schedule_id = schedule["id"]
-    ts_id_response = session.get(f"{EDITOAST_URL}train_schedule/{schedule_id}/")
+    ts_id_response = session.get(f"{EDITOAST_URL}paced_train/{schedule_id}/")
     ts_id_response.raise_for_status()
     simu_response = session.get(
-        f"{EDITOAST_URL}train_schedule/{schedule_id}/simulation?infra_id={etcs_scenario.infra}"
+        f"{EDITOAST_URL}paced_train/{schedule_id}/simulation?infra_id={etcs_scenario.infra}"
     )
     simulation_final_output = simu_response.json()["final_output"]
 
@@ -988,7 +988,7 @@ def test_etcs_schedule_result_slowdowns_with_stop(
     )
     etcs_rolling_stock_name = rolling_stock_response.json()["name"]
     ts_response = session.post(
-        f"{EDITOAST_URL}timetable/{etcs_scenario.timetable}/train_schedules/",
+        f"{EDITOAST_URL}timetable/{etcs_scenario.timetable}/paced_trains/",
         json=[
             {
                 "train_name": "slowdowns to respect MRSP and ETCS with intermediate stop",
@@ -1017,10 +1017,10 @@ def test_etcs_schedule_result_slowdowns_with_stop(
 
     schedule = ts_response.json()[0]
     schedule_id = schedule["id"]
-    ts_id_response = session.get(f"{EDITOAST_URL}train_schedule/{schedule_id}/")
+    ts_id_response = session.get(f"{EDITOAST_URL}paced_train/{schedule_id}/")
     ts_id_response.raise_for_status()
     simu_response = session.get(
-        f"{EDITOAST_URL}train_schedule/{schedule_id}/simulation?infra_id={etcs_scenario.infra}"
+        f"{EDITOAST_URL}paced_train/{schedule_id}/simulation?infra_id={etcs_scenario.infra}"
     )
     simulation_final_output = simu_response.json()["final_output"]
 
@@ -1106,7 +1106,7 @@ def test_etcs_spacing_req(
     )
     etcs_rolling_stock_name = rolling_stock_response.json()["name"]
     ts_response = session.post(
-        f"{EDITOAST_URL}timetable/{etcs_scenario.timetable}/train_schedules/",
+        f"{EDITOAST_URL}timetable/{etcs_scenario.timetable}/paced_trains/",
         json=[
             {
                 "train_name": "slowdowns to respect MRSP and ETCS with intermediate stop",
@@ -1135,10 +1135,10 @@ def test_etcs_spacing_req(
 
     schedule = ts_response.json()[0]
     schedule_id = schedule["id"]
-    ts_id_response = session.get(f"{EDITOAST_URL}train_schedule/{schedule_id}/")
+    ts_id_response = session.get(f"{EDITOAST_URL}paced_train/{schedule_id}/")
     ts_id_response.raise_for_status()
     simu_response = session.get(
-        f"{EDITOAST_URL}train_schedule/{schedule_id}/simulation?infra_id={etcs_scenario.infra}"
+        f"{EDITOAST_URL}paced_train/{schedule_id}/simulation?infra_id={etcs_scenario.infra}"
     )
     simulation_final_output = simu_response.json()["final_output"]
 
@@ -1214,7 +1214,7 @@ def test_etcs_routing_req(
     )
     etcs_rolling_stock_name = rolling_stock_response.json()["name"]
     ts_response = session.post(
-        f"{EDITOAST_URL}timetable/{etcs_scenario.timetable}/train_schedules/",
+        f"{EDITOAST_URL}timetable/{etcs_scenario.timetable}/paced_trains/",
         json=[
             {
                 "train_name": "slowdowns to respect MRSP and ETCS with intermediate stop",
@@ -1243,10 +1243,10 @@ def test_etcs_routing_req(
 
     schedule = ts_response.json()[0]
     schedule_id = schedule["id"]
-    ts_id_response = session.get(f"{EDITOAST_URL}train_schedule/{schedule_id}/")
+    ts_id_response = session.get(f"{EDITOAST_URL}paced_train/{schedule_id}/")
     ts_id_response.raise_for_status()
     simu_response = session.get(
-        f"{EDITOAST_URL}train_schedule/{schedule_id}/simulation?infra_id={etcs_scenario.infra}"
+        f"{EDITOAST_URL}paced_train/{schedule_id}/simulation?infra_id={etcs_scenario.infra}"
     )
     simulation_final_output = simu_response.json()["final_output"]
 
@@ -1332,7 +1332,7 @@ def test_etcs_stop_at_requirements_eoa(
     )
     etcs_rolling_stock_name = rolling_stock_response.json()["name"]
     ts_response = session.post(
-        f"{EDITOAST_URL}timetable/{etcs_scenario.timetable}/train_schedules/",
+        f"{EDITOAST_URL}timetable/{etcs_scenario.timetable}/paced_trains/",
         json=[
             {
                 "train_name": "stop exactly at EoA from requirements",
@@ -1361,10 +1361,10 @@ def test_etcs_stop_at_requirements_eoa(
 
     schedule = ts_response.json()[0]
     schedule_id = schedule["id"]
-    ts_id_response = session.get(f"{EDITOAST_URL}train_schedule/{schedule_id}/")
+    ts_id_response = session.get(f"{EDITOAST_URL}paced_train/{schedule_id}/")
     ts_id_response.raise_for_status()
     simu_response = session.get(
-        f"{EDITOAST_URL}train_schedule/{schedule_id}/simulation?infra_id={etcs_scenario.infra}"
+        f"{EDITOAST_URL}paced_train/{schedule_id}/simulation?infra_id={etcs_scenario.infra}"
     )
     simulation_final_output = simu_response.json()["final_output"]
 
@@ -1427,7 +1427,7 @@ def test_etcs_train_schedule_with_margins(
     )
     etcs_rolling_stock_name = rolling_stock_response.json()["name"]
     ts_response = session.post(
-        f"{EDITOAST_URL}timetable/{etcs_scenario.timetable}/train_schedules/",
+        f"{EDITOAST_URL}timetable/{etcs_scenario.timetable}/paced_trains/",
         json=[
             {
                 "train_name": "etcs train with margins",
@@ -1470,10 +1470,10 @@ def test_etcs_train_schedule_with_margins(
 
     schedule = ts_response.json()[0]
     schedule_id = schedule["id"]
-    ts_id_response = session.get(f"{EDITOAST_URL}train_schedule/{schedule_id}/")
+    ts_id_response = session.get(f"{EDITOAST_URL}paced_train/{schedule_id}/")
     ts_id_response.raise_for_status()
     simu_response = session.get(
-        f"{EDITOAST_URL}train_schedule/{schedule_id}/simulation?infra_id={etcs_scenario.infra}"
+        f"{EDITOAST_URL}paced_train/{schedule_id}/simulation?infra_id={etcs_scenario.infra}"
     )
     assert simu_response.json()["status"] == "success"
 
@@ -1486,16 +1486,16 @@ def test_etcs_schedule_braking_curves_endpoint(
     )
     etcs_rolling_stock_name = rolling_stock_response.json()["name"]
     ts_response = session.post(
-        f"{EDITOAST_URL}timetable/{etcs_scenario.timetable}/train_schedules/",
+        f"{EDITOAST_URL}timetable/{etcs_scenario.timetable}/paced_trains/",
         json=[_get_etcs_braking_curves_train_data(etcs_rolling_stock_name)],
     )
 
     schedule = ts_response.json()[0]
     schedule_id = schedule["id"]
-    ts_id_response = session.get(f"{EDITOAST_URL}train_schedule/{schedule_id}/")
+    ts_id_response = session.get(f"{EDITOAST_URL}paced_train/{schedule_id}/")
     ts_id_response.raise_for_status()
     etcs_braking_curves_response = session.get(
-        f"{EDITOAST_URL}train_schedule/{schedule_id}/etcs_braking_curves?infra_id={etcs_scenario.infra}"
+        f"{EDITOAST_URL}paced_train/{schedule_id}/etcs_braking_curves?infra_id={etcs_scenario.infra}"
     )
     _check_etcs_braking_curves_response(etcs_braking_curves_response)
 

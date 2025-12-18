@@ -104,7 +104,7 @@ def _get_train_ids(
     res = []
     while page is not None:
         r = session.get(
-            f"{editoast_url}/timetable/{scenario.timetable}/train_schedules/?page={page}"
+            f"{editoast_url}/timetable/{scenario.timetable}/paced_trains/?page={page}"
         )
         r.raise_for_status()
         parsed = r.json()
@@ -125,7 +125,7 @@ def _build_timetable_range(
     train_ids = random.sample(train_ids, min(100, len(train_ids)))
     train_times = list()
     for train_id in train_ids:
-        r = session.get(f"{editoast_url}/train_schedule/{train_id}")
+        r = session.get(f"{editoast_url}/paced_train/{train_id}")
         r.raise_for_status()
         start_time = datetime.datetime.strptime(
             r.json()["start_time"], "%Y-%m-%dT%H:%M:%SZ"

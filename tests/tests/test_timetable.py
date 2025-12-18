@@ -9,7 +9,7 @@ from .services import EDITOAST_URL
 
 
 def test_get_timetable(timetable_id: int, session: Session):
-    response = session.get(f"{EDITOAST_URL}/timetable/{timetable_id}/train_schedules")
+    response = session.get(f"{EDITOAST_URL}/timetable/{timetable_id}/paced_trains")
     assert response.status_code == 200
     json = response.json()
     assert "results" in json
@@ -65,7 +65,7 @@ def test_conflicts_with_paced_trains(
     ]
 
     stopping_train_schedule_response = session.post(
-        f"{EDITOAST_URL}/timetable/{timetable_id}/train_schedules",
+        f"{EDITOAST_URL}/timetable/{timetable_id}/paced_trains",
         json=stopping_train_schedule_payload,
     )
     stopping_train_schedule_response.raise_for_status()
@@ -156,7 +156,7 @@ def test_conflicts_with_reception_on_closed_signal(
     ]
 
     stopping_train_schedule_response = session.post(
-        f"{EDITOAST_URL}/timetable/{timetable_id}/train_schedules",
+        f"{EDITOAST_URL}/timetable/{timetable_id}/paced_trains",
         json=stopping_train_schedule_payload,
     )
     stopping_train_schedule_response.raise_for_status()
@@ -188,7 +188,7 @@ def test_conflicts_with_reception_on_closed_signal(
         }
     ]
     session.post(
-        f"{EDITOAST_URL}/timetable/{timetable_id}/train_schedules",
+        f"{EDITOAST_URL}/timetable/{timetable_id}/paced_trains",
         json=train_schedule_payload,
     ).raise_for_status()
 
@@ -207,7 +207,7 @@ def test_conflicts_with_reception_on_closed_signal(
     # (signal sight for OPEN reception, or 20s before restart for STOP/SHORT_SLIP_STOP reception).
     train_id = stopping_train_schedule_response.json()[0]["id"]
     simu_response = session.get(
-        f"{EDITOAST_URL}/train_schedule/{train_id}/simulation/?infra_id={small_infra.id}"
+        f"{EDITOAST_URL}/paced_train/{train_id}/simulation/?infra_id={small_infra.id}"
     )
     simu_response.raise_for_status()
     simu_response_json = simu_response.json()
@@ -218,7 +218,7 @@ def test_conflicts_with_reception_on_closed_signal(
     ]
     assert len(switch_zone_spacing_requirement) == 1
     path_response = session.get(
-        f"{EDITOAST_URL}/train_schedule/{train_id}/path/?infra_id={small_infra.id}"
+        f"{EDITOAST_URL}/paced_train/{train_id}/path/?infra_id={small_infra.id}"
     )
     path_response.raise_for_status()
     path_response_json = path_response.json()
@@ -228,7 +228,7 @@ def test_conflicts_with_reception_on_closed_signal(
         "track_section_ranges": path_response_json["path"]["track_section_ranges"],
     }
     response_project_path = session.post(
-        f"{EDITOAST_URL}/train_schedule/project_path", json=project_path_payload
+        f"{EDITOAST_URL}/paced_train/project_path", json=project_path_payload
     )
     response_project_path.raise_for_status()
 
@@ -391,7 +391,7 @@ def test_paced_train_with_exceptions_conflicts(
                 "index": c.get("index", None),
                 "exception_key": c.get("exception_key", None),
             }
-            for c in conflict["paced_train_occurrence_ids"]
+            for c in conflict["train_ids"]
         ]
         for conflict in conflicts_response_json
     ]
@@ -458,13 +458,13 @@ def test_scheduled_points_with_incompatible_margins(
         }
     ]
     response = session.post(
-        f"{EDITOAST_URL}/timetable/{timetable_id}/train_schedules",
+        f"{EDITOAST_URL}/timetable/{timetable_id}/paced_trains",
         json=train_schedule_payload,
     )
     response.raise_for_status()
     train_id = response.json()[0]["id"]
     response = session.get(
-        f"{EDITOAST_URL}/train_schedule/{train_id}/simulation/?infra_id={small_infra.id}"
+        f"{EDITOAST_URL}/paced_train/{train_id}/simulation/?infra_id={small_infra.id}"
     )
     response.raise_for_status()
     content = response.json()
@@ -547,13 +547,13 @@ def _get_train_schedule_simulation_response(
     session: Session,
 ):
     ts_response = session.post(
-        f"{EDITOAST_URL}/timetable/{timetable_id}/train_schedules",
+        f"{EDITOAST_URL}/timetable/{timetable_id}/paced_trains",
         json=train_schedules_payload,
     )
     ts_response.raise_for_status()
     train_id = ts_response.json()[0]["id"]
     sim_response = session.get(
-        f"{EDITOAST_URL}/train_schedule/{train_id}/simulation/?infra_id={infra.id}"
+        f"{EDITOAST_URL}/paced_train/{train_id}/simulation/?infra_id={infra.id}"
     )
     sim_response.raise_for_status()
     content = sim_response.json()

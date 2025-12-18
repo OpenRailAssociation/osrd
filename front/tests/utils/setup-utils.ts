@@ -20,8 +20,8 @@ import {
 } from './api-utils';
 import { createDateInSpecialTimeZone } from './date-utils';
 import readJsonFile from './file-utils';
-import { sendTrains } from './paced-train';
 import createScenario from './scenario';
+import sendTrains from './send-trains';
 import type { ProjectData, StudyData } from './types';
 import {
   dualModeRollingStockName,

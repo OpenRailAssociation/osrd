@@ -261,7 +261,7 @@ def _test_new_train(
     schedule_payload = _make_payload_schedule(path, rolling_stock)
     r = _post_with_timeout(
         session,
-        editoast_url + f"/timetable/{scenario.timetable}/train_schedules/",
+        editoast_url + f"/timetable/{scenario.timetable}/paced_trains/",
         json=schedule_payload,
     )
     if r.status_code // 100 != 2:
@@ -275,8 +275,7 @@ def _test_new_train(
     sim_id = r.json()[0]["id"]
     r = _get_with_timeout(
         session,
-        editoast_url
-        + f"/train_schedule/{sim_id}/simulation/?infra_id={scenario.infra}",
+        editoast_url + f"/paced_train/{sim_id}/simulation/?infra_id={scenario.infra}",
     )
     if r.status_code // 100 != 2 or r.json().get("status", "") != "success":
         _make_error(

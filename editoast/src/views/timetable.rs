@@ -38,7 +38,6 @@ use editoast_derive::EditoastError;
 use editoast_models::prelude::*;
 use editoast_models::timetable::Timetable;
 use editoast_models::timetable::TimetableWithTrains;
-use editoast_models::train_schedule::TrainScheduleChangeset;
 use itertools::Itertools;
 use itertools::izip;
 use paced_train::PacedTrainResponse;
@@ -47,13 +46,11 @@ use schemas::rolling_stock::EtcsBrakeParams;
 use schemas::rolling_stock::RollingResistance;
 use schemas::rolling_stock::RollingStock;
 use schemas::rolling_stock::TowedRollingStock;
-use schemas::train_schedule::TrainSchedule;
 use schemas::train_schedule::TrainScheduleLike;
 use serde::Deserialize;
 use serde::Serialize;
 use simulation::train_simulation_batch;
 use thiserror::Error;
-use train_schedule::TrainScheduleForm;
 use train_schedule::TrainScheduleResponse;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
@@ -223,53 +220,6 @@ pub(in crate::views) async fn delete(
     })
     .await?;
     Ok(StatusCode::NO_CONTENT)
-}
-
-/// Create train schedule by batch
-#[editoast_derive::route]
-#[utoipa::path(
-    post, path = "",
-    tags = ["timetable", "train_schedule"],
-    params(TimetableIdParam),
-    request_body = Vec<TrainSchedule>,
-    responses(
-        (status = 200, description = "The created train schedules", body = Vec<TrainScheduleResponse>)
-    )
-)]
-pub(in crate::views) async fn post_train_schedule(
-    State(db_pool): State<Arc<DbConnectionPoolV2>>,
-    Extension(auth): AuthenticationExt,
-    Path(TimetableIdParam { id: timetable_id }): Path<TimetableIdParam>,
-    Json(train_schedules): Json<Vec<TrainSchedule>>,
-) -> Result<Json<Vec<TrainScheduleResponse>>> {
-    let authorized = auth
-        .check_roles([authz::Role::OperationalStudies].into())
-        .await
-        .map_err(AuthorizationError::AuthError)?;
-    if !authorized {
-        return Err(AuthorizationError::Forbidden.into());
-    }
-
-    let conn = &mut db_pool.get().await?;
-
-    let timetable_exists = Timetable::exists(conn, timetable_id).await?;
-    if !timetable_exists {
-        return Err(TimetableError::NotFound { timetable_id }.into());
-    }
-
-    let changesets: Vec<TrainScheduleChangeset> = train_schedules
-        .into_iter()
-        .map(|ts| TrainScheduleForm {
-            timetable_id: Some(timetable_id),
-            train_schedule: ts,
-        })
-        .map_into()
-        .collect();
-
-    // Create a batch of train_schedule
-    let train_schedule: Vec<_> =
-        editoast_models::TrainSchedule::create_batch(conn, changesets).await?;
-    Ok(Json(train_schedule.into_iter().map_into().collect()))
 }
 
 /// Create paced trains by batch

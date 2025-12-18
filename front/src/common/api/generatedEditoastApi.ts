@@ -1229,17 +1229,6 @@ const injectedRtkApi = api
         }),
         providesTags: ['timetable'],
       }),
-      postTimetableByIdTrainSchedules: build.mutation<
-        PostTimetableByIdTrainSchedulesApiResponse,
-        PostTimetableByIdTrainSchedulesApiArg
-      >({
-        query: (queryArg) => ({
-          url: `/timetable/${queryArg.id}/train_schedules`,
-          method: 'POST',
-          body: queryArg.body,
-        }),
-        invalidatesTags: ['timetable', 'train_schedule'],
-      }),
       getTowedRollingStock: build.query<
         GetTowedRollingStockApiResponse,
         GetTowedRollingStockApiArg
@@ -2637,13 +2626,6 @@ export type GetTimetableByIdTrainSchedulesApiArg = {
   id: number;
   page?: number;
   pageSize?: number;
-};
-export type PostTimetableByIdTrainSchedulesApiResponse =
-  /** status 200 The created train schedules */ TrainScheduleResponse[];
-export type PostTimetableByIdTrainSchedulesApiArg = {
-  /** A timetable ID */
-  id: number;
-  body: TrainSchedule[];
 };
 export type GetTowedRollingStockApiResponse = /** status 200  */ PaginationStats & {
   results: TowedRollingStock[];
