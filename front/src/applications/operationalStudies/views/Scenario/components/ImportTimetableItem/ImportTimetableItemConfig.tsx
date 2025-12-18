@@ -1,17 +1,17 @@
 import { useState, useContext } from 'react';
 
 import { Download, Search } from '@osrd-project/ui-icons';
-import { isEmpty } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
+import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import type { TimetableJsonPayload } from 'applications/operationalStudies/types';
 import {
   type GraouStation,
-  type GraouTrainSchedule,
   type GraouTrainScheduleConfig,
   getGraouTrainSchedules,
 } from 'common/api/graouApi';
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { osrdRailwayManagerApi } from 'common/api/osrdRailwayManagerApi';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
@@ -23,6 +23,10 @@ import { useAppDispatch } from 'store';
 import { formatLocalDate } from 'utils/date';
 import { castErrorToFailure } from 'utils/error';
 
+import {
+  generateTrainSchedulesPayloads,
+  populateMissingSecondaryCodes,
+} from './helpers/parseGraouTrains';
 import parseXML from './helpers/parseXML';
 import StationSelector from './ImportTimetableItemStationSelector';
 import {
@@ -31,18 +35,17 @@ import {
 } from '../ManageTimetableItem/helpers/handleParseFiles';
 
 type ImportTimetableItemConfigProps = {
-  setTrainsList: (trainsList: GraouTrainSchedule[]) => void;
   setIsLoading: (isLoading: boolean) => void;
   setTrainsJsonData: (trainsJsonData: TimetableJsonPayload) => void;
 };
 
 const ImportTimetableItemConfig = ({
-  setTrainsList,
   setIsLoading,
   setTrainsJsonData,
 }: ImportTimetableItemConfigProps) => {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'importTrains' });
   const railwayManagerUrl = useSelector(getRailwayManagerInterfaceUrl);
+  const { infraId } = useScenarioContext();
   const [from, setFrom] = useState<GraouStation | undefined>();
   const [fromSearchString, setFromSearchString] = useState('');
   const [to, setTo] = useState<GraouStation | undefined>();
@@ -54,80 +57,50 @@ const ImportTimetableItemConfig = ({
   const { openModal, closeModal } = useContext(ModalContext);
   const [postTransformTimetable] =
     osrdRailwayManagerApi.endpoints.postTransformTimetable.useMutation();
-
-  function filterInvalidSteps(importedTrainSchedules: GraouTrainSchedule[]): GraouTrainSchedule[] {
-    const trainNumbersOfModifiedTrains: string[] = [];
-
-    const filteredSchedules = importedTrainSchedules.map((trainSchedule) => {
-      const filteredSteps = trainSchedule.steps.filter(
-        (step, i) =>
-          i === 0 ||
-          new Date(step.arrivalTime).getTime() >=
-            new Date(trainSchedule.steps[i - 1].departureTime).getTime()
-      );
-      if (filteredSteps.length < trainSchedule.steps.length) {
-        trainNumbersOfModifiedTrains.push(trainSchedule.trainNumber);
-      }
-      return { ...trainSchedule, steps: filteredSteps };
-    });
-
-    if (trainNumbersOfModifiedTrains.length)
-      dispatch(
-        setWarning({
-          title: t('warningMessages.warning'),
-          text: t('warningMessages.warningFilteredStepImport', {
-            trainNumbers: trainNumbersOfModifiedTrains,
-          }),
-        })
-      );
-
-    return filteredSchedules;
-  }
-
-  function updateTrainSchedules(importedTrainSchedules: GraouTrainSchedule[]) {
-    // For each train schedule, we add the duration and tracks of each step
-    const trainsSchedules = importedTrainSchedules.map((trainSchedule) => {
-      const stepsWithDuration = trainSchedule.steps.map((step) => {
-        // calcul duration in seconds between step arrival and departure
-        // in case of arrival and departure are the same, we set duration to 0
-        // for the step arrivalTime is before departureTime because the train first goes to the station and then leaves it
-        const duration = Math.round(
-          (new Date(step.departureTime).getTime() - new Date(step.arrivalTime).getTime()) / 1000
-        );
-        return {
-          ...step,
-          duration,
-        };
-      });
-      return {
-        ...trainSchedule,
-        steps: stepsWithDuration,
-      };
-    });
-
-    setTrainsList(trainsSchedules);
-  }
+  const [postInfraByInfraIdMatchOperationalPoints] =
+    osrdEditoastApi.endpoints.postInfraByInfraIdMatchOperationalPoints.useLazyQuery();
 
   async function getTrainsFromOpenData(config: GraouTrainScheduleConfig) {
-    setTrainsList([]);
-    setIsLoading(true);
-    setTrainsJsonData({ train_schedules: [], paced_trains: [] });
-
-    let result;
     try {
-      result = await getGraouTrainSchedules(config);
+      setIsLoading(true);
+      setTrainsJsonData({ train_schedules: [], paced_trains: [] });
+
+      const {
+        trainSchedules: graouTrains,
+        rejectedTrainsCount,
+        modifiedTrainsNames,
+      } = await getGraouTrainSchedules(config);
+      if (rejectedTrainsCount)
+        dispatch(
+          setWarning({
+            title: t('warningMessages.warning'),
+            text: t('warningMessages.warningRejectedTrainsImport', {
+              rejectedTrainsCount,
+            }),
+          })
+        );
+      if (modifiedTrainsNames.length)
+        dispatch(
+          setWarning({
+            title: t('warningMessages.warning'),
+            text: t('warningMessages.warningFilteredStepImport', {
+              modifiedTrainsNames,
+            }),
+          })
+        );
+
+      const trainSchedulesPayloads = generateTrainSchedulesPayloads(graouTrains);
+      await populateMissingSecondaryCodes(
+        trainSchedulesPayloads,
+        infraId,
+        postInfraByInfraIdMatchOperationalPoints
+      );
+      setTrainsJsonData({ train_schedules: trainSchedulesPayloads, paced_trains: [] });
     } catch (error) {
       dispatch(setFailure(castErrorToFailure(error)));
+    } finally {
       setIsLoading(false);
-      return;
     }
-
-    const importedTrainSchedules = filterInvalidSteps(result);
-    if (importedTrainSchedules && !isEmpty(importedTrainSchedules)) {
-      updateTrainSchedules(importedTrainSchedules);
-    }
-
-    setIsLoading(false);
   }
 
   function defineConfig() {
@@ -205,7 +178,6 @@ const ImportTimetableItemConfig = ({
 
   const importFile = async (file: File) => {
     closeModal();
-    setTrainsList([]);
 
     let fileContent: string;
     try {

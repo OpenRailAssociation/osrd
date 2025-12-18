@@ -44,30 +44,15 @@ export type GraouTrainScheduleConfig = {
 
 const GRAOU_URL = 'https://graou.info';
 
-// The Graou API returns only part of the UIC for French stations: the last
-// digit is missing. It's a checksum which uses the Luhn algorithm.
-export const populateUicChecksum = (uic: string): string => {
-  if (!uic.startsWith('87') || uic.length >= 8) {
-    return uic;
-  }
-
-  const rawCi = uic.substring(2);
-  let checksum = 0;
-  for (let i = 0; i < rawCi.length; i++) {
-    const digit = Number(rawCi[i]);
-    if ((i + 1) % 2 === (rawCi.length + 1) % 2) {
-      checksum += digit;
-    } else if (digit > 4) {
-      checksum += 2 * digit - 9;
-    } else {
-      checksum += 2 * digit;
-    }
-  }
-  checksum = (10 - (checksum % 10)) % 10;
-
-  return uic + String(checksum);
-};
-
+/**
+ * Requests from graou open data all train schedules with sets departure and arrival stations and in a given time window at a given date.
+ *
+ * - Throws if the payload is not a list of objects.
+ * - Rejects any train schedule lacking required fields.
+ * - Filters out any step lacking required fields, using a non-numeric uic, or having an arrival time set before the previous step departure time.
+ *
+ * Returns the filtered list of train schedules, the count of rejected trains, and the list of names of trains with filtered out steps.
+ */
 export const getGraouTrainSchedules = async (config: GraouTrainScheduleConfig) => {
   const params = new URLSearchParams({
     q: 'trains',
@@ -76,38 +61,52 @@ export const getGraouTrainSchedules = async (config: GraouTrainScheduleConfig) =
   const res = await fetch(`${GRAOU_URL}/api/trainschedules.php?${params}`);
   const rawTrainSchedules = (await res.json()) as Record<string, unknown>[];
 
-  const isInvalidTrainSchedules = rawTrainSchedules.some((trainSchedule) => {
+  const filteredTrains: GraouTrainSchedule[] = [];
+  const modifiedTrainsNames: string[] = [];
+  let rejectedTrainsCount = 0;
+
+  for (const trainSchedule of rawTrainSchedules) {
     if (
       ['trainNumber', 'rollingStock', 'departureTime', 'arrivalTime', 'departure', 'steps'].some(
         (key) => !(key in trainSchedule)
       ) ||
       !Array.isArray(trainSchedule.steps)
     ) {
-      return true;
+      rejectedTrainsCount++;
+      continue;
     }
-    const hasInvalidSteps = trainSchedule.steps.some((step) =>
-      ['arrivalTime', 'departureTime', 'uic', 'name', 'trigram', 'latitude', 'longitude'].some(
-        (key) => !(key in step)
-      )
+
+    const steps = trainSchedule.steps;
+    const filteredSteps = steps.filter(
+      (step, i) =>
+        !(
+          ['arrivalTime', 'departureTime', 'uic', 'name', 'trigram', 'latitude', 'longitude'].some(
+            (key) => !(key in step)
+          ) || !/^\d+$/.test(step.uic)
+        ) &&
+        (i === 0 ||
+          new Date(step.arrivalTime).getTime() >= new Date(steps[i - 1].departureTime).getTime())
     );
-    return hasInvalidSteps;
-  });
-  if (isInvalidTrainSchedules) {
-    throw new Error('Invalid train schedules returned by Graou API');
-  }
 
-  const trainSchedules = rawTrainSchedules as GraouTrainSchedule[];
-  for (const trainSchedule of trainSchedules) {
-    for (const step of trainSchedule.steps) {
-      step.uic = populateUicChecksum(step.uic);
+    if (filteredSteps.length < steps.length) {
+      modifiedTrainsNames.push(String(trainSchedule.trainNumber));
     }
+
+    filteredTrains.push({
+      ...trainSchedule,
+      steps: filteredSteps,
+    } as GraouTrainSchedule);
   }
 
-  return trainSchedules;
+  return {
+    trainSchedules: filteredTrains,
+    rejectedTrainsCount,
+    modifiedTrainsNames,
+  };
 };
 
 /**
- * Search the stations by name or by trigram
+ * Search graou open data for stations by name or by trigram
  * (trigram if term.length < 3, by name otherwise)
  */
 export const searchGraouStations = async (term: string) => {
