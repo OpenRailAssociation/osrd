@@ -8,7 +8,6 @@ use authz::identity::User;
 use authz::identity::UserIdentity;
 use authz::identity::UserInfo;
 use authz::identity::UserName;
-use database::DatabaseError;
 use database::DbConnection;
 use database::DbConnectionPoolV2;
 use diesel::dsl;
@@ -306,67 +305,67 @@ impl StorageDriver for PgAuthDriver {
         new_identities: &[String],
     ) -> Result<bool, Self::Error> {
         let conn = self.pool.get().await?;
-        let existing_user = match user_identity {
-            Either::Left(user_id) => authn_user::table
-                .left_join(authn_user_identity::table)
-                .select(authn_user::id)
-                .filter(authn_user::id.eq(user_id))
-                .first::<i64>(conn.write().await.deref_mut())
-                .await
-                .optional()?,
-            Either::Right(identity) => authn_user::table
-                .left_join(authn_user_identity::table)
-                .select(authn_user::id)
-                .filter(authn_user_identity::identity.eq(identity))
-                .first::<i64>(conn.write().await.deref_mut())
-                .await
-                .optional()?,
-        };
-        match existing_user {
-            None => Ok(false),
-            Some(user_id) => {
-                conn.transaction(async move |conn| {
+        conn.transaction(async move |conn| {
+            let existing_user = match user_identity {
+                Either::Left(user_id) => authn_user::table
+                    .left_join(authn_user_identity::table)
+                    .select(authn_user::id)
+                    .filter(authn_user::id.eq(user_id))
+                    .first::<i64>(conn.write().await.deref_mut())
+                    .await
+                    .optional()?,
+                Either::Right(identity) => authn_user::table
+                    .left_join(authn_user_identity::table)
+                    .select(authn_user::id)
+                    .filter(authn_user_identity::identity.eq(identity))
+                    .first::<i64>(conn.write().await.deref_mut())
+                    .await
+                    .optional()?,
+            };
+            match existing_user {
+                None => Ok(false),
+                Some(user_id) => {
                     for new_identity in new_identities {
-                        let values = &vec![(
-                            authn_user_identity::identity.eq(&new_identity),
-                            authn_user_identity::user_id.eq(user_id),)];
-                        let res = conn
-                            .transaction(async move |conn| {
+                        let identity_owner = authn_user_identity::table
+                            .select(authn_user_identity::user_id)
+                            .filter(authn_user_identity::identity.eq(&new_identity))
+                            .first::<i64>(conn.write().await.deref_mut())
+                            .await
+                            .optional()?;
+                        match identity_owner {
+                            Some(same_owner_id) if same_owner_id == user_id => {
+                                tracing::warn!(
+                                    "The identity `{}` is already associated with the target user (user_id: {})",
+                                    new_identity,
+                                    user_id
+                                );
+                                continue;
+                            }
+                            Some(different_owner_id) => {
+                                tracing::warn!(
+                                    "Could not add to user `{}` the identity `{}` as it is already associated with another user (user_id: {})",
+                                    user_id,
+                                    new_identity,
+                                    different_owner_id
+                                );
+                                continue;
+                            }
+                            None => {
                                 dsl::insert_into(authn_user_identity::table)
-                                    .values(values)
-                                    .execute(&mut conn.write().await)
-                                    .await
-                                    .map_err(database::DatabaseError::from)
-                            })
-                        .await;
-                        match res {
-                            Err(database_error @ DatabaseError::UniqueViolation(_)) => {
-                                let identity_owner = authn_user_identity::table
-                                    .select(authn_user_identity::user_id)
-                                    .filter(authn_user_identity::identity.eq(&new_identity))
-                                    .first::<i64>(conn.write().await.deref_mut())
-                                .await?;
-                                if identity_owner != user_id {
-                                    tracing::warn!(
-                                        "Could not add to user `{}` the identity `{}` as it is already associated with another user (`{}`)",
-                                        user_id,
-                                        new_identity,
-                                        identity_owner
-                                    );
-                                    return Err(AuthDriverError::from(database_error));
-                                }
-                                tracing::warn!("identity `{}` was already associated to the target user", new_identity);
-                            },
-                            Err(database_error) => return Err(AuthDriverError::from(database_error)),
-                            Ok(_) => (),
+                                    .values(&vec![(
+                                        authn_user_identity::identity.eq(&new_identity),
+                                        authn_user_identity::user_id.eq(user_id),)])
 
+                                    .execute(&mut conn.write().await)
+                                .await
+                                .map_err(database::DatabaseError::from)?;
                         }
                     }
-                    Ok(true)
-                })
-                .await
+                }
+                Ok(true)
             }
         }
+        }).await
     }
 
     #[tracing::instrument(skip_all, fields(%group_id), ret(level = Level::DEBUG), err)]
