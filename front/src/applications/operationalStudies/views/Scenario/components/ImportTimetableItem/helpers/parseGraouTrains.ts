@@ -4,7 +4,6 @@ import type { GraouTrainSchedule } from 'common/api/graouApi';
 import type { TrainSchedule } from 'common/api/osrdEditoastApi';
 import { Duration } from 'utils/duration';
 
-import findValidTrainNameKey from './findValidTrainNameKey';
 import rollingstockOpenData2OSRD from '../rollingstock_opendata2osrd.json';
 
 /**
@@ -56,6 +55,10 @@ export function filterInvalidSteps(importedTrainSchedules: GraouTrainSchedule[])
   return { filteredTrains, modifiedTrainsNumbers };
 }
 
+/** Normalize a rolling stock name by dropping every non digit, non letter character and upper casing.*/
+const normalizeRsName = (rollingStock: string): string =>
+  rollingStock.toUpperCase().replace(/[_\W]/g, '');
+
 /**
  * Find the osrd rolling stock matching the graou open data rolling stock name.
  * If not found, return the initial name.
@@ -63,8 +66,14 @@ export function filterInvalidSteps(importedTrainSchedules: GraouTrainSchedule[])
 const matchOpenDataRollingStock = (rollingStock: string | null) => {
   if (!rollingStock) return '';
 
-  const validRollingStockKey = findValidTrainNameKey(rollingStock);
-  return validRollingStockKey ? rollingstockOpenData2OSRD[validRollingStockKey] : rollingStock;
+  const normalizedRollingStock = normalizeRsName(rollingStock);
+  const matchedRollingStock = Object.entries(rollingstockOpenData2OSRD).find(
+    ([key, value]) =>
+      normalizedRollingStock.includes(normalizeRsName(key)) ||
+      normalizedRollingStock.includes(normalizeRsName(value))
+  )?.[1];
+
+  return matchedRollingStock ?? rollingStock;
 };
 
 function generateTrainSchedulePayload(train: GraouTrainSchedule): TrainSchedule | null {
