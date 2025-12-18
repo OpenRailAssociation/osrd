@@ -9,6 +9,7 @@ import Detectors from './Detectors';
 import Electrifications from './Electrifications';
 import NeutralSections from './extensions/SNCF/NeutralSections';
 import SNCF_PSL from './extensions/SNCF/PSL';
+import LevelCrossingsLayer from './LevelCrossing';
 import OperationalPoints from './OperationalPoints';
 import Routes from './Routes';
 import Signals from './Signals';
@@ -126,6 +127,14 @@ const InfraObjectLayers = ({
         sourceTable="signals"
         colors={colors[mapStyle]}
         layerOrder={LAYER_GROUPS_ORDER[LAYERS.SIGNALS.GROUP]}
+        infraID={infraId}
+        highlightedArea={highlightedArea}
+      />
+    )}
+    {layersSettings.level_crossings && (
+      <LevelCrossingsLayer
+        colors={colors[mapStyle]}
+        layerOrder={LAYER_GROUPS_ORDER[LAYERS.LEVEL_CROSSINGS.GROUP]}
         infraID={infraId}
         highlightedArea={highlightedArea}
       />

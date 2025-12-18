@@ -11,34 +11,35 @@ export const NON_EDITABLE_OBJECT_TYPES: ObjectType[] = [
 
 const INFRA_EDITOR_LAYERS = [
   'buffer_stops',
-  'electrifications',
   'detectors',
+  'electrifications',
   'errors',
-  'psl',
+  'level_crossings',
+  'neutral_sections',
+  'operational_points',
+  'platforms',
   'psl_signs',
+  'psl',
   'routes',
   'signals',
   'speed_sections',
   'switches',
   'track_sections',
-  'platforms',
-  'neutral_sections',
-  'operational_points',
 ] as const;
 export const LAYERS_SET: Set<string> = new Set(INFRA_EDITOR_LAYERS);
 export type Layer = (typeof INFRA_EDITOR_LAYERS)[number];
 
 export const EDITOAST_TYPES = [
   'BufferStop',
-  'Electrification',
   'Detector',
+  'Electrification',
+  'NeutralSection',
+  'OperationalPoint',
   'Route',
   'Signal',
   'SpeedSection',
   'Switch',
   'TrackSection',
-  'NeutralSection',
-  'OperationalPoint',
 ] as const;
 export type EditoastType = (typeof EDITOAST_TYPES)[number];
 
