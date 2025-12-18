@@ -19,6 +19,10 @@ const normal = {
     text: '#333333',
     halo: DEFAULT_HALO_COLOR.normal,
   },
+  levelcrossings: {
+    text: '#333333',
+    halo: DEFAULT_HALO_COLOR.normal,
+  },
   detectors: {
     circle: '#0058cf',
     circleOther: '#FFFFFF',
@@ -195,6 +199,10 @@ const dark: Theme = {
     text: '#999999',
     halo: DEFAULT_HALO_COLOR.dark,
   },
+  levelcrossings: {
+    text: '#999999',
+    halo: DEFAULT_HALO_COLOR.normal,
+  },
   detectors: {
     circle: '#0058cf',
     circleOther: '#000000',
@@ -366,6 +374,10 @@ const minimal: Theme = {
   muted: { color: '#d0d1d1' },
   background: { color: 'rgba(255, 255, 255, 1)' },
   bufferstop: {
+    text: '#333333',
+    halo: DEFAULT_HALO_COLOR.normal,
+  },
+  levelcrossings: {
     text: '#333333',
     halo: DEFAULT_HALO_COLOR.normal,
   },

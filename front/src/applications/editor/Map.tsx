@@ -28,6 +28,7 @@ import {
   VirtualLayers,
   useMapBlankStyle,
 } from 'common/Map/Layers';
+import LevelCrossingsLayer from 'common/Map/Layers/InfraObjectLayers/LevelCrossing';
 import { colors } from 'common/Map/theme';
 import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
 import { useMapSettings, useMapSettingsActions } from 'reducers/commonMap';
@@ -333,6 +334,14 @@ const MapUnplugged = ({
             <OperationalPointsLayer
               colors={colors[mapStyle]}
               layerOrder={LAYER_GROUPS_ORDER[LAYERS.OPERATIONAL_POINTS.GROUP]}
+              infraID={infraID}
+            />
+          )}
+
+          {editorState.editorLayers.has('level_crossings') && (
+            <LevelCrossingsLayer
+              colors={colors[mapStyle]}
+              layerOrder={LAYER_GROUPS_ORDER[LAYERS.LEVEL_CROSSINGS.GROUP]}
               infraID={infraID}
             />
           )}

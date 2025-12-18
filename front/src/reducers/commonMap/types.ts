@@ -22,6 +22,7 @@ export type LayersSettings = {
   electrifications: boolean;
   neutral_sections: boolean;
   detectors: boolean;
+  level_crossings: boolean;
   operational_points: boolean;
   routes: boolean;
   signals: boolean;

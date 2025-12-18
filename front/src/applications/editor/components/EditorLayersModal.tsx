@@ -13,6 +13,7 @@ import type { EditorEntity } from 'applications/editor/typesEditorEntity';
 import bufferStopIcon from 'assets/pictures/layersicons/bufferstop.svg';
 import detectorsIcon from 'assets/pictures/layersicons/detectors.svg';
 import trackSectionsIcon from 'assets/pictures/layersicons/layer_adv.svg';
+import levelCrossingIcon from 'assets/pictures/layersicons/layer_level_crossing.svg';
 import signalsIcon from 'assets/pictures/layersicons/layer_signal.svg';
 import pslsIcon from 'assets/pictures/layersicons/layer_tivs.svg';
 import OPsSVGFile from 'assets/pictures/layersicons/ops.svg';
@@ -48,6 +49,10 @@ export const LAYERS: Array<{ layers: Layer[]; icon: string | React.JSX.Element }
   {
     layers: ['operational_points'],
     icon: <Icon2SVG file={OPsSVGFile} style={{ width: '20px' }} className="mx-2" />,
+  },
+  {
+    layers: ['level_crossings'],
+    icon: <Icon2SVG file={levelCrossingIcon} style={{ width: '20px' }} className="mx-2" />,
   },
 ];
 

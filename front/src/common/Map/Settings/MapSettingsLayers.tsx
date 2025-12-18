@@ -6,6 +6,7 @@ import { TbRectangleVerticalFilled } from 'react-icons/tb';
 
 import BufferStopSVGFile from 'assets/pictures/layersicons/bufferstop.svg';
 import DetectorsSVGFile from 'assets/pictures/layersicons/detectors.svg';
+import LevelCrossingSVGFile from 'assets/pictures/layersicons/layer_level_crossing.svg';
 import SignalsSVGFile from 'assets/pictures/layersicons/layer_signal.svg';
 import OPsSVGFile from 'assets/pictures/layersicons/ops.svg';
 import SwitchesSVGFile from 'assets/pictures/layersicons/switches.svg';
@@ -104,6 +105,12 @@ const MapSettingsLayers = () => (
     </div>
     <div className="col-md-6">
       <FormatSwitch name="platforms" icon={<TbRectangleVerticalFilled />} />
+    </div>
+    <div className="col-md-6">
+      <FormatSwitch
+        name="level_crossings"
+        icon={<Icon2SVG file={LevelCrossingSVGFile} altName="Level crossing svg" />}
+      />
     </div>
   </div>
 );

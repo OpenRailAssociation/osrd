@@ -9,6 +9,7 @@ import { TbRectangleVerticalFilled } from 'react-icons/tb';
 
 import bufferStopIcon from 'assets/pictures/layersicons/bufferstop.svg';
 import detectorsIcon from 'assets/pictures/layersicons/detectors.svg';
+import levelCrossingIcon from 'assets/pictures/layersicons/layer_level_crossing.svg';
 import signalsIcon from 'assets/pictures/layersicons/layer_signal.svg';
 import pslsIcon from 'assets/pictures/layersicons/layer_tivs.svg';
 import OPsSVGFile from 'assets/pictures/layersicons/ops.svg';
@@ -41,6 +42,7 @@ const LAYERS = [
     icon: <Icon2SVG file={OPsSVGFile} style={{ width: '20px' }} className="mx-2" />,
   },
   { layer: 'speed_limits', icon: <MdSpeed style={{ width: '20px' }} className="mx-2" /> },
+  { layer: 'level_crossings', icon: levelCrossingIcon },
 ];
 
 type LayersModalProps = {

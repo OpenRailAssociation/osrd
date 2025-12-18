@@ -22,6 +22,7 @@ export const defaultMapSettings: MapSettings = {
     electrifications: false,
     neutral_sections: false,
     detectors: false,
+    level_crossings: false,
     operational_points: true,
     routes: false,
     signals: false,
