@@ -288,7 +288,7 @@ def west_to_south_east_simulation(
     response = session.get(EDITOAST_URL + f"light_rolling_stock/{fast_rolling_stock}")
     fast_rolling_stock_name = response.json()["name"]
     response = session.post(
-        f"{EDITOAST_URL}timetable/{small_scenario.timetable}/train_schedules/",
+        f"{EDITOAST_URL}timetable/{small_scenario.timetable}/paced_trains/",
         json=[
             {
                 "constraint_distribution": "STANDARD",
@@ -402,7 +402,7 @@ def west_to_south_east_etcs_simulation(
     )
     etcs_rolling_stock_name = rolling_stock_response.json()["name"]
     response = session.post(
-        f"{EDITOAST_URL}timetable/{etcs_scenario.timetable}/train_schedules/",
+        f"{EDITOAST_URL}timetable/{etcs_scenario.timetable}/paced_trains/",
         json=[
             {
                 "constraint_distribution": "STANDARD",
@@ -441,7 +441,7 @@ def west_to_south_east_simulations(
     }
 
     response = session.post(
-        f"{EDITOAST_URL}timetable/{small_scenario.timetable}/train_schedules/",
+        f"{EDITOAST_URL}timetable/{small_scenario.timetable}/paced_trains/",
         json=[
             {
                 **base,

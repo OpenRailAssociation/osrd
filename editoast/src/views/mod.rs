@@ -239,7 +239,6 @@ fn service_router() -> router::DocumentedRouter {
                             })
                             .nests("/train_schedules", |path| {
                                 path.route("/", get!(timetable::get_train_schedules))
-                                    .route("/", post!(timetable::post_train_schedule))
                             })
                     })
             })

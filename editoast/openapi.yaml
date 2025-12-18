@@ -4283,36 +4283,6 @@ paths:
                         $ref: '#/components/schemas/TrainScheduleResponse'
         '404':
           description: Timetable not found
-    post:
-      tags:
-      - timetable
-      - train_schedule
-      summary: Create train schedule by batch
-      parameters:
-      - name: id
-        in: path
-        description: A timetable ID
-        required: true
-        schema:
-          type: integer
-          format: int64
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: array
-              items:
-                $ref: '#/components/schemas/TrainSchedule'
-        required: true
-      responses:
-        '200':
-          description: The created train schedules
-          content:
-            application/json:
-              schema:
-                type: array
-                items:
-                  $ref: '#/components/schemas/TrainScheduleResponse'
   /towed_rolling_stock:
     get:
       tags:
