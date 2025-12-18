@@ -1,6 +1,5 @@
 use std::collections::HashMap;
 use std::collections::HashSet;
-use std::ops::DerefMut;
 use std::sync::Arc;
 
 use crate::error::Result;
@@ -18,11 +17,6 @@ use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum::response::Json;
 use database::DbConnectionPoolV2;
-use database::tables::*;
-use diesel::ExpressionMethods;
-use diesel::QueryDsl;
-use diesel::prelude::*;
-use diesel_async::RunQueryDsl;
 use editoast_derive::EditoastError;
 use editoast_models::Group;
 use editoast_models::User;
@@ -220,15 +214,11 @@ pub(in crate::views) async fn users_info(
         .await?;
 
     // Retrieve users by identities
-    let users_2 = authn_user::table
-        .inner_join(authn_user_identity::table)
-        .select(authn_user::all_columns)
-        .filter(authn_user_identity::identity.eq_any(body.identities.clone()))
-        .load::<(i64, String)>(&mut db_pool.get().await?.write().await.deref_mut())
-        .await?
-        .into_iter()
-        .map(|(id, name)| User { id, name })
-        .collect::<Vec<_>>();
+    let users_2 = User::get_batch_users_by_identity(
+        body.identities.iter().collect_vec().as_slice(),
+        &mut db_pool.get().await?,
+    )
+    .await?;
 
     // Merge both user lists
     let users: HashMap<_, _> = users_1
@@ -237,41 +227,11 @@ pub(in crate::views) async fn users_info(
         .map(|u| (u.id, u))
         .collect();
 
-    // Retrieve the full list of identities associated with the users
-    #[derive(QueryableByName)]
-    struct UserIdentities {
-        #[diesel(sql_type = diesel::sql_types::BigInt)]
-        id: i64,
-        #[diesel(sql_type = diesel::sql_types::Nullable<diesel::sql_types::Array<diesel::sql_types::Varchar>>)]
-        identities: Option<Vec<String>>,
-    }
-    let conn = &mut db_pool.get().await?;
-    let raw_query = r"
-                SELECT u.id, ARRAY_AGG(i.identity) AS identities
-                FROM authn_user AS u
-                LEFT JOIN authn_user_identity AS i
-                ON u.id = i.user_id
-                WHERE u.id = ANY($1)
-                GROUP BY u.id;
-            ";
-    let user_to_identities: HashMap<_, _> = diesel::sql_query(raw_query)
-        .bind::<diesel::sql_types::Array<diesel::sql_types::BigInt>, _>(
-            users.keys().collect::<Vec<_>>(),
-        )
-        .load::<UserIdentities>(conn.write().await.deref_mut())
-        .await?
-        .into_iter()
-        .map(|user_identities| {
-            (
-                user_identities.id,
-                user_identities
-                    .identities
-                    .into_iter()
-                    .flatten()
-                    .collect::<Vec<_>>(),
-            )
-        })
-        .collect();
+    let user_to_identities = User::get_batch_user_identities(
+        users.keys().copied().collect::<Vec<i64>>().as_slice(),
+        &mut db_pool.get().await?,
+    )
+    .await?;
 
     if let Some(missing_identity) = body
         .identities
