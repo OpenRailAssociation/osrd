@@ -3,13 +3,14 @@ import { useCallback } from 'react';
 import { flatten, inRange, last } from 'lodash';
 
 import { hexToRgb, indexToColor } from '../../common/helpers/colors';
+import { getCrispLineCoordinate } from '../../common/helpers/utils';
+import { useDraw, usePicking } from '../../common/hooks/useCanvas';
 import type {
   DrawingFunction,
   PickingDrawingFunction,
   PickingElement,
   Point,
 } from '../../common/types';
-import { useDraw, usePicking } from '../../common/hooks/useCanvas';
 import { SpaceTimeChartCanvasContext } from '../lib/context';
 import {
   type DataPoint,
@@ -18,12 +19,7 @@ import {
   type PathData,
   type SpaceTimeChartContextType,
 } from '../lib/types';
-import {
-  drawAliasedDisc,
-  drawAliasedLine,
-  drawPathExtremity,
-  getCrispLineCoordinate,
-} from '../utils/canvas';
+import { drawAliasedDisc, drawAliasedLine, drawPathExtremity } from '../utils/canvas';
 import { getPathDirection, getSpacePixels } from '../utils/paths';
 import { getSpaceBreakpoints } from '../utils/scales';
 

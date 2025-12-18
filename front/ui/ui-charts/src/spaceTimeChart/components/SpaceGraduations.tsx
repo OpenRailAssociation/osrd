@@ -1,10 +1,10 @@
 import { useCallback } from 'react';
 
-import type { DrawingFunction } from '../../common/types';
+import { getCrispLineCoordinate } from '../../common/helpers/utils';
 import { useDraw } from '../../common/hooks/useCanvas';
+import type { DrawingFunction } from '../../common/types';
 import { SpaceTimeChartCanvasContext } from '../lib/context';
 import type { SpaceTimeChartContextType } from '../lib/types';
-import { getCrispLineCoordinate } from '../utils/canvas';
 import { getSpacePixels } from '../utils/paths';
 
 const SpaceGraduations = () => {

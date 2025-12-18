@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
-import { getAliasedDiscShape, getCrispLineCoordinate } from '../utils/canvas';
+import { getCrispLineCoordinate } from '../../common/helpers/utils';
+import { getAliasedDiscShape } from '../utils/canvas';
 
 describe('getAliasedDiscShape', () => {
   it('should return return the expected flat matrices', () => {

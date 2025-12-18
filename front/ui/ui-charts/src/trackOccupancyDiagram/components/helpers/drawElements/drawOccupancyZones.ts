@@ -1,6 +1,7 @@
 import { drawOccupancyZonesTexts } from './drawOccupancyZonesTexts';
+import { getCrispLineCoordinate } from '../../../../common/helpers/utils';
 import { PATH_COLOR_DEFAULT } from '../../../../manchette/consts';
-import { getCrispLineCoordinate, type SpaceTimeChartContextType } from '../../../../spaceTimeChart';
+import type { SpaceTimeChartContextType } from '../../../../spaceTimeChart';
 import { OCCUPANCY_ZONE_Y_START, OCCUPANCY_ZONE_HEIGHT, FONTS, COLORS } from '../../../lib/consts';
 import type { OccupancyZone } from '../../../lib/types';
 

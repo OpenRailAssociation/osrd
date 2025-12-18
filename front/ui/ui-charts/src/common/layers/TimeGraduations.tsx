@@ -1,14 +1,14 @@
 import { useCallback, useContext } from 'react';
 
-import { BLACK_ALPHA_25, GREY_50 } from '../helpers/colors';
-import type { DrawingFunction } from '../types';
-import { useDraw } from '../hooks/useCanvas';
-import { MINUTE } from '../../spaceTimeChart/lib/consts';
+import { MINUTE } from '../../common/consts';
+import { computeVisibleTimeMarkers, getCrispLineCoordinate } from '../../common/helpers/utils';
 import { MouseContext, SpaceTimeChartCanvasContext } from '../../spaceTimeChart/lib/context';
 import type { SpaceTimeChartContextType } from '../../spaceTimeChart/lib/types';
-import { computeVisibleTimeMarkers, getCrispLineCoordinate } from '../../spaceTimeChart/utils/canvas';
+import { BLACK_ALPHA_25, GREY_50 } from '../helpers/colors';
+import { useDraw } from '../hooks/useCanvas';
+import type { DrawingFunction } from '../types';
 
-const TimeGraduations = () => {
+export const TimeGraduations = () => {
   const { position, isHover } = useContext(MouseContext);
   const mouseX = position.x;
   const drawingFunction = useCallback<DrawingFunction<SpaceTimeChartContextType>>(
@@ -121,5 +121,3 @@ const TimeGraduations = () => {
 
   return null;
 };
-
-export default TimeGraduations;
