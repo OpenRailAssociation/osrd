@@ -277,8 +277,8 @@ const TimetableBoardWrapper = ({
     openModal(
       <DeleteModal
         handleDelete={() => handleTrainsDelete(selectedTrainId)}
-        selectedPacedTrainIds={selectedPacedTrainIds}
-        selectedTrainScheduleIds={selectedTrainScheduleIds}
+        selectedPacedTrainCount={selectedPacedTrainIds.length}
+        selectedTrainScheduleCount={selectedTrainScheduleIds.length}
       />,
       'sm'
     );

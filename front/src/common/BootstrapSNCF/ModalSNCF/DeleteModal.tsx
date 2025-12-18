@@ -1,38 +1,37 @@
 import { useTranslation } from 'react-i18next';
 
 import { ModalBodySNCF, ModalFooterSNCF, useModal } from 'common/BootstrapSNCF/ModalSNCF';
-import type { PacedTrainId, TrainScheduleId } from 'reducers/osrdconf/types';
 
 type DeleteModalProps = {
   handleDelete: () => void;
-  selectedPacedTrainIds: PacedTrainId[];
-  selectedTrainScheduleIds: TrainScheduleId[];
+  selectedPacedTrainCount?: number;
+  selectedTrainScheduleCount?: number;
 };
 
 const DeleteModal = ({
   handleDelete,
-  selectedPacedTrainIds,
-  selectedTrainScheduleIds,
+  selectedPacedTrainCount = 0,
+  selectedTrainScheduleCount: selectedTrainScheduleCount = 0,
 }: DeleteModalProps) => {
   const { t } = useTranslation(['operational-studies', 'translation']);
   const { closeModal } = useModal();
 
   const deleteTimetableItemsComputedLabel = () => {
-    if (selectedPacedTrainIds.length > 0 && selectedTrainScheduleIds.length === 0) {
+    if (selectedPacedTrainCount > 0 && selectedTrainScheduleCount === 0) {
       return t('main.timetable.deletePacedTrainSelectionConfirmation', {
-        selectedPacedTrainsCount: selectedPacedTrainIds.length,
+        selectedPacedTrainsCount: selectedPacedTrainCount,
       });
     }
 
-    if (selectedTrainScheduleIds.length > 0 && selectedPacedTrainIds.length === 0) {
+    if (selectedTrainScheduleCount > 0 && selectedPacedTrainCount === 0) {
       return t('main.timetable.deleteTrainSelectionConfirmation', {
-        selectedTrainSchedulesCount: selectedTrainScheduleIds.length,
+        selectedTrainSchedulesCount: selectedTrainScheduleCount,
       });
     }
 
     return t('main.timetable.deletePacedTrainAndTrainSelectionConfirmation', {
-      selectedPacedTrainsCount: selectedPacedTrainIds.length,
-      selectedTrainSchedulesCount: selectedTrainScheduleIds.length,
+      selectedPacedTrainsCount: selectedPacedTrainCount,
+      selectedTrainSchedulesCount: selectedTrainScheduleCount,
     });
   };
   return (

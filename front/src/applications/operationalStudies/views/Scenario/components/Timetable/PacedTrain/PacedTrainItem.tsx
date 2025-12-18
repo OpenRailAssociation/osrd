@@ -357,8 +357,7 @@ const PacedTrainItem = ({
             openModal(
               <DeleteModal
                 handleDelete={async () => deletePacedTrain()}
-                selectedPacedTrainIds={[pacedTrain.id]}
-                selectedTrainScheduleIds={[]}
+                selectedPacedTrainCount={1}
               />,
               'sm'
             );
