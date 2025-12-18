@@ -6,7 +6,7 @@ import fr.sncf.osrd.envelope.Envelope.Companion.make
 import fr.sncf.osrd.envelope.EnvelopeTestUtils
 import fr.sncf.osrd.envelope_sim.SimpleRollingStock.STANDARD_TRAIN
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue
-import fr.sncf.osrd.pathfinding.Pathfinding.EdgeLocation
+import fr.sncf.osrd.pathfinding.BlockLocation
 import fr.sncf.osrd.stdcm.STDCMAStarHeuristic
 import fr.sncf.osrd.stdcm.STDCMHeuristicBuilder
 import fr.sncf.osrd.stdcm.STDCMStep
@@ -46,11 +46,11 @@ class STDCMHeuristicTests {
 
         val steps =
             listOf(
-                STDCMStep(listOf(EdgeLocation(blocks[0], Offset(50.meters))), null, false),
-                STDCMStep(listOf(EdgeLocation(blocks[1], Offset(25.meters))), null, false),
-                STDCMStep(listOf(EdgeLocation(blocks[1], Offset(75.meters))), null, false),
-                STDCMStep(listOf(EdgeLocation(blocks[2], Offset(0.meters))), null, false),
-                STDCMStep(listOf(EdgeLocation(blocks[3], Offset(100.meters))), 1.0, true),
+                STDCMStep(listOf(BlockLocation(blocks[0], Offset(50.meters))), null, false),
+                STDCMStep(listOf(BlockLocation(blocks[1], Offset(25.meters))), null, false),
+                STDCMStep(listOf(BlockLocation(blocks[1], Offset(75.meters))), null, false),
+                STDCMStep(listOf(BlockLocation(blocks[2], Offset(0.meters))), null, false),
+                STDCMStep(listOf(BlockLocation(blocks[3], Offset(100.meters))), 1.0, true),
             )
 
         val heuristic =
@@ -104,8 +104,8 @@ class STDCMHeuristicTests {
 
         val steps =
             listOf(
-                STDCMStep(listOf(EdgeLocation(blocks[0], Offset(0.meters))), null, false),
-                STDCMStep(listOf(EdgeLocation(blocks[1], Offset(100.meters))), null, true),
+                STDCMStep(listOf(BlockLocation(blocks[0], Offset(0.meters))), null, false),
+                STDCMStep(listOf(BlockLocation(blocks[1], Offset(100.meters))), null, true),
             )
 
         val heuristicWithAllowance =
@@ -164,9 +164,9 @@ class STDCMHeuristicTests {
 
         val steps =
             listOf(
-                STDCMStep(listOf(EdgeLocation(blocks[0], Offset(50.meters))), null, false),
-                STDCMStep(listOf(EdgeLocation(blocks[1], Offset(50.meters))), null, false),
-                STDCMStep(listOf(EdgeLocation(blocks[3], Offset(50.meters))), 1.0, true),
+                STDCMStep(listOf(BlockLocation(blocks[0], Offset(50.meters))), null, false),
+                STDCMStep(listOf(BlockLocation(blocks[1], Offset(50.meters))), null, false),
+                STDCMStep(listOf(BlockLocation(blocks[3], Offset(50.meters))), 1.0, true),
             )
 
         val heuristics =

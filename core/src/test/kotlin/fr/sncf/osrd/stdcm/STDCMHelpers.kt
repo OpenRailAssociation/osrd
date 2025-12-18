@@ -4,7 +4,7 @@ import com.google.common.collect.ImmutableMultimap
 import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.conflicts.SpacingRequirement
 import fr.sncf.osrd.envelope.Envelope
-import fr.sncf.osrd.pathfinding.Pathfinding.EdgeLocation
+import fr.sncf.osrd.pathfinding.BlockLocation
 import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
 import fr.sncf.osrd.sim_infra.api.*
 import fr.sncf.osrd.sim_infra.impl.TemporarySpeedLimitManager
@@ -115,14 +115,11 @@ fun infraExplorerFromBlock(
     blockInfra: BlockInfra,
     block: BlockId,
 ): InfraExplorer {
-    return initInfraExplorer(rawInfra, blockInfra, EdgeLocation(block, Offset(0.meters)))
+    return initInfraExplorer(rawInfra, blockInfra, BlockLocation(block, Offset(0.meters)))
         .elementAt(0)
 }
 
-fun stepsFromLocations(
-    vararg locations: EdgeLocation<BlockId>,
-    stops: Boolean = false,
-): List<STDCMStep> {
+fun stepsFromLocations(vararg locations: BlockLocation, stops: Boolean = false): List<STDCMStep> {
     val duration = if (stops) 0.0 else null
     return locations.map { STDCMStep(listOf(it), duration, stops) }
 }

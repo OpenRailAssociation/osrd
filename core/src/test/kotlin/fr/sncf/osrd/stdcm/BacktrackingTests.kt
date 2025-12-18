@@ -1,7 +1,7 @@
 package fr.sncf.osrd.stdcm
 
 import com.google.common.collect.ImmutableMultimap
-import fr.sncf.osrd.pathfinding.Pathfinding.EdgeLocation
+import fr.sncf.osrd.pathfinding.BlockLocation
 import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.stdcm.preprocessing.OccupancySegment
@@ -47,8 +47,8 @@ class BacktrackingTests {
         val res =
             STDCMPathfindingBuilder()
                 .setInfra(infra.fullInfra())
-                .setStartLocations(setOf(EdgeLocation(block, Offset<Block>(0.meters))))
-                .setEndLocations(setOf(EdgeLocation(block, Offset<Block>(1000.meters))))
+                .setStartLocations(setOf(BlockLocation(block, Offset<Block>(0.meters))))
+                .setEndLocations(setOf(BlockLocation(block, Offset<Block>(1000.meters))))
                 .setUnavailableTimes(occupancyGraph)
                 .run() ?: return
         occupancyTest(res, occupancyGraph)
@@ -90,8 +90,8 @@ class BacktrackingTests {
         val res =
             STDCMPathfindingBuilder()
                 .setInfra(infra.fullInfra())
-                .setStartLocations(setOf(EdgeLocation(firstBlock, Offset<Block>(0.meters))))
-                .setEndLocations(setOf(EdgeLocation(lastBlock, Offset<Block>(5.meters))))
+                .setStartLocations(setOf(BlockLocation(firstBlock, Offset<Block>(0.meters))))
+                .setEndLocations(setOf(BlockLocation(lastBlock, Offset<Block>(5.meters))))
                 .setUnavailableTimes(occupancyGraph)
                 .run() ?: return
         occupancyTest(res, occupancyGraph)
@@ -131,8 +131,8 @@ class BacktrackingTests {
         val res =
             STDCMPathfindingBuilder()
                 .setInfra(infra.fullInfra())
-                .setStartLocations(setOf(EdgeLocation(firstBlock, Offset<Block>(0.meters))))
-                .setEndLocations(setOf(EdgeLocation(secondBlock, Offset<Block>(5.meters))))
+                .setStartLocations(setOf(BlockLocation(firstBlock, Offset<Block>(0.meters))))
+                .setEndLocations(setOf(BlockLocation(secondBlock, Offset<Block>(5.meters))))
                 .setUnavailableTimes(occupancyGraph)
                 .run() ?: return
         occupancyTest(res, occupancyGraph)
@@ -155,8 +155,8 @@ class BacktrackingTests {
         val res =
             STDCMPathfindingBuilder()
                 .setInfra(infra.fullInfra())
-                .setStartLocations(setOf(EdgeLocation(firstBlock, Offset<Block>(0.meters))))
-                .setEndLocations(setOf(EdgeLocation(lastBlock, Offset<Block>(1000.meters))))
+                .setStartLocations(setOf(BlockLocation(firstBlock, Offset<Block>(0.meters))))
+                .setEndLocations(setOf(BlockLocation(lastBlock, Offset<Block>(1000.meters))))
                 .run()!!
         Assertions.assertTrue(res.envelope.continuous)
     }

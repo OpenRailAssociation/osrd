@@ -8,9 +8,8 @@ import fr.sncf.osrd.envelope.EnvelopeTimeInterpolate
 import fr.sncf.osrd.envelope_sim.PhysicsRollingStock
 import fr.sncf.osrd.graph.PathfindingConstraint
 import fr.sncf.osrd.path.interfaces.TrainPath
-import fr.sncf.osrd.pathfinding.Pathfinding.EdgeLocation
+import fr.sncf.osrd.pathfinding.BlockLocation
 import fr.sncf.osrd.sim_infra.api.Block
-import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.stdcm.STDCMStep
 import fr.sncf.osrd.stdcm.graph.TimeData
 import fr.sncf.osrd.train.TrainStop
@@ -85,7 +84,7 @@ interface InfraExplorerWithEnvelope : InfraExplorer {
 /** Init all InfraExplorersWithEnvelope starting at the given location. */
 fun initInfraExplorerWithEnvelope(
     fullInfra: FullInfra,
-    location: EdgeLocation<BlockId>,
+    location: BlockLocation,
     rollingStock: PhysicsRollingStock,
     steps: List<STDCMStep> = listOf(),
     constraints: List<PathfindingConstraint<Block>> = listOf(),
