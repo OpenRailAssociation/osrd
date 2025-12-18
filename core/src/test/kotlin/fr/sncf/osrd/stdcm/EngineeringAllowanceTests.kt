@@ -1,7 +1,7 @@
 package fr.sncf.osrd.stdcm
 
 import com.google.common.collect.ImmutableMultimap
-import fr.sncf.osrd.pathfinding.Pathfinding.EdgeLocation
+import fr.sncf.osrd.pathfinding.BlockLocation
 import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.sim_infra.api.BlockId
@@ -79,8 +79,8 @@ class EngineeringAllowanceTests {
         val res =
             STDCMPathfindingBuilder()
                 .setInfra(infra.fullInfra())
-                .setStartLocations(setOf(EdgeLocation(firstBlock, Offset<Block>(0.meters))))
-                .setEndLocations(setOf(EdgeLocation(thirdBlock, Offset<Block>(1.meters))))
+                .setStartLocations(setOf(BlockLocation(firstBlock, Offset<Block>(0.meters))))
+                .setEndLocations(setOf(BlockLocation(thirdBlock, Offset<Block>(1.meters))))
                 .setUnavailableTimes(occupancyGraph)
                 .setTimeStep(timeStep)
                 .run()!!
@@ -161,8 +161,8 @@ class EngineeringAllowanceTests {
         val res =
             STDCMPathfindingBuilder()
                 .setInfra(infra.fullInfra())
-                .setStartLocations(setOf(EdgeLocation(firstBlock, Offset<Block>(0.meters))))
-                .setEndLocations(setOf(EdgeLocation(lastBlock, Offset<Block>(1000.meters))))
+                .setStartLocations(setOf(BlockLocation(firstBlock, Offset<Block>(0.meters))))
+                .setEndLocations(setOf(BlockLocation(lastBlock, Offset<Block>(1000.meters))))
                 .setUnavailableTimes(occupancyGraph)
                 .setTimeStep(timeStep)
                 .run()!!
@@ -250,8 +250,8 @@ class EngineeringAllowanceTests {
         val res =
             STDCMPathfindingBuilder()
                 .setInfra(infra.fullInfra())
-                .setStartLocations(setOf(EdgeLocation(firstBlock, Offset<Block>(0.meters))))
-                .setEndLocations(setOf(EdgeLocation(lastBlock, Offset<Block>(1000.meters))))
+                .setStartLocations(setOf(BlockLocation(firstBlock, Offset<Block>(0.meters))))
+                .setEndLocations(setOf(BlockLocation(lastBlock, Offset<Block>(1000.meters))))
                 .setUnavailableTimes(occupancyGraph)
                 .setTimeStep(timeStep)
                 .run()!!
@@ -298,8 +298,8 @@ class EngineeringAllowanceTests {
         val res =
             STDCMPathfindingBuilder()
                 .setInfra(infra.fullInfra())
-                .setStartLocations(setOf(EdgeLocation(firstBlock, Offset<Block>(0.meters))))
-                .setEndLocations(setOf(EdgeLocation(thirdBlock, Offset<Block>(1.meters))))
+                .setStartLocations(setOf(BlockLocation(firstBlock, Offset<Block>(0.meters))))
+                .setEndLocations(setOf(BlockLocation(thirdBlock, Offset<Block>(1.meters))))
                 .setUnavailableTimes(occupancyGraph)
                 .setTimeStep(timeStep)
                 .run()!!
@@ -349,8 +349,8 @@ class EngineeringAllowanceTests {
         val res =
             STDCMPathfindingBuilder()
                 .setInfra(infra.fullInfra())
-                .setStartLocations(setOf(EdgeLocation(firstBlock, Offset<Block>(0.meters))))
-                .setEndLocations(setOf(EdgeLocation(forthBlock, Offset<Block>(1.meters))))
+                .setStartLocations(setOf(BlockLocation(firstBlock, Offset<Block>(0.meters))))
+                .setEndLocations(setOf(BlockLocation(forthBlock, Offset<Block>(1.meters))))
                 .setUnavailableTimes(occupancyGraph)
                 .setTimeStep(timeStep)
                 .run()!!
@@ -415,8 +415,8 @@ class EngineeringAllowanceTests {
         val res =
             STDCMPathfindingBuilder()
                 .setInfra(infra.fullInfra())
-                .setStartLocations(setOf(EdgeLocation(blocks.first(), Offset(0.meters))))
-                .setEndLocations(setOf(EdgeLocation(blocks.last(), Offset(1.meters))))
+                .setStartLocations(setOf(BlockLocation(blocks.first(), Offset(0.meters))))
+                .setEndLocations(setOf(BlockLocation(blocks.last(), Offset(1.meters))))
                 .setUnavailableTimes(occupancyGraph)
                 .setMaxRunTime(POSITIVE_INFINITY)
                 .setMaxDepartureDelay(0.0)
@@ -465,8 +465,8 @@ class EngineeringAllowanceTests {
         val res =
             STDCMPathfindingBuilder()
                 .setInfra(infra.fullInfra())
-                .setStartLocations(setOf(EdgeLocation(firstBlock, Offset(0.meters))))
-                .setEndLocations(setOf(EdgeLocation(forthBlock, Offset(1.meters))))
+                .setStartLocations(setOf(BlockLocation(firstBlock, Offset(0.meters))))
+                .setEndLocations(setOf(BlockLocation(forthBlock, Offset(1.meters))))
                 .setUnavailableTimes(occupancyGraph)
                 .setMaxRunTime(POSITIVE_INFINITY)
                 .run() ?: return // No solution found is valid here (and expected)
@@ -510,8 +510,8 @@ class EngineeringAllowanceTests {
         val res =
             STDCMPathfindingBuilder()
                 .setInfra(infra.fullInfra())
-                .setStartLocations(setOf(EdgeLocation(blocks[0], Offset<Block>(0.meters))))
-                .setEndLocations(setOf(EdgeLocation(blocks[2], Offset<Block>(1000.meters))))
+                .setStartLocations(setOf(BlockLocation(blocks[0], Offset<Block>(0.meters))))
+                .setEndLocations(setOf(BlockLocation(blocks[2], Offset<Block>(1000.meters))))
                 .setUnavailableTimes(occupancyGraph)
                 .setMaxDepartureDelay(POSITIVE_INFINITY)
                 .run()
@@ -562,8 +562,8 @@ class EngineeringAllowanceTests {
             )
         STDCMPathfindingBuilder()
             .setInfra(infra.fullInfra())
-            .setStartLocations(setOf(EdgeLocation(blocks[0], Offset(0.meters))))
-            .setEndLocations(setOf(EdgeLocation(blocks[4], Offset(1000.meters))))
+            .setStartLocations(setOf(BlockLocation(blocks[0], Offset(0.meters))))
+            .setEndLocations(setOf(BlockLocation(blocks[4], Offset(1000.meters))))
             .setUnavailableTimes(occupancyGraph)
             .setMaxDepartureDelay(POSITIVE_INFINITY)
             .setMaxRunTime(POSITIVE_INFINITY)
@@ -600,8 +600,8 @@ class EngineeringAllowanceTests {
         val res =
             STDCMPathfindingBuilder()
                 .setInfra(infra.fullInfra())
-                .setStartLocations(setOf(EdgeLocation(blocks[0], Offset<Block>(0.meters))))
-                .setEndLocations(setOf(EdgeLocation(blocks[2], Offset<Block>(100.meters))))
+                .setStartLocations(setOf(BlockLocation(blocks[0], Offset<Block>(0.meters))))
+                .setEndLocations(setOf(BlockLocation(blocks[2], Offset<Block>(100.meters))))
                 .setUnavailableTimes(occupancyGraph)
                 .setTimeStep(timeStep)
                 .run()!!
@@ -676,8 +676,8 @@ class EngineeringAllowanceTests {
         val res =
             STDCMPathfindingBuilder()
                 .setInfra(infra.fullInfra())
-                .setStartLocations(setOf(EdgeLocation(firstBlock, Offset(0.meters))))
-                .setEndLocations(setOf(EdgeLocation(thirdBlock, Offset(1.meters))))
+                .setStartLocations(setOf(BlockLocation(firstBlock, Offset(0.meters))))
+                .setEndLocations(setOf(BlockLocation(thirdBlock, Offset(1.meters))))
                 .setUnavailableTimes(occupancyGraph)
                 .setTimeStep(timeStep)
                 .run()!!

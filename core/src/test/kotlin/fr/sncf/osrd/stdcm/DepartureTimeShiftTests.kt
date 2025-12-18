@@ -1,7 +1,7 @@
 package fr.sncf.osrd.stdcm
 
 import com.google.common.collect.ImmutableMultimap
-import fr.sncf.osrd.pathfinding.Pathfinding.EdgeLocation
+import fr.sncf.osrd.pathfinding.BlockLocation
 import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
 import fr.sncf.osrd.sim_infra.api.Block
 import fr.sncf.osrd.stdcm.preprocessing.OccupancySegment
@@ -30,8 +30,8 @@ class DepartureTimeShiftTests {
                 .setInfra(infra.fullInfra())
                 .setStartTime(100.0)
                 .setUnavailableTimes(occupancyGraph)
-                .setStartLocations(setOf(EdgeLocation(firstBlock, Offset<Block>(0.meters))))
-                .setEndLocations(setOf(EdgeLocation(secondBlock, Offset<Block>(50.meters))))
+                .setStartLocations(setOf(BlockLocation(firstBlock, Offset<Block>(0.meters))))
+                .setEndLocations(setOf(BlockLocation(secondBlock, Offset<Block>(50.meters))))
                 .run()!!
         val secondBlockEntryTime =
             (res.departureTime +
@@ -63,8 +63,8 @@ class DepartureTimeShiftTests {
                 .setInfra(infra.fullInfra())
                 .setStartTime(100.0)
                 .setUnavailableTimes(occupancyGraph)
-                .setStartLocations(setOf(EdgeLocation(firstBlock, Offset<Block>(0.meters))))
-                .setEndLocations(setOf(EdgeLocation(secondBlock, Offset<Block>(50.meters))))
+                .setStartLocations(setOf(BlockLocation(firstBlock, Offset<Block>(0.meters))))
+                .setEndLocations(setOf(BlockLocation(secondBlock, Offset<Block>(50.meters))))
                 .run()!!
         val secondBlockEntryTime =
             (res.departureTime +
@@ -102,8 +102,8 @@ class DepartureTimeShiftTests {
             STDCMPathfindingBuilder()
                 .setInfra(infra.fullInfra())
                 .setStartTime(100.0)
-                .setStartLocations(setOf(EdgeLocation(firstBlock, Offset<Block>(0.meters))))
-                .setEndLocations(setOf(EdgeLocation(lastBlock, Offset<Block>(1000.meters))))
+                .setStartLocations(setOf(BlockLocation(firstBlock, Offset<Block>(0.meters))))
+                .setEndLocations(setOf(BlockLocation(lastBlock, Offset<Block>(1000.meters))))
                 .run()!!
         val blocks = res.trainPath.getBlocks().map { infra.getBlockName(it.value) }.toSet()
         Assertions.assertTrue(blocks.contains("b->c2"))
@@ -145,8 +145,8 @@ class DepartureTimeShiftTests {
             STDCMPathfindingBuilder()
                 .setInfra(infra.fullInfra())
                 .setStartTime(100.0)
-                .setStartLocations(setOf(EdgeLocation(firstBlock, Offset<Block>(0.meters))))
-                .setEndLocations(setOf(EdgeLocation(lastBlock, Offset<Block>(1000.meters))))
+                .setStartLocations(setOf(BlockLocation(firstBlock, Offset<Block>(0.meters))))
+                .setEndLocations(setOf(BlockLocation(lastBlock, Offset<Block>(1000.meters))))
                 .setUnavailableTimes(occupancyGraph)
                 .run()!!
         val blocks = res.trainPath.getBlocks().map { infra.getBlockName(it.value) }.toSet()
@@ -194,8 +194,8 @@ class DepartureTimeShiftTests {
             STDCMPathfindingBuilder()
                 .setInfra(infra.fullInfra())
                 .setStartTime(100.0)
-                .setStartLocations(setOf(EdgeLocation(firstBlock, Offset<Block>(0.meters))))
-                .setEndLocations(setOf(EdgeLocation(secondBlock, Offset<Block>(100.meters))))
+                .setStartLocations(setOf(BlockLocation(firstBlock, Offset<Block>(0.meters))))
+                .setEndLocations(setOf(BlockLocation(secondBlock, Offset<Block>(100.meters))))
                 .setUnavailableTimes(occupancyGraph)
                 .run()
         Assertions.assertNull(res)
@@ -236,8 +236,8 @@ class DepartureTimeShiftTests {
             STDCMPathfindingBuilder()
                 .setInfra(infra.fullInfra())
                 .setStartTime(100.0)
-                .setStartLocations(setOf(EdgeLocation(firstBlock, Offset<Block>(0.meters))))
-                .setEndLocations(setOf(EdgeLocation(thirdBlock, Offset<Block>(50.meters))))
+                .setStartLocations(setOf(BlockLocation(firstBlock, Offset<Block>(0.meters))))
+                .setEndLocations(setOf(BlockLocation(thirdBlock, Offset<Block>(50.meters))))
                 .setUnavailableTimes(occupancyGraph)
                 .run()!!
         occupancyTest(res, occupancyGraph)
@@ -272,8 +272,8 @@ class DepartureTimeShiftTests {
             STDCMPathfindingBuilder()
                 .setInfra(infra.fullInfra())
                 .setStartTime(100.0)
-                .setStartLocations(setOf(EdgeLocation(firstBlock, Offset<Block>(0.meters))))
-                .setEndLocations(setOf(EdgeLocation(secondBlock, Offset<Block>(50.meters))))
+                .setStartLocations(setOf(BlockLocation(firstBlock, Offset<Block>(0.meters))))
+                .setEndLocations(setOf(BlockLocation(secondBlock, Offset<Block>(50.meters))))
                 .setUnavailableTimes(occupancyGraph)
                 .run()!!
         occupancyTest(res, occupancyGraph)
@@ -303,8 +303,8 @@ class DepartureTimeShiftTests {
             STDCMPathfindingBuilder()
                 .setInfra(infra.fullInfra())
                 .setStartTime(100.0)
-                .setStartLocations(setOf(EdgeLocation(firstBlock, Offset<Block>(0.meters))))
-                .setEndLocations(setOf(EdgeLocation(secondBlock, Offset<Block>(50.meters))))
+                .setStartLocations(setOf(BlockLocation(firstBlock, Offset<Block>(0.meters))))
+                .setEndLocations(setOf(BlockLocation(secondBlock, Offset<Block>(50.meters))))
                 .setUnavailableTimes(occupancyGraph)
                 .run()!!
         occupancyTest(res, occupancyGraph)
@@ -346,8 +346,8 @@ class DepartureTimeShiftTests {
         val res =
             STDCMPathfindingBuilder()
                 .setInfra(infra.fullInfra())
-                .setStartLocations(setOf(EdgeLocation(firstBlock, Offset<Block>(0.meters))))
-                .setEndLocations(setOf(EdgeLocation(forthBlock, Offset<Block>(1.meters))))
+                .setStartLocations(setOf(BlockLocation(firstBlock, Offset<Block>(0.meters))))
+                .setEndLocations(setOf(BlockLocation(forthBlock, Offset<Block>(1.meters))))
                 .setUnavailableTimes(occupancyGraph)
                 .run()
         Assertions.assertNull(res)
@@ -396,8 +396,8 @@ class DepartureTimeShiftTests {
         val res =
             STDCMPathfindingBuilder()
                 .setInfra(infra.fullInfra())
-                .setStartLocations(setOf(EdgeLocation(firstBlock, Offset<Block>(0.meters))))
-                .setEndLocations(setOf(EdgeLocation(forthBlock, Offset<Block>(1.meters))))
+                .setStartLocations(setOf(BlockLocation(firstBlock, Offset<Block>(0.meters))))
+                .setEndLocations(setOf(BlockLocation(forthBlock, Offset<Block>(1.meters))))
                 .setUnavailableTimes(occupancyGraph)
                 .run()
         Assertions.assertNull(res)
@@ -442,8 +442,8 @@ class DepartureTimeShiftTests {
             STDCMPathfindingBuilder()
                 .setInfra(infra.fullInfra())
                 .setStartTime(100.0)
-                .setStartLocations(setOf(EdgeLocation(firstBlock, Offset<Block>(0.meters))))
-                .setEndLocations(setOf(EdgeLocation(thirdBlock, Offset<Block>(1.meters))))
+                .setStartLocations(setOf(BlockLocation(firstBlock, Offset<Block>(0.meters))))
+                .setEndLocations(setOf(BlockLocation(thirdBlock, Offset<Block>(1.meters))))
                 .setUnavailableTimes(occupancyGraph)
                 .run()!!
         occupancyTest(res, occupancyGraph)
@@ -463,8 +463,8 @@ class DepartureTimeShiftTests {
         val timeStep = 2.0
         STDCMPathfindingBuilder()
             .setInfra(infra.fullInfra())
-            .setStartLocations(setOf(EdgeLocation(firstBlock, Offset(0.meters))))
-            .setEndLocations(setOf(EdgeLocation(lastBlock, Offset(0.meters))))
+            .setStartLocations(setOf(BlockLocation(firstBlock, Offset(0.meters))))
+            .setEndLocations(setOf(BlockLocation(lastBlock, Offset(0.meters))))
             .setUnavailableTimes(occupancyGraph)
             .setTimeStep(timeStep)
             .setMaxDepartureDelay(1000 + 2 * timeStep)
@@ -472,8 +472,8 @@ class DepartureTimeShiftTests {
         val res =
             STDCMPathfindingBuilder()
                 .setInfra(infra.fullInfra())
-                .setStartLocations(setOf(EdgeLocation(firstBlock, Offset<Block>(0.meters))))
-                .setEndLocations(setOf(EdgeLocation(lastBlock, Offset<Block>(0.meters))))
+                .setStartLocations(setOf(BlockLocation(firstBlock, Offset<Block>(0.meters))))
+                .setEndLocations(setOf(BlockLocation(lastBlock, Offset<Block>(0.meters))))
                 .setUnavailableTimes(occupancyGraph)
                 .setTimeStep(timeStep)
                 .setMaxDepartureDelay(1000 - 2 * timeStep)

@@ -4,8 +4,8 @@ import com.google.common.collect.ImmutableMultimap
 import com.google.common.collect.Multimap
 import fr.sncf.osrd.api.FullInfra
 import fr.sncf.osrd.envelope_sim.allowances.AllowanceValue
+import fr.sncf.osrd.pathfinding.BlockLocation
 import fr.sncf.osrd.pathfinding.Pathfinding
-import fr.sncf.osrd.pathfinding.Pathfinding.EdgeLocation
 import fr.sncf.osrd.railjson.schema.rollingstock.Comfort
 import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.sim_infra.impl.TemporarySpeedLimitManager
@@ -63,7 +63,7 @@ data class STDCMPathfindingBuilder(
      * intermediate steps
      */
     fun setStartLocations(
-        startLocations: Set<EdgeLocation<BlockId>>,
+        startLocations: Set<BlockLocation>,
         plannedTimingData: PlannedTimingData? = null,
     ): STDCMPathfindingBuilder {
         steps.add(0, STDCMStep(startLocations, null, false, plannedTimingData))
@@ -75,7 +75,7 @@ data class STDCMPathfindingBuilder(
      * intermediate steps
      */
     fun setEndLocations(
-        endLocations: Set<EdgeLocation<BlockId>>,
+        endLocations: Set<BlockLocation>,
         plannedTimingData: PlannedTimingData? = null,
     ): STDCMPathfindingBuilder {
         steps.add(STDCMStep(endLocations, 0.0, true, plannedTimingData))

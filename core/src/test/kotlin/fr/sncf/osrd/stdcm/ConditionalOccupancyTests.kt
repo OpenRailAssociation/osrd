@@ -2,7 +2,7 @@ package fr.sncf.osrd.stdcm
 
 import com.google.common.collect.ImmutableMultimap
 import fr.sncf.osrd.api.FullInfra
-import fr.sncf.osrd.pathfinding.Pathfinding.EdgeLocation
+import fr.sncf.osrd.pathfinding.BlockLocation
 import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.stdcm.preprocessing.OccupancySegment
 import fr.sncf.osrd.utils.DummyInfra
@@ -44,14 +44,14 @@ class ConditionalOccupancyTests {
         // No conflicts
         val res1 =
             initBuilder(infra.fullInfra(), occupancyGraph, block1)
-                .setEndLocations(setOf(EdgeLocation(block2, Offset(50.meters))))
+                .setEndLocations(setOf(BlockLocation(block2, Offset(50.meters))))
                 .run()
         assertNotNull(res1)
 
         // Conflict
         val res2 =
             initBuilder(infra.fullInfra(), occupancyGraph, block1)
-                .setEndLocations(setOf(EdgeLocation(unavailableBlock, Offset(50.meters))))
+                .setEndLocations(setOf(BlockLocation(unavailableBlock, Offset(50.meters))))
                 .run()
         assertNull(res2)
     }
@@ -89,14 +89,14 @@ class ConditionalOccupancyTests {
         // No conflicts
         val res1 =
             initBuilder(infra.fullInfra(), occupancyGraph, block1)
-                .setEndLocations(setOf(EdgeLocation(block2, Offset(50.meters))))
+                .setEndLocations(setOf(BlockLocation(block2, Offset(50.meters))))
                 .run()
         assertNotNull(res1)
 
         // Conflict
         val res2 =
             initBuilder(infra.fullInfra(), occupancyGraph, block1)
-                .setEndLocations(setOf(EdgeLocation(unavailableBlock, Offset(50.meters))))
+                .setEndLocations(setOf(BlockLocation(unavailableBlock, Offset(50.meters))))
                 .run()
         assertNull(res2)
     }
@@ -175,28 +175,28 @@ class ConditionalOccupancyTests {
         // End location on b --> c: no conflict
         val res1 =
             initBuilder(infra.fullInfra(), occupancyGraph, block1)
-                .setEndLocations(setOf(EdgeLocation(block2, Offset(50.meters))))
+                .setEndLocations(setOf(BlockLocation(block2, Offset(50.meters))))
                 .run()
         assertNotNull(res1)
 
         // End location on d --> e: no conflict
         val res2 =
             initBuilder(infra.fullInfra(), occupancyGraph, block1)
-                .setEndLocations(setOf(EdgeLocation(block4, Offset(50.meters))))
+                .setEndLocations(setOf(BlockLocation(block4, Offset(50.meters))))
                 .run()
         assertNotNull(res2)
 
         // End location on g --> h: no conflict
         val res3 =
             initBuilder(infra.fullInfra(), occupancyGraph, block1)
-                .setEndLocations(setOf(EdgeLocation(block7, Offset(50.meters))))
+                .setEndLocations(setOf(BlockLocation(block7, Offset(50.meters))))
                 .run()
         assertNotNull(res3)
 
         // End location on g --> i: conflict
         val res4 =
             initBuilder(infra.fullInfra(), occupancyGraph, block1)
-                .setEndLocations(setOf(EdgeLocation(unavailableBlock, Offset(50.meters))))
+                .setEndLocations(setOf(BlockLocation(unavailableBlock, Offset(50.meters))))
                 .run()
         assertNull(res4)
     }
@@ -226,8 +226,8 @@ class ConditionalOccupancyTests {
             STDCMPathfindingBuilder()
                 .setInfra(infra.fullInfra())
                 .setUnavailableTimes(occupancyGraph)
-                .setStartLocations(setOf(EdgeLocation(blocks[0], Offset(0.meters))))
-                .setEndLocations(setOf(EdgeLocation(blocks[2], Offset(50.meters))))
+                .setStartLocations(setOf(BlockLocation(blocks[0], Offset(0.meters))))
+                .setEndLocations(setOf(BlockLocation(blocks[2], Offset(50.meters))))
                 .run()!!
         assertTrue { res.departureTime + res.envelope.totalTime >= 3600 }
     }
@@ -240,6 +240,6 @@ class ConditionalOccupancyTests {
         return STDCMPathfindingBuilder()
             .setInfra(fullInfra)
             .setUnavailableTimes(occupancyGraph)
-            .setStartLocations(setOf(EdgeLocation(startBlock, Offset(0.meters))))
+            .setStartLocations(setOf(BlockLocation(startBlock, Offset(0.meters))))
     }
 }

@@ -1,6 +1,6 @@
 package fr.sncf.osrd.stdcm.infra_exploration
 
-import fr.sncf.osrd.pathfinding.Pathfinding.EdgeLocation
+import fr.sncf.osrd.pathfinding.BlockLocation
 import fr.sncf.osrd.pathfinding.constraints.ElectrificationConstraints
 import fr.sncf.osrd.sim_infra.api.BlockId
 import fr.sncf.osrd.sim_infra.api.DirDetectorId
@@ -33,8 +33,8 @@ class InfraExplorerTests {
             initInfraExplorer(
                 infra,
                 infra,
-                EdgeLocation(block, Offset(0.meters)),
-                stepsFromLocations(EdgeLocation(block, infra.getBlockLength(block))),
+                BlockLocation(block, Offset(0.meters)),
+                stepsFromLocations(BlockLocation(block, infra.getBlockLength(block))),
             )
         assertEquals(1, explorers.size)
         val explorer = explorers.first()
@@ -60,8 +60,10 @@ class InfraExplorerTests {
             initInfraExplorer(
                 infra,
                 infra,
-                EdgeLocation(blocks[0], Offset(0.meters)),
-                stepsFromLocations(EdgeLocation(blocks.last(), infra.getBlockLength(blocks.last()))),
+                BlockLocation(blocks[0], Offset(0.meters)),
+                stepsFromLocations(
+                    BlockLocation(blocks.last(), infra.getBlockLength(blocks.last()))
+                ),
             )
         assertEquals(1, firstExplorers.size)
         var explorer = firstExplorers.first()
@@ -118,7 +120,7 @@ class InfraExplorerTests {
 
         // a --> b
         val firstExplorers =
-            initInfraExplorer(infra, infra, EdgeLocation(blocks[0], Offset(0.meters)))
+            initInfraExplorer(infra, infra, BlockLocation(blocks[0], Offset(0.meters)))
         assertEquals(1, firstExplorers.size)
         val firstExplorer = firstExplorers.first()
 
@@ -211,7 +213,7 @@ class InfraExplorerTests {
             initInfraExplorer(
                 infra,
                 infra,
-                EdgeLocation(blocks[0], Offset(0.meters)),
+                BlockLocation(blocks[0], Offset(0.meters)),
                 constraints = constraints,
             )
         assertEquals(1, firstExplorers.size)
@@ -261,7 +263,7 @@ class InfraExplorerTests {
             initInfraExplorer(
                 infra.rawInfra,
                 infra.blockInfra,
-                EdgeLocation(firstBlock, Offset(0.meters)),
+                BlockLocation(firstBlock, Offset(0.meters)),
             )
         assertEquals(2, firstExplorers.size) // There should be one instance per route
     }
@@ -300,7 +302,7 @@ class InfraExplorerTests {
             initInfraExplorer(
                 infra.rawInfra,
                 infra.blockInfra,
-                EdgeLocation(block, Offset(0.meters)),
+                BlockLocation(block, Offset(0.meters)),
             )
         assertEquals(4, explorers.size) // There should be one instance per route
         assertFalse { allEqual(explorers.map { it.getLastEdgeIdentifier() }) }
@@ -338,7 +340,7 @@ class InfraExplorerTests {
             initInfraExplorer(
                     infra.rawInfra,
                     infra.blockInfra,
-                    EdgeLocation(block, Offset(0.meters)),
+                    BlockLocation(block, Offset(0.meters)),
                 )
                 .toList()
         assertEquals(1, explorers.size)
@@ -366,12 +368,12 @@ class InfraExplorerTests {
             initInfraExplorer(
                     infra,
                     infra,
-                    EdgeLocation(blocks[0], Offset(50.meters)),
+                    BlockLocation(blocks[0], Offset(50.meters)),
                     stepsFromLocations(
-                        EdgeLocation(blocks[0], Offset(50.meters)),
-                        EdgeLocation(blocks[1], Offset(50.meters)),
-                        EdgeLocation(blocks[2], Offset(0.meters)),
-                        EdgeLocation(blocks[3], Offset(50.meters)),
+                        BlockLocation(blocks[0], Offset(50.meters)),
+                        BlockLocation(blocks[1], Offset(50.meters)),
+                        BlockLocation(blocks[2], Offset(0.meters)),
+                        BlockLocation(blocks[3], Offset(50.meters)),
                         stops = true,
                     ),
                 )
@@ -404,8 +406,8 @@ class InfraExplorerTests {
             initInfraExplorer(
                     infra.rawInfra,
                     infra.blockInfra,
-                    EdgeLocation(block, Offset(32.meters)),
-                    stepsFromLocations(EdgeLocation(block, Offset(42.meters)), stops = true),
+                    BlockLocation(block, Offset(32.meters)),
+                    stepsFromLocations(BlockLocation(block, Offset(42.meters)), stops = true),
                 )
                 .first()
         val stops = explorers.getStopsInRange()
