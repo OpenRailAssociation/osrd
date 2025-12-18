@@ -2,7 +2,7 @@ import { useCallback, useContext } from 'react';
 
 import { BLACK_ALPHA_25, GREY_50 } from '../helpers/colors';
 import type { DrawingFunction } from '../types';
-import { useDraw } from '../useCanvas';
+import { useDraw } from '../hooks/useCanvas';
 import { MINUTE } from '../../spaceTimeChart/lib/consts';
 import { MouseContext, SpaceTimeChartCanvasContext } from '../../spaceTimeChart/lib/context';
 import type { SpaceTimeChartContextType } from '../../spaceTimeChart/lib/types';

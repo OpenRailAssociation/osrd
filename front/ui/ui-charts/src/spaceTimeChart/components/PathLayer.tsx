@@ -9,7 +9,7 @@ import type {
   PickingElement,
   Point,
 } from '../../common/types';
-import { useDraw, usePicking } from '../../common/useCanvas';
+import { useDraw, usePicking } from '../../common/hooks/useCanvas';
 import { SpaceTimeChartCanvasContext } from '../lib/context';
 import {
   type DataPoint,
