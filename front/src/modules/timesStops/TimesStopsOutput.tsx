@@ -16,7 +16,7 @@ import { TableType, type TimesStopsRow } from './types';
 type TimesStopsOutputProps = {
   infraId: number;
   isValid: boolean;
-  selectedTrain?: Train;
+  selectedTrain: Train;
   simulatedTrain?: SimulationResponseSuccess['final_output'];
   simulatedPath?: CorePathfindingResultSuccess;
   simulatedPathItemTimes?: Extract<SimulationSummary, { isValid: true }>['pathItemTimes'];
