@@ -253,7 +253,9 @@ impl StorageDriver for PgAuthDriver {
                     diesel::sql_types::Array<
                         diesel::sql_types::Nullable<diesel::sql_types::Varchar>,
                     >,
-                >("array_agg(identity)"),
+                >("array_agg(")
+                .bind(authn_user_identity::identity)
+                .sql(")"),
             ))
             .load_stream::<(i64, String, Vec<Option<String>>)>(&mut conn.write().await)
             .await?
