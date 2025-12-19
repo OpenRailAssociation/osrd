@@ -37,7 +37,7 @@
       "NoSuchUser": "Utilisateur inconnu",
       "Unauthorized": "Utilisateur non authentifié",
       "UnknownIdentity": "Identité inconnue '{{identity}}'",
-      "UnknownResource": "Resource inconnue",
+      "UnknownResource": "Ressource inconnue",
       "UnknownResourceType": "Type de ressource inconnu",
       "UnknownSubject": "Sujet inconnu",
       "UnknownUser": "Utilisateur inconnu '{{id}}'"
