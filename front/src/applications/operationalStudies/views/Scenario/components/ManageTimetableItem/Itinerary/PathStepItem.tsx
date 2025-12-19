@@ -23,6 +23,9 @@ type PathStepProps = {
   index?: number;
   hidePathfindingLine?: boolean;
   categoryColors: CategoryColors;
+  onOpInputChange?: (value: string) => void;
+  onOpFocus?: () => void;
+  inputValue?: string;
 };
 
 const PathStepItem = ({
@@ -31,6 +34,9 @@ const PathStepItem = ({
   index,
   hidePathfindingLine,
   categoryColors,
+  onOpInputChange,
+  onOpFocus,
+  inputValue,
 }: PathStepProps) => {
   const { t } = useTranslation('operational-studies', {
     keyPrefix: 'manageTimetableItem.itineraryModal',
@@ -189,14 +195,15 @@ const PathStepItem = ({
         >
           <ComboBox
             id={`pathStep-name-${pathStep?.id ?? 'empty'}`}
-            value={isOpRefMetadata(pathStepMetadata) ? pathStepMetadata.name : ''}
+            value={inputValue ?? (isOpRefMetadata(pathStepMetadata) ? pathStepMetadata.name : '')}
             suggestions={[]}
             getSuggestionLabel={(option) => String(option)}
             onSelectSuggestion={() => {}}
             resetSuggestions={() => {}}
             small
             narrow
-            readOnly
+            onFocus={onOpFocus}
+            onChange={(e) => onOpInputChange?.(e.target.value)}
           />
         </div>
         {pathStep?.location && 'track' in pathStep.location ? (
