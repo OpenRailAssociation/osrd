@@ -7,6 +7,37 @@ import { Duration } from 'utils/duration';
 import rollingstockOpenData2OSRD from '../rollingstock_opendata2osrd.json';
 
 /**
+ * For an array of graou train schedules,
+ * filter out steps with an arrival time set before the previous step departure time.
+ *
+ * Returns both the train schedules with those steps removed, as well as the name of each modified train.
+ */
+
+export const filterInvalidSteps = (
+  importedTrainSchedules: GraouTrainSchedule[]
+): {
+  filteredTrains: GraouTrainSchedule[];
+  modifiedTrainsNumbers: string[];
+} => {
+  const modifiedTrainsNumbers: string[] = [];
+
+  const filteredTrains = importedTrainSchedules.map((trainSchedule) => {
+    const filteredSteps = trainSchedule.steps.filter(
+      (step, i) =>
+        i === 0 ||
+        new Date(step.arrivalTime).getTime() >=
+          new Date(trainSchedule.steps[i - 1].departureTime).getTime()
+    );
+    if (filteredSteps.length < trainSchedule.steps.length) {
+      modifiedTrainsNumbers.push(trainSchedule.trainNumber);
+    }
+    return { ...trainSchedule, steps: filteredSteps };
+  });
+
+  return { filteredTrains, modifiedTrainsNumbers };
+};
+
+/**
  *  Populate the last digit of the UIC for French stations,
  *  which is missing in schedules returned by the Graou api.
  *  It's a checksum which uses the Luhn algorithm.
@@ -33,29 +64,11 @@ const populateUicChecksum = (uic: string): string => {
   return uic + String(checksum);
 };
 
-export function filterInvalidSteps(importedTrainSchedules: GraouTrainSchedule[]): {
-  filteredTrains: GraouTrainSchedule[];
-  modifiedTrainsNumbers: string[];
-} {
-  const modifiedTrainsNumbers: string[] = [];
-
-  const filteredTrains = importedTrainSchedules.map((trainSchedule) => {
-    const filteredSteps = trainSchedule.steps.filter(
-      (step, i) =>
-        i === 0 ||
-        new Date(step.arrivalTime).getTime() >=
-          new Date(trainSchedule.steps[i - 1].departureTime).getTime()
-    );
-    if (filteredSteps.length < trainSchedule.steps.length) {
-      modifiedTrainsNumbers.push(trainSchedule.trainNumber);
-    }
-    return { ...trainSchedule, steps: filteredSteps };
-  });
-
-  return { filteredTrains, modifiedTrainsNumbers };
-}
-
-/** Normalize a rolling stock name by dropping every non digit, non letter character and upper casing.*/
+/**
+ * Normalize a rolling stock name by:
+ * - upper-casing
+ * - removing any non ASCII letter or digit character
+ */
 const normalizeRsName = (rollingStock: string): string =>
   rollingStock.toUpperCase().replace(/[_\W]/g, '');
 
@@ -76,7 +89,10 @@ const matchOpenDataRollingStock = (rollingStock: string | null) => {
   return matchedRollingStock ?? rollingStock;
 };
 
-function generateTrainSchedulePayload(train: GraouTrainSchedule): TrainSchedule | null {
+/**
+ * Generate an osrd train schedule payload from a graou train schedule.
+ */
+const generateTrainSchedulePayload = (train: GraouTrainSchedule): TrainSchedule | null => {
   const trainStartTime = new Date(train.departureTime);
   const { path, schedule } = train.steps.reduce<{
     path: TrainSchedule['path'];
@@ -121,10 +137,10 @@ function generateTrainSchedulePayload(train: GraouTrainSchedule): TrainSchedule 
     constraint_distribution: 'MARECO',
     start_time: trainStartTime.toISOString(),
   };
-}
+};
 
-export function generateTrainSchedulesPayloads(trains: GraouTrainSchedule[]): TrainSchedule[] {
-  return trains
-    .map((train) => generateTrainSchedulePayload(train))
-    .filter((payload) => payload !== null);
-}
+/**
+ * Generate osrd train schedule payloads from an array of graou train schedules.
+ */
+export const generateTrainSchedulesPayloads = (trains: GraouTrainSchedule[]): TrainSchedule[] =>
+  trains.map((train) => generateTrainSchedulePayload(train)).filter((payload) => payload !== null);
