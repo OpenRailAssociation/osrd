@@ -109,6 +109,8 @@ export function formatPacedTrainPayload(
 ): PacedTrain {
   const baseTrain = formatTimetableItemPayload(osrdconf, rollingStockName);
 
+  if (osrdconf.editingItemType === 'trainSchedule') return baseTrain;
+
   const exceptions = osrdconf.addedExceptions.map(({ key, startTime }) => ({
     key,
     start_time: { value: startTime.toISOString() },

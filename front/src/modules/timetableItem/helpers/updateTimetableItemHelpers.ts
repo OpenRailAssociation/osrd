@@ -1,4 +1,4 @@
-import { osrdEditoastApi, type TrainSchedule, type PacedTrain } from 'common/api/osrdEditoastApi';
+import { osrdEditoastApi, type PacedTrain } from 'common/api/osrdEditoastApi';
 import type {
   PacedTrainId,
   PacedTrainWithPacedTrainId,
@@ -61,19 +61,6 @@ export async function createPacedTrain(
   return { ...newPacedTrains[0], id: formatEditoastIdToPacedTrainId(newPacedTrains[0].id) };
 }
 
-async function updateTrainSchedule(
-  dispatch: AppDispatch,
-  id: TrainScheduleId,
-  trainSchedule: TrainSchedule
-) {
-  await dispatch(
-    osrdEditoastApi.endpoints.putTrainScheduleById.initiate({
-      id: extractEditoastIdFromTrainScheduleId(id),
-      trainScheduleForm: trainSchedule,
-    })
-  ).unwrap();
-}
-
 async function updatePacedTrain(dispatch: AppDispatch, id: PacedTrainId, pacedTrain: PacedTrain) {
   await dispatch(
     osrdEditoastApi.endpoints.putPacedTrainById.initiate({
@@ -101,66 +88,31 @@ export async function deletePacedTrains(dispatch: AppDispatch, ids: PacedTrainId
   ).unwrap();
 }
 
-export async function storeTrainSchedule(
-  timetableItemIdToUpdate: TimetableItemId,
-  trainSchedule: TrainSchedule,
-  timetableId: number,
-  dispatch: AppDispatch,
-  upsertTimetableItems: (timetableItems: TimetableItem[]) => void,
-  removeTimetableItems: (timetableItems: TimetableItemId[]) => void
-): Promise<TimetableItem> {
-  if (isTrainScheduleId(timetableItemIdToUpdate)) {
-    await updateTrainSchedule(dispatch, timetableItemIdToUpdate, trainSchedule);
-    const updatedTrainSchedule = {
-      ...trainSchedule,
-      id: timetableItemIdToUpdate,
-      timetable_id: timetableId,
-    };
-    upsertTimetableItems([updatedTrainSchedule]);
-    return updatedTrainSchedule;
-  }
-
-  // Turn a PacedTrain into a TrainSchedule
-  await deletePacedTrains(dispatch, [timetableItemIdToUpdate]);
-  const newTrainSchedule = await createPacedTrain(dispatch, timetableId, trainSchedule);
-
-  removeTimetableItems([timetableItemIdToUpdate]);
-  upsertTimetableItems([newTrainSchedule]);
-  return newTrainSchedule;
-}
-
 export async function storePacedTrain(
   timetableItemIdToUpdate: TimetableItemId,
   pacedTrain: PacedTrain,
   timetableId: number,
   dispatch: AppDispatch,
-  upsertTimetableItems: (timetableItems: TimetableItem[]) => void,
-  removeTimetableItems: (timetableItems: TimetableItemId[]) => void
+  upsertTimetableItems: (timetableItems: TimetableItem[]) => void
 ): Promise<PacedTrainWithPacedTrainId> {
-  if (isPacedTrainId(timetableItemIdToUpdate)) {
-    if (isPacedTrainWithPaced(pacedTrain)) {
-      dispatch(
-        unsetTrainIdsMatchingMissingOccurencesOf({
-          pacedTrainId: timetableItemIdToUpdate,
-          occurrencesPresent: getOcurrencesIds(pacedTrain, timetableItemIdToUpdate),
-        })
-      );
-    }
-    await updatePacedTrain(dispatch, timetableItemIdToUpdate, pacedTrain);
-    const updatedPacedTrain = {
-      ...pacedTrain,
-      id: timetableItemIdToUpdate,
-      timetable_id: timetableId,
-    };
-    upsertTimetableItems([updatedPacedTrain]);
-    return updatedPacedTrain;
+  if (isTrainScheduleId(timetableItemIdToUpdate)) {
+    throw new Error('TrainSchedules are not handled anymore.');
   }
 
-  // Turn a TrainSchedule into a PacedTrain
-  await deleteTrainSchedules(dispatch, [timetableItemIdToUpdate]);
-  const newPacedTrain = await createPacedTrain(dispatch, timetableId, pacedTrain);
-
-  removeTimetableItems([timetableItemIdToUpdate]);
-  upsertTimetableItems([newPacedTrain]);
-  return newPacedTrain;
+  if (isPacedTrainWithPaced(pacedTrain)) {
+    dispatch(
+      unsetTrainIdsMatchingMissingOccurencesOf({
+        pacedTrainId: timetableItemIdToUpdate,
+        occurrencesPresent: getOcurrencesIds(pacedTrain, timetableItemIdToUpdate),
+      })
+    );
+  }
+  await updatePacedTrain(dispatch, timetableItemIdToUpdate, pacedTrain);
+  const updatedPacedTrain = {
+    ...pacedTrain,
+    id: timetableItemIdToUpdate,
+    timetable_id: timetableId,
+  };
+  upsertTimetableItems([updatedPacedTrain]);
+  return updatedPacedTrain;
 }

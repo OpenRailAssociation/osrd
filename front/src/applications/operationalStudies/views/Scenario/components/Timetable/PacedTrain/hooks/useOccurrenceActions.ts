@@ -17,7 +17,7 @@ import type {
   PacedTrainWithPacedWithDetails,
   SimulatedException,
 } from 'modules/timetableItem/types';
-import type { OccurrenceId, TimetableItem, TimetableItemId } from 'reducers/osrdconf/types';
+import type { OccurrenceId, TimetableItem } from 'reducers/osrdconf/types';
 import { updateSelectedTrainId, updateTrainIdUsedForProjection } from 'reducers/simulationResults';
 import { getSelectedTrainId } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
@@ -32,7 +32,6 @@ type OccurrenceActionsParams = {
     occurrenceId?: OccurrenceId
   ) => void;
   upsertTimetableItems: (timetableItems: TimetableItem[]) => void;
-  removePacedTrains: (pacedTrainIdsToRemove: TimetableItemId[]) => void;
 };
 
 const useOccurrenceActions = ({
@@ -40,7 +39,6 @@ const useOccurrenceActions = ({
   occurrences,
   selectPacedTrainToEdit,
   upsertTimetableItems,
-  removePacedTrains,
 }: OccurrenceActionsParams) => {
   const dispatch = useAppDispatch();
   const { timetableId } = useScenarioContext();
@@ -135,8 +133,7 @@ const useOccurrenceActions = ({
         formattedPacedTrain,
         timetableId,
         dispatch,
-        upsertTimetableItems,
-        removePacedTrains
+        upsertTimetableItems
       );
 
       // If we are disabling the selected occurrence, we want to put the selection
@@ -198,8 +195,7 @@ const useOccurrenceActions = ({
         formattedPacedTrain,
         timetableId,
         dispatch,
-        upsertTimetableItems,
-        removePacedTrains
+        upsertTimetableItems
       );
     },
     [pacedTrain]
@@ -219,8 +215,7 @@ const useOccurrenceActions = ({
         updatedPacedTrainPayload,
         timetableId,
         dispatch,
-        upsertTimetableItems,
-        removePacedTrains
+        upsertTimetableItems
       );
     },
     [pacedTrain.paced.exceptions]
