@@ -25,7 +25,6 @@ use utoipa::ToSchema;
 use crate::error::Result;
 use crate::views::path::path_item_cache::PathItemCache;
 use crate::views::path::pathfinding::PathfindingFailure;
-use crate::views::path::pathfinding::PathfindingResult;
 use editoast_models::TemporarySpeedLimit;
 use editoast_models::TowedRollingStock;
 use editoast_models::WorkSchedule;
@@ -244,9 +243,9 @@ impl Request {
         let track_offsets = path_item_cache
             .extract_location_from_path_items(&locations)
             .map_err(|path_res| match path_res {
-                PathfindingResult::Failure(PathfindingFailure::PathfindingInputError(
+                PathfindingFailure::PathfindingInputError(
                     PathfindingInputError::InvalidPathItems { items },
-                )) => StdcmError::InvalidPathItems { items },
+                ) => StdcmError::InvalidPathItems { items },
                 _ => panic!("Unexpected pathfinding result"),
             })?;
 

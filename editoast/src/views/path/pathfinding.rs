@@ -399,7 +399,9 @@ fn build_pathfinding_request(
             PathfindingFailure::PathfindingInputError(PathfindingInputError::NotEnoughPathItems),
         ));
     }
-    let track_offsets = path_item_cache.extract_location_from_path_items(&path_items)?;
+    let track_offsets = path_item_cache
+        .extract_location_from_path_items(&path_items)
+        .map_err(PathfindingResult::Failure)?;
 
     // Create the pathfinding request
     Ok(PathfindingRequest {

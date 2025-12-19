@@ -15,9 +15,8 @@ use crate::models::TrackSectionModel;
 use editoast_models::prelude::*;
 
 use super::pathfinding::PathfindingFailure;
-use super::pathfinding::PathfindingResult;
 
-type TrackOffsetResult = std::result::Result<Vec<Vec<TrackOffset>>, PathfindingResult>;
+type TrackOffsetResult = std::result::Result<Vec<Vec<TrackOffset>>, PathfindingFailure>;
 
 /// Gather information about several path items, factorizing db calls.
 #[derive(Default, Debug)]
@@ -284,12 +283,10 @@ impl PathItemCache {
         }
 
         if !invalid_path_items.is_empty() {
-            return Err(PathfindingResult::Failure(
-                PathfindingFailure::PathfindingInputError(
-                    PathfindingInputError::InvalidPathItems {
-                        items: invalid_path_items,
-                    },
-                ),
+            return Err(PathfindingFailure::PathfindingInputError(
+                PathfindingInputError::InvalidPathItems {
+                    items: invalid_path_items,
+                },
             ));
         }
 
