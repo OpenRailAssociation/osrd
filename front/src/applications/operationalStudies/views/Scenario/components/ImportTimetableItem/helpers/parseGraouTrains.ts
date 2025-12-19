@@ -1,7 +1,12 @@
 import { v4 as uuidV4 } from 'uuid';
 
 import type { GraouTrainSchedule } from 'common/api/graouApi';
-import type { TrainSchedule } from 'common/api/osrdEditoastApi';
+import type {
+  PostInfraByInfraIdMatchOperationalPointsApiArg,
+  PostInfraByInfraIdMatchOperationalPointsApiResponse,
+  TrainSchedule,
+} from 'common/api/osrdEditoastApi';
+import { MAIN_OP_CH_CODES } from 'common/Map/Search/consts';
 import { Duration } from 'utils/duration';
 
 import rollingstockOpenData2OSRD from '../rollingstock_opendata2osrd.json';
@@ -141,3 +146,38 @@ const generateTrainSchedulePayload = (train: GraouTrainSchedule): TrainSchedule 
  */
 export const generateTrainSchedulesPayloads = (trains: GraouTrainSchedule[]): TrainSchedule[] =>
   trains.map((train) => generateTrainSchedulePayload(train));
+
+/**
+ * Populate in place missing secondary codes (ch) for each step of a list of graou train schedules.
+ * Main chs ("BV", "00", "") are prioritized.
+ */
+export const populateMissingSecondaryCodes = async (
+  trainSchedules: GraouTrainSchedule[],
+  infraId: number,
+  postInfraByInfraIdMatchOperationalPoints: (
+    arg: PostInfraByInfraIdMatchOperationalPointsApiArg
+  ) => { unwrap: () => Promise<PostInfraByInfraIdMatchOperationalPointsApiResponse> }
+) => {
+  const stepsWithoutChCode = trainSchedules.flatMap((train) =>
+    train.steps.filter((step) => !step.chCode)
+  );
+  const operational_point_references = stepsWithoutChCode.map((step) => ({
+    operational_point: { uic: Number(populateUicChecksum(step.uic)) },
+  }));
+
+  const related_operational_points = (
+    await postInfraByInfraIdMatchOperationalPoints({
+      infraId,
+      body: { operational_point_references },
+    }).unwrap()
+  ).related_operational_points;
+
+  related_operational_points.forEach((relatedOps, index) => {
+    const step = stepsWithoutChCode[index];
+    const secondaryCodes = relatedOps.map((op) => op.extensions?.sncf?.ch);
+    const preferredCode = secondaryCodes.find(
+      (ch) => ch !== undefined && MAIN_OP_CH_CODES.includes(ch)
+    );
+    step.chCode = preferredCode ?? secondaryCodes[0];
+  });
+};

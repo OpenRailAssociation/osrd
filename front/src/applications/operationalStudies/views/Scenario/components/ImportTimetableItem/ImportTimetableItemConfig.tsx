@@ -4,12 +4,14 @@ import { Download, Search } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
+import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import type { TimetableJsonPayload } from 'applications/operationalStudies/types';
 import {
   type GraouStation,
   type GraouTrainScheduleConfig,
   getGraouTrainSchedules,
 } from 'common/api/graouApi';
+import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { osrdRailwayManagerApi } from 'common/api/osrdRailwayManagerApi';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
@@ -21,7 +23,11 @@ import { useAppDispatch } from 'store';
 import { formatLocalDate } from 'utils/date';
 import { castErrorToFailure } from 'utils/error';
 
-import { filterInvalidSteps, generateTrainSchedulesPayloads } from './helpers/parseGraouTrains';
+import {
+  filterInvalidSteps,
+  generateTrainSchedulesPayloads,
+  populateMissingSecondaryCodes,
+} from './helpers/parseGraouTrains';
 import parseXML from './helpers/parseXML';
 import StationSelector from './ImportTimetableItemStationSelector';
 import {
@@ -40,6 +46,7 @@ const ImportTimetableItemConfig = ({
 }: ImportTimetableItemConfigProps) => {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'importTrains' });
   const railwayManagerUrl = useSelector(getRailwayManagerInterfaceUrl);
+  const { infraId } = useScenarioContext();
   const [from, setFrom] = useState<GraouStation | undefined>();
   const [fromSearchString, setFromSearchString] = useState('');
   const [to, setTo] = useState<GraouStation | undefined>();
@@ -51,6 +58,8 @@ const ImportTimetableItemConfig = ({
   const { openModal, closeModal } = useContext(ModalContext);
   const [postTransformTimetable] =
     osrdRailwayManagerApi.endpoints.postTransformTimetable.useMutation();
+  const [postInfraByInfraIdMatchOperationalPoints] =
+    osrdEditoastApi.endpoints.postInfraByInfraIdMatchOperationalPoints.useLazyQuery();
 
   async function getTrainsFromOpenData(config: GraouTrainScheduleConfig) {
     try {
@@ -68,6 +77,12 @@ const ImportTimetableItemConfig = ({
             }),
           })
         );
+
+      await populateMissingSecondaryCodes(
+        filteredTrains,
+        infraId,
+        postInfraByInfraIdMatchOperationalPoints
+      );
 
       const trainSchedulesPayloads = generateTrainSchedulesPayloads(filteredTrains);
       setTrainsJsonData({ train_schedules: trainSchedulesPayloads, paced_trains: [] });
