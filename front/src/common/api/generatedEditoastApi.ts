@@ -11,6 +11,7 @@ export const addTagTypes = [
   'pathfinding',
   'routes',
   'layers',
+  'level_crossing',
   'scenarios',
   'timetable',
   'paced_train',
@@ -512,6 +513,17 @@ const injectedRtkApi = api
           },
         }),
         providesTags: ['layers'],
+      }),
+      postLevelCrossingOccupancy: build.mutation<
+        PostLevelCrossingOccupancyApiResponse,
+        PostLevelCrossingOccupancyApiArg
+      >({
+        query: (queryArg) => ({
+          url: `/level_crossing_occupancy`,
+          method: 'POST',
+          body: queryArg.body,
+        }),
+        invalidatesTags: ['level_crossing'],
       }),
       getLightRollingStock: build.query<
         GetLightRollingStockApiResponse,
@@ -1998,6 +2010,24 @@ export type GetLayersTileByLayerSlugAndViewSlugZXYApiArg = {
   x: number;
   y: number;
   z: number;
+};
+export type PostLevelCrossingOccupancyApiResponse =
+  /** status 200 Occupancy periods of the given level crossings */ {
+    [key: string]: ({
+      duration: string;
+      time_begin: string;
+    } & {
+      direction: Direction;
+      train_id: number;
+    })[];
+  };
+export type PostLevelCrossingOccupancyApiArg = {
+  body: {
+    electrical_profile_set_id?: number | null;
+    infra_id: number;
+    level_crossing_ids: number[];
+    train_ids: number[];
+  };
 };
 export type GetLightRollingStockApiResponse = /** status 200  */ PaginationStats & {
   results: LightRollingStockWithLiveries[];

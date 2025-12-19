@@ -5,6 +5,7 @@ pub mod electrical_profiles;
 pub mod fonts;
 pub mod infra;
 mod layers;
+mod level_crossing_occupancy;
 mod openapi;
 pub mod operational_studies;
 pub mod pagination;
@@ -477,6 +478,13 @@ fn service_router() -> router::DocumentedRouter {
                             .route("/", delete!(catalog_entry::delete))
                     })
             })
+            //
+            // level_crossings
+            //
+            .route(
+                "/level_crossing_occupancy",
+                post!(level_crossing_occupancy::occupancy),
+            )
     })
 }
 

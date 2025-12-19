@@ -1830,6 +1830,75 @@ paths:
             application/octet-stream:
               schema:
                 type: string
+  /level_crossing_occupancy:
+    post:
+      tags:
+      - level_crossing
+      summary: Get the occupancy of a set of level crossings for a set of trains
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - train_ids
+              - level_crossing_ids
+              - infra_id
+              properties:
+                electrical_profile_set_id:
+                  type:
+                  - integer
+                  - 'null'
+                  format: int64
+                infra_id:
+                  type: integer
+                  format: int64
+                level_crossing_ids:
+                  type: array
+                  items:
+                    type: integer
+                    format: int64
+                train_ids:
+                  type: array
+                  items:
+                    type: integer
+                    format: int64
+        required: true
+      responses:
+        '200':
+          description: Occupancy periods of the given level crossings
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  type: array
+                  items:
+                    allOf:
+                    - type: object
+                      required:
+                      - time_begin
+                      - duration
+                      properties:
+                        duration:
+                          type: string
+                          example: PT5M
+                        time_begin:
+                          type: string
+                          format: date-time
+                    - type: object
+                      required:
+                      - train_id
+                      - direction
+                      properties:
+                        direction:
+                          $ref: '#/components/schemas/Direction'
+                        train_id:
+                          type: integer
+                          format: int64
+                propertyNames:
+                  type: integer
+                  format: int64
   /light_rolling_stock:
     get:
       tags:
