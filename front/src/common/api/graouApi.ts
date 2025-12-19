@@ -44,6 +44,15 @@ export type GraouTrainScheduleConfig = {
 
 const GRAOU_URL = 'https://graou.info';
 
+/**
+ * Request from graou open data all train schedules
+ * with sets departure and arrival stations and in a given time window at a given date.
+ *
+ * Throw if any schedule:
+ * - lacks required fields
+ * - possesses a step lacking required fields
+ * - possesses a step with a non-numeric uic
+ * */
 export const getGraouTrainSchedules = async (config: GraouTrainScheduleConfig) => {
   const params = new URLSearchParams({
     q: 'trains',
@@ -61,10 +70,11 @@ export const getGraouTrainSchedules = async (config: GraouTrainScheduleConfig) =
     ) {
       return true;
     }
-    const hasInvalidSteps = trainSchedule.steps.some((step) =>
-      ['arrivalTime', 'departureTime', 'uic', 'name', 'trigram', 'latitude', 'longitude'].some(
-        (key) => !(key in step)
-      )
+    const hasInvalidSteps = trainSchedule.steps.some(
+      (step) =>
+        ['arrivalTime', 'departureTime', 'uic', 'name', 'trigram', 'latitude', 'longitude'].some(
+          (key) => !(key in step)
+        ) || !/^\d+$/.test(step.uic)
     );
     return hasInvalidSteps;
   });
@@ -78,7 +88,7 @@ export const getGraouTrainSchedules = async (config: GraouTrainScheduleConfig) =
 };
 
 /**
- * Search the stations by name or by trigram
+ * Search graou open data for stations by name or by trigram
  * (trigram if term.length < 3, by name otherwise)
  */
 export const searchGraouStations = async (term: string) => {

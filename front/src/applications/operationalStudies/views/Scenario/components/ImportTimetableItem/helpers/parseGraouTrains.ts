@@ -92,7 +92,7 @@ const matchOpenDataRollingStock = (rollingStock: string | null) => {
 /**
  * Generate an osrd train schedule payload from a graou train schedule.
  */
-const generateTrainSchedulePayload = (train: GraouTrainSchedule): TrainSchedule | null => {
+const generateTrainSchedulePayload = (train: GraouTrainSchedule): TrainSchedule => {
   const trainStartTime = new Date(train.departureTime);
   const { path, schedule } = train.steps.reduce<{
     path: TrainSchedule['path'];
@@ -102,9 +102,6 @@ const generateTrainSchedulePayload = (train: GraouTrainSchedule): TrainSchedule 
       const stepId = uuidV4();
 
       const uic = Number(populateUicChecksum(step.uic));
-      if (Number.isNaN(uic)) {
-        throw new Error('Invalid UIC');
-      }
 
       acc.path.push({
         id: stepId,
@@ -143,4 +140,4 @@ const generateTrainSchedulePayload = (train: GraouTrainSchedule): TrainSchedule 
  * Generate osrd train schedule payloads from an array of graou train schedules.
  */
 export const generateTrainSchedulesPayloads = (trains: GraouTrainSchedule[]): TrainSchedule[] =>
-  trains.map((train) => generateTrainSchedulePayload(train)).filter((payload) => payload !== null);
+  trains.map((train) => generateTrainSchedulePayload(train));
