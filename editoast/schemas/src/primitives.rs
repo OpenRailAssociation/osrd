@@ -4,6 +4,7 @@ mod identifier;
 mod non_blank_string;
 mod object_ref;
 mod object_type;
+mod time_window;
 
 pub use bounding_box::BoundingBox;
 pub use duration::PositiveDuration;
@@ -11,6 +12,7 @@ pub use identifier::Identifier;
 pub use non_blank_string::NonBlankString;
 pub use object_ref::ObjectRef;
 pub use object_type::ObjectType;
+pub use time_window::TimeWindow;
 
 /// This trait should be implemented by all struct that represents an OSRD type.
 pub trait OSRDTyped {

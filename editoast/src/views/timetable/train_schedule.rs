@@ -17,6 +17,7 @@ use database::DbConnectionPoolV2;
 use editoast_derive::EditoastError;
 use editoast_models::prelude::*;
 use editoast_models::train_schedule::TrainScheduleChangeset;
+use schemas::primitives::TimeWindow;
 use schemas::train_schedule::OperationalPointReference;
 use schemas::train_schedule::PathItemLocation;
 use schemas::train_schedule::TrainSchedule;
@@ -884,7 +885,7 @@ pub(in crate::views) struct TrackOccupancy {
     train_schedule_id: i64,
     #[serde(flatten)]
     #[schema(inline)]
-    time_window: track_occupancy::TimeWindow,
+    time_window: TimeWindow,
 }
 
 /// Calculates when and for how long trains occupy track sections at a specific operational point.
