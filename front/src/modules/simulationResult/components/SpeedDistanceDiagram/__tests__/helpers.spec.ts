@@ -51,6 +51,7 @@ describe('formatStops', () => {
         part: {
           position: 0,
           track: 'track',
+          local_track_name: '',
         },
         weight: null,
       },

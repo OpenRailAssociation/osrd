@@ -53,10 +53,10 @@ def _build_scenario_data():
 
     # Add objects on tracks
 
-    op_start.add_part(t_1, 0)
-    op_end.add_part(t_3, 20_000)
-    op_center.add_part(t_2, 1_500)
-    op_takeover.add_part(t_takeover, 1_500)
+    op_start.add_part(t_1, 0, "V1")
+    op_end.add_part(t_3, 20_000, "V1")
+    op_center.add_part(t_2, 1_500, "V1")
+    op_takeover.add_part(t_takeover, 1_500, "V1")
     t_1.add_buffer_stop(label="bf.1", position=0)
     t_3.add_buffer_stop(label="bf.3", position=20_000)
 

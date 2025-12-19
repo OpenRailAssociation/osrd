@@ -19,7 +19,7 @@ def _build_scenario_data():
 
     ne_micro_foo_a = builder.add_track_section(length=200, label="ne.micro.foo_a")
     ne_micro_foo_a.add_curve(0, 200, 2000)
-    station_foo.add_part(ne_micro_foo_a, 100)
+    station_foo.add_part(ne_micro_foo_a, 100, "V1")
     ne_micro_foo_a.add_buffer_stop(label="buffer_stop_a", position=0)
     ne_micro_foo_a.add_detector(label="tde.foo_a-switch_foo", position=175)
     signal = ne_micro_foo_a.add_signal(
@@ -33,7 +33,7 @@ def _build_scenario_data():
     ne_micro_foo_b = builder.add_track_section(length=200, label="ne.micro.foo_b")
     ne_micro_foo_b.add_slope(0, 200, 10)
     ne_micro_foo_b.add_curve(0, 200, 2000)
-    station_foo.add_part(ne_micro_foo_b, 100)
+    station_foo.add_part(ne_micro_foo_b, 100, "V2")
     ne_micro_foo_b.add_buffer_stop(label="buffer_stop_b", position=0)
     ne_micro_foo_b.add_detector(label="tde.foo_b-switch_foo", position=175)
     signal = ne_micro_foo_b.add_signal(
@@ -45,7 +45,7 @@ def _build_scenario_data():
     signal.add_logical_signal("BAL", settings={"Nf": "true"})
 
     ne_micro_bar_a = builder.add_track_section(length=200, label="ne.micro.bar_a")
-    station_bar.add_part(ne_micro_bar_a, 100)
+    station_bar.add_part(ne_micro_bar_a, 100, "V1")
     ne_micro_bar_a.add_buffer_stop(label="buffer_stop_c", position=200)
     ne_micro_bar_a.add_detector(label="tde.track-bar", position=25)
     signal = ne_micro_bar_a.add_signal(

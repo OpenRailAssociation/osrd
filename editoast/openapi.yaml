@@ -10692,6 +10692,9 @@ components:
         document_key:
           type: integer
           format: int64
+    NonBlankString:
+      type: string
+      minLength: 1
     ObjectRef:
       type: object
       required:
@@ -10935,6 +10938,7 @@ components:
       required:
       - track
       - position
+      - local_track_name
       properties:
         extensions:
           type: object
@@ -10950,6 +10954,8 @@ components:
                     type: string
                 additionalProperties: false
           additionalProperties: false
+        local_track_name:
+          $ref: '#/components/schemas/NonBlankString'
         position:
           type: number
           format: double

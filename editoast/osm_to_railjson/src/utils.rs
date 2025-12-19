@@ -462,7 +462,8 @@ pub fn operational_points(
                 .flat_map(|node| {
                     nodes_to_tracks
                         .track_and_position(node)
-                        .map(|(track, position)| OperationalPointPart { track, position, extensions: Default::default() })
+                        // TODO: use the local_ref osm tag instead of this default value
+                        .map(|(track, position)| OperationalPointPart { track, position, local_track_name: "missing local track name".into(), extensions: Default::default() })
                 })
                 .collect();
             // Parts can be empty when the stop_area references stops that are not railway (e.g. bus station)

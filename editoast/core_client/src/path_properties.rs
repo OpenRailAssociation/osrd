@@ -122,6 +122,7 @@ impl OperationalPointOnPath {
             part: OperationalPointPart {
                 track: Identifier("T1".to_string()),
                 position: 0.0,
+                local_track_name: "V1".into(),
                 extensions: OperationalPointPartExtension { sncf: None },
             },
             extensions: OperationalPointExtensions {

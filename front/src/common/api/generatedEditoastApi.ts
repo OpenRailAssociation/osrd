@@ -3059,12 +3059,14 @@ export type NeutralSection = {
   lower_pantograph: boolean;
   track_ranges: DirectionalTrackRange[];
 };
+export type NonBlankString = string;
 export type OperationalPointPart = {
   extensions?: {
     sncf?: null | {
       kp: string;
     };
   };
+  local_track_name: NonBlankString;
   position: number;
   track: string;
 };

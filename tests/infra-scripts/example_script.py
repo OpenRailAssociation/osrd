@@ -67,8 +67,8 @@ def _build_scenario_data():
 
     # Add operational points
     my_op = builder.add_operational_point("my-op")
-    my_op.add_part(tracks[0], 500)
-    my_op.add_part(tracks[1], 500)
+    my_op.add_part(tracks[0], 500, "V1")
+    my_op.add_part(tracks[1], 500, "V2")
 
     # Build infra: Generate BufferStops, TVDSections and Routes
     return ScenarioData(infra=builder.build())

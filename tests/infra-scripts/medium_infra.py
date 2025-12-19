@@ -139,8 +139,8 @@ def create_medium_infra(signaling_system: str) -> ScenarioData:
         uic=8799,
         id="North_West_station_1",
     )
-    north_west.add_part(ti0, 300)
-    north_west_1.add_part(ti1, 250)
+    north_west.add_part(ti0, 300, "V1")
+    north_west_1.add_part(ti1, 250, "V2")
 
     pa0 = builder.add_point_switch(
         label="PA0",
@@ -193,9 +193,9 @@ def create_medium_infra(signaling_system: str) -> ScenarioData:
     )
     # Station
     west = builder.add_operational_point(label="West_station", trigram="WS", uic=8722)
-    west.add_part(ta0, 700)
-    west.add_part(ta1, 500)
-    west.add_part(ta2, 500)
+    west.add_part(ta0, 700, "V1")
+    west.add_part(ta1, 500, "V2")
+    west.add_part(ta2, 500, "V3")
     # Slopes
     ta6.add_slope(begin=4000, end=4300, slope=-3)
     ta6.add_slope(begin=4300, end=4700, slope=-6)
@@ -223,7 +223,7 @@ def create_medium_infra(signaling_system: str) -> ScenarioData:
         trigram="SWS",
         uic=8711,
     )
-    south_west.add_part(tb0, 500)
+    south_west.add_part(tb0, 500, "V1")
     # ================================
     #  Around station C: Mid - West
     # ================================
@@ -325,10 +325,10 @@ def create_medium_infra(signaling_system: str) -> ScenarioData:
     mid_west = builder.add_operational_point(
         label="Mid_West_station", trigram="MWS", uic=8733
     )
-    mid_west.add_part(tc0, 550)
-    mid_west.add_part(tc1, 550)
-    mid_west.add_part(tc2, 450)
-    mid_west.add_part(tc3, 450)
+    mid_west.add_part(tc0, 550, "V1")
+    mid_west.add_part(tc1, 550, "V2")
+    mid_west.add_part(tc2, 450, "V3")
+    mid_west.add_part(tc3, 450, "V4")
     # ================================
     #  Around station D: Mid-East
     # ================================
@@ -387,8 +387,8 @@ def create_medium_infra(signaling_system: str) -> ScenarioData:
     mid_east = builder.add_operational_point(
         label="Mid_East_station", trigram="MES", uic=8744
     )
-    mid_east.add_part(td0, 14000)
-    mid_east.add_part(td1, 14000)
+    mid_east.add_part(td0, 14000, "V1")
+    mid_east.add_part(td1, 14000, "V2")
     # Slopes
     td0.add_slope(begin=6000, end=7000, slope=3)
     td0.add_slope(begin=7000, end=8000, slope=6)
@@ -479,8 +479,8 @@ def create_medium_infra(signaling_system: str) -> ScenarioData:
     te3.set_remaining_coords([(-0.145, LAT_0 + 0.002), (-0.145, LAT_3 - 0.002)])
     # Station
     north = builder.add_operational_point(label="North_station", trigram="NS", uic=8755)
-    north.add_part(te1, 1000)
-    north.add_part(te2, 1025)
+    north.add_part(te1, 1000, "V1")
+    north.add_part(te2, 1025, "V2")
     # Curves
     te3.add_curve(begin=0, end=300, curve=5000)
     te3.add_curve(begin=650, end=850, curve=9000)
@@ -495,7 +495,7 @@ def create_medium_infra(signaling_system: str) -> ScenarioData:
     # ================================
     tf1.set_remaining_coords([(-0.172, 49.47), (-0.167, 49.466), (-0.135, 49.466)])
     south = builder.add_operational_point(label="South_station", trigram="SS", uic=8766)
-    south.add_part(tf1, 4300)
+    south.add_part(tf1, 4300, "V1")
     place_regular_signals_detectors(
         tf1, "F1", signaling_system, min_offset=200.0, max_offset=4300.0
     )
@@ -542,8 +542,8 @@ def create_medium_infra(signaling_system: str) -> ScenarioData:
     north_east = builder.add_operational_point(
         label="North_East_station", trigram="NES", uic=8777
     )
-    north_east.add_part(tg4, 1550)
-    north_east.add_part(tg5, 1500)
+    north_east.add_part(tg4, 1550, "V1")
+    north_east.add_part(tg5, 1500, "V2")
     place_regular_signals_detectors(
         tg1, "G1", signaling_system, min_offset=200.0, max_offset=-200.0
     )
@@ -618,7 +618,7 @@ def create_medium_infra(signaling_system: str) -> ScenarioData:
     south_east = builder.add_operational_point(
         label="South_East_station", trigram="SES", uic=8788
     )
-    south_east.add_part(th1, 4400)
+    south_east.add_part(th1, 4400, "V1")
     # ================================
     #  Speed sections
     # ================================

@@ -54,7 +54,7 @@ export function upsertMapWaypointsInOperationalPoints(
               uic: 0,
             },
           },
-          part: { track: location.track, position: location.offset },
+          part: { track: location.track, position: location.offset, local_track_name: 'V1' },
           position: positionOnPath,
           weight: HIGHEST_PRIORITY_WEIGHT,
         };

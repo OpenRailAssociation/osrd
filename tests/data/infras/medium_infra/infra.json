@@ -1,12 +1,13 @@
 {
-    "version": "3.5.0",
+    "version": "3.5.1",
     "operational_points": [
         {
             "id": "North_West_station",
             "parts": [
                 {
                     "track": "TI0",
-                    "position": 300.0
+                    "position": 300.0,
+                    "local_track_name": "V1"
                 }
             ],
             "weight": null,
@@ -29,7 +30,8 @@
             "parts": [
                 {
                     "track": "TI1",
-                    "position": 250.0
+                    "position": 250.0,
+                    "local_track_name": "V2"
                 }
             ],
             "weight": null,
@@ -52,15 +54,18 @@
             "parts": [
                 {
                     "track": "TA0",
-                    "position": 700.0
+                    "position": 700.0,
+                    "local_track_name": "V1"
                 },
                 {
                     "track": "TA1",
-                    "position": 500.0
+                    "position": 500.0,
+                    "local_track_name": "V2"
                 },
                 {
                     "track": "TA2",
-                    "position": 500.0
+                    "position": 500.0,
+                    "local_track_name": "V3"
                 }
             ],
             "weight": null,
@@ -83,7 +88,8 @@
             "parts": [
                 {
                     "track": "TB0",
-                    "position": 500.0
+                    "position": 500.0,
+                    "local_track_name": "V1"
                 }
             ],
             "weight": null,
@@ -106,19 +112,23 @@
             "parts": [
                 {
                     "track": "TC0",
-                    "position": 550.0
+                    "position": 550.0,
+                    "local_track_name": "V1"
                 },
                 {
                     "track": "TC1",
-                    "position": 550.0
+                    "position": 550.0,
+                    "local_track_name": "V2"
                 },
                 {
                     "track": "TC2",
-                    "position": 450.0
+                    "position": 450.0,
+                    "local_track_name": "V3"
                 },
                 {
                     "track": "TC3",
-                    "position": 450.0
+                    "position": 450.0,
+                    "local_track_name": "V4"
                 }
             ],
             "weight": null,
@@ -141,11 +151,13 @@
             "parts": [
                 {
                     "track": "TD0",
-                    "position": 14000.0
+                    "position": 14000.0,
+                    "local_track_name": "V1"
                 },
                 {
                     "track": "TD1",
-                    "position": 14000.0
+                    "position": 14000.0,
+                    "local_track_name": "V2"
                 }
             ],
             "weight": null,
@@ -168,11 +180,13 @@
             "parts": [
                 {
                     "track": "TE1",
-                    "position": 1000.0
+                    "position": 1000.0,
+                    "local_track_name": "V1"
                 },
                 {
                     "track": "TE2",
-                    "position": 1025.0
+                    "position": 1025.0,
+                    "local_track_name": "V2"
                 }
             ],
             "weight": null,
@@ -195,7 +209,8 @@
             "parts": [
                 {
                     "track": "TF1",
-                    "position": 4300.0
+                    "position": 4300.0,
+                    "local_track_name": "V1"
                 }
             ],
             "weight": null,
@@ -218,11 +233,13 @@
             "parts": [
                 {
                     "track": "TG4",
-                    "position": 1550.0
+                    "position": 1550.0,
+                    "local_track_name": "V1"
                 },
                 {
                     "track": "TG5",
-                    "position": 1500.0
+                    "position": 1500.0,
+                    "local_track_name": "V2"
                 }
             ],
             "weight": null,
@@ -245,7 +262,8 @@
             "parts": [
                 {
                     "track": "TH1",
-                    "position": 4400.0
+                    "position": 4400.0,
+                    "local_track_name": "V1"
                 }
             ],
             "weight": null,

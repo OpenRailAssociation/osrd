@@ -43,9 +43,9 @@ def _build_scenario_data() -> ScenarioData:
     t_center = builder.add_track_section(length=10_000, label="t_center")
 
     # Add objects on tracks
-    op_a.add_part(t_a, 0)
-    op_b.add_part(t_b, 0)
-    op_c.add_part(t_center, 10_000)
+    op_a.add_part(t_a, 0, "V1")
+    op_b.add_part(t_b, 0, "V1")
+    op_c.add_part(t_center, 10_000, "V1")
     t_a.add_buffer_stop(label="bf.a", position=0)
     t_b.add_buffer_stop(label="bf.b", position=0)
     t_center.add_buffer_stop(label="bf.c", position=10_000)

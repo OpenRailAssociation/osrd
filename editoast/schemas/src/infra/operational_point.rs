@@ -23,7 +23,7 @@ pub struct OperationalPoint {
     pub weight: Option<u8>,
 }
 
-#[derive(Debug, Educe, Clone, PartialEq, Deserialize, Serialize, ToSchema)]
+#[derive(Debug, Educe, Clone, PartialEq, Serialize, Deserialize, ToSchema)]
 #[serde(deny_unknown_fields)]
 #[educe(Default)]
 pub struct OperationalPointPart {
@@ -31,6 +31,7 @@ pub struct OperationalPointPart {
     #[schema(inline)]
     pub track: Identifier,
     pub position: f64,
+    pub local_track_name: NonBlankString,
     #[serde(default)]
     #[schema(inline)]
     pub extensions: OperationalPointPartExtension,

@@ -67,10 +67,14 @@ private fun makeOperationalPoints(
             rawInfra.getTrackChunkOffset(rawInfra.getOperationalPointPartChunk(opPartId)).distance +
                 chunkOffset.distance
         val opPartProps = rawInfra.getOperationalPointPartProps(opPartId)
+        val localTrackName =
+            opPartProps["local_track_name"]
+                ?: throw IllegalArgumentException("Missing required 'local_track_name'")
         val opPartResult =
             OperationalPointPartResponse(
                 trackSectionName,
                 opPartTrackSectionOffset.meters,
+                localTrackName,
                 if (opPartProps["kp"] == null) null
                 else
                     OperationalPointPartExtension(
