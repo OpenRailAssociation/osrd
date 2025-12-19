@@ -444,6 +444,10 @@
   "OperationalPointPart": {
     "description": "Operational point part is a single point on the infrastructure. It's linked to an operational point.",
     "properties": {
+      "local_track_name": {
+        "description": "Local track name for this operational point part",
+        "title": "Local track name"
+      },
       "position": {
         "description": "Offset of the point in meters to the beginning of the track section",
         "title": "Position"

@@ -1,16 +1,18 @@
 {
-    "version": "3.5.0",
+    "version": "3.5.1",
     "operational_points": [
         {
             "id": "op.station_foo",
             "parts": [
                 {
                     "track": "ne.micro.foo_a",
-                    "position": 100.0
+                    "position": 100.0,
+                    "local_track_name": "V1"
                 },
                 {
                     "track": "ne.micro.foo_b",
-                    "position": 100.0
+                    "position": 100.0,
+                    "local_track_name": "V2"
                 }
             ],
             "weight": null,
@@ -33,7 +35,8 @@
             "parts": [
                 {
                     "track": "ne.micro.bar_a",
-                    "position": 100.0
+                    "position": 100.0,
+                    "local_track_name": "V1"
                 }
             ],
             "weight": null,

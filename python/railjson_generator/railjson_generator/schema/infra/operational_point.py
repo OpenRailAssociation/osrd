@@ -1,7 +1,11 @@
 from dataclasses import dataclass
-from typing import List, Optional
+from typing import Annotated, List, Optional
+
+from pydantic import StringConstraints
 
 from osrd_schemas import infra
+
+NonBlankStr = Annotated[str, StringConstraints(min_length=1)]
 
 
 @dataclass
@@ -31,8 +35,8 @@ class OperationalPoint:
         self.id = id or label
         self.ch = ch
 
-    def add_part(self, track, offset):
-        op_part = OperationalPointPart(self, offset)
+    def add_part(self, track, offset, local_track_name):
+        op_part = OperationalPointPart(self, offset, local_track_name)
         track.operational_points.append(op_part)
         self.parts.append(op_part)
 
@@ -41,9 +45,11 @@ class OperationalPoint:
 class OperationalPointPart:
     operational_point: OperationalPoint
     position: float
+    local_track_name: str
 
     def to_rjs(self, track):
         return infra.OperationalPointPart(
             track=track.id,
             position=self.position,
+            local_track_name=self.local_track_name,
         )

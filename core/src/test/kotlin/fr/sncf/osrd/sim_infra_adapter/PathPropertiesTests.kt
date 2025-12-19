@@ -103,7 +103,7 @@ class PathPropertiesTests {
         rjsInfra.operationalPoints.add(
             RJSOperationalPoint(
                 "new_op_1",
-                listOf(RJSOperationalPointPart("ne.micro.foo_a", 200.0, null)),
+                listOf(RJSOperationalPointPart("ne.micro.foo_a", 200.0, "V1", null)),
                 null,
                 null,
             )
@@ -111,7 +111,7 @@ class PathPropertiesTests {
         rjsInfra.operationalPoints.add(
             RJSOperationalPoint(
                 "new_op_2",
-                listOf(RJSOperationalPointPart("ne.micro.bar_a", 0.0, null)),
+                listOf(RJSOperationalPointPart("ne.micro.bar_a", 0.0, "V1", null)),
                 null,
                 null,
             )
@@ -156,6 +156,7 @@ class PathPropertiesTests {
                         RJSOperationalPointPart(
                             "TA0",
                             1_000.0,
+                            "V1",
                             RJSOperationalPointPartExtensions(
                                 RJSOperationalPointPartSncfExtension("kp1")
                             ),
@@ -163,6 +164,7 @@ class PathPropertiesTests {
                         RJSOperationalPointPart(
                             "TA0",
                             1_500.0,
+                            "V1",
                             RJSOperationalPointPartExtensions(
                                 RJSOperationalPointPartSncfExtension("kp2")
                             ),
@@ -180,11 +182,12 @@ class PathPropertiesTests {
                         RJSOperationalPointPart(
                             "TA1",
                             0.0,
+                            "V1",
                             RJSOperationalPointPartExtensions(
                                 RJSOperationalPointPartSncfExtension("kp3")
                             ),
                         ),
-                        RJSOperationalPointPart("TA1", 1_950.0, null),
+                        RJSOperationalPointPart("TA1", 1_950.0, "V1", null),
                     ),
                     null,
                     null,

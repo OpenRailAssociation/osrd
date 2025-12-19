@@ -82,7 +82,7 @@ const createVirtualOp = (
         trigram: opRef.type === 'trigram' ? opRef.trigram : '',
       },
     },
-    part: { track: '', position: 0 },
+    part: { track: '', position: 0, local_track_name: 'V1' },
     position,
     weight,
   };
@@ -246,7 +246,12 @@ const usePathProjection = (
         normalizedOps.push({
           id: matchedOp.id,
           extensions: matchedOp.extensions,
-          part: matchedOp.parts.at(0) || { track: '', position: 0, extensions: undefined },
+          part: matchedOp.parts.at(0) || {
+            track: '',
+            position: 0,
+            local_track_name: 'V1',
+            extensions: undefined,
+          },
           position,
           weight,
         });

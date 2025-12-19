@@ -1,5 +1,6 @@
 package fr.sncf.osrd.railjson.schema.infra.trackranges;
 
+import com.squareup.moshi.Json;
 import edu.umd.cs.findbugs.annotations.SuppressFBWarnings;
 import fr.sncf.osrd.railjson.schema.infra.trackobjects.RJSTrackObject;
 import java.util.Objects;
@@ -7,13 +8,21 @@ import org.jetbrains.annotations.Nullable;
 
 @SuppressFBWarnings({"URF_UNREAD_PUBLIC_OR_PROTECTED_FIELD"})
 public class RJSOperationalPointPart extends RJSTrackObject {
+    @Json(name = "local_track_name")
+    @Nullable
+    public String localTrackName;
+
     @Nullable
     public RJSOperationalPointPartExtensions extensions;
 
     public RJSOperationalPointPart(
-            String track, double position, @Nullable RJSOperationalPointPartExtensions extensions) {
+            String track,
+            double position,
+            @Nullable String localTrackName,
+            @Nullable RJSOperationalPointPartExtensions extensions) {
         this.track = track;
         this.position = position;
+        this.localTrackName = localTrackName;
         this.extensions = extensions;
     }
 

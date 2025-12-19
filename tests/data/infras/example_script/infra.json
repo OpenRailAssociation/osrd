@@ -1,16 +1,18 @@
 {
-    "version": "3.5.0",
+    "version": "3.5.1",
     "operational_points": [
         {
             "id": "my-op",
             "parts": [
                 {
                     "track": "track.0",
-                    "position": 500.0
+                    "position": 500.0,
+                    "local_track_name": "V1"
                 },
                 {
                     "track": "track.1",
-                    "position": 500.0
+                    "position": 500.0,
+                    "local_track_name": "V2"
                 }
             ],
             "weight": null,

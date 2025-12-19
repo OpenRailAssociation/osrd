@@ -25,6 +25,7 @@ const getOperationalPoints = (inputs: Op[]): NonNullable<PathProperties['operati
     part: {
       track: op.track,
       position: op.positionOnTrack,
+      local_track_name: 'V1',
     },
     extensions: {
       identifier: {
@@ -107,6 +108,7 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
         part: {
           track: 'TA1',
           position: 500,
+          local_track_name: 'V1',
         },
         extensions: {
           identifier: {
@@ -128,6 +130,7 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
         part: {
           track: 'TA6',
           position: 7746000,
+          local_track_name: 'V1',
         },
         position: 9246000,
         weight: 100,
@@ -137,6 +140,7 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
         part: {
           track: 'TC1',
           position: 550,
+          local_track_name: 'V1',
         },
         extensions: {
           identifier: {
@@ -152,6 +156,7 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
         part: {
           track: 'TD0',
           position: 14000,
+          local_track_name: 'V1',
         },
         extensions: {
           identifier: {
@@ -219,6 +224,7 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
         part: {
           track: 'TA6',
           position: 6481000,
+          local_track_name: 'V1',
         },
         position: 0,
         weight: 100,
@@ -228,6 +234,7 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
         part: {
           track: 'TC0',
           position: 550,
+          local_track_name: 'V1',
         },
         extensions: {
           identifier: {
@@ -249,6 +256,7 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
         part: {
           track: 'TC0',
           position: 679000,
+          local_track_name: 'V1',
         },
         position: 4198000,
         weight: 100,
@@ -264,6 +272,7 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
         part: {
           track: 'TC0',
           position: 883000,
+          local_track_name: 'V1',
         },
         position: 4402000,
         weight: 100,
@@ -310,6 +319,7 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
         part: {
           track: 'TA6',
           position: 6481000,
+          local_track_name: 'V1',
         },
         position: 0,
         weight: 100,
@@ -325,6 +335,7 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
         part: {
           track: 'TA6',
           position: 4733000,
+          local_track_name: 'V1',
         },
         position: 1748000,
         weight: 100,
@@ -381,6 +392,7 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
         part: {
           track: 'TA1',
           position: 500,
+          local_track_name: 'V1',
         },
         extensions: {
           identifier: {
@@ -396,6 +408,7 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
         part: {
           track: 'TC1',
           position: 550,
+          local_track_name: 'V1',
         },
         extensions: {
           identifier: {
@@ -411,6 +424,7 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
         part: {
           track: 'TD0',
           position: 14000,
+          local_track_name: 'V1',
         },
         extensions: {
           identifier: {

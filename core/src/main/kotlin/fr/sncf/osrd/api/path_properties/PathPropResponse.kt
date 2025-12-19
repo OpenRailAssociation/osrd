@@ -39,6 +39,7 @@ data class OperationalPointResponse(
 data class OperationalPointPartResponse(
     val track: String,
     val position: Double,
+    @Json(name = "local_track_name") val localTrackName: String,
     val extensions: OperationalPointPartExtension?,
 )
 
