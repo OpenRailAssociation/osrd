@@ -536,8 +536,8 @@ impl Authentication {
         }
     }
 
-    /// Checks if the issuer of the request has the required roles. Always returns `false` if the
-    /// request is unauthenticated.
+    /// Checks if the issuer of the request has at least one of the required roles.
+    /// Always returns `false` if the request is unauthenticated.
     async fn check_roles(&self, required_roles: HashSet<Role>) -> Result<bool, AuthorizerError> {
         match self {
             Authentication::SkipAuthorization { .. } => Ok(true),
