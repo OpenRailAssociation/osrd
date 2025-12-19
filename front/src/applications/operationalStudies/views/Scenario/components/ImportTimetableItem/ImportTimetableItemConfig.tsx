@@ -1,7 +1,6 @@
 import { useState, useContext } from 'react';
 
 import { Download, Search } from '@osrd-project/ui-icons';
-import { isEmpty } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 
@@ -54,36 +53,29 @@ const ImportTimetableItemConfig = ({
     osrdRailwayManagerApi.endpoints.postTransformTimetable.useMutation();
 
   async function getTrainsFromOpenData(config: GraouTrainScheduleConfig) {
-    setIsLoading(true);
-    setTrainsJsonData({ train_schedules: [], paced_trains: [] });
-
-    let result;
     try {
-      result = await getGraouTrainSchedules(config);
+      setIsLoading(true);
+      setTrainsJsonData({ train_schedules: [], paced_trains: [] });
+      const graouTrains = await getGraouTrainSchedules(config);
+
+      const { filteredTrains, modifiedTrainsNumbers } = filterInvalidSteps(graouTrains);
+      if (modifiedTrainsNumbers.length)
+        dispatch(
+          setWarning({
+            title: t('warningMessages.warning'),
+            text: t('warningMessages.warningFilteredStepImport', {
+              trainNumbers: modifiedTrainsNumbers,
+            }),
+          })
+        );
+
+      const trainSchedulesPayloads = generateTrainSchedulesPayloads(filteredTrains);
+      setTrainsJsonData({ train_schedules: trainSchedulesPayloads, paced_trains: [] });
     } catch (error) {
       dispatch(setFailure(castErrorToFailure(error)));
+    } finally {
       setIsLoading(false);
-      return;
     }
-
-    const { filteredTrains, modifiedTrainsNumbers } = filterInvalidSteps(result);
-    if (modifiedTrainsNumbers.length)
-      dispatch(
-        setWarning({
-          title: t('warningMessages.warning'),
-          text: t('warningMessages.warningFilteredStepImport', {
-            trainNumbers: modifiedTrainsNumbers,
-          }),
-        })
-      );
-
-    if (filteredTrains && !isEmpty(filteredTrains)) {
-      const trainSchedulesPayloads = generateTrainSchedulesPayloads(filteredTrains);
-
-      setTrainsJsonData({ train_schedules: trainSchedulesPayloads, paced_trains: [] });
-    }
-
-    setIsLoading(false);
   }
 
   function defineConfig() {
