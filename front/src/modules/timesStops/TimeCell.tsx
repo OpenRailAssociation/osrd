@@ -1,14 +1,14 @@
 import { useState } from 'react';
 
 const TIME_MASK = [
-  { char: '-', isEditable: true, pattern: /[0-2]/, value: 'hours' },
-  { char: '-', isEditable: true, pattern: /[0-9]/, value: 'hours' },
-  { char: ':', isEditable: false, pattern: null },
-  { char: '-', isEditable: true, pattern: /[0-5]/, value: 'minutes' },
-  { char: '-', isEditable: true, pattern: /[0-9]/, value: 'minutes' },
-  { char: ':', isEditable: false, pattern: null },
-  { char: '-', isEditable: true, pattern: /[0-5]/, value: 'seconds' },
-  { char: '-', isEditable: true, pattern: /[0-9]/, value: 'seconds' },
+  { char: '-', isEditable: true, value: 'twentyTens' },
+  { char: '-', isEditable: true, value: 'twentyUnits' },
+  { char: ':', isEditable: false },
+  { char: '-', isEditable: true, value: 'sixtyTens' },
+  { char: '-', isEditable: true, value: 'sixtyUnits' },
+  { char: ':', isEditable: false },
+  { char: '-', isEditable: true, value: 'sixtyTens' },
+  { char: '-', isEditable: true, value: 'sixtyUnits' },
 ];
 
 // Converts a raw digit string into a masked time string
@@ -23,7 +23,40 @@ const applyMask = (rawDigits: string): string => {
       continue;
     }
 
-    if (digitIndex < rawDigits.length && maskInfo.pattern!.test(rawDigits[digitIndex])) {
+    if (digitIndex < rawDigits.length) {
+      switch (maskInfo.value) {
+        case 'twentyTens': {
+          const tensDigit = parseInt(rawDigits[digitIndex], 10);
+          if (tensDigit > 2) {
+            result += '2';
+            digitIndex++;
+            continue;
+          }
+          break;
+        }
+        case 'twentyUnits': {
+          const tensDigit = parseInt(result[0], 10);
+          const unitDigit = parseInt(rawDigits[digitIndex], 10);
+          if (tensDigit === 2 && unitDigit > 3) {
+            result += '3';
+            digitIndex++;
+            continue;
+          }
+          break;
+        }
+        case 'sixtyTens': {
+          const tensDigit = parseInt(rawDigits[digitIndex], 10);
+          if (tensDigit > 5) {
+            result += '5';
+            digitIndex++;
+            continue;
+          }
+          break;
+        }
+        default:
+          break;
+      }
+
       result += rawDigits[digitIndex];
       digitIndex++;
     } else {
@@ -37,9 +70,7 @@ const applyMask = (rawDigits: string): string => {
 
 // Utility to delay execution until after render
 function delayAfterRender(callback: () => void) {
-  setTimeout(() => {
-    callback();
-  }, 0);
+  queueMicrotask(callback);
 }
 
 // Get the next editable position in the input considering the mask
@@ -77,18 +108,6 @@ const TimeCell = (
 
     // If we are inserting characters
     if (rawInput.length >= displayValue.length) {
-      const maskInfo = TIME_MASK[cursorPos - 1];
-      const insertedChar = rawInput[cursorPos - 1];
-
-      // Case when we want to prevent invalid character input
-      if (maskInfo.isEditable && !maskInfo.pattern!.test(insertedChar)) {
-        setDisplayValue(displayValue);
-        delayAfterRender(() => {
-          input.setSelectionRange(cursorPos - 1, cursorPos - 1);
-        });
-        return;
-      }
-
       // Removing duplicate char caused by React's controlled input behavior
       const newRawInput = rawInput.slice(0, cursorPos) + rawInput.slice(cursorPos + 1);
 
