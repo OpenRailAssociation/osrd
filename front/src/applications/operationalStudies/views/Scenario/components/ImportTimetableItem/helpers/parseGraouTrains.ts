@@ -12,6 +12,23 @@ import { Duration } from 'utils/duration';
 import rollingstockOpenData2OSRD from '../rollingstock_opendata2osrd.json';
 
 /**
+ * Narrowing of TrainSchedule type as uic should always be present in graou train schedules steps
+ * (although they also possess trigrams)
+ */
+type TrainScheduleWithUicSteps = Omit<TrainSchedule, 'path'> & {
+  path: {
+    id: string;
+    location: {
+      operational_point: {
+        uic: number;
+        secondary_code?: string;
+        type: 'uic';
+      };
+    };
+  }[];
+};
+
+/**
  * For an array of graou train schedules,
  * filter out steps with an arrival time set before the previous step departure time.
  *
@@ -97,10 +114,10 @@ const matchOpenDataRollingStock = (rollingStock: string | null) => {
 /**
  * Generate an osrd train schedule payload from a graou train schedule.
  */
-const generateTrainSchedulePayload = (train: GraouTrainSchedule): TrainSchedule => {
+const generateTrainSchedulePayload = (train: GraouTrainSchedule): TrainScheduleWithUicSteps => {
   const trainStartTime = new Date(train.departureTime);
   const { path, schedule } = train.steps.reduce<{
-    path: TrainSchedule['path'];
+    path: TrainScheduleWithUicSteps['path'];
     schedule: NonNullable<TrainSchedule['schedule']>;
   }>(
     (acc, step) => {
@@ -144,40 +161,40 @@ const generateTrainSchedulePayload = (train: GraouTrainSchedule): TrainSchedule 
 /**
  * Generate osrd train schedule payloads from an array of graou train schedules.
  */
-export const generateTrainSchedulesPayloads = (trains: GraouTrainSchedule[]): TrainSchedule[] =>
-  trains.map((train) => generateTrainSchedulePayload(train));
+export const generateTrainSchedulesPayloads = (
+  trains: GraouTrainSchedule[]
+): TrainScheduleWithUicSteps[] => trains.map((train) => generateTrainSchedulePayload(train));
 
 /**
- * Populate in place missing secondary codes (ch) for each step of a list of graou train schedules.
+ * Populate in place missing secondary codes (ch) for each step of a list of train schedules with only uic steps.
  * Main chs ("BV", "00", "") are prioritized.
  */
 export const populateMissingSecondaryCodes = async (
-  trainSchedules: GraouTrainSchedule[],
+  trainSchedules: TrainScheduleWithUicSteps[],
   infraId: number,
   postInfraByInfraIdMatchOperationalPoints: (
     arg: PostInfraByInfraIdMatchOperationalPointsApiArg
   ) => { unwrap: () => Promise<PostInfraByInfraIdMatchOperationalPointsApiResponse> }
 ) => {
-  const stepsWithoutChCode = trainSchedules.flatMap((train) =>
-    train.steps.filter((step) => !step.chCode)
+  const locationsWithoutChCode = trainSchedules.flatMap((train) =>
+    train.path
+      .map((step) => step.location)
+      .filter((location) => !location.operational_point.secondary_code)
   );
-  const operational_point_references = stepsWithoutChCode.map((step) => ({
-    operational_point: { uic: Number(populateUicChecksum(step.uic)) },
-  }));
 
   const related_operational_points = (
     await postInfraByInfraIdMatchOperationalPoints({
       infraId,
-      body: { operational_point_references },
+      body: { operational_point_references: locationsWithoutChCode },
     }).unwrap()
   ).related_operational_points;
 
   related_operational_points.forEach((relatedOps, index) => {
-    const step = stepsWithoutChCode[index];
+    const location = locationsWithoutChCode[index];
     const secondaryCodes = relatedOps.map((op) => op.extensions?.sncf?.ch);
     const preferredCode = secondaryCodes.find(
       (ch) => ch !== undefined && MAIN_OP_CH_CODES.includes(ch)
     );
-    step.chCode = preferredCode ?? secondaryCodes[0];
+    location.operational_point.secondary_code = preferredCode ?? secondaryCodes[0];
   });
 };

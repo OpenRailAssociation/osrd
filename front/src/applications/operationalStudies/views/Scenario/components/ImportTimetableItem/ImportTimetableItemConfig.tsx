@@ -78,13 +78,12 @@ const ImportTimetableItemConfig = ({
           })
         );
 
+      const trainSchedulesPayloads = generateTrainSchedulesPayloads(filteredTrains);
       await populateMissingSecondaryCodes(
-        filteredTrains,
+        trainSchedulesPayloads,
         infraId,
         postInfraByInfraIdMatchOperationalPoints
       );
-
-      const trainSchedulesPayloads = generateTrainSchedulesPayloads(filteredTrains);
       setTrainsJsonData({ train_schedules: trainSchedulesPayloads, paced_trains: [] });
     } catch (error) {
       dispatch(setFailure(castErrorToFailure(error)));
