@@ -18,7 +18,6 @@ const ManageTimetableItemModal = ({
   displayTimetableItemManagement,
   setDisplayTimetableItemManagement,
   upsertTimetableItems,
-  removeTimetableItems,
   timetableItemToEditData,
   setTimetableItemToEditData,
   setCollapsedTimetableEdit,
@@ -29,7 +28,6 @@ const ManageTimetableItemModal = ({
       displayTimetableItemManagement={displayTimetableItemManagement}
       setDisplayTimetableItemManagement={setDisplayTimetableItemManagement}
       upsertTimetableItems={upsertTimetableItems}
-      removeTimetableItems={removeTimetableItems}
       timetableItemToEditData={timetableItemToEditData}
       setTimetableItemToEditData={setTimetableItemToEditData}
     />

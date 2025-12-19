@@ -162,7 +162,6 @@ const ScenarioContent = ({ activeBoards }: ScenarioContentProps) => {
             displayTimetableItemManagement={displayTimetableItemManagement}
             setDisplayTimetableItemManagement={setDisplayTimetableItemManagement}
             upsertTimetableItems={upsertTimetableItemsWithNge}
-            removeTimetableItems={removeTimetableItemsWithNge}
             timetableItemToEditData={timetableItemToEditData}
             setTimetableItemToEditData={setTimetableItemToEditData}
             setCollapsedTimetableEdit={() => setCollapsedTimetableEdit(!collapsedTimetableEdit)}

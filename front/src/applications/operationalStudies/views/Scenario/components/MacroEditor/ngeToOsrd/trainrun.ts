@@ -14,7 +14,6 @@ import {
   deleteTrainSchedules,
   fetchTimetableItem,
   storePacedTrain,
-  storeTrainSchedule,
 } from 'modules/timetableItem/helpers/updateTimetableItemHelpers';
 import type {
   PacedTrainWithPacedTrainId,
@@ -565,13 +564,12 @@ export const handleUpdateTimetableItem = async ({
 
   let updatedForwardTrainId: TrainScheduleId | PacedTrainId;
   if (!paced) {
-    const updatedTrainSchedule = await storeTrainSchedule(
+    const updatedTrainSchedule = await storePacedTrain(
       oldForwardTimetableItem.id,
       newForwardTimetableItem,
       timetableId,
       dispatch,
-      addUpsertedTimetableItems,
-      addDeletedTimetableItemIds
+      addUpsertedTimetableItems
     );
     updatedForwardTrainId = updatedTrainSchedule.id;
   } else {
@@ -596,8 +594,7 @@ export const handleUpdateTimetableItem = async ({
       newForwardPacedTrain,
       timetableId,
       dispatch,
-      addUpsertedTimetableItems,
-      addDeletedTimetableItemIds
+      addUpsertedTimetableItems
     );
     updatedForwardTrainId = updatedPacedTrain.id;
   }
@@ -661,17 +658,15 @@ export const handleUpdateTimetableItem = async ({
         newReturnPacedTrainBase,
         timetableId,
         dispatch,
-        addUpsertedTimetableItems,
-        addDeletedTimetableItemIds
+        addUpsertedTimetableItems
       );
     } else {
-      newReturnTimetableItem = await storeTrainSchedule(
+      newReturnTimetableItem = await storePacedTrain(
         oldReturnTimetableItem.id,
         newReturnTimetableItemBase,
         timetableId,
         dispatch,
-        addUpsertedTimetableItems,
-        addDeletedTimetableItemIds
+        addUpsertedTimetableItems
       );
     }
   } else {

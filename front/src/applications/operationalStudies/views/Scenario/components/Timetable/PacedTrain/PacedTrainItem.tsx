@@ -142,7 +142,6 @@ const PacedTrainItem = ({
     occurrences,
     selectPacedTrainToEdit,
     upsertTimetableItems,
-    removePacedTrains,
   });
 
   const [postPacedTrain] = osrdEditoastApi.endpoints.postTimetableByIdPacedTrains.useMutation();
@@ -180,8 +179,7 @@ const PacedTrainItem = ({
       updatedPacedTrainPayload,
       timetableId,
       dispatch,
-      upsertTimetableItems,
-      removePacedTrains
+      upsertTimetableItems
     );
 
     closeModal();

@@ -14,11 +14,7 @@ import {
   getEditingItemType,
   getOperationalStudiesConf,
 } from 'reducers/osrdconf/operationalStudiesConf/selectors';
-import type {
-  TimetableItemId,
-  TimetableItem,
-  TimetableItemToEditData,
-} from 'reducers/osrdconf/types';
+import type { TimetableItem, TimetableItemToEditData } from 'reducers/osrdconf/types';
 import { getSelectedTrainId } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
 
@@ -33,7 +29,6 @@ export type ManageTimetableItemLeftPanelProps = {
   timetableItemToEditData?: TimetableItemToEditData;
   setDisplayTimetableItemManagement: (type: string) => void;
   upsertTimetableItems: (timetableItems: TimetableItem[]) => void;
-  removeTimetableItems: (timetableItems: TimetableItemId[]) => void;
   setTimetableItemToEditData: (timetableItemToEditData?: TimetableItemToEditData) => void;
 };
 
@@ -44,7 +39,6 @@ const ManageTimetableItemLeftPanel = ({
   displayTimetableItemManagement,
   setDisplayTimetableItemManagement,
   upsertTimetableItems,
-  removeTimetableItems,
   timetableItemToEditData,
   setTimetableItemToEditData,
 }: ManageTimetableItemLeftPanelProps) => {
@@ -69,7 +63,6 @@ const ManageTimetableItemLeftPanel = ({
     setIsWorking,
     setDisplayTimetableItemManagement,
     upsertTimetableItems,
-    removeTimetableItems,
     setTimetableItemToEditData,
     timetableItemToEditData,
     selectedTrainId
