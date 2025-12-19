@@ -18,6 +18,7 @@ use editoast_derive::EditoastError;
 use editoast_models::prelude::*;
 use itertools::Itertools;
 use schemas::paced_train::PacedTrain;
+use schemas::primitives::TimeWindow;
 use schemas::train_schedule::OperationalPointReference;
 use schemas::train_schedule::PathItemLocation;
 use serde::Deserialize;
@@ -1153,7 +1154,7 @@ pub(in crate::views) struct TrackOccupancy {
     occurrence_id: OccurrenceId,
     #[serde(flatten)]
     #[schema(inline)]
-    time_window: track_occupancy::TimeWindow,
+    time_window: TimeWindow,
 }
 
 #[editoast_derive::route]

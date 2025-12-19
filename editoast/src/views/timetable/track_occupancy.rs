@@ -1,16 +1,11 @@
-use chrono::DateTime;
 use chrono::Duration;
-use chrono::Utc;
 use core_client::pathfinding::PathfindingResultSuccess;
 use core_client::simulation::CompleteReportTrain;
 use schemas::infra::TrackOffset;
-use schemas::primitives::PositiveDuration;
+use schemas::primitives::TimeWindow;
 use schemas::train_schedule::PathItem;
 use schemas::train_schedule::PathItemLocation;
 use schemas::train_schedule::ScheduleItem;
-use serde::Deserialize;
-use serde::Serialize;
-use utoipa::ToSchema;
 
 use crate::views::path::path_item_cache::PathItemCache;
 use crate::views::path::pathfinding::PathfindingResult;
@@ -19,13 +14,6 @@ use crate::views::projection::find_index_upper;
 use crate::views::projection::linear_interpolate;
 use crate::views::timetable::simulation;
 use crate::views::timetable::simulation::SimulationResponseSuccess;
-
-#[derive(Debug, Clone, Serialize, Deserialize, PartialEq, ToSchema)]
-pub(super) struct TimeWindow {
-    pub(super) time_begin: DateTime<Utc>,
-    #[schema(value_type = chrono::Duration, example = "PT5M")]
-    pub(super) duration: PositiveDuration,
-}
 
 #[derive(Debug, Clone)]
 pub(super) struct TrackOccupancy {
@@ -228,6 +216,7 @@ pub fn find_track_occupancy_for_operational_point(
 pub mod tests {
     use crate::error::InternalError;
     use crate::views::path::pathfinding::PathfindingFailure;
+    use chrono::DateTime;
     use core_client::pathfinding::PathfindingNotFound;
     use core_client::pathfinding::TrackRange;
     use core_client::simulation::ReportTrain;
@@ -237,6 +226,7 @@ pub mod tests {
     use schemas::infra::Direction;
     use schemas::infra::TrackOffset;
     use schemas::primitives::Identifier;
+    use schemas::primitives::PositiveDuration;
     use schemas::train_schedule::OperationalPointIdentifier;
     use schemas::train_schedule::OperationalPointReference;
     use schemas::train_schedule::ReceptionSignal;
