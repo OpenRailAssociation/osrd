@@ -358,7 +358,7 @@ impl StorageDriver for PgAuthDriver {
 
                                     .execute(&mut conn.write().await)
                                 .await
-                                .map_err(database::DatabaseError::from)?;
+                                .map_err(AuthDriverError::from)?;
                         }
                     }
                 }
