@@ -12,8 +12,14 @@ use core_client::simulation::SimulationMargins;
 use core_client::simulation::SimulationPowerRestrictionItem;
 use core_client::simulation::SimulationScheduleItem;
 use core_client::simulation::SpeedLimitProperties;
+use core_task::PathfindingConsist;
+use core_task::SimulationConsist;
+use core_task::SimulationTrain;
+use core_task::SimulationTrainParameters;
+use core_task::SimulationWaypoint;
 use database::DbConnection;
 use itertools::Itertools;
+use ordered_float::OrderedFloat;
 use schemas::train_schedule::Margins;
 use schemas::train_schedule::PathItem;
 use schemas::train_schedule::PowerRestrictionItem;
@@ -29,11 +35,13 @@ use std::iter;
 use std::sync::Arc;
 use tracing::Instrument;
 use tracing::info;
+use uom::si::f64::Velocity;
 use utoipa::ToSchema;
 
 use crate::error::InternalError;
 use crate::error::Result;
 use crate::views::CoreClient;
+use crate::views::path::operational_point_cache::OperationalPointCache;
 use crate::views::path::pathfinding::PathfindingFailure;
 use crate::views::path::pathfinding_from_train_batch;
 use crate::views::rolling_stock::RollingStockError;
@@ -558,6 +566,142 @@ pub async fn consist_train_simulation_batch<T: TrainScheduleLike>(
         .flatten()
         .zip(pathfinding_results)
         .collect())
+}
+
+fn build_pathfinding_consist(
+    physics_consist_parameters: &PhysicsConsistParameters,
+    speed_limit_tag: Option<String>,
+) -> PathfindingConsist {
+    PathfindingConsist {
+        loading_gauge: physics_consist_parameters.traction_engine.loading_gauge,
+        thermal: physics_consist_parameters
+            .traction_engine
+            .effort_curves
+            .has_thermal_curves(),
+        supported_electrifications: physics_consist_parameters
+            .traction_engine
+            .effort_curves
+            .supported_electrification(),
+        supported_signaling_systems: physics_consist_parameters
+            .traction_engine
+            .supported_signaling_systems(),
+        maximum_speed: OrderedFloat(
+            physics_consist_parameters
+                .compute_max_speed()
+                .get::<uom::si::velocity::meter_per_second>(),
+        ),
+        length: OrderedFloat(
+            physics_consist_parameters
+                .compute_length()
+                .get::<uom::si::length::meter>(),
+        ),
+        speed_limit_tag,
+    }
+}
+
+// Panics if the operational point cache doesn’t contain one of the path items of the train occurrence
+pub fn build_simulation_train(
+    train_occurrence: &schemas::TrainOccurrence,
+    physics_consist_parameters: &PhysicsConsistParameters,
+    operational_point_cache: &OperationalPointCache,
+) -> SimulationTrain {
+    let schemas::TrainOccurrence {
+        train_name: _,
+        labels: _,
+        rolling_stock_name: _,
+        start_time: _,
+        path,
+        schedule,
+        margins,
+        initial_speed,
+        comfort,
+        constraint_distribution,
+        speed_limit_tag,
+        power_restrictions,
+        options,
+        category: _,
+    } = train_occurrence;
+    let pathfinding_consist = build_pathfinding_consist(
+        physics_consist_parameters,
+        speed_limit_tag
+            .clone()
+            .map(|non_blank_string| non_blank_string.0),
+    );
+    let simulation_consist =
+        SimulationConsist(PhysicsConsist::from(physics_consist_parameters.clone()));
+    let simulation_train_parameters = SimulationTrainParameters::new(
+        Velocity::new::<uom::si::velocity::meter_per_second>(*initial_speed),
+        *constraint_distribution,
+        *comfort,
+        speed_limit_tag
+            .clone()
+            .map(|non_blank_string| non_blank_string.0),
+        options.clone(),
+    );
+    let mut simulation_train = SimulationTrain::new(
+        simulation_consist,
+        pathfinding_consist,
+        simulation_train_parameters,
+    );
+    let path_item_locations = path
+        .iter()
+        .map(|path_item| &path_item.location)
+        .collect_vec();
+    let track_offsets = operational_point_cache
+        .extract_location_from_path_items(&path_item_locations)
+        .expect("the path item cache should be built out from all the input path items of the train occurrence");
+    let schedule_map = schedule
+        .iter()
+        .map(|schedule_item @ ScheduleItem { at, .. }| (at, schedule_item))
+        .collect::<HashMap<_, _>>();
+    for (track_offsets, PathItem { id, .. }) in track_offsets.iter().zip(path) {
+        let (at, simulation_waypoint) = match schedule_map.get(id) {
+            None => (id, SimulationWaypoint::PathItem),
+            Some(ScheduleItem {
+                at,
+                arrival,
+                stop_for,
+                reception_signal,
+            }) => (
+                at,
+                SimulationWaypoint::ScheduleItem {
+                    arrival_at: arrival.as_ref().map(|a| a.num_milliseconds() as u64),
+                    stop_for: stop_for.as_ref().map(|s| s.num_milliseconds() as u64),
+                    reception_signal: *reception_signal,
+                },
+            ),
+        };
+        simulation_train.push_waypoint(
+            track_offsets.iter().cloned().collect(),
+            at.clone(),
+            simulation_waypoint,
+        )
+    }
+    debug_assert!(
+        path.len() >= 2,
+        "there should be at least 2 path items for a train schedule"
+    );
+    let at_origin = path.first().map(|path_item| &path_item.id);
+    let at_destination = path.last().map(|path_item| &path_item.id);
+    debug_assert_eq!(
+        margins.boundaries.len() + 1,
+        margins.values.len(),
+        "there should be one more margin values than margin boundaries which indicate the intervals (origin and destination omitted)"
+    );
+    itertools::chain!(at_origin, &margins.boundaries, at_destination)
+        .tuple_windows()
+        .zip(&margins.values)
+        .for_each(|((at_from, at_to), margin_value)| {
+            simulation_train.set_margin(at_from, at_to, *margin_value);
+        });
+    power_restrictions.iter().for_each(|power_restriction| {
+        simulation_train.set_power_restriction(
+            &power_restriction.from,
+            &power_restriction.to,
+            power_restriction.value.clone(),
+        );
+    });
+    simulation_train
 }
 
 fn build_simulation_request<T: TrainScheduleLike>(
