@@ -3529,9 +3529,11 @@ export type OperationalPointReference =
 export type TrackReference =
   | {
       track_id: string;
+      type: 'id';
     }
   | {
       track_name: string;
+      type: 'name';
     };
 export type OperationalPointPartReference = {
   operational_point: OperationalPointReference;
@@ -3703,7 +3705,13 @@ export type TrackOffset = {
   /** Track section identifier */
   track: string;
 };
-export type PathItemLocation = TrackOffset | OperationalPointPartReference;
+export type PathItemLocation =
+  | (TrackOffset & {
+      type: 'track_offset';
+    })
+  | (OperationalPointPartReference & {
+      type: 'operational_point_part_reference';
+    });
 export type CorePathfindingInputError =
   | {
       error_type: 'invalid_path_items';

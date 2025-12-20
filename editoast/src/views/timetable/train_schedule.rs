@@ -1121,7 +1121,6 @@ pub mod tests {
             }),
             ..schemas::TrainSchedule::fake()
         };
-
         // Insert train_schedule
         let request = app
             .post(format!("/timetable/{}/train_schedules", timetable.id).as_str())

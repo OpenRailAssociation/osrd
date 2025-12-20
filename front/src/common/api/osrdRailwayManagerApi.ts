@@ -94,13 +94,15 @@ export type Items = {
     id: string;
     /** The location of a path waypoint */
     location:
-      | {
+      | ({
           /** Offset in mm */
           offset: number;
           /** Track section identifier */
           track: string;
-        }
-      | {
+        } & {
+          type: 'track_offset';
+        })
+      | ({
           operational_point:
             | {
                 /** The object id of an operational point */
@@ -126,12 +128,16 @@ export type Items = {
             | (
                 | {
                     track_id: string;
+                    type: 'id';
                   }
                 | {
                     track_name: string;
+                    type: 'name';
                   }
               );
-        };
+        } & {
+          type: 'operational_point_part_reference';
+        });
   }[];
   power_restrictions?: {
     from: string;
@@ -170,13 +176,15 @@ export type Items2 = {
   id: string;
   /** The location of a path waypoint */
   location:
-    | {
+    | ({
         /** Offset in mm */
         offset: number;
         /** Track section identifier */
         track: string;
-      }
-    | {
+      } & {
+        type: 'track_offset';
+      })
+    | ({
         operational_point:
           | {
               /** The object id of an operational point */
@@ -202,12 +210,16 @@ export type Items2 = {
           | (
               | {
                   track_id: string;
+                  type: 'id';
                 }
               | {
                   track_name: string;
+                  type: 'name';
                 }
             );
-      };
+      } & {
+        type: 'operational_point_part_reference';
+      });
 };
 export type Items3 = {
   arrival?: null | Interval;
@@ -281,13 +293,15 @@ export type TransformTimetableResponse = {
       id: string;
       /** The location of a path waypoint */
       location:
-        | {
+        | ({
             /** Offset in mm */
             offset: number;
             /** Track section identifier */
             track: string;
-          }
-        | {
+          } & {
+            type: 'track_offset';
+          })
+        | ({
             operational_point:
               | {
                   /** The object id of an operational point */
@@ -313,12 +327,16 @@ export type TransformTimetableResponse = {
               | (
                   | {
                       track_id: string;
+                      type: 'id';
                     }
                   | {
                       track_name: string;
+                      type: 'name';
                     }
                 );
-          };
+          } & {
+            type: 'operational_point_part_reference';
+          });
     }[];
     power_restrictions?: {
       from: string;

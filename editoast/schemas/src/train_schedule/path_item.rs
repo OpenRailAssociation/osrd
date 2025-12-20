@@ -35,7 +35,7 @@ impl PathItem {
 
 /// The location of a path waypoint
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema, Hash)]
-#[serde(untagged, deny_unknown_fields)]
+#[serde(tag = "type", rename_all = "snake_case", deny_unknown_fields)]
 pub enum PathItemLocation {
     TrackOffset(TrackOffset),
     OperationalPointPartReference(OperationalPointPartReference),
@@ -49,7 +49,7 @@ pub struct OperationalPointPartReference {
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize, ToSchema, Hash)]
-#[serde(untagged, deny_unknown_fields)]
+#[serde(tag = "type", rename_all = "snake_case", deny_unknown_fields)]
 pub enum TrackReference {
     #[schema(title = "TrackReferenceId")]
     Id {
@@ -65,7 +65,7 @@ pub enum TrackReference {
 
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize, ToSchema, Hash)]
 #[serde(deny_unknown_fields)]
-#[serde(tag = "type", rename_all = "lowercase")]
+#[serde(tag = "type", rename_all = "snake_case")]
 pub enum OperationalPointReference {
     #[schema(title = "OperationalPointReferenceId")]
     Id {

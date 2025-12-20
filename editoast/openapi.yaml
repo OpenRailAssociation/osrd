@@ -11196,8 +11196,26 @@ components:
           $ref: '#/components/schemas/PathItemLocation'
     PathItemLocation:
       oneOf:
-      - $ref: '#/components/schemas/TrackOffset'
-      - $ref: '#/components/schemas/OperationalPointPartReference'
+      - allOf:
+        - $ref: '#/components/schemas/TrackOffset'
+        - type: object
+          required:
+          - type
+          properties:
+            type:
+              type: string
+              enum:
+              - track_offset
+      - allOf:
+        - $ref: '#/components/schemas/OperationalPointPartReference'
+        - type: object
+          required:
+          - type
+          properties:
+            type:
+              type: string
+              enum:
+              - operational_point_part_reference
       description: The location of a path waypoint
     PathProperties:
       type: object
@@ -14588,19 +14606,29 @@ components:
         title: TrackReferenceId
         required:
         - track_id
+        - type
         properties:
           track_id:
             type: string
             maxLength: 255
             minLength: 1
+          type:
+            type: string
+            enum:
+            - id
       - type: object
         title: TrackReferenceName
         required:
         - track_name
+        - type
         properties:
           track_name:
             type: string
             minLength: 1
+          type:
+            type: string
+            enum:
+            - name
     TrackSection:
       type: object
       required:
