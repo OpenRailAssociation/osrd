@@ -1,5 +1,6 @@
 use std::collections::HashMap;
 use std::collections::HashSet;
+use std::iter::Extend as _;
 use std::sync::Arc;
 
 use authz;
@@ -12,15 +13,18 @@ use axum::response::IntoResponse;
 use chrono::Duration;
 use core_client::AsCoreRequest;
 use core_client::CoreClient;
+use core_client::pathfinding::PathfindingInputError;
 use core_client::pathfinding::PathfindingResultSuccess;
 use core_client::signal_projection::SignalUpdate;
 use core_client::simulation::PhysicsConsist;
+use core_task::Correlated;
 use database::DbConnection;
 use database::DbConnectionPoolV2;
 use editoast_derive::EditoastError;
 use editoast_models::prelude::*;
 use editoast_models::round_trips::TrainScheduleRoundTrips;
-use itertools::Itertools;
+use futures::StreamExt as _;
+use itertools::Itertools as _;
 use itertools::izip;
 use reqwest::StatusCode;
 use schemas::infra::OperationalPoint;
@@ -33,11 +37,13 @@ use schemas::train_schedule::PathItemLocation;
 use serde::Deserialize;
 use serde::Serialize;
 use thiserror::Error;
+use tokio::sync::Mutex;
 use utoipa::IntoParams;
 use utoipa::ToSchema;
 
 use super::AppState;
 use super::AuthenticationExt;
+use crate::error::EditoastError as _;
 use crate::error::Result;
 use crate::models;
 use crate::models::Infra;
@@ -56,6 +62,7 @@ use crate::views::projection::SpaceTimeCurve;
 use crate::views::projection::compute_projected_train_path_op;
 use crate::views::projection::compute_projected_train_path_op_without_simulation;
 use crate::views::projection::compute_projected_train_paths;
+use crate::views::rolling_stock::RollingStockError;
 use crate::views::timetable::PhysicsConsistParameters;
 use crate::views::timetable::occupancy_blocks::OccupancyBlockForm;
 use crate::views::timetable::occupancy_blocks::OccupancyBlocks;
@@ -257,6 +264,35 @@ pub(in crate::views) struct TrainScheduleSummaryResponse {
     pub exceptions: HashMap<String, SummaryResponse>,
 }
 
+#[derive(Default)]
+struct TrainScheduleSummaryResponseBuilder {
+    train_schedule: Option<SummaryResponse>,
+    exceptions: HashMap<String, SummaryResponse>,
+}
+
+impl TrainScheduleSummaryResponseBuilder {
+    fn train_schedule(&mut self, summary_response: SummaryResponse) -> &mut Self {
+        self.train_schedule = Some(summary_response);
+        self
+    }
+    // Can be called multiple times for each exception to add
+    fn add_exception(
+        &mut self,
+        exception_key: String,
+        summary_response: SummaryResponse,
+    ) -> &mut Self {
+        self.exceptions.insert(exception_key, summary_response);
+        self
+    }
+    /// Only returns None if no summary response is available for the base occurrence
+    fn build(self) -> Option<TrainScheduleSummaryResponse> {
+        Some(TrainScheduleSummaryResponse {
+            train_schedule: self.train_schedule?,
+            exceptions: self.exceptions,
+        })
+    }
+}
+
 #[derive(Debug, Clone)]
 struct SimulationContext {
     train_schedule_id: i64,
@@ -277,7 +313,6 @@ struct SimulationContext {
 )]
 pub(in crate::views) async fn simulation_summary(
     State(AppState {
-        config,
         db_pool,
         valkey_client,
         core_client,
@@ -313,6 +348,25 @@ pub(in crate::views) async fn simulation_summary(
     })
     .await?;
 
+    /////
+    // Init the simulation environment
+    let core_env = core_task::CoreEnv {
+        infra_id: infra.id as u64,
+        infra_version: infra.version,
+        client: core_client.clone(),
+    };
+    let mut simulation_env =
+        if let Some(electrical_profile_set_id) = electrical_profile_set_id.map(|i| i as u64) {
+            core_task::SimulationEnv::new_with_electrical_profile_set(
+                core_env,
+                electrical_profile_set_id,
+            )
+        } else {
+            core_task::SimulationEnv::new(core_env)
+        };
+
+    /////
+    // Generate the train simulation inputs
     let train_schedules: Vec<models::TrainSchedule> =
         models::TrainSchedule::retrieve_batch_or_fail(conn, train_schedule_ids, |missing| {
             TrainScheduleError::BatchNotFound {
@@ -321,76 +375,206 @@ pub(in crate::views) async fn simulation_summary(
         })
         .await?;
 
-    let simulation_contexts: Vec<SimulationContext> = train_schedules
+    let train_occurrences = train_schedules
         .iter()
-        .flat_map(|train_schedule| {
-            std::iter::once(SimulationContext {
-                train_schedule_id: train_schedule.id,
-                exception_key: None,
-                train_schedule: train_schedule.clone().into_train_occurrence(),
+        .flat_map(models::TrainSchedule::iter_occurrences)
+        .collect::<HashMap<_, _>>();
+
+    // Get the physic consist parameters for the train schedules
+    let rolling_stocks_ids = train_occurrences
+        .values()
+        .map::<String, _>(|train_occurrence| train_occurrence.rolling_stock_name.to_string())
+        .collect::<HashSet<_>>();
+
+    let consists =
+        RollingStock::retrieve_batch_unchecked::<_, Vec<_>>(&mut conn.clone(), rolling_stocks_ids)
+            .await
+            .map_err(RollingStockError::from)?
+            .into_iter()
+            .map(|rolling_stock| {
+                (
+                    rolling_stock.name.clone(),
+                    PhysicsConsistParameters::from_traction_engine(rolling_stock.into()),
+                )
             })
-            .chain(train_schedule.exceptions.iter().map(|exception| {
-                SimulationContext {
-                    train_schedule_id: train_schedule.id,
-                    exception_key: Some(exception.key.clone()),
-                    train_schedule: train_schedule.apply_exception(exception),
-                }
-            }))
+            .collect::<HashMap<_, _>>();
+
+    // Associate train schedules with their consist, when possible
+    let (train_occurrences_with_physics_consist, not_found_rolling_stock_names) = train_occurrences
+        .into_iter()
+        .map(|(occurrence_id, train_occurrence)| {
+            let rolling_stock_name = train_occurrence.rolling_stock_name.clone();
+            consists
+                .get(&rolling_stock_name)
+                .map(|consist| (occurrence_id.clone(), (train_occurrence, consist)))
+                .ok_or((occurrence_id, rolling_stock_name))
         })
-        .collect();
+        .partition_result::<HashMap<_, _>, Vec<_>, _, _>();
 
-    let schedules: Vec<schemas::TrainOccurrence> = simulation_contexts
-        .iter()
-        .map(|ctx| ctx.train_schedule.clone())
-        .collect();
+    // Build the operational point cache
+    let path_items = train_occurrences_with_physics_consist
+        .values()
+        .flat_map(|(train_occurrence, _physics_consist)| &train_occurrence.path)
+        .map(|path_item| &path_item.location)
+        .collect_vec();
+    let path_item_cache =
+        OperationalPointCache::load_path_items(conn.clone(), infra.id, &path_items).await?;
 
-    let simulations = train_simulation_batch(
-        conn,
-        valkey_client,
-        core_client,
-        &schedules,
-        &infra,
-        electrical_profile_set_id,
-        config.app_version.as_deref(),
-    )
-    .await?;
-
-    // Will remember all simulation that already have been inserted in the response
-    let mut base_simulation = Arc::clone(&simulations[0].0);
-    let results = simulation_contexts.into_iter().zip(simulations).fold(
-        HashMap::<i64, TrainScheduleSummaryResponse>::new(),
-        |mut map, (simulation_context, (simulation, _path))| {
-            if let Some(exception_key) = &simulation_context.exception_key {
-                if !Arc::ptr_eq(&base_simulation, &simulation) {
-                    map.entry(simulation_context.train_schedule_id)
-                        .and_modify(|summary| {
-                            summary.exceptions.insert(
-                                exception_key.to_string(),
-                                SummaryResponse::summarize_simulation(
-                                    Arc::unwrap_or_clone(simulation),
-                                    &simulation_context.train_schedule,
-                                ),
-                            );
-                        });
-                }
-            } else {
-                base_simulation = Arc::clone(&simulation);
-                map.insert(
-                    simulation_context.train_schedule_id,
-                    TrainScheduleSummaryResponse {
-                        train_schedule: SummaryResponse::summarize_simulation(
-                            Arc::unwrap_or_clone(simulation),
-                            &simulation_context.train_schedule,
-                        ),
-                        exceptions: HashMap::new(),
-                    },
-                );
-            }
-            map
+    // Build the simulation trains for the simulation environment
+    let simulation_trains = train_occurrences_with_physics_consist.iter().map(
+        |(occurrence_id, (train_occurrence, physics_consist_parameters))| {
+            (
+                occurrence_id.clone(),
+                simulation::build_simulation_train(
+                    train_occurrence,
+                    physics_consist_parameters,
+                    &path_item_cache,
+                ),
+            )
         },
     );
 
-    Ok(Json(results))
+    /////
+    // Populate the simulation environment and simulate
+    simulation_env.extend(simulation_trains);
+    let simulations = simulation_env
+        .into_stream(Arc::new(Mutex::new(valkey_client.get_connection().await?)))
+        .collect::<Vec<_>>()
+        .await;
+
+    /////
+    // Prepare the API responses from the core simulation
+
+    // Duplicate simulations for each trai schedule
+    let simulations = simulations.into_iter().flat_map(
+        |Correlated {
+             correlation_key,
+             data,
+         }| {
+            // Simulation from different train schedules might be grouped into
+            // the same correlation object (each having its own correlation key
+            // still), but the final response need one simulation for each train
+            // schedule (not each occurrence of the same train schedule though)
+            let grouped_correlation_keys = correlation_key
+                .into_iter()
+                .into_grouping_map_by(|occurrence_id| match occurrence_id {
+                    OccurrenceId::Base {
+                        train_schedule_id,
+                        index: _,
+                    }
+                    | OccurrenceId::Modified {
+                        train_schedule_id,
+                        index: _,
+                        exception_key: _,
+                    }
+                    | OccurrenceId::Created {
+                        train_schedule_id,
+                        exception_key: _,
+                    } => *train_schedule_id,
+                })
+                .collect::<HashSet<_>>();
+            grouped_correlation_keys
+                .into_values()
+                .map(move |correlation_key| Correlated {
+                    correlation_key,
+                    data: data.clone(),
+                })
+        },
+    );
+
+    // Collect all the simulations per train schedule
+    let simulation_summaries = simulations
+        .into_iter()
+        .flat_map(
+            |Correlated {
+                 correlation_key,
+                 data,
+             }| {
+                let correlation_key = if let Some(base) = correlation_key
+                    .iter()
+                    .find(|occurrence_id| matches!(occurrence_id, OccurrenceId::Base { .. }))
+                {
+                    // We need to produce only one simulation response for all
+                    // occurrences that are identical to the base occurrence
+                    HashSet::from([base.clone()])
+                } else {
+                    correlation_key
+                };
+                correlation_key
+                    .into_iter()
+                    .map(move |occurrence_id| (occurrence_id, data.clone()))
+            },
+        )
+        .map(|(occurrence_id, data)| {
+            let summary_response = match &data {
+                Ok(simulation_output) => {
+                    let train_occurrence = train_occurrences_with_physics_consist
+                        .get(&occurrence_id)
+                        .map(|(train_occurrence, _physic_consist)| train_occurrence)
+                        .unwrap_or_else(|| {
+                            panic!(
+                                "no train schedule occurrence “{occurrence_id}” has been simulated"
+                            )
+                        });
+                    SummaryResponse::from_simulation_output(simulation_output, train_occurrence)
+                }
+                Err(error) => SummaryResponse::SimulationFailed {
+                    error_type: error.get_type().to_owned(),
+                },
+            };
+            (occurrence_id, summary_response)
+        })
+        .chain(not_found_rolling_stock_names.into_iter().map(
+            |(occurrence_id, rolling_stock_name)| {
+                (
+                    occurrence_id,
+                    SummaryResponse::PathfindingInputError(
+                        PathfindingInputError::RollingStockNotFound { rolling_stock_name },
+                    ),
+                )
+            },
+        ))
+        .fold(
+            HashMap::<i64, TrainScheduleSummaryResponseBuilder>::default(),
+            |mut simulation_summaries, (occurrence_id, summary_response)| {
+                match occurrence_id {
+                    OccurrenceId::Base {
+                        train_schedule_id,
+                        index: _,
+                    } => {
+                        let builder = simulation_summaries.entry(train_schedule_id).or_default();
+                        builder.train_schedule(summary_response);
+                    }
+                    OccurrenceId::Modified {
+                        train_schedule_id,
+                        index: _,
+                        exception_key,
+                    }
+                    | OccurrenceId::Created {
+                        train_schedule_id,
+                        exception_key,
+                    } => {
+                        let builder = simulation_summaries.entry(train_schedule_id).or_default();
+                        builder.add_exception(exception_key, summary_response);
+                    }
+                }
+                simulation_summaries
+            },
+        )
+        .into_iter()
+        .map(
+            |(train_schedule_id, train_schedule_summary_response_builder)| {
+                (
+                train_schedule_id,
+                train_schedule_summary_response_builder.build().unwrap_or_else(|| panic!(
+                    "no simulation was received for the paced train’s base ‘{train_schedule_id}’"
+                )),
+            )
+            },
+        )
+        .collect();
+
+    Ok(Json(simulation_summaries))
 }
 
 #[derive(Debug, Default, Clone, Serialize, Deserialize, IntoParams, ToSchema)]

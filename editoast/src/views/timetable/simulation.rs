@@ -11,6 +11,7 @@ use core_client::simulation::ReportTrain;
 use core_client::simulation::SimulationMargins;
 use core_client::simulation::SimulationPowerRestrictionItem;
 use core_client::simulation::SimulationScheduleItem;
+use core_client::simulation::SimulationSuccess;
 use core_client::simulation::SpeedLimitProperties;
 use core_task::PathfindingConsist;
 use core_task::SimulationConsist;
@@ -20,6 +21,7 @@ use core_task::SimulationWaypoint;
 use database::DbConnection;
 use itertools::Itertools;
 use ordered_float::OrderedFloat;
+use schemas::TrainOccurrence;
 use schemas::train_schedule::Margins;
 use schemas::train_schedule::PathItem;
 use schemas::train_schedule::PowerRestrictionItem;
@@ -349,6 +351,51 @@ impl SummaryResponse {
             simulation::Response::SimulationFailed { core_error } => Self::SimulationFailed {
                 error_type: core_error.error_type,
             },
+        }
+    }
+    pub fn from_simulation_output(
+        simulation_output: &core_task::SimulationOutput,
+        train_occurrence: &TrainOccurrence,
+    ) -> Self {
+        match simulation_output {
+            core_task::SimulationOutput::Success(SimulationSuccess {
+                base,
+                provisional,
+                final_output,
+                ..
+            }) => SummaryResponse::Success {
+                length: *final_output.report_train.positions.last().unwrap(),
+                time: *final_output.report_train.path_item_times.last().unwrap(),
+                energy_consumption: final_output.report_train.energy_consumption,
+                path_item_times_final: final_output.report_train.path_item_times.clone(),
+                path_item_times_provisional: provisional.path_item_times.clone(),
+                path_item_times_base: base.path_item_times.clone(),
+                path_item_respect_times: super::simulation::path_item_respect_times(
+                    &final_output.report_train.path_item_times,
+                    train_occurrence,
+                ),
+                path_item_respect_margins: super::simulation::path_item_respect_margins(
+                    &final_output.report_train.path_item_times,
+                    &provisional.path_item_times,
+                    train_occurrence,
+                ),
+            },
+            core_task::SimulationOutput::PathfindingFailure(pathfinding_failure) => {
+                match PathfindingResult::from(pathfinding_failure.clone()) {
+                    PathfindingResult::Success(_pathfinding_result_success) => {
+                        unreachable!("simulation only returns errors of pathfinding in this field")
+                    }
+                    PathfindingResult::Failure(PathfindingFailure::PathfindingInputError(
+                        pathfinding_input_error,
+                    )) => SummaryResponse::PathfindingInputError(pathfinding_input_error),
+                    PathfindingResult::Failure(PathfindingFailure::PathfindingNotFound(
+                        pathfinding_not_found,
+                    )) => SummaryResponse::PathfindingNotFound(pathfinding_not_found),
+                    PathfindingResult::Failure(PathfindingFailure::InternalError {
+                        core_error,
+                    }) => SummaryResponse::PathfindingFailure { core_error },
+                }
+            }
         }
     }
 }
