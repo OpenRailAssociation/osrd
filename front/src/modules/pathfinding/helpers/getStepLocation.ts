@@ -2,10 +2,10 @@ import type { PathItemLocation } from 'common/api/osrdEditoastApi';
 import { mToMm } from 'utils/physics';
 
 const getStepLocation = (step: PathItemLocation): PathItemLocation => {
-  if ('track' in step) {
+  if (step.type === 'track_offset') {
     // TODO: step offset should be in mm in the store /!\
     // pathfinding blocks endpoint requires offsets in mm
-    return { track: step.track, offset: mToMm(step.offset) };
+    return { track: step.track, offset: mToMm(step.offset), type: 'track_offset' };
   }
   if (step.operational_point.type === 'id') {
     return {
@@ -14,6 +14,7 @@ const getStepLocation = (step: PathItemLocation): PathItemLocation => {
         type: 'id',
       },
       track_reference: step.track_reference,
+      type: 'operational_point_part_reference',
     };
   }
   if (step.operational_point.type === 'trigram') {
@@ -24,6 +25,7 @@ const getStepLocation = (step: PathItemLocation): PathItemLocation => {
         type: 'trigram',
       },
       track_reference: step.track_reference,
+      type: 'operational_point_part_reference',
     };
   }
   if (step.operational_point.uic === -1) {
@@ -36,6 +38,7 @@ const getStepLocation = (step: PathItemLocation): PathItemLocation => {
       type: 'uic',
     },
     track_reference: step.track_reference,
+    type: 'operational_point_part_reference',
   };
 };
 

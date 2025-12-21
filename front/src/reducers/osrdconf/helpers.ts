@@ -23,17 +23,19 @@ export const insertViaFromMap = (
   const destination = last(pathSteps);
 
   const { location: newLocation } = newVia;
-  const newStep = {
+  const newStep: PathStep = {
     id: newVia.id,
     coordinates: newVia.coordinates,
     location:
-      'track' in newLocation
+      newLocation.type === 'track_offset'
         ? {
             track: newLocation.track,
             offset: newLocation.offset,
+            type: 'track_offset',
           }
         : {
             ...newLocation,
+            type: 'operational_point_part_reference',
             track_reference: newLocation.track_reference,
           },
   };
@@ -43,7 +45,7 @@ export const insertViaFromMap = (
   if (origin && destination && pathSteps.length > 2) {
     // If origin and destination have already been selected and there is at least a via,
     // we project the new via on the current path and add it at the most relevant index
-    const newViaPoint = point(newStep.coordinates);
+    const newViaPoint = point(newStep.coordinates!);
     const positionOnPath = calculateDistanceAlongTrack(
       feature(pathProperties.geometry, { length: pathProperties.length }),
       newViaPoint.geometry,
@@ -78,10 +80,14 @@ export function upsertPathStep(statePathSteps: (PathStep | null)[], op: Suggeste
     ]),
     id: uuidV4(),
     location: op.uic
-      ? { operational_point: { uic: op.uic, secondary_code: op.ch, type: 'uic' } }
+      ? {
+          operational_point: { uic: op.uic, secondary_code: op.ch, type: 'uic' },
+          type: 'operational_point_part_reference',
+        }
       : {
           track: op.track,
           offset: op.offsetOnTrack,
+          type: 'track_offset',
         },
   };
 
@@ -94,10 +100,11 @@ export function upsertPathStep(statePathSteps: (PathStep | null)[], op: Suggeste
       id: cleanPathSteps[stepIndex].id,
       location: {
         ...newVia.location,
-        track_reference:
-          'track_reference' in cleanPathSteps[stepIndex].location
-            ? cleanPathSteps[stepIndex].location.track_reference
-            : undefined,
+        ...(cleanPathSteps[stepIndex].location.type === 'operational_point_part_reference'
+          ? {
+              track_reference: cleanPathSteps[stepIndex].location.track_reference,
+            }
+          : {}),
       },
     }; // We don't need to change the id of the updated via
     statePathSteps[stepIndex] = newVia;

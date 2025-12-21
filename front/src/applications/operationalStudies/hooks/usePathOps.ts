@@ -24,7 +24,7 @@ const usePathOps = (
   const OperationalPointPartReferences: OperationalPointPartReference[] = useMemo(
     () =>
       (path ?? []).reduce<OperationalPointPartReference[]>((acc, pathItem) => {
-        if ('operational_point' in pathItem.location) {
+        if (pathItem.location.type === 'operational_point_part_reference') {
           acc.push(pathItem.location);
         }
         return acc;

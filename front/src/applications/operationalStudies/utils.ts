@@ -311,7 +311,7 @@ export const getUniqueOpRefsFromTimetableItems = (
   const uniqueSteps = new Map<string, OperationalPointPartReference>();
   for (const pathItem of pathItems) {
     const pathItemLocation = pathItem.location;
-    if (!('operational_point' in pathItemLocation)) continue;
+    if (pathItemLocation.type !== 'operational_point_part_reference') continue;
     uniqueSteps.set(JSON.stringify(pathItemLocation), pathItemLocation);
   }
   return [...uniqueSteps.values()];
@@ -481,7 +481,7 @@ export const matchOpRefAndOp = (
   location: PathItemLocation,
   op: PathProperties['operational_points'][number] | OperationalPoint
 ) => {
-  if ('track' in location) return false;
+  if (location.type === 'track_offset') return false;
 
   if (location.operational_point.type === 'id') {
     return location.operational_point.operational_point === op.id;

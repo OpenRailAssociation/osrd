@@ -35,7 +35,7 @@ const getStepLabels = (
     // If no matching op has been found for this step, it's either a track offset or an invalid step
     if (pathOp.length === 0) {
       acc.push(
-        !('operational_point' in step.location)
+        step.location.type !== 'operational_point_part_reference'
           ? t('requestedPointUnknown')
           : getInvalidStepLabel(step.location.operational_point)
       );

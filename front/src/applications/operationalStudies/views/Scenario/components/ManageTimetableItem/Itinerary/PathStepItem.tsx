@@ -45,12 +45,12 @@ const PathStepItem = ({
 
     const { location } = pathStep;
 
-    if ('track' in location) {
+    if (location.type === 'track_offset') {
       return (message += t('requestedPoint'));
     }
 
     const trackInfo = location.track_reference
-      ? 'track_name' in location.track_reference
+      ? location.track_reference.type === 'name'
         ? `, ${t('track')} ${location.track_reference.track_name}`
         : `, ${t('trackId')}`
       : '';
@@ -159,7 +159,7 @@ const PathStepItem = ({
     <div className="path-step-wrapper">
       <div
         className={cx('path-step', {
-          'requested-point': pathStep?.location && 'track' in pathStep.location,
+          'requested-point': pathStep?.location && pathStep.location.type === 'track_offset',
         })}
       >
         <div
@@ -199,7 +199,7 @@ const PathStepItem = ({
             readOnly
           />
         </div>
-        {pathStep?.location && 'track' in pathStep.location ? (
+        {pathStep?.location && pathStep.location.type === 'track_offset' ? (
           <div className="requested-point-block" />
         ) : (
           <>
@@ -240,7 +240,7 @@ const PathStepItem = ({
           </>
         )}
         <div className="map-interactions">
-          {pathStep?.location && 'track' in pathStep.location ? (
+          {pathStep?.location && pathStep.location.type === 'track_offset' ? (
             <AddedLocation
               size="lg"
               variant="fill"

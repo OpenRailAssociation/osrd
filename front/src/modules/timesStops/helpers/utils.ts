@@ -35,7 +35,7 @@ const matchPathStepAndOpWithKP = (step: PathStep, op: SuggestedOP) => {
   }
   // We match the kp in case two OPs have the same uic+ch (can happen when the
   // infra is imported)
-  if ('operational_point' in step.location) {
+  if (step.location.type === 'operational_point_part_reference') {
     if (
       step.location.operational_point.type === 'uic' ||
       step.location.operational_point.type === 'trigram'
@@ -375,7 +375,7 @@ export const getOperationalPointName = (
   if (op) return op.extensions?.identifier?.name;
 
   // TrackOffset
-  if (!('operational_point' in step)) {
+  if (step.type !== 'operational_point_part_reference') {
     if (stepIndex === 0) {
       return t('main.requestedOrigin');
     } else if (stepIndex === totalStepCount - 1) {

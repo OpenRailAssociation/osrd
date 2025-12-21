@@ -29,7 +29,7 @@ export const usePathStepsMetadata = (pathSteps: PathStepV2[]) => {
     () =>
       pathSteps.reduce<TrainSchedule['path']>((acc, step) => {
         if (!step.location) return acc;
-        if ('operational_point' in step.location) {
+        if (step.location.type === 'operational_point_part_reference') {
           if (
             step.location.operational_point.type === 'uic' ||
             step.location.operational_point.type === 'trigram'
@@ -41,6 +41,7 @@ export const usePathStepsMetadata = (pathSteps: PathStepV2[]) => {
               id: step.id,
               location: {
                 operational_point,
+                type: 'operational_point_part_reference',
               },
             });
             return acc;
@@ -67,7 +68,7 @@ export const usePathStepsMetadata = (pathSteps: PathStepV2[]) => {
     const opIds = pathSteps.reduce<string[]>((acc, step) => {
       if (
         step.location &&
-        'operational_point' in step.location &&
+        step.location.type === 'operational_point_part_reference' &&
         step.location.operational_point.type === 'id'
       ) {
         acc.push(step.location.operational_point.operational_point);
@@ -120,7 +121,10 @@ export const usePathStepsMetadata = (pathSteps: PathStepV2[]) => {
 
       // Add requested points track ids
       pathSteps.forEach(
-        (step) => step.location && 'track' in step.location && allTrackIds.push(step.location.track)
+        (step) =>
+          step.location &&
+          step.location.type === 'track_offset' &&
+          allTrackIds.push(step.location.track)
       );
 
       const trackSectionsById = await getTrackSectionsByIds(allTrackIds);
@@ -136,7 +140,7 @@ export const usePathStepsMetadata = (pathSteps: PathStepV2[]) => {
           return;
         }
 
-        if ('track' in location) {
+        if (location.type === 'track_offset') {
           // TODO : replace the name by the track offset label when provided by backend
           const correspondingTrack = trackSectionsById[location.track];
 

@@ -43,14 +43,14 @@ const Vias = ({ zoomToFeaturePoint }: ViasProps) => {
               <small data-testid="via-dropped-name" className="mr-1 text-nowrap">
                 {`${via.name || (via.positionOnPath && `KM ${(Math.round(via.positionOnPath) / 1000000).toFixed(3)}`) || t('unavailableDistance')}`}
               </small>
-              {'operational_point' in via.location &&
+              {via.location.type === 'operational_point_part_reference' &&
                 via.location.operational_point.type !== 'id' &&
                 via.location.operational_point.secondary_code && (
                   <small data-testid="via-dropped-ch">
                     {via.location.operational_point.secondary_code}
                   </small>
                 )}
-              {'operational_point' in via.location &&
+              {via.location.type === 'operational_point_part_reference' &&
                 via.location.operational_point.type === 'uic' && (
                   <small data-testid="via-dropped-uic" className="text-muted ml-3">
                     {formatUicToCi(via.location.operational_point.uic)}

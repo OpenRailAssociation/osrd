@@ -119,9 +119,11 @@ const PacedTrainItem = ({
     const exception = pacedTrain.paced.exceptions.find(
       (ex) => formatPacedTrainIdToOccurrenceId(pacedTrain.id, ex) === trainIdUsedForProjection
     );
-    const pacedTrainTrackOffsets = pacedTrain.path.filter((step) => 'track' in step);
+    const pacedTrainTrackOffsets = pacedTrain.path.filter(
+      (step) => step.location.type === 'track_offset'
+    );
     const exceptionTrackOffsets = exception?.path_and_schedule?.path?.filter(
-      (step) => 'track' in step
+      (step) => step.location.type === 'track_offset'
     );
     const isTrackOffsetsException = // This will affect the manchette even if the computed projection path is not affected
       exceptionTrackOffsets && !isEqual(pacedTrainTrackOffsets, exceptionTrackOffsets);

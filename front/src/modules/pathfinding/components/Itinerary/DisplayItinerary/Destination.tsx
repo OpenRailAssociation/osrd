@@ -49,7 +49,7 @@ const Destination = ({ zoomToFeaturePoint }: DestinationProps) => {
             {/* If destination doesn't have name, we know that it has been added by click on map and has a track property */}
             {destination?.name ||
               (destination &&
-                'track' in destination.location &&
+                destination.location.type === 'track_offset' &&
                 destination.location.track.split('-')[0])}
           </strong>
         </div>

@@ -247,7 +247,7 @@ export default class MacroEditorState {
    * Given an path step, returns its pathKey
    */
   static getPathKey(item: PathItemLocation): string {
-    if ('track' in item) return `track_offset:${item.track}+${item.offset}`;
+    if (item.type === 'track_offset') return `track_offset:${item.track}+${item.offset}`;
     if (item.operational_point.type === 'trigram')
       return `trigram:${item.operational_point.trigram}${item.operational_point.secondary_code ? `/${item.operational_point.secondary_code}` : ''}`;
     if (item.operational_point.type === 'id')
@@ -277,19 +277,28 @@ export default class MacroEditorState {
     if (!value) throw new Error('Invalid path key');
     switch (type) {
       case 'op_id': {
-        return { operational_point: { operational_point: value, type: 'id' } };
+        return {
+          operational_point: { operational_point: value, type: 'id' },
+          type: 'operational_point_part_reference',
+        };
       }
       case 'trigram': {
         const [trigram, secondary_code] = value.split('/');
-        return { operational_point: { trigram, secondary_code, type: 'trigram' } };
+        return {
+          operational_point: { trigram, secondary_code, type: 'trigram' },
+          type: 'operational_point_part_reference',
+        };
       }
       case 'uic': {
         const [uic, secondary_code] = value.split('/');
-        return { operational_point: { uic: Number(uic), secondary_code, type: 'uic' } };
+        return {
+          operational_point: { uic: Number(uic), secondary_code, type: 'uic' },
+          type: 'operational_point_part_reference',
+        };
       }
       case 'track_offset': {
         const [track, offset] = value.split('+');
-        return { track, offset: Number(offset) };
+        return { track, offset: Number(offset), type: 'track_offset' };
       }
       default:
         throw new Error(`Invalid path key type "${type}"`);

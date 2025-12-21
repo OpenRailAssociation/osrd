@@ -85,7 +85,7 @@ const usePathfinding = ({
 
       const opRefs = steps.flatMap((step) => {
         const pathItemLocation = getStepLocation(step.location);
-        if ('track' in pathItemLocation) return [];
+        if (pathItemLocation.type === 'track_offset') return [];
         return [pathItemLocation];
       });
 
@@ -102,7 +102,7 @@ const usePathfinding = ({
 
       let opIndex = 0;
       const updatedSteps = steps.map((step): PathStep => {
-        if ('track' in step.location) return step;
+        if (step.location.type === 'track_offset') return step;
 
         const op = ops[opIndex].at(0);
         opIndex++;
