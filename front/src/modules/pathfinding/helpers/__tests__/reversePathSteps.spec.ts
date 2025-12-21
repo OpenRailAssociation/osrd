@@ -21,6 +21,7 @@ describe('reversePathSteps', () => {
           secondary_code: '00',
           type: 'uic',
         },
+        type: 'operational_point_part_reference',
       },
     },
     {
@@ -38,6 +39,7 @@ describe('reversePathSteps', () => {
           secondary_code: 'JS',
           type: 'uic',
         },
+        type: 'operational_point_part_reference',
       },
     },
     {
@@ -53,6 +55,7 @@ describe('reversePathSteps', () => {
           secondary_code: '00',
           type: 'uic',
         },
+        type: 'operational_point_part_reference',
       },
     },
     {
@@ -69,6 +72,7 @@ describe('reversePathSteps', () => {
           secondary_code: '00',
           type: 'uic',
         },
+        type: 'operational_point_part_reference',
       },
     },
     {
@@ -81,6 +85,7 @@ describe('reversePathSteps', () => {
       location: {
         track: '6146255e-6667-11e3-81ff-01f464e0362d',
         offset: 5715,
+        type: 'track_offset',
       },
     },
     {
@@ -92,6 +97,7 @@ describe('reversePathSteps', () => {
           type: 'uic',
         },
         track_reference: null,
+        type: 'operational_point_part_reference',
       },
       name: 'Carantilly-Marigny',
       arrival: new Duration({ milliseconds: 3000000 }),
@@ -113,6 +119,7 @@ describe('reversePathSteps', () => {
           type: 'uic',
         },
         track_reference: null,
+        type: 'operational_point_part_reference',
       },
       name: 'Carantilly-Marigny',
       arrival: null,
@@ -133,6 +140,7 @@ describe('reversePathSteps', () => {
       location: {
         track: '6146255e-6667-11e3-81ff-01f464e0362d',
         offset: 5715,
+        type: 'track_offset',
       },
     },
     {
@@ -149,6 +157,7 @@ describe('reversePathSteps', () => {
           secondary_code: '00',
           type: 'uic',
         },
+        type: 'operational_point_part_reference',
       },
     },
     {
@@ -164,6 +173,7 @@ describe('reversePathSteps', () => {
           secondary_code: '00',
           type: 'uic',
         },
+        type: 'operational_point_part_reference',
       },
     },
     {
@@ -181,6 +191,7 @@ describe('reversePathSteps', () => {
           secondary_code: 'JS',
           type: 'uic',
         },
+        type: 'operational_point_part_reference',
       },
     },
     {
@@ -196,6 +207,7 @@ describe('reversePathSteps', () => {
           secondary_code: '00',
           type: 'uic',
         },
+        type: 'operational_point_part_reference',
       },
     },
   ];

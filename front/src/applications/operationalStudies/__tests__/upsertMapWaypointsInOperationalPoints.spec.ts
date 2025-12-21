@@ -66,11 +66,8 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
       {
         id: '1',
         location: {
-          operational_point: {
-            uic: 2,
-            secondary_code: 'BV',
-            type: 'uic',
-          },
+          operational_point: { uic: 2, secondary_code: 'BV', type: 'uic' },
+          type: 'operational_point_part_reference',
         },
       },
       {
@@ -78,16 +75,14 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
         location: {
           track: 'TA6',
           offset: 7746000,
+          type: 'track_offset',
         },
       },
       {
         id: '3',
         location: {
-          operational_point: {
-            uic: 4,
-            secondary_code: 'BV',
-            type: 'uic',
-          },
+          operational_point: { uic: 4, secondary_code: 'BV', type: 'uic' },
+          type: 'operational_point_part_reference',
         },
       },
     ];
@@ -166,12 +161,13 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
   });
 
   it('should add waypoints properly even when the last two come from map clicks', () => {
-    const pathSteps = [
+    const pathSteps: PathItem[] = [
       {
         id: '1',
         location: {
           track: 'TA6',
           offset: 6481000,
+          type: 'track_offset',
         },
       },
       {
@@ -179,6 +175,7 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
         location: {
           track: 'TC0',
           offset: 679000,
+          type: 'track_offset',
         },
       },
       {
@@ -186,6 +183,7 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
         location: {
           track: 'TC0',
           offset: 883000,
+          type: 'track_offset',
         },
       },
     ];
@@ -272,12 +270,13 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
   });
 
   it('should add waypoints properly when there is no op on path', () => {
-    const pathSteps = [
+    const pathSteps: PathItem[] = [
       {
         id: '1',
         location: {
           track: 'TA6',
           offset: 6481000,
+          type: 'track_offset',
         },
       },
       {
@@ -285,6 +284,7 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
         location: {
           track: 'TA6',
           offset: 4733000,
+          type: 'track_offset',
         },
       },
     ];
@@ -342,6 +342,7 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
             secondary_code: 'BV',
             type: 'uic',
           },
+          type: 'operational_point_part_reference',
         },
       },
       {
@@ -352,6 +353,7 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
             secondary_code: 'BV',
             type: 'uic',
           },
+          type: 'operational_point_part_reference',
         },
       },
       {
@@ -362,6 +364,7 @@ describe('upsertMapWaypointsInOperationalPoints', () => {
             secondary_code: 'BV',
             type: 'uic',
           },
+          type: 'operational_point_part_reference',
         },
       },
     ];

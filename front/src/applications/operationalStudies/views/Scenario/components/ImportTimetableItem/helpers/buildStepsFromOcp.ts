@@ -93,6 +93,7 @@ export const buildSteps = (
         id,
         location: {
           operational_point: { uic: step.uic, secondary_code: step.chCode, type: 'uic' },
+          type: 'operational_point_part_reference',
         },
       });
     } else {
@@ -100,6 +101,7 @@ export const buildSteps = (
         id,
         location: {
           operational_point: { trigram: step.name, secondary_code: step.chCode, type: 'trigram' },
+          type: 'operational_point_part_reference',
         },
       });
     }

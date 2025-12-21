@@ -85,6 +85,7 @@ const createPathStep = (
       ...trackOffset,
       // TODO: we should return the offset in mm once it is stored in mm in the store
       offset: mmToM(trackOffset.offset),
+      type: 'track_offset',
     },
     isFromPowerRestriction: true,
   };
@@ -136,6 +137,7 @@ export const createCutAtPathStep = (
       ...trackOffset,
       // TODO: we should return the offset in mm once it is stored in mm in the store
       offset: mmToM(trackOffset.offset),
+      type: 'track_offset',
     },
   };
 };

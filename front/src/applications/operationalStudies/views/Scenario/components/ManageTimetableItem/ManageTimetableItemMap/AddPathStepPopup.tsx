@@ -91,6 +91,7 @@ const AddPathStepPopup = ({
         location: {
           track: properties.id,
           offset: Math.round(offset),
+          type: 'track_offset',
         },
         kp: properties.kp,
         metadata: {
@@ -142,6 +143,7 @@ const AddPathStepPopup = ({
             uic: operationalPoint.extensions!.identifier!.uic,
             type: 'uic',
           },
+          type: 'operational_point_part_reference',
         },
         tracks: trackPartCoordinates,
       });
@@ -169,9 +171,9 @@ const AddPathStepPopup = ({
       coordinates: selectedTrack.coordinates,
       location: {
         ...prevLocation,
-        track_reference: selectedTrack.trackName
-          ? { track_name: selectedTrack.trackName }
-          : undefined,
+        ...(selectedTrack.trackName
+          ? { track_reference: { track_name: selectedTrack.trackName, type: 'name' } }
+          : {}),
       },
     });
   }, [clickedOp, selectedTrack]);

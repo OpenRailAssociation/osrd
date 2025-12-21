@@ -84,11 +84,17 @@ function buildSchedule(id: string, timeOffsetSeconds: number = 0): TrainSchedule
     path: [
       {
         id: 'step1',
-        location: { operational_point: { uic: 1, type: 'uic' } },
+        location: {
+          operational_point: { uic: 1, type: 'uic' },
+          type: 'operational_point_part_reference',
+        },
       },
       {
         id: 'step2',
-        location: { operational_point: { uic: 2, type: 'uic' } },
+        location: {
+          operational_point: { uic: 2, type: 'uic' },
+          type: 'operational_point_part_reference',
+        },
       },
     ],
     schedule: [

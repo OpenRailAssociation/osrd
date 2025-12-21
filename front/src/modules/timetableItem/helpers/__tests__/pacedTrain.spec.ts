@@ -51,11 +51,17 @@ describe('extractOccurrenceDetailsFromPacedTrain', () => {
     path: [
       {
         id: 'id227',
-        location: { operational_point: { uic: 6, secondary_code: 'BV', type: 'uic' } },
+        location: {
+          operational_point: { uic: 6, secondary_code: 'BV', type: 'uic' },
+          type: 'operational_point_part_reference',
+        },
       },
       {
         id: 'id228',
-        location: { operational_point: { uic: 5, secondary_code: 'BV', type: 'uic' } },
+        location: {
+          operational_point: { uic: 5, secondary_code: 'BV', type: 'uic' },
+          type: 'operational_point_part_reference',
+        },
       },
     ],
     schedule: [
@@ -120,11 +126,17 @@ describe('extractOccurrenceDetailsFromPacedTrain', () => {
         path: [
           {
             id: 'id225',
-            location: { operational_point: { uic: 6, secondary_code: 'BV', type: 'uic' } },
+            location: {
+              operational_point: { uic: 6, secondary_code: 'BV', type: 'uic' },
+              type: 'operational_point_part_reference',
+            },
           },
           {
             id: 'id228',
-            location: { operational_point: { uic: 5, secondary_code: 'BV', type: 'uic' } },
+            location: {
+              operational_point: { uic: 5, secondary_code: 'BV', type: 'uic' },
+              type: 'operational_point_part_reference',
+            },
           },
         ],
         schedule: [

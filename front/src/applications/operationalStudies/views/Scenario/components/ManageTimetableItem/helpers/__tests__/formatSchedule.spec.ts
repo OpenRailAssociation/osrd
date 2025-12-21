@@ -13,6 +13,7 @@ describe('formatSchedule', () => {
           id: 'id331',
           location: {
             operational_point: { uic: 8706, secondary_code: 'BV', type: 'uic' },
+            type: 'operational_point_part_reference',
           },
           kp: '130+538',
           name: 'G',
@@ -28,6 +29,7 @@ describe('formatSchedule', () => {
           id: 'id332',
           location: {
             operational_point: { uic: 8737, secondary_code: 'BV', type: 'uic' },
+            type: 'operational_point_part_reference',
           },
           kp: '117+422',
           name: 'V',

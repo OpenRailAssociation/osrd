@@ -28,6 +28,7 @@ describe('makeProjectedItems', () => {
                 secondary_code: 'BV',
                 type: 'uic',
               },
+              type: 'operational_point_part_reference',
             },
           },
           {
@@ -38,6 +39,7 @@ describe('makeProjectedItems', () => {
                 secondary_code: 'BV',
                 type: 'uic',
               },
+              type: 'operational_point_part_reference',
             },
           },
         ],
@@ -142,6 +144,7 @@ describe('makeProjectedItems', () => {
                 secondary_code: 'BV',
                 type: 'uic',
               },
+              type: 'operational_point_part_reference',
             },
           },
           {
@@ -152,6 +155,7 @@ describe('makeProjectedItems', () => {
                 secondary_code: 'BV',
                 type: 'uic',
               },
+              type: 'operational_point_part_reference',
             },
           },
         ],

@@ -169,6 +169,7 @@ const TypeAndPath = ({ setDisplayTypeAndPath, rollingStockId }: TypeAndPathProps
               secondary_code: ch,
               type: 'uic',
             },
+            type: 'operational_point_part_reference',
           },
         }));
 

@@ -43,6 +43,7 @@ export const extractMarkersInfo = (pathSteps: StdcmPathStep[]): MarkerInformatio
           secondary_code: step.operationalPoint.secondaryCode,
           type: 'trigram',
         },
+        type: 'operational_point_part_reference',
       },
       coordinates: step.operationalPoint.coordinates,
       name: step.operationalPoint.name,
@@ -107,7 +108,7 @@ export const mergeSimilarTrainSegments = (
 
 export const stdcmPathStepToPathItemLocation = (
   operationalPoint: StdcmPathStep['operationalPoint']
-): OperationalPointPartReference => {
+): OperationalPointPartReference & { type: 'operational_point_part_reference' } => {
   if (!operationalPoint) {
     throw new Error('Step has no operational point');
   }
@@ -117,5 +118,6 @@ export const stdcmPathStepToPathItemLocation = (
       secondary_code: operationalPoint.secondaryCode,
       type: 'uic',
     },
+    type: 'operational_point_part_reference',
   };
 };

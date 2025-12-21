@@ -327,12 +327,14 @@ export const trainScheduleTooFast: TrainScheduleWithTrainId = {
       location: {
         track: 'TA0',
         offset: 1299000,
+        type: 'track_offset',
       },
     },
     {
       id: 'id935',
       location: {
         operational_point: { uic: 4, secondary_code: 'BV', type: 'uic' },
+        type: 'operational_point_part_reference',
       },
     },
     {
@@ -340,6 +342,7 @@ export const trainScheduleTooFast: TrainScheduleWithTrainId = {
       location: {
         track: 'TH1',
         offset: 4095000,
+        type: 'track_offset',
       },
     },
   ],
@@ -395,18 +398,21 @@ export const trainScheduleTooFastOnInterval: TrainScheduleWithTrainId = {
       id: 'idA',
       location: {
         operational_point: { uic: 87700000, secondary_code: 'BV', type: 'uic' },
+        type: 'operational_point_part_reference',
       },
     },
     {
       id: 'idB',
       location: {
         operational_point: { uic: 87700001, secondary_code: 'BV', type: 'uic' },
+        type: 'operational_point_part_reference',
       },
     },
     {
       id: 'idC',
       location: {
         operational_point: { uic: 87700002, secondary_code: 'BV', type: 'uic' },
+        type: 'operational_point_part_reference',
       },
     },
   ],
@@ -468,12 +474,14 @@ export const trainScheduleNotHonored: TrainScheduleWithTrainId = {
       location: {
         track: 'TA0',
         offset: 1299000,
+        type: 'track_offset',
       },
     },
     {
       id: 'id584',
       location: {
         operational_point: { uic: 4, secondary_code: 'BV', type: 'uic' },
+        type: 'operational_point_part_reference',
       },
     },
     {
@@ -481,6 +489,7 @@ export const trainScheduleNotHonored: TrainScheduleWithTrainId = {
       location: {
         track: 'TG1',
         offset: 644000,
+        type: 'track_offset',
       },
     },
   ],
@@ -537,6 +546,7 @@ export const trainScheduleHonored: TrainScheduleWithTrainId = {
       location: {
         track: 'TA0',
         offset: 1299000,
+        type: 'track_offset',
       },
     },
     {
@@ -544,6 +554,7 @@ export const trainScheduleHonored: TrainScheduleWithTrainId = {
       location: {
         track: 'TG1',
         offset: 644000,
+        type: 'track_offset',
       },
     },
   ],

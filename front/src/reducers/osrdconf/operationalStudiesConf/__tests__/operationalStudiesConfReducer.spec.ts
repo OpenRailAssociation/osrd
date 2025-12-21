@@ -29,8 +29,20 @@ const baseTimetableItemWithSummary: TimetableItemWithSummaries = {
   constraint_distribution: 'MARECO',
   rollingStock: { id: 1, name: 'rollingStock1' } as LightRollingStockWithLiveries,
   path: [
-    { id: 'id1', location: { operational_point: { uic: 123, type: 'uic' } } },
-    { id: 'id2', location: { operational_point: { uic: 234, type: 'uic' } } },
+    {
+      id: 'id1',
+      location: {
+        operational_point: { uic: 123, type: 'uic' },
+        type: 'operational_point_part_reference',
+      },
+    },
+    {
+      id: 'id2',
+      location: {
+        operational_point: { uic: 234, type: 'uic' },
+        type: 'operational_point_part_reference',
+      },
+    },
   ],
   speedLimitTag: 'MA100',
   labels: ['label1'],
@@ -87,6 +99,7 @@ describe('simulationConfReducer', () => {
             id: 'id1',
             location: {
               operational_point: { uic: 123, type: 'uic' },
+              type: 'operational_point_part_reference',
             },
             name: '123',
             theoreticalMargin: '10%',
@@ -98,6 +111,7 @@ describe('simulationConfReducer', () => {
             id: 'id2',
             location: {
               operational_point: { uic: 234, type: 'uic' },
+              type: 'operational_point_part_reference',
             },
             name: '234',
             theoreticalMargin: undefined,
@@ -137,6 +151,7 @@ describe('simulationConfReducer', () => {
             id: 'id1',
             location: {
               operational_point: { uic: 123, type: 'uic' },
+              type: 'operational_point_part_reference',
             },
             name: '123',
             theoreticalMargin: '10%',
@@ -148,6 +163,7 @@ describe('simulationConfReducer', () => {
             id: 'id2',
             location: {
               operational_point: { uic: 234, type: 'uic' },
+              type: 'operational_point_part_reference',
             },
             name: '234',
             theoreticalMargin: undefined,
@@ -196,6 +212,7 @@ describe('simulationConfReducer', () => {
         positionOnPath: 200,
         location: {
           operational_point: { uic: 396002, type: 'uic' },
+          type: 'operational_point_part_reference',
         },
         coordinates: [47.99542250806296, 0.1918181738752042],
       };
@@ -232,6 +249,7 @@ describe('simulationConfReducer', () => {
         location: {
           track: '60ca8dda-6667-11e3-81ff-01f464e0362d',
           offset: 426.443,
+          type: 'track_offset',
         },
         stopFor: Duration.parse('PT5M'),
         coordinates: [47.99542250806296, 0.1918181738752042],
