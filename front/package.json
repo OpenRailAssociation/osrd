@@ -96,7 +96,7 @@
   },
   "devDependencies": {
     "@apidevtools/swagger-parser": "^12.1.0",
-    "@eslint/js": "^9.37.0",
+    "@eslint/js": "^9.39.2",
     "@playwright/test": "^1.57.0",
     "@rtk-query/codegen-openapi": "^2.1.0",
     "@tailwindcss/postcss": "^4.1.18",
@@ -113,7 +113,7 @@
     "@vitejs/plugin-react-swc": "^4.2.2",
     "@vitest/eslint-plugin": "^1.4.3",
     "ansi-to-html": "^0.7.2",
-    "eslint": "^9.37.0",
+    "eslint": "^9.39.2",
     "eslint-config-prettier": "^10.1.5",
     "eslint-import-resolver-typescript": "^4.4.4",
     "eslint-plugin-import": "^2.31.0",
