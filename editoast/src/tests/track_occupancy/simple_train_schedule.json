@@ -12,7 +12,8 @@
           "uic": 8711,
           "type": "uic",
           "secondary_code": "BV"
-        }
+        },
+        "type": "operational_point_part_reference"
       }
     },
     {
@@ -22,7 +23,8 @@
           "uic": 8733,
           "type": "uic",
           "secondary_code": "BV"
-        }
+        },
+        "type": "operational_point_part_reference"
       }
     },
     {
@@ -32,7 +34,8 @@
           "uic": 8788,
           "type": "uic",
           "secondary_code": "BV"
-        }
+        },
+        "type": "operational_point_part_reference"
       }
     }
   ],
