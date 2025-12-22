@@ -1,53 +1,68 @@
 {
-    "error_type": "RESULT",
-    "code": 200,
-    "error": "{\"status\":\"simulation_failed\",\"core_error\":{\"status\":500,\"type\":\"core:impossible_simulation\",\"context\":{\"allowance_range_index\":1},\"message\":\"The requested train stopped before reaching its destination (not enough traction)\"}}",
-    "infra_name": "small_infra",
-    "schedule_payload": [
+  "error_type": "RESULT",
+  "code": 200,
+  "error": "{\"status\":\"simulation_failed\",\"core_error\":{\"status\":500,\"type\":\"core:impossible_simulation\",\"context\":{\"allowance_range_index\":1},\"message\":\"The requested train stopped before reaching its destination (not enough traction)\"}}",
+  "infra_name": "small_infra",
+  "schedule_payload": [
+    {
+      "comfort": "STANDARD",
+      "path": [
         {
-            "comfort": "STANDARD",
-            "path": [
-                {
-                    "location": {"track": "TG0", "offset": 561106},
-                    "id": "0"
-                },
-                {
-                    "location": {"track": "TG0", "offset": 78698},
-                    "id": "1"
-                },
-                {
-                    "location": {"track": "TC0", "offset": 642653},
-                    "id": "2"
-                },
-                {
-                    "location": {"track": "TA3", "offset": 2725},
-                    "id": "3"
-                },
-                {
-                    "location": {"track": "TA1", "offset": 554934},
-                    "id": "4"
-                }
-            ],
-            "initial_speed": 0,
-            "labels": [],
-            "constraint_distribution": "MARECO",
-            "margins": {
-                "boundaries": [
-                    "2"
-                ],
-                "values": [
-                    "0%",
-                    "4min/100km"
-                ]
-            },
-            "options": {
-                "use_electrical_profiles": false
-            },
-            "rolling_stock_name": "fast_rolling_stock",
-            "schedule": [],
-            "speed_limit_tag": null,
-            "start_time": "2024-01-01T03:54:03+00:00",
-            "train_name": "fuzzer_train"
+          "location": {
+            "track": "TG0",
+            "offset": 561106,
+            "type": "track_offset"
+          },
+          "id": "0"
+        },
+        {
+          "location": {
+            "track": "TG0",
+            "offset": 78698,
+            "type": "track_offset"
+          },
+          "id": "1"
+        },
+        {
+          "location": {
+            "track": "TC0",
+            "offset": 642653,
+            "type": "track_offset"
+          },
+          "id": "2"
+        },
+        {
+          "location": {
+            "track": "TA3",
+            "offset": 2725,
+            "type": "track_offset"
+          },
+          "id": "3"
+        },
+        {
+          "location": {
+            "track": "TA1",
+            "offset": 554934,
+            "type": "track_offset"
+          },
+          "id": "4"
         }
-    ]
+      ],
+      "initial_speed": 0,
+      "labels": [],
+      "constraint_distribution": "MARECO",
+      "margins": {
+        "boundaries": ["2"],
+        "values": ["0%", "4min/100km"]
+      },
+      "options": {
+        "use_electrical_profiles": false
+      },
+      "rolling_stock_name": "fast_rolling_stock",
+      "schedule": [],
+      "speed_limit_tag": null,
+      "start_time": "2024-01-01T03:54:03+00:00",
+      "train_name": "fuzzer_train"
+    }
+  ]
 }

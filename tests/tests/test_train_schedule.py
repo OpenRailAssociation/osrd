@@ -129,12 +129,54 @@ def test_etcs_schedule_stop_brakes_result_never_reach_mrsp(
                 "rolling_stock_name": etcs_rolling_stock_name,
                 "start_time": "2024-01-01T07:00:00Z",
                 "path": [
-                    {"id": "zero", "location": {"track": "TA0", "offset": 862000}},
-                    {"id": "first", "location": {"track": "TD0", "offset": 9001000}},
-                    {"id": "second", "location": {"track": "TD0", "offset": 10769000}},
-                    {"id": "third", "location": {"track": "TD0", "offset": 17156000}},
-                    {"id": "fourth", "location": {"track": "TH1", "offset": 221000}},
-                    {"id": "last", "location": {"track": "TH1", "offset": 3922000}},
+                    {
+                        "id": "zero",
+                        "location": {
+                            "track": "TA0",
+                            "offset": 862000,
+                            "type": "track_offset",
+                        },
+                    },
+                    {
+                        "id": "first",
+                        "location": {
+                            "track": "TD0",
+                            "offset": 9001000,
+                            "type": "track_offset",
+                        },
+                    },
+                    {
+                        "id": "second",
+                        "location": {
+                            "track": "TD0",
+                            "offset": 10769000,
+                            "type": "track_offset",
+                        },
+                    },
+                    {
+                        "id": "third",
+                        "location": {
+                            "track": "TD0",
+                            "offset": 17156000,
+                            "type": "track_offset",
+                        },
+                    },
+                    {
+                        "id": "fourth",
+                        "location": {
+                            "track": "TH1",
+                            "offset": 221000,
+                            "type": "track_offset",
+                        },
+                    },
+                    {
+                        "id": "last",
+                        "location": {
+                            "track": "TH1",
+                            "offset": 3922000,
+                            "type": "track_offset",
+                        },
+                    },
                 ],
                 "schedule": [
                     {"at": "zero", "stop_for": "P0D"},
@@ -295,10 +337,38 @@ def test_etcs_schedule_result_stop_brake_from_mrsp(
                 "rolling_stock_name": etcs_rolling_stock_name,
                 "start_time": "2024-01-01T07:00:00Z",
                 "path": [
-                    {"id": "zero", "location": {"track": "TA0", "offset": 862_000}},
-                    {"id": "first", "location": {"track": "TD0", "offset": 1_7156_000}},
-                    {"id": "second", "location": {"track": "TH1", "offset": 1_177_000}},
-                    {"id": "last", "location": {"track": "TH1", "offset": 3_922_000}},
+                    {
+                        "id": "zero",
+                        "location": {
+                            "track": "TA0",
+                            "offset": 862_000,
+                            "type": "track_offset",
+                        },
+                    },
+                    {
+                        "id": "first",
+                        "location": {
+                            "track": "TD0",
+                            "offset": 1_7156_000,
+                            "type": "track_offset",
+                        },
+                    },
+                    {
+                        "id": "second",
+                        "location": {
+                            "track": "TH1",
+                            "offset": 1_177_000,
+                            "type": "track_offset",
+                        },
+                    },
+                    {
+                        "id": "last",
+                        "location": {
+                            "track": "TH1",
+                            "offset": 3_922_000,
+                            "type": "track_offset",
+                        },
+                    },
                 ],
                 "schedule": [
                     {"at": "zero", "stop_for": "P0D"},
@@ -410,9 +480,30 @@ def test_etcs_schedule_result_stop_with_eoa_and_svl_at_same_location(
                 "rolling_stock_name": etcs_rolling_stock_name,
                 "start_time": "2024-01-01T07:00:00Z",
                 "path": [
-                    {"id": "zero", "location": {"track": "TA0", "offset": 862_000}},
-                    {"id": "first", "location": {"track": "TH0", "offset": 1_000_000}},
-                    {"id": "last", "location": {"track": "TH1", "offset": 3_922_000}},
+                    {
+                        "id": "zero",
+                        "location": {
+                            "track": "TA0",
+                            "offset": 862_000,
+                            "type": "track_offset",
+                        },
+                    },
+                    {
+                        "id": "first",
+                        "location": {
+                            "track": "TH0",
+                            "offset": 1_000_000,
+                            "type": "track_offset",
+                        },
+                    },
+                    {
+                        "id": "last",
+                        "location": {
+                            "track": "TH1",
+                            "offset": 3_922_000,
+                            "type": "track_offset",
+                        },
+                    },
                 ],
                 "schedule": [
                     {"at": "zero", "stop_for": "P0D"},
@@ -527,9 +618,30 @@ def test_etcs_schedule_result_stop_with_eoa_and_svl_at_different_locations(
                 "rolling_stock_name": etcs_rolling_stock_name,
                 "start_time": "2024-01-01T07:00:00Z",
                 "path": [
-                    {"id": "zero", "location": {"track": "TA0", "offset": 862_000}},
-                    {"id": "first", "location": {"track": "TH0", "offset": 900_000}},
-                    {"id": "last", "location": {"track": "TH1", "offset": 3_922_000}},
+                    {
+                        "id": "zero",
+                        "location": {
+                            "track": "TA0",
+                            "offset": 862_000,
+                            "type": "track_offset",
+                        },
+                    },
+                    {
+                        "id": "first",
+                        "location": {
+                            "track": "TH0",
+                            "offset": 900_000,
+                            "type": "track_offset",
+                        },
+                    },
+                    {
+                        "id": "last",
+                        "location": {
+                            "track": "TH1",
+                            "offset": 3_922_000,
+                            "type": "track_offset",
+                        },
+                    },
                 ],
                 "schedule": [
                     {"at": "zero", "stop_for": "P0D"},
@@ -1437,15 +1549,27 @@ def test_etcs_train_schedule_with_margins(
                 "path": [
                     {
                         "id": "10a15119-eb4c-4b77-bbaa-f7960fe4e985",
-                        "location": {"track": "TB0", "offset": 280000},
+                        "location": {
+                            "track": "TB0",
+                            "offset": 280000,
+                            "type": "track_offset",
+                        },
                     },
                     {
                         "id": "350e21af-a9a9-4944-b27b-9b9137616ce2",
-                        "location": {"track": "TD1", "offset": 18496000},
+                        "location": {
+                            "track": "TD1",
+                            "offset": 18496000,
+                            "type": "track_offset",
+                        },
                     },
                     {
                         "id": "49078a68-7a9f-4f58-a6d8-5a094295c936",
-                        "location": {"track": "TH1", "offset": 4894000},
+                        "location": {
+                            "track": "TH1",
+                            "offset": 4894000,
+                            "type": "track_offset",
+                        },
                     },
                 ],
                 "schedule": [
@@ -1507,10 +1631,34 @@ def _get_etcs_braking_curves_train_data(rolling_stock_name: str) -> dict[str, An
         "rolling_stock_name": rolling_stock_name,
         "start_time": "2024-01-01T07:00:00Z",
         "path": [
-            {"id": "zero", "location": {"track": "TA0", "offset": 862_000}},
-            {"id": "first", "location": {"track": "TD0", "offset": 1_7156_000}},
-            {"id": "second", "location": {"track": "TH1", "offset": 1_177_000}},
-            {"id": "last", "location": {"track": "TH1", "offset": 3_922_000}},
+            {
+                "id": "zero",
+                "location": {"track": "TA0", "offset": 862_000, "type": "track_offset"},
+            },
+            {
+                "id": "first",
+                "location": {
+                    "track": "TD0",
+                    "offset": 1_7156_000,
+                    "type": "track_offset",
+                },
+            },
+            {
+                "id": "second",
+                "location": {
+                    "track": "TH1",
+                    "offset": 1_177_000,
+                    "type": "track_offset",
+                },
+            },
+            {
+                "id": "last",
+                "location": {
+                    "track": "TH1",
+                    "offset": 3_922_000,
+                    "type": "track_offset",
+                },
+            },
         ],
         "schedule": [
             {"at": "zero", "stop_for": "P0D"},
