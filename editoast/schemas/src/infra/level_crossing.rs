@@ -3,6 +3,7 @@ use serde::Deserialize;
 use serde::Serialize;
 use utoipa::ToSchema;
 
+use super::TrackOffset;
 use crate::primitives::Identifier;
 use crate::primitives::OSRDIdentified;
 use crate::primitives::OSRDTyped;
@@ -42,5 +43,18 @@ impl OSRDTyped for LevelCrossing {
 impl OSRDIdentified for LevelCrossing {
     fn get_id(&self) -> &String {
         &self.id
+    }
+}
+
+impl LevelCrossing {
+    pub fn track_offset(&self) -> Vec<TrackOffset> {
+        self.parts
+            .clone()
+            .into_iter()
+            .map(|lcp| TrackOffset {
+                track: lcp.track,
+                offset: (lcp.position * 1000.0) as u64,
+            })
+            .collect()
     }
 }
