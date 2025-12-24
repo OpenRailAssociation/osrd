@@ -118,6 +118,12 @@
       "LayerNotFound": "Layer {{layer_name}} not found.",
       "ViewNotFound": "View {{view_name}} not found."
     },
+    "level_crossing": {
+      "Database": "Internal error (database)",
+      "InfraNotFound": "Infrastructure '{{infra_id}}' could not be found.",
+      "LevelCrossingBatchNotFound": "'{{count}}' level crossing(s) could not be found.",
+      "TrainBatchNotFound": "'{{count}}' paced train(s) could not be found."
+    },
     "macro_node": {
       "Database": "Internal error",
       "NotFound": "Node {{node_id}} not found.",
