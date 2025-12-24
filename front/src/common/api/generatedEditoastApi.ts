@@ -1993,12 +1993,28 @@ export type GetLayersTileByLayerSlugAndViewSlugZXYApiArg = {
 };
 export type PostLevelCrossingOccupancyApiResponse =
   /** status 200 Occupancy periods of the given level crossings */ {
-    [key: string]: ({
+    [key: string]: ((
+      | {
+          id: number;
+          index: number;
+          type: 'base';
+        }
+      | {
+          exception_key: string;
+          id: number;
+          index: number;
+          type: 'modified';
+        }
+      | {
+          exception_key: string;
+          id: number;
+          type: 'created';
+        }
+    ) & {
       duration: string;
       time_begin: string;
     } & {
       direction: Direction;
-      train_id: number;
     })[];
   };
 export type PostLevelCrossingOccupancyApiArg = {
