@@ -324,6 +324,26 @@ pub fn linear_interpolate(a_x: u64, b_x: u64, a_y: u64, b_y: u64, x: u64) -> u64
     }
 }
 
+/// Interpolates the arrival time at a given position using simulation output.
+///
+/// This function finds the position in the train's trajectory and interpolates
+/// the arrival time based on the surrounding positions and times.
+pub fn interpolate_arrival_time(position: u64, final_output: &CompleteReportTrain) -> i64 {
+    let index = find_index_upper(&final_output.report_train.positions, position);
+    let time = if index == 0 {
+        final_output.report_train.times[0]
+    } else {
+        linear_interpolate(
+            final_output.report_train.positions[index - 1],
+            final_output.report_train.positions[index],
+            final_output.report_train.times[index - 1],
+            final_output.report_train.times[index],
+            position,
+        )
+    };
+    time as i64
+}
+
 #[allow(clippy::too_many_arguments)]
 pub async fn compute_projected_train_paths<T: TrainScheduleLike>(
     conn: &mut DbConnection,
@@ -817,6 +837,35 @@ mod tests {
     fn test_find_index_lower(#[case] value: u64, #[case] expected: usize) {
         let values = vec![1, 3, 3, 4, 5, 5, 7, 8, 9, 9];
         assert_eq!(find_index_lower(&values, value), expected);
+    }
+
+    #[rstest]
+    #[case(25, vec![0, 50, 100], vec![0, 500, 1000], 250)]
+    #[case(0, vec![0, 50, 100], vec![0, 500, 1000], 0)]
+    #[case(100, vec![0, 50, 100], vec![0, 500, 1000], 1000)]
+    fn test_interpolate_arrival_time(
+        #[case] position: u64,
+        #[case] positions: Vec<u64>,
+        #[case] times: Vec<u64>,
+        #[case] expected_time: i64,
+    ) {
+        // Create a report train with given positions and times
+        let report_train = ReportTrain {
+            positions,
+            times,
+            speeds: vec![10.0; 5],
+            energy_consumption: 0.0,
+            path_item_times: vec![],
+        };
+
+        let final_output = CompleteReportTrain {
+            report_train,
+            ..Default::default()
+        };
+
+        let result = interpolate_arrival_time(position, &final_output);
+
+        assert_eq!(result, expected_time);
     }
 
     #[test]

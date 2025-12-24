@@ -10,8 +10,7 @@ use schemas::train_schedule::ScheduleItem;
 use crate::views::path::path_item_cache::PathItemCache;
 use crate::views::path::pathfinding::PathfindingResult;
 use crate::views::path::projection::PathProjection;
-use crate::views::projection::find_index_upper;
-use crate::views::projection::linear_interpolate;
+use crate::views::projection::interpolate_arrival_time;
 use crate::views::timetable::simulation;
 use crate::views::timetable::simulation::SimulationResponseSuccess;
 
@@ -82,23 +81,6 @@ fn extract_occupancy_context<'a>(
         matching_index,
         schedule_item,
     }
-}
-
-/// Interpolates the arrival time at a given position using simulation output.
-fn interpolate_arrival_time(position: u64, final_output: &CompleteReportTrain) -> i64 {
-    let index = find_index_upper(&final_output.report_train.positions, position);
-    let time = if index == 0 {
-        final_output.report_train.times[0]
-    } else {
-        linear_interpolate(
-            final_output.report_train.positions[index - 1],
-            final_output.report_train.positions[index],
-            final_output.report_train.times[index - 1],
-            final_output.report_train.times[index],
-            position,
-        )
-    };
-    time as i64
 }
 
 // Returns the arrival time for an operational point, using direct match or interpolation.
@@ -422,35 +404,6 @@ pub mod tests {
             // We expect no results in failure cases
             assert_eq!(results.len(), 0);
         }
-    }
-
-    #[rstest]
-    #[case(25, vec![0, 50, 100], vec![0, 500, 1000], 250)]
-    #[case(0, vec![0, 50, 100], vec![0, 500, 1000], 0)]
-    #[case(100, vec![0, 50, 100], vec![0, 500, 1000], 1000)]
-    fn test_interpolate_arrival_time(
-        #[case] position: u64,
-        #[case] positions: Vec<u64>,
-        #[case] times: Vec<u64>,
-        #[case] expected_time: i64,
-    ) {
-        // Create a report train with given positions and times
-        let report_train = ReportTrain {
-            positions,
-            times,
-            speeds: vec![10.0; 5],
-            energy_consumption: 0.0,
-            path_item_times: vec![],
-        };
-
-        let final_output = CompleteReportTrain {
-            report_train,
-            ..Default::default()
-        };
-
-        let result = interpolate_arrival_time(position, &final_output);
-
-        assert_eq!(result, expected_time);
     }
 
     #[rstest]
