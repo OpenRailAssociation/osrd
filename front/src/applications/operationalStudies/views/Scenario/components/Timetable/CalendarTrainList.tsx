@@ -4,7 +4,7 @@ import { useSelector } from 'react-redux';
 
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import { useSubCategoryContext } from 'common/SubCategoryContext';
-import { isPacedTrainWithPacedWithDetails } from 'modules/timetableItem/helpers/pacedTrain';
+import { isPacedTrainWithDetails } from 'modules/timetableItem/helpers/pacedTrain';
 import type { PacedTrainWithDetails, TimetableItemWithDetails } from 'modules/timetableItem/types';
 import { selectTrainToEdit } from 'reducers/osrdconf/operationalStudiesConf';
 import type {
@@ -142,7 +142,7 @@ const CalendarTrainList = ({
           {timetableMode === 'calendar' && showDepartureDates[index] && (
             <div className="scenario-timetable-departure-date">{currentDepartureDates[index]}</div>
           )}
-          {!isPacedTrainWithPacedWithDetails(timetableItem) ? (
+          {!isPacedTrainWithDetails(timetableItem) ? (
             <TrainScheduleItem
               isInSelection={selectedTimetableItemIds.includes(timetableItem.id)}
               handleSelectTrain={handleSelectTimetableItem}
