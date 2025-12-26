@@ -56,9 +56,10 @@ import {
 } from 'utils/trainId';
 
 import { buildSplitPoints } from './buildSplitPoints';
+import cutSpaceTimeCurves from './helpers/cutSpaceTimeCurves';
 import getPathStyle from './helpers/getPathStyle';
 import makeProjectedItems from './helpers/makeProjectedItems';
-import { cutSpaceTimeChart, getOccupancyBlocks } from './helpers/utils';
+import { getOccupancyBlocks } from './helpers/utils';
 import ProjectionLoadingMessage from './ProjectionLoadingMessage';
 import SettingsPanel from './SettingsPanel';
 import SpaceTimeChartToolbar from './SpaceTimeChartToolbar';
@@ -193,7 +194,7 @@ const SpaceTimeChartWrapper = ({
   // Cut the spacetime chart curves if the first or last waypoints are hidden
   const { filteredProjectPathTrainResult: cutProjectedTrains, filteredConflicts: cutConflicts } =
     useMemo(
-      () => cutSpaceTimeChart(projectedTrains, conflicts, operationalPoints, waypointsPanelData),
+      () => cutSpaceTimeCurves(projectedTrains, conflicts, operationalPoints, waypointsPanelData),
       [waypointsPanelData?.filteredWaypoints, projectedTrains, conflicts, operationalPoints]
     );
 
