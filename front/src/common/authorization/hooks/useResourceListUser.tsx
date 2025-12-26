@@ -13,9 +13,7 @@ export default function useResourceListSubjects(resourceType: ResourceType, id: 
   const [fetchUserList] =
     osrdEditoastApi.endpoints.getAuthzByResourceTypeAndResourceId.useLazyQuery();
 
-  const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
-  const [hasMore, setHasMore] = useState(true);
   const [error, setError] = useState<null | Error>(null);
   const [subjects, setSubjects] = useState<SubjectWithGrant[]>([]);
 
@@ -23,56 +21,36 @@ export default function useResourceListSubjects(resourceType: ResourceType, id: 
    * Fetches the user list for a given resource type and resource id.
    * @param pageNb the page number to fetch
    */
-  const fetchPage = useCallback(
-    async (pageNb: number) => {
-      setLoading(true);
-      setError(null);
-      try {
-        const response = await fetchUserList({
-          resourceType,
-          resourceId: id,
-          page: pageNb,
-        }).unwrap();
-        setSubjects((prev) => [...prev, ...response.subjects]);
-        if (response.subjects.length === 0) setHasMore(false);
-      } catch (err) {
-        setError(err as Error);
-      } finally {
-        setLoading(false);
-      }
-    },
-    [resourceType, id, fetchUserList]
-  );
+  const fetchPage = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const response = await fetchUserList({
+        resourceType,
+        resourceId: id,
+      }).unwrap();
+      setSubjects((prev) => [...prev, ...response]);
+    } catch (err) {
+      setError(err as Error);
+    } finally {
+      setLoading(false);
+    }
+  }, [resourceType, id, fetchUserList]);
 
   /**
    * When the resource changes
    */
   useEffect(() => {
     // reset state
-    setHasMore(true);
-    setPage(1);
     setError(null);
     setLoading(false);
-    // load first page
-    fetchPage(1);
+    fetchPage();
   }, [resourceType, id, fetchPage]);
 
-  /**
-   * Fetch more function for the infinite scroll
-   */
-  const fetchMore = useCallback(() => {
-    fetchPage(page + 1);
-    setPage((prev) => prev + 1);
-  }, [fetchPage, page]);
-
-  /**
-   * Fetch more function for the infinite scroll
-   */
   const refetch = useCallback(async () => {
     setSubjects([]);
-    await fetchPage(1);
-    setPage(1);
-  }, [fetchPage, page]);
+    await fetchPage();
+  }, [fetchPage]);
 
-  return { loading, error, subjects, fetchMore, refetch, hasMore };
+  return { loading, error, subjects, refetch };
 }

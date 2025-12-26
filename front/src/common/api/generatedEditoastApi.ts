@@ -70,13 +70,7 @@ const injectedRtkApi = api
         GetAuthzByResourceTypeAndResourceIdApiResponse,
         GetAuthzByResourceTypeAndResourceIdApiArg
       >({
-        query: (queryArg) => ({
-          url: `/authz/${queryArg.resourceType}/${queryArg.resourceId}`,
-          params: {
-            page: queryArg.page,
-            page_size: queryArg.pageSize,
-          },
-        }),
+        query: (queryArg) => ({ url: `/authz/${queryArg.resourceType}/${queryArg.resourceId}` }),
         providesTags: ['authz'],
       }),
       getCatalogEntry: build.query<GetCatalogEntryApiResponse, GetCatalogEntryApiArg>({
@@ -1604,19 +1598,14 @@ export type PostAuthzUserInfoApiArg = {
 };
 export type GetAuthzByResourceTypeAndResourceIdApiResponse =
   /** status 200 Get list of user that have a grant on the resource */ {
-    stats: PaginationStats;
-    subjects: {
-      grant: InfraGrant;
-      id: number;
-      name: string;
-      type: SubjectType;
-    }[];
-  };
+    grant: InfraGrant;
+    id: number;
+    name: string;
+    type: SubjectType;
+  }[];
 export type GetAuthzByResourceTypeAndResourceIdApiArg = {
   resourceType: ResourceType;
   resourceId: number;
-  page?: number;
-  pageSize?: number;
 };
 export type GetCatalogEntryApiResponse =
   /** status 200 List of catalog entries */ PaginationStats & {
@@ -2921,6 +2910,7 @@ export type InfraPrivilege =
   | 'can_share_write'
   | 'can_delete'
   | 'can_share_ownership';
+export type SubjectType = 'User' | 'Group';
 export type PaginationStats = {
   /** The total number of items */
   count: number;
@@ -2935,7 +2925,6 @@ export type PaginationStats = {
   /** The previous page number, if any */
   previous: number | null;
 };
-export type SubjectType = 'User' | 'Group';
 export type CatalogEntry = {
   id: number;
   name?: string | null;

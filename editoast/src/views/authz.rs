@@ -11,7 +11,6 @@ use ::authz::InfraPrivilege;
 use ::authz::Role;
 use axum::Extension;
 use axum::extract::Path;
-use axum::extract::Query;
 use axum::extract::State;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
@@ -32,9 +31,6 @@ use super::AppState;
 use super::AuthenticationExt;
 use super::AuthorizationError;
 use super::AuthorizerError;
-use super::pagination::PaginatedList;
-use super::pagination::PaginationQueryParams;
-use super::pagination::PaginationStats;
 
 #[derive(Serialize, Deserialize, ToSchema)]
 #[cfg_attr(test, derive(Debug))]
@@ -436,19 +432,11 @@ pub(in crate::views) struct ResourceIdParam {
 
 #[derive(Serialize, ToSchema)]
 #[cfg_attr(test, derive(Debug, Deserialize))]
-struct SubjectGrant {
+pub(in crate::views) struct SubjectGrant {
     id: i64,
     name: String,
     r#type: SubjectType,
     grant: InfraGrant,
-}
-
-#[derive(Serialize, ToSchema)]
-#[cfg_attr(test, derive(Debug, Deserialize))]
-pub(in crate::views) struct SubjectsWithGrantOnResource {
-    #[schema(inline)]
-    subjects: Vec<SubjectGrant>,
-    stats: PaginationStats,
 }
 
 #[editoast_derive::route]
@@ -456,9 +444,9 @@ pub(in crate::views) struct SubjectsWithGrantOnResource {
     get,
     path = "",
     tag = "authz",
-    params(ResourceTypeParam, ResourceIdParam, PaginationQueryParams<100>),
+    params(ResourceTypeParam, ResourceIdParam),
     responses(
-        (status = 200, description = "Get list of user that have a grant on the resource", body = inline(SubjectsWithGrantOnResource)),
+        (status = 200, description = "Get list of user that have a grant on the resource", body = inline(Vec<SubjectGrant>)),
     ),
 )]
 pub(in crate::views) async fn subjects_with_grant_on_resource(
@@ -468,8 +456,7 @@ pub(in crate::views) async fn subjects_with_grant_on_resource(
     }): State<AppState>,
     Path(ResourceTypeParam { resource_type }): Path<ResourceTypeParam>,
     Path(ResourceIdParam { resource_id }): Path<ResourceIdParam>,
-    Query(pagination): Query<PaginationQueryParams<100>>,
-) -> Result<Json<SubjectsWithGrantOnResource>> {
+) -> Result<Json<Vec<SubjectGrant>>> {
     // Ask OpenFGA about grants on the resource
     let (readers, writers, owners) = match resource_type {
         ResourceType::Infra => {
@@ -509,92 +496,71 @@ pub(in crate::views) async fn subjects_with_grant_on_resource(
         })
         .collect::<HashMap<_, _>>();
 
+    if subjects_grant.is_empty() {
+        // No point querying the database if there are no subjects with grants.
+        return Ok(Json(vec![]));
+    }
+
     let subjects_id = subjects_grant.keys().copied().collect_vec();
 
     // Query subject details from the database
-    let (stats, subjects_id, mut users, mut groups) = db_pool
+    let (mut users, mut groups) = db_pool
         .get()
         .await?
-        .transaction::<_, crate::error::InternalError, _, _>(async move |mut conn| {
-            // Query the subjects from the database.
-            // OpenFGA might have returned subjects that don't exist, so these will be filtered out.
-            // The pagination will be correct even in this case.
-            let (subjects, stats) = editoast_models::Subject::list_paginated(
-                &mut conn,
-                pagination
-                    .into_selection_settings()
-                    .filter(move || editoast_models::Subject::ID.eq_any(subjects_id.clone()))
-                    .order_by(move || editoast_models::Subject::ID.asc()),
-            )
-            .await?;
-
-            // Take the IDs of the subjects that were returned by the database — which do exist for sure now.
-            let subjects_id = subjects
+        .transaction::<_, crate::error::InternalError, _, _>(async |mut conn| {
+            let users = {
+                let subjects_id = subjects_id.clone();
+                User::list(
+                    &mut conn,
+                    SelectionSettings::new().filter(move || User::ID.eq_any(subjects_id.clone())),
+                )
+                .await?
                 .into_iter()
-                .map(|editoast_models::Subject { id }| id)
-                .collect_vec();
+                .map(|u| (u.id, u.name))
+                .collect::<HashMap<_, _>>()
+            };
 
-            // Query the database for users and groups details.
-            let users = editoast_models::User::list(
-                &mut conn,
-                SelectionSettings::new()
-                    .filter({
-                        let ids = subjects_id.clone();
-                        move || editoast_models::User::ID.eq_any(ids.clone())
-                    })
-                    .order_by(move || editoast_models::User::ID.asc()),
-            )
-            .await?
-            .into_iter()
-            .map(|editoast_models::User { id, name, .. }| (id, name))
-            .collect::<HashMap<_, _>>();
+            let groups = {
+                let subjects_id = subjects_id.clone();
+                Group::list(
+                    &mut conn,
+                    SelectionSettings::new().filter(move || Group::ID.eq_any(subjects_id.clone())),
+                )
+                .await?
+                .into_iter()
+                .map(|g| (g.id, g.name))
+                .collect::<HashMap<_, _>>()
+            };
 
-            let groups = editoast_models::Group::list(
-                &mut conn,
-                SelectionSettings::new()
-                    .filter({
-                        let ids = subjects_id.clone();
-                        move || editoast_models::Group::ID.eq_any(ids.clone())
-                    })
-                    .order_by(move || editoast_models::Group::ID.asc()),
-            )
-            .await?
-            .into_iter()
-            .map(|editoast_models::Group { id, name }| (id, name))
-            .collect::<HashMap<_, _>>();
-
-            Ok((stats, subjects_id, users, groups))
+            Ok((users, groups))
         })
         .await?;
 
     // We have everything we need to build the response.
     let subjects_grant = subjects_id
         .into_iter()
-        .map(|id| {
-            let (name, r#type) = users
+        .filter_map(|id| {
+            let subject = users
                 .remove(&id)
                 .map(|name| (name, SubjectType::User))
-                .or_else(|| groups.remove(&id).map(|name| (name, SubjectType::Group)))
-                .expect(
-                    // no race condition possible here, the transaction locks the authn_subject table
-                    "all queried subjects are either a user or a group",
-                );
+                .or_else(|| groups.remove(&id).map(|name| (name, SubjectType::Group)));
+            let Some((name, r#type)) = subject else {
+                // OpenFGA may return subjects that don't exist anymore, skip them
+                return None;
+            };
             let grant = subjects_grant
                 .remove(&id)
                 .expect("subjects_id is a subset of subjects_grant keys by construction");
-            SubjectGrant {
+            Some(SubjectGrant {
                 id,
                 name,
                 r#type,
                 grant,
-            }
+            })
         })
         .collect_vec();
 
-    Ok(Json(SubjectsWithGrantOnResource {
-        subjects: subjects_grant,
-        stats,
-    }))
+    Ok(Json(subjects_grant))
 }
 
 #[derive(Deserialize, ToSchema)]
@@ -980,33 +946,14 @@ mod tests {
 
         // Get the full user list for the infra
         let request_all = app
-            .get(&format!(
-                "/authz/{}/{}?page=1&page_size=10",
-                ResourceType::Infra,
-                infra.id
-            ))
+            .get(&format!("/authz/{}/{}", ResourceType::Infra, infra.id))
             .by_user(&user);
-        let SubjectsWithGrantOnResource { subjects, .. } = app
+        let subjects: Vec<SubjectGrant> = app
             .fetch(request_all)
             .await
             .assert_status(StatusCode::OK)
             .json_into();
         assert_eq!(subjects.len(), 6);
-
-        // Get the partial user list for the infra to test pagination
-        let request_all = app
-            .get(&format!(
-                "/authz/{}/{}?page=2&page_size=5",
-                ResourceType::Infra,
-                infra.id
-            ))
-            .by_user(&user);
-        let SubjectsWithGrantOnResource { subjects, .. } = app
-            .fetch(request_all)
-            .await
-            .assert_status(StatusCode::OK)
-            .json_into();
-        assert_eq!(subjects.len(), 1);
     }
 
     #[tokio::test(flavor = "multi_thread", worker_threads = 1)]
@@ -1045,7 +992,7 @@ mod tests {
             .create()
             .await;
 
-        let SubjectsWithGrantOnResource { subjects, .. } = app
+        let subjects: Vec<SubjectGrant> = app
             .fetch(
                 app.get(&format!("/authz/{}/{}", ResourceType::Infra, infra.id))
                     .by_user(&alice),

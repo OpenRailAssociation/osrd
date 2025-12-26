@@ -24,7 +24,6 @@ pub mod work_schedules;
 // Export all Model at crate root
 pub use auth_driver::PgAuthDriver;
 pub use authn::group::Group;
-pub use authn::subject::Subject;
 pub use authn::user::User;
 pub use catalog_entry::CatalogEntry;
 pub use document::Document;
