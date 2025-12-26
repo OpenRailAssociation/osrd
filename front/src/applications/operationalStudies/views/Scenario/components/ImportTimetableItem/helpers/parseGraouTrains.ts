@@ -29,37 +29,6 @@ type TrainScheduleWithUicSteps = Omit<TrainSchedule, 'path'> & {
 };
 
 /**
- * For an array of graou train schedules,
- * filter out steps with an arrival time set before the previous step departure time.
- *
- * Returns both the train schedules with those steps removed, as well as the name of each modified train.
- */
-
-export const filterInvalidSteps = (
-  importedTrainSchedules: GraouTrainSchedule[]
-): {
-  filteredTrains: GraouTrainSchedule[];
-  modifiedTrainsNumbers: string[];
-} => {
-  const modifiedTrainsNumbers: string[] = [];
-
-  const filteredTrains = importedTrainSchedules.map((trainSchedule) => {
-    const filteredSteps = trainSchedule.steps.filter(
-      (step, i) =>
-        i === 0 ||
-        new Date(step.arrivalTime).getTime() >=
-          new Date(trainSchedule.steps[i - 1].departureTime).getTime()
-    );
-    if (filteredSteps.length < trainSchedule.steps.length) {
-      modifiedTrainsNumbers.push(trainSchedule.trainNumber);
-    }
-    return { ...trainSchedule, steps: filteredSteps };
-  });
-
-  return { filteredTrains, modifiedTrainsNumbers };
-};
-
-/**
  *  Populate the last digit of the UIC for French stations,
  *  which is missing in schedules returned by the Graou api.
  *  It's a checksum which uses the Luhn algorithm.

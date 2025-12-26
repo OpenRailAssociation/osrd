@@ -24,7 +24,6 @@ import { formatLocalDate } from 'utils/date';
 import { castErrorToFailure } from 'utils/error';
 
 import {
-  filterInvalidSteps,
   generateTrainSchedulesPayloads,
   populateMissingSecondaryCodes,
 } from './helpers/parseGraouTrains';
@@ -65,20 +64,32 @@ const ImportTimetableItemConfig = ({
     try {
       setIsLoading(true);
       setTrainsJsonData({ train_schedules: [], paced_trains: [] });
-      const graouTrains = await getGraouTrainSchedules(config);
 
-      const { filteredTrains, modifiedTrainsNumbers } = filterInvalidSteps(graouTrains);
-      if (modifiedTrainsNumbers.length)
+      const {
+        trainSchedules: graouTrains,
+        rejectedTrainsCount,
+        modifiedTrainsNames,
+      } = await getGraouTrainSchedules(config);
+      if (rejectedTrainsCount)
+        dispatch(
+          setWarning({
+            title: t('warningMessages.warning'),
+            text: t('warningMessages.warningRejectedTrainsImport', {
+              rejectedTrainsCount,
+            }),
+          })
+        );
+      if (modifiedTrainsNames.length)
         dispatch(
           setWarning({
             title: t('warningMessages.warning'),
             text: t('warningMessages.warningFilteredStepImport', {
-              trainNumbers: modifiedTrainsNumbers,
+              modifiedTrainsNames,
             }),
           })
         );
 
-      const trainSchedulesPayloads = generateTrainSchedulesPayloads(filteredTrains);
+      const trainSchedulesPayloads = generateTrainSchedulesPayloads(graouTrains);
       await populateMissingSecondaryCodes(
         trainSchedulesPayloads,
         infraId,

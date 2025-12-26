@@ -51,7 +51,8 @@
       "alreadyPresentNode_one": "One macroscopic node was already present and was not updated.",
       "alreadyPresentNode_other": "{{count}} macroscopic nodes were already present and were not updated.",
       "warning": "Warning",
-      "warningFilteredStepImport": "{{trainNumbers}} invalid trains had to be modified to be successfully imported"
+      "warningFilteredStepImport": "Some invalid steps were removed from the following trains: {{modifiedTrainNames}}.",
+      "warningRejectedTrainsImport": "{{rejectedTrainsCount}} invalid trains could not be imported."
     }
   },
   "main": {
