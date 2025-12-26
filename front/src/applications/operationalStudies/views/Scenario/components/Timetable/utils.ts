@@ -6,7 +6,6 @@ import type {
   PacedTrain,
   SubCategory,
   TrainMainCategory,
-  TrainSchedule,
   RoundTrips,
   TrainScheduleSet,
 } from 'common/api/osrdEditoastApi';
@@ -45,7 +44,7 @@ export const timetableHasInvalidItem = (timetableItems: TimetableItemWithDetails
 export const formatTrainDuration = (duration: Duration) =>
   dayjs.duration(duration.ms).format('HH[h]mm');
 
-const formatTimetableItems = (
+const formatTimetableItemsForExport = (
   timetableItems: TimetableItem[],
   selectedTimeTableIdsFromClick: TimetableItemId[]
 ) => {
@@ -61,7 +60,7 @@ const formatTimetableItems = (
     }, []);
 
   return {
-    formattedTimetableItems: { train_schedules: [], paced_trains: pacedTrains },
+    formattedTimetableItems: pacedTrains,
     pacedTrainIndexByEditoastId,
   };
 };
@@ -70,11 +69,11 @@ export const copyTimetableItemsToClipboard = async (
   selectedTimeTableIdsFromClick: TimetableItemId[],
   timetableItems: TimetableItem[]
 ) => {
-  const { formattedTimetableItems } = formatTimetableItems(
+  const { formattedTimetableItems } = formatTimetableItemsForExport(
     timetableItems,
     selectedTimeTableIdsFromClick
   );
-  const jsonString = JSON.stringify(formattedTimetableItems);
+  const jsonString = JSON.stringify({ pacedTrains: formattedTimetableItems });
   const blob = new Blob([jsonString], { type: 'text/plain' });
   const clipboardItem = new ClipboardItem({ [blob.type]: blob });
   await navigator.clipboard.write([clipboardItem]);
@@ -123,8 +122,7 @@ function mapRoundTripsToIndexes(
 }
 
 type TimetableExportPayload = {
-  train_schedules: TrainSchedule[];
-  paced_trains: PacedTrain[];
+  trains: PacedTrain[];
   round_trips?: RoundTripsFromJson;
 };
 
@@ -133,7 +131,7 @@ export const buildTimetableExportPayload = (
   selectedTimeTableIdsFromClick: TimetableItemId[],
   pacedTrainRoundTrips?: RoundTrips
 ): TimetableExportPayload => {
-  const { formattedTimetableItems, pacedTrainIndexByEditoastId } = formatTimetableItems(
+  const { formattedTimetableItems, pacedTrainIndexByEditoastId } = formatTimetableItemsForExport(
     timetableItems,
     selectedTimeTableIdsFromClick
   );
@@ -144,10 +142,10 @@ export const buildTimetableExportPayload = (
   };
 
   if (roundTrips.train_schedules.length === 0 && roundTrips.paced_trains.length === 0) {
-    return formattedTimetableItems;
+    return { trains: formattedTimetableItems };
   }
 
-  return { ...formattedTimetableItems, round_trips: roundTrips };
+  return { trains: formattedTimetableItems, round_trips: roundTrips };
 };
 
 export const exportTimetableItems = (
