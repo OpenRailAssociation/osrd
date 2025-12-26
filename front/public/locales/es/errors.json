@@ -104,7 +104,7 @@
     },
     "study": {
       "Database": "Error interno (base de datos)",
-      "NotFound": "No se pudo encontar el estudio «{{study_id}}»"
+      "NotFound": "No se pudo encontrar el estudio «{{study_id}}»"
     },
     "temporary_speed_limit": {
       "Database": "Error interno (base de datos)",

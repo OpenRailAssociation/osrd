@@ -43,7 +43,7 @@
   "form": {
     "datePickerErrors": {
       "invalidDate": "Renseignez une date entre le {{startDate}} et le {{endDate}}",
-      "invalidInput": "Saississez une date au format dd/mm/yy"
+      "invalidInput": "Saisissez une date au format dd/mm/yy"
     },
     "incompleteForm": "Formulaire incomplet",
     "viaNotDefined": "Au moins une localisation n'est pas renseignée"
