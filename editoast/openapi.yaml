@@ -259,55 +259,30 @@ paths:
         schema:
           type: integer
           format: int64
-      - name: page
-        in: query
-        required: false
-        schema:
-          type: integer
-          format: int64
-          default: 1
-          minimum: 1
-      - name: page_size
-        in: query
-        required: false
-        schema:
-          type: integer
-          format: int64
-          default: 100
-          maximum: 100
-          minimum: 1
       responses:
         '200':
           description: Get list of user that have a grant on the resource
           content:
             application/json:
               schema:
-                type: object
-                required:
-                - subjects
-                - stats
-                properties:
-                  stats:
-                    $ref: '#/components/schemas/PaginationStats'
-                  subjects:
-                    type: array
-                    items:
-                      type: object
-                      required:
-                      - id
-                      - name
-                      - type
-                      - grant
-                      properties:
-                        grant:
-                          $ref: '#/components/schemas/InfraGrant'
-                        id:
-                          type: integer
-                          format: int64
-                        name:
-                          type: string
-                        type:
-                          $ref: '#/components/schemas/SubjectType'
+                type: array
+                items:
+                  type: object
+                  required:
+                  - id
+                  - name
+                  - type
+                  - grant
+                  properties:
+                    grant:
+                      $ref: '#/components/schemas/InfraGrant'
+                    id:
+                      type: integer
+                      format: int64
+                    name:
+                      type: string
+                    type:
+                      $ref: '#/components/schemas/SubjectType'
   /catalog_entry:
     get:
       tags:

@@ -198,16 +198,10 @@ impl StorageDriver for PgAuthDriver {
 
                 None => {
                     tracing::info!("registering new group in db");
-
-                    let id: i64 = dsl::insert_into(authn_subject::table)
-                        .default_values()
-                        .returning(authn_subject::id)
-                        .get_result(&mut conn.clone().write().await)
-                        .await?;
-
-                    dsl::insert_into(authn_group::table)
-                        .values((authn_group::id.eq(id), authn_group::name.eq(&group.name)))
-                        .execute(conn.write().await.deref_mut())
+                    let id = dsl::insert_into(authn_group::table)
+                        .values(authn_group::name.eq(&group.name))
+                        .returning(authn_group::id)
+                        .get_result(conn.write().await.deref_mut())
                         .await?;
 
                     Ok(id)
@@ -376,14 +370,10 @@ impl PgAuthDriver {
         user: &UserInfo,
         conn: &DbConnection,
     ) -> Result<User, <PgAuthDriver as StorageDriver>::Error> {
-        let user_id = dsl::insert_into(authn_subject::table)
-            .default_values()
-            .returning(authn_subject::id)
-            .get_result::<i64>(&mut conn.clone().write().await)
-            .await?;
-        diesel::dsl::insert_into(authn_user::table)
-            .values((authn_user::name.eq(&user.name), authn_user::id.eq(user_id)))
-            .execute(&mut conn.write().await.deref_mut())
+        let user_id = diesel::dsl::insert_into(authn_user::table)
+            .values(authn_user::name.eq(&user.name))
+            .returning(authn_user::id)
+            .get_result::<i64>(&mut conn.write().await.deref_mut())
             .await?;
         diesel::dsl::insert_into(authn_user_identity::table)
             .values(
