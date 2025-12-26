@@ -25,7 +25,7 @@ import type {
 import { Duration } from 'utils/duration';
 import { mmToM } from 'utils/physics';
 import { SMALL_INPUT_MAX_LENGTH } from 'utils/strings';
-import { formatEditoastIdToPacedTrainId, formatEditoastIdToTrainScheduleId } from 'utils/trainId';
+import { formatEditoastIdToPacedTrainId } from 'utils/trainId';
 
 import { upsertMapWaypointsInOperationalPoints } from './helpers/upsertMapWaypointsInOperationalPoints';
 import type {
@@ -433,25 +433,13 @@ export const checkRoundTripCompatible = (
  */
 export const groupRoundTrips = (
   timetableItemsById: Map<TimetableItemId, TimetableItemWithPathOps>,
-  rawRoundTrips: { trainSchedules: RoundTrips; pacedTrains: RoundTrips }
+  rawRoundTrips?: RoundTrips
 ): TimetableItemRoundTripGroups => {
-  const oneWayIds = [
-    ...(rawRoundTrips.trainSchedules.one_ways ?? []).map(formatEditoastIdToTrainScheduleId),
-    ...(rawRoundTrips.pacedTrains.one_ways ?? []).map(formatEditoastIdToPacedTrainId),
-  ];
-  const roundTripIds = [
-    ...(rawRoundTrips.trainSchedules.round_trips ?? []).map(
-      ([leftId, rightId]) =>
-        [
-          formatEditoastIdToTrainScheduleId(leftId),
-          formatEditoastIdToTrainScheduleId(rightId),
-        ] as const
-    ),
-    ...(rawRoundTrips.pacedTrains.round_trips ?? []).map(
-      ([leftId, rightId]) =>
-        [formatEditoastIdToPacedTrainId(leftId), formatEditoastIdToPacedTrainId(rightId)] as const
-    ),
-  ];
+  const oneWayIds = (rawRoundTrips?.one_ways ?? []).map(formatEditoastIdToPacedTrainId);
+  const roundTripIds = (rawRoundTrips?.round_trips ?? []).map(
+    ([leftId, rightId]) =>
+      [formatEditoastIdToPacedTrainId(leftId), formatEditoastIdToPacedTrainId(rightId)] as const
+  );
 
   const oneWays = oneWayIds.map((id) => timetableItemsById.get(id)!);
   const roundTrips = roundTripIds.map(

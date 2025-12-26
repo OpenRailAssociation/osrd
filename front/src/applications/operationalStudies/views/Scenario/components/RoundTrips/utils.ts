@@ -12,7 +12,6 @@ import type { TimetableItemWithPathOps } from 'reducers/osrdconf/types';
 import { addDurationToDate, Duration } from 'utils/duration';
 import {
   extractEditoastIdFromPacedTrainId,
-  extractEditoastIdFromTrainScheduleId,
   isPacedTrainId,
   isTrainScheduleId,
 } from 'utils/trainId';
@@ -132,51 +131,20 @@ const getItemInitialStatus = (itemRawId: number, roundTrips: RoundTrips) => {
   return initialStatus;
 };
 
-export const buildRoundTripsPayload = (
-  pairingItems: PairingItem[],
-  trainScheduleRoundtrips: RoundTrips,
-  pacedTrainRoundtrips: RoundTrips
-) => {
-  const trainScheduleIdsToDelete: number[] = [];
-  const trainScheduleOneWaysIds: number[] = [];
-  const trainScheduleRoundTripsIds: number[][] = [];
-  const pacedTrainIdsToDelete: number[] = [];
-  const pacedTrainOneWaysIds: number[] = [];
-  const pacedTrainRoundTripsIds: number[][] = [];
+export const buildRoundTripsPayload = (pairingItems: PairingItem[], roundTrips: RoundTrips) => {
+  const idsToDelete: number[] = [];
+  const oneWaysIds: number[] = [];
+  const roundTripsIds: number[][] = [];
 
   for (const item of pairingItems) {
-    if (isTrainScheduleId(item.id)) {
-      const itemRawId = extractEditoastIdFromTrainScheduleId(item.id);
-      const initialStatus = getItemInitialStatus(itemRawId, trainScheduleRoundtrips);
-
-      if (
-        item.status === 'roundTrips' &&
-        initialStatus !== item.status &&
-        !trainScheduleRoundTripsIds.flat().includes(itemRawId)
-      ) {
-        if (!isTrainScheduleId(item.pairedItemId)) {
-          throw new Error(
-            'a train schedule round trip item can only be paired with another train schedule'
-          );
-        }
-        const pairedItemRawId = extractEditoastIdFromTrainScheduleId(item.pairedItemId);
-        trainScheduleRoundTripsIds.push([itemRawId, pairedItemRawId]);
-      }
-      if (item.status === 'oneWays' && initialStatus !== item.status) {
-        trainScheduleOneWaysIds.push(itemRawId);
-      }
-      if (item.status === 'todo' && initialStatus !== item.status) {
-        trainScheduleIdsToDelete.push(itemRawId);
-      }
-    }
     if (isPacedTrainId(item.id)) {
       const itemRawId = extractEditoastIdFromPacedTrainId(item.id);
-      const initialStatus = getItemInitialStatus(itemRawId, pacedTrainRoundtrips);
+      const initialStatus = getItemInitialStatus(itemRawId, roundTrips);
 
       if (
         item.status === 'roundTrips' &&
         initialStatus !== item.status &&
-        !pacedTrainRoundTripsIds.flat().includes(itemRawId)
+        !roundTripsIds.flat().includes(itemRawId)
       ) {
         if (isTrainScheduleId(item.pairedItemId)) {
           throw new Error(
@@ -184,23 +152,16 @@ export const buildRoundTripsPayload = (
           );
         }
         const pairedItemRawId = extractEditoastIdFromPacedTrainId(item.pairedItemId);
-        pacedTrainRoundTripsIds.push([itemRawId, pairedItemRawId]);
+        roundTripsIds.push([itemRawId, pairedItemRawId]);
       }
       if (item.status === 'oneWays' && initialStatus !== item.status) {
-        pacedTrainOneWaysIds.push(itemRawId);
+        oneWaysIds.push(itemRawId);
       }
       if (item.status === 'todo' && initialStatus !== item.status) {
-        pacedTrainIdsToDelete.push(itemRawId);
+        idsToDelete.push(itemRawId);
       }
     }
   }
 
-  return {
-    trainScheduleIdsToDelete,
-    trainScheduleOneWaysIds,
-    trainScheduleRoundTripsIds,
-    pacedTrainIdsToDelete,
-    pacedTrainOneWaysIds,
-    pacedTrainRoundTripsIds,
-  };
+  return { idsToDelete, oneWaysIds, roundTripsIds };
 };

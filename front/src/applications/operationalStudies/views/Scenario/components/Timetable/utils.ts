@@ -16,7 +16,6 @@ import type { TimetableItem, TimetableItemId } from 'reducers/osrdconf/types';
 import type { Duration } from 'utils/duration';
 import {
   extractEditoastIdFromPacedTrainId,
-  extractEditoastIdFromTrainScheduleId,
   isPacedTrainResponseWithPacedTrainId,
 } from 'utils/trainId';
 
@@ -49,35 +48,29 @@ export const timetableHasInvalidItem = (timetableItems: TimetableItemWithDetails
 export const formatTrainDuration = (duration: Duration) =>
   dayjs.duration(duration.ms).format('HH[h]mm');
 
-export const formatTimetableItems = (
+const formatTimetableItems = (
   timetableItems: TimetableItem[],
   selectedTimeTableIdsFromClick: TimetableItemId[]
 ) => {
-  const trainScheduleIndexByEditoastId = new Map<number, number>();
   const pacedTrainIndexByEditoastId = new Map<number, number>();
 
-  const formattedTimetableItems = timetableItems
+  const pacedTrains = timetableItems
     .filter(({ id }) => selectedTimeTableIdsFromClick.includes(id))
-    .reduce<{
-      train_schedules: TrainSchedule[];
-      paced_trains: PacedTrain[];
-    }>(
-      (acc, timetableItem) => {
-        if (isPacedTrainResponseWithPacedTrainId(timetableItem)) {
-          const pacedTrainEditoastId = extractEditoastIdFromPacedTrainId(timetableItem.id);
-          pacedTrainIndexByEditoastId.set(pacedTrainEditoastId, acc.paced_trains.length);
-          acc.paced_trains.push(omit(timetableItem, ['id']));
-        } else {
-          const trainScheduleEditoastId = extractEditoastIdFromTrainScheduleId(timetableItem.id);
-          trainScheduleIndexByEditoastId.set(trainScheduleEditoastId, acc.train_schedules.length);
-          acc.train_schedules.push(omit(timetableItem, ['id']));
-        }
-        return acc;
-      },
-      { train_schedules: [], paced_trains: [] }
-    );
+    .reduce<PacedTrain[]>((acc, timetableItem) => {
+      if (isPacedTrainResponseWithPacedTrainId(timetableItem)) {
+        const pacedTrainEditoastId = extractEditoastIdFromPacedTrainId(timetableItem.id);
+        pacedTrainIndexByEditoastId.set(pacedTrainEditoastId, acc.length);
+        acc.push(omit(timetableItem, ['id']));
+      } else {
+        throw new Error('TrainSchedules are not handled anymore');
+      }
+      return acc;
+    }, []);
 
-  return { formattedTimetableItems, trainScheduleIndexByEditoastId, pacedTrainIndexByEditoastId };
+  return {
+    formattedTimetableItems: { train_schedules: [], paced_trains: pacedTrains },
+    pacedTrainIndexByEditoastId,
+  };
 };
 
 export const copyTimetableItemsToClipboard = async (
@@ -145,17 +138,15 @@ type TimetableExportPayload = {
 export const buildTimetableExportPayload = (
   timetableItems: TimetableItem[],
   selectedTimeTableIdsFromClick: TimetableItemId[],
-  trainScheduleRoundTrips?: RoundTrips,
   pacedTrainRoundTrips?: RoundTrips
 ): TimetableExportPayload => {
-  const { formattedTimetableItems, trainScheduleIndexByEditoastId, pacedTrainIndexByEditoastId } =
-    formatTimetableItems(timetableItems, selectedTimeTableIdsFromClick);
+  const { formattedTimetableItems, pacedTrainIndexByEditoastId } = formatTimetableItems(
+    timetableItems,
+    selectedTimeTableIdsFromClick
+  );
 
   const roundTrips: RoundTripsFromJson = {
-    train_schedules: mapRoundTripsToIndexes(
-      trainScheduleRoundTrips,
-      trainScheduleIndexByEditoastId
-    ),
+    train_schedules: [],
     paced_trains: mapRoundTripsToIndexes(pacedTrainRoundTrips, pacedTrainIndexByEditoastId),
   };
 
@@ -169,7 +160,6 @@ export const buildTimetableExportPayload = (
 export const exportTimetableItems = (
   selectedTimeTableIdsFromClick: TimetableItemId[],
   timetableItems: TimetableItem[],
-  trainScheduleRoundTrips?: RoundTrips,
   pacedTrainRoundTrips?: RoundTrips
 ) => {
   if (!timetableItems) return;
@@ -177,7 +167,6 @@ export const exportTimetableItems = (
   const payload = buildTimetableExportPayload(
     timetableItems,
     selectedTimeTableIdsFromClick,
-    trainScheduleRoundTrips,
     pacedTrainRoundTrips
   );
 
