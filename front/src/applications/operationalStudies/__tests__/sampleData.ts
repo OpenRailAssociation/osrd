@@ -8,7 +8,7 @@ import type {
   PositionData,
 } from 'applications/operationalStudies/types';
 import type { SimulationSummaryResult } from 'common/api/osrdEditoastApi';
-import type { PacedTrainId, PacedTrainWithPacedTrainId } from 'reducers/osrdconf/types';
+import type { PacedTrainId, TimetableItem } from 'reducers/osrdconf/types';
 
 export const pathLength = 4000;
 export const pathLengthLong = 6000;
@@ -315,7 +315,7 @@ export const electrificationRangesSingleSegment: ElectrificationRange[] = [
  * Data for isTooFast
  */
 
-export const trainScheduleTooFast: PacedTrainWithPacedTrainId = {
+export const trainScheduleTooFast: TimetableItem = {
   id: 'paced_98' as PacedTrainId,
   train_name: 'tooFast',
   labels: [],
@@ -384,7 +384,7 @@ export const trainSummaryTooFast: Extract<SimulationSummaryResult, { status: 'su
   path_item_positions: [0, 1000, 2000],
 };
 
-export const trainScheduleTooFastOnInterval: PacedTrainWithPacedTrainId = {
+export const trainScheduleTooFastOnInterval: TimetableItem = {
   id: 'trainschedule_38366' as PacedTrainId,
   train_name: 'tooFastOnInterval',
   labels: [],
@@ -456,7 +456,7 @@ export const trainSummaryTooFastOnInterval: Extract<
   path_item_positions: [0, 1000, 2000],
 };
 
-export const trainScheduleNotHonored: PacedTrainWithPacedTrainId = {
+export const trainScheduleNotHonored: TimetableItem = {
   id: 'paced_96' as PacedTrainId,
   train_name: 'notHonored',
   labels: [],
@@ -525,7 +525,7 @@ export const trainSummaryNotHonored: Extract<SimulationSummaryResult, { status: 
   path_item_positions: [0, 1000, 2000],
 };
 
-export const trainScheduleHonored: PacedTrainWithPacedTrainId = {
+export const trainScheduleHonored: TimetableItem = {
   id: 'paced_95' as PacedTrainId,
   train_name: 'normal',
   labels: [],
@@ -569,12 +569,12 @@ export const trainScheduleHonored: PacedTrainWithPacedTrainId = {
   },
 };
 
-export const trainScheduleNoSchedule: PacedTrainWithPacedTrainId = {
+export const trainScheduleNoSchedule: TimetableItem = {
   ...trainScheduleHonored,
   schedule: undefined,
 };
 
-export const trainScheduleNoMatch: PacedTrainWithPacedTrainId = {
+export const trainScheduleNoMatch: TimetableItem = {
   ...trainScheduleHonored,
   schedule: [
     {

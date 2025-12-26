@@ -212,7 +212,7 @@ export type TimetableItemToEditData = {
   occurrenceId?: OccurrenceId;
 };
 
-export type PacedTrainWithPacedTrainId = PacedTrain & {
+export type TimetableItem = PacedTrain & {
   id: PacedTrainId;
 };
 export type TrainBaseWithPacedTrainId = TrainSchedule & {
@@ -222,7 +222,6 @@ export type TrainBaseWithOccurrenceId = TrainSchedule & {
   id: OccurrenceId;
 };
 
-export type TimetableItem = PacedTrainWithPacedTrainId;
 export type Train = TrainBaseWithPacedTrainId | TrainBaseWithOccurrenceId;
 
 export type TimetableItemWithPathOps = TimetableItem & { pathOps: RelatedOperationalPoint[][] };

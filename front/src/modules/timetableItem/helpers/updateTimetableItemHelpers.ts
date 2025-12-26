@@ -1,10 +1,5 @@
 import { osrdEditoastApi, type PacedTrain } from 'common/api/osrdEditoastApi';
-import type {
-  PacedTrainId,
-  PacedTrainWithPacedTrainId,
-  TimetableItemId,
-  TimetableItem,
-} from 'reducers/osrdconf/types';
+import type { PacedTrainId, TimetableItem, TimetableItemId } from 'reducers/osrdconf/types';
 import {
   unsetTrainIdsMatching,
   unsetTrainIdsMatchingMissingOccurencesOf,
@@ -40,7 +35,7 @@ export async function createPacedTrain(
   dispatch: AppDispatch,
   timetableId: number,
   pacedTrain: PacedTrain
-): Promise<PacedTrainWithPacedTrainId> {
+): Promise<TimetableItem> {
   const newPacedTrains = await dispatch(
     osrdEditoastApi.endpoints.postTimetableByIdPacedTrains.initiate({
       id: timetableId,
@@ -74,7 +69,7 @@ export async function storePacedTrain(
   timetableId: number,
   dispatch: AppDispatch,
   upsertTimetableItems: (timetableItems: TimetableItem[]) => void
-): Promise<PacedTrainWithPacedTrainId> {
+): Promise<TimetableItem> {
   if (isPacedTrainBase(pacedTrain)) {
     dispatch(
       unsetTrainIdsMatchingMissingOccurencesOf({

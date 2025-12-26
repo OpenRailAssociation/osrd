@@ -15,9 +15,8 @@ import {
   storePacedTrain,
 } from 'modules/timetableItem/helpers/updateTimetableItemHelpers';
 import type {
-  PacedTrainWithPacedTrainId,
-  TimetableItemId,
   TimetableItem,
+  TimetableItemId,
   TrainScheduleId,
   PacedTrainId,
 } from 'reducers/osrdconf/types';
@@ -459,11 +458,11 @@ const handleCreateTimetableItem = async (
     })
   ).unwrap();
 
-  const newPacedTrain: PacedTrainWithPacedTrainId = {
+  const newPacedTrain: TimetableItem = {
     ...newTimetableItems[0],
     id: formatEditoastIdToPacedTrainId(newTimetableItems[0].id),
   };
-  const newReturnPacedTrain: PacedTrainWithPacedTrainId = {
+  const newReturnPacedTrain: TimetableItem = {
     ...newTimetableItems[1],
     id: formatEditoastIdToPacedTrainId(newTimetableItems[1].id),
   };
