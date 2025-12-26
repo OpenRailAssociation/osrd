@@ -2,7 +2,7 @@ import { createSlice, type Draft, type PayloadAction } from '@reduxjs/toolkit';
 import { v4 as uuidV4 } from 'uuid';
 
 import computeBasePathStep from 'modules/timetableItem/helpers/computeBasePathStep';
-import { isPacedTrainWithPacedWithDetails } from 'modules/timetableItem/helpers/pacedTrain';
+import { isPacedTrainWithDetails } from 'modules/timetableItem/helpers/pacedTrain';
 import type { SuggestedOP, TimetableItemWithDetails } from 'modules/timetableItem/types';
 import { buildMapStateReducer } from 'reducers/commonMap';
 import { defaultCommonConf, buildCommonConfReducers } from 'reducers/osrdconf/osrdConfCommon';
@@ -83,7 +83,7 @@ export const operationalStudiesConfSlice = createSlice({
       state.powerRestriction = power_restrictions || [];
       state.constraintDistribution = constraint_distribution || 'STANDARD';
 
-      if (isPacedTrainWithPacedWithDetails(action.payload.item)) {
+      if (isPacedTrainWithDetails(action.payload.item)) {
         state.editingItemType = action.payload.isOccurrence ? 'occurrence' : 'pacedTrain';
         state.timeWindow = action.payload.item.paced.timeWindow;
         state.interval = action.payload.item.paced.interval;

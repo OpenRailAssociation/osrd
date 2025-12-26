@@ -33,7 +33,7 @@ export const isPacedTrain = (
   timetableItem: TimetableItem
 ): timetableItem is PacedTrainResponseWithPaced => !!timetableItem.paced;
 
-export const isPacedTrainWithPacedWithDetails = (
+export const isPacedTrainWithDetails = (
   timetableItem: TimetableItemWithDetails
 ): timetableItem is PacedTrainWithPacedWithDetails => !!timetableItem.paced;
 
