@@ -62,10 +62,6 @@ const TimetableToolbar = ({
   const { t } = useTranslation(['operational-studies', 'translation'], { keyPrefix: 'main' });
 
   const { infraId, timetableId } = useScenarioContext();
-  const { data: trainScheduleRoundTripsData } =
-    osrdEditoastApi.endpoints.getTimetableByIdRoundTripsTrainSchedules.useQuery({
-      id: timetableId,
-    });
   const { data: pacedTrainRoundTripsData } =
     osrdEditoastApi.endpoints.getTimetableByIdRoundTripsPacedTrains.useQuery({
       id: timetableId,
@@ -90,7 +86,6 @@ const TimetableToolbar = ({
     exportTimetableItems(
       selectedTimetableItemIds,
       timetableItems,
-      trainScheduleRoundTripsData?.results,
       pacedTrainRoundTripsData?.results
     );
   };

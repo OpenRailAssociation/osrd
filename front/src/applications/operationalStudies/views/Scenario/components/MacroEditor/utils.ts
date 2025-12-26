@@ -10,15 +10,10 @@ import {
 } from 'common/api/osrdEditoastApi';
 import isMainCategory from 'modules/rollingStock/helpers/category';
 import { isPacedTrainResponseWithPaced } from 'modules/timetableItem/helpers/pacedTrain';
-import type { TimetableItem, TrainScheduleId, PacedTrainId } from 'reducers/osrdconf/types';
+import type { TimetableItem, PacedTrainId } from 'reducers/osrdconf/types';
 import type { AppDispatch } from 'store';
 import { Duration } from 'utils/duration';
-import {
-  extractEditoastIdFromTrainScheduleId,
-  extractEditoastIdFromPacedTrainId,
-  isPacedTrainId,
-  isTrainScheduleId,
-} from 'utils/trainId';
+import { extractEditoastIdFromPacedTrainId, isPacedTrainId } from 'utils/trainId';
 
 import {
   CUSTOM_TRAINRUN_TIME_CATEGORY,
@@ -94,8 +89,8 @@ export const deleteMacroNodeByNgeId = async (
 
 export const storeRoundTrip = async (
   dispatch: AppDispatch,
-  forwardId: TrainScheduleId | PacedTrainId,
-  returnId?: TrainScheduleId | PacedTrainId
+  forwardId: PacedTrainId,
+  returnId?: PacedTrainId
 ) => {
   if (isPacedTrainId(forwardId)) {
     let roundTrips;
@@ -122,29 +117,7 @@ export const storeRoundTrip = async (
       })
     ).unwrap();
   } else {
-    let roundTrips;
-    if (returnId) {
-      if (!isTrainScheduleId(returnId)) {
-        throw new Error('Type mismatch: forward is TrainSchedule but return is not');
-      }
-      roundTrips = {
-        round_trips: [
-          [
-            extractEditoastIdFromTrainScheduleId(forwardId),
-            extractEditoastIdFromTrainScheduleId(returnId),
-          ],
-        ],
-      };
-    } else {
-      roundTrips = {
-        one_ways: [extractEditoastIdFromTrainScheduleId(forwardId)],
-      };
-    }
-    await dispatch(
-      osrdEditoastApi.endpoints.postRoundTripsTrainSchedules.initiate({
-        roundTrips,
-      })
-    ).unwrap();
+    throw new Error('TrainSchedules are not handled anymore');
   }
 };
 

@@ -737,10 +737,7 @@ export const loadNgeDto = async (
     )
   );
   const { results: pacedTrainRoundTrips } = await pacedTrainRoundTripsPromise.unwrap();
-  const roundTripGroups = groupRoundTrips(timetableItemsById, {
-    trainSchedules: {},
-    pacedTrains: pacedTrainRoundTrips,
-  });
+  const roundTripGroups = groupRoundTrips(timetableItemsById, pacedTrainRoundTrips);
   const groupedTimetableItems = groupCompatibleRoundTrips(roundTripGroups);
 
   const { results: subCategories } = await dispatch(
