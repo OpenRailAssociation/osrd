@@ -7,7 +7,7 @@ import {
   type PathItemLocation,
   type PacedTrainException,
 } from 'common/api/osrdEditoastApi';
-import { isPacedTrainResponseWithPaced } from 'modules/timetableItem/helpers/pacedTrain';
+import { isPacedTrain } from 'modules/timetableItem/helpers/pacedTrain';
 import {
   createPacedTrain,
   deletePacedTrains,
@@ -573,7 +573,7 @@ export const handleUpdateTimetableItem = async ({
     updatedForwardTrainId = updatedTrainSchedule.id;
   } else {
     let exceptions: PacedTrainException[] = [];
-    if (isPacedTrainResponseWithPaced(oldForwardTimetableItem)) {
+    if (isPacedTrain(oldForwardTimetableItem)) {
       paced.time_window = oldForwardTimetableItem.paced.time_window;
       exceptions = checkChangeGroups(
         newForwardTimetableItem,
@@ -643,7 +643,7 @@ export const handleUpdateTimetableItem = async ({
         ...newReturnTimetableItemBase,
         paced: {
           ...paced,
-          exceptions: isPacedTrainResponseWithPaced(oldReturnTimetableItem)
+          exceptions: isPacedTrain(oldReturnTimetableItem)
             ? checkChangeGroups(
                 newReturnTimetableItemBase,
                 paced,

@@ -29,7 +29,7 @@ import type {
 export const isPacedTrainBase = (pacedTrain: PacedTrain): pacedTrain is PacedTrainWithPaced =>
   !!pacedTrain.paced;
 
-export const isPacedTrainResponseWithPaced = (
+export const isPacedTrain = (
   timetableItem: TimetableItem
 ): timetableItem is PacedTrainResponseWithPaced => !!timetableItem.paced;
 
@@ -160,7 +160,7 @@ export const getExceptionFromOccurrenceId = (
 ) => {
   const pacedTrainId = extractPacedTrainIdFromOccurrenceId(occurrenceId);
   const pacedTrain = timetableItemsById.get(pacedTrainId);
-  if (!pacedTrain || !isPacedTrainResponseWithPaced(pacedTrain))
+  if (!pacedTrain || !isPacedTrain(pacedTrain))
     throw new Error(`No paced train found for id ${pacedTrainId}`);
 
   let exception: PacedTrainException | undefined;
