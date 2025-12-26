@@ -192,11 +192,10 @@ const SpaceTimeChartWrapper = ({
   );
 
   // Cut the spacetime chart curves if the first or last waypoints are hidden
-  const { filteredProjectPathTrainResult: cutProjectedTrains, filteredConflicts: cutConflicts } =
-    useMemo(
-      () => cutSpaceTimeCurves(projectedTrains, conflicts, operationalPoints, waypointsPanelData),
-      [waypointsPanelData?.filteredWaypoints, projectedTrains, conflicts, operationalPoints]
-    );
+  const { cutProjectedTrains, cutConflicts } = useMemo(
+    () => cutSpaceTimeCurves(projectedTrains, conflicts, operationalPoints, waypointsPanelData),
+    [waypointsPanelData?.filteredWaypoints, projectedTrains, conflicts, operationalPoints]
+  );
 
   const paths = usePaths(cutProjectedTrains);
 
