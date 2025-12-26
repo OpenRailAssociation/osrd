@@ -56,9 +56,9 @@ import {
 
 import { buildSplitPoints } from './buildSplitPoints';
 import cutSpaceTimeCurves from './helpers/cutSpaceTimeCurves';
+import formatSpaceTimeCurves from './helpers/formatSpaceTimeCurves';
 import getPathStyle from './helpers/getPathStyle';
 import makeProjectedItems from './helpers/makeProjectedItems';
-import usePaths from './helpers/usePaths';
 import { getOccupancyBlocks } from './helpers/utils';
 import ProjectionLoadingMessage from './ProjectionLoadingMessage';
 import SettingsPanel from './SettingsPanel';
@@ -197,7 +197,7 @@ const SpaceTimeChartWrapper = ({
     [waypointsPanelData?.filteredWaypoints, projectedTrains, conflicts, operationalPoints]
   );
 
-  const paths = useMemo(() => usePaths(cutProjectedTrains), [cutProjectedTrains]);
+  const paths = useMemo(() => formatSpaceTimeCurves(cutProjectedTrains), [cutProjectedTrains]);
 
   const manchetteWaypoints = useMemo(() => {
     const rawWaypoints = waypointsPanelData?.filteredWaypoints ?? operationalPoints;
