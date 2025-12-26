@@ -6,7 +6,7 @@ import type { PacedTrain, TrainSchedule } from 'common/api/osrdEditoastApi';
 import getStepLocation from 'modules/pathfinding/helpers/getStepLocation';
 import {
   findExceptionWithOccurrenceId,
-  isPacedTrainWithPaced,
+  isPacedTrainBase,
 } from 'modules/timetableItem/helpers/pacedTrain';
 import type { PacedTrainWithDetails } from 'modules/timetableItem/types';
 import type {
@@ -132,7 +132,7 @@ export function formatPacedTrainPayload(
     const originalPacedTrain = formatPacedTrainWithDetailsToPacedTrainPayload(
       timetableItemToEditData.originalPacedTrain
     );
-    if (!isPacedTrainWithPaced(originalPacedTrain))
+    if (!isPacedTrainBase(originalPacedTrain))
       throw new Error(
         `PacedTrain payload (built from train ${timetableItemToEditData.originalPacedTrain.id}) should have a paced field.`
       );

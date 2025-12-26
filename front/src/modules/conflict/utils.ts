@@ -1,6 +1,6 @@
 import type { Conflict, TrainCategory } from 'common/api/osrdEditoastApi';
 import computeOccurrenceName from 'modules/timetableItem/helpers/computeOccurrenceName';
-import { isPacedTrainWithPaced } from 'modules/timetableItem/helpers/pacedTrain';
+import { isPacedTrainBase } from 'modules/timetableItem/helpers/pacedTrain';
 import type { TimetableItem, TimetableItemId, TrainId } from 'reducers/osrdconf/types';
 import { formatEditoastIdToPacedTrainId } from 'utils/trainId';
 
@@ -24,7 +24,7 @@ function getConflictTrainNames(
       return;
     }
 
-    if (!isPacedTrainWithPaced(pacedTrain))
+    if (!isPacedTrainBase(pacedTrain))
       throw new Error(`Train with id ${train.id} should be a paced train`);
 
     if (train.type === 'modified') {
