@@ -212,10 +212,6 @@ export type TimetableItemToEditData = {
   occurrenceId?: OccurrenceId;
 };
 
-export type TrainScheduleWithTrainId = TrainSchedule & {
-  id: TrainScheduleId;
-};
-
 export type PacedTrainWithPacedTrainId = PacedTrain & {
   id: PacedTrainId;
 };
