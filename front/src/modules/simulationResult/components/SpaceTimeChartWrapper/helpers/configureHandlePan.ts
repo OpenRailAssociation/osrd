@@ -41,7 +41,7 @@ type ConfigureHandlePanParams = {
   previousPanning: boolean;
   setPreviousPanning: (v: boolean) => void;
   zoomMode: boolean;
-  projectPathTrainResult: TrainSpaceTimeData[];
+  timetableItemProjections: TrainSpaceTimeData[];
   dispatch: AppDispatch;
 };
 
@@ -56,7 +56,7 @@ export function configureHandlePan({
   previousPanning,
   setPreviousPanning,
   zoomMode,
-  projectPathTrainResult,
+  timetableItemProjections,
   dispatch,
 }: ConfigureHandlePanParams): NonNullable<SpaceTimeChartProps['onPan']> {
   return async (payload) => {
@@ -87,7 +87,7 @@ export function configureHandlePan({
       ) {
         const occurrencesIndex = extractOccurrenceIndexFromOccurrenceId(draggedTrain.id);
         const pacedTrainId = extractPacedTrainIdFromOccurrenceId(draggedTrain.id);
-        const pacedTrain = projectPathTrainResult.find(({ id }) => id === pacedTrainId);
+        const pacedTrain = timetableItemProjections.find(({ id }) => id === pacedTrainId);
         if (pacedTrain?.paced) {
           newDepartureTime = subtractDurationFromDate(
             newDepartureTime,

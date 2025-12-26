@@ -17,8 +17,8 @@ import {
  * Turns trainSpaceTimeData (trainSchedules + pacedTrains) into individual train projection.
  * Extracts everything into one flat array.
  */
-const makeProjectedItems = (projectPathTrainResult: TrainSpaceTimeData[]) =>
-  projectPathTrainResult.flatMap<IndividualTrainProjection>((projectedItem) => {
+const makeProjectedItems = (timetableItemProjections: TrainSpaceTimeData[]) =>
+  timetableItemProjections.flatMap<IndividualTrainProjection>((projectedItem) => {
     if (!projectedItem.paced) {
       return projectedItem;
     }

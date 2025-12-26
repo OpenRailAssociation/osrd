@@ -12,7 +12,7 @@ const upsertNewProjectedTrains = (
 ) => {
   const newProjectedTrains = new Map(projectedTrains);
 
-  // For each key (train, id) in projectPathTrainResult, we either add it or update it in the state
+  // For each key (train, id) in projectedTrainsToUpsert, we either add it or update it in the state
   for (const [trainIdKey, trainData] of projectedTrainsToUpsert) {
     const matchingTrain = timetableItemsById.get(trainIdKey);
     if (!matchingTrain) {

@@ -78,10 +78,12 @@ const SimulationResults = ({
 
   const [mapCanvas, setMapCanvas] = useState<string>();
 
-  const [projectPathTrainResult, setProjectPathTrainResult] = useState<TrainSpaceTimeData[]>([]);
+  const [timetableItemProjections, setTimetableItemProjections] = useState<TrainSpaceTimeData[]>(
+    []
+  );
 
   useEffect(() => {
-    setProjectPathTrainResult(projectionData?.projectedTrains || []);
+    setTimetableItemProjections(projectionData?.projectedTrains || []);
   }, [projectionData]);
 
   const {
@@ -104,7 +106,7 @@ const SimulationResults = ({
     infraId,
     pathfindingHasFailed: projectionData?.pathfindingStatus === 'failed',
     pathOperationalPoints: filteredOperationalPoints,
-    timetableItemProjections: projectPathTrainResult,
+    timetableItemProjections,
   });
 
   const conflictZones = useProjectedConflicts(infraId, conflicts, projectionData?.pathfinding);
@@ -129,8 +131,8 @@ const SimulationResults = ({
   }, [timetableItemsWithDetails, selectedTrainId]);
 
   const handleTrainDrag = createHandleTrainDrag({
-    projectPathTrainResult,
-    setProjectPathTrainResult,
+    timetableItemProjections,
+    setTimetableItemProjections,
     handleTrainDragInTrackOccupancy,
     updateTrainDepartureTime,
   });
@@ -206,7 +208,7 @@ const SimulationResults = ({
               {trainIdUsedForProjection && projectionData && (
                 <SpaceTimeChartWrapper
                   operationalPoints={projectedOperationalPoints}
-                  projectPathTrainResult={projectPathTrainResult}
+                  timetableItemProjections={timetableItemProjections}
                   selectedTrainId={selectedTrainId}
                   timetableItemsWithDetails={timetableItemsWithDetails}
                   waypointsPanelData={{
