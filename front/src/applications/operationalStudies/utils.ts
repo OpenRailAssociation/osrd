@@ -16,7 +16,7 @@ import type {
 } from 'common/api/osrdEditoastApi';
 import getPathVoltages from 'modules/pathfinding/helpers/getPathVoltages';
 import { ARRIVAL_TIME_ACCEPTABLE_ERROR } from 'modules/timesStops/consts';
-import { isPacedTrainResponseWithPaced } from 'modules/timetableItem/helpers/pacedTrain';
+import { isPacedTrain } from 'modules/timetableItem/helpers/pacedTrain';
 import type {
   TimetableItem,
   TimetableItemId,
@@ -357,14 +357,12 @@ export const checkRoundTripCompatible = (
   timetableItemA: TimetableItemWithPathOps,
   timetableItemB: TimetableItemWithPathOps
 ): boolean => {
-  if (
-    isPacedTrainResponseWithPaced(timetableItemA) !== isPacedTrainResponseWithPaced(timetableItemB)
-  ) {
+  if (isPacedTrain(timetableItemA) !== isPacedTrain(timetableItemB)) {
     return false;
   }
   if (
-    isPacedTrainResponseWithPaced(timetableItemA) &&
-    isPacedTrainResponseWithPaced(timetableItemB) &&
+    isPacedTrain(timetableItemA) &&
+    isPacedTrain(timetableItemB) &&
     Duration.parse(timetableItemA.paced.interval).ms !==
       Duration.parse(timetableItemB.paced.interval).ms
   ) {

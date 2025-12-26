@@ -6,7 +6,7 @@ import type { Conflict } from 'common/api/osrdEditoastApi';
 import computeOccurrenceName from 'modules/timetableItem/helpers/computeOccurrenceName';
 import {
   findExceptionWithOccurrenceId,
-  isPacedTrainResponseWithPaced,
+  isPacedTrain,
 } from 'modules/timetableItem/helpers/pacedTrain';
 import type { TimetableItem, TimetableItemId } from 'reducers/osrdconf/types';
 import { getSelectedTrainId } from 'reducers/simulationResults/selectors';
@@ -43,11 +43,7 @@ const useConflictsFilter = (timetableItems: TimetableItem[], conflicts: Conflict
       : selectedTrainId;
     const selectedTrain = timetableItemById.get(timetableItemId);
 
-    if (
-      !selectedTrain ||
-      !isOccurrenceId(selectedTrainId) ||
-      !isPacedTrainResponseWithPaced(selectedTrain)
-    )
+    if (!selectedTrain || !isOccurrenceId(selectedTrainId) || !isPacedTrain(selectedTrain))
       return selectedTrain?.train_name || null;
 
     // Occurrence with a name change group

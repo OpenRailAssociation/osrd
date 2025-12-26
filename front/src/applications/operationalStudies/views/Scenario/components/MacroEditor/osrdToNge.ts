@@ -14,7 +14,7 @@ import {
   type SubCategory,
   type MacroNoteResponse,
 } from 'common/api/osrdEditoastApi';
-import { isPacedTrainResponseWithPaced } from 'modules/timetableItem/helpers/pacedTrain';
+import { isPacedTrain } from 'modules/timetableItem/helpers/pacedTrain';
 import type { TimetableItem, TimetableItemWithPathOps } from 'reducers/osrdconf/types';
 import type { AppDispatch } from 'store';
 import { Duration, addDurationToDate } from 'utils/duration';
@@ -64,7 +64,7 @@ const getNgeTrainrunFrequencies = (
 
   // Add the unknown frequencies from the PacedTrains
   timetableItems.forEach((timetableItem) => {
-    if (isPacedTrainResponseWithPaced(timetableItem)) {
+    if (isPacedTrain(timetableItem)) {
       const intervalInMinutes = Duration.parse(timetableItem.paced.interval).total('minute');
       if (!trainrunFrequencies.find((f) => f.frequency === intervalInMinutes)) {
         const newFrequency: TrainrunFrequency = {

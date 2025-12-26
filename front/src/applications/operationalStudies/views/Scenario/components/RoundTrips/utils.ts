@@ -7,7 +7,7 @@ import {
   getStationFromOps,
 } from 'applications/operationalStudies/utils';
 import type { OperationalPoint, TrainSchedule, RoundTrips } from 'common/api/osrdEditoastApi';
-import { isPacedTrainResponseWithPaced } from 'modules/timetableItem/helpers/pacedTrain';
+import { isPacedTrain } from 'modules/timetableItem/helpers/pacedTrain';
 import type { TimetableItemWithPathOps } from 'reducers/osrdconf/types';
 import { addDurationToDate, Duration } from 'utils/duration';
 import { extractEditoastIdFromPacedTrainId } from 'utils/trainId';
@@ -70,7 +70,7 @@ const formatBasePairingItem = (
     id: item.id,
     name: item.train_name,
     category: item.category,
-    interval: isPacedTrainResponseWithPaced(item) ? Duration.parse(item.paced.interval) : null,
+    interval: isPacedTrain(item) ? Duration.parse(item.paced.interval) : null,
     origin: stepLabels.at(0)!,
     stops: stepLabels.slice(1, -1),
     destination: stepLabels.at(-1)!,

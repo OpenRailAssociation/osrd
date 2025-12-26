@@ -17,7 +17,7 @@ import {
 import { formatSpeedCurve } from 'modules/simulationResult/components/SpeedDistanceDiagram/helpers';
 import {
   findExceptionWithOccurrenceId,
-  isPacedTrainResponseWithPaced,
+  isPacedTrain,
 } from 'modules/timetableItem/helpers/pacedTrain';
 import useSelectedTimetableItem from 'modules/timetableItem/hooks/useSelectedTimetableItem';
 import { getSelectedTrainId } from 'reducers/simulationResults/selectors';
@@ -64,8 +64,7 @@ const useEtcsBrakingCurves = (
   const selectedTrainId = useSelector(getSelectedTrainId);
   const timetableItem = useSelectedTimetableItem();
   const exception = useMemo(() => {
-    if (!selectedTrainId || !timetableItem || !isPacedTrainResponseWithPaced(timetableItem))
-      return undefined;
+    if (!selectedTrainId || !timetableItem || !isPacedTrain(timetableItem)) return undefined;
     if (!isOccurrenceId(selectedTrainId))
       throw new Error(`trainId ${selectedTrainId} should be a occurrence id`);
     return findExceptionWithOccurrenceId(timetableItem.paced.exceptions, selectedTrainId);
