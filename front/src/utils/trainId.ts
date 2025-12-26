@@ -1,11 +1,7 @@
 import { isEmpty } from 'lodash';
 
 import type { PacedTrainException } from 'common/api/osrdEditoastApi';
-import type {
-  TimetableItemWithDetails,
-  PacedTrainWithDetails,
-  Occurrence,
-} from 'modules/timetableItem/types';
+import type { Occurrence } from 'modules/timetableItem/types';
 import type {
   AddedExceptionId,
   IndexedOccurrenceId,
@@ -57,10 +53,6 @@ export const isExceptionFromPathOrSimulation = ({ exceptionChangeGroups }: Occur
     exceptionChangeGroups.speed_limit_tag ||
     exceptionChangeGroups.initial_speed ||
     exceptionChangeGroups.rolling_stock);
-
-export const isPacedTrainWithDetails = (
-  timetableItem: TimetableItemWithDetails
-): timetableItem is PacedTrainWithDetails => isPacedTrainId(timetableItem.id);
 
 /**
  * Given a train id in the Editoast format (used for api),

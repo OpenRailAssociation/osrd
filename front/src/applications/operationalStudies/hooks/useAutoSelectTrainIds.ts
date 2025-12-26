@@ -17,7 +17,6 @@ import {
   formatPacedTrainIdToIndexedOccurrenceId,
   isOccurrenceId,
   isPacedTrainId,
-  isPacedTrainWithDetails,
 } from 'utils/trainId';
 
 type SimulationParams = {
@@ -158,10 +157,7 @@ const useAutoSelectTrainIds = (
     if (firstTrainCanBeUsedForProjection) {
       dispatch(updateTrainIdUsedForProjection(firstTrainCanBeUsedForProjection.id));
       let newTrainIdToSelect: TrainId;
-      if (
-        !isPacedTrainWithDetails(firstTrainCanBeUsedForProjection) ||
-        !firstTrainCanBeUsedForProjection.paced
-      ) {
+      if (!firstTrainCanBeUsedForProjection.paced) {
         newTrainIdToSelect = firstTrainCanBeUsedForProjection.id;
       } else {
         newTrainIdToSelect = formatPacedTrainIdToIndexedOccurrenceId(

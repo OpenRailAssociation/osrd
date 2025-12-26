@@ -17,7 +17,6 @@ import {
   formatPacedTrainIdToExceptionId,
   formatPacedTrainIdToIndexedOccurrenceId,
   isIndexedOccurrenceId,
-  isPacedTrainWithDetails,
 } from 'utils/trainId';
 
 import type {
@@ -36,8 +35,7 @@ export const isPacedTrainResponseWithPaced = (
 
 export const isPacedTrainWithPacedWithDetails = (
   timetableItem: TimetableItemWithDetails
-): timetableItem is PacedTrainWithPacedWithDetails =>
-  isPacedTrainWithDetails(timetableItem) && !!timetableItem.paced;
+): timetableItem is PacedTrainWithPacedWithDetails => !!timetableItem.paced;
 
 export const getOccurrencesNb = ({
   timeWindow,

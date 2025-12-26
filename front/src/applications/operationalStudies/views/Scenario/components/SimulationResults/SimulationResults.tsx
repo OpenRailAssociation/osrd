@@ -31,11 +31,7 @@ import {
   getTrainIdUsedForProjection,
 } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
-import {
-  extractPacedTrainIdFromOccurrenceId,
-  isOccurrenceId,
-  isPacedTrainWithDetails,
-} from 'utils/trainId';
+import { extractPacedTrainIdFromOccurrenceId, isOccurrenceId } from 'utils/trainId';
 import { mapBy } from 'utils/types';
 
 import BoardWrapper from '../BoardWrapper';
@@ -143,7 +139,7 @@ const SimulationResults = ({
     );
     // WARNING TODO: race condition here, to fix
     // When turning a train into a service, then pacedTrain and selectedTrainId may be desynchronized.
-    if (!pacedTrain || !isPacedTrainWithDetails(pacedTrain) || !pacedTrain.paced) return undefined;
+    if (!pacedTrain || !pacedTrain.paced) return undefined;
 
     const exception = findExceptionWithOccurrenceId(pacedTrain.paced.exceptions, selectedTrainId);
     return exception?.summary ?? pacedTrain.summary;
