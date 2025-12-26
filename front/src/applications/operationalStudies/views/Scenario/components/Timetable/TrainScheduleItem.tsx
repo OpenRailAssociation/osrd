@@ -29,11 +29,7 @@ import { useAppDispatch } from 'store';
 import { timeToLocaleStringRounded, useDateTimeLocale } from 'utils/date';
 import { addDurationToDate, Duration } from 'utils/duration';
 import { castErrorToFailure } from 'utils/error';
-import {
-  extractEditoastIdFromPacedTrainId,
-  formatEditoastIdToPacedTrainId,
-  isTrainScheduleId,
-} from 'utils/trainId';
+import { extractEditoastIdFromPacedTrainId, formatEditoastIdToPacedTrainId } from 'utils/trainId';
 
 import ArrivalTimeLoader from './ArrivalTimeLoader';
 import { TIMETABLE_ITEM_DELTA } from './consts';
@@ -83,10 +79,6 @@ const TrainScheduleItem = ({
   };
 
   const deleteTrain = async () => {
-    if (isTrainScheduleId(train.id)) {
-      throw new Error('TrainSchedules are not handled anymore');
-    }
-
     deletePacedTrains(dispatch, [train.id])
       .then(() => {
         removeTrains([train.id]);
@@ -108,10 +100,6 @@ const TrainScheduleItem = ({
 
   const duplicateTrain = async () => {
     const trainName = `${train.name} (${t('timetable.copy')})`;
-
-    if (isTrainScheduleId(train.id)) {
-      throw new Error('TrainSchedules are not handled anymore');
-    }
 
     try {
       const editoastTrainId = extractEditoastIdFromPacedTrainId(train.id);

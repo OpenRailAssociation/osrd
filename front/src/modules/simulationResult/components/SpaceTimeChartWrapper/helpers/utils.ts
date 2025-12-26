@@ -2,13 +2,8 @@ import type { Conflict, OccupancyBlock } from '@osrd-project/ui-charts';
 import { chunk, compact, noop, omit } from 'lodash';
 
 import { ASPECT_LABELS_COLORS } from 'modules/simulationResult/consts';
-import type {
-  OccurrenceId,
-  TimetableItem,
-  TimetableItemId,
-  TrainScheduleId,
-} from 'reducers/osrdconf/types';
-import { isOccurrenceId, isTrainScheduleId } from 'utils/trainId';
+import type { OccurrenceId, TimetableItem, TimetableItemId } from 'reducers/osrdconf/types';
+import { isOccurrenceId } from 'utils/trainId';
 
 import type { MovableOccupancyZone } from './zones';
 import type {
@@ -16,7 +11,6 @@ import type {
   IndividualTrainProjection,
   LayerRangeData,
   PathOperationalPoint,
-  TrainSpaceTimeData,
   WaypointsPanelData,
 } from '../../../types';
 
@@ -112,15 +106,6 @@ export function batchFetchTrackOccupancy(
 
   return handleAbort;
 }
-
-/**
- * Check if the given timetable item is a TrainScheduleProjection.
- * @param timetableItem - The timetable item to check.
- */
-export const isTrainScheduleProjection = (
-  timetableItem: TrainSpaceTimeData
-): timetableItem is Extract<TrainSpaceTimeData, { id: TrainScheduleId }> =>
-  isTrainScheduleId(timetableItem.id);
 
 export const isIndividualOccurrenceProjection = (
   trainProjection: IndividualTrainProjection

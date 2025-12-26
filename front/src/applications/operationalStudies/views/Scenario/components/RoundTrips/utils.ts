@@ -10,11 +10,7 @@ import type { OperationalPoint, TrainSchedule, RoundTrips } from 'common/api/osr
 import { isPacedTrainResponseWithPaced } from 'modules/timetableItem/helpers/pacedTrain';
 import type { TimetableItemWithPathOps } from 'reducers/osrdconf/types';
 import { addDurationToDate, Duration } from 'utils/duration';
-import {
-  extractEditoastIdFromPacedTrainId,
-  isPacedTrainId,
-  isTrainScheduleId,
-} from 'utils/trainId';
+import { extractEditoastIdFromPacedTrainId, isPacedTrainId } from 'utils/trainId';
 
 import type { PairingItem } from './types';
 
@@ -146,11 +142,6 @@ export const buildRoundTripsPayload = (pairingItems: PairingItem[], roundTrips: 
         initialStatus !== item.status &&
         !roundTripsIds.flat().includes(itemRawId)
       ) {
-        if (isTrainScheduleId(item.pairedItemId)) {
-          throw new Error(
-            'a paced train round trip item can only be paired with another paced train'
-          );
-        }
         const pairedItemRawId = extractEditoastIdFromPacedTrainId(item.pairedItemId);
         roundTripsIds.push([itemRawId, pairedItemRawId]);
       }

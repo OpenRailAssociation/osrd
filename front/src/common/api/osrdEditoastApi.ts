@@ -5,7 +5,6 @@ import {
   extractEditoastIdFromPacedTrainId,
   extractPacedTrainIdFromOccurrenceId,
   isOccurrenceId,
-  isTrainScheduleId,
 } from 'utils/trainId';
 
 import {
@@ -57,56 +56,40 @@ const osrdEditoastApi = generatedEditoastApi
       }),
       getTimetableItemById: builder.query<TimetableItem, { id: TimetableItemId }>({
         queryFn: async ({ id: timetableItemId }, { dispatch }) => {
-          let data: TimetableItem;
-          if (isTrainScheduleId(timetableItemId)) {
-            throw new Error('TrainSchedules are not handled anymore.');
-          } else {
-            const pacedTrain = await dispatch(
-              generatedEditoastApi.endpoints.getPacedTrainById.initiate(
-                {
-                  id: extractEditoastIdFromPacedTrainId(timetableItemId),
-                },
-                { subscribe: false }
-              )
-            ).unwrap();
-            data = { ...pacedTrain, id: timetableItemId };
-          }
+          const pacedTrain = await dispatch(
+            generatedEditoastApi.endpoints.getPacedTrainById.initiate(
+              {
+                id: extractEditoastIdFromPacedTrainId(timetableItemId),
+              },
+              { subscribe: false }
+            )
+          ).unwrap();
+          const data: TimetableItem = { ...pacedTrain, id: timetableItemId };
           return { data };
         },
-        providesTags: (_result, _error, arg) => [
-          'timetable',
-          isTrainScheduleId(arg.id) ? 'train_schedule' : 'paced_train',
-        ],
+        providesTags: ['timetable', 'paced_train'],
       }),
       getTrainPath: builder.query<
         PathfindingResult,
         { id: TrainId; infraId: number; exceptionKey?: string }
       >({
         queryFn: async ({ id: trainId, infraId, exceptionKey }, { dispatch }) => {
-          let path: PathfindingResult;
-          if (isTrainScheduleId(trainId)) {
-            throw new Error('TrainSchedules are not handled anymore.');
-          } else {
-            const pacedTrainId = isOccurrenceId(trainId)
-              ? extractPacedTrainIdFromOccurrenceId(trainId)
-              : trainId;
-            path = await dispatch(
-              generatedEditoastApi.endpoints.getPacedTrainByIdPath.initiate(
-                {
-                  id: extractEditoastIdFromPacedTrainId(pacedTrainId),
-                  infraId,
-                  exceptionKey,
-                },
-                { subscribe: false }
-              )
-            ).unwrap();
-          }
+          const pacedTrainId = isOccurrenceId(trainId)
+            ? extractPacedTrainIdFromOccurrenceId(trainId)
+            : trainId;
+          const path: PathfindingResult = await dispatch(
+            generatedEditoastApi.endpoints.getPacedTrainByIdPath.initiate(
+              {
+                id: extractEditoastIdFromPacedTrainId(pacedTrainId),
+                infraId,
+                exceptionKey,
+              },
+              { subscribe: false }
+            )
+          ).unwrap();
           return { data: path };
         },
-        providesTags: (_result, _error, arg) => [
-          'pathfinding',
-          isTrainScheduleId(arg.id) ? 'train_schedule' : 'paced_train',
-        ],
+        providesTags: ['pathfinding', 'paced_train'],
       }),
       getTrainSimulation: builder.query<
         SimulationResponse,
@@ -116,30 +99,23 @@ const osrdEditoastApi = generatedEditoastApi
           { id: trainId, infraId, electricalProfileSetId, exceptionKey },
           { dispatch }
         ) => {
-          let simulation: SimulationResponse;
-          if (isTrainScheduleId(trainId)) {
-            throw new Error('TrainSchedules are not handled anymore.');
-          } else {
-            const pacedTrainId = isOccurrenceId(trainId)
-              ? extractPacedTrainIdFromOccurrenceId(trainId)
-              : trainId;
-            simulation = await dispatch(
-              generatedEditoastApi.endpoints.getPacedTrainByIdSimulation.initiate(
-                {
-                  id: extractEditoastIdFromPacedTrainId(pacedTrainId),
-                  infraId,
-                  electricalProfileSetId,
-                  exceptionKey,
-                },
-                { subscribe: false }
-              )
-            ).unwrap();
-          }
+          const pacedTrainId = isOccurrenceId(trainId)
+            ? extractPacedTrainIdFromOccurrenceId(trainId)
+            : trainId;
+          const simulation = await dispatch(
+            generatedEditoastApi.endpoints.getPacedTrainByIdSimulation.initiate(
+              {
+                id: extractEditoastIdFromPacedTrainId(pacedTrainId),
+                infraId,
+                electricalProfileSetId,
+                exceptionKey,
+              },
+              { subscribe: false }
+            )
+          ).unwrap();
           return { data: simulation };
         },
-        providesTags: (_result, _error, arg) => [
-          isTrainScheduleId(arg.id) ? 'train_schedule' : 'paced_train',
-        ],
+        providesTags: ['paced_train'],
       }),
       getEtcsBrakingCurves: builder.query<
         CoreEtcsBrakingCurvesResponse,
@@ -149,30 +125,23 @@ const osrdEditoastApi = generatedEditoastApi
           { id: trainId, infraId, electricalProfileSetId, exceptionKey },
           { dispatch }
         ) => {
-          let etcsBrakingCurves: CoreEtcsBrakingCurvesResponse;
-          if (isTrainScheduleId(trainId)) {
-            throw new Error('TrainSchedules are not handled anymore.');
-          } else {
-            const pacedTrainId = isOccurrenceId(trainId)
-              ? extractPacedTrainIdFromOccurrenceId(trainId)
-              : trainId;
-            etcsBrakingCurves = await dispatch(
-              generatedEditoastApi.endpoints.getPacedTrainByIdEtcsBrakingCurves.initiate(
-                {
-                  id: extractEditoastIdFromPacedTrainId(pacedTrainId),
-                  infraId,
-                  electricalProfileSetId,
-                  exceptionKey,
-                },
-                { subscribe: false }
-              )
-            ).unwrap();
-          }
+          const pacedTrainId = isOccurrenceId(trainId)
+            ? extractPacedTrainIdFromOccurrenceId(trainId)
+            : trainId;
+          const etcsBrakingCurves = await dispatch(
+            generatedEditoastApi.endpoints.getPacedTrainByIdEtcsBrakingCurves.initiate(
+              {
+                id: extractEditoastIdFromPacedTrainId(pacedTrainId),
+                infraId,
+                electricalProfileSetId,
+                exceptionKey,
+              },
+              { subscribe: false }
+            )
+          ).unwrap();
           return { data: etcsBrakingCurves };
         },
-        providesTags: (_result, _error, arg) => [
-          isTrainScheduleId(arg.id) ? 'train_schedule' : 'paced_train',
-        ],
+        providesTags: ['paced_train'],
       }),
       matchAllOperationalPoints: builder.query<
         RelatedOperationalPoint[][],

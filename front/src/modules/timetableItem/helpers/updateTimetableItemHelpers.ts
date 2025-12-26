@@ -14,7 +14,6 @@ import {
   extractEditoastIdFromPacedTrainId,
   formatEditoastIdToPacedTrainId,
   isPacedTrainId,
-  isTrainScheduleId,
 } from 'utils/trainId';
 
 import { getOcurrencesIds, isPacedTrainWithPaced } from './pacedTrain';
@@ -76,10 +75,6 @@ export async function storePacedTrain(
   dispatch: AppDispatch,
   upsertTimetableItems: (timetableItems: TimetableItem[]) => void
 ): Promise<PacedTrainWithPacedTrainId> {
-  if (isTrainScheduleId(timetableItemIdToUpdate)) {
-    throw new Error('TrainSchedules are not handled anymore.');
-  }
-
   if (isPacedTrainWithPaced(pacedTrain)) {
     dispatch(
       unsetTrainIdsMatchingMissingOccurencesOf({

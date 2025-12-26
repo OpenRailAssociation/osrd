@@ -15,7 +15,7 @@ import type {
   TrainSchedule,
 } from 'common/api/osrdEditoastApi';
 import type { PacedTrainWithDetails } from 'modules/timetableItem/types';
-import type { OccurrenceId, PacedTrainId, TrainScheduleId } from 'reducers/osrdconf/types';
+import type { OccurrenceId, PacedTrainId } from 'reducers/osrdconf/types';
 import type { ArrayElement } from 'utils/types';
 
 // This alias refers to an operational point, in the context of a given path, from Edistoast:
@@ -44,18 +44,13 @@ export type BaseTrainProjection = {
 };
 
 export type TrainSpaceTimeData = {
+  id: PacedTrainId;
   name: string;
   departureTime: Date;
-} & BaseTrainProjection &
-  (
-    | { id: TrainScheduleId }
-    | {
-        id: PacedTrainId;
-        paced?: PacedTrainWithDetails['paced'] & {
-          exceptionProjections: Map<string, BaseTrainProjection>;
-        };
-      }
-  );
+  paced?: PacedTrainWithDetails['paced'] & {
+    exceptionProjections: Map<string, BaseTrainProjection>;
+  };
+} & BaseTrainProjection;
 
 /** Contains an individual projection, either of a trainSchedule or an occurrence */
 export type IndividualTrainProjection = {
@@ -63,7 +58,7 @@ export type IndividualTrainProjection = {
   departureTime: Date;
 } & BaseTrainProjection &
   (
-    | { id: TrainScheduleId | PacedTrainId }
+    | { id: PacedTrainId }
     | {
         id: OccurrenceId;
         exception?: PacedTrainException;

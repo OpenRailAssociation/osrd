@@ -1,30 +1,27 @@
 import { describe, it, expect } from 'vitest';
 
-import type { TrainScheduleId, PacedTrainId } from 'reducers/osrdconf/types';
-import {
-  extractEditoastIdFromTrainScheduleId,
-  extractEditoastIdFromPacedTrainId,
-} from 'utils/trainId';
+import type { PacedTrainId } from 'reducers/osrdconf/types';
+import { extractEditoastIdFromPacedTrainId } from 'utils/trainId';
 
 import { generateRoundTripsPayload } from '../generatePayloads';
 
 describe('generateRoundTripsPayload', () => {
-  it('correctly generates payload for a mix of one-ways and round-trips train schedules', () => {
-    const trainSchedules = [
-      { id: 'trainschedule_101' as TrainScheduleId },
-      { id: 'trainschedule_102' as TrainScheduleId },
-      { id: 'trainschedule_103' as TrainScheduleId },
+  it('correctly generates payload for a mix of one-ways and round-trips paced trains', () => {
+    const pacedTrains = [
+      { id: 'paced_101' as PacedTrainId },
+      { id: 'paced_102' as PacedTrainId },
+      { id: 'paced_103' as PacedTrainId },
     ];
 
-    const trainScheduleIndexes: ([number, number] | [number, null])[] = [
+    const pacedTrainIndexes: ([number, number] | [number, null])[] = [
       [0, 2],
       [1, null],
     ];
 
     const trainSchedulePayload = generateRoundTripsPayload(
-      trainScheduleIndexes,
-      trainSchedules,
-      extractEditoastIdFromTrainScheduleId
+      pacedTrainIndexes,
+      pacedTrains,
+      extractEditoastIdFromPacedTrainId
     );
 
     expect(trainSchedulePayload).toEqual({

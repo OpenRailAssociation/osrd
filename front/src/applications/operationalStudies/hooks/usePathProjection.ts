@@ -27,7 +27,6 @@ import {
   extractPacedTrainIdFromOccurrenceId,
   isOccurrenceId,
   isPacedTrainId,
-  isTrainScheduleId,
 } from 'utils/trainId';
 
 import type { PathProjectionResult } from '../types';
@@ -115,9 +114,7 @@ const usePathProjection = (
   let rawPacedTrainId: number | undefined;
   let exceptionKey: string | undefined;
   if (trainIdUsedForProjection) {
-    if (isTrainScheduleId(trainIdUsedForProjection)) {
-      throw new Error('TrainSchedules are not handled anymore.');
-    } else if (isPacedTrainId(trainIdUsedForProjection)) {
+    if (isPacedTrainId(trainIdUsedForProjection)) {
       rawPacedTrainId = extractEditoastIdFromPacedTrainId(trainIdUsedForProjection);
     } else {
       const pacedTrainId = extractPacedTrainIdFromOccurrenceId(trainIdUsedForProjection);

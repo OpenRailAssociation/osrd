@@ -2,10 +2,7 @@ import type { Conflict, TrainCategory } from 'common/api/osrdEditoastApi';
 import computeOccurrenceName from 'modules/timetableItem/helpers/computeOccurrenceName';
 import { isPacedTrainWithPaced } from 'modules/timetableItem/helpers/pacedTrain';
 import type { TimetableItem, TimetableItemId, TrainId } from 'reducers/osrdconf/types';
-import {
-  formatEditoastIdToPacedTrainId,
-  isPacedTrainResponseWithPacedTrainId,
-} from 'utils/trainId';
+import { formatEditoastIdToPacedTrainId } from 'utils/trainId';
 
 import type { ConflictWithTrainNames } from './types';
 
@@ -17,9 +14,6 @@ function getConflictTrainNames(
   conflict.train_ids.forEach((train) => {
     const pacedTrain = trainMap.get(formatEditoastIdToPacedTrainId(train.id));
     if (!pacedTrain) return;
-
-    if (!isPacedTrainResponseWithPacedTrainId(pacedTrain))
-      throw new Error(`Train with id ${train.id} is an old trainSchedule`);
 
     if (train.type === 'base') {
       trainNames.push(

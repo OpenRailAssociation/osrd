@@ -18,7 +18,6 @@ import {
   isOccurrenceId,
   isPacedTrainId,
   isPacedTrainWithDetails,
-  isTrainScheduleId,
 } from 'utils/trainId';
 
 type SimulationParams = {
@@ -92,13 +91,13 @@ const useAutoSelectTrainIds = (
     const projectionFromUrl = getParamFromUrlOrStorage('projection');
     if (
       selectedTrainFromUrl &&
-      (isTrainScheduleId(selectedTrainFromUrl) || isOccurrenceId(selectedTrainFromUrl))
+      (isOccurrenceId(selectedTrainFromUrl) || isPacedTrainId(selectedTrainFromUrl))
     ) {
       dispatch(updateSelectedTrainId(selectedTrainFromUrl));
     }
     if (
       projectionFromUrl &&
-      (isTrainScheduleId(projectionFromUrl) || isPacedTrainId(projectionFromUrl))
+      (isOccurrenceId(projectionFromUrl) || isPacedTrainId(projectionFromUrl))
     ) {
       dispatch(updateTrainIdUsedForProjection(projectionFromUrl));
     }

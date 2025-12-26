@@ -7,11 +7,7 @@ import {
   type PostPacedTrainProjectPathOpApiResponse,
 } from 'common/api/osrdEditoastApi';
 import type { TimetableItemId } from 'reducers/osrdconf/types';
-import {
-  extractEditoastIdFromPacedTrainId,
-  formatEditoastIdToPacedTrainId,
-  isTrainScheduleId,
-} from 'utils/trainId';
+import { extractEditoastIdFromPacedTrainId, formatEditoastIdToPacedTrainId } from 'utils/trainId';
 
 import TrainProjectionLazyLoaderAbstract, {
   type ProjectionResult,
@@ -41,27 +37,19 @@ export default class TrainOpProjectionLazyLoader extends TrainProjectionLazyLoad
       return;
     }
 
-    const rawPacedTrainIds = [];
-
-    for (const id of batch) {
-      if (isTrainScheduleId(id)) {
-        throw new Error('TrainSchedules are not handled anymore.');
-      } else {
-        rawPacedTrainIds.push(extractEditoastIdFromPacedTrainId(id));
-      }
-    }
+    const editoastIds = batch.map((id) => extractEditoastIdFromPacedTrainId(id));
 
     let pacedTrainPromise: Promise<PostPacedTrainProjectPathOpApiResponse> = Promise.resolve({});
     let pacedTrainOccupancyBlocksPromise: Promise<PostPacedTrainOccupancyBlocksApiResponse> =
       Promise.resolve({});
-    if (rawPacedTrainIds.length > 0) {
+    if (editoastIds.length > 0) {
       pacedTrainPromise = this.options
         .dispatch(
           osrdEditoastApi.endpoints.postPacedTrainProjectPathOp.initiate(
             {
               body: {
                 infra_id: infraId,
-                train_ids: rawPacedTrainIds,
+                train_ids: editoastIds,
                 operational_points_refs: this.opRefs,
                 operational_points_distances: this.opDistances,
               },
@@ -80,7 +68,7 @@ export default class TrainOpProjectionLazyLoader extends TrainProjectionLazyLoad
                 occupancyBlockForm: {
                   infra_id: infraId,
                   path,
-                  ids: rawPacedTrainIds,
+                  ids: editoastIds,
                   electrical_profile_set_id: electricalProfileSetId,
                 },
               },

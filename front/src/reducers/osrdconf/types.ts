@@ -204,17 +204,13 @@ export type OccurrenceId = IndexedOccurrenceId | AddedExceptionId;
  */
 export type PacedTrainId = string & { readonly __type: unique symbol };
 
-export type TrainId = TrainScheduleId | OccurrenceId | PacedTrainId;
-export type TimetableItemId = TrainScheduleId | PacedTrainId;
-export type TimetableItemToEditData =
-  | {
-      timetableItemId: TrainScheduleId;
-    }
-  | {
-      timetableItemId: PacedTrainId;
-      originalPacedTrain: PacedTrainWithDetails;
-      occurrenceId?: OccurrenceId;
-    };
+export type TrainId = OccurrenceId | PacedTrainId;
+export type TimetableItemId = PacedTrainId;
+export type TimetableItemToEditData = {
+  timetableItemId: PacedTrainId;
+  originalPacedTrain: PacedTrainWithDetails;
+  occurrenceId?: OccurrenceId;
+};
 
 export type TrainScheduleWithTrainId = TrainSchedule & {
   id: TrainScheduleId;
@@ -230,10 +226,7 @@ export type TrainBaseWithOccurrenceId = TrainSchedule & {
   id: OccurrenceId;
 };
 
-export type TimetableItem = TrainScheduleWithTrainId | PacedTrainWithPacedTrainId;
-export type Train =
-  | TrainScheduleWithTrainId
-  | TrainBaseWithPacedTrainId
-  | TrainBaseWithOccurrenceId;
+export type TimetableItem = PacedTrainWithPacedTrainId;
+export type Train = TrainBaseWithPacedTrainId | TrainBaseWithOccurrenceId;
 
 export type TimetableItemWithPathOps = TimetableItem & { pathOps: RelatedOperationalPoint[][] };

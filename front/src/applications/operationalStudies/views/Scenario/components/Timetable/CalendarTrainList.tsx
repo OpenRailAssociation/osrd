@@ -19,7 +19,6 @@ import {
 } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
 import { useDateTimeLocale } from 'utils/date';
-import { isPacedTrainWithDetails } from 'utils/trainId';
 
 import PacedTrainItem from './PacedTrain/PacedTrainItem';
 import TrainScheduleItem from './TrainScheduleItem';
@@ -123,16 +122,12 @@ const CalendarTrainList = ({
       occurrenceId?: OccurrenceId
     ) => {
       dispatch(selectTrainToEdit({ item: itemToEdit, isOccurrence: !!occurrenceId }));
-      const editData = isPacedTrainWithDetails(itemToEdit)
-        ? {
-            timetableItemId: itemToEdit.id,
-            // param originalPacedTrain is defined only when editing an occurrence
-            originalPacedTrain: originalPacedTrain ?? itemToEdit,
-            occurrenceId,
-          }
-        : {
-            timetableItemId: itemToEdit.id,
-          };
+      const editData = {
+        timetableItemId: itemToEdit.id,
+        // param originalPacedTrain is defined only when editing an occurrence
+        originalPacedTrain: originalPacedTrain ?? itemToEdit,
+        occurrenceId,
+      };
       setTimetableItemToEditData(editData);
       setDisplayTimetableItemManagement(MANAGE_TIMETABLE_ITEM_TYPES.edit);
     },

@@ -1,12 +1,11 @@
 import { describe, it, expect } from 'vitest';
 
-import type { TrainScheduleId, OccurrenceId, PacedTrainId } from 'reducers/osrdconf/types';
+import type { OccurrenceId, PacedTrainId } from 'reducers/osrdconf/types';
 
 import {
   formatEditoastIdToTrainScheduleId,
   formatEditoastIdToIndexedOccurrenceId,
   formatPacedTrainIdToIndexedOccurrenceId,
-  extractEditoastIdFromTrainScheduleId,
   formatEditoastIdToPacedTrainId,
   extractEditoastIdFromPacedTrainId,
   extractOccurrenceIndexFromOccurrenceId,
@@ -47,28 +46,6 @@ describe('formatEditoastIdToExceptionId', () => {
     const exceptionId = 'exception-uuid';
     const result = formatEditoastIdToExceptionId({ pacedTrainId, exceptionId });
     expect(result).toBe(`exception_${pacedTrainId}_${exceptionId}`);
-  });
-});
-
-describe('extractEditoastIdFromTrainScheduleId', () => {
-  it('should return a valid editoast id', () => {
-    const trainScheduleId = 'trainschedule_123' as TrainScheduleId;
-    const result = extractEditoastIdFromTrainScheduleId(trainScheduleId);
-    expect(result).toBe(123);
-  });
-
-  it("should throw an error if the trainScheduleId doesn't start correctly", () => {
-    const trainScheduleId = 'invalid_123' as TrainScheduleId;
-    expect(() => extractEditoastIdFromTrainScheduleId(trainScheduleId)).toThrow(
-      'The train schedule id should start with "trainschedule_"'
-    );
-  });
-
-  it("should throw an error if the return train id isn't a number", () => {
-    const trainScheduleId = 'trainschedule_onetwo' as TrainScheduleId;
-    expect(() => extractEditoastIdFromTrainScheduleId(trainScheduleId)).toThrow(
-      `Invalid train ID: ${trainScheduleId}`
-    );
   });
 });
 

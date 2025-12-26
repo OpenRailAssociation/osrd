@@ -6,17 +6,10 @@ import { keyBy, sortBy } from 'lodash';
 import { osrdEditoastApi, type ScenarioWithDetails } from 'common/api/osrdEditoastApi';
 import { useRollingStockContext } from 'common/RollingStockContext';
 import useLazyProjectTrains from 'modules/simulationResult/components/SpaceTimeChartWrapper/useLazyProjectTrains';
-import {
-  formatPacedTrainWithDetails,
-  formatTrainScheduleWithDetails,
-} from 'modules/timetableItem/helpers/formatTimetableItemWithDetails';
+import { formatPacedTrainWithDetails } from 'modules/timetableItem/helpers/formatTimetableItemWithDetails';
 import type { TimetableItemId, TimetableItem } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
-import {
-  formatEditoastIdToPacedTrainId,
-  extractEditoastIdFromPacedTrainId,
-  isPacedTrainResponseWithPacedTrainId,
-} from 'utils/trainId';
+import { formatEditoastIdToPacedTrainId, extractEditoastIdFromPacedTrainId } from 'utils/trainId';
 import { mapBy } from 'utils/types';
 
 import useAutoSelectTrainIds from './useAutoSelectTrainIds';
@@ -116,9 +109,7 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number) => {
       const simulatedTrain = simulatedTrainsById.get(timetableItem.id);
       if (simulatedTrain) return simulatedTrain;
       const rollingStock = rollingStocksByName.get(timetableItem.rolling_stock_name);
-      return isPacedTrainResponseWithPacedTrainId(timetableItem)
-        ? formatPacedTrainWithDetails(timetableItem, rollingStock)
-        : formatTrainScheduleWithDetails(timetableItem, rollingStock);
+      return formatPacedTrainWithDetails(timetableItem, rollingStock);
     });
     return sortBy(items, ['startTime', 'name', 'id']);
   }, [timetableItems, rollingStocksByName, simulatedTrainsById]);
@@ -207,19 +198,15 @@ const useScenarioData = (scenario: ScenarioWithDetails, infraId: number) => {
         throw new Error(`Timetable item "${timetableItemId}" not found`);
       }
 
-      if (isPacedTrainResponseWithPacedTrainId(timetableItem)) {
-        const editoastPacedTrainId = extractEditoastIdFromPacedTrainId(timetableItem.id);
+      const editoastPacedTrainId = extractEditoastIdFromPacedTrainId(timetableItem.id);
 
-        await putPacedTrainById({
-          id: editoastPacedTrainId,
-          body: {
-            ...timetableItem,
-            start_time: newDeparture.toISOString(),
-          },
-        }).unwrap();
-      } else {
-        throw new Error('TrainSchedules are not handled anymore.');
-      }
+      await putPacedTrainById({
+        id: editoastPacedTrainId,
+        body: {
+          ...timetableItem,
+          start_time: newDeparture.toISOString(),
+        },
+      }).unwrap();
 
       setTimetableItemDepartureTime(timetableItemId, newDeparture);
     },

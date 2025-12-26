@@ -17,7 +17,6 @@ import {
   formatPacedTrainIdToExceptionId,
   formatPacedTrainIdToIndexedOccurrenceId,
   isIndexedOccurrenceId,
-  isPacedTrainResponseWithPacedTrainId,
   isPacedTrainWithDetails,
 } from 'utils/trainId';
 
@@ -33,8 +32,7 @@ export const isPacedTrainWithPaced = (pacedTrain: PacedTrain): pacedTrain is Pac
 
 export const isPacedTrainResponseWithPaced = (
   timetableItem: TimetableItem
-): timetableItem is PacedTrainResponseWithPaced =>
-  isPacedTrainResponseWithPacedTrainId(timetableItem) && !!timetableItem.paced;
+): timetableItem is PacedTrainResponseWithPaced => !!timetableItem.paced;
 
 export const isPacedTrainWithPacedWithDetails = (
   timetableItem: TimetableItemWithDetails

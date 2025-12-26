@@ -28,7 +28,7 @@ export const simulationResultsSlice = createSlice({
     },
     updateTrainIdUsedForProjection(
       state: Draft<SimulationResultsState>,
-      action: PayloadAction<TrainScheduleId | PacedTrainId | OccurrenceId | undefined>
+      action: PayloadAction<TrainId | undefined>
     ) {
       state.trainIdUsedForProjection = action.payload;
     },
@@ -38,15 +38,11 @@ export const simulationResultsSlice = createSlice({
     ) {
       state.projectionType = action.payload;
     },
-    unsetTrainIdsMatching(
-      state: Draft<SimulationResultsState>,
-      action: PayloadAction<TrainScheduleId | PacedTrainId | OccurrenceId>
-    ) {
+    unsetTrainIdsMatching(state: Draft<SimulationResultsState>, action: PayloadAction<TrainId>) {
       const idToUnset = action.payload;
 
-      const isIdMatchingOccurence = (
-        id: TrainScheduleId | OccurrenceId | PacedTrainId | undefined
-      ) => id && isOccurrenceId(id) && extractPacedTrainIdFromOccurrenceId(id) === idToUnset;
+      const isIdMatchingOccurence = (id: TrainId | undefined) =>
+        id && isOccurrenceId(id) && extractPacedTrainIdFromOccurrenceId(id) === idToUnset;
 
       if (
         state.trainIdUsedForProjection === idToUnset ||

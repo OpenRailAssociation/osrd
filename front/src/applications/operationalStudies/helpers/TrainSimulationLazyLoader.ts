@@ -5,11 +5,7 @@ import {
 } from 'common/api/osrdEditoastApi';
 import type { PacedTrainId, TimetableItemId } from 'reducers/osrdconf/types';
 import type { AppDispatch } from 'store';
-import {
-  formatEditoastIdToPacedTrainId,
-  extractEditoastIdFromPacedTrainId,
-  isTrainScheduleId,
-} from 'utils/trainId';
+import { formatEditoastIdToPacedTrainId, extractEditoastIdFromPacedTrainId } from 'utils/trainId';
 
 const BATCH_SIZE = 20;
 
@@ -72,26 +68,19 @@ export default class TrainSimulationLazyLoader {
   }
 
   async processBatch(batch: TimetableItemId[]) {
-    const rawPacedTrainIds = [];
-    for (const id of batch) {
-      if (isTrainScheduleId(id)) {
-        throw new Error('TrainSchedules are not handled anymore.');
-      } else {
-        rawPacedTrainIds.push(extractEditoastIdFromPacedTrainId(id));
-      }
-    }
+    const editoastIds = batch.map((id) => extractEditoastIdFromPacedTrainId(id));
 
     let pacedTrainPromise: Promise<PostPacedTrainSimulationSummaryApiResponse> = Promise.resolve(
       {}
     );
-    if (rawPacedTrainIds.length > 0) {
+    if (editoastIds.length > 0) {
       pacedTrainPromise = this.options
         .dispatch(
           osrdEditoastApi.endpoints.postPacedTrainSimulationSummary.initiate(
             {
               body: {
                 infra_id: this.options.infraId,
-                ids: rawPacedTrainIds,
+                ids: editoastIds,
                 electrical_profile_set_id: this.options.electricalProfileSetId,
               },
             },

@@ -9,11 +9,7 @@ import type {
   SimulationSummary,
   TimetableItemWithDetails,
 } from 'modules/timetableItem/types';
-import type {
-  PacedTrainWithPacedTrainId,
-  TimetableItem,
-  TrainScheduleWithTrainId,
-} from 'reducers/osrdconf/types';
+import type { PacedTrainWithPacedTrainId, TimetableItem } from 'reducers/osrdconf/types';
 import { Duration } from 'utils/duration';
 import { jouleToKwh } from 'utils/physics';
 import { formatKmValue } from 'utils/strings';
@@ -70,28 +66,6 @@ const extractBaseTimetableItemProps = (timetableItem: TimetableItem) => ({
   speedLimitTag: timetableItem.speed_limit_tag ?? null,
   labels: timetableItem.labels ?? [],
 });
-
-export const formatTrainScheduleWithDetails = (
-  trainSchedule: TrainScheduleWithTrainId,
-  rollingStock?: LightRollingStockWithLiveries,
-  summary?: SimulationSummaryResult
-): TimetableItemWithDetails => {
-  // we omit the following props since they're not expected in TimetableItemWithDetails
-  const {
-    train_name: _,
-    start_time: __,
-    speed_limit_tag: ___,
-    rolling_stock_name: ____,
-    ...trainScheduleProps
-  } = trainSchedule;
-
-  return {
-    ...trainScheduleProps,
-    ...extractBaseTimetableItemProps(trainSchedule),
-    rollingStock,
-    summary: formatSummary(trainSchedule, summary),
-  };
-};
 
 export const formatPacedTrainWithDetails = (
   pacedTrain: PacedTrainWithPacedTrainId,

@@ -14,10 +14,7 @@ import isMainCategory from 'modules/rollingStock/helpers/category';
 import type { SimulationSummary, TimetableItemWithDetails } from 'modules/timetableItem/types';
 import type { TimetableItem, TimetableItemId } from 'reducers/osrdconf/types';
 import type { Duration } from 'utils/duration';
-import {
-  extractEditoastIdFromPacedTrainId,
-  isPacedTrainResponseWithPacedTrainId,
-} from 'utils/trainId';
+import { extractEditoastIdFromPacedTrainId } from 'utils/trainId';
 
 import { specialCodeDictionary, TRAIN_MAIN_CATEGORY_CLASS } from './consts';
 
@@ -57,13 +54,9 @@ const formatTimetableItems = (
   const pacedTrains = timetableItems
     .filter(({ id }) => selectedTimeTableIdsFromClick.includes(id))
     .reduce<PacedTrain[]>((acc, timetableItem) => {
-      if (isPacedTrainResponseWithPacedTrainId(timetableItem)) {
-        const pacedTrainEditoastId = extractEditoastIdFromPacedTrainId(timetableItem.id);
-        pacedTrainIndexByEditoastId.set(pacedTrainEditoastId, acc.length);
-        acc.push(omit(timetableItem, ['id']));
-      } else {
-        throw new Error('TrainSchedules are not handled anymore');
-      }
+      const pacedTrainEditoastId = extractEditoastIdFromPacedTrainId(timetableItem.id);
+      pacedTrainIndexByEditoastId.set(pacedTrainEditoastId, acc.length);
+      acc.push(omit(timetableItem, ['id']));
       return acc;
     }, []);
 

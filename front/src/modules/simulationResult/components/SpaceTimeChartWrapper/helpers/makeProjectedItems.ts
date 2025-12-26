@@ -13,15 +13,13 @@ import {
   extractEditoastIdFromPacedTrainId,
 } from 'utils/trainId';
 
-import { isTrainScheduleProjection } from './utils';
-
 /**
  * Turns trainSpaceTimeData (trainSchedules + pacedTrains) into individual train projection.
  * Extracts everything into one flat array.
  */
 const makeProjectedItems = (projectPathTrainResult: TrainSpaceTimeData[]) =>
   projectPathTrainResult.flatMap<IndividualTrainProjection>((projectedItem) => {
-    if (isTrainScheduleProjection(projectedItem) || !projectedItem.paced) {
+    if (!projectedItem.paced) {
       return projectedItem;
     }
 
