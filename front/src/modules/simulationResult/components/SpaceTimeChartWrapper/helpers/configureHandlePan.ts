@@ -12,7 +12,6 @@ import { Duration, subtractDurationFromDate } from 'utils/duration';
 import {
   extractOccurrenceIndexFromOccurrenceId,
   extractPacedTrainIdFromOccurrenceId,
-  isPacedTrainId,
   isTrainId,
 } from 'utils/trainId';
 
@@ -88,9 +87,7 @@ export function configureHandlePan({
       ) {
         const occurrencesIndex = extractOccurrenceIndexFromOccurrenceId(draggedTrain.id);
         const pacedTrainId = extractPacedTrainIdFromOccurrenceId(draggedTrain.id);
-        const pacedTrain = projectPathTrainResult.find(
-          ({ id }) => isPacedTrainId(id) && id === pacedTrainId
-        );
+        const pacedTrain = projectPathTrainResult.find(({ id }) => id === pacedTrainId);
         if (pacedTrain?.paced) {
           newDepartureTime = subtractDurationFromDate(
             newDepartureTime,

@@ -13,7 +13,7 @@ import { isPacedTrainResponseWithPaced } from 'modules/timetableItem/helpers/pac
 import type { TimetableItem, PacedTrainId } from 'reducers/osrdconf/types';
 import type { AppDispatch } from 'store';
 import { Duration } from 'utils/duration';
-import { extractEditoastIdFromPacedTrainId, isPacedTrainId } from 'utils/trainId';
+import { extractEditoastIdFromPacedTrainId } from 'utils/trainId';
 
 import {
   CUSTOM_TRAINRUN_TIME_CATEGORY,
@@ -92,33 +92,23 @@ export const storeRoundTrip = async (
   forwardId: PacedTrainId,
   returnId?: PacedTrainId
 ) => {
-  if (isPacedTrainId(forwardId)) {
-    let roundTrips;
-    if (returnId) {
-      if (!isPacedTrainId(returnId)) {
-        throw new Error('Type mismatch: forward is PacedTrain but return is not');
-      }
-      roundTrips = {
-        round_trips: [
-          [
-            extractEditoastIdFromPacedTrainId(forwardId),
-            extractEditoastIdFromPacedTrainId(returnId),
-          ],
-        ],
-      };
-    } else {
-      roundTrips = {
-        one_ways: [extractEditoastIdFromPacedTrainId(forwardId)],
-      };
-    }
-    await dispatch(
-      osrdEditoastApi.endpoints.postRoundTripsPacedTrains.initiate({
-        roundTrips,
-      })
-    ).unwrap();
+  let roundTrips;
+  if (returnId) {
+    roundTrips = {
+      round_trips: [
+        [extractEditoastIdFromPacedTrainId(forwardId), extractEditoastIdFromPacedTrainId(returnId)],
+      ],
+    };
   } else {
-    throw new Error('TrainSchedules are not handled anymore');
+    roundTrips = {
+      one_ways: [extractEditoastIdFromPacedTrainId(forwardId)],
+    };
   }
+  await dispatch(
+    osrdEditoastApi.endpoints.postRoundTripsPacedTrains.initiate({
+      roundTrips,
+    })
+  ).unwrap();
 };
 
 /**

@@ -10,7 +10,7 @@ import type { OperationalPoint, TrainSchedule, RoundTrips } from 'common/api/osr
 import { isPacedTrainResponseWithPaced } from 'modules/timetableItem/helpers/pacedTrain';
 import type { TimetableItemWithPathOps } from 'reducers/osrdconf/types';
 import { addDurationToDate, Duration } from 'utils/duration';
-import { extractEditoastIdFromPacedTrainId, isPacedTrainId } from 'utils/trainId';
+import { extractEditoastIdFromPacedTrainId } from 'utils/trainId';
 
 import type { PairingItem } from './types';
 
@@ -133,24 +133,22 @@ export const buildRoundTripsPayload = (pairingItems: PairingItem[], roundTrips: 
   const roundTripsIds: number[][] = [];
 
   for (const item of pairingItems) {
-    if (isPacedTrainId(item.id)) {
-      const itemRawId = extractEditoastIdFromPacedTrainId(item.id);
-      const initialStatus = getItemInitialStatus(itemRawId, roundTrips);
+    const itemRawId = extractEditoastIdFromPacedTrainId(item.id);
+    const initialStatus = getItemInitialStatus(itemRawId, roundTrips);
 
-      if (
-        item.status === 'roundTrips' &&
-        initialStatus !== item.status &&
-        !roundTripsIds.flat().includes(itemRawId)
-      ) {
-        const pairedItemRawId = extractEditoastIdFromPacedTrainId(item.pairedItemId);
-        roundTripsIds.push([itemRawId, pairedItemRawId]);
-      }
-      if (item.status === 'oneWays' && initialStatus !== item.status) {
-        oneWaysIds.push(itemRawId);
-      }
-      if (item.status === 'todo' && initialStatus !== item.status) {
-        idsToDelete.push(itemRawId);
-      }
+    if (
+      item.status === 'roundTrips' &&
+      initialStatus !== item.status &&
+      !roundTripsIds.flat().includes(itemRawId)
+    ) {
+      const pairedItemRawId = extractEditoastIdFromPacedTrainId(item.pairedItemId);
+      roundTripsIds.push([itemRawId, pairedItemRawId]);
+    }
+    if (item.status === 'oneWays' && initialStatus !== item.status) {
+      oneWaysIds.push(itemRawId);
+    }
+    if (item.status === 'todo' && initialStatus !== item.status) {
+      idsToDelete.push(itemRawId);
     }
   }
 
