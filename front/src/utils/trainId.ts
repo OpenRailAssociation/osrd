@@ -64,13 +64,6 @@ export const isPacedTrainWithDetails = (
 
 /**
  * Given a train id in the Editoast format (used for api),
- * returns the train id with a TrainScheduleId format (used across the front).
- */
-export const formatEditoastIdToTrainScheduleId = (trainId: number): TrainScheduleId =>
-  `trainschedule_${trainId}` as TrainScheduleId;
-
-/**
- * Given a train id in the Editoast format (used for api),
  * returns the paced train id with a PacedTrainId format (used across the front).
  */
 export const formatEditoastIdToPacedTrainId = (trainId: number): PacedTrainId =>
