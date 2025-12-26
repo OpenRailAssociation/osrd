@@ -9,7 +9,7 @@ import type {
   SimulationSummary,
   TimetableItemWithDetails,
 } from 'modules/timetableItem/types';
-import type { PacedTrainWithPacedTrainId, TimetableItem } from 'reducers/osrdconf/types';
+import type { TimetableItem } from 'reducers/osrdconf/types';
 import { Duration } from 'utils/duration';
 import { jouleToKwh } from 'utils/physics';
 import { formatKmValue } from 'utils/strings';
@@ -68,7 +68,7 @@ const extractBaseTimetableItemProps = (timetableItem: TimetableItem) => ({
 });
 
 export const formatPacedTrainWithDetails = (
-  pacedTrain: PacedTrainWithPacedTrainId,
+  pacedTrain: TimetableItem,
   rollingStock?: LightRollingStockWithLiveries,
   pacedTrainSummary?: PacedTrainSimulationSummaryResult
 ): TimetableItemWithDetails => {

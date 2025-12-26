@@ -14,12 +14,7 @@ import isMainCategory from 'modules/rollingStock/helpers/category';
 import { deletePacedTrains } from 'modules/timetableItem/helpers/updateTimetableItemHelpers';
 import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
 import { setFailure, setSuccess } from 'reducers/main';
-import type {
-  PacedTrainWithPacedTrainId,
-  TimetableItem,
-  TimetableItemId,
-  TrainId,
-} from 'reducers/osrdconf/types';
+import type { TimetableItem, TimetableItemId, TrainId } from 'reducers/osrdconf/types';
 import {
   updateTrainIdUsedForProjection,
   updateSelectedTrainId,
@@ -122,7 +117,7 @@ const TrainScheduleItem = ({
         id: trainDetail.timetable_id,
         body: [newTrain],
       }).unwrap();
-      const formattedTrainScheduleResponse: PacedTrainWithPacedTrainId = {
+      const formattedTrainScheduleResponse: TimetableItem = {
         ...newTimetableItem,
         id: formatEditoastIdToPacedTrainId(newTimetableItem.id),
       };

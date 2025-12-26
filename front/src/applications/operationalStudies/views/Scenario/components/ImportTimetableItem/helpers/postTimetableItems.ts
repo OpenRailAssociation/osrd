@@ -1,5 +1,5 @@
 import { osrdEditoastApi, type PacedTrain } from 'common/api/osrdEditoastApi';
-import type { PacedTrainWithPacedTrainId } from 'reducers/osrdconf/types';
+import type { TimetableItem } from 'reducers/osrdconf/types';
 import type { AppDispatch } from 'store';
 import { formatEditoastIdToPacedTrainId } from 'utils/trainId';
 
@@ -8,7 +8,7 @@ const postTimetableItems = async (
   payloads: PacedTrain[],
   dispatch: AppDispatch
 ) => {
-  let timetableItems: PacedTrainWithPacedTrainId[] = [];
+  let timetableItems: TimetableItem[] = [];
   if (payloads.length) {
     const rawTimetableItems = await dispatch(
       osrdEditoastApi.endpoints.postTimetableByIdPacedTrains.initiate({

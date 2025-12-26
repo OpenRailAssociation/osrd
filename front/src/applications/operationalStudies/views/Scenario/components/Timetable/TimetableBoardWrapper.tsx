@@ -11,7 +11,6 @@ import { deletePacedTrains } from 'modules/timetableItem/helpers/updateTimetable
 import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
 import { setFailure, setSuccess } from 'reducers/main';
 import type {
-  PacedTrainId,
   TimetableItem,
   TimetableItemId,
   TimetableItemToEditData,
@@ -91,7 +90,7 @@ const TimetableBoardWrapper = ({
       },
       { selectedTrainScheduleIds: [], selectedPacedTrainIds: [] } as {
         selectedTrainScheduleIds: TimetableItemId[];
-        selectedPacedTrainIds: PacedTrainId[];
+        selectedPacedTrainIds: TimetableItemId[];
       }
     );
   }, [selectedTimetableItemIds]);

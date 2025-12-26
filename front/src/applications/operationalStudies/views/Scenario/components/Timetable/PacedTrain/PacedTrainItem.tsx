@@ -31,9 +31,8 @@ import type { PacedTrainWithPacedWithDetails } from 'modules/timetableItem/types
 import { setFailure, setSuccess } from 'reducers/main';
 import type {
   PacedTrainId,
-  PacedTrainWithPacedTrainId,
-  TimetableItemId,
   TimetableItem,
+  TimetableItemId,
   TrainId,
   OccurrenceId,
 } from 'reducers/osrdconf/types';
@@ -223,7 +222,7 @@ const PacedTrainItem = ({
       return;
     }
 
-    const formattedPacedTrainResponse: PacedTrainWithPacedTrainId = {
+    const formattedPacedTrainResponse: TimetableItem = {
       ...pacedTrainResult,
       id: formatEditoastIdToPacedTrainId(pacedTrainResult.id),
     };

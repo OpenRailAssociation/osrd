@@ -8,7 +8,7 @@ import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/compon
 import { setFailure, setSuccess } from 'reducers/main';
 import { clearAddedExceptionsList } from 'reducers/osrdconf/operationalStudiesConf';
 import { getOperationalStudiesConf } from 'reducers/osrdconf/operationalStudiesConf/selectors';
-import type { PacedTrainWithPacedTrainId, TimetableItem } from 'reducers/osrdconf/types';
+import type { TimetableItem } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 import { formatEditoastIdToPacedTrainId } from 'utils/trainId';
@@ -62,7 +62,7 @@ const CreateTimetableItemButton = ({
       }).unwrap();
 
       // We can only add one paced train at a time
-      const formattedNewPacedTrain: PacedTrainWithPacedTrainId = {
+      const formattedNewPacedTrain: TimetableItem = {
         ...newTimetableItem.at(0)!,
         id: formatEditoastIdToPacedTrainId(newTimetableItem.at(0)!.id),
       };

@@ -23,7 +23,7 @@ import { useSubCategoryContext } from 'common/SubCategoryContext';
 import { TrainMainCategoryDict } from 'modules/rollingStock/consts';
 import isMainCategory from 'modules/rollingStock/helpers/category';
 import { setFailure, setSuccess, setWarning } from 'reducers/main';
-import type { PacedTrainWithPacedTrainId, TimetableItem } from 'reducers/osrdconf/types';
+import type { TimetableItem } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { extractEditoastIdFromPacedTrainId } from 'utils/trainId';
 
@@ -166,7 +166,7 @@ const ImportTimetableItemTrainsList = ({
 
   const postRoundTrips = async (
     roundTrips: RoundTripsFromJson,
-    formattedPacedTrains: PacedTrainWithPacedTrainId[]
+    formattedPacedTrains: TimetableItem[]
   ): Promise<void> => {
     if (roundTrips.paced_trains.length > 0) {
       const payload = generateRoundTripsPayload(
