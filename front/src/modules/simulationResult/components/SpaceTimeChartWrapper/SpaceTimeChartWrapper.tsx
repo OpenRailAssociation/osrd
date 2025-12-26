@@ -67,7 +67,7 @@ import WaypointsPanel from './WaypointsPanel';
 
 type SpaceTimeChartWrapperBaseProps = {
   operationalPoints: PathOperationalPoint[];
-  projectPathTrainResult: TrainSpaceTimeData[];
+  timetableItemProjections: TrainSpaceTimeData[];
   selectedTrainId?: TrainId;
   conflicts?: Conflict[];
   workSchedules?: PostWorkSchedulesProjectPathApiResponse;
@@ -121,7 +121,7 @@ export const MANCHETTE_WITH_SPACE_TIME_CHART_DEFAULT_HEIGHT = 561;
 
 const SpaceTimeChartWrapper = ({
   operationalPoints,
-  projectPathTrainResult,
+  timetableItemProjections,
   waypointsPanelData,
   conflicts = [],
   workSchedules,
@@ -186,8 +186,8 @@ const SpaceTimeChartWrapper = ({
   });
 
   const projectedTrains = useMemo(
-    () => makeProjectedItems(projectPathTrainResult),
-    [projectPathTrainResult]
+    () => makeProjectedItems(timetableItemProjections),
+    [timetableItemProjections]
   );
 
   // Cut the spacetime chart curves if the first or last waypoints are hidden
@@ -281,13 +281,14 @@ const SpaceTimeChartWrapper = ({
     if (trainUsedForProjection) {
       setTimeOrigin(+trainUsedForProjection.departureTime);
     } else {
-      const filteredProjectedTrains = projectPathTrainResult.filter(
-        (train) => train.spaceTimeCurves.length > 0
+      const minTime = Math.min(
+        ...timetableItemProjections
+          .filter((train) => train.spaceTimeCurves.length > 0)
+          .map((p) => +p.departureTime)
       );
-      const minTime = Math.min(...filteredProjectedTrains.map((p) => +p.departureTime));
       setTimeOrigin(minTime);
     }
-  }, [selectedProjectionId, projectPathTrainResult.length]);
+  }, [selectedProjectionId, timetableItemProjections.length]);
 
   const occupancyBlocks = getOccupancyBlocks(cutProjectedTrains);
 
@@ -322,7 +323,7 @@ const SpaceTimeChartWrapper = ({
       previousPanning,
       setPreviousPanning,
       zoomMode,
-      projectPathTrainResult,
+      timetableItemProjections,
       dispatch,
     }),
     [
@@ -332,7 +333,7 @@ const SpaceTimeChartWrapper = ({
       hoveredItem,
       previousPanning,
       zoomMode,
-      projectPathTrainResult,
+      timetableItemProjections,
       dispatch,
     ]
   );
@@ -376,7 +377,7 @@ const SpaceTimeChartWrapper = ({
         )}
       {!allTrainsProjected && (
         <ProjectionLoadingMessage
-          projectedTrainsNb={projectPathTrainResult.length}
+          projectedTrainsNb={timetableItemProjections.length}
           totalTrains={totalTrains}
         />
       )}
