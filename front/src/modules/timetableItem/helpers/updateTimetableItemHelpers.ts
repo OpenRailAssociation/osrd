@@ -16,7 +16,7 @@ import {
   isPacedTrainId,
 } from 'utils/trainId';
 
-import { getOcurrencesIds, isPacedTrainWithPaced } from './pacedTrain';
+import { getOcurrencesIds, isPacedTrainBase } from './pacedTrain';
 
 export async function fetchTimetableItem(
   timetableItemId: TimetableItemId,
@@ -75,7 +75,7 @@ export async function storePacedTrain(
   dispatch: AppDispatch,
   upsertTimetableItems: (timetableItems: TimetableItem[]) => void
 ): Promise<PacedTrainWithPacedTrainId> {
-  if (isPacedTrainWithPaced(pacedTrain)) {
+  if (isPacedTrainBase(pacedTrain)) {
     dispatch(
       unsetTrainIdsMatchingMissingOccurencesOf({
         pacedTrainId: timetableItemIdToUpdate,

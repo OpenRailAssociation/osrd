@@ -26,7 +26,7 @@ import type {
   TimetableItemWithDetails,
 } from '../types';
 
-export const isPacedTrainWithPaced = (pacedTrain: PacedTrain): pacedTrain is PacedTrainWithPaced =>
+export const isPacedTrainBase = (pacedTrain: PacedTrain): pacedTrain is PacedTrainWithPaced =>
   !!pacedTrain.paced;
 
 export const isPacedTrainResponseWithPaced = (
