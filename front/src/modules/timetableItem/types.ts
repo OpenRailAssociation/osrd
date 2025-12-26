@@ -10,7 +10,7 @@ import type {
   SimulationSummaryResult,
   TrainScheduleResponse,
 } from 'common/api/osrdEditoastApi';
-import type { OccurrenceId, PacedTrainId, TrainScheduleId } from 'reducers/osrdconf/types';
+import type { OccurrenceId, PacedTrainId } from 'reducers/osrdconf/types';
 import type { Duration } from 'utils/duration';
 
 export type SuggestedOP = {
@@ -78,10 +78,6 @@ export type InvalidReason =
   | Extract<SimulationSummaryResult['status'], 'pathfinding_failure' | 'simulation_failed'>
   | CorePathfindingNotFound['error_type']
   | CorePathfindingInputError['error_type'];
-
-export type TrainScheduleWithDetails = TimetableItemWithSummaries & {
-  id: TrainScheduleId;
-};
 
 export type SimulatedException = PacedTrainException & { summary?: SimulationSummary };
 
