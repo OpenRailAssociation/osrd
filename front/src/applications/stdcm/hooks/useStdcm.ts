@@ -5,11 +5,7 @@ import { useTranslation } from 'react-i18next';
 import { useSelector } from 'react-redux';
 import { v4 as uuidV4 } from 'uuid';
 
-import {
-  STDCM_REQUEST_STATUS,
-  STDCM_TRAIN_ID,
-  STDCM_TRAIN_TIMETABLE_ID,
-} from 'applications/stdcm/consts';
+import { STDCM_REQUEST_STATUS, STDCM_TRAIN_TIMETABLE_ID } from 'applications/stdcm/consts';
 import type {
   StdcmRequestStatus,
   StdcmSimulation,
@@ -30,7 +26,6 @@ import { updateSelectedTrainId } from 'reducers/simulationResults';
 import { useAppDispatch } from 'store';
 import { useDateTimeLocale } from 'utils/date';
 import { castErrorToFailure } from 'utils/error';
-import { formatEditoastIdToTrainScheduleId } from 'utils/trainId';
 
 import useStdcmForm from './useStdcmForm';
 import { adjustInputByDirection, adjustPayloadByDirection } from '../utils/adjustSimulationInputs';
@@ -101,7 +96,7 @@ const useStdcm = ({
         dispatch
       );
       const stdcmTrain: TimetableItem = {
-        id: formatEditoastIdToTrainScheduleId(STDCM_TRAIN_ID),
+        id: STDCM_TRAIN_TIMETABLE_ID,
         comfort: payload.body.comfort,
         constraint_distribution: 'MARECO',
         path: payload.body.steps.map((step) => ({ location: step.location, id: uuidV4() })),

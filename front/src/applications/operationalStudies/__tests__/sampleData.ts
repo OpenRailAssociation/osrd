@@ -8,7 +8,7 @@ import type {
   PositionData,
 } from 'applications/operationalStudies/types';
 import type { SimulationSummaryResult } from 'common/api/osrdEditoastApi';
-import type { TrainScheduleId, TrainScheduleWithTrainId } from 'reducers/osrdconf/types';
+import type { PacedTrainId, PacedTrainWithPacedTrainId } from 'reducers/osrdconf/types';
 
 export const pathLength = 4000;
 export const pathLengthLong = 6000;
@@ -315,8 +315,8 @@ export const electrificationRangesSingleSegment: ElectrificationRange[] = [
  * Data for isTooFast
  */
 
-export const trainScheduleTooFast: TrainScheduleWithTrainId = {
-  id: 'trainschedule-98' as TrainScheduleId,
+export const trainScheduleTooFast: PacedTrainWithPacedTrainId = {
+  id: 'paced_98' as PacedTrainId,
   train_name: 'tooFast',
   labels: [],
   rolling_stock_name: 'TC64700',
@@ -384,8 +384,8 @@ export const trainSummaryTooFast: Extract<SimulationSummaryResult, { status: 'su
   path_item_positions: [0, 1000, 2000],
 };
 
-export const trainScheduleTooFastOnInterval: TrainScheduleWithTrainId = {
-  id: 'trainschedule_38366' as TrainScheduleId,
+export const trainScheduleTooFastOnInterval: PacedTrainWithPacedTrainId = {
+  id: 'trainschedule_38366' as PacedTrainId,
   train_name: 'tooFastOnInterval',
   labels: [],
   rolling_stock_name: 'rs-fictive',
@@ -456,8 +456,8 @@ export const trainSummaryTooFastOnInterval: Extract<
   path_item_positions: [0, 1000, 2000],
 };
 
-export const trainScheduleNotHonored: TrainScheduleWithTrainId = {
-  id: 'trainschedule-96' as TrainScheduleId,
+export const trainScheduleNotHonored: PacedTrainWithPacedTrainId = {
+  id: 'paced_96' as PacedTrainId,
   train_name: 'notHonored',
   labels: [],
   rolling_stock_name: 'TC64700',
@@ -525,8 +525,8 @@ export const trainSummaryNotHonored: Extract<SimulationSummaryResult, { status: 
   path_item_positions: [0, 1000, 2000],
 };
 
-export const trainScheduleHonored: TrainScheduleWithTrainId = {
-  id: 'trainschedule-95' as TrainScheduleId,
+export const trainScheduleHonored: PacedTrainWithPacedTrainId = {
+  id: 'paced_95' as PacedTrainId,
   train_name: 'normal',
   labels: [],
   rolling_stock_name: 'TC64700',
@@ -569,12 +569,12 @@ export const trainScheduleHonored: TrainScheduleWithTrainId = {
   },
 };
 
-export const trainScheduleNoSchedule: TrainScheduleWithTrainId = {
+export const trainScheduleNoSchedule: PacedTrainWithPacedTrainId = {
   ...trainScheduleHonored,
   schedule: undefined,
 };
 
-export const trainScheduleNoMatch: TrainScheduleWithTrainId = {
+export const trainScheduleNoMatch: PacedTrainWithPacedTrainId = {
   ...trainScheduleHonored,
   schedule: [
     {

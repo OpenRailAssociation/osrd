@@ -16,17 +16,11 @@ import type {
   TimetableItemId,
   TimetableItemToEditData,
   TrainId,
-  TrainScheduleId,
 } from 'reducers/osrdconf/types';
 import { updateSelectedTrainId } from 'reducers/simulationResults';
 import { getSelectedTrainId } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
-import {
-  isPacedTrainResponseWithPacedTrainId,
-  isPacedTrainWithDetails,
-  isTrainScheduleId,
-} from 'utils/trainId';
 import { mapBy } from 'utils/types';
 
 import Timetable from './Timetable';
@@ -73,7 +67,7 @@ const TimetableBoardWrapper = ({
     () =>
       timetableItems.reduce(
         (acc, timetableItem) => {
-          if (!isPacedTrainResponseWithPacedTrainId(timetableItem) || !timetableItem.paced) {
+          if (!timetableItem.paced) {
             acc.totalTrainScheduleCount += 1;
           } else {
             acc.totalPacedTrainCount += 1;
@@ -89,16 +83,10 @@ const TimetableBoardWrapper = ({
     const timetableItemsById = mapBy(timetableItemsWithDetails, 'id');
     return selectedTimetableItemIds.reduce(
       (acc, timetableItemId) => {
-        if (isTrainScheduleId(timetableItemId)) {
-          acc.selectedTrainScheduleIds.push(timetableItemId);
-        } else {
-          const pacedTrain = timetableItemsById.get(timetableItemId);
-          if (!pacedTrain || !isPacedTrainWithDetails(pacedTrain)) {
-            throw new Error(`TimetableItem ${timetableItemId} should be a pacedTrain`);
-          }
-          if (!pacedTrain.paced) acc.selectedTrainScheduleIds.push(timetableItemId);
-          else acc.selectedPacedTrainIds.push(timetableItemId);
-        }
+        const pacedTrain = timetableItemsById.get(timetableItemId);
+        if (!pacedTrain) throw new Error(`No timetableItem found for id ${timetableItemId}`);
+        if (!pacedTrain.paced) acc.selectedTrainScheduleIds.push(timetableItemId);
+        else acc.selectedPacedTrainIds.push(timetableItemId);
         return acc;
       },
       { selectedTrainScheduleIds: [], selectedPacedTrainIds: [] } as {
@@ -171,9 +159,7 @@ const TimetableBoardWrapper = ({
     const isSelectedTimetableItemInSelection =
       currentSelectedTrainId !== undefined &&
       selectedTimetableItemIds.some((timetableItemId) =>
-        isTrainScheduleId(timetableItemId)
-          ? timetableItemId === currentSelectedTrainId
-          : currentSelectedTrainId.includes(timetableItemId)
+        currentSelectedTrainId.includes(timetableItemId)
       );
 
     if (isSelectedTimetableItemInSelection) {
@@ -182,19 +168,9 @@ const TimetableBoardWrapper = ({
       dispatch(updateSelectedTrainId(undefined));
     }
 
-    const trainScheduleIds: TrainScheduleId[] = [];
-    const pacedTrainIds: PacedTrainId[] = [];
-    for (const id of selectedTimetableItemIds) {
-      if (isTrainScheduleId(id)) trainScheduleIds.push(id);
-      else pacedTrainIds.push(id);
-    }
-
     try {
-      if (trainScheduleIds.length > 0) {
-        throw new Error('TrainSchedules are not handled anymore.');
-      }
-      if (pacedTrainIds.length > 0) {
-        await deletePacedTrains(dispatch, pacedTrainIds);
+      if (selectedTimetableItemIds.length > 0) {
+        await deletePacedTrains(dispatch, selectedTimetableItemIds);
       }
 
       removeAndUnselectTrains(selectedTimetableItemIds);

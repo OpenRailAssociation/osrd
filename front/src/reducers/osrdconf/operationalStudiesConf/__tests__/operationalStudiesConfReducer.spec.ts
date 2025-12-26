@@ -5,7 +5,6 @@ import type {
   PacedTrainWithDetails,
   SuggestedOP,
   TimetableItemWithSummaries,
-  TrainScheduleWithDetails,
 } from 'modules/timetableItem/types';
 import {
   operationalStudiesConfSlice,
@@ -13,12 +12,7 @@ import {
 } from 'reducers/osrdconf/operationalStudiesConf';
 import commonConfBuilder from 'reducers/osrdconf/osrdConfCommon/__tests__/commonConfBuilder';
 import testCommonConfReducers from 'reducers/osrdconf/osrdConfCommon/__tests__/utils';
-import type {
-  OperationalStudiesConfState,
-  PacedTrainId,
-  PathStep,
-  TrainScheduleId,
-} from 'reducers/osrdconf/types';
+import type { OperationalStudiesConfState, PacedTrainId, PathStep } from 'reducers/osrdconf/types';
 import { createStoreWithoutMiddleware } from 'store';
 import { Duration } from 'utils/duration';
 
@@ -63,53 +57,6 @@ describe('simulationConfReducer', () => {
   });
 
   describe('selectTrainToEdit', () => {
-    it('train schedule case', () => {
-      const trainSchedule: TrainScheduleWithDetails = {
-        ...baseTimetableItemWithSummary,
-        id: 'trainschedule_1' as TrainScheduleId,
-      };
-
-      const store = createStore();
-      store.dispatch(
-        operationalStudiesConfSlice.actions.selectTrainToEdit({ item: trainSchedule })
-      );
-
-      const state = store.getState()[operationalStudiesConfSlice.name];
-      expect(state).toEqual({
-        ...operationalStudiesInitialConf,
-        usingElectricalProfiles: false,
-        labels: ['label1'],
-        rollingStockID: 1,
-        speedLimitByTag: 'MA100',
-        name: 'train1',
-        pathSteps: [
-          {
-            id: 'id1',
-            location: {
-              operational_point: { uic: 123, type: 'uic' },
-            },
-            name: '123',
-            theoreticalMargin: '10%',
-            arrival: null,
-            stopFor: null,
-            receptionSignal: 'OPEN',
-          },
-          {
-            id: 'id2',
-            location: {
-              operational_point: { uic: 234, type: 'uic' },
-            },
-            name: '234',
-            theoreticalMargin: undefined,
-            arrival: null,
-            stopFor: null,
-            receptionSignal: 'OPEN',
-          },
-        ],
-        startTime: new Date('2021-01-01T00:00:00+00:00'),
-      });
-    });
-
     it('paced train case', () => {
       const pacedTrain: PacedTrainWithDetails = {
         ...baseTimetableItemWithSummary,

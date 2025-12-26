@@ -3,11 +3,7 @@ import { v4 as uuidV4 } from 'uuid';
 
 import computeBasePathStep from 'modules/timetableItem/helpers/computeBasePathStep';
 import { isPacedTrainWithPacedWithDetails } from 'modules/timetableItem/helpers/pacedTrain';
-import type {
-  PacedTrainWithDetails,
-  SuggestedOP,
-  TrainScheduleWithDetails,
-} from 'modules/timetableItem/types';
+import type { SuggestedOP, TimetableItemWithDetails } from 'modules/timetableItem/types';
 import { buildMapStateReducer } from 'reducers/commonMap';
 import { defaultCommonConf, buildCommonConfReducers } from 'reducers/osrdconf/osrdConfCommon';
 import type { OperationalStudiesConfState } from 'reducers/osrdconf/types';
@@ -53,7 +49,7 @@ export const operationalStudiesConfSlice = createSlice({
     selectTrainToEdit(
       state: Draft<OperationalStudiesConfState>,
       action: PayloadAction<{
-        item: TrainScheduleWithDetails | PacedTrainWithDetails;
+        item: TimetableItemWithDetails;
         isOccurrence?: boolean;
       }>
     ) {

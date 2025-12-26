@@ -1,30 +1,16 @@
 import type {
   LightRollingStockWithLiveries,
   PacedTrainSimulationSummaryResult,
-  SimulationSummaryResult,
 } from 'common/api/osrdEditoastApi';
-import {
-  formatPacedTrainWithDetails,
-  formatTrainScheduleWithDetails,
-} from 'modules/timetableItem/helpers/formatTimetableItemWithDetails';
+import { formatPacedTrainWithDetails } from 'modules/timetableItem/helpers/formatTimetableItemWithDetails';
 import type { TimetableItemWithDetails } from 'modules/timetableItem/types';
-import type {
-  TimetableItemId,
-  TimetableItem,
-  TrainScheduleId,
-  PacedTrainId,
-} from 'reducers/osrdconf/types';
-import { isPacedTrainId, isPacedTrainResponseWithPacedTrainId } from 'utils/trainId';
+import type { TimetableItemId, TimetableItem, PacedTrainId } from 'reducers/osrdconf/types';
 import { mapBy } from 'utils/types';
 
-type SummaryWithCorrespondingTimetableItemId =
-  | { timetableItemId: TrainScheduleId; summary: SimulationSummaryResult }
-  | { timetableItemId: PacedTrainId; summary: PacedTrainSimulationSummaryResult };
-
-const isPacedTrainInputs = (
-  inputs: SummaryWithCorrespondingTimetableItemId
-): inputs is Extract<SummaryWithCorrespondingTimetableItemId, { timetableItemId: PacedTrainId }> =>
-  isPacedTrainId(inputs.timetableItemId);
+type SummaryWithCorrespondingTimetableItemId = {
+  timetableItemId: PacedTrainId;
+  summary: PacedTrainSimulationSummaryResult;
+};
 
 const formatTimetableItemWithDetails = (
   inputs: SummaryWithCorrespondingTimetableItemId,
@@ -36,14 +22,7 @@ const formatTimetableItemWithDetails = (
     throw new Error('Missing timetable item');
   }
   const rollingStock = rollingStocks.find((rs) => rs.name === timetableItem.rolling_stock_name);
-
-  if (isPacedTrainResponseWithPacedTrainId(timetableItem) && isPacedTrainInputs(inputs)) {
-    return formatPacedTrainWithDetails(timetableItem, rollingStock, inputs.summary);
-  }
-  if (isPacedTrainInputs(inputs) || isPacedTrainResponseWithPacedTrainId(timetableItem)) {
-    throw new Error('Mismatch between timetableItemId and timetableItem');
-  }
-  return formatTrainScheduleWithDetails(timetableItem, rollingStock, inputs.summary);
+  return formatPacedTrainWithDetails(timetableItem, rollingStock, inputs.summary);
 };
 
 /** Format the timetable items with their simulation summaries */

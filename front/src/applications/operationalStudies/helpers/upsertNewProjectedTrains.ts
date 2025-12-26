@@ -1,7 +1,6 @@
 import type { BaseTrainProjection, TrainSpaceTimeData } from 'modules/simulationResult/types';
 import type { TimetableItem, TimetableItemId } from 'reducers/osrdconf/types';
 import { Duration } from 'utils/duration';
-import { isPacedTrainResponseWithPacedTrainId } from 'utils/trainId';
 
 import type { ProjectionResult } from './TrainProjectionLazyLoaderAbstract';
 
@@ -37,23 +36,18 @@ const upsertNewProjectedTrains = (
       signalUpdates: trainData.signal_updates || [],
     };
 
-    let projectedTrain: TrainSpaceTimeData;
-    if (!isPacedTrainResponseWithPacedTrainId(matchingTrain)) {
-      projectedTrain = { ...base, id: matchingTrain.id };
-    } else {
-      projectedTrain = {
-        ...base,
-        id: matchingTrain.id,
-        paced: matchingTrain.paced
-          ? {
-              timeWindow: Duration.parse(matchingTrain.paced.time_window),
-              interval: Duration.parse(matchingTrain.paced.interval),
-              exceptions: matchingTrain.paced.exceptions,
-              exceptionProjections,
-            }
-          : undefined,
-      };
-    }
+    const projectedTrain: TrainSpaceTimeData = {
+      ...base,
+      id: matchingTrain.id,
+      paced: matchingTrain.paced
+        ? {
+            timeWindow: Duration.parse(matchingTrain.paced.time_window),
+            interval: Duration.parse(matchingTrain.paced.interval),
+            exceptions: matchingTrain.paced.exceptions,
+            exceptionProjections,
+          }
+        : undefined,
+    };
 
     newProjectedTrains.set(trainIdKey, projectedTrain);
   }

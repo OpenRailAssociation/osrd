@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-import { formatEditoastIdToTrainScheduleId } from 'utils/trainId';
+import { formatEditoastIdToPacedTrainId } from 'utils/trainId';
 
 import { cutSpaceTimeRect, batchFetchTrackOccupancy } from '../utils';
 
@@ -96,7 +96,7 @@ describe('batchFetch', () => {
     const fetchSpy = vi.fn().mockResolvedValueOnce(['a', 'b']).mockResolvedValueOnce(['c', 'd']);
 
     const onComplete = vi.fn();
-    batchFetchTrackOccupancy([1, 2, 3, 4].map(formatEditoastIdToTrainScheduleId), fetchSpy, {
+    batchFetchTrackOccupancy([1, 2, 3, 4].map(formatEditoastIdToPacedTrainId), fetchSpy, {
       batchSize: 2,
       onComplete,
     });
@@ -104,8 +104,8 @@ describe('batchFetch', () => {
     await vi.waitFor(() => expect(onComplete).toHaveBeenCalled());
 
     expect(fetchSpy).toHaveBeenCalledTimes(2);
-    expect(fetchSpy).toHaveBeenNthCalledWith(1, [1, 2].map(formatEditoastIdToTrainScheduleId));
-    expect(fetchSpy).toHaveBeenNthCalledWith(2, [3, 4].map(formatEditoastIdToTrainScheduleId));
+    expect(fetchSpy).toHaveBeenNthCalledWith(1, [1, 2].map(formatEditoastIdToPacedTrainId));
+    expect(fetchSpy).toHaveBeenNthCalledWith(2, [3, 4].map(formatEditoastIdToPacedTrainId));
     expect(onComplete).toHaveBeenCalledExactlyOnceWith(['a', 'b', 'c', 'd']);
   });
 
@@ -120,7 +120,7 @@ describe('batchFetch', () => {
     );
     const onComplete = vi.fn();
 
-    const ids = [1, 2, 3, 4].map(formatEditoastIdToTrainScheduleId);
+    const ids = [1, 2, 3, 4].map(formatEditoastIdToPacedTrainId);
     const abort = batchFetchTrackOccupancy(ids, fetchSpy, {
       batchSize: 2,
       onComplete,
@@ -144,7 +144,7 @@ describe('batchFetch', () => {
     const onProgress = vi.fn();
     const onComplete = vi.fn();
 
-    batchFetchTrackOccupancy([1, 2, 3, 4].map(formatEditoastIdToTrainScheduleId), fetchSpy, {
+    batchFetchTrackOccupancy([1, 2, 3, 4].map(formatEditoastIdToPacedTrainId), fetchSpy, {
       batchSize: 2,
       onProgress,
       onComplete,
@@ -165,7 +165,7 @@ describe('batchFetch', () => {
     const onError = vi.fn();
     const onComplete = vi.fn();
 
-    batchFetchTrackOccupancy([1, 2].map(formatEditoastIdToTrainScheduleId), fetchSpy, {
+    batchFetchTrackOccupancy([1, 2].map(formatEditoastIdToPacedTrainId), fetchSpy, {
       onError,
       onComplete,
     });

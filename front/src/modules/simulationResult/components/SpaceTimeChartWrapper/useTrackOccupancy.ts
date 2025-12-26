@@ -22,11 +22,10 @@ import {
   formatPacedTrainIdToIndexedOccurrenceId,
   isOccurrenceId,
   isPacedTrainId,
-  isTrainScheduleId,
 } from 'utils/trainId';
 
 import type { PathOperationalPoint, TrainSpaceTimeData } from '../../types';
-import { batchFetchTrackOccupancy, isTrainScheduleProjection } from './helpers/utils';
+import { batchFetchTrackOccupancy } from './helpers/utils';
 import { getMovableOccupancyZone, type MovableOccupancyZone } from './helpers/zones';
 import { usePrevious } from '../../../../utils/hooks/state';
 
@@ -198,8 +197,6 @@ const useTrackOccupancy = ({
             const train = trainsCollection[pacedId];
 
             if (!train) throw new Error(`No train found for id ${pacedId}`);
-            if (isTrainScheduleProjection(train))
-              throw new Error(`TrainSchedule projection found for id ${pacedId}`);
 
             if (occupation.type === 'base') {
               zones.push(
@@ -420,10 +417,9 @@ const useTrackOccupancy = ({
         if (opState.selected) {
           forEach(opState.zones.data, (zone) => {
             if (
-              (isTrainScheduleId(zone.trainId) && zone.trainId === draggedTrainId) ||
-              (isOccurrenceId(zone.trainId) &&
-                extractPacedTrainIdFromOccurrenceId(zone.trainId) === draggedTimetableItemId &&
-                !zone.isStartTimeException)
+              isOccurrenceId(zone.trainId) &&
+              extractPacedTrainIdFromOccurrenceId(zone.trainId) === draggedTimetableItemId &&
+              !zone.isStartTimeException
             ) {
               impactedPathOperationalPointIDs.add(waypointId);
               const offset = newTrainData.departureTime.getTime() - initialDepartureTime.getTime();

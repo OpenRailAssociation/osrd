@@ -46,7 +46,6 @@ import {
   formatEditoastIdToPacedTrainId,
   extractEditoastIdFromPacedTrainId,
   extractPacedTrainIdFromOccurrenceId,
-  isTrainScheduleId,
   isPacedTrainId,
   formatPacedTrainIdToOccurrenceId,
 } from 'utils/trainId';
@@ -109,7 +108,7 @@ const PacedTrainItem = ({
   const trainIdUsedForProjection = useSelector(getTrainIdUsedForProjection);
 
   const { showPacedTrainProjectionIcon, pathUsedForProjectionIsException } = useMemo(() => {
-    if (!trainIdUsedForProjection || isTrainScheduleId(trainIdUsedForProjection))
+    if (!trainIdUsedForProjection)
       return { showPacedTrainProjectionIcon: false, pathUsedForProjectionIsException: false };
     if (isPacedTrainId(trainIdUsedForProjection))
       return {

@@ -11,10 +11,7 @@ import type {
   IndexedOccurrenceId,
   OccurrenceId,
   PacedTrainId,
-  PacedTrainWithPacedTrainId,
-  TimetableItem,
   TrainId,
-  TrainScheduleId,
 } from 'reducers/osrdconf/types';
 
 export const isPacedTrainId = (id: string): id is PacedTrainId => id.startsWith('paced_');
@@ -28,11 +25,7 @@ export const isAddedExceptionId = (id: string): id is AddedExceptionId =>
 export const isOccurrenceId = (id: string): id is OccurrenceId =>
   isIndexedOccurrenceId(id) || isAddedExceptionId(id);
 
-export const isTrainScheduleId = (id: string): id is TrainScheduleId =>
-  id.startsWith('trainschedule_');
-
-export const isTrainId = (id: string): id is TrainId =>
-  isOccurrenceId(id) || isTrainScheduleId(id) || isPacedTrainId(id);
+export const isTrainId = (id: string): id is TrainId => isOccurrenceId(id) || isPacedTrainId(id);
 
 /**
  * Given an occurrence id, return the type of the exception.
@@ -64,10 +57,6 @@ export const isExceptionFromPathOrSimulation = ({ exceptionChangeGroups }: Occur
     exceptionChangeGroups.speed_limit_tag ||
     exceptionChangeGroups.initial_speed ||
     exceptionChangeGroups.rolling_stock);
-
-export const isPacedTrainResponseWithPacedTrainId = (
-  timetableItem: TimetableItem
-): timetableItem is PacedTrainWithPacedTrainId => isPacedTrainId(timetableItem.id);
 
 export const isPacedTrainWithDetails = (
   timetableItem: TimetableItemWithDetails
@@ -111,23 +100,6 @@ export const formatEditoastIdToExceptionId = ({
   pacedTrainId: number;
   exceptionId: string;
 }): AddedExceptionId => `exception_${pacedTrainId}_${exceptionId}` as AddedExceptionId;
-
-/**
- * Given a train id with a TrainScheduleId format (used across the front),
- * returns the train id in the Editoast format (used for api).
- */
-export const extractEditoastIdFromTrainScheduleId = (trainId: TrainScheduleId): number => {
-  if (!isTrainScheduleId(trainId)) {
-    throw new Error('The train schedule id should start with "trainschedule_"');
-  }
-  const formattedTrainId = Number(trainId.split('_')[1]);
-
-  if (Number.isNaN(formattedTrainId)) {
-    throw new Error(`Invalid train ID: ${trainId}`);
-  }
-
-  return formattedTrainId;
-};
 
 /**
  * Given a paced train id with a PacedTrainId format (used across the front),

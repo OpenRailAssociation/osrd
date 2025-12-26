@@ -7,11 +7,7 @@ import {
   type CoreTrainPath,
 } from 'common/api/osrdEditoastApi';
 import type { TimetableItemId } from 'reducers/osrdconf/types';
-import {
-  extractEditoastIdFromPacedTrainId,
-  formatEditoastIdToPacedTrainId,
-  isTrainScheduleId,
-} from 'utils/trainId';
+import { extractEditoastIdFromPacedTrainId, formatEditoastIdToPacedTrainId } from 'utils/trainId';
 
 import TrainProjectionLazyLoaderAbstract from './TrainProjectionLazyLoaderAbstract';
 import type {
@@ -40,19 +36,12 @@ export default class TrainTrackProjectionLazyLoader extends TrainProjectionLazyL
   async processBatch(batch: TimetableItemId[]) {
     const { infraId, path, electricalProfileSetId } = this.options;
 
-    const rawPacedTrainIds = [];
-    for (const id of batch) {
-      if (isTrainScheduleId(id)) {
-        throw new Error('TrainSchedules are not handled anymore.');
-      } else {
-        rawPacedTrainIds.push(extractEditoastIdFromPacedTrainId(id));
-      }
-    }
+    const editoastIds = batch.map((id) => extractEditoastIdFromPacedTrainId(id));
 
     let pacedTrainPromise: Promise<PostPacedTrainProjectPathApiResponse> = Promise.resolve({});
     let pacedTrainOccupancyBlocksPromise: Promise<PostPacedTrainOccupancyBlocksApiResponse> =
       Promise.resolve({});
-    if (rawPacedTrainIds.length > 0) {
+    if (editoastIds.length > 0) {
       pacedTrainPromise = this.options
         .dispatch(
           osrdEditoastApi.endpoints.postPacedTrainProjectPath.initiate(
@@ -60,7 +49,7 @@ export default class TrainTrackProjectionLazyLoader extends TrainProjectionLazyL
               projectPathForm: {
                 infra_id: infraId,
                 track_section_ranges: path.track_section_ranges,
-                ids: rawPacedTrainIds,
+                ids: editoastIds,
                 electrical_profile_set_id: electricalProfileSetId,
               },
             },
@@ -76,7 +65,7 @@ export default class TrainTrackProjectionLazyLoader extends TrainProjectionLazyL
               occupancyBlockForm: {
                 infra_id: infraId,
                 path,
-                ids: rawPacedTrainIds,
+                ids: editoastIds,
                 electrical_profile_set_id: electricalProfileSetId,
               },
             },
