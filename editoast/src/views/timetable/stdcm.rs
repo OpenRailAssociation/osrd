@@ -254,7 +254,7 @@ pub(in crate::views) async fn stdcm_handler(
         .await?
         .map(From::from);
 
-    request.validate_consist(&rolling_stock, &towed_rolling_stock)?;
+    request.validate_consist(&rolling_stock, towed_rolling_stock.as_ref())?;
 
     let physics_consist_parameters = PhysicsConsistParameters {
         max_speed: request.max_speed,

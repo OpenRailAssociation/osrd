@@ -401,7 +401,7 @@ impl RabbitMQClient {
         &self,
         routing_key: String,
         path: &str,
-        published_payload: &Option<T>,
+        published_payload: Option<&T>,
         mandatory: bool,
         override_timeout: Option<Duration>,
     ) -> Result<MQResponse, MqClientError>
@@ -420,7 +420,7 @@ impl RabbitMQClient {
         let channel = channel_worker.get_channel();
 
         let serialized_payload_vec =
-            to_vec(published_payload).map_err(MqClientError::Serialization)?;
+            to_vec(&published_payload).map_err(MqClientError::Serialization)?;
         let serialized_payload = serialized_payload_vec.as_slice();
 
         let options = BasicPublishOptions {

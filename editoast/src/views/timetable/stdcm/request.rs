@@ -306,7 +306,7 @@ impl Request {
     pub(super) fn validate_consist(
         &self,
         traction_engine: &RollingStock,
-        towed_rolling_stock: &Option<schemas::TowedRollingStock>,
+        towed_rolling_stock: Option<&schemas::TowedRollingStock>,
     ) -> Result<()> {
         self.validate_consist_mass(traction_engine, towed_rolling_stock)?;
         self.validate_consist_length(traction_engine, towed_rolling_stock)?;
@@ -316,7 +316,7 @@ impl Request {
     fn validate_consist_mass(
         &self,
         traction_engine: &RollingStock,
-        towed_rolling_stock: &Option<schemas::TowedRollingStock>,
+        towed_rolling_stock: Option<&schemas::TowedRollingStock>,
     ) -> Result<()> {
         let consist_mass = traction_engine.mass
             + towed_rolling_stock
@@ -341,13 +341,10 @@ impl Request {
     fn validate_consist_length(
         &self,
         traction_engine: &RollingStock,
-        towed_rolling_stock: &Option<schemas::TowedRollingStock>,
+        towed_rolling_stock: Option<&schemas::TowedRollingStock>,
     ) -> Result<()> {
-        let consist_length = traction_engine.length
-            + towed_rolling_stock
-                .as_ref()
-                .map(|t| t.length)
-                .unwrap_or_default();
+        let consist_length =
+            traction_engine.length + towed_rolling_stock.map(|t| t.length).unwrap_or_default();
         let consist_length = consist_length.floor::<meter>();
 
         if let Some(request_total_length) = self.total_length

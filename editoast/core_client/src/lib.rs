@@ -99,7 +99,7 @@ impl CoreClient {
                 // TODO: tracing: use correlation id
 
                 let response = client
-                    .call_with_response(worker_key.to_string(), path, &body, true, override_timeout)
+                    .call_with_response(worker_key.to_string(), path, body, true, override_timeout)
                     .await
                     .map_err(Error::MqClientError)?;
 

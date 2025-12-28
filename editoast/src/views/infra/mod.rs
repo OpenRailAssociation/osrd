@@ -913,7 +913,7 @@ pub(in crate::views) async fn match_operational_points(
                 !path_item_cache
                     .track_reference_filter(
                         op.track_offset(),
-                        &operational_point_reference.track_reference,
+                        operational_point_reference.track_reference.as_ref(),
                     )
                     .is_empty()
             })
