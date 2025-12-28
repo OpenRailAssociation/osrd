@@ -182,7 +182,7 @@ impl PathItemCache {
                 secondary_code,
             ),
         };
-        secondary_code_filter(secondary_code, ops)
+        secondary_code_filter(secondary_code.as_ref(), ops)
             .into_iter()
             .next()
             .map(|op| op.obj_id.clone())
@@ -207,7 +207,8 @@ impl PathItemCache {
                     let mut track_offsets = vec![];
                     if let Some(op) = self.get_from_id(&operational_point.0) {
                         track_offsets = op.track_offset();
-                        track_offsets = self.track_reference_filter(track_offsets, track_reference);
+                        track_offsets =
+                            self.track_reference_filter(track_offsets, track_reference.as_ref());
                     }
                     if track_offsets.is_empty() {
                         invalid_path_items.push(InvalidPathItem {
@@ -230,9 +231,10 @@ impl PathItemCache {
                         .get_from_trigram(&trigram.0)
                         .map(|op| op.collect())
                         .unwrap_or_default();
-                    let ops = secondary_code_filter(secondary_code, ops);
+                    let ops = secondary_code_filter(secondary_code.as_ref(), ops);
                     let track_offsets = track_offsets_from_ops(ops);
-                    let track_offsets = self.track_reference_filter(track_offsets, track_reference);
+                    let track_offsets =
+                        self.track_reference_filter(track_offsets, track_reference.as_ref());
                     if track_offsets.is_empty() {
                         invalid_path_items.push(InvalidPathItem {
                             index,
@@ -254,9 +256,10 @@ impl PathItemCache {
                         .get_from_uic(*uic)
                         .map(|op| op.collect())
                         .unwrap_or_default();
-                    let ops = secondary_code_filter(secondary_code, ops);
+                    let ops = secondary_code_filter(secondary_code.as_ref(), ops);
                     let track_offsets = track_offsets_from_ops(ops);
-                    let track_offsets = self.track_reference_filter(track_offsets, track_reference);
+                    let track_offsets =
+                        self.track_reference_filter(track_offsets, track_reference.as_ref());
                     if track_offsets.is_empty() {
                         invalid_path_items.push(InvalidPathItem {
                             index,
@@ -298,7 +301,7 @@ impl PathItemCache {
     pub fn track_reference_filter(
         &self,
         track_offsets: Vec<TrackOffset>,
-        track_reference: &Option<TrackReference>,
+        track_reference: Option<&TrackReference>,
     ) -> Vec<TrackOffset> {
         match track_reference {
             Some(TrackReference::Id { track_id }) => track_offsets
@@ -397,7 +400,7 @@ fn track_offsets_from_ops<'a>(
 /// Filter operational points by secondary code
 /// If the secondary code is not provided, the original list is returned
 fn secondary_code_filter<'a>(
-    secondary_code: &Option<String>,
+    secondary_code: Option<&String>,
     ops: Vec<&'a OperationalPointModel>,
 ) -> Vec<&'a OperationalPointModel> {
     if let Some(secondary_code) = secondary_code {

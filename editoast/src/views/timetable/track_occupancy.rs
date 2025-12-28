@@ -159,7 +159,10 @@ fn get_track_section(
         };
         if track_reference.is_some() {
             return path_item_cache
-                .track_reference_filter(operational_point_track_offsets.to_vec(), track_reference)
+                .track_reference_filter(
+                    operational_point_track_offsets.to_vec(),
+                    track_reference.as_ref(),
+                )
                 .first()
                 .map(|to| to.track.to_string());
         }
