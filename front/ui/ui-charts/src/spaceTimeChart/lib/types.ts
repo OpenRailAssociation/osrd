@@ -1,13 +1,6 @@
 import type { HTMLProps, ReactNode } from 'react';
 
-import type {
-  BaseChartContextType,
-  HoveredItem,
-  PickingElement,
-  PixelToTime,
-  Point,
-  TimeToPixel,
-} from '../../common/types';
+import type { TimeChartContextType, HoveredItem, Point } from '../../common/types';
 
 // GLOBAL UTILITY TYPES:
 export type Handler<P extends object> = (payload: P) => void;
@@ -211,47 +204,23 @@ export type SpaceTimeChartProps = {
   onHoveredChildUpdate?: Handler<{ item: HoveredItem | null; context: SpaceTimeChartContextType }>;
 } & Omit<HTMLProps<HTMLDivElement>, 'onClick' | 'onMouseMove'>;
 
-export type SpaceTimeChartContextType = BaseChartContextType & {
-  width: number;
-  height: number;
-
+export type SpaceTimeChartContextType = TimeChartContextType & {
   // Axis-swapping related data:
   timeAxis: Axis;
   spaceAxis: Axis;
-  swapAxis: boolean;
-
-  // Picking:
-  registerPickingElement: (element: PickingElement) => number;
 
   // Scales:
-  timePixelOffset: number;
-  spacePixelOffset: number;
-  timeOrigin: number;
-  timeScale: number;
   spaceOrigin: number;
   spaceScaleTree: NormalizedScaleTree;
   flatSteps: Set<number>;
 
   // Translation helpers:
-  getTimePixel: TimeToPixel;
   getSpacePixel: SpaceToPixel;
-  getPoint: DataToPoint;
-  getTime: PixelToTime;
   getSpace: PixelToSpace;
   getData: PointToData;
 
   // Useful data:
   operationalPoints: OperationalPoint[];
 
-  // Full theme:
-  theme: SpaceTimeChartTheme;
   captionSize: number;
-
-  // Other options:
-  enableSnapping: boolean;
-  hideTimeCaptions: boolean;
-  hideGrid: boolean;
-  hidePathsLabels: boolean;
-  hideDates: boolean;
-  showTicks: boolean;
 };

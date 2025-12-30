@@ -413,7 +413,7 @@ export const PathLayer = ({
    * This function draws the extremities of the path.
    */
   const drawExtremities = useCallback<DrawingFunction<SpaceTimeChartContextType>>(
-    (ctx, { getTimePixel, getSpacePixel, swapAxis }) => {
+    (ctx, { getTimePixel, getSpacePixel, swapAxis = false }) => {
       if (!path.points.length) return;
 
       const from = path.points[0];

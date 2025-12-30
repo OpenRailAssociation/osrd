@@ -1,4 +1,4 @@
-import { TimeToPixel, PixelToTime } from "../types";
+import type { TimeToPixel, PixelToTime } from '../types';
 
 /**
  * @param minT number timestamp
