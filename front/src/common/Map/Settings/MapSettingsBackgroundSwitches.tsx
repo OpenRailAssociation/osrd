@@ -8,8 +8,7 @@ import iconIGNBDORTHO from 'assets/pictures/mapbuttons/mapstyle-ortho.jpg';
 import iconOSMTracks from 'assets/pictures/mapbuttons/mapstyle-osm-tracks.jpg';
 import iconIGNSCAN25 from 'assets/pictures/mapbuttons/mapstyle-scan25.jpg';
 import SwitchSNCF, { SWITCH_TYPES, type SwitchSNCFProps } from 'common/BootstrapSNCF/SwitchSNCF';
-import { useMapSettingsActions } from 'reducers/commonMap';
-import { type MapSettings } from 'reducers/commonMap/types';
+import { useMapSettings, useMapSettingsActions } from 'reducers/commonMap';
 import { useAppDispatch } from 'store';
 
 type FormatSwitchProps = {
@@ -34,7 +33,7 @@ const FormatSwitch = ({ name, onChange, state, icon, label }: FormatSwitchProps)
   </div>
 );
 
-const MapSettingsBackgroundSwitches = ({ mapSettings }: { mapSettings: MapSettings }) => {
+const MapSettingsBackgroundSwitches = () => {
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
   const { updateMapSettings } = useMapSettingsActions();
@@ -47,7 +46,7 @@ const MapSettingsBackgroundSwitches = ({ mapSettings }: { mapSettings: MapSettin
     showOSMtracksections,
     smoothTravel,
     terrain3DExaggeration,
-  } = mapSettings;
+  } = useMapSettings();
 
   const onShowOSMToggled = () => {
     dispatch(

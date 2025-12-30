@@ -4,13 +4,13 @@ import { useTranslation } from 'react-i18next';
 import picDarkMode from 'assets/pictures/mapbuttons/mapstyle-dark.jpg';
 import picMinimalMode from 'assets/pictures/mapbuttons/mapstyle-minimal.jpg';
 import picNormalMode from 'assets/pictures/mapbuttons/mapstyle-normal.jpg';
-import { useMapSettingsActions } from 'reducers/commonMap';
-import type { MapStyle } from 'reducers/commonMap/types';
+import { useMapSettings, useMapSettingsActions } from 'reducers/commonMap';
 import { useAppDispatch } from 'store';
 
-const MapSettingsMapStyle = ({ mapStyle }: { mapStyle: MapStyle }) => {
+const MapSettingsMapStyle = () => {
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
+  const { mapStyle } = useMapSettings();
   const { updateMapSettings } = useMapSettingsActions();
   const styles = [
     { key: 'normal', image: picNormalMode, label: t('mapSettings.mapstyles.normal') },
