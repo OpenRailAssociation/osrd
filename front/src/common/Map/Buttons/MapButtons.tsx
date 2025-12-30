@@ -103,26 +103,32 @@ export default function MapButtons({
     if (editorProps) {
       const { activeTool, setToolState, editorState, toolState } = editorProps;
       openModal(
-        <EditorLayersModal
-          initialLayers={editorState.editorLayers}
-          frozenLayers={activeTool.requiredLayers}
-          selection={
-            activeTool.id === 'select-items' ? (toolState as SelectionState).selection : undefined
-          }
-          onChange={({ newLayers }) => {
-            if (activeTool.id === 'select-items') {
-              const currentState = toolState as SelectionState;
-              setToolState({
-                ...currentState,
-                selection: currentState.selection.filter((entity) =>
-                  EDITOAST_TO_LAYER_DICT[entity.objType as EditoastType].every((layer) =>
-                    newLayers.has(layer)
-                  )
-                ),
-              } as SelectionState);
+        <MapContextProvider
+          infraId={infraId}
+          mapSettings={mapSettings}
+          updateMapSettings={updateMapSettings}
+        >
+          <EditorLayersModal
+            initialLayers={editorState.editorLayers}
+            frozenLayers={activeTool.requiredLayers}
+            selection={
+              activeTool.id === 'select-items' ? (toolState as SelectionState).selection : undefined
             }
-          }}
-        />,
+            onChange={({ newLayers }) => {
+              if (activeTool.id === 'select-items') {
+                const currentState = toolState as SelectionState;
+                setToolState({
+                  ...currentState,
+                  selection: currentState.selection.filter((entity) =>
+                    EDITOAST_TO_LAYER_DICT[entity.objType as EditoastType].every((layer) =>
+                      newLayers.has(layer)
+                    )
+                  ),
+                } as SelectionState);
+              }
+            }}
+          />
+        </MapContextProvider>,
         'lg'
       );
     } else if (layersModalContainer) {

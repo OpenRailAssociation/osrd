@@ -18,9 +18,12 @@ import DataLoader from 'common/Map/WarpedMap/DataLoader';
 import type { WarpingFunction } from 'common/Map/WarpedMap/getWarping';
 import getWarping from 'common/Map/WarpedMap/getWarping';
 import { useInfraID } from 'common/osrdContext';
+import { useMapSettings } from 'reducers/commonMap';
 import { getSimulationResults } from 'reducers/simulationResults/selectors';
 import { useAppDispatch } from 'store';
 import { clip } from 'utils/mapHelper';
+
+import { MapContextProvider } from '../useMapContext';
 
 const WIDTH = 300;
 
@@ -75,6 +78,7 @@ const SimulationWarpedMap = ({
   const layers = useMemo(() => new Set<Layer>(['track_sections']), []);
   const [mode, setMode] = useState<'manual' | 'auto'>('auto');
   const { chart } = useSelector(getSimulationResults);
+  const mapSettings = useMapSettings();
 
   // Boundaries handling (ie zoom sync):
   const syncedBoundingBox: LngLatBoundsLike = useMemo(() => {
@@ -203,56 +207,58 @@ const SimulationWarpedMap = ({
   }, [state.type]);
 
   return (
-    <div
-      data-testid="simulation-warped-map"
-      className="warped-map position-relative d-flex flex-row"
-      style={{ width: collapsed ? 0 : WIDTH }}
-    >
-      {state.type === 'pathLoaded' && (
-        <DataLoader
-          bbox={state.pathBBox}
-          layers={layers}
-          getGeoJSONs={(osrdData, osmData) => {
-            const transformed = {
-              osm: transformDataStatePayload(osmData, state.transform) as DataStatePayload['osm'],
-              osrd: transformDataStatePayload(
-                osrdData,
-                state.transform
-              ) as DataStatePayload['osrd'],
-            };
-            setState({ ...state, ...transformed, type: 'dataLoaded' });
-          }}
-        />
-      )}
-      {state.type !== 'dataLoaded' && <LoaderFill />}
-      {state.type === 'dataLoaded' && (
-        <div
-          className="bg-white border"
-          style={{
-            width: WIDTH,
-            borderRadius: 4,
-          }}
-        >
-          <WarpedMap
-            osrdLayers={layers}
-            bbox={state.warpedBBox}
-            osrdData={state.osrd}
-            osmData={state.osm}
-            itinerary={warpedItinerary}
-            boundingBox={mode === 'auto' ? syncedBoundingBox : undefined}
+    <MapContextProvider infraId={infraID} mapSettings={mapSettings} updateMapSettings={() => {}}>
+      <div
+        data-testid="simulation-warped-map"
+        className="warped-map position-relative d-flex flex-row"
+        style={{ width: collapsed ? 0 : WIDTH }}
+      >
+        {state.type === 'pathLoaded' && (
+          <DataLoader
+            bbox={state.pathBBox}
+            layers={layers}
+            getGeoJSONs={(osrdData, osmData) => {
+              const transformed = {
+                osm: transformDataStatePayload(osmData, state.transform) as DataStatePayload['osm'],
+                osrd: transformDataStatePayload(
+                  osrdData,
+                  state.transform
+                ) as DataStatePayload['osrd'],
+              };
+              setState({ ...state, ...transformed, type: 'dataLoaded' });
+            }}
           />
-          <div className="buttons">
-            <button
-              type="button"
-              className="btn-rounded btn-rounded-white box-shadow btn-rotate"
-              onClick={() => setMode(mode === 'auto' ? 'manual' : 'auto')}
-            >
-              {mode === 'manual' ? <PiLinkBold /> : <PiLinkBreakBold />}
-            </button>
+        )}
+        {state.type !== 'dataLoaded' && <LoaderFill />}
+        {state.type === 'dataLoaded' && (
+          <div
+            className="bg-white border"
+            style={{
+              width: WIDTH,
+              borderRadius: 4,
+            }}
+          >
+            <WarpedMap
+              osrdLayers={layers}
+              bbox={state.warpedBBox}
+              osrdData={state.osrd}
+              osmData={state.osm}
+              itinerary={warpedItinerary}
+              boundingBox={mode === 'auto' ? syncedBoundingBox : undefined}
+            />
+            <div className="buttons">
+              <button
+                type="button"
+                className="btn-rounded btn-rounded-white box-shadow btn-rotate"
+                onClick={() => setMode(mode === 'auto' ? 'manual' : 'auto')}
+              >
+                {mode === 'manual' ? <PiLinkBold /> : <PiLinkBreakBold />}
+              </button>
+            </div>
           </div>
-        </div>
-      )}
-    </div>
+        )}
+      </div>
+    </MapContextProvider>
   );
 };
 

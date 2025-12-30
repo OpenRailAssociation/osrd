@@ -4,9 +4,10 @@ import type { MapRef } from 'react-map-gl/maplibre';
 
 import BaseMap from 'common/Map/BaseMap';
 import MapButtons from 'common/Map/Buttons/MapButtons';
+import { MapContextProvider } from 'common/Map/useMapContext';
 import { useInfraID } from 'common/osrdContext';
 import { useMapSettings, useMapSettingsActions } from 'reducers/commonMap';
-import type { Viewport } from 'reducers/commonMap/types';
+import type { MapSettings, Viewport } from 'reducers/commonMap/types';
 import { updateReferenceMapViewport } from 'reducers/referenceMap';
 import { useAppDispatch } from 'store';
 
@@ -16,11 +17,19 @@ const Map = () => {
   const dispatch = useAppDispatch();
   const mapSettings = useMapSettings();
   const { layersSettings, viewport } = mapSettings;
-  const { removeMapSearchMarker } = useMapSettingsActions();
+  const { updateMapSettings: updateMapSettingsAction, removeMapSearchMarker } =
+    useMapSettingsActions();
 
   const infraID = useInfraID();
 
   const mapRef = useRef<MapRef | null>(null);
+
+  const updateMapSettings = useCallback(
+    (value: Partial<MapSettings>) => {
+      dispatch(updateMapSettingsAction(value));
+    },
+    [dispatch]
+  );
 
   const updateViewportChange = useCallback(
     (value: Partial<Viewport>, { updateRouter } = { updateRouter: false }) => {
@@ -43,27 +52,33 @@ const Map = () => {
 
   return (
     <main className="mastcontainer mastcontainer-map">
-      <MapButtons
-        map={mapRef.current ?? undefined}
-        resetPitchBearing={resetPitchBearing}
-        bearing={viewport.bearing}
-        viewPort={viewport}
-        withInfraButton
-        withMapKeyButton
-        mapSettings={mapSettings}
-      />
-      <BaseMap
-        mapId={REFERENCE_MAP_ID}
-        mapRef={mapRef}
-        cursor="normal"
+      <MapContextProvider
         infraId={infraID}
-        interactiveLayerIds={interactiveLayerIds}
         mapSettings={mapSettings}
-        onClick={() => {
-          dispatch(removeMapSearchMarker());
-        }}
-        updatePartialViewPort={updateViewportChange}
-      />
+        updateMapSettings={updateMapSettings}
+      >
+        <MapButtons
+          map={mapRef.current ?? undefined}
+          resetPitchBearing={resetPitchBearing}
+          bearing={viewport.bearing}
+          viewPort={viewport}
+          withInfraButton
+          withMapKeyButton
+          mapSettings={mapSettings}
+        />
+        <BaseMap
+          mapId={REFERENCE_MAP_ID}
+          mapRef={mapRef}
+          cursor="normal"
+          infraId={infraID}
+          interactiveLayerIds={interactiveLayerIds}
+          mapSettings={mapSettings}
+          onClick={() => {
+            dispatch(removeMapSearchMarker());
+          }}
+          updatePartialViewPort={updateViewportChange}
+        />
+      </MapContextProvider>
     </main>
   );
 };

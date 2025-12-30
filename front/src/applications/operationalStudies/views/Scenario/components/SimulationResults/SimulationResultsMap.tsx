@@ -12,6 +12,7 @@ import type { CorePathfindingResultSuccess } from 'common/api/osrdEditoastApi';
 import BaseMap from 'common/Map/BaseMap';
 import MapButtons from 'common/Map/Buttons/MapButtons';
 import MapMarkers, { type MapMarker } from 'common/Map/components/MapMarkers';
+import { MapContextProvider } from 'common/Map/useMapContext';
 import { computeBBoxViewport } from 'common/Map/WarpedMap/core/helpers';
 import { useInfraID } from 'common/osrdContext';
 import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
@@ -19,7 +20,7 @@ import getPointOnPathCoordinates from 'modules/pathfinding/helpers/getPointOnPat
 import getTrackLengthCumulativeSums from 'modules/pathfinding/helpers/getTrackLengthCumulativeSums';
 import Itinerary from 'modules/simulationResult/components/SimulationResultsMap/RenderItinerary';
 import { useMapSettings, useMapSettingsActions } from 'reducers/commonMap';
-import type { Viewport } from 'reducers/commonMap/types';
+import type { MapSettings, Viewport } from 'reducers/commonMap/types';
 import { useAppDispatch } from 'store';
 
 const MAP_ID = 'simulation-result-map';
@@ -41,7 +42,11 @@ const SimulationResultMap = ({
   const { getTrackSectionsByIds } = useScenarioContext();
 
   const mapSettings = useMapSettings();
-  const { removeMapSearchMarker, updateViewport } = useMapSettingsActions();
+  const {
+    updateMapSettings: updateMapSettingsAction,
+    removeMapSearchMarker,
+    updateViewport,
+  } = useMapSettingsActions();
   const { viewport } = mapSettings;
 
   const mapRef = React.useRef<MapRef>(null);
@@ -49,6 +54,13 @@ const SimulationResultMap = ({
   const geojsonPath = useMemo(() => geometry && lineString(geometry.coordinates), [geometry]);
 
   const [mapMarkers, setMapMarkers] = useState<MapMarker[]>([]);
+
+  const updateMapSettings = useCallback(
+    (value: Partial<MapSettings>) => {
+      dispatch(updateMapSettingsAction(value));
+    },
+    [dispatch]
+  );
 
   // Compute path items coordinates in order to place them on the map
   useEffect(() => {
@@ -113,7 +125,11 @@ const SimulationResultMap = ({
   }, [geojsonPath]);
 
   return (
-    <>
+    <MapContextProvider
+      infraId={infraID}
+      mapSettings={mapSettings}
+      updateMapSettings={updateMapSettings}
+    >
       <MapButtons
         map={mapRef.current ?? undefined}
         resetPitchBearing={resetPitchBearing}
@@ -144,7 +160,7 @@ const SimulationResultMap = ({
 
         <MapMarkers markers={mapMarkers} />
       </BaseMap>
-    </>
+    </MapContextProvider>
   );
 };
 

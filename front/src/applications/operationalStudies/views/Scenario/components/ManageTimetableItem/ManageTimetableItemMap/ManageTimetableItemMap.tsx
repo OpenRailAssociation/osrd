@@ -10,12 +10,13 @@ import type { MapPathProperties } from 'applications/operationalStudies/types';
 import BaseMap from 'common/Map/BaseMap';
 import MapButtons from 'common/Map/Buttons/MapButtons';
 import { SnappedMarker } from 'common/Map/Layers';
+import { MapContextProvider } from 'common/Map/useMapContext';
 import { computeBBoxViewport } from 'common/Map/WarpedMap/core/helpers';
 import { useInfraID } from 'common/osrdContext';
 import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
 import type { SuggestedOP } from 'modules/timetableItem/types';
 import { useMapSettings, useMapSettingsActions } from 'reducers/commonMap';
-import type { Viewport } from 'reducers/commonMap/types';
+import type { MapSettings, Viewport } from 'reducers/commonMap/types';
 import { useAppDispatch } from 'store';
 import { getMapMouseEventNearestFeature } from 'utils/mapHelper';
 
@@ -46,7 +47,11 @@ const ManageTimetableItemMap = ({
   const infraID = useInfraID();
   const mapSettings = useMapSettings();
   const { viewport, layersSettings } = mapSettings;
-  const { removeMapSearchMarker, updateViewport } = useMapSettingsActions();
+  const {
+    updateMapSettings: updateMapSettingsAction,
+    removeMapSearchMarker,
+    updateViewport,
+  } = useMapSettingsActions();
 
   const mapRef = useRef<MapRef | null>(null);
   const mapContainer = useMemo(() => mapRef.current?.getContainer(), [mapRef.current]);
@@ -55,6 +60,13 @@ const ManageTimetableItemMap = ({
 
   const [hoveredOperationalPointId, setHoveredOperationalPointId] = useState<string>();
   const [snappedPoint, setSnappedPoint] = useState<Feature<Point> | undefined>();
+
+  const updateMapSettings = useCallback(
+    (value: Partial<MapSettings>) => {
+      dispatch(updateMapSettingsAction(value));
+    },
+    [dispatch]
+  );
 
   const updateViewportChange = useCallback(
     (value: Partial<Viewport>) => {
@@ -163,7 +175,11 @@ const ManageTimetableItemMap = ({
   }, [pathGeometry, simulationPathSteps, mapContainer]);
 
   return (
-    <>
+    <MapContextProvider
+      infraId={infraID}
+      mapSettings={mapSettings}
+      updateMapSettings={updateMapSettings}
+    >
       <MapButtons
         map={mapRef.current ?? undefined}
         resetPitchBearing={resetPitchBearing}
@@ -210,7 +226,7 @@ const ManageTimetableItemMap = ({
 
         {children}
       </BaseMap>
-    </>
+    </MapContextProvider>
   );
 };
 
