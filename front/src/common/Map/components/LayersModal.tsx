@@ -55,7 +55,7 @@ const LayersModal = ({ compactModal, closePortalModal }: LayersModalProps) => {
   const dispatch = useAppDispatch();
 
   const mapSettings = useMapSettings();
-  const { layersSettings, mapStyle } = mapSettings;
+  const { layersSettings } = mapSettings;
   const [selectedLayers, setSelectedLayers] = useState<LayersSettings>(layersSettings);
   const { updateLayersSettings } = useMapSettingsActions();
 
@@ -141,8 +141,8 @@ const LayersModal = ({ compactModal, closePortalModal }: LayersModalProps) => {
         <hr />
         {!compactModal && (
           <>
-            <MapSettingsMapStyle mapStyle={mapStyle} />
-            <MapSettingsBackgroundSwitches mapSettings={mapSettings} />
+            <MapSettingsMapStyle />
+            <MapSettingsBackgroundSwitches />
           </>
         )}
       </div>

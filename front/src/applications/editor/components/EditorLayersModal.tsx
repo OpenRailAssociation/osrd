@@ -74,7 +74,7 @@ const EditorLayersModal = ({
 
   const infraID = useInfraID();
   const mapSettings = useMapSettings();
-  const { mapStyle, layersSettings } = mapSettings;
+  const { layersSettings } = mapSettings;
   const { updateLayersSettings } = useMapSettingsActions();
 
   const [selectedLayers, setSelectedLayers] = useState<Set<Layer>>(initialLayers);
@@ -222,8 +222,8 @@ const EditorLayersModal = ({
         <div>
           <h4>{t('Editor.nav.map-layers')}</h4>
         </div>
-        <MapSettingsMapStyle mapStyle={mapStyle} />
-        <MapSettingsBackgroundSwitches mapSettings={mapSettings} />
+        <MapSettingsMapStyle />
+        <MapSettingsBackgroundSwitches />
       </div>
 
       <div className="text-right">
