@@ -6,6 +6,7 @@ import type { CircleLayerSpecification, SymbolLayerSpecification } from 'react-m
 
 import { MAP_URL } from 'common/Map/const';
 import type { Theme } from 'common/Map/theme';
+import { useMapContext } from 'common/Map/useMapContext';
 import type { OmitLayer } from 'types';
 
 import { DEFAULT_HALO_WIDTH, getAllowOverlap, getDynamicTextSize } from '../commonLayers';
@@ -76,11 +77,12 @@ export function getDetectorsNameLayerProps(params: {
 type DetectorsProps = {
   colors: Theme;
   layerOrder: number;
-  infraID: number | undefined;
   highlightedArea?: Geometry;
 };
 
-const Detectors = ({ colors, layerOrder, infraID, highlightedArea }: DetectorsProps) => {
+const Detectors = ({ colors, layerOrder, highlightedArea }: DetectorsProps) => {
+  const { infraId } = useMapContext();
+
   const layerPoint3 = getDetectorsLayerProps({
     colors,
     sourceTable: 'detectors',
@@ -105,12 +107,12 @@ const Detectors = ({ colors, layerOrder, infraID, highlightedArea }: DetectorsPr
     highlightedArea,
   });
 
-  if (isNil(infraID)) return null;
+  if (isNil(infraId)) return null;
   return (
     <Source
       id="osrd_detectors_geo"
       type="vector"
-      url={`${MAP_URL}/layer/detectors/mvt/geo/?infra=${infraID}`}
+      url={`${MAP_URL}/layer/detectors/mvt/geo/?infra=${infraId}`}
     >
       <OrderedLayer {...layerName} id="chartis/osrd_detectors_name/geo" layerOrder={layerOrder} />
       <OrderedLayer

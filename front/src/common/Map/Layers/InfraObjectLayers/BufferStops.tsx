@@ -4,6 +4,7 @@ import { Source, type SymbolLayerSpecification } from 'react-map-gl/maplibre';
 
 import { MAP_URL } from 'common/Map/const';
 import type { Theme } from 'common/Map/theme';
+import { useMapContext } from 'common/Map/useMapContext';
 import type { OmitLayer } from 'types';
 
 import { DEFAULT_HALO_WIDTH, getAllowOverlap, getDynamicTextSize } from '../commonLayers';
@@ -45,17 +46,18 @@ export function getBufferStopsLayerProps(params: {
 type BufferStopsProps = {
   colors: Theme;
   layerOrder: number;
-  infraID: number | undefined;
   highlightedArea?: Geometry;
 };
 
-const BufferStops = ({ layerOrder, infraID, highlightedArea, colors }: BufferStopsProps) => {
-  if (isNil(infraID)) return null;
+const BufferStops = ({ layerOrder, highlightedArea, colors }: BufferStopsProps) => {
+  const { infraId } = useMapContext();
+
+  if (isNil(infraId)) return null;
   return (
     <Source
       id="osrd_bufferstop_geo"
       type="vector"
-      url={`${MAP_URL}/layer/buffer_stops/mvt/geo/?infra=${infraID}`}
+      url={`${MAP_URL}/layer/buffer_stops/mvt/geo/?infra=${infraId}`}
     >
       <OrderedLayer
         {...getBufferStopsLayerProps({ sourceTable: 'buffer_stops', highlightedArea, colors })}

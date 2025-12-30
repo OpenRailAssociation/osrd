@@ -6,6 +6,7 @@ import { MAP_URL } from 'common/Map/const';
 import { getAllowOverlap } from 'common/Map/Layers/commonLayers';
 import type { LayerContext } from 'common/Map/Layers/types';
 import type { Theme } from 'common/Map/theme';
+import { useMapContext } from 'common/Map/useMapContext';
 
 import OrderedLayer from '../../../OrderedLayer';
 import getKPLabelLayerProps from '../../getKPLabelLayerProps';
@@ -54,7 +55,6 @@ export function getNeutralSectionSignsLayerProps({
 }
 
 type NeutralSectionSignsProps = {
-  infraID: number | undefined;
   colors: Theme;
   layerOrder?: number;
   highlightedArea?: Geometry;
@@ -64,8 +64,8 @@ type NeutralSectionSignsProps = {
  * Renders the layer for the neutral sections signs
  * https://osrd.fr/en/docs/explanation/models/neutral_sections
  */
-export default function NeutralSectionSigns(props: NeutralSectionSignsProps) {
-  const { colors, layerOrder, infraID, highlightedArea } = props;
+const NeutralSectionSigns = ({ colors, layerOrder, highlightedArea }: NeutralSectionSignsProps) => {
+  const { infraId } = useMapContext();
 
   const signsParams: LayerProps = getNeutralSectionSignsLayerProps({
     sourceTable: 'neutral_signs',
@@ -83,12 +83,12 @@ export default function NeutralSectionSigns(props: NeutralSectionSignsProps) {
     highlightedArea,
   });
 
-  if (isNil(infraID)) return null;
+  if (isNil(infraId)) return null;
   return (
     <Source
       id="osrd_sncf_neutral_signs_geo"
       type="vector"
-      url={`${MAP_URL}/layer/neutral_signs/mvt/geo/?infra=${infraID}`}
+      url={`${MAP_URL}/layer/neutral_signs/mvt/geo/?infra=${infraId}`}
     >
       <OrderedLayer {...mastsParams} layerOrder={layerOrder} />
       <OrderedLayer {...signsParams} layerOrder={layerOrder} />
@@ -99,4 +99,6 @@ export default function NeutralSectionSigns(props: NeutralSectionSignsProps) {
       />
     </Source>
   );
-}
+};
+
+export default NeutralSectionSigns;

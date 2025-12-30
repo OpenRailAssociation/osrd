@@ -13,7 +13,6 @@ import OrderedLayer from '../OrderedLayer';
 type TracksGeographicProps = {
   colors: Theme;
   layerOrder?: number;
-  infraID: number | undefined;
   highlightedArea?: Geometry;
   highlightedTrackSections?: string[];
 };
@@ -21,11 +20,10 @@ type TracksGeographicProps = {
 function TracksGeographic({
   colors,
   layerOrder,
-  infraID,
   highlightedArea,
   highlightedTrackSections,
 }: TracksGeographicProps) {
-  const { showIGNBDORTHO, showIGNSCAN25 } = useMapContext();
+  const { infraId: infraID, showIGNBDORTHO, showIGNSCAN25 } = useMapContext();
 
   if (isNil(infraID)) return null;
   return (

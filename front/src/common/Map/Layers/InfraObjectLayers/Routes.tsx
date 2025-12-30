@@ -9,17 +9,11 @@ import type {
 
 import { MAP_URL } from 'common/Map/const';
 import type { Theme } from 'common/Map/theme';
+import { useMapContext } from 'common/Map/useMapContext';
 import type { OmitLayer } from 'types';
 
 import { DEFAULT_HALO_WIDTH, getAllowOverlap, getDynamicTextSize } from '../commonLayers';
 import OrderedLayer from '../OrderedLayer';
-
-type RoutesProps = {
-  colors: Theme;
-  layerOrder: number;
-  infraID: number | undefined;
-  highlightedArea?: Geometry;
-};
 
 export function getRoutesLineLayerProps(params: {
   colors: Theme;
@@ -100,21 +94,31 @@ export function getRoutesTextLayerProps(params: {
   return res;
 }
 
-export default function Routes({ colors, layerOrder, infraID, highlightedArea }: RoutesProps) {
+type RoutesProps = {
+  colors: Theme;
+  layerOrder: number;
+  highlightedArea?: Geometry;
+};
+
+const Routes = ({ colors, layerOrder, highlightedArea }: RoutesProps) => {
+  const { infraId } = useMapContext();
+
   const lineProps = getRoutesLineLayerProps({ colors, sourceTable: 'routes', highlightedArea });
   const pointProps = getRoutesPointLayerProps({ colors, sourceTable: 'routes', highlightedArea });
   const textProps = getRoutesTextLayerProps({ colors, sourceTable: 'routes', highlightedArea });
 
-  if (isNil(infraID)) return null;
+  if (isNil(infraId)) return null;
   return (
     <Source
       id="osrd_routes_geo"
       type="vector"
-      url={`${MAP_URL}/layer/routes/mvt/geo/?infra=${infraID}`}
+      url={`${MAP_URL}/layer/routes/mvt/geo/?infra=${infraId}`}
     >
       <OrderedLayer {...lineProps} id="chartis/osrd_routes_line/geo" layerOrder={layerOrder} />
       <OrderedLayer {...pointProps} id="chartis/osrd_routes_point/geo" layerOrder={layerOrder} />
       <OrderedLayer {...textProps} id="chartis/osrd_routes_text/geo" layerOrder={layerOrder} />
     </Source>
   );
-}
+};
+
+export default Routes;

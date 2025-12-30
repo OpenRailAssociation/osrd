@@ -6,20 +6,12 @@ import type { SymbolLayerSpecification, LineLayerSpecification } from 'react-map
 
 import { MAP_URL } from 'common/Map/const';
 import type { Theme } from 'common/Map/theme';
-import type { LayersSettings, MapSettings } from 'reducers/commonMap/types';
+import { useMapContext } from 'common/Map/useMapContext';
+import type { LayersSettings } from 'reducers/commonMap/types';
 import type { OmitLayer } from 'types';
 
 import { DEFAULT_HALO_WIDTH, getAllowOverlap, getDynamicTextSize } from '../commonLayers';
 import OrderedLayer from '../OrderedLayer';
-
-type SpeedLimitsProps = {
-  colors: Theme;
-  layerOrder: number;
-  punctualLayerOrder: number;
-  infraID?: number;
-  layersSettings: MapSettings['layersSettings'];
-  highlightedArea?: Geometry;
-};
 
 export function getSpeedSectionsTag({ speedlimittag }: LayersSettings): string {
   return speedlimittag !== null ? `speed_limit_by_tag_${speedlimittag}` : 'null';
@@ -175,14 +167,21 @@ export function getSpeedSectionsTextLayerProps({
   return res;
 }
 
-export default function SpeedLimits({
+type SpeedLimitsProps = {
+  colors: Theme;
+  layerOrder: number;
+  punctualLayerOrder: number;
+  highlightedArea?: Geometry;
+};
+
+const SpeedLimits = ({
   colors,
   layerOrder,
   punctualLayerOrder,
-  infraID,
-  layersSettings,
   highlightedArea,
-}: SpeedLimitsProps) {
+}: SpeedLimitsProps) => {
+  const { infraId, layersSettings } = useMapContext();
+
   const filter = getFilterBySpeedSectionsTag(layersSettings, highlightedArea);
   const lineProps = {
     ...getSpeedSectionsLineLayerProps({
@@ -209,12 +208,12 @@ export default function SpeedLimits({
     filter,
   };
 
-  if (isNil(infraID)) return null;
+  if (isNil(infraId)) return null;
   return (
     <Source
       id="osrd_speed_limit_geo"
       type="vector"
-      url={`${MAP_URL}/layer/speed_sections/mvt/geo/?infra=${infraID}`}
+      url={`${MAP_URL}/layer/speed_sections/mvt/geo/?infra=${infraId}`}
     >
       <OrderedLayer
         {...lineProps}
@@ -233,4 +232,6 @@ export default function SpeedLimits({
       />
     </Source>
   );
-}
+};
+
+export default SpeedLimits;

@@ -10,6 +10,7 @@ import { Source, type LayerProps } from 'react-map-gl/maplibre';
 
 import { MAP_URL } from 'common/Map/const';
 import type { Theme } from 'common/Map/theme';
+import { useMapContext } from 'common/Map/useMapContext';
 
 import { DEFAULT_HALO_WIDTH, getDynamicTextSize, getAllowOverlap } from '../commonLayers';
 import OrderedLayer from '../OrderedLayer';
@@ -17,7 +18,6 @@ import OrderedLayer from '../OrderedLayer';
 type OperationalPointsProps = {
   colors: Theme;
   layerOrder: number;
-  infraID: number | undefined;
   operationnalPointId?: string;
   highlightedArea?: Geometry;
   highlightedOperationalPoints?: number[];
@@ -62,12 +62,13 @@ function getFilterHighlighted(
 const OperationalPointsLayer = ({
   colors,
   layerOrder,
-  infraID,
   operationnalPointId,
   highlightedArea,
   highlightedOperationalPoints,
 }: OperationalPointsProps) => {
-  if (isNil(infraID)) return null;
+  const { infraId } = useMapContext();
+
+  if (isNil(infraId)) return null;
 
   const point: LayerProps = {
     type: 'circle',
@@ -259,7 +260,7 @@ const OperationalPointsLayer = ({
     <Source
       id="osrd_operational_point_geo"
       type="vector"
-      url={`${MAP_URL}/layer/operational_points/mvt/geo/?infra=${infraID}`}
+      url={`${MAP_URL}/layer/operational_points/mvt/geo/?infra=${infraId}`}
     >
       <OrderedLayer {...point} id="chartis/osrd_operational_point/geo" layerOrder={layerOrder} />
       <OrderedLayer
