@@ -64,7 +64,6 @@ const Map = () => {
           viewPort={viewport}
           withInfraButton
           withMapKeyButton
-          mapSettings={mapSettings}
         />
         <BaseMap
           mapId={REFERENCE_MAP_ID}

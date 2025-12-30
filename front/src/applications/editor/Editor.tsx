@@ -473,7 +473,7 @@ const Editor = () => {
             <div className="map">
               <MapContextProvider
                 infraId={infraID}
-                mapSettings={mapSettings}
+                mapSettings={editorState.mapSettings}
                 updateMapSettings={updateMapSettings}
               >
                 <Map
@@ -508,7 +508,6 @@ const Editor = () => {
                     activeTool: toolAndState.tool,
                   }}
                   viewPort={viewport}
-                  mapSettings={editorState.mapSettings}
                 />
 
                 {mapRef.current &&

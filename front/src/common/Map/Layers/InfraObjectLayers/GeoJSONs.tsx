@@ -9,8 +9,8 @@ import { Layer, Source } from 'react-map-gl/maplibre';
 import type { Layer as LayerType } from 'applications/editor/consts';
 import { MAP_TRACK_SOURCE, MAP_URL } from 'common/Map/const';
 import type { Theme } from 'common/Map/theme';
+import { useMapContext } from 'common/Map/useMapContext';
 import { LAYER_ENTITIES_ORDERS, LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
-import { useMapSettings } from 'reducers/commonMap';
 import type { MapSettings } from 'reducers/commonMap/types';
 import type { EditorState } from 'reducers/editor';
 
@@ -486,7 +486,7 @@ const GeoJSONs = ({
       ),
     [colors]
   );
-  const { mapStyle, showIGNBDORTHO } = useMapSettings();
+  const { mapStyle, showIGNBDORTHO } = useMapContext();
   // This flag is used to unmount sources before mounting the new ones, when
   // fingerprint is updated;
   const [skipSources, setSkipSources] = useState(true);

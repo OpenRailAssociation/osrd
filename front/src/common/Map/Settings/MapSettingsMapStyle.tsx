@@ -6,17 +6,15 @@ import { useTranslation } from 'react-i18next';
 import picDarkMode from 'assets/pictures/mapbuttons/mapstyle-dark.jpg';
 import picMinimalMode from 'assets/pictures/mapbuttons/mapstyle-minimal.jpg';
 import picNormalMode from 'assets/pictures/mapbuttons/mapstyle-normal.jpg';
-import { useMapSettings, useMapSettingsActions } from 'reducers/commonMap';
-import { useAppDispatch } from 'store';
+
+import { useMapContext } from '../useMapContext';
 
 const MapSettingsMapStyle = () => {
-  const dispatch = useAppDispatch();
-  const { mapStyle: initialMapStyle } = useMapSettings();
-  const { updateMapSettings } = useMapSettingsActions();
-
+  const { mapStyle: initialMapStyle, updateMapSettings } = useMapContext();
   const [mapStyle, setMapStyle] = useState(initialMapStyle);
 
   const { t } = useTranslation();
+
   const styles = [
     { key: 'normal', image: picNormalMode, label: t('mapSettings.mapstyles.normal') },
     { key: 'minimal', image: picMinimalMode, label: t('mapSettings.mapstyles.minimal') },
@@ -32,7 +30,7 @@ const MapSettingsMapStyle = () => {
           type="button"
           onClick={() => {
             setMapStyle(key);
-            dispatch(updateMapSettings({ mapStyle: key }));
+            updateMapSettings({ mapStyle: key });
           }}
         >
           <img src={image} alt={`${key} mode`} />

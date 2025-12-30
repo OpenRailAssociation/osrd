@@ -20,10 +20,9 @@ import SwitchSNCF from 'common/BootstrapSNCF/SwitchSNCF/SwitchSNCF';
 import MapSettingsBackgroundSwitches from 'common/Map/Settings/MapSettingsBackgroundSwitches';
 import { Icon2SVG } from 'common/Map/Settings/MapSettingsLayers';
 import MapSettingsMapStyle from 'common/Map/Settings/MapSettingsMapStyle';
-import { useInfraID } from 'common/osrdContext';
-import { useMapSettings, useMapSettingsActions } from 'reducers/commonMap';
 import type { LayersSettings } from 'reducers/commonMap/types';
-import { useAppDispatch } from 'store';
+
+import { useMapContext } from '../useMapContext';
 
 const LAYERS = [
   { layer: 'signals', icon: signalsIcon },
@@ -52,14 +51,9 @@ type LayersModalProps = {
 
 const LayersModal = ({ compactModal, closePortalModal }: LayersModalProps) => {
   const { t } = useTranslation();
-  const dispatch = useAppDispatch();
 
-  const mapSettings = useMapSettings();
-  const { layersSettings } = mapSettings;
+  const { infraId: infraID, layersSettings, updateMapSettings } = useMapContext();
   const [selectedLayers, setSelectedLayers] = useState<LayersSettings>(layersSettings);
-  const { updateLayersSettings } = useMapSettingsActions();
-
-  const infraID = useInfraID();
 
   const { data: speedLimitTagsByInfraId } =
     osrdEditoastApi.endpoints.getInfraByInfraIdSpeedLimitTags.useQuery(
@@ -82,9 +76,9 @@ const LayersModal = ({ compactModal, closePortalModal }: LayersModalProps) => {
       };
 
       setSelectedLayers(updatedLayers);
-      dispatch(updateLayersSettings(updatedLayers));
+      updateMapSettings({ layersSettings: updatedLayers });
     },
-    [selectedLayers, dispatch, updateLayersSettings]
+    [selectedLayers, updateMapSettings]
   );
 
   return (
@@ -127,7 +121,7 @@ const LayersModal = ({ compactModal, closePortalModal }: LayersModalProps) => {
             onChange={(e) => {
               const newTag = e.target.value !== DEFAULT_SPEED_LIMIT_TAG ? e.target.value : null;
               const newLayers = { ...selectedLayers, speedlimittag: newTag };
-              dispatch(updateLayersSettings(newLayers));
+              updateMapSettings({ layersSettings: newLayers });
               setSelectedLayers(newLayers);
             }}
           >

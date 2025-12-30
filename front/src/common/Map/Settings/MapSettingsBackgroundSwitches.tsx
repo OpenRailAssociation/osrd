@@ -10,9 +10,8 @@ import iconIGNBDORTHO from 'assets/pictures/mapbuttons/mapstyle-ortho.jpg';
 import iconOSMTracks from 'assets/pictures/mapbuttons/mapstyle-osm-tracks.jpg';
 import iconIGNSCAN25 from 'assets/pictures/mapbuttons/mapstyle-scan25.jpg';
 import SwitchSNCF, { SWITCH_TYPES, type SwitchSNCFProps } from 'common/BootstrapSNCF/SwitchSNCF';
-import { useMapSettingsActions, useMapSettings } from 'reducers/commonMap';
-import type { MapSettings } from 'reducers/commonMap/types';
-import { useAppDispatch } from 'store';
+
+import { useMapContext } from '../useMapContext';
 
 type MapBackgroundSettings = {
   showIGNBDORTHO: boolean;
@@ -48,17 +47,11 @@ const FormatSwitch = ({ name, onChange, state, icon, label }: FormatSwitchProps)
 
 const MapSettingsBackgroundSwitches = () => {
   const { t } = useTranslation();
-  const dispatch = useAppDispatch();
-  const { updateMapSettings: updateMapSettingsAction } = useMapSettingsActions();
-  const { terrain3DExaggeration: initialTerrain3DExaggeration, ...initialSettings } =
-    useMapSettings();
-
-  const updateMapSettings = useCallback(
-    (value: Partial<MapSettings>) => {
-      dispatch(updateMapSettingsAction(value));
-    },
-    [dispatch, updateMapSettingsAction]
-  );
+  const {
+    updateMapSettings,
+    terrain3DExaggeration: initialTerrain3DExaggeration,
+    ...initialSettings
+  } = useMapContext();
 
   const [terrain3DExaggeration, setTerrain3DExaggeration] = useState(initialTerrain3DExaggeration);
   const [backgroundSettings, setBackgroundSettings] =

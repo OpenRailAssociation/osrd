@@ -5,6 +5,7 @@ import type { MapSettings } from 'reducers/commonMap/types';
 type MapContextType =
   | ({
       infraId?: number;
+      updateMapSettings: (modifs: Partial<MapSettings>) => void;
     } & MapSettings)
   | null;
 const MapContext = createContext<MapContextType>(null);

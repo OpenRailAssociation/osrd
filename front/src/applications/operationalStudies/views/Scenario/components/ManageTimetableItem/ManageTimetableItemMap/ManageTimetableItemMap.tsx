@@ -188,7 +188,6 @@ const ManageTimetableItemMap = ({
         withMapKeyButton
         viewPort={viewport}
         isNewButtons
-        mapSettings={mapSettings}
       />
       <BaseMap
         mapId="map-container"

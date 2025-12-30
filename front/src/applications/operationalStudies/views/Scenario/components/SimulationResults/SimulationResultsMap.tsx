@@ -137,7 +137,6 @@ const SimulationResultMap = ({
         withMapKeyButton
         viewPort={viewport}
         isNewButtons
-        mapSettings={mapSettings}
       />
       <BaseMap
         mapId={MAP_ID}

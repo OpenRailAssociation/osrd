@@ -11,9 +11,9 @@ import SignalsSVGFile from 'assets/pictures/layersicons/layer_signal.svg';
 import OPsSVGFile from 'assets/pictures/layersicons/ops.svg';
 import SwitchesSVGFile from 'assets/pictures/layersicons/switches.svg';
 import SwitchSNCF, { SWITCH_TYPES } from 'common/BootstrapSNCF/SwitchSNCF';
-import { useMapSettings, useMapSettingsActions } from 'reducers/commonMap';
 import type { MapSettings } from 'reducers/commonMap/types';
-import { useAppDispatch } from 'store';
+
+import { useMapContext } from '../useMapContext';
 
 type LayerSettings = MapSettings['layersSettings'];
 
@@ -25,20 +25,19 @@ type FormatSwitchProps = {
 };
 
 export const FormatSwitch = ({ name, icon, color, disabled }: FormatSwitchProps) => {
-  const dispatch = useAppDispatch();
   const { t } = useTranslation();
-  const { layersSettings } = useMapSettings();
-  const { updateLayersSettings } = useMapSettingsActions();
+  const { layersSettings, updateMapSettings } = useMapContext();
 
   const setLayerSettings = useCallback(
     (setting: keyof LayerSettings) => {
-      dispatch(
-        updateLayersSettings({
+      updateMapSettings({
+        layersSettings: {
+          ...layersSettings,
           [setting]: !layersSettings[setting],
-        })
-      );
+        },
+      });
     },
-    [dispatch, layersSettings]
+    [updateMapSettings, layersSettings]
   );
 
   return (
