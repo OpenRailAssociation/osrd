@@ -17,7 +17,7 @@ import {
   generateCodeNumber,
   getOperationalPointsWithTimes,
 } from 'modules/SimulationReportSheet/utils/formatSimulationReportSheet';
-import { useMapSettings, useMapSettingsActions } from 'reducers/commonMap';
+import { defaultMapSettings } from 'reducers/commonMap';
 import type { MapSettings, Viewport } from 'reducers/commonMap/types';
 import { getRailwayManagerInterfaceUrl } from 'reducers/main/mainSelector';
 import {
@@ -26,7 +26,6 @@ import {
   getSelectedSimulation,
   getStdcmInfraID,
 } from 'reducers/osrdconf/stdcmConf/selectors';
-import { useAppDispatch } from 'store';
 import useDeploymentSettings from 'utils/hooks/useDeploymentSettings';
 
 import SendToRailwayManagerModal from './SendToRailwayManagerModal';
@@ -63,29 +62,21 @@ const StdcmResults = ({
 
   const { t } = useTranslation('stdcm', { keyPrefix: 'simulation.results' });
   const deploymentSettings = useDeploymentSettings();
-  const dispatch = useAppDispatch();
 
   const selectedSimulation = useSelector(getSelectedSimulation);
   const retainedSimulationIndex = useSelector(getRetainedSimulationIndex);
 
   const opIdsToExclude = useSelector(getOperationalPointsIdFiltered);
 
-  const mapSettings = useMapSettings();
+  // Keep local state of the map settings to keep stdcm config and stdcm results maps independent
+  const [mapSettings, setMapSettings] = useState(defaultMapSettings);
 
-  const { updateMapSettings: updateMapSettingsAction } = useMapSettingsActions();
   const updateMapSettings = useCallback(
-    (value: Partial<MapSettings>) => {
-      dispatch(updateMapSettingsAction(value));
-    },
-    [dispatch]
+    (value: Partial<MapSettings>) => setMapSettings((prev) => ({ ...prev, ...value })),
+    [setMapSettings]
   );
 
-  // Keep local state of the viewport to keep stdcm config and stdcm results maps independent
-  const [stdcmResultsViewport, setStdcmResultsViewport] = useState<Viewport>(mapSettings.viewport);
-
-  const updateViewport = (viewport: Viewport) => {
-    setStdcmResultsViewport(viewport);
-  };
+  const updateViewport = (viewport: Viewport) => updateMapSettings({ viewport });
 
   const { outputs, alternativePath } = selectedSimulation;
 
@@ -364,7 +355,7 @@ const StdcmResults = ({
                 geometry={hasSimulationResults ? outputs?.pathProperties.geometry : undefined}
                 pathStepMarkers={markersInfo}
                 isFeasible={hasSimulationResults}
-                mapSettings={{ ...mapSettings, viewport: stdcmResultsViewport }}
+                mapSettings={mapSettings}
                 updateMapSettings={updateMapSettings}
                 updateViewport={updateViewport}
               />
