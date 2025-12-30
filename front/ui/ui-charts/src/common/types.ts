@@ -1,4 +1,6 @@
+import { type SpaceTimeChartTheme } from '../spaceTimeChart';
 import type { LAYERS, PICKING_LAYERS } from './consts';
+import { type DataToPoint } from '../spaceTimeChart/lib/types';
 
 export type BaseChartContextType = {
   fingerprint: string;
@@ -46,3 +48,44 @@ export type CanvasContextType<T> = {
 // TIME TRANSLATION TYPES:
 export type TimeToPixel = (time: number) => number;
 export type PixelToTime = (x: number) => number;
+
+// TODO: GENERALIZE THIS TYPE FOR OTHER CHARTS
+export type TimeChartContextType = {
+  width: number;
+  height: number;
+
+  // Time Scales:
+  timePixelOffset: number;
+  timeOrigin: number;
+  timeScale: number;
+  spacePixelOffset: number;
+
+  // Translation helpers:
+  getTimePixel: TimeToPixel;
+  getTime: PixelToTime;
+  getPoint: DataToPoint;
+
+  // This string is designed to be unique to each rendering:
+  fingerprint: string;
+
+  // Picking:
+  pickingElements: PickingElement[];
+  resetPickingElements: () => void;
+  registerPickingElement: (element: PickingElement) => number;
+
+  // Full theme:
+  theme: SpaceTimeChartTheme; // TODO: create a more generic ChartTheme
+};
+
+export type ChartOptions = {
+  captionSize?: number;
+  enableSnapping?: boolean;
+  hideDates?: boolean;
+  hideGrid?: boolean;
+  hidePathsLabels?: boolean;
+  hideTimeCaptions?: boolean;
+  showTicks?: boolean;
+  swapAxis?: boolean;
+};
+
+export type ChartContextType = TimeChartContextType & ChartOptions;

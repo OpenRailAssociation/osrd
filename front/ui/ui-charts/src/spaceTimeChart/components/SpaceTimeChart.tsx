@@ -3,6 +3,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import cx from 'classnames';
 
 import SpaceGraduations from './SpaceGraduations';
+import { BaseChartCanvasContext } from '../../common/context';
 import { getTimeToPixel, getPixelToTime } from '../../common/helpers/utils';
 import { useCanvas } from '../../common/hooks/useCanvas';
 import { useSize } from '../../common/hooks/useSize';
@@ -219,18 +220,21 @@ export const SpaceTimeChart = (props: SpaceTimeChartProps) => {
     >
       <div ref={setCanvasesRoot} className="absolute inset-0" />
       <SpaceTimeChartContext.Provider value={contextState}>
+        {/* TODO: Finish refactorization to use only 1 canvas context */}
         <SpaceTimeChartCanvasContext.Provider value={canvasContext}>
-          <MouseContext.Provider value={mouseContext}>
-            {!hideGrid && (
-              <>
-                <SpaceGraduations />
-                <TimeGraduations />
-                <TimeCaptions />
-              </>
-            )}
-            {children}
-            {additionalChildren}
-          </MouseContext.Provider>
+          <BaseChartCanvasContext.Provider value={canvasContext}>
+            <MouseContext.Provider value={mouseContext}>
+              {!hideGrid && (
+                <>
+                  <SpaceGraduations />
+                  <TimeGraduations />
+                  <TimeCaptions />
+                </>
+              )}
+              {children}
+              {additionalChildren}
+            </MouseContext.Provider>
+          </BaseChartCanvasContext.Provider>
         </SpaceTimeChartCanvasContext.Provider>
       </SpaceTimeChartContext.Provider>
     </div>

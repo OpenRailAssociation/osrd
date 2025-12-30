@@ -1,12 +1,11 @@
 import { useCallback } from 'react';
 
 import { HOUR, MINUTE } from '../../common/consts';
+import { BaseChartCanvasContext } from '../../common/context';
 import { WHITE_ALPHA_75 } from '../../common/helpers/colors';
 import { computeVisibleTimeMarkers, getCrispLineCoordinate } from '../../common/helpers/utils';
 import { useDraw } from '../../common/hooks/useCanvas';
-import type { DrawingFunction } from '../../common/types';
-import { SpaceTimeChartCanvasContext } from '../../spaceTimeChart/lib/context';
-import type { SpaceTimeChartContextType } from '../../spaceTimeChart/lib/types';
+import type { DrawingFunction, ChartContextType } from '../../common/types';
 
 const MARGIN = 100;
 const MINUTES_FORMATTER = (t: number) => `:${new Date(t).getMinutes().toString().padStart(2, '0')}`;
@@ -44,7 +43,7 @@ const RANGES_FORMATER: ((t: number, pixelsPerMinute: number) => string)[] = [
 ];
 
 export const TimeCaptions = () => {
-  const drawingFunction = useCallback<DrawingFunction<SpaceTimeChartContextType>>(
+  const drawingFunction = useCallback<DrawingFunction<ChartContextType>>(
     (
       ctx,
       {
@@ -52,7 +51,6 @@ export const TimeCaptions = () => {
         timeOrigin,
         timePixelOffset,
         getTimePixel,
-        swapAxis,
         width,
         height,
         theme: {
@@ -64,10 +62,11 @@ export const TimeCaptions = () => {
           timeGraduationsStyles,
           dateCaptionsStyle,
         },
-        captionSize,
-        hideTimeCaptions,
-        hideDates,
-        showTicks,
+        captionSize = 40,
+        swapAxis = false,
+        hideTimeCaptions = false,
+        hideDates = false,
+        showTicks = false,
       }
     ) => {
       if (hideTimeCaptions) return;
@@ -186,7 +185,7 @@ export const TimeCaptions = () => {
     []
   );
 
-  useDraw(SpaceTimeChartCanvasContext, 'captions', drawingFunction);
+  useDraw(BaseChartCanvasContext, 'captions', drawingFunction);
 
   return null;
 };
