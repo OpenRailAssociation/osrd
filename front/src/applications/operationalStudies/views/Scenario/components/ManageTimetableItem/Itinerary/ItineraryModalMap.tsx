@@ -8,11 +8,12 @@ import { matchOpRefAndOp } from 'applications/operationalStudies/utils';
 import type { PathProperties } from 'common/api/osrdEditoastApi';
 import BaseMap from 'common/Map/BaseMap';
 import MapButtons from 'common/Map/Buttons/MapButtons';
+import { MapContextProvider } from 'common/Map/useMapContext';
 import { useInfraID } from 'common/osrdContext';
 import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
 import Itinerary from 'modules/simulationResult/components/SimulationResultsMap/RenderItinerary';
 import { useMapSettings, useMapSettingsActions } from 'reducers/commonMap';
-import type { Viewport } from 'reducers/commonMap/types';
+import type { MapSettings, Viewport } from 'reducers/commonMap/types';
 import type { PathStepMetadata, PathStepV2 } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 import { getBarycenter } from 'utils/geometry';
@@ -52,11 +53,22 @@ const ItineraryModalMap = ({
   const infraID = useInfraID();
   const mapSettings = useMapSettings();
   const { viewport, layersSettings } = mapSettings;
-  const { removeMapSearchMarker, updateViewport } = useMapSettingsActions();
+  const {
+    updateMapSettings: updateMapSettingsAction,
+    removeMapSearchMarker,
+    updateViewport,
+  } = useMapSettingsActions();
 
   const mapRef = useRef<MapRef | null>(null);
 
   const [hoveredOperationalPointId, setHoveredOperationalPointId] = useState<string>();
+
+  const updateMapSettings = useCallback(
+    (value: Partial<MapSettings>) => {
+      dispatch(updateMapSettingsAction(value));
+    },
+    [dispatch]
+  );
 
   const updateViewportChange = useCallback(
     (value: Partial<Viewport>) => {
@@ -134,7 +146,11 @@ const ItineraryModalMap = ({
   }, [layersSettings]);
 
   return (
-    <>
+    <MapContextProvider
+      infraId={infraID}
+      mapSettings={mapSettings}
+      updateMapSettings={updateMapSettings}
+    >
       <MapButtons
         map={mapRef.current ?? undefined}
         resetPitchBearing={resetPitchBearing}
@@ -222,7 +238,7 @@ const ItineraryModalMap = ({
           })}
         {children}
       </BaseMap>
-    </>
+    </MapContextProvider>
   );
 };
 

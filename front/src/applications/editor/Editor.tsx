@@ -27,10 +27,11 @@ import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { LoaderState } from 'common/Loaders';
 import MapButtons from 'common/Map/Buttons/MapButtons';
 import MapSearch from 'common/Map/Search/MapSearch';
+import { MapContextProvider } from 'common/Map/useMapContext';
 import { useInfraActions, useInfraID, useOsrdActions } from 'common/osrdContext';
 import useInfra from 'modules/infra/useInfra';
 import { useMapSettings, useMapSettingsActions } from 'reducers/commonMap';
-import type { Viewport } from 'reducers/commonMap/types';
+import type { MapSettings, Viewport } from 'reducers/commonMap/types';
 import { type EditorSliceActions } from 'reducers/editor';
 import { getEditorState, getInfraLockStatus } from 'reducers/editor/selectors';
 import { loadDataModel, updateTotalsIssue } from 'reducers/editor/thunkActions';
@@ -51,7 +52,8 @@ const Editor = () => {
   const { openModal, closeModal } = useModal();
   const { updateInfraID, selectLayers } = useOsrdActions() as EditorSliceActions;
 
-  const { updateViewport: updateViewportAction } = useMapSettingsActions();
+  const { updateMapSettings: updateMapSettingsAction, updateViewport: updateViewportAction } =
+    useMapSettingsActions();
 
   const mapRef = useRef<MapRef>(null);
   const { urlInfra } = useParams();
@@ -111,7 +113,15 @@ const Editor = () => {
     forceRender();
   }, [switchTool, forceRender]);
 
-  const { mapStyle, viewport } = useMapSettings();
+  const mapSettings = useMapSettings();
+  const { mapStyle, viewport } = mapSettings;
+
+  const updateMapSettings = useCallback(
+    (value: Partial<MapSettings>) => {
+      dispatch(updateMapSettingsAction(value));
+    },
+    [dispatch]
+  );
 
   const setViewport = useCallback(
     (value: Partial<Viewport>) => {
@@ -461,49 +471,55 @@ const Editor = () => {
               </button>
             )}
             <div className="map">
-              <Map
-                {...{
-                  mapRef,
-                  mapStyle,
-                  viewport,
-                  setViewport,
-                  toolState: toolAndState.state,
-                  activeTool: toolAndState.tool,
-                  setToolState,
-                  infraID,
-                }}
-              />
-              {isSearchToolOpened && (
-                <MapSearch
-                  map={mapRef.current!}
-                  closeMapSearchPopUp={() => setIsSearchToolOpened(false)}
+              <MapContextProvider
+                infraId={infraID}
+                mapSettings={mapSettings}
+                updateMapSettings={updateMapSettings}
+              >
+                <Map
+                  {...{
+                    mapRef,
+                    mapStyle,
+                    viewport,
+                    setViewport,
+                    toolState: toolAndState.state,
+                    activeTool: toolAndState.tool,
+                    setToolState,
+                    infraID,
+                  }}
+                />
+                {isSearchToolOpened && (
+                  <MapSearch
+                    map={mapRef.current!}
+                    closeMapSearchPopUp={() => setIsSearchToolOpened(false)}
+                    mapSettings={editorState.mapSettings}
+                  />
+                )}
+
+                <MapButtons
+                  map={mapRef.current ?? undefined}
+                  resetPitchBearing={resetPitchBearing}
+                  withInfraButton
+                  bearing={viewport.bearing}
+                  editorProps={{
+                    toolState: toolAndState.state,
+                    setToolState,
+                    editorState,
+                    activeTool: toolAndState.tool,
+                  }}
+                  viewPort={viewport}
                   mapSettings={editorState.mapSettings}
                 />
-              )}
 
-              <MapButtons
-                map={mapRef.current ?? undefined}
-                resetPitchBearing={resetPitchBearing}
-                withInfraButton
-                bearing={viewport.bearing}
-                editorProps={{
-                  toolState: toolAndState.state,
-                  setToolState,
-                  editorState,
-                  activeTool: toolAndState.tool,
-                }}
-                viewPort={viewport}
-                mapSettings={editorState.mapSettings}
-              />
-
-              {mapRef.current &&
-                editorState.editorLayers.has('errors') &&
-                editorState.issues.total > 0 && (
-                  <div className="error-box">
-                    <InfraErrorMapControl mapRef={mapRef.current} switchTool={switchTool} />
-                    <InfraErrorCorrector protectedAction={protectedAction} />
-                  </div>
-                )}
+                {mapRef.current &&
+                  editorState.editorLayers.has('errors') &&
+                  editorState.issues.total > 0 && (
+                    <div className="error-box">
+                      <InfraErrorMapControl mapRef={mapRef.current} switchTool={switchTool} />
+                      <InfraErrorCorrector protectedAction={protectedAction} />
+                    </div>
+                  )}
+              </MapContextProvider>
             </div>
             <div className="messages-bar border-left">
               <div className="px-1">

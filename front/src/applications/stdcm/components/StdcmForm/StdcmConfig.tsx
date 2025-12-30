@@ -1,4 +1,4 @@
-import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 
 import { Button } from '@osrd-project/ui-core';
 import cx from 'classnames';
@@ -11,8 +11,8 @@ import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import DefaultBaseMap from 'common/Map/DefaultBaseMap';
 import useWorkerStatus from 'modules/pathfinding/hooks/useWorkerStatus';
 import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
-import { useMapSettings } from 'reducers/commonMap';
-import type { Viewport } from 'reducers/commonMap/types';
+import { useMapSettings, useMapSettingsActions } from 'reducers/commonMap';
+import type { MapSettings, Viewport } from 'reducers/commonMap/types';
 import { resetMargins, restoreStdcmConfig, updateStdcmPathStep } from 'reducers/osrdconf/stdcmConf';
 import {
   getOperationalPoints,
@@ -122,6 +122,14 @@ const StdcmConfig = ({
   const updateViewport = (viewport: Viewport) => {
     setStdcmConfigViewport(viewport);
   };
+
+  const { updateMapSettings: updateMapSettingsAction } = useMapSettingsActions();
+  const updateMapSettings = useCallback(
+    (value: Partial<MapSettings>) => {
+      dispatch(updateMapSettingsAction(value));
+    },
+    [dispatch]
+  );
 
   const [showMessage, setShowMessage] = useState(false);
 
@@ -380,6 +388,7 @@ const StdcmConfig = ({
                 : undefined
             }
             mapSettings={{ ...mapSettings, viewport: stdcmConfigViewport }}
+            updateMapSettings={updateMapSettings}
             updateViewport={updateViewport}
           />
         </div>

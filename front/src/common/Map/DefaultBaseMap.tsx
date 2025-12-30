@@ -16,6 +16,8 @@ import { computeBBoxViewport } from 'common/Map/WarpedMap/core/helpers';
 import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
 import type { MapSettings, Viewport } from 'reducers/commonMap/types';
 
+import { MapContextProvider } from './useMapContext';
+
 type DefaultBaseMapProps = {
   mapId: string;
   infraId?: number;
@@ -23,6 +25,7 @@ type DefaultBaseMapProps = {
   pathStepMarkers?: MarkerInformation[];
   isFeasible?: boolean;
   mapSettings: MapSettings;
+  updateMapSettings: (mapSettings: Partial<MapSettings>) => void;
   updateViewport: (viewPort: Viewport) => void;
   highlightedArea?: Geometry;
   highlightedOperationalPoints?: number[];
@@ -44,6 +47,7 @@ const DefaultBaseMap = ({
   isFeasible = true,
   children,
   mapSettings,
+  updateMapSettings,
   updateViewport,
   highlightedArea,
   highlightedOperationalPoints,
@@ -91,7 +95,11 @@ const DefaultBaseMap = ({
   }, [geometry, pathStepMarkers]);
 
   return (
-    <>
+    <MapContextProvider
+      infraId={infraId}
+      mapSettings={mapSettings}
+      updateMapSettings={updateMapSettings}
+    >
       <MapButtons
         zoomIn={zoomIn}
         zoomOut={zoomOut}
@@ -133,7 +141,7 @@ const DefaultBaseMap = ({
 
         {children}
       </BaseMap>
-    </>
+    </MapContextProvider>
   );
 };
 
