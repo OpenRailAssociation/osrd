@@ -4,6 +4,7 @@ import { type LayerProps, Source } from 'react-map-gl/maplibre';
 
 import { MAP_URL } from 'common/Map/const';
 import type { Theme } from 'common/Map/theme';
+import { useMapContext } from 'common/Map/useMapContext';
 
 import NeutralSectionSigns from './NeutralSectionSigns';
 import OrderedLayer from '../../../OrderedLayer';
@@ -11,16 +12,12 @@ import OrderedLayer from '../../../OrderedLayer';
 type NeutralSectionsProps = {
   colors: Theme;
   layerOrder: number;
-  infraID: number | undefined;
   highlightedArea?: Geometry;
 };
 
-const NeutralSectionsLayer = ({
-  colors,
-  layerOrder,
-  infraID,
-  highlightedArea,
-}: NeutralSectionsProps) => {
+const NeutralSectionsLayer = ({ colors, layerOrder, highlightedArea }: NeutralSectionsProps) => {
+  const { infraId } = useMapContext();
+
   const neutralSectionsParams: LayerProps = {
     type: 'line',
     'source-layer': 'neutral_sections',
@@ -44,13 +41,13 @@ const NeutralSectionsLayer = ({
     },
   };
 
-  if (isNil(infraID)) return null;
+  if (isNil(infraId)) return null;
   return (
     <>
       <Source
         id="neutral_sections_geo"
         type="vector"
-        url={`${MAP_URL}/layer/neutral_sections/mvt/geo/?infra=${infraID}`}
+        url={`${MAP_URL}/layer/neutral_sections/mvt/geo/?infra=${infraId}`}
       >
         <OrderedLayer
           {...neutralSectionsParams}
@@ -61,7 +58,6 @@ const NeutralSectionsLayer = ({
       <NeutralSectionSigns
         colors={colors}
         layerOrder={layerOrder}
-        infraID={infraID}
         highlightedArea={highlightedArea}
       />
     </>

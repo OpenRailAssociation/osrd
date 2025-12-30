@@ -4,6 +4,7 @@ import { Source, type SymbolLayerSpecification } from 'react-map-gl/maplibre';
 
 import { MAP_URL } from 'common/Map/const';
 import type { Theme } from 'common/Map/theme';
+import { useMapContext } from 'common/Map/useMapContext';
 import type { OmitLayer } from 'types';
 
 import { DEFAULT_HALO_WIDTH, getAllowOverlap, getDynamicTextSize } from '../commonLayers';
@@ -47,23 +48,19 @@ export function getLevelCrossingsLayerProps(params: {
 type LevelCrossingsProps = {
   colors: Theme;
   layerOrder: number;
-  infraID: number | undefined;
   highlightedArea?: Geometry;
 };
 
-const LevelCrossingsLayer = ({
-  layerOrder,
-  infraID,
-  highlightedArea,
-  colors,
-}: LevelCrossingsProps) => {
-  if (isNil(infraID)) return null;
+const LevelCrossingsLayer = ({ layerOrder, highlightedArea, colors }: LevelCrossingsProps) => {
+  const { infraId } = useMapContext();
+
+  if (isNil(infraId)) return null;
   const zoomLevelForGroup = 15;
   return (
     <Source
       id="osrd_levelcrossing_geo"
       type="vector"
-      url={`${MAP_URL}/layer/level_crossings/mvt/geo/?infra=${infraID}`}
+      url={`${MAP_URL}/layer/level_crossings/mvt/geo/?infra=${infraId}`}
     >
       <OrderedLayer
         {...getLevelCrossingsLayerProps({

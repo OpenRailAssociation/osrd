@@ -5,16 +5,10 @@ import type { LayerProps } from 'react-map-gl/maplibre';
 
 import { MAP_URL } from 'common/Map/const';
 import type { Theme } from 'common/Map/theme';
+import { useMapContext } from 'common/Map/useMapContext';
 
 import { getAllowOverlap, getDynamicTextSize } from '../commonLayers';
 import OrderedLayer from '../OrderedLayer';
-
-type ElectrificationsProps = {
-  colors: Theme;
-  layerOrder: number;
-  infraID: number | undefined;
-  highlightedArea?: Geometry;
-};
 
 export function getElectrificationsProps({
   colors,
@@ -128,12 +122,15 @@ export function getElectrificationsTextParams({
   return res;
 }
 
-export default function Electrifications({
-  colors,
-  layerOrder,
-  infraID,
-  highlightedArea,
-}: ElectrificationsProps) {
+type ElectrificationsProps = {
+  colors: Theme;
+  layerOrder: number;
+  highlightedArea?: Geometry;
+};
+
+const Electrifications = ({ colors, layerOrder, highlightedArea }: ElectrificationsProps) => {
+  const { infraId } = useMapContext();
+
   const electrificationsParams: LayerProps = getElectrificationsProps({
     colors,
     sourceTable: 'electrifications',
@@ -144,12 +141,12 @@ export default function Electrifications({
     sourceTable: 'electrifications',
     highlightedArea,
   });
-  if (isNil(infraID)) return null;
+  if (isNil(infraId)) return null;
   return (
     <Source
       id="electrifications_geo"
       type="vector"
-      url={`${MAP_URL}/layer/electrifications/mvt/geo/?infra=${infraID}`}
+      url={`${MAP_URL}/layer/electrifications/mvt/geo/?infra=${infraId}`}
     >
       <OrderedLayer
         {...electrificationsParams}
@@ -165,4 +162,6 @@ export default function Electrifications({
       />
     </Source>
   );
-}
+};
+
+export default Electrifications;

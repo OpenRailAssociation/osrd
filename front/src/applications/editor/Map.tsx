@@ -321,7 +321,6 @@ const MapUnplugged = ({
             <NeutralSectionsLayer
               colors={colors[mapStyle]}
               layerOrder={LAYER_GROUPS_ORDER[LAYERS.NEUTRAL_SECTIONS.GROUP]}
-              infraID={infraID}
             />
           )}
 
@@ -329,7 +328,6 @@ const MapUnplugged = ({
             <OperationalPointsLayer
               colors={colors[mapStyle]}
               layerOrder={LAYER_GROUPS_ORDER[LAYERS.OPERATIONAL_POINTS.GROUP]}
-              infraID={infraID}
             />
           )}
 
@@ -337,7 +335,6 @@ const MapUnplugged = ({
             <LevelCrossingsLayer
               colors={colors[mapStyle]}
               layerOrder={LAYER_GROUPS_ORDER[LAYERS.LEVEL_CROSSINGS.GROUP]}
-              infraID={infraID}
             />
           )}
 

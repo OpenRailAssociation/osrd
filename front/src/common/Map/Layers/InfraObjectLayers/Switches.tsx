@@ -5,6 +5,7 @@ import type { SymbolLayerSpecification, CircleLayerSpecification } from 'react-m
 
 import { MAP_URL } from 'common/Map/const';
 import type { Theme } from 'common/Map/theme';
+import { useMapContext } from 'common/Map/useMapContext';
 import type { OmitLayer } from 'types';
 
 import { DEFAULT_HALO_WIDTH, getAllowOverlap, getDynamicTextSize } from '../commonLayers';
@@ -69,20 +70,21 @@ export function getSwitchesNameLayerProps(params: {
 type SwitchesProps = {
   colors: Theme;
   layerOrder: number;
-  infraID: number | undefined;
   highlightedArea?: Geometry;
 };
 
-const Switches = ({ colors, layerOrder, infraID, highlightedArea }: SwitchesProps) => {
+const Switches = ({ colors, layerOrder, highlightedArea }: SwitchesProps) => {
+  const { infraId } = useMapContext();
+
   const layerPoint = getSwitchesLayerProps({ colors, sourceTable: 'switches', highlightedArea });
   const layerName = getSwitchesNameLayerProps({ colors, sourceTable: 'switches', highlightedArea });
 
-  if (isNil(infraID)) return null;
+  if (isNil(infraId)) return null;
   return (
     <Source
       id="osrd_switches_geo"
       type="vector"
-      url={`${MAP_URL}/layer/switches/mvt/geo/?infra=${infraID}`}
+      url={`${MAP_URL}/layer/switches/mvt/geo/?infra=${infraId}`}
     >
       <OrderedLayer {...layerPoint} id="chartis/osrd_switches/geo" layerOrder={layerOrder} />
       <OrderedLayer {...layerName} id="chartis/osrd_switches_name/geo" layerOrder={layerOrder} />

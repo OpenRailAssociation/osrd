@@ -12,21 +12,13 @@ import {
   getDynamicTextSize,
 } from 'common/Map/Layers/commonLayers';
 import type { Theme } from 'common/Map/theme';
-import type { LayersSettings, MapSettings } from 'reducers/commonMap/types';
+import { useMapContext } from 'common/Map/useMapContext';
+import type { LayersSettings } from 'reducers/commonMap/types';
 import type { OmitLayer } from 'types';
 
 import SNCF_PSL_Signs from './PSLSigns';
 import OrderedLayer from '../../../OrderedLayer';
 import { getSpeedSectionsName, getFilterBySpeedSectionsTag } from '../../SpeedLimits';
-
-type SNCF_PSLProps = {
-  colors: Theme;
-  layerOrder: number;
-  punctualLayerOrder: number;
-  infraID?: number;
-  layersSettings: MapSettings['layersSettings'];
-  highlightedArea?: Geometry;
-};
 
 export function getPSLSpeedValueLayerProps({
   colors,
@@ -157,15 +149,17 @@ export function getPSLSpeedLineLayerProps({
   return res;
 }
 
-const SNCF_PSL = ({
-  colors,
-  layerOrder,
-  punctualLayerOrder,
-  infraID,
-  layersSettings,
-  highlightedArea,
-}: SNCF_PSLProps) => {
+type SNCF_PSLProps = {
+  colors: Theme;
+  layerOrder: number;
+  punctualLayerOrder: number;
+  highlightedArea?: Geometry;
+};
+
+const SNCF_PSL = ({ colors, layerOrder, punctualLayerOrder, highlightedArea }: SNCF_PSLProps) => {
   const { t } = useTranslation();
+  const { infraId, layersSettings } = useMapContext();
+
   const speedSectionFilter = getFilterBySpeedSectionsTag(layersSettings, highlightedArea);
 
   const speedValueParams = {
@@ -196,13 +190,13 @@ const SNCF_PSL = ({
     filter: speedSectionFilter,
   };
 
-  if (isNil(infraID)) return null;
+  if (isNil(infraId)) return null;
   return (
     <>
       <Source
         id="osrd_sncf_psl_geo"
         type="vector"
-        url={`${MAP_URL}/layer/psl/mvt/geo/?infra=${infraID}`}
+        url={`${MAP_URL}/layer/psl/mvt/geo/?infra=${infraId}`}
       >
         <OrderedLayer
           {...speedValueParams}

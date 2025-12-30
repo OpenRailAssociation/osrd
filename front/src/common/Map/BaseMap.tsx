@@ -151,7 +151,6 @@ const BaseMap = ({
 
       {infraId && (
         <InfraObjectLayers
-          infraId={infraId}
           mapStyle={mapStyle}
           hoveredOperationalPointId={hoveredOperationalPointId}
           layersSettings={layersSettings}

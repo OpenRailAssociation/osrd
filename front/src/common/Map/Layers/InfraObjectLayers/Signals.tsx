@@ -4,12 +4,13 @@ import { Source, type MapRef } from 'react-map-gl/maplibre';
 
 import { MAP_URL } from 'common/Map/const';
 import type { Theme } from 'common/Map/theme';
+import { useMapContext } from 'common/Map/useMapContext';
 
 import { getPointLayerProps, getSignalLayerProps } from './geoSignalsLayers';
 import getKPLabelLayerProps from './getKPLabelLayerProps';
 import getMastLayerProps from './getMastLayerProps';
 import OrderedLayer from '../OrderedLayer';
-import { type SignalContext } from '../types';
+import type { SignalContext } from '../types';
 
 type PlatformProps = {
   colors: Theme;
@@ -17,11 +18,12 @@ type PlatformProps = {
   hovered?: { id: string; layer: string };
   mapRef?: React.RefObject<MapRef>;
   layerOrder: number;
-  infraID: number | undefined;
   highlightedArea?: Geometry;
 };
 
-const Signals = ({ colors, sourceTable, layerOrder, infraID, highlightedArea }: PlatformProps) => {
+const Signals = ({ colors, sourceTable, layerOrder, highlightedArea }: PlatformProps) => {
+  const { infraId } = useMapContext();
+
   const context: SignalContext = {
     colors,
     sourceTable,
@@ -29,12 +31,12 @@ const Signals = ({ colors, sourceTable, layerOrder, infraID, highlightedArea }: 
     minzoom: 12,
   };
 
-  if (isNil(infraID)) return null;
+  if (isNil(infraId)) return null;
   return (
     <Source
       promoteId="id"
       type="vector"
-      url={`${MAP_URL}/layer/${sourceTable}/mvt/geo/?infra=${infraID}`}
+      url={`${MAP_URL}/layer/${sourceTable}/mvt/geo/?infra=${infraId}`}
     >
       <OrderedLayer
         {...getMastLayerProps({ ...context, highlightedArea })}
