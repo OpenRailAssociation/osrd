@@ -111,7 +111,6 @@ const DefaultBaseMap = ({
         viewPort={viewport}
         isNewButtons
         compactModal
-        mapSettings={mapSettings}
       />
       <BaseMap
         mapId={mapId}

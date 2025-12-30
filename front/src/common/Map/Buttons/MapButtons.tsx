@@ -25,13 +25,14 @@ import LayersModal from 'common/Map/components/LayersModal';
 import MapKey from 'common/Map/MapKey';
 import MapSearch from 'common/Map/Search/MapSearch';
 import { useMapSettingsActions } from 'reducers/commonMap';
-import type { MapSettings, Viewport } from 'reducers/commonMap/types';
+import type { Viewport } from 'reducers/commonMap/types';
 import { type EditorState } from 'reducers/editor';
 import { useAppDispatch } from 'store';
 import useOutsideClick from 'utils/hooks/useOutsideClick';
 
 import ButtonMapInfraErrors from './ButtonMapInfraErrors';
 import MapButton from './MapButton';
+import { MapContextProvider, useMapContext } from '../useMapContext';
 
 type MapButtonsProps = {
   map?: MapRef;
@@ -53,7 +54,6 @@ type MapButtonsProps = {
   compactModal?: boolean;
   viewPort: Viewport;
   isNewButtons?: boolean;
-  mapSettings: MapSettings;
   layersModalContainer?: Element | null;
 };
 
@@ -76,12 +76,12 @@ export default function MapButtons({
   zoomOut: zoomOutProps,
   isNewButtons = false,
   compactModal = false,
-  mapSettings,
   layersModalContainer,
 }: MapButtonsProps) {
   const { t } = useTranslation('translation');
   const dispatch = useAppDispatch();
   const { updateViewport } = useMapSettingsActions();
+  const { infraId, updateMapSettings, ...mapSettings } = useMapContext();
 
   const { isOpen, openModal } = useContext(ModalContext);
   const [openedPopover, setOpenedPopover] = useState<string | undefined>(undefined);
@@ -134,9 +134,26 @@ export default function MapButtons({
     } else if (layersModalContainer) {
       setShowLayersModal(true);
     } else {
-      openModal(<LayersModal compactModal={compactModal} />, 'lg');
+      openModal(
+        <MapContextProvider
+          infraId={infraId}
+          mapSettings={mapSettings}
+          updateMapSettings={updateMapSettings}
+        >
+          <LayersModal compactModal={compactModal} />{' '}
+        </MapContextProvider>,
+        'lg'
+      );
     }
-  }, [editorProps, openModal, compactModal, layersModalContainer]);
+  }, [
+    editorProps,
+    openModal,
+    compactModal,
+    layersModalContainer,
+    mapSettings,
+    infraId,
+    updateMapSettings,
+  ]);
 
   const mapButtonsRef = useRef<HTMLDivElement>(null);
 

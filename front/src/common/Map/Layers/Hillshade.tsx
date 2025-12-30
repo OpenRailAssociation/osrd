@@ -1,8 +1,7 @@
 import { type LayerProps } from 'react-map-gl/maplibre';
 
-import { useMapSettings } from 'reducers/commonMap';
-
 import OrderedLayer from './OrderedLayer';
+import { useMapContext } from '../useMapContext';
 
 type HillshadeProps = {
   mapStyle: string;
@@ -18,7 +17,7 @@ const hillshadeParams: LayerProps = {
 };
 
 const Hillshade = ({ mapStyle, layerOrder }: HillshadeProps) => {
-  const { terrain3DExaggeration } = useMapSettings();
+  const { terrain3DExaggeration } = useMapContext();
   if (mapStyle !== 'normal' || !terrain3DExaggeration) {
     return null;
   }

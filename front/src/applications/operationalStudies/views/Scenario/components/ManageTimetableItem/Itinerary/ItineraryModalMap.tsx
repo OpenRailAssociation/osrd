@@ -159,7 +159,6 @@ const ItineraryModalMap = ({
         withMapKeyButton
         viewPort={viewport}
         isNewButtons
-        mapSettings={mapSettings}
         layersModalContainer={document.querySelector('.itinerary-modal-map')}
       />
       <BaseMap

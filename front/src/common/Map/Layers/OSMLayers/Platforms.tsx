@@ -1,7 +1,7 @@
 import { type LayerProps } from 'react-map-gl/maplibre';
 
 import type { Theme } from 'common/Map/theme';
-import { useMapSettings } from 'reducers/commonMap';
+import { useMapContext } from 'common/Map/useMapContext';
 
 import OrderedLayer from '../OrderedLayer';
 
@@ -27,7 +27,7 @@ export function Platforms(props: PlatformsProps) {
 }
 
 function PlatformsState(props: PlatformsProps) {
-  const { layersSettings } = useMapSettings();
+  const { layersSettings } = useMapContext();
 
   if (!layersSettings.platforms) return null;
   return <Platforms {...props} />;
