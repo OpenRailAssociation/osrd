@@ -202,6 +202,7 @@ const injectedRtkApi = api
       }),
       getHealth: build.query<GetHealthApiResponse, GetHealthApiArg>({
         query: () => ({ url: `/health` }),
+        providesTags: [],
       }),
       getInfra: build.query<GetInfraApiResponse, GetInfraApiArg>({
         query: (queryArg) => ({
@@ -1461,6 +1462,7 @@ const injectedRtkApi = api
       }),
       getVersion: build.query<GetVersionApiResponse, GetVersionApiArg>({
         query: () => ({ url: `/version` }),
+        providesTags: [],
       }),
       postWorkSchedules: build.mutation<PostWorkSchedulesApiResponse, PostWorkSchedulesApiArg>({
         query: (queryArg) => ({ url: `/work_schedules`, method: 'POST', body: queryArg.body }),
