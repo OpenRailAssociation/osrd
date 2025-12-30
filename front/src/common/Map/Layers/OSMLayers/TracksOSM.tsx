@@ -1,16 +1,18 @@
 import { type LayerProps } from 'react-map-gl/maplibre';
 
 import type { Theme } from 'common/Map/theme';
+import { useMapContext } from 'common/Map/useMapContext';
 
 import OrderedLayer from '../OrderedLayer';
 
 type TracksOSMProps = {
   colors: Theme;
   layerOrder: number;
-  showOSMtracksections: boolean;
 };
 
-function TracksOSM({ colors, layerOrder, showOSMtracksections }: TracksOSMProps) {
+const TracksOSM = ({ colors, layerOrder }: TracksOSMProps) => {
+  const { showOSMtracksections } = useMapContext();
+
   const railwayMinor: LayerProps = {
     id: 'railwayMinor',
     type: 'line',
@@ -47,6 +49,6 @@ function TracksOSM({ colors, layerOrder, showOSMtracksections }: TracksOSMProps)
       <OrderedLayer {...railwayMajor} layerOrder={layerOrder} />
     </>
   );
-}
+};
 
 export default TracksOSM;

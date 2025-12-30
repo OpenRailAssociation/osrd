@@ -80,6 +80,7 @@ const MapUnplugged = ({
   const context = useContext(EditorContext) as EditorContextType<CommonToolState>;
   const { data: switchTypes } = useSwitchTypes(infraID);
   const editorState = useSelector(getEditorState);
+
   const {
     showOSM,
     showOSM3dBuildings,
@@ -87,10 +88,8 @@ const MapUnplugged = ({
     terrain3DExaggeration,
     mapSearchMarker,
     lineSearchCode,
-    showIGNBDORTHO,
-    showIGNCadastre,
-    showIGNSCAN25,
   } = useMapSettings();
+
   const extendedContext = useMemo<ExtendedEditorContextType<CommonToolState>>(
     () => ({
       ...context,
@@ -303,11 +302,7 @@ const MapUnplugged = ({
             showOSMtracksections={showOSMtracksections}
             hidePlatforms
           />
-          <IGNLayers
-            showIGNBDORTHO={showIGNBDORTHO}
-            showIGNCadastre={showIGNCadastre}
-            showIGNSCAN25={showIGNSCAN25}
-          />
+          <IGNLayers />
 
           <LineSearchLayer
             layerOrder={LAYER_GROUPS_ORDER[LAYERS.LINE_SEARCH.GROUP]}

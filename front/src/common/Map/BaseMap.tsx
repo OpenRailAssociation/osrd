@@ -83,10 +83,8 @@ const BaseMap = ({
     terrain3DExaggeration,
     mapSearchMarker,
     lineSearchCode,
-    showIGNBDORTHO,
-    showIGNSCAN25,
-    showIGNCadastre,
   } = mapSettings;
+
   useEffect(() => {
     if (urlLat) {
       updatePartialViewPort({
@@ -170,11 +168,7 @@ const BaseMap = ({
         showOSM3dBuildings={showOSM3dBuildings && mapIsLoaded}
         showOSMtracksections={showOSMtracksections && mapIsLoaded}
       />
-      <IGNLayers
-        showIGNBDORTHO={showIGNBDORTHO}
-        showIGNCadastre={showIGNCadastre}
-        showIGNSCAN25={showIGNSCAN25}
-      />
+      <IGNLayers />
 
       <LineSearchLayer
         layerOrder={LAYER_GROUPS_ORDER[LAYERS.LINE_SEARCH.GROUP]}

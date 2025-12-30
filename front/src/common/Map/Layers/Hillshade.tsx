@@ -4,7 +4,6 @@ import OrderedLayer from './OrderedLayer';
 import { useMapContext } from '../useMapContext';
 
 type HillshadeProps = {
-  mapStyle: string;
   layerOrder?: number;
   display?: boolean;
 };
@@ -16,8 +15,8 @@ const hillshadeParams: LayerProps = {
   paint: {},
 };
 
-const Hillshade = ({ mapStyle, layerOrder }: HillshadeProps) => {
-  const { terrain3DExaggeration } = useMapContext();
+const Hillshade = ({ layerOrder }: HillshadeProps) => {
+  const { mapStyle, terrain3DExaggeration } = useMapContext();
   if (mapStyle !== 'normal' || !terrain3DExaggeration) {
     return null;
   }
