@@ -14,16 +14,15 @@ type TracksGeographicProps = {
   colors: Theme;
   layerOrder?: number;
   highlightedArea?: Geometry;
-  highlightedTrackSections?: string[];
 };
 
-function TracksGeographic({
-  colors,
-  layerOrder,
-  highlightedArea,
-  highlightedTrackSections,
-}: TracksGeographicProps) {
-  const { infraId: infraID, showIGNBDORTHO, showIGNSCAN25 } = useMapContext();
+function TracksGeographic({ colors, layerOrder, highlightedArea }: TracksGeographicProps) {
+  const {
+    infraId: infraID,
+    showIGNBDORTHO,
+    showIGNSCAN25,
+    highlightedTrackSections,
+  } = useMapContext();
 
   if (isNil(infraID)) return null;
   return (

@@ -15,14 +15,6 @@ import { useMapContext } from 'common/Map/useMapContext';
 import { DEFAULT_HALO_WIDTH, getDynamicTextSize, getAllowOverlap } from '../commonLayers';
 import OrderedLayer from '../OrderedLayer';
 
-type OperationalPointsProps = {
-  colors: Theme;
-  layerOrder: number;
-  operationnalPointId?: string;
-  highlightedArea?: Geometry;
-  highlightedOperationalPoints?: number[];
-};
-
 function getColorByHighlighted(data: {
   highlightedArea?: Geometry;
   highlightedOperationalPoints?: number[];
@@ -59,14 +51,20 @@ function getFilterHighlighted(
   return result;
 }
 
+type OperationalPointsProps = {
+  colors: Theme;
+  layerOrder: number;
+  operationnalPointId?: string;
+  highlightedArea?: Geometry;
+};
+
 const OperationalPointsLayer = ({
   colors,
   layerOrder,
   operationnalPointId,
   highlightedArea,
-  highlightedOperationalPoints,
 }: OperationalPointsProps) => {
-  const { infraId } = useMapContext();
+  const { infraId, highlightedOperationalPoints } = useMapContext();
 
   if (isNil(infraId)) return null;
 

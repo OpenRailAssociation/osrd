@@ -22,8 +22,6 @@ type InfraObjectLayersProps = {
   hoveredOperationalPointId?: string;
   layersSettings: LayersSettings;
   highlightedArea?: Geometry;
-  highlightedOperationalPoints?: number[];
-  highlightedTrackSections?: string[];
 };
 
 const InfraObjectLayers = ({
@@ -31,15 +29,12 @@ const InfraObjectLayers = ({
   hoveredOperationalPointId,
   layersSettings,
   highlightedArea,
-  highlightedOperationalPoints,
-  highlightedTrackSections,
 }: InfraObjectLayersProps) => (
   <>
     <TracksGeographic
       colors={colors[mapStyle]}
       layerOrder={LAYER_GROUPS_ORDER[LAYERS.TRACKS.GROUP]}
       highlightedArea={highlightedArea}
-      highlightedTrackSections={highlightedTrackSections}
     />
     {layersSettings.routes && (
       <Routes
@@ -54,7 +49,6 @@ const InfraObjectLayers = ({
         layerOrder={LAYER_GROUPS_ORDER[LAYERS.OPERATIONAL_POINTS.GROUP]}
         operationnalPointId={hoveredOperationalPointId}
         highlightedArea={highlightedArea}
-        highlightedOperationalPoints={highlightedOperationalPoints}
       />
     )}
     {layersSettings.electrifications && (

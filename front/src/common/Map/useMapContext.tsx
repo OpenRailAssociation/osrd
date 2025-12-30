@@ -6,6 +6,8 @@ type MapContextType =
   | ({
       infraId?: number;
       updateMapSettings: (modifs: Partial<MapSettings>) => void;
+      highlightedTrackSections?: string[];
+      highlightedOperationalPoints?: number[];
     } & MapSettings)
   | null;
 const MapContext = createContext<MapContextType>(null);
@@ -13,6 +15,8 @@ const MapContext = createContext<MapContextType>(null);
 type MapContextProviderProps = {
   infraId?: number;
   mapSettings: MapSettings;
+  highlightedTrackSections?: string[];
+  highlightedOperationalPoints?: number[];
   updateMapSettings: (modifs: Partial<MapSettings>) => void;
   children: ReactNode;
 };
@@ -20,6 +24,8 @@ type MapContextProviderProps = {
 export const MapContextProvider = ({
   infraId,
   mapSettings,
+  highlightedTrackSections,
+  highlightedOperationalPoints,
   updateMapSettings,
   children,
 }: MapContextProviderProps) => {
@@ -27,6 +33,8 @@ export const MapContextProvider = ({
     () => ({
       infraId,
       ...mapSettings,
+      highlightedTrackSections,
+      highlightedOperationalPoints,
       updateMapSettings,
     }),
     [infraId, mapSettings, updateMapSettings]

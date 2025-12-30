@@ -44,8 +44,6 @@ type MapProps = {
    * - OP & tracks are full displayed, but elements ouside the area are muted
    */
   highlightedArea?: Geometry;
-  highlightedOperationalPoints?: number[];
-  highlightedTrackSections?: string[];
 };
 
 const BaseMap = ({
@@ -64,8 +62,6 @@ const BaseMap = ({
   onMouseMove,
   onIdle,
   highlightedArea,
-  highlightedOperationalPoints,
-  highlightedTrackSections,
 }: PropsWithChildren<MapProps>) => {
   const mapBlankStyle = useMapBlankStyle();
 
@@ -155,8 +151,6 @@ const BaseMap = ({
           hoveredOperationalPointId={hoveredOperationalPointId}
           layersSettings={layersSettings}
           highlightedArea={highlightedArea}
-          highlightedOperationalPoints={highlightedOperationalPoints}
-          highlightedTrackSections={highlightedTrackSections}
         />
       )}
 

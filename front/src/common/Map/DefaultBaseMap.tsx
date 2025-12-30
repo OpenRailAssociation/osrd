@@ -99,6 +99,8 @@ const DefaultBaseMap = ({
       infraId={infraId}
       mapSettings={mapSettings}
       updateMapSettings={updateMapSettings}
+      highlightedTrackSections={highlightedTrackSections}
+      highlightedOperationalPoints={highlightedOperationalPoints}
     >
       <MapButtons
         zoomIn={zoomIn}
@@ -121,8 +123,6 @@ const DefaultBaseMap = ({
         hideAttribution
         mapSettings={mapSettings}
         highlightedArea={highlightedArea}
-        highlightedOperationalPoints={highlightedOperationalPoints}
-        highlightedTrackSections={highlightedTrackSections}
       >
         <ItineraryLayer
           layerOrder={LAYER_GROUPS_ORDER[LAYERS.PATH.GROUP]}
