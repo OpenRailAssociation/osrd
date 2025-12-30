@@ -6,6 +6,7 @@ export type BaseChartContextType = {
   fingerprint: string;
   pickingElements: PickingElement[];
   resetPickingElements: () => void;
+  registerPickingElement: (element: PickingElement) => number;
   theme: { background: string };
 };
 
@@ -49,8 +50,7 @@ export type CanvasContextType<T> = {
 export type TimeToPixel = (time: number) => number;
 export type PixelToTime = (x: number) => number;
 
-// TODO: GENERALIZE THIS TYPE FOR OTHER CHARTS
-export type TimeChartContextType = {
+export type TimeChartContextType = BaseChartContextType & {
   width: number;
   height: number;
 
@@ -65,16 +65,9 @@ export type TimeChartContextType = {
   getTime: PixelToTime;
   getPoint: DataToPoint;
 
-  // This string is designed to be unique to each rendering:
-  fingerprint: string;
-
-  // Picking:
-  pickingElements: PickingElement[];
-  resetPickingElements: () => void;
-  registerPickingElement: (element: PickingElement) => number;
-
   // Full theme:
-  theme: SpaceTimeChartTheme; // TODO: create a more generic ChartTheme
+  // TODO: create a more generic ChartTheme
+  theme: SpaceTimeChartTheme;
 };
 
 export type ChartOptions = {
