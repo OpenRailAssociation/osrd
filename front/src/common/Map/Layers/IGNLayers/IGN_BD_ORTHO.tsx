@@ -1,13 +1,16 @@
 import { Source, type LayerProps } from 'react-map-gl/maplibre';
 
+import { useMapContext } from 'common/Map/useMapContext';
+
 import OrderedLayer from '../OrderedLayer';
 
 type IGN_BD_ORTHO_Props = {
   layerOrder?: number;
-  showIGNBDORTHO?: boolean;
 };
 
-export default function IGN_BD_ORTHO({ layerOrder, showIGNBDORTHO }: IGN_BD_ORTHO_Props) {
+export default function IGN_BD_ORTHO({ layerOrder }: IGN_BD_ORTHO_Props) {
+  const { showIGNBDORTHO } = useMapContext();
+
   const IGN_BD_ORTHO_Params: LayerProps = {
     source: 'orthophoto',
     type: 'raster',

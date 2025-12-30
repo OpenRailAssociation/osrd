@@ -4,14 +4,8 @@ import { get } from 'lodash';
 
 import OrderedLayer, { type OrderedLayerProps } from 'common/Map/Layers/OrderedLayer';
 import { getOSMStyle } from 'common/Map/theme';
+import { useMapContext } from 'common/Map/useMapContext';
 import type { MapStyle } from 'reducers/commonMap/types';
-
-type OSMProps = {
-  mapIsLoaded?: boolean;
-  layerOrder?: number;
-  mapStyle: MapStyle;
-  showOSM3dBuildings: boolean;
-};
 
 type FullLayerProps = OrderedLayerProps & { key?: string };
 type ToggledLayers = {
@@ -56,7 +50,14 @@ export function genOSMLayers(
   ));
 }
 
-function OSM({ layerOrder, mapIsLoaded, mapStyle, showOSM3dBuildings }: OSMProps) {
+type OSMProps = {
+  mapIsLoaded?: boolean;
+  layerOrder?: number;
+};
+
+const OSM = ({ layerOrder, mapIsLoaded }: OSMProps) => {
+  const { mapStyle, showOSM3dBuildings } = useMapContext();
+
   // Hack to full reload layers to avoid glitches
   // when switching map style (see #5777)
   const [reload, setReload] = useState(true);
@@ -70,6 +71,6 @@ function OSM({ layerOrder, mapIsLoaded, mapStyle, showOSM3dBuildings }: OSMProps
 
   if (reload) return null;
   return <>{genOSMLayers(mapStyle, toggledLayers, layerOrder)}</>;
-}
+};
 
 export default OSM;

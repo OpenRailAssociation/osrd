@@ -1,5 +1,7 @@
 import { Source, type LayerProps } from 'react-map-gl/maplibre';
 
+import { useMapContext } from 'common/Map/useMapContext';
+
 import OrderedLayer from '../OrderedLayer';
 
 type IGN_Cadastre_Props = {
@@ -18,8 +20,8 @@ const IGN_Cadastre_Params: LayerProps = {
   },
 };
 
-export default function IGN_CADASTRE(props: IGN_Cadastre_Props) {
-  const { layerOrder, showIGNCadastre } = props;
+export default function IGN_CADASTRE({ layerOrder }: IGN_Cadastre_Props) {
+  const { showIGNCadastre } = useMapContext();
 
   if (!showIGNCadastre) return null;
   return (

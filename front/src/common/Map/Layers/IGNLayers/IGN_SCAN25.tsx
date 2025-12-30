@@ -1,13 +1,16 @@
 import { Source, type LayerProps } from 'react-map-gl/maplibre';
 
+import { useMapContext } from 'common/Map/useMapContext';
+
 import OrderedLayer from '../OrderedLayer';
 
 type IGN_SCAN25_Props = {
   layerOrder?: number;
-  showIGNSCAN25?: boolean;
 };
 
-export default function IGN_SCAN25({ layerOrder, showIGNSCAN25 }: IGN_SCAN25_Props) {
+export default function IGN_SCAN25({ layerOrder }: IGN_SCAN25_Props) {
+  const { showIGNSCAN25 } = useMapContext();
+
   const IGN_SCAN25_Params: LayerProps = {
     source: 'orthophoto',
     type: 'raster',
