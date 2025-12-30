@@ -1,3 +1,5 @@
+import { useState } from 'react';
+
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 
@@ -8,10 +10,13 @@ import { useMapSettings, useMapSettingsActions } from 'reducers/commonMap';
 import { useAppDispatch } from 'store';
 
 const MapSettingsMapStyle = () => {
-  const { t } = useTranslation();
   const dispatch = useAppDispatch();
-  const { mapStyle } = useMapSettings();
+  const { mapStyle: initialMapStyle } = useMapSettings();
   const { updateMapSettings } = useMapSettingsActions();
+
+  const [mapStyle, setMapStyle] = useState(initialMapStyle);
+
+  const { t } = useTranslation();
   const styles = [
     { key: 'normal', image: picNormalMode, label: t('mapSettings.mapstyles.normal') },
     { key: 'minimal', image: picMinimalMode, label: t('mapSettings.mapstyles.minimal') },
@@ -25,7 +30,10 @@ const MapSettingsMapStyle = () => {
           key={key}
           className={cx('col-xs-4 mb-2 mapstyle-style-select', mapStyle === key && 'active')}
           type="button"
-          onClick={() => dispatch(updateMapSettings({ mapStyle: key }))}
+          onClick={() => {
+            setMapStyle(key);
+            dispatch(updateMapSettings({ mapStyle: key }));
+          }}
         >
           <img src={image} alt={`${key} mode`} />
           <span>{label}</span>

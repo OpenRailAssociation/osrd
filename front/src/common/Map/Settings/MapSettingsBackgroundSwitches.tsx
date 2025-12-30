@@ -1,3 +1,5 @@
+import { useCallback, useState } from 'react';
+
 import Slider from 'rc-slider';
 import { useTranslation } from 'react-i18next';
 
@@ -8,8 +10,19 @@ import iconIGNBDORTHO from 'assets/pictures/mapbuttons/mapstyle-ortho.jpg';
 import iconOSMTracks from 'assets/pictures/mapbuttons/mapstyle-osm-tracks.jpg';
 import iconIGNSCAN25 from 'assets/pictures/mapbuttons/mapstyle-scan25.jpg';
 import SwitchSNCF, { SWITCH_TYPES, type SwitchSNCFProps } from 'common/BootstrapSNCF/SwitchSNCF';
-import { useMapSettings, useMapSettingsActions } from 'reducers/commonMap';
+import { useMapSettingsActions, useMapSettings } from 'reducers/commonMap';
+import type { MapSettings } from 'reducers/commonMap/types';
 import { useAppDispatch } from 'store';
+
+type MapBackgroundSettings = {
+  showIGNBDORTHO: boolean;
+  showIGNSCAN25: boolean;
+  showIGNCadastre: boolean;
+  showOSM: boolean;
+  showOSM3dBuildings: boolean;
+  showOSMtracksections: boolean;
+  smoothTravel: boolean;
+};
 
 type FormatSwitchProps = {
   name: string;
@@ -36,7 +49,36 @@ const FormatSwitch = ({ name, onChange, state, icon, label }: FormatSwitchProps)
 const MapSettingsBackgroundSwitches = () => {
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
-  const { updateMapSettings } = useMapSettingsActions();
+  const { updateMapSettings: updateMapSettingsAction } = useMapSettingsActions();
+  const { terrain3DExaggeration: initialTerrain3DExaggeration, ...initialSettings } =
+    useMapSettings();
+
+  const updateMapSettings = useCallback(
+    (value: Partial<MapSettings>) => {
+      dispatch(updateMapSettingsAction(value));
+    },
+    [dispatch, updateMapSettingsAction]
+  );
+
+  const [terrain3DExaggeration, setTerrain3DExaggeration] = useState(initialTerrain3DExaggeration);
+  const [backgroundSettings, setBackgroundSettings] =
+    useState<MapBackgroundSettings>(initialSettings);
+
+  const toggleLayer = useCallback(
+    (layer: keyof MapBackgroundSettings) => {
+      let updatedLayers: Partial<MapBackgroundSettings> = { [layer]: !backgroundSettings[layer] };
+      if (layer === 'showOSM' && backgroundSettings.showOSM) {
+        updatedLayers = { ...updatedLayers, showOSM3dBuildings: false };
+      } else if (layer === 'showOSM3dBuildings' && !backgroundSettings.showOSM3dBuildings) {
+        updatedLayers = { ...updatedLayers, showOSM: true };
+      }
+
+      setBackgroundSettings({ ...backgroundSettings, ...updatedLayers });
+      updateMapSettings(updatedLayers);
+    },
+    [backgroundSettings, updateMapSettings]
+  );
+
   const {
     showIGNBDORTHO,
     showIGNSCAN25,
@@ -45,32 +87,13 @@ const MapSettingsBackgroundSwitches = () => {
     showOSM3dBuildings,
     showOSMtracksections,
     smoothTravel,
-    terrain3DExaggeration,
-  } = useMapSettings();
-
-  const onShowOSMToggled = () => {
-    dispatch(
-      updateMapSettings({
-        showOSM: !showOSM,
-        ...(showOSM ? { showOSM3dBuildings: false } : undefined),
-      })
-    );
-  };
-
-  const onShow3dBuildingsToggled = () => {
-    dispatch(
-      updateMapSettings({
-        showOSM3dBuildings: !showOSM3dBuildings,
-        ...(!showOSM3dBuildings ? { showOSM: true } : undefined),
-      })
-    );
-  };
+  } = backgroundSettings;
 
   return (
     <>
       <FormatSwitch
         name="show-osm-switch"
-        onChange={() => onShowOSMToggled()}
+        onChange={() => toggleLayer('showOSM')}
         state={showOSM}
         icon={iconOSM}
         label={t('mapSettings.layers.showOSM')}
@@ -78,7 +101,7 @@ const MapSettingsBackgroundSwitches = () => {
       <div className="my-2" />
       <FormatSwitch
         name="show3dBuildings"
-        onChange={() => onShow3dBuildingsToggled()}
+        onChange={() => toggleLayer('showOSM3dBuildings')}
         state={showOSM3dBuildings}
         icon={icon3dBuildings}
         label={t('mapSettings.layers.showOSM3dBuildings')}
@@ -86,9 +109,7 @@ const MapSettingsBackgroundSwitches = () => {
       <div className="my-2" />
       <FormatSwitch
         name="show-osm-track-section-switch"
-        onChange={() =>
-          dispatch(updateMapSettings({ showOSMtracksections: !showOSMtracksections }))
-        }
+        onChange={() => toggleLayer('showOSMtracksections')}
         state={showOSMtracksections}
         icon={iconOSMTracks}
         label={t('mapSettings.layers.showOSMtracksections')}
@@ -96,7 +117,7 @@ const MapSettingsBackgroundSwitches = () => {
       <div className="my-2" />
       <FormatSwitch
         name="show-ign-bdortho-switch"
-        onChange={() => dispatch(updateMapSettings({ showIGNBDORTHO: !showIGNBDORTHO }))}
+        onChange={() => toggleLayer('showIGNBDORTHO')}
         state={showIGNBDORTHO}
         icon={iconIGNBDORTHO}
         label={t('mapSettings.layers.showIGNBDORTHO')}
@@ -104,7 +125,7 @@ const MapSettingsBackgroundSwitches = () => {
       <div className="my-2" />
       <FormatSwitch
         name="show-ignscan25-switch"
-        onChange={() => dispatch(updateMapSettings({ showIGNSCAN25: !showIGNSCAN25 }))}
+        onChange={() => toggleLayer('showIGNSCAN25')}
         state={showIGNSCAN25}
         icon={iconIGNSCAN25}
         label={t('mapSettings.layers.showIGNSCAN25')}
@@ -112,7 +133,7 @@ const MapSettingsBackgroundSwitches = () => {
       <div className="my-2" />
       <FormatSwitch
         name="show-ign-cadastres-witch"
-        onChange={() => dispatch(updateMapSettings({ showIGNCadastre: !showIGNCadastre }))}
+        onChange={() => toggleLayer('showIGNCadastre')}
         state={showIGNCadastre}
         icon={iconIGNCadastre}
         label={t('mapSettings.layers.showIGNCadastre')}
@@ -131,16 +152,17 @@ const MapSettingsBackgroundSwitches = () => {
             step={0.1}
             marks={{ 0: 0, 0.5: '0.5', 1: 'x1', 2: 'x2', 5: 'x5' }}
             value={terrain3DExaggeration}
-            onChange={(value) =>
-              dispatch(updateMapSettings({ terrain3DExaggeration: value as number }))
-            }
+            onChange={(value) => {
+              setTerrain3DExaggeration(value as number);
+              updateMapSettings({ terrain3DExaggeration: value as number });
+            }}
           />
         </div>
       </div>
 
       <FormatSwitch
         name="smoothTravel-switch"
-        onChange={() => dispatch(updateMapSettings({ smoothTravel: !smoothTravel }))}
+        onChange={() => toggleLayer('smoothTravel')}
         state={smoothTravel}
         icon=""
         label={t('mapSettings.layers.smoothTravel')}
