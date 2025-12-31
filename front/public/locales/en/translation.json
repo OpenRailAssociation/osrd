@@ -135,14 +135,13 @@
       "neutral_sections": "Neutral sections",
       "operational_points": "Operational points",
       "platforms": "Platforms",
-      "psl-psl_signs": "Permanent speed limits",
       "routes": "Routes",
       "signals": "Signals",
       "sncf_psl": "Permanent speed limits",
       "speed_limits": "Speed limits",
       "speed_sections": "Speed limits",
       "switches": "Switches",
-      "track_sections": "Track sections"
+      "tvds": "Track sections"
     },
     "layers-modal": {
       "frozen-layer": "needed for the active tool",
