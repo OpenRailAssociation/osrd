@@ -140,6 +140,7 @@
       "sncf_psl": "Limitations permanentes de vitesse",
       "speed_limits": "Vitesses de ligne",
       "speed_sections": "Vitesses de ligne",
+      "speedlimittag": "Codes de composition",
       "switches": "Aiguillages",
       "tvds": "Sections de voie"
     },
@@ -147,7 +148,6 @@
       "frozen-layer": "nécessaire pour l'outil actif",
       "layer-selected-items_one": "Un élément sélectionné",
       "layer-selected-items_other": "{{count}} éléments sélectionnés",
-      "noSpeedLimitByTag": "Aucun code de composition",
       "selection-warning_one": "Un élément a été désélectionné.",
       "selection-warning_other": "{{count}} éléments ont été désélectionnés."
     },
@@ -161,7 +161,6 @@
       "choose-infra": "Choisissez une infrastructure",
       "infra-error-corrector": "Correcteur automatique d’anomalies",
       "infra-errors-list": "Gestion et affichage des anomalies",
-      "map-layers": "Paramètres cartographiques",
       "osrd-layers": "Couches de données",
       "speed-limits": "Limitations de vitesse par code de composition",
       "toggle-layers": "Choisir les types d'éléments à afficher"
