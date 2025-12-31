@@ -12,8 +12,6 @@ export const getLayerSettingNameFromEditorLayer = (
       return 'sncf_psl';
     case 'speed_sections':
       return 'speed_limits';
-    case 'track_sections':
-      return 'tvds';
     default:
       return editorLayer;
   }
@@ -25,7 +23,7 @@ export const getLayersSettingsFromEditorLayers = (
   const layersSettings = {
     ...defaultMapSettings.layersSettings,
     operational_points: false,
-    tvds: false,
+    track_sections: false,
   };
   editorLayers?.forEach((layer) => {
     const layerSetting = getLayerSettingNameFromEditorLayer(layer);
@@ -51,6 +49,7 @@ export const getEditorLayersFromLayersSetting = (layersSettings: LayersSettings)
       'neutral_sections',
       'operational_points',
       'errors',
+      'track_sections',
     ] as const
   ).forEach((key) => {
     if (layersSettings[key]) layers.push(key);
@@ -58,9 +57,6 @@ export const getEditorLayersFromLayersSetting = (layersSettings: LayersSettings)
 
   if (layersSettings.speed_limits) {
     layers.push('speed_sections');
-  }
-  if (layersSettings.tvds) {
-    layers.push('track_sections');
   }
   if (layersSettings.sncf_psl) {
     layers.push('psl');

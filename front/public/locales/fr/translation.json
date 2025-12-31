@@ -142,7 +142,7 @@
       "speed_sections": "Vitesses de ligne",
       "speedlimittag": "Codes de composition",
       "switches": "Aiguillages",
-      "tvds": "Sections de voie"
+      "track_sections": "Sections de voie"
     },
     "layers-modal": {
       "frozen-layer": "nécessaire pour l'outil actif",
@@ -641,7 +641,7 @@
       "sncf_psl": "Limitations permanentes de vitesse",
       "speed_limits": "Vitesses de ligne",
       "switches": "Appareils de voie",
-      "tvds": "Circuits de voie"
+      "track_sections": "Sections de voie"
     },
     "mapstyles": {
       "darkmode": "Sombre",
