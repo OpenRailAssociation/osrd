@@ -22,7 +22,11 @@ export const getLayerSettingNameFromEditorLayer = (
 export const getLayersSettingsFromEditorLayers = (
   editorLayers: Set<Layer> | undefined
 ): LayersSettings => {
-  const layersSettings = { ...defaultMapSettings.layersSettings, operational_points: false };
+  const layersSettings = {
+    ...defaultMapSettings.layersSettings,
+    operational_points: false,
+    tvds: false,
+  };
   editorLayers?.forEach((layer) => {
     const layerSetting = getLayerSettingNameFromEditorLayer(layer);
     if (layerSetting && layerSetting !== 'speedlimittag') {
