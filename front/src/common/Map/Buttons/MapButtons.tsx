@@ -14,11 +14,11 @@ import { createPortal } from 'react-dom';
 import { useTranslation } from 'react-i18next';
 import type { MapRef } from 'react-map-gl/maplibre';
 
-import EditorLayersModal from 'applications/editor/components/EditorLayersModal';
 import { EDITOAST_TO_LAYER_DICT, type EditoastType } from 'applications/editor/consts';
 import type { SelectionState } from 'applications/editor/tools/selection/types';
 import type { CommonToolState } from 'applications/editor/tools/types';
 import type { PartialOrReducer, Tool } from 'applications/editor/types';
+import type { EditorEntity } from 'applications/editor/typesEditorEntity';
 import {
   getEditorLayersFromLayersSetting,
   getLayersSettingsFromEditorLayers,
@@ -29,7 +29,7 @@ import LayersModal from 'common/Map/components/LayersModal';
 import MapKey from 'common/Map/MapKey';
 import MapSearch from 'common/Map/Search/MapSearch';
 import { useMapSettingsActions } from 'reducers/commonMap';
-import type { Viewport } from 'reducers/commonMap/types';
+import type { LayersSettings, Viewport } from 'reducers/commonMap/types';
 import { type EditorState } from 'reducers/editor';
 import { useAppDispatch } from 'store';
 import useOutsideClick from 'utils/hooks/useOutsideClick';
@@ -104,51 +104,47 @@ export default function MapButtons({
   const [showLayersModal, setShowLayersModal] = useState(false);
 
   const openMapSettingsModal = useCallback(() => {
+    let frozenLayers: LayersSettings | undefined;
+    let selection: EditorEntity[] | undefined;
+    let onChange: ((newLayersSettings: LayersSettings) => void) | undefined;
+
     if (editorProps) {
       const { activeTool, setToolState, toolState } = editorProps;
-      openModal(
-        <MapContextProvider
-          infraId={infraId}
-          mapSettings={mapSettings}
-          updateMapSettings={updateMapSettings}
-        >
-          <EditorLayersModal
-            frozenLayers={getLayersSettingsFromEditorLayers(activeTool.requiredLayers)}
-            selection={
-              activeTool.id === 'select-items' ? (toolState as SelectionState).selection : undefined
-            }
-            onChange={(newLayersSettings) => {
-              if (activeTool.id === 'select-items') {
-                const currentState = toolState as SelectionState;
-                const newLayers = getEditorLayersFromLayersSetting(newLayersSettings);
-                setToolState({
-                  ...currentState,
-                  selection: currentState.selection.filter((entity) =>
-                    EDITOAST_TO_LAYER_DICT[entity.objType as EditoastType].every((layer) =>
-                      newLayers.has(layer)
-                    )
-                  ),
-                } as SelectionState);
-              }
-            }}
-          />
-        </MapContextProvider>,
-        'lg'
-      );
-    } else if (layersModalContainer) {
-      setShowLayersModal(true);
-    } else {
-      openModal(
-        <MapContextProvider
-          infraId={infraId}
-          mapSettings={mapSettings}
-          updateMapSettings={updateMapSettings}
-        >
-          <LayersModal compactModal={compactModal} />{' '}
-        </MapContextProvider>,
-        'lg'
-      );
+      frozenLayers = getLayersSettingsFromEditorLayers(activeTool.requiredLayers);
+      selection =
+        activeTool.id === 'select-items' ? (toolState as SelectionState).selection : undefined;
+      onChange = (newLayersSettings) => {
+        if (activeTool.id === 'select-items') {
+          const currentState = toolState as SelectionState;
+          const newLayers = getEditorLayersFromLayersSetting(newLayersSettings);
+          setToolState({
+            ...currentState,
+            selection: currentState.selection.filter((entity) =>
+              EDITOAST_TO_LAYER_DICT[entity.objType as EditoastType].every((layer) =>
+                newLayers.has(layer)
+              )
+            ),
+          } as SelectionState);
+        }
+      };
     }
+
+    openModal(
+      <MapContextProvider
+        infraId={infraId}
+        mapSettings={mapSettings}
+        updateMapSettings={updateMapSettings}
+      >
+        <LayersModal
+          compactModal={compactModal}
+          disabledLayers={frozenLayers}
+          onChange={onChange}
+          selection={selection}
+          showTrackSectionToggle={!!editorProps}
+        />{' '}
+      </MapContextProvider>,
+      'lg'
+    );
   }, [
     editorProps,
     openModal,
@@ -262,6 +258,7 @@ export default function MapButtons({
               <LayersModal
                 compactModal={compactModal}
                 closePortalModal={() => setShowLayersModal(false)}
+                showTrackSectionToggle={!!editorProps}
               />
             </div>
           </div>,

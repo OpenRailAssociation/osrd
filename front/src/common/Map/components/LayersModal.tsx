@@ -1,13 +1,17 @@
 import { useCallback, useMemo, useState } from 'react';
 
-import { isString } from 'lodash';
+import { groupBy, isString, sum } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { GiElectric, GiUnplugged } from 'react-icons/gi';
 import { MdSpeed } from 'react-icons/md';
 import { TbRectangleVerticalFilled } from 'react-icons/tb';
 
+import { EDITOAST_TO_LAYER_DICT } from 'applications/editor/consts';
+import type { EditorEntity } from 'applications/editor/typesEditorEntity';
+import { getLayerSettingNameFromEditorLayer } from 'applications/editor/utils';
 import bufferStopIcon from 'assets/pictures/layersicons/bufferstop.svg';
 import detectorsIcon from 'assets/pictures/layersicons/detectors.svg';
+import trackSectionsIcon from 'assets/pictures/layersicons/layer_adv.svg';
 import levelCrossingIcon from 'assets/pictures/layersicons/layer_level_crossing.svg';
 import signalsIcon from 'assets/pictures/layersicons/layer_signal.svg';
 import pslsIcon from 'assets/pictures/layersicons/layer_tivs.svg';
@@ -23,7 +27,8 @@ import type { LayersSettings } from 'reducers/commonMap/types';
 
 import { useMapContext } from '../useMapContext';
 
-const LAYERS = [
+const LAYERS: { layer: keyof LayersSettings; icon: string | React.JSX.Element }[] = [
+  { layer: 'tvds', icon: trackSectionsIcon },
   { layer: 'signals', icon: signalsIcon },
   { layer: 'buffer_stops', icon: bufferStopIcon },
   { layer: 'detectors', icon: detectorsIcon },
@@ -45,34 +50,77 @@ const LAYERS = [
 
 type LayersModalProps = {
   compactModal: boolean;
+  selection?: EditorEntity[];
+  disabledLayers?: LayersSettings;
   closePortalModal?: () => void;
+  onChange?: (newLayersSettings: LayersSettings) => void;
+  showTrackSectionToggle?: boolean;
 };
 
-const LayersModal = ({ compactModal, closePortalModal }: LayersModalProps) => {
+const LayersModal = ({
+  compactModal,
+  selection,
+  disabledLayers,
+  showTrackSectionToggle = false,
+  closePortalModal,
+  onChange,
+}: LayersModalProps) => {
   const { t } = useTranslation();
 
   const { layersSettings, updateMapSettings } = useMapContext();
   const [selectedLayers, setSelectedLayers] = useState<LayersSettings>(layersSettings);
 
   const speedLimitTags = useSpeedLimitTags();
-  const DEFAULT_SPEED_LIMIT_TAG = useMemo(() => t('Editor.layers-modal.noSpeedLimitByTag'), [t]);
+  const DEFAULT_SPEED_LIMIT_TAG = useMemo(() => t('mapSettings.noSpeedLimitByTag'), [t]);
 
   const speedLimitOptions = useMemo(
     () => [DEFAULT_SPEED_LIMIT_TAG, ...speedLimitTags],
     [t, speedLimitTags]
   );
 
+  const layers = useMemo(
+    () => (showTrackSectionToggle ? LAYERS : LAYERS.filter((layer) => layer.layer !== 'tvds')),
+    [showTrackSectionToggle]
+  );
+
+  // Editor - selection counts
+  const selectionCounts = useMemo(() => {
+    const countsByObjType = new Map<keyof LayersSettings, number>();
+    if (!selection) return countsByObjType;
+
+    const selectionByObjType = groupBy(selection, 'objType');
+    Object.values(selectionByObjType).forEach((selectedObjects) => {
+      const objType = selectedObjects[0].objType;
+      if (objType !== 'SwitchType' && objType !== 'LevelCrossing') {
+        const layerSettingName = getLayerSettingNameFromEditorLayer(
+          EDITOAST_TO_LAYER_DICT[objType][0]
+        );
+        if (layerSettingName) countsByObjType.set(layerSettingName, selectedObjects.length);
+      }
+    });
+    return countsByObjType;
+  }, [selection]);
+
+  const unselectCount = useMemo(
+    () =>
+      sum(
+        LAYERS.filter(({ layer }) => !layersSettings[layer]).map(
+          ({ layer }) => selectionCounts.get(layer) || 0
+        )
+      ),
+    [selectedLayers, selectionCounts]
+  );
+
   const toggleLayer = useCallback(
     (layer: keyof LayersSettings) => {
-      const isEnabled = !selectedLayers[layer];
-
       const updatedLayers = {
         ...selectedLayers,
-        [layer]: isEnabled,
+        [layer]: !selectedLayers[layer],
       };
 
       setSelectedLayers(updatedLayers);
       updateMapSettings({ layersSettings: updatedLayers });
+      onChange?.(updatedLayers);
     },
     [selectedLayers, updateMapSettings]
   );
@@ -84,15 +132,16 @@ const LayersModal = ({ compactModal, closePortalModal }: LayersModalProps) => {
           <h4>{t('Editor.nav.osrd-layers')}</h4>
         </div>
         <div className="row">
-          {LAYERS.map(({ layer, icon }) => (
+          {layers.map(({ layer, icon }) => (
             <div className="col-lg-6" key={`${layer}`}>
               <div className="d-flex align-items-center mt-2">
                 <SwitchSNCF
+                  id={`map-layer-${layer}`}
                   type="switch"
-                  checked={!!selectedLayers[layer as keyof LayersSettings]}
-                  onChange={() => toggleLayer(layer as keyof LayersSettings)}
-                  name={`editor-layer-${layer}`}
-                  id={`editor-layer-${layer}`}
+                  name={`map-layer-${layer}`}
+                  checked={!!selectedLayers[layer]}
+                  disabled={layer !== 'speedlimittag' && disabledLayers?.[layer]}
+                  onChange={() => toggleLayer(layer)}
                 />
                 {isString(icon) ? (
                   <img className="layer-modal-img mx-2" src={icon} alt="" />
@@ -101,6 +150,18 @@ const LayersModal = ({ compactModal, closePortalModal }: LayersModalProps) => {
                 )}
                 <div className="d-flex flex-column">
                   <div>{t(`Editor.layers.${layer}`)}</div>
+                  {selectedLayers[layer] && !!selectionCounts.get(layer) && (
+                    <div className="small text-muted font-italic">
+                      {t('Editor.layers-modal.layer-selected-items', {
+                        count: selectionCounts.get(layer),
+                      })}
+                    </div>
+                  )}
+                  {disabledLayers?.[layer] && (
+                    <div className="small text-muted font-italic">
+                      {t('Editor.layers-modal.frozen-layer')}
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -135,6 +196,13 @@ const LayersModal = ({ compactModal, closePortalModal }: LayersModalProps) => {
             <MapSettingsBackgroundSwitches />
           </>
         )}
+        <div className="text-right">
+          {!!unselectCount && (
+            <div className="text-primary my-2">
+              {t('Editor.layers-modal.selection-warning', { count: unselectCount })}
+            </div>
+          )}
+        </div>
       </div>
     </Modal>
   );

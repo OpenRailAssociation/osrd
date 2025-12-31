@@ -140,6 +140,7 @@
       "sncf_psl": "Permanent speed limits",
       "speed_limits": "Speed limits",
       "speed_sections": "Speed limits",
+      "speedlimittag": "Composition codes",
       "switches": "Switches",
       "tvds": "Track sections"
     },
@@ -147,7 +148,6 @@
       "frozen-layer": "needed for the active tool",
       "layer-selected-items_one": "One item selected",
       "layer-selected-items_other": "{{count}} items selected",
-      "noSpeedLimitByTag": "No composition code",
       "selection-warning_one": "An element has been deselected.",
       "selection-warning_other": "{{count}} elements have been deselected."
     },
@@ -161,7 +161,6 @@
       "choose-infra": "Choose an infrastructure",
       "infra-error-corrector": "Automatic error corrector",
       "infra-errors-list": "Configure display of issues",
-      "map-layers": "Map settings",
       "osrd-layers": "Data layers",
       "speed-limits": "Speed limits",
       "toggle-layers": "Choose the types of elements to display"
