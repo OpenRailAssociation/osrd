@@ -135,14 +135,13 @@
       "neutral_sections": "BP/CC",
       "operational_points": "Points remarquables",
       "platforms": "Quais",
-      "psl-psl_signs": "Limitations permanentes de vitesse",
       "routes": "Itinéraires",
       "signals": "Signaux",
       "sncf_psl": "Limitations permanentes de vitesse",
       "speed_limits": "Vitesses de ligne",
       "speed_sections": "Vitesses de ligne",
       "switches": "Aiguillages",
-      "track_sections": "Sections de voie"
+      "tvds": "Sections de voie"
     },
     "layers-modal": {
       "frozen-layer": "nécessaire pour l'outil actif",

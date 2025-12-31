@@ -1,14 +1,13 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useMemo, useState } from 'react';
 
 import { skipToken } from '@reduxjs/toolkit/query';
-import { groupBy, mapKeys, mapValues, sum, isString, isArray, uniq } from 'lodash';
+import { groupBy, sum, isString, isArray, uniq } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { GiElectric, GiUnplugged } from 'react-icons/gi';
 import { MdSpeed } from 'react-icons/md';
 import { TbRectangleVerticalFilled } from 'react-icons/tb';
 
 import { EDITOAST_TO_LAYER_DICT } from 'applications/editor/consts';
-import type { Layer, EditoastType } from 'applications/editor/consts';
 import type { EditorEntity } from 'applications/editor/typesEditorEntity';
 import bufferStopIcon from 'assets/pictures/layersicons/bufferstop.svg';
 import detectorsIcon from 'assets/pictures/layersicons/detectors.svg';
@@ -26,49 +25,42 @@ import { Icon2SVG } from 'common/Map/Settings/MapSettingsLayers';
 import MapSettingsMapStyle from 'common/Map/Settings/MapSettingsMapStyle';
 import { useInfraID } from 'common/osrdContext';
 import { useMapSettings, useMapSettingsActions } from 'reducers/commonMap';
-import { editorSliceActions } from 'reducers/editor';
+import type { LayersSettings } from 'reducers/commonMap/types';
 import { useAppDispatch } from 'store';
 
-export const LAYERS: Array<{ layers: Layer[]; icon: string | React.JSX.Element }> = [
-  { layers: ['track_sections'], icon: trackSectionsIcon },
-  { layers: ['signals'], icon: signalsIcon },
-  { layers: ['buffer_stops'], icon: bufferStopIcon },
-  { layers: ['detectors'], icon: detectorsIcon },
-  { layers: ['switches'], icon: switchesIcon },
-  { layers: ['speed_sections'], icon: <MdSpeed style={{ width: '20px' }} className="mx-2" /> },
-  { layers: ['psl', 'psl_signs'], icon: pslsIcon },
-  { layers: ['electrifications'], icon: <GiElectric style={{ width: '20px' }} className="mx-2" /> },
+import { getLayerSettingNameFromEditorLayer } from '../utils';
+
+const LAYERS: { layer: keyof LayersSettings; icon: string | React.JSX.Element }[] = [
+  { layer: 'tvds', icon: trackSectionsIcon },
+  { layer: 'signals', icon: signalsIcon },
+  { layer: 'buffer_stops', icon: bufferStopIcon },
+  { layer: 'detectors', icon: detectorsIcon },
+  { layer: 'switches', icon: switchesIcon },
+  { layer: 'sncf_psl', icon: pslsIcon },
+  { layer: 'electrifications', icon: <GiElectric className="mx-2" style={{ width: '20px' }} /> },
+  { layer: 'neutral_sections', icon: <GiUnplugged className="mx-2" style={{ width: '20px' }} /> },
   {
-    layers: ['platforms'],
-    icon: <TbRectangleVerticalFilled style={{ width: '20px' }} className="mx-2" />,
+    layer: 'platforms',
+    icon: <TbRectangleVerticalFilled className="mx-2" style={{ width: '20px' }} />,
   },
   {
-    layers: ['neutral_sections'],
-    icon: <GiUnplugged style={{ width: '20px' }} className="mx-2" />,
-  },
-  {
-    layers: ['operational_points'],
+    layer: 'operational_points',
     icon: <Icon2SVG file={OPsSVGFile} style={{ width: '20px' }} className="mx-2" />,
   },
   {
-    layers: ['level_crossings'],
+    layer: 'level_crossings',
     icon: <Icon2SVG file={levelCrossingIcon} style={{ width: '20px' }} className="mx-2" />,
   },
+  { layer: 'speed_limits', icon: <MdSpeed style={{ width: '20px' }} className="mx-2" /> },
 ];
 
 type EditorLayersModalProps = {
-  initialLayers: Set<Layer>;
   selection?: EditorEntity[];
-  frozenLayers?: Set<Layer>;
-  onChange: (args: { newLayers: Set<Layer> }) => void;
+  frozenLayers?: LayersSettings;
+  onChange: (newLayersSettings: LayersSettings) => void;
 };
 
-const EditorLayersModal = ({
-  initialLayers,
-  selection,
-  frozenLayers,
-  onChange,
-}: EditorLayersModalProps) => {
+const EditorLayersModal = ({ selection, frozenLayers, onChange }: EditorLayersModalProps) => {
   const dispatch = useAppDispatch();
   const { t } = useTranslation();
 
@@ -77,7 +69,7 @@ const EditorLayersModal = ({
   const { layersSettings } = mapSettings;
   const { updateLayersSettings } = useMapSettingsActions();
 
-  const [selectedLayers, setSelectedLayers] = useState<Set<Layer>>(initialLayers);
+  const [selectedLayers, setSelectedLayers] = useState<LayersSettings>(layersSettings);
 
   const { data: speedLimitTagsByInfraId } =
     osrdEditoastApi.endpoints.getInfraByInfraIdSpeedLimitTags.useQuery(
@@ -87,48 +79,29 @@ const EditorLayersModal = ({
   const allSpeedLimitTagsOrdered = useMemo(() => allSpeedLimitTags.sort(), [allSpeedLimitTags]);
 
   const DEFAULT_SPEED_LIMIT_TAG = useMemo(() => t('mapSettings.noSpeedLimitByTag'), [t]);
-  const selectionCounts = useMemo(
-    () =>
-      selection
-        ? mapKeys(
-            // TODO: ATM we don't know if a selected speed section should be considered as SpeedSection or PSL,
-            // which are two different layers.
-            mapValues(groupBy(selection, 'objType'), (values) => values.length),
-            (_values, key) => EDITOAST_TO_LAYER_DICT[key as EditoastType]
-          )
-        : {},
-    [selection]
-  );
 
-  /**
-   * When selection changed, we check that all needed layers are enabled.
-   * This is mainly used for the error modal
-   */
-  useEffect(() => {
-    // compute the set of layer needed by the selection
-    const layersMustBeEnabled = (selection || []).reduce((acc, curr) => {
-      const layerTypes = EDITOAST_TO_LAYER_DICT[curr.objType as EditoastType] || [];
-      layerTypes.forEach((layerType) => {
-        if (layerType && !acc.has(layerType)) acc.add(layerType);
-      });
-      return acc;
-    }, new Set<Layer>());
+  const selectionCounts = useMemo(() => {
+    const countsByObjType = new Map<keyof LayersSettings, number>();
+    if (!selection) return countsByObjType;
 
-    // enable all the layers
-    setSelectedLayers((set) => {
-      const newSet = new Set(set);
-      layersMustBeEnabled.forEach((id) => {
-        if (!newSet.has(id)) newSet.add(id);
-      });
-      return newSet;
+    const selectionByObjType = groupBy(selection, 'objType');
+    Object.values(selectionByObjType).forEach((selectedObjects) => {
+      const objType = selectedObjects[0].objType;
+      if (objType !== 'SwitchType' && objType !== 'LevelCrossing') {
+        const layerSettingName = getLayerSettingNameFromEditorLayer(
+          EDITOAST_TO_LAYER_DICT[objType][0]
+        );
+        if (layerSettingName) countsByObjType.set(layerSettingName, selectedObjects.length);
+      }
     });
+    return countsByObjType;
   }, [selection]);
 
   const unselectCount = useMemo(
     () =>
       sum(
-        LAYERS.filter((layer) => layer.layers.some((id) => !selectedLayers.has(id))).flatMap(
-          (layer) => layer.layers.map((id) => selectionCounts[id] || 0)
+        LAYERS.filter(({ layer }) => !layersSettings[layer]).map(
+          ({ layer }) => selectionCounts.get(layer) || 0
         )
       ),
     [selectedLayers, selectionCounts]
@@ -146,30 +119,26 @@ const EditorLayersModal = ({
           <h4>{t('Editor.nav.osrd-layers')}</h4>
         </div>
         <div className="row">
-          {LAYERS.map(({ layers, icon }) => {
-            const layerKey = layers.join('-');
-            const count = sum(layers.map((id) => selectionCounts[id] || 0));
-            const disabled = frozenLayers && layers.some((id) => frozenLayers.has(id));
-            const checked = layers.every((id) => selectedLayers.has(id));
+          {LAYERS.map(({ layer, icon }) => {
+            if (layer === 'speedlimittag') return null;
             return (
-              <div className="col-lg-6" key={`${layerKey}-${count}-${disabled}`}>
+              <div className="col-lg-6" key={layer}>
                 <div className="d-flex align-items-center mt-2">
                   <SwitchSNCF
                     type="switch"
                     onChange={() => {
-                      const newSelectedLayersList = layers.reduce((result, layer) => {
-                        if (result.has(layer)) result.delete(layer);
-                        else result.add(layer);
-                        return result;
-                      }, new Set(selectedLayers));
-                      setSelectedLayers(newSelectedLayersList);
-                      dispatch(editorSliceActions.selectLayers(newSelectedLayersList));
-                      onChange({ newLayers: newSelectedLayersList });
+                      const newLayersSettings = {
+                        ...layersSettings,
+                        [layer]: !layersSettings[layer],
+                      };
+                      setSelectedLayers(newLayersSettings);
+                      dispatch(updateLayersSettings(newLayersSettings));
+                      onChange(newLayersSettings);
                     }}
-                    name={`editor-layer-${layerKey}`}
-                    id={`editor-layer-${layerKey}`}
-                    checked={checked}
-                    disabled={disabled}
+                    name={`editor-layer-${layer}`}
+                    id={`editor-layer-${layer}`}
+                    checked={selectedLayers[layer]}
+                    disabled={frozenLayers?.[layer]}
                   />
                   {isString(icon) ? (
                     <img className="layer-modal-img mx-2" src={icon} alt="" />
@@ -177,15 +146,15 @@ const EditorLayersModal = ({
                     <div>{icon}</div>
                   )}
                   <div className="d-flex flex-column">
-                    <div>{t(`Editor.layers.${layerKey}`)}</div>
-                    {!!count && checked && (
+                    <div>{t(`Editor.layers.${layer}`)}</div>
+                    {selectedLayers[layer] && !!selectionCounts.get(layer) && (
                       <div className="small text-muted font-italic">
                         {t('Editor.layers-modal.layer-selected-items', {
-                          count,
+                          count: selectionCounts.get(layer),
                         })}
                       </div>
                     )}
-                    {disabled && (
+                    {frozenLayers?.[layer] && (
                       <div className="small text-muted font-italic">
                         {t('Editor.layers-modal.frozen-layer')}
                       </div>
@@ -203,7 +172,7 @@ const EditorLayersModal = ({
             id="speedLimitTag"
             className="form-control"
             value={layersSettings.speedlimittag || DEFAULT_SPEED_LIMIT_TAG}
-            disabled={!isArray(allSpeedLimitTags) || !selectedLayers.has('speed_sections')}
+            disabled={!isArray(allSpeedLimitTags) || !layersSettings.speed_limits}
             onChange={(e) => {
               const newTag = e.target.value !== DEFAULT_SPEED_LIMIT_TAG ? e.target.value : null;
               dispatch(

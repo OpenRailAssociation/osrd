@@ -19,6 +19,10 @@ import { EDITOAST_TO_LAYER_DICT, type EditoastType } from 'applications/editor/c
 import type { SelectionState } from 'applications/editor/tools/selection/types';
 import type { CommonToolState } from 'applications/editor/tools/types';
 import type { PartialOrReducer, Tool } from 'applications/editor/types';
+import {
+  getEditorLayersFromLayersSetting,
+  getLayersSettingsFromEditorLayers,
+} from 'applications/editor/utils';
 import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import ButtonMapInfras from 'common/Map/Buttons/ButtonMapInfras';
 import LayersModal from 'common/Map/components/LayersModal';
@@ -101,7 +105,7 @@ export default function MapButtons({
 
   const openMapSettingsModal = useCallback(() => {
     if (editorProps) {
-      const { activeTool, setToolState, editorState, toolState } = editorProps;
+      const { activeTool, setToolState, toolState } = editorProps;
       openModal(
         <MapContextProvider
           infraId={infraId}
@@ -109,14 +113,14 @@ export default function MapButtons({
           updateMapSettings={updateMapSettings}
         >
           <EditorLayersModal
-            initialLayers={editorState.editorLayers}
-            frozenLayers={activeTool.requiredLayers}
+            frozenLayers={getLayersSettingsFromEditorLayers(activeTool.requiredLayers)}
             selection={
               activeTool.id === 'select-items' ? (toolState as SelectionState).selection : undefined
             }
-            onChange={({ newLayers }) => {
+            onChange={(newLayersSettings) => {
               if (activeTool.id === 'select-items') {
                 const currentState = toolState as SelectionState;
+                const newLayers = getEditorLayersFromLayersSetting(newLayersSettings);
                 setToolState({
                   ...currentState,
                   selection: currentState.selection.filter((entity) =>
