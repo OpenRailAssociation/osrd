@@ -66,7 +66,7 @@ function getPointEditionTool<T extends EditorPoint>({
     }) {
       const layerSettingName = getLayerSettingNameFromEditorLayer(layer);
       return (
-        !layersSettings.tvds ||
+        !layersSettings.track_sections ||
         !layerSettingName ||
         layerSettingName === 'speedlimittag' ||
         !layersSettings[layerSettingName]

@@ -142,7 +142,7 @@
       "speed_sections": "Speed limits",
       "speedlimittag": "Composition codes",
       "switches": "Switches",
-      "tvds": "Track sections"
+      "track_sections": "Track sections"
     },
     "layers-modal": {
       "frozen-layer": "needed for the active tool",
@@ -641,7 +641,7 @@
       "sncf_psl": "Permanent speed limits",
       "speed_limits": "Speed limits",
       "switches": "Switch",
-      "tvds": "Track circuits"
+      "track_sections": "Track sections"
     },
     "mapstyles": {
       "darkmode": "Dark",

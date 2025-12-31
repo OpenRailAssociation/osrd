@@ -31,7 +31,7 @@ export type LayersSettings = {
   speed_limits: boolean;
   switches: boolean;
   platforms: boolean;
-  tvds: boolean;
+  track_sections: boolean;
   errors: boolean;
 };
 

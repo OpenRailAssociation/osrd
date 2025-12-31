@@ -28,7 +28,7 @@ import type { LayersSettings } from 'reducers/commonMap/types';
 import { useMapContext } from '../useMapContext';
 
 const LAYERS: { layer: keyof LayersSettings; icon: string | React.JSX.Element }[] = [
-  { layer: 'tvds', icon: trackSectionsIcon },
+  { layer: 'track_sections', icon: trackSectionsIcon },
   { layer: 'signals', icon: signalsIcon },
   { layer: 'buffer_stops', icon: bufferStopIcon },
   { layer: 'detectors', icon: detectorsIcon },
@@ -79,7 +79,8 @@ const LayersModal = ({
   );
 
   const layers = useMemo(
-    () => (showTrackSectionToggle ? LAYERS : LAYERS.filter((layer) => layer.layer !== 'tvds')),
+    () =>
+      showTrackSectionToggle ? LAYERS : LAYERS.filter((layer) => layer.layer !== 'track_sections'),
     [showTrackSectionToggle]
   );
 
@@ -104,7 +105,7 @@ const LayersModal = ({
   const unselectCount = useMemo(
     () =>
       sum(
-        LAYERS.filter(({ layer }) => !layersSettings[layer]).map(
+        LAYERS.filter(({ layer }) => !selectedLayers[layer]).map(
           ({ layer }) => selectionCounts.get(layer) || 0
         )
       ),

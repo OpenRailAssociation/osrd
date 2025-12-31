@@ -139,7 +139,7 @@ const ItineraryModalMap = ({
     if (layersSettings.operational_points) {
       result.push('chartis/osrd_operational_point/geo');
     }
-    if (layersSettings.tvds) {
+    if (layersSettings.track_sections) {
       result.push('chartis/osrd_tvd_section/geo');
     }
     return result;

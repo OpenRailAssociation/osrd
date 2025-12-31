@@ -32,7 +32,7 @@ const TrackEditionTool: Tool<TrackEditionState> = {
       mapSettings: { layersSettings },
     },
   }) {
-    return !layersSettings.tvds;
+    return !layersSettings.track_sections;
   },
   isHidden({ activeTool }) {
     return activeTool.id === TOOL_NAMES.TRACK_SPLIT;
