@@ -40,7 +40,7 @@ const SwitchEditionTool: Tool<SwitchEditionState> = {
       mapSettings: { layersSettings },
     },
   }) {
-    return !layersSettings.switches || !layersSettings.tvds;
+    return !layersSettings.switches || !layersSettings.track_sections;
   },
   getInitialState,
   actions: [

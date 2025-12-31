@@ -46,8 +46,8 @@ const Map = () => {
   };
 
   const interactiveLayerIds = useMemo(
-    () => (layersSettings.tvds ? ['chartis/osrd_tvd_section/geo'] : []),
-    [layersSettings.tvds]
+    () => (layersSettings.track_sections ? ['chartis/osrd_tvd_section/geo'] : []),
+    [layersSettings.track_sections]
   );
 
   return (
