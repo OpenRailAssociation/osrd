@@ -15,6 +15,7 @@ import { DEFAULT_COMMON_TOOL_STATE } from 'applications/editor/tools/consts';
 import type { TrackSectionEntity } from 'applications/editor/tools/trackEdition/types';
 import { calculateDistanceAlongTrack } from 'applications/editor/tools/utils';
 import type { Tool } from 'applications/editor/types';
+import { getLayerSettingNameFromEditorLayer } from 'applications/editor/utils';
 import { ConfirmModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { save } from 'reducers/editor/thunkActions';
 import { NULL_GEOMETRY } from 'types';
@@ -58,9 +59,17 @@ function getPointEditionTool<T extends EditorPoint>({
     icon,
     labelTranslationKey: `Editor.tools.${id}-edition.label`,
     requiredLayers: new Set([layer, 'track_sections']),
-    isDisabled({ editorState }) {
+    isDisabled({
+      editorState: {
+        mapSettings: { layersSettings },
+      },
+    }) {
+      const layerSettingName = getLayerSettingNameFromEditorLayer(layer);
       return (
-        !editorState.editorLayers.has('track_sections') || !editorState.editorLayers.has(layer)
+        !layersSettings.tvds ||
+        !layerSettingName ||
+        layerSettingName === 'speedlimittag' ||
+        !layersSettings[layerSettingName]
       );
     },
     getInitialState,

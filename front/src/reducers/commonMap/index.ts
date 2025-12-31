@@ -32,6 +32,7 @@ export const defaultMapSettings: MapSettings = {
     switches: false,
     tvds: false,
     platforms: false,
+    errors: false,
   },
   viewport: {
     latitude: 48.32,

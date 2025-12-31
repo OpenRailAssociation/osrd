@@ -1,9 +1,7 @@
-import type { Layer } from 'applications/editor/consts';
 import type { EditorState } from 'reducers/editor';
 
 export default function editorTestDataBuilder() {
   return {
-    buildEditorLayers: (layers: Array<Layer>): EditorState['editorLayers'] => new Set(layers),
     buildEditorSchema: (): EditorState['editorSchema'] => [
       { layer: 'layerA', objType: 'BufferStop', schema: {} },
       { layer: 'layerA', objType: 'Route', schema: {} },

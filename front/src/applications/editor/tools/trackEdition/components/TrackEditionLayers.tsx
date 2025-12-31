@@ -9,6 +9,7 @@ import EditorContext from 'applications/editor/context';
 import { POINTS_LAYER_ID, TRACK_LAYER_ID } from 'applications/editor/tools/trackEdition/consts';
 import type { TrackEditionState } from 'applications/editor/tools/trackEdition/types';
 import type { ExtendedEditorContextType } from 'applications/editor/types';
+import { getEditorLayersFromLayersSetting } from 'applications/editor/utils';
 import { GeoJSONs } from 'common/Map/Layers';
 import { colors } from 'common/Map/theme';
 import { useInfraID } from 'common/osrdContext';
@@ -22,12 +23,11 @@ const TrackEditionLayers = () => {
   const {
     state,
     renderingFingerprint,
-    editorState: { editorLayers },
+    editorState: {
+      mapSettings: { layersSettings },
+    },
   } = useContext(EditorContext) as ExtendedEditorContextType<TrackEditionState>;
-  const {
-    mapSettings: { layersSettings },
-    issuesSettings,
-  } = useSelector(getEditorState);
+  const { issuesSettings } = useSelector(getEditorState);
   const { mapStyle } = useMapSettings();
 
   const infraID = useInfraID();
@@ -75,7 +75,7 @@ const TrackEditionLayers = () => {
       <GeoJSONs
         colors={colors[mapStyle]}
         hidden={state.track.properties.id ? [state.track.properties.id] : undefined}
-        layers={editorLayers}
+        layers={getEditorLayersFromLayersSetting(layersSettings)}
         fingerprint={renderingFingerprint}
         layersSettings={layersSettings}
         issuesSettings={issuesSettings}

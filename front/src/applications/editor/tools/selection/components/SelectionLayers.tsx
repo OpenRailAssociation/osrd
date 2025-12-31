@@ -7,6 +7,7 @@ import EntitySumUp from 'applications/editor/components/EntitySumUp';
 import EditorContext from 'applications/editor/context';
 import type { SelectionState } from 'applications/editor/tools/selection/types';
 import type { ExtendedEditorContextType } from 'applications/editor/types';
+import { getEditorLayersFromLayersSetting } from 'applications/editor/utils';
 import { GeoJSONs } from 'common/Map/Layers';
 import { colors } from 'common/Map/theme';
 import { useInfraID } from 'common/osrdContext';
@@ -24,13 +25,12 @@ const SelectionZone = ({ newZone }: { newZone: Zone }) => (
 const SelectionLayers = () => {
   const {
     state,
-    editorState: { editorLayers },
+    editorState: {
+      mapSettings: { layersSettings },
+    },
     renderingFingerprint,
   } = useContext(EditorContext) as ExtendedEditorContextType<SelectionState>;
-  const {
-    mapSettings: { layersSettings },
-    issuesSettings,
-  } = useSelector(getEditorState);
+  const { issuesSettings } = useSelector(getEditorState);
   const { mapStyle } = useMapSettings();
 
   const infraID = useInfraID();
@@ -59,7 +59,7 @@ const SelectionLayers = () => {
       <GeoJSONs
         colors={colors[mapStyle]}
         selection={state.selection.map((e) => e.properties.id)}
-        layers={editorLayers}
+        layers={getEditorLayersFromLayersSetting(layersSettings)}
         fingerprint={renderingFingerprint}
         layersSettings={layersSettings}
         issuesSettings={issuesSettings}

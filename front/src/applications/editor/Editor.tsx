@@ -40,9 +40,10 @@ import { getIsLoading } from 'reducers/main/mainSelector';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 
-import type { EditoastType, Layer } from './consts';
+import type { EditoastType } from './consts';
 import type { EditorContextType, ExtendedEditorContextType, FullTool, Reducer } from './types';
 import type { EditorEntity } from './typesEditorEntity';
+import { getLayerSettingNameFromEditorLayer } from './utils';
 
 const Editor = () => {
   const [showPanelContainer, setShowPanelContainer] = useState(true);
@@ -50,7 +51,7 @@ const Editor = () => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
   const { openModal, closeModal } = useModal();
-  const { updateInfraID, selectLayers } = useOsrdActions() as EditorSliceActions;
+  const { updateInfraID } = useOsrdActions() as EditorSliceActions;
 
   const { updateMapSettings: updateMapSettingsAction, updateViewport: updateViewportAction } =
     useMapSettingsActions();
@@ -315,13 +316,16 @@ const Editor = () => {
 
     const { requiredLayers, incompatibleLayers } = toolAndState.tool;
     if (requiredLayers || incompatibleLayers) {
-      const newLayers: Set<Layer> = new Set([
-        ...editorState.editorLayers,
-        ...(requiredLayers ?? []),
-      ]);
-
-      if (incompatibleLayers) incompatibleLayers.forEach((l) => newLayers.delete(l));
-      dispatch(selectLayers(newLayers));
+      const newLayersSettings = { ...mapSettings.layersSettings };
+      (requiredLayers ?? []).forEach((editorLayer) => {
+        const layer = getLayerSettingNameFromEditorLayer(editorLayer);
+        if (layer && layer !== 'speedlimittag') newLayersSettings[layer] = true;
+      });
+      (incompatibleLayers ?? []).forEach((editorLayer) => {
+        const layer = getLayerSettingNameFromEditorLayer(editorLayer);
+        if (layer && layer !== 'speedlimittag') newLayersSettings[layer] = true;
+      });
+      updateMapSettings({ layersSettings: newLayersSettings });
     }
 
     return () => {
@@ -511,7 +515,7 @@ const Editor = () => {
                 />
 
                 {mapRef.current &&
-                  editorState.editorLayers.has('errors') &&
+                  mapSettings.layersSettings.errors &&
                   editorState.issues.total > 0 && (
                     <div className="error-box">
                       <InfraErrorMapControl mapRef={mapRef.current} switchTool={switchTool} />

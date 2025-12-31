@@ -28,6 +28,7 @@ import {
 import type { TrackSectionEntity } from 'applications/editor/tools/trackEdition/types';
 import type { ExtendedEditorContextType } from 'applications/editor/types';
 import type { EditorEntity } from 'applications/editor/typesEditorEntity';
+import { getEditorLayersFromLayersSetting } from 'applications/editor/utils';
 import { GeoJSONs, SourcesDefinitionsIndex } from 'common/Map/Layers';
 import { colors } from 'common/Map/theme';
 import { useInfraID } from 'common/osrdContext';
@@ -41,7 +42,9 @@ export const SpeedSectionEditionLayers = () => {
   const dispatch = useAppDispatch();
   const { t } = useTranslation();
   const {
-    editorState: { editorLayers },
+    editorState: {
+      mapSettings: { layersSettings },
+    },
     renderingFingerprint,
     state: {
       entity,
@@ -59,10 +62,7 @@ export const SpeedSectionEditionLayers = () => {
   const isPermanentSpeedLimit = speedSectionIsPsl(entity);
   const isSpeedRestriction = speedSectionIsSpeedRestriction(entity);
 
-  const {
-    mapSettings: { layersSettings },
-    issuesSettings,
-  } = useSelector(getEditorState);
+  const { issuesSettings } = useSelector(getEditorState);
   const { mapStyle, showIGNBDORTHO } = useMapSettings();
   const infraID = useInfraID();
   const selection = useMemo(() => {
@@ -280,7 +280,7 @@ export const SpeedSectionEditionLayers = () => {
     <>
       <GeoJSONs
         colors={colors[mapStyle]}
-        layers={editorLayers}
+        layers={getEditorLayersFromLayersSetting(layersSettings)}
         selection={selection}
         fingerprint={renderingFingerprint}
         hidden={entity.properties.id ? [entity.properties.id] : undefined}

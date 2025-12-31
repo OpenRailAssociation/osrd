@@ -35,10 +35,12 @@ const SwitchEditionTool: Tool<SwitchEditionState> = {
   icon: TbSwitch2,
   labelTranslationKey: 'Editor.tools.switch-edition.label',
   requiredLayers: new Set(['switches', 'track_sections']),
-  isDisabled({ editorState }) {
-    return (
-      !editorState.editorLayers.has('switches') || !editorState.editorLayers.has('track_sections')
-    );
+  isDisabled({
+    editorState: {
+      mapSettings: { layersSettings },
+    },
+  }) {
+    return !layersSettings.switches || !layersSettings.tvds;
   },
   getInitialState,
   actions: [

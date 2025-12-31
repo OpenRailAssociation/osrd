@@ -34,6 +34,8 @@ import type { AppDispatch } from 'store';
 import type { Bbox } from 'types';
 import { nearestPointOnLine } from 'utils/geometry';
 
+import { getLayerSettingNameFromEditorLayer } from '../utils';
+
 /**
  * Since Turf and Editoast do not compute the lengths the same way (see #1751)
  * we can have data "end" being larger than Turf's computed length, which
@@ -131,28 +133,29 @@ export function selectEntities(
     editorState: EditorState;
   }
 ): void {
-  const { switchTool, dispatch, editorState } = context;
+  const {
+    switchTool,
+    dispatch,
+    editorState: {
+      mapSettings: { layersSettings },
+    },
+  } = context;
   // call the switch tool
   switchTool({
     toolType: TOOL_NAMES.SELECTION,
     toolState: { selection: entities },
   });
 
-  // enable the needed layer
-  const actualLayers = editorState.editorLayers;
+  // iterate over needed layers to activate them if needed
+  const neededEditorLayers = getNeededLayers(entities);
 
-  // create the next list of layer
-  const nextLayers = new Set(actualLayers);
-
-  const neededLayers = getNeededLayers(entities);
-
-  // iterate over needed layer
-  neededLayers.forEach((l) => {
-    if (!nextLayers.has(l)) nextLayers.add(l);
+  const newLayers = { ...layersSettings };
+  neededEditorLayers.forEach((editorLayer) => {
+    const layer = getLayerSettingNameFromEditorLayer(editorLayer);
+    if (layer && layer !== 'speedlimittag') newLayers[layer] = true;
   });
 
-  // dispatch the new layers
-  if (actualLayers.size !== nextLayers.size) dispatch(editorSliceActions.selectLayers(nextLayers));
+  dispatch(editorSliceActions.updateMapSettings({ layersSettings: newLayers }));
 }
 
 /**

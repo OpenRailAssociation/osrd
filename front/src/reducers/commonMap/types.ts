@@ -32,6 +32,7 @@ export type LayersSettings = {
   switches: boolean;
   platforms: boolean;
   tvds: boolean;
+  errors: boolean;
 };
 
 export type Viewport = ViewState & {

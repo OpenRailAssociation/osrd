@@ -18,6 +18,7 @@ import type {
 import useSwitch from 'applications/editor/tools/switchEdition/useSwitch';
 import type { TrackSectionEntity } from 'applications/editor/tools/trackEdition/types';
 import type { ExtendedEditorContextType } from 'applications/editor/types';
+import { getEditorLayersFromLayersSetting } from 'applications/editor/utils';
 import {
   GeoJSONs,
   getSwitchesLayerProps,
@@ -38,15 +39,14 @@ const SwitchEditionLayers = () => {
     renderingFingerprint,
     state,
     setState,
-    editorState: { editorLayers },
+    editorState: {
+      mapSettings: { layersSettings },
+    },
   } = useContext(EditorContext) as ExtendedEditorContextType<SwitchEditionState>;
   const { entity, hovered, portEditionState, mousePosition } = state;
 
   const { switchType } = useSwitch();
-  const {
-    mapSettings: { layersSettings },
-    issuesSettings,
-  } = useSelector(getEditorState);
+  const { issuesSettings } = useSelector(getEditorState);
   const { mapStyle } = useMapSettings();
   const layerProps = useMemo(
     () =>
@@ -169,7 +169,7 @@ const SwitchEditionLayers = () => {
       <GeoJSONs
         colors={colors[mapStyle]}
         hidden={entity?.properties?.id ? [entity.properties.id] : undefined}
-        layers={editorLayers}
+        layers={getEditorLayersFromLayersSetting(layersSettings)}
         fingerprint={renderingFingerprint}
         layersSettings={layersSettings}
         issuesSettings={issuesSettings}

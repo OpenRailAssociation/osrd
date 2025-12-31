@@ -3,7 +3,6 @@ import type { PayloadAction } from '@reduxjs/toolkit';
 
 import type { InfraErrorLevel } from 'applications/editor/components/InfraErrors';
 import type { InfraErrorTypeLabel } from 'applications/editor/components/InfraErrors/types';
-import type { Layer } from 'applications/editor/consts';
 import type { EditorSchema } from 'applications/editor/typesEditorEntity';
 import { buildMapStateReducer, defaultMapSettings } from 'reducers/commonMap';
 import type { MapSettings, Viewport } from 'reducers/commonMap/types';
@@ -12,7 +11,6 @@ import { type InfraState, buildInfraStateReducers, infraState } from 'reducers/i
 export type EditorState = InfraState & {
   editorSchema: EditorSchema;
   mapSettings: MapSettings;
-  editorLayers: Set<Layer>;
   issuesSettings?: {
     types: Array<InfraErrorTypeLabel>;
   };
@@ -28,8 +26,6 @@ export const editorInitialState: EditorState = {
   // Definition of entities (json schema)
   editorSchema: [],
   mapSettings: defaultMapSettings,
-  // ID of selected layers on which we are working
-  editorLayers: new Set(['operational_points', 'track_sections']),
   // Editor issue management
   issues: {
     total: 0,
@@ -51,9 +47,6 @@ export const editorSlice = createSlice({
     },
     updateIssuesSettings: (state, action: PayloadAction<EditorState['issuesSettings']>) => {
       state.issuesSettings = action.payload;
-    },
-    selectLayers(state, action: PayloadAction<EditorState['editorLayers']>) {
-      state.editorLayers = action.payload;
     },
     loadDataModelAction(state, action: PayloadAction<EditorState['editorSchema']>) {
       state.editorSchema = action.payload;
@@ -82,7 +75,6 @@ export const editorSliceActions = editorSlice.actions;
 
 export const {
   updateIssuesSettings,
-  selectLayers,
   loadDataModelAction,
   updateTotalsIssueAction,
   updateFiltersIssueAction,

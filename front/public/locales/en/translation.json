@@ -625,6 +625,7 @@
       "buffer_stops": "Buffer stops",
       "detectors": "Detectors",
       "electrifications": "Electrification",
+      "errors": "Errors",
       "level_crossings": "Level crossings",
       "neutral_sections": "Neutral sections",
       "operational_points": "Operational points",

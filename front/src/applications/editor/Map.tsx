@@ -310,28 +310,28 @@ const MapUnplugged = ({
             lineSearchCode={lineSearchCode}
           />
 
-          {editorState.editorLayers.has('platforms') && (
+          {editorState.mapSettings.layersSettings.platforms && (
             <Platforms
               colors={colors[mapStyle]}
               layerOrder={LAYER_GROUPS_ORDER[LAYERS.PLATFORMS.GROUP]}
             />
           )}
 
-          {editorState.editorLayers.has('neutral_sections') && (
+          {editorState.mapSettings.layersSettings.neutral_sections && (
             <NeutralSectionsLayer
               colors={colors[mapStyle]}
               layerOrder={LAYER_GROUPS_ORDER[LAYERS.NEUTRAL_SECTIONS.GROUP]}
             />
           )}
 
-          {editorState.editorLayers.has('operational_points') && (
+          {editorState.mapSettings.layersSettings.operational_points && (
             <OperationalPointsLayer
               colors={colors[mapStyle]}
               layerOrder={LAYER_GROUPS_ORDER[LAYERS.OPERATIONAL_POINTS.GROUP]}
             />
           )}
 
-          {editorState.editorLayers.has('level_crossings') && (
+          {editorState.mapSettings.layersSettings.level_crossings && (
             <LevelCrossingsLayer
               colors={colors[mapStyle]}
               layerOrder={LAYER_GROUPS_ORDER[LAYERS.LEVEL_CROSSINGS.GROUP]}
