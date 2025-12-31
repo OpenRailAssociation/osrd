@@ -1,7 +1,6 @@
 import { useContext } from 'react';
 
 import { Layer, Popup, Source } from 'react-map-gl/maplibre';
-import { useSelector } from 'react-redux';
 
 import EntitySumUp from 'applications/editor/components/EntitySumUp';
 import EditorContext from 'applications/editor/context';
@@ -11,8 +10,6 @@ import { getEditorLayersFromLayersSetting } from 'applications/editor/utils';
 import { GeoJSONs } from 'common/Map/Layers';
 import { colors } from 'common/Map/theme';
 import { useInfraID } from 'common/osrdContext';
-import { useMapSettings } from 'reducers/commonMap';
-import { getEditorState } from 'reducers/editor/selectors';
 import type { Zone } from 'types';
 import { zoneToFeature } from 'utils/mapHelper';
 
@@ -26,12 +23,11 @@ const SelectionLayers = () => {
   const {
     state,
     editorState: {
-      mapSettings: { layersSettings },
+      issuesSettings,
+      mapSettings: { layersSettings, mapStyle },
     },
     renderingFingerprint,
   } = useContext(EditorContext) as ExtendedEditorContextType<SelectionState>;
-  const { issuesSettings } = useSelector(getEditorState);
-  const { mapStyle } = useMapSettings();
 
   const infraID = useInfraID();
 

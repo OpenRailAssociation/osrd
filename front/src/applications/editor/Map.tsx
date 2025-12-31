@@ -31,7 +31,7 @@ import {
 import LevelCrossingsLayer from 'common/Map/Layers/InfraObjectLayers/LevelCrossing';
 import { colors } from 'common/Map/theme';
 import { LAYER_GROUPS_ORDER, LAYERS } from 'config/layerOrder';
-import { useMapSettings, useMapSettingsActions } from 'reducers/commonMap';
+import { useMapSettingsActions } from 'reducers/commonMap';
 import type { MapStyle, Viewport } from 'reducers/commonMap/types';
 import { getEditorState } from 'reducers/editor/selectors';
 import { useAppDispatch } from 'store';
@@ -82,13 +82,15 @@ const MapUnplugged = ({
   const editorState = useSelector(getEditorState);
 
   const {
-    showOSM,
-    showOSM3dBuildings,
-    showOSMtracksections,
-    terrain3DExaggeration,
-    mapSearchMarker,
-    lineSearchCode,
-  } = useMapSettings();
+    mapSettings: {
+      showOSM,
+      showOSM3dBuildings,
+      showOSMtracksections,
+      terrain3DExaggeration,
+      mapSearchMarker,
+      lineSearchCode,
+    },
+  } = editorState;
 
   const extendedContext = useMemo<ExtendedEditorContextType<CommonToolState>>(
     () => ({

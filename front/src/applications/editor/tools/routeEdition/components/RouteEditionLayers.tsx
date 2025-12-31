@@ -7,7 +7,6 @@ import { useTranslation } from 'react-i18next';
 import { BsArrowBarRight } from 'react-icons/bs';
 import { FaFlagCheckered } from 'react-icons/fa';
 import { Layer, Popup, Source, type LineLayerSpecification } from 'react-map-gl/maplibre';
-import { useSelector } from 'react-redux';
 
 import EntitySumUp from 'applications/editor/components/EntitySumUp';
 import EditorContext from 'applications/editor/context';
@@ -31,8 +30,6 @@ import {
 } from 'common/Map/Layers/InfraObjectLayers';
 import { colors } from 'common/Map/theme';
 import { useInfraID } from 'common/osrdContext';
-import { useMapSettings } from 'reducers/commonMap';
-import { getEditorState } from 'reducers/editor/selectors';
 import { useAppDispatch } from 'store';
 import { NULL_GEOMETRY, type OmitLayer, type NullGeometry } from 'types';
 
@@ -41,12 +38,11 @@ const RouteEditionLayers = () => {
     state,
     renderingFingerprint,
     editorState: {
-      mapSettings: { layersSettings },
+      issuesSettings,
+      mapSettings: { layersSettings, mapStyle },
     },
   } = useContext(EditorContext) as ExtendedEditorContextType<RouteEditionState>;
 
-  const { issuesSettings } = useSelector(getEditorState);
-  const { mapStyle } = useMapSettings();
   const infraID = useInfraID();
 
   const selectedRouteIndex =

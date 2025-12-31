@@ -5,7 +5,6 @@ import type { Feature, FeatureCollection, LineString, Point } from 'geojson';
 import { mapValues, pick } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { Layer, Popup, Source } from 'react-map-gl/maplibre';
-import { useSelector } from 'react-redux';
 
 import EntitySumUp from 'applications/editor/components/EntitySumUp';
 import EditorContext from 'applications/editor/context';
@@ -32,8 +31,6 @@ import { getEditorLayersFromLayersSetting } from 'applications/editor/utils';
 import { GeoJSONs, SourcesDefinitionsIndex } from 'common/Map/Layers';
 import { colors } from 'common/Map/theme';
 import { useInfraID } from 'common/osrdContext';
-import { useMapSettings } from 'reducers/commonMap';
-import { getEditorState } from 'reducers/editor/selectors';
 import { useAppDispatch } from 'store';
 
 const emptyFeatureCollection = featureCollection([]);
@@ -43,7 +40,8 @@ export const SpeedSectionEditionLayers = () => {
   const { t } = useTranslation();
   const {
     editorState: {
-      mapSettings: { layersSettings },
+      issuesSettings,
+      mapSettings: { mapStyle, showIGNBDORTHO, layersSettings },
     },
     renderingFingerprint,
     state: {
@@ -62,8 +60,6 @@ export const SpeedSectionEditionLayers = () => {
   const isPermanentSpeedLimit = speedSectionIsPsl(entity);
   const isSpeedRestriction = speedSectionIsSpeedRestriction(entity);
 
-  const { issuesSettings } = useSelector(getEditorState);
-  const { mapStyle, showIGNBDORTHO } = useMapSettings();
   const infraID = useInfraID();
   const selection = useMemo(() => {
     const res: string[] = [entity.properties.id];

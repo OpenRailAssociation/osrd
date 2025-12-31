@@ -5,7 +5,6 @@ import nearestPoint from '@turf/nearest-point';
 import { first, last } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { Layer, Popup, Source } from 'react-map-gl/maplibre';
-import { useSelector } from 'react-redux';
 
 import EntitySumUp from 'applications/editor/components/EntitySumUp';
 import EditorContext from 'applications/editor/context';
@@ -26,8 +25,6 @@ import {
 } from 'common/Map/Layers/InfraObjectLayers';
 import { colors } from 'common/Map/theme';
 import { useInfraID } from 'common/osrdContext';
-import { useMapSettings } from 'reducers/commonMap';
-import { getEditorState } from 'reducers/editor/selectors';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 
@@ -40,14 +37,13 @@ const SwitchEditionLayers = () => {
     state,
     setState,
     editorState: {
-      mapSettings: { layersSettings },
+      issuesSettings,
+      mapSettings: { layersSettings, mapStyle },
     },
   } = useContext(EditorContext) as ExtendedEditorContextType<SwitchEditionState>;
   const { entity, hovered, portEditionState, mousePosition } = state;
 
   const { switchType } = useSwitch();
-  const { issuesSettings } = useSelector(getEditorState);
-  const { mapStyle } = useMapSettings();
   const layerProps = useMemo(
     () =>
       getSwitchesLayerProps({
