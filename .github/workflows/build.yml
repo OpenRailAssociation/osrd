@@ -751,6 +751,7 @@ jobs:
         if: needs.build.outputs.output_method == 'artifact'
         run: |
           docker load --input ./osrd-front-tests.tar
+          docker image tag ${{ fromJSON(needs.build.outputs.stable_tags).front-tests }} front-tests
 
       - name: Check code formatting
         # TODO: Once we migrate to eslint v9 and add support for json and css this can be dropped
@@ -762,11 +763,9 @@ jobs:
           exit $(docker wait front-format)
 
       - name: Check lints
-        run: |
-          docker run --name=front-lint --net=host \
-            ${{ fromJSON(needs.build.outputs.stable_tags).front-tests }} \
-            sh -c "npm run lint"
-          exit $(docker wait front-lint)
+        uses: docker://front-tests
+        with:
+          args: npm run lint
 
       - name: Check for i18n missing keys
         run: |
