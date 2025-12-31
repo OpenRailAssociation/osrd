@@ -5,7 +5,7 @@ import { createStoreWithoutMiddleware } from 'store';
 
 import editorTestDataBuilder from './editorTestDataBuilder';
 
-const { selectLayers, loadDataModelAction, updateTotalsIssueAction, updateFiltersIssueAction } =
+const { loadDataModelAction, updateTotalsIssueAction, updateFiltersIssueAction } =
   editorSliceActions;
 
 const createStore = () =>
@@ -24,13 +24,6 @@ describe('editorReducer', () => {
   it('should return initial state', () => {
     const editorState = store.getState()[editorSlice.name];
     expect(editorState).toEqual(editorInitialState);
-  });
-
-  it('should handle selectLayers', () => {
-    const editorLayers = testDataBuilder.buildEditorLayers(['electrifications', 'routes']);
-    store.dispatch(selectLayers(editorLayers));
-    const editorState = store.getState()[editorSlice.name];
-    expect(editorState.editorLayers).toEqual(new Set(['electrifications', 'routes']));
   });
 
   it('should handle loadDataModelAction and update editorSchema', () => {

@@ -27,8 +27,12 @@ const TrackEditionTool: Tool<TrackEditionState> = {
   icon: MdShowChart,
   labelTranslationKey: 'Editor.tools.track-edition.label',
   requiredLayers: new Set(['track_sections']),
-  isDisabled({ editorState }) {
-    return !editorState.editorLayers.has('track_sections');
+  isDisabled({
+    editorState: {
+      mapSettings: { layersSettings },
+    },
+  }) {
+    return !layersSettings.tvds;
   },
   isHidden({ activeTool }) {
     return activeTool.id === TOOL_NAMES.TRACK_SPLIT;

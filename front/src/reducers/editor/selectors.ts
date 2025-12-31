@@ -14,7 +14,6 @@ const selectors = {
   ...buildInfraStateSelectors(editorSlice),
   getEditorState,
   getEditorIssues,
-  getEditorLayers: makeEditorSelector('editorLayers'),
   getEditorSchema: makeEditorSelector('editorSchema'),
   getInfraLockStatus,
   getMapSettings: makeEditorSelector('mapSettings'),

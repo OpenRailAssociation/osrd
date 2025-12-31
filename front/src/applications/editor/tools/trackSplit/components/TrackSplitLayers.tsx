@@ -4,7 +4,6 @@ import along from '@turf/along';
 import length from '@turf/length';
 import type { Feature, Point } from 'geojson';
 import { Layer, Source } from 'react-map-gl/maplibre';
-import { useSelector } from 'react-redux';
 
 import EditorContext from 'applications/editor/context';
 import {
@@ -13,11 +12,10 @@ import {
 } from 'applications/editor/tools/trackEdition/components/TrackEditionLayers';
 import { TRACK_LAYER_ID, POINTS_LAYER_ID } from 'applications/editor/tools/trackEdition/consts';
 import type { ExtendedEditorContextType } from 'applications/editor/types';
+import { getEditorLayersFromLayersSetting } from 'applications/editor/utils';
 import { GeoJSONs } from 'common/Map/Layers';
 import { colors } from 'common/Map/theme';
 import { useInfraID } from 'common/osrdContext';
-import { useMapSettings } from 'reducers/commonMap';
-import { getEditorState } from 'reducers/editor/selectors';
 
 import type { TrackSplitState } from '../types';
 import { isOffsetValid } from '../utils';
@@ -40,16 +38,14 @@ function getSplitPoint(state: TrackSplitState): Feature<Point> {
 }
 
 const TrackSplitLayers = () => {
-  const {
-    mapSettings: { layersSettings },
-    issuesSettings,
-  } = useSelector(getEditorState);
-  const { mapStyle } = useMapSettings();
   const infraID = useInfraID();
   const {
     state,
     renderingFingerprint,
-    editorState: { editorLayers },
+    editorState: {
+      issuesSettings,
+      mapSettings: { mapStyle, layersSettings },
+    },
   } = useContext(EditorContext) as ExtendedEditorContextType<TrackSplitState>;
 
   const splitPoint = getSplitPoint(state);
@@ -60,7 +56,7 @@ const TrackSplitLayers = () => {
       <GeoJSONs
         colors={colors[mapStyle]}
         hidden={state.track.properties.id ? [state.track.properties.id] : undefined}
-        layers={editorLayers}
+        layers={getEditorLayersFromLayersSetting(layersSettings)}
         fingerprint={renderingFingerprint}
         layersSettings={layersSettings}
         issuesSettings={issuesSettings}

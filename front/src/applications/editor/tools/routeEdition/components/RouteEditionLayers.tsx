@@ -22,6 +22,7 @@ import {
 } from 'applications/editor/tools/routeEdition/utils';
 import type { ExtendedEditorContextType } from 'applications/editor/types';
 import type { EditorEntity } from 'applications/editor/typesEditorEntity';
+import { getEditorLayersFromLayersSetting } from 'applications/editor/utils';
 import {
   GeoJSONs,
   getRoutesLineLayerProps,
@@ -39,13 +40,12 @@ const RouteEditionLayers = () => {
   const {
     state,
     renderingFingerprint,
-    editorState: { editorLayers },
+    editorState: {
+      mapSettings: { layersSettings },
+    },
   } = useContext(EditorContext) as ExtendedEditorContextType<RouteEditionState>;
 
-  const {
-    mapSettings: { layersSettings },
-    issuesSettings,
-  } = useSelector(getEditorState);
+  const { issuesSettings } = useSelector(getEditorState);
   const { mapStyle } = useMapSettings();
   const infraID = useInfraID();
 
@@ -191,7 +191,7 @@ const RouteEditionLayers = () => {
       <GeoJSONs
         selection={selectionList.length > 1 ? selectionList : undefined}
         colors={colors[mapStyle]}
-        layers={editorLayers}
+        layers={getEditorLayersFromLayersSetting(layersSettings)}
         fingerprint={renderingFingerprint}
         layersSettings={layersSettings}
         issuesSettings={issuesSettings}

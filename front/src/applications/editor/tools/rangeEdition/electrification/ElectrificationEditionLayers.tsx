@@ -19,6 +19,7 @@ import type {
 import { getTrackRangeFeatures, isOnModeMove } from 'applications/editor/tools/rangeEdition/utils';
 import type { TrackSectionEntity } from 'applications/editor/tools/trackEdition/types';
 import type { ExtendedEditorContextType } from 'applications/editor/types';
+import { getEditorLayersFromLayersSetting } from 'applications/editor/utils';
 import { GeoJSONs, SourcesDefinitionsIndex } from 'common/Map/Layers';
 import { colors } from 'common/Map/theme';
 import { useInfraID } from 'common/osrdContext';
@@ -30,7 +31,9 @@ export const ElectrificationEditionLayers = () => {
   const dispatch = useAppDispatch();
   const { t } = useTranslation();
   const {
-    editorState: { editorLayers },
+    editorState: {
+      mapSettings: { layersSettings },
+    },
     renderingFingerprint,
     state: { entity, trackSectionsCache, hoveredItem, interactionState, mousePosition },
     setState,
@@ -38,10 +41,7 @@ export const ElectrificationEditionLayers = () => {
     RangeEditionState<ElectrificationEntity>
   >;
 
-  const {
-    mapSettings: { layersSettings },
-    issuesSettings,
-  } = useSelector(getEditorState);
+  const { issuesSettings } = useSelector(getEditorState);
   const { mapStyle, showIGNBDORTHO } = useMapSettings();
 
   const infraID = useInfraID();
@@ -182,7 +182,7 @@ export const ElectrificationEditionLayers = () => {
     <>
       <GeoJSONs
         colors={colors[mapStyle]}
-        layers={editorLayers}
+        layers={getEditorLayersFromLayersSetting(layersSettings)}
         selection={selection}
         fingerprint={renderingFingerprint}
         layersSettings={layersSettings}

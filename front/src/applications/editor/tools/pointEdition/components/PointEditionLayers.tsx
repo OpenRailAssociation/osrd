@@ -4,7 +4,6 @@ import { featureCollection } from '@turf/helpers';
 import { isEqual } from 'lodash';
 import type { Map } from 'maplibre-gl';
 import { Popup } from 'react-map-gl/maplibre';
-import { useSelector } from 'react-redux';
 
 import EntitySumUp from 'applications/editor/components/EntitySumUp';
 import EditorContext from 'applications/editor/context';
@@ -13,11 +12,10 @@ import { POINT_LAYER_ID } from 'applications/editor/tools/pointEdition/consts';
 import type { PointEditionState } from 'applications/editor/tools/pointEdition/types';
 import type { ExtendedEditorContextType } from 'applications/editor/types';
 import type { EditorEntity } from 'applications/editor/typesEditorEntity';
+import { getEditorLayersFromLayersSetting } from 'applications/editor/utils';
 import { GeoJSONs, EditorSource, SourcesDefinitionsIndex } from 'common/Map/Layers';
 import { colors } from 'common/Map/theme';
 import { useInfraID } from 'common/osrdContext';
-import { useMapSettings } from 'reducers/commonMap';
-import { getEditorState } from 'reducers/editor/selectors';
 import { NULL_GEOMETRY } from 'types';
 
 type BasePointEditionLayersProps = {
@@ -37,13 +35,11 @@ export const BasePointEditionLayers = ({
   const {
     renderingFingerprint,
     state: { nearestPoint, mousePosition, entity, objType },
-    editorState: { editorLayers },
+    editorState: {
+      issuesSettings,
+      mapSettings: { mapStyle, layersSettings },
+    },
   } = useContext(EditorContext) as ExtendedEditorContextType<PointEditionState<EditorEntity>>;
-  const {
-    mapSettings: { layersSettings },
-    issuesSettings,
-  } = useSelector(getEditorState);
-  const { mapStyle } = useMapSettings();
 
   const [showPopup, setShowPopup] = useState(true);
 
@@ -100,7 +96,7 @@ export const BasePointEditionLayers = ({
       <GeoJSONs
         colors={colors[mapStyle]}
         hidden={entity.properties.id !== NEW_ENTITY_ID ? [entity.properties.id] : undefined}
-        layers={editorLayers}
+        layers={getEditorLayersFromLayersSetting(layersSettings)}
         fingerprint={renderingFingerprint}
         layersSettings={layersSettings}
         issuesSettings={issuesSettings}
