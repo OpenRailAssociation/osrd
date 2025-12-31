@@ -5,7 +5,6 @@ import type { Feature, FeatureCollection, LineString, Point } from 'geojson';
 import { mapValues } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { Layer, Popup, Source } from 'react-map-gl/maplibre';
-import { useSelector } from 'react-redux';
 
 import EntitySumUp from 'applications/editor/components/EntitySumUp';
 import EditorContext from 'applications/editor/context';
@@ -23,8 +22,6 @@ import { getEditorLayersFromLayersSetting } from 'applications/editor/utils';
 import { GeoJSONs, SourcesDefinitionsIndex } from 'common/Map/Layers';
 import { colors } from 'common/Map/theme';
 import { useInfraID } from 'common/osrdContext';
-import { useMapSettings } from 'reducers/commonMap';
-import { getEditorState } from 'reducers/editor/selectors';
 import { useAppDispatch } from 'store';
 
 export const ElectrificationEditionLayers = () => {
@@ -32,7 +29,8 @@ export const ElectrificationEditionLayers = () => {
   const { t } = useTranslation();
   const {
     editorState: {
-      mapSettings: { layersSettings },
+      issuesSettings,
+      mapSettings: { layersSettings, mapStyle, showIGNBDORTHO },
     },
     renderingFingerprint,
     state: { entity, trackSectionsCache, hoveredItem, interactionState, mousePosition },
@@ -40,9 +38,6 @@ export const ElectrificationEditionLayers = () => {
   } = useContext(EditorContext) as ExtendedEditorContextType<
     RangeEditionState<ElectrificationEntity>
   >;
-
-  const { issuesSettings } = useSelector(getEditorState);
-  const { mapStyle, showIGNBDORTHO } = useMapSettings();
 
   const infraID = useInfraID();
   const selection = useMemo(() => {

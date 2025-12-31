@@ -3,7 +3,6 @@ import { useContext } from 'react';
 import type { Position } from 'geojson';
 import { last } from 'lodash';
 import { Layer, Source } from 'react-map-gl/maplibre';
-import { useSelector } from 'react-redux';
 
 import EditorContext from 'applications/editor/context';
 import { POINTS_LAYER_ID, TRACK_LAYER_ID } from 'applications/editor/tools/trackEdition/consts';
@@ -13,8 +12,6 @@ import { getEditorLayersFromLayersSetting } from 'applications/editor/utils';
 import { GeoJSONs } from 'common/Map/Layers';
 import { colors } from 'common/Map/theme';
 import { useInfraID } from 'common/osrdContext';
-import { useMapSettings } from 'reducers/commonMap';
-import { getEditorState } from 'reducers/editor/selectors';
 
 export const TRACK_COLOR = '#666';
 export const TRACK_STYLE = { 'line-color': TRACK_COLOR, 'line-dasharray': [2, 1], 'line-width': 2 };
@@ -24,11 +21,10 @@ const TrackEditionLayers = () => {
     state,
     renderingFingerprint,
     editorState: {
-      mapSettings: { layersSettings },
+      issuesSettings,
+      mapSettings: { layersSettings, mapStyle },
     },
   } = useContext(EditorContext) as ExtendedEditorContextType<TrackEditionState>;
-  const { issuesSettings } = useSelector(getEditorState);
-  const { mapStyle } = useMapSettings();
 
   const infraID = useInfraID();
 
