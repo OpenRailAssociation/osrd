@@ -12,7 +12,7 @@ import simulationSettings from 'assets/pictures/components/simulationSettings.sv
 import rollingStockPic from 'assets/pictures/components/train.svg';
 import { type Comfort } from 'common/api/osrdEditoastApi';
 import { useOsrdConfActions } from 'common/osrdContext';
-import { useStoreDataForSpeedLimitByTagSelector } from 'common/SpeedLimitByTagSelector/useStoreDataForSpeedLimitByTagSelector';
+import useSpeedLimitTags from 'common/SpeedLimitByTagSelector/useSpeedLimitTags';
 import { useSubCategoryContext } from 'common/SubCategoryContext';
 import Tabs from 'common/Tabs';
 import IncompatibleConstraints from 'modules/pathfinding/components/IncompatibleConstraints';
@@ -91,8 +91,9 @@ const ManageTimetableItem = () => {
   const constraintDistribution = useSelector(getConstraintDistribution);
   const startTime = useSelector(getStartTime);
 
-  const { speedLimitsByTags, dispatchUpdateSpeedLimitByTag } =
-    useStoreDataForSpeedLimitByTagSelector({ speedLimitByTag });
+  const { speedLimitsByTags, dispatchUpdateSpeedLimitByTag } = useSpeedLimitTags({
+    speedLimitByTag,
+  });
   const { rollingStockComfort, rollingStock } = useStoreDataForRollingStockSelector({
     rollingStockId,
   });
