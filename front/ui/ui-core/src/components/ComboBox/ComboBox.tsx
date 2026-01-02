@@ -13,7 +13,7 @@ import React, {
 import { ChevronDown, XCircle } from '@osrd-project/ui-icons';
 import cx from 'classnames';
 
-import useOutsideClick from '../../../hooks/useOutsideClick';
+import useOutsideClick from '../../hooks/useOutsideClick';
 import Input, { type InputProps } from '../Input';
 
 export type ComboBoxProps<T> = Omit<InputProps, 'value'> & {

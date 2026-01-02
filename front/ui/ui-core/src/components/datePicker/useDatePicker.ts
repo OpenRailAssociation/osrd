@@ -8,8 +8,8 @@ import {
   formatValueToSlot,
   isWithinInterval,
 } from './utils';
-import { useModalPosition } from '../../../hooks/useModalPosition';
-import useOutsideClick from '../../../hooks/useOutsideClick';
+import { useModalPosition } from '../../hooks/useModalPosition';
+import useOutsideClick from '../../hooks/useOutsideClick';
 import type { StatusWithMessage } from '../StatusMessage';
 
 const MODAL_VERTICAL_OFFSET = 3;
