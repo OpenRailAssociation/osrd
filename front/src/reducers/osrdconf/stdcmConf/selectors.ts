@@ -74,7 +74,7 @@ const buildStdcmConfSelectors = () => {
     getWorkScheduleGroupId: makeOsrdConfSelector('workScheduleGroupId'),
     getOperationalPoints: makeOsrdConfSelector('operationalPoints'),
     getTrackSectionIdsByLoadingGauge: makeOsrdConfSelector('trackSectionIdsByLoadingGauge'),
-    getSpeedLimitTags: makeOsrdConfSelector('speedLimitTags'),
+    getStdcmSpeedLimitsByTag: makeOsrdConfSelector('speedLimitsByTag'),
 
     // For some selectors, if data were missing, errors would have been thrown earlier, at startup.
     // The useStdcmEnv hook ensures that.
@@ -121,7 +121,7 @@ export const {
   getSearchDatetimeWindow,
   getOperationalPoints,
   getTrackSectionIdsByLoadingGauge,
-  getSpeedLimitTags,
+  getStdcmSpeedLimitsByTag,
   getOperationalPointsIdFiltered,
 } = selectors;
 

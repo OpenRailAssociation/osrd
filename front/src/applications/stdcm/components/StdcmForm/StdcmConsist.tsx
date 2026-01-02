@@ -22,7 +22,6 @@ import type {
 } from 'common/api/osrdEditoastApi';
 import { useOsrdConfActions } from 'common/osrdContext';
 import SpeedLimitByTagSelector from 'common/SpeedLimitByTagSelector';
-import useSpeedLimitTags from 'common/SpeedLimitByTagSelector/useSpeedLimitTags';
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
 import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
 import useFilterRollingStock from 'modules/rollingStock/hooks/useFilterRollingStock';
@@ -31,8 +30,10 @@ import {
   getTrackSectionIdsByLoadingGauge,
   getStdcmRollingStockID,
   getStdcmSpeedLimitByTag,
+  getStdcmSpeedLimitsByTag,
 } from 'reducers/osrdconf/stdcmConf/selectors';
 import { useAppDispatch } from 'store';
+import { removeDuplicates } from 'utils/array';
 import { createStandardSelectOptions } from 'utils/uiCoreHelpers';
 
 import StdcmCard from './StdcmCard';
@@ -83,15 +84,17 @@ const StdcmConsist = ({
   const { t } = useTranslation('stdcm');
 
   const speedLimitByTag = useSelector(getStdcmSpeedLimitByTag);
+  const speedLimitsByTag = useSelector(getStdcmSpeedLimitsByTag);
+  const speedLimitTags = useMemo(
+    () => removeDuplicates(Object.keys(speedLimitsByTag)).sort(),
+    [speedLimitByTag]
+  );
   const trackSectionIdsByLoadingGauge = useSelector(getTrackSectionIdsByLoadingGauge);
   const loadingGauges = trackSectionIdsByLoadingGauge
     ? Object.keys(trackSectionIdsByLoadingGauge)
     : [];
-  const { speedLimitsByTags, dispatchUpdateSpeedLimitByTag } = useSpeedLimitTags({
-    isStdcm: true,
-  });
 
-  const { updateRollingStockID } = useOsrdConfActions();
+  const { updateRollingStockID, updateSpeedLimitByTag } = useOsrdConfActions();
   const dispatch = useAppDispatch();
 
   const rollingStockId = useSelector(getStdcmRollingStockID);
@@ -116,7 +119,6 @@ const StdcmConsist = ({
     prefillConsist,
     statusWithMessage,
     setMaxSpeedChanged,
-    speedLimitTags,
   } = useStdcmConsist();
 
   const useFieldStatus = (field: 'totalMass' | 'totalLength' | 'maxSpeed') =>
@@ -173,11 +175,11 @@ const StdcmConsist = ({
         calculateConsistMaxSpeed(
           rollingStock,
           towedRollingStock,
-          newTag ? (speedLimitTags || {})[newTag] : undefined
+          newTag ? speedLimitsByTag[newTag] : undefined
         )
       )
     );
-    dispatchUpdateSpeedLimitByTag(newTag);
+    dispatch(updateSpeedLimitByTag(newTag));
     setMaxSpeedChanged(false);
   };
 
@@ -343,7 +345,7 @@ const StdcmConsist = ({
         <SpeedLimitByTagSelector
           disabled={disabled}
           selectedSpeedLimitByTag={speedLimitByTag}
-          speedLimitsByTags={speedLimitsByTags}
+          speedLimitsByTags={speedLimitTags}
           dispatchUpdateSpeedLimitByTag={onSpeedLimitByTagChange}
           showPlaceHolder={isDebugMode}
           narrow
