@@ -57,7 +57,7 @@ const ManageTimetableItem = () => {
     launchPathfinding,
     pathfindingState,
   } = useManageTimetableItemContext();
-  const { updateRollingStockID } = useOsrdConfActions();
+  const { updateRollingStockID, updateSpeedLimitByTag } = useOsrdConfActions();
 
   const origin = useSelector(getOrigin);
   const destination = useSelector(getDestination);
@@ -91,7 +91,7 @@ const ManageTimetableItem = () => {
   const constraintDistribution = useSelector(getConstraintDistribution);
   const startTime = useSelector(getStartTime);
 
-  const { speedLimitsByTags, dispatchUpdateSpeedLimitByTag } = useSpeedLimitTags();
+  const speedLimitTags = useSpeedLimitTags();
   const { rollingStockComfort, rollingStock } = useStoreDataForRollingStockSelector({
     rollingStockId,
   });
@@ -107,7 +107,7 @@ const ManageTimetableItem = () => {
 
   const onSelectSpeedLimitTag = useCallback(
     (newTag: string | null) => {
-      dispatchUpdateSpeedLimitByTag(newTag);
+      dispatch(updateSpeedLimitByTag(newTag));
       launchPathfinding(pathSteps, rollingStockId, {
         isInitialization: false,
         speedLimitTag: newTag,
@@ -215,7 +215,7 @@ const ManageTimetableItem = () => {
       <div>
         <SimulationSettings
           selectedSpeedLimitByTag={speedLimitByTag}
-          speedLimitsByTags={speedLimitsByTags}
+          speedLimitsByTags={speedLimitTags}
           dispatchUpdateSpeedLimitByTag={onSelectSpeedLimitTag}
           constraintDistribution={constraintDistribution}
         />

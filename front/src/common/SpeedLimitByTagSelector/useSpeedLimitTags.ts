@@ -5,7 +5,7 @@ import { uniq } from 'lodash';
 import { useTranslation } from 'react-i18next';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
-import { useOsrdConfActions, useInfraID } from 'common/osrdContext';
+import { useInfraID } from 'common/osrdContext';
 import { setFailure } from 'reducers/main';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
@@ -22,11 +22,6 @@ const useSpeedLimitTags = () => {
   const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTimetableItem' });
 
   const infraID = useInfraID();
-  const { updateSpeedLimitByTag } = useOsrdConfActions();
-
-  const dispatchUpdateSpeedLimitByTag = (newTag: string | null) => {
-    dispatch(updateSpeedLimitByTag(newTag));
-  };
 
   const { data: speedLimitsTagsByInfraId = [], error } =
     osrdEditoastApi.endpoints.getInfraByInfraIdSpeedLimitTags.useQuery(
@@ -46,15 +41,7 @@ const useSpeedLimitTags = () => {
     }
   }, [error]);
 
-  const speedLimitsByTagsOrdered = useMemo(
-    () => uniq(speedLimitsTagsByInfraId).sort(),
-    [speedLimitsTagsByInfraId]
-  );
-
-  return {
-    speedLimitsByTags: speedLimitsByTagsOrdered,
-    dispatchUpdateSpeedLimitByTag,
-  };
+  return useMemo(() => uniq(speedLimitsTagsByInfraId).sort(), [speedLimitsTagsByInfraId]);
 };
 
 export default useSpeedLimitTags;

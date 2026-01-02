@@ -11,6 +11,7 @@ import type {
   SubCategory,
   TrainCategory,
 } from 'common/api/osrdEditoastApi';
+import { useOsrdConfActions } from 'common/osrdContext';
 import useSpeedLimitTags from 'common/SpeedLimitByTagSelector/useSpeedLimitTags';
 import useStoreDataForRollingStockSelector from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
 import isMainCategory from 'modules/rollingStock/helpers/category';
@@ -38,6 +39,7 @@ const ItineraryModalFormHeader = ({
   categoryColors,
 }: ItineraryModalFormHeaderProps) => {
   const dispatch = useAppDispatch();
+  const { updateSpeedLimitByTag } = useOsrdConfActions();
 
   const { t } = useTranslation('operational-studies', {
     keyPrefix: 'manageTimetableItem',
@@ -64,7 +66,7 @@ const ItineraryModalFormHeader = ({
 
   // Composition code/speed limit by tag
   const speedLimitByTag = useSelector(getOperationalStudiesSpeedLimitByTag);
-  const { speedLimitsByTags, dispatchUpdateSpeedLimitByTag } = useSpeedLimitTags();
+  const speedLimitTags = useSpeedLimitTags();
 
   // Timetable item name
   const name = useSelector(getName);
@@ -135,13 +137,9 @@ const ItineraryModalFormHeader = ({
             small
             placeholder={t('noSpeedLimitByTag')}
             value={speedLimitByTag || ''}
-            {...createStandardSelectOptions(speedLimitsByTags)}
+            {...createStandardSelectOptions(speedLimitTags)}
             onChange={(e) => {
-              if (e) {
-                dispatchUpdateSpeedLimitByTag(e);
-              } else {
-                dispatchUpdateSpeedLimitByTag(null);
-              }
+              dispatch(updateSpeedLimitByTag(e ?? null));
             }}
             readOnly
           ></Select>
