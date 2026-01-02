@@ -280,6 +280,13 @@
       "trainDeleted": "{{ name }} train has been deleted.",
       "trainSchedule": "Unique train",
       "trainScheduleSets": {
+        "addTrainScheduleSet": "Add package",
+        "cancel": "Cancel",
+        "catalogEntry": "Set",
+        "choose": "Choose",
+        "description": "Description",
+        "name": "Name",
+        "newLocalTrainScheduleSet": "New local package",
         "newTrainScheduleSet": "Create new package",
         "sandbox": "Sandbox"
       },

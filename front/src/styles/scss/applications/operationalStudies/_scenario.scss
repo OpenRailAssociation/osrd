@@ -451,6 +451,18 @@
         background-color: var(--primary);
       }
 
+      .train-schedule-set-dialog {
+        h5 {
+          margin-bottom: 0;
+        }
+
+        section {
+          label {
+            margin-bottom: 0;
+          }
+        }
+      }
+
       .scenario-timetable-trains {
         font-family: 'IBM Plex Sans';
         background: var(--ambientB15);

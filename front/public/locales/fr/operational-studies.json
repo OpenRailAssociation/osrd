@@ -280,6 +280,13 @@
       "trainDeleted": "Le train {{name}} a bien été supprimé.",
       "trainSchedule": "Train unique",
       "trainScheduleSets": {
+        "addTrainScheduleSet": "Ajouter le paquet",
+        "cancel": "Annuler",
+        "catalogEntry": "Ensemble",
+        "choose": "Choisir",
+        "description": "Description",
+        "name": "Nom",
+        "newLocalTrainScheduleSet": "Nouveau paquet local",
         "newTrainScheduleSet": "Créer un nouveau paquet",
         "sandbox": "Bac à sable"
       },

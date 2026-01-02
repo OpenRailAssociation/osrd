@@ -13,6 +13,7 @@ import type {
 import CalendarTrainList from './CalendarTrainList';
 import TimetableToolbar from './TimetableToolbar';
 import AddNewTrainScheduleSetTab from './TrainScheduleSet/AddNewTrainScheduleSetTab';
+import TrainScheduleSetDialog from './TrainScheduleSet/TrainScheduleSetDialog';
 import TrainScheduleSetTab from './TrainScheduleSet/TrainScheduleSetTab';
 import type { TimetableMode } from './types';
 import useFilterTimetableItems from './useFilterTimetableItems';
@@ -52,6 +53,7 @@ const Timetable = ({
   const [expandedTrainScheduleSetIds, setExpandedTrainScheduleSetIds] = useState<Set<number>>(
     new Set()
   );
+  const [showTrainScheduleSetDialog, setShowTrainScheduleSetDialog] = useState(false);
 
   const { filteredTimetableItems, ...timetableFilters } =
     useFilterTimetableItems(timetableItemsWithDetails);
@@ -191,10 +193,17 @@ const Timetable = ({
                     </TrainScheduleSetTab>
                   );
                 })}
-            <AddNewTrainScheduleSetTab />
+            <AddNewTrainScheduleSetTab onClick={() => setShowTrainScheduleSetDialog(true)} />
           </Virtualizer>
         )}
       </div>
+      {showTrainScheduleSetDialog && (
+        <TrainScheduleSetDialog
+          onCancel={() => {
+            setShowTrainScheduleSetDialog(false);
+          }}
+        />
+      )}
     </div>
   );
 };
