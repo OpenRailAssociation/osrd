@@ -1,7 +1,8 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 
 import cx from 'classnames';
 
+import ChronogramManchette from './ChronogramManchette';
 import { BaseChartCanvasContext } from '../../common/context';
 import { getTimeToPixel, getPixelToTime } from '../../common/helpers/utils';
 import { useCanvas } from '../../common/hooks/useCanvas';
@@ -134,23 +135,41 @@ export const Chronogram = (props: ChronogramProps) => {
   useEffect(() => {
     validateTheme(fullTheme);
   }, [fullTheme]);
+  const chronogramChartRef = useRef<HTMLDivElement>(null);
+  const manchetteWithSpaceTimeChartRef = useRef<HTMLDivElement>(null);
 
   return (
-    <div
-      {...attr}
-      ref={setRoot}
-      className={cx('relative space-time-chart', attr.className)}
-      style={{ background: fullTheme.background }}
-    >
-      <div ref={setCanvasesRoot} className="absolute inset-0" />
-      <ChronogramContext.Provider value={contextState}>
-        <BaseChartCanvasContext.Provider value={canvasContext}>
-          <MouseContext.Provider value={mouseContext}>
-            <TimeGraduations />
-            <TimeCaptions />
-          </MouseContext.Provider>
-        </BaseChartCanvasContext.Provider>
-      </ChronogramContext.Provider>
+    <div data-testid="manchette-space-time-chart" className="ui-manchette-space-time-chart-wrapper">
+      <div
+        data-testid="manchette-spacetimediagram-ref"
+        ref={manchetteWithSpaceTimeChartRef}
+        className="manchette flex"
+        style={{ height: '525px' }}
+      >
+        <ChronogramManchette contents={['hey']} />
+        <div
+          ref={chronogramChartRef}
+          data-testid="space-time-chart-container"
+          className="space-time-chart-container"
+        >
+          <div
+            {...attr}
+            ref={setRoot}
+            className={cx('relative space-time-chart', attr.className)}
+            style={{ background: fullTheme.background }}
+          >
+            <div ref={setCanvasesRoot} className="absolute inset-0" />
+            <ChronogramContext.Provider value={contextState}>
+              <BaseChartCanvasContext.Provider value={canvasContext}>
+                <MouseContext.Provider value={mouseContext}>
+                  <TimeGraduations />
+                  <TimeCaptions />
+                </MouseContext.Provider>
+              </BaseChartCanvasContext.Provider>
+            </ChronogramContext.Provider>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

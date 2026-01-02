@@ -215,7 +215,7 @@ export const SpaceTimeChart = (props: SpaceTimeChartProps) => {
     <div
       {...attr}
       ref={setRoot}
-      className={cx('relative space-time-chart', attr.className)}
+      className={cx('', attr.className)}
       style={{ background: fullTheme.background }}
     >
       <div ref={setCanvasesRoot} className="absolute inset-0" />
