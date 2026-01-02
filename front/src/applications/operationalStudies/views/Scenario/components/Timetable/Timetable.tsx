@@ -12,7 +12,8 @@ import type {
 
 import CalendarTrainList from './CalendarTrainList';
 import TimetableToolbar from './TimetableToolbar';
-import TrainScheduleSetTab from './TrainScheduleSetTab';
+import AddNewTrainScheduleSetTab from './TrainScheduleSet/AddNewTrainScheduleSetTab';
+import TrainScheduleSetTab from './TrainScheduleSet/TrainScheduleSetTab';
 import type { TimetableMode } from './types';
 import useFilterTimetableItems from './useFilterTimetableItems';
 import { sortTrainScheduleSets } from './utils';
@@ -190,6 +191,7 @@ const Timetable = ({
                     </TrainScheduleSetTab>
                   );
                 })}
+            <AddNewTrainScheduleSetTab />
           </Virtualizer>
         )}
       </div>
