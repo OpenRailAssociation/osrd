@@ -62,7 +62,7 @@ const Timetable = ({
     catalogEntryNameById.set(entry.id, entry.name);
   });
 
-  const handleClickPackage = useCallback(
+  const handleClickTrainScheduleSet = useCallback(
     (id: number) => {
       const newExpandedSet = new Set(expandedTrainScheduleSetIds);
       if (newExpandedSet.has(id)) {
@@ -75,7 +75,7 @@ const Timetable = ({
     [expandedTrainScheduleSetIds]
   );
 
-  const handleSelectPackage = useCallback(
+  const handleSelectTrainScheduleSet = useCallback(
     (trainIds: TimetableItemId[]) => {
       const allSelected = trainIds.every((id) => selectedTimetableItemIds.includes(id));
       if (allSelected) {
@@ -165,8 +165,10 @@ const Timetable = ({
                       key={trainScheduleSet.id}
                       trainScheduleSet={trainScheduleSet}
                       catalogName={catalogName}
-                      handleClickPackage={handleClickPackage}
-                      handleSelectPackage={() => handleSelectPackage(trainScheduleSetTrainsIds)}
+                      handleClickTrainScheduleSet={handleClickTrainScheduleSet}
+                      handleSelectTrainScheduleSet={() =>
+                        handleSelectTrainScheduleSet(trainScheduleSetTrainsIds)
+                      }
                       isSelectMode={isSelectMode}
                       isSelected={isSelected}
                       isIndeterminate={isIndeterminate}

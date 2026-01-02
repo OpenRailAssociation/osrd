@@ -14,13 +14,13 @@ import { useTranslation } from 'react-i18next';
 import type { TrainScheduleSet } from 'common/api/osrdEditoastApi';
 import MenuTriggerButton from 'common/MenuTriggerButton';
 
-import { computeTimetablePackageName, isSandbox } from './utils';
+import { computeTrainScheduleSetName, isSandbox } from './utils';
 
 type TrainScheduleSetTabProps = PropsWithChildren<{
   trainScheduleSet: TrainScheduleSet;
   catalogName?: string;
-  handleClickPackage: (id: number) => void;
-  handleSelectPackage: () => void;
+  handleClickTrainScheduleSet: (id: number) => void;
+  handleSelectTrainScheduleSet: () => void;
   isSelectMode: boolean;
   isSelected: boolean;
   isIndeterminate: boolean;
@@ -30,50 +30,54 @@ type TrainScheduleSetTabProps = PropsWithChildren<{
 const TrainScheduleSetTab = ({
   trainScheduleSet,
   catalogName,
-  handleClickPackage,
-  handleSelectPackage,
+  handleClickTrainScheduleSet,
+  handleSelectTrainScheduleSet,
   isSelectMode,
   isSelected,
   isIndeterminate,
   isTrainListOpen,
   children,
 }: TrainScheduleSetTabProps) => {
-  const { t } = useTranslation('operational-studies', { keyPrefix: 'main.timetable.packages' });
+  const { t } = useTranslation('operational-studies', {
+    keyPrefix: 'main.timetable.trainScheduleSets',
+  });
 
   return (
     <>
-      <div className={cx('package-tab-container', { sandbox: isSandbox(trainScheduleSet) })}>
+      <div
+        className={cx('train-schedule-set-tab-container', { sandbox: isSandbox(trainScheduleSet) })}
+      >
         <div
-          className="package-tab"
+          className="train-schedule-set-tab"
           role="button"
           tabIndex={0}
-          onClick={() => handleClickPackage(trainScheduleSet.id)}
+          onClick={() => handleClickTrainScheduleSet(trainScheduleSet.id)}
         >
           {isSelectMode && (
             <Checkbox
               label=""
               checked={isSelected}
               isIndeterminate={isIndeterminate}
-              onChange={handleSelectPackage}
+              onChange={handleSelectTrainScheduleSet}
               small
             />
           )}
           {isTrainListOpen ? (
-            <TriangleDown size="lg" className="package-collapse-icon" />
+            <TriangleDown size="lg" className="train-schedule-set-collapse-icon" />
           ) : (
-            <TriangleRight size="lg" className="package-expand-icon" />
+            <TriangleRight size="lg" className="train-schedule-set-expand-icon" />
           )}
-          {isSandbox(trainScheduleSet) && <Beaker className="package-status" />}
+          {isSandbox(trainScheduleSet) && <Beaker className="train-schedule-set-status" />}
           {!isSandbox(trainScheduleSet) &&
             (trainScheduleSet.published ? (
-              <Broadcast className="package-status" />
+              <Broadcast className="train-schedule-set-status" />
             ) : (
-              <DeviceDesktop className="package-status" />
+              <DeviceDesktop className="train-schedule-set-status" />
             ))}
           <span>
             {isSandbox(trainScheduleSet)
               ? t('sandbox')
-              : computeTimetablePackageName(trainScheduleSet.name!, catalogName)}
+              : computeTrainScheduleSetName(trainScheduleSet.name!, catalogName)}
           </span>
         </div>
         <MenuTriggerButton

@@ -200,11 +200,11 @@ const TimetableToolbar = ({
 
             <button
               className={cx('timetable-mode-button', {
-                active: timetableMode === 'package',
+                active: timetableMode === 'trainScheduleSet',
               })}
-              data-testid="timetable-package-mode-button"
-              title={t('timetable.modePackage')}
-              onClick={() => setTimetableMode('package')}
+              data-testid="timetable-train-schedule-set-mode-button"
+              title={t('timetable.modeTrainScheduleSet')}
+              onClick={() => setTimetableMode('trainScheduleSet')}
               type="button"
             >
               <FileDirectory />

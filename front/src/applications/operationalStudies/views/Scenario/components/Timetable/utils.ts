@@ -216,7 +216,7 @@ export const isValidPathfinding = (summaryTrain: SimulationSummary | undefined) 
 
 export const isSandbox = (trainScheduleSet: TrainScheduleSet) => !trainScheduleSet.name;
 
-export const computeTimetablePackageName = (
+export const computeTrainScheduleSetName = (
   trainScheduleSetName: string,
   catalogName?: string
 ): string => (catalogName ? `${catalogName} | ${trainScheduleSetName}` : trainScheduleSetName);
@@ -242,8 +242,8 @@ export const sortTrainScheduleSets = (
 
   // If both have catalog names, build full names and compare
   if (catalogName1 && catalogName2) {
-    const fullName1 = computeTimetablePackageName(set1.name ?? '', catalogName1);
-    const fullName2 = computeTimetablePackageName(set2.name ?? '', catalogName2);
+    const fullName1 = computeTrainScheduleSetName(set1.name ?? '', catalogName1);
+    const fullName2 = computeTrainScheduleSetName(set2.name ?? '', catalogName2);
     return fullName1.localeCompare(fullName2);
   }
 

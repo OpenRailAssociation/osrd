@@ -809,7 +809,7 @@
           }
         }
 
-        .package-tab-container {
+        .train-schedule-set-tab-container {
           width: 100%;
           height: 40px;
           display: flex;
@@ -833,13 +833,13 @@
             }
           }
 
-          .package-tab {
+          .train-schedule-set-tab {
             display: flex;
             align-items: center;
             flex: 1;
             cursor: pointer;
 
-            .package-status {
+            .train-schedule-set-status {
               color: var(--info60);
               padding-bottom: 2px; // to fix icon weird height
               margin-inline: 6px 8px;
