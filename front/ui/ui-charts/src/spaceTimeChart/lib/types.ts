@@ -1,6 +1,11 @@
-import type { HTMLProps, ReactNode } from 'react';
+import type { ReactNode } from 'react';
 
-import type { TimeChartContextType, HoveredItem, Point } from '../../common/types';
+import type {
+  TimeChartContextType,
+  ChartEventHandlers,
+  HoveredItem,
+  Point,
+} from '../../common/types';
 
 // GLOBAL UTILITY TYPES:
 export type Handler<P extends object> = (payload: P) => void;
@@ -171,38 +176,7 @@ export type SpaceTimeChartProps = {
 
   // Custom styles:
   theme?: Partial<SpaceTimeChartTheme>;
-
-  // Event handlers:
-  onPan?: Handler<{
-    isPanning: boolean;
-    initialPosition: Point;
-    position: Point;
-    initialData: DataPoint;
-    data: DataPoint;
-    context: SpaceTimeChartContextType;
-  }>;
-  onZoom?: Handler<{
-    delta: number;
-    position: Point;
-    event: WheelEvent;
-    context: SpaceTimeChartContextType;
-  }>;
-  onClick?: Handler<{
-    position: Point;
-    data: DataPoint;
-    event: MouseEvent;
-    hoveredItem: HoveredItem | null;
-    context: SpaceTimeChartContextType;
-  }>;
-  onMouseMove?: Handler<{
-    position: Point;
-    data: DataPoint;
-    isHover: boolean;
-    hoveredItem: HoveredItem | null;
-    context: SpaceTimeChartContextType;
-  }>;
-  onHoveredChildUpdate?: Handler<{ item: HoveredItem | null; context: SpaceTimeChartContextType }>;
-} & Omit<HTMLProps<HTMLDivElement>, 'onClick' | 'onMouseMove'>;
+} & ChartEventHandlers<SpaceTimeChartContextType>;
 
 export type SpaceTimeChartContextType = TimeChartContextType & {
   // Axis-swapping related data:
@@ -217,7 +191,6 @@ export type SpaceTimeChartContextType = TimeChartContextType & {
   // Translation helpers:
   getSpacePixel: SpaceToPixel;
   getSpace: PixelToSpace;
-  getData: PointToData;
 
   // Useful data:
   operationalPoints: OperationalPoint[];

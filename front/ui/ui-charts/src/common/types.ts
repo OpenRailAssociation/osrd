@@ -1,6 +1,8 @@
+import { type HTMLProps } from 'react';
+
 import { type SpaceTimeChartTheme } from '../spaceTimeChart';
 import type { LAYERS, PICKING_LAYERS } from './consts';
-import type { PointToData, DataToPoint } from '../spaceTimeChart/lib/types';
+import type { DataPoint, Handler, PointToData, DataToPoint } from '../spaceTimeChart/lib/types';
 
 export type BaseChartContextType = {
   fingerprint: string;
@@ -59,7 +61,7 @@ type BaseTimeChartContextType = BaseChartContextType & {
   timePixelOffset: number;
   timeOrigin: number;
   timeScale: number;
-  spacePixelOffset: number;
+  yPixelOffset: number;
 
   // Translation helpers:
   getTimePixel: TimeToPixel;
@@ -84,3 +86,36 @@ export type ChartOptions = {
 };
 
 export type TimeChartContextType = BaseTimeChartContextType & ChartOptions;
+
+export type ChartEventHandlers<T> = {
+  // Event handlers:
+  onPan?: Handler<{
+    isPanning: boolean;
+    initialPosition: Point;
+    position: Point;
+    initialData: DataPoint;
+    data: DataPoint;
+    context: T;
+  }>;
+  onZoom?: Handler<{
+    delta: number;
+    position: Point;
+    event: WheelEvent;
+    context: T;
+  }>;
+  onClick?: Handler<{
+    position: Point;
+    data: DataPoint;
+    event: MouseEvent;
+    hoveredItem: HoveredItem | null;
+    context: T;
+  }>;
+  onMouseMove?: Handler<{
+    position: Point;
+    data: DataPoint;
+    isHover: boolean;
+    hoveredItem: HoveredItem | null;
+    context: T;
+  }>;
+  onHoveredChildUpdate?: Handler<{ item: HoveredItem | null; context: T }>;
+} & Omit<HTMLProps<HTMLDivElement>, 'onClick' | 'onMouseMove'>;
