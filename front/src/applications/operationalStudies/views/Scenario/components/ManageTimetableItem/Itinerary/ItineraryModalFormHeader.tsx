@@ -64,9 +64,7 @@ const ItineraryModalFormHeader = ({
 
   // Composition code/speed limit by tag
   const speedLimitByTag = useSelector(getOperationalStudiesSpeedLimitByTag);
-  const { speedLimitsByTags, dispatchUpdateSpeedLimitByTag } = useSpeedLimitTags({
-    speedLimitByTag,
-  });
+  const { speedLimitsByTags, dispatchUpdateSpeedLimitByTag } = useSpeedLimitTags();
 
   // Timetable item name
   const name = useSelector(getName);
