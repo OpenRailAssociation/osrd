@@ -280,6 +280,7 @@
       "trainDeleted": "{{ name }} train has been deleted.",
       "trainSchedule": "Unique train",
       "trainScheduleSets": {
+        "newTrainScheduleSet": "Create new package",
         "sandbox": "Sandbox"
       },
       "trainType": "Services, trains",

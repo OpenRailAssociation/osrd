@@ -258,7 +258,6 @@
       "pacedTrain": "Mission",
       "pacedTrainAdded": "Mission ajoutée",
       "pacedTrainDeleted": "La mission {{name}} a bien été supprimée",
-
       "punctuality": "Ponctualité",
       "resetAllExceptions": "Confirmez-vous la réinitialisation des exceptions de cette mission ?",
       "resetExceptions": "Réinitialiser les exceptions",
@@ -281,6 +280,7 @@
       "trainDeleted": "Le train {{name}} a bien été supprimé.",
       "trainSchedule": "Train unique",
       "trainScheduleSets": {
+        "newTrainScheduleSet": "Créer un nouveau paquet",
         "sandbox": "Bac à sable"
       },
       "trainType": "Missions, trains",

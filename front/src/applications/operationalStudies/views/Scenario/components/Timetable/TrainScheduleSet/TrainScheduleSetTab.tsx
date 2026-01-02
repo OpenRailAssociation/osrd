@@ -14,7 +14,7 @@ import { useTranslation } from 'react-i18next';
 import type { TrainScheduleSet } from 'common/api/osrdEditoastApi';
 import MenuTriggerButton from 'common/MenuTriggerButton';
 
-import { computeTrainScheduleSetName, isSandbox } from './utils';
+import { computeTrainScheduleSetName, isSandbox } from '../utils';
 
 type TrainScheduleSetTabProps = PropsWithChildren<{
   trainScheduleSet: TrainScheduleSet;
