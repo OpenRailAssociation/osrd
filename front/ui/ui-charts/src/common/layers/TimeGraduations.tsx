@@ -9,8 +9,9 @@ import { BLACK_ALPHA_25, GREY_50 } from '../helpers/colors';
 import { useDraw } from '../hooks/useCanvas';
 
 const TimeGraduations = () => {
-  const { position, isHover } = useContext(MouseContext);
-  const mouseX = position.x;
+  const mouseContext = useContext(MouseContext);
+  const mouseX = mouseContext?.position.x;
+  const isHover = mouseContext?.isHover ?? false;
   const drawingFunction = useCallback<DrawingFunction<TimeChartContextType>>(
     (
       ctx,
