@@ -1,7 +1,6 @@
 import type { TrainSchedule } from 'common/api/osrdEditoastApi';
 import type { PathStep } from 'reducers/osrdconf/types';
 import { Duration } from 'utils/duration';
-import { mmToM } from 'utils/physics';
 
 const findCorrespondingMargin = (
   stepId: string,
@@ -55,10 +54,7 @@ const computeBasePathStep = (
   return {
     id,
     name,
-    location: {
-      ...location,
-      ...('track' in location ? { offset: mmToM(location.offset) } : null),
-    },
+    location,
     arrival: arrival ? Duration.parse(arrival) : null,
     stopFor: stopFor ? Duration.parse(stopFor) : null,
     // If not provided, we set receptionSignal to its default value

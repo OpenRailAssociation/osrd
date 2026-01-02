@@ -17,8 +17,8 @@ import { mmToM, mToMm } from 'utils/physics';
 export const cutRange = (
   allRanges: IntervalItem[],
   customRanges: IntervalItem[],
-  pathLength: number,
-  newCutPosition: number
+  pathLength: number, // in m
+  newCutPosition: number // in m
 ) => {
   if (newCutPosition >= pathLength) {
     throw Error('Invalid cut position: can not properly insert the new range');
@@ -81,11 +81,7 @@ const createPathStep = (
     id: uuidV4(),
     positionOnPath,
     coordinates,
-    location: {
-      ...trackOffset,
-      // TODO: we should return the offset in mm once it is stored in mm in the store
-      offset: mmToM(trackOffset.offset),
-    },
+    location: trackOffset,
     isFromPowerRestriction: true,
   };
 };
@@ -132,11 +128,7 @@ export const createCutAtPathStep = (
     positionOnPath: cutAtPosition,
     coordinates: coordinatesAtCut,
     isFromPowerRestriction: true,
-    location: {
-      ...trackOffset,
-      // TODO: we should return the offset in mm once it is stored in mm in the store
-      offset: mmToM(trackOffset.offset),
-    },
+    location: trackOffset,
   };
 };
 
