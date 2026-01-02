@@ -1,7 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
 
-import { skipToken } from '@reduxjs/toolkit/query';
-import { isString, uniq } from 'lodash';
+import { isString } from 'lodash';
 import { useTranslation } from 'react-i18next';
 import { GiElectric, GiUnplugged } from 'react-icons/gi';
 import { MdSpeed } from 'react-icons/md';
@@ -14,12 +13,12 @@ import signalsIcon from 'assets/pictures/layersicons/layer_signal.svg';
 import pslsIcon from 'assets/pictures/layersicons/layer_tivs.svg';
 import OPsSVGFile from 'assets/pictures/layersicons/ops.svg';
 import switchesIcon from 'assets/pictures/layersicons/switches.svg';
-import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { Modal } from 'common/BootstrapSNCF/ModalSNCF';
 import SwitchSNCF from 'common/BootstrapSNCF/SwitchSNCF/SwitchSNCF';
 import MapSettingsBackgroundSwitches from 'common/Map/Settings/MapSettingsBackgroundSwitches';
 import { Icon2SVG } from 'common/Map/Settings/MapSettingsLayers';
 import MapSettingsMapStyle from 'common/Map/Settings/MapSettingsMapStyle';
+import useSpeedLimitTags from 'common/SpeedLimitByTagSelector/useSpeedLimitTags';
 import type { LayersSettings } from 'reducers/commonMap/types';
 
 import { useMapContext } from '../useMapContext';
@@ -52,19 +51,16 @@ type LayersModalProps = {
 const LayersModal = ({ compactModal, closePortalModal }: LayersModalProps) => {
   const { t } = useTranslation();
 
-  const { infraId: infraID, layersSettings, updateMapSettings } = useMapContext();
+  const { layersSettings, updateMapSettings } = useMapContext();
   const [selectedLayers, setSelectedLayers] = useState<LayersSettings>(layersSettings);
 
-  const { data: speedLimitTagsByInfraId } =
-    osrdEditoastApi.endpoints.getInfraByInfraIdSpeedLimitTags.useQuery(
-      infraID ? { infraId: infraID } : skipToken
-    );
+  const speedLimitTags = useSpeedLimitTags();
   const DEFAULT_SPEED_LIMIT_TAG = useMemo(() => t('Editor.layers-modal.noSpeedLimitByTag'), [t]);
 
-  const speedLimitOptions = useMemo(() => {
-    const allSpeedLimitTags = uniq(speedLimitTagsByInfraId).sort();
-    return [t('Editor.layers-modal.noSpeedLimitByTag'), ...allSpeedLimitTags];
-  }, [t, speedLimitTagsByInfraId]);
+  const speedLimitOptions = useMemo(
+    () => [DEFAULT_SPEED_LIMIT_TAG, ...speedLimitTags],
+    [t, speedLimitTags]
+  );
 
   const toggleLayer = useCallback(
     (layer: keyof LayersSettings) => {

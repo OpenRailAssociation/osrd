@@ -1,7 +1,7 @@
-import { useContext, useEffect, useMemo, useState } from 'react';
+import { useContext, useEffect, useState } from 'react';
 
 import { skipToken } from '@reduxjs/toolkit/query';
-import { cloneDeep, compact, isEmpty, isEqual, last, pick, uniq, uniqWith } from 'lodash';
+import { cloneDeep, isEmpty, isEqual, last, pick, uniqWith } from 'lodash';
 import { useTranslation } from 'react-i18next';
 
 import EntityError from 'applications/editor/components/EntityError';
@@ -27,6 +27,7 @@ import type { ExtendedEditorContextType, PartialOrReducer } from 'applications/e
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import CheckboxRadioSNCF from 'common/BootstrapSNCF/CheckboxRadioSNCF';
 import { useInfraID } from 'common/osrdContext';
+import useSpeedLimitTags from 'common/SpeedLimitByTagSelector/useSpeedLimitTags';
 import { isEmptyArray, toggleElement } from 'utils/array';
 
 import RouteList from './RouteList';
@@ -108,16 +109,7 @@ const RangeEditionLeftPanel = () => {
       : skipToken
   );
 
-  const { data: speedLimitTagsByInfraId } =
-    osrdEditoastApi.endpoints.getInfraByInfraIdSpeedLimitTags.useQuery(
-      infraID
-        ? {
-            infraId: infraID,
-          }
-        : skipToken
-    );
-  const allSpeedLimitTags = uniq(speedLimitTagsByInfraId);
-  const allSpeedLimitTagsOrdered = useMemo(() => allSpeedLimitTags.sort(), [allSpeedLimitTags]);
+  const speedLimitTags = useSpeedLimitTags();
 
   const updateSpeedSectionExtensions = (
     extensions: SpeedSectionEntity['properties']['extensions']
@@ -284,7 +276,7 @@ const RangeEditionLeftPanel = () => {
     return (
       <div className="speed-section">
         <legend className="mb-4">{t(`Editor.obj-types.SpeedSection`)}</legend>
-        <SpeedSectionMetadataForm speedLimitTags={compact(allSpeedLimitTagsOrdered)} />
+        <SpeedSectionMetadataForm speedLimitTags={speedLimitTags} />
         <hr />
         <div>
           {permanentSpeedLimitCheckbox}
