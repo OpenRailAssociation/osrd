@@ -123,7 +123,7 @@ test.describe('@op @nge', () => {
     });
 
     await test.step('Verify timetable is empty (UI message)', async () => {
-      await scenarioTimetableSection.verifyTimetableIsEmpty(frTranslations.timetable.noTrain);
+      await scenarioTimetableSection.verifyTimetableIsEmpty(frTranslations.timetable.noItem);
     });
 
     await test.step('Enable macro view while keeping the default train list visible', async () => {
@@ -150,12 +150,12 @@ test.describe('@op @nge', () => {
     });
 
     await test.step('Verify timetable is empty (UI)', async () => {
-      await scenarioTimetableSection.verifyTimetableIsEmpty(frTranslations.timetable.noTrain);
+      await scenarioTimetableSection.verifyTimetableIsEmpty(frTranslations.timetable.noItem);
     });
 
     await test.step('Reload and re-assert timetable is empty', async () => {
       await page.reload();
-      await scenarioTimetableSection.verifyTimetableIsEmpty(frTranslations.timetable.noTrain);
+      await scenarioTimetableSection.verifyTimetableIsEmpty(frTranslations.timetable.noItem);
     });
 
     await test.step('Re-toggle macro layout and re-assert graph is empty (no lines, nodes are persisted)', async () => {

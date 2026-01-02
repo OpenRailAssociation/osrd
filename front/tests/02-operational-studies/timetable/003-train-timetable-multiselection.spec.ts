@@ -100,7 +100,7 @@ test.describe('@op @timetable-items @timetable-multiselection', () => {
     });
 
     await test.step('Verify timetable is empty', async () => {
-      await scenarioTimetableSection.verifyTimetableIsEmpty(frTranslations.timetable.noTrain);
+      await scenarioTimetableSection.verifyTimetableIsEmpty(frTranslations.timetable.noItem);
     });
   });
 });

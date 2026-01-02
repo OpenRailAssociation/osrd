@@ -238,7 +238,6 @@
       "modeTrainScheduleSet": "Sort by train schedule set",
       "noItem": "No item",
       "noSpeedLimitTagsShort": "None",
-      "noTrain": "No train",
       "occurrenceChangeGroup": {
         "constraint_distribution": "Recovery margin",
         "initial_speed": "Initial velocity",

@@ -68,7 +68,7 @@ test.describe('@op @timetable-items @import', () => {
 
   test('Verify timetable items are imported correctly', async () => {
     await test.step('Verify timetable is empty', async () => {
-      await importPage.verifyTimetableIsEmpty(frTranslations.timetable.noTrain);
+      await importPage.verifyTimetableIsEmpty(frTranslations.timetable.noItem);
     });
     await test.step('Import timetable items JSON and return to scenario', async () => {
       await importPage.openImportTimetableItemForm();
