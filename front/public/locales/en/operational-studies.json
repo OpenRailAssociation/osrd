@@ -284,8 +284,12 @@
         "cancel": "Cancel",
         "catalogEntry": "Set",
         "choose": "Choose",
+        "createNewCatalogEntry": "Create new set",
         "description": "Description",
+        "duplicateCatalogEntry": "This set name already exists.",
+        "existingCatalogEntry": "Use an existing set",
         "name": "Name",
+        "newCatalogEntry": "New set",
         "newLocalTrainScheduleSet": "New local package",
         "newTrainScheduleSet": "Create new package",
         "sandbox": "Sandbox"

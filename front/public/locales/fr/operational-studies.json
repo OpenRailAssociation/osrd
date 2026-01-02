@@ -284,8 +284,12 @@
         "cancel": "Annuler",
         "catalogEntry": "Ensemble",
         "choose": "Choisir",
+        "createNewCatalogEntry": "Créer un nouvel ensemble",
         "description": "Description",
+        "duplicateCatalogEntry": "Ce nom d'ensemble existe déjà.",
+        "existingCatalogEntry": "Utiliser un ensemble existant",
         "name": "Nom",
+        "newCatalogEntry": "Nouvel ensemble",
         "newLocalTrainScheduleSet": "Nouveau paquet local",
         "newTrainScheduleSet": "Créer un nouveau paquet",
         "sandbox": "Bac à sable"
