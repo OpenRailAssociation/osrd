@@ -82,7 +82,7 @@ export default function MapButtons({
   compactModal = false,
   layersModalContainer,
 }: MapButtonsProps) {
-  const { t } = useTranslation('translation');
+  const { t } = useTranslation();
   const dispatch = useAppDispatch();
   const { updateViewport } = useMapSettingsActions();
   const { infraId, updateMapSettings, ...mapSettings } = useMapContext();
@@ -229,7 +229,7 @@ export default function MapButtons({
             onClick={openMapSettingsModal}
             isNewButton={isNewButtons}
             icon={<Sliders />}
-            tooltip={t('Editor.nav.toggle-layers')}
+            tooltip={t('map.layers-modal.toggle-layers')}
           />
         )}
         {withMapKeyButton && (
