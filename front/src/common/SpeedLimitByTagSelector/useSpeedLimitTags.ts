@@ -3,29 +3,34 @@ import { useEffect, useMemo } from 'react';
 import { skipToken } from '@reduxjs/toolkit/query';
 import { uniq } from 'lodash';
 import { useTranslation } from 'react-i18next';
-import { useSelector } from 'react-redux';
 
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useOsrdConfActions, useInfraID } from 'common/osrdContext';
 import { setFailure } from 'reducers/main';
-import { getSpeedLimitTags } from 'reducers/osrdconf/stdcmConf/selectors';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 
-const useSpeedLimitTags = ({ isStdcm }?: { isStdcm?: boolean }) => {
+/**
+ * Hook to retrieve the speed limit tags of the concerned infrastructure.
+ *
+ * WARNING: this hook should not be used in the STDCM application since only
+ * some speed limit tags should be available for users (stored in the stdcm
+ * environment configuration)
+ */
+const useSpeedLimitTags = () => {
   const dispatch = useAppDispatch();
   const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTimetableItem' });
 
   const infraID = useInfraID();
-  const stdcmSpeedLimitTags = useSelector(getSpeedLimitTags);
   const { updateSpeedLimitByTag } = useOsrdConfActions();
 
   const dispatchUpdateSpeedLimitByTag = (newTag: string | null) => {
     dispatch(updateSpeedLimitByTag(newTag));
   };
+
   const { data: speedLimitsTagsByInfraId = [], error } =
     osrdEditoastApi.endpoints.getInfraByInfraIdSpeedLimitTags.useQuery(
-      infraID && !isStdcm
+      infraID
         ? {
             infraId: infraID,
           }
@@ -41,10 +46,10 @@ const useSpeedLimitTags = ({ isStdcm }?: { isStdcm?: boolean }) => {
     }
   }, [error]);
 
-  const speedLimitsByTags = isStdcm
-    ? Object.keys(stdcmSpeedLimitTags || {})
-    : uniq(speedLimitsTagsByInfraId);
-  const speedLimitsByTagsOrdered = useMemo(() => speedLimitsByTags.sort(), [speedLimitsByTags]);
+  const speedLimitsByTagsOrdered = useMemo(
+    () => uniq(speedLimitsTagsByInfraId).sort(),
+    [speedLimitsTagsByInfraId]
+  );
 
   return {
     speedLimitsByTags: speedLimitsByTagsOrdered,

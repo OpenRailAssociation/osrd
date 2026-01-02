@@ -35,7 +35,7 @@ export default function useStdcmEnvironment() {
           },
           operationalPoints: data.operational_points ?? undefined,
           trackSectionIdsByLoadingGauge: data.allowed_tracks ?? undefined,
-          speedLimitTags: data.speed_limits ? data.speed_limits.speed_limit_tags : undefined,
+          speedLimitsByTag: data.speed_limits?.speed_limit_tags ?? {},
           defaultSpeedLimitTag: data.speed_limits?.default_speed_limit_tag ?? undefined,
           operationalPointsIdFiltered: data.operational_points_id_filtered ?? undefined,
         })

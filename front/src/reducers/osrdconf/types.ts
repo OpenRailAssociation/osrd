@@ -83,7 +83,7 @@ export type OsrdStdcmConfState = OsrdConfState & {
   temporarySpeedLimitGroupId?: number;
   searchDatetimeWindow?: StdcmSearchDatetimeWindow;
   operationalPoints?: number[];
-  speedLimitTags?: Record<string, number>;
+  speedLimitsByTag: Record<string, number>;
   trackSectionIdsByLoadingGauge?: Record<string, string[]>;
   operationalPointsIdFiltered?: string[];
 };

@@ -22,6 +22,7 @@ const DEFAULT_TOLERANCE = new Duration({ minutes: 30 });
 
 export const stdcmConfInitialState: OsrdStdcmConfState = {
   ...defaultCommonConf,
+  speedLimitsByTag: {},
   stdcmPathSteps: [
     {
       id: uuidV4(),
@@ -165,12 +166,12 @@ export const stdcmConfSlice = createSlice({
           | 'scenarioID'
           | 'operationalPoints'
           | 'trackSectionIdsByLoadingGauge'
-          | 'speedLimitTags',
+          | 'speedLimitsByTag',
           'infraID' | 'timetableID'
-        > & { defaultSpeedLimitTag: string | undefined }
+        > & { defaultSpeedLimitTag?: string }
       >
     ) {
-      const { searchDatetimeWindow, defaultSpeedLimitTag } = action.payload;
+      const { searchDatetimeWindow, speedLimitsByTag, defaultSpeedLimitTag } = action.payload;
       state.infraID = action.payload.infraID;
       state.timetableID = action.payload.timetableID;
       state.electricalProfileSetId = action.payload.electricalProfileSetId;
@@ -183,11 +184,11 @@ export const stdcmConfSlice = createSlice({
       state.scenarioID = action.payload.scenarioID;
       state.operationalPoints = action.payload.operationalPoints;
       state.trackSectionIdsByLoadingGauge = action.payload.trackSectionIdsByLoadingGauge;
-      state.speedLimitTags = action.payload.speedLimitTags;
+      state.speedLimitsByTag = speedLimitsByTag;
       state.operationalPointsIdFiltered = action.payload.operationalPointsIdFiltered;
 
       // check if a speedLimitTag is already defined, and if not, use the defaultSpeedLimitTag
-      const speedLimitTags = Object.keys(action.payload.speedLimitTags || {});
+      const speedLimitTags = Object.keys(speedLimitsByTag);
       if (!state.speedLimitByTag || !speedLimitTags.includes(state.speedLimitByTag)) {
         state.speedLimitByTag =
           defaultSpeedLimitTag && speedLimitTags.includes(defaultSpeedLimitTag)

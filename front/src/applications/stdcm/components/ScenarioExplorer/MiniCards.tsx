@@ -83,8 +83,11 @@ export const ScenarioMiniCard = ({
 
   const [getTimetableTrainSchedules] =
     osrdEditoastApi.endpoints.getAllTimetableByIdTrainSchedules.useLazyQuery();
+  const [getSpeedLimitTags] =
+    osrdEditoastApi.endpoints.getInfraByInfraIdSpeedLimitTags.useLazyQuery();
 
   const selectScenario = async () => {
+    const speedLimitTags = await getSpeedLimitTags({ infraId: scenario.infra_id }).unwrap();
     const trainSchedules = await getTimetableTrainSchedules({
       timetableId: scenario.timetable_id,
     }).unwrap();
@@ -101,6 +104,12 @@ export const ScenarioMiniCard = ({
         projectID,
         studyID,
         scenarioID: scenario.id,
+        // /!\ TODO: we should modify the endpoint getInfraByInfraIdSpeedLimitTags to return
+        // not only the tags but also the speed associated to each tag
+        speedLimitsByTag: speedLimitTags.reduce<Record<string, number>>((acc, tag) => {
+          acc[tag] = 0;
+          return acc;
+        }, {}),
       })
     );
 
