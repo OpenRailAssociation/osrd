@@ -1,5 +1,7 @@
 import React from 'react';
 
+import { Note, XCircle } from '@osrd-project/ui-icons';
+
 import { INITIAL_HEIGHT } from '../lib/consts';
 
 export type ManchetteProps = {
@@ -11,22 +13,26 @@ export type ManchetteProps = {
 const ChronogramManchette = ({
   contents,
   height = INITIAL_HEIGHT,
-  width = 350,
+  width = 262,
 }: ManchetteProps) => (
-  <div className="ui-manchette-container" style={{ width: `${width}px` }}>
-    <div
-      className="bg-white-100 border-r border-grey-30 relative"
-      style={{ height: `${height}px` }}
-    >
-      <div className="waypoints-list" style={{ width: `${width - 1}px` }}>
-        {contents.map((content, index) => (
-          <div key={index} className="waypoint-wrapper flex justify-start">
-            {content}
-          </div>
-        ))}
-        {/* Ajouter petite croix de suppression du PN */}
-      </div>
+  <div
+    className="chronogram-manchette"
+    style={{
+      height: `${height}px`,
+      width: `${width - 1}px`,
+    }}
+  >
+    <div className="chronogram-manchette-header">
+      <Note iconColor={'rgba(148,145,142,1)'} />
     </div>
+    {contents.map((content, index) => (
+      <div key={index} className="level-crossing flex justify-between items-center">
+        <div className="flex items-center">{content}</div>
+        <button className="cursor-pointer">
+          <XCircle iconColor={'rgba(148,145,142,1)'} />
+        </button>
+      </div>
+    ))}
   </div>
 );
 

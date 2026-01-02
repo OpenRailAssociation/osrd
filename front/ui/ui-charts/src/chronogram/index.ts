@@ -1,4 +1,5 @@
 import '../spaceTimeChart/styles/main.css';
+import './styles/main.css';
 
 export * from './components/Chronogram';
 
