@@ -4,7 +4,9 @@ import test from './../page-object-fixture';
 import readJsonFile from '../utils/file-utils';
 import type { FlatTranslations } from '../utils/types';
 
-const frTranslations: FlatTranslations = readJsonFile('public/locales/fr/translation.json');
+const frTranslations: { applications: FlatTranslations } = readJsonFile(
+  'public/locales/fr/translation.json'
+);
 
 test.describe('@home @navigation', () => {
   test.beforeEach('Navigate to the home page', async ({ homePage }) => {
@@ -14,11 +16,11 @@ test.describe('@home @navigation', () => {
   /** *************** Test 1 **************** */
   test('@smoke Verify the links for different pages in Home Page', async ({ homePage }) => {
     const expectedLinks = [
-      frTranslations.operationalStudies,
-      frTranslations.stdcm,
-      frTranslations.editor,
-      frTranslations.rollingStockEditor,
-      frTranslations.map,
+      frTranslations.applications['operational-studies'],
+      frTranslations.applications.stdcm,
+      frTranslations.applications['infrastructures-editor'],
+      frTranslations.applications['rolling-stocks-editor'],
+      frTranslations.applications['reference-map'],
     ];
 
     await expect(homePage.linksTitle).toHaveText(expectedLinks);

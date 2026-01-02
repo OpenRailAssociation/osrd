@@ -11,7 +11,7 @@ import { ModalProvider } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import NavBar from 'common/NavBar';
 
 export default function Home() {
-  const { t } = useTranslation();
+  const { t } = useTranslation(undefined, { keyPrefix: 'applications' });
   const {
     operationalStudiesAllowed,
     stdcmAllowed,
@@ -32,7 +32,7 @@ export default function Home() {
             >
               <CardSNCF
                 img={operationalStudiesImg}
-                title={t('operationalStudies')}
+                title={t('operational-studies')}
                 link="/operational-studies/projects"
                 data-testid="operationalStudies"
               />
@@ -52,7 +52,7 @@ export default function Home() {
                   className="col-6 col-sm-4 mb-2"
                   {...(!infraEditorAllowed && { 'aria-disabled': true })}
                 >
-                  <CardSNCF img={editorImg} title={t('editor')} link="/editor" />
+                  <CardSNCF img={editorImg} title={t('infrastructures-editor')} link="/editor" />
                 </div>
 
                 <div
@@ -61,7 +61,7 @@ export default function Home() {
                 >
                   <CardSNCF
                     img={rollingStockEditorImg}
-                    title={t('rollingStockEditor')}
+                    title={t('rolling-stocks-editor')}
                     link="/rolling-stock-editor"
                   />
                 </div>
@@ -70,7 +70,7 @@ export default function Home() {
                   className="col-6 col-sm-4 mb-2"
                   {...(!mapAllowed && { 'aria-disabled': true })}
                 >
-                  <CardSNCF img={mapImg} title={t('map')} link="/map" />
+                  <CardSNCF img={mapImg} title={t('reference-map')} link="/map" />
                 </div>
               </div>
             </div>

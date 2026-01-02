@@ -177,7 +177,7 @@ const RollingStockEditor = () => {
 
   return (
     <>
-      <NavBar appName={<>{t('rollingStockEditor')}</>} />
+      <NavBar appName={<>{t('applications.rolling-stocks-editor')}</>} />
       <div className="d-flex rollingstock-editor">
         <div className="d-flex ml-4 flex-column rollingstock-editor-left-container">
           {(isEditing || isAdding) && (
