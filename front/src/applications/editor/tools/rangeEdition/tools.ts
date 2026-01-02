@@ -1,15 +1,16 @@
 import { GiElectric } from 'react-icons/gi';
 import { MdSpeed } from 'react-icons/md';
 
-import { RangeEditionLeftPanel } from './components';
 import {
   ElectrificationEditionLayers,
   ElectrificationMessages,
 } from './electrification/ElectrificationEditionLayers';
+import ElectrificationEditionLeftPanel from './electrification/ElectrificationLeftPanel';
 import {
   SpeedSectionEditionLayers,
   SpeedSectionMessages,
 } from './speedSection/SpeedSectionEditionLayers';
+import SpeedSectionEditionLeftPanel from './speedSection/SpeedSectionEditionLeftPanel';
 import getRangeEditionTool from './tool-factory';
 import type { ElectrificationEntity, SpeedSectionEntity, SpeedSectionPslEntity } from './types';
 import { getNewElectrification, getNewSpeedSection } from './utils';
@@ -22,7 +23,7 @@ export const SpeedEditionTool = getRangeEditionTool<SpeedSectionEntity | SpeedSe
   requiredLayers: new Set(['speed_sections', 'psl', 'psl_signs', 'switches']),
   incompatibleLayers: ['electrifications'],
   layersComponent: SpeedSectionEditionLayers,
-  leftPanelComponent: RangeEditionLeftPanel,
+  leftPanelComponent: SpeedSectionEditionLeftPanel,
   canSave(state) {
     const records = state.entity.properties.speed_limit_by_tag || {};
     return !state.error && Object.keys(records).every((code) => !!code);
@@ -44,7 +45,7 @@ export const ElectrificationEditionTool = getRangeEditionTool<ElectrificationEnt
   getNewEntity: getNewElectrification,
   messagesComponent: ElectrificationMessages,
   layersComponent: ElectrificationEditionLayers,
-  leftPanelComponent: RangeEditionLeftPanel,
+  leftPanelComponent: ElectrificationEditionLeftPanel,
   requiredLayers: new Set(['electrifications']),
   incompatibleLayers: ['speed_sections', 'psl', 'psl_signs', 'switches'],
   getEventsLayers() {

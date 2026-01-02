@@ -1,13 +1,11 @@
 import { useContext, useEffect, useState } from 'react';
 
-import { skipToken } from '@reduxjs/toolkit/query';
 import { cloneDeep, isEmpty, isEqual, last, pick, uniqWith } from 'lodash';
 import { useTranslation } from 'react-i18next';
 
 import EntityError from 'applications/editor/components/EntityError';
 import EditorContext from 'applications/editor/context';
 import { NEW_ENTITY_ID } from 'applications/editor/data/utils';
-import ElectrificationMetadataForm from 'applications/editor/tools/rangeEdition/electrification/ElectrificationMetadataForm';
 import EditPSLSection from 'applications/editor/tools/rangeEdition/speedSection/EditPSLSection';
 import SpeedSectionMetadataForm from 'applications/editor/tools/rangeEdition/speedSection/SpeedSectionMetadataForm';
 import type {
@@ -30,11 +28,11 @@ import { useInfraID } from 'common/osrdContext';
 import useSpeedLimitTags from 'common/SpeedLimitByTagSelector/useSpeedLimitTags';
 import { isEmptyArray, toggleElement } from 'utils/array';
 
-import RouteList from './RouteList';
-import TrackRangesList from './TrackRangeList';
-import SwitchList from '../speedSection/SwitchList';
+import SwitchList from './SwitchList';
+import RouteList from '../components/RouteList';
+import TrackRangesList from '../components/TrackRangeList';
 
-const RangeEditionLeftPanel = () => {
+const SpeedSectionEditionLeftPanel = () => {
   const { t } = useTranslation();
   const {
     setState,
@@ -65,7 +63,6 @@ const RangeEditionLeftPanel = () => {
 
   const isNew = entity.properties.id === NEW_ENTITY_ID;
   const infraID = useInfraID();
-  const entityIsSpeedSection = entity.objType === 'SpeedSection';
 
   /** Reset both highlighted and selected track_ranges, route ids and switches lists */
   const resetSpeedRestrictionSelections = () => {
@@ -100,14 +97,6 @@ const RangeEditionLeftPanel = () => {
       }),
     });
   };
-
-  const { data: voltages } = osrdEditoastApi.endpoints.getInfraByInfraIdVoltages.useQuery(
-    infraID
-      ? {
-          infraId: infraID,
-        }
-      : skipToken
-  );
 
   const speedLimitTags = useSpeedLimitTags();
 
@@ -271,76 +260,62 @@ const RangeEditionLeftPanel = () => {
     </div>
   );
 
-  // Entity is Speed Section
-  if (entityIsSpeedSection) {
-    return (
-      <div className="speed-section">
-        <legend className="mb-4">{t(`Editor.obj-types.SpeedSection`)}</legend>
-        <SpeedSectionMetadataForm speedLimitTags={speedLimitTags} />
-        <hr />
-        <div>
-          {permanentSpeedLimitCheckbox}
-          {!isSpeedRestriction && entity.properties.track_ranges?.length === 0 && (
-            <p className="mt-3 font-size-1">{t('Editor.tools.speed-edition.toggle-psl-help')}</p>
-          )}
-          {speedRestrictionCheckbox}
-          {!isSpeedRestriction && isPermanentSpeedLimit && (
-            <EditPSLSection
-              entity={entity as SpeedSectionPslEntity}
-              setState={
-                setState as (
-                  stateOrReducer: PartialOrReducer<RangeEditionState<SpeedSectionEntity>>
-                ) => void
-              }
-              trackSectionsCache={trackSectionsCache}
-            />
-          )}
-        </div>
-        <hr />
-        {isSpeedRestriction && (
-          <>
-            {t('Editor.tools.speed-edition.select-switches-to-get-route')}
-            {Object.keys(selectedSwitches).length > 0 && (
-              <>
-                <SwitchList
-                  selectedSwitches={selectedSwitches}
-                  unselectSwitch={unselectSwitch}
-                  setSwitchSelection={setState}
-                  availableSwitchesPositions={availableSwitchesPositions}
-                />
-                {switchesRouteCandidates.length === 0 && (
-                  <p className="text-muted">{t('Editor.tools.routes-edition.no-route-found')}</p>
-                )}
-              </>
-            )}
-            <hr />
-          </>
+  return (
+    <div className="speed-section">
+      <legend className="mb-4">{t(`Editor.obj-types.SpeedSection`)}</legend>
+      <SpeedSectionMetadataForm speedLimitTags={speedLimitTags} />
+      <hr />
+      <div>
+        {permanentSpeedLimitCheckbox}
+        {!isSpeedRestriction && entity.properties.track_ranges?.length === 0 && (
+          <p className="mt-3 font-size-1">{t('Editor.tools.speed-edition.toggle-psl-help')}</p>
         )}
-        {switchesRouteCandidates.length > 0 && (
-          <RouteList
-            switchesRouteCandidates={switchesRouteCandidates}
-            onRouteSelect={handleRouteClicked(true)}
-            selectedRoutes={entity.properties.on_routes || []}
-            onRouteHighlight={handleRouteClicked(false)}
-            highlightedRoutes={highlightedRoutes}
+        {speedRestrictionCheckbox}
+        {!isSpeedRestriction && isPermanentSpeedLimit && (
+          <EditPSLSection
+            entity={entity as SpeedSectionPslEntity}
+            setState={
+              setState as (
+                stateOrReducer: PartialOrReducer<RangeEditionState<SpeedSectionEntity>>
+              ) => void
+            }
+            trackSectionsCache={trackSectionsCache}
           />
         )}
-        <TrackRangesList speedRestrictionTool={isSpeedRestriction} />
-        {!isNew && <EntityError className="mt-1" entity={entity} />}
       </div>
-    );
-  }
-
-  // Entity is electrification
-  return (
-    <div>
-      <legend className="mb-4">{t(`Editor.obj-types.Electrification`)}</legend>
-      {voltages && <ElectrificationMetadataForm voltages={voltages} />}
       <hr />
-      <TrackRangesList />
+      {isSpeedRestriction && (
+        <>
+          {t('Editor.tools.speed-edition.select-switches-to-get-route')}
+          {Object.keys(selectedSwitches).length > 0 && (
+            <>
+              <SwitchList
+                selectedSwitches={selectedSwitches}
+                unselectSwitch={unselectSwitch}
+                setSwitchSelection={setState}
+                availableSwitchesPositions={availableSwitchesPositions}
+              />
+              {switchesRouteCandidates.length === 0 && (
+                <p className="text-muted">{t('Editor.tools.routes-edition.no-route-found')}</p>
+              )}
+            </>
+          )}
+          <hr />
+        </>
+      )}
+      {switchesRouteCandidates.length > 0 && (
+        <RouteList
+          switchesRouteCandidates={switchesRouteCandidates}
+          onRouteSelect={handleRouteClicked(true)}
+          selectedRoutes={entity.properties.on_routes || []}
+          onRouteHighlight={handleRouteClicked(false)}
+          highlightedRoutes={highlightedRoutes}
+        />
+      )}
+      <TrackRangesList speedRestrictionTool={isSpeedRestriction} />
       {!isNew && <EntityError className="mt-1" entity={entity} />}
     </div>
   );
 };
 
-export default RangeEditionLeftPanel;
+export default SpeedSectionEditionLeftPanel;
