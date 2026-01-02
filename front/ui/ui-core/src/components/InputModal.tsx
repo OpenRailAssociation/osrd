@@ -2,8 +2,8 @@ import React, { useEffect, useRef } from 'react';
 
 import { X } from '@osrd-project/ui-icons';
 
-import { useModalPosition } from '../../hooks/useModalPosition';
-import useOutsideClick from '../../hooks/useOutsideClick';
+import { useModalPosition } from '../hooks/useModalPosition';
+import useOutsideClick from '../hooks/useOutsideClick';
 
 type ModalProps = {
   inputRef: React.RefObject<HTMLInputElement | null>;
