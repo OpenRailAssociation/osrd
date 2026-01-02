@@ -4,6 +4,7 @@ volumes:
   psql_data:
   valkey_data:
   rabbitmq_data:
+  s3_data:
 
 
 services:
@@ -84,6 +85,42 @@ services:
       timeout: 5s
       retries: 20
 
+  s3:
+    image: rustfs/rustfs
+    container_name: s3
+    ports:
+      - 9000:9000
+      - 9001:9001
+    volumes:
+      - s3_data:/data
+    environment:
+      RUSTFS_ACCESS_KEY: access_key
+      RUSTFS_SECRET_KEY: secret_key
+    healthcheck:
+      test:
+        [
+          "CMD",
+          "sh", "-c",
+          "curl -f http://localhost:9000/health && curl -f http://localhost:9001/rustfs/console/health"
+        ]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+  s3_init:
+    image: minio/mc
+    container_name: s3_init
+    volumes:
+      - ./docker/create_bucket.sh:/create_bucket.sh
+    depends_on:
+      s3:
+        condition: service_healthy
+    environment:
+      AWS_ACCESS_KEY_ID: access_key
+      AWS_SECRET_ACCESS_KEY: secret_key
+      AWS_ENDPOINT_URL_S3: http://s3:9000
+    entrypoint: ["/create_bucket.sh", "osrd"]
+
   core:
     # This is a dummy container to build the core image
     # and document/provide parameters to other compose files
@@ -111,6 +148,10 @@ services:
       OTEL_METRICS_EXPORTER: "none"
       OTEL_LOGS_EXPORTER: "none"
       VALKEY_URL: "redis://valkey"
+      AWS_ACCESS_KEY_ID: access_key
+      AWS_SECRET_ACCESS_KEY: secret_key
+      AWS_ENDPOINT_URL_S3: http://s3:9000
+      BUCKET_NAME: osrd
     restart: "no"
     command: "true"
 
@@ -185,6 +226,7 @@ services:
     container_name: osrd-osrdyne
     depends_on:
       rabbitmq: { condition: service_healthy }
+      s3_init: { condition: service_completed_successfully }
     command: osrdyne
     volumes:
       - ${DOCKER_SOCKET:-/var/run/docker.sock}:/var/run/docker.sock
