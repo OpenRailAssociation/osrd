@@ -77,6 +77,13 @@
       }
     }
   },
+  "applications": {
+    "infrastructures-editor": "Editor de infraestrutura",
+    "operational-studies": "Estudos operacionais",
+    "reference-map": "Cartografia",
+    "rolling-stocks-editor": "Editor de material rodante",
+    "stdcm": "Pedido de caminho de curto prazo"
+  },
   "common": {
     "delete": "Eliminar",
     "details": "Detalhes",
@@ -127,7 +134,6 @@
     "zoom-out": "Zoom -",
     "zoom-reset": "Reiniciar zoom"
   },
-  "editor": "Editor de infraestrutura",
   "infraManagement": {
     "actions": {
       "cancel": "Cancelar",
@@ -169,7 +175,6 @@
     "emptyFile": "O ficheiro está vazio",
     "uploadError": "Ocorreu um erro enquanto enviava o ficheiro"
   },
-  "map": "Cartografia",
   "mapKey": {
     "alternatingCurrent": "CA",
     "directCurrent": "CC",
@@ -184,8 +189,5 @@
   "nav-bar": {
     "about": "Sobre",
     "languages": "Línguas"
-  },
-  "operationalStudies": "Estudos operacionais",
-  "rollingStockEditor": "Editor de material rodante",
-  "stdcm": "Pedido de caminho de curto prazo"
+  }
 }

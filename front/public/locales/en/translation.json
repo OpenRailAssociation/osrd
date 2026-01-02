@@ -457,6 +457,13 @@
       }
     }
   },
+  "applications": {
+    "infrastructures-editor": "Infrastructure editor",
+    "operational-studies": "Operational studies",
+    "reference-map": "Map viewer",
+    "rolling-stocks-editor": "Rolling stock editor",
+    "stdcm": "Short term path request"
+  },
   "authorization": {
     "addGrantToUser": "Add grant to user",
     "grants": {
@@ -528,7 +535,6 @@
     "zoom-out": "Zoom out",
     "zoom-reset": "Reset zoom"
   },
-  "editor": "Infrastructure editor",
   "infraManagement": {
     "actions": {
       "cancel": "Cancel",
@@ -581,7 +587,6 @@
     "emptyFile": "The file is empty",
     "uploadError": "Error occurred while upload the file"
   },
-  "map": "Map viewer",
   "mapKey": {
     "alternatingCurrent": "AC",
     "directCurrent": "DC",
@@ -671,7 +676,6 @@
     "userSettings": "User settings",
     "yourSafeWord": "Type in your word"
   },
-  "operationalStudies": "Operational studies",
   "rollingStock": {
     "add": "Add",
     "addNewRollingStock": "New rolling stock",
@@ -802,8 +806,6 @@
     "unspecified": "Unspecified",
     "waitingLoader": "Please wait, rolling stock database loading…"
   },
-  "rollingStockEditor": "Rolling stock editor",
-  "stdcm": "Short term path request",
   "subCategory": {
     "errorMessages": {
       "unableToRetrieveSubCategory": "Cannot fetch sub-categories",

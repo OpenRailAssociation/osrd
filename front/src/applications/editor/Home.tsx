@@ -17,7 +17,7 @@ export default function HomeEditorUnplugged() {
       <NavBar
         appName={
           <>
-            {t('editor')}
+            {t('applications.infrastructures-editor')}
             {infra ? (
               <span className="ml-2 text-muted">
                 <span>{`${t('infrastructure')} ${infra.name}`}</span>
