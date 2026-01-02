@@ -11,7 +11,7 @@ import type {
   SubCategory,
   TrainCategory,
 } from 'common/api/osrdEditoastApi';
-import useStoreDataForSpeedLimitByTagSelector from 'common/SpeedLimitByTagSelector/useStoreDataForSpeedLimitByTagSelector';
+import useSpeedLimitTags from 'common/SpeedLimitByTagSelector/useSpeedLimitTags';
 import useStoreDataForRollingStockSelector from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
 import isMainCategory from 'modules/rollingStock/helpers/category';
 import useCategoryOptions from 'modules/rollingStock/hooks/useCategoryOptions';
@@ -64,10 +64,9 @@ const ItineraryModalFormHeader = ({
 
   // Composition code/speed limit by tag
   const speedLimitByTag = useSelector(getOperationalStudiesSpeedLimitByTag);
-  const { speedLimitsByTags, dispatchUpdateSpeedLimitByTag } =
-    useStoreDataForSpeedLimitByTagSelector({
-      speedLimitByTag,
-    });
+  const { speedLimitsByTags, dispatchUpdateSpeedLimitByTag } = useSpeedLimitTags({
+    speedLimitByTag,
+  });
 
   // Timetable item name
   const name = useSelector(getName);

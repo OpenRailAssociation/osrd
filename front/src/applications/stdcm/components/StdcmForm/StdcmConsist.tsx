@@ -22,7 +22,7 @@ import type {
 } from 'common/api/osrdEditoastApi';
 import { useOsrdConfActions } from 'common/osrdContext';
 import SpeedLimitByTagSelector from 'common/SpeedLimitByTagSelector';
-import { useStoreDataForSpeedLimitByTagSelector } from 'common/SpeedLimitByTagSelector/useStoreDataForSpeedLimitByTagSelector';
+import useSpeedLimitTags from 'common/SpeedLimitByTagSelector/useSpeedLimitTags';
 import RollingStock2Img from 'modules/rollingStock/components/RollingStock2Img';
 import { useStoreDataForRollingStockSelector } from 'modules/rollingStock/components/RollingStockSelector/useStoreDataForRollingStockSelector';
 import useFilterRollingStock from 'modules/rollingStock/hooks/useFilterRollingStock';
@@ -87,8 +87,10 @@ const StdcmConsist = ({
   const loadingGauges = trackSectionIdsByLoadingGauge
     ? Object.keys(trackSectionIdsByLoadingGauge)
     : [];
-  const { speedLimitsByTags, dispatchUpdateSpeedLimitByTag } =
-    useStoreDataForSpeedLimitByTagSelector({ isStdcm: true, speedLimitByTag });
+  const { speedLimitsByTags, dispatchUpdateSpeedLimitByTag } = useSpeedLimitTags({
+    isStdcm: true,
+    speedLimitByTag,
+  });
 
   const { updateRollingStockID } = useOsrdConfActions();
   const dispatch = useAppDispatch();

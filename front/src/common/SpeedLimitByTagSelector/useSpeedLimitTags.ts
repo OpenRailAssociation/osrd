@@ -12,7 +12,7 @@ import { getDefaultSpeedLimitTag, getSpeedLimitTags } from 'reducers/osrdconf/st
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 
-export const useStoreDataForSpeedLimitByTagSelector = ({
+const useSpeedLimitTags = ({
   isStdcm,
   speedLimitByTag,
 }: {
@@ -26,6 +26,7 @@ export const useStoreDataForSpeedLimitByTagSelector = ({
   const stdcmSpeedLimitTags = useSelector(getSpeedLimitTags);
   const stdcmDefaultSpeedLimitTag = useSelector(getDefaultSpeedLimitTag);
   const { updateSpeedLimitByTag } = useOsrdConfActions();
+
   const dispatchUpdateSpeedLimitByTag = (newTag: string | null) => {
     dispatch(updateSpeedLimitByTag(newTag));
   };
@@ -59,10 +60,11 @@ export const useStoreDataForSpeedLimitByTagSelector = ({
       );
     }
   }, [speedLimitsByTagsOrdered, stdcmDefaultSpeedLimitTag]);
+
   return {
     speedLimitsByTags: speedLimitsByTagsOrdered,
     dispatchUpdateSpeedLimitByTag,
   };
 };
 
-export default useStoreDataForSpeedLimitByTagSelector;
+export default useSpeedLimitTags;
