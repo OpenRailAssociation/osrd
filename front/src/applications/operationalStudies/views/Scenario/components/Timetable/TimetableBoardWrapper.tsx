@@ -283,11 +283,7 @@ const TimetableBoardWrapper = ({
   }, [handleCut]);
 
   return (
-    <BoardWrapper
-      withFooter
-      name={timetableItems.length > 0 ? computedItemLabel() : t('main.timetable.noTrain')}
-      dataTestId="timetable-board-wrapper"
-    >
+    <BoardWrapper withFooter name={computedItemLabel()} dataTestId="timetable-board-wrapper">
       <Timetable
         selectedTimetableItemIds={selectedTimetableItemIds}
         setSelectedTimetableItemIds={setSelectedTimetableItemIds}
