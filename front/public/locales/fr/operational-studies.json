@@ -235,7 +235,7 @@
       "itemsSelectionDeletedCount_one": "L'item a bien été supprimé.",
       "itemsSelectionDeletedCount_other": "Les {{count}} items ont bien été supprimés.",
       "modeCalendar": "Trier chronologiquement",
-      "modePackage": "Trier par paquet",
+      "modeTrainScheduleSet": "Trier par paquet",
       "noItem": "Aucun item",
       "noSpeedLimitTagsShort": "Aucun",
       "noTrain": "Aucun train",
@@ -258,9 +258,7 @@
       "pacedTrain": "Mission",
       "pacedTrainAdded": "Mission ajoutée",
       "pacedTrainDeleted": "La mission {{name}} a bien été supprimée",
-      "packages": {
-        "sandbox": "Bac à sable"
-      },
+
       "punctuality": "Ponctualité",
       "resetAllExceptions": "Confirmez-vous la réinitialisation des exceptions de cette mission ?",
       "resetExceptions": "Réinitialiser les exceptions",
@@ -282,6 +280,9 @@
       "trainCategories": "Catégorie de train",
       "trainDeleted": "Le train {{name}} a bien été supprimé.",
       "trainSchedule": "Train unique",
+      "trainScheduleSets": {
+        "sandbox": "Bac à sable"
+      },
       "trainType": "Missions, trains",
       "unselectAll": "Tout désélectionner",
       "update": "Modifier",

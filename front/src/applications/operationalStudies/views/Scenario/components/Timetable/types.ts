@@ -31,4 +31,4 @@ export type TimetableFilters = {
   setTrainCategoryFilter: (categoryOption: TrainCategoryFilter) => void;
 };
 
-export type TimetableMode = 'calendar' | 'package';
+export type TimetableMode = 'calendar' | 'trainScheduleSet';

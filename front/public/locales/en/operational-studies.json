@@ -235,7 +235,7 @@
       "itemsSelectionDeletedCount_one": "The item has been deleted.",
       "itemsSelectionDeletedCount_other": "The {{count}} items have been deleted.",
       "modeCalendar": "Sort chronologically",
-      "modePackage": "Sort by package",
+      "modeTrainScheduleSet": "Sort by train schedule set",
       "noItem": "No item",
       "noSpeedLimitTagsShort": "None",
       "noTrain": "No train",
@@ -258,9 +258,6 @@
       "pacedTrain": "Service",
       "pacedTrainAdded": "Service added",
       "pacedTrainDeleted": "The service {{name}} has been deleted",
-      "packages": {
-        "sandbox": "Sandbox"
-      },
       "punctuality": "Punctuality",
       "resetAllExceptions": "Do you confirm the reset of the exceptions of this service?",
       "resetExceptions": "Reset exceptions",
@@ -282,6 +279,9 @@
       "trainCategories": "Train categories",
       "trainDeleted": "{{ name }} train has been deleted.",
       "trainSchedule": "Unique train",
+      "trainScheduleSets": {
+        "sandbox": "Sandbox"
+      },
       "trainType": "Services, trains",
       "unselectAll": "Unselect all",
       "update": "Edit",
