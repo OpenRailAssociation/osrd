@@ -22,7 +22,6 @@ import {
   type PostTimetableByIdStdcmApiResponseWithTraceId,
   type RollingStockWithLiveries,
 } from 'common/api/osrdEditoastApi';
-import { useStoreDataForSpeedLimitByTagSelector } from 'common/SpeedLimitByTagSelector/useStoreDataForSpeedLimitByTagSelector';
 import { setFailure } from 'reducers/main';
 import { addStdcmSimulations } from 'reducers/osrdconf/stdcmConf';
 import { getStdcmConf, getStdcmInfraID } from 'reducers/osrdconf/stdcmConf/selectors';
@@ -65,11 +64,6 @@ const useStdcm = ({
     osrdEditoastApi.endpoints.getLightRollingStockByRollingStockId.useQuery(
       osrdconf.rollingStockID ? { rollingStockId: osrdconf.rollingStockID } : skipToken
     );
-
-  useStoreDataForSpeedLimitByTagSelector({
-    isStdcm: true,
-    speedLimitByTag: osrdconf.speedLimitByTag,
-  });
 
   const resetStdcmState = () => {
     setCurrentStdcmRequestStatus(STDCM_REQUEST_STATUS.idle);
