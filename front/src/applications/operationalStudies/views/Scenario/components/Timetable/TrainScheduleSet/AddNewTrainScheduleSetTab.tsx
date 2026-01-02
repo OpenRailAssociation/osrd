@@ -1,7 +1,11 @@
 import { PlusCircle } from '@osrd-project/ui-icons';
 import { useTranslation } from 'react-i18next';
 
-const AddNewTrainScheduleSetTab = () => {
+type AddNewTrainScheduleSetTabProps = {
+  onClick: () => void;
+};
+
+const AddNewTrainScheduleSetTab = ({ onClick }: AddNewTrainScheduleSetTabProps) => {
   const { t } = useTranslation('operational-studies', {
     keyPrefix: 'main.timetable.trainScheduleSets',
   });
@@ -13,7 +17,7 @@ const AddNewTrainScheduleSetTab = () => {
         role="button"
         tabIndex={0}
         title={t('newTrainScheduleSet')}
-        onClick={() => {}}
+        onClick={onClick}
       >
         <PlusCircle />
         <span>{t('newTrainScheduleSet')}</span>
