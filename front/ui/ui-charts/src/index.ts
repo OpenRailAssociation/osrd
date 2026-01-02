@@ -1,5 +1,7 @@
 import '@osrd-project/ui-core/dist/theme.css';
 
+export * from './chronogram';
+
 export * from './common';
 
 export * from './spaceTimeChart';
