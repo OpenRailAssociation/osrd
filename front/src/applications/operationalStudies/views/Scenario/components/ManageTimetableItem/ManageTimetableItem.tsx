@@ -91,9 +91,7 @@ const ManageTimetableItem = () => {
   const constraintDistribution = useSelector(getConstraintDistribution);
   const startTime = useSelector(getStartTime);
 
-  const { speedLimitsByTags, dispatchUpdateSpeedLimitByTag } = useSpeedLimitTags({
-    speedLimitByTag,
-  });
+  const { speedLimitsByTags, dispatchUpdateSpeedLimitByTag } = useSpeedLimitTags();
   const { rollingStockComfort, rollingStock } = useStoreDataForRollingStockSelector({
     rollingStockId,
   });

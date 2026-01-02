@@ -89,7 +89,6 @@ const StdcmConsist = ({
     : [];
   const { speedLimitsByTags, dispatchUpdateSpeedLimitByTag } = useSpeedLimitTags({
     isStdcm: true,
-    speedLimitByTag,
   });
 
   const { updateRollingStockID } = useOsrdConfActions();

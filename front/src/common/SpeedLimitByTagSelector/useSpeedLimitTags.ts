@@ -8,23 +8,16 @@ import { useSelector } from 'react-redux';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useOsrdConfActions, useInfraID } from 'common/osrdContext';
 import { setFailure } from 'reducers/main';
-import { getDefaultSpeedLimitTag, getSpeedLimitTags } from 'reducers/osrdconf/stdcmConf/selectors';
+import { getSpeedLimitTags } from 'reducers/osrdconf/stdcmConf/selectors';
 import { useAppDispatch } from 'store';
 import { castErrorToFailure } from 'utils/error';
 
-const useSpeedLimitTags = ({
-  isStdcm,
-  speedLimitByTag,
-}: {
-  isStdcm?: boolean;
-  speedLimitByTag: string | undefined;
-}) => {
+const useSpeedLimitTags = ({ isStdcm }?: { isStdcm?: boolean }) => {
   const dispatch = useAppDispatch();
   const { t } = useTranslation('operational-studies', { keyPrefix: 'manageTimetableItem' });
 
   const infraID = useInfraID();
   const stdcmSpeedLimitTags = useSelector(getSpeedLimitTags);
-  const stdcmDefaultSpeedLimitTag = useSelector(getDefaultSpeedLimitTag);
   const { updateSpeedLimitByTag } = useOsrdConfActions();
 
   const dispatchUpdateSpeedLimitByTag = (newTag: string | null) => {
@@ -52,14 +45,6 @@ const useSpeedLimitTags = ({
     ? Object.keys(stdcmSpeedLimitTags || {})
     : uniq(speedLimitsTagsByInfraId);
   const speedLimitsByTagsOrdered = useMemo(() => speedLimitsByTags.sort(), [speedLimitsByTags]);
-
-  useEffect(() => {
-    if (isStdcm && !speedLimitByTag) {
-      dispatchUpdateSpeedLimitByTag(
-        stdcmDefaultSpeedLimitTag || speedLimitsByTagsOrdered[0] || null
-      );
-    }
-  }, [speedLimitsByTagsOrdered, stdcmDefaultSpeedLimitTag]);
 
   return {
     speedLimitsByTags: speedLimitsByTagsOrdered,

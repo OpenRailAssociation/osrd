@@ -84,7 +84,6 @@ export type OsrdStdcmConfState = OsrdConfState & {
   searchDatetimeWindow?: StdcmSearchDatetimeWindow;
   operationalPoints?: number[];
   speedLimitTags?: Record<string, number>;
-  defaultSpeedLimitTag?: string;
   trackSectionIdsByLoadingGauge?: Record<string, string[]>;
   operationalPointsIdFiltered?: string[];
 };

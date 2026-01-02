@@ -165,13 +165,12 @@ export const stdcmConfSlice = createSlice({
           | 'scenarioID'
           | 'operationalPoints'
           | 'trackSectionIdsByLoadingGauge'
-          | 'speedLimitTags'
-          | 'defaultSpeedLimitTag',
+          | 'speedLimitTags',
           'infraID' | 'timetableID'
-        >
+        > & { defaultSpeedLimitTag: string | undefined }
       >
     ) {
-      const { searchDatetimeWindow } = action.payload;
+      const { searchDatetimeWindow, defaultSpeedLimitTag } = action.payload;
       state.infraID = action.payload.infraID;
       state.timetableID = action.payload.timetableID;
       state.electricalProfileSetId = action.payload.electricalProfileSetId;
@@ -185,8 +184,16 @@ export const stdcmConfSlice = createSlice({
       state.operationalPoints = action.payload.operationalPoints;
       state.trackSectionIdsByLoadingGauge = action.payload.trackSectionIdsByLoadingGauge;
       state.speedLimitTags = action.payload.speedLimitTags;
-      state.defaultSpeedLimitTag = action.payload.defaultSpeedLimitTag;
       state.operationalPointsIdFiltered = action.payload.operationalPointsIdFiltered;
+
+      // check if a speedLimitTag is already defined, and if not, use the defaultSpeedLimitTag
+      const speedLimitTags = Object.keys(action.payload.speedLimitTags || {});
+      if (!state.speedLimitByTag || !speedLimitTags.includes(state.speedLimitByTag)) {
+        state.speedLimitByTag =
+          defaultSpeedLimitTag && speedLimitTags.includes(defaultSpeedLimitTag)
+            ? defaultSpeedLimitTag
+            : speedLimitTags.at(0);
+      }
 
       // check that the arrival dates are in the search time window
       const origin = state.stdcmPathSteps.at(0) as Extract<StdcmPathStep, { isVia: false }>;
