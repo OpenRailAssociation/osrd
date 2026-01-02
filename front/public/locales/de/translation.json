@@ -60,6 +60,13 @@
       }
     }
   },
+  "applications": {
+    "infrastructures-editor": "Betriebsnetz-Editor",
+    "operational-studies": "Betriebsstudien",
+    "reference-map": "Karte",
+    "rolling-stocks-editor": "Schienenfahrzeug-Editor",
+    "stdcm": "Schnellauftrag"
+  },
   "common": {
     "collapse": "Einklappen",
     "delete": "Löschen",
@@ -72,7 +79,6 @@
     "zoom-in": "Reinzoomen",
     "zoom-out": "Rauszoomen"
   },
-  "editor": "Betriebsnetz-Editor",
   "infraManagement": {
     "actions": {
       "cancel": "Abbrechen",
@@ -118,7 +124,6 @@
     "translate": "Übersetzen",
     "value": "Wert"
   },
-  "map": "Karte",
   "nav-bar": {
     "about": "Über OSRD",
     "disconnect": "Abmelden",
@@ -135,8 +140,5 @@
     "safeWordHelp": "Durch das „Stichwort“ können Projekte in der Liste gefiltert werden, wenn es eingegeben wird. Es sollte einzigartig sein und kein Risiko für eine Doppelung bergen, um eine versehentliche Nutzung zu meiden. Fügen Sie es einem Projekt als Label hinzu – es wird bei Erstellung automatisch hinzugefügt, sofern das Stichwort hier eingetragen wird.",
     "userSettings": "Benutzereinstellungen",
     "yourSafeWord": "Stichwort eingeben"
-  },
-  "operationalStudies": "Betriebsstudien",
-  "rollingStockEditor": "Schienenfahrzeug-Editor",
-  "stdcm": "Schnellauftrag"
+  }
 }

@@ -41,7 +41,7 @@ const HomeReferenceMap = () => {
       <NavBar
         appName={
           <>
-            {t('map')}
+            {t('applications.reference-map')}
             {infra ? (
               <span className="ml-2 text-muted">
                 {`${t('infrastructure')} ${infra.name}`}

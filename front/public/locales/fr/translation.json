@@ -457,6 +457,13 @@
       }
     }
   },
+  "applications": {
+    "infrastructures-editor": "Éditeur d'infrastructure",
+    "operational-studies": "Études d'exploitation",
+    "reference-map": "Cartographie",
+    "rolling-stocks-editor": "Éditeur de matériel roulant",
+    "stdcm": "Sillons de dernière minute"
+  },
   "authorization": {
     "addGrantToUser": "Ajouter des droits à un utilisateur",
     "grants": {
@@ -528,7 +535,6 @@
     "zoom-out": "Dézoomer",
     "zoom-reset": "Réinitialiser le zoom"
   },
-  "editor": "Éditeur d'infrastructure",
   "infraManagement": {
     "actions": {
       "cancel": "Annuler",
@@ -581,7 +587,6 @@
     "emptyFile": "Le fichier est vide",
     "uploadError": "Erreur lors du chargement du fichier"
   },
-  "map": "Cartographie",
   "mapKey": {
     "alternatingCurrent": "Alternatif",
     "directCurrent": "Continu",
@@ -671,7 +676,6 @@
     "userSettings": "Paramètres utilisateur",
     "yourSafeWord": "Tapez votre mot"
   },
-  "operationalStudies": "Études d'exploitation",
   "rollingStock": {
     "add": "Ajouter",
     "addNewRollingStock": "Nouveau matériel roulant",
@@ -802,8 +806,6 @@
     "unspecified": "Non spécifié",
     "waitingLoader": "Veuillez patienter, chargement de la base de données matériel…"
   },
-  "rollingStockEditor": "Éditeur de matériel roulant",
-  "stdcm": "Sillons de dernière minute",
   "subCategory": {
     "errorMessages": {
       "unableToRetrieveSubCategory": "Récupération des sous-catégories impossible",
