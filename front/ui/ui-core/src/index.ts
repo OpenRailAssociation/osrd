@@ -17,7 +17,7 @@ export {
   type DatePickerProps,
   type RangeDatePickerProps,
   type SingleDatePickerProps,
-} from './components/datePicker';
+} from './components/DatePicker';
 export { default as Input, InputProps } from './components/Input';
 export { default as PasswordInput, PasswordInputProps } from './components/PasswordInput';
 export { default as RadioButton, RadioButtonProps } from './components/RadioButton';
@@ -31,7 +31,7 @@ export {
   default as TolerancePicker,
   type TolerancePickerProps,
   type ToleranceValues,
-} from './components/tolerancePicker/TolerancePicker';
+} from './components/TolerancePicker/TolerancePicker';
 export { default as TokenInput, TokenInputProps } from './components/TokenInput';
 export { default as Table } from './components/Table';
 export { default as Dialog } from './components/Dialog';
