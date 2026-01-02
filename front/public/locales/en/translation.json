@@ -144,13 +144,6 @@
       "switches": "Switches",
       "track_sections": "Track sections"
     },
-    "layers-modal": {
-      "frozen-layer": "needed for the active tool",
-      "layer-selected-items_one": "One item selected",
-      "layer-selected-items_other": "{{count}} items selected",
-      "selection-warning_one": "An element has been deselected.",
-      "selection-warning_other": "{{count}} elements have been deselected."
-    },
     "linear-metadata": {
       "help": "This component allows you to view and modify a linear layout. You can zoom into the view using the provided buttons or the mouse wheel, and move around using drag'n'drop. To change the size of a segment, simply click on it and the edit form will be displayed below. You can also click on a border of a segment, and while keeping your finger pressed, move the border with the mouse.",
       "merge-with-left": "Merge with the previous item",
@@ -160,10 +153,7 @@
     "nav": {
       "choose-infra": "Choose an infrastructure",
       "infra-error-corrector": "Automatic error corrector",
-      "infra-errors-list": "Configure display of issues",
-      "osrd-layers": "Data layers",
-      "speed-limits": "Speed limits",
-      "toggle-layers": "Choose the types of elements to display"
+      "infra-errors-list": "Configure display of issues"
     },
     "obj-types": {
       "BufferStop": "Buffer stop",
@@ -587,6 +577,18 @@
     "emptyFile": "The file is empty",
     "uploadError": "Error occurred while upload the file"
   },
+  "map": {
+    "layers-modal": {
+      "data-layers": "Data layers",
+      "disabled-layer": "needed for the active tool",
+      "layer-selected-items_one": "One item selected",
+      "layer-selected-items_other": "{{count}} items selected",
+      "selection-warning_one": "An element has been deselected.",
+      "selection-warning_other": "{{count}} elements have been deselected.",
+      "speed-limits": "Speed limits",
+      "toggle-layers": "Choose the types of elements to display"
+    }
+  },
   "mapKey": {
     "alternatingCurrent": "AC",
     "directCurrent": "DC",
@@ -645,6 +647,7 @@
       "smoothTravel": "Smooth travel",
       "sncf_psl": "Permanent speed limits",
       "speed_limits": "Speed limits",
+      "speedlimittag": "Composition codes",
       "switches": "Switch",
       "track_sections": "Track sections"
     },

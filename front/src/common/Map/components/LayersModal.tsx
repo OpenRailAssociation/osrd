@@ -127,10 +127,10 @@ const LayersModal = ({
   );
 
   return (
-    <Modal title={t('Editor.nav.toggle-layers')} closePortalModal={closePortalModal}>
+    <Modal title={t('map.layers-modal.toggle-layers')} closePortalModal={closePortalModal}>
       <div className="container-fluid mb-3">
         <div>
-          <h4>{t('Editor.nav.osrd-layers')}</h4>
+          <h4>{t('map.layers-modal.data-layers')}</h4>
         </div>
         <div className="row">
           {layers.map(({ layer, icon }) => (
@@ -150,17 +150,17 @@ const LayersModal = ({
                   <div>{icon}</div>
                 )}
                 <div className="d-flex flex-column">
-                  <div>{t(`Editor.layers.${layer}`)}</div>
+                  <div>{t(`mapSettings.layers.${layer}`)}</div>
                   {selectedLayers[layer] && !!selectionCounts.get(layer) && (
                     <div className="small text-muted font-italic">
-                      {t('Editor.layers-modal.layer-selected-items', {
+                      {t('map.layers-modal.layer-selected-items', {
                         count: selectionCounts.get(layer),
                       })}
                     </div>
                   )}
                   {disabledLayers?.[layer] && (
                     <div className="small text-muted font-italic">
-                      {t('Editor.layers-modal.frozen-layer')}
+                      {t('map.layers-modal.disabled-layer')}
                     </div>
                   )}
                 </div>
@@ -170,7 +170,7 @@ const LayersModal = ({
         </div>
         <hr />
         <div>
-          <h4>{t('Editor.nav.speed-limits')}</h4>
+          <h4>{t('map.layers-modal.speed-limits')}</h4>
           <select
             id="speedLimitTag"
             className="form-control"
@@ -200,7 +200,7 @@ const LayersModal = ({
         <div className="text-right">
           {!!unselectCount && (
             <div className="text-primary my-2">
-              {t('Editor.layers-modal.selection-warning', { count: unselectCount })}
+              {t('map.layers-modal.selection-warning', { count: unselectCount })}
             </div>
           )}
         </div>
