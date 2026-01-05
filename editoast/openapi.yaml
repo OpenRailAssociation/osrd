@@ -3798,7 +3798,11 @@ paths:
     get:
       tags:
       - timetable
-      summary: Retrieve the list of conflicts of the timetable (invalid trains are ignored)
+      summary: Retrieve the list of conflicts of the timetable
+      description: |-
+        The following trains are **excluded** from the result:
+        - trains for which the simulation fails
+        - trains for which the simulation does not respect schedule times
       parameters:
       - name: id
         in: path
