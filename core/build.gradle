@@ -15,9 +15,6 @@ plugins {
 
 // region DEPENDENCIES
 
-repositories {
-    mavenCentral()
-}
 
 dependencies {
     // PLEASE ADD AND UPDATE DEPENDENCIES USING libs.versions.toml
