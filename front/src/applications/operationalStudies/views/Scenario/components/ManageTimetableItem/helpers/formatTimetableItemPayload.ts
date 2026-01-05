@@ -17,13 +17,13 @@ import {
   isPacedTrainId,
 } from 'utils/trainId';
 
+import formatMargin from './formatMargin';
+import formatSchedule from './formatSchedule';
 import {
   generatePacedTrainException,
   updatePacedTrainExceptionsList,
   checkChangeGroups,
-} from './buildPacedTrainException';
-import formatMargin from './formatMargin';
-import formatSchedule from './formatSchedule';
+} from '../../../helpers/buildPacedTrainException';
 
 export function formatTimetableItemPayload(
   osrdconf: OperationalStudiesConfState,

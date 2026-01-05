@@ -30,7 +30,7 @@ import {
   isPacedTrainResponseWithPacedTrainId,
 } from 'utils/trainId';
 
-import { checkChangeGroups } from '../../ManageTimetableItem/helpers/buildPacedTrainException';
+import { checkChangeGroups } from '../../../helpers/buildPacedTrainException';
 import type {
   NetzgrafikDto,
   NGEEvent,

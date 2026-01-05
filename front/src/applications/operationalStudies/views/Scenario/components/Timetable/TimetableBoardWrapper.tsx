@@ -29,7 +29,7 @@ import { isTrainScheduleId } from 'utils/trainId';
 
 import Timetable from './Timetable';
 import { copyTimetableItemsToClipboard } from './utils';
-import postTimetableItems from '../ImportTimetableItem/helpers/postTimetableItems';
+import postTimetableItems from '../../helpers/postTimetableItems';
 
 type TimetableBoardWrapperProps = {
   setDisplayTimetableItemManagement: (mode: string) => void;

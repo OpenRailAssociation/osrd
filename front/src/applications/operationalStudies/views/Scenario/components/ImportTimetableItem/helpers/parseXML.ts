@@ -7,7 +7,7 @@ import { addDurationToDate, Duration } from 'utils/duration';
 
 import { buildSteps, cleanTimeFormat } from './buildStepsFromOcp';
 import findMostFrequentScheduleInPacedTrain from './findMostFrequentXmlSchedule';
-import { generatePacedTrainException } from '../../ManageTimetableItem/helpers/buildPacedTrainException';
+import { generatePacedTrainException } from '../../../helpers/buildPacedTrainException';
 
 const extractCiChCode = (code: string) => {
   const [ciCode, chCode] = code.split('/');

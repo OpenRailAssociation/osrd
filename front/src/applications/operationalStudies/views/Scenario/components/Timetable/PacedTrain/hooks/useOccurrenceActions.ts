@@ -4,8 +4,8 @@ import { useSelector } from 'react-redux';
 import { v4 as uuidV4 } from 'uuid';
 
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
-import { updatePacedTrainExceptionsList } from 'applications/operationalStudies/views/Scenario/components/ManageTimetableItem/helpers/buildPacedTrainException';
 import { formatPacedTrainWithDetailsToPacedTrainPayload } from 'applications/operationalStudies/views/Scenario/components/ManageTimetableItem/helpers/formatTimetableItemPayload';
+import { updatePacedTrainExceptionsList } from 'applications/operationalStudies/views/Scenario/helpers/buildPacedTrainException';
 import type { PacedTrain } from 'common/api/osrdEditoastApi';
 import {
   findExceptionWithOccurrenceId,
