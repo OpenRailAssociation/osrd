@@ -4,9 +4,6 @@ plugins {
     id 'jacoco'
 }
 
-repositories {
-    mavenCentral()
-}
 
 java {
     toolchain {
