@@ -1,7 +1,6 @@
 import { useMemo, useEffect, useState } from 'react';
 
-import { Input } from '@osrd-project/ui-core';
-import type { Status } from '@osrd-project/ui-core/dist/components/inputs/StatusMessage';
+import { Input, type StatusWithMessage } from '@osrd-project/ui-core';
 import { useTranslation } from 'react-i18next';
 
 import { updateStdcmPathStep } from 'reducers/osrdconf/stdcmConf';
@@ -26,13 +25,13 @@ const StopDurationInput = ({ pathStep }: StopDurationInputProps) => {
   );
   const debouncedStopDuration = useDebounce(stopDuration, 300);
 
-  const stopWarning = useMemo(
+  const stopWarning: StatusWithMessage | undefined = useMemo(
     () =>
       pathStep.stopType === StdcmStopTypes.DRIVER_SWITCH &&
       pathStep.stopFor !== undefined &&
       pathStep.stopFor < new Duration({ minutes: 3 })
         ? {
-            status: 'warning' as Status,
+            status: 'warning',
             message: t('stdcmErrors.routeErrors.viaStopDurationTooShort'),
           }
         : undefined,
