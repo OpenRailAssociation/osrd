@@ -16,6 +16,7 @@ type BaseDatePickerProps = {
   errorMessages?: { invalidInput?: string; invalidDate?: string };
   width?: number;
   testIdPrefix?: string;
+  withWrapper?: boolean;
 };
 
 export type SingleDatePickerProps = BaseDatePickerProps & {
@@ -48,8 +49,7 @@ export const DatePicker = (props: DatePickerProps) => {
   } = useDatePicker(props);
 
   const { inputFieldWrapperClassname, ...otherInputProps } = props.inputProps;
-  const { selectableSlot } = props;
-  const { testIdPrefix } = props;
+  const { selectableSlot, withWrapper, testIdPrefix } = props;
 
   return (
     <div data-testid={testIdPrefix ? `${testIdPrefix}` : undefined} className="ui-date-picker">
@@ -70,7 +70,14 @@ export const DatePicker = (props: DatePickerProps) => {
           })}
           autoComplete="off"
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleInputOnChange(e.target.value)}
-          statusWithMessage={statusWithMessage}
+          wrapperProps={
+            withWrapper
+              ? {
+                  withWrapper,
+                  statusWithMessage,
+                }
+              : undefined
+          }
         />
       </div>
       <InputModal

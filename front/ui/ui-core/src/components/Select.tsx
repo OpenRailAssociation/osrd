@@ -25,7 +25,6 @@ const Select = <T,>({
   value,
   options,
   placeholder,
-  statusWithMessage,
   required,
   disabled,
   narrow,
@@ -33,6 +32,7 @@ const Select = <T,>({
   small,
   getOptionLabel,
   getOptionValue,
+  wrapperProps,
   onChange,
   ...props
 }: SelectProps<T>) => {
@@ -55,19 +55,23 @@ const Select = <T,>({
       id={id}
       label={label}
       hint={hint}
-      statusWithMessage={statusWithMessage}
       required={required}
       disabled={disabled}
       small={small}
       narrow={narrow}
+      wrapperProps={wrapperProps}
     >
       <select
         id={id}
-        className={cx('ui-select', statusWithMessage?.status, {
-          'placeholder-selected': placeholder && !selectedOption,
-          small,
-          'read-only': readOnly,
-        })}
+        className={cx(
+          'ui-select',
+          wrapperProps?.withWrapper && wrapperProps.statusWithMessage?.status,
+          {
+            'placeholder-selected': placeholder && !selectedOption,
+            small,
+            'read-only': readOnly,
+          }
+        )}
         value={selectedOption ? getOptionValue(selectedOption) : undefined}
         required={required}
         disabled={disabled || readOnly}

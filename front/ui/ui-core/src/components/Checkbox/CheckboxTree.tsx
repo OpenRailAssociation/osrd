@@ -21,10 +21,10 @@ const CheckboxesTree = ({
   id,
   label,
   hint,
-  statusWithMessage,
   disabled,
   required,
   readOnly,
+  wrapperProps,
   onChange,
   computeNewItemsTree,
 }: CheckboxesTreeProps) => {
@@ -44,10 +44,16 @@ const CheckboxesTree = ({
       id={id}
       label={label}
       hint={hint}
-      statusWithMessage={statusWithMessage}
-      statusIconPosition="before-status-message"
       disabled={disabled}
       required={required}
+      wrapperProps={
+        wrapperProps?.withWrapper
+          ? {
+              ...wrapperProps,
+              statusIconPosition: 'before-status-message',
+            }
+          : undefined
+      }
       small={small}
     >
       <CheckboxList

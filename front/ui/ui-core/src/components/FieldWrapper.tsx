@@ -13,17 +13,24 @@ export type FieldWrapperProps = {
   hint?: string;
   required?: boolean;
   disabled?: boolean;
-  statusWithMessage?: StatusWithMessage;
-  statusIconPosition?: 'next-to-field' | 'before-status-message';
   /**
    * Input without any wrapper padding.
    * Should not be used with required or statusWithMessage with no tooltip.
+   *
+   * TODO: drop narrow once WithWrapper is implemented everywhere
    */
   narrow?: boolean;
   small?: boolean;
   children?: React.ReactNode;
   className?: string;
-  onCloseStatusMessage?: () => void;
+  wrapperProps?:
+    | { withWrapper?: false }
+    | {
+        withWrapper: true;
+        statusWithMessage?: StatusWithMessage;
+        statusIconPosition?: 'next-to-field' | 'before-status-message';
+        onCloseStatusMessage?: () => void;
+      };
 };
 
 const FieldWrapper = ({
@@ -32,20 +39,42 @@ const FieldWrapper = ({
   hint,
   required,
   disabled,
-  statusWithMessage,
-  statusIconPosition = 'next-to-field',
   narrow = false,
   small = false,
   className,
+  wrapperProps,
   children,
-  onCloseStatusMessage,
 }: FieldWrapperProps) => {
-  const statusClassname = statusWithMessage ? { [statusWithMessage.status]: true } : {};
-  const defaultTooltip: StatusWithMessage['tooltip'] = narrow ? 'left' : undefined;
-
   if (narrow && required) {
     throw new Error('narrow should not be used with required for now. This breaks the input UI.');
   }
+
+  if (!wrapperProps?.withWrapper)
+    return (
+      <div>
+        {/* LABEL AND HINT */}
+        {label && (
+          <Label
+            htmlFor={id}
+            text={label}
+            hasHint={Boolean(hint)}
+            disabled={disabled}
+            small={small}
+          />
+        )}
+        {hint && <Hint text={hint} />}
+        {children}
+      </div>
+    );
+
+  const {
+    statusWithMessage,
+    statusIconPosition = 'next-to-field',
+    onCloseStatusMessage,
+  } = wrapperProps;
+
+  const statusClassname = statusWithMessage ? { [statusWithMessage.status]: true } : {};
+  const defaultTooltip: StatusWithMessage['tooltip'] = narrow ? 'left' : undefined;
 
   return (
     <div className={cx('ui-feedback', statusClassname, className, { small, narrow })}>

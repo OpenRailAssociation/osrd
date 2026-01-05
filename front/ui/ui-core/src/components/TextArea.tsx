@@ -14,10 +14,9 @@ const TextArea = ({
   label,
   value = '',
   hint,
-  required,
   disabled,
-  statusWithMessage,
   maxLength,
+  wrapperProps,
   onChange,
   onKeyUp,
   onBlur,
@@ -31,9 +30,8 @@ const TextArea = ({
       id={id}
       label={label}
       hint={hint}
-      statusWithMessage={statusWithMessage}
       disabled={disabled}
-      required={required}
+      wrapperProps={wrapperProps}
       className="ui-text-area-field-wrapper"
     >
       <div className={cx('text-area-wrapper', { 'focused-by-tab': isFocusByTab })}>
@@ -48,7 +46,10 @@ const TextArea = ({
           </div>
         )}
         <textarea
-          className={cx('text-area', { [statusWithMessage?.status || '']: !!statusWithMessage })}
+          className={cx(
+            'text-area',
+            wrapperProps?.withWrapper && wrapperProps.statusWithMessage?.status
+          )}
           id={id}
           value={value}
           disabled={disabled}

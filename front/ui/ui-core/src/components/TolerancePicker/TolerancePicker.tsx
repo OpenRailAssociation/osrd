@@ -27,6 +27,7 @@ const TolerancePicker = ({
   },
   translateWarningMessage,
   testIdPrefix,
+  wrapperProps,
   ...inputProps
 }: TolerancePickerProps) => {
   const formatToleranceValue = (minusIndex: number, plusIndex: number) =>
@@ -64,7 +65,11 @@ const TolerancePicker = ({
           testIdPrefix={testIdPrefix}
           {...inputProps}
           value={inputValue}
-          statusWithMessage={warningStatus}
+          wrapperProps={
+            wrapperProps?.withWrapper
+              ? { ...wrapperProps, statusWithMessage: warningStatus }
+              : undefined
+          }
           onClick={() => setShowPicker(!showPicker)}
           type="text"
           ref={inputRef}

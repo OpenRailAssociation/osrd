@@ -66,14 +66,13 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
       required,
       disabled = false,
       readOnly = false,
-      statusWithMessage,
+      wrapperProps,
       narrow,
       inputFieldWrapperClassname = '',
       small = false,
       withIcons = [],
       onKeyUp,
       onBlur,
-      onCloseStatusMessage,
       testIdPrefix,
       ...rest
     },
@@ -86,16 +85,20 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
         id={id}
         label={label}
         hint={hint}
-        statusWithMessage={statusWithMessage}
         disabled={disabled}
         required={required}
         small={small}
-        statusIconPosition={
-          statusWithMessage?.tooltip || narrow ? 'before-status-message' : undefined
-        }
         narrow={narrow}
         className={cx('ui-input-field-wrapper', inputFieldWrapperClassname)}
-        onCloseStatusMessage={onCloseStatusMessage}
+        {...(wrapperProps?.withWrapper
+          ? {
+              ...wrapperProps,
+              statusIconPosition:
+                wrapperProps?.statusWithMessage?.tooltip || narrow
+                  ? 'before-status-message'
+                  : undefined,
+            }
+          : {})}
       >
         {leadingContent && (
           <InputAffix
@@ -118,7 +121,11 @@ const Input = React.forwardRef<HTMLInputElement, InputProps>(
               'with-trailing-only': trailingContent && !leadingContent,
               'with-leading-and-trailing': leadingContent && trailingContent,
               [`with-icons-${withIcons.length}`]: withIcons.length > 0,
-              [statusWithMessage?.status || '']: !!statusWithMessage,
+              ...(wrapperProps?.withWrapper && wrapperProps.statusWithMessage
+                ? {
+                    [wrapperProps.statusWithMessage.status]: true,
+                  }
+                : {}),
             })}
             id={id}
             type={type}
