@@ -207,36 +207,6 @@
             animation: tilt-shaking 0.25s 0s;
           }
         }
-
-        @keyframes tilt-shaking {
-          0% {
-            transform: rotate(0deg);
-          }
-          12% {
-            transform: rotate(1deg);
-          }
-          24% {
-            transform: rotate(0deg);
-          }
-          36% {
-            transform: rotate(-1deg);
-          }
-          47% {
-            transform: rotate(0deg);
-          }
-          59% {
-            transform: rotate(1deg);
-          }
-          70% {
-            transform: rotate(0deg);
-          }
-          85% {
-            transform: rotate(-1deg);
-          }
-          100% {
-            transform: rotate(0deg);
-          }
-        }
       }
     }
 

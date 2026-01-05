@@ -179,4 +179,34 @@ $colors: (
 
   --modal-gray-transparent-background: rgba(0, 0, 0, 0.1);
   --modal-osrd-overlay: linear-gradient(180deg, rgba(0, 0, 0, 0.6) 0%, rgba(0, 0, 0, 0.7) 100%);
+
+  @keyframes tilt-shaking {
+    0% {
+      transform: rotate(0deg);
+    }
+    12% {
+      transform: rotate(1deg);
+    }
+    24% {
+      transform: rotate(0deg);
+    }
+    36% {
+      transform: rotate(-1deg);
+    }
+    47% {
+      transform: rotate(0deg);
+    }
+    59% {
+      transform: rotate(1deg);
+    }
+    70% {
+      transform: rotate(0deg);
+    }
+    85% {
+      transform: rotate(-1deg);
+    }
+    100% {
+      transform: rotate(0deg);
+    }
+  }
 }
