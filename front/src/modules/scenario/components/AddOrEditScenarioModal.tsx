@@ -24,7 +24,7 @@ import { ModalContext } from 'common/BootstrapSNCF/ModalSNCF/ModalProvider';
 import SelectImprovedSNCF from 'common/BootstrapSNCF/SelectImprovedSNCF';
 import TextareaSNCF from 'common/BootstrapSNCF/TextareaSNCF';
 import { useInfraID } from 'common/osrdContext';
-import { InfraSelectorModal } from 'modules/infra/components/InfraSelector';
+import { InfraSelectorModal } from 'modules/infra/InfraSelector';
 import DeleteItemsModal from 'modules/project/components/DeleteItemsModal';
 import { setFailure, setSuccess } from 'reducers/main';
 import { useAppDispatch } from 'store';

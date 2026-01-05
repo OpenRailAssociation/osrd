@@ -4,7 +4,7 @@ import { GiRailway } from 'react-icons/gi';
 
 import { useModal } from 'common/BootstrapSNCF/ModalSNCF';
 import { useInfraID } from 'common/osrdContext';
-import InfraSelector from 'modules/infra/components/InfraSelector';
+import InfraSelector from 'modules/infra/InfraSelector';
 
 const ButtonMapInfras = ({ isInEditor }: { isInEditor?: boolean }) => {
   const { openModal } = useModal();
