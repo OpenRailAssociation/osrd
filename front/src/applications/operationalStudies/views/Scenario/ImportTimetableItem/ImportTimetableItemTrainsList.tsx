@@ -38,7 +38,7 @@ import generateTrainSchedulesPayloads from './generateTrainSchedulesPayloads';
 import findValidTrainNameKey from './helpers/findValidTrainNameKey';
 import { generateRoundTripsPayload } from './helpers/generatePayloads';
 import rollingstockOpenData2OSRD from './rollingstock_opendata2osrd.json';
-import postTimetableItems from '../../helpers/postTimetableItems';
+import postTimetableItems from '../helpers/postTimetableItems';
 
 function LoadingIfSearching({
   isLoading,

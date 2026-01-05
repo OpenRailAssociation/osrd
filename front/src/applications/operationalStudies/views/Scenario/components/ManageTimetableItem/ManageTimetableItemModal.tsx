@@ -2,12 +2,12 @@ import { ChevronLeft, ChevronRight } from '@osrd-project/ui-icons';
 
 import { ManageTimetableItemContextProvider } from 'applications/operationalStudies/hooks/useManageTimetableItemContext';
 
-import ImportTimetableItem from '../ImportTimetableItem';
 import ManageTimetableItem from './ManageTimetableItem';
 import ManageTimetableItemLeftPanel, {
   type ManageTimetableItemLeftPanelProps,
 } from './ManageTimetableItemLeftPanel';
 import { MANAGE_TIMETABLE_ITEM_TYPES } from '../../consts';
+import ImportTimetableItem from '../../ImportTimetableItem';
 
 type ManageTimetableItemModalProps = ManageTimetableItemLeftPanelProps & {
   setCollapsedTimetableEdit: () => void;

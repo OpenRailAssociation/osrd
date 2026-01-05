@@ -25,7 +25,7 @@ import { castErrorToFailure } from 'utils/error';
 
 import parseXML from './helpers/parseXML';
 import StationSelector from './ImportTimetableItemStationSelector';
-import { handleFileReadingError, processJsonFile } from '../../helpers/handleParseFiles';
+import { handleFileReadingError, processJsonFile } from '../helpers/handleParseFiles';
 
 type ImportTimetableItemConfigProps = {
   setTrainsList: (trainsList: GraouTrainSchedule[]) => void;
