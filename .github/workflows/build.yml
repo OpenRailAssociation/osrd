@@ -862,6 +862,48 @@ jobs:
           path: container-logs
           retention-days: 30
 
+  getting_started:
+    runs-on: ubuntu-latest
+    name: Check Getting Started
+    needs:
+      - build
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+      - name: Download built editoast image
+        if: needs.build.outputs.output_method == 'artifact'
+        uses: actions/download-artifact@v7
+        with:
+          name: editoast
+          path: .
+      - name: Download built core image
+        if: needs.build.outputs.output_method == 'artifact'
+        uses: actions/download-artifact@v7
+        with:
+          name: core
+          path: .
+      - name: Download built osrdyne image
+        if: needs.build.outputs.output_method == 'artifact'
+        uses: actions/download-artifact@v7
+        with:
+          name: osrdyne
+          path: .
+      - name: Load built images
+        if: needs.build.outputs.output_method == 'artifact'
+        run: |
+          docker load --input ./osrd-editoast.tar
+          docker load --input ./osrd-core.tar
+          docker load --input ./osrd-osrdyne.tar
+      - name: Start the stack
+        run: |
+          docker compose up --no-build -d editoast osrdyne core jaeger openfga wait-healthy
+      - name: "Check the getting started commands"
+        # Note: any change below should also be reflected in the README.md getting started section
+        run: |
+          ./scripts/load-railjson-infra.sh small_infra tests/data/infras/small_infra/infra.json
+          ./scripts/load-railjson-rolling-stock.sh tests/data/rolling_stocks/realistic/*.json --force
+          ./scripts/load-railjson-rolling-stock.sh tests/data/rolling_stocks/*.json
+
   end_to_end_tests:
     runs-on: ubuntu-latest
     name: End to end tests
