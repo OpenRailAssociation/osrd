@@ -1,4 +1,7 @@
-import { isTooFast, isScheduledPointsNotHonored } from 'applications/operationalStudies/utils';
+import {
+  isTooFast,
+  isScheduledPointsNotHonored,
+} from 'applications/operationalStudies/helpers/utils';
 import type {
   LightRollingStockWithLiveries,
   SimulationSummaryResult,

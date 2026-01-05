@@ -1,7 +1,7 @@
 import type { TFunction } from 'i18next';
 import { isEmpty, sortBy } from 'lodash';
 
-import { isInvalidName } from 'applications/operationalStudies/utils';
+import { isInvalidName } from 'applications/operationalStudies/helpers/utils';
 import type { StudyState } from 'applications/operationalStudies/views/Study/consts';
 import type { SelectOptionObject } from 'common/BootstrapSNCF/SelectImprovedSNCF';
 import { SMALL_INPUT_MAX_LENGTH, SMALL_TEXT_AREA_MAX_LENGTH, isInvalidString } from 'utils/strings';

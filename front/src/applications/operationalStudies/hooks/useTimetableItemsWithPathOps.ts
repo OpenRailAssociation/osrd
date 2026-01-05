@@ -5,7 +5,7 @@ import { skipToken } from '@reduxjs/toolkit/query';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import type { TimetableItem, TimetableItemWithPathOps } from 'reducers/osrdconf/types';
 
-import { getUniqueOpRefsFromTimetableItems, addPathOpsToTimetableItems } from '../utils';
+import { getUniqueOpRefsFromTimetableItems, addPathOpsToTimetableItems } from '../helpers/utils';
 
 const useTimetableItemsWithPathOps = (
   infraId: number,

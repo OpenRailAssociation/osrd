@@ -6,7 +6,7 @@ import {
   isTooFast,
   transformBoundariesDataToPositionDataArray,
   transformElectricalBoundariesToRanges,
-} from 'applications/operationalStudies/utils';
+} from 'applications/operationalStudies/helpers/utils';
 
 import {
   boundariesDataWithNumber,

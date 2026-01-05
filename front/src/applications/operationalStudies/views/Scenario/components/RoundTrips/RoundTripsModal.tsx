@@ -6,7 +6,10 @@ import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 
 import useTimetableItemsWithPathOps from 'applications/operationalStudies/hooks/useTimetableItemsWithPathOps';
-import { checkRoundTripCompatible, groupRoundTrips } from 'applications/operationalStudies/utils';
+import {
+  checkRoundTripCompatible,
+  groupRoundTrips,
+} from 'applications/operationalStudies/helpers/utils';
 import { osrdEditoastApi } from 'common/api/osrdEditoastApi';
 import { useSubCategoryContext } from 'common/SubCategoryContext';
 import type { TimetableItem, TimetableItemId } from 'reducers/osrdconf/types';

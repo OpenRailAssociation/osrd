@@ -1,7 +1,7 @@
 import type { TFunction } from 'i18next';
 import { describe, it, expect, vi } from 'vitest';
 
-import { trainScheduleHonored } from 'applications/operationalStudies/__tests__/sampleData';
+import { trainScheduleHonored } from 'applications/operationalStudies/helpers/__tests__/sampleData';
 import { setFailure } from 'reducers/main';
 
 import { processJsonFile } from '../handleParseFiles';

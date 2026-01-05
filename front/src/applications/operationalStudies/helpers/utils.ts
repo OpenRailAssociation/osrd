@@ -30,7 +30,6 @@ import {
   isPacedTrainResponseWithPacedTrainId,
 } from 'utils/trainId';
 
-import { upsertMapWaypointsInOperationalPoints } from './helpers/upsertMapWaypointsInOperationalPoints';
 import type {
   BoundariesData,
   ElectricalBoundariesData,
@@ -41,7 +40,8 @@ import type {
   PathPropertiesFormatted,
   PositionData,
   TimetableItemRoundTripGroups,
-} from './types';
+} from '../types';
+import { upsertMapWaypointsInOperationalPoints } from './upsertMapWaypointsInOperationalPoints';
 
 /**
  * Transform datas received with boundaries / values format :

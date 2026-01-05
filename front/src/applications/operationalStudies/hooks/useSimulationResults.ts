@@ -20,8 +20,8 @@ import {
   isTrainScheduleId,
 } from 'utils/trainId';
 
+import { preparePathPropertiesData } from '../helpers/utils';
 import type { SimulationResults } from '../types';
-import { preparePathPropertiesData } from '../utils';
 import { useScenarioContext } from './useScenarioContext';
 
 /**

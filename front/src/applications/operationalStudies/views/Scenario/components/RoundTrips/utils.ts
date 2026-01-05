@@ -1,11 +1,11 @@
 import type { TFunction } from 'i18next';
 
-import type { TimetableItemRoundTripGroups } from 'applications/operationalStudies/types';
 import {
   getInvalidStepLabel,
   checkRoundTripCompatible,
   getStationFromOps,
-} from 'applications/operationalStudies/utils';
+} from 'applications/operationalStudies/helpers/utils';
+import type { TimetableItemRoundTripGroups } from 'applications/operationalStudies/types';
 import type { OperationalPoint, TrainSchedule, RoundTrips } from 'common/api/osrdEditoastApi';
 import type { TimetableItemWithPathOps } from 'reducers/osrdconf/types';
 import { addDurationToDate, Duration } from 'utils/duration';

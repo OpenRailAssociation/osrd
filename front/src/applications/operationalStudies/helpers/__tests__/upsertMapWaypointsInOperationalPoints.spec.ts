@@ -3,7 +3,7 @@ import { describe, it, expect } from 'vitest';
 
 import type { PathItem, PathProperties } from 'common/api/osrdEditoastApi';
 
-import { upsertMapWaypointsInOperationalPoints } from '../helpers/upsertMapWaypointsInOperationalPoints';
+import { upsertMapWaypointsInOperationalPoints } from '../upsertMapWaypointsInOperationalPoints';
 
 /**
 Mocks the translation t function by stripping the namespace prefixes of the passed translation key and prefixing it with t_

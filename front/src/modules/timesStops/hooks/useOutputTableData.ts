@@ -7,7 +7,7 @@ import { useSelector } from 'react-redux';
 import usePathOps from 'applications/operationalStudies/hooks/usePathOps';
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import type { PathPropertiesFormatted } from 'applications/operationalStudies/types';
-import { matchOpRefAndOp } from 'applications/operationalStudies/utils';
+import { matchOpRefAndOp } from 'applications/operationalStudies/helpers/utils';
 import type {
   ScheduleItem,
   SimulationResponseSuccess,

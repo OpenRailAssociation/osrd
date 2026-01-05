@@ -4,7 +4,7 @@ import type { Position } from 'geojson';
 import { useTranslation } from 'react-i18next';
 import type { MapLayerMouseEvent, MapRef } from 'react-map-gl/maplibre';
 
-import { matchOpRefAndOp } from 'applications/operationalStudies/utils';
+import { matchOpRefAndOp } from 'applications/operationalStudies/helpers/utils';
 import type { PathProperties } from 'common/api/osrdEditoastApi';
 import BaseMap from 'common/Map/BaseMap';
 import MapButtons from 'common/Map/Buttons/MapButtons';

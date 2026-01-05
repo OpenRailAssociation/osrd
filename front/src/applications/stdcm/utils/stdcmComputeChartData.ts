@@ -1,6 +1,6 @@
 import type { TFunction } from 'i18next';
 
-import { preparePathPropertiesData } from 'applications/operationalStudies/utils';
+import { preparePathPropertiesData } from 'applications/operationalStudies/helpers/utils';
 import type { StdcmSuccessResponse } from 'applications/stdcm/types';
 import type { PathProperties, RollingStockWithLiveries } from 'common/api/osrdEditoastApi';
 import formatPowerRestrictionRangesWithHandled from 'modules/powerRestriction/helpers/formatPowerRestrictionRangesWithHandled';

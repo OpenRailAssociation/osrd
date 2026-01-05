@@ -1,4 +1,4 @@
-import { isInvalidName } from 'applications/operationalStudies/utils';
+import { isInvalidName } from 'applications/operationalStudies/helpers/utils';
 import type { TrainScheduleResponse } from 'common/api/osrdEditoastApi';
 import { SMALL_TEXT_AREA_MAX_LENGTH, isInvalidString } from 'utils/strings';
 

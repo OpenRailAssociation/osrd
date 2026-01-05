@@ -4,7 +4,7 @@ import dayjs from 'dayjs';
 import type { TFunction } from 'i18next';
 import { round, isEqual, isNil } from 'lodash';
 
-import { getInvalidStepLabel } from 'applications/operationalStudies/utils';
+import { getInvalidStepLabel } from 'applications/operationalStudies/helpers/utils';
 import type {
   OperationalPoint,
   PathItemLocation,

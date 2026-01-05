@@ -6,7 +6,7 @@ import { MdOutlineAccessTime, MdOutlineDriveFileRenameOutline } from 'react-icon
 import { SlSpeedometer } from 'react-icons/sl';
 import { useSelector } from 'react-redux';
 
-import { isInvalidName } from 'applications/operationalStudies/utils';
+import { isInvalidName } from 'applications/operationalStudies/helpers/utils';
 import ChipsSNCF from 'common/BootstrapSNCF/ChipsSNCF';
 import InputSNCF from 'common/BootstrapSNCF/InputSNCF';
 import SelectSNCF from 'common/BootstrapSNCF/SelectSNCF';

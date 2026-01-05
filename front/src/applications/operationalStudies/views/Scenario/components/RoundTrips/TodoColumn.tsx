@@ -3,7 +3,7 @@ import { useLayoutEffect, useMemo, useRef, useState } from 'react';
 import cx from 'classnames';
 import { useTranslation } from 'react-i18next';
 
-import { checkRoundTripCompatible } from 'applications/operationalStudies/utils';
+import { checkRoundTripCompatible } from 'applications/operationalStudies/helpers/utils';
 import type { SubCategory } from 'common/api/osrdEditoastApi';
 import type { TimetableItemId, TimetableItemWithPathOps } from 'reducers/osrdconf/types';
 import { isPacedTrainId } from 'utils/trainId';

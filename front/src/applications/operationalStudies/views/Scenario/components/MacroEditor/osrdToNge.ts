@@ -7,7 +7,7 @@ import {
   addPathOpsToTimetableItems,
   groupRoundTrips,
   checkRoundTripCompatible,
-} from 'applications/operationalStudies/utils';
+} from 'applications/operationalStudies/helpers/utils';
 import {
   osrdEditoastApi,
   type ScheduleItem,

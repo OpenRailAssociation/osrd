@@ -31,8 +31,8 @@ import {
   isTrainScheduleId,
 } from 'utils/trainId';
 
+import { getStationFromOps } from '../helpers/utils';
 import type { PathProjectionResult } from '../types';
-import { getStationFromOps } from '../utils';
 
 /**
  * Generates a display name for a virtual operational point based on available reference data.

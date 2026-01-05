@@ -9,7 +9,7 @@ import {
 } from 'common/api/osrdEditoastApi';
 import type { Train } from 'reducers/osrdconf/types';
 
-import { getStationFromOps } from '../utils';
+import { getStationFromOps } from '../helpers/utils';
 
 /**
  * Given a train's path, return the operational points corresponding to the pathSteps of this train

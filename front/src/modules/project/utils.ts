@@ -1,4 +1,4 @@
-import { isInvalidName } from 'applications/operationalStudies/utils';
+import { isInvalidName } from 'applications/operationalStudies/helpers/utils';
 import {
   SMALL_TEXT_AREA_MAX_LENGTH,
   TEXT_AREA_MAX_LENGTH,
