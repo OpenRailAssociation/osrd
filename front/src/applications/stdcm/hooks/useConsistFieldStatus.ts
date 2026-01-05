@@ -1,5 +1,4 @@
-import type { InputProps } from '@osrd-project/ui-core';
-import type { StatusWithMessage } from '@osrd-project/ui-core/dist/components/inputs/StatusMessage';
+import type { InputProps, StatusWithMessage } from '@osrd-project/ui-core';
 import { useTranslation } from 'react-i18next';
 
 import type { RollingStockWithLiveries, TowedRollingStock } from 'common/api/osrdEditoastApi';
