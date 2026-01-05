@@ -212,7 +212,7 @@ export const RS_SCHEMA_PROPERTIES: readonly SchemaProperty[] = [
     title: 'comfortAcceleration',
     type: 'number',
     min: 0,
-    max: 1,
+    max: 1.5,
     unit: 'm/s²',
     side: 'middle',
   },
