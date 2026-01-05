@@ -380,7 +380,11 @@ impl Conflict {
     }
 }
 
-/// Retrieve the list of conflicts of the timetable (invalid trains are ignored)
+/// Retrieve the list of conflicts of the timetable
+///
+/// The following trains are **excluded** from the result:
+/// - trains for which the simulation fails
+/// - trains for which the simulation does not respect schedule times
 #[editoast_derive::route]
 #[utoipa::path(
     get, path = "",
@@ -447,14 +451,30 @@ pub(in crate::views) async fn conflicts(
     .map(|(sim, _)| sim)
     .collect();
 
-    // Concatenate paced trains occurrences with train schedules
-    let start_times = occurrence_trains
-        .iter()
-        .map(|ts| ts.start_time())
-        .collect::<Vec<_>>();
+    let request_items = izip!(occurrence_ids, occurrence_trains, occurrence_simulations)
+        .filter_map(|(train_id, train_schedule, simulation)| {
+            let simulation::Response::Success(simulation) = simulation.as_ref() else {
+                return None;
+            };
+            let respect_times = simulation
+                .path_item_respect_times(&train_schedule)
+                .into_iter()
+                .all(|path_item| path_item);
+            if !respect_times {
+                return None;
+            }
+            Some((
+                train_id,
+                TrainRequirements {
+                    start_time: train_schedule.start_time(),
+                    spacing_requirements: simulation.final_output.spacing_requirements.clone(),
+                    routing_requirements: simulation.final_output.routing_requirements.clone(),
+                },
+            ))
+        });
 
     let (trains_ids_map, conflict_detection_request) =
-        build_conflict_core_request(infra, start_times, occurrence_ids, occurrence_simulations);
+        build_conflict_core_request(infra, request_items);
 
     // 3. Call core
     let conflict_detection_response = conflict_detection_request.fetch(&core_client).await?;
@@ -483,47 +503,20 @@ async fn retrieve_trains(
 }
 
 /// Build the core conflict detection request
-///
-/// **Panic** if the number of start_times, train_ids, and simulations do not match.
 fn build_conflict_core_request(
     infra: Infra,
-    start_times: Vec<DateTime<Utc>>,
-    train_ids: Vec<OccurrenceId>,
-    simulations: Vec<Arc<simulation::Response>>,
+    items: impl Iterator<Item = (OccurrenceId, TrainRequirements)>,
 ) -> (HashMap<Uuid, OccurrenceId>, ConflictDetectionRequest) {
-    assert_eq!(start_times.len(), simulations.len());
-    assert_eq!(train_ids.len(), simulations.len());
+    let mut trains_map: HashMap<Uuid, OccurrenceId> = HashMap::new();
 
-    let mut trains_map: HashMap<Uuid, OccurrenceId> = HashMap::with_capacity(train_ids.len());
+    let trains_requirements: HashMap<Uuid, TrainRequirements> = items
+        .map(|(train_id, train_requirements)| {
+            let train_id_for_core = Uuid::new_v4();
+            trains_map.insert(train_id_for_core, train_id);
 
-    let trains_requirements: HashMap<Uuid, TrainRequirements> =
-        izip!(start_times, train_ids, simulations)
-            .flat_map(|(start_time, train_id, sim)| {
-                let CompleteReportTrain {
-                    spacing_requirements,
-                    routing_requirements,
-                    ..
-                } = match Arc::unwrap_or_clone(sim) {
-                    simulation::Response::Success(SimulationResponseSuccess {
-                        final_output,
-                        ..
-                    }) => Some(final_output),
-                    _ => None,
-                }?;
-
-                let train_id_for_core = Uuid::new_v4();
-                trains_map.insert(train_id_for_core, train_id.clone());
-
-                Some((
-                    train_id_for_core,
-                    TrainRequirements {
-                        start_time,
-                        spacing_requirements,
-                        routing_requirements,
-                    },
-                ))
-            })
-            .collect();
+            (train_id_for_core, train_requirements)
+        })
+        .collect();
 
     (
         trains_map,
@@ -898,13 +891,9 @@ mod tests {
     use chrono::Duration;
     use chrono::NaiveDate;
     use common::units;
-    use core_client::simulation::CompleteReportTrain;
-    use core_client::simulation::ElectricalProfiles;
-    use core_client::simulation::ReportTrain;
     use core_client::simulation::RoutingRequirement;
     use core_client::simulation::RoutingZoneRequirement;
     use core_client::simulation::SpacingRequirement;
-    use core_client::simulation::SpeedLimitProperties;
     use pretty_assertions::assert_eq;
     use schemas::fixtures::simple_created_exception_with_change_groups;
     use schemas::fixtures::simple_modified_exception_with_change_groups;
@@ -1229,49 +1218,33 @@ mod tests {
             .and_utc();
         let paced_interval = chrono::Duration::try_hours(1).unwrap();
 
-        // Start times
-        let start_times = vec![
-            paced_start_time,
-            paced_start_time + paced_interval,
-            ts_start_time,
-        ];
-        // Train IDs
         let train_ids = vec![
             OccurrenceId::new_base(paced_train_id, 0),
             OccurrenceId::new_base(paced_train_id, 1),
             OccurrenceId::new_base(ts_id, 0),
         ];
 
-        // Simulations
-        let paced_train_sim = Arc::new(simulation::Response::Success(SimulationResponseSuccess {
-            base: ReportTrain::default(),
-            provisional: ReportTrain::default(),
-            final_output: CompleteReportTrain {
+        let requirements = vec![
+            TrainRequirements {
+                start_time: paced_start_time,
                 spacing_requirements: vec![spacing_requirement.clone()],
                 routing_requirements: vec![routing_requirement.clone()],
-                ..Default::default()
             },
-            mrsp: SpeedLimitProperties::default(),
-            electrical_profiles: ElectricalProfiles::default(),
-        }));
-        let mut simulations = vec![paced_train_sim; 2];
-        simulations.push(Arc::new(simulation::Response::Success(
-            SimulationResponseSuccess {
-                base: ReportTrain::default(),
-                provisional: ReportTrain::default(),
-                final_output: CompleteReportTrain {
-                    spacing_requirements: vec![spacing_requirement.clone()],
-                    routing_requirements: vec![routing_requirement.clone()],
-                    ..Default::default()
-                },
-                mrsp: SpeedLimitProperties::default(),
-                electrical_profiles: ElectricalProfiles::default(),
+            TrainRequirements {
+                start_time: paced_start_time + paced_interval,
+                spacing_requirements: vec![spacing_requirement.clone()],
+                routing_requirements: vec![routing_requirement.clone()],
             },
-        )));
+            TrainRequirements {
+                start_time: ts_start_time,
+                spacing_requirements: vec![spacing_requirement.clone()],
+                routing_requirements: vec![routing_requirement.clone()],
+            },
+        ];
 
         // When
         let (trains_ids_map, conflict_core_request) =
-            build_conflict_core_request(infra, start_times, train_ids, simulations);
+            build_conflict_core_request(infra, train_ids.into_iter().zip(requirements));
 
         // Then (assert the train schedule)
         assert_eq!(conflict_core_request.trains_requirements.len(), 3);
