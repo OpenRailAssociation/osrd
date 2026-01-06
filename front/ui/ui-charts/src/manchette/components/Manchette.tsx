@@ -37,7 +37,7 @@ const Manchette = ({
   toggleMode,
   children,
   height = INITIAL_OP_LIST_HEIGHT,
-  width = 350,
+  width = 295,
   hidePositions = false,
 }: ManchetteProps) => (
   <div className="ui-manchette-container" style={{ width: `${width}px` }}>
