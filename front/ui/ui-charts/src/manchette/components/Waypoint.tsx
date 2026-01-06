@@ -15,7 +15,7 @@ type WaypointProps = {
 };
 
 const Waypoint = ({
-  waypoint: { name, secondaryCode, id, position, onClick },
+  waypoint: { name, secondaryCode, id, position, onClick, styles },
   waypointRef,
   isActive,
   isMenuActive,
@@ -28,6 +28,7 @@ const Waypoint = ({
       'waypoint-active': isActive,
       'menu-active': isMenuActive,
     })}
+    style={styles}
     id={id}
     ref={waypointRef}
     onClick={() => {
@@ -49,7 +50,7 @@ const Waypoint = ({
     >
       {name}
     </div>
-    <div className="waypoint-separator"></div>
+    <div className="waypoint-separator" />
     {secondaryCode && (
       <>
         <div
@@ -58,12 +59,9 @@ const Waypoint = ({
         >
           {secondaryCode}
         </div>
-        <div className="waypoint-separator"></div>
+        <div className="waypoint-separator" />
       </>
     )}
-
-    <div className="waypoint-type"></div>
-    <div className="waypoint-separator"></div>
   </div>
 );
 

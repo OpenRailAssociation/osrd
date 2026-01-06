@@ -48,16 +48,15 @@ const Manchette = ({
       <div className="waypoints-list" style={{ width: `${width - 1}px` }}>
         {contents.map((content, index) =>
           isInteractiveWaypoint(content) ? (
-            <div key={index} className="waypoint-wrapper flex justify-start" style={content.styles}>
-              <Waypoint
-                waypoint={content}
-                waypointRef={activeWaypointId === content.id ? activeWaypointRef : undefined}
-                isActive={activeWaypointId === content.id}
-                isMenuActive={!!activeWaypointId}
-                testIdPrefix="waypoint"
-                hidePositions={hidePositions}
-              />
-            </div>
+            <Waypoint
+              key={content.id}
+              waypoint={content}
+              waypointRef={activeWaypointId === content.id ? activeWaypointRef : undefined}
+              isActive={activeWaypointId === content.id}
+              isMenuActive={!!activeWaypointId}
+              testIdPrefix="waypoint"
+              hidePositions={hidePositions}
+            />
           ) : (
             <Fragment key={index}>{content}</Fragment>
           )

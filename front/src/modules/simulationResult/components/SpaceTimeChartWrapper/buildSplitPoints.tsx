@@ -127,26 +127,24 @@ export function buildSplitPoints(
       ),
       manchetteNode: (
         <TrackOccupancyManchette tracks={tracks || []}>
-          <div className="waypoint-wrapper flex justify-start">
-            <WaypointComponent
-              waypoint={{
-                id: waypointId,
-                name: (
-                  <div className="d-flex flex-row align-items-center">
-                    {operationalPointName || operationalPointId}
-                    {loading && (
-                      <Spinner className="ml-2 small" spinnerClassName="spinner-border-sm" />
-                    )}
-                  </div>
-                ),
-                position: operationalPointPosition,
-                onClick: handleWaypointClick,
-              }}
-              waypointRef={activeWaypointRef}
-              isActive={false}
-              isMenuActive={false}
-            />
-          </div>
+          <WaypointComponent
+            waypoint={{
+              id: waypointId,
+              name: (
+                <div className="d-flex flex-row align-items-center">
+                  {operationalPointName || operationalPointId}
+                  {loading && (
+                    <Spinner className="ml-2 small" spinnerClassName="spinner-border-sm" />
+                  )}
+                </div>
+              ),
+              position: operationalPointPosition,
+              onClick: handleWaypointClick,
+            }}
+            waypointRef={activeWaypointRef}
+            isActive={false}
+            isMenuActive={false}
+          />
         </TrackOccupancyManchette>
       ),
     })

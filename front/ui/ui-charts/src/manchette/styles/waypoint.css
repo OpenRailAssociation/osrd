@@ -3,7 +3,8 @@
   height: 2rem;
   line-height: 1.5rem;
   padding-block: 3px 5px;
-  width: 315px;
+  padding-left: 12px;
+  width: 100%;
   position: relative;
 
   .waypoint-separator {
@@ -40,34 +41,11 @@
     }
   }
 
-  .waypoint-type {
-    width: 1rem;
-    height: 16px;
-    position: relative;
-    align-self: center;
-    & + .waypoint-separator {
-      flex-grow: 0;
-      width: 0.6875rem;
-    }
-    &::after {
-      position: absolute;
-      content: '';
-      top: 50%;
-      left: 50%;
-      width: 0.125rem;
-      height: 0.125rem;
-      border-radius: 50%;
-      @apply bg-grey-80;
-    }
-  }
   .waypoint-position {
     @apply text-grey-50;
     font-size: 12px;
     font-weight: 400;
     width: calc(41px - 8px); /* 8px is the padding-left */
-  }
-  .lines {
-    min-width: 37px;
   }
 
   &:not(.menu-active):hover,
@@ -83,17 +61,6 @@
 
   &.menu-active {
     cursor: default;
-  }
-
-  &::after {
-    content: '';
-    position: absolute;
-    display: inline-block;
-    bottom: 16px;
-    right: -1.625rem;
-    width: 1.625rem;
-    opacity: 0.6;
-    @apply bg-grey-40;
   }
 
   /**
