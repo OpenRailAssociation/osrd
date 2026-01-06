@@ -8,4 +8,6 @@ export * from './manchette';
 
 export * from './speedSpaceChart';
 
+export * from './speedSpaceDiagram';
+
 export * from './trackOccupancyDiagram';
