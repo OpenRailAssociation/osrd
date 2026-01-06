@@ -116,6 +116,7 @@ class WorkerCommand : CliCommand {
 
         val httpClient = OkHttpClient.Builder().readTimeout(120, TimeUnit.SECONDS).build()
         val valkeyConnection = VALKEY_URL?.let { RedisClient.create(it).connect() }
+        val s3Context = makeS3Context()
 
         val infraId = WORKER_KEY.split("-").first()
         val timetableId = WORKER_KEY.split("-").getOrNull(1)?.toInt()
