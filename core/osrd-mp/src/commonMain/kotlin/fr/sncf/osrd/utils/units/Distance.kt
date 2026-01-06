@@ -17,6 +17,7 @@ package fr.sncf.osrd.utils.units
 
 import fr.sncf.osrd.fast_collections.PrimitiveWrapperCollections
 import fr.sncf.osrd.utils.Direction
+import kotlin.jvm.JvmInline
 import kotlin.math.absoluteValue
 import kotlin.math.round
 

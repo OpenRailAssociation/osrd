@@ -1,5 +1,6 @@
 plugins {
     alias(libs.plugins.kotlin.multiplatform)
+    alias(libs.plugins.ksp)
 }
 
 group = 'fr.sncf.osrd'
@@ -7,10 +8,24 @@ version = '1.0.0'
 
 kotlin {
     jvm()
+    linuxX64()
 
     sourceSets {
         commonMain.dependencies {
             // PLEASE ADD AND UPDATE DEPENDENCIES USING libs.versions.toml
+            implementation(project(':kt-fast-collections-annotations'))
         }
+        // Work around https://github.com/google/ksp/issues/567 see also below
+        commonMain.kotlin.srcDir('build/generated/ksp/metadata/commonMain/kotlin')
     }
 }
+
+dependencies {
+    add('kspCommonMainMetadata', project(':kt-fast-collections-generator'))
+}
+
+// Work around https://github.com/google/ksp/issues/567
+// The "ksp*" tasks only exist if the project has two or more targets, see
+// https://slack-chats.kotlinlang.org/t/16066381/after-modularizing-a-project-using-a-ksp-processor-i-get-the#765bfaa9-c0df-4a39-ae43-d0132561f5b7
+tasks.named('compileKotlinJvm') { dependsOn('kspCommonMainKotlinMetadata') }
+tasks.named('compileKotlinLinuxX64') { dependsOn('kspCommonMainKotlinMetadata') }

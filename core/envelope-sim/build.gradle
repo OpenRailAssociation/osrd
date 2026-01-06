@@ -17,10 +17,12 @@ dependencies {
 
     implementation project(':osrd-reporting')
     implementation project(":kt-osrd-path")
+    implementation project(':osrd-mp')
     api project(":kt-osrd-sim-infra")
     api project(":osrd-railjson")
     api project(":kt-osrd-utils")
     testFixturesImplementation project(":kt-osrd-path")
+    testFixturesImplementation project(':osrd-mp')
     implementation libs.guava
     implementation libs.slf4j
 

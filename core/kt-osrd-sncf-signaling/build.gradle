@@ -18,6 +18,7 @@ dependencies {
 
     implementation libs.kotlin.stdlib
     testImplementation libs.kotlin.test
+    testImplementation project(':osrd-mp')
 }
 
 tasks.withType(org.jetbrains.kotlin.gradle.tasks.KotlinCompile).configureEach {
