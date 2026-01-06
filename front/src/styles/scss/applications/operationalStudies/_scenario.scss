@@ -459,7 +459,8 @@
         --catalog-entry-mode-button-offset: 9px;
 
         &:has(.wizz-effect:active) {
-          .new-catalog-entry-input {
+          .train-schedule-set-name:has(.error),
+          .new-catalog-entry-input:has(.error) {
             animation: tilt-shaking 0.25s 0s;
           }
         }
