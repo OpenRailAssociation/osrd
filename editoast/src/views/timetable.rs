@@ -428,14 +428,11 @@ pub(in crate::views) async fn conflicts(
     })
     .await?;
 
-    // TODO: CLEAN UP: don't need to retrieve train schedules
-    let (trains, paced_trains) = retrieve_trains_and_paced_trains(conn, timetable_id).await?;
+    let trains = retrieve_trains(conn, timetable_id).await?;
 
     // Flatten paced trains occurrences
-    let (paced_train_ids, occurrence_trains): (Vec<_>, Vec<_>) = paced_trains
-        .iter()
-        .flat_map(|pt| pt.iter_occurrences())
-        .unzip();
+    let (occurrence_ids, occurrence_trains): (Vec<_>, Vec<_>) =
+        trains.iter().flat_map(|pt| pt.iter_occurrences()).unzip();
     let occurrence_simulations: Vec<_> = train_simulation_batch(
         &mut db_pool.get().await?,
         valkey_client.clone(),
@@ -449,37 +446,15 @@ pub(in crate::views) async fn conflicts(
     .into_iter()
     .map(|(sim, _)| sim)
     .collect();
-    let simulations: Vec<_> = train_simulation_batch(
-        &mut db_pool.get().await?,
-        valkey_client.clone(),
-        core_client.clone(),
-        &trains,
-        &infra,
-        electrical_profile_set_id,
-        config.app_version.as_deref(),
-    )
-    .await?
-    .into_iter()
-    .map(|(sim, _)| sim)
-    .collect();
 
     // Concatenate paced trains occurrences with train schedules
-    let train_ids: Vec<_> = paced_train_ids
-        .into_iter()
-        .chain(trains.iter().map(|ts| OccurrenceId::new_base(ts.id, 0)))
-        .collect();
     let start_times = occurrence_trains
         .iter()
         .map(|ts| ts.start_time())
-        .chain(trains.iter().map(|ts| ts.start_time()))
         .collect::<Vec<_>>();
-    let simulations: Vec<_> = occurrence_simulations
-        .into_iter()
-        .chain(simulations)
-        .collect();
 
     let (trains_ids_map, conflict_detection_request) =
-        build_conflict_core_request(infra, start_times, train_ids, simulations);
+        build_conflict_core_request(infra, start_times, occurrence_ids, occurrence_simulations);
 
     // 3. Call core
     let conflict_detection_response = conflict_detection_request.fetch(&core_client).await?;
@@ -491,28 +466,20 @@ pub(in crate::views) async fn conflicts(
     Ok(Json(conflicts_response?))
 }
 
-async fn retrieve_trains_and_paced_trains(
+async fn retrieve_trains(
     mut conn: DbConnection,
     timetable_id: i64,
-) -> Result<(Vec<editoast_models::TrainSchedule>, Vec<models::PacedTrain>)> {
+) -> Result<Vec<models::PacedTrain>> {
     let timetable_trains =
         TimetableWithTrains::retrieve_or_fail(conn.clone(), timetable_id, || {
             TimetableError::NotFound { timetable_id }
         })
         .await?;
-    let mut conn_clone = conn.clone();
-    let (trains, paced_trains): (Vec<_>, Vec<_>) = tokio::try_join!(
-        editoast_models::TrainSchedule::retrieve_batch_unchecked(
-            &mut conn,
-            timetable_trains.train_ids
-        ),
-        models::PacedTrain::retrieve_batch_unchecked(
-            &mut conn_clone,
-            timetable_trains.paced_train_ids
-        )
-    )?;
+    let trains =
+        models::PacedTrain::retrieve_batch_unchecked(&mut conn, timetable_trains.paced_train_ids)
+            .await?;
 
-    Ok((trains, paced_trains))
+    Ok(trains)
 }
 
 /// Build the core conflict detection request
