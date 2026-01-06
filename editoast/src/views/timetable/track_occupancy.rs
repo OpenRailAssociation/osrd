@@ -1,6 +1,6 @@
 use chrono::Duration;
 use core_client::pathfinding::PathfindingResultSuccess;
-use core_client::simulation::CompleteReportTrain;
+use core_client::simulation::ReportTrain;
 use schemas::infra::TrackOffset;
 use schemas::primitives::TimeWindow;
 use schemas::train_schedule::PathItem;
@@ -22,7 +22,7 @@ pub(super) struct TrackOccupancy {
 
 /// Structure holding extracted data needed for track occupancy computation
 struct OccupancyContext<'a> {
-    final_output: Option<&'a CompleteReportTrain>,
+    report_train: Option<&'a ReportTrain>,
     pathfinding_success: Option<&'a PathfindingResultSuccess>,
     matching_index: Option<usize>,
     schedule_item: Option<&'a ScheduleItem>,
@@ -53,9 +53,9 @@ fn extract_occupancy_context<'a>(
     pathfinding: &'a PathfindingResult,
     train_schedule: &'a schemas::TrainSchedule,
 ) -> OccupancyContext<'a> {
-    let final_output = match simulation {
+    let report_train = match simulation {
         simulation::Response::Success(SimulationResponseSuccess { final_output, .. }) => {
-            Some(final_output)
+            Some(&final_output.report_train)
         }
         _ => None,
     };
@@ -76,7 +76,7 @@ fn extract_occupancy_context<'a>(
     });
 
     OccupancyContext {
-        final_output,
+        report_train,
         pathfinding_success,
         matching_index,
         schedule_item,
@@ -93,8 +93,8 @@ fn get_arrival_time(
             .then_some(0)
             .or_else(|| {
                 context
-                    .final_output
-                    .map(|output| output.report_train.path_item_times[idx] as i64)
+                    .report_train
+                    .map(|report_train| report_train.path_item_times[idx] as i64)
             })
             .or_else(|| {
                 context
@@ -103,8 +103,8 @@ fn get_arrival_time(
                     .map(|a| a.num_milliseconds())
             });
     }
-    if let (Some(final_output), Some(pathfinding_success)) =
-        (context.final_output, context.pathfinding_success)
+    if let (Some(report_train), Some(pathfinding_success)) =
+        (context.report_train, context.pathfinding_success)
     {
         let path_projection = PathProjection::new(&pathfinding_success.path.track_section_ranges);
         return operational_point_track_offsets
@@ -112,7 +112,7 @@ fn get_arrival_time(
             .find_map(|track_offset| {
                 path_projection
                     .get_position(track_offset)
-                    .map(|position| interpolate_arrival_time(position, final_output))
+                    .map(|position| interpolate_arrival_time(position, report_train))
             });
     }
     None
@@ -204,6 +204,7 @@ pub mod tests {
     use chrono::DateTime;
     use core_client::pathfinding::PathfindingNotFound;
     use core_client::pathfinding::TrackRange;
+    use core_client::simulation::CompleteReportTrain;
     use core_client::simulation::ReportTrain;
     use pretty_assertions::assert_eq;
     use reqwest::StatusCode;
