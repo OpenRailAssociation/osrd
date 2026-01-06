@@ -11,6 +11,7 @@ plugins {
     alias(libs.plugins.versions)
     alias(libs.plugins.spotless)
     alias(libs.plugins.kotlin.serialization)
+    alias(libs.plugins.kotlin.multiplatform) apply false
 }
 
 // region DEPENDENCIES

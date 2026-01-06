@@ -1,6 +1,5 @@
 plugins {
-    alias(libs.plugins.kotlin.jvm)
-    id 'jacoco'
+    alias(libs.plugins.kotlin.multiplatform)
 }
 
 
@@ -10,7 +9,14 @@ java {
     }
 }
 
-dependencies {
-    // PLEASE ADD AND UPDATE DEPENDENCIES USING libs.versions.toml
-    api libs.kotlin.reflect
+kotlin {
+    jvm()
+
+    sourceSets {
+        commonMain.dependencies {
+            // PLEASE ADD AND UPDATE DEPENDENCIES USING libs.versions.toml
+            api libs.kotlin.reflect
+        }
+        commonMain.kotlin.srcDirs = ['src/main/kotlin']
+    }
 }
