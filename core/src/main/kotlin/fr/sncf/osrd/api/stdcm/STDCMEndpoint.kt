@@ -70,6 +70,7 @@ import kotlinx.serialization.ExperimentalSerializationApi
 class STDCMEndpoint(
     private val infraManager: InfraProvider,
     private val timetableCacheManager: TimetableCacheManager,
+    private val s3Context: S3Context? = null,
 ) : Take {
     @Throws(OSRDError::class)
     override fun act(req: Request): Response {
@@ -86,6 +87,8 @@ class STDCMEndpoint(
                 it.println(stdcmRequestAdapter.indent("    ").toJson(request))
             }
         }
+
+        s3Context?.writeSTDCMFile("input_payload.json") { stdcmRequestAdapter.toJson(request) }
 
         return run(request)
     }
@@ -190,10 +193,18 @@ class STDCMEndpoint(
         departureTime: ZonedDateTime,
         requirements: Map<ZoneId, List<STDCMTimetableData.DetailedRequirement>>,
     ) {
-        val filename = System.getenv("STDCM_DEBUG_DATA_FILENAME") ?: return
-        val debugData =
-            generateDebugData(infra, path, simulationResponse, departureTime, requirements)
-        File(filename).writeText(OutputSimDebugData.adapter.indent("  ").toJson(debugData))
+        val stringDebugData by lazy {
+            OutputSimDebugData.adapter.toJson(
+                generateDebugData(infra, path, simulationResponse, departureTime, requirements)
+            )
+        }
+
+        val filename = System.getenv("STDCM_DEBUG_DATA_FILENAME")
+        if (filename != null) {
+            File(filename).writeText(stringDebugData)
+        }
+
+        s3Context?.writeSTDCMFile("output_simulation_data.json") { stringDebugData }
     }
 
     /** Build the simulation part of the response */

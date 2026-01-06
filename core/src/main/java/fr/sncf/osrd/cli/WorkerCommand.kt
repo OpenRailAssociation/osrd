@@ -133,6 +133,7 @@ class WorkerCommand : CliCommand {
                 valkeyConnection,
                 DISABLE_ALL_TIMETABLE_CACHE,
                 OSRD_GIT_DESCRIBE,
+                s3Context,
             )
         val electricalProfileSetManager =
             ElectricalProfileSetManager(editoastUrl, editoastAuthorization, httpClient)
@@ -155,7 +156,7 @@ class WorkerCommand : CliCommand {
                 "/conflict_detection" to ConflictDetectionEndpoint(infraManager),
                 "/etcs_braking_curves" to
                     ETCSBrakingCurvesEndpoint(infraManager, electricalProfileSetManager),
-                "/stdcm" to STDCMEndpoint(infraManager, timetableCache),
+                "/stdcm" to STDCMEndpoint(infraManager, timetableCache, s3Context),
                 "/worker_load" to WorkerLoadEndpoint(infraManager, timetableCache),
             )
 
