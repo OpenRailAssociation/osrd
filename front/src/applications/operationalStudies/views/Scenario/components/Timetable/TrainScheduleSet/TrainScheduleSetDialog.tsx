@@ -22,6 +22,7 @@ const TrainScheduleSetDialog = ({ onCancel }: TrainScheduleSetDialogProps) => {
   });
 
   const [name, setName] = useState('');
+  const [isNameMissing, setIsNameMissing] = useState(false);
   const [catalogEntry, setCatalogEntry] = useState<CatalogEntry>();
   const [description, setDescription] = useState('');
   const [catalogEntryMode, setCatalogEntryMode] = useState<'select' | 'create'>('select');
@@ -71,6 +72,11 @@ const TrainScheduleSetDialog = ({ onCancel }: TrainScheduleSetDialogProps) => {
   };
 
   const handleSubmit = async () => {
+    if (!name) {
+      setIsNameMissing(true);
+      return;
+    }
+
     let catalogEntryId = catalogEntry?.id ?? null;
     if (catalogEntryMode === 'create') {
       if (!newCatalogEntryName) {
@@ -107,19 +113,35 @@ const TrainScheduleSetDialog = ({ onCancel }: TrainScheduleSetDialogProps) => {
           <Button variant="Cancel" label={t('cancel')} onClick={onCancel} />
           <Button
             label={t('addTrainScheduleSet')}
-            className={cx('submit-button', { 'wizz-effect': catalogEntryError !== 'none' })}
+            className={cx('submit-button', {
+              'wizz-effect': catalogEntryError !== 'none' || isNameMissing,
+            })}
             onClick={handleSubmit}
           />
         </>
       }
     >
-      <Input
-        id="train-schedule-set-name"
-        label={t('name')}
-        required
-        value={name}
-        onChange={(e) => setName(e.target.value)}
-      />
+      <div className="train-schedule-set-name">
+        <Input
+          id="train-schedule-set-name"
+          label={t('name')}
+          required
+          value={name}
+          onChange={(e) => {
+            setName(e.target.value);
+            if (isNameMissing) {
+              setIsNameMissing(false);
+            }
+          }}
+          statusWithMessage={
+            isNameMissing
+              ? {
+                  status: 'error',
+                }
+              : undefined
+          }
+        />
+      </div>
       {catalogEntryMode === 'select' && (
         <div className="catalog-entry">
           <Select
