@@ -83,18 +83,16 @@ const TrackOccupancyDiagramWithinSpaceTimeChartWrapper = ({ height = 561 }: { he
         ),
         manchetteNode: (
           <TrackOccupancyManchette tracks={tracks}>
-            <div className="waypoint-wrapper flex justify-start">
-              <WaypointComponent
-                waypoint={{
-                  id: operationalPoint.id,
-                  name: operationalPoint.label,
-                  position: operationalPoint.position,
-                  onClick: () => setSelectedWaypoint(undefined),
-                }}
-                isActive={false}
-                isMenuActive={false}
-              />
-            </div>
+            <WaypointComponent
+              waypoint={{
+                id: operationalPoint.id,
+                name: operationalPoint.label,
+                position: operationalPoint.position,
+                onClick: () => setSelectedWaypoint(undefined),
+              }}
+              isActive={false}
+              isMenuActive={false}
+            />
           </TrackOccupancyManchette>
         ),
       },
