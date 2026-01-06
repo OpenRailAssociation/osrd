@@ -21,7 +21,7 @@ use chrono::DateTime;
 use chrono::Duration;
 use chrono::Utc;
 use core_client::pathfinding::TrackRange;
-use core_client::simulation::CompleteReportTrain;
+use core_client::simulation::ReportTrain;
 use database::DbConnection;
 use editoast_derive::EditoastError;
 use editoast_models::prelude::*;
@@ -225,11 +225,11 @@ fn find_level_crossing_occupancy(
     rolling_stock_length: &u64,
 ) -> Option<LevelCrossingOccupancy> {
     // Check simulation results
-    let (final_output, pathfinding_success) = match (simulation, pathfinding) {
+    let (report_train, pathfinding_success) = match (simulation, pathfinding) {
         (
             simulation::Response::Success(SimulationResponseSuccess { final_output, .. }),
             PathfindingResult::Success(pathfinding_success),
-        ) => (final_output, pathfinding_success),
+        ) => (&final_output.report_train, pathfinding_success),
         _ => return None,
     };
 
@@ -250,7 +250,7 @@ fn find_level_crossing_occupancy(
     // Compute the occupancy time window
     let time_window = find_occupancy_time_window(
         &direction,
-        final_output,
+        report_train,
         level_crossing,
         &lc_position,
         &matched_track_offset,
@@ -282,7 +282,7 @@ fn find_level_crossing_intersection(
 
 fn find_occupancy_time_window(
     direction: &Direction,
-    final_output: &CompleteReportTrain,
+    report_train: &ReportTrain,
     level_crossing: &LevelCrossing,
     lc_position: &u64,
     matched_track_offset: &TrackOffset,
@@ -294,15 +294,15 @@ fn find_occupancy_time_window(
 
     // Compute arrival and leaving times
     let lc_end_position = lc_position + level_crossing.short_zone_length + rolling_stock_length;
-    let last_train_position = *final_output.report_train.positions.last()?;
+    let last_train_position = *report_train.positions.last()?;
 
     // Check whether the train completely leaves the short zone; ignore it otherwise.
     if lc_end_position > last_train_position {
         return None;
     }
 
-    let arrival_time = interpolate_arrival_time(pedal_position, final_output);
-    let leaving_time = interpolate_arrival_time(lc_end_position, final_output);
+    let arrival_time = interpolate_arrival_time(pedal_position, report_train);
+    let leaving_time = interpolate_arrival_time(lc_end_position, report_train);
 
     Some(TimeWindow {
         time_begin: start_time + Duration::milliseconds(arrival_time),

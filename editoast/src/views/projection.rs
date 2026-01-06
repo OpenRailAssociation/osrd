@@ -3,6 +3,7 @@ use core_client::CoreClient;
 use core_client::pathfinding::TrackRange;
 use core_client::pathfinding::TrainPath;
 use core_client::simulation::CompleteReportTrain;
+use core_client::simulation::ReportTrain;
 use core_client::simulation::SignalCriticalPosition;
 use core_client::simulation::ZoneUpdate;
 use database::DbConnection;
@@ -326,16 +327,16 @@ pub fn linear_interpolate(a_x: u64, b_x: u64, a_y: u64, b_y: u64, x: u64) -> u64
 ///
 /// This function finds the position in the train's trajectory and interpolates
 /// the arrival time based on the surrounding positions and times.
-pub fn interpolate_arrival_time(position: u64, final_output: &CompleteReportTrain) -> i64 {
-    let index = find_index_upper(&final_output.report_train.positions, position);
+pub fn interpolate_arrival_time(position: u64, report_train: &ReportTrain) -> i64 {
+    let index = find_index_upper(&report_train.positions, position);
     let time = if index == 0 {
-        final_output.report_train.times[0]
+        report_train.times[0]
     } else {
         linear_interpolate(
-            final_output.report_train.positions[index - 1],
-            final_output.report_train.positions[index],
-            final_output.report_train.times[index - 1],
-            final_output.report_train.times[index],
+            report_train.positions[index - 1],
+            report_train.positions[index],
+            report_train.times[index - 1],
+            report_train.times[index],
             position,
         )
     };
@@ -783,7 +784,6 @@ mod tests {
     use super::*;
     use crate::models::fixtures::create_small_infra;
     use crate::views::test_app::TestAppBuilder;
-    use core_client::simulation::ReportTrain;
     use rstest::rstest;
     use schemas::infra::Direction;
     use schemas::infra::DirectionalTrackRange;
@@ -840,12 +840,7 @@ mod tests {
             path_item_times: vec![],
         };
 
-        let final_output = CompleteReportTrain {
-            report_train,
-            ..Default::default()
-        };
-
-        let result = interpolate_arrival_time(position, &final_output);
+        let result = interpolate_arrival_time(position, &report_train);
 
         assert_eq!(result, expected_time);
     }
