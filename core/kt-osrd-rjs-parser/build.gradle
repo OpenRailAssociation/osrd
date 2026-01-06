@@ -17,6 +17,7 @@ dependencies {
     implementation project(':kt-fast-collections')
     ksp project(':kt-fast-collections-generator')
     implementation project(':osrd-geom')
+    implementation project(':osrd-mp')
     implementation libs.guava
     implementation libs.kotlin.stdlib
     implementation libs.kotlin.logging

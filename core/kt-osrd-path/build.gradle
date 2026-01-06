@@ -19,6 +19,7 @@ dependencies {
     api project(":osrd-railjson")
     api project(":osrd-reporting")
     implementation project(':osrd-geom')
+    implementation project(':osrd-mp')
 
     implementation libs.guava
     implementation libs.kotlin.logging

@@ -19,6 +19,7 @@ dependencies {
     api project(":osrd-railjson")
     api project(":osrd-reporting")
     implementation project(":kt-osrd-path")
+    implementation project(':osrd-mp')
 
     implementation libs.kotlin.logging
     implementation libs.kotlin.stdlib
