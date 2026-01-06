@@ -1,6 +1,6 @@
 .ui-manchette-container .waypoint {
   @apply text-grey-80;
-  height: 2rem;
+  height: 32px;
   line-height: 1.5rem;
   padding-block: 3px 5px;
   padding-left: 12px;
@@ -33,17 +33,17 @@
   .waypoint-ch {
     font-size: 0.875rem;
     margin: 0 2px;
-    width: 1rem;
+    width: 16px;
     text-align: left;
     & + .waypoint-separator {
       flex-grow: 0;
-      width: 1rem;
+      width: 16px;
     }
   }
 
   .waypoint-position {
     @apply text-grey-50;
-    font-size: 12px;
+    font-size: 0.75rem;
     font-weight: 400;
     width: calc(41px - 8px); /* 8px is the padding-left */
   }
