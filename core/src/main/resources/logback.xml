@@ -6,12 +6,10 @@
         </encoder>
     </appender>
 
-    <logger name="fr.sncf.osrd.utils.graph.BiDijkstra" level="TRACE"/>
-    <logger name="fr.sncf.osrd.train.events.TrainCreatedEvent" level="TRACE"/>
-
     <root level="debug">
         <appender-ref ref="COLOR"/>
     </root>
     <logger name="io.lettuce" level="INFO"/>
     <logger name="io.netty" level="INFO"/>
+    <logger name="software.amazon.awssdk" level="INFO"/>
 </configuration>

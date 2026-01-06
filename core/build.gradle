@@ -99,6 +99,9 @@ dependencies {
 
     // redis
     implementation libs.lettuce
+
+    // s3
+    implementation libs.s3
 }
 // endregion
 
