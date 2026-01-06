@@ -11,11 +11,7 @@ import { v4 as uuidV4 } from 'uuid';
 import useCategoryColors from 'applications/operationalStudies/hooks/useCategoryColors';
 import { useScenarioContext } from 'applications/operationalStudies/hooks/useScenarioContext';
 import AlertBox from 'common/AlertBox';
-import {
-  osrdEditoastApi,
-  type SearchResultItemOperationalPoint,
-  type PathProperties,
-} from 'common/api/osrdEditoastApi';
+import { type PathProperties, type PathItemLocation } from 'common/api/osrdEditoastApi';
 import { computeBBoxViewport } from 'common/Map/WarpedMap/core/helpers';
 import { useInfraID } from 'common/osrdContext';
 import IncompatibleConstraints from 'modules/pathfinding/components/IncompatibleConstraints';
@@ -29,7 +25,6 @@ import {
 } from 'reducers/osrdconf/operationalStudiesConf/selectors';
 import type { PathStepV2 } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
-import { useDebounce } from 'utils/helpers';
 import useModalFocusTrap from 'utils/hooks/useModalFocusTrap';
 
 import { type OperationalPointSuggestion } from './ComboBoxCustomList.tsx/ListElementComponent';
@@ -40,6 +35,7 @@ import PathStepItem from './PathStepItem';
 import { computePathStepCoordinates } from './utils';
 import { MANAGE_TIMETABLE_ITEM_TYPES } from '../../../consts';
 import { buildOpSuggestion } from '../helpers/buildOpSuggestion';
+import { useOperationalPointSearch } from 'applications/operationalStudies/hooks/useOperationalPointSearch';
 
 type ItineraryModalProps = {
   itineraryModalIsOpen: boolean;
@@ -56,7 +52,6 @@ const ItineraryModal = ({
     keyPrefix: 'manageTimetableItem.itineraryModal',
   });
   const infraId = useInfraID();
-  const [postSearch] = osrdEditoastApi.endpoints.postSearch.useLazyQuery();
   const storePathSteps = useSelector(getPathSteps);
   const category = useSelector(getCategory);
   const { workerStatus } = useScenarioContext();
@@ -72,42 +67,45 @@ const ItineraryModal = ({
 
   const [pathSteps, setPathSteps] = useState<PathStepV2[]>([]);
   const [categoryWarning, setCategoryWarning] = useState<string | undefined>(undefined);
-  const [activeStepId, setActiveStepId] = useState<string | null>(null);
-  const [opInput, setOpInput] = useState('');
-  const [opResults, setOpResults] = useState<SearchResultItemOperationalPoint[]>([]);
-  const debouncedOpInput = useDebounce(opInput.trim(), 300);
-  const [opSuggestions, setOpSuggestions] = useState<OperationalPointSuggestion[]>([]);
-  useEffect(() => {
-    if (!activeStepId) return;
-    if (!debouncedOpInput || debouncedOpInput.length < 2) {
-      setOpResults([]);
-      return;
-    }
-
-    const searchQuery = [
-      'or',
-      ['search', ['name'], debouncedOpInput],
-      ['search', ['trigram'], debouncedOpInput],
-      ['search', ['ch'], debouncedOpInput],
-    ];
-
-    const payload = {
-      object: 'operationalpoint',
-      query: ['and', searchQuery, infraId !== undefined ? ['=', ['infra_id'], infraId] : true],
-    };
-
-    postSearch({ searchPayload: payload, pageSize: 101 })
-      .unwrap()
-      .then((results) => {
-        const res = results as SearchResultItemOperationalPoint[];
-        const suggestions = buildOpSuggestion(res);
-        setOpSuggestions(suggestions);
-      })
-      .catch(() => setOpResults([]));
-  }, [activeStepId, debouncedOpInput, infraId, postSearch]);
+  const {
+    activeStepId,
+    setActiveStepId,
+    getInputForStep,
+    setInputForStep,
+    opSuggestions,
+    resetOpSuggestions,
+    chooseChForSuggestion,
+    formatChosenValue,
+  } = useOperationalPointSearch({
+    infraId,
+    buildOpSuggestion,
+  });
 
   const { pathStepsMetadataById } = usePathStepsMetadata(pathSteps);
   const { launchPathfindingV2, pathProperties, pathfindingError } = usePathfindingV2();
+  const applyOperationalPointToStep = (
+    stepId: string,
+    suggestion: OperationalPointSuggestion,
+    forcedCh?: string
+  ) => {
+    const chosenCh = chooseChForSuggestion(stepId, suggestion, forcedCh);
+    if (!chosenCh) return;
+
+    const newLocation: PathItemLocation = {
+      operational_point: {
+        type: 'trigram',
+        trigram: suggestion.trigram,
+        secondary_code: chosenCh,
+      },
+    };
+
+    setPathSteps((prev) =>
+      prev.map((s) => (s.id === stepId ? { ...s, location: newLocation } : s))
+    );
+
+    setInputForStep(stepId, formatChosenValue(suggestion, chosenCh));
+    resetOpSuggestions();
+  };
 
   const hasInvalidPathStep = Array.from(pathStepsMetadataById.values()).some(
     (metadata) => metadata.isInvalid
@@ -263,9 +261,14 @@ const ItineraryModal = ({
                   onOpFocus={() => setActiveStepId(pathStep.id)}
                   onOpInputChange={(value) => {
                     setActiveStepId(pathStep.id);
-                    setOpInput(value);
+                    setInputForStep(pathStep.id, value);
                   }}
-                  inputValue={activeStepId === pathStep.id ? opInput : undefined}
+                  inputValue={getInputForStep(pathStep.id)}
+                  opSuggestions={activeStepId === pathStep.id ? opSuggestions : []}
+                  onSelectOpSuggestion={(suggestion, chCode) => {
+                    applyOperationalPointToStep(pathStep.id, suggestion, chCode);
+                  }}
+                  resetOpSuggestions={resetOpSuggestions}
                 />
               );
             })}

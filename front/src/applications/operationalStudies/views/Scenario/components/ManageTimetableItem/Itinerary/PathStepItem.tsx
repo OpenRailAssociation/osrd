@@ -13,6 +13,10 @@ import type { Viewport } from 'reducers/commonMap/types';
 import type { PathStepMetadata, PathStepV2 } from 'reducers/osrdconf/types';
 import { useAppDispatch } from 'store';
 
+import {
+  ListElementComponent,
+  type OperationalPointSuggestion,
+} from './ComboBoxCustomList.tsx/ListElementComponent';
 import { computePathStepCoordinates, isOpRefMetadata } from './utils';
 
 const EMPTY_OPTION = { label: '', id: '' };
@@ -26,6 +30,9 @@ type PathStepProps = {
   onOpInputChange?: (value: string) => void;
   onOpFocus?: () => void;
   inputValue?: string;
+  opSuggestions?: Array<OperationalPointSuggestion | string>;
+  onSelectOpSuggestion?: (suggestion: OperationalPointSuggestion, ch?: string) => void;
+  resetOpSuggestions?: () => void;
 };
 
 const PathStepItem = ({
@@ -37,6 +44,9 @@ const PathStepItem = ({
   onOpInputChange,
   onOpFocus,
   inputValue,
+  opSuggestions = [],
+  onSelectOpSuggestion,
+  resetOpSuggestions,
 }: PathStepProps) => {
   const { t } = useTranslation('operational-studies', {
     keyPrefix: 'manageTimetableItem.itineraryModal',
@@ -79,17 +89,6 @@ const PathStepItem = ({
 
     return (message += secondaryCodeInfo + trackInfo);
   };
-
-  const secondaryCodeSuggestions = useMemo(() => {
-    if (!isOpRefMetadata(pathStepMetadata)) return [];
-    return [
-      { label: '', id: '' },
-      {
-        label: pathStepMetadata.secondaryCode || '',
-        id: pathStepMetadata.secondaryCode || '',
-      },
-    ];
-  }, [pathStepMetadata]);
 
   const selectedSecondaryCodeOption = useMemo(() => {
     if (!isOpRefMetadata(pathStepMetadata)) return { label: '', id: '' };
@@ -161,6 +160,13 @@ const PathStepItem = ({
     dispatch(updateViewport(viewport));
   };
 
+  const comboBoxValue = useMemo(() => {
+    const raw = inputValue ?? (isOpRefMetadata(pathStepMetadata) ? pathStepMetadata.name : '');
+
+    const text = (raw ?? '').trim();
+    return text.length > 0 ? raw : undefined;
+  }, [inputValue, pathStepMetadata]);
+
   return (
     <div className="path-step-wrapper">
       <div
@@ -195,11 +201,41 @@ const PathStepItem = ({
         >
           <ComboBox
             id={`pathStep-name-${pathStep?.id ?? 'empty'}`}
-            value={inputValue ?? (isOpRefMetadata(pathStepMetadata) ? pathStepMetadata.name : '')}
-            suggestions={[]}
-            getSuggestionLabel={(option) => String(option)}
-            onSelectSuggestion={() => {}}
-            resetSuggestions={() => {}}
+            value={comboBoxValue}
+            suggestions={opSuggestions}
+            getSuggestionLabel={(op) => {
+              if (!op) return '';
+              if (typeof op === 'string') return op;
+              return `${op.trigram} ${op.name}`;
+            }}
+            onSelectSuggestion={(op) => {
+              if (!op) {
+                onOpInputChange?.('');
+                resetOpSuggestions?.();
+                return;
+              }
+
+              if (typeof op === 'string') {
+                onOpInputChange?.(op);
+                return;
+              }
+
+              onSelectOpSuggestion?.(op);
+            }}
+            resetSuggestions={() => resetOpSuggestions?.()}
+            listElementComponent={({ suggestion, index, isActive, isSelected }) => {
+              if (typeof suggestion === 'string') return suggestion;
+
+              return (
+                <ListElementComponent
+                  suggestion={suggestion}
+                  index={index}
+                  isActive={isActive}
+                  isSelected={isSelected}
+                  onPickCh={(chCode) => onSelectOpSuggestion?.(suggestion, chCode)}
+                />
+              );
+            }}
             small
             narrow
             onFocus={onOpFocus}
@@ -210,23 +246,6 @@ const PathStepItem = ({
           <div className="requested-point-block" />
         ) : (
           <>
-            <div
-              className={cx('secondary-code', {
-                invalid: pathStepMetadata?.isInvalid,
-              })}
-            >
-              <Select
-                id={`pathStep-type-${pathStep?.id ?? 'empty'}`}
-                value={selectedSecondaryCodeOption}
-                options={secondaryCodeSuggestions}
-                getOptionLabel={(option) => option.label}
-                getOptionValue={(option) => option.id}
-                onChange={() => {}}
-                small
-                narrow
-                readOnly
-              />
-            </div>
             <div
               className={cx('track-name', {
                 invalid: pathStepMetadata?.isInvalid,
@@ -241,7 +260,6 @@ const PathStepItem = ({
                 onChange={() => {}}
                 small
                 narrow
-                readOnly
               />
             </div>
           </>

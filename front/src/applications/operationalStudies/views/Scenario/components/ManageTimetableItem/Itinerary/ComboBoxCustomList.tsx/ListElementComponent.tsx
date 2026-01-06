@@ -4,6 +4,7 @@ import cx from 'classnames';
 
 export type OpCh = {
   code: string;
+  opId?: string;
   isCandidate?: boolean;
   isBestSuggestion?: boolean;
 };
@@ -43,12 +44,14 @@ export const ListElementComponent = ({
         <button
           key={ch.code}
           type="button"
-          className={cx('op-suggestion-ch-element', {
-            'op-suggestion-ch-element--best': ch.isBestSuggestion,
-            'op-suggestion-ch-element--inactive': ch.isCandidate === false,
+          className={cx('op-suggestion-secondary-code', {
+            'op-suggestion-secondary-code--best': ch.isBestSuggestion,
+            'op-suggestion-secondary-code--inactive': ch.isCandidate === false,
           })}
           disabled={ch.isCandidate === false}
-          onClick={() => onPickCh?.(ch.code)}
+          onClick={() => {
+            onPickCh?.(ch.code);
+          }}
         >
           {ch.code}
         </button>

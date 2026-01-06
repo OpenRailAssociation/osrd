@@ -8,17 +8,21 @@ export const buildOpSuggestion = (
   const map = new Map<string, OperationalPointSuggestion>();
 
   for (const r of results) {
-    const key = `${r.trigram}__${r.name}`;
+    const key = `${r.trigram}||${r.name}`;
 
     const existing = map.get(key);
+
+    const chEntry = r.ch ? { code: r.ch, opId: r.obj_id } : undefined;
+
     if (!existing) {
       map.set(key, {
-        id: key, // ou `${r.trigram}-${r.name}` (doit être stable)
+        id: key,
         trigram: r.trigram,
         name: r.name,
-        chList: [{ code: r.ch }],
+        chList: chEntry ? [chEntry] : [],
       });
-      continue;
+    } else if (chEntry && !existing.chList.some((c) => c.code === chEntry.code)) {
+      existing.chList.push(chEntry);
     }
   }
 

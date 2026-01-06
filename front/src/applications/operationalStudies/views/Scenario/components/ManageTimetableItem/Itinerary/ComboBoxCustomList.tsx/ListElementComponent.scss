@@ -30,11 +30,13 @@
     overflow: hidden;
     text-overflow: ellipsis;
   }
-  &-ch-list {
+  &-secondary-code-list {
     display: flex;
     gap: 4px;
+    flex-wrap: wrap;
+    max-width: 100%;
   }
-  &-ch-element {
+  &-secondary-code {
     display: inline-flex;
     justify-content: center;
     align-items: center;
@@ -62,11 +64,11 @@
     opacity: 0.7;
     background-color: rgba(0, 0, 0, 0.05);
   }
-  &-ch-element--best {
+  &-secondary-code--best {
     background-color: rgba(31, 15, 150, 1);
     color: rgba(255, 255, 255, 1);
   }
-  &-ch-element--inactive {
+  &-secondary-code--inactive {
     opacity: 0.3;
   }
 }
@@ -95,11 +97,13 @@
   &:has(#combo-box-custom) {
     .suggestions-list {
       margin-top: 15px;
-      width: auto;
       right: auto;
       left: 0.7rem;
       max-height: none;
       border-radius: 4px;
+      display: inline-block;
+      width: max-content;
+      max-width: 748px;
     }
 
     .suggestion-item {
@@ -114,25 +118,28 @@
           box-shadow: none;
         }
 
-        .op-suggestion-ch-element:hover {
+        .op-suggestion-secondary-code:hover {
           background-color: rgba(31, 15, 150, 1);
           color: #ffffff;
           opacity: 1;
         }
 
-        &:hover:not(:has(.op-suggestion-ch-element:hover))
-          .op-suggestion-ch-element:first-child:not(.op-suggestion-ch-element--inactive) {
+        &:hover:not(:has(.op-suggestion-secondary-code:hover))
+          .op-suggestion-secondary-code:first-child:not(.op-suggestion-secondary-code--inactive) {
           background-color: rgba(31, 15, 150, 1);
           color: #ffffff;
         }
 
-        &.active .op-suggestion-ch-element:first-child:not(.op-suggestion-ch-element--inactive) {
+        &.active
+          .op-suggestion-secondary-code:first-child:not(.op-suggestion-secondary-code--inactive) {
           background-color: rgba(31, 15, 150, 1);
           color: #ffffff;
         }
 
-        &:has(.op-suggestion-ch-element:hover)
-          .op-suggestion-ch-element:first-child:not(:hover):not(.op-suggestion-ch-element--best) {
+        &:has(.op-suggestion-secondary-code:hover)
+          .op-suggestion-secondary-code:first-child:not(:hover):not(
+            .op-suggestion-secondary-code--best
+          ) {
           background-color: rgba(227, 237, 252, 1);
           color: rgba(24, 68, 239, 1);
           opacity: 1;
